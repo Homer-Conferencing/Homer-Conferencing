@@ -3,7 +3,7 @@
  * Purpose: Implemenation of packet statistic service as singleton
  * Author:  Thomas Volkert
  * Since:   2010-10-27
- * Version: $Id: PacketStatisticService.cpp 14 2011-08-22 13:18:27Z silvo $
+ * Version: $Id$
 */
 #include <PacketStatisticService.h>
 

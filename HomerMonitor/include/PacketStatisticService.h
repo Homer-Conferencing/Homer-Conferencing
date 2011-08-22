@@ -3,7 +3,7 @@
  * Purpose: Packet statistic service
  * Author:  Thomas Volkert
  * Since:   2010-10-27
- * Version: $Id: PacketStatisticService.h 14 2011-08-22 13:18:27Z silvo $
+ * Version: $Id$
  */
 
 #ifndef _MONITOR_PACKET_STATISTIC_SERVICE_

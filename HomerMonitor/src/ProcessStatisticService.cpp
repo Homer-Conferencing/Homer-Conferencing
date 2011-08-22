@@ -3,7 +3,7 @@
  * Purpose: Implemenation of process statistic service as singleton
  * Author:  Thomas Volkert
  * Since:   2010-11-07
- * Version: $Id: ProcessStatisticService.cpp 14 2011-08-22 13:18:27Z silvo $
+ * Version: $Id$
 */
 #include <ProcessStatisticService.h>
 
