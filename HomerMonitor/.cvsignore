@@ -1,0 +1,10 @@
+*.sdf
+Debug
+Depency
+ipch
+Release
+Dependency
+CMakeFiles
+*.cmake
+CMakeCache.txt
+Makefile
