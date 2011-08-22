@@ -3,7 +3,7 @@
  * Purpose: Implemenation of process statistic
  * Author:  Thomas Volkert
  * Since:   2009-05-18
- * Version: $Id: ProcessStatistic.cpp 14 2011-08-22 13:18:27Z silvo $
+ * Version: $Id$
 */
 
 #include <ProcessStatistic.h>

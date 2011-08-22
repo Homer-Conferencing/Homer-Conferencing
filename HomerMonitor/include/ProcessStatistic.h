@@ -3,7 +3,7 @@
  * Purpose: Process statistic
  * Author:  Thomas Volkert
  * Since:   2009-05-18
- * Version: $Id: ProcessStatistic.h 14 2011-08-22 13:18:27Z silvo $
+ * Version: $Id$
  */
 
 #ifndef _MULTIMEDIA_PROCESS_STATISTIC_

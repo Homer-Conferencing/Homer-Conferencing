@@ -3,7 +3,7 @@
  * Purpose: Implemenation of packet statistic
  * Author:  Thomas Volkert
  * Since:   2009-04-17
- * Version: $Id: PacketStatistic.cpp 14 2011-08-22 13:18:27Z silvo $
+ * Version: $Id$
 */
 #include <PacketStatistic.h>
 #include <PacketStatisticService.h>
