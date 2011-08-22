@@ -3,7 +3,7 @@
  * Purpose: header file for log sink for net outputs
  * Author:  Thomas Volkert
  * Since:   2011-07-29
- * Version: $Id: LogSinkNet.h 6 2011-08-22 13:06:22Z silvo $
+ * Version: $Id$
  */
 
 #ifndef _LOGGER_LOG_SINK_NET_

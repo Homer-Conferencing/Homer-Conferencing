@@ -3,7 +3,7 @@
  * Purpose: header for Java-Reflection for C++
  * Author:  Thomas Volkert
  * Since:   2011-03-10
- * Version: $Id: HBReflection.h 6 2011-08-22 13:06:22Z silvo $
+ * Version: $Id$
  */
 
 #ifndef _BASE_REFLECTION_

@@ -3,7 +3,7 @@
  * Purpose: Implementation of Java-Reflections for C++
  * Author:  Thomas Volkert
  * Since:   2011-03-10
- * Version: $Id: HBReflection.cpp 6 2011-08-22 13:06:22Z silvo $
+ * Version: $Id$
  */
 
 #include <Logger.h>

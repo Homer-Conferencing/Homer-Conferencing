@@ -3,7 +3,7 @@
  * Purpose: Implementation of several basic system functions
  * Author:  Thomas Volkert
  * Since:   2011-02-25
- * Version: $Id: HBSystem.cpp 6 2011-08-22 13:06:22Z silvo $
+ * Version: $Id$
  */
 
 #include <Logger.h>

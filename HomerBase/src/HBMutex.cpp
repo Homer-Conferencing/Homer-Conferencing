@@ -3,7 +3,7 @@
  * Purpose: Implementation of os independent mutex handling
  * Author:  Thomas Volkert
  * Since:   2010-09-20
- * Version: $Id: HBMutex.cpp 6 2011-08-22 13:06:22Z silvo $
+ * Version: $Id$
  */
 
 #include <Logger.h>

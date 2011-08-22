@@ -3,7 +3,7 @@
  * Purpose: wrapper for os independent time handling
  * Author:  Thomas Volkert
  * Since:   2010-09-23
- * Version: $Id: HBTime.h 6 2011-08-22 13:06:22Z silvo $
+ * Version: $Id$
  */
 
 #ifndef _BASE_TIME_

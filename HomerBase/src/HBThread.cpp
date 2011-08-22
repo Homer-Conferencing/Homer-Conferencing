@@ -3,7 +3,7 @@
  * Purpose: Implementation of wrapper for os independent thread handling
  * Author:  Thomas Volkert
  * Since:   2010-09-28
- * Version: $Id: HBThread.cpp 6 2011-08-22 13:06:22Z silvo $
+ * Version: $Id$
  */
 
 #include <HBThread.h>

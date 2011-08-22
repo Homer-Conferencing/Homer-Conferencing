@@ -3,7 +3,7 @@
  * Purpose: Implementation of the core logger
  * Author:  Thomas Volkert
  * Since:   2009-05-19
- * Version: $Id: Logger.cpp 6 2011-08-22 13:06:22Z silvo $
+ * Version: $Id$
  */
 
 /*

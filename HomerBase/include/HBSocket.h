@@ -3,7 +3,7 @@
  * Purpose: wrapper for OS independent socket handling
  * Author:  Thomas Volkert
  * Since:   2010-09-22
- * Version: $Id: HBSocket.h 6 2011-08-22 13:06:22Z silvo $
+ * Version: $Id$
  */
 
 #ifndef _BASE_SOCKET_
