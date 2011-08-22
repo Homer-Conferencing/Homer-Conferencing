@@ -4,4 +4,4 @@ if [ "${MSYSTEM}" = "MINGW32" ] ; then
 else
     cmake -Wno-dev .
 fi
-make    
+make
