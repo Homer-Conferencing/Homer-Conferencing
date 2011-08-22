@@ -3,7 +3,7 @@
  * Purpose: header file for universal SDL based audio output
  * Author:  Stefan Koegel, Thomas Volkert
  * Since:   2009-03-18
- * Version: $Id: AudioOutSdl.h 11 2011-08-22 13:15:28Z silvo $
+ * Version: $Id$
  */
 
 #ifndef _SOUNDOUT_AUDIO_OUT_SDL_

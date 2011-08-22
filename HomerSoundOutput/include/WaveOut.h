@@ -3,7 +3,7 @@
  * Purpose: abstract wave out
  * Author:  Thomas Volkert
  * Since:   2010-11-30
- * Version: $Id: WaveOut.h 11 2011-08-22 13:15:28Z silvo $
+ * Version: $Id$
  */
 
 #ifndef _SOUNDOUT_WAVE_OUT_

@@ -3,7 +3,7 @@
  * Purpose: wave out based on ALSA
  * Author:  Thomas Volkert
  * Since:   2010-12-11
- * Version: $Id: WaveOutAlsa.h 11 2011-08-22 13:15:28Z silvo $
+ * Version: $Id$
  */
 
 #ifdef LINUX

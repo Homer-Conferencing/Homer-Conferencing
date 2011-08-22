@@ -3,7 +3,7 @@
  * Purpose: Wave output base class
  * Author:  Thomas Volkert
  * Since:   2010-12-11
- * Version: $Id: WaveOut.cpp 11 2011-08-22 13:15:28Z silvo $
+ * Version: $Id$
  */
 
 #include <WaveOut.h>

@@ -3,7 +3,7 @@
  * Purpose: header includes for Windows multimedia system
  * Author:  Thomas Volkert
  * Since:   2010-12-11
- * Version: $Id: Header_MMSys.h 11 2011-08-22 13:15:28Z silvo $
+ * Version: $Id$
  */
 
 #ifndef _SOUNDOUT_HEADER_MMSYS_

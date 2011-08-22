@@ -3,7 +3,7 @@
  * Purpose: Implementation of an universal SDL based audio output
  * Author:  Stefan Koegel, Thomas Volkert
  * Since:   2009-03-18
- * Version: $Id: AudioOutSdl.cpp 11 2011-08-22 13:15:28Z silvo $
+ * Version: $Id$
  */
 
 #include <AudioOutSdl.h>
