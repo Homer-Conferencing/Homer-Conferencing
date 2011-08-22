@@ -3,7 +3,7 @@
  * Purpose: header includes for SDL_mixer library
  * Author:  Thomas Volkert
  * Since:   2009-02-16
- * Version: $Id: Header_SdlMixer.h 11 2011-08-22 13:15:28Z silvo $
+ * Version: $Id$
  */
 
 #ifndef _SOUNDOUT_HEADER_SDLMIXER_
