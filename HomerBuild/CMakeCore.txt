@@ -1,0 +1,98 @@
+###############################################################################
+# CMakeCore as core for cmake environment
+# Author:  Thomas Volkert
+# Since:   2010-11-13
+# Version: $Id: CMakeCore.txt 3 2011-08-22 13:36:20Z silvo $
+###############################################################################
+
+#MESSAGE("#####################################")
+#MESSAGE("Configure")
+#MESSAGE("#####################################")
+
+##############################################################
+# support thread-safe exception handling on Mingw32
+if (WIN32)
+SET (FLAGS 
+	${FLAGS}
+	-mthreads
+)
+endif (WIN32)
+
+##############################################################
+# define minimum requirements for cmake
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6) 
+
+##############################################################
+# build only shared libs by default
+SET(BUILD_SHARED_LIBS ON)
+SET(BUILD_STATIC_LIBS ON)
+
+##############################################################
+# for win32 remove the "lib" prefix for dll's
+if (WIN32)
+	SET(CMAKE_SHARED_LIBRARY_PREFIX "")
+	SET(CMAKE_STATIC_LIBRARY_PREFIX "")
+	SET(CMAKE_IMPORT_LIBRARY_PREFIX "")
+endif (WIN32)
+
+##############################################################
+# destination for install target
+SET(LIBRARY_OUTPUT_PATH ${TARGET_DIRECTORY})
+          
+##############################################################
+# add definitions for compilation
+if (WIN32)
+	FOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_WINDOWS})
+		ADD_DEFINITIONS("${DEFINITIONS_ENTRY}")
+	ENDFOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_WINDOWS})
+endif (WIN32)	
+if (UNIX AND NOT WIN32)
+	FOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_LINUX})
+		ADD_DEFINITIONS("${DEFINITIONS_ENTRY}")
+	ENDFOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_LINUX})
+endif (UNIX AND NOT WIN32)
+
+##############################################################
+# add flags for compilation
+FOREACH(FLAGS_ENTRY ${FLAGS})
+	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${FLAGS_ENTRY}")
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAGS_ENTRY}")
+ENDFOREACH(FLAGS_ENTRY ${FLAGS})
+
+##############################################################
+# add include paths
+FOREACH(INCLUDE_DIRS_ENTRY ${INCLUDE_DIRS})
+	INCLUDE_DIRECTORIES("${INCLUDE_DIRS_ENTRY}")
+ENDFOREACH(INCLUDE_DIRS_ENTRY ${INCLUDE_DIRS})
+
+##############################################################
+# add library paths
+FOREACH(LIB_DIRS_ENTRY ${LIB_DIRS})
+	LINK_DIRECTORIES("${LIB_DIRS_ENTRY}")
+ENDFOREACH(LIB_DIRS_ENTRY ${LIB_DIRS})
+
+##############################################################
+# generate library from given source files
+ADD_LIBRARY(${TARGET_NAME} SHARED ${SOURCES})
+
+##############################################################
+# link to needed external libraries
+if (WIN32)
+	MESSAGE("### Linking dynamic Windows libraries: ${LIBS_WINDOWS}")
+	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_WINDOWS})
+endif (WIN32)
+
+if (UNIX AND NOT WIN32)
+	MESSAGE("### Linking dynamic Linux libraries: ${LIBS_LINUX}")
+	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_LINUX})
+
+	MESSAGE("### Linking static Linux libraries: ${LIBS_LINUX_STATIC}")
+#	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_LINUX_STATIC} )
+	TARGET_LINK_LIBRARIES(${TARGET_NAME} -Wl,-Bstatic -Wl,-Bsymbolic ${LIBS_LINUX_STATIC} -Wl,-Bdynamic )
+endif (UNIX AND NOT WIN32)
+
+#		TARGET_LINK_LIBRARIES(${TARGET_NAME} -Wl,-Bstatic -Wl,-Bsymbolic ${LIBS_LINUX_STATIC} -Wl,-Bdynamic )
+#		TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_LINUX_STATIC} )
+
+#		TARGET_LINK_LIBRARIES(${TARGET_NAME} -Wl,-Bstatic ${LIBS_LINUX_STATIC_ENTRY} -Wl,-Bdynamic )
+#		TARGET_LINK_LIBRARIES(${TARGET_NAME} -Wl,--whole-archive ${LIBS_LINUX_STATIC_ENTRY} -Wl,--no-whole-archive )
