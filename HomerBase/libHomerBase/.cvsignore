@@ -1,0 +1,11 @@
+*.so
+*.so.*
+*.dep
+*.a
+*.dll.*
+*.dll
+HomerBase
+*.cmake
+CMakeFiles
+CMakeCache.txt
+Makefile
