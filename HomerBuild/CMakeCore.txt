@@ -2,7 +2,7 @@
 # CMakeCore as core for cmake environment
 # Author:  Thomas Volkert
 # Since:   2010-11-13
-# Version: $Id: CMakeCore.txt 3 2011-08-22 13:36:20Z silvo $
+# Version: $Id$
 ###############################################################################
 
 #MESSAGE("#####################################")
