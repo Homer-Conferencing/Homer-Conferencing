@@ -3,7 +3,7 @@
  * Purpose: header file for log sink for console outputs
  * Author:  Thomas Volkert
  * Since:   2011-07-27
- * Version: $Id: LogSinkConsole.h 6 2011-08-22 13:06:22Z silvo $
+ * Version: $Id$
  */
 
 #ifndef _LOGGER_LOG_SINK_CONSOLE_

@@ -3,7 +3,7 @@
  * Purpose: Implementation of os independent condition handling
  * Author:  Thomas Volkert
  * Since:   2011-02-05
- * Version: $Id: HBCondition.cpp 6 2011-08-22 13:06:22Z silvo $
+ * Version: $Id$
  */
 
 #include <Logger.h>

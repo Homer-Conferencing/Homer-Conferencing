@@ -3,7 +3,7 @@
  * Purpose: Implementation of log sink for console output
  * Author:  Thomas Volkert
  * Since:   2011-07-27
- * Version: $Id: LogSinkConsole.cpp 6 2011-08-22 13:06:22Z silvo $
+ * Version: $Id$
  */
 
 #include <LogSinkConsole.h>

@@ -3,7 +3,7 @@
  * Purpose: Implementation of wrapper for os independent time handling
  * Author:  Thomas Volkert
  * Since:   2010-09-23
- * Version: $Id: HBTime.cpp 6 2011-08-22 13:06:22Z silvo $
+ * Version: $Id$
  */
 
 #include <Logger.h>

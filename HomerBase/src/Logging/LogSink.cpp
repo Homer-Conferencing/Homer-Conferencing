@@ -3,7 +3,7 @@
  * Purpose: Implementation of abstract log sink
  * Author:  Thomas Volkert
  * Since:   2011-07-27
- * Version: $Id: LogSink.cpp 6 2011-08-22 13:06:22Z silvo $
+ * Version: $Id$
  */
 
 #include <LogSink.h>

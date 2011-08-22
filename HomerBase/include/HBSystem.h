@@ -3,7 +3,7 @@
  * Purpose: header for system specific and unspecific basic functions
  * Author:  Thomas Volkert
  * Since:   2011-02-25
- * Version: $Id: HBSystem.h 6 2011-08-22 13:06:22Z silvo $
+ * Version: $Id$
  */
 
 #ifndef _BASE_SYSTEM_

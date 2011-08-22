@@ -3,7 +3,7 @@
  * Purpose: wrapper for os independent conditional waiting
  * Author:  Thomas Volkert
  * Since:   2011-02-05
- * Version: $Id: HBCondition.h 6 2011-08-22 13:06:22Z silvo $
+ * Version: $Id$
  */
 
 #ifndef _BASE_CONDITION_

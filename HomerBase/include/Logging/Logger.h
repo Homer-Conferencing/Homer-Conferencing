@@ -3,7 +3,7 @@
  * Purpose: header file for logger
  * Author:  Thomas Volkert
  * Since:   2009-05-19
- * Version: $Id: Logger.h 6 2011-08-22 13:06:22Z silvo $
+ * Version: $Id$
  */
 
 #ifndef _LOGGER_LOGGER_

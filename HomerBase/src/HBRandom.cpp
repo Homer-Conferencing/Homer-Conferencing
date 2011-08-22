@@ -3,7 +3,7 @@
  * Purpose: Implementation of wrapper for os independent random number generator
  * Author:  Thomas Volkert
  * Since:   2010-09-28
- * Version: $Id: HBRandom.cpp 6 2011-08-22 13:06:22Z silvo $
+ * Version: $Id$
  */
 
 #include <HBRandom.h>
