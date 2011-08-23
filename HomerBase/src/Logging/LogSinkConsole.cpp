@@ -40,6 +40,13 @@ LogSinkConsole::LogSinkConsole()
 
 LogSinkConsole::~LogSinkConsole()
 {
+	// reset to default color values
+	#ifdef LINUX
+		printf("\033[22;37m\n");
+	#endif
+	#ifdef WIN32
+    	SetConsoleTextAttribute(sConsoleHandle, 7);
+	#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
