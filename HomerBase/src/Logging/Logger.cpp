@@ -269,6 +269,10 @@ void Logger::SetLogLevel(int pLevel)
         case LOG_ERROR:
                 mLogLevel = pLevel;
                 break;
+        case LOG_WARN:
+                LOG(LOG_INFO, "Set log level to: WARN");
+                mLogLevel = pLevel;
+                break;
         case LOG_INFO:
                 LOG(LOG_INFO, "Set log level to: INFO");
                 mLogLevel = pLevel;
