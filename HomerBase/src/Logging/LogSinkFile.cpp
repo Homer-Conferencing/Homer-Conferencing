@@ -69,6 +69,9 @@ void LogSinkFile::ProcessMessage(int pLevel, string pTime, string pSource, int p
             case LOG_ERROR:
                     fprintf(tFile, "(%s) ERROR:   %s(%d): %s\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
                     break;
+            case LOG_WARN:
+                    fprintf(tFile, "(%s) WARN:   %s(%d): %s\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
+                    break;
             case LOG_INFO:
                     fprintf(tFile, "(%s) INFO:    %s(%d): %s\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
                     break;

@@ -140,6 +140,9 @@ void LogSinkConsole::ProcessMessage(int pLevel, string pTime, string pSource, in
                 case LOG_ERROR:
                             printf("\033[22;36m(%s)\033[22;31m ERROR:   %s(%d):\033[01;31m %s\033[00;22;35m\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
                             break;
+                case LOG_WARN:
+                            printf("\033[22;36m(%s)\033[22;31m WARN:    %s(%d):\033[01;33m %s\033[00;22;35m\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
+                            break;
                 case LOG_INFO:
                             printf("\033[22;36m(%s)\033[01;30m INFO:    %s(%d):\033[01;37m %s\033[00;22;35m\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
                             break;
@@ -157,6 +160,11 @@ void LogSinkConsole::ProcessMessage(int pLevel, string pTime, string pSource, in
                             SetConsoleTextAttribute(sConsoleHandle, 4);
                             printf("ERROR:   %s(%d): ", pSource.c_str(), pLine);
                             SetConsoleTextAttribute(sConsoleHandle, 12);
+                            break;
+                case LOG_WARN:
+                            SetConsoleTextAttribute(sConsoleHandle, 6);
+                            printf("WARN:    %s(%d): ", pSource.c_str(), pLine);
+                            SetConsoleTextAttribute(sConsoleHandle, 14);
                             break;
                 case LOG_INFO:
                             SetConsoleTextAttribute(sConsoleHandle, 8);
