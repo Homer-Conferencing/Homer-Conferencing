@@ -53,7 +53,7 @@ public:
 private:
     std::string         mTargetHost;
     unsigned short      mTargetPort;
-    Homer::Base::Socket *mDataSocket;
+    Socket 				*mDataSocket;
     bool                mBrokenPipe;
 };
 
