@@ -31,6 +31,7 @@
 #define _LOGGER_LOGGER_
 
 #include <LogSinkConsole.h>
+#include <LogSink.h>
 #include <string>
 #include <list>
 #include <sys/types.h>
