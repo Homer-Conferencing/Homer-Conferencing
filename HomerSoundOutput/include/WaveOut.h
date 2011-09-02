@@ -35,7 +35,7 @@
 namespace Homer { namespace SoundOutput {
 
 /* audio */
-struct AudioDeviceDescriptor
+struct AudioOutDeviceDescriptor
 {
     std::string Name;
     std::string Card;
@@ -43,7 +43,7 @@ struct AudioDeviceDescriptor
     std::string IoType;
 };
 
-typedef std::list<AudioDeviceDescriptor> AudioDevicesList;
+typedef std::list<AudioOutDeviceDescriptor> AudioOutDevicesList;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -69,7 +69,7 @@ public:
     virtual bool OpenWaveOutDevice(int pSampleRate = 44100, bool pStereo = true) = 0;
     virtual bool CloseWaveOutDevice() = 0;
     /* device interface */
-    virtual void getAudioDevices(AudioDevicesList &pAList) = 0;
+    virtual void getAudioDevices(AudioOutDevicesList &pAList) = 0;
     /* playback control */
     virtual bool WriteChunk(void* pChunkBuffer, int pChunkSize = 4096) = 0;
 
