@@ -54,10 +54,10 @@ WaveOutAlsa::~WaveOutAlsa()
     LOG(LOG_VERBOSE, "Destroyed");
 }
 
-void WaveOutAlsa::getAudioDevices(AudioDevicesList &pAList)
+void WaveOutAlsa::getAudioDevices(AudioOutDevicesList &pAList)
 {
     static bool tFirstCall = true;
-    AudioDeviceDescriptor tDevice;
+    AudioOutDeviceDescriptor tDevice;
     void **tDeviceNames;
     size_t tPos, tPos1;
 

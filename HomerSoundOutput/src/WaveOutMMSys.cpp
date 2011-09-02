@@ -56,9 +56,9 @@ WaveOutMMSys::~WaveOutMMSys()
     LOG(LOG_VERBOSE, "Destroyed");
 }
 
-void WaveOutMMSys::getAudioDevices(AudioDevicesList &pAList)
+void WaveOutMMSys::getAudioDevices(AudioOutDevicesList &pAList)
 {
-    AudioDeviceDescriptor tDevice;
+    AudioOutDeviceDescriptor tDevice;
     WAVEOUTCAPS tCaps;
     UINT tCapsSize = sizeof(tCaps);
 

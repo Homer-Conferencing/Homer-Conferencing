@@ -54,8 +54,8 @@ WaveOut::~WaveOut()
 
 bool WaveOut::SelectDevice(string pDeviceName)
 {
-    AudioDevicesList::iterator tAIt;
-    AudioDevicesList tAList;
+    AudioOutDevicesList::iterator tAIt;
+    AudioOutDevicesList tAList;
     string tOldDesiredDevice = mDesiredDevice;
     bool tNewSelection = false;
     bool tAutoSelect = false;

@@ -60,7 +60,7 @@ public:
     virtual bool OpenWaveOutDevice(int pSampleRate = 44100, bool pStereo = true);
     virtual bool CloseWaveOutDevice();
     /* device interface */
-    virtual void getAudioDevices(AudioDevicesList &pAList);
+    virtual void getAudioDevices(AudioOutDevicesList &pAList);
     /* playback control */
     virtual bool WriteChunk(void* pChunkBuffer, int pChunkSize = 4096);
 
