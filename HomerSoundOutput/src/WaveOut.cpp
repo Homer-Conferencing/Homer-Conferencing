@@ -34,7 +34,6 @@ namespace Homer { namespace SoundOutput {
 
 using namespace std;
 using namespace Homer::Monitor;
-using namespace Homer::Multimedia;
 
 WaveOut::WaveOut(string pName):
     PacketStatistic(pName)

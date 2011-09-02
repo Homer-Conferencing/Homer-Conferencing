@@ -31,13 +31,11 @@
 
 #include <WaveOutAlsa.h>
 #include <Logger.h>
-#include <MediaSource.h>
 
 namespace Homer { namespace SoundOutput {
 
 using namespace std;
 using namespace Homer::Monitor;
-using namespace Homer::Multimedia;
 
 WaveOutAlsa::WaveOutAlsa(string pDesiredDevice):
     WaveOut("ALSA: local playback")

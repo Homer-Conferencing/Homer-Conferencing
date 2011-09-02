@@ -30,10 +30,20 @@
 #ifndef _SOUNDOUT_WAVE_OUT_
 #define _SOUNDOUT_WAVE_OUT_
 
-#include <MediaSource.h>
 #include <PacketStatistic.h>
 
 namespace Homer { namespace SoundOutput {
+
+/* audio */
+struct AudioDeviceDescriptor
+{
+    std::string Name;
+    std::string Card;
+    std::string Desc;
+    std::string IoType;
+};
+
+typedef std::list<AudioDeviceDescriptor> AudioDevicesList;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -59,7 +69,7 @@ public:
     virtual bool OpenWaveOutDevice(int pSampleRate = 44100, bool pStereo = true) = 0;
     virtual bool CloseWaveOutDevice() = 0;
     /* device interface */
-    virtual void getAudioDevices(Homer::Multimedia::AudioDevicesList &pAList) = 0;
+    virtual void getAudioDevices(AudioDevicesList &pAList) = 0;
     /* playback control */
     virtual bool WriteChunk(void* pChunkBuffer, int pChunkSize = 4096) = 0;
 
