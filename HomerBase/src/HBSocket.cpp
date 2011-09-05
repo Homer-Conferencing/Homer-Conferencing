@@ -988,6 +988,11 @@ unsigned short int Socket::BindSocket(unsigned int pPort, unsigned int pProbeSte
 
         LOG(LOG_INFO, "Failed to bind IPv%d-%s socket %d to local port %d because \"%s\", will try next alternative", (mSocketNetworkType == SOCKET_IPv6) ? 6 : 4, TransportType2String(mSocketTransportType).c_str(), mSocketHandle, pPort, strerror(errno));
         pPort += pProbeStepping;
+        if (pPort > 65535)
+        {
+            tResult = 0;
+            break;
+        }
 
         if (mSocketNetworkType == SOCKET_IPv6)
             tAddressDescriptor6.sin6_port = htons((uint16_t)pPort);
