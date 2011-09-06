@@ -1000,7 +1000,7 @@ unsigned short int Socket::BindSocket(unsigned int pPort, unsigned int pProbeSte
         if ((pPort > 65535) || ((pPort > pHighesPossibleListenerPort) && (pHighesPossibleListenerPort != 0)))
         {
             LOG(LOG_ERROR, "Auto-probing for port binding failed, no further port numbers allowed");
-            tResult = 0;
+            pPort = 0;
             break;
         }
 
