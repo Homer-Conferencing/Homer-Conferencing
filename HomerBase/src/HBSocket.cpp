@@ -345,14 +345,14 @@ void Socket::SetDefaults(enum TransportType pTransportType)
 ///////////////////////////////////////////////////////////////////////////////
 /// server socket
 ///////////////////////////////////////////////////////////////////////////////
-Socket::Socket(unsigned int pListenerPort, enum TransportType pTransportType, unsigned int pProbeStepping)
+Socket::Socket(unsigned int pListenerPort, enum TransportType pTransportType, unsigned int pProbeStepping, unsigned int pHighesPossibleListenerPort)
 {
     LOG(LOG_VERBOSE, "Created server socket object with listener port %u, transport type %d, port probing stepping %d", pListenerPort, pTransportType, pProbeStepping);
 
     SetDefaults(pTransportType);
     if (CreateSocket(SOCKET_IPv6))
     {
-    	mLocalPort = BindSocket(pListenerPort, pProbeStepping);
+    	mLocalPort = BindSocket(pListenerPort, pProbeStepping, pHighesPossibleListenerPort);
     	if ((!pProbeStepping) && (mLocalPort != pListenerPort))
     		LOG(LOG_ERROR, "Bound socket %d to another port than requested", mSocketHandle);
     	if (mLocalPort == 0)
@@ -940,7 +940,7 @@ void Socket::DestroySocket(int pHandle)
     }
 }
 
-unsigned short int Socket::BindSocket(unsigned int pPort, unsigned int pProbeStepping)
+unsigned short int Socket::BindSocket(unsigned int pPort, unsigned int pProbeStepping, unsigned int pHighesPossibleListenerPort)
 {
     unsigned short int  tResult = 0;
     struct sockaddr_in  tAddressDescriptor4;
@@ -997,8 +997,9 @@ unsigned short int Socket::BindSocket(unsigned int pPort, unsigned int pProbeSte
 
         LOG(LOG_INFO, "Failed to bind IPv%d-%s socket %d to local port %d because \"%s\", will try next alternative", (mSocketNetworkType == SOCKET_IPv6) ? 6 : 4, TransportType2String(mSocketTransportType).c_str(), mSocketHandle, pPort, strerror(errno));
         pPort += pProbeStepping;
-        if (pPort > 65535)
+        if ((pPort > 65535) || ((pPort > pHighesPossibleListenerPort) && (pHighesPossibleListenerPort != 0)))
         {
+            LOG(LOG_ERROR, "Auto-probing for port binding failed, no further port numbers allowed");
             tResult = 0;
             break;
         }
