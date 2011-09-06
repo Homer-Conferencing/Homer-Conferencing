@@ -44,9 +44,17 @@ using namespace std;
 
 // definitions for UDP-Lite
 // HINT: homepage for UDP-Lite is http://www.erg.abdn.ac.uk/users/gerrit/udp-lite/
-#define SOL_UDPLITE  									136
-#define SON_SENDERS_CHECKSUM_COVERAGE     				 10
-#define SON_RECEIVERS_CHECKSUM_COVERAGE     		     11
+#ifndef IPPROTO_UDPLITE
+#define IPPROTO_UDPLITE  						        136
+#endif
+
+#ifndef UDPLITE_SEND_CSCOV
+#define UDPLITE_SEND_CSCOV     				             10
+#endif
+
+#ifndef UDPLITE_RECV_CSCOV
+#define UDPLITE_RECV_CSCOV     		                     11
+#endif
 
 //define IPV6_V6ONLY for MinGW/MSYS
 //HINT: strange API because Windows screams for RFCs 3493 and 3542 meanwhile Linux takes another way by defining IPV6_ONLY with value 26
@@ -508,7 +516,8 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
     {
 		case SOCKET_UDP_LITE:
 			#ifdef LINUX
-				if (setsockopt(mSocketHandle, SOL_UDPLITE, SON_SENDERS_CHECKSUM_COVERAGE, (__const void*)&mUdpLiteChecksumCoverage, sizeof(mUdpLiteChecksumCoverage)))
+		        LOG(LOG_VERBOSE, "Setting UDPlite checksum coverage to %d", mUdpLiteChecksumCoverage);
+				if (setsockopt(mSocketHandle, IPPROTO_UDPLITE, UDPLITE_SEND_CSCOV, (__const void*)&mUdpLiteChecksumCoverage, sizeof(mUdpLiteChecksumCoverage)) != 0)
 					LOG(LOG_ERROR, "Failed to set senders checksum coverage for UDPlite on socket %d", mSocketHandle);
 			#endif
 		case SOCKET_UDP:
@@ -602,7 +611,7 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
     {
 		case SOCKET_UDP_LITE:
 			#ifdef LINUX
-				if (setsockopt(mSocketHandle, SOL_UDPLITE, SON_RECEIVERS_CHECKSUM_COVERAGE, (__const void*)&mUdpLiteChecksumCoverage, sizeof(mUdpLiteChecksumCoverage)))
+				if (setsockopt(mSocketHandle, IPPROTO_UDPLITE, UDPLITE_RECV_CSCOV, (__const void*)&mUdpLiteChecksumCoverage, sizeof(mUdpLiteChecksumCoverage)) != 0)
 					LOG(LOG_ERROR, "Failed to set receivers checksum coverage for UDPlite on socket %d", mSocketHandle);
 			#endif
 		case SOCKET_UDP:
@@ -912,10 +921,12 @@ bool Socket::CreateSocket(enum NetworkType pIpVersion)
             // we force hybrid sockets, otherwise Windows will complain: http://msdn.microsoft.com/en-us/library/bb513665%28v=vs.85%29.aspx
             int tOnlyIpv6Sockets = false;
 			#ifdef LINUX
-				setsockopt(mSocketHandle, IPPROTO_IPV6, IPV6_V6ONLY, (__const void*)&tOnlyIpv6Sockets, sizeof(tOnlyIpv6Sockets));
+				if (setsockopt(mSocketHandle, IPPROTO_IPV6, IPV6_V6ONLY, (__const void*)&tOnlyIpv6Sockets, sizeof(tOnlyIpv6Sockets)) != 0)
+				    LOG(LOG_ERROR, "FAiled to define IPv6_only");
 			#endif
 			#ifdef WIN32
-				setsockopt(mSocketHandle, IPPROTO_IPV6, IPV6_V6ONLY, (const char*)&tOnlyIpv6Sockets, sizeof(tOnlyIpv6Sockets));
+				if (setsockopt(mSocketHandle, IPPROTO_IPV6, IPV6_V6ONLY, (const char*)&tOnlyIpv6Sockets, sizeof(tOnlyIpv6Sockets)) != 0)
+				    LOG(LOG_ERROR, "FAiled to define IPv6_only");
 			#endif
             LOG(LOG_VERBOSE, "Set %s socket with handle number %d to IPv6only state %d", TransportType2String(mSocketTransportType).c_str(), mSocketHandle, tOnlyIpv6Sockets);
             mSocketNetworkType = SOCKET_IPv6;
