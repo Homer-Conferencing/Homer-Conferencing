@@ -105,7 +105,7 @@ public:
     /* client sockets */
 	Socket(enum NetworkType pIpVersion, enum TransportType pTransportType = SOCKET_UDP);
     /* server socekts */
-    Socket(unsigned int pListenerPort /* start number for auto probing */, enum TransportType pTransportType, unsigned int pProbeStepping = 0);
+    Socket(unsigned int pListenerPort /* start number for auto probing */, enum TransportType pTransportType, unsigned int pProbeStepping = 0, unsigned int pHighesPossibleListenerPort = 0);
 
     virtual ~Socket( );
 
@@ -145,7 +145,7 @@ private:
     void SetDefaults(enum TransportType pTransportType);
 
     bool CreateSocket(enum NetworkType pIpVersion = SOCKET_IPv6);
-    unsigned short int BindSocket(unsigned int pPort = 0, unsigned int pProbeStepping = 1);
+    unsigned short int BindSocket(unsigned int pPort = 0, unsigned int pProbeStepping = 1, unsigned int pHighesPossibleListenerPort = 0);
     static void DestroySocket(int pHandle);
 
     int 			    mUdpLiteChecksumCoverage;
