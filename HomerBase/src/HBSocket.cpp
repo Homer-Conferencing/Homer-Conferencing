@@ -491,6 +491,9 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
     unsigned short int  tLocalPort = 0;
     bool                tTargetIsIPv6 = IS_IPV6_ADDRESS(pTargetHost);
 
+    if (mSocketHandle == -1)
+        return false;
+
     #ifdef HBS_DEBUG_PACKETS
         LOG(LOG_VERBOSE, "Try to send %d bytes via socket %d to %s<%u>", pBufferSize, pTargetHost.c_str(), mSocketHandle, pTargetPort);
     #endif
@@ -591,6 +594,9 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
 	#endif
     bool                    tResult = false;
     bool                    tSourceIsIPv6 = false;
+
+    if (mSocketHandle == -1)
+        return false;
 
     switch(mSocketTransportType)
     {
@@ -941,6 +947,9 @@ unsigned short int Socket::BindSocket(unsigned int pPort, unsigned int pProbeSte
     struct sockaddr_in6 tAddressDescriptor6;
     struct sockaddr     *tAddressDescriptor;
     int                 tAddressDescriptorSize;
+
+    if (mSocketHandle == -1)
+        return 0;
 
     LOG(LOG_VERBOSE, "Trying to bind IPv%d-%s socket %d to local port %d", (mSocketNetworkType == SOCKET_IPv6) ? 6 : 4, TransportType2String(mSocketTransportType).c_str(), mSocketHandle, pPort);
 
