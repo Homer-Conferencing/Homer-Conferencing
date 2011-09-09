@@ -336,8 +336,8 @@ void Socket::SetDefaults(enum TransportType pTransportType)
     mLocalPort = 0;
     mSocketHandle = -1;
     mTcpClientSockeHandle = -1;
-    mConnectedTargetHost = "";
-    mConnectedTargetPort = 0;
+    mConnectedHost = "";
+    mConnectedPort = 0;
     mUdpLiteChecksumCoverage = UDP_LITE_HEADER_SIZE;
 
     #ifdef WIN32
@@ -533,8 +533,8 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
 			//#########################
 			//### re-bind if required
 			//#########################
-			if ((mConnectedTargetHost != "") &&          (mConnectedTargetPort != 0) &&
-			   ((mConnectedTargetHost != pTargetHost) || (mConnectedTargetPort != pTargetPort)))
+			if ((mConnectedHost != "") &&          (mConnectedPort != 0) &&
+			   ((mConnectedHost != pTargetHost) || (mConnectedPort != pTargetPort)))
 			{
 				tLocalPort = mLocalPort;
 				DestroySocket(mSocketHandle);
@@ -556,8 +556,8 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
 		        }else
 		        {
 		            mIsConnected = true;
-		        	mConnectedTargetHost = pTargetHost;
-		        	mConnectedTargetPort = pTargetPort;
+		        	mConnectedHost = pTargetHost;
+		        	mConnectedPort = pTargetPort;
 		        }
 			}
 			//#########################
@@ -615,25 +615,39 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
 					LOG(LOG_ERROR, "Failed to set receivers checksum coverage for UDPlite on socket %d", mSocketHandle);
 			#endif
 		case SOCKET_UDP:
+            /*
+             * receive data
+             */
 			#ifdef LINUX
 				tReceivedBytes = recvfrom(mSocketHandle, pBuffer, (size_t)pBufferSize, MSG_NOSIGNAL, &tAddressDescriptor.sa, &tAddressDescriptorSize);
 			#endif
 			#ifdef WIN32
 				tReceivedBytes = recvfrom(mSocketHandle, (char*)pBuffer, pBufferSize, 0, &tAddressDescriptor.sa, &tAddressDescriptorSize);
 			#endif
-			break;
+		    if (tReceivedBytes >= 0)
+		    {
+		        if (!GetAddrFromDescriptor(&tAddressDescriptor, pSourceHost, pSourcePort))
+		            LOG(LOG_ERROR ,"Could not determine the source address for socket %d", mSocketHandle);
+		    }
+            break;
 		case SOCKET_TCP:
+            /*
+             * activate listener
+             */
             if (!mIsListening)
             {
                 if (listen(mSocketHandle, MAX_INCOMING_CONNECTIONS) < 0)
                 {
                     LOG(LOG_ERROR, "Failed to execute listen on socket %d because of \"%s\"", strerror(errno), mSocketHandle);
-                    return 0;
+                    return false;
                 }else
                     LOG(LOG_VERBOSE, "Started IPv%d-TCP listening on socket %d at local port %d", (mSocketNetworkType == SOCKET_IPv6) ? 6 : 4, mSocketHandle, mLocalPort);
                 mIsListening = true;
             }
 
+            /*
+             * wait for new connection
+             */
             if (!mIsConnected)
             {
                 if ((mTcpClientSockeHandle = accept(mSocketHandle, &tAddressDescriptor.sa, &tAddressDescriptorSize)) < 0)
@@ -642,8 +656,15 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
                 {
                     LOG(LOG_VERBOSE, "Having new IPv%d-TCP client socket %d connection on socket %d at local port %d", (mSocketNetworkType == SOCKET_IPv6) ? 6 : 4, mTcpClientSockeHandle, mSocketHandle, mLocalPort);
                     mIsConnected = true;
+
+                    if (!GetAddrFromDescriptor(&tAddressDescriptor, mConnectedHost, mConnectedPort))
+                        LOG(LOG_ERROR ,"Could not determine the source address for socket %d", mSocketHandle);
                 }
             }
+
+            /*
+             * receive data
+             */
             #ifdef LINUX
                 tReceivedBytes = recv(mTcpClientSockeHandle, pBuffer, (size_t)pBufferSize, MSG_NOSIGNAL);
                 if (tReceivedBytes <= 0)
@@ -663,17 +684,18 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
                     mIsConnected = false;
                 }
             #endif
+            pSourceHost = mConnectedHost;
+            pSourcePort = mConnectedPort;
 			break;
     }
+
+    // reset source description in case of receive error
     if (tReceivedBytes >= 0)
     {
         #ifdef HBS_DEBUG_PACKETS
-    	    LOG(LOG_VERBOSE, "Received %d bytes via socket %d at local port %d of %s socket", tReceivedBytes, mSocketHandle, mLocalPort, TransportType2String(mSocketType).c_str());
+            LOG(LOG_VERBOSE, "Received %d bytes via socket %d at local port %d of %s socket", tReceivedBytes, mSocketHandle, mLocalPort, TransportType2String(mSocketType).c_str());
         #endif
         tResult = true;
-
-        if (!GetAddrFromDescriptor(&tAddressDescriptor, pSourceHost, pSourcePort))
-            LOG(LOG_ERROR ,"Could not determine the source address for socket %d", mSocketHandle);
     }else
     {
     	pSourceHost = "0.0.0.0";
@@ -682,6 +704,7 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
     }
 
     pBufferSize = tReceivedBytes;
+
     return tResult;
 }
 

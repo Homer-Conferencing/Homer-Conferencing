@@ -51,6 +51,7 @@ public:
 
     static bool GetWindowsKernelVersion(int &pMajor, int &pMinor);
     static std::string GetLinuxKernelVersion();
+    static std::string GetMachineType();
 private:
 };
 
