@@ -34,6 +34,7 @@
 #include <stdlib.h>
 
 #ifdef LINUX
+#include <sys/utsname.h>
 #endif
 
 #ifdef WIN32
@@ -79,20 +80,34 @@ bool System::GetWindowsKernelVersion(int &pMajor, int &pMinor)
 
 string System::GetLinuxKernelVersion()
 {
-    FILE *tFile;
     string tResult = "";
-    char tVersionBuffer[1024];
-    memset(tVersionBuffer, 0, 1024);
+
     #ifdef LINUX
-        if ((tFile = fopen("/proc/version", "r")) != NULL)
-        {
-            if (EOF == fscanf(tFile, "%*s %*s %s", tVersionBuffer))
-                LOGEX(System, LOG_ERROR, "Failed to parse file content of /proc/version because of input failure");
-            fclose(tFile);
-        }
-        LOGEX(System, LOG_VERBOSE, "Found linux kernel %s", tVersionBuffer);
-        tResult = string(tVersionBuffer);
+        struct utsname tInfo;
+        uname(&tInfo);
+
+        if (tInfo.release != NULL)
+            tResult = string(tInfo.release);
     #endif
+
+    LOGEX(System, LOG_VERBOSE, "Found linux kernel \"%s\"", tResult.c_str());
+
+    return tResult;
+}
+
+string System::GetMachineType()
+{
+    string tResult = "x86";
+
+    #ifdef LINUX
+        struct utsname tInfo;
+        uname(&tInfo);
+
+        if (tInfo.machine != NULL)
+            tResult = string(tInfo.machine);
+    #endif
+
+    LOGEX(System, LOG_VERBOSE, "Found machine type \"%s\"", tResult.c_str());
 
     return tResult;
 }
