@@ -355,7 +355,7 @@ void Socket::SetDefaults(enum TransportType pTransportType)
 ///////////////////////////////////////////////////////////////////////////////
 Socket::Socket(unsigned int pListenerPort, enum TransportType pTransportType, unsigned int pProbeStepping, unsigned int pHighesPossibleListenerPort)
 {
-    LOG(LOG_VERBOSE, "Created server socket object with listener port %u, transport type %d, port probing stepping %d", pListenerPort, pTransportType, pProbeStepping);
+    LOG(LOG_VERBOSE, "Created server socket object with listener port %u, transport type %s, port probing stepping %d", pListenerPort, TransportType2String(pTransportType).c_str(), pProbeStepping);
 
     SetDefaults(pTransportType);
     if (CreateSocket(SOCKET_IPv6))
@@ -374,7 +374,7 @@ Socket::Socket(unsigned int pListenerPort, enum TransportType pTransportType, un
 ///////////////////////////////////////////////////////////////////////////////
 Socket::Socket(enum NetworkType pIpVersion, enum TransportType pTransportType)
 {
-    LOG(LOG_VERBOSE, "Created client socket object with IP version %d, transport type %d", pIpVersion, pTransportType);
+    LOG(LOG_VERBOSE, "Created client socket object with IP version %d, transport type %s", pIpVersion, TransportType2String(pTransportType).c_str());
 
     SetDefaults(pTransportType);
     if ((pIpVersion == SOCKET_IPv6) && (!IsIPv6Supported()))
@@ -498,6 +498,7 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
     bool                tResult = false;
     unsigned short int  tLocalPort = 0;
     bool                tTargetIsIPv6 = IS_IPV6_ADDRESS(pTargetHost);
+    int                 tUdpLiteChecksumCoverage = mUdpLiteChecksumCoverage;
 
     if (mSocketHandle == -1)
         return false;
@@ -516,8 +517,8 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
     {
 		case SOCKET_UDP_LITE:
 			#ifdef LINUX
-		        LOG(LOG_VERBOSE, "Setting UDPlite checksum coverage to %d", mUdpLiteChecksumCoverage);
-				if (setsockopt(mSocketHandle, IPPROTO_UDPLITE, UDPLITE_SEND_CSCOV, (__const void*)&mUdpLiteChecksumCoverage, sizeof(mUdpLiteChecksumCoverage)) != 0)
+		        LOG(LOG_VERBOSE, "Setting UDPlite checksum coverage to %d", tUdpLiteChecksumCoverage);
+				if (setsockopt(mSocketHandle, IPPROTO_UDPLITE, UDPLITE_SEND_CSCOV, (__const void*)&tUdpLiteChecksumCoverage, sizeof(int)) < 0)
 					LOG(LOG_ERROR, "Failed to set senders checksum coverage for UDPlite on socket %d", mSocketHandle);
 			#endif
 		case SOCKET_UDP:
@@ -603,6 +604,7 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
 	#endif
     bool                    tResult = false;
     bool                    tSourceIsIPv6 = false;
+    int                     tUdpLiteChecksumCoverage = mUdpLiteChecksumCoverage;
 
     if (mSocketHandle == -1)
         return false;
@@ -611,7 +613,7 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
     {
 		case SOCKET_UDP_LITE:
 			#ifdef LINUX
-				if (setsockopt(mSocketHandle, IPPROTO_UDPLITE, UDPLITE_RECV_CSCOV, (__const void*)&mUdpLiteChecksumCoverage, sizeof(mUdpLiteChecksumCoverage)) != 0)
+				if (setsockopt(mSocketHandle, IPPROTO_UDPLITE, UDPLITE_RECV_CSCOV, (__const void*)&tUdpLiteChecksumCoverage, sizeof(int)) != 0)
 					LOG(LOG_ERROR, "Failed to set receivers checksum coverage for UDPlite on socket %d", mSocketHandle);
 			#endif
 		case SOCKET_UDP:
@@ -860,7 +862,7 @@ bool Socket::CreateSocket(enum NetworkType pIpVersion)
         WSAStartup(tVersion, &tWsa);
     #endif
 
-    LOG(LOG_VERBOSE, "Creating socket for IPv%d", (pIpVersion == SOCKET_IPv6) ? 6 : 4);
+    LOG(LOG_VERBOSE, "Creating socket for IPv%d, transport type %s", (pIpVersion == SOCKET_IPv6) ? 6 : 4, TransportType2String(mSocketTransportType).c_str());
 
     switch(pIpVersion)
     {
@@ -888,8 +890,8 @@ bool Socket::CreateSocket(enum NetworkType pIpVersion)
     switch(mSocketTransportType)
     {
         case SOCKET_UDP_LITE:
-            #ifndef WIN32
-                if ((mSocketHandle = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDPLITE)) < 0)
+            #ifdef LINUX
+                if ((mSocketHandle = socket(tSelectedIPDomain, SOCK_DGRAM, IPPROTO_UDPLITE)) < 0)
                     LOG(LOG_ERROR, "Could not create UDPlite socket");
                 else
                     tResult = true;
@@ -943,15 +945,17 @@ bool Socket::CreateSocket(enum NetworkType pIpVersion)
         {
             // we force hybrid sockets, otherwise Windows will complain: http://msdn.microsoft.com/en-us/library/bb513665%28v=vs.85%29.aspx
             int tOnlyIpv6Sockets = false;
+            bool tIpv6OnlyOkay = false;
 			#ifdef LINUX
-				if (setsockopt(mSocketHandle, IPPROTO_IPV6, IPV6_V6ONLY, (__const void*)&tOnlyIpv6Sockets, sizeof(tOnlyIpv6Sockets)) != 0)
-				    LOG(LOG_ERROR, "FAiled to define IPv6_only");
+				tIpv6OnlyOkay = (setsockopt(mSocketHandle, IPPROTO_IPV6, IPV6_V6ONLY, (__const void*)&tOnlyIpv6Sockets, sizeof(tOnlyIpv6Sockets)) == 0);
 			#endif
 			#ifdef WIN32
-				if (setsockopt(mSocketHandle, IPPROTO_IPV6, IPV6_V6ONLY, (const char*)&tOnlyIpv6Sockets, sizeof(tOnlyIpv6Sockets)) != 0)
-				    LOG(LOG_ERROR, "FAiled to define IPv6_only");
+                tIpv6OnlyOkay = (setsockopt(mSocketHandle, IPPROTO_IPV6, IPV6_V6ONLY, (const char*)&tOnlyIpv6Sockets, sizeof(tOnlyIpv6Sockets)) == 0);
 			#endif
-            LOG(LOG_VERBOSE, "Set %s socket with handle number %d to IPv6only state %d", TransportType2String(mSocketTransportType).c_str(), mSocketHandle, tOnlyIpv6Sockets);
+            if (tIpv6OnlyOkay)
+                LOG(LOG_VERBOSE, "Set %s socket with handle number %d to IPv6only state %d", TransportType2String(mSocketTransportType).c_str(), mSocketHandle, tOnlyIpv6Sockets);
+            else
+                LOG(LOG_ERROR, "Failed to disable IPv6_only");
             mSocketNetworkType = SOCKET_IPv6;
         }else
             mSocketNetworkType = SOCKET_IPv4;
