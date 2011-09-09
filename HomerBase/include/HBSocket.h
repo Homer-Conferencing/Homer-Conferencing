@@ -133,6 +133,10 @@ public:
     static bool IsIPv6Supported();
     static void DisableIPv6Support();
 
+    /* UDPlite support */
+    static bool IsUDPliteSupported();
+    static void DisableUDPliteSupport();
+
     /* transport type */
     static std::string TransportType2String(enum TransportType pSocketType);
     static enum TransportType String2TransportType(std::string pTypeStr);
