@@ -326,6 +326,7 @@ int inet_pton (int pAF, const char *pSrc, void *pDst)
 ///////////////////////////////////////////////////////////////////////////////
 
 int sIPv6Supported = -1;
+int sUDPliteSupported = -1;
 
 void Socket::SetDefaults(enum TransportType pTransportType)
 {
@@ -357,6 +358,12 @@ Socket::Socket(unsigned int pListenerPort, enum TransportType pTransportType, un
 {
     LOG(LOG_VERBOSE, "Created server socket object with listener port %u, transport type %s, port probing stepping %d", pListenerPort, TransportType2String(pTransportType).c_str(), pProbeStepping);
 
+    if ((pTransportType == SOCKET_UDP_LITE) && (!IsUDPliteSupported()))
+    {
+        LOG(LOG_ERROR, "UDPlite not supported by system, falling back to UDP");
+        pTransportType = SOCKET_UDP;
+    }
+
     SetDefaults(pTransportType);
     if (CreateSocket(SOCKET_IPv6))
     {
@@ -376,13 +383,19 @@ Socket::Socket(enum NetworkType pIpVersion, enum TransportType pTransportType)
 {
     LOG(LOG_VERBOSE, "Created client socket object with IP version %d, transport type %s", pIpVersion, TransportType2String(pTransportType).c_str());
 
-    SetDefaults(pTransportType);
     if ((pIpVersion == SOCKET_IPv6) && (!IsIPv6Supported()))
     {
-    	LOG(LOG_ERROR, "IPv6 not supported by system, force client to socket to be IPv4");
+    	LOG(LOG_ERROR, "IPv6 not supported by system, falling back to IPv4");
     	pIpVersion = SOCKET_IPv4;
     }
 
+    if ((pTransportType == SOCKET_UDP_LITE) && (!IsUDPliteSupported()))
+    {
+        LOG(LOG_ERROR, "UDPlite not supported by system, falling back to UDP");
+        pTransportType = SOCKET_UDP;
+    }
+
+    SetDefaults(pTransportType);
     if (CreateSocket(pIpVersion))
         mLocalPort = BindSocket();
     LOG(LOG_VERBOSE, "Created %s-sender for socket %d at local port %u", TransportType2String(mSocketTransportType).c_str(), mSocketHandle, mLocalPort);
@@ -756,6 +769,38 @@ void Socket::DisableIPv6Support()
 	sIPv6Supported = false;
 }
 
+bool Socket::IsUDPliteSupported()
+{
+    if (sUDPliteSupported == -1)
+    {
+        #ifdef WIN32
+            sUDPliteSupported = false;
+        #endif
+
+        #ifdef LINUX
+            int tHandle = 0;
+
+            if ((tHandle = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDPLITE)) > 0)
+            {
+                LOGEX(Socket, LOG_INFO, ">>> UDPlite sockets available <<<");
+                close(tHandle);
+                sUDPliteSupported = true;
+            }else
+            {
+                LOGEX(Socket, LOG_INFO, ">>> UDPlite not supported, falling back to UDP <<<");
+                sUDPliteSupported = false;
+            }
+        #endif
+    }
+
+    return (sUDPliteSupported == true);
+}
+
+void Socket::DisableUDPliteSupport()
+{
+    sUDPliteSupported = false;
+}
+
 bool Socket::FillAddrDescriptor(string pHost, unsigned int pPort, SocketAddressDescriptor *tAddressDescriptor, unsigned int &tAddressDescriptorSize)
 {
     // does pTargetHost contain a ':' char => we have an IPv6 based target
@@ -891,11 +936,14 @@ bool Socket::CreateSocket(enum NetworkType pIpVersion)
     {
         case SOCKET_UDP_LITE:
             #ifdef LINUX
-                if ((mSocketHandle = socket(tSelectedIPDomain, SOCK_DGRAM, IPPROTO_UDPLITE)) < 0)
-                    LOG(LOG_ERROR, "Could not create UDPlite socket");
-                else
-                    tResult = true;
-                break;
+                if (IsUDPliteSupported())
+                {
+                    if ((mSocketHandle = socket(tSelectedIPDomain, SOCK_DGRAM, IPPROTO_UDPLITE)) < 0)
+                        LOG(LOG_ERROR, "Could not create UDPlite socket");
+                    else
+                        tResult = true;
+                    break;
+                }
             #else
                 LOG(LOG_ERROR, "UDPlite is not supported by Windows API, a common UDP socket will be used instead");
             #endif
