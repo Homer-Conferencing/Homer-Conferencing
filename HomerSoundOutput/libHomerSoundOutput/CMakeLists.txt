@@ -35,8 +35,10 @@ SET (INCLUDE_DIRS
 
 # library directories
 SET (LIB_DIRS
+	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerLibs/win64
 	${CMAKE_CURRENT_SOURCE_DIR}/../../lib
-	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerWinLibs
+	/usr/local/lib
+	/usr/lib
 )
 
 # target directory for the lib
