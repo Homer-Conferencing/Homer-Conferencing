@@ -50,7 +50,7 @@ SET (TARGET_DIRECTORY
 SET (FLAGS
 	-W
 	-Wall
-    -Wno-uninitialized
+	-Wno-uninitialized
 	-Wno-switch
 	-Wno-unused
 	-Wno-long-long
