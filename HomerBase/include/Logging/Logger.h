@@ -63,7 +63,11 @@ inline std::string GetShortFileName(std::string pLongFileName)
 #define         LOG_VERBOSE                     4
 
 #define         LOGGER                          Logger::GetInstance()
+// standard logging macro
 #define         LOG(Level, ...)                 LOGGER.AddMessage(Level, GetObjectNameStr(this).c_str(), __LINE__, __VA_ARGS__)
+// remote logging with given source file and line number
+#define         LOG_REMOTE(Level, Source, Line, ...)   LOGGER.AddMessage(Level, Source.c_str(), Line, __VA_ARGS__)
+// static logging
 #define         LOGEX(FromWhere, Level, ...)    LOGGER.AddMessage(Level, ("static:" + GetObjectNameStr(FromWhere) + ":" + GetShortFileName(__FILE__)).c_str(), __LINE__, __VA_ARGS__)
 
 template <typename T>
