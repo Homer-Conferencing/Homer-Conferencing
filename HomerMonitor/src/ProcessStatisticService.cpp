@@ -96,7 +96,7 @@ void ProcessStatisticService::UpdateThreadDatabase()
     vector<int> tThreadIds;
     vector<int>::iterator tIt;
 
-    LOG(LOG_VERBOSE, "Updating thread database");
+    //LOG(LOG_VERBOSE, "Updating thread database");
 
     tThreadIds = Thread::GetTIds();
     if(tThreadIds.size())
@@ -126,7 +126,7 @@ void ProcessStatisticService::UpdateThreadDatabase()
         }
     }
 
-    LOG(LOG_VERBOSE, "Deleting zombie entries in thread database");
+    //LOG(LOG_VERBOSE, "Deleting zombie entries in thread database");
     // find all registrations which represents disappeared threads
     bool tExists = false;
     do {
@@ -162,7 +162,7 @@ void ProcessStatisticService::UpdateThreadDatabase()
 
     }while(!tExists);
 
-    LOG(LOG_VERBOSE, "Thread database updated");
+    //LOG(LOG_VERBOSE, "Thread database updated");
 
     mUpdateThreadDataBaseMutex.unlock();
 }
