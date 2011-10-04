@@ -50,8 +50,8 @@ struct ThreadStatisticDescriptor{
     int Priority;
     int PriorityBase;
     int ThreadCount;
-    int MemVirtual;
-    int MemPhysical;
+    unsigned long MemVirtual;
+    unsigned long MemPhysical;
 };
 
 typedef std::list<ThreadStatisticDescriptor> ThreadStatisticList;
