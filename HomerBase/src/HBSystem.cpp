@@ -35,6 +35,7 @@
 
 #ifdef LINUX
 #include <sys/utsname.h>
+#include <unistd.h>
 #endif
 
 #ifdef WIN32
@@ -91,6 +92,26 @@ string System::GetLinuxKernelVersion()
     #endif
 
     LOGEX(System, LOG_VERBOSE, "Found linux kernel \"%s\"", tResult.c_str());
+
+    return tResult;
+}
+
+int System::GetMachineCores()
+{
+    int tResult = 1;
+    #ifdef LINUX
+        tResult = sysconf(_SC_NPROCESSORS_ONLN);
+
+    #endif
+    #ifdef WIN32
+        SYSTEM_INFO tSysInfo;
+
+        GetSystemInfo(&tSysInfo);
+
+        tResult = tSysInfo.dwNumberOfProcessors;
+    #endif
+
+    LOGEX(System, LOG_VERBOSE, "Found machine cores: %d", tResult);
 
     return tResult;
 }
