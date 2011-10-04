@@ -299,7 +299,7 @@ bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned l
 		if ((tFile = fopen(tFileName, "r")) != NULL)
 		{
 		    long int tPriority, tBasePriority;
-		    if (EOF == fscanf(tFile, "%d %*s %*c %d %*d %*d %*d %*d %*u %*lu %*lu %*lu %*lu %lu %lu %ld %ld %ld %ld %d 0 %*llu %lu %ld", &pPid, &pPPid, &tJiffiesUserMode, &tJiffiesKernelMode, &tJiffiesUserModeChildWait, &tJiffiesKernelModeChildWait, &tPriority, &tBasePriority, &pThreadCount, &pMemVirtual, (long int)&pMemPhysical))
+		    if (EOF == fscanf(tFile, "%d %*s %*c %d %*d %*d %*d %*d %*u %*lu %*lu %*lu %*lu %lu %lu %ld %ld %ld %ld %d 0 %*llu %lu %ld", &pPid, &pPPid, &tJiffiesUserMode, &tJiffiesKernelMode, &tJiffiesUserModeChildWait, &tJiffiesKernelModeChildWait, &tPriority, &tBasePriority, &pThreadCount, &pMemVirtual, (long int*)&pMemPhysical))
 		        LOGEX(Thread, LOG_ERROR, "Failed to parse file content because of input failure");
 		    pPriority = tPriority;
 		    pBasePriority = tBasePriority;
