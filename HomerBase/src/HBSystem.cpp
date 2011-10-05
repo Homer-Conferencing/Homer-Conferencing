@@ -160,6 +160,10 @@ string System::GetMachineType()
             case PROCESSOR_ARCHITECTURE_UNKNOWN:
                 LOG(LOG_VERBOSE, "Windows reported unknown machine architecture");
                 tResult = "unknown";
+                break;
+            default:
+                LOG(LOG_ERROR, "Unsupported result code");
+                break;
         }
     #endif
 
