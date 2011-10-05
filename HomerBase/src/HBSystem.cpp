@@ -116,16 +116,51 @@ int System::GetMachineCores()
     return tResult;
 }
 
+/*
+ * possible machine types:
+ *          x86      => Intel x86 (32 bit)
+ *          amd64    => AMD 64 - compatible to Intel x86 (64 bit)
+ *          ia-64    => Itanium - not compatible to Intel x86 (64 bit)
+ *          unknown  => misc. cases
+ *
+ */
 string System::GetMachineType()
 {
-    string tResult = "x86";
+    string tResult = "unknown";
 
     #ifdef LINUX
         struct utsname tInfo;
         uname(&tInfo);
 
         if (tInfo.machine != NULL)
-            tResult = string(tInfo.machine);
+        {
+            string tType = string(tInfo.machine);
+            if(tType == "i686")
+                tResult = "x86";
+            if(tType == "x86_64")
+                tResult = "amd64";
+        }
+    #endif
+    #ifdef WIN32
+        SYSTEM_INFO tSysInfo;
+
+        GetSystemInfo(&tSysInfo);
+
+        switch(tSysInfo.wProcessorArchitecture)
+        {
+            case PROCESSOR_ARCHITECTURE_AMD64:
+                tResult = "amd64";
+                break;
+            case PROCESSOR_ARCHITECTURE_IA64:
+                tResult = "ia-64";
+                break;
+            case PROCESSOR_ARCHITECTURE_INTEL:
+                tResult = "x86";
+                break;
+            case PROCESSOR_ARCHITECTURE_UNKNOWN:
+                LOG(LOG_VERBOSE, "Windows reported unknown machine architecture");
+                tResult = "unknown";
+        }
     #endif
 
     LOGEX(System, LOG_VERBOSE, "Found machine type \"%s\"", tResult.c_str());
