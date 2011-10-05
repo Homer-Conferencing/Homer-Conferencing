@@ -36,7 +36,6 @@ namespace Homer { namespace SoundOutput {
 
 using namespace std;
 using namespace Homer::Monitor;
-using namespace Homer::Multimedia;
 
 WaveOutMMSys::WaveOutMMSys(string pDesiredDevice):
     WaveOut("MMSys: local playback")
