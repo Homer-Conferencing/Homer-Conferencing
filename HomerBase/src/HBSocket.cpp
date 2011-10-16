@@ -452,7 +452,12 @@ unsigned int Socket::getLocalPort()
 
 bool Socket::SetQoS(QoSSettings *pQoSSettings)
 {
-	LOG(LOG_VERBOSE, "Desired QoS parameters: %u KB/s min. bandwidth, %u max. delay", pQoSSettings->MinBandwidth, pQoSSettings->MaxDelay);
+    #ifndef QOS_INTERFACE
+        LOG(LOG_WARN, "QoS interface is deactivated but was called from application");
+        return false;
+    #endif
+
+    LOG(LOG_VERBOSE, "Desired QoS parameters: %u KB/s min. data rate, %u max. delay", pQoSSettings->MinDataRate, pQoSSettings->MaxDelay);
 	//TODO: interface anbinden
 
 	return true;
@@ -460,7 +465,12 @@ bool Socket::SetQoS(QoSSettings *pQoSSettings)
 
 bool Socket::GetQoS(QoSSettings &pQoSSettings)
 {
-	LOG(LOG_VERBOSE, "Getting current QoS settings");
+    #ifndef QOS_INTERFACE
+        LOG(LOG_WARN, "QoS interface is deactivated but was called from application");
+        return false;
+    #endif
+
+    LOG(LOG_VERBOSE, "Getting current QoS settings");
 	//TODO: interface anbinden
 
 	return true;
@@ -468,7 +478,7 @@ bool Socket::GetQoS(QoSSettings &pQoSSettings)
 
 bool Socket::CreateQoSProfile(std::string pProfileName, QoSSettings *pQoSSettings)
 {
-	LOGEX(Socket, LOG_VERBOSE, "Creating QoS profile %s with parameters: %u KB/s min. bandwidth, %u max. delay", pQoSSettings->MinBandwidth, pQoSSettings->MaxDelay);
+	LOGEX(Socket, LOG_VERBOSE, "Creating QoS profile %s with parameters: %u KB/s min. data rate, %u max. delay", pQoSSettings->MinDataRate, pQoSSettings->MaxDelay);
 	//TODO: interface anbinden
 
 	return true;
@@ -484,7 +494,12 @@ bool Socket::GetQoSProfile(std::string pProfileName, QoSSettings *pQoSSettings)
 
 bool Socket::SetQoS(std::string pDesiredProfile)
 {
-	LOG(LOG_VERBOSE, "Desired QoS profile: %s", pDesiredProfile.c_str());
+    #ifndef QOS_INTERFACE
+        LOG(LOG_WARN, "QoS interface is deactivated but was called from application");
+        return false;
+    #endif
+
+    LOG(LOG_VERBOSE, "Desired QoS profile: %s", pDesiredProfile.c_str());
 	//TODO: interface anbinden
 
 	return true;
