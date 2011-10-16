@@ -59,6 +59,9 @@ namespace Homer { namespace Base {
 // the following de/activates debugging of received packets
 //#define HBS_DEBUG_PACKETS
 
+// de/activate QoS interface
+#define QOS_INTERFACE
+
 // maximum TCP connections a TCP based socket supports
 #define MAX_INCOMING_CONNECTIONS        1 //TODO: support multiple clients
 
@@ -94,9 +97,15 @@ union SocketAddressDescriptor
 ///////////////////////////////////////////////////////////////////////////////
 struct QoSSettings
 {
-	unsigned int MinBandwidth; /* in KB/s */
+	unsigned int MinDataRate; /* in KB/s */
 	unsigned int MaxDelay; /* in us */
-	unsigned int Pripority; /* TOS like priority */
+	union{
+	    struct{
+	        bool Lossless; /* dropping allowed? */
+	        bool dummy[31];
+	    }__attribute__((__packed__))Feature;
+        unsigned int Features;
+	};
 };
 
 class Socket
