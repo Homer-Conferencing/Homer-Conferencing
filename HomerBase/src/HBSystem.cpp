@@ -158,11 +158,11 @@ string System::GetMachineType()
                 tResult = "x86";
                 break;
             case PROCESSOR_ARCHITECTURE_UNKNOWN:
-                LOG(LOG_VERBOSE, "Windows reported unknown machine architecture");
+                LOGEX(System, LOG_VERBOSE, "Windows reported unknown machine architecture");
                 tResult = "unknown";
                 break;
             default:
-                LOG(LOG_ERROR, "Unsupported result code");
+                LOGEX(System, LOG_ERROR, "Unsupported result code");
                 break;
         }
     #endif
