@@ -44,11 +44,6 @@ using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static list<QoSProfileDescriptor*> sQoSProfiles;
-static Mutex sQoSProfileMutex;
-
-///////////////////////////////////////////////////////////////////////////////
-
 // definitions for UDP-Lite
 // HINT: homepage for UDP-Lite is http://www.erg.abdn.ac.uk/users/gerrit/udp-lite/
 #ifndef IPPROTO_UDPLITE
@@ -482,6 +477,9 @@ bool Socket::GetQoS(QoSSettings &pQoSSettings)
 
 	return true;
 }
+
+static list<QoSProfileDescriptor*> sQoSProfiles;
+static Mutex sQoSProfileMutex;
 
 bool Socket::CreateQoSProfile(const std::string &pProfileName, const QoSSettings &pQoSSettings)
 {
