@@ -60,9 +60,6 @@ namespace Homer { namespace Base {
 // the following de/activates debugging of received packets
 //#define HBS_DEBUG_PACKETS
 
-// de/activate QoS interface
-#define QOS_INTERFACE
-
 // maximum TCP connections a TCP based socket supports
 #define MAX_INCOMING_CONNECTIONS        1 //TODO: support multiple clients
 
@@ -96,17 +93,21 @@ union SocketAddressDescriptor
 #define IS_IPV6_ADDRESS(x) (x.find(':') != string::npos)
 
 ///////////////////////////////////////////////////////////////////////////////
+
+// de/activate QoS interface
+#define QOS_INTERFACE
+
 struct QoSSettings
 {
-	unsigned int MinDataRate; /* in KB/s */
-	unsigned int MaxDelay; /* in us */
-	union{
-	    struct{
-	        bool Lossless; /* dropping allowed? */
-	        bool dummy[31];
-	    }__attribute__((__packed__))Feature;
+    unsigned int MinDataRate; /* in KB/s */
+    unsigned int MaxDelay; /* in us */
+    union{
+        struct{
+            bool Lossless; /* dropping allowed? */
+            bool dummy[31];
+        }__attribute__((__packed__))Feature;
         unsigned int Features;
-	};
+    };
 };
 
 struct QoSProfileDescriptor
@@ -116,6 +117,8 @@ struct QoSProfileDescriptor
 };
 
 typedef std::list<QoSProfileDescriptor*> QoSProfileList;
+
+///////////////////////////////////////////////////////////////////////////////
 
 class Socket
 {
