@@ -30,15 +30,22 @@
 #include <Logger.h>
 #include <HBSocket.h>
 #include <HBSystem.h>
+#include <HBMutex.h>
 
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
 #include <errno.h>
+#include <list>
 
 namespace Homer { namespace Base {
 
 using namespace std;
+
+///////////////////////////////////////////////////////////////////////////////
+
+static list<QoSProfileDescriptor*> sQoSProfiles;
+static Mutex sQoSProfileMutex;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -450,14 +457,14 @@ unsigned int Socket::getLocalPort()
     return mLocalPort;
 }
 
-bool Socket::SetQoS(QoSSettings *pQoSSettings)
+bool Socket::SetQoS(const QoSSettings &pQoSSettings)
 {
     #ifndef QOS_INTERFACE
         LOG(LOG_WARN, "QoS interface is deactivated but was called from application");
         return false;
     #endif
 
-    LOG(LOG_VERBOSE, "Desired QoS parameters: %u KB/s min. data rate, %u max. delay", pQoSSettings->MinDataRate, pQoSSettings->MaxDelay);
+    LOG(LOG_VERBOSE, "Desired QoS parameters: %u KB/s min. data rate, %u max. delay", pQoSSettings.MinDataRate, pQoSSettings.MaxDelay);
 	//TODO: interface anbinden
 
 	return true;
@@ -476,33 +483,102 @@ bool Socket::GetQoS(QoSSettings &pQoSSettings)
 	return true;
 }
 
-bool Socket::CreateQoSProfile(std::string pProfileName, QoSSettings *pQoSSettings)
+bool Socket::CreateQoSProfile(const std::string &pProfileName, const QoSSettings &pQoSSettings)
 {
-	LOGEX(Socket, LOG_VERBOSE, "Creating QoS profile %s with parameters: %u KB/s min. data rate, %u max. delay", pQoSSettings->MinDataRate, pQoSSettings->MaxDelay);
-	//TODO: interface anbinden
+    QoSProfileDescriptor *tQoSProfileDescriptor;
+    QoSProfileList tResult;
+    QoSProfileList::iterator tIt, tItEnd;
+
+    LOGEX(Socket, LOG_VERBOSE, "Creating QoS profile %s with parameters: %u KB/s min. data rate, %u max. delay", pQoSSettings.MinDataRate, pQoSSettings.MaxDelay);
+
+    // lock the static list of QoS profiles
+    sQoSProfileMutex.lock();
+
+    tItEnd = sQoSProfiles.end();
+    for (tIt = sQoSProfiles.begin(); tIt != tItEnd; tIt++)
+    {
+        if ((*tIt)->Name == pProfileName)
+        {
+            // unlock the static list of QoS profiles
+            sQoSProfileMutex.unlock();
+
+            LOGEX(Socket, LOG_WARN, "QoS profile of name \"%s\" already registered", pProfileName.c_str());
+
+            return false;
+        }
+    }
+
+    tQoSProfileDescriptor = new QoSProfileDescriptor;
+    tQoSProfileDescriptor->Name = pProfileName;
+    tQoSProfileDescriptor->Settings = pQoSSettings;
+    sQoSProfiles.push_back(tQoSProfileDescriptor);
+
+    // unlock the static list of QoS profiles
+    sQoSProfileMutex.unlock();
 
 	return true;
 }
 
-bool Socket::GetQoSProfile(std::string pProfileName, QoSSettings *pQoSSettings)
+QoSProfileList Socket::GetQoSProfiles()
 {
-	LOGEX(Socket, LOG_VERBOSE, "Getting QoS settings for existing QoS profile");
-	//TODO: interface anbinden
+    QoSProfileDescriptor *tQoSProfileDescriptor;
+    QoSProfileList tResult;
+    QoSProfileList::iterator tIt, tItEnd;
 
-	return true;
+    LOGEX(Socket, LOG_VERBOSE, "Getting QoS settings for existing QoS profiles");
+
+    // lock the static list of QoS profiles
+    sQoSProfileMutex.lock();
+
+    tItEnd = sQoSProfiles.end();
+    for (tIt = sQoSProfiles.begin(); tIt != tItEnd; tIt++)
+    {
+        tQoSProfileDescriptor = new QoSProfileDescriptor;
+        tQoSProfileDescriptor->Name = (*tIt)->Name;
+        tQoSProfileDescriptor->Settings = (*tIt)->Settings;
+        tResult.push_back(tQoSProfileDescriptor);
+    }
+
+    // unlock the static list of QoS profiles
+    sQoSProfileMutex.unlock();
+
+	return tResult;
 }
 
-bool Socket::SetQoS(std::string pDesiredProfile)
+bool Socket::SetQoS(const std::string &pProfileName)
 {
+    QoSProfileList::iterator tIt, tItEnd;
+
     #ifndef QOS_INTERFACE
         LOG(LOG_WARN, "QoS interface is deactivated but was called from application");
         return false;
     #endif
 
-    LOG(LOG_VERBOSE, "Desired QoS profile: %s", pDesiredProfile.c_str());
-	//TODO: interface anbinden
+    LOG(LOG_VERBOSE, "Desired QoS profile: %s", pProfileName.c_str());
 
-	return true;
+    // lock the static list of QoS profiles
+    sQoSProfileMutex.lock();
+
+    tItEnd = sQoSProfiles.end();
+    for (tIt = sQoSProfiles.begin(); tIt != tItEnd; tIt++)
+    {
+        if ((*tIt)->Name == pProfileName)
+        {
+            QoSSettings tSettings = (*tIt)->Settings;
+
+            // unlock the static list of QoS profiles
+            sQoSProfileMutex.unlock();
+
+            SetQoS(tSettings);
+
+            return true;
+        }
+    }
+
+    // unlock the static list of QoS profiles
+    sQoSProfileMutex.unlock();
+
+	return false;
 }
 
 void Socket::SetUdpLiteChecksumCoverage(int pBytes)

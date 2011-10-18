@@ -51,6 +51,7 @@
 #endif
 
 #include <string>
+#include <list>
 
 namespace Homer { namespace Base {
 
@@ -108,6 +109,14 @@ struct QoSSettings
 	};
 };
 
+struct QoSProfileDescriptor
+{
+    std::string Name;
+    QoSSettings Settings;
+};
+
+typedef std::list<QoSProfileDescriptor*> QoSProfileList;
+
 class Socket
 {
 public:
@@ -125,11 +134,11 @@ public:
     unsigned int getLocalPort();
 
     /* QoS interface */
-    bool SetQoS(QoSSettings *pQoSSettings);
+    bool SetQoS(const QoSSettings &pQoSSettings);
     bool GetQoS(QoSSettings &pQoSSettings);
-    static bool CreateQoSProfile(std::string pProfileName, QoSSettings *pQoSSettings);
-    static bool GetQoSProfile(std::string pProfileName, QoSSettings *pQoSSettings);
-    bool SetQoS(std::string pDesiredProfile);
+    static bool CreateQoSProfile(const std::string &pProfileName, const QoSSettings &pQoSSettings);
+    static QoSProfileList GetQoSProfiles();
+    bool SetQoS(const std::string &pProfileName);
 
     /* checksum coverage */
     void SetUdpLiteChecksumCoverage(int pBytes = UDP_LITE_HEADER_SIZE);
