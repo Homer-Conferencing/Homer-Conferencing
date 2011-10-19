@@ -94,8 +94,10 @@ union SocketAddressDescriptor
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef QOS_FEATURE_NONE
 #define QOS_FEATURE_NONE									0x00000000
 #define QOS_FEATURE_LOSLESS									0x00000001
+#endif
 
 struct QoSSettings
 {
