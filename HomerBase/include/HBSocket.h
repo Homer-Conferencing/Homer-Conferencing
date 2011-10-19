@@ -105,11 +105,11 @@ struct QoSSettings
     unsigned int MinDataRate; /* in KB/s */
     unsigned int MaxDelay; /* in us */
     union{
+        unsigned int Features;
         struct{
             bool Lossless; /* dropping allowed? */
             bool dummy[31];
         }__attribute__((__packed__))Feature;
-        unsigned int Features;
     };
 };
 
