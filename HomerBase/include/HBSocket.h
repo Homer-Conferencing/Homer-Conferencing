@@ -97,6 +97,7 @@ union SocketAddressDescriptor
 // de/activate QoS interface
 #define QOS_INTERFACE
 
+#define QOS_FEATURE_NONE									0x00000000
 #define QOS_FEATURE_LOSLESS									0x00000001
 
 struct QoSSettings
