@@ -176,6 +176,7 @@ private:
     unsigned short int BindSocket(unsigned int pPort = 0, unsigned int pProbeStepping = 1, unsigned int pHighesPossibleListenerPort = 0);
     static void DestroySocket(int pHandle);
 
+    QoSSettings			mQoSSettings;
     int 			    mUdpLiteChecksumCoverage;
     enum TransportType	mSocketTransportType;
     enum NetworkType    mSocketNetworkType;
