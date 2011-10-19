@@ -459,7 +459,7 @@ bool Socket::SetQoS(const QoSSettings &pQoSSettings)
         return false;
     #endif
 
-    LOG(LOG_VERBOSE, "Desired QoS parameters: %u KB/s min. data rate, %u max. delay", pQoSSettings.MinDataRate, pQoSSettings.MaxDelay);
+    LOG(LOG_VERBOSE, "Desired QoS: %u KB/s min. data rate, %u max. delay, loss less: %d", pQoSSettings.MinDataRate, pQoSSettings.MaxDelay, pQoSSettings.Feature.Lossless);
 	//TODO: interface anbinden
 
 	return true;
