@@ -459,6 +459,11 @@ bool Socket::SetQoS(const QoSSettings &pQoSSettings)
         return false;
     #endif
 
+	#ifdef WIN32
+        LOG(LOG_WARN, "QoS interface unsupported for Windows environments, settings will be ignored");
+        return false;
+	#endif
+
     LOG(LOG_VERBOSE, "Desired QoS: %u KB/s min. data rate, %u ms max. delay, loss less: %d", pQoSSettings.MinDataRate, pQoSSettings.MaxDelay, pQoSSettings.Feature.Lossless);
 	//TODO: interface anbinden
 
@@ -471,6 +476,11 @@ bool Socket::GetQoS(QoSSettings &pQoSSettings)
         LOG(LOG_WARN, "QoS interface is deactivated but was called from application");
         return false;
     #endif
+
+	#ifdef WIN32
+		LOG(LOG_WARN, "QoS interface unsupported for Windows environments, settings will be ignored");
+		return false;
+	#endif
 
     LOG(LOG_VERBOSE, "Getting current QoS settings");
 	//TODO: interface anbinden
@@ -546,11 +556,6 @@ QoSProfileList Socket::GetQoSProfiles()
 bool Socket::SetQoS(const std::string &pProfileName)
 {
     QoSProfileList::iterator tIt, tItEnd;
-
-    #ifndef QOS_INTERFACE
-        LOG(LOG_WARN, "QoS interface is deactivated but was called from application");
-        return false;
-    #endif
 
     LOG(LOG_VERBOSE, "Desired QoS profile: %s", pProfileName.c_str());
 
