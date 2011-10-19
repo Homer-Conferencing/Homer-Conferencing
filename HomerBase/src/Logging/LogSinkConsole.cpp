@@ -53,7 +53,7 @@ HANDLE sConsoleHandle;
 LogSinkConsole::LogSinkConsole()
 {
     mLogLevel = LOG_ERROR;
-    mMediaId = "CONSOLE: standard out";
+    mLogSinkId = "CONSOLE: standard out";
 	#ifdef WIN32
 		sConsoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 	#endif

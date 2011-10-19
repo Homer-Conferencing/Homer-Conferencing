@@ -35,7 +35,7 @@ namespace Homer { namespace Base {
 
 LogSink::LogSink()
 {
-    mMediaId = "undefined";
+    mLogSinkId = "undefined";
 }
 
 LogSink::~LogSink()

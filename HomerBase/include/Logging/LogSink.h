@@ -47,10 +47,10 @@ public:
 
     virtual void ProcessMessage(int pLevel, std::string pTime, std::string pSource, int pLine, std::string pMessage) = 0;
 
-    std::string GetId() { return mMediaId; }
+    std::string GetId() { return mLogSinkId; }
 
 protected:
-    std::string         mMediaId;
+    std::string         mLogSinkId;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -44,7 +44,7 @@ using namespace std;
 LogSinkFile::LogSinkFile(string pFileName)
 {
     mFileName = pFileName;
-    mMediaId = "FILE: " + mFileName;
+    mLogSinkId = "FILE: " + mFileName;
     ProcessMessage(LOG_VERBOSE, "", "", 0, "");
     ProcessMessage(LOG_VERBOSE, "", "", 0, "======================================");
     ProcessMessage(LOG_VERBOSE, "", "", 0, "========> LOGGING START POINT <=======");
