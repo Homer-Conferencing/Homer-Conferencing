@@ -103,7 +103,7 @@ union SocketAddressDescriptor
 struct QoSSettings
 {
     unsigned int MinDataRate; /* in KB/s */
-    unsigned int MaxDelay; /* in us */
+    unsigned int MaxDelay; /* in ms */
     union{
         unsigned int Features;
         struct{
