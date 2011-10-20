@@ -53,6 +53,8 @@
 #include <string>
 #include <list>
 
+#include <HBSocketQoSSettings.h>
+
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -91,34 +93,6 @@ union SocketAddressDescriptor
 #define UDP_LITE_HEADER_SIZE					8 // fixed size
 
 #define IS_IPV6_ADDRESS(x) (x.find(':') != string::npos)
-
-///////////////////////////////////////////////////////////////////////////////
-
-#ifndef QOS_FEATURE_NONE
-#define QOS_FEATURE_NONE									0x00000000
-#define QOS_FEATURE_LOSLESS									0x00000001
-#endif
-
-struct QoSSettings
-{
-    unsigned int MinDataRate; /* in KB/s */
-    unsigned int MaxDelay; /* in ms */
-    union{
-        unsigned int Features;
-        struct{
-            bool Lossless; /* dropping allowed? */
-            bool dummy[31];
-        }__attribute__((__packed__))Feature;
-    };
-};
-
-struct QoSProfileDescriptor
-{
-    std::string Name;
-    QoSSettings Settings;
-};
-
-typedef std::list<QoSProfileDescriptor*> QoSProfileList;
 
 ///////////////////////////////////////////////////////////////////////////////
 
