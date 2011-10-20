@@ -41,20 +41,15 @@ namespace Homer { namespace Base {
 #define QOS_SETTINGS
 
 #ifndef QOS_FEATURE_NONE
-#define QOS_FEATURE_NONE									0x00000000
-#define QOS_FEATURE_LOSLESS									0x00000001
+#define QOS_FEATURE_NONE									0x0000
+#define QOS_FEATURE_LOSLESS									0x0001
 #endif
 
 struct QoSSettings
 {
-    unsigned int MinDataRate; /* in KB/s */
-    unsigned int MaxDelay; /* in ms */
-    union{
-        unsigned int Features;
-        struct{
-            bool Lossless; /* dropping allowed? */
-        }__attribute__((__packed__))Feature;
-    };
+    unsigned int DataRate; /* in KB/s */
+    unsigned short int Delay; /* in ms */
+    unsigned short int Features;
 }__attribute__((__packed__));
 
 struct QoSProfileDescriptor
