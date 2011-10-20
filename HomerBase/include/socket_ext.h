@@ -50,8 +50,10 @@ int setqos(int pFd, unsigned int pDataRate, unsigned int pDelay, unsigned int pF
         tQoSSettings.MaxDelay = pDelay;
         tQoSSettings.Features = pFeatures;
 
+        LOGEX(Socket, LOG_VERBOSE, "Setting IP options of %d bytes", sizeof(QoSSettings)); // max. options of 40 bytes length possible
+
         if ((tResult = setsockopt(pFd, IPPROTO_IP, IP_OPTIONS, (char*)&tQoSSettings, sizeof(QoSSettings))) < 0)
-            LOGEX(Socket, LOG_ERROR, "Failed to set IP options for transmitting QoS settings for socket %d because \"%s\"", pFd, strerror(errno));
+            LOGEX(Socket, LOG_ERROR, "Failed to set IP options for transmitting QoS settings for socket %d because \"%s\"(%d)", pFd, strerror(errno), tResult);
     #endif
 
     return tResult;

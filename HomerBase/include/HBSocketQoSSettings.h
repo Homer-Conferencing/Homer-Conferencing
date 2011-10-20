@@ -53,10 +53,9 @@ struct QoSSettings
         unsigned int Features;
         struct{
             bool Lossless; /* dropping allowed? */
-            bool dummy[31];
         }__attribute__((__packed__))Feature;
     };
-};
+}__attribute__((__packed__));
 
 struct QoSProfileDescriptor
 {
