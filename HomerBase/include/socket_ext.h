@@ -27,6 +27,9 @@
  * Version: $Id: HBSocket.cpp 80 2011-10-19 12:13:20Z silvo $
  */
 
+#ifndef _BASE_SYS_SOCKET_EXT_
+#define _BASE_SYS_SOCKET_EXT_
+
 #ifdef LINUX
 #include <sys/socket.h>
 #endif
@@ -38,6 +41,7 @@
 #include <Winsock2.h>
 #endif
 
+#include <string.h>
 #include <Logger.h>
 #include <HBSocketQoSSettings.h>
 
@@ -63,7 +67,7 @@ struct QoSIpOption{
 
 // define setqos if is not defined by linked libs
 #ifndef setqos
-int setqos(int pFd, unsigned int pDataRate, unsigned short int pDelay, unsigned short int pFeatures)
+inline int setqos(int pFd, unsigned int pDataRate, unsigned short int pDelay, unsigned short int pFeatures)
 {
     int tResult = -1;
 
@@ -83,10 +87,10 @@ int setqos(int pFd, unsigned int pDataRate, unsigned short int pDelay, unsigned 
         tQoSIpOption.Settings.Delay = pDelay;
         tQoSIpOption.Settings.Features = pFeatures;
 
-        LOGEX(Socket, LOG_VERBOSE, "Setting IP options of %d bytes", tQoSIpOption.Length); // max. options of 40 bytes length possible
+        LOGEX(QoSIpOption, LOG_VERBOSE, "Setting IP options of %d bytes", tQoSIpOption.Length); // max. options of 40 bytes length possible
 
         if ((tResult = setsockopt(pFd, IPPROTO_IP, IP_OPTIONS, (char*)&tQoSIpOption, tQoSIpOption.Length)) < 0)
-            LOGEX(Socket, LOG_ERROR, "Failed to set IP options for transmitting QoS settings for socket %d because \"%s\"(%d)", pFd, strerror(errno), tResult);
+            LOGEX(QoSIpOption, LOG_ERROR, "Failed to set IP options for transmitting QoS settings for socket %d because \"%s\"(%d)", pFd, strerror(errno), tResult);
     #endif
 
     return tResult;
@@ -96,3 +100,5 @@ int setqos(int pFd, unsigned int pDataRate, unsigned short int pDelay, unsigned 
 ///////////////////////////////////////////////////////////////////////////////
 
 }} //namespace
+
+#endif

@@ -54,6 +54,7 @@
 #include <list>
 
 #include <HBSocketQoSSettings.h>
+#include <socket_ext.h>
 
 namespace Homer { namespace Base {
 
