@@ -47,21 +47,45 @@ using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// overview of IP options: http://www.iana.org/assignments/ip-parameters
+struct QoSIpOption{
+    unsigned char Number:5;         // ID of this option indicating its purpose
+    unsigned char Class:2;          // "0" for control option, "2" for debugging/measurement
+    unsigned char Copied:1;         // "1" to copy this option to all fragments of a packet
+    unsigned char Length;           // length of the entire IP option
+
+    unsigned char Pointer;          // time stamp specific
+    unsigned char Flags;            // time stamp specific
+    unsigned int  InternetAddress;  // time stamp specific
+
+    struct QoSSettings Settings;
+}__attribute__((__packed__));
+
 // define setqos if is not defined by linked libs
 #ifndef setqos
-int setqos(int pFd, unsigned int pDataRate, unsigned int pDelay, unsigned int pFeatures)
+int setqos(int pFd, unsigned int pDataRate, unsigned short int pDelay, unsigned short int pFeatures)
 {
     int tResult = -1;
 
     #ifdef QOS_SETTINGS
-        struct QoSSettings tQoSSettings;
-        tQoSSettings.MinDataRate = pDataRate;
-        tQoSSettings.MaxDelay = pDelay;
-        tQoSSettings.Features = pFeatures;
+        struct QoSIpOption tQoSIpOption;
+        memset(&tQoSIpOption, 0, sizeof(tQoSIpOption));
+        tQoSIpOption.Copied = false; // don't copy this option to every fragment
+        tQoSIpOption.Class = 2; // measurement
+        tQoSIpOption.Number = 4; // time stamps
+        tQoSIpOption.Length = sizeof(tQoSIpOption);
 
-        LOGEX(Socket, LOG_VERBOSE, "Setting IP options of %d bytes", sizeof(QoSSettings)); // max. options of 40 bytes length possible
+        tQoSIpOption.Pointer = 5; // smallest legal value
+        tQoSIpOption.Flags = 0; // time stamps only, stored in consecutive 32-bit words
+        tQoSIpOption.InternetAddress = 0;
 
-        if ((tResult = setsockopt(pFd, IPPROTO_IP, IP_OPTIONS, (char*)&tQoSSettings, sizeof(QoSSettings))) < 0)
+        tQoSIpOption.Settings.DataRate = pDataRate;
+        tQoSIpOption.Settings.Delay = pDelay;
+        tQoSIpOption.Settings.Features = pFeatures;
+
+        LOGEX(Socket, LOG_VERBOSE, "Setting IP options of %d bytes", tQoSIpOption.Length); // max. options of 40 bytes length possible
+
+        if ((tResult = setsockopt(pFd, IPPROTO_IP, IP_OPTIONS, (char*)&tQoSIpOption, tQoSIpOption.Length)) < 0)
             LOGEX(Socket, LOG_ERROR, "Failed to set IP options for transmitting QoS settings for socket %d because \"%s\"(%d)", pFd, strerror(errno), tResult);
     #endif
 
