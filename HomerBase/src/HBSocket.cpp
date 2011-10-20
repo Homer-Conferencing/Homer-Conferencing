@@ -192,6 +192,15 @@ unsigned int Socket::getLocalPort()
     return mLocalPort;
 }
 
+bool Socket::IsQoSSupported()
+{
+    #ifdef QOS_SETTINGS
+        return true;
+    #else
+        return false;
+    #endif
+}
+
 bool Socket::SetQoS(const QoSSettings &pQoSSettings)
 {
     LOG(LOG_VERBOSE, "Desired QoS: %u KB/s min. data rate, %u ms max. delay, loss less: %d", pQoSSettings.MinDataRate, pQoSSettings.MaxDelay, pQoSSettings.Feature.Lossless);
