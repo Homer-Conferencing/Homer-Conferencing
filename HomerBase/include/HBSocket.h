@@ -114,6 +114,7 @@ public:
     unsigned int getLocalPort();
 
     /* QoS interface */
+    static bool IsQoSSupported();
     bool SetQoS(const QoSSettings &pQoSSettings);
     bool GetQoS(QoSSettings &pQoSSettings);
     static bool CreateQoSProfile(const std::string &pProfileName, const QoSSettings &pQoSSettings);
