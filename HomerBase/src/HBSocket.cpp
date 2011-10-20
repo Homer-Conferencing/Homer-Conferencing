@@ -49,6 +49,9 @@ using namespace std;
 
 int sIPv6Supported = -1;
 int sUDPliteSupported = -1;
+int sDCCPSupported = -1;
+
+///////////////////////////////////////////////////////////////////////////////
 
 void Socket::SetDefaults(enum TransportType pTransportType)
 {
@@ -69,6 +72,11 @@ void Socket::SetDefaults(enum TransportType pTransportType)
 			LOG(LOG_ERROR, "UDPlite is not supported by Windows API, a common UDP socket will be used instead");
 			pTransportType = SOCKET_UDP;
 		}
+        if (pTransportType == SOCKET_DCCP)
+        {
+            LOG(LOG_ERROR, "DCCP is not supported by Windows API, a common UDP socket will be used instead");
+            pTransportType = SOCKET_UDP;
+        }
 	#endif
     mSocketTransportType = pTransportType;
 }
@@ -83,6 +91,12 @@ Socket::Socket(unsigned int pListenerPort, enum TransportType pTransportType, un
     if ((pTransportType == SOCKET_UDP_LITE) && (!IsUDPliteSupported()))
     {
         LOG(LOG_ERROR, "UDPlite not supported by system, falling back to UDP");
+        pTransportType = SOCKET_UDP;
+    }
+
+    if ((pTransportType == SOCKET_DCCP) && (!IsDCCPSupported()))
+    {
+        LOG(LOG_ERROR, "DCCP not supported by system, falling back to UDP");
         pTransportType = SOCKET_UDP;
     }
 
@@ -114,6 +128,12 @@ Socket::Socket(enum NetworkType pIpVersion, enum TransportType pTransportType)
     if ((pTransportType == SOCKET_UDP_LITE) && (!IsUDPliteSupported()))
     {
         LOG(LOG_ERROR, "UDPlite not supported by system, falling back to UDP");
+        pTransportType = SOCKET_UDP;
+    }
+
+    if ((pTransportType == SOCKET_DCCP) && (!IsDCCPSupported()))
+    {
+        LOG(LOG_ERROR, "DCCP not supported by system, falling back to UDP");
         pTransportType = SOCKET_UDP;
     }
 
@@ -602,6 +622,38 @@ bool Socket::IsUDPliteSupported()
 void Socket::DisableUDPliteSupport()
 {
     sUDPliteSupported = false;
+}
+
+bool Socket::IsDCCPSupported()
+{
+    if (sDCCPSupported == -1)
+    {
+        #ifdef WIN32
+            sDCCPSupported = false;
+        #endif
+
+        #ifdef LINUX
+            int tHandle = 0;
+
+            if ((tHandle = socket(AF_INET6, SOCK_DGRAM, IPPROTO_DCCP)) > 0)
+            {
+                LOGEX(Socket, LOG_INFO, ">>> DCCP sockets available <<<");
+                close(tHandle);
+                sDCCPSupported = true;
+            }else
+            {
+                LOGEX(Socket, LOG_INFO, ">>> DCCP not supported, falling back to UDP <<<");
+                sDCCPSupported = false;
+            }
+        #endif
+    }
+
+    return (sDCCPSupported == true);
+}
+
+void Socket::DisableDCCPSupport()
+{
+    sDCCPSupported = false;
 }
 
 bool Socket::FillAddrDescriptor(string pHost, unsigned int pPort, SocketAddressDescriptor *tAddressDescriptor, unsigned int &tAddressDescriptorSize)
