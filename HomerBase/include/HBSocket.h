@@ -115,6 +115,7 @@ public:
 
     /* QoS interface */
     static bool IsQoSSupported();
+    static void DisableQoSSupport();
     bool SetQoS(const QoSSettings &pQoSSettings);
     bool GetQoS(QoSSettings &pQoSSettings);
     static bool CreateQoSProfile(const std::string &pProfileName, const QoSSettings &pQoSSettings);

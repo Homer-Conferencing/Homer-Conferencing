@@ -47,6 +47,11 @@ using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifdef QOS_SETTINGS
+    int sQoSSupported = true;
+#else
+    int sQoSSupported = false;
+#endif
 int sIPv6Supported = -1;
 int sUDPliteSupported = -1;
 int sDCCPSupported = -1;
@@ -190,15 +195,6 @@ enum TransportType Socket::GetTransportType()
 unsigned int Socket::getLocalPort()
 {
     return mLocalPort;
-}
-
-bool Socket::IsQoSSupported()
-{
-    #ifdef QOS_SETTINGS
-        return true;
-    #else
-        return false;
-    #endif
 }
 
 bool Socket::SetQoS(const QoSSettings &pQoSSettings)
@@ -548,6 +544,16 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
     pBufferSize = tReceivedBytes;
 
     return tResult;
+}
+
+bool Socket::IsQoSSupported()
+{
+    return (sQoSSupported == true);
+}
+
+void Socket::DisableQoSSupport()
+{
+    sQoSSupported = false;
 }
 
 bool Socket::IsIPv6Supported()
