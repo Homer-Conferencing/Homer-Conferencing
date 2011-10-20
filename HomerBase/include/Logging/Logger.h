@@ -47,7 +47,10 @@ inline std::string GetShortFileName(std::string pLongFileName)
 {
 	std::string tResult = "";
 
-	tResult = pLongFileName.substr(0, pLongFileName.length() - 4 /* ".cpp" */);
+	if (pLongFileName.substr(pLongFileName.length() - 4, 4) == ".cpp")
+        tResult = pLongFileName.substr(0, pLongFileName.length() - 4 /* ".cpp" */);
+	else
+        tResult = pLongFileName.substr(0, pLongFileName.length() - 2 /* ".h" */);
 
 	int tPos = tResult.rfind('/');
 	if (tPos != (int)std::string::npos)
