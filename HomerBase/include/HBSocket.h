@@ -87,6 +87,7 @@ union SocketAddressDescriptor
     struct sockaddr_storage sa_stor;
 };
 
+#define IP_OPTIONS_SIZE                         (sizeof(QoSIpOption))
 #define IP4_HEADER_SIZE							20 // default size, additional bytes for IP options are possible
 #define IP6_HEADER_SIZE							40 // fixed size
 #define TCP_HEADER_SIZE							20 // default size, additional bytes for TCP options are possible
