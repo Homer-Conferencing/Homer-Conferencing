@@ -75,7 +75,8 @@ enum TransportType{
     SOCKET_TRANSPORT_TYPE_INVALID = -1,
     SOCKET_UDP = 0, //RFC 768
     SOCKET_TCP, //RFC 793
-    SOCKET_UDP_LITE //RFC 3828, only for Linux, in Windows environments we fall back to UDP
+    SOCKET_UDP_LITE, //RFC 3828, only for Linux, in Windows environments we fall back to UDP
+    SOCKET_DCCP // RFC 4340, only for Linux, in Windows environments we fall back to UDP
 };
 
 union SocketAddressDescriptor
@@ -133,6 +134,10 @@ public:
     /* UDPlite support */
     static bool IsUDPliteSupported();
     static void DisableUDPliteSupport();
+
+    /* DCCP support */
+    static bool IsDCCPSupported();
+    static void DisableDCCPSupport();
 
     /* transport type */
     static std::string TransportType2String(enum TransportType pSocketType);
