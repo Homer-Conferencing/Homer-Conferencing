@@ -27,7 +27,16 @@
  * Version: $Id: HBSocket.cpp 80 2011-10-19 12:13:20Z silvo $
  */
 
+#ifdef LINUX
 #include <sys/socket.h>
+#endif
+
+#ifdef WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <Winsock2.h>
+#endif
 
 #include <Logger.h>
 #include <HBSocketQoSSettings.h>
