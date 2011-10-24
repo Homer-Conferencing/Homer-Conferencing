@@ -30,7 +30,7 @@
 #ifndef _BASE_MUTEX_
 #define _BASE_MUTEX_
 
-#ifdef LINUX
+#if defined(LINUX) || defined(APPLE)
 #include <pthread.h>
 #include <stdlib.h>
 #include <errno.h>

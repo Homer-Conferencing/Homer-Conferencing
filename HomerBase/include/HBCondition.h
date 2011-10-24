@@ -32,7 +32,7 @@
 
 #include <HBMutex.h>
 
-#ifdef LINUX
+#if defined(LINUX) || defined(APPLE)
 #include <pthread.h>
 #include <stdlib.h>
 #include <errno.h>

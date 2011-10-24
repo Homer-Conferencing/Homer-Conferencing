@@ -30,7 +30,7 @@
 #ifndef _BASE_SOCKET_
 #define _BASE_SOCKET_
 
-#ifdef LINUX
+#if defined(LINUX) || defined(APPLE)
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
