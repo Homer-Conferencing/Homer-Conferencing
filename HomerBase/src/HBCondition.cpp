@@ -39,7 +39,7 @@ using namespace std;
 Condition::Condition()
 {
 	bool tResult = false;
-	#ifdef LINUX
+    #if defined(LINUX) || defined(APPLE)
 	    mCondition = (pthread_cond_t*)malloc(sizeof(pthread_cond_t));
 		tResult = (pthread_cond_init(mCondition, NULL) == 0);
 	#endif
@@ -54,7 +54,7 @@ Condition::Condition()
 Condition::~Condition()
 {
     bool tResult = false;
-	#ifdef LINUX
+    #if defined(LINUX) || defined(APPLE)
 		tResult = (pthread_cond_destroy(mCondition) == 0);
 	    free(mCondition);
 	#endif
@@ -69,7 +69,7 @@ Condition::~Condition()
 
 bool Condition::Wait(Mutex *pMutex, int pTime)
 {
-    #ifdef LINUX
+    #if defined(LINUX) || defined(APPLE)
         struct timespec tTimeout;
 
 		if (clock_gettime(CLOCK_REALTIME, &tTimeout) == -1)
@@ -103,7 +103,7 @@ bool Condition::Wait(Mutex *pMutex, int pTime)
 
 bool Condition::SignalOne()
 {
-	#ifdef LINUX
+    #if defined(LINUX) || defined(APPLE)
 		return !pthread_cond_signal(mCondition);
 	#endif
 	#ifdef WIN32
@@ -113,7 +113,7 @@ bool Condition::SignalOne()
 
 bool Condition::SignalAll()
 {
-    #ifdef LINUX
+    #if defined(LINUX) || defined(APPLE)
         return !pthread_cond_broadcast(mCondition);
     #endif
     #ifdef WIN32
@@ -123,7 +123,7 @@ bool Condition::SignalAll()
 
 bool Condition::Reset()
 {
-	#ifdef LINUX
+    #if defined(LINUX) || defined(APPLE)
         return (pthread_cond_init(mCondition, NULL) == 0);
 	#endif
 	#ifdef WIN32

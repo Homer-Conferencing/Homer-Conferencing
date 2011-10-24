@@ -33,7 +33,7 @@
 #include <errno.h>
 #include <time.h>
 
-#ifdef LINUX
+#if defined(LINUX) || defined(APPLE)
 #include <sys/time.h>
 #endif
 
@@ -81,7 +81,7 @@ void Time::InvalidateTimeStamp()
 int64_t Time::GetTimeStamp()
 {
 	int64_t tResult = 0;
-	#ifdef LINUX
+    #if defined(LINUX) || defined(APPLE)
 		struct timeval tTimeVal;
 		gettimeofday(&tTimeVal, 0);
 		tResult = (int64_t)1000 * 1000 * tTimeVal.tv_sec + tTimeVal.tv_usec;
@@ -117,7 +117,7 @@ bool Time::GetNow(int *pDay, int *pMonth, int *pYear, int *pHour, int *pMin, int
     time_t tTimeStamp = GetTimeStamp() / 1000000;
     struct tm tLocalTimeData;
 
-    #ifdef LINUX
+    #if defined(LINUX) || defined(APPLE)
         struct tm* tLocalTime = localtime_r(&tTimeStamp, &tLocalTimeData);
         if (tLocalTime == NULL)
             LOGEX(Time, LOG_ERROR, "Error while determining current time");

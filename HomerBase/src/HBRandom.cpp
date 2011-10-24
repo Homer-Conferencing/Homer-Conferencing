@@ -65,7 +65,7 @@ unsigned long Random::GenerateNumber()
 	}
 
 	// generate random number
-	#ifdef LINUX
+    #if defined(LINUX) || defined(APPLE)
 		return random();
 	#endif
 	#ifdef WIN32

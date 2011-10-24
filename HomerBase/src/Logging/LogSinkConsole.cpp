@@ -62,7 +62,7 @@ LogSinkConsole::LogSinkConsole()
 LogSinkConsole::~LogSinkConsole()
 {
 	// reset to default color values
-	#ifdef LINUX
+    #if defined(LINUX) || defined(APPLE)
 		printf("\033[22;37m\n");
 	#endif
 	#ifdef WIN32
@@ -134,7 +134,7 @@ void LogSinkConsole::ProcessMessage(int pLevel, string pTime, string pSource, in
 {
     if ((pLevel <= mLogLevel) && (pLevel > LOG_OFF))
     {
-        #ifdef LINUX
+        #if defined(LINUX) || defined(APPLE)
             switch(pLevel)
             {
                 case LOG_ERROR:

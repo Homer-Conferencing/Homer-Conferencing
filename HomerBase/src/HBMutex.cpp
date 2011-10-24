@@ -39,7 +39,7 @@ using namespace std;
 Mutex::Mutex()
 {
 	bool tResult = false;
-	#ifdef LINUX
+    #if defined(LINUX) || defined(APPLE)
 		mMutex = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t));
 		tResult = (pthread_mutex_init(mMutex, NULL) == 0);
 	#endif
@@ -54,7 +54,7 @@ Mutex::Mutex()
 Mutex::~Mutex()
 {
     bool tResult = false;
-	#ifdef LINUX
+    #if defined(LINUX) || defined(APPLE)
 		tResult = (pthread_mutex_destroy(mMutex) == 0);
 	    free(mMutex);
 	#endif
@@ -69,7 +69,7 @@ Mutex::~Mutex()
 
 bool Mutex::lock()
 {
-	#ifdef LINUX
+    #if defined(LINUX) || defined(APPLE)
 		return !pthread_mutex_lock(mMutex);
 	#endif
 	#ifdef WIN32
@@ -79,7 +79,7 @@ bool Mutex::lock()
 
 bool Mutex::unlock()
 {
-	#ifdef LINUX
+    #if defined(LINUX) || defined(APPLE)
 		return !pthread_mutex_unlock(mMutex);
 	#endif
 	#ifdef WIN32
@@ -90,7 +90,7 @@ bool Mutex::unlock()
 bool Mutex::tryLock()
 {
 	bool tResult = false;
-	#ifdef LINUX
+    #if defined(LINUX) || defined(APPLE)
 		switch(pthread_mutex_trylock(mMutex))
 		{
 			case EDEADLK:
@@ -131,7 +131,7 @@ bool Mutex::tryLock()
 bool Mutex::tryLock(int pMSecs)
 {
 	bool tResult = false;
-	#ifdef LINUX
+    #if defined(LINUX) || defined(APPLE)
 		struct timespec tTimeout;
 
 		if (clock_gettime(CLOCK_REALTIME, &tTimeout) == -1)
@@ -172,7 +172,7 @@ bool Mutex::tryLock(int pMSecs)
 				break;
 		}
 	#endif
-	#ifdef WIN32
+    #if defined(LINUX) || defined(APPLE)
 		switch(WaitForSingleObject(mMutex, (DWORD)pMSecs))
 		{
 			case WAIT_ABANDONED:

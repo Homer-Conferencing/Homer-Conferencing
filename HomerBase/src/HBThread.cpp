@@ -34,14 +34,14 @@
 #include <stdlib.h>
 #include <cstdio>
 
-#ifdef LINUX
+#if defined(LINUX) || defined(APPLE)
 #include <sys/types.h>
 #include <sys/syscall.h>
 #include <unistd.h>
 #include <dirent.h>
 #include <errno.h>
-
 #endif
+
 #ifdef WIN32
 #include <Windows.h>
 #include <Psapi.h>
@@ -73,7 +73,7 @@ void Thread::Suspend(unsigned int pUSecs)
 {
 	if (pUSecs < 1)
 		return;
-	#ifdef LINUX
+    #if defined(LINUX) || defined(APPLE)
 		if (usleep(pUSecs) != 0)
 			LOGEX(Thread, LOG_ERROR, "Error from usleep: \"%s\"", strerror(errno));
 	#endif
@@ -84,7 +84,7 @@ void Thread::Suspend(unsigned int pUSecs)
 
 int Thread::GetTId()
 {
-	#ifdef LINUX
+    #if defined(LINUX) || defined(APPLE)
 		// some magic from the depth of linux sources
 		return syscall(__NR_gettid);
 	#endif
@@ -95,7 +95,7 @@ int Thread::GetTId()
 
 int Thread::GetPId()
 {
-	#ifdef LINUX
+    #if defined(LINUX) || defined(APPLE)
 		return getpid();
 	#endif
 	#ifdef WIN32
@@ -105,7 +105,7 @@ int Thread::GetPId()
 
 int Thread::GetPPId()
 {
-	#ifdef LINUX
+    #if defined(LINUX) || defined(APPLE)
 		return getppid();
 	#endif
 	#ifdef WIN32
@@ -139,7 +139,7 @@ vector<int> Thread::GetTIds()
 {
 	vector<int> tResult;
 
-	#if LINUX
+    #if defined(LINUX) || defined(APPLE)
 		DIR *tDir;
 		if ((tDir  = opendir("/proc/self/task/")) == NULL)
 		{
@@ -205,7 +205,7 @@ bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned l
 {
 	bool tResult = false;
 
-	#ifdef LINUX
+    #if defined(LINUX) || defined(APPLE)
 	    /*
 	     * HINT: For Linux we show relative cpu usage statistic which depend on the amount of available cpu cores.
 	     *       Hence, one task can have a maximum of 25 % cpu usage for a 4 core cpu. This behavior is how Windows deals with cpu usage values.
@@ -496,7 +496,7 @@ bool Thread::StartThread(void* pArgs)
     mThreadMain = 0;
     mThreadArguments = pArgs;
 
-    #ifdef LINUX
+    #if defined(LINUX) || defined(APPLE)
         size_t tThreadStackSize;
         pthread_attr_t tThreadAttributes;
 
@@ -543,7 +543,7 @@ bool Thread::StartThread(THREAD_MAIN pMain, void* pArgs)
 	mThreadMain = pMain;
 	mThreadArguments = pArgs;
 
-	#ifdef LINUX
+    #if defined(LINUX) || defined(APPLE)
 		size_t tThreadStackSize;
 	    pthread_attr_t tThreadAttributes;
 
@@ -585,7 +585,7 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
     if (mThreadHandle == 0)
         return false;
 
-    #ifdef LINUX
+    #if defined(LINUX) || defined(APPLE)
 		struct timespec tTimeout;
 
 		if (clock_gettime(CLOCK_REALTIME, &tTimeout) == -1)
