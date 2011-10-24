@@ -30,6 +30,12 @@
 #include <Logger.h>
 #include <HBCondition.h>
 
+#ifdef APPLE
+// to get current time stamp
+#include <mach/clock.h>
+#include <mach/mach.h>
+#endif
+
 namespace Homer { namespace Base {
 
 using namespace std;
