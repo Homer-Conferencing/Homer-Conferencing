@@ -84,10 +84,14 @@ void Thread::Suspend(unsigned int pUSecs)
 
 int Thread::GetTId()
 {
-    #if defined(LINUX) || defined(APPLE)
+    #if defined(LINUX)
 		// some magic from the depth of linux sources
 		return syscall(__NR_gettid);
 	#endif
+    #ifdef defined(APPLE)
+        //TODO
+		return 0;
+    #endif
 	#ifdef WIN32
 		return (int)GetCurrentThreadId();
 	#endif
@@ -139,7 +143,7 @@ vector<int> Thread::GetTIds()
 {
 	vector<int> tResult;
 
-    #if defined(LINUX) || defined(APPLE)
+    #if defined(LINUX)
 		DIR *tDir;
 		if ((tDir  = opendir("/proc/self/task/")) == NULL)
 		{
@@ -159,6 +163,9 @@ vector<int> Thread::GetTIds()
 		}
 		closedir(tDir);
 	#endif
+    #ifdef defined(APPLE)
+		//TODO
+    #endif
 	#ifdef WIN32
 		HANDLE tSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD /* include all system thread */, 0 /* current process only */);
 		if (tSnapshot)
@@ -205,7 +212,7 @@ bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned l
 {
 	bool tResult = false;
 
-    #if defined(LINUX) || defined(APPLE)
+    #if defined(LINUX)
 	    /*
 	     * HINT: For Linux we show relative cpu usage statistic which depend on the amount of available cpu cores.
 	     *       Hence, one task can have a maximum of 25 % cpu usage for a 4 core cpu. This behavior is how Windows deals with cpu usage values.
@@ -316,6 +323,18 @@ bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned l
         pLastUserTicsSystem = tSystemJiffiesUser;
 		pLastKernelTicsSystem = tSystemJiffiesKernel;
 	#endif
+    #if defined(APPLE)
+        pMemPhysical = 0;
+        pLoadUser = 0;
+        pLoadSystem = 0;
+        pLastUserTicsThread = 0;
+        pLastKernelTicsThread = 0;
+        pLastUserTicsSystem = 0;
+        pLastKernelTicsSystem = 0;
+        pPriority = 0;
+        pBasePriority = 0;
+		//TODO
+    #endif
 	#ifdef WIN32
 		/* Windows thread priorities: (based on http://msdn.microsoft.com/en-us/library/ms683235%28VS.85%29.aspx)
 			 priority			| explanation
