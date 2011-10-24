@@ -466,9 +466,12 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
             /*
              * receive data
              */
-            #if defined(LINUX) || defined(APPLE)
+            #if defined(LINUX)
 				tReceivedBytes = recvfrom(mSocketHandle, pBuffer, (size_t)pBufferSize, MSG_NOSIGNAL, &tAddressDescriptor.sa, &tAddressDescriptorSize);
 			#endif
+            #if defined(APPLE)
+                tReceivedBytes = recvfrom(mSocketHandle, pBuffer, (size_t)pBufferSize, 0, &tAddressDescriptor.sa, &tAddressDescriptorSize);
+            #endif
 			#ifdef WIN32
 				tReceivedBytes = recvfrom(mSocketHandle, (char*)pBuffer, pBufferSize, 0, &tAddressDescriptor.sa, &tAddressDescriptorSize);
 			#endif
@@ -513,25 +516,23 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
             /*
              * receive data
              */
-            #if defined(LINUX) || defined(APPLE)
+            #if defined(LINUX)
                 tReceivedBytes = recv(mTcpClientSockeHandle, pBuffer, (size_t)pBufferSize, MSG_NOSIGNAL);
                 if (tReceivedBytes <= 0)
-                {
                     close(mTcpClientSockeHandle);
-                    LOG(LOG_VERBOSE, "Client socket %d was closed", mTcpClientSockeHandle);
-                    mIsConnected = false;
-                }
-
+            #endif
+            #if defined(APPLE)
+                tReceivedBytes = recv(mTcpClientSockeHandle, pBuffer, (size_t)pBufferSize, 0);
+                if (tReceivedBytes <= 0)
+                    close(mTcpClientSockeHandle);
             #endif
             #ifdef WIN32
                 tReceivedBytes = recv(mTcpClientSockeHandle, (char*)pBuffer, pBufferSize, 0);
                 if (tReceivedBytes <= 0)
-                {
                     closesocket(mTcpClientSockeHandle);
-                    LOG(LOG_VERBOSE, "Client socket %d was closed", mTcpClientSockeHandle);
-                    mIsConnected = false;
-                }
             #endif
+            LOG(LOG_VERBOSE, "Client socket %d was closed", mTcpClientSockeHandle);
+            mIsConnected = false;
             pSourceHost = mConnectedHost;
             pSourcePort = mConnectedPort;
 			break;
