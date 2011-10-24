@@ -33,28 +33,9 @@ SET (TARGET_DIRECTORY
 	
 # compile flags
 SET (FLAGS
-	-W
-	-Wall
-	-Wno-switch
-	-Wno-unused
-	-Wno-long-long
-	-Wno-deprecated-declarations
-	-O2
+
 )
 
-# "-D" options for compilation in win32 environment
-SET (DEFINITIONS_WINDOWS
-	-D__STDC_CONSTANT_MACROS
-	-DWIN32
-	-D_REENTRANT
-)
-
-# "-D" options for compilation in linux environment
-SET (DEFINITIONS_LINUX
-	-D__STDC_CONSTANT_MACROS
-	-DLINUX
-	-D_REENTRANT
-)
 
 # SOURCES
 SET (SOURCES

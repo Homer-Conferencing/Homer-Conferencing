@@ -48,44 +48,24 @@ SET (TARGET_DIRECTORY
 	
 # compile flags
 SET (FLAGS
-	-W
-	-Wall
-	-Wno-uninitialized
-	-Wno-switch
-	-Wno-unused
-	-Wno-long-long
-	-Wno-deprecated-declarations
+	${FLAGS}
 	-static
-	-O2
 )
 
-# "-D" options for compilation in win32 environment
-SET (DEFINITIONS_WINDOWS
-	-D__STDC_CONSTANT_MACROS
-	-DWINVER=0x0501
-	-DWIN32
-	-D_REENTRANT
+SET (SOURCES
+	${SOURCES}
+	../src/AudioOutSdl
+	../src/WaveOut
 )
-
-# "-D" options for compilation in linux environment
-SET (DEFINITIONS_LINUX
-	-D__STDC_CONSTANT_MACROS
-	-DLINUX
-	-D_REENTRANT
-)
-
 # SOURCES
 if (WIN32)
 SET (SOURCES
-	../src/AudioOutSdl
-	../src/WaveOut
 	../src/WaveOutMMSys
 )
 endif (WIN32)
 if (UNIX AND NOT WIN32)
 SET (SOURCES
-	../src/AudioOutSdl
-	../src/WaveOut
+	${SOURCES}
 	../src/WaveOutAlsa
 )
 endif (UNIX AND NOT WIN32)
