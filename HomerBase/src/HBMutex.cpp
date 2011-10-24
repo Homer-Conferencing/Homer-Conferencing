@@ -131,7 +131,30 @@ bool Mutex::tryLock()
 bool Mutex::tryLock(int pMSecs)
 {
 	bool tResult = false;
-    #if defined(LINUX) || defined(APPLE)
+    #ifdef APPLE
+	    // OSX doesn't support pthread_mutex_timedlock() and clock_gettime(), fall back to simple pthread_mutex_trylock()
+        switch(pthread_mutex_trylock(mMutex))
+        {
+            case EDEADLK:
+                LOG(LOG_ERROR, "Lock already held by calling thread");
+                break;
+            case EBUSY: // lock can't be obtained because it is busy
+                break;
+            case EINVAL:
+                LOG(LOG_ERROR, "Lock was found in uninitialized state");
+                break;
+            case EFAULT:
+                LOG(LOG_ERROR, "Invalid lock pointer was given");
+                break;
+            case 0: // lock was free and is obtained now
+                tResult = true;
+                break;
+            default:
+                LOG(LOG_ERROR, "Error occurred while trying to get lock: code %d", tResult);
+                break;
+        }
+    #endif
+	#ifdef LINUX
 		struct timespec tTimeout;
 
 		if (clock_gettime(CLOCK_REALTIME, &tTimeout) == -1)
