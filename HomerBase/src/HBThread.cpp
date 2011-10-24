@@ -42,6 +42,12 @@
 #include <errno.h>
 #endif
 
+#ifdef APPLE
+// to get current time stamp
+#include <mach/clock.h>
+#include <mach/mach.h>
+#endif
+
 #ifdef WIN32
 #include <Windows.h>
 #include <Psapi.h>
