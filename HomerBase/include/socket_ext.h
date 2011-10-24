@@ -30,7 +30,7 @@
 #ifndef _BASE_SYS_SOCKET_EXT_
 #define _BASE_SYS_SOCKET_EXT_
 
-#ifdef LINUX
+#if defined(LINUX) || defined(APPLE)
 #include <sys/socket.h>
 #endif
 
