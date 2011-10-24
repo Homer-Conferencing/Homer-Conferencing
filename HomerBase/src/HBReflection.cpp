@@ -30,12 +30,6 @@
 #include <Logger.h>
 #include <HBReflection.h>
 
-#ifdef LINUX
-#endif
-
-#ifdef WIN32
-#endif
-
 namespace Homer { namespace Base {
 
 using namespace std;

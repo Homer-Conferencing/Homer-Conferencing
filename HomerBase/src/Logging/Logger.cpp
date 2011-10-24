@@ -40,7 +40,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#ifdef LINUX
+#if defined(LINUX) || defined(APPLE)
 #include <sys/time.h>
 #endif
 
