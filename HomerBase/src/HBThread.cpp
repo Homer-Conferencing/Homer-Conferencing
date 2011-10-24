@@ -607,8 +607,20 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
     #if defined(LINUX) || defined(APPLE)
 		struct timespec tTimeout;
 
-		if (clock_gettime(CLOCK_REALTIME, &tTimeout) == -1)
-			LOG(LOG_ERROR, "Failed to get time from realtime clock");
+        #if defined(LINUX)
+            if (clock_gettime(CLOCK_REALTIME, &tTimeout) == -1)
+                LOG(LOG_ERROR, "Failed to get time from clock");
+        #endif
+        #if defined(APPLE)
+            // apple specific implementation for clock_gettime()
+            clock_serv_t tCalenderClock;
+            mach_timespec_t tMachTimeSpec;
+            host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &tCalenderClock);
+            clock_get_time(tCalenderClock, &tMachTimeSpec);
+            mach_port_deallocate(mach_task_self(), tCalenderClock);
+            tTimeout.tv_sec = tMachTimeSpec.tv_sec;
+            tTimeout.tv_nsec = tMachTimeSpec.tv_nsec;
+        #endif
 
 		// add 5 secs to current time stamp
 		tTimeout.tv_sec += pTimeoutInMSecs / 1000;
