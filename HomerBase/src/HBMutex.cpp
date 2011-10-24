@@ -172,7 +172,7 @@ bool Mutex::tryLock(int pMSecs)
 				break;
 		}
 	#endif
-    #if defined(LINUX) || defined(APPLE)
+	#ifdef WIN32
 		switch(WaitForSingleObject(mMutex, (DWORD)pMSecs))
 		{
 			case WAIT_ABANDONED:
