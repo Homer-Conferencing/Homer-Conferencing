@@ -362,9 +362,12 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
 					LOG(LOG_ERROR, "Failed to set senders checksum coverage for UDPlite on socket %d", mSocketHandle);
 			#endif
 		case SOCKET_UDP:
-            #if defined(LINUX) || defined(APPLE)
+            #if defined(LINUX)
 				tSent = sendto(mSocketHandle, pBuffer, (size_t)pBufferSize, MSG_NOSIGNAL, &tAddressDescriptor.sa, tAddressDescriptorSize);
 			#endif
+            #if defined(APPLE)
+                tSent = sendto(mSocketHandle, pBuffer, (size_t)pBufferSize, 0, &tAddressDescriptor.sa, tAddressDescriptorSize);
+            #endif
 			#ifdef WIN32
 				tSent = sendto(mSocketHandle, (const char*)pBuffer, (int)pBufferSize, 0, &tAddressDescriptor.sa, (int)tAddressDescriptorSize);
 			#endif
@@ -404,9 +407,12 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
 			//#########################
 			//### send
 			//#########################
-            #if defined(LINUX) || defined(APPLE)
+            #if defined(LINUX)
 				tSent = send(mSocketHandle, pBuffer, (size_t)pBufferSize, MSG_NOSIGNAL);
 			#endif
+            #if defined(APPLE)
+                tSent = send(mSocketHandle, pBuffer, (size_t)pBufferSize, 0);
+            #endif
 			#ifdef WIN32
 				tSent = send(mSocketHandle, (const char*)pBuffer, (int)pBufferSize, 0);
 			#endif
