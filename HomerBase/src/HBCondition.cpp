@@ -72,30 +72,43 @@ bool Condition::Wait(Mutex *pMutex, int pTime)
     #if defined(LINUX) || defined(APPLE)
         struct timespec tTimeout;
 
-		if (clock_gettime(CLOCK_REALTIME, &tTimeout) == -1)
-			LOG(LOG_ERROR, "Failed to get time from clock");
+        #if defined(LINUX)
+            if (clock_gettime(CLOCK_REALTIME, &tTimeout) == -1)
+                LOG(LOG_ERROR, "Failed to get time from clock");
+        #endif
+        #if defined(APPLE)
+            // apple specific implementation for clock_gettime()
+            clock_serv_t tCalenderClock;
+            mach_timespec_t tMachTimeSpec;
+            host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &tCalenderClock);
+            clock_get_time(tCalenderClock, &tMachTimeSpec);
+            mach_port_deallocate(mach_task_self(), tCalenderClock);
+            tTimeout.tv_sec = tMachTimeSpec.tv_sec;
+            tTimeout.tv_nsec = tMachTimeSpec.tv_nsec;
+        #endif
 
-		// add msecs to current time stamp
-		tTimeout.tv_nsec += pTime * 1000 * 1000;
+        // add msecs to current time stamp
+        tTimeout.tv_nsec += pTime * 1000 * 1000;
 
-		if (pMutex)
-			if (pTime > 0)
-			    return !pthread_cond_timedwait(mCondition, pMutex->mMutex, &tTimeout);
-			else
-			    return !pthread_cond_wait(mCondition, pMutex->mMutex);
-		else
-		{
-	        pthread_mutex_t* tMutex = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t));
+        if (pMutex)
+            if (pTime > 0)
+                return !pthread_cond_timedwait(mCondition, pMutex->mMutex, &tTimeout);
+            else
+                return !pthread_cond_wait(mCondition, pMutex->mMutex);
+        else
+        {
+            pthread_mutex_t* tMutex = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t));
             pthread_mutex_init(tMutex, NULL);
-	        pthread_mutex_lock(tMutex);
-		    if (pTime > 0)
-		        return !pthread_cond_timedwait(mCondition, tMutex, &tTimeout);
-		    else
-		        return !pthread_cond_wait(mCondition, tMutex);
-		    pthread_mutex_destroy(tMutex);
-		    free(tMutex);
-		}
+            pthread_mutex_lock(tMutex);
+            if (pTime > 0)
+                return !pthread_cond_timedwait(mCondition, tMutex, &tTimeout);
+            else
+                return !pthread_cond_wait(mCondition, tMutex);
+            pthread_mutex_destroy(tMutex);
+            free(tMutex);
+        }
     #endif
+
     #ifdef WIN32
         return (WaitForSingleObject(mCondition, (pTime == 0) ? INFINITE : pTime) == WAIT_OBJECT_0);
     #endif
