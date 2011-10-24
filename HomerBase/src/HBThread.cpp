@@ -88,7 +88,7 @@ int Thread::GetTId()
 		// some magic from the depth of linux sources
 		return syscall(__NR_gettid);
 	#endif
-    #ifdef defined(APPLE)
+    #if defined(APPLE)
         //TODO
 		return 0;
     #endif
@@ -163,7 +163,7 @@ vector<int> Thread::GetTIds()
 		}
 		closedir(tDir);
 	#endif
-    #ifdef defined(APPLE)
+    #if defined(APPLE)
 		//TODO
     #endif
 	#ifdef WIN32
