@@ -628,13 +628,26 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
 		tTimeout.tv_sec += pTimeoutInMSecs / 1000;
 		tTimeout.tv_nsec += (pTimeoutInMSecs % 1000) * 1000000;
 
-		if (int tRes = pthread_timedjoin_np(mThreadHandle, &tThreadResult, &tTimeout))
-			LOG(LOG_INFO, "Waiting for end of thread failed because of \"%s\"", strerror(tRes));
-		else
-		{
-			LOG(LOG_VERBOSE, "Got end signal and thread results at %p", tThreadResult);
-			tResult = true;
-		}
+        #if defined(LINUX)
+            if (int tRes = pthread_timedjoin_np(mThreadHandle, &tThreadResult, &tTimeout))
+                LOG(LOG_INFO, "Waiting for end of thread failed because of \"%s\"", strerror(tRes));
+            else
+            {
+                LOG(LOG_VERBOSE, "Got end signal and thread results at %p", tThreadResult);
+                tResult = true;
+            }
+        #endif
+
+        #if defined(APPLE)
+            // OSX doesn't support pthread_timedjoin_np(), fall back to simple pthread_join()
+            if (int tRes = pthread_join(mThreadHandle, &tThreadResult))
+                LOG(LOG_INFO, "Waiting for end of thread failed because of \"%s\"", strerror(tRes));
+            else
+            {
+                LOG(LOG_VERBOSE, "Got end signal and thread results at %p", tThreadResult);
+                tResult = true;
+            }
+        #endif
 	#endif
 	#ifdef WIN32
 		switch(WaitForSingleObject(mThreadHandle, (DWORD)pTimeoutInMSecs))
