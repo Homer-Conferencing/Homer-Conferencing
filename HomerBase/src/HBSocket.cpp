@@ -71,7 +71,7 @@ void Socket::SetDefaults(enum TransportType pTransportType)
     mConnectedPort = 0;
     mUdpLiteChecksumCoverage = UDP_LITE_HEADER_SIZE;
 
-    #ifdef WIN32
+    #if defined(WIN32) || defined(APPLE)
 		if (pTransportType == SOCKET_UDP_LITE)
 		{
 			LOG(LOG_ERROR, "UDPlite is not supported by Windows API, a common UDP socket will be used instead");
@@ -610,11 +610,11 @@ bool Socket::IsUDPliteSupported()
 {
     if (sUDPliteSupported == -1)
     {
-        #ifdef WIN32
+        #if defined(WIN32) || defined(APPLE)
             sUDPliteSupported = false;
         #endif
 
-        #if defined(LINUX) || defined(APPLE)
+        #if defined(LINUX)
             int tHandle = 0;
 
             if ((tHandle = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDPLITE)) > 0)
@@ -642,11 +642,11 @@ bool Socket::IsDCCPSupported()
 {
     if (sDCCPSupported == -1)
     {
-        #ifdef WIN32
+        #if defined(WIN32) || defined(APPLE)
             sDCCPSupported = false;
         #endif
 
-        #if defined(LINUX) || defined(APPLE)
+        #if defined(LINUX)
             int tHandle = 0;
 
             if ((tHandle = socket(AF_INET6, SOCK_DGRAM, IPPROTO_DCCP)) > 0)
