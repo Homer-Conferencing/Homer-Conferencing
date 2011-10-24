@@ -60,10 +60,6 @@ using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define PAGE_SIZE 4096
-
-///////////////////////////////////////////////////////////////////////////////
-
 Thread::Thread()
 {
     mThreadHandle = 0;
@@ -321,7 +317,7 @@ bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned l
             fclose(tFile);
 			tResult = true;
 		}
-		pMemPhysical *= PAGE_SIZE; // this value is given in 4k pages
+		pMemPhysical *= 4096; // this value is given in 4k pages
 		pLoadUser = 100 * ((float)(tJiffiesUserMode - pLastUserTicsThread)) / (float)(tSystemJiffies - pLastUserTicsSystem - pLastKernelTicsSystem);
 		pLoadSystem = 100 * ((float)(tJiffiesKernelMode - pLastKernelTicsThread)) / (float)(tSystemJiffies - pLastUserTicsSystem - pLastKernelTicsSystem);
 		pLastUserTicsThread = tJiffiesUserMode;
