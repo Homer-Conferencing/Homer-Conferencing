@@ -2,7 +2,7 @@
 # CMakeLists for libHomerMultimedia
 # Author:  Thomas Volkert
 # Since:   2011-02-19
-# Version: $Id: CMakeLists.txt,v 1.27 2011/10/24 20:55:52 chaos Exp $
+# Version: $Id$
 ###############################################################################
 
 MESSAGE("#####################################")
