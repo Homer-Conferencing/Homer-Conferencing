@@ -24,7 +24,7 @@
  * Purpose: header includes for sofia-sip library
  * Author:  Thomas Volkert
  * Since:   2009-02-16
- * Version: $Id: Header_SofiaSip.h,v 1.5 2011/07/20 17:37:59 chaos Exp $
+ * Version: $Id$
  */
 
 #ifndef _CONFERENCE_HEADER_SOFIASIP_

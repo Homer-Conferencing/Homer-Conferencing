@@ -24,7 +24,7 @@
  * Purpose: session initiation protocol
  * Author:  Thomas Volkert
  * Since:   2009-04-14
- * Version: $Id: SIP.h,v 1.29 2011/10/11 12:20:36 chaos Exp $
+ * Version: $Id$
  */
 
 #ifndef _CONFERENCE_SIP_

@@ -24,7 +24,7 @@
  * Purpose: Implementation for session description protocol
  * Author:  Thomas Volkert
  * Since:   2009-04-14
- * Version: $Id: SDP.cpp,v 1.18 2011/08/03 20:10:29 chaos Exp $
+ * Version: $Id$
  */
 
 #include <string>

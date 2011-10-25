@@ -24,7 +24,7 @@
  * Purpose: Event management
  * Author:  Thomas Volkert
  * Since:   2008-12-09
- * Version: $Id: MeetingEvents.h,v 1.16 2011/10/17 13:48:18 chaos Exp $
+ * Version: $Id$
  */
 
 #ifndef _CONFERENCE_MEETING_EVENTS_

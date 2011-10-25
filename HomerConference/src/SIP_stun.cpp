@@ -24,7 +24,7 @@
  * Purpose: Implementation for session initiation protocol's stun support
  * Author:  Thomas Volkert
  * Since:   2009-06-20
- * Version: $Id: SIP_stun.cpp,v 1.12 2011/08/03 20:10:40 chaos Exp $
+ * Version: $Id$
  */
 
 #include <string>
