@@ -378,43 +378,43 @@ string MediaSource::FfmpegId2FfmpegFormat(enum CodecID pCodecId)
     return tResult;
 }
 
-enum AVMediaType MediaSource::FfmpegName2MediaType(std::string pName)
+enum MediaType MediaSource::FfmpegName2MediaType(std::string pName)
 {
-    enum AVMediaType tResult = AVMEDIA_TYPE_UNKNOWN;
+    enum MediaType tResult = MEDIA_UNKNOWN;
 
     /* video */
     // translate from standardized names to FFMPEG internal names
     if (pName == "h261")
-        tResult = AVMEDIA_TYPE_VIDEO;
+        tResult = MEDIA_VIDEO;
     if (pName == "h263")
-        tResult = AVMEDIA_TYPE_VIDEO;
+        tResult = MEDIA_VIDEO;
     if (pName == "h263+")
-        tResult = AVMEDIA_TYPE_VIDEO;
+        tResult = MEDIA_VIDEO;
     if (pName == "h264") //GPL-2
-        tResult = AVMEDIA_TYPE_VIDEO;
+        tResult = MEDIA_VIDEO;
     if (pName == "m4v")
-        tResult = AVMEDIA_TYPE_VIDEO;
+        tResult = MEDIA_VIDEO;
     if (pName == "mjpeg")
-        tResult = AVMEDIA_TYPE_VIDEO;
+        tResult = MEDIA_VIDEO;
 
     /* audio */
     // translate from standardized names to FFMPEG internal names
     if (pName == "ac3")
-        tResult = AVMEDIA_TYPE_AUDIO;
+        tResult = MEDIA_AUDIO;
     if (pName == "aac")
-        tResult = AVMEDIA_TYPE_AUDIO;
+        tResult = MEDIA_AUDIO;
     if (pName == "mp3")
-        tResult = AVMEDIA_TYPE_AUDIO;
+        tResult = MEDIA_AUDIO;
     if (pName == "gsm")
-        tResult = AVMEDIA_TYPE_AUDIO;
+        tResult = MEDIA_AUDIO;
     if (pName == "alaw")
-        tResult = AVMEDIA_TYPE_AUDIO;
+        tResult = MEDIA_AUDIO;
     if (pName == "mulaw")
-        tResult = AVMEDIA_TYPE_AUDIO;
+        tResult = MEDIA_AUDIO;
     if (pName == "pcms16le")
-        tResult = AVMEDIA_TYPE_AUDIO;
+        tResult = MEDIA_AUDIO;
     if (pName == "amr")
-        tResult = AVMEDIA_TYPE_AUDIO;
+        tResult = MEDIA_AUDIO;
 
     //LOG(LOG_VERBOSE, "Translated %s to %d", pName.c_str(), tResult);
 
