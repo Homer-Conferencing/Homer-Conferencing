@@ -1,0 +1,3 @@
+- rtp-parser: AMR + AAC
+- for max. packet size adjust: size differences between IPv4 + IPv6 -> see software settings
+- audio resampling for files (48 kHz => 44.1 kHz sampling) => wait for ffmpeg developers

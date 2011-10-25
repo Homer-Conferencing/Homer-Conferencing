@@ -1,0 +1,106 @@
+/*
+ * Name:    RTP.h
+ * Purpose: real-time transport protocol handling
+ * Author:  Thomas Volkert
+ * Since:   2009-01-20
+ * Version: $Id: RTP.h,v 1.21 2011/09/09 09:42:55 chaos Exp $
+ */
+
+#ifndef _MULTIMEDIA_RTP_
+#define _MULTIMEDIA_RTP_
+
+#include <Header_Ffmpeg.h>
+
+#include <sys/types.h>
+#include <string>
+
+using namespace Homer::Base;
+
+namespace Homer { namespace Multimedia {
+
+///////////////////////////////////////////////////////////////////////////////
+
+// the following de/activates debugging of RTP packets
+//#define RTP_DEBUG_PACKETS
+
+///////////////////////////////////////////////////////////////////////////////
+
+union RtpHeader{
+    struct{
+        unsigned short int SequenceNumber; /* sequence number */
+
+        unsigned int PayloadType:7;         /* payload type */
+        unsigned int Marked:1;              /* marker bit */
+        unsigned int CsrcCount:4;           /* CSRC count */
+        unsigned int Extension:1;           /* header extension flag */
+        unsigned int Padding:1;             /* padding flag */
+        unsigned int Version:2;             /* protocol version */
+
+        unsigned int Timestamp;             /* timestamp */
+
+        unsigned int Ssrc;                  /* synchronization source */
+        //HINT: we do not support CSRC because it is not necessary!
+        //unsigned int Csrc[1];               /* optional CSRC list */
+    } __attribute__((__packed__));
+    uint32_t Data[3];
+};
+
+// calculate the size of an RTP header: "size of structure"
+#define RTP_HEADER_SIZE                      sizeof(RtpHeader)
+
+// maximum packet size, including encoded data/TS and RTP header
+// HINT: values above 1k would lead to unacceptable picture quality in wireless LAN
+// HINT: 576 bytes should every host be able to process, 20 bytes for IP header
+// HINT: 1448 byte should be the maximum packet size (1500 - IP - UDP - UMTP)
+//       UMTP = "UDP Multicast Tunneling Protocol"
+// HINT: 1472 bytes are the value from the ffmpeg library
+// HINT: this value is only used within h261 packetizer, in remaining cases the value
+//       from the MediaSourceMuxer is used
+//#define RTP_MAX_PACKET_SIZE                     1472 //576
+//#define RTP_MAX_PAYLOAD_SIZE                    RTP_MAX_PACKET_SIZE - RTP_HEADER_SIZE
+
+///////////////////////////////////////////////////////////////////////////////
+
+class RTP
+{
+public:
+    RTP();
+
+    virtual ~RTP( );
+
+    static int FfmpegNameToPayloadId(std::string pName);
+    static std::string PayloadIdToFfmpegName(int pId);
+    static bool IsPayloadSupported(enum CodecID pId);
+    static int GetPayloadHeaderSizeMax(enum CodecID pCodec);// calculate the maximum header size of the RTP payload (not the RTP header!)
+    static int GetHeaderSizeMax(enum CodecID pCodec);
+    static void SetH261PayloadSizeMax(unsigned int pMaxSize);
+    bool RtpCreate(char *&pData, unsigned int &pDataSize);
+    bool RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment, bool &pIsSenderReport, enum CodecID pCodecId, bool pReadOnly);
+    bool OpenRtpEncoder(std::string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream);
+    bool CloseRtpEncoder();
+
+private:
+    bool RtpCreateH261(char *&pData, unsigned int &pDataSize);
+
+    AVFormatContext     *mRtpFormatContext;
+    URLContext          *mURLContext;
+    unsigned short int  mLastSequenceNumber;
+    unsigned int        mLastTimestamp;
+    int                 mPayloadId;
+    bool                mFrameFragmentation;
+    bool                mEncoderOpened;
+    bool                mUseInternalEncoder;
+    std::string         mTargetHost;
+    unsigned int        mTargetPort;
+    /* H261 RTP packetizing */
+    unsigned int        mSsrc;
+    static unsigned int mH261PayloadSizeMax;
+    /* MP3 RTP hack */
+    unsigned int        mMp3Hack_EntireBufferSize;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+}} // namespaces
+
+#endif
