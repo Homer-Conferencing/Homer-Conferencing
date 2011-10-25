@@ -60,4 +60,17 @@ extern "C" {
 #ifndef CodecType
 #define CodecType CodecID
 #endif
+
+#ifndef AVMEDIA_TYPE_VIDEO
+#define AVMEDIA_TYPE_VIDEO CODEC_TYPE_VIDEO
+#endif
+
+#ifndef AVMEDIA_TYPE_AUDIO
+#define AVMEDIA_TYPE_AUDIO CODEC_TYPE_AUDIO
+#endif
+
+#ifndef AVMEDIA_TYPE_UNKNOWN
+#define AVMEDIA_TYPE_UNKNOWN CODEC_TYPE_UNKNOWN
+#endif
+
 #endif
