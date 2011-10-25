@@ -1,0 +1,77 @@
+######################################################################################
+################################### RFC2327 (SDP) ####################################
+######################################################################################
+
+- optional items are marked with a `*'
+- "v=" marks beginning of a new SDP description and ends the last one
+- The `attribute' mechanism ("a=" described below) is the primary means for
+  extending SDP and tailoring it to particular applications or media.
+- The sequence CRLF (0x0d0a) is used to end a record
+
+Session description
+        v=  (protocol version)
+        o=  (owner/creator and session identifier).
+        s=  (session name)
+        i=* (session information)
+
+        u=* (URI of description)
+        e=* (email address)
+        p=* (phone number)
+        c=* (connection information - not required if included in all media)
+        b=* (bandwidth information)
+        One or more time descriptions (see below)
+        z=* (time zone adjustments)
+        k=* (encryption key)
+        a=* (zero or more session attribute lines)
+        Zero or more media descriptions (see below)
+
+Time description
+        t=  (time the session is active)
+        r=* (zero or more repeat times)
+
+Media description
+        m=  (media name and transport address)
+            m=<media> <port>/<number of ports> <transport> <fmt list>
+        i=* (media title)
+        c=* (connection information - optional if included at session-level)
+        b=* (bandwidth information)
+        k=* (encryption key)
+        a=* (zero or more media attribute lines)
+
+******************************************************************************
+
+     Ekiga 3.0:
+            o=- 1256917459 1 IN IP4 141.24.203.111
+            s=Opal SIP Session
+            c=IN IP4 141.24.203.111
+            t=0 0
+            m=audio 5076 RTP/AVP 116 99 0 8 3 115 105 104 103 102 9 101
+            a=rtpmap:116 Speex/16000/1
+            a=fmtp:116 sr=16000,mode=any
+            a=rtpmap:99 iLBC/8000/1
+            a=fmtp:99 mode=20
+            a=rtpmap:0 PCMU/8000/1
+            a=rtpmap:8 PCMA/8000/1
+            a=rtpmap:3 gsm/8000/1
+            a=rtpmap:115 Speex/8000/1
+            a=fmtp:115 sr=8000,mode=any
+            a=rtpmap:105 G726-16/8000/1
+            a=rtpmap:104 G726-24/8000/1
+            a=rtpmap:103 G726-32/8000/1
+            a=rtpmap:102 G726-40/8000/1
+            a=rtpmap:9 G722/8000/1
+            a=rtpmap:101 telephone-event/8000
+            a=fmtp:101 0-16,32,36
+            m=video 5078 RTP/AVP 120 31 34 123 121
+            b=AS:4096
+            b=TIAS:4096000
+            a=rtpmap:120 h264/90000
+            a=fmtp:120 packetization-mode=1;profile-level-id=42C01E
+            a=rtpmap:31 h261/90000
+            a=fmtp:31 CIF=1;QCIF=1
+            a=rtpmap:34 h263/90000
+            a=fmtp:34 F=1;CIF=1;CIF4=1;QCIF=1
+            a=rtpmap:123 h263-1998/90000
+            a=fmtp:123 D=1;F=1;I=1;J=1;CIF=1;CIF4=1;QCIF=1;CUSTOM=320,240,1;CUSTOM=640,480,1
+            a=rtpmap:121 MP4V-ES/90000
+            a=fmtp:121 profile-level-id=5
