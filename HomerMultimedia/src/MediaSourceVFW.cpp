@@ -584,7 +584,7 @@ int MediaSourceVFW::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
         if (!pDropChunk)
         {
         	if ((tFrameFinished) && (tBytesDecoded > 0))
-                sws_scale(mScalerContext, tSourceFrame->data, tSourceFrame->linesize, 0, mCodecContext->height, tRGBFrame->data, tRGBFrame->linesize);
+        	    HM_sws_scale(mScalerContext, tSourceFrame->data, tSourceFrame->linesize, 0, mCodecContext->height, tRGBFrame->data, tRGBFrame->linesize);
             else
             {
                 // unlock grabbing
