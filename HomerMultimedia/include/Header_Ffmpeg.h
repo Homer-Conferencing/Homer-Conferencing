@@ -67,4 +67,13 @@ extern "C" {
 #define AVMEDIA_TYPE_UNKNOWN CODEC_TYPE_UNKNOWN
 #endif
 
+inline int HM_sws_scale(struct SwsContext *context, const uint8_t* const srcSlice[], const int srcStride[], int srcSliceY, int srcSliceH, uint8_t* const dst[], const int dstStride[])
+{
+    #if LIBSWSCALE_VERSION_MAJOR < 1
+        sws_scale(context, (const uint8_t**)srcSlice, srcStride, srcSliceY, srcSliceH, dst, dstStride);
+    #else
+        sws_scale(context, srcSlice, srcStride, srcSliceY, srcSliceH, dst, dstStride);
+    #endif
+}
+
 #endif
