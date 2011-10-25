@@ -35,7 +35,7 @@ SET (INCLUDE_DIRS
 
 # library directories
 SET (LIB_DIRS
-	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerLibs/linux64
+	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerLibs/win32
 	${CMAKE_CURRENT_SOURCE_DIR}/../../lib
 	/usr/local/lib
 	/usr/lib
@@ -60,6 +60,7 @@ SET (SOURCES
 # SOURCES
 if (WIN32)
 SET (SOURCES
+    ${SOURCES}
 	../src/WaveOutMMSys
 )
 endif (WIN32)
