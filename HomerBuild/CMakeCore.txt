@@ -49,7 +49,7 @@ SET (DEFINITIONS_LINUX
 # "-D" options for compilation in linux environment
 SET (DEFINITIONS_APPLE
 	-D__STDC_CONSTANT_MACROS
-	-DLINUX
+	-DAPPLE
 	-D_REENTRANT
 )
 
