@@ -24,7 +24,7 @@
  * Purpose: Implementation for event management
  * Author:  Thomas Volkert
  * Since:   2008-12-09
- * Version: $Id: MeetingEvents.cpp,v 1.5 2011/09/02 21:41:18 chaos Exp $
+ * Version: $Id$
  */
 
 #include <MeetingEvents.h>

@@ -24,7 +24,7 @@
  * Purpose: session description protocol
  * Author:  Thomas Volkert
  * Since:   2009-04-14
- * Version: $Id: SDP.h,v 1.11 2011/02/19 10:55:50 chaos Exp $
+ * Version: $Id$
  */
 
 #ifndef _CONFERENCE_SDP_

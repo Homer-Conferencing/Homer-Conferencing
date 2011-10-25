@@ -24,7 +24,7 @@
  * Purpose: session initiation protocol's stun support
  * Author:  Thomas Volkert
  * Since:   2009-06-20
- * Version: $Id: SIP_stun.h,v 1.6 2011/02/19 10:55:50 chaos Exp $
+ * Version: $Id$
  */
 
 #ifndef _CONFERENCE_SIP_STUN_

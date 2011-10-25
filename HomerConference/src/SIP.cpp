@@ -25,7 +25,7 @@
  *          implemented as base class (some inits are done within MEETING class)
  * Author:  Thomas Volkert
  * Since:   2009-04-14
- * Version: $Id: SIP.cpp,v 1.81 2011/10/23 21:07:25 chaos Exp $
+ * Version: $Id$
  */
 
 #include <string>

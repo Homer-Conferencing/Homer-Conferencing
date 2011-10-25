@@ -24,7 +24,7 @@
  * Purpose: presence information data format (RFC 3863)
  * Author:  Thomas Volkert
  * Since:   2010-11-04
- * Version: $Id: PIDF.h,v 1.3 2011/02/19 10:55:50 chaos Exp $
+ * Version: $Id$
  */
 
 #ifndef _CONFERENCE_PIDF_

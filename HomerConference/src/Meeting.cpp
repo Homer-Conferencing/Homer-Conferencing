@@ -24,7 +24,7 @@
  * Purpose: Implementation of conference functions
  * Author:  Thomas Volkert
  * Since:   2008-11-25
- * Version: $Id: Meeting.cpp,v 1.55 2011/10/20 08:39:56 chaos Exp $
+ * Version: $Id$
  */
 
 #include <Meeting.h>

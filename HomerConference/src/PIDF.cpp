@@ -24,7 +24,7 @@
  * Purpose: Implementation for presence information data format (RFC 3863)
  * Author:  Thomas Volkert
  * Since:   2010-11-04
- * Version: $Id: PIDF.cpp,v 1.6 2011/08/03 20:10:20 chaos Exp $
+ * Version: $Id$
  */
 
 #include <Header_SofiaSip.h>
