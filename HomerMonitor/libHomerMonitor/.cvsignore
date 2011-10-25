@@ -1,6 +1,0 @@
-*.so
-*.dep
-*.dll
-CMakeFiles
-*.cmake
-Makefile
