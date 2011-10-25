@@ -1421,7 +1421,7 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
         // convert pixel format
         //HINT: we should execute this step in every case (incl. when pixel format is equal), otherwise data structures are wrong
         #if LIBSWSCALE_VERSION_MAJOR < 1
-            sws_scale(mRecorderScalerContext, (const uint8_t*)pSourceFrame->data, pSourceFrame->linesize, 0, mSourceResY, tFrame->data, tFrame->linesize);
+            sws_scale(mRecorderScalerContext, (const uint8_t**)pSourceFrame->data, pSourceFrame->linesize, 0, mSourceResY, tFrame->data, tFrame->linesize);
         #else
             sws_scale(mRecorderScalerContext, pSourceFrame->data, pSourceFrame->linesize, 0, mSourceResY, tFrame->data, tFrame->linesize);
         #endif
