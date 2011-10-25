@@ -41,13 +41,15 @@ SET (LIB_DIRS
 SET (TARGET_DIRECTORY
 	../../lib
 )
-	
-# compile flags
+
+if (NOT APPLE)
+# compile flags                                                                                                                                                                                                                                                                   
 SET (FLAGS
 	${FLAGS}
 	-Wno-uninitialized
 	-static
 )
+endif (NOT APPLE)
 
 # SOURCES
 SET (SOURCES
