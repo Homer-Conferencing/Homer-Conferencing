@@ -61,6 +61,7 @@ SET (SOURCES
 	../src/MediaSourceNet
 	../src/RTP
 )
+
 IF (WIN32)
 SET (SOURCES
 	${SOURCES}
@@ -68,14 +69,13 @@ SET (SOURCES
 	../src/MediaSourceVFW
 )
 ENDIF (WIN32)
+
 IF (APPLE)
 SET (SOURCES
 	${SOURCES}
-	../src/MediaSourceAlsa
-	../src/MediaSourceOss
-	../src/MediaSourceV4L2
 )
 ENDIF (APPLE)
+
 IF (UNIX AND NOT WIN32 AND NOT APPLE)
 SET (SOURCES
 	${SOURCES}
