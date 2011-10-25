@@ -55,6 +55,11 @@ set(LIBS_LINUX
 	HomerBase
 )
 
+# USED LIBRARIES for apple environment
+set(LIBS_APPLE
+	HomerBase
+)
+
 SET (TARGET_NAME
 	HomerMonitor
 )
