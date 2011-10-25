@@ -682,7 +682,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
                         // convert frame from YUV to RGB format
                         if ((tFrameFinished != 0) && (tBytesDecoded >= 0))
                         {
-                            sws_scale(mScalerContext, tSourceFrame->data, tSourceFrame->linesize, 0, mCodecContext->height, tRGBFrame->data, tRGBFrame->linesize);
+                            HM_sws_scale(mScalerContext, tSourceFrame->data, tSourceFrame->linesize, 0, mCodecContext->height, tRGBFrame->data, tRGBFrame->linesize);
                         }else
                         {
                             // Free the RGB frame
