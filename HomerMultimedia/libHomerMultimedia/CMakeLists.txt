@@ -101,6 +101,25 @@ SET (LIBS_WINDOWS
 	Winmm
 )
 
+# USED LIBRARIES for apple environment
+SET (LIBS_APPLE
+	HomerBase
+	HomerMonitor
+	avdevice
+	avformat
+	avcodec
+#	avfilter
+	swscale
+	avutil
+	mp3lame
+#	opencore-amrnb
+#	opencore-amrwb
+#	jack
+#	x264
+	bz2
+	z
+)
+
 # USED LIBRARIES for linux environment
 SET (LIBS_LINUX
 	HomerBase
