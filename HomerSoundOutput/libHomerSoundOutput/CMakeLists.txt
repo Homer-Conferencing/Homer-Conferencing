@@ -87,6 +87,13 @@ SET (LIBS_LINUX
 	asound
 )
 
+# USED LIBRARIES for apple environment
+SET (LIBS_APPLE
+	HomerBase
+	HomerMonitor
+	asound
+)
+
 # USED STATIC libraries for linux environment ==> ordering of linking is IMPORTANT!!
 SET (LIBS_LINUX_STATIC
 	SDL_mixer
