@@ -142,7 +142,7 @@ public:
     static enum CodecID FfmpegName2FfmpegId(std::string pName);
     static std::string FfmpegName2FfmpegFormat(std::string pName);
     static std::string FfmpegId2FfmpegFormat(enum CodecID pCodecId);
-    static enum AVMediaType FfmpegName2MediaType(std::string pName);
+    static enum MediaType FfmpegName2MediaType(std::string pName);
 
     /* audio */
     static int AudioQuality2BitRate(int pQuality);
