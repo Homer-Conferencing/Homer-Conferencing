@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    Meeting.cpp
  * Purpose: Implementation of conference functions
  * Author:  Thomas Volkert
  * Since:   2008-11-25
- * Version: $Id$
  */
 
 #include <Meeting.h>

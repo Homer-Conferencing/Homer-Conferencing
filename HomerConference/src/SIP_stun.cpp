@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    SIP_stun.cpp
  * Purpose: Implementation for session initiation protocol's stun support
  * Author:  Thomas Volkert
  * Since:   2009-06-20
- * Version: $Id$
  */
 
 #include <string>

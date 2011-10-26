@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    PIDF.h
  * Purpose: presence information data format (RFC 3863)
  * Author:  Thomas Volkert
  * Since:   2010-11-04
- * Version: $Id$
  */
 
 #ifndef _CONFERENCE_PIDF_

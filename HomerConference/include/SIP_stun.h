@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    SIP_stun.h
  * Purpose: session initiation protocol's stun support
  * Author:  Thomas Volkert
  * Since:   2009-06-20
- * Version: $Id$
  */
 
 #ifndef _CONFERENCE_SIP_STUN_

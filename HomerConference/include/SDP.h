@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    SDP.h
  * Purpose: session description protocol
  * Author:  Thomas Volkert
  * Since:   2009-04-14
- * Version: $Id$
  */
 
 #ifndef _CONFERENCE_SDP_

@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    MeetingEvents.cpp
  * Purpose: Implementation for event management
  * Author:  Thomas Volkert
  * Since:   2008-12-09
- * Version: $Id$
  */
 
 #include <MeetingEvents.h>

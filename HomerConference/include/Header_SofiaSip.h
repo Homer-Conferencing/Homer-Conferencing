@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    Header_SofiaSip.h
  * Purpose: header includes for sofia-sip library
  * Author:  Thomas Volkert
  * Since:   2009-02-16
- * Version: $Id$
  */
 
 #ifndef _CONFERENCE_HEADER_SOFIASIP_
