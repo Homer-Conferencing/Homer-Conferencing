@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    MediaSourceAlsa.h
  * Purpose: Alsa Audio Capture
  * Author:  Stefan Kögel, Thomas Volkert
  * Since:   2009-05-18
- * Version: $Id$
  */
 
 #ifdef LINUX

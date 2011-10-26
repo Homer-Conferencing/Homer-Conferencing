@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    RTP.cpp
  * Purpose: Implementation for real-time transport protocol
  * Author:  Thomas Volkert
  * Since:   2009-10-28
- * Version: $Id$
  */
 
 /*

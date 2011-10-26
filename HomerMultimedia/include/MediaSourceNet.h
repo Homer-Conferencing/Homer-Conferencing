@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    MediaSourceNet.h
  * Purpose: ffmpeg based network video source
  * Author:  Thomas Volkert
  * Since:   2008-12-16
- * Version: $Id$
  */
 
 #ifndef _MULTIMEDIA_MEDIA_SOURCE_NET_

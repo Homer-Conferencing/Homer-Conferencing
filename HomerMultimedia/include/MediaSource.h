@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    MediaSource.h
  * Purpose: abstract media source
  * Author:  Thomas Volkert
  * Since:   2008-12-02
- * Version: $Id$
  */
 
 #ifndef _MULTIMEDIA_MEDIA_SOURCE_

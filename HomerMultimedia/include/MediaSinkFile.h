@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    MediaSinkFile.h
  * Purpose: file based media sink which supports RTP
  * Author:  Thomas Volkert
  * Since:   2010-04-17
- * Version: $Id$
  */
 
 #ifndef _MULTIMEDIA_MEDIA_SINK_FILE_

@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    MediaSourceNet.cpp
  * Purpose: Implementation of a ffmpeg based network media source
  * Author:  Thomas Volkert
  * Since:   2008-12-16
- * Version: $Id$
  */
 
 // HINT: for audio streams the RTP support remains unused!

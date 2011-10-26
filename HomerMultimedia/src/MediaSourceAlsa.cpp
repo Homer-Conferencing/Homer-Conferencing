@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    MediaSourceAlsa.cpp
  * Purpose: Alsa Capture Implementation
  * Author:  Stefan Kögel, Thomas Volkert
  * Since:   2009-05-18
- * Version: $Id$
  */
 
 //HINT: documentation: http://www.alsa-project.org/alsa-doc/alsa-lib/group___p_c_m.html

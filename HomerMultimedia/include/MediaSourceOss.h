@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    MediaSourceOss.h
  * Purpose: ffmpeg based local oss audio source
  * Author:  Thomas Volkert
  * Since:   2009-02-11
- * Version: $Id$
  */
 
 #ifdef LINUX

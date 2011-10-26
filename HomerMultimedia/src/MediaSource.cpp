@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    MediaSource.cpp
  * Purpose: Implementation of an abstract media source
  * Author:  Thomas Volkert
  * Since:   2008-12-02
- * Version: $Id$
  */
 
 /*
