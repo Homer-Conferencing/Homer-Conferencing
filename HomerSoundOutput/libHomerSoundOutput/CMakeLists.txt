@@ -60,12 +60,12 @@ SET (SOURCES
 	../src/WaveOutMMSys
 )
 endif (WIN32)
-if (UNIX AND NOT WIN32)
+if (UNIX AND NOT WIN32 AND NOT APPLE)
 SET (SOURCES
 	${SOURCES}
 	../src/WaveOutAlsa
 )
-endif (UNIX AND NOT WIN32)
+endif (UNIX AND NOT WIN32 AND NOT APPLE)
 
 # USED LIBRARIES for win32 environment
 SET (LIBS_WINDOWS
@@ -81,7 +81,6 @@ SET (LIBS_WINDOWS
 SET (LIBS_APPLE
 	HomerBase
 	HomerMonitor
-	asound
 	SDL_mixer
 	smpeg
 	SDL_sound

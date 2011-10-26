@@ -32,10 +32,9 @@
 #include <WaveOutAlsa.h>
 #include <Logger.h>
 
-namespace Homer { namespace SoundOutput {
-
 using namespace std;
-using namespace Homer::Monitor;
+
+namespace Homer { namespace SoundOutput {
 
 WaveOutAlsa::WaveOutAlsa(string pDesiredDevice):
     WaveOut("ALSA: local playback")
