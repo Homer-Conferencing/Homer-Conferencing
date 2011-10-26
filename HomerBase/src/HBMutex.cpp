@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    Mutex.cpp
  * Purpose: Implementation of os independent mutex handling
  * Author:  Thomas Volkert
  * Since:   2010-09-20
- * Version: $Id$
  */
 
 #include <Logger.h>

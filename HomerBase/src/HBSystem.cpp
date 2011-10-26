@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    System.cpp
  * Purpose: Implementation of several basic system functions
  * Author:  Thomas Volkert
  * Since:   2011-02-25
- * Version: $Id$
  */
 
 #include <Logger.h>

@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    Socket.cpp
  * Purpose: Implementation of wrapper for os independent socket handling
  * Author:  Thomas Volkert
  * Since:   2010-09-22
- * Version: $Id$
  */
 
 #include <Logger.h>

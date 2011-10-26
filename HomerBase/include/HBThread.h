@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    Thread.h
  * Purpose: wrapper for os independent thread handling
  * Author:  Thomas Volkert
  * Since:   2010-09-28
- * Version: $Id$
  */
 
 #ifndef _BASE_THREAD_

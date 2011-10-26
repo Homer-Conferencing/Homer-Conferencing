@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    LogSink.h
  * Purpose: header file for abstract log sink
  * Author:  Thomas Volkert
  * Since:   2011-07-27
- * Version: $Id$
  */
 
 #ifndef _LOGGER_LOG_SINK_

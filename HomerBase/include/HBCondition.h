@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    Condition.h
  * Purpose: wrapper for os independent conditional waiting
  * Author:  Thomas Volkert
  * Since:   2011-02-05
- * Version: $Id$
  */
 
 #ifndef _BASE_CONDITION_

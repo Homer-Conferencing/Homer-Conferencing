@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    System.h
  * Purpose: header for system specific and unspecific basic functions
  * Author:  Thomas Volkert
  * Since:   2011-02-25
- * Version: $Id$
  */
 
 #ifndef _BASE_SYSTEM_

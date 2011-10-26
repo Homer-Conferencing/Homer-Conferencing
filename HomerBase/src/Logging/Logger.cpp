@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    Logger.cpp
  * Purpose: Implementation of the core logger
  * Author:  Thomas Volkert
  * Since:   2009-05-19
- * Version: $Id$
  */
 
 /*

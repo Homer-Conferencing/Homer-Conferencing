@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    Random.h
  * Purpose: wrapper for os independent random number generator
  * Author:  Thomas Volkert
  * Since:   2010-09-28
- * Version: $Id$
  */
 
 #ifndef _BASE_RANDOM_

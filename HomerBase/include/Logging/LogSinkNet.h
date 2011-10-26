@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    LogSinkNet.h
  * Purpose: header file for log sink for net outputs
  * Author:  Thomas Volkert
  * Since:   2011-07-29
- * Version: $Id$
  */
 
 #ifndef _LOGGER_LOG_SINK_NET_

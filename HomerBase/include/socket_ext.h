@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    socket_ext.h
  * Purpose: Extension for sys/socket.h
  * Author:  Thomas Volkert
  * Since:   2011-10-20
- * Version: $Id: HBSocket.cpp 80 2011-10-19 12:13:20Z silvo $
  */
 
 #ifndef _BASE_SYS_SOCKET_EXT_

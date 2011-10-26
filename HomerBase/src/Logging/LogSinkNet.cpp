@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    LogSinkNet.cpp
  * Purpose: Implementation of log sink for file output
  * Author:  Thomas Volkert
  * Since:   2011-07-27
- * Version: $Id$
  */
 
 #include <LogSinkNet.h>

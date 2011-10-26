@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    Random.cpp
  * Purpose: Implementation of wrapper for os independent random number generator
  * Author:  Thomas Volkert
  * Since:   2010-09-28
- * Version: $Id$
  */
 
 #include <HBRandom.h>

@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    Socket.h
  * Purpose: wrapper for OS independent socket handling
  * Author:  Thomas Volkert
  * Since:   2010-09-22
- * Version: $Id$
  */
 
 #ifndef _BASE_SOCKET_
