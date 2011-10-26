@@ -21,6 +21,8 @@ SET (INCLUDE_DIRS
 	../../HomerMonitor/include
 	/usr/include/sofia-sip
 	/usr/include/sofia-sip-1.12
+	/usr/local/include/sofia-sip
+	/usr/local/include/sofia-sip-1.12
 	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/bnf
 	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/features
 	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/http
@@ -54,7 +56,7 @@ SET (LIB_DIRS
 SET (TARGET_DIRECTORY
 	../../lib
 )
-	
+
 if (NOT APPLE)
 # compile flags                                                                                                                                                                                                                                                                   
 SET (FLAGS
@@ -80,6 +82,15 @@ SET (LIBS_WINDOWS
 	HomerMonitor
 	ws2_32
 	libsofia_sip_ua
+)
+
+# USED LIBRARIES for apple environment
+SET (LIBS_APPLE
+	HomerBase
+	HomerMonitor
+	sofia-sip-ua
+	ssl
+	crypto
 )
 
 # USED LIBRARIES for linux environment
