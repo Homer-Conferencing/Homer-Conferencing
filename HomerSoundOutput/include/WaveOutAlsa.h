@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    WaveOutAlsa.h
  * Purpose: wave out based on ALSA
  * Author:  Thomas Volkert
  * Since:   2010-12-11
- * Version: $Id$
  */
 
 #ifdef LINUX

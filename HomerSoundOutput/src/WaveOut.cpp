@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    WaveOut.cpp
  * Purpose: Wave output base class
  * Author:  Thomas Volkert
  * Since:   2010-12-11
- * Version: $Id$
  */
 
 #include <WaveOut.h>

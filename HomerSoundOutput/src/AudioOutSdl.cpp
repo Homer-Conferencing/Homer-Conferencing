@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    AudioOutSdl.cpp
  * Purpose: Implementation of an universal SDL based audio output
  * Author:  Stefan Koegel, Thomas Volkert
  * Since:   2009-03-18
- * Version: $Id$
  */
 
 #include <AudioOutSdl.h>
@@ -236,6 +234,8 @@ int AudioOutSdl::AllocateChannel()
         if (tChannelDesc->Assigned == false)
         {
             tChannelDesc->Assigned = true;
+            tChannelDesc->Chunks.clear();
+            tChannelDesc->IsPlaying = false;
             tResult = i;
         }
 
@@ -304,6 +304,7 @@ void AudioOutSdl::ClearChunkList(int pChannel)
         // free memory of chunk descriptor
         free((*tIt));
     }
+    tChannelDesc->Chunks.clear();
 }
 
 bool AudioOutSdl::Play(int pChannel)
@@ -563,16 +564,19 @@ void AudioOutSdl::PlayerCallBack(int pChannel)
         {
             // get new chunk for playing
             tChunk = tChannelDesc->Chunks.front();
-            tChannelDesc->Chunks.pop_front();
-            // play the new chunk (0 loops)
-            int tGotChannel = Mix_PlayChannel(pChannel, tChunk, 0);
-
-            if (tGotChannel == -1)
+            if (tChunk != NULL)
             {
-            	LOGEX(AudioOutSdl, LOG_ERROR, "Callback failed, unable to play chunk because of: %s", Mix_GetError());
-                AUDIOOUTSDL.ClearChunkList(pChannel);
-            }else
-                tChannelDesc->IsPlaying = true;
+                tChannelDesc->Chunks.pop_front();
+                // play the new chunk (0 loops)
+                int tGotChannel = Mix_PlayChannel(pChannel, tChunk, 0);
+
+                if (tGotChannel == -1)
+                {
+                    LOGEX(AudioOutSdl, LOG_ERROR, "Callback failed, unable to play chunk because of: %s", Mix_GetError());
+                    AUDIOOUTSDL.ClearChunkList(pChannel);
+                }else
+                    tChannelDesc->IsPlaying = true;
+            }
         }
 
         // free memory

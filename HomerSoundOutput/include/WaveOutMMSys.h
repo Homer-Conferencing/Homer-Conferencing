@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    WaveOutMMSys.h
  * Purpose: wave out based on Windows multimedia system
  * Author:  Thomas Volkert
  * Since:   2010-12-11
- * Version: $Id$
  */
 
 #ifdef WIN32

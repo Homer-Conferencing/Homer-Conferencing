@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    WaveOutMMSys.cpp
  * Purpose: Wave output based on Alsa
  * Author:  Thomas Volkert
  * Since:   2010-12-11
- * Version: $Id$
  */
 
 //HINT: documentation: http://www.alsa-project.org/alsa-doc/alsa-lib/group___p_c_m.html

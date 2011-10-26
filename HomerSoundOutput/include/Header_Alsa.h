@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    Header_Alsa.h
  * Purpose: header includes for alsa library
  * Author:  Thomas Volkert
  * Since:   2009-06-05
- * Version: $Id$
  */
 
 #ifndef _SOUNDOUT_HEADER_ALSA_
