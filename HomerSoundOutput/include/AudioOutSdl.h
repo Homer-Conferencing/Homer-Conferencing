@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    AudioOutSdl.h
  * Purpose: header file for universal SDL based audio output
  * Author:  Stefan Koegel, Thomas Volkert
  * Since:   2009-03-18
- * Version: $Id$
  */
 
 #ifndef _SOUNDOUT_AUDIO_OUT_SDL_

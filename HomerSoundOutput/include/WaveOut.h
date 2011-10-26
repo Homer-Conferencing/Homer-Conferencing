@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    WaveOut.h
  * Purpose: abstract wave out
  * Author:  Thomas Volkert
  * Since:   2010-11-30
- * Version: $Id$
  */
 
 #ifndef _SOUNDOUT_WAVE_OUT_
