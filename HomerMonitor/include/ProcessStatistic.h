@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    ProcessStatistic.h
  * Purpose: Process statistic
  * Author:  Thomas Volkert
  * Since:   2009-05-18
- * Version: $Id$
  */
 
 #ifndef _MULTIMEDIA_PROCESS_STATISTIC_

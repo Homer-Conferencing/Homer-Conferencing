@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    PacketStatisticService.h
  * Purpose: Packet statistic service
  * Author:  Thomas Volkert
  * Since:   2010-10-27
- * Version: $Id$
  */
 
 #ifndef _MONITOR_PACKET_STATISTIC_SERVICE_

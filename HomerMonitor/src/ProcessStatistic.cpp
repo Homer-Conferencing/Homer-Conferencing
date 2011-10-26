@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    ProcessStatistic.cpp
  * Purpose: Implemenation of process statistic
  * Author:  Thomas Volkert
  * Since:   2009-05-18
- * Version: $Id$
 */
 
 #include <ProcessStatistic.h>

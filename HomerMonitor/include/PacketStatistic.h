@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    PacketStatistic.h
  * Purpose: Packet statistic
  * Author:  Thomas Volkert
  * Since:   2009-04-17
- * Version: $Id$
  */
 
 #ifndef _MONITOR_PACKET_STATISTIC_

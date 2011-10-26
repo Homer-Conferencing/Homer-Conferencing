@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    PacketStatistic.cpp
  * Purpose: Implemenation of packet statistic
  * Author:  Thomas Volkert
  * Since:   2009-04-17
- * Version: $Id$
 */
 #include <PacketStatistic.h>
 #include <PacketStatisticService.h>

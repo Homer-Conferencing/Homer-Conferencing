@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    ProcessStatisticService.cpp
  * Purpose: Implemenation of process statistic service as singleton
  * Author:  Thomas Volkert
  * Since:   2010-11-07
- * Version: $Id$
 */
 #include <ProcessStatisticService.h>
 
