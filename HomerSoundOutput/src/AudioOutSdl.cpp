@@ -448,7 +448,6 @@ bool AudioOutSdl::Enqueue(int pChannel, void *pBuffer, int pBufferSize, bool pLi
     return true;
 }
 
-#ifdef SDL_FILE_SUPPORT
 bool AudioOutSdl::Enqueue(int pChannel, std::string pFile, bool pLimitBucket)
 {
     if (pChannel == -1)
@@ -486,7 +485,6 @@ bool AudioOutSdl::Enqueue(int pChannel, std::string pFile, bool pLimitBucket)
 
     return true;
 }
-#endif
 
 AudioOutInfo AudioOutSdl::QueryAudioOutDevices()
 {

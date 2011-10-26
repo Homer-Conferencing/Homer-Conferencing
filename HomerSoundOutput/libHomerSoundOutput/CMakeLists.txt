@@ -20,17 +20,11 @@ SET (INCLUDE_DIRS
 	../../HomerBase/include
 	../../HomerMonitor/include
 	../../HomerMultimedia/include
-	../../HomerWinLibs/FFMPEG
 	../../HomerWinLibs/SDL/include
 	../../HomerWinLibs/SDL-MIXER/include
 	../../HomerWinLibs/SDL-SOUND
-	/usr/include/ffmpeg
-	/usr/include/libavutil
-	/usr/include/libavcodec
-	/usr/include/libavformat
-	/usr/include/libavdevice
-	/usr/include/libswscale
 	/usr/include/SDL 
+	/usr/local/include/SDL 
 )
 
 # library directories
@@ -45,12 +39,14 @@ SET (LIB_DIRS
 SET (TARGET_DIRECTORY
 	../../lib
 )
-	
+
+if (NOT APPLE)
 # compile flags
 SET (FLAGS
 	${FLAGS}
 	-static
 )
+endif (NOT APPLE)
 
 SET (SOURCES
 	${SOURCES}
@@ -76,19 +72,30 @@ SET (LIBS_WINDOWS
 	HomerBase
 	HomerMonitor
 	SDL
+	SDL_sound
 	SDL_mixer
 	Winmm
 )
 
-# USED LIBRARIES for linux environment
-SET (LIBS_LINUX
+# USED LIBRARIES for apple environment
+SET (LIBS_APPLE
 	HomerBase
 	HomerMonitor
 	asound
+	SDL_mixer
+	smpeg
+	SDL_sound
+	SDL
+	speex
+	FLAC
+	vorbisfile
+	vorbis
+	ogg
 )
 
-# USED LIBRARIES for apple environment
-SET (LIBS_APPLE
+
+# USED LIBRARIES for linux environment
+SET (LIBS_LINUX
 	HomerBase
 	HomerMonitor
 	asound
