@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    MediaSourceFile.h
  * Purpose: ffmpeg based local file source
  * Author:  Thomas Volkert
  * Since:   2009-02-24
- * Version: $Id$
  */
 
 #ifndef _MULTIMEDIA_MEDIA_SOURCE_FILE_

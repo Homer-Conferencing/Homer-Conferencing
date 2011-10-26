@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    MediaSinkFile.cpp
  * Purpose: Implementation of a file based media sink which supports RTP
  * Author:  Thomas Volkert
  * Since:   2010-04-17
- * Version: $Id$
  */
 
 #include <Header_Ffmpeg.h>

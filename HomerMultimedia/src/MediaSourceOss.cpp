@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    MediaSourceOss.cpp
  * Purpose: Implementation of a ffmpeg based local oss audio source
  * Author:  Thomas Volkert
  * Since:   2009-02-11
- * Version: $Id$
  */
 
 #include <MediaSourceOss.h>

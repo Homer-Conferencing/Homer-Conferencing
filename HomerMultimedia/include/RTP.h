@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    RTP.h
  * Purpose: real-time transport protocol handling
  * Author:  Thomas Volkert
  * Since:   2009-01-20
- * Version: $Id$
  */
 
 #ifndef _MULTIMEDIA_RTP_

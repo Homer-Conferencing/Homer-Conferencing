@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    Header_Ffmpeg.h
  * Purpose: header includes for ffmpeg library
  * Author:  Thomas Volkert
  * Since:   2009-02-16
- * Version: $Id$
  */
 
 #ifndef _MULTIMEDIA_HEADER_FFMPEG_

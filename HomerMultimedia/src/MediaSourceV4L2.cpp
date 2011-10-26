@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    MediaSourceV4L2.cpp
  * Purpose: Implementation of a ffmpeg based local v4l2 video source
  * Author:  Thomas Volkert
  * Since:   2008-12-01
- * Version: $Id$
  */
 
 #include <MediaSourceV4L2.h>

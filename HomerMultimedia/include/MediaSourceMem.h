@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    MediaSourceMem.h
  * Purpose: ffmpeg based memory video source
  * Author:  Thomas Volkert
  * Since:   2011-05-05
- * Version: $Id$
  */
 
 #ifndef _MULTIMEDIA_MEDIA_SOURCE_MEM_

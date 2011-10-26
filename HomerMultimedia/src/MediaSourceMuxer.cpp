@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    MediaSourceMuxer.cpp
  * Purpose: Implementation of a media source multiplexer
  * Author:  Thomas Volkert
  * Since:   2009-01-04
- * Version: $Id$
  */
 
 // HINT: for audio streams the RTP support remains unused!

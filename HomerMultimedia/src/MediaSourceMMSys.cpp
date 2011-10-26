@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    MediaSourceMMSys.cpp
  * Purpose: Implementation of a ffmpeg based local MMSys video source
  * Author:  Thomas Volkert
  * Since:   2010-10-29
- * Version: $Id$
  */
 
 // HINT: documentation: http://msdn.microsoft.com/en-us/library/aa909811.aspx

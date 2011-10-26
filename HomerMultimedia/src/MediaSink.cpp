@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    MediaSink.cpp
  * Purpose: Implementation of an abstract media sink
  * Author:  Thomas Volkert
  * Since:   2009-01-06
- * Version: $Id$
  */
 
 #include <MediaSink.h>

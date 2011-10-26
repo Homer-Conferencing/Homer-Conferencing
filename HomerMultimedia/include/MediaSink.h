@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    MediaSink.h
  * Purpose: abstract media sink
  * Author:  Thomas Volkert
  * Since:   2009-01-06
- * Version: $Id$
  */
 
 #ifndef _MULTIMEDIA_MEDIA_SINK_
