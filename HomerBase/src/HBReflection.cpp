@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    Reflection.cpp
  * Purpose: Implementation of Java-Reflections for C++
  * Author:  Thomas Volkert
  * Since:   2011-03-10
- * Version: $Id$
  */
 
 #include <Logger.h>

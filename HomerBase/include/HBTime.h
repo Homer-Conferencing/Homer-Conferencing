@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    Time.h
  * Purpose: wrapper for os independent time handling
  * Author:  Thomas Volkert
  * Since:   2010-09-23
- * Version: $Id$
  */
 
 #ifndef _BASE_TIME_

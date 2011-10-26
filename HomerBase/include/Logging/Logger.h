@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    Logger.h
  * Purpose: header file for logger
  * Author:  Thomas Volkert
  * Since:   2009-05-19
- * Version: $Id$
  */
 
 #ifndef _LOGGER_LOGGER_

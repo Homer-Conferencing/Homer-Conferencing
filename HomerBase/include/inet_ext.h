@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    inet_ext.h
  * Purpose: Extension for arpa/inet.h for MinGw environments
  * Author:  Thomas Volkert
  * Since:   2011-10-20
- * Version: $Id: HBSocket.cpp 80 2011-10-19 12:13:20Z silvo $
  */
 
 namespace Homer { namespace Base {

@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    Socket.h
  * Purpose: QoS settings support
  * Author:  Thomas Volkert
  * Since:   2011-10-20
- * Version: $Id: HBSocket.h 81 2011-10-19 12:16:35Z silvo $
  */
 
 #ifndef _BASE_SOCKET_QOS_SETTINGS_

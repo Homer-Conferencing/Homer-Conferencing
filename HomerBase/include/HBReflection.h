@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    Reflection.h
  * Purpose: header for Java-Reflection for C++
  * Author:  Thomas Volkert
  * Since:   2011-03-10
- * Version: $Id$
  */
 
 #ifndef _BASE_REFLECTION_

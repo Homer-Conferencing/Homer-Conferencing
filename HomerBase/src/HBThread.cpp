@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    Thread.cpp
  * Purpose: Implementation of wrapper for os independent thread handling
  * Author:  Thomas Volkert
  * Since:   2010-09-28
- * Version: $Id$
  */
 
 #include <HBThread.h>
