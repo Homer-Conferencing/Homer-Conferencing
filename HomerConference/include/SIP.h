@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    SIP.h
  * Purpose: session initiation protocol
  * Author:  Thomas Volkert
  * Since:   2009-04-14
- * Version: $Id$
  */
 
 #ifndef _CONFERENCE_SIP_
@@ -54,6 +52,7 @@ namespace Homer { namespace Conference {
 //#define SIP_ASSERTS
 
 #define USER_AGENT_SIGNATURE                            "homer-conferencing.com"
+#define ORGANIZATION_SIGNATURE                          "homer-conferencing.com"
 #define CALL_REQUEST_RETRIES                            1
 #define MESSAGE_REQUEST_RETRIES                         1
 #define OPTIONS_REQUEST_RETRIES                         0

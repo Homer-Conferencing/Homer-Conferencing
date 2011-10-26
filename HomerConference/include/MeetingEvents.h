@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    MeetingEvents.h
  * Purpose: Event management
  * Author:  Thomas Volkert
  * Since:   2008-12-09
- * Version: $Id$
  */
 
 #ifndef _CONFERENCE_MEETING_EVENTS_

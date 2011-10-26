@@ -20,11 +20,9 @@
  *****************************************************************************/
 
 /*
- * Name:    Meeting.h
  * Purpose: conference management
  * Author:  Thomas Volkert
  * Since:   2008-11-25
- * Version: $Id$
  */
 
 #ifndef _CONFERENCE_MEETING_
