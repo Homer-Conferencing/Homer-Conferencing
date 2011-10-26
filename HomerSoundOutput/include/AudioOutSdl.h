@@ -46,6 +46,9 @@ namespace Homer { namespace SoundOutput {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// if SDL_FILE_SUPPORT is defined library SDL_sound has to be linked!
+//#define SDL_FILE_SUPPORT
+
 #define AUDIOOUTSDL AudioOutSdl::getInstance()
 // amount of mixing channels (independent from stereo/mono)
 #define DEFAULT_CHANNEL_COUNT                   16
@@ -116,6 +119,7 @@ public:
      */
     bool Enqueue(int pChannel, void *pBuffer, int pBufferSize = 4096, bool pLimitBucket = true);
 
+	#ifdef SDL_FILE_SUPPORT
     /**
      * @brief add file to channels output queue
      * @param pChannel - channel id
@@ -124,6 +128,7 @@ public:
      * @return false if decoding of audio samples failed, audio output is closed or memory allocation failed
      */
     bool Enqueue(int pChannel, std::string File, bool pLimitBucket = true);
+	#endif
 
     /**
      * @brief Query Audio Device Information

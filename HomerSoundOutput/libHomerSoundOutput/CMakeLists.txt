@@ -77,7 +77,6 @@ SET (LIBS_WINDOWS
 	HomerMonitor
 	SDL
 	SDL_mixer
-	SDL_sound
 	Winmm
 )
 
