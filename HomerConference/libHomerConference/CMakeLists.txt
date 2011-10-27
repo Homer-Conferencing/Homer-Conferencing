@@ -50,19 +50,19 @@ SET (LIB_DIRS
 	/usr/lib
 )
 
-# target directory for the lib
-SET (TARGET_DIRECTORY
-	../../lib
-)
-
-if (NOT APPLE)
 # compile flags                                                                                                                                                                                                                                                                   
+if (NOT APPLE)
 SET (FLAGS
     ${FLAGS}
     -Wno-uninitialized
     -static
 )
 endif (NOT APPLE)
+
+# target directory for the lib
+SET (TARGET_DIRECTORY
+	../../lib
+)
 
 # SOURCES
 SET (SOURCES
