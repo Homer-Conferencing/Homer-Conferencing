@@ -194,7 +194,7 @@ void* SIP::Run(void*)
 
              // set necessary parameters
             LOG(LOG_VERBOSE, "..set_params");
-            nua_set_params(mSipContext.Nua, NUTAG_AUTOACK(MEETING_AUTOACK_CALLS), NUTAG_URL(URL_STRING_MAKE(tOwnAddress.c_str())), SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), SIPTAG_ORGANIZATION(ORGANIZATION_SIGNATURE), NUTAG_OUTBOUND("natify outbound use-rport use-stun"), NTATAG_USER_VIA(1), TAG_NULL());
+            nua_set_params(mSipContext.Nua, NUTAG_AUTOACK(MEETING_AUTOACK_CALLS), NUTAG_URL(URL_STRING_MAKE(tOwnAddress.c_str())), SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), SIPTAG_ORGANIZATION_STR(ORGANIZATION_SIGNATURE), NUTAG_OUTBOUND("natify outbound use-rport use-stun"), NTATAG_USER_VIA(1), TAG_NULL());
 
             //###################################################################
             //### STUN support
