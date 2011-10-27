@@ -31,6 +31,7 @@ SET (FLAGS
 
 # "-D" options for compilation in win32 environment
 SET (DEFINITIONS_WINDOWS
+	${DEFINITIONS_WINDOWS}
 	-D__STDC_CONSTANT_MACROS
 	-DWINVER=0x0501
 	-DWIN32
@@ -39,6 +40,7 @@ SET (DEFINITIONS_WINDOWS
 
 # "-D" options for compilation in linux environment
 SET (DEFINITIONS_LINUX
+	${DEFINITIONS_LINUX}
 	-D__STDC_CONSTANT_MACROS
 	-DLINUX
 	-D_REENTRANT
@@ -46,6 +48,7 @@ SET (DEFINITIONS_LINUX
 
 # "-D" options for compilation in linux environment
 SET (DEFINITIONS_APPLE
+	${DEFINITIONS_APPLE}
 	-D__STDC_CONSTANT_MACROS
 	-DAPPLE
 	-D_REENTRANT
