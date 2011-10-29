@@ -28,7 +28,6 @@
 #ifndef _SOUNDOUT_AUDIO_OUT_SDL_
 #define _SOUNDOUT_AUDIO_OUT_SDL_
 
-#include <Header_SdlMixer.h>
 #include <HBMutex.h>
 
 #include <list>
@@ -49,7 +48,6 @@ namespace Homer { namespace SoundOutput {
 #define DEFAULT_CHANNEL_COUNT                   16
 
 ///////////////////////////////////////////////////////////////////////////////
-
 struct AudioOutInfo
 {
     std::list<std::string> Drivers;
@@ -140,11 +138,11 @@ private:
 
     struct ChannelEntry
     {
-        std::list<Mix_Chunk*> Chunks;
-        Mix_Chunk* LastChunk;
-        Mutex mMutex;
-        bool Assigned;
-        bool IsPlaying;
+        std::list<void*> Chunks;
+        void*   LastChunk;
+        Mutex   mMutex;
+        bool    Assigned;
+        bool    IsPlaying;
     };
     std::map<int, ChannelEntry*> mChannelMap;
 };

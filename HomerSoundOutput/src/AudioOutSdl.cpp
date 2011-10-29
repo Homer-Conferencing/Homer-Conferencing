@@ -25,6 +25,7 @@
  * Since:   2009-03-18
  */
 
+#include <Header_SdlMixer.h>
 #include <AudioOutSdl.h>
 #include <Logger.h>
 #include <map>
@@ -272,10 +273,11 @@ void AudioOutSdl::ReleaseChannel(int pChannel)
         // reset and free possible current buffer
         if (tChannelDesc->LastChunk != NULL)
         {
+            Mix_Chunk* tLastChunk = (Mix_Chunk*)tChannelDesc->LastChunk;
             // free buffer memory of old chunk
-            free(tChannelDesc->LastChunk->abuf);
+            free(tLastChunk->abuf);
             // free memory of old chunk
-            free(tChannelDesc->LastChunk);
+            free(tLastChunk);
             // reset pointer
             tChannelDesc->LastChunk = NULL;
         }
@@ -296,13 +298,14 @@ void AudioOutSdl::ClearChunkList(int pChannel)
     ChannelEntry* tChannelDesc = mChannelMap[pChannel];
 
     // free chunk list
-    std::list<Mix_Chunk*>::iterator tItEnd = tChannelDesc->Chunks.end();
-    for (std::list<Mix_Chunk*>::iterator tIt = tChannelDesc->Chunks.begin(); tIt != tItEnd; tIt++)
+    std::list<void*>::iterator tItEnd = tChannelDesc->Chunks.end();
+    for (std::list<void*>::iterator tIt = tChannelDesc->Chunks.begin(); tIt != tItEnd; tIt++)
     {
+        Mix_Chunk* tChunk = (Mix_Chunk*)(*tIt);
         // free buffer memory of chunk
-        free((*tIt)->abuf);
+        free(tChunk->abuf);
         // free memory of chunk descriptor
-        free((*tIt));
+        free(tChunk);
     }
     tChannelDesc->Chunks.clear();
 }
@@ -331,7 +334,7 @@ bool AudioOutSdl::Play(int pChannel)
             if ((tChannelDesc->Chunks.size() > 0) && (tChannelDesc->Assigned == true))
             {
                 // get new chunk for playing
-                tChunk = tChannelDesc->Chunks.front();
+                tChunk = (Mix_Chunk*)tChannelDesc->Chunks.front();
                 tChannelDesc->Chunks.pop_front();
 
                 // unlock to prevent deadlock with SDL_lock
@@ -354,10 +357,11 @@ bool AudioOutSdl::Play(int pChannel)
             // free memory
             if (tChannelDesc->LastChunk != NULL)
             {
+                Mix_Chunk* tLastChunk = (Mix_Chunk*)tChannelDesc->LastChunk;
                 // free buffer memory of old chunk
-                free(tChannelDesc->LastChunk->abuf);
+                free(tLastChunk->abuf);
                 // free memory of old chunk
-                free(tChannelDesc->LastChunk);
+                free(tLastChunk);
             }
 
             // update the current chunk pointer
@@ -563,7 +567,7 @@ void AudioOutSdl::PlayerCallBack(int pChannel)
         if ((tChannelDesc->Chunks.size() > 0) && (tChannelDesc->Assigned == true))
         {
             // get new chunk for playing
-            tChunk = tChannelDesc->Chunks.front();
+            tChunk = (Mix_Chunk*)tChannelDesc->Chunks.front();
             if (tChunk != NULL)
             {
                 tChannelDesc->Chunks.pop_front();
@@ -582,14 +586,15 @@ void AudioOutSdl::PlayerCallBack(int pChannel)
         // free memory
         if (tChannelDesc->LastChunk != NULL)
         {
+            Mix_Chunk* tLastChunk = (Mix_Chunk*)tChannelDesc->LastChunk;
             // free buffer memory of old chunk
-            free(tChannelDesc->LastChunk->abuf);
+            free(tLastChunk->abuf);
             // free memory of old chunk
-            free(tChannelDesc->LastChunk);
+            free(tLastChunk);
         }
 
         // update the current chunk pointer
-        tChannelDesc->LastChunk = tChunk;
+        tChannelDesc->LastChunk = (void*)tChunk;
 
         // unlock
         tChannelDesc->mMutex.unlock();
