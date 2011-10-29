@@ -28,13 +28,15 @@
 #ifndef _CONFERENCE_MEETING_EVENTS_
 #define _CONFERENCE_MEETING_EVENTS_
 
-#include <Header_SofiaSip.h>
 #include <HBMutex.h>
 
 #include <string>
 
 using namespace std;
 using namespace Homer::Base;
+
+// forw. decl. to avoid dependency from sofia-sip headers
+struct nua_handle_s;
 
 namespace Homer { namespace Conference {
 
@@ -147,7 +149,7 @@ public:
 private:
     friend class SIP;
     friend class Meeting;
-    nua_handle_t **HandlePtr;
+    struct nua_handle_s **HandlePtr;
 
 private:
     int mType;

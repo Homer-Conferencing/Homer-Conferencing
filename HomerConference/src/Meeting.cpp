@@ -27,6 +27,8 @@
 
 #include <Meeting.h>
 #include <Logger.h>
+#include <SDP.h>
+#include <SIP.h>
 
 #include <string>
 #include <stdlib.h>
@@ -40,6 +42,30 @@ using namespace std;
 using namespace Homer::Base;
 
 Meeting sMeeting;
+
+///////////////////////////////////////////////////////////////////////////////
+
+struct ParticipantDescriptor
+{
+    std::string    User;
+    std::string    Host;
+    std::string    Port;
+    std::string    Sdp;
+    std::string    OwnIp; //necessary for NAT traversal: store the outmost NAT's IP, directed towards this participant
+    unsigned int   OwnPort; //necessary for NAT traversal: store the outmost NAT's PORT, directed towards this participant
+    std::string    RemoteVideoHost;
+    unsigned int   RemoteVideoPort;
+    std::string    RemoteVideoCodec;
+    std::string    RemoteAudioHost;
+    unsigned int   RemoteAudioPort;
+    std::string    RemoteAudioCodec;
+    nua_handle_t   *SipNuaHandleForCalls;
+    nua_handle_t   *SipNuaHandleForMsgs;
+    nua_handle_t   *SipNuaHandleForOptions;
+    Socket         *VSocket;
+    Socket         *ASocket;
+    int            CallState;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 /////////////////////////// Meeting ///////////////////////////////////////////
@@ -365,16 +391,6 @@ void Meeting::CloseAllSessions()
     mParticipantsMutex.unlock();
 }
 
-int Meeting::GetParticipantCount()
-{
-    return mParticipants.size();
-}
-
-ParticipantList Meeting::GetParticipants()
-{
-    return mParticipants;
-}
-
 bool Meeting::SendBroadcastMessage(string pMessage)
 {
     bool tResult = false;
@@ -429,8 +445,8 @@ bool Meeting::SendMessage(string pParticipant, string pMessage)
     {
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_VERBOSE, "CompareForMessage: \"%s\" with \"%s\"", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str());
-            if (pParticipant.find(SipCreateId(tIt->User, tIt->Host, tIt->Port)) != string::npos)
+            LOG(LOG_VERBOSE, "Search(for SendMessage): \"%s\" in \"%s\"", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str());
+            if (SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos)
             {
                 LOG(LOG_VERBOSE, "...found");
                 tFound = true;
@@ -476,8 +492,8 @@ bool Meeting::SendCall(string pParticipant)
     {
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_VERBOSE, "CompareForCall: \"%s\" with \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
-            if ((pParticipant.find(SipCreateId(tIt->User, tIt->Host, tIt->Port)) != string::npos) && (tIt->CallState == CALLSTATE_STANDBY))
+            LOG(LOG_VERBOSE, "Search(for SendCall): \"%s\" in \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
+            if ((SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos) && (tIt->CallState == CALLSTATE_STANDBY))
             {
                 LOG(LOG_VERBOSE, "...found");
                 tFound = true;
@@ -522,12 +538,12 @@ bool Meeting::SendCallAcknowledge(string pParticipant)
     {
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_VERBOSE, "CompareForAck: \"%s\" with \"%s\" and state: %d", pParticipant.c_str(), (tIt->User + "@" + tIt->Host + ":" + tIt->Port).c_str(), tIt->CallState);
-            if ((pParticipant.find(SipCreateId(tIt->User, tIt->Host, tIt->Port)) != string::npos) && (tIt->CallState == CALLSTATE_RINGING))
+            LOG(LOG_VERBOSE, "Search(for SendCallAcknowledge): \"%s\" in \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
+            if ((SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos) && (tIt->CallState == CALLSTATE_RINGING))
             {
                 tFound = true;
                 tHandlePtr = &tIt->SipNuaHandleForCalls;
-                //LOG(LOG_VERBOSE, "...found");
+                LOG(LOG_VERBOSE, "...found");
                 break;
             }
         }
@@ -742,7 +758,7 @@ bool Meeting::SendProbe(std::string pParticipant)
     return true;
 }
 
-const char* Meeting::getSdp(std::string pParticipant)
+const char* Meeting::GetSdpData(std::string pParticipant)
 {
     const char *tResult = "";
     ParticipantList::iterator tIt;
@@ -760,8 +776,8 @@ const char* Meeting::getSdp(std::string pParticipant)
     {
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_VERBOSE, "CompareForSdp: \"%s\" with \"%s\"", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str());
-            if (pParticipant.find(SipCreateId(tIt->User, tIt->Host, tIt->Port)) != string::npos)
+            LOG(LOG_VERBOSE, "Search(for GetSdpData): \"%s\" in \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
+            if (SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos)
             {
                 // ####################### get ports #############################
                 tLocalVideoPort = tIt->VSocket->getLocalPort();
@@ -769,7 +785,7 @@ const char* Meeting::getSdp(std::string pParticipant)
 
                 // ##################### create SDP string #######################
                 // set sdp string
-                tIt->Sdp = createSdpString(tLocalAudioPort, tLocalVideoPort);
+                tIt->Sdp = CreateSdpData(tLocalAudioPort, tLocalVideoPort);
 
                 tResult = tIt->Sdp.c_str();
                 LOG(LOG_VERBOSE, "VPort: %d\n APort: %d\n SDP: %s\n", tLocalVideoPort, tLocalAudioPort, tResult);
@@ -796,8 +812,8 @@ bool Meeting::SearchParticipantAndSetState(string pParticipant, int pState)
     {
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_VERBOSE, "CompareForState: \"%s\" with \"%s\"", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str());
-            if (pParticipant.find(SipCreateId(tIt->User, tIt->Host, tIt->Port)) != string::npos)
+            LOG(LOG_VERBOSE, "Search(for SearchParticipantAndSetState): \"%s\" in \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
+            if (SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos)
             {
                 tIt->CallState = pState;
                 tFound = true;
@@ -826,8 +842,8 @@ bool Meeting::SearchParticipantAndSetOwnContactAddress(string pParticipant, stri
     {
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_VERBOSE, "CompareForOwnNatAddress: \"%s\" with \"%s\"", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str());
-            if (pParticipant.find(SipCreateId(tIt->User, tIt->Host, tIt->Port)) != string::npos)
+            LOG(LOG_VERBOSE, "Search(for SearchParticipantAndSetOwnContactAddress): \"%s\" in \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
+            if (SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos)
             {
                 tIt->OwnIp = pOwnNatIp;
                 tIt->OwnPort = pOwnNatPort;
@@ -858,8 +874,8 @@ bool Meeting::SearchParticipantAndSetNuaHandleForMsgs(string pParticipant, nua_h
     {
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_VERBOSE, "CompareForHandleForMsgs: \"%s\" with \"%s\"", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str());
-            if (pParticipant.find(SipCreateId(tIt->User, tIt->Host, tIt->Port)) != string::npos)
+            LOG(LOG_VERBOSE, "Search(for SearchParticipantAndSetNuaHandleForMsgs): \"%s\" in \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
+            if (SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos)
             {
                 tIt->SipNuaHandleForMsgs = pNuaHandle;
                 tFound = true;
@@ -888,8 +904,8 @@ bool Meeting::SearchParticipantAndSetNuaHandleForCalls(string pParticipant, nua_
     {
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_VERBOSE, "CompareForHandleForCalls: \"%s\" with \"%s\"", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str());
-            if (pParticipant.find(SipCreateId(tIt->User, tIt->Host, tIt->Port)) != string::npos)
+            LOG(LOG_VERBOSE, "Search(for SearchParticipantAndSetNuaHandleForCalls): \"%s\" in \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
+            if (SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos)
             {
                 tIt->SipNuaHandleForCalls = pNuaHandle;
                 tFound = true;
@@ -918,8 +934,8 @@ nua_handle_t** Meeting::SearchParticipantAndGetNuaHandleForCalls(string pPartici
     {
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_VERBOSE, "CompareForGetHandleForCalls: \"%s\" with \"%s\"", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str());
-            if (pParticipant.find(SipCreateId(tIt->User, tIt->Host, tIt->Port)) != string::npos)
+            LOG(LOG_VERBOSE, "Search(for SearchParticipantAndGetNuaHandleForCalls): \"%s\" in \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
+            if (SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos)
             {
                 tResult = &tIt->SipNuaHandleForCalls;
                 LOG(LOG_VERBOSE, "...found");
@@ -979,8 +995,8 @@ bool Meeting::SearchParticipantAndSetRemoteMediaInformation(std::string pPartici
     {
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_VERBOSE, "CompareForRemoteMEdiaInformation: \"%s\" with \"%s\"", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str());
-            if (pParticipant.find(SipCreateId(tIt->User, tIt->Host, tIt->Port)) != string::npos)
+            LOG(LOG_VERBOSE, "Search(for SearchParticipantAndSetRemoteMediaInformation): \"%s\" in \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
+            if (SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos)
             {
                 tIt->RemoteVideoHost = pVideoHost;
                 tIt->RemoteVideoPort = pVideoPort;
@@ -1011,9 +1027,7 @@ bool Meeting::IsLocalAddress(string pHost, string pPort)
 
     for (tIt = mLocalAddresses.begin(); tIt != mLocalAddresses.end(); tIt++)
     {
-        LOG(LOG_VERBOSE, "CompareForLocalUser: \"%s\" with \"%s\"",
-                                            (pHost + ":" + pPort).c_str(),
-                                            ((*tIt) + ":" + tLocalPort).c_str());
+        LOG(LOG_VERBOSE, "CompareForLocalUser: \"%s\" with \"%s\"", (pHost + ":" + pPort).c_str(), ((*tIt) + ":" + tLocalPort).c_str());
         if ((pHost == (*tIt)) && (pPort == tLocalPort))
         {
             tFound = true;
@@ -1043,8 +1057,8 @@ Socket* Meeting::GetAudioSocket(string pParticipant)
         {
             for (tIt = mParticipants.begin()++; tIt != mParticipants.end(); tIt++)
             {
-                LOG(LOG_VERBOSE, "CompareForAudioSocket: \"%s\" with \"%s\"", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str());
-                if (pParticipant.find(SipCreateId(tIt->User, tIt->Host, tIt->Port)) != string::npos)
+                LOG(LOG_VERBOSE, "Search(for GetAudioSocket): \"%s\" in \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
+                if (SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos)
                 {
                     tResult = tIt->ASocket;
                     LOG(LOG_VERBOSE, "...found");
@@ -1081,8 +1095,8 @@ Socket* Meeting::GetVideoSocket(string pParticipant)
         {
             for (tIt = mParticipants.begin()++; tIt != mParticipants.end(); tIt++)
             {
-                LOG(LOG_VERBOSE, "CompareForVideoSocket: \"%s\" with \"%s\"", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str());
-                if (pParticipant.find(SipCreateId(tIt->User, tIt->Host, tIt->Port)) != string::npos)
+                LOG(LOG_VERBOSE, "Search(for GetVideoSocket): \"%s\" in \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
+                if (SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos)
                 {
                     tResult = tIt->VSocket;
                     LOG(LOG_VERBOSE, "...found");
@@ -1100,7 +1114,7 @@ Socket* Meeting::GetVideoSocket(string pParticipant)
     return tResult;
 }
 
-int Meeting::getCallState(string pParticipant)
+int Meeting::GetCallState(string pParticipant)
 {
     int tResult = CALLSTATE_INVALID;
     ParticipantList::iterator tIt;
@@ -1119,8 +1133,8 @@ int Meeting::getCallState(string pParticipant)
         {
             for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
             {
-                LOG(LOG_VERBOSE, "CompareForCallState: \"%s\" with \"%s\"", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str());
-                if (pParticipant.find(SipCreateId(tIt->User, tIt->Host, tIt->Port)) != string::npos)
+                LOG(LOG_VERBOSE, "Search(for GetCallState): \"%s\" in \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
+                if (SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos)
                 {
                     tResult = tIt->CallState;
                     LOG(LOG_VERBOSE, "...found");
@@ -1169,8 +1183,8 @@ bool Meeting::GetSessionInfo(string pParticipant, struct SessionInfo *pInfo)
         {
             for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
             {
-                //LOG(LOG_VERBOSE, "CompareForSessionInfo: \"%s\" with \"%s\"", pParticipant.c_str(), SipCreateId(/*tIt->User*/"", tIt->Host, tIt->Port).c_str());
-                if (pParticipant.find(SipCreateId(tIt->User, tIt->Host, tIt->Port)) != string::npos)
+                //LOG(LOG_VERBOSE, "Search(for GetSessionInfo): \"%s\" in \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
+                if (SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos)
                 {
                     tResult = true;
                     pInfo->User = tIt->User;
@@ -1199,7 +1213,7 @@ bool Meeting::GetSessionInfo(string pParticipant, struct SessionInfo *pInfo)
     return tResult;
 }
 
-void Meeting::getOwnContactAddress(std::string pParticipant, std::string &pIp, unsigned int &pPort)
+void Meeting::GetOwnContactAddress(std::string pParticipant, std::string &pIp, unsigned int &pPort)
 {
     ParticipantList::iterator tIt;
 
@@ -1213,8 +1227,8 @@ void Meeting::getOwnContactAddress(std::string pParticipant, std::string &pIp, u
     {
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_VERBOSE, "CompareForContactAddress: \"%s\" with \"%s\"", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str());
-            if (pParticipant.find(SipCreateId(tIt->User, tIt->Host, tIt->Port)) != string::npos)
+            LOG(LOG_VERBOSE, "Search(for GetOwnContactAddress): \"%s\" in \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
+            if (SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos)
             {
                 pIp = tIt->OwnIp;
                 pPort = tIt->OwnPort;

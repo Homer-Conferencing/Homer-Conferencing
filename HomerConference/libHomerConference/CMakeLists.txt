@@ -56,6 +56,8 @@ SET (FLAGS
     ${FLAGS}
     -Wno-uninitialized
     -static
+    -g
+    -ggdb
 )
 endif (NOT APPLE)
 

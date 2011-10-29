@@ -28,11 +28,11 @@
 #ifndef _CONFERENCE_SIP_
 #define _CONFERENCE_SIP_
 
+#include <Header_SofiaSipForwDecl.h>
 #include <HBThread.h>
 #include <MeetingEvents.h>
 #include <SIP_stun.h>
 #include <PIDF.h>
-#include <Header_SofiaSip.h>
 
 #include <string>
 
@@ -63,12 +63,7 @@ enum AvailabilityState{
 	AVAILABILITY_STATE_YES_AUTO = 2
 };
 
-struct SipContext
-{
-  su_home_t             Home;           /* memory home */
-  su_root_t             *Root;          /* root object */
-  nua_t                 *Nua;           /* NUA stack object */
-};
+struct SipContext;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -79,6 +74,8 @@ public:
     SIP();
 
     virtual ~SIP();
+
+    static std::string GetSofiaSipVersion();
 
     /* presence management */
     void setAvailabilityState(enum AvailabilityState pState, std::string pStateText = "");
@@ -96,6 +93,8 @@ public:
     /* general */
     static std::string SipCreateId(std::string pUser, std::string pHost, std::string pPort = "");
 
+    /* SIP call back */
+    void SipCallBack(int pEvent, int pStatus, char const *pPhrase, nua_t *pNua, nua_magic_t *pMagic, nua_handle_t *pNuaHandle, nua_hmagic_t *pHMagic, sip_t const *pSip, void* pTags);
 private:
     /* main SIP event loop handling */
     virtual void* Run(void*);
@@ -110,8 +109,6 @@ protected:
 
     void StopSipMainLoop();
 
-    static void SipCallBack(nua_event_t pEvent, int pStatus, char const *pPhrase, nua_t *pNua, nua_magic_t *pMagic, nua_handle_t *pNuaHandle, nua_hmagic_t *pHMagic, sip_t const *pSip, tagi_t pTags[]);
-
     void PrintSipHeaderInfo(const sip_to_t *pRemote, const sip_to_t *pLocal, sip_t const *pSip);
     void printFromToSendingSipEvent(nua_handle_t *pNuaHandle, GeneralEvent *pEvent, std::string pEventName);
     void initParticipantTriplet(const sip_to_t *pRemote, sip_t const *pSip, std::string &pSourceIp, unsigned int pSourcePort, std::string &pUser, std::string &pHost, std::string &pPort);
@@ -119,14 +116,14 @@ protected:
     void SipReceivedError(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, const char* pPhrase, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort);
 
     void SipReceivedMessage(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort);
-    void SipReceivedMessageResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, sip_t const *pSip, tagi_t pTags[], std::string pSourceIp, unsigned int pSourcePort);
+    void SipReceivedMessageResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort);
         /* helpers for "message response */
         void SipReceivedMessageAccept(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort);
         void SipReceivedMessageAcceptDelayed(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort);
         void SipReceivedMessageUnavailable(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort);
         /* */
-    void SipReceivedCall(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, tagi_t pTags[], std::string pSourceIp, unsigned int pSourcePort);
-    void SipReceivedCallResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, const char* pPhrase, sip_t const *pSip, tagi_t pTags[], std::string pSourceIp, unsigned int pSourcePort);
+    void SipReceivedCall(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, void* pTags, std::string pSourceIp, unsigned int pSourcePort);
+    void SipReceivedCallResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, const char* pPhrase, sip_t const *pSip, void* pTags, std::string pSourceIp, unsigned int pSourcePort);
         /* helpers for "call response */
         void SipReceivedCallRinging(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort);
         void SipReceivedCallAccept(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort);
@@ -138,7 +135,7 @@ protected:
     void SipReceivedCallHangup(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort);
     void SipReceivedCallHangupResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort);
     void SipReceivedCallTermination(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort);
-    void SipReceivedCallStateChange(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, tagi_t pTags[], std::string pSourceIp, unsigned int pSourcePort);
+    void SipReceivedCallStateChange(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, void* pTags, std::string pSourceIp, unsigned int pSourcePort);
     void SipReceivedOptionsResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort);
         /* helpers for "options response */
         void SipReceivedOptionsResponseAccept(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort);
@@ -164,7 +161,7 @@ protected:
 
     EventManager        OutgoingEvents; // from users point of view
     enum AvailabilityState mAvailabilityState;
-    SipContext          mSipContext;
+    SipContext          *mSipContext;
     std::string         mSipHostAdr;
     nua_handle_t        *mSipRegisterHandle, *mSipPublishHandle;
     std::string         mSipRegisterServer;

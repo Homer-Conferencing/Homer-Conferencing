@@ -202,7 +202,7 @@ int SDP::CodecNameToPayloadId(std::string pName)
     return tResult;
 }
 
-string SDP::createSdpString(int pAudioPort, int pVideoPort)
+string SDP::CreateSdpData(int pAudioPort, int pVideoPort)
 {
     string tResult = "";
     unsigned int tSupportedAudioCodecs = GetAudioCodecsSupport();

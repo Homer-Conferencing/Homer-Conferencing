@@ -41,21 +41,41 @@ using namespace Homer::Base;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+struct StunContext
+{
+  stun_handle_t         *Handle;    /* handle for STUN based nat traversal */
+  //stun_discovery_magic_t StunDiscoveryContext; /* context for STUN discovery process */
+  su_socket_t           Socket;     /* socket for STUN nat traversal processes */
+  su_root_t*            SipRoot;    /* root of current SIP stack */
+};
+
+// wrapper to avoid dependency of the header from the sofia-sip headers
+void GlobalStunCallBack(stun_discovery_magic_t *pStunDiscoveryMagic, stun_handle_t *pStunHandle, stun_discovery_t *pStunDiscoveryHandle, stun_action_t pStunAction, stun_state_t pStunState)
+{
+    SIP_stun *tSIP_stun = (SIP_stun*)pStunDiscoveryMagic;
+
+    tSIP_stun->StunCallBack(pStunDiscoveryHandle, pStunAction, pStunState);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 SIP_stun::SIP_stun()
 {
+    mStunContext = new StunContext;
     mStunServer = "";
     mStunNatType = "";
     mStunOutmostAdr = "";
     mStunOutmostPort = -1;
     mStunSupportActivated = false;
     mStunNatDetectionFinished = false;
-    mStunContext.Handle = NULL;
-    mStunContext.SipRoot = NULL;
-    mStunContext.Socket = (su_socket_t)-1;
+    mStunContext->Handle = NULL;
+    mStunContext->SipRoot = NULL;
+    mStunContext->Socket = (su_socket_t)-1;
 }
 
 SIP_stun::~SIP_stun()
 {
+    delete mStunContext;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -64,11 +84,11 @@ SIP_stun::~SIP_stun()
 
 void SIP_stun::Init(su_root_t* pSipRoot)
 {
-    mStunContext.SipRoot = pSipRoot;
+    mStunContext->SipRoot = pSipRoot;
 
     // create STUN socket
-    mStunContext.Socket = su_socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if ((int)mStunContext.Socket == -1)
+    mStunContext->Socket = su_socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if ((int)mStunContext->Socket == -1)
     {
         LOG(LOG_ERROR, "Error during su_socket() because of \"%s\"", strerror(errno));
         return;
@@ -81,7 +101,7 @@ void SIP_stun::Init(su_root_t* pSipRoot)
     tSocketAddrDesc.su_port = htons((uint16_t)mStunHostPort);
     tSocketAddrDesc.su_family = AF_INET;
 
-    while (bind(mStunContext.Socket, (struct sockaddr *) &tSocketAddrDesc, tSocketAddrDescLen) < 0)
+    while (bind(mStunContext->Socket, (struct sockaddr *) &tSocketAddrDesc, tSocketAddrDescLen) < 0)
     {
         mStunHostPort++;
         tSocketAddrDesc.su_port = htons((uint16_t)mStunHostPort);
@@ -95,12 +115,12 @@ void SIP_stun::Deinit()
     if (mStunSupportActivated)
     {
         // destroy STUN handle
-//        if (mStunContext.Handle != NULL)
-//            stun_handle_destroy(mStunContext.Handle);
+//        if (mStunContext->Handle != NULL)
+//            stun_handle_destroy(mStunContext->Handle);
 
         // close STUN socket
-        if ((int)mStunContext.Socket != -1)
-            su_close(mStunContext.Socket);
+        if ((int)mStunContext->Socket != -1)
+            su_close(mStunContext->Socket);
 
         mStunSupportActivated = false;
     }
@@ -152,12 +172,12 @@ bool SIP_stun::DetectNatViaStun(string &pFailureReason)
         return false;
 
     // destroy STUN handle
-    if (mStunContext.Handle != NULL)
-        stun_handle_destroy(mStunContext.Handle);
+    if (mStunContext->Handle != NULL)
+        stun_handle_destroy(mStunContext->Handle);
 
     // init STUN handle
-    mStunContext.Handle = stun_handle_init(mStunContext.SipRoot, STUNTAG_SERVER(mStunServer.c_str()), TAG_NULL());
-    if (mStunContext.Handle == NULL)
+    mStunContext->Handle = stun_handle_init(mStunContext->SipRoot, STUNTAG_SERVER(mStunServer.c_str()), TAG_NULL());
+    if (mStunContext->Handle == NULL)
     {
         LOG(LOG_ERROR, "Error during first contact with STUN server because of \"%s\"", strerror(errno));
         pFailureReason = string(strerror(errno));
@@ -166,31 +186,31 @@ bool SIP_stun::DetectNatViaStun(string &pFailureReason)
 
     // perform shared secret request/response processing
     /*
-    if (stun_obtain_shared_secret(mStunContext.Handle, StunCallBack, NULL, STUNTAG_SOCKET(mStunContext.Socket), STUNTAG_REGISTER_EVENTS(1), TAG_NULL()) < 0)
+    if (stun_obtain_shared_secret(mStunContext->Handle, StunCallBack, NULL, STUNTAG_SOCKET(mStunContext->Socket), STUNTAG_REGISTER_EVENTS(1), TAG_NULL()) < 0)
     {
         LOG(LOG_ERROR, "Error during STUN shared secret request/response because of \"%s\"", strerror(errno));
-        stun_handle_destroy(mStunContext.Handle);
-        su_close(mStunContext.Socket);
+        stun_handle_destroy(mStunContext->Handle);
+        su_close(mStunContext->Socket);
         return false;
     }
 
     // perform a STUN binding discovery (rfc 3489/3489bis) process
-    if (stun_bind(mStunContext.Handle, StunCallBack, (stun_discovery_magic_t*)this, STUNTAG_SOCKET(mStunContext.Socket), STUNTAG_REGISTER_EVENTS(1), TAG_NULL()) < 0)
+    if (stun_bind(mStunContext->Handle, StunCallBack, (stun_discovery_magic_t*)this, STUNTAG_SOCKET(mStunContext->Socket), STUNTAG_REGISTER_EVENTS(1), TAG_NULL()) < 0)
     {
         //LOG(LOG_ERROR, "Error during STUN binding discovery because of \"%s\"", strerror(errno));
-        stun_handle_destroy(mStunContext.Handle);
-        su_close(mStunContext.Socket);
+        stun_handle_destroy(mStunContext->Handle);
+        su_close(mStunContext->Socket);
         return false;
     }
     */
 
     // initiates STUN discovery process to find out NAT characteristics
-    if (stun_test_nattype(mStunContext.Handle, StunCallBack, (stun_discovery_magic_t*)this, STUNTAG_SOCKET(mStunContext.Socket), STUNTAG_REGISTER_EVENTS(1), TAG_NULL()) < 0)
+    if (stun_test_nattype(mStunContext->Handle, GlobalStunCallBack, (stun_discovery_magic_t*)this, STUNTAG_SOCKET(mStunContext->Socket), STUNTAG_REGISTER_EVENTS(1), TAG_NULL()) < 0)
     {
         LOG(LOG_ERROR, "Error during STUN nat discovery because of \"%s\"", strerror(errno));
         pFailureReason = string(strerror(errno));
-        stun_handle_destroy(mStunContext.Handle);
-        mStunContext.Handle = NULL;
+        stun_handle_destroy(mStunContext->Handle);
+        mStunContext->Handle = NULL;
         return false;
     }
 
@@ -200,9 +220,8 @@ bool SIP_stun::DetectNatViaStun(string &pFailureReason)
     return true;
 }
 
-void SIP_stun::StunCallBack(stun_discovery_magic_t *pStunDiscoveryMagic, stun_handle_t *pStunHandle, stun_discovery_t *pStunDiscoveryHandle, stun_action_t pStunAction, stun_state_t pStunState)
+void SIP_stun::StunCallBack(stun_discovery_t *pStunDiscoveryHandle, int pStunAction, int pStunState)
 {
-    SIP_stun *tSIP_stun = (SIP_stun*)pStunDiscoveryMagic;
     su_sockaddr_t tSocketAddrDesc;
     socklen_t tSocketAddrDescLen = sizeof(tSocketAddrDesc);
 
@@ -213,17 +232,17 @@ void SIP_stun::StunCallBack(stun_discovery_magic_t *pStunDiscoveryMagic, stun_ha
     // nat detection finished?
     if ((pStunAction == stun_action_test_nattype) && (pStunState == stun_discovery_done))
     {
-        tSIP_stun->mStunNatType = string(stun_nattype_str(pStunDiscoveryHandle));
+        mStunNatType = string(stun_nattype_str(pStunDiscoveryHandle));
         stun_discovery_get_address(pStunDiscoveryHandle, (struct sockaddr *) &tSocketAddrDesc, &tSocketAddrDescLen);
-        tSIP_stun->mStunOutmostAdr = string(inet_ntoa(tSocketAddrDesc.su_sin.sin_addr));
-        tSIP_stun->mStunOutmostPort = (int)ntohs(tSocketAddrDesc.su_sin.sin_port);
+        mStunOutmostAdr = string(inet_ntoa(tSocketAddrDesc.su_sin.sin_addr));
+        mStunOutmostPort = (int)ntohs(tSocketAddrDesc.su_sin.sin_port);
 
         LOGEX(SIP_stun, LOG_INFO, "STUN nat detection finished");
-        LOGEX(SIP_stun, LOG_INFO, "     ..nat type: \"%s\"", tSIP_stun->mStunNatType.c_str());
-        LOGEX(SIP_stun, LOG_INFO, "     ..nat outmost IP: %s", tSIP_stun->mStunOutmostAdr.c_str());
-        LOGEX(SIP_stun, LOG_INFO, "     ..nat outmost port: %d", tSIP_stun->mStunOutmostPort);
+        LOGEX(SIP_stun, LOG_INFO, "     ..nat type: \"%s\"", mStunNatType.c_str());
+        LOGEX(SIP_stun, LOG_INFO, "     ..nat outmost IP: %s", mStunOutmostAdr.c_str());
+        LOGEX(SIP_stun, LOG_INFO, "     ..nat outmost port: %d", mStunOutmostPort);
     }
-    tSIP_stun->mStunNatDetectionFinished = true;
+    mStunNatDetectionFinished = true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

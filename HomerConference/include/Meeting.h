@@ -28,6 +28,7 @@
 #ifndef _CONFERENCE_MEETING_
 #define _CONFERENCE_MEETING_
 
+#include <Header_SofiaSipForwDecl.h>
 #include <SDP.h>
 #include <SIP.h>
 #include <MeetingEvents.h>
@@ -44,35 +45,14 @@ namespace Homer { namespace Conference {
 ///////////////////////////////////////////////////////////////////////////////
 
 #define MEETING Meeting::GetInstance()
-#define MEETING_AUTOACK_CALLS                   false
 
+// configuration
+#define MEETING_AUTOACK_CALLS                   false
 
 #define CALLSTATE_INVALID                       -1
 #define CALLSTATE_STANDBY                       0
 #define CALLSTATE_RINGING                       1
 #define CALLSTATE_RUNNING                       2
-
-struct ParticipantDescriptor
-{
-    std::string    User;
-    std::string    Host;
-    std::string    Port;
-    std::string    Sdp;
-    std::string    OwnIp; //necessary for NAT traversal: store the outmost NAT's IP, directed towards this participant
-    unsigned int   OwnPort; //necessary for NAT traversal: store the outmost NAT's PORT, directed towards this participant
-    std::string    RemoteVideoHost;
-    unsigned int   RemoteVideoPort;
-    std::string    RemoteVideoCodec;
-    std::string    RemoteAudioHost;
-    unsigned int   RemoteAudioPort;
-    std::string    RemoteAudioCodec;
-    nua_handle_t   *SipNuaHandleForCalls;
-    nua_handle_t   *SipNuaHandleForMsgs;
-    nua_handle_t   *SipNuaHandleForOptions;
-    Socket         *VSocket;
-    Socket         *ASocket;
-    int            CallState;
-};
 
 struct SessionInfo
 {
@@ -92,7 +72,7 @@ struct SessionInfo
     std::string    CallState;
 };
 
-
+struct ParticipantDescriptor;
 typedef std::list<ParticipantDescriptor>  ParticipantList;
 typedef std::list<std::string>            LocalAddressesList;
 
@@ -129,16 +109,14 @@ public:
 
     /* local user's id */
     std::string getLocalConferenceId();
-    int GetParticipantCount();
-    ParticipantList GetParticipants();
 
     /* local I/O interfaces and state */
     bool IsLocalAddress(std::string pHost, std::string pPort);
     Socket* GetAudioSocket(std::string pParticipant);
     Socket* GetVideoSocket(std::string pParticipant);
-    int getCallState(std::string pParticipant);
+    int GetCallState(std::string pParticipant);
     bool GetSessionInfo(std::string pParticipant, struct SessionInfo *pInfo);
-    void getOwnContactAddress(std::string pParticipant, std::string &pIp, unsigned int &pPort);
+    void GetOwnContactAddress(std::string pParticipant, std::string &pIp, unsigned int &pPort);
 
     /* session management */
     bool OpenParticipantSession(std::string pUser, std::string pHost, std::string pPort, int pInitState);
@@ -167,7 +145,7 @@ private:
     bool SearchParticipantAndSetRemoteMediaInformation(std::string pParticipant, std::string pVideoHost, unsigned int pVideoPort, std::string pVideoCodec, std::string pAudioHost, unsigned int pAudioPort, std::string pAudioCodec);
     nua_handle_t ** SearchParticipantAndGetNuaHandleForCalls(string pParticipant);
     bool SearchParticipantByNuaHandleOrName(string &pUser, string &pHost, string &pPort, nua_handle_t *pNuaHandle);
-    const char* getSdp(std::string pParticipant);
+    const char* GetSdpData(std::string pParticipant);
     void CloseAllSessions();
     std::string CallStateAsString(int pCallState);
 
