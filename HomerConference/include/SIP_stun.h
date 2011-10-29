@@ -28,24 +28,14 @@
 #ifndef _CONFERENCE_SIP_STUN_
 #define _CONFERENCE_SIP_STUN_
 
-#include <Header_SofiaSip.h>
+#include <Header_SofiaSipForwDecl.h>
 
 #include <string>
 
 namespace Homer { namespace Conference {
 
 ///////////////////////////////////////////////////////////////////////////////
-
-
-struct StunContext
-{
-  stun_handle_t         *Handle;    /* handle for STUN based nat traversal */
-  //stun_discovery_magic_t StunDiscoveryContext; /* context for STUN discovery process */
-  su_socket_t           Socket;     /* socket for STUN nat traversal processes */
-  su_root_t*            SipRoot;    /* root of current SIP stack */
-};
-
-///////////////////////////////////////////////////////////////////////////////
+struct StunContext;
 
 class SIP_stun
 {
@@ -60,13 +50,15 @@ public:
     int getStunNatPort();
     std::string getStunNatType();
 
+    void StunCallBack(stun_discovery_t *pStunDiscoveryHandle, int pStunAction, int pStunState);
+
 protected:
     void Init(su_root_t* pSipRoot);
     void Deinit();
 
     bool DetectNatViaStun(std::string &pFailureReason);
 
-    StunContext         mStunContext;
+    StunContext*        mStunContext;
     int                 mStunHostPort;
     std::string         mStunServer;
     std::string         mStunNatType;
@@ -74,9 +66,6 @@ protected:
     int                 mStunOutmostPort;
     bool                mStunNatDetectionFinished;
     bool                mStunSupportActivated;
-
-private:
-    static void StunCallBack(stun_discovery_magic_t *pStunDiscoveryMagic, stun_handle_t *pStunHandle, stun_discovery_t *pStunDiscoveryHandle, stun_action_t pStunAction, stun_state_t pStunState);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

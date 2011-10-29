@@ -87,7 +87,7 @@ private:
     std::string GetMediaTransportStr(enum MediaTransportType pType);
 
 protected:
-    std::string createSdpString(int pAudioPort, int pVideoPort);
+    std::string CreateSdpData(int pAudioPort, int pVideoPort);
 
     int             			mVideoCodecsSupport;
     int             			mAudioCodecsSupport;

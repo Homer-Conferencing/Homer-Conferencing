@@ -53,11 +53,19 @@ using namespace Homer::Monitor;
 #define                 SIP_STATE_REQUEST_TIMEOUT           408
 #define                 SIP_STATE_BAD_EVENT                 489
 
+struct SipContext
+{
+  su_home_t             Home;           /* memory home */
+  su_root_t             *Root;          /* root object */
+  nua_t                 *Nua;           /* NUA stack object */
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 
 SIP::SIP():
     SIP_stun(), PIDF()
 {
+    mSipContext = new SipContext;
     mAvailabilityState = AVAILABILITY_STATE_YES;
 
     mSipStackOnline = false;
@@ -76,11 +84,17 @@ SIP::SIP():
 
 SIP::~SIP()
 {
+    delete mSipContext;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////// main loop ///////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
+string SIP::GetSofiaSipVersion()
+{
+    return SOFIA_SIP_VERSION;
+}
+
 void SIP::Init(int pStartPort, int pStunPort)
 {
     // default port is 5060, auto-probing within run()
@@ -116,6 +130,13 @@ string SIP::SipCreateId(string pUser, string pHost, string pPort)
         return (pUser + "@" + pHost + ":" + pPort);
     else
         return (pUser + "@" + pHost);
+}
+
+void GlobalSipCallBack(nua_event_t pEvent, int pStatus, char const *pPhrase, nua_t *pNua, nua_magic_t *pMagic, nua_handle_t *pNuaHandle, nua_hmagic_t *pHMagic, sip_t const *pSip, tagi_t pTags[])
+{
+    SIP* tSIP = (SIP*)pMagic;
+
+    tSIP->SipCallBack((int)pEvent, pStatus, pPhrase, pNua, pMagic, pNuaHandle, pHMagic, pSip, (void*)pTags);
 }
 
 void* SIP::Run(void*)
@@ -156,13 +177,13 @@ void* SIP::Run(void*)
 
     // initialize memory handling
     LOG(LOG_VERBOSE, "..home init");
-    su_home_init(&mSipContext.Home);
+    su_home_init(&mSipContext->Home);
 
     // initialize root object
     LOG(LOG_VERBOSE, "..SU root create");
-    mSipContext.Root = su_root_create(&mSipContext);
+    mSipContext->Root = su_root_create(&mSipContext);
 
-    if (mSipContext.Root != NULL)
+    if (mSipContext->Root != NULL)
     {
         // create NUA stack
         // auto probe SIP port (default: 5060 to 5064)
@@ -178,27 +199,27 @@ void* SIP::Run(void*)
 
             // NAT traversal: use keepalive packets with interval of 10 seconds
             //                otherwise a NAT box won't maintain the state about the NAT forwarding
-            mSipContext.Nua = nua_create(mSipContext.Root, SipCallBack, this, NUTAG_URL(URL_STRING_MAKE(tOwnAddress.c_str())), TPTAG_KEEPALIVE(10000), NUTAG_OUTBOUND("natify use-stun"), TPTAG_REUSE(true), TAG_NULL()); //NUTAG_MEDIA_ENABLE(0)
-            if (mSipContext.Nua != NULL)
+            mSipContext->Nua = nua_create(mSipContext->Root, GlobalSipCallBack, this, NUTAG_URL(URL_STRING_MAKE(tOwnAddress.c_str())), TPTAG_KEEPALIVE(10000), NUTAG_OUTBOUND("natify use-stun"), TPTAG_REUSE(true), TAG_NULL()); //NUTAG_MEDIA_ENABLE(0)
+            if (mSipContext->Nua != NULL)
                 break;
             else
                 LOG(LOG_INFO, "Another agent is already listening at %s<%d>:udp. Probing alternatives...", mSipHostAdr.c_str(), mSipHostPort);
             mSipHostPort++;
         }
 
-        if (mSipContext.Nua != NULL)
+        if (mSipContext->Nua != NULL)
         {
             LOG(LOG_INFO, "Listener assigned to %s", tOwnAddress.c_str());
 
              // set necessary parameters
             LOG(LOG_VERBOSE, "..set_params");
-            nua_set_params(mSipContext.Nua, NUTAG_AUTOACK(MEETING_AUTOACK_CALLS), NUTAG_URL(URL_STRING_MAKE(tOwnAddress.c_str())), SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), SIPTAG_ORGANIZATION_STR(ORGANIZATION_SIGNATURE), NUTAG_OUTBOUND("natify outbound use-rport use-stun"), NTATAG_USER_VIA(1), TAG_NULL());
+            nua_set_params(mSipContext->Nua, NUTAG_AUTOACK(MEETING_AUTOACK_CALLS), NUTAG_URL(URL_STRING_MAKE(tOwnAddress.c_str())), SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), SIPTAG_ORGANIZATION_STR(ORGANIZATION_SIGNATURE), NUTAG_OUTBOUND("natify outbound use-rport use-stun"), NTATAG_USER_VIA(1), TAG_NULL());
 
             //###################################################################
             //### STUN support
             //###################################################################
             #ifdef SIP_SUPORTING_STUN
-                SIP_stun::Init(mSipContext.Root);
+                SIP_stun::Init(mSipContext->Root);
 
                 // open NAT support via STUN
                 LOG(LOG_VERBOSE, "..STUN based NAT detection");
@@ -216,7 +237,7 @@ void* SIP::Run(void*)
                 SipProcessOutgoingEvents();
 
                 // INCOMING events: one step of main loop for processing of SIP messages, timeout is set to 100 ms
-                su_root_step(mSipContext.Root, 100);
+                su_root_step(mSipContext->Root, 100);
             }
 
             LOG(LOG_VERBOSE, "Closing stack..");
@@ -226,7 +247,7 @@ void* SIP::Run(void*)
 
             // shutdown NUA stack
             LOG(LOG_VERBOSE, "..shutdown NUA stack");
-            nua_shutdown(mSipContext.Nua);
+            nua_shutdown(mSipContext->Nua);
 
             // wait for shutdown of NUA stack
             while (mSipStackOnline)
@@ -234,12 +255,12 @@ void* SIP::Run(void*)
                 LOG(LOG_VERBOSE, "Wait for Shutdown-Step");
 
                 // one step of main loop for processing of messages, timeout is set to 100 ms
-                su_root_step(mSipContext.Root, 100);
+                su_root_step(mSipContext->Root, 100);
             }
 
             // destroy NUA stack
             LOG(LOG_VERBOSE, "..NUA destroy");
-            nua_destroy(mSipContext.Nua);
+            nua_destroy(mSipContext->Nua);
 
         }else
         {
@@ -250,8 +271,8 @@ void* SIP::Run(void*)
 
         // deinit root object
         LOG(LOG_VERBOSE, "..SU root destroy");
-        su_root_destroy(mSipContext.Root);
-        mSipContext.Root = NULL;
+        su_root_destroy(mSipContext->Root);
+        mSipContext->Root = NULL;
 
     }else
     {
@@ -261,7 +282,7 @@ void* SIP::Run(void*)
 
     // deinitialize memory handling
     LOG(LOG_VERBOSE, "..home deinit");
-    su_home_deinit(&mSipContext.Home);
+    su_home_deinit(&mSipContext->Home);
 
     // deinitialize system utilities
     LOG(LOG_VERBOSE, "..deinit");
@@ -297,7 +318,7 @@ bool SIP::SipLoginAtServer()
     }
 
     LOG(LOG_VERBOSE, "..FROM header: sip:%s", SipCreateId(mSipRegisterUsername, mSipRegisterServer).c_str());
-    tFrom = sip_to_make(&mSipContext.Home, ("sip:" + SipCreateId(mSipRegisterUsername, mSipRegisterServer)).c_str());
+    tFrom = sip_to_make(&mSipContext->Home, ("sip:" + SipCreateId(mSipRegisterUsername, mSipRegisterServer)).c_str());
     if (tFrom == NULL)
     {
         LOG(LOG_ERROR, "Can not create \"from\" handle for function \"SipLoginAtServer\" and user id \"%s\"", ("sip:" + SipCreateId(mSipRegisterUsername, mSipRegisterServer)).c_str());
@@ -305,7 +326,7 @@ bool SIP::SipLoginAtServer()
     }
 
     LOG(LOG_VERBOSE, "..TO header: sip:%s", SipCreateId(mSipRegisterUsername, mSipRegisterServer).c_str());
-    tTo = sip_to_make(&mSipContext.Home, ("sip:" + SipCreateId(mSipRegisterUsername, mSipRegisterServer)).c_str());
+    tTo = sip_to_make(&mSipContext->Home, ("sip:" + SipCreateId(mSipRegisterUsername, mSipRegisterServer)).c_str());
     if (tTo == NULL)
     {
         LOG(LOG_ERROR, "Can not create \"to\" handle for function \"SipLoginAtServer\" and user id \"%s\"", ("sip:" + SipCreateId(mSipRegisterUsername, mSipRegisterServer)).c_str());
@@ -317,10 +338,10 @@ bool SIP::SipLoginAtServer()
         tOwnIp = mStunOutmostAdr;
 
     LOG(LOG_VERBOSE, "..CONTACT header: sip:%s", SipCreateId(mSipRegisterUsername, tOwnIp, toString(MEETING.GetHostPort())).c_str());
-    tContact = sip_contact_make(&mSipContext.Home, ("sip:" + SipCreateId(mSipRegisterUsername, tOwnIp, toString(MEETING.GetHostPort()))).c_str());
+    tContact = sip_contact_make(&mSipContext->Home, ("sip:" + SipCreateId(mSipRegisterUsername, tOwnIp, toString(MEETING.GetHostPort()))).c_str());
 
     // create operation handle
-    mSipRegisterHandle = nua_handle(mSipContext.Nua, &mSipContext.Home, SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), TAG_IF(tContact, SIPTAG_CONTACT(tContact)), SIPTAG_TO(tTo), SIPTAG_FROM(tFrom), TAG_END());
+    mSipRegisterHandle = nua_handle(mSipContext->Nua, &mSipContext->Home, SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), TAG_IF(tContact, SIPTAG_CONTACT(tContact)), SIPTAG_TO(tTo), SIPTAG_FROM(tFrom), TAG_END());
 
     if (mSipRegisterHandle == NULL)
     {
@@ -533,7 +554,7 @@ void SIP::setAvailabilityState(enum AvailabilityState pState, string pStateText)
     }
     if (pStateText != "")
         tStateNote += " - " + pStateText;
-    mPresenceDesription = CreatePresenceInPidf(&mSipContext.Home, mSipRegisterUsername, mSipRegisterServer, tStateNote, true);
+    mPresenceDesription = CreatePresenceInPidf(&mSipContext->Home, mSipRegisterUsername, mSipRegisterServer, tStateNote, true);
 
     mSipPresencePublished = false;
 
@@ -542,7 +563,7 @@ void SIP::setAvailabilityState(enum AvailabilityState pState, string pStateText)
     sip_to_t *tTo;
 
     LOG(LOG_VERBOSE, "..FROM header: sip:%s", SipCreateId(mSipRegisterUsername, mSipRegisterServer).c_str());
-    tFrom = sip_to_make(&mSipContext.Home, ("sip:" + SipCreateId(mSipRegisterUsername, mSipRegisterServer)).c_str());
+    tFrom = sip_to_make(&mSipContext->Home, ("sip:" + SipCreateId(mSipRegisterUsername, mSipRegisterServer)).c_str());
     if (tFrom == NULL)
     {
         LOG(LOG_ERROR, "Can not create \"from\" handle for function \"setAvailabilityState\" and user id \"%s\"", ("sip:" + SipCreateId(mSipRegisterUsername, mSipRegisterServer)).c_str());
@@ -550,7 +571,7 @@ void SIP::setAvailabilityState(enum AvailabilityState pState, string pStateText)
     }
 
     LOG(LOG_VERBOSE, "..TO header: sip:%s", SipCreateId(mSipRegisterUsername, mSipRegisterServer).c_str());
-    tTo = sip_to_make(&mSipContext.Home, ("sip:" + SipCreateId(mSipRegisterUsername, mSipRegisterServer)).c_str());
+    tTo = sip_to_make(&mSipContext->Home, ("sip:" + SipCreateId(mSipRegisterUsername, mSipRegisterServer)).c_str());
     if (tTo == NULL)
     {
         LOG(LOG_ERROR, "Can not create \"to\" handle for function \"setAvailabilityState\" and user id \"%s\"", ("sip:" + SipCreateId(mSipRegisterUsername, mSipRegisterServer)).c_str());
@@ -562,10 +583,10 @@ void SIP::setAvailabilityState(enum AvailabilityState pState, string pStateText)
         tOwnIp = mStunOutmostAdr;
 
     LOG(LOG_VERBOSE, "..CONTACT header: sip:%s", SipCreateId(mSipRegisterUsername, tOwnIp, toString(MEETING.GetHostPort())).c_str());
-    tContact = sip_contact_make(&mSipContext.Home, ("sip:" + SipCreateId(mSipRegisterUsername, tOwnIp, toString(MEETING.GetHostPort()))).c_str());
+    tContact = sip_contact_make(&mSipContext->Home, ("sip:" + SipCreateId(mSipRegisterUsername, tOwnIp, toString(MEETING.GetHostPort()))).c_str());
 
     // create operation handle
-    mSipPublishHandle = nua_handle(mSipContext.Nua, &mSipContext.Home, SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), TAG_IF(tContact, SIPTAG_CONTACT(tContact)), SIPTAG_TO(tTo), SIPTAG_FROM(tFrom), TAG_END());
+    mSipPublishHandle = nua_handle(mSipContext->Nua, &mSipContext->Home, SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), TAG_IF(tContact, SIPTAG_CONTACT(tContact)), SIPTAG_TO(tTo), SIPTAG_FROM(tFrom), TAG_END());
 
     if (mSipPublishHandle == NULL)
     {
@@ -704,14 +725,13 @@ void SIP::SipReceivedPublishResponse(const sip_to_t *pSipRemote, const sip_to_t 
 ///////////////////////////////////////////////////////////////////////////////
 //////////////////////// CENTRAL CALLBACK /////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-void SIP::SipCallBack(nua_event_t pEvent, int pStatus, char const *pPhrase, nua_t *pNua, nua_magic_t *pMagic, nua_handle_t *pNuaHandle, nua_hmagic_t *pHMagic, sip_t const *pSip, tagi_t pTags[])
+void SIP::SipCallBack(int pEvent, int pStatus, char const *pPhrase, nua_t *pNua, nua_magic_t *pMagic, nua_handle_t *pNuaHandle, nua_hmagic_t *pHMagic, sip_t const *pSip, void* pTags)
 {
-    SIP *tSIP = (SIP*)pMagic;
     string tSourceIp;
     unsigned int tSourcePort = 0;
     SocketAddressDescriptor *tAddressDescriptor = NULL;
     msg_t *tCurrentMessage = nua_current_request(pNua);
-    char const* tEventName = nua_event_name(pEvent);
+    char const* tEventName = nua_event_name((nua_event_t)pEvent);
     const sip_to_t *tRemote = nua_handle_remote(pNuaHandle);
     const sip_to_t *tLocal = nua_handle_local(pNuaHandle);
 
@@ -726,7 +746,7 @@ void SIP::SipCallBack(nua_event_t pEvent, int pStatus, char const *pPhrase, nua_
     }
     LOGEX(SIP, LOG_INFO, "Handle: 0x%lx", (unsigned long)pNuaHandle);
     LOGEX(SIP, LOG_INFO, "Lib-Status: \"%s\"(%d)", pPhrase, pStatus);
-    tSIP->PrintSipHeaderInfo(tRemote, tLocal, pSip);
+    PrintSipHeaderInfo(tRemote, tLocal, pSip);
     switch (pEvent)
     {
             /*################################################################
@@ -745,7 +765,7 @@ void SIP::SipCallBack(nua_event_t pEvent, int pStatus, char const *pPhrase, nua_
                     tags    empty or error specific information
              */
             case nua_i_error:
-                tSIP->SipReceivedError(tRemote, tLocal, pNuaHandle, pStatus, pPhrase, pSip, tSourceIp, tSourcePort);
+                SipReceivedError(tRemote, tLocal, pNuaHandle, pStatus, pPhrase, pSip, tSourceIp, tSourcePort);
                 break;
             /*################################################################
                 Incoming call INVITE.
@@ -764,7 +784,7 @@ void SIP::SipCallBack(nua_event_t pEvent, int pStatus, char const *pPhrase, nua_
                 Responding to INVITE with nua_respond()
              */
             case nua_i_invite:
-                tSIP->SipReceivedCall(tRemote, tLocal, pNuaHandle, pSip, pTags, tSourceIp, tSourcePort);
+                SipReceivedCall(tRemote, tLocal, pNuaHandle, pSip, pTags, tSourceIp, tSourcePort);
                 break;
             /*################################################################
                 Incoming INVITE has been cancelled.
@@ -779,7 +799,7 @@ void SIP::SipCallBack(nua_event_t pEvent, int pStatus, char const *pPhrase, nua_
                     tags    empty
             */
             case nua_i_cancel:
-                tSIP->SipReceivedCallCancel(tRemote, tLocal, pNuaHandle, pSip, tSourceIp, tSourcePort);
+                SipReceivedCallCancel(tRemote, tLocal, pNuaHandle, pSip, tSourceIp, tSourcePort);
                 break;
             /*################################################################
                 Final response to INVITE has been ACKed.
@@ -851,7 +871,7 @@ void SIP::SipCallBack(nua_event_t pEvent, int pStatus, char const *pPhrase, nua_
                         tags    empty
              */
             case nua_i_terminated:
-                tSIP->SipReceivedCallTermination(tRemote, tLocal, pNuaHandle, pSip, tSourceIp, tSourcePort);
+                SipReceivedCallTermination(tRemote, tLocal, pNuaHandle, pSip, tSourceIp, tSourcePort);
                 break;
             /*################################################################
                 Call state has changed.
@@ -902,7 +922,7 @@ void SIP::SipCallBack(nua_event_t pEvent, int pStatus, char const *pPhrase, nua_
                                 SOATAG_ACTIVE_CHAT()
             */
             case nua_i_state:
-                tSIP->SipReceivedCallStateChange(tRemote, tLocal, pNuaHandle, pSip, pTags, tSourceIp, tSourcePort);
+                SipReceivedCallStateChange(tRemote, tLocal, pNuaHandle, pSip, pTags, tSourceIp, tSourcePort);
                 break;
             /*################################################################
                 Status from outbound processing.
@@ -935,7 +955,7 @@ void SIP::SipCallBack(nua_event_t pEvent, int pStatus, char const *pPhrase, nua_
                         tags    empty
              */
             case nua_i_bye:
-                tSIP->SipReceivedCallHangup(tRemote, tLocal, pNuaHandle, pSip, tSourceIp, tSourcePort);
+                SipReceivedCallHangup(tRemote, tLocal, pNuaHandle, pSip, tSourceIp, tSourcePort);
                 break;
             /*################################################################
                 Incoming OPTIONS.
@@ -1100,7 +1120,7 @@ void SIP::SipCallBack(nua_event_t pEvent, int pStatus, char const *pPhrase, nua_
                         tags    empty
             */
             case nua_i_message:
-                tSIP->SipReceivedMessage(tRemote, tLocal, pNuaHandle, pSip, tSourceIp, tSourcePort);
+                SipReceivedMessage(tRemote, tLocal, pNuaHandle, pSip, tSourceIp, tSourcePort);
                 break;
             /*################################################################
                 Incoming chat MESSAGE.
@@ -1378,7 +1398,7 @@ void SIP::SipCallBack(nua_event_t pEvent, int pStatus, char const *pPhrase, nua_
                         tags    empty
             */
             case nua_r_shutdown:
-                tSIP->SipReceivedShutdownResponse(tRemote, tLocal, pNuaHandle, pStatus, pSip, tSourceIp, tSourcePort);
+                SipReceivedShutdownResponse(tRemote, tLocal, pNuaHandle, pStatus, pSip, tSourceIp, tSourcePort);
                 break;
             /*################################################################
                 nua_r_notifier  Answer to nua_notifier().
@@ -1423,7 +1443,7 @@ void SIP::SipCallBack(nua_event_t pEvent, int pStatus, char const *pPhrase, nua_
                         tags    empty
             */
             case nua_r_register:
-                tSIP->SipReceivedRegisterResponse(tRemote, tLocal, pNuaHandle, pStatus, pPhrase, pSip, tSourceIp, tSourcePort);
+                SipReceivedRegisterResponse(tRemote, tLocal, pNuaHandle, pStatus, pPhrase, pSip, tSourceIp, tSourcePort);
                 break;
             /*################################################################
                 nua_r_unregister        Answer to outgoing un-REGISTER.
@@ -1446,7 +1466,7 @@ void SIP::SipCallBack(nua_event_t pEvent, int pStatus, char const *pPhrase, nua_
                 Answer to outgoing INVITE.
             */
             case nua_r_invite:
-                tSIP->SipReceivedCallResponse(tRemote, tLocal, pNuaHandle, pStatus, pPhrase, pSip, pTags, tSourceIp, tSourcePort);
+                SipReceivedCallResponse(tRemote, tLocal, pNuaHandle, pStatus, pPhrase, pSip, pTags, tSourceIp, tSourcePort);
                 break;
             /*################################################################
                 nua_r_cancel    Answer to outgoing CANCEL.
@@ -1483,7 +1503,7 @@ void SIP::SipCallBack(nua_event_t pEvent, int pStatus, char const *pPhrase, nua_
                         tags    empty
             */
             case nua_r_bye:
-                tSIP->SipReceivedCallHangupResponse(tRemote, tLocal, pNuaHandle, pStatus, pSip, tSourceIp, tSourcePort);
+                SipReceivedCallHangupResponse(tRemote, tLocal, pNuaHandle, pStatus, pSip, tSourceIp, tSourcePort);
                 break;
             /*################################################################
                 nua_r_options   Answer to outgoing OPTIONS.
@@ -1503,7 +1523,7 @@ void SIP::SipCallBack(nua_event_t pEvent, int pStatus, char const *pPhrase, nua_
                         tags    empty
             */
             case nua_r_options:
-                tSIP->SipReceivedOptionsResponse(tRemote, tLocal, pNuaHandle, pStatus, pSip, tSourceIp, tSourcePort);
+                SipReceivedOptionsResponse(tRemote, tLocal, pNuaHandle, pStatus, pSip, tSourceIp, tSourcePort);
                 break;
             /*################################################################
                 nua_r_refer     Answer to outgoing REFER.
@@ -1543,7 +1563,7 @@ void SIP::SipCallBack(nua_event_t pEvent, int pStatus, char const *pPhrase, nua_
                         tags    empty
             */
             case nua_r_publish:
-                tSIP->SipReceivedPublishResponse(tRemote, tLocal, pNuaHandle, pStatus, pPhrase, pSip, tSourceIp, tSourcePort);
+                SipReceivedPublishResponse(tRemote, tLocal, pNuaHandle, pStatus, pPhrase, pSip, tSourceIp, tSourcePort);
                 break;
             /*################################################################
                 nua_r_unpublish         Answer to outgoing un-PUBLISH.
@@ -1628,7 +1648,7 @@ void SIP::SipCallBack(nua_event_t pEvent, int pStatus, char const *pPhrase, nua_
                         tags    empty
             */
             case nua_r_message:
-                tSIP->SipReceivedMessageResponse(tRemote, tLocal, pNuaHandle, pStatus, pSip, pTags, tSourceIp, tSourcePort);
+                SipReceivedMessageResponse(tRemote, tLocal, pNuaHandle, pStatus, pSip, tSourceIp, tSourcePort);
                 break;
 
             /*################################################################
@@ -1745,7 +1765,7 @@ void SIP::SipCallBack(nua_event_t pEvent, int pStatus, char const *pPhrase, nua_
                         tags    empty
             */
             case nua_r_authenticate:
-                tSIP->SipReceivedAuthenticationResponse(tRemote, tLocal, pNuaHandle, pStatus, tSourceIp, tSourcePort);
+                SipReceivedAuthenticationResponse(tRemote, tLocal, pNuaHandle, pStatus, tSourceIp, tSourcePort);
                 break;
 
             /*################################################################
@@ -2057,7 +2077,7 @@ void SIP::SipReceivedMessageUnavailable(const sip_to_t *pSipRemote, const sip_to
     MEETING.notifyObservers(tMUEvent);
 }
 
-void SIP::SipReceivedMessageResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, sip_t const *pSip, tagi_t pTags[], string pSourceIp, unsigned int pSourcePort)
+void SIP::SipReceivedMessageResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, sip_t const *pSip, string pSourceIp, unsigned int pSourcePort)
 {
     switch(pStatus)
     {
@@ -2091,15 +2111,16 @@ void SIP::SipReceivedMessageResponse(const sip_to_t *pSipRemote, const sip_to_t 
     }
 }
 
-void SIP::SipReceivedCall(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, tagi_t pTags[], string pSourceIp, unsigned int pSourcePort)
+void SIP::SipReceivedCall(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, void* pTags, string pSourceIp, unsigned int pSourcePort)
 {
     int tCallState = nua_callstate_init;
     //char const *tLocalSdp = NULL;
     char const *tRemoteSdp = NULL;
     sip_to_t *to;
     sip_from_t *from;
+    tagi_t* tTags = (tagi_t*)pTags;
 
-    tl_gets(pTags,
+    tl_gets(tTags,
             NUTAG_CALLSTATE_REF(tCallState),
             //SOATAG_LOCAL_SDP_STR_REF(tLocalSdp),
             SOATAG_REMOTE_SDP_STR_REF(tRemoteSdp),
@@ -2173,7 +2194,7 @@ void SIP::SipReceivedCall(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal,
     }
 }
 
-void SIP::SipReceivedCallStateChange(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, tagi_t pTags[], string pSourceIp, unsigned int pSourcePort)
+void SIP::SipReceivedCallStateChange(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, void* pTags, string pSourceIp, unsigned int pSourcePort)
 {
     int tCallState = nua_callstate_init;
     //char const *tLocalSdp = NULL;
@@ -2194,7 +2215,8 @@ void SIP::SipReceivedCallStateChange(const sip_to_t *pSipRemote, const sip_to_t 
     if ((tPos = pSourceIp.find("[")) != string::npos)
         pSourceIp = pSourceIp.substr(1, pSourceIp.length() - 2);
 
-    tl_gets(pTags,
+    tagi_t* tTags = (tagi_t*)pTags;
+    tl_gets(tTags,
             NUTAG_CALLSTATE_REF(tCallState),
             //SOATAG_LOCAL_SDP_STR_REF(tLocalSdp),
             SOATAG_REMOTE_SDP_STR_REF(tRemoteSdp),
@@ -2226,7 +2248,7 @@ void SIP::SipReceivedCallStateChange(const sip_to_t *pSipRemote, const sip_to_t 
          *
          */
 
-        tSdpParsed = sdp_parse(&mSipContext.Home, tRemoteSdp, strlen(tRemoteSdp), sdp_f_insane);
+        tSdpParsed = sdp_parse(&mSipContext->Home, tRemoteSdp, strlen(tRemoteSdp), sdp_f_insane);
         if ((tParserError = sdp_parsing_error(tSdpParsed)) != NULL)
             LOG(LOG_INFO, "Error parsing remote SDP with result: %s", tParserError);
         else
@@ -2515,7 +2537,7 @@ void SIP::SipReceivedShutdownResponse(const sip_to_t *pSipRemote, const sip_to_t
         mSipStackOnline = false;
 }
 
-void SIP::SipReceivedCallResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, const char* pPhrase, sip_t const *pSip, tagi_t pTags[], string pSourceIp, unsigned int pSourcePort)
+void SIP::SipReceivedCallResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, const char* pPhrase, sip_t const *pSip, void* pTags, string pSourceIp, unsigned int pSourcePort)
 {
     size_t tNatIpPos;
     string tPhrase = string(pPhrase);
@@ -2524,7 +2546,8 @@ void SIP::SipReceivedCallResponse(const sip_to_t *pSipRemote, const sip_to_t *pS
     //char const *tLocalSdp = NULL;
     char const *tRemoteSdp = NULL;
 
-    tl_gets(pTags,
+    tagi_t* tTags = (tagi_t*)pTags;
+    tl_gets(tTags,
             NUTAG_CALLSTATE_REF(tCallState),
             //SOATAG_LOCAL_SDP_STR_REF(tLocalSdp),
             SOATAG_REMOTE_SDP_STR_REF(tRemoteSdp),
@@ -2601,14 +2624,14 @@ void SIP::SipSendMessage(MessageEvent *pMEvent)
     sip_to_t *to;
     sip_from_t *from;
 
-    to = sip_to_make(&mSipContext.Home, pMEvent->Receiver.c_str());
+    to = sip_to_make(&mSipContext->Home, pMEvent->Receiver.c_str());
     if (to == NULL)
     {
         LOG(LOG_ERROR, "Can not create \"to\" handle for function \"SendMessage\" and receiver \"%s\"", pMEvent->Receiver.c_str());
         return;
     }
 
-    from = sip_to_make(&mSipContext.Home, pMEvent->Sender.c_str());
+    from = sip_to_make(&mSipContext->Home, pMEvent->Sender.c_str());
     if (from == NULL)
     {
         LOG(LOG_ERROR, "Can not create \"from\" handle for function \"SendMessage\" and sender \"%s\"", pMEvent->Sender.c_str());
@@ -2620,7 +2643,7 @@ void SIP::SipSendMessage(MessageEvent *pMEvent)
         from->a_url->url_password = pMEvent->SenderComment.c_str();
 
     // create operation handle
-    tHandle = nua_handle(mSipContext.Nua, NULL, SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), SIPTAG_TO(to), SIPTAG_FROM(from), TAG_END());
+    tHandle = nua_handle(mSipContext->Nua, NULL, SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), SIPTAG_TO(to), SIPTAG_FROM(from), TAG_END());
 
     if (tHandle == NULL)
     {
@@ -2660,14 +2683,14 @@ void SIP::SipSendCall(CallEvent *pCEvent)
     string tOwnContactIp;
     unsigned int tOwnContactPort;
 
-    tTo = sip_to_make(&mSipContext.Home, pCEvent->Receiver.c_str());
+    tTo = sip_to_make(&mSipContext->Home, pCEvent->Receiver.c_str());
     if (tTo == NULL)
     {
         LOG(LOG_ERROR, "Can not create \"to\" handle for function \"SipSendCall\" and receiver \"%s\"", pCEvent->Receiver.c_str());
         return;
     }
 
-    tFrom = sip_to_make(&mSipContext.Home, pCEvent->Sender.c_str());
+    tFrom = sip_to_make(&mSipContext->Home, pCEvent->Sender.c_str());
     if (tFrom == NULL)
     {
         LOG(LOG_ERROR, "Can not create \"from\" handle for function \"SipSendCall\" and sender \"%s\"", pCEvent->Sender.c_str());
@@ -2681,16 +2704,16 @@ void SIP::SipSendCall(CallEvent *pCEvent)
     // NAT traversal: explicit CONTACT header necessary
     //                otherwise acknowledge and session activation from the answering host will be lost because of routing problems
     // hint: SIP usually uses the sender's CONTACT header for routing responses
-    MEETING.getOwnContactAddress(tParticipant, tOwnContactIp, tOwnContactPort);
+    MEETING.GetOwnContactAddress(tParticipant, tOwnContactIp, tOwnContactPort);
     LOG(LOG_VERBOSE, "Contact header: %s", ("sip:" + tOwnContactIp + ":" + toString(tOwnContactPort)).c_str());
-    tContact = sip_contact_make(&mSipContext.Home, ("sip:" + tOwnContactIp + ":" + toString(tOwnContactPort)).c_str());
+    tContact = sip_contact_make(&mSipContext->Home, ("sip:" + tOwnContactIp + ":" + toString(tOwnContactPort)).c_str());
 
     tFrom->a_display = pCEvent->SenderName.c_str();
     if (pCEvent->SenderComment.size())
         tFrom->a_url->url_password = pCEvent->SenderComment.c_str();
 
     // create operation handle
-    tHandle = nua_handle(mSipContext.Nua, NULL, SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), SOATAG_ADDRESS(tOwnContactIp.c_str()), TAG_IF(tContact, SIPTAG_CONTACT(tContact)), SIPTAG_TO(tTo), SIPTAG_FROM(tFrom), TAG_END());
+    tHandle = nua_handle(mSipContext->Nua, NULL, SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), SOATAG_ADDRESS(tOwnContactIp.c_str()), TAG_IF(tContact, SIPTAG_CONTACT(tContact)), SIPTAG_TO(tTo), SIPTAG_FROM(tFrom), TAG_END());
 
     if (tHandle == NULL)
     {
@@ -2703,7 +2726,7 @@ void SIP::SipSendCall(CallEvent *pCEvent)
 
     // initialize SDP protocol parameters
     // set SDP string
-    tSdp = MEETING.getSdp(tParticipant);
+    tSdp = MEETING.GetSdpData(tParticipant);
 
     printFromToSendingSipEvent(tHandle, pCEvent, "Call");
     LOG(LOG_INFO, "CallSdp: %s", tSdp);
@@ -2737,7 +2760,7 @@ void SIP::SipSendCallAccept(CallAcceptEvent *pCAEvent)
     pCAEvent->Receiver.erase(0, 4);
 
     // get SDP string
-    tSdp = MEETING.getSdp(pCAEvent->Receiver);
+    tSdp = MEETING.GetSdpData(pCAEvent->Receiver);
 
     printFromToSendingSipEvent(tHandle, pCAEvent, "CallAccept");
     LOG(LOG_INFO, "CallAcceptSdp: %s", tSdp);
@@ -2746,9 +2769,9 @@ void SIP::SipSendCallAccept(CallAcceptEvent *pCAEvent)
     // NAT traversal: explicit CONTACT header necessary
     //                otherwise acknowledge and session activation from the requesting host will be lost because of routing problems
     // hint: SIP usually uses the sender's CONTACT header for routing responses to the sender
-    MEETING.getOwnContactAddress(pCAEvent->Receiver, tOwnContactIp, tOwnContactPort);
+    MEETING.GetOwnContactAddress(pCAEvent->Receiver, tOwnContactIp, tOwnContactPort);
     LOG(LOG_VERBOSE, "Contact header: %s", ("sip:" + tOwnContactIp + ":" + toString(tOwnContactPort)).c_str());
-    tContact = sip_contact_make(&mSipContext.Home, ("sip:" + tOwnContactIp + ":" + toString(tOwnContactPort)).c_str());
+    tContact = sip_contact_make(&mSipContext->Home, ("sip:" + tOwnContactIp + ":" + toString(tOwnContactPort)).c_str());
 
     nua_respond(tHandle, SIP_STATE_OKAY, "OK", SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), SOATAG_ADDRESS(tOwnContactIp.c_str()), TAG_IF(tContact, SIPTAG_CONTACT(tContact)), TAG_IF(tSdp, SOATAG_USER_SDP_STR(tSdp)), TAG_END());
 
@@ -2832,7 +2855,7 @@ void SIP::SipSendCallHangUp(CallHangUpEvent *pCHUEvent)
 {
     sip_to_t *to;
 
-    to = sip_to_make(&mSipContext.Home, pCHUEvent->Receiver.c_str());
+    to = sip_to_make(&mSipContext->Home, pCHUEvent->Receiver.c_str());
     if (to == NULL)
     {
         LOG(LOG_ERROR, "Can not create \"to\" handle for function \"SipSendCallHangUp\" and sender \"%s\"", pCHUEvent->Receiver.c_str());
@@ -2865,14 +2888,14 @@ void SIP::SipSendOptionsRequest(OptionsEvent *pOEvent)
     sip_to_t *to;
     sip_from_t *from;
 
-    to = sip_to_make(&mSipContext.Home, pOEvent->Receiver.c_str());
+    to = sip_to_make(&mSipContext->Home, pOEvent->Receiver.c_str());
     if (to == NULL)
     {
         LOG(LOG_ERROR, "Can not create \"to\" handle for function \"SipSendOptionsRequest\" and receiver \"%s\"", pOEvent->Receiver.c_str());
         return;
     }
 
-    from = sip_to_make(&mSipContext.Home, pOEvent->Sender.c_str());
+    from = sip_to_make(&mSipContext->Home, pOEvent->Sender.c_str());
     if (from == NULL)
     {
         LOG(LOG_ERROR, "Can not create \"from\" handle for function \"SipSendOptionsRequest\" and sender \"%s\"", pOEvent->Sender.c_str());
@@ -2884,7 +2907,7 @@ void SIP::SipSendOptionsRequest(OptionsEvent *pOEvent)
         from->a_url->url_password = pOEvent->SenderComment.c_str();
 
     // create operation handle
-    tHandle = nua_handle(mSipContext.Nua, NULL, SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), SIPTAG_TO(to), SIPTAG_FROM(from), TAG_END());
+    tHandle = nua_handle(mSipContext->Nua, NULL, SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), SIPTAG_TO(to), /*SIPTAG_FROM(from),*/ TAG_END());
 
     if (tHandle == NULL)
     {

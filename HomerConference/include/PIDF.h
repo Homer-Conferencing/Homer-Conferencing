@@ -28,7 +28,7 @@
 #ifndef _CONFERENCE_PIDF_
 #define _CONFERENCE_PIDF_
 
-#include <Header_SofiaSip.h>
+#include <Header_SofiaSipForwDecl.h>
 #include <string>
 
 namespace Homer { namespace Conference {
