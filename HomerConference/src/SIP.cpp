@@ -125,11 +125,79 @@ string SIP::SipCreateId(string pUser, string pHost, string pPort)
         pHost = "[" + pHost + "]";
 
     // ignore port "5060" because not necessary
-    // HINT: SIP servers would be confused by this suffix -> ignore incoming messages/calls with ":5060" in SIP address
+    // HINT: SIP servers would be confused by this suffix -> they ignore incoming messages/calls with ":5060" in SIP address
     if ((pPort != "") && (pPort != "5060"))
         return (pUser + "@" + pHost + ":" + pPort);
     else
         return (pUser + "@" + pHost);
+}
+
+bool SIP::SplitParticipantName(string pParticipant, string &pUser, string &pHost, string &pPort)
+{
+    size_t tPos;
+
+//    LOGEX(SIP, LOG_VERBOSE, "Participant: %s", pParticipant.c_str());
+
+    // separate user part
+    tPos = pParticipant.find('@');
+    if (tPos != string::npos)
+    {
+        pUser = pParticipant.substr(0, tPos);
+        pParticipant = pParticipant.substr(tPos + 1, pParticipant.size() - tPos);
+    }else{
+        pUser = "";
+        LOGEX(SIP, LOG_WARN, "Couldn't find user part in %s", pParticipant.c_str());
+    }
+
+    // IPv6?
+    tPos = pParticipant.find('[');
+    if (tPos != string::npos)
+    {
+        size_t tPos_HostEnd = pParticipant.find(']');
+        // separate host part
+        pHost = pParticipant.substr(tPos + 1, tPos_HostEnd - tPos -1);
+        // separate port part
+        pPort = pParticipant.substr(tPos_HostEnd + 1 - pParticipant.size() - tPos_HostEnd - 1);
+    }else
+    {
+        tPos = pParticipant.find(':');
+        if (tPos != string::npos)
+        {
+            // separate host part
+            pHost = pParticipant.substr(0, tPos - 1);
+            // separate port part
+            pPort = pParticipant.substr(tPos + 1, pParticipant.size() - tPos - 1);
+
+        }else{
+            // set host by remaining participant string
+            pHost = pParticipant;
+            // set default port
+            pPort = "5060";
+        }
+    }
+
+//    LOGEX(SIP, LOG_VERBOSE, "User: %s", pUser.c_str());
+//    LOGEX(SIP, LOG_VERBOSE, "Host: %s", pHost.c_str());
+//    LOGEX(SIP, LOG_VERBOSE, "Port: %s", pPort.c_str());
+
+    return true;
+}
+
+bool SIP::IsThisParticipant(string pParticipant, string pUser, string pHost, string pPort)
+{
+    bool tResult = false;
+
+    string tUser, tHost, tPort;
+    if (!SplitParticipantName(pParticipant, tUser, tHost, tPort))
+    {
+        LOGEX(SIP, LOG_ERROR, "Could not split participant name into its parts");
+        return false;
+    }
+    tResult = (((tUser == pUser) || (tHost != mSipRegisterServer)) && (tHost == pHost) && (tPort == pPort));
+
+    LOGEX(SIP, LOG_VERBOSE, "Comparing: %s - %s, %s - %s, %s - %s  ==> %s", tUser.c_str(), pUser.c_str(), tHost.c_str(), pHost.c_str(), tPort.c_str(), pPort.c_str(), tResult ? "MATCH" : "different");
+
+    return tResult;
 }
 
 void GlobalSipCallBack(nua_event_t pEvent, int pStatus, char const *pPhrase, nua_t *pNua, nua_magic_t *pMagic, nua_handle_t *pNuaHandle, nua_hmagic_t *pHMagic, sip_t const *pSip, tagi_t pTags[])
@@ -311,7 +379,7 @@ bool SIP::SipLoginAtServer()
 
     LOG(LOG_VERBOSE, "Going to register at sip server..");
 
-    if (getServerRegistrationState())
+    if (GetServerRegistrationState())
     {
         LOG(LOG_WARN, "Still registered at the server, no additional registration possible");
         return false;
@@ -357,7 +425,7 @@ bool SIP::SipLoginAtServer()
 
 void SIP::SipLogoutAtServer()
 {
-    if (!getServerRegistrationState())
+    if (!GetServerRegistrationState())
     {
         LOG(LOG_WARN, "Not registered at SIP server at the moment, no logout possible");
         return;
@@ -385,7 +453,7 @@ bool SIP::RegisterAtServer(string pUsername, string pPassword, string pServer)
 
     if ((mSipRegisterServer != pServer) || (mSipRegisterUsername != pUsername) || (mSipRegisterPassword != pPassword))
     {
-        if (getServerRegistrationState())
+        if (GetServerRegistrationState())
             UnregisterAtServer();
 
         LOG(LOG_VERBOSE, "Register at SIP server %s with login %s:%s", pServer.c_str(), pUsername.c_str(), pPassword.c_str());
@@ -427,7 +495,7 @@ bool SIP::RegisterAtServer()
         return false;
     }
 
-    if (getServerRegistrationState())
+    if (GetServerRegistrationState())
         UnregisterAtServer();
 
     LOG(LOG_VERBOSE, "Re-registering at SIP server");
@@ -459,7 +527,7 @@ void SIP::UnregisterAtServer()
     SipLogoutAtServer();
 }
 
-bool SIP::getServerRegistrationState()
+bool SIP::GetServerRegistrationState()
 {
     return (mSipRegisteredAtServer == true);
 }
@@ -2088,7 +2156,7 @@ void SIP::SipReceivedMessageResponse(const sip_to_t *pSipRemote, const sip_to_t 
             SipReceivedMessageAcceptDelayed(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort);
             break;
         case SIP_STATE_PROXY_AUTH_REQUIRED:
-            if ((pNuaHandle != NULL) && (getServerRegistrationState()))
+            if ((pNuaHandle != NULL) && (GetServerRegistrationState()))
             {
                 string tAuthInfo = "Digest:\"" + mSipRegisterServer + "\":" + mSipRegisterUsername + ":" + mSipRegisterPassword;
 
@@ -2481,7 +2549,7 @@ void SIP::SipReceivedOptionsResponse(const sip_to_t *pSipRemote, const sip_to_t 
             SipReceivedOptionsResponseAccept(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort);
             break;
         case SIP_STATE_PROXY_AUTH_REQUIRED:
-            if ((pNuaHandle != NULL) && (getServerRegistrationState()))
+            if ((pNuaHandle != NULL) && (GetServerRegistrationState()))
             {
                 string tAuthInfo = "Digest:\"" + mSipRegisterServer + "\":" + mSipRegisterUsername + ":" + mSipRegisterPassword;
 
@@ -2566,7 +2634,7 @@ void SIP::SipReceivedCallResponse(const sip_to_t *pSipRemote, const sip_to_t *pS
             SipReceivedCallRinging(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort);
             break;
         case SIP_STATE_PROXY_AUTH_REQUIRED:
-            if ((pNuaHandle != NULL) && (getServerRegistrationState()))
+            if ((pNuaHandle != NULL) && (GetServerRegistrationState()))
             {
                 string tAuthInfo = "Digest:\"" + mSipRegisterServer + "\":" + mSipRegisterUsername + ":" + mSipRegisterPassword;
 
@@ -2658,7 +2726,7 @@ void SIP::SipSendMessage(MessageEvent *pMEvent)
     LOG(LOG_INFO, "MessageText: %s", pMEvent->Text.c_str());
 
     // is the receiver located behind the registered SIP server?
-    if ((getServerRegistrationState()) && (pMEvent->Receiver.find(mSipRegisterServer) != string::npos))
+    if ((GetServerRegistrationState()) && (pMEvent->Receiver.find(mSipRegisterServer) != string::npos))
     {
         string tAuthInfo = "Digest:\"" + mSipRegisterServer + "\":" + mSipRegisterUsername + ":" + mSipRegisterPassword;
 

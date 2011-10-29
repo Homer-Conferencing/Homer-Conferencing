@@ -329,7 +329,7 @@ bool Meeting::CloseParticipantSession(string pParticipant)
 
     for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
     {
-        if (pParticipant.find(SipCreateId(tIt->User, tIt->Host, tIt->Port)) != string::npos)
+        if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
         {
             // hint: the media sources are deleted within video/audio-widget
 
@@ -443,10 +443,10 @@ bool Meeting::SendMessage(string pParticipant, string pMessage)
     // is the recipient already involved in the conference?
     if (mParticipants.size() > 1)
     {
+        LOG(LOG_VERBOSE, "Search matching database entry for SendMessage()");
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_VERBOSE, "Search(for SendMessage): \"%s\" in \"%s\"", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str());
-            if (SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos)
+            if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
             {
                 LOG(LOG_VERBOSE, "...found");
                 tFound = true;
@@ -459,7 +459,7 @@ bool Meeting::SendMessage(string pParticipant, string pMessage)
         {
             MessageEvent *tMEvent = new MessageEvent();
             // is participant user of the registered SIP server then replace sender by our official server login
-            if ((pParticipant.find(mSipRegisterServer) != string::npos) && (getServerRegistrationState()))
+            if ((pParticipant.find(mSipRegisterServer) != string::npos) && (GetServerRegistrationState()))
                 tMEvent->Sender = "sip:" + mSipRegisterUsername + "@" + mSipRegisterServer;
             else
                 tMEvent->Sender = "sip:" + getLocalConferenceId();
@@ -490,10 +490,10 @@ bool Meeting::SendCall(string pParticipant)
     // is the recipient already involved in the conference?
     if (mParticipants.size() > 1)
     {
+        LOG(LOG_VERBOSE, "Search matching database entry for SendCall()");
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_VERBOSE, "Search(for SendCall): \"%s\" in \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
-            if ((SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos) && (tIt->CallState == CALLSTATE_STANDBY))
+            if ((IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port)) && (tIt->CallState == CALLSTATE_STANDBY))
             {
                 LOG(LOG_VERBOSE, "...found");
                 tFound = true;
@@ -506,7 +506,7 @@ bool Meeting::SendCall(string pParticipant)
         {
             CallEvent *tCEvent = new CallEvent();
             // is participant user of the registered SIP server then replace sender by our official server login
-            if ((pParticipant.find(mSipRegisterServer) != string::npos) && (getServerRegistrationState()))
+            if ((pParticipant.find(mSipRegisterServer) != string::npos) && (GetServerRegistrationState()))
                 tCEvent->Sender = "sip:" + mSipRegisterUsername + "@" + mSipRegisterServer;
             else
                 tCEvent->Sender = "sip:" + getLocalConferenceId();
@@ -536,10 +536,10 @@ bool Meeting::SendCallAcknowledge(string pParticipant)
     // is the recipient already involved in the conference?
     if (mParticipants.size() > 1)
     {
+        LOG(LOG_VERBOSE, "Search matching database entry for SendCallAcknowledge()");
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_VERBOSE, "Search(for SendCallAcknowledge): \"%s\" in \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
-            if ((SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos) && (tIt->CallState == CALLSTATE_RINGING))
+            if ((IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port)) && (tIt->CallState == CALLSTATE_RINGING))
             {
                 tFound = true;
                 tHandlePtr = &tIt->SipNuaHandleForCalls;
@@ -580,7 +580,7 @@ bool Meeting::SendCallAccept(string pParticipant)
     {
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            if ((pParticipant.find(SipCreateId(tIt->User, tIt->Host, tIt->Port)) != string::npos) && (tIt->CallState == CALLSTATE_RINGING))
+            if ((IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port)) && (tIt->CallState == CALLSTATE_RINGING))
             {
                 tFound = true;
                 tHandlePtr = &tIt->SipNuaHandleForCalls;
@@ -620,7 +620,7 @@ bool Meeting::SendCallCancel(string pParticipant)
     {
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            if ((pParticipant.find(SipCreateId(tIt->User, tIt->Host, tIt->Port)) != string::npos) && (tIt->CallState == CALLSTATE_RINGING))
+            if ((IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port)) && (tIt->CallState == CALLSTATE_RINGING))
             {
                 tFound = true;
                 tHandlePtr = &tIt->SipNuaHandleForCalls;
@@ -660,7 +660,7 @@ bool Meeting::SendCallDeny(string pParticipant)
     {
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            if ((pParticipant.find(SipCreateId(tIt->User, tIt->Host, tIt->Port)) != string::npos) && (tIt->CallState == CALLSTATE_RINGING))
+            if ((IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port)) && (tIt->CallState == CALLSTATE_RINGING))
             {
                 tFound = true;
                 tHandlePtr = &tIt->SipNuaHandleForCalls;
@@ -698,10 +698,10 @@ bool Meeting::SendHangUp(string pParticipant)
     // is the recipient already involved in the conference?
     if (mParticipants.size() > 1)
     {
+        LOG(LOG_VERBOSE, "Search matching database entry for SendHangUp()");
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_VERBOSE, "CompareForHangUp: \"%s\" with \"%s\" and state: %d", pParticipant.c_str(), (tIt->User + "@" + tIt->Host + ":" + tIt->Port).c_str(), tIt->CallState);
-            if ((pParticipant.find(SipCreateId(tIt->User, tIt->Host, tIt->Port)) != string::npos) && (tIt->CallState == CALLSTATE_RUNNING))
+            if ((IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port)) && (tIt->CallState == CALLSTATE_RUNNING))
             {
                 tFound = true;
                 tIt->CallState = CALLSTATE_STANDBY;
@@ -736,7 +736,7 @@ bool Meeting::SendProbe(std::string pParticipant)
     OptionsEvent *tOEvent = new OptionsEvent();
 
     // is participant user of the registered SIP server then acknowledge directly
-    if ((pParticipant.find(mSipRegisterServer) != string::npos) && (getServerRegistrationState()))
+    if ((pParticipant.find(mSipRegisterServer) != string::npos) && (GetServerRegistrationState()))
     {
         LOG(LOG_VERBOSE, "Probing of %s skipped and participant reported as available because he belongs to the registered SIP server", pParticipant.c_str());
         OptionsAcceptEvent *tOAEvent = new OptionsAcceptEvent();
@@ -774,11 +774,22 @@ const char* Meeting::GetSdpData(std::string pParticipant)
     // is the recipient already involved in the conference?
     if (mParticipants.size() > 1)
     {
+        LOG(LOG_VERBOSE, "Search matching database entry for GetSdpData()");
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_VERBOSE, "Search(for GetSdpData): \"%s\" in \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
-            if (SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos)
+            if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
             {
+                LOG(LOG_VERBOSE, "...found");
+                if (tIt->VSocket == NULL)
+                {
+                    LOG(LOG_ERROR, "Found video socket reference is NULL");
+                    return tResult;
+                }
+                if (tIt->ASocket == NULL)
+                {
+                    LOG(LOG_ERROR, "Found audio socket reference is NULL");
+                    return tResult;
+                }
                 // ####################### get ports #############################
                 tLocalVideoPort = tIt->VSocket->getLocalPort();
                 tLocalAudioPort = tIt->ASocket->getLocalPort();
@@ -810,10 +821,10 @@ bool Meeting::SearchParticipantAndSetState(string pParticipant, int pState)
     // is the recipient already involved in the conference?
     if (mParticipants.size() > 1)
     {
+        LOG(LOG_VERBOSE, "Search matching database entry for SearchParticipantAndSetState()");
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_VERBOSE, "Search(for SearchParticipantAndSetState): \"%s\" in \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
-            if (SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos)
+            if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
             {
                 tIt->CallState = pState;
                 tFound = true;
@@ -840,10 +851,10 @@ bool Meeting::SearchParticipantAndSetOwnContactAddress(string pParticipant, stri
     // is the recipient already involved in the conference?
     if (mParticipants.size() > 1)
     {
+        LOG(LOG_VERBOSE, "Search matching database entry for SearchParticipantAndSetOwnContactAddress()");
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_VERBOSE, "Search(for SearchParticipantAndSetOwnContactAddress): \"%s\" in \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
-            if (SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos)
+            if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
             {
                 tIt->OwnIp = pOwnNatIp;
                 tIt->OwnPort = pOwnNatPort;
@@ -872,10 +883,10 @@ bool Meeting::SearchParticipantAndSetNuaHandleForMsgs(string pParticipant, nua_h
     // is the recipient already involved in the conference?
     if (mParticipants.size() > 1)
     {
+        LOG(LOG_VERBOSE, "Search matching database entry for SearchParticipantAndSetNuaHandleForMsgs()");
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_VERBOSE, "Search(for SearchParticipantAndSetNuaHandleForMsgs): \"%s\" in \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
-            if (SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos)
+            if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
             {
                 tIt->SipNuaHandleForMsgs = pNuaHandle;
                 tFound = true;
@@ -902,10 +913,10 @@ bool Meeting::SearchParticipantAndSetNuaHandleForCalls(string pParticipant, nua_
     // is the recipient already involved in the conference?
     if (mParticipants.size() > 1)
     {
+        LOG(LOG_VERBOSE, "Search matching database entry for SearchParticipantAndSetNuaHandleForCalls()");
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_VERBOSE, "Search(for SearchParticipantAndSetNuaHandleForCalls): \"%s\" in \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
-            if (SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos)
+            if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
             {
                 tIt->SipNuaHandleForCalls = pNuaHandle;
                 tFound = true;
@@ -932,10 +943,10 @@ nua_handle_t** Meeting::SearchParticipantAndGetNuaHandleForCalls(string pPartici
     // is the recipient already involved in the conference?
     if (mParticipants.size() > 1)
     {
+        LOG(LOG_VERBOSE, "Search matching database entry for SearchParticipantAndGetNuaHandleForCalls()");
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_VERBOSE, "Search(for SearchParticipantAndGetNuaHandleForCalls): \"%s\" in \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
-            if (SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos)
+            if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
             {
                 tResult = &tIt->SipNuaHandleForCalls;
                 LOG(LOG_VERBOSE, "...found");
@@ -993,10 +1004,10 @@ bool Meeting::SearchParticipantAndSetRemoteMediaInformation(std::string pPartici
     // is the recipient already involved in the conference?
     if (mParticipants.size() > 1)
     {
+        LOG(LOG_VERBOSE, "Search matching database entry for SearchParticipantAndSetRemoteMediaInformation()");
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_VERBOSE, "Search(for SearchParticipantAndSetRemoteMediaInformation): \"%s\" in \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
-            if (SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos)
+            if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
             {
                 tIt->RemoteVideoHost = pVideoHost;
                 tIt->RemoteVideoPort = pVideoPort;
@@ -1055,10 +1066,10 @@ Socket* Meeting::GetAudioSocket(string pParticipant)
         // is the recipient already involved in the conference?
         if (mParticipants.size() > 1)
         {
+            LOG(LOG_VERBOSE, "Search matching database entry for GetAudioSocket()");
             for (tIt = mParticipants.begin()++; tIt != mParticipants.end(); tIt++)
             {
-                LOG(LOG_VERBOSE, "Search(for GetAudioSocket): \"%s\" in \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
-                if (SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos)
+                if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
                 {
                     tResult = tIt->ASocket;
                     LOG(LOG_VERBOSE, "...found");
@@ -1093,10 +1104,10 @@ Socket* Meeting::GetVideoSocket(string pParticipant)
         // is the recipient already involved in the conference?
         if (mParticipants.size() > 1)
         {
+            LOG(LOG_VERBOSE, "Search matching database entry for GetAudioSocket()");
             for (tIt = mParticipants.begin()++; tIt != mParticipants.end(); tIt++)
             {
-                LOG(LOG_VERBOSE, "Search(for GetVideoSocket): \"%s\" in \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
-                if (SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos)
+                if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
                 {
                     tResult = tIt->VSocket;
                     LOG(LOG_VERBOSE, "...found");
@@ -1131,10 +1142,10 @@ int Meeting::GetCallState(string pParticipant)
         // is the recipient already involved in the conference?
         if (mParticipants.size() > 1)
         {
+            LOG(LOG_VERBOSE, "Search matching database entry for GetCallState()");
             for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
             {
-                LOG(LOG_VERBOSE, "Search(for GetCallState): \"%s\" in \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
-                if (SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos)
+                if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
                 {
                     tResult = tIt->CallState;
                     LOG(LOG_VERBOSE, "...found");
@@ -1181,10 +1192,10 @@ bool Meeting::GetSessionInfo(string pParticipant, struct SessionInfo *pInfo)
         // is the recipient already involved in the conference?
         if (mParticipants.size() > 1)
         {
+            LOG(LOG_VERBOSE, "Search matching database entry for GetSessionInfo()");
             for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
             {
-                //LOG(LOG_VERBOSE, "Search(for GetSessionInfo): \"%s\" in \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
-                if (SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos)
+                if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
                 {
                     tResult = true;
                     pInfo->User = tIt->User;
@@ -1225,10 +1236,10 @@ void Meeting::GetOwnContactAddress(std::string pParticipant, std::string &pIp, u
     // is the recipient already involved in the conference?
     if (mParticipants.size() > 1)
     {
+        LOG(LOG_VERBOSE, "Search matching database entry for GetOwnContactAddress()");
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_VERBOSE, "Search(for GetOwnContactAddress): \"%s\" in \"%s\" and state: %d", pParticipant.c_str(), SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str(), tIt->CallState);
-            if (SipCreateId(tIt->User, tIt->Host, tIt->Port).find(pParticipant) != string::npos)
+            if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
             {
                 pIp = tIt->OwnIp;
                 pPort = tIt->OwnPort;

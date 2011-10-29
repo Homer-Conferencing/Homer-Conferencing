@@ -86,12 +86,14 @@ public:
     bool RegisterAtServer();
     bool RegisterAtServer(std::string pUsername, std::string pPassword, std::string pServer = "sip2sip.info");
     void UnregisterAtServer();
-    bool getServerRegistrationState();
+    bool GetServerRegistrationState();
     std::string GetServerSoftwareId();
     /* NAT detection */
     virtual void SetStunServer(std::string pServer);
     /* general */
     static std::string SipCreateId(std::string pUser, std::string pHost, std::string pPort = "");
+    static bool SplitParticipantName(string pParticipant, string &pUser, string &Host, string &pPort);
+    bool IsThisParticipant(string pParticipant, string pUser, string pHost, string pPort);
 
     /* SIP call back */
     void SipCallBack(int pEvent, int pStatus, char const *pPhrase, nua_t *pNua, nua_magic_t *pMagic, nua_handle_t *pNuaHandle, nua_hmagic_t *pHMagic, sip_t const *pSip, void* pTags);
