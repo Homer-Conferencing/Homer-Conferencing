@@ -28,15 +28,13 @@
 #ifndef _CONFERENCE_MEETING_EVENTS_
 #define _CONFERENCE_MEETING_EVENTS_
 
+#include <Header_SofiaSipForwDecl.h>
 #include <HBMutex.h>
 
 #include <string>
 
 using namespace std;
 using namespace Homer::Base;
-
-// forw. decl. to avoid dependency from sofia-sip headers
-struct nua_handle_s;
 
 namespace Homer { namespace Conference {
 
