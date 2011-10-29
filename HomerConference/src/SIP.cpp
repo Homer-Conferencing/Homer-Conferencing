@@ -1053,7 +1053,7 @@ void SIP::SipCallBack(int pEvent, int pStatus, char const *pPhrase, nua_t *pNua,
                         tags    empty
              */
             case nua_i_options :
-                LOGEX(SIP, LOG_INFO, "FUNCTION NOT IMPLEMENTED YET");
+                LOGEX(SIP, LOG_INFO, "No further processing of this event, SIP stack will automatically answer the request");
                 break;
             /*################################################################
                 Incoming REFER call transfer.
