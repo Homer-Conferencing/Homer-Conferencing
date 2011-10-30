@@ -1929,15 +1929,21 @@ void SIP::printFromToSendingSipEvent(nua_handle_t *pNuaHandle, GeneralEvent *pEv
 void SIP::initParticipantTriplet(const sip_to_t *pRemote, sip_t const *pSip, string &pSourceIp, unsigned int pSourcePort, string &pUser, string &pHost, string &pPort)
 {
     pUser = pRemote->a_url->url_user;
+    pHost = string(pRemote->a_url->url_host);
 
-//    if ((pSourceIp.size()) && (pSourceIp != "0.0.0.0") && (pSourceIp != "::"))
-//    {
-//        pHost = pSourceIp;
-//    }else
-//    {
-        pHost = string(pRemote->a_url->url_host);
-//        pSourceIp = pHost;
-//    }
+    /*
+     * use source IP from network layer if:
+     *              * source IP is valid
+     *              * source from SIP header is not a DNS name (means the SIP header is not from a SIP server (PBX box))
+     */
+
+    if ((pSourceIp.size()) && (pSourceIp != "0.0.0.0") && (pSourceIp != "::") && (!IsLetter(&pHost[0])))
+    {
+        pHost = pSourceIp;
+    }else
+    {
+        pSourceIp = pHost;
+    }
 
     if (pRemote->a_url->url_port != NULL)
         pPort = string(pRemote->a_url->url_port);
