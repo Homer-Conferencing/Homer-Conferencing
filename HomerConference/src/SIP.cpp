@@ -261,9 +261,9 @@ void* SIP::Run(void*)
 
             // add brackets for IPv6 address
             if (mSipHostAdr.find(":") != string::npos)
-	            tOwnAddress = "sip:[" + mSipHostAdr + "]:" + toString(mSipHostPort) + ";transport=udp";
+	            tOwnAddress = "sip:[" + toString("::")/*mSipHostAdr*/ + "]:" + toString(mSipHostPort) + ";transport=udp";
 			else
-	            tOwnAddress = "sip:" + mSipHostAdr + ":" + toString(mSipHostPort) + ";transport=udp";
+	            tOwnAddress = "sip:" + toString("0.0.0.0")/*mSipHostAdr*/ + ":" + toString(mSipHostPort) + ";transport=udp";
 
             // NAT traversal: use keepalive packets with interval of 10 seconds
             //                otherwise a NAT box won't maintain the state about the NAT forwarding
