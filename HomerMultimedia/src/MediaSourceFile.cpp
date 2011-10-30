@@ -591,11 +591,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
                         }
 
                         // Decode the next chunk of data
-                        #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(52, 21, 0)
-                            tBytesDecoded = avcodec_decode_video(mCodecContext, tSourceFrame, &tFrameFinished, tPacket.data, tPacket.size);
-                        #else
-                            tBytesDecoded = avcodec_decode_video2(mCodecContext, tSourceFrame, &tFrameFinished, &tPacket);
-                        #endif
+                        tBytesDecoded = HM_avcodec_decode_video(mCodecContext, tSourceFrame, &tFrameFinished, &tPacket);
 
                         // transfer the presentation time value
                         tSourceFrame->pts = mCurPts;
@@ -754,11 +750,8 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
                             LOG(LOG_VERBOSE, "Decoding audio samples into buffer of size: %d", tOutputBufferSize);
                         #endif
 
-                        #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(52, 21, 0)
-                            int tBytesDecoded = avcodec_decode_audio2(mCodecContext, (int16_t *)pChunkBuffer, &tOutputBufferSize, tPacket.data, tPacket.size);
-                        #else
-                            int tBytesDecoded = avcodec_decode_audio3(mCodecContext, (int16_t *)pChunkBuffer, &tOutputBufferSize, &tPacket);
-                        #endif
+                        int tBytesDecoded = HM_avcodec_decode_audio(mCodecContext, (int16_t *)pChunkBuffer, &tOutputBufferSize, &tPacket);
+
                         pChunkSize = tOutputBufferSize;
                         #ifdef MSF_DEBUG_PACKETS
                             LOG(LOG_VERBOSE, "Result is an audio frame with size of %d bytes from %d encoded bytes", tOutputBufferSize, tBytesDecoded);

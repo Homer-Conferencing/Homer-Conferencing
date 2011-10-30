@@ -749,11 +749,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                         }
 
                         // Decode the next chunk of data
-                        #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(52, 21, 0)
-                            tBytesDecoded = avcodec_decode_video(mCodecContext, tSourceFrame, &tFrameFinished, tPacket.data, tPacket.size);
-                        #else
-                            tBytesDecoded = avcodec_decode_video2(mCodecContext, tSourceFrame, &tFrameFinished, &tPacket);
-                        #endif
+                        tBytesDecoded = HM_avcodec_decode_video(mCodecContext, tSourceFrame, &tFrameFinished, &tPacket);
 
                         // emulate set FPS
                         tSourceFrame->pts = FpsEmulationGetPts();
@@ -910,11 +906,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                         //printf("DecodeFrame..\n");
                         // Decode the next chunk of data
                         int tOutputBufferSize = AVCODEC_MAX_AUDIO_FRAME_SIZE;
-                        #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(52, 21, 0)
-                            int tBytesDecoded = avcodec_decode_audio2(mCodecContext, (int16_t *)pChunkBuffer, &tOutputBufferSize, tPacket.data, tPacket.size);
-                        #else
-                            int tBytesDecoded = avcodec_decode_audio3(mCodecContext, (int16_t *)pChunkBuffer, &tOutputBufferSize, &tPacket);
-                        #endif
+                        int tBytesDecoded = HM_avcodec_decode_audio(mCodecContext, (int16_t *)pChunkBuffer, &tOutputBufferSize, &tPacket);
                         pChunkSize = tOutputBufferSize;
                         //printf("    ..with result: %d bytes decoded into %d bytes\n", tBytesDecoded, tOutputBufferSize);
 

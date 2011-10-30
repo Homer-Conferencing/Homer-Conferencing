@@ -1035,12 +1035,16 @@ void MediaSource::RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacke
     }
 }
 
-bool MediaSource::StartRecording(std::string pSaveFileName, bool pRealTime)
+bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality, bool pRealTime)
 {
     int                 tResult;
     AVOutputFormat      *tFormat;
     AVStream            *tStream;
     AVCodec             *tCodec;
+    CodecID             tSaveFileCodec = CODEC_ID_NONE;
+    int                 tMediaStreamIndex = 0; // we always use stream number 0
+
+    LOG(LOG_VERBOSE, "Going to open recorder, media type is \"%s\"", GetMediaTypeStr().c_str());
 
     //find simple file name
 	size_t tSize;
@@ -1062,12 +1066,6 @@ bool MediaSource::StartRecording(std::string pSaveFileName, bool pRealTime)
     //char tTitle[512] = "recorded live video";
     char tCopyright[512] = "free for use";
     char tComment[512] = "see http://www.homer-conferencing.com";
-
-    if (mMediaType == MEDIA_AUDIO)
-    {
-        LOG(LOG_ERROR, "Wrong media type (audio)");
-        return false;
-    }
 
     // lock grabbing
     mGrabMutex.lock();
@@ -1112,17 +1110,10 @@ bool MediaSource::StartRecording(std::string pSaveFileName, bool pRealTime)
     mRecorderFormatContext->oformat = tFormat;
 
     // set meta data
-    #if LIBAVFORMAT_VERSION_INT <= AV_VERSION_INT(52, 64, 2)
-        av_metadata_set(&mRecorderFormatContext->metadata, "author"   , tAuthor);
-        av_metadata_set(&mRecorderFormatContext->metadata, "comment"  , tComment);
-        av_metadata_set(&mRecorderFormatContext->metadata, "copyright", tCopyright);
-        av_metadata_set(&mRecorderFormatContext->metadata, "title"    , tSimpleFileName.c_str());//tTitle
-    #else
-        av_metadata_set2(&mRecorderFormatContext->metadata, "author"   , tAuthor, AV_METADATA_MATCH_CASE);
-        av_metadata_set2(&mRecorderFormatContext->metadata, "comment"  , tComment, AV_METADATA_MATCH_CASE);
-        av_metadata_set2(&mRecorderFormatContext->metadata, "copyright", tCopyright, AV_METADATA_MATCH_CASE);
-        av_metadata_set2(&mRecorderFormatContext->metadata, "title"    , tSimpleFileName.c_str(), AV_METADATA_MATCH_CASE);//tTitle
-    #endif
+    HM_av_metadata_set(&mRecorderFormatContext->metadata, "author"   , tAuthor);
+    HM_av_metadata_set(&mRecorderFormatContext->metadata, "comment"  , tComment);
+    HM_av_metadata_set(&mRecorderFormatContext->metadata, "copyright", tCopyright);
+    HM_av_metadata_set(&mRecorderFormatContext->metadata, "title"    , tSimpleFileName.c_str());
 
     // set filename
     sprintf(mRecorderFormatContext->filename, "%s", pSaveFileName.c_str());
@@ -1130,48 +1121,96 @@ bool MediaSource::StartRecording(std::string pSaveFileName, bool pRealTime)
     // allocate new stream structure
     tStream = av_new_stream(mRecorderFormatContext, 0);
     mRecorderCodecContext = tStream->codec;
-    mRecorderCodecContext->codec_id = tFormat->video_codec;
-    if (tFormat->video_codec == CODEC_ID_H263P)
-        mRecorderCodecContext->flags |= CODEC_FLAG_H263P_SLICE_STRUCT | CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED | CODEC_FLAG_H263P_UMV | CODEC_FLAG_H263P_AIV;
 
-    mRecorderCodecContext->codec_type = AVMEDIA_TYPE_VIDEO;
     // put sample parameters
     mRecorderCodecContext->bit_rate = 500000;
-    // resolution
-    mRecorderCodecContext->width = mSourceResX;
-    mRecorderCodecContext->height = mSourceResY;
-    /*
-     * time base: this is the fundamental unit of time (in seconds) in terms
-     * of which frame timestamps are represented. for fixed-FrameRate content,
-     * timebase should be 1/framerate and timestamp increments should be
-     * identically to 1.
-     */
-    mRecorderCodecContext->time_base.den = (int)mFrameRate * 100;
-    mRecorderCodecContext->time_base.num = 100;
-    tStream->time_base.den = (int)mFrameRate * 100;
-    tStream->time_base.num = 100;
-    LOG(LOG_VERBOSE, "FPS: %f", mFrameRate);
-    LOG(LOG_INFO, "    ..codec time_base: %d/%d", mRecorderCodecContext->time_base.den, mRecorderCodecContext->time_base.num); // inverse
-    LOG(LOG_INFO, "    ..stream rfps: %d/%d", mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num, mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den);
-    LOG(LOG_INFO, "    ..stream time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->time_base.den, mFormatContext->streams[mMediaStreamIndex]->time_base.num); // inverse
-    LOG(LOG_INFO, "    ..stream codec time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->codec->time_base.den, mFormatContext->streams[mMediaStreamIndex]->codec->time_base.num); // inverse
-    // one I-Frame every twelve frames at most, GOP = group of pictures
-    mRecorderCodecContext->gop_size = 12; // key frame every 12 frames
 
-    // set pixel format
-    mRecorderCodecContext->pix_fmt = PIX_FMT_YUV420P;
+    switch(mMediaType)
+    {
+        case MEDIA_VIDEO:
+                tSaveFileCodec = tFormat->video_codec;
+                mRecorderCodecContext->codec_id = tFormat->video_codec;
+                mRecorderCodecContext->codec_type = AVMEDIA_TYPE_VIDEO;
 
-    // activate ffmpeg internal fps emulation
-    //mRecorderCodecContext->rate_emu = 1;
+                if (tFormat->video_codec == CODEC_ID_H263P)
+                    mRecorderCodecContext->flags |= CODEC_FLAG_H263P_SLICE_STRUCT | CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED | CODEC_FLAG_H263P_UMV | CODEC_FLAG_H263P_AIV;
+                // resolution
 
-    // some formats want stream headers to be separate
-    if(mRecorderFormatContext->oformat->flags & AVFMT_GLOBALHEADER)
-        mRecorderCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
+                mRecorderCodecContext->width = mSourceResX;
+                mRecorderCodecContext->height = mSourceResY;
+
+                /*
+                 * time base: this is the fundamental unit of time (in seconds) in terms
+                 * of which frame timestamps are represented. for fixed-FrameRate content,
+                 * timebase should be 1/framerate and timestamp increments should be
+                 * identically to 1.
+                 */
+                mRecorderCodecContext->time_base.den = (int)mFrameRate * 100;
+                mRecorderCodecContext->time_base.num = 100;
+                tStream->time_base.den = (int)mFrameRate * 100;
+                tStream->time_base.num = 100;
+                // set i frame distance: GOP = group of pictures
+                mRecorderCodecContext->gop_size = (100 - pSaveFileQuality) / 5; // default is 12
+                mRecorderCodecContext->qmin = 1; // default is 2
+                mRecorderCodecContext->qmax = 2 +(100 - pSaveFileQuality) / 4; // default is 31
+                // set pixel format
+                mRecorderCodecContext->pix_fmt = PIX_FMT_YUV420P;
+
+                // workaround for incompatibility of ffmpeg/libx264
+                // inspired by check within libx264 in "x264_validate_parameters()" of encoder.c
+                if (tFormat->video_codec == CODEC_ID_H264)
+                {
+                    mRecorderCodecContext->me_range = 16;
+                    mRecorderCodecContext->max_qdiff = 4;
+                    mRecorderCodecContext->qcompress = 0.6;
+                }
+
+                // set MPEG quantizer: for h261/h263/mjpeg use the h263 quantizer, in other cases use the MPEG2 one
+            //    if ((tFormat->video_codec == CODEC_ID_H261) || (tFormat->video_codec == CODEC_ID_H263) || (tFormat->video_codec == CODEC_ID_H263P) || (tFormat->video_codec == CODEC_ID_MJPEG))
+            //        mRecorderCodecContext->mpeg_quant = 0;
+            //    else
+            //        mRecorderCodecContext->mpeg_quant = 1;
+
+                // set pixel format
+                if (tFormat->video_codec == CODEC_ID_MJPEG)
+                    mRecorderCodecContext->pix_fmt = PIX_FMT_YUVJ420P;
+                else
+                    mRecorderCodecContext->pix_fmt = PIX_FMT_YUV420P;
+
+                // allocate software scaler context if necessary
+                mRecorderScalerContext = sws_getContext(mSourceResX, mSourceResY, mCodecContext->pix_fmt, mSourceResX, mSourceResY, mRecorderCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
+
+                // Dump information about device file
+                dump_format(mRecorderFormatContext, 0, "MediaSource recorder (video)", true);
+
+                break;
+        case MEDIA_AUDIO:
+                tSaveFileCodec = tFormat->audio_codec;
+                mRecorderCodecContext->codec_id = tFormat->audio_codec;
+                mRecorderCodecContext->codec_type = AVMEDIA_TYPE_AUDIO;
+
+                mRecorderCodecContext->channels = mStereo?2:1; // stereo?
+                mRecorderCodecContext->bit_rate = MediaSource::AudioQuality2BitRate(pSaveFileQuality); // streaming rate
+                mRecorderCodecContext->sample_rate = mSampleRate; // sampling rate: 22050, 44100
+
+                mRecorderCodecContext->qmin = 2; // 2
+                mRecorderCodecContext->qmax = 9;/*2 +(100 - mAudioStreamQuality) / 4; // 31*/
+                mRecorderCodecContext->sample_fmt = SAMPLE_FMT_S16;
+
+                // Dump information about device file
+                dump_format(mRecorderFormatContext, 0, "MediaSource recorder (audio)", true);
+
+                break;
+        default:
+        case MEDIA_UNKNOWN:
+                LOG(LOG_ERROR, "Media type unknown");
+                break;
+    }
 
     // reset output stream parameters
     if ((tResult = av_set_parameters(mRecorderFormatContext, NULL)) < 0)
     {
-        LOG(LOG_ERROR, "Invalid output format parameters because of \"%s\".", strerror(AVUNERROR(tResult)));
+        LOG(LOG_ERROR, "Invalid %s output format parameters because of \"%s\".", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
         // free codec and stream 0
         av_freep(&mRecorderFormatContext->streams[0]->codec);
         av_freep(&mRecorderFormatContext->streams[0]);
@@ -1185,13 +1224,17 @@ bool MediaSource::StartRecording(std::string pSaveFileName, bool pRealTime)
         return false;
     }
 
-    // Dump information about device file
-    dump_format(mRecorderFormatContext, 0, "MediaSourceFfmpeg recorder", true);
+    // activate ffmpeg internal fps emulation
+    //mRecorderCodecContext->rate_emu = 1;
+
+    // some formats want stream headers to be separate
+    if(mRecorderFormatContext->oformat->flags & AVFMT_GLOBALHEADER)
+        mRecorderCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
 
     // Find the encoder for the video stream
-    if ((tCodec = avcodec_find_encoder(tFormat->video_codec)) == NULL)
+    if ((tCodec = avcodec_find_encoder(tSaveFileCodec)) == NULL)
     {
-        LOG(LOG_ERROR, "Couldn't find a fitting codec");
+        LOG(LOG_ERROR, "Couldn't find a fitting %s codec", GetMediaTypeStr().c_str());
         // free codec and stream 0
         av_freep(&mRecorderFormatContext->streams[0]->codec);
         av_freep(&mRecorderFormatContext->streams[0]);
@@ -1206,9 +1249,9 @@ bool MediaSource::StartRecording(std::string pSaveFileName, bool pRealTime)
     }
 
     // Open codec
-    if (avcodec_open(mRecorderCodecContext, tCodec) < 0)
+    if ((tResult = avcodec_open(mRecorderCodecContext, tCodec)) < 0)
     {
-        LOG(LOG_ERROR, "Couldn't open codec");
+        LOG(LOG_ERROR, "Couldn't open %s codec because of \"%s\".", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
         // free codec and stream 0
         av_freep(&mRecorderFormatContext->streams[0]->codec);
         av_freep(&mRecorderFormatContext->streams[0]);
@@ -1221,9 +1264,6 @@ bool MediaSource::StartRecording(std::string pSaveFileName, bool pRealTime)
 
         return false;
     }
-
-    // allocate software scaler context if necessary
-    mRecorderScalerContext = sws_getContext(mSourceResX, mSourceResY, mCodecContext->pix_fmt, mSourceResX, mSourceResY, mRecorderCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
 
     // open the output file, if needed
     if (!(tFormat->flags & AVFMT_NOFILE))
@@ -1248,21 +1288,44 @@ bool MediaSource::StartRecording(std::string pSaveFileName, bool pRealTime)
     // allocate streams private data buffer and write the streams header, if any
     av_write_header(mRecorderFormatContext);
 
-    LOG(LOG_INFO, "Recording...");
-    LOG(LOG_INFO, "    ..pts adaption for realtime recording: %d", pRealTime);
-    LOG(LOG_INFO, "    ..resolution: %d * %d", mRecorderCodecContext->width, mRecorderCodecContext->height);
-    LOG(LOG_INFO, "    ..codec name: %s", tCodec->name);
+    LOG(LOG_INFO, "%s recorder opened...", GetMediaTypeStr().c_str());
+
+    LOG(LOG_INFO, "    ..selected recording quality: %d%", pSaveFileQuality);
+    LOG(LOG_INFO, "    ..pts adaption for real-time recording: %d", pRealTime);
+
+    LOG(LOG_INFO, "    ..codec name: %s", mRecorderCodecContext->codec->name);
+    LOG(LOG_INFO, "    ..codec long name: %s", mRecorderCodecContext->codec->long_name);
+    LOG(LOG_INFO, "    ..codec flags: 0x%x", mRecorderCodecContext->flags);
     LOG(LOG_INFO, "    ..codec time_base: %d/%d", mRecorderCodecContext->time_base.den, mRecorderCodecContext->time_base.num); // inverse
-    LOG(LOG_INFO, "    ..stream rfps: %d/%d", mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num, mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den);
-    LOG(LOG_INFO, "    ..stream time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->time_base.den, mFormatContext->streams[mMediaStreamIndex]->time_base.num); // inverse
-    LOG(LOG_INFO, "    ..stream codec time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->codec->time_base.den, mFormatContext->streams[mMediaStreamIndex]->codec->time_base.num); // inverse
-    LOG(LOG_INFO, "    ..i-frame distance: %d", mRecorderCodecContext->gop_size);
+    LOG(LOG_INFO, "    ..stream rfps: %d/%d", mRecorderFormatContext->streams[tMediaStreamIndex]->r_frame_rate.num, mRecorderFormatContext->streams[tMediaStreamIndex]->r_frame_rate.den);
+    LOG(LOG_INFO, "    ..stream time_base: %d/%d", mRecorderFormatContext->streams[tMediaStreamIndex]->time_base.den, mRecorderFormatContext->streams[tMediaStreamIndex]->time_base.num); // inverse
+    LOG(LOG_INFO, "    ..stream codec time_base: %d/%d", mRecorderFormatContext->streams[tMediaStreamIndex]->codec->time_base.den, mRecorderFormatContext->streams[tMediaStreamIndex]->codec->time_base.num); // inverse
     LOG(LOG_INFO, "    ..bit rate: %d", mRecorderCodecContext->bit_rate);
+    LOG(LOG_INFO, "    ..desired device: %s", mDesiredDevice.c_str());
+    LOG(LOG_INFO, "    ..current device: %s", mCurrentDevice.c_str());
     LOG(LOG_INFO, "    ..qmin: %d", mRecorderCodecContext->qmin);
     LOG(LOG_INFO, "    ..qmax: %d", mRecorderCodecContext->qmax);
-    LOG(LOG_INFO, "    ..mpeg quant: %d", mRecorderCodecContext->mpeg_quant);
-    LOG(LOG_INFO, "    ..pixel format: %d", (int)mRecorderCodecContext->pix_fmt);
     LOG(LOG_INFO, "    ..frame size: %d", mRecorderCodecContext->frame_size);
+    LOG(LOG_INFO, "    ..duration: %ld frames", mDuration);
+    LOG(LOG_INFO, "    ..stream context duration: %ld frames, %.0f seconds, format context duration: %ld, nr. of frames: %ld", mRecorderFormatContext->streams[tMediaStreamIndex]->duration, (float)mRecorderFormatContext->streams[tMediaStreamIndex]->duration / mFrameRate, mRecorderFormatContext->duration, mRecorderFormatContext->streams[tMediaStreamIndex]->nb_frames);
+    switch(mMediaType)
+    {
+        case MEDIA_VIDEO:
+            LOG(LOG_INFO, "    ..source resolution: %d * %d", mRecorderCodecContext->width, mRecorderCodecContext->height);
+            LOG(LOG_INFO, "    ..target resolution: %d * %d", mTargetResX, mTargetResY);
+            LOG(LOG_INFO, "    ..i-frame distance: %d", mRecorderCodecContext->gop_size);
+            LOG(LOG_INFO, "    ..mpeg quant: %d", mRecorderCodecContext->mpeg_quant);
+            LOG(LOG_INFO, "    ..pixel format: %d", (int)mRecorderCodecContext->pix_fmt);
+            break;
+        case MEDIA_AUDIO:
+            LOG(LOG_INFO, "    ..sample rate: %d", mRecorderCodecContext->sample_rate);
+            LOG(LOG_INFO, "    ..channels: %d", mRecorderCodecContext->channels);
+            LOG(LOG_INFO, "    ..sample format: %d", (int)mRecorderCodecContext->sample_fmt);
+            break;
+        default:
+            LOG(LOG_ERROR, "Media type unknown");
+            break;
+    }
 
     // unlock grabbing
     mGrabMutex.unlock();
@@ -1278,13 +1341,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, bool pRealTime)
 
 void MediaSource::StopRecording()
 {
-    LOG(LOG_VERBOSE, "Going to close recorder");
-
-    if (mMediaType == MEDIA_AUDIO)
-    {
-        LOG(LOG_ERROR, "Wrong media type (audio)");
-        return;
-    }
+    LOG(LOG_VERBOSE, "Going to close recorder, media type is \"%s\"", GetMediaTypeStr().c_str());
 
     if (mRecording)
     {
@@ -1296,8 +1353,20 @@ void MediaSource::StopRecording()
         // write the trailer, if any
         av_write_trailer(mRecorderFormatContext);
 
-        // free the software scaler context
-        sws_freeContext(mRecorderScalerContext);
+        switch(mMediaType)
+        {
+            case MEDIA_VIDEO:
+                    // free the software scaler context
+                    sws_freeContext(mRecorderScalerContext);
+
+                    break;
+            case MEDIA_AUDIO:
+                    break;
+            default:
+            case MEDIA_UNKNOWN:
+                    LOG(LOG_ERROR, "Media type unknown");
+                    break;
+        }
 
         // Close the codec
         avcodec_close(mRecorderCodecContext);
@@ -1318,10 +1387,10 @@ void MediaSource::StopRecording()
         // unlock grabbing
         mGrabMutex.unlock();
 
-        LOG(LOG_INFO, "...closed");
+        LOG(LOG_INFO, "...closed, media type is \"%s\"", GetMediaTypeStr().c_str());
 
     }else
-        LOG(LOG_INFO, "...wasn't open");
+        LOG(LOG_INFO, "...wasn't open, media type is \"%s\"", GetMediaTypeStr().c_str());
 
     mRecorderStartPts = -1;
 }
@@ -1361,137 +1430,147 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
     }else
         tCurrentPts = mRecorderChunkNumber;
 
-    // #########################################
-    // has resolution changed since last call?
-    // #########################################
-    if ((mSourceResX != mRecorderCodecContext->width) || (mSourceResY != mRecorderCodecContext->height))
+    switch(mMediaType)
     {
-        // free the software scaler context
-        sws_freeContext(mRecorderScalerContext);
+        case MEDIA_VIDEO:
+                // #########################################
+                // has resolution changed since last call?
+                // #########################################
+                if ((mSourceResX != mRecorderCodecContext->width) || (mSourceResY != mRecorderCodecContext->height))
+                {
+                    // free the software scaler context
+                    sws_freeContext(mRecorderScalerContext);
 
-        // set grabbing resolution to the resulting ones delivered by received frame
-        mRecorderCodecContext->width = mSourceResY;
-        mRecorderCodecContext->height = mSourceResY;
+                    // set grabbing resolution to the resulting ones delivered by received frame
+                    mRecorderCodecContext->width = mSourceResY;
+                    mRecorderCodecContext->height = mSourceResY;
 
-        // allocate software scaler context
-        mRecorderScalerContext = sws_getContext(mSourceResX, mSourceResY, mCodecContext->pix_fmt, mSourceResX, mSourceResY, mRecorderCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
+                    // allocate software scaler context
+                    mRecorderScalerContext = sws_getContext(mSourceResX, mSourceResY, mCodecContext->pix_fmt, mSourceResX, mSourceResY, mRecorderCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
 
-        LOG(LOG_INFO, "Resolution changed to (%d * %d)", mSourceResX, mSourceResY);
-    }
+                    LOG(LOG_INFO, "Resolution changed to (%d * %d)", mSourceResX, mSourceResY);
+                }
 
-    // #########################################
-    // scale resolution and transform pixel format
-    // #########################################
-    pSourceFrame->coded_picture_number = mRecorderChunkNumber;
+                // #########################################
+                // scale resolution and transform pixel format
+                // #########################################
+                pSourceFrame->coded_picture_number = mRecorderChunkNumber;
 
-    #ifdef MS_DEBUG_PACKETS
-        LOG(LOG_VERBOSE, "Recorder source frame..");
-        LOG(LOG_VERBOSE, "      ..key frame: %d", pSourceFrame->key_frame);
-        switch(pSourceFrame->pict_type)
-        {
-                case FF_I_TYPE:
-                    LOG(LOG_VERBOSE, "      ..picture type: i-frame");
-                    break;
-                case FF_P_TYPE:
-                    LOG(LOG_VERBOSE, "      ..picture type: p-frame");
-                    break;
-                case FF_B_TYPE:
-                    LOG(LOG_VERBOSE, "      ..picture type: b-frame");
-                    break;
-                default:
-                    LOG(LOG_VERBOSE, "      ..picture type: %d", pSourceFrame->pict_type);
-                    break;
-        }
-        LOG(LOG_VERBOSE, "      ..pts: %ld", pSourceFrame->pts);
-        LOG(LOG_VERBOSE, "      ..coded pic number: %d", pSourceFrame->coded_picture_number);
-        LOG(LOG_VERBOSE, "      ..display pic number: %d", pSourceFrame->display_picture_number);
-    #endif
+                #ifdef MS_DEBUG_PACKETS
+                    LOG(LOG_VERBOSE, "Recorder source frame..");
+                    LOG(LOG_VERBOSE, "      ..key frame: %d", pSourceFrame->key_frame);
+                    switch(pSourceFrame->pict_type)
+                    {
+                            case FF_I_TYPE:
+                                LOG(LOG_VERBOSE, "      ..picture type: i-frame");
+                                break;
+                            case FF_P_TYPE:
+                                LOG(LOG_VERBOSE, "      ..picture type: p-frame");
+                                break;
+                            case FF_B_TYPE:
+                                LOG(LOG_VERBOSE, "      ..picture type: b-frame");
+                                break;
+                            default:
+                                LOG(LOG_VERBOSE, "      ..picture type: %d", pSourceFrame->pict_type);
+                                break;
+                    }
+                    LOG(LOG_VERBOSE, "      ..pts: %ld", pSourceFrame->pts);
+                    LOG(LOG_VERBOSE, "      ..coded pic number: %d", pSourceFrame->coded_picture_number);
+                    LOG(LOG_VERBOSE, "      ..display pic number: %d", pSourceFrame->display_picture_number);
+                #endif
 
-    // transform pixel format to target format
-    if (((tFrame = avcodec_alloc_frame()) == NULL) || (avpicture_alloc((AVPicture*)tFrame, mRecorderCodecContext->pix_fmt, mSourceResX, mSourceResY) != 0))
-    {
-        LOG(LOG_ERROR, "Couldn't allocate frame memory");
-        return;
-    }else
-    {
-        // convert pixel format
-        //HINT: we should execute this step in every case (incl. when pixel format is equal), otherwise data structures are wrong
-        HM_sws_scale(mRecorderScalerContext, pSourceFrame->data, pSourceFrame->linesize, 0, mSourceResY, tFrame->data, tFrame->linesize);
-    }
+                // transform pixel format to target format
+                if (((tFrame = avcodec_alloc_frame()) == NULL) || (avpicture_alloc((AVPicture*)tFrame, mRecorderCodecContext->pix_fmt, mSourceResX, mSourceResY) != 0))
+                {
+                    LOG(LOG_ERROR, "Couldn't allocate frame memory");
+                    return;
+                }else
+                {
+                    // convert pixel format
+                    //HINT: we should execute this step in every case (incl. when pixel format is equal), otherwise data structures are wrong
+                    HM_sws_scale(mRecorderScalerContext, pSourceFrame->data, pSourceFrame->linesize, 0, mSourceResY, tFrame->data, tFrame->linesize);
+                }
 
-    tFrame->coded_picture_number = tCurrentPts;
-    tFrame->pts = tCurrentPts;
-    tFrame->pict_type = pSourceFrame->pict_type;
-    tFrame->key_frame = pSourceFrame->key_frame;
+                tFrame->coded_picture_number = tCurrentPts;
+                tFrame->pts = tCurrentPts;
+                tFrame->pict_type = pSourceFrame->pict_type;
+                tFrame->key_frame = pSourceFrame->key_frame;
 
-    #ifdef MS_DEBUG_PACKETS
-        LOG(LOG_VERBOSE, "Recording video frame..");
-        LOG(LOG_VERBOSE, "      ..key frame: %d", tFrame->key_frame);
-        switch(tFrame->pict_type)
-        {
-                case FF_I_TYPE:
-                    LOG(LOG_VERBOSE, "      ..picture type: i-frame");
-                    break;
-                case FF_P_TYPE:
-                    LOG(LOG_VERBOSE, "      ..picture type: p-frame");
-                    break;
-                case FF_B_TYPE:
-                    LOG(LOG_VERBOSE, "      ..picture type: b-frame");
-                    break;
-                default:
-                    LOG(LOG_VERBOSE, "      ..picture type: %d", tFrame->pict_type);
-                    break;
-        }
-        LOG(LOG_VERBOSE, "      ..pts: %ld", tFrame->pts);
-        LOG(LOG_VERBOSE, "      ..coded pic number: %d", tFrame->coded_picture_number);
-        LOG(LOG_VERBOSE, "      ..display pic number: %d", tFrame->display_picture_number);
-    #endif
+                #ifdef MS_DEBUG_PACKETS
+                    LOG(LOG_VERBOSE, "Recording video frame..");
+                    LOG(LOG_VERBOSE, "      ..key frame: %d", tFrame->key_frame);
+                    switch(tFrame->pict_type)
+                    {
+                            case FF_I_TYPE:
+                                LOG(LOG_VERBOSE, "      ..picture type: i-frame");
+                                break;
+                            case FF_P_TYPE:
+                                LOG(LOG_VERBOSE, "      ..picture type: p-frame");
+                                break;
+                            case FF_B_TYPE:
+                                LOG(LOG_VERBOSE, "      ..picture type: b-frame");
+                                break;
+                            default:
+                                LOG(LOG_VERBOSE, "      ..picture type: %d", tFrame->pict_type);
+                                break;
+                    }
+                    LOG(LOG_VERBOSE, "      ..pts: %ld", tFrame->pts);
+                    LOG(LOG_VERBOSE, "      ..coded pic number: %d", tFrame->coded_picture_number);
+                    LOG(LOG_VERBOSE, "      ..display pic number: %d", tFrame->display_picture_number);
+                #endif
 
-    // #########################################
-    // re-encode the frame
-    // #########################################
-    tFrameSize = avcodec_encode_video(mRecorderCodecContext, (uint8_t *)mRecorderChunkBuffer, RECORDER_CHUNK_BUFFER_SIZE, tFrame);
+                // #########################################
+                // re-encode the frame
+                // #########################################
+                tFrameSize = avcodec_encode_video(mRecorderCodecContext, (uint8_t *)mRecorderChunkBuffer, RECORDER_CHUNK_BUFFER_SIZE, tFrame);
 
-    if (tFrameSize > 0)
-    {
-        av_init_packet(&tPacket);
+                if (tFrameSize > 0)
+                {
+                    av_init_packet(&tPacket);
 
-        // mark i-frame
-        if (mRecorderCodecContext->coded_frame->key_frame)
-            tPacket.flags |= AV_PKT_FLAG_KEY;
+                    // mark i-frame
+                    if (mRecorderCodecContext->coded_frame->key_frame)
+                        tPacket.flags |= AV_PKT_FLAG_KEY;
 
-        // we only have one stream per video stream
-        tPacket.stream_index = 0;
-        tPacket.data = (uint8_t *)mRecorderChunkBuffer;
-        tPacket.size = tFrameSize;
-        tPacket.pts = tCurrentPts;
-        tPacket.dts = tCurrentPts;
-        tPacket.duration = 1; // always 1 because we increase pts for every packet by one
-        tPacket.pos = -1;
+                    // we only have one stream per video stream
+                    tPacket.stream_index = 0;
+                    tPacket.data = (uint8_t *)mRecorderChunkBuffer;
+                    tPacket.size = tFrameSize;
+                    tPacket.pts = tCurrentPts;
+                    tPacket.dts = tCurrentPts;
+                    tPacket.duration = 1; // always 1 because we increase pts for every packet by one
+                    tPacket.pos = -1;
 
-        #ifdef MS_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "Recording packet..");
-            LOG(LOG_VERBOSE, "      ..duration: %d", tPacket.duration);
-            LOG(LOG_VERBOSE, "      ..pts: %ld (fps: %3.2f)", tPacket.pts, mFrameRate);
-            LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket.dts);
-            LOG(LOG_VERBOSE, "      ..size: %d", tPacket.size);
-            LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket.pos);
-        #endif
+                    #ifdef MS_DEBUG_PACKETS
+                        LOG(LOG_VERBOSE, "Recording packet..");
+                        LOG(LOG_VERBOSE, "      ..duration: %d", tPacket.duration);
+                        LOG(LOG_VERBOSE, "      ..pts: %ld (fps: %3.2f)", tPacket.pts, mFrameRate);
+                        LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket.dts);
+                        LOG(LOG_VERBOSE, "      ..size: %d", tPacket.size);
+                        LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket.pos);
+                    #endif
 
-         // distribute the encoded frame
-         if (av_write_frame(mRecorderFormatContext, &tPacket) != 0)
-             LOG(LOG_ERROR, "Couldn't write video frame to file");
+                     // distribute the encoded frame
+                     if (av_write_frame(mRecorderFormatContext, &tPacket) != 0)
+                         LOG(LOG_ERROR, "Couldn't write video frame to file");
 
-     }else
-        LOG(LOG_ERROR, "Couldn't re-encode current video frame");
+                 }else
+                    LOG(LOG_ERROR, "Couldn't re-encode current video frame");
 
-    if (mCodecContext->pix_fmt != mRecorderCodecContext->pix_fmt)
-    {
-        // Free the file frame's data buffer
-        avpicture_free((AVPicture*)tFrame);
+                if (mCodecContext->pix_fmt != mRecorderCodecContext->pix_fmt)
+                {
+                    // Free the file frame's data buffer
+                    avpicture_free((AVPicture*)tFrame);
 
-        // Free the file frame
-        av_free(tFrame);
+                    // Free the file frame
+                    av_free(tFrame);
+                }
+                break;
+        case MEDIA_AUDIO:
+                break;
+        default:
+                LOG(LOG_ERROR, "Media type unknown");
+                break;
     }
 
     mRecorderChunkNumber++;
@@ -1749,51 +1828,35 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     //######################################################
     //### give some verbose output
     //######################################################
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "%s source opened...", GetMediaTypeStr().c_str());
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec name: %s", mCodecContext->codec->name);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec long name: %s", mCodecContext->codec->long_name);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec flags: 0x%x", mCodecContext->flags);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec time_base: %d/%d", mCodecContext->time_base.den, mCodecContext->time_base.num); // inverse
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream rfps: %d/%d", mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num, mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->time_base.den, mFormatContext->streams[mMediaStreamIndex]->time_base.num); // inverse
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream codec time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->codec->time_base.den, mFormatContext->streams[mMediaStreamIndex]->codec->time_base.num); // inverse
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..bit rate: %d", mCodecContext->bit_rate);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..desired device: %s", mDesiredDevice.c_str());
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..current device: %s", mCurrentDevice.c_str());
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..qmin: %d", mCodecContext->qmin);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..qmax: %d", mCodecContext->qmax);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame size: %d", mCodecContext->frame_size);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..duration: %ld frames", mDuration);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context duration: %ld frames, %.0f seconds, format context duration: %ld, nr. of frames: %ld", mFormatContext->streams[mMediaStreamIndex]->duration, (float)mFormatContext->streams[mMediaStreamIndex]->duration / mFrameRate, mFormatContext->duration, mFormatContext->streams[mMediaStreamIndex]->nb_frames);
     switch(mMediaType)
     {
         case MEDIA_VIDEO:
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "Video source opened...");
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec name: %s", mCodecContext->codec->name);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec long name: %s", mCodecContext->codec->long_name);
             LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..source resolution: %d * %d", mCodecContext->width, mCodecContext->height);
             LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..target resolution: %d * %d", mTargetResX, mTargetResY);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec flags: 0x%x", mCodecContext->flags);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec time_base: %d/%d", mCodecContext->time_base.den, mCodecContext->time_base.num); // inverse
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream rfps: %d/%d", mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num, mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->time_base.den, mFormatContext->streams[mMediaStreamIndex]->time_base.num); // inverse
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream codec time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->codec->time_base.den, mFormatContext->streams[mMediaStreamIndex]->codec->time_base.num); // inverse
             LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..i-frame distance: %d", mCodecContext->gop_size);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..bit rate: %d", mCodecContext->bit_rate);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..desired device: %s", mDesiredDevice.c_str());
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..current device: %s", mCurrentDevice.c_str());
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..qmin: %d", mCodecContext->qmin);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..qmax: %d", mCodecContext->qmax);
             LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..mpeg quant: %d", mCodecContext->mpeg_quant);
             LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..pixel format: %d", (int)mCodecContext->pix_fmt);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame size: %d", mCodecContext->frame_size);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..duration: %ld frames", mDuration);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context duration: %ld frames, %.0f seconds, format context duration: %ld, nr. of frames: %ld", mFormatContext->streams[mMediaStreamIndex]->duration, (float)mFormatContext->streams[mMediaStreamIndex]->duration / mFrameRate, mFormatContext->duration, mFormatContext->streams[mMediaStreamIndex]->nb_frames);
             break;
         case MEDIA_AUDIO:
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "Audio source opened...");
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec name: %s", mCodecContext->codec->name);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec long name: %s", mCodecContext->codec->long_name);
             LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..sample rate: %d", mCodecContext->sample_rate);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec flags: 0x%x", mCodecContext->flags);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec time_base: %d/%d", mCodecContext->time_base.den, mCodecContext->time_base.num); // inverse
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream rfps: %d/%d", mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num, mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->time_base.den, mFormatContext->streams[mMediaStreamIndex]->time_base.num); // inverse
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream codec time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->codec->time_base.den, mFormatContext->streams[mMediaStreamIndex]->codec->time_base.num); // inverse
             LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..channels: %d", mCodecContext->channels);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..bit rate: %d", mCodecContext->bit_rate);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..desired device: %s", mDesiredDevice.c_str());
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..current device: %s", mCurrentDevice.c_str());
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..qmin: %d", mCodecContext->qmin);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..qmax: %d", mCodecContext->qmax);
             LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..sample format: %d", (int)mCodecContext->sample_fmt);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame size: %d", mCodecContext->frame_size);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..duration: %ld frames", mDuration);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context duration: %ld frames, %.0f seconds, format context duration: %ld, nr. of frames: %ld", mFormatContext->streams[mMediaStreamIndex]->duration, (float)mFormatContext->streams[mMediaStreamIndex]->duration / mFrameRate, mFormatContext->duration, mFormatContext->streams[mMediaStreamIndex]->nb_frames);
             break;
         default:
             LOG(LOG_ERROR, "Media type unknown");

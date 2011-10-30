@@ -87,7 +87,7 @@ public:
     virtual int GetChunkDropConter();
 
     /* recording control */
-    virtual bool StartRecording(std::string pSaveFileName, bool pRealTime = true /* 1 = frame rate emulation, 0 = no pts adaption */);
+    virtual bool StartRecording(std::string pSaveFileName, int pSaveFileQuality = 10, bool pRealTime = true /* 1 = frame rate emulation, 0 = no pts adaption */);
     virtual void StopRecording();
 
     /* activation control */
