@@ -1037,6 +1037,7 @@ void MediaSource::RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacke
 
 bool MediaSource::StartRecording(std::string pSaveFileName, bool pRealTime)
 {
+    int                 tResult;
     AVOutputFormat      *tFormat;
     AVStream            *tStream;
     AVCodec             *tCodec;
@@ -1168,7 +1169,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, bool pRealTime)
         mRecorderCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
 
     // reset output stream parameters
-    if (av_set_parameters(mRecorderFormatContext, NULL) < 0)
+    if ((tResult = av_set_parameters(mRecorderFormatContext, NULL)) < 0)
     {
         LOG(LOG_ERROR, "Invalid output format parameters because of \"%s\".", strerror(AVUNERROR(tResult)));
         // free codec and stream 0
