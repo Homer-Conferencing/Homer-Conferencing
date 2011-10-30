@@ -261,7 +261,13 @@ string Meeting::GetLocalUserMailAdr()
 
 string Meeting::getLocalConferenceId()
 {
-    return SipCreateId(getUser(), GetHostAdr(), toString(GetHostPort()));
+    string tResult = "";
+
+    tResult = SipCreateId(getUser(), GetHostAdr(), toString(GetHostPort()));
+
+    LOG(LOG_VERBOSE, "Determined local conference ID with \"%s\"", tResult.c_str());
+
+    return tResult;
 }
 
 bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort, int pInitState)
