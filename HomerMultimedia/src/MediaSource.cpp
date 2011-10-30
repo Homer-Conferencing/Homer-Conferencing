@@ -1037,7 +1037,6 @@ void MediaSource::RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacke
 
 bool MediaSource::StartRecording(std::string pSaveFileName, bool pRealTime)
 {
-    bool tResult = false;
     AVOutputFormat      *tFormat;
     AVStream            *tStream;
     AVCodec             *tCodec;
@@ -1061,7 +1060,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, bool pRealTime)
     char tAuthor[512] = "HomerMultimedia";
     //char tTitle[512] = "recorded live video";
     char tCopyright[512] = "free for use";
-    char tComment[512] = "see http://www.silvo.de/Homer";
+    char tComment[512] = "see http://www.homer-conferencing.com";
 
     if (mMediaType == MEDIA_AUDIO)
     {
@@ -1171,7 +1170,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, bool pRealTime)
     // reset output stream parameters
     if (av_set_parameters(mRecorderFormatContext, NULL) < 0)
     {
-        LOG(LOG_ERROR, "Invalid output format parameters");
+        LOG(LOG_ERROR, "Invalid output format parameters because of \"%s\".", strerror(AVUNERROR(tResult)));
         // free codec and stream 0
         av_freep(&mRecorderFormatContext->streams[0]->codec);
         av_freep(&mRecorderFormatContext->streams[0]);
@@ -1273,9 +1272,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, bool pRealTime)
     mRecording = true;
     mRecorderRealTime = pRealTime;
 
-    tResult = true;
-
-    return tResult;
+    return true;
 }
 
 void MediaSource::StopRecording()
