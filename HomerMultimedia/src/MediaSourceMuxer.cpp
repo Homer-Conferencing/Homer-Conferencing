@@ -302,10 +302,10 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     }
 
     // set MPEG quantizer: for h261/h263/mjpeg use the h263 quantizer, in other cases use the MPEG2 one
-    if ((tFormat->video_codec == CODEC_ID_H261) || (tFormat->video_codec == CODEC_ID_H263) || (tFormat->video_codec == CODEC_ID_H263P) || (tFormat->video_codec == CODEC_ID_MJPEG))
-        mCodecContext->mpeg_quant = 0;
-    else
-        mCodecContext->mpeg_quant = 1;
+//    if ((tFormat->video_codec == CODEC_ID_H261) || (tFormat->video_codec == CODEC_ID_H263) || (tFormat->video_codec == CODEC_ID_H263P) || (tFormat->video_codec == CODEC_ID_MJPEG))
+//        mCodecContext->mpeg_quant = 0;
+//    else
+//        mCodecContext->mpeg_quant = 1;
 
     // set pixel format
     if (tFormat->video_codec == CODEC_ID_MJPEG)
@@ -546,7 +546,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     // Open codec
     if ((tResult = avcodec_open(mCodecContext, tCodec)) < 0)
     {
-        LOG(LOG_ERROR, "Couldn't open audiocodec because of \"%s\".", strerror(AVUNERROR(tResult)));
+        LOG(LOG_ERROR, "Couldn't open audio codec because of \"%s\".", strerror(AVUNERROR(tResult)));
         // free codec and stream 0
         av_freep(&mFormatContext->streams[0]->codec);
         av_freep(&mFormatContext->streams[0]);
@@ -565,12 +565,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     av_write_header(mFormatContext);
 
     // init fifo buffer
-    #if LIBAVUTIL_VERSION_MAJOR < 50
-        av_fifo_init(&mSampleFifoVersionDummy, MEDIA_SOURCE_MUX_SAMPLE_BUFFER_SIZE * 2);
-        mSampleFifo = &mSampleFifoVersionDummy;
-    #else
-        mSampleFifo = av_fifo_alloc(MEDIA_SOURCE_MUX_SAMPLE_BUFFER_SIZE * 2);
-    #endif
+    mSampleFifo = HM_av_fifo_alloc(MEDIA_SOURCE_MUX_SAMPLE_BUFFER_SIZE * 2);
 
     mMediaType = MEDIA_AUDIO;
     MarkOpenGrabDeviceSuccessful();
@@ -641,10 +636,12 @@ bool MediaSourceMuxer::CloseMuxer()
             case MEDIA_VIDEO:
                     // free the software scaler context
                     sws_freeContext(mScalerContext);
+
                     break;
             case MEDIA_AUDIO:
                     // free fifo buffer
                     av_fifo_free(mSampleFifo);
+
                     break;
             case MEDIA_UNKNOWN:
                     LOG(LOG_ERROR, "Media type unknown");
@@ -760,6 +757,9 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
         }
     #endif
 
+    //####################################################################
+    // horizontal/vertical picture flipping
+    // ###################################################################
     if (mMediaType == MEDIA_VIDEO)
     {
         if (mVideoVFlip)
@@ -961,12 +961,7 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
                             LOG(LOG_VERBOSE, "Reading %d bytes from %d bytes of fifo", 2 * mCodecContext->frame_size * mCodecContext->channels, av_fifo_size(mSampleFifo));
                         #endif
                         // read sample data from the fifo buffer
-                        #if LIBAVUTIL_VERSION_MAJOR < 50
-                            av_fifo_generic_read(mSampleFifo, /* assume signed 16 bit */ 2 * mCodecContext->frame_size * mCodecContext->channels, NULL, mSamplesTempBuffer);
-                        #else
-                            av_fifo_generic_read(mSampleFifo, (void*)mSamplesTempBuffer, /* assume signed 16 bit */ 2 * mCodecContext->frame_size * mCodecContext->channels, NULL);
-                        #endif
-
+                        HM_av_fifo_generic_read(mSampleFifo, (void*)mSamplesTempBuffer, /* assume signed 16 bit */ 2 * mCodecContext->frame_size * mCodecContext->channels);
 
                         //####################################################################
                         // re-encode the sample
@@ -1153,10 +1148,10 @@ int MediaSourceMuxer::GetChunkDropConter()
         return 0;
 }
 
-bool MediaSourceMuxer::StartRecording(std::string pSaveFileName, bool pRealTime)
+bool MediaSourceMuxer::StartRecording(std::string pSaveFileName, int pSaveFileQuality, bool pRealTime)
 {
     if (mMediaSource != NULL)
-    	return mMediaSource->StartRecording(pSaveFileName, pRealTime);
+    	return mMediaSource->StartRecording(pSaveFileName, pSaveFileQuality, pRealTime);
     else
     	return false;
 

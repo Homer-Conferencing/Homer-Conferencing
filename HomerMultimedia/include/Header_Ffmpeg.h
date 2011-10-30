@@ -65,6 +65,53 @@ extern "C" {
 #define AVMEDIA_TYPE_UNKNOWN CODEC_TYPE_UNKNOWN
 #endif
 
+inline int HM_av_metadata_set(AVDictionary **pm, const char *key, const char *value)
+{
+    #if LIBAVFORMAT_VERSION_INT <= AV_VERSION_INT(52, 64, 2)
+        return av_metadata_set(pm, key, value);
+    #else
+        return av_metadata_set2(pm, key, value, AV_METADATA_MATCH_CASE);
+    #endif
+}
+
+inline int HM_avcodec_decode_video(AVCodecContext *avctx, AVFrame *picture, int *got_picture_ptr, AVPacket *avpkt)
+{
+    #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(52, 21, 0)
+        return avcodec_decode_video(avctx, picture, got_picture_ptr, avpkt->data, avpkt->size);
+    #else
+        return avcodec_decode_video2(avctx, picture, got_picture_ptr, avpkt);
+    #endif
+}
+
+inline int HM_avcodec_decode_audio(AVCodecContext *avctx, int16_t *samples, int *frame_size_ptr, AVPacket *avpkt)
+{
+    #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(52, 21, 0)
+        return avcodec_decode_audio2(avctx, samples, frame_size_ptr, avpkt->data, avpkt->size);
+    #else
+        return avcodec_decode_audio3(avctx, samples, frame_size_ptr, avpkt);
+    #endif
+}
+
+inline AVFifoBuffer *HM_av_fifo_alloc(unsigned int size)
+{
+    #if LIBAVUTIL_VERSION_MAJOR < 50
+        AVFifoBuffer *tFifo = malloc(sizeof(AVFifoBuffer));
+        av_fifo_init(tFifo, size);
+        return tFifo;
+    #else
+        return av_fifo_alloc(size);
+    #endif
+}
+
+inline int HM_av_fifo_generic_read(AVFifoBuffer *f, void *dest, int buf_size)
+{
+    #if LIBAVUTIL_VERSION_MAJOR < 50
+        return av_fifo_generic_read(f, buf_size, NULL, dest);
+    #else
+        return av_fifo_generic_read(f, dest, buf_size, NULL);
+    #endif
+}
+
 inline int HM_sws_scale(struct SwsContext *context, const uint8_t* const srcSlice[], const int srcStride[], int srcSliceY, int srcSliceH, uint8_t* const dst[], const int dstStride[])
 {
     #if LIBSWSCALE_VERSION_MAJOR < 1

@@ -382,11 +382,7 @@ int MediaSourceOss::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
             //LOG(LOG_INFO, "##DecodeAudio..\n");
             // Decode the next chunk of data
             int tOutputBufferSize = AVCODEC_MAX_AUDIO_FRAME_SIZE;
-            #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(52, 21, 0)
-                int tBytesDecoded = avcodec_decode_audio2(mCodecContext, (int16_t *)pChunkBuffer, &tOutputBufferSize, tPacket.data, tPacket.size);
-            #else
-                int tBytesDecoded = avcodec_decode_audio3(mCodecContext, (int16_t *)pChunkBuffer, &tOutputBufferSize, &tPacket);
-            #endif
+            int tBytesDecoded = HM_avcodec_decode_audio(mCodecContext, (int16_t *)pChunkBuffer, &tOutputBufferSize, &tPacket);
             pChunkSize = tBytesDecoded;
             //LOG(LOG_INFO, "    ..with result(!= 0 => OK): %d bytes: %i\n", tFrameFinished, tBytesDecoded);
 

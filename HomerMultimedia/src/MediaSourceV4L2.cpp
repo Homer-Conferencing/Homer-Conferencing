@@ -540,11 +540,7 @@ int MediaSourceV4L2::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
         if ((!pDropChunk) || (mRecording))
         {
             // Decode the next chunk of data
-            #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(52, 21, 0)
-                tBytesDecoded = avcodec_decode_video(mCodecContext, tSourceFrame, &tFrameFinished, tPacket.data, tPacket.size);
-            #else
-                tBytesDecoded = avcodec_decode_video2(mCodecContext, tSourceFrame, &tFrameFinished, &tPacket);
-            #endif
+            tBytesDecoded = HM_avcodec_decode_video(mCodecContext, tSourceFrame, &tFrameFinished, &tPacket);
         }
 
         // emulate set FPS
