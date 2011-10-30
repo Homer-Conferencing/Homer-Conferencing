@@ -57,6 +57,26 @@ inline std::string GetShortFileName(std::string pLongFileName)
 	return tResult;
 }
 
+template <typename T>
+inline std::string toString(T const& value_)
+{
+    std::stringstream ss;
+    ss << value_;
+    return ss.str();
+}
+
+inline bool IsLetter(char *pChar)
+{
+    if (pChar == NULL)
+        return false;
+
+    return (((*pChar >= 'a') && (*pChar <= 'z')) || ((*pChar >= 'A') && (*pChar <= 'Z')));
+}
+
+typedef std::list<LogSink*>        LogSinksList;
+
+///////////////////////////////////////////////////////////////////////////////
+
 #define         LOG_OFF                         0
 #define         LOG_ERROR                       1
 #define         LOG_WARN                        2
@@ -70,16 +90,6 @@ inline std::string GetShortFileName(std::string pLongFileName)
 #define         LOG_REMOTE(Level, Source, Line, ...)   LOGGER.AddMessage(Level, Source.c_str(), Line, __VA_ARGS__)
 // static logging
 #define         LOGEX(FromWhere, Level, ...)    LOGGER.AddMessage(Level, ("static:" + GetObjectNameStr(FromWhere) + ":" + GetShortFileName(__FILE__)).c_str(), __LINE__, __VA_ARGS__)
-
-template <typename T>
-inline std::string toString(T const& value_)
-{
-    std::stringstream ss;
-    ss << value_;
-    return ss.str();
-}
-
-typedef std::list<LogSink*>        LogSinksList;
 
 ///////////////////////////////////////////////////////////////////////////////
 
