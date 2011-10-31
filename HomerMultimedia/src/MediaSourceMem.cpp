@@ -908,6 +908,11 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                         int tOutputBufferSize = AVCODEC_MAX_AUDIO_FRAME_SIZE;
                         int tBytesDecoded = HM_avcodec_decode_audio(mCodecContext, (int16_t *)pChunkBuffer, &tOutputBufferSize, &tPacket);
                         pChunkSize = tOutputBufferSize;
+
+                        // re-encode the frame and write it to file
+                        if (mRecording)
+                            RecordSamples((int16_t *)pChunkBuffer, pChunkSize);
+
                         //printf("    ..with result: %d bytes decoded into %d bytes\n", tBytesDecoded, tOutputBufferSize);
 
                         if ((tBytesDecoded < 0) || (tOutputBufferSize == 0))
