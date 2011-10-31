@@ -65,7 +65,6 @@ SET (LIBS_LINUX
 
 # USED LIBRARIES for apple environment
 SET (LIBS_APPLE
-	rt
 )
 
 SET (TARGET_NAME
