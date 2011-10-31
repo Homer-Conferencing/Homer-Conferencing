@@ -1,0 +1,143 @@
+###############################################################################
+# Author:  Thomas Volkert
+# Since:   2010-11-13
+###############################################################################
+
+#MESSAGE("#####################################")
+#MESSAGE("Configure")
+#MESSAGE("#####################################")
+
+##############################################################
+# support thread-safe exception handling on Mingw32
+if (WIN32)
+SET (FLAGS 
+	${FLAGS}
+	-mthreads
+)
+endif (WIN32)
+
+# compile flags
+SET (FLAGS
+	${FLAGS}
+	-D_GNU_SOURCE
+	-W
+	-Wall
+	-Wno-switch
+	-Wno-unused
+	-Wno-long-long
+	-Wno-deprecated-declarations
+	-O2
+)
+
+# "-D" options for compilation in win32 environment
+SET (DEFINITIONS_WINDOWS
+	${DEFINITIONS_WINDOWS}
+	-D__STDC_CONSTANT_MACROS
+	-DWINVER=0x0501
+	-DWIN32
+	-D_REENTRANT
+)
+
+# "-D" options for compilation in linux environment
+SET (DEFINITIONS_LINUX
+	${DEFINITIONS_LINUX}
+	-D__STDC_CONSTANT_MACROS
+	-DLINUX
+	-D_REENTRANT
+)
+
+# "-D" options for compilation in linux environment
+SET (DEFINITIONS_APPLE
+	${DEFINITIONS_APPLE}
+	-D__STDC_CONSTANT_MACROS
+	-DAPPLE
+	-D_REENTRANT
+)
+
+##############################################################
+# define minimum requirements for cmake
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6) 
+
+##############################################################
+# build only shared libs by default
+SET(BUILD_SHARED_LIBS ON)
+SET(BUILD_STATIC_LIBS ON)
+
+##############################################################
+# for win32 remove the "lib" prefix for dll's
+if (WIN32)
+	SET(CMAKE_SHARED_LIBRARY_PREFIX "")
+	SET(CMAKE_STATIC_LIBRARY_PREFIX "")
+	SET(CMAKE_IMPORT_LIBRARY_PREFIX "")
+endif (WIN32)
+
+##############################################################
+# destination for install target
+SET(LIBRARY_OUTPUT_PATH ${TARGET_DIRECTORY})
+          
+##############################################################
+# add definitions for compilation
+if (WIN32)
+	FOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_WINDOWS})
+		ADD_DEFINITIONS("${DEFINITIONS_ENTRY}")
+	ENDFOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_WINDOWS})
+endif (WIN32)	
+if (APPLE)
+	FOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_APPLE})
+		ADD_DEFINITIONS("${DEFINITIONS_ENTRY}")
+	ENDFOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_APPLE})
+endif (APPLE)	
+if (UNIX AND NOT WIN32 AND NOT APPLE)
+	FOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_LINUX})
+		ADD_DEFINITIONS("${DEFINITIONS_ENTRY}")
+	ENDFOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_LINUX})
+endif (UNIX AND NOT WIN32 AND NOT APPLE)
+
+##############################################################
+# add flags for compilation
+FOREACH(FLAGS_ENTRY ${FLAGS})
+	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${FLAGS_ENTRY}")
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAGS_ENTRY}")
+ENDFOREACH(FLAGS_ENTRY ${FLAGS})
+
+##############################################################
+# add include paths
+FOREACH(INCLUDE_DIRS_ENTRY ${INCLUDE_DIRS})
+	INCLUDE_DIRECTORIES("${INCLUDE_DIRS_ENTRY}")
+ENDFOREACH(INCLUDE_DIRS_ENTRY ${INCLUDE_DIRS})
+
+##############################################################
+# add library paths
+FOREACH(LIB_DIRS_ENTRY ${LIB_DIRS})
+	LINK_DIRECTORIES("${LIB_DIRS_ENTRY}")
+ENDFOREACH(LIB_DIRS_ENTRY ${LIB_DIRS})
+
+##############################################################
+# generate library from given source files
+ADD_LIBRARY(${TARGET_NAME} SHARED ${SOURCES})
+
+##############################################################
+# link to needed external libraries
+if (WIN32)
+	MESSAGE("### Linking dynamic Windows libraries: ${LIBS_WINDOWS}")
+	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_WINDOWS})
+endif (WIN32)
+
+if (APPLE)
+	MESSAGE("### Linking dynamic Apple libraries: ${LIBS_APPLE}")
+	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_APPLE})
+endif (APPLE)
+
+if (UNIX AND NOT WIN32 AND NOT APPLE)
+	MESSAGE("### Linking dynamic Linux libraries: ${LIBS_LINUX}")
+	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_LINUX})
+
+	MESSAGE("### Linking static Linux libraries: ${LIBS_LINUX_STATIC}")
+#	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_LINUX_STATIC} )
+	TARGET_LINK_LIBRARIES(${TARGET_NAME} -Wl,-Bstatic -Wl,-Bsymbolic ${LIBS_LINUX_STATIC} -Wl,-Bdynamic )
+endif (UNIX AND NOT WIN32 AND NOT APPLE)
+
+#		TARGET_LINK_LIBRARIES(${TARGET_NAME} -Wl,-Bstatic -Wl,-Bsymbolic ${LIBS_LINUX_STATIC} -Wl,-Bdynamic )
+#		TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_LINUX_STATIC} )
+#		TARGET_LINK_LIBRARIES(${TARGET_NAME} -Wl,-Bstatic ${LIBS_LINUX_STATIC_ENTRY} -Wl,-Bdynamic )
+#		TARGET_LINK_LIBRARIES(${TARGET_NAME} -Wl,--whole-archive ${LIBS_LINUX_STATIC_ENTRY} -Wl,--no-whole-archive )
