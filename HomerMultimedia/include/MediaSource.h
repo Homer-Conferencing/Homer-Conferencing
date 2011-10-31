@@ -44,6 +44,19 @@ namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// the following de/activates debugging of packets
+//#define MS_DEBUG_PACKETS
+// the following de/activates debugging of ffmpag mutex management
+//#define MS_DEBUG_FFMPEG_MUTEX
+
+///////////////////////////////////////////////////////////////////////////////
+
+#define MEDIA_SOURCE_AUDIO_SAMPLE_BUFFER_SIZE                     4*4096
+
+#define MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE                         60000
+
+///////////////////////////////////////////////////////////////////////////////
+
 /* video */
 enum VideoFormat
 {
@@ -96,17 +109,11 @@ typedef std::list<AudioDeviceDescriptor> AudioDevicesList;
 ///////////////////////////////////////////////////////////////////////////////
 
 #define Grabbing
-#define RECORDER_CHUNK_BUFFER_SIZE                  256*1024
 
 /* relaying */
 class MediaSource;
 typedef std::list<MediaSink*>        MediaSinksList;
 typedef std::list<MediaSource*>      MediaSourcesList;
-
-// the following de/activates debugging of packets
-//#define MS_DEBUG_PACKETS
-// the following de/activates debugging of ffmpag mutex management
-//#define MS_DEBUG_FFMPEG_MUTEX
 
 // possible GrabChunk results
 #define GRAB_RES_INVALID                            -1
@@ -232,6 +239,7 @@ protected:
 
     /* internal interface for stream recordring */
     void RecordFrame(AVFrame *pSourceFrame);
+    void RecordSamples(int16_t *pSourceSamples, int pSourceSamplesSize);
 
     /* video fps emulation */
     void FpsEmulationInit(); // auto. called by MarkOpenGrabDeviceSuccessful
@@ -257,6 +265,7 @@ protected:
     int64_t             mDuration;
     /* audio */
     AVFifoBuffer        *mRecorderSampleFifo;
+    char                *mRecorderSamplesTempBuffer;
     int                 mSampleRate;
     bool                mStereo;
     /* video */
@@ -275,7 +284,7 @@ protected:
     AVFormatContext     *mRecorderFormatContext;
     AVCodecContext      *mRecorderCodecContext;
     SwsContext          *mRecorderScalerContext;
-    char                mRecorderChunkBuffer[RECORDER_CHUNK_BUFFER_SIZE];
+    char                *mRecorderEncoderChunkBuffer;
     int                 mRecorderChunkNumber;
     int64_t             mRecorderStartPts; // for synchronized playback we calculate the position within a media stream and write the value into PTS entry of an encoded packet
     bool                mRecorderRealTime;

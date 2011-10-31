@@ -43,12 +43,8 @@ namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define MEDIA_SOURCE_MUX_CHUNK_BUFFER_SIZE                      60000
-
 // maximum packet size of a reeencoded frame
 #define MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE              256*1024
-
-#define MEDIA_SOURCE_MUX_SAMPLE_BUFFER_SIZE                     8*4096
 
 // the following de/activates debugging of sent packets
 //#define MSM_DEBUG_PACKETS

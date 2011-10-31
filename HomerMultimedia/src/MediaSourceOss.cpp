@@ -377,13 +377,18 @@ int MediaSourceOss::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
 
         //LOG(LOG_INFO, "New sample %6d with size: %d and index: %d\n", mSampleNumber, tPacket.size, tPacket.stream_index);
 
-        if (!pDropChunk)
+        if ((!pDropChunk) || (mRecording))
         {
             //LOG(LOG_INFO, "##DecodeAudio..\n");
             // Decode the next chunk of data
             int tOutputBufferSize = AVCODEC_MAX_AUDIO_FRAME_SIZE;
             int tBytesDecoded = HM_avcodec_decode_audio(mCodecContext, (int16_t *)pChunkBuffer, &tOutputBufferSize, &tPacket);
             pChunkSize = tBytesDecoded;
+
+            // re-encode the frame and write it to file
+            if (mRecording)
+                RecordSamples((int16_t *)pChunkBuffer, pChunkSize);
+
             //LOG(LOG_INFO, "    ..with result(!= 0 => OK): %d bytes: %i\n", tFrameFinished, tBytesDecoded);
 
             if (tBytesDecoded <= 0)

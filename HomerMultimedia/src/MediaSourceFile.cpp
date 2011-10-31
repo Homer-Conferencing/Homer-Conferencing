@@ -83,7 +83,6 @@ void MediaSourceFile::getAudioDevices(AudioDevicesList &pAList)
 
 bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 {
-    FILE                *tFile;
     int                 tResult = 0;
     AVCodec             *tCodec;
     AVInputFormat       *tFormat;
@@ -132,7 +131,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     // Open video file
     // open file and close it again to prevent FFMPEG from crashes, risk of race conditions!
     LOG(LOG_VERBOSE, "try to open \"%s\"", mDesiredDevice.c_str());
-    if (((tFile = fopen(mDesiredDevice.c_str(), "r+")) == NULL) || (fclose(tFile) != 0) || ((tResult = av_open_input_file(&mFormatContext, mDesiredDevice.c_str(), tFormat, 0, &tFormatParams)) != 0))
+    if ((tResult = av_open_input_file(&mFormatContext, mDesiredDevice.c_str(), tFormat, 0, &tFormatParams)) != 0)
     {
         LOG(LOG_ERROR, "Couldn't open video file \"%s\" because of \"%s\".", mDesiredDevice.c_str(), strerror(AVUNERROR(tResult)));
         return false;
@@ -237,7 +236,6 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 
 bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
 {
-    FILE                *tFile;
     int                 tResult = 0;
     AVCodec             *tCodec;
     AVInputFormat       *tFormat;
@@ -278,7 +276,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     // Open audio file
     // open file and close it again to prevent FFMPEG from crashes, risk of race conditions!
     LOG(LOG_VERBOSE, "try to open \"%s\"", mDesiredDevice.c_str());
-    if (((tFile = fopen(mDesiredDevice.c_str(), "r+")) == NULL) || (fclose(tFile) != 0) || ((tResult = av_open_input_file(&mFormatContext, mDesiredDevice.c_str(), tFormat, 0, &tFormatParams)) != 0))
+    if ((tResult = av_open_input_file(&mFormatContext, mDesiredDevice.c_str(), tFormat, 0, &tFormatParams)) != 0)
     {
         LOG(LOG_ERROR, "Couldn't open audio file \"%s\" because of \"%s\".", mDesiredDevice.c_str(), strerror(AVUNERROR(tResult)));
         return false;
@@ -751,8 +749,12 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
                         #endif
 
                         int tBytesDecoded = HM_avcodec_decode_audio(mCodecContext, (int16_t *)pChunkBuffer, &tOutputBufferSize, &tPacket);
-
                         pChunkSize = tOutputBufferSize;
+
+                        // re-encode the frame and write it to file
+                        if (mRecording)
+                            RecordSamples((int16_t *)pChunkBuffer, pChunkSize);
+
                         #ifdef MSF_DEBUG_PACKETS
                             LOG(LOG_VERBOSE, "Result is an audio frame with size of %d bytes from %d encoded bytes", tOutputBufferSize, tBytesDecoded);
                         #endif

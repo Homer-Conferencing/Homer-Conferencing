@@ -528,6 +528,10 @@ int MediaSourceMMSys::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
 		LOG(LOG_VERBOSE, "Delivering packet with size %d", pChunkSize);
 	#endif
 
+    // re-encode the frame and write it to file
+    if (mRecording)
+        RecordSamples((int16_t *)pChunkBuffer, pChunkSize);
+
     // unlock grabbing
     mGrabMutex.unlock();
 
