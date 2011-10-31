@@ -25,7 +25,7 @@
  * Since:   2009-02-11
  */
 
-#ifdef LINUX
+#if defined(LINUX) && !defined(APPLE)
 #ifndef _MULTIMEDIA_MEDIA_SOURCE_OSS_
 #define _MULTIMEDIA_MEDIA_SOURCE_OSS_
 

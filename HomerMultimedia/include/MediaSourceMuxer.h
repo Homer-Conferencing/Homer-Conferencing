@@ -149,7 +149,6 @@ private:
     bool                mVideoHFlip, mVideoVFlip;
     /* audio */
     AVFifoBuffer        *mSampleFifo;
-    AVFifoBuffer        mSampleFifoVersionDummy;
     char                *mSamplesTempBuffer;
 
 };
