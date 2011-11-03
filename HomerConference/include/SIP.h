@@ -43,7 +43,9 @@ namespace Homer { namespace Conference {
 ///////////////////////////////////////////////////////////////////////////////
 
 // de/activate STUN
+#ifndef APPLE // no STUN for APPLE environment: TODO: fix the occurring hangs and reactivate STUN support for APPLE
 #define SIP_SUPORTING_STUN
+#endif
 
 // de/activate adaption of source address in case of NAT
 //#define SIP_NAT_SOURCE_ADDRESS_ADAPTION
