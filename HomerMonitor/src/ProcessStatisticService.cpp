@@ -87,6 +87,11 @@ void ProcessStatisticService::UpdateThreadDatabase()
 	if (!sProcessStatisticSupported)
 		return;
 
+    // return immediately for APPLE environment because HomerBase lacks support for thread statistics in APPLE environment
+	#ifdef APPLE
+        return;
+    #endif
+
 	mUpdateThreadDataBaseMutex.lock();
 
     ProcessStatisticsList tNewThreads;
