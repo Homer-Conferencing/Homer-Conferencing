@@ -27,7 +27,7 @@ SET (INCLUDE_DIRS
 
 # library directories
 SET (LIB_DIRS
-	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerLibs/win32
+	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerLibs/apple64
 	${CMAKE_CURRENT_SOURCE_DIR}/../../lib
 	/usr/local/lib
 	/usr/lib
@@ -79,17 +79,29 @@ SET (LIBS_WINDOWS
 SET (LIBS_APPLE
 	HomerBase
 	HomerMonitor
+)
+
+# USED STATIC libraries for linux environment ==> ordering of linking is IMPORTANT!!
+SET (LIBS_APPLE_STATIC
 	SDL_mixer
 	smpeg
 	SDL_sound
 	SDL
 	speex
-	FLAC
 	vorbisfile
 	vorbis
 	ogg
 )
 
+# USED FRAMEWORKS for apple environment
+SET (FRAMEWORKS_APPLE
+	AppKit
+	AudioUnit
+	CoreFoundation
+	Carbon
+	IOKit
+	OpenGL
+)
 
 # USED LIBRARIES for linux environment
 SET (LIBS_LINUX
