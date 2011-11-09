@@ -27,14 +27,6 @@ SET (INCLUDE_DIRS
 	/usr/include/libswscale
 )
 
-# library directories
-SET (LIB_DIRS
-	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerLibs/apple64
-	${CMAKE_CURRENT_SOURCE_DIR}/../../lib
-	/usr/local/lib
-	/usr/lib
-)
-
 # target directory for the lib
 SET (TARGET_DIRECTORY
 	../../lib
