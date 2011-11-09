@@ -29,7 +29,7 @@ SET (INCLUDE_DIRS
 
 # library directories
 SET (LIB_DIRS
-	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerLibs/win32
+	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerLibs/apple64
 	${CMAKE_CURRENT_SOURCE_DIR}/../../lib
 	/usr/local/lib
 	/usr/lib
@@ -103,17 +103,19 @@ SET (LIBS_WINDOWS
 SET (LIBS_APPLE
 	HomerBase
 	HomerMonitor
+)
+
+SET (LIBS_APPLE_STATIC
 	avdevice
 	avformat
 	avcodec
-#	avfilter
+	avfilter
 	swscale
 	avutil
 	mp3lame
-#	opencore-amrnb
-#	opencore-amrwb
-#	jack
-#	x264
+	opencore-amrnb
+	opencore-amrwb
+	x264
 	bz2
 	z
 )
