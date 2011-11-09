@@ -16,6 +16,33 @@ SET (FLAGS
 )
 endif (WIN32)
 
+# library directories
+SET (LIB_DIRS
+	${LIB_DIRS}
+	${CMAKE_CURRENT_SOURCE_DIR}/../../lib
+	/usr/local/lib
+	/usr/lib
+)
+IF (UNIX AND NOT WIN32 AND NOT APPLE)
+SET (LIB_DIRS
+	${LIB_DIRS}
+	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerLibs/linux64	
+)
+ENDIF (UNIX AND NOT WIN32 AND NOT APPLE)
+IF (WIN32)
+SET (LIB_DIRS
+	${LIB_DIRS}
+	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerLibs/win32	
+	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerWinLibs
+)
+ENDIF (WIN32)
+IF (APPLE)
+SET (LIB_DIRS
+	${LIB_DIRS}
+	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerLibs/apple64	
+)
+ENDIF (APPLE)
+
 # compile flags
 SET (FLAGS
 	${FLAGS}
