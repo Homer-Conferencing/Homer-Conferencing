@@ -42,14 +42,6 @@ SET (INCLUDE_DIRS
 	../../HomerWinLibs/SOFIA-SIP/win32
 )
 
-# library directories
-SET (LIB_DIRS
-	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerLibs/apple64
-	${CMAKE_CURRENT_SOURCE_DIR}/../../lib
-	/usr/local/lib
-	/usr/lib
-)
-
 # compile flags                                                                                                                                                                                                                                                                   
 if (NOT APPLE)
 SET (FLAGS
