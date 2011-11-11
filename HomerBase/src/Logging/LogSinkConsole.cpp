@@ -87,7 +87,7 @@ LogSinkConsole::~LogSinkConsole()
       7 Reverse
       8 Hidden
 
-        Foreground Colours
+        Foreground Colors
       30    Black
       31    Red
       32    Green
@@ -97,7 +97,7 @@ LogSinkConsole::~LogSinkConsole()
       36    Cyan
       37    White
 
-        Background Colours
+        Background Colors
       40    Black
       41    Red
       42    Green
