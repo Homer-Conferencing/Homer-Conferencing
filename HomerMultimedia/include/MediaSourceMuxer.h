@@ -30,8 +30,10 @@
 
 #include <Header_Ffmpeg.h>
 #include <HBMutex.h>
+#include <HBThread.h>
 #include <MediaSourceNet.h>
 #include <MediaSource.h>
+#include <MediaFifo.h>
 #include <RTP.h>
 
 #include <list>
@@ -46,13 +48,15 @@ namespace Homer { namespace Multimedia {
 // maximum packet size of a reeencoded frame
 #define MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE              256*1024
 
+#define MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT                  32
+
 // the following de/activates debugging of sent packets
 //#define MSM_DEBUG_PACKETS
 
 ///////////////////////////////////////////////////////////////////////////////
 
 class MediaSourceMuxer :
-    public MediaSource
+    public MediaSource, public Thread
 {
 public:
     /// The default constructor
@@ -127,6 +131,10 @@ private:
     bool OpenAudioMuxer(int pSampleRate = 44100, bool pStereo = true);
     bool CloseMuxer();
 
+    virtual void* Run(void* pArgs = NULL); // transcoder main loop
+    void InitTranscoder(int pFifoEntrySize);
+    void DeinitTranscoder();
+
     static int DistributePacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize);
 
     MediaSource         *mMediaSource;
@@ -136,6 +144,9 @@ private:
     bool                mMuxingActivated;
     char                *mStreamPacketBuffer;
     char                *mEncoderChunkBuffer;
+    /* transcoding */
+    bool                mTranscoderNeeded;
+    MediaFifo           *mTranscoderFifo;
     /* device control */
     MediaSourcesList    mMediaSources;
     Mutex               mMediaSourcesMutex;

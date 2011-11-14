@@ -25,8 +25,6 @@
  * Since:   2011-05-05
  */
 
-// HINT: for audio streams the RTP support remains unused!
-
 #include <MediaSourceMem.h>
 #include <MediaSource.h>
 #include <ProcessStatisticService.h>
@@ -50,20 +48,11 @@ MediaSourceMem::MediaSourceMem(bool pRtpActivated):
     mOpenInputStream = false;
     mRtpActivated = pRtpActivated;
 
+    mDecoderFifo = new MediaFifo(MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT, MEDIA_SOURCE_MEM_PACKET_BUFFER_SIZE);
+
     mStreamCodecId = CODEC_ID_NONE;
 
-    mQueueWritePtr = 0;
-    mQueueReadPtr = 0;
-    mQueueSize = 0;
-	for (int i = 0; i < MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT; i++)
-	{
-		mQueue[i].Size = 0;
-		mQueue[i].Data = (char*)malloc(MEDIA_SOURCE_MEM_PACKET_BUFFER_SIZE);
-		if (mQueue[i].Data == NULL)
-			LOG(LOG_ERROR, "Unable to allocate memory for buffer queue");
-	}
-
-	LOG(LOG_VERBOSE, "Listen for media packets from memory");
+	LOG(LOG_VERBOSE, "Listen for media packets from memory with queue of %d bytes", MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT * MEDIA_SOURCE_MEM_PACKET_BUFFER_SIZE);
 }
 
 MediaSourceMem::~MediaSourceMem()
@@ -73,17 +62,13 @@ MediaSourceMem::~MediaSourceMem()
     if (mMediaSourceOpened)
         CloseGrabDevice();
 
-    for (int i = 0; i < MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT; i++)
-	{
-		mQueue[i].Size = 0;
-		free(mQueue[i].Data);
-	}
+    delete mDecoderFifo;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // static call back function:
 //      function reads data from Socket and delivers it to ffmpeg library
-int MediaSourceMem::ReceivePacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize)
+int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize)
 {
 	MediaSourceMem *tMediaSourceMemInstance = (MediaSourceMem*)pOpaque;
     char *tBuffer = (char*)pBuffer;
@@ -107,7 +92,7 @@ int MediaSourceMem::ReceivePacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
             tFragmentData = &tMediaSourceMemInstance->mPacketBuffer[0];
             tFragmentBufferSize = MEDIA_SOURCE_MEM_PACKET_BUFFER_SIZE;
             // receive a fragment
-            tMediaSourceMemInstance->ReceiveFragment(tFragmentData, tFragmentBufferSize);
+            tMediaSourceMemInstance->ReadFragment(tFragmentData, tFragmentBufferSize);
             #ifdef MSMEM_DEBUG_PACKETS
                 LOGEX(MediaSourceMem, LOG_VERBOSE, "Got packet fragment of size %d at address %p", tFragmentBufferSize, tFragmentData);
             #endif
@@ -162,7 +147,7 @@ int MediaSourceMem::ReceivePacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
         }while(!tLastFragment);
     }else
     {// rtp is inactive, no fragmentation!
-        tMediaSourceMemInstance->ReceiveFragment(tBuffer, tBufferSize);
+        tMediaSourceMemInstance->ReadFragment(tBuffer, tBufferSize);
         if (tMediaSourceMemInstance->mGrabbingStopped)
         {
             LOGEX(MediaSourceMem, LOG_VERBOSE, "Grabbing was stopped meanwhile");
@@ -183,49 +168,21 @@ int MediaSourceMem::ReceivePacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
     return tBufferSize;
 }
 
-void MediaSourceMem::ReceiveFragment(char *pData, ssize_t &pDataSize)
+void MediaSourceMem::WriteFragment(char *pBuffer, int pBufferSize)
 {
-	#ifdef MSMEM_DEBUG_PACKETS
-		LOG(LOG_VERBOSE, "Trying to get new input data");
-	#endif
-	// make sure there is some pending data in the input queue
-	mQueueMutex.lock();
-	if (mQueueSize == 0)
-	{
-		#ifdef MSMEM_DEBUG_PACKETS
-			LOG(LOG_VERBOSE, "Waiting for some new input data");
-		#endif
+    mDecoderFifo->WriteFifo(pBuffer, pBufferSize);
+}
 
-		mDataInputCondition.Reset();
-		mQueueMutex.unlock();
-
-		while(!mDataInputCondition.Wait())
-			LOG(LOG_ERROR, "Error when waiting for new input data");
-
-		mQueueMutex.lock();
-	}
-
-    // get captured data from queue
-	pDataSize = (ssize_t)mQueue[mQueueReadPtr].Size;
-    memcpy((void*)pData, mQueue[mQueueReadPtr].Data, (size_t)pDataSize);
-    mQueueSize--;
-
-    mQueueReadPtr++;
-	if (mQueueReadPtr >= MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT)
-		mQueueReadPtr = mQueueReadPtr - MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT;
-
-	#ifdef MSMEM_DEBUG_PACKETS
-		LOG(LOG_VERBOSE, "Erased front element of size %d from data input queue, size afterwards: %d", (int)pDataSize, (int)mQueueSize);
-	#endif
-	mQueueMutex.unlock();
-
-    if (pDataSize == 0)
-        LOG(LOG_VERBOSE, "Packet with size 0 added to input queue");
+void MediaSourceMem::ReadFragment(char *pData, ssize_t &pDataSize)
+{
+    int tDataSize = pDataSize;
+    mDecoderFifo->ReadFifo(&pData[0], tDataSize);
+    pDataSize = tDataSize;
 
     if (pDataSize > 0)
     {
         // log statistics
-        AnnouncePacket(pDataSize);
+        AnnouncePacket((int)pDataSize);
 
         #ifdef MSMEM_DEBUG_PACKETS
             LOG(LOG_VERBOSE, "Delivered packet with number %5u at %p with size: %5d", (unsigned int)++mPacketNumber, pData, (int)pDataSize);
@@ -240,35 +197,6 @@ void MediaSourceMem::ReceiveFragment(char *pData, ssize_t &pDataSize)
         // unlock
         mMediaSinksMutex.unlock();
     }
-}
-
-void MediaSourceMem::AddDataInput(void* pPacketBuffer, int pPacketSize)
-{
-	#ifdef MSMEM_DEBUG_PACKETS
-		LOG(LOG_VERBOSE, "Going to add data input to queue");
-	#endif
-
-	mQueueMutex.lock();
-	if (mQueueSize < MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT)
-	{
-		// add the new entry
-		mQueue[mQueueWritePtr].Size = pPacketSize;
-		memcpy((void*)mQueue[mQueueWritePtr].Data, (const void*)pPacketBuffer, (size_t)pPacketSize);
-		mQueueSize++;
-
-		mQueueWritePtr++;
-		if (mQueueWritePtr >= MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT)
-			mQueueWritePtr = mQueueWritePtr - MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT;
-
-		#ifdef MSMEM_DEBUG_PACKETS
-			LOG(LOG_VERBOSE, "+++++++++++++++++Queue length now: %d", mQueueSize);
-		#endif
-	}else
-		LOG(LOG_WARN, "Chunk queue full (size is %d) - dropping current data chunk", MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT);
-
-	mQueueMutex.unlock();
-
-	mDataInputCondition.SignalOne();
 }
 
 bool MediaSourceMem::SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset, bool pRtpActivated)
@@ -334,7 +262,7 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     }
 
 	// build corresponding "ByteIOContext"
-    tByteIoContext = av_alloc_put_byte((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, /* read-only */0, this, ReceivePacket, NULL, NULL);
+    tByteIoContext = av_alloc_put_byte((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, /* read-only */0, this, GetNextPacket, NULL, NULL);
 
     // mark as streamed
     tByteIoContext->is_streamed = 1;
@@ -494,7 +422,7 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
         return false;
 
 	// build corresponding "ByteIOContex
-    tByteIoContext = av_alloc_put_byte((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, /* read-only */0, this, ReceivePacket, NULL, NULL);
+    tByteIoContext = av_alloc_put_byte((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, /* read-only */0, this, GetNextPacket, NULL, NULL);
 
     // mark as streamed
     tByteIoContext->is_streamed = 1;

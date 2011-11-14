@@ -162,7 +162,7 @@ void* MediaSourceNet::Run(void* pArgs)
 				LOG(LOG_VERBOSE, "Received packet number %5d at %p with size: %5d from %s:%u", (int)++mPacketNumber, mPacketBuffer, (int)tDataSize, tSourceHost.c_str(), tSourcePort);
 			#endif
 
-            AddDataInput(mPacketBuffer, tDataSize);
+            WriteFragment(mPacketBuffer, (int)tDataSize);
 		}else
 		{
 			if (tDataSize == 0)
@@ -170,7 +170,7 @@ void* MediaSourceNet::Run(void* pArgs)
 				LOG(LOG_VERBOSE, "Zero byte packet received, media type is \"%s\"", GetMediaTypeStr().c_str());
 
 				// add also a zero byte packet to enable early thread termination
-                AddDataInput(mPacketBuffer, 0);
+				WriteFragment(mPacketBuffer, 0);
 			}else
 			{
 				LOG(LOG_VERBOSE, "Got faulty packet, media type is \"%s\"", GetMediaTypeStr().c_str());
