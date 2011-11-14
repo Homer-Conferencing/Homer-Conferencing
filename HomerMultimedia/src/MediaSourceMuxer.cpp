@@ -32,6 +32,7 @@
 #include <MediaSourceNet.h>
 #include <MediaSinkNet.h>
 #include <MediaSourceFile.h>
+#include <ProcessStatisticService.h>
 #include <HBSocket.h>
 #include <RTP.h>
 #include <Logger.h>
@@ -64,6 +65,8 @@ MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
     mRequestedStreamingResX = 352;
     mRequestedStreamingResY = 288;
     mMuxingActivated = true;
+    mTranscoderNeeded = true;
+    mTranscoderFifo = NULL;
 }
 
 MediaSourceMuxer::~MediaSourceMuxer()
@@ -73,6 +76,8 @@ MediaSourceMuxer::~MediaSourceMuxer()
     free(mSamplesTempBuffer);
     free(mEncoderChunkBuffer);
     free(mStreamPacketBuffer);
+
+    DeinitTranscoder();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -370,6 +375,9 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     // allocate software scaler context
     mScalerContext = sws_getContext(mSourceResX, mSourceResY, PIX_FMT_RGB32, mCodecContext->width, mCodecContext->height, mCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
 
+    // init transcoder FIFO based for RGB32 pictures
+    InitTranscoder(mSourceResX * mSourceResY * 4 /* bytes per pixel */);
+
     // allocate streams private data buffer and write the streams header, if any
     av_write_header(mFormatContext);
 
@@ -561,6 +569,9 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     if (mCodecContext->frame_size == 1)
         mCodecContext->frame_size = 256;
 
+    // init transcoder FIFO based for 1024 samples with 16 bit and 2 channels
+    InitTranscoder(4096);
+
     // allocate streams private data buffer and write the streams header, if any
     av_write_header(mFormatContext);
 
@@ -657,6 +668,9 @@ bool MediaSourceMuxer::CloseMuxer()
 
         // Close the format context
         av_free(mFormatContext);
+
+        // free the memory of the transcoder FIFO
+        DeinitTranscoder();
 
         LOG(LOG_INFO, "...closed, media type is \"%s\"", GetMediaTypeStr().c_str());
 
@@ -828,200 +842,7 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
     // ###################################################################
     if ((mMuxingActivated) && (!pDropChunk) && (tResult >= 0) && (pChunkSize > 0) && (mMediaSinks.size()))
     {
-        switch(mMediaType)
-        {
-            case MEDIA_VIDEO:
-                    //####################################################################
-                    // re-encode the frame
-                    // ###################################################################
-                    // Allocate video frame structure for RGB and YUV format, afterwards allocate data buffer for YUV format
-                    if (((tRGBFrame = avcodec_alloc_frame()) == NULL) || ((tYUVFrame = avcodec_alloc_frame()) == NULL) || (avpicture_alloc((AVPicture*)tYUVFrame, PIX_FMT_YUV420P, mCurrentStreamingResX, mCurrentStreamingResY) < 0))
-                    {
-                        LOG(LOG_ERROR, "Couldn't allocate video frame memory");
-                    }else
-                    {
-                        // Assign appropriate parts of buffer to image planes in tRGBFrame
-                        avpicture_fill((AVPicture *)tRGBFrame, (uint8_t *)pChunkBuffer, PIX_FMT_RGB32, mSourceResX, mSourceResY);
-
-                        // set frame number in corresponding entries within AVFrame structure
-                        tRGBFrame->pts = mChunkNumber + 1;
-                        tRGBFrame->coded_picture_number = mChunkNumber + 1;
-                        tRGBFrame->display_picture_number = mChunkNumber + 1;
-
-                        #ifdef MSM_DEBUG_PACKETS
-                            LOG(LOG_VERBOSE, "Reencoding video frame..");
-                            LOG(LOG_VERBOSE, "      ..key frame: %d", tRGBFrame->key_frame);
-                            switch(tRGBFrame->pict_type)
-                            {
-                                    case FF_I_TYPE:
-                                        LOG(LOG_VERBOSE, "      ..picture type: i-frame");
-                                        break;
-                                    case FF_P_TYPE:
-                                        LOG(LOG_VERBOSE, "      ..picture type: p-frame");
-                                        break;
-                                    case FF_B_TYPE:
-                                        LOG(LOG_VERBOSE, "      ..picture type: b-frame");
-                                        break;
-                                    default:
-                                        LOG(LOG_VERBOSE, "      ..picture type: %d", tRGBFrame->pict_type);
-                                        break;
-                            }
-                            LOG(LOG_VERBOSE, "      ..pts: %ld", tRGBFrame->pts);
-                            LOG(LOG_VERBOSE, "      ..coded pic number: %d", tRGBFrame->coded_picture_number);
-                            LOG(LOG_VERBOSE, "      ..display pic number: %d", tRGBFrame->display_picture_number);
-                        #endif
-
-                        // convert fromn RGB to YUV420
-                        HM_sws_scale(mScalerContext, tRGBFrame->data, tRGBFrame->linesize, 0, mSourceResY, tYUVFrame->data, tYUVFrame->linesize);
-
-                        // #########################################
-                        // re-encode the frame
-                        // #########################################
-                        tFrameSize = avcodec_encode_video(mCodecContext, (uint8_t *)mEncoderChunkBuffer, MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE, tYUVFrame);
-
-                        if (tFrameSize > 0)
-                        {
-                            av_init_packet(&tPacket);
-                            mChunkNumber++;
-
-                            // adapt pts value
-                            if ((mCodecContext->coded_frame) && (mCodecContext->coded_frame->pts != 0))
-                            {
-                                tPacket.pts = av_rescale_q(mCodecContext->coded_frame->pts, mCodecContext->time_base, mFormatContext->streams[mMediaStreamIndex]->time_base);
-                                tPacket.dts = tPacket.pts;
-                            }
-                            // mark i-frame
-                            if (mCodecContext->coded_frame->key_frame)
-                                tPacket.flags |= AV_PKT_FLAG_KEY;
-
-                            // we only have one stream per video stream
-                            tPacket.stream_index = 0;
-                            tPacket.data = (uint8_t *)mEncoderChunkBuffer;
-                            tPacket.size = tFrameSize;
-                            tPacket.pts = mChunkNumber;
-                            tPacket.dts = mChunkNumber;
-                            //tPacket.pos = av_gettime() - mStartPts;
-
-                            #ifdef MSM_DEBUG_PACKETS
-                                LOG(LOG_VERBOSE, "Sending video packet: %5d to %2d sink(s):", mChunkNumber, mMediaSinks.size());
-                                LOG(LOG_VERBOSE, "      ..duration: %d", tPacket.duration);
-                                LOG(LOG_VERBOSE, "      ..pts: %ld stream [%d] pts: %ld", tPacket.pts, mMediaStreamIndex, mFormatContext->streams[mMediaStreamIndex]->pts);
-                                LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket.dts);
-                                LOG(LOG_VERBOSE, "      ..size: %d", tPacket.size);
-                                LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket.pos);
-                            #endif
-
-                            // log statistics
-                            AnnouncePacket(tPacket.size);
-
-                            //####################################################################
-                            // distribute the encoded frame
-                            // ###################################################################
-                            if (av_write_frame(mFormatContext, &tPacket) != 0)
-                             {
-                                 LOG(LOG_ERROR, "Couldn't distribute video frame among registered video sinks");
-                             }
-                        }else
-                            LOG(LOG_INFO, "Couldn't re-encode current video frame");
-
-                        // Free the RGB frame
-                        av_free(tRGBFrame);
-
-                        // Free the YUV frame's data buffer
-                        avpicture_free((AVPicture*)tYUVFrame);
-
-                        // Free the YUV frame
-                        av_free(tYUVFrame);
-                    }
-
-                    break;
-
-            case MEDIA_AUDIO:
-                    // increase fifo buffer size by size of input buffer size
-                    #ifdef MSM_DEBUG_PACKETS
-                        LOG(LOG_VERBOSE, "Adding %d bytes to fifo buffer with size of %d bytes", pChunkSize, av_fifo_size(mSampleFifo));
-                    #endif
-                    if (av_fifo_realloc2(mSampleFifo, av_fifo_size(mSampleFifo) + pChunkSize) < 0)
-                    {
-                        // unlock grabbing
-                        mGrabMutex.unlock();
-
-                        // acknowledge failed
-                        MarkGrabChunkFailed("reallocation of FIFO audio buffer failed");
-
-                        return tResult;
-                    }
-
-                    //LOG(LOG_VERBOSE, "ChunkSize: %d", pChunkSize);
-                    // write new samples into fifo buffer
-                    av_fifo_generic_write(mSampleFifo, pChunkBuffer, pChunkSize, NULL);
-                    //LOG(LOG_VERBOSE, "ChunkSize: %d", pChunkSize);
-
-                    while (av_fifo_size(mSampleFifo) >= 2 * mCodecContext->frame_size * mCodecContext->channels)
-                    {
-                        #ifdef MSM_DEBUG_PACKETS
-                            LOG(LOG_VERBOSE, "Reading %d bytes from %d bytes of fifo", 2 * mCodecContext->frame_size * mCodecContext->channels, av_fifo_size(mSampleFifo));
-                        #endif
-                        // read sample data from the fifo buffer
-                        HM_av_fifo_generic_read(mSampleFifo, (void*)mSamplesTempBuffer, /* assume signed 16 bit */ 2 * mCodecContext->frame_size * mCodecContext->channels);
-
-                        //####################################################################
-                        // re-encode the sample
-                        // ###################################################################
-                        // re-encode the sample
-                        #ifdef MSM_DEBUG_PACKETS
-                            LOG(LOG_VERBOSE, "Reencoding audio frame..");
-                        #endif
-                        //printf("Gonna encode with frame_size %d and channels %d\n", mCodecContext->frame_size, mCodecContext->channels);
-                        int tEncodingResult = avcodec_encode_audio(mCodecContext, (uint8_t *)mEncoderChunkBuffer, /* assume signed 16 bit */ 2 * mCodecContext->frame_size * mCodecContext->channels, (const short *)mSamplesTempBuffer);
-
-                        //printf("encoded to mp3: %d\n\n", tSampleSize);
-                        if (tEncodingResult > 0)
-                        {
-                            av_init_packet(&tPacket);
-                            mChunkNumber++;
-
-                            // adapt pts value
-                            if ((mCodecContext->coded_frame) && (mCodecContext->coded_frame->pts != 0))
-                                tPacket.pts = av_rescale_q(mCodecContext->coded_frame->pts, mCodecContext->time_base, mFormatContext->streams[mMediaStreamIndex]->time_base);
-                            tPacket.flags |= AV_PKT_FLAG_KEY;
-
-                            // we only have one stream per audio stream
-                            tPacket.stream_index = 0;
-                            tPacket.data = (uint8_t *)mEncoderChunkBuffer;
-                            tPacket.size = tEncodingResult;
-                            tPacket.pts = mChunkNumber;
-                            tPacket.dts = mChunkNumber;
-//                            tPacket.pos = av_gettime() - mStartPts;
-
-                            #ifdef MSM_DEBUG_PACKETS
-                                LOG(LOG_VERBOSE, "Sending audio packet: %5d to %2d sink(s):", mChunkNumber, mMediaSinks.size());
-                                LOG(LOG_VERBOSE, "      ..pts: %ld", tPacket.pts);
-                                LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket.dts);
-                                LOG(LOG_VERBOSE, "      ..size: %d", tPacket.size);
-                                LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket.pos);
-                            #endif
-
-                            // log statistics
-                            AnnouncePacket(tPacket.size);
-
-                            //####################################################################
-                            // distribute the encoded frame
-                            // ###################################################################
-                             if (av_write_frame(mFormatContext, &tPacket) != 0)
-                             {
-                                 LOG(LOG_ERROR, "Couldn't distribute audio sample among registered audio sinks");
-                             }
-                        }else
-                            LOG(LOG_INFO, "Couldn't re-encode current audio sample");
-                    }
-                    break;
-
-            default:
-                    LOG(LOG_ERROR, "Media type unknown");
-                    break;
-
-        }
+        mTranscoderFifo->WriteFifo((char*)pChunkBuffer, pChunkSize);
     }
 
     // unlock
@@ -1034,6 +855,299 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
     MarkGrabChunkSuccessful();
 
     return tResult;
+}
+
+void MediaSourceMuxer::InitTranscoder(int pFifoEntrySize)
+{
+    LOG(LOG_VERBOSE, "Init transcoder with FIFO entry size of %d bytes", pFifoEntrySize);
+
+    if (mTranscoderFifo != NULL)
+    {
+        LOG(LOG_ERROR, "FIFO already initiated");
+        delete mTranscoderFifo;
+    }else
+    {
+        mTranscoderFifo = new MediaFifo(MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT, pFifoEntrySize);
+
+        mTranscoderNeeded = true;
+
+        // start transcoder main loop
+        StartThread();
+    }
+}
+
+void MediaSourceMuxer::DeinitTranscoder()
+{
+    char tTmp[4];
+
+    LOG(LOG_VERBOSE, "Deinit transcoder");
+
+    if (mTranscoderFifo != NULL)
+    {
+        // tell transcoder thread it isn't needed anymore
+        mTranscoderNeeded = false;
+
+        // write fake data to awake transcoder thread in every case
+        mTranscoderFifo->WriteFifo(tTmp, 0);
+
+        // wait 2 seconds for termination of transcoder thread
+        if (StopThread(2000))
+        {
+            delete mTranscoderFifo;
+            mTranscoderFifo = NULL;
+        }
+    }
+}
+
+void* MediaSourceMuxer::Run(void* pArgs)
+{
+    char *tBuffer;
+    int tBufferSize;
+    int tFifoEntry = 0;
+
+    int                         tResult;
+    AVFrame                     *tRGBFrame;
+    AVFrame                     *tYUVFrame;
+    AVPacket                    tPacket;
+    int                         tFrameSize;
+
+    LOG(LOG_VERBOSE, "Transcoder started, media type is \"%s\"", GetMediaTypeStr().c_str());
+    switch(mMediaType)
+    {
+        case MEDIA_VIDEO:
+            SVC_PROCESS_STATISTIC.AssignThreadName("Video-Transcoder(" + FfmpegId2FfmpegFormat(mStreamCodecId) + ")");
+            break;
+        case MEDIA_AUDIO:
+            SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Transcoder(" + FfmpegId2FfmpegFormat(mStreamCodecId) + ")");
+            break;
+        default:
+            LOG(LOG_ERROR, "Unknown media type");
+            break;
+    }
+
+    while(mTranscoderNeeded)
+    {
+        if (mTranscoderFifo != NULL)
+        {
+            tFifoEntry = mTranscoderFifo->ReadFifoExclusive(&tBuffer, tBufferSize);
+
+            if (tBufferSize > 0)
+            {
+                // lock
+                mMediaSinksMutex.lock();
+
+                //####################################################################
+                // reencode frame and send it to the registered media sinks
+                // ###################################################################
+                if ((mMuxingActivated) && (mMediaSinks.size()))
+                {
+                    switch(mMediaType)
+                    {
+                        case MEDIA_VIDEO:
+                                //####################################################################
+                                // re-encode the frame
+                                // ###################################################################
+                                // Allocate video frame structure for RGB and YUV format, afterwards allocate data buffer for YUV format
+                                if (((tRGBFrame = avcodec_alloc_frame()) == NULL) || ((tYUVFrame = avcodec_alloc_frame()) == NULL) || (avpicture_alloc((AVPicture*)tYUVFrame, PIX_FMT_YUV420P, mCurrentStreamingResX, mCurrentStreamingResY) < 0))
+                                {
+                                    LOG(LOG_ERROR, "Couldn't allocate video frame memory");
+                                }else
+                                {
+                                    // Assign appropriate parts of buffer to image planes in tRGBFrame
+                                    avpicture_fill((AVPicture *)tRGBFrame, (uint8_t *)tBuffer, PIX_FMT_RGB32, mSourceResX, mSourceResY);
+
+                                    // set frame number in corresponding entries within AVFrame structure
+                                    tRGBFrame->pts = mChunkNumber + 1;
+                                    tRGBFrame->coded_picture_number = mChunkNumber + 1;
+                                    tRGBFrame->display_picture_number = mChunkNumber + 1;
+
+                                    #ifdef MSM_DEBUG_PACKETS
+                                        LOG(LOG_VERBOSE, "Reencoding video frame..");
+                                        LOG(LOG_VERBOSE, "      ..key frame: %d", tRGBFrame->key_frame);
+                                        switch(tRGBFrame->pict_type)
+                                        {
+                                                case FF_I_TYPE:
+                                                    LOG(LOG_VERBOSE, "      ..picture type: i-frame");
+                                                    break;
+                                                case FF_P_TYPE:
+                                                    LOG(LOG_VERBOSE, "      ..picture type: p-frame");
+                                                    break;
+                                                case FF_B_TYPE:
+                                                    LOG(LOG_VERBOSE, "      ..picture type: b-frame");
+                                                    break;
+                                                default:
+                                                    LOG(LOG_VERBOSE, "      ..picture type: %d", tRGBFrame->pict_type);
+                                                    break;
+                                        }
+                                        LOG(LOG_VERBOSE, "      ..pts: %ld", tRGBFrame->pts);
+                                        LOG(LOG_VERBOSE, "      ..coded pic number: %d", tRGBFrame->coded_picture_number);
+                                        LOG(LOG_VERBOSE, "      ..display pic number: %d", tRGBFrame->display_picture_number);
+                                    #endif
+
+                                    // convert fromn RGB to YUV420
+                                    HM_sws_scale(mScalerContext, tRGBFrame->data, tRGBFrame->linesize, 0, mSourceResY, tYUVFrame->data, tYUVFrame->linesize);
+
+                                    // #########################################
+                                    // re-encode the frame
+                                    // #########################################
+                                    tFrameSize = avcodec_encode_video(mCodecContext, (uint8_t *)mEncoderChunkBuffer, MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE, tYUVFrame);
+
+                                    if (tFrameSize > 0)
+                                    {
+                                        av_init_packet(&tPacket);
+                                        mChunkNumber++;
+
+                                        // adapt pts value
+                                        if ((mCodecContext->coded_frame) && (mCodecContext->coded_frame->pts != 0))
+                                        {
+                                            tPacket.pts = av_rescale_q(mCodecContext->coded_frame->pts, mCodecContext->time_base, mFormatContext->streams[mMediaStreamIndex]->time_base);
+                                            tPacket.dts = tPacket.pts;
+                                        }
+                                        // mark i-frame
+                                        if (mCodecContext->coded_frame->key_frame)
+                                            tPacket.flags |= AV_PKT_FLAG_KEY;
+
+                                        // we only have one stream per video stream
+                                        tPacket.stream_index = 0;
+                                        tPacket.data = (uint8_t *)mEncoderChunkBuffer;
+                                        tPacket.size = tFrameSize;
+                                        tPacket.pts = mChunkNumber;
+                                        tPacket.dts = mChunkNumber;
+                                        //tPacket.pos = av_gettime() - mStartPts;
+
+                                        #ifdef MSM_DEBUG_PACKETS
+                                            LOG(LOG_VERBOSE, "Sending video packet: %5d to %2d sink(s):", mChunkNumber, mMediaSinks.size());
+                                            LOG(LOG_VERBOSE, "      ..duration: %d", tPacket.duration);
+                                            LOG(LOG_VERBOSE, "      ..pts: %ld stream [%d] pts: %ld", tPacket.pts, mMediaStreamIndex, mFormatContext->streams[mMediaStreamIndex]->pts);
+                                            LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket.dts);
+                                            LOG(LOG_VERBOSE, "      ..size: %d", tPacket.size);
+                                            LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket.pos);
+                                        #endif
+
+                                        // log statistics
+                                        AnnouncePacket(tPacket.size);
+
+                                        //####################################################################
+                                        // distribute the encoded frame
+                                        // ###################################################################
+                                        if (av_write_frame(mFormatContext, &tPacket) != 0)
+                                         {
+                                             LOG(LOG_ERROR, "Couldn't distribute video frame among registered video sinks");
+                                         }
+                                    }else
+                                        LOG(LOG_INFO, "Couldn't re-encode current video frame");
+
+                                    // Free the RGB frame
+                                    av_free(tRGBFrame);
+
+                                    // Free the YUV frame's data buffer
+                                    avpicture_free((AVPicture*)tYUVFrame);
+
+                                    // Free the YUV frame
+                                    av_free(tYUVFrame);
+                                }
+
+                                break;
+
+                        case MEDIA_AUDIO:
+                                // increase fifo buffer size by size of input buffer size
+                                #ifdef MSM_DEBUG_PACKETS
+                                    LOG(LOG_VERBOSE, "Adding %d bytes to fifo buffer with size of %d bytes", tBufferSize, av_fifo_size(mSampleFifo));
+                                #endif
+                                if (av_fifo_realloc2(mSampleFifo, av_fifo_size(mSampleFifo) + tBufferSize) < 0)
+                                {
+                                    // unlock grabbing
+                                    mGrabMutex.unlock();
+
+                                    // acknowledge failed
+                                    MarkGrabChunkFailed("reallocation of FIFO audio buffer failed");
+
+                                    break;
+                                }
+
+                                //LOG(LOG_VERBOSE, "ChunkSize: %d", pChunkSize);
+                                // write new samples into fifo buffer
+                                av_fifo_generic_write(mSampleFifo, tBuffer, tBufferSize, NULL);
+                                //LOG(LOG_VERBOSE, "ChunkSize: %d", pChunkSize);
+
+                                while (av_fifo_size(mSampleFifo) >= 2 * mCodecContext->frame_size * mCodecContext->channels)
+                                {
+                                    #ifdef MSM_DEBUG_PACKETS
+                                        LOG(LOG_VERBOSE, "Reading %d bytes from %d bytes of fifo", 2 * mCodecContext->frame_size * mCodecContext->channels, av_fifo_size(mSampleFifo));
+                                    #endif
+                                    // read sample data from the fifo buffer
+                                    HM_av_fifo_generic_read(mSampleFifo, (void*)mSamplesTempBuffer, /* assume signed 16 bit */ 2 * mCodecContext->frame_size * mCodecContext->channels);
+
+                                    //####################################################################
+                                    // re-encode the sample
+                                    // ###################################################################
+                                    // re-encode the sample
+                                    #ifdef MSM_DEBUG_PACKETS
+                                        LOG(LOG_VERBOSE, "Reencoding audio frame..");
+                                    #endif
+                                    //printf("Gonna encode with frame_size %d and channels %d\n", mCodecContext->frame_size, mCodecContext->channels);
+                                    int tEncodingResult = avcodec_encode_audio(mCodecContext, (uint8_t *)mEncoderChunkBuffer, /* assume signed 16 bit */ 2 * mCodecContext->frame_size * mCodecContext->channels, (const short *)mSamplesTempBuffer);
+
+                                    //printf("encoded to mp3: %d\n\n", tSampleSize);
+                                    if (tEncodingResult > 0)
+                                    {
+                                        av_init_packet(&tPacket);
+                                        mChunkNumber++;
+
+                                        // adapt pts value
+                                        if ((mCodecContext->coded_frame) && (mCodecContext->coded_frame->pts != 0))
+                                            tPacket.pts = av_rescale_q(mCodecContext->coded_frame->pts, mCodecContext->time_base, mFormatContext->streams[mMediaStreamIndex]->time_base);
+                                        tPacket.flags |= AV_PKT_FLAG_KEY;
+
+                                        // we only have one stream per audio stream
+                                        tPacket.stream_index = 0;
+                                        tPacket.data = (uint8_t *)mEncoderChunkBuffer;
+                                        tPacket.size = tEncodingResult;
+                                        tPacket.pts = mChunkNumber;
+                                        tPacket.dts = mChunkNumber;
+            //                            tPacket.pos = av_gettime() - mStartPts;
+
+                                        #ifdef MSM_DEBUG_PACKETS
+                                            LOG(LOG_VERBOSE, "Sending audio packet: %5d to %2d sink(s):", mChunkNumber, mMediaSinks.size());
+                                            LOG(LOG_VERBOSE, "      ..pts: %ld", tPacket.pts);
+                                            LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket.dts);
+                                            LOG(LOG_VERBOSE, "      ..size: %d", tPacket.size);
+                                            LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket.pos);
+                                        #endif
+
+                                        // log statistics
+                                        AnnouncePacket(tPacket.size);
+
+                                        //####################################################################
+                                        // distribute the encoded frame
+                                        // ###################################################################
+                                         if (av_write_frame(mFormatContext, &tPacket) != 0)
+                                         {
+                                             LOG(LOG_ERROR, "Couldn't distribute audio sample among registered audio sinks");
+                                         }
+                                    }else
+                                        LOG(LOG_INFO, "Couldn't re-encode current audio sample");
+                                }
+                                break;
+
+                        default:
+                                LOG(LOG_ERROR, "Media type unknown");
+                                break;
+
+                    }
+                }
+
+                // unlock
+                mMediaSinksMutex.unlock();
+            }
+
+            // release FIFO entry lock
+            mTranscoderFifo->ReadFifoExclusiveFinished(tFifoEntry);
+        }else
+            Suspend(100 * 1000); // check every 1/10 seconds the state of the FIFO
+    }
+
+    return NULL;
 }
 
 void MediaSourceMuxer::SetVideoGrabResolution(int pResX, int pResY)

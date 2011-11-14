@@ -43,6 +43,7 @@ endif (NOT APPLE)
 
 # SOURCES
 SET (SOURCES
+	../src/MediaFifo
 	../src/MediaSink
 	../src/MediaSinkFile
 	../src/MediaSinkNet
