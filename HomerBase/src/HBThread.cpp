@@ -628,7 +628,7 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
 
         #if defined(LINUX)
             if (int tRes = pthread_timedjoin_np(mThreadHandle, &tThreadResult, &tTimeout))
-                LOG(LOG_INFO, "Waiting for end of thread failed because of \"%s\"", strerror(tRes));
+                LOG(LOG_INFO, "Waiting for end of thread failed because \"%s\"", strerror(tRes));
             else
             {
                 LOG(LOG_VERBOSE, "Got end signal and thread results at %p", tThreadResult);
@@ -639,7 +639,7 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
         #if defined(APPLE)
             // OSX doesn't support pthread_timedjoin_np(), fall back to simple pthread_join()
             if (int tRes = pthread_join(mThreadHandle, &tThreadResult))
-                LOG(LOG_INFO, "Waiting for end of thread failed because of \"%s\"", strerror(tRes));
+                LOG(LOG_INFO, "Waiting for end of thread failed because \"%s\"", strerror(tRes));
             else
             {
                 LOG(LOG_VERBOSE, "Got end signal and thread results at %p", tThreadResult);
