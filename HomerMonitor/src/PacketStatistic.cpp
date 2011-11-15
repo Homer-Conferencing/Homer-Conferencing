@@ -95,13 +95,17 @@ void PacketStatistic::AnnouncePacket(int pSize)
     StatisticEntry tStatEntry;
 
     mPacketCount++;
+    mByteCount += pSize;
     if (pSize < mMinPacketSize)
         mMinPacketSize = pSize;
     if (pSize > mMaxPacketSize)
         mMaxPacketSize = pSize;
 
     tStatEntry.PacketSize = pSize;
-    tStatEntry.TimeDiff = (int)tDiff;
+    //tStatEntry.TimeDiff = (int)tDiff;
+
+    tStatEntry.Timestamp = Time::GetTimeStamp();
+    tStatEntry.ByteCount = mByteCount;
     mLastTime = tCurTime;
 
     // lock
@@ -121,6 +125,7 @@ void PacketStatistic::ResetPacketStatistic()
     mStatisticsMutex.lock();
 
     mPacketCount = 0;
+    mByteCount = 0;
     mMinPacketSize = INT_MAX;
     mMaxPacketSize = 0;
     mLostPacketCount = 0;
@@ -169,23 +174,43 @@ int PacketStatistic::getAvgDataRate()
     long int tTimesDiff = 0;
 
     // lock
+//    mStatisticsMutex.lock();
+//
+//    for (tIt = mStatistics.begin(); tIt != mStatistics.end(); tIt++)
+//    {
+//        tPacketsSize += tIt->PacketSize;
+//        tTimesDiff += tIt->TimeDiff;
+//    }
+//
+//    // unlock
+//    mStatisticsMutex.unlock();
+
+//    if (tTimesDiff > 0)
+//        tResult = 1000 * 1000 * (long long)tPacketsSize / tTimesDiff;
+//    else
+//        tResult = 0;
+
+    // lock
     mStatisticsMutex.lock();
 
-    for (tIt = mStatistics.begin(); tIt != mStatistics.end(); tIt++)
-    {
-        tPacketsSize += tIt->PacketSize;
-        tTimesDiff += tIt->TimeDiff;
-    }
+    int64_t tCurrentTime = Time::GetTimeStamp();
+    int64_t tMeasurementStartTime = mStatistics.front().Timestamp;
+    int64_t tMeasurementStartByteCount = mStatistics.front().ByteCount;
+    int tMeasuredValues = mStatistics.size() - 1;
+    int64_t tMeasuredTimeDifference = tCurrentTime - tMeasurementStartTime;
+    int64_t tMeasuredByteCountDifference = mByteCount - tMeasurementStartByteCount;
+
+    double tDataRate = 1000000 * tMeasuredByteCountDifference / tMeasuredTimeDifference;
 
     // unlock
     mStatisticsMutex.unlock();
 
-    if (tTimesDiff > 0)
-        tResult = 1000 * 1000 * (long long)tPacketsSize / tTimesDiff;
-    else
-        tResult = 0;
+    return (int)tDataRate;
+}
 
-    return (int)tResult;
+int64_t PacketStatistic::getByteCount()
+{
+    return mByteCount;
 }
 
 int PacketStatistic::getPacketCount()
@@ -225,7 +250,7 @@ void PacketStatistic::ClassifyStream(enum DataType pDataType, enum PacketType pP
 
 string PacketStatistic::GetStreamName()
 {
-	return mName;
+	return (mName != "" ? mName : "undefined");
 }
 
 enum DataType PacketStatistic::GetDataType()
@@ -255,60 +280,18 @@ string PacketStatistic::GetPacketTypeStr()
     }
 }
 
-PacketStatisticAbsDescriptor PacketStatistic::GetPacketStatisticAbs()
-{
-	PacketStatisticAbsDescriptor tStatAbs;
-
-	tStatAbs.Outgoing = IsOutgoingStream();
-	tStatAbs.MinPacketSize = getMinPacketSize();
-	tStatAbs.MaxPacketSize = getMaxPacketSize();
-	tStatAbs.PacketCount = getPacketCount();
-	tStatAbs.LostPacketCount = getLostPacketCount();
-
-	return tStatAbs;
-}
-
 PacketStatisticDescriptor PacketStatistic::GetPacketStatistic()
 {
 	PacketStatisticDescriptor tStat;
-
-    StatisticList::iterator tIt;
-    long long tAvgBandwidth = 0;
-    long tPacketsSize = 0;
-    long tTimesDiff = 0;
-    long tAvgPacketSize = 0;
-    long tCount = 0;
-
-    // lock
-    mStatisticsMutex.lock();
-
-    tCount = (long)mStatistics.size();
-    for (tIt = mStatistics.begin(); tIt != mStatistics.end(); tIt++)
-    {
-        tPacketsSize += tIt->PacketSize;
-        tTimesDiff += tIt->TimeDiff;
-    }
-
-    // unlock
-    mStatisticsMutex.unlock();
-
-    if (tTimesDiff > 0)
-        tAvgBandwidth = 1000 * 1000 * (long long int)tPacketsSize / tTimesDiff;
-    else
-        tAvgBandwidth = 0;
-
-    if (tCount > 0)
-        tAvgPacketSize = tPacketsSize / tCount;
-    else
-    	tAvgPacketSize = 0;
 
     tStat.Outgoing = IsOutgoingStream();
 	tStat.MinPacketSize = getMinPacketSize();
 	tStat.MaxPacketSize = getMaxPacketSize();
 	tStat.PacketCount = getPacketCount();
+	tStat.ByteCount = getByteCount();
 	tStat.LostPacketCount = getLostPacketCount();
-	tStat.AvgPacketSize = tAvgPacketSize;
-	tStat.AvgBandwidth = (int)tAvgBandwidth;
+	tStat.AvgPacketSize = getAvgPacketSize();
+	tStat.AvgDataRate = getAvgDataRate();
 
 	return tStat;
 }
