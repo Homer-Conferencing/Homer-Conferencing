@@ -219,6 +219,8 @@ bool WaveOutAlsa::CloseWaveOutDevice()
     }else
         LOG(LOG_INFO, "...wasn't open");
 
+    ResetPacketStatistic();
+
     //mGrabbingStopped = false;
 
     return tResult;
