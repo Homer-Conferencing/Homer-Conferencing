@@ -444,6 +444,8 @@ bool MediaSourceV4L2::CloseGrabDevice()
     mGrabbingStopped = false;
     mMediaType = MEDIA_UNKNOWN;
 
+    ResetPacketStatistic();
+
     return tResult;
 }
 

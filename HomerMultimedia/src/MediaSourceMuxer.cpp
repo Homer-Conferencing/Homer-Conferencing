@@ -680,6 +680,8 @@ bool MediaSourceMuxer::CloseMuxer()
 
     mMediaType = MEDIA_UNKNOWN;
 
+    ResetPacketStatistic();
+
     return tResult;
 
 }
@@ -891,7 +893,7 @@ void MediaSourceMuxer::DeinitTranscoder()
         mTranscoderFifo->WriteFifo(tTmp, 0);
 
         // wait 2 seconds for termination of transcoder thread
-        if (StopThread(2000))
+        if (StopThread(5000))
         {
             delete mTranscoderFifo;
             mTranscoderFifo = NULL;
