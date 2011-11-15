@@ -174,23 +174,6 @@ int PacketStatistic::getAvgDataRate()
     long int tTimesDiff = 0;
 
     // lock
-//    mStatisticsMutex.lock();
-//
-//    for (tIt = mStatistics.begin(); tIt != mStatistics.end(); tIt++)
-//    {
-//        tPacketsSize += tIt->PacketSize;
-//        tTimesDiff += tIt->TimeDiff;
-//    }
-//
-//    // unlock
-//    mStatisticsMutex.unlock();
-
-//    if (tTimesDiff > 0)
-//        tResult = 1000 * 1000 * (long long)tPacketsSize / tTimesDiff;
-//    else
-//        tResult = 0;
-
-    // lock
     mStatisticsMutex.lock();
 
     int64_t tCurrentTime = Time::GetTimeStamp();
