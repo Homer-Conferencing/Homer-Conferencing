@@ -40,7 +40,7 @@ namespace Homer { namespace Monitor {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define STATISTIC_BUFFER_SIZE                   1000
+#define STATISTIC_BUFFER_SIZE                   128
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -62,22 +62,15 @@ enum PacketType
     PACKET_TYPE_UDP_LITE
 };
 
-struct PacketStatisticAbsDescriptor{
-    bool Outgoing;
-    int  MinPacketSize;
-    int  MaxPacketSize;
-    int  PacketCount;
-    int  LostPacketCount;
-};
-
 struct PacketStatisticDescriptor{
     bool Outgoing;
     int  MinPacketSize;
     int  MaxPacketSize;
     int  PacketCount;
+    int64_t ByteCount;
     int  LostPacketCount;
     int  AvgPacketSize;
-    int  AvgBandwidth;
+    int  AvgDataRate;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -97,12 +90,11 @@ public:
     int getAvgPacketSize();
     int getAvgDataRate();
     int getPacketCount();
+    int64_t getByteCount();
     int getMinPacketSize();
     int getMaxPacketSize();
     int getLostPacketCount();
-    /* get only size and counter values - the absolute values, no average*/
-    PacketStatisticAbsDescriptor GetPacketStatisticAbs();
-    /* get whole statistic including average values */
+    /* get statistic values */
     PacketStatisticDescriptor GetPacketStatistic();
     /* identification */
     void AssignStreamName(std::string pName);
@@ -125,7 +117,10 @@ protected:
 private:
     struct StatisticEntry{
         int PacketSize;
-        int TimeDiff;
+        //int TimeDiff;
+
+        int64_t Timestamp;
+        int64_t ByteCount;
     };
 
     typedef std::list<StatisticEntry>      StatisticList;
@@ -133,6 +128,7 @@ private:
     int           mMinPacketSize;
     int           mMaxPacketSize;
     int           mPacketCount;
+    int64_t       mByteCount;
     int           mLostPacketCount;
     Time          mLastTime;
     StatisticList mStatistics;
