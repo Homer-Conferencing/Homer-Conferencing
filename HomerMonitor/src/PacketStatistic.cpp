@@ -168,22 +168,23 @@ int PacketStatistic::getAvgPacketSize()
 
 int PacketStatistic::getAvgDataRate()
 {
-    StatisticList::iterator tIt;
-    long long tResult = 0;
-    long int tPacketsSize = 0;
-    long int tTimesDiff = 0;
+    double tDataRate = 0;
 
     // lock
     mStatisticsMutex.lock();
 
-    int64_t tCurrentTime = Time::GetTimeStamp();
-    int64_t tMeasurementStartTime = mStatistics.front().Timestamp;
-    int64_t tMeasurementStartByteCount = mStatistics.front().ByteCount;
-    int tMeasuredValues = mStatistics.size() - 1;
-    int64_t tMeasuredTimeDifference = tCurrentTime - tMeasurementStartTime;
-    int64_t tMeasuredByteCountDifference = mByteCount - tMeasurementStartByteCount;
+    if (mStatistics.size() > 1)
+    {
+        int64_t tCurrentTime = Time::GetTimeStamp();
+        int64_t tMeasurementStartTime = mStatistics.front().Timestamp;
+        int64_t tMeasurementStartByteCount = mStatistics.front().ByteCount;
+        int tMeasuredValues = mStatistics.size() - 1;
+        int64_t tMeasuredTimeDifference = tCurrentTime - tMeasurementStartTime;
+        int64_t tMeasuredByteCountDifference = mByteCount - tMeasurementStartByteCount;
 
-    double tDataRate = 1000000 * tMeasuredByteCountDifference / tMeasuredTimeDifference;
+        tDataRate = 1000000 * tMeasuredByteCountDifference / tMeasuredTimeDifference;
+    }else
+        tDataRate = 0;
 
     // unlock
     mStatisticsMutex.unlock();
