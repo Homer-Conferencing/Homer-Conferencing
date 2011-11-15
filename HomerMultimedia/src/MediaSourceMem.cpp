@@ -576,6 +576,8 @@ bool MediaSourceMem::CloseGrabDevice()
     mGrabbingStopped = false;
     mMediaType = MEDIA_UNKNOWN;
 
+    ResetPacketStatistic();
+
     return tResult;
 }
 
