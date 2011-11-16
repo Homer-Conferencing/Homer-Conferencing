@@ -632,7 +632,7 @@ void Socket::DisableIPv6Support()
 	sIPv6Supported = false;
 }
 
-bool IsTransportSupported(enum TransportType pType)
+bool Socket::IsTransportSupported(enum TransportType pType)
 {
     bool tResult = false;
 
