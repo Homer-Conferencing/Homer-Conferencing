@@ -161,7 +161,6 @@ void MediaSourceVFW::getVideoDevices(VideoDevicesList &pVList)
 
 bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 {
-    FILE                *tFile;
     int                 tResult;
     AVFormatParameters  tFormatParams;
     AVInputFormat       *tFormat;

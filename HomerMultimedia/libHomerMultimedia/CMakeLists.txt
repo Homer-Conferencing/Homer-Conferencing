@@ -66,6 +66,8 @@ ENDIF (WIN32)
 IF (APPLE)
 SET (SOURCES
 	${SOURCES}
+    ../src/MediaSourceCoreAudio
+    ../src/MediaSourceCoreVideo
 )
 ENDIF (APPLE)
 
