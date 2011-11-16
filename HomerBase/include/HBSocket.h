@@ -158,8 +158,8 @@ private:
     enum NetworkType    mSocketNetworkType;
     bool			    mIsConnected;
     bool                mIsListening;
-    std::string         mConnectedHost;
-    unsigned int        mConnectedPort;
+    std::string         mPeerHost;
+    unsigned int        mPeerPort;
     int                 mSocketHandle, mTcpClientSockeHandle;
     unsigned int        mLocalPort;
     bool                mIsClientSocket;

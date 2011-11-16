@@ -68,8 +68,8 @@ void Socket::SetDefaults(enum TransportType pTransportType)
     mLocalPort = 0;
     mSocketHandle = -1;
     mTcpClientSockeHandle = -1;
-    mConnectedHost = "";
-    mConnectedPort = 0;
+    mPeerHost = "";
+    mPeerPort = 0;
     mUdpLiteChecksumCoverage = UDP_LITE_HEADER_SIZE;
 
     #if defined(WIN32) || defined(APPLE)
@@ -235,7 +235,7 @@ std::string Socket::GetName()
 {
     string tResult = "";
 
-    tResult = mConnectedHost + ":<" + toString(mConnectedPort) + ">(" + TransportType2String(mSocketTransportType) + ")";
+    tResult = mPeerHost + ":<" + toString(mPeerPort) + ">(" + TransportType2String(mSocketTransportType) + ")";
 
     return tResult;
 }
@@ -257,8 +257,8 @@ unsigned int Socket::getLocalPort()
 
 void Socket::GetPeerAddress(std::string &pHost, unsigned int &pPort)
 {
-    pHost = mConnectedHost;
-    pPort = mConnectedPort;
+    pHost = mPeerHost;
+    pPort = mPeerPort;
 }
 
 bool Socket::SetQoS(const QoSSettings &pQoSSettings)
@@ -426,6 +426,8 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
 					LOG(LOG_ERROR, "Failed to set senders checksum coverage for UDPlite on socket %d", mSocketHandle);
 			#endif
 		case SOCKET_UDP:
+		    mPeerHost = pTargetHost;
+		    mPeerPort = pTargetPort;
             #if defined(LINUX)
 				tSent = sendto(mSocketHandle, pBuffer, (size_t)pBufferSize, MSG_NOSIGNAL, &tAddressDescriptor.sa, tAddressDescriptorSize);
 			#endif
@@ -441,8 +443,8 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
 			//#########################
 			//### re-bind if required
 			//#########################
-			if ((mConnectedHost != "") &&          (mConnectedPort != 0) &&
-			   ((mConnectedHost != pTargetHost) || (mConnectedPort != pTargetPort)))
+			if ((mPeerHost != "") &&          (mPeerPort != 0) &&
+			   ((mPeerHost != pTargetHost) || (mPeerPort != pTargetPort)))
 			{
 				tLocalPort = mLocalPort;
 				DestroySocket(mSocketHandle);
@@ -464,8 +466,8 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
 		        }else
 		        {
 		            mIsConnected = true;
-		        	mConnectedHost = pTargetHost;
-		        	mConnectedPort = pTargetPort;
+		        	mPeerHost = pTargetHost;
+		        	mPeerPort = pTargetPort;
 		        }
 			}
 			//#########################
@@ -572,7 +574,7 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
                     LOG(LOG_VERBOSE, "Having new IPv%d-TCP client socket %d connection on socket %d at local port %d", (mSocketNetworkType == SOCKET_IPv6) ? 6 : 4, mTcpClientSockeHandle, mSocketHandle, mLocalPort);
                     mIsConnected = true;
 
-                    if (!GetAddrFromDescriptor(&tAddressDescriptor, mConnectedHost, mConnectedPort))
+                    if (!GetAddrFromDescriptor(&tAddressDescriptor, mPeerHost, mPeerPort))
                         LOG(LOG_ERROR ,"Could not determine the source address for socket %d", mSocketHandle);
                 }
             }
@@ -597,8 +599,8 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
             #endif
             LOG(LOG_VERBOSE, "Client socket %d was closed", mTcpClientSockeHandle);
             mIsConnected = false;
-            pSourceHost = mConnectedHost;
-            pSourcePort = mConnectedPort;
+            pSourceHost = mPeerHost;
+            pSourcePort = mPeerPort;
 			break;
     }
 
