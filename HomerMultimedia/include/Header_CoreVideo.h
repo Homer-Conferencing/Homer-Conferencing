@@ -29,7 +29,7 @@
 #define _MULTIMEDIA_HEADER_CORE_VIDEO_
 
 #if defined(APPLE)
-#pragma GCC system_header //suppress warnings from alsa
+#pragma GCC system_header //suppress warnings
 
 //TODO: implement
 
