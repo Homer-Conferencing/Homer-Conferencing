@@ -35,6 +35,7 @@ SET (SOURCES
 	../src/HBRandom
 	../src/HBReflection
 	../src/HBSocket
+	../src/HBSocketControlService
 	../src/HBSystem
 	../src/HBThread
 	../src/HBTime

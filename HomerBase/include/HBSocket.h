@@ -108,11 +108,12 @@ public:
 
     virtual ~Socket( );
 
-    /* get type information */
+    /* getters */
     enum NetworkType GetNetworkType();
     enum TransportType GetTransportType();
-
     unsigned int getLocalPort();
+    void GetPeerAddress(std::string &pHost, unsigned int &pPort);
+    std::string GetName();
 
     /* QoS interface */
     static bool IsQoSSupported();
@@ -131,14 +132,14 @@ public:
     static bool IsTransportSupported(enum TransportType pType);
     static void DisableTransportSupport(enum TransportType pType);
     void SetUdpLiteChecksumCoverage(int pBytes = UDP_LITE_HEADER_SIZE);
+    static std::string TransportType2String(enum TransportType pSocketType);
+    static enum TransportType String2TransportType(std::string pTypeStr);
 
     /* network layer support */
     static bool IsIPv6Supported();
     static void DisableIPv6Support();
-
-    /* transport type */
-    static std::string TransportType2String(enum TransportType pSocketType);
-    static enum TransportType String2TransportType(std::string pTypeStr);
+    static std::string NetworkType2String(enum NetworkType pSocketType);
+    static enum NetworkType String2NetworkType(std::string pTypeStr);
 
     /* handling of SocketAddressDescriptor */
     static bool GetAddrFromDescriptor(SocketAddressDescriptor *tAddressDescriptor, std::string &pHost, unsigned int &pPort);
@@ -161,6 +162,7 @@ private:
     unsigned int        mConnectedPort;
     int                 mSocketHandle, mTcpClientSockeHandle;
     unsigned int        mLocalPort;
+    bool                mIsClientSocket;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
