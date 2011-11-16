@@ -53,6 +53,7 @@ using namespace std;
 int sIPv6Supported = -1;
 int sUDPliteSupported = -1;
 int sDCCPSupported = -1;
+int sSCTPSupported = -1;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -91,15 +92,21 @@ Socket::Socket(unsigned int pListenerPort, enum TransportType pTransportType, un
 {
     LOG(LOG_VERBOSE, "Created server socket object with listener port %u, transport type %s, port probing stepping %d", pListenerPort, TransportType2String(pTransportType).c_str(), pProbeStepping);
 
-    if ((pTransportType == SOCKET_UDP_LITE) && (!IsUDPliteSupported()))
+    if ((pTransportType == SOCKET_UDP_LITE) && (!IsTransportSupported(SOCKET_UDP_LITE)))
     {
         LOG(LOG_ERROR, "UDPlite not supported by system, falling back to UDP");
         pTransportType = SOCKET_UDP;
     }
 
-    if ((pTransportType == SOCKET_DCCP) && (!IsDCCPSupported()))
+    if ((pTransportType == SOCKET_DCCP) && (!IsTransportSupported(SOCKET_DCCP)))
     {
         LOG(LOG_ERROR, "DCCP not supported by system, falling back to UDP");
+        pTransportType = SOCKET_UDP;
+    }
+
+    if ((pTransportType == SOCKET_SCTP) && (!IsTransportSupported(SOCKET_SCTP)))
+    {
+        LOG(LOG_ERROR, "SCTP not supported by system, falling back to UDP");
         pTransportType = SOCKET_UDP;
     }
 
@@ -128,15 +135,21 @@ Socket::Socket(enum NetworkType pIpVersion, enum TransportType pTransportType)
     	pIpVersion = SOCKET_IPv4;
     }
 
-    if ((pTransportType == SOCKET_UDP_LITE) && (!IsUDPliteSupported()))
+    if ((pTransportType == SOCKET_UDP_LITE) && (!IsTransportSupported(SOCKET_UDP_LITE)))
     {
         LOG(LOG_ERROR, "UDPlite not supported by system, falling back to UDP");
         pTransportType = SOCKET_UDP;
     }
 
-    if ((pTransportType == SOCKET_DCCP) && (!IsDCCPSupported()))
+    if ((pTransportType == SOCKET_DCCP) && (!IsTransportSupported(SOCKET_DCCP)))
     {
         LOG(LOG_ERROR, "DCCP not supported by system, falling back to UDP");
+        pTransportType = SOCKET_UDP;
+    }
+
+    if ((pTransportType == SOCKET_SCTP) && (!IsTransportSupported(SOCKET_SCTP)))
+    {
+        LOG(LOG_ERROR, "SCTP not supported by system, falling back to UDP");
         pTransportType = SOCKET_UDP;
     }
 
@@ -164,6 +177,10 @@ string Socket::TransportType2String(enum TransportType pSocketType)
             return "TCP";
         case SOCKET_UDP_LITE:
             return "UDPlite";
+        case SOCKET_DCCP:
+            return "DCCP";
+        case SOCKET_SCTP:
+            return "SCTP";
         default:
             return "N/A";
     }
@@ -177,6 +194,10 @@ enum TransportType Socket::String2TransportType(string pTypeStr)
         return SOCKET_TCP;
     if ((pTypeStr == "UDPLITE") || (pTypeStr == "UDPlite") || (pTypeStr == "udplite"))
         return SOCKET_UDP_LITE;
+    if ((pTypeStr == "DCCP") || (pTypeStr == "dccp"))
+        return SOCKET_DCCP;
+    if ((pTypeStr == "SCTP") || (pTypeStr == "sctp"))
+        return SOCKET_SCTP;
     return SOCKET_UDP;
 }
 
@@ -611,68 +632,129 @@ void Socket::DisableIPv6Support()
 	sIPv6Supported = false;
 }
 
-bool Socket::IsUDPliteSupported()
+bool IsTransportSupported(enum TransportType pType)
 {
-    if (sUDPliteSupported == -1)
+    bool tResult = false;
+
+    switch(pType)
     {
-        #if defined(WIN32) || defined(APPLE)
+        case SOCKET_UDP:
+            tResult = true;
+            break;
+
+        case SOCKET_TCP:
+            tResult = true;
+            break;
+
+        case SOCKET_UDP_LITE:
+            if (sUDPliteSupported == -1)
+            {
+                #if defined(WIN32) || defined(APPLE)
+                    sUDPliteSupported = false;
+                #endif
+
+                #if defined(LINUX)
+                    int tHandle = 0;
+
+                    if ((tHandle = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDPLITE)) > 0)
+                    {
+                        LOGEX(Socket, LOG_INFO, ">>> UDPlite sockets available <<<");
+                        close(tHandle);
+                        sUDPliteSupported = true;
+                    }else
+                    {
+                        LOGEX(Socket, LOG_INFO, ">>> UDPlite not supported, falling back to UDP <<<");
+                        sUDPliteSupported = false;
+                    }
+                #endif
+            }
+            tResult = (sUDPliteSupported == true);
+            break;
+
+        case SOCKET_DCCP:
+            if (sDCCPSupported == -1)
+            {
+                #if defined(WIN32) || defined(APPLE)
+                    sDCCPSupported = false;
+                #endif
+
+                #if defined(LINUX)
+                    int tHandle = 0;
+
+                    if ((tHandle = socket(AF_INET, SOCK_DGRAM, IPPROTO_DCCP)) > 0)
+                    {
+                        LOGEX(Socket, LOG_INFO, ">>> DCCP sockets available <<<");
+                        close(tHandle);
+                        sDCCPSupported = true;
+                    }else
+                    {
+                        LOGEX(Socket, LOG_INFO, ">>> DCCP not supported, falling back to UDP <<<");
+                        sDCCPSupported = false;
+                    }
+                #endif
+            }
+            tResult = (sDCCPSupported == true);
+            break;
+
+        case SOCKET_SCTP:
+            if (sSCTPSupported == -1)
+            {
+                #if defined(WIN32) || defined(APPLE)
+                    sSCTPSupported = false;
+                #endif
+
+                #if defined(LINUX)
+                    int tHandle = 0;
+
+                    if ((tHandle = socket(AF_INET, SOCK_DGRAM, IPPROTO_SCTP)) > 0)
+                    {
+                        LOGEX(Socket, LOG_INFO, ">>> SCTP sockets available <<<");
+                        close(tHandle);
+                        sSCTPSupported = true;
+                    }else
+                    {
+                        LOGEX(Socket, LOG_INFO, ">>> SCTP not supported, falling back to UDP <<<");
+                        sSCTPSupported = false;
+                    }
+                #endif
+            }
+            tResult = (sSCTPSupported == true);
+            break;
+
+        default:
+        case SOCKET_TRANSPORT_TYPE_INVALID:
+            LOGEX(Socket, LOG_ERROR, "Unsupported or invalid protocol type");
+            break;
+    }
+
+    return tResult;
+}
+
+void Socket::DisableTransportSupport(enum TransportType pType)
+{
+    switch(pType)
+    {
+        case SOCKET_UDP:
+            LOGEX(Socket, LOG_ERROR, "We don't do strange things");
+            break;
+        case SOCKET_TCP:
+            LOGEX(Socket, LOG_ERROR, "We don't do strange things");
+            break;
+        case SOCKET_UDP_LITE:
             sUDPliteSupported = false;
-        #endif
-
-        #if defined(LINUX)
-            int tHandle = 0;
-
-            if ((tHandle = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDPLITE)) > 0)
-            {
-                LOGEX(Socket, LOG_INFO, ">>> UDPlite sockets available <<<");
-                close(tHandle);
-                sUDPliteSupported = true;
-            }else
-            {
-                LOGEX(Socket, LOG_INFO, ">>> UDPlite not supported, falling back to UDP <<<");
-                sUDPliteSupported = false;
-            }
-        #endif
-    }
-
-    return (sUDPliteSupported == true);
-}
-
-void Socket::DisableUDPliteSupport()
-{
-    sUDPliteSupported = false;
-}
-
-bool Socket::IsDCCPSupported()
-{
-    if (sDCCPSupported == -1)
-    {
-        #if defined(WIN32) || defined(APPLE)
+            break;
+        case SOCKET_DCCP:
             sDCCPSupported = false;
-        #endif
+            break;
+        case SOCKET_SCTP:
+            sSCTPSupported = false;
+            break;
+        default:
+        case SOCKET_TRANSPORT_TYPE_INVALID:
+            LOGEX(Socket, LOG_ERROR, "Unsupported or invalid protocol type");
+            break;
 
-        #if defined(LINUX)
-            int tHandle = 0;
-
-            if ((tHandle = socket(AF_INET6, SOCK_DGRAM, IPPROTO_DCCP)) > 0)
-            {
-                LOGEX(Socket, LOG_INFO, ">>> DCCP sockets available <<<");
-                close(tHandle);
-                sDCCPSupported = true;
-            }else
-            {
-                LOGEX(Socket, LOG_INFO, ">>> DCCP not supported, falling back to UDP <<<");
-                sDCCPSupported = false;
-            }
-        #endif
     }
-
-    return (sDCCPSupported == true);
-}
-
-void Socket::DisableDCCPSupport()
-{
-    sDCCPSupported = false;
 }
 
 bool Socket::FillAddrDescriptor(string pHost, unsigned int pPort, SocketAddressDescriptor *tAddressDescriptor, unsigned int &tAddressDescriptorSize)
@@ -810,7 +892,7 @@ bool Socket::CreateSocket(enum NetworkType pIpVersion)
     {
         case SOCKET_UDP_LITE:
             #if defined(LINUX) || defined(APPLE)
-                if (IsUDPliteSupported())
+                if (IsTransportSupported(SOCKET_UDP_LITE))
                 {
                     if ((mSocketHandle = socket(tSelectedIPDomain, SOCK_DGRAM, IPPROTO_UDPLITE)) < 0)
                         LOG(LOG_ERROR, "Could not create UDPlite socket");

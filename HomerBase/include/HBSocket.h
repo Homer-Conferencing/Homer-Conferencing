@@ -75,7 +75,8 @@ enum TransportType{
     SOCKET_UDP = 0, //RFC 768
     SOCKET_TCP, //RFC 793
     SOCKET_UDP_LITE, //RFC 3828, only for Linux, in Windows environments we fall back to UDP
-    SOCKET_DCCP // RFC 4340, only for Linux, in Windows environments we fall back to UDP
+    SOCKET_DCCP, // RFC 4340, only for Linux, in Windows environments we fall back to UDP
+    SOCKET_SCTP // RFC 4960, only for Linux, in Windows environments we fall back to UDP
 };
 
 union SocketAddressDescriptor
@@ -122,24 +123,18 @@ public:
     static QoSProfileList GetQoSProfiles();
     bool SetQoS(const std::string &pProfileName);
 
-    /* checksum coverage */
-    void SetUdpLiteChecksumCoverage(int pBytes = UDP_LITE_HEADER_SIZE);
-
     /* transmission */
     bool Send(std::string pTargetHost, unsigned int pTargetPort, void *pBuffer, ssize_t pBufferSize);
     bool Receive(std::string &pSourceHost, unsigned int &pSourcePort, void *pBuffer, ssize_t &pBufferSize);
 
-    /* IPv6 support */
+    /* transport layer support */
+    static bool IsTransportSupported(enum TransportType pType);
+    static void DisableTransportSupport(enum TransportType pType);
+    void SetUdpLiteChecksumCoverage(int pBytes = UDP_LITE_HEADER_SIZE);
+
+    /* network layer support */
     static bool IsIPv6Supported();
     static void DisableIPv6Support();
-
-    /* UDPlite support */
-    static bool IsUDPliteSupported();
-    static void DisableUDPliteSupport();
-
-    /* DCCP support */
-    static bool IsDCCPSupported();
-    static void DisableDCCPSupport();
 
     /* transport type */
     static std::string TransportType2String(enum TransportType pSocketType);
