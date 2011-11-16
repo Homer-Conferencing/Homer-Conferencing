@@ -27,6 +27,7 @@
 
 #include <Logger.h>
 #include <HBSocket.h>
+#include <HBSocketControlService.h>
 #include <HBSystem.h>
 #include <HBMutex.h>
 
@@ -61,6 +62,7 @@ void Socket::SetDefaults(enum TransportType pTransportType)
 {
     mIsConnected = false;
 	mIsListening = false;
+	mIsClientSocket = false;
 	mSocketNetworkType = SOCKET_NETWORK_TYPE_INVALID;
 	mSocketTransportType = SOCKET_TRANSPORT_TYPE_INVALID;
     mLocalPort = 0;
@@ -157,11 +159,17 @@ Socket::Socket(enum NetworkType pIpVersion, enum TransportType pTransportType)
     if (CreateSocket(pIpVersion))
         mLocalPort = BindSocket();
     LOG(LOG_VERBOSE, "Created %s-sender for socket %d at local port %u", TransportType2String(mSocketTransportType).c_str(), mSocketHandle, mLocalPort);
+
+    mIsClientSocket = true;
+    SVC_SOCKET_CONTROL.RegisterClientSocket(this);
 }
 
 Socket::~Socket()
 {
-	DestroySocket(mSocketHandle);
+    if (mIsClientSocket)
+        SVC_SOCKET_CONTROL.UnregisterClientSocket(this);
+
+    DestroySocket(mSocketHandle);
     LOG(LOG_VERBOSE, "Destroyed");
 }
 
@@ -198,7 +206,38 @@ enum TransportType Socket::String2TransportType(string pTypeStr)
         return SOCKET_DCCP;
     if ((pTypeStr == "SCTP") || (pTypeStr == "sctp"))
         return SOCKET_SCTP;
-    return SOCKET_UDP;
+    return SOCKET_TRANSPORT_TYPE_INVALID;
+}
+
+string Socket::NetworkType2String(enum NetworkType pSocketType)
+{
+    switch(pSocketType)
+    {
+        case SOCKET_IPv4:
+            return "IPv4";
+        case SOCKET_IPv6:
+            return "IPv6";
+        default:
+            return "N/A";
+    }
+}
+
+enum NetworkType Socket::String2NetworkType(std::string pTypeStr)
+{
+    if ((pTypeStr == "IPv4") || (pTypeStr == "ipv4"))
+        return SOCKET_IPv4;
+    if ((pTypeStr == "IPv6") || (pTypeStr == "ipv6"))
+        return SOCKET_IPv6;
+    return SOCKET_NETWORK_TYPE_INVALID;
+}
+
+std::string Socket::GetName()
+{
+    string tResult = "";
+
+    tResult = mConnectedHost + ":<" + toString(mConnectedPort) + ">(" + TransportType2String(mSocketTransportType) + ")";
+
+    return tResult;
 }
 
 enum NetworkType Socket::GetNetworkType()
@@ -214,6 +253,12 @@ enum TransportType Socket::GetTransportType()
 unsigned int Socket::getLocalPort()
 {
     return mLocalPort;
+}
+
+void Socket::GetPeerAddress(std::string &pHost, unsigned int &pPort)
+{
+    pHost = mConnectedHost;
+    pPort = mConnectedPort;
 }
 
 bool Socket::SetQoS(const QoSSettings &pQoSSettings)
