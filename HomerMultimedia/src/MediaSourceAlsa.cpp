@@ -50,7 +50,7 @@ MediaSourceAlsa::MediaSourceAlsa(string pDesiredDevice):
     SelectDevice(pDesiredDevice, MEDIA_AUDIO, tNewDeviceSelected);
     if (!tNewDeviceSelected)
     {
-        LOG(LOG_INFO, "Haven't selected new alsa device when creating source object");
+        LOG(LOG_INFO, "Haven't selected new ALSA device when creating source object");
     }
 
     LOG(LOG_VERBOSE, "Created");
