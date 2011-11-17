@@ -54,6 +54,7 @@ public:
 
     /* get client socket control */
     SocketsList GetClientSocketsControl();
+    void ReleaseClientSocketsControl();
 
     /* registration interface */
     Socket* RegisterClientSocket(Socket *pSocket);

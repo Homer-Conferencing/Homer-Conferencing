@@ -60,10 +60,14 @@ SocketsList SocketControlService::GetClientSocketsControl()
 
     tResult = mClientSockets;
 
+    return tResult;
+}
+
+void SocketControlService::ReleaseClientSocketsControl()
+{
+
     // unlock
     mClientSocketsMutex.unlock();
-
-    return tResult;
 }
 
 Socket* SocketControlService::RegisterClientSocket(Socket *pSocket)
