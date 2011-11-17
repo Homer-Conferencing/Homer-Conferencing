@@ -70,6 +70,32 @@ void SocketControlService::ReleaseClientSocketsControl()
     mClientSocketsMutex.unlock();
 }
 
+bool SocketControlService::IsClientSocketAvailable(Socket *pSocket)
+{
+    SocketsList::iterator tIt;
+    bool tFound = false;
+
+    if (pSocket == NULL)
+        return false;
+
+    LOG(LOG_VERBOSE, "Searching socket");
+
+    for (tIt = mClientSockets.begin(); tIt != mClientSockets.end(); tIt++)
+    {
+        if (*tIt == pSocket)
+        {
+            LOG(LOG_VERBOSE, "..found");
+            tFound = true;
+            break;
+        }
+    }
+
+    if(!tFound)
+        LOG(LOG_VERBOSE, "..not found");
+
+    return tFound;
+}
+
 Socket* SocketControlService::RegisterClientSocket(Socket *pSocket)
 {
     SocketsList::iterator tIt;

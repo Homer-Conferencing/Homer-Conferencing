@@ -59,6 +59,7 @@ public:
     /* registration interface */
     Socket* RegisterClientSocket(Socket *pSocket);
     bool UnregisterClientSocket(Socket *pSocket);
+    bool IsClientSocketAvailable(Socket *pSocket);
 
 private:
     SocketsList         mClientSockets;
