@@ -53,7 +53,7 @@ PacketStatisticService& PacketStatisticService::GetInstance()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PacketStatisticsList PacketStatisticService::GetPacketStatistics()
+PacketStatisticsList PacketStatisticService::GetPacketStatisticsAccess()
 {
 	PacketStatisticsList tResult;
 
@@ -62,10 +62,13 @@ PacketStatisticsList PacketStatisticService::GetPacketStatistics()
 
     tResult = mPacketStatistics;
 
+    return tResult;
+}
+
+void PacketStatisticService::ReleasePacketStatisticsAccess()
+{
     // unlock
     mPacketStatisticsMutex.unlock();
-
-    return tResult;
 }
 
 PacketStatistic* PacketStatisticService::RegisterPacketStatistic(PacketStatistic *pStat)

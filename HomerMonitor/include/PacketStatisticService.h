@@ -53,7 +53,8 @@ public:
     static PacketStatisticService& GetInstance();
 
     /* get statistics */
-    PacketStatisticsList GetPacketStatistics();
+    PacketStatisticsList GetPacketStatisticsAccess();
+    void ReleasePacketStatisticsAccess();
 
     /* registration interface */
     PacketStatistic* RegisterPacketStatistic(PacketStatistic *pStat);
