@@ -500,98 +500,108 @@ int MediaSourceVFW::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                 LOG(LOG_VERBOSE, "      ..display pic number: %d", tSourceFrame->display_picture_number);
             #endif
 
-            // auto. flip picture if CCD delivers upside down pictures
-            if (mFramesAreUpsideDown[mCurrentInputChannel])
-            {
-                int tRowLength;
-                char *tPicture;
-                char *tRowBuffer;
-                int tRowMax;
-                char *tUpperRow;
-                char *tLowerRow;
+			if ((tFrameFinished) && (tBytesDecoded > 0))
+			{
+				// auto. flip picture if CCD delivers upside down pictures
+//TODO: check why pictures aren't received upside-down anymore - does ffmpeg the trick?
+//				if ((mFramesAreUpsideDown[mCurrentInputChannel]) && (tSourceFrame->data[0] != NULL))
+//				{
+//					int tRowLength;
+//					char *tPicture;
+//					char *tRowBuffer;
+//					int tRowMax;
+//					char *tUpperRow;
+//					char *tLowerRow;
+//					int tRowCount = 0;
+//
+//					switch(mCodecContext->pix_fmt)
+//					{
+//						case PIX_FMT_BGR24:
+//							LOG(LOG_VERBOSE, "Format BGR24 %d*%d %d*%d   %d", mSourceResX, mSourceResY, tSourceFrame->width, tSourceFrame->height, tSourceFrame->linesize);
+//							tRowLength = mSourceResX * 3;
+//							tPicture = (char*)tSourceFrame->data[0];
+//							LOG(LOG_ERROR, "VALUES: %p  %p", tPicture, tSourceFrame->data[0]);
+//							tRowBuffer = (char*)malloc(tRowLength);
+//							if (tRowBuffer == NULL)
+//								LOG(LOG_ERROR, "Out of memory occurred");
+//							tRowMax = mSourceResY / 2;
+//							tUpperRow = tPicture;
+//							tLowerRow = tPicture + (tRowLength * (mSourceResY - 1));
+//							LOG(LOG_ERROR, "VALUES: lower %p  upper %p", tLowerRow, tUpperRow);
+//							LOG(LOG_ERROR, "RowMax: %d", tRowMax);
+//
+//							for (tRowCount = 0; tRowCount < tRowMax; tRowCount++)
+//							{
+//								//LOG(LOG_VERBOSE, "ROWCOUNT: %d", tRowCount);
+//								// save first line
+//								memcpy(tRowBuffer, tUpperRow, tRowLength);
+//								// first row = last row
+//								memcpy(tUpperRow, tLowerRow, tRowLength);
+//								// last row = saved row
+//								memcpy(tLowerRow, tRowBuffer, tRowLength);
+//
+//								tUpperRow += tRowLength;
+//								tLowerRow -= tRowLength;
+//							}
+//							free(tRowBuffer);
+//							break;
+//
+//						case PIX_FMT_RGB32:
+//							//LOG(LOG_VERBOSE, "Format RGB32");
+//							tRowLength = mSourceResX * 4;
+//							tPicture = (char*)tSourceFrame->data[0];
+//							tRowBuffer = (char*)malloc(tRowLength);
+//							if (tRowBuffer == NULL)
+//								LOG(LOG_ERROR, "Out of memory occurred");
+//							tRowMax = mSourceResY / 2;
+//							tUpperRow = tPicture;
+//							tLowerRow = tPicture + (tRowLength * (mSourceResY - 1));
+//
+//							for (tRowCount = 0; tRowCount < tRowMax; tRowCount++)
+//							{
+//								// save first line
+//								memcpy(tRowBuffer, tUpperRow, tRowLength);
+//								// first row = last row
+//								memcpy(tUpperRow, tLowerRow, tRowLength);
+//								// last row = saved row
+//								memcpy(tLowerRow, tRowBuffer, tRowLength);
+//
+//								tUpperRow += tRowLength;
+//								tLowerRow -= tRowLength;
+//							}
+//							free(tRowBuffer);
+//							break;
+//
+//						default:
+//							if (mFirstPixelformatError)
+//							{
+//								LOG(LOG_ERROR, "Unsupported pixel format %d, cannot flip frame (message won't be repeated)", mCodecContext->pix_fmt);
+//								mFirstPixelformatError = false;
+//							}
+//							break;
+//					}
+//				}
 
-                switch(mCodecContext->pix_fmt)
-                {
-                    case PIX_FMT_BGR24:
-                        //LOG(LOG_VERBOSE, "Format BGR24");
-                        tRowLength = mSourceResX * 3;
-                        tPicture = (char*)tSourceFrame->data[0];
-                        tRowBuffer = (char*)malloc(tRowLength);
-                        tRowMax = mSourceResY / 2;
-                        tUpperRow = tPicture;
-                        tLowerRow = tPicture + (tRowLength * (mSourceResY - 1));
+				// re-encode the frame and write it to file
+				if (mRecording)
+					RecordFrame(tSourceFrame);
 
-                        for (int tRowCount = 0; tRowCount < tRowMax; tRowCount++)
-                        {
-                            // save first line
-                            memcpy(tRowBuffer, tUpperRow, tRowLength);
-                            // first row = last row
-                            memcpy(tUpperRow, tLowerRow, tRowLength);
-                            // last row = saved row
-                            memcpy(tLowerRow, tRowBuffer, tRowLength);
+				// convert frame to RGB format
+				if (!pDropChunk)
+				{
+					HM_sws_scale(mScalerContext, tSourceFrame->data, tSourceFrame->linesize, 0, mCodecContext->height, tRGBFrame->data, tRGBFrame->linesize);
+				}
+			}else
+			{
+				// unlock grabbing
+				mGrabMutex.unlock();
 
-                            tUpperRow += tRowLength;
-                            tLowerRow -= tRowLength;
-                        }
-                        free(tRowBuffer);
-                        break;
+				// acknowledge failed
+				MarkGrabChunkFailed("couldn't decode video frame");
 
-                    case PIX_FMT_RGB32:
-                        //LOG(LOG_VERBOSE, "Format BGR24");
-                        tRowLength = mSourceResX * 4;
-                        tPicture = (char*)tSourceFrame->data[0];
-                        tRowBuffer = (char*)malloc(tRowLength);
-                        tRowMax = mSourceResY / 2;
-                        tUpperRow = tPicture;
-                        tLowerRow = tPicture + (tRowLength * (mSourceResY - 1));
-
-                        for (int tRowCount = 0; tRowCount < tRowMax; tRowCount++)
-                        {
-                            // save first line
-                            memcpy(tRowBuffer, tUpperRow, tRowLength);
-                            // first row = last row
-                            memcpy(tUpperRow, tLowerRow, tRowLength);
-                            // last row = saved row
-                            memcpy(tLowerRow, tRowBuffer, tRowLength);
-
-                            tUpperRow += tRowLength;
-                            tLowerRow -= tRowLength;
-                        }
-                        free(tRowBuffer);
-                        break;
-
-                    default:
-                        if (mFirstPixelformatError)
-                        {
-							LOG(LOG_ERROR, "Unsupported pixel format %d, cannot flip frame (message won't be repeated)", mCodecContext->pix_fmt);
-                            mFirstPixelformatError = false;
-                        }
-                        break;
-                }
-            }
+				return -1;
+			}
         }
-
-		// re-encode the frame and write it to file
-        if (mRecording)
-            RecordFrame(tSourceFrame);
-
-        // convert frame to RGB format
-        if (!pDropChunk)
-        {
-        	if ((tFrameFinished) && (tBytesDecoded > 0))
-        	    HM_sws_scale(mScalerContext, tSourceFrame->data, tSourceFrame->linesize, 0, mCodecContext->height, tRGBFrame->data, tRGBFrame->linesize);
-            else
-            {
-                // unlock grabbing
-                mGrabMutex.unlock();
-
-                // acknowledge failed
-                MarkGrabChunkFailed("couldn't decode video frame");
-
-                return -1;
-            }
-        }
-
         av_free_packet(&tPacket);
     }
 
