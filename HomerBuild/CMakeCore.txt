@@ -78,6 +78,7 @@ SET (DEFINITIONS_WINDOWS
 	-DWINVER=0x0501
 	-DWIN32
 	-D_REENTRANT
+	-DBITS=${ARCH_BITS}
 )
 
 # "-D" options for compilation in linux environment
@@ -86,6 +87,7 @@ SET (DEFINITIONS_LINUX
 	-D__STDC_CONSTANT_MACROS
 	-DLINUX
 	-D_REENTRANT
+    -DBITS=${ARCH_BITS}
 )
 
 # "-D" options for compilation in linux environment
@@ -94,6 +96,7 @@ SET (DEFINITIONS_APPLE
 	-D__STDC_CONSTANT_MACROS
 	-DAPPLE
 	-D_REENTRANT
+    -DBITS=${ARCH_BITS}
 )
 
 ##############################################################
