@@ -1,0 +1,97 @@
+/*****************************************************************************
+ *
+ * Copyright (C) 2008-2011 Homer-conferencing project
+ *
+ * This software is free software.
+ * Your are allowed to redistribute it and/or modify it under the terms of
+ * the GNU General Public License version 2 as published by the Free Software
+ * Foundation.
+ *
+ * This source is published in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License version 2 for more details.
+ *
+ * You should have received a copy of the GNU General Public License version 2
+ * along with this program. Otherwise, you can write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02111, USA.
+ * Alternatively, you find an online version of the license text under
+ * http://www.gnu.org/licenses/gpl-2.0.html.
+ *
+ *****************************************************************************/
+
+/*
+ * Purpose: Implemenation of process statistic
+ * Author:  Thomas Volkert
+ * Since:   2009-05-18
+*/
+
+#include <ProcessStatistic.h>
+#include <HBThread.h>
+#include <Logger.h>
+
+namespace Homer { namespace Monitor {
+
+using namespace std;
+
+///////////////////////////////////////////////////////////////////////////////
+
+ProcessStatistic::ProcessStatistic(int pThreadId)
+{
+    if (pThreadId == -1)
+    {
+        mRemotelyCreated = false;
+        mThreadId = Thread::GetTId();
+    }else
+    {
+        mRemotelyCreated = true;
+        mThreadId = pThreadId;
+    }
+
+    mName = "hidden thread";
+    mLastUserTicsThread = 0;
+    mLastKernelTicsThread = 0;
+    mLastUserTicsSystem = 0;
+    mLastKernelTicsSystem = 0;
+}
+
+ProcessStatistic::~ProcessStatistic()
+{
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+int ProcessStatistic::GetThreadStatisticId()
+{
+    return mThreadId;
+}
+
+bool ProcessStatistic::IsRemotelyCreated()
+{
+    return mRemotelyCreated;
+}
+
+void ProcessStatistic::AssignThreadName(string pName)
+{
+    mName = pName;
+
+    LOG(LOG_INFO, "Assign name \"%s\" for thread (Pid:%d Tid:%d)", pName.c_str(), Thread::GetPId(), mThreadId);
+}
+
+string ProcessStatistic::GetThreadName()
+{
+    return mName;
+}
+
+ThreadStatisticDescriptor ProcessStatistic::GetThreadStatistic()
+{
+    ThreadStatisticDescriptor tStat;
+
+    Thread::GetThreadStatistic(mThreadId, tStat.MemVirtual, tStat.MemPhysical, tStat.Pid, tStat.PPid, tStat.LoadUser, tStat.LoadSystem, tStat.LoadTotal, tStat.Priority, tStat.PriorityBase, tStat.ThreadCount, mLastUserTicsThread, mLastKernelTicsThread, mLastUserTicsSystem, mLastKernelTicsSystem);
+    tStat.Tid = mThreadId;
+
+    return tStat;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+}}
