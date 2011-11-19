@@ -148,7 +148,7 @@ void* MediaSourceNet::Run(void* pArgs)
 
 		if ((tDataSize > 0) && (tSourceHost != "") && (tSourcePort != 0))
 		{
-			mCurrentDeviceName = "NET: " + tSourceHost + "<" + toString(tSourcePort) + ">";
+		    mCurrentDeviceName = "NET-IN: " + mDataSocket->GetName();
 
 			#ifdef MSN_DEBUG_PACKETS
 				LOG(LOG_VERBOSE, "Received packet number %5d at %p with size: %5d from %s:%u", (int)++mPacketNumber, mPacketBuffer, (int)tDataSize, tSourceHost.c_str(), tSourcePort);
