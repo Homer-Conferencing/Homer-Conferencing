@@ -1,0 +1,3 @@
+- finish wave out for Alsa & MMSYS
+- multi-channel output based on wave out classes instead of SDL
+
