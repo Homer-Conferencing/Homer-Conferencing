@@ -53,6 +53,12 @@ SET (LIB_DIRS
 	/usr/lib
 )
 
+# include dirs
+SET (INCLUDE_DIRS
+	${INCLUDE_DIRS}
+	/usr/local/include
+)
+
 ##############################################################
 # compile flags
 SET (FLAGS
