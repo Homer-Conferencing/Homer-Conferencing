@@ -2,6 +2,7 @@
 # Author:  Thomas Volkert
 # Since:   2010-11-13
 ###############################################################################
+INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakePreDefs.txt)
 
 MESSAGE("#####################################")
 MESSAGE("Configure HomerBase")
@@ -52,6 +53,11 @@ SET (LIBS_WINDOWS
 	Psapi
 )
 	
+# USED LIBRARIES for BSD environment
+SET (LIBS_BSD
+	rt
+)
+
 # USED LIBRARIES for linux environment
 SET (LIBS_LINUX
 	rt
