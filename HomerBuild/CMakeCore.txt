@@ -3,6 +3,10 @@
 # Since:   2010-11-13
 ###############################################################################
 
+if (NOT PRE_DEFINITIONS_EXECUTED)
+MESSAGE("!!!!## You forgot to include the pre-definitions called CMakePreDefs.txt ##!!!! ")
+endif ()
+
 #MESSAGE("#####################################")
 #MESSAGE("Configure")
 #MESSAGE("#####################################")
