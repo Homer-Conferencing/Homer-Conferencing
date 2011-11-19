@@ -235,7 +235,7 @@ std::string Socket::GetName()
 {
     string tResult = "";
 
-    tResult = mPeerHost + ":<" + toString(mPeerPort) + ">(" + TransportType2String(mSocketTransportType) + ")";
+    tResult = mPeerHost + "<" + toString(mPeerPort) + ">(" + TransportType2String(mSocketTransportType) + ")";
 
     return tResult;
 }
