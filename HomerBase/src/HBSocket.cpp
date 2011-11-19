@@ -461,7 +461,7 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
 			{
 		        if (connect(mSocketHandle, &tAddressDescriptor.sa, tAddressDescriptorSize) < 0)
 		        {
-		            LOG(LOG_ERROR, "Failed to connect socket %d because of \"%s\"(%d)", mSocketHandle, strerror(errno), errno);
+		            LOG(LOG_ERROR, "Failed to connect socket %d because \"%s\"(%d)", mSocketHandle, strerror(errno), errno);
 		            return false;
 		        }else
 		        {
