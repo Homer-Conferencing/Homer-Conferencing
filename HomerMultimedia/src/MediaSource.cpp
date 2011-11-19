@@ -74,6 +74,7 @@ MediaSource::MediaSource(string pName):
     mCurrentDevice = "";
     mCurrentDeviceName = "";
     mRecorderRealTime = true;
+    mLastGrabResultWasError = false;
     mChunkNumber = 0;
     mChunkDropCounter = 0;
     mSampleRate = 44100;
@@ -979,9 +980,12 @@ list<string> MediaSource::ListRegisteredMediaSinks()
     // lock
     mMediaSinksMutex.lock();
 
-    for (tIt = mMediaSinks.begin(); tIt != mMediaSinks.end(); tIt++)
+    if(mMediaSinks.size() > 0)
     {
-        tResult.push_back((*tIt)->GetId());
+        for (tIt = mMediaSinks.begin(); tIt != mMediaSinks.end(); tIt++)
+        {
+            tResult.push_back((*tIt)->GetId());
+        }
     }
 
     // unlock
