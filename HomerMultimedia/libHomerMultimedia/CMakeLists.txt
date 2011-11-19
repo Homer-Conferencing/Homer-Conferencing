@@ -2,6 +2,7 @@
 # Author:  Thomas Volkert
 # Since:   2011-02-19
 ###############################################################################
+INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakePreDefs.txt)
 
 MESSAGE("#####################################")
 MESSAGE("Configure HomerMultimedia")
@@ -71,14 +72,22 @@ SET (SOURCES
 )
 ENDIF (APPLE)
 
-IF (UNIX AND NOT WIN32 AND NOT APPLE)
+IF (BSD)
+SET (SOURCES
+	${SOURCES}
+	../src/MediaSourceAlsa
+	../src/MediaSourceOss
+)
+ENDIF (BSD)
+
+IF (LINUX)
 SET (SOURCES
 	${SOURCES}
 	../src/MediaSourceAlsa
 	../src/MediaSourceOss
 	../src/MediaSourceV4L2
 )
-ENDIF (UNIX AND NOT WIN32 AND NOT APPLE)
+ENDIF (LINUX)
 
 # USED LIBRARIES for win32 environment
 SET (LIBS_WINDOWS
@@ -123,6 +132,29 @@ SET (LIBS_LINUX
 )
 
 SET (LIBS_LINUX_STATIC
+	avdevice
+	avformat
+	avcodec
+	avfilter
+	swscale
+	avutil
+	mp3lame
+	opencore-amrnb
+	opencore-amrwb
+	jack
+	x264
+	bz2
+	z
+)
+
+# USED LIBRARIES for BSD environment
+SET (LIBS_BSD
+	HomerBase
+	HomerMonitor
+	asound
+)
+
+SET (LIBS_BSD_STATIC
 	avdevice
 	avformat
 	avcodec
