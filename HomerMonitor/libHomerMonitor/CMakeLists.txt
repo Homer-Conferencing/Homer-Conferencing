@@ -2,6 +2,7 @@
 # Author:  Thomas Volkert
 # Since:   2010-11-13
 ###############################################################################
+INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakePreDefs.txt)
 
 MESSAGE("#####################################")
 MESSAGE("Configure HomerMonitor")
@@ -28,7 +29,6 @@ SET (FLAGS
 
 )
 
-
 # SOURCES
 SET (SOURCES
 	../src/PacketStatistic
@@ -44,6 +44,11 @@ SET (LIBS_WINDOWS
 
 # USED LIBRARIES for linux environment
 set(LIBS_LINUX
+	HomerBase
+)
+
+# USED LIBRARIES for BSD environment
+set(LIBS_BSD
 	HomerBase
 )
 
