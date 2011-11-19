@@ -141,7 +141,7 @@ int MediaFifo::ReadFifoExclusive(char **pBuffer, int &pBufferSize)
             LOG(LOG_VERBOSE, "Waiting for a new FIFO input");
         #endif
 
-            mFifoDataInputCondition.Reset();
+        mFifoDataInputCondition.Reset();
         mFifoMutex.unlock();
 
         while(!mFifoDataInputCondition.Wait())
