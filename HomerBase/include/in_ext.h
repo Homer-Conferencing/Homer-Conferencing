@@ -31,6 +31,16 @@ using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// definitions for DCCP
+#ifndef IPPROTO_DCCP
+#define IPPROTO_DCCP                                     33
+#endif
+
+// definitions for SCTP
+#ifndef IPPROTO_SCTP
+#define IPPROTO_SCTP                                    132
+#endif
+
 // definitions for UDP-Lite
 // HINT: homepage for UDP-Lite is http://www.erg.abdn.ac.uk/users/gerrit/udp-lite/
 #ifndef IPPROTO_UDPLITE
