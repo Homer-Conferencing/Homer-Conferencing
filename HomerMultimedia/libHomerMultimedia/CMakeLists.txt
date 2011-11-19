@@ -14,18 +14,13 @@ MESSAGE("#####################################")
 
 # include dirs
 SET (INCLUDE_DIRS
+	${INCLUDE_DIRS}
 	../include
 	../../HomerBase/include/Logging
 	../../HomerBase/include
 	../../HomerMonitor/include
 	../../HomerMultimedia/include
 	../../HomerWinLibs/FFMPEG
-	/usr/include/ffmpeg
-	/usr/include/libavutil
-	/usr/include/libavcodec
-	/usr/include/libavformat
-	/usr/include/libavdevice
-	/usr/include/libswscale
 )
 
 # target directory for the lib
