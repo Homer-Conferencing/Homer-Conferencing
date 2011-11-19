@@ -28,7 +28,7 @@
 #ifndef _BASE_SOCKET_
 #define _BASE_SOCKET_
 
-#if defined(LINUX) || defined(APPLE)
+#if defined(LINUX) || defined(APPLE) || defined(BSD)
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>

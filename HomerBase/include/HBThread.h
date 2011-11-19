@@ -30,7 +30,7 @@
 
 typedef void*(*THREAD_MAIN)(void*);
 
-#if defined(LINUX) || defined(APPLE)
+#if defined(LINUX) || defined(APPLE) || defined(BSD)
 #include <pthread.h>
 #define OS_DEP_THREAD pthread_t
 #endif
