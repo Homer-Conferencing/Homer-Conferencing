@@ -30,7 +30,7 @@
 
 #include <HBMutex.h>
 
-#if defined(LINUX) || defined(APPLE)
+#if defined(LINUX) || defined(APPLE) || defined(BSD)
 #include <pthread.h>
 #include <stdlib.h>
 #include <errno.h>

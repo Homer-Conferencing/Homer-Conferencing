@@ -31,7 +31,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#if defined(LINUX) || defined(APPLE)
+#if defined(LINUX) || defined(APPLE) || defined(BSD)
 #include <sys/utsname.h>
 #include <unistd.h>
 #endif
@@ -81,7 +81,7 @@ string System::GetLinuxKernelVersion()
 {
     string tResult = "";
 
-    #if defined(LINUX) || defined(APPLE)
+    #if defined(LINUX) || defined(APPLE) || defined(BSD)
         struct utsname tInfo;
         uname(&tInfo);
 
@@ -97,7 +97,7 @@ string System::GetLinuxKernelVersion()
 int System::GetMachineCores()
 {
     int tResult = 1;
-    #if defined(LINUX) || defined(APPLE)
+    #if defined(LINUX) || defined(APPLE) || defined(BSD)
         tResult = sysconf(_SC_NPROCESSORS_ONLN);
 
     #endif
@@ -126,7 +126,7 @@ string System::GetMachineType()
 {
     string tResult = "unknown";
 
-    #if defined(LINUX) || defined(APPLE)
+    #if defined(LINUX) || defined(APPLE) || defined(BSD)
         struct utsname tInfo;
         uname(&tInfo);
 

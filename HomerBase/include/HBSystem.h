@@ -30,12 +30,6 @@
 
 #include <string.h>
 
-#ifdef LINUX
-#endif
-
-#ifdef WIN32
-#endif
-
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////

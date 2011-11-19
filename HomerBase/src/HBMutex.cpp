@@ -37,7 +37,7 @@ using namespace std;
 Mutex::Mutex()
 {
 	bool tResult = false;
-    #if defined(LINUX) || defined(APPLE)
+    #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		mMutex = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t));
 		tResult = (pthread_mutex_init(mMutex, NULL) == 0);
 	#endif
@@ -52,7 +52,7 @@ Mutex::Mutex()
 Mutex::~Mutex()
 {
     bool tResult = false;
-    #if defined(LINUX) || defined(APPLE)
+    #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		tResult = (pthread_mutex_destroy(mMutex) == 0);
 	    free(mMutex);
 	#endif
@@ -67,7 +67,7 @@ Mutex::~Mutex()
 
 bool Mutex::lock()
 {
-    #if defined(LINUX) || defined(APPLE)
+    #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		return !pthread_mutex_lock(mMutex);
 	#endif
 	#ifdef WIN32
@@ -77,7 +77,7 @@ bool Mutex::lock()
 
 bool Mutex::unlock()
 {
-    #if defined(LINUX) || defined(APPLE)
+    #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		return !pthread_mutex_unlock(mMutex);
 	#endif
 	#ifdef WIN32
@@ -88,7 +88,7 @@ bool Mutex::unlock()
 bool Mutex::tryLock()
 {
 	bool tResult = false;
-    #if defined(LINUX) || defined(APPLE)
+    #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		switch(pthread_mutex_trylock(mMutex))
 		{
 			case EDEADLK:
@@ -129,8 +129,8 @@ bool Mutex::tryLock()
 bool Mutex::tryLock(int pMSecs)
 {
 	bool tResult = false;
-    #ifdef APPLE
-	    // OSX doesn't support pthread_mutex_timedlock() and clock_gettime(), fall back to simple pthread_mutex_trylock()
+    #if defined(APPLE) || defined(BSD)
+	    // OSX/BSD don't support pthread_mutex_timedlock() and clock_gettime(), fall back to simple pthread_mutex_trylock()
         switch(pthread_mutex_trylock(mMutex))
         {
             case EDEADLK:

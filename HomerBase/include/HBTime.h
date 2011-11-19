@@ -32,7 +32,7 @@
 #include <sys/types.h>
 #include <time.h>
 
-#if defined(LINUX) || defined(APPLE)
+#if defined(LINUX) || defined(APPLE) || defined(BSD)
 #include <sys/time.h>
 #endif
 

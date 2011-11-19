@@ -28,7 +28,7 @@
 #ifndef _BASE_MUTEX_
 #define _BASE_MUTEX_
 
-#if defined(LINUX) || defined(APPLE)
+#if defined(LINUX) || defined(APPLE) || defined(BSD)
 #include <pthread.h>
 #include <stdlib.h>
 #include <errno.h>

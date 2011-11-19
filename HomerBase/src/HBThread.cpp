@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include <cstdio>
 
-#if defined(LINUX) || defined(APPLE)
+#if defined(LINUX) || defined(APPLE) || defined(BSD)
 #include <sys/types.h>
 #include <sys/syscall.h>
 #include <unistd.h>
@@ -73,7 +73,7 @@ void Thread::Suspend(unsigned int pUSecs)
 {
 	if (pUSecs < 1)
 		return;
-    #if defined(LINUX) || defined(APPLE)
+    #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		if (usleep(pUSecs) != 0)
 			LOGEX(Thread, LOG_ERROR, "Error from usleep: \"%s\"", strerror(errno));
 	#endif
@@ -88,7 +88,7 @@ int Thread::GetTId()
 		// some magic from the depth of linux sources
 		return syscall(__NR_gettid);
 	#endif
-    #if defined(APPLE)
+    #if defined(APPLE) || defined(BSD)
         //TODO
 		return 0;
     #endif
@@ -99,7 +99,7 @@ int Thread::GetTId()
 
 int Thread::GetPId()
 {
-    #if defined(LINUX) || defined(APPLE)
+    #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		return getpid();
 	#endif
 	#ifdef WIN32
@@ -109,7 +109,7 @@ int Thread::GetPId()
 
 int Thread::GetPPId()
 {
-    #if defined(LINUX) || defined(APPLE)
+    #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		return getppid();
 	#endif
 	#ifdef WIN32
@@ -163,7 +163,7 @@ vector<int> Thread::GetTIds()
 		}
 		closedir(tDir);
 	#endif
-    #if defined(APPLE)
+    #if defined(APPLE) || defined(BSD)
 		//TODO
     #endif
 	#ifdef WIN32
@@ -323,7 +323,7 @@ bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned l
         pLastUserTicsSystem = tSystemJiffiesUser;
 		pLastKernelTicsSystem = tSystemJiffiesKernel;
 	#endif
-    #if defined(APPLE)
+    #if defined(APPLE) || defined(BSD)
         pMemPhysical = 0;
         pLoadUser = 0;
         pLoadSystem = 0;
@@ -515,7 +515,7 @@ bool Thread::StartThread(void* pArgs)
     mThreadMain = 0;
     mThreadArguments = pArgs;
 
-    #if defined(LINUX) || defined(APPLE)
+    #if defined(LINUX) || defined(APPLE) || defined(BSD)
         size_t tThreadStackSize;
         pthread_attr_t tThreadAttributes;
 
@@ -562,7 +562,7 @@ bool Thread::StartThread(THREAD_MAIN pMain, void* pArgs)
 	mThreadMain = pMain;
 	mThreadArguments = pArgs;
 
-    #if defined(LINUX) || defined(APPLE)
+    #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		size_t tThreadStackSize;
 	    pthread_attr_t tThreadAttributes;
 
@@ -604,10 +604,10 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
     if (mThreadHandle == 0)
         return false;
 
-    #if defined(LINUX) || defined(APPLE)
+    #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		struct timespec tTimeout;
 
-        #if defined(LINUX)
+        #if defined(LINUX) || defined(BSD)
             if (clock_gettime(CLOCK_REALTIME, &tTimeout) == -1)
                 LOG(LOG_ERROR, "Failed to get time from clock");
         #endif
@@ -636,7 +636,7 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
             }
         #endif
 
-        #if defined(APPLE)
+        #if defined(APPLE) || defined(BSD)
             // OSX doesn't support pthread_timedjoin_np(), fall back to simple pthread_join()
             if (int tRes = pthread_join(mThreadHandle, &tThreadResult))
                 LOG(LOG_INFO, "Waiting for end of thread failed because \"%s\"", strerror(tRes));

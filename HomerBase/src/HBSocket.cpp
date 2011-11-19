@@ -72,7 +72,7 @@ void Socket::SetDefaults(enum TransportType pTransportType)
     mPeerPort = 0;
     mUdpLiteChecksumCoverage = UDP_LITE_HEADER_SIZE;
 
-    #if defined(WIN32) || defined(APPLE)
+    #if defined(WIN32) || defined(APPLE) || defined(BSD)
 		if (pTransportType == SOCKET_UDP_LITE)
 		{
 			LOG(LOG_ERROR, "UDPlite is not supported by Windows API, a common UDP socket will be used instead");
@@ -420,7 +420,7 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
     switch(mSocketTransportType)
     {
 		case SOCKET_UDP_LITE:
-            #if defined(LINUX) || defined(APPLE)
+            #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		        LOG(LOG_VERBOSE, "Setting UDPlite checksum coverage to %d", tUdpLiteChecksumCoverage);
 				if (setsockopt(mSocketHandle, IPPROTO_UDPLITE, UDPLITE_SEND_CSCOV, (__const void*)&tUdpLiteChecksumCoverage, sizeof(int)) < 0)
 					LOG(LOG_ERROR, "Failed to set senders checksum coverage for UDPlite on socket %d", mSocketHandle);
@@ -431,7 +431,7 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
             #if defined(LINUX)
 				tSent = sendto(mSocketHandle, pBuffer, (size_t)pBufferSize, MSG_NOSIGNAL, &tAddressDescriptor.sa, tAddressDescriptorSize);
 			#endif
-            #if defined(APPLE)
+            #if defined(APPLE) || defined(BSD)
                 tSent = sendto(mSocketHandle, pBuffer, (size_t)pBufferSize, 0, &tAddressDescriptor.sa, tAddressDescriptorSize);
             #endif
 			#ifdef WIN32
@@ -476,7 +476,7 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
             #if defined(LINUX)
 				tSent = send(mSocketHandle, pBuffer, (size_t)pBufferSize, MSG_NOSIGNAL);
 			#endif
-            #if defined(APPLE)
+            #if defined(APPLE) || defined(BSD)
                 tSent = send(mSocketHandle, pBuffer, (size_t)pBufferSize, 0);
             #endif
 			#ifdef WIN32
@@ -508,7 +508,7 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
     int                     tClientHandle;
     ssize_t                 tReceivedBytes = 0;
     SocketAddressDescriptor tAddressDescriptor;
-    #if defined(LINUX) || defined(APPLE)
+    #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		socklen_t           tAddressDescriptorSize = sizeof(tAddressDescriptor.sa_stor);
 	#endif
 	#ifdef WIN32
@@ -524,7 +524,7 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
     switch(mSocketTransportType)
     {
 		case SOCKET_UDP_LITE:
-            #if defined(LINUX) || defined(APPLE)
+            #if defined(LINUX) || defined(APPLE) || defined(BSD)
 				if (setsockopt(mSocketHandle, IPPROTO_UDPLITE, UDPLITE_RECV_CSCOV, (__const void*)&tUdpLiteChecksumCoverage, sizeof(int)) != 0)
 					LOG(LOG_ERROR, "Failed to set receivers checksum coverage for UDPlite on socket %d", mSocketHandle);
 			#endif
@@ -536,7 +536,7 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
             #if defined(LINUX)
 				tReceivedBytes = recvfrom(mSocketHandle, pBuffer, (size_t)pBufferSize, MSG_NOSIGNAL, &tAddressDescriptor.sa, &tAddressDescriptorSize);
 			#endif
-            #if defined(APPLE)
+            #if defined(APPLE) || defined(BSD)
                 tReceivedBytes = recvfrom(mSocketHandle, pBuffer, (size_t)pBufferSize, 0, &tAddressDescriptor.sa, &tAddressDescriptorSize);
             #endif
 			#ifdef WIN32
@@ -586,7 +586,7 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
             #if defined(LINUX)
                 tReceivedBytes = recv(mTcpClientSockeHandle, pBuffer, (size_t)pBufferSize, MSG_NOSIGNAL);
             #endif
-            #if defined(APPLE)
+            #if defined(APPLE) || defined(BSD)
                 tReceivedBytes = recv(mTcpClientSockeHandle, pBuffer, (size_t)pBufferSize, 0);
             #endif
             #ifdef WIN32
@@ -655,7 +655,7 @@ bool Socket::IsIPv6Supported()
         if ((tHandle = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP)) > 0)
         {
             LOGEX(Socket, LOG_INFO, ">>> IPv6 sockets available <<<");
-            #if defined(LINUX) || defined(APPLE)
+            #if defined(LINUX) || defined(APPLE) || defined(BSD)
                 close(tHandle);
             #endif
             #ifdef WIN32
@@ -695,7 +695,7 @@ bool Socket::IsTransportSupported(enum TransportType pType)
         case SOCKET_UDP_LITE:
             if (sUDPliteSupported == -1)
             {
-                #if defined(WIN32) || defined(APPLE)
+                #if defined(WIN32) || defined(APPLE) || defined(BSD)
                     sUDPliteSupported = false;
                 #endif
 
@@ -720,7 +720,7 @@ bool Socket::IsTransportSupported(enum TransportType pType)
         case SOCKET_DCCP:
             if (sDCCPSupported == -1)
             {
-                #if defined(WIN32) || defined(APPLE)
+                #if defined(WIN32) || defined(APPLE) || defined(BSD)
                     sDCCPSupported = false;
                 #endif
 
@@ -745,7 +745,7 @@ bool Socket::IsTransportSupported(enum TransportType pType)
         case SOCKET_SCTP:
             if (sSCTPSupported == -1)
             {
-                #if defined(WIN32) || defined(APPLE)
+                #if defined(WIN32) || defined(APPLE) || defined(BSD)
                     sSCTPSupported = false;
                 #endif
 
@@ -937,7 +937,7 @@ bool Socket::CreateSocket(enum NetworkType pIpVersion)
     switch(mSocketTransportType)
     {
         case SOCKET_UDP_LITE:
-            #if defined(LINUX) || defined(APPLE)
+            #if defined(LINUX) || defined(APPLE) || defined(BSD)
                 if (IsTransportSupported(SOCKET_UDP_LITE))
                 {
                     if ((mSocketHandle = socket(tSelectedIPDomain, SOCK_DGRAM, IPPROTO_UDPLITE)) < 0)
@@ -996,7 +996,7 @@ bool Socket::CreateSocket(enum NetworkType pIpVersion)
             // we force hybrid sockets, otherwise Windows will complain: http://msdn.microsoft.com/en-us/library/bb513665%28v=vs.85%29.aspx
             int tOnlyIpv6Sockets = false;
             bool tIpv6OnlyOkay = false;
-            #if defined(LINUX) || defined(APPLE)
+            #if defined(LINUX) || defined(APPLE) || defined(BSD)
 				tIpv6OnlyOkay = (setsockopt(mSocketHandle, IPPROTO_IPV6, IPV6_V6ONLY, (__const void*)&tOnlyIpv6Sockets, sizeof(tOnlyIpv6Sockets)) == 0);
 			#endif
 			#ifdef WIN32
@@ -1018,7 +1018,7 @@ void Socket::DestroySocket(int pHandle)
 {
     if (pHandle > 0)
     {
-        #if defined(LINUX) || defined(APPLE)
+        #if defined(LINUX) || defined(APPLE) || defined(BSD)
             close(pHandle);
         #endif
         #ifdef WIN32

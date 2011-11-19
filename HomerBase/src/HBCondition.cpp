@@ -43,7 +43,7 @@ using namespace std;
 Condition::Condition()
 {
 	bool tResult = false;
-    #if defined(LINUX) || defined(APPLE)
+    #if defined(LINUX) || defined(APPLE) || defined(BSD)
 	    mCondition = (pthread_cond_t*)malloc(sizeof(pthread_cond_t));
 		tResult = (pthread_cond_init(mCondition, NULL) == 0);
 	#endif
@@ -58,7 +58,7 @@ Condition::Condition()
 Condition::~Condition()
 {
     bool tResult = false;
-    #if defined(LINUX) || defined(APPLE)
+    #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		tResult = (pthread_cond_destroy(mCondition) == 0);
 	    free(mCondition);
 	#endif
@@ -73,10 +73,10 @@ Condition::~Condition()
 
 bool Condition::Wait(Mutex *pMutex, int pTime)
 {
-    #if defined(LINUX) || defined(APPLE)
+    #if defined(LINUX) || defined(APPLE) || defined(BSD)
         struct timespec tTimeout;
 
-        #if defined(LINUX)
+        #if defined(LINUX) || defined(BSD)
             if (clock_gettime(CLOCK_REALTIME, &tTimeout) == -1)
                 LOG(LOG_ERROR, "Failed to get time from clock");
         #endif
@@ -120,7 +120,7 @@ bool Condition::Wait(Mutex *pMutex, int pTime)
 
 bool Condition::SignalOne()
 {
-    #if defined(LINUX) || defined(APPLE)
+    #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		return !pthread_cond_signal(mCondition);
 	#endif
 	#ifdef WIN32
@@ -130,7 +130,7 @@ bool Condition::SignalOne()
 
 bool Condition::SignalAll()
 {
-    #if defined(LINUX) || defined(APPLE)
+    #if defined(LINUX) || defined(APPLE) || defined(BSD)
         return !pthread_cond_broadcast(mCondition);
     #endif
     #ifdef WIN32
@@ -140,7 +140,7 @@ bool Condition::SignalAll()
 
 bool Condition::Reset()
 {
-    #if defined(LINUX) || defined(APPLE)
+    #if defined(LINUX) || defined(APPLE) || defined(BSD)
         return (pthread_cond_init(mCondition, NULL) == 0);
 	#endif
 	#ifdef WIN32
