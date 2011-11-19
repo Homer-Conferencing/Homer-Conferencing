@@ -43,8 +43,7 @@ using namespace Homer::Base;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-MediaSourceNet::MediaSourceNet(Socket *pDataSocket, bool pRtpActivated):
-    MediaSourceMem(pRtpActivated)
+void MediaSourceNet::Init(Socket *pDataSocket, bool pRtpActivated)
 {
     if (pDataSocket == NULL)
         LOG(LOG_ERROR, "Given socket is invalid");
@@ -53,7 +52,6 @@ MediaSourceNet::MediaSourceNet(Socket *pDataSocket, bool pRtpActivated):
     mReceiveErrors = 0;
     mOpenInputStream = false;
     mListenerRunning = false;
-    mListenerSocketOutside = true;
     mRtpActivated = pRtpActivated;
     mPacketBuffer = (char*)malloc(MEDIA_SOURCE_MEM_PACKET_BUFFER_SIZE);
 
@@ -64,33 +62,27 @@ MediaSourceNet::MediaSourceNet(Socket *pDataSocket, bool pRtpActivated):
     if ((mDataSocket != NULL) && (mDataSocket->GetTransportType() == SOCKET_UDP_LITE))
         mDataSocket->SetUdpLiteChecksumCoverage(UDP_LITE_HEADER_SIZE + RTP_HEADER_SIZE);
     LOG(LOG_VERBOSE, "Listen for media packets at port %u, transport %d, IP version %d", mDataSocket->getLocalPort(), mDataSocket->GetTransportType(), mDataSocket->GetNetworkType());
-    AssignStreamName("NET-IN: <" + toString(mDataSocket->getLocalPort()) + ">");
-    mCurrentDeviceName = "NET-IN: <" + toString(mDataSocket->getLocalPort()) + ">";
+    AssignStreamName("NET-IN: " + mDataSocket->GetName());
+    mCurrentDeviceName = "NET-IN: " + mDataSocket->GetName();
+}
+
+MediaSourceNet::MediaSourceNet(Socket *pDataSocket, bool pRtpActivated):
+    MediaSourceMem(pRtpActivated)
+{
+    mListenerSocketOutside = true;
+
+    Init(pDataSocket, pRtpActivated);
 }
 
 MediaSourceNet::MediaSourceNet(unsigned int pPortNumber, enum TransportType pTransportType,  bool pRtpActivated):
     MediaSourceMem(pRtpActivated)
 {
     if ((pPortNumber == 0) || (pPortNumber > 65535))
-        LOG(LOG_ERROR, "Given socket is invalid");
+        LOG(LOG_ERROR, "Given port number is invalid");
 
-    mPacketNumber = 0;
-    mReceiveErrors = 0;
-    mOpenInputStream = false;
-    mListenerRunning = false;
-    mRtpActivated = pRtpActivated;
-    mPacketBuffer = (char*)malloc(MEDIA_SOURCE_MEM_PACKET_BUFFER_SIZE);
-
-    mStreamCodecId = CODEC_ID_NONE;
-
-    mDataSocket = new Socket(pPortNumber, pTransportType, 0);
     mListenerSocketOutside = false;
-    // check the UDPLite and the RTP header
-    if ((mDataSocket != NULL) && (mDataSocket->GetTransportType() == SOCKET_UDP_LITE))
-        mDataSocket->SetUdpLiteChecksumCoverage(UDP_LITE_HEADER_SIZE + RTP_HEADER_SIZE);
-    LOG(LOG_VERBOSE, "Listen for media packets at port %u, transport %d, IP version %d", mDataSocket->getLocalPort(), mDataSocket->GetTransportType(), mDataSocket->GetNetworkType());
-    AssignStreamName("NET-IN: <" + toString(mDataSocket->getLocalPort()) + ">");
-    mCurrentDeviceName = "NET-IN: <" + toString(mDataSocket->getLocalPort()) + ">";
+
+    Init(new Socket(pPortNumber, pTransportType, 0), pRtpActivated);
 }
 
 MediaSourceNet::~MediaSourceNet()
