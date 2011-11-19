@@ -69,6 +69,10 @@ public:
     virtual void StopGrabbing();
 
     virtual void* Run(void* pArgs = NULL);
+
+private:
+    void Init(Socket *pDataSocket, bool pRtpActivated = true);
+
 protected:
 
     char                *mPacketBuffer;
