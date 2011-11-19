@@ -528,6 +528,7 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
 				if (setsockopt(mSocketHandle, IPPROTO_UDPLITE, UDPLITE_RECV_CSCOV, (__const void*)&tUdpLiteChecksumCoverage, sizeof(int)) != 0)
 					LOG(LOG_ERROR, "Failed to set receivers checksum coverage for UDPlite on socket %d", mSocketHandle);
 			#endif
+            // continue as it was UDP receiving
 		case SOCKET_UDP:
             /*
              * receive data
@@ -543,8 +544,8 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
 			#endif
 		    if (tReceivedBytes >= 0)
 		    {
-		        if (!GetAddrFromDescriptor(&tAddressDescriptor, pSourceHost, pSourcePort))
-		            LOG(LOG_ERROR ,"Could not determine the source address for socket %d", mSocketHandle);
+		        if (!GetAddrFromDescriptor(&tAddressDescriptor, mPeerHost, mPeerPort))
+		            LOG(LOG_ERROR ,"Could not determine the UDP/UDPLite source address for socket %d", mSocketHandle);
 		    }
             break;
 		case SOCKET_TCP:
@@ -575,7 +576,7 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
                     mIsConnected = true;
 
                     if (!GetAddrFromDescriptor(&tAddressDescriptor, mPeerHost, mPeerPort))
-                        LOG(LOG_ERROR ,"Could not determine the source address for socket %d", mSocketHandle);
+                        LOG(LOG_ERROR ,"Could not determine the TCP source address for socket %d", mSocketHandle);
                 }
             }
 
@@ -584,29 +585,27 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
              */
             #if defined(LINUX)
                 tReceivedBytes = recv(mTcpClientSockeHandle, pBuffer, (size_t)pBufferSize, MSG_NOSIGNAL);
-                if (tReceivedBytes <= 0)
-                    close(mTcpClientSockeHandle);
             #endif
             #if defined(APPLE)
                 tReceivedBytes = recv(mTcpClientSockeHandle, pBuffer, (size_t)pBufferSize, 0);
-                if (tReceivedBytes <= 0)
-                    close(mTcpClientSockeHandle);
             #endif
             #ifdef WIN32
                 tReceivedBytes = recv(mTcpClientSockeHandle, (char*)pBuffer, pBufferSize, 0);
-                if (tReceivedBytes <= 0)
-                    closesocket(mTcpClientSockeHandle);
             #endif
-            LOG(LOG_VERBOSE, "Client socket %d was closed", mTcpClientSockeHandle);
-            mIsConnected = false;
-            pSourceHost = mPeerHost;
-            pSourcePort = mPeerPort;
+            if (tReceivedBytes < 0)
+            {
+                DestroySocket(mTcpClientSockeHandle);
+                LOG(LOG_VERBOSE, "Client TCP socket %d was closed", mTcpClientSockeHandle);
+                mIsConnected = false;
+            }
 			break;
     }
 
     // reset source description in case of receive error
     if (tReceivedBytes >= 0)
     {
+        pSourceHost = mPeerHost;
+        pSourcePort = mPeerPort;
         #ifdef HBS_DEBUG_PACKETS
             LOG(LOG_VERBOSE, "Received %d bytes via socket %d at local port %d of %s socket", tReceivedBytes, mSocketHandle, mLocalPort, TransportType2String(mSocketType).c_str());
         #endif
