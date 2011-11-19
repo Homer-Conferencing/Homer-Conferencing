@@ -5,19 +5,7 @@
 
 #MESSAGE("#####################################")
 #MESSAGE("Configure")
-MESSAGE("Detected system is ${CMAKE_SYSTEM}") 
 #MESSAGE("#####################################")
-
-##############################################################
-# architecture
-if ("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
-       set(ARCH_BITS "64")
-elseif ("${CMAKE_SIZEOF_VOID_P}" EQUAL "4")
-       set(ARCH_BITS "32")
-else()
-    MESSAGE("Unable to detect architecture of your system")
-endif()
-
 
 ##############################################################
 # support thread-safe exception handling on Mingw32
@@ -30,12 +18,18 @@ endif (WIN32)
 
 ##############################################################
 # library directories
-IF (UNIX AND NOT WIN32 AND NOT APPLE)
+IF (LINUX)
 SET (LIB_DIRS
 	${LIB_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerLibs/linux${ARCH_BITS}
 )
-ENDIF (UNIX AND NOT WIN32 AND NOT APPLE)
+ENDIF (LINUX)
+IF (BSD)
+SET (LIB_DIRS
+	${LIB_DIRS}
+	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerLibs/linux64
+)
+ENDIF (BSD)
 IF (WIN32)
 SET (LIB_DIRS
 	${LIB_DIRS}
@@ -87,7 +81,16 @@ SET (DEFINITIONS_LINUX
 	-D__STDC_CONSTANT_MACROS
 	-DLINUX
 	-D_REENTRANT
-    -DBITS=${ARCH_BITS}
+    	-DBITS=${ARCH_BITS}
+)
+
+# "-D" options for compilation in linux environment
+SET (DEFINITIONS_BSD
+	${DEFINITIONS_BSD}
+	-D__STDC_CONSTANT_MACROS
+	-DBSD
+	-D_REENTRANT
+    	-DBITS=${ARCH_BITS}
 )
 
 # "-D" options for compilation in linux environment
@@ -96,7 +99,7 @@ SET (DEFINITIONS_APPLE
 	-D__STDC_CONSTANT_MACROS
 	-DAPPLE
 	-D_REENTRANT
-    -DBITS=${ARCH_BITS}
+    	-DBITS=${ARCH_BITS}
 )
 
 ##############################################################
@@ -132,11 +135,16 @@ if (APPLE)
 		ADD_DEFINITIONS("${DEFINITIONS_ENTRY}")
 	ENDFOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_APPLE})
 endif (APPLE)	
-if (UNIX AND NOT WIN32 AND NOT APPLE)
+if (BSD)
+	FOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_BSD})
+		ADD_DEFINITIONS("${DEFINITIONS_ENTRY}")
+	ENDFOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_BSD})
+endif (BSD)	
+if (LINUX)
 	FOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_LINUX})
 		ADD_DEFINITIONS("${DEFINITIONS_ENTRY}")
 	ENDFOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_LINUX})
-endif (UNIX AND NOT WIN32 AND NOT APPLE)
+endif (LINUX)
 
 ##############################################################
 # add flags for compilation
@@ -184,14 +192,23 @@ if (APPLE)
 	ENDFOREACH(FRAMEWORKS_APPLE_ENTRY ${FRAMEWORKS_APPLE})
 endif (APPLE)
 
-if (UNIX AND NOT WIN32 AND NOT APPLE)
+if (BSD)
+	MESSAGE("### Linking dynamic BSD libraries: ${LIBS_BSD}")
+	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_BSD})
+
+	MESSAGE("### Linking static BSD libraries: ${LIBS_BSD_STATIC}")
+#	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_BSD_STATIC} )
+	TARGET_LINK_LIBRARIES(${TARGET_NAME} -Wl,-Bstatic -Wl,-Bsymbolic ${LIBS_BSD_STATIC} -Wl,-Bdynamic )
+endif (BSD)
+
+if (LINUX)
 	MESSAGE("### Linking dynamic Linux libraries: ${LIBS_LINUX}")
 	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_LINUX})
 
 	MESSAGE("### Linking static Linux libraries: ${LIBS_LINUX_STATIC}")
 #	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_LINUX_STATIC} )
 	TARGET_LINK_LIBRARIES(${TARGET_NAME} -Wl,-Bstatic -Wl,-Bsymbolic ${LIBS_LINUX_STATIC} -Wl,-Bdynamic )
-endif (UNIX AND NOT WIN32 AND NOT APPLE)
+endif (LINUX)
 
 #		TARGET_LINK_LIBRARIES(${TARGET_NAME} -Wl,-Bstatic -Wl,-Bsymbolic ${LIBS_LINUX_STATIC} -Wl,-Bdynamic )
 #		TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_LINUX_STATIC} )
