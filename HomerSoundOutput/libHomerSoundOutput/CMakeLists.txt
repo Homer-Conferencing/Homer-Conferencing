@@ -2,6 +2,7 @@
 # Author:  Thomas Volkert
 # Since:   2011-02-19
 ###############################################################################
+INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakePreDefs.txt)
 
 MESSAGE("#####################################")
 MESSAGE("Configure HomerSoundOutput")
@@ -50,12 +51,12 @@ SET (SOURCES
 	../src/WaveOutMMSys
 )
 endif (WIN32)
-if (UNIX AND NOT WIN32 AND NOT APPLE)
+if (LINUX)
 SET (SOURCES
 	${SOURCES}
 	../src/WaveOutAlsa
 )
-endif (UNIX AND NOT WIN32 AND NOT APPLE)
+endif (LINUX)
 
 # USED LIBRARIES for win32 environment
 SET (LIBS_WINDOWS
