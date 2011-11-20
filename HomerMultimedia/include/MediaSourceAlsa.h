@@ -25,7 +25,7 @@
  * Since:   2009-05-18
  */
 
-#if defined(LINUX) && !defined(APPLE)
+#if defined(LINUX) || defined(BSD)
 #ifndef _MULTIMEDIA_MEDIA_SOURCE_ALSA_
 #define _MULTIMEDIA_MEDIA_SOURCE_ALSA_
 
