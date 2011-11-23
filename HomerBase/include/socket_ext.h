@@ -50,6 +50,7 @@ using namespace std;
 ///////////////////////////////////////////////////////////////////////////////
 
 // overview of IP options: http://www.iana.org/assignments/ip-parameters
+// structure of IP options: http://www.tcpipguide.com/free/t_IPDatagramOptionsandOptionFormat.htm
 struct QoSIpOption{
     unsigned char Number:5;         // ID of this option indicating its purpose
     unsigned char Class:2;          // "0" for control option, "2" for debugging/measurement
