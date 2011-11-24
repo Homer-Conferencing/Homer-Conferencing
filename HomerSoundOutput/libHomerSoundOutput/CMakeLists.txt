@@ -103,7 +103,7 @@ SET (LIBS_LINUX
 	asound
 )
 
-# USED STATIC libraries for linux environment ==> ordering of linking is IMPORTANT!!
+# USED STATIC libraries for linux environment
 SET (LIBS_LINUX_STATIC
 	SDL_mixer
 	smpeg
@@ -116,6 +116,25 @@ SET (LIBS_LINUX_STATIC
 	ogg
 )
 
+# USED LIBRARIES for BSD environment
+SET (LIBS_BSD
+    HomerBase
+    HomerMonitor
+#    asound
+)
+
+# USED STATIC libraries for BSD environment
+SET (LIBS_LINUX_STATIC
+    SDL_mixer
+#    smpeg
+    SDL_sound
+    SDL
+#    speex
+#    FLAC
+#    vorbisfile
+#    vorbis
+#    ogg
+)
 SET (TARGET_NAME
 	HomerSoundOutput
 )
