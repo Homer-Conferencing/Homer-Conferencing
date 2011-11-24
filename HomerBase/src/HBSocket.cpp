@@ -271,7 +271,7 @@ bool Socket::SetQoS(const QoSSettings &pQoSSettings)
     {
         setqos(mSocketHandle, pQoSSettings.DataRate, pQoSSettings.Delay, pQoSSettings.Features);
     }else
-        LOG(LOG_WARN, "QoS support deactivated, serttings will be ignored");
+        LOG(LOG_WARN, "QoS support deactivated, settings will be ignored");
 
 	return true;
 }
