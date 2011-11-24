@@ -88,7 +88,7 @@ void ProcessStatisticService::UpdateThreadDatabase()
 		return;
 
     // return immediately for APPLE environment because HomerBase lacks support for thread statistics in APPLE environment
-	#ifdef APPLE
+	#if defined(APPLE) || (BSD)
         return;
     #endif
 
