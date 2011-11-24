@@ -124,7 +124,7 @@ SET (LIBS_BSD
 )
 
 # USED STATIC libraries for BSD environment
-SET (LIBS_LINUX_STATIC
+SET (LIBS_BSD_STATIC
     SDL_mixer
 #    smpeg
     SDL_sound
