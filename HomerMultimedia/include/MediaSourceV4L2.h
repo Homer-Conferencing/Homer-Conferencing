@@ -25,7 +25,7 @@
  * Since:   2008-12-01
  */
 
-#if defined(LINUX) && !defined(APPLE)
+#if defined(LINUX)
 #ifndef _MULTIMEDIA_MEDIA_SOURCE_V4L2_
 #define _MULTIMEDIA_MEDIA_SOURCE_V4L2_
 
