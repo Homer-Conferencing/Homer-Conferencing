@@ -28,7 +28,7 @@
 #ifndef _MULTIMEDIA_HEADER_ALSA_
 #define _MULTIMEDIA_HEADER_ALSA_
 
-#if defined(LINUX) && !defined(APPLE)
+#if defined(LINUX)
 #pragma GCC system_header //suppress warnings from alsa
 
 #include <alsa/asoundlib.h>
