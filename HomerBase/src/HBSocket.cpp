@@ -629,6 +629,7 @@ bool Socket::IsQoSSupported()
 
 void Socket::DisableQoSSupport()
 {
+    printf("QoS support disabled\n");
     sQoSSupported = false;
 }
 
@@ -675,6 +676,7 @@ bool Socket::IsIPv6Supported()
 
 void Socket::DisableIPv6Support()
 {
+    printf("IPv6 support disabled\n");
 	sIPv6Supported = false;
 }
 
