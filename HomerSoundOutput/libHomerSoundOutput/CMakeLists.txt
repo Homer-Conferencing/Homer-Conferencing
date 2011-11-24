@@ -130,6 +130,7 @@ SET (LIBS_BSD_STATIC
     SDL_sound
     SDL
     vgl
+    usbhid 
 #    speex
 #    FLAC
 #    vorbisfile
