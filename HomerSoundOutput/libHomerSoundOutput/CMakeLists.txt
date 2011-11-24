@@ -129,6 +129,7 @@ SET (LIBS_BSD_STATIC
 #    smpeg
     SDL_sound
     SDL
+    vgl
 #    speex
 #    FLAC
 #    vorbisfile
