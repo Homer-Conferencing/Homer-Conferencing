@@ -105,6 +105,17 @@ SET (LIBS_LINUX_STATIC
 	crypto
 )
 
+# USED LIBRARIES for BSD environment
+SET (LIBS_BSD
+    HomerBase
+    HomerMonitor
+)
+SET (LIBS_BSD_STATIC
+    sofia-sip-ua
+    ssl
+    crypto
+)
+
 SET (TARGET_NAME
 	HomerConference
 )
