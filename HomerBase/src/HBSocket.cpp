@@ -381,7 +381,7 @@ bool Socket::SetQoS(const std::string &pProfileName)
 	return false;
 }
 
-void Socket::SetUdpLiteChecksumCoverage(int pBytes)
+void Socket::UDPSetCheckLength(int pBytes)
 {
     /* Checksum coverage:
              Sender's side:
@@ -391,8 +391,28 @@ void Socket::SetUdpLiteChecksumCoverage(int pBytes)
                  If a packet's value is below the packet is silently discarded by the Linux kernel.
                  Moreover, packets with a checksum coverage of zero will be discarded in every case!
      */
-	mUdpLiteChecksumCoverage = pBytes;
+    if (mSocketTransportType != SOCKET_UDP_LITE)
+    {
+        LOG(LOG_WARN, "Socket is not an UDPLite socket, will ignore the new value for the check length");
+        return;
+    }
+    mUdpLiteChecksumCoverage = pBytes;
 }
+
+void Socket::TCPDisableNagle()
+{
+    if (mSocketTransportType != SOCKET_TCP)
+    {
+        LOG(LOG_WARN, "Socket is not a TCP socket, will ignore the request for disabling Nagle's algorithm");
+        return;
+    }
+
+    LOG(LOG_VERBOSE, "Disabling NAgle's algorithm");
+    int tFlag = 1;
+    if (setsockopt(mSocketHandle, IPPROTO_TCP, TCP_NODELAY, (char*)&tFlag, sizeof(tFlag)) < 0)
+        LOG(LOG_ERROR, "Failed to disable Nagle's algorithm for TCP on socket %d", mSocketHandle);
+}
+
 
 bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, ssize_t pBufferSize)
 {
