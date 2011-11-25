@@ -32,6 +32,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #endif
 
 #ifdef WIN32
@@ -131,7 +132,8 @@ public:
     /* transport layer support */
     static bool IsTransportSupported(enum TransportType pType);
     static void DisableTransportSupport(enum TransportType pType);
-    void SetUdpLiteChecksumCoverage(int pBytes = UDP_LITE_HEADER_SIZE);
+    void UDPSetCheckLength(int pBytes = UDP_LITE_HEADER_SIZE);
+    void TCPDisableNagle();
     static std::string TransportType2String(enum TransportType pSocketType);
     static enum TransportType String2TransportType(std::string pTypeStr);
 
