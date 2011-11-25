@@ -856,7 +856,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                             // only print debug output if it is not "operation not permitted"
                             //if (AVUNERROR(tBytesDecoded) != EPERM)
                             // acknowledge failed"
-                            MarkGrabChunkFailed("couldn't decode audio frame-" + toString(strerror(AVUNERROR(tBytesDecoded))) + "(" + toString(AVUNERROR(tBytesDecoded)) + ")");
+                            MarkGrabChunkFailed("couldn't decode audio frame because - \"" + toString(strerror(AVUNERROR(tBytesDecoded))) + "(" + toString(AVUNERROR(tBytesDecoded)) + ")\"");
 
                             return -1;
                         }
