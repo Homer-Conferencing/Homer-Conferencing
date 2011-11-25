@@ -75,9 +75,16 @@ MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, enum Tr
 
         mDataSocket = new Socket(IS_IPV6_ADDRESS(pTargetHost) ? SOCKET_IPv6 : SOCKET_IPv4, pSocketType);
 
-        // for UDP-Lite: check the UDPLite and the RTP header
-        if ((mDataSocket != NULL) && (pSocketType == SOCKET_UDP_LITE))
-            mDataSocket->SetUdpLiteChecksumCoverage(UDP_LITE_HEADER_SIZE + RTP_HEADER_SIZE);
+        if (mDataSocket != NULL)
+        {
+            // for UDP-Lite: check the UDPLite and the RTP header
+            if (pSocketType == SOCKET_UDP_LITE)
+                mDataSocket->UDPLiteSetCheckLength(UDP_LITE_HEADER_SIZE + RTP_HEADER_SIZE);
+
+            // for TCP: disable Nagle's algorithm
+            if (pSocketType == SOCKET_TCP)
+                mDataSocket->TCPDisableNagle();
+        }
     }
 
     switch(pType)
