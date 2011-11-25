@@ -39,6 +39,7 @@ using namespace Homer::Base;
 MediaFifo::MediaFifo(int pFifoSize, int pFifoEntrySize)
 {
     mFifoSize = pFifoSize;
+    mFifoEntrySize = pFifoEntrySize;
     mFifoWritePtr = 0;
     mFifoReadPtr = 0;
     mFifoAvailableEntries = 0;
@@ -201,6 +202,12 @@ void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize)
     #ifdef MF_DEBUG
 		LOG(LOG_VERBOSE, "Going to write data chunk to FIFO");
 	#endif
+
+	if (pBufferSize > mFifoEntrySize)
+	{
+		LOG(LOG_ERROR, "FIFO entries are limited to %d bytes, current write request of %s bytes will be ignored", mFifoEntrySize, pBufferSize);
+		return;
+	}
 
 	mFifoMutex.lock();
 	if (mFifoAvailableEntries < mFifoSize)
