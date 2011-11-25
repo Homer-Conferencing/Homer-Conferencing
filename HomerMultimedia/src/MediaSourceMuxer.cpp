@@ -569,8 +569,8 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     if (mCodecContext->frame_size == 1)
         mCodecContext->frame_size = 256;
 
-    // init transcoder FIFO based for 1024 samples with 16 bit and 2 channels
-    InitTranscoder(4096);
+    // init transcoder FIFO based for 2048 samples with 16 bit and 2 channels, more samples are never produced by a media source per grabbing cycle
+    InitTranscoder(8192);
 
     // allocate streams private data buffer and write the streams header, if any
     av_write_header(mFormatContext);

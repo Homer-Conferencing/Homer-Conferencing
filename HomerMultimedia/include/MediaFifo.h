@@ -74,6 +74,7 @@ public:
 private:
     MediaFifoEntry      *mFifo;
 	int					mFifoWritePtr, mFifoReadPtr, mFifoAvailableEntries, mFifoSize;
+	int 				mFifoEntrySize;
     Mutex				mFifoMutex;
     Condition			mFifoDataInputCondition;
 };
