@@ -60,7 +60,7 @@ void MediaSourceNet::Init(Socket *pDataSocket, bool pRtpActivated)
     mDataSocket = pDataSocket;
     // check the UDPLite and the RTP header
     if ((mDataSocket != NULL) && (mDataSocket->GetTransportType() == SOCKET_UDP_LITE))
-        mDataSocket->SetUdpLiteChecksumCoverage(UDP_LITE_HEADER_SIZE + RTP_HEADER_SIZE);
+        mDataSocket->UDPLiteSetCheckLength(UDP_LITE_HEADER_SIZE + RTP_HEADER_SIZE);
     LOG(LOG_VERBOSE, "Listen for media packets at port %u, transport %d, IP version %d", mDataSocket->getLocalPort(), mDataSocket->GetTransportType(), mDataSocket->GetNetworkType());
     AssignStreamName("NET-IN: " + mDataSocket->GetName());
     mCurrentDeviceName = "NET-IN: " + mDataSocket->GetName();
