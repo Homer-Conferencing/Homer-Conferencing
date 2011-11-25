@@ -87,11 +87,15 @@ void PacketStatistic::AnnouncePacket(int pSize)
 
     // lock
     mStatisticsMutex.lock();
-
+    
     // init last time if we are called for the first time
     if (!mLastTime.ValidTimeStamp())
     {
         mLastTime.UpdateTimeStamp();
+
+        // unlock
+        mStatisticsMutex.unlock();
+
         return;
     }
 
