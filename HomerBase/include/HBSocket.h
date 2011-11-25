@@ -132,7 +132,7 @@ public:
     /* transport layer support */
     static bool IsTransportSupported(enum TransportType pType);
     static void DisableTransportSupport(enum TransportType pType);
-    void UDPSetCheckLength(int pBytes = UDP_LITE_HEADER_SIZE);
+    void UDPLiteSetCheckLength(int pBytes = UDP_LITE_HEADER_SIZE);
     void TCPDisableNagle();
     static std::string TransportType2String(enum TransportType pSocketType);
     static enum TransportType String2TransportType(std::string pTypeStr);

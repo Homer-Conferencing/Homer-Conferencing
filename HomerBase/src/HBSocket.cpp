@@ -381,7 +381,7 @@ bool Socket::SetQoS(const std::string &pProfileName)
 	return false;
 }
 
-void Socket::UDPSetCheckLength(int pBytes)
+void Socket::UDPLiteSetCheckLength(int pBytes)
 {
     /* Checksum coverage:
              Sender's side:
