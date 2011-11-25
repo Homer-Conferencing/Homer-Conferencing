@@ -117,8 +117,7 @@ protected:
 private:
     struct StatisticEntry{
         int PacketSize;
-        //int TimeDiff;
-
+		int TimeDiff;
         int64_t Timestamp;
         int64_t ByteCount;
     };

@@ -81,6 +81,13 @@ void PacketStatistic::AnnouncePacket(int pSize)
             break;
     }
 
+    StatisticEntry tStatEntry;
+    tStatEntry.PacketSize = pSize;
+    tStatEntry.Timestamp = Time::GetTimeStamp();
+
+    // lock
+    mStatisticsMutex.lock();
+
     // init last time if we are called for the first time
     if (!mLastTime.ValidTimeStamp())
     {
@@ -91,8 +98,7 @@ void PacketStatistic::AnnouncePacket(int pSize)
     Time tCurTime;
     tCurTime.UpdateTimeStamp();
     long int tDiff = (long)tCurTime.TimeDiffInUSecs(&mLastTime);
-
-    StatisticEntry tStatEntry;
+    tStatEntry.TimeDiff = (int)tDiff;
 
     mPacketCount++;
     mByteCount += pSize;
@@ -101,15 +107,8 @@ void PacketStatistic::AnnouncePacket(int pSize)
     if (pSize > mMaxPacketSize)
         mMaxPacketSize = pSize;
 
-    tStatEntry.PacketSize = pSize;
-    //tStatEntry.TimeDiff = (int)tDiff;
-
-    tStatEntry.Timestamp = Time::GetTimeStamp();
     tStatEntry.ByteCount = mByteCount;
     mLastTime = tCurTime;
-
-    // lock
-    mStatisticsMutex.lock();
 
     mStatistics.push_back(tStatEntry);
     while (mStatistics.size() > STATISTIC_BUFFER_SIZE)
