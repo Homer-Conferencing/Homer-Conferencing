@@ -27,6 +27,7 @@
 
 #include <Header_Ffmpeg.h>
 #include <MediaSinkNet.h>
+#include <MediaSourceMem.h>
 #include <MediaSourceNet.h>
 #include <PacketStatistic.h>
 #include <RTP.h>
@@ -68,6 +69,7 @@ MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, enum Tr
     mTargetHost = pTargetHost;
     mTargetPort = pTargetPort;
     mRtpActivated = pRtpActivated;
+    mTCPCopyBuffer = (char*)malloc(MEDIA_SOURCE_MEM_PACKET_BUFFER_SIZE);
 
     if ((mTargetHost != "") && (mTargetPort != 0))
     {
@@ -102,7 +104,7 @@ MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, enum Tr
             break;
     }
     mMediaId = CreateId(pTargetHost, toString(pTargetPort), pSocketType, pRtpActivated);
-    AssignStreamName("MUX-relay: " + mMediaId);
+    AssignStreamName("NET-OUT: " + mMediaId);
 }
 
 MediaSinkNet::~MediaSinkNet()
@@ -110,6 +112,7 @@ MediaSinkNet::~MediaSinkNet()
     CloseStreamer();
     if (mDataSocket != NULL)
         delete mDataSocket;
+    free(mTCPCopyBuffer);
 }
 
 bool MediaSinkNet::OpenStreamer(AVStream *pStream)
@@ -280,8 +283,21 @@ void MediaSinkNet::SendFragment(char* pPacketData, unsigned int pPacketSize, uns
             RtpParse(tPacketData, tPacketSize, tIsLastFragment, tIsSenderReport, mCurrentStream->codec->codec_id, true);
         }
     #endif
+
+    char *tPacketData = pPacketData;
+
+    // for TCP add an additional fragment header in front of the codec data to be able to differentiate the fragments in a received TCP packet at receiver side
+    if(mDataSocket->GetTransportType() == SOCKET_TCP)
+    {
+        TCPFragmentHeader *tHeader = (TCPFragmentHeader*)mTCPCopyBuffer;
+        memcpy(mTCPCopyBuffer + TCP_FRAGMENT_HEADER_SIZE, pPacketData, pPacketSize);
+        tHeader->FragmentSize = pPacketSize;
+        pPacketSize += TCP_FRAGMENT_HEADER_SIZE;
+        tPacketData = mTCPCopyBuffer;
+    }
+
     AnnouncePacket(pPacketSize);
-    if (!mDataSocket->Send(mTargetHost, mTargetPort, pPacketData, (ssize_t)pPacketSize))
+    if (!mDataSocket->Send(mTargetHost, mTargetPort, tPacketData, (ssize_t)pPacketSize))
     {
         LOG(LOG_ERROR, "Error when sending data through %s socket to %s:%u, will skip further transmissions", GetPacketTypeStr().c_str(), mTargetHost.c_str(), mTargetPort);
         mBrokenPipe = true;

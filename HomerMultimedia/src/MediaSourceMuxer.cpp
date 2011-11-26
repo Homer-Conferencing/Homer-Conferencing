@@ -121,8 +121,9 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
     pMaxPacketSize -= IP6_HEADER_SIZE; // IPv6 overhead is bigger than IPv4
     pMaxPacketSize -= IP_OPTIONS_SIZE; // IP options size: used for QoS signaling
     pMaxPacketSize -= TCP_HEADER_SIZE; // TCP overhead is bigger than UDP/UDPlite
+    pMaxPacketSize -= TCP_FRAGMENT_HEADER_SIZE; // TCP fragment header which is used to differentiate the RTP packets (fragments) in a received TCP packet
     pMaxPacketSize -= RTP::GetHeaderSizeMax(tStreamCodecId);
-	pMaxPacketSize -= 32; // additional safety buffer size
+	//pMaxPacketSize -= 32; // additional safety buffer size
 
     if (mMediaType == MEDIA_VIDEO)
     {

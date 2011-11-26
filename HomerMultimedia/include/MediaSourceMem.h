@@ -89,6 +89,7 @@ protected:
     bool                mOpenInputStream;
     int                 mWrappingHeaderSize;
     MediaFifo           *mDecoderFifo;
+    int                 mPacketStatAdditionalFragmentSize; // used to adapt packet statistic to additional fragment header, which is used for TCP transmission
 };
 
 ///////////////////////////////////////////////////////////////////////////////

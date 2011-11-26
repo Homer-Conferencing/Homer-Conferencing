@@ -45,6 +45,7 @@ MediaSourceMem::MediaSourceMem(bool pRtpActivated):
     MediaSource("MEM-IN:"), RTP()
 {
     mPacketNumber = 0;
+    mPacketStatAdditionalFragmentSize = 0;
     mOpenInputStream = false;
     mRtpActivated = pRtpActivated;
 
@@ -182,7 +183,8 @@ void MediaSourceMem::ReadFragment(char *pData, ssize_t &pDataSize)
     if (pDataSize > 0)
     {
         // log statistics
-        AnnouncePacket((int)pDataSize);
+        // mFragmentHeaderSize to add additional TCPFragmentHeader to the statistic if TCP is used, this is triggered by MediaSourceNet
+        AnnouncePacket((int)pDataSize + mPacketStatAdditionalFragmentSize);
 
         #ifdef MSMEM_DEBUG_PACKETS
             LOG(LOG_VERBOSE, "Delivered packet with number %5u at %p with size: %5d", (unsigned int)++mPacketNumber, pData, (int)pDataSize);
