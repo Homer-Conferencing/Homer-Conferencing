@@ -427,9 +427,7 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
     if (mSocketHandle == -1)
         return false;
 
-    #ifdef HBS_DEBUG_PACKETS
-        LOG(LOG_VERBOSE, "Try to send %d bytes via socket %d to %s<%u>", pBufferSize, pTargetHost.c_str(), mSocketHandle, pTargetPort);
-    #endif
+    //LOG(LOG_VERBOSE, "Try to send %d bytes via socket %d to %s<%u>", (int)pBufferSize, mSocketHandle, pTargetHost.c_str(), pTargetPort);
 
     if (!FillAddrDescriptor(pTargetHost, pTargetPort, &tAddressDescriptor, tAddressDescriptorSize))
     {
@@ -514,7 +512,7 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
         }else
         {
             #ifdef HBS_DEBUG_PACKETS
-                LOG(LOG_VERBOSE, "Having sent %d bytes via socket %d to %s<%u>", tSent, mSocketHandle, pTargetHost.c_str(), pTargetPort);
+                LOG(LOG_VERBOSE, "Sent %d bytes via socket %d to %s<%u>", tSent, mSocketHandle, pTargetHost.c_str(), pTargetPort);
             #endif
             tResult = true;
         }
@@ -627,7 +625,7 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
         pSourceHost = mPeerHost;
         pSourcePort = mPeerPort;
         #ifdef HBS_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "Received %d bytes via socket %d at local port %d of %s socket", tReceivedBytes, mSocketHandle, mLocalPort, TransportType2String(mSocketType).c_str());
+            LOG(LOG_VERBOSE, "Received %d bytes via socket %d at local port %d of %s socket", tReceivedBytes, mSocketHandle, mLocalPort, TransportType2String(mSocketTransportType).c_str());
         #endif
         tResult = true;
     }else
