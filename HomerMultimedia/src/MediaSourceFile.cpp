@@ -81,6 +81,12 @@ void MediaSourceFile::getAudioDevices(AudioDevicesList &pAList)
     pAList.push_back(tDevice);
 }
 
+void MediaSourceFile::SetFrameRate(float pFps)
+{
+    LOG(LOG_VERBOSE, "Calls to SetFrameRate() are ignored here, otherwise the real-time playback would delay input data for the wrong FPS value");
+    LOG(LOG_VERBOSE, "Ignoring %f, keeping FPS of %f", pFps, mFrameRate);
+}
+
 bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 {
     int                 tResult = 0;
