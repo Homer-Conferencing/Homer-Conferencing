@@ -73,6 +73,7 @@ private:
     unsigned int        mTargetPort;
     std::string         mCodec;
     Socket              *mDataSocket;
+    char                *mTCPCopyBuffer;
     bool                mStreamerOpened;
     bool                mBrokenPipe;
 };

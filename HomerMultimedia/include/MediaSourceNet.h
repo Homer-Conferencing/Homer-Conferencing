@@ -50,6 +50,13 @@ namespace Homer { namespace Multimedia {
 #define MAX_RECEIVE_ERRORS                                  3
 
 ///////////////////////////////////////////////////////////////////////////////
+struct TCPFragmentHeader{
+    unsigned int    FragmentSize;
+};
+
+#define TCP_FRAGMENT_HEADER_SIZE            (sizeof(TCPFragmentHeader))
+
+///////////////////////////////////////////////////////////////////////////////
 
 class MediaSourceNet :
     public MediaSourceMem, public Thread

@@ -58,12 +58,19 @@ void MediaSourceNet::Init(Socket *pDataSocket, bool pRtpActivated)
     mStreamCodecId = CODEC_ID_NONE;
 
     mDataSocket = pDataSocket;
-    // check the UDPLite and the RTP header
-    if ((mDataSocket != NULL) && (mDataSocket->GetTransportType() == SOCKET_UDP_LITE))
-        mDataSocket->UDPLiteSetCheckLength(UDP_LITE_HEADER_SIZE + RTP_HEADER_SIZE);
+
+    if(mDataSocket != NULL)
+    {
+        // check the UDPLite and the RTP header
+        if (mDataSocket->GetTransportType() == SOCKET_UDP_LITE)
+            mDataSocket->UDPLiteSetCheckLength(UDP_LITE_HEADER_SIZE + RTP_HEADER_SIZE);
+
+        if (mDataSocket->GetTransportType() == SOCKET_TCP)
+            mPacketStatAdditionalFragmentSize = TCP_FRAGMENT_HEADER_SIZE;
+    }
     LOG(LOG_VERBOSE, "Listen for media packets at port %u, transport %d, IP version %d", mDataSocket->getLocalPort(), mDataSocket->GetTransportType(), mDataSocket->GetNetworkType());
-    AssignStreamName("NET-IN: " + mDataSocket->GetName());
     mCurrentDeviceName = "NET-IN: " + mDataSocket->GetName();
+    AssignStreamName(mCurrentDeviceName);
 }
 
 MediaSourceNet::MediaSourceNet(Socket *pDataSocket, bool pRtpActivated):
@@ -148,13 +155,31 @@ void* MediaSourceNet::Run(void* pArgs)
 
 		if ((tDataSize > 0) && (tSourceHost != "") && (tSourcePort != 0))
 		{
-		    mCurrentDeviceName = "NET-IN: " + mDataSocket->GetName();
+		    mCurrentDeviceName = "NET-IN: " + MediaSinkNet::CreateId(tSourceHost, toString(tSourcePort), mDataSocket->GetTransportType(), mRtpActivated);
+            AssignStreamName(mCurrentDeviceName);
 
 			#ifdef MSN_DEBUG_PACKETS
 				LOG(LOG_VERBOSE, "Received packet number %5d at %p with size: %5d from %s:%u", (int)++mPacketNumber, mPacketBuffer, (int)tDataSize, tSourceHost.c_str(), tSourcePort);
 			#endif
 
-            WriteFragment(mPacketBuffer, (int)tDataSize);
+            if (mDataSocket->GetTransportType() == SOCKET_TCP)
+            {
+                TCPFragmentHeader *tHeader;
+                char *tData = mPacketBuffer;
+
+                while(tDataSize > 0)
+                {
+                    tHeader = (TCPFragmentHeader*)tData;
+                    tData += TCP_FRAGMENT_HEADER_SIZE;
+                    tDataSize -= TCP_FRAGMENT_HEADER_SIZE;
+                    WriteFragment(tData, (int)tHeader->FragmentSize);
+                    tData += tHeader->FragmentSize;
+                    tDataSize -= tHeader->FragmentSize;
+                }
+            }else
+            {
+                WriteFragment(mPacketBuffer, (int)tDataSize);
+            }
 		}else
 		{
 			if (tDataSize == 0)

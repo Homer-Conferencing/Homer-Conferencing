@@ -78,19 +78,22 @@ void MediaFifo::ReadFifo(char *pBuffer, int &pBufferSize)
 
     // make sure there is some pending data in the input Fifo
 	mFifoMutex.lock();
-	if (mFifoAvailableEntries == 0)
+	while(mFifoAvailableEntries < 1)
 	{
 		#ifdef MF_DEBUG
 			LOG(LOG_VERBOSE, "Waiting for a new FIFO input");
 		#endif
 
-			mFifoDataInputCondition.Reset();
+		mFifoDataInputCondition.Reset();
 		mFifoMutex.unlock();
 
 		while(!mFifoDataInputCondition.Wait())
 			LOG(LOG_ERROR, "Error when waiting for new FIFO input");
 
 		mFifoMutex.lock();
+
+		if (mFifoAvailableEntries < 0)
+		    LOG(LOG_ERROR, "FIFO has negative amount of entries: %d", mFifoAvailableEntries);
 	}
 
 	tCurrentFifoReadPtr = mFifoReadPtr;
@@ -136,7 +139,7 @@ int MediaFifo::ReadFifoExclusive(char **pBuffer, int &pBufferSize)
 
     // make sure there is some pending data in the input Fifo
     mFifoMutex.lock();
-    if (mFifoAvailableEntries == 0)
+    while (mFifoAvailableEntries < 1)
     {
         #ifdef MF_DEBUG
             LOG(LOG_VERBOSE, "Waiting for a new FIFO input");
