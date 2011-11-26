@@ -638,7 +638,7 @@ GrabResolutions MediaSourceV4L2::GetSupportedVideoGrabResolutions()
         tFormat.ResY = 288;
         mSupportedVideoFormats.push_back(tFormat);
 
-        tFormat.Name="VGA";       //
+        tFormat.Name="VGA";       //       640 x 480
         tFormat.ResX = 640;
         tFormat.ResY = 480;
         mSupportedVideoFormats.push_back(tFormat);
@@ -648,20 +648,25 @@ GrabResolutions MediaSourceV4L2::GetSupportedVideoGrabResolutions()
         tFormat.ResY = 576;
         mSupportedVideoFormats.push_back(tFormat);
 
-        tFormat.Name="SVGA";       //
+        tFormat.Name="DVD";        //      720 × 576
+        tFormat.ResX = 720;
+        tFormat.ResY = 576;
+        mSupportedVideoFormats.push_back(tFormat);
+
+        tFormat.Name="SVGA";       //      800 x 600
         tFormat.ResX = 800;
         tFormat.ResY = 600;
         mSupportedVideoFormats.push_back(tFormat);
 
-        tFormat.Name="CIF9";       //     1056 × 864
-        tFormat.ResX = 1056;
-        tFormat.ResY = 864;
+        tFormat.Name="WVGA";       //      854 x 480
+        tFormat.ResX = 864;
+        tFormat.ResY = 480;
         mSupportedVideoFormats.push_back(tFormat);
 
-        tFormat.Name="CIF16";      //     1408 × 1152
-        tFormat.ResX = 1408;
-        tFormat.ResY = 1152;
-        //mSupportedVideoFormats.push_back(tFormat);
+        tFormat.Name="EDTV";       //     1280 × 720
+        tFormat.ResX = 1280;
+        tFormat.ResY = 720;
+        mSupportedVideoFormats.push_back(tFormat);
     }
 
     return mSupportedVideoFormats;
