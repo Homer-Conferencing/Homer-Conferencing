@@ -1076,7 +1076,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     char tAuthor[512] = "HomerMultimedia";
     //char tTitle[512] = "recorded live video";
     char tCopyright[512] = "free for use";
-    char tComment[512] = "see http://www.homer-conferencing.com";
+    char tComment[512] = "www.homer-conferencing.com";
 
     // lock grabbing
     mGrabMutex.lock();
