@@ -56,9 +56,14 @@ public:
 
     /* video grabbing control */
     virtual GrabResolutions GetSupportedVideoGrabResolutions();
+
     /* pseudo device control */
     virtual void getVideoDevices(VideoDevicesList &pVList);
     virtual void getAudioDevices(AudioDevicesList &pAList);
+
+    /* fps */
+    virtual void SetFrameRate(float pFps);
+
     /* seek interface */
     virtual bool SupportsSeeking();
     virtual int64_t GetSeekEnd(); // get maximum seek time in seconds
