@@ -889,8 +889,8 @@ void MediaSourceMuxer::DeinitTranscoder()
         // write fake data to awake transcoder thread in every case
         mTranscoderFifo->WriteFifo(tTmp, 0);
 
-        // wait 2 seconds for termination of transcoder thread
-        if (StopThread(5000))
+        // wait for termination of transcoder thread
+        if (StopThread())
         {
             delete mTranscoderFifo;
             mTranscoderFifo = NULL;
