@@ -127,34 +127,31 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
     pMaxPacketSize -= RTP::GetHeaderSizeMax(tStreamCodecId);
 	//pMaxPacketSize -= 32; // additional safety buffer size
 
-    if (mMediaType == MEDIA_VIDEO)
+    switch(tStreamCodecId)
     {
-        switch(tStreamCodecId)
-        {
-                case CODEC_ID_H261: // supports QCIF, CIF
-                        if (pResX > 352)
-                            pResX = 352;
-                        if (pResX < 176)
-                            pResX = 176;
-                        if (pResY > 288)
-                            pResY = 288;
-                        if (pResY < 144)
-                            pResY = 144;
-                        break;
-                case CODEC_ID_H263:  // supports QCIF, CIF, CIF4
-                case CODEC_ID_H263P:  // supports QCIF, CIF, CIF4
-                        if (pResX > 704)
-                            pResX = 704;
-                        if (pResX < 176)
-                            pResX = 176;
-                        if (pResY > 576)
-                            pResY = 576;
-                        if (pResY < 144)
-                            pResY = 144;
-                        break;
-                default:
-                        break;
-        }
+            case CODEC_ID_H261: // supports QCIF, CIF
+                    if (pResX > 352)
+                        pResX = 352;
+                    if (pResX < 176)
+                        pResX = 176;
+                    if (pResY > 288)
+                        pResY = 288;
+                    if (pResY < 144)
+                        pResY = 144;
+                    break;
+            case CODEC_ID_H263:  // supports QCIF, CIF, CIF4
+            case CODEC_ID_H263P:  // supports QCIF, CIF, CIF4
+                    if (pResX > 704)
+                        pResX = 704;
+                    if (pResX < 176)
+                        pResX = 176;
+                    if (pResY > 576)
+                        pResY = 576;
+                    if (pResY < 144)
+                        pResY = 144;
+                    break;
+            default:
+                    break;
     }
 
     if ((mStreamCodecId != tStreamCodecId) ||
