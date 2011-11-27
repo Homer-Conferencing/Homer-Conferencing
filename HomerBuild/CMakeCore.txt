@@ -74,6 +74,30 @@ SET (FLAGS
 )
 
 ##############################################################
+# link flags
+SET (LFLAGS
+	${LFLAGS}
+)
+
+##############################################################
+IF (APPLE)
+SET (LFLAGS
+	${LFLAGS}
+	-Wl,-install_name,@rpath/lib${TARGET_NAME}.dylib
+)
+ENDIF (APPLE)
+
+IF (BSD)
+	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wl,-soname,${TARGET_NAME}.dylib")
+	SET(CMAKE_CCC_FLAGS "${CMAKE_CCC_FLAGS} -Wl,-soname,${TARGET_NAME}.dylib")
+ENDIF (BSD)
+
+IF (LINUX)
+	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wl,-soname,${TARGET_NAME}.so")
+	SET(CMAKE_CCC_FLAGS "${CMAKE_CCC_FLAGS} -Wl,-soname,${TARGET_NAME}.so")
+ENDIF (LINUX)
+
+##############################################################
 # definitions
 # "-D" options for compilation in win32 environment
 SET (DEFINITIONS_WINDOWS
@@ -91,7 +115,7 @@ SET (DEFINITIONS_LINUX
 	-D__STDC_CONSTANT_MACROS
 	-DLINUX
 	-D_REENTRANT
-    	-DBITS=${ARCH_BITS}
+	-DBITS=${ARCH_BITS}
 )
 
 # "-D" options for compilation in linux environment
@@ -100,7 +124,7 @@ SET (DEFINITIONS_BSD
 	-D__STDC_CONSTANT_MACROS
 	-DBSD
 	-D_REENTRANT
-    	-DBITS=${ARCH_BITS}
+	-DBITS=${ARCH_BITS}
 )
 
 # "-D" options for compilation in linux environment
@@ -109,7 +133,7 @@ SET (DEFINITIONS_APPLE
 	-D__STDC_CONSTANT_MACROS
 	-DAPPLE
 	-D_REENTRANT
-    	-DBITS=${ARCH_BITS}
+	-DBITS=${ARCH_BITS}
 )
 
 ##############################################################
@@ -156,12 +180,29 @@ if (LINUX)
 	ENDFOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_LINUX})
 endif (LINUX)
 
+
+
+
+
+##############################################################
+# add flags for linking
+FOREACH(LFLAGS_ENTRY ${LFLAGS})
+	SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LFLAGS_ENTRY}")
+	SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LFLAGS_ENTRY}")
+	SET(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${LFLAGS_ENTRY}")
+ENDFOREACH(LFLAGS_ENTRY ${LFLAGS})
+MESSAGE("### Flags for exe linking: ${CMAKE_EXE_LINKER_FLAGS}")
+MESSAGE("### Flags for shared linking: ${CMAKE_SHARED_LINKER_FLAGS}")
+MESSAGE("### Flags for module linking: ${CMAKE_MODULE_LINKER_FLAGS}")
+
 ##############################################################
 # add flags for compilation
 FOREACH(FLAGS_ENTRY ${FLAGS})
 	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${FLAGS_ENTRY}")
 	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAGS_ENTRY}")
 ENDFOREACH(FLAGS_ENTRY ${FLAGS})
+MESSAGE("### Flags for C compiling: ${CMAKE_C_FLAGS}")
+MESSAGE("### Flags for C++ compiling: ${CMAKE_CXX_FLAGS}")
 
 ##############################################################
 # add include paths
