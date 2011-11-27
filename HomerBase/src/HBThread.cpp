@@ -622,7 +622,6 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
             tTimeout.tv_nsec = tMachTimeSpec.tv_nsec;
         #endif
 
-		// add 5 secs to current time stamp
 		tTimeout.tv_sec += pTimeoutInMSecs / 1000;
 		tTimeout.tv_nsec += (pTimeoutInMSecs % 1000) * 1000000;
 
