@@ -663,9 +663,19 @@ GrabResolutions MediaSourceV4L2::GetSupportedVideoGrabResolutions()
         tFormat.ResY = 480;
         mSupportedVideoFormats.push_back(tFormat);
 
+        tFormat.Name="CIF9";       //     1056 x 864
+        tFormat.ResX = 1056;
+        tFormat.ResY = 864;
+        mSupportedVideoFormats.push_back(tFormat);
+
         tFormat.Name="EDTV";       //     1280 × 720
         tFormat.ResX = 1280;
         tFormat.ResY = 720;
+        mSupportedVideoFormats.push_back(tFormat);
+
+        tFormat.Name="HDTV";       //     1920 x 1080
+        tFormat.ResX = 1920;
+        tFormat.ResY = 1080;
         mSupportedVideoFormats.push_back(tFormat);
     }
 

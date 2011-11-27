@@ -132,15 +132,30 @@ MediaSource::MediaSource(string pName):
     tFormat.ResY = 576;
     mSupportedVideoFormats.push_back(tFormat);
 
+    tFormat.Name="DVD";        //      720 × 576
+    tFormat.ResX = 720;
+    tFormat.ResY = 576;
+    mSupportedVideoFormats.push_back(tFormat);
+
     tFormat.Name="CIF9";       //     1056 × 864
     tFormat.ResX = 1056;
     tFormat.ResY = 864;
     mSupportedVideoFormats.push_back(tFormat);
 
+    tFormat.Name="EDTV";       //     1280 × 720
+    tFormat.ResX = 1280;
+    tFormat.ResY = 720;
+    mSupportedVideoFormats.push_back(tFormat);
+
     tFormat.Name="CIF16";      //     1408 × 1152
     tFormat.ResX = 1408;
     tFormat.ResY = 1152;
-    //mSupportedVideoFormats.push_back(tFormat);
+    mSupportedVideoFormats.push_back(tFormat);
+
+    tFormat.Name="HDTV";       //     1920 × 1080
+    tFormat.ResX = 1920;
+    tFormat.ResY = 1080;
+    mSupportedVideoFormats.push_back(tFormat);
 }
 
 MediaSource::~MediaSource()
@@ -481,29 +496,33 @@ void MediaSource::VideoFormat2Resolution(VideoFormat pFormat, int& pX, int& pY)
                     pX = 176;
                     pY = 144;
                     break;
-        case QCIFplus:   /*      176 × 220       */
-                    pX = 176;
-                    pY = 220;
-                    break;
         case CIF:        /*      352 × 288       */
                     pX = 352;
-                    pY = 288;
-                    break;
-        case CIF2:       /*      704 × 288       */
-                    pX = 704;
                     pY = 288;
                     break;
         case CIF4:       /*      704 × 576       */
                     pX = 704;
                     pY = 576;
                     break;
+        case DVD:        /*      720 × 576       */
+                    pX = 720;
+                    pY = 576;
+                    break;
         case CIF9:       /*     1056 × 864       */
                     pX = 1056;
                     pY = 864;
                     break;
+        case EDTV:       /*     1280 × 720       */
+                    pX = 1280;
+                    pY = 720;
+                    break;
         case CIF16:      /*     1408 × 1152      */
                     pX = 1408;
                     pY = 1152;
+                    break;
+        case HDTV:       /*     1920 × 1080       */
+                    pX = 1920;
+                    pY = 1080;
                     break;
     }
 }
@@ -533,15 +552,30 @@ void MediaSource::VideoString2Resolution(string pString, int& pX, int& pY)
         pX = 704;
         pY = 576;
     }
+    if (pString == "720 * 576")
+    {
+        pX = 720;
+        pY = 576;
+    }
     if (pString == "1056 * 864")
     {
         pX = 1056;
         pY = 864;
     }
+    if (pString == "1280 * 720")
+    {
+        pX = 1280;
+        pY = 720;
+    }
     if (pString == "1408 * 1152")
     {
         pX = 1408;
         pY = 1152;
+    }
+    if (pString == "1920 * 1080")
+    {
+        pX = 1920;
+        pY = 1080;
     }
 }
 
@@ -557,10 +591,16 @@ int MediaSource::VideoString2ResolutionIndex(string pString)
         tResult = 2;
     if (pString == "704 * 576")
         tResult = 3;
-    if (pString == "1056 * 864")
+    if (pString == "720 * 576")
         tResult = 4;
-    if (pString == "1408 * 1152")
+    if (pString == "1056 * 864")
         tResult = 5;
+    if (pString == "1280 * 720")
+        tResult = 6;
+    if (pString == "1408 * 1152")
+        tResult = 7;
+    if (pString == "1920 * 1080")
+        tResult = 8;
 
     return tResult;
 }

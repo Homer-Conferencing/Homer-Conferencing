@@ -62,12 +62,13 @@ enum VideoFormat
 {
     SQCIF,      /*      128 ×  96       */
     QCIF,       /*      176 × 144       */
-    QCIFplus,   /*      176 × 220       */
     CIF,        /*      352 × 288       */
-    CIF2,       /*      704 × 288       */
     CIF4,       /*      704 × 576       */
+    DVD,        /*      720 × 576       */
     CIF9,       /*     1056 × 864       */
-    CIF16       /*     1408 × 1152      */
+    EDTV,       /*     1280 x 720       */
+    CIF16,      /*     1408 × 1152      */
+    HDTV,       /*     1920 x 1080      */
 };
 
 struct VideoDeviceDescriptor
