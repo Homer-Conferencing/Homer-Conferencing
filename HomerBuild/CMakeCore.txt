@@ -89,12 +89,12 @@ ENDIF (APPLE)
 
 IF (BSD)
 	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wl,-soname,${TARGET_NAME}.dylib")
-	SET(CMAKE_CCC_FLAGS "${CMAKE_CCC_FLAGS} -Wl,-soname,${TARGET_NAME}.dylib")
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,-soname,${TARGET_NAME}.dylib")
 ENDIF (BSD)
 
 IF (LINUX)
 	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wl,-soname,${TARGET_NAME}.so")
-	SET(CMAKE_CCC_FLAGS "${CMAKE_CCC_FLAGS} -Wl,-soname,${TARGET_NAME}.so")
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,-soname,${TARGET_NAME}.so")
 ENDIF (LINUX)
 
 ##############################################################
