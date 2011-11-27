@@ -77,13 +77,8 @@ SET (LIBS_APPLE
 # USED STATIC libraries for linux environment ==> ordering of linking is IMPORTANT!!
 SET (LIBS_APPLE_STATIC
 	SDL_mixer
-	smpeg
 	SDL_sound
 	SDL
-	speex
-	vorbisfile
-	vorbis
-	ogg
 )
 
 # USED FRAMEWORKS for apple environment
