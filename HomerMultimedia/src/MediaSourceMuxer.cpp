@@ -127,6 +127,9 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
     pMaxPacketSize -= RTP::GetHeaderSizeMax(tStreamCodecId);
 	//pMaxPacketSize -= 32; // additional safety buffer size
 
+    int tOrgResX = pResX;
+    int tOrgResY = pResY;
+
     switch(tStreamCodecId)
     {
             case CODEC_ID_H261: // supports QCIF, CIF
@@ -152,6 +155,11 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
                     break;
             default:
                     break;
+    }
+
+    if ((tOrgResX != pResX) || (tOrgResY != pResY))
+    {
+        LOG(LOG_WARN, "Codec %s doesn't support the request video resolution of %d * %d, values were replaced by %d * %d", GetCodecName().c_str(), tOrgResX, tOrgResY, pResX, pResY);
     }
 
     if ((mStreamCodecId != tStreamCodecId) ||
