@@ -611,28 +611,30 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
             if (clock_gettime(CLOCK_REALTIME, &tTimeout) == -1)
                 LOG(LOG_ERROR, "Failed to get time from clock");
         #endif
-        #if defined(APPLE)
-            // apple specific implementation for clock_gettime()
-            clock_serv_t tCalenderClock;
-            mach_timespec_t tMachTimeSpec;
-            host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &tCalenderClock);
-            clock_get_time(tCalenderClock, &tMachTimeSpec);
-            mach_port_deallocate(mach_task_self(), tCalenderClock);
-            tTimeout.tv_sec = tMachTimeSpec.tv_sec;
-            tTimeout.tv_nsec = tMachTimeSpec.tv_nsec;
-        #endif
 
 		tTimeout.tv_sec += pTimeoutInMSecs / 1000;
 		tTimeout.tv_nsec += (pTimeoutInMSecs % 1000) * 1000000;
 
         #if defined(LINUX)
-            if (int tRes = pthread_timedjoin_np(mThreadHandle, &tThreadResult, &tTimeout))
-                LOG(LOG_INFO, "Waiting for end of thread failed because \"%s\"", strerror(tRes));
-            else
-            {
-                LOG(LOG_VERBOSE, "Got end signal and thread results at %p", tThreadResult);
-                tResult = true;
-            }
+		    if(pTimeoutInMSecs > 0)
+		    {
+		        if (int tRes = pthread_timedjoin_np(mThreadHandle, &tThreadResult, &tTimeout))
+                    LOG(LOG_INFO, "Waiting for end of thread failed because \"%s\"", strerror(tRes));
+                else
+                {
+                    LOG(LOG_VERBOSE, "Got end signal and thread results at %p", tThreadResult);
+                    tResult = true;
+                }
+		    }else
+		    {
+                if (int tRes = pthread_join(mThreadHandle, &tThreadResult))
+                    LOG(LOG_INFO, "Waiting for end of thread failed because \"%s\"", strerror(tRes));
+                else
+                {
+                    LOG(LOG_VERBOSE, "Got end signal and thread results at %p", tThreadResult);
+                    tResult = true;
+                }
+		    }
         #endif
 
         #if defined(APPLE) || defined(BSD)
@@ -647,7 +649,12 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
         #endif
 	#endif
 	#ifdef WIN32
-		switch(WaitForSingleObject(mThreadHandle, (DWORD)pTimeoutInMSecs))
+        if (pTimeoutInMSecs == 0)
+        {
+            pTimeoutInMSecs = INFINITE;
+        }
+
+        switch(WaitForSingleObject(mThreadHandle, (DWORD)pTimeoutInMSecs))
 		{
 			case WAIT_ABANDONED:
 			case WAIT_TIMEOUT:
