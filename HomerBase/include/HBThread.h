@@ -56,7 +56,7 @@ public:
     virtual void* Run(void* pArgs = NULL);
     bool StartThread(void* pArgs = NULL);
     bool StartThread(THREAD_MAIN pMain, void* pArgs = NULL);
-    bool StopThread(int pTimeoutInMSecs, void** pResults = NULL); // return pointer to result of thread
+    bool StopThread(int pTimeoutInMSecs = 0, void** pResults = NULL); // return pointer to result of thread
     static void Suspend(unsigned int pUSecs);
     static int GetTId();
     static int GetPId();
