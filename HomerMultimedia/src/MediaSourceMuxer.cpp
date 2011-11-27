@@ -62,6 +62,8 @@ MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
     mMediaSource = pMediaSource;
     if (mMediaSource != NULL)
     	mMediaSources.push_back(mMediaSource);
+    mCurrentStreamingResX = 0;
+    mCurrentStreamingResY = 0;
     mRequestedStreamingResX = 352;
     mRequestedStreamingResY = 288;
     mMuxingActivated = true;
@@ -159,9 +161,9 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
         (GetRtpActivation() != pRtpActivated) ||
         (mMediaStreamQuality != pMediaStreamQuality) ||
         (mStreamMaxPacketSize != pMaxPacketSize) ||
-        ((mMediaType == MEDIA_VIDEO) && ((mCurrentStreamingResX != pResX) || (mCurrentStreamingResY != pResY))))
+        (mCurrentStreamingResX != pResX) || (mCurrentStreamingResY != pResY))
     {
-        LOG(LOG_VERBOSE, "Setting new streaming preferences");
+        LOG(LOG_VERBOSE, "Setting new %s streaming preferences", GetMediaTypeStr().c_str());
 
         tResult = true;
 
@@ -181,13 +183,10 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
         LOG(LOG_VERBOSE, "    ..stream rtp encapsulation: %d => %d", GetRtpActivation(), pRtpActivated);
         SetRtpActivation(pRtpActivated);
 
-        if (mMediaType == MEDIA_VIDEO)
-        {
-            // set new streaming resolution
-            LOG(LOG_VERBOSE, "    ..stream resolution: %d*%d => %d*%d", mRequestedStreamingResX, mRequestedStreamingResY, pResX, pResY);
-            mRequestedStreamingResX = pResX;
-            mRequestedStreamingResY = pResY;
-        }
+        // set new streaming resolution
+        LOG(LOG_VERBOSE, "    ..stream resolution: %d*%d => %d*%d", mRequestedStreamingResX, mRequestedStreamingResY, pResX, pResY);
+        mRequestedStreamingResX = pResX;
+        mRequestedStreamingResY = pResY;
 
         if ((pDoReset) && (mMediaSourceOpened))
         {
