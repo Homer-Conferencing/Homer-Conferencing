@@ -79,9 +79,9 @@ bool System::GetWindowsKernelVersion(int &pMajor, int &pMinor)
 
 string System::GetLinuxKernelVersion()
 {
-    string tResult = "";
+    string tResult = "???";
 
-    #if defined(LINUX) || defined(APPLE) || defined(BSD)
+    #if defined(LINUX)
         struct utsname tInfo;
         uname(&tInfo);
 
