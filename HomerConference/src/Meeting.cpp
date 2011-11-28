@@ -366,6 +366,21 @@ bool Meeting::CloseParticipantSession(string pParticipant)
     }
 }
 
+int Meeting::CountParticipantSessions()
+{
+    int tResult = 0;
+
+    // lock
+    mParticipantsMutex.lock();
+
+    tResult = mParticipants.size();
+
+    // unlock
+    mParticipantsMutex.unlock();
+
+    return tResult;
+}
+
 void Meeting::CloseAllSessions()
 {
     ParticipantList::iterator tIt;

@@ -121,6 +121,7 @@ public:
     /* session management */
     bool OpenParticipantSession(std::string pUser, std::string pHost, std::string pPort, int pInitState);
     bool CloseParticipantSession(std::string pParticipant);
+    int CountParticipantSessions();
 
     /* outgoing events */
     bool SendMessage(std::string pParticipant, std::string pMessage);
