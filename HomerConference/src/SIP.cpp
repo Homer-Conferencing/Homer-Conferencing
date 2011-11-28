@@ -155,9 +155,9 @@ bool SIP::SplitParticipantName(string pParticipant, string &pUser, string &pHost
     {
         size_t tPos_HostEnd = pParticipant.find(']');
         // separate host part
-        pHost = pParticipant.substr(tPos + 1, tPos_HostEnd - tPos);
+        pHost = pParticipant.substr(tPos + 1, tPos_HostEnd - tPos -1);
         // separate port part
-        pPort = pParticipant.substr(tPos_HostEnd + 1 - pParticipant.size() - tPos_HostEnd);
+        pPort = pParticipant.substr(tPos_HostEnd + 1, pParticipant.size() - tPos_HostEnd);
     }else
     {
         tPos = pParticipant.find(':');
