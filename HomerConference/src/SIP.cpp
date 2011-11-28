@@ -158,6 +158,8 @@ bool SIP::SplitParticipantName(string pParticipant, string &pUser, string &pHost
         pHost = pParticipant.substr(tPos + 1, tPos_HostEnd - tPos -1);
         // separate port part
         pPort = pParticipant.substr(tPos_HostEnd + 1, pParticipant.size() - tPos_HostEnd);
+        if (pPort == "")
+            pPort = "5060";
     }else
     {
         tPos = pParticipant.find(':');
