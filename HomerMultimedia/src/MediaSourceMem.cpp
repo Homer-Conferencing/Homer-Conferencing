@@ -113,6 +113,20 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
             tFragmentDataSize = (unsigned int)tFragmentBufferSize;
             // parse and remove the RTP header, extract the encapsulated frame fragment
             tFragmentIsOkay = tMediaSourceMemInstance->RtpParse(tFragmentData, tFragmentDataSize, tLastFragment, tFragmentIsSenderReport, tMediaSourceMemInstance->mStreamCodecId, false);
+
+            // relay new data to registered sinks
+            if(tFragmentIsOkay)
+            {
+                // lock
+                tMediaSourceMemInstance->mMediaSinksMutex.lock();
+
+                // relay the received fragment to registered sinks
+                tMediaSourceMemInstance->RelayPacketToMediaSinks(tFragmentData, tFragmentDataSize);
+
+                // unlock
+                tMediaSourceMemInstance->mMediaSinksMutex.unlock();
+            }
+
             if ((tFragmentIsOkay) && (!tFragmentIsSenderReport))
             {
                 if (tBufferSize + (ssize_t)tFragmentDataSize < pBufferSize)
@@ -160,6 +174,15 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
         	LOGEX(MediaSourceMem, LOG_ERROR, "Error when receiving network data");
             return 0;
         }
+
+        // lock
+        tMediaSourceMemInstance->mMediaSinksMutex.lock();
+
+        // relay the received fragment to registered sinks
+        tMediaSourceMemInstance->RelayPacketToMediaSinks(tBuffer, (unsigned int)tBufferSize);
+
+        // unlock
+        tMediaSourceMemInstance->mMediaSinksMutex.unlock();
     }
 
     #ifdef MSMEM_DEBUG_PACKETS
@@ -189,15 +212,6 @@ void MediaSourceMem::ReadFragment(char *pData, ssize_t &pDataSize)
         #ifdef MSMEM_DEBUG_PACKETS
             LOG(LOG_VERBOSE, "Delivered packet with number %5u at %p with size: %5d", (unsigned int)++mPacketNumber, pData, (int)pDataSize);
         #endif
-
-        // lock
-        mMediaSinksMutex.lock();
-
-        // relay the received fragment to registered sinks
-        RelayPacketToMediaSinks(pData, (unsigned int)pDataSize);
-
-        // unlock
-        mMediaSinksMutex.unlock();
     }
 }
 
