@@ -273,6 +273,7 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         return false;
     }
 
+    bool tFound = false;
     if (mDesiredDevice != "")
     {
         //########################################
@@ -293,17 +294,22 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         if ((tResult = av_find_stream_info(mFormatContext)) < 0)
         {
             LOG(LOG_ERROR, "Couldn't find stream information because of \"%s\".", strerror(AVUNERROR(tResult)));
+
             // Close the V4L2 video file
             av_close_input_file(mFormatContext);
-            return false;
+
+            // HINT: we probe all available devices now
+        }else
+        {
+            tFound = true;
         }
-    }else
+    }
+    if(!tFound)
     {
         //########################################
         //### auto probing possible device files
         //########################################
         LOG(LOG_VERBOSE, "Auto-probing for VFL2 capture device");
-        bool tFound = false;
         string tDesiredDevice;
         for (int i = 0; i < 10; i++)
         {
@@ -316,7 +322,7 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
                 //######################################################
                 if ((tResult = av_find_stream_info(mFormatContext)) < 0)
                 {
-                    LOG(LOG_WARN, "Couldn't find stream information because of \"%s\".", strerror(AVUNERROR(tResult)));
+                    LOG(LOG_WARN, "Couldn't find stream information for device %s because \"%s\".", tDesiredDevice.c_str(), strerror(AVUNERROR(tResult)));
                     // Close the V4L2 video file
                     av_close_input_file(mFormatContext);
                     continue;
@@ -714,7 +720,8 @@ bool MediaSourceV4L2::SupportsMultipleInputChannels()
     // lock grabbing
     mGrabMutex.lock();
 
-    if ((tFd = open(mDesiredDevice.c_str(), O_RDONLY)) >= 0)
+    LOG(LOG_VERBOSE, "Probing for multiple input channels for device %s", mCurrentDevice.c_str());
+    if ((tFd = open(mCurrentDevice.c_str(), O_RDONLY)) >= 0)
     {
         tV4L2Input.index = 0;
         for(;;)
