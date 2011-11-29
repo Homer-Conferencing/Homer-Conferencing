@@ -79,10 +79,11 @@ public:
     virtual bool CloseGrabDevice();
     virtual int GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk = false);
 
+    virtual void WriteFragment(char *pBuffer, int pBufferSize);
+
 protected:
     static int GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize);
     virtual void ReadFragment(char *pData, ssize_t &pDataSize);
-    virtual void WriteFragment(char *pBuffer, int pBufferSize);
 
     unsigned long       mPacketNumber;
     enum CodecID        mStreamCodecId;
