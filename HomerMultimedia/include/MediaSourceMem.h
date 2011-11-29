@@ -69,6 +69,9 @@ public:
     /// The destructor.
     virtual ~MediaSourceMem();
 
+    /* relaying */
+    virtual bool SupportsRelaying();
+
     virtual bool SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset = false, bool pRtpActivated = true);
 
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97);

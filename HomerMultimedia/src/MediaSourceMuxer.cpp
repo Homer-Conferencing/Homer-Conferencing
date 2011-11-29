@@ -108,6 +108,11 @@ bool MediaSourceMuxer::SupportsMuxing()
     return true;
 }
 
+bool MediaSourceMuxer::SupportsRelaying()
+{
+    return true;
+}
+
 MediaSource* MediaSourceMuxer::GetMediaSource()
 {
     return mMediaSource;

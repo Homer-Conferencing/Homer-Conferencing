@@ -65,6 +65,7 @@ public:
     /// The constructor
     MediaSourceNet(Socket *pDataSocket, bool pRtpActivated = true);
     MediaSourceNet(unsigned int pPortNumber, enum TransportType pTransportType, bool pRtpActivated = true);
+
     /// The destructor
     virtual ~MediaSourceNet();
 
