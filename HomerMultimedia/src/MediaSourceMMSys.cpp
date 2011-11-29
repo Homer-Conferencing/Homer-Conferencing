@@ -564,6 +564,16 @@ void MediaSourceMMSys::StopGrabbing()
 	}
 }
 
+string MediaSourceMMSys::GetCodecName()
+{
+    return "Raw";
+}
+
+string MediaSourceMMSys::GetCodecLongName()
+{
+    return "Raw";
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 }} //namespace

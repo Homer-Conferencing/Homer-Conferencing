@@ -410,6 +410,16 @@ int MediaSourceOss::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
     return ++mChunkNumber;
 }
 
+string MediaSourceOss::GetCodecName()
+{
+    return "Raw";
+}
+
+string MediaSourceOss::GetCodecLongName()
+{
+    return "Raw";
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 }} //namespace

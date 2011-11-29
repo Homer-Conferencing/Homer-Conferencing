@@ -204,4 +204,14 @@ int MediaSourceCoreVideo::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pD
     return ++mChunkNumber;
 }
 
+string MediaSourceCoreVideo::GetCodecName()
+{
+    return "Raw";
+}
+
+string MediaSourceCoreVideo::GetCodecLongName()
+{
+    return "Raw";
+}
+
 }} //namespaces
