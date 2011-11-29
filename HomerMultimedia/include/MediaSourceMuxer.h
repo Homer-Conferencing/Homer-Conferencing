@@ -69,7 +69,7 @@ public:
     virtual bool SupportsMuxing();
 
     /* relaying */
-    virtual bool Supportsrelaying();
+    virtual bool SupportsRelaying();
 
     /* get access to current basic media source */
     virtual MediaSource* GetMediaSource();
