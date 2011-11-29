@@ -162,6 +162,7 @@ void* MediaSourceNet::Run(void* pArgs)
 				LOG(LOG_VERBOSE, "Received packet number %5d at %p with size: %5d from %s:%u", (int)++mPacketNumber, mPacketBuffer, (int)tDataSize, tSourceHost.c_str(), tSourcePort);
 			#endif
 
+            // for TCP we have to use a special fragment header!
             if (mDataSocket->GetTransportType() == SOCKET_TCP)
             {
                 TCPFragmentHeader *tHeader;
