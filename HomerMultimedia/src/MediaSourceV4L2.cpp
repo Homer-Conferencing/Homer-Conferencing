@@ -287,6 +287,16 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
                 LOG(LOG_ERROR, "Couldn't find device \"%s\".", mDesiredDevice.c_str());
             return false;
         }
+        //######################################################
+        //### retrieve stream information and find right stream
+        //######################################################
+        if ((tResult = av_find_stream_info(mFormatContext)) < 0)
+        {
+            LOG(LOG_ERROR, "Couldn't find stream information because of \"%s\".", strerror(AVUNERROR(tResult)));
+            // Close the V4L2 video file
+            av_close_input_file(mFormatContext);
+            return false;
+        }
     }else
     {
         //########################################
@@ -301,8 +311,20 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
             tResult = 0;
             if (((tFile = fopen(tDesiredDevice.c_str(), "r")) != NULL) && (fclose(tFile) == 0) && ((tResult = av_open_input_file(&mFormatContext, tDesiredDevice.c_str(), tFormat, 0, &tFormatParams)) == 0))
             {
-                tFound = true;
-                break;
+                //######################################################
+                //### retrieve stream information and find right stream
+                //######################################################
+                if ((tResult = av_find_stream_info(mFormatContext)) < 0)
+                {
+                    LOG(LOG_WARN, "Couldn't find stream information because of \"%s\".", strerror(AVUNERROR(tResult)));
+                    // Close the V4L2 video file
+                    av_close_input_file(mFormatContext);
+                    continue;
+                }else
+                {
+                    tFound = true;
+                    break;
+                }
             }
         }
         if (!tFound)
@@ -312,19 +334,9 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         }
         mDesiredDevice = tDesiredDevice;
     }
+
     mCurrentDevice = mDesiredDevice;
     mCurrentInputChannel = mDesiredInputChannel;
-
-    //######################################################
-    //### retrieve stream information and find right stream
-    //######################################################
-    if ((tResult = av_find_stream_info(mFormatContext)) < 0)
-    {
-        LOG(LOG_ERROR, "Couldn't find stream information because of \"%s\".", strerror(AVUNERROR(tResult)));
-        // Close the V4L2 video file
-        av_close_input_file(mFormatContext);
-        return false;
-    }
 
     // Find the first video stream
     mMediaStreamIndex = -1;

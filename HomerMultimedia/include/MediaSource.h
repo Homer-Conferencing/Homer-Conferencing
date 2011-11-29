@@ -138,6 +138,7 @@ public:
 
     virtual ~MediaSource();
 
+    /* multiplexing */
     virtual bool SupportsMuxing();
 
     /* get access to current basic media source */
