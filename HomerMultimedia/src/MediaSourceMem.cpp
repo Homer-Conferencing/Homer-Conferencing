@@ -215,6 +215,11 @@ void MediaSourceMem::ReadFragment(char *pData, ssize_t &pDataSize)
     }
 }
 
+bool MediaSourceMem::SupportsRelaying()
+{
+    return true;
+}
+
 bool MediaSourceMem::SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset, bool pRtpActivated)
 {
     bool tResult = false;

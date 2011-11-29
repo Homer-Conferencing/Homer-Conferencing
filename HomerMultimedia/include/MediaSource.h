@@ -184,6 +184,7 @@ public:
     void DeleteAllRegisteredMediaSinks();
     void SetRtpActivation(bool pState);
     bool GetRtpActivation();
+    virtual bool SupportsRelaying();
 
     /* recording control WITH reencoding but WITHOUT rtp support */
     virtual bool StartRecording(std::string pSaveFileName, int SaveFileQuality = 100, bool pRealTime = true /* 1 = frame rate emulation, 0 = no pts adaption */);

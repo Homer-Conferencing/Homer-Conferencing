@@ -1073,6 +1073,11 @@ bool MediaSource::GetRtpActivation()
     return mRtpActivated;
 }
 
+bool MediaSource::SupportsRelaying()
+{
+    return false;
+}
+
 void MediaSource::RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacketSize)
 {
     MediaSinksList::iterator tIt;
