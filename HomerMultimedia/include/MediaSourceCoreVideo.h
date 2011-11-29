@@ -54,6 +54,10 @@ public:
     /* device control */
     virtual void getVideoDevices(VideoDevicesList &pVList);
 
+    /* grabbing control */
+    virtual std::string GetCodecName();
+    virtual std::string GetCodecLongName();
+
 public:
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97);
     virtual bool OpenAudioGrabDevice(int pSampleRate = 44100, bool pStereo = true);

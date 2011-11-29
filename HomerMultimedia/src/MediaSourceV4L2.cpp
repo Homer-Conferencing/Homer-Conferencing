@@ -694,6 +694,16 @@ GrabResolutions MediaSourceV4L2::GetSupportedVideoGrabResolutions()
     return mSupportedVideoFormats;
 }
 
+string MediaSourceV4L2::GetCodecName()
+{
+    return "Raw";
+}
+
+string MediaSourceV4L2::GetCodecLongName()
+{
+    return "Raw";
+}
+
 bool MediaSourceV4L2::SupportsMultipleInputChannels()
 {
     int tCount = 0;

@@ -339,4 +339,14 @@ void MediaSourceAlsa::StopGrabbing()
 	}
 }
 
+string MediaSourceAlsa::GetCodecName()
+{
+    return "Raw";
+}
+
+string MediaSourceAlsa::GetCodecLongName()
+{
+    return "Raw";
+}
+
 }} //namespaces

@@ -543,6 +543,16 @@ int MediaSourceVFW::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
     return ++mChunkNumber;
 }
 
+string MediaSourceVFW::GetCodecName()
+{
+    return "Raw";
+}
+
+string MediaSourceVFW::GetCodecLongName()
+{
+    return "Raw";
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 }} //namespace

@@ -51,9 +51,15 @@ public:
 
     /* video grabbing control */
     virtual GrabResolutions GetSupportedVideoGrabResolutions();
+
+    /* grabbing control */
+    virtual std::string GetCodecName();
+    virtual std::string GetCodecLongName();
+
     /* device control */
     virtual void getVideoDevices(VideoDevicesList &pVList);
     virtual bool SelectDevice(std::string pDeviceName, enum MediaType pMediaType, bool &pIsNewDevice);
+
     /* multi input interface */
     virtual bool SupportsMultipleInputChannels();
     virtual bool SelectInputChannel(int pIndex);

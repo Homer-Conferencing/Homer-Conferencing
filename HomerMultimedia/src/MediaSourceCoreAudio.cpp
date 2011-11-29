@@ -209,4 +209,14 @@ int MediaSourceCoreAudio::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pD
     return ++mChunkNumber;
 }
 
+string MediaSourceCoreAudio::GetCodecName()
+{
+    return "Raw";
+}
+
+string MediaSourceCoreAudio::GetCodecLongName()
+{
+    return "Raw";
+}
+
 }} //namespaces
