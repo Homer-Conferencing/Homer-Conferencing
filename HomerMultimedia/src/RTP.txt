@@ -1,0 +1,1691 @@
+######################################################################################
+############################### RFC3550 ##############################################
+######################################################################################
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |V=2|P|X|  CC   |M|     PT      |       sequence number         |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                           timestamp                           |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |           synchronization source (SSRC) identifier            |
+   +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+   |            contributing source (CSRC) identifiers             |
+   |                             ....                              |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   The first twelve octets are present in every RTP packet, while the
+   list of CSRC identifiers is present only when inserted by a mixer.
+   The fields have the following meaning:
+
+   version (V): 2 bits
+        This field identifies the version of RTP. The version defined by
+        this specification is two (2). (The value 1 is used by the first
+        draft version of RTP and the value 0 is used by the protocol
+        initially implemented in the "vat" audio tool.)
+
+   padding (P): 1 bit
+        If the padding bit is set, the packet contains one or more
+        additional padding octets at the end which are not part of the
+        payload. The last octet of the padding contains a count of how
+        many padding octets should be ignored. Padding may be needed by
+        some encryption algorithms with fixed block sizes or for
+        carrying several RTP packets in a lower-layer protocol data
+        unit.
+
+   extension (X): 1 bit
+        If the extension bit is set, the fixed header is followed by
+        exactly one header extension, with a format defined in Section
+        5.3.1.
+
+   CSRC count (CC): 4 bits
+        The CSRC count contains the number of CSRC identifiers that
+        follow the fixed header.
+
+   marker (M): 1 bit
+        The interpretation of the marker is defined by a profile. It is
+        intended to allow significant events such as frame boundaries to
+        be marked in the packet stream. A profile may define additional
+        marker bits or specify that there is no marker bit by changing
+        the number of bits in the payload type field (see Section 5.3).
+
+   payload type (PT): 7 bits
+        This field identifies the format of the RTP payload and
+        determines its interpretation by the application. A profile
+        specifies a default static mapping of payload type codes to
+        payload formats. Additional payload type codes may be defined
+        dynamically through non-RTP means (see Section 3). An initial
+        set of default mappings for audio and video is specified in the
+        companion profile Internet-Draft draft-ietf-avt-profile, and
+        may be extended in future editions of the Assigned Numbers RFC
+        [6].  An RTP sender emits a single RTP payload type at any given
+        time; this field is not intended for multiplexing separate media
+        streams (see Section 5.2).
+
+        A receiver MUST ignore packets with payload types that it does not
+        understand.
+
+   sequence number: 16 bits
+        The sequence number increments by one for each RTP data packet
+        sent, and may be used by the receiver to detect packet loss and
+        to restore packet sequence. The initial value of the sequence
+        number is random (unpredictable) to make known-plaintext attacks
+        on encryption more difficult, even if the source itself does not
+        encrypt, because the packets may flow through a translator that
+        does. Techniques for choosing unpredictable numbers are
+        discussed in [7].
+
+   timestamp: 32 bits
+        The timestamp reflects the sampling instant of the first octet
+        in the RTP data packet. The sampling instant must be derived
+        from a clock that increments monotonically and linearly in time
+        to allow synchronization and jitter calculations (see Section
+        6.3.1).  The resolution of the clock must be sufficient for the
+        desired synchronization accuracy and for measuring packet
+        arrival jitter (one tick per video frame is typically not
+        sufficient).  The clock frequency is dependent on the format of
+        data carried as payload and is specified statically in the
+        profile or payload format specification that defines the format,
+        or may be specified dynamically for payload formats defined
+        through non-RTP means. If RTP packets are generated
+        periodically, the nominal sampling instant as determined from
+        the sampling clock is to be used, not a reading of the system
+        clock. As an example, for fixed-rate audio the timestamp clock
+        would likely increment by one for each sampling period.  If an
+        audio application reads blocks covering 160 sampling periods
+        from the input device, the timestamp would be increased by 160
+        for each such block, regardless of whether the block is
+        transmitted in a packet or dropped as silent.
+
+          The initial value of the timestamp SHOULD be random, as for the
+          sequence number.  Several consecutive RTP packets will have equal
+          timestamps if they are (logically) generated at once, e.g., belong
+          to the same video frame.  Consecutive RTP packets MAY contain
+          timestamps that are not monotonic if the data is not transmitted
+          in the order it was sampled, as in the case of MPEG interpolated
+          video frames.  (The sequence numbers of the packets as transmitted
+          will still be monotonic.)
+
+          RTP timestamps from different media streams may advance at
+          different rates and usually have independent, random offsets.
+          Therefore, although these timestamps are sufficient to reconstruct
+          the timing of a single stream, directly comparing RTP timestamps
+          from different media is not effective for synchronization.
+          Instead, for each medium the RTP timestamp is related to the
+          sampling instant by pairing it with a timestamp from a reference
+          clock (wallclock) that represents the time when the data
+          corresponding to the RTP timestamp was sampled.  The reference
+          clock is shared by all media to be synchronized.  The timestamp
+          pairs are not transmitted in every data packet, but at a lower
+          rate in RTCP SR packets as described in Section 6.4.
+
+          The sampling instant is chosen as the point of reference for the
+          RTP timestamp because it is known to the transmitting endpoint and
+          has a common definition for all media, independent of encoding
+          delays or other processing.  The purpose is to allow synchronized
+          presentation of all media sampled at the same time.
+
+          Applications transmitting stored data rather than data sampled in
+          real time typically use a virtual presentation timeline derived
+          from wallclock time to determine when the next frame or other unit
+          of each medium in the stored data should be presented.  In this
+          case, the RTP timestamp would reflect the presentation time for
+          each unit.  That is, the RTP timestamp for each unit would be
+          related to the wallclock time at which the unit becomes current on
+          the virtual presentation timeline.  Actual presentation occurs
+          some time later as determined by the receiver.
+
+          An example describing live audio narration of prerecorded video
+          illustrates the significance of choosing the sampling instant as
+          the reference point.  In this scenario, the video would be
+          presented locally for the narrator to view and would be
+          simultaneously transmitted using RTP.  The "sampling instant" of a
+          video frame transmitted in RTP would be established by referencing
+
+
+   SSRC: 32 bits
+        The SSRC field identifies the synchronization source. This
+        identifier is chosen randomly, with the intent that no two
+        synchronization sources within the same RTP session will have
+        the same SSRC identifier. An example algorithm for generating a
+        random identifier is presented in Appendix A.6. Although the
+        probability of multiple sources choosing the same identifier is
+        low, all RTP implementations must be prepared to detect and
+        resolve collisions.  Section 8 describes the probability of
+        collision along with a mechanism for resolving collisions and
+        detecting RTP-level forwarding loops based on the uniqueness of
+        the SSRC identifier. If a source changes its source transport
+        address, it must also choose a new SSRC identifier to avoid
+        being interpreted as a looped source.
+
+   CSRC list: 0 to 15 items, 32 bits each
+        The CSRC list identifies the contributing sources for the
+        payload contained in this packet. The number of identifiers is
+        given by the CC field. If there are more than 15 contributing
+        sources, only 15 may be identified. CSRC identifiers are
+        inserted by mixers, using the SSRC identifiers of contributing
+        sources. For example, for audio packets the SSRC identifiers of
+        all sources that were mixed together to create a packet are
+        listed, allowing correct talker indication at the receiver.
+
+
+	 SR: Sender Report RTCP Packet
+
+        0                   1                   2                   3
+        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+header |V=2|P|    RC   |   PT=SR=200   |             length            |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                         SSRC of sender                        |
+       +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+sender |              NTP timestamp, most significant word             |
+info   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |             NTP timestamp, least significant word             |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                         RTP timestamp                         |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                     sender's packet count                     |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                      sender's octet count                     |
+       +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+report |                 SSRC_1 (SSRC of first source)                 |
+block  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  1    | fraction lost |       cumulative number of packets lost       |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |           extended highest sequence number received           |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                      interarrival jitter                      |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                         last SR (LSR)                         |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                   delay since last SR (DLSR)                  |
+       +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+report |                 SSRC_2 (SSRC of second source)                |
+block  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  2    :                               ...                             :
+       +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+       |                  profile-specific extensions                  |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+
+ 	RR: Receiver Report RTCP Packet
+
+        0                   1                   2                   3
+        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+header |V=2|P|    RC   |   PT=RR=201   |             length            |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                     SSRC of packet sender                     |
+       +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+report |                 SSRC_1 (SSRC of first source)                 |
+block  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  1    | fraction lost |       cumulative number of packets lost       |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |           extended highest sequence number received           |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                      interarrival jitter                      |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                         last SR (LSR)                         |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                   delay since last SR (DLSR)                  |
+       +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+report |                 SSRC_2 (SSRC of second source)                |
+block  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  2    :                               ...                             :
+       +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+       |                  profile-specific extensions                  |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   version (V): 2 bits
+      Identifies the version of RTP, which is the same in RTCP packets
+      as in RTP data packets.  The version defined by this specification
+      is two (2).
+
+   padding (P): 1 bit
+      If the padding bit is set, this individual RTCP packet contains
+      some additional padding octets at the end which are not part of
+      the control information but are included in the length field.  The
+      last octet of the padding is a count of how many padding octets
+      should be ignored, including itself (it will be a multiple of
+      four).  Padding may be needed by some encryption algorithms with
+      fixed block sizes.  In a compound RTCP packet, padding is only
+      required on one individual packet because the compound packet is
+      encrypted as a whole for the method in Section 9.1.  Thus, padding
+      MUST only be added to the last individual packet, and if padding
+      is added to that packet, the padding bit MUST be set only on that
+      packet.  This convention aids the header validity checks described
+      in Appendix A.2 and allows detection of packets from some early
+      implementations that incorrectly set the padding bit on the first
+      individual packet and add padding to the last individual packet.
+
+   reception report count (RC): 5 bits
+      The number of reception report blocks contained in this packet.  A
+      value of zero is valid.
+
+   packet type (PT): 8 bits
+      Contains the constant 200 to identify this as an RTCP SR packet.
+
+   length: 16 bits
+      The length of this RTCP packet in 32-bit words minus one,
+      including the header and any padding.  (The offset of one makes
+      zero a valid length and avoids a possible infinite loop in
+      scanning a compound RTCP packet, while counting 32-bit words
+      avoids a validity check for a multiple of 4.)
+
+   SSRC: 32 bits
+      The synchronization source identifier for the originator of this
+      SR packet.
+
+######################################################################################
+############################### RFC2032/4587 (H261) ##################################
+######################################################################################
+  HINT: http://www.javvin.com/protocolH261.html
+
+   The H.261 information is carried as payload data within the RTP
+   protocol. The following fields of the RTP header are specified:
+
+   -    The payload type should specify H.261 payload format (see
+        the companion RTP profile document RFC 1890).
+
+   -    The RTP timestamp encodes the sampling instant of the
+        first video image contained in the RTP data packet. If a
+        video image occupies more than one packet, the timestamp
+        will be the same on all of those packets. Packets from
+        different video images must have different timestamps so
+        that frames may be distinguished by the timestamp. For
+        H.261 video streams, the RTP timestamp is based on a
+        90kHz clock. This clock rate is a multiple of the natural
+        H.261 frame rate (i.e. 30000/1001 or approx. 29.97 Hz).
+        That way, for each frame time, the clock is just
+        incremented by the multiple and this removes inaccuracy
+        in calculating the timestamp. Furthermore, the initial
+        value of the timestamp is random (unpredictable) to make
+        known-plaintext attacks on encryption more difficult, see
+        RTP [1]. Note that if multiple frames are encoded in a
+        packet (e.g. when there are very little changes between
+        two images), it is necessary to calculate display times
+        for the frames after the first using the timing
+        information in the H.261 frame header. This is required
+        because the RTP timestamp only gives the display time of
+        the first frame in the packet.
+
+   -    The marker bit of the RTP header is set to one in the
+        last packet of a video frame, and otherwise, must be
+        zero. Thus, it is not necessary to wait for a following
+        packet (which contains the start code that terminates the
+        current frame) to detect that a new frame should be
+        displayed.
+
+   The H.261 data will follow the RTP header, as in:
+
+     0                   1                   2                   3
+     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    .                                                               .
+    .                          RTP header                           .
+    .                                                               .
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |                          H.261  header                        |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |                          H.261 stream ...                     .
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   The H.261 header is defined as following:
+
+     0                   1                   2                   3
+     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |SBIT |EBIT |I|V| GOBN  |   MBAP  |  QUANT  |  HMVD   |  VMVD   |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   The fields in the H.261 header have the following meanings:
+
+   Start bit position (SBIT): 3 bits
+     Number of most significant bits that should be ignored
+     in the first data octet.
+
+   End bit position (EBIT): 3 bits
+     Number of least significant bits that should be ignored
+     in the last data octet.
+
+   INTRA-frame encoded data (I): 1 bit
+     Set to 1 if this stream contains only INTRA-frame coded
+     blocks. Set to 0 if this stream may or may not contain
+     INTRA-frame coded blocks. The sense of this bit may not
+     change during the course of the RTP session.
+
+   Motion Vector flag (V): 1 bit
+     Set to 0 if motion vectors are not used in this stream.
+     Set to 1 if motion vectors may or may not be used in
+     this stream. The sense of this bit may not change during
+     the course of the session.
+
+   GOB number (GOBN): 4 bits
+     Encodes the GOB number in effect at the start of the
+     packet. Set to 0 if the packet begins with a GOB header.
+
+   Macroblock address predictor (MBAP): 5 bits
+     Encodes the macroblock address predictor (i.e. the last
+     MBA encoded in the previous packet). This predictor ranges
+     from 0-32 (to predict the valid MBAs 1-33), but because
+     the bit stream cannot be fragmented between a GOB header
+     and MB 1, the predictor at the start of the packet can
+     never be 0. Therefore, the range is 1-32, which is biased
+     by -1 to fit in 5 bits. For example, if MBAP is 0, the
+     value of the MBA predictor is 1. Set to 0 if the packet
+     begins with a GOB header.
+
+   Quantizer (QUANT): 5 bits
+     Quantizer value (MQUANT or GQUANT) in effect prior to the
+     start of this packet. Set to 0 if the packet begins with
+     a GOB header.
+
+   Horizontal motion vector data (HMVD): 5 bits
+     Reference horizontal motion vector data (MVD). Set to 0
+     if V flag is 0 or if the packet begins with a GOB header,
+     or when the MTYPE of the last MB encoded in the previous
+     packet was not MC. HMVD is encoded as a 2's complement
+     number, and `10000' corresponding to the value -16 is
+     forbidden (motion vector fields range from +/-15).
+
+   Vertical motion vector data (VMVD): 5 bits
+     Reference vertical motion vector data (MVD). Set to 0 if
+     V flag is 0 or if the packet begins with a GOB header, or
+     when the MTYPE of the last MB encoded in the previous
+     packet was not MC. VMVD is encoded as a 2's complement
+     number, and `10000' corresponding to the value -16 is
+     forbidden (motion vector fields range from +/-15).
+
+   Note that the I and V flags are hint flags, i.e. they can be inferred
+   from the bit stream. They are included to allow decoders to make
+   optimizations that would not be possible if these hints were not
+   provided before bit stream was decoded.  Therefore, these bits cannot
+   change for the duration of the stream. A conformant implementation
+   can always set V=1 and I=0.
+
+
+  H.261 control packets definition
+
+  Full INTRA-frame Request (FIR) packet
+
+     0                   1                   2                   3
+     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |V=2|P|   MBZ   |  PT=RTCP_FIR  |           length              |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |                              SSRC                             |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   This packet indicates that a receiver requires a full encoded image
+   in order to either start decoding with an entire image or to refresh
+   its image and speed the recovery after a burst of lost packets. The
+   receiver requests the source to force the next image in full "INTRA-
+   frame" coding mode, i.e. without using differential coding. The
+   various fields are defined in the RTP specification [1]. SSRC is the
+   synchronization source identifier for the sender of this packet. The
+   value of the packet type (PT) identifier is the constant RTCP_FIR
+   (192).
+
+  Negative ACKnowledgements (NACK) packet
+
+   The format of the NACK packet is as follow:
+
+     0                   1                   2                   3
+     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |V=2|P|   MBZ   | PT=RTCP_NACK  |           length              |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |                              SSRC                             |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |              FSN              |              BLP              |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   The various fields T, P, PT, length and SSRC are defined in the RTP
+   specification [1]. The value of the packet type (PT) identifier is
+   the constant RTCP_NACK (193). SSRC is the synchronization source
+   identifier for the sender of this packet.
+
+   The two remaining fields have the following meanings:
+
+   First Sequence Number (FSN): 16 bits
+     Identifies the first sequence number lost.
+
+   Bitmask of following lost packets (BLP): 16 bits
+     A bit is set to 1 if the corresponding packet has been lost,
+     and set to 0 otherwise. BLP is set to 0 only if no packet
+     other than that being NACKed (using the FSN field) has been
+     lost. BLP is set to 0x00001 if the packet corresponding to
+     the FSN and the following packet have been lost, etc.
+
+######################################################################################
+################################## RFC2190 (H263) ####################################
+######################################################################################
+
+ Video Packet Structure
+
+   For each RTP packet, the RTP fixed header is followed by the H.263
+   payload header, which is followed by the standard H.263 compressed
+   bitstream [4].
+
+   The size of the H.263 payload header is variable depending on modes
+   used as detailed in the next section. The layout of an RTP H.263
+   video packet is shown as:
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                 RTP header                                    |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                 H.263 payload header                          |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                 H.263 bitstream                               |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+ H.263 Payload Header
+
+   For H.263 video streams, each RTP packet carries only one H.263 video
+   packet. The H.263 payload header is always present for each H.263
+   video packet.
+
+   Three formats (mode A, mode B and mode C) are defined for H.263
+   payload header. In mode A, an H.263 payload header of four bytes is
+   present before actual compressed H.263 video bitstream in a packet.
+   It allows fragmentation at GOB boundaries. In mode B, an eight byte
+   H.263 payload header is used and each packet starts at MB boundaries
+   without the PB-frames option. Finally, a twelve byte H.263 payload
+   header is defined in mode C to support fragmentation at MB boundaries
+   for frames that are coded with the PB-frames option.
+
+   The mode of each H.263 payload header is indicated by the F and P
+   fields in the header. Packets of different modes can be intermixed.
+   All client application are required to be able to receive packets in
+   any mode, but decoding of mode C packets is optional because the PB-
+   frames feature is optional.
+
+   In this section, the H.263 payload format is shown as rows of 32-bit
+   words. Each word is transmitted in network byte order. Whenever a
+   field represents a numeric value, the most significant bit is at the
+   left of the field.
+
+ Mode A
+
+   In this mode, an H.263 bitstream will be packetized on a GOB boundary
+   or a picture boundary. Mode A packets always start with the H.263
+   picture start code [4] or a GOB, but do not necessarily contain
+   complete GOBs. Four bytes are used for the mode A H.263 payload
+   header. The H.263 payload header definition for mode A is shown as
+   follows with F=0. Mode A packets are allowed to start at a GOB
+   boundary even if no GOB header is present in the bitstream for the
+   GOB.  However, such use is discouraged due to the dependencies it
+   creates across GOB boundaries, as described in Section 3.3.
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |F|P|SBIT |EBIT | SRC |I|U|S|A|R      |DBQ| TRB |    TR         |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   F: 1 bit
+   The flag bit indicates the mode of the payload header. F=0, mode A;
+   F=1, mode B or mode C depending on P bit defined below.
+
+   P: 1 bit
+   Optional PB-frames mode as defined by the H.263 [4]. "0" implies
+   normal I or P frame, "1" PB-frames. When F=1, P also indicates modes:
+   mode B if P=0, mode C if P=1.
+
+   SBIT: 3 bits
+   Start bit position specifies number of most significant bits that
+   shall be ignored in the first data byte.
+
+   EBIT: 3 bits
+   End bit position specifies number of least significant bits that
+   shall be ignored in the last data byte.
+
+   SRC : 3 bits
+   Source format, bit 6,7 and 8 in PTYPE defined by H.263 [4], specifies
+   the resolution of the current picture.
+
+   I:  1 bit.
+   Picture coding type, bit 9 in PTYPE defined by H.263[4], "0" is
+   intra-coded, "1" is inter-coded.
+
+   U: 1 bit
+   Set to 1 if the Unrestricted Motion Vector option, bit 10 in PTYPE
+   defined by H.263 [4] was set to 1 in the current picture header,
+   otherwise 0.
+
+   S: 1 bit
+   Set to 1 if the Syntax-based Arithmetic Coding option, bit 11 in
+   PTYPE defined by the H.263 [4] was set to 1 for current picture
+   header, otherwise 0.
+
+   A: 1 bit
+   Set to 1 if the Advanced Prediction option, bit 12 in PTYPE defined
+   by H.263 [4] was set to 1 for current picutre header, otherwise 0.
+
+   R: 4 bits
+   Reserved, must be set to zero.
+
+   DBQ: 2 bits
+   Differential quantization parameter used to calculate quantizer for
+   the B frame based on quantizer for the P frame, when PB-frames option
+   is used. The value should be the same as DBQUANT defined by H.263
+   [4].  Set to zero if PB-frames option is not used.
+
+   TRB: 3 bits
+   Temporal Reference for the B frame as defined by H.263 [4]. Set to
+   zero if PB-frames option is not used.
+
+   TR: 8 bits
+   Temporal Reference for the P frame as defined by H.263 [4]. Set to
+   zero if the PB-frames option is not used.
+
+ Mode B
+
+   In this mode, an H.263 bitstream can be fragmented at MB boundaries.
+   Whenever a packet starts at a MB boundary, this mode shall be used
+   without PB-frames option. Mode B packets are intended for a GOB whose
+   size is larger than the maximum packet size allowed in the underlying
+   protocol, thus making it impossible to fit one or more complete GOBs
+   in a packet. This mode can only be used without the PB-frames option.
+   Mode C as defined in the next section can be used to fragment H.263
+   bitstreams at MB boundaries with the PB-frames option.  The H.263
+   payload header definition for mode B is shown as follows with F=1 and
+   P=0:
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |F|P|SBIT |EBIT | SRC | QUANT   |  GOBN   |   MBA           |R  |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |I|U|S|A| HMV1        | VMV1        | HMV2        | VMV2        |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   The following fields are defined the same as in mode A: F, P, SBIT,
+   EBIT, SRC, I, U, S and A. Other fields are defined as follows:
+
+   QUANT: 5 bits
+   Quantization value for the first MB coded at the starting of the
+   packet.  Set to 0 if the packet begins with a GOB header. This is the
+   equivalent of GQUANT defined by the H.263 [4].
+
+   GOBN: 5 bits
+   GOB number in effect at the start of the packet. GOB number is
+   specified differently for different resolutions. See H.263 [4] for
+   details.
+
+   MBA: 9 bits
+   The address within the GOB of the first MB in the packet, counting
+   from zero in scan order. For example, the third MB in any GOB is
+   given MBA = 2.
+
+   HMV1, VMV1: 7 bits each.
+   Horizontal and vertical motion vector predictors for the first MB in
+   this packet [4]. When four motion vectors are used for current MB
+   with advanced prediction option, these would be the motion vector
+   predictors for block number 1 in the MB. Each 7 bits field encodes a
+   motion vector predictor in half pixel resolution as a 2's complement
+   number.
+
+   HMV2, VMV2: 7 bits each.
+   Horizontal and vertical motion vector predictors for block number 3
+   in the first MB in this packet when four motion vectors are used with
+   the advanced prediction option. This is needed because block number 3
+   in the MB needs different motion vector predictors from other blocks
+   in the MB. These two fields are not used when the MB only has one
+   motion vector. See the H.263 [4] for block organization in a
+   macroblock.  Each 7 bits field encodes a motion vector predictor in
+   half pixel resolution as a 2's complement number.
+
+   R : 2 bits
+   Reserved, must be set to zero.
+
+ Mode C
+
+   In this mode, an H.263 bitstream is fragmented at MB boundaries of P
+   frames with the PB-frames option. It is intended for those GOBs whose
+   sizes are larger than the maximum packet size allowed in the
+   underlying protocol when PB-frames option is used. The H.263 payload
+   header definition for mode C is shown as follows with F=1 and P=1:
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |F|P|SBIT |EBIT | SRC | QUANT   |  GOBN   |   MBA           |R  |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |I|U|S|A| HMV1        | VMV1        | HMV2        | VMV2        |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   | RR                                  |DBQ| TRB |    TR         |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   The following fields are defined the same as in mode B: F, P, SBIT,
+   EBIT, SRC, QUANT, GOBN, MBA, R, I, U, S, A, HMV1, VMV1, HMV2, VMV2.
+   The rest of the fields (TR, DBQ, TRB) are defined the same as in mode
+   A, except field RR. The RR field takes 19 bits, and is currently
+   reserved.  It must be set to zero.
+
+######################################################################################
+################################## RFC4629 (H263+) ###################################
+######################################################################################
+
+        Each RTP packet starts with a fixed RTP header [1]. The following
+        fields of the RTP fixed header are used for H.263 video streams:
+
+        Marker bit (M bit): The Marker bit of the RTP fixed header is set to
+        1 when the current packet carries the end of current frame; set to 0
+        otherwise.
+
+        Payload Type (PT): The Payload Type shall specify H.263 video payload
+        format using the value specified by the RTP profile in use, for
+        example RFC 1890 [3].
+
+        Timestamp: The RTP timestamp encodes the sampling instant of the
+        video frame contained in the RTP data packet. The RTP timestamp may
+        be the same  on successive packets if a video frame occupies more
+        than one packet. For H.263 video streams, the RTP timestamp is based
+        on a 90 kHz clock, the same as the RTP timestamp for H.261 video
+        streams [5].
+
+        For each RTP packet, the RTP fixed header is followed by the H.263
+        payload header, which is followed by the standard H.263 compressed
+        bitstream [4].
+
+---
+
+        A section of an H.263+ compressed bitstream is carried as a payload
+        within each RTP packet.  For each RTP packet, the RTP header is
+        followed by an H.263+ payload header, which is followed by a number
+        of bytes of a standard H.263+ compressed bitstream.  The size of the
+        H.263+ payload header is variable, depending on the payload involved,
+        as detailed in the Section 4.  The layout of the RTP H.263+ video
+        packet is shown as
+
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          :    RTP Header                                                 :
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          :    H.263+ Payload Header                                      :
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          :    H.263+ Compressed Data Stream                              :
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+       The H.263+ payload header is structured as follows:
+
+         0                   1
+         0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        |   RR    |P|V|   PLEN    |PEBIT|
+        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+       RR: 5 bits
+
+          Reserved bits.  It SHALL be zero and MUST be ignored by receivers.
+
+       P: 1 bit
+
+          Indicates the picture start or a picture segment (GOB/Slice) start
+          or a video sequence end (EOS or EOSBS).  Two bytes of zero bits
+          then have to be prefixed to the payload of such a packet to
+          compose a complete picture/GOB/slice/EOS/EOSBS start code.  This
+          bit allows the omission of the two first bytes of the start codes,
+          thus improving the compression ratio.
+
+	   A packet that begins at the location of a Picture, GOB, slice, EOS,
+	   or EOSBS start code shall omit the first two (all zero) bytes from
+	   the H.263+ bitstream and signify their presence by setting P=1 in the
+	   payload header.
+	
+	   Here is an example of encapsulating the first packet in a frame
+	   (without an attached redundant complete picture header):
+	
+	      0                   1                   2                   3
+	      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+	     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	     |   RR    |1|V|0|0|0|0|0|0|0|0|0| bitstream data without the    :
+	     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	     : first two 0 bytes of the PSC
+	     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+       V: 1 bit
+
+          Indicates the presence of an 8-bit field containing information
+          for Video Redundancy Coding (VRC), which follows immediately after
+          the initial 16 bits of the payload header, if present.  For syntax
+          and semantics of that 8-bit VRC field, see Section 5.2.
+
+       PLEN: 6 bits
+
+          Length, in bytes, of the extra picture header.  If no extra
+          picture header is attached, PLEN is 0.  If PLEN>0, the extra
+          picture header is attached immediately following the rest of the
+          payload header.  Note that the length reflects the omission of the
+          first two bytes of the picture start code (PSC).  See Section 6.1.
+
+          An extra picture header can sometimes be attached in the payload
+          header of such packets.  Whenever an extra picture header is attached
+          as signified by PLEN>0, only the last six bits of its picture start
+          code, '100000', are included in the payload header.  A complete
+          H.263+ picture header with byte-aligned picture start code can be
+          conveniently assembled on the receiving end by prepending the sixteen
+          leading '0' bits.
+
+          When PLEN>0, the end bit position corresponding to the last byte of
+          the picture header data is indicated by PEBIT.  The actual bitstream
+          data shall begin on an 8-bit byte boundary following the payload
+          header.
+
+       PEBIT: 3 bits
+
+          Indicates the number of bits that shall be ignored in the last
+          byte of the picture header.  If PLEN is not zero, the ignored bits
+          shall be the least significant bits of the byte.  If PLEN is zero,
+          then PEBIT shall also be zero.
+
+   for (V = 1):
+       The format of the VRC header extension is as follows:
+
+         0 1 2 3 4 5 6 7
+        +-+-+-+-+-+-+-+-+
+        | TID | Trun  |S|
+        +-+-+-+-+-+-+-+-+
+
+       TID: 3 bits
+
+       Thread ID.  Up to 7 threads are allowed.  Each frame of H.263+ VRC
+       data will use as reference information only sync frames or frames
+       within the same thread.  By convention, thread 0 is expected to be
+       the "canonical" thread, which is the thread from which the sync frame
+       should ideally be used.  In the case of corruption or loss of the
+       thread 0 representation, a representation of the sync frame with a
+       higher thread number can be used by the decoder.  Lower thread
+       numbers are expected to contain representations of the sync frames
+       equal to or better than higher thread numbers in the absence of data
+       corruption or loss.  See [Vredun] for a detailed discussion of VRC.
+
+       Trun: 4 bits
+
+       Monotonically increasing (modulo 16) 4-bit number counting the packet
+       number within each thread.
+
+       S: 1 bit
+
+       A bit that indicates that the packet content is for a sync frame.  An
+       encoder using VRC may send several representations of the same "sync"
+       picture, in order to ensure that, regardless of which thread of
+       pictures is corrupted by errors or packet losses, the reception of at
+       least one representation of a particular picture is ensured (within
+       at least one thread).  The sync picture can then be used for the
+       prediction of any thread.  If packet losses have not occurred, then
+       the sync frame contents of thread 0 can be used, and those of other
+       threads can be discarded (and similarly for other threads).  Thread 0
+       is considered the "canonical" thread, the use of which is preferable
+       to all others.  The contents of packets having lower thread numbers
+       shall be considered as having a higher processing and delivery
+       priority than those with higher thread numbers.  Thus, packets having
+       lower thread numbers for a given sync frame shall be delivered first
+       to the decoder under loss-free and low-time-jitter conditions, which
+       will result in the discarding of the sync contents of the higher-
+       numbered threads as specified in Annex N of [H263].
+
+######################################################################################
+############################### RFC3984 (H264) #######################################
+######################################################################################
+
+   The RTP header information to be set according to this RTP payload
+   format is set as follows:
+
+   Marker bit (M): 1 bit
+      Set for the very last packet of the access unit indicated by the
+      RTP timestamp, in line with the normal use of the M bit in video
+      formats, to allow an efficient playout buffer handling.  For
+      aggregation packets (STAP and MTAP), the marker bit in the RTP
+      header MUST be set to the value that the marker bit of the last
+      NAL unit of the aggregation packet would have been if it were
+      transported in its own RTP packet.  Decoders MAY use this bit as
+      an early indication of the last packet of an access unit, but MUST
+      NOT rely on this property.
+
+         Informative note: Only one M bit is associated with an
+         aggregation packet carrying multiple NAL units.  Thus, if a
+         gateway has re-packetized an aggregation packet into several
+         packets, it cannot reliably set the M bit of those packets.
+
+   Payload type (PT): 7 bits
+      The assignment of an RTP payload type for this new packet format
+      is outside the scope of this document and will not be specified
+      here.  The assignment of a payload type has to be performed either
+      through the profile used or in a dynamic way.
+
+   Sequence number (SN): 16 bits
+      Set and used in accordance with RFC 3550.  For the single NALU and
+      non-interleaved packetization mode, the sequence number is used to
+      determine decoding order for the NALU.
+
+   Timestamp: 32 bits
+      The RTP timestamp is set to the sampling timestamp of the content.
+      A 90 kHz clock rate MUST be used.
+
+       The payload format defines three different basic payload structures.
+       A receiver can identify the payload structure by the first byte of
+       the RTP payload, which co-serves as the RTP payload header and, in
+       some cases, as the first byte of the payload.  This byte is always
+       structured as a NAL unit header.  The NAL unit type field indicates
+       which structure is present.  The possible structures are as follows:
+
+       Single NAL Unit Packet: Contains only a single NAL unit in the
+       payload.  The NAL header type field will be equal to the original NAL
+       unit type; i.e., in the range of 1 to 23, inclusive.  Specified in
+       section 5.6.
+
+       Aggregation packet: Packet type used to aggregate multiple NAL units
+       into a single RTP payload.  This packet exists in four versions, the
+       Single-Time Aggregation Packet type A (STAP-A), the Single-Time
+       Aggregation Packet type B (STAP-B), Multi-Time Aggregation Packet
+       (MTAP) with 16-bit offset (MTAP16), and Multi-Time Aggregation Packet
+       (MTAP) with 24-bit offset (MTAP24).  The NAL unit type numbers
+       assigned for STAP-A, STAP-B, MTAP16, and MTAP24 are 24, 25, 26, and
+       27, respectively.  Specified in section 5.7.
+
+       Fragmentation unit: Used to fragment a single NAL unit over multiple
+       RTP packets.  Exists with two versions, FU-A and FU-B, identified
+       with the NAL unit type numbers 28 and 29, respectively.  Specified in
+       section 5.8.
+
+       Table 1.  Summary of NAL unit types and their payload structures
+
+          Type   Packet    Type name                        Section
+          ---------------------------------------------------------
+          0      undefined                                    -
+          1-23   NAL unit  Single NAL unit packet per H.264   5.6
+          24     STAP-A    Single-time aggregation packet     5.7.1
+          25     STAP-B    Single-time aggregation packet     5.7.1
+          26     MTAP16    Multi-time aggregation packet      5.7.2
+          27     MTAP24    Multi-time aggregation packet      5.7.2
+          28     FU-A      Fragmentation unit                 5.8
+          29     FU-B      Fragmentation unit                 5.8
+          30-31  undefined                                    -
+
+          Informative note: This specification does not limit the size of
+          NAL units encapsulated in single NAL unit packets and
+          fragmentation units.  The maximum size of a NAL unit encapsulated
+          in any aggregation packet is 65535 bytes.
+
+       The structure and semantics of the NAL unit octet were introduced in
+       section 1.3.  For convenience, the format of the NAL unit type octet
+       is reprinted below:
+
+          +---------------+
+          |0|1|2|3|4|5|6|7|
+          +-+-+-+-+-+-+-+-+
+          |F|NRI|  Type   |
+          +---------------+
+
+       This section specifies the semantics of F and NRI according to this
+       specification.
+
+       F: 1 bit
+          forbidden_zero_bit.  A value of 0 indicates that the NAL unit type
+          octet and payload should not contain bit errors or other syntax
+          violations.  A value of 1 indicates that the NAL unit type octet
+          and payload may contain bit errors or other syntax violations.
+
+          MANEs SHOULD set the F bit to indicate detected bit errors in the
+          NAL unit.  The H.264 specification requires that the F bit is
+          equal to 0.  When the F bit is set, the decoder is advised that
+          bit errors or any other syntax violations may be present in the
+          payload or in the NAL unit type octet.  The simplest decoder
+          reaction to a NAL unit in which the F bit is equal to 1 is to
+          discard such a NAL unit and to conceal the lost data in the
+          discarded NAL unit.
+
+       NRI: 2 bits
+          nal_ref_idc.  The semantics of value 00 and a non-zero value
+          remain unchanged from the H.264 specification.  In other words, a
+          value of 00 indicates that the content of the NAL unit is not used
+          to reconstruct reference pictures for inter picture prediction.
+          Such NAL units can be discarded without risking the integrity of
+          the reference pictures.  Values greater than 00 indicate that the
+          decoding of the NAL unit is required to maintain the integrity of
+          the reference pictures.
+
+          In addition to the specification above, according to this RTP
+          payload specification, values of NRI greater than 00 indicate the
+          relative transport priority, as determined by the encoder.  MANEs
+          can use this information to protect more important NAL units
+          better than they do less important NAL units.  The highest
+          transport priority is 11, followed by 10, and then by 01; finally,
+          00 is the lowest.
+
+             Informative note: Any non-zero value of NRI is handled
+             identically in H.264 decoders.  Therefore, receivers need not
+             manipulate the value of NRI when passing NAL units to the
+             decoder.
+
+          An H.264 encoder MUST set the value of NRI according to the H.264
+          specification (subclause 7.4.1) when the value of nal_unit_type is
+          in the range of 1 to 12, inclusive.  In particular, the H.264
+          specification requires that the value of NRI SHALL be equal to 0
+          for all NAL units having nal_unit_type equal to 6, 9, 10, 11, or
+          12.
+
+          For NAL units having nal_unit_type equal to 7 or 8 (indicating a
+          sequence parameter set or a picture parameter set, respectively),
+          an H.264 encoder SHOULD set the value of NRI to 11 (in binary
+          format).  For coded slice NAL units of a primary coded picture
+          having nal_unit_type equal to 5 (indicating a coded slice
+          belonging to an IDR picture), an H.264 encoder SHOULD set the
+          value of NRI to 11 (in binary format).
+
+          For a mapping of the remaining nal_unit_types to NRI values, the
+          following example MAY be used and has been shown to be efficient
+          in a certain environment [13].  Other mappings MAY also be
+          desirable, depending on the application and the H.264/AVC Annex A
+          profile in use.
+
+             Informative note: Data Partitioning is not available in certain
+             profiles; e.g., in the Main or Baseline profiles.
+             Consequently, the nal unit types 2, 3, and 4 can occur only if
+             the video bitstream conforms to a profile in which data
+             partitioning is allowed and not in streams that conform to the
+             Main or Baseline profiles.
+
+          Table 2.  Example of NRI values for coded slices and coded slice
+          data partitions of primary coded reference pictures
+
+          NAL Unit Type     Content of NAL unit              NRI (binary)
+          ----------------------------------------------------------------
+           1              non-IDR coded slice                         10
+           2              Coded slice data partition A                10
+           3              Coded slice data partition B                01
+           4              Coded slice data partition C                01
+
+             Informative note: As mentioned before, the NRI value of non-
+             reference pictures is 00 as mandated by H.264/AVC.
+
+          An H.264 encoder SHOULD set the value of NRI for coded slice and
+          coded slice data partition NAL units of redundant coded reference
+          pictures equal to 01 (in binary format).
+
+          Definitions of the values for NRI for NAL unit types 24 to 29,
+          inclusive, are given in sections 5.7 and 5.8 of this memo.
+
+          No recommendation for the value of NRI is given for NAL units
+          having nal_unit_type in the range of 13 to 23, inclusive, because
+          these values are reserved for ITU-T and ISO/IEC.  No
+          recommendation for the value of NRI is given for NAL units having
+          nal_unit_type equal to 0 or in the range of 30 to 31, inclusive,
+          as the semantics of these values are not specified in this memo.
+
+       This memo specifies three cases of packetization modes:
+
+          o Single NAL unit mode
+          o Non-interleaved mode
+          o Interleaved mode
+
+       The single NAL unit mode is targeted for conversational systems that
+       comply with ITU-T Recommendation H.241 [15] (see section 12.1).  The
+       non-interleaved mode is targeted for conversational systems that may
+       not comply with ITU-T Recommendation H.241.  In the non-interleaved
+       mode, NAL units are transmitted in NAL unit decoding order.  The
+       interleaved mode is targeted for systems that do not require very low
+       end-to-end latency.  The interleaved mode allows transmission of NAL
+       units out of NAL unit decoding order.
+
+       The packetization mode in use MAY be signaled by the value of the
+       OPTIONAL packetization-mode MIME parameter or by external means.  The
+       used packetization mode governs which NAL unit types are allowed in
+       RTP payloads.  Table 3 summarizes the allowed NAL unit types for each
+       packetization mode.  Some NAL unit type values (indicated as
+       undefined in Table 3) are reserved for future extensions.  NAL units
+       of those types SHOULD NOT be sent by a sender and MUST be ignored by
+       a receiver.  For example, the Types 1-23, with the associated packet
+       type "NAL unit", are allowed in "Single NAL Unit Mode" and in "Non-
+       Interleaved Mode", but disallowed in "Interleaved Mode".
+       Packetization modes are explained in more detail in section 6.
+
+       Table 3.  Summary of allowed NAL unit types for each packetization
+       mode (yes = allowed, no = disallowed, ig = ignore)
+
+          Type   Packet    Single NAL    Non-Interleaved    Interleaved
+                           Unit Mode           Mode             Mode
+          -------------------------------------------------------------
+
+          0      undefined     ig               ig               ig
+          1-23   NAL unit     yes              yes               no
+          24     STAP-A        no              yes               no
+          25     STAP-B        no               no              yes
+          26     MTAP16        no               no              yes
+          27     MTAP24        no               no              yes
+          28     FU-A          no              yes              yes
+          29     FU-B          no               no              yes
+          30-31  undefined     ig               ig               ig
+
+
+	  Single NAL Unit Packet
+	
+	   The single NAL unit packet defined here MUST contain only one NAL
+	   unit, of the types defined in [1].  This means that neither an
+	   aggregation packet nor a fragmentation unit can be used within a
+	   single NAL unit packet.  A NAL unit stream composed by decapsulating
+	   single NAL unit packets in RTP sequence number order MUST conform to
+	   the NAL unit decoding order.  The structure of the single NAL unit
+	   packet is shown in Figure 2.
+	
+	      Informative note: The first byte of a NAL unit co-serves as the
+	      RTP payload header.
+	
+	       0                   1                   2                   3
+	       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+	      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	      |F|NRI|  type   |                                               |
+	      +-+-+-+-+-+-+-+-+                                               |
+	      |                                                               |
+	      |               Bytes 2..n of a Single NAL unit                 |
+	      |                                                               |
+	      |                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	      |                               :...OPTIONAL RTP padding        |
+	      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+	  Single-Time Aggregation Packet
+
+	       0                   1                   2                   3
+	       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+	      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	                      :                                               |
+	      +-+-+-+-+-+-+-+-+                                               |
+	      |                                                               |
+	      |                single-time aggregation units                  |
+	      |                                                               |
+	      |                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	      |                               :
+	      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	
+	      Figure 4.  Payload format for STAP-A
+	
+	       0                   1                   2                   3
+	       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+	      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	                      :  decoding order number (DON)  |               |
+	      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+               |
+	      |                                                               |
+	      |                single-time aggregation units                  |
+	      |                                                               |
+	      |                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	      |                               :
+	      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+      	      Figure 5.  Payload format for STAP-B
+
+	       0                   1                   2                   3
+	       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+	      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	                      :        NAL unit size          |               |
+	      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+               |
+	      |                                                               |
+	      |                           NAL unit                            |
+	      |                                                               |
+	      |                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	      |                               :
+	      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	
+	      Figure 6.  Structure for single-time aggregation unit
+	      
+	  Multi-Time Aggregation Packets (MTAPs)
+	
+	   The NAL unit payload of MTAPs consists of a 16-bit unsigned decoding
+	   order number base (DONB) (in network byte order) and one or more
+	   multi-time aggregation units, as presented in Figure 9.  DONB MUST
+	   contain the value of DON for the first NAL unit in the NAL unit
+	   decoding order among the NAL units of the MTAP.
+	
+	      Informative note: The first NAL unit in the NAL unit decoding
+	      order is not necessarily the first NAL unit in the order in which
+	      the NAL units are encapsulated in an MTAP.
+	
+	       0                   1                   2                   3
+	       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+	      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	                      :  decoding order number base   |               |
+	      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+               |
+	      |                                                               |
+	      |                 multi-time aggregation units                  |
+	      |                                                               |
+	      |                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	      |                               :
+	      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+               0                   1                   2                   3
+	       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+	      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	      :        NAL unit size          |      DOND     |  TS offset    |
+	      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	      |  TS offset    |                                               |
+	      +-+-+-+-+-+-+-+-+              NAL unit                         |
+	      |                                                               |
+	      |                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	      |                               :
+	      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	
+	      Figure 10.  Multi-time aggregation unit for MTAP16
+	
+	       0                   1                   2                   3
+	       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+	      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	      :        NALU unit size         |      DOND     |  TS offset    |
+	      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	      |         TS offset             |                               |
+	      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               |
+	      |                              NAL unit                         |
+	      |                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	      |                               :
+	      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	
+	      Figure 11.  Multi-time aggregation unit for MTAP24
+	      
+	  Fragmentation Units (FUs)
+	
+	   This payload type allows fragmenting a NAL unit into several RTP
+	   packets.  Doing so on the application layer instead of relying on
+	   lower layer fragmentation (e.g., by IP) has the following advantages:
+	
+	   o  The payload format is capable of transporting NAL units bigger
+	      than 64 kbytes over an IPv4 network that may be present in pre-
+	      recorded video, particularly in High Definition formats (there is
+	      a limit of the number of slices per picture, which results in a
+	      limit of NAL units per picture, which may result in big NAL
+	      units).
+	
+	   o  The fragmentation mechanism allows fragmenting a single picture
+	      and applying generic forward error correction as described in
+	      section 12.5.
+	
+	   Fragmentation is defined only for a single NAL unit and not for any
+	   aggregation packets.  A fragment of a NAL unit consists of an integer
+	   number of consecutive octets of that NAL unit.  Each octet of the NAL
+	   unit MUST be part of exactly one fragment of that NAL unit.
+	   Fragments of the same NAL unit MUST be sent in consecutive order with
+	   ascending RTP sequence numbers (with no other RTP packets within the
+	   same RTP packet stream being sent between the first and last
+	   fragment).  Similarly, a NAL unit MUST be reassembled in RTP sequence
+	   number order.
+	
+	   When a NAL unit is fragmented and conveyed within fragmentation units
+	   (FUs), it is referred to as a fragmented NAL unit.  STAPs and MTAPs
+	   MUST NOT be fragmented.  FUs MUST NOT be nested; i.e., an FU MUST NOT
+	   contain another FU.
+	
+	   The RTP timestamp of an RTP packet carrying an FU is set to the NALU
+	   time of the fragmented NAL unit.
+	
+	   Figure 14 presents the RTP payload format for FU-As.  An FU-A
+	   consists of a fragmentation unit indicator of one octet, a
+	   fragmentation unit header of one octet, and a fragmentation unit
+	   payload.
+	
+	       0                   1                   2                   3
+	       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+	      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	      | FU indicator  |   FU header   |                               |
+	      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               |
+	      |                                                               |
+	      |                         FU payload                            |
+	      |                                                               |
+	      |                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	      |                               :...OPTIONAL RTP padding        |
+	      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	
+	      Figure 14.  RTP payload format for FU-A
+
+	       0                   1                   2                   3
+	       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+	      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	      | FU indicator  |   FU header   |               DON             |
+	      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-|
+	      |                                                               |
+	      |                         FU payload                            |
+	      |                                                               |
+	      |                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	      |                               :...OPTIONAL RTP padding        |
+	      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	
+	      Figure 15.  RTP payload format for FU-B
+
+	   NAL unit type FU-B MUST be used in the interleaved packetization mode
+	   for the first fragmentation unit of a fragmented NAL unit.  NAL unit
+	   type FU-B MUST NOT be used in any other case.  In other words, in the
+	   interleaved packetization mode, each NALU that is fragmented has an
+	   FU-B as the first fragment, followed by one or more FU-A fragments.
+	
+	   The FU indicator octet has the following format:
+	
+	      +---------------+
+	      |0|1|2|3|4|5|6|7|
+	      +-+-+-+-+-+-+-+-+
+	      |F|NRI|  Type   |
+	      +---------------+
+	
+	   Values equal to 28 and 29 in the Type field of the FU indicator octet
+	   identify an FU-A and an FU-B, respectively.  The use of the F bit is
+	   described in section 5.3.  The value of the NRI field MUST be set
+	   according to the value of the NRI field in the fragmented NAL unit.
+	
+	   The FU header has the following format:
+	
+	      +---------------+
+	      |0|1|2|3|4|5|6|7|
+	      +-+-+-+-+-+-+-+-+
+	      |S|E|R|  Type   |
+	      +---------------+
+
+	   S: 1 bit
+	      When set to one, the Start bit indicates the start of a fragmented
+	      NAL unit.  When the following FU payload is not the start of a
+	      fragmented NAL unit payload, the Start bit is set to zero.
+	
+	   E: 1 bit
+	      When set to one, the End bit indicates the end of a fragmented NAL
+	      unit, i.e., the last byte of the payload is also the last byte of
+	      the fragmented NAL unit.  When the following FU payload is not the
+	      last fragment of a fragmented NAL unit, the End bit is set to
+	      zero.
+	
+	   R: 1 bit
+	      The Reserved bit MUST be equal to 0 and MUST be ignored by the
+	      receiver.
+	
+	   Type: 5 bits
+	      The NAL unit payload type as defined in table 7-1 of [1].
+
+######################################################################################
+############################### RFC3016 (MPEG4) ######################################
+######################################################################################
+
+       This section specifies RTP packetization rules for MPEG-4 Visual
+       content.  An MPEG-4 Visual bitstream is mapped directly onto RTP
+       packets without the addition of extra header fields or any removal of
+       Visual syntax elements.  The Combined Configuration/Elementary stream
+       mode MUST be used so that configuration information will be carried
+       to the same RTP port as the elementary stream.  (see 6.2.1 "Start
+       codes" of ISO/IEC 14496-2 [2][9][4]) The configuration information
+       MAY additionally be specified by some out-of-band means.  If needed
+       for an H.323 terminal, H.245 codepoint
+       "decoderConfigurationInformation" MUST be used for this purpose.  If
+       needed by systems using MIME content type and SDP parameters, e.g.,
+       SIP and RTSP, the optional parameter "config" MUST be used to specify
+       the configuration information (see 5.1 and 5.2).
+
+       When the short video header mode is used, the RTP payload format for
+       H.263 SHOULD be used (the format defined in RFC 2429 is RECOMMENDED,
+       but the RFC 2190 format MAY be used for compatibility with older
+       implementations).
+
+        0                   1                   2                   3
+        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        |V=2|P|X|  CC   |M|     PT      |       sequence number         | RTP
+        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        |                           timestamp                           | Header
+        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        |           synchronization source (SSRC) identifier            |
+        +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+        |            contributing source (CSRC) identifiers             |
+        |                             ....                              |
+        +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+        |                                                               | RTP
+        |       MPEG-4 Visual stream (byte aligned)                     | Pay-
+        |                                                               | load
+        |                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        |                               :...OPTIONAL RTP padding        |
+        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+######################################################################################
+########################### RFC2250 (MPEG video/audio) ###############################
+######################################################################################
+ RTP header usage
+
+   The RTP header fields are used as follows:
+
+        Payload Type: Distinct payload types should be assigned for
+          MPEG1 System Streams, MPEG2 Program Streams and MPEG2
+          Transport Streams.  See [4] for payload type assignments.
+
+        M bit:  Set to 1 whenever the timestamp is discontinuous
+          (such as might happen when a sender switches from one data
+          source to another). This allows the receiver and any
+          intervening RTP mixers or translators that are synchronizing
+          to the flow to ignore the difference between this timestamp
+          and any previous timestamp in their clock phase detectors.
+
+        timestamp: 32 bit 90K Hz timestamp representing the target
+          transmission time for the first byte of the packet.
+
+ MPEG Audio-specific header
+
+   This header shall be attached to each RTP packet at the start of the
+   payload and after any RTP headers for an MPEG1/2 Audio payload type.
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |             MBZ               |          Frag_offset          |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+           Frag_offset: Byte offset into the audio frame for the data
+                        in this packet.
+
+######################################################################################
+############################### RFC3119 (MP3 ADU) ####################################
+######################################################################################
+
+ ADU descriptors
+
+   Within each RTP packet payload, each "ADU frame" is preceded by a 1
+   or 2-byte "ADU descriptor", which gives the size of the ADU, and
+   indicates whether or not this packet's data is a continuation of the
+   previous packet's data.  (This occurs only when a single "ADU
+   descriptor"+"ADU frame" is too large to fit within a RTP packet.)
+
+   An ADU descriptor consists of the following fields
+
+   -  "C": Continuation flag (1 bit):  1 if the data following the ADU
+           descriptor is a continuation of an ADU frame that was too
+           large to fit within a single RTP packet; 0 otherwise.
+   -  "T": Descriptor Type flag (1 bit):
+           0 if this is a 1-byte ADU descriptor;
+           1 if this is a 2-byte ADU descriptor.
+   -  "ADU size" (6 or 14 bits):
+           The size (in bytes) of the ADU frame that will follow this
+           ADU descriptor (i.e., NOT including the size of the
+           descriptor itself).  A 2-byte ADU descriptor (with a 14-bit
+           "ADU size" field) is used for ADU frames sizes of 64 bytes or
+           more.  For smaller ADU frame sizes, senders MAY alternatively
+           use a 1-byte ADU descriptor (with a 6-bit "ADU size" field).
+           Receivers MUST be able to accept an ADU descriptor of either
+           size.
+
+   Thus, a 1-byte ADU descriptor is formatted as follows:
+
+          0 1 2 3 4 5 6 7
+         +-+-+-+-+-+-+-+-+
+         |C|0|  ADU size |
+         +-+-+-+-+-+-+-+-+
+
+   and a 2-byte ADU descriptor is formatted as follows:
+
+          0                   1
+          0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+         +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+         |C|1|     ADU size (14 bits)    |
+         +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+######################################################################################
+############################## RFC5391 (PCMU/A) ######################################
+######################################################################################
+
+  Payload Format
+
+   The complete payload consists of a payload header of 1 octet,
+   followed by one or more consecutive G.711.1 audio frames of the same
+   mode.
+
+   The mode may change between packets, but not within a packet.
+
+  Payload Header
+
+   The payload header is illustrated below.
+
+      0 1 2 3 4 5 6 7
+     +-+-+-+-+-+-+-+-+
+     |0 0 0 0 0|  MI |
+     +-+-+-+-+-+-+-+-+
+
+   The five most significant bits are reserved for further extension and
+   MUST be set to zero and MUST be ignored by receivers.
+
+   The Mode Index (MI) field (3 bits) gives the mode of the following
+   frame(s) as per the table:
+
+                +------------+--------------+------------+
+                | Mode Index | G.711.1 mode | Frame size |
+                +------------+--------------+------------+
+                |      1     |      R1      |  40 octets |
+                |      2     |      R2a     |  50 octets |
+                |      3     |      R2b     |  50 octets |
+                |      4     |      R3      |  60 octets |
+                +------------+--------------+------------+
+
+                     Table 3: Modes in payload header
+
+   All other values of MI are reserved for future use and MUST NOT be
+   used.
+
+######################################################################################
+################################ RFC4184 (AC3) #######################################
+######################################################################################
+
+  Payload-Specific Header
+
+   There is a two-octet Payload Header at the beginning of each payload.
+
+.  Payload Header
+
+   Each AC-3 RTP payload MUST begin with the payload header shown in
+   Figure 3.
+
+                  0                   1
+                  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+                 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                 |    MBZ    | FT|       NF      |
+                 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+                 Figure 3.  AC-3 RTP Payload Header
+
+   o MBZ (Must Be Zero): Bits marked MBZ SHALL be set to the value zero
+     and SHALL be ignored by receivers.  The bits are reserved for
+     future extensions.
+
+   o FT (Frame Type): This two-bit field indicates the type of frame(s)
+     present in the payload.  It takes the following values:
+
+      0 - One or more complete frames.
+      1 - Initial fragment of frame which includes the first 5/8ths of
+          the frame.  (See Section 4.2.)
+      2 - Initial fragment of frame, which does not include the first
+          5/8ths of the frame.
+      3 - Fragment of frame other than initial fragment.  (Note that M
+          bit in RTP header is set for final fragment).
+
+   o NF (Number of frames/fragments): An 8-bit field whose meaning
+     depends on the Frame Type (FT) in this payload.  For complete
+     frames (FT of 0), it is used to indicate the number of AC-3 frames
+     in the RTP payload.  For frame fragments (FT of 1, 2, or 3), it is
+     used to indicate the number fragments (and therefore packets) that
+     make up the current frame.  NF MUST be identical for packets
+     containing fragments of the same frame.
+
+######################################################################################
+########################## RFC4585 (RTCP feedback messages) ##########################
+######################################################################################
+ 
+  Common Packet Format for Feedback Messages
+
+   All FB messages MUST use a common packet format that is depicted in
+   Figure 3:
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |V=2|P|   FMT   |       PT      |          length               |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                  SSRC of packet sender                        |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                  SSRC of media source                         |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   :            Feedback Control Information (FCI)                 :
+   :                                                               :
+
+           Figure 3: Common Packet Format for Feedback Messages
+
+   The fields V, P, SSRC, and length are defined in the RTP
+   specification [2], the respective meaning being summarized below:
+
+   version (V): 2 bits
+      This field identifies the RTP version.  The current version is 2.
+
+   padding (P): 1 bit
+      If set, the padding bit indicates that the packet contains
+      additional padding octets at the end that are not part of the
+      control information but are included in the length field.
+
+   Feedback message type (FMT): 5 bits
+      This field identifies the type of the FB message and is
+      interpreted relative to the type (transport layer, payload-
+      specific, or application layer feedback).  The values for each of
+      the three feedback types are defined in the respective sections
+      below.
+
+   Payload type (PT): 8 bits
+      This is the RTCP packet type that identifies the packet as being
+      an RTCP FB message.  Two values are defined by the IANA:
+
+            Name   | Value | Brief Description
+         ----------+-------+------------------------------------
+            RTPFB  |  205  | Transport layer FB message
+            PSFB   |  206  | Payload-specific FB message
+
+   Length: 16 bits
+      The length of this packet in 32-bit words minus one, including the
+      header and any padding.  This is in line with the definition of
+      the length field used in RTCP sender and receiver reports [3].
+
+   SSRC of packet sender: 32 bits
+      The synchronization source identifier for the originator of this
+      packet.
+
+   SSRC of media source: 32 bits
+      The synchronization source identifier of the media source that
+      this piece of feedback information is related to.
+
+   Feedback Control Information (FCI): variable length
+      The following three sections define which additional information
+      MAY be included in the FB message for each type of feedback:
+      transport layer, payload-specific, or application layer feedback.
+      Note that further FCI contents MAY be specified in further
+      documents.
+
+######################################################################################
+############################### RFC3551 (RTP payload types) ##########################
+######################################################################################
+    1.) Payload types (PT) for audio encodings
+
+                   PT   encoding    media type  clock rate   channels
+                    name                    (Hz)
+               ___________________________________________________
+               0    PCMU        A            8,000       1
+               1    reserved    A
+               2    reserved    A
+               3    GSM         A            8,000       1
+               4    G723        A            8,000       1
+               5    DVI4        A            8,000       1
+               6    DVI4        A           16,000       1
+               7    LPC         A            8,000       1
+               8    PCMA        A            8,000       1
+               9    G722        A            8,000       1
+               10   L16         A           44,100       2
+               11   L16         A           44,100       1
+               12   QCELP       A            8,000       1
+               13   CN          A            8,000       1
+               14   MPA         A           90,000       (see text)
+               15   G728        A            8,000       1
+               16   DVI4        A           11,025       1
+               17   DVI4        A           22,050       1
+               18   G729        A            8,000       1
+               19   reserved    A
+               20   unassigned  A
+               21   unassigned  A
+               22   unassigned  A
+               23   unassigned  A
+               dyn  G726-40     A            8,000       1
+               dyn  G726-32     A            8,000       1
+               dyn  G726-24     A            8,000       1
+               dyn  G726-16     A            8,000       1
+               dyn  G729D       A            8,000       1
+               dyn  G729E       A            8,000       1
+               dyn  GSM-EFR     A            8,000       1
+               dyn  L8          A            var.        var.
+               dyn  RED         A                        (see text)
+               dyn  VDVI        A            var.        1
+
+
+    2.) Payload types (PT) for video and combined encodings:
+
+               PT      encoding    media type  clock rate
+                       name                    (Hz)
+               _____________________________________________
+               24      unassigned  V
+               25      CelB        V           90,000
+               26      JPEG        V           90,000
+               27      unassigned  V
+               28      nv          V           90,000
+               29      unassigned  V
+               30      unassigned  V
+               31      H261        V           90,000
+               32      MPV         V           90,000
+               33      MP2T        AV          90,000
+               34      H263        V           90,000
+               35-71   unassigned  ?
+               72-76   reserved    N/A         N/A
+               77-95   unassigned  ?
+               96-127  dynamic     ?
+               dyn     H263-1998   V           90,000
+
+######################################################################################
+############################### IANA (RTP payload types) #############################
+######################################################################################
+(http://www.iana.org/assignments/rtp-parameters)
+
+PT        encoding name   audio/video (A/V)  clock rate (Hz)  channels (audio)  Reference
+--------  --------------  -----------------  ---------------  ----------------  ---------
+0         PCMU            A                  8000             1                 [RFC3551]
+1         Reserved	  
+2         Reserved
+3         GSM             A                  8000             1                 [RFC3551]
+4         G723            A                  8000             1                 [Kumar]
+5         DVI4            A                  8000             1                 [RFC3551]
+6         DVI4            A                  16000            1                 [RFC3551]
+7         LPC             A                  8000             1                 [RFC3551]
+8         PCMA            A                  8000             1                 [RFC3551]
+9         G722            A                  8000             1                 [RFC3551]
+10        L16             A                  44100            2                 [RFC3551]
+11        L16             A                  44100            1                 [RFC3551]
+12        QCELP           A                  8000             1                 
+13        CN              A                  8000             1                 [RFC3389]
+14        MPA             A                  90000                              [RFC3551][RFC2250]
+15        G728            A                  8000             1                 [RFC3551]
+16        DVI4            A                  11025            1                 [DiPol]
+17        DVI4            A                  22050            1                 [DiPol]
+18        G729            A                  8000             1
+19        Reserved        A
+20        Unassigned      A
+21        Unassigned      A
+22        Unassigned      A
+23        Unassigned      A
+24        Unassigned      V
+25        CelB            V                  90000                              [RFC2029]
+26        JPEG            V                  90000                              [RFC2435]
+27        Unassigned      V
+28        nv              V                  90000                              [RFC3551]
+29        Unassigned      V
+30        Unassigned      V
+31        H261            V                  90000                              [RFC4587]
+32        MPV             V                  90000                              [RFC2250]
+33        MP2T            AV                 90000                              [RFC2250]
+34        H263            V                  90000                              [Zhu]
+35-71     Unassigned      ?
+72-76     Reserved for RTCP conflict avoidance                                  [RFC3551]
+77-95     Unassigned      ?
+96-127    dynamic         ?                                                     [RFC3551] 
