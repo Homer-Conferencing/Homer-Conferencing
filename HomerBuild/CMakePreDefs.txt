@@ -1,0 +1,42 @@
+###############################################################################
+# Author:  Thomas Volkert
+# Since:   2011-11-19
+###############################################################################
+
+MESSAGE("#####################################")
+MESSAGE("Configuring pre-definitions")
+MESSAGE("#####################################")
+
+MESSAGE("Detected system is ${CMAKE_SYSTEM}") 
+
+##############################################################
+# detect FreeBSD
+if (${CMAKE_SYSTEM} MATCHES "FreeBSD.*")
+SET (BSD "true")	
+MESSAGE("BSD detected")	
+else()
+SET (BSD "false")	
+endif()
+
+##############################################################
+# detect Linux
+IF (UNIX AND NOT WIN32 AND NOT APPLE AND NOT BSD)
+SET (LINUX "true")
+MESSAGE("Linux detected")	
+else()
+SET (LINUX "false")	
+endif()
+
+##############################################################
+# architecture
+if ("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
+       set(ARCH_BITS "64")
+elseif ("${CMAKE_SIZEOF_VOID_P}" EQUAL "4")
+       set(ARCH_BITS "32")
+else()
+    MESSAGE("Unable to detect architecture of your system")
+endif()
+
+MESSAGE("Detected architecture is ${ARCH_BITS} bit")
+
+SET (PRE_DEFINITIONS_EXECUTED "true")
