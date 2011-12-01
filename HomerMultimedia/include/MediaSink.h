@@ -62,11 +62,15 @@ public:
     int GetMaxFps();
 
 protected:
+    bool BelowMaxFps(int pFrameNumber);
+
     unsigned long       mPacketNumber;
     std::string         mMediaId;
 
     /* video */
     int					mMaxFps;
+    int 				mMaxFpsFrameNumberLastFragment;
+    int64_t				mMaxFpsTimestampLastFragment;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
