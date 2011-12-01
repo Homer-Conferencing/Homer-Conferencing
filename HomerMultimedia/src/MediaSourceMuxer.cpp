@@ -1004,7 +1004,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                     // re-encode the frame
                                     // #########################################
                                     tFrameSize = avcodec_encode_video(mCodecContext, (uint8_t *)mEncoderChunkBuffer, MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE, tYUVFrame);
-                                    mTranscoderHasKeyFrame = (tYUVFrame->key_frame == 1);
+                                    mTranscoderHasKeyFrame = (tYUVFrame->pict_type == FF_I_TYPE);
 
                                     if (tFrameSize > 0)
                                     {
