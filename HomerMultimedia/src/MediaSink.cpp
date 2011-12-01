@@ -41,6 +41,7 @@ MediaSink::MediaSink(enum MediaSinkType pType):
 {
     SetOutgoingStream();
     mPacketNumber = 0;
+    mMaxFps = 0;
     switch(pType)
     {
         case MEDIA_SINK_VIDEO:
