@@ -1752,7 +1752,7 @@ string MediaSource::GetMediaTypeStr()
     return "unknown";
 }
 
-enum MediaType MediaSource::GetMediaTypeStr()
+enum MediaType MediaSource::GetMediaType()
 {
 	return mMediaType;
 }
