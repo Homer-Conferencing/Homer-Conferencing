@@ -58,9 +58,15 @@ public:
 
     std::string GetId() { return mMediaId; }
 
+    void SetMaxFps(int pMaxFps);
+    int GetMaxFps();
+
 protected:
     unsigned long       mPacketNumber;
     std::string         mMediaId;
+
+    /* video */
+    int					mMaxFps;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

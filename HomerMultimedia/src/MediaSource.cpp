@@ -735,7 +735,7 @@ int MediaSource::GetChunkDropConter()
     return mChunkDropCounter;
 }
 
-MediaSinkNet* MediaSource::RegisterMediaSink(string pTargetHost, unsigned int pTargetPort, enum TransportType pSocketType, bool pRtpActivation)
+MediaSinkNet* MediaSource::RegisterMediaSink(string pTargetHost, unsigned int pTargetPort, enum TransportType pSocketType, bool pRtpActivation, int pMaxFps)
 {
     MediaSinksList::iterator tIt;
     bool tFound = false;
@@ -765,7 +765,8 @@ MediaSinkNet* MediaSource::RegisterMediaSink(string pTargetHost, unsigned int pT
 
     if (!tFound)
     {
-        MediaSinkNet *tMediaSinkNet = new MediaSinkNet(pTargetHost, pTargetPort, pSocketType, (mMediaType == MEDIA_VIDEO)?MEDIA_SINK_VIDEO:MEDIA_SINK_AUDIO, pRtpActivation);
+        MediaSinkNet *tMediaSinkNet = new MediaSinkNet(pTargetHost, pTargetPort, pSocketType, (mMediaType == MEDIA_VIDEO) ? MEDIA_SINK_VIDEO : MEDIA_SINK_AUDIO, pRtpActivation);
+        tMediaSinkNet->SetMaxFps(pMaxFps);
         mMediaSinks.push_back(tMediaSinkNet);
         tResult = tMediaSinkNet;
     }
