@@ -147,7 +147,7 @@ bool MediaSinkNet::CloseStreamer()
     return true;
 }
 
-void MediaSinkNet::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AVStream *pStream)
+void MediaSinkNet::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AVStream *pStream, bool pIsKeyFrame)
 {
     // limit packet size
     if (pPacketSize > 65000)
@@ -181,7 +181,7 @@ void MediaSinkNet::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
         //####################################################################
         // limit the outgoing stream to the defined maximum FPS value
         //####################################################################
-        if(!BelowMaxFps(pStream->nb_frames))
+        if ((!BelowMaxFps(pStream->nb_frames)) && (!pIsKeyFrame))
         {
 			#ifdef MSIN_DEBUG_PACKETS
         		LOG(LOG_VERBOSE, "Max. FPS reached, packet skipped");

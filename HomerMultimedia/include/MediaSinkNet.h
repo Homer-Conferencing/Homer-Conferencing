@@ -55,7 +55,7 @@ public:
 
     virtual ~MediaSinkNet();
 
-    virtual void ProcessPacket(char* pPacketData, unsigned int pPacketSize, AVStream *pStream = NULL);
+    virtual void ProcessPacket(char* pPacketData, unsigned int pPacketSize, AVStream *pStream = NULL, bool pIsKeyFrame = false);
     static std::string CreateId(std::string pHost, std::string pPort, enum TransportType pSocketTransportType = SOCKET_TRANSPORT_TYPE_INVALID, bool pRtpActivated = true);
 
 protected:

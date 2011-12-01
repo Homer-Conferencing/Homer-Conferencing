@@ -68,6 +68,7 @@ MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
     mRequestedStreamingResY = 288;
     mMuxingActivated = true;
     mTranscoderNeeded = true;
+    mTranscoderHasKeyFrame = false;
     mTranscoderFifo = NULL;
 }
 
@@ -96,7 +97,7 @@ int MediaSourceMuxer::DistributePacket(void *pOpaque, uint8_t *pBuffer, int pBuf
     #ifdef MSM_DEBUG_PACKETS
         LOG(LOG_VERBOSE, "Distribute packet of size: %d", pBufferSize);
     #endif
-    tMuxer->RelayPacketToMediaSinks(tBuffer, (unsigned int)pBufferSize);
+    tMuxer->RelayPacketToMediaSinks(tBuffer, (unsigned int)pBufferSize, tMuxer->mTranscoderHasKeyFrame);
 
     return pBufferSize;
 }
@@ -1003,6 +1004,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                     // re-encode the frame
                                     // #########################################
                                     tFrameSize = avcodec_encode_video(mCodecContext, (uint8_t *)mEncoderChunkBuffer, MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE, tYUVFrame);
+                                    mTranscoderHasKeyFrame = (tYUVFrame->key_frame == 1);
 
                                     if (tFrameSize > 0)
                                     {
@@ -1099,6 +1101,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                     #endif
                                     //printf("Gonna encode with frame_size %d and channels %d\n", mCodecContext->frame_size, mCodecContext->channels);
                                     int tEncodingResult = avcodec_encode_audio(mCodecContext, (uint8_t *)mEncoderChunkBuffer, /* assume signed 16 bit */ 2 * mCodecContext->frame_size * mCodecContext->channels, (const short *)mSamplesTempBuffer);
+                                    mTranscoderHasKeyFrame = true;
 
                                     //printf("encoded to mp3: %d\n\n", tSampleSize);
                                     if (tEncodingResult > 0)

@@ -239,7 +239,7 @@ protected:
     virtual void DoSetVideoGrabResolution(int pResX = 352, int pResY = 288);
 
     /* internal interface for packet relaying */
-    virtual void RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacketSize);
+    virtual void RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacketSize, bool pIsKeyFrame = false);
 
     /* internal interface for stream recordring */
     void RecordFrame(AVFrame *pSourceFrame);
