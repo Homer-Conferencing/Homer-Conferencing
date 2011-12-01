@@ -173,7 +173,7 @@ public:
     virtual int GetChunkDropConter();
 
     /* simple relaying WITHOUT any reencoding functionality but WITH rtp support*/
-    MediaSinkNet* RegisterMediaSink(std::string pTargetHost, unsigned int pTargetPort, enum TransportType pSocketType, bool pRtpActivation);
+    MediaSinkNet* RegisterMediaSink(std::string pTargetHost, unsigned int pTargetPort, enum TransportType pSocketType, bool pRtpActivation, int pMaxFps = 0 /* max. fps */);
     bool UnregisterMediaSink(std::string pTargetHost, unsigned int pTargetPort, bool pAutoDelete = true);
     MediaSinkFile* RegisterMediaSink(std::string pTargetFile);
     bool UnregisterMediaSink(std::string pTargetFile, bool pAutoDelete = true);

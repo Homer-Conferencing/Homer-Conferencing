@@ -60,4 +60,15 @@ MediaSink::~MediaSink()
 
 ///////////////////////////////////////////////////////////////////////////////
 
+void MediaSink::SetMaxFps(int pMaxFps)
+{
+	LOG(LOG_VERBOSE, "Setting max. %D FPS", pMaxFps);
+	mMaxFps = pMaxFps;
+}
+
+int MediaSink::GetMaxFps()
+{
+	return mMaxFps;
+}
+
 }} //namespace
