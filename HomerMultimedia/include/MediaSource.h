@@ -192,6 +192,7 @@ public:
 
     /* device control */
     virtual std::string GetMediaTypeStr();
+    virtual enum MediaType GetMediaTypeStr();
     virtual void getVideoDevices(VideoDevicesList &pVList);
     virtual void getAudioDevices(AudioDevicesList &pAList);
     virtual bool SelectDevice(std::string pDeviceName, enum MediaType pMediaType, bool &pIsNewDevice);

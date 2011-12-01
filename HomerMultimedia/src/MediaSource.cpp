@@ -1752,6 +1752,11 @@ string MediaSource::GetMediaTypeStr()
     return "unknown";
 }
 
+enum MediaType MediaSource::GetMediaTypeStr()
+{
+	return mMediaType;
+}
+
 void MediaSource::getVideoDevices(VideoDevicesList &pVList)
 {
     VideoDeviceDescriptor tDevice;
