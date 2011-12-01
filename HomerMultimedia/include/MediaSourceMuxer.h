@@ -151,6 +151,7 @@ private:
     /* transcoding */
     bool                mTranscoderNeeded;
     MediaFifo           *mTranscoderFifo;
+    bool				mTranscoderHasKeyFrame;
     /* device control */
     MediaSourcesList    mMediaSources;
     Mutex               mMediaSourcesMutex;

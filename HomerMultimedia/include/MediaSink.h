@@ -54,7 +54,7 @@ public:
     virtual ~MediaSink();
 
 public:
-    virtual void ProcessPacket(char* pPacketData, unsigned int pPacketSize, AVStream *pStream) = 0;
+    virtual void ProcessPacket(char* pPacketData, unsigned int pPacketSize, AVStream *pStream, bool pIsKeyFrame) = 0;
 
     std::string GetId() { return mMediaId; }
 

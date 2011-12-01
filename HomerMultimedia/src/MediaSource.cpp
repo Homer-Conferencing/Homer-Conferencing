@@ -1079,7 +1079,7 @@ bool MediaSource::SupportsRelaying()
     return false;
 }
 
-void MediaSource::RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacketSize)
+void MediaSource::RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacketSize, bool pIsKeyFrame)
 {
     MediaSinksList::iterator tIt;
 
@@ -1087,7 +1087,7 @@ void MediaSource::RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacke
     {
         for (tIt = mMediaSinks.begin(); tIt != mMediaSinks.end(); tIt++)
         {
-            (*tIt)->ProcessPacket(pPacketData, pPacketSize, mFormatContext->streams[0]);
+            (*tIt)->ProcessPacket(pPacketData, pPacketSize, mFormatContext->streams[0], pIsKeyFrame);
         }
     }
 }
