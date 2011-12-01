@@ -32,6 +32,7 @@
 #include <PacketStatistic.h>
 #include <RTP.h>
 #include <HBSocket.h>
+#include <HBTime.h>
 #include <Logger.h>
 
 #include <string>
@@ -162,6 +163,7 @@ void MediaSinkNet::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
             if (pStream == NULL)
             {
                 LOG(LOG_ERROR, "Tried to process packets while streaming is closed, implicit open impossible");
+
                 return;
             }
 
@@ -174,6 +176,18 @@ void MediaSinkNet::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
             LOG(LOG_VERBOSE, "Restarting RTP encoder");
             CloseStreamer();
             OpenStreamer(pStream);
+        }
+
+        //####################################################################
+        // limit the outgoing stream to the defined maximum FPS value
+        //####################################################################
+        if(!BelowMaxFps(pStream->nb_frames))
+        {
+			#ifdef MSIN_DEBUG_PACKETS
+        		LOG(LOG_VERBOSE, "Max. FPS reached, packet skipped");
+			#endif
+
+        	return;
         }
 
         //####################################################################

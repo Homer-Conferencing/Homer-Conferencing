@@ -26,7 +26,7 @@
  */
 
 #include <MediaSink.h>
-
+#include <Logger.h>
 #include <string>
 
 namespace Homer { namespace Multimedia {
@@ -42,6 +42,8 @@ MediaSink::MediaSink(enum MediaSinkType pType):
     SetOutgoingStream();
     mPacketNumber = 0;
     mMaxFps = 0;
+    mMaxFpsTimestampLastFragment = 0;
+    mMaxFpsFrameNumberLastFragment = 0;
     switch(pType)
     {
         case MEDIA_SINK_VIDEO:
@@ -70,6 +72,31 @@ void MediaSink::SetMaxFps(int pMaxFps)
 int MediaSink::GetMaxFps()
 {
 	return mMaxFps;
+}
+
+bool MediaSink::BelowMaxFps(int pFrameNumber)
+{
+    int64_t tCurrentTime = Time::GetTimeStamp();
+    int64_t tTimeDiff = tCurrentTime - mMaxFpsTimestampLastFragment;
+
+    LOG(LOG_VERBOSE, "Checking max. FPS for frame number %d", pFrameNumber);
+
+    if (mMaxFps != 0)
+    {
+        //### skip capturing when we are too slow
+        if (tTimeDiff < 1000*1000 / (mMaxFps + 0.5 /* some tolerance! */))
+        {
+        	return false;
+        }
+    }
+
+    if(mMaxFpsFrameNumberLastFragment != pFrameNumber)
+    {
+    	mMaxFpsTimestampLastFragment = tCurrentTime;
+    	mMaxFpsFrameNumberLastFragment = pFrameNumber;
+    }
+
+    return true;
 }
 
 }} //namespace
