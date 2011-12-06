@@ -56,7 +56,8 @@ MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
     SetOutgoingStream();
     mStreamCodecId = CODEC_ID_NONE;
     mStreamMaxPacketSize = 500;
-    mMediaStreamQuality = 20;
+    mStreamQuality = 20;
+    mStreamMaxFps = 0;
     mVideoHFlip = false;
     mVideoVFlip = false;
     mMediaSource = pMediaSource;
@@ -66,7 +67,7 @@ MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
     mCurrentStreamingResY = 0;
     mRequestedStreamingResX = 352;
     mRequestedStreamingResY = 288;
-    mMuxingActivated = true;
+    mStreamActivated = true;
     mTranscoderNeeded = true;
     mTranscoderHasKeyFrame = false;
     mTranscoderFifo = NULL;
@@ -120,7 +121,7 @@ MediaSource* MediaSourceMuxer::GetMediaSource()
 }
 
 // return if something has changed
-bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int pMediaStreamQuality, int pMaxPacketSize, bool pDoReset, int pResX, int pResY, bool pRtpActivated, enum TransportType pTransportType)
+bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int pMediaStreamQuality, int pMaxPacketSize, bool pDoReset, int pResX, int pResY, bool pRtpActivated, int pMaxFps)
 {
     // HINT: returns if something has changed
     bool tResult = false;
@@ -168,9 +169,16 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
         LOG(LOG_WARN, "Codec %s doesn't support the request video resolution of %d * %d, values were replaced by %d * %d", GetCodecName().c_str(), tOrgResX, tOrgResY, pResX, pResY);
     }
 
+    if (mStreamMaxFps != pMaxFps)
+    {
+        // set new quality
+        LOG(LOG_VERBOSE, "    ..stream FPS: %d => %d", mStreamMaxFps, pMaxFps);
+        mStreamMaxFps = pMaxFps;
+    }
+
     if ((mStreamCodecId != tStreamCodecId) ||
         (GetRtpActivation() != pRtpActivated) ||
-        (mMediaStreamQuality != pMediaStreamQuality) ||
+        (mStreamQuality != pMediaStreamQuality) ||
         (mStreamMaxPacketSize != pMaxPacketSize) ||
         (mCurrentStreamingResX != pResX) || (mCurrentStreamingResY != pResY))
     {
@@ -187,8 +195,8 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
         mStreamMaxPacketSize = pMaxPacketSize;
 
         // set new quality
-        LOG(LOG_VERBOSE, "    ..stream quality: %d => %d", mMediaStreamQuality, pMediaStreamQuality);
-        mMediaStreamQuality = pMediaStreamQuality;
+        LOG(LOG_VERBOSE, "    ..stream quality: %d => %d", mStreamQuality, pMediaStreamQuality);
+        mStreamQuality = pMediaStreamQuality;
 
         // set RTP encapsulation state
         LOG(LOG_VERBOSE, "    ..stream rtp encapsulation: %d => %d", GetRtpActivation(), pRtpActivated);
@@ -298,9 +306,9 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     tStream->time_base.den = (int)mFrameRate * 100;
     tStream->time_base.num = 100;
     // set i frame distance: GOP = group of pictures
-    mCodecContext->gop_size = (100 - mMediaStreamQuality) / 5; // default is 12
+    mCodecContext->gop_size = (100 - mStreamQuality) / 5; // default is 12
     mCodecContext->qmin = 1; // default is 2
-    mCodecContext->qmax = 2 +(100 - mMediaStreamQuality) / 4; // default is 31
+    mCodecContext->qmax = 2 +(100 - mStreamQuality) / 4; // default is 31
     // set max. packet size for RTP based packets
     //HINT: don't set if we use H261, otherwise ffmpeg internal functions in mpegvideo_enc.c (MPV_*) would get confused because H261 support is missing for RTP
     if (tFormat->video_codec != CODEC_ID_H261)
@@ -509,7 +517,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     }else
     {
         mCodecContext->channels = pStereo?2:1; // stereo?
-        mCodecContext->bit_rate = MediaSource::AudioQuality2BitRate(mMediaStreamQuality); // streaming rate
+        mCodecContext->bit_rate = MediaSource::AudioQuality2BitRate(mStreamQuality); // streaming rate
         mSampleRate = pSampleRate;
     }
     mStereo = pStereo;
@@ -847,13 +855,28 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
         return tResult;
     }
 
+    //####################################################################
+    // limit the outgoing stream FPS to the defined maximum FPS value
+    //####################################################################
+    if (!BelowMaxFps(tResult))
+    {
+		#ifdef MSM_DEBUG_PACKETS
+    		LOG(LOG_VERBOSE, "Max. FPS reached, packet skipped");
+		#endif
+
+		// acknowledge failed
+		MarkGrabChunkSuccessful();
+
+		return tResult;
+    }
+
     // lock
     mMediaSinksMutex.lock();
 
     //####################################################################
     // reencode frame and send it to the registered media sinks
     // ###################################################################
-    if ((mMuxingActivated) && (!pDropChunk) && (tResult >= 0) && (pChunkSize > 0) && (mMediaSinks.size()))
+    if ((mStreamActivated) && (!pDropChunk) && (tResult >= 0) && (pChunkSize > 0) && (mMediaSinks.size()))
     {
         mTranscoderFifo->WriteFifo((char*)pChunkBuffer, pChunkSize);
     }
@@ -868,6 +891,31 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
     MarkGrabChunkSuccessful();
 
     return tResult;
+}
+
+bool MediaSourceMuxer::BelowMaxFps(int pFrameNumber)
+{
+    int64_t tCurrentTime = Time::GetTimeStamp();
+    int64_t tTimeDiff = tCurrentTime - mStreamMaxFpsTimestampLastFragment;
+
+    LOG(LOG_VERBOSE, "Checking max. FPS for frame number %d", pFrameNumber);
+
+    if (mStreamMaxFps != 0)
+    {
+        //### skip capturing when we are too slow
+        if (tTimeDiff < 1000*1000 / mStreamMaxFps)
+        {
+        	return false;
+        }
+    }
+
+    if(mStreamMaxFpsChunkNumberLastFragment != pFrameNumber)
+    {
+    	mStreamMaxFpsTimestampLastFragment = tCurrentTime;
+    	mStreamMaxFpsChunkNumberLastFragment = pFrameNumber;
+    }
+
+    return true;
 }
 
 void MediaSourceMuxer::InitTranscoder(int pFifoEntrySize)
@@ -952,7 +1000,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                 //####################################################################
                 // reencode frame and send it to the registered media sinks
                 // ###################################################################
-                if ((mMuxingActivated) && (mMediaSinks.size()))
+                if ((mStreamActivated) && (mMediaSinks.size()))
                 {
                     switch(mMediaType)
                     {
@@ -1296,7 +1344,7 @@ void MediaSourceMuxer::StopRecording()
 
 void MediaSourceMuxer::SetActivation(bool pState)
 {
-    mMuxingActivated = pState;
+    mStreamActivated = pState;
 }
 
 void MediaSourceMuxer::getVideoDevices(VideoDevicesList &pVList)
