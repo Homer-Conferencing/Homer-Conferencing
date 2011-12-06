@@ -35,7 +35,6 @@ if (NOT APPLE)
 # compile flags
 SET (FLAGS
 	${FLAGS}
-	-static
 )
 endif (NOT APPLE)
 
