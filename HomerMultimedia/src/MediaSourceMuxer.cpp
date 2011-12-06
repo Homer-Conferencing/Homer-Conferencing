@@ -855,28 +855,14 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
         return tResult;
     }
 
-    //####################################################################
-    // limit the outgoing stream FPS to the defined maximum FPS value
-    //####################################################################
-    if (!BelowMaxFps(tResult))
-    {
-		#ifdef MSM_DEBUG_PACKETS
-    		LOG(LOG_VERBOSE, "Max. FPS reached, packet skipped");
-		#endif
-
-		// acknowledge failed
-		MarkGrabChunkSuccessful();
-
-		return tResult;
-    }
-
     // lock
     mMediaSinksMutex.lock();
 
     //####################################################################
     // reencode frame and send it to the registered media sinks
+    // limit the outgoing stream FPS to the defined maximum FPS value
     // ###################################################################
-    if ((mStreamActivated) && (!pDropChunk) && (tResult >= 0) && (pChunkSize > 0) && (mMediaSinks.size()))
+    if ((mStreamActivated) && (!pDropChunk) && (tResult >= 0) && (pChunkSize > 0) && (mMediaSinks.size()) && (BelowMaxFps(tResult)))
     {
         mTranscoderFifo->WriteFifo((char*)pChunkBuffer, pChunkSize);
     }
@@ -897,15 +883,20 @@ bool MediaSourceMuxer::BelowMaxFps(int pFrameNumber)
 {
     int64_t tCurrentTime = Time::GetTimeStamp();
     int64_t tTimeDiff = tCurrentTime - mStreamMaxFpsTimestampLastFragment;
-
-    LOG(LOG_VERBOSE, "Checking max. FPS for frame number %d", pFrameNumber);
+    int64_t tTimeDiffTreshold = 1000*1000 / mStreamMaxFps;
 
     if (mStreamMaxFps != 0)
     {
+        #ifdef MSM_DEBUG_PACKETS
+            LOG(LOG_VERBOSE, "Checking max. FPS(=%d) for frame number %d: %lld < %lld?", mStreamMaxFps, pFrameNumber, tTimeDiff, tTimeDiffTreshold);
+        #endif
+
         //### skip capturing when we are too slow
-        if (tTimeDiff < 1000*1000 / mStreamMaxFps)
+        if (tTimeDiff < tTimeDiffTreshold)
         {
-        	return false;
+            LOG(LOG_VERBOSE, "Max. FPS reached, dropping frame %d", pFrameNumber);
+
+            return false;
         }
     }
 
