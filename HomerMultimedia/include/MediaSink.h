@@ -58,6 +58,7 @@ public:
 
     std::string GetId() { return mMediaId; }
 
+    /* FPS limitation */
     void SetMaxFps(int pMaxFps);
     int GetMaxFps();
 
