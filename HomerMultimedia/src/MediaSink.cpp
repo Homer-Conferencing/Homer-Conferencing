@@ -84,7 +84,7 @@ bool MediaSink::BelowMaxFps(int pFrameNumber)
     if (mMaxFps != 0)
     {
         //### skip capturing when we are too slow
-        if (tTimeDiff < 1000*1000 / (mMaxFps + 0.5 /* some tolerance! */))
+        if (tTimeDiff < 1000*1000 / mMaxFps)
         {
         	return false;
         }

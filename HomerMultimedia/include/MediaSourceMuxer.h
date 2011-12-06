@@ -75,7 +75,7 @@ public:
     virtual MediaSource* GetMediaSource();
 
     /* streaming control */
-    bool SetOutputStreamPreferences(std::string pStreamCodec, int pMediaStreamQuality, int pMaxPacketSize = 500, bool pDoReset = false, int pResX = 352, int pResY = 288, bool pRtpActivated = true, enum TransportType pSocketsType = SOCKET_UDP);
+    bool SetOutputStreamPreferences(std::string pStreamCodec, int pMediaStreamQuality, int pMaxPacketSize = 500, bool pDoReset = false, int pResX = 352, int pResY = 288, bool pRtpActivated = true, int pMaxFps = 0);
     enum CodecID GetStreamCodecId() { return mStreamCodecId; } // used in RTSPListenerMediaSession
 
     /* video grabbing control */
@@ -135,6 +135,10 @@ private:
     bool OpenAudioMuxer(int pSampleRate = 44100, bool pStereo = true);
     bool CloseMuxer();
 
+    /* FPS limitation */
+    bool BelowMaxFps(int pFrameNumber);
+
+    /* transcoder */
     virtual void* Run(void* pArgs = NULL); // transcoder main loop
     void InitTranscoder(int pFifoEntrySize);
     void DeinitTranscoder();
@@ -144,8 +148,11 @@ private:
     MediaSource         *mMediaSource;
     enum CodecID        mStreamCodecId;
     int                 mStreamMaxPacketSize;
-    int                 mMediaStreamQuality;
-    bool                mMuxingActivated;
+    int                 mStreamQuality;
+    int 				mStreamMaxFps;
+    int 				mStreamMaxFpsChunkNumberLastFragment;
+    int64_t				mStreamMaxFpsTimestampLastFragment;
+    bool                mStreamActivated;
     char                *mStreamPacketBuffer;
     char                *mEncoderChunkBuffer;
     /* transcoding */
