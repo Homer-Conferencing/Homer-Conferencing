@@ -48,7 +48,6 @@ if (NOT APPLE)
 SET (FLAGS
     ${FLAGS}
     -Wno-uninitialized
-    -static
 )
 endif (NOT APPLE)
 
