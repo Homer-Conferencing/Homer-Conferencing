@@ -344,6 +344,15 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     mCurrentDevice = mDesiredDevice;
     mCurrentInputChannel = mDesiredInputChannel;
 
+    VideoDevicesList tAvailDevs;
+    VideoDevicesList::iterator tDevIt;
+    getVideoDevices(tAvailDevs);
+    for(tDevIt = tAvailDevs.begin(); tDevIt != tAvailDevs.end(); tDevIt++)
+    {
+        if(tDevIt->Card == mCurrentDevice)
+            mCurrentDeviceName = tDevIt->Name;
+    }
+
     // Find the first video stream
     mMediaStreamIndex = -1;
     for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
