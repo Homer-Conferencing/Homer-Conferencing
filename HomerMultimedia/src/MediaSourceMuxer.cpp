@@ -883,10 +883,11 @@ bool MediaSourceMuxer::BelowMaxFps(int pFrameNumber)
 {
     int64_t tCurrentTime = Time::GetTimeStamp();
     int64_t tTimeDiff = tCurrentTime - mStreamMaxFpsTimestampLastFragment;
-    int64_t tTimeDiffTreshold = 1000*1000 / mStreamMaxFps;
 
     if (mStreamMaxFps != 0)
     {
+        int64_t tTimeDiffTreshold = 1000*1000 / mStreamMaxFps;
+
         #ifdef MSM_DEBUG_PACKETS
             LOG(LOG_VERBOSE, "Checking max. FPS(=%d) for frame number %d: %lld < %lld?", mStreamMaxFps, pFrameNumber, tTimeDiff, tTimeDiffTreshold);
         #endif
