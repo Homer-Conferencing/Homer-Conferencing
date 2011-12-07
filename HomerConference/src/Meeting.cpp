@@ -812,8 +812,8 @@ const char* Meeting::GetSdpData(std::string pParticipant)
                     return tResult;
                 }
                 // ####################### get ports #############################
-                tLocalVideoPort = tIt->VSocket->getLocalPort();
-                tLocalAudioPort = tIt->ASocket->getLocalPort();
+                tLocalVideoPort = tIt->VSocket->GetLocalPort();
+                tLocalAudioPort = tIt->ASocket->GetLocalPort();
 
                 // ##################### create SDP string #######################
                 // set sdp string
@@ -1230,8 +1230,8 @@ bool Meeting::GetSessionInfo(string pParticipant, struct SessionInfo *pInfo)
                     pInfo->RemoteAudioHost = tIt->RemoteAudioHost;
                     pInfo->RemoteAudioPort = toString(tIt->RemoteAudioPort);
                     pInfo->RemoteAudioCodec = tIt->RemoteAudioCodec;
-                    pInfo->LocalVideoPort = toString(tIt->VSocket->getLocalPort());
-                    pInfo->LocalAudioPort = toString(tIt->ASocket->getLocalPort());
+                    pInfo->LocalVideoPort = toString(tIt->VSocket->GetLocalPort());
+                    pInfo->LocalAudioPort = toString(tIt->ASocket->GetLocalPort());
                     pInfo->CallState = CallStateAsString(tIt->CallState);
                     //LOG(LOG_VERBOSE, "...found");
                 }
