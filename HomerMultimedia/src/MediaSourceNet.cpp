@@ -68,7 +68,7 @@ void MediaSourceNet::Init(Socket *pDataSocket, bool pRtpActivated)
         if (mDataSocket->GetTransportType() == SOCKET_TCP)
             mPacketStatAdditionalFragmentSize = TCP_FRAGMENT_HEADER_SIZE;
     }
-    LOG(LOG_VERBOSE, "Listen for media packets at port %u, transport %d, IP version %d", mDataSocket->getLocalPort(), mDataSocket->GetTransportType(), mDataSocket->GetNetworkType());
+    LOG(LOG_VERBOSE, "Listen for media packets at port %u, transport %d, IP version %d", mDataSocket->GetLocalPort(), mDataSocket->GetTransportType(), mDataSocket->GetNetworkType());
     mCurrentDeviceName = "NET-IN: " + mDataSocket->GetName();
     AssignStreamName(mCurrentDeviceName);
 }
@@ -155,7 +155,7 @@ void* MediaSourceNet::Run(void* pArgs)
 
 		if ((tDataSize > 0) && (tSourceHost != "") && (tSourcePort != 0))
 		{
-		    mCurrentDeviceName = "NET-IN: " + MediaSinkNet::CreateId(tSourceHost, toString(tSourcePort), mDataSocket->GetTransportType(), mRtpActivated);
+		    mCurrentDeviceName = "NET-IN: " + MediaSinkNet::CreateId(mDataSocket->GetLocalHost(), toString(mDataSocket->GetLocalPort()), mDataSocket->GetTransportType(), mRtpActivated);
             AssignStreamName(mCurrentDeviceName);
 
 			#ifdef MSN_DEBUG_PACKETS
@@ -205,7 +205,7 @@ void* MediaSourceNet::Run(void* pArgs)
 
 unsigned int MediaSourceNet::getListenerPort()
 {
-    return mDataSocket->getLocalPort();
+    return mDataSocket->GetLocalPort();
 }
 
 bool MediaSourceNet::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
@@ -267,19 +267,19 @@ void MediaSourceNet::StopGrabbing()
 
     if ((mDataSocket != NULL) && (((mOpenInputStream) && (mListenerRunning)) || (mListenerRunning) || ((!mOpenInputStream) && (!mGrabMutex.tryLock(100)))))
     {
-        LOG(LOG_VERBOSE, "Try to do loopback signaling to local IPv%d listener at port %u, transport %d", mDataSocket->GetNetworkType(), 0xFFFF & mDataSocket->getLocalPort(), mDataSocket->GetTransportType());
+        LOG(LOG_VERBOSE, "Try to do loopback signaling to local IPv%d listener at port %u, transport %d", mDataSocket->GetNetworkType(), 0xFFFF & mDataSocket->GetLocalPort(), mDataSocket->GetTransportType());
         Socket  *tSocket = new Socket(mDataSocket->GetNetworkType(), mDataSocket->GetTransportType());
         char    tData[8];
         switch(tSocket->GetNetworkType())
         {
             case SOCKET_IPv4:
                 LOG(LOG_VERBOSE, "Doing loopback signaling to IPv4 listener to port %u", getListenerPort());
-                if (!tSocket->Send("127.0.0.1", mDataSocket->getLocalPort(), tData, 0))
+                if (!tSocket->Send("127.0.0.1", mDataSocket->GetLocalPort(), tData, 0))
                     LOG(LOG_ERROR, "Error when sending data through loopback IPv4-UDP socket");
                 break;
             case SOCKET_IPv6:
                 LOG(LOG_VERBOSE, "Doing loopback signaling to IPv6 listener to port %u", getListenerPort());
-                if (!tSocket->Send("::1", mDataSocket->getLocalPort(), tData, 0))
+                if (!tSocket->Send("::1", mDataSocket->GetLocalPort(), tData, 0))
                     LOG(LOG_ERROR, "Error when sending data through loopback IPv6-UDP socket");
                 break;
             default:
