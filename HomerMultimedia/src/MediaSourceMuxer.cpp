@@ -25,9 +25,6 @@
  * Since:   2009-01-04
  */
 
-// HINT: for audio streams the RTP support remains unused!
-// HINT: either RTP support OR TS support is available
-
 #include <MediaSourceMuxer.h>
 #include <MediaSourceNet.h>
 #include <MediaSinkNet.h>
@@ -895,7 +892,7 @@ bool MediaSourceMuxer::BelowMaxFps(int pFrameNumber)
         //### skip capturing when we are too slow
         if (tTimeDiff < tTimeDiffTreshold)
         {
-            LOG(LOG_VERBOSE, "Max. FPS reached, dropping frame %d", pFrameNumber);
+            //LOG(LOG_VERBOSE, "Max. FPS reached, dropping frame %d", pFrameNumber);
 
             return false;
         }

@@ -79,7 +79,7 @@ bool MediaSink::BelowMaxFps(int pFrameNumber)
     int64_t tCurrentTime = Time::GetTimeStamp();
     int64_t tTimeDiff = tCurrentTime - mMaxFpsTimestampLastFragment;
 
-    LOG(LOG_VERBOSE, "Checking max. FPS for frame number %d", pFrameNumber);
+    //LOG(LOG_VERBOSE, "Checking max. FPS for frame number %d", pFrameNumber);
 
     if (mMaxFps != 0)
     {
