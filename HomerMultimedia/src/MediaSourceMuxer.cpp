@@ -947,6 +947,8 @@ void MediaSourceMuxer::DeinitTranscoder()
             mTranscoderFifo = NULL;
         }
     }
+
+    LOG(LOG_VERBOSE, "Transcoder stopped");
 }
 
 void* MediaSourceMuxer::Run(void* pArgs)
