@@ -66,6 +66,7 @@ void Socket::SetDefaults(enum TransportType pTransportType)
 	mSocketNetworkType = SOCKET_NETWORK_TYPE_INVALID;
 	mSocketTransportType = SOCKET_TRANSPORT_TYPE_INVALID;
     mLocalPort = 0;
+    mLocalHost = "";
     mSocketHandle = -1;
     mTcpClientSockeHandle = -1;
     mPeerHost = "";
@@ -115,11 +116,10 @@ Socket::Socket(unsigned int pListenerPort, enum TransportType pTransportType, un
     SetDefaults(pTransportType);
     if (CreateSocket(SOCKET_IPv6))
     {
-    	mLocalPort = BindSocket(pListenerPort, pProbeStepping, pHighesPossibleListenerPort);
+    	if (!BindSocket(pListenerPort, pProbeStepping, pHighesPossibleListenerPort))
+    	    mSocketHandle = -1;
     	if ((!pProbeStepping) && (mLocalPort != pListenerPort))
     		LOG(LOG_ERROR, "Bound socket %d to another port than requested", mSocketHandle);
-    	if (mLocalPort == 0)
-    		mSocketHandle = -1;
     }
     LOG(LOG_VERBOSE, "Created %s-listener for socket %d at local port %u", TransportType2String(mSocketTransportType).c_str(), mSocketHandle, mLocalPort);
 }
@@ -157,8 +157,11 @@ Socket::Socket(enum NetworkType pIpVersion, enum TransportType pTransportType)
 
     SetDefaults(pTransportType);
     if (CreateSocket(pIpVersion))
-        mLocalPort = BindSocket();
-    LOG(LOG_VERBOSE, "Created %s-sender for socket %d at local port %u", TransportType2String(mSocketTransportType).c_str(), mSocketHandle, mLocalPort);
+    {
+        if (!BindSocket())
+            mSocketHandle = -1;
+    }
+    LOG(LOG_VERBOSE, "Created %s-sender for socket %d at local address %s:%u", TransportType2String(mSocketTransportType).c_str(), mSocketHandle, mLocalHost.c_str(), mLocalPort);
 
     mIsClientSocket = true;
     SVC_SOCKET_CONTROL.RegisterClientSocket(this);
@@ -235,6 +238,15 @@ std::string Socket::GetName()
 {
     string tResult = "";
 
+    tResult = mLocalHost + "<" + toString(mLocalPort) + ">(" + TransportType2String(mSocketTransportType) + ")";
+
+    return tResult;
+}
+
+std::string Socket::GetPeerName()
+{
+    string tResult = "";
+
     tResult = mPeerHost + "<" + toString(mPeerPort) + ">(" + TransportType2String(mSocketTransportType) + ")";
 
     return tResult;
@@ -250,9 +262,14 @@ enum TransportType Socket::GetTransportType()
     return mSocketTransportType;
 }
 
-unsigned int Socket::getLocalPort()
+unsigned int Socket::GetLocalPort()
 {
     return mLocalPort;
+}
+
+std::string Socket::GetLocalHost()
+{
+    return mLocalHost;
 }
 
 void Socket::GetPeerAddress(std::string &pHost, unsigned int &pPort)
@@ -834,11 +851,17 @@ bool Socket::FillAddrDescriptor(string pHost, unsigned int pPort, SocketAddressD
         // Internet/IP type
         tAddressDescriptor->sa_in6.sin6_family = AF_INET6;
 
-        // transform address
-        if (inet_pton(AF_INET6, pHost.c_str(), &tAddressDescriptor->sa_in6.sin6_addr) < 0)
+        if ((pHost != ":") && (pHost != "::"))
         {
-            LOGEX(Socket, LOG_ERROR, "Error in inet-pton(IPv6) because of %s", strerror(errno));
-            return false;
+            // transform address
+            if (inet_pton(AF_INET6, pHost.c_str(), &tAddressDescriptor->sa_in6.sin6_addr) < 0)
+            {
+                LOGEX(Socket, LOG_ERROR, "Error in inet-pton(IPv6) because of %s", strerror(errno));
+                return false;
+            }
+        }else
+        {
+            tAddressDescriptor->sa_in6.sin6_addr = in6addr_any;
         }
 
         // port
@@ -859,12 +882,18 @@ bool Socket::FillAddrDescriptor(string pHost, unsigned int pPort, SocketAddressD
         // Internet/IP type
         tAddressDescriptor->sa_in.sin_family = AF_INET;
 
-        // transform address
-        //tAddressDescriptor->sa_in.sin_addr.s_addr = inet_addr(pHost.c_str());
-        if (inet_pton(AF_INET, pHost.c_str(), &tAddressDescriptor->sa_in.sin_addr.s_addr) < 0)
+        if ((pHost != "") && (pHost != "*"))
         {
-            LOGEX(Socket, LOG_ERROR, "Error in inet-pton(IPv4) because of %s", strerror(errno));
-            return false;
+            // transform address
+            //tAddressDescriptor->sa_in.sin_addr.s_addr = inet_addr(pHost.c_str());
+            if (inet_pton(AF_INET, pHost.c_str(), &tAddressDescriptor->sa_in.sin_addr.s_addr) < 0)
+            {
+                LOGEX(Socket, LOG_ERROR, "Error in inet-pton(IPv4) because of %s", strerror(errno));
+                return false;
+            }
+        }else
+        {
+            tAddressDescriptor->sa_in.sin_addr.s_addr = INADDR_ANY;
         }
 
         // port
@@ -1048,58 +1077,38 @@ void Socket::DestroySocket(int pHandle)
     }
 }
 
-unsigned short int Socket::BindSocket(unsigned int pPort, unsigned int pProbeStepping, unsigned int pHighesPossibleListenerPort)
+bool Socket::BindSocket(unsigned int pPort, unsigned int pProbeStepping, unsigned int pHighesPossibleListenerPort)
 {
-    unsigned short int  tResult = 0;
-    struct sockaddr_in  tAddressDescriptor4;
-    struct sockaddr_in6 tAddressDescriptor6;
-    struct sockaddr     *tAddressDescriptor;
-    int                 tAddressDescriptorSize;
+    bool tResult = true;
+    SocketAddressDescriptor tAddressDescriptor;
+    #if defined(LINUX) || defined(APPLE) || defined(BSD)
+        socklen_t           tAddressDescriptorSize = sizeof(tAddressDescriptor.sa_stor);
+    #endif
+    #ifdef WIN32
+        int                 tAddressDescriptorSize = sizeof(tAddressDescriptor.sa_stor);
+    #endif
 
     if (mSocketHandle == -1)
-        return 0;
+    {
+        LOG(LOG_ERROR, "Socket handle is invalid, cannot bind socket");
+        return false;
+    }
 
     LOG(LOG_VERBOSE, "Trying to bind IPv%d-%s socket %d to local port %d", (mSocketNetworkType == SOCKET_IPv6) ? 6 : 4, TransportType2String(mSocketTransportType).c_str(), mSocketHandle, pPort);
 
-    if (mSocketNetworkType == SOCKET_IPv6)
+    if (!FillAddrDescriptor((mSocketNetworkType == SOCKET_IPv6) ? "::" : "*", pPort, &tAddressDescriptor, tAddressDescriptorSize))
     {
-        // Internet/IP type
-        tAddressDescriptor6.sin6_family = AF_INET6;
-
-        // listen on all interfaces and addresses
-        tAddressDescriptor6.sin6_addr = in6addr_any;
-
-        // port
-        tAddressDescriptor6.sin6_port = htons((uint16_t)pPort);
-
-        // flow related information = should be zero until its usage is specified
-        tAddressDescriptor6.sin6_flowinfo = 0;
-
-        tAddressDescriptor6.sin6_scope_id = 0;
-
-        tAddressDescriptor = (sockaddr*)&tAddressDescriptor6;
-        tAddressDescriptorSize = sizeof(tAddressDescriptor6);
-    }else
-    {
-        // Internet/IP type
-        tAddressDescriptor4.sin_family = AF_INET;
-
-        // listen on all interfaces and addresses
-        tAddressDescriptor4.sin_addr.s_addr = INADDR_ANY;
-
-        // port
-        tAddressDescriptor4.sin_port = htons((uint16_t)pPort);
-
-        tAddressDescriptor = (sockaddr*)&tAddressDescriptor4;
-        tAddressDescriptorSize = sizeof(tAddressDescriptor4);
+        LOG(LOG_ERROR ,"Could not process the bind address of socket %d", mSocketHandle);
+        return false;
     }
 
     // data port: search for the next free port and bind to it
-    while (bind(mSocketHandle, tAddressDescriptor, tAddressDescriptorSize) < 0)
+    while (bind(mSocketHandle, &tAddressDescriptor.sa, tAddressDescriptorSize) < 0)
     {
         if (!pProbeStepping)
         {
             LOG(LOG_ERROR, "Failed to bind IPv%d-%s socket %d to port %d while auto probing is off, error occurred because of \"%s\"", (mSocketNetworkType == SOCKET_IPv6) ? 6 : 4, TransportType2String(mSocketTransportType).c_str(), mSocketHandle, pPort, strerror(errno));
+            tResult = false;
             return 0;
         }
 
@@ -1108,19 +1117,31 @@ unsigned short int Socket::BindSocket(unsigned int pPort, unsigned int pProbeSte
         if ((pPort > 65535) || ((pPort > pHighesPossibleListenerPort) && (pHighesPossibleListenerPort != 0)))
         {
             LOG(LOG_ERROR, "Auto-probing for port binding failed, no further port numbers allowed");
+            tResult = false;
             pPort = 0;
             break;
         }
 
         if (mSocketNetworkType == SOCKET_IPv6)
-            tAddressDescriptor6.sin6_port = htons((uint16_t)pPort);
+            tAddressDescriptor.sa_in6.sin6_port = htons((uint16_t)pPort);
         else
-            tAddressDescriptor4.sin_port = htons((uint16_t)pPort);
+            tAddressDescriptor.sa_in.sin_port = htons((uint16_t)pPort);
     }
-    tResult = pPort;
 
-    if (tResult)
-        LOG(LOG_VERBOSE, "Bound IPv%d-%s socket %d to local port %d", (mSocketNetworkType == SOCKET_IPv6) ? 6 : 4, TransportType2String(mSocketTransportType).c_str(), mSocketHandle, tResult);
+    // find local port if bind was successful
+    if(tResult)
+    {
+        if (getsockname(mSocketHandle, &tAddressDescriptor.sa, (socklen_t *)&tAddressDescriptorSize) <  0)
+        {
+            LOG(LOG_ERROR, "Failed to determine the local socket name");
+        }else
+        {
+            if (!GetAddrFromDescriptor(&tAddressDescriptor, mLocalHost, mLocalPort))
+                LOG(LOG_ERROR ,"Could not determine the local BIND address for socket %d", mSocketHandle);
+            else
+                LOG(LOG_VERBOSE, "Bound IPv%d-%s socket %d to %s:%d", (mSocketNetworkType == SOCKET_IPv6) ? 6 : 4, TransportType2String(mSocketTransportType).c_str(), mSocketHandle, mLocalHost.c_str(), mLocalPort);
+        }
+    }
 
     return tResult;
 }
