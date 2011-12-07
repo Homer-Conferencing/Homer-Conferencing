@@ -112,9 +112,11 @@ public:
     /* getters */
     enum NetworkType GetNetworkType();
     enum TransportType GetTransportType();
-    unsigned int getLocalPort();
+    unsigned int GetLocalPort();
+    std::string GetLocalHost();
     void GetPeerAddress(std::string &pHost, unsigned int &pPort);
     std::string GetName();
+    std::string GetPeerName();
 
     /* QoS interface */
     static bool IsQoSSupported();
@@ -151,7 +153,7 @@ private:
     void SetDefaults(enum TransportType pTransportType);
 
     bool CreateSocket(enum NetworkType pIpVersion = SOCKET_IPv6);
-    unsigned short int BindSocket(unsigned int pPort = 0, unsigned int pProbeStepping = 1, unsigned int pHighesPossibleListenerPort = 0);
+    bool BindSocket(unsigned int pPort = 0, unsigned int pProbeStepping = 1, unsigned int pHighesPossibleListenerPort = 0);
     static void DestroySocket(int pHandle);
 
     QoSSettings			mQoSSettings;
@@ -164,6 +166,7 @@ private:
     unsigned int        mPeerPort;
     int                 mSocketHandle, mTcpClientSockeHandle;
     unsigned int        mLocalPort;
+    std::string         mLocalHost;
     bool                mIsClientSocket;
 };
 
