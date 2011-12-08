@@ -37,12 +37,15 @@ namespace Homer { namespace Base {
 class SocketName
 {
 public:
-	SocketName(std::string pName);
+	SocketName(std::string pHost, unsigned int pPort);
     virtual ~SocketName();
 
     virtual std::string toString();
+    virtual std::string getHost();
+    virtual unsigned int getPort();
 private:
-    std::string		mName;
+    std::string		mHost;
+    unsigned int    mPort;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
