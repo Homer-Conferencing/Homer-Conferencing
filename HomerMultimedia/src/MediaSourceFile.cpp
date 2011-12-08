@@ -653,6 +653,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
                     if (mRecording)
                         RecordFrame(tSourceFrame);
 
+                    // scale only if frame shouldn't be dropped
                     if (!pDropChunk)
                     {
     //                        #ifdef MSF_DEBUG_PACKETS
