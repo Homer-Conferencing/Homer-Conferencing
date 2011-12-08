@@ -244,7 +244,7 @@ void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize)
 			LOG(LOG_VERBOSE, "FIFO length now: %d", mFifoAvailableEntries);
 		#endif
 
-        mFifoDataInputCondition.SignalOne();
+        mFifoDataInputCondition.SignalAll();
 	}else
 	{
 	    mFifoMutex.unlock();
