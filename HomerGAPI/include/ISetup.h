@@ -31,7 +31,7 @@
 #include <IName.h>
 #include <ISubscription.h>
 #include <IRegistration.h>
-#include <IRequirements.h>
+#include <Requirements.h>
 
 namespace Homer { namespace Base {
 
@@ -43,8 +43,8 @@ public:
 	ISetup(){ }
     virtual ~ISetup( ){ }
 
-    virtual ISubscription* subscribe(IName *pName, IRequirements *pRequirements = 0) = 0;
-    virtual IRegistration* publish(IName *pName, IRequirements *pRequirements = 0) = 0;
+    virtual ISubscription* subscribe(IName *pName, Requirements *pRequirements = 0) = 0;
+    virtual IRegistration* publish(IName *pName, Requirements *pRequirements = 0) = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

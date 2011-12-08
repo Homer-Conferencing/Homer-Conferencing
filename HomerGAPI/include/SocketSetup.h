@@ -42,8 +42,8 @@ public:
 	SocketSetup();
     virtual ~SocketSetup();
 
-    virtual ISubscription* subscribe(IName *pName, IRequirements *pRequirements = 0);
-    virtual IRegistration* publish(IName *pName, IRequirements *pRequirements = 0);
+    virtual ISubscription* subscribe(IName *pName, Requirements *pRequirements = 0);
+    virtual IRegistration* publish(IName *pName, Requirements *pRequirements = 0);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -20,58 +20,29 @@
  *****************************************************************************/
 
 /*
- * Purpose: SocketSubscription
+ * Purpose: RequirementLoslessTransmission
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
 
-#include <GAPI.h>
-#include <SocketSubscription.h>
-#include <HBSocket.h>
+#ifndef _GAPI_REQUIREMENT_LOSLESS_
+#define _GAPI_REQUIREMENT_LOSLESS_
 
-#include <Logger.h>
+#include <IRequirement.h>
 
-#include <string>
+#define REQUIREMENT_LOSLESS                     0x00000001
 
 namespace Homer { namespace Base {
 
-using namespace std;
+///////////////////////////////////////////////////////////////////////////////
+
+class RequirementLoslessTransmission:
+    public TRequirement<RequirementLoslessTransmission, REQUIREMENT_LOSLESS>
+{
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 
-SocketSubscription::SocketSubscription(Requirements *pRequirements)
-{
-//	mSocket = new Socket(SOCKET_IPv6)
-}
+}} // namespaces
 
-SocketSubscription::~SocketSubscription()
-{
-
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-bool SocketSubscription::isClosed()
-{
-	//TODO
-	return true;
-}
-
-void SocketSubscription::read(char* pBuffer, int &pBufferize)
-{
-	//TODO
-}
-
-void SocketSubscription::write(char* pBuffer, int pBufferSize)
-{
-	//TODO
-}
-
-void SocketSubscription::cancel()
-{
-	//TODO
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-}} //namespace
+#endif

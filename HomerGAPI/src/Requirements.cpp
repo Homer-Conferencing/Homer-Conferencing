@@ -20,14 +20,14 @@
  *****************************************************************************/
 
 /*
- * Purpose: SocketSubscription
+ * Purpose: Requirements
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
 
 #include <GAPI.h>
-#include <SocketSubscription.h>
-#include <HBSocket.h>
+#include <Requirements.h>
+#include <IRequirement.h>
 
 #include <Logger.h>
 
@@ -39,37 +39,72 @@ using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-SocketSubscription::SocketSubscription(Requirements *pRequirements)
+Requirements::Requirements()
 {
-//	mSocket = new Socket(SOCKET_IPv6)
 }
 
-SocketSubscription::~SocketSubscription()
+Requirements::~Requirements()
 {
 
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool SocketSubscription::isClosed()
+string Requirements::toString()
 {
-	//TODO
-	return true;
+    std::string tResult = "";
+    RequirementSet::iterator tIt;
+
+    mRequirementSetMutex.lock();
+
+    int tRemainingRequs = mRequirementSet.size();
+    for(tIt = mRequirementSet.begin(); tIt != mRequirementSet.end(); tIt++)
+    {
+        tRemainingRequs--;
+        tResult += (*tIt)->toString();
+        if(tRemainingRequs > 0)
+        {
+            tResult += ",";
+        }
+    }
+
+    mRequirementSetMutex.unlock();
+
+    return tResult;
 }
 
-void SocketSubscription::read(char* pBuffer, int &pBufferize)
+void Requirements::operator+=(IRequirement *pAddRequ)
 {
-	//TODO
+    add(pAddRequ);
 }
 
-void SocketSubscription::write(char* pBuffer, int pBufferSize)
+void Requirements::add(IRequirement *pAddRequ)
 {
-	//TODO
+    mRequirementSetMutex.lock();
+
+    mRequirementSet.push_back(pAddRequ);
+
+    mRequirementSetMutex.unlock();
 }
 
-void SocketSubscription::cancel()
+bool Requirements::contains(IRequirement *pRequ)
 {
-	//TODO
+    bool tResult = false;
+    RequirementSet::iterator tIt;
+
+    mRequirementSetMutex.lock();
+
+    for(tIt = mRequirementSet.begin(); tIt != mRequirementSet.end(); tIt++)
+    {
+        if((*tIt)->getType() == pRequ->getType())
+        {
+            tResult = true;
+        }
+    }
+
+    mRequirementSetMutex.unlock();
+
+    return tResult;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

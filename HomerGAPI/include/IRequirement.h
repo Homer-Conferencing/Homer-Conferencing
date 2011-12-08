@@ -25,20 +25,37 @@
  * Since:   2011-12-08
  */
 
-#ifndef _GAPI_IREQUIREMENTS_
-#define _GAPI_IREQUIREMENTS_
+#ifndef _GAPI_IREQUIREMENT_
+#define _GAPI_IREQUIREMENT_
+
+#include <Logger.h>
 
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class IRequirements
+class IRequirement
 {
 public:
-	IRequirements(){}
-    virtual ~IRequirements( ){}
+	IRequirement(int pType):mType(pType){}
+    virtual ~IRequirement( ){}
 
-    virtual std::string toString() = 0;
+    virtual std::string toString(){ return "Requ(undefined)"; }
+    virtual int getType(){ return mType; }
+
+private:
+    int mType;
+};
+
+template <typename DerivedClass, int pType>
+class TRequirement:
+    public IRequirement
+{
+public:
+    TRequirement():IRequirement(pType) { }
+    virtual ~TRequirement() { }
+
+    static int type() { return pType; }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
