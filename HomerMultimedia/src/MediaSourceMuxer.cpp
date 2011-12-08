@@ -163,7 +163,7 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
 
     if ((tOrgResX != pResX) || (tOrgResY != pResY))
     {
-        LOG(LOG_WARN, "Codec %s doesn't support the request video resolution of %d * %d, values were replaced by %d * %d", GetCodecName().c_str(), tOrgResX, tOrgResY, pResX, pResY);
+        LOG(LOG_WARN, "Codec %s doesn't support the request video resolution of %d * %d, values were replaced by %d * %d", pStreamCodec.c_str(), tOrgResX, tOrgResY, pResX, pResY);
     }
 
     if (mStreamMaxFps != pMaxFps)
@@ -928,6 +928,7 @@ void MediaSourceMuxer::InitTranscoder(int pFifoEntrySize)
 
 void MediaSourceMuxer::DeinitTranscoder()
 {
+    int tSignalingRound = 0;
     char tTmp[4];
 
     LOG(LOG_VERBOSE, "Deinit transcoder");
@@ -937,15 +938,19 @@ void MediaSourceMuxer::DeinitTranscoder()
         // tell transcoder thread it isn't needed anymore
         mTranscoderNeeded = false;
 
-        // write fake data to awake transcoder thread in every case
-        mTranscoderFifo->WriteFifo(tTmp, 0);
-
         // wait for termination of transcoder thread
-        if (StopThread())
+        do
         {
-            delete mTranscoderFifo;
-            mTranscoderFifo = NULL;
-        }
+            if(tSignalingRound > 0)
+                LOG(LOG_WARN, "Signaling round %d to stop transcoder, system has high load", tSignalingRound);
+            tSignalingRound++;
+
+            // write fake data to awake transcoder thread as long as it still runs
+            mTranscoderFifo->WriteFifo(tTmp, 0);
+        }while(!StopThread(1000));
+
+        delete mTranscoderFifo;
+        mTranscoderFifo = NULL;
     }
 
     LOG(LOG_VERBOSE, "Transcoder stopped");
@@ -983,7 +988,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
         {
             tFifoEntry = mTranscoderFifo->ReadFifoExclusive(&tBuffer, tBufferSize);
 
-            if (tBufferSize > 0)
+            if ((tBufferSize > 0) && (mTranscoderNeeded))
             {
                 // lock
                 mMediaSinksMutex.lock();
