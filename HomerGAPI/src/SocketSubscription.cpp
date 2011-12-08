@@ -41,8 +41,11 @@ using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-SocketSubscription::SocketSubscription(Requirements *pRequirements)
+SocketSubscription::SocketSubscription(std::string pTargetHost, unsigned int pTargetPort, Requirements *pRequirements)
 {
+    mTargetHost = pTargetHost;
+    mTargetPort = pTargetPort;
+
     bool tTcp = ((pRequirements->contains(RequirementLosslessTransmission::type())) &&
                 (!pRequirements->contains(RequirementDatagramTransmission::type())));
 
@@ -71,13 +74,15 @@ void SocketSubscription::read(char* pBuffer, int &pBufferSize)
     string tSourceHost;
     unsigned int tSourcePort;
     ssize_t tBufferSize = pBufferSize;
-    mSocket->Receive(tSourceHost, tSourcePort, (void*)pBuffer, tBufferSize);
+    mIsClosed = !mSocket->Receive(tSourceHost, tSourcePort, (void*)pBuffer, tBufferSize);
     pBufferSize = (int)tBufferSize;
+    //TODO: extended error signaling
 }
 
 void SocketSubscription::write(char* pBuffer, int pBufferSize)
 {
-	//TODO
+    mIsClosed = !mSocket->Send(mTargetHost, mTargetPort, (void*)pBuffer, (ssize_t) pBufferSize);
+    //TODO: extended error signaling
 }
 
 void SocketSubscription::cancel()

@@ -52,7 +52,8 @@ SocketSetup::~SocketSetup()
 
 ISubscription* SocketSetup::subscribe(IName *pName, Requirements *pRequirements)
 {
-	return new SocketSubscription(pRequirements);
+    SocketName *tName = (SocketName*)pName; //TODO: type safety via C++ reflections
+	return new SocketSubscription(tName->getHost(), tName->getPort(), pRequirements);
 }
 
 IRegistration* SocketSetup::publish(IName *pName, Requirements *pRequirements)

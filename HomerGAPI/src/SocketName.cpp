@@ -38,8 +38,8 @@ using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-SocketName::SocketName(string pName):
-	mName(pName)
+SocketName::SocketName(string pHost, unsigned int pPort):
+	mHost(pHost), mPort(pPort)
 {
 }
 
@@ -50,9 +50,27 @@ SocketName::~SocketName()
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template <typename T>
+inline std::string dataToString(T const& value_)
+{
+    std::stringstream ss;
+    ss << value_;
+    return ss.str();
+}
+
 string SocketName::toString()
 {
-	return mName;
+	return mHost + "<" + dataToString(mPort) + ">";
+}
+
+std::string SocketName::getHost()
+{
+    return mHost;
+}
+
+unsigned int SocketName::getPort()
+{
+    return mPort;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -40,7 +40,7 @@ class SocketSubscription:
 	public ISubscription
 {
 public:
-	SocketSubscription(Requirements *pRequirements);
+	SocketSubscription(std::string pTargetHost, unsigned int pTargetPort, Requirements *pRequirements);
     virtual ~SocketSubscription( );
 
     virtual bool isClosed();
@@ -52,6 +52,8 @@ private:
     int 		mSocketHandle;
     Socket		*mSocket;
     bool        mIsClosed;
+    std::string mTargetHost;
+    unsigned int mTargetPort;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
