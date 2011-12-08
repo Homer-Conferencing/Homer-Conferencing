@@ -39,8 +39,8 @@ namespace Homer { namespace Base {
 ///////////////////////////////////////////////////////////////////////////////
 
 #define GAPI GapiService::GetInstance()
-typedef ISubscription*(*subscribeFunction)(IName *, IRequirements *);
-typedef IRegistration*(*publishFunction)(IName *, IRequirements *);
+typedef ISubscription*(*subscribeFunction)(IName*, Requirements*);
+typedef IRegistration*(*publishFunction)(IName*, Requirements*);
 
 struct SetupInterfaceDescription{
 	ISetup			*Interface;
@@ -70,8 +70,8 @@ public:
     SetupInterfacesNames enumSetupInterfaces();
 
     /* ISetup */
-    virtual ISubscription* subscribe(IName *pName, IRequirements *pRequirements = 0);
-    virtual IRegistration* publish(IName *pName, IRequirements *pRequirements = 0);
+    virtual ISubscription* subscribe(IName *pName, Requirements *pRequirements = 0);
+    virtual IRegistration* publish(IName *pName, Requirements *pRequirements = 0);
 
 private:
     ISetup						*mSetupInterface;

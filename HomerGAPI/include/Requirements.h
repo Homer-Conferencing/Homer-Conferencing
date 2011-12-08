@@ -20,7 +20,7 @@
  *****************************************************************************/
 
 /*
- * Purpose: IRequirements
+ * Purpose: Requirements
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
@@ -28,17 +28,34 @@
 #ifndef _GAPI_IREQUIREMENTS_
 #define _GAPI_IREQUIREMENTS_
 
+#include <IRequirement.h>
+#include <HBMutex.h>
+
+#include <list>
+
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class IRequirements
+typedef std::list<IRequirement*> RequirementSet;
+
+///////////////////////////////////////////////////////////////////////////////
+
+class Requirements
 {
 public:
-	IRequirements(){}
-    virtual ~IRequirements( ){}
+    Requirements();
+    virtual ~Requirements();
 
-    virtual std::string toString() = 0;
+    virtual std::string toString();
+
+    void operator+=(IRequirement *pAddRequ);
+    void add(IRequirement *pRequ);
+    bool contains(IRequirement *pRequ);
+
+private:
+    RequirementSet      mRequirementSet;
+    Mutex               mRequirementSetMutex;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

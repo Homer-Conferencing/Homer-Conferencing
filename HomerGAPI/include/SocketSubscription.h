@@ -30,7 +30,7 @@
 
 #include <HBSocket.h>
 
-#include <IRequirements.h>
+#include <Requirements.h>
 
 namespace Homer { namespace Base {
 
@@ -40,7 +40,7 @@ class SocketSubscription:
 	public ISubscription
 {
 public:
-	SocketSubscription(IRequirements *pRequirements);
+	SocketSubscription(Requirements *pRequirements);
     virtual ~SocketSubscription( );
 
     virtual bool isClosed();

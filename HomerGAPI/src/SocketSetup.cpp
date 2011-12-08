@@ -50,12 +50,12 @@ SocketSetup::~SocketSetup()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-ISubscription* SocketSetup::subscribe(IName *pName, IRequirements *pRequirements)
+ISubscription* SocketSetup::subscribe(IName *pName, Requirements *pRequirements)
 {
 	return new SocketSubscription(pRequirements);
 }
 
-IRegistration* SocketSetup::publish(IName *pName, IRequirements *pRequirements)
+IRegistration* SocketSetup::publish(IName *pName, Requirements *pRequirements)
 {
 	//TODO:
 	return 0;
