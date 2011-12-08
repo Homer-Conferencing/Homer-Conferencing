@@ -20,38 +20,25 @@
  *****************************************************************************/
 
 /*
- * Purpose: ISubscription
+ * Purpose: RequirementDatagramTransmission
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
 
-#ifndef _GAPI_SOCKET_SUBSCRIPTION_
-#define _GAPI_SOCKET_SUBSCRIPTION_
+#ifndef _GAPI_REQUIREMENT_DATAGRAMS_
+#define _GAPI_REQUIREMENT_DATAGRAMS_
 
-#include <HBSocket.h>
+#include <IRequirement.h>
 
-#include <Requirements.h>
+#define REQUIREMENT_DATAGRAMS                     0x00000002
 
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class SocketSubscription:
-	public ISubscription
+class RequirementDatagramTransmission:
+    public TRequirement<RequirementDatagramTransmission, REQUIREMENT_DATAGRAMS>
 {
-public:
-	SocketSubscription(Requirements *pRequirements);
-    virtual ~SocketSubscription( );
-
-    virtual bool isClosed();
-    virtual void read(char* pBuffer, int &pBufferSize);
-    virtual void write(char* pBuffer, int pBufferSize);
-    virtual void cancel();
-
-private:
-    int 		mSocketHandle;
-    Socket		*mSocket;
-    bool        mIsClosed;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

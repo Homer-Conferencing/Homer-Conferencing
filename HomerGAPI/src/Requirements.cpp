@@ -87,7 +87,7 @@ void Requirements::add(IRequirement *pAddRequ)
     mRequirementSetMutex.unlock();
 }
 
-bool Requirements::contains(IRequirement *pRequ)
+bool Requirements::contains(int pType)
 {
     bool tResult = false;
     RequirementSet::iterator tIt;
@@ -96,7 +96,7 @@ bool Requirements::contains(IRequirement *pRequ)
 
     for(tIt = mRequirementSet.begin(); tIt != mRequirementSet.end(); tIt++)
     {
-        if((*tIt)->getType() == pRequ->getType())
+        if((*tIt)->getType() == pType)
         {
             tResult = true;
         }

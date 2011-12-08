@@ -36,8 +36,8 @@ namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class RequirementLoslessTransmission:
-    public TRequirement<RequirementLoslessTransmission, REQUIREMENT_LOSLESS>
+class RequirementLosslessTransmission:
+    public TRequirement<RequirementLosslessTransmission, REQUIREMENT_LOSLESS>
 {
 };
 

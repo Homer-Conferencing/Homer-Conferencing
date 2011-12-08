@@ -51,7 +51,7 @@ public:
 
     void operator+=(IRequirement *pAddRequ);
     void add(IRequirement *pRequ);
-    bool contains(IRequirement *pRequ);
+    bool contains(int pType);
 
 private:
     RequirementSet      mRequirementSet;

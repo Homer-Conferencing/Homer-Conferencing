@@ -27,6 +27,8 @@
 
 #include <GAPI.h>
 #include <SocketSubscription.h>
+#include <RequirementLosslessTransmission.h>
+#include <RequirementDatagramTransmission.h>
 #include <HBSocket.h>
 
 #include <Logger.h>
@@ -41,25 +43,36 @@ using namespace std;
 
 SocketSubscription::SocketSubscription(Requirements *pRequirements)
 {
-//	mSocket = new Socket(SOCKET_IPv6)
+    bool tTcp = ((pRequirements->contains(RequirementLosslessTransmission::type())) &&
+                (!pRequirements->contains(RequirementDatagramTransmission::type())));
+
+    if (tTcp)
+        mSocket = new Socket(SOCKET_IPv6, SOCKET_TCP);
+    else
+        mSocket = new Socket(SOCKET_IPv6, SOCKET_UDP);
+
+    mIsClosed = false;
 }
 
 SocketSubscription::~SocketSubscription()
 {
-
+    delete mSocket;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 bool SocketSubscription::isClosed()
 {
-	//TODO
-	return true;
+	return mIsClosed;
 }
 
-void SocketSubscription::read(char* pBuffer, int &pBufferize)
+void SocketSubscription::read(char* pBuffer, int &pBufferSize)
 {
-	//TODO
+    string tSourceHost;
+    unsigned int tSourcePort;
+    ssize_t tBufferSize = pBufferSize;
+    mSocket->Receive(tSourceHost, tSourcePort, (void*)pBuffer, tBufferSize);
+    pBufferSize = (int)tBufferSize;
 }
 
 void SocketSubscription::write(char* pBuffer, int pBufferSize)
