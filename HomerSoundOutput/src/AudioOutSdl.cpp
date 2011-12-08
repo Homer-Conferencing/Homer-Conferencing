@@ -63,7 +63,7 @@ AudioOutSdl& AudioOutSdl::getInstance()
  */
 bool AudioOutSdl::OpenPlaybackDevice(int pSampleRate, bool pStereo, string pDriver, string pDevice)
 {
-    int tReqChunksize = 4096, tReqChannels;
+    int tReqChunksize = 16 * 1024, tReqChannels;
     int tGotSampleRate, tGotChannels;
     Uint16 tGotSampleFormat;
 
@@ -432,16 +432,18 @@ bool AudioOutSdl::Enqueue(int pChannel, void *pBuffer, int pBufferSize, bool pLi
         tChannelDesc->mMutex.lock();
 
         // check for queue limit
-        if ((pLimitBucket) && (tChannelDesc->Chunks.size() > 16))
+        if ((pLimitBucket) && (tChannelDesc->Chunks.size() > AUDIO_BUFFER_QUEUE_LIMIT))
         {
-            //printf("AudioOutSdl-Latency too high, dropping audio samples\n");
+            LOG(LOG_WARN, "AudioOutSdl-Latency too high, dropping audio samples");
             // free buffer memory of new chunk
             free(tNewChunk->abuf);
             // free memory of new chunk
             free(tNewChunk);
         }else
         {
-            //printf("##### %d QueueSize: %d\n", pChannel, (int)tChannelDesc->Chunks.size());
+            #ifdef DEBUG_AUDIO_OUT_SDL
+                LOG(LOG_VERBOSE, "Channel %d, queue size: %d", pChannel, (int)tChannelDesc->Chunks.size());
+            #endif
             // add new chunk to queue
             tChannelDesc->Chunks.push_back(tNewChunk);
         }
