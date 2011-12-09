@@ -272,10 +272,14 @@ std::string Socket::GetLocalHost()
     return mLocalHost;
 }
 
-void Socket::GetPeerAddress(std::string &pHost, unsigned int &pPort)
+unsigned int Socket::GetPeerPort()
 {
-    pHost = mPeerHost;
-    pPort = mPeerPort;
+    return mPeerPort;
+}
+
+std::string Socket::GetPeerHost()
+{
+    return mPeerHost;
 }
 
 bool Socket::SetQoS(const QoSSettings &pQoSSettings)

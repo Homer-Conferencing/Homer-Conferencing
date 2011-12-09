@@ -114,7 +114,8 @@ public:
     enum TransportType GetTransportType();
     unsigned int GetLocalPort();
     std::string GetLocalHost();
-    void GetPeerAddress(std::string &pHost, unsigned int &pPort);
+    unsigned int GetPeerPort();
+    std::string GetPeerHost();
     std::string GetName();
     std::string GetPeerName();
 
