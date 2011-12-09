@@ -95,6 +95,29 @@ bool GapiService::registerSetupInterface(ISetup* pSetupInterface, std::string pN
 	return !tFound;
 }
 
+bool GapiService::selectSetupInterface(std::string pName)
+{
+    bool tFound = false;
+    SetupInterfacesPool::iterator tIt;
+
+
+    mSetupInterfacesPoolMutex.lock();
+
+    for(tIt = mSetupInterfacesPool.begin(); tIt != mSetupInterfacesPool.end(); tIt++)
+    {
+        if(pName == (*tIt)->Name)
+        {
+            LOG(LOG_VERBOSE, "Setup interface \"%s\" selected", pName.c_str());
+            mSetupInterface = (*tIt)->Interface;
+            tFound = true;
+        }
+    }
+
+    mSetupInterfacesPoolMutex.unlock();
+
+    return tFound;
+}
+
 SetupInterfacesNames GapiService::enumSetupInterfaces()
 {
 	SetupInterfacesNames tResult;
