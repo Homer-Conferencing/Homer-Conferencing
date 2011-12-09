@@ -282,7 +282,7 @@ void AudioOutSdl::ReleaseChannel(int pChannel)
             tChannelDesc->LastChunk = NULL;
         }
 
-        ClearChunkList(pChannel);
+        ClearChunkListInternal(pChannel);
     }
 
     // unlock
@@ -294,6 +294,17 @@ void AudioOutSdl::ReleaseChannel(int pChannel)
 }
 
 void AudioOutSdl::ClearChunkList(int pChannel)
+{
+    ChannelEntry* tChannelDesc = mChannelMap[pChannel];
+
+    tChannelDesc->mMutex.lock();
+
+    ClearChunkListInternal(pChannel);
+
+    tChannelDesc->mMutex.unlock();
+}
+
+void AudioOutSdl::ClearChunkListInternal(int pChannel)
 {
     ChannelEntry* tChannelDesc = mChannelMap[pChannel];
 
@@ -349,7 +360,7 @@ bool AudioOutSdl::Play(int pChannel)
                 if (tGotChannel != pChannel)
                 {
                     LOG(LOG_ERROR, "Callback failed, unable to play chunk because of: %s", Mix_GetError());
-                    ClearChunkList(pChannel);
+                    ClearChunkListInternal(pChannel);
                 }else
                     tChannelDesc->IsPlaying = true;
             }
@@ -387,6 +398,7 @@ bool AudioOutSdl::Stop(int pChannel)
         return false;
 
     Mix_HaltChannel(pChannel);
+    ClearChunkListInternal(pChannel);
 
     return true;
 }
@@ -579,7 +591,7 @@ void AudioOutSdl::PlayerCallBack(int pChannel)
                 if (tGotChannel == -1)
                 {
                     LOGEX(AudioOutSdl, LOG_ERROR, "Callback failed, unable to play chunk because of: %s", Mix_GetError());
-                    AUDIOOUTSDL.ClearChunkList(pChannel);
+                    AUDIOOUTSDL.ClearChunkListInternal(pChannel);
                 }else
                     tChannelDesc->IsPlaying = true;
             }

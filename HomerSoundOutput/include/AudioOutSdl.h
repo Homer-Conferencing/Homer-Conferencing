@@ -132,10 +132,12 @@ public:
     AudioOutInfo QueryAudioOutDevices();
 
 
+    void ClearChunkList(int pChannel);
+
 private:
     static void PlayerCallBack(int channel);
 
-    void ClearChunkList(int pChannel);
+    void ClearChunkListInternal(int pChannel);
 
     bool mAudioOutOpened;
     int mChannels;
