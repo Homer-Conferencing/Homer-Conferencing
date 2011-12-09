@@ -1085,12 +1085,7 @@ bool Socket::BindSocket(unsigned int pPort, unsigned int pProbeStepping, unsigne
 {
     bool tResult = true;
     SocketAddressDescriptor tAddressDescriptor;
-    #if defined(LINUX) || defined(APPLE) || defined(BSD)
-        socklen_t           tAddressDescriptorSize = sizeof(tAddressDescriptor.sa_stor);
-    #endif
-    #ifdef WIN32
-        int                 tAddressDescriptorSize = sizeof(tAddressDescriptor.sa_stor);
-    #endif
+	unsigned int   			tAddressDescriptorSize;
 
     if (mSocketHandle == -1)
     {
@@ -1107,7 +1102,11 @@ bool Socket::BindSocket(unsigned int pPort, unsigned int pProbeStepping, unsigne
     }
 
     // data port: search for the next free port and bind to it
-    while (bind(mSocketHandle, &tAddressDescriptor.sa, tAddressDescriptorSize) < 0)
+	#ifdef WIN32
+    	while (bind(mSocketHandle, &tAddressDescriptor.sa, (int)tAddressDescriptorSize) < 0)
+	#else
+		while (bind(mSocketHandle, &tAddressDescriptor.sa, tAddressDescriptorSize) < 0)
+	#endif
     {
         if (!pProbeStepping)
         {
