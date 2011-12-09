@@ -205,7 +205,7 @@ public:
     virtual void SetFrameRate(float pFps);
 
     /* sample rate */
-    int GetSampleRate();
+    virtual int GetSampleRate();
 
     /* seek interface */
     virtual bool SupportsSeeking();
