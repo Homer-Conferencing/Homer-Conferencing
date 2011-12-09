@@ -198,7 +198,7 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if ((mDesiredDevice == "") || (mDesiredDevice == "auto") || (mDesiredDevice == "automatic"))
         mDesiredDevice = "";
 
-    LOG(LOG_VERBOSE, "Going to open input file..");
+    LOG(LOG_VERBOSE, "Going to open input device..");
     if (mDesiredDevice != "")
     {
         //########################################
