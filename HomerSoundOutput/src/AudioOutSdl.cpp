@@ -63,7 +63,7 @@ AudioOutSdl& AudioOutSdl::getInstance()
  */
 bool AudioOutSdl::OpenPlaybackDevice(int pSampleRate, bool pStereo, string pDriver, string pDevice)
 {
-    int tReqChunksize = 16 * 1024, tReqChannels;
+    int tReqChunksize = 4096, tReqChannels;
     int tGotSampleRate, tGotChannels;
     Uint16 tGotSampleFormat;
 
