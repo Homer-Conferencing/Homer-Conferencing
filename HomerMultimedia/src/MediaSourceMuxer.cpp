@@ -1608,6 +1608,14 @@ void MediaSourceMuxer::SetFrameRate(float pFps)
         mMediaSource->SetFrameRate(pFps);
 }
 
+int MediaSourceMuxer::GetSampleRate()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->GetSampleRate();
+    else
+        return 0;
+}
+
 void* MediaSourceMuxer::AllocChunkBuffer(int& pChunkBufferSize, enum MediaType pMediaType)
 {
     void *tResult = NULL;

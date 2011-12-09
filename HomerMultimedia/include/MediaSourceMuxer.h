@@ -109,6 +109,9 @@ public:
     virtual float GetFrameRate();
     virtual void SetFrameRate(float pFps);
 
+    /* sample rate */
+    int GetSampleRate();
+
     /* seek interface */
     virtual bool SupportsSeeking();
     virtual int64_t GetSeekEnd(); // get maximum seek time in seconds
