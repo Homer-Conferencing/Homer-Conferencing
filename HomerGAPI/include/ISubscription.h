@@ -28,6 +28,7 @@
 #ifndef _GAPI_ISUBSCRIPTION_
 #define _GAPI_ISUBSCRIPTION_
 
+#include <IName.h>
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -42,6 +43,8 @@ public:
     virtual void read(char* pBuffer, int &pBufferize) = 0;
     virtual void write(char* pBuffer, int pBufferSize) = 0;
     virtual void cancel() = 0;
+    virtual IName* name() = 0;
+    virtual IName* peer() = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
