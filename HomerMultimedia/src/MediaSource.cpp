@@ -483,7 +483,7 @@ int MediaSource::AudioQuality2BitRate(int pQuality)
     return tResult;
 }
 
-void MediaSource::GetSampleRate()
+int MediaSource::GetSampleRate()
 {
     return mSampleRate;
 }
