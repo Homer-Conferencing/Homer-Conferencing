@@ -153,7 +153,6 @@ public:
 
     /* audio */
     static int AudioQuality2BitRate(int pQuality);
-    int GetSampleRate();
 
     /* video */
     static void VideoFormat2Resolution(VideoFormat pFormat, int& pX, int& pY);
@@ -204,6 +203,9 @@ public:
     /* fps */
     virtual float GetFrameRate();
     virtual void SetFrameRate(float pFps);
+
+    /* sample rate */
+    int GetSampleRate();
 
     /* seek interface */
     virtual bool SupportsSeeking();
