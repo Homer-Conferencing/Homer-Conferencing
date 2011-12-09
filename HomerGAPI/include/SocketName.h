@@ -34,7 +34,8 @@ namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class SocketName
+class SocketName:
+    public IName
 {
 public:
 	SocketName(std::string pHost, unsigned int pPort);

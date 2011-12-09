@@ -26,6 +26,7 @@
  */
 
 #include <GAPI.h>
+#include <SocketName.h>
 #include <SocketSubscription.h>
 #include <RequirementLosslessTransmission.h>
 #include <RequirementDatagramTransmission.h>
@@ -71,23 +72,55 @@ bool SocketSubscription::isClosed()
 
 void SocketSubscription::read(char* pBuffer, int &pBufferSize)
 {
-    string tSourceHost;
-    unsigned int tSourcePort;
-    ssize_t tBufferSize = pBufferSize;
-    mIsClosed = !mSocket->Receive(tSourceHost, tSourcePort, (void*)pBuffer, tBufferSize);
-    pBufferSize = (int)tBufferSize;
-    //TODO: extended error signaling
+    if(mSocket != NULL)
+    {
+        string tSourceHost;
+        unsigned int tSourcePort;
+        ssize_t tBufferSize = pBufferSize;
+        mIsClosed = !mSocket->Receive(tSourceHost, tSourcePort, (void*)pBuffer, tBufferSize);
+        pBufferSize = (int)tBufferSize;
+        //TODO: extended error signaling
+    }
 }
 
 void SocketSubscription::write(char* pBuffer, int pBufferSize)
 {
-    mIsClosed = !mSocket->Send(mTargetHost, mTargetPort, (void*)pBuffer, (ssize_t) pBufferSize);
-    //TODO: extended error signaling
+    if(mSocket != NULL)
+    {
+        mIsClosed = !mSocket->Send(mTargetHost, mTargetPort, (void*)pBuffer, (ssize_t) pBufferSize);
+        //TODO: extended error signaling
+    }
 }
 
 void SocketSubscription::cancel()
 {
-	//TODO
+    if(mSocket != NULL)
+    {
+        delete mSocket;
+        mSocket = NULL;
+    }
+}
+
+IName* SocketSubscription::name()
+{
+    if(mSocket != NULL)
+    {
+        return new SocketName(mSocket->GetLocalHost(), mSocket->GetLocalPort());
+    }else
+    {
+        return NULL;
+    }
+}
+
+IName* SocketSubscription::peer()
+{
+    if(mSocket != NULL)
+    {
+        return new SocketName(mSocket->GetPeerHost(), mSocket->GetPeerPort());
+    }else
+    {
+        return NULL;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

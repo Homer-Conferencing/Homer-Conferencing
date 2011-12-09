@@ -47,6 +47,8 @@ public:
     virtual void read(char* pBuffer, int &pBufferSize);
     virtual void write(char* pBuffer, int pBufferSize);
     virtual void cancel();
+    virtual IName* name();
+    virtual IName* peer();
 
 private:
     int 		mSocketHandle;
