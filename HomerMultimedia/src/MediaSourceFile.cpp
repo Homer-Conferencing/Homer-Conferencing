@@ -334,7 +334,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     mSampleRate = mCodecContext->sample_rate;
     mStereo = pStereo;
     if(mCodecContext->sample_rate != 44100)
-        LOG(LOG_ERROR, "Audio sample rate doesn't match with the one of the output stream and resampling isn't supported yet, output will be digital crap");
+        LOG(LOG_ERROR, "Audio sample rate (%d Hz) doesn't match with the one (%d Hz) of the output stream and resampling isn't supported yet, output will be digital crap", 44100, mCodecContext->sample_rate);
 
     // set rate of incoming frames
     mFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->time_base.den / mFormatContext->streams[mMediaStreamIndex]->time_base.num;

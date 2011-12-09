@@ -153,6 +153,7 @@ public:
 
     /* audio */
     static int AudioQuality2BitRate(int pQuality);
+    int GetSampleRate();
 
     /* video */
     static void VideoFormat2Resolution(VideoFormat pFormat, int& pX, int& pY);

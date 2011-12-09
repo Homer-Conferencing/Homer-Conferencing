@@ -483,6 +483,11 @@ int MediaSource::AudioQuality2BitRate(int pQuality)
     return tResult;
 }
 
+void MediaSource::GetSampleRate()
+{
+    return mSampleRate;
+}
+
 void MediaSource::VideoFormat2Resolution(VideoFormat pFormat, int& pX, int& pY)
 {
     switch(pFormat)
