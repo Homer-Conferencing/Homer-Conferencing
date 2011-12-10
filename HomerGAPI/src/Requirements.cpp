@@ -45,7 +45,7 @@ Requirements::Requirements()
 
 Requirements::~Requirements()
 {
-    //TODO: speicher aufraeumen, set loeschen
+    removeAll();
 }
 
 Requirements::Requirements(Requirements &pCopy)
@@ -55,7 +55,7 @@ Requirements::Requirements(Requirements &pCopy)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-string Requirements::toString()
+string Requirements::getDescription()
 {
     std::string tResult = "";
     RequirementSet::iterator tIt;
@@ -190,6 +190,21 @@ RequirementSet Requirements::getAll()
     return mRequirementSet;
 }
 
+void Requirements::removeAll()
+{
+    LOG(LOG_VERBOSE, "Removing stored requirements");
+
+    RequirementSet::iterator tIt;
+
+    mRequirementSetMutex.lock();
+
+    for(tIt = mRequirementSet.begin(); tIt != mRequirementSet.end(); tIt++)
+    {
+        delete (*tIt);
+    }
+
+    mRequirementSetMutex.unlock();
+}
 ///////////////////////////////////////////////////////////////////////////////
 
 }} //namespace

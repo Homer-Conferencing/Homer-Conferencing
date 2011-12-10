@@ -147,6 +147,7 @@ void SocketSubscription::cancel()
 {
     if(mSocket != NULL)
     {
+        LOG(LOG_VERBOSE, "Subscription will be canceled now");
         delete mSocket;
         mSocket = NULL;
     }
