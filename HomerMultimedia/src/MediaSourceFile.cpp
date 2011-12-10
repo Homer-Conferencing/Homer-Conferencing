@@ -45,15 +45,19 @@ MediaSourceFile::MediaSourceFile(string pSourceFile, bool pGrabInRealTime):
 {
     mDesiredDevice = pSourceFile;
     mGrabInRealTime = pGrabInRealTime;
+    mResampleContext = NULL;
     mDuration = 0;
     mCurPts = 0;
-    mCurrentDeviceName = "FILE: " + mDesiredDevice;;
+    mCurrentDeviceName = "FILE: " + mDesiredDevice;
+    mResampleBuffer = (char*)malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
 }
 
 MediaSourceFile::~MediaSourceFile()
 {
     if (mMediaSourceOpened)
         CloseGrabDevice();
+
+    free(mResampleBuffer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -324,7 +328,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     }
 
     // Dump information about device file
-    dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceFile(audio)", false);
+    av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceFile(audio)", false);
     //printf("    ..audio stream found with ID: %d, number of available streams: %d\n", mMediaStreamIndex, mFormatContext->nb_streams);
 
     // Get a pointer to the codec context for the audio stream
@@ -333,8 +337,6 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     // set sample rate and bit rate to the resulting ones delivered by opened audio codec
     mSampleRate = mCodecContext->sample_rate;
     mStereo = pStereo;
-    if(mCodecContext->sample_rate != 44100)
-        LOG(LOG_ERROR, "Audio sample rate (%d Hz) doesn't match with the one (%d Hz) of the output stream and resampling isn't supported yet, output will be digital crap", 44100, mCodecContext->sample_rate);
 
     // set rate of incoming frames
     mFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->time_base.den / mFormatContext->streams[mMediaStreamIndex]->time_base.num;
@@ -361,6 +363,13 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
         // Close the audio file
         av_close_input_file(mFormatContext);
         return false;
+    }
+
+    // create resample context
+    if (mCodecContext->sample_rate != 44100)
+    {
+        LOG(LOG_WARN, "Audio samples with rate of %d Hz have to be resampled to 44100 Hz", mCodecContext->sample_rate);
+        mResampleContext = av_audio_resample_init(2, mCodecContext->channels, 44100, mCodecContext->sample_rate, SAMPLE_FMT_S16, mCodecContext->sample_fmt, 16, 10, 0, 0.8);
     }
 
     //set duration
@@ -396,6 +405,13 @@ bool MediaSourceFile::CloseGrabDevice()
         // free the software scaler context
         if (mMediaType == MEDIA_VIDEO)
             sws_freeContext(mScalerContext);
+
+        // free resample context
+        if ((mMediaType == MEDIA_AUDIO) && (mResampleContext != NULL))
+        {
+            audio_resample_close(mResampleContext);
+            mResampleContext = NULL;
+        }
 
         // Close the codec
         avcodec_close(mCodecContext);
@@ -615,38 +631,6 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
 
                         // hint: 32 bytes additional data per line within ffmpeg
                         int tCurrentFrameResX = (tSourceFrame->linesize[0] - 32);
-
-                        // check if video resolution has changed within remote GUI
-//                        if ((tCurrentFrameResX != -32) && (mSourceResX != 0) && (mSourceResX != tCurrentFrameResX))
-//                        {
-//                            LOG(LOG_INFO, "Video resolution change within file stream detected (old width: %d new width: %d)", mSourceResX, tCurrentFrameResX);
-//
-//                            GrabResolutions::iterator tIt, tItEnd = mSupportedVideoFormats.end();
-//                            bool tFound = false;
-//
-//                            for (tIt = mSupportedVideoFormats.begin(); tIt != tItEnd; tIt++)
-//                            {
-//                                if (tIt->ResX == tCurrentFrameResX)
-//                                {
-//                                    tFound = true;
-//                                    break;
-//                                }
-//                            }
-//
-//                            if (tFound)
-//                            {
-//                                // set grabbing resolution to the resulting ones delivered by received frame
-//                                mSourceResX = tIt->ResX;
-//                                mCodecContext->width = tIt->ResX;
-//                                mSourceResY = tIt->ResY;
-//                                mCodecContext->height = tIt->ResY;
-//
-//                                DoSetVideoGrabResolution(mTargetResX, mTargetResY);
-//
-//                                LOG(LOG_INFO, "Video resolution changed to \"%s\"(%d * %d)", tIt->Name.c_str(), tIt->ResX, tIt->ResY);
-//                            }else
-//                                LOG(LOG_ERROR, "Video resolution changed to unknown width: %d", tCurrentFrameResX);
-//                        }
                     }
 
                     // re-encode the frame and write it to file
@@ -757,18 +741,46 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
                             LOG(LOG_VERBOSE, "Decoding audio samples into buffer of size: %d", tOutputBufferSize);
                         #endif
 
-                        int tBytesDecoded = HM_avcodec_decode_audio(mCodecContext, (int16_t *)pChunkBuffer, &tOutputBufferSize, &tPacket);
-                        pChunkSize = tOutputBufferSize;
+                        int tBytesDecoded;
+
+                        if (mCodecContext->sample_rate == 44100)
+                        {
+                            tBytesDecoded = HM_avcodec_decode_audio(mCodecContext, (int16_t *)pChunkBuffer, &tOutputBufferSize, &tPacket);
+                            pChunkSize = tOutputBufferSize;
+                        }else
+                        {// have to insert an intermediate step, which resamples the audio chunk to 44.1 kHz
+                            tBytesDecoded = HM_avcodec_decode_audio(mCodecContext, (int16_t *)mResampleBuffer, &tOutputBufferSize, &tPacket);
+                            if(tOutputBufferSize > 0)
+                            {
+                                //HINT: we always assume 16 bit samples and a stereo signal, so we have to divide/multiply by 4
+                                int tResampledBytes = 4 * audio_resample(mResampleContext, (short*)pChunkBuffer, (short*)mResampleBuffer, tOutputBufferSize / 4);
+                                #ifdef MSF_DEBUG_PACKETS
+                                    LOG(LOG_VERBOSE, "Have resampled %d bytes of sample rate %d Hz to %d bytes of sample rate 44100 Hz", tOutputBufferSize, mCodecContext->sample_rate, tResampledBytes);
+                                #endif
+                                if(tResampledBytes > 0)
+                                {
+                                    pChunkSize = tResampledBytes;
+                                }else
+                                {
+                                    LOG(LOG_ERROR, "Amount of resampled bytes (%d) is invalid", tResampledBytes);
+                                    pChunkSize = 0;
+                                }
+                            }else
+                            {
+                                LOG(LOG_ERROR, "Output buffer size %d from audio decoder is invalid", tOutputBufferSize);
+                                pChunkSize = 0;
+                            }
+                        }
 
                         // re-encode the frame and write it to file
-                        if (mRecording)
+                        if ((mRecording) && (pChunkSize > 0))
                             RecordSamples((int16_t *)pChunkBuffer, pChunkSize);
 
                         #ifdef MSF_DEBUG_PACKETS
                             LOG(LOG_VERBOSE, "Result is an audio frame with size of %d bytes from %d encoded bytes", tOutputBufferSize, tBytesDecoded);
                         #endif
 
-                        if ((tBytesDecoded < 0) || (tOutputBufferSize == 0))
+                        if ((tBytesDecoded <= 0) || (tOutputBufferSize <= 0))
                         {
                             // free packet buffer
                             av_free_packet(&tPacket);
