@@ -74,33 +74,33 @@ MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, bool pT
     {
         LOG(LOG_VERBOSE, "Remote media sink at: %s<%d>%s", pTargetHost.c_str(), pTargetPort, mRtpActivated ? "(RTP)" : "");
 
-        SocketName *tDataTarget = new SocketName(mTargetHost, mTargetPort);
-        Requirements *tRequs = new Requirements();
+        SocketName tDataTarget(mTargetHost, mTargetPort);
+        Requirements tRequs;
 
         // Requirement network
         if(IS_IPV6_ADDRESS(pTargetHost))
-            tRequs->add(new RequirementUseIPv6());
+            tRequs.add(new RequirementUseIPv6());
 
         // REquirement transport
         if (pTransmitLossLess)
         {
-            tRequs->add(new RequirementTransmitLossless());
-            tRequs->add(new RequirementWaterfallTransmission());
+            tRequs.add(new RequirementTransmitLossless());
+            tRequs.add(new RequirementWaterfallTransmission());
         }else
-            tRequs->add(new RequirementTransmitChunks());
+            tRequs.add(new RequirementTransmitChunks());
 
         // Requirement QoS
         switch(pType)
         {
             case MEDIA_SINK_VIDEO:
                 ClassifyStream(DATA_TYPE_VIDEO, (enum PacketType)tTransportType);
-                tRequs->add(new RequirementLimitDelay(250)); //max. 250 ms
-                tRequs->add(new RequirementLimitDataRate(20, 0)); //min. 20 KB/s
+                tRequs.add(new RequirementLimitDelay(250)); //max. 250 ms
+                tRequs.add(new RequirementLimitDataRate(20, 0)); //min. 20 KB/s
                 break;
             case MEDIA_SINK_AUDIO:
                 ClassifyStream(DATA_TYPE_AUDIO, (enum PacketType)tTransportType);
-                tRequs->add(new RequirementLimitDelay(100)); //100 ms
-                tRequs->add(new RequirementLimitDataRate(8, 0)); //min. 8 KB/s
+                tRequs.add(new RequirementLimitDelay(100)); //100 ms
+                tRequs.add(new RequirementLimitDataRate(8, 0)); //min. 8 KB/s
                 break;
             default:
                 LOG(LOG_ERROR, "Undefined media type");
@@ -108,7 +108,7 @@ MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, bool pT
         }
 
         // finally subscribe to the target server/service
-        mGAPIDataSocket = GAPI.subscribe(tDataTarget, tRequs); //new Socket(IS_IPV6_ADDRESS(pTargetHost) ? SOCKET_IPv6 : SOCKET_IPv4, pSocketType);
+        mGAPIDataSocket = GAPI.subscribe(&tDataTarget, &tRequs); //new Socket(IS_IPV6_ADDRESS(pTargetHost) ? SOCKET_IPv6 : SOCKET_IPv4, pSocketType);
 
         if (mGAPIDataSocket != NULL)
         {
