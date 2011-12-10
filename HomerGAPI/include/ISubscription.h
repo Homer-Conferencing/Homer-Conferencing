@@ -29,6 +29,8 @@
 #define _GAPI_ISUBSCRIPTION_
 
 #include <IName.h>
+#include <Requirements.h>
+
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -45,6 +47,7 @@ public:
     virtual void cancel() = 0;
     virtual IName* name() = 0;
     virtual IName* peer() = 0;
+    virtual bool update(Requirements *pRequirements) = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

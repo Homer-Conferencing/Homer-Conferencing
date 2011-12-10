@@ -20,55 +20,24 @@
  *****************************************************************************/
 
 /*
- * Purpose: Requirements
+ * Purpose: RequirementChunksTransmission to trigger UDP based transport
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
 
-#ifndef _GAPI_REQUIREMENTS_
-#define _GAPI_REQUIREMENTS_
+#ifndef _GAPI_REQUIREMENT_USE_IPv6_
+#define _GAPI_REQUIREMENT_USE_IPv6_
 
 #include <IRequirement.h>
-#include <HBMutex.h>
-
-#include <list>
 
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-typedef std::list<IRequirement*> RequirementSet;
-
-///////////////////////////////////////////////////////////////////////////////
-
-class Requirements
+class RequirementUseIPv6:
+    public TRequirement<RequirementUseIPv6, REQUIREMENT_USE_IPv6>
 {
-public:
-    Requirements();
-    Requirements(Requirements &pCopy);
-    virtual ~Requirements();
-
-    virtual std::string toString();
-
-    /* overloaded operators */
-//    void operator+=(IRequirement pAddRequ);
-//    void operator|=(IRequirement pAddRequ);
-//    Requirements& operator+(IRequirement pAddRequ);
-//    Requirements& operator|(IRequirement pAddRequ);
-
-    /* set manipulation */
-    bool add(IRequirement *pRequ);
-
-    /* query functions */
-    bool contains(int pType);
-    IRequirement* get(int pType);
-
-private:
-    void add(RequirementSet pSet);
-    RequirementSet getAll();
-
-    RequirementSet      mRequirementSet;
-    Mutex               mRequirementSetMutex;
+    virtual std::string toString(){ return "Requ(UseIPv6)"; }
 };
 
 ///////////////////////////////////////////////////////////////////////////////

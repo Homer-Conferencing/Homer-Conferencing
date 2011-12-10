@@ -20,7 +20,7 @@
  *****************************************************************************/
 
 /*
- * Purpose: RequirementLosslessTransmission
+ * Purpose: RequirementTransmitLossless
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
@@ -34,10 +34,10 @@ namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class RequirementLosslessTransmission:
-    public TRequirement<RequirementLosslessTransmission, REQUIREMENT_TRANSMIT_LOSLESS>
+class RequirementTransmitLossless:
+    public TRequirement<RequirementTransmitLossless, REQUIREMENT_TRANSMIT_LOSLESS>
 {
-    virtual std::string toString(){ return "Requ(LosslessTransmission)"; }
+    virtual std::string toString(){ return "Requ(TransmitLossless)"; }
 };
 
 ///////////////////////////////////////////////////////////////////////////////

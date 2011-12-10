@@ -38,6 +38,10 @@ namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define BERKEYLEY_SOCKETS           "Berkeley Sockets"
+
+///////////////////////////////////////////////////////////////////////////////
+
 #define GAPI GapiService::GetInstance()
 typedef ISubscription*(*subscribeFunction)(IName*, Requirements*);
 typedef IRegistration*(*publishFunction)(IName*, Requirements*);

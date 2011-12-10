@@ -32,7 +32,8 @@ SET (FLAGS
 
 # SOURCES
 SET (SOURCES
-	../src/GAPI
+    ../src/GAPI
+    ../src/Requirements
     ../src/SocketName
     ../src/SocketSetup
     ../src/SocketSubscription

@@ -45,7 +45,7 @@ Requirements::Requirements()
 
 Requirements::~Requirements()
 {
-
+    //TODO: speicher aufraeumen, set loeschen
 }
 
 Requirements::Requirements(Requirements &pCopy)
@@ -78,31 +78,31 @@ string Requirements::toString()
     return tResult;
 }
 
-void Requirements::operator+=(IRequirement *pAddRequ)
-{
-    add(pAddRequ);
-}
-
-void Requirements::operator|=(IRequirement *pAddRequ)
-{
-    add(pAddRequ);
-}
-
-Requirements& Requirements::operator|(IRequirement pAddRequ)
-{
-    Requirements tResult(this);
-    tResult.add(pAddRequ);
-    return tResult;
-}
-
-Requirements& Requirements::operator+(IRequirement pAddRequ)
-{
-    Requirements tResult(this);
-    tResult.add(pAddRequ);
-    return tResult;
-}
-
-bool Requirements::add(const IRequirement& pAddRequ)
+//void Requirements::operator+=(IRequirement &pAddRequ)
+//{
+//    add(pAddRequ);
+//}
+//
+//void Requirements::operator|=(IRequirement &pAddRequ)
+//{
+//    add(pAddRequ);
+//}
+//
+//Requirements& Requirements::operator|(IRequirement &pAddRequ)
+//{
+//    Requirements *tResult = new Requirements(*this);
+//    tResult->add(pAddRequ);
+//    return *tResult;
+//}
+//
+//Requirements& Requirements::operator+(IRequirement &pAddRequ)
+//{
+//    Requirements *tResult = new Requirements(*this);
+//    tResult->add(pAddRequ);
+//    return *tResult;
+//}
+//
+bool Requirements::add(IRequirement *pAddRequ)
 {
     bool tResult = true;
     RequirementSet::iterator tIt;
@@ -112,7 +112,7 @@ bool Requirements::add(const IRequirement& pAddRequ)
     // do we already know this type of requirement?
     for(tIt = mRequirementSet.begin(); tIt != mRequirementSet.end(); tIt++)
     {
-        if((*tIt)->getType() == pAddRequ.getType())
+        if((*tIt)->getType() == pAddRequ->getType())
         {
             tResult = false;
         }
@@ -129,15 +129,15 @@ bool Requirements::add(const IRequirement& pAddRequ)
     return tResult;
 }
 
-void Requirements::add(const RequirementSet& pSet)
+void Requirements::add(RequirementSet pSet)
 {
     RequirementSet::iterator tIt;
 
     mRequirementSetMutex.lock();
 
-    for (tIt = pSet->begin(); tIt != pSet->end(); tIt++)
+    for (tIt = pSet.begin(); tIt != pSet.end(); tIt++)
     {
-        mRequirementSet.push_back((*tIt));
+        mRequirementSet.push_back(*tIt);
     }
 
     mRequirementSetMutex.unlock();

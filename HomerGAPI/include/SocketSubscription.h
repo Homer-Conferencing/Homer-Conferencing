@@ -49,6 +49,7 @@ public:
     virtual void cancel();
     virtual IName* name();
     virtual IName* peer();
+    virtual bool update(Requirements *pRequirements);
 
 private:
     int 		mSocketHandle;

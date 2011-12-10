@@ -40,6 +40,7 @@ namespace Homer { namespace Base {
 #define REQUIREMENT_TRANSMIT_WATERFALL                  0x00000003
 #define REQUIREMENT_LIMIT_DATARATE                      0x00000004
 #define REQUIREMENT_LIMIT_DELAY                         0x00000005
+#define REQUIREMENT_USE_IPv6                            0x00000006
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -52,8 +53,8 @@ public:
 	IRequirement(int pType):mType(pType){}
     virtual ~IRequirement( ){}
 
-    virtual std::string toString(){ return "Requ(undefined)"; }
-    virtual int getType(){ return mType; }
+    virtual std::string toString() = 0;
+    virtual int getType()const { return mType; }
 
 private:
     int mType;
