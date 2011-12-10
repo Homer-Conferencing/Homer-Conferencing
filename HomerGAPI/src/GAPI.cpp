@@ -137,7 +137,7 @@ SetupInterfacesNames GapiService::enumSetupInterfaces()
 
 ISubscription* GapiService::subscribe(IName *pName, Requirements *pRequirements)
 {
-	LOG(LOG_VERBOSE, "Got call to GAPI::subscribe() with name \"%s\" and requirements \"%s\"", pName->toString().c_str(), pRequirements->toString().c_str());
+	LOG(LOG_VERBOSE, "Got call to GAPI::subscribe() with name \"%s\" and requirements \"%s\"", pName->toString().c_str(), pRequirements->getDescription().c_str());
 
 	if(mSetupInterface == 0)
 	{
@@ -150,7 +150,7 @@ ISubscription* GapiService::subscribe(IName *pName, Requirements *pRequirements)
 
 IRegistration* GapiService::publish(IName *pName, Requirements *pRequirements)
 {
-	LOG(LOG_VERBOSE, "Got call to GAPI::publish() with name \"%s\" and requirements \"%s\"", pName->toString().c_str(), pRequirements->toString().c_str());
+	LOG(LOG_VERBOSE, "Got call to GAPI::publish() with name \"%s\" and requirements \"%s\"", pName->toString().c_str(), pRequirements->getDescription().c_str());
 
 	if(mSetupInterface == 0)
 	{

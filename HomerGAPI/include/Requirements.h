@@ -48,7 +48,7 @@ public:
     Requirements(Requirements &pCopy);
     virtual ~Requirements();
 
-    virtual std::string toString();
+    virtual std::string getDescription();
 
     /* overloaded operators */
 //    void operator+=(IRequirement pAddRequ);
@@ -66,6 +66,7 @@ public:
 private:
     void add(RequirementSet pSet);
     RequirementSet getAll();
+    void removeAll();
 
     RequirementSet      mRequirementSet;
     Mutex               mRequirementSetMutex;
