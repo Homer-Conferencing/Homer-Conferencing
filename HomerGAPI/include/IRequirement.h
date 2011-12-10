@@ -35,12 +35,21 @@ namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define REQUIREMENT_TRANSMIT_LOSLESS                    0x00000001
-#define REQUIREMENT_TRANSMIT_CHUNKS                     0x00000002
-#define REQUIREMENT_TRANSMIT_WATERFALL                  0x00000003
-#define REQUIREMENT_LIMIT_DATARATE                      0x00000004
-#define REQUIREMENT_LIMIT_DELAY                         0x00000005
-#define REQUIREMENT_USE_IPv6                            0x00000006
+// network attributes
+#define REQUIREMENT_USE_IPv6                            0x0006
+
+// transport attributes
+#define REQUIREMENT_TRANSMIT_LOSLESS                    0x0101
+#define REQUIREMENT_TRANSMIT_CHUNKS                     0x0102
+#define REQUIREMENT_TRANSMIT_WATERFALL                  0x0103
+
+// additional transport attributes
+#define REQUIREMENT_TRANSMIT_BIT_ERRORS                 0x0111
+#define REQUIREMENT_TRANSMIT_FAST                       0x0112
+
+// QoS/throughput attributes
+#define REQUIREMENT_LIMIT_DATARATE                      0x0201
+#define REQUIREMENT_LIMIT_DELAY                         0x0201
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -50,11 +59,20 @@ class Requirements;
 class IRequirement
 {
 public:
-	IRequirement(int pType):mType(pType){}
-    virtual ~IRequirement( ){}
+	IRequirement(int pType):mType(pType)
+	{
+
+	}
+    virtual ~IRequirement( )
+    {
+
+    }
 
     virtual std::string toString() = 0;
-    virtual int getType()const { return mType; }
+    virtual int getType()const
+    {
+        return mType;
+    }
 
 private:
     int mType;
@@ -65,10 +83,19 @@ class TRequirement:
     public IRequirement
 {
 public:
-    TRequirement():IRequirement(pType) { }
-    virtual ~TRequirement() { }
+    TRequirement():IRequirement(pType)
+    {
 
-    static int type() { return pType; }
+    }
+    virtual ~TRequirement()
+    {
+
+    }
+
+    static int type()
+    {
+        return pType;
+    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
