@@ -28,6 +28,16 @@
 #ifndef _GAPI_REQUIREMENTS_
 #define _GAPI_REQUIREMENTS_
 
+// to simplify including of all requirements
+#include <RequirementUseIPv6.h>
+#include <RequirementTransmitLossless.h>
+#include <RequirementTransmitChunks.h>
+#include <RequirementTransmitWaterfall.h>
+#include <RequirementTransmitBitErrors.h>
+#include <RequirementTransmitFast.h>
+#include <RequirementLimitDelay.h>
+#include <RequirementLimitDataRate.h>
+
 #include <IRequirement.h>
 #include <HBMutex.h>
 

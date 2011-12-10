@@ -37,7 +37,15 @@ namespace Homer { namespace Base {
 class RequirementTransmitBitErrors:
     public TRequirement<RequirementTransmitBitErrors, REQUIREMENT_TRANSMIT_BIT_ERRORS>
 {
+public:
+    RequirementTransmitBitErrors(int pSecuredFrontDataSize):TRequirement(),mSecuredFrontDataSize(pSecuredFrontDataSize){ }
+
     virtual std::string toString(){ return "Requ(TransmitBitErrors)"; }
+
+    int getSecuredFrontDataSize(){ return mSecuredFrontDataSize; }
+
+private:
+    int mSecuredFrontDataSize;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

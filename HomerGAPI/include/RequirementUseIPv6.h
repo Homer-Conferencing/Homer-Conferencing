@@ -37,6 +37,7 @@ namespace Homer { namespace Base {
 class RequirementUseIPv6:
     public TRequirement<RequirementUseIPv6, REQUIREMENT_USE_IPv6>
 {
+public:
     virtual std::string toString(){ return "Requ(UseIPv6)"; }
 };
 

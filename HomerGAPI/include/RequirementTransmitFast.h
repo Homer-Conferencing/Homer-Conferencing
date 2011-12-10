@@ -37,6 +37,7 @@ namespace Homer { namespace Base {
 class RequirementTransmitFast:
     public TRequirement<RequirementTransmitFast, REQUIREMENT_TRANSMIT_FAST>
 {
+public:
     virtual std::string toString(){ return "Requ(TransmitFast)"; }
 };
 
