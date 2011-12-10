@@ -104,7 +104,7 @@ Socket* SocketControlService::RegisterClientSocket(Socket *pSocket)
     if (pSocket == NULL)
         return NULL;
 
-    LOG(LOG_VERBOSE, "Registering socket control for client socket to peer: %s", pSocket->GetName().c_str());
+    LOG(LOG_VERBOSE, "Registering socket control for client socket to peer: %s", pSocket->GetPeerName().c_str());
 
     // lock
     mClientSocketsMutex.lock();
@@ -136,7 +136,7 @@ bool SocketControlService::UnregisterClientSocket(Socket *pSocket)
     if (pSocket == NULL)
         return false;
 
-    LOG(LOG_VERBOSE, "Unregistering socket control for client socket to peer: %s", pSocket->GetName().c_str());
+    LOG(LOG_VERBOSE, "Unregistering socket control for client socket to peer: %s", pSocket->GetPeerName().c_str());
 
     // lock
     mClientSocketsMutex.lock();
