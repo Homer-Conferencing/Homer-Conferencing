@@ -18,6 +18,7 @@ SET (INCLUDE_DIRS
 	../include
 	../../HomerBase/include/Logging
 	../../HomerBase/include
+	../../HomerGAPI/include
 	../../HomerMonitor/include
 	../../HomerMultimedia/include
 	../../HomerWinLibs/FFMPEG
@@ -86,6 +87,7 @@ ENDIF (LINUX)
 # USED LIBRARIES for win32 environment
 SET (LIBS_WINDOWS
 	HomerBase
+	HomerGAPI
 	HomerMonitor
 	ws2_32
 	avutil-51
@@ -100,6 +102,7 @@ SET (LIBS_WINDOWS
 # USED LIBRARIES for apple environment
 SET (LIBS_APPLE
 	HomerBase
+	HomerGAPI
 	HomerMonitor
 )
 
@@ -121,6 +124,7 @@ SET (LIBS_APPLE_STATIC
 # USED LIBRARIES for linux environment
 SET (LIBS_LINUX
 	HomerBase
+	HomerGAPI
 	HomerMonitor
 	asound
 )
@@ -144,8 +148,8 @@ SET (LIBS_LINUX_STATIC
 # USED LIBRARIES for BSD environment
 SET (LIBS_BSD
 	HomerBase
+	HomerGAPI
 	HomerMonitor
-	asound
 )
 
 SET (LIBS_BSD_STATIC
