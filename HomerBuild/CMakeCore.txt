@@ -1,0 +1,267 @@
+###############################################################################
+# Author:  Thomas Volkert
+# Since:   2010-11-13
+###############################################################################
+
+if (NOT PRE_DEFINITIONS_EXECUTED)
+MESSAGE("!!!!## You forgot to include the pre-definitions called CMakePreDefs.txt ##!!!! ")
+endif ()
+
+#MESSAGE("#####################################")
+#MESSAGE("Configure")
+#MESSAGE("#####################################")
+
+##############################################################
+# support thread-safe exception handling on Mingw32
+if (WIN32)
+SET (FLAGS 
+	${FLAGS}
+	-mthreads
+)
+endif (WIN32)
+
+##############################################################
+# library directories
+IF (LINUX)
+SET (LIB_DIRS
+	${LIB_DIRS}
+	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerLibs/linux${ARCH_BITS}
+)
+ENDIF (LINUX)
+IF (BSD)
+SET (LIB_DIRS
+	${LIB_DIRS}
+	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerLibs/bsd${ARCH_BITS}
+)
+ENDIF (BSD)
+IF (WIN32)
+SET (LIB_DIRS
+	${LIB_DIRS}
+	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerLibs/win${ARCH_BITS}	
+)
+ENDIF (WIN32)
+IF (APPLE)
+SET (LIB_DIRS
+	${LIB_DIRS}
+	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerLibs/apple${ARCH_BITS}
+)
+ENDIF (APPLE)
+SET (LIB_DIRS
+	${LIB_DIRS}
+	${CMAKE_CURRENT_SOURCE_DIR}/../../lib
+	/usr/local/lib
+	/usr/lib
+)
+
+# include dirs
+SET (INCLUDE_DIRS
+	${INCLUDE_DIRS}
+	/usr/local/include
+)
+
+##############################################################
+# compile flags
+SET (FLAGS
+	${FLAGS}
+	-D_GNU_SOURCE
+	-W
+	-Wall
+	-Wno-switch
+	-Wno-unused
+	-Wno-long-long
+	-Wno-deprecated-declarations
+	-O2
+)
+
+##############################################################
+# link flags
+SET (LFLAGS
+	${LFLAGS}
+)
+
+##############################################################
+IF (APPLE)
+SET (LFLAGS
+	${LFLAGS}
+	-Wl,-install_name,@rpath/lib${TARGET_NAME}.dylib
+)
+ENDIF (APPLE)
+
+IF (BSD)
+	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wl,-soname,${TARGET_NAME}.dylib")
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,-soname,${TARGET_NAME}.dylib")
+ENDIF (BSD)
+
+IF (LINUX)
+	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wl,-soname,${TARGET_NAME}.so")
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,-soname,${TARGET_NAME}.so")
+ENDIF (LINUX)
+
+##############################################################
+# definitions
+# "-D" options for compilation in win32 environment
+SET (DEFINITIONS_WINDOWS
+	${DEFINITIONS_WINDOWS}
+	-D__STDC_CONSTANT_MACROS
+	-DWINVER=0x0501
+	-DWIN32
+	-D_REENTRANT
+	-DBITS=${ARCH_BITS}
+)
+
+# "-D" options for compilation in linux environment
+SET (DEFINITIONS_LINUX
+	${DEFINITIONS_LINUX}
+	-D__STDC_CONSTANT_MACROS
+	-DLINUX
+	-D_REENTRANT
+	-DBITS=${ARCH_BITS}
+)
+
+# "-D" options for compilation in linux environment
+SET (DEFINITIONS_BSD
+	${DEFINITIONS_BSD}
+	-D__STDC_CONSTANT_MACROS
+	-DBSD
+	-D_REENTRANT
+	-DBITS=${ARCH_BITS}
+)
+
+# "-D" options for compilation in linux environment
+SET (DEFINITIONS_APPLE
+	${DEFINITIONS_APPLE}
+	-D__STDC_CONSTANT_MACROS
+	-DAPPLE
+	-D_REENTRANT
+	-DBITS=${ARCH_BITS}
+)
+
+##############################################################
+# define minimum requirements for cmake
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6) 
+
+##############################################################
+# build only shared libs by default
+SET(BUILD_SHARED_LIBS ON)
+SET(BUILD_STATIC_LIBS ON)
+
+##############################################################
+# for win32 remove the "lib" prefix for dll's
+if (WIN32)
+	SET(CMAKE_SHARED_LIBRARY_PREFIX "")
+	SET(CMAKE_STATIC_LIBRARY_PREFIX "")
+	SET(CMAKE_IMPORT_LIBRARY_PREFIX "")
+endif (WIN32)
+
+##############################################################
+# destination for install target
+SET(LIBRARY_OUTPUT_PATH ${TARGET_DIRECTORY})
+          
+##############################################################
+# add definitions for compilation
+if (WIN32)
+	FOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_WINDOWS})
+		ADD_DEFINITIONS("${DEFINITIONS_ENTRY}")
+	ENDFOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_WINDOWS})
+endif (WIN32)	
+if (APPLE)
+	FOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_APPLE})
+		ADD_DEFINITIONS("${DEFINITIONS_ENTRY}")
+	ENDFOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_APPLE})
+endif (APPLE)	
+if (BSD)
+	FOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_BSD})
+		ADD_DEFINITIONS("${DEFINITIONS_ENTRY}")
+	ENDFOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_BSD})
+endif (BSD)	
+if (LINUX)
+	FOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_LINUX})
+		ADD_DEFINITIONS("${DEFINITIONS_ENTRY}")
+	ENDFOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_LINUX})
+endif (LINUX)
+
+
+
+
+
+##############################################################
+# add flags for linking
+FOREACH(LFLAGS_ENTRY ${LFLAGS})
+	SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LFLAGS_ENTRY}")
+	SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LFLAGS_ENTRY}")
+	SET(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${LFLAGS_ENTRY}")
+ENDFOREACH(LFLAGS_ENTRY ${LFLAGS})
+MESSAGE("### Flags for exe linking: ${CMAKE_EXE_LINKER_FLAGS}")
+MESSAGE("### Flags for shared linking: ${CMAKE_SHARED_LINKER_FLAGS}")
+MESSAGE("### Flags for module linking: ${CMAKE_MODULE_LINKER_FLAGS}")
+
+##############################################################
+# add flags for compilation
+FOREACH(FLAGS_ENTRY ${FLAGS})
+	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${FLAGS_ENTRY}")
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAGS_ENTRY}")
+ENDFOREACH(FLAGS_ENTRY ${FLAGS})
+MESSAGE("### Flags for C compiling: ${CMAKE_C_FLAGS}")
+MESSAGE("### Flags for C++ compiling: ${CMAKE_CXX_FLAGS}")
+
+##############################################################
+# add include paths
+FOREACH(INCLUDE_DIRS_ENTRY ${INCLUDE_DIRS})
+	INCLUDE_DIRECTORIES("${INCLUDE_DIRS_ENTRY}")
+ENDFOREACH(INCLUDE_DIRS_ENTRY ${INCLUDE_DIRS})
+
+##############################################################
+# add library paths
+FOREACH(LIB_DIRS_ENTRY ${LIB_DIRS})
+	LINK_DIRECTORIES("${LIB_DIRS_ENTRY}")
+ENDFOREACH(LIB_DIRS_ENTRY ${LIB_DIRS})
+
+##############################################################
+# generate library from given source files
+ADD_LIBRARY(${TARGET_NAME} SHARED ${SOURCES})
+
+##############################################################
+# link to needed external libraries
+if (WIN32)
+	MESSAGE("### Linking dynamic Windows libraries: ${LIBS_WINDOWS}")
+	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_WINDOWS})
+endif (WIN32)
+
+
+if (APPLE)
+	MESSAGE("### Linking dynamic Apple libraries: ${LIBS_APPLE}")
+	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_APPLE})
+
+	MESSAGE("### Linking static Apple libraries: ${LIBS_APPLE_STATIC}")
+	SET (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-search_paths_first")
+	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_APPLE_STATIC})
+
+	MESSAGE("### Linking Apple frameworks: ${FRAMEWORKS_APPLE}")
+	FOREACH(FRAMEWORKS_APPLE_ENTRY ${FRAMEWORKS_APPLE})
+		SET (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -framework ${FRAMEWORKS_APPLE_ENTRY}" )
+		#TARGET_LINK_LIBRARIES(${TARGET_NAME} "-Wl,-framework ${FRAMEWORKS_APPLE_ENTRY}" )
+	ENDFOREACH(FRAMEWORKS_APPLE_ENTRY ${FRAMEWORKS_APPLE})
+endif (APPLE)
+
+if (BSD)
+	MESSAGE("### Linking dynamic BSD libraries: ${LIBS_BSD}")
+	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_BSD})
+
+	MESSAGE("### Linking static BSD libraries: ${LIBS_BSD_STATIC}")
+#	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_BSD_STATIC} )
+	TARGET_LINK_LIBRARIES(${TARGET_NAME} -Wl,-Bstatic -Wl,-Bsymbolic ${LIBS_BSD_STATIC} -Wl,-Bdynamic )
+endif (BSD)
+
+if (LINUX)
+	MESSAGE("### Linking dynamic Linux libraries: ${LIBS_LINUX}")
+	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_LINUX})
+
+	MESSAGE("### Linking static Linux libraries: ${LIBS_LINUX_STATIC}")
+#	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_LINUX_STATIC} )
+	TARGET_LINK_LIBRARIES(${TARGET_NAME} -Wl,-Bstatic -Wl,-Bsymbolic ${LIBS_LINUX_STATIC} -Wl,-Bdynamic )
+endif (LINUX)
+
+#		TARGET_LINK_LIBRARIES(${TARGET_NAME} -Wl,-Bstatic -Wl,-Bsymbolic ${LIBS_LINUX_STATIC} -Wl,-Bdynamic )
+#		TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_LINUX_STATIC} )
+#		TARGET_LINK_LIBRARIES(${TARGET_NAME} -Wl,-Bstatic ${LIBS_LINUX_STATIC_ENTRY} -Wl,-Bdynamic )
+#		TARGET_LINK_LIBRARIES(${TARGET_NAME} -Wl,--whole-archive ${LIBS_LINUX_STATIC_ENTRY} -Wl,--no-whole-archive )
