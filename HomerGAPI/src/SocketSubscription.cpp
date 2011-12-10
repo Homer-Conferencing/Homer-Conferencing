@@ -32,6 +32,7 @@
 #include <RequirementTransmitLossless.h>
 #include <RequirementTransmitChunks.h>
 #include <RequirementTransmitWaterfall.h>
+#include <RequirementTransmitBitErrors.h>
 #include <RequirementLimitDelay.h>
 #include <RequirementLimitDataRate.h>
 
@@ -79,6 +80,11 @@ SocketSubscription::SocketSubscription(std::string pTargetHost, unsigned int pTa
                 (pRequirements->contains(RequirementTransmitChunks::type())) &&
                 (!pRequirements->contains(RequirementWaterfallTransmission::type())));
 
+    bool tUdpLite = ((!pRequirements->contains(RequirementTransmitLossless::type())) &&
+                    (pRequirements->contains(RequirementTransmitChunks::type())) &&
+                    (!pRequirements->contains(RequirementWaterfallTransmission::type())) &&
+                    (pRequirements->contains(RequirementTransmitBitErrors::type())));
+
     if (tTcp)
     {
         mSocket = new Socket(tIPv6 ? SOCKET_IPv6 : SOCKET_IPv4, SOCKET_TCP);
@@ -91,7 +97,13 @@ SocketSubscription::SocketSubscription(std::string pTargetHost, unsigned int pTa
     {
         if(!tFoundTransport)
         {
-            mSocket = new Socket(tIPv6 ? SOCKET_IPv6 : SOCKET_IPv4, SOCKET_UDP);
+            if(!tUdpLite)
+            {
+                mSocket = new Socket(tIPv6 ? SOCKET_IPv6 : SOCKET_IPv4, SOCKET_UDP);
+            }else
+            {
+                mSocket = new Socket(tIPv6 ? SOCKET_IPv6 : SOCKET_IPv4, SOCKET_UDP_LITE);
+            }
             tFoundTransport = true;
             mIsClosed = false;
         }else
