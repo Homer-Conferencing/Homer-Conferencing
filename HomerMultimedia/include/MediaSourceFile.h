@@ -42,7 +42,7 @@ namespace Homer { namespace Multimedia {
 //#define MSF_DEBUG_TIMING
 
 // 33 ms delay for 30 fps -> rounded to 35 ms
-#define MSF_FRAME_DROP_THRESHOLD           0 //in us, 0 deactivates frame dropping
+#define MSF_FRAME_DROP_THRESHOLD            0 //in us, 0 deactivates frame dropping
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -85,6 +85,8 @@ private:
     bool                mGrabInRealTime;
     int64_t             mCurPts; // we have to determine this manually during grabbing because cur_dts and everything else in AVStream is buggy for some video/audio files
     bool                mSeekingToPos; // seek to starting point because initial stream detection consumes the first n frames, or seeking to explicit position ("Seek" was called)
+    char                *mResampleBuffer;
+    ReSampleContext     *mResampleContext;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
