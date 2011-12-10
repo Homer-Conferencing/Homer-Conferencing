@@ -38,13 +38,7 @@
 
 #include <string>
 
-#include <RequirementUseIPv6.h>
-#include <RequirementTransmitLossless.h>
-#include <RequirementTransmitChunks.h>
-#include <RequirementTransmitWaterfall.h>
-#include <RequirementTransmitBitErrors.h>
-#include <RequirementLimitDelay.h>
-#include <RequirementLimitDataRate.h>
+#include <Requirements.h>
 
 namespace Homer { namespace Multimedia {
 
@@ -84,14 +78,17 @@ MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, bool pT
 
         // REquirement transport
         if (pTransmitLossLess)
-        {
+        {//TCP-like
             tRequs.add(new RequirementTransmitLossless());
+            tRequs.add(new RequirementTransmitFast());
             tRequs.add(new RequirementWaterfallTransmission());
         }else
-        {
+        {//UDP-like
             tRequs.add(new RequirementTransmitChunks());
+
+            //extend to UDP-Lite
             if(pTransmitBitErrors)
-                tRequs.add(new RequirementTransmitBitErrors());
+                tRequs.add(new RequirementTransmitBitErrors(UDP_LITE_HEADER_SIZE + RTP_HEADER_SIZE));
         }
 
         // Requirement QoS
@@ -114,18 +111,6 @@ MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, bool pT
 
         // finally subscribe to the target server/service
         mGAPIDataSocket = GAPI.subscribe(&tDataTarget, &tRequs); //new Socket(IS_IPV6_ADDRESS(pTargetHost) ? SOCKET_IPv6 : SOCKET_IPv4, pSocketType);
-
-        if (mGAPIDataSocket != NULL)
-        {
-//TODO
-//            // for UDP-Lite: check the UDPLite and the RTP header
-//            if (pSocketType == SOCKET_UDP_LITE)
-//                mGAPIDataSocket->UDPLiteSetCheckLength(UDP_LITE_HEADER_SIZE + RTP_HEADER_SIZE);
-
-            // for TCP: disable Nagle's algorithm
-//            if (pTransmitLossLess)
-//                mGAPIDataSocket->TCPDisableNagle();
-        }
     }
 
     mMediaId = CreateId(pTargetHost, toString(pTargetPort), tTransportType, pRtpActivated);
