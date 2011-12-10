@@ -34,8 +34,16 @@
 #include <HBSocket.h>
 #include <HBTime.h>
 #include <Logger.h>
+#include <SocketName.h>
 
 #include <string>
+
+#include <RequirementUseIPv6.h>
+#include <RequirementTransmitLossless.h>
+#include <RequirementTransmitChunks.h>
+#include <RequirementTransmitWaterfall.h>
+#include <RequirementLimitDelay.h>
+#include <RequirementLimitDataRate.h>
 
 namespace Homer { namespace Multimedia {
 
@@ -43,28 +51,16 @@ using namespace std;
 using namespace Homer::Monitor;
 using namespace Homer::Base;
 
-QoSSettings sVideoDefaultQoSSettings = {
-		20, // min. data rate
-		250, // max. delay
-		QOS_FEATURE_NONE // features
-};
-
-
-QoSSettings sAudioDefaultQoSSettings = {
-		8, // min. data rate
-		100, // max. delay
-		QOS_FEATURE_LOSSLESS // features
-};
-
 ///////////////////////////////////////////////////////////////////////////////
 
-MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, enum TransportType pSocketType, enum MediaSinkType pType, bool pRtpActivated):
+MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, bool pTransmitLossLess, bool pTransmitBitErrors, enum MediaSinkType pType, bool pRtpActivated):
     MediaSink(pType), RTP()
 {
+    mTransmitLossLess = pTransmitLossLess;
     mCodec = "unknown";
     mStreamerOpened = false;
     mBrokenPipe = false;
-    mDataSocket = NULL;
+    mGAPIDataSocket = NULL;
     mCurrentStream = NULL;
 
     mTargetHost = pTargetHost;
@@ -72,47 +68,73 @@ MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, enum Tr
     mRtpActivated = pRtpActivated;
     mTCPCopyBuffer = (char*)malloc(MEDIA_SOURCE_MEM_PACKET_BUFFER_SIZE);
 
+    enum TransportType tTransportType = (pTransmitLossLess ? SOCKET_TCP : (pTransmitBitErrors ? SOCKET_UDP_LITE : SOCKET_UDP));
+
     if ((mTargetHost != "") && (mTargetPort != 0))
     {
         LOG(LOG_VERBOSE, "Remote media sink at: %s<%d>%s", pTargetHost.c_str(), pTargetPort, mRtpActivated ? "(RTP)" : "");
 
-        mDataSocket = new Socket(IS_IPV6_ADDRESS(pTargetHost) ? SOCKET_IPv6 : SOCKET_IPv4, pSocketType);
+        SocketName *tDataTarget = new SocketName(mTargetHost, mTargetPort);
+        Requirements *tRequs = new Requirements();
 
-        if (mDataSocket != NULL)
+        // Requirement network
+        if(IS_IPV6_ADDRESS(pTargetHost))
+            tRequs->add(new RequirementUseIPv6());
+
+        // REquirement transport
+        if (pTransmitLossLess)
         {
-            // for UDP-Lite: check the UDPLite and the RTP header
-            if (pSocketType == SOCKET_UDP_LITE)
-                mDataSocket->UDPLiteSetCheckLength(UDP_LITE_HEADER_SIZE + RTP_HEADER_SIZE);
+            tRequs->add(new RequirementTransmitLossless());
+            tRequs->add(new RequirementWaterfallTransmission());
+        }else
+            tRequs->add(new RequirementTransmitChunks());
+
+        // Requirement QoS
+        switch(pType)
+        {
+            case MEDIA_SINK_VIDEO:
+                ClassifyStream(DATA_TYPE_VIDEO, (enum PacketType)tTransportType);
+                tRequs->add(new RequirementLimitDelay(250)); //max. 250 ms
+                tRequs->add(new RequirementLimitDataRate(20, 0)); //min. 20 KB/s
+                break;
+            case MEDIA_SINK_AUDIO:
+                ClassifyStream(DATA_TYPE_AUDIO, (enum PacketType)tTransportType);
+                tRequs->add(new RequirementLimitDelay(100)); //100 ms
+                tRequs->add(new RequirementLimitDataRate(8, 0)); //min. 8 KB/s
+                break;
+            default:
+                LOG(LOG_ERROR, "Undefined media type");
+                break;
+        }
+
+        // finally subscribe to the target server/service
+        mGAPIDataSocket = GAPI.subscribe(tDataTarget, tRequs); //new Socket(IS_IPV6_ADDRESS(pTargetHost) ? SOCKET_IPv6 : SOCKET_IPv4, pSocketType);
+
+        if (mGAPIDataSocket != NULL)
+        {
+//TODO
+//            // for UDP-Lite: check the UDPLite and the RTP header
+//            if (pSocketType == SOCKET_UDP_LITE)
+//                mGAPIDataSocket->UDPLiteSetCheckLength(UDP_LITE_HEADER_SIZE + RTP_HEADER_SIZE);
 
             // for TCP: disable Nagle's algorithm
-            if (pSocketType == SOCKET_TCP)
-                mDataSocket->TCPDisableNagle();
+//            if (pTransmitLossLess)
+//                mGAPIDataSocket->TCPDisableNagle();
         }
     }
 
-    switch(pType)
-    {
-        case MEDIA_SINK_VIDEO:
-            ClassifyStream(DATA_TYPE_VIDEO, (enum PacketType)pSocketType);
-            mDataSocket->SetQoS(sVideoDefaultQoSSettings);
-            break;
-        case MEDIA_SINK_AUDIO:
-            ClassifyStream(DATA_TYPE_AUDIO, (enum PacketType)pSocketType);
-            mDataSocket->SetQoS(sAudioDefaultQoSSettings);
-            break;
-        default:
-            LOG(LOG_ERROR, "Undefined media type");
-            break;
-    }
-    mMediaId = CreateId(pTargetHost, toString(pTargetPort), pSocketType, pRtpActivated);
+    mMediaId = CreateId(pTargetHost, toString(pTargetPort), tTransportType, pRtpActivated);
     AssignStreamName("NET-OUT: " + mMediaId);
 }
 
 MediaSinkNet::~MediaSinkNet()
 {
     CloseStreamer();
-    if (mDataSocket != NULL)
-        delete mDataSocket;
+    if (mGAPIDataSocket != NULL)
+    {
+        mGAPIDataSocket->cancel();
+        delete mGAPIDataSocket;
+    }
     free(mTCPCopyBuffer);
 }
 
@@ -301,7 +323,7 @@ void MediaSinkNet::SendFragment(char* pPacketData, unsigned int pPacketSize, uns
     char *tPacketData = pPacketData;
 
     // for TCP add an additional fragment header in front of the codec data to be able to differentiate the fragments in a received TCP packet at receiver side
-    if(mDataSocket->GetTransportType() == SOCKET_TCP)
+    if(mTransmitLossLess)
     {
         TCPFragmentHeader *tHeader = (TCPFragmentHeader*)mTCPCopyBuffer;
         memcpy(mTCPCopyBuffer + TCP_FRAGMENT_HEADER_SIZE, pPacketData, pPacketSize);
@@ -311,7 +333,8 @@ void MediaSinkNet::SendFragment(char* pPacketData, unsigned int pPacketSize, uns
     }
 
     AnnouncePacket(pPacketSize);
-    if (!mDataSocket->Send(mTargetHost, mTargetPort, tPacketData, (ssize_t)pPacketSize))
+    mGAPIDataSocket->write(tPacketData, (int)pPacketSize);
+    if (mGAPIDataSocket->isClosed())
     {
         LOG(LOG_ERROR, "Error when sending data through %s socket to %s:%u, will skip further transmissions", GetPacketTypeStr().c_str(), mTargetHost.c_str(), mTargetPort);
         mBrokenPipe = true;

@@ -29,6 +29,7 @@
 #define _MULTIMEDIA_MEDIA_SINK_NET_
 
 #include <Header_Ffmpeg.h>
+#include <GAPI.h>
 #include <HBSocket.h>
 #include <MediaSink.h>
 #include <RTP.h>
@@ -51,7 +52,7 @@ class MediaSinkNet:
 {
 
 public:
-    MediaSinkNet(std::string pTargetHost, unsigned int pTargetPort, enum TransportType pSocketType = SOCKET_UDP, enum MediaSinkType pType = MEDIA_SINK_UNKNOWN, bool pRtpActivated = true);
+    MediaSinkNet(std::string pTargetHost, unsigned int pTargetPort, bool TransmitLossLess = false, bool pTransmitBitErrors = false, enum MediaSinkType pType = MEDIA_SINK_UNKNOWN, bool pRtpActivated = true);
 
     virtual ~MediaSinkNet();
 
@@ -72,10 +73,11 @@ private:
     std::string         mTargetHost;
     unsigned int        mTargetPort;
     std::string         mCodec;
-    Socket              *mDataSocket;
+    ISubscription       *mGAPIDataSocket;
     char                *mTCPCopyBuffer;
     bool                mStreamerOpened;
     bool                mBrokenPipe;
+    bool                mTransmitLossLess;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

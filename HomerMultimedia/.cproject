@@ -47,6 +47,7 @@
 									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\FFMPEG\libavutil&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\FFMPEG\libswscale&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\FFMPEG&quot;"/>
+									<listOptionValue builtIn="false" value="../../HomerGAPI/include"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.943936581" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -323,5 +324,8 @@
 				</scannerInfoProvider>
 			</profile>
 		</scannerConfigBuildInfo>
+	</storageModule>
+	<storageModule moduleId="refreshScope" versionNumber="1">
+		<resource resourceType="PROJECT" workspacePath="/HomerMultimedia"/>
 	</storageModule>
 </cproject>

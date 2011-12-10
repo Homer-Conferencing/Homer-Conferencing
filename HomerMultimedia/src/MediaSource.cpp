@@ -773,7 +773,7 @@ MediaSinkNet* MediaSource::RegisterMediaSink(string pTargetHost, unsigned int pT
 
     if (!tFound)
     {
-        MediaSinkNet *tMediaSinkNet = new MediaSinkNet(pTargetHost, pTargetPort, pSocketType, (mMediaType == MEDIA_VIDEO) ? MEDIA_SINK_VIDEO : MEDIA_SINK_AUDIO, pRtpActivation);
+        MediaSinkNet *tMediaSinkNet = new MediaSinkNet(pTargetHost, pTargetPort, (pSocketType == SOCKET_TCP) ? true : false, (pSocketType == SOCKET_UDP_LITE) ? true : false, (mMediaType == MEDIA_VIDEO) ? MEDIA_SINK_VIDEO : MEDIA_SINK_AUDIO, pRtpActivation);
         tMediaSinkNet->SetMaxFps(pMaxFps);
         mMediaSinks.push_back(tMediaSinkNet);
         tResult = tMediaSinkNet;

@@ -42,7 +42,7 @@ using namespace Homer::Monitor;
 ///////////////////////////////////////////////////////////////////////////////
 
 MediaSinkFile::MediaSinkFile(string pSinkFile, enum MediaSinkType pType):
-    MediaSinkNet(pSinkFile, 0, SOCKET_UDP, pType, false)
+    MediaSinkNet(pSinkFile, 0, false, false, pType, false)
 {
     mSinkFile = pSinkFile;
     // overwrite id from MediaSinkNet
