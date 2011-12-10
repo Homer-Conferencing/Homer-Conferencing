@@ -38,7 +38,7 @@ class RequirementTransmitBitErrors:
     public TRequirement<RequirementTransmitBitErrors, REQUIREMENT_TRANSMIT_BIT_ERRORS>
 {
 public:
-    RequirementTransmitBitErrors(int pSecuredFrontDataSize):TRequirement(),mSecuredFrontDataSize(pSecuredFrontDataSize){ }
+    RequirementTransmitBitErrors(int pSecuredFrontDataSize):mSecuredFrontDataSize(pSecuredFrontDataSize){ }
 
     virtual std::string toString(){ return "Requ(TransmitBitErrors)"; }
 
