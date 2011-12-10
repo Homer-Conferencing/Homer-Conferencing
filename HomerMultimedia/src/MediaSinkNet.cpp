@@ -42,6 +42,7 @@
 #include <RequirementTransmitLossless.h>
 #include <RequirementTransmitChunks.h>
 #include <RequirementTransmitWaterfall.h>
+#include <RequirementTransmitBitErrors.h>
 #include <RequirementLimitDelay.h>
 #include <RequirementLimitDataRate.h>
 
@@ -87,7 +88,11 @@ MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, bool pT
             tRequs.add(new RequirementTransmitLossless());
             tRequs.add(new RequirementWaterfallTransmission());
         }else
+        {
             tRequs.add(new RequirementTransmitChunks());
+            if(pTransmitBitErrors)
+                tRequs.add(new RequirementTransmitBitErrors());
+        }
 
         // Requirement QoS
         switch(pType)
