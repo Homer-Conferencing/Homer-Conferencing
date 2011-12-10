@@ -38,7 +38,7 @@ class RequirementWaterfallTransmission:
     public TRequirement<RequirementWaterfallTransmission, REQUIREMENT_TRANSMIT_WATERFALL>
 {
 public:
-    virtual std::string toString(){ return "Requ(TransmitWaterfall)"; }
+    virtual std::string getDescription(){ return "Requ(TransmitWaterfall)"; }
 };
 
 ///////////////////////////////////////////////////////////////////////////////

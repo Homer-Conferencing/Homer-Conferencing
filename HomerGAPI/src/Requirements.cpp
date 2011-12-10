@@ -66,7 +66,7 @@ string Requirements::getDescription()
     for(tIt = mRequirementSet.begin(); tIt != mRequirementSet.end(); tIt++)
     {
         tRemainingRequs--;
-        tResult += (*tIt)->toString();
+        tResult += (*tIt)->getDescription();
         if(tRemainingRequs > 0)
         {
             tResult += ",";
@@ -107,6 +107,8 @@ bool Requirements::add(IRequirement *pAddRequ)
     bool tResult = true;
     RequirementSet::iterator tIt;
 
+    LOG(LOG_VERBOSE, "Adding requirement %s", pAddRequ->getDescription().c_str());
+
     mRequirementSetMutex.lock();
 
     // do we already know this type of requirement?
@@ -115,6 +117,7 @@ bool Requirements::add(IRequirement *pAddRequ)
         if((*tIt)->getType() == pAddRequ->getType())
         {
             tResult = false;
+            LOG(LOG_WARN, "Requirement is a duplicate of an already known");
         }
     }
 

@@ -29,6 +29,7 @@
 #define _GAPI_REQUIREMENT_TRANSMIT_BITERRORS_
 
 #include <IRequirement.h>
+#include <Logger.h>
 
 namespace Homer { namespace Base {
 
@@ -40,7 +41,7 @@ class RequirementTransmitBitErrors:
 public:
     RequirementTransmitBitErrors(int pSecuredFrontDataSize):mSecuredFrontDataSize(pSecuredFrontDataSize){ }
 
-    virtual std::string toString(){ return "Requ(TransmitBitErrors)"; }
+    virtual std::string getDescription(){ return "Requ(TransmitBitErrors[" + toString(mSecuredFrontDataSize) + "])"; }
 
     int getSecuredFrontDataSize(){ return mSecuredFrontDataSize; }
 

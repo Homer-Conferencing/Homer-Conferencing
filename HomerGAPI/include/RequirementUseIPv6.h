@@ -38,7 +38,7 @@ class RequirementUseIPv6:
     public TRequirement<RequirementUseIPv6, REQUIREMENT_USE_IPv6>
 {
 public:
-    virtual std::string toString(){ return "Requ(UseIPv6)"; }
+    virtual std::string getDescription(){ return "Requ(UseIPv6)"; }
 };
 
 ///////////////////////////////////////////////////////////////////////////////

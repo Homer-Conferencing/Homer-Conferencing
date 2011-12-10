@@ -40,7 +40,7 @@ class RequirementLimitDelay:
 public:
     RequirementLimitDelay(int pMaxDelay):mMaxDelay(pMaxDelay){}
 
-    virtual std::string toString(){ return "Requ(LimitDelay)"; }
+    virtual std::string getDescription(){ return "Requ(LimitDelay[" + toString(mMaxDelay) + "])"; }
 
     int getMaxDelay(){ return mMaxDelay; }
 private:

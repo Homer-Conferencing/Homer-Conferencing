@@ -48,8 +48,8 @@ namespace Homer { namespace Base {
 #define REQUIREMENT_TRANSMIT_FAST                       0x0112
 
 // QoS/throughput attributes
-#define REQUIREMENT_LIMIT_DATARATE                      0x0201
 #define REQUIREMENT_LIMIT_DELAY                         0x0201
+#define REQUIREMENT_LIMIT_DATARATE                      0x0202
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -68,7 +68,7 @@ public:
 
     }
 
-    virtual std::string toString() = 0;
+    virtual std::string getDescription() = 0;
     virtual int getType()const
     {
         return mType;
