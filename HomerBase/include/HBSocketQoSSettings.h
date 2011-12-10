@@ -40,7 +40,7 @@ namespace Homer { namespace Base {
 
 #ifndef QOS_FEATURE_NONE
 #define QOS_FEATURE_NONE									0x0000
-#define QOS_FEATURE_LOSLESS									0x0001
+#define QOS_FEATURE_LOSSLESS								0x0001
 #endif
 
 struct QoSSettings
