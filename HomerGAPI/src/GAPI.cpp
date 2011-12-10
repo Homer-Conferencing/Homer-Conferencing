@@ -43,7 +43,7 @@ GapiService sGapiService;
 GapiService::GapiService()
 {
 	mSetupInterface = 0;
-	registerSetupInterface(new SocketSetup(), "Berkeley Sockets");
+	registerSetupInterface(new SocketSetup(), BERKEYLEY_SOCKETS);
 }
 
 GapiService::~GapiService()

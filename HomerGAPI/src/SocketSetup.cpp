@@ -52,7 +52,7 @@ SocketSetup::~SocketSetup()
 
 ISubscription* SocketSetup::subscribe(IName *pName, Requirements *pRequirements)
 {
-    SocketName *tName = (SocketName*)pName; //TODO: type safety via C++ reflections
+    SocketName *tName = (SocketName*)pName; //TODO: type safety via C++ reflections or template structure
 	return new SocketSubscription(tName->getHost(), tName->getPort(), pRequirements);
 }
 

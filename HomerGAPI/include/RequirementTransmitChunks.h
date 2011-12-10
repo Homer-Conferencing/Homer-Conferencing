@@ -34,9 +34,10 @@ namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class RequirementChunksTransmission:
-    public TRequirement<RequirementChunksTransmission, REQUIREMENT_TRANSMIT_CHUNKS>
+class RequirementTransmitChunks:
+    public TRequirement<RequirementTransmitChunks, REQUIREMENT_TRANSMIT_CHUNKS>
 {
+    virtual std::string toString(){ return "Requ(TransmitChunks)"; }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
