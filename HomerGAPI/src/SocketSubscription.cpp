@@ -117,7 +117,7 @@ SocketSubscription::SocketSubscription(std::string pTargetHost, unsigned int pTa
         LOG(LOG_ERROR, "Haven't found correct mapping from application requirements to transport protocol");
     }
 
-    /* QoS requirements */
+    /* QoS requirements and additional transport requirements */
     update(pRequirements);
 }
 
@@ -190,6 +190,18 @@ IName* SocketSubscription::peer()
 bool SocketSubscription::update(Requirements *pRequirements)
 {
     bool tResult = false;
+
+    /* additional transport requirements */
+    if (pRequirements->contains(RequirementTransmitBitErrors::type()))
+    {
+        RequirementTransmitBitErrors* tReqBitErr = (RequirementTransmitBitErrors*)pRequirements->get(RequirementTransmitBitErrors::type());
+        int tSecuredFrontDataSize = tReqBitErr->getSecuredFrontDataSize();
+        mSocket->UDPLiteSetCheckLength(tSecuredFrontDataSize);
+    }
+    if (pRequirements->contains(RequirementTransmitFast::type()))
+    {
+        mSocket->TCPDisableNagle();
+    }
 
     /* QoS requirements */
     int tMaxDelay = 0;
