@@ -53,7 +53,7 @@ QoSSettings sVideoDefaultQoSSettings = {
 QoSSettings sAudioDefaultQoSSettings = {
 		8, // min. data rate
 		100, // max. delay
-		QOS_FEATURE_LOSLESS // features
+		QOS_FEATURE_LOSSLESS // features
 };
 
 ///////////////////////////////////////////////////////////////////////////////
