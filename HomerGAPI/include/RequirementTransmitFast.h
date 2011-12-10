@@ -38,7 +38,7 @@ class RequirementTransmitFast:
     public TRequirement<RequirementTransmitFast, REQUIREMENT_TRANSMIT_FAST>
 {
 public:
-    virtual std::string toString(){ return "Requ(TransmitFast)"; }
+    virtual std::string getDescription(){ return "Requ(TransmitFast)"; }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
