@@ -20,26 +20,29 @@
  *****************************************************************************/
 
 /*
- * Purpose: RequirementLoslessTransmission
+ * Purpose: RequirementLimitDelay
  * Author:  Thomas Volkert
- * Since:   2011-12-08
+ * Since:   2011-12-10
  */
 
-#ifndef _GAPI_REQUIREMENT_LOSLESS_
-#define _GAPI_REQUIREMENT_LOSLESS_
+#ifndef _GAPI_REQUIREMENT_LIMIT_DELAY_
+#define _GAPI_REQUIREMENT_LIMIT_DELAY_
 
 #include <IRequirement.h>
-
-#define REQUIREMENT_LOSLESS                     0x00000001
 
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class RequirementLosslessTransmission:
-    public TRequirement<RequirementLosslessTransmission, REQUIREMENT_LOSLESS>
+class RequirementLimitDelay:
+    public TRequirement<RequirementLimitDelay, REQUIREMENT_LIMIT_DELAY>
 {
-    virtual std::string toString(){ return "Requ(LosslessTransmission)"; }
+public:
+    RequirementLimitDelay(int pMaxDelay):TRequirement(), mMaxDelay(pMaxDelay){}
+
+    int getMaxDelay(){ return mMaxDelay; }
+private:
+    int     mMaxDelay;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -29,10 +29,22 @@
 #define _GAPI_IREQUIREMENT_
 
 #include <Logger.h>
+#include <Requirements.h>
 
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
+
+#define REQUIREMENT_TRANSMIT_LOSLESS                    0x00000001
+#define REQUIREMENT_TRANSMIT_CHUNKS                     0x00000002
+#define REQUIREMENT_TRANSMIT_WATERFALL                  0x00000003
+#define REQUIREMENT_LIMIT_DATARATE                      0x00000004
+#define REQUIREMENT_LIMIT_DELAY                         0x00000005
+
+///////////////////////////////////////////////////////////////////////////////
+
+// forward declaration
+class Requirements;
 
 class IRequirement
 {

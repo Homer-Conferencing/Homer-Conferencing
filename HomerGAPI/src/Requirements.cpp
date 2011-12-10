@@ -48,6 +48,11 @@ Requirements::~Requirements()
 
 }
 
+Requirements::Requirements(Requirements &pCopy)
+{
+    add(pCopy.getAll());
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 string Requirements::toString()
@@ -78,11 +83,62 @@ void Requirements::operator+=(IRequirement *pAddRequ)
     add(pAddRequ);
 }
 
-void Requirements::add(IRequirement *pAddRequ)
+void Requirements::operator|=(IRequirement *pAddRequ)
 {
+    add(pAddRequ);
+}
+
+Requirements& Requirements::operator|(IRequirement pAddRequ)
+{
+    Requirements tResult(this);
+    tResult.add(pAddRequ);
+    return tResult;
+}
+
+Requirements& Requirements::operator+(IRequirement pAddRequ)
+{
+    Requirements tResult(this);
+    tResult.add(pAddRequ);
+    return tResult;
+}
+
+bool Requirements::add(const IRequirement& pAddRequ)
+{
+    bool tResult = true;
+    RequirementSet::iterator tIt;
+
     mRequirementSetMutex.lock();
 
-    mRequirementSet.push_back(pAddRequ);
+    // do we already know this type of requirement?
+    for(tIt = mRequirementSet.begin(); tIt != mRequirementSet.end(); tIt++)
+    {
+        if((*tIt)->getType() == pAddRequ.getType())
+        {
+            tResult = false;
+        }
+    }
+
+    // is everything okay to add given requirement?
+    if(tResult)
+    {
+        mRequirementSet.push_back(pAddRequ);
+    }
+
+    mRequirementSetMutex.unlock();
+
+    return tResult;
+}
+
+void Requirements::add(const RequirementSet& pSet)
+{
+    RequirementSet::iterator tIt;
+
+    mRequirementSetMutex.lock();
+
+    for (tIt = pSet->begin(); tIt != pSet->end(); tIt++)
+    {
+        mRequirementSet.push_back((*tIt));
+    }
 
     mRequirementSetMutex.unlock();
 }
@@ -105,6 +161,33 @@ bool Requirements::contains(int pType)
     mRequirementSetMutex.unlock();
 
     return tResult;
+}
+
+IRequirement* Requirements::get(int pType)
+{
+    IRequirement* tResult = NULL;
+    RequirementSet::iterator tIt;
+
+    mRequirementSetMutex.lock();
+
+    for(tIt = mRequirementSet.begin(); tIt != mRequirementSet.end(); tIt++)
+    {
+        if((*tIt)->getType() == pType)
+        {
+            // return first occurrence
+            tResult = (*tIt);
+            break;
+        }
+    }
+
+    mRequirementSetMutex.unlock();
+
+    return tResult;
+}
+
+RequirementSet Requirements::getAll()
+{
+    return mRequirementSet;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
