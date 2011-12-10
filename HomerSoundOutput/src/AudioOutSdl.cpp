@@ -419,6 +419,12 @@ bool AudioOutSdl::Enqueue(int pChannel, void *pBuffer, int pBufferSize, bool pLi
     if (!mAudioOutOpened)
         return false;
 
+    if(pBufferSize <= 0)
+    {
+        LOG(LOG_ERROR, "Invalid buffer size %d, skipping this chunk", pBufferSize);
+        return false;
+    }
+
     void *tBuffer = malloc(pBufferSize);
     if (tBuffer == NULL)
     {
