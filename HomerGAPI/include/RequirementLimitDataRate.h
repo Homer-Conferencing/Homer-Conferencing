@@ -20,25 +20,30 @@
  *****************************************************************************/
 
 /*
- * Purpose: RequirementDatagramTransmission
+ * Purpose: RequirementLimitDataRate
  * Author:  Thomas Volkert
- * Since:   2011-12-08
+ * Since:   2011-12-10
  */
 
-#ifndef _GAPI_REQUIREMENT_DATAGRAMS_
-#define _GAPI_REQUIREMENT_DATAGRAMS_
+#ifndef _GAPI_REQUIREMENT_LIMIT_DATARATE_
+#define _GAPI_REQUIREMENT_LIMIT_DATARATE_
 
 #include <IRequirement.h>
-
-#define REQUIREMENT_DATAGRAMS                     0x00000002
 
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class RequirementDatagramTransmission:
-    public TRequirement<RequirementDatagramTransmission, REQUIREMENT_DATAGRAMS>
+class RequirementLimitDataRate:
+    public TRequirement<RequirementLimitDataRate, REQUIREMENT_LIMIT_DATARATE>
 {
+public:
+    RequirementLimitDataRate(int pMinDataRate, int pMaxDataRate):TRequirement(), mMinDataRate(pMinDataRate), mMaxDataRate(pMaxDataRate){}
+
+    int getMinDataRate(){ return mMinDataRate; }
+    int getMaxDataRate(){ return mMaxDataRate; }
+private:
+    int     mMinDataRate, mMaxDataRate;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

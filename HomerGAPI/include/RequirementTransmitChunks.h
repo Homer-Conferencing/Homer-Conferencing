@@ -20,55 +20,23 @@
  *****************************************************************************/
 
 /*
- * Purpose: Requirements
+ * Purpose: RequirementChunksTransmission to trigger UDP based transport
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
 
-#ifndef _GAPI_REQUIREMENTS_
-#define _GAPI_REQUIREMENTS_
+#ifndef _GAPI_REQUIREMENT_TRANSMIT_CHUNKS_
+#define _GAPI_REQUIREMENT_TRANSMIT_CHUNKS_
 
 #include <IRequirement.h>
-#include <HBMutex.h>
-
-#include <list>
 
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-typedef std::list<IRequirement*> RequirementSet;
-
-///////////////////////////////////////////////////////////////////////////////
-
-class Requirements
+class RequirementChunksTransmission:
+    public TRequirement<RequirementChunksTransmission, REQUIREMENT_TRANSMIT_CHUNKS>
 {
-public:
-    Requirements();
-    Requirements(Requirements &pCopy);
-    virtual ~Requirements();
-
-    virtual std::string toString();
-
-    /* overloaded operators */
-    void operator+=(IRequirement *pAddRequ);
-    void operator|=(IRequirement *pAddRequ);
-    Requirements& operator+(IRequirement& pAddRequ);
-    Requirements& operator|(IRequirement& pAddRequ);
-
-    /* set manipulation */
-    bool add(const IRequirement& pRequ);
-
-    /* query functions */
-    bool contains(int pType);
-    IRequirement* get(int pType);
-
-private:
-    void add(const RequirementSet& pSet);
-    RequirementSet getAll();
-
-    RequirementSet      mRequirementSet;
-    Mutex               mRequirementSetMutex;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
