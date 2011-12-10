@@ -38,7 +38,7 @@ class RequirementLimitDataRate:
     public TRequirement<RequirementLimitDataRate, REQUIREMENT_LIMIT_DATARATE>
 {
 public:
-    RequirementLimitDataRate(int pMinDataRate, int pMaxDataRate):TRequirement(), mMinDataRate(pMinDataRate), mMaxDataRate(pMaxDataRate){}
+    RequirementLimitDataRate(int pMinDataRate, int pMaxDataRate):mMinDataRate(pMinDataRate), mMaxDataRate(pMaxDataRate){}
 
     virtual std::string toString(){ return "Requ(LimitDataRate)"; }
 
