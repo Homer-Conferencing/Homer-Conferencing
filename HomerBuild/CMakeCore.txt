@@ -20,16 +20,6 @@ SET (FLAGS
 )
 endif (WIN32)
 
-# force gcc to statically load libgcc and libstdc++, otherwise several linking problems might occurr during run-time
-# "-static-libstdc++" works since gcc 4.5 
-if (LINUX)
-SET (FLAGS 
-	${FLAGS}
-	-static-libgcc
-	-static-libstdc++
-)
-endif (LINUX)
-
 ##############################################################
 # library directories
 IF (LINUX)
