@@ -71,6 +71,7 @@ public:
     /* plugin system for different ISetup implementations */
     bool registerSetupInterface(ISetup* pSetupInterface, std::string pName);
     bool selectSetupInterface(std::string pName);
+    std::string currentSetupInterface();
     SetupInterfacesNames enumSetupInterfaces();
 
     /* ISetup */
@@ -79,6 +80,7 @@ public:
 
 private:
     ISetup						*mSetupInterface;
+    std::string                 mSetupInterfaceName;
     SetupInterfacesPool			mSetupInterfacesPool;
     Mutex						mSetupInterfacesPoolMutex;
 };
