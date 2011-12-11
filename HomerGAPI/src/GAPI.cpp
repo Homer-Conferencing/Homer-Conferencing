@@ -43,6 +43,7 @@ GapiService sGapiService;
 GapiService::GapiService()
 {
 	mSetupInterface = 0;
+	mSetupInterfaceName = "";
 	registerSetupInterface(new SocketSetup(), BERKEYLEY_SOCKETS);
 }
 
@@ -69,6 +70,7 @@ bool GapiService::registerSetupInterface(ISetup* pSetupInterface, std::string pN
 	if(mSetupInterfacesPool.size() == 0)
 	{
 		mSetupInterface = pSetupInterface;
+		mSetupInterfaceName = pName;
 	}
 
 	for(tIt = mSetupInterfacesPool.begin(); tIt != mSetupInterfacesPool.end(); tIt++)
@@ -109,6 +111,7 @@ bool GapiService::selectSetupInterface(std::string pName)
         {
             LOG(LOG_VERBOSE, "Setup interface \"%s\" selected", pName.c_str());
             mSetupInterface = (*tIt)->Interface;
+            mSetupInterfaceName = pName;
             tFound = true;
         }
     }
@@ -116,6 +119,11 @@ bool GapiService::selectSetupInterface(std::string pName)
     mSetupInterfacesPoolMutex.unlock();
 
     return tFound;
+}
+
+string GapiService::currentSetupInterface()
+{
+    return mSetupInterfaceName;
 }
 
 SetupInterfacesNames GapiService::enumSetupInterfaces()
