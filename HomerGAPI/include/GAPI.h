@@ -20,7 +20,7 @@
  *****************************************************************************/
 
 /*
- * Purpose: G-Lab API
+ * Purpose: G-Lab API: proof-of-concept of the definition from the current official paper
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
