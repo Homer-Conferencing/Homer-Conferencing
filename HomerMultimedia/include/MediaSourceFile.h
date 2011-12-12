@@ -71,6 +71,12 @@ public:
     virtual bool SeekRelative(int64_t pSeconds, bool pOnlyKeyFrames = true); // seeks relative to the current position, distance is given in seconds
     virtual int64_t GetSeekPos(); // in seconds
 
+    /* multi channel input interface */
+    virtual bool SupportsMultipleInputChannels();
+    virtual bool SelectInputChannel(int pIndex);
+    virtual std::string CurrentInputChannel();
+    virtual std::list<std::string> GetInputChannels();
+
 public:
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97);
     virtual bool OpenAudioGrabDevice(int pSampleRate = 44100, bool pStereo = true);

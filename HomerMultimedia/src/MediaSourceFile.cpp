@@ -366,7 +366,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     }
 
     // create resample context
-    if (mCodecContext->sample_rate != 44100)
+    if ((mCodecContext->sample_rate != 44100) || (mCodecContext->channels != 2))
     {
         LOG(LOG_WARN, "Audio samples with rate of %d Hz have to be resampled to 44100 Hz", mCodecContext->sample_rate);
         mResampleContext = av_audio_resample_init(2, mCodecContext->channels, 44100, mCodecContext->sample_rate, SAMPLE_FMT_S16, mCodecContext->sample_fmt, 16, 10, 0, 0.8);
@@ -743,7 +743,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
 
                         int tBytesDecoded;
 
-                        if (mCodecContext->sample_rate == 44100)
+                        if ((mCodecContext->sample_rate == 44100) && (mCodecContext->channels == 2))
                         {
                             tBytesDecoded = HM_avcodec_decode_audio(mCodecContext, (int16_t *)pChunkBuffer, &tOutputBufferSize, &tPacket);
                             pChunkSize = tOutputBufferSize;
@@ -755,7 +755,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
                                 //HINT: we always assume 16 bit samples and a stereo signal, so we have to divide/multiply by 4
                                 int tResampledBytes = 4 * audio_resample(mResampleContext, (short*)pChunkBuffer, (short*)mResampleBuffer, tOutputBufferSize / 4);
                                 #ifdef MSF_DEBUG_PACKETS
-                                    LOG(LOG_VERBOSE, "Have resampled %d bytes of sample rate %d Hz to %d bytes of sample rate 44100 Hz", tOutputBufferSize, mCodecContext->sample_rate, tResampledBytes);
+                                    LOG(LOG_VERBOSE, "Have resampled %d bytes of sample rate %dHz and %d channels to %d bytes of sample rate 44100Hz and 2 channels", tOutputBufferSize, mCodecContext->sample_rate, mCodecContext->channels, tResampledBytes);
                                 #endif
                                 if(tResampledBytes > 0)
                                 {
@@ -1069,6 +1069,132 @@ bool MediaSourceFile::SeekRelative(int64_t pSeconds, bool pOnlyKeyFrames)
 int64_t MediaSourceFile::GetSeekPos()
 {
     return (mCurPts / ((int64_t)mFrameRate));
+}
+
+bool MediaSourceFile::SupportsMultipleInputChannels()
+{
+    int tCount = 0;
+    bool tResult = false;
+
+    // lock grabbing
+    mGrabMutex.lock();
+
+    if(mMediaSourceOpened)
+    {
+        LOG(LOG_VERBOSE, "Probing for multiple input channels for device %s", mCurrentDevice.c_str());
+        for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
+        {
+            if (mMediaType == MEDIA_AUDIO)
+            {
+                if(mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
+                {
+                    tCount++;
+                }
+            }
+            if (mMediaType == MEDIA_VIDEO)
+            {
+                if(mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO)
+                {
+                    tCount++;
+                }
+            }
+        }
+    }
+
+    // unlock grabbing
+    mGrabMutex.unlock();
+
+    return tCount > 1;
+}
+
+bool MediaSourceFile::SelectInputChannel(int pIndex)
+{
+    return false;
+}
+
+list<string> MediaSourceFile::GetInputChannels()
+{
+    AVCodec *tCodec;
+    list<string> tResult;
+    string tEntry;
+
+    int tCount = 0;
+
+    // lock grabbing
+    mGrabMutex.lock();
+
+    if(mMediaSourceOpened)
+    {
+        LOG(LOG_VERBOSE, "Probing for multiple input channels for device %s", mCurrentDevice.c_str());
+        for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
+        {
+            if (mMediaType == MEDIA_AUDIO)
+            {
+                if(mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
+                {
+                    tCount++;
+                    tCodec = avcodec_find_decoder(mFormatContext->streams[i]->codec->codec_id);
+                    tEntry = "Audio " + toString(tCount) + ": " + toString(tCodec->name) + " [" + toString(mFormatContext->streams[i]->codec->channels) + " channel(s)]";
+                    tResult.push_back(tEntry);
+                }
+            }
+            if (mMediaType == MEDIA_VIDEO)
+            {
+                if(mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO)
+                {
+                    tCount++;
+                    tCodec = avcodec_find_decoder(mFormatContext->streams[i]->codec->codec_id);
+                    tEntry = "Video " + toString(tCount) + ": " + toString(tCodec->name);
+                    tResult.push_back(tEntry);
+                }
+            }
+        }
+    }
+
+    // unlock grabbing
+    mGrabMutex.unlock();
+
+    return tResult;
+}
+
+string MediaSourceFile::CurrentInputChannel()
+{
+    AVCodec *tCodec;
+    string tResult;
+
+    int tCount = 0;
+
+    for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
+    {
+        if (mMediaType == MEDIA_AUDIO)
+        {
+            if(mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
+            {
+                tCount++;
+                if(mMediaStreamIndex = i)
+                {
+                    tCodec = avcodec_find_decoder(mFormatContext->streams[i]->codec->codec_id);
+                    tResult = "Audio " + toString(tCount) + ": " + toString(tCodec->name) + " [" + toString(mFormatContext->streams[i]->codec->channels) + " channel(s)]";
+                    break;
+                }
+            }
+        }
+        if (mMediaType == MEDIA_VIDEO)
+        {
+            if(mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO)
+            {
+                tCount++;
+                if(mMediaStreamIndex = i)
+                {
+                    tCodec = avcodec_find_decoder(mFormatContext->streams[i]->codec->codec_id);
+                    tResult = "Video " + toString(tCount) + ": " + toString(tCodec->name);
+                    break;
+                }
+            }
+        }
+    }
+
+    return tResult;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
