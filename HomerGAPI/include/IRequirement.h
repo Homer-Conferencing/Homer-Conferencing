@@ -28,7 +28,6 @@
 #ifndef _GAPI_IREQUIREMENT_
 #define _GAPI_IREQUIREMENT_
 
-#include <Logger.h>
 #include <Requirements.h>
 
 namespace Homer { namespace Base {
