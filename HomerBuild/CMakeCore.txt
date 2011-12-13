@@ -60,6 +60,17 @@ SET (INCLUDE_DIRS
 )
 
 ##############################################################
+# set gcc version to avoid linking problems caused by wrong version of libstdc++
+IF (LINUX)
+SET (CMAKE_C_COMPILER 
+	/usr/bin/gcc-4.4.5
+)
+SET (CMAKE_CXX_COMPILER 
+	/usr/bin/g++-4.4.5
+)
+ENDIF (LINUX)
+
+##############################################################
 # compile flags
 SET (FLAGS
 	${FLAGS}
