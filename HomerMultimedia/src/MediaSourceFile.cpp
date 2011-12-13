@@ -327,6 +327,49 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
         return false;
     }
 
+    // enumerate all audio streams and store them as possible input channels
+    string tEntry;
+    AVDictionaryEntry *tDictEntry;
+    char tLanguageBuffer[256];
+    int tAudioStreamCount = 0;
+    LOG(LOG_VERBOSE, "Probing for multiple input channels for device %s", mCurrentDevice.c_str());
+    mInputChannels.clear();
+    for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
+    {
+        if(mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
+        {
+            tCodec = avcodec_find_decoder(mFormatContext->streams[i]->codec->codec_id);
+            tDictEntry = NULL;
+            int tLanguageCount = 0;
+            memset(tLanguageBuffer, 0, 256);
+            while((tDictEntry = HM_av_metadata_get(mFormatContext->metadata, "", tDictEntry)))
+            {
+                if (strcmp("language", tDictEntry->key))
+                {
+                    if (i == tLanguageCount)
+                    {
+                        av_strlcpy(tLanguageBuffer, tDictEntry->value, sizeof(tLanguageBuffer));
+                        for (int j = 0; j < (int)strlen(tLanguageBuffer); j++)
+                        {
+                            if (tLanguageBuffer[j] == 0x0D)
+                                tLanguageBuffer[j]=0;
+                        }
+                        LOG(LOG_VERBOSE, "Language found: %s", tLanguageBuffer);
+                    }
+                    tLanguageCount++;
+                }
+            }
+            tAudioStreamCount++;
+
+            if (strlen(tLanguageBuffer) > 0)
+                tEntry = "Audio " + toString(tAudioStreamCount) + ": " + toString(tCodec->name) + " [" + toString(mFormatContext->streams[i]->codec->channels) + " channel(s)] " + string(tLanguageBuffer);
+            else
+                tEntry = "Audio " + toString(tAudioStreamCount) + ": " + toString(tCodec->name) + " [" + toString(mFormatContext->streams[i]->codec->channels) + " channel(s)]";
+            LOG(LOG_VERBOSE, "Found audio stream: %s", tEntry.c_str());
+            mInputChannels.push_back(tEntry);
+        }
+    }
+
     // Dump information about device file
     av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceFile(audio)", false);
     //printf("    ..audio stream found with ID: %d, number of available streams: %d\n", mMediaStreamIndex, mFormatContext->nb_streams);
@@ -418,6 +461,8 @@ bool MediaSourceFile::CloseGrabDevice()
 
         // Close the file
         av_close_input_file(mFormatContext);
+
+        mInputChannels.clear();
 
         LOG(LOG_INFO, "...closed, media type is \"%s\"", GetMediaTypeStr().c_str());
 
@@ -1073,38 +1118,10 @@ int64_t MediaSourceFile::GetSeekPos()
 
 bool MediaSourceFile::SupportsMultipleInputChannels()
 {
-    int tCount = 0;
-    bool tResult = false;
-
-    // lock grabbing
-    mGrabMutex.lock();
-
-    if(mMediaSourceOpened)
-    {
-        LOG(LOG_VERBOSE, "Probing for multiple input channels for device %s", mCurrentDevice.c_str());
-        for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
-        {
-            if (mMediaType == MEDIA_AUDIO)
-            {
-                if(mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
-                {
-                    tCount++;
-                }
-            }
-            if (mMediaType == MEDIA_VIDEO)
-            {
-                if(mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO)
-                {
-                    tCount++;
-                }
-            }
-        }
-    }
-
-    // unlock grabbing
-    mGrabMutex.unlock();
-
-    return tCount > 1;
+    if(mMediaType == MEDIA_AUDIO)
+        return true;
+    else
+        return false;
 }
 
 bool MediaSourceFile::SelectInputChannel(int pIndex)
@@ -1114,41 +1131,14 @@ bool MediaSourceFile::SelectInputChannel(int pIndex)
 
 list<string> MediaSourceFile::GetInputChannels()
 {
-    AVCodec *tCodec;
     list<string> tResult;
-    string tEntry;
-
-    int tCount = 0;
 
     // lock grabbing
     mGrabMutex.lock();
 
     if(mMediaSourceOpened)
     {
-        LOG(LOG_VERBOSE, "Probing for multiple input channels for device %s", mCurrentDevice.c_str());
-        for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
-        {
-            if (mMediaType == MEDIA_AUDIO)
-            {
-                if(mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
-                {
-                    tCount++;
-                    tCodec = avcodec_find_decoder(mFormatContext->streams[i]->codec->codec_id);
-                    tEntry = "Audio " + toString(tCount) + ": " + toString(tCodec->name) + " [" + toString(mFormatContext->streams[i]->codec->channels) + " channel(s)]";
-                    tResult.push_back(tEntry);
-                }
-            }
-            if (mMediaType == MEDIA_VIDEO)
-            {
-                if(mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO)
-                {
-                    tCount++;
-                    tCodec = avcodec_find_decoder(mFormatContext->streams[i]->codec->codec_id);
-                    tEntry = "Video " + toString(tCount) + ": " + toString(tCodec->name);
-                    tResult.push_back(tEntry);
-                }
-            }
-        }
+        tResult = mInputChannels;
     }
 
     // unlock grabbing
@@ -1160,39 +1150,29 @@ list<string> MediaSourceFile::GetInputChannels()
 string MediaSourceFile::CurrentInputChannel()
 {
     AVCodec *tCodec;
-    string tResult;
+    string tResult = "";
+    list<string>::iterator tIt;
 
     int tCount = 0;
 
-    for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
+    // lock grabbing
+    mGrabMutex.lock();
+
+    if(mMediaSourceOpened)
     {
-        if (mMediaType == MEDIA_AUDIO)
+        for (tIt = mInputChannels.begin(); tIt != mInputChannels.end(); tIt++)
         {
-            if(mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
+            if (tCount == mCurrentInputChannel)
             {
-                tCount++;
-                if(mMediaStreamIndex = i)
-                {
-                    tCodec = avcodec_find_decoder(mFormatContext->streams[i]->codec->codec_id);
-                    tResult = "Audio " + toString(tCount) + ": " + toString(tCodec->name) + " [" + toString(mFormatContext->streams[i]->codec->channels) + " channel(s)]";
-                    break;
-                }
+                tResult = (*tIt);
+                break;
             }
-        }
-        if (mMediaType == MEDIA_VIDEO)
-        {
-            if(mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO)
-            {
-                tCount++;
-                if(mMediaStreamIndex = i)
-                {
-                    tCodec = avcodec_find_decoder(mFormatContext->streams[i]->codec->codec_id);
-                    tResult = "Video " + toString(tCount) + ": " + toString(tCodec->name);
-                    break;
-                }
-            }
+            tCount++;
         }
     }
+
+    // unlock grabbing
+    mGrabMutex.unlock();
 
     return tResult;
 }

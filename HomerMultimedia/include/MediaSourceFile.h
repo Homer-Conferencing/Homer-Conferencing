@@ -93,6 +93,7 @@ private:
     bool                mSeekingToPos; // seek to starting point because initial stream detection consumes the first n frames, or seeking to explicit position ("Seek" was called)
     char                *mResampleBuffer;
     ReSampleContext     *mResampleContext;
+    list<string>        mInputChannels;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

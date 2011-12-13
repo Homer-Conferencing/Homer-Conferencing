@@ -36,7 +36,9 @@ extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libavformat/avio.h>
+#include <libavutil/avstring.h>
 #include <libavutil/avutil.h>
+#include <libavutil/dict.h>
 #include <libavutil/log.h>
 #include <libavutil/fifo.h>
 #include <libswscale/swscale.h>
@@ -67,10 +69,23 @@ extern "C" {
 
 inline int HM_av_metadata_set(AVDictionary **pm, const char *key, const char *value)
 {
-    #if LIBAVFORMAT_VERSION_INT <= AV_VERSION_INT(52, 64, 2)
-        return av_metadata_set(pm, key, value);
+    #if FF_API_OLD_METADATA2
+        #if LIBAVFORMAT_VERSION_INT <= AV_VERSION_INT(52, 64, 2)
+            return av_metadata_set(pm, key, value);
+        #else
+            return av_metadata_set2(pm, key, value, AV_METADATA_MATCH_CASE);
+        #endif
     #else
-        return av_metadata_set2(pm, key, value, AV_METADATA_MATCH_CASE);
+        return av_dict_set(pm, key, value, AV_DICT_MATCH_CASE);
+    #endif
+}
+
+inline AVDictionaryEntry* HM_av_metadata_get(AVDictionary *pm, const char *key, const AVDictionaryEntry *prev)
+{
+    #if FF_API_OLD_METADATA2
+        return av_metadata_get(pm, key, prev, AV_DICT_IGNORE_SUFFIX);
+    #else
+        return av_dict_get(pm, key, value, AV_DICT_IGNORE_SUFFIX);
     #endif
 }
 
