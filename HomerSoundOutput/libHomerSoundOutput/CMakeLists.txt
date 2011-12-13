@@ -114,22 +114,15 @@ SET (LIBS_LINUX_STATIC
 SET (LIBS_BSD
     HomerBase
     HomerMonitor
-#    asound
 )
 
 # USED STATIC libraries for BSD environment
 SET (LIBS_BSD_STATIC
     SDL_mixer
-#    smpeg
     SDL_sound
     SDL
     vgl
-    usbhid 
-#    speex
-#    FLAC
-#    vorbisfile
-#    vorbis
-#    ogg
+    usbhid
 )
 SET (TARGET_NAME
 	HomerSoundOutput
