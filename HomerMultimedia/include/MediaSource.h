@@ -302,6 +302,9 @@ protected:
     /* event handling */
     bool                mLastGrabResultWasError;
     std::string         mLastGrabFailureReason;
+    /* multiple channel input */
+    int                 mCurrentInputChannel;
+    int                 mDesiredInputChannel;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

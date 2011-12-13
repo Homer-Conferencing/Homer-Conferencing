@@ -74,7 +74,6 @@ public:
 
 private:
     std::string         mCurrentInputChannelName;
-    int                 mCurrentInputChannel, mDesiredInputChannel;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

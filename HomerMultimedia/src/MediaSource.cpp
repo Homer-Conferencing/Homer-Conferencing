@@ -84,6 +84,8 @@ MediaSource::MediaSource(string pName):
     mTargetResX = 352;
     mTargetResY = 288;
     mFrameRate = 29.97;
+    mCurrentInputChannel = 0;
+    mDesiredInputChannel = 0;
     mMediaType = MEDIA_UNKNOWN;
 
     // allocate all needed buffers

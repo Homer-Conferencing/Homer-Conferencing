@@ -52,8 +52,6 @@ MediaSourceV4L2::MediaSourceV4L2(string pDesiredDevice):
     ClassifyStream(DATA_TYPE_VIDEO, PACKET_TYPE_RAW);
 
     mCurrentInputChannelName = "";
-    mCurrentInputChannel = 0;
-    mDesiredInputChannel = 0;
 
     bool tNewDeviceSelected = false;
     SelectDevice(pDesiredDevice, MEDIA_VIDEO, tNewDeviceSelected);
