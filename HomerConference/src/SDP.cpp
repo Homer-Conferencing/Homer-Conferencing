@@ -43,8 +43,8 @@ SDP::SDP()
 {
     mVideoCodecsSupport = 0;
     mAudioCodecsSupport = 0;
-    mVideoTransportType = MEDIA_TRANSPORT_UDP;
-    mAudioTransportType = MEDIA_TRANSPORT_UDP;
+    mVideoTransportType = MEDIA_TRANSPORT_RTP_UDP;
+    mAudioTransportType = MEDIA_TRANSPORT_RTP_UDP;
 }
 
 SDP::~SDP()
