@@ -1135,7 +1135,7 @@ bool MediaSourceFile::SelectInputChannel(int pIndex)
     if (tResult)
     {
         int64_t tCurPos = GetSeekPos();
-        Reset();
+        tResult &= Reset();
         Seek(tCurPos, false);
     }
 
