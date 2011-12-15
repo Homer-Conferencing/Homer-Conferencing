@@ -309,31 +309,15 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     mFormatContext->preload= (int)(5 * AV_TIME_BASE); // 0.5 seconds
     mFormatContext->max_delay= (int)(5.5 * AV_TIME_BASE); // 0.7 seconds
 
-    // Find the first audio stream
-    mMediaStreamIndex = -1;
-    for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
-    {
-        if(mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
-        {
-            mMediaStreamIndex = i;
-            break;
-        }
-    }
-    if (mMediaStreamIndex == -1)
-    {
-        LOG(LOG_ERROR, "Couldn't find an audio stream");
-        // Close the audio file
-        av_close_input_file(mFormatContext);
-        return false;
-    }
-
     // enumerate all audio streams and store them as possible input channels
+    // find correct audio stream, depending on the desired input channel
     string tEntry;
     AVDictionaryEntry *tDictEntry;
     char tLanguageBuffer[256];
     int tAudioStreamCount = 0;
     LOG(LOG_VERBOSE, "Probing for multiple input channels for device %s", mCurrentDevice.c_str());
     mInputChannels.clear();
+    mMediaStreamIndex = -1;
     for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
     {
         if(mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
@@ -359,6 +343,12 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
                     tLanguageCount++;
                 }
             }
+            if(tAudioStreamCount = mDesiredInputChannel)
+            {
+                mMediaStreamIndex = i;
+                LOG(LOG_VERBOSE, "Using input channel %d for grabbing", i);
+            }
+
             tAudioStreamCount++;
 
             if (strlen(tLanguageBuffer) > 0)
@@ -368,6 +358,13 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
             LOG(LOG_VERBOSE, "Found audio stream: %s", tEntry.c_str());
             mInputChannels.push_back(tEntry);
         }
+    }
+    if (mMediaStreamIndex == -1)
+    {
+        LOG(LOG_ERROR, "Couldn't find an audio stream");
+        // Close the audio file
+        av_close_input_file(mFormatContext);
+        return false;
     }
 
     // Dump information about device file
@@ -1126,7 +1123,23 @@ bool MediaSourceFile::SupportsMultipleInputChannels()
 
 bool MediaSourceFile::SelectInputChannel(int pIndex)
 {
-    return false;
+    bool tResult = false;
+
+    LOG(LOG_VERBOSE, "Selecting input channel: %d", pIndex);
+
+    if (mCurrentInputChannel != pIndex)
+        tResult = true;
+
+    mDesiredInputChannel = pIndex;
+
+    if (tResult)
+    {
+        int64_t tCurPos = GetSeekPos();
+        Reset();
+        Seek(tCurPos, false);
+    }
+
+    return tResult;
 }
 
 list<string> MediaSourceFile::GetInputChannels()
