@@ -343,10 +343,11 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
                     tLanguageCount++;
                 }
             }
-            if(tAudioStreamCount = mDesiredInputChannel)
+            LOG(LOG_VERBOSE, "Desired inputchannel: %d, current found input channel: %d", mDesiredInputChannel, tAudioStreamCount);
+            if(tAudioStreamCount == mDesiredInputChannel)
             {
                 mMediaStreamIndex = i;
-                LOG(LOG_VERBOSE, "Using input channel %d for grabbing", i);
+                LOG(LOG_VERBOSE, "Using audio input channel %d in stream %d for grabbing", mDesiredInputChannel, i);
             }
 
             tAudioStreamCount++;
@@ -366,6 +367,8 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
         av_close_input_file(mFormatContext);
         return false;
     }
+
+    mCurrentInputChannel = mDesiredInputChannel;
 
     // Dump information about device file
     av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceFile(audio)", false);
