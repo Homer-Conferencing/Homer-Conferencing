@@ -42,10 +42,9 @@ namespace Homer { namespace Base {
 #define REQUIREMENT_TRANSMIT_LOSLESS                    0x0101
 #define REQUIREMENT_TRANSMIT_CHUNKS                     0x0102
 #define REQUIREMENT_TRANSMIT_WATERFALL                  0x0103
-
-// additional transport attributes
-#define REQUIREMENT_TRANSMIT_BIT_ERRORS                 0x0111
-#define REQUIREMENT_TRANSMIT_FAST                       0x0112
+#define REQUIREMENT_TRANSMIT_BIT_ERRORS                 0x0104
+#define REQUIREMENT_TRANSMIT_FAST                       0x0105
+#define REQUIREMENT_TRANSMIT_ORDERED                    0x0106
 
 // QoS/throughput attributes
 #define REQUIREMENT_LIMIT_DELAY                         0x0201
