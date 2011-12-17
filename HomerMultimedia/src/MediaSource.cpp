@@ -38,8 +38,8 @@
     MPEG4: built-in ffmpeg: LGPL
     MJPEG: LGPL
 
-    AC3: decoder: built-in ffmpeg: LGPL, encoder: libfaac LGPL-2
-    AAC: built-in ffmpeg: LGPL
+    AC3: decoder: built-in ffmpeg: LGPL, encoder: tbd??
+    AAC: built-in ffmpeg: LGPL, encoder: libfaac LGPL-2
     MP3: decoder: built-in ffmpeg: LGPL, encoder: LGPL, http://lame.sourceforge.net
     GSM FREE, http://kbs.cs.tu-berlin.de/~jutta/toast.html
     A-LAW: built-in ffmpeg: LGPL
@@ -296,7 +296,7 @@ enum CodecID MediaSource::FfmpegName2FfmpegId(std::string pName)
     // translate from standardized names to FFMPEG internal names
     if (pName == "ac3")
         tResult = CODEC_ID_AC3;
-    if (pName == "aac")
+    if ((pName == "aac") || (pName == "libfaac"))
         tResult = CODEC_ID_AAC;
     if ((pName == "mp3") || (pName == "libmp3lame"))
         tResult = CODEC_ID_MP3;
@@ -341,7 +341,7 @@ string MediaSource::FfmpegName2FfmpegFormat(std::string pName)
     // translate from standardized names to FFMPEG internal names
     if (pName == "ac3")
         tResult = "ac3";
-    if (pName == "aac")
+    if ((pName == "aac") || (pName == "libfaac"))
         tResult = "aac";
     if ((pName == "mp3") || (pName == "libmp3lame"))
         tResult = "mp3";
