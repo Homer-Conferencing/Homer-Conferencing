@@ -96,7 +96,6 @@ SET (LIBS_LINUX
 	HomerMonitor
 	asound
 	resolv
-	dbus-1
 )
 
 # USED STATIC libraries for linux environment
@@ -110,6 +109,7 @@ SET (LIBS_LINUX_STATIC
 	pulsecommon-0.9.22
 	asyncns
 	audio
+	dbus-1
 )
 
 # USED LIBRARIES for BSD environment
