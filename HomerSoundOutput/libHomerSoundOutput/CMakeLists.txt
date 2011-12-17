@@ -103,11 +103,11 @@ SET (LIBS_LINUX_STATIC
 	smpeg
 	SDL_sound
 	SDL
-	speex
-	FLAC
-	vorbisfile
-	vorbis
-	ogg
+	pulse-simple
+	pulse
+	pulsecommon-0.9.22
+	asyncns
+	audio
 )
 
 # USED LIBRARIES for BSD environment
