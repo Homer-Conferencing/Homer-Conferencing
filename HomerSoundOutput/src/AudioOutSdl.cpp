@@ -295,6 +295,9 @@ void AudioOutSdl::ReleaseChannel(int pChannel)
 
 void AudioOutSdl::ClearChunkList(int pChannel)
 {
+    if (!mAudioOutOpened)
+        return;
+
     ChannelEntry* tChannelDesc = mChannelMap[pChannel];
 
     tChannelDesc->mMutex.lock();
