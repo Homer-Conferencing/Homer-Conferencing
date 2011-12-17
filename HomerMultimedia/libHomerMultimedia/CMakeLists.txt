@@ -137,6 +137,7 @@ SET (LIBS_LINUX_STATIC
 	swscale
 	avutil
 	mp3lame
+	faac
 	opencore-amrnb
 	opencore-amrwb
 	jack
