@@ -95,6 +95,8 @@ SET (LIBS_LINUX
 	HomerBase
 	HomerMonitor
 	asound
+	resolv
+	dbus-1
 )
 
 # USED STATIC libraries for linux environment
