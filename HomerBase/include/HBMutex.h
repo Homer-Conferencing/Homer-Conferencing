@@ -37,9 +37,9 @@
 
 #include <Header_Windows.h>
 
-//#if defined(WIN32) || defined(WIN64)
+#if defined(WIN32) || defined(WIN64)
 #define OS_DEP_MUTEX HANDLE
-//#endif
+#endif
 
 namespace Homer { namespace Base {
 
