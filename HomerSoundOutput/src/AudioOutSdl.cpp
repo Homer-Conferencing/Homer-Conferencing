@@ -75,7 +75,7 @@ bool AudioOutSdl::OpenPlaybackDevice(int pSampleRate, bool pStereo, string pDriv
         LOG(LOG_ERROR, "SDL Audio subsystem could not be started");
 
     // set explicit env. variable for output driver
-    #ifdef M_LINUX
+    #ifdef LINUX
         if (pDriver != "auto")
         setenv("SDL_AUDIODRIVER", pDriver.c_str(), 1);
     #endif
@@ -208,11 +208,8 @@ void AudioOutSdl::ClosePlaybackDevice()
         Mix_HaltMusic();
 
         // close SDL_mixer
-		#ifdef LINUX
-			Mix_CloseAudio();
-
-			SDL_QuitSubSystem(SDL_INIT_AUDIO);
-		#endif
+        Mix_CloseAudio();
+        SDL_QuitSubSystem(SDL_INIT_AUDIO);
 
         LOG(LOG_INFO, "closed");
     }
