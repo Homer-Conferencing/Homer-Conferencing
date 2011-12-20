@@ -24,6 +24,7 @@
  * Author:  Thomas Volkert
  * Since:   2011-11-16
 */
+#include <Header_Windows.h>
 #include <HBSocketControlService.h>
 
 #include <Logger.h>

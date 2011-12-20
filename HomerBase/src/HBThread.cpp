@@ -28,6 +28,8 @@
 #include <HBThread.h>
 #include <Logger.h>
 
+#include <Header_Windows.h>
+
 #include <string.h>
 #include <stdlib.h>
 #include <cstdio>
@@ -44,12 +46,6 @@
 // to get current time stamp
 #include <mach/clock.h>
 #include <mach/mach.h>
-#endif
-
-#ifdef WIN32
-#include <Windows.h>
-#include <Psapi.h>
-#include <Tlhelp32.h>
 #endif
 
 namespace Homer { namespace Base {

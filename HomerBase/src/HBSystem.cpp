@@ -36,9 +36,7 @@
 #include <unistd.h>
 #endif
 
-#ifdef WIN32
-#include <windows.h>
-#endif
+#include <Header_Windows.h>
 
 namespace Homer { namespace Base {
 

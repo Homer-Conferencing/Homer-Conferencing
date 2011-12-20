@@ -42,10 +42,7 @@
 #include <sys/time.h>
 #endif
 
-#ifdef WIN32
-#include <sys/timeb.h>
-#include <Windows.h>
-#endif
+#include <Header_Windows.h>
 
 namespace Homer { namespace Base {
 

@@ -35,9 +35,7 @@
 #include <sys/time.h>
 #endif
 
-#ifdef WIN32
-#include <sys/timeb.h>
-#endif
+#include <Header_Windows.h>
 
 namespace Homer { namespace Base {
 

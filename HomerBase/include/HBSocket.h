@@ -35,19 +35,7 @@
 #include <netinet/tcp.h>
 #endif
 
-#ifdef WIN32
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#include <Winsock2.h>
-#include <ws2tcpip.h>
-#include <Windows.h>
-#include <io.h>
-#include <BaseTsd.h>
-#ifndef ssize_t
-#define ssize_t SSIZE_T
-#endif
-#endif
+#include <Header_Windows.h>
 
 #include <string>
 #include <list>

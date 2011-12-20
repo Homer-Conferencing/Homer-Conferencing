@@ -32,9 +32,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#ifdef WIN32
-#include <Windows.h>
-#endif
+#include <Header_Windows.h>
 
 namespace Homer { namespace Base {
 

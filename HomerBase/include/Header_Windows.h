@@ -20,57 +20,57 @@
  *****************************************************************************/
 
 /*
- * Purpose: Implementation of wrapper for os independent random number generator
+ * Purpose: Windows includes, compatibility definitions for VC
  * Author:  Thomas Volkert
- * Since:   2010-09-28
+ * Since:   2011-12-20
  */
 
-#include <HBRandom.h>
-#include <HBTime.h>
+// HINT: this abstractino of header includes is needed to have a defined order how we include the headers of Windows (esp. for WinSock2.h and Windows.h)
+#ifndef _HEADER_WINDOWS_
+#define _HEADER_WINDOWS_
 
+///////////////////////////////////////////////////////////////////////////////
+
+// use secured functions instead of old function for string handling
+#ifdef _MSC_VER
+
+// make sure the 64 bit version is marked as active
+#ifndef WIN64
+#define WIN64
+#endif
+
+#endif
+
+// include all needed headers for 32 bit and 64 bit Windows
+#if defined(WIN32) || defined(WIN64)
+
+// activate some additional definitions within Windows includes
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+
+#include <winsock2.h> // has to be included before Windows.h
+#include <windows.h>
+#include <ws2tcpip.h>
+#include <io.h>
+#include <BaseTsd.h>
+#include <sys/timeb.h>
+#include <stdio.h>
+#include <Psapi.h>
+#include <Tlhelp32.h>
 #include <stdlib.h>
 
-namespace Homer { namespace Base {
+// additional definitions for compatibility with gcc
+#ifndef ssize_t
+#define ssize_t SSIZE_T
+#endif
 
-using namespace std;
+#ifndef __const
+#define __const
+#endif
 
-///////////////////////////////////////////////////////////////////////////////
-
-Random::Random()
-{
-}
-
-Random::~Random()
-{
-}
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
-unsigned long Random::GenerateNumber()
-{
-	static bool sFirstStart = true;
-
-	// if first start then init random number generator
-	if (sFirstStart)
-	{
-		sFirstStart = false;
-		#if defined(LINUX) || defined(APPLE) || defined(BSD)
-				srandom((unsigned int)Time::GetTimeStamp());
-		#endif
-		#if defined(WIN32) ||defined(WIN64)
-				srand((unsigned)Time::GetTimeStamp());
-		#endif
-	}
-
-	// generate random number
-    #if defined(LINUX) || defined(APPLE) || defined(BSD)
-		return random();
-	#endif
-	#if defined(WIN32) ||defined(WIN64)
-		return rand();
-	#endif
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-}} //namespace
+#endif

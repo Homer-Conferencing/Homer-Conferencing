@@ -34,9 +34,9 @@ typedef void*(*THREAD_MAIN)(void*);
 #include <pthread.h>
 #define OS_DEP_THREAD pthread_t
 #endif
-#ifdef WIN32
-#include <Windows.h>
-#include <stdio.h>
+
+#include <Header_Windows.h>
+#if defined(WIN32) ||defined(WIN64)
 #define OS_DEP_THREAD HANDLE
 #endif
 

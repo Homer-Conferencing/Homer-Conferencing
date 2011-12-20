@@ -36,7 +36,7 @@ inline std::string ParseRawObjectName(std::string pRawName)
 {
 	std::string tResult = "";
 	int tPos = 2; //ignore prefix "PN"
-	int tRawNameLength = pRawName.length();
+	int tRawNameLength = (int)pRawName.length();
 
 	for(;;)
 	{
