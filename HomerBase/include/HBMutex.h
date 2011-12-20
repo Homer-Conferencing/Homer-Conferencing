@@ -64,7 +64,7 @@ public:
     bool tryLock(int pMSecs);
 
 private:
-//friend class Condition;
+friend class Condition;
     OS_DEP_MUTEX mMutex;
 };
 
