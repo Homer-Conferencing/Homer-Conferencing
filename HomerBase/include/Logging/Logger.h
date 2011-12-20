@@ -50,7 +50,7 @@ inline std::string GetShortFileName(std::string pLongFileName)
 	else
         tResult = pLongFileName.substr(0, pLongFileName.length() - 2 /* ".h" */);
 
-	int tPos = tResult.rfind('/');
+	int tPos = (int)tResult.rfind('/');
 	if (tPos != (int)std::string::npos)
 		tResult = tResult.substr(tPos + 1, tResult.length() - tPos - 1);
 

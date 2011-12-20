@@ -32,12 +32,7 @@
 #include <sys/socket.h>
 #endif
 
-#ifdef WIN32
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#include <Winsock2.h>
-#endif
+#include <Header_Windows.h>
 
 #include <string.h>
 #include <Logger.h>
@@ -62,7 +57,7 @@ struct QoSIpOption{
     unsigned int  InternetAddress;  // time stamp specific
 
     struct QoSSettings Settings;
-}__attribute__((__packed__));
+}AATRIBUTE_PACKED;
 
 // define setqos if is not defined by linked libs
 #ifndef setqos

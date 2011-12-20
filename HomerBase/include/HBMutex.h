@@ -34,11 +34,12 @@
 #include <errno.h>
 #define OS_DEP_MUTEX pthread_mutex_t*
 #endif
-#ifdef WIN32
-#include <windows.h>
-#include <stdio.h>
+
+#include <Header_Windows.h>
+
+//#if defined(WIN32) || defined(WIN64)
 #define OS_DEP_MUTEX HANDLE
-#endif
+//#endif
 
 namespace Homer { namespace Base {
 
@@ -63,7 +64,7 @@ public:
     bool tryLock(int pMSecs);
 
 private:
-friend class Condition;
+//friend class Condition;
     OS_DEP_MUTEX mMutex;
 };
 

@@ -41,7 +41,7 @@ Mutex::Mutex()
 		mMutex = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t));
 		tResult = (pthread_mutex_init(mMutex, NULL) == 0);
 	#endif
-	#ifdef WIN32
+	#if defined(WIN32) ||defined(WIN64)
 		mMutex = CreateMutex(NULL, false, NULL);
 		tResult = (mMutex != NULL);
 	#endif
@@ -56,7 +56,7 @@ Mutex::~Mutex()
 		tResult = (pthread_mutex_destroy(mMutex) == 0);
 	    free(mMutex);
 	#endif
-	#ifdef WIN32
+	#if defined(WIN32) ||defined(WIN64)
 	    tResult = (CloseHandle(mMutex) != 0);
 	#endif
     if (!tResult)
@@ -70,7 +70,7 @@ bool Mutex::lock()
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		return !pthread_mutex_lock(mMutex);
 	#endif
-	#ifdef WIN32
+	#if defined(WIN32) ||defined(WIN64)
 		return (WaitForSingleObject(mMutex, INFINITE) != WAIT_FAILED);
 	#endif
 }
@@ -80,7 +80,7 @@ bool Mutex::unlock()
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		return !pthread_mutex_unlock(mMutex);
 	#endif
-	#ifdef WIN32
+	#if defined(WIN32) ||defined(WIN64)
 		return (ReleaseMutex(mMutex) != 0);
 	#endif
 }
@@ -110,7 +110,7 @@ bool Mutex::tryLock()
 				break;
 		}
 	#endif
-	#ifdef WIN32
+	#if defined(WIN32) ||defined(WIN64)
 		switch(WaitForSingleObject(mMutex, (DWORD)0))
 		{
 			case WAIT_ABANDONED:
@@ -193,7 +193,7 @@ bool Mutex::tryLock(int pMSecs)
 				break;
 		}
 	#endif
-	#ifdef WIN32
+	#if defined(WIN32) ||defined(WIN64)
 		switch(WaitForSingleObject(mMutex, (DWORD)pMSecs))
 		{
 			case WAIT_ABANDONED:

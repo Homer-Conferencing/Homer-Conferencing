@@ -28,6 +28,8 @@
 #include <LogSinkFile.h>
 #include <Logger.h>
 
+#include <Header_Windows.h>
+
 #include <string.h>
 #include <stdio.h>
 

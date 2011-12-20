@@ -73,7 +73,7 @@ void Socket::SetDefaults(enum TransportType pTransportType)
     mPeerPort = 0;
     mUdpLiteChecksumCoverage = UDP_LITE_HEADER_SIZE;
 
-    #if defined(WIN32) || defined(APPLE) || defined(BSD)
+    #if defined(WIN32) ||defined(WIN64) || defined(APPLE) || defined(BSD)
 		if (pTransportType == SOCKET_UDP_LITE)
 		{
 			LOG(LOG_ERROR, "UDPlite is not supported by Windows API, a common UDP socket will be used instead");
@@ -473,7 +473,7 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
             #if defined(APPLE) || defined(BSD)
                 tSent = sendto(mSocketHandle, pBuffer, (size_t)pBufferSize, 0, &tAddressDescriptor.sa, tAddressDescriptorSize);
             #endif
-			#ifdef WIN32
+			#if defined(WIN32) ||defined(WIN64)
 				tSent = sendto(mSocketHandle, (const char*)pBuffer, (int)pBufferSize, 0, &tAddressDescriptor.sa, (int)tAddressDescriptorSize);
 			#endif
 			break;
@@ -518,7 +518,7 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
             #if defined(APPLE) || defined(BSD)
                 tSent = send(mSocketHandle, pBuffer, (size_t)pBufferSize, 0);
             #endif
-			#ifdef WIN32
+			#if defined(WIN32) ||defined(WIN64)
 				tSent = send(mSocketHandle, (const char*)pBuffer, (int)pBufferSize, 0);
 			#endif
 			break;
@@ -544,13 +544,12 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
 
 bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuffer, ssize_t &pBufferSize)
 {
-    int                     tClientHandle;
     ssize_t                 tReceivedBytes = 0;
     SocketAddressDescriptor tAddressDescriptor;
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		socklen_t           tAddressDescriptorSize = sizeof(tAddressDescriptor.sa_stor);
 	#endif
-	#ifdef WIN32
+	#if defined(WIN32) || defined(WIN64)
 		int                 tAddressDescriptorSize = sizeof(tAddressDescriptor.sa_stor);
 	#endif
     bool                    tResult = false;
@@ -578,8 +577,8 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
             #if defined(APPLE) || defined(BSD)
                 tReceivedBytes = recvfrom(mSocketHandle, pBuffer, (size_t)pBufferSize, 0, &tAddressDescriptor.sa, &tAddressDescriptorSize);
             #endif
-			#ifdef WIN32
-				tReceivedBytes = recvfrom(mSocketHandle, (char*)pBuffer, pBufferSize, 0, &tAddressDescriptor.sa, &tAddressDescriptorSize);
+			#if defined(WIN32) ||defined(WIN64)
+				tReceivedBytes = recvfrom(mSocketHandle, (char*)pBuffer, (int)pBufferSize, 0, &tAddressDescriptor.sa, &tAddressDescriptorSize);
 			#endif
 		    if (tReceivedBytes >= 0)
 		    {
@@ -607,7 +606,7 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
              */
             if (!mIsConnected)
             {
-                if ((mTcpClientSockeHandle = accept(mSocketHandle, &tAddressDescriptor.sa, &tAddressDescriptorSize)) < 0)
+                if ((mTcpClientSockeHandle = (int)accept(mSocketHandle, &tAddressDescriptor.sa, &tAddressDescriptorSize)) < 0)
                     LOG(LOG_ERROR, "Failed to accept connections on socket %d because of \"%s\"", mSocketHandle, strerror(errno));
                 else
                 {
@@ -628,8 +627,8 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
             #if defined(APPLE) || defined(BSD)
                 tReceivedBytes = recv(mTcpClientSockeHandle, pBuffer, (size_t)pBufferSize, 0);
             #endif
-            #ifdef WIN32
-                tReceivedBytes = recv(mTcpClientSockeHandle, (char*)pBuffer, pBufferSize, 0);
+            #if defined(WIN32) ||defined(WIN64)
+                tReceivedBytes = recv(mTcpClientSockeHandle, (char*)pBuffer, (int)pBufferSize, 0);
             #endif
             if (tReceivedBytes < 0)
             {
@@ -663,7 +662,7 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
 
 bool Socket::IsQoSSupported()
 {
-    return (sQoSSupported == true);
+    return (sQoSSupported == 1);
 }
 
 void Socket::DisableQoSSupport()
@@ -676,7 +675,7 @@ bool Socket::IsIPv6Supported()
 {
     if (sIPv6Supported == -1)
     {
-        #ifdef WIN32
+        #if defined(WIN32) ||defined(WIN64)
             int tMajor, tMinor;
             if ((!System::GetWindowsKernelVersion(tMajor, tMinor)) || (tMajor < 6))
             {
@@ -692,13 +691,13 @@ bool Socket::IsIPv6Supported()
 
         int tHandle = 0;
 
-        if ((tHandle = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP)) > 0)
+        if ((tHandle = (int)socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP)) > 0)
         {
             LOGEX(Socket, LOG_INFO, ">>> IPv6 sockets available <<<");
             #if defined(LINUX) || defined(APPLE) || defined(BSD)
                 close(tHandle);
             #endif
-            #ifdef WIN32
+            #if defined(WIN32) ||defined(WIN64)
                 closesocket(tHandle);
                 // no WSACleanup() here, it would lead to a crash because of static context
             #endif
@@ -710,7 +709,7 @@ bool Socket::IsIPv6Supported()
         }
     }
 
-    return (sIPv6Supported == true);
+    return (sIPv6Supported == 1);
 }
 
 void Socket::DisableIPv6Support()
@@ -736,7 +735,7 @@ bool Socket::IsTransportSupported(enum TransportType pType)
         case SOCKET_UDP_LITE:
             if (sUDPliteSupported == -1)
             {
-                #if defined(WIN32) || defined(APPLE) || defined(BSD)
+                #if defined(WIN32) || defined(WIN64) || defined(APPLE) || defined(BSD)
                     sUDPliteSupported = false;
                 #endif
 
@@ -755,13 +754,13 @@ bool Socket::IsTransportSupported(enum TransportType pType)
                     }
                 #endif
             }
-            tResult = (sUDPliteSupported == true);
+            tResult = (sUDPliteSupported == 1);
             break;
 
         case SOCKET_DCCP:
             if (sDCCPSupported == -1)
             {
-                #if defined(WIN32) || defined(APPLE) || defined(BSD)
+                #if defined(WIN32) || defined(WIN64) || defined(APPLE) || defined(BSD)
                     sDCCPSupported = false;
                 #endif
 
@@ -780,13 +779,13 @@ bool Socket::IsTransportSupported(enum TransportType pType)
                     }
                 #endif
             }
-            tResult = (sDCCPSupported == true);
+            tResult = (sDCCPSupported == 1);
             break;
 
         case SOCKET_SCTP:
             if (sSCTPSupported == -1)
             {
-                #if defined(WIN32) || defined(APPLE) || defined(BSD)
+                #if defined(WIN32) || defined(WIN64) || defined(APPLE) || defined(BSD)
                     sSCTPSupported = false;
                 #endif
 
@@ -805,7 +804,7 @@ bool Socket::IsTransportSupported(enum TransportType pType)
                     }
                 #endif
             }
-            tResult = (sSCTPSupported == true);
+            tResult = (sSCTPSupported == 1);
             break;
 
         default:
@@ -952,7 +951,7 @@ bool Socket::CreateSocket(enum NetworkType pIpVersion)
     int tSelectedIPDomain = 0;
     bool tResult = false;
 
-    #ifdef WIN32
+    #if defined(WIN32) ||defined(WIN64)
         unsigned long int nonBlockingMode = 0; // blocking mode
         BOOL tNewBehaviour = false;
         DWORD tBytesReturned = 0;
@@ -1003,11 +1002,11 @@ bool Socket::CreateSocket(enum NetworkType pIpVersion)
                 LOG(LOG_ERROR, "UDPlite is not supported by Windows API, a common UDP socket will be used instead");
             #endif
         case SOCKET_UDP:
-            if ((mSocketHandle = socket(tSelectedIPDomain, SOCK_DGRAM, IPPROTO_UDP)) < 0)
+            if ((mSocketHandle = (int)socket(tSelectedIPDomain, SOCK_DGRAM, IPPROTO_UDP)) < 0)
                 LOG(LOG_ERROR, "Could not create UDP socket");
             else
                 tResult = true;
-            #ifdef WIN32
+            #if defined(WIN32) ||defined(WIN64)
                 if (ioctlsocket(mSocketHandle, FIONBIO, &nonBlockingMode))
                 {
                     LOG(LOG_ERROR, "Failed to set blocking-mode for socket %d", mSocketHandle);
@@ -1027,11 +1026,11 @@ bool Socket::CreateSocket(enum NetworkType pIpVersion)
             #endif
             break;
         case SOCKET_TCP:
-            if ((mSocketHandle = socket(tSelectedIPDomain, SOCK_STREAM, IPPROTO_TCP)) < 0)
+            if ((mSocketHandle = (int)socket(tSelectedIPDomain, SOCK_STREAM, IPPROTO_TCP)) < 0)
                 LOG(LOG_ERROR, "Could not create TCP socket");
             else
                 tResult = true;
-            #ifdef WIN32
+            #if defined(WIN32) ||defined(WIN64)
                 if (ioctlsocket(mSocketHandle, FIONBIO, &nonBlockingMode))
                 {
                     LOG(LOG_ERROR, "Failed to set blocking-mode for socket %d", mSocketHandle);
@@ -1052,7 +1051,7 @@ bool Socket::CreateSocket(enum NetworkType pIpVersion)
             #if defined(LINUX) || defined(APPLE) || defined(BSD)
 				tIpv6OnlyOkay = (setsockopt(mSocketHandle, IPPROTO_IPV6, IPV6_V6ONLY, (__const void*)&tOnlyIpv6Sockets, sizeof(tOnlyIpv6Sockets)) == 0);
 			#endif
-			#ifdef WIN32
+			#if defined(WIN32) ||defined(WIN64)
                 tIpv6OnlyOkay = (setsockopt(mSocketHandle, IPPROTO_IPV6, IPV6_V6ONLY, (const char*)&tOnlyIpv6Sockets, sizeof(tOnlyIpv6Sockets)) == 0);
 			#endif
             if (tIpv6OnlyOkay)
@@ -1074,7 +1073,7 @@ void Socket::DestroySocket(int pHandle)
         #if defined(LINUX) || defined(APPLE) || defined(BSD)
             close(pHandle);
         #endif
-        #ifdef WIN32
+        #if defined(WIN32) ||defined(WIN64)
             closesocket(pHandle);
             WSACleanup();
         #endif
@@ -1102,7 +1101,7 @@ bool Socket::BindSocket(unsigned int pPort, unsigned int pProbeStepping, unsigne
     }
 
     // data port: search for the next free port and bind to it
-	#ifdef WIN32
+	#if defined(WIN32) ||defined(WIN64)
     	while (bind(mSocketHandle, &tAddressDescriptor.sa, (int)tAddressDescriptorSize) < 0)
 	#else
 		while (bind(mSocketHandle, &tAddressDescriptor.sa, tAddressDescriptorSize) < 0)
