@@ -87,7 +87,7 @@ LIBS+=		dbus-1
 LIBS+=		resolv
 #LFLAGS+=	-Wl,-Bstatic -Wl,-Bsymbolic -lQtWebKit -l$(QT4_GUI_LIB) -lQtMultimedia -lQtNetwork -lQtXml -lQtDBus -lQtXml -lQtScript -l$(QT4_CORE_LIB) -Wl,-Bdynamic
 endif
-LFLAGS+=	-Wl,-R. -Wl,-R./bin -Wl,-R./lib -Wl,-R../../lib
+LFLAGS+=	-Wl,-R. -Wl,-R./bin -Wl,-R./lib -Wl,-R../../lib -Wl,-R../lib
 
 ifeq ($(MSYSTEM),MINGW32)
 # otherwise the console window will be displayed
