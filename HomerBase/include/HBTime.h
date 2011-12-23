@@ -54,7 +54,7 @@ public:
     int64_t UpdateTimeStamp(); // in µs
     int64_t TimeDiffInUSecs(Time *pTime);
     static int64_t GetTimeStamp(); // in µs
-    static bool GetNow(int *pDay, int *pMonth, int *pYear, int *pHour, int *pMin, int *pSec);
+    static bool GetNow(int *pDay = NULL, int *pMonth = NULL, int *pYear = NULL, int *pHour = NULL, int *pMin = NULL, int *pSec = NULL);
 
     Time& operator=(const Time &pTime);
 
