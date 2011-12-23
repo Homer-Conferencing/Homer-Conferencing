@@ -131,10 +131,10 @@ static void showMood()
         printf((const char*)sCandle);
     }
 
-//    if ((tDay > 23) && (tMonth == 12))
-//    {
+    if ((tDay > 23) && (tMonth == 12))
+    {
         printf(sMerryXmas, tYear + 1);
-//    }
+    }
 }
 
 static void sQtDebugMessageOutput(QtMsgType pType, const char *pMsg)
