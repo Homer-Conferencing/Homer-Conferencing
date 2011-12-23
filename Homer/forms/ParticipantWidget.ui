@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ParticipantWidget</class>
+ <widget class="QDockWidget" name="ParticipantWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>514</width>
+    <height>392</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Participant widget</string>
+  </property>
+  <widget class="QWidget" name="mParticipantWidgetContent">
+   <layout class="QGridLayout" name="gridLayout">
+    <property name="leftMargin">
+     <number>3</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>3</number>
+    </property>
+    <property name="bottomMargin">
+     <number>3</number>
+    </property>
+    <item row="0" column="0">
+     <widget class="QSplitter" name="mSplitter">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <widget class="QWidget" name="mVideoAudioWidget" native="true">
+       <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0">
+        <property name="margin">
+         <number>3</number>
+        </property>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,2">
+          <item>
+           <widget class="QFrame" name="mSessionInfoWidgetFrame">
+            <property name="frameShape">
+             <enum>QFrame::Panel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_3">
+             <property name="margin">
+              <number>3</number>
+             </property>
+             <item row="0" column="0">
+              <widget class="Homer::Gui::SessionInfoWidget" name="mSessionInfoWidget" native="true"/>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QFrame" name="mVideoWidgetFrame">
+            <property name="frameShape">
+             <enum>QFrame::Panel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_2">
+             <property name="margin">
+              <number>3</number>
+             </property>
+             <item row="0" column="0">
+              <widget class="Homer::Gui::VideoWidget" name="mVideoWidget" native="true"/>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QFrame" name="mAudioWidgetFrame">
+            <property name="frameShape">
+             <enum>QFrame::Panel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_4">
+             <property name="margin">
+              <number>3</number>
+             </property>
+             <item row="0" column="0">
+              <widget class="Homer::Gui::AudioWidget" name="mAudioWidget" native="true"/>
+             </item>
+            </layout>
+            <zorder>mAudioWidget</zorder>
+            <zorder>mAudioWidget</zorder>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="Homer::Gui::MessageWidget" name="mMessageWidget" native="true"/>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>Homer::Gui::MessageWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">Widgets/MessageWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Homer::Gui::SessionInfoWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">Widgets/SessionInfoWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Homer::Gui::VideoWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">Widgets/VideoWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Homer::Gui::AudioWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">Widgets/AudioWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,88 @@
+/*****************************************************************************
+ *
+ * Copyright (C) 2008-2011 Homer-conferencing project
+ *
+ * This software is free software.
+ * Your are allowed to redistribute it and/or modify it under the terms of
+ * the GNU General Public License version 2 as published by the Free Software
+ * Foundation.
+ *
+ * This source is published in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License version 2 for more details.
+ *
+ * You should have received a copy of the GNU General Public License version 2
+ * along with this program. Otherwise, you can write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02111, USA.
+ * Alternatively, you find an online version of the license text under
+ * http://www.gnu.org/licenses/gpl-2.0.html.
+ *
+ *****************************************************************************/
+
+/*
+ * Purpose: tool buttons for streaming control
+ * Author:  Thomas Volkert
+ * Since:   2010-11-17
+ */
+
+#ifndef _STREAMING_CONTROL_WIDGET
+#define _STREAMING_CONTROL_WIDGET
+
+#include <MediaSourceDesktop.h>
+#include <Widgets/VideoWidget.h>
+#include <Widgets/AudioWidget.h>
+#include <Widgets/OverviewPlaylistWidget.h>
+
+#include <ui_StreamingControlWidget.h>
+
+namespace Homer { namespace Gui {
+
+///////////////////////////////////////////////////////////////////////////////
+
+class StreamingControlWidget :
+    public QWidget,
+    public Ui_StreamingControlWidget
+{
+    Q_OBJECT;
+public:
+    /// The default constructor
+    StreamingControlWidget(VideoWorkerThread* pVideoWorker, AudioWorkerThread* pAudioWorker, MediaSourceDesktop *pMediaSourceDesktop, OverviewPlaylistWidget *pOverviewPlaylistWidgetVideo, OverviewPlaylistWidget *pOverviewPlaylistWidgetAudio, OverviewPlaylistWidget *pOverviewPlaylistWidgetMovie);
+
+    /// The destructor.
+    virtual ~StreamingControlWidget();
+
+    void SetVideoSliderVisible(bool pVisible = true);
+    void SetAudioSliderVisible(bool pVisible = true);
+    void SetMovieSliderVisible(bool pVisible = true);
+    void SetVideoInputSelectionVisible(bool pVisible = true);
+
+private slots:
+    void StartScreenSegmentStreaming();
+    void StartVoiceStreaming();
+    void StartCameraStreaming();
+	void StartVideoFileStreaming();
+	void StartAudioFileStreaming();
+    void StartMovieFileStreaming();
+	void SeekVideoFile(int pPos);
+	void SeekAudioFile(int pPos);
+	void SeekMovieFile(int pPos);
+	void SelectedNewVideoInputChannel(int pIndex);
+
+private:
+    void timerEvent(QTimerEvent *pEvent);
+    void initializeGUI();
+
+    VideoWorkerThread       *mVideoWorker;
+    AudioWorkerThread       *mAudioWorker;
+    MediaSourceDesktop      *mMediaSourceDesktop;
+    OverviewPlaylistWidget 	*mOverviewPlaylistWidgetVideo;
+    OverviewPlaylistWidget 	*mOverviewPlaylistWidgetAudio;
+    OverviewPlaylistWidget 	*mOverviewPlaylistWidgetMovie;
+    int 					mTimerId;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+}}
+
+#endif

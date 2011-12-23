@@ -1,0 +1,683 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>361</width>
+    <height>117</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="font">
+   <font>
+    <pointsize>8</pointsize>
+   </font>
+  </property>
+  <property name="mouseTracking">
+   <bool>false</bool>
+  </property>
+  <property name="windowTitle">
+   <string>Homer</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../resources/Icons.qrc">
+    <normaloff>:/images/LogoHomer3.png</normaloff>:/images/LogoHomer3.png</iconset>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QStatusBar::item { border: 0px solid black };</string>
+  </property>
+  <property name="tabShape">
+   <enum>QTabWidget::Rounded</enum>
+  </property>
+  <property name="dockOptions">
+   <set>QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks</set>
+  </property>
+  <widget class="QMenuBar" name="mMenuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>361</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="mMenuSettings">
+    <property name="title">
+     <string>Settings</string>
+    </property>
+    <addaction name="mActionIdentity"/>
+    <addaction name="mActionConfiguration"/>
+   </widget>
+   <widget class="QMenu" name="mMenuHomer">
+    <property name="title">
+     <string>Homer</string>
+    </property>
+    <addaction name="separator"/>
+    <addaction name="mActionHelp"/>
+    <addaction name="separator"/>
+    <addaction name="mActionUpdateCheck"/>
+    <addaction name="mActionVersion"/>
+   </widget>
+   <widget class="QMenu" name="mMenuWindows">
+    <property name="title">
+     <string>Views</string>
+    </property>
+    <widget class="QMenu" name="mMenuToolBars">
+     <property name="title">
+      <string>Tool bars</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../resources/Icons.qrc">
+       <normaloff>:/images/Tools.png</normaloff>:/images/Tools.png</iconset>
+     </property>
+     <addaction name="mActionContactingToolBar"/>
+     <addaction name="mActionStreamingToolBar"/>
+     <addaction name="mActionServerConnectionToolBar"/>
+    </widget>
+    <widget class="QMenu" name="mMenuOverviewPlaylistWidgets">
+     <property name="title">
+      <string>Playlists</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../resources/Icons.qrc">
+       <normaloff>:/images/Document.png</normaloff>:/images/Document.png</iconset>
+     </property>
+     <addaction name="mActionOverviewVideoPlaylistWidget"/>
+     <addaction name="mActionOverviewAudioPlaylistWidget"/>
+     <addaction name="mActionOverviewMoviePlaylistWidget"/>
+    </widget>
+    <widget class="QMenu" name="mMenuParticipantVideoWidgets">
+     <property name="title">
+      <string>Video windows</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../resources/Icons.qrc">
+       <normaloff>:/images/VideoReel.png</normaloff>:/images/VideoReel.png</iconset>
+     </property>
+     <addaction name="separator"/>
+    </widget>
+    <widget class="QMenu" name="mMenuParticipantAudioWidgets">
+     <property name="title">
+      <string>Audio windows</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../resources/Icons.qrc">
+       <normaloff>:/images/Speaker.png</normaloff>:/images/Speaker.png</iconset>
+     </property>
+    </widget>
+    <addaction name="mMenuParticipantVideoWidgets"/>
+    <addaction name="mMenuParticipantAudioWidgets"/>
+    <addaction name="mActionParticipantMessageWidgets"/>
+    <addaction name="mMenuToolBars"/>
+    <addaction name="separator"/>
+    <addaction name="mActionOpenVideoAudioPreview"/>
+    <addaction name="separator"/>
+    <addaction name="mMenuOverviewPlaylistWidgets"/>
+    <addaction name="mActionOverviewContactsWidget"/>
+    <addaction name="mActionOverviewFileTransfersWidget"/>
+    <addaction name="separator"/>
+    <addaction name="mActionOverviewErrorsWidget"/>
+    <addaction name="mActionOverviewNetworkStreamsWidget"/>
+    <addaction name="mActionOverviewDataStreamsWidget"/>
+    <addaction name="mActionOverviewThreadsWidget"/>
+    <addaction name="mActionMonitorBroadcastWidget"/>
+   </widget>
+   <widget class="QMenu" name="mMenuMain">
+    <property name="title">
+     <string>Main</string>
+    </property>
+    <addaction name="mActionExit"/>
+   </widget>
+   <addaction name="mMenuMain"/>
+   <addaction name="mMenuSettings"/>
+   <addaction name="mMenuWindows"/>
+   <addaction name="mMenuHomer"/>
+  </widget>
+  <widget class="QToolBar" name="mContactingToolBar">
+   <property name="contextMenuPolicy">
+    <enum>Qt::DefaultContextMenu</enum>
+   </property>
+   <property name="windowTitle">
+    <string>Presence status</string>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::AllToolBarAreas</set>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QStatusBar" name="mStatusBar">
+   <property name="minimumSize">
+    <size>
+     <width>0</width>
+     <height>15</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>16777215</width>
+     <height>15</height>
+    </size>
+   </property>
+  </widget>
+  <widget class="QToolBar" name="mStreamingToolBar">
+   <property name="windowTitle">
+    <string>Available sources</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QToolBar" name="mServerConnectionToolBar">
+   <property name="windowTitle">
+    <string>Server connection</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <action name="mActionAddParticipant">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/images/Add.png</normaloff>:/images/Add.png</iconset>
+   </property>
+   <property name="text">
+    <string>Add participant</string>
+   </property>
+  </action>
+  <action name="mActionCloseSessions">
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/Close.png</normaloff>:/images/Close.png</iconset>
+   </property>
+   <property name="text">
+    <string>Close sessions</string>
+   </property>
+  </action>
+  <action name="mActionRemoveParticipant">
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/Delete.png</normaloff>:/images/Delete.png</iconset>
+   </property>
+   <property name="text">
+    <string>Remove participant</string>
+   </property>
+  </action>
+  <action name="actionExit_Center">
+   <property name="text">
+    <string>Exit Homer</string>
+   </property>
+  </action>
+  <action name="actionIdentity">
+   <property name="text">
+    <string>Identity</string>
+   </property>
+  </action>
+  <action name="mActionIdentity">
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/UserMale.png</normaloff>:/images/UserMale.png</iconset>
+   </property>
+   <property name="text">
+    <string>Identity</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Q</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="mActionConfiguration">
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/Tools2.png</normaloff>:/images/Tools2.png</iconset>
+   </property>
+   <property name="text">
+    <string>Configuration</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+C</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="mActionVersion">
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/LogoHomer3.png</normaloff>:/images/LogoHomer3.png</iconset>
+   </property>
+   <property name="text">
+    <string>Version info</string>
+   </property>
+   <property name="shortcut">
+    <string>F12</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="actionMissed_calls">
+   <property name="text">
+    <string>Missed calls</string>
+   </property>
+  </action>
+  <action name="mActionInstantMessages">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Instant messages</string>
+   </property>
+  </action>
+  <action name="mActionExit">
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/Exit.png</normaloff>:/images/Exit.png</iconset>
+   </property>
+   <property name="text">
+    <string>Exit</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+X</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="mActionOwnVideo">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Own Video</string>
+   </property>
+  </action>
+  <action name="mActionEventHistoryWidget">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Event history</string>
+   </property>
+  </action>
+  <action name="mActionParticipantMessageWidgets">
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/Message.png</normaloff>:/images/Message.png</iconset>
+   </property>
+   <property name="text">
+    <string>Message windows</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="mActionContacts">
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/Catalog.png</normaloff>:/images/Catalog.png</iconset>
+   </property>
+   <property name="text">
+    <string>Contact list</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+L</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="mActionOverviewDataStreamsWidget">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/Multimedia1.png</normaloff>
+     <normalon>:/images/Success.png</normalon>:/images/Multimedia1.png</iconset>
+   </property>
+   <property name="text">
+    <string>Data streams</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="mActionOverviewThreadsWidget">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/Processor.png</normaloff>
+     <normalon>:/images/Success.png</normalon>:/images/Processor.png</iconset>
+   </property>
+   <property name="text">
+    <string>System threads</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="mActionSaveContacts">
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/DriveSave.png</normaloff>:/images/DriveSave.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save contacts</string>
+   </property>
+   <property name="shortcut">
+    <string>F2</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="mActionLoadContacts">
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/BoxOpen.png</normaloff>:/images/BoxOpen.png</iconset>
+   </property>
+   <property name="text">
+    <string>Load contacts</string>
+   </property>
+   <property name="shortcut">
+    <string>F3</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="mActionContactingToolBar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/UserFamily.png</normaloff>
+     <normalon>:/images/Success.png</normalon>:/images/UserFamily.png</iconset>
+   </property>
+   <property name="text">
+    <string>Presence status</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="mActionStreamingToolBar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/Network.png</normaloff>
+     <normalon>:/images/Success.png</normalon>:/images/Network.png</iconset>
+   </property>
+   <property name="text">
+    <string>Available source</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="mActionUpdateCheck">
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/SoftwareUpdate.png</normaloff>:/images/SoftwareUpdate.png</iconset>
+   </property>
+   <property name="text">
+    <string>Update check</string>
+   </property>
+   <property name="shortcut">
+    <string>F5</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="mActionHelp">
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/Help.png</normaloff>:/images/Help.png</iconset>
+   </property>
+   <property name="text">
+    <string>Online help</string>
+   </property>
+   <property name="shortcut">
+    <string>F1</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="mActionOverviewContactsWidget">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/UserGroup.png</normaloff>
+     <normalon>:/images/Success.png</normalon>:/images/UserGroup.png</iconset>
+   </property>
+   <property name="text">
+    <string>Contact list</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="mActionOverviewFileTransfersWidget">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/NetworkShare.png</normaloff>
+     <normalon>:/images/Success.png</normalon>:/images/NetworkShare.png</iconset>
+   </property>
+   <property name="text">
+    <string>File transfer list</string>
+   </property>
+  </action>
+  <action name="mActionMonitorBroadcastWidget">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/Monitor.png</normaloff>
+     <normalon>:/images/Success.png</normalon>:/images/Monitor.png</iconset>
+   </property>
+   <property name="text">
+    <string>Broadcast data</string>
+   </property>
+  </action>
+  <action name="mActionOverviewVideoPlaylistWidget">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/VideoReel.png</normaloff>
+     <normalon>:/images/Success.png</normalon>:/images/VideoReel.png</iconset>
+   </property>
+   <property name="text">
+    <string>Video playlist</string>
+   </property>
+  </action>
+  <action name="mActionOverviewAudioPlaylistWidget">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/Speaker.png</normaloff>
+     <normalon>:/images/Success.png</normalon>:/images/Speaker.png</iconset>
+   </property>
+   <property name="text">
+    <string>Audio playlist</string>
+   </property>
+  </action>
+  <action name="mActionOverviewMoviePlaylistWidget">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/FilmStrip1.png</normaloff>
+     <normalon>:/images/Success.png</normalon>:/images/FilmStrip1.png</iconset>
+   </property>
+   <property name="text">
+    <string>Movie playlist</string>
+   </property>
+  </action>
+  <action name="mActionOpenVideoPreview">
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/Monitor.png</normaloff>:/images/Monitor.png</iconset>
+   </property>
+   <property name="text">
+    <string>Start video preview</string>
+   </property>
+  </action>
+  <action name="mActionOverviewErrorsWidget">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/Warning.png</normaloff>
+     <normalon>:/images/Success.png</normalon>:/images/Warning.png</iconset>
+   </property>
+   <property name="text">
+    <string>Errors</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="mActionOpenAudioPreview">
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/MusicalNote.png</normaloff>:/images/MusicalNote.png</iconset>
+   </property>
+   <property name="text">
+    <string>Start audio preview</string>
+   </property>
+  </action>
+  <action name="mActionServerConnectionToolBar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/Server.png</normaloff>
+     <normalon>:/images/Success.png</normalon>:/images/Server.png</iconset>
+   </property>
+   <property name="text">
+    <string>Server connection</string>
+   </property>
+  </action>
+  <action name="mActionOverviewNetworkStreamsWidget">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/NetworkSocket.png</normaloff>
+     <normalon>:/images/Success.png</normalon>:/images/NetworkSocket.png</iconset>
+   </property>
+   <property name="text">
+    <string>Network streams</string>
+   </property>
+  </action>
+  <action name="mActionOpenVideoAudioPreview">
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/Multimedia1.png</normaloff>:/images/Multimedia1.png</iconset>
+   </property>
+   <property name="text">
+    <string>Open video/audio preview</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+W</string>
+   </property>
+  </action>
+ </widget>
+ <resources>
+  <include location="../resources/Icons.qrc"/>
+ </resources>
+ <connections/>
+</ui>

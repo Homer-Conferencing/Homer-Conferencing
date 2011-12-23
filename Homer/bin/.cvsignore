@@ -1,0 +1,7 @@
+Homer
+Homer.exe
+*.dep
+*.C
+*.rcc
+*.xml
+moc_*.cpp
