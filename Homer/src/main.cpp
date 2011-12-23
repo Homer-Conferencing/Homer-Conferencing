@@ -33,6 +33,7 @@
 #include <QSplashScreen>
 #include <QResource>
 
+#include <HBTime.h>
 #include <MainWindow.h>
 #include <Logger.h>
 #include <Configuration.h>
@@ -69,6 +70,72 @@ static void SetHandlers()
 #else
 static void SetHandlers(){ }
 #endif
+
+const char* sCandle = ""
+"░░░░░░░░░░░░░░█░░░░░░░░░░░░░░\n"
+"░░░░░░░░░░░░░███░░░░░░░░░░░░░\n"
+"░░░░░░░░░░░░██░██░░░░░░░░░░░░\n"
+"░░░░░░░░░░░░██░██░░░░░░░░░░░░\n"
+"░░░░░░░░░░░██░░░██░░░░░░░░░░░\n"
+"░░░░░░░░░░██░░░░░██░░░░░░░░░░\n"
+"░░░░░░░░░██░░░░░░░██░░░░░░░░░\n"
+"░░░░░░░░██░░░░░░░░░██░░░░░░░░\n"
+"░░░░░░░░██░░░░░░░░░██░░░░░░░░\n"
+"░░░░░░░░░██░░░█░░░██░░░░░░░░░\n"
+"░░░░░░░░░░░██░█░██░░░░░░░░░░░\n"
+"░░░░░░░░░░░░░███░░░░░░░░░░░░░\n"
+"░░░░░░░░░░█████████░░░░░░░░░░\n"
+"░░░░░███████████████████░░░░░\n"
+"░░░░█████████████████████░░░░\n"
+"░░░███████████████████████░░░\n"
+"░░░░█████████████████████░░░░\n"
+"░░░░░███████████████████░░░░░\n"
+"░░░░░░█████████████████░░░░░░\n"
+"░░░░░░░░█████████████░░░░░░░░\n"
+"░░░░░░░░░███████████░░░░░░░░░\n"
+"░░░░░░░░░░█████████░░░░░░░░░░\n"
+"░░░░░░█████████████████░░░░░░\n"
+"░░░░░███████████████████░░░░░\n";
+
+const char* sMerryXmas = ""
+"░░░░░░░░░░░░░░░*░░░░░░░░░░░░░░░\n"
+"░░░░░░░░░░░░░░*o*░░░░░░░░░░░░░░\n"
+"░░░░░░░░░░░░░*o*o*░░░░░░░░░░░░░\n"
+"░░░░░░░░░░░░*o*o*o*░░░░░░░░░░░░\n"
+"░░░░░░░░░░░*o*o*o*o*░░░░░░░░░░░\n"
+"░░░░░░░░░░*o*o*o*o*o*░░░░░░░░░░\n"
+"░░░░░░░░░*o* HO-HO *o*░░░░░░░░░\n"
+"░░░░░░░░*o*o*o*o*o*o*o*░░░░░░░░\n"
+"░░░░░░░░░░*o*o*o*o*o*░░░░░░░░░░\n"
+"░░░░░░░░░*o*o*o*o*o*o*░░░░░░░░░\n"
+"░░░░░░░░*o*o*o*o*o*o*o*░░░░░░░░\n"
+"░░░░░░░*o HO-HOO-HOOO o*░░░░░░░\n"
+"░░░░░░*o*o*o*o*o*o*o*o*o*░░░░░░\n"
+"░░░░░░░░░░*o*o*o*o*o*░░░░░░░░░░\n"
+"░░░░░░░░░*o*o*o*o*o*o*░░░░░░░░░\n"
+"░░░░░░░░*o*  MERRY  *o*░░░░░░░░\n"
+"░░░░░░░*o* CHRISTMAS *o*░░░░░░░\n"
+"░░░░░░*o*o*o*o + o*o*o*o*░░░░░░\n"
+"░░░░░*o*o*o* HAPPY *o*o*o*░░░░░\n"
+"░░░░*o*o*o*o* NEW *o*o*o*o*░░░░\n"
+"░░░*o*o*o* YEAR %d *o*o*o*░░░\n";
+
+static void showMood()
+{
+    int tDay, tMonth, tYear;
+    Time::GetNow(&tDay, &tMonth, &tYear);
+
+    if ((tDay < 24) && (tMonth == 12))
+    {
+        printf("\nLooking forward to Christmas? Then it's time for a candle\n");
+        printf((const char*)sCandle);
+    }
+
+//    if ((tDay > 23) && (tMonth == 12))
+//    {
+        printf(sMerryXmas, tYear + 1);
+//    }
+}
 
 static void sQtDebugMessageOutput(QtMsgType pType, const char *pMsg)
 {
@@ -239,6 +306,7 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
                     LOGGER.Init(LOG_VERBOSE);
                 #endif
             }
+    showMood();
     LOGEX(MainWindow, LOG_VERBOSE, "Creating Qt main window");
 
     MainWindow *tMainWindow = new MainWindow(tAbsBinPath);
