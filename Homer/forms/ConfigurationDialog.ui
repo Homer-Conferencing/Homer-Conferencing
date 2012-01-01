@@ -604,8 +604,7 @@
                 </property>
                 <property name="font">
                  <font>
-                  <weight>50</weight>
-                  <bold>false</bold>
+                  <pointsize>8</pointsize>
                  </font>
                 </property>
                 <property name="specialValueText">
