@@ -52,40 +52,6 @@
         <number>3</number>
        </property>
        <item>
-        <widget class="QLabel" name="mLbContactHint">
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>60</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>10</pointsize>
-           <italic>true</italic>
-          </font>
-         </property>
-         <property name="frameShape">
-          <enum>QFrame::Panel</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Raised</enum>
-         </property>
-         <property name="text">
-          <string>Right click here to add a new contact, &lt;br&gt;afterwards right click on the new contact</string>
-         </property>
-         <property name="scaledContents">
-          <bool>false</bool>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-         <property name="wordWrap">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QTreeView" name="mTvContacts">
          <property name="contextMenuPolicy">
           <enum>Qt::CustomContextMenu</enum>
