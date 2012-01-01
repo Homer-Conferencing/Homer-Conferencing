@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>333</width>
-    <height>177</height>
+    <width>361</width>
+    <height>175</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -51,13 +51,13 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>70</width>
+            <width>80</width>
             <height>16</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>70</width>
+            <width>80</width>
             <height>16</height>
            </size>
           </property>
@@ -117,13 +117,13 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>0</width>
+            <width>80</width>
             <height>16</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>16777215</width>
+            <width>80</width>
             <height>16</height>
            </size>
           </property>
@@ -198,13 +198,13 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>70</width>
+            <width>80</width>
             <height>16</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>70</width>
+            <width>80</width>
             <height>16</height>
            </size>
           </property>
@@ -279,18 +279,6 @@
    </item>
    <item>
     <widget class="QDialogButtonBox" name="mBb">
-     <property name="minimumSize">
-      <size>
-       <width>276</width>
-       <height>28</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>276</width>
-       <height>28</height>
-      </size>
-     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
