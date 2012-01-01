@@ -56,7 +56,7 @@ namespace Homer { namespace Gui {
 //#define RELEASE_VERSION
 
 // version string which is checked/used in the whole application
-#define RELEASE_VERSION_STRING          "Beta 0.18.1"
+#define RELEASE_VERSION_STRING          "Beta 0.19"
 
 // for home calls
 #define RELEASE_SERVER                  "www.homer-conferencing.com"
@@ -82,10 +82,10 @@ public:
     QString GetConferenceAvailability();
     QString GetContactFile();
     QString GetDataDirectory();
+
     QPoint GetMainWindowPosition();
     QSize GetMainWindowSize();
-    bool GetParticipantWidgetsSeparation();
-    bool GetParticipantWidgetsCloseImmediately();
+
     bool GetVisibilityContactsWidget();
     bool GetVisibilityFileTransfersWidget();
     bool GetVisibilityErrorsWidget();
@@ -99,9 +99,12 @@ public:
     bool GetVisibilityServerToolBar();
     bool GetVisibilityStreamingToolBar();
     bool GetVisibilityContactingToolBar();
+
+    int GetColoringScheme();
+    bool GetParticipantWidgetsSeparation();
+    bool GetParticipantWidgetsCloseImmediately();
     bool GetSmoothVideoPresentation();
     bool GetAutoUpdateCheck();
-    int GetColoringScheme();
 
     /* user settings */
     QString GetUserName();
