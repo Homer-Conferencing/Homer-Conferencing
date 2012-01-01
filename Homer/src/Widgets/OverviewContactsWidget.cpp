@@ -159,16 +159,6 @@ void OverviewContactsWidget::paintEvent(QPaintEvent *pEvent)
 {
     QModelIndex tIndex = mTvContacts->currentIndex();
 
-    if (CONTACTSPOOL.ContactCount() > 0)
-    {
-        mLbContactHint->setVisible(false);
-        mTvContacts->setVisible(true);
-    }else
-    {
-        mLbContactHint->setVisible(true);
-        mTvContacts->setVisible(false);
-    }
-
     QDockWidget::paintEvent(pEvent);
 
     mTvContacts->setCurrentIndex(tIndex);
@@ -421,8 +411,8 @@ void OverviewContactsWidget::InsertNew()
     ContactEditDialog tCED;
 
     tCED.setWindowTitle("Add new contact");
-    tCED.mLeAddress->setText("user@host");
-    tCED.mLeName->setText("name");
+    tCED.mLeAddress->setText("user_account@" + QString(MEETING.GetHostAdr().c_str()));
+    tCED.mLeName->setText("optional contact name");
     tCED.mLeName->setFocus(Qt::TabFocusReason);
 
 
