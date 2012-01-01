@@ -1181,16 +1181,6 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
     // #############################################################
     if (!pReadOnly)
     {
-        mPayloadId = tRtpHeader->PayloadType;
-        mLastSequenceNumber = tRtpHeader->SequenceNumber;
-        mLastTimestamp = tRtpHeader->Timestamp;
-        // if payload type = 0 or 8 then marker bit does not represent a fragmentation marker
-        // if payload type = 14 then RFC 2250 defines the marker bit for discontinuous timestamps instead of fragmentation
-        mFrameFragmentation = ((tRtpHeader->PayloadType == 0 /* mulaw */) || (tRtpHeader->PayloadType == 8 /* alaw */) ||  (tRtpHeader->PayloadType == 14 /* mp3 */)) ? false : !tRtpHeader->Marked;
-
-        // store the assigned SSRC identifier
-        mSsrc = tRtpHeader->Ssrc;
-
         // check if there was a packet order problem
         if ((mLastTimestamp > 0) && (tRtpHeader->SequenceNumber < mLastSequenceNumber))
         {
@@ -1208,6 +1198,16 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
         {
             LOG(LOG_ERROR, "Packet belongs to new frame while last frame is incomplete");
         }
+
+        mPayloadId = tRtpHeader->PayloadType;
+        mLastSequenceNumber = tRtpHeader->SequenceNumber;
+        mLastTimestamp = tRtpHeader->Timestamp;
+        // if payload type = 0 or 8 then marker bit does not represent a fragmentation marker
+        // if payload type = 14 then RFC 2250 defines the marker bit for discontinuous timestamps instead of fragmentation
+        mFrameFragmentation = ((tRtpHeader->PayloadType == 0 /* mulaw */) || (tRtpHeader->PayloadType == 8 /* alaw */) ||  (tRtpHeader->PayloadType == 14 /* mp3 */)) ? false : !tRtpHeader->Marked;
+
+        // store the assigned SSRC identifier
+        mSsrc = tRtpHeader->Ssrc;
     }
 
     // convert from host to network byte order again
