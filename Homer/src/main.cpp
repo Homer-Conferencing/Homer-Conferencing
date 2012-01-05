@@ -43,6 +43,8 @@
 #include <signal.h>
 #include <stdlib.h>
 
+#include <Header_Windows.h>
+
 using namespace Homer::Gui;
 using namespace std;
 
