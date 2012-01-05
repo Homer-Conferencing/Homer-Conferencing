@@ -455,33 +455,14 @@ bool SIP::RegisterAtServer(string pUsername, string pPassword, string pServer)
 
     if ((mSipRegisterServer != pServer) || (mSipRegisterUsername != pUsername) || (mSipRegisterPassword != pPassword))
     {
-        if (GetServerRegistrationState())
-            UnregisterAtServer();
-
         LOG(LOG_VERBOSE, "Register at SIP server %s with login %s:%s", pServer.c_str(), pUsername.c_str(), pPassword.c_str());
 
         mSipRegisterServer = pServer;
         mSipRegisterUsername = pUsername;
         mSipRegisterPassword = pPassword;
 
-        // if STUN is activated then wait until NAT information is found
-        if (mStunSupportActivated)
-        {
-            bool tFirst = false;
+        tResult = RegisterAtServer();
 
-            while(!mStunNatDetectionFinished)
-            {
-                if(!tFirst)
-                {
-                    tFirst = true;
-                    LOG(LOG_INFO, "Waiting for STUN based NAT detection (this could take some seconds)");
-                }
-            }
-            LOG(LOG_INFO, "NAT information found");
-        }
-
-        // login at SIP registrar server
-        tResult = SipLoginAtServer();
     }
 
     return tResult;
@@ -500,7 +481,7 @@ bool SIP::RegisterAtServer()
     if (GetServerRegistrationState())
         UnregisterAtServer();
 
-    LOG(LOG_VERBOSE, "Re-registering at SIP server");
+    LOG(LOG_VERBOSE, "Registering at SIP server");
 
     // if STUN is activated then wait until NAT information is found
     if (mStunSupportActivated)
