@@ -91,10 +91,10 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, QMainWindow 
     {
         setParent(NULL);
         setWindowIcon(QPixmap(":/images/UserUnavailable.png"));
-        setFeatures(QDockWidget::NoDockWidgetFeatures);
+        setFeatures(QDockWidget::DockWidgetClosable);
     }else
     {
-        setFeatures(QDockWidget::AllDockWidgetFeatures);
+        setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
         setAllowedAreas(Qt::RightDockWidgetArea | Qt::BottomDockWidgetArea);
         pMainWindow->addDockWidget(Qt::RightDockWidgetArea, this, Qt::Horizontal);
     }
