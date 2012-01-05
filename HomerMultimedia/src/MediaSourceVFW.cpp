@@ -84,77 +84,83 @@ void MediaSourceVFW::getVideoDevices(VideoDevicesList &pVList)
     #endif
 
     if (tFirstCall)
+    {
+    	mFoundVFWDevices.clear();
+
         LOG(LOG_VERBOSE, "Enumerating hardware..");
 
-    // windows supports up to 10 drivers which are indexed from 0 to 9
-    //HINT: http://msdn.microsoft.com/en-us/library/dd756909%28VS.85%29.aspx
-    char tDriverName[256];
-    char tDriverVersion[32];
-    for (int i = 0; i < 10; i++)
+		// windows supports up to 10 drivers which are indexed from 0 to 9
+		//HINT: http://msdn.microsoft.com/en-us/library/dd756909%28VS.85%29.aspx
+		char tDriverName[256];
+		char tDriverVersion[32];
+		for (int i = 0; i < 10; i++)
+		{
+			//####################################
+			//### verbose output and store device description
+			//####################################
+			if (capGetDriverDescription(i, tDriverName, 256, tDriverVersion, 32))
+			{
+				LOG(LOG_INFO, "Found active VFW device %d", i);
+				LOG(LOG_INFO, "  ..name: %s", tDriverName);
+				LOG(LOG_INFO, "  ..version: %s", tDriverVersion);
+
+				tDevice.Name = "VFW: " + string(tDriverName);
+				tDevice.Card = (char)i + 48;
+				tDevice.Desc = "VFW based video device " + tDevice.Card + " \"" + string(tDriverName) + "\"";
+				LOG(LOG_VERBOSE, "Found video device: %s (card: %s)", tDevice.Name.c_str(), tDevice.Card.c_str());
+			}
+
+			//##############################################
+			//### probe device by creating a capture window
+			//##############################################
+			tWinHandle = capCreateCaptureWindow(NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, 0);
+			if(!tWinHandle)
+			{
+				LOG(LOG_INFO, "Could not create capture window");
+				continue;
+			}
+
+			tRes = SendMessage(tWinHandle, WM_CAP_DRIVER_CONNECT, i, 0);
+			if(!tRes)
+			{
+				LOG(LOG_INFO, "Could not connect to device");
+				mDeviceAvailable[i] = false;
+				DestroyWindow(tWinHandle);
+				continue;
+			}else
+				mDeviceAvailable[i] = true;
+
+			//HINT: maybe our capture frames are upside down, see http://www.microsoft.com/whdc/archive/biheight.mspx -> detect this
+			BITMAPINFO tInfo;
+			tRes = capGetVideoFormat(tWinHandle, &tInfo, sizeof(tInfo));
+			if (!tRes)
+			{
+				LOG(LOG_ERROR, "Not connected to the capture window");
+				DestroyWindow(tWinHandle);
+				continue;
+			}
+			// see http://msdn.microsoft.com/de-de/library/dd183376.aspx
+			mFramesAreUpsideDown[i] = (tInfo.bmiHeader.biHeight > 0);
+			LOG(LOG_INFO, "  ..pictures are upside down: %d", mFramesAreUpsideDown[i]);
+
+			DestroyWindow(tWinHandle);
+
+			//###############################################
+			//### finally add this device to the result list
+			//###############################################
+			mFoundVFWDevices.push_back(tDevice);
+		}
+    }else
     {
-    	//####################################
-    	//### verbose output and store device description
-    	//####################################
-    	if (capGetDriverDescription(i, tDriverName, 256, tDriverVersion, 32))
-    	{
-            if (tFirstCall)
-            {
-                LOG(LOG_INFO, "Found active VFW device %d", i);
-                LOG(LOG_INFO, "  ..name: %s", tDriverName);
-                LOG(LOG_INFO, "  ..version: %s", tDriverVersion);
-            }
-
-		    tDevice.Name = "VFW: " + string(tDriverName);
-		    tDevice.Card = (char)i + 48;
-		    tDevice.Desc = "VFW based video device " + tDevice.Card + " \"" + string(tDriverName) + "\"";
-            if (tFirstCall)
-		        LOG(LOG_VERBOSE, "Found video device: %s (card: %s)", tDevice.Name.c_str(), tDevice.Card.c_str());
-    	}
-
-    	//##############################################
-    	//### probe device by creating a capture window
-    	//##############################################
-        tWinHandle = capCreateCaptureWindow(NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, 0);
-        if(!tWinHandle)
-        {
-            if (tFirstCall)
-            	LOG(LOG_INFO, "Could not create capture window");
-            continue;
-        }
-
-    	tRes = SendMessage(tWinHandle, WM_CAP_DRIVER_CONNECT, i, 0);
-        if(!tRes)
-        {
-            if (tFirstCall)
-            	LOG(LOG_INFO, "Could not connect to device");
-            mDeviceAvailable[i] = false;
-            DestroyWindow(tWinHandle);
-            continue;
-        }else
-            mDeviceAvailable[i] = true;
-
-        //HINT: maybe our capture frames are upside down, see http://www.microsoft.com/whdc/archive/biheight.mspx -> detect this
-    	BITMAPINFO tInfo;
-    	tRes = capGetVideoFormat(tWinHandle, &tInfo, sizeof(tInfo));
-    	if (!tRes)
-        {
-            LOG(LOG_ERROR, "Not connected to the capture window");
-            DestroyWindow(tWinHandle);
-            continue;
-        }
-    	// see http://msdn.microsoft.com/de-de/library/dd183376.aspx
-    	mFramesAreUpsideDown[i] = (tInfo.bmiHeader.biHeight > 0);
-        if (tFirstCall)
-        	LOG(LOG_INFO, "  ..pictures are upside down: %d", mFramesAreUpsideDown[i]);
-
-        DestroyWindow(tWinHandle);
-
-    	//###############################################
-    	//### finally add this device to the result list
-    	//###############################################
-	    pVList.push_back(tDevice);
+    	LOG(LOG_VERBOSE, "Using internal device cache with %d entries", (int)mFoundVFWDevices.size());
     }
     tFirstCall = false;
+
+    VideoDevicesList::iterator tIt;
+    for (tIt = mFoundVFWDevices.begin(); tIt != mFoundVFWDevices.end(); tIt++)
+    {
+    	pVList.push_back(*tIt);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
