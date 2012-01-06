@@ -59,6 +59,7 @@
 #include <Psapi.h>
 #include <Tlhelp32.h>
 #include <stdlib.h>
+#include <shellapi.h>
 
 // additional definitions for compatibility with gcc
 #ifndef ssize_t
