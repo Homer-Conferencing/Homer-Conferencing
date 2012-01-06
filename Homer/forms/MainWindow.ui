@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>361</width>
-    <height>117</height>
+    <width>385</width>
+    <height>127</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -48,8 +48,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>361</width>
-     <height>23</height>
+     <width>385</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="mMenuSettings">
@@ -81,9 +81,8 @@
       <iconset resource="../resources/Icons.qrc">
        <normaloff>:/images/Tools.png</normaloff>:/images/Tools.png</iconset>
      </property>
-     <addaction name="mActionContactingToolBar"/>
-     <addaction name="mActionStreamingToolBar"/>
-     <addaction name="mActionServerConnectionToolBar"/>
+     <addaction name="mActionToolBarOnlineStatus"/>
+     <addaction name="mActionToolBarMediaSources"/>
     </widget>
     <widget class="QMenu" name="mMenuOverviewPlaylistWidgets">
      <property name="title">
@@ -144,7 +143,7 @@
    <addaction name="mMenuWindows"/>
    <addaction name="mMenuHomer"/>
   </widget>
-  <widget class="QToolBar" name="mContactingToolBar">
+  <widget class="QToolBar" name="mToolBarOnlineStatus">
    <property name="contextMenuPolicy">
     <enum>Qt::DefaultContextMenu</enum>
    </property>
@@ -175,20 +174,9 @@
     </size>
    </property>
   </widget>
-  <widget class="QToolBar" name="mStreamingToolBar">
+  <widget class="QToolBar" name="mToolBarMediaSources">
    <property name="windowTitle">
     <string>Available sources</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-  </widget>
-  <widget class="QToolBar" name="mServerConnectionToolBar">
-   <property name="windowTitle">
-    <string>Server connection</string>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -427,7 +415,7 @@
     <bool>true</bool>
    </property>
   </action>
-  <action name="mActionContactingToolBar">
+  <action name="mActionToolBarOnlineStatus">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -440,13 +428,13 @@
      <normalon>:/images/Success.png</normalon>:/images/UserFamily.png</iconset>
    </property>
    <property name="text">
-    <string>Presence status</string>
+    <string>Online status</string>
    </property>
    <property name="iconVisibleInMenu">
     <bool>true</bool>
    </property>
   </action>
-  <action name="mActionStreamingToolBar">
+  <action name="mActionToolBarMediaSources">
    <property name="checkable">
     <bool>true</bool>
    </property>

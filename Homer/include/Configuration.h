@@ -89,16 +89,19 @@ public:
     bool GetVisibilityContactsWidget();
     bool GetVisibilityFileTransfersWidget();
     bool GetVisibilityErrorsWidget();
+
     bool GetVisibilityPlaylistWidgetAudio();
     bool GetVisibilityPlaylistWidgetVideo();
     bool GetVisibilityPlaylistWidgetMovie();
+
     bool GetVisibilityThreadsWidget();
     bool GetVisibilityNetworkStreamsWidget();
     bool GetVisibilityDataStreamsWidget();
     bool GetVisibilityBroadcastWidget();
-    bool GetVisibilityServerToolBar();
-    bool GetVisibilityStreamingToolBar();
-    bool GetVisibilityContactingToolBar();
+
+    bool GetVisibilityToolBarMediaSources();
+    bool GetVisibilityToolBarOnlineStatus();
+
     bool GetSmoothVideoPresentation();
     bool GetAutoUpdateCheck();
     int GetColoringScheme();
@@ -190,16 +193,19 @@ private:
     void SetVisibilityContactsWidget(bool pActive);
     void SetVisibilityErrorsWidget(bool pActive);
     void SetVisibilityFileTransfersWidget(bool pActive);
+
     void SetVisibilityPlaylistWidgetAudio(bool pActive);
     void SetVisibilityPlaylistWidgetVideo(bool pActive);
     void SetVisibilityPlaylistWidgetMovie(bool pActive);
+
     void SetVisibilityThreadsWidget(bool pActive);
     void SetVisibilityNetworkStreamsWidget(bool pActive);
     void SetVisibilityDataStreamsWidget(bool pActive);
     void SetVisibilityBroadcastWidget(bool pActive);
-    void SetVisibilityServerToolBar(bool pActive);
-    void SetVisibilityStreamingToolBar(bool pActive);
-    void SetVisibilityContactingToolBar(bool pActive);
+
+    void SetVisibilityToolBarMediaSources(bool pActive);
+    void SetVisibilityToolBarOnlineStatus(bool pActive);
+
     void SetSmoothVideoPresentation(bool pActive);
     void SetAutoUpdateCheck(bool pActive);
     void SetColoringScheme(int pColoringScheme);

@@ -33,7 +33,6 @@
 #include <WaveOut.h>
 #include <Widgets/AudioWidget.h>
 #include <Widgets/AvailabilityWidget.h>
-#include <Widgets/ServerConnectionWidget.h>
 #include <Widgets/StreamingControlWidget.h>
 #include <Widgets/MessageWidget.h>
 #include <Widgets/OverviewContactsWidget.h>
@@ -159,9 +158,8 @@ private:
 
     QHttp           		    *mHttpGetVersionServer;
     std::string 			    mAbsBinPath;
-    AvailabilityWidget 		    *mAvailabilityWidget;
-    ServerConnectionWidget      *mServerConnectionWidget;
-    StreamingControlWidget 	    *mStreamingControlWidget;
+    AvailabilityWidget 		    *mOnlineStatusWidget;
+    StreamingControlWidget 	    *mMediaSourcesControlWidget;
     LocalAddressesList 		    mLocalAddresses;
     OverviewContactsWidget 	    *mOverviewContactsWidget;
     OverviewDataStreamsWidget   *mOverviewDataStreamsWidget;

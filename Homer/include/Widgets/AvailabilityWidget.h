@@ -48,7 +48,7 @@ public:
     /// The destructor.
     virtual ~AvailabilityWidget();
 
-    void InitializeAvailabilityMenu(QMenu *pMenu);
+    void InitializeMenuOnlineStatus(QMenu *pMenu);
 
 public slots:
     void Selected(QAction *pAction);
