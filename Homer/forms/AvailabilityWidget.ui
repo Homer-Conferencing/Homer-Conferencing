@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>241</width>
+    <width>180</width>
     <height>29</height>
    </rect>
   </property>
@@ -62,7 +62,7 @@
       <enum>Qt::LeftToRight</enum>
      </property>
      <property name="text">
-      <string>Available (auto)</string>
+      <string>Online (auto)</string>
      </property>
      <property name="icon">
       <iconset resource="../resources/Icons.qrc">
@@ -96,7 +96,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Presence status:</string>
+      <string>Status:</string>
      </property>
     </widget>
    </item>
