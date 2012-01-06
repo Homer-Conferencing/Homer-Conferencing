@@ -130,7 +130,6 @@ SOURCE=         main.cpp \
 		OverviewThreadsWidget.cpp \
 		ParticipantWidget.cpp \
 		SegmentSelectionDialog.cpp \
-		ServerConnectionWidget.cpp \
 		StreamingControlWidget.cpp \
 		StreamPositionWidget.cpp \
 		SessionInfoWidget.cpp \
@@ -161,7 +160,6 @@ MOC_SRC=	AddNetworkSinkDialog.h \
 		OverviewThreadsWidget.h \
 		ParticipantWidget.h \
 		SegmentSelectionDialog.h \
-		ServerConnectionWidget.h \
 		SessionInfoWidget.h \
 		StreamingControlWidget.h \
 		StreamPositionWidget.h \
@@ -189,7 +187,6 @@ QT_FORMS=	../forms/AddNetworkSinkDialog.ui \
 		../forms/OverviewThreadsWidget.ui \
 		../forms/ParticipantWidget.ui \
 		../forms/SegmentSelectionDialog.ui \
-		../forms/ServerConnectionWidget.ui \
 		../forms/SessionInfoWidget.ui \
 		../forms/StreamingControlWidget.ui \
 		../forms/StreamPositionWidget.ui \

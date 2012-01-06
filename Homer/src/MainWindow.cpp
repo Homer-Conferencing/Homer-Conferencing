@@ -38,7 +38,6 @@
 #include <Widgets/MessageWidget.h>
 #include <Widgets/ParticipantWidget.h>
 #include <Widgets/AvailabilityWidget.h>
-#include <Widgets/ServerConnectionWidget.h>
 #include <Widgets/OverviewErrorsWidget.h>
 #include <Widgets/OverviewFileTransfersWidget.h>
 #include <Widgets/OverviewPlaylistWidget.h>
@@ -156,24 +155,22 @@ void MainWindow::connectSignalsSlots()
 
     connect(mShortcutActivateDebugWidgets, SIGNAL(activated()), this, SLOT(actionActivateDebuggingWidgets()));
     connect(mShortcutActivateDebuggingGlobally, SIGNAL(activated()), this, SLOT(actionActivateDebuggingGlobally()));
-    connect(mActionContactingToolBar, SIGNAL(toggled(bool)), mContactingToolBar, SLOT(setVisible(bool)));
-    connect(mContactingToolBar->toggleViewAction(), SIGNAL(toggled(bool)), mActionContactingToolBar, SLOT(setChecked(bool)));
-    connect(mActionStreamingToolBar, SIGNAL(toggled(bool)), mStreamingToolBar, SLOT(setVisible(bool)));
-    connect(mStreamingToolBar->toggleViewAction(), SIGNAL(toggled(bool)), mActionStreamingToolBar, SLOT(setChecked(bool)));
+
+    connect(mActionToolBarOnlineStatus, SIGNAL(toggled(bool)), mToolBarOnlineStatus, SLOT(setVisible(bool)));
+    connect(mToolBarOnlineStatus->toggleViewAction(), SIGNAL(toggled(bool)), mActionToolBarOnlineStatus, SLOT(setChecked(bool)));
+    connect(mActionToolBarMediaSources, SIGNAL(toggled(bool)), mToolBarMediaSources, SLOT(setVisible(bool)));
+    connect(mToolBarMediaSources->toggleViewAction(), SIGNAL(toggled(bool)), mActionToolBarMediaSources, SLOT(setChecked(bool)));
     connect(mActionMonitorBroadcastWidget, SIGNAL(toggled(bool)), mLocalUserParticipantWidget, SLOT(setVisible(bool)));
 
     mActionMonitorBroadcastWidget->setChecked(CONF.GetVisibilityBroadcastWidget());
-    mStreamingToolBar->setVisible(CONF.GetVisibilityStreamingToolBar());
-    mStreamingToolBar->toggleViewAction()->setChecked(CONF.GetVisibilityStreamingToolBar());
-    mActionStreamingToolBar->setChecked(CONF.GetVisibilityStreamingToolBar());
 
-    mContactingToolBar->setVisible(CONF.GetVisibilityContactingToolBar());
-    mContactingToolBar->toggleViewAction()->setChecked(CONF.GetVisibilityContactingToolBar());
-    mActionContactingToolBar->setChecked(CONF.GetVisibilityContactingToolBar());
+    mToolBarMediaSources->setVisible(CONF.GetVisibilityToolBarMediaSources());
+    mToolBarMediaSources->toggleViewAction()->setChecked(CONF.GetVisibilityToolBarMediaSources());
+    mActionToolBarMediaSources->setChecked(CONF.GetVisibilityToolBarMediaSources());
 
-    mServerConnectionToolBar->setVisible(CONF.GetVisibilityServerToolBar());
-    mServerConnectionToolBar->toggleViewAction()->setChecked(CONF.GetVisibilityServerToolBar());
-    mActionServerConnectionToolBar->setChecked(CONF.GetVisibilityServerToolBar());
+    mToolBarOnlineStatus->setVisible(CONF.GetVisibilityToolBarOnlineStatus());
+    mToolBarOnlineStatus->toggleViewAction()->setChecked(CONF.GetVisibilityToolBarOnlineStatus());
+    mActionToolBarOnlineStatus->setChecked(CONF.GetVisibilityToolBarOnlineStatus());
 }
 
 void MainWindow::triggerUpdateCheck()
@@ -457,11 +454,8 @@ void MainWindow::initializeWidgetsAndMenus()
     mLocalUserParticipantWidget = new ParticipantWidget(BROADCAST, this, mOverviewContactsWidget, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer);
     setCentralWidget(mLocalUserParticipantWidget);
 
-    mAvailabilityWidget = new AvailabilityWidget(this);
-    mContactingToolBar->addWidget(mAvailabilityWidget);
-
-    mServerConnectionWidget = new ServerConnectionWidget(this);
-    mServerConnectionToolBar->addWidget(mServerConnectionWidget);
+    mOnlineStatusWidget = new AvailabilityWidget(this);
+    mToolBarOnlineStatus->addWidget(mOnlineStatusWidget);
 
     CreateSysTray();
 
@@ -472,17 +466,17 @@ void MainWindow::initializeWidgetsAndMenus()
     tabifyDockWidget(mOverviewPlaylistWidgetVideo, mOverviewPlaylistWidgetAudio);
     tabifyDockWidget(mOverviewPlaylistWidgetAudio, mOverviewPlaylistWidgetMovie);
 
-    mStreamingControlWidget = new StreamingControlWidget(mLocalUserParticipantWidget->GetVideoWorker(), mLocalUserParticipantWidget->GetAudioWorker(), mSourceDesktop, mOverviewPlaylistWidgetVideo, mOverviewPlaylistWidgetAudio, mOverviewPlaylistWidgetMovie);
-    mStreamingToolBar->addWidget(mStreamingControlWidget);
+    mMediaSourcesControlWidget = new StreamingControlWidget(mLocalUserParticipantWidget->GetVideoWorker(), mLocalUserParticipantWidget->GetAudioWorker(), mSourceDesktop, mOverviewPlaylistWidgetVideo, mOverviewPlaylistWidgetAudio, mOverviewPlaylistWidgetMovie);
+    mToolBarMediaSources->addWidget(mMediaSourcesControlWidget);
     if (mOwnVideoMuxer->SupportsMultipleInputChannels())
-        mStreamingControlWidget->SetVideoInputSelectionVisible();
+        mMediaSourcesControlWidget->SetVideoInputSelectionVisible();
     else
-        mStreamingControlWidget->SetVideoInputSelectionVisible(false);
+        mMediaSourcesControlWidget->SetVideoInputSelectionVisible(false);
 
     if (mOwnVideoMuxer->SupportsMultipleInputChannels())
-        mStreamingControlWidget->SetVideoInputSelectionVisible();
+        mMediaSourcesControlWidget->SetVideoInputSelectionVisible();
     else
-        mStreamingControlWidget->SetVideoInputSelectionVisible(false);
+        mMediaSourcesControlWidget->SetVideoInputSelectionVisible(false);
 
     mOverviewDataStreamsWidget = new OverviewDataStreamsWidget(mActionOverviewDataStreamsWidget, this);
     mOverviewNetworkStreamsWidget = new OverviewNetworkStreamsWidget(mActionOverviewNetworkStreamsWidget, this);
@@ -680,7 +674,7 @@ void MainWindow::loadSettings()
         MEETING.SetAudioCodecsSupport(CODEC_MP3);
     if (tAudioStreamCodec == "G711 A-law (PCMA)")
         MEETING.SetAudioCodecsSupport(CODEC_G711A);
-    if (tAudioStreamCodec == "G711 µ-law (PCMU)")
+    if (tAudioStreamCodec == "G711 ï¿½-law (PCMU)")
         MEETING.SetAudioCodecsSupport(CODEC_G711U);
     if (tAudioStreamCodec == "AAC")
         MEETING.SetAudioCodecsSupport(CODEC_AAC);
@@ -744,9 +738,8 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
 
     CONF.SetMainWindowPosition(pos());
     CONF.SetMainWindowSize(size());
-    CONF.SetVisibilityStreamingToolBar(mStreamingToolBar->isVisible());
-    CONF.SetVisibilityContactingToolBar(mContactingToolBar->isVisible());
-    CONF.SetVisibilityServerToolBar(mServerConnectionToolBar->isVisible());
+    CONF.SetVisibilityToolBarMediaSources(mToolBarMediaSources->isVisible());
+    CONF.SetVisibilityToolBarOnlineStatus(mToolBarOnlineStatus->isVisible());
 
     // update IP entries within usage statistic
     //setIpStatistic(MEETING.GetHostAdr(), MEETING.getStunNatIp());
@@ -790,9 +783,8 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
     delete mOverviewPlaylistWidgetVideo;
     delete mOverviewPlaylistWidgetAudio;
     delete mOverviewPlaylistWidgetMovie;
-    delete mStreamingControlWidget;
-    delete mAvailabilityWidget;
-    delete mServerConnectionWidget;
+    delete mMediaSourcesControlWidget;
+    delete mOnlineStatusWidget;
     delete mSysTrayIcon;
 
 	//HINT: mSourceDesktop will be deleted by VideoWidget which grabbed from there
@@ -1229,12 +1221,12 @@ void MainWindow::customEvent(QEvent* pEvent)
         case REGISTRATION:
                     //####################### REGISTRATION SUCCEEDED #############################
                     tREvent = (RegistrationEvent*) tEvent;
-                    mServerConnectionWidget->UpdateState(true);
+                    mSysTrayIcon->showMessage("Registration successful", "Registered  \"" + CONF.GetSipUserName() + "\" at SIP server \"" + CONF.GetSipServer() + "\"!\n" \
+                                              "SIP server runs software \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".", QSystemTrayIcon::Warning, CONF.GetSystrayTimeout());
                     return;
         case REGISTRATION_FAILED:
                     //####################### REGISTRATION FAILED #############################
                     tRFEvent = (RegistrationFailedEvent*) tEvent;
-                    mServerConnectionWidget->UpdateState(false);
                     ShowError("Registration failed", "Could not register \"" + CONF.GetSipUserName() + "\" at the SIP server \"" + CONF.GetSipServer() + "\"!\n" \
                                                      "SIP server runs software \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
                     return;
@@ -1445,17 +1437,17 @@ void MainWindow::actionConfiguration()
 
         // show QSliders for video and audio if we have seekable media sources selected
         if (mOwnVideoMuxer->SupportsSeeking())
-            mStreamingControlWidget->SetVideoSliderVisible();
+            mMediaSourcesControlWidget->SetVideoSliderVisible();
         else
-            mStreamingControlWidget->SetVideoSliderVisible(false);
+            mMediaSourcesControlWidget->SetVideoSliderVisible(false);
         if (mOwnVideoMuxer->SupportsMultipleInputChannels())
-            mStreamingControlWidget->SetVideoInputSelectionVisible();
+            mMediaSourcesControlWidget->SetVideoInputSelectionVisible();
         else
-            mStreamingControlWidget->SetVideoInputSelectionVisible(false);
+            mMediaSourcesControlWidget->SetVideoInputSelectionVisible(false);
         if (mOwnAudioMuxer->SupportsSeeking())
-            mStreamingControlWidget->SetAudioSliderVisible();
+            mMediaSourcesControlWidget->SetAudioSliderVisible();
         else
-            mStreamingControlWidget->SetAudioSliderVisible(false);
+            mMediaSourcesControlWidget->SetAudioSliderVisible(false);
 
         // do an explicit auto probing of known contacts in case the user has activated this feature in the configuration dialogue
         if ((!tFormerStateMeetingProbeContacts) && (CONF.GetSipContactsProbing()))
@@ -1618,17 +1610,11 @@ void MainWindow::UpdateSysTrayContextMenu()
 
 	mSysTrayMenu->addSeparator();
 
-    tAction = mSysTrayMenu->addAction("Server registration");
-    tMenu = new QMenu(this);
-    mServerConnectionWidget->InitializeRegistrationMenu(tMenu);
-    tAction->setMenu(tMenu);
-    connect(tMenu, SIGNAL(triggered(QAction *)), mServerConnectionWidget, SLOT(Selected(QAction *)));
-
-    tAction = mSysTrayMenu->addAction("Availability");
+    tAction = mSysTrayMenu->addAction("Online status");
 	tMenu = new QMenu(this);
-	mAvailabilityWidget->InitializeAvailabilityMenu(tMenu);
+	mOnlineStatusWidget->InitializeMenuOnlineStatus(tMenu);
 	tAction->setMenu(tMenu);
-    connect(tMenu, SIGNAL(triggered(QAction *)), mAvailabilityWidget, SLOT(Selected(QAction *)));
+    connect(tMenu, SIGNAL(triggered(QAction *)), mOnlineStatusWidget, SLOT(Selected(QAction *)));
 
 	mSysTrayMenu->addSeparator();
 
