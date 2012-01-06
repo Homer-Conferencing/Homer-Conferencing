@@ -92,23 +92,18 @@ public:
     void Stop();
     void Deinit();
 
-    /* local user's network interface */
+    /* local interface/contact data */
     std::string GetHostAdr();
     int GetHostPort();
-
-    /* local user's name */
     std::string getUser();
-
-    /* local user's name, "setName" filters the given string for valid characters */
     void SetLocalUserName(std::string pName);
     std::string GetLocalUserName();
-
-    /* local user's mail address */
     void SetLocalUserMailAdr(std::string pMailAdr);
     std::string GetLocalUserMailAdr();
+    std::string GetLocalConferenceId();
 
-    /* local user's id */
-    std::string getLocalConferenceId();
+    /* server interface/contact data */
+    std::string GetServerConferenceId();
 
     /* local I/O interfaces and state */
     bool IsLocalAddress(std::string pHost, std::string pPort);
