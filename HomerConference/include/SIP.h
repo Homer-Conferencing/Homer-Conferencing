@@ -60,9 +60,9 @@ namespace Homer { namespace Conference {
 #define OPTIONS_REQUEST_RETRIES                         0
 
 enum AvailabilityState{
-	AVAILABILITY_STATE_NO = 0,
-	AVAILABILITY_STATE_YES = 1,
-	AVAILABILITY_STATE_YES_AUTO = 2
+	AVAILABILITY_STATE_OFFLINE = 0,
+	AVAILABILITY_STATE_ONLINE = 1,
+	AVAILABILITY_STATE_ONLINE_AUTO = 2
 };
 
 struct SipContext;
