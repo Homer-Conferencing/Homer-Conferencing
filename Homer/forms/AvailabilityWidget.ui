@@ -29,7 +29,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Online status</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <property name="margin">
