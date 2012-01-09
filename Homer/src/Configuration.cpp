@@ -486,6 +486,11 @@ QString Configuration::GetSipListenerAddress()
     return mQSettings->value("Network/SipListenerAddress", QString("")).toString();
 }
 
+QString Configuration::GetBinaryPath()
+{
+	return QString(mAbsBinPath.c_str());
+}
+
 QString Configuration::GetConferenceAvailability()
 {
     return mQSettings->value("Global/Availability", QString(MEETING.getAvailabilityStateStr().c_str())).toString();
