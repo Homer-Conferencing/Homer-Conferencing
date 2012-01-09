@@ -6,27 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>392</width>
-    <height>255</height>
+    <width>413</width>
+    <height>296</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
-  </property>
-  <property name="minimumSize">
-   <size>
-    <width>392</width>
-    <height>255</height>
-   </size>
-  </property>
-  <property name="maximumSize">
-   <size>
-    <width>16777215</width>
-    <height>16777215</height>
-   </size>
   </property>
   <property name="windowTitle">
    <string>Edit own identity</string>
@@ -66,9 +54,9 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <layout class="QHBoxLayout" stretch="0,2">
+       <layout class="QHBoxLayout" name="_2" stretch="0,2,0,0,0">
         <item>
-         <widget class="QLabel" name="mLbDescId">
+         <widget class="QLabel" name="mLbDescId_2">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -77,33 +65,27 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>140</width>
+            <width>150</width>
             <height>22</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>140</width>
-            <height>22</height>
+            <width>150</width>
+            <height>16777215</height>
            </size>
           </property>
           <property name="text">
-           <string>Conference address:</string>
+           <string>Own server contact address:</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="mLbId">
+         <widget class="QLabel" name="mLbServerAddress">
           <property name="minimumSize">
            <size>
             <width>0</width>
-            <height>22</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>22</height>
+            <height>30</height>
            </size>
           </property>
           <property name="font">
@@ -117,57 +99,177 @@
           <property name="alignment">
            <set>Qt::AlignCenter</set>
           </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
           <property name="textInteractionFlags">
            <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
           </property>
          </widget>
         </item>
+        <item>
+         <spacer name="horizontalSpacer_8">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Fixed</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>5</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="mServerStatus">
+          <property name="minimumSize">
+           <size>
+            <width>22</width>
+            <height>22</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>22</width>
+            <height>22</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="pixmap">
+           <pixmap resource="../resources/Icons.qrc">:/images/UserUnavailable.png</pixmap>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_5">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Fixed</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>5</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
        </layout>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,2">
+       <layout class="QHBoxLayout" stretch="0,2,0,0,0">
         <item>
-         <widget class="QLabel" name="mLbNatAdrDesAdr">
+         <widget class="QLabel" name="mLbDescId">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
           <property name="minimumSize">
            <size>
-            <width>140</width>
+            <width>150</width>
             <height>22</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>140</width>
-            <height>22</height>
+            <width>150</width>
+            <height>16777215</height>
            </size>
           </property>
           <property name="text">
-           <string>NAT outmost address:</string>
+           <string>Own direct contact address:</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="mLbNatAdr">
+         <widget class="QLabel" name="mLbDirectAddress">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>30</height>
+           </size>
+          </property>
           <property name="font">
            <font>
             <pointsize>8</pointsize>
            </font>
           </property>
           <property name="text">
-           <string>Uplink</string>
+           <string>ID</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
           </property>
           <property name="textInteractionFlags">
            <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
           </property>
          </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_7">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Fixed</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>5</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="mDirectStatus">
+          <property name="minimumSize">
+           <size>
+            <width>22</width>
+            <height>22</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>22</width>
+            <height>22</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="pixmap">
+           <pixmap resource="../resources/Icons.qrc">:/images/UserAvailable.png</pixmap>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_6">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Fixed</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>5</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
         </item>
        </layout>
       </item>
@@ -188,6 +290,62 @@
        </spacer>
       </item>
       <item>
+       <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,2">
+        <item>
+         <widget class="QLabel" name="mLbNatAdrDesAdr">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>150</width>
+            <height>22</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>150</width>
+            <height>22</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>NAT outmost address:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="mLbNatAdr">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>8</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Uplink</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+          <property name="textInteractionFlags">
+           <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,2">
         <item>
          <widget class="QLabel" name="mLbNatTypeDesc">
@@ -199,13 +357,13 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>140</width>
+            <width>150</width>
             <height>30</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>140</width>
+            <width>150</width>
             <height>16777215</height>
            </size>
           </property>
@@ -419,6 +577,8 @@
   <tabstop>mBb</tabstop>
  </tabstops>
  <resources>
+  <include location="../resources/Icons.qrc"/>
+  <include location="../resources/Icons.qrc"/>
   <include location="../resources/Icons.qrc"/>
  </resources>
  <connections>

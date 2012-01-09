@@ -28,7 +28,7 @@
 #include <Widgets/OverviewDataStreamsWidget.h>
 #include <PacketStatisticService.h>
 #include <Configuration.h>
-
+#include <Snippets.h>
 #include <QDockWidget>
 #include <QMainWindow>
 #include <QTimerEvent>
@@ -401,23 +401,6 @@ void OverviewDataStreamsWidget::SaveStatistic()
     tFile.close();
 }
 
-QString OverviewDataStreamsWidget::Int2String(int64_t pSize)
-{
-    QString tResult = "";
-
-    do{
-        int64_t tRest = pSize % 1000;
-        pSize /= 1000;
-        if (pSize)
-        {
-            tResult = "." + QString("%1").arg(tRest, 3, 10, (QLatin1Char)'0') + tResult;
-        }else
-            tResult = QString("%1").arg(tRest) + tResult;
-    }while(pSize);
-
-    return tResult;
-}
-
 void OverviewDataStreamsWidget::FillCellText(QTableWidget *pTable, int pRow, int pCol, QString pText)
 {
     if (pTable->item(pRow, pCol) != NULL)
@@ -446,16 +429,16 @@ void OverviewDataStreamsWidget::FillRow(QTableWidget *pTable, int pRow, PacketSt
         pTable->setItem(pRow, 0, new QTableWidgetItem(QString(pStats->GetStreamName().c_str())));
     pTable->item(pRow, 0)->setBackground(QBrush(QColor(Qt::lightGray)));
 
-    FillCellText(pTable, pRow, 1, Int2String(tStatValues.MinPacketSize) + " bytes");
-    FillCellText(pTable, pRow, 2, Int2String(tStatValues.MaxPacketSize) + " bytes");
-    FillCellText(pTable, pRow, 3, Int2String(tStatValues.AvgPacketSize) + " bytes");
-    FillCellText(pTable, pRow, 4, Int2String(tStatValues.ByteCount) + " bytes");
-    FillCellText(pTable, pRow, 5, Int2String(tStatValues.PacketCount));
-    FillCellText(pTable, pRow, 6, Int2String(tStatValues.LostPacketCount));
+    FillCellText(pTable, pRow, 1, Int2ByteExpression(tStatValues.MinPacketSize) + " bytes");
+    FillCellText(pTable, pRow, 2, Int2ByteExpression(tStatValues.MaxPacketSize) + " bytes");
+    FillCellText(pTable, pRow, 3, Int2ByteExpression(tStatValues.AvgPacketSize) + " bytes");
+    FillCellText(pTable, pRow, 4, Int2ByteExpression(tStatValues.ByteCount) + " bytes");
+    FillCellText(pTable, pRow, 5, Int2ByteExpression(tStatValues.PacketCount));
+    FillCellText(pTable, pRow, 6, Int2ByteExpression(tStatValues.LostPacketCount));
     FillCellText(pTable, pRow, 8, QString(pStats->GetPacketTypeStr().c_str()));
     pTable->item(pRow, 8)->setTextAlignment(Qt::AlignCenter|Qt::AlignVCenter);
-    FillCellText(pTable, pRow, 9, Int2String(tStatValues.AvgDataRate) + " bytes/s");
-    FillCellText(pTable, pRow, 10, Int2String(pRow));
+    FillCellText(pTable, pRow, 9, Int2ByteExpression(tStatValues.AvgDataRate) + " bytes/s");
+    FillCellText(pTable, pRow, 10, Int2ByteExpression(pRow));
 
 	if (pTable->item(pRow, 7) != NULL)
         if (tStatValues.Outgoing)

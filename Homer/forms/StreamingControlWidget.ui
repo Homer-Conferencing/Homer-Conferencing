@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>885</width>
+    <width>823</width>
     <height>29</height>
    </rect>
   </property>
@@ -60,7 +60,7 @@
       </font>
      </property>
      <property name="text">
-      <string>VIDEO</string>
+      <string>Video</string>
      </property>
     </widget>
    </item>
@@ -257,7 +257,7 @@
       </font>
      </property>
      <property name="text">
-      <string>AUDIO</string>
+      <string>Audio</string>
      </property>
     </widget>
    </item>
@@ -375,7 +375,7 @@
       </font>
      </property>
      <property name="text">
-      <string>AUDIO &amp; VIDEO</string>
+      <string>Video/Audio</string>
      </property>
     </widget>
    </item>

@@ -380,7 +380,7 @@ p, li { white-space: pre-wrap; }
            <widget class="QLabel" name="label_2">
             <property name="font">
              <font>
-              <family>Times New Roman</family>
+              <family>Arial</family>
               <pointsize>10</pointsize>
               <weight>75</weight>
               <bold>true</bold>
@@ -398,7 +398,7 @@ p, li { white-space: pre-wrap; }
            <widget class="QLabel" name="mLbVersionServer">
             <property name="font">
              <font>
-              <family>Times New Roman</family>
+              <family>Arial</family>
               <pointsize>10</pointsize>
               <weight>75</weight>
               <italic>false</italic>
@@ -437,6 +437,11 @@ p, li { white-space: pre-wrap; }
         </item>
         <item>
          <widget class="QGroupBox" name="groupBox">
+          <property name="font">
+           <font>
+            <family>Arial</family>
+           </font>
+          </property>
           <property name="title">
            <string> Changelog view</string>
           </property>
@@ -448,6 +453,7 @@ p, li { white-space: pre-wrap; }
             <widget class="QLabel" name="mLbWaiting">
              <property name="font">
               <font>
+               <family>Arial</family>
                <pointsize>15</pointsize>
               </font>
              </property>
@@ -531,6 +537,7 @@ p, li { white-space: pre-wrap; }
   <tabstop>buttonBox</tabstop>
  </tabstops>
  <resources>
+  <include location="../resources/Icons.qrc"/>
   <include location="../resources/Icons.qrc"/>
   <include location="../resources/Icons.qrc"/>
  </resources>

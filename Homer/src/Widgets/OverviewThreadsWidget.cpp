@@ -30,6 +30,7 @@
 #include <Configuration.h>
 #include <Logger.h>
 #include <HBSystem.h>
+#include <Snippets.h>
 
 #include <QDockWidget>
 #include <QMainWindow>
@@ -189,23 +190,6 @@ void OverviewThreadsWidget::SetVisible(bool pVisible)
     }
 }
 
-QString OverviewThreadsWidget::Int2String(int pSize)
-{
-    QString tResult = "";
-
-    do{
-        int tRest = pSize % 1000;
-        pSize /= 1000;
-        if (pSize)
-        {
-            tResult = "." + QString("%1").arg(tRest, 3, 10, (QLatin1Char)'0') + tResult;
-        }else
-            tResult = QString("%1").arg(tRest) + tResult;
-    }while(pSize);
-
-    return tResult;
-}
-
 void OverviewThreadsWidget::FillCellText(int pRow, int pCol, QString pText)
 {
     if (mTwThreads->item(pRow, pCol) != NULL)
@@ -245,8 +229,8 @@ void OverviewThreadsWidget::FillRow(int pRow, ProcessStatistic *pStats)
     FillCellText(pRow, 4, QString("%1").arg(tStatValues.ThreadCount));
     FillCellText(pRow, 5, QString("%1").arg(tStatValues.PriorityBase));
     FillCellText(pRow, 6, QString("%1").arg(tStatValues.Priority));
-    FillCellText(pRow, 7, Int2String(tStatValues.MemVirtual) + " bytes");
-    FillCellText(pRow, 8, Int2String(tStatValues.MemPhysical) + " bytes");
+    FillCellText(pRow, 7, Int2ByteExpression(tStatValues.MemVirtual) + " bytes");
+    FillCellText(pRow, 8, Int2ByteExpression(tStatValues.MemPhysical) + " bytes");
     FillCellText(pRow, 9, QString("%1 %").arg(tStatValues.LoadUser * tCpuCores, 0, 'f', 2));
     FillCellText(pRow, 10, QString("%1 %").arg(tStatValues.LoadSystem * tCpuCores, 0, 'f', 2));
     FillCellText(pRow, 11, QString("%1 %").arg(tStatValues.LoadTotal * tCpuCores, 0, 'f', 2));

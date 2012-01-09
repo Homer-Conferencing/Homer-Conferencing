@@ -259,13 +259,24 @@ string Meeting::GetLocalUserMailAdr()
     return mOwnMail;
 }
 
-string Meeting::getLocalConferenceId()
+string Meeting::GetLocalConferenceId()
 {
     string tResult = "";
 
     tResult = SipCreateId(getUser(), GetHostAdr(), toString(GetHostPort()));
 
     LOG(LOG_VERBOSE, "Determined local conference ID with \"%s\"", tResult.c_str());
+
+    return tResult;
+}
+
+string Meeting::GetServerConferenceId()
+{
+    string tResult = "";
+
+    tResult = SipCreateId(mSipRegisterUsername, mSipRegisterServer, "");
+
+    LOG(LOG_VERBOSE, "Determined server conference ID with \"%s\"", tResult.c_str());
 
     return tResult;
 }
@@ -427,7 +438,7 @@ bool Meeting::SendBroadcastMessage(string pMessage)
         for (tIt = ++mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
             MessageEvent *tMEvent = new MessageEvent();
-            tMEvent->Sender = "sip:" + getLocalConferenceId();
+            tMEvent->Sender = "sip:" + GetLocalConferenceId();
             tMEvent->SenderName = GetLocalUserName();
             tMEvent->SenderComment = "Broadcast";
             tMEvent->Receiver = "sip:" + SipCreateId(tIt->User, tIt->Host, tIt->Port);
@@ -483,7 +494,7 @@ bool Meeting::SendMessage(string pParticipant, string pMessage)
             if ((pParticipant.find(mSipRegisterServer) != string::npos) && (GetServerRegistrationState()))
                 tMEvent->Sender = "sip:" + mSipRegisterUsername + "@" + mSipRegisterServer;
             else
-                tMEvent->Sender = "sip:" + getLocalConferenceId();
+                tMEvent->Sender = "sip:" + GetLocalConferenceId();
             tMEvent->SenderName = GetLocalUserName();
             tMEvent->SenderComment = "";
             tMEvent->Receiver = "sip:" + pParticipant;
@@ -530,7 +541,7 @@ bool Meeting::SendCall(string pParticipant)
             if ((pParticipant.find(mSipRegisterServer) != string::npos) && (GetServerRegistrationState()))
                 tCEvent->Sender = "sip:" + mSipRegisterUsername + "@" + mSipRegisterServer;
             else
-                tCEvent->Sender = "sip:" + getLocalConferenceId();
+                tCEvent->Sender = "sip:" + GetLocalConferenceId();
             tCEvent->SenderName = GetLocalUserName();
             tCEvent->SenderComment = "";
             tCEvent->Receiver = "sip:" + pParticipant;
@@ -572,7 +583,7 @@ bool Meeting::SendCallAcknowledge(string pParticipant)
         if (tFound)
         {
             CallRingingEvent *tCREvent = new CallRingingEvent();
-            tCREvent->Sender = "sip:" + getLocalConferenceId();
+            tCREvent->Sender = "sip:" + GetLocalConferenceId();
             tCREvent->SenderName = GetLocalUserName();
             tCREvent->SenderComment = "";
             tCREvent->Receiver = "sip:" + pParticipant;
@@ -612,7 +623,7 @@ bool Meeting::SendCallAccept(string pParticipant)
         if (tFound)
         {
             CallAcceptEvent *tCAEvent = new CallAcceptEvent();
-            tCAEvent->Sender = "sip:" + getLocalConferenceId();
+            tCAEvent->Sender = "sip:" + GetLocalConferenceId();
             tCAEvent->SenderName = GetLocalUserName();
             tCAEvent->SenderComment = "";
             tCAEvent->Receiver = "sip:" + pParticipant;
@@ -652,7 +663,7 @@ bool Meeting::SendCallCancel(string pParticipant)
         if (tFound)
         {
             CallCancelEvent *tCCEvent = new CallCancelEvent();
-            tCCEvent->Sender = "sip:" + getLocalConferenceId();
+            tCCEvent->Sender = "sip:" + GetLocalConferenceId();
             tCCEvent->SenderName = GetLocalUserName();
             tCCEvent->SenderComment = "";
             tCCEvent->Receiver = "sip:" + pParticipant;
@@ -692,7 +703,7 @@ bool Meeting::SendCallDeny(string pParticipant)
         if (tFound)
         {
             CallDenyEvent *tCDEvent = new CallDenyEvent();
-            tCDEvent->Sender = "sip:" + getLocalConferenceId();
+            tCDEvent->Sender = "sip:" + GetLocalConferenceId();
             tCDEvent->SenderName = GetLocalUserName();
             tCDEvent->SenderComment = "";
             tCDEvent->Receiver = "sip:" + pParticipant;
@@ -735,7 +746,7 @@ bool Meeting::SendHangUp(string pParticipant)
         if (tFound)
         {
             CallHangUpEvent *tCHUEvent = new CallHangUpEvent();
-            tCHUEvent->Sender = "sip:" + getLocalConferenceId();
+            tCHUEvent->Sender = "sip:" + GetLocalConferenceId();
             tCHUEvent->SenderName = GetLocalUserName();
             tCHUEvent->SenderComment = "";
             tCHUEvent->Receiver = "sip:" + pParticipant;
@@ -763,13 +774,13 @@ bool Meeting::SendProbe(std::string pParticipant)
         OptionsAcceptEvent *tOAEvent = new OptionsAcceptEvent();
 
         tOAEvent->Sender = pParticipant;
-        tOAEvent->Receiver = getLocalConferenceId();
+        tOAEvent->Receiver = GetLocalConferenceId();
         notifyObservers(tOAEvent);
         return true;
     }
 
     // probe P2P SIP participants
-    tOEvent->Sender = "sip:" + getLocalConferenceId();
+    tOEvent->Sender = "sip:" + GetLocalConferenceId();
     tOEvent->SenderName = GetLocalUserName();
     tOEvent->SenderComment = "";
     tOEvent->Receiver = "sip:" + pParticipant;

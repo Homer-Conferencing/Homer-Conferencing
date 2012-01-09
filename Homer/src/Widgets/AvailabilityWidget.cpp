@@ -56,18 +56,18 @@ void AvailabilityWidget::initializeGUI()
     setupUi(this);
 
     mMenu = new QMenu(this);
-    InitializeAvailabilityMenu(mMenu);
+    InitializeMenuOnlineStatus(mMenu);
     mTbAvailability->setMenu(mMenu);
     mTbAvailability->setText(QString(MEETING.getAvailabilityStateStr().c_str()));
-    if (MEETING.getAvailabilityStateStr() == "Available (auto)")
+    if (MEETING.getAvailabilityStateStr() == "Online (auto)")
     {
         mTbAvailability->setIcon(QPixmap(":/images/UserAvailable.png"));
     }
-    if (MEETING.getAvailabilityStateStr() == "Available")
+    if (MEETING.getAvailabilityStateStr() == "Online")
     {
         mTbAvailability->setIcon(QPixmap(":/images/UserAvailable.png"));
     }
-    if (MEETING.getAvailabilityStateStr() == "Unavailable")
+    if (MEETING.getAvailabilityStateStr() == "Offline")
     {
         mTbAvailability->setIcon(QPixmap(":/images/UserUnavailable.png"));
     }
@@ -75,7 +75,7 @@ void AvailabilityWidget::initializeGUI()
     connect(mTbAvailability, SIGNAL(triggered(QAction *)), this, SLOT(Selected(QAction *)));
 }
 
-void AvailabilityWidget::InitializeAvailabilityMenu(QMenu *pMenu)
+void AvailabilityWidget::InitializeMenuOnlineStatus(QMenu *pMenu)
 {
     switch(CONF.GetColoringScheme())
     {
@@ -89,9 +89,9 @@ void AvailabilityWidget::InitializeAvailabilityMenu(QMenu *pMenu)
             break;
     }
 
-    pMenu->addAction(QPixmap(":/images/UserAvailable.png"), "Available (auto)");
-    pMenu->addAction(QPixmap(":/images/UserAvailable.png"),"Available");
-    pMenu->addAction(QPixmap(":/images/UserUnavailable.png"),"Unavailable");
+    pMenu->addAction(QPixmap(":/images/UserAvailable.png"), "Online (auto)");
+    pMenu->addAction(QPixmap(":/images/UserAvailable.png"),"Online");
+    pMenu->addAction(QPixmap(":/images/UserUnavailable.png"),"Offline");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -101,6 +101,17 @@ void AvailabilityWidget::Selected(QAction *pAction)
     mTbAvailability->setText(pAction->text());
     mTbAvailability->setIcon(pAction->icon());
     QString tNewState = pAction->text();
+
+    if ((MEETING.GetServerRegistrationState()) && (pAction->text() == "Offline"))
+    {
+        MEETING.UnregisterAtServer();
+    }
+
+    if ((!MEETING.GetServerRegistrationState()) && (pAction->text() != "Offline"))
+    {
+        MEETING.RegisterAtServer();
+    }
+
     MEETING.setAvailabilityState(tNewState.toStdString());
 }
 
