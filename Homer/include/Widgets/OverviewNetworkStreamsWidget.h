@@ -136,7 +136,6 @@ private:
     void initializeGUI();
     void UpdateView();
     void SaveValues();
-    QString Int2String(int64_t pSize);
     void FillCellText(int pRow, int pCol, QString pText);
     void FillRow(int pRow, Homer::Base::Socket *pSocket);
 

@@ -63,6 +63,8 @@ namespace Homer { namespace Gui {
 #define PATH_VERSION_TXT                "/live/version.txt"
 #define PATH_CHANGELOG_TXT              "/live/changelog.txt"
 #define PATH_HELP_TXT                   "/live/help.txt"
+#define PATH_INSTALL_EXE				CONF.GetBinaryPath() + "install.exe"
+#define PATH_HOMER_RELEASES				"http://"RELEASE_SERVER"/releases/"
 
 #define CONF Configuration::GetInstance()
 
@@ -79,6 +81,7 @@ public:
     void Init(string pAbsBinPath);
 
     /* general settings */
+    QString GetBinaryPath();
     QString GetConferenceAvailability();
     QString GetContactFile();
     QString GetDataDirectory();
@@ -89,20 +92,23 @@ public:
     bool GetVisibilityContactsWidget();
     bool GetVisibilityFileTransfersWidget();
     bool GetVisibilityErrorsWidget();
+
     bool GetVisibilityPlaylistWidgetAudio();
     bool GetVisibilityPlaylistWidgetVideo();
     bool GetVisibilityPlaylistWidgetMovie();
+
     bool GetVisibilityThreadsWidget();
     bool GetVisibilityNetworkStreamsWidget();
     bool GetVisibilityDataStreamsWidget();
     bool GetVisibilityBroadcastWidget();
-    bool GetVisibilityServerToolBar();
-    bool GetVisibilityStreamingToolBar();
-    bool GetVisibilityContactingToolBar();
+
+    bool GetVisibilityToolBarMediaSources();
+    bool GetVisibilityToolBarOnlineStatus();
 
     int GetColoringScheme();
     bool GetParticipantWidgetsSeparation();
     bool GetParticipantWidgetsCloseImmediately();
+
     bool GetSmoothVideoPresentation();
     bool GetAutoUpdateCheck();
 
@@ -193,16 +199,19 @@ private:
     void SetVisibilityContactsWidget(bool pActive);
     void SetVisibilityErrorsWidget(bool pActive);
     void SetVisibilityFileTransfersWidget(bool pActive);
+
     void SetVisibilityPlaylistWidgetAudio(bool pActive);
     void SetVisibilityPlaylistWidgetVideo(bool pActive);
     void SetVisibilityPlaylistWidgetMovie(bool pActive);
+
     void SetVisibilityThreadsWidget(bool pActive);
     void SetVisibilityNetworkStreamsWidget(bool pActive);
     void SetVisibilityDataStreamsWidget(bool pActive);
     void SetVisibilityBroadcastWidget(bool pActive);
-    void SetVisibilityServerToolBar(bool pActive);
-    void SetVisibilityStreamingToolBar(bool pActive);
-    void SetVisibilityContactingToolBar(bool pActive);
+
+    void SetVisibilityToolBarMediaSources(bool pActive);
+    void SetVisibilityToolBarOnlineStatus(bool pActive);
+
     void SetSmoothVideoPresentation(bool pActive);
     void SetAutoUpdateCheck(bool pActive);
     void SetColoringScheme(int pColoringScheme);

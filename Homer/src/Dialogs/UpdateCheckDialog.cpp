@@ -30,8 +30,15 @@
 #include <Logger.h>
 #include <Snippets.h>
 
+#include <QProcess>
 #include <QHttp>
 #include <QDesktopServices>
+#include <QProgressDialog>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QFile>
+#include <QString>
+#include <QFileDialog>
 
 namespace Homer { namespace Gui {
 
@@ -40,14 +47,17 @@ namespace Homer { namespace Gui {
 UpdateCheckDialog::UpdateCheckDialog(QWidget* pParent) :
     QDialog(pParent)
 {
+	mDownloadProgressDialog = NULL;
     initializeGUI();
     mTbDownloadUpdate->hide();
     mLbVersion->setText(RELEASE_VERSION_STRING);
     mCbAutoUpdateCheck->setChecked(CONF.GetAutoUpdateCheck());
+    mNetworkAccessManager = new QNetworkAccessManager(this);
 }
 
 UpdateCheckDialog::~UpdateCheckDialog()
 {
+	delete mNetworkAccessManager;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -61,34 +71,176 @@ void UpdateCheckDialog::initializeGUI()
 
     mHttpGetChangelogUrl = new QHttp(this);
     connect(mHttpGetChangelogUrl, SIGNAL(done(bool)), this, SLOT(GotAnswerForChangelogRequest(bool)));
-    connect(mTbDownloadUpdate, SIGNAL(clicked()), this, SLOT(DownloadUpdate()));
+    connect(mTbDownloadUpdate, SIGNAL(clicked()), this, SLOT(DownloadStart()));
     mHttpGetChangelogUrl->setHost(RELEASE_SERVER);
     mHttpGetChangelogUrl->get(PATH_CHANGELOG_TXT);
 }
 
-void UpdateCheckDialog::DownloadUpdate()
+QString UpdateCheckDialog::GetNumericReleaseVersion(QString pServerVersion)
 {
-    QString tUpdateLocation;
-    QString tBits;
-    if (QString(_OS_ARCH).contains("64"))
-        tBits = "64";
-    else
-        tBits = "32";
+	QString tResult = "";
+	int tPos = 0;
+	while ((tPos < pServerVersion.size()) && (((pServerVersion[tPos] < '0') || (pServerVersion[tPos] > '9')) && (pServerVersion[tPos] != '.')))
+		tPos++;
 
-    #ifdef WIN32
-        tUpdateLocation = "http://sourceforge.net/projects/homer-conf/files/Homer-Windows.zip";
-    #endif
-    #ifdef LINUX
-        tUpdateLocation = "http://sourceforge.net/projects/homer-conf/files/Homer-Linux" + tBits + ".tar.bz2";
-    #endif
-    #ifdef BSD
-        tUpdateLocation = "http://sourceforge.net/projects/homer-conf/files/Homer-BSD" + tBits + ".tar.bz2";
-    #endif
-    #ifdef APPLE
-        tUpdateLocation = "http://sourceforge.net/projects/homer-conf/files/Homer-OSX" + tBits + ".tar.bz2";
-    #endif
+	tResult = pServerVersion.right(pServerVersion.size() - tPos);
 
-    QDesktopServices::openUrl(tUpdateLocation);
+	LOG(LOG_VERBOSE, "Determined numeric release version on server as %s", tResult.toStdString().c_str());
+
+	return tResult;
+}
+
+void UpdateCheckDialog::DownloadStart()
+{
+	if(QFile::exists(PATH_INSTALL_EXE))
+	{
+		if(QProcess::startDetached(PATH_INSTALL_EXE))
+			return;
+	}
+
+	if(mDownloadProgressDialog != NULL)
+	{
+		ShowInfo("Download of Homer archive running", "A download of a current Homer archive is already started!");
+		return;
+	}
+	// find correct release name for this target system
+	QString tReleaseFileName;
+	QString tReleaseFileType;
+	QString tBits;
+	if (QString(_OS_ARCH).contains("64"))
+		tBits = "64";
+	else
+		tBits = "32";
+
+	#ifdef WIN32
+		tReleaseFileName = "Homer-Windows.zip";
+		tReleaseFileType = "ZIP archive file (*.zip)";
+	#endif
+	#ifdef LINUX
+		tReleaseFileName = "Homer-Linux" + tBits + ".tar.bz2";
+		tReleaseFileType = "bz2 archive file (*.bz2)";
+	#endif
+	#ifdef BSD
+		tReleaseFileName = "Homer-BSD" + tBits + ".tar.bz2";
+		tReleaseFileType = "bz2 archive file (*.bz2)";
+	#endif
+	#ifdef APPLE
+		tReleaseFileName = "Homer-OSX" + tBits + ".tar.bz2";
+		tReleaseFileType = "bz2 archive file (*.bz2)";
+	#endif
+
+	// ask for target location for new release archive
+	QString tFileName;
+	tFileName = QFileDialog::getSaveFileName(this,  "Save Homer archive to..",
+																CONF.GetDataDirectory() + "/" + tReleaseFileName,
+																tReleaseFileType,
+																&tReleaseFileType,
+																QFileDialog::DontUseNativeDialog);
+
+	if (tFileName.isEmpty())
+		return;
+
+	CONF.SetDataDirectory(tFileName.left(tFileName.lastIndexOf('/')));
+
+	// open the target file
+	mDownloadHomerArchiveFile = new QFile(tFileName, this);
+	if(!mDownloadHomerArchiveFile->open(QIODevice::WriteOnly))
+	{
+		ShowError("Could not store Homer archive", "Unable to store the downloaded Homer archive to \"" + tFileName + "\"");
+		return;
+	}
+
+	// create progress dialogue
+	mDownloadProgressDialog = new QProgressDialog(this);//, Qt::Widget);
+	mDownloadProgressDialog->setWindowTitle("Download progress");
+	mDownloadProgressDialog->setLabelText("Downloading Homer archive");
+	connect(mDownloadProgressDialog, SIGNAL(canceled()), this, SLOT(DownloadStop()));
+
+	LOG(LOG_VERBOSE, "Download progress dialog created");
+
+	//start HTTP get for the Homer archive
+	DownloadFireRequest(PATH_HOMER_RELEASES + GetNumericReleaseVersion(mServerVersion) + "/" + tReleaseFileName);
+}
+
+void UpdateCheckDialog::DownloadFireRequest(QString pTarget)
+{
+	mServerFile = pTarget;
+	mDownloadReply = mNetworkAccessManager->get(QNetworkRequest(QUrl(pTarget)));
+    connect(mDownloadReply, SIGNAL(finished()), this, SLOT(DownloadFinished()));
+    connect(mDownloadReply, SIGNAL(readyRead()), this, SLOT(DownloadNewChunk()));
+    connect(mDownloadReply, SIGNAL(downloadProgress(qint64, qint64)), this, SLOT(DownloadProgress(qint64, qint64)));
+}
+
+void UpdateCheckDialog::DownloadStop()
+{
+	LOG(LOG_VERBOSE, "Download stopped");
+	mDownloadReply->abort();
+	if(mDownloadHomerArchiveFile != NULL)
+	{
+		mDownloadHomerArchiveFile->close();
+		delete mDownloadHomerArchiveFile;
+		mDownloadHomerArchiveFile = NULL;
+	}
+	if(mDownloadProgressDialog != NULL)
+	{
+		delete mDownloadProgressDialog;
+		mDownloadProgressDialog = NULL;
+	}
+	mDownloadReply->deleteLater();
+}
+
+void UpdateCheckDialog::DownloadProgress(qint64 pLoadedBytes, qint64 pTotalBytes)
+{
+	mDownloadProgressDialog->setMaximum((int)pTotalBytes);
+	mDownloadProgressDialog->setValue((int)pLoadedBytes);
+	mDownloadProgressDialog->setLabelText("<b>Downloading Homer archive\n  from " + mServerFile + "</b>\n  to " + mDownloadHomerArchiveFile->fileName() + "\n  <b>Loaded: " + Int2ByteExpression(pLoadedBytes) + "/" +  Int2ByteExpression(pTotalBytes) + " bytes</b>");
+}
+
+void UpdateCheckDialog::DownloadFinished()
+{
+	LOG(LOG_VERBOSE, "Download finished");
+	if((mDownloadProgressDialog != NULL) && (mDownloadReply->error()))
+	{
+		ShowError("Failed to download Homer archive", "Unable to download Homer archive because " + mDownloadReply->errorString());
+	}
+
+	mDownloadHomerArchiveFile->flush();
+	mDownloadHomerArchiveFile->close();
+
+	// were we redirected to another target?
+	QVariant tRedirectionTarget = mDownloadReply->attribute(QNetworkRequest::RedirectionTargetAttribute);
+    if (!tRedirectionTarget.isNull())
+    {
+    	LOG(LOG_VERBOSE, "Have been redirected to new Homer archive location under %s", tRedirectionTarget.toString().toStdString().c_str());
+		mDownloadReply->deleteLater();
+		mDownloadHomerArchiveFile->open(QIODevice::WriteOnly);
+		mDownloadHomerArchiveFile->resize(0);
+
+		// start HTTP get for the Homer archive
+		DownloadFireRequest(tRedirectionTarget.toString());
+    }else
+    {// everything was okay, we automatically open downloaded file and we delete objects
+		QDesktopServices::openUrl(mDownloadHomerArchiveFile->fileName());
+
+		if(mDownloadHomerArchiveFile != NULL)
+		{
+			mDownloadHomerArchiveFile->close();
+			delete mDownloadHomerArchiveFile;
+			mDownloadHomerArchiveFile = NULL;
+		}
+		if(mDownloadProgressDialog != NULL)
+		{
+			delete mDownloadProgressDialog;
+			mDownloadProgressDialog = NULL;
+		}
+		mDownloadReply->deleteLater();
+    }
+}
+
+void UpdateCheckDialog::DownloadNewChunk()
+{
+    if (mDownloadHomerArchiveFile)
+    	mDownloadHomerArchiveFile->write(mDownloadReply->readAll());
 }
 
 void UpdateCheckDialog::GotAnswerForVersionRequest(bool pError)

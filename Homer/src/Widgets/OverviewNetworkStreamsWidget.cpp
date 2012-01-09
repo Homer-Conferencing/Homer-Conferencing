@@ -492,23 +492,6 @@ void OverviewNetworkStreamsWidget::SaveValues()
     tFile.close();
 }
 
-QString OverviewNetworkStreamsWidget::Int2String(int64_t pSize)
-{
-    QString tResult = "";
-
-    do{
-        int64_t tRest = pSize % 1000;
-        pSize /= 1000;
-        if (pSize)
-        {
-            tResult = "." + QString("%1").arg(tRest, 3, 10, (QLatin1Char)'0') + tResult;
-        }else
-            tResult = QString("%1").arg(tRest) + tResult;
-    }while(pSize);
-
-    return tResult;
-}
-
 void OverviewNetworkStreamsWidget::FillCellText(int pRow, int pCol, QString pText)
 {
     if (mTwOutgoingStreams->item(pRow, pCol) != NULL)

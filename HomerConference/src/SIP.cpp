@@ -66,7 +66,7 @@ SIP::SIP():
     SIP_stun(), PIDF()
 {
     mSipContext = new SipContext;
-    mAvailabilityState = AVAILABILITY_STATE_YES;
+    mAvailabilityState = AVAILABILITY_STATE_ONLINE;
 
     mSipStackOnline = false;
     mSipListenerNeeded = false;
@@ -455,33 +455,14 @@ bool SIP::RegisterAtServer(string pUsername, string pPassword, string pServer)
 
     if ((mSipRegisterServer != pServer) || (mSipRegisterUsername != pUsername) || (mSipRegisterPassword != pPassword))
     {
-        if (GetServerRegistrationState())
-            UnregisterAtServer();
-
         LOG(LOG_VERBOSE, "Register at SIP server %s with login %s:%s", pServer.c_str(), pUsername.c_str(), pPassword.c_str());
 
         mSipRegisterServer = pServer;
         mSipRegisterUsername = pUsername;
         mSipRegisterPassword = pPassword;
 
-        // if STUN is activated then wait until NAT information is found
-        if (mStunSupportActivated)
-        {
-            bool tFirst = false;
+        tResult = RegisterAtServer();
 
-            while(!mStunNatDetectionFinished)
-            {
-                if(!tFirst)
-                {
-                    tFirst = true;
-                    LOG(LOG_INFO, "Waiting for STUN based NAT detection (this could take some seconds)");
-                }
-            }
-            LOG(LOG_INFO, "NAT information found");
-        }
-
-        // login at SIP registrar server
-        tResult = SipLoginAtServer();
     }
 
     return tResult;
@@ -500,7 +481,7 @@ bool SIP::RegisterAtServer()
     if (GetServerRegistrationState())
         UnregisterAtServer();
 
-    LOG(LOG_VERBOSE, "Re-registering at SIP server");
+    LOG(LOG_VERBOSE, "Registering at SIP server");
 
     // if STUN is activated then wait until NAT information is found
     if (mStunSupportActivated)
@@ -570,7 +551,7 @@ void SIP::SipReceivedRegisterResponse(const sip_to_t *pSipRemote, const sip_to_t
 
         case SIP_STATE_OKAY: // successful
             LOG(LOG_VERBOSE, "Registration at SIP server succeeded");
-            mSipRegisteredAtServer = true;
+            mSipRegisteredAtServer = 1;
 
             tREvent = new RegistrationEvent();
             InitGeneralEvent_FromSipReceivedResponseEvent(pSipRemote, pSipLocal, pNuaHandle, pSip, tREvent, "Registration", pSourceIp, pSourcePort);
@@ -611,11 +592,11 @@ void SIP::setAvailabilityState(enum AvailabilityState pState, string pStateText)
     // publish presence state
     switch(mAvailabilityState)
     {
-        case AVAILABILITY_STATE_NO:
+        case AVAILABILITY_STATE_OFFLINE:
             tStateNote = "dnd";
             break;
-        case AVAILABILITY_STATE_YES_AUTO:
-        case AVAILABILITY_STATE_YES:
+        case AVAILABILITY_STATE_ONLINE_AUTO:
+        case AVAILABILITY_STATE_ONLINE:
             tStateNote = "online";
             break;
         default:
@@ -676,29 +657,36 @@ void SIP::setAvailabilityState(string pState)
 {
     LOG(LOG_VERBOSE, "Setting new availability-state \"%s\"", pState.c_str());
 
-    if (pState == "Unavailable")
-        setAvailabilityState(AVAILABILITY_STATE_NO);
-    if (pState == "Available")
-        setAvailabilityState(AVAILABILITY_STATE_YES);
-    if (pState == "Available (auto)")
-        setAvailabilityState(AVAILABILITY_STATE_YES_AUTO);
+    if (pState == "Offline")
+        setAvailabilityState(AVAILABILITY_STATE_OFFLINE);
+    else
+    if (pState == "Online")
+        setAvailabilityState(AVAILABILITY_STATE_ONLINE);
+    else
+    if (pState == "Online (auto)")
+        setAvailabilityState(AVAILABILITY_STATE_ONLINE_AUTO);
+    else
+    {
+    	LOG(LOG_WARN, "Availability state \"%s\" unknown, falling back to \"online\"", pState.c_str());
+    	setAvailabilityState(AVAILABILITY_STATE_ONLINE);
+    }
 }
 
 string SIP::getAvailabilityStateStr()
 {
     switch(mAvailabilityState)
     {
-        case AVAILABILITY_STATE_NO:
-            return "Unavailable";
+        case AVAILABILITY_STATE_OFFLINE:
+            return "Offline";
             break;
-        case AVAILABILITY_STATE_YES:
-            return "Available";
+        case AVAILABILITY_STATE_ONLINE:
+            return "Online";
             break;
-        case AVAILABILITY_STATE_YES_AUTO:
-            return "Available (auto)";
+        case AVAILABILITY_STATE_ONLINE_AUTO:
+            return "Online (auto)";
             break;
         default:
-            return "Available";
+            return "Online";
             break;
     }
 }
@@ -2239,14 +2227,14 @@ void SIP::SipReceivedCall(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal,
 
     switch(mAvailabilityState)
     {
-        case AVAILABILITY_STATE_NO: // automatically deny this call
+        case AVAILABILITY_STATE_OFFLINE: // automatically deny this call
 
                     printFromToSendingSipEvent(pNuaHandle, tCEvent, "CallAutoDeny");
                     nua_respond(pNuaHandle, 603, "Decline", SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), TAG_END());
                     nua_handle_destroy (pNuaHandle);
                     delete tCEvent;
                     break;
-        case AVAILABILITY_STATE_YES: // ask user if we should accept this call
+        case AVAILABILITY_STATE_ONLINE: // ask user if we should accept this call
                     if (MEETING.SearchParticipantAndSetState(tCEvent->Sender, CALLSTATE_RINGING))
                     {
                         tCEvent->AutoAnswering = false;
@@ -2254,7 +2242,7 @@ void SIP::SipReceivedCall(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal,
                         MEETING.notifyObservers(tCEvent);
                     }
                     break;
-        case AVAILABILITY_STATE_YES_AUTO: // automatically accept this call
+        case AVAILABILITY_STATE_ONLINE_AUTO: // automatically accept this call
                     if (MEETING.SearchParticipantAndSetState(tCEvent->Sender, CALLSTATE_RINGING))
                     {
                         tCEvent->AutoAnswering = true;

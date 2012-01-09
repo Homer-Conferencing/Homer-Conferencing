@@ -64,7 +64,20 @@ void IdentityDialog::initializeGUI()
 
 void IdentityDialog::LoadConfiguration()
 {
-    mLbId->setText(QString(MEETING.getLocalConferenceId().c_str()));
+	if(CONF.GetSipInfrastructureMode() == 1)
+		mLbServerAddress->setText(QString(MEETING.GetServerConferenceId().c_str()));
+	else
+		mLbServerAddress->setText("Server based contacting is disabled. Check configuration!");
+	mLbDirectAddress->setText(QString(MEETING.GetLocalConferenceId().c_str()));
+
+	if(MEETING.GetServerRegistrationState())
+	{
+		mServerStatus->setPixmap(QPixmap(":/images/UserAvailable.png"));
+	}else
+	{
+		mServerStatus->setPixmap(QPixmap(":/images/UserUnavailable.png"));
+	}
+
     if (MEETING.getStunNatIp() != "")
         mLbNatAdr->setText(QString(MEETING.getStunNatIp().c_str()));
     else
@@ -72,7 +85,7 @@ void IdentityDialog::LoadConfiguration()
     if (MEETING.getStunNatType() != "")
         mLbNatType->setText(QString(MEETING.getStunNatType().c_str()));
     else
-        mLbNatType->setText("Not yet detected. Check the configuration!");
+        mLbNatType->setText("Not yet detected. Check configuration!");
     mLeName->setText(CONF.GetUserName());
     mLeMail->setText(CONF.GetUserMail());
 }

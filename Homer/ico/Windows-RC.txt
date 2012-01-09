@@ -1,0 +1,53 @@
+First you need to create a .rc file that looks something like this:
+
+id ICON "path/to/my.ico"
+
+Well, actually, I suppose you need to create the icon first... but anyway... the ID can pretty much anything. It doesn't matter unless you want to refer to it in your code.
+
+Then run windres as follows:
+
+windres my.rc -O coff -o my.res
+
+Then you just include my.res along with your object files when you link. e.g.,
+
+g++ -o my_app obj1.o obj2.o my.res
+
+And that should be all there is to it. Hope it helps, I spent an entire evening tracking his down last week when porting my wxwidgets program from linux to windoze...
+
+And, at no extra charge, if you want to include version information in your application, add the following boilerplate to your .rc file and modify appropriately:
+
+1 VERSIONINFO
+FILEVERSION     1,0,0,0
+PRODUCTVERSION  1,0,0,0
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "080904E4"
+    BEGIN
+      VALUE "CompanyName", "My Company Name"
+      VALUE "FileDescription", "My excellent application"
+      VALUE "FileVersion", "1.0"
+      VALUE "InternalName", "my_app"
+      VALUE "LegalCopyright", "My Name"
+      VALUE "OriginalFilename", "my_app.exe"
+      VALUE "ProductName", "My App"
+      VALUE "ProductVersion", "1.0"
+    END
+  END
+
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x809, 1252
+  END
+END
+
+Note, the langID is for U.K. English (which is the closest localisation to Australia I could identify.) If you want U.S. "English" then change the BLOCK line to:
+
+BLOCK "040904E4"
+
+and the translation line to:
+
+VALUE "Translation", 0x409, 1252
+
+
+http://msdn.microsoft.com/en-us/library/aa381058.aspx

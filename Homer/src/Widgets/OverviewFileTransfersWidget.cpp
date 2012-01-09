@@ -175,23 +175,6 @@ void OverviewFileTransfersWidget::contextMenuEvent(QContextMenuEvent *pContextMe
 //    }
 }
 
-QString OverviewFileTransfersWidget::Int2String(int pSize)
-{
-    QString tResult = "";
-
-    do{
-        int tRest = pSize % 1000;
-        pSize /= 1000;
-        if (pSize)
-        {
-            tResult = "." + QString("%1").arg(tRest, 3, 10, (QLatin1Char)'0') + tResult;
-        }else
-            tResult = QString("%1").arg(tRest) + tResult;
-    }while(pSize);
-
-    return tResult;
-}
-
 //void OverviewFileTransfersWidget::FillRow(QTableWidget *pTable, int pRow, PacketStatistic *pStats)
 //{
 //	if (pStats == NULL)

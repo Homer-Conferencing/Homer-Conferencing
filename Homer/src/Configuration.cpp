@@ -187,24 +187,17 @@ void Configuration::SetVisibilityBroadcastWidget(bool pActive)
     mQSettings->endGroup();
 }
 
-void Configuration::SetVisibilityServerToolBar(bool pActive)
+void Configuration::SetVisibilityToolBarMediaSources(bool pActive)
 {
     mQSettings->beginGroup("Global");
-    mQSettings->setValue("VisibilityServerToolBar", pActive);
+    mQSettings->setValue("VisibilityToolBarMediaSources", pActive);
     mQSettings->endGroup();
 }
 
-void Configuration::SetVisibilityStreamingToolBar(bool pActive)
+void Configuration::SetVisibilityToolBarOnlineStatus(bool pActive)
 {
     mQSettings->beginGroup("Global");
-    mQSettings->setValue("VisibilityStreamingToolBar", pActive);
-    mQSettings->endGroup();
-}
-
-void Configuration::SetVisibilityContactingToolBar(bool pActive)
-{
-    mQSettings->beginGroup("Global");
-    mQSettings->setValue("VisibilityContactingToolBar", pActive);
+    mQSettings->setValue("VisibilityToolBarOnlineStatus", pActive);
     mQSettings->endGroup();
 }
 
@@ -493,6 +486,11 @@ QString Configuration::GetSipListenerAddress()
     return mQSettings->value("Network/SipListenerAddress", QString("")).toString();
 }
 
+QString Configuration::GetBinaryPath()
+{
+	return QString(mAbsBinPath.c_str());
+}
+
 QString Configuration::GetConferenceAvailability()
 {
     return mQSettings->value("Global/Availability", QString(MEETING.getAvailabilityStateStr().c_str())).toString();
@@ -595,19 +593,14 @@ bool Configuration::GetVisibilityBroadcastWidget()
     return mQSettings->value("Global/VisibilityBroadcastWidget", true).toBool();
 }
 
-bool Configuration::GetVisibilityServerToolBar()
+bool Configuration::GetVisibilityToolBarMediaSources()
 {
-    return mQSettings->value("Global/VisibilityServerToolBar", true).toBool();
+    return mQSettings->value("Global/VisibilityToolBarMediaSources", true).toBool();
 }
 
-bool Configuration::GetVisibilityStreamingToolBar()
+bool Configuration::GetVisibilityToolBarOnlineStatus()
 {
-    return mQSettings->value("Global/VisibilityStreamingToolBar", true).toBool();
-}
-
-bool Configuration::GetVisibilityContactingToolBar()
-{
-    return mQSettings->value("Global/VisibilityContactingToolBar", false).toBool();
+    return mQSettings->value("Global/VisibilityToolBarOnlineStatus", true).toBool();
 }
 
 bool Configuration::GetSmoothVideoPresentation()

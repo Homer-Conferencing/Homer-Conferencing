@@ -28,6 +28,7 @@
 #include <Widgets/OverviewPlaylistWidget.h>
 #include <Configuration.h>
 #include <Logger.h>
+#include <Snippets.h>
 
 #include <QDockWidget>
 #include <QMainWindow>
@@ -542,11 +543,12 @@ void OverviewPlaylistWidget::SaveListDialog()
     }
     if (!tPlaylistFile.open(QIODevice::WriteOnly))
     {
-        LOG(LOG_ERROR, "Couldn't write playlist in %s", tFileName.toStdString().c_str());
+    	ShowError("Could not store playlist file", "Couldn't write playlist in " + tFileName);
         return;
     }
 
     tPlaylistFile.write(tPlaylistData.toUtf8());
+    tPlaylistFile.close();
 }
 
 void OverviewPlaylistWidget::PlayItem(QListWidgetItem *pItem)
