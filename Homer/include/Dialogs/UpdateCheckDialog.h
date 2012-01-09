@@ -31,6 +31,10 @@
 #include <ui_UpdateCheckDialog.h>
 
 #include <QHttp>
+#include <QProgressDialog>
+#include <QNetworkReply>
+#include <QFile>
+#include <QNetworkAccessManager>
 
 #define TriggerVersionCheck(pReqObject, pAnswerHandleFunction) {                                                                                         \
                                                                 connect(pReqObject, SIGNAL(done(bool)), this, SLOT(pAnswerHandleFunction(bool)));        \
@@ -58,16 +62,28 @@ public slots:
     int exec();
 
 private slots:
-    void DownloadUpdate();
     void GotAnswerForVersionRequest(bool pError);
     void GotAnswerForChangelogRequest(bool pError);
+    void DownloadStart();
+    void DownloadStop();
+    void DownloadFinished();
+    void DownloadNewChunk();
+    void DownloadProgress(qint64 pLoadedBytes, qint64 pTotalBytes);
 
 private:
     void initializeGUI();
+    void DownloadFireRequest(QString pTarget);
+    QString GetNumericReleaseVersion(QString pServerVersion);
 
     QHttp           *mHttpGetVersionServer;
     QHttp           *mHttpGetChangelogUrl;
     QString         mServerVersion;
+    bool			mDownloadStarted;
+    QProgressDialog *mDownloadProgressDialog;
+    QNetworkAccessManager *mNetworkAccessManager;
+    QFile			*mDownloadHomerArchiveFile;
+    QNetworkReply   *mDownloadReply;
+    QString 		mServerFile;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
