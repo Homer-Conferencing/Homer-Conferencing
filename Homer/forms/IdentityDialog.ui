@@ -186,7 +186,7 @@
            </size>
           </property>
           <property name="text">
-           <string>Own direct network address:</string>
+           <string>Own direct contact address:</string>
           </property>
          </widget>
         </item>
@@ -577,6 +577,7 @@
   <tabstop>mBb</tabstop>
  </tabstops>
  <resources>
+  <include location="../resources/Icons.qrc"/>
   <include location="../resources/Icons.qrc"/>
   <include location="../resources/Icons.qrc"/>
  </resources>
