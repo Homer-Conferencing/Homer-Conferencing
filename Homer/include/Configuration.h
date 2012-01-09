@@ -56,13 +56,15 @@ namespace Homer { namespace Gui {
 //#define RELEASE_VERSION
 
 // version string which is checked/used in the whole application
-#define RELEASE_VERSION_STRING          "Beta 0.18.1"
+#define RELEASE_VERSION_STRING          "Beta 0.19"
 
 // for home calls
 #define RELEASE_SERVER                  "www.homer-conferencing.com"
 #define PATH_VERSION_TXT                "/live/version.txt"
 #define PATH_CHANGELOG_TXT              "/live/changelog.txt"
 #define PATH_HELP_TXT                   "/live/help.txt"
+#define PATH_INSTALL_EXE				CONF.GetBinaryPath() + "install.exe"
+#define PATH_HOMER_RELEASES				"http://sourceforge.net/projects/homer-conf/files/"
 
 #define CONF Configuration::GetInstance()
 
@@ -79,6 +81,7 @@ public:
     void Init(string pAbsBinPath);
 
     /* general settings */
+    QString GetBinaryPath();
     QString GetConferenceAvailability();
     QString GetContactFile();
     QString GetDataDirectory();
