@@ -64,7 +64,7 @@ namespace Homer { namespace Gui {
 #define PATH_CHANGELOG_TXT              "/live/changelog.txt"
 #define PATH_HELP_TXT                   "/live/help.txt"
 #define PATH_INSTALL_EXE				CONF.GetBinaryPath() + "install.exe"
-#define PATH_HOMER_RELEASES				"http://sourceforge.net/projects/homer-conf/files/"
+#define PATH_HOMER_RELEASES				"http://"RELEASE_SERVER"/releases/"
 
 #define CONF Configuration::GetInstance()
 
