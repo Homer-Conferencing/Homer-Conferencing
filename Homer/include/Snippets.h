@@ -66,6 +66,22 @@ inline void DoShowError(std::string pSource, int pLine, QWidget *pParent, QStrin
     delete tMb;
 }
 
+inline QString Int2ByteExpression(int64_t pSize)
+{
+    QString tResult = "";
+
+    do{
+        int64_t tRest = pSize % 1000;
+        pSize /= 1000;
+        if (pSize)
+        {
+            tResult = "." + QString("%1").arg(tRest, 3, 10, (QLatin1Char)'0') + tResult;
+        }else
+            tResult = QString("%1").arg(tRest) + tResult;
+    }while(pSize);
+
+    return tResult;
+}
 ///////////////////////////////////////////////////////////////////////////////
 
 }}
