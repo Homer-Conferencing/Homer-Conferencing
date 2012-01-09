@@ -289,6 +289,8 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     tByteIoContext->is_streamed = 1;
     // limit packet size, otherwise ffmpeg will deliver unpredictable results ;)
     tByteIoContext->max_packet_size = MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE;
+
+    memset((void*)&tFormatParams, 0, sizeof(tFormatParams));
     tFormatParams.channel = 0;
     tFormatParams.standard = NULL;
     tFormatParams.time_base.num = 100;
@@ -450,6 +452,7 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     // limit packet size
     tByteIoContext->max_packet_size = MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE;
 
+    memset((void*)&tFormatParams, 0, sizeof(tFormatParams));
     tFormatParams.sample_rate = pSampleRate; // sampling rate
     tFormatParams.channels = pStereo?2:1; // stereo?
     tFormatParams.initial_pause = 0;

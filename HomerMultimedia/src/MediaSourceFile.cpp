@@ -114,6 +114,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if (mMediaSourceOpened)
         return false;
 
+    memset((void*)&tFormatParams, 0, sizeof(tFormatParams));
     tFormatParams.channel = 0;
     tFormatParams.standard = NULL;
     tFormatParams.time_base.num = 100;
@@ -267,6 +268,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     if (mMediaSourceOpened)
         return false;
 
+    memset((void*)&tFormatParams, 0, sizeof(tFormatParams));
     tFormatParams.sample_rate = pSampleRate; // sampling rate
     tFormatParams.channels = pStereo?2:1; // stereo?
     tFormatParams.initial_pause = 0;

@@ -185,6 +185,7 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if (mMediaSourceOpened)
         return false;
 
+    memset((void*)&tFormatParams, 0, sizeof(tFormatParams));
     tFormatParams.channel = 0;
     tFormatParams.standard = NULL;
     tFormatParams.time_base.num = 100;
