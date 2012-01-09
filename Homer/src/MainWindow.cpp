@@ -622,7 +622,7 @@ void MainWindow::GotAnswerForVersionRequest(bool pError)
     {
         QString tServerVersion = QString(mHttpGetVersionServer->readAll().constData());
         if (tServerVersion != RELEASE_VERSION_STRING)
-            ShowInfo("Update available", "An updated version of Homer is available. Current version on server is: <font color='green'><b>" + tServerVersion +"</b></font>");
+            ShowInfo("Update available", "An updated version of Homer is available. Current version on server is: <font color='green'><b>" + tServerVersion +"</b></font>. Have a look in the \"update check\" dialogue in the \"Homer\" menu.");
     }
 }
 
