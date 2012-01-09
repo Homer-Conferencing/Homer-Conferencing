@@ -73,7 +73,6 @@ private:
     void initializeGUI();
     void UpdateView();
     void SaveStatistic();
-    QString Int2String(int64_t pSize);
     void FillCellText(QTableWidget *pTable, int pRow, int pCol, QString pText);
     void FillRow(QTableWidget *pTable, int pRow, Homer::Monitor::PacketStatistic *pStats);
 

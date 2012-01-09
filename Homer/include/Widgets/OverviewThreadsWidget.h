@@ -61,7 +61,6 @@ private:
     virtual void closeEvent(QCloseEvent* pEvent);
     virtual void timerEvent(QTimerEvent *pEvent);
     virtual void contextMenuEvent(QContextMenuEvent *pContextMenuEvent);
-    QString Int2String(int pSize);
     void FillCellText(int pRow, int pCol, QString pText);
     void FillRow(int pRow, Homer::Monitor::ProcessStatistic *pStats);
 

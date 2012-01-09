@@ -62,7 +62,6 @@ private:
 
     void initializeGUI();
     void UpdateView();
-    QString Int2String(int pSize);
     //void FillRow(QTableWidget *pTable, int pRow, Homer::Monitor::PacketStatistic *pStats);
 
     QPoint              mWinPos;
