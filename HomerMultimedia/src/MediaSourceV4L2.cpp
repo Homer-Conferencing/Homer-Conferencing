@@ -248,6 +248,7 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     //##################################################################################
     // ### begin to open the selected input from the selected device
     //##################################################################################
+    memset((void*)&tFormatParams, 0, sizeof(tFormatParams));
     tFormatParams.channel = mDesiredInputChannel;
     tFormatParams.standard = NULL;
     if (tSelectedInputSupportsFps)
