@@ -66,6 +66,7 @@
 #include <QApplication>
 #include <QHostInfo>
 #include <QStringList>
+#include <QDesktopWidget>
 
 #include <stdlib.h>
 #include <list>
@@ -755,6 +756,22 @@ void VideoWidget::SetResolutionFormat(VideoFormat pFormat)
     SetResolution(tResX, tResY);
 }
 
+void VideoWidget::ShowFullScreen()
+{
+	// get screen that contains the largest part of he VideoWidget
+	QDesktopWidget *tDesktop = new QDesktopWidget();
+	int tScreenNumber = tDesktop->screenNumber(this);
+
+	// get screen geometry
+	QRect tScreenRes = QApplication::desktop()->screenGeometry(tScreenNumber);
+
+	// prepare and set fullscreen on the corresponding screen
+	move(QPoint(tScreenRes.x(), tScreenRes.y()));
+	resize(tScreenRes.width(), tScreenRes.height());
+	showFullScreen();
+	delete tDesktop;
+}
+
 void VideoWidget::ToggleFullScreenMode()
 {
     setUpdatesEnabled(false);
@@ -763,7 +780,7 @@ void VideoWidget::ToggleFullScreenMode()
         default:
         case Qt::WindowNoState:
             setWindowFlags(windowFlags() | Qt::Window);
-            showFullScreen();
+            ShowFullScreen();
             layout()->update();// repaint the old widget background
             break;
         case Qt::WindowFullScreen:
