@@ -1414,7 +1414,7 @@ bool MediaSourceMuxer::SelectDevice(std::string pDesiredDevice, enum MediaType p
 
     if (mMediaSources.size() > 0)
     {
-        // probe all registered media sources for support for selected device
+        // probe all registered media sources for support of the requested device
 		for (tIt = mMediaSources.begin(); tIt != mMediaSources.end(); tIt++)
 		{
 		    pIsNewDevice = false;
@@ -1436,7 +1436,7 @@ bool MediaSourceMuxer::SelectDevice(std::string pDesiredDevice, enum MediaType p
 		    // lock
 		    mMediaSourcesMutex.lock();
 
-	        // probe all registered media sources for support for selected file device
+	        // probe all registered media sources for support for selected file device: we need a correct iterator reference !
 	        for (tIt = mMediaSources.begin(); tIt != mMediaSources.end(); tIt++)
 	        {
 	            pIsNewDevice = false;
@@ -1445,7 +1445,7 @@ bool MediaSourceMuxer::SelectDevice(std::string pDesiredDevice, enum MediaType p
 	        }
 		}
 
-		// do we have a new device selected and does it come from another MediaSource?
+		// do we have a new device selected and does it come from another MediaSource, then we close the old media source and open the new media source
 		if (tResult)
 		{
 		    if ((mMediaSource != *tIt) || (mCurrentDevice != mDesiredDevice))
@@ -1475,7 +1475,12 @@ bool MediaSourceMuxer::SelectDevice(std::string pDesiredDevice, enum MediaType p
                                 mMediaSource = tOldMediaSource;
                                 pIsNewDevice = false;
                                 tResult = false;
-                                OpenVideoGrabDevice(mSourceResX, mSourceResY, mFrameRate);
+                                while((!OpenVideoGrabDevice(mSourceResX, mSourceResY, mFrameRate)) && (tIt != mMediaSources.end()))
+                                {
+                                    LOG(LOG_VERBOSE, "Couldn't open basic video device, will probe next possible basic device");
+                                    tIt++;
+                                    (*tIt)->SelectDevice(pDesiredDevice, tMediaType, pIsNewDevice);
+                                }
                             }
                             break;
                         case MEDIA_AUDIO:

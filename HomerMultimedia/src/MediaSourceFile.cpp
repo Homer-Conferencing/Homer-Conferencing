@@ -148,6 +148,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         return false;
     }
     mCurrentDevice = mDesiredDevice;
+    mCurrentDeviceName = "FILE: " + mDesiredDevice;
 
     // limit frame analyzing time for ffmpeg internal codec auto detection
     mFormatContext->max_analyze_duration = AV_TIME_BASE / 4; //  1/4 recorded seconds
@@ -294,6 +295,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
         return false;
     }
     mCurrentDevice = mDesiredDevice;
+    mCurrentDeviceName = "FILE: " + mDesiredDevice;
 
     // limit frame analyzing time for ffmpeg internal codec auto detection
     mFormatContext->max_analyze_duration = AV_TIME_BASE / 4; //  1/4 recorded seconds
