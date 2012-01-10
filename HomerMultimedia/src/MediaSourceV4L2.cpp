@@ -292,7 +292,7 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         //######################################################
         if ((tResult = av_find_stream_info(mFormatContext)) < 0)
         {
-            LOG(LOG_ERROR, "Couldn't find stream information because of \"%s\".", strerror(AVUNERROR(tResult)));
+            LOG(LOG_ERROR, "Couldn't find stream information because \"%s\".", strerror(AVUNERROR(tResult)));
 
             // Close the V4L2 video file
             av_close_input_file(mFormatContext);
