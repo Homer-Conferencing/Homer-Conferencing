@@ -76,7 +76,7 @@ public:
     /// The destructor.
     virtual ~OverviewContactsWidget();
 
-    void InsertNew(QString pParticipant);
+    bool InsertNew(QString pParticipant);
 
 public slots:
     void SetVisible(bool pVisible);

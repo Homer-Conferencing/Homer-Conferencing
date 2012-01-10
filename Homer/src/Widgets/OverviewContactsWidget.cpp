@@ -369,8 +369,10 @@ void OverviewContactsWidget::ContactParticipant(ContactDescriptor *pContact, boo
         ContactParticipantDelegateToMainWindow(mContact, pContact->Host, mCallAfterwards);
 }
 
-void OverviewContactsWidget::InsertNew(QString pParticipant)
+bool OverviewContactsWidget::InsertNew(QString pParticipant)
 {
+    bool tWasAdded = false;
+
     ContactEditDialog tCED;
 
     tCED.setWindowTitle("Add new contact");
@@ -388,7 +390,7 @@ void OverviewContactsWidget::InsertNew(QString pParticipant)
     if(!tOk)
     {
         LOG(LOG_ERROR, "Unable to parse string to a valid scalar for the port value");
-        return;
+        return false;
     }
     tCED.mSbPort->setValue(tPortScal);
     tCED.mLeName->setText(tUser);
@@ -403,7 +405,10 @@ void OverviewContactsWidget::InsertNew(QString pParticipant)
         CONTACTSPOOL.AddContact(tContact);
         mTvContacts->setVisible(true);
         mContactListModel->UpdateView();
+        tWasAdded = true;
     }
+
+    return tWasAdded;
 }
 
 void OverviewContactsWidget::InsertNew()
