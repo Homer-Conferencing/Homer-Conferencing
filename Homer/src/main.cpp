@@ -187,7 +187,7 @@ static void sQtDebugMessageOutput(QtMsgType pType, const char *pMsg)
 int main(int pArgc, char* pArgv[])
 {
 #endif
-#ifdef WIN32
+#if defined(WIN32) || defined(WIN64)
 int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine, int pShowCmd)
 {
 	int pArgc = 0;
