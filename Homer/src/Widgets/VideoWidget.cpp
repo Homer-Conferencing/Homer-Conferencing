@@ -775,18 +775,16 @@ void VideoWidget::ShowFullScreen()
 void VideoWidget::ToggleFullScreenMode()
 {
     setUpdatesEnabled(false);
-    switch(windowState())
+    LOG(LOG_VERBOSE, "Found window state: %d", (int)windowState());
+    if (windowState() & Qt::WindowFullScreen)
     {
-        default:
-        case Qt::WindowNoState:
-            setWindowFlags(windowFlags() | Qt::Window);
-            ShowFullScreen();
-            layout()->update();// repaint the old widget background
-            break;
-        case Qt::WindowFullScreen:
-            setWindowFlags(windowFlags() ^ Qt::Window);
-            showNormal();
-            break;
+        setWindowFlags(windowFlags() ^ Qt::Window);
+        showNormal();
+    }else
+    {
+        setWindowFlags(windowFlags() | Qt::Window);
+        ShowFullScreen();
+        layout()->update();// repaint the old widget background
     }
     mNeedBackgroundUpdate = true;
     setUpdatesEnabled(true);
