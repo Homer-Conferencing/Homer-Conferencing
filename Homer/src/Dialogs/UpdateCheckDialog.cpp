@@ -151,9 +151,9 @@ void UpdateCheckDialog::DownloadStart()
 	}
 
 	// create progress dialogue
-	mDownloadProgressDialog = new QProgressDialog(this);//, Qt::Widget);
+	mDownloadProgressDialog = new QProgressDialog(this);
 	mDownloadProgressDialog->setWindowTitle("Download progress");
-	mDownloadProgressDialog->setLabelText("Downloading Homer archive");
+	mDownloadProgressDialog->setLabelText("<b>Downloading Homer archive</b>");
 	connect(mDownloadProgressDialog, SIGNAL(canceled()), this, SLOT(DownloadStop()));
 
 	LOG(LOG_VERBOSE, "Download progress dialog created");
@@ -164,17 +164,20 @@ void UpdateCheckDialog::DownloadStart()
 
 void UpdateCheckDialog::DownloadFireRequest(QString pTarget)
 {
+    LOG(LOG_VERBOSE, "Triggered download of file %s", pTarget.toStdString().c_str());
 	mServerFile = pTarget;
 	mDownloadReply = mNetworkAccessManager->get(QNetworkRequest(QUrl(pTarget)));
     connect(mDownloadReply, SIGNAL(finished()), this, SLOT(DownloadFinished()));
     connect(mDownloadReply, SIGNAL(readyRead()), this, SLOT(DownloadNewChunk()));
     connect(mDownloadReply, SIGNAL(downloadProgress(qint64, qint64)), this, SLOT(DownloadProgress(qint64, qint64)));
+    mDownloadAborted = false;
 }
 
 void UpdateCheckDialog::DownloadStop()
 {
 	LOG(LOG_VERBOSE, "Download stopped");
-	mDownloadReply->abort();
+	mDownloadAborted = true;
+    mDownloadReply->abort();
 	if(mDownloadHomerArchiveFile != NULL)
 	{
 		mDownloadHomerArchiveFile->close();
@@ -193,13 +196,14 @@ void UpdateCheckDialog::DownloadProgress(qint64 pLoadedBytes, qint64 pTotalBytes
 {
 	mDownloadProgressDialog->setMaximum((int)pTotalBytes);
 	mDownloadProgressDialog->setValue((int)pLoadedBytes);
-	mDownloadProgressDialog->setLabelText("<b>Downloading Homer archive\n  from " + mServerFile + "</b>\n  to " + mDownloadHomerArchiveFile->fileName() + "\n  <b>Loaded: " + Int2ByteExpression(pLoadedBytes) + "/" +  Int2ByteExpression(pTotalBytes) + " bytes</b>");
+	mDownloadProgressDialog->setLabelText("<b>Downloading Homer archive</b><br>  from <font color=blue>" + mServerFile + "</font><br>  to <i>" + mDownloadHomerArchiveFile->fileName() + "</i><br>  <b>Loaded: " + Int2ByteExpression(pLoadedBytes) + "/" +  Int2ByteExpression(pTotalBytes) + " bytes</b>");
+    mDownloadProgressDialog->show();
 }
 
 void UpdateCheckDialog::DownloadFinished()
 {
 	LOG(LOG_VERBOSE, "Download finished");
-	if((mDownloadProgressDialog != NULL) && (mDownloadReply->error()))
+	if((!mDownloadAborted) && (mDownloadReply->error()))
 	{
 		ShowError("Failed to download Homer archive", "Unable to download Homer archive because " + mDownloadReply->errorString());
 	}
@@ -220,7 +224,8 @@ void UpdateCheckDialog::DownloadFinished()
 		DownloadFireRequest(tRedirectionTarget.toString());
     }else
     {// everything was okay, we automatically open downloaded file and we delete objects
-		QDesktopServices::openUrl(mDownloadHomerArchiveFile->fileName());
+		if(!mDownloadAborted)
+		    QDesktopServices::openUrl(mDownloadHomerArchiveFile->fileName());
 
 		if(mDownloadHomerArchiveFile != NULL)
 		{
