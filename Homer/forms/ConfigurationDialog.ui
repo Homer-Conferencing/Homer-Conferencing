@@ -1558,6 +1558,22 @@
                </spacer>
               </item>
               <item>
+               <spacer name="horizontalSpacer_15">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeType">
+                 <enum>QSizePolicy::Fixed</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>22</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
                <widget class="QLineEdit" name="mLeSipServer">
                 <property name="minimumSize">
                  <size>
@@ -1624,6 +1640,22 @@
                </spacer>
               </item>
               <item>
+               <spacer name="horizontalSpacer_14">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeType">
+                 <enum>QSizePolicy::Fixed</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>22</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
                <widget class="QLineEdit" name="mLeSipUserName">
                 <property name="minimumSize">
                  <size>
@@ -1656,7 +1688,7 @@
              </layout>
             </item>
             <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_18">
+             <layout class="QHBoxLayout" name="horizontalLayout_18" stretch="0,0,0,0">
               <item>
                <widget class="QLabel" name="mLbSipPassword">
                 <property name="minimumSize">
@@ -1688,6 +1720,41 @@
                  </size>
                 </property>
                </spacer>
+              </item>
+              <item>
+               <widget class="QToolButton" name="mTbShowPassword">
+                <property name="minimumSize">
+                 <size>
+                  <width>22</width>
+                  <height>22</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>22</width>
+                  <height>22</height>
+                 </size>
+                </property>
+                <property name="toolTip">
+                 <string>toggle password display</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset resource="../resources/Icons.qrc">
+                  <normaloff>:/images/Key.png</normaloff>:/images/Key.png</iconset>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>22</width>
+                  <height>22</height>
+                 </size>
+                </property>
+                <property name="checkable">
+                 <bool>true</bool>
+                </property>
+               </widget>
               </item>
               <item>
                <widget class="QLineEdit" name="mLeSipPassword">
@@ -2703,9 +2770,6 @@
   </layout>
  </widget>
  <resources>
-  <include location="../resources/Icons.qrc"/>
-  <include location="../resources/Icons.qrc"/>
-  <include location="../resources/Icons.qrc"/>
   <include location="../resources/Icons.qrc"/>
  </resources>
  <connections>

@@ -42,6 +42,7 @@
 #include <QString>
 #include <QFileDialog>
 #include <QSound>
+#include <QLineEdit>
 
 namespace Homer { namespace Gui {
 
@@ -68,6 +69,7 @@ ConfigurationDialog::ConfigurationDialog(QWidget* pParent, list<string>  pLocalA
     connect(mPbNotifySoundNewCallFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForCall()));
     connect(mTbPlaySoundNewImFile, SIGNAL(clicked()), this, SLOT(PlayNotifySoundFileForIm()));
     connect(mTbPlaySoundNewCallFile, SIGNAL(clicked()), this, SLOT(PlayNotifySoundFileForCall()));
+    connect(mTbShowPassword, SIGNAL(clicked()), this, SLOT(ToggleSipServerPasswordVisibility()));
     ShowVideoSourceInfo(mCbVideoSource->currentText());
     ShowAudioSourceInfo(mCbAudioSource->currentText());
     ShowAudioSinkInfo(mCbAudioSink->currentText());
@@ -480,6 +482,14 @@ void ConfigurationDialog::ShowAudioSinkInfo(QString pCurrentText)
     }
 
     mLbAudioSinkInfo->setText(tInfoText);
+}
+
+void ConfigurationDialog::ToggleSipServerPasswordVisibility()
+{
+    if(mLeSipPassword->echoMode() == QLineEdit::Normal)
+        mLeSipPassword->setEchoMode(QLineEdit::PasswordEchoOnEdit);
+    else
+        mLeSipPassword->setEchoMode(QLineEdit::Normal);
 }
 
 void ConfigurationDialog::SelectNotifySoundFileForIm()

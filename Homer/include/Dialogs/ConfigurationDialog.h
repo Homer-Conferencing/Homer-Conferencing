@@ -66,6 +66,7 @@ private slots:
     void PlayNotifySoundFileForIm();
     void PlayNotifySoundFileForCall();
     void ClickedButton(QAbstractButton *pButton);
+    void ToggleSipServerPasswordVisibility();
 
 private:
     void initializeGUI();
