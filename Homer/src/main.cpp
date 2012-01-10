@@ -130,7 +130,7 @@ static void showMood()
     if ((tDay < 24) && (tMonth == 12))
     {
         printf("\nLooking forward to Christmas? Then it's time for a candle\n");
-        printf((const char*)sCandle);
+        printf("%s", sCandle);
     }
 
     if ((tDay > 23) && (tMonth == 12))
