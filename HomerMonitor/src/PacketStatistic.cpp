@@ -115,8 +115,6 @@ void PacketStatistic::AnnouncePacket(int pSize)
     mLastTime = tCurTime;
 
     mStatistics.push_back(tStatEntry);
-    while (mStatistics.size() > STATISTIC_BUFFER_SIZE)
-        mStatistics.pop_front();
 
     // unlock
     mStatisticsMutex.unlock();
@@ -148,21 +146,18 @@ void PacketStatistic::SetLostPacketCount(int pPacketCount)
 
 int PacketStatistic::getAvgPacketSize()
 {
-    StatisticList::iterator tIt;
-    long tResult = 0, tCount = 0, tPacketsSize = 0;
+    int64_t tResult = 0, tCount = 0, tPacketsSize = 0;
 
     // lock
     mStatisticsMutex.lock();
 
     tCount = (long)mStatistics.size();
-    for (tIt = mStatistics.begin(); tIt != mStatistics.end(); tIt++)
-        tPacketsSize += tIt->PacketSize;
 
     // unlock
     mStatisticsMutex.unlock();
 
     if (tCount > 0)
-        tResult = tPacketsSize / tCount;
+        tResult = mByteCount / tCount;
     else
         tResult = 0;
 
@@ -182,6 +177,41 @@ int PacketStatistic::getAvgDataRate()
         int64_t tMeasurementStartTime = mStatistics.front().Timestamp;
         int64_t tMeasurementStartByteCount = mStatistics.front().ByteCount;
         int tMeasuredValues = mStatistics.size() - 1;
+        int64_t tMeasuredTimeDifference = tCurrentTime - tMeasurementStartTime;
+        int64_t tMeasuredByteCountDifference = mByteCount - tMeasurementStartByteCount;
+
+        tDataRate = 1000000 * tMeasuredByteCountDifference / tMeasuredTimeDifference;
+    }else
+        tDataRate = 0;
+
+    // unlock
+    mStatisticsMutex.unlock();
+
+    return (int)tDataRate;
+}
+
+int PacketStatistic::getMomentAvgDataRate()
+{
+    StatisticList::iterator tIt;
+    double tDataRate = 0;
+
+    // lock
+    mStatisticsMutex.lock();
+
+    int tCounter = STATISTIC_MOMENT_REFERENCE_SIZE;
+    tIt = mStatistics.end();
+    while(tCounter)
+    {
+        tCounter--;
+        tIt--;
+    }
+
+    if (mStatistics.size() > 1)
+    {
+        int64_t tCurrentTime = Time::GetTimeStamp();
+        int64_t tMeasurementStartTime = tIt->Timestamp;
+        int64_t tMeasurementStartByteCount = tIt->ByteCount;
+        int tMeasuredValues = STATISTIC_MOMENT_REFERENCE_SIZE - 1;
         int64_t tMeasuredTimeDifference = tCurrentTime - tMeasurementStartTime;
         int64_t tMeasuredByteCountDifference = mByteCount - tMeasurementStartByteCount;
 
@@ -279,6 +309,7 @@ PacketStatisticDescriptor PacketStatistic::GetPacketStatistic()
 	tStat.LostPacketCount = getLostPacketCount();
 	tStat.AvgPacketSize = getAvgPacketSize();
 	tStat.AvgDataRate = getAvgDataRate();
+    tStat.MomentAvgDataRate = getMomentAvgDataRate();
 
 	return tStat;
 }
