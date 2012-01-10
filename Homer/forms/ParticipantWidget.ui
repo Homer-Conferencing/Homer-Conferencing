@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>514</width>
-    <height>392</height>
+    <width>727</width>
+    <height>448</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -38,7 +38,7 @@
          <number>3</number>
         </property>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,2">
+         <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,2,0">
           <item>
            <widget class="QFrame" name="mSessionInfoWidgetFrame">
             <property name="frameShape">
@@ -58,6 +58,22 @@
            </widget>
           </item>
           <item>
+           <spacer name="horizontalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::MinimumExpanding</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>5</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
            <widget class="QFrame" name="mVideoWidgetFrame">
             <property name="frameShape">
              <enum>QFrame::Panel</enum>
@@ -74,6 +90,22 @@
              </item>
             </layout>
            </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::MinimumExpanding</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>5</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
           </item>
          </layout>
         </item>
@@ -108,8 +140,6 @@
               <widget class="Homer::Gui::AudioWidget" name="mAudioWidget" native="true"/>
              </item>
             </layout>
-            <zorder>mAudioWidget</zorder>
-            <zorder>mAudioWidget</zorder>
            </widget>
           </item>
           <item>
