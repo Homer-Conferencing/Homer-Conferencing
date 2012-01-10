@@ -89,6 +89,7 @@ private:
     void SavePicture();
     void StartRecorder();
     void StopRecorder();
+    void ShowFullScreen();
 
     virtual void paintEvent(QPaintEvent *pEvent);
     virtual void resizeEvent(QResizeEvent *pEvent);
