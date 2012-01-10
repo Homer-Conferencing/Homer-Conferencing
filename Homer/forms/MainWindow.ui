@@ -148,7 +148,7 @@
     <enum>Qt::DefaultContextMenu</enum>
    </property>
    <property name="windowTitle">
-    <string>Presence status</string>
+    <string>Online status</string>
    </property>
    <property name="allowedAreas">
     <set>Qt::AllToolBarAreas</set>
@@ -176,7 +176,7 @@
   </widget>
   <widget class="QToolBar" name="mToolBarMediaSources">
    <property name="windowTitle">
-    <string>Available sources</string>
+    <string>Video/audio source</string>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -447,7 +447,7 @@
      <normalon>:/images/Success.png</normalon>:/images/Network.png</iconset>
    </property>
    <property name="text">
-    <string>Available source</string>
+    <string>Video/Audio source</string>
    </property>
    <property name="iconVisibleInMenu">
     <bool>true</bool>
