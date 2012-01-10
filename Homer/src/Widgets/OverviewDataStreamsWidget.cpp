@@ -90,24 +90,26 @@ void OverviewDataStreamsWidget::initializeGUI()
     setupUi(this);
 
     // hide id column
-    mTwAudio->setColumnHidden(10, true);
-    mTwAudio->sortItems(10);
+    mTwAudio->setColumnHidden(11, true);
+    mTwAudio->sortItems(11);
     mTwAudio->horizontalHeader()->setResizeMode(QHeaderView::Interactive);
     mTwAudio->horizontalHeader()->resizeSection(0, mTwAudio->horizontalHeader()->sectionSize(0) * 3);
     for (int i = 1; i < 5; i++)
         mTwAudio->horizontalHeader()->resizeSection(i, mTwAudio->horizontalHeader()->sectionSize(i) * 2);
-    mTwAudio->horizontalHeader()->resizeSection(7, (int)mTwAudio->horizontalHeader()->sectionSize(6) * 2);
-    mTwAudio->horizontalHeader()->resizeSection(9, mTwAudio->horizontalHeader()->sectionSize(7) * 2);
+    mTwAudio->horizontalHeader()->resizeSection(7, (int)mTwAudio->horizontalHeader()->sectionSize(7) * 2);
+    mTwAudio->horizontalHeader()->resizeSection(9, mTwAudio->horizontalHeader()->sectionSize(9) * 2);
+    mTwAudio->horizontalHeader()->resizeSection(10, mTwAudio->horizontalHeader()->sectionSize(10) * 2);
 
     // hide id column
-    mTwVideo->setColumnHidden(10, true);
-    mTwVideo->sortItems(10);
+    mTwVideo->setColumnHidden(11, true);
+    mTwVideo->sortItems(11);
     mTwVideo->horizontalHeader()->setResizeMode(QHeaderView::Interactive);
     mTwVideo->horizontalHeader()->resizeSection(0, mTwVideo->horizontalHeader()->sectionSize(0) * 3);
     for (int i = 1; i < 5; i++)
         mTwVideo->horizontalHeader()->resizeSection(i, mTwVideo->horizontalHeader()->sectionSize(i) * 2);
-    mTwVideo->horizontalHeader()->resizeSection(7, (int)mTwVideo->horizontalHeader()->sectionSize(6) * 2);
-    mTwVideo->horizontalHeader()->resizeSection(9, mTwVideo->horizontalHeader()->sectionSize(7) * 2);
+    mTwVideo->horizontalHeader()->resizeSection(7, (int)mTwVideo->horizontalHeader()->sectionSize(7) * 2);
+    mTwVideo->horizontalHeader()->resizeSection(9, mTwVideo->horizontalHeader()->sectionSize(9) * 2);
+    mTwVideo->horizontalHeader()->resizeSection(10, mTwVideo->horizontalHeader()->sectionSize(10) * 2);
 
     QPalette palette;
     QBrush brush1(QColor(0, 128, 128, 255));
@@ -380,7 +382,8 @@ void OverviewDataStreamsWidget::SaveStatistic()
                 tLine += "outgoing,";
             else
                 tLine += "incoming,";
-            tLine += QString("%1").arg(tStatValues.AvgDataRate);
+            tLine += QString("%1,").arg(tStatValues.AvgDataRate);
+            tLine += QString("%1").arg(tStatValues.MomentAvgDataRate);
             tLine += "\n";
 
             //#######################
@@ -437,8 +440,9 @@ void OverviewDataStreamsWidget::FillRow(QTableWidget *pTable, int pRow, PacketSt
     FillCellText(pTable, pRow, 6, Int2ByteExpression(tStatValues.LostPacketCount));
     FillCellText(pTable, pRow, 8, QString(pStats->GetPacketTypeStr().c_str()));
     pTable->item(pRow, 8)->setTextAlignment(Qt::AlignCenter|Qt::AlignVCenter);
-    FillCellText(pTable, pRow, 9, Int2ByteExpression(tStatValues.AvgDataRate) + " bytes/s");
-    FillCellText(pTable, pRow, 10, Int2ByteExpression(pRow));
+    FillCellText(pTable, pRow, 9, Int2ByteExpression(tStatValues.MomentAvgDataRate) + " bytes/s");
+    FillCellText(pTable, pRow, 10, Int2ByteExpression(tStatValues.AvgDataRate) + " bytes/s");
+    FillCellText(pTable, pRow, 11, Int2ByteExpression(pRow));
 
 	if (pTable->item(pRow, 7) != NULL)
         if (tStatValues.Outgoing)
