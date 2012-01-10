@@ -186,7 +186,8 @@ void MessageWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEvent)
 
 void MessageWidget::AddPArticipantToContacts()
 {
-    mContactsWidget->InsertNew(mParticipant);
+    if (mContactsWidget->InsertNew(mParticipant))
+        mTbAdd->hide();
 }
 
 void MessageWidget::closeEvent(QCloseEvent *pEvent)
