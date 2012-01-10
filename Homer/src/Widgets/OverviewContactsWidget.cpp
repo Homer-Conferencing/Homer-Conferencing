@@ -720,7 +720,7 @@ QVariant ContactListModel::headerData(int pSection, Qt::Orientation pOrientation
                     case 0:
                         return "";
                     case 1:
-                        return "Contact";
+                        return "Contacts";
                     default:
                         break;
                 }
