@@ -450,7 +450,7 @@ void ParticipantWidget::LookedUpParticipantHost(const QHostInfo &pHost)
 {
     if (pHost.error() != QHostInfo::NoError)
     {
-        LOG(LOG_ERROR, "Unable to lookup DNS entry for \"%s\" because \"%s\"", pHost.hostName().toStdString().c_str(), pHost.errorString().toStdString().c_str());
+        ShowError("DNS lookup error", "Unable to lookup DNS entry for \"" + pHost.hostName() + "\" because \"" + pHost.errorString() + "\"");
         return;
     }
 
