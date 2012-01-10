@@ -40,7 +40,8 @@ namespace Homer { namespace Monitor {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define STATISTIC_BUFFER_SIZE                   128
+// reference buffer size for average data rate measurement (current value!)
+#define STATISTIC_MOMENT_REFERENCE_SIZE                   128
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -71,6 +72,7 @@ struct PacketStatisticDescriptor{
     int  LostPacketCount;
     int  AvgPacketSize;
     int  AvgDataRate;
+    int  MomentAvgDataRate;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -89,6 +91,7 @@ public:
     /* get simple statistic values */
     int getAvgPacketSize();
     int getAvgDataRate();
+    int getMomentAvgDataRate();
     int getPacketCount();
     int64_t getByteCount();
     int getMinPacketSize();
