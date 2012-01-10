@@ -84,6 +84,7 @@ private:
     QFile			*mDownloadHomerArchiveFile;
     QNetworkReply   *mDownloadReply;
     QString 		mServerFile;
+    bool            mDownloadAborted;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
