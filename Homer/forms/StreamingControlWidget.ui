@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>823</width>
+    <width>721</width>
     <height>29</height>
    </rect>
   </property>
@@ -239,9 +239,6 @@
     </widget>
    </item>
    <item>
-    <widget class="Homer::Gui::StreamPositionWidget" name="mPosVideoWidget" native="true"/>
-   </item>
-   <item>
     <widget class="Line" name="line">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -357,9 +354,6 @@
     </widget>
    </item>
    <item>
-    <widget class="Homer::Gui::StreamPositionWidget" name="mPosAudioWidget" native="true"/>
-   </item>
-   <item>
     <widget class="Line" name="line_2">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -415,34 +409,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QSlider" name="mSlMovie">
-     <property name="minimumSize">
-      <size>
-       <width>100</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="cursor">
-      <cursorShape>PointingHandCursor</cursorShape>
-     </property>
-     <property name="toolTip">
-      <string>seek within audio file</string>
-     </property>
-     <property name="maximum">
-      <number>1000</number>
-     </property>
-     <property name="pageStep">
-      <number>100</number>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="tickPosition">
-      <enum>QSlider::TicksBelow</enum>
-     </property>
-    </widget>
-   </item>
-   <item>
     <spacer name="horizontalSpacer_2">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -460,14 +426,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>Homer::Gui::StreamPositionWidget</class>
-   <extends>QWidget</extends>
-   <header location="global">Widgets/StreamPositionWidget.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources>
   <include location="../resources/Icons.qrc"/>
  </resources>

@@ -32,10 +32,13 @@
 #include <Widgets/VideoWidget.h>
 #include <Widgets/AudioWidget.h>
 #include <Widgets/OverviewPlaylistWidget.h>
+#include <Widgets/ParticipantWidget.h>
 
 #include <ui_StreamingControlWidget.h>
 
 namespace Homer { namespace Gui {
+
+#define STREAM_POS_UPDATE_DELAY         250 //ms
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -46,7 +49,7 @@ class StreamingControlWidget :
     Q_OBJECT;
 public:
     /// The default constructor
-    StreamingControlWidget(VideoWorkerThread* pVideoWorker, AudioWorkerThread* pAudioWorker, MediaSourceDesktop *pMediaSourceDesktop, OverviewPlaylistWidget *pOverviewPlaylistWidgetVideo, OverviewPlaylistWidget *pOverviewPlaylistWidgetAudio, OverviewPlaylistWidget *pOverviewPlaylistWidgetMovie);
+    StreamingControlWidget(ParticipantWidget* pBroadcastParticipantWidget, MediaSourceDesktop *pMediaSourceDesktop, OverviewPlaylistWidget *pOverviewPlaylistWidgetVideo, OverviewPlaylistWidget *pOverviewPlaylistWidgetAudio, OverviewPlaylistWidget *pOverviewPlaylistWidgetMovie);
 
     /// The destructor.
     virtual ~StreamingControlWidget();
@@ -74,6 +77,7 @@ private:
 
     VideoWorkerThread       *mVideoWorker;
     AudioWorkerThread       *mAudioWorker;
+    ParticipantWidget       *mBroadcastParticipantWidget;
     MediaSourceDesktop      *mMediaSourceDesktop;
     OverviewPlaylistWidget 	*mOverviewPlaylistWidgetVideo;
     OverviewPlaylistWidget 	*mOverviewPlaylistWidgetAudio;

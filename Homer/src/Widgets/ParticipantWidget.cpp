@@ -26,6 +26,7 @@
  */
 
 #include <Dialogs/OpenVideoAudioPreviewDialog.h>
+#include <Widgets/StreamingControlWidget.h>
 #include <Widgets/ParticipantWidget.h>
 #include <Widgets/VideoWidget.h>
 #include <Widgets/OverviewPlaylistWidget.h>
@@ -122,6 +123,7 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, QMainWindow 
                     break;
         case PARTICIPANT:
                     LOG(LOG_VERBOSE, "Creating participant widget for PARTICIPANT");
+                    mMovieControlsFrame->hide();
                     mSessionName = pParticipant;
                     FindSipInterface(pParticipant);
                     mMessageWidget->Init(pMessageMenu, mSessionName, pContactsWidget);
@@ -170,6 +172,9 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, QMainWindow 
                                 mSessionName = "PREVIEW " + tVDesc + " / " + tADesc;
                             else
                                 mSessionName = "PREVIEW " + tVDesc;
+
+                            if (tVDesc != tADesc)
+                                mMovieControlsFrame->hide();
                         }
                         if(tFoundPreviewSource)
                             break;
@@ -198,6 +203,8 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, QMainWindow 
 
     if (mSessionType == BROADCAST)
         setVisible(CONF.GetVisibilityBroadcastWidget());
+
+    mTimerId = startTimer(STREAM_POS_UPDATE_DELAY);
 }
 
 ParticipantWidget::~ParticipantWidget()
@@ -228,6 +235,9 @@ ParticipantWidget::~ParticipantWidget()
         mVideoSourceMuxer->UnregisterMediaSink(mRemoteVideoAdr.toStdString(), mRemoteVideoPort);
     if (mAudioSourceMuxer != NULL)
         mAudioSourceMuxer->UnregisterMediaSink(mRemoteAudioAdr.toStdString(), mRemoteAudioPort);
+
+    if (mTimerId != -1)
+        killTimer(mTimerId);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -288,6 +298,10 @@ void ParticipantWidget::initializeGUI()
     font.setBold(true);
     font.setWeight(75);
     setFont(font);
+
+    connect(mTbPlay, SIGNAL(clicked()), this, SLOT(PlayMovieFile()));
+    connect(mTbPause, SIGNAL(clicked()), this, SLOT(PauseMovieFile()));
+    connect(mSlMovie, SIGNAL(sliderMoved(int)), this, SLOT(SeekMovieFile(int)));
 }
 
 void ParticipantWidget::closeEvent(QCloseEvent* pEvent)
@@ -945,6 +959,32 @@ QString ParticipantWidget::GetSipInterface()
 	return mSipInterface;
 }
 
+void ParticipantWidget::SetMovieControlsVisible(bool pVisible)
+{
+    if(pVisible)
+        mMovieControlsFrame->show();
+    else
+        mMovieControlsFrame->hide();
+}
+
+void ParticipantWidget::PlayMovieFile()
+{
+    mVideoWidget->GetWorker()->PlayFile(mVideoWidget->GetWorker()->CurrentFile());
+    mAudioWidget->GetWorker()->PlayFile(mAudioWidget->GetWorker()->CurrentFile());
+}
+
+void ParticipantWidget::PauseMovieFile()
+{
+    mVideoWidget->GetWorker()->PauseFile();
+    mAudioWidget->GetWorker()->PauseFile();
+}
+
+void ParticipantWidget::SeekMovieFile(int pPos)
+{
+    mVideoWidget->GetWorker()->Seek(pPos);
+    mAudioWidget->GetWorker()->Seek(pPos);
+}
+
 VideoWorkerThread* ParticipantWidget::GetVideoWorker()
 {
     if (mVideoWidget != NULL)
@@ -959,6 +999,24 @@ AudioWorkerThread* ParticipantWidget::GetAudioWorker()
         return mAudioWidget->GetWorker();
     else
         return NULL;
+}
+
+void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
+{
+    int tTmp = 0;
+    int tHour, tMin, tSec;
+
+    if ((pEvent->timerId() == mTimerId) && (mMovieControlsFrame->isVisible()) && (mVideoWidget->GetWorker()->SupportsSeeking()) && (mAudioWidget->GetWorker()->SupportsSeeking()))
+    {
+        // get current stream position from video source and use it as movie position
+        int64_t tCurVideoPos = mVideoWidget->GetWorker()->GetSeekPos();
+        int64_t tEndVideoPos = mVideoWidget->GetWorker()->GetSeekEnd();
+        tTmp = 1000 * tCurVideoPos / tEndVideoPos;
+
+        // update GUI widgets
+        mSlMovie->setValue(tTmp);
+        mMoviePosWidget->showPosition(tCurVideoPos, tEndVideoPos);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

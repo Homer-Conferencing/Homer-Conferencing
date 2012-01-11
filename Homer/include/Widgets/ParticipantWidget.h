@@ -125,11 +125,15 @@ public:
     QString getParticipantName();
     enum SessionType GetSessionType();
     QString GetSipInterface();
+    void SetMovieControlsVisible(bool pVisible);
     VideoWorkerThread* GetVideoWorker();
     AudioWorkerThread* GetAudioWorker();
 
 private slots:
 	void LookedUpParticipantHost(const QHostInfo &pHost);
+	void PlayMovieFile();
+	void PauseMovieFile();
+	void SeekMovieFile(int pPos);
 
 private:
 	void initializeGUI();
@@ -138,6 +142,7 @@ private:
     virtual void closeEvent(QCloseEvent* pEvent = NULL);
     virtual void dragEnterEvent(QDragEnterEvent *pEvent);
     virtual void dropEvent(QDropEvent *pEvent);
+    void timerEvent(QTimerEvent *pEvent);
     void ShowNewState();
 
     QMainWindow         *mMainWindow;
@@ -158,6 +163,7 @@ private:
     QString             mRemoteVideoCodec;
     MediaSource         *mVideoSource, *mAudioSource;
     QSound				*mSoundForIncomingCall;
+    int                 mTimerId;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
