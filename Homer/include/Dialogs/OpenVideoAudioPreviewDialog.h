@@ -54,6 +54,8 @@ public:
 
     int exec();
 
+    bool FileSourceSelected();
+
 private slots:
     void actionGetFile();
     void actionVideoEnabled(bool pState);
