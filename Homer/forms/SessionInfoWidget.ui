@@ -110,7 +110,7 @@
         </font>
        </property>
        <property name="text">
-        <string>text</string>
+        <string/>
        </property>
        <property name="frame">
         <bool>false</bool>
@@ -200,7 +200,7 @@
         </font>
        </property>
        <property name="text">
-        <string>text</string>
+        <string/>
        </property>
        <property name="frame">
         <bool>false</bool>
@@ -290,7 +290,7 @@
         </font>
        </property>
        <property name="text">
-        <string>text</string>
+        <string/>
        </property>
        <property name="frame">
         <bool>false</bool>
