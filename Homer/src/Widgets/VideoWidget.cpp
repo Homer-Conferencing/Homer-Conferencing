@@ -1217,7 +1217,7 @@ void VideoWorkerThread::PlayFile(QString pName)
 	if ((mPaused) && (pName == mDesiredFile))
 	{
 		LOG(LOG_VERBOSE, "Continue playback of file: %s", pName.toStdString().c_str());
-		mVideoSource->Seek(mPausedPos);
+		mVideoSource->Seek(mPausedPos, false);
 		mPaused = false;
         mFrameTimestamps.clear();
 	}else
