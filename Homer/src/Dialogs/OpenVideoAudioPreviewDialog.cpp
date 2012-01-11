@@ -127,6 +127,11 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceVideo()
     return NULL;
 }
 
+bool OpenVideoAudioPreviewDialog::FileSourceSelected()
+{
+    return mRbFile->isChecked();
+}
+
 MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceAudio()
 {
     if(!mCbAudioEnabled->isChecked())
