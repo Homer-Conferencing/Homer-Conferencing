@@ -66,13 +66,9 @@ StreamingControlWidget::StreamingControlWidget(ParticipantWidget* pBroadcastPart
     connect(mPbBroadcastVideoFile, SIGNAL(clicked()), this, SLOT(StartVideoFileStreaming()));
     connect(mPbBroadcastAudioFile, SIGNAL(clicked()), this, SLOT(StartAudioFileStreaming()));
     connect(mPbBroadcastMovieFile, SIGNAL(clicked()), this, SLOT(StartMovieFileStreaming()));
-    //connect(mSlAudio, SIGNAL(valueChanged(int)), this, SLOT(SeekAudioFile(int)));
-    //connect(mSlVideo, SIGNAL(valueChanged(int)), this, SLOT(SeekVideoFile(int)));
-    connect(mSlAudio, SIGNAL(sliderMoved(int)), this, SLOT(SeekAudioFile(int)));
-    connect(mSlVideo, SIGNAL(sliderMoved(int)), this, SLOT(SeekVideoFile(int)));
     connect(mCbVideoInput, SIGNAL(currentIndexChanged(int)), this, SLOT(SelectedNewVideoInputChannel(int)));
 
-    mTimerId = startTimer(STREAM_POS_UPDATE_DELAY);
+    mTimerId = startTimer(1000);
 }
 
 StreamingControlWidget::~StreamingControlWidget()
@@ -86,15 +82,6 @@ StreamingControlWidget::~StreamingControlWidget()
 void StreamingControlWidget::initializeGUI()
 {
     setupUi(this);
-    if (mAudioWorker->SupportsSeeking())
-        SetAudioSliderVisible();
-    else
-        SetAudioSliderVisible(false);
-
-    if (mVideoWorker->SupportsSeeking())
-        SetVideoSliderVisible();
-    else
-        SetVideoSliderVisible(false);
     if (mVideoWorker->SupportsMultipleChannels())
         SetVideoInputSelectionVisible();
     else
@@ -110,7 +97,6 @@ void StreamingControlWidget::StartScreenSegmentStreaming()
     if (tList.contains("DESKTOP: screen segment"))
     mVideoWorker->SetCurrentDevice("DESKTOP: screen segment");
 
-    SetVideoSliderVisible(false);
     if (mVideoWorker->SupportsMultipleChannels())
         SetVideoInputSelectionVisible();
     else
@@ -144,8 +130,6 @@ void StreamingControlWidget::StartCameraStreaming()
     }
 
     mVideoWorker->SetCurrentDevice(tList[tPos]);
-    mSlVideo->setValue(0);
-    SetVideoSliderVisible(false);
     if (mVideoWorker->SupportsMultipleChannels())
         SetVideoInputSelectionVisible();
     else
@@ -177,8 +161,6 @@ void StreamingControlWidget::StartVoiceStreaming()
     }
 
     mAudioWorker->SetCurrentDevice(tList[tPos]);
-    mSlAudio->setValue(0);
-    SetAudioSliderVisible(false);
 }
 
 void StreamingControlWidget::StartVideoFileStreaming()
@@ -198,85 +180,6 @@ void StreamingControlWidget::StartMovieFileStreaming()
     mOverviewPlaylistWidgetVideo->StopPlaylist();
     mOverviewPlaylistWidgetAudio->StopPlaylist();
     mOverviewPlaylistWidgetMovie->StartPlaylist();
-}
-
-void StreamingControlWidget::SeekMovieFile(int pPos)
-{
-    mVideoWorker->Seek(pPos);
-    mAudioWorker->Seek(pPos);
-}
-
-void StreamingControlWidget::SeekVideoFile(int pPos)
-{
-    mVideoWorker->Seek(pPos);
-}
-
-void StreamingControlWidget::SeekAudioFile(int pPos)
-{
-    mAudioWorker->Seek(pPos);
-}
-
-void StreamingControlWidget::SetVideoSliderVisible(bool pVisible)
-{
-    mSlVideo->setVisible(pVisible);
-    if (pVisible)
-    {
-        if (mSlAudio->isVisible())
-        {
-            //check if video and audio source are the same
-            if (mVideoWorker->GetStreamName() == mAudioWorker->GetStreamName())
-                SetMovieSliderVisible();
-            else
-                SetMovieSliderVisible(false);
-        }
-//        if (mTimerId == -1)
-//        {
-//            mTimerId = startTimer(STREAM_POS_UPDATE_DELAY);
-//            LOG(LOG_VERBOSE, "Starting timer with an update delay of %d ms", STREAM_POS_UPDATE_DELAY);
-//        }
-    }else
-    {
-        SetMovieSliderVisible(false);
-//        if ((!mSlAudio->isVisible())  && (mTimerId != -1))
-//        {
-//            killTimer(mTimerId);
-//            mTimerId = -1;
-//        }
-    }
-}
-
-void StreamingControlWidget::SetAudioSliderVisible(bool pVisible)
-{
-    mSlAudio->setVisible(pVisible);
-    if (pVisible)
-    {
-        if (mSlVideo->isVisible())
-        {
-            //check if video and audio source are the same
-            if (mVideoWorker->GetStreamName() == mAudioWorker->GetStreamName())
-                SetMovieSliderVisible();
-            else
-                SetMovieSliderVisible(false);
-        }
-//        if (mTimerId == -1)
-//        {
-//            mTimerId = startTimer(STREAM_POS_UPDATE_DELAY);
-//            LOG(LOG_VERBOSE, "Starting timer with an update delay of %d ms", STREAM_POS_UPDATE_DELAY);
-//        }
-    }else
-    {
-        SetMovieSliderVisible(false);
-//        if ((!mSlVideo->isVisible()) && (mTimerId != -1))
-//        {
-//            killTimer(mTimerId);
-//            mTimerId = -1;
-//        }
-    }
-}
-
-void StreamingControlWidget::SetMovieSliderVisible(bool pVisible)
-{
-    mBroadcastParticipantWidget->SetMovieControlsVisible(pVisible);
 }
 
 void StreamingControlWidget::SetVideoInputSelectionVisible(bool pVisible)
@@ -308,42 +211,10 @@ void StreamingControlWidget::timerEvent(QTimerEvent *pEvent)
 
     if (pEvent->timerId() == mTimerId)
     {
-        if ((mVideoWorker->SupportsSeeking()) && (mVideoWorker->GetSeekEnd() > 0))
-        {
-        	SetVideoSliderVisible();
-        	if (mVideoWorker->SupportsMultipleChannels())
-        		SetVideoInputSelectionVisible();
-        	else
-        		SetVideoInputSelectionVisible(false);
-
-            if (mSlVideo->isVisible())
-            {
-                int64_t tCurVideoPos = mVideoWorker->GetSeekPos();
-                int64_t tEndVideoPos = mVideoWorker->GetSeekEnd();
-                tTmp = 1000 * tCurVideoPos / tEndVideoPos;
-
-                mSlVideo->setValue(tTmp);
-            }
-        }else
-        {
-            SetVideoSliderVisible(false);
-        }
-        if ((mAudioWorker->SupportsSeeking()) && (mAudioWorker->GetSeekEnd() > 0))
-        {
-        	SetAudioSliderVisible();
-
-        	if (mSlAudio->isVisible())
-        	{
-                int64_t tCurAudioPos = mAudioWorker->GetSeekPos();
-                int64_t tEndAudioPos = mAudioWorker->GetSeekEnd();
-                tTmp = 1000 * tCurAudioPos / mAudioWorker->GetSeekEnd();
-
-                mSlAudio->setValue(tTmp);
-        	}
-        }else
-        {
-            SetAudioSliderVisible(false);
-        }
+        if (mVideoWorker->SupportsMultipleChannels())
+            SetVideoInputSelectionVisible();
+        else
+            SetVideoInputSelectionVisible(false);
     }
 }
 

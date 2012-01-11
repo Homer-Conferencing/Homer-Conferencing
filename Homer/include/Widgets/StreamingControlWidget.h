@@ -38,8 +38,6 @@
 
 namespace Homer { namespace Gui {
 
-#define STREAM_POS_UPDATE_DELAY         250 //ms
-
 ///////////////////////////////////////////////////////////////////////////////
 
 class StreamingControlWidget :
@@ -54,9 +52,6 @@ public:
     /// The destructor.
     virtual ~StreamingControlWidget();
 
-    void SetVideoSliderVisible(bool pVisible = true);
-    void SetAudioSliderVisible(bool pVisible = true);
-    void SetMovieSliderVisible(bool pVisible = true);
     void SetVideoInputSelectionVisible(bool pVisible = true);
 
 private slots:
@@ -66,9 +61,6 @@ private slots:
 	void StartVideoFileStreaming();
 	void StartAudioFileStreaming();
     void StartMovieFileStreaming();
-	void SeekVideoFile(int pPos);
-	void SeekAudioFile(int pPos);
-	void SeekMovieFile(int pPos);
 	void SelectedNewVideoInputChannel(int pIndex);
 
 private:
