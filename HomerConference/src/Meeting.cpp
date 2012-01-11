@@ -328,7 +328,8 @@ bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort, i
 
         if (pInitState == CALLSTATE_RINGING)
             SendCall(SipCreateId(pUser, pHost, pPort));
-    }
+    }else
+        LOG(LOG_VERBOSE, "Participant session already exists, open request ignored");
 
     // unlock
     mParticipantsMutex.unlock();
