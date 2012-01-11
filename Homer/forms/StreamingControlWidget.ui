@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>721</width>
+    <width>507</width>
     <height>29</height>
    </rect>
   </property>
@@ -173,34 +173,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QSlider" name="mSlVideo">
-     <property name="minimumSize">
-      <size>
-       <width>100</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="cursor">
-      <cursorShape>PointingHandCursor</cursorShape>
-     </property>
-     <property name="toolTip">
-      <string>seek within video file</string>
-     </property>
-     <property name="maximum">
-      <number>1000</number>
-     </property>
-     <property name="pageStep">
-      <number>100</number>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="tickPosition">
-      <enum>QSlider::TicksBelow</enum>
-     </property>
-    </widget>
-   </item>
-   <item>
     <widget class="QComboBox" name="mCbVideoInput">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -322,34 +294,6 @@
        <width>22</width>
        <height>22</height>
       </size>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QSlider" name="mSlAudio">
-     <property name="minimumSize">
-      <size>
-       <width>100</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="cursor">
-      <cursorShape>PointingHandCursor</cursorShape>
-     </property>
-     <property name="toolTip">
-      <string>seek within audio file</string>
-     </property>
-     <property name="maximum">
-      <number>1000</number>
-     </property>
-     <property name="pageStep">
-      <number>100</number>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="tickPosition">
-      <enum>QSlider::TicksBelow</enum>
      </property>
     </widget>
    </item>
