@@ -294,7 +294,7 @@ bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort, i
     for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
     {
         LOG(LOG_VERBOSE, "CompareForOpen: \"%s\" with \"%s\" and state: %d", (pUser + "@" + pHost + ":" + pPort).c_str(), (tIt->User + "@" + tIt->Host + ":" + tIt->Port).c_str(), tIt->CallState);
-        if ((pUser == tIt->User) && (pHost == tIt->Host) && (pPort == tIt->Port))
+        if (IsThisParticipant(pUser, pHost, pPort, tIt->User, tIt->Host, tIt->Port))
         {
             LOG(LOG_VERBOSE, "...found");
             tFound = true;
