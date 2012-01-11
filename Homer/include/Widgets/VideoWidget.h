@@ -72,6 +72,7 @@ public:
     virtual void contextMenuEvent(QContextMenuEvent *event);
     void InformAboutOpenError(QString pSourceName);
     void InformAboutNewFrame();
+    void InformAboutNewSourceResolution();
     void InformAboutNewSource();
     void SetOriginalResolution();
     VideoWorkerThread* GetWorker();
