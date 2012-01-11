@@ -173,7 +173,7 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, QMainWindow 
                             else
                                 mSessionName = "PREVIEW " + tVDesc;
 
-                            if (tVDesc != tADesc)
+                            if (!tOpenVideoAudioPreviewDialog->FileSourceSelected())
                                 mMovieControlsFrame->hide();
                         }
                         if(tFoundPreviewSource)
@@ -959,14 +959,6 @@ QString ParticipantWidget::GetSipInterface()
 	return mSipInterface;
 }
 
-void ParticipantWidget::SetMovieControlsVisible(bool pVisible)
-{
-    if(pVisible)
-        mMovieControlsFrame->show();
-    else
-        mMovieControlsFrame->hide();
-}
-
 void ParticipantWidget::PlayMovieFile()
 {
     mVideoWidget->GetWorker()->PlayFile(mVideoWidget->GetWorker()->CurrentFile());
@@ -1006,16 +998,34 @@ void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
     int tTmp = 0;
     int tHour, tMin, tSec;
 
-    if ((pEvent->timerId() == mTimerId) && (mMovieControlsFrame->isVisible()) && (mVideoWidget->GetWorker()->SupportsSeeking()) && (mAudioWidget->GetWorker()->SupportsSeeking()))
+    if((mVideoWidget->GetWorker()->SupportsSeeking()) || (mAudioWidget->GetWorker()->SupportsSeeking()))
+        mMovieControlsFrame->show();
+    else
+        mMovieControlsFrame->hide();
+
+    if ((pEvent->timerId() == mTimerId) && (mMovieControlsFrame->isVisible()) && ((mVideoWidget->GetWorker()->SupportsSeeking()) || (mAudioWidget->GetWorker()->SupportsSeeking())))
     {
-        // get current stream position from video source and use it as movie position
-        int64_t tCurVideoPos = mVideoWidget->GetWorker()->GetSeekPos();
-        int64_t tEndVideoPos = mVideoWidget->GetWorker()->GetSeekEnd();
-        tTmp = 1000 * tCurVideoPos / tEndVideoPos;
+        int64_t tCurPos = 0;
+        int64_t tEndPos = 0;
+        if(mVideoWidget->GetWorker()->SupportsSeeking())
+        {
+            // get current stream position from video source and use it as movie position
+            tCurPos = mVideoWidget->GetWorker()->GetSeekPos();
+            tEndPos = mVideoWidget->GetWorker()->GetSeekEnd();
+        }else
+        {
+            // get current stream position from audio source and use it as movie position
+            tCurPos = mAudioWidget->GetWorker()->GetSeekPos();
+            tEndPos = mAudioWidget->GetWorker()->GetSeekEnd();
+        }
+        if(tEndPos)
+            tTmp = 1000 * tCurPos / tEndPos;
+        else
+            tTmp = 0;
 
         // update GUI widgets
         mSlMovie->setValue(tTmp);
-        mMoviePosWidget->showPosition(tCurVideoPos, tEndVideoPos);
+        mMoviePosWidget->showPosition(tCurPos, tEndPos);
     }
 }
 
