@@ -82,6 +82,7 @@ using namespace Homer::Monitor;
 #define VIDEO_OPEN_ERROR                (QEvent::User + 1001)
 #define VIDEO_NEW_FRAME                 (QEvent::User + 1002)
 #define VIDEO_NEW_SOURCE                (QEvent::User + 1003)
+#define VIDEO_NEW_SOURCE_RESOLUTION     (QEvent::User + 1004)
 
 class VideoEvent:
     public QEvent
@@ -173,12 +174,12 @@ void VideoWidget::Init(MediaSource *pVideoSource, QMenu *pMenu, QString pActionT
     LOG(LOG_VERBOSE, "Created hour glas timer with ID 0x%X", mHourGlassTimer->timerId());
 
     //####################################################################
-    //### later, we speedup video presentation by deactivate the following
+    //### speedup video presentation by setting the following
     //####################################################################
-    setAutoFillBackground(true);
-    setAttribute(Qt::WA_NoSystemBackground, false);
-    setAttribute(Qt::WA_PaintOnScreen, false);
-    setAttribute(Qt::WA_OpaquePaintEvent, false);
+    setAutoFillBackground(false);
+    setAttribute(Qt::WA_NoSystemBackground, true);
+    setAttribute(Qt::WA_PaintOnScreen, true);
+    setAttribute(Qt::WA_OpaquePaintEvent, true);
 
     setMinimumSize(352, 288);
     setMaximumSize(16777215, 16777215);
@@ -582,7 +583,7 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
     if ((CONF.GetSmoothVideoPresentation()) && (tTimeDiff > 1000 / 3)) // at least we assume 3 FPS!
     {
         CONF.SetSmoothVideoPresentation(false);
-        ShowInfo("System too busy", "Your system is too busy to do smooth transformation. F, fast transformation will be used from now.");
+        ShowInfo("System too busy", "Your system is too busy to do smooth transformation. Fast transformation will be used from now.");
     }
 
     QImage *tShownFrame = &mCurrentFrame;
@@ -655,17 +656,20 @@ void VideoWidget::ShowHourGlass()
     if (!isVisible())
         return;
 
+    setUpdatesEnabled(false);
+
     int tWidth = width(), tHeight = height();
 
     //printf("Res: %d %d\n", mResX, mResY);
-    QImage tImage = QImage(tWidth, tHeight, QImage::Format_RGB32);
-    tImage.fill(QColor(Qt::darkGray).rgb());
+    mCurrentFrame = QImage(tWidth, tHeight, QImage::Format_RGB32);
+    mCurrentFrame.fill(QColor(Qt::darkGray).rgb());
 
     QPixmap tPixmap = QPixmap(":/images/Sandglass1.png");
     if (!tPixmap.isNull())
     	tPixmap = tPixmap.scaledToHeight(40, Qt::SmoothTransformation);
 
-    QPainter *tPainter1 = new QPainter(&tImage);
+    QImage *tShownFrame = &mCurrentFrame;
+    QPainter *tPainter1 = new QPainter(tShownFrame);
     tPainter1->setRenderHint(QPainter::Antialiasing);
 
     tPainter1->save();
@@ -688,10 +692,7 @@ void VideoWidget::ShowHourGlass()
     tPainter1->restore();
 
     delete tPainter1;
-
-    QPalette tPalette = palette();
-    tPalette.setBrush(backgroundRole(), QBrush(tImage));
-    setPalette(tPalette);
+    setUpdatesEnabled(true);
 }
 
 void VideoWidget::InformAboutNewFrame()
@@ -707,6 +708,11 @@ void VideoWidget::InformAboutOpenError(QString pSourceName)
 void VideoWidget::InformAboutNewSource()
 {
     QApplication::postEvent(this, new VideoEvent(VIDEO_NEW_SOURCE, ""));
+}
+
+void VideoWidget::InformAboutNewSourceResolution()
+{
+    QApplication::postEvent(this, new VideoEvent(VIDEO_NEW_SOURCE_RESOLUTION, ""));
 }
 
 void VideoWidget::SetOriginalResolution()
@@ -743,8 +749,8 @@ void VideoWidget::SetResolution(int mX, int mY)
         if (windowState() != Qt::WindowFullScreen)
             resize(mResX, mResY);
     }
-    mNeedBackgroundUpdate = true;
     setUpdatesEnabled(true);
+    mNeedBackgroundUpdate = true;
 }
 
 void VideoWidget::SetResolutionFormat(VideoFormat pFormat)
@@ -780,14 +786,15 @@ void VideoWidget::ToggleFullScreenMode()
     {
         setWindowFlags(windowFlags() ^ Qt::Window);
         showNormal();
+//        layout()->update();// repaint the old widget background
     }else
     {
         setWindowFlags(windowFlags() | Qt::Window);
         ShowFullScreen();
-        layout()->update();// repaint the old widget background
+//        layout()->update();// repaint the old widget background
     }
-    mNeedBackgroundUpdate = true;
     setUpdatesEnabled(true);
+    mNeedBackgroundUpdate = true;
 }
 
 void VideoWidget::ToggleVisibility()
@@ -892,15 +899,8 @@ void VideoWidget::paintEvent(QPaintEvent *pEvent)
     QPainter tPainter(this);
     QColor tBackgroundColor;
 
-    // as long as the hour glas is shown we call the original paintEvent function from QWidget
-    if (mHourGlassTimer->isActive())
-    {
-        QWidget::paintEvent(pEvent);
-        return;
-    }
-
     // selected background color depends on the window state
-    if (windowState() == Qt::WindowFullScreen)
+    if (windowState() & Qt::WindowFullScreen)
         tBackgroundColor = QColor(Qt::black);
     else
         tBackgroundColor = QApplication::palette().brush(backgroundRole()).color();
@@ -923,13 +923,6 @@ void VideoWidget::paintEvent(QPaintEvent *pEvent)
     //mNeedBackgroundUpdate = true;
     if (mNeedBackgroundUpdate)
     {
-//        //### reset Qt's background
-//        QImage tImage = QImage(width(), height(), QImage::Format_RGB32);
-//        tImage.fill(tBackgroundColor.rgb());
-//        QPalette tPalette = palette();
-//        tPalette.setBrush(backgroundRole(), QBrush(tImage));
-//        setPalette(tPalette);
-
         //### calculate background surrounding the current frame
         int tFrameWidth = width() - mCurrentFrame.width();
         if (tFrameWidth > 0)
@@ -1059,6 +1052,14 @@ void VideoWidget::customEvent(QEvent *pEvent)
         case VIDEO_NEW_SOURCE:
             tVideoEvent->accept();
             SetOriginalResolution();
+            if(!mHourGlassTimer->isActive())
+            {
+                LOG(LOG_VERBOSE, "Reactivating hour glas timer");
+                mHourGlassTimer->start(250);
+            }
+            break;
+        case VIDEO_NEW_SOURCE_RESOLUTION:
+            mNeedBackgroundUpdate = true;
             break;
         default:
             break;
@@ -1384,6 +1385,7 @@ void VideoWorkerThread::DoSetGrabResolution()
         InitFrameBuffer(i);
     }
 
+    mVideoWidget->InformAboutNewSourceResolution();
     mSetGrabResolutionAsap = false;
     mFrameTimestamps.clear();
 
