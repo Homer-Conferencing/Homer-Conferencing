@@ -68,6 +68,7 @@ class ParticipantWidget;
 typedef std::list<ParticipantWidget*>  ParticipantWidgetList;
 
 #define	SOUND_FOR_CALL_LOOPS										10
+#define STREAM_POS_UPDATE_DELAY                                     250 //ms
 
 ///////////////////////////////////////////////////////////////////////////////
 // use the SIP-Events-structure for signaling the deletion of a participant ///
@@ -125,7 +126,6 @@ public:
     QString getParticipantName();
     enum SessionType GetSessionType();
     QString GetSipInterface();
-    void SetMovieControlsVisible(bool pVisible);
     VideoWorkerThread* GetVideoWorker();
     AudioWorkerThread* GetAudioWorker();
 
