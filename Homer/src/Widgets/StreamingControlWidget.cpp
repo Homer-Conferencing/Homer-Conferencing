@@ -46,15 +46,14 @@ using namespace std;
 
 namespace Homer { namespace Gui {
 
-#define STREAM_POS_UPDATE_DELAY         250 //ms
-
 ///////////////////////////////////////////////////////////////////////////////
 
-StreamingControlWidget::StreamingControlWidget(VideoWorkerThread* pVideoWorker, AudioWorkerThread* pAudioWorker, MediaSourceDesktop *pMediaSourceDesktop, OverviewPlaylistWidget *pOverviewPlaylistWidgetVideo, OverviewPlaylistWidget *pOverviewPlaylistWidgetAudio, OverviewPlaylistWidget *pOverviewPlaylistWidgetMovie):
+StreamingControlWidget::StreamingControlWidget(ParticipantWidget* pBroadcastParticipantWidget, MediaSourceDesktop *pMediaSourceDesktop, OverviewPlaylistWidget *pOverviewPlaylistWidgetVideo, OverviewPlaylistWidget *pOverviewPlaylistWidgetAudio, OverviewPlaylistWidget *pOverviewPlaylistWidgetMovie):
     QWidget()
 {
-    mVideoWorker = pVideoWorker;
-    mAudioWorker = pAudioWorker;
+    mVideoWorker = pBroadcastParticipantWidget->GetVideoWorker();
+    mAudioWorker = pBroadcastParticipantWidget->GetAudioWorker();
+    mBroadcastParticipantWidget = pBroadcastParticipantWidget;
     mMediaSourceDesktop = pMediaSourceDesktop;
     mOverviewPlaylistWidgetVideo = pOverviewPlaylistWidgetVideo;
     mOverviewPlaylistWidgetAudio = pOverviewPlaylistWidgetAudio;
@@ -71,7 +70,6 @@ StreamingControlWidget::StreamingControlWidget(VideoWorkerThread* pVideoWorker, 
     //connect(mSlVideo, SIGNAL(valueChanged(int)), this, SLOT(SeekVideoFile(int)));
     connect(mSlAudio, SIGNAL(sliderMoved(int)), this, SLOT(SeekAudioFile(int)));
     connect(mSlVideo, SIGNAL(sliderMoved(int)), this, SLOT(SeekVideoFile(int)));
-    connect(mSlMovie, SIGNAL(sliderMoved(int)), this, SLOT(SeekMovieFile(int)));
     connect(mCbVideoInput, SIGNAL(currentIndexChanged(int)), this, SLOT(SelectedNewVideoInputChannel(int)));
 
     mTimerId = startTimer(STREAM_POS_UPDATE_DELAY);
@@ -221,7 +219,6 @@ void StreamingControlWidget::SeekAudioFile(int pPos)
 void StreamingControlWidget::SetVideoSliderVisible(bool pVisible)
 {
     mSlVideo->setVisible(pVisible);
-    mPosVideoWidget->setVisible(pVisible);
     if (pVisible)
     {
         if (mSlAudio->isVisible())
@@ -251,7 +248,6 @@ void StreamingControlWidget::SetVideoSliderVisible(bool pVisible)
 void StreamingControlWidget::SetAudioSliderVisible(bool pVisible)
 {
     mSlAudio->setVisible(pVisible);
-    mPosAudioWidget->setVisible(pVisible);
     if (pVisible)
     {
         if (mSlVideo->isVisible())
@@ -280,7 +276,7 @@ void StreamingControlWidget::SetAudioSliderVisible(bool pVisible)
 
 void StreamingControlWidget::SetMovieSliderVisible(bool pVisible)
 {
-    mSlMovie->setVisible(pVisible);
+    mBroadcastParticipantWidget->SetMovieControlsVisible(pVisible);
 }
 
 void StreamingControlWidget::SetVideoInputSelectionVisible(bool pVisible)
@@ -324,14 +320,10 @@ void StreamingControlWidget::timerEvent(QTimerEvent *pEvent)
             {
                 int64_t tCurVideoPos = mVideoWorker->GetSeekPos();
                 int64_t tEndVideoPos = mVideoWorker->GetSeekEnd();
-                tTmp = 1000 * tCurVideoPos / mVideoWorker->GetSeekEnd();
+                tTmp = 1000 * tCurVideoPos / tEndVideoPos;
 
                 mSlVideo->setValue(tTmp);
-                mPosVideoWidget->showPosition(tCurVideoPos, tEndVideoPos);
             }
-            //HINT: if the video and audio sources are different, this slider won't be visible anymore
-            if (mSlMovie->isVisible())
-                mSlMovie->setValue(tTmp);
         }else
         {
             SetVideoSliderVisible(false);
@@ -347,7 +339,6 @@ void StreamingControlWidget::timerEvent(QTimerEvent *pEvent)
                 tTmp = 1000 * tCurAudioPos / mAudioWorker->GetSeekEnd();
 
                 mSlAudio->setValue(tTmp);
-                mPosAudioWidget->showPosition(tCurAudioPos, tEndAudioPos);
         	}
         }else
         {
