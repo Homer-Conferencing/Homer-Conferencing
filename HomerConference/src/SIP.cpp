@@ -187,17 +187,23 @@ bool SIP::SplitParticipantName(string pParticipant, string &pUser, string &pHost
 
 bool SIP::IsThisParticipant(string pParticipant, string pUser, string pHost, string pPort)
 {
-    bool tResult = false;
-
     string tUser, tHost, tPort;
     if (!SplitParticipantName(pParticipant, tUser, tHost, tPort))
     {
         LOGEX(SIP, LOG_ERROR, "Could not split participant name into its parts");
         return false;
     }
-    tResult = (((tUser == pUser) || (tHost != mSipRegisterServer)) && (tHost == pHost) && (tPort == pPort));
 
-    LOGEX(SIP, LOG_VERBOSE, "Comparing: %s - %s, %s - %s, %s - %s  ==> %s", tUser.c_str(), pUser.c_str(), tHost.c_str(), pHost.c_str(), tPort.c_str(), pPort.c_str(), tResult ? "MATCH" : "different");
+    return IsThisParticipant(tUser, tHost, tPort, pUser, pHost, pPort);
+}
+
+bool SIP::IsThisParticipant(string pParticipantUser, string pParticipantHost, string pParticipantPort, string pUser, string pHost, string pPort)
+{
+    bool tResult = false;
+
+    tResult = (((pParticipantUser == pUser) || (pParticipantHost != mSipRegisterServer)) && (pParticipantHost == pHost) && (pParticipantPort == pPort));
+
+    LOGEX(SIP, LOG_VERBOSE, "Comparing: %s - %s, %s - %s, %s - %s  ==> %s", pParticipantUser.c_str(), pUser.c_str(), pParticipantHost.c_str(), pHost.c_str(), pParticipantPort.c_str(), pPort.c_str(), tResult ? "MATCH" : "different");
 
     return tResult;
 }
@@ -263,9 +269,9 @@ void* SIP::Run(void*)
 
             // add brackets for IPv6 address
             if (mSipHostAdr.find(":") != string::npos)
-	            tOwnAddress = "sip:[" + mSipHostAdr + "]:" + toString(mSipHostPort) + ";transport=udp";
+	            tOwnAddress = "sip:[::]"/*mSipHostAdr*/ + toString(mSipHostPort) + ";transport=udp";
 			else
-	            tOwnAddress = "sip:" + mSipHostAdr + ":" + toString(mSipHostPort) + ";transport=udp";
+	            tOwnAddress = "sip:0.0.0.0:" /*mSipHostAdr*/ + toString(mSipHostPort) + ";transport=udp";
 
             // NAT traversal: use keepalive packets with interval of 10 seconds
             //                otherwise a NAT box won't maintain the state about the NAT forwarding
