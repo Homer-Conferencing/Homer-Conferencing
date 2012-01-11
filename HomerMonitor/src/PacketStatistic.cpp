@@ -84,6 +84,8 @@ void PacketStatistic::AnnouncePacket(int pSize)
     StatisticEntry tStatEntry;
     tStatEntry.PacketSize = pSize;
     tStatEntry.Timestamp = Time::GetTimeStamp();
+    if (mStartTimeStamp == 0)
+        mStartTimeStamp = tStatEntry.Timestamp;
 
     // lock
     mStatisticsMutex.lock();
@@ -115,6 +117,8 @@ void PacketStatistic::AnnouncePacket(int pSize)
     mLastTime = tCurTime;
 
     mStatistics.push_back(tStatEntry);
+    while (mStatistics.size() > STATISTIC_MOMENT_REFERENCE_SIZE)
+        mStatistics.pop_front();
 
     // unlock
     mStatisticsMutex.unlock();
@@ -125,6 +129,7 @@ void PacketStatistic::ResetPacketStatistic()
     // lock
     mStatisticsMutex.lock();
 
+    mStartTimeStamp = 0;
     mPacketCount = 0;
     mByteCount = 0;
     mMinPacketSize = INT_MAX;
@@ -174,13 +179,16 @@ int PacketStatistic::getAvgDataRate()
     if (mStatistics.size() > 1)
     {
         int64_t tCurrentTime = Time::GetTimeStamp();
-        int64_t tMeasurementStartTime = mStatistics.front().Timestamp;
-        int64_t tMeasurementStartByteCount = mStatistics.front().ByteCount;
-        int tMeasuredValues = mStatistics.size() - 1;
+        int64_t tMeasurementStartTime = mStartTimeStamp;
+        int64_t tMeasurementStartByteCount = 0;
+        int tMeasuredValues = mPacketCount - 1;
         int64_t tMeasuredTimeDifference = tCurrentTime - tMeasurementStartTime;
         int64_t tMeasuredByteCountDifference = mByteCount - tMeasurementStartByteCount;
 
-        tDataRate = 1000000 * tMeasuredByteCountDifference / tMeasuredTimeDifference;
+        if(tMeasuredTimeDifference != 0)
+            tDataRate = 1000000 * tMeasuredByteCountDifference / tMeasuredTimeDifference;
+        else
+            tDataRate = 0;
     }else
         tDataRate = 0;
 
@@ -198,19 +206,11 @@ int PacketStatistic::getMomentAvgDataRate()
     // lock
     mStatisticsMutex.lock();
 
-    int tCounter = STATISTIC_MOMENT_REFERENCE_SIZE;
-    tIt = mStatistics.end();
-    while(tCounter)
-    {
-        tCounter--;
-        tIt--;
-    }
-
     if (mStatistics.size() > 1)
     {
         int64_t tCurrentTime = Time::GetTimeStamp();
-        int64_t tMeasurementStartTime = tIt->Timestamp;
-        int64_t tMeasurementStartByteCount = tIt->ByteCount;
+        int64_t tMeasurementStartTime = mStatistics.front().Timestamp;
+        int64_t tMeasurementStartByteCount = mStatistics.front().ByteCount;
         int tMeasuredValues = STATISTIC_MOMENT_REFERENCE_SIZE - 1;
         int64_t tMeasuredTimeDifference = tCurrentTime - tMeasurementStartTime;
         int64_t tMeasuredByteCountDifference = mByteCount - tMeasurementStartByteCount;

@@ -131,6 +131,7 @@ private:
     int           mMaxPacketSize;
     int           mPacketCount;
     int64_t       mByteCount;
+    int64_t       mStartTimeStamp;
     int           mLostPacketCount;
     Time          mLastTime;
     StatisticList mStatistics;
