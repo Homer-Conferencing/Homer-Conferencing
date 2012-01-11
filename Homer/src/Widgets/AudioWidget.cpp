@@ -1115,7 +1115,7 @@ void AudioWorkerThread::PlayFile(QString pName)
 	if ((mPaused) && (pName == mDesiredFile))
 	{
 		LOG(LOG_VERBOSE, "Continue playback of file: %s", pName.toStdString().c_str());
-		mAudioSource->Seek(mPausedPos);
+		mAudioSource->Seek(mPausedPos, false);
 		mPaused = false;
 	}else
 	{
