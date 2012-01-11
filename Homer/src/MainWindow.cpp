@@ -1327,8 +1327,8 @@ ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHos
 
             if (pInitState == CALLSTATE_RINGING)
                 MEETING.SendCall(MEETING.SipCreateId(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString()));
-        }// else
-            //ShowInfo("Address is local", "The address \"" + QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str()) + "\" is a local one!");
+        } else
+            ShowInfo("Participant is already contacted", "The contact with the address \"" + QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str()) + "\" is already contacted and a participant widget is currently open!");
     }
     return tParticipantWidget;
 }
@@ -1436,18 +1436,10 @@ void MainWindow::actionConfiguration()
         }
 
         // show QSliders for video and audio if we have seekable media sources selected
-        if (mOwnVideoMuxer->SupportsSeeking())
-            mMediaSourcesControlWidget->SetVideoSliderVisible();
-        else
-            mMediaSourcesControlWidget->SetVideoSliderVisible(false);
         if (mOwnVideoMuxer->SupportsMultipleInputChannels())
             mMediaSourcesControlWidget->SetVideoInputSelectionVisible();
         else
             mMediaSourcesControlWidget->SetVideoInputSelectionVisible(false);
-        if (mOwnAudioMuxer->SupportsSeeking())
-            mMediaSourcesControlWidget->SetAudioSliderVisible();
-        else
-            mMediaSourcesControlWidget->SetAudioSliderVisible(false);
 
         // do an explicit auto probing of known contacts in case the user has activated this feature in the configuration dialogue
         if ((!tFormerStateMeetingProbeContacts) && (CONF.GetSipContactsProbing()))
