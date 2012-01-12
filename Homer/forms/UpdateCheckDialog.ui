@@ -457,7 +457,7 @@ p, li { white-space: pre-wrap; }
           <item>
            <widget class="QToolButton" name="mTbDownloadUpdate">
             <property name="text">
-             <string>Download new release</string>
+             <string>Download new version</string>
             </property>
             <property name="icon">
              <iconset resource="../resources/Icons.qrc">
