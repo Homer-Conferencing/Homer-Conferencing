@@ -50,7 +50,6 @@
              </property>
              <item row="0" column="0">
               <widget class="Homer::Gui::SessionInfoWidget" name="mSessionInfoWidget" native="true">
-               <zorder>mSlMovie</zorder>
               </widget>
              </item>
             </layout>
