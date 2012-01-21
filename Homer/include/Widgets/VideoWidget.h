@@ -41,6 +41,7 @@
 #include <QMutex>
 #include <QContextMenuEvent>
 #include <QKeyEvent>
+#include <QMainWindow>
 
 #include <MediaSource.h>
 
@@ -54,6 +55,16 @@ using namespace Homer::Multimedia;
 
 #define FPS_MEASUREMENT_STEPS          30
 
+enum AspectRatio{
+	ASPECT_RATIO_ORIGINAL = 0,
+	ASPECT_RATIO_WINDOW,
+	ASPECT_RATIO_1x1, //1
+	ASPECT_RATIO_4x3, //1.33
+	ASPECT_RATIO_5x4, //1.25
+	ASPECT_RATIO_16x9, //1.77
+	ASPECT_RATIO_16x10 //1.6
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 
 class VideoWorkerThread;
@@ -65,7 +76,7 @@ class VideoWidget:
 
 public:
     VideoWidget(QWidget* pParent = NULL);
-    void Init(MediaSource *pVideoSource, QMenu *pVideoMenu, QString pActionTitle = "Video", QString pWidgetTitle = "Video", bool pVisible = false, bool pInsideDockWidget = false);
+    void Init(QMainWindow* pMainWindow, MediaSource *pVideoSource, QMenu *pVideoMenu, QString pActionTitle = "Video", QString pWidgetTitle = "Video", bool pVisible = false);
 
     virtual ~VideoWidget();
     void SetVisible(bool pVisible);
@@ -103,6 +114,7 @@ private:
     QImage              mCurrentFrame;
     QPoint              mWinPos;
     QAction             *mAssignedAction;
+    QMainWindow			*mMainWindow;
     QString             mVideoTitle;
     int                 mUpdateTimerId;
     int                 mResX;
@@ -115,8 +127,8 @@ private:
     bool                mRecorderStarted;
     bool                mInsideDockWidget;
     bool                mVideoPaused;
-    bool                mKeepAspectRatio;
-    bool                mNeedBackgroundUpdate;
+    int                 mAspectRatio;
+    bool                mNeedBackgroundUpdate, mNeedBackgroundUpdatesUntillNextFrame;
     bool				mVideoMirroredHorizontal;
     bool				mVideoMirroredVertical;
     int                 mCurrentFrameNumber;

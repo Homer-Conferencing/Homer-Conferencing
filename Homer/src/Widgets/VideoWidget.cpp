@@ -123,22 +123,23 @@ VideoWidget::VideoWidget(QWidget* pParent):
     mShowLiveStats = false;
     mRecorderStarted = false;
     mVideoPaused = false;
-    mKeepAspectRatio = true;
+    mAspectRatio = ASPECT_RATIO_ORIGINAL;
     mVideoMirroredHorizontal = false;
     mVideoMirroredVertical = false;
     mCurrentApplicationFocusedWidget = NULL;
     mVideoWorker = NULL;
+    mMainWindow = NULL;
     mAssignedAction = NULL;
 
     parentWidget()->hide();
     hide();
 }
 
-void VideoWidget::Init(MediaSource *pVideoSource, QMenu *pMenu, QString pActionTitle, QString pWidgetTitle, bool pVisible, bool pInsideDockWidget)
+void VideoWidget::Init(QMainWindow* pMainWindow, MediaSource *pVideoSource, QMenu *pMenu, QString pActionTitle, QString pWidgetTitle, bool pVisible)
 {
-    mInsideDockWidget = pInsideDockWidget;
     mVideoSource = pVideoSource;
     mVideoTitle = pActionTitle;
+    mMainWindow = pMainWindow;
 
     //####################################################################
     //### create the remaining necessary menu item
@@ -184,7 +185,7 @@ void VideoWidget::Init(MediaSource *pVideoSource, QMenu *pMenu, QString pActionT
     setMinimumSize(352, 288);
     setMaximumSize(16777215, 16777215);
     SetVisible(pVisible);
-    mNeedBackgroundUpdate = true;
+    mNeedBackgroundUpdatesUntillNextFrame = true;
 }
 
 VideoWidget::~VideoWidget()
@@ -215,9 +216,15 @@ VideoWidget::~VideoWidget()
 
 void VideoWidget::closeEvent(QCloseEvent* pEvent)
 {
-    ToggleVisibility();
-    if (mInsideDockWidget)
-        QApplication::postEvent(parentWidget(), new QCloseEvent());
+	// are we a fullscreen widget?
+	if (windowState() & Qt::WindowFullScreen)
+    {
+        LOG(LOG_VERBOSE, "Got closeEvent in VideoWidget while it is in fullscreen mode, will forward this to main window");
+        QApplication::postEvent(mMainWindow, new QCloseEvent());
+    }else
+    {
+    	ToggleVisibility();
+    }
 }
 
 void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
@@ -272,20 +279,92 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
     tAction->setCheckable(true);
     tAction->setChecked(mShowLiveStats);
 
+    QList<QKeySequence> tIKeys;
+    tIKeys.push_back(Qt::Key_I);
+    tAction->setShortcuts(tIKeys);
+
     //###############################################################################
-    //### RESOLUTIONS
+    //### "Full screen"
     //###############################################################################
-    QMenu *tResMenu = tMenu.addMenu("Resolution");
+    if (windowState() & Qt::WindowFullScreen)
+    {
+        tAction = tMenu.addAction("Window mode");
+    }else
+    {
+        tAction = tMenu.addAction("Full screen");
+    }
+    QList<QKeySequence> tFSKeys;
+    tFSKeys.push_back(Qt::Key_F);
+    tFSKeys.push_back(Qt::Key_Escape);
+    tAction->setShortcuts(tFSKeys);
+
+    QIcon tIcon3;
+    tIcon3.addPixmap(QPixmap(":/images/Computer.png"), QIcon::Normal, QIcon::Off);
+    tAction->setIcon(tIcon3);
+
+    //###############################################################################
+    //### ASPECT RATION
+    //###############################################################################
+    QMenu *tAspectRatioMenu = tMenu.addMenu("Aspect ratio");
     //###############################################################################
     //### "Keep aspect ratio"
     //###############################################################################
-    tAction = tResMenu->addAction("Keep aspect ratio");
+
+    tAction = tAspectRatioMenu->addAction("Original");
     tAction->setCheckable(true);
-    tAction->setShortcut(Qt::Key_A);
-    if (mKeepAspectRatio)
+    if (mAspectRatio == ASPECT_RATIO_ORIGINAL)
         tAction->setChecked(true);
     else
         tAction->setChecked(false);
+
+    tAction = tAspectRatioMenu->addAction("1 : 1");
+    tAction->setCheckable(true);
+    if (mAspectRatio == ASPECT_RATIO_1x1)
+        tAction->setChecked(true);
+    else
+        tAction->setChecked(false);
+
+    tAction = tAspectRatioMenu->addAction("4 : 3");
+    tAction->setCheckable(true);
+    if (mAspectRatio == ASPECT_RATIO_4x3)
+        tAction->setChecked(true);
+    else
+        tAction->setChecked(false);
+
+    tAction = tAspectRatioMenu->addAction("5 : 4");
+    tAction->setCheckable(true);
+    if (mAspectRatio == ASPECT_RATIO_5x4)
+        tAction->setChecked(true);
+    else
+        tAction->setChecked(false);
+
+    tAction = tAspectRatioMenu->addAction("16 : 9");
+    tAction->setCheckable(true);
+    if (mAspectRatio == ASPECT_RATIO_16x9)
+        tAction->setChecked(true);
+    else
+        tAction->setChecked(false);
+
+    tAction = tAspectRatioMenu->addAction("16 : 10");
+    tAction->setCheckable(true);
+    if (mAspectRatio == ASPECT_RATIO_16x10)
+        tAction->setChecked(true);
+    else
+        tAction->setChecked(false);
+
+    tAction = tAspectRatioMenu->addAction("Full window");
+    tAction->setCheckable(true);
+    if (mAspectRatio == ASPECT_RATIO_WINDOW)
+        tAction->setChecked(true);
+    else
+        tAction->setChecked(false);
+
+    tAspectRatioMenu->setIcon(tIcon3);
+
+    //###############################################################################
+    //### RESOLUTIONS
+    //###############################################################################
+    QMenu *tResMenu = tMenu.addMenu("Source resolution");
     //###############################################################################
     //### add all possible resolutions which are reported by the media soruce
     //###############################################################################
@@ -300,30 +379,8 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             else
                 tResAction->setChecked(false);
         }
-
-        QIcon tIcon3;
-        tIcon3.addPixmap(QPixmap(":/images/Computer.png"), QIcon::Normal, QIcon::Off);
-        tResMenu->setIcon(tIcon3);
     }
-    //###############################################################################
-    //### "Full screen"
-    //###############################################################################
-    tAction = tResMenu->addAction("Full screen");
-    tAction->setCheckable(true);
-    QList<QKeySequence> tFSKeys;
-    tFSKeys.push_back(Qt::Key_F);
-    tFSKeys.push_back(Qt::Key_Escape);
-    tAction->setShortcuts(tFSKeys);
-    switch(windowState())
-    {
-        default:
-        case Qt::WindowNoState:
-            tAction->setChecked(false);
-            break;
-        case Qt::WindowFullScreen:
-            tAction->setChecked(true);
-            break;
-    }
+    tResMenu->setIcon(tIcon3);
 
     //###############################################################################
     //### MIRRORING
@@ -339,9 +396,7 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
         tAction->setCheckable(true);
         tAction->setChecked(false);
     }
-    QIcon tIcon11;
-    tIcon11.addPixmap(QPixmap(":/images/Computer.png"), QIcon::Normal, QIcon::Off);
-    tAction->setIcon(tIcon11);
+    tAction->setIcon(tIcon3);
 
     if (mVideoMirroredVertical)
     {
@@ -354,9 +409,7 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
         tAction->setCheckable(true);
         tAction->setChecked(false);
     }
-    QIcon tIcon12;
-    tIcon12.addPixmap(QPixmap(":/images/Computer.png"), QIcon::Normal, QIcon::Off);
-    tAction->setIcon(tIcon12);
+    tAction->setIcon(tIcon3);
 
     //###############################################################################
     //### STREAM RELAY
@@ -434,8 +487,6 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
         if (tPopupRes->text().compare("Close video") == 0)
         {
             ToggleVisibility();
-            if (mInsideDockWidget)
-                QApplication::postEvent(parentWidget(), new QCloseEvent());
             return;
         }
         if (tPopupRes->text().compare("Reset source") == 0)
@@ -505,18 +556,51 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             DialogAddNetworkSink();
             return;
         }
-        if (tPopupRes->text().compare("Full screen") == 0)
+        if ((tPopupRes->text().compare("Full screen") == 0) || (tPopupRes->text().compare("Window mode") == 0))
         {
             ToggleFullScreenMode();
             return;
         }
-        if (tPopupRes->text().compare("Keep aspect ratio") == 0)
+        if (tPopupRes->text().compare("Full window") == 0)
         {
-            if (mKeepAspectRatio)
-                mKeepAspectRatio = false;
-            else
-                mKeepAspectRatio = true;
-            mNeedBackgroundUpdate = true;
+        	mAspectRatio = ASPECT_RATIO_WINDOW;
+        	mNeedBackgroundUpdatesUntillNextFrame = true;
+            return;
+        }
+        if (tPopupRes->text().compare("Original") == 0)
+        {
+        	mAspectRatio = ASPECT_RATIO_ORIGINAL;
+        	mNeedBackgroundUpdatesUntillNextFrame = true;
+            return;
+        }
+        if (tPopupRes->text().compare("1 : 1") == 0)
+        {
+        	mAspectRatio = ASPECT_RATIO_1x1;
+        	mNeedBackgroundUpdatesUntillNextFrame = true;
+            return;
+        }
+        if (tPopupRes->text().compare("4 : 3") == 0)
+        {
+        	mAspectRatio = ASPECT_RATIO_4x3;
+        	mNeedBackgroundUpdatesUntillNextFrame = true;
+            return;
+        }
+        if (tPopupRes->text().compare("5 : 4") == 0)
+        {
+        	mAspectRatio = ASPECT_RATIO_5x4;
+        	mNeedBackgroundUpdatesUntillNextFrame = true;
+            return;
+        }
+        if (tPopupRes->text().compare("16 : 9") == 0)
+        {
+        	mAspectRatio = ASPECT_RATIO_16x9;
+        	mNeedBackgroundUpdatesUntillNextFrame = true;
+            return;
+        }
+        if (tPopupRes->text().compare("16 : 10") == 0)
+        {
+        	mAspectRatio = ASPECT_RATIO_16x10;
+        	mNeedBackgroundUpdatesUntillNextFrame = true;
             return;
         }
         for (tRegisteredVideoSinksIt = tRegisteredVideoSinks.begin(); tRegisteredVideoSinksIt != tRegisteredVideoSinks.end(); tRegisteredVideoSinksIt++)
@@ -553,7 +637,10 @@ void VideoWidget::DialogAddNetworkSink()
 
 void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
 {
-    if (!isVisible())
+	int tFrameOutputWidth = 0;
+	int tFrameOutputHeight = 0;
+
+	if (!isVisible())
         return;
 
     setUpdatesEnabled(false);
@@ -577,7 +664,62 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
     //#############################################################
     // keep aspect ratio if requested
 	QTime tTime = QTime::currentTime();
-    mCurrentFrame = mCurrentFrame.scaled(width(), height(), mKeepAspectRatio ? Qt::KeepAspectRatio : Qt::IgnoreAspectRatio, CONF.GetSmoothVideoPresentation() ? Qt::SmoothTransformation : Qt::FastTransformation);
+	Qt::AspectRatioMode tAspectMode = Qt::IgnoreAspectRatio;
+	switch(mAspectRatio)
+	{
+		case ASPECT_RATIO_WINDOW:
+			tFrameOutputWidth = width();
+			tFrameOutputHeight = height();
+			break;
+		case ASPECT_RATIO_ORIGINAL:
+			tFrameOutputWidth = width();
+			tFrameOutputHeight = height();
+			tAspectMode = Qt::KeepAspectRatio;
+			break;
+		case ASPECT_RATIO_1x1:
+			tFrameOutputWidth = mCurrentFrame.width();
+			tFrameOutputHeight = tFrameOutputWidth; // adapt aspect ratio
+			break;
+		case ASPECT_RATIO_4x3:
+			tFrameOutputWidth = mCurrentFrame.width();
+			tFrameOutputHeight = (int)(tFrameOutputWidth / 1.33); // adapt aspect ratio
+			break;
+		case ASPECT_RATIO_5x4:
+			tFrameOutputWidth = mCurrentFrame.width();
+			tFrameOutputHeight = (int)(tFrameOutputWidth / 1.25); // adapt aspect ratio
+			break;
+		case ASPECT_RATIO_16x9:
+			tFrameOutputWidth = mCurrentFrame.width();
+			tFrameOutputHeight = (int)(tFrameOutputWidth / 1.77); // adapt aspect ratio
+			break;
+		case ASPECT_RATIO_16x10:
+			tFrameOutputWidth = mCurrentFrame.width();
+			tFrameOutputHeight = (int)(tFrameOutputWidth / 1.6); // adapt aspect ratio
+			break;
+	}
+
+	// resize frame to best fitting size, related to video widget
+	if ((mAspectRatio != ASPECT_RATIO_WINDOW) && (mAspectRatio != ASPECT_RATIO_ORIGINAL))
+	{
+		float tRatio = (float)width() / tFrameOutputWidth;
+		int tNewFrameOutputWidth = width();
+		int tNewFrameOutputHeight = (int)(tRatio * tFrameOutputHeight);
+		if(tNewFrameOutputHeight > height())
+		{
+			tRatio = (float)height() / tFrameOutputHeight;
+			tFrameOutputHeight = height();
+			tFrameOutputWidth = (int)(tRatio * tFrameOutputWidth);
+		}else
+		{
+			tFrameOutputHeight = tNewFrameOutputHeight;
+			tFrameOutputWidth = tNewFrameOutputWidth;
+		}
+	}
+
+	mCurrentFrame = mCurrentFrame.scaled(tFrameOutputWidth, tFrameOutputHeight, tAspectMode, CONF.GetSmoothVideoPresentation() ? Qt::SmoothTransformation : Qt::FastTransformation);
+	tFrameOutputWidth = mCurrentFrame.width();
+	tFrameOutputHeight = mCurrentFrame.height();
+
     int tTimeDiff = QTime::currentTime().msecsTo(tTime);
     // did we spend too much time with transforming the image?
     if ((CONF.GetSmoothVideoPresentation()) && (tTimeDiff > 1000 / 3)) // at least we assume 3 FPS!
@@ -594,7 +736,33 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
     //#############################################################
     if (mShowLiveStats)
     {
-        int tHour = 0, tMin = 0, tSec = 0, tTime = mVideoSource->GetSeekPos();
+		QString tAspectRatio = "";
+    	switch(mAspectRatio)
+		{
+			case ASPECT_RATIO_ORIGINAL:
+				tAspectRatio = "Original";
+				break;
+			case ASPECT_RATIO_WINDOW:
+				tAspectRatio = "Window";
+				break;
+			case ASPECT_RATIO_1x1:
+				tAspectRatio = "1 : 1";
+				break;
+			case ASPECT_RATIO_4x3:
+				tAspectRatio = "4 : 3";
+				break;
+			case ASPECT_RATIO_5x4:
+				tAspectRatio = "5 : 4";
+				break;
+			case ASPECT_RATIO_16x9:
+				tAspectRatio = "16 : 9";
+				break;
+			case ASPECT_RATIO_16x10:
+				tAspectRatio = "16 : 10";
+				break;
+		}
+
+		int tHour = 0, tMin = 0, tSec = 0, tTime = mVideoSource->GetSeekPos();
         tSec = tTime % 60;
         tTime /= 60;
         tMin = tTime % 60;
@@ -616,16 +784,18 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
         tPainter->drawText(5, 61, " Frame: " + QString("%1").arg(pFrameNumber) + (mVideoSource->GetChunkDropConter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropConter()) + " dropped)") : ""));
         tPainter->drawText(5, 81, " Fps: " + QString("%1").arg(pFps, 4, 'f', 2, ' '));
         tPainter->drawText(5, 101, " Codec: " + QString((mVideoSource->GetCodecName() != "") ? mVideoSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(mResX) + "*" + QString("%1").arg(mResY) + ")");
+        tPainter->drawText(5, 121, " Output: " + QString("%1").arg(tFrameOutputWidth) + "*" + QString("%1").arg(tFrameOutputHeight) + "(" + tAspectRatio + ")");
         if (mVideoSource->SupportsSeeking())
-            tPainter->drawText(5, 121, " Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0'));
+            tPainter->drawText(5, 141, " Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0'));
 
         tPainter->setPen(QColor(Qt::red));
         tPainter->drawText(4, 40, " Source: " + mVideoWorker->GetCurrentDevice());
         tPainter->drawText(4, 60, " Frame: " + QString("%1").arg(pFrameNumber) + (mVideoSource->GetChunkDropConter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropConter()) + " dropped)") : ""));
         tPainter->drawText(4, 80, " Fps: " + QString("%1").arg(pFps, 4, 'f', 2, ' '));
         tPainter->drawText(4, 100, " Codec: " + QString((mVideoSource->GetCodecName() != "") ? mVideoSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(mResX) + "*" + QString("%1").arg(mResY) + ")");
+        tPainter->drawText(4, 120, " Output: "  + QString("%1").arg(tFrameOutputWidth) + "*" + QString("%1").arg(tFrameOutputHeight) + "(" + tAspectRatio + ")");
         if (mVideoSource->SupportsSeeking())
-			tPainter->drawText(4, 120, " Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0'));
+			tPainter->drawText(4, 140, " Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0'));
     }
 
     //#############################################################
@@ -649,6 +819,12 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
 
     delete tPainter;
     setUpdatesEnabled(true);
+
+    if(mNeedBackgroundUpdatesUntillNextFrame)
+    {
+    	mNeedBackgroundUpdatesUntillNextFrame = false;
+    	mNeedBackgroundUpdate = true;
+    }
 }
 
 void VideoWidget::ShowHourGlass()
@@ -750,7 +926,7 @@ void VideoWidget::SetResolution(int mX, int mY)
             resize(mResX, mResY);
     }
     setUpdatesEnabled(true);
-    mNeedBackgroundUpdate = true;
+	mNeedBackgroundUpdatesUntillNextFrame = true;
 }
 
 void VideoWidget::SetResolutionFormat(VideoFormat pFormat)
@@ -786,15 +962,13 @@ void VideoWidget::ToggleFullScreenMode()
     {
         setWindowFlags(windowFlags() ^ Qt::Window);
         showNormal();
-//        layout()->update();// repaint the old widget background
     }else
     {
         setWindowFlags(windowFlags() | Qt::Window);
         ShowFullScreen();
-//        layout()->update();// repaint the old widget background
     }
     setUpdatesEnabled(true);
-    mNeedBackgroundUpdate = true;
+	mNeedBackgroundUpdatesUntillNextFrame = true;
 }
 
 void VideoWidget::ToggleVisibility()
@@ -916,12 +1090,12 @@ void VideoWidget::paintEvent(QPaintEvent *pEvent)
     // force background update if focus has changed
     QWidget *tWidget = QApplication::focusWidget();
     if ((tWidget == NULL) || (tWidget != mCurrentApplicationFocusedWidget))
-        mNeedBackgroundUpdate = true;
+    	mNeedBackgroundUpdatesUntillNextFrame = true;
     mCurrentApplicationFocusedWidget = tWidget;
 
     //TODO: remove this line and get paint errors fixed
     //mNeedBackgroundUpdate = true;
-    if (mNeedBackgroundUpdate)
+    if ((mNeedBackgroundUpdate) || (mNeedBackgroundUpdatesUntillNextFrame))
     {
         //### calculate background surrounding the current frame
         int tFrameWidth = width() - mCurrentFrame.width();
@@ -955,7 +1129,7 @@ void VideoWidget::resizeEvent(QResizeEvent *pEvent)
 
 	setUpdatesEnabled(false);
     QWidget::resizeEvent(pEvent);
-    mNeedBackgroundUpdate = true;
+    mNeedBackgroundUpdatesUntillNextFrame = true;
     pEvent->accept();
     setUpdatesEnabled(true);
 }
@@ -971,13 +1145,19 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
     {
         ToggleFullScreenMode();
     }
+    if (pEvent->key() == Qt::Key_I)
+    {
+        if (mShowLiveStats)
+        	mShowLiveStats = false;
+        else
+        	mShowLiveStats = true;
+    }
     if (pEvent->key() == Qt::Key_A)
     {
-        if (mKeepAspectRatio)
-            mKeepAspectRatio = false;
-        else
-            mKeepAspectRatio = true;
-        mNeedBackgroundUpdate = true;
+    	mAspectRatio++;
+    	if(mAspectRatio > ASPECT_RATIO_16x10)
+    		mAspectRatio = ASPECT_RATIO_ORIGINAL;
+    	mNeedBackgroundUpdatesUntillNextFrame = true;
     }
 }
 
@@ -1028,7 +1208,7 @@ void VideoWidget::customEvent(QEvent *pEvent)
                         setAttribute(Qt::WA_NoSystemBackground, true);
                         setAttribute(Qt::WA_PaintOnScreen, true);
                         setAttribute(Qt::WA_OpaquePaintEvent, true);
-                        mNeedBackgroundUpdate = true;
+                        mNeedBackgroundUpdatesUntillNextFrame = true;
                     }
 
                     // display the current video frame
@@ -1059,7 +1239,7 @@ void VideoWidget::customEvent(QEvent *pEvent)
             }
             break;
         case VIDEO_NEW_SOURCE_RESOLUTION:
-            mNeedBackgroundUpdate = true;
+        	mNeedBackgroundUpdatesUntillNextFrame = true;
             break;
         default:
             break;
