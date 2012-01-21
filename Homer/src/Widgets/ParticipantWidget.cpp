@@ -115,7 +115,7 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, QMainWindow 
                     if (mVideoSourceMuxer != NULL)
                     {
                         mVideoWidgetFrame->show();
-                        mVideoWidget->Init(mVideoSourceMuxer, pVideoMenu, mSessionName, mSessionName, true);
+                        mVideoWidget->Init(mMainWindow, mVideoSourceMuxer, pVideoMenu, mSessionName, mSessionName, true);
                     }
                     if (mAudioSourceMuxer != NULL)
                         mAudioWidget->Init(mAudioSourceMuxer, pAudioMenu, mSessionName, mSessionName, true, true);
@@ -133,7 +133,7 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, QMainWindow 
                     {
                         mVideoSource = new MediaSourceNet(tVSocket, CONF.GetVideoRtp());
                         mVideoWidgetFrame->hide();
-                        mVideoWidget->Init(mVideoSource, pVideoMenu, mSessionName);
+                        mVideoWidget->Init(mMainWindow, mVideoSource, pVideoMenu, mSessionName);
                     }else
                         LOG(LOG_ERROR, "Determined video socket is NULL");
                     if (tASocket != NULL)
@@ -157,7 +157,7 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, QMainWindow 
                             {
                                 tVDesc = QString(mVideoSource->GetCurrentDeviceName().c_str());
                                 mVideoWidgetFrame->show();
-                                mVideoWidget->Init(mVideoSource, pVideoMenu, mSessionName, mSessionName, true);
+                                mVideoWidget->Init(mMainWindow, mVideoSource, pVideoMenu, mSessionName, mSessionName, true);
                                 tFoundPreviewSource = true;
                             }
 

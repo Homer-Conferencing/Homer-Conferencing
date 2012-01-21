@@ -791,6 +791,9 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
 
     // close audio output device
     AUDIOOUTSDL.ClosePlaybackDevice();
+
+    // make sure this main window will be deleted when control returns to Qt event loop (need especially in case of closeEvent from fullscreen video widget)
+    deleteLater();
 }
 
 void MainWindow::handleMeetingEvent(GeneralEvent *pEvent)
