@@ -209,7 +209,7 @@ void ConfigurationDialog::LoadConfiguration()
         mCbAudioCodec->setCurrentIndex(0);
     if (tAudioStreamCodec == "G711 A-law (PCMA)")
         mCbAudioCodec->setCurrentIndex(1);
-    if (tAudioStreamCodec == "G711 µ-law (PCMU)")
+    if (tAudioStreamCodec == "G711 ï¿½-law (PCMU)")
         mCbAudioCodec->setCurrentIndex(2);
     if (tAudioStreamCodec == "AAC")
         mCbAudioCodec->setCurrentIndex(3);

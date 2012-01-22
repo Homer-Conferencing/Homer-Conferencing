@@ -216,7 +216,7 @@ void OverviewErrorsWidget::SaveLog()
         return;
 
     tFile.write("======================================\n");
-    tFile.write("=======> Homer "RELEASE_VERSION_STRING" <=======\n");
+    tFile.write("======> Homer-Conferencing "RELEASE_VERSION_STRING" <======\n");
     tFile.write("======================================\n");
     mLogBufferMutex.lock();
     tFile.write(mTeErrorLog->toPlainText().toAscii());
