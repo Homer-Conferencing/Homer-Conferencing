@@ -88,7 +88,7 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     SVC_PROCESS_STATISTIC.AssignThreadName("Qt-MainLoop");
     mAbsBinPath = pAbsBinPath;
     mSourceDesktop = NULL;
-    QCoreApplication::setApplicationName("Homer-Conferencing");
+    QCoreApplication::setApplicationName("Homer");
     QCoreApplication::setApplicationVersion("1.0");
 
     // get the program arguments
@@ -622,7 +622,7 @@ void MainWindow::GotAnswerForVersionRequest(bool pError)
     {
         QString tServerVersion = QString(mHttpGetVersionServer->readAll().constData());
         if (tServerVersion != RELEASE_VERSION_STRING)
-            ShowInfo("Update available", "An updated version of Homer-Conferencing is available. Current version on server is: <font color='green'><b>" + tServerVersion +"</b></font>. Have a look in the \"update check\" dialogue in the application menu.");
+            ShowInfo("Update available", "An updated version of Homer-Conferencing is available. Current version on server is <font color='green'><b>" + tServerVersion +"</b></font>. Have a look in the \"update check\" dialogue in the application menu.");
     }
 }
 
@@ -1489,7 +1489,7 @@ void MainWindow::CreateSysTray()
 
     mSysTrayIcon = new QSystemTrayIcon(QIcon(":/images/LogoHomer3.png"), this);
     mSysTrayIcon->setContextMenu(mSysTrayMenu);
-    mSysTrayIcon->setToolTip("Homer-Conferencing " RELEASE_VERSION_STRING " - live conferencing and more");
+    mSysTrayIcon->setToolTip("Homer " RELEASE_VERSION_STRING " - live conferencing and more");
     mSysTrayIcon->show();
 
     connect(mSysTrayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(activatedSysTray(QSystemTrayIcon::ActivationReason)));

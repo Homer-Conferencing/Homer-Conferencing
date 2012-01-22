@@ -93,7 +93,8 @@ ifeq ($(MSYSTEM),MINGW32)
 # otherwise the console window will be displayed
 #LFLAGS+=	-Wl,-subsystem,windows
 LFLAGS+=	-mthreads
-LFLAGS+=	$(TOP_DIR)/Homer/ico/Homer-Icon.o
+LFLAGS+=	$(TOP_DIR)/Homer/winres/Homer-Icon.o
+LFLAGS+=	$(TOP_DIR)/Homer/winres/Homer-Version.o
 else
 #CXXFLAGS+=	-static-libgcc -static-libstdc++
 #LFLAGS+=	-static-libgcc -static-libstdc++
