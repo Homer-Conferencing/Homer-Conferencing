@@ -89,6 +89,7 @@
              </property>
              <property name="font">
               <font>
+               <pointsize>8</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -131,6 +132,8 @@
              <property name="font">
               <font>
                <pointsize>8</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
               </font>
              </property>
              <property name="alignment">
@@ -164,6 +167,7 @@
              </property>
              <property name="font">
               <font>
+               <pointsize>8</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -206,6 +210,8 @@
              <property name="font">
               <font>
                <pointsize>8</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
               </font>
              </property>
              <property name="alignment">
@@ -254,6 +260,7 @@
              </property>
              <property name="font">
               <font>
+               <pointsize>8</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -378,6 +385,7 @@
              </property>
              <property name="font">
               <font>
+               <pointsize>8</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -517,6 +525,7 @@
              </property>
              <property name="font">
               <font>
+               <pointsize>8</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -587,6 +596,7 @@
              </property>
              <property name="font">
               <font>
+               <pointsize>8</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -650,6 +660,7 @@
   <tabstop>mBb</tabstop>
  </tabstops>
  <resources>
+  <include location="../resources/Icons.qrc"/>
   <include location="../resources/Icons.qrc"/>
   <include location="../resources/Icons.qrc"/>
   <include location="../resources/Icons.qrc"/>
