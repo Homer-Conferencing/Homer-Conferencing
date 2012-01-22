@@ -154,6 +154,7 @@ private:
     void RemoveSessionWidget(ParticipantWidget *pParticipantWidget);
 
     /* handle incoming Meeting events */
+    void GetEventSource(GeneralEvent *pEvent, QString &pSender, QString &pSenderApp);
     virtual void handleMeetingEvent(GeneralEvent *pEvent);
 
     QHttp           		    *mHttpGetVersionServer;

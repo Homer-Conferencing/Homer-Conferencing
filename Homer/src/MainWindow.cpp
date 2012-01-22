@@ -88,7 +88,7 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     SVC_PROCESS_STATISTIC.AssignThreadName("Qt-MainLoop");
     mAbsBinPath = pAbsBinPath;
     mSourceDesktop = NULL;
-    QCoreApplication::setApplicationName("Homer");
+    QCoreApplication::setApplicationName("Homer-Conferencing");
     QCoreApplication::setApplicationVersion("1.0");
 
     // get the program arguments
@@ -622,7 +622,7 @@ void MainWindow::GotAnswerForVersionRequest(bool pError)
     {
         QString tServerVersion = QString(mHttpGetVersionServer->readAll().constData());
         if (tServerVersion != RELEASE_VERSION_STRING)
-            ShowInfo("Update available", "An updated version of Homer is available. Current version on server is: <font color='green'><b>" + tServerVersion +"</b></font>. Have a look in the \"update check\" dialogue in the \"Homer\" menu.");
+            ShowInfo("Update available", "An updated version of Homer-Conferencing is available. Current version on server is: <font color='green'><b>" + tServerVersion +"</b></font>. Have a look in the \"update check\" dialogue in the application menu.");
     }
 }
 
@@ -801,6 +801,14 @@ void MainWindow::handleMeetingEvent(GeneralEvent *pEvent)
     QApplication::postEvent(this, (QEvent*) new QMeetingEvent(pEvent));
 }
 
+void MainWindow::GetEventSource(GeneralEvent *pEvent, QString &pSender, QString &pSenderApp)
+{
+    pSender = (pEvent->SenderName != "") ? QString(pEvent->SenderName.c_str()) : QString(pEvent->Sender.c_str());
+    pSenderApp = (pEvent->SenderApplication != "") ? QString(pEvent->SenderApplication.c_str()) : "";
+    if (pSenderApp == USER_AGENT_SIGNATURE)
+    	pSenderApp = "Homer-Conferencing";
+}
+
 void MainWindow::customEvent(QEvent* pEvent)
 {
     // make sure we have our user defined QEvent
@@ -834,6 +842,8 @@ void MainWindow::customEvent(QEvent* pEvent)
     OptionsUnavailableEvent *tOUAEvent;
     GeneralEvent *tEvent = ((QMeetingEvent*) pEvent)->getEvent();
     ParticipantWidget *tParticipantWidget;
+
+    QString tEventSender, tEventSenderApp;
 
     if(tEvent->getType() != ADD_PARTICIPANT)
         LOG(LOG_INFO, "Event of type \"%s\"", GeneralEvent::getNameFromType(tEvent->getType()).c_str());
@@ -939,12 +949,9 @@ void MainWindow::customEvent(QEvent* pEvent)
                     {
                         if ((!hasFocus()) || (isMinimized()))
                         {
-                            QString tSender = (tMEvent->SenderName != "") ? QString(tMEvent->SenderName.c_str()) : QString(tMEvent->Sender.c_str());
+                            GetEventSource(tMEvent, tEventSender, tEventSenderApp);
                             QString tText = (tMEvent->Text != "") ? QString(tMEvent->Text.c_str()) : "";
-                            QString tApp = (tMEvent->SenderApplication != "") ? QString(tMEvent->SenderApplication.c_str()) : "";
-                            if (tApp == USER_AGENT_SIGNATURE)
-                                tApp = "Homer conferencing";
-                            mSysTrayIcon->showMessage("Message from " + tSender, "\"" + tText + "\"" + ((tApp != "") ? ("\n(via \"" + tApp + "\")") : ""), QSystemTrayIcon::Information, CONF.GetSystrayTimeout());
+                            mSysTrayIcon->showMessage("Message from " + tEventSender, "\"" + tText + "\"" + ((tEventSenderApp != "") ? ("\n(via \"" + tEventSenderApp + "\")") : ""), QSystemTrayIcon::Information, CONF.GetSystrayTimeout());
                         }
                     }
 
@@ -1037,11 +1044,8 @@ void MainWindow::customEvent(QEvent* pEvent)
                     {
                         if ((!hasFocus()) || (isMinimized()))
                         {
-                            QString tSender = (tCEvent->SenderName != "") ? QString(tCEvent->SenderName.c_str()) : QString(tCEvent->Sender.c_str());
-                            QString tApp = (tCEvent->SenderApplication != "") ? QString(tCEvent->SenderApplication.c_str()) : "";
-                            if (tApp == USER_AGENT_SIGNATURE)
-                                tApp = "Homer conferencing";
-                            mSysTrayIcon->showMessage("Call from " + tSender, (tApp != "") ? "(via \"" + tApp + "\")" : "", QSystemTrayIcon::Warning, CONF.GetSystrayTimeout());
+                            GetEventSource(tCEvent, tEventSender, tEventSenderApp);
+                            mSysTrayIcon->showMessage("Call from " + tEventSender, (tEventSenderApp != "") ? "(via \"" + tEventSenderApp + "\")" : "", QSystemTrayIcon::Warning, CONF.GetSystrayTimeout());
                         }
                     }
 
@@ -1115,11 +1119,8 @@ void MainWindow::customEvent(QEvent* pEvent)
                     {
                         if ((!hasFocus()) || (isMinimized()))
                         {
-                            QString tSender = (tCCEvent->SenderName != "") ? QString(tCCEvent->SenderName.c_str()) : QString(tCCEvent->Sender.c_str());
-                            QString tApp = (tCCEvent->SenderApplication != "") ? QString(tCCEvent->SenderApplication.c_str()) : "";
-                            if (tApp == USER_AGENT_SIGNATURE)
-                                tApp = "Homer conferencing";
-                            mSysTrayIcon->showMessage("Call canceled from " + tSender, (tApp != "") ? "(via \"" + tApp + "\")" : "", QSystemTrayIcon::Warning, CONF.GetSystrayTimeout());
+                            GetEventSource(tCCEvent, tEventSender, tEventSenderApp);
+                            mSysTrayIcon->showMessage("Call canceled from " + tEventSender, (tEventSenderApp != "") ? "(via \"" + tEventSenderApp + "\")" : "", QSystemTrayIcon::Warning, CONF.GetSystrayTimeout());
                         }
                     }
 
@@ -1171,11 +1172,8 @@ void MainWindow::customEvent(QEvent* pEvent)
                     {
                         if ((!hasFocus()) || (isMinimized()))
                         {
-                            QString tSender = (tCHUEvent->SenderName != "") ? QString(tCHUEvent->SenderName.c_str()) : QString(tCHUEvent->Sender.c_str());
-                            QString tApp = (tCHUEvent->SenderApplication != "") ? QString(tCHUEvent->SenderApplication.c_str()) : "";
-                            if (tApp == USER_AGENT_SIGNATURE)
-                                tApp = "Homer conferencing";
-                            mSysTrayIcon->showMessage("Call hangup from " + tSender, (tApp != "") ? "(via \"" + tApp + "\")" : "", QSystemTrayIcon::Warning, CONF.GetSystrayTimeout());
+                            GetEventSource(tCHUEvent, tEventSender, tEventSenderApp);
+                            mSysTrayIcon->showMessage("Call hangup from " + tEventSender, (tEventSenderApp != "") ? "(via \"" + tEventSenderApp + "\")" : "", QSystemTrayIcon::Warning, CONF.GetSystrayTimeout());
                         }
                     }
 
@@ -1491,7 +1489,7 @@ void MainWindow::CreateSysTray()
 
     mSysTrayIcon = new QSystemTrayIcon(QIcon(":/images/LogoHomer3.png"), this);
     mSysTrayIcon->setContextMenu(mSysTrayMenu);
-    mSysTrayIcon->setToolTip("Homer " RELEASE_VERSION_STRING " - live conferencing and more");
+    mSysTrayIcon->setToolTip("Homer-Conferencing " RELEASE_VERSION_STRING " - live conferencing and more");
     mSysTrayIcon->show();
 
     connect(mSysTrayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(activatedSysTray(QSystemTrayIcon::ActivationReason)));
