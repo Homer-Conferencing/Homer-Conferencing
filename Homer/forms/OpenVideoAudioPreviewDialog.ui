@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>763</width>
-    <height>381</height>
+    <width>761</width>
+    <height>364</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -64,8 +64,14 @@
             <height>16777215</height>
            </size>
           </property>
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
           <property name="text">
-           <string>Device source:</string>
+           <string>Play device inputs:</string>
           </property>
           <property name="checked">
            <bool>true</bool>
@@ -74,8 +80,14 @@
         </item>
         <item>
          <widget class="QGroupBox" name="groupBox">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
           <property name="title">
-           <string> Capture devices </string>
+           <string> Devices for playback </string>
           </property>
           <layout class="QGridLayout" name="gridLayout">
            <item row="0" column="0">
@@ -84,6 +96,12 @@
               <layout class="QHBoxLayout">
                <item>
                 <widget class="QLabel" name="label_5">
+                 <property name="font">
+                  <font>
+                   <weight>50</weight>
+                   <bold>false</bold>
+                  </font>
+                 </property>
                  <property name="text">
                   <string>Video device:</string>
                  </property>
@@ -110,6 +128,8 @@
                  <property name="font">
                   <font>
                    <pointsize>8</pointsize>
+                   <weight>50</weight>
+                   <bold>false</bold>
                   </font>
                  </property>
                  <property name="layoutDirection">
@@ -134,6 +154,12 @@
               <layout class="QHBoxLayout" name="_2">
                <item>
                 <widget class="QLabel" name="label_6">
+                 <property name="font">
+                  <font>
+                   <weight>50</weight>
+                   <bold>false</bold>
+                  </font>
+                 </property>
                  <property name="text">
                   <string>Audio device:</string>
                  </property>
@@ -160,6 +186,8 @@
                  <property name="font">
                   <font>
                    <pointsize>8</pointsize>
+                   <weight>50</weight>
+                   <bold>false</bold>
                   </font>
                  </property>
                  <property name="layoutDirection">
@@ -200,37 +228,39 @@
             <height>16777215</height>
            </size>
           </property>
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
           <property name="text">
-           <string>File source:</string>
+           <string>Play movie file:</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QGroupBox" name="groupBox_2">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
           <property name="title">
-           <string> Input file </string>
+           <string> Movie file for playback </string>
           </property>
           <layout class="QGridLayout" name="gridLayout_2">
            <item row="0" column="0">
             <layout class="QHBoxLayout" name="horizontalLayout_3">
              <item>
-              <spacer name="horizontalSpacer_2">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::MinimumExpanding</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>247</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
               <widget class="QLabel" name="mLbFile">
+               <property name="font">
+                <font>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
                <property name="text">
                 <string/>
                </property>
@@ -291,15 +321,27 @@
             <height>16777215</height>
            </size>
           </property>
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
           <property name="text">
-           <string>Network source:</string>
+           <string>Play received streams:</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QGroupBox" name="groupBox_3">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
           <property name="title">
-           <string> Network stream parameters </string>
+           <string> Stream parameters for playback </string>
           </property>
           <layout class="QGridLayout" name="gridLayout_3">
            <item row="0" column="0">
@@ -322,7 +364,9 @@
                  </property>
                  <property name="font">
                   <font>
-                   <pointsize>9</pointsize>
+                   <pointsize>8</pointsize>
+                   <weight>50</weight>
+                   <bold>false</bold>
                   </font>
                  </property>
                  <property name="text">
@@ -347,6 +391,8 @@
                  <property name="font">
                   <font>
                    <pointsize>8</pointsize>
+                   <weight>50</weight>
+                   <bold>false</bold>
                   </font>
                  </property>
                  <property name="suffix">
@@ -398,7 +444,7 @@
                  </property>
                  <property name="font">
                   <font>
-                   <pointsize>9</pointsize>
+                   <pointsize>8</pointsize>
                    <weight>50</weight>
                    <bold>false</bold>
                   </font>
@@ -425,6 +471,8 @@
                  <property name="font">
                   <font>
                    <pointsize>8</pointsize>
+                   <weight>50</weight>
+                   <bold>false</bold>
                   </font>
                  </property>
                  <item>
@@ -502,7 +550,7 @@
                   <enum>Qt::Horizontal</enum>
                  </property>
                  <property name="sizeType">
-                  <enum>QSizePolicy::Fixed</enum>
+                  <enum>QSizePolicy::MinimumExpanding</enum>
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
@@ -526,6 +574,12 @@
                    <height>25</height>
                   </size>
                  </property>
+                 <property name="font">
+                  <font>
+                   <weight>50</weight>
+                   <bold>false</bold>
+                  </font>
+                 </property>
                  <property name="text">
                   <string>Codec:</string>
                  </property>
@@ -536,6 +590,8 @@
                  <property name="font">
                   <font>
                    <pointsize>8</pointsize>
+                   <weight>50</weight>
+                   <bold>false</bold>
                   </font>
                  </property>
                  <property name="currentIndex">
@@ -593,7 +649,9 @@
                  </property>
                  <property name="font">
                   <font>
-                   <pointsize>9</pointsize>
+                   <pointsize>8</pointsize>
+                   <weight>50</weight>
+                   <bold>false</bold>
                   </font>
                  </property>
                  <property name="text">
@@ -618,6 +676,8 @@
                  <property name="font">
                   <font>
                    <pointsize>8</pointsize>
+                   <weight>50</weight>
+                   <bold>false</bold>
                   </font>
                  </property>
                  <property name="suffix">
@@ -669,7 +729,7 @@
                  </property>
                  <property name="font">
                   <font>
-                   <pointsize>9</pointsize>
+                   <pointsize>8</pointsize>
                    <weight>50</weight>
                    <bold>false</bold>
                   </font>
@@ -696,6 +756,8 @@
                  <property name="font">
                   <font>
                    <pointsize>8</pointsize>
+                   <weight>50</weight>
+                   <bold>false</bold>
                   </font>
                  </property>
                  <item>
@@ -773,7 +835,7 @@
                   <enum>Qt::Horizontal</enum>
                  </property>
                  <property name="sizeType">
-                  <enum>QSizePolicy::Fixed</enum>
+                  <enum>QSizePolicy::MinimumExpanding</enum>
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
@@ -797,6 +859,12 @@
                    <height>25</height>
                   </size>
                  </property>
+                 <property name="font">
+                  <font>
+                   <weight>50</weight>
+                   <bold>false</bold>
+                  </font>
+                 </property>
                  <property name="text">
                   <string>Codec:</string>
                  </property>
@@ -807,6 +875,8 @@
                  <property name="font">
                   <font>
                    <pointsize>8</pointsize>
+                   <weight>50</weight>
+                   <bold>false</bold>
                   </font>
                  </property>
                  <property name="layoutDirection">
@@ -885,7 +955,7 @@
      <item>
       <widget class="QCheckBox" name="mCbVideoEnabled">
        <property name="text">
-        <string>Video enabled</string>
+        <string>Video playback enabled</string>
        </property>
        <property name="checked">
         <bool>true</bool>
@@ -908,7 +978,7 @@
      <item>
       <widget class="QCheckBox" name="mCbAudioEnabled">
        <property name="text">
-        <string>Audio enabled</string>
+        <string>Audio playback enabled</string>
        </property>
        <property name="checked">
         <bool>true</bool>
