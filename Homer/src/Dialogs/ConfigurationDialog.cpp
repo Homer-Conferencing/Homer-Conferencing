@@ -170,6 +170,8 @@ void ConfigurationDialog::LoadConfiguration()
         }
     }
 
+    mCbSmoothVideoPresentation->setChecked(CONF.GetSmoothVideoPresentation());
+
     //######################################################################
     //### AUDIO configuration
     //######################################################################
@@ -270,7 +272,6 @@ void ConfigurationDialog::LoadConfiguration()
     mCbAutoUpdateCheck->setChecked(CONF.GetAutoUpdateCheck());
     if ((CONF.GetColoringScheme() > -1) && (CONF.GetColoringScheme() < mCbColoring->count()))
         mCbColoring->setCurrentIndex(CONF.GetColoringScheme());
-    mCbSmoothVideoPresentation->setChecked(CONF.GetSmoothVideoPresentation());
     mCbSeparatedParticipantWidgets->setChecked(CONF.GetParticipantWidgetsSeparation());
     mCbCloseParticipantWidgetsImmediately->setChecked(CONF.GetParticipantWidgetsCloseImmediately());
 
@@ -344,6 +345,8 @@ void ConfigurationDialog::SaveConfiguration()
     //### maximum packet size
     tCurMaxPackSize = mCbVideoMaxPacketSize->currentText();
     CONF.SetVideoMaxPacketSize(tCurMaxPackSize.left((tCurMaxPackSize.indexOf("(") -1)).toInt());
+
+    CONF.SetSmoothVideoPresentation(mCbSmoothVideoPresentation->isChecked());
 
     //######################################################################
     //### AUDIO configuration
@@ -431,7 +434,6 @@ void ConfigurationDialog::SaveConfiguration()
     //######################################################################
     CONF.SetAutoUpdateCheck(mCbAutoUpdateCheck->isChecked());
     CONF.SetColoringScheme(mCbColoring->currentIndex());
-    CONF.SetSmoothVideoPresentation(mCbSmoothVideoPresentation->isChecked());
     CONF.SetParticipantWidgetsSeparation(mCbSeparatedParticipantWidgets->isChecked());
     CONF.SetParticipantWidgetsCloseImmediately(mCbCloseParticipantWidgetsImmediately->isChecked());
 
@@ -579,6 +581,7 @@ void ConfigurationDialog::ClickedButton(QAbstractButton *pButton)
                 mCbVideoQuality->setCurrentIndex(0);//10 %
                 mCbVideoResolution->setCurrentIndex(2);//CIF
                 mCbVideoMaxPacketSize->setCurrentIndex(3);//1492
+                mCbSmoothVideoPresentation->setChecked(false);
                 break;
             //### AUDIO configuration
             case 1:
@@ -606,7 +609,6 @@ void ConfigurationDialog::ClickedButton(QAbstractButton *pButton)
             case 3:
                 mCbAutoUpdateCheck->setChecked(false);
                 mCbColoring->setCurrentIndex(0);
-                mCbSmoothVideoPresentation->setChecked(false);
                 mCbSeparatedParticipantWidgets->setChecked(true);
                 mCbCloseParticipantWidgetsImmediately->setChecked(true);
                 break;

@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>646</width>
-    <height>482</height>
+    <width>679</width>
+    <height>480</height>
    </rect>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>1024</width>
+    <height>480</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Edit configuration</string>
@@ -190,10 +196,7 @@
         <number>0</number>
        </property>
        <widget class="QWidget" name="mVideo">
-        <layout class="QVBoxLayout" name="verticalLayout">
-         <property name="margin">
-          <number>9</number>
-         </property>
+        <layout class="QVBoxLayout" name="verticalLayout_19">
          <item>
           <widget class="QGroupBox" name="mGrpDevices">
            <property name="minimumSize">
@@ -207,6 +210,12 @@
              <width>16777215</width>
              <height>16777215</height>
             </size>
+           </property>
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
            </property>
            <property name="title">
             <string> Video capture </string>
@@ -234,6 +243,13 @@
                   <height>25</height>
                  </size>
                 </property>
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
                 <property name="text">
                  <string>Source selection:</string>
                 </property>
@@ -257,6 +273,8 @@
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
                  </font>
                 </property>
                 <property name="currentIndex">
@@ -328,6 +346,8 @@
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
                  </font>
                 </property>
                 <property name="text">
@@ -356,6 +376,13 @@
                   <height>25</height>
                  </size>
                 </property>
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
                 <property name="text">
                  <string>Flip captured picture:</string>
                 </property>
@@ -379,6 +406,13 @@
               </item>
               <item>
                <widget class="QCheckBox" name="mCbHFlip">
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
                 <property name="layoutDirection">
                  <enum>Qt::RightToLeft</enum>
                 </property>
@@ -408,6 +442,13 @@
               </item>
               <item>
                <widget class="QCheckBox" name="mCbVFlip">
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
                 <property name="layoutDirection">
                  <enum>Qt::RightToLeft</enum>
                 </property>
@@ -416,6 +457,86 @@
                 </property>
                 <property name="autoExclusive">
                  <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="groupBox_3">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>51</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>510</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="title">
+            <string> Video playback </string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout">
+            <property name="margin">
+             <number>3</number>
+            </property>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_15">
+              <item>
+               <widget class="QLabel" name="mLbSmoothVideoPresentation">
+                <property name="minimumSize">
+                 <size>
+                  <width>240</width>
+                  <height>25</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>240</width>
+                  <height>25</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Smooth video presentation:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_24">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="mCbSmoothVideoPresentation">
+                <property name="text">
+                 <string/>
                 </property>
                </widget>
               </item>
@@ -434,14 +555,20 @@
            </property>
            <property name="sizeHint" stdset="0">
             <size>
-             <width>20</width>
-             <height>2</height>
+             <width>17</width>
+             <height>38</height>
             </size>
            </property>
           </spacer>
          </item>
          <item>
           <widget class="QGroupBox" name="mGrpVideo">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
            <property name="title">
             <string>Video stream broadcast</string>
            </property>
@@ -474,6 +601,13 @@
                   <height>25</height>
                  </size>
                 </property>
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
                 <property name="text">
                  <string>Output resolution:</string>
                 </property>
@@ -497,6 +631,8 @@
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
                  </font>
                 </property>
                 <property name="currentIndex">
@@ -569,6 +705,7 @@
                 </property>
                 <property name="font">
                  <font>
+                  <pointsize>8</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -605,6 +742,8 @@
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
                  </font>
                 </property>
                 <property name="specialValueText">
@@ -639,6 +778,13 @@
                   <height>25</height>
                  </size>
                 </property>
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
                 <property name="text">
                  <string>Output codec:</string>
                 </property>
@@ -662,6 +808,8 @@
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
                  </font>
                 </property>
                 <property name="currentIndex">
@@ -717,6 +865,13 @@
                   <height>25</height>
                  </size>
                 </property>
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
                 <property name="text">
                  <string>Output quality:</string>
                 </property>
@@ -740,6 +895,8 @@
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
                  </font>
                 </property>
                 <property name="currentIndex">
@@ -815,6 +972,13 @@
                   <height>25</height>
                  </size>
                 </property>
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
                 <property name="text">
                  <string>Transmission maximum packet size:</string>
                 </property>
@@ -838,6 +1002,8 @@
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
                  </font>
                 </property>
                 <property name="currentIndex">
@@ -911,6 +1077,12 @@
              <height>84</height>
             </size>
            </property>
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
            <property name="title">
             <string> Audio capture </string>
            </property>
@@ -937,6 +1109,13 @@
                   <height>25</height>
                  </size>
                 </property>
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
                 <property name="text">
                  <string>Source selection:</string>
                 </property>
@@ -960,6 +1139,8 @@
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
                  </font>
                 </property>
                 <property name="currentIndex">
@@ -1022,6 +1203,8 @@
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
                  </font>
                 </property>
                 <property name="text">
@@ -1054,6 +1237,12 @@
              <height>510</height>
             </size>
            </property>
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
            <property name="title">
             <string> Audio playback </string>
            </property>
@@ -1076,6 +1265,13 @@
                   <width>160</width>
                   <height>25</height>
                  </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
                 </property>
                 <property name="text">
                  <string>Device selection:</string>
@@ -1100,6 +1296,8 @@
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
                  </font>
                 </property>
                 <property name="currentIndex">
@@ -1162,6 +1360,8 @@
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
                  </font>
                 </property>
                 <property name="text">
@@ -1198,6 +1398,12 @@
          </item>
          <item>
           <widget class="QGroupBox" name="mGrpAudio">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
            <property name="title">
             <string>Audio stream broadcast</string>
            </property>
@@ -1230,6 +1436,13 @@
                   <height>25</height>
                  </size>
                 </property>
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
                 <property name="text">
                  <string>Output codec:</string>
                 </property>
@@ -1253,6 +1466,8 @@
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
                  </font>
                 </property>
                 <property name="layoutDirection">
@@ -1319,6 +1534,13 @@
                   <height>25</height>
                  </size>
                 </property>
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
                 <property name="text">
                  <string>Output quality:</string>
                 </property>
@@ -1342,6 +1564,8 @@
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
                  </font>
                 </property>
                 <property name="currentIndex">
@@ -1417,6 +1641,13 @@
                   <height>25</height>
                  </size>
                 </property>
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
                 <property name="text">
                  <string>Transmission maximum packet size:</string>
                 </property>
@@ -1440,6 +1671,8 @@
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
                  </font>
                 </property>
                 <property name="currentIndex">
@@ -1510,6 +1743,12 @@
              <height>16200</height>
             </size>
            </property>
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
            <property name="title">
             <string> Server based contacting </string>
            </property>
@@ -1538,6 +1777,13 @@
                   <width>120</width>
                   <height>25</height>
                  </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
                 </property>
                 <property name="text">
                  <string>SIP server:</string>
@@ -1590,6 +1836,8 @@
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
                  </font>
                 </property>
                 <property name="layoutDirection">
@@ -1620,6 +1868,13 @@
                   <width>120</width>
                   <height>25</height>
                  </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
                 </property>
                 <property name="text">
                  <string>User name: </string>
@@ -1672,6 +1927,8 @@
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
                  </font>
                 </property>
                 <property name="layoutDirection">
@@ -1702,6 +1959,13 @@
                   <width>120</width>
                   <height>25</height>
                  </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
                 </property>
                 <property name="text">
                  <string>Password: </string>
@@ -1773,6 +2037,8 @@
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
                  </font>
                 </property>
                 <property name="layoutDirection">
@@ -1796,6 +2062,12 @@
          </item>
          <item>
           <widget class="QGroupBox" name="groupBox">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
            <property name="title">
             <string> Contacting </string>
            </property>
@@ -1818,6 +2090,13 @@
                   <width>270</width>
                   <height>25</height>
                  </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
                 </property>
                 <property name="text">
                  <string>Check availability of known contacts:</string>
@@ -1873,6 +2152,12 @@
          </item>
          <item>
           <widget class="QGroupBox" name="mGrpNatSupport">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
            <property name="title">
             <string> NAT detection </string>
            </property>
@@ -1895,6 +2180,13 @@
                   <width>120</width>
                   <height>25</height>
                  </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
                 </property>
                 <property name="text">
                  <string>STUN server:</string>
@@ -1931,6 +2223,8 @@
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
                  </font>
                 </property>
                 <property name="layoutDirection">
@@ -1963,8 +2257,14 @@
              <height>8400</height>
             </size>
            </property>
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
            <property name="title">
-            <string> Local listeners (needs program restart)</string>
+            <string> Local listeners </string>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_3">
             <item>
@@ -1982,6 +2282,13 @@
                   <width>230</width>
                   <height>25</height>
                  </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
                 </property>
                 <property name="text">
                  <string>Session management address:</string>
@@ -2006,6 +2313,8 @@
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
                  </font>
                 </property>
                 <property name="currentIndex">
@@ -2035,6 +2344,13 @@
                   <width>270</width>
                   <height>25</height>
                  </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
                 </property>
                 <property name="text">
                  <string>Session management port:</string>
@@ -2071,6 +2387,8 @@
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
                  </font>
                 </property>
                 <property name="specialValueText">
@@ -2111,6 +2429,13 @@
                   <height>25</height>
                  </size>
                 </property>
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
                 <property name="text">
                  <string>Video/audio ports start at:</string>
                 </property>
@@ -2146,6 +2471,8 @@
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
                  </font>
                 </property>
                 <property name="specialValueText">
@@ -2179,8 +2506,14 @@
         <layout class="QVBoxLayout" name="verticalLayout_15">
          <item>
           <widget class="QGroupBox" name="mGrpStyle">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
            <property name="title">
-            <string>GUI style </string>
+            <string> Window style and behavior </string>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_13">
             <property name="margin">
@@ -2192,15 +2525,22 @@
                <widget class="QLabel" name="mLbColoring">
                 <property name="minimumSize">
                  <size>
-                  <width>220</width>
+                  <width>200</width>
                   <height>25</height>
                  </size>
                 </property>
                 <property name="maximumSize">
                  <size>
-                  <width>220</width>
+                  <width>200</width>
                   <height>25</height>
                  </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
                 </property>
                 <property name="text">
                  <string>Coloring:(needs program restart)</string>
@@ -2225,6 +2565,13 @@
               </item>
               <item>
                <widget class="QComboBox" name="mCbColoring">
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
                 <item>
                  <property name="text">
                   <string>Scheme 0</string>
@@ -2240,63 +2587,27 @@
              </layout>
             </item>
             <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_11">
-              <item>
-               <widget class="QLabel" name="mLbSmoothVideoPresentation">
-                <property name="minimumSize">
-                 <size>
-                  <width>240</width>
-                  <height>25</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>240</width>
-                  <height>25</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string>Smooth video presentation:</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_10">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="mCbSmoothVideoPresentation">
-                <property name="text">
-                 <string/>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
              <layout class="QHBoxLayout" name="horizontalLayout_35">
               <item>
                <widget class="QLabel" name="mLbSeparatedParticipantWidgets">
                 <property name="minimumSize">
                  <size>
-                  <width>240</width>
+                  <width>200</width>
                   <height>25</height>
                  </size>
                 </property>
                 <property name="maximumSize">
                  <size>
-                  <width>240</width>
+                  <width>200</width>
                   <height>25</height>
                  </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
                 </property>
                 <property name="text">
                  <string>Separated participant windows:</string>
@@ -2331,15 +2642,22 @@
                <widget class="QLabel" name="mLbCloseParticipantWidgetsImmediately">
                 <property name="minimumSize">
                  <size>
-                  <width>240</width>
+                  <width>200</width>
                   <height>25</height>
                  </size>
                 </property>
                 <property name="maximumSize">
                  <size>
-                  <width>240</width>
+                  <width>200</width>
                   <height>25</height>
                  </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
                 </property>
                 <property name="text">
                  <string>Close participant windows immediately:</string>
@@ -2373,6 +2691,12 @@
          </item>
          <item>
           <widget class="QGroupBox" name="mGrpStyle_2">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
            <property name="title">
             <string> Software updates </string>
            </property>
@@ -2386,15 +2710,22 @@
                <widget class="QLabel" name="mLbColoring_2">
                 <property name="minimumSize">
                  <size>
-                  <width>300</width>
+                  <width>200</width>
                   <height>25</height>
                  </size>
                 </property>
                 <property name="maximumSize">
                  <size>
-                  <width>300</width>
+                  <width>200</width>
                   <height>25</height>
                  </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
                 </property>
                 <property name="text">
                  <string>Check for software updates during start:</string>
@@ -2448,6 +2779,12 @@
         <layout class="QVBoxLayout" name="verticalLayout_18">
          <item>
           <widget class="QGroupBox" name="mGrpStyle_3">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
            <property name="title">
             <string> Notifications for new instant messages </string>
            </property>
@@ -2498,6 +2835,13 @@
               </item>
               <item>
                <widget class="QLabel" name="label_6">
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
                 <property name="text">
                  <string>play sound file: </string>
                 </property>
@@ -2521,6 +2865,13 @@
               </item>
               <item>
                <widget class="QLabel" name="mLbNotifySoundNewImFile">
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
                 <property name="text">
                  <string>file</string>
                 </property>
@@ -2561,6 +2912,13 @@
              <layout class="QHBoxLayout" name="horizontalLayout_31">
               <item>
                <widget class="QCheckBox" name="mCbNotifySystrayNewIm">
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
                 <property name="text">
                  <string>show hint in systray</string>
                 </property>
@@ -2589,6 +2947,12 @@
          </item>
          <item>
           <widget class="QGroupBox" name="mGrpStyle_4">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
            <property name="title">
             <string> Notifications for new conference calls </string>
            </property>
@@ -2639,6 +3003,13 @@
               </item>
               <item>
                <widget class="QLabel" name="label_7">
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
                 <property name="text">
                  <string>play sound file: </string>
                 </property>
@@ -2662,6 +3033,13 @@
               </item>
               <item>
                <widget class="QLabel" name="mLbNotifySoundNewCallFile">
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
                 <property name="text">
                  <string>file</string>
                 </property>
@@ -2702,6 +3080,13 @@
              <layout class="QHBoxLayout" name="horizontalLayout_33">
               <item>
                <widget class="QCheckBox" name="mCbNotifySystrayNewCall">
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
                 <property name="text">
                  <string>show hint in systray</string>
                 </property>
@@ -2770,6 +3155,8 @@
   </layout>
  </widget>
  <resources>
+  <include location="../resources/Icons.qrc"/>
+  <include location="../resources/Icons.qrc"/>
   <include location="../resources/Icons.qrc"/>
  </resources>
  <connections>
