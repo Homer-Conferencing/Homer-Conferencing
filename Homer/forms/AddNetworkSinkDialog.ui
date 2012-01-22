@@ -51,7 +51,7 @@
          </font>
         </property>
         <property name="title">
-         <string> Send stream to </string>
+         <string> Send video/audio to </string>
         </property>
         <layout class="QGridLayout" name="gridLayout_2">
          <property name="margin">
