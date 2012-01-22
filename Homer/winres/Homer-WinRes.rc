@@ -1,0 +1,29 @@
+IDI_ICON1               ICON    DISCARDABLE     "Homer-Icon.ico"
+
+1 VERSIONINFO
+FILEVERSION     0,20,0,0
+PRODUCTVERSION  0,20,0,0
+
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904E4"
+    BEGIN
+      VALUE "ProductName", "Homer-Conferencing"
+      VALUE "FileDescription", "Free cross-platform SIP softphone"
+      VALUE "ProductVersion", "Beta 0.20"
+      VALUE "CompanyName", "Homer-Conferencing project"
+      VALUE "Comments", "Provided under the terms of the GNU General Public License 2 (GPLv2.0)"
+      VALUE "FileVersion", "Beta 0.20"
+      VALUE "OriginalFilename", "Homer.exe"
+      VALUE "InternalName", "Homer.exe"
+      VALUE "LegalCopyright", "(C) 2008-2012 Homer-conferencing project"
+      
+    END
+  END
+
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x409, 1252
+  END
+END
