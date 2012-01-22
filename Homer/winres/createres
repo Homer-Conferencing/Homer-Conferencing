@@ -1,2 +1,2 @@
-windres Homer-Icon.rc Homer-Icon.o
-windres Homer-Version.rc Homer-Version.o
+windres Homer-WinRes.rc Homer-WinRes.o
+
