@@ -12,7 +12,7 @@
   </property>
   <property name="maximumSize">
    <size>
-    <width>1024</width>
+    <width>1280</width>
     <height>480</height>
    </size>
   </property>
@@ -193,7 +193,7 @@
         <number>1</number>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="mVideo">
         <layout class="QVBoxLayout" name="verticalLayout_19">
@@ -270,6 +270,12 @@
               </item>
               <item>
                <widget class="QComboBox" name="mCbVideoSource">
+                <property name="maximumSize">
+                 <size>
+                  <width>800</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
@@ -1136,6 +1142,12 @@
               </item>
               <item>
                <widget class="QComboBox" name="mCbAudioSource">
+                <property name="maximumSize">
+                 <size>
+                  <width>800</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
                 <property name="font">
                  <font>
                   <pointsize>8</pointsize>
@@ -3155,6 +3167,7 @@
   </layout>
  </widget>
  <resources>
+  <include location="../resources/Icons.qrc"/>
   <include location="../resources/Icons.qrc"/>
   <include location="../resources/Icons.qrc"/>
   <include location="../resources/Icons.qrc"/>
