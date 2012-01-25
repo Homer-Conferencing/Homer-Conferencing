@@ -43,8 +43,6 @@ namespace Homer { namespace Base {
 ///////////////////////////////////////////////////////////////////////////////
 
 #define GAPI GapiService::GetInstance()
-typedef ISubscription*(*subscribeFunction)(IName*, Requirements*);
-typedef IRegistration*(*publishFunction)(IName*, Requirements*);
 
 struct SetupInterfaceDescription{
 	ISetup			*Interface;
