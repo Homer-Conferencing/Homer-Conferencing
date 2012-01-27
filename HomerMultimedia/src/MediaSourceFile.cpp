@@ -799,10 +799,11 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
                         }else
                         {// have to insert an intermediate step, which resamples the audio chunk to 44.1 kHz
                             tBytesDecoded = HM_avcodec_decode_audio(mCodecContext, (int16_t *)mResampleBuffer, &tOutputBufferSize, &tPacket);
+
                             if(tOutputBufferSize > 0)
                             {
                                 //HINT: we always assume 16 bit samples and a stereo signal, so we have to divide/multiply by 4
-                                int tResampledBytes = 4 * audio_resample(mResampleContext, (short*)pChunkBuffer, (short*)mResampleBuffer, tOutputBufferSize / 4);
+                                int tResampledBytes = (2 /*16 signed char*/ * 2 /*channels*/) * audio_resample(mResampleContext, (short*)pChunkBuffer, (short*)mResampleBuffer, tOutputBufferSize / (2 * mCodecContext->channels));
                                 #ifdef MSF_DEBUG_PACKETS
                                     LOG(LOG_VERBOSE, "Have resampled %d bytes of sample rate %dHz and %d channels to %d bytes of sample rate 44100Hz and 2 channels", tOutputBufferSize, mCodecContext->sample_rate, mCodecContext->channels, tResampledBytes);
                                 #endif
