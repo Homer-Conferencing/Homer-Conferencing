@@ -120,6 +120,8 @@ void SIP::SetStunServer(string pServer)
 
 string SIP::SipCreateId(string pUser, string pHost, string pPort)
 {
+	string tResult = "";
+
     // add brackets for IPv6 hosts
     if ((pHost.find(":") != string::npos) && (pHost.find("[") == string::npos))
         pHost = "[" + pHost + "]";
@@ -127,9 +129,11 @@ string SIP::SipCreateId(string pUser, string pHost, string pPort)
     // ignore port "5060" because not necessary
     // HINT: SIP servers would be confused by this suffix -> they ignore incoming messages/calls with ":5060" in SIP address
     if ((pPort != "") && (pPort != "5060"))
-        return (pUser + "@" + pHost + ":" + pPort);
+    	tResult = (pUser + "@" + pHost + ":" + pPort);
     else
-        return (pUser + "@" + pHost);
+    	tResult = (pUser + "@" + pHost);
+
+    return tResult;
 }
 
 bool SIP::SplitParticipantName(string pParticipant, string &pUser, string &pHost, string &pPort)
@@ -523,7 +527,11 @@ bool SIP::GetServerRegistrationState()
 
 string SIP::GetServerSoftwareId()
 {
-    return mSipRegisterServerSoftwareId;
+	string tResult = "";
+
+	tResult = mSipRegisterServerSoftwareId;
+
+    return tResult;
 }
 
 void SIP::SipReceivedRegisterResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, const char* pPhrase, sip_t const *pSip, string pSourceIp, unsigned int pSourcePort)
@@ -680,21 +688,25 @@ void SIP::setAvailabilityState(string pState)
 
 string SIP::getAvailabilityStateStr()
 {
-    switch(mAvailabilityState)
+	string tResult = "";
+
+	switch(mAvailabilityState)
     {
         case AVAILABILITY_STATE_OFFLINE:
-            return "Offline";
+            tResult = "Offline";
             break;
         case AVAILABILITY_STATE_ONLINE:
-            return "Online";
+        	tResult = "Online";
             break;
         case AVAILABILITY_STATE_ONLINE_AUTO:
-            return "Online (auto)";
+        	tResult = "Online (auto)";
             break;
         default:
-            return "Online";
+        	tResult = "Online";
             break;
     }
+
+	return tResult;
 }
 
 void SIP::SipReceivedPublishResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, const char* pPhrase, sip_t const *pSip, string pSourceIp, unsigned int pSourcePort)

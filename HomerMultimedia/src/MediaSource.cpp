@@ -710,6 +710,8 @@ bool MediaSource::Reset(enum MediaType pMediaType)
 
 string MediaSource::GetCodecName()
 {
+	string tResult = "unknown";
+
     if (mMediaSourceOpened)
         if (mCodecContext != NULL)
             if (mCodecContext->codec != NULL)
@@ -717,21 +719,25 @@ string MediaSource::GetCodecName()
                 {
                 	string tName = FfmpegName2FfmpegFormat(string(mCodecContext->codec->name));
                 	if (tName != "")
-                		return tName;
+                		tResult = tName;
                 	else
-                		return string(mCodecContext->codec->name);
+                		tResult = string(mCodecContext->codec->name);
                 }
-    return "unknown";
+
+    return tResult;
 }
 
 string MediaSource::GetCodecLongName()
 {
+	string tResult = "unknown";
+
     if (mMediaSourceOpened)
         if (mCodecContext != NULL)
             if (mCodecContext->codec != NULL)
                 if (mCodecContext->codec->long_name != NULL)
-                    return string(mCodecContext->codec->long_name);
-    return "unknown";
+                    tResult = string(mCodecContext->codec->long_name);
+
+    return tResult;
 }
 
 bool MediaSource::SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset, bool pRtpActivated)
