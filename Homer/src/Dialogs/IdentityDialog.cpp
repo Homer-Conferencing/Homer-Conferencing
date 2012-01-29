@@ -81,7 +81,7 @@ void IdentityDialog::LoadConfiguration()
     if (MEETING.getStunNatIp() != "")
         mLbNatAdr->setText(QString(MEETING.getStunNatIp().c_str()));
     else
-        mLbNatAdr->setText("Not yet detected. Check the configuration!");
+        mLbNatAdr->setText("Not yet detected. Check configuration!");
     if (MEETING.getStunNatType() != "")
         mLbNatType->setText(QString(MEETING.getStunNatType().c_str()));
     else
