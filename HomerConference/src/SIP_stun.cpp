@@ -139,15 +139,23 @@ void SIP_stun::SetStunServer(string pServer)
 
 string SIP_stun::GetStunServer()
 {
-    return mStunServer;
+	string tResult = "";
+
+	tResult = mStunServer;
+
+	return tResult;
 }
 
 string SIP_stun::getStunNatIp()
 {
-    if ((!mStunSupportActivated) || (!mStunNatDetectionFinished))
-        return "";
+	string tResult = "";
+
+	if ((!mStunSupportActivated) || (!mStunNatDetectionFinished))
+        tResult = "";
     else
-        return mStunOutmostAdr;
+        tResult = mStunOutmostAdr;
+
+	return tResult;
 }
 
 int SIP_stun::getStunNatPort()
@@ -160,10 +168,14 @@ int SIP_stun::getStunNatPort()
 
 string SIP_stun::getStunNatType()
 {
-    if ((!mStunSupportActivated) || (!mStunNatDetectionFinished))
-        return "";
+	string tResult = "";
+
+	if ((!mStunSupportActivated) || (!mStunNatDetectionFinished))
+		tResult = "";
     else
-        return mStunNatType;
+    	tResult = mStunNatType;
+
+	return tResult;
 }
 
 bool SIP_stun::DetectNatViaStun(string &pFailureReason)
