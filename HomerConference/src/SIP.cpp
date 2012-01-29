@@ -803,7 +803,8 @@ void SIP::SipCallBack(int pEvent, int pStatus, char const *pPhrase, nua_t *pNua,
     if (tCurrentMessage != NULL)
     {
         tAddressDescriptor = (SocketAddressDescriptor *)msg_addrinfo(tCurrentMessage)->ai_addr;
-        if (!Socket::GetAddrFromDescriptor(tAddressDescriptor, tSourceIp, tSourcePort))
+        tSourceIp = Socket::GetAddrFromDescriptor(tAddressDescriptor, &tSourcePort);
+        if (tSourceIp == "")
             LOGEX(SIP, LOG_ERROR, "Could not determine SIP apcket's source");
         else
             LOGEX(SIP, LOG_INFO, "SIP-Network source: [%s]:%u", tSourceIp.c_str(), tSourcePort);

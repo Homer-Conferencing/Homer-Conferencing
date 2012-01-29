@@ -582,7 +582,8 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
 			#endif
 		    if (tReceivedBytes >= 0)
 		    {
-		        if (!GetAddrFromDescriptor(&tAddressDescriptor, mPeerHost, mPeerPort))
+		    	mPeerHost = GetAddrFromDescriptor(&tAddressDescriptor, &mPeerPort);
+		    	if (mPeerHost == "")
 		            LOG(LOG_ERROR ,"Could not determine the UDP/UDPLite source address for socket %d", mSocketHandle);
 		    }
             break;
@@ -613,7 +614,8 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
                     LOG(LOG_VERBOSE, "Having new IPv%d-TCP client socket %d connection on socket %d at local port %d", (mSocketNetworkType == SOCKET_IPv6) ? 6 : 4, mTcpClientSockeHandle, mSocketHandle, mLocalPort);
                     mIsConnected = true;
 
-                    if (!GetAddrFromDescriptor(&tAddressDescriptor, mPeerHost, mPeerPort))
+    		    	mPeerHost = GetAddrFromDescriptor(&tAddressDescriptor, &mPeerPort);
+    		    	if (mPeerHost == "")
                         LOG(LOG_ERROR ,"Could not determine the TCP source address for socket %d", mSocketHandle);
                 }
             }
@@ -907,8 +909,9 @@ bool Socket::FillAddrDescriptor(string pHost, unsigned int pPort, SocketAddressD
     return true;
 }
 
-bool Socket::GetAddrFromDescriptor(SocketAddressDescriptor *tAddressDescriptor, string &pHost, unsigned int &pPort)
+string Socket::GetAddrFromDescriptor(SocketAddressDescriptor *tAddressDescriptor, unsigned int *pPort)
 {
+	string tResult = "";
     char tSourceHostStr[INET6_ADDRSTRLEN];
     switch (tAddressDescriptor->sa_stor.ss_family)
     {
@@ -917,29 +920,31 @@ bool Socket::GetAddrFromDescriptor(SocketAddressDescriptor *tAddressDescriptor, 
             if (inet_ntop(AF_INET, &tAddressDescriptor->sa_in.sin_addr, tSourceHostStr, INET_ADDRSTRLEN /* is always smaller than INET6_ADDRSTRLEN */) == NULL)
             {
                 LOGEX(Socket, LOG_ERROR, "Error in inet_ntop(IPv4) because of %s", strerror(errno));
-                return false;
+                return "";
             }
-            pPort = (unsigned int)ntohs(tAddressDescriptor->sa_in.sin_port);
+            if(pPort != NULL)
+            	*pPort = (unsigned int)ntohs(tAddressDescriptor->sa_in.sin_port);
             break;
         case AF_INET6:
             if (inet_ntop(AF_INET6, &tAddressDescriptor->sa_in6.sin6_addr, tSourceHostStr, INET6_ADDRSTRLEN) == NULL)
             {
                 LOGEX(Socket, LOG_ERROR, "Error in inet_ntop(IPv6) because of %s", strerror(errno));
-                return false;
+                return "";
             }
-            pPort = (unsigned int)ntohs(tAddressDescriptor->sa_in6.sin6_port);
+            if(pPort != NULL)
+            	*pPort = (unsigned int)ntohs(tAddressDescriptor->sa_in6.sin6_port);
             break;
     }
     if (tSourceHostStr != NULL)
     {
-        pHost = string(tSourceHostStr);
+        tResult = string(tSourceHostStr);
         // IPv4 in IPv6 address?
-        if ((pHost.find(':') != string::npos) && (pHost.find('.') != string::npos))
-             pHost.erase(0, pHost.rfind(':') + 1);
+        if ((tResult.find(':') != string::npos) && (tResult.find('.') != string::npos))
+        	tResult.erase(0, tResult.rfind(':') + 1);
     }else
-        pHost = "";
+    	tResult = "";
 
-    return true;
+    return tResult;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1138,7 +1143,8 @@ bool Socket::BindSocket(unsigned int pPort, unsigned int pProbeStepping, unsigne
             LOG(LOG_ERROR, "Failed to determine the local socket name");
         }else
         {
-            if (!GetAddrFromDescriptor(&tAddressDescriptor, mLocalHost, mLocalPort))
+        	mLocalHost = GetAddrFromDescriptor(&tAddressDescriptor, &mLocalPort);
+        	if (mLocalHost == "")
                 LOG(LOG_ERROR ,"Could not determine the local BIND address for socket %d", mSocketHandle);
             else
                 LOG(LOG_VERBOSE, "Bound IPv%d-%s socket %d to %s:%d", (mSocketNetworkType == SOCKET_IPv6) ? 6 : 4, TransportType2String(mSocketTransportType).c_str(), mSocketHandle, mLocalHost.c_str(), mLocalPort);
