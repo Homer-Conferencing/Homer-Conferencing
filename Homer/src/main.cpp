@@ -278,6 +278,7 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
     }
 
     // load the icon resources
+    LOGEX(MainWindow, LOG_VERBOSE, "Loading Icons.rcc from %s", (tAbsBinPath + "Icons.rcc").c_str());
     QResource::registerResource(QString((tAbsBinPath + "Icons.rcc").c_str()));
 
     #ifdef RELEASE_VERSION
