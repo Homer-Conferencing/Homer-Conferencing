@@ -135,7 +135,7 @@ public:
     static enum NetworkType String2NetworkType(std::string pTypeStr);
 
     /* handling of SocketAddressDescriptor */
-    static bool GetAddrFromDescriptor(SocketAddressDescriptor *tAddressDescriptor, std::string &pHost, unsigned int &pPort);
+    static std::string GetAddrFromDescriptor(SocketAddressDescriptor *tAddressDescriptor, unsigned int *pPort = NULL);
     static bool FillAddrDescriptor(std::string pHost, unsigned int pPort, SocketAddressDescriptor *tAddressDescriptor, unsigned int &tAddressDescriptorSize);
 
 private:
