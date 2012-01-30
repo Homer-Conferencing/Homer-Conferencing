@@ -1,6 +1,7 @@
 /*****************************************************************************
  *
- * Copyright (C) 2008-2011 Homer-conferencing project
+ * Copyright (C) 2009 Thomas Volkert <thomas@homer-conferencing.com>
+ * Copyright (C) 2009-2009 Stefan Koegel
  *
  * This software is free software.
  * Your are allowed to redistribute it and/or modify it under the terms of

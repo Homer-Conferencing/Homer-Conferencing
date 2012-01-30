@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 2008-2011 Homer-conferencing project
+ * Copyright (C) 2008 Thomas Volkert <thomas@homer-conferencing.com>
  *
  * This software is free software.
  * Your are allowed to redistribute it and/or modify it under the terms of
@@ -245,6 +245,7 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
 
     #ifdef RELEASE_VERSION
 	    printf("Homer-Conferencing, Version "RELEASE_VERSION_STRING"\n");
+	    printf("Copyright (C) 2008 Thomas Volkert <thomas@homer-conferencing.com>\n");
         printf("For updates visit http://www.homer-conferencing.com\n");
     #endif
 
