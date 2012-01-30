@@ -516,7 +516,7 @@ bool Meeting::SendCall(string pParticipant)
     bool        tFound = false;
     nua_handle_t **tHandlePtr = NULL;
     ParticipantList::iterator tIt;
-//TODO: wie bei nachrichten hier broadcasts unterstützen
+//TODO: support broadcast, similar to SendMessage()
     // lock
     mParticipantsMutex.lock();
 

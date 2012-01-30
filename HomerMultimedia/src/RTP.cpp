@@ -1259,11 +1259,11 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                             break;
             case CODEC_ID_AMR_NB:
                             LOG(LOG_VERBOSE, "#################### AMR-NB header #######################");
-                            LOG(LOG_VERBOSE, "TODO: AMR header parsing");//TODO: implementieren
+                            LOG(LOG_VERBOSE, "TODO: AMR header parsing");//TODO: implement
                             break;
             case CODEC_ID_AAC:
                             LOG(LOG_VERBOSE, "#################### AAC header #######################");
-                            LOG(LOG_VERBOSE, "TODO: AAC header parsing");//TODO: implementieren
+                            LOG(LOG_VERBOSE, "TODO: AAC header parsing");//TODO: implement
                             break;
             case CODEC_ID_MP3:
                             // convert from network to host byte order
