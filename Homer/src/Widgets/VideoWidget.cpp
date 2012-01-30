@@ -1093,8 +1093,6 @@ void VideoWidget::paintEvent(QPaintEvent *pEvent)
     	mNeedBackgroundUpdatesUntillNextFrame = true;
     mCurrentApplicationFocusedWidget = tWidget;
 
-    //TODO: remove this line and get paint errors fixed
-    //mNeedBackgroundUpdate = true;
     if ((mNeedBackgroundUpdate) || (mNeedBackgroundUpdatesUntillNextFrame))
     {
         //### calculate background surrounding the current frame
