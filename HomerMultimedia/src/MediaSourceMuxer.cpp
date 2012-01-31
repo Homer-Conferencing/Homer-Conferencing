@@ -95,6 +95,10 @@ int MediaSourceMuxer::DistributePacket(void *pOpaque, uint8_t *pBuffer, int pBuf
     #ifdef MSM_DEBUG_PACKETS
         LOG(LOG_VERBOSE, "Distribute packet of size: %d", pBufferSize);
     #endif
+    if (pBufferSize > tMuxer->mStreamMaxPacketSize)
+    {
+        LOGEX(MediaSourceMuxer, LOG_WARN, "Current buffer size of %d bytes exceeds maximum packet size of %d bytes", pBufferSize, tMuxer->mStreamMaxPacketSize);
+    }
     tMuxer->RelayPacketToMediaSinks(tBuffer, (unsigned int)pBufferSize, tMuxer->mTranscoderHasKeyFrame);
 
     return pBufferSize;
