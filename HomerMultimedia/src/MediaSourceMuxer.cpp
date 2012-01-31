@@ -88,6 +88,9 @@ int MediaSourceMuxer::DistributePacket(void *pOpaque, uint8_t *pBuffer, int pBuf
     MediaSourceMuxer *tMuxer = (MediaSourceMuxer*)pOpaque;
     char *tBuffer = (char*)pBuffer;
 
+    // log statistics
+    tMuxer->AnnouncePacket(pBufferSize);
+
     //####################################################################
     // distribute frame among the registered media sinks
     // ###################################################################
@@ -312,6 +315,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     mCodecContext->qmax = 2 +(100 - mStreamQuality) / 4; // default is 31
     // set max. packet size for RTP based packets
     //HINT: don't set if we use H261, otherwise ffmpeg internal functions in mpegvideo_enc.c (MPV_*) would get confused because H261 support is missing for RTP
+    //TODO: fix packet size limitation here, currently the packet size limitation doesn't work hor H.261 codec because ffmpegs lacks support for RTP encaps. for H.261 based video streams, TODO: send them the fitting bug-fix
     if (tFormat->video_codec != CODEC_ID_H261)
         mCodecContext->rtp_payload_size = mStreamMaxPacketSize;
     else
@@ -1087,9 +1091,6 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                             LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket.pos);
                                         #endif
 
-                                        // log statistics
-                                        AnnouncePacket(tPacket.size);
-
                                         //####################################################################
                                         // distribute the encoded frame
                                         // ###################################################################
@@ -1178,9 +1179,6 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                             LOG(LOG_VERBOSE, "      ..size: %d", tPacket.size);
                                             LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket.pos);
                                         #endif
-
-                                        // log statistics
-                                        AnnouncePacket(tPacket.size);
 
                                         //####################################################################
                                         // distribute the encoded frame
