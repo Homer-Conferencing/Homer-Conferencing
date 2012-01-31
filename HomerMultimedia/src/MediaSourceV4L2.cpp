@@ -728,7 +728,7 @@ bool MediaSourceV4L2::SupportsMultipleInputChannels()
     // lock grabbing
     mGrabMutex.lock();
 
-    LOG(LOG_VERBOSE, "Probing for multiple input channels for device %s", mCurrentDevice.c_str());
+    //LOG(LOG_VERBOSE, "Probing for multiple input channels for device %s", mCurrentDevice.c_str());
     if ((tFd = open(mCurrentDevice.c_str(), O_RDONLY)) >= 0)
     {
         tV4L2Input.index = 0;
