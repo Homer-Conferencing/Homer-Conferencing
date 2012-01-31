@@ -348,7 +348,7 @@
           </property>
           <property name="font">
            <font>
-            <pointsize>8</pointsize>
+            <pointsize>9</pointsize>
            </font>
           </property>
           <property name="toolTip">
@@ -404,7 +404,7 @@
           </property>
           <property name="font">
            <font>
-            <pointsize>8</pointsize>
+            <pointsize>9</pointsize>
            </font>
           </property>
           <property name="toolTip">
@@ -474,7 +474,7 @@
           </property>
           <property name="font">
            <font>
-            <pointsize>8</pointsize>
+            <pointsize>9</pointsize>
            </font>
           </property>
           <property name="toolTip">
@@ -530,7 +530,7 @@
           </property>
           <property name="font">
            <font>
-            <pointsize>8</pointsize>
+            <pointsize>9</pointsize>
            </font>
           </property>
           <property name="toolTip">

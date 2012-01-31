@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>654</width>
-    <height>266</height>
+    <width>676</width>
+    <height>235</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -37,7 +37,7 @@
      <widget class="QGroupBox" name="mGrpOutgoing">
       <property name="font">
        <font>
-        <pointsize>7</pointsize>
+        <pointsize>8</pointsize>
         <weight>75</weight>
         <bold>true</bold>
        </font>
@@ -59,7 +59,7 @@
         <widget class="QTableWidget" name="mTwOutgoingStreams">
          <property name="font">
           <font>
-           <pointsize>7</pointsize>
+           <pointsize>8</pointsize>
            <weight>50</weight>
            <bold>false</bold>
           </font>

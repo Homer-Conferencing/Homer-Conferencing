@@ -787,7 +787,7 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
         tPainter->drawText(5, 61, " Frame: " + QString("%1").arg(pFrameNumber) + (mVideoSource->GetChunkDropConter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropConter()) + " dropped)") : ""));
         tPainter->drawText(5, 81, " Fps: " + QString("%1").arg(pFps, 4, 'f', 2, ' '));
         tPainter->drawText(5, 101, " Codec: " + QString((mVideoSource->GetCodecName() != "") ? mVideoSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(tSourceResX) + "*" + QString("%1").arg(tSourceResY) + ")");
-        tPainter->drawText(5, 121, " Output: " + QString("%1").arg(tFrameOutputWidth) + "*" + QString("%1").arg(tFrameOutputHeight) + "(" + tAspectRatio + ")");
+        tPainter->drawText(5, 121, " Output: " + QString("%1").arg(tFrameOutputWidth) + "*" + QString("%1").arg(tFrameOutputHeight) + " (" + tAspectRatio + ")");
         if (mVideoSource->SupportsSeeking())
             tPainter->drawText(5, 141, " Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0'));
 
@@ -796,7 +796,7 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
         tPainter->drawText(4, 60, " Frame: " + QString("%1").arg(pFrameNumber) + (mVideoSource->GetChunkDropConter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropConter()) + " dropped)") : ""));
         tPainter->drawText(4, 80, " Fps: " + QString("%1").arg(pFps, 4, 'f', 2, ' '));
         tPainter->drawText(4, 100, " Codec: " + QString((mVideoSource->GetCodecName() != "") ? mVideoSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(tSourceResX) + "*" + QString("%1").arg(tSourceResY) + ")");
-        tPainter->drawText(4, 120, " Output: "  + QString("%1").arg(tFrameOutputWidth) + "*" + QString("%1").arg(tFrameOutputHeight) + "(" + tAspectRatio + ")");
+        tPainter->drawText(4, 120, " Output: "  + QString("%1").arg(tFrameOutputWidth) + "*" + QString("%1").arg(tFrameOutputHeight) + " (" + tAspectRatio + ")");
         if (mVideoSource->SupportsSeeking())
 			tPainter->drawText(4, 140, " Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0'));
     }

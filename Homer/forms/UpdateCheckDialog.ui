@@ -297,7 +297,7 @@ p, li { white-space: pre-wrap; }
 &lt;table border=&quot;0&quot; style=&quot;-qt-table-type: root; margin-top:4px; margin-bottom:4px; margin-left:4px; margin-right:4px;&quot;&gt;
 &lt;tr&gt;
 &lt;td style=&quot;border: none;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Arial';&quot;&gt;Find current releases and news: &lt;br /&gt;&lt;/span&gt;&amp;nbsp;&lt;a href=&quot;http://www.homer-conferencing.com&quot;&gt;&lt;span style=&quot; font-family:'Arial'; text-decoration: underline; color:#33517e;&quot;&gt;http://www.homer-conferencing.com&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Arial';&quot;&gt;Find current releases and news: &lt;br /&gt;&lt;/span&gt; &lt;a href=&quot;http://www.homer-conferencing.com&quot;&gt;&lt;span style=&quot; font-family:'Arial'; text-decoration: underline; color:#33517e;&quot;&gt;http://www.homer-conferencing.com&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="scaledContents">
            <bool>true</bool>
@@ -420,6 +420,8 @@ p, li { white-space: pre-wrap; }
           <property name="font">
            <font>
             <family>Arial</family>
+            <weight>75</weight>
+            <bold>true</bold>
            </font>
           </property>
           <property name="title">
@@ -435,6 +437,8 @@ p, li { white-space: pre-wrap; }
               <font>
                <family>Arial</family>
                <pointsize>15</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
               </font>
              </property>
              <property name="text">
@@ -446,6 +450,12 @@ p, li { white-space: pre-wrap; }
             <widget class="QWebView" name="mWvChangelog">
              <property name="enabled">
               <bool>true</bool>
+             </property>
+             <property name="font">
+              <font>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
              </property>
             </widget>
            </item>
