@@ -153,16 +153,8 @@ int PacketStatistic::getAvgPacketSize()
 {
     int64_t tResult = 0, tCount = 0, tPacketsSize = 0;
 
-    // lock
-    mStatisticsMutex.lock();
-
-    tCount = (long)mStatistics.size();
-
-    // unlock
-    mStatisticsMutex.unlock();
-
-    if (tCount > 0)
-        tResult = mByteCount / tCount;
+    if (mPacketCount > 0)
+        tResult = mByteCount / mPacketCount;
     else
         tResult = 0;
 
