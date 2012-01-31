@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>457</width>
-    <height>359</height>
+    <width>570</width>
+    <height>380</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -89,7 +89,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>8</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -131,7 +131,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>8</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -167,7 +167,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>8</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -209,7 +209,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>8</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -248,19 +248,19 @@
              </property>
              <property name="minimumSize">
               <size>
-               <width>150</width>
+               <width>180</width>
                <height>22</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>150</width>
+               <width>180</width>
                <height>22</height>
               </size>
              </property>
              <property name="font">
               <font>
-               <pointsize>8</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -286,7 +286,8 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>8</pointsize>
+               <family>Bitstream Vera Sans</family>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -373,19 +374,19 @@
              </property>
              <property name="minimumSize">
               <size>
-               <width>150</width>
+               <width>180</width>
                <height>22</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>150</width>
+               <width>180</width>
                <height>22</height>
               </size>
              </property>
              <property name="font">
               <font>
-               <pointsize>8</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -411,7 +412,8 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>8</pointsize>
+               <family>Bitstream Vera Sans</family>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -513,19 +515,19 @@
              </property>
              <property name="minimumSize">
               <size>
-               <width>100</width>
+               <width>120</width>
                <height>22</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>100</width>
+               <width>120</width>
                <height>22</height>
               </size>
              </property>
              <property name="font">
               <font>
-               <pointsize>8</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -551,7 +553,8 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>8</pointsize>
+               <family>Bitstream Vera Sans</family>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -584,19 +587,19 @@
              </property>
              <property name="minimumSize">
               <size>
-               <width>100</width>
+               <width>120</width>
                <height>22</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>100</width>
+               <width>120</width>
                <height>16777215</height>
               </size>
              </property>
              <property name="font">
               <font>
-               <pointsize>8</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -622,7 +625,8 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>8</pointsize>
+               <family>Bitstream Vera Sans</family>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>

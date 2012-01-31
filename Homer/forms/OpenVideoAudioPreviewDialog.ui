@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>761</width>
-    <height>364</height>
+    <width>812</width>
+    <height>381</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -54,13 +54,13 @@
          <widget class="QRadioButton" name="mRbDevice">
           <property name="minimumSize">
            <size>
-            <width>130</width>
+            <width>170</width>
             <height>0</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>130</width>
+            <width>170</width>
             <height>16777215</height>
            </size>
           </property>
@@ -127,7 +127,7 @@
                 <widget class="QComboBox" name="mCbDeviceVideo">
                  <property name="font">
                   <font>
-                   <pointsize>8</pointsize>
+                   <pointsize>9</pointsize>
                    <weight>50</weight>
                    <bold>false</bold>
                   </font>
@@ -185,7 +185,7 @@
                 <widget class="QComboBox" name="mCbDeviceAudio">
                  <property name="font">
                   <font>
-                   <pointsize>8</pointsize>
+                   <pointsize>9</pointsize>
                    <weight>50</weight>
                    <bold>false</bold>
                   </font>
@@ -218,13 +218,13 @@
          <widget class="QRadioButton" name="mRbFile">
           <property name="minimumSize">
            <size>
-            <width>130</width>
+            <width>170</width>
             <height>0</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>130</width>
+            <width>170</width>
             <height>16777215</height>
            </size>
           </property>
@@ -311,13 +311,13 @@
          <widget class="QRadioButton" name="mRbStream">
           <property name="minimumSize">
            <size>
-            <width>130</width>
+            <width>170</width>
             <height>0</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>130</width>
+            <width>170</width>
             <height>16777215</height>
            </size>
           </property>
@@ -364,7 +364,7 @@
                  </property>
                  <property name="font">
                   <font>
-                   <pointsize>8</pointsize>
+                   <pointsize>9</pointsize>
                    <weight>50</weight>
                    <bold>false</bold>
                   </font>
@@ -390,7 +390,7 @@
                  </property>
                  <property name="font">
                   <font>
-                   <pointsize>8</pointsize>
+                   <pointsize>9</pointsize>
                    <weight>50</weight>
                    <bold>false</bold>
                   </font>
@@ -444,7 +444,7 @@
                  </property>
                  <property name="font">
                   <font>
-                   <pointsize>8</pointsize>
+                   <pointsize>9</pointsize>
                    <weight>50</weight>
                    <bold>false</bold>
                   </font>
@@ -470,7 +470,7 @@
                  </property>
                  <property name="font">
                   <font>
-                   <pointsize>8</pointsize>
+                   <pointsize>9</pointsize>
                    <weight>50</weight>
                    <bold>false</bold>
                   </font>
@@ -529,6 +529,7 @@
                  </property>
                  <property name="font">
                   <font>
+                   <pointsize>9</pointsize>
                    <weight>50</weight>
                    <bold>false</bold>
                   </font>
@@ -576,6 +577,7 @@
                  </property>
                  <property name="font">
                   <font>
+                   <pointsize>9</pointsize>
                    <weight>50</weight>
                    <bold>false</bold>
                   </font>
@@ -589,7 +591,7 @@
                 <widget class="QComboBox" name="mCbCodecVideo">
                  <property name="font">
                   <font>
-                   <pointsize>8</pointsize>
+                   <pointsize>9</pointsize>
                    <weight>50</weight>
                    <bold>false</bold>
                   </font>
@@ -649,7 +651,7 @@
                  </property>
                  <property name="font">
                   <font>
-                   <pointsize>8</pointsize>
+                   <pointsize>9</pointsize>
                    <weight>50</weight>
                    <bold>false</bold>
                   </font>
@@ -675,7 +677,7 @@
                  </property>
                  <property name="font">
                   <font>
-                   <pointsize>8</pointsize>
+                   <pointsize>9</pointsize>
                    <weight>50</weight>
                    <bold>false</bold>
                   </font>
@@ -729,7 +731,7 @@
                  </property>
                  <property name="font">
                   <font>
-                   <pointsize>8</pointsize>
+                   <pointsize>9</pointsize>
                    <weight>50</weight>
                    <bold>false</bold>
                   </font>
@@ -755,7 +757,7 @@
                  </property>
                  <property name="font">
                   <font>
-                   <pointsize>8</pointsize>
+                   <pointsize>9</pointsize>
                    <weight>50</weight>
                    <bold>false</bold>
                   </font>
@@ -814,6 +816,7 @@
                  </property>
                  <property name="font">
                   <font>
+                   <pointsize>9</pointsize>
                    <weight>50</weight>
                    <bold>false</bold>
                   </font>
@@ -861,6 +864,7 @@
                  </property>
                  <property name="font">
                   <font>
+                   <pointsize>9</pointsize>
                    <weight>50</weight>
                    <bold>false</bold>
                   </font>
@@ -874,7 +878,7 @@
                 <widget class="QComboBox" name="mCbCodecAudio">
                  <property name="font">
                   <font>
-                   <pointsize>8</pointsize>
+                   <pointsize>9</pointsize>
                    <weight>50</weight>
                    <bold>false</bold>
                   </font>
@@ -954,6 +958,11 @@
      </item>
      <item>
       <widget class="QCheckBox" name="mCbVideoEnabled">
+       <property name="font">
+        <font>
+         <pointsize>9</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>Video playback enabled</string>
        </property>
@@ -977,6 +986,11 @@
      </item>
      <item>
       <widget class="QCheckBox" name="mCbAudioEnabled">
+       <property name="font">
+        <font>
+         <pointsize>9</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>Audio playback enabled</string>
        </property>

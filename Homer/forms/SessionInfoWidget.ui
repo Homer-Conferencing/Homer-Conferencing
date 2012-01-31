@@ -103,7 +103,8 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>8</pointsize>
+         <family>Bitstream Vera Sans</family>
+         <pointsize>9</pointsize>
          <weight>50</weight>
          <italic>true</italic>
          <bold>false</bold>
@@ -193,7 +194,8 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>8</pointsize>
+         <family>Bitstream Vera Sans</family>
+         <pointsize>9</pointsize>
          <weight>50</weight>
          <italic>true</italic>
          <bold>false</bold>
@@ -283,7 +285,8 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>8</pointsize>
+         <family>Bitstream Vera Sans</family>
+         <pointsize>9</pointsize>
          <weight>50</weight>
          <italic>true</italic>
          <bold>false</bold>
@@ -373,7 +376,8 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>8</pointsize>
+         <family>Bitstream Vera Sans</family>
+         <pointsize>9</pointsize>
          <weight>50</weight>
          <italic>true</italic>
          <bold>false</bold>
@@ -460,7 +464,8 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>8</pointsize>
+         <family>Bitstream Vera Sans</family>
+         <pointsize>9</pointsize>
          <weight>50</weight>
          <italic>true</italic>
          <bold>false</bold>
@@ -547,7 +552,8 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>8</pointsize>
+         <family>Bitstream Vera Sans</family>
+         <pointsize>9</pointsize>
          <weight>50</weight>
          <italic>true</italic>
          <bold>false</bold>
@@ -634,7 +640,8 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>8</pointsize>
+         <family>Bitstream Vera Sans</family>
+         <pointsize>9</pointsize>
          <weight>50</weight>
          <italic>true</italic>
          <bold>false</bold>
@@ -721,7 +728,8 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>8</pointsize>
+         <family>Bitstream Vera Sans</family>
+         <pointsize>9</pointsize>
          <weight>50</weight>
          <italic>true</italic>
          <bold>false</bold>

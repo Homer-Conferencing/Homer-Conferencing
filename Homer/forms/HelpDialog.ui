@@ -303,7 +303,7 @@
             </property>
             <property name="font">
              <font>
-              <pointsize>8</pointsize>
+              <pointsize>9</pointsize>
              </font>
             </property>
             <property name="text">
@@ -361,7 +361,7 @@
           </property>
           <property name="font">
            <font>
-            <pointsize>8</pointsize>
+            <pointsize>9</pointsize>
             <italic>true</italic>
            </font>
           </property>
@@ -408,6 +408,12 @@ p, li { white-space: pre-wrap; }
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
          <widget class="QGroupBox" name="groupBox">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
           <property name="title">
            <string> Help view </string>
           </property>
@@ -431,6 +437,13 @@ p, li { white-space: pre-wrap; }
             <widget class="QWebView" name="mWvHelp">
              <property name="enabled">
               <bool>true</bool>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
              </property>
             </widget>
            </item>

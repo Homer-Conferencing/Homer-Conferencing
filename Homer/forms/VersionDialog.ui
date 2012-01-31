@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>670</width>
-    <height>441</height>
+    <width>698</width>
+    <height>431</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -443,7 +443,7 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>Arial</family>
+                <family>Bitstream Vera Sans</family>
                 <pointsize>9</pointsize>
                 <italic>false</italic>
                </font>
@@ -682,7 +682,7 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>Arial</family>
+                <family>Bitstream Vera Sans</family>
                 <pointsize>9</pointsize>
                 <italic>false</italic>
                </font>
@@ -920,7 +920,7 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>Arial</family>
+                <family>Bitstream Vera Sans</family>
                 <pointsize>9</pointsize>
                 <italic>false</italic>
                </font>
@@ -1155,7 +1155,7 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>Arial</family>
+                <family>Bitstream Vera Sans</family>
                 <pointsize>9</pointsize>
                 <italic>false</italic>
                </font>
@@ -1393,7 +1393,7 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <family>Arial</family>
+                <family>Bitstream Vera Sans</family>
                 <pointsize>9</pointsize>
                 <italic>false</italic>
                </font>
