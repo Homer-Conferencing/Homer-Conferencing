@@ -1271,6 +1271,18 @@ void MediaSourceMuxer::GetVideoGrabResolution(int &pResX, int &pResY)
         mMediaSource->GetVideoGrabResolution(pResX, pResY);
 }
 
+void MediaSourceMuxer::GetVideoSourceResolution(int &pResX, int &pResY)
+{
+    if (mMediaType == MEDIA_AUDIO)
+    {
+        LOG(LOG_ERROR, "Wrong media type detected");
+        return;
+    }
+
+    if (mMediaSource != NULL)
+        mMediaSource->GetVideoSourceResolution(pResX, pResY);
+}
+
 GrabResolutions MediaSourceMuxer::GetSupportedVideoGrabResolutions()
 {
     GrabResolutions tResult;
