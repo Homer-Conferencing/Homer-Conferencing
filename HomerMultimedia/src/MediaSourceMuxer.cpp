@@ -96,7 +96,7 @@ int MediaSourceMuxer::DistributePacket(void *pOpaque, uint8_t *pBuffer, int pBuf
     // ###################################################################
     // no locking of mMediaSinksMutex needed - we are running in context of GrabChunk
     #ifdef MSM_DEBUG_PACKETS
-        LOG(LOG_VERBOSE, "Distribute packet of size: %d", pBufferSize);
+        LOGEX(MediaSourceMuxer, LOG_VERBOSE, "Distribute packet of size: %d", pBufferSize);
     #endif
     if (pBufferSize > tMuxer->mStreamMaxPacketSize)
     {
