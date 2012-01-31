@@ -163,6 +163,7 @@ public:
     virtual void SetVideoGrabResolution(int pResX = 352, int pResY = 288);
     virtual void GetVideoGrabResolution(int &pResX, int &pResY);
     virtual GrabResolutions GetSupportedVideoGrabResolutions();
+    virtual void GetVideoSourceResolution(int &pResX, int &pResY);
 
     /* grabbing control */
     virtual void StopGrabbing();

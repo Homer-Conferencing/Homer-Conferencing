@@ -83,6 +83,7 @@ public:
     virtual void GetVideoGrabResolution(int &pResX, int &pResY);
     virtual GrabResolutions GetSupportedVideoGrabResolutions();
     virtual void SetVideoFlipping(bool pHFlip, bool pVFlip);
+    virtual void GetVideoSourceResolution(int &pResX, int &pResY);
 
     /* grabbing control */
     virtual void StopGrabbing();
