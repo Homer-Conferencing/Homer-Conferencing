@@ -106,6 +106,7 @@ public:
 
     void Init(int pLevel);
     void Deinit();
+    void SetColoring(bool pState = true);
     void AddMessage(int pLevel, const char *pSource, int pLine, const char* pFormat, ...);
     void SetLogLevel(int pLevel);
     int GetLogLevel();

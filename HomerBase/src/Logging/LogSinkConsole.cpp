@@ -50,6 +50,7 @@ LogSinkConsole::LogSinkConsole()
 {
     mLogLevel = LOG_ERROR;
     mLogSinkId = "CONSOLE: standard out";
+    mColoring = true;
 	#ifdef WIN32
 		sConsoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 	#endif
@@ -67,6 +68,11 @@ LogSinkConsole::~LogSinkConsole()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+void LogSinkConsole::SetColoring(bool pState)
+{
+    mColoring = pState;
+}
+
 /*
     LINUX COLORING
     --------------
@@ -130,52 +136,72 @@ void LogSinkConsole::ProcessMessage(int pLevel, string pTime, string pSource, in
 {
     if ((pLevel <= mLogLevel) && (pLevel > LOG_OFF))
     {
-        #if defined(LINUX) || defined(APPLE) || defined(BSD)
+        if(mColoring)
+        {
+            #if defined(LINUX) || defined(APPLE) || defined(BSD)
+                switch(pLevel)
+                {
+                    case LOG_ERROR:
+                                printf("\033[22;36m(%s)\033[22;31m ERROR:   %s(%d):\033[01;31m %s\033[00;22;35m\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
+                                break;
+                    case LOG_WARN:
+                                printf("\033[22;36m(%s)\033[22;33m WARN:    %s(%d):\033[01;33m %s\033[00;22;35m\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
+                                break;
+                    case LOG_INFO:
+                                printf("\033[22;36m(%s)\033[01;30m INFO:    %s(%d):\033[01;37m %s\033[00;22;35m\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
+                                break;
+                    case LOG_VERBOSE:
+                                printf("\033[22;36m(%s)\033[01;30m VERBOSE: %s(%d):\033[01;37m %s\033[00;22;35m\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
+                                break;
+                }
+            #endif
+            #ifdef WIN32
+                SetConsoleTextAttribute(sConsoleHandle, 3);
+                printf("(%s) ", pTime.c_str());
+                switch(pLevel)
+                {
+                    case LOG_ERROR:
+                                SetConsoleTextAttribute(sConsoleHandle, 4);
+                                printf("ERROR:   %s(%d): ", pSource.c_str(), pLine);
+                                SetConsoleTextAttribute(sConsoleHandle, 12);
+                                break;
+                    case LOG_WARN:
+                                SetConsoleTextAttribute(sConsoleHandle, 6);
+                                printf("WARN:    %s(%d): ", pSource.c_str(), pLine);
+                                SetConsoleTextAttribute(sConsoleHandle, 14);
+                                break;
+                    case LOG_INFO:
+                                SetConsoleTextAttribute(sConsoleHandle, 8);
+                                printf("INFO:    %s(%d): ", pSource.c_str(), pLine);
+                                SetConsoleTextAttribute(sConsoleHandle, 15);
+                                break;
+                    case LOG_VERBOSE:
+                                SetConsoleTextAttribute(sConsoleHandle, 8);
+                                printf("VERBOSE: %s(%d): ", pSource.c_str(), pLine);
+                                SetConsoleTextAttribute(sConsoleHandle, 15);
+                                break;
+                }
+                printf("%s\n", pMessage.c_str());
+                SetConsoleTextAttribute(sConsoleHandle, 7);
+            #endif
+        }else
+        {
             switch(pLevel)
             {
                 case LOG_ERROR:
-                            printf("\033[22;36m(%s)\033[22;31m ERROR:   %s(%d):\033[01;31m %s\033[00;22;35m\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
+                            printf("(%s) ERROR:   %s(%d):\ %s\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
                             break;
                 case LOG_WARN:
-                            printf("\033[22;36m(%s)\033[22;33m WARN:    %s(%d):\033[01;33m %s\033[00;22;35m\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
+                            printf("(%s) WARN:    %s(%d):\ %s\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
                             break;
                 case LOG_INFO:
-                            printf("\033[22;36m(%s)\033[01;30m INFO:    %s(%d):\033[01;37m %s\033[00;22;35m\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
+                            printf("(%s) INFO:    %s(%d):\ %s\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
                             break;
                 case LOG_VERBOSE:
-                            printf("\033[22;36m(%s)\033[01;30m VERBOSE: %s(%d):\033[01;37m %s\033[00;22;35m\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
+                            printf("(%s) VERBOSE: %s(%d):\ %s\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
                             break;
             }
-        #endif
-        #ifdef WIN32
-			SetConsoleTextAttribute(sConsoleHandle, 3);
-            printf("(%s) ", pTime.c_str());
-            switch(pLevel)
-            {
-                case LOG_ERROR:
-                            SetConsoleTextAttribute(sConsoleHandle, 4);
-                            printf("ERROR:   %s(%d): ", pSource.c_str(), pLine);
-                            SetConsoleTextAttribute(sConsoleHandle, 12);
-                            break;
-                case LOG_WARN:
-                            SetConsoleTextAttribute(sConsoleHandle, 6);
-                            printf("WARN:    %s(%d): ", pSource.c_str(), pLine);
-                            SetConsoleTextAttribute(sConsoleHandle, 14);
-                            break;
-                case LOG_INFO:
-                            SetConsoleTextAttribute(sConsoleHandle, 8);
-                            printf("INFO:    %s(%d): ", pSource.c_str(), pLine);
-                            SetConsoleTextAttribute(sConsoleHandle, 15);
-                            break;
-                case LOG_VERBOSE:
-                            SetConsoleTextAttribute(sConsoleHandle, 8);
-                            printf("VERBOSE: %s(%d): ", pSource.c_str(), pLine);
-                            SetConsoleTextAttribute(sConsoleHandle, 15);
-                            break;
-            }
-            printf("%s\n", pMessage.c_str());
-            SetConsoleTextAttribute(sConsoleHandle, 7);
-        #endif
+        }
     }
 }
 
