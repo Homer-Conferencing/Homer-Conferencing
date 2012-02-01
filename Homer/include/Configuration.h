@@ -161,7 +161,7 @@ public:
     bool GetCallSound();
     bool GetCallSystray();
 
-    /* additional static values */
+    /* additional fixed values */
     int GetSystrayTimeout(){ return 6000; /* ms */ }
     int GetContactPresenceCheckPeriod(){ return 60*1000; /* ms */ }
 
@@ -266,10 +266,10 @@ private:
     void SetCallSystray(bool pActivation);
 
 
-    /* debugging state machine */
+    /* debug state */
     void SetDebugging(bool pState = true);
 
-    // important because some write operations could be delayed
+    // important because some write operations might be delayed
     void Sync();
 
     std::string             mAbsBinPath;
