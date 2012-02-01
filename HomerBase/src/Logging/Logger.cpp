@@ -195,6 +195,11 @@ void Logger::RelayMessageToLogSinks(int pLevel, string pTime, string pSource, in
     mLogSinksMutex.unlock();
 }
 
+void Logger::SetColoring(bool pState)
+{
+    mLogSinkConsole->SetColoring(pState);
+}
+
 void Logger::AddMessage(int pLevel, const char *pSource, int pLine, const char* pFormat, ...)
 {
     if( !sLoggerReady)

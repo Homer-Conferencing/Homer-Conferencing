@@ -47,10 +47,12 @@ public:
 
     void SetLogLevel(int pLevel);
     int GetLogLevel();
+    void SetColoring(bool pState = true);
     virtual void ProcessMessage(int pLevel, std::string pTime, std::string pSource, int pLine, std::string pMessage);
 
 private:
     int         mLogLevel;
+    bool        mColoring;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
