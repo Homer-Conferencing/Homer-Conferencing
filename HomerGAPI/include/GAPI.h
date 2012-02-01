@@ -31,6 +31,8 @@
 #include <HBMutex.h>
 
 #include <ISetup.h>
+#include <ISubscription.h>
+#include <IRegistration.h>
 
 #include <list>
 

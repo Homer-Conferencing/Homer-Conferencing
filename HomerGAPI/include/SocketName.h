@@ -28,6 +28,8 @@
 #ifndef _GAPI_SOCKET_NAME_
 #define _GAPI_SOCKET_NAME_
 
+#include <IName.h>
+
 #include <string>
 
 namespace Homer { namespace Base {
