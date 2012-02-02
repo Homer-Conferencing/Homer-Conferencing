@@ -306,6 +306,9 @@ protected:
     /* multiple channel input */
     int                 mCurrentInputChannel;
     int                 mDesiredInputChannel;
+    /* ffmpeg init */
+    static Mutex 		mFfmpegInitMutex;
+    static bool 		mFfmpegInitiated;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
