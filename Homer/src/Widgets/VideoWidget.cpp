@@ -1357,7 +1357,10 @@ QStringList VideoWorkerThread::GetPossibleDevices()
     VideoDevicesList::iterator tIt;
     VideoDevicesList tVList;
 
+    LOG(LOG_VERBOSE, "Enumerate all video devices..");
     mVideoSource->getVideoDevices(tVList);
+
+    LOG(LOG_VERBOSE, "Convert device info to processable format..");
     for (tIt = tVList.begin(); tIt != tVList.end(); tIt++)
         tResult.push_back(QString(tIt->Name.c_str()));
 
@@ -1508,11 +1511,11 @@ void VideoWorkerThread::DoStopRecorder()
 
 void VideoWorkerThread::DoPlayNewFile()
 {
-    QStringList tList = GetPossibleDevices();
-    int tPos = -1, i = 0;
-
     LOG(LOG_VERBOSE, "DoPlayNewFile now...");
-    for (i = 0; i < tList.size(); i++)
+
+    QStringList tList = GetPossibleDevices();
+    int tPos = -1;
+    for (int i = 0; i < tList.size(); i++)
     {
         if (tList[i].contains("FILE: " + mDesiredFile))
         {
