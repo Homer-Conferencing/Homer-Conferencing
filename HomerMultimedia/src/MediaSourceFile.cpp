@@ -217,10 +217,19 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     // Open codec
     if ((tResult = avcodec_open(mCodecContext, tCodec)) < 0)
     {
-        LOG(LOG_ERROR, "Couldn't open video codec because of \"%s\".", strerror(AVUNERROR(tResult)));
+        LOG(LOG_ERROR, "Couldn't open video codec because \"%s\".", strerror(AVUNERROR(tResult)));
         // Close the video file
         av_close_input_file(mFormatContext);
         return false;
+    }
+
+    if((tResult = av_seek_frame(mFormatContext, mMediaStreamIndex, 0, 0)) < 0)
+    {
+        LOG(LOG_ERROR, "Couldn't seek to the start of video stream because \"%s\".", strerror(AVUNERROR(tResult)));
+        // Close the video file
+        av_close_input_file(mFormatContext);
+        return false;
+
     }
 
     // allocate software scaler context
@@ -410,6 +419,15 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
         // Close the audio file
         av_close_input_file(mFormatContext);
         return false;
+    }
+
+    if((tResult = av_seek_frame(mFormatContext, mMediaStreamIndex, 0, 0)) < 0)
+    {
+        LOG(LOG_ERROR, "Couldn't seek to the start of audio stream because \"%s\".", strerror(AVUNERROR(tResult)));
+        // Close the audio file
+        av_close_input_file(mFormatContext);
+        return false;
+
     }
 
     // create resample context
