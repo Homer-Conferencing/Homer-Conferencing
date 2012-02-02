@@ -62,6 +62,9 @@ using namespace Homer::Monitor;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+Mutex MediaSource::mFfmpegInitMutex;
+bool MediaSource::mFfmpegInitiated = false;
+
 MediaSource::MediaSource(string pName):
     PacketStatistic(pName)
 {
@@ -92,25 +95,34 @@ MediaSource::MediaSource(string pName):
     mRecorderEncoderChunkBuffer = (char*)malloc(MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE);
     mRecorderSamplesTempBuffer = (char*)malloc(MEDIA_SOURCE_AUDIO_SAMPLE_BUFFER_SIZE);
 
-    // console logging of FFMPG
-    if (LOGGER.GetLogLevel() == LOG_VERBOSE)
-        av_log_set_level(AV_LOG_DEBUG);
-    else
-        av_log_set_level(AV_LOG_QUIET);
+    mFfmpegInitMutex.lock();
 
-    // Register all formats and codecs
-    av_register_all();
+    if(!mFfmpegInitiated)
+    {
+		// console logging of FFMPG
+		if (LOGGER.GetLogLevel() == LOG_VERBOSE)
+			av_log_set_level(AV_LOG_DEBUG);
+		else
+			av_log_set_level(AV_LOG_QUIET);
 
-    // init network support once isntead for every stream
-    //avformat_network_init(); TODO: uncomment for future ffmpeg use
+		// Register all formats and codecs
+		av_register_all();
 
-    // Register all supported input and output devices
-    avdevice_register_all();
+		// init network support once isntead for every stream
+		//avformat_network_init(); TODO: uncomment for future ffmpeg use
 
-    // register our own lock manager at ffmpeg
-    //HINT: we can do this as many times as this class is instanced
-    if(av_lockmgr_register(FfmpegLockManager))
-        LOG(LOG_ERROR, "Registration of own lock manager at ffmpeg failed.");
+		// Register all supported input and output devices
+		avdevice_register_all();
+
+		// register our own lock manager at ffmpeg
+		//HINT: we can do this as many times as this class is instanced
+		if(av_lockmgr_register(FfmpegLockManager))
+			LOG(LOG_ERROR, "Registration of own lock manager at ffmpeg failed.");
+
+		mFfmpegInitiated = true;
+    }
+
+    mFfmpegInitMutex.unlock();
 
     // ###################################################################
     // ### add all 6 default video formats to the list of supported ones
