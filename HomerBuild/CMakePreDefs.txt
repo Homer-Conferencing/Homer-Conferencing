@@ -4,7 +4,7 @@
 ###############################################################################
 
 MESSAGE("#####################################")
-MESSAGE("Configuring pre-definitions")
+MESSAGE("Preparing configuration")
 MESSAGE("#####################################")
 
 MESSAGE("Detected system is ${CMAKE_SYSTEM}") 
