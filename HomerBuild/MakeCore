@@ -1,6 +1,114 @@
 ###############################################################################
 # Author:  Thomas Volkert
-# Since:   2011-11-16
+# Since:   2012-02-10
 ###############################################################################
 
+##############################################################
+# Default target executed when no arguments are given to make.
 
+default_target: default
+.PHONY : default
+
+##############################################################
+# define build directories
+
+BUILD_DIR=Build
+BUILD_DIR_RELEASE=$(BUILD_DIR)/Release
+BUILD_DIR_DEFAULT=$(BUILD_DIR)/Default
+BUILD_DIR_DEBUG=$(BUILD_DIR)/Debug
+
+##############################################################
+# Options for cmake
+ifeq ($(MSYSTEM), "MINGW32")
+	CMAKE_OPTIONS=-DRELOCATION_DIR=../../ -Wno-dev -G "MSYS Makefiles"
+else
+	CMAKE_OPTIONS=-DRELOCATION_DIR=../../ -Wno-dev
+endif
+
+##############################################################
+
+all:
+clean:
+
+cleaner:
+	@echo "#####################################"
+	@echo "##### Deleting ALL build systems ####"
+	@echo "#####################################"
+	@rm -rf CMakeFiles
+	@rm -f CMakeCache.txt
+	@rm -rf $(TOP_DIR)/$(BUILD_DIR)
+	
+$(TOP_DIR)/$(BUILD_DIR):
+	@mkdir -p $(TOP_DIR)/$(BUILD_DIR)
+	
+$(TOP_DIR)/$(BUILD_DIR_RELEASE)/Makefile:
+	@echo "#####################################"
+	@echo "### Creating RELEASE build system ###"
+	@echo "#####################################"
+	@rm -rf CMakeFiles
+	@rm -f CMakeCache.txt
+	@mkdir -p $(TOP_DIR)/$(BUILD_DIR_RELEASE)
+	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE) && cmake $(CMAKE_OPTIONS) -DRELEASE_VERSION=true ../..
+
+$(TOP_DIR)/$(BUILD_DIR_DEFAULT)/Makefile:
+	@echo "#####################################"
+	@echo "### Creating DEFAULT build system ###"
+	@echo "#####################################"
+	@rm -rf CMakeFiles
+	@rm -f CMakeCache.txt
+	@mkdir -p $(TOP_DIR)/$(BUILD_DIR_DEFAULT)
+	@cd $(TOP_DIR)/$(BUILD_DIR_DEFAULT) && cmake $(CMAKE_OPTIONS) -DRELEASE_VERSION=true ../..
+
+$(TOP_DIR)/$(BUILD_DIR_DEBUG)/Makefile:
+	@echo "#####################################"
+	@echo "#### Creating DEBUG build system ####"
+	@echo "#####################################"
+	@rm -rf CMakeFiles
+	@rm -f CMakeCache.txt
+	@mkdir -p $(TOP_DIR)/$(BUILD_DIR_DEBUG)
+	@cd $(TOP_DIR)/$(BUILD_DIR_DEBUG) && cmake $(CMAKE_OPTIONS) ../..
+
+##############################################################
+# Makefile targets 
+
+release: $(TOP_DIR)/$(BUILD_DIR_RELEASE)/Makefile
+	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE) && $(MAKE) -s
+
+default: $(TOP_DIR)/$(BUILD_DIR_DEFAULT)/Makefile
+	@cd $(TOP_DIR)/$(BUILD_DIR_DEFAULT) && $(MAKE) -s
+
+debug: $(TOP_DIR)/$(BUILD_DIR_DEBUG)/Makefile
+	@cd $(TOP_DIR)/$(BUILD_DIR_DEBUG) && $(MAKE) -s
+
+###############################################################################
+# Targets for building a special subtarget in one of our configurations 
+
+%_release: $(TOP_DIR)/$(BUILD_DIR_RELEASE)/Makefile
+	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE) && $(MAKE) -s $*
+
+%_default: $(TOP_DIR)/$(BUILD_DIR_DEFAULT)/Makefile
+	@cd $(TOP_DIR)/$(BUILD_DIR_DEFAULT) && $(MAKE) -s $*
+
+%_debug: $(TOP_DIR)/$(BUILD_DIR_DEBUG)/Makefile
+	@cd $(TOP_DIR)/$(BUILD_DIR_DEBUG) && $(MAKE) -s $*
+
+###############################################################################
+%MakeCore:
+	@echo "MakeCore target ignored"
+
+Makefile:
+	@echo "Makefile as target is invalid"
+
+###############################################################################
+# catch all unhandled targets
+%: 
+ifneq ($(wildcard $(TOP_DIR)/$(BUILD_DIR_RELEASE)),) 
+	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE) && $(MAKE) -s $*
+endif
+ifneq ($(wildcard $(TOP_DIR)/$(BUILD_DIR_DEFAULT)),) 
+	@cd $(TOP_DIR)/$(BUILD_DIR_DEFAULT) && $(MAKE) -s $*
+endif
+ifneq ($(wildcard $(TOP_DIR)/$(BUILD_DIR_DEBUG)),) 
+	@cd $(TOP_DIR)/$(BUILD_DIR_DEBUG) && $(MAKE) -s $*
+endif
+	

@@ -7,9 +7,9 @@ if (NOT PRE_DEFINITIONS_EXECUTED)
 MESSAGE("!!!!## You forgot to include the pre-definitions called CMakePreDefs.txt ##!!!! ")
 endif ()
 
-#MESSAGE("#####################################")
-#MESSAGE("Configure")
-#MESSAGE("#####################################")
+MESSAGE("#####################################")
+MESSAGE("Configure ${TARGET_NAME}")
+MESSAGE("#####################################")
 
 ##############################################################
 # support thread-safe exception handling on Mingw32
@@ -167,6 +167,7 @@ endif (WIN32)
 ##############################################################
 # destination for install target
 SET(LIBRARY_OUTPUT_PATH ${TARGET_DIRECTORY})
+MESSAGE("### Library output path: ${TARGET_DIRECTORY}")
           
 ##############################################################
 # add definitions for compilation
