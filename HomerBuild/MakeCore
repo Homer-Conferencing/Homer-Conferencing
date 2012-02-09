@@ -6,8 +6,8 @@
 ##############################################################
 # Default target executed when no arguments are given to make.
 
-default_target: default
-.PHONY : default
+default_target: debug
+.PHONY : debug
 
 ##############################################################
 # define build directories
