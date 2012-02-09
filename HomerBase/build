@@ -1,7 +1,0 @@
-#!/bin/bash
-if [ "${MSYSTEM}" = "MINGW32" ] ; then
-    cmake -Wno-dev -G "MSYS Makefiles" .
-else
-    cmake -Wno-dev .
-fi
-make
