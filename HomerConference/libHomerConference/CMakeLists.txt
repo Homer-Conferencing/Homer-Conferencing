@@ -53,7 +53,7 @@ endif (NOT APPLE)
 
 # target directory for the lib
 SET (TARGET_DIRECTORY
-	../../lib
+	${RELOCATION_DIR}../../lib
 )
 
 # SOURCES
