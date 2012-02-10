@@ -20,30 +20,33 @@ endif (WIN32)
 
 ##############################################################
 # library directories
+if (NOT (${BUILD} MATCHES "Default"))
 IF (LINUX)
 SET (LIB_DIRS
 	${LIB_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerLibs/linux${ARCH_BITS}
+	${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerLibs/linux${ARCH_BITS}
 )
 ENDIF (LINUX)
 IF (BSD)
 SET (LIB_DIRS
 	${LIB_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerLibs/bsd${ARCH_BITS}
+	${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerLibs/bsd${ARCH_BITS}
 )
 ENDIF (BSD)
 IF (WIN32)
 SET (LIB_DIRS
 	${LIB_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerLibs/win${ARCH_BITS}
+	${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerLibs/win${ARCH_BITS}
 )
 ENDIF (WIN32)
 IF (APPLE)
 SET (LIB_DIRS
 	${LIB_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerLibs/apple${ARCH_BITS}
+	${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerLibs/apple${ARCH_BITS}
 )
 ENDIF (APPLE)
+endif ()
+
 SET (LIB_DIRS
 	${LIB_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}/../../lib
@@ -278,11 +281,5 @@ if (LINUX)
 	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_LINUX})
 
 	MESSAGE("### Linking static Linux libraries: ${LIBS_LINUX_STATIC}")
-#	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_LINUX_STATIC} )
 	TARGET_LINK_LIBRARIES(${TARGET_NAME} -Wl,-Bstatic -Wl,-Bsymbolic ${LIBS_LINUX_STATIC} -Wl,-Bdynamic )
 endif (LINUX)
-
-#		TARGET_LINK_LIBRARIES(${TARGET_NAME} -Wl,-Bstatic -Wl,-Bsymbolic ${LIBS_LINUX_STATIC} -Wl,-Bdynamic )
-#		TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_LINUX_STATIC} )
-#		TARGET_LINK_LIBRARIES(${TARGET_NAME} -Wl,-Bstatic ${LIBS_LINUX_STATIC_ENTRY} -Wl,-Bdynamic )
-#		TARGET_LINK_LIBRARIES(${TARGET_NAME} -Wl,--whole-archive ${LIBS_LINUX_STATIC_ENTRY} -Wl,--no-whole-archive )

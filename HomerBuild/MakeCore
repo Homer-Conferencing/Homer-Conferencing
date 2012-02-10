@@ -26,8 +26,11 @@ else
 endif
 
 ##############################################################
-
+# build target mappings
 all: default
+distclean: cleaner
+
+##############################################################
 clean:
 
 cleaner:
@@ -36,9 +39,11 @@ cleaner:
 	@rm -f CMakeCache.txt
 	@rm -rf $(TOP_DIR)/$(BUILD_DIR)
 	
+##############################################################
 $(TOP_DIR)/$(BUILD_DIR):
 	@mkdir -p $(TOP_DIR)/$(BUILD_DIR)
 	
+##############################################################
 $(TOP_DIR)/$(BUILD_DIR_RELEASE)/Makefile:
 	@echo "##### Creating RELEASE build system in $(TOP_DIR) #####"
 	@rm -rf CMakeFiles
