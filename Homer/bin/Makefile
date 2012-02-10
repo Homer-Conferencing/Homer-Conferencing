@@ -56,7 +56,7 @@ endif
 
 ###############################################################################
 
-LIB_DIRS+=	$(TOP_DIR)/HomerLibs/$(OS_ARCH)
+LIB_DIRS+=	$(TOP_DIR)/HomerWinLibs
 LIB_DIRS+=	$(TOP_DIR)/lib
 LIB_DIRS+=	/usr/local/lib
 LIBS+=		stdc++
