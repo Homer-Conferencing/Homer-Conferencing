@@ -10,19 +10,20 @@ default_target: debug
 .PHONY : debug
 
 ##############################################################
-# define build directories
+# define build variables
 
 BUILD_DIR=Build
 BUILD_DIR_RELEASE=$(BUILD_DIR)/Release
 BUILD_DIR_DEFAULT=$(BUILD_DIR)/Default
 BUILD_DIR_DEBUG=$(BUILD_DIR)/Debug
+BUILD_OS := $(shell echo "$$OSTYPE")
 
 ##############################################################
 # Options for cmake
-ifeq ($(MSYSTEM), "MINGW32")
-	CMAKE_OPTIONS=-DRELOCATION_DIR=../../ -Wno-dev -G "MSYS Makefiles"
+ifeq ($(BUILD_OS),msys)
+	CMAKE_OPTIONS= -DRELOCATION_DIR=../../ -Wno-dev -G"Unix Makefiles"
 else
-	CMAKE_OPTIONS=-DRELOCATION_DIR=../../ -Wno-dev
+    CMAKE_OPTIONS=  -DRELOCATION_DIR=../../ -Wno-dev
 endif
 
 ##############################################################
@@ -75,6 +76,7 @@ default: $(TOP_DIR)/$(BUILD_DIR_DEFAULT)/Makefile
 	@cd $(TOP_DIR)/$(BUILD_DIR_DEFAULT) && $(MAKE) -s
 
 debug: $(TOP_DIR)/$(BUILD_DIR_DEBUG)/Makefile
+	@echo "##### OSType is \"$(BUILD_OS)\""
 	@cd $(TOP_DIR)/$(BUILD_DIR_DEBUG) && $(MAKE) -s
 
 ###############################################################################
