@@ -4,10 +4,6 @@
 ###############################################################################
 INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakePreDefs.txt)
 
-MESSAGE("#####################################")
-MESSAGE("Configure HomerMultimedia")
-MESSAGE("#####################################")
-
 ##############################################################
 # Configuration
 ##############################################################
@@ -26,7 +22,7 @@ SET (INCLUDE_DIRS
 
 # target directory for the lib
 SET (TARGET_DIRECTORY
-	../../lib
+	${RELOCATION_DIR}../../lib
 )
 
 if (NOT APPLE)
