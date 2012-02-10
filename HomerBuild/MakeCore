@@ -27,7 +27,7 @@ endif
 
 ##############################################################
 
-all:
+all: default
 clean:
 
 cleaner:
@@ -48,7 +48,7 @@ $(TOP_DIR)/$(BUILD_DIR_RELEASE)/Makefile:
 	@rm -rf CMakeFiles
 	@rm -f CMakeCache.txt
 	@mkdir -p $(TOP_DIR)/$(BUILD_DIR_RELEASE)
-	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE) && cmake $(CMAKE_OPTIONS) -DRELEASE_VERSION=true ../..
+	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE) && cmake $(CMAKE_OPTIONS) -DBUILD=Release ../..
 
 $(TOP_DIR)/$(BUILD_DIR_DEFAULT)/Makefile:
 	@echo "#####################################"
@@ -57,7 +57,7 @@ $(TOP_DIR)/$(BUILD_DIR_DEFAULT)/Makefile:
 	@rm -rf CMakeFiles
 	@rm -f CMakeCache.txt
 	@mkdir -p $(TOP_DIR)/$(BUILD_DIR_DEFAULT)
-	@cd $(TOP_DIR)/$(BUILD_DIR_DEFAULT) && cmake $(CMAKE_OPTIONS) -DRELEASE_VERSION=true ../..
+	@cd $(TOP_DIR)/$(BUILD_DIR_DEFAULT) && cmake $(CMAKE_OPTIONS) -DBUILD=Default ../..
 
 $(TOP_DIR)/$(BUILD_DIR_DEBUG)/Makefile:
 	@echo "#####################################"
@@ -66,7 +66,7 @@ $(TOP_DIR)/$(BUILD_DIR_DEBUG)/Makefile:
 	@rm -rf CMakeFiles
 	@rm -f CMakeCache.txt
 	@mkdir -p $(TOP_DIR)/$(BUILD_DIR_DEBUG)
-	@cd $(TOP_DIR)/$(BUILD_DIR_DEBUG) && cmake $(CMAKE_OPTIONS) ../..
+	@cd $(TOP_DIR)/$(BUILD_DIR_DEBUG) && cmake $(CMAKE_OPTIONS) -DBUILD=Debug ../..
 
 ##############################################################
 # Makefile targets 
