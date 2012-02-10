@@ -83,6 +83,11 @@ SET (FLAGS
 	-Wno-deprecated-declarations
 	-O2
 )
+if (${BUILD} MATCHES "Debug")
+	SET (FLAGS "${FLAGS} -g -ggdb -DDEBUG_VERSION")
+else ()
+	SET (FLAGS "${FLAGS} -DRELEASE_VERSION")
+endif ()
 
 ##############################################################
 # link flags
@@ -265,6 +270,12 @@ if (BSD)
 endif (BSD)
 
 if (LINUX)
+	if (${BUILD} MATCHES "Default")
+		FOREACH(LIBS_LINUX_STATIC_ENTRY ${LIBS_LINUX_STATIC})
+			SET(LIBS_LINUX "${LIBS_LINUX};${LIBS_LINUX_STATIC_ENTRY}")
+		ENDFOREACH(LIBS_LINUX_STATIC_ENTRY ${LIBS_LINUX_STATIC})
+		SET (LIBS_LINUX_STATIC "")	
+	endif ()
 	MESSAGE("### Linking dynamic Linux libraries: ${LIBS_LINUX}")
 	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_LINUX})
 
