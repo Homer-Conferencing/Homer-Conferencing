@@ -31,9 +31,7 @@ all: default
 clean:
 
 cleaner:
-	@echo "#####################################"
-	@echo "##### Deleting ALL build systems ####"
-	@echo "#####################################"
+	@echo "##### Deleting ALL build systems in $(TOP_DIR) #####"
 	@rm -rf CMakeFiles
 	@rm -f CMakeCache.txt
 	@rm -rf $(TOP_DIR)/$(BUILD_DIR)
@@ -42,27 +40,21 @@ $(TOP_DIR)/$(BUILD_DIR):
 	@mkdir -p $(TOP_DIR)/$(BUILD_DIR)
 	
 $(TOP_DIR)/$(BUILD_DIR_RELEASE)/Makefile:
-	@echo "#####################################"
-	@echo "### Creating RELEASE build system ###"
-	@echo "#####################################"
+	@echo "##### Creating RELEASE build system in $(TOP_DIR) #####"
 	@rm -rf CMakeFiles
 	@rm -f CMakeCache.txt
 	@mkdir -p $(TOP_DIR)/$(BUILD_DIR_RELEASE)
 	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE) && cmake $(CMAKE_OPTIONS) -DBUILD=Release ../..
 
 $(TOP_DIR)/$(BUILD_DIR_DEFAULT)/Makefile:
-	@echo "#####################################"
-	@echo "### Creating DEFAULT build system ###"
-	@echo "#####################################"
+	@echo "##### Creating DEFAULT build system in $(TOP_DIR) #####"
 	@rm -rf CMakeFiles
 	@rm -f CMakeCache.txt
 	@mkdir -p $(TOP_DIR)/$(BUILD_DIR_DEFAULT)
 	@cd $(TOP_DIR)/$(BUILD_DIR_DEFAULT) && cmake $(CMAKE_OPTIONS) -DBUILD=Default ../..
 
 $(TOP_DIR)/$(BUILD_DIR_DEBUG)/Makefile:
-	@echo "#####################################"
-	@echo "#### Creating DEBUG build system ####"
-	@echo "#####################################"
+	@echo "##### Creating DEBUG build system in $(TOP_DIR) #####"
 	@rm -rf CMakeFiles
 	@rm -f CMakeCache.txt
 	@mkdir -p $(TOP_DIR)/$(BUILD_DIR_DEBUG)

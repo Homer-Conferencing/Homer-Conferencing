@@ -7,9 +7,7 @@ if (NOT PRE_DEFINITIONS_EXECUTED)
 MESSAGE("!!!!## You forgot to include the pre-definitions called CMakePreDefs.txt ##!!!! ")
 endif ()
 
-MESSAGE("#####################################")
-MESSAGE("Configure ${TARGET_NAME}")
-MESSAGE("#####################################")
+MESSAGE("##### Configuring \"${TARGET_NAME}\" to build \"${BUILD}\" version")
 
 ##############################################################
 # support thread-safe exception handling on Mingw32
@@ -37,7 +35,7 @@ ENDIF (BSD)
 IF (WIN32)
 SET (LIB_DIRS
 	${LIB_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerLibs/win${ARCH_BITS}	
+	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerLibs/win${ARCH_BITS}
 )
 ENDIF (WIN32)
 IF (APPLE)

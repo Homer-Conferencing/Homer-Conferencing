@@ -3,9 +3,7 @@
 # Since:   2011-11-19
 ###############################################################################
 
-MESSAGE("#####################################")
-MESSAGE("Preparing configuration")
-MESSAGE("#####################################")
+MESSAGE("##### Preparing configuration")
 
 MESSAGE("Detected system is ${CMAKE_SYSTEM}") 
 
@@ -22,7 +20,6 @@ endif()
 # detect Linux
 IF (UNIX AND NOT WIN32 AND NOT APPLE AND NOT BSD)
 SET (LINUX "true")
-MESSAGE("Linux detected")	
 else()
 SET (LINUX "false")	
 endif()
