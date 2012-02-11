@@ -189,16 +189,16 @@ void LogSinkConsole::ProcessMessage(int pLevel, string pTime, string pSource, in
             switch(pLevel)
             {
                 case LOG_ERROR:
-                            printf("(%s) ERROR:   %s(%d):\ %s\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
+                            printf("(%s) ERROR:   %s(%d): %s\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
                             break;
                 case LOG_WARN:
-                            printf("(%s) WARN:    %s(%d):\ %s\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
+                            printf("(%s) WARN:    %s(%d): %s\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
                             break;
                 case LOG_INFO:
-                            printf("(%s) INFO:    %s(%d):\ %s\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
+                            printf("(%s) INFO:    %s(%d): %s\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
                             break;
                 case LOG_VERBOSE:
-                            printf("(%s) VERBOSE: %s(%d):\ %s\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
+                            printf("(%s) VERBOSE: %s(%d): %s\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
                             break;
             }
         }
