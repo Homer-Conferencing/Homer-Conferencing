@@ -420,7 +420,7 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     // verbose timestamp debugging    mRtpFormatContext->debug = FF_FDEBUG_TS;
 
     // allocate new stream structure
-	tOuterStream = av_new_stream(mRtpFormatContext, 0);//pInnerStream->codec->codec->id);//(AVStream*)av_mallocz(sizeof(AVStream));
+	tOuterStream = av_new_stream(mRtpFormatContext, 0);//(AVStream*)av_mallocz(sizeof(AVStream));
     if (tOuterStream == NULL)
     {
         LOG(LOG_ERROR, "Memory allocation failed");

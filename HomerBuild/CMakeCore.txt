@@ -3,73 +3,79 @@
 # Since:   2010-11-13
 ###############################################################################
 
-if (NOT PRE_DEFINITIONS_EXECUTED)
-MESSAGE("!!!!## You forgot to include the pre-definitions called CMakePreDefs.txt ##!!!! ")
-endif ()
-
 MESSAGE("##### Configuring \"${TARGET_NAME}\" to build \"${BUILD}\" version")
 
 ##############################################################
+# check if CMakePreDefs.txt was parsed before
+IF (NOT PRE_DEFINITIONS_EXECUTED)
+	MESSAGE(FATAL_ERROR "You forgot to include the pre-definitions called CMakePreDefs.txt!")
+ENDIF ()
+
+##############################################################
+# minimum required GCC version
+SET(REQUIRED_GCC_VERSION 4.4)
+# check compiler version
+EXECUTE_PROCESS(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
+IF(NOT GCC_VERSION VERSION_GREATER ${REQUIRED_GCC_VERSION} AND NOT GCC_VERSION VERSION_EQUAL ${REQUIRED_GCC_VERSION})
+	MESSAGE(FATAL_ERROR "You need at least GCC version ${REQUIRED_GCC_VERSION}!")
+ENDIF()
+
+##############################################################
 # support thread-safe exception handling on Mingw32
-if (WIN32)
-SET (FLAGS 
-	${FLAGS}
-	-mthreads
-)
-endif (WIN32)
+IF (WIN32)
+	SET (FLAGS 
+		${FLAGS}
+		-mthreads
+	)
+ENDIF (WIN32)
 
 ##############################################################
 # library directories
-if (NOT (${BUILD} MATCHES "Default"))
+IF (NOT (${BUILD} MATCHES "Default"))
 IF (LINUX)
-SET (LIB_DIRS
-	${LIB_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerLibs/linux${ARCH_BITS}
-)
+	SET (LIB_DIRS
+		${LIB_DIRS}
+		${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerLibs/linux${ARCH_BITS}
+	)
 ENDIF (LINUX)
 IF (BSD)
-SET (LIB_DIRS
-	${LIB_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerLibs/bsd${ARCH_BITS}
-)
+	SET (LIB_DIRS
+		${LIB_DIRS}
+		${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerLibs/bsd${ARCH_BITS}
+	)
 ENDIF (BSD)
 IF (WIN32)
-SET (LIB_DIRS
-	${LIB_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerLibs/win${ARCH_BITS}
-)
+	SET (LIB_DIRS
+		${LIB_DIRS}
+		${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerLibs/win${ARCH_BITS}
+	)
 ENDIF (WIN32)
 IF (APPLE)
-SET (LIB_DIRS
-	${LIB_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerLibs/apple${ARCH_BITS}
-)
+	SET (LIB_DIRS
+		${LIB_DIRS}
+		${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerLibs/apple${ARCH_BITS}
+	)
 ENDIF (APPLE)
-endif ()
+ENDIF ()
 
+##############################################################
+# lib search path
 SET (LIB_DIRS
 	${LIB_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}/../../lib
 	/usr/local/lib
 	/usr/lib
+	/usr/lib${ARCH_BITS}
 )
+MESSAGE("##### Library search path: ${LIB_DIRS}")
 
+##############################################################
 # include dirs
 SET (INCLUDE_DIRS
 	${INCLUDE_DIRS}
 	/usr/local/include
 )
-
-##############################################################
-# set gcc version to avoid linking problems caused by wrong version of libstdc++
-#IF (LINUX)
-#SET (CMAKE_C_COMPILER 
-#	/usr/bin/gcc-4.4.5
-#)
-#SET (CMAKE_CXX_COMPILER 
-#	/usr/bin/g++-4.4.5
-#)
-#ENDIF (LINUX)
+MESSAGE("##### Header search path: ${INCLUDE_DIRS}")
 
 ##############################################################
 # compile flags
@@ -82,13 +88,14 @@ SET (FLAGS
 	-Wno-unused
 	-Wno-long-long
 	-Wno-deprecated-declarations
+	-Wno-format
 	-O2
 )
-if (${BUILD} MATCHES "Debug")
+IF (${BUILD} MATCHES "Debug")
 	SET (FLAGS "${FLAGS} -g -ggdb -DDEBUG_VERSION")
-else ()
+ELSE ()
 	SET (FLAGS "${FLAGS} -DRELEASE_VERSION")
-endif ()
+ENDIF ()
 
 ##############################################################
 # link flags
@@ -164,43 +171,39 @@ SET(BUILD_STATIC_LIBS ON)
 
 ##############################################################
 # for win32 remove the "lib" prefix for dll's
-if (WIN32)
+IF (WIN32)
 	SET(CMAKE_SHARED_LIBRARY_PREFIX "")
 	SET(CMAKE_STATIC_LIBRARY_PREFIX "")
 	SET(CMAKE_IMPORT_LIBRARY_PREFIX "")
-endif (WIN32)
+ENDIF (WIN32)
 
 ##############################################################
 # destination for install target
 SET(LIBRARY_OUTPUT_PATH ${TARGET_DIRECTORY})
 MESSAGE("### Library output path: ${TARGET_DIRECTORY}")
-          
+
 ##############################################################
 # add definitions for compilation
-if (WIN32)
+IF (WIN32)
 	FOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_WINDOWS})
 		ADD_DEFINITIONS("${DEFINITIONS_ENTRY}")
 	ENDFOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_WINDOWS})
-endif (WIN32)	
-if (APPLE)
+ENDIF (WIN32)
+IF (APPLE)
 	FOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_APPLE})
 		ADD_DEFINITIONS("${DEFINITIONS_ENTRY}")
 	ENDFOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_APPLE})
-endif (APPLE)	
-if (BSD)
+ENDIF (APPLE)
+IF (BSD)
 	FOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_BSD})
 		ADD_DEFINITIONS("${DEFINITIONS_ENTRY}")
 	ENDFOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_BSD})
-endif (BSD)	
-if (LINUX)
+ENDIF (BSD)
+IF (LINUX)
 	FOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_LINUX})
 		ADD_DEFINITIONS("${DEFINITIONS_ENTRY}")
 	ENDFOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_LINUX})
-endif (LINUX)
-
-
-
-
+ENDIF (LINUX)
 
 ##############################################################
 # add flags for linking
@@ -209,7 +212,7 @@ FOREACH(LFLAGS_ENTRY ${LFLAGS})
 	SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LFLAGS_ENTRY}")
 	SET(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${LFLAGS_ENTRY}")
 ENDFOREACH(LFLAGS_ENTRY ${LFLAGS})
-MESSAGE("### Flags for exe linking: ${CMAKE_EXE_LINKER_FLAGS}")
+MESSAGE("### Flags for Windows binary linking: ${CMAKE_EXE_LINKER_FLAGS}")
 MESSAGE("### Flags for shared linking: ${CMAKE_SHARED_LINKER_FLAGS}")
 MESSAGE("### Flags for module linking: ${CMAKE_MODULE_LINKER_FLAGS}")
 
@@ -240,13 +243,13 @@ ADD_LIBRARY(${TARGET_NAME} SHARED ${SOURCES})
 
 ##############################################################
 # link to needed external libraries
-if (WIN32)
+IF (WIN32)
 	MESSAGE("### Linking dynamic Windows libraries: ${LIBS_WINDOWS}")
 	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_WINDOWS})
-endif (WIN32)
+ENDIF (WIN32)
 
 
-if (APPLE)
+IF (APPLE)
 	MESSAGE("### Linking dynamic Apple libraries: ${LIBS_APPLE}")
 	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_APPLE})
 
@@ -259,27 +262,27 @@ if (APPLE)
 		SET (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -framework ${FRAMEWORKS_APPLE_ENTRY}" )
 		#TARGET_LINK_LIBRARIES(${TARGET_NAME} "-Wl,-framework ${FRAMEWORKS_APPLE_ENTRY}" )
 	ENDFOREACH(FRAMEWORKS_APPLE_ENTRY ${FRAMEWORKS_APPLE})
-endif (APPLE)
+ENDIF (APPLE)
 
-if (BSD)
+IF (BSD)
 	MESSAGE("### Linking dynamic BSD libraries: ${LIBS_BSD}")
 	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_BSD})
 
 	MESSAGE("### Linking static BSD libraries: ${LIBS_BSD_STATIC}")
 #	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_BSD_STATIC} )
 	TARGET_LINK_LIBRARIES(${TARGET_NAME} -Wl,-Bstatic -Wl,-Bsymbolic ${LIBS_BSD_STATIC} -Wl,-Bdynamic )
-endif (BSD)
+ENDIF (BSD)
 
-if (LINUX)
-	if (${BUILD} MATCHES "Default")
+IF (LINUX)
+	IF (${BUILD} MATCHES "Default")
 		FOREACH(LIBS_LINUX_STATIC_ENTRY ${LIBS_LINUX_STATIC})
 			SET(LIBS_LINUX "${LIBS_LINUX};${LIBS_LINUX_STATIC_ENTRY}")
 		ENDFOREACH(LIBS_LINUX_STATIC_ENTRY ${LIBS_LINUX_STATIC})
 		SET (LIBS_LINUX_STATIC "")	
-	endif ()
+	ENDIF ()
 	MESSAGE("### Linking dynamic Linux libraries: ${LIBS_LINUX}")
 	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_LINUX})
 
 	MESSAGE("### Linking static Linux libraries: ${LIBS_LINUX_STATIC}")
 	TARGET_LINK_LIBRARIES(${TARGET_NAME} -Wl,-Bstatic -Wl,-Bsymbolic ${LIBS_LINUX_STATIC} -Wl,-Bdynamic )
-endif (LINUX)
+ENDIF (LINUX)

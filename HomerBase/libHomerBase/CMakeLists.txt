@@ -8,23 +8,27 @@ INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakePreDefs.txt)
 # Configuration
 ##############################################################
 
+##############################################################
 # include dirs
 SET (INCLUDE_DIRS
 	../include
 	../include/Logging
 )
 
+##############################################################
 # target directory for the lib
 SET (TARGET_DIRECTORY
 	${RELOCATION_DIR}../../lib
 )
 	
+##############################################################
 # compile flags
 SET (FLAGS
 	${FLAGS}
 	
 )
 
+##############################################################
 # SOURCES
 SET (SOURCES
 	../src/HBMutex
@@ -43,6 +47,7 @@ SET (SOURCES
 	../src/Logging/LogSinkNet
 )
 
+##############################################################
 # USED LIBRARIES for win32 environment
 SET (LIBS_WINDOWS
 	ws2_32
@@ -63,6 +68,7 @@ SET (LIBS_LINUX
 SET (LIBS_APPLE
 )
 
+##############################################################
 SET (TARGET_NAME
 	HomerBase
 )

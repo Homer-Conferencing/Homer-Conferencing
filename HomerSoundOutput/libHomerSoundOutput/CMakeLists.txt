@@ -8,6 +8,40 @@ INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakePreDefs.txt)
 # Configuration
 ##############################################################
 
+##############################################################
+# find package "ALSA"
+MESSAGE("##### Searching for library ALSA")
+Find_Package(ALSA REQUIRED)
+IF (NOT ALSA_FOUND)
+	MESSAGE(FATAL_ERROR "You need library ALSA")
+ENDIF ()
+
+##############################################################
+# find package "SDL"
+MESSAGE("##### Searching for library SDL")
+Find_Package(SDL REQUIRED)
+IF (NOT SDL_FOUND)
+	MESSAGE(FATAL_ERROR "You need library SDL")
+ENDIF ()
+
+##############################################################
+# find package "SDL_sound
+MESSAGE("##### Searching for library SDL_sound")
+Find_Package(SDL_sound REQUIRED)
+IF (NOT SDL_SOUND_FOUND)
+	MESSAGE(FATAL_ERROR "You need library SDL_sound")
+ENDIF ()
+
+##############################################################
+# find package "SDL_mixer
+MESSAGE("##### Searching for library SDL_mixer")
+Find_Package(SDL_mixer REQUIRED)
+IF (NOT SDLMIXER_FOUND)
+	MESSAGE(FATAL_ERROR "You need library SDL_mixer")
+ENDIF ()
+
+
+##############################################################
 # include dirs
 SET (INCLUDE_DIRS
 	../include
@@ -18,22 +52,27 @@ SET (INCLUDE_DIRS
 	../../HomerWinLibs/SDL/include
 	../../HomerWinLibs/SDL-MIXER/include
 	../../HomerWinLibs/SDL-SOUND
-	/usr/include/SDL 
-	/usr/local/include/SDL 
+	${ALSA_INCLUDE_DIRS}
+	${SDL_INCLUDE_DIR}
+	${SDL_SOUND_INCLUDE_DIR}
+	${SDLMIXER_INCLUDE_DIR}
 )
 
+##############################################################
 # target directory for the lib
 SET (TARGET_DIRECTORY
 	${RELOCATION_DIR}../../lib
 )
 
-if (NOT APPLE)
+##############################################################
 # compile flags
+if (NOT APPLE)
 SET (FLAGS
 	${FLAGS}
 )
 endif (NOT APPLE)
 
+##############################################################
 SET (SOURCES
 	${SOURCES}
 	../src/AudioOutSdl
@@ -53,6 +92,7 @@ SET (SOURCES
 )
 endif (LINUX)
 
+##############################################################
 # USED LIBRARIES for win32 environment
 SET (LIBS_WINDOWS
 	HomerBase
@@ -86,42 +126,54 @@ SET (FRAMEWORKS_APPLE
 	OpenGL
 )
 
-# USED LIBRARIES for linux environment
-SET (LIBS_LINUX
-	HomerBase
-	HomerMonitor
-	asound
-	resolv
-)
+IF (${BUILD} MATCHES "Default")
+	SET (LIBS_LINUX
+		HomerBase
+		HomerMonitor
+		${ALSA_LIBRARIES}
+		${SDL_LIBRARY}
+		${SDL_SOUND_LIBRARY}
+		${SDLMIXER_LIBRARY}
+	)
+ELSE ()
+	# USED LIBRARIES for linux environment
+	SET (LIBS_LINUX
+		HomerBase
+		HomerMonitor
+		asound
+		resolv
+	)
 
-# USED STATIC libraries for linux environment
-SET (LIBS_LINUX_STATIC
-	SDL_mixer
-	smpeg
-	SDL_sound
-	SDL
-	pulse-simple
-	pulse
-	pulsecommon-0.9.22
-	asyncns
-	audio
-	dbus-1
-)
+	# USED STATIC libraries for linux environment
+	SET (LIBS_LINUX_STATIC
+		SDL_mixer
+		smpeg
+		SDL_sound
+		SDL
+		pulse-simple
+		pulse
+		pulsecommon-0.9.22
+		asyncns
+		audio
+		dbus-1
+	)
+ENDIF ()
 
 # USED LIBRARIES for BSD environment
 SET (LIBS_BSD
-    HomerBase
-    HomerMonitor
+	HomerBase
+	HomerMonitor
 )
 
 # USED STATIC libraries for BSD environment
 SET (LIBS_BSD_STATIC
-    SDL_mixer
-    SDL_sound
-    SDL
-    vgl
-    usbhid
+	SDL_mixer
+	SDL_sound
+	SDL
+	vgl
+	usbhid
 )
+##############################################################
 SET (TARGET_NAME
 	HomerSoundOutput
 )
