@@ -23,7 +23,7 @@ BUILD_OS := $(shell echo "$$OSTYPE")
 ifeq ($(BUILD_OS),msys)
 	CMAKE_OPTIONS= -DRELOCATION_DIR=../../ -Wno-dev -G"Unix Makefiles"
 else
-    CMAKE_OPTIONS=  -DRELOCATION_DIR=../../ -Wno-dev
+    CMAKE_OPTIONS= -DRELOCATION_DIR=../../ -Wno-dev
 endif
 
 ##############################################################
