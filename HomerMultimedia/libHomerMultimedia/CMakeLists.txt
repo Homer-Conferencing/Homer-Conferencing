@@ -8,6 +8,15 @@ INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakePreDefs.txt)
 # Configuration
 ##############################################################
 
+##############################################################
+# find package "ALSA"
+MESSAGE("##### Searching for library ALSA")
+Find_Package(ALSA REQUIRED)
+IF (NOT ALSA_FOUND)
+	MESSAGE(FATAL_ERROR "You need library ALSA")
+ENDIF ()
+
+##############################################################
 # include dirs
 SET (INCLUDE_DIRS
 	${INCLUDE_DIRS}
@@ -19,21 +28,25 @@ SET (INCLUDE_DIRS
 	../../HomerMultimedia/include
 	../../HomerWinLibs/FFMPEG
 	/usr/include/ffmpeg
+	${ALSA_INCLUDE_DIRS}
 )
 
+##############################################################
 # target directory for the lib
 SET (TARGET_DIRECTORY
 	${RELOCATION_DIR}../../lib
 )
 
-if (NOT APPLE)
+##############################################################
 # compile flags                                                                                                                                                                                                                                                                   
+IF (NOT APPLE)
 SET (FLAGS
 	${FLAGS}
 	-Wno-uninitialized
 )
-endif (NOT APPLE)
+ENDIF (NOT APPLE)
 
+##############################################################
 # SOURCES
 SET (SOURCES
 	../src/MediaFifo
@@ -81,6 +94,7 @@ SET (SOURCES
 )
 ENDIF (LINUX)
 
+##############################################################
 # USED LIBRARIES for win32 environment
 SET (LIBS_WINDOWS
 	HomerBase
@@ -118,30 +132,44 @@ SET (LIBS_APPLE_STATIC
 	z
 )
 
-# USED LIBRARIES for linux environment
-SET (LIBS_LINUX
-	HomerBase
-	HomerGAPI
-	HomerMonitor
-	asound
-)
+IF (${BUILD} MATCHES "Default")
+	SET (LIBS_LINUX
+		HomerBase
+		HomerMonitor
+		${ALSA_LIBRARIES}
+		avdevice
+		avformat
+		avcodec
+		avutil
+		avfilter
+		swscale
+	)
+ELSE ()
+	# USED LIBRARIES for linux environment
+	SET (LIBS_LINUX
+		HomerBase
+		HomerGAPI
+		HomerMonitor
+		asound
+	)
 
-SET (LIBS_LINUX_STATIC
-	avdevice
-	avformat
-	avcodec
-	avfilter
-	swscale
-	avutil
-	mp3lame
-	faac
-	opencore-amrnb
-	opencore-amrwb
-	jack
-	x264
-	bz2
-	z
-)
+	SET (LIBS_LINUX_STATIC
+		avdevice
+		avformat
+		avcodec
+		avfilter
+		swscale
+		avutil
+		mp3lame
+		faac
+		opencore-amrnb
+		opencore-amrwb
+		jack
+		x264
+		bz2
+		z
+	)
+ENDIF ()
 
 # USED LIBRARIES for BSD environment
 SET (LIBS_BSD
@@ -166,6 +194,7 @@ SET (LIBS_BSD_STATIC
 	z
 )
 
+##############################################################
 SET (TARGET_NAME
 	HomerMultimedia
 )

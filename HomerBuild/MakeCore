@@ -39,11 +39,11 @@ cleaner:
 	@rm -rf CMakeFiles
 	@rm -f CMakeCache.txt
 	@rm -rf $(TOP_DIR)/$(BUILD_DIR)
-	
+
 ##############################################################
 $(TOP_DIR)/$(BUILD_DIR):
 	@mkdir -p $(TOP_DIR)/$(BUILD_DIR)
-	
+
 ##############################################################
 $(TOP_DIR)/$(BUILD_DIR_RELEASE)/Makefile:
 	@echo "##### Creating RELEASE build system in $(TOP_DIR) #####"
@@ -110,4 +110,4 @@ endif
 ifneq ($(wildcard $(TOP_DIR)/$(BUILD_DIR_DEBUG)),) 
 	@cd $(TOP_DIR)/$(BUILD_DIR_DEBUG) && $(MAKE) -s $*
 endif
-	
+
