@@ -8,6 +8,7 @@ INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakePreDefs.txt)
 # Configuration
 ##############################################################
 
+##############################################################
 # include directories
 SET (INCLUDE_DIRS
 	../include
@@ -15,16 +16,19 @@ SET (INCLUDE_DIRS
 	../../HomerBase/include/Logging
 )
 	
+##############################################################
 # target directory for the lib
 SET (TARGET_DIRECTORY
 	${RELOCATION_DIR}../../lib
 )
 	
+##############################################################
 # compile flags
 SET (FLAGS
 
 )
 
+##############################################################
 # SOURCES
 SET (SOURCES
 	../src/PacketStatistic
@@ -33,6 +37,7 @@ SET (SOURCES
 	../src/ProcessStatisticService
 )
 
+##############################################################
 # USED LIBRARIES for win32 environment
 SET (LIBS_WINDOWS
 	HomerBase

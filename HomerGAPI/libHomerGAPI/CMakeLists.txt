@@ -8,6 +8,7 @@ INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakePreDefs.txt)
 # Configuration
 ##############################################################
 
+##############################################################
 # include dirs
 SET (INCLUDE_DIRS
     ../include
@@ -15,44 +16,48 @@ SET (INCLUDE_DIRS
 	../../HomerBase/include/Logging
 )
 
+##############################################################
 # target directory for the lib
 SET (TARGET_DIRECTORY
 	${RELOCATION_DIR}../../lib
 )
 	
+##############################################################
 # compile flags
 SET (FLAGS
 	${FLAGS}
 	
 )
 
+##############################################################
 # SOURCES
 SET (SOURCES
-    ../src/GAPI
-    ../src/Requirements
-    ../src/SocketName
-    ../src/SocketSetup
-    ../src/SocketSubscription
+	../src/GAPI
+	../src/Requirements
+	../src/SocketName
+	../src/SocketSetup
+	../src/SocketSubscription
 )
 
+##############################################################
 # USED LIBRARIES for win32 environment
 SET (LIBS_WINDOWS
-    HomerBase
+	HomerBase
 )
 	
 # USED LIBRARIES for BSD environment
 SET (LIBS_BSD
-    HomerBase
+	HomerBase
 )
 
 # USED LIBRARIES for linux environment
 SET (LIBS_LINUX
-    HomerBase
+	HomerBase
 )
 
 # USED LIBRARIES for apple environment
 SET (LIBS_APPLE
-    HomerBase
+	HomerBase
 )
 
 SET (TARGET_NAME

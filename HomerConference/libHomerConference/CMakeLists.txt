@@ -8,6 +8,15 @@ INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakePreDefs.txt)
 # Configuration
 ##############################################################
 
+##############################################################
+# find package "OpenSSL"
+MESSAGE("##### Searching for library OpenSSL")
+Find_Package(OpenSSL REQUIRED)
+IF (NOT OPENSSL_FOUND)
+	MESSAGE(FATAL_ERROR "You need library OpenSSL")
+ENDIF ()
+
+##############################################################
 # include dirs
 SET (INCLUDE_DIRS
 	../include
@@ -37,21 +46,25 @@ SET (INCLUDE_DIRS
 	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/tport
 	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/url
 	../../HomerWinLibs/SOFIA-SIP/win32
+	${OPENSSL_INCLUDE_DIR}
 )
 
+##############################################################
 # compile flags                                                                                                                                                                                                                                                                   
 if (NOT APPLE)
 SET (FLAGS
-    ${FLAGS}
-    -Wno-uninitialized
+	${FLAGS}
+	-Wno-uninitialized
 )
 endif (NOT APPLE)
 
+##############################################################
 # target directory for the lib
 SET (TARGET_DIRECTORY
 	${RELOCATION_DIR}../../lib
 )
 
+##############################################################
 # SOURCES
 SET (SOURCES
 	../src/Meeting
@@ -62,6 +75,7 @@ SET (SOURCES
 	../src/SIP_stun
 )
 
+##############################################################
 # USED LIBRARIES for win32 environment
 SET (LIBS_WINDOWS
 	HomerBase
@@ -89,28 +103,38 @@ SET (FRAMEWORKS_APPLE
 	SystemConfiguration
 )
 
-# USED LIBRARIES for linux environment
-SET (LIBS_LINUX
+IF (${BUILD} MATCHES "Default")
+	SET (LIBS_LINUX
+		HomerBase
+		HomerMonitor
+		sofia-sip-ua
+		${OPENSSL_LIBRARIES}
+	)
+ELSE ()
+	# USED LIBRARIES for linux environment
+	SET (LIBS_LINUX
+		HomerBase
+		HomerMonitor
+	)
+	SET (LIBS_LINUX_STATIC
+		sofia-sip-ua
+		ssl
+		crypto
+	)
+ENDIF ()
+
+# USED LIBRARIES for BSD environment
+SET (LIBS_BSD
 	HomerBase
 	HomerMonitor
 )
-SET (LIBS_LINUX_STATIC
+SET (LIBS_BSD_STATIC
 	sofia-sip-ua
 	ssl
 	crypto
 )
 
-# USED LIBRARIES for BSD environment
-SET (LIBS_BSD
-    HomerBase
-    HomerMonitor
-)
-SET (LIBS_BSD_STATIC
-    sofia-sip-ua
-    ssl
-    crypto
-)
-
+##############################################################
 SET (TARGET_NAME
 	HomerConference
 )
