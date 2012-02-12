@@ -18,6 +18,7 @@ SET (INCLUDE_DIRS
 	../../HomerMonitor/include
 	../../HomerMultimedia/include
 	../../HomerWinLibs/FFMPEG
+	/usr/include/ffmpeg
 )
 
 # target directory for the lib
