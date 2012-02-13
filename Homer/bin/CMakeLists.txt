@@ -50,6 +50,7 @@ SET (INCLUDE_DIRS
 	../../HomerWinLibs/QT/include/QtWebKit
 	../../HomerWinLibs/FFMPEG
 	../../HomerWinLibs/OPENSSL/include
+    /usr/include/ffmpeg
 	${QT_INCLUDE_DIR}
 )
 
