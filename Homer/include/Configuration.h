@@ -53,7 +53,7 @@ namespace Homer { namespace Gui {
 ///////////////////////////////////////////////////////////////////////////////
 
 // select if it is a release or development version
-#define RELEASE_VERSION
+//#define RELEASE_VERSION -> is now defined automatically via build system
 
 // version string which is checked/used in the whole application
 #define RELEASE_VERSION_STRING          "Beta 0.21"
