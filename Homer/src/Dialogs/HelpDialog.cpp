@@ -73,7 +73,7 @@ void HelpDialog::initializeGUI()
                                     "\n"\
                                     "Number of cpu cores: " + QString("%1").arg(System::GetMachineCores()) + "\n"\
                                     "Current architecture: " + tCurArch + "\n"\
-                                    "Target architecture: " + _OS_ARCH + "\n"\
+                                    "Target architecture: linux" + QString(BITS) + "\n"\
 									"\n"\
                                     "Linked AVCodec:  " + QString("%1").arg(LIBAVCODEC_VERSION_MAJOR) + "." + QString("%1").arg(LIBAVCODEC_VERSION_MINOR) + "." + QString("%1").arg(LIBAVCODEC_VERSION_MICRO) + "\n"\
                                     "Linked AVDevice:  " + QString("%1").arg(LIBAVDEVICE_VERSION_MAJOR) + "." + QString("%1").arg(LIBAVDEVICE_VERSION_MINOR) + "." + QString("%1").arg(LIBAVDEVICE_VERSION_MICRO) + "\n"\
@@ -201,7 +201,7 @@ void HelpDialog::initializeGUI()
                                     "\n"\
                                     "Number of cpu cores: " + QString("%1").arg(System::GetMachineCores()) + "\n"\
                                     "Current architecture: win32\n"\
-                                    "Target architecture: " + _OS_ARCH + "\n"\
+                                    "Target architecture: win" + QString(BITS) + "\n"\
 									"\n"\
                                     "Linked AVCodec:  " + QString("%1").arg(LIBAVCODEC_VERSION_MAJOR) + "." + QString("%1").arg(LIBAVCODEC_VERSION_MINOR) + "." + QString("%1").arg(LIBAVCODEC_VERSION_MICRO) + "\n"\
                                     "Linked AVDevice:  " + QString("%1").arg(LIBAVDEVICE_VERSION_MAJOR) + "." + QString("%1").arg(LIBAVDEVICE_VERSION_MINOR) + "." + QString("%1").arg(LIBAVDEVICE_VERSION_MICRO) + "\n"\

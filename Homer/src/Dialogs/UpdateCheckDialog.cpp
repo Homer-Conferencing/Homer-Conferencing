@@ -106,26 +106,21 @@ void UpdateCheckDialog::DownloadStart()
 	// find correct release name for this target system
 	QString tReleaseFileName;
 	QString tReleaseFileType;
-	QString tBits;
-	if (QString(_OS_ARCH).contains("64"))
-		tBits = "64";
-	else
-		tBits = "32";
 
 	#ifdef WIN32
 		tReleaseFileName = "Homer-Windows.zip";
 		tReleaseFileType = "ZIP archive file (*.zip)";
 	#endif
 	#ifdef LINUX
-		tReleaseFileName = "Homer-Linux" + tBits + ".tar.bz2";
+		tReleaseFileName = "Homer-Linux" + QString(BITS) + ".tar.bz2";
 		tReleaseFileType = "bz2 archive file (*.bz2)";
 	#endif
 	#ifdef BSD
-		tReleaseFileName = "Homer-BSD" + tBits + ".tar.bz2";
+		tReleaseFileName = "Homer-BSD" + BITS + ".tar.bz2";
 		tReleaseFileType = "bz2 archive file (*.bz2)";
 	#endif
 	#ifdef APPLE
-		tReleaseFileName = "Homer-OSX" + tBits + ".tar.bz2";
+		tReleaseFileName = "Homer-OSX" + BITS + ".tar.bz2";
 		tReleaseFileType = "bz2 archive file (*.bz2)";
 	#endif
 

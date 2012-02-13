@@ -1,3 +1,4 @@
+/Makefile
 /Icons.rcc
 /Configuration.dep
 /moc_AudioWidget.cpp
@@ -158,3 +159,4 @@
 /UpdateCheckDialog.dep
 /OverviewThreadsWidget.dep
 /Homer.exe
+/Homer
