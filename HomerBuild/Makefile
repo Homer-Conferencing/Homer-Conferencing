@@ -36,6 +36,6 @@ endif
 ifneq ($(wildcard $(TOP_DIR)/$(HOMER_SOUNDOUTPUT)),)
 	@cd $(TOP_DIR)/$(HOMER_SOUNDOUTPUT) && $(MAKE) -s $*
 endif
-#ifneq ($(wildcard $(TOP_DIR)/$(HOMER_GUI)),)
-#<------>@cd $(TOP_DIR)/$(HOMER_GUI) && $(MAKE) -s $*
-#endif
+ifneq ($(wildcard $(TOP_DIR)/$(HOMER_GUI)),)
+	@cd $(TOP_DIR)/$(HOMER_GUI) && $(MAKE) -s $*
+endif

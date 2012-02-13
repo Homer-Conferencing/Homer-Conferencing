@@ -18,7 +18,7 @@ SET (INCLUDE_DIRS
 ##############################################################
 # target directory for the lib
 SET (TARGET_DIRECTORY
-	${RELOCATION_DIR}../../lib
+	${RELOCATION_DIR}lib
 )
 	
 ##############################################################
@@ -69,7 +69,7 @@ SET (LIBS_APPLE
 )
 
 ##############################################################
-SET (TARGET_NAME
+SET (TARGET_LIB_NAME
 	HomerBase
 )
 

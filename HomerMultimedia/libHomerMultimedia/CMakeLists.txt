@@ -33,7 +33,7 @@ SET (INCLUDE_DIRS
 ##############################################################
 # target directory for the lib
 SET (TARGET_DIRECTORY
-	${RELOCATION_DIR}../../lib
+	${RELOCATION_DIR}lib
 )
 
 ##############################################################
@@ -142,6 +142,7 @@ IF (${BUILD} MATCHES "Default")
 		avutil
 		avfilter
 		swscale
+		x264
 	)
 ELSE ()
 	# USED LIBRARIES for linux environment
@@ -194,7 +195,7 @@ SET (LIBS_BSD_STATIC
 )
 
 ##############################################################
-SET (TARGET_NAME
+SET (TARGET_LIB_NAME
 	HomerMultimedia
 )
 

@@ -21,9 +21,9 @@ BUILD_OS := $(shell echo "$$OSTYPE")
 ##############################################################
 # Options for cmake
 ifeq ($(BUILD_OS),msys)
-	CMAKE_OPTIONS= -DRELOCATION_DIR=../../ -Wno-dev -G"Unix Makefiles"
+	CMAKE_OPTIONS= -DRELOCATION_DIR=../../../../bin/ -Wno-dev -G"Unix Makefiles"
 else
-    CMAKE_OPTIONS= -DRELOCATION_DIR=../../ -Wno-dev
+	CMAKE_OPTIONS= -DRELOCATION_DIR=../../../../bin/ -Wno-dev
 endif
 
 ##############################################################
@@ -78,6 +78,8 @@ default: $(TOP_DIR)/$(BUILD_DIR_DEFAULT)/Makefile
 debug: $(TOP_DIR)/$(BUILD_DIR_DEBUG)/Makefile
 	@echo "##### OSType is \"$(BUILD_OS)\""
 	@cd $(TOP_DIR)/$(BUILD_DIR_DEBUG) && $(MAKE) -s
+
+install: all
 
 ###############################################################################
 # Targets for building a special subtarget in one of our configurations 

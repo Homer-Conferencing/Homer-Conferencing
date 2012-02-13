@@ -3,7 +3,11 @@
 # Since:   2010-11-13
 ###############################################################################
 
-MESSAGE("##### Configuring \"${TARGET_NAME}\" to build \"${BUILD}\" version")
+IF (DEFINED TARGET_PROGRAM_NAME) 
+	MESSAGE("##### Configuring program \"${TARGET_PROGRAM_NAME}\" to build \"${BUILD}\" version")
+ELSEIF (DEFINED TARGET_LIB_NAME) 
+	MESSAGE("##### Configuring library \"${TARGET_LIB_NAME}\" to build \"${BUILD}\" version")
+ENDIF ()
 
 ##############################################################
 # check if CMakePreDefs.txt was parsed before
@@ -62,12 +66,13 @@ ENDIF ()
 # lib search path
 SET (LIB_DIRS
 	${LIB_DIRS}
+	${CMAKE_CURRENT_SOURCE_DIR}/../../bin/lib
 	${CMAKE_CURRENT_SOURCE_DIR}/../../lib
 	/usr/local/lib
 	/usr/lib
 	/usr/lib${ARCH_BITS}
 )
-MESSAGE("##### Library search path: ${LIB_DIRS}")
+MESSAGE("### Library search path: ${LIB_DIRS}")
 
 ##############################################################
 # include dirs
@@ -75,7 +80,7 @@ SET (INCLUDE_DIRS
 	${INCLUDE_DIRS}
 	/usr/local/include
 )
-MESSAGE("##### Header search path: ${INCLUDE_DIRS}")
+MESSAGE("### Header search path: ${INCLUDE_DIRS}")
 
 ##############################################################
 # compile flags
@@ -111,6 +116,7 @@ SET (LFLAGS
 )
 ENDIF (APPLE)
 
+##############################################################
 IF (BSD)
 	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wl,-soname,${TARGET_NAME}.dylib")
 	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,-soname,${TARGET_NAME}.dylib")
@@ -182,11 +188,6 @@ IF (WIN32)
 ENDIF (WIN32)
 
 ##############################################################
-# destination for install target
-SET(LIBRARY_OUTPUT_PATH ${TARGET_DIRECTORY})
-MESSAGE("### Library output path: ${TARGET_DIRECTORY}")
-
-##############################################################
 # add definitions for compilation
 IF (WIN32)
 	FOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_WINDOWS})
@@ -216,9 +217,6 @@ FOREACH(LFLAGS_ENTRY ${LFLAGS})
 	SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LFLAGS_ENTRY}")
 	SET(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${LFLAGS_ENTRY}")
 ENDFOREACH(LFLAGS_ENTRY ${LFLAGS})
-MESSAGE("### Flags for Windows binary linking: ${CMAKE_EXE_LINKER_FLAGS}")
-MESSAGE("### Flags for shared linking: ${CMAKE_SHARED_LINKER_FLAGS}")
-MESSAGE("### Flags for module linking: ${CMAKE_MODULE_LINKER_FLAGS}")
 
 ##############################################################
 # add flags for compilation
@@ -243,7 +241,42 @@ ENDFOREACH(LIB_DIRS_ENTRY ${LIB_DIRS})
 
 ##############################################################
 # generate library from given source files
-ADD_LIBRARY(${TARGET_NAME} SHARED ${SOURCES})
+IF (DEFINED TARGET_LIB_NAME) 
+	MESSAGE("### Flags for shared linking: ${CMAKE_SHARED_LINKER_FLAGS}")
+	MESSAGE("### Flags for module linking: ${CMAKE_MODULE_LINKER_FLAGS}")
+	
+	# destination for install target
+	SET(LIBRARY_OUTPUT_PATH ${TARGET_DIRECTORY})
+	MESSAGE("### Library output path: ${TARGET_DIRECTORY}")
+
+	# trigger library creation
+	ADD_LIBRARY(${TARGET_LIB_NAME} SHARED ${SOURCES})
+	SET(TARGET_NAME
+		${TARGET_LIB_NAME}
+	)
+ENDIF ()
+# generate program from given source files
+IF (DEFINED TARGET_PROGRAM_NAME) 
+	IF (WIN32)
+		MESSAGE("### Flags for Windows binary linking: ${CMAKE_EXE_LINKER_FLAGS}")
+	ENDIF (WIN32)
+	
+	# destination for install target
+	SET(EXECUTABLE_OUTPUT_PATH ${TARGET_DIRECTORY})
+	MESSAGE("### Program output path: ${EXECUTABLE_OUTPUT_PATH}")
+
+	# trigger program creation
+	IF(APPLE)
+		ADD_EXECUTABLE(${TARGET_PROGRAM_NAME} MACOSX_BUNDLE ${SOURCES})
+	ELSEIF (WIN32)
+		ADD_EXECUTABLE(${TARGET_PROGRAM_NAME} WIN32 ${SOURCES})
+	ELSE ()
+		ADD_EXECUTABLE(${TARGET_PROGRAM_NAME} ${SOURCES})
+	ENDIF ()
+	SET(TARGET_NAME
+		${TARGET_PROGRAM_NAME}
+	)
+ENDIF ()
 
 ##############################################################
 # link to needed external libraries
