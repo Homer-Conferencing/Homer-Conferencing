@@ -10,35 +10,51 @@ INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakePreDefs.txt)
 
 ##############################################################
 # find package "ALSA"
+IF (LINUX)
 MESSAGE("##### Searching for library ALSA")
 Find_Package(ALSA REQUIRED)
 IF (NOT ALSA_FOUND)
-	MESSAGE(FATAL_ERROR "You need library ALSA")
+    MESSAGE(FATAL_ERROR "You need library ALSA")
 ENDIF ()
+ELSE (LINUX)
+    SET(ALSA_INCLUDE_DIRS "/usr/include")
+ENDIF (LINUX)
 
 ##############################################################
 # find package "SDL"
+IF (LINUX)
 MESSAGE("##### Searching for library SDL")
 Find_Package(SDL REQUIRED)
 IF (NOT SDL_FOUND)
 	MESSAGE(FATAL_ERROR "You need library SDL")
 ENDIF ()
+ELSE (LINUX)
+    SET(SDL_INCLUDE_DIR "/usr/include")
+ENDIF (LINUX)
 
 ##############################################################
 # find package "SDL_sound
+IF (LINUX)
 MESSAGE("##### Searching for library SDL_sound")
 Find_Package(SDL_sound REQUIRED)
 IF (NOT SDL_SOUND_FOUND)
 	MESSAGE(FATAL_ERROR "You need library SDL_sound")
 ENDIF ()
+ELSE (LINUX)
+    SET(SDL_SOUND_INCLUDE_DIR "/usr/include")
+ENDIF (LINUX)
 
 ##############################################################
 # find package "SDL_mixer
+IF (LINUX)
 MESSAGE("##### Searching for library SDL_mixer")
 Find_Package(SDL_mixer REQUIRED)
 IF (NOT SDLMIXER_FOUND)
 	MESSAGE(FATAL_ERROR "You need library SDL_mixer")
 ENDIF ()
+ELSE (LINUX)
+    SET(SDLMIXER_INCLUDE_DIR "/usr/include")
+ENDIF (LINUX)
 
 
 ##############################################################
@@ -60,9 +76,15 @@ SET (INCLUDE_DIRS
 
 ##############################################################
 # target directory for the lib
+IF (NOT (WIN32))
 SET (TARGET_DIRECTORY
-	${RELOCATION_DIR}lib
+    ${RELOCATION_DIR}lib
 )
+ELSE (NOT (WIN32))
+SET (TARGET_DIRECTORY
+    ${RELOCATION_DIR}
+)
+ENDIF (NOT (WIN32))
 
 ##############################################################
 # compile flags

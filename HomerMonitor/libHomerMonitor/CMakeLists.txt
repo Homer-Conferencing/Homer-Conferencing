@@ -18,9 +18,15 @@ SET (INCLUDE_DIRS
 	
 ##############################################################
 # target directory for the lib
+IF (NOT (WIN32))
 SET (TARGET_DIRECTORY
-	${RELOCATION_DIR}lib
+    ${RELOCATION_DIR}lib
 )
+ELSE (NOT (WIN32))
+SET (TARGET_DIRECTORY
+    ${RELOCATION_DIR}
+)
+ENDIF (NOT (WIN32))
 	
 ##############################################################
 # compile flags

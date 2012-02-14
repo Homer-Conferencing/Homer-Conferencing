@@ -10,11 +10,15 @@ INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakePreDefs.txt)
 
 ##############################################################
 # find package "OpenSSL"
+IF (LINUX)
 MESSAGE("##### Searching for library OpenSSL")
 Find_Package(OpenSSL REQUIRED)
 IF (NOT OPENSSL_FOUND)
 	MESSAGE(FATAL_ERROR "You need library OpenSSL")
-ENDIF ()
+ENDIF(NOT OPENSSL_FOUND)
+ELSE (LINUX)
+    SET(OPENSSL_INCLUDE_DIR "/usr/include")
+ENDIF (LINUX)
 
 ##############################################################
 # include dirs
@@ -60,9 +64,15 @@ endif (NOT APPLE)
 
 ##############################################################
 # target directory for the lib
+IF (NOT (WIN32))
 SET (TARGET_DIRECTORY
-	${RELOCATION_DIR}lib
+    ${RELOCATION_DIR}lib
 )
+ELSE (NOT (WIN32))
+SET (TARGET_DIRECTORY
+    ${RELOCATION_DIR}
+)
+ENDIF (NOT (WIN32))
 
 ##############################################################
 # SOURCES

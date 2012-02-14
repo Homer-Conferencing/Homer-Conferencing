@@ -84,7 +84,7 @@ SET (LFLAGS
 IF (WIN32)
 	SET (LFLAGS
 		${LFLAGS}
-		../winres/Homer-WinRes.o	
+		${CMAKE_CURRENT_SOURCE_DIR}/../../Homer/winres/Homer-WinRes.o	
 	)
 	IF (NOT (${BUILD} MATCHES "Debug"))
 		SET (LFLAGS
