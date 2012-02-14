@@ -67,7 +67,7 @@ ENDIF ()
 SET (LIB_DIRS
 	${LIB_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}/../../bin/lib
-	${CMAKE_CURRENT_SOURCE_DIR}/../../lib
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../bin
 	/usr/local/lib
 	/usr/lib
 	/usr/lib${ARCH_BITS}
@@ -94,6 +94,7 @@ SET (FLAGS
 	-Wno-long-long
 	-Wno-deprecated-declarations
 	-Wno-format
+	-Wno-uninitialized
 	-O2
 )
 IF (${BUILD} MATCHES "Debug")
@@ -177,7 +178,11 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 ##############################################################
 # build only shared libs by default
 SET(BUILD_SHARED_LIBS ON)
-SET(BUILD_STATIC_LIBS ON)
+IF (NOT (${BUILD} MATCHES "Release"))
+    SET(BUILD_STATIC_LIBS OFF)
+ELSE ()
+    SET(BUILD_STATIC_LIBS ON)
+ENDIF()
 
 ##############################################################
 # for win32 remove the "lib" prefix for dll's

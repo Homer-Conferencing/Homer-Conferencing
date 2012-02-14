@@ -10,11 +10,15 @@ INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakePreDefs.txt)
 
 ##############################################################
 # find package "ALSA"
+IF (LINUX)
 MESSAGE("##### Searching for library ALSA")
 Find_Package(ALSA REQUIRED)
 IF (NOT ALSA_FOUND)
 	MESSAGE(FATAL_ERROR "You need library ALSA")
 ENDIF ()
+ELSE (LINUX)
+    SET(ALSA_INCLUDE_DIRS "/usr/include")
+ENDIF (LINUX)
 
 ##############################################################
 # include dirs
@@ -32,9 +36,15 @@ SET (INCLUDE_DIRS
 
 ##############################################################
 # target directory for the lib
+IF (NOT (WIN32))
 SET (TARGET_DIRECTORY
-	${RELOCATION_DIR}lib
+    ${RELOCATION_DIR}lib
 )
+ELSE (NOT (WIN32))
+SET (TARGET_DIRECTORY
+    ${RELOCATION_DIR}
+)
+ENDIF (NOT (WIN32))
 
 ##############################################################
 # compile flags                                                                                                                                                                                                                                                                   
