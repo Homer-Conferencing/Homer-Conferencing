@@ -30,7 +30,6 @@ INCLUDE(${QT_USE_FILE})
 # include dirs
 SET (INCLUDE_DIRS
 	../include
-	../forms
 	../include/Dialogs
 	../include/Widgets
 	../../HomerBase/include/Logging
@@ -50,8 +49,9 @@ SET (INCLUDE_DIRS
 	../../HomerWinLibs/QT/include/QtWebKit
 	../../HomerWinLibs/FFMPEG
 	../../HomerWinLibs/OPENSSL/include
-    /usr/include/ffmpeg
+	/usr/include/ffmpeg
 	${QT_INCLUDE_DIR}
+	${CMAKE_BINARY_DIR}/bin
 )
 
 ##############################################################
@@ -213,12 +213,6 @@ SET (LIBS_WINDOWS
 	${QT_QTNETWORK_LIBRARIES}
 	${QT_QTXML_LIBRARIES}
 	${QT_QTWEBKIT_LIBRARIES}
-#	QtCore4
-#	QtGui4
-#	QtMultimedia4
-#	QtNetwork4
-#	QtXml4
-#	QtWebKit4
 )
 # USED LIBRARIES for BSD environment
 SET (LIBS_BSD
@@ -247,7 +241,7 @@ SET (TARGET_PROGRAM_NAME
 
 ##############################################################
 # compile Qt-ui files via uic
-QT4_WRAP_UI(UI_HEADERS ${QT_UI_SOURCES})
+QT4_WRAP_UI(SOURCES ${QT_UI_SOURCES})
 
 ##############################################################
 # parse Q_OBJECT entries via moc
