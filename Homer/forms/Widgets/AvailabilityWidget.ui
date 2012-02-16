@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>171</width>
+    <width>180</width>
     <height>29</height>
    </rect>
   </property>
@@ -65,7 +65,7 @@
       <string>Online (auto)</string>
      </property>
      <property name="icon">
-      <iconset resource="../resources/Icons.qrc">
+      <iconset resource="../../resources/Icons.qrc">
        <normaloff>:/images/UserAvailable.png</normaloff>:/images/UserAvailable.png</iconset>
      </property>
      <property name="iconSize">
@@ -135,7 +135,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../resources/Icons.qrc"/>
+  <include location="../../resources/Icons.qrc"/>
  </resources>
  <connections/>
 </ui>

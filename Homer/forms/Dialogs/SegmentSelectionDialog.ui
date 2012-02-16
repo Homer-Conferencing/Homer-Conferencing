@@ -29,7 +29,7 @@
    <string>Select screen segment</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../resources/Icons.qrc">
+   <iconset resource="../../resources/Icons.qrc">
     <normaloff>:/images/LogoHomer3.png</normaloff>:/images/LogoHomer3.png</iconset>
   </property>
   <property name="windowOpacity">
@@ -168,7 +168,7 @@
                 <string/>
                </property>
                <property name="pixmap">
-                <pixmap resource="../resources/Icons.qrc">:/images/ArrowUp.png</pixmap>
+                <pixmap resource="../../resources/Icons.qrc">:/images/ArrowUp.png</pixmap>
                </property>
                <property name="scaledContents">
                 <bool>true</bool>
@@ -216,7 +216,7 @@
                 <string/>
                </property>
                <property name="pixmap">
-                <pixmap resource="../resources/Icons.qrc">:/images/ArrowLeft.png</pixmap>
+                <pixmap resource="../../resources/Icons.qrc">:/images/ArrowLeft.png</pixmap>
                </property>
                <property name="scaledContents">
                 <bool>true</bool>
@@ -250,7 +250,7 @@
                 <string/>
                </property>
                <property name="pixmap">
-                <pixmap resource="../resources/Icons.qrc">:/images/Computer.png</pixmap>
+                <pixmap resource="../../resources/Icons.qrc">:/images/Computer.png</pixmap>
                </property>
                <property name="scaledContents">
                 <bool>true</bool>
@@ -278,7 +278,7 @@
                 <string/>
                </property>
                <property name="pixmap">
-                <pixmap resource="../resources/Icons.qrc">:/images/ArrowRight.png</pixmap>
+                <pixmap resource="../../resources/Icons.qrc">:/images/ArrowRight.png</pixmap>
                </property>
                <property name="scaledContents">
                 <bool>true</bool>
@@ -332,7 +332,7 @@
                 <string/>
                </property>
                <property name="pixmap">
-                <pixmap resource="../resources/Icons.qrc">:/images/ArrowDown.png</pixmap>
+                <pixmap resource="../../resources/Icons.qrc">:/images/ArrowDown.png</pixmap>
                </property>
                <property name="scaledContents">
                 <bool>true</bool>
@@ -587,6 +587,7 @@
   </layout>
  </widget>
  <resources>
+  <include location="../../resources/Icons.qrc"/>
   <include location="../resources/Icons.qrc"/>
  </resources>
  <connections>

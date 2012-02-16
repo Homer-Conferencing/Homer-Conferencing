@@ -49,8 +49,7 @@
               <number>3</number>
              </property>
              <item row="0" column="0">
-              <widget class="Homer::Gui::SessionInfoWidget" name="mSessionInfoWidget" native="true">
-              </widget>
+              <widget class="Homer::Gui::SessionInfoWidget" name="mSessionInfoWidget" native="true"/>
              </item>
             </layout>
            </widget>
@@ -179,7 +178,7 @@
                 <string>...</string>
                </property>
                <property name="icon">
-                <iconset resource="../resources/Icons.qrc">
+                <iconset resource="../../resources/Icons.qrc">
                  <normaloff>:/images/Audio - Play.png</normaloff>:/images/Audio - Play.png</iconset>
                </property>
                <property name="iconSize">
@@ -211,7 +210,7 @@
                 <string>...</string>
                </property>
                <property name="icon">
-                <iconset resource="../resources/Icons.qrc">
+                <iconset resource="../../resources/Icons.qrc">
                  <normaloff>:/images/Audio - Pause.png</normaloff>:/images/Audio - Pause.png</iconset>
                </property>
                <property name="iconSize">
@@ -393,7 +392,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../resources/Icons.qrc"/>
+  <include location="../../resources/Icons.qrc"/>
  </resources>
  <connections/>
 </ui>
