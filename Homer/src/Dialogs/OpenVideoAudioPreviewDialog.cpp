@@ -60,7 +60,20 @@ void OpenVideoAudioPreviewDialog::initializeGUI()
 {
     setupUi(this);
 
+    connect(mCbDeviceVideo, SIGNAL(currentIndexChanged(int)), this, SLOT(selectDevicesPlayback()));
+    connect(mCbDeviceAudio, SIGNAL(currentIndexChanged(int)), this, SLOT(selectDevicesPlayback()));
+
     connect(mPbFile, SIGNAL(clicked()), this, SLOT(actionGetFile()));
+
+    connect(mSbPortVideo, SIGNAL(valueChanged(int)), this, SLOT(selectStreaming()));
+    connect(mCbTransportVideo, SIGNAL(currentIndexChanged(int)), this, SLOT(selectStreaming()));
+    connect(mCbCodecVideo, SIGNAL(currentIndexChanged(int)), this, SLOT(selectStreaming()));
+    connect(mCbRtpVideo, SIGNAL(stateChanged(int)), this, SLOT(selectStreaming()));
+    connect(mSbPortAudio, SIGNAL(valueChanged(int)), this, SLOT(selectStreaming()));
+    connect(mCbTransportAudio, SIGNAL(currentIndexChanged(int)), this, SLOT(selectStreaming()));
+    connect(mCbCodecAudio, SIGNAL(currentIndexChanged(int)), this, SLOT(selectStreaming()));
+    connect(mCbRtpAudio, SIGNAL(stateChanged(int)), this, SLOT(selectStreaming()));
+
     connect(mCbVideoEnabled, SIGNAL(clicked(bool)), this, SLOT(actionVideoEnabled(bool)));
     connect(mCbAudioEnabled, SIGNAL(clicked(bool)), this, SLOT(actionAudioEnabled(bool)));
 
@@ -332,7 +345,22 @@ void OpenVideoAudioPreviewDialog::actionGetFile()
         return;
 
     mLbFile->setText(tFileName);
-    mRbFile->setChecked(true);
+    selectFilePlayback();
+}
+
+void OpenVideoAudioPreviewDialog::selectStreaming()
+{
+	mRbStream->setChecked(true);
+}
+
+void OpenVideoAudioPreviewDialog::selectDevicesPlayback()
+{
+	mRbDevice->setChecked(true);
+}
+
+void OpenVideoAudioPreviewDialog::selectFilePlayback()
+{
+	mRbFile->setChecked(true);
 }
 
 void OpenVideoAudioPreviewDialog::actionVideoEnabled(bool pState)
