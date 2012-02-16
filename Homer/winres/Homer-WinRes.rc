@@ -1,8 +1,8 @@
 IDI_ICON1               ICON    DISCARDABLE     "Homer-Icon.ico"
 
 1 VERSIONINFO
-FILEVERSION     0,20,0,0
-PRODUCTVERSION  0,20,0,0
+FILEVERSION     0,21,0,0
+PRODUCTVERSION  0,21,0,0
 
 BEGIN
   BLOCK "StringFileInfo"
@@ -11,10 +11,10 @@ BEGIN
     BEGIN
       VALUE "ProductName", "Homer Conferencing"
       VALUE "FileDescription", "Homer Conferencing"
-      VALUE "ProductVersion", "Beta 0.20"
+      VALUE "ProductVersion", "Beta 0.21"
       VALUE "CompanyName", "Homer Conferencing project"
       VALUE "Comments", "Provided under the terms of the GNU General Public License 2 (GPLv2.0)"
-      VALUE "FileVersion", "Beta 0.20"
+      VALUE "FileVersion", "Beta 0.21"
       VALUE "OriginalFilename", "Homer.exe"
       VALUE "InternalName", "Homer.exe"
       VALUE "LegalCopyright", "(C) 2008 Thomas Volkert <thomas@homer-conferencing.com>"
