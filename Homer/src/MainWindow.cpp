@@ -1131,7 +1131,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                         {
                             if (tCCEvent->SenderName.size())
                                 (*tIt)->UpdateParticipantName(QString(tCCEvent->SenderName.c_str()));
-                            (*tIt)->HandleCallStopped(tCCEvent->IsIncomingEvent);
+                            (*tIt)->HandleCallCancel(tCCEvent->IsIncomingEvent);
                             return;
                         }
                     }
@@ -1184,7 +1184,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                         {
                             if (tCHUEvent->SenderName.size())
                                 (*tIt)->UpdateParticipantName(QString(tCHUEvent->SenderName.c_str()));
-                            (*tIt)->HandleCallStopped(tCHUEvent->IsIncomingEvent);
+                            (*tIt)->HandleCallHangup(tCHUEvent->IsIncomingEvent);
                             return;
                         }
                     }
@@ -1199,7 +1199,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                         {
                             if (tCTEvent->SenderName.size())
                                 (*tIt)->UpdateParticipantName(QString(tCTEvent->SenderName.c_str()));
-                            (*tIt)->HandleCallStopped(tCTEvent->IsIncomingEvent);
+                            (*tIt)->HandleCallTermination(tCTEvent->IsIncomingEvent);
                             return;
                         }
                     }

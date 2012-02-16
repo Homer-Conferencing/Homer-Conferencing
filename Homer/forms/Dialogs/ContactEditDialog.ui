@@ -20,7 +20,7 @@
    <string>Edit contact</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../resources/Icons.qrc">
+   <iconset resource="../../resources/Icons.qrc">
     <normaloff>:/images/LogoHomer3.png</normaloff>:/images/LogoHomer3.png</iconset>
   </property>
   <property name="sizeGripEnabled">
@@ -340,7 +340,7 @@
   <tabstop>mBb</tabstop>
  </tabstops>
  <resources>
-  <include location="../resources/Icons.qrc"/>
+  <include location="../../resources/Icons.qrc"/>
  </resources>
  <connections>
   <connection>

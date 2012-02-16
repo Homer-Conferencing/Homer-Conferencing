@@ -61,14 +61,37 @@ private slots:
     void ShowVideoSourceInfo(QString pCurrentText);
     void ShowAudioSourceInfo(QString pCurrentText);
     void ShowAudioSinkInfo(QString pCurrentText);
+
     void SelectNotifySoundFileForIm();
     void SelectNotifySoundFileForCall();
+    void SelectNotifySoundFileForCallAcknowledge();
+    void SelectNotifySoundFileForCallDeny();
+    void SelectNotifySoundFileForCallHangup();
+    void SelectNotifySoundFileForError();
+    void SelectNotifySoundFileForRegistrationFailed();
+    void SelectNotifySoundFileForRegistrationSuccessful();
+
+    void SelectAllSound();
+    void DeselectAllSound();
+    void SelectAllSystray();
+    void DeselectAllSystray();
+
     void PlayNotifySoundFileForIm();
     void PlayNotifySoundFileForCall();
+    void PlayNotifySoundFileForCallAcknowledge();
+    void PlayNotifySoundFileForCallDeny();
+    void PlayNotifySoundFileForCallHangup();
+    void PlayNotifySoundFileForError();
+    void PlayNotifySoundFileForRegistrationFailed();
+    void PlayNotifySoundFileForRegistrationSuccessful();
+
     void ClickedButton(QAbstractButton *pButton);
     void ToggleSipServerPasswordVisibility();
 
 private:
+    QString SelectSoundFile(QString pEventName, QString pSuggestion);
+    void PlayNotifySoundFile(QString pFile);
+
     void initializeGUI();
     void LoadConfiguration();
     void SaveConfiguration();

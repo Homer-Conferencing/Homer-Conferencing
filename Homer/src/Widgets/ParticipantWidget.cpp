@@ -618,11 +618,14 @@ void ParticipantWidget::HandleCallRinging(bool pIncoming)
     // return immediately if we are a preview only
     if (mSessionType == PREVIEW)
     {
-        LOG(LOG_ERROR, "This function is not support vor preview widgets");
+        LOG(LOG_ERROR, "This function is not support for preview widgets");
         return;
     }
 
     ShowNewState();
+
+    if (CONF.GetCallAcknowledgeSound())
+        QSound::play(CONF.GetCallAcknowledgeSoundFile());
 }
 
 void ParticipantWidget::HandleCall(bool pIncoming, QString pRemoteApplication)
@@ -665,7 +668,52 @@ void ParticipantWidget::HandleCall(bool pIncoming, QString pRemoteApplication)
     }
 }
 
-void ParticipantWidget::HandleCallStopped(bool pIncoming)
+void ParticipantWidget::HandleCallCancel(bool pIncoming)
+{
+    // return immediately if we are a preview only
+    if (mSessionType == PREVIEW)
+    {
+        LOG(LOG_ERROR, "This function is not support for preview widgets");
+        return;
+    }
+
+    CallStopped(pIncoming);
+
+    if (CONF.GetCallHangupSound())
+        QSound::play(CONF.GetCallHangupSoundFile());
+}
+
+void ParticipantWidget::HandleCallHangup(bool pIncoming)
+{
+    // return immediately if we are a preview only
+    if (mSessionType == PREVIEW)
+    {
+        LOG(LOG_ERROR, "This function is not support for preview widgets");
+        return;
+    }
+
+    CallStopped(pIncoming);
+
+    if (CONF.GetCallHangupSound())
+        QSound::play(CONF.GetCallHangupSoundFile());
+}
+
+void ParticipantWidget::HandleCallTermination(bool pIncoming)
+{
+    // return immediately if we are a preview only
+    if (mSessionType == PREVIEW)
+    {
+        LOG(LOG_ERROR, "This function is not support for preview widgets");
+        return;
+    }
+
+    CallStopped(pIncoming);
+
+    if (CONF.GetErrorSound())
+        QSound::play(CONF.GetErrorSoundFile());
+}
+
+void ParticipantWidget::CallStopped(bool pIncoming)
 {
     // return immediately if we are a preview only
     if (mSessionType == PREVIEW)
@@ -715,13 +763,13 @@ void ParticipantWidget::HandleCallUnavailable(bool pIncoming)
 
     if (!mIncomingCall)
     {
-        HandleCallStopped(pIncoming);
+    	CallStopped(pIncoming);
         UpdateParticipantState(CONTACT_UNAVAILABLE);
         CONTACTSPOOL.UpdateContactState(mSessionName, CONTACT_UNAVAILABLE);
 
         ShowError("Participant unavailable", "The participant " + mSessionName + " is currently unavailable for a call!");
     }else
-        HandleCallStopped(pIncoming);
+    	CallStopped(pIncoming);
 
     // stop sound output
     if (mSoundForIncomingCall->loopsRemaining())
@@ -742,12 +790,12 @@ void ParticipantWidget::HandleCallDenied(bool pIncoming)
 
     if (!mIncomingCall)
     {
-        HandleCallStopped(pIncoming);
+    	CallStopped(pIncoming);
 
         ShowInfo("Participant denied", "The participant " + mSessionName + " has denied your call request!");
     }else
     {
-        HandleCallStopped(pIncoming);
+    	CallStopped(pIncoming);
     }
 
     // stop sound output
@@ -783,6 +831,9 @@ void ParticipantWidget::HandleCallAccept(bool pIncoming)
     // stop sound output
     if (mSoundForIncomingCall->loopsRemaining())
     	mSoundForIncomingCall->stop();
+
+    if (CONF.GetCallAcknowledgeSound())
+        QSound::play(CONF.GetCallAcknowledgeSoundFile());
 }
 
 void ParticipantWidget::HandleMediaUpdate(bool pIncoming, QString pRemoteAudioAdr, unsigned int pRemoteAudioPort, QString pRemoteAudioCodec, QString pRemoteVideoAdr, unsigned int pRemoteVideoPort, QString pRemoteVideoCodec)

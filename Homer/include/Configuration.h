@@ -154,12 +154,38 @@ public:
     QString GetStunServer();
 
     /* notification settings */
+    // instant message
     QString GetImSoundFile();
     bool GetImSound();
     bool GetImSystray();
+    // call
     QString GetCallSoundFile();
     bool GetCallSound();
     bool GetCallSystray();
+    // call acknowledge
+    QString GetCallAcknowledgeSoundFile();
+    bool GetCallAcknowledgeSound();
+    bool GetCallAcknowledgeSystray();
+    // call canceled
+    QString GetCallDenySoundFile();
+    bool GetCallDenySound();
+    bool GetCallDenySystray();
+    // call hangup
+    QString GetCallHangupSoundFile();
+    bool GetCallHangupSound();
+    bool GetCallHangupSystray();
+    // error
+    QString GetErrorSoundFile();
+    bool GetErrorSound();
+    bool GetErrorSystray();
+    // registration failed
+    QString GetRegistrationFailedSoundFile();
+    bool GetRegistrationFailedSound();
+    bool GetRegistrationFailedSystray();
+    // registration successful
+    QString GetRegistrationSuccessfulSoundFile();
+    bool GetRegistrationSuccessfulSound();
+    bool GetRegistrationSuccessfulSystray();
 
     /* additional fixed values */
     int GetSystrayTimeout(){ return 6000; /* ms */ }
@@ -258,13 +284,38 @@ private:
     void SetNatSupportActivation(bool pActivation);
 
     /* notification settings */
+    // instant message
     void SetImSoundFile(QString pSoundFile);
     void SetImSound(bool pActivation);
     void SetImSystray(bool pActivation);
+    // call
     void SetCallSoundFile(QString pSoundFile);
     void SetCallSound(bool pActivation);
     void SetCallSystray(bool pActivation);
-
+    // call acknowledge
+    void SetCallAcknowledgeSoundFile(QString pSoundFile);
+    void SetCallAcknowledgeSound(bool pActivation);
+    void SetCallAcknowledgeSystray(bool pActivation);
+    // call canceled
+    void SetCallDenySoundFile(QString pSoundFile);
+    void SetCallDenySound(bool pActivation);
+    void SetCallDenySystray(bool pActivation);
+    // call hangup
+    void SetCallHangupSoundFile(QString pSoundFile);
+    void SetCallHangupSound(bool pActivation);
+    void SetCallHangupSystray(bool pActivation);
+    // error
+    void SetErrorSoundFile(QString pSoundFile);
+    void SetErrorSound(bool pActivation);
+    void SetErrorSystray(bool pActivation);
+    // registration failed
+    void SetRegistrationFailedSoundFile(QString pSoundFile);
+    void SetRegistrationFailedSound(bool pActivation);
+    void SetRegistrationFailedSystray(bool pActivation);
+    // registration successful
+    void SetRegistrationSuccessfulSoundFile(QString pSoundFile);
+    void SetRegistrationSuccessfulSound(bool pActivation);
+    void SetRegistrationSuccessfulSystray(bool pActivation);
 
     /* debug state */
     void SetDebugging(bool pState = true);

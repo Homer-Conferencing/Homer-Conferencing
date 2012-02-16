@@ -112,9 +112,11 @@ public:
     void HandleMessageUnavailable(bool pIncoming);
     void HandleCall(bool pIncoming, QString pRemoteApplication);
     void HandleCallAccept(bool pIncoming);
+    void HandleCallCancel(bool pIncoming);
+    void HandleCallHangup(bool pIncoming);
+    void HandleCallTermination(bool pIncoming);
     void HandleCallUnavailable(bool pIncoming);
     void HandleCallRinging(bool pIncoming);
-    void HandleCallStopped(bool pIncoming);
     void HandleCallDenied(bool pIncoming);
     void HandleMediaUpdate(bool pIncoming, QString pRemoteAudioAdr, unsigned int pRemoteAudioPort, QString pRemoteAudioCodec, QString pRemoteVideoAdr, unsigned int pRemoteVideoPort, QString pRemoteVideoCodec);
 
@@ -144,6 +146,7 @@ private:
     virtual void dropEvent(QDropEvent *pEvent);
     void timerEvent(QTimerEvent *pEvent);
     void ShowNewState();
+    void CallStopped(bool pIncoming);
 
     QMainWindow         *mMainWindow;
     QMessageBox         *mCallBox;
