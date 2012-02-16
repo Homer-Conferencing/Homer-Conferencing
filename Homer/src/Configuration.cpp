@@ -481,6 +481,132 @@ void Configuration::SetCallSystray(bool pActivation)
     mQSettings->endGroup();
 }
 
+void Configuration::SetCallAcknowledgeSoundFile(QString pSoundFile)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("CallAcknowledgeSoundFile", pSoundFile);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetCallAcknowledgeSound(bool pActivation)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("CallAcknowledgeSound", pActivation);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetCallAcknowledgeSystray(bool pActivation)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("CallAcknowledgeSystray", pActivation);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetCallDenySoundFile(QString pSoundFile)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("CallDenySoundFile", pSoundFile);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetCallDenySound(bool pActivation)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("CallDenySound", pActivation);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetCallDenySystray(bool pActivation)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("CallDenySystray", pActivation);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetCallHangupSoundFile(QString pSoundFile)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("CallHangupSoundFile", pSoundFile);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetCallHangupSound(bool pActivation)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("CallHangupSound", pActivation);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetCallHangupSystray(bool pActivation)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("CallHangupSystray", pActivation);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetErrorSoundFile(QString pSoundFile)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("ErrorSoundFile", pSoundFile);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetErrorSound(bool pActivation)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("ErrorSound", pActivation);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetErrorSystray(bool pActivation)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("ErrorSystray", pActivation);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetRegistrationFailedSoundFile(QString pSoundFile)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("RegistrationFailedSoundFile", pSoundFile);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetRegistrationFailedSound(bool pActivation)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("RegistrationFailedSound", pActivation);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetRegistrationFailedSystray(bool pActivation)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("RegistrationFailedSystray", pActivation);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetRegistrationSuccessfulSoundFile(QString pSoundFile)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("RegistrationSuccessfulSoundFile", pSoundFile);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetRegistrationSuccessfulSound(bool pActivation)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("RegistrationSuccessfulSound", pActivation);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetRegistrationSuccessfulSystray(bool pActivation)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("RegistrationSuccessfulSystray", pActivation);
+    mQSettings->endGroup();
+}
+
 QString Configuration::GetSipListenerAddress()
 {
     return mQSettings->value("Network/SipListenerAddress", QString("")).toString();
@@ -796,6 +922,96 @@ bool Configuration::GetCallSound()
 bool Configuration::GetCallSystray()
 {
     return mQSettings->value("Notification/CallSystray", true).toBool();
+}
+
+QString Configuration::GetCallAcknowledgeSoundFile()
+{
+    return mQSettings->value("Notification/CallAcknowledgeSoundFile", QString((mAbsBinPath + "Call_Acknowledge.wav").c_str())).toString();
+}
+
+bool Configuration::GetCallAcknowledgeSound()
+{
+    return mQSettings->value("Notification/CallAcknowledgeSound", false).toBool();
+}
+
+bool Configuration::GetCallAcknowledgeSystray()
+{
+    return mQSettings->value("Notification/CallAcknowledgeSystray", true).toBool();
+}
+
+QString Configuration::GetCallDenySoundFile()
+{
+    return mQSettings->value("Notification/CallDenySoundFile", QString((mAbsBinPath + "Call_Deny.wav").c_str())).toString();
+}
+
+bool Configuration::GetCallDenySound()
+{
+    return mQSettings->value("Notification/CallDenySound", false).toBool();
+}
+
+bool Configuration::GetCallDenySystray()
+{
+    return mQSettings->value("Notification/CallDenySystray", true).toBool();
+}
+
+QString Configuration::GetCallHangupSoundFile()
+{
+    return mQSettings->value("Notification/CallHangupSoundFile", QString((mAbsBinPath + "Call_Hangup.wav").c_str())).toString();
+}
+
+bool Configuration::GetCallHangupSound()
+{
+    return mQSettings->value("Notification/CallHangupSound", false).toBool();
+}
+
+bool Configuration::GetCallHangupSystray()
+{
+    return mQSettings->value("Notification/CallHangupSystray", true).toBool();
+}
+
+QString Configuration::GetErrorSoundFile()
+{
+    return mQSettings->value("Notification/ErrorSoundFile", QString((mAbsBinPath + "Error.wav").c_str())).toString();
+}
+
+bool Configuration::GetErrorSound()
+{
+    return mQSettings->value("Notification/ErrorSound", false).toBool();
+}
+
+bool Configuration::GetErrorSystray()
+{
+    return mQSettings->value("Notification/ErrorSystray", true).toBool();
+}
+
+QString Configuration::GetRegistrationFailedSoundFile()
+{
+    return mQSettings->value("Notification/RegistrationFailedSoundFile", QString((mAbsBinPath + "Registration_Failed.wav").c_str())).toString();
+}
+
+bool Configuration::GetRegistrationFailedSound()
+{
+    return mQSettings->value("Notification/RegistrationFailedSound", false).toBool();
+}
+
+bool Configuration::GetRegistrationFailedSystray()
+{
+    return mQSettings->value("Notification/RegistrationFailedSystray", true).toBool();
+}
+
+QString Configuration::GetRegistrationSuccessfulSoundFile()
+{
+    return mQSettings->value("Notification/RegistrationSuccessfulSoundFile", QString((mAbsBinPath + "Registration_Successful.wav").c_str())).toString();
+}
+
+bool Configuration::GetRegistrationSuccessfulSound()
+{
+    return mQSettings->value("Notification/RegistrationSuccessfulSound", false).toBool();
+}
+
+bool Configuration::GetRegistrationSuccessfulSystray()
+{
+    return mQSettings->value("Notification/RegistrationSuccessfulSystray", true).toBool();
 }
 
 void Configuration::Sync()

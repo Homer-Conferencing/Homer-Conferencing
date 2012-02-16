@@ -14,7 +14,7 @@
    <string>Edit configuration</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../resources/Icons.qrc">
+   <iconset resource="../../resources/Icons.qrc">
     <normaloff>:/images/LogoHomer3.png</normaloff>:/images/LogoHomer3.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout">
@@ -101,7 +101,7 @@
          <set>AlignHCenter|AlignVCenter|AlignCenter</set>
         </property>
         <property name="icon">
-         <iconset resource="../resources/Icons.qrc">
+         <iconset resource="../../resources/Icons.qrc">
           <normaloff>:/images/VideoReel.png</normaloff>:/images/VideoReel.png</iconset>
         </property>
        </item>
@@ -118,7 +118,7 @@
          <set>AlignHCenter|AlignVCenter|AlignCenter</set>
         </property>
         <property name="icon">
-         <iconset resource="../resources/Icons.qrc">
+         <iconset resource="../../resources/Icons.qrc">
           <normaloff>:/images/Speaker.png</normaloff>:/images/Speaker.png</iconset>
         </property>
        </item>
@@ -135,7 +135,7 @@
          <set>AlignHCenter|AlignVCenter|AlignCenter</set>
         </property>
         <property name="icon">
-         <iconset resource="../resources/Icons.qrc">
+         <iconset resource="../../resources/Icons.qrc">
           <normaloff>:/images/Network.png</normaloff>:/images/Network.png</iconset>
         </property>
        </item>
@@ -152,7 +152,7 @@
          <set>AlignHCenter|AlignVCenter|AlignCenter</set>
         </property>
         <property name="icon">
-         <iconset resource="../resources/Icons.qrc">
+         <iconset resource="../../resources/Icons.qrc">
           <normaloff>:/images/Gears1.png</normaloff>:/images/Gears1.png</iconset>
         </property>
        </item>
@@ -169,7 +169,7 @@
          <set>AlignHCenter|AlignVCenter|AlignCenter</set>
         </property>
         <property name="icon">
-         <iconset resource="../resources/Icons.qrc">
+         <iconset resource="../../resources/Icons.qrc">
           <normaloff>:/images/RedFlag.png</normaloff>:/images/RedFlag.png</iconset>
         </property>
        </item>
@@ -328,7 +328,7 @@
                  <enum>Qt::PlainText</enum>
                 </property>
                 <property name="pixmap">
-                 <pixmap resource="../resources/Icons.qrc">:/images/HardwareInfo.png</pixmap>
+                 <pixmap resource="../../resources/Icons.qrc">:/images/HardwareInfo.png</pixmap>
                 </property>
                 <property name="scaledContents">
                  <bool>true</bool>
@@ -1198,7 +1198,7 @@
                  <string/>
                 </property>
                 <property name="pixmap">
-                 <pixmap resource="../resources/Icons.qrc">:/images/HardwareInfo.png</pixmap>
+                 <pixmap resource="../../resources/Icons.qrc">:/images/HardwareInfo.png</pixmap>
                 </property>
                 <property name="scaledContents">
                  <bool>true</bool>
@@ -1355,7 +1355,7 @@
                  <string/>
                 </property>
                 <property name="pixmap">
-                 <pixmap resource="../resources/Icons.qrc">:/images/HardwareInfo.png</pixmap>
+                 <pixmap resource="../../resources/Icons.qrc">:/images/HardwareInfo.png</pixmap>
                 </property>
                 <property name="scaledContents">
                  <bool>true</bool>
@@ -2013,7 +2013,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/Key.png</normaloff>:/images/Key.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -2828,7 +2828,7 @@
                  <string/>
                 </property>
                 <property name="pixmap">
-                 <pixmap resource="../resources/Icons.qrc">:/images/Info.png</pixmap>
+                 <pixmap resource="../../resources/Icons.qrc">:/images/Info.png</pixmap>
                 </property>
                 <property name="scaledContents">
                  <bool>true</bool>
@@ -2866,7 +2866,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QCheckBox" name="mCbNotifySystrayNewIm">
+               <widget class="QCheckBox" name="mCbNotifySystrayIm">
                 <property name="font">
                  <font>
                   <pointsize>9</pointsize>
@@ -2881,13 +2881,13 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/Message.png</normaloff>:/images/Message.png</iconset>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QCheckBox" name="mCbNotifySoundNewIm">
+               <widget class="QCheckBox" name="mCbNotifySoundIm">
                 <property name="font">
                  <font>
                   <pointsize>9</pointsize>
@@ -2902,7 +2902,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/SpeakerLoud.png</normaloff>:/images/SpeakerLoud.png</iconset>
                 </property>
                </widget>
@@ -2924,7 +2924,7 @@
                </spacer>
               </item>
               <item>
-               <widget class="QLabel" name="mLbNotifySoundNewImFile">
+               <widget class="QLabel" name="mLbNotifySoundImFile">
                 <property name="font">
                  <font>
                   <family>MS Shell Dlg 2</family>
@@ -2939,7 +2939,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="mPbNotifySoundNewImFile">
+               <widget class="QPushButton" name="mPbNotifySoundImFile">
                 <property name="minimumSize">
                  <size>
                   <width>22</width>
@@ -2959,7 +2959,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/BoxOpen.png</normaloff>:/images/BoxOpen.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -2971,7 +2971,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QToolButton" name="mTbPlaySoundNewImFile">
+               <widget class="QToolButton" name="mTbPlaySoundImFile">
                 <property name="minimumSize">
                  <size>
                   <width>22</width>
@@ -2991,7 +2991,7 @@
                  <string>...</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/Audio - Play.png</normaloff>:/images/Audio - Play.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -3051,7 +3051,7 @@
                  <string/>
                 </property>
                 <property name="pixmap">
-                 <pixmap resource="../resources/Icons.qrc">:/images/Info.png</pixmap>
+                 <pixmap resource="../../resources/Icons.qrc">:/images/Info.png</pixmap>
                 </property>
                 <property name="scaledContents">
                  <bool>true</bool>
@@ -3089,7 +3089,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QCheckBox" name="mCbNotifySystrayNewCall">
+               <widget class="QCheckBox" name="mCbNotifySystrayCall">
                 <property name="font">
                  <font>
                   <pointsize>9</pointsize>
@@ -3104,13 +3104,13 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/Message.png</normaloff>:/images/Message.png</iconset>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QCheckBox" name="mCbNotifySoundNewCall">
+               <widget class="QCheckBox" name="mCbNotifySoundCall">
                 <property name="font">
                  <font>
                   <pointsize>9</pointsize>
@@ -3125,7 +3125,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/SpeakerLoud.png</normaloff>:/images/SpeakerLoud.png</iconset>
                 </property>
                </widget>
@@ -3147,7 +3147,7 @@
                </spacer>
               </item>
               <item>
-               <widget class="QLabel" name="mLbNotifySoundNewCallFile">
+               <widget class="QLabel" name="mLbNotifySoundCallFile">
                 <property name="font">
                  <font>
                   <family>MS Shell Dlg 2</family>
@@ -3162,7 +3162,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="mPbNotifySoundNewCallFile">
+               <widget class="QPushButton" name="mPbNotifySoundCallFile">
                 <property name="minimumSize">
                  <size>
                   <width>22</width>
@@ -3182,7 +3182,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/BoxOpen.png</normaloff>:/images/BoxOpen.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -3194,7 +3194,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QToolButton" name="mTbPlaySoundNewCallFile">
+               <widget class="QToolButton" name="mTbPlaySoundCallFile">
                 <property name="minimumSize">
                  <size>
                   <width>22</width>
@@ -3214,7 +3214,7 @@
                  <string>...</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/Audio - Play.png</normaloff>:/images/Audio - Play.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -3247,7 +3247,7 @@
                  <string/>
                 </property>
                 <property name="pixmap">
-                 <pixmap resource="../resources/Icons.qrc">:/images/Info.png</pixmap>
+                 <pixmap resource="../../resources/Icons.qrc">:/images/Info.png</pixmap>
                 </property>
                 <property name="scaledContents">
                  <bool>true</bool>
@@ -3285,7 +3285,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QCheckBox" name="mCbNotifySystrayCallAck">
+               <widget class="QCheckBox" name="mCbNotifySystrayCallAcknowledge">
                 <property name="font">
                  <font>
                   <pointsize>9</pointsize>
@@ -3300,13 +3300,13 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/Message.png</normaloff>:/images/Message.png</iconset>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QCheckBox" name="mCbNotifySoundCallAck">
+               <widget class="QCheckBox" name="mCbNotifySoundCallAcknowledge">
                 <property name="font">
                  <font>
                   <pointsize>9</pointsize>
@@ -3321,7 +3321,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/SpeakerLoud.png</normaloff>:/images/SpeakerLoud.png</iconset>
                 </property>
                </widget>
@@ -3343,7 +3343,7 @@
                </spacer>
               </item>
               <item>
-               <widget class="QLabel" name="mLbNotifySoundCallAckFile">
+               <widget class="QLabel" name="mLbNotifySoundCallAcknowledgeFile">
                 <property name="font">
                  <font>
                   <family>MS Shell Dlg 2</family>
@@ -3358,7 +3358,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="mPbNotifySoundCallAckFile">
+               <widget class="QPushButton" name="mPbNotifySoundCallAcknowledgeFile">
                 <property name="minimumSize">
                  <size>
                   <width>22</width>
@@ -3378,7 +3378,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/BoxOpen.png</normaloff>:/images/BoxOpen.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -3390,7 +3390,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QToolButton" name="mTbPlaySoundCallAckFile">
+               <widget class="QToolButton" name="mTbPlaySoundCallAcknowledgeFile">
                 <property name="minimumSize">
                  <size>
                   <width>22</width>
@@ -3410,7 +3410,7 @@
                  <string>...</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/Audio - Play.png</normaloff>:/images/Audio - Play.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -3443,7 +3443,7 @@
                  <string/>
                 </property>
                 <property name="pixmap">
-                 <pixmap resource="../resources/Icons.qrc">:/images/Info.png</pixmap>
+                 <pixmap resource="../../resources/Icons.qrc">:/images/Info.png</pixmap>
                 </property>
                 <property name="scaledContents">
                  <bool>true</bool>
@@ -3473,7 +3473,7 @@
                  </font>
                 </property>
                 <property name="text">
-                 <string>Call cancel</string>
+                 <string>Call deny</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -3481,7 +3481,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QCheckBox" name="mCbNotifySystrayCallCancel">
+               <widget class="QCheckBox" name="mCbNotifySystrayCallDeny">
                 <property name="font">
                  <font>
                   <pointsize>9</pointsize>
@@ -3496,13 +3496,13 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/Message.png</normaloff>:/images/Message.png</iconset>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QCheckBox" name="mCbNotifySoundCallCancel">
+               <widget class="QCheckBox" name="mCbNotifySoundCallDeny">
                 <property name="font">
                  <font>
                   <pointsize>9</pointsize>
@@ -3517,7 +3517,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/SpeakerLoud.png</normaloff>:/images/SpeakerLoud.png</iconset>
                 </property>
                </widget>
@@ -3539,7 +3539,7 @@
                </spacer>
               </item>
               <item>
-               <widget class="QLabel" name="mLbNotifySoundCallCancelFile">
+               <widget class="QLabel" name="mLbNotifySoundCallDenyFile">
                 <property name="font">
                  <font>
                   <family>MS Shell Dlg 2</family>
@@ -3554,7 +3554,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="mPbNotifySoundCallCancelFile">
+               <widget class="QPushButton" name="mPbNotifySoundCallDenyFile">
                 <property name="minimumSize">
                  <size>
                   <width>22</width>
@@ -3574,7 +3574,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/BoxOpen.png</normaloff>:/images/BoxOpen.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -3586,7 +3586,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QToolButton" name="mTbPlaySoundCallCancelFile">
+               <widget class="QToolButton" name="mTbPlaySoundCallDenyFile">
                 <property name="minimumSize">
                  <size>
                   <width>22</width>
@@ -3606,7 +3606,7 @@
                  <string>...</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/Audio - Play.png</normaloff>:/images/Audio - Play.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -3639,7 +3639,7 @@
                  <string/>
                 </property>
                 <property name="pixmap">
-                 <pixmap resource="../resources/Icons.qrc">:/images/Info.png</pixmap>
+                 <pixmap resource="../../resources/Icons.qrc">:/images/Info.png</pixmap>
                 </property>
                 <property name="scaledContents">
                  <bool>true</bool>
@@ -3692,7 +3692,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/Message.png</normaloff>:/images/Message.png</iconset>
                 </property>
                </widget>
@@ -3713,7 +3713,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/SpeakerLoud.png</normaloff>:/images/SpeakerLoud.png</iconset>
                 </property>
                </widget>
@@ -3770,7 +3770,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/BoxOpen.png</normaloff>:/images/BoxOpen.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -3802,7 +3802,7 @@
                  <string>...</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/Audio - Play.png</normaloff>:/images/Audio - Play.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -3862,7 +3862,7 @@
                  <string/>
                 </property>
                 <property name="pixmap">
-                 <pixmap resource="../resources/Icons.qrc">:/images/Info.png</pixmap>
+                 <pixmap resource="../../resources/Icons.qrc">:/images/Info.png</pixmap>
                 </property>
                 <property name="scaledContents">
                  <bool>true</bool>
@@ -3900,7 +3900,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QCheckBox" name="mCbNotifySystrayRegisterSuccessful">
+               <widget class="QCheckBox" name="mCbNotifySystrayRegistrationSuccessful">
                 <property name="font">
                  <font>
                   <pointsize>9</pointsize>
@@ -3915,13 +3915,13 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/Message.png</normaloff>:/images/Message.png</iconset>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QCheckBox" name="mCbNotifySoundRegisterSuccessful">
+               <widget class="QCheckBox" name="mCbNotifySoundRegistrationSuccessful">
                 <property name="font">
                  <font>
                   <pointsize>9</pointsize>
@@ -3936,7 +3936,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/SpeakerLoud.png</normaloff>:/images/SpeakerLoud.png</iconset>
                 </property>
                </widget>
@@ -3958,7 +3958,7 @@
                </spacer>
               </item>
               <item>
-               <widget class="QLabel" name="mLbNotifySoundRegisterSuccessfulFile">
+               <widget class="QLabel" name="mLbNotifySoundRegistrationSuccessfulFile">
                 <property name="font">
                  <font>
                   <family>MS Shell Dlg 2</family>
@@ -3973,7 +3973,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="mPbNotifySoundRegisterSuccessfulFile">
+               <widget class="QPushButton" name="mPbNotifySoundRegistrationSuccessfulFile">
                 <property name="minimumSize">
                  <size>
                   <width>22</width>
@@ -3993,7 +3993,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/BoxOpen.png</normaloff>:/images/BoxOpen.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -4005,7 +4005,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QToolButton" name="mTbPlaySoundRegisterSuccessfulFile">
+               <widget class="QToolButton" name="mTbPlaySoundRegistrationSuccessfulFile">
                 <property name="minimumSize">
                  <size>
                   <width>22</width>
@@ -4025,7 +4025,7 @@
                  <string>...</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/Audio - Play.png</normaloff>:/images/Audio - Play.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -4058,7 +4058,7 @@
                  <string/>
                 </property>
                 <property name="pixmap">
-                 <pixmap resource="../resources/Icons.qrc">:/images/Info.png</pixmap>
+                 <pixmap resource="../../resources/Icons.qrc">:/images/Info.png</pixmap>
                 </property>
                 <property name="scaledContents">
                  <bool>true</bool>
@@ -4096,7 +4096,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QCheckBox" name="mCbNotifySystrayRegisterFailed">
+               <widget class="QCheckBox" name="mCbNotifySystrayRegistrationFailed">
                 <property name="font">
                  <font>
                   <pointsize>9</pointsize>
@@ -4111,13 +4111,13 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/Message.png</normaloff>:/images/Message.png</iconset>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QCheckBox" name="mCbNotifySoundNewIm_4">
+               <widget class="QCheckBox" name="mCbNotifySoundRegistrationFailed">
                 <property name="font">
                  <font>
                   <pointsize>9</pointsize>
@@ -4132,7 +4132,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/SpeakerLoud.png</normaloff>:/images/SpeakerLoud.png</iconset>
                 </property>
                </widget>
@@ -4154,7 +4154,7 @@
                </spacer>
               </item>
               <item>
-               <widget class="QLabel" name="mLbNotifySoundRegisterFailedFile">
+               <widget class="QLabel" name="mLbNotifySoundRegistrationFailedFile">
                 <property name="font">
                  <font>
                   <family>MS Shell Dlg 2</family>
@@ -4169,7 +4169,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="mPbNotifySoundRegisterFailedFile">
+               <widget class="QPushButton" name="mPbNotifySoundRegistrationFailedFile">
                 <property name="minimumSize">
                  <size>
                   <width>22</width>
@@ -4189,7 +4189,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/BoxOpen.png</normaloff>:/images/BoxOpen.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -4201,7 +4201,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QToolButton" name="mTbPlaySoundRegisterFailedFile">
+               <widget class="QToolButton" name="mTbPlaySoundRegistrationFailedFile">
                 <property name="minimumSize">
                  <size>
                   <width>22</width>
@@ -4221,7 +4221,7 @@
                  <string>...</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/Audio - Play.png</normaloff>:/images/Audio - Play.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -4281,7 +4281,7 @@
                  <string/>
                 </property>
                 <property name="pixmap">
-                 <pixmap resource="../resources/Icons.qrc">:/images/Info.png</pixmap>
+                 <pixmap resource="../../resources/Icons.qrc">:/images/Info.png</pixmap>
                 </property>
                 <property name="scaledContents">
                  <bool>true</bool>
@@ -4334,7 +4334,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/Message.png</normaloff>:/images/Message.png</iconset>
                 </property>
                </widget>
@@ -4355,7 +4355,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/SpeakerLoud.png</normaloff>:/images/SpeakerLoud.png</iconset>
                 </property>
                </widget>
@@ -4412,7 +4412,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/BoxOpen.png</normaloff>:/images/BoxOpen.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -4444,7 +4444,7 @@
                  <string>...</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="../resources/Icons.qrc">
+                 <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/Audio - Play.png</normaloff>:/images/Audio - Play.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -4512,7 +4512,7 @@
               <string/>
              </property>
              <property name="pixmap">
-              <pixmap resource="../resources/Icons.qrc">:/images/Info.png</pixmap>
+              <pixmap resource="../../resources/Icons.qrc">:/images/Info.png</pixmap>
              </property>
              <property name="scaledContents">
               <bool>true</bool>
@@ -4567,7 +4567,7 @@
               <string>...</string>
              </property>
              <property name="icon">
-              <iconset resource="../resources/Icons.qrc">
+              <iconset resource="../../resources/Icons.qrc">
                <normaloff>:/images/Success.png</normaloff>:/images/Success.png</iconset>
              </property>
              <property name="iconSize">
@@ -4595,7 +4595,7 @@
             </spacer>
            </item>
            <item>
-            <widget class="QToolButton" name="mTbSelectAllSounds">
+            <widget class="QToolButton" name="mTbSelectAllSound">
              <property name="minimumSize">
               <size>
                <width>28</width>
@@ -4612,7 +4612,7 @@
               <string>...</string>
              </property>
              <property name="icon">
-              <iconset resource="../resources/Icons.qrc">
+              <iconset resource="../../resources/Icons.qrc">
                <normaloff>:/images/Success.png</normaloff>:/images/Success.png</iconset>
              </property>
              <property name="iconSize">
@@ -4677,7 +4677,7 @@
               <string/>
              </property>
              <property name="pixmap">
-              <pixmap resource="../resources/Icons.qrc">:/images/Info.png</pixmap>
+              <pixmap resource="../../resources/Icons.qrc">:/images/Info.png</pixmap>
              </property>
              <property name="scaledContents">
               <bool>true</bool>
@@ -4732,7 +4732,7 @@
               <string>...</string>
              </property>
              <property name="icon">
-              <iconset resource="../resources/Icons.qrc">
+              <iconset resource="../../resources/Icons.qrc">
                <normaloff>:/images/Delete1.png</normaloff>:/images/Delete1.png</iconset>
              </property>
              <property name="iconSize">
@@ -4760,7 +4760,7 @@
             </spacer>
            </item>
            <item>
-            <widget class="QToolButton" name="mTbDeselectAllSounds">
+            <widget class="QToolButton" name="mTbDeselectAllSound">
              <property name="minimumSize">
               <size>
                <width>28</width>
@@ -4777,7 +4777,7 @@
               <string>...</string>
              </property>
              <property name="icon">
-              <iconset resource="../resources/Icons.qrc">
+              <iconset resource="../../resources/Icons.qrc">
                <normaloff>:/images/Delete1.png</normaloff>:/images/Delete1.png</iconset>
              </property>
              <property name="iconSize">
@@ -4835,10 +4835,10 @@
   </layout>
  </widget>
  <resources>
-  <include location="../resources/Icons.qrc"/>
-  <include location="../resources/Icons.qrc"/>
-  <include location="../resources/Icons.qrc"/>
-  <include location="../resources/Icons.qrc"/>
+  <include location="../../resources/Icons.qrc"/>
+  <include location="../../resources/Icons.qrc"/>
+  <include location="../../resources/Icons.qrc"/>
+  <include location="../../resources/Icons.qrc"/>
   <include location="../resources/Icons.qrc"/>
   <include location="../resources/Icons.qrc"/>
  </resources>

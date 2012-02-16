@@ -65,10 +65,26 @@ ConfigurationDialog::ConfigurationDialog(QWidget* pParent, list<string>  pLocalA
     connect(mCbVideoSource, SIGNAL(currentIndexChanged(QString)), this, SLOT(ShowVideoSourceInfo(QString)));
     connect(mCbAudioSource, SIGNAL(currentIndexChanged(QString)), this, SLOT(ShowAudioSourceInfo(QString)));
     connect(mCbAudioSink, SIGNAL(currentIndexChanged(QString)), this, SLOT(ShowAudioSinkInfo(QString)));
-    connect(mPbNotifySoundNewImFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForIm()));
-    connect(mPbNotifySoundNewCallFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForCall()));
-    connect(mTbPlaySoundNewImFile, SIGNAL(clicked()), this, SLOT(PlayNotifySoundFileForIm()));
-    connect(mTbPlaySoundNewCallFile, SIGNAL(clicked()), this, SLOT(PlayNotifySoundFileForCall()));
+    connect(mPbNotifySoundImFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForIm()));
+    connect(mPbNotifySoundCallFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForCall()));
+    connect(mPbNotifySoundCallAcknowledgeFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForCallAcknowledge()));
+    connect(mPbNotifySoundCallDenyFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForCallDeny()));
+    connect(mPbNotifySoundCallHangupFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForCallHangup()));
+    connect(mPbNotifySoundErrorFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForError()));
+    connect(mPbNotifySoundRegistrationFailedFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForRegistrationFailed()));
+    connect(mPbNotifySoundRegistrationSuccessfulFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForRegistrationSuccessful()));
+    connect(mTbPlaySoundImFile, SIGNAL(clicked()), this, SLOT(PlayNotifySoundFileForIm()));
+    connect(mTbPlaySoundCallFile, SIGNAL(clicked()), this, SLOT(PlayNotifySoundFileForCall()));
+    connect(mTbPlaySoundCallAcknowledgeFile, SIGNAL(clicked()), this, SLOT(PlayNotifySoundFileForCallAcknowledge()));
+    connect(mTbPlaySoundCallDenyFile, SIGNAL(clicked()), this, SLOT(PlayNotifySoundFileForCallDeny()));
+    connect(mTbPlaySoundCallHangupFile, SIGNAL(clicked()), this, SLOT(PlayNotifySoundFileForCallHangup()));
+    connect(mTbPlaySoundErrorFile, SIGNAL(clicked()), this, SLOT(PlayNotifySoundFileForError()));
+    connect(mTbPlaySoundRegistrationFailedFile, SIGNAL(clicked()), this, SLOT(PlayNotifySoundFileForRegistrationFailed()));
+    connect(mTbPlaySoundRegistrationSuccessfulFile, SIGNAL(clicked()), this, SLOT(PlayNotifySoundFileForRegistrationSuccessful()));
+    connect(mTbSelectAllSound, SIGNAL(clicked()), this, SLOT(SelectAllSound()));
+    connect(mTbDeselectAllSound, SIGNAL(clicked()), this, SLOT(DeselectAllSound()));
+    connect(mTbSelectAllSystray, SIGNAL(clicked()), this, SLOT(SelectAllSystray()));
+    connect(mTbDeselectAllSystray, SIGNAL(clicked()), this, SLOT(DeselectAllSystray()));
     connect(mTbShowPassword, SIGNAL(clicked()), this, SLOT(ToggleSipServerPasswordVisibility()));
     ShowVideoSourceInfo(mCbVideoSource->currentText());
     ShowAudioSourceInfo(mCbAudioSource->currentText());
@@ -278,13 +294,37 @@ void ConfigurationDialog::LoadConfiguration()
     //######################################################################
     //### NOTIFICATION configuration
     //######################################################################
-    mCbNotifySoundNewIm->setChecked(CONF.GetImSound());
-    mCbNotifySystrayNewIm->setChecked(CONF.GetImSystray());
-    mLbNotifySoundNewImFile->setText(CONF.GetImSoundFile());
+    mCbNotifySoundIm->setChecked(CONF.GetImSound());
+    mCbNotifySystrayIm->setChecked(CONF.GetImSystray());
+    mLbNotifySoundImFile->setText(CONF.GetImSoundFile());
 
-    mCbNotifySoundNewCall->setChecked(CONF.GetCallSound());
-    mCbNotifySystrayNewCall->setChecked(CONF.GetCallSystray());
-    mLbNotifySoundNewCallFile->setText(CONF.GetCallSoundFile());
+    mCbNotifySoundCall->setChecked(CONF.GetCallSound());
+    mCbNotifySystrayCall->setChecked(CONF.GetCallSystray());
+    mLbNotifySoundCallFile->setText(CONF.GetCallSoundFile());
+
+    mCbNotifySoundCallAcknowledge->setChecked(CONF.GetCallAcknowledgeSound());
+    mCbNotifySystrayCallAcknowledge->setChecked(CONF.GetCallAcknowledgeSystray());
+    mLbNotifySoundCallAcknowledgeFile->setText(CONF.GetCallAcknowledgeSoundFile());
+
+    mCbNotifySoundCallDeny->setChecked(CONF.GetCallDenySound());
+    mCbNotifySystrayCallDeny->setChecked(CONF.GetCallDenySystray());
+    mLbNotifySoundCallDenyFile->setText(CONF.GetCallDenySoundFile());
+
+    mCbNotifySoundCallHangup->setChecked(CONF.GetCallHangupSound());
+    mCbNotifySystrayCallHangup->setChecked(CONF.GetCallHangupSystray());
+    mLbNotifySoundCallHangupFile->setText(CONF.GetCallHangupSoundFile());
+
+    mCbNotifySoundError->setChecked(CONF.GetErrorSound());
+    mCbNotifySystrayError->setChecked(CONF.GetErrorSystray());
+    mLbNotifySoundErrorFile->setText(CONF.GetErrorSoundFile());
+
+    mCbNotifySoundRegistrationFailed->setChecked(CONF.GetRegistrationFailedSound());
+    mCbNotifySystrayRegistrationFailed->setChecked(CONF.GetRegistrationFailedSystray());
+    mLbNotifySoundRegistrationFailedFile->setText(CONF.GetRegistrationFailedSoundFile());
+
+    mCbNotifySoundRegistrationSuccessful->setChecked(CONF.GetRegistrationSuccessfulSound());
+    mCbNotifySystrayRegistrationSuccessful->setChecked(CONF.GetRegistrationSuccessfulSystray());
+    mLbNotifySoundRegistrationSuccessfulFile->setText(CONF.GetRegistrationSuccessfulSoundFile());
 }
 
 void ConfigurationDialog::SaveConfiguration()
@@ -440,13 +480,37 @@ void ConfigurationDialog::SaveConfiguration()
     //######################################################################
     //### NOTIFICATION configuration
     //######################################################################
-    CONF.SetImSound(mCbNotifySoundNewIm->isChecked());
-    CONF.SetImSystray(mCbNotifySystrayNewIm->isChecked());
-    CONF.SetImSoundFile(mLbNotifySoundNewImFile->text());
+    CONF.SetImSound(mCbNotifySoundIm->isChecked());
+    CONF.SetImSystray(mCbNotifySystrayIm->isChecked());
+    CONF.SetImSoundFile(mLbNotifySoundImFile->text());
 
-    CONF.SetCallSound(mCbNotifySoundNewCall->isChecked());
-    CONF.SetCallSystray(mCbNotifySystrayNewCall->isChecked());
-    CONF.SetCallSoundFile(mLbNotifySoundNewCallFile->text());
+    CONF.SetCallSound(mCbNotifySoundCall->isChecked());
+    CONF.SetCallSystray(mCbNotifySystrayCall->isChecked());
+    CONF.SetCallSoundFile(mLbNotifySoundCallFile->text());
+
+    CONF.SetCallAcknowledgeSound(mCbNotifySoundCallAcknowledge->isChecked());
+    CONF.SetCallAcknowledgeSystray(mCbNotifySystrayCallAcknowledge->isChecked());
+    CONF.SetCallAcknowledgeSoundFile(mLbNotifySoundCallAcknowledgeFile->text());
+
+    CONF.SetCallDenySound(mCbNotifySoundCallDeny->isChecked());
+    CONF.SetCallDenySystray(mCbNotifySystrayCallDeny->isChecked());
+    CONF.SetCallDenySoundFile(mLbNotifySoundCallDenyFile->text());
+
+    CONF.SetCallHangupSound(mCbNotifySoundCallHangup->isChecked());
+    CONF.SetCallHangupSystray(mCbNotifySystrayCallHangup->isChecked());
+    CONF.SetCallHangupSoundFile(mLbNotifySoundCallHangupFile->text());
+
+    CONF.SetErrorSound(mCbNotifySoundError->isChecked());
+    CONF.SetErrorSystray(mCbNotifySystrayError->isChecked());
+    CONF.SetErrorSoundFile(mLbNotifySoundErrorFile->text());
+
+    CONF.SetRegistrationFailedSound(mCbNotifySoundRegistrationFailed->isChecked());
+    CONF.SetRegistrationFailedSystray(mCbNotifySystrayRegistrationFailed->isChecked());
+    CONF.SetRegistrationFailedSoundFile(mLbNotifySoundRegistrationFailedFile->text());
+
+    CONF.SetRegistrationSuccessfulSound(mCbNotifySoundRegistrationSuccessful->isChecked());
+    CONF.SetRegistrationSuccessfulSystray(mCbNotifySystrayRegistrationSuccessful->isChecked());
+    CONF.SetRegistrationSuccessfulSoundFile(mLbNotifySoundRegistrationSuccessfulFile->text());
 
     //######################################################################
     //### Synchronize write operations
@@ -494,74 +558,167 @@ void ConfigurationDialog::ToggleSipServerPasswordVisibility()
         mLeSipPassword->setEchoMode(QLineEdit::Normal);
 }
 
-void ConfigurationDialog::SelectNotifySoundFileForIm()
+QString ConfigurationDialog::SelectSoundFile(QString pEventName, QString pSuggestion)
 {
-    QString tSoundFile = QFileDialog::getOpenFileName(this, "Select sound file for instant message notification", CONF.GetImSoundFile(), "Sound file (*.wav)", NULL, QFileDialog::DontUseNativeDialog);
+    QString tSoundFile = QFileDialog::getOpenFileName(this, "Select sound file for acoustic notification for event \"" + pEventName + "\".", pSuggestion, "Sound file (*.wav)", NULL, QFileDialog::DontUseNativeDialog);
 
     if (tSoundFile.isEmpty())
-        return;
+        return "";
 
     if (!tSoundFile.endsWith(".wav"))
         tSoundFile += ".wav";
 
     LOG(LOG_VERBOSE, "Selected sound file: %s", tSoundFile.toStdString().c_str());
+
+    return tSoundFile;
+}
+
+void ConfigurationDialog::SelectNotifySoundFileForIm()
+{
+    QString tSoundFile = SelectSoundFile("new message", CONF.GetImSoundFile());
+
+    if (tSoundFile.isEmpty())
+        return;
+
     CONF.SetImSoundFile(tSoundFile);
-    mLbNotifySoundNewImFile->setText(tSoundFile);
+    mLbNotifySoundImFile->setText(tSoundFile);
 }
 
 void ConfigurationDialog::SelectNotifySoundFileForCall()
 {
-    QString tSoundFile = QFileDialog::getOpenFileName(this, "Select sound file for incoming call notification", CONF.GetCallSoundFile(), "Sound file (*.wav)", NULL, QFileDialog::DontUseNativeDialog);
+    QString tSoundFile = SelectSoundFile("new call", CONF.GetCallSoundFile());
 
     if (tSoundFile.isEmpty())
         return;
 
-    if (!tSoundFile.endsWith(".wav"))
-        tSoundFile += ".wav";
-
-    LOG(LOG_VERBOSE, "Selected sound file: %s", tSoundFile.toStdString().c_str());
     CONF.SetCallSoundFile(tSoundFile);
-    mLbNotifySoundNewCallFile->setText(tSoundFile);
+    mLbNotifySoundCallFile->setText(tSoundFile);
+}
+
+void ConfigurationDialog::SelectNotifySoundFileForCallDeny()
+{
+    QString tSoundFile = SelectSoundFile("call canceled", CONF.GetCallDenySoundFile());
+
+    if (tSoundFile.isEmpty())
+        return;
+
+    CONF.SetCallDenySoundFile(tSoundFile);
+    mLbNotifySoundCallDenyFile->setText(tSoundFile);
+}
+
+void ConfigurationDialog::SelectNotifySoundFileForCallAcknowledge()
+{
+    QString tSoundFile = SelectSoundFile("call acknowledged", CONF.GetCallAcknowledgeSoundFile());
+
+    if (tSoundFile.isEmpty())
+        return;
+
+    CONF.SetCallAcknowledgeSoundFile(tSoundFile);
+    mLbNotifySoundCallAcknowledgeFile->setText(tSoundFile);
+}
+
+void ConfigurationDialog::SelectNotifySoundFileForCallHangup()
+{
+    QString tSoundFile = SelectSoundFile("call hangup", CONF.GetCallHangupSoundFile());
+
+    if (tSoundFile.isEmpty())
+        return;
+
+    CONF.SetCallHangupSoundFile(tSoundFile);
+    mLbNotifySoundCallHangupFile->setText(tSoundFile);
+}
+
+void ConfigurationDialog::SelectNotifySoundFileForError()
+{
+    QString tSoundFile = SelectSoundFile("error", CONF.GetErrorSoundFile());
+
+    if (tSoundFile.isEmpty())
+        return;
+
+    CONF.SetErrorSoundFile(tSoundFile);
+    mLbNotifySoundErrorFile->setText(tSoundFile);
+}
+
+void ConfigurationDialog::SelectNotifySoundFileForRegistrationFailed()
+{
+    QString tSoundFile = SelectSoundFile("registration failed", CONF.GetRegistrationFailedSoundFile());
+
+    if (tSoundFile.isEmpty())
+        return;
+
+    CONF.SetRegistrationFailedSoundFile(tSoundFile);
+    mLbNotifySoundRegistrationFailedFile->setText(tSoundFile);
+}
+
+void ConfigurationDialog::SelectNotifySoundFileForRegistrationSuccessful()
+{
+    QString tSoundFile = SelectSoundFile("registration successful", CONF.GetRegistrationSuccessfulSoundFile());
+
+    if (tSoundFile.isEmpty())
+        return;
+
+    CONF.SetRegistrationSuccessfulSoundFile(tSoundFile);
+    mLbNotifySoundRegistrationSuccessfulFile->setText(tSoundFile);
+}
+
+void ConfigurationDialog::PlayNotifySoundFile(QString pFile)
+{
+    if (!QSound::isAvailable())
+    {
+        #ifdef LINUX
+            ShowError("Sound output failed", "Sound output is unavailable. Check your NAS installation!");
+        #endif
+        #ifdef WIN32
+            ShowError("Sound output failed", "Sound output is unavailable. Check your Windows drivers!");
+        #endif
+        return;
+    }
+
+    if (pFile != "")
+    {
+        LOG(LOG_VERBOSE, "Playing sound file: %s", pFile.toStdString().c_str());
+        QSound::play(pFile);
+    }
 }
 
 void ConfigurationDialog::PlayNotifySoundFileForIm()
 {
-    if (!QSound::isAvailable())
-    {
-        #ifdef LINUX
-            ShowError("Sound output failed", "Sound output is unavailable. Check your NAS installation!");
-        #endif
-        #ifdef WIN32
-            ShowError("Sound output failed", "Sound output is unavailable. Check your Windows drivers!");
-        #endif
-        return;
-    }
-
-    if (CONF.GetImSoundFile() != "")
-    {
-        LOG(LOG_VERBOSE, "Playing sound file: %s", CONF.GetImSoundFile().toStdString().c_str());
-        QSound::play(CONF.GetImSoundFile());
-    }
+	PlayNotifySoundFile(CONF.GetImSoundFile());
 }
 
 void ConfigurationDialog::PlayNotifySoundFileForCall()
 {
-    if (!QSound::isAvailable())
-    {
-        #ifdef LINUX
-            ShowError("Sound output failed", "Sound output is unavailable. Check your NAS installation!");
-        #endif
-        #ifdef WIN32
-            ShowError("Sound output failed", "Sound output is unavailable. Check your Windows drivers!");
-        #endif
-        return;
-    }
+	PlayNotifySoundFile(CONF.GetCallSoundFile());
+}
 
-    if (CONF.GetCallSoundFile() != "")
-    {
-        LOG(LOG_VERBOSE, "Playing sound file: %s", CONF.GetCallSoundFile().toStdString().c_str());
-        QSound::play(CONF.GetCallSoundFile());
-    }
+void ConfigurationDialog::PlayNotifySoundFileForCallAcknowledge()
+{
+	PlayNotifySoundFile(CONF.GetCallAcknowledgeSoundFile());
+}
+
+void ConfigurationDialog::PlayNotifySoundFileForCallDeny()
+{
+	PlayNotifySoundFile(CONF.GetCallDenySoundFile());
+}
+
+void ConfigurationDialog::PlayNotifySoundFileForCallHangup()
+{
+	PlayNotifySoundFile(CONF.GetCallHangupSoundFile());
+}
+
+void ConfigurationDialog::PlayNotifySoundFileForError()
+{
+	PlayNotifySoundFile(CONF.GetErrorSoundFile());
+}
+
+void ConfigurationDialog::PlayNotifySoundFileForRegistrationFailed()
+{
+	PlayNotifySoundFile(CONF.GetRegistrationFailedSoundFile());
+}
+
+void ConfigurationDialog::PlayNotifySoundFileForRegistrationSuccessful()
+{
+	PlayNotifySoundFile(CONF.GetRegistrationSuccessfulSoundFile());
 }
 
 void ConfigurationDialog::ClickedButton(QAbstractButton *pButton)
@@ -614,16 +771,72 @@ void ConfigurationDialog::ClickedButton(QAbstractButton *pButton)
                 break;
             //### NOTIFICATIONS configuration
             case 4:
-                mCbNotifySoundNewIm->setChecked(false);
-                mCbNotifySystrayNewIm->setChecked(true);
-
-                mCbNotifySoundNewCall->setChecked(false);
-                mCbNotifySystrayNewCall->setChecked(true);
+            	DeselectAllSound();
+            	SelectAllSystray();
                 break;
             default: //something is going wrong in this case
                 break;
         }
     }
+}
+
+void ConfigurationDialog::SelectAllSound()
+{
+    mCbNotifySoundIm->setChecked(true);
+
+    mCbNotifySoundCall->setChecked(true);
+    mCbNotifySoundCallAcknowledge->setChecked(true);
+    mCbNotifySoundCallDeny->setChecked(true);
+    mCbNotifySoundCallHangup->setChecked(true);
+    mCbNotifySoundError->setChecked(true);
+    mCbNotifySoundRegistrationFailed->setChecked(true);
+    mCbNotifySoundRegistrationSuccessful->setChecked(true);
+}
+
+void ConfigurationDialog::DeselectAllSound()
+{
+    mCbNotifySoundIm->setChecked(false);
+
+    mCbNotifySoundCall->setChecked(false);
+    mCbNotifySoundCallAcknowledge->setChecked(false);
+    mCbNotifySoundCallDeny->setChecked(false);
+    mCbNotifySoundCallHangup->setChecked(false);
+
+    mCbNotifySoundError->setChecked(false);
+
+    mCbNotifySoundRegistrationFailed->setChecked(false);
+    mCbNotifySoundRegistrationSuccessful->setChecked(false);
+}
+
+void ConfigurationDialog::SelectAllSystray()
+{
+    mCbNotifySystrayIm->setChecked(true);
+
+    mCbNotifySystrayCall->setChecked(true);
+    mCbNotifySystrayCallAcknowledge->setChecked(true);
+    mCbNotifySystrayCallDeny->setChecked(true);
+    mCbNotifySystrayCallHangup->setChecked(true);
+
+    mCbNotifySystrayError->setChecked(true);
+
+    mCbNotifySystrayRegistrationFailed->setChecked(true);
+    mCbNotifySystrayRegistrationSuccessful->setChecked(true);
+
+}
+
+void ConfigurationDialog::DeselectAllSystray()
+{
+    mCbNotifySystrayIm->setChecked(false);
+
+    mCbNotifySystrayCall->setChecked(false);
+    mCbNotifySystrayCallAcknowledge->setChecked(false);
+    mCbNotifySystrayCallDeny->setChecked(false);
+    mCbNotifySystrayCallHangup->setChecked(false);
+
+    mCbNotifySystrayError->setChecked(false);
+
+    mCbNotifySystrayRegistrationFailed->setChecked(false);
+    mCbNotifySystrayRegistrationSuccessful->setChecked(false);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
