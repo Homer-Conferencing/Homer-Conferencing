@@ -100,7 +100,7 @@ SET (FLAGS
 IF (${BUILD} MATCHES "Debug")
 	SET (FLAGS "${FLAGS} -g -ggdb -DDEBUG_VERSION")
 ELSE ()
-	SET (FLAGS "${FLAGS} -DRELEASE_VERSION")
+	SET (FLAGS "${FLAGS} -s -DRELEASE_VERSION")
 ENDIF ()
 
 ##############################################################
