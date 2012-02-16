@@ -9,15 +9,15 @@ BEGIN
   BEGIN
     BLOCK "040904E4"
     BEGIN
-      VALUE "ProductName", "Homer-Conferencing"
-      VALUE "FileDescription", "Free cross-platform SIP softphone"
+      VALUE "ProductName", "Homer Conferencing"
+      VALUE "FileDescription", "Homer Conferencing"
       VALUE "ProductVersion", "Beta 0.20"
-      VALUE "CompanyName", "Homer-Conferencing project"
+      VALUE "CompanyName", "Homer Conferencing project"
       VALUE "Comments", "Provided under the terms of the GNU General Public License 2 (GPLv2.0)"
       VALUE "FileVersion", "Beta 0.20"
       VALUE "OriginalFilename", "Homer.exe"
       VALUE "InternalName", "Homer.exe"
-      VALUE "LegalCopyright", "(C) 2008-2012 Homer-conferencing project"
+      VALUE "LegalCopyright", "(C) 2008 Thomas Volkert <thomas@homer-conferencing.com>"
       
     END
   END
