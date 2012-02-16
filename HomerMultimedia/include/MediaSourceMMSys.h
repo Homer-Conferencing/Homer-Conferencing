@@ -48,6 +48,12 @@ namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef CALLBACK
+#define CALLBACK __stdcall
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
+
 struct MMSysDataChunkDesc
 {
 	char  *Data;
@@ -77,7 +83,7 @@ public:
     virtual int GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk = false);
 
 private:
-    static void EventHandler(HWAVEIN pCapturDevice, UINT pMessage, DWORD pInstance, DWORD pParam1, DWORD pParam2);
+    static void CALLBACK EventHandler(HWAVEIN pCapturDevice, UINT pMessage, DWORD pInstance, DWORD pParam1, DWORD pParam2);
 
     //HANDLE			mCaptureEvent;
     HWAVEIN      	mCaptureHandle;

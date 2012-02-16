@@ -360,10 +360,6 @@ bool MediaSourceMMSys::CloseGrabDevice()
     return tResult;
 }
 
-#ifndef CALLBACK
-#define CALLBACK __stdcall
-#endif
-
 void CALLBACK MediaSourceMMSys::EventHandler(HWAVEIN pCapturDevice, UINT pMessage, DWORD pInstance, DWORD pParam1, DWORD pParam2)
 {
 	MediaSourceMMSys *tSource = (MediaSourceMMSys*)pInstance;
