@@ -150,7 +150,7 @@
            <string>File</string>
           </property>
           <property name="icon">
-           <iconset resource="../resources/Icons.qrc">
+           <iconset resource="../../resources/Icons.qrc">
             <normaloff>:/images/Document.png</normaloff>:/images/Document.png</iconset>
           </property>
          </column>
@@ -159,7 +159,7 @@
            <string>Size</string>
           </property>
           <property name="icon">
-           <iconset resource="../resources/Icons.qrc">
+           <iconset resource="../../resources/Icons.qrc">
             <normaloff>:/images/Compression.png</normaloff>:/images/Compression.png</iconset>
           </property>
          </column>
@@ -168,7 +168,7 @@
            <string>Progress</string>
           </property>
           <property name="icon">
-           <iconset resource="../resources/Icons.qrc">
+           <iconset resource="../../resources/Icons.qrc">
             <normaloff>:/images/Percent.png</normaloff>:/images/Percent.png</iconset>
           </property>
          </column>
@@ -177,7 +177,7 @@
            <string>Time left</string>
           </property>
           <property name="icon">
-           <iconset resource="../resources/Icons.qrc">
+           <iconset resource="../../resources/Icons.qrc">
             <normaloff>:/images/Counter.png</normaloff>:/images/Counter.png</iconset>
           </property>
          </column>
@@ -186,7 +186,7 @@
            <string>Bandwidth</string>
           </property>
           <property name="icon">
-           <iconset resource="../resources/Icons.qrc">
+           <iconset resource="../../resources/Icons.qrc">
             <normaloff>:/images/ArrowRightGreen.png</normaloff>:/images/ArrowRightGreen.png</iconset>
           </property>
          </column>
@@ -204,7 +204,7 @@
   </widget>
  </widget>
  <resources>
-  <include location="../resources/Icons.qrc"/>
+  <include location="../../resources/Icons.qrc"/>
  </resources>
  <connections/>
 </ui>

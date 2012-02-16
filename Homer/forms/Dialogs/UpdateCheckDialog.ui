@@ -6,34 +6,22 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1111</width>
-    <height>807</height>
+    <width>1124</width>
+    <height>810</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Check for software updates</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../resources/Icons.qrc">
+   <iconset resource="../../resources/Icons.qrc">
     <normaloff>:/images/LogoHomer3.png</normaloff>:/images/LogoHomer3.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_4">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_8">
+    <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="0,1">
      <item>
       <widget class="QFrame" name="frame">
-       <property name="minimumSize">
-        <size>
-         <width>250</width>
-         <height>300</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>250</width>
-         <height>16777215</height>
-        </size>
-       </property>
        <property name="frameShape">
         <enum>QFrame::Panel</enum>
        </property>
@@ -58,7 +46,7 @@
            <string/>
           </property>
           <property name="pixmap">
-           <pixmap resource="../resources/Icons.qrc">:/images/LogoHomer2.png</pixmap>
+           <pixmap resource="../../resources/Icons.qrc">:/images/LogoHomer2.png</pixmap>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -226,13 +214,13 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>230</width>
+            <width>250</width>
             <height>0</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>240</width>
+            <width>250</width>
             <height>16777215</height>
            </size>
           </property>
@@ -246,11 +234,11 @@
            <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'DejaVu Sans'; font-size:8pt; font-weight:400; font-style:italic;&quot;&gt;
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:400; font-style:italic;&quot;&gt;
 &lt;table border=&quot;0&quot; style=&quot;-qt-table-type: root; margin-top:4px; margin-bottom:4px; margin-left:4px; margin-right:4px;&quot;&gt;
 &lt;tr&gt;
 &lt;td style=&quot;border: none;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Arial'; font-size:9pt; font-style:normal;&quot;&gt;Send feedback about Homer:&lt;br /&gt; &lt;/span&gt;&lt;a href=&quot;mailto:homer@homer-conferencing.com?Subject=[Homer]&quot;&gt;&lt;span style=&quot; font-family:'Arial'; font-size:9pt; font-style:normal; text-decoration: underline; color:#33517e;&quot;&gt;homer@homer-conferencing.com&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Arial'; font-size:9pt; font-style:normal;&quot;&gt;Send feedback about Homer Conferencing:&lt;br /&gt; &lt;/span&gt;&lt;a href=&quot;mailto:homer@homer-conferencing.com?Subject=[Homer]&quot;&gt;&lt;span style=&quot; font-family:'Arial'; font-size:9pt; font-style:normal; text-decoration: underline; color:#33517e;&quot;&gt;homer@homer-conferencing.com&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="scaledContents">
            <bool>true</bool>
@@ -470,7 +458,7 @@ p, li { white-space: pre-wrap; }
              <string>Download new version</string>
             </property>
             <property name="icon">
-             <iconset resource="../resources/Icons.qrc">
+             <iconset resource="../../resources/Icons.qrc">
               <normaloff>:/images/ArrowDownGreen.png</normaloff>:/images/ArrowDownGreen.png</iconset>
             </property>
             <property name="iconSize">
@@ -547,9 +535,9 @@ p, li { white-space: pre-wrap; }
   <tabstop>buttonBox</tabstop>
  </tabstops>
  <resources>
-  <include location="../resources/Icons.qrc"/>
-  <include location="../resources/Icons.qrc"/>
-  <include location="../resources/Icons.qrc"/>
+  <include location="../../resources/Icons.qrc"/>
+  <include location="../../resources/Icons.qrc"/>
+  <include location="../../resources/Icons.qrc"/>
  </resources>
  <connections>
   <connection>

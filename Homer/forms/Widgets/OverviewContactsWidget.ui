@@ -120,7 +120,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../resources/Icons.qrc">
+            <iconset resource="../../resources/Icons.qrc">
              <normaloff>:/images/DriveSave.png</normaloff>:/images/DriveSave.png</iconset>
            </property>
            <property name="iconSize">
@@ -152,7 +152,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../resources/Icons.qrc">
+            <iconset resource="../../resources/Icons.qrc">
              <normaloff>:/images/BoxOpen.png</normaloff>:/images/BoxOpen.png</iconset>
            </property>
            <property name="iconSize">
@@ -184,7 +184,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../resources/Icons.qrc">
+            <iconset resource="../../resources/Icons.qrc">
              <normaloff>:/images/Plus.png</normaloff>:/images/Plus.png</iconset>
            </property>
            <property name="iconSize">
@@ -216,7 +216,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../resources/Icons.qrc">
+            <iconset resource="../../resources/Icons.qrc">
              <normaloff>:/images/Minus.png</normaloff>:/images/Minus.png</iconset>
            </property>
            <property name="iconSize">
@@ -252,7 +252,7 @@
   </widget>
  </widget>
  <resources>
-  <include location="../resources/Icons.qrc"/>
+  <include location="../../resources/Icons.qrc"/>
  </resources>
  <connections/>
 </ui>

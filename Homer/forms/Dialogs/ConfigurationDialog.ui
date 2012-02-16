@@ -4839,8 +4839,8 @@
   <include location="../../resources/Icons.qrc"/>
   <include location="../../resources/Icons.qrc"/>
   <include location="../../resources/Icons.qrc"/>
-  <include location="../resources/Icons.qrc"/>
-  <include location="../resources/Icons.qrc"/>
+  <include location="../../resources/Icons.qrc"/>
+  <include location="../../resources/Icons.qrc"/>
  </resources>
  <connections>
   <connection>

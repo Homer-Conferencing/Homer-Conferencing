@@ -160,7 +160,7 @@
            <enum>Qt::LogText</enum>
           </property>
           <property name="pixmap">
-           <pixmap resource="../resources/Icons.qrc">:/images/UserAvailable.png</pixmap>
+           <pixmap resource="../../resources/Icons.qrc">:/images/UserAvailable.png</pixmap>
           </property>
          </widget>
         </item>
@@ -238,7 +238,7 @@
            <string/>
           </property>
           <property name="icon">
-           <iconset resource="../resources/Icons.qrc">
+           <iconset resource="../../resources/Icons.qrc">
             <normaloff>:/images/Plus.png</normaloff>:/images/Plus.png</iconset>
           </property>
           <property name="iconSize">
@@ -358,7 +358,7 @@
            <string>Send link</string>
           </property>
           <property name="icon">
-           <iconset resource="../resources/Icons.qrc">
+           <iconset resource="../../resources/Icons.qrc">
             <normaloff>:/images/Globe1.png</normaloff>:/images/Globe1.png</iconset>
           </property>
           <property name="iconSize">
@@ -414,7 +414,7 @@
            <string>Send message</string>
           </property>
           <property name="icon">
-           <iconset resource="../resources/Icons.qrc">
+           <iconset resource="../../resources/Icons.qrc">
             <normaloff>:/images/Message.png</normaloff>:/images/Message.png</iconset>
           </property>
           <property name="iconSize">
@@ -484,7 +484,7 @@
            <string>Send file(s)</string>
           </property>
           <property name="icon">
-           <iconset resource="../resources/Icons.qrc">
+           <iconset resource="../../resources/Icons.qrc">
             <normaloff>:/images/BoxOpen.png</normaloff>:/images/BoxOpen.png</iconset>
           </property>
           <property name="iconSize">
@@ -540,7 +540,7 @@
            <string>Conference</string>
           </property>
           <property name="icon">
-           <iconset resource="../resources/Icons.qrc">
+           <iconset resource="../../resources/Icons.qrc">
             <normaloff>:/images/Phone.png</normaloff>:/images/Phone.png</iconset>
           </property>
           <property name="iconSize">
@@ -595,6 +595,7 @@
   <tabstop>mPbWeb</tabstop>
  </tabstops>
  <resources>
+  <include location="../../resources/Icons.qrc"/>
   <include location="../resources/Icons.qrc"/>
  </resources>
  <connections/>
