@@ -40,6 +40,12 @@ namespace Homer { namespace SoundOutput {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef CALLBACK
+#define CALLBACK __stdcall
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
+
 class WaveOutMMSys:
     public WaveOut
 {
@@ -62,7 +68,7 @@ public:
     virtual bool WriteChunk(void* pChunkBuffer, int pChunkSize = 4096);
 
 private:
-    static void EventHandler(HWAVEOUT pPlaybackDevice, UINT pMessage, DWORD pInstance, DWORD pParam1, DWORD pParam2);
+    static CALLBACK void EventHandler(HWAVEOUT pPlaybackDevice, UINT pMessage, DWORD pInstance, DWORD pParam1, DWORD pParam2);
 
     HANDLE          mPlaybackEvent;
     HWAVEOUT        mPlaybackHandle;

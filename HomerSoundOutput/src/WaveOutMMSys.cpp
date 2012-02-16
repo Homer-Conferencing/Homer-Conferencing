@@ -252,10 +252,6 @@ bool WaveOutMMSys::CloseWaveOutDevice()
     return tResult;
 }
 
-#ifndef CALLBACK
-#define CALLBACK __stdcall
-#endif
-
 void CALLBACK WaveOutMMSys::EventHandler(HWAVEOUT pPlaybackDevice, UINT pMessage, DWORD pInstance, DWORD pParam1, DWORD pParam2)
 {
 	WaveOutMMSys *tSink = (WaveOutMMSys*)pInstance;

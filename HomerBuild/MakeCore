@@ -76,7 +76,6 @@ default: $(TOP_DIR)/$(BUILD_DIR_DEFAULT)/Makefile
 	@cd $(TOP_DIR)/$(BUILD_DIR_DEFAULT) && $(MAKE) -s
 
 debug: $(TOP_DIR)/$(BUILD_DIR_DEBUG)/Makefile
-	@echo "##### OSType is \"$(BUILD_OS)\""
 	@cd $(TOP_DIR)/$(BUILD_DIR_DEBUG) && $(MAKE) -s
 
 install: all
