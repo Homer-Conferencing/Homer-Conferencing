@@ -218,18 +218,30 @@ SET (LIBS_WINDOWS
 SET (LIBS_BSD
 )
 # USED LIBRARIES for linux environment
-SET (LIBS_LINUX
-	stdc++
-	HomerBase
-	HomerGAPI
-	HomerMonitor
-	HomerMultimedia
-	HomerConference
-	HomerSoundOutput
-	${QT_LIBRARIES}
-	dbus-1
-	resolv
-)
+IF (${BUILD} MATCHES "Default")
+	SET (LIBS_LINUX
+		HomerBase
+		HomerGAPI
+		HomerMonitor
+		HomerMultimedia
+		HomerConference
+		HomerSoundOutput
+		${QT_LIBRARIES}
+	)
+ELSE ()
+	SET (LIBS_LINUX
+		stdc++
+		HomerBase
+		HomerGAPI
+		HomerMonitor
+		HomerMultimedia
+		HomerConference
+		HomerSoundOutput
+		${QT_LIBRARIES}
+		dbus-1
+		resolv
+	)
+ENDIF ()
 # USED LIBRARIES for apple environment
 SET (LIBS_APPLE
 )
