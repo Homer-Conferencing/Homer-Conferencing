@@ -67,7 +67,7 @@ ENDIF ()
 SET (LIB_DIRS
 	${LIB_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}/../../bin/lib
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../bin
+	${CMAKE_CURRENT_SOURCE_DIR}/../../bin
 	/usr/local/lib
 	/usr/lib
 	/usr/lib${ARCH_BITS}
@@ -282,6 +282,22 @@ IF (DEFINED TARGET_PROGRAM_NAME)
 		${TARGET_PROGRAM_NAME}
 	)
 ENDIF ()
+
+##############################################################
+# library: define install target
+IF (DEFINED TARGET_LIB_NAME) 
+	INSTALL(TARGETS ${TARGET_NAME} DESTINATION lib)
+ENDIF ()
+# executable: define install target
+IF (DEFINED TARGET_PROGRAM_NAME) 
+	INSTALL(TARGETS ${TARGET_NAME} DESTINATION bin)
+ENDIF()
+
+# RPATH handling (where are dynamically linked libraries located)
+SET(CMAKE_SKIP_BUILD_RPATH  FALSE) # don't skip the full RPATH for the build tree
+SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) # when building, don't use the install RPATH already (but later on when installing) 
+SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE) # add the automatically determined parts of the RPATH, which point to directories outside the build tree to the install RPATH
 
 ##############################################################
 # link to needed external libraries

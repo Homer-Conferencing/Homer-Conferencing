@@ -55,7 +55,7 @@ SET (INCLUDE_DIRS
 )
 
 ##############################################################
-# target directory for the lib
+# target directory for the executable
 SET (TARGET_DIRECTORY
 	${RELOCATION_DIR}
 )
@@ -72,19 +72,19 @@ SET (FLAGS
 SET (LFLAGS
 	${LFLAGS}
 	-Wl,-R. 
-	-Wl,-R./bin 
 	-Wl,-R./lib 
-	-Wl,-R../../lib 
 	-Wl,-R../lib
-	-Wl,-R../../bin/lib 
+	-Wl,-R../../lib 
+	-Wl,-R./bin 
 	-Wl,-R../bin/lib
+	-Wl,-R../../bin/lib 
 	-mthreads
 )
 
 IF (WIN32)
 	SET (LFLAGS
 		${LFLAGS}
-		${CMAKE_CURRENT_SOURCE_DIR}/../../Homer/winres/Homer-WinRes.o	
+		${CMAKE_CURRENT_SOURCE_DIR}/../winres/Homer-WinRes.o	
 	)
 	IF (NOT (${BUILD} MATCHES "Debug"))
 		SET (LFLAGS
@@ -262,5 +262,9 @@ QT4_WRAP_CPP(SOURCES ${QT_MOC_SOURCES})
 ##############################################################
 # integrate Qt resources
 QT4_ADD_RESOURCES(SOURCES ${QT_QRC_SOURCES})
+
+##############################################################
+# extend install target by "Homer.png"
+INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../Homer.png ${TARGET_NAME} DESTINATION bin)
 
 INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakeCore.txt)
