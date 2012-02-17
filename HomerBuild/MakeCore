@@ -79,7 +79,8 @@ debug: $(TOP_DIR)/$(BUILD_DIR_DEBUG)/Makefile
 	@cd $(TOP_DIR)/$(BUILD_DIR_DEBUG) && $(MAKE) -s
 
 install: all
-
+	@cd $(TOP_DIR)/$(BUILD_DIR_DEFAULT) && $(MAKE) -s install
+	
 ###############################################################################
 # Targets for building a special subtarget in one of our configurations 
 
