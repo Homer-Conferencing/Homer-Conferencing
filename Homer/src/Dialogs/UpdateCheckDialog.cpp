@@ -112,15 +112,15 @@ void UpdateCheckDialog::DownloadStart()
 		tReleaseFileType = "ZIP archive file (*.zip)";
 	#endif
 	#ifdef LINUX
-		tReleaseFileName = "Homer-Linux" + QString(BITS) + ".tar.bz2";
+		tReleaseFileName = "Homer-Linux" + QString(ARCH_BITS) + ".tar.bz2";
 		tReleaseFileType = "bz2 archive file (*.bz2)";
 	#endif
 	#ifdef BSD
-		tReleaseFileName = "Homer-BSD" + BITS + ".tar.bz2";
+		tReleaseFileName = "Homer-BSD" + ARCH_BITS + ".tar.bz2";
 		tReleaseFileType = "bz2 archive file (*.bz2)";
 	#endif
 	#ifdef APPLE
-		tReleaseFileName = "Homer-OSX" + BITS + ".tar.bz2";
+		tReleaseFileName = "Homer-OSX" + ARCH_BITS + ".tar.bz2";
 		tReleaseFileType = "bz2 archive file (*.bz2)";
 	#endif
 
