@@ -66,6 +66,22 @@
          </widget>
         </item>
         <item>
+         <spacer name="verticalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Fixed</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>10</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
          <layout class="QHBoxLayout" name="horizontalLayout_11">
           <item>
            <widget class="QLabel" name="label">
@@ -110,7 +126,6 @@
              <font>
               <family>Arial</family>
               <pointsize>9</pointsize>
-              <italic>true</italic>
              </font>
             </property>
             <property name="text">
@@ -164,7 +179,6 @@
              <font>
               <family>Arial</family>
               <pointsize>9</pointsize>
-              <italic>true</italic>
              </font>
             </property>
             <property name="text">
@@ -188,7 +202,7 @@
           <property name="sizeHint" stdset="0">
            <size>
             <width>20</width>
-            <height>30</height>
+            <height>10</height>
            </size>
           </property>
          </spacer>
@@ -487,7 +501,11 @@ p, li { white-space: pre-wrap; }
  <resources>
   <include location="../../resources/Icons.qrc"/>
   <include location="../../resources/Icons.qrc"/>
-  <include location="../resources/Icons.qrc"/>
+  <include location="../../resources/Icons.qrc"/>
+  <include location="../../resources/Icons.qrc"/>
+  <include location="../../resources/Icons.qrc"/>
+  <include location="../../resources/Icons.qrc"/>
+  <include location="../../resources/Icons.qrc"/>
  </resources>
  <connections>
   <connection>
