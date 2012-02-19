@@ -568,10 +568,10 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
             // unlock grabbing
             mGrabMutex.unlock();
 
-            if ((!mGrabbingStopped) && (tRes != AVERROR_EOF) && (tRes != AVERROR(EIO)))
+            if ((!mGrabbingStopped) && (tRes != (int)AVERROR_EOF) && (tRes != (int)AVERROR(EIO)))
                 LOG(LOG_ERROR, "Couldn't grab a frame because of \"%s\"(%d), media type is \"%s\"", strerror(AVUNERROR(tRes)), tRes, GetMediaTypeStr().c_str());
 
-            if (tRes == AVERROR_EOF)
+            if (tRes == (int)AVERROR_EOF)
             {
                 mCurPts = mDuration;
 
@@ -580,7 +580,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
 
                 return GRAB_RES_EOF;
             }
-            if (tRes == AVERROR(EIO))
+            if (tRes == (int)AVERROR(EIO))
             {
                 // acknowledge failed"
                 MarkGrabChunkFailed(GetMediaTypeStr() + " source has I/O error");
