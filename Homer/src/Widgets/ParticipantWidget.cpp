@@ -550,8 +550,9 @@ void ParticipantWidget::HandleMessage(bool pIncoming, QString pSender, QString p
     if (mMessageWidget != NULL)
     {
         mMessageWidget->AddMessage(pSender, pMessage);
-        if (CONF.GetImSound())
-            QSound::play(CONF.GetImSoundFile());
+        if (pIncoming)
+			if (CONF.GetImSound())
+				QSound::play(CONF.GetImSoundFile());
     }
 }
 
@@ -624,8 +625,9 @@ void ParticipantWidget::HandleCallRinging(bool pIncoming)
 
     ShowNewState();
 
-    if (CONF.GetCallAcknowledgeSound())
-        QSound::play(CONF.GetCallAcknowledgeSoundFile());
+    if (pIncoming)
+		if (CONF.GetCallAcknowledgeSound())
+			QSound::play(CONF.GetCallAcknowledgeSoundFile());
 }
 
 void ParticipantWidget::HandleCall(bool pIncoming, QString pRemoteApplication)
@@ -649,10 +651,13 @@ void ParticipantWidget::HandleCall(bool pIncoming, QString pRemoteApplication)
         mCallBox = new QMessageBox(QMessageBox::Question, "Incoming call from application " + pRemoteApplication, "Do you want to accept the incoming call from " + mSessionName + "?", QMessageBox::Yes | QMessageBox::Cancel, this);
 
         // start sound output
-        if (CONF.GetCallSound())
+        if (pIncoming)
         {
-        	mSoundForIncomingCall->setLoops(SOUND_FOR_CALL_LOOPS);
-        	mSoundForIncomingCall->play();
+			if (CONF.GetCallSound())
+			{
+				mSoundForIncomingCall->setLoops(SOUND_FOR_CALL_LOOPS);
+				mSoundForIncomingCall->play();
+			}
         }
 
         if (mCallBox->exec() == QMessageBox::Yes)
@@ -679,8 +684,9 @@ void ParticipantWidget::HandleCallCancel(bool pIncoming)
 
     CallStopped(pIncoming);
 
-    if (CONF.GetCallHangupSound())
-        QSound::play(CONF.GetCallHangupSoundFile());
+    if (pIncoming)
+		if (CONF.GetCallHangupSound())
+			QSound::play(CONF.GetCallHangupSoundFile());
 }
 
 void ParticipantWidget::HandleCallHangup(bool pIncoming)
@@ -694,8 +700,9 @@ void ParticipantWidget::HandleCallHangup(bool pIncoming)
 
     CallStopped(pIncoming);
 
-    if (CONF.GetCallHangupSound())
-        QSound::play(CONF.GetCallHangupSoundFile());
+    if (pIncoming)
+		if (CONF.GetCallHangupSound())
+			QSound::play(CONF.GetCallHangupSoundFile());
 }
 
 void ParticipantWidget::HandleCallTermination(bool pIncoming)
@@ -709,8 +716,9 @@ void ParticipantWidget::HandleCallTermination(bool pIncoming)
 
     CallStopped(pIncoming);
 
-    if (CONF.GetErrorSound())
-        QSound::play(CONF.GetErrorSoundFile());
+    if (pIncoming)
+		if (CONF.GetErrorSound())
+			QSound::play(CONF.GetErrorSoundFile());
 }
 
 void ParticipantWidget::CallStopped(bool pIncoming)
@@ -746,10 +754,6 @@ void ParticipantWidget::CallStopped(bool pIncoming)
     // stop sound output
     if (mSoundForIncomingCall->loopsRemaining())
     	mSoundForIncomingCall->stop();
-
-    // stop sound output
-    if (mSoundForIncomingCall->loopsRemaining())
-    	mSoundForIncomingCall->stop();
 }
 
 void ParticipantWidget::HandleCallUnavailable(bool pIncoming)
@@ -771,9 +775,9 @@ void ParticipantWidget::HandleCallUnavailable(bool pIncoming)
     }else
     	CallStopped(pIncoming);
 
-    // stop sound output
-    if (mSoundForIncomingCall->loopsRemaining())
-    	mSoundForIncomingCall->stop();
+    if (pIncoming)
+		if (CONF.GetErrorSound())
+			QSound::play(CONF.GetErrorSoundFile());
 }
 
 void ParticipantWidget::HandleCallDenied(bool pIncoming)
@@ -788,19 +792,11 @@ void ParticipantWidget::HandleCallDenied(bool pIncoming)
     if (mMessageWidget != NULL)
         mMessageWidget->AddMessage("", "call denied", true);
 
-    if (!mIncomingCall)
-    {
-    	CallStopped(pIncoming);
+	CallStopped(pIncoming);
 
-        ShowInfo("Participant denied", "The participant " + mSessionName + " has denied your call request!");
-    }else
-    {
-    	CallStopped(pIncoming);
-    }
-
-    // stop sound output
-    if (mSoundForIncomingCall->loopsRemaining())
-    	mSoundForIncomingCall->stop();
+    if (pIncoming)
+		if (CONF.GetCallDenySound())
+			QSound::play(CONF.GetCallDenySoundFile());
 }
 
 void ParticipantWidget::HandleCallAccept(bool pIncoming)
@@ -832,8 +828,9 @@ void ParticipantWidget::HandleCallAccept(bool pIncoming)
     if (mSoundForIncomingCall->loopsRemaining())
     	mSoundForIncomingCall->stop();
 
-    if (CONF.GetCallAcknowledgeSound())
-        QSound::play(CONF.GetCallAcknowledgeSoundFile());
+    if (pIncoming)
+		if (CONF.GetCallAcknowledgeSound())
+			QSound::play(CONF.GetCallAcknowledgeSoundFile());
 }
 
 void ParticipantWidget::HandleMediaUpdate(bool pIncoming, QString pRemoteAudioAdr, unsigned int pRemoteAudioPort, QString pRemoteAudioCodec, QString pRemoteVideoAdr, unsigned int pRemoteVideoPort, QString pRemoteVideoCodec)

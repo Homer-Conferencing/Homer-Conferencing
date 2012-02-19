@@ -39,6 +39,15 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define ShowMessage(pTitle, pMessage) DoShowMessage(GetObjectNameStr(this).c_str(), __LINE__, this, pTitle, pMessage)
+inline void DoShowMessage(std::string pSource, int pLine, QWidget *pParent, QString pTitle, QString pMessage)
+{
+    LOG_REMOTE(LOG_INFO, pSource, pLine, pMessage.toStdString().c_str());
+    QMessageBox *tMb = new QMessageBox(QMessageBox::NoIcon, pTitle, pMessage, QMessageBox::Close, pParent);
+    tMb->exec();
+    delete tMb;
+}
+
 #define ShowInfo(pTitle, pMessage) DoShowInfo(GetObjectNameStr(this).c_str(), __LINE__, this, pTitle, pMessage)
 inline void DoShowInfo(std::string pSource, int pLine, QWidget *pParent, QString pTitle, QString pMessage)
 {
