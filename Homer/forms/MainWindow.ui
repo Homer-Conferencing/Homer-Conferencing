@@ -28,7 +28,7 @@
    <bool>false</bool>
   </property>
   <property name="windowTitle">
-   <string>Homer</string>
+   <string>Homer Conferencing</string>
   </property>
   <property name="windowIcon">
    <iconset resource="../resources/Icons.qrc">
