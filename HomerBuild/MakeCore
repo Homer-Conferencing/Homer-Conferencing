@@ -19,13 +19,17 @@ BUILD_DIR_DEBUG=$(BUILD_DIR)/Debug
 BUILD_OS := $(shell echo "$$OSTYPE")
 
 ##############################################################
-# Options for cmake
-ifeq ($(BUILD_OS),msys)
-	CMAKE_OPTIONS= -DRELOCATION_DIR=../../../../bin/ -Wno-dev -G"Unix Makefiles"
-else
-	CMAKE_OPTIONS= -DRELOCATION_DIR=../../../../bin/ -Wno-dev
+# Options for cmake: define an explicit install directory if the command line provides a DESTDIR variable
+ifneq ($(DESTDIR),)
+	INSTALL_OPTIONS=-DCMAKE_INSTALL_PREFIX=$(DESTDIR)
 endif
-
+# Options for cmake: set relocation directory, deactivate special warnings, for MSys32/MinGW32 environment Unix makefiles are created by default
+ifeq ($(BUILD_OS),msys)
+	CMAKE_OPTIONS= -DRELOCATION_DIR=../../../../bin/ -Wno-dev -G"Unix Makefiles" $(INSTALL_OPTIONS)
+else
+	CMAKE_OPTIONS= -DRELOCATION_DIR=../../../../bin/ -Wno-dev $(INSTALL_OPTIONS)
+endif
+	
 ##############################################################
 # build target mappings
 all: default
@@ -79,10 +83,15 @@ debug: $(TOP_DIR)/$(BUILD_DIR_DEBUG)/Makefile
 	@cd $(TOP_DIR)/$(BUILD_DIR_DEBUG) && $(MAKE) -s
 
 install: all
+ifneq ($(DESTDIR),)
+	@echo "##### Installing to $(DESTDIR)"
+else
+	@echo "##### Installing to default directory"
+endif
 	@cd $(TOP_DIR)/$(BUILD_DIR_DEFAULT) && $(MAKE) -s install
 	
 ###############################################################################
-# Targets for building a special subtarget in one of our configurations 
+# Targets for building a special sub target in one of our configurations 
 
 %_release: $(TOP_DIR)/$(BUILD_DIR_RELEASE)/Makefile
 	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE) && $(MAKE) -s $*
