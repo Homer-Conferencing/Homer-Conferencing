@@ -33,8 +33,6 @@
 #include <sys/types.h>
 #include <string>
 
-using namespace Homer::Base;
-
 namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -99,7 +97,7 @@ public:
     bool CloseRtpEncoder();
 
 private:
-    bool OpenRtpEncoderH261();
+    bool OpenRtpEncoderH261(std::string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream);
     bool RtpCreateH261(char *&pData, unsigned int &pDataSize);
 
     AVFormatContext     *mRtpFormatContext;

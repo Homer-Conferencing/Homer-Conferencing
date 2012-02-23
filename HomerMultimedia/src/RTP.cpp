@@ -60,9 +60,9 @@
 #include <string>
 #include <sstream>
 
+#include <RTP.h>
 #include <Header_Ffmpeg.h>
 #include <HBSocket.h>
-#include <RTP.h>
 #include <MediaSourceNet.h>
 #include <Logger.h>
 
@@ -352,7 +352,7 @@ RTP::~RTP()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool RTP::OpenRtpEncoderH261()
+bool RTP::OpenRtpEncoderH261(string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream)
 {
 	mSsrc = av_get_random_seed();
 	mCurrentTimestamp = av_get_random_seed();
@@ -401,7 +401,7 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     mTargetPort = pTargetPort;
 
     if (pInnerStream->codec->codec->id == CODEC_ID_H261)
-    	return OpenRtpEncoderH261();
+    	return OpenRtpEncoderH261(pTargetHost, pTargetPort, pInnerStream);
 
     int                 tResult;
     AVOutputFormat      *tFormat;
