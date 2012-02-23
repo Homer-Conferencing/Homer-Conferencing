@@ -83,11 +83,10 @@ IF (WIN32)
 		${LFLAGS}
 		${CMAKE_CURRENT_SOURCE_DIR}/../winres/Homer-WinRes.o	
 	)
-	IF (NOT (${BUILD} MATCHES "Debug"))
-		SET (LFLAGS
-			${LFLAGS}
-			-Wl,-subsystem,windows
-		)
+	IF (${BUILD} MATCHES "Debug")
+		SET (LFLAGS	"${LFLAGS} -Wl,--subsystem,console")
+	ELSE()
+		SET (LFLAGS	"${LFLAGS} -Wl,--subsystem,windows")
 	ENDIF ()
 ENDIF (WIN32)
 
