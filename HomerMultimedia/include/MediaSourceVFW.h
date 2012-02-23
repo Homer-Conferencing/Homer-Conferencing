@@ -52,6 +52,9 @@ public:
     /* device control */
     virtual void getVideoDevices(VideoDevicesList &pVList);
 
+    /* recording */
+    virtual bool SupportsRecording();
+
     /* grabbing control */
     virtual std::string GetCodecName();
     virtual std::string GetCodecLongName();

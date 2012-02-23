@@ -53,6 +53,9 @@ public:
 
     virtual void getAudioDevices(AudioDevicesList &pAList);
 
+    /* recording */
+    virtual bool SupportsRecording();
+
     /* grabbing control */
     virtual std::string GetCodecName();
     virtual std::string GetCodecLongName();

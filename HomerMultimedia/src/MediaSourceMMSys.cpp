@@ -542,6 +542,11 @@ int MediaSourceMMSys::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
     return ++mChunkNumber;
 }
 
+bool MediaSourceMMSys::SupportsRecording()
+{
+	return true;
+}
+
 void MediaSourceMMSys::StopGrabbing()
 {
 	MMRESULT  tResult;

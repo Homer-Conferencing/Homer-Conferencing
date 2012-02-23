@@ -41,6 +41,7 @@
 #include <QTime>
 #include <QWaitCondition>
 #include <string.h>
+#include <Snippets.h>
 
 namespace Homer { namespace Gui {
 
@@ -206,7 +207,7 @@ bool MediaSourceDesktop::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     	pFps = MIN_GRABBING_FPS;
 
 	mFrameRate = pFps;
-    mScreenshot = malloc(mSourceResX * mSourceResY * 4 * sizeof(char));
+    mScreenshot = malloc(mTargetResX * mTargetResY * 4 * sizeof(char));
     if (mScreenshot == NULL)
     {
         LOG(LOG_ERROR, "Buffer allocation failed");
@@ -223,6 +224,7 @@ bool MediaSourceDesktop::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     //######################################################
     //### initiate local variables
     //######################################################
+    FpsEmulationInit();
     mLastTimeGrabbed == QTime(0, 0, 0, 0);
     mSourceStartPts = -1;
     mChunkNumber = 0;
@@ -260,6 +262,7 @@ bool MediaSourceDesktop::CloseGrabDevice()
 
         // free internal buffer
         free(mScreenshot);
+        mScreenshot = NULL;
 
         LOG(LOG_INFO, "...closed");
 
@@ -290,9 +293,16 @@ void MediaSourceDesktop::DoSetVideoGrabResolution(int pResX, int pResY)
     mMutexScreenshot.unlock();
 }
 
+bool MediaSourceDesktop::SupportsRecording()
+{
+	return true;
+}
+
 void MediaSourceDesktop::CreateScreenshot()
 {
-	mMutexGrabberActive.lock();
+    AVFrame             *tRGBFrame;
+
+    mMutexGrabberActive.lock();
 
     if (!mMediaSourceOpened)
     {
@@ -356,19 +366,54 @@ void MediaSourceDesktop::CreateScreenshot()
         mSourceResX = tWidget->width();
         mSourceResY = tWidget->height();
     }
-    QPixmap tTargetPixmap = tSourcePixmap.scaled(mTargetResX, mTargetResY);
 
-    // lock screenshot buffer
-    mMutexScreenshot.lock();
-    QImage tTargetImage = QImage((unsigned char*)mScreenshot, mTargetResX, mTargetResY, QImage::Format_RGB32);
-    QPainter *tTargetPainter = new QPainter(&tTargetImage);
-    tTargetPainter->drawPixmap(0, 0, tTargetPixmap);
-    delete tTargetPainter;
-    mScreenshotUpdated = true;
-    // notify consumer about new screenshot
-    mWaitConditionScreenshotUpdated.wakeAll();
-    // unlock screenshot buffer again
-    mMutexScreenshot.unlock();
+    if(!tSourcePixmap.isNull())
+    {
+		// record screenshot via ffmpeg
+		if (mRecording)
+		{
+			if ((tRGBFrame = AllocFrame()) == NULL)
+			{
+				LOG(LOG_ERROR, "Unable to allocate memory for RGB frame");
+			}else
+			{
+				void *tOriginalScreenShotData = malloc(mSourceResX * mSourceResY * 4 * sizeof(char));
+				QImage tSourceImage = QImage((unsigned char*)tOriginalScreenShotData, mSourceResX, mSourceResY, QImage::Format_RGB32);
+				QPainter *tSourcePainter = new QPainter(&tSourceImage);
+				tSourcePainter->drawPixmap(0, 0, tSourcePixmap);
+				delete tSourcePainter;
+
+				// Assign appropriate parts of buffer to image planes in tRGBFrame
+				FillFrame(tRGBFrame, tOriginalScreenShotData, PIX_FMT_RGB32, mSourceResX, mSourceResY);
+
+				// set frame number in corresponding entries within AVFrame structure
+				tRGBFrame->pts = mChunkNumber + 1;
+				tRGBFrame->coded_picture_number = mChunkNumber + 1;
+				tRGBFrame->display_picture_number = mChunkNumber + 1;
+
+				// emulate set FPS
+				tRGBFrame->pts = FpsEmulationGetPts();
+
+				// re-encode the frame and write it to file
+				RecordFrame(tRGBFrame);
+			}
+		}
+
+		// get the scaled version of the capture screen segment
+		QPixmap tTargetPixmap = tSourcePixmap.scaled(mTargetResX, mTargetResY);
+
+		// lock screenshot buffer
+		mMutexScreenshot.lock();
+		QImage tTargetImage = QImage((unsigned char*)mScreenshot, mTargetResX, mTargetResY, QImage::Format_RGB32);
+		QPainter *tTargetPainter = new QPainter(&tTargetImage);
+		tTargetPainter->drawPixmap(0, 0, tTargetPixmap);
+		delete tTargetPainter;
+		mScreenshotUpdated = true;
+		// notify consumer about new screenshot
+		mWaitConditionScreenshotUpdated.wakeAll();
+		// unlock screenshot buffer again
+		mMutexScreenshot.unlock();
+    }
 
     mMutexGrabberActive.unlock();
 }
@@ -506,6 +551,11 @@ GrabResolutions MediaSourceDesktop::GetSupportedVideoGrabResolutions()
 
 void MediaSourceDesktop::SelectSegment(QWidget *pParent)
 {
+	if (mRecording)
+	{
+		DoShowInfo(GetObjectNameStr(this).c_str(), __LINE__, pParent, "Recording active", "Screen segment is fixed in position and size if recording is active");
+		return;
+	}
     int tOldGrabOffsetX = mGrabOffsetX;
     int tOldGrabOffsetY = mGrabOffsetY;
     int tOldSourceResX = mSourceResX;

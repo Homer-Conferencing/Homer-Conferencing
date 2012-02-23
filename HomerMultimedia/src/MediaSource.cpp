@@ -72,6 +72,11 @@ MediaSource::MediaSource(string pName):
     mGrabbingStopped = false;
     mRecording = false;
     SetRtpActivation(true);
+    mCodecContext = NULL;
+    mRecorderCodecContext = NULL;
+    mRecorderFormatContext = NULL;
+    mRecorderScalerContext = NULL;
+    mFormatContext = NULL;
     mRecordingSaveFileName = "";
     mDesiredDevice = "";
     mCurrentDevice = "";
@@ -503,6 +508,16 @@ int MediaSource::AudioQuality2BitRate(int pQuality)
 int MediaSource::GetSampleRate()
 {
     return mSampleRate;
+}
+
+AVFrame *MediaSource::AllocFrame()
+{
+	return avcodec_alloc_frame();
+}
+
+int MediaSource::FillFrame(AVFrame *pFrame, void *pData, enum PixelFormat pPixFormat, int pWidth, int pHeight)
+{
+	return avpicture_fill((AVPicture *)pFrame, (uint8_t *)pData, pPixFormat, pWidth, pHeight);
 }
 
 void MediaSource::VideoFormat2Resolution(VideoFormat pFormat, int& pX, int& pY)
@@ -1275,7 +1290,13 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
                     mRecorderCodecContext->pix_fmt = PIX_FMT_YUV420P;
 
                 // allocate software scaler context if necessary
-                mRecorderScalerContext = sws_getContext(mSourceResX, mSourceResY, mCodecContext->pix_fmt, mSourceResX, mSourceResY, mRecorderCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
+        		if (mCodecContext != NULL)
+                	mRecorderScalerContext = sws_getContext(mSourceResX, mSourceResY, mCodecContext->pix_fmt, mSourceResX, mSourceResY, mRecorderCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
+        		else
+        		{
+        			LOG(LOG_WARN, "Codec context is invalid, pixel format cannot be determined automatically, assuming RGB32 as input");
+                	mRecorderScalerContext = sws_getContext(mSourceResX, mSourceResY, PIX_FMT_RGB32, mSourceResX, mSourceResY, mRecorderCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
+        		}
 
                 // Dump information about device file
                 dump_format(mRecorderFormatContext, 0, "MediaSource recorder (video)", true);
@@ -1500,6 +1521,16 @@ void MediaSource::StopRecording()
     mRecorderStartPts = -1;
 }
 
+bool MediaSource::SupportsRecording()
+{
+	return false;
+}
+
+bool MediaSource::IsRecording()
+{
+	return mRecording;
+}
+
 void MediaSource::RecordFrame(AVFrame *pSourceFrame)
 {
     AVFrame             *tFrame;
@@ -1548,7 +1579,13 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
         mRecorderCodecContext->height = mSourceResY;
 
         // allocate software scaler context
-        mRecorderScalerContext = sws_getContext(mSourceResX, mSourceResY, mCodecContext->pix_fmt, mSourceResX, mSourceResY, mRecorderCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
+		if (mCodecContext != NULL)
+        	mRecorderScalerContext = sws_getContext(mSourceResX, mSourceResY, mCodecContext->pix_fmt, mSourceResX, mSourceResY, mRecorderCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
+		else
+		{
+			LOG(LOG_WARN, "Codec context is invalid, pixel format cannot be determined automatically, assuming RGB32 as input");
+        	mRecorderScalerContext = sws_getContext(mSourceResX, mSourceResY, PIX_FMT_RGB32, mSourceResX, mSourceResY, mRecorderCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
+		}
 
         LOG(LOG_INFO, "Resolution changed to (%d * %d)", mSourceResX, mSourceResY);
     }
@@ -1617,7 +1654,7 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
 
         // convert pixel format in pSourceFrame and store it in tFrame
         //HINT: we should execute this step in every case (incl. when pixel format is equal), otherwise data structures are wrong
-        HM_sws_scale(mRecorderScalerContext, pSourceFrame->data, pSourceFrame->linesize, 0, mSourceResY, tFrame->data, tFrame->linesize);
+		HM_sws_scale(mRecorderScalerContext, pSourceFrame->data, pSourceFrame->linesize, 0, mSourceResY, tFrame->data, tFrame->linesize);
 
         // #########################################
         // re-encode the frame
@@ -1654,17 +1691,13 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
              if (av_write_frame(mRecorderFormatContext, &tPacket) != 0)
                  LOG(LOG_ERROR, "Couldn't write video frame to file");
 
+             // Free the file frame's data buffer
+             avpicture_free((AVPicture*)tFrame);
+
+             // Free the file frame
+             av_free(tFrame);
         }else
             LOG(LOG_ERROR, "Couldn't re-encode current video frame");
-
-        if (mCodecContext->pix_fmt != mRecorderCodecContext->pix_fmt)
-        {
-            // Free the file frame's data buffer
-            avpicture_free((AVPicture*)tFrame);
-
-            // Free the file frame
-            av_free(tFrame);
-        }
     }
 
     mRecorderChunkNumber++;

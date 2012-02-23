@@ -215,6 +215,11 @@ void MediaSourceMem::ReadFragment(char *pData, ssize_t &pDataSize)
     }
 }
 
+bool MediaSourceMem::SupportsRecording()
+{
+	return true;
+}
+
 bool MediaSourceMem::SupportsRelaying()
 {
     return true;

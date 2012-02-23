@@ -252,17 +252,20 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
     //###############################################################################
     //### RECORD
     //###############################################################################
-    QIcon tIcon5;
-    if (mRecorderStarted)
+    if (mVideoSource->SupportsRecording())
     {
-        tAction = tMenu.addAction("Stop recording");
-        tIcon5.addPixmap(QPixmap(":/images/Audio - Stop.png"), QIcon::Normal, QIcon::Off);
-    }else
-    {
-        tAction = tMenu.addAction("Record video");
-        tIcon5.addPixmap(QPixmap(":/images/Audio - Record.png"), QIcon::Normal, QIcon::Off);
+		QIcon tIcon5;
+		if (mVideoSource->IsRecording())
+		{
+			tAction = tMenu.addAction("Stop recording");
+			tIcon5.addPixmap(QPixmap(":/images/Audio - Stop.png"), QIcon::Normal, QIcon::Off);
+		}else
+		{
+			tAction = tMenu.addAction("Record video");
+			tIcon5.addPixmap(QPixmap(":/images/Audio - Record.png"), QIcon::Normal, QIcon::Off);
+		}
+		tAction->setIcon(tIcon5);
     }
-    tAction->setIcon(tIcon5);
 
     tMenu.addSeparator();
 
@@ -805,7 +808,7 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
     //### draw record icon
     //#############################################################
     int tMSecs = QTime::currentTime().msec();
-    if ((mRecorderStarted) and (tMSecs % 500 < 250))
+    if ((mVideoSource->IsRecording()) and (tMSecs % 500 < 250))
     {
         QPixmap tPixmap = QPixmap(":/images/Audio - Record.png");
         tPainter->drawPixmap(10, 10, tPixmap);

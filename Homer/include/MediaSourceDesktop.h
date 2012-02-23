@@ -64,6 +64,9 @@ public:
     virtual std::string GetCodecLongName();
     void SelectSegment(QWidget *pParent = NULL);
 
+    /* recording */
+    virtual bool SupportsRecording();
+
     /* device control */
     virtual void getVideoDevices(VideoDevicesList &pVList);
 

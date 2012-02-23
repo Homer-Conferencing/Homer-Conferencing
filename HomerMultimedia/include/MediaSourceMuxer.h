@@ -94,6 +94,8 @@ public:
     /* recording control */
     virtual bool StartRecording(std::string pSaveFileName, int pSaveFileQuality = 10, bool pRealTime = true /* 1 = frame rate emulation, 0 = no pts adaption */);
     virtual void StopRecording();
+    virtual bool SupportsRecording();
+    virtual bool IsRecording();
 
     /* activation control */
     void SetActivation(bool pState);
