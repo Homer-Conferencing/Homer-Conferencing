@@ -998,6 +998,11 @@ GrabResolutions MediaSourceFile::GetSupportedVideoGrabResolutions()
     return mSupportedVideoFormats;
 }
 
+bool MediaSourceFile::SupportsRecording()
+{
+	return true;
+}
+
 bool MediaSourceFile::SupportsSeeking()
 {
     return true;

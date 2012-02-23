@@ -69,6 +69,9 @@ public:
     /// The destructor.
     virtual ~MediaSourceMem();
 
+    /* recording */
+    virtual bool SupportsRecording();
+
     /* relaying */
     virtual bool SupportsRelaying();
 

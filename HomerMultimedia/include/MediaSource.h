@@ -53,7 +53,7 @@ namespace Homer { namespace Multimedia {
 
 #define MEDIA_SOURCE_AUDIO_SAMPLE_BUFFER_SIZE                     4*4096
 
-#define MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE                         60000
+#define MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE                         16 * 1000 * 1000 // HDTV RGB32 picture: 1920*1080*4 = ca. 7,9 MB
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -155,6 +155,8 @@ public:
     static int AudioQuality2BitRate(int pQuality);
 
     /* video */
+    static AVFrame *AllocFrame();
+    static int FillFrame(AVFrame *pFrame, void *pData, enum PixelFormat pPixFormat, int pWidth, int pHeight);
     static void VideoFormat2Resolution(VideoFormat pFormat, int& pX, int& pY);
     static void VideoString2Resolution(std::string pString, int& pX, int& pY);
     static int VideoString2ResolutionIndex(std::string pString);
@@ -188,8 +190,10 @@ public:
     virtual bool SupportsRelaying();
 
     /* recording control WITH reencoding but WITHOUT rtp support */
-    virtual bool StartRecording(std::string pSaveFileName, int SaveFileQuality = 100, bool pRealTime = true /* 1 = frame rate emulation, 0 = no pts adaption */);
+    virtual bool StartRecording(std::string pSaveFileName, int SaveFileQuality = 100, bool pRealTime = true /* 1 = frame rate emulation, 0 = no pts adaption */); // needs valid mCodecContext, otherwise RGB32 pictures are assumed as input; source resolution must not change during recording is activated
     virtual void StopRecording();
+    virtual bool SupportsRecording();
+    virtual bool IsRecording();
 
     /* device control */
     virtual std::string GetMediaTypeStr();

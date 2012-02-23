@@ -410,6 +410,11 @@ int MediaSourceOss::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
     return ++mChunkNumber;
 }
 
+bool MediaSourceOss::SupportsRecording()
+{
+	return true;
+}
+
 string MediaSourceOss::GetCodecName()
 {
     return "Raw";

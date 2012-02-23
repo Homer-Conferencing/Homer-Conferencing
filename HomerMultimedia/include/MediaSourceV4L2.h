@@ -60,6 +60,9 @@ public:
     virtual void getVideoDevices(VideoDevicesList &pVList);
     virtual bool SelectDevice(std::string pDeviceName, enum MediaType pMediaType, bool &pIsNewDevice);
 
+    /* recording */
+    virtual bool SupportsRecording();
+
     /* multi input interface */
     virtual bool SupportsMultipleInputChannels();
     virtual bool SelectInputChannel(int pIndex);

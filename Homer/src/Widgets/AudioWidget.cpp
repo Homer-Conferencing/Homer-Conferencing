@@ -213,17 +213,20 @@ void AudioWidget::contextMenuEvent(QContextMenuEvent *pEvent)
     //###############################################################################
     //### RECORD
     //###############################################################################
-    QIcon tIcon5;
-    if (mRecorderStarted)
+    if (mAudioSource->SupportsRecording())
     {
-        tAction = tMenu.addAction("Stop recording");
-        tIcon5.addPixmap(QPixmap(":/images/Audio - Stop.png"), QIcon::Normal, QIcon::Off);
-    }else
-    {
-        tAction = tMenu.addAction("Record audio");
-        tIcon5.addPixmap(QPixmap(":/images/Audio - Record.png"), QIcon::Normal, QIcon::Off);
+		QIcon tIcon5;
+		if (mRecorderStarted)
+		{
+			tAction = tMenu.addAction("Stop recording");
+			tIcon5.addPixmap(QPixmap(":/images/Audio - Stop.png"), QIcon::Normal, QIcon::Off);
+		}else
+		{
+			tAction = tMenu.addAction("Record audio");
+			tIcon5.addPixmap(QPixmap(":/images/Audio - Record.png"), QIcon::Normal, QIcon::Off);
+		}
+		tAction->setIcon(tIcon5);
     }
-    tAction->setIcon(tIcon5);
 
     tMenu.addSeparator();
 
@@ -579,7 +582,7 @@ void AudioWidget::ShowSample(void* pBuffer, int pSampleSize, int pSampleNumber)
     //#############################################################
     //### draw record icon
     //#############################################################
-    if (mRecorderStarted)
+    if (mAudioSource->IsRecording())
     {
         int tMSecs = QTime::currentTime().msec();
         if (tMSecs % 500 < 250)

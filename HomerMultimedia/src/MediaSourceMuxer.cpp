@@ -1353,6 +1353,22 @@ void MediaSourceMuxer::StopRecording()
     	mMediaSource->StopRecording();
 }
 
+bool MediaSourceMuxer::SupportsRecording()
+{
+    if (mMediaSource != NULL)
+    	return mMediaSource->SupportsRecording();
+    else
+    	return false;
+}
+
+bool MediaSourceMuxer::IsRecording()
+{
+    if (mMediaSource != NULL)
+    	return mMediaSource->IsRecording();
+    else
+    	return false;
+}
+
 void MediaSourceMuxer::SetActivation(bool pState)
 {
     mStreamActivated = pState;

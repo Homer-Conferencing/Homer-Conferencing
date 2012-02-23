@@ -64,6 +64,9 @@ public:
     /* fps */
     virtual void SetFrameRate(float pFps);
 
+    /* recording */
+    virtual bool SupportsRecording();
+
     /* seek interface */
     virtual bool SupportsSeeking();
     virtual int64_t GetSeekEnd(); // get maximum seek time in seconds

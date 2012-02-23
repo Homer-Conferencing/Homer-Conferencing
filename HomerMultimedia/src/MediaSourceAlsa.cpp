@@ -328,6 +328,11 @@ int MediaSourceAlsa::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
     return ++mChunkNumber;
 }
 
+bool MediaSourceAlsa::SupportsRecording()
+{
+	return true;
+}
+
 void MediaSourceAlsa::StopGrabbing()
 {
 	MediaSource::StopGrabbing();
