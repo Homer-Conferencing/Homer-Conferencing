@@ -28,9 +28,15 @@
 									<listOptionValue builtIn="false" value="WIN32"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.include.paths.1039249295" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value=".././include"/>
 									<listOptionValue builtIn="false" value="/usr/include/SDL"/>
 									<listOptionValue builtIn="false" value="../../HomerBase/include/Logging"/>
 									<listOptionValue builtIn="false" value="../../HomerBase/include"/>
+									<listOptionValue builtIn="false" value="&quot;C:\MinGW\include\c++\3.4.5&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\MinGW\include&quot;"/>
+									<listOptionValue builtIn="false" value="../../HomerWinLibs/SDL/include"/>
+									<listOptionValue builtIn="false" value="../../HomerWinLibs/SDL-MIXER/include"/>
+									<listOptionValue builtIn="false" value="../../HomerWinLibs/SDL-SOUND/"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.689652821" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -75,4 +81,5 @@
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileCPP"/>
 		</scannerConfigBuildInfo>
 	</storageModule>
+	<storageModule moduleId="refreshScope"/>
 </cproject>
