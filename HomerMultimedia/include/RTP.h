@@ -99,6 +99,7 @@ public:
     bool CloseRtpEncoder();
 
 private:
+    bool OpenRtpEncoderH261();
     bool RtpCreateH261(char *&pData, unsigned int &pDataSize);
 
     AVFormatContext     *mRtpFormatContext;
@@ -114,6 +115,7 @@ private:
     /* H261 RTP packetizing */
     unsigned int        mSsrc;
     static unsigned int mH261PayloadSizeMax;
+    unsigned int 		mCurrentTimestamp;
     /* MP3 RTP hack */
     unsigned int        mMp3Hack_EntireBufferSize;
 };

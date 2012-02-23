@@ -352,6 +352,42 @@ RTP::~RTP()
 
 ///////////////////////////////////////////////////////////////////////////////
 
+bool RTP::OpenRtpEncoderH261()
+{
+	mSsrc = av_get_random_seed();
+	mCurrentTimestamp = av_get_random_seed();
+
+    LOG(LOG_VERBOSE, "Using lib internal rtp packetizer for H261 codec");
+    LOG(LOG_INFO, "Opened...");
+    LOG(LOG_INFO, "    ..rtp target: %s:%u", pTargetHost.c_str(), pTargetPort);
+    LOG(LOG_INFO, "    ..rtp header size: %d", RTP_HEADER_SIZE);
+    LOG(LOG_INFO, "    ..rtp TIMESTAMP: %u", mCurrentTimestamp);
+    LOG(LOG_INFO, "    ..rtp SRC: %u", mSsrc);
+    LOG(LOG_INFO, "  Wrapping following codec...");
+    LOG(LOG_INFO, "    ..codec name: %s", pInnerStream->codec->codec->name);
+    LOG(LOG_INFO, "    ..codec long name: %s", pInnerStream->codec->codec->long_name);
+    LOG(LOG_INFO, "    ..resolution: %d * %d pixels", pInnerStream->codec->width, pInnerStream->codec->height);
+//    LOG(LOG_INFO, "    ..codec time_base: %d/%d", mCodecContext->time_base.den, mCodecContext->time_base.num); // inverse
+    LOG(LOG_INFO, "    ..stream rfps: %d/%d", pInnerStream->r_frame_rate.num, pInnerStream->r_frame_rate.den);
+    LOG(LOG_INFO, "    ..stream time_base: %d/%d", pInnerStream->time_base.den, pInnerStream->time_base.num); // inverse
+    LOG(LOG_INFO, "    ..stream codec time_base: %d/%d", pInnerStream->codec->time_base.den, pInnerStream->codec->time_base.num); // inverse
+    LOG(LOG_INFO, "    ..sample rate: %d Hz", pInnerStream->codec->sample_rate);
+    LOG(LOG_INFO, "    ..channels: %d", pInnerStream->codec->channels);
+    LOG(LOG_INFO, "    ..i-frame distance: %d pictures", pInnerStream->codec->gop_size);
+    LOG(LOG_INFO, "    ..bit rate: %d Hz", pInnerStream->codec->bit_rate);
+    LOG(LOG_INFO, "    ..qmin: %d", pInnerStream->codec->qmin);
+    LOG(LOG_INFO, "    ..qmax: %d", pInnerStream->codec->qmax);
+    LOG(LOG_INFO, "    ..mpeg quant: %d", pInnerStream->codec->mpeg_quant);
+    LOG(LOG_INFO, "    ..pixel format: %d", (int)pInnerStream->codec->pix_fmt);
+    LOG(LOG_INFO, "    ..sample format: %d", (int)pInnerStream->codec->sample_fmt);
+    LOG(LOG_INFO, "    ..frame size: %d bytes", pInnerStream->codec->frame_size);
+    //LOG(LOG_INFO, "    ..max packet size: %d bytes", mRtpFormatContext->pb->max_packet_size);
+    LOG(LOG_INFO, "    ..rtp payload size: %d bytes", pInnerStream->codec->rtp_payload_size);
+    mEncoderOpened = true;
+    mUseInternalEncoder = true;
+    return true;
+}
+
 bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream)
 {
     if (mEncoderOpened)
@@ -365,35 +401,7 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     mTargetPort = pTargetPort;
 
     if (pInnerStream->codec->codec->id == CODEC_ID_H261)
-    {
-        LOG(LOG_VERBOSE, "Using lib internal rtp packetizer for H261 codec");
-        LOG(LOG_INFO, "Opened...");
-        LOG(LOG_INFO, "    ..rtp target: %s:%u", pTargetHost.c_str(), pTargetPort);
-        LOG(LOG_INFO, "    ..rtp header size: %d", RTP_HEADER_SIZE);
-        LOG(LOG_INFO, "  Wrapping following codec...");
-        LOG(LOG_INFO, "    ..codec name: %s", pInnerStream->codec->codec->name);
-        LOG(LOG_INFO, "    ..codec long name: %s", pInnerStream->codec->codec->long_name);
-        LOG(LOG_INFO, "    ..resolution: %d * %d pixels", pInnerStream->codec->width, pInnerStream->codec->height);
-    //    LOG(LOG_INFO, "    ..codec time_base: %d/%d", mCodecContext->time_base.den, mCodecContext->time_base.num); // inverse
-        LOG(LOG_INFO, "    ..stream rfps: %d/%d", pInnerStream->r_frame_rate.num, pInnerStream->r_frame_rate.den);
-        LOG(LOG_INFO, "    ..stream time_base: %d/%d", pInnerStream->time_base.den, pInnerStream->time_base.num); // inverse
-        LOG(LOG_INFO, "    ..stream codec time_base: %d/%d", pInnerStream->codec->time_base.den, pInnerStream->codec->time_base.num); // inverse
-        LOG(LOG_INFO, "    ..sample rate: %d Hz", pInnerStream->codec->sample_rate);
-        LOG(LOG_INFO, "    ..channels: %d", pInnerStream->codec->channels);
-        LOG(LOG_INFO, "    ..i-frame distance: %d pictures", pInnerStream->codec->gop_size);
-        LOG(LOG_INFO, "    ..bit rate: %d Hz", pInnerStream->codec->bit_rate);
-        LOG(LOG_INFO, "    ..qmin: %d", pInnerStream->codec->qmin);
-        LOG(LOG_INFO, "    ..qmax: %d", pInnerStream->codec->qmax);
-        LOG(LOG_INFO, "    ..mpeg quant: %d", pInnerStream->codec->mpeg_quant);
-        LOG(LOG_INFO, "    ..pixel format: %d", (int)pInnerStream->codec->pix_fmt);
-        LOG(LOG_INFO, "    ..sample format: %d", (int)pInnerStream->codec->sample_fmt);
-        LOG(LOG_INFO, "    ..frame size: %d bytes", pInnerStream->codec->frame_size);
-        //LOG(LOG_INFO, "    ..max packet size: %d bytes", mRtpFormatContext->pb->max_packet_size);
-        LOG(LOG_INFO, "    ..rtp payload size: %d bytes", pInnerStream->codec->rtp_payload_size);
-        mEncoderOpened = true;
-        mUseInternalEncoder = true;
-        return true;
-    }
+    	return OpenRtpEncoderH261();
 
     int                 tResult;
     AVOutputFormat      *tFormat;

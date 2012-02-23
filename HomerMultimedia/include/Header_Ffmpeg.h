@@ -41,6 +41,7 @@ extern "C" {
 #include <libavutil/dict.h>
 #include <libavutil/log.h>
 #include <libavutil/fifo.h>
+#include <libavutil/random_seed.h>
 #include <libswscale/swscale.h>
 #include <libavdevice/avdevice.h>
 }
