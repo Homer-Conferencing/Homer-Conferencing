@@ -716,7 +716,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
     // we only have one stream per media stream
     tPacket.stream_index = 0;
     tPacket.data = (uint8_t *)pData;
-    tPacket.size = pDataSize;
+    tPacket.size = pDataSize; //TODO: pts from stream contextfor packet.pts? -> used in ffmpeg to create rtp packets
     #ifdef RTP_DEBUG_PACKETS
         LOG(LOG_VERBOSE, "Encapsulating codec packet:");
         LOG(LOG_VERBOSE, "      ..pts: %ld", tPacket.pts);
