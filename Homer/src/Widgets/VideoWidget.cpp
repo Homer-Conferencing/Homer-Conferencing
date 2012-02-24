@@ -174,7 +174,7 @@ void VideoWidget::Init(QMainWindow* pMainWindow, MediaSource *pVideoSource, QMen
     mHourGlassTimer = new QTimer(this);
     connect(mHourGlassTimer, SIGNAL(timeout()), this, SLOT(ShowHourGlass()));
     mHourGlassTimer->start(250);
-    LOG(LOG_VERBOSE, "Created hour glas timer with ID 0x%X", mHourGlassTimer->timerId());
+    LOG(LOG_VERBOSE, "Created hour glass timer with ID 0x%X", mHourGlassTimer->timerId());
 
     //####################################################################
     //### speedup video presentation by setting the following

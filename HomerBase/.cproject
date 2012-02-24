@@ -33,6 +33,8 @@
 									<listOptionValue builtIn="false" value="&quot;C:\MinGW\include\c++\3.4.5&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\MinGW\include\&quot;"/>
 									<listOptionValue builtIn="false" value="../../HomerBase/include/Logging"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/HomerBase/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/HomerBase/include/Logging}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1832614701" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>

@@ -37,6 +37,8 @@
 									<listOptionValue builtIn="false" value="../../HomerWinLibs/SDL/include"/>
 									<listOptionValue builtIn="false" value="../../HomerWinLibs/SDL-MIXER/include"/>
 									<listOptionValue builtIn="false" value="../../HomerWinLibs/SDL-SOUND/"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/HomerSoundOutput/include}&quot;"/>
+									<listOptionValue builtIn="false" value="../../HomerMonitor/include"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.689652821" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
