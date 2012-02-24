@@ -55,6 +55,7 @@ static void HandlerSigSegfault(int pSignal, siginfo_t *pSignalInfo, void *pArg)
     LOGEX(MainWindow, LOG_ERROR, "-");
     LOGEX(MainWindow, LOG_ERROR, "Restart Homer-Conferencing via \"Homer -DebugOutputFile=debug.log\" to generate verbose debug data.");
     LOGEX(MainWindow, LOG_ERROR, "Afterwards attach the file debug.log to your bug report and sent it by mail to homer@homer-conferencing.com.");
+    LOGEX(MainWindow, LOG_ERROR, " ");
     exit(0);
 }
 
