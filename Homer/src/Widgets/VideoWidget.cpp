@@ -367,7 +367,7 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
     //###############################################################################
     //### RESOLUTIONS
     //###############################################################################
-    QMenu *tResMenu = tMenu.addMenu("Source resolution");
+    QMenu *tResMenu = tMenu.addMenu("Resolution");
     //###############################################################################
     //### add all possible resolutions which are reported by the media soruce
     //###############################################################################
