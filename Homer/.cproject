@@ -24,7 +24,6 @@
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.7282346" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.1088023149" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
 								<option id="gnu.cpp.compiler.option.include.paths.1583508335" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="../include"/>
 									<listOptionValue builtIn="false" value="/usr/include"/>
 									<listOptionValue builtIn="false" value="/usr/include/qt4/Qt"/>
 									<listOptionValue builtIn="false" value="/usr/include/qt4/QtCore"/>
@@ -49,6 +48,8 @@
 									<listOptionValue builtIn="false" value="../../HomerWinLibs/QT/include/QtGui"/>
 									<listOptionValue builtIn="false" value="../../HomerWinLibs/QT/include/QtNetwork"/>
 									<listOptionValue builtIn="false" value="/usr/lib64/gcc/x86_64-pc-linux-gnu/4.4.5/include/g++-v4"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Homer/include}&quot;"/>
+									<listOptionValue builtIn="false" value="/usr/include/qt4/"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1209009665" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="M_LINUX=1"/>
@@ -78,6 +79,10 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<sourceEntries>
+						<entry excluding="src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
+					</sourceEntries>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings">

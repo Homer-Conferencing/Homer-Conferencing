@@ -50,6 +50,7 @@
 									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\SOFIA-SIP\libsofia-sip-ua\msg&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\SOFIA-SIP\libsofia-sip-ua\features&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\SOFIA-SIP\libsofia-sip-ua\nea&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/HomerConference/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.2023351185" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
