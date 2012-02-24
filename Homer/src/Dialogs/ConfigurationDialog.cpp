@@ -112,6 +112,34 @@ int ConfigurationDialog::exec()
     return tResult;
 }
 
+int ConfigurationDialog::VideoString2ResolutionIndex(string pString)
+{
+    int tResult = 2;
+
+    if (pString == "auto")
+        tResult = 0;
+    if (pString == "128 * 96")
+        tResult = 1;
+    if (pString == "176 * 144")
+        tResult = 2;
+    if (pString == "352 * 288")
+        tResult = 3;
+    if (pString == "704 * 576")
+        tResult = 4;
+    if (pString == "720 * 576")
+        tResult = 5;
+    if (pString == "1056 * 864")
+        tResult = 6;
+    if (pString == "1280 * 720")
+        tResult = 7;
+    if (pString == "1408 * 1152")
+        tResult = 8;
+    if (pString == "1920 * 1080")
+        tResult = 9;
+
+    return tResult;
+}
+
 void ConfigurationDialog::LoadConfiguration()
 {
     AudioDevicesList::iterator tAudioDevicesIt;
@@ -173,7 +201,7 @@ void ConfigurationDialog::LoadConfiguration()
 
     //### stream resolution
     QString tVideoStreamResolution = CONF.GetVideoResolution();
-    mCbVideoResolution->setCurrentIndex(MediaSource::VideoString2ResolutionIndex(tVideoStreamResolution.toStdString()));
+    mCbVideoResolution->setCurrentIndex(VideoString2ResolutionIndex(tVideoStreamResolution.toStdString()));
 
     //### maximum packet size
     for (int i = 0; i < mCbVideoMaxPacketSize->count(); i++)
