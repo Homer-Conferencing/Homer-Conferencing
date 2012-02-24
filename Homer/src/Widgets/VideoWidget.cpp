@@ -127,6 +127,7 @@ VideoWidget::VideoWidget(QWidget* pParent):
     mVideoMirroredHorizontal = false;
     mVideoMirroredVertical = false;
     mCurrentApplicationFocusedWidget = NULL;
+    mVideoSource = NULL;
     mVideoWorker = NULL;
     mMainWindow = NULL;
     mAssignedAction = NULL;
@@ -623,7 +624,6 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
                 //printf("to compare: |%s| |%s|\n", (QString(tIt->Name.c_str()) + QString("  (%1 x %2)").arg(tIt->ResX).arg(tIt->ResY)).toStdString().c_str(), tPopupRes->text().toStdString().c_str());
                 if (tPopupRes->text().compare(QString(tIt->Name.c_str()) + QString("  (%1 x %2)").arg(tIt->ResX).arg(tIt->ResY)) == 0)
                 {
-                    mVideoWorker->SetGrabResolution(tIt->ResX, tIt->ResY);
                     SetResolution(tIt->ResX, tIt->ResY);
                 }
             }
@@ -908,7 +908,6 @@ void VideoWidget::SetOriginalResolution()
             //LOG(LOG_ERROR, "Res: %s", tIt->Name.c_str());
             if (tIt->Name == "Original")
             {
-                mVideoWorker->SetGrabResolution(tIt->ResX, tIt->ResY);
                 SetResolution(tIt->ResX, tIt->ResY);
             }
         }
@@ -922,17 +921,26 @@ VideoWorkerThread* VideoWidget::GetWorker()
 
 void VideoWidget::SetResolution(int mX, int mY)
 {
-    setUpdatesEnabled(false);
-    if ((mResX != mX) || (mResY != mY))
+    if (!mRecorderStarted)
     {
-        mResX = mX;
-        mResY = mY;
-        setMinimumSize(mResX, mResY);
-        if (windowState() != Qt::WindowFullScreen)
-            resize(mResX, mResY);
+		if(mVideoWorker != NULL)
+			mVideoWorker->SetGrabResolution(mX, mY);
+
+		setUpdatesEnabled(false);
+		if ((mResX != mX) || (mResY != mY))
+		{
+			mResX = mX;
+			mResY = mY;
+			setMinimumSize(mResX, mResY);
+			if (windowState() != Qt::WindowFullScreen)
+				resize(mResX, mResY);
+		}
+		setUpdatesEnabled(true);
+		mNeedBackgroundUpdatesUntillNextFrame = true;
+    }else
+    {
+		ShowInfo("Recording active", "Video playback settings cannot be changed if recording is active");
     }
-    setUpdatesEnabled(true);
-	mNeedBackgroundUpdatesUntillNextFrame = true;
 }
 
 void VideoWidget::SetResolutionFormat(VideoFormat pFormat)

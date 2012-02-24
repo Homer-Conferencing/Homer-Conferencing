@@ -650,23 +650,29 @@ void MediaSource::DoSetVideoGrabResolution(int pResX, int pResY)
 
 void MediaSource::SetVideoGrabResolution(int pResX, int pResY)
 {
-    if ((pResX != mTargetResX) || (pResY != mTargetResY))
-    {
-        LOG(LOG_VERBOSE, "Setting video grabbing resolution to %d * %d", pResX, pResY);
+	if(!mRecording)
+	{
+		if ((pResX != mTargetResX) || (pResY != mTargetResY))
+		{
+			LOG(LOG_VERBOSE, "Setting video grabbing resolution to %d * %d", pResX, pResY);
 
-        mTargetResX = pResX;
-        mTargetResY = pResY;
-        if ((mMediaType == MEDIA_VIDEO) && (mMediaSourceOpened))
-        {
-            // lock grabbing
-            mGrabMutex.lock();
+			mTargetResX = pResX;
+			mTargetResY = pResY;
+			if ((mMediaType == MEDIA_VIDEO) && (mMediaSourceOpened))
+			{
+				// lock grabbing
+				mGrabMutex.lock();
 
-            DoSetVideoGrabResolution(mTargetResX, mTargetResY);
+				DoSetVideoGrabResolution(mTargetResX, mTargetResY);
 
-            // unlock grabbing
-            mGrabMutex.unlock();
-        }
-    }
+				// unlock grabbing
+				mGrabMutex.unlock();
+			}
+		}
+	}else
+	{
+		LOG(LOG_ERROR, "Can't change video resolution if recording is activated");
+	}
 }
 
 void MediaSource::GetVideoGrabResolution(int &pResX, int &pResY)
