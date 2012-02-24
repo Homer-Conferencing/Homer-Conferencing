@@ -67,6 +67,8 @@ public:
 
     /* multiplexing */
     virtual bool SupportsMuxing();
+    virtual std::string GetMuxingCodec();
+    virtual void GetMuxingResolution(int &pResX, int &pResY);
 
     /* relaying */
     virtual bool SupportsRelaying();
@@ -80,7 +82,6 @@ public:
 
     /* video grabbing control */
     virtual void SetVideoGrabResolution(int pTargetResX, int pTargetResY);
-    virtual void GetVideoGrabResolution(int &pResX, int &pResY);
     virtual GrabResolutions GetSupportedVideoGrabResolutions();
     virtual void SetVideoFlipping(bool pHFlip, bool pVFlip);
     virtual void GetVideoSourceResolution(int &pResX, int &pResY);

@@ -195,6 +195,17 @@ bool MediaSource::SupportsMuxing()
     return false;
 }
 
+string MediaSource::GetMuxingCodec()
+{
+    return "";
+}
+
+void MediaSource::GetMuxingResolution(int &pResX, int &pResY)
+{
+    pResX = 0;
+    pResY = 0;
+}
+
 MediaSource* MediaSource::GetMediaSource()
 {
     LOG(LOG_VERBOSE, "This is only the dummy function");

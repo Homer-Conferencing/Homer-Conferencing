@@ -140,6 +140,8 @@ public:
 
     /* multiplexing */
     virtual bool SupportsMuxing();
+    virtual std::string GetMuxingCodec();
+    virtual void GetMuxingResolution(int &pResX, int &pResY);
 
     /* get access to current basic media source */
     virtual MediaSource* GetMediaSource();
