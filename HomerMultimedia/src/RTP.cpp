@@ -337,6 +337,7 @@ RTP::RTP()
     LOG(LOG_VERBOSE, "Created");
     mLastSequenceNumber = 0;
     mLastTimestamp = 0;
+    mLostPackets = 0;
     mFrameFragmentation = 0;
     mPayloadId = 0;
     mEncoderOpened = false;
@@ -987,6 +988,11 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize)
     return true;
 }
 
+unsigned int RTP::GetLostPacketsFromRTP()
+{
+    return mLostPackets;
+}
+
 // assumption: we are getting one single RTP encapsulated packet, not auto detection of following additional packets included
 bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment, bool &pIsSenderReport, enum CodecID pCodecId, bool pReadOnly)
 {
@@ -1186,14 +1192,15 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
     if (!pReadOnly)
     {
         // check if there was a packet order problem
-        if ((mLastTimestamp > 0) && (tRtpHeader->SequenceNumber < mLastSequenceNumber))
+        if ((mLastTimestamp != 65535) && (mLastTimestamp > 0) && (tRtpHeader->SequenceNumber < mLastSequenceNumber))
         {
             LOG(LOG_ERROR, "Packets in wrong order received (last SN: %d; current SN: %d)", mLastSequenceNumber, tRtpHeader->SequenceNumber);
         }
 
         // check if there was packet loss
-        if ((mLastTimestamp > 0) && (tRtpHeader->SequenceNumber > mLastSequenceNumber + 1))
+        if ((mLastTimestamp > 0) && (((mLastTimestamp != 65535) && (tRtpHeader->SequenceNumber > mLastSequenceNumber + 1)) || ((mLastTimestamp == 65535) && (tRtpHeader->SequenceNumber != 0))))
         {
+            mLostPackets++;
             LOG(LOG_ERROR, "Packet loss detected (last SN: %d; current SN: %d)", mLastSequenceNumber, tRtpHeader->SequenceNumber);
         }
 
