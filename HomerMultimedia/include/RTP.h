@@ -92,6 +92,7 @@ public:
     static int GetHeaderSizeMax(enum CodecID pCodec);
     static void SetH261PayloadSizeMax(unsigned int pMaxSize);
     bool RtpCreate(char *&pData, unsigned int &pDataSize);
+    unsigned int GetLostPacketsFromRTP();
     bool RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment, bool &pIsSenderReport, enum CodecID pCodecId, bool pReadOnly);
     bool OpenRtpEncoder(std::string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream);
     bool CloseRtpEncoder();
@@ -110,6 +111,7 @@ private:
     bool                mUseInternalEncoder;
     std::string         mTargetHost;
     unsigned int        mTargetPort;
+    unsigned int        mLostPackets;
     /* H261 RTP packetizing */
     unsigned int        mSsrc;
     static unsigned int mH261PayloadSizeMax;

@@ -69,6 +69,9 @@ public:
     /// The destructor.
     virtual ~MediaSourceMem();
 
+    /* grabbing control */
+    virtual int GetChunkDropConter();
+
     /* recording */
     virtual bool SupportsRecording();
 
