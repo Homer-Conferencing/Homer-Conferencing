@@ -818,7 +818,7 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
 
         tPainter->setPen(QColor(Qt::darkRed));
         tPainter->drawText(5, 41, " Source: " + mVideoWorker->GetCurrentDevice());
-        tPainter->drawText(5, 61, " Frame: " + QString("%1").arg(pFrameNumber) + (mVideoSource->GetChunkDropConter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropConter()) + " dropped)") : ""));
+        tPainter->drawText(5, 61, " Frame: " + QString("%1").arg(pFrameNumber) + (mVideoSource->GetChunkDropConter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropConter()) + " lost packets)") : ""));
         tPainter->drawText(5, 81, " Fps: " + QString("%1").arg(pFps, 4, 'f', 2, ' '));
         tPainter->drawText(5, 101, " Codec: " + QString((mVideoSource->GetCodecName() != "") ? mVideoSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(tSourceResX) + "*" + QString("%1").arg(tSourceResY) + ")");
         tPainter->drawText(5, 121, " Output: " + QString("%1").arg(tFrameOutputWidth) + "*" + QString("%1").arg(tFrameOutputHeight) + " (" + tAspectRatio + ")");
@@ -833,7 +833,7 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
 
         tPainter->setPen(QColor(Qt::red));
         tPainter->drawText(4, 40, " Source: " + mVideoWorker->GetCurrentDevice());
-        tPainter->drawText(4, 60, " Frame: " + QString("%1").arg(pFrameNumber) + (mVideoSource->GetChunkDropConter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropConter()) + " dropped)") : ""));
+        tPainter->drawText(4, 60, " Frame: " + QString("%1").arg(pFrameNumber) + (mVideoSource->GetChunkDropConter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropConter()) + " lost packets)") : ""));
         tPainter->drawText(4, 80, " Fps: " + QString("%1").arg(pFps, 4, 'f', 2, ' '));
         tPainter->drawText(4, 100, " Codec: " + QString((mVideoSource->GetCodecName() != "") ? mVideoSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(tSourceResX) + "*" + QString("%1").arg(tSourceResY) + ")");
         tPainter->drawText(4, 120, " Output: "  + QString("%1").arg(tFrameOutputWidth) + "*" + QString("%1").arg(tFrameOutputHeight) + " (" + tAspectRatio + ")");

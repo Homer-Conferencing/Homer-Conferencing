@@ -781,6 +781,12 @@ bool MediaSource::SetInputStreamPreferences(std::string pStreamCodec, bool pDoRe
     return false;
 }
 
+void MediaSource::ResetPacketStatistic()
+{
+    PacketStatistic::ResetPacketStatistic();
+    mChunkDropCounter = 0;
+}
+
 int MediaSource::GetChunkDropConter()
 {
     return mChunkDropCounter;

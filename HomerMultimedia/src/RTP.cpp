@@ -62,11 +62,13 @@
 
 #include <RTP.h>
 #include <Header_Ffmpeg.h>
+#include <PacketStatistic.h>
 #include <HBSocket.h>
 #include <MediaSourceNet.h>
 #include <Logger.h>
 
 using namespace std;
+using namespace Homer::Monitor;
 
 namespace Homer { namespace Multimedia {
 
@@ -339,6 +341,7 @@ RTP::RTP()
     mLastTimestamp = 0;
     mLostPackets = 0;
     mFrameFragmentation = 0;
+    mPacketStatistic = NULL;
     mPayloadId = 0;
     mEncoderOpened = false;
     mUseInternalEncoder = false;
@@ -573,6 +576,11 @@ bool RTP::CloseRtpEncoder()
     mUseInternalEncoder = false;
 
     return true;
+}
+
+void RTP::RTPRegisterPacketStatistic(PacketStatistic *pStatistic)
+{
+    mPacketStatistic = pStatistic;
 }
 
 bool RTP::IsPayloadSupported(enum CodecID pId)
@@ -993,6 +1001,13 @@ unsigned int RTP::GetLostPacketsFromRTP()
     return mLostPackets;
 }
 
+void RTP::AnnounceLostPackets(unsigned int pCount)
+{
+    mLostPackets += pCount;
+    if (mPacketStatistic != NULL)
+        mPacketStatistic->SetLostPacketCount(mLostPackets);
+}
+
 // assumption: we are getting one single RTP encapsulated packet, not auto detection of following additional packets included
 bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment, bool &pIsSenderReport, enum CodecID pCodecId, bool pReadOnly)
 {
@@ -1200,8 +1215,17 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
         // check if there was packet loss
         if ((mLastTimestamp > 0) && (((mLastTimestamp != 65535) && (tRtpHeader->SequenceNumber > mLastSequenceNumber + 1)) || ((mLastTimestamp == 65535) && (tRtpHeader->SequenceNumber != 0))))
         {
-            mLostPackets++;
-            LOG(LOG_ERROR, "Packet loss detected (last SN: %d; current SN: %d)", mLastSequenceNumber, tRtpHeader->SequenceNumber);
+            unsigned int tLostPackets = 0;
+            if(mLastTimestamp != 65535)
+            {
+                tLostPackets = tRtpHeader->SequenceNumber - mLastSequenceNumber - 1;
+            }else
+            {
+                tLostPackets = tRtpHeader->SequenceNumber;
+            }
+
+            AnnounceLostPackets(tLostPackets);
+            LOG(LOG_ERROR, "Packet loss detected (last SN: %d; current SN: %d), lost %u packets, overall packet loss is now %u", mLastSequenceNumber, tRtpHeader->SequenceNumber, tLostPackets, mLostPackets);
         }
 
         // check if there was a new frame begun before the last was finished

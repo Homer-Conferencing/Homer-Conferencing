@@ -138,6 +138,8 @@ public:
 
     virtual ~MediaSource();
 
+    virtual void ResetPacketStatistic();
+
     /* multiplexing */
     virtual bool SupportsMuxing();
     virtual std::string GetMuxingCodec();
