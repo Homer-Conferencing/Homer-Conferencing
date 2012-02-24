@@ -115,6 +115,7 @@ VideoWidget::VideoWidget(QWidget* pParent):
 {
     mResX = 640;
     mResY = 480;
+    mVideoScaleFactor = 1.0;
     mCurrentFrameNumber = 0;
     mLastFrameNumber = 0;
     mHourGlassAngle = 0;
@@ -185,6 +186,7 @@ void VideoWidget::Init(QMainWindow* pMainWindow, MediaSource *pVideoSource, QMen
 
     setMinimumSize(352, 288);
     setMaximumSize(16777215, 16777215);
+	mMainWindow->adjustSize();
     SetVisible(pVisible);
     mNeedBackgroundUpdatesUntillNextFrame = true;
 }
@@ -385,6 +387,23 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
         }
     }
     tResMenu->setIcon(tIcon3);
+
+    //###############################################################################
+    //### SCALING
+    //###############################################################################
+    QMenu *tScaleMenu = tMenu.addMenu("Scale video");
+    for (int i = 1; i < 5; i++)
+    {
+    	QAction *tScaleAction = tScaleMenu->addAction(QString(" %1%").arg((int)(i * 50), 3, 10, (const QChar)' '));
+    	tScaleAction->setCheckable(true);
+        if (IsCurrentScaleFactor((float)i / 2))
+        {
+        	LOG(LOG_INFO, "Scaling factor matches");
+        	tScaleAction->setChecked(true);
+        }else
+        	tScaleAction->setChecked(false);
+    }
+    tScaleMenu->setIcon(tIcon3);
 
     //###############################################################################
     //### MIRRORING
@@ -616,6 +635,7 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             }
         }
 
+        //### RESOLUTION
         if (tGrabResolutions.size())
         {
             //printf("%s\n", tPopupRes->text().toStdString().c_str());
@@ -625,8 +645,17 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
                 if (tPopupRes->text().compare(QString(tIt->Name.c_str()) + QString("  (%1 x %2)").arg(tIt->ResX).arg(tIt->ResY)) == 0)
                 {
                     SetResolution(tIt->ResX, tIt->ResY);
+                    return;
                 }
             }
+        }
+        //### SCALING
+        for (int i = 1; i < 5; i++)
+        {
+        	if (tPopupRes->text() == QString(" %1%").arg((int)(i * 50), 3, 10, (const QChar)' '))
+        	{
+        		SetScaling((float)i/2);
+        	}
         }
     }
 }
@@ -923,17 +952,26 @@ void VideoWidget::SetResolution(int mX, int mY)
 {
     if (!mRecorderStarted)
     {
-		if(mVideoWorker != NULL)
-			mVideoWorker->SetGrabResolution(mX, mY);
+    	LOG(LOG_VERBOSE, "Setting video resolution to %d * %d", mX, mY);
 
 		setUpdatesEnabled(false);
 		if ((mResX != mX) || (mResY != mY))
 		{
 			mResX = mX;
 			mResY = mY;
-			setMinimumSize(mResX, mResY);
-			if (windowState() != Qt::WindowFullScreen)
+
+			if(mVideoWorker != NULL)
+				mVideoWorker->SetGrabResolution(mResX, mResY);
+
+			if ((windowState() & Qt::WindowFullScreen) == 0)
+			{
+				setMinimumSize(mResX, mResY);
+				setMaximumSize(mResX, mResY);
 				resize(mResX, mResY);
+				mMainWindow->adjustSize();
+				setMinimumSize(128, 96);
+				setMaximumSize(16777215, 16777215);
+			}
 		}
 		setUpdatesEnabled(true);
 		mNeedBackgroundUpdatesUntillNextFrame = true;
@@ -941,6 +979,35 @@ void VideoWidget::SetResolution(int mX, int mY)
     {
 		ShowInfo("Recording active", "Video playback settings cannot be changed if recording is active");
     }
+}
+
+void VideoWidget::SetScaling(float pVideoScaleFactor)
+{
+	LOG(LOG_VERBOSE, "Setting video scaling to %f", pVideoScaleFactor);
+
+	if ((windowState() & Qt::WindowFullScreen) == 0)
+	{
+		int tX = mResX * pVideoScaleFactor;
+		int tY = mResY * pVideoScaleFactor;
+		LOG(LOG_VERBOSE, "Setting video output resolution to %d * %d", tX, tY);
+
+		setSizePolicy(QSizePolicy::Fixed);
+		setMinimumSize(tX, tY);
+		setMaximumSize(tX, tY);
+		resize(tX, tY);
+		mMainWindow->adjustSize();
+		setMinimumSize(128, 96);
+		setMaximumSize(16777215, 16777215);
+		setSizePolicy(QSizePolicy::Preferred);
+		mNeedBackgroundUpdatesUntillNextFrame = true;
+	}else
+		LOG(LOG_VERBOSE, "SetScaling skipped because fullscreen mode detected");
+}
+
+bool VideoWidget::IsCurrentScaleFactor(float pScaleFactor)
+{
+	LOG(LOG_VERBOSE, "Checking scale factor %f:  %d <=> %d, %d <=> %d", pScaleFactor, width(), (int)(mResX * pScaleFactor), height(), (int)(mResY * pScaleFactor));
+	return ((width() == mResX * pScaleFactor) || (height() == mResY * pScaleFactor));
 }
 
 void VideoWidget::SetResolutionFormat(VideoFormat pFormat)
@@ -1148,7 +1215,7 @@ void VideoWidget::resizeEvent(QResizeEvent *pEvent)
 
 void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
 {
-	if ((pEvent->key() == Qt::Key_Escape) && (windowState() == Qt::WindowFullScreen))
+	if ((pEvent->key() == Qt::Key_Escape) && (windowState() & Qt::WindowFullScreen))
 	{
         setWindowFlags(windowFlags() ^ Qt::Window);
         showNormal();

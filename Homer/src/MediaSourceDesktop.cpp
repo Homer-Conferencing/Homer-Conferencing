@@ -553,7 +553,7 @@ void MediaSourceDesktop::SelectSegment(QWidget *pParent)
 {
 	if (mRecording)
 	{
-		DoShowInfo(GetObjectNameStr(this).c_str(), __LINE__, pParent, "Recording active", "Screen segment is fixed in position and size if recording is active");
+		DoShowInfo(GetObjectNameStr(this).c_str(), __LINE__, pParent, "Recording active", "Desktop capture settings cannot be changed if recording is active");
 		return;
 	}
     int tOldGrabOffsetX = mGrabOffsetX;

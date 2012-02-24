@@ -96,6 +96,8 @@ private:
     void DialogAddNetworkSink();
     void ShowFrame(void* pBuffer, float pFps = 15, int pFrameNumber = 0);
     void SetResolution(int mX, int mY);
+    void SetScaling(float pVideoScaleFactor);
+    bool IsCurrentScaleFactor(float pScaleFactor);
     void SetResolutionFormat(VideoFormat pFormat);
     void ToggleFullScreenMode();
     void SavePicture();
@@ -119,6 +121,7 @@ private:
     int                 mUpdateTimerId;
     int                 mResX;
     int                 mResY;
+    float				mVideoScaleFactor; // 0.5, 1.0, 1.5, 2.0
     bool                mShowLiveStats;
     int                 mCustomEventReason;
     QTimer              *mHourGlassTimer;
