@@ -138,39 +138,54 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
     pMaxPacketSize -= RTP::GetHeaderSizeMax(tStreamCodecId);
 	//pMaxPacketSize -= 32; // additional safety buffer size
 
-    int tOrgResX = pResX;
-    int tOrgResY = pResY;
-
-    switch(tStreamCodecId)
+    if ((pResX != -1) && (pResY != -1))
     {
+        int tResX = pResX;
+        int tResY = pResY;
+
+        // limit resolution settings according to the features of video codecs
+        switch(tStreamCodecId)
+        {
             case CODEC_ID_H261: // supports QCIF, CIF
                     if (pResX > 352)
-                        pResX = 352;
+                        tResX = 352;
                     if (pResX < 176)
-                        pResX = 176;
+                        tResX = 176;
                     if (pResY > 288)
-                        pResY = 288;
+                        tResY = 288;
                     if (pResY < 144)
-                        pResY = 144;
+                        tResY = 144;
                     break;
             case CODEC_ID_H263:  // supports QCIF, CIF, CIF4
+                    if (((pResX == 128) && (pResY == 96)) || ((pResX == 176) && (pResY == 144)) || ((pResX == 352) && (pResY == 288)) || ((pResX == 704) && (pResY == 576)) || ((pResX == 1408) && (pResY == 1152)))
+                    {
+                        LOG(LOG_VERBOSE, "Resolution %d*%d supported by H.263", pResX, pResY);
+                    }else
+                    {
+                        LOG(LOG_WARN, "Resolution %d*%d unsupported by H.263, will switch to default resolution of 352*288", pResX, pResY);
+                        pResX = 352;
+                        pResY = 288;
+                        break;
+                    }
             case CODEC_ID_H263P:  // supports QCIF, CIF, CIF4
                     if (pResX > 704)
-                        pResX = 704;
+                        tResX = 704;
                     if (pResX < 176)
-                        pResX = 176;
+                        tResX = 176;
                     if (pResY > 576)
-                        pResY = 576;
+                        tResY = 576;
                     if (pResY < 144)
-                        pResY = 144;
+                        tResY = 144;
                     break;
             default:
                     break;
-    }
-
-    if ((tOrgResX != pResX) || (tOrgResY != pResY))
-    {
-        LOG(LOG_WARN, "Codec %s doesn't support the request video resolution of %d * %d, values were replaced by %d * %d", pStreamCodec.c_str(), tOrgResX, tOrgResY, pResX, pResY);
+        }
+        if ((tResX != pResX) || (tResY != pResY))
+        {
+            LOG(LOG_WARN, "Codec %s doesn't support selected video resolution, changed resolution from %d*%d to %d*%d", pResX, pResY, tResX, tResY);
+            pResX = tResX;
+            pResY = tResY;
+        }
     }
 
     if (mStreamMaxFps != pMaxFps)
@@ -237,7 +252,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     if (pFps < 5)
         pFps = 5;
 
-    LOG(LOG_VERBOSE, "Going to open muxer, media type is \"%s\"", GetMediaTypeStr().c_str());
+    LOG(LOG_VERBOSE, "Going to open video muxer with resolution %d * %d", pResX, pResY);
 
     if (mMediaSourceOpened)
         return false;
@@ -294,11 +309,18 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
         mCodecContext->flags |= CODEC_FLAG_H263P_SLICE_STRUCT | CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED | CODEC_FLAG_H263P_UMV | CODEC_FLAG_H263P_AIV;
     // put sample parameters
     mCodecContext->bit_rate = 90000;
+
     // resolution
+    if (((mRequestedStreamingResX == -1) || (mRequestedStreamingResY == -1)) && (mMediaSource != NULL))
+    {
+        mRequestedStreamingResX = mSourceResX;
+        mRequestedStreamingResY = mSourceResY;
+    }
     mCurrentStreamingResX = mRequestedStreamingResX;
     mCodecContext->width = mCurrentStreamingResX;
     mCurrentStreamingResY = mRequestedStreamingResY;
     mCodecContext->height = mCurrentStreamingResY;
+
     /*
      * time base: this is the fundamental unit of time (in seconds) in terms
      * of which frame timestamps are represented. for fixed-FrameRate content,
@@ -1222,8 +1244,14 @@ void MediaSourceMuxer::SetVideoGrabResolution(int pResX, int pResY)
 
     if ((pResX != mSourceResX) || (pResY != mSourceResY))
     {
+        LOG(LOG_VERBOSE, "Setting video grabbing resolution to %d * %d", pResX, pResY);
+
         mSourceResX = pResX;
         mSourceResY = pResY;
+        mRequestedStreamingResX = pResX;
+        mRequestedStreamingResY = pResY;
+        mTargetResX = pResX;
+        mTargetResY = pResY;
 
         if (mMediaSourceOpened)
         {

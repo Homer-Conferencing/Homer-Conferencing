@@ -569,6 +569,11 @@ void MediaSource::VideoString2Resolution(string pString, int& pX, int& pY)
     pX = 352;
     pY = 288;
 
+    if (pString == "auto")
+    {
+        pX = -1;
+        pY = -1;
+    }
     if (pString == "128 * 96")
     {
         pX = 128;
@@ -614,32 +619,6 @@ void MediaSource::VideoString2Resolution(string pString, int& pX, int& pY)
         pX = 1920;
         pY = 1080;
     }
-}
-
-int MediaSource::VideoString2ResolutionIndex(string pString)
-{
-    int tResult = 2;
-
-    if (pString == "128 * 96")
-        tResult = 0;
-    if (pString == "176 * 144")
-        tResult = 1;
-    if (pString == "352 * 288")
-        tResult = 2;
-    if (pString == "704 * 576")
-        tResult = 3;
-    if (pString == "720 * 576")
-        tResult = 4;
-    if (pString == "1056 * 864")
-        tResult = 5;
-    if (pString == "1280 * 720")
-        tResult = 6;
-    if (pString == "1408 * 1152")
-        tResult = 7;
-    if (pString == "1920 * 1080")
-        tResult = 8;
-
-    return tResult;
 }
 
 void MediaSource::DoSetVideoGrabResolution(int pResX, int pResY)

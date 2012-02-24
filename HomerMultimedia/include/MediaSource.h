@@ -159,7 +159,6 @@ public:
     static int FillFrame(AVFrame *pFrame, void *pData, enum PixelFormat pPixFormat, int pWidth, int pHeight);
     static void VideoFormat2Resolution(VideoFormat pFormat, int& pX, int& pY);
     static void VideoString2Resolution(std::string pString, int& pX, int& pY);
-    static int VideoString2ResolutionIndex(std::string pString);
 
     /* video grabbing control */
     virtual void SetVideoGrabResolution(int pResX = 352, int pResY = 288);

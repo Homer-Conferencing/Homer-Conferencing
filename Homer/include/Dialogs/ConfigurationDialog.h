@@ -92,6 +92,8 @@ private:
     QString SelectSoundFile(QString pEventName, QString pSuggestion);
     void PlayNotifySoundFile(QString pFile);
 
+    int VideoString2ResolutionIndex(std::string pString);
+
     void initializeGUI();
     void LoadConfiguration();
     void SaveConfiguration();
