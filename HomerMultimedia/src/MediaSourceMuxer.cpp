@@ -114,6 +114,17 @@ bool MediaSourceMuxer::SupportsMuxing()
     return true;
 }
 
+string MediaSourceMuxer::GetMuxingCodec()
+{
+    return FfmpegId2FfmpegFormat(mStreamCodecId);
+}
+
+void MediaSourceMuxer::GetMuxingResolution(int &pResX, int &pResY)
+{
+    pResX = mCurrentStreamingResX;
+    pResY = mCurrentStreamingResY;
+}
+
 bool MediaSourceMuxer::SupportsRelaying()
 {
     return true;
@@ -147,6 +158,16 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
         switch(tStreamCodecId)
         {
             case CODEC_ID_H261: // supports QCIF, CIF
+                    if (((pResX == 176) && (pResY == 144)) || ((pResX == 352) && (pResY == 288)))
+                    {
+                        LOG(LOG_VERBOSE, "Resolution %d*%d supported by H.261", pResX, pResY);
+                    }else
+                    {
+                        LOG(LOG_WARN, "Resolution %d*%d unsupported by H.261, will switch to default resolution of 352*288", pResX, pResY);
+                        tResX = 352;
+                        tResY = 288;
+                        break;
+                    }
                     if (pResX > 352)
                         tResX = 352;
                     if (pResX < 176)
@@ -156,18 +177,17 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
                     if (pResY < 144)
                         tResY = 144;
                     break;
-            case CODEC_ID_H263:  // supports QCIF, CIF, CIF4
+            case CODEC_ID_H263:  // supports SQCIF, QCIF, CIF, CIF4,CIF16
                     if (((pResX == 128) && (pResY == 96)) || ((pResX == 176) && (pResY == 144)) || ((pResX == 352) && (pResY == 288)) || ((pResX == 704) && (pResY == 576)) || ((pResX == 1408) && (pResY == 1152)))
                     {
                         LOG(LOG_VERBOSE, "Resolution %d*%d supported by H.263", pResX, pResY);
                     }else
                     {
                         LOG(LOG_WARN, "Resolution %d*%d unsupported by H.263, will switch to default resolution of 352*288", pResX, pResY);
-                        pResX = 352;
-                        pResY = 288;
+                        tResX = 352;
+                        tResY = 288;
                         break;
                     }
-            case CODEC_ID_H263P:  // supports QCIF, CIF, CIF4
                     if (pResX > 704)
                         tResX = 704;
                     if (pResX < 176)
@@ -177,12 +197,13 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
                     if (pResY < 144)
                         tResY = 144;
                     break;
+            case CODEC_ID_H263P:
             default:
                     break;
         }
         if ((tResX != pResX) || (tResY != pResY))
         {
-            LOG(LOG_WARN, "Codec %s doesn't support selected video resolution, changed resolution from %d*%d to %d*%d", pResX, pResY, tResX, tResY);
+            LOG(LOG_WARN, "Codec doesn't support selected video resolution, changed resolution from %d*%d to %d*%d", pResX, pResY, tResX, tResY);
             pResX = tResX;
             pResY = tResY;
         }
@@ -1245,9 +1266,65 @@ void MediaSourceMuxer::SetVideoGrabResolution(int pResX, int pResY)
     if ((pResX != mSourceResX) || (pResY != mSourceResY))
     {
         LOG(LOG_VERBOSE, "Setting video grabbing resolution to %d * %d", pResX, pResY);
-
         mSourceResX = pResX;
         mSourceResY = pResY;
+
+        int tResX = pResX;
+        int tResY = pResY;
+        switch(mStreamCodecId)
+        {
+            case CODEC_ID_H261: // supports QCIF, CIF
+                    if (((pResX == 176) && (pResY == 144)) || ((pResX == 352) && (pResY == 288)))
+                    {
+                        LOG(LOG_VERBOSE, "Resolution %d*%d supported by H.261", pResX, pResY);
+                    }else
+                    {
+                        LOG(LOG_WARN, "Resolution %d*%d unsupported by H.261, will switch to default resolution of 352*288", pResX, pResY);
+                        tResX = 352;
+                        tResY = 288;
+                        break;
+                    }
+                    if (pResX > 352)
+                        tResX = 352;
+                    if (pResX < 176)
+                        tResX = 176;
+                    if (pResY > 288)
+                        tResY = 288;
+                    if (pResY < 144)
+                        tResY = 144;
+                    break;
+            case CODEC_ID_H263:  // supports QCIF, CIF, CIF4
+                    if (((pResX == 128) && (pResY == 96)) || ((pResX == 176) && (pResY == 144)) || ((pResX == 352) && (pResY == 288)) || ((pResX == 704) && (pResY == 576)) || ((pResX == 1408) && (pResY == 1152)))
+                    {
+                        LOG(LOG_VERBOSE, "Resolution %d*%d supported by H.263", pResX, pResY);
+                    }else
+                    {
+                        LOG(LOG_WARN, "Resolution %d*%d unsupported by H.263, will switch to default resolution of 352*288", pResX, pResY);
+                        tResX = 352;
+                        tResY = 288;
+                        break;
+                    }
+                    if (pResX > 704)
+                        tResX = 704;
+                    if (pResX < 176)
+                        tResX = 176;
+                    if (pResY > 576)
+                        tResY = 576;
+                    if (pResY < 144)
+                        tResY = 144;
+                    break;
+            case CODEC_ID_H263P:
+            default:
+                    break;
+        }
+
+        if ((tResX != pResX) || (tResY != pResY))
+        {
+            LOG(LOG_WARN, "Codec doesn't support selected video resolution, changed resolution from %d*%d to %d*%d", pResX, pResY, tResX, tResY);
+            pResX = tResX;
+            pResY = tResY;
+        }
+
         mRequestedStreamingResX = pResX;
         mRequestedStreamingResY = pResY;
         mTargetResX = pResX;
@@ -1285,18 +1362,6 @@ void MediaSourceMuxer::SetVideoGrabResolution(int pResX, int pResY)
             	mMediaSource->SetVideoGrabResolution(mSourceResX, mSourceResY);
         }
     }
-}
-
-void MediaSourceMuxer::GetVideoGrabResolution(int &pResX, int &pResY)
-{
-    if (mMediaType == MEDIA_AUDIO)
-    {
-        LOG(LOG_ERROR, "Wrong media type detected");
-        return;
-    }
-
-    if (mMediaSource != NULL)
-        mMediaSource->GetVideoGrabResolution(pResX, pResY);
 }
 
 void MediaSourceMuxer::GetVideoSourceResolution(int &pResX, int &pResY)
