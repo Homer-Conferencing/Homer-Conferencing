@@ -764,7 +764,7 @@ void ConfigurationDialog::ClickedButton(QAbstractButton *pButton)
                 mSbVideoFps->setValue(0);
                 mCbVideoCodec->setCurrentIndex(0);//H.261
                 mCbVideoQuality->setCurrentIndex(0);//10 %
-                mCbVideoResolution->setCurrentIndex(2);//CIF
+                mCbVideoResolution->setCurrentIndex(3);//CIF
                 mCbVideoMaxPacketSize->setCurrentIndex(3);//1492
                 mCbSmoothVideoPresentation->setChecked(false);
                 break;
