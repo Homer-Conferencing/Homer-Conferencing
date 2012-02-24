@@ -290,149 +290,148 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
     tAction->setShortcuts(tIKeys);
 
     //###############################################################################
-    //### "Full screen"
+    //### Video settings
     //###############################################################################
-    if (windowState() & Qt::WindowFullScreen)
-    {
-        tAction = tMenu.addAction("Window mode");
-    }else
-    {
-        tAction = tMenu.addAction("Full screen");
-    }
-    QList<QKeySequence> tFSKeys;
-    tFSKeys.push_back(Qt::Key_F);
-    tFSKeys.push_back(Qt::Key_Escape);
-    tAction->setShortcuts(tFSKeys);
-
     QIcon tIcon3;
     tIcon3.addPixmap(QPixmap(":/images/Computer.png"), QIcon::Normal, QIcon::Off);
-    tAction->setIcon(tIcon3);
+    QMenu *tVideoMenu = tMenu.addMenu("Video settings");
 
-    //###############################################################################
-    //### ASPECT RATION
-    //###############################################################################
-    QMenu *tAspectRatioMenu = tMenu.addMenu("Aspect ratio");
-    //###############################################################################
-    //### "Keep aspect ratio"
-    //###############################################################################
+            //###############################################################################
+            //### "Full screen"
+            //###############################################################################
+            if (windowState() & Qt::WindowFullScreen)
+            {
+                tAction = tVideoMenu->addAction("Window mode");
+            }else
+            {
+                tAction = tVideoMenu->addAction("Full screen");
+            }
+            QList<QKeySequence> tFSKeys;
+            tFSKeys.push_back(Qt::Key_F);
+            tFSKeys.push_back(Qt::Key_Escape);
+            tAction->setShortcuts(tFSKeys);
 
-    tAction = tAspectRatioMenu->addAction("Original");
-    tAction->setCheckable(true);
-    if (mAspectRatio == ASPECT_RATIO_ORIGINAL)
-        tAction->setChecked(true);
-    else
-        tAction->setChecked(false);
+            //###############################################################################
+            //### ASPECT RATION
+            //###############################################################################
+            QMenu *tAspectRatioMenu = tVideoMenu->addMenu("Aspect ratio");
+            //###############################################################################
+            //### "Keep aspect ratio"
+            //###############################################################################
 
-    tAction = tAspectRatioMenu->addAction("1 : 1");
-    tAction->setCheckable(true);
-    if (mAspectRatio == ASPECT_RATIO_1x1)
-        tAction->setChecked(true);
-    else
-        tAction->setChecked(false);
-
-    tAction = tAspectRatioMenu->addAction("4 : 3");
-    tAction->setCheckable(true);
-    if (mAspectRatio == ASPECT_RATIO_4x3)
-        tAction->setChecked(true);
-    else
-        tAction->setChecked(false);
-
-    tAction = tAspectRatioMenu->addAction("5 : 4");
-    tAction->setCheckable(true);
-    if (mAspectRatio == ASPECT_RATIO_5x4)
-        tAction->setChecked(true);
-    else
-        tAction->setChecked(false);
-
-    tAction = tAspectRatioMenu->addAction("16 : 9");
-    tAction->setCheckable(true);
-    if (mAspectRatio == ASPECT_RATIO_16x9)
-        tAction->setChecked(true);
-    else
-        tAction->setChecked(false);
-
-    tAction = tAspectRatioMenu->addAction("16 : 10");
-    tAction->setCheckable(true);
-    if (mAspectRatio == ASPECT_RATIO_16x10)
-        tAction->setChecked(true);
-    else
-        tAction->setChecked(false);
-
-    tAction = tAspectRatioMenu->addAction("Full window");
-    tAction->setCheckable(true);
-    if (mAspectRatio == ASPECT_RATIO_WINDOW)
-        tAction->setChecked(true);
-    else
-        tAction->setChecked(false);
-
-    tAspectRatioMenu->setIcon(tIcon3);
-
-    //###############################################################################
-    //### RESOLUTIONS
-    //###############################################################################
-    QMenu *tResMenu = tMenu.addMenu("Resolution");
-    //###############################################################################
-    //### add all possible resolutions which are reported by the media soruce
-    //###############################################################################
-    if (tGrabResolutions.size())
-    {
-        for (tIt = tGrabResolutions.begin(); tIt != tGrabResolutions.end(); tIt++)
-        {
-            QAction *tResAction = tResMenu->addAction(QString(tIt->Name.c_str()) + QString("  (%1 x %2)").arg(tIt->ResX).arg(tIt->ResY));
-            tResAction->setCheckable(true);
-            if ((tIt->ResX == tCurResX) && (tIt->ResY == tCurResY))
-                tResAction->setChecked(true);
+            tAction = tAspectRatioMenu->addAction("Original");
+            tAction->setCheckable(true);
+            if (mAspectRatio == ASPECT_RATIO_ORIGINAL)
+                tAction->setChecked(true);
             else
-                tResAction->setChecked(false);
-        }
-    }
-    tResMenu->setIcon(tIcon3);
+                tAction->setChecked(false);
 
-    //###############################################################################
-    //### SCALING
-    //###############################################################################
-    QMenu *tScaleMenu = tMenu.addMenu("Scale video");
-    for (int i = 1; i < 5; i++)
-    {
-    	QAction *tScaleAction = tScaleMenu->addAction(QString(" %1%").arg((int)(i * 50), 3, 10, (const QChar)' '));
-    	tScaleAction->setCheckable(true);
-        if (IsCurrentScaleFactor((float)i / 2))
-        {
-        	LOG(LOG_INFO, "Scaling factor matches");
-        	tScaleAction->setChecked(true);
-        }else
-        	tScaleAction->setChecked(false);
-    }
-    tScaleMenu->setIcon(tIcon3);
+            tAction = tAspectRatioMenu->addAction(" 1 : 1 ");
+            tAction->setCheckable(true);
+            if (mAspectRatio == ASPECT_RATIO_1x1)
+                tAction->setChecked(true);
+            else
+                tAction->setChecked(false);
 
-    //###############################################################################
-    //### MIRRORING
-    //###############################################################################
-    if (mVideoMirroredHorizontal)
-    {
-        tAction = tMenu.addAction("Unmirror horizontally");
-        tAction->setCheckable(true);
-        tAction->setChecked(true);
-    }else
-    {
-        tAction = tMenu.addAction("Mirror horizontally");
-        tAction->setCheckable(true);
-        tAction->setChecked(false);
-    }
-    tAction->setIcon(tIcon3);
+            tAction = tAspectRatioMenu->addAction(" 4 : 3 ");
+            tAction->setCheckable(true);
+            if (mAspectRatio == ASPECT_RATIO_4x3)
+                tAction->setChecked(true);
+            else
+                tAction->setChecked(false);
 
-    if (mVideoMirroredVertical)
-    {
-        tAction = tMenu.addAction("Unmirror vertically");
-        tAction->setCheckable(true);
-        tAction->setChecked(true);
-    }else
-    {
-        tAction = tMenu.addAction("Mirror vertically");
-        tAction->setCheckable(true);
-        tAction->setChecked(false);
-    }
-    tAction->setIcon(tIcon3);
+            tAction = tAspectRatioMenu->addAction(" 5 : 4 ");
+            tAction->setCheckable(true);
+            if (mAspectRatio == ASPECT_RATIO_5x4)
+                tAction->setChecked(true);
+            else
+                tAction->setChecked(false);
+
+            tAction = tAspectRatioMenu->addAction("16 : 9 ");
+            tAction->setCheckable(true);
+            if (mAspectRatio == ASPECT_RATIO_16x9)
+                tAction->setChecked(true);
+            else
+                tAction->setChecked(false);
+
+            tAction = tAspectRatioMenu->addAction("16 : 10");
+            tAction->setCheckable(true);
+            if (mAspectRatio == ASPECT_RATIO_16x10)
+                tAction->setChecked(true);
+            else
+                tAction->setChecked(false);
+
+            tAction = tAspectRatioMenu->addAction("Full window");
+            tAction->setCheckable(true);
+            if (mAspectRatio == ASPECT_RATIO_WINDOW)
+                tAction->setChecked(true);
+            else
+                tAction->setChecked(false);
+
+
+            //###############################################################################
+            //### RESOLUTIONS
+            //###############################################################################
+            QMenu *tResMenu = tVideoMenu->addMenu("Resolution");
+            //###############################################################################
+            //### add all possible resolutions which are reported by the media source
+            //###############################################################################
+            if (tGrabResolutions.size())
+            {
+                for (tIt = tGrabResolutions.begin(); tIt != tGrabResolutions.end(); tIt++)
+                {
+                    QAction *tResAction = tResMenu->addAction(QString(tIt->Name.c_str()) + QString("  (%1 x %2)").arg(tIt->ResX, 4, 10, (const QChar)' ').arg(tIt->ResY, 4, 10, (const QChar)' '));
+                    tResAction->setCheckable(true);
+                    if ((tIt->ResX == tCurResX) && (tIt->ResY == tCurResY))
+                        tResAction->setChecked(true);
+                    else
+                        tResAction->setChecked(false);
+                }
+            }
+
+            //###############################################################################
+            //### SCALING
+            //###############################################################################
+            QMenu *tScaleMenu = tVideoMenu->addMenu("Scale video");
+            for (int i = 1; i < 5; i++)
+            {
+                QAction *tScaleAction = tScaleMenu->addAction(QString(" %1%").arg((int)(i * 50), 3, 10, (const QChar)' '));
+                tScaleAction->setCheckable(true);
+                if (IsCurrentScaleFactor((float)i / 2))
+                {
+                    LOG(LOG_INFO, "Scaling factor matches");
+                    tScaleAction->setChecked(true);
+                }else
+                    tScaleAction->setChecked(false);
+            }
+
+            //###############################################################################
+            //### MIRRORING
+            //###############################################################################
+            if (mVideoMirroredHorizontal)
+            {
+                tAction = tVideoMenu->addAction("Unmirror horizontally");
+                tAction->setCheckable(true);
+                tAction->setChecked(true);
+            }else
+            {
+                tAction = tVideoMenu->addAction("Mirror horizontally");
+                tAction->setCheckable(true);
+                tAction->setChecked(false);
+            }
+
+            if (mVideoMirroredVertical)
+            {
+                tAction = tVideoMenu->addAction("Unmirror vertically");
+                tAction->setCheckable(true);
+                tAction->setChecked(true);
+            }else
+            {
+                tAction = tVideoMenu->addAction("Mirror vertically");
+                tAction->setCheckable(true);
+                tAction->setChecked(false);
+            }
+    tVideoMenu->setIcon(tIcon3);
 
     //###############################################################################
     //### STREAM RELAY
@@ -596,25 +595,25 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
         	mNeedBackgroundUpdatesUntillNextFrame = true;
             return;
         }
-        if (tPopupRes->text().compare("1 : 1") == 0)
+        if (tPopupRes->text().compare(" 1 : 1 ") == 0)
         {
         	mAspectRatio = ASPECT_RATIO_1x1;
         	mNeedBackgroundUpdatesUntillNextFrame = true;
             return;
         }
-        if (tPopupRes->text().compare("4 : 3") == 0)
+        if (tPopupRes->text().compare(" 4 : 3 ") == 0)
         {
         	mAspectRatio = ASPECT_RATIO_4x3;
         	mNeedBackgroundUpdatesUntillNextFrame = true;
             return;
         }
-        if (tPopupRes->text().compare("5 : 4") == 0)
+        if (tPopupRes->text().compare(" 5 : 4 ") == 0)
         {
         	mAspectRatio = ASPECT_RATIO_5x4;
         	mNeedBackgroundUpdatesUntillNextFrame = true;
             return;
         }
-        if (tPopupRes->text().compare("16 : 9") == 0)
+        if (tPopupRes->text().compare("16 : 9 ") == 0)
         {
         	mAspectRatio = ASPECT_RATIO_16x9;
         	mNeedBackgroundUpdatesUntillNextFrame = true;
@@ -642,7 +641,7 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             for (tIt = tGrabResolutions.begin(); tIt != tGrabResolutions.end(); tIt++)
             {
                 //printf("to compare: |%s| |%s|\n", (QString(tIt->Name.c_str()) + QString("  (%1 x %2)").arg(tIt->ResX).arg(tIt->ResY)).toStdString().c_str(), tPopupRes->text().toStdString().c_str());
-                if (tPopupRes->text().compare(QString(tIt->Name.c_str()) + QString("  (%1 x %2)").arg(tIt->ResX).arg(tIt->ResY)) == 0)
+                if (tPopupRes->text().compare(QString(tIt->Name.c_str()) + QString("  (%1 x %2)").arg(tIt->ResX, 4, 10, (const QChar)' ').arg(tIt->ResY, 4, 10, (const QChar)' ')) == 0)
                 {
                     SetResolution(tIt->ResX, tIt->ResY);
                     return;
