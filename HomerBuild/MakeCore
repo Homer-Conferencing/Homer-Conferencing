@@ -13,6 +13,7 @@ default_target: debug
 # define build variables
 
 BUILD_DIR=Build
+BUILD_DIR_RELEASE32=$(BUILD_DIR)/Release32
 BUILD_DIR_RELEASE=$(BUILD_DIR)/Release
 BUILD_DIR_DEFAULT=$(BUILD_DIR)/Default
 BUILD_DIR_DEBUG=$(BUILD_DIR)/Debug
@@ -49,6 +50,13 @@ $(TOP_DIR)/$(BUILD_DIR):
 	@mkdir -p $(TOP_DIR)/$(BUILD_DIR)
 
 ##############################################################
+$(TOP_DIR)/$(BUILD_DIR_RELEASE32)/Makefile:
+	@echo "##### Creating RELEASE32 build system in $(TOP_DIR) #####"
+	@rm -rf CMakeFiles
+	@rm -f CMakeCache.txt
+	@mkdir -p $(TOP_DIR)/$(BUILD_DIR_RELEASE32)
+	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE32) && cmake $(CMAKE_OPTIONS) -DBUILD=Release ../.. -DARCH_BITS="32"
+
 $(TOP_DIR)/$(BUILD_DIR_RELEASE)/Makefile:
 	@echo "##### Creating RELEASE build system in $(TOP_DIR) #####"
 	@rm -rf CMakeFiles
@@ -73,6 +81,10 @@ $(TOP_DIR)/$(BUILD_DIR_DEBUG)/Makefile:
 ##############################################################
 # Makefile targets 
 
+
+release32: $(TOP_DIR)/$(BUILD_DIR_RELEASE32)/Makefile
+	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE32) && $(MAKE) -s
+
 release: $(TOP_DIR)/$(BUILD_DIR_RELEASE)/Makefile
 	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE) && $(MAKE) -s
 
@@ -92,6 +104,9 @@ endif
 	
 ###############################################################################
 # Targets for building a special sub target in one of our configurations 
+
+%_release32: $(TOP_DIR)/$(BUILD_DIR_RELEASE32)/Makefile
+	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE32) && $(MAKE) -s $*
 
 %_release: $(TOP_DIR)/$(BUILD_DIR_RELEASE)/Makefile
 	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE) && $(MAKE) -s $*

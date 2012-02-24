@@ -87,6 +87,7 @@ MESSAGE("### Header search path: ${INCLUDE_DIRS}")
 SET (FLAGS
 	${FLAGS}
 	-D_GNU_SOURCE
+	-m${ARCH_BITS}
 	-W
 	-Wall
 	-Wno-switch
@@ -138,7 +139,7 @@ SET (DEFINITIONS_WINDOWS
 	-DWINVER=0x0501
 	-DWIN32
 	-D_REENTRANT
-    -DARCH_BITS=${ARCH_BITS}
+	-DARCH_BITS=${ARCH_BITS}
 )
 
 # "-D" options for compilation in linux environment
@@ -148,7 +149,7 @@ SET (DEFINITIONS_LINUX
 	-D__STDC_LIMIT_MACROS
 	-DLINUX
 	-D_REENTRANT
-    -DARCH_BITS=${ARCH_BITS}
+	-DARCH_BITS=${ARCH_BITS}
 )
 
 # "-D" options for compilation in linux environment
@@ -158,7 +159,7 @@ SET (DEFINITIONS_BSD
 	-D__STDC_LIMIT_MACROS
 	-DBSD
 	-D_REENTRANT
-    -DARCH_BITS=${ARCH_BITS}
+	-DARCH_BITS=${ARCH_BITS}
 )
 
 # "-D" options for compilation in linux environment

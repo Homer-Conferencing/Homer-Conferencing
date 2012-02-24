@@ -1801,7 +1801,6 @@ void VideoWorkerThread::run()
 
     // start the video source
     mCodec = CONF.GetVideoCodec();
-    mVideoSource->SetInputStreamPreferences(CONF.GetVideoCodec().toStdString());
     if (!(mSourceAvailable = mVideoSource->OpenVideoGrabDevice(mResX, mResY)))
     {
     	LOG(LOG_WARN, "Couldn't open video grabbing device \"%s\"", mVideoSource->GetCurrentDeviceName().c_str());

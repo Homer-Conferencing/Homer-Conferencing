@@ -25,6 +25,7 @@ ENDIF()
 
 ##############################################################
 # architecture
+IF (NOT DEFINED ARCH_BITS)
 IF ("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
 	set(ARCH_BITS "64")
 	MESSAGE("Detected architecture is 64 bit")
@@ -34,6 +35,8 @@ ELSEIF ("${CMAKE_SIZEOF_VOID_P}" EQUAL "4")
 ELSE()
 	MESSAGE("Unable to detect architecture of your system")
 ENDIF()
-
+ELSE()
+	MESSAGE("Architecture was explicitly defined as ${ARCH_BITS} bit")
+ENDIF (NOT DEFINED ARCH_BITS)
 
 SET (PRE_DEFINITIONS_EXECUTED "true")

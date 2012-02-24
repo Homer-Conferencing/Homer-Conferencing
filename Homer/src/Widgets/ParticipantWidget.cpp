@@ -132,6 +132,7 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, QMainWindow 
                     if (tVSocket != NULL)
                     {
                         mVideoSource = new MediaSourceNet(tVSocket, CONF.GetVideoRtp());
+                        mVideoSource->SetInputStreamPreferences(CONF.GetVideoCodec().toStdString());
                         mVideoWidgetFrame->hide();
                         mVideoWidget->Init(mMainWindow, mVideoSource, pVideoMenu, mSessionName);
                     }else
@@ -139,6 +140,7 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, QMainWindow 
                     if (tASocket != NULL)
                     {
                         mAudioSource = new MediaSourceNet(tASocket, CONF.GetAudioRtp());
+                        mAudioSource->SetInputStreamPreferences(CONF.GetAudioCodec().toStdString());
                         mAudioWidget->Init(mAudioSource, pAudioMenu, mSessionName);
                     }else
                         LOG(LOG_ERROR, "Determined audio socket is NULL");

@@ -233,7 +233,12 @@ ELSE ()
 		HomerMultimedia
 		HomerConference
 		HomerSoundOutput
-		${QT_LIBRARIES}
+		QtCore
+		QtGui
+		QtMultimedia
+		QtNetwork
+		QtXml
+		QtWebKit
 		dbus-1
 		resolv
 	)
