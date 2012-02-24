@@ -29,6 +29,7 @@
 #define _MULTIMEDIA_RTP_
 
 #include <Header_Ffmpeg.h>
+#include <PacketStatistic.h>
 
 #include <sys/types.h>
 #include <string>
@@ -97,10 +98,15 @@ public:
     bool OpenRtpEncoder(std::string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream);
     bool CloseRtpEncoder();
 
+    void RTPRegisterPacketStatistic(Homer::Monitor::PacketStatistic *pStatistic);
+
 private:
+    void AnnounceLostPackets(unsigned int pCount);
     bool OpenRtpEncoderH261(std::string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream);
     bool RtpCreateH261(char *&pData, unsigned int &pDataSize);
 
+
+    Homer::Monitor::PacketStatistic *mPacketStatistic;
     AVFormatContext     *mRtpFormatContext;
     URLContext          *mURLContext;
     unsigned short int  mLastSequenceNumber;

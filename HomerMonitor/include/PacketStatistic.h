@@ -107,12 +107,13 @@ public:
     std::string GetPacketTypeStr();
     bool IsOutgoingStream();
     /* reset internal states */
-    void ResetPacketStatistic();
+    virtual void ResetPacketStatistic();
+
+    void SetLostPacketCount(int pPacketCount);
 
 protected:
     /* update internal states */
     void AnnouncePacket(int pSize /* in bytes */); // timestamp is auto generated
-    void SetLostPacketCount(int pPacketCount);
     /* identification */
     void ClassifyStream(enum DataType pDataType = DATA_TYPE_UNKNOWN, enum PacketType pPacketType  = PACKET_TYPE_UNKNOWN);
     void SetOutgoingStream();

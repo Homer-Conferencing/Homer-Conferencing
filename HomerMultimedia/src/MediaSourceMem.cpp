@@ -48,7 +48,7 @@ MediaSourceMem::MediaSourceMem(bool pRtpActivated):
     mPacketStatAdditionalFragmentSize = 0;
     mOpenInputStream = false;
     mRtpActivated = pRtpActivated;
-
+    RTPRegisterPacketStatistic(this);
     mDecoderFifo = new MediaFifo(MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT, MEDIA_SOURCE_MEM_PACKET_BUFFER_SIZE);
 
     mStreamCodecId = CODEC_ID_NONE;
@@ -726,7 +726,9 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
 //                        #endif
 
                         // log lost packets: difference between currently received frame number and the number of locally processed frames
-                        SetLostPacketCount(tSourceFrame->coded_picture_number - mChunkNumber);
+                        //HINT: if RTP is active we rely on RTP parser, which automatically calls SetLostPacketCount()
+                        if (!mRtpActivated)
+                            SetLostPacketCount(tSourceFrame->coded_picture_number - mChunkNumber);
 
 //                        #ifdef MSMEM_DEBUG_PACKETS
 //                            LOG(LOG_VERBOSE, "Video frame coded: %d internal frame number: %d", tSourceFrame->coded_picture_number, mChunkNumber);
