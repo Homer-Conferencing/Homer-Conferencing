@@ -40,6 +40,9 @@
       <property name="contextMenuPolicy">
        <enum>Qt::CustomContextMenu</enum>
       </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(0, 0, 0);</string>
+      </property>
       <property name="frameShape">
        <enum>QFrame::Panel</enum>
       </property>

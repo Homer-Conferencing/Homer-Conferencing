@@ -273,23 +273,27 @@ void AudioWidget::contextMenuEvent(QContextMenuEvent *pEvent)
     }
 
     //###############################################################################
-    //### VOLUMES
+    //### AUDIO SETTINGS
     //###############################################################################
-    QMenu *tVolMenu = tMenu.addMenu("Volume");
-
-    for (int i = 1; i < 5; i++)
-    {
-        QAction *tVolAction = tVolMenu->addAction(QString("%1 %").arg(i * 25));
-        tVolAction->setCheckable(true);
-        if (i * 25 == mAudioVolume)
-            tVolAction->setChecked(true);
-        else
-            tVolAction->setChecked(false);
-    }
-
     QIcon tIcon3;
     tIcon3.addPixmap(QPixmap(":/images/SpeakerLoud.png"), QIcon::Normal, QIcon::Off);
-    tVolMenu->setIcon(tIcon3);
+    QMenu *tAudioMenu = tMenu.addMenu("Audio settings");
+            //###############################################################################
+            //### VOLUMES
+            //###############################################################################
+            QMenu *tVolMenu = tAudioMenu->addMenu("Volume");
+
+            for (int i = 1; i < 5; i++)
+            {
+                QAction *tVolAction = tVolMenu->addAction(QString("%1 %").arg(i * 25));
+                tVolAction->setCheckable(true);
+                if (i * 25 == mAudioVolume)
+                    tVolAction->setChecked(true);
+                else
+                    tVolAction->setChecked(false);
+            }
+
+    tAudioMenu->setIcon(tIcon3);
 
     //###############################################################################
     //### STREAM RELAY

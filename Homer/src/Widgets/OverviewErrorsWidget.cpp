@@ -227,7 +227,7 @@ void OverviewErrorsWidget::SaveLog()
 
 void OverviewErrorsWidget::ProcessMessage(int pLevel, std::string pTime, std::string pSource, int pLine, std::string pMessage)
 {
-    if (pLevel != LOG_ERROR)
+    if (pLevel > LOGGER.GetLogLevel())
         return;
 
     QString tMessage = QString(pMessage.c_str());
@@ -238,7 +238,23 @@ void OverviewErrorsWidget::ProcessMessage(int pLevel, std::string pTime, std::st
     // hint: necessary because this QTextEdit is in html-mode and caused by this it ignores "\n"
     tMessage.replace(QString("\n"), QString("<br>"));
 
-    QString tLogEntry = "<font color=blue><b>" + tTime + "</b></font> <font color=black>" + tSource + "(" + QString("%1").arg(pLine) + "):</font> <font color=red> " + tMessage + "</font><br>";
+    QString tLogEntry;
+    switch(pLevel)
+    {
+        case LOG_ERROR:
+            tLogEntry = "<font color=teal><b>" + tTime + "</b></font> <font color=maroon>" + tSource + "(" + QString("%1").arg(pLine) + "):</font> <font color=red> " + tMessage + "</font><br>";
+            break;
+        case LOG_WARN:
+            tLogEntry = "<font color=teal><b>" + tTime + "</b></font> <font color=olive>" + tSource + "(" + QString("%1").arg(pLine) + "):</font> <font color=yellow> " + tMessage + "</font><br>";
+            break;
+        case LOG_INFO:
+            tLogEntry = "<font color=teal><b>" + tTime + "</b></font> <font color=gray>" + tSource + "(" + QString("%1").arg(pLine) + "):</font> <font color=white> " + tMessage + "</font><br>";
+            break;
+        case LOG_VERBOSE:
+        default:
+            tLogEntry = "<font color=teal><b>" + tTime + "</b></font> <font color=gray>" + tSource + "(" + QString("%1").arg(pLine) + "):</font> <font color=white> " + tMessage + "</font><br>";
+            break;
+    }
 
     if (mLogBufferMutex.tryLock(10 * 1000))
     {
