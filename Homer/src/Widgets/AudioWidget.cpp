@@ -1405,7 +1405,6 @@ void AudioWorkerThread::run()
     {
         LOG(LOG_ERROR, "Invalid audio source");
     }
-    mAudioSource->SetInputStreamPreferences(CONF.GetAudioCodec().toStdString());
     if(!(mSourceAvailable = mAudioSource->OpenAudioGrabDevice()))
     {
     	LOG(LOG_WARN, "Couldn't open audio grabbing device \"%s\"", mAudioSource->GetCurrentDeviceName().c_str());

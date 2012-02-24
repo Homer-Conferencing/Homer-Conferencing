@@ -227,7 +227,7 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
         tResult = true;
 
         // set new codec
-        LOG(LOG_VERBOSE, "    ..stream codec: %d => %d", mStreamCodecId, tStreamCodecId);
+        LOG(LOG_VERBOSE, "    ..stream codec: %d => %d(%s)", mStreamCodecId, tStreamCodecId, pStreamCodec.c_str());
         mStreamCodecId = tStreamCodecId;
 
         // set the stream's maximum packet size
