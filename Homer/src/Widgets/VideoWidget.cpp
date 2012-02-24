@@ -185,10 +185,10 @@ void VideoWidget::Init(QMainWindow* pMainWindow, MediaSource *pVideoSource, QMen
     setAttribute(Qt::WA_OpaquePaintEvent, true);
 
     setMinimumSize(352, 288);
-    setMaximumSize(16777215, 16777215);
-	mMainWindow->adjustSize();
+    mMainWindow->adjustSize();
     SetVisible(pVisible);
     mNeedBackgroundUpdatesUntillNextFrame = true;
+    setMaximumSize(16777215, 16777215);
 }
 
 VideoWidget::~VideoWidget()
@@ -966,11 +966,7 @@ void VideoWidget::SetResolution(int mX, int mY)
 			if ((windowState() & Qt::WindowFullScreen) == 0)
 			{
 				setMinimumSize(mResX, mResY);
-				setMaximumSize(mResX, mResY);
 				resize(mResX, mResY);
-				mMainWindow->adjustSize();
-				setMinimumSize(128, 96);
-				setMaximumSize(16777215, 16777215);
 			}
 		}
 		setUpdatesEnabled(true);
@@ -991,14 +987,8 @@ void VideoWidget::SetScaling(float pVideoScaleFactor)
 		int tY = mResY * pVideoScaleFactor;
 		LOG(LOG_VERBOSE, "Setting video output resolution to %d * %d", tX, tY);
 
-		setSizePolicy(QSizePolicy::Fixed);
 		setMinimumSize(tX, tY);
-		setMaximumSize(tX, tY);
 		resize(tX, tY);
-		mMainWindow->adjustSize();
-		setMinimumSize(128, 96);
-		setMaximumSize(16777215, 16777215);
-		setSizePolicy(QSizePolicy::Preferred);
 		mNeedBackgroundUpdatesUntillNextFrame = true;
 	}else
 		LOG(LOG_VERBOSE, "SetScaling skipped because fullscreen mode detected");
