@@ -119,6 +119,8 @@ public:
     /* transmission */
     bool Send(std::string pTargetHost, unsigned int pTargetPort, void *pBuffer, ssize_t pBufferSize);
     bool Receive(std::string &pSourceHost, unsigned int &pSourcePort, void *pBuffer, ssize_t &pBufferSize);
+    int GetReceiveBufferSize();
+    bool SetReceiveBufferSize(int pSize);
 
     /* transport layer support */
     static bool IsTransportSupported(enum TransportType pType);

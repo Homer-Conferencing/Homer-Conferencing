@@ -121,7 +121,7 @@ Socket::Socket(unsigned int pListenerPort, enum TransportType pTransportType, un
     	if ((!pProbeStepping) && (mLocalPort != pListenerPort))
     		LOG(LOG_ERROR, "Bound socket %d to another port than requested", mSocketHandle);
     }
-    LOG(LOG_VERBOSE, "Created %s-listener for socket %d at local port %u", TransportType2String(mSocketTransportType).c_str(), mSocketHandle, mLocalPort);
+    LOG(LOG_VERBOSE, "Created %s-listener for socket %d at local port %u with receive buffer of %d bytes", TransportType2String(mSocketTransportType).c_str(), mSocketHandle, mLocalPort, GetReceiveBufferSize());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -161,7 +161,7 @@ Socket::Socket(enum NetworkType pIpVersion, enum TransportType pTransportType)
         if (!BindSocket())
             mSocketHandle = -1;
     }
-    LOG(LOG_VERBOSE, "Created %s-sender for socket %d at local address %s:%u", TransportType2String(mSocketTransportType).c_str(), mSocketHandle, mLocalHost.c_str(), mLocalPort);
+    LOG(LOG_VERBOSE, "Created %s-sender for socket %d at local address %s:%u with receive buffer size of %d bytes", TransportType2String(mSocketTransportType).c_str(), mSocketHandle, mLocalHost.c_str(), mLocalPort, GetReceiveBufferSize());
 
     mIsClientSocket = true;
     SVC_SOCKET_CONTROL.RegisterClientSocket(this);
@@ -461,7 +461,7 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
 		case SOCKET_UDP_LITE:
             #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		        LOG(LOG_VERBOSE, "Setting UDPlite checksum coverage to %d", tUdpLiteChecksumCoverage);
-				if (setsockopt(mSocketHandle, IPPROTO_UDPLITE, UDPLITE_SEND_CSCOV, (__const void*)&tUdpLiteChecksumCoverage, sizeof(int)) < 0)
+				if (setsockopt(mSocketHandle, IPPROTO_UDPLITE, UDPLITE_SEND_CSCOV, (__const void*)&tUdpLiteChecksumCoverage, sizeof(tUdpLiteChecksumCoverage)) < 0)
 					LOG(LOG_ERROR, "Failed to set senders checksum coverage for UDPlite on socket %d", mSocketHandle);
 			#endif
 		case SOCKET_UDP:
@@ -563,7 +563,7 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
     {
 		case SOCKET_UDP_LITE:
             #if defined(LINUX) || defined(APPLE) || defined(BSD)
-				if (setsockopt(mSocketHandle, IPPROTO_UDPLITE, UDPLITE_RECV_CSCOV, (__const void*)&tUdpLiteChecksumCoverage, sizeof(int)) != 0)
+				if (setsockopt(mSocketHandle, IPPROTO_UDPLITE, UDPLITE_RECV_CSCOV, (__const void*)&tUdpLiteChecksumCoverage, sizeof(tUdpLiteChecksumCoverage)) != 0)
 					LOG(LOG_ERROR, "Failed to set receivers checksum coverage for UDPlite on socket %d", mSocketHandle);
 			#endif
             // continue as it was UDP receiving
@@ -658,6 +658,41 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
     }
 
     pBufferSize = tReceivedBytes;
+
+    return tResult;
+}
+
+int Socket::GetReceiveBufferSize()
+{
+    int tResult = -1;
+    socklen_t tResultSize = sizeof(tResult);
+
+    if(mSocketHandle != -1)
+    {
+        int tCallRes = getsockopt(mSocketHandle, SOL_SOCKET, SO_RCVBUF, (void *)&tResult, &tResultSize);
+        if (tCallRes < 0)
+            LOG(LOG_ERROR, "Failed to get receive buffer size on socket %d", mSocketHandle);
+        else
+            LOG(LOG_VERBOSE, "Determined receive buffer size with %d bytes on socket %d", tResult, mSocketHandle);
+    }
+
+    return tResult;
+}
+
+bool Socket::SetReceiveBufferSize(int pSize)
+{
+    bool tResult = false;
+
+    if(mSocketHandle != -1)
+    {
+        LOG(LOG_VERBOSE, "Setting receive buffer size to %d bytes on socket %d", pSize, mSocketHandle);
+
+        if (setsockopt(mSocketHandle, SOL_SOCKET, SO_RCVBUF, (__const void *)&pSize, sizeof(pSize)) < 0)
+            LOG(LOG_ERROR, "Failed to get receive buffer size on socket %d", mSocketHandle);
+        else
+            tResult = true;
+    }else
+        LOG(LOG_ERROR, "Socket is invalid");
 
     return tResult;
 }
