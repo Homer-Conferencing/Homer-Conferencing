@@ -1,0 +1,29 @@
+
+============================
+Overview about project Homer
+============================
+
+Project resources:
+==================
+
+Homer web site                  ==> http://www.homer-conferencing.com
+Support mailing list            ==> homer-conf-users@lists.sourceforge.net
+Homer souce repository          ==> https://github.com/Homer-Conferencing/Homer-Conferencing
+Homer release repository        ==> https://github.com/Homer-Conferencing/Homer-Release
+
+
+Package structure:
+==================
+
+COPYING                 - Copy of GPL-2 license
+INSTALL                 - Installation instructions
+OVERVIEW                - Here you are
+Homer/                  - GUI: Qt based user interface
+HomerBase               - OS abstraction: support threads/mutexes/conditions/time for multiple systems and architectures, logging system (log output to console/file/network)
+HomerBuild              - Build environement: GNU Make and CMake based build environement, overall build control, support files to buil a library or executable binary
+HomerConference         - Session management: SIP based call/IM mangement, STUN server support
+HomerGAPI               - G-Lab interface: extended communication interface to support requirements to data transmissions
+HomerMonitor            - Monitoring: to observe Homer's data stream and threads
+HomerMultimedia         - Video/audio processing: application drivers for file/V4L2/VFW/ALSA/OSS/CoreAudio/CoreVideo based media sources, video/audio transcoding
+                          Streaming: stream mangement, RTP parsing, RTP packetizing for H.261
+HomerSoundOutput        - Sound playback abstraction: support sound playback for multiple systems and architectures
