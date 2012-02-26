@@ -1,0 +1,127 @@
+
+=========================================================
+Instructions to install Homer-Conferencing on your system
+=========================================================
+
+ The source code of Homer was build for Windows (XP/2003/Vista/7), Linux,
+ OS X (Snow Leopard) and FreeBSD. Please use always the latest release
+ version from https://github.com/Homer-Conferencing/Homer-Conferencing to
+ build Homer or one of its libraries. If you face problems during build
+ process, please ask your question(s) via mailing list (you have to be
+ subscribed):
+
+    <homer-conf-users@lists.sourceforge.net>
+
+ Most current binaries for all supported system and additional information
+ can be found on the offical homepage of Homer:
+
+    http://www.homer-conferencing.com
+
+
+Installing Homer:
+=================
+
+ At least gcc version 4.4 is needed to build Homer or one cf its libraries.
+ Additionally, GNU Make and CMake is needed during build process.
+
+ Step 1: create build environment via
+
+    > "cd HomerBuild"
+    > "make all"
+
+    This will create all needed libraries and binaries denpending on your 
+    current system configuration. All binary files are build without debug 
+    symbols and the output is stripped. After this step you can start Homer
+    via the command "../bin/Homer".
+
+ Step 2: install files to your system
+
+    > "make install DESTDIR=/foo/bar"
+
+    All created files from step 1 will be installed to "/foo/bar/".
+    Libraries will be copied to "/foo/bar/lib" and binaries to "/foo/bar/bin".
+    The program icon for Homer will be copied to "/foo/bar/usr/share/Homer".
+    The default directory (if no parameter DESTDIR is given) is "/usr/local".
+
+
+System dependencies:
+====================
+
+ To build Homer or one of its libraries several libraries from other projects 
+ are needed. The following table gives an overview. Minimum required versions
+ and operating system are listed in brackets.
+
+    - Library "HomerBase": no additional dependencies
+    - Library "HomerMonitor": no additional dependencies
+    - Library "HomerGAPI": no additional dependencies
+    - Library "HomerMultimedia": ffmpeg(**), x264
+	only for Linux: ALSA,
+	only for Windows: Winmm, avicap32, ws2_32
+    - Library "HomerConference": sofia-sip (1.12), openssl (1.0)
+    - Library "HomerSoundOutput": SDL (1.2), SDL_sound (1.0, SDL_mixer (1.2),
+	only for Linux: ALSA,
+	only for Windows: Winmm,
+	only for OS X: AppKit, AudioUnit, CoreFoundation, Carbon, IOKit, OpenGL
+    - Library "Homer" GUI: Qt (4.6)
+
+    **) On some systems the library "ffmpeg" is splitted into separate libraries:
+	avutil, avformat, avcodec, avdevice, avfilter, swscale, swresample.
+
+
+Removing old build data and restoring default data:
+===================================================
+
+ You can reset the Homer directories and restore defaults via
+
+    > "cd HomerBuild"
+    > "make distclean" (or "make cleaner")
+
+    After these commands all data from the last build run is deleted. You can 
+    use "make clean" if you want to remove only the temporary build files and 
+    keep the resulting CMake generated Makefile and binaries form the last 
+    build run on the disc.
+
+
+Building Homer with debug symbols / as developer:
+=================================================
+
+ Step 1: create build environment via
+
+    > "cd HomerBuild"
+    > "make" (or explicit via "make debug")
+
+    This will create all needed libraries and binaries based on the precompiled 
+    files from the Homer-Release packages. All binary files are build with debug 
+    symbols and the output isn't stripped. If you need the Homer-Release package 
+    see https://github.com/Homer-Conferencing/Homer-Release.
+
+ Step 2: install files to your system
+
+    > "make install DESTDIR=/foo/bar"
+
+    You can also install the debug version of Homer. In this case all created 
+    files from step 1 will be installed to "/foo/bar/". Libraries will be copied 
+    to "/foo/bar/lib" and binaries to "/foo/bar/bin". The program icon for Homer 
+    will be copied to "/foo/bar/usr/share/Homer". The default directory (if no 
+    parameter DESTDIR is given) is "/usr/local".
+
+
+
+
+
+Additional information to buil Homer on Windows systems:
+========================================================
+
+ To build Homer on Windows you need a minimal Linux environment. At the moment
+ each Windows release is built with MSys32, which depends on MinGW32. For 
+ compiling gcc version 4.6 and for linking binutils 2.22 are used. Additionally,
+ cmake 2.6 is used to generate system depending Makefiles.
+
+
+
+Additional information to build Homer on OS X systems:
+======================================================
+
+ Current OS X releases of Homer are built with cmake 2.6 for OS X and Apple's 
+ Xcode 3.2.6, which includes both gcc and binutils in current versions.
+
