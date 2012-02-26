@@ -74,7 +74,7 @@
            <string>Play device inputs:</string>
           </property>
           <property name="checked">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
          </widget>
         </item>
@@ -329,6 +329,9 @@
           </property>
           <property name="text">
            <string>Play received streams:</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
           </property>
          </widget>
         </item>

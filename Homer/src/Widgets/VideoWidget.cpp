@@ -938,6 +938,7 @@ void VideoWidget::InformAboutNewSourceResolution()
 
 void VideoWidget::SetOriginalResolution()
 {
+    LOG(LOG_VERBOSE, "Setting original resolution");
     GrabResolutions tGrabResolutions = mVideoSource->GetSupportedVideoGrabResolutions();
     GrabResolutions::iterator tIt;
     if (tGrabResolutions.size())
