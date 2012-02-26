@@ -215,6 +215,76 @@ void MediaSourceMem::ReadFragment(char *pData, ssize_t &pDataSize)
     }
 }
 
+GrabResolutions MediaSourceMem::GetSupportedVideoGrabResolutions()
+{
+    VideoFormatDescriptor tFormat;
+
+    mSupportedVideoFormats.clear();
+
+    if (mMediaType == MEDIA_VIDEO)
+    {
+        tFormat.Name="SQCIF";      //      128 ×  96
+        tFormat.ResX = 128;
+        tFormat.ResY = 96;
+        //mSupportedVideoFormats.push_back(tFormat);
+
+        tFormat.Name="QCIF";       //      176 × 144
+        tFormat.ResX = 176;
+        tFormat.ResY = 144;
+        //mSupportedVideoFormats.push_back(tFormat);
+
+        tFormat.Name="CIF";        //      352 × 288
+        tFormat.ResX = 352;
+        tFormat.ResY = 288;
+        mSupportedVideoFormats.push_back(tFormat);
+
+        tFormat.Name="VGA";       //
+        tFormat.ResX = 640;
+        tFormat.ResY = 480;
+        mSupportedVideoFormats.push_back(tFormat);
+
+        tFormat.Name="CIF4";       //      704 × 576
+        tFormat.ResX = 704;
+        tFormat.ResY = 576;
+        //mSupportedVideoFormats.push_back(tFormat);
+
+        tFormat.Name="SVGA";       //
+        tFormat.ResX = 800;
+        tFormat.ResY = 600;
+        mSupportedVideoFormats.push_back(tFormat);
+
+        tFormat.Name="XGA";       //
+        tFormat.ResX = 1024;
+        tFormat.ResY = 768;
+        mSupportedVideoFormats.push_back(tFormat);
+
+        tFormat.Name="CIF9";       //     1056 × 864
+        tFormat.ResX = 1056;
+        tFormat.ResY = 864;
+        //mSupportedVideoFormats.push_back(tFormat);
+
+        tFormat.Name="CIF16";      //     1408 × 1152
+        tFormat.ResX = 1408;
+        tFormat.ResY = 1152;
+        //mSupportedVideoFormats.push_back(tFormat);
+
+        tFormat.Name="HDTV";       //     1920 × 1080
+        tFormat.ResX = 1920;
+        tFormat.ResY = 1080;
+        mSupportedVideoFormats.push_back(tFormat);
+
+        if (mMediaSourceOpened)
+        {
+            tFormat.Name="Original";
+            tFormat.ResX = mCodecContext->width;
+            tFormat.ResY = mCodecContext->height;
+            mSupportedVideoFormats.push_back(tFormat);
+        }
+    }
+
+    return mSupportedVideoFormats;
+}
+
 bool MediaSourceMem::SupportsRecording()
 {
 	return true;
