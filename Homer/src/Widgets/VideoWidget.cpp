@@ -1518,7 +1518,10 @@ QString VideoWorkerThread::CurrentFile()
 
 bool VideoWorkerThread::SupportsSeeking()
 {
-    return mVideoSource->SupportsSeeking();
+    if(mVideoSource != NULL)
+        return mVideoSource->SupportsSeeking();
+    else
+        return false;
 }
 
 void VideoWorkerThread::Seek(int pPos)
@@ -1538,7 +1541,10 @@ int64_t VideoWorkerThread::GetSeekEnd()
 
 bool VideoWorkerThread::SupportsMultipleChannels()
 {
-    return mVideoSource->SupportsMultipleInputChannels();
+    if (mVideoSource != NULL)
+        return mVideoSource->SupportsMultipleInputChannels();
+    else
+        return false;
 }
 
 QString VideoWorkerThread::GetCurrentChannel()
