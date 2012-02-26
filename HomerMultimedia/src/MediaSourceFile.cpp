@@ -986,6 +986,11 @@ GrabResolutions MediaSourceFile::GetSupportedVideoGrabResolutions()
         tFormat.ResY = 1152;
         //mSupportedVideoFormats.push_back(tFormat);
 
+        tFormat.Name="HDTV";       //     1920 × 1080
+        tFormat.ResX = 1920;
+        tFormat.ResY = 1080;
+        mSupportedVideoFormats.push_back(tFormat);
+
         if (mMediaSourceOpened)
         {
             tFormat.Name="Original";
