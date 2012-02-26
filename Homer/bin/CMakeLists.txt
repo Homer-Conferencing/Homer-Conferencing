@@ -266,6 +266,6 @@ QT4_ADD_RESOURCES(SOURCES ${QT_QRC_SOURCES})
 
 ##############################################################
 # extend install target by "Homer.png"
-INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../Homer.png ${TARGET_NAME} DESTINATION bin)
+INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../Homer.png ${TARGET_NAME} DESTINATION usr/share/Homer)
 
 INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakeCore.txt)
