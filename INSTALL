@@ -36,12 +36,12 @@ Installing Homer:
 
  Step 2: install files to your system
 
-    > "make install DESTDIR=/foo/bar"
+    > "make install INSTALL_PREFIX=/foo/bar"
 
     All created files from step 1 will be installed to "/foo/bar/".
     Libraries will be copied to "/foo/bar/lib" and binaries to "/foo/bar/bin".
     The program icon for Homer will be copied to "/foo/bar/usr/share/Homer".
-    The default directory (if no parameter DESTDIR is given) is "/usr/local".
+    The default directory (without INSTALL_PREFIX parameter) is "/usr/local".
 
 
 System dependencies:
@@ -97,16 +97,26 @@ Building Homer with debug symbols / as developer:
 
  Step 2: install files to your system
 
-    > "make install DESTDIR=/foo/bar"
+    > "make install INSTALL_PREFIX=/foo/bar"
 
     You can also install the debug version of Homer. In this case all created 
     files from step 1 will be installed to "/foo/bar/". Libraries will be copied 
     to "/foo/bar/lib" and binaries to "/foo/bar/bin". The program icon for Homer 
     will be copied to "/foo/bar/usr/share/Homer". The default directory (if no 
-    parameter DESTDIR is given) is "/usr/local".
+    parameter INSTALL_PREFIX is given) is "/usr/local".
 
 
 
+Install libraries to a different directory than the Homer binary:
+=================================================================
+
+ It is possible to install all built libraries to an explicitly given directory.
+ This can be triggered via:
+ 
+     >"make install INSTALL_LIBDIR=/foo/bar/lib64"
+     
+     This will install all libraries to the directory "/foo/bar/lib64" instead
+     of "/foo/bar/lib". 
 
 
 Additional information to buil Homer on Windows systems:
