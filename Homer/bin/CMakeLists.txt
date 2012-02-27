@@ -74,9 +74,18 @@ SET (LFLAGS
 	-Wl,-R../../lib 
 	-Wl,-R./bin 
 	-Wl,-R../bin/lib
-	-Wl,-R../../bin/lib 
+	-Wl,-R../../bin/lib
+	-Wl,-R/usr/lib 
+	-Wl,-R/usr/local/lib  
 	-mthreads
 )
+
+IF (DEFINED INSTALL_LIBDIR)	
+	SET (LFLAGS
+		${LFLAGS}
+		-Wl,-R${INSTALL_LIBDIR}
+	)
+ENDIF()  
 
 IF (WIN32)
 	SET (LFLAGS
