@@ -38,13 +38,7 @@ namespace Homer { namespace Multimedia {
 ///////////////////////////////////////////////////////////////////////////////
 
 // the following de/activates debugging of received packets
-//#define MF_DEBUG
-
-// maximum packet size, including encoded data and RTP/TS
-#define MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE          256*1024 // 256 kB
-#define MEDIA_SOURCE_MEM_PACKET_BUFFER_SIZE              	 16*1024 // 16 kB
-
-#define MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT 	             256 // 256 entries -> 4 MB
+#define MF_DEBUG
 
 ///////////////////////////////////////////////////////////////////////////////
 

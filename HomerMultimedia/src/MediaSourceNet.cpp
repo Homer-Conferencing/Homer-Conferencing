@@ -61,6 +61,9 @@ void MediaSourceNet::Init(Socket *pDataSocket, bool pRtpActivated)
 
     if(mDataSocket != NULL)
     {
+        // set receive buffer size
+        mDataSocket->SetReceiveBufferSize(SOCKET_RECEIVE_BUFFER_SIZE);
+
         // check the UDPLite and the RTP header
         if (mDataSocket->GetTransportType() == SOCKET_UDP_LITE)
             mDataSocket->UDPLiteSetCheckLength(UDP_LITE_HEADER_SIZE + RTP_HEADER_SIZE);
