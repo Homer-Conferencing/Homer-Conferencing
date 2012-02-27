@@ -251,7 +251,7 @@ IF (DEFINED TARGET_LIB_NAME)
 	MESSAGE("### Flags for shared linking: ${CMAKE_SHARED_LINKER_FLAGS}")
 	MESSAGE("### Flags for module linking: ${CMAKE_MODULE_LINKER_FLAGS}")
 	
-	# destination for install target
+	# build destination
 	SET(LIBRARY_OUTPUT_PATH ${TARGET_DIRECTORY})
 	MESSAGE("### Library output path: ${TARGET_DIRECTORY}")
 
@@ -267,7 +267,7 @@ IF (DEFINED TARGET_PROGRAM_NAME)
 		MESSAGE("### Flags for Windows binary linking: ${CMAKE_EXE_LINKER_FLAGS}")
 	ENDIF (WIN32)
 	
-	# destination for install target
+	# build destination
 	SET(EXECUTABLE_OUTPUT_PATH ${TARGET_DIRECTORY})
 	MESSAGE("### Program output path: ${EXECUTABLE_OUTPUT_PATH}")
 
@@ -287,18 +287,12 @@ ENDIF ()
 ##############################################################
 # library: define install target
 IF (DEFINED TARGET_LIB_NAME) 
-	INSTALL(TARGETS ${TARGET_NAME} DESTINATION lib)
+	INSTALL(TARGETS ${TARGET_NAME} LIBRARY DESTINATION lib)
 ENDIF ()
 # executable: define install target
 IF (DEFINED TARGET_PROGRAM_NAME) 
-	INSTALL(TARGETS ${TARGET_NAME} DESTINATION bin)
+	INSTALL(TARGETS ${TARGET_NAME} RUNTIME DESTINATION bin)
 ENDIF()
-
-# RPATH handling (where are dynamically linked libraries located)
-SET(CMAKE_SKIP_BUILD_RPATH  FALSE) # don't skip the full RPATH for the build tree
-SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) # when building, don't use the install RPATH already (but later on when installing) 
-SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE) # add the automatically determined parts of the RPATH, which point to directories outside the build tree to the install RPATH
 
 ##############################################################
 # link to needed external libraries
