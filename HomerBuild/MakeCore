@@ -21,8 +21,8 @@ BUILD_OS := $(shell echo "$$OSTYPE")
 
 ##############################################################
 # Options for cmake: define an explicit install directory if the command line provides a DESTDIR variable
-ifneq ($(DESTDIR),)
-	INSTALL_OPTIONS=-DCMAKE_INSTALL_PREFIX=$(DESTDIR)
+ifneq ($(INSTALL_PREFIX),)
+	INSTALL_OPTIONS=-DCMAKE_INSTALL_PREFIX=$(INSTALL_PREFIX)
 endif
 # Options for cmake: set relocation directory, deactivate special warnings, for MSys32/MinGW32 environment Unix makefiles are created by default
 ifeq ($(BUILD_OS),msys)
@@ -95,8 +95,8 @@ debug: $(TOP_DIR)/$(BUILD_DIR_DEBUG)/Makefile
 	@cd $(TOP_DIR)/$(BUILD_DIR_DEBUG) && $(MAKE) -s
 
 install: all
-ifneq ($(DESTDIR),)
-	@echo "##### Installing to $(DESTDIR)"
+ifneq ($(INSTALL_PREFIX),)
+	@echo "##### Installing to $(INSTALL_PREFIX)"
 else
 	@echo "##### Installing to default directory"
 endif
