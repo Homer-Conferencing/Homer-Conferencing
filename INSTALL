@@ -1,7 +1,7 @@
 
-=========================================================
-Instructions to install Homer-Conferencing on your system
-=========================================================
+=============================================================
+Instructions for installing Homer-Conferencing on your system
+=============================================================
 
  The source code of Homer was built for Windows (XP/2003/Vista/7), Linux,
  OS X (Snow Leopard) and FreeBSD. Please use always the latest release
@@ -18,10 +18,10 @@ Instructions to install Homer-Conferencing on your system
     http://www.homer-conferencing.com
 
 
-Installing Homer:
-=================
+Install Homer:
+==============
 
- At least gcc version 4.4 is needed to build Homer or one cf its libraries.
+ At least gcc version 4.4 is needed to build Homer or one of its libraries.
  Additionally, GNU Make and CMake is needed during build process.
 
  Step 1: create build environment via
@@ -82,15 +82,15 @@ Removing old build data and restoring default data:
     build run on the disc.
 
 
-Building Homer with debug symbols / as developer:
-=================================================
+Build Homer with debug symbols / as developer:
+==============================================
 
  Step 1: create build environment via
 
     > "cd HomerBuild"
     > "make" (or explicit via "make debug")
 
-    This will create all needed libraries and binaries based on the precompiled 
+    This will create all needed libraries and binaries based on the pre-compiled 
     files from the Homer-Release packages. All binary files are build with debug 
     symbols and the output isn't stripped. If you need the Homer-Release package 
     see https://github.com/Homer-Conferencing/Homer-Release.
@@ -119,7 +119,7 @@ Install libraries to a different directory than the Homer binary:
      of "/foo/bar/lib". 
 
 
-Additional information to buil Homer on Windows systems:
+Additional information to build Homer on Windows systems:
 ========================================================
 
  To build Homer on Windows you need a minimal Linux environment. At the moment
