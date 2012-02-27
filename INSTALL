@@ -3,7 +3,7 @@
 Instructions to install Homer-Conferencing on your system
 =========================================================
 
- The source code of Homer was build for Windows (XP/2003/Vista/7), Linux,
+ The source code of Homer was built for Windows (XP/2003/Vista/7), Linux,
  OS X (Snow Leopard) and FreeBSD. Please use always the latest release
  version from https://github.com/Homer-Conferencing/Homer-Conferencing to
  build Homer or one of its libraries. If you face problems during build
@@ -13,7 +13,7 @@ Instructions to install Homer-Conferencing on your system
     <homer-conf-users@lists.sourceforge.net>
 
  Most current binaries for all supported system and additional information
- can be found on the offical homepage of Homer:
+ can be found on the official home page of Homer:
 
     http://www.homer-conferencing.com
 
@@ -29,7 +29,7 @@ Installing Homer:
     > "cd HomerBuild"
     > "make all"
 
-    This will create all needed libraries and binaries denpending on your 
+    This will create all needed libraries and binaries depending on your 
     current system configuration. All binary files are build without debug 
     symbols and the output is stripped. After this step you can start Homer
     via the command "../bin/Homer".
@@ -64,7 +64,7 @@ System dependencies:
 	only for OS X: AppKit, AudioUnit, CoreFoundation, Carbon, IOKit, OpenGL
     - Library "Homer" GUI: Qt (4.6)
 
-    **) On some systems the library "ffmpeg" is splitted into separate libraries:
+    **) On some systems the library "ffmpeg" is split into separate libraries:
 	avutil, avformat, avcodec, avdevice, avfilter, swscale, swresample.
 
 
