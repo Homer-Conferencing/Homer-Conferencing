@@ -1058,10 +1058,23 @@
   </layout>
  </widget>
  <tabstops>
+  <tabstop>mRbStream</tabstop>
   <tabstop>mCbDeviceVideo</tabstop>
-  <tabstop>mRbFile</tabstop>
+  <tabstop>mCbDeviceAudio</tabstop>
+  <tabstop>mPbFile</tabstop>
   <tabstop>mSbPortVideo</tabstop>
+  <tabstop>mCbTransportVideo</tabstop>
+  <tabstop>mCbRtpVideo</tabstop>
+  <tabstop>mCbCodecVideo</tabstop>
+  <tabstop>mSbPortAudio</tabstop>
+  <tabstop>mCbTransportAudio</tabstop>
+  <tabstop>mCbRtpAudio</tabstop>
+  <tabstop>mCbCodecAudio</tabstop>
+  <tabstop>mCbVideoEnabled</tabstop>
+  <tabstop>mCbAudioEnabled</tabstop>
   <tabstop>mBb</tabstop>
+  <tabstop>mRbDevice</tabstop>
+  <tabstop>mRbFile</tabstop>
  </tabstops>
  <resources>
   <include location="../../resources/Icons.qrc"/>
@@ -1074,8 +1087,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
+     <x>257</x>
+     <y>371</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -1090,8 +1103,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
+     <x>325</x>
+     <y>371</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>

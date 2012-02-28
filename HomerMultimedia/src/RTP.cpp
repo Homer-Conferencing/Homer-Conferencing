@@ -1207,13 +1207,13 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
     if (!pReadOnly)
     {
         // check if there was a packet order problem
-        if ((mLastTimestamp != 65535) && (mLastTimestamp > 0) && (tRtpHeader->SequenceNumber < mLastSequenceNumber))
+        if ((mLastSequenceNumber != 65535) && (mLastTimestamp > 0) && (tRtpHeader->SequenceNumber < mLastSequenceNumber))
         {
             LOG(LOG_ERROR, "Packets in wrong order received (last SN: %d; current SN: %d)", mLastSequenceNumber, tRtpHeader->SequenceNumber);
         }
 
         // check if there was packet loss
-        if ((mLastTimestamp > 0) && (((mLastTimestamp != 65535) && (tRtpHeader->SequenceNumber > mLastSequenceNumber + 1)) || ((mLastTimestamp == 65535) && (tRtpHeader->SequenceNumber != 0))))
+        if ((mLastTimestamp > 0) && (((mLastSequenceNumber != 65535) && (tRtpHeader->SequenceNumber > mLastSequenceNumber + 1)) || ((mLastSequenceNumber == 65535) && (tRtpHeader->SequenceNumber != 0))))
         {
             unsigned int tLostPackets = 0;
             if(mLastTimestamp != 65535)
