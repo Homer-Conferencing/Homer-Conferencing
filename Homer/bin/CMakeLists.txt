@@ -74,6 +74,7 @@ SET (LFLAGS
 	-Wl,-R../lib
 	-Wl,-R../../lib 
 	-Wl,-R./bin 
+	-Wl,-R./bin/lib 
 	-Wl,-R../bin/lib
 	-Wl,-R../../bin/lib
 	-Wl,-R/usr/lib 
