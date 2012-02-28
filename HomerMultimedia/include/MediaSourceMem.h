@@ -45,7 +45,7 @@ namespace Homer { namespace Multimedia {
 //#define MSMEM_DEBUG_PACKETS
 
 // maximum packet size, including encoded data and RTP/TS
-#define MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE          256*1024 // 256 kB
+#define MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE          MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE
 
 #define MEDIA_SOURCE_MEM_PACKET_BUFFER_SIZE              	 16*1024 // 16 kB
 #define MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT 	             256 // 256 entries -> 4 MB FIFO
