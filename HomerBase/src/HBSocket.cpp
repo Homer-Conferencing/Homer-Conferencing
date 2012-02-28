@@ -461,7 +461,7 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
 		case SOCKET_UDP_LITE:
             #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		        LOG(LOG_VERBOSE, "Setting UDPlite checksum coverage to %d", tUdpLiteChecksumCoverage);
-				if (setsockopt(mSocketHandle, IPPROTO_UDPLITE, UDPLITE_SEND_CSCOV, (__const void*)&tUdpLiteChecksumCoverage, sizeof(tUdpLiteChecksumCoverage)) < 0)
+				if (setsockopt(mSocketHandle, IPPROTO_UDPLITE, UDPLITE_SEND_CSCOV, (char*)&tUdpLiteChecksumCoverage, sizeof(tUdpLiteChecksumCoverage)) < 0)
 					LOG(LOG_ERROR, "Failed to set senders checksum coverage for UDPlite on socket %d", mSocketHandle);
 			#endif
 		case SOCKET_UDP:
@@ -563,7 +563,7 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
     {
 		case SOCKET_UDP_LITE:
             #if defined(LINUX) || defined(APPLE) || defined(BSD)
-				if (setsockopt(mSocketHandle, IPPROTO_UDPLITE, UDPLITE_RECV_CSCOV, (__const void*)&tUdpLiteChecksumCoverage, sizeof(tUdpLiteChecksumCoverage)) != 0)
+				if (setsockopt(mSocketHandle, IPPROTO_UDPLITE, UDPLITE_RECV_CSCOV, (char*)&tUdpLiteChecksumCoverage, sizeof(tUdpLiteChecksumCoverage)) != 0)
 					LOG(LOG_ERROR, "Failed to set receivers checksum coverage for UDPlite on socket %d", mSocketHandle);
 			#endif
             // continue as it was UDP receiving
@@ -669,7 +669,7 @@ int Socket::GetReceiveBufferSize()
 
     if(mSocketHandle != -1)
     {
-        int tCallRes = getsockopt(mSocketHandle, SOL_SOCKET, SO_RCVBUF, (void *)&tResult, &tResultSize);
+        int tCallRes = getsockopt(mSocketHandle, SOL_SOCKET, SO_RCVBUF, (char *)&tResult, &tResultSize);
         if (tCallRes < 0)
             LOG(LOG_ERROR, "Failed to get receive buffer size on socket %d", mSocketHandle);
         else
@@ -687,7 +687,7 @@ bool Socket::SetReceiveBufferSize(int pSize)
     {
         LOG(LOG_VERBOSE, "Setting receive buffer size to %d bytes on socket %d", pSize, mSocketHandle);
 
-        if (setsockopt(mSocketHandle, SOL_SOCKET, SO_RCVBUF, (__const void *)&pSize, sizeof(pSize)) < 0)
+        if (setsockopt(mSocketHandle, SOL_SOCKET, SO_RCVBUF, (char*)&pSize, sizeof(pSize)) < 0)
             LOG(LOG_ERROR, "Failed to get receive buffer size on socket %d", mSocketHandle);
         else
             tResult = true;
@@ -1089,10 +1089,7 @@ bool Socket::CreateSocket(enum NetworkType pIpVersion)
             int tOnlyIpv6Sockets = false;
             bool tIpv6OnlyOkay = false;
             #if defined(LINUX) || defined(APPLE) || defined(BSD)
-				tIpv6OnlyOkay = (setsockopt(mSocketHandle, IPPROTO_IPV6, IPV6_V6ONLY, (__const void*)&tOnlyIpv6Sockets, sizeof(tOnlyIpv6Sockets)) == 0);
-			#endif
-			#if defined(WIN32) ||defined(WIN64)
-                tIpv6OnlyOkay = (setsockopt(mSocketHandle, IPPROTO_IPV6, IPV6_V6ONLY, (const char*)&tOnlyIpv6Sockets, sizeof(tOnlyIpv6Sockets)) == 0);
+				tIpv6OnlyOkay = (setsockopt(mSocketHandle, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&tOnlyIpv6Sockets, sizeof(tOnlyIpv6Sockets)) == 0);
 			#endif
             if (tIpv6OnlyOkay)
                 LOG(LOG_VERBOSE, "Set %s socket with handle number %d to IPv6only state %d", TransportType2String(mSocketTransportType).c_str(), mSocketHandle, tOnlyIpv6Sockets);
