@@ -74,7 +74,7 @@ Removing old build data and restoring default data:
  You can reset the Homer directories and restore defaults via
 
     > "cd HomerBuild"
-    > "make distclean" (or "make cleaner")
+    > "make distclean"
 
     After these commands all data from the last build run is deleted. You can 
     use "make clean" if you want to remove only the temporary build files and 
