@@ -49,11 +49,11 @@ MediaSourceMem::MediaSourceMem(bool pRtpActivated):
     mOpenInputStream = false;
     mRtpActivated = pRtpActivated;
     RTPRegisterPacketStatistic(this);
-    mDecoderFifo = new MediaFifo(MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT, MEDIA_SOURCE_MEM_PACKET_BUFFER_SIZE);
+    mDecoderFifo = new MediaFifo(MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT, MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
 
     mStreamCodecId = CODEC_ID_NONE;
 
-	LOG(LOG_VERBOSE, "Listen for media packets from memory with queue of %d bytes", MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT * MEDIA_SOURCE_MEM_PACKET_BUFFER_SIZE);
+	LOG(LOG_VERBOSE, "Listen for video/audio frames from memory with queue of %d bytes", MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT * MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
 }
 
 MediaSourceMem::~MediaSourceMem()
@@ -91,8 +91,8 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
         do{
             tLastFragment = false;
             tFragmentIsOkay = false;
-            tFragmentData = &tMediaSourceMemInstance->mPacketBuffer[0];
-            tFragmentBufferSize = MEDIA_SOURCE_MEM_PACKET_BUFFER_SIZE;
+            tFragmentData = &tMediaSourceMemInstance->mFragmentBuffer[0];
+            tFragmentBufferSize = MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE; // maximum size of one single fragment of a frame packet
             // receive a fragment
             tMediaSourceMemInstance->ReadFragment(tFragmentData, tFragmentBufferSize);
             #ifdef MSMEM_DEBUG_PACKETS
