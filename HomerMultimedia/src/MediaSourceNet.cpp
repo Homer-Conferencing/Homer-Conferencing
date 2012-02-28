@@ -53,7 +53,7 @@ void MediaSourceNet::Init(Socket *pDataSocket, bool pRtpActivated)
     mOpenInputStream = false;
     mListenerRunning = false;
     mRtpActivated = pRtpActivated;
-    mPacketBuffer = (char*)malloc(MEDIA_SOURCE_MEM_PACKET_BUFFER_SIZE);
+    mPacketBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
 
     mStreamCodecId = CODEC_ID_NONE;
 
@@ -139,7 +139,7 @@ void* MediaSourceNet::Run(void* pArgs)
         //####################################################################
 		// receive packet from network socket
 		// ###################################################################
-		tDataSize = MEDIA_SOURCE_MEM_PACKET_BUFFER_SIZE;
+		tDataSize = MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE;
 		tSourceHost = "";
 		if (!mDataSocket->Receive(tSourceHost, tSourcePort, mPacketBuffer, tDataSize))
 		{

@@ -61,7 +61,7 @@ MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, bool pT
     mTargetHost = pTargetHost;
     mTargetPort = pTargetPort;
     mRtpActivated = pRtpActivated;
-    mTCPCopyBuffer = (char*)malloc(MEDIA_SOURCE_MEM_PACKET_BUFFER_SIZE);
+    mTCPCopyBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
 
     enum TransportType tTransportType = (pTransmitLossLess ? SOCKET_TCP : (pTransmitBitErrors ? SOCKET_UDP_LITE : SOCKET_UDP));
 
