@@ -68,7 +68,8 @@ MediaSourceMem::~MediaSourceMem()
 
 ///////////////////////////////////////////////////////////////////////////////
 // static call back function:
-//      function reads data from Socket and delivers it to ffmpeg library
+//      function reads frame packet and delivers it upwards to ffmpeg library
+// HINT: result can consist of many network packets, which represent one frame (packet)
 int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize)
 {
 	MediaSourceMem *tMediaSourceMemInstance = (MediaSourceMem*)pOpaque;
