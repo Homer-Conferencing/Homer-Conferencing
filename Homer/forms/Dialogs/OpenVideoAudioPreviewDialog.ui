@@ -73,9 +73,9 @@
           <property name="text">
            <string>Play device inputs:</string>
           </property>
-          <property name="checked">
-           <bool>false</bool>
-          </property>
+          <attribute name="buttonGroup">
+           <string>buttonGroup</string>
+          </attribute>
          </widget>
         </item>
         <item>
@@ -237,6 +237,9 @@
           <property name="text">
            <string>Play movie file:</string>
           </property>
+          <attribute name="buttonGroup">
+           <string>buttonGroup</string>
+          </attribute>
          </widget>
         </item>
         <item>
@@ -333,6 +336,9 @@
           <property name="checked">
            <bool>true</bool>
           </property>
+          <attribute name="buttonGroup">
+           <string>buttonGroup</string>
+          </attribute>
          </widget>
         </item>
         <item>
@@ -1094,4 +1100,7 @@
    </hints>
   </connection>
  </connections>
+ <buttongroups>
+  <buttongroup name="buttonGroup"/>
+ </buttongroups>
 </ui>
