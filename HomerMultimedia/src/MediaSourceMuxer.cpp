@@ -899,7 +899,7 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
         mGrabMutex.unlock();
 
         // acknowledge failed
-        MarkGrabChunkFailed(GetMediaTypeStr() + "muxer is closed");
+        MarkGrabChunkFailed(GetMediaTypeStr() + " muxer is closed");
 
         return tResult;
     }
