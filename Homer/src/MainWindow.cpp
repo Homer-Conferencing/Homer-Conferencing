@@ -665,7 +665,7 @@ void MainWindow::loadSettings()
         MEETING.SetVideoCodecsSupport(CODEC_MPEG4);
     if (tVideoStreamCodec == "MJPEG")
         MEETING.SetVideoCodecsSupport(CODEC_MJPEG);
-    MEETING.SetVideoTransportType(MEETING.CreateMediaTransportType(CONF.GetVideoTransportType(), CONF.GetVideoRtp()));
+    MEETING.SetVideoTransportType(MEDIA_TRANSPORT_RTP_UDP);
 
     // init audio codec for network streaming, but only support ONE codec and not multiple
     QString tAudioStreamCodec = CONF.GetAudioCodec();
@@ -684,7 +684,7 @@ void MainWindow::loadSettings()
         MEETING.SetAudioCodecsSupport(CODEC_GSM);
     if (tAudioStreamCodec == "AMR")
         MEETING.SetAudioCodecsSupport(CODEC_AMR);
-    MEETING.SetAudioTransportType(MEETING.CreateMediaTransportType(CONF.GetAudioTransportType(), CONF.GetAudioRtp()));
+    MEETING.SetAudioTransportType(MEDIA_TRANSPORT_RTP_UDP);
 
     LOG(LOG_VERBOSE, "..video/audio settings");
     QString tVideoStreamResolution = CONF.GetVideoResolution();
