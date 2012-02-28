@@ -48,6 +48,7 @@ SET (INCLUDE_DIRS
 	../../HomerWinLibs/OPENSSL/include
 	/usr/include/ffmpeg
 	${QT_INCLUDE_DIR}
+	${CMAKE_BINARY_DIR}/Homer/bin
 	${CMAKE_BINARY_DIR}/bin
 )
 
