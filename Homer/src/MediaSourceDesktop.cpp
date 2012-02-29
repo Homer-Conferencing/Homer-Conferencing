@@ -256,6 +256,8 @@ bool MediaSourceDesktop::CloseGrabDevice()
 
     if (mMediaSourceOpened)
     {
+        StopRecording();
+
         mMediaSourceOpened = false;
 
         mWidget = NULL;

@@ -286,6 +286,8 @@ bool MediaSourceOss::CloseGrabDevice()
 
     if (mMediaSourceOpened)
     {
+        StopRecording();
+
         mMediaSourceOpened = false;
 
         // Close the OSS codec

@@ -128,6 +128,8 @@ bool MediaSourceCoreVideo::CloseGrabDevice()
 
     if (mMediaSourceOpened)
     {
+        StopRecording();
+
         mMediaSourceOpened = false;
 
         //TODO: implement

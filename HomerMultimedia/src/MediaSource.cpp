@@ -1517,8 +1517,7 @@ void MediaSource::StopRecording()
 
         LOG(LOG_INFO, "...closed, media type is \"%s\"", GetMediaTypeStr().c_str());
 
-    }else
-        LOG(LOG_INFO, "...wasn't open, media type is \"%s\"", GetMediaTypeStr().c_str());
+    }
 
     mRecorderStartPts = -1;
 }
