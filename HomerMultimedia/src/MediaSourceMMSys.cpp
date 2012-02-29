@@ -313,6 +313,8 @@ bool MediaSourceMMSys::CloseGrabDevice()
 
     if (mMediaSourceOpened)
     {
+        StopRecording();
+
         mMediaSourceOpened = false;
 
 		LOG(LOG_VERBOSE, "Stopping capturing..");

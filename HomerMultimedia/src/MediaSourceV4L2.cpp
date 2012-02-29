@@ -450,6 +450,8 @@ bool MediaSourceV4L2::CloseGrabDevice()
 
     if (mMediaSourceOpened)
     {
+        StopRecording();
+
         mMediaSourceOpened = false;
 
         // free the software scaler context

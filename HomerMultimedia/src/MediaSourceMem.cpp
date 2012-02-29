@@ -663,6 +663,8 @@ bool MediaSourceMem::CloseGrabDevice()
 
     if (mMediaSourceOpened)
     {
+        StopRecording();
+
         mMediaSourceOpened = false;
 
         // free the software scaler context

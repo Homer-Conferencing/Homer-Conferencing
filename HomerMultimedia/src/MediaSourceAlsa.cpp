@@ -245,6 +245,8 @@ bool MediaSourceAlsa::CloseGrabDevice()
 
     if (mMediaSourceOpened)
     {
+        StopRecording();
+
         mMediaSourceOpened = false;
 
         snd_pcm_close(mCaptureHandle);

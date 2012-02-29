@@ -144,6 +144,8 @@ bool MediaSourceCoreAudio::CloseGrabDevice()
 
     if (mMediaSourceOpened)
     {
+        StopRecording();
+
         mMediaSourceOpened = false;
 
         //TODO: implement

@@ -1120,7 +1120,7 @@ void VideoWidget::StartRecorder()
     QStringList tPosQuals;
     for (int i = 1; i < 11; i++)
         tPosQuals.append(QString("%1").arg(i * 10));
-    QString tQualityStr = QInputDialog::getItem(this, "Select recording quality", "Record with quality:                                      ", tPosQuals, 9, false, &tAck);
+    QString tQualityStr = QInputDialog::getItem(this, "Select recording quality", "Record with quality:                                      ", tPosQuals, 0, false, &tAck);
 
     if (!tAck)
         return;
