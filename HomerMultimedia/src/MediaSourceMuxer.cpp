@@ -452,6 +452,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     //### give some verbose output
     //######################################################
     mMediaType = MEDIA_VIDEO;
+    mStreamMaxFps_LastFrame_Timestamp = Time::GetTimeStamp();
     MarkOpenGrabDeviceSuccessful();
     LOG(LOG_INFO, "    ..max packet size: %d bytes", mFormatContext->pb->max_packet_size);
     LOG(LOG_INFO, "  stream...");
@@ -911,7 +912,7 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
     // reencode frame and send it to the registered media sinks
     // limit the outgoing stream FPS to the defined maximum FPS value
     // ###################################################################
-    if ((mStreamActivated) && (!pDropChunk) && (tResult >= 0) && (pChunkSize > 0) && (mMediaSinks.size()) && (BelowMaxFps(tResult)))
+    if ((BelowMaxFps(tResult) /* we have to call this function continuously */) && (mStreamActivated) && (!pDropChunk) && (tResult >= 0) && (pChunkSize > 0) && (mMediaSinks.size()))
     {
         mTranscoderFifo->WriteFifo((char*)pChunkBuffer, pChunkSize);
     }
@@ -928,35 +929,34 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
     return tResult;
 }
 
+//HINT: call this function continuously !
 bool MediaSourceMuxer::BelowMaxFps(int pFrameNumber)
 {
-    int64_t tCurrentTime = Time::GetTimeStamp();
-    int64_t tTimeDiff = tCurrentTime - mStreamMaxFpsTimestampLastFragment;
-
     if (mStreamMaxFps != 0)
     {
+        int64_t tCurrentTime = Time::GetTimeStamp();
+        int64_t tTimeDiffToLastFrame = tCurrentTime - mStreamMaxFps_LastFrame_Timestamp;
         int64_t tTimeDiffTreshold = 1000*1000 / mStreamMaxFps;
-
+        int64_t tTimeDiffForNextFrame = tTimeDiffToLastFrame - tTimeDiffTreshold;
         #ifdef MSM_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "Checking max. FPS(=%d) for frame number %d: %lld < %lld?", mStreamMaxFps, pFrameNumber, tTimeDiff, tTimeDiffTreshold);
+            LOG(LOG_VERBOSE, "Checking max. FPS(=%d) for frame number %d: %lld < %lld => %s", mStreamMaxFps, pFrameNumber, tTimeDiffToLastFrame, tTimeDiffTreshold, (tTimeDiffToLastFrame < tTimeDiffTreshold) ? "yes" : "no");
         #endif
 
-        //### skip capturing when we are too slow
-        if (tTimeDiff < tTimeDiffTreshold)
+        // time for a new frame?
+        if (tTimeDiffForNextFrame > 0)
         {
-            //LOG(LOG_VERBOSE, "Max. FPS reached, dropping frame %d", pFrameNumber);
+            mStreamMaxFps_LastFrame_Timestamp = tCurrentTime;
 
-            return false;
+            //LOG(LOG_VERBOSE, "Last frame timestamp: %lld(%lld) , %lld, %lld", tCurrentTime, mStreamMaxFps_LastFrame_Timestamp, tTimeDiffForNextFrame, mStreamMaxFps_LastFrame_Timestamp - tTimeDiffForNextFrame);
+
+            // correct reference timestamp for last frame by the already passed time for the next frame
+            mStreamMaxFps_LastFrame_Timestamp -= tTimeDiffForNextFrame;
+            return true;
         }
-    }
+    }else
+        return true;
 
-    if(mStreamMaxFpsChunkNumberLastFragment != pFrameNumber)
-    {
-    	mStreamMaxFpsTimestampLastFragment = tCurrentTime;
-    	mStreamMaxFpsChunkNumberLastFragment = pFrameNumber;
-    }
-
-    return true;
+    return false;
 }
 
 void MediaSourceMuxer::InitTranscoder(int pFifoEntrySize)
