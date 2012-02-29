@@ -1207,7 +1207,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
     if (!pReadOnly)
     {
         // check if there was a packet order problem
-        if ((mLastSequenceNumber != 65535) && (mLastTimestamp > 0) && (tRtpHeader->SequenceNumber < mLastSequenceNumber))
+        if ((tRtpHeader->SequenceNumber != 0 /* ignore stream resets */) && (mLastSequenceNumber != 65535) && (mLastTimestamp > 0) && (tRtpHeader->SequenceNumber < mLastSequenceNumber))
         {
             LOG(LOG_ERROR, "Packets in wrong order received (last SN: %d; current SN: %d)", mLastSequenceNumber, tRtpHeader->SequenceNumber);
         }
