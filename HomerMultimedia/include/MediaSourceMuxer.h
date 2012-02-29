@@ -157,8 +157,7 @@ private:
     int                 mStreamMaxPacketSize;
     int                 mStreamQuality;
     int 				mStreamMaxFps;
-    int 				mStreamMaxFpsChunkNumberLastFragment;
-    int64_t				mStreamMaxFpsTimestampLastFragment;
+    int64_t				mStreamMaxFps_LastFrame_Timestamp;
     bool                mStreamActivated;
     char                *mStreamPacketBuffer;
     char                *mEncoderChunkBuffer;
