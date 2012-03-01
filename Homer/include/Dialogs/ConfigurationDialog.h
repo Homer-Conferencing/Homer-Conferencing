@@ -35,6 +35,8 @@
 #include <WaveOut.h>
 
 #include <QCloseEvent>
+#include <QHttp>
+#include <QStringList>
 
 namespace Homer { namespace Gui {
 
@@ -61,6 +63,14 @@ private slots:
     void ShowVideoSourceInfo(QString pCurrentText);
     void ShowAudioSourceInfo(QString pCurrentText);
     void ShowAudioSinkInfo(QString pCurrentText);
+
+    void ShowSuggestionsForStunServer();
+    void GotAnswerForStunServerListRequest(bool pError);
+
+    void ShowSuggestionsForSipServer();
+    void GotAnswerForSipServerListRequest(bool pError);
+
+    void CreateAccountAtSipServer();
 
     void SelectNotifySoundFileForIm();
     void SelectNotifySoundFileForCall();
@@ -94,6 +104,9 @@ private:
 
     int VideoString2ResolutionIndex(std::string pString);
 
+    void LetUserSelectStunServerFromSuggestions();
+    void LetUserSelectSipServerFromSuggestions();
+
     void initializeGUI();
     void LoadConfiguration();
     void SaveConfiguration();
@@ -102,6 +115,12 @@ private:
 
     VideoWorkerThread       *mVideoWorker;
     AudioWorkerThread       *mAudioWorker;
+
+    QHttp                   *mHttpGetStunServerList;
+    static QStringList      mStunServerList;
+
+    QHttp                   *mHttpGetSipServerList;
+    static QStringList      mSipServerList;
 
     Homer::SoundOutput::WaveOut *mWaveOut;
     QStringList             mVideoCaptureDevices;
