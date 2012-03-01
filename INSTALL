@@ -32,7 +32,7 @@ Install Homer:
     This will create all needed libraries and binaries depending on your 
     current system configuration. All binary files are build without debug 
     symbols and the output is stripped. After this step you can start Homer
-    via the command "../bin/Homer".
+    via the command "./bin/Homer".
 
  Step 2: install files to your system
 
