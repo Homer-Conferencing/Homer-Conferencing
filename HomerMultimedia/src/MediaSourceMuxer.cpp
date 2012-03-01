@@ -220,7 +220,7 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
         (GetRtpActivation() != pRtpActivated) ||
         (mStreamQuality != pMediaStreamQuality) ||
         (mStreamMaxPacketSize != pMaxPacketSize) ||
-        (mCurrentStreamingResX != pResX) || (mCurrentStreamingResY != pResY))
+        ((mCurrentStreamingResX != pResX) &&  (pResX != -1)) || ((mCurrentStreamingResY != pResY) && (pResY != -1)))
     {
         LOG(LOG_VERBOSE, "Setting new %s streaming preferences", GetMediaTypeStr().c_str());
 
