@@ -1088,9 +1088,7 @@ bool Socket::CreateSocket(enum NetworkType pIpVersion)
             // we force hybrid sockets, otherwise Windows will complain: http://msdn.microsoft.com/en-us/library/bb513665%28v=vs.85%29.aspx
             int tOnlyIpv6Sockets = false;
             bool tIpv6OnlyOkay = false;
-            #if defined(LINUX) || defined(APPLE) || defined(BSD)
-				tIpv6OnlyOkay = (setsockopt(mSocketHandle, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&tOnlyIpv6Sockets, sizeof(tOnlyIpv6Sockets)) == 0);
-			#endif
+			tIpv6OnlyOkay = (setsockopt(mSocketHandle, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&tOnlyIpv6Sockets, sizeof(tOnlyIpv6Sockets)) == 0);
             if (tIpv6OnlyOkay)
                 LOG(LOG_VERBOSE, "Set %s socket with handle number %d to IPv6only state %d", TransportType2String(mSocketTransportType).c_str(), mSocketHandle, tOnlyIpv6Sockets);
             else
