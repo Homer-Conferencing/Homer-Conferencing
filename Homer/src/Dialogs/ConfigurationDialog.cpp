@@ -43,6 +43,8 @@
 #include <QFileDialog>
 #include <QSound>
 #include <QLineEdit>
+#include <QInputDialog>
+#include <QDesktopServices>
 
 namespace Homer { namespace Gui {
 
@@ -53,9 +55,16 @@ using namespace Homer::SoundOutput;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+QStringList      ConfigurationDialog::mStunServerList;
+QStringList      ConfigurationDialog::mSipServerList;
+
+///////////////////////////////////////////////////////////////////////////////
+
 ConfigurationDialog::ConfigurationDialog(QWidget* pParent, list<string>  pLocalAdresses, VideoWorkerThread* pVideoWorker, AudioWorkerThread* pAudioWorker, WaveOut *pWaveOut):
     QDialog(pParent)
 {
+    mHttpGetStunServerList = NULL;
+    mHttpGetSipServerList = NULL;
     mVideoWorker = pVideoWorker;
     mAudioWorker = pAudioWorker;
     mWaveOut = pWaveOut;
@@ -86,6 +95,9 @@ ConfigurationDialog::ConfigurationDialog(QWidget* pParent, list<string>  pLocalA
     connect(mTbSelectAllSystray, SIGNAL(clicked()), this, SLOT(SelectAllSystray()));
     connect(mTbDeselectAllSystray, SIGNAL(clicked()), this, SLOT(DeselectAllSystray()));
     connect(mTbShowPassword, SIGNAL(clicked()), this, SLOT(ToggleSipServerPasswordVisibility()));
+    connect(mTbStunServerSuggestions, SIGNAL(clicked()), this, SLOT(ShowSuggestionsForStunServer()));
+    connect(mTbSipServerSuggestions, SIGNAL(clicked()), this, SLOT(ShowSuggestionsForSipServer()));
+    connect(mTbSipServerCreateAccount, SIGNAL(clicked()), this, SLOT(CreateAccountAtSipServer()));
     ShowVideoSourceInfo(mCbVideoSource->currentText());
     ShowAudioSourceInfo(mCbAudioSource->currentText());
     ShowAudioSinkInfo(mCbAudioSink->currentText());
@@ -576,6 +588,126 @@ void ConfigurationDialog::ShowAudioSinkInfo(QString pCurrentText)
     }
 
     mLbAudioSinkInfo->setText(tInfoText);
+}
+
+void ConfigurationDialog::GotAnswerForStunServerListRequest(bool pError)
+{
+    if (pError)
+    {
+        ShowError("Communication with server failed", "The list with suggested STUN servers from the project server is unavailable");
+    }else
+    {
+        QString tListString = QString(mHttpGetStunServerList->readAll().constData());
+        LOG(LOG_VERBOSE, "Got STUN server list answer from server:\n%s", tListString.toStdString().c_str());
+        if (tListString.contains("404 Not Found"))
+        {
+            ShowError("Communication with server failed", "The list with suggested STUN servers from the project server is unavailable");
+        }else
+        {
+            mStunServerList = tListString.split("\n",  QString::SkipEmptyParts);
+            LetUserSelectStunServerFromSuggestions();
+        }
+    }
+}
+
+void ConfigurationDialog::ShowSuggestionsForStunServer()
+{
+    if ((mHttpGetStunServerList == NULL) && (mStunServerList.isEmpty()))
+    {
+        // load list with suggested STUN servers from web server
+        mHttpGetStunServerList = new QHttp(this);
+
+        connect(mHttpGetStunServerList, SIGNAL(done(bool)), this, SLOT(GotAnswerForStunServerListRequest(bool)));
+        mHttpGetStunServerList->setHost(RELEASE_SERVER);
+        mHttpGetStunServerList->get(PATH_STUN_SERVER_TXT);
+    }else
+    {
+        if(!mStunServerList.isEmpty())
+        {
+            LetUserSelectStunServerFromSuggestions();
+        }else
+        {
+            ShowError("Communication with server failed", "The list with suggested STUN servers from the project server is unavailable");
+        }
+    }
+}
+
+void ConfigurationDialog::LetUserSelectStunServerFromSuggestions()
+{
+    bool tAck = false;
+
+    QString tStunServer = QInputDialog::getItem(this, "Select a STUN server", "STUN server:                                             ", mStunServerList, 0, false, &tAck);
+
+    if (!tAck)
+        return;
+
+    mLeStunServer->setText(tStunServer);
+}
+
+void ConfigurationDialog::GotAnswerForSipServerListRequest(bool pError)
+{
+    if (pError)
+    {
+        ShowError("Communication with server failed", "The list with suggested SIP servers from the project server is unavailable");
+    }else
+    {
+        QString tListString = QString(mHttpGetSipServerList->readAll().constData());
+        LOG(LOG_VERBOSE, "Got SIP server list answer from server:\n%s", tListString.toStdString().c_str());
+        if (tListString.contains("404 Not Found"))
+        {
+            ShowError("Communication with server failed", "The list with suggested SIP servers from the project server is unavailable");
+        }else
+        {
+            mSipServerList = tListString.split("\n",  QString::SkipEmptyParts);
+            LetUserSelectSipServerFromSuggestions();
+        }
+    }
+}
+
+void ConfigurationDialog::ShowSuggestionsForSipServer()
+{
+    if ((mHttpGetSipServerList == NULL) && (mSipServerList.isEmpty()))
+    {
+        // load list with suggested SIP servers from web server
+        mHttpGetSipServerList = new QHttp(this);
+
+        connect(mHttpGetSipServerList, SIGNAL(done(bool)), this, SLOT(GotAnswerForSipServerListRequest(bool)));
+        mHttpGetSipServerList->setHost(RELEASE_SERVER);
+        mHttpGetSipServerList->get(PATH_SIP_SERVER_TXT);
+    }else
+    {
+        if(!mSipServerList.isEmpty())
+        {
+            LetUserSelectSipServerFromSuggestions();
+        }else
+        {
+            ShowError("Communication with server failed", "The list with suggested SIP servers from the project server is unavailable");
+        }
+    }
+}
+
+void ConfigurationDialog::LetUserSelectSipServerFromSuggestions()
+{
+    bool tAck = false;
+
+    QString tSipServer = QInputDialog::getItem(this, "Select a SIP server", "SIP server:                                             ", mSipServerList, 0, false, &tAck);
+
+    if (!tAck)
+        return;
+
+    mLeSipServer->setText(tSipServer);
+}
+
+void ConfigurationDialog::CreateAccountAtSipServer()
+{
+    if (mLeSipServer->text() == "")
+    {
+        ShowError("No SIP server entered", "You have to enter a SIP server address first!");
+        return;
+    }
+
+    QDesktopServices::openUrl("http://" + mLeSipServer->text());
+    ShowInfo("Web browser opened", "Your web browser was opened with the url <font color='blue'><b>http://" + mLeSipServer->text() + "</b></font> for your account creation!");
 }
 
 void ConfigurationDialog::ToggleSipServerPasswordVisibility()
