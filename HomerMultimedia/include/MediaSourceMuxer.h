@@ -88,6 +88,7 @@ public:
 
     /* grabbing control */
     virtual void StopGrabbing();
+    virtual bool Reset(enum MediaType = MEDIA_UNKNOWN);
     virtual std::string GetCodecName();
     virtual std::string GetCodecLongName();
     virtual int GetChunkDropConter();
