@@ -932,9 +932,10 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
 //HINT: call this function continuously !
 bool MediaSourceMuxer::BelowMaxFps(int pFrameNumber)
 {
+    int64_t tCurrentTime = Time::GetTimeStamp();
+
     if (mStreamMaxFps != 0)
     {
-        int64_t tCurrentTime = Time::GetTimeStamp();
         int64_t tTimeDiffToLastFrame = tCurrentTime - mStreamMaxFps_LastFrame_Timestamp;
         int64_t tTimeDiffTreshold = 1000*1000 / mStreamMaxFps;
         int64_t tTimeDiffForNextFrame = tTimeDiffToLastFrame - tTimeDiffTreshold;
@@ -954,7 +955,10 @@ bool MediaSourceMuxer::BelowMaxFps(int pFrameNumber)
             return true;
         }
     }else
+    {
+        mStreamMaxFps_LastFrame_Timestamp = tCurrentTime;
         return true;
+    }
 
     return false;
 }
