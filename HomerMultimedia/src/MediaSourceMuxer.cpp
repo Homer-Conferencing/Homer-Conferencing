@@ -220,7 +220,7 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
         (GetRtpActivation() != pRtpActivated) ||
         (mStreamQuality != pMediaStreamQuality) ||
         (mStreamMaxPacketSize != pMaxPacketSize) ||
-        (mCurrentStreamingResX != pResX) || (mCurrentStreamingResY != pResY))
+        ((mCurrentStreamingResX != pResX) &&  (pResX != -1)) || ((mCurrentStreamingResY != pResY) && (pResY != -1)))
     {
         LOG(LOG_VERBOSE, "Setting new %s streaming preferences", GetMediaTypeStr().c_str());
 
@@ -704,6 +704,9 @@ bool MediaSourceMuxer::CloseMuxer()
 
     LOG(LOG_VERBOSE, "Going to close muxer, media type is \"%s\"", GetMediaTypeStr().c_str());
 
+    // lock
+    mMediaSinksMutex.lock();
+
     if (mMediaSourceOpened)
     {
         mMediaSourceOpened = false;
@@ -751,6 +754,9 @@ bool MediaSourceMuxer::CloseMuxer()
 
     ResetPacketStatistic();
 
+    // unlock
+    mMediaSinksMutex.unlock();
+
     return tResult;
 
 }
@@ -763,13 +769,7 @@ bool MediaSourceMuxer::CloseGrabDevice()
 
     if (mMediaSourceOpened)
     {
-        // lock
-        mMediaSinksMutex.lock();
-
         CloseMuxer();
-
-        // unlock
-        mMediaSinksMutex.unlock();
 
         tResult = true;
     }else
@@ -1409,6 +1409,43 @@ void MediaSourceMuxer::StopGrabbing()
     	mMediaSource->StopGrabbing();
     mGrabbingStopped = true;
     LOG(LOG_VERBOSE, "Stopping of muxer completed");
+}
+
+bool MediaSourceMuxer::Reset(enum MediaType pMediaType)
+{
+    bool tResult = false;
+
+    // HINT: closing the grab device resets the media type!
+    int tMediaType = (pMediaType == MEDIA_UNKNOWN) ? mMediaType : pMediaType;
+
+    //StopGrabbing();
+
+    // lock grabbing
+    mGrabMutex.lock();
+
+    CloseMuxer();
+
+    // restart media source, assuming that the last start of the media source was successful
+    // otherwise a manual call to Open(Video/Audio)GrabDevice besides this reset function is need
+    switch(tMediaType)
+    {
+        case MEDIA_VIDEO:
+            tResult = OpenVideoMuxer(mSourceResX, mSourceResY, mFrameRate);
+            break;
+        case MEDIA_AUDIO:
+            tResult = OpenAudioMuxer(mSampleRate, mStereo);
+            break;
+        case MEDIA_UNKNOWN:
+            //LOG(LOG_ERROR, "Media type unknown");
+            break;
+    }
+
+    // unlock grabbing
+    mGrabMutex.unlock();
+
+    mChunkNumber = 0;
+
+    return tResult;
 }
 
 string MediaSourceMuxer::GetCodecName()

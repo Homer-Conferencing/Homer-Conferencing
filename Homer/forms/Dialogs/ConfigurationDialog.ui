@@ -1816,26 +1816,36 @@
                </spacer>
               </item>
               <item>
-               <spacer name="horizontalSpacer_15">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeType">
-                 <enum>QSizePolicy::Fixed</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
+               <widget class="QToolButton" name="mTbSipServerSuggestions">
+                <property name="minimumSize">
                  <size>
                   <width>22</width>
-                  <height>20</height>
+                  <height>22</height>
                  </size>
                 </property>
-               </spacer>
+                <property name="maximumSize">
+                 <size>
+                  <width>22</width>
+                  <height>22</height>
+                 </size>
+                </property>
+                <property name="toolTip">
+                 <string>download suggestions from web server and select from this list</string>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="../../resources/Icons.qrc">
+                  <normaloff>:/images/ArrowDownGreen.png</normaloff>:/images/ArrowDownGreen.png</iconset>
+                </property>
+               </widget>
               </item>
               <item>
                <widget class="QLineEdit" name="mLeSipServer">
                 <property name="minimumSize">
                  <size>
-                  <width>167</width>
+                  <width>170</width>
                   <height>22</height>
                  </size>
                 </property>
@@ -1907,26 +1917,36 @@
                </spacer>
               </item>
               <item>
-               <spacer name="horizontalSpacer_14">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeType">
-                 <enum>QSizePolicy::Fixed</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
+               <widget class="QToolButton" name="mTbSipServerCreateAccount">
+                <property name="minimumSize">
                  <size>
                   <width>22</width>
-                  <height>20</height>
+                  <height>22</height>
                  </size>
                 </property>
-               </spacer>
+                <property name="maximumSize">
+                 <size>
+                  <width>22</width>
+                  <height>22</height>
+                 </size>
+                </property>
+                <property name="toolTip">
+                 <string>create a SIP account at the selected SIP server</string>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="../../resources/Icons.qrc">
+                  <normaloff>:/images/UserMale.png</normaloff>:/images/UserMale.png</iconset>
+                </property>
+               </widget>
               </item>
               <item>
                <widget class="QLineEdit" name="mLeSipUserName">
                 <property name="minimumSize">
                  <size>
-                  <width>167</width>
+                  <width>170</width>
                   <height>22</height>
                  </size>
                 </property>
@@ -2036,7 +2056,7 @@
                <widget class="QLineEdit" name="mLeSipPassword">
                 <property name="minimumSize">
                  <size>
-                  <width>167</width>
+                  <width>170</width>
                   <height>22</height>
                  </size>
                 </property>
@@ -2219,10 +2239,36 @@
                </spacer>
               </item>
               <item>
+               <widget class="QToolButton" name="mTbStunServerSuggestions">
+                <property name="minimumSize">
+                 <size>
+                  <width>22</width>
+                  <height>22</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>22</width>
+                  <height>22</height>
+                 </size>
+                </property>
+                <property name="toolTip">
+                 <string>download suggestions from web server and select from this list</string>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="../../resources/Icons.qrc">
+                  <normaloff>:/images/ArrowDownGreen.png</normaloff>:/images/ArrowDownGreen.png</iconset>
+                </property>
+               </widget>
+              </item>
+              <item>
                <widget class="QLineEdit" name="mLeStunServer">
                 <property name="minimumSize">
                  <size>
-                  <width>167</width>
+                  <width>170</width>
                   <height>22</height>
                  </size>
                 </property>
