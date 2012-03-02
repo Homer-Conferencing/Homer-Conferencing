@@ -68,6 +68,8 @@ SET (LIB_DIRS
 	${LIB_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}/../../bin/lib
 	${CMAKE_CURRENT_SOURCE_DIR}/../../bin
+	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/bin/lib
+	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/bin
 	/usr/local/lib
 	/usr/lib
 	/usr/lib${ARCH_BITS}
