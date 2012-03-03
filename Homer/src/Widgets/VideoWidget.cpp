@@ -977,7 +977,7 @@ void VideoWidget::SetResolution(int mX, int mY)
 			if ((windowState() & Qt::WindowFullScreen) == 0)
 			{
 				setMinimumSize(mResX, mResY);
-				resize(mResX, mResY);
+				resize(0, 0);
 			}
 		}
 		setUpdatesEnabled(true);
@@ -999,7 +999,8 @@ void VideoWidget::SetScaling(float pVideoScaleFactor)
 		LOG(LOG_VERBOSE, "Setting video output resolution to %d * %d", tX, tY);
 
 		setMinimumSize(tX, tY);
-		resize(tX, tY);
+		resize(0, 0);
+		
 		mNeedBackgroundUpdatesUntillNextFrame = true;
 	}else
 		LOG(LOG_VERBOSE, "SetScaling skipped because fullscreen mode detected");
@@ -1305,8 +1306,8 @@ void VideoWidget::customEvent(QEvent *pEvent)
                     ShowFrame(tFrame, tFps, mCurrentFrameNumber);
                     //printf("VideoWidget-Frame number: %d\n", mCurrentFrameNumber);
                     // do we have a frame order problem?
-                    if ((mLastFrameNumber > mCurrentFrameNumber) && (mCurrentFrameNumber  > 9 /* -1 means error, 1 is received after every reset, use "9" because of possible latencies */))
-                        LOG(LOG_ERROR, "Frame ordering problem detected! [%d->%d]", mLastFrameNumber, mCurrentFrameNumber);
+                    if ((mLastFrameNumber > mCurrentFrameNumber) && (mCurrentFrameNumber  > 32 /* -1 means error, 1 is received after every reset, use "32" because of possible latencies */))
+                        LOG(LOG_WARN, "Frames received in wrong order, [%d->%d]", mLastFrameNumber, mCurrentFrameNumber);
                     //if (tlFrameNumber == tFrameNumber)
                         //printf("VideoWidget-unnecessary frame grabbing detected!\n");
                 }
