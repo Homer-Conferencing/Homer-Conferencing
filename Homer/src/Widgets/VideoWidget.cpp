@@ -668,6 +668,7 @@ void VideoWidget::DialogAddNetworkSink()
 
 void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
 {
+    int tMSecs = QTime::currentTime().msec();
 	int tFrameOutputWidth = 0;
 	int tFrameOutputHeight = 0;
 
@@ -846,7 +847,6 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
     //#############################################################
     //### draw record icon
     //#############################################################
-    int tMSecs = QTime::currentTime().msec();
     if ((mVideoSource->IsRecording()) and (tMSecs % 500 < 250))
     {
         QPixmap tPixmap = QPixmap(":/images/Audio - Record.png");
@@ -1160,7 +1160,9 @@ void VideoWidget::paintEvent(QPaintEvent *pEvent)
         tBackgroundColor = QColor(Qt::black);
     else
         tBackgroundColor = QApplication::palette().brush(backgroundRole()).color();
-
+    #ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
+        tBackgroundColor = QColor((int)((long)256 * qrand() / RAND_MAX), (int)((long)256 * qrand() / RAND_MAX), (int)((long)256 * qrand() / RAND_MAX));
+    #endif
     // wait until valid new frame is available to be drawn
     if (mCurrentFrame.isNull())
     {
@@ -1171,12 +1173,20 @@ void VideoWidget::paintEvent(QPaintEvent *pEvent)
     // force background update as long as we don't have the focus -> we are maybe covered by other applications GUI
     // force background update if focus has changed
     QWidget *tWidget = QApplication::focusWidget();
-    if ((tWidget == NULL) || (tWidget != mCurrentApplicationFocusedWidget))
-    	mNeedBackgroundUpdatesUntillNextFrame = true;
-    mCurrentApplicationFocusedWidget = tWidget;
+    if (((tWidget == NULL) || (tWidget != mCurrentApplicationFocusedWidget)) && ((windowState() & Qt::WindowFullScreen) == 0))
+    {
+        #ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
+            LOG(LOG_VERBOSE, "Focused widget has changed, background-update enforced, focused widget: %p", tWidget);
+        #endif
+        mNeedBackgroundUpdate = true;
+        mCurrentApplicationFocusedWidget = tWidget;
+    }
 
     if ((mNeedBackgroundUpdate) || (mNeedBackgroundUpdatesUntillNextFrame))
     {
+        #ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
+            LOG(LOG_ERROR, "Background-update %d, %d", mNeedBackgroundUpdate, mNeedBackgroundUpdatesUntillNextFrame);
+        #endif
         //### calculate background surrounding the current frame
         int tFrameWidth = width() - mCurrentFrame.width();
         if (tFrameWidth > 0)
