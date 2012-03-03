@@ -278,6 +278,9 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     if (mMediaSourceOpened)
         return false;
 
+    // lock
+    mMediaSinksMutex.lock();
+
     // set category for packet statistics
     ClassifyStream(DATA_TYPE_VIDEO, PACKET_TYPE_RAW);
 
@@ -304,6 +307,9 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
 
         // Close the format context
         av_free(mFormatContext);
+
+        // unlock
+        mMediaSinksMutex.unlock();
 
         return false;
     }
@@ -403,6 +409,9 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
         // Close the format context
         av_free(mFormatContext);
 
+        // unlock
+        mMediaSinksMutex.unlock();
+
         return false;
     }
 
@@ -422,6 +431,9 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
         // Close the format context
         av_free(mFormatContext);
 
+        // unlock
+        mMediaSinksMutex.unlock();
+
         return false;
     }
 
@@ -435,6 +447,9 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
 
         // Close the format context
         av_free(mFormatContext);
+
+        // unlock
+        mMediaSinksMutex.unlock();
 
         return false;
     }
@@ -461,6 +476,9 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     else
         LOG(LOG_INFO, "    ..rtp encapsulation: no");
     LOG(LOG_INFO, "    ..max. packet size: %d bytes", mStreamMaxPacketSize);
+
+    // unlock
+    mMediaSinksMutex.unlock();
 
     return true;
 }
@@ -493,17 +511,11 @@ bool MediaSourceMuxer::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if (mMediaSourceOpened)
         return false;
 
-    // lock
-    mMediaSinksMutex.lock();
-
     // afterwards open the muxer, independent from the open state of the local video
     if (mMediaSource != NULL)
     	tResult = tResult && OpenVideoMuxer(pResX, pResY, pFps);
     else
     	tResult = OpenVideoMuxer(pResX, pResY, pFps);
-
-    // unlock
-    mMediaSinksMutex.unlock();
 
     return tResult;
 }
@@ -520,6 +532,9 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
 
     if (mMediaSourceOpened)
         return false;
+
+    // lock
+    mMediaSinksMutex.lock();
 
     // set category for packet statistics
     ClassifyStream(DATA_TYPE_AUDIO, PACKET_TYPE_RAW);
@@ -544,6 +559,9 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
 
         // Close the format context
         av_free(mFormatContext);
+
+        // unlock
+        mMediaSinksMutex.unlock();
 
         return false;
     }
@@ -593,6 +611,9 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
         // Close the format context
         av_free(mFormatContext);
 
+        // unlock
+        mMediaSinksMutex.unlock();
+
         return false;
     }
 
@@ -612,6 +633,9 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
         // Close the format context
         av_free(mFormatContext);
 
+        // unlock
+        mMediaSinksMutex.unlock();
+
         return false;
     }
 
@@ -630,6 +654,9 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
 
         // Close the format context
         av_free(mFormatContext);
+
+        // unlock
+        mMediaSinksMutex.unlock();
 
         return false;
     }
@@ -659,6 +686,9 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     LOG(LOG_INFO, "Fifo opened...");
     LOG(LOG_INFO, "    ..fill size: %d bytes", av_fifo_size(mSampleFifo));
 
+    // unlock
+    mMediaSinksMutex.unlock();
+
     return true;
 }
 
@@ -683,17 +713,11 @@ bool MediaSourceMuxer::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     if (mMediaSourceOpened)
         return false;
 
-    // lock
-    mMediaSinksMutex.lock();
-
     // afterwards open the muxer, independent from the open state of the local video
     if (mMediaSource != NULL)
     	tResult = tResult && OpenAudioMuxer(pSampleRate, pStereo);
     else
     	tResult = OpenAudioMuxer(pSampleRate, pStereo);
-
-    // unlock
-    mMediaSinksMutex.unlock();
 
     return tResult;
 }
@@ -1339,24 +1363,12 @@ void MediaSourceMuxer::SetVideoGrabResolution(int pResX, int pResY)
             // lock grabbing
             mGrabMutex.lock();
 
-            // lock
-            mMediaSinksMutex.lock();
-
             CloseMuxer();
-
-            // unlock
-            mMediaSinksMutex.unlock();
 
             if (mMediaSource != NULL)
               mMediaSource->SetVideoGrabResolution(mSourceResX, mSourceResY);
 
-            // lock
-            mMediaSinksMutex.lock();
-
             OpenVideoMuxer(mSourceResX, mSourceResY, mFrameRate);
-
-            // unlock
-            mMediaSinksMutex.unlock();
 
             // unlock grabbing
             mGrabMutex.unlock();
