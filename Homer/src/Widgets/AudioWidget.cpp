@@ -495,6 +495,7 @@ void AudioWidget::DialogAddNetworkSink()
 
 void AudioWidget::ShowSample(void* pBuffer, int pSampleSize, int pSampleNumber)
 {
+    int tMSecs = QTime::currentTime().msec();
     short int tData = 0;
     int tSum = 0, tMax = 1, tMin = -1;
     int tLevel = 0;
@@ -570,7 +571,7 @@ void AudioWidget::ShowSample(void* pBuffer, int pSampleSize, int pSampleNumber)
         mLbStreamInfo->setFont(tFont);
         if (mAudioSource->SupportsSeeking())
             mLbStreamInfo->setText("<font color=red><b>"                                                                                                \
-                                   "Source: " + mAudioWorker->GetCurrentDevice() + "<br>" +                                                            \
+                                   /*"Source: " + mAudioWorker->GetCurrentDevice() + "<br>" +                                                            \*/
                                    "Blocks: " + QString("%1").arg(pSampleNumber) + (mAudioSource->GetChunkDropConter() ? (" (" + QString("%1").arg(mAudioSource->GetChunkDropConter()) + " dropped)") : "") + "<br>" + \
                                    "Codec: " + QString((mAudioSource->GetCodecName() != "") ? mAudioSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(mAudioSource->GetSampleRate()) + "Hz)<br>" + \
                                    "Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0') + \
@@ -588,7 +589,6 @@ void AudioWidget::ShowSample(void* pBuffer, int pSampleSize, int pSampleNumber)
     //#############################################################
     if (mAudioSource->IsRecording())
     {
-        int tMSecs = QTime::currentTime().msec();
         if (tMSecs % 500 < 250)
         {
             QPixmap tPixmap = QPixmap(":/images/Audio - Record.png");
