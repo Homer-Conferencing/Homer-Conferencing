@@ -30,6 +30,7 @@
 #include <Logger.h>
 #include <HBThread.h>
 
+#include <algorithm>
 #include <string>
 #include <unistd.h>
 
@@ -125,13 +126,14 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     tFormatParams.initial_pause = 0;
     tFormatParams.prealloced_context = 0;
 
-    if (mDesiredDevice.substr(mDesiredDevice.find_last_of(".") + 1) == "mkv")
-        tFormat = av_find_input_format("matroska");
-    else
-    if (mDesiredDevice.substr(mDesiredDevice.find_last_of(".") + 1) == "mpg")
-        tFormat = av_find_input_format("mpeg");
-    else
-        tFormat = av_find_input_format(mDesiredDevice.substr(mDesiredDevice.find_last_of(".") + 1).c_str());
+    string tFileType = mDesiredDevice.substr(mDesiredDevice.find_last_of(".") + 1);
+    transform(tFileType.begin(), tFileType.end(), tFileType.begin(), ::tolower);
+    LOG(LOG_VERBOSE, "Try to open video stream from file with extension \"%s\"", tFileType.c_str());
+    if (tFileType == "mkv")
+        tFileType = "matroska";
+    if ((tFileType == "mpg") || (tFileType == "vob"))
+        tFileType = "mpeg";
+    tFormat = av_find_input_format(tFileType.c_str());
     if (tFormat == NULL)
     {
         LOG(LOG_ERROR, "Couldn't find video input format");
@@ -284,10 +286,14 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     tFormatParams.initial_pause = 0;
     tFormatParams.prealloced_context = 0;
 
-    if ((mDesiredDevice.substr(mDesiredDevice.find_last_of(".") + 1) == "mkv") || (mDesiredDevice.substr(mDesiredDevice.find_last_of(".") + 1) == "mka"))
-        tFormat = av_find_input_format("matroska");
-    else
-        tFormat = av_find_input_format(mDesiredDevice.substr(mDesiredDevice.find_last_of(".") + 1).c_str());
+    string tFileType = mDesiredDevice.substr(mDesiredDevice.find_last_of(".") + 1);
+    transform(tFileType.begin(), tFileType.end(), tFileType.begin(), ::tolower);
+    LOG(LOG_VERBOSE, "Try to open an audio stream from file with extension \"%s\"", tFileType.c_str());
+    if ((tFileType == "mkv") || (tFileType == "mka"))
+        tFileType = "matroska";
+    if (tFileType == "vob")
+        tFileType = "mpeg";
+    tFormat = av_find_input_format(tFileType.c_str());
     if (tFormat == NULL)
     {
         LOG(LOG_ERROR, "Couldn't find audio input format");
