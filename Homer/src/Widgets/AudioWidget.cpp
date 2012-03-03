@@ -712,8 +712,8 @@ void AudioWidget::customEvent(QEvent* pEvent)
                 {
                     ShowSample(tSample, tSampleSize, mCurrentSampleNumber);
                     //printf("VideoWidget-Sample number: %d\n", mCurrentSampleNumber);
-                    if ((mLastSampleNumber > mCurrentSampleNumber) && (mCurrentSampleNumber > 9 /* -1 means error, 1 is received after every reset, use "9" because of possible latencies */))
-                        LOG(LOG_ERROR, "Sample ordering problem detected! [%d->%d]", mLastSampleNumber, mCurrentSampleNumber);
+                    if ((mLastSampleNumber > mCurrentSampleNumber) && (mCurrentSampleNumber > 32 /* -1 means error, 1 is received after every reset, use "32" because of possible latencies */))
+                        LOG(LOG_WARN, "Samples received in wrong order, [%d->%d]", mLastSampleNumber, mCurrentSampleNumber);
                     //if (tlSampleNumber == tSampleNumber)
                         //LOG(LOG_ERROR, "Unnecessary frame grabbing detected");
                 }

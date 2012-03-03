@@ -95,6 +95,8 @@ public:
 
 public slots:
     void ToggleVisibility();
+
+private slots:
     void ShowHourGlass();
 
 private:
