@@ -289,17 +289,17 @@ void OverviewPlaylistWidget::DelEntryDialog()
     }
 }
 
-static QString sAllLoadVideoFilters = "All supported formats (*.avi *.asf *.dv *.mkv *.mpg *.mpeg *.mov *.mp4 *.mp4a *.m3u *.3gp *.swf *.wmv)";
-static QString sLoadVideoFilters = sAllLoadVideoFilters + ";;"\
-                    "Audio Video Interleave Format (*.avi);;"\
+static QString sAllLoadVideoFilter = "All supported formats (*.asf *.avi *.dv *.mkv *.mov *.mpg *.mpeg *.mp4 *.mp4a *.m3u *.swf *.vob *.wmv *.3gp)";
+static QString sLoadVideoFilters = sAllLoadVideoFilter + ";;"\
                     "Advanced Systems Format (*.asf);;"\
+                    "Audio Video Interleave Format (*.avi);;"\
                     "Digital Video Format (*.dv);;"\
                     "Matroska Format (*.mkv);;"\
                     "MPEG-Program Stream Format (*.mpg *.mpeg);;"\
                     "Playlist file (*.m3u);;"\
                     "Quicktime/MPEG4 Format (*.mov *.mp4 *.mp4a *.3gp);;"\
                     "Small Web Format (*.swf);;"\
-                    /*"Video Object Format (*.vob);;" \*/
+                    "Video Object Format (*.vob);;" \
                     "Windows Media Video Format (*.wmv)";
 
 QStringList OverviewPlaylistWidget::LetUserSelectVideoFile(QWidget *pParent, QString pDescription, bool pMultipleFiles)
@@ -310,13 +310,13 @@ QStringList OverviewPlaylistWidget::LetUserSelectVideoFile(QWidget *pParent, QSt
         tResult = QFileDialog::getOpenFileNames(pParent, pDescription,
                                                                 CONF.GetDataDirectory() + "/Homer-Video.avi",
                                                                 sLoadVideoFilters,
-                                                                &sAllLoadVideoFilters,
+                                                                &sAllLoadVideoFilter,
                                                                 QFileDialog::DontUseNativeDialog);
     else
         tResult = QStringList(QFileDialog::getOpenFileName(pParent,  pDescription,
                                                                 CONF.GetDataDirectory() + "/Homer-Video.avi",
                                                                 sLoadVideoFilters,
-                                                                &sAllLoadVideoFilters,
+                                                                &sAllLoadVideoFilter,
                                                                 QFileDialog::DontUseNativeDialog));
 
     if (!tResult.isEmpty())
@@ -325,8 +325,8 @@ QStringList OverviewPlaylistWidget::LetUserSelectVideoFile(QWidget *pParent, QSt
     return tResult;
 }
 
-static QString sAllSaveVideoFilters = "All supported formats (*.avi *.mov *.mp4 *.mp4a *.3gp)";
-static QString sSaveVideoFilters = sAllSaveVideoFilters + ";;"\
+static QString sAllSaveVideoFilter = "All supported formats (*.avi *.mov *.mp4 *.mp4a *.3gp)";
+static QString sSaveVideoFilters = sAllSaveVideoFilter + ";;"\
                     "Audio Video Interleave Format (*.avi);;"\
                     "Quicktime/MPEG4 Format (*.mov *.mp4 *.mp4a *.3gp)";
 
@@ -335,7 +335,7 @@ QString OverviewPlaylistWidget::LetUserSelectVideoSaveFile(QWidget *pParent, QSt
     QString tResult = QFileDialog::getSaveFileName(pParent,  pDescription,
                                                             CONF.GetDataDirectory() + "/Homer-Video.avi",
                                                             sSaveVideoFilters,
-                                                            &sAllSaveVideoFilters,
+                                                            &sAllSaveVideoFilter,
                                                             QFileDialog::DontUseNativeDialog);
 
     if (!tResult.isEmpty())
@@ -364,8 +364,8 @@ bool OverviewPlaylistWidget::IsVideoFile(QString pFileName)
         return false;
 }
 
-static QString sAllLoadAudioFilters =  "All supported formats (*.mp3 *.avi *.mka *.mkv *.m3u *.wav)";
-static QString sLoadAudioFilters =  sAllLoadAudioFilters + ";;"\
+static QString sAllLoadAudioFilter =  "All supported formats (*.mp3 *.avi *.mka *.mkv *.m3u *.wav)";
+static QString sLoadAudioFilters =  sAllLoadAudioFilter + ";;"\
                     "Audio Video Interleave Format (*.avi);;"\
                     "Matroska Format (*.mka);;"\
                     "MPEG Audio Layer 2/3 Format (*.mp3);;"\
@@ -380,13 +380,13 @@ QStringList OverviewPlaylistWidget::LetUserSelectAudioFile(QWidget *pParent, QSt
         tResult = QFileDialog::getOpenFileNames(pParent,  pDescription,
                                                                 CONF.GetDataDirectory() + "/Homer-Audio.mp3",
                                                                 sLoadAudioFilters,
-                                                                &sAllLoadAudioFilters,
+                                                                &sAllLoadAudioFilter,
                                                                 QFileDialog::DontUseNativeDialog);
     else
         tResult = QStringList(QFileDialog::getOpenFileName(pParent,  pDescription,
                                                                 CONF.GetDataDirectory() + "/Homer-Audio.mp3",
                                                                 sLoadAudioFilters,
-                                                                &sAllLoadAudioFilters,
+                                                                &sAllLoadAudioFilter,
                                                                 QFileDialog::DontUseNativeDialog));
 
     if (!tResult.isEmpty())
@@ -395,8 +395,8 @@ QStringList OverviewPlaylistWidget::LetUserSelectAudioFile(QWidget *pParent, QSt
     return tResult;
 }
 
-static QString sAllSaveAudioFilters =  "All supported formats (*.mp3 *.wav)";
-static QString sSaveAudioFilters =  sAllSaveAudioFilters + ";;"\
+static QString sAllSaveAudioFilter =  "All supported formats (*.mp3 *.wav)";
+static QString sSaveAudioFilters =  sAllSaveAudioFilter + ";;"\
                     "MPEG Audio Layer 2/3 Format (*.mp3);;"\
                     "Waveform Audio File Format (*.wav)";
 
@@ -405,7 +405,7 @@ QString OverviewPlaylistWidget::LetUserSelectAudioSaveFile(QWidget *pParent, QSt
     QString tResult = QFileDialog::getSaveFileName(pParent,  pDescription,
                                                             CONF.GetDataDirectory() + "/Homer-Audio.mp3",
                                                             sSaveAudioFilters,
-                                                            &sAllSaveAudioFilters,
+                                                            &sAllSaveAudioFilter,
                                                             QFileDialog::DontUseNativeDialog);
 
     if (!tResult.isEmpty())
@@ -434,32 +434,32 @@ bool OverviewPlaylistWidget::IsAudioFile(QString pFileName)
         return false;
 }
 
+QString sAllLoadMovieFilter = "All supported formats (*.avi *.mkv *.mov *.mpeg *.mp4 *.mp4a *.m3u *.swf *.vob *.wmv *.3gp)";
+QString sLoadMovieFilters =  sAllLoadMovieFilter + ";;"\
+                    "Audio Video Interleave Format (*.avi);;"\
+                    "Matroska Format (*.mkv);;"\
+                    "MPEG-Program Stream Format (*.mpeg);;"\
+                    "Playlist file (*.m3u);;"\
+                    "Quicktime/MPEG4 Format (*.mov *.mp4 *.mp4a *.3gp);;"\
+                    "Small Web Format (*.swf);;"\
+                    "Video Object Format (*.vob);;" \
+                    "Windows Media Video Format (*.wmv)";
+
 QStringList OverviewPlaylistWidget::LetUserSelectMovieFile(QWidget *pParent, QString pDescription, bool pMultipleFiles)
 {
     QStringList tResult;
 
-    QString tFilters =  "All supported formats (*.avi *.mkv *.mpeg *.mov *.mp4 *.mp4a *.m3u *.3gp *.swf *.wmv);;"\
-                        "Audio Video Interleave Format (*.avi);;"\
-                        "Matroska Format (*.mkv);;"\
-                        "MPEG-Program Stream Format (*.mpeg);;"\
-                        "Playlist file (*.m3u);;"\
-                        "Quicktime/MPEG4 Format (*.mov *.mp4 *.mp4a *.3gp);;"\
-                        "Small Web Format (*.swf);;"\
-                        /*"Video Object Format (*.vob);;" \*/
-                        "Windows Media Video Format (*.wmv)";
-    QString tSelectedFilter = "All supported formats (*.avi *.mkv *.mpeg *.mov *.mp4 *.mp4a *.m3u *.3gp *.swf *.wmv)";
-
     if (pMultipleFiles)
         tResult = QFileDialog::getOpenFileNames(pParent,  pDescription,
                                                                 CONF.GetDataDirectory() + "/Homer-Movie.avi",
-                                                                tFilters,
-                                                                &tSelectedFilter,
+                                                                sLoadMovieFilters,
+                                                                &sAllLoadMovieFilter,
                                                                 QFileDialog::DontUseNativeDialog);
     else
         tResult = QStringList(QFileDialog::getOpenFileName(pParent,  pDescription,
                                                                 CONF.GetDataDirectory() + "/Homer-Movie.avi",
-                                                                tFilters,
-                                                                &tSelectedFilter,
+                                                                sLoadMovieFilters,
+                                                                &sAllLoadMovieFilter,
                                                                 QFileDialog::DontUseNativeDialog));
 
     if (!tResult.isEmpty())
