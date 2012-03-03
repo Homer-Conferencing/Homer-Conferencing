@@ -51,9 +51,14 @@ using namespace Homer::Multimedia;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// debug performance of video widget: background repainting
+//#define DEBUG_VIDEOWIDGET_PERFORMANCE
+
+///////////////////////////////////////////////////////////////////////////////
+
 #define FRAME_BUFFER_SIZE               3
 
-#define FPS_MEASUREMENT_STEPS          30
+#define FPS_MEASUREMENT_STEPS          60
 
 enum AspectRatio{
 	ASPECT_RATIO_ORIGINAL = 0,
