@@ -18,13 +18,13 @@ Instructions for installing Homer-Conferencing on your system
     http://www.homer-conferencing.com
 
 
-Install Homer:
-==============
+Install Homer-Conferencing:
+===========================
 
  At least gcc version 4.4 is needed to build Homer or one of its libraries.
  Additionally, GNU Make and CMake is needed during build process.
 
- Step 1: create build environment via
+ Create and install Homer via:
 
     > "cd HomerBuild"
     > "make install INSTALL_PREFIX=/foo/bar"
@@ -66,7 +66,7 @@ System dependencies:
 Removing old build data and restoring default data:
 ===================================================
 
- You can reset the Homer directories and restore defaults via
+ You can reset the Homer directories and restore defaults via:
 
     > "cd HomerBuild"
     > "make distclean"
@@ -77,10 +77,10 @@ Removing old build data and restoring default data:
     build run on the disc.
 
 
-Build Homer with debug symbols / as developer:
-==============================================
+Build Homer-Conferencing with debug symbols / as developer:
+===========================================================
 
- Step 1: create build environment via
+ Create debug build via:
 
     > "cd HomerBuild"
     > "make" (or explicit via "make debug")
@@ -92,8 +92,8 @@ Build Homer with debug symbols / as developer:
 
 
 
-Install libraries to a different directory than the Homer binary:
-=================================================================
+Install libraries to a different directory than the Homer-Conferencing binary:
+==============================================================================
 
  It is possible to install all built libraries to an explicitly given directory.
  This can be triggered via:
@@ -104,8 +104,8 @@ Install libraries to a different directory than the Homer binary:
      of "/foo/bar/lib". 
 
 
-Additional information to build Homer on Windows systems:
-========================================================
+Additional information to build Homer-Conferencing on Windows systems:
+======================================================================
 
  To build Homer on Windows you need a minimal Linux environment. At the moment
  each Windows release is built with MSys32, which depends on MinGW32. For 
@@ -114,8 +114,8 @@ Additional information to build Homer on Windows systems:
 
 
 
-Additional information to build Homer on OS X systems:
-======================================================
+Additional information to build Homer-Conferencing on OS X systems:
+===================================================================
 
  Current OS X releases of Homer are built with cmake 2.6 for OS X and Apple's 
  Xcode 3.2.6, which includes both gcc and binutils in current versions.
