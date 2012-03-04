@@ -27,18 +27,13 @@ Install Homer:
  Step 1: create build environment via
 
     > "cd HomerBuild"
-    > "make all"
+    > "make install INSTALL_PREFIX=/foo/bar"
 
     This will create all needed libraries and binaries depending on your 
     current system configuration. All binary files are build without debug 
-    symbols and the output is stripped. After this step you can start Homer
-    via the command "./bin/Homer".
-
- Step 2: install files to your system
-
-    > "make install INSTALL_PREFIX=/foo/bar"
-
-    All created files from step 1 will be installed to "/foo/bar/".
+    symbols and the output is stripped. After these steps you can start Homer
+    via the command line "./bin/Homer".
+    Additionally, all created files will be installed to "/foo/bar/".
     Libraries will be copied to "/foo/bar/lib" and binaries to "/foo/bar/bin".
     The program icon for Homer will be copied to "/foo/bar/usr/share/Homer".
     The default directory (without INSTALL_PREFIX parameter) is "/usr/local".
@@ -95,16 +90,6 @@ Build Homer with debug symbols / as developer:
     symbols and the output isn't stripped. If you need the Homer-Release package 
     see https://github.com/Homer-Conferencing/Homer-Release.
 
- Step 2: install files to your system
-
-    > "make install INSTALL_PREFIX=/foo/bar"
-
-    You can also install the debug version of Homer. In this case all created 
-    files from step 1 will be installed to "/foo/bar/". Libraries will be copied 
-    to "/foo/bar/lib" and binaries to "/foo/bar/bin". The program icon for Homer 
-    will be copied to "/foo/bar/usr/share/Homer". The default directory (if no 
-    parameter INSTALL_PREFIX is given) is "/usr/local".
-
 
 
 Install libraries to a different directory than the Homer binary:
@@ -113,7 +98,7 @@ Install libraries to a different directory than the Homer binary:
  It is possible to install all built libraries to an explicitly given directory.
  This can be triggered via:
  
-     >"make install INSTALL_LIBDIR=/foo/bar/lib64"
+     >"make install INSTALL_PREFIX=/foo/bar INSTALL_LIBDIR=/foo/bar/lib64"
      
      This will install all libraries to the directory "/foo/bar/lib64" instead
      of "/foo/bar/lib". 
