@@ -68,6 +68,8 @@ SET (INCLUDE_DIRS
 	../../HomerWinLibs/SDL/include
 	../../HomerWinLibs/SDL-MIXER/include
 	../../HomerWinLibs/SDL-SOUND
+	/usr/include/SDL
+	/usr/local/include/SDL
 	${ALSA_INCLUDE_DIRS}
 	${SDL_INCLUDE_DIR}
 	${SDL_SOUND_INCLUDE_DIR}
