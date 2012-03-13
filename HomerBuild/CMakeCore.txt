@@ -72,18 +72,22 @@ ENDIF ()
 # lib search path
 SET (LIB_DIRS
 	${LIB_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}/../../bin/lib
-	${CMAKE_CURRENT_SOURCE_DIR}/../../bin
 	/usr/local/lib
 	/usr/lib
 	/usr/lib${ARCH_BITS}
 )
 IF (DEFINED INSIDE_HOMER_BUILD)
-SET (LIB_DIRS
-	${LIB_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/bin/lib
-	${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/bin
-)
+	SET (LIB_DIRS
+		${LIB_DIRS}
+		${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/bin/lib
+		${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/bin
+	)
+ELSE()
+	SET (LIB_DIRS
+		${LIB_DIRS}
+		${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/lib
+		${CMAKE_CURRENT_SOURCE_DIR}/../../../bin
+	)
 ENDIF()
 MESSAGE("### Library search path: ${LIB_DIRS}")
 
@@ -122,14 +126,6 @@ ENDIF ()
 SET (LFLAGS
 	${LFLAGS}
 )
-
-##############################################################
-IF (APPLE)
-SET (LFLAGS
-	${LFLAGS}
-	-Wl,-install_name,@rpath/lib${TARGET_NAME}.dylib
-)
-ENDIF (APPLE)
 
 ##############################################################
 IF (BSD)
@@ -261,13 +257,21 @@ ENDFOREACH(LIB_DIRS_ENTRY ${LIB_DIRS})
 ##############################################################
 # generate library from given source files
 IF (DEFINED TARGET_LIB_NAME) 
+	# set libraries install_name for APPLE systems
+	IF (APPLE)
+		SET (LFLAGS
+			${LFLAGS}
+			-Wl,-install_name,@rpath/lib${TARGET_LIB_NAME}.dylib
+		)
+	ENDIF (APPLE)
+	
 	MESSAGE("### Flags for shared linking: ${CMAKE_SHARED_LINKER_FLAGS}")
 	MESSAGE("### Flags for module linking: ${CMAKE_MODULE_LINKER_FLAGS}")
 	
 	# build destination
 	SET(LIBRARY_OUTPUT_PATH ${TARGET_DIRECTORY})
 	MESSAGE("### Library output path: ${TARGET_DIRECTORY}")
-
+	
 	# trigger library creation
 	ADD_LIBRARY(${TARGET_LIB_NAME} SHARED ${SOURCES})
 	SET(TARGET_NAME
@@ -286,7 +290,8 @@ IF (DEFINED TARGET_PROGRAM_NAME)
 
 	# trigger program creation
 	IF(APPLE)
-		ADD_EXECUTABLE(${TARGET_PROGRAM_NAME} MACOSX_BUNDLE ${SOURCES})
+#		ADD_EXECUTABLE(${TARGET_PROGRAM_NAME} MACOSX_BUNDLE ${SOURCES})
+		ADD_EXECUTABLE(${TARGET_PROGRAM_NAME} ${SOURCES})
 	ELSEIF (WIN32)
 		ADD_EXECUTABLE(${TARGET_PROGRAM_NAME} WIN32 ${SOURCES})
 	ELSE ()
