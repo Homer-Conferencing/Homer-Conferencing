@@ -11,9 +11,14 @@ INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakePreDefs.txt)
 ##############################################################
 # find package "QT" and include some macros
 MESSAGE("##### Searching for library QT4")
+SET (QT_QMAKE_EXECUTABLE $ENV{QT_QMAKE_EXECUTABLE} )
 Find_Package(Qt4 4.6 REQUIRED)
 IF (NOT QT4_FOUND)
-	MESSAGE(FATAL_ERROR "You need library QT4")
+	IF ($ENV{QT_QMAKE_EXECUTABLE} MATCHES "")
+		MESSAGE(FATAL_ERROR "Library QT4 not found, try to define path to Qt4 qmake in environment variable QT_QMAKE_EXECUTABLE")
+	ELSE()
+		MESSAGE(FATAL_ERROR "You need library QT4")
+	ENDIF()
 ENDIF ()
 SET(QT_USE_QTCOREL 1)
 SET(QT_USE_QTGUI 1)
@@ -69,25 +74,45 @@ SET (FLAGS
 # link flags
 SET (LFLAGS
 	${LFLAGS}
-	-Wl,-R. 
-	-Wl,-R./lib 
-	-Wl,-R../lib
-	-Wl,-R../../lib 
-	-Wl,-R./bin 
-	-Wl,-R./bin/lib 
-	-Wl,-R../bin/lib
-	-Wl,-R../../bin/lib
-	-Wl,-R/usr/lib 
-	-Wl,-R/usr/local/lib  
 	-mthreads
 )
 
-IF (DEFINED INSTALL_LIBDIR)	
+IF (APPLE)
+	SET (LFLAGS
+		${LFLAGS}
+		-Wl,-rpath,.
+		-Wl,-rpath,./lib
+		-Wl,-rpath,../lib
+		-Wl,-rpath,../../lib
+		-Wl,-rpath,./bin
+		-Wl,-rpath,./bin/lib
+		-Wl,-rpath,../bin/lib
+		-Wl,-rpath,../../bin/lib
+		-Wl,-rpath,/usr/lib
+		-Wl,-rpath,/usr/local/lib
+	)
+ELSE()
+	SET (LFLAGS
+		${LFLAGS}
+		-Wl,-R.
+		-Wl,-R./lib
+		-Wl,-R../lib
+		-Wl,-R../../lib
+		-Wl,-R./bin
+		-Wl,-R./bin/lib
+		-Wl,-R../bin/lib
+		-Wl,-R../../bin/lib
+		-Wl,-R/usr/lib
+		-Wl,-R/usr/local/lib
+	)
+ENDIF()
+
+IF (DEFINED INSTALL_LIBDIR)
 	SET (LFLAGS
 		${LFLAGS}
 		-Wl,-R${INSTALL_LIBDIR}
 	)
-ENDIF()  
+ENDIF()
 
 IF (WIN32)
 	SET (LFLAGS
@@ -256,6 +281,23 @@ ELSE ()
 ENDIF ()
 # USED LIBRARIES for apple environment
 SET (LIBS_APPLE
+	stdc++
+	HomerBase
+	HomerGAPI
+	HomerMonitor
+	HomerMultimedia
+	HomerConference
+	HomerSoundOutput
+	${QT_LIBRARIES}
+)
+SET (FRAMEWORKS_APPLE2
+	${QT_LIBRARIES}
+	${QT_QTCORE_LIBRARIES}
+	${QT_QTGUI_LIBRARIES}
+	${QT_QTMULTIMEDIA_LIBRARIES}
+	${QT_QTNETWORK_LIBRARIES}
+	${QT_QTXML_LIBRARIES}
+	${QT_QTWEBKIT_LIBRARIES}
 )
 
 ##############################################################
