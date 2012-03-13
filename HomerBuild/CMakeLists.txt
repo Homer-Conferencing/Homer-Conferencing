@@ -3,6 +3,8 @@
 # Since:   2012-02-28
 ###############################################################################
 
+# we are inside HomerBuild!
+SET (INSIDE_HOMER_BUILD "true")
 cmake_minimum_required (VERSION 2.6)
 PROJECT(Homer-Conferencing)
 ADD_SUBDIRECTORY(../HomerBase ${CMAKE_CURRENT_BINARY_DIR}/HomerBase)
