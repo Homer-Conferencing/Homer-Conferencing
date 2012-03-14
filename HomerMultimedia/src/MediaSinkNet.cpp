@@ -51,7 +51,7 @@ using namespace Homer::Base;
 MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, bool pTransmitLossLess, bool pTransmitBitErrors, enum MediaSinkType pType, bool pRtpActivated):
     MediaSink(pType), RTP()
 {
-    mTransmitLossLess = pTransmitLossLess;
+    mUseTCP = pTransmitLossLess;
     mCodec = "unknown";
     mStreamerOpened = false;
     mBrokenPipe = false;
@@ -313,13 +313,19 @@ void MediaSinkNet::SendFragment(char* pPacketData, unsigned int pPacketSize, uns
     char *tPacketData = pPacketData;
 
     // for TCP add an additional fragment header in front of the codec data to be able to differentiate the fragments in a received TCP packet at receiver side
-    if(mTransmitLossLess)
+    if(mUseTCP)
     {
-        TCPFragmentHeader *tHeader = (TCPFragmentHeader*)mTCPCopyBuffer;
-        memcpy(mTCPCopyBuffer + TCP_FRAGMENT_HEADER_SIZE, pPacketData, pPacketSize);
-        tHeader->FragmentSize = pPacketSize;
-        pPacketSize += TCP_FRAGMENT_HEADER_SIZE;
-        tPacketData = mTCPCopyBuffer;
+        if (MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE > TCP_FRAGMENT_HEADER_SIZE + pPacketSize)
+        {
+            TCPFragmentHeader *tHeader = (TCPFragmentHeader*)mTCPCopyBuffer;
+            memcpy(mTCPCopyBuffer + TCP_FRAGMENT_HEADER_SIZE, pPacketData, pPacketSize);
+            tHeader->FragmentSize = pPacketSize;
+            pPacketSize += TCP_FRAGMENT_HEADER_SIZE;
+            tPacketData = mTCPCopyBuffer;
+        }else
+        {
+            LOG(LOG_ERROR, "TCP copy buffer is too small for data");
+        }
     }
 
     AnnouncePacket(pPacketSize);
