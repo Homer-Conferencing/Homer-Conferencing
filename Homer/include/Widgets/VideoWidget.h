@@ -145,6 +145,7 @@ private:
     int                 mLastFrameNumber;
     VideoWorkerThread   *mVideoWorker;
     MediaSource         *mVideoSource;
+    int                 mPendingNewFrameSignals;
 };
 
 
