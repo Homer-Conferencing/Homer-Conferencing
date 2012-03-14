@@ -607,6 +607,14 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
             }
             return GRAB_RES_INVALID;
         }
+
+        #ifdef MSF_DEBUG_PACKETS
+            if (tPacket.stream_index != mMediaStreamIndex)
+            {
+                LOG(LOG_VERBOSE, "Read stream %d instead of desired stream %d", tPacket.stream_index, mMediaStreamIndex);
+            }
+        #endif
+
         // is "presentation timestamp" stored within media file?
         if (tPacket.pts == (int64_t)AV_NOPTS_VALUE)
         {// pts isn't stored in the media file, fall back to "decompression timestamp"
@@ -658,9 +666,6 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
     #ifdef MSF_DEBUG_PACKETS
         if (tReadIteration > 1)
             LOG(LOG_VERBOSE, "Needed %d read iterations to get next media packet from source file", tReadIteration);
-    #endif
-
-    #ifdef MSF_DEBUG_PACKETS
         LOG(LOG_VERBOSE, "New read chunk %5d with size: %d and stream index: %d, media type %d", mMediaType, mChunkNumber + 1, tPacket.size, tPacket.stream_index);
     #endif
 
