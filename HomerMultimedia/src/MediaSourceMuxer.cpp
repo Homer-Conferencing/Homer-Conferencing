@@ -98,6 +98,10 @@ int MediaSourceMuxer::DistributePacket(void *pOpaque, uint8_t *pBuffer, int pBuf
     #ifdef MSM_DEBUG_PACKETS
         LOGEX(MediaSourceMuxer, LOG_VERBOSE, "Distribute packet of size: %d", pBufferSize);
     #endif
+    if (pBufferSize > 64 * 1024)
+    {
+        LOGEX(MediaSourceMuxer, LOG_WARN, "Encoded media data is too big for network streaming");
+    }
     if (pBufferSize > tMuxer->mStreamMaxPacketSize)
     {
         //LOGEX(MediaSourceMuxer, LOG_WARN, "Ffmpeg packet of %d bytes is biger than maximum payload size of %d bytes, RTP packetizer will fragment to solve this", pBufferSize, tMuxer->mStreamMaxPacketSize);
