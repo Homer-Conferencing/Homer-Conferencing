@@ -77,7 +77,7 @@ private:
     char                *mTCPCopyBuffer;
     bool                mStreamerOpened;
     bool                mBrokenPipe;
-    bool                mTransmitLossLess;
+    bool                mUseTCP;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
