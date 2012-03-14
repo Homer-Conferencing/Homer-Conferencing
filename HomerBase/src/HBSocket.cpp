@@ -650,6 +650,11 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
             LOG(LOG_VERBOSE, "Received %d bytes via socket %d at local port %d of %s socket", tReceivedBytes, mSocketHandle, mLocalPort, TransportType2String(mSocketTransportType).c_str());
         #endif
         tResult = true;
+
+        if (tReceivedBytes == pBufferSize)
+        {
+            LOG(LOG_WARN, "Full buffer size was used, maybe given application buffer is too small?");
+        }
     }else
     {
     	pSourceHost = "0.0.0.0";
