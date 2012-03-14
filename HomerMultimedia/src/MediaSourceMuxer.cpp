@@ -100,7 +100,7 @@ int MediaSourceMuxer::DistributePacket(void *pOpaque, uint8_t *pBuffer, int pBuf
     #endif
     if (pBufferSize > 64 * 1024)
     {
-        LOGEX(MediaSourceMuxer, LOG_WARN, "Encoded media data is too big for network streaming");
+        LOGEX(MediaSourceMuxer, LOG_WARN, "Encoded media data of %d bytes is too big for network streaming", pBufferSize);
     }
     if (pBufferSize > tMuxer->mStreamMaxPacketSize)
     {
@@ -152,6 +152,10 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
     pMaxPacketSize -= TCP_FRAGMENT_HEADER_SIZE; // TCP fragment header which is used to differentiate the RTP packets (fragments) in a received TCP packet
     pMaxPacketSize -= RTP::GetHeaderSizeMax(tStreamCodecId);
 	//pMaxPacketSize -= 32; // additional safety buffer size
+
+    // sanity check for max. packet size
+    if (pMaxPacketSize > MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE - 256) //HINT: assume 256 bytes of maximum overhead for additional headers
+        pMaxPacketSize = MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE - 256;
 
     if ((pResX != -1) && (pResY != -1))
     {
@@ -289,7 +293,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     ClassifyStream(DATA_TYPE_VIDEO, PACKET_TYPE_RAW);
 
     // build correct IO-context
-    tByteIoContext = av_alloc_put_byte((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE /*HINT: don't use mStreamMaxPacketSize here */, 1, this, NULL, DistributePacket, NULL);
+    tByteIoContext = av_alloc_put_byte((uint8_t*) mStreamPacketBuffer, mStreamMaxPacketSize, 1, this, NULL, DistributePacket, NULL);
 
     // mark as streamed
     tByteIoContext->is_streamed = 1;
