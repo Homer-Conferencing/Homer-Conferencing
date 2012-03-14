@@ -566,9 +566,18 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
     // Read new packet
     // return 0 if OK, < 0 if error or end of file.
     bool tFrameShouldBeDropped;
+    int tReadIteration = 0;
     do
     {
         tFrameShouldBeDropped = false;
+
+        if (tReadIteration > 0)
+        {
+            // free packet buffer
+            av_free_packet(&tPacket);
+        }
+
+        tReadIteration++;
 
         // read next sample from source - blocking
         if ((tRes = av_read_frame(mFormatContext, &tPacket)) != 0)
@@ -645,6 +654,11 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
 			}
 		#endif
     }while ((tPacket.stream_index != mMediaStreamIndex) || (tFrameShouldBeDropped));
+
+    #ifdef MSF_DEBUG_PACKETS
+        if (tReadIteration > 1)
+            LOG(LOG_VERBOSE, "Needed %d read iterations to get next media packet from source file", tReadIteration);
+    #endif
 
     #ifdef MSF_DEBUG_PACKETS
         LOG(LOG_VERBOSE, "New read chunk %5d with size: %d and stream index: %d, media type %d", mMediaType, mChunkNumber + 1, tPacket.size, tPacket.stream_index);
@@ -879,10 +893,11 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
                     break;
 
         }
-        // free packet buffer
-        av_free_packet(&tPacket);
     }else
         LOG(LOG_ERROR, "Empty packet received, media type is \"%s\"", GetMediaTypeStr().c_str());
+
+    // free packet buffer
+    av_free_packet(&tPacket);
 
     // unlock grabbing
     mGrabMutex.unlock();

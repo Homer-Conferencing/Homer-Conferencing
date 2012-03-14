@@ -1000,10 +1000,11 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                     break;
 
         }
-        // free packet buffer
-        av_free_packet(&tPacket);
     }else
         LOG(LOG_ERROR, "Empty packet received");
+
+    // free packet buffer
+    av_free_packet(&tPacket);
 
     // unlock grabbing
     mGrabMutex.unlock();
