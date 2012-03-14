@@ -1880,9 +1880,18 @@ void VideoWorkerThread::run()
 			// unlock
 			mGrabMutex.unlock();
 
+			// do we have a valid new video frame?
 			if ((tFrameNumber >= 0) && (tFrameSize > 0))
 			{
-				//LOG(LOG_ERROR, "A NEW ONE");
+
+			    // has the source resolution changed in the meantime? -> thread it as new source
+			    int tSourceResX, tSourceResY;
+			    mVideoSource->GetVideoSourceResolution(tSourceResX, tSourceResY);
+			    if ((tSourceResX != mResX) || (tSourceResY != mResY))
+			    {
+	                mVideoWidget->InformAboutNewSource();
+			    }
+
 				// lock
 				mDeliverMutex.lock();
 
