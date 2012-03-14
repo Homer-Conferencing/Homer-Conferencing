@@ -121,6 +121,7 @@ VideoWidget::VideoWidget(QWidget* pParent):
     mHourGlassAngle = 0;
     mHourGlassOffset = 0;
     mCustomEventReason = 0;
+    mPendingNewFrameSignals = 0;
     mShowLiveStats = false;
     mRecorderStarted = false;
     mVideoPaused = false;
@@ -918,6 +919,7 @@ void VideoWidget::ShowHourGlass()
 
 void VideoWidget::InformAboutNewFrame()
 {
+    mPendingNewFrameSignals++;
     QApplication::postEvent(this, new VideoEvent(VIDEO_NEW_FRAME, ""));
 }
 
@@ -1275,14 +1277,17 @@ void VideoWidget::customEvent(QEvent *pEvent)
     switch(tVideoEvent->GetReason())
     {
         case VIDEO_NEW_FRAME:
+            mPendingNewFrameSignals--;
+            if (mPendingNewFrameSignals > 2)
+                LOG(LOG_WARN, "System too slow?, %d pending signals about new frames", mPendingNewFrameSignals);
+
             tVideoEvent->accept();
             if (isVisible())
             {
-
                 mLastFrameNumber = mCurrentFrameNumber;
                 // hint: we don't have to synchronize with resolution changes because Qt has only one synchronous working event loop!
                 mCurrentFrameNumber = mVideoWorker->GetCurrentFrame(&tFrame, &tFps);
-                if (mCurrentFrameNumber != -1)
+                if (mCurrentFrameNumber > -1)
                 {
                     // make sure there is no hour glass anymore
                     if (mHourGlassTimer->isActive())
@@ -1310,7 +1315,8 @@ void VideoWidget::customEvent(QEvent *pEvent)
                         LOG(LOG_WARN, "Frames received in wrong order, [%d->%d]", mLastFrameNumber, mCurrentFrameNumber);
                     //if (tlFrameNumber == tFrameNumber)
                         //printf("VideoWidget-unnecessary frame grabbing detected!\n");
-                }
+                }else
+                    LOG(LOG_WARN, "Current frame number is invalid (%d)", mCurrentFrameNumber);
             }
             break;
         case VIDEO_OPEN_ERROR:
@@ -1768,12 +1774,19 @@ int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFps)
 
     // lock
     if (!mDeliverMutex.tryLock(100))
-        return -1;
-
-    if ((mWorkerWithNewData) && (!mSetGrabResolutionAsap) && (!mResetVideoSourceAsap))
     {
-        mFrameCurrentIndex = FRAME_BUFFER_SIZE - mFrameCurrentIndex - mFrameGrabIndex;
-        mWorkerWithNewData = false;
+        LOG(LOG_WARN, "Timeout during locking deliver mutex");
+        return -1;
+    }
+
+    if ((!mSetGrabResolutionAsap) && (!mResetVideoSourceAsap))
+    {
+        if (mWorkerWithNewData)
+        {
+            mFrameCurrentIndex = FRAME_BUFFER_SIZE - mFrameCurrentIndex - mFrameGrabIndex;
+            mWorkerWithNewData = false;
+        }else
+            LOG(LOG_WARN, "No new frame available, delivering old frame");
 
         // calculate FPS
         if ((pFps != NULL) && (mFrameTimestamps.size() > 1))
@@ -1791,7 +1804,8 @@ int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFps)
         *pFrame = mFrame[mFrameCurrentIndex];
         tResult = mFrameNumber[mFrameCurrentIndex];
         //printf("[%3lu %3lu %3lu] cur: %d grab: %d\n", mFrameNumber[0], mFrameNumber[1], mFrameNumber[2], mFrameCurrentIndex, mFrameGrabIndex);
-    }
+    }else
+        LOG(LOG_WARN, "No current frame available, worker with new data: %d, grab resolution invalid: %d, have to reset source: %d", mWorkerWithNewData, mSetGrabResolutionAsap, mResetVideoSourceAsap);
 
     // unlock
     mDeliverMutex.unlock();
@@ -1911,10 +1925,11 @@ void VideoWorkerThread::run()
                         mFrameTimestamps.removeFirst();
 				}
 
+                mVideoWidget->InformAboutNewFrame();
+
                 // unlock
 				mDeliverMutex.unlock();
 
-				mVideoWidget->InformAboutNewFrame();
 				//printf("VideoWorker--> %d\n", mFrameGrabIndex);
 				//printf("VideoWorker-grabbing FPS: %2d grabbed frame number: %d\n", mResultingFps, tFrameNumber);
 
