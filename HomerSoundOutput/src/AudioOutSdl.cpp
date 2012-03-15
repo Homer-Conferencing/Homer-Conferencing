@@ -182,6 +182,18 @@ bool AudioOutSdl::OpenPlaybackDevice(int pSampleRate, bool pStereo, string pDriv
     // set player callback function
     Mix_ChannelFinished(PlayerCallBack);
 
+    // give info about available chunk decoders
+    int tNumDecoders = Mix_GetNumChunkDecoders();
+    LOG(LOG_INFO, "There are %d available chunk decoders..", tNumDecoders);
+    for(int i = 0; i < tNumDecoders; ++i)
+        LOG(LOG_INFO, "  ..chunk decoder[%d]: %s", i, Mix_GetChunkDecoder(i));
+
+    // give info about available music decoders
+    tNumDecoders = Mix_GetNumMusicDecoders();
+    LOG(LOG_INFO, "There are %d available music decoders..", tNumDecoders);
+    for(int i = 0; i < tNumDecoders; ++i)
+        LOG(LOG_INFO, "  ..music decoder[%d]: %s", i, Mix_GetMusicDecoder(i));
+
     mAudioOutOpened = true;
 
     return true;
@@ -268,14 +280,15 @@ void AudioOutSdl::ReleaseChannel(int pChannel)
         // unassign the channel
         tChannelDesc->Assigned = false;
 
+        Mix_Chunk* tLastChunk = (Mix_Chunk*)tChannelDesc->LastChunk;
+
         // reset and free possible current buffer
-        if (tChannelDesc->LastChunk != NULL)
+        if (tLastChunk != NULL)
         {
-            Mix_Chunk* tLastChunk = (Mix_Chunk*)tChannelDesc->LastChunk;
+
             // free buffer memory of old chunk
-            free(tLastChunk->abuf);
-            // free memory of old chunk
-            free(tLastChunk);
+            Mix_FreeChunk(tLastChunk);
+
             // reset pointer
             tChannelDesc->LastChunk = NULL;
         }
@@ -314,10 +327,9 @@ void AudioOutSdl::ClearChunkListInternal(int pChannel)
     for (std::list<void*>::iterator tIt = tChannelDesc->Chunks.begin(); tIt != tItEnd; tIt++)
     {
         Mix_Chunk* tChunk = (Mix_Chunk*)(*tIt);
+
         // free buffer memory of chunk
-        free(tChunk->abuf);
-        // free memory of chunk descriptor
-        free(tChunk);
+        Mix_FreeChunk(tChunk);
     }
     tChannelDesc->Chunks.clear();
 }
@@ -366,14 +378,13 @@ bool AudioOutSdl::Play(int pChannel)
                     tChannelDesc->IsPlaying = true;
             }
 
+	        Mix_Chunk* tLastChunk = (Mix_Chunk*)tChannelDesc->LastChunk;
+	        
             // free memory
-            if (tChannelDesc->LastChunk != NULL)
+            if (tLastChunk != NULL)
             {
-                Mix_Chunk* tLastChunk = (Mix_Chunk*)tChannelDesc->LastChunk;
                 // free buffer memory of old chunk
-                free(tLastChunk->abuf);
-                // free memory of old chunk
-                free(tLastChunk);
+                Mix_FreeChunk(tLastChunk);
             }
 
             // update the current chunk pointer
@@ -518,9 +529,9 @@ AudioOutInfo AudioOutSdl::QueryAudioOutDevices()
     list<string> tDrivers;
     list<string> tDevices;
     string tCurDriver = "";
-    char tDriverNameBuffer[32];
+    char tDriverNameBuffer[1024];
 
-    if (SDL_AudioDriverName(tDriverNameBuffer, 32) != NULL)
+    if (SDL_AudioDriverName(tDriverNameBuffer, 1024) != NULL)
         tCurDriver = tDriverNameBuffer;
 
     ///SDL 1.3
@@ -613,14 +624,7 @@ void AudioOutSdl::PlayerCallBack(int pChannel)
         // unlock
         tChannelDesc->mMutex.unlock();
 
-        // free memory of last chunk if it was a valid one
-        if (tLastChunk != NULL)
-        {
-            // free buffer memory of old chunk
-            free(tLastChunk->abuf);
-            // free memory of old chunk
-            free(tLastChunk);
-        }
+        Mix_FreeChunk(tLastChunk);
     }
 }
 
