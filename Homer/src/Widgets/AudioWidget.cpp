@@ -574,6 +574,7 @@ void AudioWidget::ShowSample(void* pBuffer, int pSampleSize, int pSampleNumber)
                                    /*"Source: " + mAudioWorker->GetCurrentDevice() + "<br>" +                                                            \*/
                                    "Blocks: " + QString("%1").arg(pSampleNumber) + (mAudioSource->GetChunkDropConter() ? (" (" + QString("%1").arg(mAudioSource->GetChunkDropConter()) + " dropped)") : "") + "<br>" + \
                                    "Codec: " + QString((mAudioSource->GetCodecName() != "") ? mAudioSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(mAudioSource->GetSampleRate()) + "Hz)<br>" + \
+                                   "Output: " + QString("%1").arg(AUDIO_OUTPUT_SAMPLE_RATE) + " Hz" + "<br>" + \
                                    "Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0') + \
                                    "</b></font>");
         else
@@ -581,6 +582,7 @@ void AudioWidget::ShowSample(void* pBuffer, int pSampleSize, int pSampleNumber)
                                    "Source: " + mAudioWorker->GetCurrentDevice() + "<br>" +                                                            \
                                    "Blocks: " + QString("%1").arg(pSampleNumber) + (mAudioSource->GetChunkDropConter() ? (" (" + QString("%1").arg(mAudioSource->GetChunkDropConter()) + " dropped)") : "") + "<br>" + \
                                    "Codec: " + QString((mAudioSource->GetCodecName() != "") ? mAudioSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(mAudioSource->GetSampleRate()) + "Hz)" + \
+                                   "Output: " + QString("%1").arg(AUDIO_OUTPUT_SAMPLE_RATE) + " Hz" + "<br>" + \
                                    "</b></font>");
     }
 
@@ -994,9 +996,15 @@ void AudioWorkerThread::AudioPlaybackPeriodFinished()
 
 void AudioWorkerThread::PlaySamples(void *pSampleBuffer, int pSampleBufferSize)
 {
+    //QTime tTime = QTime::currentTime();
+
     //LOG(LOG_VERBOSE, "Playing buffer at %p with size %d", pSampleBuffer, pSampleBufferSize);
     AUDIOOUTSDL.Enqueue(mAudioChannel, pSampleBuffer, pSampleBufferSize, false);
     AUDIOOUTSDL.Play(mAudioChannel);
+
+    //QTime tTime2 = QTime::currentTime();
+
+    //LOG(LOG_VERBOSE, "Took %d ms, %s, %s", tTime2.msecsTo(tTime), tTime.toString("hh:mm:ss.zzz").toStdString().c_str(), tTime2.toString("hh:mm:ss.zzz").toStdString().c_str());
 
 //    qint64 tWrittenBytes = mAudioBuffer->write((const char*)pSampleBuffer, (qint64)pSampleBufferSize);
 //    if (mAudioOutput->state() != QAudio::ActiveState)
