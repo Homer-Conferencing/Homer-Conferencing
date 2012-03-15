@@ -443,7 +443,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
             mDuration = mFormatContext->streams[mMediaStreamIndex]->nb_frames;
         else
             if (mFormatContext->duration > 0)
-                mDuration = mFormatContext->duration;
+                mDuration = mFormatContext->duration / AV_TIME_BASE; //TODO: value is in seconds, should be related to time base!
             else
                 mDuration = 0;
 
