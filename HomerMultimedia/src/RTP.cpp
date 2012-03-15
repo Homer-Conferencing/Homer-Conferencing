@@ -965,8 +965,8 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize)
 
         tH261Header->Sbit = 0;
         tH261Header->Ebit = 0;
-        tH261Header->I = 0;
-        tH261Header->V = 1;
+        tH261Header->I = false;
+        tH261Header->V = true;
         tH261Header->Gobn = 0;
         tH261Header->Mbap = 0;
         tH261Header->Quant = 0;
