@@ -2087,7 +2087,7 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..qmax: %d", mCodecContext->qmax);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame size: %d", mCodecContext->frame_size);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..duration: %ld frames", mDuration);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context duration: %ld frames, %.0f seconds, format context duration: %ld, nr. of frames: %ld", mFormatContext->streams[mMediaStreamIndex]->duration, (float)mFormatContext->streams[mMediaStreamIndex]->duration / mFrameRate, mFormatContext->duration, mFormatContext->streams[mMediaStreamIndex]->nb_frames);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context duration: %ld frames, %.0f seconds, format context duration: %ld seconds, nr. of frames: %ld", mFormatContext->streams[mMediaStreamIndex]->duration, (float)mFormatContext->streams[mMediaStreamIndex]->duration / mFrameRate, mFormatContext->duration / AV_TIME_BASE, mFormatContext->streams[mMediaStreamIndex]->nb_frames);
     switch(mMediaType)
     {
         case MEDIA_VIDEO:
@@ -2100,7 +2100,7 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
         case MEDIA_AUDIO:
             LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..sample rate: %d", mCodecContext->sample_rate);
             LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..channels: %d", mCodecContext->channels);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..sample format: %d", (int)mCodecContext->sample_fmt);
+            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..sample format: %s", av_get_sample_fmt_name(mCodecContext->sample_fmt));
             break;
         default:
             LOG(LOG_ERROR, "Media type unknown");
