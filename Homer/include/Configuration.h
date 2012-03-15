@@ -70,6 +70,8 @@ namespace Homer { namespace Gui {
 
 #define CONF Configuration::GetInstance()
 
+#define AUDIO_OUTPUT_SAMPLE_RATE        44100
+
 ///////////////////////////////////////////////////////////////////////////////
 class Configuration
 {

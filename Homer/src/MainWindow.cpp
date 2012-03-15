@@ -343,7 +343,7 @@ void MainWindow::initializeVideoAudioIO()
     #endif
     // audio output
 	LOG(LOG_VERBOSE, "Opening audio output object..");
-    AUDIOOUTSDL.OpenPlaybackDevice(44100, true, "alsa", "auto");
+    AUDIOOUTSDL.OpenPlaybackDevice(AUDIO_OUTPUT_SAMPLE_RATE, true, "alsa", "auto");
 }
 
 void MainWindow::initializeColoring()
