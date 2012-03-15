@@ -225,13 +225,9 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         return false;
     }
 
-    if((tResult = av_seek_frame(mFormatContext, mMediaStreamIndex, 0, 0)) < 0)
+    if((tResult = av_seek_frame(mFormatContext, mMediaStreamIndex, 0, AVSEEK_FLAG_ANY)) < 0)
     {
-        LOG(LOG_ERROR, "Couldn't seek to the start of video stream because \"%s\".", strerror(AVUNERROR(tResult)));
-        // Close the video file
-        av_close_input_file(mFormatContext);
-        return false;
-
+        LOG(LOG_WARN, "Couldn't seek to the start of video stream because \"%s\".", strerror(AVUNERROR(tResult)));
     }
 
     // allocate software scaler context
@@ -427,13 +423,9 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
         return false;
     }
 
-    if((tResult = av_seek_frame(mFormatContext, mMediaStreamIndex, 0, 0)) < 0)
+    if((tResult = av_seek_frame(mFormatContext, mMediaStreamIndex, 0, AVSEEK_FLAG_ANY)) < 0)
     {
-        LOG(LOG_ERROR, "Couldn't seek to the start of audio stream because \"%s\".", strerror(AVUNERROR(tResult)));
-        // Close the audio file
-        av_close_input_file(mFormatContext);
-        return false;
-
+        LOG(LOG_WARN, "Couldn't seek to the start of audio stream because \"%s\".", strerror(AVUNERROR(tResult)));
     }
 
     // create resample context
@@ -652,7 +644,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
 						{
 							++mChunkDropCounter;
 							#ifdef MSF_DEBUG_PACKETS
-								LOG(LOG_VERBOSE, "System too busy (delay > %dms), read frame time diff.: %dms, frame is dropped (%d/%d dropped), media type %d", MSF_FRAME_DROP_THRESHOLD / 1000, -tDiffPtsUSecs / 1000, mChunkDropCounter, mChunkNumber, mMediaType);
+								LOG(LOG_VERBOSE, "System too busy (delay > %dms), read frame time diff.: %dms, frame is dropped (%d/%d dropped), media type is \"%s\"", MSF_FRAME_DROP_THRESHOLD / 1000, -tDiffPtsUSecs / 1000, mChunkDropCounter, mChunkNumber, mMediaType, GetMediaTypeStr().c_str());
 							#endif
 						}
 						tFrameShouldBeDropped = true;
@@ -676,7 +668,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
             LOG(LOG_VERBOSE, "      ..duration: %d", tPacket.duration);
             LOG(LOG_VERBOSE, "      ..pts: %ld stream [%d] pts: %ld", tPacket.pts, mMediaStreamIndex, mFormatContext->streams[mMediaStreamIndex]->pts.val);
             LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket.dts);
-            //LOG(LOG_VERBOSE, "      ..size: %d", tPacket.size);
+            LOG(LOG_VERBOSE, "      ..size: %d", tPacket.size);
             LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket.pos);
         #endif
 
@@ -924,20 +916,20 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
             tRelativeRealTimeUSecs = av_gettime() - mStartPtsUSecs;
             tDiffPtsUSecs = tRelativePacketTimeUSecs - tRelativeRealTimeUSecs;
             #ifdef MSF_DEBUG_TIMING
-                LOG(LOG_VERBOSE, "Current pts: %8lld (Fps: %3.2f) Stream start pts: %6lld Rel. Packet pts: %8lld Diff time: %8lld us", tRelativeRealTimeUSecs, mFrameRate, mSourceStartPts, tRelativePacketTimeUSecs, tDiffPtsUSecs);
+                LOG(LOG_VERBOSE, "%s-current relative time: %8lld us (Fps: %3.2f), stream start time: %6lld us, packet's relative play out time: %8lld us, time difference: %8lld us", GetMediaTypeStr().c_str(), tRelativeRealTimeUSecs, mFrameRate, mSourceStartPts, tRelativePacketTimeUSecs, tDiffPtsUSecs);
             #endif
             // adapt timing to real-time, ignore timings between -5 ms and +5 ms
             if (tDiffPtsUSecs > 0)
             {
                 #ifdef MSF_DEBUG_TIMING
-                    LOG(LOG_VERBOSE, "  Sleeping for %d us, media type: %d", tDiffPtsUSecs, mMediaType);
+                    LOG(LOG_VERBOSE, "%s-sleeping for %d us", GetMediaTypeStr().c_str(), tDiffPtsUSecs);
                 #endif
 				Thread::Suspend(tDiffPtsUSecs);
             }else
             {
                 #ifdef MSF_DEBUG_TIMING
                     if (tDiffPtsUSecs < -MSF_FRAME_DROP_THRESHOLD)
-                        LOG(LOG_VERBOSE, "System too busy (delay > %dms), decoded frame time diff.: %dms, media type %d", MSF_FRAME_DROP_THRESHOLD / 1000, -tDiffPtsUSecs / 1000, mMediaType);
+                        LOG(LOG_VERBOSE, "%s-system too busy (delay > %dms), decoded frame time diff.: %dms", GetMediaTypeStr().c_str(),MSF_FRAME_DROP_THRESHOLD / 1000, -tDiffPtsUSecs / 1000);
                 #endif
             }
         }
@@ -1087,7 +1079,7 @@ bool MediaSourceFile::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
         // unlock grabbing
         mGrabMutex.unlock();
 
-        //LOG(LOG_ERROR, "Tried to seek while source is closed, media type %d", mMediaType);
+        //LOG(LOG_ERROR, "Tried to seek while source is closed, media type is \"%s\"", GetMediaTypeStr().c_str());
         return false;
     }
 
