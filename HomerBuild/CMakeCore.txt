@@ -113,6 +113,10 @@ SET (FLAGS
 	-Wno-deprecated-declarations
 	-Wno-format
 	-Wno-uninitialized
+)
+IF (NOT (${BUILD} MATCHES "Default"))
+SET (FLAGS
+	${FLAGS}
 	-O2
 )
 IF (${BUILD} MATCHES "Debug")
