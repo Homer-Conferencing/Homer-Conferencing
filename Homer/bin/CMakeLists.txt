@@ -77,41 +77,49 @@ SET (LFLAGS
 	-mthreads
 )
 
-IF (APPLE)
-	SET (LFLAGS
-		${LFLAGS}
-		-Wl,-rpath,.
-		-Wl,-rpath,./lib
-		-Wl,-rpath,../lib
-		-Wl,-rpath,../../lib
-		-Wl,-rpath,./bin
-		-Wl,-rpath,./bin/lib
-		-Wl,-rpath,../bin/lib
-		-Wl,-rpath,../../bin/lib
-		-Wl,-rpath,/usr/lib
-		-Wl,-rpath,/usr/local/lib
-	)
-ELSE()
-	SET (LFLAGS
-		${LFLAGS}
-		-Wl,-R.
-		-Wl,-R./lib
-		-Wl,-R../lib
-		-Wl,-R../../lib
-		-Wl,-R./bin
-		-Wl,-R./bin/lib
-		-Wl,-R../bin/lib
-		-Wl,-R../../bin/lib
-		-Wl,-R/usr/lib
-		-Wl,-R/usr/local/lib
-	)
-ENDIF()
-
-IF (DEFINED INSTALL_LIBDIR)
-	SET (LFLAGS
-		${LFLAGS}
-		-Wl,-R${INSTALL_LIBDIR}
-	)
+# set rapth entries for non-default builds
+IF (NOT (${BUILD} MATCHES "Default"))
+	IF (APPLE)
+		SET (LFLAGS
+			${LFLAGS}
+			-Wl,-rpath,.
+			-Wl,-rpath,./lib
+			-Wl,-rpath,../lib
+			-Wl,-rpath,../../lib
+			-Wl,-rpath,./bin
+			-Wl,-rpath,./bin/lib
+			-Wl,-rpath,../bin/lib
+			-Wl,-rpath,../../bin/lib
+			-Wl,-rpath,/usr/lib
+			-Wl,-rpath,/usr/local/lib
+		)
+		IF (DEFINED INSTALL_LIBDIR)
+			SET (LFLAGS
+				${LFLAGS}
+				-Wl,-rpath,${INSTALL_LIBDIR}
+			)
+		ENDIF()
+	ELSE()
+		SET (LFLAGS
+			${LFLAGS}
+			-Wl,-R.
+			-Wl,-R./lib
+			-Wl,-R../lib
+			-Wl,-R../../lib
+			-Wl,-R./bin
+			-Wl,-R./bin/lib
+			-Wl,-R../bin/lib
+			-Wl,-R../../bin/lib
+			-Wl,-R/usr/lib
+			-Wl,-R/usr/local/lib
+		)
+		IF (DEFINED INSTALL_LIBDIR)
+			SET (LFLAGS
+				${LFLAGS}
+				-Wl,-R${INSTALL_LIBDIR}
+			)
+		ENDIF()
+	ENDIF()
 ENDIF()
 
 IF (WIN32)

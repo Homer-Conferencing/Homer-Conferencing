@@ -115,10 +115,11 @@ SET (FLAGS
 	-Wno-uninitialized
 )
 IF (NOT (${BUILD} MATCHES "Default"))
-SET (FLAGS
-	${FLAGS}
-	-O2
-)
+	SET (FLAGS
+		${FLAGS}
+		-O2
+	)
+ENDIF()
 IF (${BUILD} MATCHES "Debug")
 	SET (FLAGS "${FLAGS} -g -ggdb -DDEBUG_VERSION")
 ELSE ()
