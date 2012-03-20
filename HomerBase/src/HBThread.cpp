@@ -56,11 +56,17 @@ using namespace std;
 
 Thread::Thread()
 {
-    mThreadHandle = 0;
+    Init();
 }
 
 Thread::~Thread()
 {
+}
+
+void Thread::Init()
+{
+    LOG(LOG_VERBOSE, "Initialize thread object");
+    mThreadHandle = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -490,7 +496,9 @@ void* Thread::StartThreadStaticWrapperUniversal(void* pThread)
 	LOGEX(Thread, LOG_VERBOSE, "Going to start thread main");
 
     Thread *tThreadObject = (Thread*)pThread;
-    return tThreadObject->mThreadMain(tThreadObject->mThreadArguments);
+    void* tResult = tThreadObject->mThreadMain(tThreadObject->mThreadArguments);
+    tThreadObject->Init();
+    return tResult;
 }
 
 void* Thread::StartThreadStaticWrapperRun(void* pThread)
@@ -498,7 +506,9 @@ void* Thread::StartThreadStaticWrapperRun(void* pThread)
 	LOGEX(Thread, LOG_VERBOSE, "Going to start thread main (Run method)");
 
     Thread *tThreadObject = (Thread*)pThread;
-    return tThreadObject->Run(tThreadObject->mThreadArguments);
+    void* tResult = tThreadObject->Run(tThreadObject->mThreadArguments);
+    tThreadObject->Init();
+    return tResult;
 }
 
 bool Thread::StartThread(void* pArgs)
