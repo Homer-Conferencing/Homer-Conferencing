@@ -78,6 +78,9 @@ void OpenVideoAudioPreviewDialog::initializeGUI()
     connect(mCbAudioEnabled, SIGNAL(clicked(bool)), this, SLOT(actionAudioEnabled(bool)));
 
     LoadConfiguration();
+
+    // use network streaming as default selection
+    mRbStream->setChecked(true);
 }
 
 int OpenVideoAudioPreviewDialog::exec()
