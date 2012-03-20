@@ -387,8 +387,9 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     }
 
 	// build corresponding "ByteIOContext"
-    tByteIoContext = av_alloc_put_byte((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, /* read-only */0, this, GetNextPacket, NULL, NULL);
+    tByteIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, /* read-only */0, this, GetNextPacket, NULL, NULL);
 
+    tByteIoContext->seekable = 0;
     // mark as streamed
     tByteIoContext->is_streamed = 1;
     // limit packet size, otherwise ffmpeg will deliver unpredictable results ;)
@@ -549,8 +550,9 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
         return false;
 
 	// build corresponding "ByteIOContex
-    tByteIoContext = av_alloc_put_byte((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, /* read-only */0, this, GetNextPacket, NULL, NULL);
+    tByteIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, /* read-only */0, this, GetNextPacket, NULL, NULL);
 
+    tByteIoContext->seekable = 0;
     // mark as streamed
     tByteIoContext->is_streamed = 1;
     // limit packet size
