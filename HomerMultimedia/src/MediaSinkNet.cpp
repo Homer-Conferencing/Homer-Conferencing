@@ -57,6 +57,7 @@ MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, bool pT
     mBrokenPipe = false;
     mGAPIDataSocket = NULL;
     mCurrentStream = NULL;
+    mWaitUntillFirstKeyFrame = (pType == MEDIA_SINK_VIDEO) ? true : false;
 
     mTargetHost = pTargetHost;
     mTargetPort = pTargetPort;
@@ -164,6 +165,18 @@ void MediaSinkNet::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
     // limit packet size
     if (pPacketSize > 65000)
         pPacketSize = 65000;
+
+    // check for key frame if we wait for the first key frame
+    if (mWaitUntillFirstKeyFrame)
+    {
+        if (!pIsKeyFrame)
+            return;
+        else
+        {
+            LOG(LOG_VERBOSE, "Sending frame as first key frame to network sink");
+            mWaitUntillFirstKeyFrame = false;
+        }
+    }
 
     //####################################################################
     // send packet(s) with frame data to the correct target host and port
