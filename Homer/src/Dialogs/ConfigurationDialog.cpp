@@ -897,7 +897,7 @@ void ConfigurationDialog::ClickedButton(QAbstractButton *pButton)
                 mCbVideoCodec->setCurrentIndex(0);//H.261
                 mCbVideoQuality->setCurrentIndex(0);//10 %
                 mCbVideoResolution->setCurrentIndex(3);//CIF
-                mCbVideoMaxPacketSize->setCurrentIndex(3);//1492
+                mCbVideoMaxPacketSize->setCurrentIndex(2);//1280
                 mCbSmoothVideoPresentation->setChecked(false);
                 break;
             //### AUDIO configuration
@@ -907,7 +907,7 @@ void ConfigurationDialog::ClickedButton(QAbstractButton *pButton)
                 mCbAudioSink->setCurrentIndex(0);
                 mCbAudioCodec->setCurrentIndex(0);//MP3
                 mCbAudioQuality->setCurrentIndex(6);//70 %
-                mCbAudioMaxPacketSize->setCurrentIndex(3);//1492
+                mCbAudioMaxPacketSize->setCurrentIndex(2);//1280
                 break;
             //### NETWORK configuration
             case 2:
