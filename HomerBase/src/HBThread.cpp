@@ -608,7 +608,7 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
 	void* tThreadResult = NULL;
 
     if (mThreadHandle == 0)
-        return false;
+        return true;
 
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		struct timespec tTimeout;
@@ -674,7 +674,6 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
 	if (pResults != NULL)
 		*pResults = tThreadResult;
 
-	mThreadHandle = 0;
 	return tResult;
 }
 
