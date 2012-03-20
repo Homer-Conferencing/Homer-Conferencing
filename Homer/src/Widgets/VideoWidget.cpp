@@ -400,7 +400,7 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
                 tScaleAction->setCheckable(true);
                 if (IsCurrentScaleFactor((float)i / 2))
                 {
-                    LOG(LOG_INFO, "Scaling factor matches");
+                    //LOG(LOG_INFO, "Scaling factor %f matches", (float)i / 2));
                     tScaleAction->setChecked(true);
                 }else
                     tScaleAction->setChecked(false);
@@ -1010,7 +1010,7 @@ void VideoWidget::SetScaling(float pVideoScaleFactor)
 
 bool VideoWidget::IsCurrentScaleFactor(float pScaleFactor)
 {
-	LOG(LOG_VERBOSE, "Checking scale factor %f:  %d <=> %d, %d <=> %d", pScaleFactor, width(), (int)(mResX * pScaleFactor), height(), (int)(mResY * pScaleFactor));
+	//LOG(LOG_VERBOSE, "Checking scale factor %f:  %d <=> %d, %d <=> %d", pScaleFactor, width(), (int)(mResX * pScaleFactor), height(), (int)(mResY * pScaleFactor));
 	return ((width() == mResX * pScaleFactor) || (height() == mResY * pScaleFactor));
 }
 
@@ -1903,6 +1903,7 @@ void VideoWorkerThread::run()
 			    mVideoSource->GetVideoSourceResolution(tSourceResX, tSourceResY);
 			    if ((tSourceResX != mResX) || (tSourceResY != mResY))
 			    {
+			        LOG(LOG_INFO, "New source detect because source video resolution differs: %d <=> %d, %d <=> %d", tSourceResX, mResX, tSourceResY, mResY);
 	                mVideoWidget->InformAboutNewSource();
 			    }
 
