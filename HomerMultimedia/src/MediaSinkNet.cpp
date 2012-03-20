@@ -55,6 +55,7 @@ MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, bool pT
     mCodec = "unknown";
     mStreamerOpened = false;
     mBrokenPipe = false;
+    mMaxNetworkPacketSize = 1280;
     mGAPIDataSocket = NULL;
     mCurrentStream = NULL;
     mWaitUntillFirstKeyFrame = (pType == MEDIA_SINK_VIDEO) ? true : false;
@@ -162,10 +163,6 @@ bool MediaSinkNet::CloseStreamer()
 
 void MediaSinkNet::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AVStream *pStream, bool pIsKeyFrame)
 {
-    // limit packet size
-    if (pPacketSize > 65000)
-        pPacketSize = 65000;
-
     // check for key frame if we wait for the first key frame
     if (mWaitUntillFirstKeyFrame)
     {
@@ -177,6 +174,11 @@ void MediaSinkNet::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
             mWaitUntillFirstKeyFrame = false;
         }
     }
+
+    // save maximum network packet size to use it later within SendFragment() function
+    mMaxNetworkPacketSize = pStream->codec->rtp_payload_size;
+    if ((mMaxNetworkPacketSize == 0) && (pStream->codec->codec_id == CODEC_ID_H261))
+        mMaxNetworkPacketSize = RTP::GetH261PayloadSizeMax() + RTP_HEADER_SIZE + 4 /* H.261 rtp payload header */;
 
     //####################################################################
     // send packet(s) with frame data to the correct target host and port
@@ -264,7 +266,7 @@ void MediaSinkNet::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
                     break;
 
                 // send final packet
-                SendFragment(tRtpPacket, tRtpPacketSize, RTP_HEADER_SIZE);
+                SendFragment(tRtpPacket, tRtpPacketSize);
 
                 // go to the next RTP packet
                 tRtpPacket = tRtpPacket + (tRtpPacketSize + 4);
@@ -282,7 +284,7 @@ void MediaSinkNet::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
     }else
     {
         // send final packet
-        SendFragment(pPacketData, pPacketSize, 0);
+        SendFragment(pPacketData, pPacketSize);
     }
 }
 
@@ -294,7 +296,7 @@ string MediaSinkNet::CreateId(string pHost, string pPort, enum TransportType pSo
         return pHost + "<" + toString(pPort) + ">(" + Socket::TransportType2String(pSocketTransportType) + (pRtpActivated ? "/RTP" : "") + ")";
 }
 
-void MediaSinkNet::SendFragment(char* pPacketData, unsigned int pPacketSize, unsigned int pHeaderSize)
+void MediaSinkNet::SendFragment(char* pData, unsigned int pSize)
 {
     if ((mTargetHost == "") || (mTargetPort == 0))
     {
@@ -308,45 +310,70 @@ void MediaSinkNet::SendFragment(char* pPacketData, unsigned int pPacketSize, uns
     }
 
     #ifdef MSIN_DEBUG_PACKETS
-        LOG(LOG_VERBOSE, "Sending packet number %6ld at %p with size %4u(incl. %3u bytes header) to %s:%d", ++mPacketNumber, pPacketData, pPacketSize, pHeaderSize, mTargetHost.c_str(), mTargetPort);
+        LOG(LOG_VERBOSE, "Sending packet number %6ld at %p with size %4u(incl. %3u bytes header) to %s:%d", ++mPacketNumber, pData, pSize, RTP_HEADER_SIZE, mTargetHost.c_str(), mTargetPort);
 //        for (int i = 0; i < 10; i++)
 //            LOG(LOG_VERBOSE, "Packet data[%d] = %3d", i, pPacketData[i]);
 
         // if RTP activated then reparse the current packet and print the content
-        if ((mRtpActivated) && (pHeaderSize > 0))
+        if (mRtpActivated)
         {
-            char *tPacketData = pPacketData;
-            unsigned int tPacketSize = pPacketSize;
+            char *tFragmentData = pData;
+            unsigned int tPacketSize = pSize;
             bool tIsLastFragment = false;
             bool tIsSenderReport = false;
-            RtpParse(tPacketData, tPacketSize, tIsLastFragment, tIsSenderReport, mCurrentStream->codec->codec_id, true);
+            RtpParse(tFragmentData, tPacketSize, tIsLastFragment, tIsSenderReport, mCurrentStream->codec->codec_id, true);
         }
     #endif
 
-    char *tPacketData = pPacketData;
-
-    // for TCP add an additional fragment header in front of the codec data to be able to differentiate the fragments in a received TCP packet at receiver side
-    if(mUseTCP)
+    // HINT: we limit packet size to mMaxNetworkPacketSize if RTP is inactive
+    int tFragmentCount = 1;
+    if (!mRtpActivated)
     {
-        if (MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE > TCP_FRAGMENT_HEADER_SIZE + pPacketSize)
-        {
-            TCPFragmentHeader *tHeader = (TCPFragmentHeader*)mTCPCopyBuffer;
-            memcpy(mTCPCopyBuffer + TCP_FRAGMENT_HEADER_SIZE, pPacketData, pPacketSize);
-            tHeader->FragmentSize = pPacketSize;
-            pPacketSize += TCP_FRAGMENT_HEADER_SIZE;
-            tPacketData = mTCPCopyBuffer;
-        }else
-        {
-            LOG(LOG_ERROR, "TCP copy buffer is too small for data");
-        }
+        tFragmentCount = (pSize + mMaxNetworkPacketSize -1) / mMaxNetworkPacketSize;
+        #ifdef MSIN_DEBUG_PACKETS
+            if (tFragmentCount > 1)
+                LOG(LOG_WARN, "RTP is inactive and current packet of %d bytes is larger than limit of %d bytes per network packet, will split data into %d packets", pSize, mMaxNetworkPacketSize, tFragmentCount);
+        #endif
     }
 
-    AnnouncePacket(pPacketSize);
-    mGAPIDataSocket->write(tPacketData, (int)pPacketSize);
-    if (mGAPIDataSocket->isClosed())
+    unsigned int tFragmentSize = pSize;
+    char *tFragmentData = pData;
+    while (tFragmentCount)
     {
-        LOG(LOG_ERROR, "Error when sending data through %s socket to %s:%u, will skip further transmissions", GetPacketTypeStr().c_str(), mTargetHost.c_str(), mTargetPort);
-        mBrokenPipe = true;
+        if (!mRtpActivated)
+            tFragmentSize = (unsigned int)(((int)pSize > mMaxNetworkPacketSize)? mMaxNetworkPacketSize : pSize);
+
+        // for TCP add an additional fragment header in front of the codec data to be able to differentiate the fragments in a received TCP packet at receiver side
+        if(mUseTCP)
+        {
+            if (MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE > TCP_FRAGMENT_HEADER_SIZE + tFragmentSize)
+            {
+                TCPFragmentHeader *tHeader = (TCPFragmentHeader*)mTCPCopyBuffer;
+                memcpy(mTCPCopyBuffer + TCP_FRAGMENT_HEADER_SIZE, tFragmentData, tFragmentSize);
+                tHeader->FragmentSize = tFragmentSize;
+                tFragmentSize += TCP_FRAGMENT_HEADER_SIZE;
+                tFragmentData = mTCPCopyBuffer;
+            }else
+            {
+                LOG(LOG_ERROR, "TCP copy buffer is too small for data");
+            }
+        }
+
+        AnnouncePacket(tFragmentSize);
+        mGAPIDataSocket->write(tFragmentData, (int)tFragmentSize);
+        if (mGAPIDataSocket->isClosed())
+        {
+            LOG(LOG_ERROR, "Error when sending data through %s socket to %s:%u, will skip further transmissions", GetPacketTypeStr().c_str(), mTargetHost.c_str(), mTargetPort);
+            mBrokenPipe = true;
+        }
+
+        tFragmentData = tFragmentData + tFragmentSize;
+        tFragmentCount--;
+        if ((tFragmentData > (pData + pSize)) && (tFragmentCount))
+        {
+            LOG(LOG_ERROR, "Something went wrong, we have too many fragments and would read over the last byte of the fragment buffer");
+            return;
+        }
     }
 }
 

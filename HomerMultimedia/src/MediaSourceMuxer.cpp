@@ -96,16 +96,16 @@ int MediaSourceMuxer::DistributePacket(void *pOpaque, uint8_t *pBuffer, int pBuf
     // ###################################################################
     // no locking of mMediaSinksMutex needed - we are running in context of GrabChunk
     #ifdef MSM_DEBUG_PACKETS
-        LOGEX(MediaSourceMuxer, LOG_VERBOSE, "Distribute packet of size: %d", pBufferSize);
+        LOGEX(MediaSourceMuxer, LOG_VERBOSE, "Distribute packet of size: %d, chunk number: %d", pBufferSize, tMuxer->mChunkNumber);
+        if (pBufferSize > MAX_SOCKET_BUFFER)
+        {
+            LOGEX(MediaSourceMuxer, LOG_WARN, "Encoded media data of %d bytes is too big for network streaming", pBufferSize);
+        }
+	    if (pBufferSize > tMuxer->mStreamMaxPacketSize)
+	    {
+    	    LOGEX(MediaSourceMuxer, LOG_WARN, "Ffmpeg packet of %d bytes is bigger than maximum payload size of %d bytes, RTP packetizer will fragment to solve this", pBufferSize, tMuxer->mStreamMaxPacketSize);
+	    }
     #endif
-    if (pBufferSize > 64 * 1024)
-    {
-        LOGEX(MediaSourceMuxer, LOG_WARN, "Encoded media data of %d bytes is too big for network streaming", pBufferSize);
-    }
-    if (pBufferSize > tMuxer->mStreamMaxPacketSize)
-    {
-        //LOGEX(MediaSourceMuxer, LOG_WARN, "Ffmpeg packet of %d bytes is biger than maximum payload size of %d bytes, RTP packetizer will fragment to solve this", pBufferSize, tMuxer->mStreamMaxPacketSize);
-    }
     tMuxer->RelayPacketToMediaSinks(tBuffer, (unsigned int)pBufferSize, tMuxer->mTranscoderHasKeyFrame);
 
     return pBufferSize;
@@ -293,7 +293,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     ClassifyStream(DATA_TYPE_VIDEO, PACKET_TYPE_RAW);
 
     // build correct IO-context
-    tByteIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, mStreamMaxPacketSize, 1, this, NULL, DistributePacket, NULL);
+    tByteIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE /*HINT: don't use mStreamMaxPacketSize here */, 1, this, NULL, DistributePacket, NULL);
 
     tByteIoContext->seekable = 0;
     // mark as streamed
@@ -370,7 +370,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     mCodecContext->qmin = 1; // default is 2
     mCodecContext->qmax = 2 +(100 - mStreamQuality) / 4; // default is 31
     // set max. packet size for RTP based packets
-    //HINT: don't set if we use H261, otherwise ffmpeg internal functions in mpegvideo_enc.c (MPV_*) would get confused because H261 support is missing for RTP
+    //HINT: don't set if we use H261, otherwise ffmpeg internal functions in mpegvideo_enc.c (MPV_*) would get confused because H261 support is missing in ffmpeg's RTP support
     //TODO: fix packet size limitation here, currently the packet size limitation doesn't work hor H.261 codec because ffmpegs lacks support for RTP encaps. for H.261 based video streams, TODO: send them the fitting bug-fix
     if (tFormat->video_codec != CODEC_ID_H261)
         mCodecContext->rtp_payload_size = mStreamMaxPacketSize;
@@ -402,8 +402,8 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     //mCodecContext->rate_emu = 1;
 
     // some formats want stream headers to be separate
-//    if(mFormatContext->oformat->flags & AVFMT_GLOBALHEADER)
-//        mCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
+    if(mFormatContext->oformat->flags & AVFMT_GLOBALHEADER)
+        mCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
 
     // reset output stream parameters
     if ((tResult = av_set_parameters(mFormatContext, NULL)) < 0)

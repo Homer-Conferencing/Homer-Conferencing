@@ -64,20 +64,20 @@ MediaSinkFile::~MediaSinkFile()
 {
 }
 
-void MediaSinkFile::SendFragment(char* pPacketData, unsigned int pPacketSize, unsigned int pHeaderSize)
+void MediaSinkFile::SendFragment(char* pData, unsigned int pSize)
 {
     #ifdef MSIF_DEBUG_PACKETS
-        LOG(LOG_VERBOSE, "Storing packet number %6ld at %p with size %4u(%3u header) in file %s", ++mPacketNumber, pPacketData, pPacketSize, pHeaderSize, mSinkFile.c_str());
+        LOG(LOG_VERBOSE, "Storing packet number %6ld at %p with size %4u(%3u header) in file %s", ++mPacketNumber, pData, pSize, RTP_HEADER_SIZE, mSinkFile.c_str());
 
         // if RTP activated then reparse the current packet and print the content
-        if ((mRtpActivated) && (pHeaderSize > 0))
+        if (mRtpActivated)
         {
-            char *tPacketData = pPacketData;
-            unsigned int tPacketSize = pPacketSize;
+            char *tPacketData = pData;
+            unsigned int tPacketSize = pSize;
             RtpParse(tPacketData, tPacketSize, mCurrentStream->codec->codec_id);
         }
     #endif
-    AnnouncePacket(pPacketSize);
+    AnnouncePacket(pSize);
 
     FILE *tFile = fopen(mSinkFile.c_str(), "a+");
     if (tFile == NULL)
@@ -86,11 +86,11 @@ void MediaSinkFile::SendFragment(char* pPacketData, unsigned int pPacketSize, un
         return;
     }
 
-    size_t tSent = fwrite((void*)pPacketData, 1, (size_t) pPacketSize, tFile);
+    size_t tSent = fwrite((void*)pData, 1, (size_t) pSize, tFile);
     fclose(tFile);
 
-    if (tSent < pPacketSize)
-        LOG(LOG_ERROR, "Insufficient data was written to file %s (%u < %u)", mSinkFile.c_str(), tSent, pPacketSize);
+    if (tSent < pSize)
+        LOG(LOG_ERROR, "Insufficient data was written to file %s (%u < %u)", mSinkFile.c_str(), tSent, pSize);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

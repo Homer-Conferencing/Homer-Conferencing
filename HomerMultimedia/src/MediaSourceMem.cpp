@@ -517,6 +517,9 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     }
     LOG(LOG_VERBOSE, "Successfully opened codec");
 
+    //HINT: we need to allow that input bit stream might be truncated at packet boundaries instead of frame boundaries, otherwise an UDP/TCP based transmission will fail because the decoder expects only complete packets as input
+    mCodecContext->flags2 |= CODEC_FLAG2_CHUNKS;
+
     // allocate software scaler context
     LOG(LOG_VERBOSE, "Going to create scaler context..");
     mScalerContext = sws_getContext(mCodecContext->width, mCodecContext->height, mCodecContext->pix_fmt, mTargetResX, mTargetResY, PIX_FMT_RGB32, SWS_BICUBIC, NULL, NULL, NULL);
