@@ -293,8 +293,9 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     ClassifyStream(DATA_TYPE_VIDEO, PACKET_TYPE_RAW);
 
     // build correct IO-context
-    tByteIoContext = av_alloc_put_byte((uint8_t*) mStreamPacketBuffer, mStreamMaxPacketSize, 1, this, NULL, DistributePacket, NULL);
+    tByteIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, mStreamMaxPacketSize, 1, this, NULL, DistributePacket, NULL);
 
+    tByteIoContext->seekable = 0;
     // mark as streamed
     tByteIoContext->is_streamed = 1;
     // limit packet size
@@ -343,7 +344,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     if (tFormat->video_codec == CODEC_ID_H263P)
         mCodecContext->flags |= CODEC_FLAG_H263P_SLICE_STRUCT | CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED | CODEC_FLAG_H263P_UMV | CODEC_FLAG_H263P_AIV;
     // put sample parameters
-    mCodecContext->bit_rate = 90000;
+    mCodecContext->bit_rate = 500000;
 
     // resolution
     if (((mRequestedStreamingResX == -1) || (mRequestedStreamingResY == -1)) && (mMediaSource != NULL))
@@ -362,10 +363,8 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
      * timebase should be 1/framerate and timestamp increments should be
      * identically to 1.
      */
-    mCodecContext->time_base.den = (int)mFrameRate * 100;
-    mCodecContext->time_base.num = 100;
-    tStream->time_base.den = (int)mFrameRate * 100;
-    tStream->time_base.num = 100;
+    mCodecContext->time_base = (AVRational){1, (int)mFrameRate};
+    tStream->time_base = (AVRational){100, (int)mFrameRate * 100};
     // set i frame distance: GOP = group of pictures
     mCodecContext->gop_size = (100 - mStreamQuality) / 5; // default is 12
     mCodecContext->qmin = 1; // default is 2
@@ -548,8 +547,9 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     ClassifyStream(DATA_TYPE_AUDIO, PACKET_TYPE_RAW);
 
     // build correct IO-context
-    tByteIoContext = av_alloc_put_byte((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE /*HINT: don't use mStreamMaxPacketSize here */, 1, this, NULL, DistributePacket, NULL);
+    tByteIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE /*HINT: don't use mStreamMaxPacketSize here */, 1, this, NULL, DistributePacket, NULL);
 
+    tByteIoContext->seekable = 0;
     // mark as streamed
     tByteIoContext->is_streamed = 1;
     // limit packet size
@@ -1136,7 +1136,6 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                     // re-encode the frame
                                     // #########################################
                                     tFrameSize = avcodec_encode_video(mCodecContext, (uint8_t *)mEncoderChunkBuffer, MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE, tYUVFrame);
-                                    mTranscoderHasKeyFrame = (tYUVFrame->pict_type == FF_I_TYPE);
 
                                     if (tFrameSize > 0)
                                     {
@@ -1151,7 +1150,10 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                         }
                                         // mark i-frame
                                         if (mCodecContext->coded_frame->key_frame)
+                                        {
+                                            mTranscoderHasKeyFrame = true;
                                             tPacket.flags |= AV_PKT_FLAG_KEY;
+                                        }
 
                                         // we only have one stream per video stream
                                         tPacket.stream_index = 0;
@@ -1164,10 +1166,12 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                         #ifdef MSM_DEBUG_PACKETS
                                             LOG(LOG_VERBOSE, "Sending video packet: %5d to %2d sink(s):", mChunkNumber, mMediaSinks.size());
                                             LOG(LOG_VERBOSE, "      ..duration: %d", tPacket.duration);
+                                            LOG(LOG_VERBOSE, "      ..flags: %d", tPacket.flags);
                                             LOG(LOG_VERBOSE, "      ..pts: %ld stream [%d] pts: %ld", tPacket.pts, mMediaStreamIndex, mFormatContext->streams[mMediaStreamIndex]->pts);
                                             LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket.dts);
                                             LOG(LOG_VERBOSE, "      ..size: %d", tPacket.size);
                                             LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket.pos);
+                                            LOG(LOG_VERBOSE, "      ..key frame: %d", mTranscoderHasKeyFrame);
                                         #endif
 
                                         //####################################################################

@@ -78,6 +78,7 @@ private:
     bool                mStreamerOpened;
     bool                mBrokenPipe;
     bool                mUseTCP;
+    bool                mWaitUntillFirstKeyFrame;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
