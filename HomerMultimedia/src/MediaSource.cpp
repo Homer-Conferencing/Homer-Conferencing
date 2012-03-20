@@ -1466,10 +1466,10 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
 
 void MediaSource::StopRecording()
 {
-    LOG(LOG_VERBOSE, "Going to close recorder, media type is \"%s\"", GetMediaTypeStr().c_str());
-
     if (mRecording)
     {
+        LOG(LOG_VERBOSE, "Going to close recorder, media type is \"%s\"", GetMediaTypeStr().c_str());
+
         mRecording = false;
 
         // lock grabbing
