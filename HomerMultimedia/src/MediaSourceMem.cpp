@@ -106,9 +106,14 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
                 LOGEX(MediaSourceMem, LOG_VERBOSE, "Grabbing was stopped meanwhile");
                 return -1; //force negative resulting buffer size to signal error and force a return to the calling GUI!
             }
-            if (tFragmentBufferSize <= 0)
+            if (tFragmentBufferSize == 0)
             {
-            	LOGEX(MediaSourceMem, LOG_WARN, "Could not receive a new fragment");
+            	LOGEX(MediaSourceMem, LOG_VERBOSE, "Received empty fragment");
+                return 0;
+            }
+            if (tFragmentBufferSize < 0)
+            {
+                LOGEX(MediaSourceMem, LOG_VERBOSE, "Received invalid fragment");
                 return 0;
             }
             tFragmentDataSize = (unsigned int)tFragmentBufferSize;
