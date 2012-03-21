@@ -78,7 +78,7 @@ MediaSourceMuxer::~MediaSourceMuxer()
     free(mEncoderChunkBuffer);
     free(mStreamPacketBuffer);
 
-    DeinitTranscoder();
+    StopTranscoder();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -94,7 +94,6 @@ int MediaSourceMuxer::DistributePacket(void *pOpaque, uint8_t *pBuffer, int pBuf
     //####################################################################
     // distribute frame among the registered media sinks
     // ###################################################################
-    // no locking of mMediaSinksMutex needed - we are running in context of GrabChunk
     #ifdef MSM_DEBUG_PACKETS
         LOGEX(MediaSourceMuxer, LOG_VERBOSE, "Distribute packet of size: %d, chunk number: %d", pBufferSize, tMuxer->mChunkNumber);
         if (pBufferSize > MAX_SOCKET_BUFFER)
@@ -465,7 +464,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     mScalerContext = sws_getContext(mSourceResX, mSourceResY, PIX_FMT_RGB32, mCodecContext->width, mCodecContext->height, mCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
 
     // init transcoder FIFO based for RGB32 pictures
-    InitTranscoder(mSourceResX * mSourceResY * 4 /* bytes per pixel */);
+    StartTranscoder(mSourceResX * mSourceResY * 4 /* bytes per pixel */);
 
     // allocate streams private data buffer and write the streams header, if any
     av_write_header(mFormatContext);
@@ -674,7 +673,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
         mCodecContext->frame_size = 256;
 
     // init transcoder FIFO based for 2048 samples with 16 bit and 2 channels, more samples are never produced by a media source per grabbing cycle
-    InitTranscoder(8192);
+    StartTranscoder(8192);
 
     // allocate streams private data buffer and write the streams header, if any
     av_write_header(mFormatContext);
@@ -736,8 +735,7 @@ bool MediaSourceMuxer::CloseMuxer()
 
     LOG(LOG_VERBOSE, "Going to close muxer, media type is \"%s\"", GetMediaTypeStr().c_str());
 
-    // lock
-    mMediaSinksMutex.lock();
+    // HINT: no mMediaSinksMutex usage because StopTranscoder will stop all media sink usage and this CloseMuxer doesn't change the registered media sinks
 
     if (mMediaSourceOpened)
     {
@@ -745,6 +743,9 @@ bool MediaSourceMuxer::CloseMuxer()
 
         // write the trailer, if any
         av_write_trailer(mFormatContext);
+
+        // make sure we can free the memory structures
+        StopTranscoder();
 
         switch(mMediaType)
         {
@@ -773,9 +774,6 @@ bool MediaSourceMuxer::CloseMuxer()
         // Close the format context
         av_free(mFormatContext);
 
-        // free the memory of the transcoder FIFO
-        DeinitTranscoder();
-
         LOG(LOG_INFO, "...closed, media type is \"%s\"", GetMediaTypeStr().c_str());
 
         tResult = true;
@@ -786,11 +784,7 @@ bool MediaSourceMuxer::CloseMuxer()
 
     ResetPacketStatistic();
 
-    // unlock
-    mMediaSinksMutex.unlock();
-
     return tResult;
-
 }
 
 bool MediaSourceMuxer::CloseGrabDevice()
@@ -940,17 +934,19 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
     // lock
     mMediaSinksMutex.lock();
 
+    int tMediaSinks = mMediaSinks.size();
+
+    // unlock
+    mMediaSinksMutex.unlock();
+
     //####################################################################
     // reencode frame and send it to the registered media sinks
     // limit the outgoing stream FPS to the defined maximum FPS value
     // ###################################################################
-    if ((BelowMaxFps(tResult) /* we have to call this function continuously */) && (mStreamActivated) && (!pDropChunk) && (tResult >= 0) && (pChunkSize > 0) && (mMediaSinks.size()))
+    if ((BelowMaxFps(tResult) /* we have to call this function continuously */) && (mStreamActivated) && (!pDropChunk) && (tResult >= 0) && (pChunkSize > 0) && (tMediaSinks))
     {
         mTranscoderFifo->WriteFifo((char*)pChunkBuffer, pChunkSize);
     }
-
-    // unlock
-    mMediaSinksMutex.unlock();
 
     // unlock grabbing
     mGrabMutex.unlock();
@@ -995,9 +991,9 @@ bool MediaSourceMuxer::BelowMaxFps(int pFrameNumber)
     return false;
 }
 
-void MediaSourceMuxer::InitTranscoder(int pFifoEntrySize)
+void MediaSourceMuxer::StartTranscoder(int pFifoEntrySize)
 {
-    LOG(LOG_VERBOSE, "Init transcoder with FIFO entry size of %d bytes", pFifoEntrySize);
+    LOG(LOG_VERBOSE, "Starting transcoder with FIFO entry size of %d bytes", pFifoEntrySize);
 
     if (mTranscoderFifo != NULL)
     {
@@ -1014,12 +1010,12 @@ void MediaSourceMuxer::InitTranscoder(int pFifoEntrySize)
     }
 }
 
-void MediaSourceMuxer::DeinitTranscoder()
+void MediaSourceMuxer::StopTranscoder()
 {
     int tSignalingRound = 0;
     char tTmp[4];
 
-    LOG(LOG_VERBOSE, "Deinit transcoder");
+    LOG(LOG_VERBOSE, "Stopping transcoder");
 
     if (mTranscoderFifo != NULL)
     {
@@ -1081,10 +1077,15 @@ void* MediaSourceMuxer::Run(void* pArgs)
                 // lock
                 mMediaSinksMutex.lock();
 
+                int tRegisteredMediaSinks = mMediaSinks.size();
+
+                // unlock
+                mMediaSinksMutex.unlock();
+
                 //####################################################################
                 // reencode frame and send it to the registered media sinks
                 // ###################################################################
-                if ((mStreamActivated) && (mMediaSinks.size()))
+                if ((mStreamActivated) && (tRegisteredMediaSinks))
                 {
                     switch(mMediaType)
                     {
@@ -1203,9 +1204,6 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 #endif
                                 if (av_fifo_realloc2(mSampleFifo, av_fifo_size(mSampleFifo) + tBufferSize) < 0)
                                 {
-                                    // unlock grabbing
-                                    mGrabMutex.unlock();
-
                                     // acknowledge failed
                                     MarkGrabChunkFailed("reallocation of FIFO audio buffer failed");
 
@@ -1280,10 +1278,8 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 break;
 
                     }
-                }
-
-                // unlock
-                mMediaSinksMutex.unlock();
+                }else
+                    LOG(LOG_VERBOSE, "Skipped transcoder task");
             }
 
             // release FIFO entry lock
