@@ -1279,7 +1279,7 @@ void VideoWidget::customEvent(QEvent *pEvent)
         case VIDEO_NEW_FRAME:
             mPendingNewFrameSignals--;
             if (mPendingNewFrameSignals > 2)
-                LOG(LOG_WARN, "System too slow?, %d pending signals about new frames", mPendingNewFrameSignals);
+                LOG(LOG_VERBOSE, "System too slow?, %d pending signals about new frames", mPendingNewFrameSignals);
 
             tVideoEvent->accept();
             if (isVisible())
@@ -1358,6 +1358,7 @@ VideoWorkerThread::VideoWorkerThread(MediaSource *pVideoSource, VideoWidget *pVi
     mEofReached = false;
     mPaused = false;
     mPausedPos = 0;
+    mMissingFrames = 0;
     mDesiredFile = "";
     mResX = 352;
     mResY = 288;
@@ -1368,33 +1369,42 @@ VideoWorkerThread::VideoWorkerThread(MediaSource *pVideoSource, VideoWidget *pVi
     blockSignals(true);
     mFrameCurrentIndex = FRAME_BUFFER_SIZE - 1;
     mFrameGrabIndex = 0;
-    for (int i = 0; i < FRAME_BUFFER_SIZE; i++)
-    {
-        mFrame[i] = mVideoSource->AllocChunkBuffer(mFrameSize[i], MEDIA_VIDEO);
-        mFrameNumber[i] = 0;
-        InitFrameBuffer(i);
-    }
     mDropFrames = false;
-    mWorkerWithNewData = false;
+    mPendingNewFrames = 0;
+    InitFrameBuffers();
 }
 
 VideoWorkerThread::~VideoWorkerThread()
 {
-	mWorkerWithNewData = false;
-	for (int i = 0; i < FRAME_BUFFER_SIZE; i++)
-        mVideoSource->FreeChunkBuffer(mFrame[i]);
+    DeinitFrameBuffers();
+    mPendingNewFrames = 0;
 }
 
-void VideoWorkerThread::InitFrameBuffer(int pBufferId)
+void VideoWorkerThread::InitFrameBuffers()
 {
-    QImage tFrameImage = QImage((unsigned char*)mFrame[pBufferId], mResX, mResY, QImage::Format_RGB32);
-    QPainter *tPainter = new QPainter(&tFrameImage);
-    tPainter->setRenderHint(QPainter::TextAntialiasing, true);
-    tPainter->fillRect(0, 0, mResX, mResY, QColor(Qt::darkGray));
-    tPainter->setFont(QFont("Tahoma", 16));
-    tPainter->setPen(QColor(Qt::black));
-    tPainter->drawText(5, 70, "..no data");
-    delete tPainter;
+    for (int i = 0; i < FRAME_BUFFER_SIZE; i++)
+    {
+        mFrame[i] = mVideoSource->AllocChunkBuffer(mFrameSize[i], MEDIA_VIDEO);
+
+        mFrameNumber[i] = 0;
+
+        QImage tFrameImage = QImage((unsigned char*)mFrame[i], mResX, mResY, QImage::Format_RGB32);
+        QPainter *tPainter = new QPainter(&tFrameImage);
+        tPainter->setRenderHint(QPainter::TextAntialiasing, true);
+        tPainter->fillRect(0, 0, mResX, mResY, QColor(Qt::darkGray));
+        tPainter->setFont(QFont("Tahoma", 16));
+        tPainter->setPen(QColor(Qt::black));
+        tPainter->drawText(5, 70, "..no data");
+        delete tPainter;
+    }
+}
+
+void VideoWorkerThread::DeinitFrameBuffers()
+{
+    for (int i = 0; i < FRAME_BUFFER_SIZE; i++)
+    {
+        mVideoSource->FreeChunkBuffer(mFrame[i]);
+    }
 }
 
 void VideoWorkerThread::SetFrameDropping(bool pDrop)
@@ -1656,20 +1666,13 @@ void VideoWorkerThread::DoSetGrabResolution()
     mDeliverMutex.lock();
 
     // delete old frame buffers
-    for (int i = 0; i < FRAME_BUFFER_SIZE; i++)
-    {
-        mVideoSource->FreeChunkBuffer(mFrame[i]);
-    }
+    DeinitFrameBuffers();
 
     // set new resolution for frame grabbing
     mVideoSource->SetVideoGrabResolution(mResX, mResY);
 
     // create new frame buffers
-    for (int i = 0; i < FRAME_BUFFER_SIZE; i++)
-    {
-        mFrame[i] = mVideoSource->AllocChunkBuffer(mFrameSize[i], MEDIA_VIDEO);
-        InitFrameBuffer(i);
-    }
+    InitFrameBuffers();
 
     mVideoWidget->InformAboutNewSourceResolution();
     mSetGrabResolutionAsap = false;
@@ -1781,12 +1784,20 @@ int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFps)
 
     if ((!mSetGrabResolutionAsap) && (!mResetVideoSourceAsap))
     {
-        if (mWorkerWithNewData)
+        if (mPendingNewFrames)
         {
-            mFrameCurrentIndex = FRAME_BUFFER_SIZE - mFrameCurrentIndex - mFrameGrabIndex;
-            mWorkerWithNewData = false;
+            if (mPendingNewFrames > 1)
+                LOG(LOG_VERBOSE, "Found %d pending frames", mPendingNewFrames);
+
+            mFrameCurrentIndex++;
+            if (mFrameCurrentIndex >= FRAME_BUFFER_SIZE)
+                mFrameCurrentIndex = 0;//TODO- mFrameCurrentIndex - mFrameGrabIndex;
+            mPendingNewFrames--;
         }else
-            LOG(LOG_WARN, "No new frame available, delivering old frame");
+        {
+            mMissingFrames++;
+            LOG(LOG_WARN, "Missing new frame (%d overall missed frames), delivering old frame instead", mMissingFrames);
+        }
 
         // calculate FPS
         if ((pFps != NULL) && (mFrameTimestamps.size() > 1))
@@ -1805,7 +1816,7 @@ int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFps)
         tResult = mFrameNumber[mFrameCurrentIndex];
         //printf("[%3lu %3lu %3lu] cur: %d grab: %d\n", mFrameNumber[0], mFrameNumber[1], mFrameNumber[2], mFrameCurrentIndex, mFrameGrabIndex);
     }else
-        LOG(LOG_WARN, "No current frame available, worker with new data: %d, grab resolution invalid: %d, have to reset source: %d", mWorkerWithNewData, mSetGrabResolutionAsap, mResetVideoSourceAsap);
+        LOG(LOG_WARN, "No current frame available, pending frames: %d, grab resolution invalid: %d, have to reset source: %d", mPendingNewFrames, mSetGrabResolutionAsap, mResetVideoSourceAsap);
 
     // unlock
     mDeliverMutex.unlock();
@@ -1911,10 +1922,13 @@ void VideoWorkerThread::run()
 				mDeliverMutex.lock();
 
 				mFrameNumber[mFrameGrabIndex] = tFrameNumber;
+                if (mPendingNewFrames == FRAME_BUFFER_SIZE)
+                    LOG(LOG_WARN, "System too slow?, frame buffer of %d entries is full, will drop oldest frame", FRAME_BUFFER_SIZE);
+                mPendingNewFrames++;
 
-				mWorkerWithNewData = true;
-
-				mFrameGrabIndex = FRAME_BUFFER_SIZE - mFrameCurrentIndex - mFrameGrabIndex;
+				mFrameGrabIndex++;
+				if (mFrameGrabIndex >= FRAME_BUFFER_SIZE)
+				    mFrameGrabIndex = 0;//TODO: mFrameGrabIndex = FRAME_BUFFER_SIZE - mFrameCurrentIndex - mFrameGrabIndex;
 
                 // store timestamp starting from frame number 3 to avoid peaks
 				if(tFrameNumber > 3)
