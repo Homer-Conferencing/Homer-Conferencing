@@ -610,7 +610,10 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
 	void* tThreadResult = NULL;
 
     if (mThreadHandle == 0)
+    {
+        LOG(LOG_VERBOSE, "Thread handle is NULL, assume thread was already stopped");
         return true;
+    }
 
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		struct timespec tTimeout;
@@ -627,7 +630,7 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
 		    if(pTimeoutInMSecs > 0)
 		    {
 		        if (int tRes = pthread_timedjoin_np(mThreadHandle, &tThreadResult, &tTimeout))
-                    LOG(LOG_INFO, "Waiting (time limited) for end of thread failed because \"%s\"", strerror(tRes));
+                    LOG(LOG_INFO, "Waiting (time limited to %d ms) for end of thread failed because \"%s\"", pTimeoutInMSecs, strerror(tRes));
                 else
                 {
                     LOG(LOG_VERBOSE, "Got end signal and thread results at %p", tThreadResult);
