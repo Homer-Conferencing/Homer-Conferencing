@@ -625,7 +625,7 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
 		    if(pTimeoutInMSecs > 0)
 		    {
 		        if (int tRes = pthread_timedjoin_np(mThreadHandle, &tThreadResult, &tTimeout))
-                    LOG(LOG_INFO, "Waiting for end of thread failed because \"%s\"", strerror(tRes));
+                    LOG(LOG_INFO, "Waiting (time limited) for end of thread failed because \"%s\"", strerror(tRes));
                 else
                 {
                     LOG(LOG_VERBOSE, "Got end signal and thread results at %p", tThreadResult);
