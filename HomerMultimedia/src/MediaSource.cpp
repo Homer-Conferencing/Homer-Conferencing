@@ -1140,6 +1140,9 @@ void MediaSource::RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacke
 {
     MediaSinksList::iterator tIt;
 
+    // lock
+    mMediaSinksMutex.lock();
+
     if (mMediaSinks.size() > 0)
     {
         for (tIt = mMediaSinks.begin(); tIt != mMediaSinks.end(); tIt++)
@@ -1147,6 +1150,9 @@ void MediaSource::RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacke
             (*tIt)->ProcessPacket(pPacketData, pPacketSize, mFormatContext->streams[0], pIsKeyFrame);
         }
     }
+
+    // unlock
+    mMediaSinksMutex.unlock();
 }
 
 bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality, bool pRealTime)

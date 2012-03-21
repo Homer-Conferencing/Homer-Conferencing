@@ -148,8 +148,8 @@ private:
 
     /* transcoder */
     virtual void* Run(void* pArgs = NULL); // transcoder main loop
-    void InitTranscoder(int pFifoEntrySize);
-    void DeinitTranscoder();
+    void StartTranscoder(int pFifoEntrySize);
+    void StopTranscoder();
 
     static int DistributePacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize);
 

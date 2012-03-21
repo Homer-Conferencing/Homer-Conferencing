@@ -123,14 +123,8 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
             // relay new data to registered sinks
             if(tFragmentIsOkay)
             {
-                // lock
-                tMediaSourceMemInstance->mMediaSinksMutex.lock();
-
                 // relay the received fragment to registered sinks
                 tMediaSourceMemInstance->RelayPacketToMediaSinks(tFragmentData, tFragmentDataSize);
-
-                // unlock
-                tMediaSourceMemInstance->mMediaSinksMutex.unlock();
             }
 
             if ((tFragmentIsOkay) && (!tFragmentIsSenderReport))
@@ -181,14 +175,8 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
             return 0;
         }
 
-        // lock
-        tMediaSourceMemInstance->mMediaSinksMutex.lock();
-
         // relay the received fragment to registered sinks
         tMediaSourceMemInstance->RelayPacketToMediaSinks(tBuffer, (unsigned int)tBufferSize);
-
-        // unlock
-        tMediaSourceMemInstance->mMediaSinksMutex.unlock();
     }
 
     #ifdef MSMEM_DEBUG_PACKETS
