@@ -145,9 +145,6 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         return false;
     }
 
-    mFormatContext->preload= (int)(5 * AV_TIME_BASE); // 0.5 seconds
-    mFormatContext->max_delay= (int)(5.5 * AV_TIME_BASE); // 0.7 seconds
-
     // Find the first video stream
     mMediaStreamIndex = -1;
     for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
@@ -285,9 +282,6 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
         av_close_input_file(mFormatContext);
         return false;
     }
-
-    mFormatContext->preload= (int)(5 * AV_TIME_BASE); // 0.5 seconds
-    mFormatContext->max_delay= (int)(5.5 * AV_TIME_BASE); // 0.7 seconds
 
     // enumerate all audio streams and store them as possible input channels
     // find correct audio stream, depending on the desired input channel
