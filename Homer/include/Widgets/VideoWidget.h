@@ -56,7 +56,7 @@ using namespace Homer::Multimedia;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define FRAME_BUFFER_SIZE               3
+#define FRAME_BUFFER_SIZE              90 // 3 seconds of buffer
 
 #define FPS_MEASUREMENT_STEPS          60
 
@@ -197,6 +197,8 @@ public:
     int GetCurrentFrame(void **pFrame, float *pFps = NULL);
 
 private:
+    void InitFrameBuffers();
+    void DeinitFrameBuffers();
     void InitFrameBuffer(int pBufferId);
     void DoSetGrabResolution();
     void DoResetVideoSource();
@@ -216,7 +218,7 @@ private:
     int                 mResX;
     int                 mResY;
     bool                mWorkerNeeded;
-    bool                mWorkerWithNewData;
+    int                 mPendingNewFrames;
     bool                mDropFrames;
     std::string         mSaveFileName;
     int                 mSaveFileQuality;
@@ -229,6 +231,7 @@ private:
     bool				mSourceAvailable;
     int64_t				mPausedPos;
     QList<int64_t>      mFrameTimestamps;
+    int                 mMissingFrames;
 
     /* for forwarded interface to media source */
     bool                mSetInputStreamPreferencesAsap;
