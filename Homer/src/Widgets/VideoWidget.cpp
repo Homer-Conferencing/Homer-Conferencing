@@ -1775,7 +1775,7 @@ int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFps)
     // lock
     if (!mDeliverMutex.tryLock(100))
     {
-        LOG(LOG_WARN, "Timeout during locking deliver mutex");
+        LOG(LOG_WARN, "Timeout during locking of deliver mutex");
         return -1;
     }
 
