@@ -355,7 +355,7 @@ bool OverviewPlaylistWidget::IsVideoFile(QString pFileName)
         return false;
     }
 
-    QString tExt = pFileName.right(pFileName.size() - tPos);
+    QString tExt = pFileName.right(pFileName.size() - tPos).toLower();
     LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Checking for video content in file %s of type %s", pFileName.toStdString().c_str(), tExt.toStdString().c_str());
 
     if (sLoadVideoFilters.indexOf(tExt, 0) != -1)
@@ -425,7 +425,7 @@ bool OverviewPlaylistWidget::IsAudioFile(QString pFileName)
         return false;
     }
 
-    QString tExt = pFileName.right(pFileName.size() - tPos);
+    QString tExt = pFileName.right(pFileName.size() - tPos).toLower();
     LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Checking for audio content in file %s of type %s", pFileName.toStdString().c_str(), tExt.toStdString().c_str());
 
     if (sLoadAudioFilters.indexOf(tExt, 0) != -1)

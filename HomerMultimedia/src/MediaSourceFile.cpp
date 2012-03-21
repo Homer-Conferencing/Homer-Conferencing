@@ -144,7 +144,8 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     // Open video file
     // open file and close it again to prevent FFMPEG from crashes, risk of race conditions!
     LOG(LOG_VERBOSE, "try to open \"%s\"", mDesiredDevice.c_str());
-    if ((tResult = av_open_input_file(&mFormatContext, mDesiredDevice.c_str(), tFormat, 0, &tFormatParams)) != 0)
+//    if ((tResult = av_open_input_file(&mFormatContext, mDesiredDevice.c_str(), tFormat, 0, &tFormatParams)) != 0)
+    if ((tResult = avformat_open_input(&mFormatContext, mDesiredDevice.c_str(), NULL, NULL)) != 0)
     {
         LOG(LOG_ERROR, "Couldn't open video file \"%s\" because of \"%s\".", mDesiredDevice.c_str(), strerror(AVUNERROR(tResult)));
         return false;
@@ -300,7 +301,8 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     // Open audio file
     // open file and close it again to prevent FFMPEG from crashes, risk of race conditions!
     LOG(LOG_VERBOSE, "try to open \"%s\"", mDesiredDevice.c_str());
-    if ((tResult = av_open_input_file(&mFormatContext, mDesiredDevice.c_str(), tFormat, 0, &tFormatParams)) != 0)
+//    if ((tResult = av_open_input_file(&mFormatContext, mDesiredDevice.c_str(), tFormat, 0, &tFormatParams)) != 0)
+    if ((tResult = avformat_open_input(&mFormatContext, mDesiredDevice.c_str(), NULL, NULL)) != 0)
     {
         LOG(LOG_ERROR, "Couldn't open audio file \"%s\" because of \"%s\".", mDesiredDevice.c_str(), strerror(AVUNERROR(tResult)));
         return false;
