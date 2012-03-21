@@ -497,6 +497,7 @@ void* Thread::StartThreadStaticWrapperUniversal(void* pThread)
 
     Thread *tThreadObject = (Thread*)pThread;
     void* tResult = tThreadObject->mThreadMain(tThreadObject->mThreadArguments);
+    LOGEX(Thread, LOG_VERBOSE, "Thread finished");
     tThreadObject->Init();
     return tResult;
 }
@@ -507,6 +508,7 @@ void* Thread::StartThreadStaticWrapperRun(void* pThread)
 
     Thread *tThreadObject = (Thread*)pThread;
     void* tResult = tThreadObject->Run(tThreadObject->mThreadArguments);
+    LOGEX(Thread, LOG_VERBOSE, "Thread finished (Run method)");
     tThreadObject->Init();
     return tResult;
 }
