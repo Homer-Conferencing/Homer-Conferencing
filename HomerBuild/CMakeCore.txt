@@ -141,11 +141,6 @@ IF (BSD)
 	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,-soname,${TARGET_NAME}.dylib")
 ENDIF (BSD)
 
-IF (LINUX)
-	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wl,-soname,${TARGET_NAME}.so")
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,-soname,${TARGET_NAME}.so")
-ENDIF (LINUX)
-
 ##############################################################
 # definitions
 # "-D" options for compilation in win32 environment
