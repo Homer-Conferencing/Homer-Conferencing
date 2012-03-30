@@ -336,7 +336,7 @@ void MediaSourceDesktop::CreateScreenshot()
     //### skip capturing when we are too slow
     if (tTimeDiff > 1000 / MIN_GRABBING_FPS)
     {
-    	LOG(LOG_ERROR, "Screen capturing skipped because system is too busy");
+    	LOG(LOG_WARN, "Screen capturing skipped because system is too busy");
     	mMutexGrabberActive.unlock();
     	return;
     }
