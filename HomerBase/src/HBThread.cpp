@@ -56,11 +56,17 @@ using namespace std;
 
 Thread::Thread()
 {
-    mThreadHandle = 0;
+    Init();
 }
 
 Thread::~Thread()
 {
+}
+
+void Thread::Init()
+{
+    LOG(LOG_VERBOSE, "Initialize thread object");
+    mThreadHandle = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -490,7 +496,10 @@ void* Thread::StartThreadStaticWrapperUniversal(void* pThread)
 	LOGEX(Thread, LOG_VERBOSE, "Going to start thread main");
 
     Thread *tThreadObject = (Thread*)pThread;
-    return tThreadObject->mThreadMain(tThreadObject->mThreadArguments);
+    void* tResult = tThreadObject->mThreadMain(tThreadObject->mThreadArguments);
+    LOGEX(Thread, LOG_VERBOSE, "Thread finished");
+    tThreadObject->Init();
+    return tResult;
 }
 
 void* Thread::StartThreadStaticWrapperRun(void* pThread)
@@ -498,7 +507,10 @@ void* Thread::StartThreadStaticWrapperRun(void* pThread)
 	LOGEX(Thread, LOG_VERBOSE, "Going to start thread main (Run method)");
 
     Thread *tThreadObject = (Thread*)pThread;
-    return tThreadObject->Run(tThreadObject->mThreadArguments);
+    void* tResult = tThreadObject->Run(tThreadObject->mThreadArguments);
+    LOGEX(Thread, LOG_VERBOSE, "Thread finished (Run method)");
+    tThreadObject->Init();
+    return tResult;
 }
 
 bool Thread::StartThread(void* pArgs)
@@ -598,7 +610,10 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
 	void* tThreadResult = NULL;
 
     if (mThreadHandle == 0)
-        return false;
+    {
+        LOG(LOG_VERBOSE, "Thread handle is NULL, assume thread was already stopped");
+        return true;
+    }
 
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		struct timespec tTimeout;
@@ -615,7 +630,7 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
 		    if(pTimeoutInMSecs > 0)
 		    {
 		        if (int tRes = pthread_timedjoin_np(mThreadHandle, &tThreadResult, &tTimeout))
-                    LOG(LOG_INFO, "Waiting for end of thread failed because \"%s\"", strerror(tRes));
+                    LOG(LOG_INFO, "Waiting (time limited to %d ms) for end of thread failed because \"%s\"", pTimeoutInMSecs, strerror(tRes));
                 else
                 {
                     LOG(LOG_VERBOSE, "Got end signal and thread results at %p", tThreadResult);
@@ -664,7 +679,6 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
 	if (pResults != NULL)
 		*pResults = tThreadResult;
 
-	mThreadHandle = 0;
 	return tResult;
 }
 

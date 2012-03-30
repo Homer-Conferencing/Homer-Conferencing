@@ -64,12 +64,13 @@ protected:
     virtual bool OpenStreamer(AVStream *pStream);
     virtual bool CloseStreamer();
     /* sending one single fragment of an (rtp) packet stream */
-    virtual void SendFragment(char* pPacketData, unsigned int pPacketSize, unsigned int pHeaderSize);
+    virtual void SendFragment(char* pData, unsigned int pSize);
 
     bool                mRtpActivated;
     AVStream            *mCurrentStream;
 
 private:
+    int                 mMaxNetworkPacketSize;
     std::string         mTargetHost;
     unsigned int        mTargetPort;
     std::string         mCodec;
@@ -78,6 +79,7 @@ private:
     bool                mStreamerOpened;
     bool                mBrokenPipe;
     bool                mUseTCP;
+    bool                mWaitUntillFirstKeyFrame;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

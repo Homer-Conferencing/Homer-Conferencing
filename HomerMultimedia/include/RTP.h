@@ -92,6 +92,7 @@ public:
     static int GetPayloadHeaderSizeMax(enum CodecID pCodec);// calculate the maximum header size of the RTP payload (not the RTP header!)
     static int GetHeaderSizeMax(enum CodecID pCodec);
     static void SetH261PayloadSizeMax(unsigned int pMaxSize);
+    static unsigned int GetH261PayloadSizeMax();
     bool RtpCreate(char *&pData, unsigned int &pDataSize);
     unsigned int GetLostPacketsFromRTP();
     bool RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment, bool &pIsSenderReport, enum CodecID pCodecId, bool pReadOnly);

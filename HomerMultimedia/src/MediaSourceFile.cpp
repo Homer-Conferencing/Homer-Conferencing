@@ -96,8 +96,6 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 {
     int                 tResult = 0;
     AVCodec             *tCodec;
-    AVInputFormat       *tFormat;
-    AVFormatParameters  tFormatParams;
 
     LOG(LOG_VERBOSE, "Trying to open the video source");
 
@@ -115,17 +113,6 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if (mMediaSourceOpened)
         return false;
 
-    memset((void*)&tFormatParams, 0, sizeof(tFormatParams));
-    tFormatParams.channel = 0;
-    tFormatParams.standard = NULL;
-    tFormatParams.time_base.num = 100;
-    tFormatParams.time_base.den = (int)pFps * 100;
-    LOG(LOG_VERBOSE, "Desired video time_base: %d/%d (%3.2f)", tFormatParams.time_base.den, tFormatParams.time_base.num, pFps);
-    tFormatParams.width = pResX;
-    tFormatParams.height = pResY;
-    tFormatParams.initial_pause = 0;
-    tFormatParams.prealloced_context = 0;
-
     string tFileType = mDesiredDevice.substr(mDesiredDevice.find_last_of(".") + 1);
     transform(tFileType.begin(), tFileType.end(), tFileType.begin(), ::tolower);
     LOG(LOG_VERBOSE, "Try to open video stream from file with extension \"%s\"", tFileType.c_str());
@@ -133,18 +120,11 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         tFileType = "matroska";
     if ((tFileType == "mpg") || (tFileType == "vob"))
         tFileType = "mpeg";
-    tFormat = av_find_input_format(tFileType.c_str());
-    if (tFormat == NULL)
-    {
-        LOG(LOG_ERROR, "Couldn't find video input format");
-        return false;
-    }
-    tFormat->flags &= ~AVFMT_NOFILE; // make sure this is marked as file based input
 
-    // Open video file
-    // open file and close it again to prevent FFMPEG from crashes, risk of race conditions!
     LOG(LOG_VERBOSE, "try to open \"%s\"", mDesiredDevice.c_str());
-    if ((tResult = av_open_input_file(&mFormatContext, mDesiredDevice.c_str(), tFormat, 0, &tFormatParams)) != 0)
+
+    // open input: automatic content detection is done inside ffmpeg
+    if ((tResult = avformat_open_input(&mFormatContext, mDesiredDevice.c_str(), NULL, NULL)) != 0)
     {
         LOG(LOG_ERROR, "Couldn't open video file \"%s\" because of \"%s\".", mDesiredDevice.c_str(), strerror(AVUNERROR(tResult)));
         return false;
@@ -164,9 +144,6 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         av_close_input_file(mFormatContext);
         return false;
     }
-
-    mFormatContext->preload= (int)(5 * AV_TIME_BASE); // 0.5 seconds
-    mFormatContext->max_delay= (int)(5.5 * AV_TIME_BASE); // 0.7 seconds
 
     // Find the first video stream
     mMediaStreamIndex = -1;
@@ -257,8 +234,6 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
 {
     int                 tResult = 0;
     AVCodec             *tCodec;
-    AVInputFormat       *tFormat;
-    AVFormatParameters  tFormatParams;
 
     LOG(LOG_VERBOSE, "Trying to open the audio source");
 
@@ -276,12 +251,6 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     if (mMediaSourceOpened)
         return false;
 
-    memset((void*)&tFormatParams, 0, sizeof(tFormatParams));
-    tFormatParams.sample_rate = pSampleRate; // sampling rate
-    tFormatParams.channels = pStereo?2:1; // stereo?
-    tFormatParams.initial_pause = 0;
-    tFormatParams.prealloced_context = 0;
-
     string tFileType = mDesiredDevice.substr(mDesiredDevice.find_last_of(".") + 1);
     transform(tFileType.begin(), tFileType.end(), tFileType.begin(), ::tolower);
     LOG(LOG_VERBOSE, "Try to open an audio stream from file with extension \"%s\"", tFileType.c_str());
@@ -289,18 +258,11 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
         tFileType = "matroska";
     if (tFileType == "vob")
         tFileType = "mpeg";
-    tFormat = av_find_input_format(tFileType.c_str());
-    if (tFormat == NULL)
-    {
-        LOG(LOG_ERROR, "Couldn't find audio input format");
-        return false;
-    }
-    tFormat->flags &= ~AVFMT_NOFILE; // make sure this is marked as file based input
 
-    // Open audio file
-    // open file and close it again to prevent FFMPEG from crashes, risk of race conditions!
     LOG(LOG_VERBOSE, "try to open \"%s\"", mDesiredDevice.c_str());
-    if ((tResult = av_open_input_file(&mFormatContext, mDesiredDevice.c_str(), tFormat, 0, &tFormatParams)) != 0)
+
+    // open input: automatic content detection is done inside ffmpeg
+    if ((tResult = avformat_open_input(&mFormatContext, mDesiredDevice.c_str(), NULL, NULL)) != 0)
     {
         LOG(LOG_ERROR, "Couldn't open audio file \"%s\" because of \"%s\".", mDesiredDevice.c_str(), strerror(AVUNERROR(tResult)));
         return false;
@@ -320,9 +282,6 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
         av_close_input_file(mFormatContext);
         return false;
     }
-
-    mFormatContext->preload= (int)(5 * AV_TIME_BASE); // 0.5 seconds
-    mFormatContext->max_delay= (int)(5.5 * AV_TIME_BASE); // 0.7 seconds
 
     // enumerate all audio streams and store them as possible input channels
     // find correct audio stream, depending on the desired input channel
