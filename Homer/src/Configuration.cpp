@@ -776,7 +776,7 @@ int Configuration::GetVideoQuality()
 
 int Configuration::GetVideoMaxPacketSize()
 {
-    return mQSettings->value("Streaming/VideoStreamMaxPacketSize", 1492).toInt();
+    return mQSettings->value("Streaming/VideoStreamMaxPacketSize", 1280).toInt();
 }
 
 enum TransportType Configuration::GetVideoTransportType()
@@ -831,7 +831,7 @@ int Configuration::GetAudioQuality()
 
 int Configuration::GetAudioMaxPacketSize()
 {
-    return mQSettings->value("Streaming/AudioStreamMaxPacketSize", 1492).toInt();
+    return mQSettings->value("Streaming/AudioStreamMaxPacketSize", 1280).toInt();
 }
 
 enum TransportType Configuration::GetAudioTransportType()

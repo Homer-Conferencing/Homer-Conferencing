@@ -45,8 +45,8 @@ namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// maximum packet size of a reeencoded frame
-#define MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE              256*1024
+// maximum packet size of a reeencoded frame, must not be more than 64 kB - otherwise it can't be used via networks!
+#define MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE               MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE
 
 #define MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT                  32
 
@@ -148,8 +148,8 @@ private:
 
     /* transcoder */
     virtual void* Run(void* pArgs = NULL); // transcoder main loop
-    void InitTranscoder(int pFifoEntrySize);
-    void DeinitTranscoder();
+    void StartTranscoder(int pFifoEntrySize);
+    void StopTranscoder();
 
     static int DistributePacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize);
 

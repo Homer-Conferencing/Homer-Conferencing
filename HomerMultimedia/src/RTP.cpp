@@ -177,6 +177,10 @@ void RTP::SetH261PayloadSizeMax(unsigned int pMaxSize)
 {//workaround for separation of RTP packetizer and the payload limit problem which is caused by the missing RTP support for H261 within ffmpeg
     mH261PayloadSizeMax = pMaxSize - RTP_HEADER_SIZE - H261_HEADER_SIZE;
 }
+unsigned int RTP::GetH261PayloadSizeMax()
+{
+    return mH261PayloadSizeMax;
+}
 // *******************************************************************************
 
 // ########################## H 263 ############################################
@@ -768,7 +772,10 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
     pDataSize = url_close_dyn_buf(mRtpFormatContext->pb, &tData);
     pData = (char*)tData;
     #ifdef RTP_DEBUG_PACKETS
-        LOG(LOG_VERBOSE, "Resulting RTP stream at %p with size of %d bytes", pData, pDataSize);
+        if (pDataSize == 0)
+            LOG(LOG_WARN, "Resulting RTP stream is empty");
+        else
+            LOG(LOG_VERBOSE, "Resulting RTP stream at %p with size of %d bytes", pData, pDataSize);
     #endif
 
     //####################################################################

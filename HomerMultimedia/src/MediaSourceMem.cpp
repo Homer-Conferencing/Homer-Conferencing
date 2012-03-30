@@ -106,9 +106,14 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
                 LOGEX(MediaSourceMem, LOG_VERBOSE, "Grabbing was stopped meanwhile");
                 return -1; //force negative resulting buffer size to signal error and force a return to the calling GUI!
             }
-            if (tFragmentBufferSize <= 0)
+            if (tFragmentBufferSize == 0)
             {
-            	LOGEX(MediaSourceMem, LOG_WARN, "Could not receive a new fragment");
+            	LOGEX(MediaSourceMem, LOG_VERBOSE, "Received empty fragment");
+                return 0;
+            }
+            if (tFragmentBufferSize < 0)
+            {
+                LOGEX(MediaSourceMem, LOG_VERBOSE, "Received invalid fragment");
                 return 0;
             }
             tFragmentDataSize = (unsigned int)tFragmentBufferSize;
@@ -118,14 +123,8 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
             // relay new data to registered sinks
             if(tFragmentIsOkay)
             {
-                // lock
-                tMediaSourceMemInstance->mMediaSinksMutex.lock();
-
                 // relay the received fragment to registered sinks
                 tMediaSourceMemInstance->RelayPacketToMediaSinks(tFragmentData, tFragmentDataSize);
-
-                // unlock
-                tMediaSourceMemInstance->mMediaSinksMutex.unlock();
             }
 
             if ((tFragmentIsOkay) && (!tFragmentIsSenderReport))
@@ -176,14 +175,8 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
             return 0;
         }
 
-        // lock
-        tMediaSourceMemInstance->mMediaSinksMutex.lock();
-
         // relay the received fragment to registered sinks
         tMediaSourceMemInstance->RelayPacketToMediaSinks(tBuffer, (unsigned int)tBufferSize);
-
-        // unlock
-        tMediaSourceMemInstance->mMediaSinksMutex.unlock();
     }
 
     #ifdef MSMEM_DEBUG_PACKETS
@@ -387,8 +380,9 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     }
 
 	// build corresponding "ByteIOContext"
-    tByteIoContext = av_alloc_put_byte((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, /* read-only */0, this, GetNextPacket, NULL, NULL);
+    tByteIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, /* read-only */0, this, GetNextPacket, NULL, NULL);
 
+    tByteIoContext->seekable = 0;
     // mark as streamed
     tByteIoContext->is_streamed = 1;
     // limit packet size, otherwise ffmpeg will deliver unpredictable results ;)
@@ -511,6 +505,9 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     }
     LOG(LOG_VERBOSE, "Successfully opened codec");
 
+    //HINT: we need to allow that input bit stream might be truncated at packet boundaries instead of frame boundaries, otherwise an UDP/TCP based transmission will fail because the decoder expects only complete packets as input
+    mCodecContext->flags2 |= CODEC_FLAG2_CHUNKS;
+
     // allocate software scaler context
     LOG(LOG_VERBOSE, "Going to create scaler context..");
     mScalerContext = sws_getContext(mCodecContext->width, mCodecContext->height, mCodecContext->pix_fmt, mTargetResX, mTargetResY, PIX_FMT_RGB32, SWS_BICUBIC, NULL, NULL, NULL);
@@ -549,8 +546,9 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
         return false;
 
 	// build corresponding "ByteIOContex
-    tByteIoContext = av_alloc_put_byte((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, /* read-only */0, this, GetNextPacket, NULL, NULL);
+    tByteIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, /* read-only */0, this, GetNextPacket, NULL, NULL);
 
+    tByteIoContext->seekable = 0;
     // mark as streamed
     tByteIoContext->is_streamed = 1;
     // limit packet size

@@ -72,7 +72,7 @@ void MediaSourceNet::Init(Socket *pDataSocket, bool pRtpActivated)
             mPacketStatAdditionalFragmentSize = TCP_FRAGMENT_HEADER_SIZE;
     }
     LOG(LOG_VERBOSE, "Listen for media packets at port %u, transport %d, IP version %d", mDataSocket->GetLocalPort(), mDataSocket->GetTransportType(), mDataSocket->GetNetworkType());
-    mCurrentDeviceName = "NET-IN: " + mDataSocket->GetName();
+    mCurrentDeviceName = "NET-IN: " + MediaSinkNet::CreateId(mDataSocket->GetLocalHost(), toString(mDataSocket->GetLocalPort()), mDataSocket->GetTransportType(), mRtpActivated);
     AssignStreamName(mCurrentDeviceName);
 }
 

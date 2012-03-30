@@ -52,7 +52,7 @@ public:
     virtual ~MediaSinkFile();
 
 protected:
-    virtual void SendFragment(char* pPacketData, unsigned int pPacketSize, unsigned int pHeaderSize);
+    virtual void SendFragment(char* pData, unsigned int pSize);
 
 private:
     std::string         mSinkFile;
