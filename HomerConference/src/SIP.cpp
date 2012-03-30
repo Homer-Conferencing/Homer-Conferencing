@@ -2325,7 +2325,10 @@ void SIP::SipReceivedCallResponse(const sip_to_t *pSipRemote, const sip_to_t *pS
                 // set auth. information
                 nua_authenticate(pNuaHandle, NUTAG_AUTH(tAuthInfo.c_str()), TAG_END());
             }else
-                SipReceivedCallUnavailable(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort);
+            {
+            	LOG(LOG_ERROR, "Communication partner requests authentication data but this is not support in peer-to-peer mode");
+            	SipReceivedCallUnavailable(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort);
+            }
 
             break;
         case 408 ... 599: // user/service unavailable
