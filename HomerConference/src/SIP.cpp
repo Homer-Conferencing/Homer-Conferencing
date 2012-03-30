@@ -2084,6 +2084,12 @@ void SIP::SipReceivedError(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal
     MEETING.notifyObservers(tEEvent);
 }
 
+void SIP::SipReceivedShutdownResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, sip_t const *pSip, string pSourceIp, unsigned int pSourcePort)
+{
+    if ((pStatus == SIP_STATE_OKAY /* okay */) || (pStatus == 500 /* timeout */))
+        mSipStackOnline = false;
+}
+
 void SIP::SipReceivedAuthenticationResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, std::string pSourceIp, unsigned int pSourcePort)
 {
     switch(pStatus)
@@ -2103,6 +2109,8 @@ void SIP::SipReceivedAuthenticationResponse(const sip_to_t *pSipRemote, const si
     }
 
 }
+
+///////////////// Instant Messaging //////////////////////////////////
 
 void SIP::SipReceivedMessage(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, string pSourceIp, unsigned int pSourcePort)
 {
@@ -2125,39 +2133,6 @@ void SIP::SipReceivedMessage(const sip_to_t *pSipRemote, const sip_to_t *pSipLoc
         MEETING.notifyObservers(tMEvent);
     }else
         LOG(LOG_ERROR, "Message: no message text");
-}
-
-void SIP::SipReceivedMessageAccept(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, string pSourceIp, unsigned int pSourcePort)
-{
-    MessageAcceptEvent *tMAEvent = new MessageAcceptEvent();
-
-    InitGeneralEvent_FromSipReceivedResponseEvent(pSipRemote, pSipLocal, pNuaHandle, pSip, tMAEvent, "MessageAccept", pSourceIp, pSourcePort);
-
-    nua_handle_destroy(pNuaHandle);
-
-    MEETING.notifyObservers(tMAEvent);
-}
-
-void SIP::SipReceivedMessageAcceptDelayed(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, string pSourceIp, unsigned int pSourcePort)
-{
-    MessageAcceptDelayedEvent *tMADEvent = new MessageAcceptDelayedEvent();
-
-    InitGeneralEvent_FromSipReceivedResponseEvent(pSipRemote, pSipLocal, pNuaHandle, pSip, tMADEvent, "MessageAcceptDelayed", pSourceIp, pSourcePort);
-
-    nua_handle_destroy(pNuaHandle);
-
-    MEETING.notifyObservers(tMADEvent);
-}
-
-void SIP::SipReceivedMessageUnavailable(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, string pSourceIp, unsigned int pSourcePort)
-{
-    MessageUnavailableEvent *tMUEvent = new MessageUnavailableEvent();
-
-    InitGeneralEvent_FromSipReceivedResponseEvent(pSipRemote, pSipLocal, pNuaHandle, pSip, tMUEvent, "MessageUnavailable", pSourceIp, pSourcePort);
-
-    nua_handle_destroy(pNuaHandle);
-
-    MEETING.notifyObservers(tMUEvent);
 }
 
 void SIP::SipReceivedMessageResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, sip_t const *pSip, string pSourceIp, unsigned int pSourcePort)
@@ -2193,6 +2168,41 @@ void SIP::SipReceivedMessageResponse(const sip_to_t *pSipRemote, const sip_to_t 
             break;
     }
 }
+
+void SIP::SipReceivedMessageAccept(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, string pSourceIp, unsigned int pSourcePort)
+{
+    MessageAcceptEvent *tMAEvent = new MessageAcceptEvent();
+
+    InitGeneralEvent_FromSipReceivedResponseEvent(pSipRemote, pSipLocal, pNuaHandle, pSip, tMAEvent, "MessageAccept", pSourceIp, pSourcePort);
+
+    nua_handle_destroy(pNuaHandle);
+
+    MEETING.notifyObservers(tMAEvent);
+}
+
+void SIP::SipReceivedMessageAcceptDelayed(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, string pSourceIp, unsigned int pSourcePort)
+{
+    MessageAcceptDelayedEvent *tMADEvent = new MessageAcceptDelayedEvent();
+
+    InitGeneralEvent_FromSipReceivedResponseEvent(pSipRemote, pSipLocal, pNuaHandle, pSip, tMADEvent, "MessageAcceptDelayed", pSourceIp, pSourcePort);
+
+    nua_handle_destroy(pNuaHandle);
+
+    MEETING.notifyObservers(tMADEvent);
+}
+
+void SIP::SipReceivedMessageUnavailable(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, string pSourceIp, unsigned int pSourcePort)
+{
+    MessageUnavailableEvent *tMUEvent = new MessageUnavailableEvent();
+
+    InitGeneralEvent_FromSipReceivedResponseEvent(pSipRemote, pSipLocal, pNuaHandle, pSip, tMUEvent, "MessageUnavailable", pSourceIp, pSourcePort);
+
+    nua_handle_destroy(pNuaHandle);
+
+    MEETING.notifyObservers(tMUEvent);
+}
+
+///////////////// Call Handling //////////////////////////////////
 
 void SIP::SipReceivedCall(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, void* pTags, string pSourceIp, unsigned int pSourcePort)
 {
@@ -2274,6 +2284,82 @@ void SIP::SipReceivedCall(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal,
                     LOG(LOG_ERROR, "AvailabilityState unknown");
                     delete tCEvent;
                     break;
+    }
+}
+
+void SIP::SipReceivedCallResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, const char* pPhrase, sip_t const *pSip, void* pTags, string pSourceIp, unsigned int pSourcePort)
+{
+    size_t tNatIpPos;
+    string tPhrase = string(pPhrase);
+
+    int tCallState = nua_callstate_init;
+    //char const *tLocalSdp = NULL;
+    char const *tRemoteSdp = NULL;
+
+    tagi_t* tTags = (tagi_t*)pTags;
+    tl_gets(tTags,
+            NUTAG_CALLSTATE_REF(tCallState),
+            //SOATAG_LOCAL_SDP_STR_REF(tLocalSdp),
+            SOATAG_REMOTE_SDP_STR_REF(tRemoteSdp),
+            TAG_END());
+
+    LOG(LOG_INFO, "CallResponseCallState: %d", tCallState);
+    //LOG(LOG_INFO, "CallResponseLocalSdp: %s", tLocalSdp);
+    LOG(LOG_INFO, "CallResponseRemoteSdp: %s", tRemoteSdp);
+
+    switch(pStatus)
+    {
+        case SIP_STATE_OKAY: // the other side accepted the call
+            SipReceivedCallAccept(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort);
+            break;
+        case 180: // ringing on the other side
+            SipReceivedCallRinging(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort);
+            break;
+        case SIP_STATE_PROXY_AUTH_REQUIRED:
+            if ((pNuaHandle != NULL) && (GetServerRegistrationState()))
+            {
+                string tAuthInfo = "Digest:\"" + mSipRegisterServer + "\":" + mSipRegisterUsername + ":" + mSipRegisterPassword;
+
+                LOG(LOG_VERBOSE, "Authentication information for message: %s", tAuthInfo.c_str());
+
+                // set auth. information
+                nua_authenticate(pNuaHandle, NUTAG_AUTH(tAuthInfo.c_str()), TAG_END());
+            }else
+                SipReceivedCallUnavailable(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort);
+
+            break;
+        case 408 ... 599: // user/service unavailable
+            //    408 = Timeout
+            //    415 = Unsupported media type (linphone)
+            //    503 = Service unavailable
+            SipReceivedCallUnavailable(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort);
+            break;
+        case 600 ... 699: // we got a deny answer
+            //     603 = Deny
+            #ifdef SIP_NAT_SOURCE_ADDRESS_ADAPTION
+                // NAT traversal: was NAT detected by remote side?
+                if ((tNatIpPos = tPhrase.find("NAT:")) != string::npos)
+                {
+                    string tOwnNatIp = tPhrase.substr(tNatIpPos + 4, tPhrase.size() - (tNatIpPos + 4));
+                    unsigned int tOwnNatPort = 5060;
+                    size_t tNatPortPos;
+                    if ((tNatPortPos = tOwnNatIp.find(":")) != string::npos)
+                    {
+                        tOwnNatPort = (unsigned int)atoi(tOwnNatIp.substr(tNatPortPos + 1, tOwnNatIp.size() - (tNatPortPos + 1)).c_str());
+                        tOwnNatIp.erase(tNatPortPos, tOwnNatIp.size() - tNatPortPos );
+                    }
+                    SipReceivedCallDenyNat(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort, tOwnNatIp, tOwnNatPort);
+                }else
+                {
+                    SipReceivedCallDeny(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort);
+                }
+            #else
+                SipReceivedCallDeny(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort);
+            #endif
+            break;
+        default:
+            LOG(LOG_ERROR, "Unsupported status code");
+            break;
     }
 }
 
@@ -2556,6 +2642,8 @@ void SIP::SipReceivedCallTermination(const sip_to_t *pSipRemote, const sip_to_t 
         MEETING.notifyObservers(tCTEvent);
 }
 
+///////////////// Options Messaging //////////////////////////////////
+
 void SIP::SipReceivedOptionsResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort)
 {
     switch(pStatus)
@@ -2613,89 +2701,6 @@ void SIP::SipReceivedOptionsResponseUnavailable(const sip_to_t *pSipRemote, cons
 
     MEETING.notifyObservers(tOUAEvent);
 }
-
-void SIP::SipReceivedShutdownResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, sip_t const *pSip, string pSourceIp, unsigned int pSourcePort)
-{
-    if ((pStatus == SIP_STATE_OKAY /* okay */) || (pStatus == 500 /* timeout */))
-        mSipStackOnline = false;
-}
-
-void SIP::SipReceivedCallResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, const char* pPhrase, sip_t const *pSip, void* pTags, string pSourceIp, unsigned int pSourcePort)
-{
-    size_t tNatIpPos;
-    string tPhrase = string(pPhrase);
-
-    int tCallState = nua_callstate_init;
-    //char const *tLocalSdp = NULL;
-    char const *tRemoteSdp = NULL;
-
-    tagi_t* tTags = (tagi_t*)pTags;
-    tl_gets(tTags,
-            NUTAG_CALLSTATE_REF(tCallState),
-            //SOATAG_LOCAL_SDP_STR_REF(tLocalSdp),
-            SOATAG_REMOTE_SDP_STR_REF(tRemoteSdp),
-            TAG_END());
-
-    LOG(LOG_INFO, "CallResponseCallState: %d", tCallState);
-    //LOG(LOG_INFO, "CallResponseLocalSdp: %s", tLocalSdp);
-    LOG(LOG_INFO, "CallResponseRemoteSdp: %s", tRemoteSdp);
-
-    switch(pStatus)
-    {
-        case SIP_STATE_OKAY: // the other side accepted the call
-            SipReceivedCallAccept(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort);
-            break;
-        case 180: // ringing on the other side
-            SipReceivedCallRinging(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort);
-            break;
-        case SIP_STATE_PROXY_AUTH_REQUIRED:
-            if ((pNuaHandle != NULL) && (GetServerRegistrationState()))
-            {
-                string tAuthInfo = "Digest:\"" + mSipRegisterServer + "\":" + mSipRegisterUsername + ":" + mSipRegisterPassword;
-
-                LOG(LOG_VERBOSE, "Authentication information for message: %s", tAuthInfo.c_str());
-
-                // set auth. information
-                nua_authenticate(pNuaHandle, NUTAG_AUTH(tAuthInfo.c_str()), TAG_END());
-            }else
-                SipReceivedCallUnavailable(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort);
-
-            break;
-        case 408 ... 599: // user/service unavailable
-            //    408 = Timeout
-            //    415 = Unsupported media type (linphone)
-            //    503 = Service unavailable
-            SipReceivedCallUnavailable(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort);
-            break;
-        case 600 ... 699: // we got a deny answer
-            //     603 = Deny
-            #ifdef SIP_NAT_SOURCE_ADDRESS_ADAPTION
-                // NAT traversal: was NAT detected by remote side?
-                if ((tNatIpPos = tPhrase.find("NAT:")) != string::npos)
-                {
-                    string tOwnNatIp = tPhrase.substr(tNatIpPos + 4, tPhrase.size() - (tNatIpPos + 4));
-                    unsigned int tOwnNatPort = 5060;
-                    size_t tNatPortPos;
-                    if ((tNatPortPos = tOwnNatIp.find(":")) != string::npos)
-                    {
-                        tOwnNatPort = (unsigned int)atoi(tOwnNatIp.substr(tNatPortPos + 1, tOwnNatIp.size() - (tNatPortPos + 1)).c_str());
-                        tOwnNatIp.erase(tNatPortPos, tOwnNatIp.size() - tNatPortPos );
-                    }
-                    SipReceivedCallDenyNat(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort, tOwnNatIp, tOwnNatPort);
-                }else
-                {
-                    SipReceivedCallDeny(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort);
-                }
-            #else
-                SipReceivedCallDeny(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort);
-            #endif
-            break;
-        default:
-            LOG(LOG_ERROR, "Unsupported status code");
-            break;
-    }
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //////////////////////// SENDING //////////////////////////////////////////////
