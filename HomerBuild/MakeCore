@@ -29,7 +29,7 @@ ifneq ($(INSTALL_LIBDIR),)
 endif
 # Options for cmake: set relocation directory, deactivate special warnings, for MSys32/MinGW32 environment Unix makefiles are created by default
 ifeq ($(BUILD_OS),msys)
-	CMAKE_OPTIONS= -DCMAKE_SKIP_RPATH:BOOL=ON -DRELOCATION_DIR=../../../../bin/ -Wno-dev -G"Unix Makefiles" $(OPTION_INSTALL_PREFIX) ${OPTION_INSTALL_LIBDIR}
+	CMAKE_OPTIONS= -DCMAKE_SKIP_RPATH:BOOL=ON -DRELOCATION_DIR=../../../../bin/ -Wno-dev -G "MSYS Makefiles" $(OPTION_INSTALL_PREFIX) ${OPTION_INSTALL_LIBDIR}
 else
 	CMAKE_OPTIONS= -DCMAKE_SKIP_RPATH:BOOL=ON -DRELOCATION_DIR=../../../../bin/ -Wno-dev $(OPTION_INSTALL_PREFIX) ${OPTION_INSTALL_LIBDIR}
 endif
@@ -37,7 +37,9 @@ endif
 ##############################################################
 # build target mappings
 all: default
-
+        
+package: release
+        
 ##############################################################
 clean:
 

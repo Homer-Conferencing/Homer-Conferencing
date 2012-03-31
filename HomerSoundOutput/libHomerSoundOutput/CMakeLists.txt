@@ -118,12 +118,23 @@ endif (LINUX)
 
 ##############################################################
 # USED LIBRARIES for win32 environment
+SET (LIBS_WINDOWS_INSTALL
+    libgcc_s_dw2-1
+    libstdc++-6
+    ogg
+    SDL
+    SDL_sound
+    SDL_mixer
+    smpeg
+    vorbis
+    vorbisfile
+)
 SET (LIBS_WINDOWS
 	HomerBase
 	HomerMonitor
-	SDL
-	SDL_sound
-	SDL_mixer
+    SDL
+    SDL_sound
+    SDL_mixer
 	Winmm
 )
 

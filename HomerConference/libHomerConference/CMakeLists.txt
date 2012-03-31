@@ -87,11 +87,18 @@ SET (SOURCES
 
 ##############################################################
 # USED LIBRARIES for win32 environment
+SET (LIBS_WINDOWS_INSTALL
+    libgcc_s_dw2-1
+    libsofia_sip_ua
+    libstdc++-6
+    msvcr100
+    pthreadVC2
+)
 SET (LIBS_WINDOWS
 	HomerBase
 	HomerMonitor
 	ws2_32
-	libsofia_sip_ua
+    libsofia_sip_ua
 )
 
 # USED LIBRARIES for apple environment

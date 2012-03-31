@@ -105,16 +105,27 @@ ENDIF (LINUX)
 
 ##############################################################
 # USED LIBRARIES for win32 environment
+SET (LIBS_WINDOWS_INSTALL
+    avcodec-53
+    avdevice-53
+    avfilter-2
+    avformat-53
+    avutil-51
+    libgcc_s_dw2-1
+    libstdc++-6
+    swresample-0
+    swscale-2
+)
 SET (LIBS_WINDOWS
 	HomerBase
 	HomerGAPI
 	HomerMonitor
 	ws2_32
-	avutil-51
-	avcodec-53
-	avformat-53
-	avdevice-53
-	swscale-2
+    avutil-51
+    avcodec-53
+    avformat-53
+    avdevice-53
+    swscale-2
 	Avicap32
 	Winmm
 )

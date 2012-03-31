@@ -1,4 +1,3 @@
-###############################################################################
 # Author:  Thomas Volkert
 # Since:   2010-11-13
 ###############################################################################
@@ -306,20 +305,37 @@ IF (DEFINED TARGET_PROGRAM_NAME)
 ENDIF ()
 
 ##############################################################
-# library: define install target
+# INSTALL library: define install target
 IF (DEFINED INSTALL_LIBDIR)
 	MESSAGE("##### Libraries will be installed to " ${INSTALL_LIBDIR})
 ENDIF()  
 IF (DEFINED TARGET_LIB_NAME) 
 	IF (DEFINED INSTALL_LIBDIR)
-		INSTALL(TARGETS ${TARGET_NAME} DESTINATION ${INSTALL_LIBDIR})
+		INSTALL(TARGETS ${TARGET_NAME} RUNTIME DESTINATION ${INSTALL_LIBDIR})
 	ELSE()
-		INSTALL(TARGETS ${TARGET_NAME} DESTINATION lib)
+        IF(WIN32)
+                INSTALL(TARGETS ${TARGET_NAME} RUNTIME DESTINATION .)
+        ELSE()
+                INSTALL(TARGETS ${TARGET_NAME} RUNTIME DESTINATION lib)
+        ENDIF()	     
 	ENDIF()
 ENDIF ()
-# executable: define install target
+
+# INSTALL executable: define install target
 IF (DEFINED TARGET_PROGRAM_NAME)
-	INSTALL(TARGETS ${TARGET_NAME} DESTINATION bin PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+    IF(WIN32)
+        INSTALL(TARGETS ${TARGET_NAME} DESTINATION .)
+    ELSE()
+        INSTALL(TARGETS ${TARGET_NAME} DESTINATION bin PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+    ENDIF()
+ENDIF()
+
+# INSTALL additional libraries: define install target
+IF (WIN32)
+    MESSAGE("### Will additionally install Windows libraries: ${LIBS_WINDOWS_INSTALL}")
+    FOREACH(LIBS_WINDOWS_INSTALL_ENTRY ${LIBS_WINDOWS_INSTALL})
+        INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerLibs/win${ARCH_BITS}/${LIBS_WINDOWS_INSTALL_ENTRY}.dll DESTINATION .)
+    ENDFOREACH(LIBS_WINDOWS_INSTALL_ENTRY ${LIBS_WINDOWS_INSTALL})
 ENDIF()
 
 ##############################################################

@@ -39,4 +39,5 @@ ELSE()
 	MESSAGE("Architecture was explicitly defined as ${ARCH_BITS} bit")
 ENDIF (NOT DEFINED ARCH_BITS)
 
+##############################################################
 SET (PRE_DEFINITIONS_EXECUTED "true")

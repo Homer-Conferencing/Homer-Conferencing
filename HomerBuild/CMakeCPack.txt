@@ -1,0 +1,54 @@
+###############################################################################
+# Author:  Thomas Volkert
+# Since:   2012-03-24
+###############################################################################
+
+MESSAGE("### Supporting installer creation")
+
+###############################################################################
+#
+SET(PACKAGE_TOP_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
+
+###############################################################################
+# package version number
+SET(CPACK_PACKAGE_VERSION "0.23.0")
+SET(CPACK_PACKAGE_VERSION_MAJOR "0")
+SET(CPACK_PACKAGE_VERSION_MINOR "23")
+SET(CPACK_PACKAGE_VERSION_PATCH "0")
+
+###############################################################################
+# general CPack configuration
+set(CPACK_MONOLITHIC_INSTALL 1)
+
+SET(CPACK_PACKAGE_NAME "Homer-Conferencing")
+SET(CPACK_PACKAGE_VENDOR "Homer Conferencing project")
+SET(CPACK_PACKAGE_FILE_NAME "Homer-Install")
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Homer - live conferencing and more")
+SET(CPACK_PACKAGE_INSTALL_DIRECTORY "Homer")
+SET(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "Homer-Conferencing")
+
+###############################################################################
+SET(CPACK_RESOURCE_FILE_LICENSE ${PACKAGE_TOP_SRC_DIR}/COPYING)
+#CPACK_RESOURCE_FILE_README
+SET(CPACK_RESOURCE_FILE_WELCOME ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/texts\\\\Homer-Welcome.txt)
+
+###############################################################################
+SET(CPACK_PACKAGE_ICON ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/images\\\\Homer-Banner.bmp)
+
+IF (WIN32)
+    SET(CPACK_PACKAGE_EXECUTABLES "Homer" "Homer-Conferencing")
+ELSE()
+    SET(CPACK_PACKAGE_EXECUTABLES "bin/Homer" "Homer-Conferencing")
+ENDIF()
+
+###############################################################################
+# NSIS specific configuration for Windows
+IF (WIN32)
+        INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../HomerBuild/CMakeCPackWin.txt)
+ENDIF(WIN32)
+
+
+###############################################################################
+# include CPack in the end
+INCLUDE(CPack)
+
