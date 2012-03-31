@@ -1,0 +1,26 @@
+###############################################################################
+# Author:  Thomas Volkert
+# Since:   2012-03-24
+###############################################################################
+
+MESSAGE("### Supporting NSIS installer creation")
+
+###############################################################################
+SET(CPACK_GENERATOR "NSIS")
+
+###############################################################################
+set(CPACK_NSIS_PACKAGE_NAME "Homer Conferencing")
+set(CPACK_NSIS_DISPLAY_NAME "Homer Conferencing ${CPACK_PACKAGE_VERSION}")
+SET(CPACK_NSIS_CONTACT "homer@homer-conferencing.com") 
+
+SET(CPACK_NSIS_MODIFY_PATH "ON")
+
+SET(CPACK_NSIS_MUI_ICON ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/images\\\\Homer-Install.ico) 
+SET(CPACK_NSIS_MUI_UNIICON ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/images\\\\Homer-Uninstall.ico) 
+SET(CPACK_NSIS_INSTALLED_ICON_NAME ${CMAKE_BINARY_DIR}/Homer/Homer.exe)
+
+SET(CPACK_NSIS_EXECUTABLES_DIRECTORY ".")
+
+SET(CPACK_NSIS_MENU_LINKS "http://homer-conferencing.com" "Homer-Conferencing web site")
+SET(CPACK_NSIS_URL_INFO_ABOUT "http://homer-conferencing.com")
+SET(CPACK_NSIS_HELP_LINK "http://homer-conferencing.com")

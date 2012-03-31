@@ -237,6 +237,19 @@ SET (QT_QRC_SOURCES
 
 ##############################################################
 # USED LIBRARIES for win32 environment
+SET (LIBS_WINDOWS_INSTALL   
+    libgcc_s_dw2-1
+    libstdc++-6
+    mingwm10
+    QtCore4
+    QtGui4
+    QtMultimedia4
+    QtNetwork4
+    QtWebKit4
+    QtXml4
+    QtXmlPatterns4
+    phonon4
+)
 SET (LIBS_WINDOWS	
 	stdc++
 	HomerBase
@@ -246,14 +259,15 @@ SET (LIBS_WINDOWS
 	HomerConference
 	HomerSoundOutput
 	mingw32
-	${QT_LIBRARIES}
-	${QT_QTCORE_LIBRARIES}
-	${QT_QTGUI_LIBRARIES}
-	${QT_QTMULTIMEDIA_LIBRARIES}
-	${QT_QTNETWORK_LIBRARIES}
-	${QT_QTXML_LIBRARIES}
-	${QT_QTWEBKIT_LIBRARIES}
+    ${QT_LIBRARIES}
+    ${QT_QTCORE_LIBRARIES}
+    ${QT_QTGUI_LIBRARIES}
+    ${QT_QTMULTIMEDIA_LIBRARIES}
+    ${QT_QTNETWORK_LIBRARIES}
+    ${QT_QTXML_LIBRARIES}
+    ${QT_QTWEBKIT_LIBRARIES}
 )
+
 # USED LIBRARIES for BSD environment
 SET (LIBS_BSD
 )
@@ -326,7 +340,9 @@ QT4_WRAP_CPP(SOURCES ${QT_MOC_SOURCES})
 QT4_ADD_RESOURCES(SOURCES ${QT_QRC_SOURCES})
 
 ##############################################################
-# extend install target by "Homer.png"
-INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../Homer.png ${TARGET_NAME} DESTINATION share/Homer)
+# extend install target by "Homer.png" for non Windows systems
+IF(NOT WIN32)
+        INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../Homer.png DESTINATION share/Homer)
+ENDIF()
 
 INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakeCore.txt)

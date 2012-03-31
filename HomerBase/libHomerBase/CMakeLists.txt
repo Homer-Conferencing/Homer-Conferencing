@@ -54,6 +54,10 @@ SET (SOURCES
 
 ##############################################################
 # USED LIBRARIES for win32 environment
+SET (LIBS_WINDOWS_INSTALL
+    libgcc_s_dw2-1
+    libstdc++-6
+)
 SET (LIBS_WINDOWS
 	ws2_32
 	Psapi
