@@ -17,8 +17,6 @@ SET(CPACK_PACKAGE_VERSION_MINOR "23")
 SET(CPACK_PACKAGE_VERSION_PATCH "0")
 
 ###############################################################################
-# general CPack configuration
-set(CPACK_MONOLITHIC_INSTALL 1)
 
 SET(CPACK_PACKAGE_NAME "Homer-Conferencing")
 SET(CPACK_PACKAGE_VENDOR "Homer Conferencing project")
@@ -40,6 +38,32 @@ IF (WIN32)
 ELSE()
     SET(CPACK_PACKAGE_EXECUTABLES "bin/Homer" "Homer-Conferencing")
 ENDIF()
+
+###############################################################################
+
+SET(CPACK_COMPONENTS_ALL application libraries extlibraries sounds)
+
+SET(CPACK_COMPONENT_APPLICATION_DISPLAY_NAME "Homer user interface")
+SET(CPACK_COMPONENT_LIBRARIES_DISPLAY_NAME "Homer libraries")
+SET(CPACK_COMPONENT_EXTLIBRARIES_DISPLAY_NAME "External libraries")
+SET(CPACK_COMPONENT_SOUNDS_DISPLAY_NAME "Sound files")
+
+SET(CPACK_COMPONENT_APPLICATION_REQUIRED ON) 
+SET(CPACK_COMPONENT_LIBRARIES_REQUIRED ON) 
+SET(CPACK_COMPONENT_EXTLIBRARIES_REQUIRED ON) 
+
+SET(CPACK_COMPONENT_APPLICATION_DESCRIPTION "Homer-Conferencing is a free cross-platform SIP softphone with video support.") 
+SET(CPACK_COMPONENT_LIBRARIES_DESCRIPTION "Homer-Conferencing is a free cross-platform SIP softphone with video support.") 
+SET(CPACK_COMPONENT_EXTLIBRARIES_DESCRIPTION "Several libraries from external projects are needed for Homer-Conferencing.") 
+SET(CPACK_COMPONENT_SOUNDS_DESCRIPTION "Sound files to notify for new events like messages or calls.") 
+  
+SET(CPACK_COMPONENT_APPLICATION_DEPENDS libraries extlibraries)
+SET(CPACK_COMPONENT_LIBRARIES_DEPENDS extlibraries)
+
+SET(CPACK_COMPONENT_APPLICATION_GROUP "Runtime components")
+SET(CPACK_COMPONENT_LIBRARIES_GROUP "Runtime components")
+SET(CPACK_COMPONENT_EXTLIBRARIES_GROUP "Runtime components")
+SET(CPACK_COMPONENT_SOUNDS_GROUP "Usability add-ons")
 
 ###############################################################################
 # NSIS specific configuration for Windows
