@@ -28,15 +28,18 @@ SET(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "Homer-Conferencing")
 ###############################################################################
 SET(CPACK_RESOURCE_FILE_LICENSE ${PACKAGE_TOP_SRC_DIR}/COPYING)
 #CPACK_RESOURCE_FILE_README
-SET(CPACK_RESOURCE_FILE_WELCOME ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/texts\\\\Homer-Welcome.txt)
 
 ###############################################################################
-SET(CPACK_PACKAGE_ICON ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/images\\\\Homer-Banner.bmp)
+# HINT: workaround for NSIS installer bug is to use "\\\\" construction at least once per variable
 
 IF (WIN32)
     SET(CPACK_PACKAGE_EXECUTABLES "Homer" "Homer-Conferencing")
+    SET(CPACK_PACKAGE_ICON ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/images\\\\Homer-Banner.bmp)
+    SET(CPACK_RESOURCE_FILE_WELCOME ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/texts\\\\Homer-Welcome.txt)
 ELSE()
     SET(CPACK_PACKAGE_EXECUTABLES "bin/Homer" "Homer-Conferencing")
+    SET(CPACK_PACKAGE_ICON ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/images/Homer-Banner.bmp)
+    SET(CPACK_RESOURCE_FILE_WELCOME ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/texts/Homer-Welcome.txt)
 ENDIF()
 
 ###############################################################################
