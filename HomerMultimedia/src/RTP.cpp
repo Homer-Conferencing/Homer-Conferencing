@@ -616,6 +616,11 @@ bool RTP::IsPayloadSupported(enum CodecID pId)
 //            case CODEC_ID_MPEG2TS:
             case CODEC_ID_AMR_NB:
 //            case CODEC_ID_AMR_WB:
+//            case CODEC_ID_VORBIS:
+            case CODEC_ID_THEORA:
+//            case CODEC_ID_VP8:
+//            case CODEC_ID_ADPCM_G722:
+//            case CODEC_ID_ADPCM_G726:
                             tResult = true;
                             break;
             default:
@@ -1650,6 +1655,8 @@ int RTP::FfmpegNameToPayloadId(std::string pName)
         tResult = 120;
     if ((pName == "m4v") || (pName == "mpeg4"))
         tResult = 121;
+    if ((pName == "theora") || (pName == "THEORA"))
+        tResult = 122;
 
     //audio
     if ((pName == "mulaw") || (pName == "pcm_mulaw"))
@@ -1692,6 +1699,9 @@ string RTP::PayloadIdToFfmpegName(int pId)
                 break;
         case 121:
                 tResult = "m4v";
+                break;
+        case 122:
+                tResult = "theora";
                 break;
 
         //audio

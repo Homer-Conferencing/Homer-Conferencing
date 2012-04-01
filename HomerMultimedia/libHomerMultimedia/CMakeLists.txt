@@ -179,6 +179,7 @@ ELSE ()
 		avformat
 		avcodec
 		avfilter
+		swresample
 		swscale
 		avutil
 		mp3lame
@@ -186,6 +187,8 @@ ELSE ()
 		opencore-amrnb
 		opencore-amrwb
 		jack
+		theoraenc
+		theoradec
 		x264
 		bz2
 		z
