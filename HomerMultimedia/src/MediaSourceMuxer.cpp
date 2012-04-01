@@ -308,6 +308,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     mFormatContext = AV_NEW_FORMAT_CONTEXT();
 
     // find format
+    LOG(LOG_VERBOSE, "Guessing format for codec \"%s\"", FfmpegId2FfmpegFormat(mStreamCodecId).c_str());
     tFormat = AV_GUESS_FORMAT(FfmpegId2FfmpegFormat(mStreamCodecId).c_str(), NULL, NULL);
     if (tFormat == NULL)
     {
@@ -558,7 +559,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     mFormatContext = AV_NEW_FORMAT_CONTEXT();
 
     // find format
-    LOG(LOG_VERBOSE, "Guessing format for %s", FfmpegId2FfmpegFormat(mStreamCodecId).c_str());
+    LOG(LOG_VERBOSE, "Guessing format for codec \"%s\"", FfmpegId2FfmpegFormat(mStreamCodecId).c_str());
     tFormat = AV_GUESS_FORMAT(FfmpegId2FfmpegFormat(mStreamCodecId).c_str(), NULL, NULL);
     if (tFormat == NULL)
     {
