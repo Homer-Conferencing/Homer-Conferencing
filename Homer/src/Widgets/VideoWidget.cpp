@@ -1583,9 +1583,15 @@ QString VideoWorkerThread::GetCurrentChannel()
 
 void VideoWorkerThread::SelectInputChannel(int pIndex)
 {
-    LOG(LOG_VERBOSE, "Will select new input channel %d after some short time", pIndex);
-    mDesiredInputChannel = pIndex;
-    mSelectInputChannelAsap = true;
+    if (pIndex != -1)
+    {
+        LOG(LOG_VERBOSE, "Will select new input channel %d after some short time", pIndex);
+        mDesiredInputChannel = pIndex;
+        mSelectInputChannelAsap = true;
+    }else
+    {
+        LOG(LOG_WARN, "Will not select new input channel -1, ignoring this request");
+    }
 }
 
 QStringList VideoWorkerThread::GetPossibleChannels()
@@ -1688,6 +1694,10 @@ void VideoWorkerThread::DoSetGrabResolution()
 void VideoWorkerThread::DoSelectInputChannel()
 {
     LOG(LOG_VERBOSE, "VideoWorkerThread-DoSelectInputChannel now...");
+
+    if(mDesiredInputChannel == -1)
+        return;
+
     // lock
     mDeliverMutex.lock();
 

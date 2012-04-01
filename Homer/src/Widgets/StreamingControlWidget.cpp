@@ -83,9 +83,21 @@ void StreamingControlWidget::initializeGUI()
 {
     setupUi(this);
     if (mVideoWorker->SupportsMultipleChannels())
-        SetVideoInputSelectionVisible();
-    else
-        SetVideoInputSelectionVisible(false);
+    {
+        mCbVideoInput->clear();
+        QStringList tList = mVideoWorker->GetPossibleChannels();
+        int i = 0;
+        for (i = 0; i < tList.size(); i++)
+        {
+            mCbVideoInput->addItem(tList[i]);
+            if (tList[i] == mVideoWorker->GetCurrentChannel())
+                mCbVideoInput->setCurrentIndex(mCbVideoInput->count() - 1);
+        }
+        mCbVideoInput->setVisible(true);
+    }else
+    {
+        mCbVideoInput->setVisible(false);
+    }
 }
 
 void StreamingControlWidget::StartScreenSegmentStreaming()
@@ -206,7 +218,8 @@ void StreamingControlWidget::SetVideoInputSelectionVisible(bool pVisible)
 void StreamingControlWidget::SelectedNewVideoInputChannel(int pIndex)
 {
     LOG(LOG_VERBOSE, "User selected new video input channel: %d", pIndex);
-    mVideoWorker->SelectInputChannel(pIndex);
+    if (pIndex >= 0)
+        mVideoWorker->SelectInputChannel(pIndex);
 }
 
 void StreamingControlWidget::timerEvent(QTimerEvent *pEvent)
