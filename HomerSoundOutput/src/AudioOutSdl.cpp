@@ -221,8 +221,8 @@ void AudioOutSdl::ClosePlaybackDevice()
         Mix_HaltMusic();
 
         // close SDL_mixer
-        Mix_CloseAudio();
-        SDL_QuitSubSystem(SDL_INIT_AUDIO);
+        //Mix_CloseAudio();
+        //SDL_QuitSubSystem(SDL_INIT_AUDIO);
 
         LOG(LOG_INFO, "closed");
     }
