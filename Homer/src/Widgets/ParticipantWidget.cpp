@@ -1045,6 +1045,9 @@ AudioWorkerThread* ParticipantWidget::GetAudioWorker()
 
 void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
 {
+    #ifdef DEBUG_TIMING
+        LOG(LOG_VERBOSE, "New timer event");
+    #endif
     int tTmp = 0;
     int tHour, tMin, tSec;
 

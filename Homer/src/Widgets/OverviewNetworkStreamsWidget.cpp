@@ -624,6 +624,9 @@ void OverviewNetworkStreamsWidget::UpdateView()
 
 void OverviewNetworkStreamsWidget::timerEvent(QTimerEvent *pEvent)
 {
+    #ifdef DEBUG_TIMING
+        LOG(LOG_VERBOSE, "New timer event");
+    #endif
     if (pEvent->timerId() == mTimerId)
         UpdateView();
 }

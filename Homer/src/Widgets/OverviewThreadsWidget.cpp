@@ -279,6 +279,9 @@ void OverviewThreadsWidget::UpdateView()
 
 void OverviewThreadsWidget::timerEvent(QTimerEvent *pEvent)
 {
+    #ifdef DEBUG_TIMING
+        LOG(LOG_VERBOSE, "New timer event");
+    #endif
     if (pEvent->timerId() == mTimerId)
         UpdateView();
 }

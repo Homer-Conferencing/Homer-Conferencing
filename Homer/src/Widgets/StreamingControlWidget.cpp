@@ -186,6 +186,7 @@ void StreamingControlWidget::SetVideoInputSelectionVisible(bool pVisible)
 {
     if (((mCbVideoInput->isVisible()) && (!pVisible))  || ((!mCbVideoInput->isVisible()) && (pVisible)))
     {
+        LOG(LOG_VERBOSE, "Setting new visibility state for video input selection");
         mCbVideoInput->clear();
         if ((pVisible) && (mVideoWorker->SupportsMultipleChannels()))
         {
@@ -210,6 +211,9 @@ void StreamingControlWidget::SelectedNewVideoInputChannel(int pIndex)
 
 void StreamingControlWidget::timerEvent(QTimerEvent *pEvent)
 {
+    #ifdef DEBUG_TIMING
+        LOG(LOG_VERBOSE, "New timer event");
+    #endif
     int tTmp = 0;
     int tHour, tMin, tSec;
 
