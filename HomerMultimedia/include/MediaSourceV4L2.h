@@ -76,7 +76,10 @@ public:
     virtual int GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk = false);
 
 private:
+    bool DoSupportsMultipleInputChannels();
+
     std::string         mCurrentInputChannelName;
+    bool                mSupportsMultipleInputChannels;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
