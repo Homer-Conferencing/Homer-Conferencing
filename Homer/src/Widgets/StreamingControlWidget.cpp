@@ -184,24 +184,28 @@ void StreamingControlWidget::StartMovieFileStreaming()
 
 void StreamingControlWidget::SetVideoInputSelectionVisible(bool pVisible)
 {
-    mCbVideoInput->clear();
-    if ((pVisible) && (mVideoWorker->SupportsMultipleChannels()))
+    if (((mCbVideoInput->isVisible()) && (!pVisible))  || ((!mCbVideoInput->isVisible()) && (pVisible)))
     {
-        QStringList tList = mVideoWorker->GetPossibleChannels();
-        int i = 0;
-        for (i = 0; i < tList.size(); i++)
+        mCbVideoInput->clear();
+        if ((pVisible) && (mVideoWorker->SupportsMultipleChannels()))
         {
-            mCbVideoInput->addItem(tList[i]);
-            if (tList[i] == mVideoWorker->GetCurrentChannel())
-                mCbVideoInput->setCurrentIndex(mCbVideoInput->count() - 1);
+            QStringList tList = mVideoWorker->GetPossibleChannels();
+            int i = 0;
+            for (i = 0; i < tList.size(); i++)
+            {
+                mCbVideoInput->addItem(tList[i]);
+                if (tList[i] == mVideoWorker->GetCurrentChannel())
+                    mCbVideoInput->setCurrentIndex(mCbVideoInput->count() - 1);
+            }
         }
+        mCbVideoInput->setVisible(pVisible);
     }
-    mCbVideoInput->setVisible(pVisible);
 }
 
 void StreamingControlWidget::SelectedNewVideoInputChannel(int pIndex)
 {
-    mVideoWorker->SetChannel(pIndex);
+    LOG(LOG_VERBOSE, "User selected new video input channel: %d", pIndex);
+    mVideoWorker->SelectInputChannel(pIndex);
 }
 
 void StreamingControlWidget::timerEvent(QTimerEvent *pEvent)

@@ -814,6 +814,7 @@ AudioWorkerThread::AudioWorkerThread(MediaSource *pAudioSource, AudioWidget *pAu
     mAudioOutMuted = false;
     mPlayNewFileAsap = false;
     mSelectInputChannelAsap = false;
+    mDesiredInputChannel = 0;
     mEofReached = false;
     mPaused = false;
     mSourceAvailable = false;
@@ -1169,9 +1170,9 @@ QString AudioWorkerThread::CurrentFile()
 	return mCurrentFile;
 }
 
-void AudioWorkerThread::SelectInputChannel(int pChannel)
+void AudioWorkerThread::SelectInputChannel(int pIndex)
 {
-    mDesiredInputChannel = pChannel;
+    mDesiredInputChannel = pIndex;
     mSelectInputChannelAsap = true;
 }
 
