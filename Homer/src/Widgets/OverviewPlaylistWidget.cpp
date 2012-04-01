@@ -640,6 +640,9 @@ void OverviewPlaylistWidget::PlayLast()
 
 void OverviewPlaylistWidget::timerEvent(QTimerEvent *pEvent)
 {
+    #ifdef DEBUG_TIMING
+        LOG(LOG_VERBOSE, "New timer event");
+    #endif
     if (pEvent->timerId() == mTimerId)
     {
 //    	if (mPlaylistId == PLAYLIST_VIDEO)

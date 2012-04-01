@@ -298,6 +298,9 @@ void OverviewFileTransfersWidget::UpdateView()
 
 void OverviewFileTransfersWidget::timerEvent(QTimerEvent *pEvent)
 {
+    #ifdef DEBUG_TIMING
+        LOG(LOG_VERBOSE, "New timer event");
+    #endif
     if (pEvent->timerId() == mTimerId)
         UpdateView();
 }

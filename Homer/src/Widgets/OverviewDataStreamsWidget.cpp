@@ -529,7 +529,10 @@ void OverviewDataStreamsWidget::UpdateView()
 
 void OverviewDataStreamsWidget::timerEvent(QTimerEvent *pEvent)
 {
-    if (pEvent->timerId() == mTimerId)
+    #ifdef DEBUG_TIMING
+        LOG(LOG_VERBOSE, "New timer event");
+    #endif
+   if (pEvent->timerId() == mTimerId)
         UpdateView();
 }
 

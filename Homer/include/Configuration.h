@@ -55,6 +55,9 @@ namespace Homer { namespace Gui {
 // select if it is a release or development version
 //#define RELEASE_VERSION -> is now defined automatically via build system
 
+// debug GUI timer?
+//#define DEBUG_TIMING
+
 // version string which is checked/used in the whole application
 #define RELEASE_VERSION_STRING          "Beta 0.23"
 
