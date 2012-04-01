@@ -189,7 +189,7 @@ public:
     //--
     bool SupportsMultipleChannels();
     QString GetCurrentChannel();
-    void SetChannel(int pIndex);
+    void SelectInputChannel(int pIndex);
     QStringList GetPossibleChannels();
 
     /* frame grabbing */
@@ -201,6 +201,7 @@ private:
     void DeinitFrameBuffers();
     void InitFrameBuffer(int pBufferId);
     void DoSetGrabResolution();
+    void DoSelectInputChannel();
     void DoResetVideoSource();
     void DoSetInputStreamPreferences();
     void DoSetCurrentDevice();
@@ -234,6 +235,7 @@ private:
     int                 mMissingFrames;
 
     /* for forwarded interface to media source */
+    int                 mDesiredInputChannel;
     bool                mSetInputStreamPreferencesAsap;
     bool                mSetCurrentDeviceAsap;
     bool                mSetGrabResolutionAsap;
@@ -241,6 +243,7 @@ private:
     bool                mStartRecorderAsap;
     bool                mStopRecorderAsap;
     bool				mPlayNewFileAsap;
+    bool                mSelectInputChannelAsap;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

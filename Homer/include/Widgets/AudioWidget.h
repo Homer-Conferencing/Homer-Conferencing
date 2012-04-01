@@ -159,12 +159,13 @@ public:
     void StopFile();
     bool EofReached();
     QString CurrentFile();
-    void SelectInputChannel(int pChannel);
     //--
     bool SupportsSeeking();
     void Seek(int pPos); // max. value is 1000
     int64_t GetSeekPos();
     int64_t GetSeekEnd();
+    //--
+    void SelectInputChannel(int pIndex);
 
     /* frame grabbing */
     void SetSampleDropping(bool pDrop);

@@ -1353,7 +1353,9 @@ VideoWorkerThread::VideoWorkerThread(MediaSource *pVideoSource, VideoWidget *pVi
     mStopRecorderAsap = false;
     mSetCurrentDeviceAsap = false;
     mSetInputStreamPreferencesAsap = false;
+    mDesiredInputChannel = 0;
     mPlayNewFileAsap = false;
+    mSelectInputChannelAsap = false;
     mSourceAvailable = false;
     mEofReached = false;
     mPaused = false;
@@ -1579,10 +1581,11 @@ QString VideoWorkerThread::GetCurrentChannel()
     return QString(mVideoSource->CurrentInputChannel().c_str());
 }
 
-void VideoWorkerThread::SetChannel(int pIndex)
+void VideoWorkerThread::SelectInputChannel(int pIndex)
 {
-    mVideoSource->SelectInputChannel(pIndex);
-    mFrameTimestamps.clear();
+    LOG(LOG_VERBOSE, "Will select new input channel %d after some short time", pIndex);
+    mDesiredInputChannel = pIndex;
+    mSelectInputChannelAsap = true;
 }
 
 QStringList VideoWorkerThread::GetPossibleChannels()
@@ -1676,6 +1679,24 @@ void VideoWorkerThread::DoSetGrabResolution()
 
     mVideoWidget->InformAboutNewSourceResolution();
     mSetGrabResolutionAsap = false;
+    mFrameTimestamps.clear();
+
+    // unlock
+    mDeliverMutex.unlock();
+}
+
+void VideoWorkerThread::DoSelectInputChannel()
+{
+    LOG(LOG_VERBOSE, "VideoWorkerThread-DoSelectInputChannel now...");
+    // lock
+    mDeliverMutex.lock();
+
+    // restart frame grabbing device
+    mSourceAvailable = mVideoSource->SelectInputChannel(mDesiredInputChannel);
+
+    mResetVideoSourceAsap = false;
+    mSelectInputChannelAsap = false;
+    mPaused = false;
     mFrameTimestamps.clear();
 
     // unlock
@@ -1872,6 +1893,10 @@ void VideoWorkerThread::run()
         // input stream preferences
         if (mSetInputStreamPreferencesAsap)
             DoSetInputStreamPreferences();
+
+        // input channel
+        if(mSelectInputChannelAsap)
+            DoSelectInputChannel();
 
         // reset video source
         if (mResetVideoSourceAsap)
