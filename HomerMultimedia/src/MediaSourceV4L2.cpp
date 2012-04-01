@@ -776,15 +776,19 @@ bool MediaSourceV4L2::SelectInputChannel(int pIndex)
 
     if ((pIndex >= 0) && (pIndex < 16))
     {
-        LOG(LOG_VERBOSE, "Selecting input channel: %d", pIndex);
-
         if (mCurrentInputChannel != pIndex)
-            tResult = true;
+        {
+            LOG(LOG_VERBOSE, "Selecting input channel: %d", pIndex);
 
-        mDesiredInputChannel = pIndex;
+            if (mCurrentInputChannel != pIndex)
+                tResult = true;
 
-        if (tResult)
-            Reset();
+            mDesiredInputChannel = pIndex;
+
+            if (tResult)
+                Reset();
+        }else
+            LOG(LOG_VERBOSE, "Selection of unput channel skipped because it is already selected");
     }else
     {
         LOG(LOG_WARN, "Selected input channel %d is out of range", pIndex);
