@@ -200,7 +200,7 @@ void ConfigurationDialog::LoadConfiguration()
         mCbVideoCodec->setCurrentIndex(3);
     if (tVideoStreamCodec == "MPEG4")
         mCbVideoCodec->setCurrentIndex(4);
-    if (tVideoStreamCodec == "MJPEG")
+    if (tVideoStreamCodec == "THEORA")
         mCbVideoCodec->setCurrentIndex(5);
 
     //### stream quality
@@ -396,7 +396,7 @@ void ConfigurationDialog::SaveConfiguration()
                 MEETING.SetVideoCodecsSupport(CODEC_MPEG4);
                 break;
         case 5:
-                MEETING.SetVideoCodecsSupport(CODEC_MJPEG);
+                MEETING.SetVideoCodecsSupport(CODEC_THEORA);
                 break;
         default:
                 break;

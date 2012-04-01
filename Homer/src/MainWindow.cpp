@@ -663,8 +663,8 @@ void MainWindow::loadSettings()
         MEETING.SetVideoCodecsSupport(CODEC_H264);
     if (tVideoStreamCodec == "MPEG4")
         MEETING.SetVideoCodecsSupport(CODEC_MPEG4);
-    if (tVideoStreamCodec == "MJPEG")
-        MEETING.SetVideoCodecsSupport(CODEC_MJPEG);
+    if (tVideoStreamCodec == "THEORA")
+        MEETING.SetVideoCodecsSupport(CODEC_THEORA);
     MEETING.SetVideoTransportType(MEDIA_TRANSPORT_RTP_UDP);
 
     // init audio codec for network streaming, but only support ONE codec and not multiple

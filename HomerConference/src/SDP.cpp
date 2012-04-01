@@ -182,6 +182,8 @@ int SDP::CodecNameToPayloadId(std::string pName)
         tResult = 120;
     if ((pName == "m4v") || (pName == "mpeg4"))
         tResult = 121;
+    if ((pName == "theora") || (pName == "THEORA"))
+        tResult = 122;
 
     //audio
     if ((pName == "mulaw") || (pName == "pcm_mulaw"))
@@ -256,6 +258,8 @@ string SDP::CreateSdpData(int pAudioPort, int pVideoPort)
         // rest is filled by SIP library
         tResult += "m=video " + toString(pVideoPort) + " "  + GetMediaTransportStr(mVideoTransportType);
 
+        if (tSupportedVideoCodecs & CODEC_THEORA)
+            tResult += " " + toString(CodecNameToPayloadId("theora"));
         if (tSupportedVideoCodecs & CODEC_MPEG4)
             tResult += " " + toString(CodecNameToPayloadId("m4v"));
         if (tSupportedVideoCodecs & CODEC_H264)
@@ -269,6 +273,8 @@ string SDP::CreateSdpData(int pAudioPort, int pVideoPort)
 
         tResult += "\r\n";
 
+        if (tSupportedVideoCodecs & CODEC_THEORA)
+            tResult += "a=rtpmap:" + toString(CodecNameToPayloadId("theora")) + " theora/90000\r\n";
         if (tSupportedVideoCodecs & CODEC_MPEG4)
             tResult += "a=rtpmap:" + toString(CodecNameToPayloadId("m4v")) + " MP4V-ES/90000\r\n";
         if (tSupportedVideoCodecs & CODEC_H264)
