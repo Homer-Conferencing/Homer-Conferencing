@@ -427,6 +427,8 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     MarkOpenGrabDeviceSuccessful();
     LOG(LOG_INFO, "    ..input: %s", mCurrentInputChannelName.c_str());
 
+    mSupportsMultipleInputChannels = DoSupportsMultipleInputChannels();
+
     return true;
 }
 
@@ -470,6 +472,7 @@ bool MediaSourceV4L2::CloseGrabDevice()
         LOG(LOG_INFO, "...wasn't open");
 
     mGrabbingStopped = false;
+    mSupportsMultipleInputChannels = false;
     mMediaType = MEDIA_UNKNOWN;
 
     ResetPacketStatistic();
@@ -727,13 +730,15 @@ bool MediaSourceV4L2::SupportsRecording()
 
 bool MediaSourceV4L2::SupportsMultipleInputChannels()
 {
+    return mSupportsMultipleInputChannels;
+}
+
+bool MediaSourceV4L2::DoSupportsMultipleInputChannels()
+{
     int tCount = 0;
     struct v4l2_input tV4L2Input;
     int tFd = 0;
     bool tResult = false;
-
-    // lock grabbing
-    mGrabMutex.lock();
 
     //LOG(LOG_VERBOSE, "Probing for multiple input channels for device %s", mCurrentDevice.c_str());
     if ((tFd = open(mCurrentDevice.c_str(), O_RDONLY)) >= 0)
@@ -749,9 +754,6 @@ bool MediaSourceV4L2::SupportsMultipleInputChannels()
         }
         close(tFd);
     }
-
-    // unlock grabbing
-    mGrabMutex.unlock();
 
     return tCount > 1;
 }
