@@ -96,6 +96,8 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 {
     int                 tResult = 0;
     AVCodec             *tCodec;
+    AVDictionary        *tFormatOpts = NULL;
+    AVDictionaryEntry   *tFormatOptsEntry = NULL;
 
     LOG(LOG_VERBOSE, "Trying to open the video source");
 
@@ -124,11 +126,18 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     LOG(LOG_VERBOSE, "try to open \"%s\"", mDesiredDevice.c_str());
 
     // open input: automatic content detection is done inside ffmpeg
-    if ((tResult = avformat_open_input(&mFormatContext, mDesiredDevice.c_str(), NULL, NULL)) != 0)
+    mFormatContext = avformat_alloc_context();
+    if ((tResult = avformat_open_input(&mFormatContext, mDesiredDevice.c_str(), NULL, &tFormatOpts)) != 0)
     {
         LOG(LOG_ERROR, "Couldn't open video file \"%s\" because of \"%s\".", mDesiredDevice.c_str(), strerror(AVUNERROR(tResult)));
         return false;
     }
+
+    if ((tFormatOptsEntry = av_dict_get(tFormatOpts, "", NULL, AV_DICT_IGNORE_SUFFIX))) {
+        LOG(LOG_ERROR, "Option %s not found.\n", tFormatOptsEntry->key);
+        return false;
+    }
+
     mCurrentDevice = mDesiredDevice;
     mCurrentDeviceName = "FILE: " + mDesiredDevice;
 
@@ -234,6 +243,8 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
 {
     int                 tResult = 0;
     AVCodec             *tCodec;
+    AVDictionary        *tFormatOpts = NULL;
+    AVDictionaryEntry   *tFormatOptsEntry = NULL;
 
     LOG(LOG_VERBOSE, "Trying to open the audio source");
 
@@ -262,11 +273,18 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     LOG(LOG_VERBOSE, "try to open \"%s\"", mDesiredDevice.c_str());
 
     // open input: automatic content detection is done inside ffmpeg
-    if ((tResult = avformat_open_input(&mFormatContext, mDesiredDevice.c_str(), NULL, NULL)) != 0)
+    mFormatContext = avformat_alloc_context();
+    if ((tResult = avformat_open_input(&mFormatContext, mDesiredDevice.c_str(), NULL, &tFormatOpts)) != 0)
     {
         LOG(LOG_ERROR, "Couldn't open audio file \"%s\" because of \"%s\".", mDesiredDevice.c_str(), strerror(AVUNERROR(tResult)));
         return false;
     }
+
+    if ((tFormatOptsEntry = av_dict_get(tFormatOpts, "", NULL, AV_DICT_IGNORE_SUFFIX))) {
+        LOG(LOG_ERROR, "Option %s not found.\n", tFormatOptsEntry->key);
+        return false;
+    }
+
     mCurrentDevice = mDesiredDevice;
     mCurrentDeviceName = "FILE: " + mDesiredDevice;
 
