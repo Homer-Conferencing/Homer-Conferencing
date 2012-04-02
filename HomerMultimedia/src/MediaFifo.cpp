@@ -218,46 +218,49 @@ void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize)
 	    LOG(LOG_VERBOSE, "Writing empty chunk to FIFO");
 
 	mFifoMutex.lock();
-	if (mFifoAvailableEntries < mFifoSize)
+	if (mFifoAvailableEntries >= mFifoSize -1)
 	{
-        tCurrentFifoWritePtr = mFifoWritePtr;
+	    LOG(LOG_WARN, "FIFO full (size is %d, read: %d, write %d) - dropping oldest (%d) data chunk", mFifoSize, mFifoReadPtr, mFifoWritePtr, mFifoReadPtr);
 
-        #ifdef MF_DEBUG
-            LOG(LOG_VERBOSE, "Writing FIFO entry %d", tCurrentFifoWritePtr);
-        #endif
-
-        // update FIFO write pointer
-        mFifoWritePtr++;
-        if (mFifoWritePtr >= mFifoSize)
-            mFifoWritePtr = mFifoWritePtr - mFifoSize;
-
-	    // update FIFO counter
-	    mFifoAvailableEntries++;
-
-	    // release FIFO mutex and use fine grained mutex of corresponding FIFO entry instead for protecting memcpy
-	    mFifo[tCurrentFifoWritePtr].EntryMutex->lock();
-        mFifoMutex.unlock();
-
-	    // add the new entry
-		mFifo[tCurrentFifoWritePtr].Size = pBufferSize;
-		memcpy((void*)mFifo[tCurrentFifoWritePtr].Data, (const void*)pBuffer, (size_t)pBufferSize);
-
-	    // unlock fine grained mutex again
-	    mFifo[tCurrentFifoWritePtr].EntryMutex->unlock();
-
-		#ifdef MF_DEBUG
-			LOG(LOG_VERBOSE, "FIFO length now: %d", mFifoAvailableEntries);
-		#endif
-
-        if (pBufferSize == 0)
-            LOG(LOG_VERBOSE, "Send wake up signal for empty chunk");
-
-        mFifoDataInputCondition.SignalAll();
-	}else
-	{
-	    mFifoMutex.unlock();
-		LOG(LOG_WARN, "FIFO full (size is %d) - dropping current data chunk", mFifoSize);
+	    // update FIFO read pointer
+        mFifoReadPtr++;
+        if (mFifoReadPtr >= mFifoSize)
+            mFifoReadPtr = mFifoReadPtr - mFifoSize;
 	}
+
+	tCurrentFifoWritePtr = mFifoWritePtr;
+
+    #ifdef MF_DEBUG
+        LOG(LOG_VERBOSE, "Writing FIFO entry %d", tCurrentFifoWritePtr);
+    #endif
+
+    // update FIFO write pointer
+    mFifoWritePtr++;
+    if (mFifoWritePtr >= mFifoSize)
+        mFifoWritePtr = mFifoWritePtr - mFifoSize;
+
+    // update FIFO counter
+    mFifoAvailableEntries++;
+
+    // release FIFO mutex and use fine grained mutex of corresponding FIFO entry instead for protecting memcpy
+    mFifo[tCurrentFifoWritePtr].EntryMutex->lock();
+    mFifoMutex.unlock();
+
+    // add the new entry
+    mFifo[tCurrentFifoWritePtr].Size = pBufferSize;
+    memcpy((void*)mFifo[tCurrentFifoWritePtr].Data, (const void*)pBuffer, (size_t)pBufferSize);
+
+    // unlock fine grained mutex again
+    mFifo[tCurrentFifoWritePtr].EntryMutex->unlock();
+
+    #ifdef MF_DEBUG
+        LOG(LOG_VERBOSE, "FIFO length now: %d", mFifoAvailableEntries);
+    #endif
+
+    if (pBufferSize == 0)
+        LOG(LOG_VERBOSE, "Send wake up signal for empty chunk");
+
+    mFifoDataInputCondition.SignalAll();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

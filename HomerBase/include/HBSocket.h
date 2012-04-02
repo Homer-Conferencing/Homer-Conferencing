@@ -60,7 +60,8 @@ enum NetworkType{
 };
 
 enum TransportType{
-    SOCKET_TRANSPORT_TYPE_INVALID = -1,
+    SOCKET_TRANSPORT_TYPE_INVALID = -2,
+    SOCKET_RAW = -1,
     SOCKET_UDP = 0, //RFC 768
     SOCKET_TCP, //RFC 793
     SOCKET_UDP_LITE, //RFC 3828, only for Linux, in Windows environments we fall back to UDP

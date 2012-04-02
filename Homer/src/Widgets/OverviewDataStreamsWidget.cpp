@@ -438,7 +438,7 @@ void OverviewDataStreamsWidget::FillRow(QTableWidget *pTable, int pRow, PacketSt
     FillCellText(pTable, pRow, 4, Int2ByteExpression(tStatValues.ByteCount) + " bytes");
     FillCellText(pTable, pRow, 5, Int2ByteExpression(tStatValues.PacketCount));
     FillCellText(pTable, pRow, 6, Int2ByteExpression(tStatValues.LostPacketCount));
-    FillCellText(pTable, pRow, 8, QString(pStats->GetPacketTypeStr().c_str()));
+    FillCellText(pTable, pRow, 8, QString(pStats->GetTransportTypeStr().c_str()));
     pTable->item(pRow, 8)->setTextAlignment(Qt::AlignCenter|Qt::AlignVCenter);
     FillCellText(pTable, pRow, 9, Int2ByteExpression(tStatValues.MomentAvgDataRate) + " bytes/s");
     FillCellText(pTable, pRow, 10, Int2ByteExpression(tStatValues.AvgDataRate) + " bytes/s");

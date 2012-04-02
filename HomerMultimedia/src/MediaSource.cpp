@@ -1288,12 +1288,12 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
 
                 // workaround for incompatibility of ffmpeg/libx264
                 // inspired by check within libx264 in "x264_validate_parameters()" of encoder.c
-                if (tFormat->video_codec == CODEC_ID_H264)
-                {
-                    mRecorderCodecContext->me_range = 16;
-                    mRecorderCodecContext->max_qdiff = 4;
-                    mRecorderCodecContext->qcompress = 0.6;
-                }
+//                if (tFormat->video_codec == CODEC_ID_H264)
+//                {
+//                    mRecorderCodecContext->me_range = 16;
+//                    mRecorderCodecContext->max_qdiff = 4;
+//                    mRecorderCodecContext->qcompress = 0.6;
+//                }
 
                 // set MPEG quantizer: for h261/h263/mjpeg use the h263 quantizer, in other cases use the MPEG2 one
             //    if ((tFormat->video_codec == CODEC_ID_H261) || (tFormat->video_codec == CODEC_ID_H263) || (tFormat->video_codec == CODEC_ID_H263P) || (tFormat->video_codec == CODEC_ID_MJPEG))

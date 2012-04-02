@@ -66,15 +66,15 @@ void PacketStatistic::AnnouncePacket(int pSize)
     if (pSize == 0)
         return;
 
-    switch(mStreamPacketType)
+    switch(mStreamTransportType)
     {
-		case PACKET_TYPE_UDP_LITE:
+		case SOCKET_UDP_LITE:
 			pSize += IP_OVERHEAD + UDP_LITE_HEADER_SIZE;
 			break;
-        case PACKET_TYPE_UDP:
+        case SOCKET_UDP:
             pSize += IP_OVERHEAD + UDP_HEADER_SIZE;
             break;
-        case PACKET_TYPE_TCP:
+        case SOCKET_TCP:
             pSize += IP_OVERHEAD + TCP_HEADER_SIZE;
             break;
         default:
@@ -250,11 +250,11 @@ void PacketStatistic::AssignStreamName(std::string pName)
 	mName = pName;
 }
 
-void PacketStatistic::ClassifyStream(enum DataType pDataType, enum PacketType pPacketType)
+void PacketStatistic::ClassifyStream(enum DataType pDataType, enum TransportType pTransportType)
 {
     mStreamDataType = pDataType;
-    mStreamPacketType = pPacketType;
-	LOG(LOG_VERBOSE, "Classified stream by data type %d and packet type \"%s\"", (int)pDataType, GetPacketTypeStr().c_str());
+    mStreamTransportType = pTransportType;
+	LOG(LOG_VERBOSE, "Classified stream by data type %d and packet type \"%s\"", (int)pDataType, GetTransportTypeStr().c_str());
 }
 
 string PacketStatistic::GetStreamName()
@@ -267,22 +267,22 @@ enum DataType PacketStatistic::GetDataType()
 	return mStreamDataType;
 }
 
-enum PacketType PacketStatistic::GetPacketType()
+enum TransportType PacketStatistic::GetTransportType()
 {
-    return mStreamPacketType;
+    return mStreamTransportType;
 }
 
-string PacketStatistic::GetPacketTypeStr()
+string PacketStatistic::GetTransportTypeStr()
 {
-    switch(mStreamPacketType)
+    switch(mStreamTransportType)
     {
-		case PACKET_TYPE_RAW:
+		case SOCKET_RAW:
 			return "RAW";
-		case PACKET_TYPE_TCP:
+		case SOCKET_TCP:
 			return "TCP";
-		case PACKET_TYPE_UDP:
+		case SOCKET_UDP:
 			return "UDP";
-		case PACKET_TYPE_UDP_LITE:
+		case SOCKET_UDP_LITE:
 			return "UDP-Lite";
 		default:
 			return "N/A";
