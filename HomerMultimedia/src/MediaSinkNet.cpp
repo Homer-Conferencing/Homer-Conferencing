@@ -66,6 +66,7 @@ MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, bool pT
     mTCPCopyBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
 
     enum TransportType tTransportType = (pTransmitLossLess ? SOCKET_TCP : (pTransmitBitErrors ? SOCKET_UDP_LITE : SOCKET_UDP));
+    enum NetworkType tNetworkType = (IS_IPV6_ADDRESS(pTargetHost)) ? SOCKET_IPv6 : SOCKET_IPv4;
 
     if ((mTargetHost != "") && (mTargetPort != 0))
     {
@@ -97,12 +98,12 @@ MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, bool pT
         switch(pType)
         {
             case MEDIA_SINK_VIDEO:
-                ClassifyStream(DATA_TYPE_VIDEO, tTransportType);
+                ClassifyStream(DATA_TYPE_VIDEO, tTransportType, tNetworkType);
                 tRequs.add(new RequirementLimitDelay(250)); //max. 250 ms
                 tRequs.add(new RequirementLimitDataRate(20, 100)); //min. 20 KB/s
                 break;
             case MEDIA_SINK_AUDIO:
-                ClassifyStream(DATA_TYPE_AUDIO, tTransportType);
+                ClassifyStream(DATA_TYPE_AUDIO, tTransportType, tNetworkType);
                 tRequs.add(new RequirementLimitDelay(100)); //100 ms
                 tRequs.add(new RequirementLimitDataRate(8, 40)); //min. 8 KB/s
                 break;

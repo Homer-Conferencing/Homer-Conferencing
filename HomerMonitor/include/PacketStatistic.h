@@ -74,10 +74,7 @@ class PacketStatistic
     friend class RTP;
 
 public:
-    /// The default constructor
     PacketStatistic(std::string pName = "");
-
-    /// The destructor.
     virtual ~PacketStatistic();
 
     /* get simple statistic values */
@@ -89,15 +86,20 @@ public:
     int getMinPacketSize();
     int getMaxPacketSize();
     int getLostPacketCount();
+
     /* get statistic values */
     PacketStatisticDescriptor GetPacketStatistic();
-    /* identification */
+
+    /* classification */
     void AssignStreamName(std::string pName);
     std::string GetStreamName();
     enum DataType GetDataType();
     enum TransportType GetTransportType();
     std::string GetTransportTypeStr();
+    enum NetworkType GetNetworkType();
+    std::string GetNetworkTypeStr();
     bool IsOutgoingStream();
+
     /* reset internal states */
     virtual void ResetPacketStatistic();
 
@@ -107,7 +109,7 @@ protected:
     /* update internal states */
     void AnnouncePacket(int pSize /* in bytes */); // timestamp is auto generated
     /* identification */
-    void ClassifyStream(enum DataType pDataType = DATA_TYPE_UNKNOWN, enum TransportType pTransportType  = SOCKET_TRANSPORT_TYPE_INVALID);
+    void ClassifyStream(enum DataType pDataType = DATA_TYPE_UNKNOWN, enum TransportType pTransportType  = SOCKET_TRANSPORT_TYPE_INVALID, enum NetworkType pNetworkType = SOCKET_RAWNET);
     void SetOutgoingStream();
 
 private:
@@ -132,6 +134,7 @@ private:
     std::string	  mName;
     enum DataType mStreamDataType;
     enum TransportType mStreamTransportType;
+    enum NetworkType mStreamNetworkType;
     bool          mStreamOutgoing;
 };
 

@@ -186,7 +186,12 @@
          </column>
          <column>
           <property name="text">
-           <string>Type</string>
+           <string>Transp.</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Netw.</string>
           </property>
          </column>
          <column>
@@ -236,7 +241,7 @@
            <set>AlignRight|AlignVCenter</set>
           </property>
          </item>
-         <item row="0" column="9">
+         <item row="0" column="10">
           <property name="text">
            <string/>
           </property>
@@ -244,7 +249,7 @@
            <set>AlignRight|AlignVCenter</set>
           </property>
          </item>
-         <item row="0" column="11">
+         <item row="0" column="12">
           <property name="text">
            <string>0</string>
           </property>
@@ -331,7 +336,7 @@
           <bool>true</bool>
          </property>
          <property name="columnCount">
-          <number>12</number>
+          <number>13</number>
          </property>
          <attribute name="horizontalHeaderCascadingSectionResizes">
           <bool>false</bool>
@@ -407,7 +412,12 @@
          </column>
          <column>
           <property name="text">
-           <string>Type</string>
+           <string>Transp.</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Netw.</string>
           </property>
          </column>
          <column>
@@ -457,7 +467,7 @@
            <set>AlignRight|AlignVCenter</set>
           </property>
          </item>
-         <item row="0" column="9">
+         <item row="0" column="10">
           <property name="text">
            <string/>
           </property>
@@ -465,7 +475,7 @@
            <set>AlignRight|AlignVCenter</set>
           </property>
          </item>
-         <item row="0" column="11">
+         <item row="0" column="12">
           <property name="text">
            <string>0</string>
           </property>

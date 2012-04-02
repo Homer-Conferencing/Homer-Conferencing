@@ -39,10 +39,6 @@ namespace Homer { namespace Monitor {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define IP_OVERHEAD                             20
-
-///////////////////////////////////////////////////////////////////////////////
-
 PacketStatistic::PacketStatistic(std::string pName)
 {
 	mStreamDataType = DATA_TYPE_UNKNOWN;
@@ -66,16 +62,28 @@ void PacketStatistic::AnnouncePacket(int pSize)
     if (pSize == 0)
         return;
 
+    switch(mStreamNetworkType)
+    {
+        case SOCKET_IPv4:
+            pSize += IP4_HEADER_SIZE;
+            break;
+        case SOCKET_IPv6:
+            pSize += IP6_HEADER_SIZE;
+            break;
+        default:
+            break;
+    }
+
     switch(mStreamTransportType)
     {
 		case SOCKET_UDP_LITE:
-			pSize += IP_OVERHEAD + UDP_LITE_HEADER_SIZE;
+			pSize += UDP_LITE_HEADER_SIZE;
 			break;
         case SOCKET_UDP:
-            pSize += IP_OVERHEAD + UDP_HEADER_SIZE;
+            pSize += UDP_HEADER_SIZE;
             break;
         case SOCKET_TCP:
-            pSize += IP_OVERHEAD + TCP_HEADER_SIZE;
+            pSize += TCP_HEADER_SIZE;
             break;
         default:
             break;
@@ -250,11 +258,15 @@ void PacketStatistic::AssignStreamName(std::string pName)
 	mName = pName;
 }
 
-void PacketStatistic::ClassifyStream(enum DataType pDataType, enum TransportType pTransportType)
+void PacketStatistic::ClassifyStream(enum DataType pDataType, enum TransportType pTransportType, enum NetworkType pNetworkType)
 {
-    mStreamDataType = pDataType;
-    mStreamTransportType = pTransportType;
-	LOG(LOG_VERBOSE, "Classified stream by data type %d and packet type \"%s\"", (int)pDataType, GetTransportTypeStr().c_str());
+    if ((pDataType != mStreamDataType) || (pTransportType != mStreamTransportType) || (pNetworkType != mStreamNetworkType))
+    {
+        mStreamDataType = pDataType;
+        mStreamTransportType = pTransportType;
+        mStreamNetworkType = pNetworkType;
+        LOG(LOG_VERBOSE, "Classified stream as of data type %d, transport type is \"%s\", network type is \"%s\"", (int)pDataType, GetTransportTypeStr().c_str(), GetNetworkTypeStr().c_str());
+    }
 }
 
 string PacketStatistic::GetStreamName()
@@ -285,7 +297,27 @@ string PacketStatistic::GetTransportTypeStr()
 		case SOCKET_UDP_LITE:
 			return "UDP-Lite";
 		default:
-			return "N/A";
+			return "unknown";
+    }
+}
+
+enum NetworkType PacketStatistic::GetNetworkType()
+{
+    return mStreamNetworkType;
+}
+
+string PacketStatistic::GetNetworkTypeStr()
+{
+    switch(mStreamNetworkType)
+    {
+        case SOCKET_RAWNET:
+            return "RAW";
+        case SOCKET_IPv4:
+            return "IPv4";
+        case SOCKET_IPv6:
+            return "IPv6";
+        default:
+            return "unknown";
     }
 }
 
