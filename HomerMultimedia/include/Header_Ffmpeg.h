@@ -76,7 +76,7 @@ extern "C" {
 
 inline int HM_avformat_write_header(AVFormatContext *s)
 {
-    #if FF_API_FORMAT_PARAMETERS
+    #if LIBAVFORMAT_VERSION_MAJOR < 54
         return av_write_header(s);
     #else
         return avformat_write_header(s, NULL);

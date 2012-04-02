@@ -279,7 +279,7 @@ void* SIP::Run(void*)
 
             // NAT traversal: use keepalive packets with interval of 10 seconds
             //                otherwise a NAT box won't maintain the state about the NAT forwarding
-            mSipContext->Nua = nua_create(mSipContext->Root, GlobalSipCallBack, this, NUTAG_URL(URL_STRING_MAKE(tOwnAddress.c_str())), TPTAG_KEEPALIVE(10000), NUTAG_OUTBOUND("natify use-stun"), TPTAG_REUSE(true), TAG_NULL()); //NUTAG_MEDIA_ENABLE(0)
+            mSipContext->Nua = nua_create(mSipContext->Root, GlobalSipCallBack, this, NUTAG_URL(URL_STRING_MAKE(tOwnAddress.c_str())), TPTAG_KEEPALIVE(10000), NUTAG_OUTBOUND(SIP_OUTBOUND_OPTIONS), TPTAG_REUSE(true), TAG_NULL());
             if (mSipContext->Nua != NULL)
                 break;
             else
@@ -293,7 +293,7 @@ void* SIP::Run(void*)
 
              // set necessary parameters
             LOG(LOG_VERBOSE, "..set_params");
-            nua_set_params(mSipContext->Nua, NUTAG_AUTOACK(MEETING_AUTOACK_CALLS), NUTAG_URL(URL_STRING_MAKE(tOwnAddress.c_str())), SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), SIPTAG_ORGANIZATION_STR(ORGANIZATION_SIGNATURE), NUTAG_OUTBOUND("natify outbound use-rport use-stun"), NTATAG_USER_VIA(1), TAG_NULL());
+            nua_set_params(mSipContext->Nua, NUTAG_AUTOACK(MEETING_AUTOACK_CALLS), NUTAG_URL(URL_STRING_MAKE(tOwnAddress.c_str())), SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), SIPTAG_ORGANIZATION_STR(ORGANIZATION_SIGNATURE), NUTAG_OUTBOUND(SIP_OUTBOUND_OPTIONS), NTATAG_USER_VIA(1), TAG_NULL());
 
             //###################################################################
             //### STUN support

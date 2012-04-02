@@ -405,23 +405,6 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     if(mFormatContext->oformat->flags & AVFMT_GLOBALHEADER)
         mCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
 
-    // reset output stream parameters
-//    if ((tResult = av_set_parameters(mFormatContext, NULL)) < 0)
-//    {
-//        LOG(LOG_ERROR, "Invalid video output format parameters because of \"%s\".", strerror(AVUNERROR(tResult)));
-//        // free codec and stream 0
-//        av_freep(&mFormatContext->streams[0]->codec);
-//        av_freep(&mFormatContext->streams[0]);
-//
-//        // Close the format context
-//        av_free(mFormatContext);
-//
-//        // unlock
-//        mMediaSinksMutex.unlock();
-//
-//        return false;
-//    }
-
     mMediaStreamIndex = 0;
 
     // Dump information about device file
@@ -607,23 +590,6 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     // some formats want stream headers to be separate
 //    if(mFormatContext->oformat->flags & AVFMT_GLOBALHEADER)
 //        mCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
-
-    // reset output stream parameters
-//    if ((tResult = av_set_parameters(mFormatContext, NULL)) < 0)
-//    {
-//        LOG(LOG_ERROR, "Invalid audio output format parameters because of \"%s\".", strerror(AVUNERROR(tResult)));
-//        // free codec and stream 0
-//        av_freep(&mFormatContext->streams[0]->codec);
-//        av_freep(&mFormatContext->streams[0]);
-//
-//        // Close the format context
-//        av_free(mFormatContext);
-//
-//        // unlock
-//        mMediaSinksMutex.unlock();
-//
-//        return false;
-//    }
 
     mMediaStreamIndex = 0;
 

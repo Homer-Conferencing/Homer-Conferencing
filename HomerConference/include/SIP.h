@@ -47,6 +47,8 @@ namespace Homer { namespace Conference {
 #define SIP_SUPORTING_STUN
 #endif
 
+#define SIP_OUTBOUND_OPTIONS        "outbound natify use-stun use-rport"
+
 // de/activate adaption of source address in case of NAT
 //#define SIP_NAT_SOURCE_ADDRESS_ADAPTION
 
