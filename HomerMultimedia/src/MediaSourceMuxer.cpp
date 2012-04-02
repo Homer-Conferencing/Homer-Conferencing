@@ -1063,7 +1063,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
             SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Transcoder(" + FfmpegId2FfmpegFormat(mStreamCodecId) + ")");
             break;
         default:
-            LOG(LOG_ERROR, "Unknown media type");
+            SVC_PROCESS_STATISTIC.AssignThreadName("Transcoder(" + FfmpegId2FfmpegFormat(mStreamCodecId) + ")");
             break;
     }
 
@@ -1489,6 +1489,14 @@ int MediaSourceMuxer::GetChunkDropConter()
 {
     if (mMediaSource != NULL)
         return mMediaSource->GetChunkDropConter();
+    else
+        return 0;
+}
+
+int MediaSourceMuxer::GetChunkBufferCounter()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->GetChunkBufferCounter();
     else
         return 0;
 }

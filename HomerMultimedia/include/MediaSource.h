@@ -176,7 +176,8 @@ public:
     virtual std::string GetCodecName();
     virtual std::string GetCodecLongName();
     virtual bool SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset = false, bool pRtpActivated = true);
-    virtual int GetChunkDropConter();
+    virtual int GetChunkDropConter(); // how many chunks were dropped?
+    virtual int GetChunkBufferCounter(); // how many chunks are currently buffered?
 
     /* simple relaying WITHOUT any reencoding functionality but WITH rtp support*/
     MediaSinkNet* RegisterMediaSink(std::string pTargetHost, unsigned int pTargetPort, enum TransportType pSocketType, bool pRtpActivation, int pMaxFps = 0 /* max. fps */);

@@ -92,6 +92,7 @@ public:
     virtual std::string GetCodecName();
     virtual std::string GetCodecLongName();
     virtual int GetChunkDropConter();
+    virtual int GetChunkBufferCounter();
 
     /* recording control */
     virtual bool StartRecording(std::string pSaveFileName, int pSaveFileQuality = 10, bool pRealTime = true /* 1 = frame rate emulation, 0 = no pts adaption */);

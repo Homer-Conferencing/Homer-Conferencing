@@ -317,6 +317,11 @@ int MediaSourceMem::GetChunkDropConter()
         return mChunkDropCounter;
 }
 
+int MediaSourceMem::GetChunkBufferCounter()
+{
+    return mDecoderFifo->UsedFifoSize();
+}
+
 bool MediaSourceMem::SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset, bool pRtpActivated)
 {
     bool tResult = false;
