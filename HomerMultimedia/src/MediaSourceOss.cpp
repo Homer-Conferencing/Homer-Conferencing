@@ -47,7 +47,7 @@ MediaSourceOss::MediaSourceOss(string pDesiredDevice):
     MediaSource("OSS: local capture")
 {
     // set category for packet statistics
-    ClassifyStream(DATA_TYPE_AUDIO, PACKET_TYPE_RAW);
+    ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
 
     bool tNewDeviceSelected = false;
     SelectDevice(pDesiredDevice, MEDIA_AUDIO, tNewDeviceSelected);

@@ -49,7 +49,7 @@ MediaSourceV4L2::MediaSourceV4L2(string pDesiredDevice):
     MediaSource("V4L2: local capture")
 {
     // set category for packet statistics
-    ClassifyStream(DATA_TYPE_VIDEO, PACKET_TYPE_RAW);
+    ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 
     mCurrentInputChannelName = "";
 

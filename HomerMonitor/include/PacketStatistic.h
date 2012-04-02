@@ -33,6 +33,7 @@
 
 #include <list>
 #include <string>
+#include <HBSocket.h>
 
 using namespace Homer::Base;
 

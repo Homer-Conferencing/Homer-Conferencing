@@ -43,7 +43,7 @@ using namespace Homer::Monitor;
 MediaSourceAlsa::MediaSourceAlsa(string pDesiredDevice):
     MediaSource("ALSA: local capture")
 {
-    ClassifyStream(DATA_TYPE_AUDIO, PACKET_TYPE_RAW);
+    ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
     mSampleBufferSize = MEDIA_SOURCE_ALSA_BUFFER_SIZE * 2 /* SND_PCM_FORMAT_S16_LE */ * 2 /* stereo */;
     mCaptureHandle = NULL;
 

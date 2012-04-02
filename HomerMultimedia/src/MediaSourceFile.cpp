@@ -110,7 +110,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     SVC_PROCESS_STATISTIC.AssignThreadName("Video-Grabber(FILE)");
 
     // set category for packet statistics
-    ClassifyStream(DATA_TYPE_VIDEO, PACKET_TYPE_RAW);
+    ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 
     if (mMediaSourceOpened)
         return false;
@@ -257,7 +257,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Grabber(FILE)");
 
     // set category for packet statistics
-    ClassifyStream(DATA_TYPE_AUDIO, PACKET_TYPE_RAW);
+    ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
 
     if (mMediaSourceOpened)
         return false;

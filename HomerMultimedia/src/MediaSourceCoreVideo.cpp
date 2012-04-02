@@ -40,7 +40,7 @@ using namespace Homer::Monitor;
 MediaSourceCoreVideo::MediaSourceCoreVideo(string pDesiredDevice):
     MediaSource("CoreVideo: local capture")
 {
-    ClassifyStream(DATA_TYPE_VIDEO, PACKET_TYPE_RAW);
+    ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 
     bool tNewDeviceSelected = false;
     SelectDevice(pDesiredDevice, MEDIA_VIDEO, tNewDeviceSelected);

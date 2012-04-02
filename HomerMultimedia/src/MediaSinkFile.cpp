@@ -50,10 +50,10 @@ MediaSinkFile::MediaSinkFile(string pSinkFile, enum MediaSinkType pType):
     switch(pType)
     {
         case MEDIA_SINK_VIDEO:
-            ClassifyStream(DATA_TYPE_VIDEO, PACKET_TYPE_RAW);
+            ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
             break;
         case MEDIA_SINK_AUDIO:
-            ClassifyStream(DATA_TYPE_AUDIO, PACKET_TYPE_RAW);
+            ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
             break;
         default:
             break;
