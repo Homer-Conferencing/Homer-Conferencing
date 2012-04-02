@@ -52,7 +52,7 @@
 
 /*
      MP3 hack:
-         Problem: ffmpeg buffers mp3 fragments but there is no value in the RTP headers to store the size of the entire orignal MP3 buffer
+         Problem: ffmpeg buffers mp3 fragments but there is no value in the RTP headers to store the size of the entire original MP3 buffer
          Solution: we store the size of all MP3 fragments in "mMp3Hack_EntireBufferSize" and set MBZ from the RTP header to this value
                    further, we use this value when parsing the RTP packets
  */
@@ -493,28 +493,11 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     // limit packet size, otherwise ffmpeg will deliver unpredictable results ;)
     mRtpFormatContext->pb->max_packet_size = tMaxPacketSize;
 
-    // reset output stream parameters
-    if ((tResult = av_set_parameters(mRtpFormatContext, NULL)) < 0)
-    {
-        LOG(LOG_ERROR, "Invalid output format parameters because of \"%s\".", strerror(AVUNERROR(tResult)));
-
-        // close RTP stream
-        url_close(mURLContext);
-
-        // free codec and stream 0
-        av_freep(&mRtpFormatContext->streams[0]);
-
-        // Close the format context
-        av_free(mRtpFormatContext);
-
-        return false;
-    }
-
     // Dump information about device file
-    dump_format(mRtpFormatContext, 0, "RTP Encoder", true);
+    HM_av_dump_format(mRtpFormatContext, 0, "RTP Encoder", true);
 
     // allocate streams private data buffer and write the streams header, if any
-    av_write_header(mRtpFormatContext);
+    HM_avformat_write_header(mRtpFormatContext);
 
     // close memory stream
     uint8_t *tBuffer = NULL;

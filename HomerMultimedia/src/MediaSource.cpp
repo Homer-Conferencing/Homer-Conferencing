@@ -1317,7 +1317,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
         		}
 
                 // Dump information about device file
-                dump_format(mRecorderFormatContext, 0, "MediaSource recorder (video)", true);
+        		HM_av_dump_format(mRecorderFormatContext, 0, "MediaSource recorder (video)", true);
 
                 break;
         case MEDIA_AUDIO:
@@ -1337,30 +1337,13 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
                 mRecorderSampleFifo = HM_av_fifo_alloc(MEDIA_SOURCE_AUDIO_SAMPLE_BUFFER_SIZE * 2);
 
                 // Dump information about device file
-                dump_format(mRecorderFormatContext, 0, "MediaSource recorder (audio)", true);
+                HM_av_dump_format(mRecorderFormatContext, 0, "MediaSource recorder (audio)", true);
 
                 break;
         default:
         case MEDIA_UNKNOWN:
                 LOG(LOG_ERROR, "Media type unknown");
                 break;
-    }
-
-    // reset output stream parameters
-    if ((tResult = av_set_parameters(mRecorderFormatContext, NULL)) < 0)
-    {
-        LOG(LOG_ERROR, "Invalid %s output format parameters because of \"%s\".", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
-        // free codec and stream 0
-        av_freep(&mRecorderFormatContext->streams[0]->codec);
-        av_freep(&mRecorderFormatContext->streams[0]);
-
-        // Close the format context
-        av_free(mRecorderFormatContext);
-
-        // unlock grabbing
-        mGrabMutex.unlock();
-
-        return false;
     }
 
     // activate ffmpeg internal fps emulation
@@ -1425,7 +1408,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     }
 
     // allocate streams private data buffer and write the streams header, if any
-    av_write_header(mRecorderFormatContext);
+    HM_avformat_write_header(mRecorderFormatContext);
 
     LOG(LOG_INFO, "%s recorder opened...", GetMediaTypeStr().c_str());
 

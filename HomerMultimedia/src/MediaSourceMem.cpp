@@ -469,7 +469,7 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     }
 
     // Dump information about device file
-    dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceMem (video)", false);
+    HM_av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceMem (video)", false);
     //LOG(LOG_VERBOSE, "    ..video stream found with ID: %d, number of available streams: %d", mMediaStreamIndex, mFormatContext->nb_streams);
 
     // Get a pointer to the codec context for the video stream
@@ -626,7 +626,7 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     }
 
     // Dump information about device file
-    dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceMem (audio)", false);
+    HM_av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceMem (audio)", false);
     //printf("    ..audio stream found with ID: %d, number of available streams: %d\n", mMediaStreamIndex, mFormatContext->nb_streams);
 
     // Get a pointer to the codec context for the audio stream

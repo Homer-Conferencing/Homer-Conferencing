@@ -59,14 +59,29 @@ extern "C" {
 #endif
 
 #ifndef CodecType
-#define CodecType CodecID
+    #define CodecType CodecID
 #endif
 
 #if LIBAVUTIL_VERSION_MAJOR < 51
-#define AVMEDIA_TYPE_VIDEO CODEC_TYPE_VIDEO
-#define AVMEDIA_TYPE_AUDIO CODEC_TYPE_AUDIO
-#define AVMEDIA_TYPE_UNKNOWN CODEC_TYPE_UNKNOWN
+    #define AVMEDIA_TYPE_VIDEO CODEC_TYPE_VIDEO
+    #define AVMEDIA_TYPE_AUDIO CODEC_TYPE_AUDIO
+    #define AVMEDIA_TYPE_UNKNOWN CODEC_TYPE_UNKNOWN
 #endif
+
+#if FF_API_DUMP_FORMAT
+    #define HM_av_dump_format dump_format
+#else
+    #define HM_av_dump_format av_dump_format
+#endif
+
+inline int HM_avformat_write_header(AVFormatContext *s)
+{
+    #if LIBAVFORMAT_VERSION_MAJOR < 54
+        return av_write_header(s);
+    #else
+        return avformat_write_header(s, NULL);
+    #endif
+}
 
 inline int HM_av_metadata_set(AVDictionary **pm, const char *key, const char *value)
 {
@@ -86,7 +101,7 @@ inline AVDictionaryEntry* HM_av_metadata_get(AVDictionary *pm, const char *key, 
     #if FF_API_OLD_METADATA2
         return av_metadata_get(pm, key, prev, AV_DICT_IGNORE_SUFFIX);
     #else
-        return av_dict_get(pm, key, value, AV_DICT_IGNORE_SUFFIX);
+        return av_dict_get(pm, key, prev, AV_DICT_IGNORE_SUFFIX);
     #endif
 }
 
