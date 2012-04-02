@@ -161,6 +161,10 @@ void* MediaSourceNet::Run(void* pArgs)
 		    mCurrentDeviceName = "NET-IN: " + MediaSinkNet::CreateId(mDataSocket->GetLocalHost(), toString(mDataSocket->GetLocalPort()), mDataSocket->GetTransportType(), mRtpActivated);
             AssignStreamName(mCurrentDeviceName);
 
+            // update category for packet statistics
+            enum NetworkType tNetworkType = (IS_IPV6_ADDRESS(tSourceHost)) ? SOCKET_IPv6 : SOCKET_IPv4;
+            ClassifyStream(GetDataType(), mDataSocket->GetTransportType(), tNetworkType);
+
 			#ifdef MSN_DEBUG_PACKETS
 				LOG(LOG_VERBOSE, "Received packet number %5d at %p with size: %5d from %s:%u", (int)++mPacketNumber, mPacketBuffer, (int)tDataSize, tSourceHost.c_str(), tSourcePort);
 			#endif
