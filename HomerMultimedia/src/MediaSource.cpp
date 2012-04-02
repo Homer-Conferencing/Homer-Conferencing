@@ -114,7 +114,7 @@ MediaSource::MediaSource(string pName):
 		av_register_all();
 
 		// init network support once isntead for every stream
-		//avformat_network_init(); TODO: uncomment for future ffmpeg use
+		avformat_network_init();
 
 		// Register all supported input and output devices
 		avdevice_register_all();
@@ -1344,23 +1344,6 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
         case MEDIA_UNKNOWN:
                 LOG(LOG_ERROR, "Media type unknown");
                 break;
-    }
-
-    // reset output stream parameters
-    if ((tResult = av_set_parameters(mRecorderFormatContext, NULL)) < 0)
-    {
-        LOG(LOG_ERROR, "Invalid %s output format parameters because of \"%s\".", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
-        // free codec and stream 0
-        av_freep(&mRecorderFormatContext->streams[0]->codec);
-        av_freep(&mRecorderFormatContext->streams[0]);
-
-        // Close the format context
-        av_free(mRecorderFormatContext);
-
-        // unlock grabbing
-        mGrabMutex.unlock();
-
-        return false;
     }
 
     // activate ffmpeg internal fps emulation

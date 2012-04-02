@@ -493,23 +493,6 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     // limit packet size, otherwise ffmpeg will deliver unpredictable results ;)
     mRtpFormatContext->pb->max_packet_size = tMaxPacketSize;
 
-    // reset output stream parameters
-//    if ((tResult = av_set_parameters(mRtpFormatContext, NULL)) < 0)
-//    {
-//        LOG(LOG_ERROR, "Invalid output format parameters because of \"%s\".", strerror(AVUNERROR(tResult)));
-//
-//        // close RTP stream
-//        url_close(mURLContext);
-//
-//        // free codec and stream 0
-//        av_freep(&mRtpFormatContext->streams[0]);
-//
-//        // Close the format context
-//        av_free(mRtpFormatContext);
-//
-//        return false;
-//    }
-
     // Dump information about device file
     HM_av_dump_format(mRtpFormatContext, 0, "RTP Encoder", true);
 
