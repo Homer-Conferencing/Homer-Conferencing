@@ -54,7 +54,8 @@ namespace Homer { namespace Base {
 #define MAX_INCOMING_CONNECTIONS        1 //TODO: support multiple clients
 
 enum NetworkType{
-    SOCKET_NETWORK_TYPE_INVALID = -1,
+    SOCKET_NETWORK_TYPE_INVALID = -2,
+    SOCKET_RAWNET = -1,
     SOCKET_IPv4 = 4,
     SOCKET_IPv6 = 6
 };
