@@ -405,6 +405,26 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     if(mFormatContext->oformat->flags & AVFMT_GLOBALHEADER)
         mCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
 
+<<<<<<< HEAD
+=======
+    // reset output stream parameters
+//    if ((tResult = av_set_parameters(mFormatContext, NULL)) < 0)
+//    {
+//        LOG(LOG_ERROR, "Invalid video output format parameters because of \"%s\".", strerror(AVUNERROR(tResult)));
+//        // free codec and stream 0
+//        av_freep(&mFormatContext->streams[0]->codec);
+//        av_freep(&mFormatContext->streams[0]);
+//
+//        // Close the format context
+//        av_free(mFormatContext);
+//
+//        // unlock
+//        mMediaSinksMutex.unlock();
+//
+//        return false;
+//    }
+
+>>>>>>> branch 'master' of https://ThomasVolkert@github.com/Homer-Conferencing/Homer-Conferencing.git
     mMediaStreamIndex = 0;
 
     // Dump information about device file
