@@ -36,7 +36,7 @@ using namespace Homer::Monitor;
 WaveOut::WaveOut(string pName):
     PacketStatistic(pName)
 {
-    ClassifyStream(DATA_TYPE_AUDIO, PACKET_TYPE_RAW);
+    ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
     mPlaybackStopped = false;
     mWaveOutOpened = false;
     mDesiredDevice = "";

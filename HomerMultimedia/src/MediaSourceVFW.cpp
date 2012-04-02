@@ -53,7 +53,7 @@ MediaSourceVFW::MediaSourceVFW(string pDesiredDevice):
     MediaSource("VFW: local capture")
 {
     // set category for packet statistics
-    ClassifyStream(DATA_TYPE_VIDEO, PACKET_TYPE_RAW);
+    ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 
     mCurrentInputChannel = 0;
     mDesiredInputChannel = 0;

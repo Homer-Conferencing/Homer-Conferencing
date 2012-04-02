@@ -50,7 +50,7 @@ MediaSourceMMSys::MediaSourceMMSys(string pDesiredDevice):
     MediaSource("MMSys: local capture")
 {
     // set category for packet statistics
-    ClassifyStream(DATA_TYPE_AUDIO, PACKET_TYPE_RAW);
+    ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
 
     mDesiredDevice = toString((int)WAVE_MAPPER);
     mSampleBufferSize = MEDIA_SOURCE_MMSYS_BUFFER_SIZE_BYTES;

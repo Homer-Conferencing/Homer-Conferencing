@@ -40,7 +40,7 @@ using namespace Homer::Monitor;
 MediaSourceCoreAudio::MediaSourceCoreAudio(string pDesiredDevice):
     MediaSource("CoreAudio: local capture")
 {
-    ClassifyStream(DATA_TYPE_AUDIO, PACKET_TYPE_RAW);
+    ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
 
     bool tNewDeviceSelected = false;
     SelectDevice(pDesiredDevice, MEDIA_AUDIO, tNewDeviceSelected);

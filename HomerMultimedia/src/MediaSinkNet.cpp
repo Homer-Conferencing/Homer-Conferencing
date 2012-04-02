@@ -97,12 +97,12 @@ MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, bool pT
         switch(pType)
         {
             case MEDIA_SINK_VIDEO:
-                ClassifyStream(DATA_TYPE_VIDEO, (enum PacketType)tTransportType);
+                ClassifyStream(DATA_TYPE_VIDEO, tTransportType);
                 tRequs.add(new RequirementLimitDelay(250)); //max. 250 ms
                 tRequs.add(new RequirementLimitDataRate(20, 100)); //min. 20 KB/s
                 break;
             case MEDIA_SINK_AUDIO:
-                ClassifyStream(DATA_TYPE_AUDIO, (enum PacketType)tTransportType);
+                ClassifyStream(DATA_TYPE_AUDIO, tTransportType);
                 tRequs.add(new RequirementLimitDelay(100)); //100 ms
                 tRequs.add(new RequirementLimitDataRate(8, 40)); //min. 8 KB/s
                 break;

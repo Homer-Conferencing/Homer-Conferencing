@@ -289,7 +289,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     mMediaSinksMutex.lock();
 
     // set category for packet statistics
-    ClassifyStream(DATA_TYPE_VIDEO, PACKET_TYPE_RAW);
+    ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 
     // build correct IO-context
     tByteIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE /*HINT: don't use mStreamMaxPacketSize here */, 1, this, NULL, DistributePacket, NULL);
@@ -544,7 +544,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     mMediaSinksMutex.lock();
 
     // set category for packet statistics
-    ClassifyStream(DATA_TYPE_AUDIO, PACKET_TYPE_RAW);
+    ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
 
     // build correct IO-context
     tByteIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE /*HINT: don't use mStreamMaxPacketSize here */, 1, this, NULL, DistributePacket, NULL);
