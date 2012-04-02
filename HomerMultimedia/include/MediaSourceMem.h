@@ -50,7 +50,7 @@ namespace Homer { namespace Multimedia {
 // size of one single fragment of a frame packet
 #define MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE                64*1024 // 64 kB
 
-#define MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT 	             256 // 256 entries -> 4 MB FIFO
+#define MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT 	            1024 // 1024 entries -> 64 MB FIFO
 
 ///////////////////////////////////////////////////////////////////////////////
 

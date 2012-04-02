@@ -54,15 +54,6 @@ enum DataType
 	DATA_TYPE_APP_DATA
 };
 
-enum PacketType
-{
-    PACKET_TYPE_UNKNOWN = -2,
-    PACKET_TYPE_RAW,
-    PACKET_TYPE_UDP,
-    PACKET_TYPE_TCP,
-    PACKET_TYPE_UDP_LITE
-};
-
 struct PacketStatisticDescriptor{
     bool Outgoing;
     int  MinPacketSize;
@@ -103,8 +94,8 @@ public:
     void AssignStreamName(std::string pName);
     std::string GetStreamName();
     enum DataType GetDataType();
-    enum PacketType GetPacketType();
-    std::string GetPacketTypeStr();
+    enum TransportType GetTransportType();
+    std::string GetTransportTypeStr();
     bool IsOutgoingStream();
     /* reset internal states */
     virtual void ResetPacketStatistic();
@@ -115,7 +106,7 @@ protected:
     /* update internal states */
     void AnnouncePacket(int pSize /* in bytes */); // timestamp is auto generated
     /* identification */
-    void ClassifyStream(enum DataType pDataType = DATA_TYPE_UNKNOWN, enum PacketType pPacketType  = PACKET_TYPE_UNKNOWN);
+    void ClassifyStream(enum DataType pDataType = DATA_TYPE_UNKNOWN, enum TransportType pTransportType  = SOCKET_TRANSPORT_TYPE_INVALID);
     void SetOutgoingStream();
 
 private:
@@ -139,7 +130,7 @@ private:
     Mutex         mStatisticsMutex;
     std::string	  mName;
     enum DataType mStreamDataType;
-    enum PacketType mStreamPacketType;
+    enum TransportType mStreamTransportType;
     bool          mStreamOutgoing;
 };
 

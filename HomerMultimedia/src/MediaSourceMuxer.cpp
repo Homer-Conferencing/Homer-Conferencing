@@ -379,12 +379,12 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
 
     // workaround for incompatibility of ffmpeg/libx264
     // inspired by check within libx264 in "x264_validate_parameters()" of encoder.c
-    if (tFormat->video_codec == CODEC_ID_H264)
-    {
-        mCodecContext->me_range = 16;
-        mCodecContext->max_qdiff = 4;
-        mCodecContext->qcompress = 0.6;
-    }
+//    if (tFormat->video_codec == CODEC_ID_H264)
+//    {
+//        mCodecContext->me_range = 16;
+//        mCodecContext->max_qdiff = 4;
+//        mCodecContext->qcompress = 0.6;
+//    }
 
     // set MPEG quantizer: for h261/h263/mjpeg use the h263 quantizer, in other cases use the MPEG2 one
 //    if ((tFormat->video_codec == CODEC_ID_H261) || (tFormat->video_codec == CODEC_ID_H263) || (tFormat->video_codec == CODEC_ID_H263P) || (tFormat->video_codec == CODEC_ID_MJPEG))
@@ -404,6 +404,23 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     // some formats want stream headers to be separate
     if(mFormatContext->oformat->flags & AVFMT_GLOBALHEADER)
         mCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
+
+    // reset output stream parameters
+    if ((tResult = av_set_parameters(mFormatContext, NULL)) < 0)
+    {
+        LOG(LOG_ERROR, "Invalid video output format parameters because of \"%s\".", strerror(AVUNERROR(tResult)));
+        // free codec and stream 0
+        av_freep(&mFormatContext->streams[0]->codec);
+        av_freep(&mFormatContext->streams[0]);
+
+        // Close the format context
+        av_free(mFormatContext);
+
+        // unlock
+        mMediaSinksMutex.unlock();
+
+        return false;
+    }
 
     mMediaStreamIndex = 0;
 
@@ -590,6 +607,23 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     // some formats want stream headers to be separate
 //    if(mFormatContext->oformat->flags & AVFMT_GLOBALHEADER)
 //        mCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
+
+    // reset output stream parameters
+    if ((tResult = av_set_parameters(mFormatContext, NULL)) < 0)
+    {
+        LOG(LOG_ERROR, "Invalid audio output format parameters because of \"%s\".", strerror(AVUNERROR(tResult)));
+        // free codec and stream 0
+        av_freep(&mFormatContext->streams[0]->codec);
+        av_freep(&mFormatContext->streams[0]);
+
+        // Close the format context
+        av_free(mFormatContext);
+
+        // unlock
+        mMediaSinksMutex.unlock();
+
+        return false;
+    }
 
     mMediaStreamIndex = 0;
 
