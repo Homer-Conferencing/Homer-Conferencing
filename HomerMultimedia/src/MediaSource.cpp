@@ -802,6 +802,11 @@ int MediaSource::GetChunkDropConter()
     return mChunkDropCounter;
 }
 
+int MediaSource::GetChunkBufferCounter()
+{
+    return 0;
+}
+
 MediaSinkNet* MediaSource::RegisterMediaSink(string pTargetHost, unsigned int pTargetPort, enum TransportType pSocketType, bool pRtpActivation, int pMaxFps)
 {
     MediaSinksList::iterator tIt;

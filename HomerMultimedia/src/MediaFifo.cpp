@@ -129,6 +129,18 @@ void MediaFifo::ReadFifo(char *pBuffer, int &pBufferSize)
         LOG(LOG_VERBOSE, "Data chunk with size 0 read from FIFO");
 }
 
+int MediaFifo::UsedFifoSize()
+{
+    int tResult = 0;
+    mFifoMutex.lock();
+
+    tResult = mFifoAvailableEntries;
+
+    mFifoMutex.unlock();
+
+    return tResult;
+}
+
 int MediaFifo::ReadFifoExclusive(char **pBuffer, int &pBufferSize)
 {
     int tCurrentFifoReadPtr;

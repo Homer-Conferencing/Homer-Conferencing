@@ -65,6 +65,8 @@ public:
     int ReadFifoExclusive(char **pBuffer, int &pBufferSize);
     void ReadFifoExclusiveFinished(int pEntryPointer);
 
+    int UsedFifoSize();
+
 private:
     MediaFifoEntry      *mFifo;
 	int					mFifoWritePtr, mFifoReadPtr, mFifoAvailableEntries, mFifoSize;

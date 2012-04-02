@@ -73,6 +73,7 @@ public:
 
     /* grabbing control */
     virtual int GetChunkDropConter();
+    virtual int GetChunkBufferCounter();
 
     /* video grabbing control */
     virtual GrabResolutions GetSupportedVideoGrabResolutions();
