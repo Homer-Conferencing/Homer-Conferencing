@@ -89,11 +89,13 @@ void PacketStatistic::AnnouncePacket(int pSize)
             break;
     }
 
+    mEndTimeStamp = Time::GetTimeStamp();
+    if (mStartTimeStamp == 0)
+        mStartTimeStamp = mEndTimeStamp;
+
     StatisticEntry tStatEntry;
     tStatEntry.PacketSize = pSize;
-    tStatEntry.Timestamp = Time::GetTimeStamp();
-    if (mStartTimeStamp == 0)
-        mStartTimeStamp = tStatEntry.Timestamp;
+    tStatEntry.Timestamp = mEndTimeStamp;
 
     // lock
     mStatisticsMutex.lock();
@@ -138,6 +140,7 @@ void PacketStatistic::ResetPacketStatistic()
     mStatisticsMutex.lock();
 
     mStartTimeStamp = 0;
+    mEndTimeStamp = 0;
     mPacketCount = 0;
     mByteCount = 0;
     mMinPacketSize = INT_MAX;
@@ -178,7 +181,7 @@ int PacketStatistic::getAvgDataRate()
 
     if (mStatistics.size() > 1)
     {
-        int64_t tCurrentTime = Time::GetTimeStamp();
+        int64_t tCurrentTime = mEndTimeStamp;
         int64_t tMeasurementStartTime = mStartTimeStamp;
         int64_t tMeasurementStartByteCount = 0;
         int tMeasuredValues = mPacketCount - 1;
