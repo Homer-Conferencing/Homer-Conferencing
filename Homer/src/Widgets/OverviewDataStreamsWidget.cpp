@@ -195,7 +195,7 @@ void OverviewDataStreamsWidget::contextMenuEvent(QContextMenuEvent *pContextMenu
     {
         if (tPopupRes->text().compare("Save statistic") == 0)
         {
-            SaveStatistic();
+            SaveCompleteStatistic();
             return;
         }
     }
@@ -207,12 +207,15 @@ void OverviewDataStreamsWidget::TwVideoCustomContextMenuEvent(const QPoint &pPos
 
     QMenu tMenu(this);
 
-    tAction = tMenu.addAction("Save statistic");
+    tAction = tMenu.addAction("Save all");
     QIcon tIcon1;
     tIcon1.addPixmap(QPixmap(":/images/DriveSave.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon1);
 
-    tAction = tMenu.addAction("Reset statistic");
+    tAction = tMenu.addAction("Save row history");
+    tAction->setIcon(tIcon1);
+
+    tAction = tMenu.addAction("Reset row");
     QIcon tIcon2;
     tIcon2.addPixmap(QPixmap(":/images/Reload.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon2);
@@ -220,14 +223,19 @@ void OverviewDataStreamsWidget::TwVideoCustomContextMenuEvent(const QPoint &pPos
     QAction* tPopupRes = tMenu.exec(QCursor::pos());
     if (tPopupRes != NULL)
     {
-        if (tPopupRes->text().compare("Reset statistic") == 0)
+        if (tPopupRes->text().compare("Reset row") == 0)
         {
-            ResetCurrentVideoStatistic();
+            ResetStatistic(DATA_TYPE_VIDEO, mTwVideo->currentRow());
             return;
         }
-        if (tPopupRes->text().compare("Save statistic") == 0)
+        if (tPopupRes->text().compare("Save row history") == 0)
         {
-            SaveStatistic();
+            SaveHistory(DATA_TYPE_VIDEO, mTwVideo->currentRow());
+            return;
+        }
+        if (tPopupRes->text().compare("Save all") == 0)
+        {
+            SaveCompleteStatistic();
             return;
         }
     }
@@ -239,12 +247,15 @@ void OverviewDataStreamsWidget::TwAudioCustomContextMenuEvent(const QPoint &pPos
 
     QMenu tMenu(this);
 
-    tAction = tMenu.addAction("Save statistic");
+    tAction = tMenu.addAction("Save all");
     QIcon tIcon1;
     tIcon1.addPixmap(QPixmap(":/images/DriveSave.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon1);
 
-    tAction = tMenu.addAction("Reset statistic");
+    tAction = tMenu.addAction("Save row history");
+    tAction->setIcon(tIcon1);
+
+    tAction = tMenu.addAction("Reset row");
     QIcon tIcon2;
     tIcon2.addPixmap(QPixmap(":/images/Reload.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon2);
@@ -252,20 +263,122 @@ void OverviewDataStreamsWidget::TwAudioCustomContextMenuEvent(const QPoint &pPos
     QAction* tPopupRes = tMenu.exec(QCursor::pos());
     if (tPopupRes != NULL)
     {
-        if (tPopupRes->text().compare("Reset statistic") == 0)
+        if (tPopupRes->text().compare("Reset row") == 0)
         {
-            ResetCurrentAudioStatistic();
+            ResetStatistic(DATA_TYPE_AUDIO, mTwAudio->currentRow());
             return;
         }
-        if (tPopupRes->text().compare("Save statistic") == 0)
+        if (tPopupRes->text().compare("Save row history") == 0)
         {
-            SaveStatistic();
+            SaveHistory(DATA_TYPE_AUDIO, mTwAudio->currentRow());
+            return;
+        }
+        if (tPopupRes->text().compare("Save all") == 0)
+        {
+            SaveCompleteStatistic();
             return;
         }
     }
 }
 
-void OverviewDataStreamsWidget::ResetCurrentVideoStatistic()
+void OverviewDataStreamsWidget::SaveHistory(enum DataType pDataType, int pIndex)
+{
+    DataRateHistory tHistory;
+
+    int tCount = 0;
+    PacketStatisticsList::iterator tIt;
+    PacketStatisticsList tStatList = SVC_PACKET_STATISTIC.GetPacketStatisticsAccess();
+
+    if (tStatList.size() > 0)
+    {
+        tIt = tStatList.begin();
+
+        while (tIt != tStatList.end())
+        {
+            if ((*tIt)->GetDataType() == pDataType)
+            {
+                //### reset statistic
+                if (tCount == pIndex)
+                {
+                    LOG(LOG_VERBOSE, "Going to save history for %s", (*tIt)->GetStreamName().c_str());
+                    tHistory = (*tIt)->GetDataRateHistory();
+                    break;
+                }
+                tCount++;
+            }
+
+            //### next entry
+            tIt++;
+        }
+    }
+
+    SVC_PACKET_STATISTIC.ReleasePacketStatisticsAccess();
+
+    if (tHistory.size() > 0)
+    {
+        QString tFileName = QFileDialog::getSaveFileName(this,
+                                                         "Save data rate history",
+                                                         QDir::homePath() + "/DataRateHistory.csv",
+                                                         "Comma-Separated Values File (*.csv)",
+                                                         NULL,
+                                                         QFileDialog::DontUseNativeDialog);
+
+        if (tFileName.isEmpty())
+            return;
+
+        // write history to file
+        QFile tFile(tFileName);
+        if (!tFile.open(QIODevice::ReadWrite))
+        {
+            ShowError("Unable to open file", "The selected output file can't be opened");
+            return;
+        }
+
+        //#####################################################
+        //### write header to csv
+        //#####################################################
+        QString tHeader = "Time,TimeStamp,Rate\n";
+        if (!tFile.write(tHeader.toStdString().c_str(), tHeader.size()))
+            return;
+
+        //#####################################################
+        //### write one entry per line
+        //#####################################################
+        QString tLine;
+        DataRateHistory::iterator tHistIt;
+
+        tHistIt = tHistory.begin();
+        while (tHistIt != tHistory.end())
+        {
+            //#######################
+            //### calculate line
+            //#######################
+            tLine = QString("%1,").arg(tHistIt->Time);
+            tLine += QString("%1,").arg(tHistIt->TimeStamp);
+            tLine += QString("%1").arg(tHistIt->DataRate);
+            tLine += "\n";
+
+            //#######################
+            //### write to file
+            //#######################
+            if (!tFile.write(tLine.toStdString().c_str(), tLine.size()))
+                return;
+
+            //#######################
+            //### next entry
+            //#######################
+            tHistIt++;
+        }
+
+        tFile.close();
+
+    }else
+    {
+        ShowWarning("History empty", "The history of measured data rates is empty, can't save to file");
+    }
+}
+
+void OverviewDataStreamsWidget::ResetStatistic(enum DataType pDataType, int pIndex)
 {
     int tCount = 0;
     PacketStatisticsList::iterator tIt;
@@ -277,19 +390,19 @@ void OverviewDataStreamsWidget::ResetCurrentVideoStatistic()
 
         while (tIt != tStatList.end())
         {
-            if ((*tIt)->GetDataType() == DATA_TYPE_VIDEO)
+            if ((*tIt)->GetDataType() == pDataType)
             {
-                //############################
-                //### reset current statistic
-                //############################
-                if (tCount == mTwVideo->currentRow())
+                //### reset statistic
+                if (tCount == pIndex)
+                {
+                    LOG(LOG_VERBOSE, "Going to reset statistic for %s", (*tIt)->GetStreamName().c_str());
                     (*tIt)->ResetPacketStatistic();
+                    break;
+                }
                 tCount++;
             }
 
-            //#######################
             //### next entry
-            //#######################
             tIt++;
         }
     }
@@ -297,39 +410,7 @@ void OverviewDataStreamsWidget::ResetCurrentVideoStatistic()
     SVC_PACKET_STATISTIC.ReleasePacketStatisticsAccess();
 }
 
-void OverviewDataStreamsWidget::ResetCurrentAudioStatistic()
-{
-    int tCount = 0;
-    PacketStatisticsList::iterator tIt;
-    PacketStatisticsList tStatList = SVC_PACKET_STATISTIC.GetPacketStatisticsAccess();
-
-    if (tStatList.size() > 0)
-    {
-        tIt = tStatList.begin();
-
-        while (tIt != tStatList.end())
-        {
-            if ((*tIt)->GetDataType() == DATA_TYPE_AUDIO)
-            {
-                //############################
-                //### reset current statistic
-                //############################
-                if (tCount == mTwAudio->currentRow())
-                    (*tIt)->ResetPacketStatistic();
-                tCount++;
-            }
-
-            //#######################
-            //### next entry
-            //#######################
-            tIt++;
-        }
-    }
-
-    SVC_PACKET_STATISTIC.ReleasePacketStatisticsAccess();
-}
-
-void OverviewDataStreamsWidget::SaveStatistic()
+void OverviewDataStreamsWidget::SaveCompleteStatistic()
 {
     QString tFileName = QFileDialog::getSaveFileName(this,
                                                      "Save packet statistic",
@@ -344,12 +425,15 @@ void OverviewDataStreamsWidget::SaveStatistic()
     // write history to file
     QFile tFile(tFileName);
     if (!tFile.open(QIODevice::ReadWrite))
+    {
+        ShowError("Unable to open file", "The selected output file can't be opened");
         return;
+    }
 
     //#####################################################
     //### write header to csv
     //#####################################################
-    QString tHeader = "Type,MinSize,MaxSize,AvgSize,Size,Packets,LostPackets,Direction,Rate\n";
+    QString tHeader = "Type,MinSize,MaxSize,AvgSize,Size,Packets,LostPackets,Direction,Rate,MomRate\n";
     if (!tFile.write(tHeader.toStdString().c_str(), tHeader.size()))
         return;
 
