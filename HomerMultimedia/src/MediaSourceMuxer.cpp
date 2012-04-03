@@ -1146,7 +1146,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                              LOG(LOG_ERROR, "Couldn't distribute video frame among registered video sinks");
                                          }
                                     }else
-                                        LOG(LOG_INFO, "Couldn't re-encode current video frame");
+                                        LOG(LOG_WARN, "Couldn't re-encode current video frame");
 
                                     // Free the RGB frame
                                     av_free(tRGBFrame);
@@ -1232,7 +1232,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                              LOG(LOG_ERROR, "Couldn't distribute audio sample among registered audio sinks");
                                          }
                                     }else
-                                        LOG(LOG_INFO, "Couldn't re-encode current audio sample");
+                                        LOG(LOG_WARN, "Couldn't re-encode current audio sample");
                                 }
                                 break;
 
