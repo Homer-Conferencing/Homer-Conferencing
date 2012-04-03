@@ -224,7 +224,7 @@ bool MediaSourceOss::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     //### dump ffmpeg information about format
     //######################################################
 
-    HM_av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceOss (audio)", false);
+    av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceOss (audio)", false);
 
     // Get a pointer to the codec context for the audio stream
     mCodecContext = mFormatContext->streams[mMediaStreamIndex]->codec;

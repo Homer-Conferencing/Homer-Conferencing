@@ -68,12 +68,6 @@ extern "C" {
     #define AVMEDIA_TYPE_UNKNOWN CODEC_TYPE_UNKNOWN
 #endif
 
-#if FF_API_DUMP_FORMAT
-    #define HM_av_dump_format dump_format
-#else
-    #define HM_av_dump_format av_dump_format
-#endif
-
 inline int HM_avformat_write_header(AVFormatContext *s)
 {
     #if LIBAVFORMAT_VERSION_MAJOR < 54

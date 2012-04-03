@@ -282,7 +282,7 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     mFormatContext->streams[mMediaStreamIndex]->time_base.den = (int)pFps * 100;
 
     // Dump information about device file
-    HM_av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceVFW (video)", false);
+    av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceVFW (video)", false);
 
     // Get a pointer to the codec context for the video stream
     mCodecContext = mFormatContext->streams[mMediaStreamIndex]->codec;

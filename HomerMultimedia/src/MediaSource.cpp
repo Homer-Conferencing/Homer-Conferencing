@@ -1322,7 +1322,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
         		}
 
                 // Dump information about device file
-        		HM_av_dump_format(mRecorderFormatContext, 0, "MediaSource recorder (video)", true);
+        		av_dump_format(mRecorderFormatContext, 0, "MediaSource recorder (video)", true);
 
                 break;
         case MEDIA_AUDIO:
@@ -1342,7 +1342,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
                 mRecorderSampleFifo = HM_av_fifo_alloc(MEDIA_SOURCE_AUDIO_SAMPLE_BUFFER_SIZE * 2);
 
                 // Dump information about device file
-                HM_av_dump_format(mRecorderFormatContext, 0, "MediaSource recorder (audio)", true);
+                av_dump_format(mRecorderFormatContext, 0, "MediaSource recorder (audio)", true);
 
                 break;
         default:
@@ -1413,7 +1413,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     }
 
     // allocate streams private data buffer and write the streams header, if any
-    HM_avformat_write_header(mRecorderFormatContext);
+    avformat_write_header(mRecorderFormatContext, NULL);
 
     LOG(LOG_INFO, "%s recorder opened...", GetMediaTypeStr().c_str());
 

@@ -488,16 +488,14 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
         return false;
     }
 
-    // mark as stream
-    mRtpFormatContext->pb->is_streamed = 1;
     // limit packet size, otherwise ffmpeg will deliver unpredictable results ;)
     mRtpFormatContext->pb->max_packet_size = tMaxPacketSize;
 
     // Dump information about device file
-    HM_av_dump_format(mRtpFormatContext, 0, "RTP Encoder", true);
+    av_dump_format(mRtpFormatContext, 0, "RTP Encoder", true);
 
     // allocate streams private data buffer and write the streams header, if any
-    HM_avformat_write_header(mRtpFormatContext);
+    avformat_write_header(mRtpFormatContext, NULL);
 
     // close memory stream
     uint8_t *tBuffer = NULL;
@@ -740,8 +738,6 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
         return false;
     }
 
-    // mark as stream
-    mRtpFormatContext->pb->is_streamed = 1;
     // limit packet size, otherwise ffmpeg will deliver unpredictable results ;)
     mRtpFormatContext->pb->max_packet_size = tMaxPacketSize;
 
