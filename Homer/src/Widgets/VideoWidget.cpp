@@ -1822,7 +1822,7 @@ int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFps)
 
             mFrameCurrentIndex++;
             if (mFrameCurrentIndex >= FRAME_BUFFER_SIZE)
-                mFrameCurrentIndex = 0;//TODO- mFrameCurrentIndex - mFrameGrabIndex;
+                mFrameCurrentIndex = 0;
             mPendingNewFrames--;
         }else
         {
@@ -1963,7 +1963,7 @@ void VideoWorkerThread::run()
 
 				mFrameGrabIndex++;
 				if (mFrameGrabIndex >= FRAME_BUFFER_SIZE)
-				    mFrameGrabIndex = 0;//TODO: mFrameGrabIndex = FRAME_BUFFER_SIZE - mFrameCurrentIndex - mFrameGrabIndex;
+				    mFrameGrabIndex = 0;
 
                 // store timestamp starting from frame number 3 to avoid peaks
 				if(tFrameNumber > 3)
