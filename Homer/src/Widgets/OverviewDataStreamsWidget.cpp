@@ -300,8 +300,8 @@ void OverviewDataStreamsWidget::SaveHistory(enum DataType pDataType, int pIndex)
                 //### reset statistic
                 if (tCount == pIndex)
                 {
-                    LOG(LOG_VERBOSE, "Going to save history for %s", (*tIt)->GetStreamName().c_str());
                     tHistory = (*tIt)->GetDataRateHistory();
+                    LOG(LOG_VERBOSE, "Going to save history with %d entries for %s", tHistory.size(), (*tIt)->GetStreamName().c_str());
                     break;
                 }
                 tCount++;
