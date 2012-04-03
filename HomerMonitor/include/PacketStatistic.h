@@ -42,7 +42,7 @@ namespace Homer { namespace Monitor {
 ///////////////////////////////////////////////////////////////////////////////
 
 // reference buffer size for average data rate measurement (current value!)
-#define STATISTIC_MOMENT_REFERENCE_SIZE                   128
+#define STATISTIC_MOMENT_REFERENCE_SIZE                   8
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -127,6 +127,7 @@ private:
     int           mPacketCount;
     int64_t       mByteCount;
     int64_t       mStartTimeStamp;
+    int64_t       mEndTimeStamp;
     int           mLostPacketCount;
     Time          mLastTime;
     StatisticList mStatistics;
