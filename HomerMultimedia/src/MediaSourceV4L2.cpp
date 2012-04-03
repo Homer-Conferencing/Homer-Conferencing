@@ -376,7 +376,7 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     mFormatContext->streams[mMediaStreamIndex]->time_base.num = 100;
     mFormatContext->streams[mMediaStreamIndex]->time_base.den = (int)pFps * 100;
 
-    HM_av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceV4L2 (video)", false);
+    av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceV4L2 (video)", false);
 
     // Get a pointer to the codec context for the video stream
     mCodecContext = mFormatContext->streams[mMediaStreamIndex]->codec;
