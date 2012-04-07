@@ -17,10 +17,10 @@ ENDIF ()
 ##############################################################
 # minimum required GCC version
 IF (APPLE)
-	# allow usage of free xcode 3.2.6 for OS X Snow Leopard
+	# allow usage of xcode with Apple's gcc 4.2
 	SET(REQUIRED_GCC_VERSION 4.2)
 ELSE()
-	# fore usage of current gcc release
+	# for usage of current gcc release
 	SET(REQUIRED_GCC_VERSION 4.4)
 ENDIF()
 # check compiler version
@@ -112,6 +112,7 @@ SET (FLAGS
 	-Wno-deprecated-declarations
 	-Wno-format
 	-Wno-uninitialized
+	-Wno-unused-parameter
 )
 IF (NOT (${BUILD} MATCHES "Default"))
 	SET (FLAGS
@@ -120,7 +121,11 @@ IF (NOT (${BUILD} MATCHES "Default"))
 	)
 ENDIF()
 IF (${BUILD} MATCHES "Debug")
-	SET (FLAGS "${FLAGS} -g -ggdb -DDEBUG_VERSION")
+	IF (APPLE)
+		SET (FLAGS "${FLAGS} -g -DDEBUG_VERSION")
+	ELSE()
+		SET (FLAGS "${FLAGS} -g -ggdb -DDEBUG_VERSION")
+	ENDIF()
 ELSE ()
 	SET (FLAGS "${FLAGS} -DRELEASE_VERSION")
 ENDIF ()
