@@ -113,8 +113,8 @@ MediaSource::MediaSource(string pName):
 		// Register all formats and codecs
 		av_register_all();
 
-		// init network support once isntead for every stream
-		avformat_network_init();
+		// init network support once instead for every stream
+		//avformat_network_init();
 
 		// Register all supported input and output devices
 		avdevice_register_all();
