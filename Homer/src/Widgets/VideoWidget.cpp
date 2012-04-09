@@ -950,6 +950,7 @@ void VideoWidget::SetOriginalResolution()
             //LOG(LOG_ERROR, "Res: %s", tIt->Name.c_str());
             if (tIt->Name == "Original")
             {
+            	LOG(LOG_VERBOSE, "Found original resolution %d*%d", tIt->ResX, tIt->ResY);
                 SetResolution(tIt->ResX, tIt->ResY);
             }
         }
@@ -1331,7 +1332,7 @@ void VideoWidget::customEvent(QEvent *pEvent)
             SetOriginalResolution();
             if(!mHourGlassTimer->isActive())
             {
-                LOG(LOG_VERBOSE, "Reactivating hour glas timer");
+                LOG(LOG_VERBOSE, "Reactivating hour glass timer");
                 mHourGlassTimer->start(250);
             }
             break;
@@ -1949,7 +1950,7 @@ void VideoWorkerThread::run()
 			    mVideoSource->GetVideoSourceResolution(tSourceResX, tSourceResY);
 			    if ((tSourceResX != mResX) || (tSourceResY != mResY))
 			    {
-			        LOG(LOG_INFO, "New source detect because source video resolution differs: %d <=> %d, %d <=> %d", tSourceResX, mResX, tSourceResY, mResY);
+			        LOG(LOG_INFO, "New source detect because source video resolution differs: width %d => %d, height %d => %d", mResX, tSourceResX, mResY, tSourceResY);
 	                mVideoWidget->InformAboutNewSource();
 			    }
 

@@ -42,6 +42,9 @@
 #include <QWaitCondition>
 #include <string.h>
 #include <Snippets.h>
+#ifdef APPLE
+#include <ApplicationServices/ApplicationServices.h>
+#endif
 
 namespace Homer { namespace Gui {
 
@@ -101,8 +104,12 @@ void MediaSourceDesktop::getVideoDevices(VideoDevicesList &pVList)
     //#############################
     tDevice.Name = "DESKTOP: screen segment";
     tDevice.Card = "segment";
-    tDevice.Desc = "Qt based virtual device which captures from a screen segment";
-    if (tFirstCall)
+	#ifdef APPLE
+    	tDevice.Desc = "OSX Cocoa based screen segment capturing";
+	#else
+		tDevice.Desc = "Qt based screen segment capturing";
+	#endif
+	if (tFirstCall)
         LOG(LOG_VERBOSE, "Found video device: %s (card: %s)", tDevice.Name.c_str(), tDevice.Card.c_str());
     pVList.push_back(tDevice);
 
@@ -126,7 +133,11 @@ void MediaSourceDesktop::getVideoDevices(VideoDevicesList &pVList)
             tDevice.Name = "DESKTOP: ";
             tDevice.Name += tScreenName;
             tDevice.Card = tScreenName;
-            tDevice.Desc = "Qt based virtual device which captures from screen " + toString(i) + " with resolution " + toString(tScreen->width()) + "*" + toString(tScreen->height()) + " pixels";
+			#ifdef APPLE
+            	tDevice.Desc = "OSX Cocoa based capturing from screen " + toString(i) + " with resolution " + toString(tScreen->width()) + "*" + toString(tScreen->height()) + " pixels";
+			#else
+            	tDevice.Desc = "Qt based capturing from screen " + toString(i) + " with resolution " + toString(tScreen->width()) + "*" + toString(tScreen->height()) + " pixels";
+			#endif
 
             if (tFirstCall)
             {
@@ -283,7 +294,7 @@ bool MediaSourceDesktop::CloseGrabDevice()
 
 void MediaSourceDesktop::DoSetVideoGrabResolution(int pResX, int pResY)
 {
-    LOG(LOG_VERBOSE, "Setting video grab resolution for desktop grabbing");
+    LOG(LOG_VERBOSE, "Setting desktop grab resolution to %d*%d", pResX, pResY);
 
     mMutexScreenshot.lock();
 
@@ -303,6 +314,12 @@ bool MediaSourceDesktop::SupportsRecording()
 void MediaSourceDesktop::CreateScreenshot()
 {
     AVFrame             *tRGBFrame;
+
+    if (mWidget == NULL)
+    {
+    	LOG(LOG_ERROR, "Capture widget is invalid");
+    	return;
+    }
 
     mMutexGrabberActive.lock();
 
@@ -345,29 +362,20 @@ void MediaSourceDesktop::CreateScreenshot()
     //### do the grabbing and scaling stuff
     //####################################################################
     QPixmap tSourcePixmap;
-    if (mWidget != NULL)
-    {// screen capturing
-        tSourcePixmap = QPixmap::grabWindow(mWidget->winId(), mGrabOffsetX, mGrabOffsetY);
-        if((tSourcePixmap.width() != mSourceResX) || (tSourcePixmap.height() != mSourceResY))
-        {
-            #ifdef MSD_DEBUG_PACKETS
-                LOG(LOG_VERBOSE, "Clip the source pixmap from %d*%d to %d*%d", tSourcePixmap.width(), tSourcePixmap.height(), mSourceResX, mSourceResY);
-            #endif
-            tSourcePixmap = tSourcePixmap.copy(0, 0, mSourceResX, mSourceResY);
-        }
-    }else
-    {// capture current window
-        QWidget *tWidget = QApplication::activeWindow();
-        if (tWidget == NULL)
-        {
-        	LOG(LOG_VERBOSE, "Screen capturing skipped because widget is null");
-        	mMutexGrabberActive.unlock();
-            return;
-        }
-        tSourcePixmap = QPixmap::grabWindow(tWidget->winId());
-        mSourceResX = tWidget->width();
-        mSourceResY = tWidget->height();
-    }
+    // screen capturing
+	#ifdef APPLE
+		CGImageRef tOSXWindowImage = CGWindowListCreateImage(CGRectInfinite, kCGWindowListOptionOnScreenOnly, mWidget->winId(), kCGWindowImageDefault);
+		tSourcePixmap = QPixmap::fromMacCGImageRef(tOSXWindowImage).copy(mGrabOffsetX, mGrabOffsetY, mSourceResX, mSourceResY);
+	#else
+		tSourcePixmap = QPixmap::grabWindow(mWidget->winId(), mGrabOffsetX, mGrabOffsetY);
+		if((tSourcePixmap.width() != mSourceResX) || (tSourcePixmap.height() != mSourceResY))
+		{
+			#ifdef MSD_DEBUG_PACKETS
+				LOG(LOG_VERBOSE, "Clip the source pixmap from %d*%d to %d*%d", tSourcePixmap.width(), tSourcePixmap.height(), mSourceResX, mSourceResY);
+			#endif
+			tSourcePixmap = tSourcePixmap.copy(0, 0, mSourceResX, mSourceResY);
+		}
+	#endif
 
     if(!tSourcePixmap.isNull())
     {
@@ -415,7 +423,8 @@ void MediaSourceDesktop::CreateScreenshot()
 		mWaitConditionScreenshotUpdated.wakeAll();
 		// unlock screenshot buffer again
 		mMutexScreenshot.unlock();
-    }
+    }else
+    	LOG(LOG_ERROR, "Source pixmap is invalid");
 
     mMutexGrabberActive.unlock();
 }
@@ -544,6 +553,11 @@ GrabResolutions MediaSourceDesktop::GetSupportedVideoGrabResolutions()
     tFormat.Name="Desktop";
     tFormat.ResX = QApplication::desktop()->width();
     tFormat.ResY = QApplication::desktop()->height();
+    mSupportedVideoFormats.push_back(tFormat);
+
+    tFormat.Name="Original";
+    tFormat.ResX = mSourceResX;
+    tFormat.ResY = mSourceResY;
     mSupportedVideoFormats.push_back(tFormat);
 
     return mSupportedVideoFormats;
