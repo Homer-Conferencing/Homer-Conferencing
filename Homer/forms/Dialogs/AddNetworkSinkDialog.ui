@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>394</width>
-    <height>182</height>
+    <width>452</width>
+    <height>207</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -39,9 +39,6 @@
       <enum>QFrame::Raised</enum>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <property name="margin">
-       <number>9</number>
-      </property>
       <item row="0" column="0">
        <widget class="QGroupBox" name="groupBox">
         <property name="font">
@@ -54,9 +51,6 @@
          <string> Send video/audio to </string>
         </property>
         <layout class="QGridLayout" name="gridLayout_2">
-         <property name="margin">
-          <number>9</number>
-         </property>
          <item row="1" column="0">
           <layout class="QHBoxLayout">
            <item>
@@ -106,7 +100,6 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -148,7 +141,6 @@
             <widget class="QComboBox" name="mCbTransport">
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -264,7 +256,6 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
