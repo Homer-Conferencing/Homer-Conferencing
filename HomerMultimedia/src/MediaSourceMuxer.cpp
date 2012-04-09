@@ -809,6 +809,17 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
         return -1;
     }
 
+    if (mMediaSource == NULL)
+    {
+    	// unlock grabbing
+        mGrabMutex.unlock();
+
+        // acknowledge failed
+        MarkGrabChunkFailed(GetMediaTypeStr() + " base source is undefined");
+
+        return -1;
+    }
+
     //####################################################################
     // get frame from the original media source
     // ###################################################################
@@ -1782,8 +1793,14 @@ void* MediaSourceMuxer::AllocChunkBuffer(int& pChunkBufferSize, enum MediaType p
     void *tResult = NULL;
 
     if (mMediaSource != NULL)
+    {
     	tResult = mMediaSource->AllocChunkBuffer(pChunkBufferSize, pMediaType);
-
+    }else
+    {
+    	LOG(LOG_WARN, "%s-muxer has no valid base media source registered, allocating chunk buffer via MediaSource::AllocChunkBuffer", GetMediaTypeStr().c_str());
+    	tResult = MediaSource::AllocChunkBuffer(pChunkBufferSize, pMediaType);
+    }
+    LOG(LOG_VERBOSE, "%s-muxer allocated buffer at %p with size of %d bytes", GetMediaTypeStr().c_str(), tResult, pChunkBufferSize);
     return tResult;
 }
 
@@ -1793,8 +1810,13 @@ void MediaSourceMuxer::FreeChunkBuffer(void *pChunk)
     mGrabMutex.lock();
 
     if (mMediaSource != NULL)
+    {
     	mMediaSource->FreeChunkBuffer(pChunk);
-
+	}else
+	{
+		LOG(LOG_WARN, "%s-muxer has no valid base media source registered, allocating chunk buffer via MediaSource::FreeChunkBuffer", GetMediaTypeStr().c_str());
+		MediaSource::FreeChunkBuffer(pChunk);
+	}
     // unlock grabbing
     mGrabMutex.unlock();
 }
