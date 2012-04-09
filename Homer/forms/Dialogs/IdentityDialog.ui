@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>570</width>
-    <height>380</height>
+    <height>426</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -75,21 +75,8 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
-             <property name="minimumSize">
-              <size>
-               <width>100</width>
-               <height>22</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>100</width>
-               <height>22</height>
-              </size>
-             </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -117,21 +104,8 @@
            </item>
            <item>
             <widget class="QLineEdit" name="mLeName">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>22</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>16777215</width>
-               <height>22</height>
-              </size>
-             </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -153,21 +127,8 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
-             <property name="minimumSize">
-              <size>
-               <width>100</width>
-               <height>22</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>100</width>
-               <height>22</height>
-              </size>
-             </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -195,21 +156,8 @@
            </item>
            <item>
             <widget class="QLineEdit" name="mLeMail">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>22</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>16777215</width>
-               <height>22</height>
-              </size>
-             </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -246,21 +194,8 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
-             <property name="minimumSize">
-              <size>
-               <width>180</width>
-               <height>22</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>180</width>
-               <height>22</height>
-              </size>
-             </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -272,22 +207,9 @@
            </item>
            <item>
             <widget class="QLabel" name="mLbServerAddress">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>22</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>16777215</width>
-               <height>16777215</height>
-              </size>
-             </property>
              <property name="font">
               <font>
                <family>Bitstream Vera Sans</family>
-               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -372,21 +294,8 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
-             <property name="minimumSize">
-              <size>
-               <width>180</width>
-               <height>22</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>180</width>
-               <height>22</height>
-              </size>
-             </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -398,22 +307,9 @@
            </item>
            <item>
             <widget class="QLabel" name="mLbDirectAddress">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>22</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>16777215</width>
-               <height>22</height>
-              </size>
-             </property>
              <property name="font">
               <font>
                <family>Bitstream Vera Sans</family>
-               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -513,21 +409,8 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
-             <property name="minimumSize">
-              <size>
-               <width>120</width>
-               <height>22</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>120</width>
-               <height>22</height>
-              </size>
-             </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -539,22 +422,9 @@
            </item>
            <item>
             <widget class="QLabel" name="mLbNatAdr">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>22</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>16777215</width>
-               <height>22</height>
-              </size>
-             </property>
              <property name="font">
               <font>
                <family>Bitstream Vera Sans</family>
-               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -585,21 +455,8 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
-             <property name="minimumSize">
-              <size>
-               <width>120</width>
-               <height>22</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>120</width>
-               <height>16777215</height>
-              </size>
-             </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -611,22 +468,9 @@
            </item>
            <item>
             <widget class="QLabel" name="mLbNatType">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>22</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>16777215</width>
-               <height>16777215</height>
-              </size>
-             </property>
              <property name="font">
               <font>
                <family>Bitstream Vera Sans</family>
-               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -670,7 +514,7 @@
   <include location="../../resources/Icons.qrc"/>
   <include location="../../resources/Icons.qrc"/>
   <include location="../../resources/Icons.qrc"/>
-  <include location="../resources/Icons.qrc"/>
+  <include location="../../resources/Icons.qrc"/>
  </resources>
  <connections>
   <connection>

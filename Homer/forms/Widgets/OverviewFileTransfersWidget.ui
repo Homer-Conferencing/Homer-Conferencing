@@ -68,7 +68,7 @@
         <widget class="QTableWidget" name="mTwFiles">
          <property name="font">
           <font>
-           <pointsize>8</pointsize>
+           <pointsize>9</pointsize>
            <weight>50</weight>
            <bold>false</bold>
           </font>
