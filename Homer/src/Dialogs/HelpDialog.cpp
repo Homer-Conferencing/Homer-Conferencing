@@ -158,7 +158,7 @@ void HelpDialog::initializeGUI()
                         tOsxMajor = 10;
                         tOsxMinor = 6;
                         break;
-            case 0x0009:
+            case QSysInfo::MV_LION:
                         tOsxVer = "OS X Lion";
                         tOsxMajor = 10;
                         tOsxMinor = 7;
