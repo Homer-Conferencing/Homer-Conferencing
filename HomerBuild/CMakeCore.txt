@@ -134,18 +134,6 @@ IF (${BUILD} MATCHES "Release")
 ENDIF()
 
 ##############################################################
-# link flags
-SET (LFLAGS
-	${LFLAGS}
-)
-
-##############################################################
-IF (BSD)
-	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wl,-soname,${TARGET_NAME}.dylib")
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,-soname,${TARGET_NAME}.dylib")
-ENDIF (BSD)
-
-##############################################################
 # definitions
 # "-D" options for compilation in win32 environment
 SET (DEFINITIONS_WINDOWS
@@ -363,8 +351,8 @@ IF (APPLE)
 
 	MESSAGE("### Linking Apple frameworks: ${FRAMEWORKS_APPLE}")
 	FOREACH(FRAMEWORKS_APPLE_ENTRY ${FRAMEWORKS_APPLE})
-		SET (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -framework ${FRAMEWORKS_APPLE_ENTRY}" )
-		#TARGET_LINK_LIBRARIES(${TARGET_NAME} "-Wl,-framework ${FRAMEWORKS_APPLE_ENTRY}" )
+		#SET (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -framework ${FRAMEWORKS_APPLE_ENTRY}" )
+		TARGET_LINK_LIBRARIES(${TARGET_NAME} "-framework ${FRAMEWORKS_APPLE_ENTRY}" )
 	ENDFOREACH(FRAMEWORKS_APPLE_ENTRY ${FRAMEWORKS_APPLE})
 ENDIF (APPLE)
 
