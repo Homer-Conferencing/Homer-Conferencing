@@ -1814,7 +1814,7 @@ void MediaSourceMuxer::FreeChunkBuffer(void *pChunk)
     	mMediaSource->FreeChunkBuffer(pChunk);
 	}else
 	{
-		LOG(LOG_WARN, "%s-muxer has no valid base media source registered, allocating chunk buffer via MediaSource::FreeChunkBuffer", GetMediaTypeStr().c_str());
+		LOG(LOG_WARN, "%s-muxer has no valid base media source registered, freeing chunk buffer via MediaSource::FreeChunkBuffer", GetMediaTypeStr().c_str());
 		MediaSource::FreeChunkBuffer(pChunk);
 	}
     // unlock grabbing
