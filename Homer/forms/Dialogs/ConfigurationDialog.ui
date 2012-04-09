@@ -86,16 +86,11 @@
         <bool>true</bool>
        </property>
        <property name="currentRow">
-        <number>0</number>
+        <number>-1</number>
        </property>
        <item>
         <property name="text">
          <string>Video</string>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>9</pointsize>
-         </font>
         </property>
         <property name="textAlignment">
          <set>AlignHCenter|AlignVCenter|AlignCenter</set>
@@ -109,11 +104,6 @@
         <property name="text">
          <string>Audio</string>
         </property>
-        <property name="font">
-         <font>
-          <pointsize>9</pointsize>
-         </font>
-        </property>
         <property name="textAlignment">
          <set>AlignHCenter|AlignVCenter|AlignCenter</set>
         </property>
@@ -125,11 +115,6 @@
        <item>
         <property name="text">
          <string>Network</string>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>9</pointsize>
-         </font>
         </property>
         <property name="textAlignment">
          <set>AlignHCenter|AlignVCenter|AlignCenter</set>
@@ -143,11 +128,6 @@
         <property name="text">
          <string>General</string>
         </property>
-        <property name="font">
-         <font>
-          <pointsize>9</pointsize>
-         </font>
-        </property>
         <property name="textAlignment">
          <set>AlignHCenter|AlignVCenter|AlignCenter</set>
         </property>
@@ -159,11 +139,6 @@
        <item>
         <property name="text">
          <string>Notifications</string>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>9</pointsize>
-         </font>
         </property>
         <property name="textAlignment">
          <set>AlignHCenter|AlignVCenter|AlignCenter</set>
@@ -2213,7 +2188,6 @@
                <widget class="QLabel" name="label_24">
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
