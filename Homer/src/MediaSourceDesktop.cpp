@@ -315,16 +315,17 @@ void MediaSourceDesktop::CreateScreenshot()
 {
     AVFrame             *tRGBFrame;
 
-    if (mWidget == NULL)
-    {
-    	LOG(LOG_ERROR, "Capture widget is invalid");
-    	return;
-    }
-
     mMutexGrabberActive.lock();
 
     if (!mMediaSourceOpened)
     {
+    	mMutexGrabberActive.unlock();
+    	return;
+    }
+
+    if (mWidget == NULL)
+    {
+    	LOG(LOG_ERROR, "Capture widget is invalid");
     	mMutexGrabberActive.unlock();
     	return;
     }
