@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>529</width>
+    <width>563</width>
     <height>29</height>
    </rect>
   </property>
@@ -53,12 +53,6 @@
    </item>
    <item>
     <widget class="QLabel" name="label_4">
-     <property name="font">
-      <font>
-       <family>Bitstream Vera Sans</family>
-       <pointsize>9</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Video</string>
      </property>
@@ -192,12 +186,6 @@
        <height>25</height>
       </size>
      </property>
-     <property name="font">
-      <font>
-       <family>Bitstream Vera Sans</family>
-       <pointsize>9</pointsize>
-      </font>
-     </property>
      <property name="sizeAdjustPolicy">
       <enum>QComboBox::AdjustToContentsOnFirstShow</enum>
      </property>
@@ -220,12 +208,6 @@
    </item>
    <item>
     <widget class="QLabel" name="label">
-     <property name="font">
-      <font>
-       <family>Bitstream Vera Sans</family>
-       <pointsize>9</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Audio</string>
      </property>
@@ -307,12 +289,6 @@
    </item>
    <item>
     <widget class="QLabel" name="label_3">
-     <property name="font">
-      <font>
-       <family>Bitstream Vera Sans</family>
-       <pointsize>9</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Video/Audio</string>
      </property>
