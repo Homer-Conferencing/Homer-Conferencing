@@ -582,21 +582,19 @@ QVariant ContactListModel::data(const QModelIndex &pIndex, int pRole) const
                 switch(pIndex.column())
                 {
                     case 0:
-                        switch(GetContactAvailability(pIndex))
-                        {
-                            case false:
-                                if (CONF.GetSipContactsProbing())
-                                    tResult = QPixmap(":/images/UserAvailable.png");//.scaled(20, 20, Qt::KeepAspectRatio, Qt::FastTransformation);
-                                else
-                                    tResult = QPixmap(":/images/Users1.png").scaled(20, 20, Qt::KeepAspectRatio, Qt::FastTransformation);
-                                break;
-                            case true:
-                                if (CONF.GetSipContactsProbing())
-                                    tResult = QPixmap(":/images/UserUnavailable.png");//.scaled(20, 20, Qt::KeepAspectRatio, Qt::FastTransformation);
-                                else
-                                    tResult = QPixmap(":/images/Users1.png").scaled(20, 20, Qt::KeepAspectRatio, Qt::FastTransformation);
-                                break;
-                        }
+                    	if (CONF.GetSipContactsProbing())
+                    	{
+                    		if (GetContactAvailability(pIndex))
+                    		{
+                    			tResult = QPixmap(":/images/UserAvailable.png");//.scaled(20, 20, Qt::KeepAspectRatio, Qt::FastTransformation);
+                    		}else
+                    		{
+                    			tResult = QPixmap(":/images/UserUnavailable.png");//.scaled(20, 20, Qt::KeepAspectRatio, Qt::FastTransformation);
+                    		}
+                    	}else
+                    	{
+							tResult = QPixmap(":/images/Users1.png").scaled(20, 20, Qt::KeepAspectRatio, Qt::FastTransformation);
+                    	}
                         break;
                     case 1:
                         //tResult = QPixmap(":/images/Users1.png").scaled(25, 25, Qt::KeepAspectRatio, Qt::FastTransformation);
