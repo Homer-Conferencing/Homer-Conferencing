@@ -1997,6 +1997,7 @@ void* MediaSource::AllocChunkBuffer(int& pChunkBufferSize, enum MediaType pMedia
             pChunkBufferSize = AVCODEC_MAX_AUDIO_FRAME_SIZE + FF_INPUT_BUFFER_PADDING_SIZE;
             return av_malloc(pChunkBufferSize);
         default:
+        	LOG(LOG_WARN, "Undefined media type, returning chunk buffer will be invalid");
             return NULL;
     }
 }
