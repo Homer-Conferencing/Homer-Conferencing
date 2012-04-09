@@ -1827,6 +1827,8 @@ string MediaSource::GetMediaTypeStr()
             return "VIDEO";
         case MEDIA_AUDIO:
             return "AUDIO";
+        default:
+        	return "VIDEO/AUDIO";
     }
     return "unknown";
 }
@@ -2004,13 +2006,7 @@ void* MediaSource::AllocChunkBuffer(int& pChunkBufferSize, enum MediaType pMedia
 
 void MediaSource::FreeChunkBuffer(void *pChunk)
 {
-    // lock grabbing
-    mGrabMutex.lock();
-
     av_free(pChunk);
-
-    // unlock grabbing
-    mGrabMutex.unlock();
 }
 
 bool MediaSource::SupportsSeeking()
