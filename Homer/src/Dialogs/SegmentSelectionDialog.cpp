@@ -169,7 +169,6 @@ void SegmentSelectionDialog::moveEvent(QMoveEvent *pEvent)
 
 void SegmentSelectionDialog::resizeEvent(QResizeEvent *pEvent)
 {
-    setSizeGripEnabled(false);
     int tNewWidth = pEvent->size().width() + (frameGeometry().width() - width());
     if (tNewWidth < MIN_WIDTH)
         tNewWidth = MIN_WIDTH;
@@ -183,7 +182,7 @@ void SegmentSelectionDialog::resizeEvent(QResizeEvent *pEvent)
 
     mMediaSourceDesktop->mSourceResY = tNewHeight;
     mLbResY->setText(QString("%1").arg(tNewHeight));
-    setSizeGripEnabled(true);
+    QDialog::resizeEvent(pEvent);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
