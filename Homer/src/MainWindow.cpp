@@ -1030,7 +1030,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     {
                         if ((*tIt)->IsThisParticipant(QString(tMUEvent->Sender.c_str())))
                         {
-                            (*tIt)->HandleMessageUnavailable(tMUEvent->IsIncomingEvent);
+                            (*tIt)->HandleMessageUnavailable(tMUEvent->IsIncomingEvent, tMUEvent->StatusCode, QString(tMUEvent->Description.c_str()));
                             return;
                         }
                     }
@@ -1159,7 +1159,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     {
                         if ((*tIt)->IsThisParticipant(QString(tCUEvent->Sender.c_str())))
                         {
-                            (*tIt)->HandleCallUnavailable(tCUEvent->IsIncomingEvent);
+                            (*tIt)->HandleCallUnavailable(tCUEvent->IsIncomingEvent, tCUEvent->StatusCode, QString(tCUEvent->Description.c_str()));
                             return;
                         }
                     }
