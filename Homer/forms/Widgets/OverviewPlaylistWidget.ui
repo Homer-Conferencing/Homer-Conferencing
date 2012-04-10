@@ -108,7 +108,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../resources/Icons.qrc">
+            <iconset resource="../../resources/Icons.qrc">
              <normaloff>:/images/DriveSave.png</normaloff>:/images/DriveSave.png</iconset>
            </property>
            <property name="iconSize">
@@ -140,7 +140,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../resources/Icons.qrc">
+            <iconset resource="../../resources/Icons.qrc">
              <normaloff>:/images/Plus.png</normaloff>:/images/Plus.png</iconset>
            </property>
            <property name="iconSize">
@@ -172,7 +172,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../resources/Icons.qrc">
+            <iconset resource="../../resources/Icons.qrc">
              <normaloff>:/images/Minus.png</normaloff>:/images/Minus.png</iconset>
            </property>
            <property name="iconSize">
@@ -220,7 +220,7 @@
             <string>...</string>
            </property>
            <property name="icon">
-            <iconset resource="../resources/Icons.qrc">
+            <iconset resource="../../resources/Icons.qrc">
              <normaloff>:/images/Audio - Play.png</normaloff>:/images/Audio - Play.png</iconset>
            </property>
            <property name="iconSize">
@@ -252,7 +252,7 @@
             <string>...</string>
            </property>
            <property name="icon">
-            <iconset resource="../resources/Icons.qrc">
+            <iconset resource="../../resources/Icons.qrc">
              <normaloff>:/images/Audio - Stop.png</normaloff>:/images/Audio - Stop.png</iconset>
            </property>
            <property name="iconSize">
@@ -284,7 +284,7 @@
             <string>...</string>
            </property>
            <property name="icon">
-            <iconset resource="../resources/Icons.qrc">
+            <iconset resource="../../resources/Icons.qrc">
              <normaloff>:/images/Audio - Pause.png</normaloff>:/images/Audio - Pause.png</iconset>
            </property>
            <property name="iconSize">
@@ -316,7 +316,7 @@
             <string>...</string>
            </property>
            <property name="icon">
-            <iconset resource="../resources/Icons.qrc">
+            <iconset resource="../../resources/Icons.qrc">
              <normaloff>:/images/Audio - Back.png</normaloff>:/images/Audio - Back.png</iconset>
            </property>
            <property name="iconSize">
@@ -348,7 +348,7 @@
             <string>...</string>
            </property>
            <property name="icon">
-            <iconset resource="../resources/Icons.qrc">
+            <iconset resource="../../resources/Icons.qrc">
              <normaloff>:/images/Audio - Forward.png</normaloff>:/images/Audio - Forward.png</iconset>
            </property>
            <property name="iconSize">
@@ -368,7 +368,7 @@
   </widget>
  </widget>
  <resources>
-  <include location="../resources/Icons.qrc"/>
+  <include location="../../resources/Icons.qrc"/>
  </resources>
  <connections/>
 </ui>
