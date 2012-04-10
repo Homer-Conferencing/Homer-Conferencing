@@ -6,15 +6,9 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>570</width>
-    <height>426</height>
+    <width>477</width>
+    <height>380</height>
    </rect>
-  </property>
-  <property name="sizePolicy">
-   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-    <horstretch>0</horstretch>
-    <verstretch>0</verstretch>
-   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>Edit own identity</string>
@@ -69,11 +63,11 @@
           <layout class="QHBoxLayout" stretch="0,1,2">
            <item>
             <widget class="QLabel" name="mLbName">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
+             <property name="minimumSize">
+              <size>
+               <width>140</width>
+               <height>22</height>
+              </size>
              </property>
              <property name="font">
               <font>
@@ -104,6 +98,12 @@
            </item>
            <item>
             <widget class="QLineEdit" name="mLeName">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
              <property name="font">
               <font>
                <weight>50</weight>
@@ -121,11 +121,11 @@
           <layout class="QHBoxLayout" stretch="0,1,2">
            <item>
             <widget class="QLabel" name="mLbMail">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
+             <property name="minimumSize">
+              <size>
+               <width>140</width>
+               <height>22</height>
+              </size>
              </property>
              <property name="font">
               <font>
@@ -156,6 +156,12 @@
            </item>
            <item>
             <widget class="QLineEdit" name="mLeMail">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
              <property name="font">
               <font>
                <weight>50</weight>
@@ -185,14 +191,14 @@
         </property>
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
-          <layout class="QHBoxLayout" name="_2" stretch="0,2,0,0,0">
+          <layout class="QHBoxLayout" name="_2" stretch="0,0,2,0,0,0">
            <item>
             <widget class="QLabel" name="mLbDescId_2">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
+             <property name="minimumSize">
+              <size>
+               <width>170</width>
+               <height>22</height>
+              </size>
              </property>
              <property name="font">
               <font>
@@ -204,6 +210,22 @@
               <string>Own server contact address:</string>
              </property>
             </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_2">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Fixed</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
            </item>
            <item>
             <widget class="QLabel" name="mLbServerAddress">
@@ -285,14 +307,14 @@
           </layout>
          </item>
          <item>
-          <layout class="QHBoxLayout" stretch="0,2,0,0,0">
+          <layout class="QHBoxLayout" stretch="0,0,2,0,0,0">
            <item>
             <widget class="QLabel" name="mLbDescId">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
+             <property name="minimumSize">
+              <size>
+               <width>170</width>
+               <height>22</height>
+              </size>
              </property>
              <property name="font">
               <font>
@@ -304,6 +326,22 @@
               <string>Own direct contact address:</string>
              </property>
             </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_4">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Fixed</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
            </item>
            <item>
             <widget class="QLabel" name="mLbDirectAddress">
@@ -400,14 +438,14 @@
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_2">
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,2">
+          <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,2">
            <item>
             <widget class="QLabel" name="mLbNatAdrDesAdr">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
+             <property name="minimumSize">
+              <size>
+               <width>110</width>
+               <height>22</height>
+              </size>
              </property>
              <property name="font">
               <font>
@@ -419,6 +457,19 @@
               <string>Outmost address:</string>
              </property>
             </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_9">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
            </item>
            <item>
             <widget class="QLabel" name="mLbNatAdr">
@@ -446,14 +497,14 @@
           </layout>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,2">
+          <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,2">
            <item>
             <widget class="QLabel" name="mLbNatTypeDesc">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
+             <property name="minimumSize">
+              <size>
+               <width>110</width>
+               <height>22</height>
+              </size>
              </property>
              <property name="font">
               <font>
@@ -465,6 +516,19 @@
               <string>Translation type:</string>
              </property>
             </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_10">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
            </item>
            <item>
             <widget class="QLabel" name="mLbNatType">
