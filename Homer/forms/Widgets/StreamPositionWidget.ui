@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>114</width>
-    <height>38</height>
+    <width>94</width>
+    <height>44</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -41,7 +41,6 @@
         <widget class="QLabel" name="mLbCurPos">
          <property name="font">
           <font>
-           <family>Bitstream Vera Sans</family>
            <pointsize>10</pointsize>
            <weight>75</weight>
            <bold>true</bold>
@@ -63,7 +62,6 @@
         <widget class="QLabel" name="mLbEndPos">
          <property name="font">
           <font>
-           <family>Bitstream Vera Sans</family>
            <pointsize>10</pointsize>
            <weight>75</weight>
            <bold>true</bold>

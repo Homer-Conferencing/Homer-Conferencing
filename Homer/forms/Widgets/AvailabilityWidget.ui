@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>187</width>
+    <width>172</width>
     <height>29</height>
    </rect>
   </property>
@@ -89,10 +89,13 @@
      <property name="font">
       <font>
        <family>Arial</family>
+       <pointsize>10</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
       </font>
      </property>
      <property name="text">
-      <string>Status:</string>
+      <string>Status</string>
      </property>
     </widget>
    </item>
