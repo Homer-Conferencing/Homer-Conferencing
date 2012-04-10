@@ -602,7 +602,7 @@ void ParticipantWidget::HandleMessageAcceptDelayed(bool pIncoming)
     CONTACTSPOOL.UpdateContactState(mSessionName, CONTACT_UNDEFINED_STATE);
 }
 
-void ParticipantWidget::HandleMessageUnavailable(bool pIncoming)
+void ParticipantWidget::HandleMessageUnavailable(bool pIncoming, int pStatusCode, QString pDescription)
 {
     // return immediately if we are a preview only
     if (mSessionType == PREVIEW)
@@ -613,7 +613,7 @@ void ParticipantWidget::HandleMessageUnavailable(bool pIncoming)
 
     UpdateParticipantState(CONTACT_UNAVAILABLE);
     CONTACTSPOOL.UpdateContactState(mSessionName, CONTACT_UNAVAILABLE);
-    ShowError("Participant unavailable", "The participant " + mSessionName + " is currently unavailable for an instant message!");
+    ShowError("Participant unavailable", "The participant " + mSessionName + " is currently unavailable for an instant message! The reason is \"" + pDescription + "\"(" + QString("%1").arg(pStatusCode) + ").");
 }
 
 void ParticipantWidget::HandleCallRinging(bool pIncoming)
@@ -758,7 +758,7 @@ void ParticipantWidget::CallStopped(bool pIncoming)
     	mSoundForIncomingCall->stop();
 }
 
-void ParticipantWidget::HandleCallUnavailable(bool pIncoming)
+void ParticipantWidget::HandleCallUnavailable(bool pIncoming, int pStatusCode, QString pDescription)
 {
     // return immediately if we are a preview only
     if (mSessionType == PREVIEW)
@@ -773,7 +773,7 @@ void ParticipantWidget::HandleCallUnavailable(bool pIncoming)
         UpdateParticipantState(CONTACT_UNAVAILABLE);
         CONTACTSPOOL.UpdateContactState(mSessionName, CONTACT_UNAVAILABLE);
 
-        ShowError("Participant unavailable", "The participant " + mSessionName + " is currently unavailable for a call!");
+        ShowError("Participant unavailable", "The participant " + mSessionName + " is currently unavailable for a call! The reason is \"" + pDescription + "\"(" + QString("%1").arg(pStatusCode) + ").");
     }else
     	CallStopped(pIncoming);
 

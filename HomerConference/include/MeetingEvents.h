@@ -198,8 +198,8 @@ class ErrorEvent:
     public TEvent<ErrorEvent, GENERAL_ERROR>
 {
 public:
-    int StatusCode;
-    string Description;
+    int     StatusCode;
+    string  Description;
 };
 
 class MessageEvent:
@@ -222,6 +222,9 @@ class MessageAcceptDelayedEvent:
 class MessageUnavailableEvent:
     public TEvent<MessageUnavailableEvent, MESSAGE_UNAVAILABLE>
 {
+public:
+    int     StatusCode;
+    string  Description;
 };
 
 class CallEvent:
@@ -276,6 +279,9 @@ public:
 class CallUnavailableEvent:
     public TEvent<CallUnavailableEvent, CALL_UNAVAILABLE>
 {
+public:
+    int     StatusCode;
+    string  Description;
 };
 
 class RegistrationEvent:
