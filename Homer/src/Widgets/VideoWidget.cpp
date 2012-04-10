@@ -938,9 +938,10 @@ void VideoWidget::InformAboutNewSourceResolution()
     QApplication::postEvent(this, new VideoEvent(VIDEO_NEW_SOURCE_RESOLUTION, ""));
 }
 
-void VideoWidget::SetOriginalResolution()
+bool VideoWidget::SetOriginalResolution()
 {
-    LOG(LOG_VERBOSE, "Setting original resolution");
+	bool tResult = false;
+
     GrabResolutions tGrabResolutions = mVideoSource->GetSupportedVideoGrabResolutions();
     GrabResolutions::iterator tIt;
     if (tGrabResolutions.size())
@@ -950,11 +951,14 @@ void VideoWidget::SetOriginalResolution()
             //LOG(LOG_ERROR, "Res: %s", tIt->Name.c_str());
             if (tIt->Name == "Original")
             {
-            	LOG(LOG_VERBOSE, "Found original resolution %d*%d", tIt->ResX, tIt->ResY);
+            	tResult = true;
+            	LOG(LOG_VERBOSE, "Setting original resolution %d*%d", tIt->ResX, tIt->ResY);
                 SetResolution(tIt->ResX, tIt->ResY);
             }
         }
     }
+
+    return tResult;
 }
 
 VideoWorkerThread* VideoWidget::GetWorker()
@@ -1329,11 +1333,13 @@ void VideoWidget::customEvent(QEvent *pEvent)
             break;
         case VIDEO_NEW_SOURCE:
             tVideoEvent->accept();
-            SetOriginalResolution();
-            if(!mHourGlassTimer->isActive())
+            if (SetOriginalResolution())
             {
-                LOG(LOG_VERBOSE, "Reactivating hour glass timer");
-                mHourGlassTimer->start(250);
+				if(!mHourGlassTimer->isActive())
+				{
+					LOG(LOG_VERBOSE, "Reactivating hour glass timer");
+					mHourGlassTimer->start(250);
+				}
             }
             break;
         case VIDEO_NEW_SOURCE_RESOLUTION:
@@ -1948,11 +1954,16 @@ void VideoWorkerThread::run()
 			    // has the source resolution changed in the meantime? -> thread it as new source
 			    int tSourceResX, tSourceResY;
 			    mVideoSource->GetVideoSourceResolution(tSourceResX, tSourceResY);
-			    if ((tSourceResX != mResX) || (tSourceResY != mResY))
+			    if ((mFrameWidthLastGrabbedFrame != tSourceResX) || (mFrameHeightLastGrabbedFrame != tSourceResY))
 			    {
-			        LOG(LOG_INFO, "New source detect because source video resolution differs: width %d => %d, height %d => %d", mResX, tSourceResX, mResY, tSourceResY);
-	                mVideoWidget->InformAboutNewSource();
+					if ((tSourceResX != mResX) || (tSourceResY != mResY))
+					{
+						LOG(LOG_INFO, "New source detect because source video resolution differs: width %d => %d, height %d => %d", mResX, tSourceResX, mResY, tSourceResY);
+						mVideoWidget->InformAboutNewSource();
+					}
 			    }
+			    mFrameWidthLastGrabbedFrame = tSourceResX;
+			    mFrameHeightLastGrabbedFrame = tSourceResY;
 
 				// lock
 				mDeliverMutex.lock();
