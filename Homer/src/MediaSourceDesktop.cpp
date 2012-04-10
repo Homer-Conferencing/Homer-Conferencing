@@ -556,7 +556,7 @@ GrabResolutions MediaSourceDesktop::GetSupportedVideoGrabResolutions()
     tFormat.ResY = QApplication::desktop()->height();
     mSupportedVideoFormats.push_back(tFormat);
 
-    tFormat.Name="Original";
+    tFormat.Name="Segment";
     tFormat.ResX = mSourceResX;
     tFormat.ResY = mSourceResY;
     mSupportedVideoFormats.push_back(tFormat);

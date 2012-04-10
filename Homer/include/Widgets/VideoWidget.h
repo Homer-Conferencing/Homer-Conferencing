@@ -90,7 +90,6 @@ public:
     void InformAboutNewFrame();
     void InformAboutNewSourceResolution();
     void InformAboutNewSource();
-    void SetOriginalResolution();
     VideoWorkerThread* GetWorker();
 
 public slots:
@@ -111,6 +110,7 @@ private:
     void StartRecorder();
     void StopRecorder();
     void ShowFullScreen();
+    bool SetOriginalResolution();
 
     virtual void paintEvent(QPaintEvent *pEvent);
     virtual void resizeEvent(QResizeEvent *pEvent);
@@ -218,6 +218,8 @@ private:
     QMutex              mDeliverMutex, mGrabMutex;
     int                 mResX;
     int                 mResY;
+    int					mFrameWidthLastGrabbedFrame;
+    int					mFrameHeightLastGrabbedFrame;
     bool                mWorkerNeeded;
     int                 mPendingNewFrames;
     bool                mDropFrames;
