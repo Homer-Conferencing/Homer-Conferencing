@@ -186,7 +186,6 @@
           </property>
           <property name="font">
            <font>
-            <family>Sans Serif</family>
             <weight>75</weight>
             <italic>true</italic>
             <bold>true</bold>
