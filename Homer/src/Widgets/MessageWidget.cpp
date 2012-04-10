@@ -119,6 +119,9 @@ void MessageWidget::Init(QMenu *pMenu, QString pParticipant, OverviewContactsWid
         hide();
     }
     UpdateParticipantState(CONTACT_UNDEFINED_STATE);
+
+    //### set focus setFocus
+    mTeMessage->setFocus(Qt::TabFocusReason);
 }
 
 MessageWidget::~MessageWidget()

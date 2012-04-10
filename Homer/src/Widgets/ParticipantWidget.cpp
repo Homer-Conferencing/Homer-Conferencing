@@ -86,8 +86,109 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, QMainWindow 
     //####################################################################
     //### create the remaining necessary widgets, menu and layouts
     //####################################################################
-    initializeGUI();
+    Init(pContactsWidget, pVideoMenu, pAudioMenu, pMessageMenu, pParticipant);
+}
 
+ParticipantWidget::~ParticipantWidget()
+{
+    if (mSessionType == BROADCAST)
+        CONF.SetVisibilityBroadcastWidget(isVisible());
+
+    // inform the call partner
+    switch (MEETING.GetCallState(QString(mSessionName.toLocal8Bit()).toStdString()))
+    {
+        case CALLSTATE_RUNNING:
+                    MEETING.SendHangUp(QString(mSessionName.toLocal8Bit()).toStdString());
+                    break;
+        case CALLSTATE_RINGING:
+                    MEETING.SendCallCancel(QString(mSessionName.toLocal8Bit()).toStdString());
+                    break;
+    }
+    delete mVideoWidget;
+    delete mAudioWidget;
+    delete mMessageWidget;
+    delete mSessionInfoWidget;
+
+    delete mVideoSource;
+    delete mAudioSource;
+    delete mSoundForIncomingCall;
+
+    if (mVideoSourceMuxer != NULL)
+        mVideoSourceMuxer->UnregisterMediaSink(mRemoteVideoAdr.toStdString(), mRemoteVideoPort);
+    if (mAudioSourceMuxer != NULL)
+        mAudioSourceMuxer->UnregisterMediaSink(mRemoteAudioAdr.toStdString(), mRemoteAudioPort);
+
+    if (mTimerId != -1)
+        killTimer(mTimerId);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, QString pParticipant)
+{
+    setupUi(this);
+
+    QPalette tPalette;
+    QBrush brush(QColor(0, 255, 255, 255));
+    QBrush tBrush1(QColor(0, 128, 128, 255));
+    QBrush brush2(QColor(155, 220, 198, 255));
+    QBrush brush3(QColor(98, 99, 98, 255));
+    QBrush brush4(QColor(100, 102, 100, 255));
+    QBrush tBrush5(QColor(250, 250, 255, 255));
+    QBrush tBrush6(QColor(145, 191, 155, 255));
+    switch(CONF.GetColoringScheme())
+    {
+        case 0:
+            // no coloring
+            break;
+        case 1:
+            // set coloring of the DockWidget
+            brush.setStyle(Qt::SolidPattern);
+            tPalette.setBrush(QPalette::Active, QPalette::WindowText, brush);
+            tBrush1.setStyle(Qt::SolidPattern);
+            tPalette.setBrush(QPalette::Active, QPalette::Button, tBrush1);
+            brush2.setStyle(Qt::SolidPattern);
+            tPalette.setBrush(QPalette::Active, QPalette::ButtonText, brush2);
+            tPalette.setBrush(QPalette::Inactive, QPalette::WindowText, brush);
+            tPalette.setBrush(QPalette::Inactive, QPalette::Button, tBrush1);
+            tPalette.setBrush(QPalette::Inactive, QPalette::ButtonText, brush2);
+            brush3.setStyle(Qt::SolidPattern);
+            tPalette.setBrush(QPalette::Disabled, QPalette::WindowText, brush3);
+            tPalette.setBrush(QPalette::Disabled, QPalette::Button, tBrush1);
+            brush4.setStyle(Qt::SolidPattern);
+            tPalette.setBrush(QPalette::Disabled, QPalette::ButtonText, brush4);
+            tBrush5.setStyle(Qt::SolidPattern);
+            tPalette.setBrush(QPalette::Active, QPalette::Base, tBrush5);
+            tBrush6.setStyle(Qt::SolidPattern);
+            tPalette.setBrush(QPalette::Active, QPalette::Window, tBrush6);
+            tPalette.setBrush(QPalette::Inactive, QPalette::Base, tBrush5);
+            tPalette.setBrush(QPalette::Inactive, QPalette::Window, tBrush6);
+            tPalette.setBrush(QPalette::Disabled, QPalette::Base, tBrush5);
+            tPalette.setBrush(QPalette::Disabled, QPalette::Window, tBrush6);
+            setPalette(tPalette);
+
+            setAutoFillBackground(true);
+            // manipulate stylesheet for buttons on the top right of the DockWidget and the title bar
+            setStyleSheet("QDockWidget::close-button, QDockWidget::float-button { border: 1px solid; background: #9BDCC6; } QDockWidget::title { padding-left: 20px; text-align: left; background: #008080; }");
+            break;
+        default:
+            break;
+    }
+
+    QFont font;
+    font.setPointSize(8);
+    font.setBold(true);
+    font.setWeight(75);
+    setFont(font);
+
+    connect(mTbPlay, SIGNAL(clicked()), this, SLOT(PlayMovieFile()));
+    connect(mTbPause, SIGNAL(clicked()), this, SLOT(PauseMovieFile()));
+    connect(mSlMovie, SIGNAL(sliderMoved(int)), this, SLOT(SeekMovieFile(int)));
+
+
+    //####################################################################
+    //### create additional widget and allocate resources
+    //####################################################################
     if ((CONF.GetParticipantWidgetsSeparation()) && (mSessionType == PARTICIPANT))
     {
         setParent(NULL);
@@ -97,7 +198,7 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, QMainWindow 
     {
         setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
         setAllowedAreas(Qt::RightDockWidgetArea | Qt::BottomDockWidgetArea);
-        pMainWindow->addDockWidget(Qt::RightDockWidgetArea, this, Qt::Horizontal);
+        mMainWindow->addDockWidget(Qt::RightDockWidgetArea, this, Qt::Horizontal);
     }
 
     Socket* tVSocket = NULL;
@@ -207,103 +308,6 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, QMainWindow 
         setVisible(CONF.GetVisibilityBroadcastWidget());
 
     mTimerId = startTimer(STREAM_POS_UPDATE_DELAY);
-}
-
-ParticipantWidget::~ParticipantWidget()
-{
-    if (mSessionType == BROADCAST)
-        CONF.SetVisibilityBroadcastWidget(isVisible());
-
-    // inform the call partner
-    switch (MEETING.GetCallState(QString(mSessionName.toLocal8Bit()).toStdString()))
-    {
-        case CALLSTATE_RUNNING:
-                    MEETING.SendHangUp(QString(mSessionName.toLocal8Bit()).toStdString());
-                    break;
-        case CALLSTATE_RINGING:
-                    MEETING.SendCallCancel(QString(mSessionName.toLocal8Bit()).toStdString());
-                    break;
-    }
-    delete mVideoWidget;
-    delete mAudioWidget;
-    delete mMessageWidget;
-    delete mSessionInfoWidget;
-
-    delete mVideoSource;
-    delete mAudioSource;
-    delete mSoundForIncomingCall;
-
-    if (mVideoSourceMuxer != NULL)
-        mVideoSourceMuxer->UnregisterMediaSink(mRemoteVideoAdr.toStdString(), mRemoteVideoPort);
-    if (mAudioSourceMuxer != NULL)
-        mAudioSourceMuxer->UnregisterMediaSink(mRemoteAudioAdr.toStdString(), mRemoteAudioPort);
-
-    if (mTimerId != -1)
-        killTimer(mTimerId);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void ParticipantWidget::initializeGUI()
-{
-    setupUi(this);
-
-    QPalette tPalette;
-    QBrush brush(QColor(0, 255, 255, 255));
-    QBrush tBrush1(QColor(0, 128, 128, 255));
-    QBrush brush2(QColor(155, 220, 198, 255));
-    QBrush brush3(QColor(98, 99, 98, 255));
-    QBrush brush4(QColor(100, 102, 100, 255));
-    QBrush tBrush5(QColor(250, 250, 255, 255));
-    QBrush tBrush6(QColor(145, 191, 155, 255));
-    switch(CONF.GetColoringScheme())
-    {
-        case 0:
-            // no coloring
-            break;
-        case 1:
-            // set coloring of the DockWidget
-            brush.setStyle(Qt::SolidPattern);
-            tPalette.setBrush(QPalette::Active, QPalette::WindowText, brush);
-            tBrush1.setStyle(Qt::SolidPattern);
-            tPalette.setBrush(QPalette::Active, QPalette::Button, tBrush1);
-            brush2.setStyle(Qt::SolidPattern);
-            tPalette.setBrush(QPalette::Active, QPalette::ButtonText, brush2);
-            tPalette.setBrush(QPalette::Inactive, QPalette::WindowText, brush);
-            tPalette.setBrush(QPalette::Inactive, QPalette::Button, tBrush1);
-            tPalette.setBrush(QPalette::Inactive, QPalette::ButtonText, brush2);
-            brush3.setStyle(Qt::SolidPattern);
-            tPalette.setBrush(QPalette::Disabled, QPalette::WindowText, brush3);
-            tPalette.setBrush(QPalette::Disabled, QPalette::Button, tBrush1);
-            brush4.setStyle(Qt::SolidPattern);
-            tPalette.setBrush(QPalette::Disabled, QPalette::ButtonText, brush4);
-            tBrush5.setStyle(Qt::SolidPattern);
-            tPalette.setBrush(QPalette::Active, QPalette::Base, tBrush5);
-            tBrush6.setStyle(Qt::SolidPattern);
-            tPalette.setBrush(QPalette::Active, QPalette::Window, tBrush6);
-            tPalette.setBrush(QPalette::Inactive, QPalette::Base, tBrush5);
-            tPalette.setBrush(QPalette::Inactive, QPalette::Window, tBrush6);
-            tPalette.setBrush(QPalette::Disabled, QPalette::Base, tBrush5);
-            tPalette.setBrush(QPalette::Disabled, QPalette::Window, tBrush6);
-            setPalette(tPalette);
-
-            setAutoFillBackground(true);
-            // manipulate stylesheet for buttons on the top right of the DockWidget and the title bar
-            setStyleSheet("QDockWidget::close-button, QDockWidget::float-button { border: 1px solid; background: #9BDCC6; } QDockWidget::title { padding-left: 20px; text-align: left; background: #008080; }");
-            break;
-        default:
-            break;
-    }
-
-    QFont font;
-    font.setPointSize(8);
-    font.setBold(true);
-    font.setWeight(75);
-    setFont(font);
-
-    connect(mTbPlay, SIGNAL(clicked()), this, SLOT(PlayMovieFile()));
-    connect(mTbPause, SIGNAL(clicked()), this, SLOT(PauseMovieFile()));
-    connect(mSlMovie, SIGNAL(sliderMoved(int)), this, SLOT(SeekMovieFile(int)));
 }
 
 void ParticipantWidget::closeEvent(QCloseEvent* pEvent)
