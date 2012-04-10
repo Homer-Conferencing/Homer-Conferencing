@@ -101,6 +101,7 @@ protected:
     enum CodecID        mStreamCodecId;
     char                mStreamPacketBuffer[MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE];
     char                mFragmentBuffer[MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE];
+    int					mFrameWidthLastGrabbedFrame;
     bool                mRtpActivated;
     bool                mOpenInputStream;
     int                 mWrappingHeaderSize;
