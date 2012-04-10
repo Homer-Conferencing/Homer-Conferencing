@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>541</width>
-    <height>498</height>
+    <width>560</width>
+    <height>535</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -2184,6 +2184,10 @@
                 </property>
                </widget>
               </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_11">
               <item>
                <widget class="QLabel" name="label_24">
                 <property name="font">
@@ -2193,9 +2197,22 @@
                  </font>
                 </property>
                 <property name="text">
-                 <string>Transport:</string>
+                 <string>Session transport protocol:</string>
                 </property>
                </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_14">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
               </item>
               <item>
                <widget class="QComboBox" name="mCbSipTransport">
