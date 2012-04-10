@@ -119,7 +119,11 @@ bool MediaSourceMuxer::SupportsMuxing()
 
 string MediaSourceMuxer::GetMuxingCodec()
 {
-    return FfmpegId2FfmpegFormat(mStreamCodecId);
+    // ffmpeg doesn't distinguish between h263 and h263+ but we do
+    if (mStreamCodecId == CODEC_ID_H263P)
+        return "h263+";
+    else
+        return FfmpegId2FfmpegFormat(mStreamCodecId);
 }
 
 void MediaSourceMuxer::GetMuxingResolution(int &pResX, int &pResY)
