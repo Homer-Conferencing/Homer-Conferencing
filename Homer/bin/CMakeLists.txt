@@ -238,17 +238,17 @@ SET (QT_QRC_SOURCES
 ##############################################################
 # USED LIBRARIES for win32 environment
 SET (LIBS_WINDOWS_INSTALL   
-    libgcc_s_dw2-1
-    libstdc++-6
-    mingwm10
-    QtCore4
-    QtGui4
-    QtMultimedia4
-    QtNetwork4
-    QtWebKit4
-    QtXml4
-    QtXmlPatterns4
-    phonon4
+	libgcc_s_dw2-1
+	libstdc++-6
+	mingwm10
+	QtCore4
+	QtGui4
+	QtMultimedia4
+	QtNetwork4
+	QtWebKit4
+	QtXml4
+	QtXmlPatterns4
+	phonon4
 )
 SET (LIBS_WINDOWS	
 	stdc++
@@ -259,13 +259,13 @@ SET (LIBS_WINDOWS
 	HomerConference
 	HomerSoundOutput
 	mingw32
-    ${QT_LIBRARIES}
-    ${QT_QTCORE_LIBRARIES}
-    ${QT_QTGUI_LIBRARIES}
-    ${QT_QTMULTIMEDIA_LIBRARIES}
-    ${QT_QTNETWORK_LIBRARIES}
-    ${QT_QTXML_LIBRARIES}
-    ${QT_QTWEBKIT_LIBRARIES}
+	${QT_LIBRARIES}
+	${QT_QTCORE_LIBRARIES}
+	${QT_QTGUI_LIBRARIES}
+	${QT_QTMULTIMEDIA_LIBRARIES}
+	${QT_QTNETWORK_LIBRARIES}
+	${QT_QTXML_LIBRARIES}
+	${QT_QTWEBKIT_LIBRARIES}
 )
 
 # USED LIBRARIES for BSD environment
@@ -298,7 +298,7 @@ ELSE ()
 		QtNetwork
 		QtXml
 		QtWebKit
-		dbus-1
+#		dbus-1
 		resolv
 	)
 ENDIF ()
