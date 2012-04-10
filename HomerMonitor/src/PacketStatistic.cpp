@@ -241,9 +241,9 @@ int PacketStatistic::GetMomentAvgDataRate()
         int64_t tMeasuredTimeDifference = tCurrentTime - tMeasurementStartTime;
         int64_t tMeasuredByteCountDifference = mByteCount - tMeasurementStartByteCount;
 
-        tDataRate = 1000000 * tMeasuredByteCountDifference / tMeasuredTimeDifference;
-    }else
-        tDataRate = 0;
+        if (tMeasuredTimeDifference != 0)
+        	tDataRate = 1000000 * tMeasuredByteCountDifference / tMeasuredTimeDifference;
+    }
 
     // unlock
     mStatisticsMutex.unlock();
