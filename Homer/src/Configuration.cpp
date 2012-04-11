@@ -661,7 +661,7 @@ QSize Configuration::GetMainWindowSize()
 
 bool Configuration::GetParticipantWidgetsSeparation()
 {
-    return mQSettings->value("Global/ParticipantWidgetsSeparation", true).toBool();
+    return mQSettings->value("Global/ParticipantWidgetsSeparation", false).toBool();
 }
 
 bool Configuration::GetParticipantWidgetsCloseImmediately()
