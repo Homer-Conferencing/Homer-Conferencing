@@ -425,6 +425,13 @@ void Configuration::SetSipListenerAddress(QString pAddress)
     mQSettings->endGroup();
 }
 
+void Configuration::SetSipListenerTransport(enum TransportType pType)
+{
+    mQSettings->beginGroup("Network");
+    mQSettings->setValue("SipListenerTransportType", QString(Socket::TransportType2String(pType).c_str()));
+    mQSettings->endGroup();
+}
+
 void Configuration::SetStunServer(QString pServer)
 {
     mQSettings->beginGroup("Network");
@@ -610,6 +617,11 @@ void Configuration::SetRegistrationSuccessfulSystray(bool pActivation)
 QString Configuration::GetSipListenerAddress()
 {
     return mQSettings->value("Network/SipListenerAddress", QString("")).toString();
+}
+
+enum TransportType Configuration::GetSipListenerTransport()
+{
+    return Socket::String2TransportType(mQSettings->value("Network/SipListenerTransportType", QString("UDP")).toString().toStdString());
 }
 
 QString Configuration::GetBinaryPath()
