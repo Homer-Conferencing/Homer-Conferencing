@@ -1972,7 +1972,7 @@ void SIP::InitGeneralEvent_FromSipReceivedRequestEvent(const sip_to_t *pRemote, 
 
     tParticipant = SipCreateId(tUser, tHost, tPort);
 
-    if (!MEETING.OpenParticipantSession(tUser, tHost, tPort, CALLSTATE_STANDBY))
+    if (!MEETING.OpenParticipantSession(tUser, tHost, tPort))
         LOG(LOG_INFO, "%s-User \"%s\" already known to system", pEventName.c_str(), tParticipant.c_str());
 
     LOG(LOG_VERBOSE, "Participant is %s", tParticipant.c_str());
@@ -2232,7 +2232,7 @@ void SIP::SipReceivedCall(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal,
 
     InitGeneralEvent_FromSipReceivedRequestEvent(pSipRemote, pSipLocal, pNuaHandle, pSip, tCEvent, "Call", pSourceIp, pSourcePort);
 
-    #ifdef SIP_NAT_SOURCE_ADDRESS_ADAPTION
+    #ifdef SIP_NAT_PROPRIETARY_ADDRESS_ADAPTION
         // only for IPv4
         if (pSourceIp.find(":") == string::npos)
         {
@@ -2343,7 +2343,7 @@ void SIP::SipReceivedCallResponse(const sip_to_t *pSipRemote, const sip_to_t *pS
             break;
         case 600 ... 699: // we got a deny answer
             //     603 = Deny
-            #ifdef SIP_NAT_SOURCE_ADDRESS_ADAPTION
+            #ifdef SIP_NAT_PROPRIETARY_ADDRESS_ADAPTION
                 // NAT traversal: was NAT detected by remote side?
                 if ((tNatIpPos = tPhrase.find("NAT:")) != string::npos)
                 {
@@ -2830,7 +2830,7 @@ void SIP::SipSendCall(CallEvent *pCEvent)
     printFromToSendingSipEvent(tHandle, pCEvent, "Call");
     LOG(LOG_INFO, "CallSdp: %s", tSdp);
 
-    nua_invite(tHandle, NUTAG_RETRY_COUNT(CALL_REQUEST_RETRIES), TAG_IF(tSdp, SOATAG_USER_SDP_STR(tSdp)), TAG_END());
+    nua_invite(tHandle, NUTAG_RETRY_COUNT(CALL_REQUEST_RETRIES), NUTAG_INVITE_TIMER(CALL_REQUEST_TIMEOUT), TAG_IF(tSdp, SOATAG_USER_SDP_STR(tSdp)), TAG_END());
     // no "nua_handle_destroy" here because we need this handle as long as the call is running !
 
     MEETING.SearchParticipantAndSetState(tParticipant, CALLSTATE_RINGING);

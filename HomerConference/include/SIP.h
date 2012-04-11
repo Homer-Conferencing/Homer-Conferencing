@@ -49,17 +49,22 @@ namespace Homer { namespace Conference {
 
 #define SIP_OUTBOUND_OPTIONS        "outbound natify use-stun use-rport"
 
-// de/activate adaption of source address in case of NAT
-//#define SIP_NAT_SOURCE_ADDRESS_ADAPTION
+// de/activate NAT traversal mechanism: adaption of source address in case of NAT by using proprietary signaling which is stored within "phrase" string
+//HINT: incompatible clients don't recognize this mechanism and react in a usual way
+//#define SIP_NAT_PROPRIETARY_ADDRESS_ADAPTION
 
 // de/activate strict assertions
 //#define SIP_ASSERTS
 
 #define USER_AGENT_SIGNATURE                            "homer-conferencing.com"
 #define ORGANIZATION_SIGNATURE                          "homer-conferencing.com"
+
 #define CALL_REQUEST_RETRIES                            1
 #define MESSAGE_REQUEST_RETRIES                         1
 #define OPTIONS_REQUEST_RETRIES                         0
+
+#define CALL_REQUEST_TIMEOUT                            3 //seconds
+
 
 enum AvailabilityState{
 	AVAILABILITY_STATE_OFFLINE = 0,

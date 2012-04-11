@@ -214,6 +214,47 @@ int Meeting::GetHostPort()
     return mSipHostPort;
 }
 
+string Meeting::GetOwnRoutingAddressForPeer(std::string pForeignHost)
+{
+    #ifndef NAT_TRAVERSAL_SUPPORT
+        return GetHostAdr();
+    #endif
+
+    if ((pForeignHost == "") ||
+        (pForeignHost == GetHostAdr()))
+    {
+        return GetHostAdr();
+    }
+
+    if (IS_IPV6_ADDRESS(mSipHostAdr))
+    {//IPv6
+        return GetHostAdr();
+    }else
+    {//IPv4 processing, based on RFC 5735
+        // check for loopback address
+        if (pForeignHost.substr(0, 3) == "127.")    /* 127.0.0.0.0 - 172.255.255.255  */
+        {
+            return "127.0.0.1"; // loopback address
+        }
+
+        // check for private address
+        if ((pForeignHost.substr(0, 3) == "10.")      /* 10.0.0.0       - 10.255.255.255  */ ||
+            (pForeignHost.substr(0, 4) == "172.")     /* 172.16.0.0     - 172.31.255.255  */ || //HINT: we check only for the first digit ;)
+            (pForeignHost.substr(0, 8) == "192.168.") /* 192.168.0.0    - 192.168.255.255 */ )
+        {
+            return GetHostAdr(); // local address
+        }
+
+        // check for link local address
+        if (pForeignHost.substr(0, 8) == "169.254.") /* 169.254.0.0.0  - 169.254.255.255  */
+        {
+            return GetHostAdr(); // local address
+        }
+
+        return GetStunNatIp();   // outmost NAT address
+    }
+}
+
 void Meeting::SetLocalUserName(string pName)
 {
     string tFilteredString = "";
@@ -281,7 +322,7 @@ string Meeting::GetServerConferenceId()
     return tResult;
 }
 
-bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort, int pInitState)
+bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort)
 {
     bool        tFound = false;
     ParticipantDescriptor tParticipantDescriptor;
@@ -308,7 +349,7 @@ bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort, i
         tParticipantDescriptor.User = pUser;
         tParticipantDescriptor.Host = pHost;
         tParticipantDescriptor.Port = pPort;
-        tParticipantDescriptor.OwnIp = GetHostAdr();
+        tParticipantDescriptor.OwnIp = GetOwnRoutingAddressForPeer(pHost);
         tParticipantDescriptor.OwnPort = (unsigned int)GetHostPort();
         tParticipantDescriptor.RemoteVideoHost = "0.0.0.0";
         tParticipantDescriptor.RemoteVideoPort = 0;
@@ -326,8 +367,6 @@ bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort, i
 
         mParticipants.push_back(tParticipantDescriptor);
 
-        if (pInitState == CALLSTATE_RINGING)
-            SendCall(SipCreateId(pUser, pHost, pPort));
     }else
         LOG(LOG_VERBOSE, "Participant session already exists, open request ignored");
 
@@ -873,6 +912,7 @@ bool Meeting::SearchParticipantAndSetState(string pParticipant, int pState)
     return tFound;
 }
 
+//HINT: following function is used in case a call was received and the SIP destination address differs from the IP address of the network layer
 bool Meeting::SearchParticipantAndSetOwnContactAddress(string pParticipant, string pOwnNatIp, unsigned int pOwnNatPort)
 {
     bool tFound = false;
