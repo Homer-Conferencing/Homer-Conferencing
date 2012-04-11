@@ -150,15 +150,17 @@ public:
 
     /* network settings */
     int GetVideoAudioStartPort();
-    int GetSipStartPort();
     QString GetSipUserName();
     QString GetSipPassword();
     QString GetSipServer();
     bool GetSipContactsProbing();
-    QString GetSipListenerAddress();
     int GetSipInfrastructureMode();
     bool GetNatSupportActivation();
     QString GetStunServer();
+    /* SIP network listener */
+    QString GetSipListenerAddress();
+    enum Homer::Base::TransportType GetSipListenerTransport();
+    int GetSipStartPort();
 
     /* notification settings */
     // instant message
@@ -280,15 +282,16 @@ private:
 
     /* network settings */
     void SetVideoAudioStartPort(int pPort);
-    void SetSipStartPort(int pPort);
     void SetSipUserName(QString pUserName);
     void SetSipPassword(QString pPassword);
     void SetSipServer(QString pServer);
     void SetSipInfrastructureMode(int pMode);
     void SetSipContactsProbing(bool pActivation);
-    void SetSipListenerAddress(QString pAddress);
     void SetStunServer(QString pServer);
     void SetNatSupportActivation(bool pActivation);
+    void SetSipListenerAddress(QString pAddress);
+    void SetSipListenerTransport(enum Homer::Base::TransportType pType);
+    void SetSipStartPort(int pPort);
 
     /* notification settings */
     // instant message
