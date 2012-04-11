@@ -30,6 +30,7 @@
 
 #include <Header_SofiaSipForwDecl.h>
 #include <HBThread.h>
+#include <HBSocket.h>
 #include <MeetingEvents.h>
 #include <SIP_stun.h>
 #include <PIDF.h>
@@ -116,7 +117,7 @@ private:
     std::string InitGeneralEvent_FromSipReceivedResponseEvent(const sip_to_t *pRemote, const sip_to_t *pLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, GeneralEvent *pEvent, std::string pEventName, std::string &pSourceIp, unsigned int pSourcePort);
 
 protected:
-    void Init(int pStartPort = 5060, int pStunPort = 5070);
+    void Init(int pStartPort = 5060, Homer::Base::TransportType pSipListenerTransport = SOCKET_UDP, int pStunPort = 5070);
     void DeInit();
 
     void StopSipMainLoop();
@@ -182,6 +183,7 @@ protected:
     std::string         mSipRegisterPassword;
     sip_payload_t       *mPresenceDesription;
     int                 mSipHostPort;
+    enum TransportType  mSipHostPortTransport;
     bool                mSipListenerNeeded;
     bool                mSipStackOnline;
     int                 mSipRegisteredAtServer; //tri-state: 0 = unregistered, 1 = registered, -1 = registration failed

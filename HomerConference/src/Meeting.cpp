@@ -90,9 +90,9 @@ Meeting& Meeting::GetInstance()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void Meeting::Init(string pSipHostAdr, LocalAddressesList pLocalAddresses, string pBroadcastAdr, int pSipStartPort, int pStunStartPort, int pVideoAudioStartPort)
+void Meeting::Init(string pSipHostAdr, LocalAddressesList pLocalAddresses, string pBroadcastAdr, int pSipStartPort, TransportType pSipListenerTransport, int pStunStartPort, int pVideoAudioStartPort)
 {
-    SIP::Init(pSipStartPort, pStunStartPort);
+    SIP::Init(pSipStartPort, pSipListenerTransport, pStunStartPort);
 
     // start value for port auto probing (default is 5000)
     mVideoAudioStartPort = pVideoAudioStartPort;
