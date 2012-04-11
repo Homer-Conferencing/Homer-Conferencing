@@ -234,7 +234,7 @@ string Meeting::GetOwnRoutingAddressForPeer(std::string pForeignHost)
         // check for loopback address
         if (pForeignHost.substr(0, 3) == "127.")    /* 127.0.0.0.0 - 172.255.255.255  */
         {
-            return "127.0.0.1"; // loopback address
+            return "127.0.0.1";         // loopback address
         }
 
         // check for private address
@@ -242,16 +242,19 @@ string Meeting::GetOwnRoutingAddressForPeer(std::string pForeignHost)
             (pForeignHost.substr(0, 4) == "172.")     /* 172.16.0.0     - 172.31.255.255  */ || //HINT: we check only for the first digit ;)
             (pForeignHost.substr(0, 8) == "192.168.") /* 192.168.0.0    - 192.168.255.255 */ )
         {
-            return GetHostAdr(); // local address
+            return GetHostAdr();        // local address
         }
 
         // check for link local address
         if (pForeignHost.substr(0, 8) == "169.254.") /* 169.254.0.0.0  - 169.254.255.255  */
         {
-            return GetHostAdr(); // local address
+            return GetHostAdr();        // local address
         }
 
-        return GetStunNatIp();   // outmost NAT address
+        if (GetStunNatIp() != "")
+            return GetStunNatIp();      // outmost NAT address
+        else
+            return GetHostAdr();        // local address
     }
 }
 
