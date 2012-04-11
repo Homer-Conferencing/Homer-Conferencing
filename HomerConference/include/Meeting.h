@@ -44,6 +44,11 @@ namespace Homer { namespace Conference {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// de/activate NAT traversal mechanism: setting explicitly the own contact IP address (used as video/audio destination)
+#define NAT_TRAVERSAL_SUPPORT
+
+///////////////////////////////////////////////////////////////////////////////
+
 #define MEETING Meeting::GetInstance()
 
 // configuration
@@ -114,7 +119,7 @@ public:
     void GetOwnContactAddress(std::string pParticipant, std::string &pIp, unsigned int &pPort);
 
     /* session management */
-    bool OpenParticipantSession(std::string pUser, std::string pHost, std::string pPort, int pInitState);
+    bool OpenParticipantSession(std::string pUser, std::string pHost, std::string pPort);
     bool CloseParticipantSession(std::string pParticipant);
     int CountParticipantSessions();
 
@@ -133,6 +138,7 @@ private:
     friend class SIP;
 
     void SetHostAdr(std::string pHost); // no one should be allowed to change the local address from the outside
+    std::string GetOwnRoutingAddressForPeer(std::string pForeignHost);
 
     bool SearchParticipantAndSetState(std::string pParticipant, int pState);
     bool SearchParticipantAndSetOwnContactAddress(std::string pParticipant, std::string pOwnNatIp, unsigned int pOwnNatPort);
@@ -141,6 +147,7 @@ private:
     bool SearchParticipantAndSetRemoteMediaInformation(std::string pParticipant, std::string pVideoHost, unsigned int pVideoPort, std::string pVideoCodec, std::string pAudioHost, unsigned int pAudioPort, std::string pAudioCodec);
     nua_handle_t ** SearchParticipantAndGetNuaHandleForCalls(string pParticipant);
     bool SearchParticipantByNuaHandleOrName(string &pUser, string &pHost, string &pPort, nua_handle_t *pNuaHandle);
+
     const char* GetSdpData(std::string pParticipant);
     void CloseAllSessions();
     std::string CallStateAsString(int pCallState);
