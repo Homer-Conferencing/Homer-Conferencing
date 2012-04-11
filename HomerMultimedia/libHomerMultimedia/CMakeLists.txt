@@ -195,6 +195,7 @@ ELSE ()
 		jack
 		theoraenc
 		theoradec
+		ogg
 		x264
 		bz2
 		z
