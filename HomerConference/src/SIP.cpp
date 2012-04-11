@@ -95,10 +95,11 @@ string SIP::GetSofiaSipVersion()
     return SOFIA_SIP_VERSION;
 }
 
-void SIP::Init(int pStartPort, int pStunPort)
+void SIP::Init(int pStartPort, TransportType pSipListenerTransport, int pStunPort)
 {
     // default port is 5060, auto-probing within run()
     mSipHostPort = pStartPort;
+    mSipHostPortTransport = pSipListenerTransport;
     mStunHostPort = pStunPort;
 }
 
@@ -265,6 +266,17 @@ void* SIP::Run(void*)
 
     if (mSipContext->Root != NULL)
     {
+        string tTransportAttribute;
+        switch(mSipHostPortTransport)
+        {
+            default:
+            case SOCKET_UDP:
+                tTransportAttribute = "transport=udp";
+                break;
+            case SOCKET_TCP:
+                tTransportAttribute = "transport=tcp";
+                break;
+        }
         // create NUA stack
         // auto probe SIP port (default: 5060 to 5064)
         for(int i = 0; i < 5; i++)
@@ -273,9 +285,9 @@ void* SIP::Run(void*)
 
             // add brackets for IPv6 address
             if (mSipHostAdr.find(":") != string::npos)
-	            tOwnAddress = "sip:[::]"/*mSipHostAdr*/ + toString(mSipHostPort) + ";transport=udp";
+	            tOwnAddress = "sip:[::]"/* don't limit to mSipHostAdr*/ + toString(mSipHostPort) + ";" + tTransportAttribute;
 			else
-	            tOwnAddress = "sip:0.0.0.0:" /*mSipHostAdr*/ + toString(mSipHostPort) + ";transport=udp";
+	            tOwnAddress = "sip:0.0.0.0:" /* don't limit to mSipHostAdr*/ + toString(mSipHostPort) + ";" + tTransportAttribute;
 
             // NAT traversal: use keepalive packets with interval of 10 seconds
             //                otherwise a NAT box won't maintain the state about the NAT forwarding

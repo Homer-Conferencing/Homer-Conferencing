@@ -93,7 +93,7 @@ public:
 
     static Meeting& GetInstance();
 
-    void Init(std::string pSipHostAdr, LocalAddressesList pLocalAddresses, std::string pBroadcastAdr = "Global messages", int pSipStartPort = 5060, int pStunStartPort = 5070, int pVideoAudioStartPort = 5000);
+    void Init(std::string pSipHostAdr, LocalAddressesList pLocalAddresses, std::string pBroadcastAdr = "Global messages", int pSipStartPort = 5060, Homer::Base::TransportType pSipListenerTransport = SOCKET_UDP, int pStunStartPort = 5070, int pVideoAudioStartPort = 5000);
     void Stop();
     void Deinit();
 
