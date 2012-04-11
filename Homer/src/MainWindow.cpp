@@ -1318,7 +1318,7 @@ ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHos
         }
 
         pHost = CompleteIpAddress(pHost);
-        if (MEETING.OpenParticipantSession(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString(), CALLSTATE_STANDBY))
+        if (MEETING.OpenParticipantSession(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString()))
         {
             QString tParticipant = QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str());
 
