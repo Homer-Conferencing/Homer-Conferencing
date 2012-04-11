@@ -869,9 +869,9 @@ void ParticipantWidget::HandleMediaUpdate(bool pIncoming, QString pRemoteAudioAd
         MediaSinkNet* tVideoSink = NULL;
         MediaSinkNet* tAudioSink = NULL;
         if (pRemoteVideoPort != 0)
-            tVideoSink = mVideoSourceMuxer->RegisterMediaSink(mRemoteVideoAdr.toStdString(), mRemoteVideoPort, CONF.GetVideoTransportType(), CONF.GetVideoRtp());
+            tVideoSink = mVideoSourceMuxer->RegisterMediaSink(mRemoteVideoAdr.toStdString(), mRemoteVideoPort, SOCKET_UDP, true); // always use RTP/AVP profile (RTP/UDP)
         if (pRemoteAudioPort != 0)
-            tAudioSink = mAudioSourceMuxer->RegisterMediaSink(mRemoteAudioAdr.toStdString(), mRemoteAudioPort, CONF.GetAudioTransportType(), CONF.GetAudioRtp());
+            tAudioSink = mAudioSourceMuxer->RegisterMediaSink(mRemoteAudioAdr.toStdString(), mRemoteAudioPort, SOCKET_UDP, true); // always use RTP/AVP profile (RTP/UDP)
 
         if (tVideoSink != NULL)
             tVideoSink->AssignStreamName("MUX-relay: " + mSessionName.toStdString());
