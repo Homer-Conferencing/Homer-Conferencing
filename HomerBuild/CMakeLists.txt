@@ -14,7 +14,9 @@ ADD_SUBDIRECTORY(../HomerMultimedia ${CMAKE_CURRENT_BINARY_DIR}/HomerMultimedia)
 ADD_SUBDIRECTORY(../HomerConference ${CMAKE_CURRENT_BINARY_DIR}/HomerConference)
 ADD_SUBDIRECTORY(../HomerSoundOutput ${CMAKE_CURRENT_BINARY_DIR}/HomerSoundOutput)
 ADD_SUBDIRECTORY(../Homer ${CMAKE_CURRENT_BINARY_DIR}/Homer)
-ADD_SUBDIRECTORY(../../Homer-Release/HomerSounds ${CMAKE_CURRENT_BINARY_DIR}/HomerSounds)
+IF (${BUILD} MATCHES "Release")
+	ADD_SUBDIRECTORY(../../Homer-Release/HomerSounds ${CMAKE_CURRENT_BINARY_DIR}/HomerSounds)
+ENDIF()
 
 ##############################################################################
 # include CPack configuration to generate installers for Win/OSX
