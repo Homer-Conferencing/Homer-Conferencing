@@ -874,7 +874,7 @@ void MainWindow::customEvent(QEvent* pEvent)
         case DELETE_SESSION:
                     //####################### PARTICIPANT DELETE #############################
                     tDSEvent = (DeleteSessionEvent*) tEvent;
-                    RemoveSessionWidget(tDSEvent->PWidget);
+                    DeleteParticipantSession(tDSEvent->PWidget);
                     return;
         case INT_START_NAT_DETECTION:
                     //####################### NAT DETECTION ANSWER ###########################
@@ -1334,7 +1334,7 @@ ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHos
     return tParticipantWidget;
 }
 
-void MainWindow::RemoveSessionWidget(ParticipantWidget *pParticipantWidget)
+void MainWindow::DeleteParticipantSession(ParticipantWidget *pParticipantWidget)
 {
     ParticipantWidgetList::iterator tIt;
     QString tParticipantName;
