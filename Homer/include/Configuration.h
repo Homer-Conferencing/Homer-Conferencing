@@ -68,7 +68,6 @@ namespace Homer { namespace Gui {
 #define PATH_HELP_TXT                   "/live/help.txt"
 #define PATH_STUN_SERVER_TXT            "/live/stun_server.txt"
 #define PATH_SIP_SERVER_TXT             "/live/sip_server.txt"
-#define PATH_INSTALL_EXE				CONF.GetBinaryPath() + "install.exe"
 #define PATH_HOMER_RELEASES				"http://"RELEASE_SERVER"/releases/"
 
 #define CONF Configuration::GetInstance()

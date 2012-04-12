@@ -72,6 +72,7 @@ void UpdateCheckDialog::initializeGUI()
     mHttpGetChangelogUrl = new QHttp(this);
     connect(mHttpGetChangelogUrl, SIGNAL(done(bool)), this, SLOT(GotAnswerForChangelogRequest(bool)));
     connect(mTbDownloadUpdate, SIGNAL(clicked()), this, SLOT(DownloadStart()));
+    connect(mTbDownloadUpdateInstaller, SIGNAL(clicked()), this, SLOT(DownloadInstallerStart()));
     mHttpGetChangelogUrl->setHost(RELEASE_SERVER);
     mHttpGetChangelogUrl->get(PATH_CHANGELOG_TXT);
 }
@@ -92,15 +93,9 @@ QString UpdateCheckDialog::GetNumericReleaseVersion(QString pServerVersion)
 
 void UpdateCheckDialog::DownloadStart()
 {
-	if(QFile::exists(PATH_INSTALL_EXE))
-	{
-		if(QProcess::startDetached(PATH_INSTALL_EXE))
-			return;
-	}
-
 	if(mDownloadProgressDialog != NULL)
 	{
-		ShowInfo("Download of Homer archive running", "A download of a current Homer archive is already started!");
+		ShowInfo("Download of Homer update running", "A download of a Homer update is already started!");
 		return;
 	}
 	// find correct release name for this target system
@@ -138,8 +133,8 @@ void UpdateCheckDialog::DownloadStart()
 	CONF.SetDataDirectory(tFileName.left(tFileName.lastIndexOf('/')));
 
 	// open the target file
-	mDownloadHomerArchiveFile = new QFile(tFileName, this);
-	if(!mDownloadHomerArchiveFile->open(QIODevice::WriteOnly))
+	mDownloadHomerUpdateFile = new QFile(tFileName, this);
+	if(!mDownloadHomerUpdateFile->open(QIODevice::WriteOnly))
 	{
 		ShowError("Could not store Homer archive", "Unable to store the downloaded Homer archive to \"" + tFileName + "\"");
 		return;
@@ -154,6 +149,64 @@ void UpdateCheckDialog::DownloadStart()
 	LOG(LOG_VERBOSE, "Download progress dialog created");
 
 	//start HTTP get for the Homer archive
+	DownloadFireRequest(PATH_HOMER_RELEASES + GetNumericReleaseVersion(mServerVersion) + "/" + tReleaseFileName);
+}
+
+void UpdateCheckDialog::DownloadInstallerStart()
+{
+	if(mDownloadProgressDialog != NULL)
+	{
+		ShowInfo("Download of Homer update running", "A download of a Homer update is already started!");
+		return;
+	}
+	// find correct release name for this target system
+	QString tReleaseFileName;
+	QString tReleaseFileType;
+
+	#ifdef WIN32
+		tReleaseFileName = "Homer-Install.exe";
+		tReleaseFileType = "Windows executable file (*.exe)";
+	#endif
+	#ifdef LINUX
+		return;
+	#endif
+	#ifdef BSD
+		return;
+	#endif
+	#ifdef APPLE
+		return;
+	#endif
+
+	// ask for target location for new release installer
+	QString tFileName;
+	tFileName = QFileDialog::getSaveFileName(this,  "Save Homer installer to..",
+																CONF.GetDataDirectory() + "/" + tReleaseFileName,
+																tReleaseFileType,
+																&tReleaseFileType,
+																QFileDialog::DontUseNativeDialog);
+
+	if (tFileName.isEmpty())
+		return;
+
+	CONF.SetDataDirectory(tFileName.left(tFileName.lastIndexOf('/')));
+
+	// open the target file
+	mDownloadHomerUpdateFile = new QFile(tFileName, this);
+	if(!mDownloadHomerUpdateFile->open(QIODevice::WriteOnly))
+	{
+		ShowError("Could not store Homer installer", "Unable to store the downloaded Homer installer to \"" + tFileName + "\"");
+		return;
+	}
+
+	// create progress dialogue
+	mDownloadProgressDialog = new QProgressDialog(this);
+	mDownloadProgressDialog->setWindowTitle("Download progress");
+	mDownloadProgressDialog->setLabelText("<b>Downloading Homer installer</b>");
+	connect(mDownloadProgressDialog, SIGNAL(canceled()), this, SLOT(DownloadStop()));
+
+	LOG(LOG_VERBOSE, "Download progress dialog created");
+
+	//start HTTP get for the Homer installer
 	DownloadFireRequest(PATH_HOMER_RELEASES + GetNumericReleaseVersion(mServerVersion) + "/" + tReleaseFileName);
 }
 
@@ -173,11 +226,11 @@ void UpdateCheckDialog::DownloadStop()
 	LOG(LOG_VERBOSE, "Download stopped");
 	mDownloadAborted = true;
     mDownloadReply->abort();
-	if(mDownloadHomerArchiveFile != NULL)
+	if(mDownloadHomerUpdateFile != NULL)
 	{
-		mDownloadHomerArchiveFile->close();
-		delete mDownloadHomerArchiveFile;
-		mDownloadHomerArchiveFile = NULL;
+		mDownloadHomerUpdateFile->close();
+		delete mDownloadHomerUpdateFile;
+		mDownloadHomerUpdateFile = NULL;
 	}
 	if(mDownloadProgressDialog != NULL)
 	{
@@ -191,7 +244,7 @@ void UpdateCheckDialog::DownloadProgress(qint64 pLoadedBytes, qint64 pTotalBytes
 {
 	mDownloadProgressDialog->setMaximum((int)pTotalBytes);
 	mDownloadProgressDialog->setValue((int)pLoadedBytes);
-	mDownloadProgressDialog->setLabelText("<b>Downloading Homer archive</b><br>  from <font color=blue>" + mServerFile + "</font><br>  to <i>" + mDownloadHomerArchiveFile->fileName() + "</i><br>  <b>Loaded: " + Int2ByteExpression(pLoadedBytes) + "/" +  Int2ByteExpression(pTotalBytes) + " bytes</b>");
+	mDownloadProgressDialog->setLabelText("<b>Downloading Homer update</b><br>  from <font color=blue>" + mServerFile + "</font><br>  to <i>" + mDownloadHomerUpdateFile->fileName() + "</i><br>  <b>Loaded: " + Int2ByteExpression(pLoadedBytes) + "/" +  Int2ByteExpression(pTotalBytes) + " bytes</b>");
     mDownloadProgressDialog->show();
 }
 
@@ -200,33 +253,33 @@ void UpdateCheckDialog::DownloadFinished()
 	LOG(LOG_VERBOSE, "Download finished");
 	if((!mDownloadAborted) && (mDownloadReply->error()))
 	{
-		ShowError("Failed to download Homer archive", "Unable to download Homer archive because " + mDownloadReply->errorString());
+		ShowError("Failed to download Homer update", "Unable to download Homer update. The reason is: \"" + mDownloadReply->errorString() + "\"");
 	}
 
-	mDownloadHomerArchiveFile->flush();
-	mDownloadHomerArchiveFile->close();
+	mDownloadHomerUpdateFile->flush();
+	mDownloadHomerUpdateFile->close();
 
 	// were we redirected to another target?
 	QVariant tRedirectionTarget = mDownloadReply->attribute(QNetworkRequest::RedirectionTargetAttribute);
     if (!tRedirectionTarget.isNull())
     {
-    	LOG(LOG_VERBOSE, "Have been redirected to new Homer archive location under %s", tRedirectionTarget.toString().toStdString().c_str());
+    	LOG(LOG_VERBOSE, "Have been redirected to new Homer update location under %s", tRedirectionTarget.toString().toStdString().c_str());
 		mDownloadReply->deleteLater();
-		mDownloadHomerArchiveFile->open(QIODevice::WriteOnly);
-		mDownloadHomerArchiveFile->resize(0);
+		mDownloadHomerUpdateFile->open(QIODevice::WriteOnly);
+		mDownloadHomerUpdateFile->resize(0);
 
-		// start HTTP get for the Homer archive
+		// start HTTP get for the Homer update
 		DownloadFireRequest(tRedirectionTarget.toString());
     }else
     {// everything was okay, we automatically open downloaded file and we delete objects
 		if(!mDownloadAborted)
-		    QDesktopServices::openUrl(mDownloadHomerArchiveFile->fileName());
+		    QDesktopServices::openUrl(mDownloadHomerUpdateFile->fileName());
 
-		if(mDownloadHomerArchiveFile != NULL)
+		if(mDownloadHomerUpdateFile != NULL)
 		{
-			mDownloadHomerArchiveFile->close();
-			delete mDownloadHomerArchiveFile;
-			mDownloadHomerArchiveFile = NULL;
+			mDownloadHomerUpdateFile->close();
+			delete mDownloadHomerUpdateFile;
+			mDownloadHomerUpdateFile = NULL;
 		}
 		if(mDownloadProgressDialog != NULL)
 		{
@@ -239,8 +292,8 @@ void UpdateCheckDialog::DownloadFinished()
 
 void UpdateCheckDialog::DownloadNewChunk()
 {
-    if (mDownloadHomerArchiveFile)
-    	mDownloadHomerArchiveFile->write(mDownloadReply->readAll());
+    if (mDownloadHomerUpdateFile)
+    	mDownloadHomerUpdateFile->write(mDownloadReply->readAll());
 }
 
 void UpdateCheckDialog::GotAnswerForVersionRequest(bool pError)
@@ -263,6 +316,11 @@ void UpdateCheckDialog::GotAnswerForVersionRequest(bool pError)
             {
                 mLbVersionServer->setText("<font color='red'><b>" + mServerVersion + "</b></font>");
                 mTbDownloadUpdate->show();
+
+                // show download button for installer on Windows
+                #ifdef WIN32
+                	mTbDownloadUpdateInstaller->show();
+                #endif
             }else
                 mLbVersionServer->setText("<font color='green'><b>" + mServerVersion + "</b></font>");
         }
