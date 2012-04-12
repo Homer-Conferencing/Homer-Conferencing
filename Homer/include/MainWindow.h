@@ -151,7 +151,7 @@ private:
     bool GetNetworkInfo(LocalAddressesList &pLocalAddressesList, QString &pLocalSourceIp, QString &pLocalLoopIp);
     QString CompleteIpAddress(QString pAddr);
     ParticipantWidget* AddParticipantSession(QString pUser, QString pHost, QString pPort, QString pIp, int pInitState);
-    void RemoveSessionWidget(ParticipantWidget *pParticipantWidget);
+    void DeleteParticipantSession(ParticipantWidget *pParticipantWidget);
 
     /* handle incoming Meeting events */
     void GetEventSource(GeneralEvent *pEvent, QString &pSender, QString &pSenderApp);
