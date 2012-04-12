@@ -92,6 +92,8 @@ private slots:
     void DeleteSelected();
 
 private:
+    friend class ContactListModel; // allow model to save and restore currently selected index in GUI
+
     void initializeGUI();
     virtual void closeEvent(QCloseEvent* pEvent);
     virtual void contextMenuEvent(QContextMenuEvent *pEvent);
@@ -122,7 +124,7 @@ class ContactListModel:
 {
     Q_OBJECT;
 public:
-    ContactListModel(QObject *pParent);
+    ContactListModel(OverviewContactsWidget *pOverviewContactsWidget);
 
     virtual ~ContactListModel();
 
@@ -141,6 +143,8 @@ private:
     QString GetContactName(const QModelIndex &pIndex) const;
     bool GetContactAvailability(const QModelIndex &pIndex) const;
     void *GetContactPointer(unsigned int pIndex) const;
+
+    OverviewContactsWidget   *mOverviewContactsWidget;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

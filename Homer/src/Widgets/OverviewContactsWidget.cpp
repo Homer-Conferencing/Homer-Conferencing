@@ -157,11 +157,7 @@ void OverviewContactsWidget::SetVisible(bool pVisible)
 
 void OverviewContactsWidget::paintEvent(QPaintEvent *pEvent)
 {
-    QModelIndex tIndex = mTvContacts->currentIndex();
-
     QDockWidget::paintEvent(pEvent);
-
-    mTvContacts->setCurrentIndex(tIndex);
 }
 
 void OverviewContactsWidget::contextMenuEvent(QContextMenuEvent *pEvent)
@@ -548,9 +544,10 @@ void OverviewContactsWidget::LoadList()
 ///////////////////////  MODEL CLASS  /////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-ContactListModel::ContactListModel(QObject *pParent):
-    QAbstractItemModel(pParent)
+ContactListModel::ContactListModel(OverviewContactsWidget *pOverviewContactsWidget):
+    QAbstractItemModel(pOverviewContactsWidget)
 {
+	mOverviewContactsWidget = pOverviewContactsWidget;
     CONTACTSPOOL.RegisterAtController(this);
 }
 
@@ -762,7 +759,11 @@ QVariant ContactListModel::headerData(int pSection, Qt::Orientation pOrientation
 
 void ContactListModel::UpdateView()
 {
+	QModelIndex tIndex = mOverviewContactsWidget->mTvContacts->currentIndex();
+
     reset();
+
+    mOverviewContactsWidget->mTvContacts->setCurrentIndex(tIndex);
 }
 
 void ContactListModel::sort (int pColumn, Qt::SortOrder pOrder)
