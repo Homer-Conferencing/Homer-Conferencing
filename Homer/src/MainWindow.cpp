@@ -911,7 +911,9 @@ void MainWindow::customEvent(QEvent* pEvent)
                     // inform contacts pool about online state
                     CONTACTSPOOL.UpdateContactState(QString::fromLocal8Bit(tOUAEvent->Sender.c_str()), CONTACT_UNAVAILABLE);
 
-                    // inform participant widget about new state
+                	LOG(LOG_WARN, "Contact unavailable, reason is \"%s\"(%d).", tOUAEvent->Description.c_str(), tOUAEvent->StatusCode);
+
+                	// inform participant widget about new state
                     if (mParticipantWidgets.size())
                     {
                         // search for corresponding participant widget

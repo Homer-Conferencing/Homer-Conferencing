@@ -1612,7 +1612,7 @@ void SIP::SipCallBack(int pEvent, int pStatus, char const *pPhrase, nua_t *pNua,
                         tags    empty
             */
             case nua_r_options:
-                SipReceivedOptionsResponse(tRemote, tLocal, pNuaHandle, pStatus, pSip, tSourceIp, tSourcePort);
+                SipReceivedOptionsResponse(tRemote, tLocal, pNuaHandle, pStatus, pPhrase, pSip, tSourceIp, tSourcePort);
                 break;
             /*################################################################
                 nua_r_refer     Answer to outgoing REFER.
@@ -2667,7 +2667,7 @@ void SIP::SipReceivedCallTermination(const sip_to_t *pSipRemote, const sip_to_t 
 
 ///////////////// Options Messaging //////////////////////////////////
 
-void SIP::SipReceivedOptionsResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort)
+void SIP::SipReceivedOptionsResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, const char* pPhrase, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort)
 {
     switch(pStatus)
     {
@@ -2684,7 +2684,7 @@ void SIP::SipReceivedOptionsResponse(const sip_to_t *pSipRemote, const sip_to_t 
                 // set auth. information
                 nua_authenticate(pNuaHandle, NUTAG_AUTH(tAuthInfo.c_str()), TAG_END());
             }else
-                SipReceivedOptionsResponseUnavailable(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort);
+                SipReceivedOptionsResponseUnavailable(pSipRemote, pSipLocal, pNuaHandle, pStatus, pPhrase, pSip, pSourceIp, pSourcePort);
             break;
         case 404:
         case 406:
@@ -2694,11 +2694,11 @@ void SIP::SipReceivedOptionsResponse(const sip_to_t *pSipRemote, const sip_to_t 
             //    408 = Timeout
             //    415 = Unsupported media type (linphone)
             //    503 = Service unavailable, e.g. no transport (tried to talk with a SIP server?)
-            SipReceivedOptionsResponseUnavailable(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort);
+            SipReceivedOptionsResponseUnavailable(pSipRemote, pSipLocal, pNuaHandle, pStatus, pPhrase, pSip, pSourceIp, pSourcePort);
             break;
         default:
             LOG(LOG_WARN, "Unsupported status code %d, will interpret it as \"service unavailable\"", pStatus);
-            SipReceivedOptionsResponseUnavailable(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort);
+            SipReceivedOptionsResponseUnavailable(pSipRemote, pSipLocal, pNuaHandle, pStatus, pPhrase, pSip, pSourceIp, pSourcePort);
             break;
     }
 }
@@ -2714,11 +2714,15 @@ void SIP::SipReceivedOptionsResponseAccept(const sip_to_t *pSipRemote, const sip
     MEETING.notifyObservers(tOAEvent);
 }
 
-void SIP::SipReceivedOptionsResponseUnavailable(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort)
+void SIP::SipReceivedOptionsResponseUnavailable(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, const char* pPhrase, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort)
 {
     OptionsUnavailableEvent *tOUAEvent = new OptionsUnavailableEvent();
 
     InitGeneralEvent_FromSipReceivedResponseEvent(pSipRemote, pSipLocal, pNuaHandle, pSip, tOUAEvent, "OptionsUnavailable", pSourceIp, pSourcePort);
+
+    // store extended information
+    tOUAEvent->StatusCode = pStatus;
+    tOUAEvent->Description = string (pPhrase);
 
     nua_handle_destroy(pNuaHandle);
 
