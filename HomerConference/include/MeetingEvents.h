@@ -89,11 +89,11 @@ public:
             case INT_START_NAT_DETECTION:
                 return "Internal signaling for NAT detection in SIP thread context";
             case OPTIONS:
-                return "Options of SIP server";
+                return "Options of SIP peer";
             case OPTIONS_ACCEPT:
-                return "Options from SIP server delivered";
+                return "Options from SIP peer delivered";
             case OPTIONS_UNAVAILABLE:
-                return "Options from SIP server unavailable";
+                return "Options from SIP peer unavailable";
             case GENERAL_ERROR:
                 return "General Error";
             case MESSAGE:
@@ -192,6 +192,8 @@ class OptionsUnavailableEvent:
     public TEvent<OptionsUnavailableEvent, OPTIONS_UNAVAILABLE>
 {
 public:
+    int     StatusCode;
+    string  Description;
 };
 
 class ErrorEvent:
