@@ -898,7 +898,7 @@ int Configuration::GetSipInfrastructureMode()
 
 bool Configuration::GetNatSupportActivation()
 {
-    return mQSettings->value("Network/NatSupportActivation", false).toBool();
+    return mQSettings->value("Network/NatSupportActivation", true).toBool();
 }
 
 QString Configuration::GetStunServer()
