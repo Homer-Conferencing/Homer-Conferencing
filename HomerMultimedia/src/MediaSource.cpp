@@ -797,7 +797,7 @@ void MediaSource::ResetPacketStatistic()
     mChunkDropCounter = 0;
 }
 
-int MediaSource::GetChunkDropConter()
+int MediaSource::GetChunkDropCounter()
 {
     return mChunkDropCounter;
 }
