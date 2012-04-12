@@ -161,6 +161,7 @@ SET (FRAMEWORKS_APPLE
 IF (${BUILD} MATCHES "Default")
 	SET (LIBS_LINUX
 		HomerBase
+		HomerGAPI
 		HomerMonitor
 		${ALSA_LIBRARIES}
 		avdevice
