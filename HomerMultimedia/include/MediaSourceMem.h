@@ -72,7 +72,7 @@ public:
     virtual ~MediaSourceMem();
 
     /* grabbing control */
-    virtual int GetChunkDropConter();
+    virtual int GetChunkDropCounter();
     virtual int GetChunkBufferCounter();
 
     /* video grabbing control */

@@ -309,7 +309,7 @@ bool MediaSourceMem::SupportsRelaying()
     return true;
 }
 
-int MediaSourceMem::GetChunkDropConter()
+int MediaSourceMem::GetChunkDropCounter()
 {
     if (mRtpActivated)
         return GetLostPacketsFromRTP();

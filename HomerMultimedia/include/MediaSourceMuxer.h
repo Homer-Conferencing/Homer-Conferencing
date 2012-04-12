@@ -91,7 +91,7 @@ public:
     virtual bool Reset(enum MediaType = MEDIA_UNKNOWN);
     virtual std::string GetCodecName();
     virtual std::string GetCodecLongName();
-    virtual int GetChunkDropConter();
+    virtual int GetChunkDropCounter();
     virtual int GetChunkBufferCounter();
 
     /* recording control */

@@ -1462,10 +1462,10 @@ string MediaSourceMuxer::GetCodecLongName()
         return "";
 }
 
-int MediaSourceMuxer::GetChunkDropConter()
+int MediaSourceMuxer::GetChunkDropCounter()
 {
     if (mMediaSource != NULL)
-        return mMediaSource->GetChunkDropConter();
+        return mMediaSource->GetChunkDropCounter();
     else
         return 0;
 }
