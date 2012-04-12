@@ -150,7 +150,7 @@ string SIP_stun::GetStunNatIp()
 {
 	string tResult = "";
 
-	if ((!mStunSupportActivated) || (!mStunNatDetectionFinished))
+	if ((!mStunSupportActivated) || (!mStunNatDetectionFinished) || (mStunOutmostAdr == "0.0.0.0"))
         tResult = "";
     else
         tResult = mStunOutmostAdr;
