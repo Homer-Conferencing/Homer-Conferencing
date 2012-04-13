@@ -139,6 +139,28 @@ MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, Socket*
 
     mDataSocket = pSocket;
 
+    // define QoS settings
+    QoSSettings tQoSSettings;
+    switch(pType)
+    {
+        case MEDIA_SINK_VIDEO:
+            ClassifyStream(DATA_TYPE_VIDEO, mDataSocket->GetTransportType(), mDataSocket->GetNetworkType());
+            tQoSSettings.DataRate = 20;
+            tQoSSettings.Delay = 250;
+            tQoSSettings.Features = QOS_FEATURE_NONE;
+            break;
+        case MEDIA_SINK_AUDIO:
+            ClassifyStream(DATA_TYPE_AUDIO, mDataSocket->GetTransportType(), mDataSocket->GetNetworkType());
+            tQoSSettings.DataRate = 8;
+            tQoSSettings.Delay = 100;
+            tQoSSettings.Features = QOS_FEATURE_NONE;
+            break;
+        default:
+            LOG(LOG_ERROR, "Undefined media type");
+            break;
+    }
+    mDataSocket->SetQoS(tQoSSettings);
+
 	LOG(LOG_VERBOSE, "Remote media sink at: %s<%d>%s", pTargetHost.c_str(), pTargetPort, mRtpActivated ? "(RTP)" : "");
 
     mMediaId = CreateId(pTargetHost, toString(pTargetPort), mDataSocket->GetTransportType(), pRtpActivated);
