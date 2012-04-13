@@ -172,6 +172,7 @@ public:
     QString GetStreamName();
     //--
     QString GetCurrentDevice();
+    QString GetCurrentDevicePeer();
     void SetCurrentDevice(QString pName);
     QStringList GetPossibleDevices();
     QString GetDeviceDescription(QString pName);

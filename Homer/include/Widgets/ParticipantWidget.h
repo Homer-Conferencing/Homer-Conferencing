@@ -165,6 +165,7 @@ private:
     unsigned int        mRemoteVideoPort;
     QString             mRemoteVideoCodec;
     MediaSource         *mVideoSource, *mAudioSource;
+    Socket				*mVideoSendSocket, *mAudioSendSocket, *mVideoReceiveSocket, *mAudioReceiveSocket;
     QSound				*mSoundForIncomingCall;
     int                 mTimerId;
 };
