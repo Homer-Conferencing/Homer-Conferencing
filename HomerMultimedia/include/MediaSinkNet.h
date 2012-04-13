@@ -65,11 +65,14 @@ protected:
     virtual bool CloseStreamer();
     /* sending one single fragment of an (rtp) packet stream */
     virtual void SendFragment(char* pData, unsigned int pSize);
+    virtual void DoSendFragment(char* pData, unsigned int pSize);
 
     bool                mRtpActivated;
     AVStream            *mCurrentStream;
 
 private:
+    void BasicInit(enum MediaSinkType pType);
+
     int                 mMaxNetworkPacketSize;
     std::string         mTargetHost;
     unsigned int        mTargetPort;
