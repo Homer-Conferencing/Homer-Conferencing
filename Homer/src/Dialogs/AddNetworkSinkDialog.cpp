@@ -57,6 +57,11 @@ AddNetworkSinkDialog::~AddNetworkSinkDialog()
 void AddNetworkSinkDialog::initializeGUI()
 {
     setupUi(this);
+    if (!CONF.DebuggingEnabled())
+    {
+        mGbRequirements->hide();
+        mGbInterface->hide();
+    }
 }
 
 int AddNetworkSinkDialog::exec()
