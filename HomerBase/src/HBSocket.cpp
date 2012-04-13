@@ -91,7 +91,7 @@ void Socket::SetDefaults(enum TransportType pTransportType)
 ///////////////////////////////////////////////////////////////////////////////
 /// server socket
 ///////////////////////////////////////////////////////////////////////////////
-Socket::Socket(unsigned int pListenerPort, enum TransportType pTransportType, unsigned int pProbeStepping, unsigned int pHighesPossibleListenerPort)
+Socket::Socket(unsigned int pListenerPort, enum TransportType pTransportType, unsigned int pProbeStepping, unsigned int pHighestPossibleListenerPort)
 {
     LOG(LOG_VERBOSE, "Created server socket object with listener port %u, transport type %s, port probing stepping %d", pListenerPort, TransportType2String(pTransportType).c_str(), pProbeStepping);
 
@@ -116,7 +116,7 @@ Socket::Socket(unsigned int pListenerPort, enum TransportType pTransportType, un
     SetDefaults(pTransportType);
     if (CreateSocket(SOCKET_IPv6))
     {
-    	if (!BindSocket(pListenerPort, pProbeStepping, pHighesPossibleListenerPort))
+    	if (!BindSocket(pListenerPort, pProbeStepping, pHighestPossibleListenerPort))
     	    mSocketHandle = -1;
     	if ((!pProbeStepping) && (mLocalPort != pListenerPort))
     		LOG(LOG_ERROR, "Bound socket %d to another port than requested", mSocketHandle);
@@ -1085,16 +1085,20 @@ bool Socket::CreateSocket(enum NetworkType pIpVersion)
             break;
     }
 
+    // do we have a valid socket?
     if (tResult)
     {
         LOG(LOG_VERBOSE, "Created IPv%d-%s socket with handle number %d", (tSelectedIPDomain == PF_INET6) ? 6 : 4, TransportType2String(mSocketTransportType).c_str(), mSocketHandle);
+
+        bool tSockOptResult = 0;
+
+        // activate dual stack
         if (tSelectedIPDomain == PF_INET6)
         {
             // we force hybrid sockets, otherwise Windows will complain: http://msdn.microsoft.com/en-us/library/bb513665%28v=vs.85%29.aspx
             int tOnlyIpv6Sockets = false;
-            bool tIpv6OnlyOkay = false;
-			tIpv6OnlyOkay = (setsockopt(mSocketHandle, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&tOnlyIpv6Sockets, sizeof(tOnlyIpv6Sockets)) == 0);
-            if (tIpv6OnlyOkay)
+            tSockOptResult = (setsockopt(mSocketHandle, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&tOnlyIpv6Sockets, sizeof(tOnlyIpv6Sockets)) == 0);
+            if (tSockOptResult)
                 LOG(LOG_VERBOSE, "Set %s socket with handle number %d to IPv6only state %d", TransportType2String(mSocketTransportType).c_str(), mSocketHandle, tOnlyIpv6Sockets);
             else
                 LOG(LOG_ERROR, "Failed to disable IPv6_only");
