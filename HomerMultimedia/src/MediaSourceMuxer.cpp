@@ -1696,6 +1696,14 @@ string MediaSourceMuxer::GetCurrentDeviceName()
         return "";
 }
 
+string MediaSourceMuxer::GetCurrentDevicePeerName()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->GetCurrentDevicePeerName();
+    else
+        return "";
+}
+
 bool MediaSourceMuxer::RegisterMediaSource(MediaSource* pMediaSource)
 {
     MediaSourcesList::iterator tIt;
