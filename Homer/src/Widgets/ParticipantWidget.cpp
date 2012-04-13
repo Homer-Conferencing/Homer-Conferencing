@@ -201,8 +201,6 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
         mMainWindow->addDockWidget(Qt::RightDockWidgetArea, this, Qt::Horizontal);
     }
 
-    Socket* tVSocket = NULL;
-    Socket* tASocket = NULL;
     mVideoSource = NULL;
     mAudioSource = NULL;
     OpenVideoAudioPreviewDialog *tOpenVideoAudioPreviewDialog = NULL;
@@ -228,19 +226,21 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
                     mSessionName = pParticipant;
                     FindSipInterface(pParticipant);
                     mMessageWidget->Init(pMessageMenu, mSessionName, pContactsWidget);
-                    tVSocket = MEETING.GetVideoSocket(mSessionName.toStdString());
-                    tASocket = MEETING.GetAudioSocket(mSessionName.toStdString());
-                    if (tVSocket != NULL)
+                    mVideoSendSocket = MEETING.GetVideoSendSocket(mSessionName.toStdString());
+                    mAudioSendSocket = MEETING.GetAudioSendSocket(mSessionName.toStdString());
+                    mVideoReceiveSocket = MEETING.GetVideoReceiveSocket(mSessionName.toStdString());
+                    mAudioReceiveSocket = MEETING.GetAudioReceiveSocket(mSessionName.toStdString());
+                    if (mVideoReceiveSocket != NULL)
                     {
-                        mVideoSource = new MediaSourceNet(tVSocket, CONF.GetVideoRtp());
+                        mVideoSource = new MediaSourceNet(mVideoReceiveSocket, CONF.GetVideoRtp());
                         mVideoSource->SetInputStreamPreferences(CONF.GetVideoCodec().toStdString());
                         mVideoWidgetFrame->hide();
                         mVideoWidget->Init(mMainWindow, mVideoSource, pVideoMenu, mSessionName);
                     }else
                         LOG(LOG_ERROR, "Determined video socket is NULL");
-                    if (tASocket != NULL)
+                    if (mAudioReceiveSocket != NULL)
                     {
-                        mAudioSource = new MediaSourceNet(tASocket, CONF.GetAudioRtp());
+                        mAudioSource = new MediaSourceNet(mAudioReceiveSocket, CONF.GetAudioRtp());
                         mAudioSource->SetInputStreamPreferences(CONF.GetAudioCodec().toStdString());
                         mAudioWidget->Init(mAudioSource, pAudioMenu, mSessionName);
                     }else
@@ -844,7 +844,7 @@ void ParticipantWidget::HandleMediaUpdate(bool pIncoming, QString pRemoteAudioAd
     // return immediately if we are a preview only
     if (mSessionType == PREVIEW)
     {
-        LOG(LOG_ERROR, "This function is not support vor preview widgets");
+        LOG(LOG_ERROR, "This function is not support for preview widgets");
         return;
     }
 
@@ -865,23 +865,22 @@ void ParticipantWidget::HandleMediaUpdate(bool pIncoming, QString pRemoteAudioAd
         LOG(LOG_VERBOSE, "Audio sink set to %s:%u", pRemoteAudioAdr.toStdString().c_str(), pRemoteAudioPort);
         LOG(LOG_VERBOSE, "Audio sink uses codec: \"%s\"", pRemoteAudioCodec.toStdString().c_str());
 
-
         MediaSinkNet* tVideoSink = NULL;
         MediaSinkNet* tAudioSink = NULL;
         if (pRemoteVideoPort != 0)
-            tVideoSink = mVideoSourceMuxer->RegisterMediaSink(mRemoteVideoAdr.toStdString(), mRemoteVideoPort, SOCKET_UDP, true); // always use RTP/AVP profile (RTP/UDP)
+            tVideoSink = mVideoSourceMuxer->RegisterMediaSink(mRemoteVideoAdr.toStdString(), mRemoteVideoPort, mVideoSendSocket, true); // always use RTP/AVP profile (RTP/UDP)
         if (pRemoteAudioPort != 0)
-            tAudioSink = mAudioSourceMuxer->RegisterMediaSink(mRemoteAudioAdr.toStdString(), mRemoteAudioPort, SOCKET_UDP, true); // always use RTP/AVP profile (RTP/UDP)
+            tAudioSink = mAudioSourceMuxer->RegisterMediaSink(mRemoteAudioAdr.toStdString(), mRemoteAudioPort, mAudioSendSocket, true); // always use RTP/AVP profile (RTP/UDP)
 
         if (tVideoSink != NULL)
-            tVideoSink->AssignStreamName("MUX-relay: " + mSessionName.toStdString());
+            tVideoSink->AssignStreamName("CONF-OUT: " + mSessionName.toStdString());
         if (tAudioSink != NULL)
-            tAudioSink->AssignStreamName("MUX-relay: " + mSessionName.toStdString());
+            tAudioSink->AssignStreamName("CONF-OUT: " + mSessionName.toStdString());
 
         if (mVideoWidget != NULL)
-            mVideoWidget->GetWorker()->SetStreamName("VID-IN: " + mSessionName);
+            mVideoWidget->GetWorker()->SetStreamName("CONF-IN: " + mSessionName);
         if (mAudioWidget != NULL)
-            mAudioWidget->GetWorker()->SetStreamName("AUD-IN: " + mSessionName);
+            mAudioWidget->GetWorker()->SetStreamName("CONF-IN: " + mSessionName);
     }
 
     if (pRemoteVideoPort == 0)

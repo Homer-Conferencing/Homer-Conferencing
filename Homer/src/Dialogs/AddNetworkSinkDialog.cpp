@@ -81,7 +81,7 @@ void AddNetworkSinkDialog::CreateNewMediaSink()
     QString tPort = QString("%1").arg(mSbPort->value());
     enum TransportType tTransport = (enum TransportType)mCbTransport->currentIndex();
 
-    mMediaSource->RegisterMediaSink(tHost.toStdString(), tPort.toInt(), tTransport, mCbRtp->isChecked());
+    //TODO: mMediaSource->RegisterMediaSink(tHost.toStdString(), tPort.toInt(), tTransport, mCbRtp->isChecked());
 }
 
 void AddNetworkSinkDialog::SaveConfiguration()

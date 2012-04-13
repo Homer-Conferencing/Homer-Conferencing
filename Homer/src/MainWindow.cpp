@@ -665,7 +665,7 @@ void MainWindow::loadSettings()
         MEETING.SetVideoCodecsSupport(CODEC_MPEG4);
     if (tVideoStreamCodec == "THEORA")
         MEETING.SetVideoCodecsSupport(CODEC_THEORA);
-    MEETING.SetVideoTransportType(MEDIA_TRANSPORT_RTP_UDP);
+    MEETING.SetVideoTransportType(MEDIA_TRANSPORT_RTP_UDP); // always use RTP/AVP as profile (RTP/UDP)
 
     // init audio codec for network streaming, but only support ONE codec and not multiple
     QString tAudioStreamCodec = CONF.GetAudioCodec();
@@ -684,7 +684,7 @@ void MainWindow::loadSettings()
         MEETING.SetAudioCodecsSupport(CODEC_GSM);
     if (tAudioStreamCodec == "AMR")
         MEETING.SetAudioCodecsSupport(CODEC_AMR);
-    MEETING.SetAudioTransportType(MEDIA_TRANSPORT_RTP_UDP);
+    MEETING.SetAudioTransportType(MEDIA_TRANSPORT_RTP_UDP); // always use RTP/AVP as profile (RTP/UDP)
 
     LOG(LOG_VERBOSE, "..video/audio settings");
     QString tVideoStreamResolution = CONF.GetVideoResolution();
