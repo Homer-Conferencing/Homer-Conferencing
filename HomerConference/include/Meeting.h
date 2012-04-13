@@ -112,8 +112,10 @@ public:
 
     /* local I/O interfaces and state */
     bool IsLocalAddress(std::string pHost, std::string pPort);
-    Socket* GetAudioSocket(std::string pParticipant);
-    Socket* GetVideoSocket(std::string pParticipant);
+    Socket* GetAudioReceiveSocket(std::string pParticipant);
+    Socket* GetVideoReceiveSocket(std::string pParticipant);
+    Socket* GetAudioSendSocket(std::string pParticipant);
+    Socket* GetVideoSendSocket(std::string pParticipant);
     int GetCallState(std::string pParticipant);
     bool GetSessionInfo(std::string pParticipant, struct SessionInfo *pInfo);
     void GetOwnContactAddress(std::string pParticipant, std::string &pIp, unsigned int &pPort);
