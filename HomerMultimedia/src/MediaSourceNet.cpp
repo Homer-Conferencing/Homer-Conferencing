@@ -301,6 +301,11 @@ void MediaSourceNet::StopGrabbing()
     }
 }
 
+string MediaSourceNet::GetCurrentDevicePeerName()
+{
+	return MediaSinkNet::CreateId(mDataSocket->GetPeerHost(), toString(mDataSocket->GetPeerPort()));
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 }} //namespace

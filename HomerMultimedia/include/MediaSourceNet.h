@@ -79,6 +79,8 @@ public:
 
     virtual void* Run(void* pArgs = NULL);
 
+    virtual std::string GetCurrentDevicePeerName();
+
 private:
     void Init(Socket *pDataSocket, bool pRtpActivated = true);
 
