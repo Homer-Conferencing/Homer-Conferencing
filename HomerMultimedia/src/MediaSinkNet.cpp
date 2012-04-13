@@ -47,19 +47,22 @@ using namespace Homer::Monitor;
 using namespace Homer::Base;
 
 ///////////////////////////////////////////////////////////////////////////////
-
-MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, bool pTransmitLossLess, bool pTransmitBitErrors, enum MediaSinkType pType, bool pRtpActivated):
-    MediaSink(pType), RTP()
+void MediaSinkNet::BasicInit(enum MediaSinkType pType)
 {
-    mUseTCP = pTransmitLossLess;
     mCodec = "unknown";
     mStreamerOpened = false;
     mBrokenPipe = false;
     mMaxNetworkPacketSize = 1280;
-    mGAPIDataSocket = NULL;
     mCurrentStream = NULL;
     mWaitUntillFirstKeyFrame = (pType == MEDIA_SINK_VIDEO) ? true : false;
+}
 
+MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, bool pTransmitLossLess, bool pTransmitBitErrors, enum MediaSinkType pType, bool pRtpActivated):
+    MediaSink(pType), RTP()
+{
+    BasicInit(pType);
+    mUseTCP = pTransmitLossLess;
+    mGAPIDataSocket = NULL;
     mTargetHost = pTargetHost;
     mTargetPort = pTargetPort;
     mRtpActivated = pRtpActivated;
@@ -361,12 +364,7 @@ void MediaSinkNet::SendFragment(char* pData, unsigned int pSize)
         }
 
         AnnouncePacket(tFragmentSize);
-        mGAPIDataSocket->write(tFragmentData, (int)tFragmentSize);
-        if (mGAPIDataSocket->isClosed())
-        {
-            LOG(LOG_ERROR, "Error when sending data through %s socket to %s:%u, will skip further transmissions", GetTransportTypeStr().c_str(), mTargetHost.c_str(), mTargetPort);
-            mBrokenPipe = true;
-        }
+        DoSendFragment(tFragmentData, tFragmentSize);
 
         tFragmentData = tFragmentData + tFragmentSize;
         tFragmentCount--;
@@ -375,6 +373,16 @@ void MediaSinkNet::SendFragment(char* pData, unsigned int pSize)
             LOG(LOG_ERROR, "Something went wrong, we have too many fragments and would read over the last byte of the fragment buffer");
             return;
         }
+    }
+}
+
+void MediaSinkNet::DoSendFragment(char* pData, unsigned int pSize)
+{
+    mGAPIDataSocket->write(pData, (int)pSize);
+    if (mGAPIDataSocket->isClosed())
+    {
+        LOG(LOG_ERROR, "Error when sending data through %s socket to %s:%u, will skip further transmissions", GetTransportTypeStr().c_str(), mTargetHost.c_str(), mTargetPort);
+        mBrokenPipe = true;
     }
 }
 
