@@ -57,6 +57,11 @@ AddNetworkSinkDialog::~AddNetworkSinkDialog()
 void AddNetworkSinkDialog::initializeGUI()
 {
     setupUi(this);
+    if (!CONF.DebuggingEnabled())
+    {
+        mGbRequirements->hide();
+        mGbInterface->hide();
+    }
 }
 
 int AddNetworkSinkDialog::exec()
@@ -116,12 +121,18 @@ void AddNetworkSinkDialog::LoadConfiguration()
     {// video
         mCbRtp->setChecked(CONF.GetVideoRtp());
         tTransport = QString(Socket::TransportType2String(CONF.GetVideoTransportType()).c_str());
+
+        mSbPort->setValue(5000);
+        mSbDelay->setValue(250);
+        mSbDataRate->setValue(20);
     }else
     {// audio
         mCbRtp->setChecked(CONF.GetAudioRtp());
         tTransport = QString(Socket::TransportType2String(CONF.GetAudioTransportType()).c_str());
 
         mSbPort->setValue(5002);
+        mSbDelay->setValue(100);
+        mSbDataRate->setValue(8);
     }
 
     for (int i = 0; i < mCbTransport->count(); i++)
