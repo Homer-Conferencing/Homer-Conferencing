@@ -129,6 +129,7 @@ public:
     int GetVideoQuality();
     int GetVideoMaxPacketSize();
     enum Homer::Base::TransportType GetVideoTransportType();
+    QString GetVideoStreamingGAPIImpl();
     QString GetLocalVideoSource();
     int GetVideoFps();
     QString GetVideoResolution();
@@ -142,6 +143,7 @@ public:
     int GetAudioQuality();
     int GetAudioMaxPacketSize();
     enum Homer::Base::TransportType GetAudioTransportType();
+    QString GetAudioStreamingGAPIImpl();
     QString GetLocalAudioSource();
 
     /* playback settings */
@@ -261,6 +263,7 @@ private:
     void SetVideoQuality(int pQuality);
     void SetVideoMaxPacketSize(int pSize);
     void SetVideoTransport(enum Homer::Base::TransportType pType);
+    void SetVideoStreamingGAPIImpl(QString pImpl);
     void SetVideoResolution(QString pResolution);
     void SetLocalVideoSource(QString pVSource);
     void SetVideoFps(int pFps);
@@ -274,6 +277,7 @@ private:
     void SetAudioQuality(int pQuality);
     void SetAudioMaxPacketSize(int pSize);
     void SetAudioTransport(enum Homer::Base::TransportType pType);
+    void SetAudioStreamingGAPIImpl(QString pImpl);
     void SetLocalAudioSource(QString pASource);
 
     /* playback settings */

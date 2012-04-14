@@ -807,12 +807,12 @@ int MediaSource::GetChunkBufferCounter()
     return 0;
 }
 
-MediaSinkNet* MediaSource::RegisterMediaSink(string pTarget, Requirements pTransportRequirements, bool pRtpActivation, int pMaxFps)
+MediaSinkNet* MediaSource::RegisterMediaSink(string pTarget, Requirements *pTransportRequirements, bool pRtpActivation, int pMaxFps)
 {
     MediaSinksList::iterator tIt;
     bool tFound = false;
     MediaSinkNet *tResult = NULL;
-    string tId = pTarget + "[" + pTransportRequirements.getDescription() + "]" + (pRtpActivation ? "(RTP)" : "");
+    string tId = pTarget + "[" + pTransportRequirements->GetDescription() + "]" + (pRtpActivation ? "(RTP)" : "");
 
     if (pTarget == "")
     {
@@ -820,7 +820,7 @@ MediaSinkNet* MediaSource::RegisterMediaSink(string pTarget, Requirements pTrans
         return NULL;
     }
 
-    LOG(LOG_VERBOSE, "Registering GAPI based media sink: %s (Requirements: %s)", pTarget.c_str(), pTransportRequirements.getDescription().c_str());
+    LOG(LOG_VERBOSE, "Registering GAPI based media sink: %s (Requirements: %s)", pTarget.c_str(), pTransportRequirements->GetDescription().c_str());
 
     // lock
     mMediaSinksMutex.lock();
@@ -849,16 +849,16 @@ MediaSinkNet* MediaSource::RegisterMediaSink(string pTarget, Requirements pTrans
     return tResult;
 }
 
-bool MediaSource::UnregisterMediaSink(string pTarget, Requirements pTransportRequirements, bool pAutoDelete)
+bool MediaSource::UnregisterMediaSink(string pTarget, Requirements *pTransportRequirements, bool pAutoDelete)
 {
     bool tResult = false;
     MediaSinksList::iterator tIt;
-    string tId = pTarget + "[" + pTransportRequirements.getDescription() + "]";
+    string tId = pTarget + "[" + pTransportRequirements->GetDescription() + "]";
 
     if (pTarget == "")
         return false;
 
-    LOG(LOG_VERBOSE, "Unregistering GAPI based media sink: %s (Requirements: %s)", pTarget.c_str(), pTransportRequirements.getDescription().c_str());
+    LOG(LOG_VERBOSE, "Unregistering GAPI based media sink: %s (Requirements: %s)", pTarget.c_str(), pTransportRequirements->GetDescription().c_str());
 
     // lock
     mMediaSinksMutex.lock();

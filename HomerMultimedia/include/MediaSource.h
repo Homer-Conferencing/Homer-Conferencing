@@ -184,8 +184,8 @@ public:
     	MediaSinkNet* RegisterMediaSink(std::string pTargetHost, unsigned int pTargetPort, Socket* pSocket, bool pRtpActivation, int pMaxFps = 0 /* max. fps */);
     	bool UnregisterMediaSink(std::string pTargetHost, unsigned int pTargetPort, bool pAutoDelete = true);
 	// register/unregister: GAPI based network sinks
-    	MediaSinkNet* RegisterMediaSink(string pTarget, Requirements pTransportRequirements, bool pRtpActivation, int pMaxFps);
-    	bool UnregisterMediaSink(std::string pTarget, Requirements pTransportRequirements, bool pAutoDelete = true);
+    	MediaSinkNet* RegisterMediaSink(string pTarget, Requirements *pTransportRequirements, bool pRtpActivation, int pMaxFps = 0 /* max. fps */);
+    	bool UnregisterMediaSink(std::string pTarget, Requirements *pTransportRequirements, bool pAutoDelete = true);
 	// register/unregister: file based media sinks
     	MediaSinkFile* RegisterMediaSink(std::string pTargetFile);
     	bool UnregisterMediaSink(std::string pTargetFile, bool pAutoDelete = true);
