@@ -29,6 +29,7 @@
 #include <Logger.h>
 #include <Meeting.h>
 
+#include <Berkeley/SocketSetup.h>
 #include <QString>
 #include <QHostInfo>
 #include <QDir>
@@ -278,6 +279,13 @@ void Configuration::SetVideoTransport(enum TransportType pType)
     mQSettings->endGroup();
 }
 
+void Configuration::SetVideoStreamingGAPIImpl(QString pImpl)
+{
+    mQSettings->beginGroup("Streaming");
+    mQSettings->setValue("VideoStreamGAPIImpl", pImpl);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetVideoResolution(QString pResolution)
 {
     mQSettings->beginGroup("Streaming");
@@ -352,6 +360,13 @@ void Configuration::SetAudioTransport(enum TransportType pType)
 {
     mQSettings->beginGroup("Streaming");
     mQSettings->setValue("AudioStreamTransportType", QString(Socket::TransportType2String(pType).c_str()));
+    mQSettings->endGroup();
+}
+
+void Configuration::SetAudioStreamingGAPIImpl(QString pImpl)
+{
+    mQSettings->beginGroup("Streaming");
+    mQSettings->setValue("AudioStreamGAPIImpl", pImpl);
     mQSettings->endGroup();
 }
 
@@ -796,6 +811,11 @@ enum TransportType Configuration::GetVideoTransportType()
     return Socket::String2TransportType(mQSettings->value("Streaming/VideoStreamTransportType", QString("UDP")).toString().toStdString());
 }
 
+QString Configuration::GetVideoStreamingGAPIImpl()
+{
+    return mQSettings->value("Streaming/VideoStreamGAPIImpl", QString(BERKEYLEY_SOCKETS)).toString();
+}
+
 QString Configuration::GetVideoResolution()
 {
     return mQSettings->value("Streaming/VideoStreamResolution", QString("352*288")).toString();
@@ -849,6 +869,11 @@ int Configuration::GetAudioMaxPacketSize()
 enum TransportType Configuration::GetAudioTransportType()
 {
     return Socket::String2TransportType(mQSettings->value("Streaming/AudioStreamTransportType", QString("UDP")).toString().toStdString());
+}
+
+QString Configuration::GetAudioStreamingGAPIImpl()
+{
+    return mQSettings->value("Streaming/AudioStreamGAPIImpl", QString(BERKEYLEY_SOCKETS)).toString();
 }
 
 int Configuration::GetVideoAudioStartPort()

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>394</width>
-    <height>380</height>
+    <width>406</width>
+    <height>383</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -301,6 +301,9 @@
              <property name="text">
               <string>Guaranteed data rate:</string>
              </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
             </widget>
            </item>
            <item>
@@ -396,6 +399,9 @@
              </property>
              <property name="text">
               <string>Maximum overall delay:</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
              </property>
             </widget>
            </item>
@@ -560,7 +566,7 @@
             </spacer>
            </item>
            <item>
-            <widget class="QComboBox" name="comboBox">
+            <widget class="QComboBox" name="mCbGAPIImpl">
              <property name="font">
               <font>
                <weight>50</weight>
@@ -570,11 +576,6 @@
              <item>
               <property name="text">
                <string>Berkeley Sockets</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>HRM simulation</string>
               </property>
              </item>
             </widget>

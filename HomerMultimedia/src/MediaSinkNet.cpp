@@ -34,7 +34,8 @@
 #include <HBSocket.h>
 #include <HBTime.h>
 #include <Logger.h>
-#include <SocketName.h>
+#include <Berkeley/SocketName.h>
+#include <RequirementTargetPort.h>
 
 #include <string>
 
@@ -63,69 +64,46 @@ void MediaSinkNet::BasicInit(string pTargetHost, unsigned int pTargetPort, enum 
     mWaitUntillFirstKeyFrame = (pType == MEDIA_SINK_VIDEO) ? true : false;
 }
 
-MediaSinkNet::MediaSinkNet(string pTarget, Requirements pTransportRequirements, enum MediaSinkType pType, bool pRtpActivated):
-//TODO: MediaSinkNet::MediaSinkNet(string pTarget, unsigned int pTargetPort, bool pTransmitLossLess, bool pTransmitBitErrors, enum MediaSinkType pType, bool pRtpActivated):
+MediaSinkNet::MediaSinkNet(string pTarget, Requirements *pTransportRequirements, enum MediaSinkType pType, bool pRtpActivated):
     MediaSink(pType), RTP()
 {
     BasicInit(pTarget, 0, pType, pRtpActivated);
     mGAPIUsed = true;
-//    mStreamedTransport = pTransmitLossLess;
-//    if (mStreamedTransport)
-//    	mStreamFragmentCopyBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
 
-//    enum TransportType tTransportType = (pTransmitLossLess ? SOCKET_TCP : (pTransmitBitErrors ? SOCKET_UDP_LITE : SOCKET_UDP));
-//    enum NetworkType tNetworkType = (IS_IPV6_ADDRESS(pTarget)) ? SOCKET_IPv6 : SOCKET_IPv4;
-//
-//    if ((mTargetHost != "") && (mTargetPort != 0))
-//    {
-//        LOG(LOG_VERBOSE, "Remote media sink at: %s<%d>%s", pTarget.c_str(), pTargetPort, mRtpActivated ? "(RTP)" : "");
-//
-//        SocketName tDataTarget(mTargetHost, mTargetPort);
-//        Requirements tRequs;
-//
-//        // Requirement network
-//        if(IS_IPV6_ADDRESS(pTarget))
-//            tRequs.add(new RequirementUseIPv6());
-//
-//        // REquirement transport
-//        if (pTransmitLossLess)
-//        {//TCP-like
-//            tRequs.add(new RequirementTransmitLossless());
-//            tRequs.add(new RequirementTransmitFast());
-//            tRequs.add(new RequirementWaterfallTransmission());
-//        }else
-//        {//UDP-like
-//            tRequs.add(new RequirementTransmitChunks());
-//
-//            //extend to UDP-Lite
-//            if(pTransmitBitErrors)
-//                tRequs.add(new RequirementTransmitBitErrors(UDP_LITE_HEADER_SIZE + RTP_HEADER_SIZE));
-//        }
-//
-//        // Requirement QoS
-//        switch(pType)
-//        {
-//            case MEDIA_SINK_VIDEO:
-//                ClassifyStream(DATA_TYPE_VIDEO, tTransportType, tNetworkType);
-//                tRequs.add(new RequirementLimitDelay(250)); //max. 250 ms
-//                tRequs.add(new RequirementLimitDataRate(20, 100)); //min. 20 KB/s
-//                break;
-//            case MEDIA_SINK_AUDIO:
-//                ClassifyStream(DATA_TYPE_AUDIO, tTransportType, tNetworkType);
-//                tRequs.add(new RequirementLimitDelay(100)); //100 ms
-//                tRequs.add(new RequirementLimitDataRate(8, 40)); //min. 8 KB/s
-//                break;
-//            default:
-//                LOG(LOG_ERROR, "Undefined media type");
-//                break;
-//        }
-//
-//        // finally subscribe to the target server/service
-//        mGAPIDataSocket = GAPI.subscribe(&tDataTarget, &tRequs); //new Socket(IS_IPV6_ADDRESS(pTargetHost) ? SOCKET_IPv6 : SOCKET_IPv4, pSocketType);
-//    }
-//
-//    mMediaId = CreateId(pTargetHost, toString(pTargetPort), tTransportType, pRtpActivated);
-//    AssignStreamName("NET-OUT: " + mMediaId);
+    // get target port
+    unsigned int tTargetPort = 0;
+    RequirementTargetPort *tRequPort = (RequirementTargetPort*)pTransportRequirements->Get(RequirementTargetPort::type());
+    if (tRequPort != NULL)
+    {
+        tTargetPort = tRequPort->GetPort();
+
+    }else
+    {
+        LOG(LOG_WARN, "No target port given within requirement set, falling back to port 0");
+        tTargetPort = 0;
+    }
+    mTargetPort = tTargetPort;
+
+    // get target host
+    mTargetHost = pTarget;
+
+    // get transport type
+    mStreamedTransport = (pTransportRequirements->Contains(RequirementTransmitLossless::type()) || pTransportRequirements->Contains(RequirementTransmitStream::type()));
+    enum TransportType tTransportType = (mStreamedTransport ? SOCKET_TCP : (pTransportRequirements->Contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
+    if (mStreamedTransport)
+    	mStreamFragmentCopyBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
+
+    // call GAPI
+    if (mTargetHost != "")
+    {
+        LOG(LOG_VERBOSE, "Remote media sink at: %s<%d>%s", mTargetHost.c_str(), tTargetPort, mRtpActivated ? "(RTP)" : "");
+
+        // finally subscribe to the target server/service
+        mGAPIDataSocket = GAPI.subscribe(new Name(pTarget), pTransportRequirements); //new Socket(IS_IPV6_ADDRESS(pTargetHost) ? SOCKET_IPv6 : SOCKET_IPv4, pSocketType);
+    }
+
+    mMediaId = CreateId(mTargetHost, toString(mTargetPort), tTransportType, pRtpActivated);
+    AssignStreamName("NET-OUT: " + mMediaId);
 }
 
 MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, Socket* pSocket, enum MediaSinkType pType, bool pRtpActivated):
@@ -354,7 +332,7 @@ void MediaSinkNet::SendFragment(char* pData, unsigned int pSize)
 {
     if ((mTargetHost == "") || (mTargetPort == 0))
     {
-        LOG(LOG_ERROR, "Remote network address invalid");
+        LOG(LOG_ERROR, "Remote network address invalid: %s:%u", mTargetHost.c_str(), mTargetPort);
         return;
     }
     if (mBrokenPipe)
