@@ -45,17 +45,17 @@ Requirements::Requirements()
 
 Requirements::~Requirements()
 {
-    removeAll();
+    RemoveAll();
 }
 
 Requirements::Requirements(Requirements &pCopy)
 {
-    add(pCopy.getAll());
+    Add(pCopy.GetAll());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-string Requirements::getDescription()
+string Requirements::GetDescription()
 {
     std::string tResult = "";
     RequirementSet::iterator tIt;
@@ -66,7 +66,7 @@ string Requirements::getDescription()
     for(tIt = mRequirementSet.begin(); tIt != mRequirementSet.end(); tIt++)
     {
         tRemainingRequs--;
-        tResult += (*tIt)->getDescription();
+        tResult += (*tIt)->GetDescription();
         if(tRemainingRequs > 0)
         {
             tResult += ",";
@@ -102,19 +102,19 @@ string Requirements::getDescription()
 //    return *tResult;
 //}
 //
-bool Requirements::add(IRequirement *pAddRequ)
+bool Requirements::Add(IRequirement *pAddRequ)
 {
     bool tResult = true;
     RequirementSet::iterator tIt;
 
-    LOG(LOG_VERBOSE, "Adding requirement %s", pAddRequ->getDescription().c_str());
+    LOG(LOG_VERBOSE, "Adding requirement %s", pAddRequ->GetDescription().c_str());
 
     mRequirementSetMutex.lock();
 
     // do we already know this type of requirement?
     for(tIt = mRequirementSet.begin(); tIt != mRequirementSet.end(); tIt++)
     {
-        if((*tIt)->getType() == pAddRequ->getType())
+        if((*tIt)->GetType() == pAddRequ->GetType())
         {
             tResult = false;
             LOG(LOG_WARN, "Requirement is a duplicate of an already known");
@@ -132,7 +132,7 @@ bool Requirements::add(IRequirement *pAddRequ)
     return tResult;
 }
 
-void Requirements::add(RequirementSet pSet)
+void Requirements::Add(RequirementSet pSet)
 {
     RequirementSet::iterator tIt;
 
@@ -146,7 +146,7 @@ void Requirements::add(RequirementSet pSet)
     mRequirementSetMutex.unlock();
 }
 
-bool Requirements::contains(int pType)
+bool Requirements::Contains(int pType)
 {
     bool tResult = false;
     RequirementSet::iterator tIt;
@@ -155,7 +155,7 @@ bool Requirements::contains(int pType)
 
     for(tIt = mRequirementSet.begin(); tIt != mRequirementSet.end(); tIt++)
     {
-        if((*tIt)->getType() == pType)
+        if((*tIt)->GetType() == pType)
         {
             tResult = true;
         }
@@ -166,7 +166,7 @@ bool Requirements::contains(int pType)
     return tResult;
 }
 
-IRequirement* Requirements::get(int pType)
+IRequirement* Requirements::Get(int pType)
 {
     IRequirement* tResult = NULL;
     RequirementSet::iterator tIt;
@@ -175,7 +175,7 @@ IRequirement* Requirements::get(int pType)
 
     for(tIt = mRequirementSet.begin(); tIt != mRequirementSet.end(); tIt++)
     {
-        if((*tIt)->getType() == pType)
+        if((*tIt)->GetType() == pType)
         {
             // return first occurrence
             tResult = (*tIt);
@@ -188,12 +188,12 @@ IRequirement* Requirements::get(int pType)
     return tResult;
 }
 
-RequirementSet Requirements::getAll()
+RequirementSet Requirements::GetAll()
 {
     return mRequirementSet;
 }
 
-void Requirements::removeAll()
+void Requirements::RemoveAll()
 {
     LOG(LOG_VERBOSE, "Removing stored requirements");
 

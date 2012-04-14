@@ -38,7 +38,7 @@ class RequirementTransmitChunks:
     public TRequirement<RequirementTransmitChunks, REQUIREMENT_TRANSMIT_CHUNKS>
 {
 public:
-    virtual std::string getDescription(){ return "Requ(TransmitChunks)"; }
+    virtual std::string GetDescription(){ return "Requ(TransmitChunks)"; }
 };
 
 ///////////////////////////////////////////////////////////////////////////////

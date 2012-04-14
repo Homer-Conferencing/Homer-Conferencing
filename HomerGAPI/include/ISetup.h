@@ -28,7 +28,7 @@
 #ifndef _GAPI_ISETUP_
 #define _GAPI_ISETUP_
 
-#include <IName.h>
+#include <Name.h>
 #include <ISubscription.h>
 #include <IRegistration.h>
 #include <Requirements.h>
@@ -43,8 +43,8 @@ public:
 	ISetup(){ }
     virtual ~ISetup( ){ }
 
-    virtual ISubscription* subscribe(IName *pName, Requirements *pRequirements = 0) = 0;
-    virtual IRegistration* publish(IName *pName, Requirements *pRequirements = 0) = 0;
+    virtual ISubscription* subscribe(Name *pName, Requirements *pRequirements = 0) = 0;
+    virtual IRegistration* publish(Name *pName, Requirements *pRequirements = 0) = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

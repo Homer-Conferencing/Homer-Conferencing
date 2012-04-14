@@ -20,30 +20,43 @@
  *****************************************************************************/
 
 /*
- * Purpose: SocketSetup
+ * Purpose: ISubscription
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
 
-#ifndef _GAPI_SOCKET_SETUP_
-#define _GAPI_SOCKET_SETUP_
+#ifndef _GAPI_SOCKET_SUBSCRIPTION_
+#define _GAPI_SOCKET_SUBSCRIPTION_
 
-#include <SocketName.h>
-#include <ISetup.h>
+#include <HBSocket.h>
+
+#include <Requirements.h>
 
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class SocketSetup:
-	public ISetup
+class SocketSubscription:
+	public ISubscription
 {
 public:
-	SocketSetup();
-    virtual ~SocketSetup();
+	SocketSubscription(std::string pTarget, Requirements *pRequirements);
+    virtual ~SocketSubscription( );
 
-    virtual ISubscription* subscribe(IName *pName, Requirements *pRequirements = 0);
-    virtual IRegistration* publish(IName *pName, Requirements *pRequirements = 0);
+    virtual bool isClosed();
+    virtual void read(char* pBuffer, int &pBufferSize);
+    virtual void write(char* pBuffer, int pBufferSize);
+    virtual void cancel();
+    virtual Name* name();
+    virtual Name* peer();
+    virtual bool update(Requirements *pRequirements);
+
+private:
+    int 		mSocketHandle;
+    Socket		*mSocket;
+    bool        mIsClosed;
+    std::string mTargetHost;
+    unsigned int mTargetPort;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -35,16 +35,15 @@ namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// network attributes
-#define REQUIREMENT_USE_IPv6                            0x0006
+// address attributes
+#define REQUIREMENT_TARGET_PORT                         0x0001
 
 // transport attributes
 #define REQUIREMENT_TRANSMIT_LOSLESS                    0x0101
 #define REQUIREMENT_TRANSMIT_CHUNKS                     0x0102
-#define REQUIREMENT_TRANSMIT_WATERFALL                  0x0103
+#define REQUIREMENT_TRANSMIT_STREAM                     0x0103
 #define REQUIREMENT_TRANSMIT_BIT_ERRORS                 0x0104
-#define REQUIREMENT_TRANSMIT_FAST                       0x0105
-#define REQUIREMENT_TRANSMIT_ORDERED                    0x0106
+#define REQUIREMENT_TRANSMIT_ORDERED                    0x0105
 
 // QoS/throughput attributes
 #define REQUIREMENT_LIMIT_DELAY                         0x0201
@@ -67,8 +66,8 @@ public:
 
     }
 
-    virtual std::string getDescription() = 0;
-    virtual int getType()const
+    virtual std::string GetDescription() = 0;
+    virtual int GetType()const
     {
         return mType;
     }

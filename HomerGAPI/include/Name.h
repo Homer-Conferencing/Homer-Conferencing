@@ -20,25 +20,30 @@
  *****************************************************************************/
 
 /*
- * Purpose: RequirementChunksTransmission to trigger UDP based transport
+ * Purpose: Name
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
 
-#ifndef _GAPI_REQUIREMENT_USE_IPv6_
-#define _GAPI_REQUIREMENT_USE_IPv6_
+#ifndef _GAPI_NAME_
+#define _GAPI_NAME_
 
-#include <IRequirement.h>
+#include <string>
 
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class RequirementUseIPv6:
-    public TRequirement<RequirementUseIPv6, REQUIREMENT_USE_IPv6>
+class Name
 {
 public:
-    virtual std::string getDescription(){ return "Requ(UseIPv6)"; }
+	Name(std::string pName):mName(pName){ }
+    virtual ~Name(){ }
+
+    virtual std::string toString(){ return mName; }
+
+private:
+    std::string mName;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

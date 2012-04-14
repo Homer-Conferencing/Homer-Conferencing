@@ -26,13 +26,13 @@
  */
 
 #include <GAPI.h>
-#include <SocketName.h>
-#include <SocketSubscription.h>
-#include <RequirementUseIPv6.h>
+#include <Berkeley/SocketName.h>
+#include <Berkeley/SocketSubscription.h>
 #include <RequirementTransmitLossless.h>
 #include <RequirementTransmitChunks.h>
-#include <RequirementTransmitWaterfall.h>
+#include <RequirementTransmitStream.h>
 #include <RequirementTransmitBitErrors.h>
+#include <RequirementTargetPort.h>
 #include <RequirementLimitDelay.h>
 #include <RequirementLimitDataRate.h>
 
@@ -48,42 +48,43 @@ namespace Homer { namespace Base {
 using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
-
-SocketSubscription::SocketSubscription(std::string pTargetHost, unsigned int pTargetPort, Requirements *pRequirements)
+//HINT: lossless transmission is not implemented by using TCP but by rely on a reaction by the network
+SocketSubscription::SocketSubscription(std::string pTarget, Requirements *pRequirements)
 {
     bool tFoundTransport = false;
 
-    mTargetHost = pTargetHost;
-    mTargetPort = pTargetPort;
+    mTargetHost = pTarget;
+    RequirementTargetPort *tRequPort = (RequirementTargetPort*)pRequirements->Get(RequirementTargetPort::type());
+    if (tRequPort != NULL)
+    {
+        mTargetPort = tRequPort->GetPort();
+
+    }else
+    {
+        LOG(LOG_WARN, "No target port given within requirement set, falling back to port 0");
+        mTargetPort = 0;
+    }
     mIsClosed = true;
 
 
     /* network requirements */
-    bool tIPv6 = pRequirements->contains(RequirementUseIPv6::type());
+    bool tIPv6 = IS_IPV6_ADDRESS(pTarget);
 
     /* transport requirements */
-    if ((pRequirements->contains(RequirementTransmitChunks::type())) && (pRequirements->contains(RequirementWaterfallTransmission::type())))
+    if ((pRequirements->Contains(RequirementTransmitChunks::type())) && (pRequirements->Contains(RequirementTransmitStream::type())))
     {
         LOG(LOG_ERROR, "Detected requirement conflict between \"Req:Chunks\" and \"Req:Waterfall\"");
     }
 
-    if ((pRequirements->contains(RequirementTransmitLossless::type())) && (!pRequirements->contains(RequirementWaterfallTransmission::type())))
-    {
-        LOG(LOG_ERROR, "Detected requirement conflict between \"Req:Lossless\" and \"Req:!Waterfall\"");
-    }
+    bool tTcp = (((!pRequirements->Contains(RequirementTransmitChunks::type())) &&
+                (pRequirements->Contains(RequirementTransmitStream::type()))));
 
-    bool tTcp = ((pRequirements->contains(RequirementTransmitLossless::type())) ||
-                ((!pRequirements->contains(RequirementTransmitChunks::type())) &&
-                (pRequirements->contains(RequirementWaterfallTransmission::type()))));
+    bool tUdp = ((pRequirements->Contains(RequirementTransmitChunks::type())) &&
+                (!pRequirements->Contains(RequirementTransmitStream::type())));
 
-    bool tUdp = ((!pRequirements->contains(RequirementTransmitLossless::type())) &&
-                (pRequirements->contains(RequirementTransmitChunks::type())) &&
-                (!pRequirements->contains(RequirementWaterfallTransmission::type())));
-
-    bool tUdpLite = ((!pRequirements->contains(RequirementTransmitLossless::type())) &&
-                    (pRequirements->contains(RequirementTransmitChunks::type())) &&
-                    (!pRequirements->contains(RequirementWaterfallTransmission::type())) &&
-                    (pRequirements->contains(RequirementTransmitBitErrors::type())));
+    bool tUdpLite = ((pRequirements->Contains(RequirementTransmitChunks::type())) &&
+                    (!pRequirements->Contains(RequirementTransmitStream::type())) &&
+                    (pRequirements->Contains(RequirementTransmitBitErrors::type())));
 
     if (tTcp)
     {
@@ -165,7 +166,7 @@ void SocketSubscription::cancel()
     }
 }
 
-IName* SocketSubscription::name()
+Name* SocketSubscription::name()
 {
     if(mSocket != NULL)
     {
@@ -176,7 +177,7 @@ IName* SocketSubscription::name()
     }
 }
 
-IName* SocketSubscription::peer()
+Name* SocketSubscription::peer()
 {
     if(mSocket != NULL)
     {
@@ -192,15 +193,11 @@ bool SocketSubscription::update(Requirements *pRequirements)
     bool tResult = false;
 
     /* additional transport requirements */
-    if (pRequirements->contains(RequirementTransmitBitErrors::type()))
+    if (pRequirements->Contains(RequirementTransmitBitErrors::type()))
     {
-        RequirementTransmitBitErrors* tReqBitErr = (RequirementTransmitBitErrors*)pRequirements->get(RequirementTransmitBitErrors::type());
-        int tSecuredFrontDataSize = tReqBitErr->getSecuredFrontDataSize();
+        RequirementTransmitBitErrors* tReqBitErr = (RequirementTransmitBitErrors*)pRequirements->Get(RequirementTransmitBitErrors::type());
+        int tSecuredFrontDataSize = tReqBitErr->GetSecuredFrontDataSize();
         mSocket->UDPLiteSetCheckLength(tSecuredFrontDataSize);
-    }
-    if (pRequirements->contains(RequirementTransmitFast::type()))
-    {
-        mSocket->TCPDisableNagle();
     }
 
     /* QoS requirements */
@@ -208,19 +205,19 @@ bool SocketSubscription::update(Requirements *pRequirements)
     int tMinDataRate = 0;
     int tMaxDataRate = 0;
     // get lossless transmission activation
-    bool tLossless = pRequirements->contains(RequirementTransmitLossless::type());
+    bool tLossless = pRequirements->Contains(RequirementTransmitLossless::type());
     // get delay values
-    if(pRequirements->contains(RequirementLimitDelay::type()))
+    if(pRequirements->Contains(RequirementLimitDelay::type()))
     {
-        RequirementLimitDelay* tReqDelay = (RequirementLimitDelay*)pRequirements->get(RequirementLimitDelay::type());
-        tMaxDelay = tReqDelay->getMaxDelay();
+        RequirementLimitDelay* tReqDelay = (RequirementLimitDelay*)pRequirements->Get(RequirementLimitDelay::type());
+        tMaxDelay = tReqDelay->GetMaxDelay();
     }
     // get data rate values
-    if(pRequirements->contains(RequirementLimitDataRate::type()))
+    if(pRequirements->Contains(RequirementLimitDataRate::type()))
     {
-        RequirementLimitDataRate* tReqDataRate = (RequirementLimitDataRate*)pRequirements->get(RequirementLimitDataRate::type());
-        tMinDataRate = tReqDataRate->getMinDataRate();
-        tMaxDataRate = tReqDataRate->getMaxDataRate();
+        RequirementLimitDataRate* tReqDataRate = (RequirementLimitDataRate*)pRequirements->Get(RequirementLimitDataRate::type());
+        tMinDataRate = tReqDataRate->GetMinDataRate();
+        tMaxDataRate = tReqDataRate->GetMaxDataRate();
     }
 
     if((tLossless) || (tMaxDelay) || (tMinDataRate))

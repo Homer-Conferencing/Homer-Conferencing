@@ -38,7 +38,7 @@ class RequirementTransmitOrdered:
     public TRequirement<RequirementTransmitOrdered, REQUIREMENT_TRANSMIT_ORDERED>
 {
 public:
-    virtual std::string getDescription(){ return "Requ(TransmitOrdered)"; }
+    virtual std::string GetDescription(){ return "Requ(TransmitOrdered)"; }
 };
 
 ///////////////////////////////////////////////////////////////////////////////

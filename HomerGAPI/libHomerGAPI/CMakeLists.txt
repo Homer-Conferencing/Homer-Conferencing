@@ -40,9 +40,11 @@ SET (FLAGS
 SET (SOURCES
 	../src/GAPI
 	../src/Requirements
-	../src/SocketName
-	../src/SocketSetup
-	../src/SocketSubscription
+	../src/Berkeley/SocketName
+	../src/Berkeley/SocketSetup
+	../src/Berkeley/SocketSubscription
+	../src/Simulation/ChannelSetup
+	../src/Simulation/ChannelSubscription
 )
 
 ##############################################################
