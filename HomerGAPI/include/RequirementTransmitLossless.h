@@ -38,7 +38,7 @@ class RequirementTransmitLossless:
     public TRequirement<RequirementTransmitLossless, REQUIREMENT_TRANSMIT_LOSLESS>
 {
 public:
-    virtual std::string getDescription(){ return "Requ(TransmitLossless)"; }
+    virtual std::string GetDescription(){ return "Requ(TransmitLossless)"; }
 };
 
 ///////////////////////////////////////////////////////////////////////////////

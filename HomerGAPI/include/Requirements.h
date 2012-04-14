@@ -29,12 +29,12 @@
 #define _GAPI_REQUIREMENTS_
 
 // to simplify including of all requirements
-#include <RequirementUseIPv6.h>
 #include <RequirementTransmitLossless.h>
 #include <RequirementTransmitChunks.h>
-#include <RequirementTransmitWaterfall.h>
+#include <RequirementTransmitStream.h>
 #include <RequirementTransmitBitErrors.h>
-#include <RequirementTransmitFast.h>
+#include <RequirementTargetPort.h>
+#include <RequirementTransmitOrdered.h>
 #include <RequirementLimitDelay.h>
 #include <RequirementLimitDataRate.h>
 
@@ -58,7 +58,7 @@ public:
     Requirements(Requirements &pCopy);
     virtual ~Requirements();
 
-    virtual std::string getDescription();
+    virtual std::string GetDescription();
 
     /* overloaded operators */
 //    void operator+=(IRequirement pAddRequ);
@@ -67,16 +67,16 @@ public:
 //    Requirements& operator|(IRequirement pAddRequ);
 
     /* set manipulation */
-    bool add(IRequirement *pRequ);
+    bool Add(IRequirement *pRequ);
 
     /* query functions */
-    bool contains(int pType);
-    IRequirement* get(int pType);
+    bool Contains(int pType);
+    IRequirement* Get(int pType);
 
 private:
-    void add(RequirementSet pSet);
-    RequirementSet getAll();
-    void removeAll();
+    void Add(RequirementSet pSet);
+    RequirementSet GetAll();
+    void RemoveAll();
 
     RequirementSet      mRequirementSet;
     Mutex               mRequirementSetMutex;

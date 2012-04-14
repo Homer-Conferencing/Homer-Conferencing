@@ -40,10 +40,10 @@ class RequirementLimitDataRate:
 public:
     RequirementLimitDataRate(int pMinDataRate, int pMaxDataRate):mMinDataRate(pMinDataRate), mMaxDataRate(pMaxDataRate){}
 
-    virtual std::string getDescription(){ return "Requ(LimitDataRate[" + toString(mMinDataRate) + "," + toString(mMaxDataRate) + "])"; }
+    virtual std::string GetDescription(){ return "Requ(LimitDataRate[" + toString(mMinDataRate) + "," + toString(mMaxDataRate) + "])"; }
 
-    int getMinDataRate(){ return mMinDataRate; }
-    int getMaxDataRate(){ return mMaxDataRate; }
+    int GetMinDataRate(){ return mMinDataRate; }
+    int GetMaxDataRate(){ return mMaxDataRate; }
 private:
     int     mMinDataRate, mMaxDataRate;
 };

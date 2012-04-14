@@ -20,31 +20,48 @@
  *****************************************************************************/
 
 /*
- * Purpose: IName
+ * Purpose: Implementation of G-Lab API
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
 
-#ifndef _GAPI_INAME_
-#define _GAPI_INAME_
+#include <GAPI.h>
+#include <Berkeley/SocketSetup.h>
+#include <Berkeley/SocketSubscription.h>
+
+#include <Logger.h>
 
 #include <string>
 
 namespace Homer { namespace Base {
 
+using namespace std;
+
 ///////////////////////////////////////////////////////////////////////////////
 
-class IName
+SocketSetup::SocketSetup()
 {
-public:
-	IName(){}
-    virtual ~IName(){}
+}
 
-    virtual std::string toString() = 0;
-};
+SocketSetup::~SocketSetup()
+{
+
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
-}} // namespaces
+ISubscription* SocketSetup::subscribe(Name *pName, Requirements *pRequirements)
+{
+	return new SocketSubscription(pName->toString(), pRequirements);
+}
 
-#endif
+IRegistration* SocketSetup::publish(Name *pName, Requirements *pRequirements)
+{
+	//TODO:
+	return 0;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+}} //namespace

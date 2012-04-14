@@ -20,35 +20,31 @@
  *****************************************************************************/
 
 /*
- * Purpose: SocketName
+ * Purpose: RequirementLimitDelay
  * Author:  Thomas Volkert
- * Since:   2011-12-08
+ * Since:   2011-12-10
  */
 
-#ifndef _GAPI_SOCKET_NAME_
-#define _GAPI_SOCKET_NAME_
+#ifndef _GAPI_REQUIREMENT_TARGET_PORT_
+#define _GAPI_REQUIREMENT_TARGET_PORT_
 
-#include <IName.h>
-
-#include <string>
+#include <IRequirement.h>
 
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class SocketName:
-    public IName
+class RequirementTargetPort:
+    public TRequirement<RequirementTargetPort, REQUIREMENT_TARGET_PORT>
 {
 public:
-	SocketName(std::string pHost, unsigned int pPort);
-    virtual ~SocketName();
+    RequirementTargetPort(int pPort):mPort(pPort){}
 
-    virtual std::string toString();
-    virtual std::string getHost();
-    virtual unsigned int getPort();
+    virtual std::string GetDescription(){ return "Requ(TargetPort[" + toString(mPort) + "])"; }
+
+    int GetPort(){ return mPort; }
 private:
-    std::string		mHost;
-    unsigned int    mPort;
+    int     mPort;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -20,47 +20,60 @@
  *****************************************************************************/
 
 /*
- * Purpose: ISubscription
+ * Purpose: Implementation of G-Lab API
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
 
-#ifndef _GAPI_SOCKET_SUBSCRIPTION_
-#define _GAPI_SOCKET_SUBSCRIPTION_
+#include <GAPI.h>
+#include <Berkeley/SocketName.h>
 
-#include <HBSocket.h>
+#include <Logger.h>
 
-#include <Requirements.h>
+#include <string>
 
 namespace Homer { namespace Base {
 
+using namespace std;
+
 ///////////////////////////////////////////////////////////////////////////////
 
-class SocketSubscription:
-	public ISubscription
+SocketName::SocketName(string pHost, unsigned int pPort):
+	Name(pHost), mHost(pHost), mPort(pPort)
 {
-public:
-	SocketSubscription(std::string pTargetHost, unsigned int pTargetPort, Requirements *pRequirements);
-    virtual ~SocketSubscription( );
 
-    virtual bool isClosed();
-    virtual void read(char* pBuffer, int &pBufferSize);
-    virtual void write(char* pBuffer, int pBufferSize);
-    virtual void cancel();
-    virtual IName* name();
-    virtual IName* peer();
-    virtual bool update(Requirements *pRequirements);
+}
 
-private:
-    int 		mSocketHandle;
-    Socket		*mSocket;
-    bool        mIsClosed;
-    std::string mTargetHost;
-    unsigned int mTargetPort;
-};
+SocketName::~SocketName()
+{
+
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
-}} // namespaces
+template <typename T>
+inline std::string dataToString(T const& value_)
+{
+    std::stringstream ss;
+    ss << value_;
+    return ss.str();
+}
 
-#endif
+string SocketName::toString()
+{
+	return mHost + "<" + dataToString(mPort) + ">";
+}
+
+std::string SocketName::GetHost()
+{
+    return mHost;
+}
+
+unsigned int SocketName::GetPort()
+{
+    return mPort;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+}} //namespace

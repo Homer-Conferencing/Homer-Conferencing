@@ -20,13 +20,13 @@
  *****************************************************************************/
 
 /*
- * Purpose: RequirementWaterfallTransmission to trigger TCP based transport
+ * Purpose: RequirementTransmitStream to trigger stream based transport
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
 
-#ifndef _GAPI_REQUIREMENT_TRANSMIT_WATERFALL_
-#define _GAPI_REQUIREMENT_TRANSMIT_WATERFALL_
+#ifndef _GAPI_REQUIREMENT_TRANSMIT_STREAM_
+#define _GAPI_REQUIREMENT_TRANSMIT_STREAM_
 
 #include <IRequirement.h>
 
@@ -34,11 +34,11 @@ namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class RequirementWaterfallTransmission:
-    public TRequirement<RequirementWaterfallTransmission, REQUIREMENT_TRANSMIT_WATERFALL>
+class RequirementTransmitStream:
+    public TRequirement<RequirementTransmitStream, REQUIREMENT_TRANSMIT_STREAM>
 {
 public:
-    virtual std::string getDescription(){ return "Requ(TransmitWaterfall)"; }
+    virtual std::string GetDescription(){ return "Requ(TransmitStream)"; }
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -20,49 +20,39 @@
  *****************************************************************************/
 
 /*
- * Purpose: Implementation of G-Lab API
+ * Purpose: SocketName
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
 
-#include <GAPI.h>
-#include <SocketSetup.h>
-#include <SocketSubscription.h>
+#ifndef _GAPI_SOCKET_NAME_
+#define _GAPI_SOCKET_NAME_
 
-#include <Logger.h>
+#include <Name.h>
 
 #include <string>
 
 namespace Homer { namespace Base {
 
-using namespace std;
+///////////////////////////////////////////////////////////////////////////////
+
+class SocketName:
+    public Name
+{
+public:
+	SocketName(std::string pHost, unsigned int pPort);
+    virtual ~SocketName();
+
+    virtual std::string toString();
+    virtual std::string GetHost();
+    virtual unsigned int GetPort();
+private:
+    std::string		mHost;
+    unsigned int    mPort;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 
-SocketSetup::SocketSetup()
-{
-}
+}} // namespaces
 
-SocketSetup::~SocketSetup()
-{
-
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-ISubscription* SocketSetup::subscribe(IName *pName, Requirements *pRequirements)
-{
-    SocketName *tName = (SocketName*)pName; //TODO: type safety via C++ reflections or template structure
-	return new SocketSubscription(tName->getHost(), tName->getPort(), pRequirements);
-}
-
-IRegistration* SocketSetup::publish(IName *pName, Requirements *pRequirements)
-{
-	//TODO:
-	return 0;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-}} //namespace
+#endif

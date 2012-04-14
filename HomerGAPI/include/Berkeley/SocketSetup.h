@@ -20,59 +20,38 @@
  *****************************************************************************/
 
 /*
- * Purpose: Implementation of G-Lab API
+ * Purpose: SocketSetup
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
 
-#include <GAPI.h>
-#include <SocketName.h>
+#ifndef _GAPI_SOCKET_SETUP_
+#define _GAPI_SOCKET_SETUP_
 
-#include <Logger.h>
-
-#include <string>
+#include <Name.h>
+#include <ISetup.h>
 
 namespace Homer { namespace Base {
 
-using namespace std;
+///////////////////////////////////////////////////////////////////////////////
+
+#define BERKEYLEY_SOCKETS           "Berkeley Sockets"
 
 ///////////////////////////////////////////////////////////////////////////////
 
-SocketName::SocketName(string pHost, unsigned int pPort):
-	mHost(pHost), mPort(pPort)
+class SocketSetup:
+	public ISetup
 {
-}
+public:
+	SocketSetup();
+    virtual ~SocketSetup();
 
-SocketName::~SocketName()
-{
-
-}
+    virtual ISubscription* subscribe(Name *pName, Requirements *pRequirements = 0);
+    virtual IRegistration* publish(Name *pName, Requirements *pRequirements = 0);
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename T>
-inline std::string dataToString(T const& value_)
-{
-    std::stringstream ss;
-    ss << value_;
-    return ss.str();
-}
+}} // namespaces
 
-string SocketName::toString()
-{
-	return mHost + "<" + dataToString(mPort) + ">";
-}
-
-std::string SocketName::getHost()
-{
-    return mHost;
-}
-
-unsigned int SocketName::getPort()
-{
-    return mPort;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-}} //namespace
+#endif

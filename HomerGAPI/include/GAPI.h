@@ -30,6 +30,7 @@
 
 #include <HBMutex.h>
 
+#include <Name.h>
 #include <ISetup.h>
 #include <ISubscription.h>
 #include <IRegistration.h>
@@ -37,10 +38,6 @@
 #include <list>
 
 namespace Homer { namespace Base {
-
-///////////////////////////////////////////////////////////////////////////////
-
-#define BERKEYLEY_SOCKETS           "Berkeley Sockets"
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -69,14 +66,14 @@ public:
     static GapiService& GetInstance();
 
     /* plugin system for different ISetup implementations */
-    bool registerSetupInterface(ISetup* pSetupInterface, std::string pName);
-    bool selectSetupInterface(std::string pName);
-    std::string currentSetupInterface();
-    SetupInterfacesNames enumSetupInterfaces();
+    bool Register(ISetup* pSetupInterface, std::string pName);
+    bool Select(std::string pName);
+    std::string GetCurrentName();
+    SetupInterfacesNames ListAllNames();
 
     /* ISetup */
-    virtual ISubscription* subscribe(IName *pName, Requirements *pRequirements = 0);
-    virtual IRegistration* publish(IName *pName, Requirements *pRequirements = 0);
+    virtual ISubscription* subscribe(Name *pName, Requirements *pRequirements = 0);
+    virtual IRegistration* publish(Name *pName, Requirements *pRequirements = 0);
 
 private:
     ISetup						*mSetupInterface;
