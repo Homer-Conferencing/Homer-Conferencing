@@ -181,6 +181,13 @@ void Configuration::SetVisibilityDataStreamsWidget(bool pActive)
     mQSettings->endGroup();
 }
 
+void Configuration::SetVisibilityBroadcastMessageWidget(bool pActive)
+{
+    mQSettings->beginGroup("Global");
+    mQSettings->setValue("VisibilityBroadcastMessageWidget", pActive);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetVisibilityBroadcastWidget(bool pActive)
 {
     mQSettings->beginGroup("Global");
@@ -739,6 +746,11 @@ bool Configuration::GetVisibilityNetworkStreamsWidget()
 bool Configuration::GetVisibilityDataStreamsWidget()
 {
     return mQSettings->value("Global/VisibilityDataStreamsWidget", false).toBool();
+}
+
+bool Configuration::GetVisibilityBroadcastMessageWidget()
+{
+    return mQSettings->value("Global/VisibilityBroadcastMessageWidget", false).toBool();
 }
 
 bool Configuration::GetVisibilityBroadcastWidget()

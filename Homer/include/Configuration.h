@@ -106,6 +106,7 @@ public:
     bool GetVisibilityThreadsWidget();
     bool GetVisibilityNetworkStreamsWidget();
     bool GetVisibilityDataStreamsWidget();
+    bool GetVisibilityBroadcastMessageWidget();
     bool GetVisibilityBroadcastWidget();
 
     bool GetVisibilityToolBarMediaSources();
@@ -243,6 +244,7 @@ private:
     void SetVisibilityThreadsWidget(bool pActive);
     void SetVisibilityNetworkStreamsWidget(bool pActive);
     void SetVisibilityDataStreamsWidget(bool pActive);
+    void SetVisibilityBroadcastMessageWidget(bool pActive);
     void SetVisibilityBroadcastWidget(bool pActive);
 
     void SetVisibilityToolBarMediaSources(bool pActive);

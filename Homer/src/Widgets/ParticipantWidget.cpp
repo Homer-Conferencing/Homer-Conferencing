@@ -210,7 +210,7 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
         case BROADCAST:
                     LOG(LOG_VERBOSE, "Creating participant widget for BROADCAST");
                     mSessionName = "BROADCAST";
-                    mMessageWidget->Init(pMessageMenu, mSessionName, NULL, false);
+                    mMessageWidget->Init(pMessageMenu, mSessionName, NULL, CONF.GetVisibilityBroadcastMessageWidget());
                     if (mVideoSourceMuxer != NULL)
                     {
                         mVideoWidgetFrame->show();
