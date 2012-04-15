@@ -252,6 +252,20 @@ std::string Socket::GetPeerName()
     return tResult;
 }
 
+bool Socket::EnableReuse()
+{
+    bool tResult = false;
+
+    // activate reuse of socket per default
+    int tReuseAddr = 1;
+    if (setsockopt(mSocketHandle, SOL_SOCKET, SO_REUSEADDR, (char*)&tReuseAddr, sizeof(tReuseAddr)) < 0)
+        LOG(LOG_ERROR, "Failed to set socket option SO_REUSEADDR on socket %d", mSocketHandle);
+    else
+        tResult = true;
+
+    return tResult;
+}
+
 enum NetworkType Socket::GetNetworkType()
 {
     return mSocketNetworkType;
