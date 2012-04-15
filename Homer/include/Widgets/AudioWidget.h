@@ -54,6 +54,9 @@ using namespace Homer::Multimedia;
 
 #define SAMPLE_BUFFER_SIZE               3
 
+// de/activate automatic sample dropping in case the audo widget is invisible (default is off)
+//#define AUDIO_WIDGET_DROP_WHEN_INVISIBLE
+
 ///////////////////////////////////////////////////////////////////////////////
 
 class AudioWorkerThread;

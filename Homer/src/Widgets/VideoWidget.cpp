@@ -491,7 +491,7 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             tIcon10.addPixmap(QPixmap(":/images/Audio - Play.png"), QIcon::Normal, QIcon::Off);
         }else
         {
-            tAction = tMenu.addAction("Pause stream");
+            tAction = tMenu.addAction("Drop stream");
             tIcon10.addPixmap(QPixmap(":/images/Audio - Pause.png"), QIcon::Normal, QIcon::Off);
         }
         tAction->setIcon(tIcon10);
@@ -576,7 +576,7 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             mShowLiveStats = false;
             return;
         }
-        if (tPopupRes->text().compare("Pause stream") == 0)
+        if (tPopupRes->text().compare("Drop stream") == 0)
         {
             mVideoPaused = true;
             mVideoWorker->SetFrameDropping(true);
@@ -1110,7 +1110,9 @@ void VideoWidget::SetVisible(bool pVisible)
 {
     if (pVisible)
     {
-        mVideoWorker->SetFrameDropping(false);
+        #ifdef VIDEO_WIDGET_DROP_WHEN_INVISIBLE
+            mVideoWorker->SetFrameDropping(false);
+        #endif
         move(mWinPos);
         parentWidget()->show();
         show();
@@ -1119,7 +1121,9 @@ void VideoWidget::SetVisible(bool pVisible)
 
     }else
     {
-        mVideoWorker->SetFrameDropping(true);
+        #ifdef VIDEO_WIDGET_DROP_WHEN_INVISIBLE
+            mVideoWorker->SetFrameDropping(true);
+        #endif
         mWinPos = pos();
         parentWidget()->hide();
         hide();
