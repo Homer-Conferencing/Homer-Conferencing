@@ -107,15 +107,15 @@ void UpdateCheckDialog::DownloadStart()
 		tReleaseFileType = "ZIP archive file (*.zip)";
 	#endif
 	#ifdef LINUX
-		tReleaseFileName = "Homer-Linux" + QString(ARCH_BITS) + ".tar.bz2";
+		tReleaseFileName = "Homer-Linux" + QString("%1").arg(ARCH_BITS) + ".tar.bz2";
 		tReleaseFileType = "bz2 archive file (*.bz2)";
 	#endif
 	#ifdef BSD
-		tReleaseFileName = "Homer-BSD" + QString(ARCH_BITS) + ".tar.bz2";
+		tReleaseFileName = "Homer-BSD" + QString("%1").arg(ARCH_BITS) + ".tar.bz2";
 		tReleaseFileType = "bz2 archive file (*.bz2)";
 	#endif
 	#ifdef APPLE
-		tReleaseFileName = "Homer-OSX" + QString(ARCH_BITS) + ".tar.bz2";
+		tReleaseFileName = "Homer-OSX" + QString("%1").arg(ARCH_BITS) + ".tar.bz2";
 		tReleaseFileType = "bz2 archive file (*.bz2)";
 	#endif
 
@@ -254,6 +254,7 @@ void UpdateCheckDialog::DownloadFinished()
 	if((!mDownloadAborted) && (mDownloadReply->error()))
 	{
 		ShowError("Failed to download Homer update", "Unable to download Homer update. The reason is: \"" + mDownloadReply->errorString() + "\"");
+		mDownloadAborted = true;
 	}
 
 	mDownloadHomerUpdateFile->flush();
@@ -320,6 +321,8 @@ void UpdateCheckDialog::GotAnswerForVersionRequest(bool pError)
                 // show download button for installer on Windows
                 #ifdef WIN32
                 	mTbDownloadUpdateInstaller->show();
+                #else
+                    mTbDownloadUpdateInstaller->hide();
                 #endif
             }else
                 mLbVersionServer->setText("<font color='green'><b>" + mServerVersion + "</b></font>");
