@@ -165,6 +165,7 @@ private:
     std::string         mLocalHost;
     bool                mIsClientSocket;
     bool 				mNonBlockingMode;
+    Mutex               mPeerHostMutex;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
