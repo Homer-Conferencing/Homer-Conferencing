@@ -338,7 +338,7 @@ void AudioWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             tIcon10.addPixmap(QPixmap(":/images/Audio - Play.png"), QIcon::Normal, QIcon::Off);
         }else
         {
-            tAction = tMenu.addAction("Pause stream");
+            tAction = tMenu.addAction("Drop stream");
             tIcon10.addPixmap(QPixmap(":/images/Audio - Pause.png"), QIcon::Normal, QIcon::Off);
         }
         tAction->setIcon(tIcon10);
@@ -403,7 +403,7 @@ void AudioWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             mShowLiveStats = false;
             return;
         }
-        if (tPopupRes->text().compare("Pause stream") == 0)
+        if (tPopupRes->text().compare("Drop stream") == 0)
         {
             mAudioPaused = true;
             mAudioWorker->SetSampleDropping(true);
@@ -668,7 +668,9 @@ void AudioWidget::SetVisible(bool pVisible)
 {
     if (pVisible)
     {
-        mAudioWorker->SetSampleDropping(false);
+        #ifdef AUDIO_WIDGET_DROP_WHEN_INVISIBLE
+            mAudioWorker->SetSampleDropping(false);
+        #endif
         move(mWinPos);
         show();
         parentWidget()->show();
@@ -677,7 +679,9 @@ void AudioWidget::SetVisible(bool pVisible)
         mAudioWorker->SetVolume(mAudioVolume);
     }else
     {
-        mAudioWorker->SetSampleDropping(true);
+        #ifdef AUDIO_WIDGET_DROP_WHEN_INVISIBLE
+            mAudioWorker->SetSampleDropping(true);
+        #endif
         mWinPos = pos();
         hide();
         parentWidget()->hide();
