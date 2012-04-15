@@ -106,6 +106,7 @@ private:
     bool IsCurrentScaleFactor(float pScaleFactor);
     void SetResolutionFormat(VideoFormat pFormat);
     void ToggleFullScreenMode();
+    void ToggleSmoothPresentationMode();
     void SavePicture();
     void StartRecorder();
     void StopRecorder();
@@ -134,6 +135,7 @@ private:
     QTimer              *mHourGlassTimer;
     qreal               mHourGlassAngle;
     int                 mHourGlassOffset;
+    bool                mSmoothPresentation;
     bool                mRecorderStarted;
     bool                mInsideDockWidget;
     bool                mVideoPaused;
