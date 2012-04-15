@@ -375,8 +375,13 @@ bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort)
             LOG(LOG_ERROR, "Invalid audio socket");
         else
             mVideoAudioStartPort = tParticipantDescriptor.AudioReceiveSocket->GetLocalPort() + 2;
-        tParticipantDescriptor.VideoSendSocket = new Socket(IS_IPV6_ADDRESS(pHost) ? SOCKET_IPv6 : SOCKET_IPv4, GetSocketTypeFromMediaTransportType(GetVideoTransportType()));
-        tParticipantDescriptor.AudioSendSocket = new Socket(IS_IPV6_ADDRESS(pHost) ? SOCKET_IPv6 : SOCKET_IPv4, GetSocketTypeFromMediaTransportType(GetVideoTransportType()));
+        #ifdef MEETING_USE_BIRECTIONAL_MEDIASOCKETS
+            tParticipantDescriptor.VideoSendSocket = tParticipantDescriptor.VideoReceiveSocket;
+            tParticipantDescriptor.AudioSendSocket = tParticipantDescriptor.AudioReceiveSocket;
+        #else
+            tParticipantDescriptor.VideoSendSocket = new Socket(IS_IPV6_ADDRESS(pHost) ? SOCKET_IPv6 : SOCKET_IPv4, GetSocketTypeFromMediaTransportType(GetVideoTransportType()));
+            tParticipantDescriptor.AudioSendSocket = new Socket(IS_IPV6_ADDRESS(pHost) ? SOCKET_IPv6 : SOCKET_IPv4, GetSocketTypeFromMediaTransportType(GetVideoTransportType()));
+        #endif
 
         mParticipants.push_back(tParticipantDescriptor);
 
@@ -406,8 +411,10 @@ bool Meeting::CloseParticipantSession(string pParticipant)
             // delete video/audio sockets
             delete (*tIt).VideoReceiveSocket;
             delete (*tIt).AudioReceiveSocket;
-            delete (*tIt).VideoSendSocket;
-            delete (*tIt).AudioSendSocket;
+            #ifndef MEETING_USE_BIRECTIONAL_MEDIASOCKETS
+                delete (*tIt).VideoSendSocket;
+                delete (*tIt).AudioSendSocket;
+            #endif
 
             // remove element from participants list
             tIt = mParticipants.erase(tIt);
@@ -468,8 +475,10 @@ void Meeting::CloseAllSessions()
         // delete video/audio sockets
         delete (*tIt).VideoReceiveSocket;
         delete (*tIt).AudioReceiveSocket;
-        delete (*tIt).VideoSendSocket;
-        delete (*tIt).AudioSendSocket;
+        #ifndef MEETING_USE_BIRECTIONAL_MEDIASOCKETS
+            delete (*tIt).VideoSendSocket;
+            delete (*tIt).AudioSendSocket;
+        #endif
 
         // remove element from participants list
         tIt = mParticipants.erase(tIt);
