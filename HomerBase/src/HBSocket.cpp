@@ -479,8 +479,10 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
 					LOG(LOG_ERROR, "Failed to set senders checksum coverage for UDPlite on socket %d", mSocketHandle);
 			#endif
 		case SOCKET_UDP:
+		    mPeerHostMutex.lock();
 		    mPeerHost = pTargetHost;
 		    mPeerPort = pTargetPort;
+		    mPeerHostMutex.unlock();
             #if defined(LINUX)
 				tSent = sendto(mSocketHandle, pBuffer, (size_t)pBufferSize, MSG_NOSIGNAL, &tAddressDescriptor.sa, tAddressDescriptorSize);
 			#endif
@@ -519,8 +521,10 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
 		        }else
 		        {
 		            mIsConnected = true;
+		            mPeerHostMutex.lock();
 		        	mPeerHost = pTargetHost;
 		        	mPeerPort = pTargetPort;
+		        	mPeerHostMutex.unlock();
 		        }
 			}
 			//#########################
@@ -596,9 +600,11 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
 			#endif
 		    if (tReceivedBytes >= 0)
 		    {
+		        mPeerHostMutex.lock();
 		    	mPeerHost = GetAddrFromDescriptor(&tAddressDescriptor, &mPeerPort);
 		    	if (mPeerHost == "")
 		            LOG(LOG_ERROR ,"Could not determine the UDP/UDPLite source address for socket %d", mSocketHandle);
+		    	mPeerHostMutex.unlock();
 		    }
             break;
 		case SOCKET_TCP:
@@ -628,9 +634,11 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
                     LOG(LOG_VERBOSE, "Having new IPv%d-TCP client socket %d connection on socket %d at local port %d", (mSocketNetworkType == SOCKET_IPv6) ? 6 : 4, mTcpClientSockeHandle, mSocketHandle, mLocalPort);
                     mIsConnected = true;
 
+                    mPeerHostMutex.lock();
     		    	mPeerHost = GetAddrFromDescriptor(&tAddressDescriptor, &mPeerPort);
     		    	if (mPeerHost == "")
                         LOG(LOG_ERROR ,"Could not determine the TCP source address for socket %d", mSocketHandle);
+    		    	mPeerHostMutex.unlock();
                 }
             }
 
