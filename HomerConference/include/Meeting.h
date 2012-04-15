@@ -47,6 +47,10 @@ namespace Homer { namespace Conference {
 // de/activate NAT traversal mechanism: setting explicitly the own contact IP address (used as video/audio destination)
 #define NAT_TRAVERSAL_SUPPORT
 
+// de/activate birectional sockets for video/audio transmission: local media socket is used both for sending stream to peer and for receiving stream from peer
+//HINT: this is need for easier NAT traversal because it allows the assumption sending and receiving port number at remote side are the same and can be derived from SDP data
+#define MEETING_USE_BIRECTIONAL_MEDIASOCKETS
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #define MEETING Meeting::GetInstance()
