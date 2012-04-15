@@ -1426,18 +1426,17 @@ VideoWorkerThread::VideoWorkerThread(MediaSource *pVideoSource, VideoWidget *pVi
     mFrameCurrentIndex = FRAME_BUFFER_SIZE - 1;
     mFrameGrabIndex = 0;
     mDropFrames = false;
-    mPendingNewFrames = 0;
     InitFrameBuffers();
 }
 
 VideoWorkerThread::~VideoWorkerThread()
 {
     DeinitFrameBuffers();
-    mPendingNewFrames = 0;
 }
 
 void VideoWorkerThread::InitFrameBuffers()
 {
+    mPendingNewFrames = 0;
     for (int i = 0; i < FRAME_BUFFER_SIZE; i++)
     {
         mFrame[i] = mVideoSource->AllocChunkBuffer(mFrameSize[i], MEDIA_VIDEO);
