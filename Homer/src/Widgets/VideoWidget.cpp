@@ -133,7 +133,7 @@ VideoWidget::VideoWidget(QWidget* pParent):
     mVideoWorker = NULL;
     mMainWindow = NULL;
     mAssignedAction = NULL;
-
+    mSmoothPresentation = CONF.GetSmoothVideoPresentation();
     parentWidget()->hide();
     hide();
 }
@@ -311,6 +311,20 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             tFSKeys.push_back(Qt::Key_F);
             tFSKeys.push_back(Qt::Key_Escape);
             tAction->setShortcuts(tFSKeys);
+
+            //###############################################################################
+            //### "Smooth presentation"
+            //###############################################################################
+            if (mSmoothPresentation)
+            {
+                tAction = tVideoMenu->addAction("Show smooth video");
+            }else
+            {
+                tAction = tVideoMenu->addAction("Show fast video");
+            }
+            QList<QKeySequence> tSPKeys;
+            tSPKeys.push_back(Qt::Key_S);
+            tAction->setShortcuts(tSPKeys);
 
             //###############################################################################
             //### ASPECT RATION
@@ -579,6 +593,11 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             DialogAddNetworkSink();
             return;
         }
+        if ((tPopupRes->text().compare("Show smooth video") == 0) || (tPopupRes->text().compare("Show fast video") == 0))
+        {
+            ToggleSmoothPresentationMode();
+            return;
+        }
         if ((tPopupRes->text().compare("Full screen") == 0) || (tPopupRes->text().compare("Window mode") == 0))
         {
             ToggleFullScreenMode();
@@ -749,14 +768,15 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
 		}
 	}
 
-	mCurrentFrame = mCurrentFrame.scaled(tFrameOutputWidth, tFrameOutputHeight, tAspectMode, CONF.GetSmoothVideoPresentation() ? Qt::SmoothTransformation : Qt::FastTransformation);
+	mCurrentFrame = mCurrentFrame.scaled(tFrameOutputWidth, tFrameOutputHeight, tAspectMode, mSmoothPresentation ? Qt::SmoothTransformation : Qt::FastTransformation);
 	tFrameOutputWidth = mCurrentFrame.width();
 	tFrameOutputHeight = mCurrentFrame.height();
 
     int tTimeDiff = QTime::currentTime().msecsTo(tTime);
     // did we spend too much time with transforming the image?
-    if ((CONF.GetSmoothVideoPresentation()) && (tTimeDiff > 1000 / 3)) // at least we assume 3 FPS!
+    if ((mSmoothPresentation) && (tTimeDiff > 1000 / 3)) // at least we assume 3 FPS!
     {
+        mSmoothPresentation = false;
         CONF.SetSmoothVideoPresentation(false);
         ShowInfo("System too busy", "Your system is too busy to do smooth transformation. Fast transformation will be used from now.");
     }
@@ -827,7 +847,7 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
         tPainter->drawText(5, 61, " Frame: " + QString("%1").arg(pFrameNumber) + (mVideoSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropCounter()) + " lost packets)") : "") + (mVideoSource->GetChunkBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkBufferCounter()) + " buffered packets)") : ""));
         tPainter->drawText(5, 81, " Fps: " + QString("%1").arg(pFps, 4, 'f', 2, ' '));
         tPainter->drawText(5, 101, " Codec: " + ((tCodecName != "") ? tCodecName : "unknown") + " (" + QString("%1").arg(tSourceResX) + "*" + QString("%1").arg(tSourceResY) + ")");
-        tPainter->drawText(5, 121, " Output: " + QString("%1").arg(tFrameOutputWidth) + "*" + QString("%1").arg(tFrameOutputHeight) + " (" + tAspectRatio + ")");
+        tPainter->drawText(5, 121, " Output: " + QString("%1").arg(tFrameOutputWidth) + "*" + QString("%1").arg(tFrameOutputHeight) + " (" + tAspectRatio + ")" + (mSmoothPresentation ? "[smoothed]" : ""));
         int tMuxOutputOffs = 0;
         int tPeerOutputOffs = 0;
         if (mVideoSource->SupportsSeeking())
@@ -848,7 +868,7 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
         tPainter->drawText(4, 60, " Frame: " + QString("%1").arg(pFrameNumber) + (mVideoSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropCounter()) + " lost packets)") : "") + (mVideoSource->GetChunkBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkBufferCounter()) + " buffered packets)") : ""));
         tPainter->drawText(4, 80, " Fps: " + QString("%1").arg(pFps, 4, 'f', 2, ' '));
         tPainter->drawText(4, 100, " Codec: " + ((tCodecName != "") ? tCodecName : "unknown") + " (" + QString("%1").arg(tSourceResX) + "*" + QString("%1").arg(tSourceResY) + ")");
-        tPainter->drawText(4, 120, " Output: "  + QString("%1").arg(tFrameOutputWidth) + "*" + QString("%1").arg(tFrameOutputHeight) + " (" + tAspectRatio + ")");
+        tPainter->drawText(4, 120, " Output: "  + QString("%1").arg(tFrameOutputWidth) + "*" + QString("%1").arg(tFrameOutputHeight) + " (" + tAspectRatio + ")" + (mSmoothPresentation ? "[smoothed]" : ""));
         if (mVideoSource->SupportsSeeking())
 			tPainter->drawText(4, 140, " Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0'));
         if (mVideoSource->SupportsMuxing())
@@ -1073,6 +1093,11 @@ void VideoWidget::ToggleFullScreenMode()
 	mNeedBackgroundUpdatesUntillNextFrame = true;
 }
 
+void VideoWidget::ToggleSmoothPresentationMode()
+{
+    mSmoothPresentation = !mSmoothPresentation;
+}
+
 void VideoWidget::ToggleVisibility()
 {
     if (isVisible())
@@ -1254,6 +1279,10 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
     if (pEvent->key() == Qt::Key_F)
     {
         ToggleFullScreenMode();
+    }
+    if (pEvent->key() == Qt::Key_S)
+    {
+        ToggleSmoothPresentationMode();
     }
     if (pEvent->key() == Qt::Key_I)
     {
