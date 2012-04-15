@@ -109,6 +109,9 @@ public:
     std::string GetName();
     std::string GetPeerName();
 
+    /* reusing of sockets */
+    bool EnableReuse();
+
     /* QoS interface */
     static bool IsQoSSupported();
     static void DisableQoSSupport();
