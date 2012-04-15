@@ -2179,10 +2179,6 @@ p, li { white-space: pre-wrap; }
              </widget>
             </item>
            </layout>
-           <zorder>layoutWidget</zorder>
-           <zorder>horizontalLayoutWidget</zorder>
-           <zorder>layoutWidget</zorder>
-           <zorder>frame_4</zorder>
           </widget>
          </widget>
         </item>
