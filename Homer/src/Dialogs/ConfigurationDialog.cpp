@@ -940,7 +940,7 @@ void ConfigurationDialog::ClickedButton(QAbstractButton *pButton)
             case 3:
                 mCbAutoUpdateCheck->setChecked(false);
                 mCbColoring->setCurrentIndex(0);
-                mCbSeparatedParticipantWidgets->setChecked(true);
+                mCbSeparatedParticipantWidgets->setChecked(false);
                 mCbCloseParticipantWidgetsImmediately->setChecked(true);
                 break;
             //### NOTIFICATIONS configuration
