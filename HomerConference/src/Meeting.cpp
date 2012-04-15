@@ -1367,7 +1367,7 @@ bool Meeting::GetSessionInfo(string pParticipant, struct SessionInfo *pInfo)
         // is the recipient already involved in the conference?
         if (mParticipants.size() > 1)
         {
-            LOG(LOG_VERBOSE, "Search matching database entry for GetSessionInfo()");
+            //LOG(LOG_VERBOSE, "Search matching database entry for GetSessionInfo()");
             for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
             {
                 if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
