@@ -1856,6 +1856,9 @@ p, li { white-space: pre-wrap; }
                      <property name="alignment">
                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                      </property>
+                     <property name="openExternalLinks">
+                      <bool>true</bool>
+                     </property>
                     </widget>
                    </item>
                    <item>
@@ -1943,6 +1946,9 @@ p, li { white-space: pre-wrap; }
                      </property>
                      <property name="alignment">
                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                     </property>
+                     <property name="openExternalLinks">
+                      <bool>true</bool>
                      </property>
                     </widget>
                    </item>
@@ -2032,6 +2038,9 @@ p, li { white-space: pre-wrap; }
                      <property name="alignment">
                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                      </property>
+                     <property name="openExternalLinks">
+                      <bool>true</bool>
+                     </property>
                     </widget>
                    </item>
                    <item>
@@ -2119,6 +2128,9 @@ p, li { white-space: pre-wrap; }
                      </property>
                      <property name="alignment">
                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                     </property>
+                     <property name="openExternalLinks">
+                      <bool>true</bool>
                      </property>
                     </widget>
                    </item>
