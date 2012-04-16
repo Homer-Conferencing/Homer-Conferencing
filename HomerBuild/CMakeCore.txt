@@ -92,17 +92,17 @@ MESSAGE("### Library search path: ${LIB_DIRS}")
 
 ##############################################################
 # include dirs
-IF ((NOT ${BUILD} MATCHES "Default") OR (WIN32))
-SET (INCLUDE_DIRS
-	${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerIncludes
-	${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerIncludes/SDL
-	${INCLUDE_DIRS}
-)
-ENDIF()
 SET (INCLUDE_DIRS
 	${INCLUDE_DIRS}
 	/usr/local/include	
 )
+IF ((NOT ${BUILD} MATCHES "Default") OR (WIN32))
+SET (INCLUDE_DIRS
+	${INCLUDE_DIRS}
+	${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerIncludes
+	${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerIncludes/SDL
+)
+ENDIF()
 MESSAGE("### Header search path: ${INCLUDE_DIRS}")
 
 ##############################################################
