@@ -1743,6 +1743,9 @@ p, li { white-space: pre-wrap; }
                <enum>QFrame::Raised</enum>
               </property>
               <layout class="QGridLayout" name="gridLayout_3">
+               <property name="margin">
+                <number>0</number>
+               </property>
                <item row="0" column="0">
                 <layout class="QVBoxLayout" name="verticalLayout_9">
                  <item>
@@ -1830,13 +1833,13 @@ p, li { white-space: pre-wrap; }
                     <widget class="QLabel" name="label_2">
                      <property name="minimumSize">
                       <size>
-                       <width>110</width>
+                       <width>120</width>
                        <height>22</height>
                       </size>
                      </property>
                      <property name="maximumSize">
                       <size>
-                       <width>110</width>
+                       <width>120</width>
                        <height>16777215</height>
                       </size>
                      </property>
@@ -1921,13 +1924,13 @@ p, li { white-space: pre-wrap; }
                     <widget class="QLabel" name="label_14">
                      <property name="minimumSize">
                       <size>
-                       <width>110</width>
+                       <width>120</width>
                        <height>22</height>
                       </size>
                      </property>
                      <property name="maximumSize">
                       <size>
-                       <width>110</width>
+                       <width>120</width>
                        <height>16777215</height>
                       </size>
                      </property>
@@ -2012,13 +2015,13 @@ p, li { white-space: pre-wrap; }
                     <widget class="QLabel" name="label_16">
                      <property name="minimumSize">
                       <size>
-                       <width>110</width>
+                       <width>120</width>
                        <height>22</height>
                       </size>
                      </property>
                      <property name="maximumSize">
                       <size>
-                       <width>110</width>
+                       <width>120</width>
                        <height>16777215</height>
                       </size>
                      </property>
@@ -2103,13 +2106,13 @@ p, li { white-space: pre-wrap; }
                     <widget class="QLabel" name="label_18">
                      <property name="minimumSize">
                       <size>
-                       <width>110</width>
+                       <width>120</width>
                        <height>22</height>
                       </size>
                      </property>
                      <property name="maximumSize">
                       <size>
-                       <width>110</width>
+                       <width>120</width>
                        <height>16777215</height>
                       </size>
                      </property>
