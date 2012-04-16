@@ -41,16 +41,16 @@ SET (INCLUDE_DIRS
 	../../HomerMultimedia/include
 	../../HomerConference/include
 	../../HomerSoundOutput/include
-	../../HomerWinLibs/QT/include/
-	../../HomerWinLibs/QT/include/Qt
-	../../HomerWinLibs/QT/include/QtCore
-	../../HomerWinLibs/QT/include/QtGui
-	../../HomerWinLibs/QT/include/QtMultimedia
-	../../HomerWinLibs/QT/include/QtNetwork
-	../../HomerWinLibs/QT/include/QtXml
-	../../HomerWinLibs/QT/include/QtWebKit
-	../../HomerWinLibs/FFMPEG
-	../../HomerWinLibs/OPENSSL/include
+#	../../HomerWinLibs/QT/include/
+#	../../HomerWinLibs/QT/include/Qt
+#	../../HomerWinLibs/QT/include/QtCore
+#	../../HomerWinLibs/QT/include/QtGui
+#	../../HomerWinLibs/QT/include/QtMultimedia
+#	../../HomerWinLibs/QT/include/QtNetwork
+#	../../HomerWinLibs/QT/include/QtXml
+#	../../HomerWinLibs/QT/include/QtWebKit
+#	../../HomerWinLibs/FFMPEG
+#	../../HomerWinLibs/OPENSSL/include
 	/usr/include/ffmpeg
 	${QT_INCLUDE_DIR}
 	${CMAKE_BINARY_DIR}/Homer/bin

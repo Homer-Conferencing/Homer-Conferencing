@@ -65,9 +65,6 @@ SET (INCLUDE_DIRS
 	../../HomerBase/include
 	../../HomerMonitor/include
 	../../HomerMultimedia/include
-	../../HomerWinLibs/SDL/include
-	../../HomerWinLibs/SDL-MIXER/include
-	../../HomerWinLibs/SDL-SOUND
 	/usr/include/SDL
 	/usr/local/include/SDL
 	${ALSA_INCLUDE_DIRS}
