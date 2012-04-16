@@ -29,7 +29,6 @@ SET (INCLUDE_DIRS
 	../../HomerBase/include
 	../../HomerGAPI/include
 	../../HomerMonitor/include
-	../../HomerWinLibs/FFMPEG
 	/usr/include/ffmpeg
 	${ALSA_INCLUDE_DIRS}
 )
