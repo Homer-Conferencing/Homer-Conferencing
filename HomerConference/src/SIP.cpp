@@ -590,6 +590,11 @@ void SIP::SipReceivedRegisterResponse(const sip_to_t *pSipRemote, const sip_to_t
 
             tRFEvent = new RegistrationFailedEvent();
             InitGeneralEvent_FromSipReceivedResponseEvent(pSipRemote, pSipLocal, pNuaHandle, pSip, tRFEvent, "RegistrationFailed", pSourceIp, pSourcePort);
+
+            // store extended information
+            tRFEvent->StatusCode = pStatus;
+            tRFEvent->Description = string (pPhrase);
+
             MEETING.notifyObservers(tRFEvent);
 
             nua_handle_destroy(mSipRegisterHandle);
@@ -748,10 +753,12 @@ void SIP::SipReceivedPublishResponse(const sip_to_t *pSipRemote, const sip_to_t 
                 // send second registration request, authenticated now
                 //snua_publish(mSipPublishhandle, SIPTAG_PAYLOAD(mPresenceDesription), TAG_IF(mPresenceDesription, SIPTAG_CONTENT_TYPE_STR(GetMimeFormatPidf().c_str())), TAG_END());
             }
+            mSipPresencePublished = false;
             break;
 
         case 100: // successful based on cache
             LOG(LOG_VERBOSE, "Publication update at SIP server based on cache succeeded");
+            mSipPresencePublished = true;
             break;
 
         case SIP_STATE_OKAY: // successful
@@ -768,20 +775,12 @@ void SIP::SipReceivedPublishResponse(const sip_to_t *pSipRemote, const sip_to_t 
             LOG(LOG_ERROR, "Method is not allowed");
             mSipPresencePublished = -1;
 
-            tPFEvent = new PublicationFailedEvent();
-            InitGeneralEvent_FromSipReceivedResponseEvent(pSipRemote, pSipLocal, pNuaHandle, pSip, tPFEvent, "PublicationFailed", pSourceIp, pSourcePort);
-            MEETING.notifyObservers(tPFEvent);
-
             //nua_handle_destroy(mSipPublishHandle);
             break;
 
         case SIP_STATE_REQUEST_TIMEOUT:
             LOG(LOG_ERROR, "Request timeout");
             mSipPresencePublished = -1;
-
-            tPFEvent = new PublicationFailedEvent();
-            InitGeneralEvent_FromSipReceivedResponseEvent(pSipRemote, pSipLocal, pNuaHandle, pSip, tPFEvent, "PublicationFailed", pSourceIp, pSourcePort);
-            MEETING.notifyObservers(tPFEvent);
 
             //nua_handle_destroy(mSipPublishHandle);
             break;
@@ -790,10 +789,6 @@ void SIP::SipReceivedPublishResponse(const sip_to_t *pSipRemote, const sip_to_t 
             LOG(LOG_ERROR, "Bad event received as answer for publish request");
             mSipPresencePublished = -1;
 
-            tPFEvent = new PublicationFailedEvent();
-            InitGeneralEvent_FromSipReceivedResponseEvent(pSipRemote, pSipLocal, pNuaHandle, pSip, tPFEvent, "PublicationFailed", pSourceIp, pSourcePort);
-            MEETING.notifyObservers(tPFEvent);
-
             //nua_handle_destroy(mSipPublishHandle);
             break;
 
@@ -801,12 +796,21 @@ void SIP::SipReceivedPublishResponse(const sip_to_t *pSipRemote, const sip_to_t 
             LOG(LOG_ERROR, "Presence publication at SIP server failed because of some unknown reasen");
             mSipPresencePublished = -1;
 
-            tPFEvent = new PublicationFailedEvent();
-            InitGeneralEvent_FromSipReceivedResponseEvent(pSipRemote, pSipLocal, pNuaHandle, pSip, tPFEvent, "PublicationFailed", pSourceIp, pSourcePort);
-            MEETING.notifyObservers(tPFEvent);
-
             //nua_handle_destroy(mSipPublishHandle);
             break;
+    }
+
+    // presence publication has failed? -> inform the upper layer
+    if (mSipPresencePublished == -1)
+    {
+        tPFEvent = new PublicationFailedEvent();
+
+        // store extended information
+        tPFEvent->StatusCode = pStatus;
+        tPFEvent->Description = string (pPhrase);
+
+        InitGeneralEvent_FromSipReceivedResponseEvent(pSipRemote, pSipLocal, pNuaHandle, pSip, tPFEvent, "PublicationFailed", pSourceIp, pSourcePort);
+        MEETING.notifyObservers(tPFEvent);
     }
 }
 

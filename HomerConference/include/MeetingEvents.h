@@ -294,6 +294,9 @@ class RegistrationEvent:
 class RegistrationFailedEvent:
     public TEvent<RegistrationFailedEvent, REGISTRATION_FAILED>
 {
+public:
+    int     StatusCode;
+    string  Description;
 };
 
 class PublicationEvent:
@@ -304,6 +307,9 @@ class PublicationEvent:
 class PublicationFailedEvent:
     public TEvent<PublicationFailedEvent, PUBLICATION_FAILED>
 {
+public:
+    int     StatusCode;
+    string  Description;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

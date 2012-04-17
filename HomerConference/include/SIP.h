@@ -187,7 +187,7 @@ protected:
     bool                mSipListenerNeeded;
     bool                mSipStackOnline;
     int                 mSipRegisteredAtServer; //tri-state: 0 = unregistered, 1 = registered, -1 = registration failed
-    bool                mSipPresencePublished; //tri-state: 0 = unpublished, 1 = published, -1 = publication failed
+    int                 mSipPresencePublished; //tri-state: 0 = unpublished, 1 = published, -1 = publication failed
 };
 
 ///////////////////////////////////////////////////////////////////////////////
