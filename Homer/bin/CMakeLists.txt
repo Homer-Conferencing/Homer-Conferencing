@@ -287,7 +287,6 @@ ELSE ()
 		QtNetwork
 		QtXml
 		QtWebKit
-#		dbus-1
 		resolv
 	)
 ENDIF ()

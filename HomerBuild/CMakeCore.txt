@@ -141,6 +141,18 @@ IF (${BUILD} MATCHES "Release")
 ENDIF()
 
 ##############################################################
+# explicit shared object name
+IF (DEFINED TARGET_LIB_NAME) 
+	IF (APPLE)
+		SET(LFLAGS "${LFLAGS} -Wl,-dylib_install_name,@rpath/lib${TARGET_LIB_NAME}.dylib")
+	ENDIF (APPLE)
+	
+	IF (LINUX)
+		SET(LFLAGS "${LFLAGS} -Wl,-soname,${TARGET_LIB_NAME}.so")
+	ENDIF (LINUX)
+ENDIF()
+
+##############################################################
 # definitions
 # "-D" options for compilation in win32 environment
 SET (DEFINITIONS_WINDOWS
@@ -347,6 +359,11 @@ IF (DEFINED TARGET_NAME)
     ENDIF (WIN32)
 ENDIF()
 
+# activate rpath
+IF (APPLE)
+	SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
+	SET(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
+ENDIF(APPLE)
 
 IF (APPLE)
 	MESSAGE("### Linking dynamic Apple libraries: ${LIBS_APPLE}")
@@ -358,7 +375,6 @@ IF (APPLE)
 
 	MESSAGE("### Linking Apple frameworks: ${FRAMEWORKS_APPLE}")
 	FOREACH(FRAMEWORKS_APPLE_ENTRY ${FRAMEWORKS_APPLE})
-		#SET (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -framework ${FRAMEWORKS_APPLE_ENTRY}" )
 		TARGET_LINK_LIBRARIES(${TARGET_NAME} "-framework ${FRAMEWORKS_APPLE_ENTRY}" )
 	ENDFOREACH(FRAMEWORKS_APPLE_ENTRY ${FRAMEWORKS_APPLE})
 ENDIF (APPLE)
