@@ -210,12 +210,15 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
         case BROADCAST:
                     LOG(LOG_VERBOSE, "Creating participant widget for BROADCAST");
                     mSessionName = "BROADCAST";
+                    LOG(LOG_VERBOSE, "..init broacast message widget");
                     mMessageWidget->Init(pMessageMenu, mSessionName, NULL, CONF.GetVisibilityBroadcastMessageWidget());
+                    LOG(LOG_VERBOSE, "..init broacast video widget");
                     if (mVideoSourceMuxer != NULL)
                     {
                         mVideoWidgetFrame->show();
                         mVideoWidget->Init(mMainWindow, mVideoSourceMuxer, pVideoMenu, mSessionName, mSessionName, true);
                     }
+                    LOG(LOG_VERBOSE, "..init broacast audio widget");
                     if (mAudioSourceMuxer != NULL)
                         mAudioWidget->Init(mAudioSourceMuxer, pAudioMenu, mSessionName, mSessionName, true, true);
                     setFeatures(QDockWidget::NoDockWidgetFeatures);

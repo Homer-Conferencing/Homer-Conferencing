@@ -63,6 +63,7 @@
 #include <QPlastiqueStyle>
 #include <QApplication>
 #include <QTime>
+#include <QTimer>
 #include <QTextEdit>
 #include <QMenu>
 #include <QScrollBar>
@@ -126,6 +127,8 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     triggerUpdateCheck();
     // init screen capturing
     initializeScreenCapturing();
+    // delayed call to register at Stun and Sip server
+    QTimer::singleShot(2000, this, SLOT(registerAtStunSipServer()));
 }
 
 MainWindow::~MainWindow()
@@ -305,6 +308,15 @@ void MainWindow::initializeConferenceManagement()
     }
 }
 
+void MainWindow::registerAtStunSipServer()
+{
+    if (CONF.GetNatSupportActivation())
+        MEETING.SetStunServer(CONF.GetStunServer().toStdString());
+    // is centralized mode selected activated?
+    if (CONF.GetSipInfrastructureMode() == 1)
+        MEETING.RegisterAtServer(CONF.GetSipUserName().toStdString(), CONF.GetSipPassword().toStdString(), CONF.GetSipServer().toStdString());
+}
+
 void MainWindow::initializeVideoAudioIO()
 {
     LOG(LOG_VERBOSE, "Initialization of video/audio I/O..");
@@ -451,9 +463,11 @@ void MainWindow::initializeWidgetsAndMenus()
     mMenuParticipantMessageWidgets = new QMenu("Participant messages");
     mActionParticipantMessageWidgets->setMenu(mMenuParticipantMessageWidgets);
 
+    LOG(LOG_VERBOSE, "..local broadcast widget");
     mLocalUserParticipantWidget = new ParticipantWidget(BROADCAST, this, mOverviewContactsWidget, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer);
     setCentralWidget(mLocalUserParticipantWidget);
 
+    LOG(LOG_VERBOSE, "..availability widget");
     mOnlineStatusWidget = new AvailabilityWidget(this);
     mToolBarOnlineStatus->addWidget(mOnlineStatusWidget);
 
@@ -640,15 +654,10 @@ void MainWindow::loadSettings()
 
     LOG(LOG_VERBOSE, "Loading program settings..");
     LOG(LOG_VERBOSE, "..meeting settings");
-    if (CONF.GetNatSupportActivation())
-        MEETING.SetStunServer(CONF.GetStunServer().toStdString());
 
     MEETING.SetLocalUserName(QString(CONF.GetUserName().toLocal8Bit()).toStdString());
     MEETING.SetLocalUserMailAdr(QString(CONF.GetUserMail().toLocal8Bit()).toStdString());
     MEETING.setAvailabilityState(CONF.GetConferenceAvailability().toStdString());
-    // is centralized mode selected activated?
-    if (CONF.GetSipInfrastructureMode() == 1)
-        MEETING.RegisterAtServer(CONF.GetSipUserName().toStdString(), CONF.GetSipPassword().toStdString(), CONF.GetSipServer().toStdString());
 
     // init video codec for network streaming, but only support ONE codec and not multiple
     QString tVideoStreamCodec = CONF.GetVideoCodec();
