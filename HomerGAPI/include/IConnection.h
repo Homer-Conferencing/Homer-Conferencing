@@ -25,8 +25,8 @@
  * Since:   2011-12-08
  */
 
-#ifndef _GAPI_ISUBSCRIPTION_
-#define _GAPI_ISUBSCRIPTION_
+#ifndef _GAPI_ICONNECTION_
+#define _GAPI_ICONNECTION_
 
 #include <Name.h>
 #include <Requirements.h>
