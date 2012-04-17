@@ -127,6 +127,8 @@ private slots:
     void GotAnswerForVersionRequest(bool pError);
     void CreateScreenShot();
 
+    void registerAtStunSipServer();
+
 private:
     friend class GeneralControlWidget;
 
