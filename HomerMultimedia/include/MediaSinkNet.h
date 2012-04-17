@@ -89,7 +89,7 @@ private:
     /* Berkeley sockets based transport */
     Socket				*mDataSocket;
     /* GAPI based transport */
-    ISubscription       *mGAPIDataSocket;
+    IConnection       *mGAPIDataSocket;
     bool 				mGAPIUsed;
 };
 

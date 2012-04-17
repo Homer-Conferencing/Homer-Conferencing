@@ -20,13 +20,13 @@
  *****************************************************************************/
 
 /*
- * Purpose: ChannelSubscription
+ * Purpose: ChannelConnection
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
 
 #include <GAPI.h>
-#include <Simulation/ChannelSubscription.h>
+#include <Simulation/ChannelConnection.h>
 #include <RequirementTransmitLossless.h>
 #include <RequirementTransmitChunks.h>
 #include <RequirementTransmitStream.h>
@@ -47,7 +47,7 @@ namespace Homer { namespace Base {
 using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
-ChannelSubscription::ChannelSubscription(std::string pTarget, Requirements *pRequirements)
+ChannelConnection::ChannelConnection(std::string pTarget, Requirements *pRequirements)
 {
 //    bool tFoundTransport = false;
 //
@@ -121,19 +121,19 @@ ChannelSubscription::ChannelSubscription(std::string pTarget, Requirements *pReq
 //    update(pRequirements);
 }
 
-ChannelSubscription::~ChannelSubscription()
+ChannelConnection::~ChannelConnection()
 {
 //    delete mSocket;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool ChannelSubscription::isClosed()
+bool ChannelConnection::isClosed()
 {
 	return mIsClosed;
 }
 
-void ChannelSubscription::read(char* pBuffer, int &pBufferSize)
+void ChannelConnection::read(char* pBuffer, int &pBufferSize)
 {
     LOG(LOG_WARN, "TODO: implement me!");
 //    if(mSocket != NULL)
@@ -147,7 +147,7 @@ void ChannelSubscription::read(char* pBuffer, int &pBufferSize)
 //    }
 }
 
-void ChannelSubscription::write(char* pBuffer, int pBufferSize)
+void ChannelConnection::write(char* pBuffer, int pBufferSize)
 {
     LOG(LOG_WARN, "TODO: implement me!");
 //    if(mSocket != NULL)
@@ -157,18 +157,18 @@ void ChannelSubscription::write(char* pBuffer, int pBufferSize)
 //    }
 }
 
-void ChannelSubscription::cancel()
+void ChannelConnection::cancel()
 {
     LOG(LOG_WARN, "TODO: implement me!");
 //    if(mSocket != NULL)
 //    {
-//        LOG(LOG_VERBOSE, "Subscription will be canceled now");
+//        LOG(LOG_VERBOSE, "Connection will be canceled now");
 //        delete mSocket;
 //        mSocket = NULL;
 //    }
 }
 
-Name* ChannelSubscription::name()
+Name* ChannelConnection::name()
 {
 //    if(mSocket != NULL)
 //    {
@@ -179,7 +179,7 @@ Name* ChannelSubscription::name()
 //    }
 }
 
-Name* ChannelSubscription::peer()
+Name* ChannelConnection::peer()
 {
     LOG(LOG_WARN, "TODO: implement me!");
 //    if(mSocket != NULL)
@@ -191,7 +191,7 @@ Name* ChannelSubscription::peer()
 //    }
 }
 
-bool ChannelSubscription::update(Requirements *pRequirements)
+bool ChannelConnection::update(Requirements *pRequirements)
 {
     bool tResult = false;
 

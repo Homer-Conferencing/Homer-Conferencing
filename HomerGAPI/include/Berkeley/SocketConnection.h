@@ -20,13 +20,13 @@
  *****************************************************************************/
 
 /*
- * Purpose: ISubscription
+ * Purpose: SocketConnection
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
 
-#ifndef _GAPI_SOCKET_SUBSCRIPTION_
-#define _GAPI_SOCKET_SUBSCRIPTION_
+#ifndef _GAPI_SOCKET_CONNECTION_
+#define _GAPI_SOCKET_CONNECTION_
 
 #include <HBSocket.h>
 
@@ -36,12 +36,12 @@ namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class SocketSubscription:
-	public ISubscription
+class SocketConnection:
+	public IConnection
 {
 public:
-	SocketSubscription(std::string pTarget, Requirements *pRequirements);
-    virtual ~SocketSubscription( );
+	SocketConnection(std::string pTarget, Requirements *pRequirements);
+    virtual ~SocketConnection( );
 
     virtual bool isClosed();
     virtual void read(char* pBuffer, int &pBufferSize);

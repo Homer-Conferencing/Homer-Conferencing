@@ -20,43 +20,28 @@
  *****************************************************************************/
 
 /*
- * Purpose: ChannelSubscription
+ * Purpose: IBinding
  * Author:  Thomas Volkert
- * Since:   2012-04-14
+ * Since:   2011-12-08
  */
 
-#ifndef _GAPI_CHANNEL_SUBSCRIPTION_
-#define _GAPI_CHANNEL_SUBSCRIPTION_
+#ifndef _GAPI_IREGISTRATION_
+#define _GAPI_IREGISTRATION_
 
-#include <HBSocket.h>
-
-#include <Requirements.h>
+#include <IConnection.h>
 
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class ChannelSubscription:
-	public ISubscription
+class IBinding
 {
 public:
-    ChannelSubscription(std::string pTarget, Requirements *pRequirements);
-    virtual ~ChannelSubscription( );
+	IBinding(){}
+    virtual ~IBinding( ){}
 
-    virtual bool isClosed();
-    virtual void read(char* pBuffer, int &pBufferSize);
-    virtual void write(char* pBuffer, int pBufferSize);
-    virtual void cancel();
-    virtual Name* name();
-    virtual Name* peer();
-    virtual bool update(Requirements *pRequirements);
-
-private:
-//    int 		mSocketHandle;
-//    Socket		*mSocket;
-    bool        mIsClosed;
-    std::string mTarget;
-//    unsigned int mTargetPort;
+    virtual IConnection* readConnection() = 0;
+    virtual void cancel() = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

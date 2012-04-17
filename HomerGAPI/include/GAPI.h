@@ -32,8 +32,8 @@
 
 #include <Name.h>
 #include <ISetup.h>
-#include <ISubscription.h>
-#include <IRegistration.h>
+#include <IConnection.h>
+#include <IBinding.h>
 
 #include <list>
 
@@ -72,8 +72,8 @@ public:
     SetupInterfacesNames ListAllNames();
 
     /* ISetup */
-    virtual ISubscription* subscribe(Name *pName, Requirements *pRequirements = 0);
-    virtual IRegistration* publish(Name *pName, Requirements *pRequirements = 0);
+    virtual IConnection* connect(Name *pName, Requirements *pRequirements = 0);
+    virtual IBinding* bind(Name *pName, Requirements *pRequirements = 0);
 
 private:
     ISetup						*mSetupInterface;
