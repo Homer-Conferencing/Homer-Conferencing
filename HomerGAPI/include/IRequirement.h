@@ -39,7 +39,7 @@ namespace Homer { namespace Base {
 #define REQUIREMENT_TARGET_PORT                         0x0001
 
 // transport attributes
-#define REQUIREMENT_TRANSMIT_LOSLESS                    0x0101
+#define REQUIREMENT_TRANSMIT_LOSSLESS                   0x0101
 #define REQUIREMENT_TRANSMIT_CHUNKS                     0x0102
 #define REQUIREMENT_TRANSMIT_STREAM                     0x0103
 #define REQUIREMENT_TRANSMIT_BIT_ERRORS                 0x0104

@@ -35,7 +35,7 @@ namespace Homer { namespace Base {
 ///////////////////////////////////////////////////////////////////////////////
 
 class RequirementTransmitLossless:
-    public TRequirement<RequirementTransmitLossless, REQUIREMENT_TRANSMIT_LOSLESS>
+    public TRequirement<RequirementTransmitLossless, REQUIREMENT_TRANSMIT_LOSSLESS>
 {
 public:
     virtual std::string GetDescription(){ return "Requ(TransmitLossless)"; }
