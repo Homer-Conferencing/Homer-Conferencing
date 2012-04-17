@@ -81,11 +81,13 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, QMainWindow 
     mSessionType = pSessionType;
     mIncomingCall = false;
     mQuitForced = false;
+    LOG(LOG_VERBOSE, "..init sound object for acoustic notifications");
     mSoundForIncomingCall = new QSound(CONF.GetCallSoundFile());
 
     //####################################################################
     //### create the remaining necessary widgets, menu and layouts
     //####################################################################
+    LOG(LOG_VERBOSE, "..init participant widget");
     Init(pContactsWidget, pVideoMenu, pAudioMenu, pMessageMenu, pParticipant);
 }
 
@@ -210,12 +212,15 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
         case BROADCAST:
                     LOG(LOG_VERBOSE, "Creating participant widget for BROADCAST");
                     mSessionName = "BROADCAST";
+                    LOG(LOG_VERBOSE, "..init broacast message widget");
                     mMessageWidget->Init(pMessageMenu, mSessionName, NULL, CONF.GetVisibilityBroadcastMessageWidget());
+                    LOG(LOG_VERBOSE, "..init broacast video widget");
                     if (mVideoSourceMuxer != NULL)
                     {
                         mVideoWidgetFrame->show();
                         mVideoWidget->Init(mMainWindow, mVideoSourceMuxer, pVideoMenu, mSessionName, mSessionName, true);
                     }
+                    LOG(LOG_VERBOSE, "..init broacast audio widget");
                     if (mAudioSourceMuxer != NULL)
                         mAudioWidget->Init(mAudioSourceMuxer, pAudioMenu, mSessionName, mSessionName, true, true);
                     setFeatures(QDockWidget::NoDockWidgetFeatures);
