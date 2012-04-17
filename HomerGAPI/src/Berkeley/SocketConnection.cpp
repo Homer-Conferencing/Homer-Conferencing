@@ -73,7 +73,7 @@ SocketConnection::SocketConnection(std::string pTarget, Requirements *pRequireme
     /* transport requirements */
     if ((pRequirements->Contains(RequirementTransmitChunks::type())) && (pRequirements->Contains(RequirementTransmitStream::type())))
     {
-        LOG(LOG_ERROR, "Detected requirement conflict between \"Req:Chunks\" and \"Req:Waterfall\"");
+        LOG(LOG_ERROR, "Detected requirement conflict between \"Req:Chunks\" and \"Req:Stream\"");
     }
 
     bool tTcp = (((!pRequirements->Contains(RequirementTransmitChunks::type())) &&

@@ -35,9 +35,6 @@
 #include <QThread>
 #include <QMutex>
 #include <QContextMenuEvent>
-#include <QAudioDeviceInfo>
-#include <QAudioOutput>
-#include <QAudio>
 #include <QBuffer>
 #include <QQueue>
 #include <QList>
@@ -182,10 +179,6 @@ public slots:
     void ToggleMuteState(bool pState = true);
     void SetVolume(int pValue);
 
-private slots:
-    void AudioPlaybackStateChanged(QAudio::State pState);
-    void AudioPlaybackPeriodFinished();
-
 private:
     void OpenPlaybackDevice();
     void ClosePlaybackDevice();
@@ -235,8 +228,6 @@ private:
     bool				mPlayNewFileAsap;
     bool                mSelectInputChannelAsap;
     /* playback */
-    QAudioDeviceInfo    *mAudioDeviceInfo;
-    QAudioOutput        *mAudioOutput;
     AudioBuffer         *mAudioBuffer;
 };
 

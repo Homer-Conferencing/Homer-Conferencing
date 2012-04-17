@@ -22,7 +22,6 @@ IF (NOT QT4_FOUND)
 ENDIF ()
 SET(QT_USE_QTCOREL 1)
 SET(QT_USE_QTGUI 1)
-SET(QT_USE_QTMULTIMEDIA 1)
 SET(QT_USE_QTNETWORK 1)
 SET(QT_USE_QTWEBKIT 1)
 SET(QT_USE_QTXML 1)
@@ -41,16 +40,6 @@ SET (INCLUDE_DIRS
 	../../HomerMultimedia/include
 	../../HomerConference/include
 	../../HomerSoundOutput/include
-#	../../HomerWinLibs/QT/include/
-#	../../HomerWinLibs/QT/include/Qt
-#	../../HomerWinLibs/QT/include/QtCore
-#	../../HomerWinLibs/QT/include/QtGui
-#	../../HomerWinLibs/QT/include/QtMultimedia
-#	../../HomerWinLibs/QT/include/QtNetwork
-#	../../HomerWinLibs/QT/include/QtXml
-#	../../HomerWinLibs/QT/include/QtWebKit
-#	../../HomerWinLibs/FFMPEG
-#	../../HomerWinLibs/OPENSSL/include
 	/usr/include/ffmpeg
 	${QT_INCLUDE_DIR}
 	${CMAKE_BINARY_DIR}/Homer/bin
@@ -243,7 +232,7 @@ SET (LIBS_WINDOWS_INSTALL
 	mingwm10
 	QtCore4
 	QtGui4
-	QtMultimedia4
+	#QtMultimedia4
 	QtNetwork4
 	QtWebKit4
 	QtXml4
@@ -262,7 +251,7 @@ SET (LIBS_WINDOWS
 	${QT_LIBRARIES}
 	${QT_QTCORE_LIBRARIES}
 	${QT_QTGUI_LIBRARIES}
-	${QT_QTMULTIMEDIA_LIBRARIES}
+	#${QT_QTMULTIMEDIA_LIBRARIES}
 	${QT_QTNETWORK_LIBRARIES}
 	${QT_QTXML_LIBRARIES}
 	${QT_QTWEBKIT_LIBRARIES}
@@ -294,7 +283,7 @@ ELSE ()
 		HomerSoundOutput
 		QtCore
 		QtGui
-		QtMultimedia
+		#QtMultimedia
 		QtNetwork
 		QtXml
 		QtWebKit
@@ -309,7 +298,7 @@ SET (LIBS_APPLE
 	HomerBase
 	HomerGAPI
 	HomerMonitor
-	HomerMultimedia
+	#HomerMultimedia
 	HomerConference
 	HomerSoundOutput
 	${QT_LIBRARIES}
@@ -317,13 +306,6 @@ SET (LIBS_APPLE
 SET (FRAMEWORKS_APPLE
 	Cocoa
 	ApplicationServices
-	#${QT_LIBRARIES}
-	#${QT_QTCORE_LIBRARIES}
-	#${QT_QTGUI_LIBRARIES}
-	#${QT_QTMULTIMEDIA_LIBRARIES}
-	#${QT_QTNETWORK_LIBRARIES}
-	#${QT_QTXML_LIBRARIES}
-	#${QT_QTWEBKIT_LIBRARIES}
 )
 
 ##############################################################
