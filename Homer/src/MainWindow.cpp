@@ -1230,7 +1230,7 @@ void MainWindow::customEvent(QEvent* pEvent)
         case REGISTRATION_FAILED:
                     //####################### REGISTRATION FAILED #############################
                     tRFEvent = (RegistrationFailedEvent*) tEvent;
-                    ShowError("Registration failed", "Could not register \"" + CONF.GetSipUserName() + "\" at the SIP server \"" + CONF.GetSipServer() + "\"!\n" \
+                    ShowError("Registration failed", "Could not register \"" + CONF.GetSipUserName() + "\" at the SIP server \"" + CONF.GetSipServer() + "\"! The reason is \"" + QString(tRFEvent->Description.c_str()) + "\"(" + QString("%1").arg(tRFEvent->StatusCode) + ")\n" \
                                                      "SIP server runs software \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
                     return;
         case PUBLICATION:
@@ -1241,7 +1241,7 @@ void MainWindow::customEvent(QEvent* pEvent)
         case PUBLICATION_FAILED:
                     //####################### PUBLICATION FAILED #############################
                     tPFEvent = (PublicationFailedEvent*) tEvent;
-                    ShowError("Presence publication failed", "Could not publish your new presence state at the SIP server \"" + CONF.GetSipServer() + "\"!\n" \
+                    ShowError("Presence publication failed", "Could not publish your new presence state at the SIP server \"" + CONF.GetSipServer() + "\"! The reason is \"" + QString(tPFEvent->Description.c_str()) + "\"(" + QString("%1").arg(tPFEvent->StatusCode) + ")\n" \
                                                              "SIP server runs software \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
                     return;
         default:
