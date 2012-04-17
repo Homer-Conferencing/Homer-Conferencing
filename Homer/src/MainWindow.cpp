@@ -1047,7 +1047,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                         if ((!hasFocus()) || (isMinimized()))
                         {
                             GetEventSource(tCEvent, tEventSender, tEventSenderApp);
-                            mSysTrayIcon->showMessage("Call from " + tEventSender, (tEventSenderApp != "") ? "(via \"" + tEventSenderApp + "\")" : "", QSystemTrayIcon::Warning, CONF.GetSystrayTimeout());
+                            mSysTrayIcon->showMessage("Call from " + tEventSender, (tEventSenderApp != "") ? "(via \"" + tEventSenderApp + "\")" : "", QSystemTrayIcon::Information, CONF.GetSystrayTimeout());
                         }
                     }
 
@@ -1122,7 +1122,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                         if ((!hasFocus()) || (isMinimized()))
                         {
                             GetEventSource(tCCEvent, tEventSender, tEventSenderApp);
-                            mSysTrayIcon->showMessage("Call canceled from " + tEventSender, (tEventSenderApp != "") ? "(via \"" + tEventSenderApp + "\")" : "", QSystemTrayIcon::Warning, CONF.GetSystrayTimeout());
+                            mSysTrayIcon->showMessage("Call canceled from " + tEventSender, (tEventSenderApp != "") ? "(via \"" + tEventSenderApp + "\")" : "", QSystemTrayIcon::Information, CONF.GetSystrayTimeout());
                         }
                     }
 
@@ -1175,7 +1175,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                         if ((!hasFocus()) || (isMinimized()))
                         {
                             GetEventSource(tCHUEvent, tEventSender, tEventSenderApp);
-                            mSysTrayIcon->showMessage("Call hangup from " + tEventSender, (tEventSenderApp != "") ? "(via \"" + tEventSenderApp + "\")" : "", QSystemTrayIcon::Warning, CONF.GetSystrayTimeout());
+                            mSysTrayIcon->showMessage("Call hangup from " + tEventSender, (tEventSenderApp != "") ? "(via \"" + tEventSenderApp + "\")" : "", QSystemTrayIcon::Information, CONF.GetSystrayTimeout());
                         }
                     }
 
@@ -1225,7 +1225,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     //####################### REGISTRATION SUCCEEDED #############################
                     tREvent = (RegistrationEvent*) tEvent;
                     mSysTrayIcon->showMessage("Registration successful", "Registered  \"" + CONF.GetSipUserName() + "\" at SIP server \"" + CONF.GetSipServer() + "\"!\n" \
-                                              "SIP server runs software \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".", QSystemTrayIcon::Warning, CONF.GetSystrayTimeout());
+                                              "SIP server runs software \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".", QSystemTrayIcon::Information, CONF.GetSystrayTimeout());
                     return;
         case REGISTRATION_FAILED:
                     //####################### REGISTRATION FAILED #############################
