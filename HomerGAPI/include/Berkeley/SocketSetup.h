@@ -46,8 +46,8 @@ public:
 	SocketSetup();
     virtual ~SocketSetup();
 
-    virtual ISubscription* subscribe(Name *pName, Requirements *pRequirements = 0);
-    virtual IRegistration* publish(Name *pName, Requirements *pRequirements = 0);
+    virtual IConnection* connect(Name *pName, Requirements *pRequirements = 0);
+    virtual IBinding* bind(Name *pName, Requirements *pRequirements = 0);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

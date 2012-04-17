@@ -99,7 +99,7 @@ MediaSinkNet::MediaSinkNet(string pTarget, Requirements *pTransportRequirements,
         LOG(LOG_VERBOSE, "Remote media sink at: %s<%d>%s", mTargetHost.c_str(), tTargetPort, mRtpActivated ? "(RTP)" : "");
 
         // finally subscribe to the target server/service
-        mGAPIDataSocket = GAPI.subscribe(new Name(pTarget), pTransportRequirements); //new Socket(IS_IPV6_ADDRESS(pTargetHost) ? SOCKET_IPv6 : SOCKET_IPv4, pSocketType);
+        mGAPIDataSocket = GAPI.connect(new Name(pTarget), pTransportRequirements); //new Socket(IS_IPV6_ADDRESS(pTargetHost) ? SOCKET_IPv6 : SOCKET_IPv4, pSocketType);
     }
 
     mMediaId = CreateId(mTargetHost, toString(mTargetPort), tTransportType, pRtpActivated);

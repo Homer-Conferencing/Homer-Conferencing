@@ -20,34 +20,43 @@
  *****************************************************************************/
 
 /*
- * Purpose: ISubscription
+ * Purpose: ChannelConnection
  * Author:  Thomas Volkert
- * Since:   2011-12-08
+ * Since:   2012-04-14
  */
 
-#ifndef _GAPI_ISUBSCRIPTION_
-#define _GAPI_ISUBSCRIPTION_
+#ifndef _GAPI_CHANNEL_CONNECTION_
+#define _GAPI_CHANNEL_CONNECTION_
 
-#include <Name.h>
+#include <HBSocket.h>
+
 #include <Requirements.h>
 
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class ISubscription
+class ChannelConnection:
+	public IConnection
 {
 public:
-	ISubscription(){ }
-    virtual ~ISubscription(){ }
+    ChannelConnection(std::string pTarget, Requirements *pRequirements);
+    virtual ~ChannelConnection( );
 
-    virtual bool isClosed() = 0;
-    virtual void read(char* pBuffer, int &pBufferize) = 0;
-    virtual void write(char* pBuffer, int pBufferSize) = 0;
-    virtual void cancel() = 0;
-    virtual Name* name() = 0;
-    virtual Name* peer() = 0;
-    virtual bool update(Requirements *pRequirements) = 0;
+    virtual bool isClosed();
+    virtual void read(char* pBuffer, int &pBufferSize);
+    virtual void write(char* pBuffer, int pBufferSize);
+    virtual void cancel();
+    virtual Name* name();
+    virtual Name* peer();
+    virtual bool update(Requirements *pRequirements);
+
+private:
+//    int 		mSocketHandle;
+//    Socket		*mSocket;
+    bool        mIsClosed;
+    std::string mTarget;
+//    unsigned int mTargetPort;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

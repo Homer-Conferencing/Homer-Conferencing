@@ -20,14 +20,14 @@
  *****************************************************************************/
 
 /*
- * Purpose: SocketSubscription
+ * Purpose: SocketConnection
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
 
 #include <GAPI.h>
 #include <Berkeley/SocketName.h>
-#include <Berkeley/SocketSubscription.h>
+#include <Berkeley/SocketConnection.h>
 #include <RequirementTransmitLossless.h>
 #include <RequirementTransmitChunks.h>
 #include <RequirementTransmitStream.h>
@@ -49,7 +49,7 @@ using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 //HINT: lossless transmission is not implemented by using TCP but by rely on a reaction by the network
-SocketSubscription::SocketSubscription(std::string pTarget, Requirements *pRequirements)
+SocketConnection::SocketConnection(std::string pTarget, Requirements *pRequirements)
 {
     bool tFoundTransport = false;
 
@@ -122,19 +122,19 @@ SocketSubscription::SocketSubscription(std::string pTarget, Requirements *pRequi
     update(pRequirements);
 }
 
-SocketSubscription::~SocketSubscription()
+SocketConnection::~SocketConnection()
 {
     delete mSocket;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool SocketSubscription::isClosed()
+bool SocketConnection::isClosed()
 {
 	return mIsClosed;
 }
 
-void SocketSubscription::read(char* pBuffer, int &pBufferSize)
+void SocketConnection::read(char* pBuffer, int &pBufferSize)
 {
     if(mSocket != NULL)
     {
@@ -147,7 +147,7 @@ void SocketSubscription::read(char* pBuffer, int &pBufferSize)
     }
 }
 
-void SocketSubscription::write(char* pBuffer, int pBufferSize)
+void SocketConnection::write(char* pBuffer, int pBufferSize)
 {
     if(mSocket != NULL)
     {
@@ -156,17 +156,17 @@ void SocketSubscription::write(char* pBuffer, int pBufferSize)
     }
 }
 
-void SocketSubscription::cancel()
+void SocketConnection::cancel()
 {
     if(mSocket != NULL)
     {
-        LOG(LOG_VERBOSE, "Subscription will be canceled now");
+        LOG(LOG_VERBOSE, "Connection will be canceled now");
         delete mSocket;
         mSocket = NULL;
     }
 }
 
-Name* SocketSubscription::name()
+Name* SocketConnection::name()
 {
     if(mSocket != NULL)
     {
@@ -177,7 +177,7 @@ Name* SocketSubscription::name()
     }
 }
 
-Name* SocketSubscription::peer()
+Name* SocketConnection::peer()
 {
     if(mSocket != NULL)
     {
@@ -188,7 +188,7 @@ Name* SocketSubscription::peer()
     }
 }
 
-bool SocketSubscription::update(Requirements *pRequirements)
+bool SocketConnection::update(Requirements *pRequirements)
 {
     bool tResult = false;
 

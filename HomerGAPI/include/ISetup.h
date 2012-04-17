@@ -29,8 +29,8 @@
 #define _GAPI_ISETUP_
 
 #include <Name.h>
-#include <ISubscription.h>
-#include <IRegistration.h>
+#include <IConnection.h>
+#include <IBinding.h>
 #include <Requirements.h>
 
 namespace Homer { namespace Base {
@@ -43,8 +43,8 @@ public:
 	ISetup(){ }
     virtual ~ISetup( ){ }
 
-    virtual ISubscription* subscribe(Name *pName, Requirements *pRequirements = 0) = 0;
-    virtual IRegistration* publish(Name *pName, Requirements *pRequirements = 0) = 0;
+    virtual IConnection* connect(Name *pName, Requirements *pRequirements = 0) = 0;
+    virtual IBinding* bind(Name *pName, Requirements *pRequirements = 0) = 0; //TODO: callback?
 };
 
 ///////////////////////////////////////////////////////////////////////////////

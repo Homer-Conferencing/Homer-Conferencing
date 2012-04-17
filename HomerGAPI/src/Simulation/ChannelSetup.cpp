@@ -27,7 +27,7 @@
 
 #include <GAPI.h>
 #include <Simulation/ChannelSetup.h>
-#include <Simulation/ChannelSubscription.h>
+#include <Simulation/ChannelConnection.h>
 
 #include <Logger.h>
 
@@ -50,12 +50,12 @@ ChannelSetup::~ChannelSetup()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-ISubscription* ChannelSetup::subscribe(Name *pName, Requirements *pRequirements)
+IConnection* ChannelSetup::connect(Name *pName, Requirements *pRequirements)
 {
-	return new ChannelSubscription(pName->toString(), pRequirements);
+	return new ChannelConnection(pName->toString(), pRequirements);
 }
 
-IRegistration* ChannelSetup::publish(Name *pName, Requirements *pRequirements)
+IBinding* ChannelSetup::bind(Name *pName, Requirements *pRequirements)
 {
 	//TODO:
 	return 0;

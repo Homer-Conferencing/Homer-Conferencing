@@ -42,9 +42,9 @@ SET (SOURCES
 	../src/Requirements
 	../src/Berkeley/SocketName
 	../src/Berkeley/SocketSetup
-	../src/Berkeley/SocketSubscription
+	../src/Berkeley/SocketConnection
 	../src/Simulation/ChannelSetup
-	../src/Simulation/ChannelSubscription
+	../src/Simulation/ChannelConnection
 )
 
 ##############################################################

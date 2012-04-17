@@ -20,28 +20,34 @@
  *****************************************************************************/
 
 /*
- * Purpose: IRegistration
+ * Purpose: ISubscription
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
 
-#ifndef _GAPI_IREGISTRATION_
-#define _GAPI_IREGISTRATION_
+#ifndef _GAPI_ISUBSCRIPTION_
+#define _GAPI_ISUBSCRIPTION_
 
-#include <ISubscription.h>
+#include <Name.h>
+#include <Requirements.h>
 
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class IRegistration
+class IConnection
 {
 public:
-	IRegistration(){}
-    virtual ~IRegistration( ){}
+	IConnection(){ }
+    virtual ~IConnection(){ }
 
-    virtual ISubscription* readSubscription() = 0;
+    virtual bool isClosed() = 0;
+    virtual void read(char* pBuffer, int &pBufferize) = 0;
+    virtual void write(char* pBuffer, int pBufferSize) = 0;
     virtual void cancel() = 0;
+    virtual Name* name() = 0;
+    virtual Name* peer() = 0;
+    virtual bool update(Requirements *pRequirements) = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -27,7 +27,7 @@
 
 #include <GAPI.h>
 #include <Berkeley/SocketSetup.h>
-#include <Berkeley/SocketSubscription.h>
+#include <Berkeley/SocketConnection.h>
 
 #include <Logger.h>
 
@@ -50,12 +50,12 @@ SocketSetup::~SocketSetup()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-ISubscription* SocketSetup::subscribe(Name *pName, Requirements *pRequirements)
+IConnection* SocketSetup::connect(Name *pName, Requirements *pRequirements)
 {
-	return new SocketSubscription(pName->toString(), pRequirements);
+	return new SocketConnection(pName->toString(), pRequirements);
 }
 
-IRegistration* SocketSetup::publish(Name *pName, Requirements *pRequirements)
+IBinding* SocketSetup::bind(Name *pName, Requirements *pRequirements)
 {
 	//TODO:
 	return 0;

@@ -145,7 +145,7 @@ SetupInterfacesNames GapiService::ListAllNames()
 	return tResult;
 }
 
-ISubscription* GapiService::subscribe(Name *pName, Requirements *pRequirements)
+IConnection* GapiService::connect(Name *pName, Requirements *pRequirements)
 {
 	LOG(LOG_VERBOSE, "Got call to GAPI::subscribe() with name \"%s\" and requirements \"%s\"", pName->toString().c_str(), pRequirements->GetDescription().c_str());
 
@@ -155,10 +155,10 @@ ISubscription* GapiService::subscribe(Name *pName, Requirements *pRequirements)
 		return 0;
 	}
 
-	return mSetupInterface->subscribe(pName, pRequirements);
+	return mSetupInterface->connect(pName, pRequirements);
 }
 
-IRegistration* GapiService::publish(Name *pName, Requirements *pRequirements)
+IBinding* GapiService::bind(Name *pName, Requirements *pRequirements)
 {
 	LOG(LOG_VERBOSE, "Got call to GAPI::publish() with name \"%s\" and requirements \"%s\"", pName->toString().c_str(), pRequirements->GetDescription().c_str());
 
@@ -168,7 +168,7 @@ IRegistration* GapiService::publish(Name *pName, Requirements *pRequirements)
 		return 0;
 	}
 
-	return mSetupInterface->publish(pName, pRequirements);
+	return mSetupInterface->bind(pName, pRequirements);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
