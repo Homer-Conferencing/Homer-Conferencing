@@ -312,7 +312,7 @@
               </font>
              </property>
              <property name="text">
-              <string>Guaranteed data rate:</string>
+              <string>Desired minimum data rate:</string>
              </property>
              <property name="checked">
               <bool>true</bool>
@@ -411,7 +411,7 @@
               </font>
              </property>
              <property name="text">
-              <string>Maximum overall delay:</string>
+              <string>Desired maximum overall delay:</string>
              </property>
              <property name="checked">
               <bool>true</bool>
@@ -510,7 +510,7 @@
               </font>
              </property>
              <property name="text">
-              <string>Lossless multimedia streaming</string>
+              <string>Demand for lossless multimedia streaming</string>
              </property>
             </widget>
            </item>
