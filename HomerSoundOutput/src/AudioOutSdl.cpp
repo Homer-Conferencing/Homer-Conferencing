@@ -182,17 +182,20 @@ bool AudioOutSdl::OpenPlaybackDevice(int pSampleRate, bool pStereo, string pDriv
     // set player callback function
     Mix_ChannelFinished(PlayerCallBack);
 
-    // give info about available chunk decoders
-    int tNumDecoders = Mix_GetNumChunkDecoders();
-    LOG(LOG_INFO, "There are %d available chunk decoders..", tNumDecoders);
-    for(int i = 0; i < tNumDecoders; ++i)
-        LOG(LOG_INFO, "  ..chunk decoder[%d]: %s", i, Mix_GetChunkDecoder(i));
+	#if (((SDL_MIXER_MAJOR_VERSION << 16) + (SDL_MIXER_MINOR_VERSION << 8) + SDL_MIXER_PATCHLEVEL) > ((1 << 16) + (2 << 8) + 10))
 
-    // give info about available music decoders
-    tNumDecoders = Mix_GetNumMusicDecoders();
-    LOG(LOG_INFO, "There are %d available music decoders..", tNumDecoders);
-    for(int i = 0; i < tNumDecoders; ++i)
-        LOG(LOG_INFO, "  ..music decoder[%d]: %s", i, Mix_GetMusicDecoder(i));
+		// give info about available chunk decoders
+		int tNumDecoders = Mix_GetNumChunkDecoders();
+		LOG(LOG_INFO, "There are %d available chunk decoders..", tNumDecoders);
+		for(int i = 0; i < tNumDecoders; ++i)
+			LOG(LOG_INFO, "  ..chunk decoder[%d]: %s", i, Mix_GetChunkDecoder(i));
+
+		// give info about available music decoders
+		tNumDecoders = Mix_GetNumMusicDecoders();
+		LOG(LOG_INFO, "There are %d available music decoders..", tNumDecoders);
+		for(int i = 0; i < tNumDecoders; ++i)
+			LOG(LOG_INFO, "  ..music decoder[%d]: %s", i, Mix_GetMusicDecoder(i));
+	#endif
 
     mAudioOutOpened = true;
 
