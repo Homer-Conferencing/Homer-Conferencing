@@ -298,7 +298,7 @@ SET (LIBS_APPLE
 	HomerBase
 	HomerGAPI
 	HomerMonitor
-	#HomerMultimedia
+	HomerMultimedia
 	HomerConference
 	HomerSoundOutput
 	${QT_LIBRARIES}
