@@ -71,7 +71,7 @@ public:
 
     /* query functions */
     bool contains(int pType);
-    IEvent* get(int pType);
+    IEvent* get(int pType, int pNumber = 0);
 
 private:
     void add(EventSet pSet);

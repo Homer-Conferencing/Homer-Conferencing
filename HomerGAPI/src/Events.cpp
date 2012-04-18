@@ -111,21 +111,8 @@ bool Events::add(IEvent *pAddRequ)
 
     mEventSetMutex.lock();
 
-    // do we already know this type of requirement?
-    for(tIt = mEventSet.begin(); tIt != mEventSet.end(); tIt++)
-    {
-        if((*tIt)->getType() == pAddRequ->getType())
-        {
-            tResult = false;
-            LOG(LOG_WARN, "Event is a duplicate of an already known");
-        }
-    }
-
-    // is everything okay to add given requirement?
-    if(tResult)
-    {
-        mEventSet.push_back(pAddRequ);
-    }
+    // we allow event duplicates
+	mEventSet.push_back(pAddRequ);
 
     mEventSetMutex.unlock();
 
@@ -166,20 +153,25 @@ bool Events::contains(int pType)
     return tResult;
 }
 
-IEvent* Events::get(int pType)
+IEvent* Events::get(int pType, int pNumber)
 {
     IEvent* tResult = NULL;
     EventSet::iterator tIt;
 
     mEventSetMutex.lock();
 
+    int tEventCounter = 0;
     for(tIt = mEventSet.begin(); tIt != mEventSet.end(); tIt++)
     {
         if((*tIt)->getType() == pType)
         {
-            // return first occurrence
-            tResult = (*tIt);
-            break;
+        	if (tEventCounter == pNumber)
+        	{
+				// return first occurrence
+				tResult = (*tIt);
+				break;
+        	}
+        	tEventCounter++;
         }
     }
 
