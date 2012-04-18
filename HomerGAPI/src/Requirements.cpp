@@ -47,11 +47,6 @@ Requirements::~Requirements()
 {
 }
 
-Requirements::Requirements(Requirements &pCopy)
-{
-    add(pCopy.getAll());
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 string Requirements::getDescription()

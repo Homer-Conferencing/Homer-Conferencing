@@ -55,7 +55,7 @@ class Requirements
 {
 public:
     Requirements();
-    Requirements(Requirements &pCopy);
+
     virtual ~Requirements();
 
     virtual std::string getDescription();
