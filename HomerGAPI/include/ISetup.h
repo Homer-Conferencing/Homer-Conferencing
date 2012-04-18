@@ -45,6 +45,7 @@ public:
 
     virtual IConnection* connect(Name *pName, Requirements *pRequirements = 0) = 0;
     virtual IBinding* bind(Name *pName, Requirements *pRequirements = 0) = 0; //TODO: callback?
+    virtual Requirements getCapabilities(Name *pName, Requirements *pImportantRequirements = 0) = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

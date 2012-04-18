@@ -49,6 +49,7 @@ using namespace std;
 ///////////////////////////////////////////////////////////////////////////////
 ChannelConnection::ChannelConnection(std::string pTarget, Requirements *pRequirements)
 {
+    mBlockingMode = true;
 //    bool tFoundTransport = false;
 //
     mTarget = pTarget;
@@ -133,6 +134,11 @@ bool ChannelConnection::isClosed()
 	return mIsClosed;
 }
 
+int ChannelConnection::availableBytes()
+{
+	return 0; //TODO
+}
+
 void ChannelConnection::read(char* pBuffer, int &pBufferSize)
 {
     LOG(LOG_WARN, "TODO: implement me!");
@@ -157,6 +163,16 @@ void ChannelConnection::write(char* pBuffer, int pBufferSize)
 //    }
 }
 
+bool ChannelConnection::getBlocking()
+{
+	return mBlockingMode;
+}
+
+void ChannelConnection::setBlocking(bool pState)
+{
+	mBlockingMode = pState;
+}
+
 void ChannelConnection::cancel()
 {
     LOG(LOG_WARN, "TODO: implement me!");
@@ -168,7 +184,7 @@ void ChannelConnection::cancel()
 //    }
 }
 
-Name* ChannelConnection::name()
+Name* ChannelConnection::getName()
 {
 //    if(mSocket != NULL)
 //    {
@@ -179,7 +195,7 @@ Name* ChannelConnection::name()
 //    }
 }
 
-Name* ChannelConnection::peer()
+Name* ChannelConnection::getRemoteName()
 {
     LOG(LOG_WARN, "TODO: implement me!");
 //    if(mSocket != NULL)
@@ -191,7 +207,7 @@ Name* ChannelConnection::peer()
 //    }
 }
 
-bool ChannelConnection::update(Requirements *pRequirements)
+bool ChannelConnection::changeRequirements(Requirements *pRequirements)
 {
     bool tResult = false;
 
@@ -234,7 +250,23 @@ bool ChannelConnection::update(Requirements *pRequirements)
 //        tResult = mSocket->SetQoS(tQoSSettings);
 //    }
 //
+    mRequirements = *pRequirements; //TODO: maybe some requirements were dropped?
+
     return tResult;
+}
+
+Requirements ChannelConnection::getRequirements()
+{
+	return mRequirements;
+}
+
+Events ChannelConnection::getEvents()
+{
+	Events tResult;
+
+	//TODO:
+
+	return tResult;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

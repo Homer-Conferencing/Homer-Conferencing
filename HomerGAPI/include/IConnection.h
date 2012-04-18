@@ -30,6 +30,7 @@
 
 #include <Name.h>
 #include <Requirements.h>
+#include <Events.h>
 
 namespace Homer { namespace Base {
 
@@ -42,12 +43,17 @@ public:
     virtual ~IConnection(){ }
 
     virtual bool isClosed() = 0;
+    virtual int availableBytes() = 0;
     virtual void read(char* pBuffer, int &pBufferize) = 0;
     virtual void write(char* pBuffer, int pBufferSize) = 0;
+    virtual bool getBlocking() = 0;
+    virtual void setBlocking(bool pState) = 0;
     virtual void cancel() = 0;
-    virtual Name* name() = 0;
-    virtual Name* peer() = 0;
-    virtual bool update(Requirements *pRequirements) = 0;
+    virtual Name* getName() = 0;
+    virtual Name* getRemoteName() = 0;
+    virtual bool changeRequirements(Requirements *pRequirements) = 0;
+    virtual Requirements getRequirements() = 0;
+    virtual Events getEvents() = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

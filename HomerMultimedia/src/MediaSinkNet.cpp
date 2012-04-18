@@ -72,10 +72,10 @@ MediaSinkNet::MediaSinkNet(string pTarget, Requirements *pTransportRequirements,
 
     // get target port
     unsigned int tTargetPort = 0;
-    RequirementTargetPort *tRequPort = (RequirementTargetPort*)pTransportRequirements->Get(RequirementTargetPort::type());
+    RequirementTargetPort *tRequPort = (RequirementTargetPort*)pTransportRequirements->get(RequirementTargetPort::type());
     if (tRequPort != NULL)
     {
-        tTargetPort = tRequPort->GetPort();
+        tTargetPort = tRequPort->getPort();
 
     }else
     {
@@ -88,8 +88,8 @@ MediaSinkNet::MediaSinkNet(string pTarget, Requirements *pTransportRequirements,
     mTargetHost = pTarget;
 
     // get transport type
-    mStreamedTransport = (pTransportRequirements->Contains(RequirementTransmitLossless::type()) || pTransportRequirements->Contains(RequirementTransmitStream::type()));
-    enum TransportType tTransportType = (mStreamedTransport ? SOCKET_TCP : (pTransportRequirements->Contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
+    mStreamedTransport = (pTransportRequirements->contains(RequirementTransmitLossless::type()) || pTransportRequirements->contains(RequirementTransmitStream::type()));
+    enum TransportType tTransportType = (mStreamedTransport ? SOCKET_TCP : (pTransportRequirements->contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
     if (mStreamedTransport)
     	mStreamFragmentCopyBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
 

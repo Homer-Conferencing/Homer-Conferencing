@@ -41,7 +41,7 @@ namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define GAPI GapiService::GetInstance()
+#define GAPI GapiService::getInstance()
 
 struct SetupInterfaceDescription{
 	ISetup			*Interface;
@@ -63,17 +63,18 @@ public:
 	GapiService();
     virtual ~GapiService( );
 
-    static GapiService& GetInstance();
+    static GapiService& getInstance();
 
     /* plugin system for different ISetup implementations */
-    bool Register(ISetup* pSetupInterface, std::string pName);
-    bool Select(std::string pName);
-    std::string GetCurrentName();
-    SetupInterfacesNames ListAllNames();
+    bool registerImpl(ISetup* pSetupInterface, std::string pName);
+    bool selectImpl(std::string pName);
+    std::string getCurrentImplName();
+    SetupInterfacesNames getAllImplNames();
 
     /* ISetup */
     virtual IConnection* connect(Name *pName, Requirements *pRequirements = 0);
     virtual IBinding* bind(Name *pName, Requirements *pRequirements = 0);
+    virtual Requirements getCapabilities(Name *pName, Requirements *pImportantRequirements = 0);
 
 private:
     ISetup						*mSetupInterface;

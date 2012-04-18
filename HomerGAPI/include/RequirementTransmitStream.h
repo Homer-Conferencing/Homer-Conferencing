@@ -38,7 +38,7 @@ class RequirementTransmitStream:
     public TRequirement<RequirementTransmitStream, REQUIREMENT_TRANSMIT_STREAM>
 {
 public:
-    virtual std::string GetDescription(){ return "Requ(TransmitStream)"; }
+    virtual std::string getDescription(){ return "Requ(TransmitStream)"; }
 };
 
 ///////////////////////////////////////////////////////////////////////////////

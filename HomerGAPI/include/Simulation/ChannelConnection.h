@@ -44,14 +44,21 @@ public:
     virtual ~ChannelConnection( );
 
     virtual bool isClosed();
-    virtual void read(char* pBuffer, int &pBufferSize);
+    virtual int availableBytes();
+    virtual void read(char* pBuffer, int &pBufferSize); //TODO: support non blocking mode
     virtual void write(char* pBuffer, int pBufferSize);
+    virtual bool getBlocking();
+    virtual void setBlocking(bool pState);
     virtual void cancel();
-    virtual Name* name();
-    virtual Name* peer();
-    virtual bool update(Requirements *pRequirements);
+    virtual Name* getName();
+    virtual Name* getRemoteName();
+    virtual bool changeRequirements(Requirements *pRequirements);
+    virtual Requirements getRequirements();
+    virtual Events getEvents();
 
 private:
+    bool		mBlockingMode;
+    Requirements mRequirements;
 //    int 		mSocketHandle;
 //    Socket		*mSocket;
     bool        mIsClosed;

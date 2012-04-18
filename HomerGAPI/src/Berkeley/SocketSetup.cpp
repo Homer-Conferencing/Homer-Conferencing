@@ -61,6 +61,14 @@ IBinding* SocketSetup::bind(Name *pName, Requirements *pRequirements)
 	return 0;
 }
 
+Requirements SocketSetup::getCapabilities(Name *pName, Requirements *pImportantRequirements)
+{
+	Requirements tResult;
+
+	//TODO:
+
+	return tResult;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 

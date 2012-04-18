@@ -66,8 +66,8 @@ public:
 
     }
 
-    virtual std::string GetDescription() = 0;
-    virtual int GetType()const
+    virtual std::string getDescription() = 0;
+    virtual int getType()const
     {
         return mType;
     }

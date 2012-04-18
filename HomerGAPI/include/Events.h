@@ -20,35 +20,66 @@
  *****************************************************************************/
 
 /*
- * Purpose: SocketSetup
+ * Purpose: Requirements
  * Author:  Thomas Volkert
- * Since:   2011-12-08
+ * Since:   2012-04-18
  */
 
-#ifndef _GAPI_SOCKET_SETUP_
-#define _GAPI_SOCKET_SETUP_
+#ifndef _GAPI_EVENT_
+#define _GAPI_EVENT_
 
-#include <Name.h>
-#include <ISetup.h>
+// to simplify including of all requirements
+//#include <RequirementTransmitLossless.h>
+//#include <RequirementTransmitChunks.h>
+//#include <RequirementTransmitStream.h>
+//#include <RequirementTransmitBitErrors.h>
+//#include <RequirementTargetPort.h>
+//#include <RequirementTransmitOrdered.h>
+//#include <RequirementLimitDelay.h>
+//#include <RequirementLimitDataRate.h>
+
+#include <IEvent.h>
+#include <HBMutex.h>
+
+#include <list>
 
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define BERKEYLEY_SOCKETS           "Berkeley Sockets"
+typedef std::list<IEvent*> EventSet;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class SocketSetup:
-	public ISetup
+class Events
 {
 public:
-	SocketSetup();
-    virtual ~SocketSetup();
+	Events();
+	Events(Events &pCopy);
+    virtual ~Events();
 
-    virtual IConnection* connect(Name *pName, Requirements *pRequirements = 0);
-    virtual IBinding* bind(Name *pName, Requirements *pRequirements = 0);
-    virtual Requirements getCapabilities(Name *pName, Requirements *pImportantRequirements = 0);
+    virtual std::string getDescription();
+
+    /* overloaded operators */
+//    void operator+=(IRequirement pAddRequ);
+//    void operator|=(IRequirement pAddRequ);
+//    Requirements& operator+(IRequirement pAddRequ);
+//    Requirements& operator|(IRequirement pAddRequ);
+
+    /* set manipulation */
+    bool add(IEvent *pRequ);
+
+    /* query functions */
+    bool contains(int pType);
+    IEvent* get(int pType);
+
+private:
+    void add(EventSet pSet);
+    EventSet getAll();
+    void removeAll();
+
+    EventSet      		mEventSet;
+    Mutex               mEventSetMutex;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

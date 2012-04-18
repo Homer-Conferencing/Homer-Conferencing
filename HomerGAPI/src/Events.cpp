@@ -20,14 +20,14 @@
  *****************************************************************************/
 
 /*
- * Purpose: Requirements
+ * Purpose: Events
  * Author:  Thomas Volkert
- * Since:   2011-12-08
+ * Since:   2012-04-18
  */
 
 #include <GAPI.h>
-#include <Requirements.h>
-#include <IRequirement.h>
+#include <Events.h>
+#include <IEvent.h>
 
 #include <Logger.h>
 
@@ -39,31 +39,31 @@ using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-Requirements::Requirements()
+Events::Events()
 {
 }
 
-Requirements::~Requirements()
+Events::~Events()
 {
     removeAll();
 }
 
-Requirements::Requirements(Requirements &pCopy)
+Events::Events(Events &pCopy)
 {
     add(pCopy.getAll());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-string Requirements::getDescription()
+string Events::getDescription()
 {
     std::string tResult = "";
-    RequirementSet::iterator tIt;
+    EventSet::iterator tIt;
 
-    mRequirementSetMutex.lock();
+    mEventSetMutex.lock();
 
-    int tRemainingRequs = mRequirementSet.size();
-    for(tIt = mRequirementSet.begin(); tIt != mRequirementSet.end(); tIt++)
+    int tRemainingRequs = mEventSet.size();
+    for(tIt = mEventSet.begin(); tIt != mEventSet.end(); tIt++)
     {
         tRemainingRequs--;
         tResult += (*tIt)->getDescription();
@@ -73,87 +73,87 @@ string Requirements::getDescription()
         }
     }
 
-    mRequirementSetMutex.unlock();
+    mEventSetMutex.unlock();
 
     return tResult;
 }
 
-//void Requirements::operator+=(IRequirement &pAddRequ)
+//void Events::operator+=(IEvent &pAddRequ)
 //{
 //    add(pAddRequ);
 //}
 //
-//void Requirements::operator|=(IRequirement &pAddRequ)
+//void Events::operator|=(IEvent &pAddRequ)
 //{
 //    add(pAddRequ);
 //}
 //
-//Requirements& Requirements::operator|(IRequirement &pAddRequ)
+//Events& Events::operator|(IEvent &pAddRequ)
 //{
-//    Requirements *tResult = new Requirements(*this);
+//    Events *tResult = new Events(*this);
 //    tResult->add(pAddRequ);
 //    return *tResult;
 //}
 //
-//Requirements& Requirements::operator+(IRequirement &pAddRequ)
+//Events& Events::operator+(IEvent &pAddRequ)
 //{
-//    Requirements *tResult = new Requirements(*this);
+//    Events *tResult = new Events(*this);
 //    tResult->add(pAddRequ);
 //    return *tResult;
 //}
 //
-bool Requirements::add(IRequirement *pAddRequ)
+bool Events::add(IEvent *pAddRequ)
 {
     bool tResult = true;
-    RequirementSet::iterator tIt;
+    EventSet::iterator tIt;
 
     LOG(LOG_VERBOSE, "Adding requirement %s", pAddRequ->getDescription().c_str());
 
-    mRequirementSetMutex.lock();
+    mEventSetMutex.lock();
 
     // do we already know this type of requirement?
-    for(tIt = mRequirementSet.begin(); tIt != mRequirementSet.end(); tIt++)
+    for(tIt = mEventSet.begin(); tIt != mEventSet.end(); tIt++)
     {
         if((*tIt)->getType() == pAddRequ->getType())
         {
             tResult = false;
-            LOG(LOG_WARN, "Requirement is a duplicate of an already known");
+            LOG(LOG_WARN, "Event is a duplicate of an already known");
         }
     }
 
     // is everything okay to add given requirement?
     if(tResult)
     {
-        mRequirementSet.push_back(pAddRequ);
+        mEventSet.push_back(pAddRequ);
     }
 
-    mRequirementSetMutex.unlock();
+    mEventSetMutex.unlock();
 
     return tResult;
 }
 
-void Requirements::add(RequirementSet pSet)
+void Events::add(EventSet pSet)
 {
-    RequirementSet::iterator tIt;
+    EventSet::iterator tIt;
 
-    mRequirementSetMutex.lock();
+    mEventSetMutex.lock();
 
     for (tIt = pSet.begin(); tIt != pSet.end(); tIt++)
     {
-        mRequirementSet.push_back(*tIt);
+        mEventSet.push_back(*tIt);
     }
 
-    mRequirementSetMutex.unlock();
+    mEventSetMutex.unlock();
 }
 
-bool Requirements::contains(int pType)
+bool Events::contains(int pType)
 {
     bool tResult = false;
-    RequirementSet::iterator tIt;
+    EventSet::iterator tIt;
 
-    mRequirementSetMutex.lock();
+    mEventSetMutex.lock();
 
-    for(tIt = mRequirementSet.begin(); tIt != mRequirementSet.end(); tIt++)
+    for(tIt = mEventSet.begin(); tIt != mEventSet.end(); tIt++)
     {
         if((*tIt)->getType() == pType)
         {
@@ -161,19 +161,19 @@ bool Requirements::contains(int pType)
         }
     }
 
-    mRequirementSetMutex.unlock();
+    mEventSetMutex.unlock();
 
     return tResult;
 }
 
-IRequirement* Requirements::get(int pType)
+IEvent* Events::get(int pType)
 {
-    IRequirement* tResult = NULL;
-    RequirementSet::iterator tIt;
+    IEvent* tResult = NULL;
+    EventSet::iterator tIt;
 
-    mRequirementSetMutex.lock();
+    mEventSetMutex.lock();
 
-    for(tIt = mRequirementSet.begin(); tIt != mRequirementSet.end(); tIt++)
+    for(tIt = mEventSet.begin(); tIt != mEventSet.end(); tIt++)
     {
         if((*tIt)->getType() == pType)
         {
@@ -183,30 +183,30 @@ IRequirement* Requirements::get(int pType)
         }
     }
 
-    mRequirementSetMutex.unlock();
+    mEventSetMutex.unlock();
 
     return tResult;
 }
 
-RequirementSet Requirements::getAll()
+EventSet Events::getAll()
 {
-    return mRequirementSet;
+    return mEventSet;
 }
 
-void Requirements::removeAll()
+void Events::removeAll()
 {
     LOG(LOG_VERBOSE, "Removing stored requirements");
 
-    RequirementSet::iterator tIt;
+    EventSet::iterator tIt;
 
-    mRequirementSetMutex.lock();
+    mEventSetMutex.lock();
 
-    for(tIt = mRequirementSet.begin(); tIt != mRequirementSet.end(); tIt++)
+    for(tIt = mEventSet.begin(); tIt != mEventSet.end(); tIt++)
     {
         delete (*tIt);
     }
 
-    mRequirementSetMutex.unlock();
+    mEventSetMutex.unlock();
 }
 ///////////////////////////////////////////////////////////////////////////////
 

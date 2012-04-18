@@ -44,8 +44,8 @@ public:
     virtual ~SocketName();
 
     virtual std::string toString();
-    virtual std::string GetHost();
-    virtual unsigned int GetPort();
+    virtual std::string getHost();
+    virtual unsigned int getPort();
 private:
     std::string		mHost;
     unsigned int    mPort;
