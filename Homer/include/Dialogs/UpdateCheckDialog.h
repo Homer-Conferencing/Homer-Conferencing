@@ -65,6 +65,7 @@ private slots:
     void GotAnswerForVersionRequest(bool pError);
     void GotAnswerForChangelogRequest(bool pError);
     void DownloadStart();
+    void DownloadInstallerStart();
     void DownloadStop();
     void DownloadFinished();
     void DownloadNewChunk();
@@ -81,7 +82,7 @@ private:
     bool			mDownloadStarted;
     QProgressDialog *mDownloadProgressDialog;
     QNetworkAccessManager *mNetworkAccessManager;
-    QFile			*mDownloadHomerArchiveFile;
+    QFile			*mDownloadHomerUpdateFile;
     QNetworkReply   *mDownloadReply;
     QString 		mServerFile;
     bool            mDownloadAborted;

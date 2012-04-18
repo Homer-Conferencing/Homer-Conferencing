@@ -47,8 +47,6 @@
 #include <QPainter>
 #include <QEvent>
 #include <QApplication>
-#include <QAudioDeviceInfo>
-#include <QAudioOutput>
 
 #include <stdlib.h>
 #include <string>
@@ -338,7 +336,7 @@ void AudioWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             tIcon10.addPixmap(QPixmap(":/images/Audio - Play.png"), QIcon::Normal, QIcon::Off);
         }else
         {
-            tAction = tMenu.addAction("Pause stream");
+            tAction = tMenu.addAction("Drop stream");
             tIcon10.addPixmap(QPixmap(":/images/Audio - Pause.png"), QIcon::Normal, QIcon::Off);
         }
         tAction->setIcon(tIcon10);
@@ -403,7 +401,7 @@ void AudioWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             mShowLiveStats = false;
             return;
         }
-        if (tPopupRes->text().compare("Pause stream") == 0)
+        if (tPopupRes->text().compare("Drop stream") == 0)
         {
             mAudioPaused = true;
             mAudioWorker->SetSampleDropping(true);
@@ -572,7 +570,7 @@ void AudioWidget::ShowSample(void* pBuffer, int pSampleSize, int pSampleNumber)
         if (mAudioSource->SupportsSeeking())
             mLbStreamInfo->setText("<font color=red><b>"                                                                                                \
                                    /*"Source: " + mAudioWorker->GetCurrentDevice() + "<br>" +                                                            \*/
-                                   "Buffer: " + QString("%1").arg(pSampleNumber) + (mAudioSource->GetChunkDropConter() ? (" (" + QString("%1").arg(mAudioSource->GetChunkDropConter()) + " dropped)") : "") + "<br>" + \
+                                   "Buffer: " + QString("%1").arg(pSampleNumber) + (mAudioSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mAudioSource->GetChunkDropCounter()) + " dropped)") : "") + "<br>" + \
                                    "Codec: " + QString((mAudioSource->GetCodecName() != "") ? mAudioSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(mAudioSource->GetSampleRate()) + "Hz)<br>" + \
                                    "Output: " + QString("%1").arg(AUDIO_OUTPUT_SAMPLE_RATE) + " Hz" + "<br>" + \
                                    "Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0') + \
@@ -580,7 +578,7 @@ void AudioWidget::ShowSample(void* pBuffer, int pSampleSize, int pSampleNumber)
         else
             mLbStreamInfo->setText("<font color=red><b>"                                                                                                \
                                    "Source: " + mAudioWorker->GetCurrentDevice() + "<br>" +                                                            \
-                                   "Buffer: " + QString("%1").arg(pSampleNumber) + (mAudioSource->GetChunkDropConter() ? (" (" + QString("%1").arg(mAudioSource->GetChunkDropConter()) + " dropped)") : "") + "<br>" + \
+                                   "Buffer: " + QString("%1").arg(pSampleNumber) + (mAudioSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mAudioSource->GetChunkDropCounter()) + " dropped)") : "") + "<br>" + \
                                    "Codec: " + QString((mAudioSource->GetCodecName() != "") ? mAudioSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(mAudioSource->GetSampleRate()) + "Hz)" + \
                                    "Output: " + QString("%1").arg(AUDIO_OUTPUT_SAMPLE_RATE) + " Hz" + "<br>" + \
                                    "</b></font>");
@@ -668,7 +666,9 @@ void AudioWidget::SetVisible(bool pVisible)
 {
     if (pVisible)
     {
-        mAudioWorker->SetSampleDropping(false);
+        #ifdef AUDIO_WIDGET_DROP_WHEN_INVISIBLE
+            mAudioWorker->SetSampleDropping(false);
+        #endif
         move(mWinPos);
         show();
         parentWidget()->show();
@@ -677,7 +677,9 @@ void AudioWidget::SetVisible(bool pVisible)
         mAudioWorker->SetVolume(mAudioVolume);
     }else
     {
-        mAudioWorker->SetSampleDropping(true);
+        #ifdef AUDIO_WIDGET_DROP_WHEN_INVISIBLE
+            mAudioWorker->SetSampleDropping(true);
+        #endif
         mWinPos = pos();
         hide();
         parentWidget()->hide();
@@ -851,84 +853,8 @@ AudioWorkerThread::~AudioWorkerThread()
 
 void AudioWorkerThread::OpenPlaybackDevice()
 {
-    QList<QAudioDeviceInfo> tPbDevs = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
-    QAudioDeviceInfo tPbDev, tSelectedDevice = QAudioDeviceInfo::defaultOutputDevice();
-
     LOG(LOG_VERBOSE, "Going to open playback device");
 
-//    // #################################
-//    // ### Enumerate devices
-//    // #################################
-//    foreach(tPbDev, tPbDevs)
-//    {
-////        if (tPbDev.deviceName() == "default")
-////            tSelectedDevice =tPbDev;
-//
-//        QAudioFormat tFormat = tPbDev.preferredFormat();
-//        LOG(LOG_VERBOSE, "Found audio playback device: %s", tPbDev.deviceName().toStdString().c_str());
-//        LOG(LOG_VERBOSE, " ..byte order: %s", (tFormat.byteOrder() == QAudioFormat::BigEndian) ? "BigEndian" : "LittleEndian");
-//        LOG(LOG_VERBOSE, " ..channel count: %d", tFormat.channelCount());
-//        LOG(LOG_VERBOSE, " ..codec: %s", tFormat.codec().toStdString().c_str());
-//        LOG(LOG_VERBOSE, " ..sample rate: %d", tFormat.sampleRate());
-//        LOG(LOG_VERBOSE, " ..sample size: %d", tFormat.sampleSize());
-//        switch(tFormat.sampleType())
-//        {
-//            case QAudioFormat::Unknown:
-//                LOG(LOG_VERBOSE, " ..sample type: unknown");
-//                break;
-//            case QAudioFormat::SignedInt:
-//                LOG(LOG_VERBOSE, " ..sample type: signed int");
-//                break;
-//            case QAudioFormat::UnSignedInt:
-//                LOG(LOG_VERBOSE, " ..sample type: unsigned int");
-//                break;
-//            case QAudioFormat::Float:
-//                LOG(LOG_VERBOSE, " ..sample type: float");
-//                break;
-//        }
-//        QList<int> tChanCounts = tPbDev.supportedChannelCounts();
-//        int i = 0;
-//        foreach(i, tChanCounts)
-//        {
-//            LOG(LOG_VERBOSE, " ..supported channel count: %d", i);
-//        }
-//        QStringList tCodecs = tPbDev.supportedCodecs();
-//        QString tCodec = 0;
-//        foreach(tCodec, tCodecs)
-//        {
-//            LOG(LOG_VERBOSE, " ..supported codec: %s", tCodec.toStdString().c_str());
-//        }
-//    }
-//
-//    // #################################
-//    // ### Open/configure selected device
-//    // #################################
-//    mAudioDeviceInfo = new QAudioDeviceInfo(tSelectedDevice); //todo: use config for finding device
-//
-//    QAudioFormat tAudioFormat;
-//    tAudioFormat.setFrequency(44100);
-//    tAudioFormat.setSampleRate(44100);
-//    tAudioFormat.setChannels(2);
-//    tAudioFormat.setChannelCount(2);
-//    tAudioFormat.setSampleSize(16);
-//    tAudioFormat.setCodec("audio/pcm");
-//    tAudioFormat.setByteOrder(QAudioFormat::LittleEndian);
-//    tAudioFormat.setSampleType(QAudioFormat::SignedInt);
-//
-//    if (!mAudioDeviceInfo->isFormatSupported(tAudioFormat))
-//    {
-//        LOG(LOG_ERROR, "Raw audio format is not supported by audio backend, cannot play audio");
-//    }
-//
-//    mAudioOutput = new QAudioOutput(*mAudioDeviceInfo, tAudioFormat);
-//    connect(mAudioOutput,SIGNAL(stateChanged(QAudio::State)),this, SLOT(AudioPlaybackStateChanged(QAudio::State)));
-//    connect(mAudioOutput,SIGNAL(notify()),this, SLOT(AudioPlaybackPeriodFinished()));
-//    mAudioBuffer = new AudioBuffer();
-//    mAudioOutput->start(mAudioBuffer);
-//    LOG(LOG_VERBOSE, "Allocated audio playdevice \"%s\"", mAudioDeviceInfo->deviceName().toStdString().c_str());
-//    LOG(LOG_VERBOSE, " ..buffer size: %d", mAudioOutput->bufferSize());
-//    LOG(LOG_VERBOSE, " ..period size: %d", mAudioOutput->periodSize());
-//    LOG(LOG_VERBOSE, " ..notify interval: %d ms", mAudioOutput->notifyInterval());
 
     mAudioChannel = AUDIOOUTSDL.AllocateChannel();
 
@@ -944,55 +870,7 @@ void AudioWorkerThread::ClosePlaybackDevice()
     SetVolume(0);
     AUDIOOUTSDL.ReleaseChannel(mAudioChannel);
 
-//    mAudioOutput->stop();
-//    mAudioBuffer->close();
-//    delete mAudioBuffer;
-//    mAudioOutput->disconnect();
-//    delete mAudioOutput;
-
     LOG(LOG_VERBOSE, "Finished to close playback device");
-}
-
-void AudioWorkerThread::AudioPlaybackStateChanged(QAudio::State pState)
-{
-    switch(pState)
-    {
-        case QAudio::ActiveState:
-            LOG(LOG_ERROR, "Got state change in audio playback object to \"ActiveState\"");
-            break;
-        case QAudio::SuspendedState:
-            LOG(LOG_ERROR, "Got state change in audio playback object to \"SuspendedState\"");
-            break;
-        case QAudio::StoppedState:
-            LOG(LOG_ERROR, "Got state change in audio playback object to \"StoppedState\"");
-            break;
-        case QAudio::IdleState:
-            LOG(LOG_ERROR, "Got state change in audio playback object to \"IdleState\"");
-            break;
-    }
-    switch(mAudioOutput->error())
-    {
-        case QAudio::NoError:
-            LOG(LOG_VERBOSE, "No errors have occurred");
-            break;
-        case QAudio::OpenError:
-            LOG(LOG_ERROR, "An error opening the audio device");
-            break;
-        case QAudio::IOError:
-            LOG(LOG_ERROR, "An error occurred during read/write of audio device");
-            break;
-        case QAudio::UnderrunError:
-            LOG(LOG_VERBOSE, "Audio data is not being fed to the audio device at a fast enough rate");
-            break;
-        case QAudio::FatalError:
-            LOG(LOG_ERROR, "A non-recoverable error has occurred, the audio device is not usable at this time");
-            break;
-    }
-}
-
-void AudioWorkerThread::AudioPlaybackPeriodFinished()
-{
-    LOG(LOG_VERBOSE, "Got a notify by audio output object");
 }
 
 void AudioWorkerThread::PlaySamples(void *pSampleBuffer, int pSampleBufferSize)

@@ -133,7 +133,7 @@ VideoWidget::VideoWidget(QWidget* pParent):
     mVideoWorker = NULL;
     mMainWindow = NULL;
     mAssignedAction = NULL;
-
+    mSmoothPresentation = CONF.GetSmoothVideoPresentation();
     parentWidget()->hide();
     hide();
 }
@@ -313,6 +313,20 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             tAction->setShortcuts(tFSKeys);
 
             //###############################################################################
+            //### "Smooth presentation"
+            //###############################################################################
+            if (mSmoothPresentation)
+            {
+                tAction = tVideoMenu->addAction("Show smooth video");
+            }else
+            {
+                tAction = tVideoMenu->addAction("Show fast video");
+            }
+            QList<QKeySequence> tSPKeys;
+            tSPKeys.push_back(Qt::Key_S);
+            tAction->setShortcuts(tSPKeys);
+
+            //###############################################################################
             //### ASPECT RATION
             //###############################################################################
             QMenu *tAspectRatioMenu = tVideoMenu->addMenu("Aspect ratio");
@@ -477,7 +491,7 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             tIcon10.addPixmap(QPixmap(":/images/Audio - Play.png"), QIcon::Normal, QIcon::Off);
         }else
         {
-            tAction = tMenu.addAction("Pause stream");
+            tAction = tMenu.addAction("Drop stream");
             tIcon10.addPixmap(QPixmap(":/images/Audio - Pause.png"), QIcon::Normal, QIcon::Off);
         }
         tAction->setIcon(tIcon10);
@@ -562,7 +576,7 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             mShowLiveStats = false;
             return;
         }
-        if (tPopupRes->text().compare("Pause stream") == 0)
+        if (tPopupRes->text().compare("Drop stream") == 0)
         {
             mVideoPaused = true;
             mVideoWorker->SetFrameDropping(true);
@@ -577,6 +591,11 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
         if (tPopupRes->text().compare("Add network sink") == 0)
         {
             DialogAddNetworkSink();
+            return;
+        }
+        if ((tPopupRes->text().compare("Show smooth video") == 0) || (tPopupRes->text().compare("Show fast video") == 0))
+        {
+            ToggleSmoothPresentationMode();
             return;
         }
         if ((tPopupRes->text().compare("Full screen") == 0) || (tPopupRes->text().compare("Window mode") == 0))
@@ -749,14 +768,15 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
 		}
 	}
 
-	mCurrentFrame = mCurrentFrame.scaled(tFrameOutputWidth, tFrameOutputHeight, tAspectMode, CONF.GetSmoothVideoPresentation() ? Qt::SmoothTransformation : Qt::FastTransformation);
+	mCurrentFrame = mCurrentFrame.scaled(tFrameOutputWidth, tFrameOutputHeight, tAspectMode, mSmoothPresentation ? Qt::SmoothTransformation : Qt::FastTransformation);
 	tFrameOutputWidth = mCurrentFrame.width();
 	tFrameOutputHeight = mCurrentFrame.height();
 
     int tTimeDiff = QTime::currentTime().msecsTo(tTime);
     // did we spend too much time with transforming the image?
-    if ((CONF.GetSmoothVideoPresentation()) && (tTimeDiff > 1000 / 3)) // at least we assume 3 FPS!
+    if ((mSmoothPresentation) && (tTimeDiff > 1000 / 3)) // at least we assume 3 FPS!
     {
+        mSmoothPresentation = false;
         CONF.SetSmoothVideoPresentation(false);
         ShowInfo("System too busy", "Your system is too busy to do smooth transformation. Fast transformation will be used from now.");
     }
@@ -818,31 +838,43 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
         int tMuxResX = 0, tMuxResY = 0;
         mVideoSource->GetMuxingResolution(tMuxResX, tMuxResY);
 
+        QString tCodecName = QString(mVideoSource->GetCodecName().c_str());
+        QString tMuxCodecName = QString(mVideoSource->GetMuxingCodec().c_str());
+        QString tPeerName = QString(mVideoSource->GetCurrentDevicePeerName().c_str());
+
         tPainter->setPen(QColor(Qt::darkRed));
         tPainter->drawText(5, 41, " Source: " + mVideoWorker->GetCurrentDevice());
-        tPainter->drawText(5, 61, " Frame: " + QString("%1").arg(pFrameNumber) + (mVideoSource->GetChunkDropConter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropConter()) + " lost packets)") : "") + (mVideoSource->GetChunkBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkBufferCounter()) + " buffered packets)") : ""));
+        tPainter->drawText(5, 61, " Frame: " + QString("%1").arg(pFrameNumber) + (mVideoSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropCounter()) + " lost packets)") : "") + (mVideoSource->GetChunkBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkBufferCounter()) + " buffered packets)") : ""));
         tPainter->drawText(5, 81, " Fps: " + QString("%1").arg(pFps, 4, 'f', 2, ' '));
-        tPainter->drawText(5, 101, " Codec: " + QString((mVideoSource->GetCodecName() != "") ? mVideoSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(tSourceResX) + "*" + QString("%1").arg(tSourceResY) + ")");
-        tPainter->drawText(5, 121, " Output: " + QString("%1").arg(tFrameOutputWidth) + "*" + QString("%1").arg(tFrameOutputHeight) + " (" + tAspectRatio + ")");
+        tPainter->drawText(5, 101, " Codec: " + ((tCodecName != "") ? tCodecName : "unknown") + " (" + QString("%1").arg(tSourceResX) + "*" + QString("%1").arg(tSourceResY) + ")");
+        tPainter->drawText(5, 121, " Output: " + QString("%1").arg(tFrameOutputWidth) + "*" + QString("%1").arg(tFrameOutputHeight) + " (" + tAspectRatio + ")" + (mSmoothPresentation ? "[smoothed]" : ""));
         int tMuxOutputOffs = 0;
+        int tPeerOutputOffs = 0;
         if (mVideoSource->SupportsSeeking())
         {
             tMuxOutputOffs = 20;
             tPainter->drawText(5, 141, " Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0'));
         }
         if (mVideoSource->SupportsMuxing())
-            tPainter->drawText(5, 141 + tMuxOutputOffs, " Mux codec: " + QString((mVideoSource->GetMuxingCodec() != "") ? mVideoSource->GetMuxingCodec().c_str() : "unknown") + " (" + QString("%1").arg(tMuxResX) + "*" + QString("%1").arg(tMuxResY) + ")");
+        {
+        	tPeerOutputOffs = 20;
+            tPainter->drawText(5, 141 + tMuxOutputOffs, " Mux codec: " + ((tMuxCodecName != "") ? tMuxCodecName : "unknown") + " (" + QString("%1").arg(tMuxResX) + "*" + QString("%1").arg(tMuxResY) + ")");
+        }
+        if (tPeerName != "")
+        	tPainter->drawText(5, 141 + tMuxOutputOffs + tPeerOutputOffs, " Peer: " + tPeerName);
 
         tPainter->setPen(QColor(Qt::red));
         tPainter->drawText(4, 40, " Source: " + mVideoWorker->GetCurrentDevice());
-        tPainter->drawText(4, 60, " Frame: " + QString("%1").arg(pFrameNumber) + (mVideoSource->GetChunkDropConter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropConter()) + " lost packets)") : "") + (mVideoSource->GetChunkBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkBufferCounter()) + " buffered packets)") : ""));
+        tPainter->drawText(4, 60, " Frame: " + QString("%1").arg(pFrameNumber) + (mVideoSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropCounter()) + " lost packets)") : "") + (mVideoSource->GetChunkBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkBufferCounter()) + " buffered packets)") : ""));
         tPainter->drawText(4, 80, " Fps: " + QString("%1").arg(pFps, 4, 'f', 2, ' '));
-        tPainter->drawText(4, 100, " Codec: " + QString((mVideoSource->GetCodecName() != "") ? mVideoSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(tSourceResX) + "*" + QString("%1").arg(tSourceResY) + ")");
-        tPainter->drawText(4, 120, " Output: "  + QString("%1").arg(tFrameOutputWidth) + "*" + QString("%1").arg(tFrameOutputHeight) + " (" + tAspectRatio + ")");
+        tPainter->drawText(4, 100, " Codec: " + ((tCodecName != "") ? tCodecName : "unknown") + " (" + QString("%1").arg(tSourceResX) + "*" + QString("%1").arg(tSourceResY) + ")");
+        tPainter->drawText(4, 120, " Output: "  + QString("%1").arg(tFrameOutputWidth) + "*" + QString("%1").arg(tFrameOutputHeight) + " (" + tAspectRatio + ")" + (mSmoothPresentation ? "[smoothed]" : ""));
         if (mVideoSource->SupportsSeeking())
 			tPainter->drawText(4, 140, " Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0'));
         if (mVideoSource->SupportsMuxing())
-            tPainter->drawText(4, 140 + tMuxOutputOffs, " Mux codec: " + QString((mVideoSource->GetMuxingCodec() != "") ? mVideoSource->GetMuxingCodec().c_str() : "unknown") + " (" + QString("%1").arg(tMuxResX) + "*" + QString("%1").arg(tMuxResY) + ")");
+            tPainter->drawText(4, 140 + tMuxOutputOffs, " Mux codec: " + ((tMuxCodecName != "") ? tMuxCodecName : "unknown") + " (" + QString("%1").arg(tMuxResX) + "*" + QString("%1").arg(tMuxResY) + ")");
+        if (tPeerName != "")
+        	tPainter->drawText(5, 140 + tMuxOutputOffs + tPeerOutputOffs, " Peer: " + tPeerName);
     }
 
     //#############################################################
@@ -938,9 +970,10 @@ void VideoWidget::InformAboutNewSourceResolution()
     QApplication::postEvent(this, new VideoEvent(VIDEO_NEW_SOURCE_RESOLUTION, ""));
 }
 
-void VideoWidget::SetOriginalResolution()
+bool VideoWidget::SetOriginalResolution()
 {
-    LOG(LOG_VERBOSE, "Setting original resolution");
+	bool tResult = false;
+
     GrabResolutions tGrabResolutions = mVideoSource->GetSupportedVideoGrabResolutions();
     GrabResolutions::iterator tIt;
     if (tGrabResolutions.size())
@@ -950,10 +983,14 @@ void VideoWidget::SetOriginalResolution()
             //LOG(LOG_ERROR, "Res: %s", tIt->Name.c_str());
             if (tIt->Name == "Original")
             {
+            	tResult = true;
+            	LOG(LOG_VERBOSE, "Setting original resolution %d*%d", tIt->ResX, tIt->ResY);
                 SetResolution(tIt->ResX, tIt->ResY);
             }
         }
     }
+
+    return tResult;
 }
 
 VideoWorkerThread* VideoWidget::GetWorker()
@@ -1056,6 +1093,11 @@ void VideoWidget::ToggleFullScreenMode()
 	mNeedBackgroundUpdatesUntillNextFrame = true;
 }
 
+void VideoWidget::ToggleSmoothPresentationMode()
+{
+    mSmoothPresentation = !mSmoothPresentation;
+}
+
 void VideoWidget::ToggleVisibility()
 {
     if (isVisible())
@@ -1068,7 +1110,9 @@ void VideoWidget::SetVisible(bool pVisible)
 {
     if (pVisible)
     {
-        mVideoWorker->SetFrameDropping(false);
+        #ifdef VIDEO_WIDGET_DROP_WHEN_INVISIBLE
+            mVideoWorker->SetFrameDropping(false);
+        #endif
         move(mWinPos);
         parentWidget()->show();
         show();
@@ -1077,7 +1121,9 @@ void VideoWidget::SetVisible(bool pVisible)
 
     }else
     {
-        mVideoWorker->SetFrameDropping(true);
+        #ifdef VIDEO_WIDGET_DROP_WHEN_INVISIBLE
+            mVideoWorker->SetFrameDropping(true);
+        #endif
         mWinPos = pos();
         parentWidget()->hide();
         hide();
@@ -1238,6 +1284,10 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
     {
         ToggleFullScreenMode();
     }
+    if (pEvent->key() == Qt::Key_S)
+    {
+        ToggleSmoothPresentationMode();
+    }
     if (pEvent->key() == Qt::Key_I)
     {
         if (mShowLiveStats)
@@ -1278,8 +1328,10 @@ void VideoWidget::customEvent(QEvent *pEvent)
     {
         case VIDEO_NEW_FRAME:
             mPendingNewFrameSignals--;
-            if (mPendingNewFrameSignals > 2)
-                LOG(LOG_VERBOSE, "System too slow?, %d pending signals about new frames", mPendingNewFrameSignals);
+			#ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
+				if (mPendingNewFrameSignals > 2)
+					LOG(LOG_VERBOSE, "System too slow?, %d pending signals about new frames", mPendingNewFrameSignals);
+			#endif
 
             tVideoEvent->accept();
             if (isVisible())
@@ -1328,11 +1380,13 @@ void VideoWidget::customEvent(QEvent *pEvent)
             break;
         case VIDEO_NEW_SOURCE:
             tVideoEvent->accept();
-            SetOriginalResolution();
-            if(!mHourGlassTimer->isActive())
+            if (SetOriginalResolution())
             {
-                LOG(LOG_VERBOSE, "Reactivating hour glas timer");
-                mHourGlassTimer->start(250);
+				if(!mHourGlassTimer->isActive())
+				{
+					LOG(LOG_VERBOSE, "Reactivating hour glass timer");
+					mHourGlassTimer->start(250);
+				}
             }
             break;
         case VIDEO_NEW_SOURCE_RESOLUTION:
@@ -1372,18 +1426,17 @@ VideoWorkerThread::VideoWorkerThread(MediaSource *pVideoSource, VideoWidget *pVi
     mFrameCurrentIndex = FRAME_BUFFER_SIZE - 1;
     mFrameGrabIndex = 0;
     mDropFrames = false;
-    mPendingNewFrames = 0;
     InitFrameBuffers();
 }
 
 VideoWorkerThread::~VideoWorkerThread()
 {
     DeinitFrameBuffers();
-    mPendingNewFrames = 0;
 }
 
 void VideoWorkerThread::InitFrameBuffers()
 {
+    mPendingNewFrames = 0;
     for (int i = 0; i < FRAME_BUFFER_SIZE; i++)
     {
         mFrame[i] = mVideoSource->AllocChunkBuffer(mFrameSize[i], MEDIA_VIDEO);
@@ -1443,6 +1496,11 @@ void VideoWorkerThread::SetStreamName(QString pName)
 QString VideoWorkerThread::GetStreamName()
 {
     return QString(mVideoSource->GetMediaSource()->GetStreamName().c_str());
+}
+
+QString VideoWorkerThread::GetCurrentDevicePeer()
+{
+    return QString(mVideoSource->GetCurrentDevicePeerName().c_str());
 }
 
 QString VideoWorkerThread::GetCurrentDevice()
@@ -1817,12 +1875,14 @@ int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFps)
     {
         if (mPendingNewFrames)
         {
-            if (mPendingNewFrames > 1)
-                LOG(LOG_VERBOSE, "Found %d pending frames", mPendingNewFrames);
+			#ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
+				if (mPendingNewFrames > 1)
+					LOG(LOG_VERBOSE, "Found %d pending frames", mPendingNewFrames);
+			#endif
 
             mFrameCurrentIndex++;
             if (mFrameCurrentIndex >= FRAME_BUFFER_SIZE)
-                mFrameCurrentIndex = 0;//TODO- mFrameCurrentIndex - mFrameGrabIndex;
+                mFrameCurrentIndex = 0;
             mPendingNewFrames--;
         }else
         {
@@ -1947,11 +2007,16 @@ void VideoWorkerThread::run()
 			    // has the source resolution changed in the meantime? -> thread it as new source
 			    int tSourceResX, tSourceResY;
 			    mVideoSource->GetVideoSourceResolution(tSourceResX, tSourceResY);
-			    if ((tSourceResX != mResX) || (tSourceResY != mResY))
+			    if ((mFrameWidthLastGrabbedFrame != tSourceResX) || (mFrameHeightLastGrabbedFrame != tSourceResY))
 			    {
-			        LOG(LOG_INFO, "New source detect because source video resolution differs: %d <=> %d, %d <=> %d", tSourceResX, mResX, tSourceResY, mResY);
-	                mVideoWidget->InformAboutNewSource();
+					if ((tSourceResX != mResX) || (tSourceResY != mResY))
+					{
+						LOG(LOG_INFO, "New source detect because source video resolution differs: width %d => %d, height %d => %d", mResX, tSourceResX, mResY, tSourceResY);
+						mVideoWidget->InformAboutNewSource();
+					}
 			    }
+			    mFrameWidthLastGrabbedFrame = tSourceResX;
+			    mFrameHeightLastGrabbedFrame = tSourceResY;
 
 				// lock
 				mDeliverMutex.lock();
@@ -1963,7 +2028,7 @@ void VideoWorkerThread::run()
 
 				mFrameGrabIndex++;
 				if (mFrameGrabIndex >= FRAME_BUFFER_SIZE)
-				    mFrameGrabIndex = 0;//TODO: mFrameGrabIndex = FRAME_BUFFER_SIZE - mFrameCurrentIndex - mFrameGrabIndex;
+				    mFrameGrabIndex = 0;
 
                 // store timestamp starting from frame number 3 to avoid peaks
 				if(tFrameNumber > 3)

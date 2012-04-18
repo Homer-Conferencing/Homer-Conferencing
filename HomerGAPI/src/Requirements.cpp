@@ -45,12 +45,6 @@ Requirements::Requirements()
 
 Requirements::~Requirements()
 {
-    removeAll();
-}
-
-Requirements::Requirements(Requirements &pCopy)
-{
-    add(pCopy.getAll());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -195,15 +189,17 @@ RequirementSet Requirements::getAll()
 
 void Requirements::removeAll()
 {
-    LOG(LOG_VERBOSE, "Removing stored requirements");
-
     RequirementSet::iterator tIt;
 
     mRequirementSetMutex.lock();
 
-    for(tIt = mRequirementSet.begin(); tIt != mRequirementSet.end(); tIt++)
+    LOG(LOG_VERBOSE, "Removing %d stored requirements", mRequirementSet.size());
+
+    tIt = mRequirementSet.begin();
+    while (tIt != mRequirementSet.end())
     {
-        delete (*tIt);
+        delete (*mRequirementSet.begin());
+        tIt = mRequirementSet.begin();
     }
 
     mRequirementSetMutex.unlock();

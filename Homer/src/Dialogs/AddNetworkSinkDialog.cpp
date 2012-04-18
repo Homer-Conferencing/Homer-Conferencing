@@ -29,8 +29,15 @@
 #include <HBSocket.h>
 #include <Meeting.h>
 #include <Configuration.h>
+#include <Requirements.h>
 #include <HBSocket.h>
 #include <Dialogs/AddNetworkSinkDialog.h>
+
+#include <GAPI.h>
+
+#include <string>
+#include <list>
+#include <limits.h>
 
 using namespace Homer::Base;
 using namespace Homer::Conference;
@@ -57,6 +64,11 @@ AddNetworkSinkDialog::~AddNetworkSinkDialog()
 void AddNetworkSinkDialog::initializeGUI()
 {
     setupUi(this);
+    if (!CONF.DebuggingEnabled())
+    {
+        mGbRequirements->hide();
+        mGbInterface->hide();
+    }
 }
 
 int AddNetworkSinkDialog::exec()
@@ -81,7 +93,38 @@ void AddNetworkSinkDialog::CreateNewMediaSink()
     QString tPort = QString("%1").arg(mSbPort->value());
     enum TransportType tTransport = (enum TransportType)mCbTransport->currentIndex();
 
-    mMediaSource->RegisterMediaSink(tHost.toStdString(), tPort.toInt(), tTransport, mCbRtp->isChecked());
+    Requirements tRequs;
+    // add transport details depending on transport protocol selection
+    switch(tTransport)
+    {
+        case SOCKET_UDP_LITE:
+            tRequs.add(new RequirementTransmitBitErrors(UDP_LITE_HEADER_SIZE + RTP_HEADER_SIZE));
+        case SOCKET_UDP:
+            tRequs.add(new RequirementTransmitChunks());
+            break;
+        case SOCKET_TCP:
+            tRequs.add(new RequirementTransmitLossless());
+            tRequs.add(new RequirementTransmitOrdered());
+            tRequs.add(new RequirementTransmitStream());
+            break;
+        default:
+            LOG(LOG_WARN, "Unsupported transport protocol selected");
+            break;
+    }
+    // add target port
+    tRequs.add(new RequirementTargetPort(tPort.toInt()));
+    // add QoS parameter
+    if (mCbDelay->isChecked())
+        tRequs.add(new RequirementLimitDelay(mSbDelay->value()));
+    if (mCbDataRate->isChecked())
+        tRequs.add(new RequirementLimitDataRate(mSbDataRate->value(), INT_MAX));
+    if (mCbLossless->isChecked())
+        tRequs.add(new RequirementTransmitLossless());
+
+    string tOldGAPIImpl = GAPI.getCurrentImplName();
+    GAPI.selectImpl(mCbGAPIImpl->currentText().toStdString());
+    mMediaSource->RegisterMediaSink(tHost.toStdString(), &tRequs, mCbRtp->isChecked());
+    GAPI.selectImpl(tOldGAPIImpl);
 }
 
 void AddNetworkSinkDialog::SaveConfiguration()
@@ -90,15 +133,18 @@ void AddNetworkSinkDialog::SaveConfiguration()
     {// video
         CONF.SetVideoRtp(mCbRtp->isChecked());
         CONF.SetVideoTransport(Socket::String2TransportType(mCbTransport->currentText().toStdString()));
+        CONF.SetVideoStreamingGAPIImpl(mCbGAPIImpl->currentText());
     }else
     {// audio
         CONF.SetAudioRtp(mCbRtp->isChecked());
         CONF.SetAudioTransport(Socket::String2TransportType(mCbTransport->currentText().toStdString()));
+        CONF.SetAudioStreamingGAPIImpl(mCbGAPIImpl->currentText());
     }
 }
 void AddNetworkSinkDialog::LoadConfiguration()
 {
     QString tTransport;
+    QString tGAPIImpl;
 
     // remove SCTP from comboBox if is not supported
     if(!Socket::IsTransportSupported(SOCKET_SCTP))
@@ -111,17 +157,54 @@ void AddNetworkSinkDialog::LoadConfiguration()
         mCbTransport->removeItem(2);
     }
 
+    list<string> tGAPIImpls = GAPI.getAllImplNames();
+    list<string>::iterator tGAPIImplsIt;
+    mCbGAPIImpl->clear();
+    for (tGAPIImplsIt = tGAPIImpls.begin(); tGAPIImplsIt != tGAPIImpls.end(); tGAPIImplsIt++)
+    {
+        mCbGAPIImpl->addItem(QString(tGAPIImplsIt->c_str()));
+    }
+
     mLeHost->setText(QString(MEETING.GetHostAdr().c_str()));
     if (mMediaSource->GetMediaType() == MEDIA_VIDEO)
     {// video
         mCbRtp->setChecked(CONF.GetVideoRtp());
         tTransport = QString(Socket::TransportType2String(CONF.GetVideoTransportType()).c_str());
+        tGAPIImpl = CONF.GetVideoStreamingGAPIImpl();
+
+        mSbPort->setValue(5000);
+        mSbDelay->setValue(250);
+        mSbDataRate->setValue(20);
     }else
     {// audio
         mCbRtp->setChecked(CONF.GetAudioRtp());
         tTransport = QString(Socket::TransportType2String(CONF.GetAudioTransportType()).c_str());
 
         mSbPort->setValue(5002);
+        mSbDelay->setValue(100);
+        mSbDataRate->setValue(8);
+        for (int i = 0; i < mCbGAPIImpl->count(); i++)
+        {
+            QString tCurTransport = mCbGAPIImpl->itemText(i);
+            if (tTransport == tCurTransport)
+            {
+                mCbGAPIImpl->setCurrentIndex(i);
+                break;
+            }
+        }
+    }
+
+    mCbDataRate->setChecked(true);
+    mCbDelay->setChecked(true);
+
+    for (int i = 0; i < mCbGAPIImpl->count(); i++)
+    {
+        QString tCurGAPIImpl = mCbGAPIImpl->itemText(i);
+        if (tGAPIImpl == tCurGAPIImpl)
+        {
+            mCbGAPIImpl->setCurrentIndex(i);
+            break;
+        }
     }
 
     for (int i = 0; i < mCbTransport->count(); i++)

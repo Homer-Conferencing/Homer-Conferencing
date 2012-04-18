@@ -58,7 +58,7 @@ void MeetingObservable::AddObserver(MeetingObserver *pObserver)
 
 void MeetingObservable::DeleteObserver(MeetingObserver *pObserver)
 {
-    mMeetingObserver = NULL;//TODO: manage list of observers
+    mMeetingObserver = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

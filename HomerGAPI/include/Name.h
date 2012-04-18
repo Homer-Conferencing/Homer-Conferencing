@@ -20,28 +20,30 @@
  *****************************************************************************/
 
 /*
- * Purpose: IRegistration
+ * Purpose: Name
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
 
-#ifndef _GAPI_IREGISTRATION_
-#define _GAPI_IREGISTRATION_
+#ifndef _GAPI_NAME_
+#define _GAPI_NAME_
 
-#include <ISubscription.h>
+#include <string>
 
 namespace Homer { namespace Base {
 
-///////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 
-class IRegistration
+class Name
 {
 public:
-	IRegistration(){}
-    virtual ~IRegistration( ){}
+	Name(std::string pName):mName(pName){ }
+    virtual ~Name(){ }
 
-    virtual ISubscription* readSubscription() = 0;
-    virtual void cancel() = 0;
+    virtual std::string toString(){ return mName; }
+
+private:
+    std::string mName;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

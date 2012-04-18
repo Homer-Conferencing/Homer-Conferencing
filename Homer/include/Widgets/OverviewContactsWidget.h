@@ -83,26 +83,29 @@ public slots:
 
 private slots:
     void processCustomContextMenuRequest(const QPoint &pPos);
-    void Edit(const QModelIndex &pIndex);
     void ContactParticipantDoubleClick(const QModelIndex &pIndex);
     void LookedUpContactHost(const QHostInfo &pHost);
     void SaveList();
     void LoadList();
     void InsertNew();
+    void EditSelected();
     void DeleteSelected();
+    void ContactSelected(bool pCall = false);
 
 private:
+    friend class ContactListModel; // allow model to save and restore currently selected index in GUI
+
     void initializeGUI();
     virtual void closeEvent(QCloseEvent* pEvent);
     virtual void contextMenuEvent(QContextMenuEvent *pEvent);
     virtual void paintEvent(QPaintEvent *pEvent);
     virtual void timerEvent(QTimerEvent *pEvent);
+    virtual void keyPressEvent(QKeyEvent *pEvent);
 
     void ContactParticipantDelegateToMainWindow(ContactDescriptor *pContact, QString pIp, bool pCallAfterwards);
     void ContactParticipant(ContactDescriptor *pContact, bool pCallAfterwards = false);
     void InsertCopy(ContactDescriptor *pContact);
-    void Edit(ContactDescriptor *pContact);
-    void Delete(ContactDescriptor *pContact);
+
     void Dialog2Contact(ContactEditDialog *pCED, ContactDescriptor *pContact, bool pNewContact);
     void Contact2Dialog(ContactDescriptor *pContact, ContactEditDialog *pCED);
 
@@ -122,7 +125,7 @@ class ContactListModel:
 {
     Q_OBJECT;
 public:
-    ContactListModel(QObject *pParent);
+    ContactListModel(OverviewContactsWidget *pOverviewContactsWidget);
 
     virtual ~ContactListModel();
 
@@ -141,6 +144,8 @@ private:
     QString GetContactName(const QModelIndex &pIndex) const;
     bool GetContactAvailability(const QModelIndex &pIndex) const;
     void *GetContactPointer(unsigned int pIndex) const;
+
+    OverviewContactsWidget   *mOverviewContactsWidget;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

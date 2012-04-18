@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>288</width>
-    <height>254</height>
+    <width>280</width>
+    <height>286</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -186,8 +186,6 @@
           </property>
           <property name="font">
            <font>
-            <family>Sans Serif</family>
-            <pointsize>9</pointsize>
             <weight>75</weight>
             <italic>true</italic>
             <bold>true</bold>
@@ -346,11 +344,6 @@
             <height>22</height>
            </size>
           </property>
-          <property name="font">
-           <font>
-            <pointsize>9</pointsize>
-           </font>
-          </property>
           <property name="toolTip">
            <string>send link</string>
           </property>
@@ -401,11 +394,6 @@
             <width>120</width>
             <height>22</height>
            </size>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>9</pointsize>
-           </font>
           </property>
           <property name="toolTip">
            <string>send instant message from above (Alt+S, Enter)</string>
@@ -472,11 +460,6 @@
             <height>22</height>
            </size>
           </property>
-          <property name="font">
-           <font>
-            <pointsize>9</pointsize>
-           </font>
-          </property>
           <property name="toolTip">
            <string>send local files(s) to communication partner</string>
           </property>
@@ -527,11 +510,6 @@
             <width>120</width>
             <height>22</height>
            </size>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>9</pointsize>
-           </font>
           </property>
           <property name="toolTip">
            <string>manage call</string>
@@ -596,7 +574,7 @@
  </tabstops>
  <resources>
   <include location="../../resources/Icons.qrc"/>
-  <include location="../resources/Icons.qrc"/>
+  <include location="../../resources/Icons.qrc"/>
  </resources>
  <connections/>
 </ui>

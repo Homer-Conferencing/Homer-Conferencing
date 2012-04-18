@@ -81,13 +81,116 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, QMainWindow 
     mSessionType = pSessionType;
     mIncomingCall = false;
     mQuitForced = false;
+    LOG(LOG_VERBOSE, "..init sound object for acoustic notifications");
     mSoundForIncomingCall = new QSound(CONF.GetCallSoundFile());
 
     //####################################################################
     //### create the remaining necessary widgets, menu and layouts
     //####################################################################
-    initializeGUI();
+    LOG(LOG_VERBOSE, "..init participant widget");
+    Init(pContactsWidget, pVideoMenu, pAudioMenu, pMessageMenu, pParticipant);
+}
 
+ParticipantWidget::~ParticipantWidget()
+{
+    if (mSessionType == BROADCAST)
+        CONF.SetVisibilityBroadcastWidget(isVisible());
+
+    // inform the call partner
+    switch (MEETING.GetCallState(QString(mSessionName.toLocal8Bit()).toStdString()))
+    {
+        case CALLSTATE_RUNNING:
+                    MEETING.SendHangUp(QString(mSessionName.toLocal8Bit()).toStdString());
+                    break;
+        case CALLSTATE_RINGING:
+                    MEETING.SendCallCancel(QString(mSessionName.toLocal8Bit()).toStdString());
+                    break;
+    }
+    delete mVideoWidget;
+    delete mAudioWidget;
+    delete mMessageWidget;
+    delete mSessionInfoWidget;
+
+    delete mVideoSource;
+    delete mAudioSource;
+    delete mSoundForIncomingCall;
+
+    if (mVideoSourceMuxer != NULL)
+        mVideoSourceMuxer->UnregisterMediaSink(mRemoteVideoAdr.toStdString(), mRemoteVideoPort);
+    if (mAudioSourceMuxer != NULL)
+        mAudioSourceMuxer->UnregisterMediaSink(mRemoteAudioAdr.toStdString(), mRemoteAudioPort);
+
+    if (mTimerId != -1)
+        killTimer(mTimerId);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, QString pParticipant)
+{
+    setupUi(this);
+
+    QPalette tPalette;
+    QBrush brush(QColor(0, 255, 255, 255));
+    QBrush tBrush1(QColor(0, 128, 128, 255));
+    QBrush brush2(QColor(155, 220, 198, 255));
+    QBrush brush3(QColor(98, 99, 98, 255));
+    QBrush brush4(QColor(100, 102, 100, 255));
+    QBrush tBrush5(QColor(250, 250, 255, 255));
+    QBrush tBrush6(QColor(145, 191, 155, 255));
+    switch(CONF.GetColoringScheme())
+    {
+        case 0:
+            // no coloring
+            break;
+        case 1:
+            // set coloring of the DockWidget
+            brush.setStyle(Qt::SolidPattern);
+            tPalette.setBrush(QPalette::Active, QPalette::WindowText, brush);
+            tBrush1.setStyle(Qt::SolidPattern);
+            tPalette.setBrush(QPalette::Active, QPalette::Button, tBrush1);
+            brush2.setStyle(Qt::SolidPattern);
+            tPalette.setBrush(QPalette::Active, QPalette::ButtonText, brush2);
+            tPalette.setBrush(QPalette::Inactive, QPalette::WindowText, brush);
+            tPalette.setBrush(QPalette::Inactive, QPalette::Button, tBrush1);
+            tPalette.setBrush(QPalette::Inactive, QPalette::ButtonText, brush2);
+            brush3.setStyle(Qt::SolidPattern);
+            tPalette.setBrush(QPalette::Disabled, QPalette::WindowText, brush3);
+            tPalette.setBrush(QPalette::Disabled, QPalette::Button, tBrush1);
+            brush4.setStyle(Qt::SolidPattern);
+            tPalette.setBrush(QPalette::Disabled, QPalette::ButtonText, brush4);
+            tBrush5.setStyle(Qt::SolidPattern);
+            tPalette.setBrush(QPalette::Active, QPalette::Base, tBrush5);
+            tBrush6.setStyle(Qt::SolidPattern);
+            tPalette.setBrush(QPalette::Active, QPalette::Window, tBrush6);
+            tPalette.setBrush(QPalette::Inactive, QPalette::Base, tBrush5);
+            tPalette.setBrush(QPalette::Inactive, QPalette::Window, tBrush6);
+            tPalette.setBrush(QPalette::Disabled, QPalette::Base, tBrush5);
+            tPalette.setBrush(QPalette::Disabled, QPalette::Window, tBrush6);
+            setPalette(tPalette);
+
+            setAutoFillBackground(true);
+            // manipulate stylesheet for buttons on the top right of the DockWidget and the title bar
+            setStyleSheet("QDockWidget::close-button, QDockWidget::float-button { border: 1px solid; background: #9BDCC6; } QDockWidget::title { padding-left: 20px; text-align: left; background: #008080; }");
+            break;
+        default:
+            break;
+    }
+
+    QFont font;
+    font.setPointSize(8);
+    font.setBold(true);
+    font.setWeight(75);
+    setFont(font);
+
+    connect(mTbPlay, SIGNAL(clicked()), this, SLOT(PlayMovieFile()));
+    connect(mTbPause, SIGNAL(clicked()), this, SLOT(PauseMovieFile()));
+    connect(mSlMovie, SIGNAL(sliderMoved(int)), this, SLOT(SeekMovieFile(int)));
+
+
+    //####################################################################
+    //### create additional widget and allocate resources
+    //####################################################################
     if ((CONF.GetParticipantWidgetsSeparation()) && (mSessionType == PARTICIPANT))
     {
         setParent(NULL);
@@ -97,11 +200,9 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, QMainWindow 
     {
         setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
         setAllowedAreas(Qt::RightDockWidgetArea | Qt::BottomDockWidgetArea);
-        pMainWindow->addDockWidget(Qt::RightDockWidgetArea, this, Qt::Horizontal);
+        mMainWindow->addDockWidget(Qt::RightDockWidgetArea, this, Qt::Horizontal);
     }
 
-    Socket* tVSocket = NULL;
-    Socket* tASocket = NULL;
     mVideoSource = NULL;
     mAudioSource = NULL;
     OpenVideoAudioPreviewDialog *tOpenVideoAudioPreviewDialog = NULL;
@@ -111,12 +212,17 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, QMainWindow 
         case BROADCAST:
                     LOG(LOG_VERBOSE, "Creating participant widget for BROADCAST");
                     mSessionName = "BROADCAST";
-                    mMessageWidget->Init(pMessageMenu, mSessionName, NULL, false);
+                    LOG(LOG_VERBOSE, "..init broadcast message widget");
+                    mMessageWidget->Init(pMessageMenu, mSessionName, NULL, CONF.GetVisibilityBroadcastMessageWidget());
+                    LOG(LOG_VERBOSE, "..init broadcast video widget");
+                    mVideoSource = mVideoSourceMuxer;
+                    mAudioSource = mAudioSourceMuxer;
                     if (mVideoSourceMuxer != NULL)
                     {
                         mVideoWidgetFrame->show();
                         mVideoWidget->Init(mMainWindow, mVideoSourceMuxer, pVideoMenu, mSessionName, mSessionName, true);
                     }
+                    LOG(LOG_VERBOSE, "..init broadcast audio widget");
                     if (mAudioSourceMuxer != NULL)
                         mAudioWidget->Init(mAudioSourceMuxer, pAudioMenu, mSessionName, mSessionName, true, true);
                     setFeatures(QDockWidget::NoDockWidgetFeatures);
@@ -127,19 +233,21 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, QMainWindow 
                     mSessionName = pParticipant;
                     FindSipInterface(pParticipant);
                     mMessageWidget->Init(pMessageMenu, mSessionName, pContactsWidget);
-                    tVSocket = MEETING.GetVideoSocket(mSessionName.toStdString());
-                    tASocket = MEETING.GetAudioSocket(mSessionName.toStdString());
-                    if (tVSocket != NULL)
+                    mVideoSendSocket = MEETING.GetVideoSendSocket(mSessionName.toStdString());
+                    mAudioSendSocket = MEETING.GetAudioSendSocket(mSessionName.toStdString());
+                    mVideoReceiveSocket = MEETING.GetVideoReceiveSocket(mSessionName.toStdString());
+                    mAudioReceiveSocket = MEETING.GetAudioReceiveSocket(mSessionName.toStdString());
+                    if (mVideoReceiveSocket != NULL)
                     {
-                        mVideoSource = new MediaSourceNet(tVSocket, CONF.GetVideoRtp());
+                        mVideoSource = new MediaSourceNet(mVideoReceiveSocket, CONF.GetVideoRtp());
                         mVideoSource->SetInputStreamPreferences(CONF.GetVideoCodec().toStdString());
                         mVideoWidgetFrame->hide();
                         mVideoWidget->Init(mMainWindow, mVideoSource, pVideoMenu, mSessionName);
                     }else
                         LOG(LOG_ERROR, "Determined video socket is NULL");
-                    if (tASocket != NULL)
+                    if (mAudioReceiveSocket != NULL)
                     {
-                        mAudioSource = new MediaSourceNet(tASocket, CONF.GetAudioRtp());
+                        mAudioSource = new MediaSourceNet(mAudioReceiveSocket, CONF.GetAudioRtp());
                         mAudioSource->SetInputStreamPreferences(CONF.GetAudioCodec().toStdString());
                         mAudioWidget->Init(mAudioSource, pAudioMenu, mSessionName);
                     }else
@@ -207,103 +315,6 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, QMainWindow 
         setVisible(CONF.GetVisibilityBroadcastWidget());
 
     mTimerId = startTimer(STREAM_POS_UPDATE_DELAY);
-}
-
-ParticipantWidget::~ParticipantWidget()
-{
-    if (mSessionType == BROADCAST)
-        CONF.SetVisibilityBroadcastWidget(isVisible());
-
-    // inform the call partner
-    switch (MEETING.GetCallState(QString(mSessionName.toLocal8Bit()).toStdString()))
-    {
-        case CALLSTATE_RUNNING:
-                    MEETING.SendHangUp(QString(mSessionName.toLocal8Bit()).toStdString());
-                    break;
-        case CALLSTATE_RINGING:
-                    MEETING.SendCallCancel(QString(mSessionName.toLocal8Bit()).toStdString());
-                    break;
-    }
-    delete mVideoWidget;
-    delete mAudioWidget;
-    delete mMessageWidget;
-    delete mSessionInfoWidget;
-
-    delete mVideoSource;
-    delete mAudioSource;
-    delete mSoundForIncomingCall;
-
-    if (mVideoSourceMuxer != NULL)
-        mVideoSourceMuxer->UnregisterMediaSink(mRemoteVideoAdr.toStdString(), mRemoteVideoPort);
-    if (mAudioSourceMuxer != NULL)
-        mAudioSourceMuxer->UnregisterMediaSink(mRemoteAudioAdr.toStdString(), mRemoteAudioPort);
-
-    if (mTimerId != -1)
-        killTimer(mTimerId);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void ParticipantWidget::initializeGUI()
-{
-    setupUi(this);
-
-    QPalette tPalette;
-    QBrush brush(QColor(0, 255, 255, 255));
-    QBrush tBrush1(QColor(0, 128, 128, 255));
-    QBrush brush2(QColor(155, 220, 198, 255));
-    QBrush brush3(QColor(98, 99, 98, 255));
-    QBrush brush4(QColor(100, 102, 100, 255));
-    QBrush tBrush5(QColor(250, 250, 255, 255));
-    QBrush tBrush6(QColor(145, 191, 155, 255));
-    switch(CONF.GetColoringScheme())
-    {
-        case 0:
-            // no coloring
-            break;
-        case 1:
-            // set coloring of the DockWidget
-            brush.setStyle(Qt::SolidPattern);
-            tPalette.setBrush(QPalette::Active, QPalette::WindowText, brush);
-            tBrush1.setStyle(Qt::SolidPattern);
-            tPalette.setBrush(QPalette::Active, QPalette::Button, tBrush1);
-            brush2.setStyle(Qt::SolidPattern);
-            tPalette.setBrush(QPalette::Active, QPalette::ButtonText, brush2);
-            tPalette.setBrush(QPalette::Inactive, QPalette::WindowText, brush);
-            tPalette.setBrush(QPalette::Inactive, QPalette::Button, tBrush1);
-            tPalette.setBrush(QPalette::Inactive, QPalette::ButtonText, brush2);
-            brush3.setStyle(Qt::SolidPattern);
-            tPalette.setBrush(QPalette::Disabled, QPalette::WindowText, brush3);
-            tPalette.setBrush(QPalette::Disabled, QPalette::Button, tBrush1);
-            brush4.setStyle(Qt::SolidPattern);
-            tPalette.setBrush(QPalette::Disabled, QPalette::ButtonText, brush4);
-            tBrush5.setStyle(Qt::SolidPattern);
-            tPalette.setBrush(QPalette::Active, QPalette::Base, tBrush5);
-            tBrush6.setStyle(Qt::SolidPattern);
-            tPalette.setBrush(QPalette::Active, QPalette::Window, tBrush6);
-            tPalette.setBrush(QPalette::Inactive, QPalette::Base, tBrush5);
-            tPalette.setBrush(QPalette::Inactive, QPalette::Window, tBrush6);
-            tPalette.setBrush(QPalette::Disabled, QPalette::Base, tBrush5);
-            tPalette.setBrush(QPalette::Disabled, QPalette::Window, tBrush6);
-            setPalette(tPalette);
-
-            setAutoFillBackground(true);
-            // manipulate stylesheet for buttons on the top right of the DockWidget and the title bar
-            setStyleSheet("QDockWidget::close-button, QDockWidget::float-button { border: 1px solid; background: #9BDCC6; } QDockWidget::title { padding-left: 20px; text-align: left; background: #008080; }");
-            break;
-        default:
-            break;
-    }
-
-    QFont font;
-    font.setPointSize(8);
-    font.setBold(true);
-    font.setWeight(75);
-    setFont(font);
-
-    connect(mTbPlay, SIGNAL(clicked()), this, SLOT(PlayMovieFile()));
-    connect(mTbPause, SIGNAL(clicked()), this, SLOT(PauseMovieFile()));
-    connect(mSlMovie, SIGNAL(sliderMoved(int)), this, SLOT(SeekMovieFile(int)));
 }
 
 void ParticipantWidget::closeEvent(QCloseEvent* pEvent)
@@ -602,7 +613,7 @@ void ParticipantWidget::HandleMessageAcceptDelayed(bool pIncoming)
     CONTACTSPOOL.UpdateContactState(mSessionName, CONTACT_UNDEFINED_STATE);
 }
 
-void ParticipantWidget::HandleMessageUnavailable(bool pIncoming)
+void ParticipantWidget::HandleMessageUnavailable(bool pIncoming, int pStatusCode, QString pDescription)
 {
     // return immediately if we are a preview only
     if (mSessionType == PREVIEW)
@@ -613,7 +624,7 @@ void ParticipantWidget::HandleMessageUnavailable(bool pIncoming)
 
     UpdateParticipantState(CONTACT_UNAVAILABLE);
     CONTACTSPOOL.UpdateContactState(mSessionName, CONTACT_UNAVAILABLE);
-    ShowError("Participant unavailable", "The participant " + mSessionName + " is currently unavailable for an instant message!");
+    ShowError("Participant unavailable", "The participant " + mSessionName + " is currently unavailable for an instant message! The reason is \"" + pDescription + "\"(" + QString("%1").arg(pStatusCode) + ").");
 }
 
 void ParticipantWidget::HandleCallRinging(bool pIncoming)
@@ -758,7 +769,7 @@ void ParticipantWidget::CallStopped(bool pIncoming)
     	mSoundForIncomingCall->stop();
 }
 
-void ParticipantWidget::HandleCallUnavailable(bool pIncoming)
+void ParticipantWidget::HandleCallUnavailable(bool pIncoming, int pStatusCode, QString pDescription)
 {
     // return immediately if we are a preview only
     if (mSessionType == PREVIEW)
@@ -773,7 +784,7 @@ void ParticipantWidget::HandleCallUnavailable(bool pIncoming)
         UpdateParticipantState(CONTACT_UNAVAILABLE);
         CONTACTSPOOL.UpdateContactState(mSessionName, CONTACT_UNAVAILABLE);
 
-        ShowError("Participant unavailable", "The participant " + mSessionName + " is currently unavailable for a call!");
+        ShowError("Participant unavailable", "The participant " + mSessionName + " is currently unavailable for a call! The reason is \"" + pDescription + "\"(" + QString("%1").arg(pStatusCode) + ").");
     }else
     	CallStopped(pIncoming);
 
@@ -840,7 +851,7 @@ void ParticipantWidget::HandleMediaUpdate(bool pIncoming, QString pRemoteAudioAd
     // return immediately if we are a preview only
     if (mSessionType == PREVIEW)
     {
-        LOG(LOG_ERROR, "This function is not support vor preview widgets");
+        LOG(LOG_ERROR, "This function is not support for preview widgets");
         return;
     }
 
@@ -861,23 +872,22 @@ void ParticipantWidget::HandleMediaUpdate(bool pIncoming, QString pRemoteAudioAd
         LOG(LOG_VERBOSE, "Audio sink set to %s:%u", pRemoteAudioAdr.toStdString().c_str(), pRemoteAudioPort);
         LOG(LOG_VERBOSE, "Audio sink uses codec: \"%s\"", pRemoteAudioCodec.toStdString().c_str());
 
-
         MediaSinkNet* tVideoSink = NULL;
         MediaSinkNet* tAudioSink = NULL;
         if (pRemoteVideoPort != 0)
-            tVideoSink = mVideoSourceMuxer->RegisterMediaSink(mRemoteVideoAdr.toStdString(), mRemoteVideoPort, CONF.GetVideoTransportType(), CONF.GetVideoRtp());
+            tVideoSink = mVideoSourceMuxer->RegisterMediaSink(mRemoteVideoAdr.toStdString(), mRemoteVideoPort, mVideoSendSocket, true); // always use RTP/AVP profile (RTP/UDP)
         if (pRemoteAudioPort != 0)
-            tAudioSink = mAudioSourceMuxer->RegisterMediaSink(mRemoteAudioAdr.toStdString(), mRemoteAudioPort, CONF.GetAudioTransportType(), CONF.GetAudioRtp());
+            tAudioSink = mAudioSourceMuxer->RegisterMediaSink(mRemoteAudioAdr.toStdString(), mRemoteAudioPort, mAudioSendSocket, true); // always use RTP/AVP profile (RTP/UDP)
 
         if (tVideoSink != NULL)
-            tVideoSink->AssignStreamName("MUX-relay: " + mSessionName.toStdString());
+            tVideoSink->AssignStreamName("CONF-OUT: " + mSessionName.toStdString());
         if (tAudioSink != NULL)
-            tAudioSink->AssignStreamName("MUX-relay: " + mSessionName.toStdString());
+            tAudioSink->AssignStreamName("CONF-OUT: " + mSessionName.toStdString());
 
         if (mVideoWidget != NULL)
-            mVideoWidget->GetWorker()->SetStreamName("VID-IN: " + mSessionName);
+            mVideoWidget->GetWorker()->SetStreamName("CONF-IN: " + mSessionName);
         if (mAudioWidget != NULL)
-            mAudioWidget->GetWorker()->SetStreamName("AUD-IN: " + mSessionName);
+            mAudioWidget->GetWorker()->SetStreamName("CONF-IN: " + mSessionName);
     }
 
     if (pRemoteVideoPort == 0)
@@ -1051,12 +1061,17 @@ void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
     int tTmp = 0;
     int tHour, tMin, tSec;
 
-    if((mVideoWidget->GetWorker()->SupportsSeeking()) || (mAudioWidget->GetWorker()->SupportsSeeking()))
+    bool tShowMovieControls = false;
+    if ((mVideoSource) && (mVideoWidget->GetWorker()->SupportsSeeking()))
+        tShowMovieControls = true;
+    if ((mAudioSource) && (mAudioWidget->GetWorker()->SupportsSeeking()))
+        tShowMovieControls = true;
+    if (tShowMovieControls)
         mMovieControlsFrame->show();
     else
         mMovieControlsFrame->hide();
 
-    if ((pEvent->timerId() == mTimerId) && (mMovieControlsFrame->isVisible()) && ((mVideoWidget->GetWorker()->SupportsSeeking()) || (mAudioWidget->GetWorker()->SupportsSeeking())))
+    if ((pEvent->timerId() == mTimerId) && (tShowMovieControls))
     {
         int64_t tCurPos = 0;
         int64_t tEndPos = 0;

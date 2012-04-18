@@ -42,7 +42,8 @@ namespace Homer { namespace Monitor {
 ///////////////////////////////////////////////////////////////////////////////
 
 // reference buffer size for average data rate measurement (current value!)
-#define STATISTIC_MOMENT_REFERENCE_SIZE                   128
+#define STATISTIC_MOMENT_DATARATE_REFERENCE_SIZE                   8
+#define STATISTIC_MOMENT_DATARATE_HISTORY                     5 * 1000 * 1000 // limits the measurement array
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -67,7 +68,16 @@ struct PacketStatisticDescriptor{
     int  MomentAvgDataRate;
 };
 
+struct DataRateHistoryDescriptor{
+    int64_t Time; // absolute time in ms
+    int64_t TimeStamp; // relative time stamp
+    int     DataRate;
+};
+
+typedef std::list<DataRateHistoryDescriptor> DataRateHistory;
+
 ///////////////////////////////////////////////////////////////////////////////
+
 class PacketStatistic
 {
     // let RTP announce its generated packets
@@ -78,17 +88,20 @@ public:
     virtual ~PacketStatistic();
 
     /* get simple statistic values */
-    int getAvgPacketSize();
-    int getAvgDataRate();
-    int getMomentAvgDataRate();
-    int getPacketCount();
-    int64_t getByteCount();
-    int getMinPacketSize();
-    int getMaxPacketSize();
-    int getLostPacketCount();
+    int GetAvgPacketSize();
+    int GetAvgDataRate();
+    int GetMomentAvgDataRate();
+    int GetPacketCount();
+    int64_t GetByteCount();
+    int GetMinPacketSize();
+    int GetMaxPacketSize();
+    int GetLostPacketCount();
 
     /* get statistic values */
     PacketStatisticDescriptor GetPacketStatistic();
+
+    /* history */
+    DataRateHistory GetDataRateHistory();
 
     /* classification */
     void AssignStreamName(std::string pName);
@@ -127,6 +140,7 @@ private:
     int           mPacketCount;
     int64_t       mByteCount;
     int64_t       mStartTimeStamp;
+    int64_t       mEndTimeStamp;
     int           mLostPacketCount;
     Time          mLastTime;
     StatisticList mStatistics;
@@ -136,6 +150,10 @@ private:
     enum TransportType mStreamTransportType;
     enum NetworkType mStreamNetworkType;
     bool          mStreamOutgoing;
+    /* history */
+    DataRateHistory mDataRateHistory;
+    Mutex         mDataRateHistoryMutex;
+    bool          mFirstDataRateHistoryLoss;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

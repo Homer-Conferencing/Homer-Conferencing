@@ -29,6 +29,7 @@
 #include <Logger.h>
 #include <Meeting.h>
 
+#include <Berkeley/SocketSetup.h>
 #include <QString>
 #include <QHostInfo>
 #include <QDir>
@@ -180,6 +181,13 @@ void Configuration::SetVisibilityDataStreamsWidget(bool pActive)
     mQSettings->endGroup();
 }
 
+void Configuration::SetVisibilityBroadcastMessageWidget(bool pActive)
+{
+    mQSettings->beginGroup("Global");
+    mQSettings->setValue("VisibilityBroadcastMessageWidget", pActive);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetVisibilityBroadcastWidget(bool pActive)
 {
     mQSettings->beginGroup("Global");
@@ -278,6 +286,13 @@ void Configuration::SetVideoTransport(enum TransportType pType)
     mQSettings->endGroup();
 }
 
+void Configuration::SetVideoStreamingGAPIImpl(QString pImpl)
+{
+    mQSettings->beginGroup("Streaming");
+    mQSettings->setValue("VideoStreamGAPIImpl", pImpl);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetVideoResolution(QString pResolution)
 {
     mQSettings->beginGroup("Streaming");
@@ -355,6 +370,13 @@ void Configuration::SetAudioTransport(enum TransportType pType)
     mQSettings->endGroup();
 }
 
+void Configuration::SetAudioStreamingGAPIImpl(QString pImpl)
+{
+    mQSettings->beginGroup("Streaming");
+    mQSettings->setValue("AudioStreamGAPIImpl", pImpl);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetLocalAudioSource(QString pASource)
 {
     mQSettings->beginGroup("Capturing");
@@ -422,6 +444,13 @@ void Configuration::SetSipListenerAddress(QString pAddress)
 {
     mQSettings->beginGroup("Network");
     mQSettings->setValue("SipListenerAddress", pAddress);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetSipListenerTransport(enum TransportType pType)
+{
+    mQSettings->beginGroup("Network");
+    mQSettings->setValue("SipListenerTransportType", QString(Socket::TransportType2String(pType).c_str()));
     mQSettings->endGroup();
 }
 
@@ -612,6 +641,11 @@ QString Configuration::GetSipListenerAddress()
     return mQSettings->value("Network/SipListenerAddress", QString("")).toString();
 }
 
+enum TransportType Configuration::GetSipListenerTransport()
+{
+    return Socket::String2TransportType(mQSettings->value("Network/SipListenerTransportType", QString("UDP")).toString().toStdString());
+}
+
 QString Configuration::GetBinaryPath()
 {
 	return QString(mAbsBinPath.c_str());
@@ -661,7 +695,7 @@ QSize Configuration::GetMainWindowSize()
 
 bool Configuration::GetParticipantWidgetsSeparation()
 {
-    return mQSettings->value("Global/ParticipantWidgetsSeparation", true).toBool();
+    return mQSettings->value("Global/ParticipantWidgetsSeparation", false).toBool();
 }
 
 bool Configuration::GetParticipantWidgetsCloseImmediately()
@@ -712,6 +746,11 @@ bool Configuration::GetVisibilityNetworkStreamsWidget()
 bool Configuration::GetVisibilityDataStreamsWidget()
 {
     return mQSettings->value("Global/VisibilityDataStreamsWidget", false).toBool();
+}
+
+bool Configuration::GetVisibilityBroadcastMessageWidget()
+{
+    return mQSettings->value("Global/VisibilityBroadcastMessageWidget", false).toBool();
 }
 
 bool Configuration::GetVisibilityBroadcastWidget()
@@ -784,6 +823,11 @@ enum TransportType Configuration::GetVideoTransportType()
     return Socket::String2TransportType(mQSettings->value("Streaming/VideoStreamTransportType", QString("UDP")).toString().toStdString());
 }
 
+QString Configuration::GetVideoStreamingGAPIImpl()
+{
+    return mQSettings->value("Streaming/VideoStreamGAPIImpl", QString(BERKEYLEY_SOCKETS)).toString();
+}
+
 QString Configuration::GetVideoResolution()
 {
     return mQSettings->value("Streaming/VideoStreamResolution", QString("352*288")).toString();
@@ -839,6 +883,11 @@ enum TransportType Configuration::GetAudioTransportType()
     return Socket::String2TransportType(mQSettings->value("Streaming/AudioStreamTransportType", QString("UDP")).toString().toStdString());
 }
 
+QString Configuration::GetAudioStreamingGAPIImpl()
+{
+    return mQSettings->value("Streaming/AudioStreamGAPIImpl", QString(BERKEYLEY_SOCKETS)).toString();
+}
+
 int Configuration::GetVideoAudioStartPort()
 {
     return mQSettings->value("Network/VideoAudioListenerStartPort", 5000).toInt();
@@ -886,7 +935,7 @@ int Configuration::GetSipInfrastructureMode()
 
 bool Configuration::GetNatSupportActivation()
 {
-    return mQSettings->value("Network/NatSupportActivation", false).toBool();
+    return mQSettings->value("Network/NatSupportActivation", true).toBool();
 }
 
 QString Configuration::GetStunServer()

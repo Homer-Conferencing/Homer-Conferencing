@@ -78,12 +78,12 @@ void IdentityDialog::LoadConfiguration()
 		mServerStatus->setPixmap(QPixmap(":/images/UserUnavailable.png"));
 	}
 
-    if (MEETING.getStunNatIp() != "")
-        mLbNatAdr->setText(QString(MEETING.getStunNatIp().c_str()));
+    if (MEETING.GetStunNatIp() != "")
+        mLbNatAdr->setText(QString(MEETING.GetStunNatIp().c_str()));
     else
         mLbNatAdr->setText("Not yet detected. Check configuration!");
-    if (MEETING.getStunNatType() != "")
-        mLbNatType->setText(QString(MEETING.getStunNatType().c_str()));
+    if (MEETING.GetStunNatType() != "")
+        mLbNatType->setText(QString(MEETING.GetStunNatType().c_str()));
     else
         mLbNatType->setText("Not yet detected. Check configuration!");
     mLeName->setText(CONF.GetUserName());

@@ -113,8 +113,8 @@ MediaSource::MediaSource(string pName):
 		// Register all formats and codecs
 		av_register_all();
 
-		// init network support once isntead for every stream
-		avformat_network_init();
+		// init network support once instead for every stream
+		//avformat_network_init();
 
 		// Register all supported input and output devices
 		avdevice_register_all();
@@ -797,7 +797,7 @@ void MediaSource::ResetPacketStatistic()
     mChunkDropCounter = 0;
 }
 
-int MediaSource::GetChunkDropConter()
+int MediaSource::GetChunkDropCounter()
 {
     return mChunkDropCounter;
 }
@@ -807,20 +807,20 @@ int MediaSource::GetChunkBufferCounter()
     return 0;
 }
 
-MediaSinkNet* MediaSource::RegisterMediaSink(string pTargetHost, unsigned int pTargetPort, enum TransportType pSocketType, bool pRtpActivation, int pMaxFps)
+MediaSinkNet* MediaSource::RegisterMediaSink(string pTarget, Requirements *pTransportRequirements, bool pRtpActivation, int pMaxFps)
 {
     MediaSinksList::iterator tIt;
     bool tFound = false;
     MediaSinkNet *tResult = NULL;
-    string tId = MediaSinkNet::CreateId(pTargetHost, toString(pTargetPort), pSocketType, pRtpActivation);
+    string tId = pTarget + "[" + pTransportRequirements->getDescription() + "]" + (pRtpActivation ? "(RTP)" : "");
 
-    if ((pTargetHost == "") || (pTargetPort == 0))
+    if (pTarget == "")
     {
-        LOG(LOG_ERROR, "Sink is ignored because its id is undefined");
+        LOG(LOG_ERROR, "Sink is ignored because its target is undefined");
         return NULL;
     }
 
-    LOG(LOG_VERBOSE, "Registering net based media sink: %s<%d>", pTargetHost.c_str(), pTargetPort);
+    LOG(LOG_VERBOSE, "Registering GAPI based media sink: %s (Requirements: %s)", pTarget.c_str(), pTransportRequirements->getDescription().c_str());
 
     // lock
     mMediaSinksMutex.lock();
@@ -837,7 +837,89 @@ MediaSinkNet* MediaSource::RegisterMediaSink(string pTargetHost, unsigned int pT
 
     if (!tFound)
     {
-        MediaSinkNet *tMediaSinkNet = new MediaSinkNet(pTargetHost, pTargetPort, (pSocketType == SOCKET_TCP) ? true : false, (pSocketType == SOCKET_UDP_LITE) ? true : false, (mMediaType == MEDIA_VIDEO) ? MEDIA_SINK_VIDEO : MEDIA_SINK_AUDIO, pRtpActivation);
+        MediaSinkNet *tMediaSinkNet = new MediaSinkNet(pTarget, pTransportRequirements, (mMediaType == MEDIA_VIDEO) ? MEDIA_SINK_VIDEO : MEDIA_SINK_AUDIO, pRtpActivation);
+        tMediaSinkNet->SetMaxFps(pMaxFps);
+        mMediaSinks.push_back(tMediaSinkNet);
+        tResult = tMediaSinkNet;
+    }
+
+    // unlock
+    mMediaSinksMutex.unlock();
+
+    return tResult;
+}
+
+bool MediaSource::UnregisterMediaSink(string pTarget, Requirements *pTransportRequirements, bool pAutoDelete)
+{
+    bool tResult = false;
+    MediaSinksList::iterator tIt;
+    string tId = pTarget + "[" + pTransportRequirements->getDescription() + "]";
+
+    if (pTarget == "")
+        return false;
+
+    LOG(LOG_VERBOSE, "Unregistering GAPI based media sink: %s (Requirements: %s)", pTarget.c_str(), pTransportRequirements->getDescription().c_str());
+
+    // lock
+    mMediaSinksMutex.lock();
+
+    for (tIt = mMediaSinks.begin(); tIt != mMediaSinks.end(); tIt++)
+    {
+        if ((*tIt)->GetId().find(tId) != string::npos)
+        {
+            LOG(LOG_VERBOSE, "Found registered sink");
+
+            tResult = true;
+            // free memory of media sink object
+            if (pAutoDelete)
+            {
+                delete (*tIt);
+                LOG(LOG_VERBOSE, "..deleted");
+            }
+            // remove registration of media sink object
+            mMediaSinks.erase(tIt);
+            LOG(LOG_VERBOSE, "..unregistered");
+            break;
+        }
+    }
+
+    // unlock
+    mMediaSinksMutex.unlock();
+
+    return tResult;
+}
+
+MediaSinkNet* MediaSource::RegisterMediaSink(string pTargetHost, unsigned int pTargetPort, Socket* pSocket, bool pRtpActivation, int pMaxFps)
+{
+    MediaSinksList::iterator tIt;
+    bool tFound = false;
+    MediaSinkNet *tResult = NULL;
+    string tId = MediaSinkNet::CreateId(pTargetHost, toString(pTargetPort), pSocket->GetTransportType(), pRtpActivation);
+
+    if ((pTargetHost == "") || (pTargetPort == 0))
+    {
+        LOG(LOG_ERROR, "Sink is ignored because its target is undefined");
+        return NULL;
+    }
+
+    LOG(LOG_VERBOSE, "Registering Berkeley sockets based media sink: %s<%d>", pTargetHost.c_str(), pTargetPort);
+
+    // lock
+    mMediaSinksMutex.lock();
+
+    for (tIt = mMediaSinks.begin(); tIt != mMediaSinks.end(); tIt++)
+    {
+        if ((*tIt)->GetId().find(tId) != string::npos)
+        {
+            LOG(LOG_WARN, "Sink already registered");
+            tFound = true;
+            break;
+        }
+    }
+
+    if (!tFound)
+    {
+        MediaSinkNet *tMediaSinkNet = new MediaSinkNet(pTargetHost, pTargetPort, pSocket, (mMediaType == MEDIA_VIDEO) ? MEDIA_SINK_VIDEO : MEDIA_SINK_AUDIO, pRtpActivation);
         tMediaSinkNet->SetMaxFps(pMaxFps);
         mMediaSinks.push_back(tMediaSinkNet);
         tResult = tMediaSinkNet;
@@ -1293,12 +1375,12 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
 
                 // workaround for incompatibility of ffmpeg/libx264
                 // inspired by check within libx264 in "x264_validate_parameters()" of encoder.c
-//                if (tFormat->video_codec == CODEC_ID_H264)
-//                {
-//                    mRecorderCodecContext->me_range = 16;
-//                    mRecorderCodecContext->max_qdiff = 4;
-//                    mRecorderCodecContext->qcompress = 0.6;
-//                }
+                if (tFormat->video_codec == CODEC_ID_H264)
+                {
+                    mRecorderCodecContext->me_range = 16;
+                    mRecorderCodecContext->max_qdiff = 4;
+                    mRecorderCodecContext->qcompress = 0.6;
+                }
 
                 // set MPEG quantizer: for h261/h263/mjpeg use the h263 quantizer, in other cases use the MPEG2 one
             //    if ((tFormat->video_codec == CODEC_ID_H261) || (tFormat->video_codec == CODEC_ID_H263) || (tFormat->video_codec == CODEC_ID_H263P) || (tFormat->video_codec == CODEC_ID_MJPEG))
@@ -1322,7 +1404,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
         		}
 
                 // Dump information about device file
-        		HM_av_dump_format(mRecorderFormatContext, 0, "MediaSource recorder (video)", true);
+        		av_dump_format(mRecorderFormatContext, 0, "MediaSource recorder (video)", true);
 
                 break;
         case MEDIA_AUDIO:
@@ -1342,7 +1424,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
                 mRecorderSampleFifo = HM_av_fifo_alloc(MEDIA_SOURCE_AUDIO_SAMPLE_BUFFER_SIZE * 2);
 
                 // Dump information about device file
-                HM_av_dump_format(mRecorderFormatContext, 0, "MediaSource recorder (audio)", true);
+                av_dump_format(mRecorderFormatContext, 0, "MediaSource recorder (audio)", true);
 
                 break;
         default:
@@ -1413,7 +1495,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     }
 
     // allocate streams private data buffer and write the streams header, if any
-    HM_avformat_write_header(mRecorderFormatContext);
+    avformat_write_header(mRecorderFormatContext, NULL);
 
     LOG(LOG_INFO, "%s recorder opened...", GetMediaTypeStr().c_str());
 
@@ -1827,6 +1909,8 @@ string MediaSource::GetMediaTypeStr()
             return "VIDEO";
         case MEDIA_AUDIO:
             return "AUDIO";
+        default:
+        	return "VIDEO/AUDIO";
     }
     return "unknown";
 }
@@ -1942,6 +2026,11 @@ bool MediaSource::SelectDevice(std::string pDeviceName, enum MediaType pMediaTyp
     return tResult;
 }
 
+std::string MediaSource::GetCurrentDevicePeerName()
+{
+	return "";
+}
+
 std::string MediaSource::GetCurrentDeviceName()
 {
 	return mCurrentDeviceName;
@@ -1997,19 +2086,14 @@ void* MediaSource::AllocChunkBuffer(int& pChunkBufferSize, enum MediaType pMedia
             pChunkBufferSize = AVCODEC_MAX_AUDIO_FRAME_SIZE + FF_INPUT_BUFFER_PADDING_SIZE;
             return av_malloc(pChunkBufferSize);
         default:
+        	LOG(LOG_WARN, "Undefined media type, returning chunk buffer will be invalid");
             return NULL;
     }
 }
 
 void MediaSource::FreeChunkBuffer(void *pChunk)
 {
-    // lock grabbing
-    mGrabMutex.lock();
-
     av_free(pChunk);
-
-    // unlock grabbing
-    mGrabMutex.unlock();
 }
 
 bool MediaSource::SupportsSeeking()

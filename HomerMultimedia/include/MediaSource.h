@@ -176,17 +176,24 @@ public:
     virtual std::string GetCodecName();
     virtual std::string GetCodecLongName();
     virtual bool SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset = false, bool pRtpActivated = true);
-    virtual int GetChunkDropConter(); // how many chunks were dropped?
+    virtual int GetChunkDropCounter(); // how many chunks were dropped?
     virtual int GetChunkBufferCounter(); // how many chunks are currently buffered?
 
     /* simple relaying WITHOUT any reencoding functionality but WITH rtp support*/
-    MediaSinkNet* RegisterMediaSink(std::string pTargetHost, unsigned int pTargetPort, enum TransportType pSocketType, bool pRtpActivation, int pMaxFps = 0 /* max. fps */);
-    bool UnregisterMediaSink(std::string pTargetHost, unsigned int pTargetPort, bool pAutoDelete = true);
-    MediaSinkFile* RegisterMediaSink(std::string pTargetFile);
-    bool UnregisterMediaSink(std::string pTargetFile, bool pAutoDelete = true);
-    MediaSink* RegisterMediaSink(MediaSink *pMediaSink);
-    bool UnregisterMediaSink(MediaSink *pMediaSink, bool pAutoDelete = true);
-    bool UnregisterGeneralMediaSink(std::string pId, bool pAutoDelete = true);
+	// register/unregister: Berkeley sockets based media sinks
+    	MediaSinkNet* RegisterMediaSink(std::string pTargetHost, unsigned int pTargetPort, Socket* pSocket, bool pRtpActivation, int pMaxFps = 0 /* max. fps */);
+    	bool UnregisterMediaSink(std::string pTargetHost, unsigned int pTargetPort, bool pAutoDelete = true);
+	// register/unregister: GAPI based network sinks
+    	MediaSinkNet* RegisterMediaSink(string pTarget, Requirements *pTransportRequirements, bool pRtpActivation, int pMaxFps = 0 /* max. fps */);
+    	bool UnregisterMediaSink(std::string pTarget, Requirements *pTransportRequirements, bool pAutoDelete = true);
+	// register/unregister: file based media sinks
+    	MediaSinkFile* RegisterMediaSink(std::string pTargetFile);
+    	bool UnregisterMediaSink(std::string pTargetFile, bool pAutoDelete = true);
+	// register/unregister: already allocated media sinks
+    	MediaSink* RegisterMediaSink(MediaSink *pMediaSink);
+    	bool UnregisterMediaSink(MediaSink *pMediaSink, bool pAutoDelete = true);
+	// register/unregister: media sink of any type
+    	bool UnregisterGeneralMediaSink(std::string pId, bool pAutoDelete = true);
     std::list<std::string> ListRegisteredMediaSinks();
     void DeleteAllRegisteredMediaSinks();
     void SetRtpActivation(bool pState);
@@ -206,6 +213,7 @@ public:
     virtual void getAudioDevices(AudioDevicesList &pAList);
     virtual bool SelectDevice(std::string pDeviceName, enum MediaType pMediaType, bool &pIsNewDevice);
     virtual std::string GetCurrentDeviceName();
+    virtual std::string GetCurrentDevicePeerName();
     virtual bool RegisterMediaSource(MediaSource *pMediaSource);
     virtual bool UnregisterMediaSource(MediaSource *pMediaSource, bool pAutoDelete = true);
 

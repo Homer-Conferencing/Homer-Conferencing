@@ -44,6 +44,15 @@ namespace Homer { namespace Conference {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// de/activate NAT traversal mechanism: setting explicitly the own contact IP address (used as video/audio destination)
+#define NAT_TRAVERSAL_SUPPORT
+
+// de/activate birectional sockets for video/audio transmission: local media socket is used both for sending stream to peer and for receiving stream from peer
+//HINT: this is need for easier NAT traversal because it allows the assumption sending and receiving port number at remote side are the same and can be derived from SDP data
+#define MEETING_USE_BIRECTIONAL_MEDIASOCKETS
+
+///////////////////////////////////////////////////////////////////////////////
+
 #define MEETING Meeting::GetInstance()
 
 // configuration
@@ -88,7 +97,7 @@ public:
 
     static Meeting& GetInstance();
 
-    void Init(std::string pSipHostAdr, LocalAddressesList pLocalAddresses, std::string pBroadcastAdr = "Global messages", int pSipStartPort = 5060, int pStunStartPort = 5070, int pVideoAudioStartPort = 5000);
+    void Init(std::string pSipHostAdr, LocalAddressesList pLocalAddresses, std::string pBroadcastAdr = "Global messages", int pSipStartPort = 5060, Homer::Base::TransportType pSipListenerTransport = SOCKET_UDP, int pStunStartPort = 5070, int pVideoAudioStartPort = 5000);
     void Stop();
     void Deinit();
 
@@ -107,14 +116,16 @@ public:
 
     /* local I/O interfaces and state */
     bool IsLocalAddress(std::string pHost, std::string pPort);
-    Socket* GetAudioSocket(std::string pParticipant);
-    Socket* GetVideoSocket(std::string pParticipant);
+    Socket* GetAudioReceiveSocket(std::string pParticipant);
+    Socket* GetVideoReceiveSocket(std::string pParticipant);
+    Socket* GetAudioSendSocket(std::string pParticipant);
+    Socket* GetVideoSendSocket(std::string pParticipant);
     int GetCallState(std::string pParticipant);
     bool GetSessionInfo(std::string pParticipant, struct SessionInfo *pInfo);
     void GetOwnContactAddress(std::string pParticipant, std::string &pIp, unsigned int &pPort);
 
     /* session management */
-    bool OpenParticipantSession(std::string pUser, std::string pHost, std::string pPort, int pInitState);
+    bool OpenParticipantSession(std::string pUser, std::string pHost, std::string pPort);
     bool CloseParticipantSession(std::string pParticipant);
     int CountParticipantSessions();
 
@@ -133,6 +144,7 @@ private:
     friend class SIP;
 
     void SetHostAdr(std::string pHost); // no one should be allowed to change the local address from the outside
+    std::string GetOwnRoutingAddressForPeer(std::string pForeignHost);
 
     bool SearchParticipantAndSetState(std::string pParticipant, int pState);
     bool SearchParticipantAndSetOwnContactAddress(std::string pParticipant, std::string pOwnNatIp, unsigned int pOwnNatPort);
@@ -141,6 +153,7 @@ private:
     bool SearchParticipantAndSetRemoteMediaInformation(std::string pParticipant, std::string pVideoHost, unsigned int pVideoPort, std::string pVideoCodec, std::string pAudioHost, unsigned int pAudioPort, std::string pAudioCodec);
     nua_handle_t ** SearchParticipantAndGetNuaHandleForCalls(string pParticipant);
     bool SearchParticipantByNuaHandleOrName(string &pUser, string &pHost, string &pPort, nua_handle_t *pNuaHandle);
+
     const char* GetSdpData(std::string pParticipant);
     void CloseAllSessions();
     std::string CallStateAsString(int pCallState);

@@ -157,11 +157,7 @@ void OverviewContactsWidget::SetVisible(bool pVisible)
 
 void OverviewContactsWidget::paintEvent(QPaintEvent *pEvent)
 {
-    QModelIndex tIndex = mTvContacts->currentIndex();
-
     QDockWidget::paintEvent(pEvent);
-
-    mTvContacts->setCurrentIndex(tIndex);
 }
 
 void OverviewContactsWidget::contextMenuEvent(QContextMenuEvent *pEvent)
@@ -198,6 +194,30 @@ void OverviewContactsWidget::timerEvent(QTimerEvent *pEvent)
     }
 }
 
+void OverviewContactsWidget::keyPressEvent(QKeyEvent *pEvent)
+{
+    if (pEvent->key() == Qt::Key_Return)
+    {
+        ContactSelected();
+        return;
+    }
+    if (pEvent->key() == Qt::Key_Insert)
+    {
+        InsertNew();
+        return;
+    }
+    if (pEvent->key() == Qt::Key_F2)
+    {
+        EditSelected();
+        return;
+    }
+    if (pEvent->key() == Qt::Key_Delete)
+    {
+        DeleteSelected();
+        return;
+    }
+}
+
 void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
 {
     QAction *tAction;
@@ -213,6 +233,9 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
         QIcon tIcon6;
         tIcon6.addPixmap(QPixmap(":/images/Message.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon6);
+        QList<QKeySequence> tMsgKeys;
+        tMsgKeys.push_back(Qt::Key_Enter);
+        tAction->setShortcuts(tMsgKeys);
 
         tAction = tMenu.addAction("Conference");
         QIcon tIcon5;
@@ -226,6 +249,9 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
     QIcon tIcon1;
     tIcon1.addPixmap(QPixmap(":/images/Plus.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon1);
+    QList<QKeySequence> tINSKeys;
+    tINSKeys.push_back(Qt::Key_Insert);
+    tAction->setShortcuts(tINSKeys);
 
     if (tValidEntryBelow)
     {
@@ -233,6 +259,9 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
         QIcon tIcon3;
         tIcon3.addPixmap(QPixmap(":/images/Pen.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon3);
+        QList<QKeySequence> tEditKeys;
+        tEditKeys.push_back(Qt::Key_F2);
+        tAction->setShortcuts(tEditKeys);
 
         tAction = tMenu.addAction("Duplicate contact");
         QIcon tIcon2;
@@ -243,6 +272,9 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
         QIcon tIcon4;
         tIcon4.addPixmap(QPixmap(":/images/Minus.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon4);
+        QList<QKeySequence> tDELKeys;
+        tDELKeys.push_back(Qt::Key_Delete);
+        tAction->setShortcuts(tDELKeys);
     }
 
     tMenu.addSeparator();
@@ -256,12 +288,12 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
     {
         if (tPopupRes->text().contains("Send message"))
         {
-            ContactParticipant((ContactDescriptor*)mTvContacts->indexAt(tRelPos).internalPointer(), false);
+            ContactSelected();
             return;
         }
         if (tPopupRes->text().contains("Conference"))
         {
-            ContactParticipant((ContactDescriptor*)mTvContacts->indexAt(tRelPos).internalPointer(), true);
+            ContactSelected(true);
             return;
         }
         if (tPopupRes->text().contains("Add contact"))
@@ -276,7 +308,7 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
         }
         if (tPopupRes->text().contains("Edit contact"))
         {
-            Edit((ContactDescriptor*)mTvContacts->indexAt(tRelPos).internalPointer());
+            EditSelected();
             return;
         }
         if (tPopupRes->text().contains("Delete contact"))
@@ -356,7 +388,7 @@ void OverviewContactsWidget::ContactParticipant(ContactDescriptor *pContact, boo
 {
     if (pContact == NULL)
     {
-        LOG(LOG_VERBOSE, "Cannot contact none existing contact");
+        LOG(LOG_VERBOSE, "Cannot contact non existing contact");
         return;
     }
 
@@ -435,27 +467,68 @@ void OverviewContactsWidget::InsertNew()
     }
 }
 
+void OverviewContactsWidget::EditSelected()
+{
+    QModelIndex tIndex = mTvContacts->currentIndex();
+    ContactDescriptor* tContact = (ContactDescriptor*)tIndex.internalPointer();
+
+    if (tContact == NULL)
+    {
+        LOG(LOG_VERBOSE, "Cannot edit non existing contact");
+        return;
+    }
+
+    ContactEditDialog tCED;
+
+    tCED.setWindowTitle("Edit contact");
+    Contact2Dialog(tContact, &tCED);
+    tCED.mLeName->setFocus(Qt::TabFocusReason);
+
+    if (tCED.exec() == QDialog::Accepted)
+    {
+        Dialog2Contact(&tCED, tContact, false);
+        CONTACTSPOOL.SavePool();
+        mContactListModel->UpdateView();
+    }
+}
+
 void OverviewContactsWidget::DeleteSelected()
 {
     QModelIndex tIndex = mTvContacts->currentIndex();
     ContactDescriptor* tContact = (ContactDescriptor*)tIndex.internalPointer();
     if (tContact == NULL)
+    {
+        LOG(LOG_VERBOSE, "Cannot delete non existing contact");
         return;
+    }
 
     QString tContactDescription = (tContact->Name != "") ? tContact->Name : QString(MEETING.SipCreateId(tContact->User.toStdString(), tContact->Host.toStdString(), tContact->Port.toStdString()).c_str());
     QMessageBox tMB(QMessageBox::Question, "Acknowledge", "Do you really want to delete \"" + tContactDescription + "\" from your contact list?", QMessageBox::Yes | QMessageBox::No);
 
     if (tMB.exec() == QMessageBox::Yes)
     {
-        Delete((ContactDescriptor*)tIndex.internalPointer());
+        CONTACTSPOOL.RemoveContact(tContact->Id);
     }
+}
+
+void OverviewContactsWidget::ContactSelected(bool pCall)
+{
+    QModelIndex tIndex = mTvContacts->currentIndex();
+    ContactDescriptor* tContact = (ContactDescriptor*)tIndex.internalPointer();
+    if (tContact == NULL)
+    {
+        LOG(LOG_VERBOSE, "Cannot contact non existing contact");
+        return;
+    }
+
+    ContactParticipant(tContact, pCall);
 }
 
 void OverviewContactsWidget::InsertCopy(ContactDescriptor *pContact)
 {
     if (pContact == NULL)
     {
-        LOG(LOG_VERBOSE, "Cannot copy none existing contact");
+        LOG(LOG_VERBOSE, "Cannot copy non existing contact");
         return;
     }
 
@@ -473,49 +546,10 @@ void OverviewContactsWidget::InsertCopy(ContactDescriptor *pContact)
     }
 }
 
-void OverviewContactsWidget::Edit(const QModelIndex &pIndex)
-{
-    if ((pIndex.isValid()) && (pIndex.internalPointer() != NULL))
-        Edit((ContactDescriptor*)pIndex.internalPointer());
-}
-
 void OverviewContactsWidget::ContactParticipantDoubleClick(const QModelIndex &pIndex)
 {
     if ((pIndex.isValid()) && (pIndex.internalPointer() != NULL))
         ContactParticipant((ContactDescriptor*)pIndex.internalPointer(), false);
-}
-
-void OverviewContactsWidget::Edit(ContactDescriptor *pContact)
-{
-    if (pContact == NULL)
-    {
-        LOG(LOG_VERBOSE, "Cannot edit none existing contact");
-        return;
-    }
-
-    ContactEditDialog tCED;
-
-    tCED.setWindowTitle("Edit contact");
-    Contact2Dialog(pContact, &tCED);
-    tCED.mLeName->setFocus(Qt::TabFocusReason);
-
-    if (tCED.exec() == QDialog::Accepted)
-    {
-        Dialog2Contact(&tCED, pContact, false);
-        CONTACTSPOOL.SavePool();
-        mContactListModel->UpdateView();
-    }
-}
-
-void OverviewContactsWidget::Delete(ContactDescriptor *pContact)
-{
-    if (pContact == NULL)
-    {
-        LOG(LOG_VERBOSE, "Cannot delete none existing contact");
-        return;
-    }
-
-    CONTACTSPOOL.RemoveContact(pContact->Id);
 }
 
 void OverviewContactsWidget::SaveList()
@@ -548,9 +582,10 @@ void OverviewContactsWidget::LoadList()
 ///////////////////////  MODEL CLASS  /////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-ContactListModel::ContactListModel(QObject *pParent):
-    QAbstractItemModel(pParent)
+ContactListModel::ContactListModel(OverviewContactsWidget *pOverviewContactsWidget):
+    QAbstractItemModel(pOverviewContactsWidget)
 {
+	mOverviewContactsWidget = pOverviewContactsWidget;
     CONTACTSPOOL.RegisterAtController(this);
 }
 
@@ -582,21 +617,19 @@ QVariant ContactListModel::data(const QModelIndex &pIndex, int pRole) const
                 switch(pIndex.column())
                 {
                     case 0:
-                        switch(GetContactAvailability(pIndex))
-                        {
-                            case false:
-                                if (CONF.GetSipContactsProbing())
-                                    tResult = QPixmap(":/images/UserAvailable.png");//.scaled(20, 20, Qt::KeepAspectRatio, Qt::FastTransformation);
-                                else
-                                    tResult = QPixmap(":/images/Users1.png").scaled(20, 20, Qt::KeepAspectRatio, Qt::FastTransformation);
-                                break;
-                            case true:
-                                if (CONF.GetSipContactsProbing())
-                                    tResult = QPixmap(":/images/UserUnavailable.png");//.scaled(20, 20, Qt::KeepAspectRatio, Qt::FastTransformation);
-                                else
-                                    tResult = QPixmap(":/images/Users1.png").scaled(20, 20, Qt::KeepAspectRatio, Qt::FastTransformation);
-                                break;
-                        }
+                    	if (CONF.GetSipContactsProbing())
+                    	{
+                    		if (GetContactAvailability(pIndex))
+                    		{
+                    			tResult = QPixmap(":/images/UserAvailable.png");//.scaled(20, 20, Qt::KeepAspectRatio, Qt::FastTransformation);
+                    		}else
+                    		{
+                    			tResult = QPixmap(":/images/UserUnavailable.png");//.scaled(20, 20, Qt::KeepAspectRatio, Qt::FastTransformation);
+                    		}
+                    	}else
+                    	{
+							tResult = QPixmap(":/images/Users1.png").scaled(20, 20, Qt::KeepAspectRatio, Qt::FastTransformation);
+                    	}
                         break;
                     case 1:
                         //tResult = QPixmap(":/images/Users1.png").scaled(25, 25, Qt::KeepAspectRatio, Qt::FastTransformation);
@@ -764,7 +797,11 @@ QVariant ContactListModel::headerData(int pSection, Qt::Orientation pOrientation
 
 void ContactListModel::UpdateView()
 {
+	QModelIndex tIndex = mOverviewContactsWidget->mTvContacts->currentIndex();
+
     reset();
+
+    mOverviewContactsWidget->mTvContacts->setCurrentIndex(tIndex);
 }
 
 void ContactListModel::sort (int pColumn, Qt::SortOrder pOrder)

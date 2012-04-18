@@ -68,11 +68,11 @@ private:
     virtual void timerEvent(QTimerEvent *pEvent);
     virtual void contextMenuEvent(QContextMenuEvent *pContextMenuEvent);
 
-    void ResetCurrentVideoStatistic();
-    void ResetCurrentAudioStatistic();
+    void ResetStatistic(enum Homer::Monitor::DataType pDataType, int pIndex);
     void initializeGUI();
     void UpdateView();
-    void SaveStatistic();
+    void SaveCompleteStatistic();
+    void SaveHistory(enum Homer::Monitor::DataType pDataType, int pIndex);
     void FillCellText(QTableWidget *pTable, int pRow, int pCol, QString pText);
     void FillRow(QTableWidget *pTable, int pRow, Homer::Monitor::PacketStatistic *pStats);
 

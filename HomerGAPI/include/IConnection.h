@@ -20,49 +20,44 @@
  *****************************************************************************/
 
 /*
- * Purpose: Implementation of G-Lab API
+ * Purpose: IConnection
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
 
-#include <GAPI.h>
-#include <SocketSetup.h>
-#include <SocketSubscription.h>
+#ifndef _GAPI_ICONNECTION_
+#define _GAPI_ICONNECTION_
 
-#include <Logger.h>
-
-#include <string>
+#include <Name.h>
+#include <Requirements.h>
+#include <Events.h>
 
 namespace Homer { namespace Base {
 
-using namespace std;
+///////////////////////////////////////////////////////////////////////////////
+
+class IConnection
+{
+public:
+	IConnection(){ }
+    virtual ~IConnection(){ }
+
+    virtual bool isClosed() = 0;
+    virtual int availableBytes() = 0;
+    virtual void read(char* pBuffer, int &pBufferize) = 0;
+    virtual void write(char* pBuffer, int pBufferSize) = 0;
+    virtual bool getBlocking() = 0;
+    virtual void setBlocking(bool pState) = 0;
+    virtual void cancel() = 0;
+    virtual Name* getName() = 0;
+    virtual Name* getRemoteName() = 0;
+    virtual bool changeRequirements(Requirements *pRequirements) = 0;
+    virtual Requirements getRequirements() = 0;
+    virtual Events getEvents() = 0;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 
-SocketSetup::SocketSetup()
-{
-}
+}} // namespaces
 
-SocketSetup::~SocketSetup()
-{
-
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-ISubscription* SocketSetup::subscribe(IName *pName, Requirements *pRequirements)
-{
-    SocketName *tName = (SocketName*)pName; //TODO: type safety via C++ reflections or template structure
-	return new SocketSubscription(tName->getHost(), tName->getPort(), pRequirements);
-}
-
-IRegistration* SocketSetup::publish(IName *pName, Requirements *pRequirements)
-{
-	//TODO:
-	return 0;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-}} //namespace
+#endif

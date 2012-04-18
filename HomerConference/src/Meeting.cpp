@@ -62,8 +62,10 @@ struct ParticipantDescriptor
     nua_handle_t   *SipNuaHandleForCalls;
     nua_handle_t   *SipNuaHandleForMsgs;
     nua_handle_t   *SipNuaHandleForOptions;
-    Socket         *VSocket;
-    Socket         *ASocket;
+    Socket         *VideoReceiveSocket;
+    Socket         *AudioReceiveSocket;
+    Socket         *VideoSendSocket;
+    Socket         *AudioSendSocket;
     int            CallState;
 };
 
@@ -90,9 +92,9 @@ Meeting& Meeting::GetInstance()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void Meeting::Init(string pSipHostAdr, LocalAddressesList pLocalAddresses, string pBroadcastAdr, int pSipStartPort, int pStunStartPort, int pVideoAudioStartPort)
+void Meeting::Init(string pSipHostAdr, LocalAddressesList pLocalAddresses, string pBroadcastAdr, int pSipStartPort, TransportType pSipListenerTransport, int pStunStartPort, int pVideoAudioStartPort)
 {
-    SIP::Init(pSipStartPort, pStunStartPort);
+    SIP::Init(pSipStartPort, pSipListenerTransport, pStunStartPort);
 
     // start value for port auto probing (default is 5000)
     mVideoAudioStartPort = pVideoAudioStartPort;
@@ -131,8 +133,10 @@ void Meeting::Init(string pSipHostAdr, LocalAddressesList pLocalAddresses, strin
     tParticipantDescriptor.SipNuaHandleForCalls = NULL;
     tParticipantDescriptor.SipNuaHandleForMsgs = NULL;
     tParticipantDescriptor.CallState = CALLSTATE_STANDBY;
-    tParticipantDescriptor.VSocket = NULL;
-    tParticipantDescriptor.ASocket = NULL;
+    tParticipantDescriptor.VideoReceiveSocket = NULL;
+    tParticipantDescriptor.AudioReceiveSocket = NULL;
+    tParticipantDescriptor.VideoSendSocket = NULL;
+    tParticipantDescriptor.AudioSendSocket = NULL;
 
     mParticipants.push_back(tParticipantDescriptor);
     mMeetingInitiated = true;
@@ -214,6 +218,50 @@ int Meeting::GetHostPort()
     return mSipHostPort;
 }
 
+string Meeting::GetOwnRoutingAddressForPeer(std::string pForeignHost)
+{
+    #ifndef NAT_TRAVERSAL_SUPPORT
+        return GetHostAdr();
+    #endif
+
+    if ((pForeignHost == "") ||
+        (pForeignHost == GetHostAdr()))
+    {
+        return GetHostAdr();
+    }
+
+    if (IS_IPV6_ADDRESS(mSipHostAdr))
+    {//IPv6
+        return GetHostAdr();
+    }else
+    {//IPv4 processing, based on RFC 5735
+        // check for loopback address
+        if (pForeignHost.substr(0, 3) == "127.")    /* 127.0.0.0.0 - 172.255.255.255  */
+        {
+            return "127.0.0.1";         // loopback address
+        }
+
+        // check for private address
+        if ((pForeignHost.substr(0, 3) == "10.")      /* 10.0.0.0       - 10.255.255.255  */ ||
+            (pForeignHost.substr(0, 4) == "172.")     /* 172.16.0.0     - 172.31.255.255  */ || //HINT: we check only for the first digit ;)
+            (pForeignHost.substr(0, 8) == "192.168.") /* 192.168.0.0    - 192.168.255.255 */ )
+        {
+            return GetHostAdr();        // local address
+        }
+
+        // check for link local address
+        if (pForeignHost.substr(0, 8) == "169.254.") /* 169.254.0.0.0  - 169.254.255.255  */
+        {
+            return GetHostAdr();        // local address
+        }
+
+        if (GetStunNatIp() != "")
+            return GetStunNatIp();      // outmost NAT address
+        else
+            return GetHostAdr();        // local address
+    }
+}
+
 void Meeting::SetLocalUserName(string pName)
 {
     string tFilteredString = "";
@@ -281,7 +329,7 @@ string Meeting::GetServerConferenceId()
     return tResult;
 }
 
-bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort, int pInitState)
+bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort)
 {
     bool        tFound = false;
     ParticipantDescriptor tParticipantDescriptor;
@@ -308,7 +356,7 @@ bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort, i
         tParticipantDescriptor.User = pUser;
         tParticipantDescriptor.Host = pHost;
         tParticipantDescriptor.Port = pPort;
-        tParticipantDescriptor.OwnIp = GetHostAdr();
+        tParticipantDescriptor.OwnIp = GetOwnRoutingAddressForPeer(pHost);
         tParticipantDescriptor.OwnPort = (unsigned int)GetHostPort();
         tParticipantDescriptor.RemoteVideoHost = "0.0.0.0";
         tParticipantDescriptor.RemoteVideoPort = 0;
@@ -317,17 +365,26 @@ bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort, i
         tParticipantDescriptor.RemoteAudioPort = 0;
         tParticipantDescriptor.RemoteAudioCodec = "";
         tParticipantDescriptor.CallState = CALLSTATE_STANDBY;
-        tParticipantDescriptor.VSocket = new Socket(mVideoAudioStartPort, GetSocketTypeFromMediaTransportType(GetVideoTransportType()), 2);
-        if (tParticipantDescriptor.VSocket == NULL)
+        tParticipantDescriptor.VideoReceiveSocket = new Socket(mVideoAudioStartPort, GetSocketTypeFromMediaTransportType(GetVideoTransportType()), 2);
+        if (tParticipantDescriptor.VideoReceiveSocket == NULL)
             LOG(LOG_ERROR, "Invalid video socket");
-        tParticipantDescriptor.ASocket = new Socket(mVideoAudioStartPort, GetSocketTypeFromMediaTransportType(GetAudioTransportType()), 2);
-        if (tParticipantDescriptor.ASocket == NULL)
+        else
+            mVideoAudioStartPort = tParticipantDescriptor.VideoReceiveSocket->GetLocalPort() + 2;
+        tParticipantDescriptor.AudioReceiveSocket = new Socket(mVideoAudioStartPort, GetSocketTypeFromMediaTransportType(GetAudioTransportType()), 2);
+        if (tParticipantDescriptor.AudioReceiveSocket == NULL)
             LOG(LOG_ERROR, "Invalid audio socket");
+        else
+            mVideoAudioStartPort = tParticipantDescriptor.AudioReceiveSocket->GetLocalPort() + 2;
+        #ifdef MEETING_USE_BIRECTIONAL_MEDIASOCKETS
+            tParticipantDescriptor.VideoSendSocket = tParticipantDescriptor.VideoReceiveSocket;
+            tParticipantDescriptor.AudioSendSocket = tParticipantDescriptor.AudioReceiveSocket;
+        #else
+            tParticipantDescriptor.VideoSendSocket = new Socket(IS_IPV6_ADDRESS(pHost) ? SOCKET_IPv6 : SOCKET_IPv4, GetSocketTypeFromMediaTransportType(GetVideoTransportType()));
+            tParticipantDescriptor.AudioSendSocket = new Socket(IS_IPV6_ADDRESS(pHost) ? SOCKET_IPv6 : SOCKET_IPv4, GetSocketTypeFromMediaTransportType(GetVideoTransportType()));
+        #endif
 
         mParticipants.push_back(tParticipantDescriptor);
 
-        if (pInitState == CALLSTATE_RINGING)
-            SendCall(SipCreateId(pUser, pHost, pPort));
     }else
         LOG(LOG_VERBOSE, "Participant session already exists, open request ignored");
 
@@ -352,8 +409,12 @@ bool Meeting::CloseParticipantSession(string pParticipant)
             // hint: the media sources are deleted within video/audio-widget
 
             // delete video/audio sockets
-            delete (*tIt).VSocket;
-            delete (*tIt).ASocket;
+            delete (*tIt).VideoReceiveSocket;
+            delete (*tIt).AudioReceiveSocket;
+            #ifndef MEETING_USE_BIRECTIONAL_MEDIASOCKETS
+                delete (*tIt).VideoSendSocket;
+                delete (*tIt).AudioSendSocket;
+            #endif
 
             // remove element from participants list
             tIt = mParticipants.erase(tIt);
@@ -412,8 +473,12 @@ void Meeting::CloseAllSessions()
             LOG(LOG_VERBOSE, "Close loopback session with: %s", SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str());
 
         // delete video/audio sockets
-        delete (*tIt).VSocket;
-        delete (*tIt).ASocket;
+        delete (*tIt).VideoReceiveSocket;
+        delete (*tIt).AudioReceiveSocket;
+        #ifndef MEETING_USE_BIRECTIONAL_MEDIASOCKETS
+            delete (*tIt).VideoSendSocket;
+            delete (*tIt).AudioSendSocket;
+        #endif
 
         // remove element from participants list
         tIt = mParticipants.erase(tIt);
@@ -813,19 +878,19 @@ const char* Meeting::GetSdpData(std::string pParticipant)
             if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
             {
                 LOG(LOG_VERBOSE, "...found");
-                if (tIt->VSocket == NULL)
+                if (tIt->VideoReceiveSocket == NULL)
                 {
                     LOG(LOG_ERROR, "Found video socket reference is NULL");
                     return tResult;
                 }
-                if (tIt->ASocket == NULL)
+                if (tIt->AudioReceiveSocket == NULL)
                 {
                     LOG(LOG_ERROR, "Found audio socket reference is NULL");
                     return tResult;
                 }
                 // ####################### get ports #############################
-                tLocalVideoPort = tIt->VSocket->GetLocalPort();
-                tLocalAudioPort = tIt->ASocket->GetLocalPort();
+                tLocalVideoPort = tIt->VideoReceiveSocket->GetLocalPort();
+                tLocalAudioPort = tIt->AudioReceiveSocket->GetLocalPort();
 
                 // ##################### create SDP string #######################
                 // set sdp string
@@ -873,6 +938,7 @@ bool Meeting::SearchParticipantAndSetState(string pParticipant, int pState)
     return tFound;
 }
 
+//HINT: following function is used in case a call was received and the SIP destination address differs from the IP address of the network layer
 bool Meeting::SearchParticipantAndSetOwnContactAddress(string pParticipant, string pOwnNatIp, unsigned int pOwnNatPort)
 {
     bool tFound = false;
@@ -1082,7 +1148,7 @@ bool Meeting::IsLocalAddress(string pHost, string pPort)
     return tFound;
 }
 
-Socket* Meeting::GetAudioSocket(string pParticipant)
+Socket* Meeting::GetAudioReceiveSocket(string pParticipant)
 {
     Socket *tResult = NULL;
     ParticipantList::iterator tIt;
@@ -1093,18 +1159,18 @@ Socket* Meeting::GetAudioSocket(string pParticipant)
     mParticipantsMutex.lock();
 
     if (pParticipant == mBroadcastAdr)
-        tResult = mParticipants.begin()->ASocket;
+        tResult = mParticipants.begin()->AudioReceiveSocket;
     else
     {
         // is the recipient already involved in the conference?
         if (mParticipants.size() > 1)
         {
-            LOG(LOG_VERBOSE, "Search matching database entry for GetAudioSocket()");
+            LOG(LOG_VERBOSE, "Search matching database entry for GetAudioReceiveSocket()");
             for (tIt = mParticipants.begin()++; tIt != mParticipants.end(); tIt++)
             {
                 if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
                 {
-                    tResult = tIt->ASocket;
+                    tResult = tIt->AudioReceiveSocket;
                     LOG(LOG_VERBOSE, "...found");
                 }
             }
@@ -1115,12 +1181,12 @@ Socket* Meeting::GetAudioSocket(string pParticipant)
     mParticipantsMutex.unlock();
 
     if (tResult == NULL)
-        LOG(LOG_WARN, "Resulting audio socket is NULL");
+        LOG(LOG_WARN, "Resulting audio receive socket is NULL");
 
     return tResult;
 }
 
-Socket* Meeting::GetVideoSocket(string pParticipant)
+Socket* Meeting::GetVideoReceiveSocket(string pParticipant)
 {
     Socket *tResult = NULL;
     ParticipantList::iterator tIt;
@@ -1131,18 +1197,18 @@ Socket* Meeting::GetVideoSocket(string pParticipant)
     mParticipantsMutex.lock();
 
     if (pParticipant == mBroadcastAdr)
-        tResult = mParticipants.begin()->VSocket;
+        tResult = mParticipants.begin()->VideoReceiveSocket;
     else
     {
         // is the recipient already involved in the conference?
         if (mParticipants.size() > 1)
         {
-            LOG(LOG_VERBOSE, "Search matching database entry for GetAudioSocket()");
+            LOG(LOG_VERBOSE, "Search matching database entry for GetVideoReceiveSocket()");
             for (tIt = mParticipants.begin()++; tIt != mParticipants.end(); tIt++)
             {
                 if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
                 {
-                    tResult = tIt->VSocket;
+                    tResult = tIt->VideoReceiveSocket;
                     LOG(LOG_VERBOSE, "...found");
                 }
             }
@@ -1153,7 +1219,83 @@ Socket* Meeting::GetVideoSocket(string pParticipant)
     mParticipantsMutex.unlock();
 
     if (tResult == NULL)
-        LOG(LOG_WARN, "Resulting video socket is NULL");
+        LOG(LOG_WARN, "Resulting video receive socket is NULL");
+
+    return tResult;
+}
+
+Socket* Meeting::GetAudioSendSocket(string pParticipant)
+{
+    Socket *tResult = NULL;
+    ParticipantList::iterator tIt;
+
+    LOG(LOG_VERBOSE, "GetAudioSocket for: %s", pParticipant.c_str());
+
+    // lock
+    mParticipantsMutex.lock();
+
+    if (pParticipant == mBroadcastAdr)
+        tResult = mParticipants.begin()->AudioSendSocket;
+    else
+    {
+        // is the recipient already involved in the conference?
+        if (mParticipants.size() > 1)
+        {
+            LOG(LOG_VERBOSE, "Search matching database entry for GetAudioSendSocket()");
+            for (tIt = mParticipants.begin()++; tIt != mParticipants.end(); tIt++)
+            {
+                if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
+                {
+                    tResult = tIt->AudioSendSocket;
+                    LOG(LOG_VERBOSE, "...found");
+                }
+            }
+        }
+    }
+
+    // unlock
+    mParticipantsMutex.unlock();
+
+    if (tResult == NULL)
+        LOG(LOG_WARN, "Resulting audio send socket is NULL");
+
+    return tResult;
+}
+
+Socket* Meeting::GetVideoSendSocket(string pParticipant)
+{
+    Socket *tResult = NULL;
+    ParticipantList::iterator tIt;
+
+    LOG(LOG_VERBOSE, "GetVideoSocket for: %s", pParticipant.c_str());
+
+    // lock
+    mParticipantsMutex.lock();
+
+    if (pParticipant == mBroadcastAdr)
+        tResult = mParticipants.begin()->VideoSendSocket;
+    else
+    {
+        // is the recipient already involved in the conference?
+        if (mParticipants.size() > 1)
+        {
+            LOG(LOG_VERBOSE, "Search matching database entry for GetVideoSendSocket()");
+            for (tIt = mParticipants.begin()++; tIt != mParticipants.end(); tIt++)
+            {
+                if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
+                {
+                    tResult = tIt->VideoSendSocket;
+                    LOG(LOG_VERBOSE, "...found");
+                }
+            }
+        }
+    }
+
+    // unlock
+    mParticipantsMutex.unlock();
+
+    if (tResult == NULL)
+        LOG(LOG_WARN, "Resulting video send socket is NULL");
 
     return tResult;
 }
@@ -1225,7 +1367,7 @@ bool Meeting::GetSessionInfo(string pParticipant, struct SessionInfo *pInfo)
         // is the recipient already involved in the conference?
         if (mParticipants.size() > 1)
         {
-            LOG(LOG_VERBOSE, "Search matching database entry for GetSessionInfo()");
+            //LOG(LOG_VERBOSE, "Search matching database entry for GetSessionInfo()");
             for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
             {
                 if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
@@ -1242,8 +1384,8 @@ bool Meeting::GetSessionInfo(string pParticipant, struct SessionInfo *pInfo)
                     pInfo->RemoteAudioHost = tIt->RemoteAudioHost;
                     pInfo->RemoteAudioPort = toString(tIt->RemoteAudioPort);
                     pInfo->RemoteAudioCodec = tIt->RemoteAudioCodec;
-                    pInfo->LocalVideoPort = toString(tIt->VSocket->GetLocalPort());
-                    pInfo->LocalAudioPort = toString(tIt->ASocket->GetLocalPort());
+                    pInfo->LocalVideoPort = toString(tIt->VideoReceiveSocket->GetLocalPort());
+                    pInfo->LocalAudioPort = toString(tIt->AudioReceiveSocket->GetLocalPort());
                     pInfo->CallState = CallStateAsString(tIt->CallState);
                     //LOG(LOG_VERBOSE, "...found");
                 }

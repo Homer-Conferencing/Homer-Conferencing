@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>352</width>
-    <height>298</height>
+    <height>288</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -93,7 +93,6 @@
        <widget class="QLabel" name="label_2">
         <property name="font">
          <font>
-          <pointsize>11</pointsize>
           <weight>75</weight>
           <bold>true</bold>
          </font>
@@ -588,7 +587,7 @@
  </widget>
  <resources>
   <include location="../../resources/Icons.qrc"/>
-  <include location="../resources/Icons.qrc"/>
+  <include location="../../resources/Icons.qrc"/>
  </resources>
  <connections>
   <connection>

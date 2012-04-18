@@ -91,7 +91,7 @@ public:
     virtual bool Reset(enum MediaType = MEDIA_UNKNOWN);
     virtual std::string GetCodecName();
     virtual std::string GetCodecLongName();
-    virtual int GetChunkDropConter();
+    virtual int GetChunkDropCounter();
     virtual int GetChunkBufferCounter();
 
     /* recording control */
@@ -108,6 +108,7 @@ public:
     virtual void getAudioDevices(AudioDevicesList &pAList);
     virtual bool SelectDevice(std::string pDesiredDevice, enum MediaType pMediaType, bool &pIsNewDevice); // returns if the new device should be reseted
     virtual std::string GetCurrentDeviceName();
+    virtual std::string GetCurrentDevicePeerName();
     virtual bool RegisterMediaSource(MediaSource *pMediaSource);
     virtual bool UnregisterMediaSource(MediaSource *pMediaSource, bool pAutoDelete = true);
 

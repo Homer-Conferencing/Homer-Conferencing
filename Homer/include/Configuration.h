@@ -68,7 +68,6 @@ namespace Homer { namespace Gui {
 #define PATH_HELP_TXT                   "/live/help.txt"
 #define PATH_STUN_SERVER_TXT            "/live/stun_server.txt"
 #define PATH_SIP_SERVER_TXT             "/live/sip_server.txt"
-#define PATH_INSTALL_EXE				CONF.GetBinaryPath() + "install.exe"
 #define PATH_HOMER_RELEASES				"http://"RELEASE_SERVER"/releases/"
 
 #define CONF Configuration::GetInstance()
@@ -107,6 +106,7 @@ public:
     bool GetVisibilityThreadsWidget();
     bool GetVisibilityNetworkStreamsWidget();
     bool GetVisibilityDataStreamsWidget();
+    bool GetVisibilityBroadcastMessageWidget();
     bool GetVisibilityBroadcastWidget();
 
     bool GetVisibilityToolBarMediaSources();
@@ -130,6 +130,7 @@ public:
     int GetVideoQuality();
     int GetVideoMaxPacketSize();
     enum Homer::Base::TransportType GetVideoTransportType();
+    QString GetVideoStreamingGAPIImpl();
     QString GetLocalVideoSource();
     int GetVideoFps();
     QString GetVideoResolution();
@@ -143,6 +144,7 @@ public:
     int GetAudioQuality();
     int GetAudioMaxPacketSize();
     enum Homer::Base::TransportType GetAudioTransportType();
+    QString GetAudioStreamingGAPIImpl();
     QString GetLocalAudioSource();
 
     /* playback settings */
@@ -150,15 +152,17 @@ public:
 
     /* network settings */
     int GetVideoAudioStartPort();
-    int GetSipStartPort();
     QString GetSipUserName();
     QString GetSipPassword();
     QString GetSipServer();
     bool GetSipContactsProbing();
-    QString GetSipListenerAddress();
     int GetSipInfrastructureMode();
     bool GetNatSupportActivation();
     QString GetStunServer();
+    /* SIP network listener */
+    QString GetSipListenerAddress();
+    enum Homer::Base::TransportType GetSipListenerTransport();
+    int GetSipStartPort();
 
     /* notification settings */
     // instant message
@@ -240,6 +244,7 @@ private:
     void SetVisibilityThreadsWidget(bool pActive);
     void SetVisibilityNetworkStreamsWidget(bool pActive);
     void SetVisibilityDataStreamsWidget(bool pActive);
+    void SetVisibilityBroadcastMessageWidget(bool pActive);
     void SetVisibilityBroadcastWidget(bool pActive);
 
     void SetVisibilityToolBarMediaSources(bool pActive);
@@ -260,6 +265,7 @@ private:
     void SetVideoQuality(int pQuality);
     void SetVideoMaxPacketSize(int pSize);
     void SetVideoTransport(enum Homer::Base::TransportType pType);
+    void SetVideoStreamingGAPIImpl(QString pImpl);
     void SetVideoResolution(QString pResolution);
     void SetLocalVideoSource(QString pVSource);
     void SetVideoFps(int pFps);
@@ -273,6 +279,7 @@ private:
     void SetAudioQuality(int pQuality);
     void SetAudioMaxPacketSize(int pSize);
     void SetAudioTransport(enum Homer::Base::TransportType pType);
+    void SetAudioStreamingGAPIImpl(QString pImpl);
     void SetLocalAudioSource(QString pASource);
 
     /* playback settings */
@@ -280,15 +287,16 @@ private:
 
     /* network settings */
     void SetVideoAudioStartPort(int pPort);
-    void SetSipStartPort(int pPort);
     void SetSipUserName(QString pUserName);
     void SetSipPassword(QString pPassword);
     void SetSipServer(QString pServer);
     void SetSipInfrastructureMode(int pMode);
     void SetSipContactsProbing(bool pActivation);
-    void SetSipListenerAddress(QString pAddress);
     void SetStunServer(QString pServer);
     void SetNatSupportActivation(bool pActivation);
+    void SetSipListenerAddress(QString pAddress);
+    void SetSipListenerTransport(enum Homer::Base::TransportType pType);
+    void SetSipStartPort(int pPort);
 
     /* notification settings */
     // instant message

@@ -119,7 +119,11 @@ bool MediaSourceMuxer::SupportsMuxing()
 
 string MediaSourceMuxer::GetMuxingCodec()
 {
-    return FfmpegId2FfmpegFormat(mStreamCodecId);
+    // ffmpeg doesn't distinguish between h263 and h263+ but we do
+    if (mStreamCodecId == CODEC_ID_H263P)
+        return "h263+";
+    else
+        return FfmpegId2FfmpegFormat(mStreamCodecId);
 }
 
 void MediaSourceMuxer::GetMuxingResolution(int &pResX, int &pResY)
@@ -295,8 +299,6 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     tByteIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE /*HINT: don't use mStreamMaxPacketSize here */, 1, this, NULL, DistributePacket, NULL);
 
     tByteIoContext->seekable = 0;
-    // mark as streamed
-    tByteIoContext->is_streamed = 1;
     // limit packet size
     tByteIoContext->max_packet_size = mStreamMaxPacketSize;
 
@@ -344,7 +346,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     if (tFormat->video_codec == CODEC_ID_H263P)
         mCodecContext->flags |= CODEC_FLAG_H263P_SLICE_STRUCT | CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED | CODEC_FLAG_H263P_UMV | CODEC_FLAG_H263P_AIV;
     // put sample parameters
-    mCodecContext->bit_rate = 500000;
+    mCodecContext->bit_rate = 90000;
 
     // resolution
     if (((mRequestedStreamingResX == -1) || (mRequestedStreamingResY == -1)) && (mMediaSource != NULL))
@@ -371,7 +373,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     mCodecContext->qmax = 2 +(100 - mStreamQuality) / 4; // default is 31
     // set max. packet size for RTP based packets
     //HINT: don't set if we use H261, otherwise ffmpeg internal functions in mpegvideo_enc.c (MPV_*) would get confused because H261 support is missing in ffmpeg's RTP support
-    //TODO: fix packet size limitation here, currently the packet size limitation doesn't work hor H.261 codec because ffmpegs lacks support for RTP encaps. for H.261 based video streams, TODO: send them the fitting bug-fix
+    //TODO: fix packet size limitation here, ffmpegs lacks support for RTP encaps. for H.261 based video streams
     if (tFormat->video_codec != CODEC_ID_H261)
         mCodecContext->rtp_payload_size = mStreamMaxPacketSize;
     else
@@ -379,12 +381,12 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
 
     // workaround for incompatibility of ffmpeg/libx264
     // inspired by check within libx264 in "x264_validate_parameters()" of encoder.c
-//    if (tFormat->video_codec == CODEC_ID_H264)
-//    {
-//        mCodecContext->me_range = 16;
-//        mCodecContext->max_qdiff = 4;
-//        mCodecContext->qcompress = 0.6;
-//    }
+    if (tFormat->video_codec == CODEC_ID_H264)
+    {
+        mCodecContext->me_range = 16;
+        mCodecContext->max_qdiff = 4;
+        mCodecContext->qcompress = 0.6;
+    }
 
     // set MPEG quantizer: for h261/h263/mjpeg use the h263 quantizer, in other cases use the MPEG2 one
 //    if ((tFormat->video_codec == CODEC_ID_H261) || (tFormat->video_codec == CODEC_ID_H263) || (tFormat->video_codec == CODEC_ID_H263P) || (tFormat->video_codec == CODEC_ID_MJPEG))
@@ -405,27 +407,10 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     if(mFormatContext->oformat->flags & AVFMT_GLOBALHEADER)
         mCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
 
-    // reset output stream parameters
-    if ((tResult = av_set_parameters(mFormatContext, NULL)) < 0)
-    {
-        LOG(LOG_ERROR, "Invalid video output format parameters because of \"%s\".", strerror(AVUNERROR(tResult)));
-        // free codec and stream 0
-        av_freep(&mFormatContext->streams[0]->codec);
-        av_freep(&mFormatContext->streams[0]);
-
-        // Close the format context
-        av_free(mFormatContext);
-
-        // unlock
-        mMediaSinksMutex.unlock();
-
-        return false;
-    }
-
     mMediaStreamIndex = 0;
 
     // Dump information about device file
-    HM_av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceMuxer (video)", true);
+    av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceMuxer (video)", true);
 
     // Find the encoder for the video stream
     if ((tCodec = avcodec_find_encoder(tFormat->video_codec)) == NULL)
@@ -468,7 +453,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     StartTranscoder(mSourceResX * mSourceResY * 4 /* bytes per pixel */);
 
     // allocate streams private data buffer and write the streams header, if any
-    HM_avformat_write_header(mFormatContext);
+    avformat_write_header(mFormatContext, NULL);
 
     //######################################################
     //### give some verbose output
@@ -550,8 +535,6 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     tByteIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE /*HINT: don't use mStreamMaxPacketSize here */, 1, this, NULL, DistributePacket, NULL);
 
     tByteIoContext->seekable = 0;
-    // mark as streamed
-    tByteIoContext->is_streamed = 1;
     // limit packet size
     tByteIoContext->max_packet_size = mStreamMaxPacketSize;
 
@@ -608,27 +591,10 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
 //    if(mFormatContext->oformat->flags & AVFMT_GLOBALHEADER)
 //        mCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
 
-    // reset output stream parameters
-    if ((tResult = av_set_parameters(mFormatContext, NULL)) < 0)
-    {
-        LOG(LOG_ERROR, "Invalid audio output format parameters because of \"%s\".", strerror(AVUNERROR(tResult)));
-        // free codec and stream 0
-        av_freep(&mFormatContext->streams[0]->codec);
-        av_freep(&mFormatContext->streams[0]);
-
-        // Close the format context
-        av_free(mFormatContext);
-
-        // unlock
-        mMediaSinksMutex.unlock();
-
-        return false;
-    }
-
     mMediaStreamIndex = 0;
 
     // Dump information about device file
-    HM_av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceMuxer (audio)", true);
+    av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceMuxer (audio)", true);
 
     // Find the encoder for the audio stream
     if((tCodec = avcodec_find_encoder(tFormat->audio_codec)) == NULL)
@@ -677,7 +643,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     StartTranscoder(8192);
 
     // allocate streams private data buffer and write the streams header, if any
-    HM_avformat_write_header(mFormatContext);
+    avformat_write_header(mFormatContext, NULL);
 
     // init fifo buffer
     mSampleFifo = HM_av_fifo_alloc(MEDIA_SOURCE_AUDIO_SAMPLE_BUFFER_SIZE * 2);
@@ -843,6 +809,17 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
 
         // acknowledge failed
         MarkGrabChunkFailed(GetMediaTypeStr() + " source is paused");
+
+        return -1;
+    }
+
+    if (mMediaSource == NULL)
+    {
+    	// unlock grabbing
+        mGrabMutex.unlock();
+
+        // acknowledge failed
+        MarkGrabChunkFailed(GetMediaTypeStr() + " base source is undefined");
 
         return -1;
     }
@@ -1184,7 +1161,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                              LOG(LOG_ERROR, "Couldn't distribute video frame among registered video sinks");
                                          }
                                     }else
-                                        LOG(LOG_INFO, "Couldn't re-encode current video frame");
+                                        LOG(LOG_WARN, "Couldn't re-encode current video frame");
 
                                     // Free the RGB frame
                                     av_free(tRGBFrame);
@@ -1270,7 +1247,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                              LOG(LOG_ERROR, "Couldn't distribute audio sample among registered audio sinks");
                                          }
                                     }else
-                                        LOG(LOG_INFO, "Couldn't re-encode current audio sample");
+                                        LOG(LOG_WARN, "Couldn't re-encode current audio sample");
                                 }
                                 break;
 
@@ -1485,10 +1462,10 @@ string MediaSourceMuxer::GetCodecLongName()
         return "";
 }
 
-int MediaSourceMuxer::GetChunkDropConter()
+int MediaSourceMuxer::GetChunkDropCounter()
 {
     if (mMediaSource != NULL)
-        return mMediaSource->GetChunkDropConter();
+        return mMediaSource->GetChunkDropCounter();
     else
         return 0;
 }
@@ -1719,6 +1696,14 @@ string MediaSourceMuxer::GetCurrentDeviceName()
         return "";
 }
 
+string MediaSourceMuxer::GetCurrentDevicePeerName()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->GetCurrentDevicePeerName();
+    else
+        return "";
+}
+
 bool MediaSourceMuxer::RegisterMediaSource(MediaSource* pMediaSource)
 {
     MediaSourcesList::iterator tIt;
@@ -1820,8 +1805,14 @@ void* MediaSourceMuxer::AllocChunkBuffer(int& pChunkBufferSize, enum MediaType p
     void *tResult = NULL;
 
     if (mMediaSource != NULL)
+    {
     	tResult = mMediaSource->AllocChunkBuffer(pChunkBufferSize, pMediaType);
-
+    }else
+    {
+    	LOG(LOG_WARN, "%s-muxer has no valid base media source registered, allocating chunk buffer via MediaSource::AllocChunkBuffer", GetMediaTypeStr().c_str());
+    	tResult = MediaSource::AllocChunkBuffer(pChunkBufferSize, pMediaType);
+    }
+    LOG(LOG_VERBOSE, "%s-muxer allocated buffer at %p with size of %d bytes", GetMediaTypeStr().c_str(), tResult, pChunkBufferSize);
     return tResult;
 }
 
@@ -1831,8 +1822,13 @@ void MediaSourceMuxer::FreeChunkBuffer(void *pChunk)
     mGrabMutex.lock();
 
     if (mMediaSource != NULL)
+    {
     	mMediaSource->FreeChunkBuffer(pChunk);
-
+	}else
+	{
+		LOG(LOG_WARN, "%s-muxer has no valid base media source registered, freeing chunk buffer via MediaSource::FreeChunkBuffer", GetMediaTypeStr().c_str());
+		MediaSource::FreeChunkBuffer(pChunk);
+	}
     // unlock grabbing
     mGrabMutex.unlock();
 }

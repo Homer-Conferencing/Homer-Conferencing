@@ -20,29 +20,56 @@
  *****************************************************************************/
 
 /*
- * Purpose: RequirementTransmitFast to trigger deactivation of TCP-nagle
+ * Purpose: Implementation of G-Lab API
  * Author:  Thomas Volkert
- * Since:   2011-12-10
+ * Since:   2011-12-08
  */
 
-#ifndef _GAPI_REQUIREMENT_TRANSMIT_FAST_
-#define _GAPI_REQUIREMENT_TRANSMIT_FAST_
+#include <GAPI.h>
+#include <Berkeley/SocketSetup.h>
+#include <Berkeley/SocketConnection.h>
 
-#include <IRequirement.h>
+#include <Logger.h>
+
+#include <string>
 
 namespace Homer { namespace Base {
 
+using namespace std;
+
 ///////////////////////////////////////////////////////////////////////////////
 
-class RequirementTransmitFast:
-    public TRequirement<RequirementTransmitFast, REQUIREMENT_TRANSMIT_FAST>
+SocketSetup::SocketSetup()
 {
-public:
-    virtual std::string getDescription(){ return "Requ(TransmitFast)"; }
-};
+}
+
+SocketSetup::~SocketSetup()
+{
+
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
-}} // namespaces
+IConnection* SocketSetup::connect(Name *pName, Requirements *pRequirements)
+{
+	return new SocketConnection(pName->toString(), pRequirements);
+}
 
-#endif
+IBinding* SocketSetup::bind(Name *pName, Requirements *pRequirements)
+{
+	//TODO:
+	return 0;
+}
+
+Requirements SocketSetup::getCapabilities(Name *pName, Requirements *pImportantRequirements)
+{
+	Requirements tResult;
+
+	//TODO:
+
+	return tResult;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+}} //namespace

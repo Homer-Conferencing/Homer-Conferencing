@@ -173,7 +173,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     }
 
     // Dump information about device file
-    HM_av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceFile(video)", false);
+    av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceFile(video)", false);
     //printf("    ..video stream found with ID: %d, number of available streams: %d\n", mMediaStreamIndex, mFormatContext->nb_streams);
 
     // Get a pointer to the codec context for the video stream

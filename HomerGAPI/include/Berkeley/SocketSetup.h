@@ -20,27 +20,35 @@
  *****************************************************************************/
 
 /*
- * Purpose: IName
+ * Purpose: SocketSetup
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
 
-#ifndef _GAPI_INAME_
-#define _GAPI_INAME_
+#ifndef _GAPI_SOCKET_SETUP_
+#define _GAPI_SOCKET_SETUP_
 
-#include <string>
+#include <Name.h>
+#include <ISetup.h>
 
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class IName
+#define BERKEYLEY_SOCKETS           "Berkeley Sockets"
+
+///////////////////////////////////////////////////////////////////////////////
+
+class SocketSetup:
+	public ISetup
 {
 public:
-	IName(){}
-    virtual ~IName(){}
+	SocketSetup();
+    virtual ~SocketSetup();
 
-    virtual std::string toString() = 0;
+    virtual IConnection* connect(Name *pName, Requirements *pRequirements = 0);
+    virtual IBinding* bind(Name *pName, Requirements *pRequirements = 0);
+    virtual Requirements getCapabilities(Name *pName, Requirements *pImportantRequirements = 0);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

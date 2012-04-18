@@ -30,9 +30,10 @@
 
 #include <HBMutex.h>
 
+#include <Name.h>
 #include <ISetup.h>
-#include <ISubscription.h>
-#include <IRegistration.h>
+#include <IConnection.h>
+#include <IBinding.h>
 
 #include <list>
 
@@ -40,11 +41,7 @@ namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define BERKEYLEY_SOCKETS           "Berkeley Sockets"
-
-///////////////////////////////////////////////////////////////////////////////
-
-#define GAPI GapiService::GetInstance()
+#define GAPI GapiService::getInstance()
 
 struct SetupInterfaceDescription{
 	ISetup			*Interface;
@@ -66,17 +63,18 @@ public:
 	GapiService();
     virtual ~GapiService( );
 
-    static GapiService& GetInstance();
+    static GapiService& getInstance();
 
     /* plugin system for different ISetup implementations */
-    bool registerSetupInterface(ISetup* pSetupInterface, std::string pName);
-    bool selectSetupInterface(std::string pName);
-    std::string currentSetupInterface();
-    SetupInterfacesNames enumSetupInterfaces();
+    bool registerImpl(ISetup* pSetupInterface, std::string pName);
+    bool selectImpl(std::string pName);
+    std::string getCurrentImplName();
+    SetupInterfacesNames getAllImplNames();
 
     /* ISetup */
-    virtual ISubscription* subscribe(IName *pName, Requirements *pRequirements = 0);
-    virtual IRegistration* publish(IName *pName, Requirements *pRequirements = 0);
+    virtual IConnection* connect(Name *pName, Requirements *pRequirements = 0);
+    virtual IBinding* bind(Name *pName, Requirements *pRequirements = 0);
+    virtual Requirements getCapabilities(Name *pName, Requirements *pImportantRequirements = 0);
 
 private:
     ISetup						*mSetupInterface;

@@ -308,6 +308,17 @@ void ConfigurationDialog::LoadConfiguration()
         if ((*tItAdr) == CONF.GetSipListenerAddress().toStdString())
             mCbLocalAdr->setCurrentIndex(mCbLocalAdr->count() - 1);
     }
+    QString tTransport = QString(Socket::TransportType2String(CONF.GetSipListenerTransport()).c_str());
+
+    for (int i = 0; i < mCbSipTransport->count(); i++)
+    {
+        QString tCurTransport = mCbSipTransport->itemText(i);
+        if (tTransport == tCurTransport)
+        {
+            mCbSipTransport->setCurrentIndex(i);
+            break;
+        }
+    }
     mSbSipStartPort->setValue(CONF.GetSipStartPort());
     mSbVideoAudioStartPort->setValue(CONF.GetVideoAudioStartPort());
     mGrpServerRegistration->setChecked(CONF.GetSipInfrastructureMode() > 0);
@@ -487,6 +498,9 @@ void ConfigurationDialog::SaveConfiguration()
     if (mCbLocalAdr->currentText() != CONF.GetSipListenerAddress())
         tHaveToRestart = true;
     CONF.SetSipListenerAddress(mCbLocalAdr->currentText());
+    if (mCbSipTransport->currentText() != QString(Socket::TransportType2String(CONF.GetSipListenerTransport()).c_str()))
+        tHaveToRestart = true;
+    CONF.SetSipListenerTransport(Socket::String2TransportType(mCbSipTransport->currentText().toStdString()));
     if (mSbSipStartPort->value() != CONF.GetSipStartPort())
         tHaveToRestart = true;
     CONF.SetSipStartPort(mSbSipStartPort->value());
@@ -926,7 +940,7 @@ void ConfigurationDialog::ClickedButton(QAbstractButton *pButton)
             case 3:
                 mCbAutoUpdateCheck->setChecked(false);
                 mCbColoring->setCurrentIndex(0);
-                mCbSeparatedParticipantWidgets->setChecked(true);
+                mCbSeparatedParticipantWidgets->setChecked(false);
                 mCbCloseParticipantWidgetsImmediately->setChecked(true);
                 break;
             //### NOTIFICATIONS configuration

@@ -22,7 +22,6 @@ IF (NOT QT4_FOUND)
 ENDIF ()
 SET(QT_USE_QTCOREL 1)
 SET(QT_USE_QTGUI 1)
-SET(QT_USE_QTMULTIMEDIA 1)
 SET(QT_USE_QTNETWORK 1)
 SET(QT_USE_QTWEBKIT 1)
 SET(QT_USE_QTXML 1)
@@ -41,16 +40,6 @@ SET (INCLUDE_DIRS
 	../../HomerMultimedia/include
 	../../HomerConference/include
 	../../HomerSoundOutput/include
-	../../HomerWinLibs/QT/include/
-	../../HomerWinLibs/QT/include/Qt
-	../../HomerWinLibs/QT/include/QtCore
-	../../HomerWinLibs/QT/include/QtGui
-	../../HomerWinLibs/QT/include/QtMultimedia
-	../../HomerWinLibs/QT/include/QtNetwork
-	../../HomerWinLibs/QT/include/QtXml
-	../../HomerWinLibs/QT/include/QtWebKit
-	../../HomerWinLibs/FFMPEG
-	../../HomerWinLibs/OPENSSL/include
 	/usr/include/ffmpeg
 	${QT_INCLUDE_DIR}
 	${CMAKE_BINARY_DIR}/Homer/bin
@@ -238,17 +227,17 @@ SET (QT_QRC_SOURCES
 ##############################################################
 # USED LIBRARIES for win32 environment
 SET (LIBS_WINDOWS_INSTALL   
-    libgcc_s_dw2-1
-    libstdc++-6
-    mingwm10
-    QtCore4
-    QtGui4
-    QtMultimedia4
-    QtNetwork4
-    QtWebKit4
-    QtXml4
-    QtXmlPatterns4
-    phonon4
+	libgcc_s_dw2-1
+	libstdc++-6
+	mingwm10
+	QtCore4
+	QtGui4
+	#QtMultimedia4
+	QtNetwork4
+	QtWebKit4
+	QtXml4
+	QtXmlPatterns4
+	phonon4
 )
 SET (LIBS_WINDOWS	
 	stdc++
@@ -259,18 +248,19 @@ SET (LIBS_WINDOWS
 	HomerConference
 	HomerSoundOutput
 	mingw32
-    ${QT_LIBRARIES}
-    ${QT_QTCORE_LIBRARIES}
-    ${QT_QTGUI_LIBRARIES}
-    ${QT_QTMULTIMEDIA_LIBRARIES}
-    ${QT_QTNETWORK_LIBRARIES}
-    ${QT_QTXML_LIBRARIES}
-    ${QT_QTWEBKIT_LIBRARIES}
+	${QT_LIBRARIES}
+	${QT_QTCORE_LIBRARIES}
+	${QT_QTGUI_LIBRARIES}
+	#${QT_QTMULTIMEDIA_LIBRARIES}
+	${QT_QTNETWORK_LIBRARIES}
+	${QT_QTXML_LIBRARIES}
+	${QT_QTWEBKIT_LIBRARIES}
 )
 
 # USED LIBRARIES for BSD environment
 SET (LIBS_BSD
 )
+
 # USED LIBRARIES for linux environment
 IF (${BUILD} MATCHES "Default")
 	SET (LIBS_LINUX
@@ -293,14 +283,14 @@ ELSE ()
 		HomerSoundOutput
 		QtCore
 		QtGui
-		QtMultimedia
+		#QtMultimedia
 		QtNetwork
 		QtXml
 		QtWebKit
-		dbus-1
 		resolv
 	)
 ENDIF ()
+
 # USED LIBRARIES for apple environment
 SET (LIBS_APPLE
 	stdc++
@@ -312,14 +302,9 @@ SET (LIBS_APPLE
 	HomerSoundOutput
 	${QT_LIBRARIES}
 )
-SET (FRAMEWORKS_APPLE2
-	${QT_LIBRARIES}
-	${QT_QTCORE_LIBRARIES}
-	${QT_QTGUI_LIBRARIES}
-	${QT_QTMULTIMEDIA_LIBRARIES}
-	${QT_QTNETWORK_LIBRARIES}
-	${QT_QTXML_LIBRARIES}
-	${QT_QTWEBKIT_LIBRARIES}
+SET (FRAMEWORKS_APPLE
+	Cocoa
+	ApplicationServices
 )
 
 ##############################################################

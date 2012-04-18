@@ -63,6 +63,7 @@
 #include <QPlastiqueStyle>
 #include <QApplication>
 #include <QTime>
+#include <QTimer>
 #include <QTextEdit>
 #include <QMenu>
 #include <QScrollBar>
@@ -126,6 +127,8 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     triggerUpdateCheck();
     // init screen capturing
     initializeScreenCapturing();
+    // delayed call to register at Stun and Sip server
+    QTimer::singleShot(2000, this, SLOT(registerAtStunSipServer()));
 }
 
 MainWindow::~MainWindow()
@@ -286,7 +289,7 @@ void MainWindow::initializeConferenceManagement()
     {
         LOG(LOG_INFO, "Using IP address: %s", tLocalSourceIp.toStdString().c_str());
         CONF.SetSipListenerAddress(tLocalSourceIp);
-        MEETING.Init(tLocalSourceIp.toStdString(), mLocalAddresses, "BROADCAST", CONF.GetSipStartPort(), CONF.GetSipStartPort() + 10, CONF.GetVideoAudioStartPort());
+        MEETING.Init(tLocalSourceIp.toStdString(), mLocalAddresses, "BROADCAST", CONF.GetSipStartPort(), CONF.GetSipListenerTransport(), CONF.GetSipStartPort() + 10, CONF.GetVideoAudioStartPort());
         MEETING.AddObserver(this);
     } else
     {
@@ -295,7 +298,7 @@ void MainWindow::initializeConferenceManagement()
             LOG(LOG_INFO, "No fitting network interface towards outside found");
             LOG(LOG_INFO, "Using loopback interface with IP address: %s", tLocalLoopIp.toStdString().c_str());
             LOG(LOG_INFO, "==>>>>> NETWORK TIMEOUTS ARE POSSIBLE! APPLICATION MAY HANG FOR MOMENTS! <<<<<==");
-            MEETING.Init(tLocalLoopIp.toStdString(), mLocalAddresses, "BROADCAST", CONF.GetSipStartPort(), CONF.GetSipStartPort() + 10, CONF.GetVideoAudioStartPort());
+            MEETING.Init(tLocalLoopIp.toStdString(), mLocalAddresses, "BROADCAST", CONF.GetSipStartPort(), CONF.GetSipListenerTransport(), CONF.GetSipStartPort() + 10, CONF.GetVideoAudioStartPort());
             MEETING.AddObserver(this);
         } else
         {
@@ -303,6 +306,15 @@ void MainWindow::initializeConferenceManagement()
             exit(-1);
         }
     }
+}
+
+void MainWindow::registerAtStunSipServer()
+{
+    if (CONF.GetNatSupportActivation())
+        MEETING.SetStunServer(CONF.GetStunServer().toStdString());
+    // is centralized mode selected activated?
+    if (CONF.GetSipInfrastructureMode() == 1)
+        MEETING.RegisterAtServer(CONF.GetSipUserName().toStdString(), CONF.GetSipPassword().toStdString(), CONF.GetSipServer().toStdString());
 }
 
 void MainWindow::initializeVideoAudioIO()
@@ -451,9 +463,11 @@ void MainWindow::initializeWidgetsAndMenus()
     mMenuParticipantMessageWidgets = new QMenu("Participant messages");
     mActionParticipantMessageWidgets->setMenu(mMenuParticipantMessageWidgets);
 
+    LOG(LOG_VERBOSE, "..local broadcast widget");
     mLocalUserParticipantWidget = new ParticipantWidget(BROADCAST, this, mOverviewContactsWidget, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer);
     setCentralWidget(mLocalUserParticipantWidget);
 
+    LOG(LOG_VERBOSE, "..availability widget");
     mOnlineStatusWidget = new AvailabilityWidget(this);
     mToolBarOnlineStatus->addWidget(mOnlineStatusWidget);
 
@@ -640,15 +654,10 @@ void MainWindow::loadSettings()
 
     LOG(LOG_VERBOSE, "Loading program settings..");
     LOG(LOG_VERBOSE, "..meeting settings");
-    if (CONF.GetNatSupportActivation())
-        MEETING.SetStunServer(CONF.GetStunServer().toStdString());
 
     MEETING.SetLocalUserName(QString(CONF.GetUserName().toLocal8Bit()).toStdString());
     MEETING.SetLocalUserMailAdr(QString(CONF.GetUserMail().toLocal8Bit()).toStdString());
     MEETING.setAvailabilityState(CONF.GetConferenceAvailability().toStdString());
-    // is centralized mode selected activated?
-    if (CONF.GetSipInfrastructureMode() == 1)
-        MEETING.RegisterAtServer(CONF.GetSipUserName().toStdString(), CONF.GetSipPassword().toStdString(), CONF.GetSipServer().toStdString());
 
     // init video codec for network streaming, but only support ONE codec and not multiple
     QString tVideoStreamCodec = CONF.GetVideoCodec();
@@ -665,7 +674,7 @@ void MainWindow::loadSettings()
         MEETING.SetVideoCodecsSupport(CODEC_MPEG4);
     if (tVideoStreamCodec == "THEORA")
         MEETING.SetVideoCodecsSupport(CODEC_THEORA);
-    MEETING.SetVideoTransportType(MEDIA_TRANSPORT_RTP_UDP);
+    MEETING.SetVideoTransportType(MEDIA_TRANSPORT_RTP_UDP); // always use RTP/AVP as profile (RTP/UDP)
 
     // init audio codec for network streaming, but only support ONE codec and not multiple
     QString tAudioStreamCodec = CONF.GetAudioCodec();
@@ -684,7 +693,7 @@ void MainWindow::loadSettings()
         MEETING.SetAudioCodecsSupport(CODEC_GSM);
     if (tAudioStreamCodec == "AMR")
         MEETING.SetAudioCodecsSupport(CODEC_AMR);
-    MEETING.SetAudioTransportType(MEDIA_TRANSPORT_RTP_UDP);
+    MEETING.SetAudioTransportType(MEDIA_TRANSPORT_RTP_UDP); // always use RTP/AVP as profile (RTP/UDP)
 
     LOG(LOG_VERBOSE, "..video/audio settings");
     QString tVideoStreamResolution = CONF.GetVideoResolution();
@@ -874,7 +883,7 @@ void MainWindow::customEvent(QEvent* pEvent)
         case DELETE_SESSION:
                     //####################### PARTICIPANT DELETE #############################
                     tDSEvent = (DeleteSessionEvent*) tEvent;
-                    RemoveSessionWidget(tDSEvent->PWidget);
+                    DeleteParticipantSession(tDSEvent->PWidget);
                     return;
         case INT_START_NAT_DETECTION:
                     //####################### NAT DETECTION ANSWER ###########################
@@ -911,7 +920,9 @@ void MainWindow::customEvent(QEvent* pEvent)
                     // inform contacts pool about online state
                     CONTACTSPOOL.UpdateContactState(QString::fromLocal8Bit(tOUAEvent->Sender.c_str()), CONTACT_UNAVAILABLE);
 
-                    // inform participant widget about new state
+                	LOG(LOG_WARN, "Contact unavailable, reason is \"%s\"(%d).", tOUAEvent->Description.c_str(), tOUAEvent->StatusCode);
+
+                	// inform participant widget about new state
                     if (mParticipantWidgets.size())
                     {
                         // search for corresponding participant widget
@@ -1030,7 +1041,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     {
                         if ((*tIt)->IsThisParticipant(QString(tMUEvent->Sender.c_str())))
                         {
-                            (*tIt)->HandleMessageUnavailable(tMUEvent->IsIncomingEvent);
+                            (*tIt)->HandleMessageUnavailable(tMUEvent->IsIncomingEvent, tMUEvent->StatusCode, QString(tMUEvent->Description.c_str()));
                             return;
                         }
                     }
@@ -1045,7 +1056,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                         if ((!hasFocus()) || (isMinimized()))
                         {
                             GetEventSource(tCEvent, tEventSender, tEventSenderApp);
-                            mSysTrayIcon->showMessage("Call from " + tEventSender, (tEventSenderApp != "") ? "(via \"" + tEventSenderApp + "\")" : "", QSystemTrayIcon::Warning, CONF.GetSystrayTimeout());
+                            mSysTrayIcon->showMessage("Call from " + tEventSender, (tEventSenderApp != "") ? "(via \"" + tEventSenderApp + "\")" : "", QSystemTrayIcon::Information, CONF.GetSystrayTimeout());
                         }
                     }
 
@@ -1120,7 +1131,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                         if ((!hasFocus()) || (isMinimized()))
                         {
                             GetEventSource(tCCEvent, tEventSender, tEventSenderApp);
-                            mSysTrayIcon->showMessage("Call canceled from " + tEventSender, (tEventSenderApp != "") ? "(via \"" + tEventSenderApp + "\")" : "", QSystemTrayIcon::Warning, CONF.GetSystrayTimeout());
+                            mSysTrayIcon->showMessage("Call canceled from " + tEventSender, (tEventSenderApp != "") ? "(via \"" + tEventSenderApp + "\")" : "", QSystemTrayIcon::Information, CONF.GetSystrayTimeout());
                         }
                     }
 
@@ -1159,7 +1170,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     {
                         if ((*tIt)->IsThisParticipant(QString(tCUEvent->Sender.c_str())))
                         {
-                            (*tIt)->HandleCallUnavailable(tCUEvent->IsIncomingEvent);
+                            (*tIt)->HandleCallUnavailable(tCUEvent->IsIncomingEvent, tCUEvent->StatusCode, QString(tCUEvent->Description.c_str()));
                             return;
                         }
                     }
@@ -1173,7 +1184,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                         if ((!hasFocus()) || (isMinimized()))
                         {
                             GetEventSource(tCHUEvent, tEventSender, tEventSenderApp);
-                            mSysTrayIcon->showMessage("Call hangup from " + tEventSender, (tEventSenderApp != "") ? "(via \"" + tEventSenderApp + "\")" : "", QSystemTrayIcon::Warning, CONF.GetSystrayTimeout());
+                            mSysTrayIcon->showMessage("Call hangup from " + tEventSender, (tEventSenderApp != "") ? "(via \"" + tEventSenderApp + "\")" : "", QSystemTrayIcon::Information, CONF.GetSystrayTimeout());
                         }
                     }
 
@@ -1223,12 +1234,12 @@ void MainWindow::customEvent(QEvent* pEvent)
                     //####################### REGISTRATION SUCCEEDED #############################
                     tREvent = (RegistrationEvent*) tEvent;
                     mSysTrayIcon->showMessage("Registration successful", "Registered  \"" + CONF.GetSipUserName() + "\" at SIP server \"" + CONF.GetSipServer() + "\"!\n" \
-                                              "SIP server runs software \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".", QSystemTrayIcon::Warning, CONF.GetSystrayTimeout());
+                                              "SIP server runs software \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".", QSystemTrayIcon::Information, CONF.GetSystrayTimeout());
                     return;
         case REGISTRATION_FAILED:
                     //####################### REGISTRATION FAILED #############################
                     tRFEvent = (RegistrationFailedEvent*) tEvent;
-                    ShowError("Registration failed", "Could not register \"" + CONF.GetSipUserName() + "\" at the SIP server \"" + CONF.GetSipServer() + "\"!\n" \
+                    ShowError("Registration failed", "Could not register \"" + CONF.GetSipUserName() + "\" at the SIP server \"" + CONF.GetSipServer() + "\"! The reason is \"" + QString(tRFEvent->Description.c_str()) + "\"(" + QString("%1").arg(tRFEvent->StatusCode) + ")\n" \
                                                      "SIP server runs software \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
                     return;
         case PUBLICATION:
@@ -1239,7 +1250,7 @@ void MainWindow::customEvent(QEvent* pEvent)
         case PUBLICATION_FAILED:
                     //####################### PUBLICATION FAILED #############################
                     tPFEvent = (PublicationFailedEvent*) tEvent;
-                    ShowError("Presence publication failed", "Could not publish your new presence state at the SIP server \"" + CONF.GetSipServer() + "\"!\n" \
+                    ShowError("Presence publication failed", "Could not publish your new presence state at the SIP server \"" + CONF.GetSipServer() + "\"! The reason is \"" + QString(tPFEvent->Description.c_str()) + "\"(" + QString("%1").arg(tPFEvent->StatusCode) + ")\n" \
                                                              "SIP server runs software \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
                     return;
         default:
@@ -1318,7 +1329,7 @@ ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHos
         }
 
         pHost = CompleteIpAddress(pHost);
-        if (MEETING.OpenParticipantSession(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString(), CALLSTATE_STANDBY))
+        if (MEETING.OpenParticipantSession(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString()))
         {
             QString tParticipant = QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str());
 
@@ -1334,7 +1345,7 @@ ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHos
     return tParticipantWidget;
 }
 
-void MainWindow::RemoveSessionWidget(ParticipantWidget *pParticipantWidget)
+void MainWindow::DeleteParticipantSession(ParticipantWidget *pParticipantWidget)
 {
     ParticipantWidgetList::iterator tIt;
     QString tParticipantName;

@@ -146,11 +146,11 @@ string SIP_stun::GetStunServer()
 	return tResult;
 }
 
-string SIP_stun::getStunNatIp()
+string SIP_stun::GetStunNatIp()
 {
 	string tResult = "";
 
-	if ((!mStunSupportActivated) || (!mStunNatDetectionFinished))
+	if ((!mStunSupportActivated) || (!mStunNatDetectionFinished) || (mStunOutmostAdr == "0.0.0.0"))
         tResult = "";
     else
         tResult = mStunOutmostAdr;
@@ -158,7 +158,7 @@ string SIP_stun::getStunNatIp()
 	return tResult;
 }
 
-int SIP_stun::getStunNatPort()
+int SIP_stun::GetStunNatPort()
 {
     if ((!mStunSupportActivated) || (!mStunNatDetectionFinished))
         return 0;
@@ -166,7 +166,7 @@ int SIP_stun::getStunNatPort()
         return mStunOutmostPort;
 }
 
-string SIP_stun::getStunNatType()
+string SIP_stun::GetStunNatType()
 {
 	string tResult = "";
 

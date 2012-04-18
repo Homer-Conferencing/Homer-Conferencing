@@ -20,30 +20,50 @@
  *****************************************************************************/
 
 /*
- * Purpose: SocketSetup
+ * Purpose: SocketConnection
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
 
-#ifndef _GAPI_SOCKET_SETUP_
-#define _GAPI_SOCKET_SETUP_
+#ifndef _GAPI_SOCKET_CONNECTION_
+#define _GAPI_SOCKET_CONNECTION_
 
-#include <SocketName.h>
-#include <ISetup.h>
+#include <HBSocket.h>
+
+#include <Requirements.h>
 
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class SocketSetup:
-	public ISetup
+class SocketConnection:
+	public IConnection
 {
 public:
-	SocketSetup();
-    virtual ~SocketSetup();
+	SocketConnection(std::string pTarget, Requirements *pRequirements);
+    virtual ~SocketConnection( );
 
-    virtual ISubscription* subscribe(IName *pName, Requirements *pRequirements = 0);
-    virtual IRegistration* publish(IName *pName, Requirements *pRequirements = 0);
+    virtual bool isClosed();
+    virtual int availableBytes();
+    virtual void read(char* pBuffer, int &pBufferSize); //TODO: support non blocking mode
+    virtual void write(char* pBuffer, int pBufferSize);
+    virtual bool getBlocking();
+    virtual void setBlocking(bool pState);
+    virtual void cancel();
+    virtual Name* getName();
+    virtual Name* getRemoteName();
+    virtual bool changeRequirements(Requirements *pRequirements);
+    virtual Requirements getRequirements();
+    virtual Events getEvents();
+
+private:
+    bool		mBlockingMode;
+    Requirements mRequirements;
+    int 		mSocketHandle;
+    Socket		*mSocket;
+    bool        mIsClosed;
+    std::string mTargetHost;
+    unsigned int mTargetPort;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
