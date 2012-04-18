@@ -20,13 +20,13 @@
  *****************************************************************************/
 
 /*
- * Purpose: Requirements
+ * Purpose: Events
  * Author:  Thomas Volkert
  * Since:   2012-04-18
  */
 
-#ifndef _GAPI_EVENT_
-#define _GAPI_EVENT_
+#ifndef _GAPI_EVENTS_
+#define _GAPI_EVENTS_
 
 // to simplify including of all requirements
 //#include <RequirementTransmitLossless.h>
