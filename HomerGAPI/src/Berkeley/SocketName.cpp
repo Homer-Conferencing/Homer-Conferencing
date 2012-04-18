@@ -64,12 +64,12 @@ string SocketName::toString()
 	return mHost + "<" + dataToString(mPort) + ">";
 }
 
-std::string SocketName::GetHost()
+std::string SocketName::getHost()
 {
     return mHost;
 }
 
-unsigned int SocketName::GetPort()
+unsigned int SocketName::getPort()
 {
     return mPort;
 }

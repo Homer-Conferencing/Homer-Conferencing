@@ -53,11 +53,12 @@ SocketConnection::SocketConnection(std::string pTarget, Requirements *pRequireme
 {
     bool tFoundTransport = false;
 
+    mBlockingMode = true;
     mTargetHost = pTarget;
-    RequirementTargetPort *tRequPort = (RequirementTargetPort*)pRequirements->Get(RequirementTargetPort::type());
+    RequirementTargetPort *tRequPort = (RequirementTargetPort*)pRequirements->get(RequirementTargetPort::type());
     if (tRequPort != NULL)
     {
-        mTargetPort = tRequPort->GetPort();
+        mTargetPort = tRequPort->getPort();
 
     }else
     {
@@ -71,20 +72,20 @@ SocketConnection::SocketConnection(std::string pTarget, Requirements *pRequireme
     bool tIPv6 = IS_IPV6_ADDRESS(pTarget);
 
     /* transport requirements */
-    if ((pRequirements->Contains(RequirementTransmitChunks::type())) && (pRequirements->Contains(RequirementTransmitStream::type())))
+    if ((pRequirements->contains(RequirementTransmitChunks::type())) && (pRequirements->contains(RequirementTransmitStream::type())))
     {
         LOG(LOG_ERROR, "Detected requirement conflict between \"Req:Chunks\" and \"Req:Stream\"");
     }
 
-    bool tTcp = (((!pRequirements->Contains(RequirementTransmitChunks::type())) &&
-                (pRequirements->Contains(RequirementTransmitStream::type()))));
+    bool tTcp = (((!pRequirements->contains(RequirementTransmitChunks::type())) &&
+                (pRequirements->contains(RequirementTransmitStream::type()))));
 
-    bool tUdp = ((pRequirements->Contains(RequirementTransmitChunks::type())) &&
-                (!pRequirements->Contains(RequirementTransmitStream::type())));
+    bool tUdp = ((pRequirements->contains(RequirementTransmitChunks::type())) &&
+                (!pRequirements->contains(RequirementTransmitStream::type())));
 
-    bool tUdpLite = ((pRequirements->Contains(RequirementTransmitChunks::type())) &&
-                    (!pRequirements->Contains(RequirementTransmitStream::type())) &&
-                    (pRequirements->Contains(RequirementTransmitBitErrors::type())));
+    bool tUdpLite = ((pRequirements->contains(RequirementTransmitChunks::type())) &&
+                    (!pRequirements->contains(RequirementTransmitStream::type())) &&
+                    (pRequirements->contains(RequirementTransmitBitErrors::type())));
 
     if (tTcp)
     {
@@ -119,7 +120,7 @@ SocketConnection::SocketConnection(std::string pTarget, Requirements *pRequireme
     }
 
     /* QoS requirements and additional transport requirements */
-    update(pRequirements);
+    changeRequirements(pRequirements);
 }
 
 SocketConnection::~SocketConnection()
@@ -132,6 +133,11 @@ SocketConnection::~SocketConnection()
 bool SocketConnection::isClosed()
 {
 	return mIsClosed;
+}
+
+int SocketConnection::availableBytes()
+{
+	return 0; //TODO
 }
 
 void SocketConnection::read(char* pBuffer, int &pBufferSize)
@@ -156,6 +162,16 @@ void SocketConnection::write(char* pBuffer, int pBufferSize)
     }
 }
 
+bool SocketConnection::getBlocking()
+{
+	return mBlockingMode;
+}
+
+void SocketConnection::setBlocking(bool pState)
+{
+	mBlockingMode = pState;
+}
+
 void SocketConnection::cancel()
 {
     if(mSocket != NULL)
@@ -166,7 +182,7 @@ void SocketConnection::cancel()
     }
 }
 
-Name* SocketConnection::name()
+Name* SocketConnection::getName()
 {
     if(mSocket != NULL)
     {
@@ -177,7 +193,7 @@ Name* SocketConnection::name()
     }
 }
 
-Name* SocketConnection::peer()
+Name* SocketConnection::getRemoteName()
 {
     if(mSocket != NULL)
     {
@@ -188,15 +204,15 @@ Name* SocketConnection::peer()
     }
 }
 
-bool SocketConnection::update(Requirements *pRequirements)
+bool SocketConnection::changeRequirements(Requirements *pRequirements)
 {
     bool tResult = false;
 
     /* additional transport requirements */
-    if (pRequirements->Contains(RequirementTransmitBitErrors::type()))
+    if (pRequirements->contains(RequirementTransmitBitErrors::type()))
     {
-        RequirementTransmitBitErrors* tReqBitErr = (RequirementTransmitBitErrors*)pRequirements->Get(RequirementTransmitBitErrors::type());
-        int tSecuredFrontDataSize = tReqBitErr->GetSecuredFrontDataSize();
+        RequirementTransmitBitErrors* tReqBitErr = (RequirementTransmitBitErrors*)pRequirements->get(RequirementTransmitBitErrors::type());
+        int tSecuredFrontDataSize = tReqBitErr->getSecuredFrontDataSize();
         mSocket->UDPLiteSetCheckLength(tSecuredFrontDataSize);
     }
 
@@ -205,19 +221,19 @@ bool SocketConnection::update(Requirements *pRequirements)
     int tMinDataRate = 0;
     int tMaxDataRate = 0;
     // get lossless transmission activation
-    bool tLossless = pRequirements->Contains(RequirementTransmitLossless::type());
+    bool tLossless = pRequirements->contains(RequirementTransmitLossless::type());
     // get delay values
-    if(pRequirements->Contains(RequirementLimitDelay::type()))
+    if(pRequirements->contains(RequirementLimitDelay::type()))
     {
-        RequirementLimitDelay* tReqDelay = (RequirementLimitDelay*)pRequirements->Get(RequirementLimitDelay::type());
-        tMaxDelay = tReqDelay->GetMaxDelay();
+        RequirementLimitDelay* tReqDelay = (RequirementLimitDelay*)pRequirements->get(RequirementLimitDelay::type());
+        tMaxDelay = tReqDelay->getMaxDelay();
     }
     // get data rate values
-    if(pRequirements->Contains(RequirementLimitDataRate::type()))
+    if(pRequirements->contains(RequirementLimitDataRate::type()))
     {
-        RequirementLimitDataRate* tReqDataRate = (RequirementLimitDataRate*)pRequirements->Get(RequirementLimitDataRate::type());
-        tMinDataRate = tReqDataRate->GetMinDataRate();
-        tMaxDataRate = tReqDataRate->GetMaxDataRate();
+        RequirementLimitDataRate* tReqDataRate = (RequirementLimitDataRate*)pRequirements->get(RequirementLimitDataRate::type());
+        tMinDataRate = tReqDataRate->getMinDataRate();
+        tMaxDataRate = tReqDataRate->getMaxDataRate();
     }
 
     if((tLossless) || (tMaxDelay) || (tMinDataRate))
@@ -229,7 +245,23 @@ bool SocketConnection::update(Requirements *pRequirements)
         tResult = mSocket->SetQoS(tQoSSettings);
     }
 
+    mRequirements = *pRequirements; //TODO: maybe some requirements were dropped?
+
     return tResult;
+}
+
+Requirements SocketConnection::getRequirements()
+{
+	return mRequirements;
+}
+
+Events SocketConnection::getEvents()
+{
+	Events tResult;
+
+	//TODO:
+
+	return tResult;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

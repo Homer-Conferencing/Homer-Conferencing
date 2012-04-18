@@ -98,33 +98,33 @@ void AddNetworkSinkDialog::CreateNewMediaSink()
     switch(tTransport)
     {
         case SOCKET_UDP_LITE:
-            tRequs.Add(new RequirementTransmitBitErrors(UDP_LITE_HEADER_SIZE + RTP_HEADER_SIZE));
+            tRequs.add(new RequirementTransmitBitErrors(UDP_LITE_HEADER_SIZE + RTP_HEADER_SIZE));
         case SOCKET_UDP:
-            tRequs.Add(new RequirementTransmitChunks());
+            tRequs.add(new RequirementTransmitChunks());
             break;
         case SOCKET_TCP:
-            tRequs.Add(new RequirementTransmitLossless());
-            tRequs.Add(new RequirementTransmitOrdered());
-            tRequs.Add(new RequirementTransmitStream());
+            tRequs.add(new RequirementTransmitLossless());
+            tRequs.add(new RequirementTransmitOrdered());
+            tRequs.add(new RequirementTransmitStream());
             break;
         default:
             LOG(LOG_WARN, "Unsupported transport protocol selected");
             break;
     }
     // add target port
-    tRequs.Add(new RequirementTargetPort(tPort.toInt()));
+    tRequs.add(new RequirementTargetPort(tPort.toInt()));
     // add QoS parameter
     if (mCbDelay->isChecked())
-        tRequs.Add(new RequirementLimitDelay(mSbDelay->value()));
+        tRequs.add(new RequirementLimitDelay(mSbDelay->value()));
     if (mCbDataRate->isChecked())
-        tRequs.Add(new RequirementLimitDataRate(mSbDataRate->value(), INT_MAX));
+        tRequs.add(new RequirementLimitDataRate(mSbDataRate->value(), INT_MAX));
     if (mCbLossless->isChecked())
-        tRequs.Add(new RequirementTransmitLossless());
+        tRequs.add(new RequirementTransmitLossless());
 
-    string tOldGAPIImpl = GAPI.GetCurrentName();
-    GAPI.Select(mCbGAPIImpl->currentText().toStdString());
+    string tOldGAPIImpl = GAPI.getCurrentImplName();
+    GAPI.selectImpl(mCbGAPIImpl->currentText().toStdString());
     mMediaSource->RegisterMediaSink(tHost.toStdString(), &tRequs, mCbRtp->isChecked());
-    GAPI.Select(tOldGAPIImpl);
+    GAPI.selectImpl(tOldGAPIImpl);
 }
 
 void AddNetworkSinkDialog::SaveConfiguration()
@@ -157,7 +157,7 @@ void AddNetworkSinkDialog::LoadConfiguration()
         mCbTransport->removeItem(2);
     }
 
-    list<string> tGAPIImpls = GAPI.ListAllNames();
+    list<string> tGAPIImpls = GAPI.getAllImplNames();
     list<string>::iterator tGAPIImplsIt;
     mCbGAPIImpl->clear();
     for (tGAPIImplsIt = tGAPIImpls.begin(); tGAPIImplsIt != tGAPIImpls.end(); tGAPIImplsIt++)

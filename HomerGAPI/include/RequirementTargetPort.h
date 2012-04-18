@@ -40,9 +40,9 @@ class RequirementTargetPort:
 public:
     RequirementTargetPort(int pPort):mPort(pPort){}
 
-    virtual std::string GetDescription(){ return "Requ(TargetPort[" + toString(mPort) + "])"; }
+    virtual std::string getDescription(){ return "Requ(TargetPort[" + toString(mPort) + "])"; }
 
-    int GetPort(){ return mPort; }
+    int getPort(){ return mPort; }
 private:
     int     mPort;
 };

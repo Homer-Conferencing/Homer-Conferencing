@@ -45,8 +45,8 @@ GapiService::GapiService()
 {
 	mSetupInterface = 0;
 	mSetupInterfaceName = "";
-	Register(new SocketSetup(), BERKEYLEY_SOCKETS);
-    Register(new ChannelSetup(), VIRTUAL_CHANNELS);
+	registerImpl(new SocketSetup(), BERKEYLEY_SOCKETS);
+	registerImpl(new ChannelSetup(), VIRTUAL_CHANNELS);
 }
 
 GapiService::~GapiService()
@@ -54,14 +54,14 @@ GapiService::~GapiService()
 
 }
 
-GapiService& GapiService::GetInstance()
+GapiService& GapiService::getInstance()
 {
     return sGapiService;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool GapiService::Register(ISetup* pSetupInterface, std::string pName)
+bool GapiService::registerImpl(ISetup* pSetupInterface, std::string pName)
 {
 	bool tFound = false;
 	SetupInterfacesPool::iterator tIt;
@@ -99,7 +99,7 @@ bool GapiService::Register(ISetup* pSetupInterface, std::string pName)
 	return !tFound;
 }
 
-bool GapiService::Select(std::string pName)
+bool GapiService::selectImpl(std::string pName)
 {
     bool tFound = false;
     SetupInterfacesPool::iterator tIt;
@@ -123,12 +123,12 @@ bool GapiService::Select(std::string pName)
     return tFound;
 }
 
-string GapiService::GetCurrentName()
+string GapiService::getCurrentImplName()
 {
     return mSetupInterfaceName;
 }
 
-SetupInterfacesNames GapiService::ListAllNames()
+SetupInterfacesNames GapiService::getAllImplNames()
 {
 	SetupInterfacesNames tResult;
 	SetupInterfacesPool::iterator tIt;
@@ -147,30 +147,45 @@ SetupInterfacesNames GapiService::ListAllNames()
 
 IConnection* GapiService::connect(Name *pName, Requirements *pRequirements)
 {
-	LOG(LOG_VERBOSE, "Got call to GAPI::subscribe() with name \"%s\" and requirements \"%s\"", pName->toString().c_str(), pRequirements->GetDescription().c_str());
+	IConnection *tResult = NULL;
+
+	LOG(LOG_VERBOSE, "Got call to GAPI::connect() with name \"%s\" and requirements \"%s\"", pName->toString().c_str(), (pRequirements != NULL) ? pRequirements->getDescription().c_str() : "none");
 
 	if(mSetupInterface == 0)
-	{
 		LOG(LOG_ERROR, "No setup interface available");
-		return 0;
-	}
+	else
+		tResult = mSetupInterface->connect(pName, pRequirements);
 
-	return mSetupInterface->connect(pName, pRequirements);
+	return tResult;
 }
 
 IBinding* GapiService::bind(Name *pName, Requirements *pRequirements)
 {
-	LOG(LOG_VERBOSE, "Got call to GAPI::publish() with name \"%s\" and requirements \"%s\"", pName->toString().c_str(), pRequirements->GetDescription().c_str());
+	IBinding *tResult = NULL;
+
+	LOG(LOG_VERBOSE, "Got call to GAPI::bind() with name \"%s\" and requirements \"%s\"", pName->toString().c_str(), (pRequirements != NULL) ? pRequirements->getDescription().c_str() : "none");
 
 	if(mSetupInterface == 0)
-	{
 		LOG(LOG_ERROR, "No setup interface available");
-		return 0;
-	}
+	else
+		tResult = mSetupInterface->bind(pName, pRequirements);
 
-	return mSetupInterface->bind(pName, pRequirements);
+	return tResult;
 }
 
+Requirements GapiService::getCapabilities(Name *pName, Requirements *pImportantRequirements)
+{
+	Requirements tResult;
+
+	LOG(LOG_VERBOSE, "Got call to GAPI::getCapabilities() with name \"%s\" and requirements \"%s\"", pName->toString().c_str(), (pImportantRequirements != NULL) ? pImportantRequirements->getDescription().c_str() : "none");
+
+	if(mSetupInterface == 0)
+		LOG(LOG_ERROR, "No setup interface available");
+	else
+		tResult = mSetupInterface->getCapabilities(pName, pImportantRequirements);
+
+	return tResult;
+}
 ///////////////////////////////////////////////////////////////////////////////
 
 }} //namespace

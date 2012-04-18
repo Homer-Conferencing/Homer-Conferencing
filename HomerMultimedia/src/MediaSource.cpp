@@ -812,7 +812,7 @@ MediaSinkNet* MediaSource::RegisterMediaSink(string pTarget, Requirements *pTran
     MediaSinksList::iterator tIt;
     bool tFound = false;
     MediaSinkNet *tResult = NULL;
-    string tId = pTarget + "[" + pTransportRequirements->GetDescription() + "]" + (pRtpActivation ? "(RTP)" : "");
+    string tId = pTarget + "[" + pTransportRequirements->getDescription() + "]" + (pRtpActivation ? "(RTP)" : "");
 
     if (pTarget == "")
     {
@@ -820,7 +820,7 @@ MediaSinkNet* MediaSource::RegisterMediaSink(string pTarget, Requirements *pTran
         return NULL;
     }
 
-    LOG(LOG_VERBOSE, "Registering GAPI based media sink: %s (Requirements: %s)", pTarget.c_str(), pTransportRequirements->GetDescription().c_str());
+    LOG(LOG_VERBOSE, "Registering GAPI based media sink: %s (Requirements: %s)", pTarget.c_str(), pTransportRequirements->getDescription().c_str());
 
     // lock
     mMediaSinksMutex.lock();
@@ -853,12 +853,12 @@ bool MediaSource::UnregisterMediaSink(string pTarget, Requirements *pTransportRe
 {
     bool tResult = false;
     MediaSinksList::iterator tIt;
-    string tId = pTarget + "[" + pTransportRequirements->GetDescription() + "]";
+    string tId = pTarget + "[" + pTransportRequirements->getDescription() + "]";
 
     if (pTarget == "")
         return false;
 
-    LOG(LOG_VERBOSE, "Unregistering GAPI based media sink: %s (Requirements: %s)", pTarget.c_str(), pTransportRequirements->GetDescription().c_str());
+    LOG(LOG_VERBOSE, "Unregistering GAPI based media sink: %s (Requirements: %s)", pTarget.c_str(), pTransportRequirements->getDescription().c_str());
 
     // lock
     mMediaSinksMutex.lock();

@@ -58,7 +58,7 @@ public:
     Requirements(Requirements &pCopy);
     virtual ~Requirements();
 
-    virtual std::string GetDescription();
+    virtual std::string getDescription();
 
     /* overloaded operators */
 //    void operator+=(IRequirement pAddRequ);
@@ -67,16 +67,16 @@ public:
 //    Requirements& operator|(IRequirement pAddRequ);
 
     /* set manipulation */
-    bool Add(IRequirement *pRequ);
+    bool add(IRequirement *pRequ);
 
     /* query functions */
-    bool Contains(int pType);
-    IRequirement* Get(int pType);
+    bool contains(int pType);
+    IRequirement* get(int pType);
 
 private:
-    void Add(RequirementSet pSet);
-    RequirementSet GetAll();
-    void RemoveAll();
+    void add(RequirementSet pSet);
+    RequirementSet getAll();
+    void removeAll();
 
     RequirementSet      mRequirementSet;
     Mutex               mRequirementSetMutex;

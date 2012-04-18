@@ -20,30 +20,73 @@
  *****************************************************************************/
 
 /*
- * Purpose: Name
+ * Purpose: IRequirements
  * Author:  Thomas Volkert
- * Since:   2011-12-08
+ * Since:   2012-04-18
  */
 
-#ifndef _GAPI_NAME_
-#define _GAPI_NAME_
+#ifndef _GAPI_IEVENT_
+#define _GAPI_IEVENT_
 
-#include <string>
+#include <Logger.h>
+#include <Events.h>
 
 namespace Homer { namespace Base {
 
-//////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
-class Name
+// transport attributes
+//#define REQUIREMENT_TRANSMIT_LOSSLESS                   0x0101
+//#define REQUIREMENT_TRANSMIT_CHUNKS                     0x0102
+//#define REQUIREMENT_TRANSMIT_STREAM                     0x0103
+//#define REQUIREMENT_TRANSMIT_BIT_ERRORS                 0x0104
+//#define REQUIREMENT_TRANSMIT_ORDERED                    0x0105
+
+///////////////////////////////////////////////////////////////////////////////
+
+// forward declaration
+class Events;
+
+class IEvent
 {
 public:
-	Name(std::string pName):mName(pName){ }
-    virtual ~Name(){ }
+	IEvent(int pType):mType(pType)
+	{
 
-    virtual std::string toString(){ return mName; }
+	}
+    virtual ~IEvent( )
+    {
+
+    }
+
+    virtual std::string getDescription() = 0;
+    virtual int getType()const
+    {
+        return mType;
+    }
 
 private:
-    std::string mName;
+    int mType;
+};
+
+template <typename DerivedClass, int pType>
+class TEvent:
+    public IEvent
+{
+public:
+	TEvent():IEvent(pType)
+    {
+
+    }
+    virtual ~TEvent()
+    {
+
+    }
+
+    static int type()
+    {
+        return pType;
+    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////

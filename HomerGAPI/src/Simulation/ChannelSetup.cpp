@@ -61,6 +61,14 @@ IBinding* ChannelSetup::bind(Name *pName, Requirements *pRequirements)
 	return 0;
 }
 
+Requirements ChannelSetup::getCapabilities(Name *pName, Requirements *pImportantRequirements)
+{
+	Requirements tResult;
+
+	//TODO:
+
+	return tResult;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 

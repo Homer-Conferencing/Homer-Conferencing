@@ -41,9 +41,9 @@ class RequirementTransmitBitErrors:
 public:
     RequirementTransmitBitErrors(int pSecuredFrontDataSize):mSecuredFrontDataSize(pSecuredFrontDataSize){ }
 
-    virtual std::string GetDescription(){ return "Requ(TransmitBitErrors[" + toString(mSecuredFrontDataSize) + "])"; }
+    virtual std::string getDescription(){ return "Requ(TransmitBitErrors[" + toString(mSecuredFrontDataSize) + "])"; }
 
-    int GetSecuredFrontDataSize(){ return mSecuredFrontDataSize; }
+    int getSecuredFrontDataSize(){ return mSecuredFrontDataSize; }
 
 private:
     int mSecuredFrontDataSize;
