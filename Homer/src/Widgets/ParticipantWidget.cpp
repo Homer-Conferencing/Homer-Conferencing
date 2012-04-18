@@ -212,15 +212,17 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
         case BROADCAST:
                     LOG(LOG_VERBOSE, "Creating participant widget for BROADCAST");
                     mSessionName = "BROADCAST";
-                    LOG(LOG_VERBOSE, "..init broacast message widget");
+                    LOG(LOG_VERBOSE, "..init broadcast message widget");
                     mMessageWidget->Init(pMessageMenu, mSessionName, NULL, CONF.GetVisibilityBroadcastMessageWidget());
-                    LOG(LOG_VERBOSE, "..init broacast video widget");
+                    LOG(LOG_VERBOSE, "..init broadcast video widget");
+                    mVideoSource = mVideoSourceMuxer;
+                    mAudioSource = mAudioSourceMuxer;
                     if (mVideoSourceMuxer != NULL)
                     {
                         mVideoWidgetFrame->show();
                         mVideoWidget->Init(mMainWindow, mVideoSourceMuxer, pVideoMenu, mSessionName, mSessionName, true);
                     }
-                    LOG(LOG_VERBOSE, "..init broacast audio widget");
+                    LOG(LOG_VERBOSE, "..init broadcast audio widget");
                     if (mAudioSourceMuxer != NULL)
                         mAudioWidget->Init(mAudioSourceMuxer, pAudioMenu, mSessionName, mSessionName, true, true);
                     setFeatures(QDockWidget::NoDockWidgetFeatures);
@@ -1059,12 +1061,17 @@ void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
     int tTmp = 0;
     int tHour, tMin, tSec;
 
-    if((mVideoWidget->GetWorker()->SupportsSeeking()) || (mAudioWidget->GetWorker()->SupportsSeeking()))
+    bool tShowMovieControls = false;
+    if ((mVideoSource) && (mVideoWidget->GetWorker()->SupportsSeeking()))
+        tShowMovieControls = true;
+    if ((mAudioSource) && (mAudioWidget->GetWorker()->SupportsSeeking()))
+        tShowMovieControls = true;
+    if (tShowMovieControls)
         mMovieControlsFrame->show();
     else
         mMovieControlsFrame->hide();
 
-    if ((pEvent->timerId() == mTimerId) && (mMovieControlsFrame->isVisible()) && ((mVideoWidget->GetWorker()->SupportsSeeking()) || (mAudioWidget->GetWorker()->SupportsSeeking())))
+    if ((pEvent->timerId() == mTimerId) && (tShowMovieControls))
     {
         int64_t tCurPos = 0;
         int64_t tEndPos = 0;
