@@ -137,7 +137,7 @@ ELSE ()
 	SET (FLAGS "${FLAGS} -DRELEASE_VERSION")
 ENDIF ()
 IF (${BUILD} MATCHES "Release")
-	SET (FLAGS "${FLAGS} -s")
+	SET (LFLAGS "${FLAGS} -s")
 ENDIF()
 
 ##############################################################
