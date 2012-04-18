@@ -193,9 +193,11 @@ void Events::removeAll()
 
     mEventSetMutex.lock();
 
-    for(tIt = mEventSet.begin(); tIt != mEventSet.end(); tIt++)
+    tIt = mEventSet.begin();
+    while (tIt != mEventSet.end())
     {
-        delete (*tIt);
+        delete (*mEventSet.begin());
+        tIt = mEventSet.begin();
     }
 
     mEventSetMutex.unlock();
