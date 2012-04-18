@@ -20,34 +20,25 @@
  *****************************************************************************/
 
 /*
- * Purpose: ISubscription
+ * Purpose: RequirementTransmitStream to trigger stream based transport
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
 
-#ifndef _GAPI_ISUBSCRIPTION_
-#define _GAPI_ISUBSCRIPTION_
+#ifndef _GAPI_REQUIREMENT_TRANSMIT_STREAM_
+#define _GAPI_REQUIREMENT_TRANSMIT_STREAM_
 
-#include <IName.h>
-#include <Requirements.h>
+#include <IRequirement.h>
 
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class ISubscription
+class RequirementTransmitStream:
+    public TRequirement<RequirementTransmitStream, REQUIREMENT_TRANSMIT_STREAM>
 {
 public:
-	ISubscription(){ }
-    virtual ~ISubscription(){ }
-
-    virtual bool isClosed() = 0;
-    virtual void read(char* pBuffer, int &pBufferize) = 0;
-    virtual void write(char* pBuffer, int pBufferSize) = 0;
-    virtual void cancel() = 0;
-    virtual IName* name() = 0;
-    virtual IName* peer() = 0;
-    virtual bool update(Requirements *pRequirements) = 0;
+    virtual std::string getDescription(){ return "Requ(TransmitStream)"; }
 };
 
 ///////////////////////////////////////////////////////////////////////////////

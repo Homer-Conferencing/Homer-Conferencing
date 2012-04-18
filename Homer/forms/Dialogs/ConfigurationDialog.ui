@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>667</width>
-    <height>535</height>
+    <width>580</width>
+    <height>539</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -86,16 +86,11 @@
         <bool>true</bool>
        </property>
        <property name="currentRow">
-        <number>0</number>
+        <number>-1</number>
        </property>
        <item>
         <property name="text">
          <string>Video</string>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>9</pointsize>
-         </font>
         </property>
         <property name="textAlignment">
          <set>AlignHCenter|AlignVCenter|AlignCenter</set>
@@ -109,11 +104,6 @@
         <property name="text">
          <string>Audio</string>
         </property>
-        <property name="font">
-         <font>
-          <pointsize>9</pointsize>
-         </font>
-        </property>
         <property name="textAlignment">
          <set>AlignHCenter|AlignVCenter|AlignCenter</set>
         </property>
@@ -125,11 +115,6 @@
        <item>
         <property name="text">
          <string>Network</string>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>9</pointsize>
-         </font>
         </property>
         <property name="textAlignment">
          <set>AlignHCenter|AlignVCenter|AlignCenter</set>
@@ -143,11 +128,6 @@
         <property name="text">
          <string>General</string>
         </property>
-        <property name="font">
-         <font>
-          <pointsize>9</pointsize>
-         </font>
-        </property>
         <property name="textAlignment">
          <set>AlignHCenter|AlignVCenter|AlignCenter</set>
         </property>
@@ -159,11 +139,6 @@
        <item>
         <property name="text">
          <string>Notifications</string>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>9</pointsize>
-         </font>
         </property>
         <property name="textAlignment">
          <set>AlignHCenter|AlignVCenter|AlignCenter</set>
@@ -231,15 +206,8 @@
                   <height>25</height>
                  </size>
                 </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>160</width>
-                  <height>25</height>
-                 </size>
-                </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -272,7 +240,6 @@
                 </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -345,7 +312,6 @@
                 </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -370,15 +336,8 @@
                   <height>25</height>
                  </size>
                 </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>160</width>
-                  <height>25</height>
-                 </size>
-                </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -408,7 +367,6 @@
                <widget class="QCheckBox" name="mCbHFlip">
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -444,7 +402,6 @@
                <widget class="QCheckBox" name="mCbVFlip">
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -467,12 +424,6 @@
          </item>
          <item>
           <widget class="QGroupBox" name="groupBox_3">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>51</height>
-            </size>
-           </property>
            <property name="maximumSize">
             <size>
              <width>16777215</width>
@@ -502,15 +453,8 @@
                   <height>25</height>
                  </size>
                 </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>210</width>
-                  <height>25</height>
-                 </size>
-                </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -595,15 +539,8 @@
                   <height>25</height>
                  </size>
                 </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>210</width>
-                  <height>25</height>
-                 </size>
-                </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -630,7 +567,6 @@
                <widget class="QComboBox" name="mCbVideoResolution">
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -702,15 +638,8 @@
                   <height>25</height>
                  </size>
                 </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>210</width>
-                  <height>25</height>
-                 </size>
-                </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -747,7 +676,6 @@
                 <property name="font">
                  <font>
                   <family>Bitstream Vera Sans</family>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -778,15 +706,8 @@
                   <height>25</height>
                  </size>
                 </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>210</width>
-                  <height>25</height>
-                 </size>
-                </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -813,7 +734,6 @@
                <widget class="QComboBox" name="mCbVideoCodec">
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -860,15 +780,8 @@
                   <height>25</height>
                  </size>
                 </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>210</width>
-                  <height>25</height>
-                 </size>
-                </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -895,7 +808,6 @@
                <widget class="QComboBox" name="mCbVideoQuality">
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -967,15 +879,8 @@
                   <height>25</height>
                  </size>
                 </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>210</width>
-                  <height>25</height>
-                 </size>
-                </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -1002,7 +907,6 @@
                <widget class="QComboBox" name="mCbVideoMaxPacketSize">
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -1061,23 +965,8 @@
        </widget>
        <widget class="QWidget" name="mAudio">
         <layout class="QVBoxLayout" name="verticalLayout_2">
-         <property name="margin">
-          <number>9</number>
-         </property>
          <item>
           <widget class="QGroupBox" name="mGrpDevices_2">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>84</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>84</height>
-            </size>
-           </property>
            <property name="font">
             <font>
              <weight>75</weight>
@@ -1104,15 +993,8 @@
                   <height>25</height>
                  </size>
                 </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>160</width>
-                  <height>25</height>
-                 </size>
-                </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -1137,15 +1019,8 @@
               </item>
               <item>
                <widget class="QComboBox" name="mCbAudioSource">
-                <property name="maximumSize">
-                 <size>
-                  <width>800</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -1209,7 +1084,6 @@
                <widget class="QLabel" name="mLbAudioSourceInfo">
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -1232,18 +1106,6 @@
          </item>
          <item>
           <widget class="QGroupBox" name="groupBox_2">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>51</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>510</height>
-            </size>
-           </property>
            <property name="font">
             <font>
              <weight>75</weight>
@@ -1267,15 +1129,8 @@
                   <height>25</height>
                  </size>
                 </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>160</width>
-                  <height>25</height>
-                 </size>
-                </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -1302,7 +1157,6 @@
                <widget class="QComboBox" name="mCbAudioSink">
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -1366,7 +1220,6 @@
                <widget class="QLabel" name="mLbAudioSinkInfo">
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -1437,15 +1290,8 @@
                   <height>25</height>
                  </size>
                 </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>210</width>
-                  <height>25</height>
-                 </size>
-                </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -1472,7 +1318,6 @@
                <widget class="QComboBox" name="mCbAudioCodec">
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -1535,15 +1380,8 @@
                   <height>25</height>
                  </size>
                 </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>210</width>
-                  <height>25</height>
-                 </size>
-                </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -1570,7 +1408,6 @@
                <widget class="QComboBox" name="mCbAudioQuality">
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -1642,15 +1479,8 @@
                   <height>25</height>
                  </size>
                 </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>260</width>
-                  <height>25</height>
-                 </size>
-                </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -1677,7 +1507,6 @@
                <widget class="QComboBox" name="mCbAudioMaxPacketSize">
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -1775,19 +1604,12 @@
                <widget class="QLabel" name="mLbSipServer">
                 <property name="minimumSize">
                  <size>
-                  <width>120</width>
-                  <height>25</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>120</width>
-                  <height>25</height>
+                  <width>0</width>
+                  <height>22</height>
                  </size>
                 </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -1838,21 +1660,8 @@
               </item>
               <item>
                <widget class="QLineEdit" name="mLeSipServer">
-                <property name="minimumSize">
-                 <size>
-                  <width>170</width>
-                  <height>22</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -1876,19 +1685,12 @@
                <widget class="QLabel" name="mLbSipUserName">
                 <property name="minimumSize">
                  <size>
-                  <width>120</width>
-                  <height>25</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>120</width>
-                  <height>25</height>
+                  <width>0</width>
+                  <height>22</height>
                  </size>
                 </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -1939,21 +1741,8 @@
               </item>
               <item>
                <widget class="QLineEdit" name="mLeSipUserName">
-                <property name="minimumSize">
-                 <size>
-                  <width>170</width>
-                  <height>22</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -1977,19 +1766,12 @@
                <widget class="QLabel" name="mLbSipPassword">
                 <property name="minimumSize">
                  <size>
-                  <width>120</width>
-                  <height>25</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>120</width>
-                  <height>25</height>
+                  <width>0</width>
+                  <height>22</height>
                  </size>
                 </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -2049,21 +1831,8 @@
               </item>
               <item>
                <widget class="QLineEdit" name="mLeSipPassword">
-                <property name="minimumSize">
-                 <size>
-                  <width>170</width>
-                  <height>22</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -2108,19 +1877,12 @@
                <widget class="QLabel" name="mLbContactsProbing">
                 <property name="minimumSize">
                  <size>
-                  <width>270</width>
-                  <height>25</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>270</width>
-                  <height>25</height>
+                  <width>0</width>
+                  <height>22</height>
                  </size>
                 </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -2198,19 +1960,12 @@
                <widget class="QLabel" name="mLbStunServer">
                 <property name="minimumSize">
                  <size>
-                  <width>120</width>
-                  <height>25</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>120</width>
-                  <height>25</height>
+                  <width>0</width>
+                  <height>22</height>
                  </size>
                 </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -2261,21 +2016,8 @@
               </item>
               <item>
                <widget class="QLineEdit" name="mLeStunServer">
-                <property name="minimumSize">
-                 <size>
-                  <width>170</width>
-                  <height>22</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -2326,19 +2068,12 @@
                <widget class="QLabel" name="mLbLocalAdr">
                 <property name="minimumSize">
                  <size>
-                  <width>230</width>
-                  <height>25</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>230</width>
-                  <height>25</height>
+                  <width>0</width>
+                  <height>22</height>
                  </size>
                 </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -2365,7 +2100,6 @@
                <widget class="QComboBox" name="mCbLocalAdr">
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -2388,19 +2122,12 @@
                <widget class="QLabel" name="mLbSipPort">
                 <property name="minimumSize">
                  <size>
-                  <width>270</width>
-                  <height>25</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>270</width>
-                  <height>25</height>
+                  <width>0</width>
+                  <height>22</height>
                  </size>
                 </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -2425,21 +2152,8 @@
               </item>
               <item>
                <widget class="QSpinBox" name="mSbSipStartPort">
-                <property name="minimumSize">
-                 <size>
-                  <width>70</width>
-                  <height>22</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>70</width>
-                  <height>22</height>
-                 </size>
-                </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -2467,24 +2181,79 @@
              </layout>
             </item>
             <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_11">
+              <item>
+               <widget class="QLabel" name="label_24">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>22</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Session transport protocol:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_14">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QComboBox" name="mCbSipTransport">
+                <property name="font">
+                 <font>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
+                <property name="sizeAdjustPolicy">
+                 <enum>QComboBox::AdjustToContentsOnFirstShow</enum>
+                </property>
+                <property name="frame">
+                 <bool>false</bool>
+                </property>
+                <item>
+                 <property name="text">
+                  <string>UDP</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>TCP</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
              <layout class="QHBoxLayout" name="horizontalLayout_20">
               <item>
                <widget class="QLabel" name="mLbVideoAudioPort">
                 <property name="minimumSize">
                  <size>
-                  <width>230</width>
-                  <height>25</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>230</width>
-                  <height>25</height>
+                  <width>0</width>
+                  <height>22</height>
                  </size>
                 </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -2509,21 +2278,8 @@
               </item>
               <item>
                <widget class="QSpinBox" name="mSbVideoAudioStartPort">
-                <property name="minimumSize">
-                 <size>
-                  <width>70</width>
-                  <height>22</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>70</width>
-                  <height>22</height>
-                 </size>
-                </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -2579,18 +2335,11 @@
                 <property name="minimumSize">
                  <size>
                   <width>230</width>
-                  <height>25</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>230</width>
-                  <height>25</height>
+                  <height>22</height>
                  </size>
                 </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -2620,7 +2369,6 @@
                <widget class="QComboBox" name="mCbColoring">
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -2646,18 +2394,11 @@
                 <property name="minimumSize">
                  <size>
                   <width>230</width>
-                  <height>25</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>230</width>
-                  <height>25</height>
+                  <height>22</height>
                  </size>
                 </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -2695,19 +2436,12 @@
                <widget class="QLabel" name="mLbCloseParticipantWidgetsImmediately">
                 <property name="minimumSize">
                  <size>
-                  <width>230</width>
-                  <height>25</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>230</width>
-                  <height>25</height>
+                  <width>0</width>
+                  <height>22</height>
                  </size>
                 </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -2763,19 +2497,12 @@
                <widget class="QLabel" name="mLbColoring_2">
                 <property name="minimumSize">
                  <size>
-                  <width>230</width>
-                  <height>25</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>230</width>
-                  <height>25</height>
+                  <width>0</width>
+                  <height>22</height>
                  </size>
                 </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -2885,20 +2612,19 @@
                <widget class="QLabel" name="label_2">
                 <property name="minimumSize">
                  <size>
-                  <width>130</width>
+                  <width>170</width>
                   <height>0</height>
                  </size>
                 </property>
                 <property name="maximumSize">
                  <size>
-                  <width>130</width>
+                  <width>170</width>
                   <height>16777215</height>
                  </size>
                 </property>
                 <property name="font">
                  <font>
                   <family>MS Shell Dlg 2</family>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -2974,7 +2700,6 @@
                 <property name="font">
                  <font>
                   <family>MS Shell Dlg 2</family>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -3108,20 +2833,19 @@
                <widget class="QLabel" name="label_8">
                 <property name="minimumSize">
                  <size>
-                  <width>130</width>
+                  <width>170</width>
                   <height>0</height>
                  </size>
                 </property>
                 <property name="maximumSize">
                  <size>
-                  <width>130</width>
+                  <width>170</width>
                   <height>16777215</height>
                  </size>
                 </property>
                 <property name="font">
                  <font>
                   <family>MS Shell Dlg 2</family>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -3197,7 +2921,6 @@
                 <property name="font">
                  <font>
                   <family>MS Shell Dlg 2</family>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -3304,20 +3027,19 @@
                <widget class="QLabel" name="label_13">
                 <property name="minimumSize">
                  <size>
-                  <width>130</width>
+                  <width>170</width>
                   <height>0</height>
                  </size>
                 </property>
                 <property name="maximumSize">
                  <size>
-                  <width>130</width>
+                  <width>170</width>
                   <height>16777215</height>
                  </size>
                 </property>
                 <property name="font">
                  <font>
                   <family>MS Shell Dlg 2</family>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -3393,7 +3115,6 @@
                 <property name="font">
                  <font>
                   <family>MS Shell Dlg 2</family>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -3500,20 +3221,19 @@
                <widget class="QLabel" name="label_9">
                 <property name="minimumSize">
                  <size>
-                  <width>130</width>
+                  <width>170</width>
                   <height>0</height>
                  </size>
                 </property>
                 <property name="maximumSize">
                  <size>
-                  <width>130</width>
+                  <width>170</width>
                   <height>16777215</height>
                  </size>
                 </property>
                 <property name="font">
                  <font>
                   <family>MS Shell Dlg 2</family>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -3589,7 +3309,6 @@
                 <property name="font">
                  <font>
                   <family>MS Shell Dlg 2</family>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -3696,20 +3415,19 @@
                <widget class="QLabel" name="label_11">
                 <property name="minimumSize">
                  <size>
-                  <width>130</width>
+                  <width>170</width>
                   <height>0</height>
                  </size>
                 </property>
                 <property name="maximumSize">
                  <size>
-                  <width>130</width>
+                  <width>170</width>
                   <height>16777215</height>
                  </size>
                 </property>
                 <property name="font">
                  <font>
                   <family>MS Shell Dlg 2</family>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -3785,7 +3503,6 @@
                 <property name="font">
                  <font>
                   <family>MS Shell Dlg 2</family>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -3919,20 +3636,19 @@
                <widget class="QLabel" name="label_17">
                 <property name="minimumSize">
                  <size>
-                  <width>130</width>
+                  <width>170</width>
                   <height>0</height>
                  </size>
                 </property>
                 <property name="maximumSize">
                  <size>
-                  <width>130</width>
+                  <width>170</width>
                   <height>16777215</height>
                  </size>
                 </property>
                 <property name="font">
                  <font>
                   <family>MS Shell Dlg 2</family>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -4008,7 +3724,6 @@
                 <property name="font">
                  <font>
                   <family>MS Shell Dlg 2</family>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -4115,20 +3830,19 @@
                <widget class="QLabel" name="label_19">
                 <property name="minimumSize">
                  <size>
-                  <width>130</width>
+                  <width>170</width>
                   <height>0</height>
                  </size>
                 </property>
                 <property name="maximumSize">
                  <size>
-                  <width>130</width>
+                  <width>170</width>
                   <height>16777215</height>
                  </size>
                 </property>
                 <property name="font">
                  <font>
                   <family>MS Shell Dlg 2</family>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -4204,7 +3918,6 @@
                 <property name="font">
                  <font>
                   <family>MS Shell Dlg 2</family>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -4338,20 +4051,19 @@
                <widget class="QLabel" name="label_15">
                 <property name="minimumSize">
                  <size>
-                  <width>130</width>
+                  <width>170</width>
                   <height>0</height>
                  </size>
                 </property>
                 <property name="maximumSize">
                  <size>
-                  <width>130</width>
+                  <width>170</width>
                   <height>16777215</height>
                  </size>
                 </property>
                 <property name="font">
                  <font>
                   <family>MS Shell Dlg 2</family>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -4427,7 +4139,6 @@
                 <property name="font">
                  <font>
                   <family>MS Shell Dlg 2</family>
-                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -4569,20 +4280,19 @@
             <widget class="QLabel" name="label_21">
              <property name="minimumSize">
               <size>
-               <width>125</width>
+               <width>170</width>
                <height>0</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>125</width>
+               <width>170</width>
                <height>16777215</height>
               </size>
              </property>
              <property name="font">
               <font>
                <family>MS Shell Dlg 2</family>
-               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -4599,14 +4309,14 @@
             <widget class="QToolButton" name="mTbSelectAllSystray">
              <property name="minimumSize">
               <size>
-               <width>28</width>
-               <height>28</height>
+               <width>24</width>
+               <height>24</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>28</width>
-               <height>28</height>
+               <width>24</width>
+               <height>24</height>
               </size>
              </property>
              <property name="text">
@@ -4644,14 +4354,14 @@
             <widget class="QToolButton" name="mTbSelectAllSound">
              <property name="minimumSize">
               <size>
-               <width>28</width>
-               <height>28</height>
+               <width>24</width>
+               <height>24</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>28</width>
-               <height>28</height>
+               <width>24</width>
+               <height>24</height>
               </size>
              </property>
              <property name="text">
@@ -4734,20 +4444,19 @@
             <widget class="QLabel" name="label_23">
              <property name="minimumSize">
               <size>
-               <width>125</width>
+               <width>170</width>
                <height>0</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>125</width>
+               <width>170</width>
                <height>16777215</height>
               </size>
              </property>
              <property name="font">
               <font>
                <family>MS Shell Dlg 2</family>
-               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -4764,14 +4473,14 @@
             <widget class="QToolButton" name="mTbDeselectAllSystray">
              <property name="minimumSize">
               <size>
-               <width>28</width>
-               <height>28</height>
+               <width>24</width>
+               <height>24</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>28</width>
-               <height>28</height>
+               <width>24</width>
+               <height>24</height>
               </size>
              </property>
              <property name="text">
@@ -4809,14 +4518,14 @@
             <widget class="QToolButton" name="mTbDeselectAllSound">
              <property name="minimumSize">
               <size>
-               <width>28</width>
-               <height>28</height>
+               <width>24</width>
+               <height>24</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>28</width>
-               <height>28</height>
+               <width>24</width>
+               <height>24</height>
               </size>
              </property>
              <property name="text">

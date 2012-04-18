@@ -20,19 +20,19 @@
  *****************************************************************************/
 
 /*
- * Purpose: SocketSubscription
+ * Purpose: SocketConnection
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
 
 #include <GAPI.h>
-#include <SocketName.h>
-#include <SocketSubscription.h>
-#include <RequirementUseIPv6.h>
+#include <Berkeley/SocketName.h>
+#include <Berkeley/SocketConnection.h>
 #include <RequirementTransmitLossless.h>
 #include <RequirementTransmitChunks.h>
-#include <RequirementTransmitWaterfall.h>
+#include <RequirementTransmitStream.h>
 #include <RequirementTransmitBitErrors.h>
+#include <RequirementTargetPort.h>
 #include <RequirementLimitDelay.h>
 #include <RequirementLimitDataRate.h>
 
@@ -48,41 +48,43 @@ namespace Homer { namespace Base {
 using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
-
-SocketSubscription::SocketSubscription(std::string pTargetHost, unsigned int pTargetPort, Requirements *pRequirements)
+//HINT: lossless transmission is not implemented by using TCP but by rely on a reaction by the network
+SocketConnection::SocketConnection(std::string pTarget, Requirements *pRequirements)
 {
     bool tFoundTransport = false;
 
-    mTargetHost = pTargetHost;
-    mTargetPort = pTargetPort;
+    mBlockingMode = true;
+    mTargetHost = pTarget;
+    RequirementTargetPort *tRequPort = (RequirementTargetPort*)pRequirements->get(RequirementTargetPort::type());
+    if (tRequPort != NULL)
+    {
+        mTargetPort = tRequPort->getPort();
+
+    }else
+    {
+        LOG(LOG_WARN, "No target port given within requirement set, falling back to port 0");
+        mTargetPort = 0;
+    }
     mIsClosed = true;
 
 
     /* network requirements */
-    bool tIPv6 = pRequirements->contains(RequirementUseIPv6::type());
+    bool tIPv6 = IS_IPV6_ADDRESS(pTarget);
 
     /* transport requirements */
-    if ((pRequirements->contains(RequirementTransmitChunks::type())) && (pRequirements->contains(RequirementWaterfallTransmission::type())))
+    if ((pRequirements->contains(RequirementTransmitChunks::type())) && (pRequirements->contains(RequirementTransmitStream::type())))
     {
-        LOG(LOG_ERROR, "Detected requirement conflict between \"Req:Chunks\" and \"Req:Waterfall\"");
+        LOG(LOG_ERROR, "Detected requirement conflict between \"Req:Chunks\" and \"Req:Stream\"");
     }
 
-    if ((pRequirements->contains(RequirementTransmitLossless::type())) && (!pRequirements->contains(RequirementWaterfallTransmission::type())))
-    {
-        LOG(LOG_ERROR, "Detected requirement conflict between \"Req:Lossless\" and \"Req:!Waterfall\"");
-    }
+    bool tTcp = (((!pRequirements->contains(RequirementTransmitChunks::type())) &&
+                (pRequirements->contains(RequirementTransmitStream::type()))));
 
-    bool tTcp = ((pRequirements->contains(RequirementTransmitLossless::type())) ||
-                ((!pRequirements->contains(RequirementTransmitChunks::type())) &&
-                (pRequirements->contains(RequirementWaterfallTransmission::type()))));
+    bool tUdp = ((pRequirements->contains(RequirementTransmitChunks::type())) &&
+                (!pRequirements->contains(RequirementTransmitStream::type())));
 
-    bool tUdp = ((!pRequirements->contains(RequirementTransmitLossless::type())) &&
-                (pRequirements->contains(RequirementTransmitChunks::type())) &&
-                (!pRequirements->contains(RequirementWaterfallTransmission::type())));
-
-    bool tUdpLite = ((!pRequirements->contains(RequirementTransmitLossless::type())) &&
-                    (pRequirements->contains(RequirementTransmitChunks::type())) &&
-                    (!pRequirements->contains(RequirementWaterfallTransmission::type())) &&
+    bool tUdpLite = ((pRequirements->contains(RequirementTransmitChunks::type())) &&
+                    (!pRequirements->contains(RequirementTransmitStream::type())) &&
                     (pRequirements->contains(RequirementTransmitBitErrors::type())));
 
     if (tTcp)
@@ -118,22 +120,27 @@ SocketSubscription::SocketSubscription(std::string pTargetHost, unsigned int pTa
     }
 
     /* QoS requirements and additional transport requirements */
-    update(pRequirements);
+    changeRequirements(pRequirements);
 }
 
-SocketSubscription::~SocketSubscription()
+SocketConnection::~SocketConnection()
 {
     delete mSocket;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool SocketSubscription::isClosed()
+bool SocketConnection::isClosed()
 {
 	return mIsClosed;
 }
 
-void SocketSubscription::read(char* pBuffer, int &pBufferSize)
+int SocketConnection::availableBytes()
+{
+	return 0; //TODO
+}
+
+void SocketConnection::read(char* pBuffer, int &pBufferSize)
 {
     if(mSocket != NULL)
     {
@@ -146,7 +153,7 @@ void SocketSubscription::read(char* pBuffer, int &pBufferSize)
     }
 }
 
-void SocketSubscription::write(char* pBuffer, int pBufferSize)
+void SocketConnection::write(char* pBuffer, int pBufferSize)
 {
     if(mSocket != NULL)
     {
@@ -155,17 +162,27 @@ void SocketSubscription::write(char* pBuffer, int pBufferSize)
     }
 }
 
-void SocketSubscription::cancel()
+bool SocketConnection::getBlocking()
+{
+	return mBlockingMode;
+}
+
+void SocketConnection::setBlocking(bool pState)
+{
+	mBlockingMode = pState;
+}
+
+void SocketConnection::cancel()
 {
     if(mSocket != NULL)
     {
-        LOG(LOG_VERBOSE, "Subscription will be canceled now");
+        LOG(LOG_VERBOSE, "Connection will be canceled now");
         delete mSocket;
         mSocket = NULL;
     }
 }
 
-IName* SocketSubscription::name()
+Name* SocketConnection::getName()
 {
     if(mSocket != NULL)
     {
@@ -176,7 +193,7 @@ IName* SocketSubscription::name()
     }
 }
 
-IName* SocketSubscription::peer()
+Name* SocketConnection::getRemoteName()
 {
     if(mSocket != NULL)
     {
@@ -187,7 +204,7 @@ IName* SocketSubscription::peer()
     }
 }
 
-bool SocketSubscription::update(Requirements *pRequirements)
+bool SocketConnection::changeRequirements(Requirements *pRequirements)
 {
     bool tResult = false;
 
@@ -197,10 +214,6 @@ bool SocketSubscription::update(Requirements *pRequirements)
         RequirementTransmitBitErrors* tReqBitErr = (RequirementTransmitBitErrors*)pRequirements->get(RequirementTransmitBitErrors::type());
         int tSecuredFrontDataSize = tReqBitErr->getSecuredFrontDataSize();
         mSocket->UDPLiteSetCheckLength(tSecuredFrontDataSize);
-    }
-    if (pRequirements->contains(RequirementTransmitFast::type()))
-    {
-        mSocket->TCPDisableNagle();
     }
 
     /* QoS requirements */
@@ -232,7 +245,23 @@ bool SocketSubscription::update(Requirements *pRequirements)
         tResult = mSocket->SetQoS(tQoSSettings);
     }
 
+    mRequirements = *pRequirements; //TODO: maybe some requirements were dropped?
+
     return tResult;
+}
+
+Requirements SocketConnection::getRequirements()
+{
+	return mRequirements;
+}
+
+Events SocketConnection::getEvents()
+{
+	Events tResult;
+
+	//TODO:
+
+	return tResult;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

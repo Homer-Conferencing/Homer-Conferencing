@@ -20,25 +20,31 @@
  *****************************************************************************/
 
 /*
- * Purpose: RequirementChunksTransmission to trigger UDP based transport
+ * Purpose: IBinding
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
 
-#ifndef _GAPI_REQUIREMENT_USE_IPv6_
-#define _GAPI_REQUIREMENT_USE_IPv6_
+#ifndef _GAPI_IREGISTRATION_
+#define _GAPI_IREGISTRATION_
 
-#include <IRequirement.h>
+#include <IConnection.h>
 
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class RequirementUseIPv6:
-    public TRequirement<RequirementUseIPv6, REQUIREMENT_USE_IPv6>
+class IBinding
 {
 public:
-    virtual std::string getDescription(){ return "Requ(UseIPv6)"; }
+	IBinding(){}
+    virtual ~IBinding( ){}
+
+    virtual IConnection* readConnection() = 0;
+    virtual void cancel() = 0;
+    virtual bool changeRequirements(Requirements *pRequirements) = 0;
+    virtual Requirements getRequirements() = 0;
+    virtual Events getEvents() = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

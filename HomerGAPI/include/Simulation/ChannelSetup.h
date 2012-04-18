@@ -20,59 +20,39 @@
  *****************************************************************************/
 
 /*
- * Purpose: Implementation of G-Lab API
+ * Purpose: ChannelSetup
  * Author:  Thomas Volkert
- * Since:   2011-12-08
+ * Since:   2012-04-14
  */
 
-#include <GAPI.h>
-#include <SocketName.h>
+#ifndef _GAPI_CHANNEL_SETUP_
+#define _GAPI_CHANNEL_SETUP_
 
-#include <Logger.h>
-
-#include <string>
+#include <Name.h>
+#include <ISetup.h>
 
 namespace Homer { namespace Base {
 
-using namespace std;
+///////////////////////////////////////////////////////////////////////////////
+
+#define VIRTUAL_CHANNELS               "Virtual Channels"
 
 ///////////////////////////////////////////////////////////////////////////////
 
-SocketName::SocketName(string pHost, unsigned int pPort):
-	mHost(pHost), mPort(pPort)
+class ChannelSetup:
+	public ISetup
 {
-}
+public:
+    ChannelSetup();
+    virtual ~ChannelSetup();
 
-SocketName::~SocketName()
-{
-
-}
+    virtual IConnection* connect(Name *pName, Requirements *pRequirements = 0);
+    virtual IBinding* bind(Name *pName, Requirements *pRequirements = 0);
+    virtual Requirements getCapabilities(Name *pName, Requirements *pImportantRequirements = 0);
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename T>
-inline std::string dataToString(T const& value_)
-{
-    std::stringstream ss;
-    ss << value_;
-    return ss.str();
-}
+}} // namespaces
 
-string SocketName::toString()
-{
-	return mHost + "<" + dataToString(mPort) + ">";
-}
-
-std::string SocketName::getHost()
-{
-    return mHost;
-}
-
-unsigned int SocketName::getPort()
-{
-    return mPort;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-}} //namespace
+#endif

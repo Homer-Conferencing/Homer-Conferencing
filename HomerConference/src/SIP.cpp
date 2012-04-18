@@ -95,10 +95,11 @@ string SIP::GetSofiaSipVersion()
     return SOFIA_SIP_VERSION;
 }
 
-void SIP::Init(int pStartPort, int pStunPort)
+void SIP::Init(int pStartPort, TransportType pSipListenerTransport, int pStunPort)
 {
     // default port is 5060, auto-probing within run()
     mSipHostPort = pStartPort;
+    mSipHostPortTransport = pSipListenerTransport;
     mStunHostPort = pStunPort;
 }
 
@@ -207,7 +208,7 @@ bool SIP::IsThisParticipant(string pParticipantUser, string pParticipantHost, st
 
     tResult = (((pParticipantUser == pUser) || (pParticipantHost != mSipRegisterServer)) && (pParticipantHost == pHost) && (pParticipantPort == pPort));
 
-    LOGEX(SIP, LOG_VERBOSE, "Comparing: %s - %s, %s - %s, %s - %s  ==> %s", pParticipantUser.c_str(), pUser.c_str(), pParticipantHost.c_str(), pHost.c_str(), pParticipantPort.c_str(), pPort.c_str(), tResult ? "MATCH" : "different");
+    //LOGEX(SIP, LOG_VERBOSE, "Comparing: %s - %s, %s - %s, %s - %s  ==> %s", pParticipantUser.c_str(), pUser.c_str(), pParticipantHost.c_str(), pHost.c_str(), pParticipantPort.c_str(), pPort.c_str(), tResult ? "MATCH" : "different");
 
     return tResult;
 }
@@ -265,6 +266,17 @@ void* SIP::Run(void*)
 
     if (mSipContext->Root != NULL)
     {
+        string tTransportAttribute;
+        switch(mSipHostPortTransport)
+        {
+            default:
+            case SOCKET_UDP:
+                tTransportAttribute = "transport=udp";
+                break;
+            case SOCKET_TCP:
+                tTransportAttribute = "transport=tcp";
+                break;
+        }
         // create NUA stack
         // auto probe SIP port (default: 5060 to 5064)
         for(int i = 0; i < 5; i++)
@@ -273,9 +285,9 @@ void* SIP::Run(void*)
 
             // add brackets for IPv6 address
             if (mSipHostAdr.find(":") != string::npos)
-	            tOwnAddress = "sip:[::]"/*mSipHostAdr*/ + toString(mSipHostPort) + ";transport=udp";
+	            tOwnAddress = "sip:[::]"/* don't limit to mSipHostAdr*/ + toString(mSipHostPort) + ";" + tTransportAttribute;
 			else
-	            tOwnAddress = "sip:0.0.0.0:" /*mSipHostAdr*/ + toString(mSipHostPort) + ";transport=udp";
+	            tOwnAddress = "sip:0.0.0.0:" /* don't limit to mSipHostAdr*/ + toString(mSipHostPort) + ";" + tTransportAttribute;
 
             // NAT traversal: use keepalive packets with interval of 10 seconds
             //                otherwise a NAT box won't maintain the state about the NAT forwarding
@@ -578,6 +590,11 @@ void SIP::SipReceivedRegisterResponse(const sip_to_t *pSipRemote, const sip_to_t
 
             tRFEvent = new RegistrationFailedEvent();
             InitGeneralEvent_FromSipReceivedResponseEvent(pSipRemote, pSipLocal, pNuaHandle, pSip, tRFEvent, "RegistrationFailed", pSourceIp, pSourcePort);
+
+            // store extended information
+            tRFEvent->StatusCode = pStatus;
+            tRFEvent->Description = string (pPhrase);
+
             MEETING.notifyObservers(tRFEvent);
 
             nua_handle_destroy(mSipRegisterHandle);
@@ -736,10 +753,12 @@ void SIP::SipReceivedPublishResponse(const sip_to_t *pSipRemote, const sip_to_t 
                 // send second registration request, authenticated now
                 //snua_publish(mSipPublishhandle, SIPTAG_PAYLOAD(mPresenceDesription), TAG_IF(mPresenceDesription, SIPTAG_CONTENT_TYPE_STR(GetMimeFormatPidf().c_str())), TAG_END());
             }
+            mSipPresencePublished = false;
             break;
 
         case 100: // successful based on cache
             LOG(LOG_VERBOSE, "Publication update at SIP server based on cache succeeded");
+            mSipPresencePublished = true;
             break;
 
         case SIP_STATE_OKAY: // successful
@@ -756,20 +775,12 @@ void SIP::SipReceivedPublishResponse(const sip_to_t *pSipRemote, const sip_to_t 
             LOG(LOG_ERROR, "Method is not allowed");
             mSipPresencePublished = -1;
 
-            tPFEvent = new PublicationFailedEvent();
-            InitGeneralEvent_FromSipReceivedResponseEvent(pSipRemote, pSipLocal, pNuaHandle, pSip, tPFEvent, "PublicationFailed", pSourceIp, pSourcePort);
-            MEETING.notifyObservers(tPFEvent);
-
             //nua_handle_destroy(mSipPublishHandle);
             break;
 
         case SIP_STATE_REQUEST_TIMEOUT:
             LOG(LOG_ERROR, "Request timeout");
             mSipPresencePublished = -1;
-
-            tPFEvent = new PublicationFailedEvent();
-            InitGeneralEvent_FromSipReceivedResponseEvent(pSipRemote, pSipLocal, pNuaHandle, pSip, tPFEvent, "PublicationFailed", pSourceIp, pSourcePort);
-            MEETING.notifyObservers(tPFEvent);
 
             //nua_handle_destroy(mSipPublishHandle);
             break;
@@ -778,10 +789,6 @@ void SIP::SipReceivedPublishResponse(const sip_to_t *pSipRemote, const sip_to_t 
             LOG(LOG_ERROR, "Bad event received as answer for publish request");
             mSipPresencePublished = -1;
 
-            tPFEvent = new PublicationFailedEvent();
-            InitGeneralEvent_FromSipReceivedResponseEvent(pSipRemote, pSipLocal, pNuaHandle, pSip, tPFEvent, "PublicationFailed", pSourceIp, pSourcePort);
-            MEETING.notifyObservers(tPFEvent);
-
             //nua_handle_destroy(mSipPublishHandle);
             break;
 
@@ -789,12 +796,21 @@ void SIP::SipReceivedPublishResponse(const sip_to_t *pSipRemote, const sip_to_t 
             LOG(LOG_ERROR, "Presence publication at SIP server failed because of some unknown reasen");
             mSipPresencePublished = -1;
 
-            tPFEvent = new PublicationFailedEvent();
-            InitGeneralEvent_FromSipReceivedResponseEvent(pSipRemote, pSipLocal, pNuaHandle, pSip, tPFEvent, "PublicationFailed", pSourceIp, pSourcePort);
-            MEETING.notifyObservers(tPFEvent);
-
             //nua_handle_destroy(mSipPublishHandle);
             break;
+    }
+
+    // presence publication has failed? -> inform the upper layer
+    if (mSipPresencePublished == -1)
+    {
+        tPFEvent = new PublicationFailedEvent();
+
+        // store extended information
+        tPFEvent->StatusCode = pStatus;
+        tPFEvent->Description = string (pPhrase);
+
+        InitGeneralEvent_FromSipReceivedResponseEvent(pSipRemote, pSipLocal, pNuaHandle, pSip, tPFEvent, "PublicationFailed", pSourceIp, pSourcePort);
+        MEETING.notifyObservers(tPFEvent);
     }
 }
 
@@ -1600,7 +1616,7 @@ void SIP::SipCallBack(int pEvent, int pStatus, char const *pPhrase, nua_t *pNua,
                         tags    empty
             */
             case nua_r_options:
-                SipReceivedOptionsResponse(tRemote, tLocal, pNuaHandle, pStatus, pSip, tSourceIp, tSourcePort);
+                SipReceivedOptionsResponse(tRemote, tLocal, pNuaHandle, pStatus, pPhrase, pSip, tSourceIp, tSourcePort);
                 break;
             /*################################################################
                 nua_r_refer     Answer to outgoing REFER.
@@ -1725,7 +1741,7 @@ void SIP::SipCallBack(int pEvent, int pStatus, char const *pPhrase, nua_t *pNua,
                         tags    empty
             */
             case nua_r_message:
-                SipReceivedMessageResponse(tRemote, tLocal, pNuaHandle, pStatus, pSip, tSourceIp, tSourcePort);
+                SipReceivedMessageResponse(tRemote, tLocal, pNuaHandle, pStatus, pPhrase, pSip, tSourceIp, tSourcePort);
                 break;
 
             /*################################################################
@@ -1972,7 +1988,7 @@ void SIP::InitGeneralEvent_FromSipReceivedRequestEvent(const sip_to_t *pRemote, 
 
     tParticipant = SipCreateId(tUser, tHost, tPort);
 
-    if (!MEETING.OpenParticipantSession(tUser, tHost, tPort, CALLSTATE_STANDBY))
+    if (!MEETING.OpenParticipantSession(tUser, tHost, tPort))
         LOG(LOG_INFO, "%s-User \"%s\" already known to system", pEventName.c_str(), tParticipant.c_str());
 
     LOG(LOG_VERBOSE, "Participant is %s", tParticipant.c_str());
@@ -2135,7 +2151,7 @@ void SIP::SipReceivedMessage(const sip_to_t *pSipRemote, const sip_to_t *pSipLoc
         LOG(LOG_ERROR, "Message: no message text");
 }
 
-void SIP::SipReceivedMessageResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, sip_t const *pSip, string pSourceIp, unsigned int pSourcePort)
+void SIP::SipReceivedMessageResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, char const *pPhrase, sip_t const *pSip, string pSourceIp, unsigned int pSourcePort)
 {
     switch(pStatus)
     {
@@ -2155,13 +2171,13 @@ void SIP::SipReceivedMessageResponse(const sip_to_t *pSipRemote, const sip_to_t 
                 // set auth. information
                 nua_authenticate(pNuaHandle, NUTAG_AUTH(tAuthInfo.c_str()), TAG_END());
             }else
-                SipReceivedMessageUnavailable(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort);
+                SipReceivedMessageUnavailable(pSipRemote, pSipLocal, pNuaHandle, pStatus, pPhrase, pSip, pSourceIp, pSourcePort);
             break;
         case 408 ... 599: // user/service unavailable
             //    408 = Timeout
             //    415 = Unsupported media type (linphone)
             //    503 = Service unavailable, e.g. no transport (tried to talk with a SIP server?)
-            SipReceivedMessageUnavailable(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort);
+            SipReceivedMessageUnavailable(pSipRemote, pSipLocal, pNuaHandle, pStatus, pPhrase, pSip, pSourceIp, pSourcePort);
             break;
         default:
             LOG(LOG_ERROR, "Unsupported status code");
@@ -2191,11 +2207,15 @@ void SIP::SipReceivedMessageAcceptDelayed(const sip_to_t *pSipRemote, const sip_
     MEETING.notifyObservers(tMADEvent);
 }
 
-void SIP::SipReceivedMessageUnavailable(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, string pSourceIp, unsigned int pSourcePort)
+void SIP::SipReceivedMessageUnavailable(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus,  char const *pPhrase, sip_t const *pSip, string pSourceIp, unsigned int pSourcePort)
 {
     MessageUnavailableEvent *tMUEvent = new MessageUnavailableEvent();
 
     InitGeneralEvent_FromSipReceivedResponseEvent(pSipRemote, pSipLocal, pNuaHandle, pSip, tMUEvent, "MessageUnavailable", pSourceIp, pSourcePort);
+
+    // store extended information
+    tMUEvent->StatusCode = pStatus;
+    tMUEvent->Description = string (pPhrase);
 
     nua_handle_destroy(pNuaHandle);
 
@@ -2228,7 +2248,7 @@ void SIP::SipReceivedCall(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal,
 
     InitGeneralEvent_FromSipReceivedRequestEvent(pSipRemote, pSipLocal, pNuaHandle, pSip, tCEvent, "Call", pSourceIp, pSourcePort);
 
-    #ifdef SIP_NAT_SOURCE_ADDRESS_ADAPTION
+    #ifdef SIP_NAT_PROPRIETARY_ADDRESS_ADAPTION
         // only for IPv4
         if (pSourceIp.find(":") == string::npos)
         {
@@ -2327,7 +2347,7 @@ void SIP::SipReceivedCallResponse(const sip_to_t *pSipRemote, const sip_to_t *pS
             }else
             {
             	LOG(LOG_ERROR, "Communication partner requests authentication data but this is not support in peer-to-peer mode");
-            	SipReceivedCallUnavailable(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort);
+            	SipReceivedCallUnavailable(pSipRemote, pSipLocal, pNuaHandle, pStatus, pPhrase, pSip, pSourceIp, pSourcePort);
             }
 
             break;
@@ -2335,11 +2355,11 @@ void SIP::SipReceivedCallResponse(const sip_to_t *pSipRemote, const sip_to_t *pS
             //    408 = Timeout
             //    415 = Unsupported media type (linphone)
             //    503 = Service unavailable
-            SipReceivedCallUnavailable(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort);
+            SipReceivedCallUnavailable(pSipRemote, pSipLocal, pNuaHandle, pStatus, pPhrase, pSip, pSourceIp, pSourcePort);
             break;
         case 600 ... 699: // we got a deny answer
             //     603 = Deny
-            #ifdef SIP_NAT_SOURCE_ADDRESS_ADAPTION
+            #ifdef SIP_NAT_PROPRIETARY_ADDRESS_ADAPTION
                 // NAT traversal: was NAT detected by remote side?
                 if ((tNatIpPos = tPhrase.find("NAT:")) != string::npos)
                 {
@@ -2580,12 +2600,16 @@ void SIP::SipReceivedCallDenyNat(const sip_to_t *pSipRemote, const sip_to_t *pSi
     SipSendCall(tCEvent);
 }
 
-void SIP::SipReceivedCallUnavailable(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, string pSourceIp, unsigned int pSourcePort)
+void SIP::SipReceivedCallUnavailable(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, const char* pPhrase, sip_t const *pSip, string pSourceIp, unsigned int pSourcePort)
 {
     bool tFound = false;
     CallUnavailableEvent *tCUEvent = new CallUnavailableEvent();
 
     InitGeneralEvent_FromSipReceivedResponseEvent(pSipRemote, pSipLocal, pNuaHandle, pSip, tCUEvent, "CallUnavilable", pSourceIp, pSourcePort);
+
+    // store extended information
+    tCUEvent->StatusCode = pStatus;
+    tCUEvent->Description = string (pPhrase);
 
     tFound = MEETING.SearchParticipantAndSetState(tCUEvent->Sender, CALLSTATE_STANDBY);
 
@@ -2647,7 +2671,7 @@ void SIP::SipReceivedCallTermination(const sip_to_t *pSipRemote, const sip_to_t 
 
 ///////////////// Options Messaging //////////////////////////////////
 
-void SIP::SipReceivedOptionsResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort)
+void SIP::SipReceivedOptionsResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, const char* pPhrase, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort)
 {
     switch(pStatus)
     {
@@ -2664,7 +2688,7 @@ void SIP::SipReceivedOptionsResponse(const sip_to_t *pSipRemote, const sip_to_t 
                 // set auth. information
                 nua_authenticate(pNuaHandle, NUTAG_AUTH(tAuthInfo.c_str()), TAG_END());
             }else
-                SipReceivedOptionsResponseUnavailable(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort);
+                SipReceivedOptionsResponseUnavailable(pSipRemote, pSipLocal, pNuaHandle, pStatus, pPhrase, pSip, pSourceIp, pSourcePort);
             break;
         case 404:
         case 406:
@@ -2674,11 +2698,11 @@ void SIP::SipReceivedOptionsResponse(const sip_to_t *pSipRemote, const sip_to_t 
             //    408 = Timeout
             //    415 = Unsupported media type (linphone)
             //    503 = Service unavailable, e.g. no transport (tried to talk with a SIP server?)
-            SipReceivedOptionsResponseUnavailable(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort);
+            SipReceivedOptionsResponseUnavailable(pSipRemote, pSipLocal, pNuaHandle, pStatus, pPhrase, pSip, pSourceIp, pSourcePort);
             break;
         default:
             LOG(LOG_WARN, "Unsupported status code %d, will interpret it as \"service unavailable\"", pStatus);
-            SipReceivedOptionsResponseUnavailable(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort);
+            SipReceivedOptionsResponseUnavailable(pSipRemote, pSipLocal, pNuaHandle, pStatus, pPhrase, pSip, pSourceIp, pSourcePort);
             break;
     }
 }
@@ -2694,11 +2718,15 @@ void SIP::SipReceivedOptionsResponseAccept(const sip_to_t *pSipRemote, const sip
     MEETING.notifyObservers(tOAEvent);
 }
 
-void SIP::SipReceivedOptionsResponseUnavailable(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort)
+void SIP::SipReceivedOptionsResponseUnavailable(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, const char* pPhrase, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort)
 {
     OptionsUnavailableEvent *tOUAEvent = new OptionsUnavailableEvent();
 
     InitGeneralEvent_FromSipReceivedResponseEvent(pSipRemote, pSipLocal, pNuaHandle, pSip, tOUAEvent, "OptionsUnavailable", pSourceIp, pSourcePort);
+
+    // store extended information
+    tOUAEvent->StatusCode = pStatus;
+    tOUAEvent->Description = string (pPhrase);
 
     nua_handle_destroy(pNuaHandle);
 
@@ -2822,7 +2850,7 @@ void SIP::SipSendCall(CallEvent *pCEvent)
     printFromToSendingSipEvent(tHandle, pCEvent, "Call");
     LOG(LOG_INFO, "CallSdp: %s", tSdp);
 
-    nua_invite(tHandle, NUTAG_RETRY_COUNT(CALL_REQUEST_RETRIES), TAG_IF(tSdp, SOATAG_USER_SDP_STR(tSdp)), TAG_END());
+    nua_invite(tHandle, NUTAG_RETRY_COUNT(CALL_REQUEST_RETRIES), NUTAG_INVITE_TIMER(CALL_REQUEST_TIMEOUT), TAG_IF(tSdp, SOATAG_USER_SDP_STR(tSdp)), TAG_END());
     // no "nua_handle_destroy" here because we need this handle as long as the call is running !
 
     MEETING.SearchParticipantAndSetState(tParticipant, CALLSTATE_RINGING);

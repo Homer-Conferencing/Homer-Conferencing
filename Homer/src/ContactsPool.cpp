@@ -637,7 +637,7 @@ void ContactDescriptor::setHostStdStr(string pHost)
 
 bool ContactDescriptor::isOnline()
 {
-    return (State != CONTACT_AVAILABLE);
+    return (State == CONTACT_AVAILABLE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

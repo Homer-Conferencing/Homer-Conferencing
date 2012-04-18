@@ -38,11 +38,14 @@ SET (FLAGS
 ##############################################################
 # SOURCES
 SET (SOURCES
+	../src/Events
 	../src/GAPI
 	../src/Requirements
-	../src/SocketName
-	../src/SocketSetup
-	../src/SocketSubscription
+	../src/Berkeley/SocketName
+	../src/Berkeley/SocketSetup
+	../src/Berkeley/SocketConnection
+	../src/Simulation/ChannelSetup
+	../src/Simulation/ChannelConnection
 )
 
 ##############################################################

@@ -1,2 +1,2 @@
 - rtp-parser: AMR + AAC
-- for max. packet size adjust: size differences between IPv4 + IPv6 -> see software settings
+

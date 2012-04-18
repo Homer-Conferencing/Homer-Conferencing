@@ -95,7 +95,7 @@ public:
     /* client sockets */
 	Socket(enum NetworkType pIpVersion, enum TransportType pTransportType = SOCKET_UDP);
     /* server socekts */
-    Socket(unsigned int pListenerPort /* start number for auto probing */, enum TransportType pTransportType, unsigned int pProbeStepping = 0, unsigned int pHighesPossibleListenerPort = 0);
+    Socket(unsigned int pListenerPort /* start number for auto probing */, enum TransportType pTransportType, unsigned int pProbeStepping = 0, unsigned int pHighestPossibleListenerPort = 0);
 
     virtual ~Socket( );
 
@@ -108,6 +108,9 @@ public:
     std::string GetPeerHost();
     std::string GetName();
     std::string GetPeerName();
+
+    /* reusing of sockets */
+    bool EnableReuse();
 
     /* QoS interface */
     static bool IsQoSSupported();
@@ -161,6 +164,8 @@ private:
     unsigned int        mLocalPort;
     std::string         mLocalHost;
     bool                mIsClientSocket;
+    bool 				mNonBlockingMode;
+    Mutex               mPeerHostMutex;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -52,7 +52,10 @@ class MediaSinkNet:
 {
 
 public:
-    MediaSinkNet(std::string pTargetHost, unsigned int pTargetPort, bool TransmitLossLess = false, bool pTransmitBitErrors = false, enum MediaSinkType pType = MEDIA_SINK_UNKNOWN, bool pRtpActivated = true);
+	// general purpose constructor which uses GAPI library
+	MediaSinkNet(string pTarget, Requirements *pTransportRequirements, enum MediaSinkType pType, bool pRtpActivated);
+	// constructor to send media data via the same port of an existing already allocated socket object (can be used in conferences to support NAT traversal)
+	MediaSinkNet(std::string pTargetHost, unsigned int pTargetPort, Socket* pSocket, enum MediaSinkType pType, bool pRtpActivated);
 
     virtual ~MediaSinkNet();
 
@@ -65,21 +68,29 @@ protected:
     virtual bool CloseStreamer();
     /* sending one single fragment of an (rtp) packet stream */
     virtual void SendFragment(char* pData, unsigned int pSize);
+    virtual void DoSendFragment(char* pData, unsigned int pSize);
 
     bool                mRtpActivated;
     AVStream            *mCurrentStream;
 
 private:
+    void BasicInit(string pTargetHost, unsigned int pTargetPort, enum MediaSinkType pType, bool pRtpActivated);
+
+    std::string         mCodec;
+    bool                mStreamerOpened;
+    bool                mWaitUntillFirstKeyFrame;
+    /* general transport */
     int                 mMaxNetworkPacketSize;
+    bool                mBrokenPipe;
     std::string         mTargetHost;
     unsigned int        mTargetPort;
-    std::string         mCodec;
-    ISubscription       *mGAPIDataSocket;
-    char                *mTCPCopyBuffer;
-    bool                mStreamerOpened;
-    bool                mBrokenPipe;
-    bool                mUseTCP;
-    bool                mWaitUntillFirstKeyFrame;
+    bool                mStreamedTransport;
+    char                *mStreamFragmentCopyBuffer;
+    /* Berkeley sockets based transport */
+    Socket				*mDataSocket;
+    /* GAPI based transport */
+    IConnection       *mGAPIDataSocket;
+    bool 				mGAPIUsed;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

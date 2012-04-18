@@ -54,6 +54,9 @@ using namespace Homer::Multimedia;
 // debug performance of video widget: background repainting
 //#define DEBUG_VIDEOWIDGET_PERFORMANCE
 
+// de/activate automatic frame dropping in case the video widget is invisible (default is off)
+//#define VIDEO_WIDGET_DROP_WHEN_INVISIBLE
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #define FRAME_BUFFER_SIZE              90 // 3 seconds of buffer
@@ -90,7 +93,6 @@ public:
     void InformAboutNewFrame();
     void InformAboutNewSourceResolution();
     void InformAboutNewSource();
-    void SetOriginalResolution();
     VideoWorkerThread* GetWorker();
 
 public slots:
@@ -107,10 +109,12 @@ private:
     bool IsCurrentScaleFactor(float pScaleFactor);
     void SetResolutionFormat(VideoFormat pFormat);
     void ToggleFullScreenMode();
+    void ToggleSmoothPresentationMode();
     void SavePicture();
     void StartRecorder();
     void StopRecorder();
     void ShowFullScreen();
+    bool SetOriginalResolution();
 
     virtual void paintEvent(QPaintEvent *pEvent);
     virtual void resizeEvent(QResizeEvent *pEvent);
@@ -134,6 +138,7 @@ private:
     QTimer              *mHourGlassTimer;
     qreal               mHourGlassAngle;
     int                 mHourGlassOffset;
+    bool                mSmoothPresentation;
     bool                mRecorderStarted;
     bool                mInsideDockWidget;
     bool                mVideoPaused;
@@ -172,6 +177,7 @@ public:
     QString GetStreamName();
     //--
     QString GetCurrentDevice();
+    QString GetCurrentDevicePeer();
     void SetCurrentDevice(QString pName);
     QStringList GetPossibleDevices();
     QString GetDeviceDescription(QString pName);
@@ -218,6 +224,8 @@ private:
     QMutex              mDeliverMutex, mGrabMutex;
     int                 mResX;
     int                 mResY;
+    int					mFrameWidthLastGrabbedFrame;
+    int					mFrameHeightLastGrabbedFrame;
     bool                mWorkerNeeded;
     int                 mPendingNewFrames;
     bool                mDropFrames;

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>354</width>
+    <width>340</width>
     <height>27</height>
    </rect>
   </property>
@@ -102,7 +102,6 @@
     <widget class="QLabel" name="mLbStreamInfo">
      <property name="font">
       <font>
-       <family>Arial</family>
        <pointsize>10</pointsize>
        <weight>75</weight>
        <bold>true</bold>
@@ -246,7 +245,7 @@ QProgressBar::chunk {
  </widget>
  <resources>
   <include location="../../resources/Icons.qrc"/>
-  <include location="../resources/Icons.qrc"/>
+  <include location="../../resources/Icons.qrc"/>
  </resources>
  <connections/>
 </ui>

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>383</width>
-    <height>210</height>
+    <width>379</width>
+    <height>195</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -113,7 +113,6 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -204,7 +203,6 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -278,7 +276,6 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>

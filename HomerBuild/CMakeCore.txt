@@ -17,10 +17,10 @@ ENDIF ()
 ##############################################################
 # minimum required GCC version
 IF (APPLE)
-	# allow usage of free xcode 3.2.6 for OS X Snow Leopard
+	# allow usage of xcode with Apple's gcc 4.2
 	SET(REQUIRED_GCC_VERSION 4.2)
 ELSE()
-	# fore usage of current gcc release
+	# for usage of current gcc release
 	SET(REQUIRED_GCC_VERSION 4.4)
 ENDIF()
 # check compiler version
@@ -95,8 +95,15 @@ MESSAGE("### Library search path: ${LIB_DIRS}")
 # include dirs
 SET (INCLUDE_DIRS
 	${INCLUDE_DIRS}
-	/usr/local/include
+	/usr/local/include	
 )
+IF ((NOT ${BUILD} MATCHES "Default") OR (WIN32))
+SET (INCLUDE_DIRS
+	${INCLUDE_DIRS}
+	${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerIncludes
+	${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerIncludes/SDL
+)
+ENDIF()
 MESSAGE("### Header search path: ${INCLUDE_DIRS}")
 
 ##############################################################
@@ -113,6 +120,7 @@ SET (FLAGS
 	-Wno-deprecated-declarations
 	-Wno-format
 	-Wno-uninitialized
+	-Wno-unused-parameter
 )
 IF (NOT (${BUILD} MATCHES "Default"))
 	SET (FLAGS
@@ -121,25 +129,29 @@ IF (NOT (${BUILD} MATCHES "Default"))
 	)
 ENDIF()
 IF (${BUILD} MATCHES "Debug")
-	SET (FLAGS "${FLAGS} -g -ggdb -DDEBUG_VERSION")
+	IF (APPLE)
+		SET (FLAGS "${FLAGS} -g -DDEBUG_VERSION")
+	ELSE()
+		SET (FLAGS "${FLAGS} -g -ggdb -DDEBUG_VERSION")
+	ENDIF()
 ELSE ()
 	SET (FLAGS "${FLAGS} -DRELEASE_VERSION")
 ENDIF ()
 IF (${BUILD} MATCHES "Release")
-	SET (FLAGS "${FLAGS} -s")
+	SET (LFLAGS "${FLAGS} -s")
 ENDIF()
 
 ##############################################################
-# link flags
-SET (LFLAGS
-	${LFLAGS}
-)
-
-##############################################################
-IF (BSD)
-	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wl,-soname,${TARGET_NAME}.dylib")
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,-soname,${TARGET_NAME}.dylib")
-ENDIF (BSD)
+# explicit shared object name
+IF (DEFINED TARGET_LIB_NAME) 
+	IF (APPLE)
+		SET(LFLAGS "${LFLAGS} -Wl,-dylib_install_name,@rpath/lib${TARGET_LIB_NAME}.dylib")
+	ENDIF (APPLE)
+	
+	IF (LINUX)
+		SET(LFLAGS "${LFLAGS} -Wl,-soname,${TARGET_LIB_NAME}.so")
+	ENDIF (LINUX)
+ENDIF()
 
 ##############################################################
 # definitions
@@ -312,12 +324,12 @@ IF (DEFINED INSTALL_LIBDIR)
 ENDIF()  
 IF (DEFINED TARGET_LIB_NAME) 
 	IF (DEFINED INSTALL_LIBDIR)
-		INSTALL(TARGETS ${TARGET_NAME} RUNTIME DESTINATION ${INSTALL_LIBDIR} LIBRARY DESTINATION ${INSTALL_LIBDIR} COMPONENT libraries)
+		INSTALL(TARGETS ${TARGET_NAME} COMPONENT libraries RUNTIME DESTINATION ${INSTALL_LIBDIR} LIBRARY DESTINATION ${INSTALL_LIBDIR})
 	ELSE()
         IF(WIN32)
-                INSTALL(TARGETS ${TARGET_NAME} RUNTIME DESTINATION . LIBRARY DESTINATION . COMPONENT libraries)
+                INSTALL(TARGETS ${TARGET_NAME} COMPONENT libraries RUNTIME DESTINATION . LIBRARY DESTINATION .)
         ELSE()
-                INSTALL(TARGETS ${TARGET_NAME} RUNTIME DESTINATION lib LIBRARY DESTINATION lib COMPONENT libraries)
+                INSTALL(TARGETS ${TARGET_NAME} COMPONENT libraries RUNTIME DESTINATION lib LIBRARY DESTINATION lib)
         ENDIF()	     
 	ENDIF()
 ENDIF ()
@@ -348,6 +360,11 @@ IF (DEFINED TARGET_NAME)
     ENDIF (WIN32)
 ENDIF()
 
+# activate rpath
+IF (APPLE)
+	SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
+	SET(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
+ENDIF(APPLE)
 
 IF (APPLE)
 	MESSAGE("### Linking dynamic Apple libraries: ${LIBS_APPLE}")
@@ -359,8 +376,7 @@ IF (APPLE)
 
 	MESSAGE("### Linking Apple frameworks: ${FRAMEWORKS_APPLE}")
 	FOREACH(FRAMEWORKS_APPLE_ENTRY ${FRAMEWORKS_APPLE})
-		SET (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -framework ${FRAMEWORKS_APPLE_ENTRY}" )
-		#TARGET_LINK_LIBRARIES(${TARGET_NAME} "-Wl,-framework ${FRAMEWORKS_APPLE_ENTRY}" )
+		TARGET_LINK_LIBRARIES(${TARGET_NAME} "-framework ${FRAMEWORKS_APPLE_ENTRY}" )
 	ENDFOREACH(FRAMEWORKS_APPLE_ENTRY ${FRAMEWORKS_APPLE})
 ENDIF (APPLE)
 

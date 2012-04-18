@@ -309,7 +309,7 @@ bool MediaSourceMem::SupportsRelaying()
     return true;
 }
 
-int MediaSourceMem::GetChunkDropConter()
+int MediaSourceMem::GetChunkDropCounter()
 {
     if (mRtpActivated)
         return GetLostPacketsFromRTP();
@@ -355,7 +355,6 @@ bool MediaSourceMem::SetInputStreamPreferences(std::string pStreamCodec, bool pD
 bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 {
     int                 tResult;
-    AVFormatParameters  tFormatParams;
     ByteIOContext       *tByteIoContext;
     AVInputFormat       *tFormat;
     AVCodec             *tCodec;
@@ -388,21 +387,8 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     tByteIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, /* read-only */0, this, GetNextPacket, NULL, NULL);
 
     tByteIoContext->seekable = 0;
-    // mark as streamed
-    tByteIoContext->is_streamed = 1;
     // limit packet size, otherwise ffmpeg will deliver unpredictable results ;)
     tByteIoContext->max_packet_size = MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE;
-
-    memset((void*)&tFormatParams, 0, sizeof(tFormatParams));
-    tFormatParams.channel = 0;
-    tFormatParams.standard = NULL;
-    tFormatParams.time_base.num = 100;
-    tFormatParams.time_base.den = (int)(pFps * 100);
-    LOG(LOG_VERBOSE, "Desired time_base: %d/%d (%3.2f)", tFormatParams.time_base.den, tFormatParams.time_base.num, pFps);
-    tFormatParams.width = pResX;
-    tFormatParams.height = pResY;
-    tFormatParams.initial_pause = 0;
-    tFormatParams.prealloced_context = 0;
 
     // find format
     LOG(LOG_VERBOSE, "Going to find input format..");
@@ -419,7 +405,7 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     // Open video stream
     LOG(LOG_VERBOSE, "Going to open input stream..");
     mOpenInputStream = true;
-    if((tResult = av_open_input_stream(&mFormatContext, tByteIoContext, "", tFormat, &tFormatParams)) != 0)
+    if((tResult = av_open_input_stream(&mFormatContext, tByteIoContext, "", tFormat, NULL)) != 0)
     {
         if (!mGrabbingStopped)
             LOG(LOG_ERROR, "Couldn't open video input stream because of \"%s\".", strerror(AVUNERROR(tResult)));
@@ -474,7 +460,7 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     }
 
     // Dump information about device file
-    HM_av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceMem (video)", false);
+    av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceMem (video)", false);
     //LOG(LOG_VERBOSE, "    ..video stream found with ID: %d, number of available streams: %d", mMediaStreamIndex, mFormatContext->nb_streams);
 
     // Get a pointer to the codec context for the video stream
@@ -522,6 +508,7 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 
     mMediaType = MEDIA_VIDEO;
     MarkOpenGrabDeviceSuccessful();
+    mFrameWidthLastGrabbedFrame = 0;
 
     return true;
 }
@@ -529,7 +516,6 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
 {
     int                 tResult;
-    AVFormatParameters  tFormatParams;
     ByteIOContext       *tByteIoContext;
     AVInputFormat       *tFormat;
     AVCodec             *tCodec;
@@ -554,16 +540,8 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     tByteIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, /* read-only */0, this, GetNextPacket, NULL, NULL);
 
     tByteIoContext->seekable = 0;
-    // mark as streamed
-    tByteIoContext->is_streamed = 1;
     // limit packet size
     tByteIoContext->max_packet_size = MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE;
-
-    memset((void*)&tFormatParams, 0, sizeof(tFormatParams));
-    tFormatParams.sample_rate = pSampleRate; // sampling rate
-    tFormatParams.channels = pStereo?2:1; // stereo?
-    tFormatParams.initial_pause = 0;
-    tFormatParams.prealloced_context = 0;
 
     // find format
     tFormat = av_find_input_format(FfmpegId2FfmpegFormat(mStreamCodecId).c_str());
@@ -578,7 +556,7 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
 
     // Open audio stream
     mOpenInputStream = true;
-    if((tResult = av_open_input_stream(&mFormatContext, tByteIoContext, "", tFormat, &tFormatParams)) != 0)
+    if((tResult = av_open_input_stream(&mFormatContext, tByteIoContext, "", tFormat, NULL)) != 0)
     {
         if (!mGrabbingStopped)
             LOG(LOG_ERROR, "Couldn't open audio input stream because of \"%s\".", strerror(AVUNERROR(tResult)));
@@ -631,7 +609,7 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     }
 
     // Dump information about device file
-    HM_av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceMem (audio)", false);
+    av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceMem (audio)", false);
     //printf("    ..audio stream found with ID: %d, number of available streams: %d\n", mMediaStreamIndex, mFormatContext->nb_streams);
 
     // Get a pointer to the codec context for the audio stream
@@ -833,40 +811,45 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                         // hint: 32 bytes additional data per line within ffmpeg
                         int tCurrentFrameResX = (tSourceFrame->linesize[0] - 32);
 
-                        // check if video resolution has changed within remote GUI
-                        if ((tCurrentFrameResX != -32) && (mSourceResX != tCurrentFrameResX))
+                        if (mFrameWidthLastGrabbedFrame != tCurrentFrameResX)
                         {
-                            LOG(LOG_INFO, "Video resolution change at remote side detected");
+							// check if video resolution has changed within remote GUI
+							if ((tCurrentFrameResX != -32) && (mSourceResX != tCurrentFrameResX))
+							{
+								LOG(LOG_INFO, "Video resolution change at remote side detected");
 
-                            GrabResolutions::iterator tIt, tItEnd = mSupportedVideoFormats.end();
-                            bool tFound = false;
+								GrabResolutions::iterator tIt, tItEnd = mSupportedVideoFormats.end();
+								bool tFound = false;
 
-                            for (tIt = mSupportedVideoFormats.begin(); tIt != tItEnd; tIt++)
-                            {
-                                if (tIt->ResX == tCurrentFrameResX)
-                                {
-                                    tFound = true;
-                                    break;
-                                }
-                            }
+								for (tIt = mSupportedVideoFormats.begin(); tIt != tItEnd; tIt++)
+								{
+									if (tIt->ResX == tCurrentFrameResX)
+									{
+										tFound = true;
+										break;
+									}
+								}
 
-                            if (tFound)
-                            {
-                                // free the software scaler context
-                                sws_freeContext(mScalerContext);
+								if (tFound)
+								{
+									// free the software scaler context
+									sws_freeContext(mScalerContext);
 
-                                // set grabbing resolution to the resulting ones delivered by received frame
-                                mSourceResX = tIt->ResX;
-                                mCodecContext->width = tIt->ResX;
-                                mSourceResY = tIt->ResY;
-                                mCodecContext->height = tIt->ResY;
+									// set grabbing resolution to the resulting ones delivered by received frame
+									mSourceResX = tIt->ResX;
+									mCodecContext->width = tIt->ResX;
+									mSourceResY = tIt->ResY;
+									mCodecContext->height = tIt->ResY;
 
-                                // allocate software scaler context
-                                mScalerContext = sws_getContext(mCodecContext->width, mCodecContext->height, mCodecContext->pix_fmt, mTargetResX, mTargetResY, PIX_FMT_RGB32, SWS_BICUBIC, NULL, NULL, NULL);
+									// allocate software scaler context
+									mScalerContext = sws_getContext(mCodecContext->width, mCodecContext->height, mCodecContext->pix_fmt, mTargetResX, mTargetResY, PIX_FMT_RGB32, SWS_BICUBIC, NULL, NULL, NULL);
 
-                                LOG(LOG_INFO, "Video resolution changed to \"%s\"(%d * %d)", tIt->Name.c_str(), tIt->ResX, tIt->ResY);
-                            }else
-                                LOG(LOG_ERROR, "Video resolution changed to unknown width: %d", tCurrentFrameResX);
+									LOG(LOG_INFO, "Video resolution changed to \"%s\"(%d * %d)", tIt->Name.c_str(), tIt->ResX, tIt->ResY);
+								}else
+									LOG(LOG_WARN, "Video resolution changed to unknown width: %d", tCurrentFrameResX);
+							}
+
+							mFrameWidthLastGrabbedFrame = tCurrentFrameResX;
                         }
                     }
 

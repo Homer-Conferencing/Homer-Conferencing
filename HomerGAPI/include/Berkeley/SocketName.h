@@ -20,25 +20,35 @@
  *****************************************************************************/
 
 /*
- * Purpose: RequirementWaterfallTransmission to trigger TCP based transport
+ * Purpose: SocketName
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
 
-#ifndef _GAPI_REQUIREMENT_TRANSMIT_WATERFALL_
-#define _GAPI_REQUIREMENT_TRANSMIT_WATERFALL_
+#ifndef _GAPI_SOCKET_NAME_
+#define _GAPI_SOCKET_NAME_
 
-#include <IRequirement.h>
+#include <Name.h>
+
+#include <string>
 
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class RequirementWaterfallTransmission:
-    public TRequirement<RequirementWaterfallTransmission, REQUIREMENT_TRANSMIT_WATERFALL>
+class SocketName:
+    public Name
 {
 public:
-    virtual std::string getDescription(){ return "Requ(TransmitWaterfall)"; }
+	SocketName(std::string pHost, unsigned int pPort);
+    virtual ~SocketName();
+
+    virtual std::string toString();
+    virtual std::string getHost();
+    virtual unsigned int getPort();
+private:
+    std::string		mHost;
+    unsigned int    mPort;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

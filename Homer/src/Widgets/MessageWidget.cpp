@@ -119,10 +119,26 @@ void MessageWidget::Init(QMenu *pMenu, QString pParticipant, OverviewContactsWid
         hide();
     }
     UpdateParticipantState(CONTACT_UNDEFINED_STATE);
+
+    //### set focus setFocus
+    mTeMessage->setFocus(Qt::TabFocusReason);
+
+    // are we part of broadcast window?
+    if (mContactsWidget == NULL)
+    {
+        mTbAdd->hide();
+        mPbCall->setEnabled(false);
+    }
 }
 
 MessageWidget::~MessageWidget()
 {
+    // are we part of broadcast window?
+    if (mContactsWidget == NULL)
+    {
+        CONF.SetVisibilityBroadcastMessageWidget(isVisible());
+    }
+
     if (mAssignedAction != NULL)
         delete mAssignedAction;
 }
@@ -154,7 +170,7 @@ void MessageWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEvent)
 
     tMenu.addSeparator();
 
-    if(!IsKnownContact())
+    if ((!IsKnownContact()) && (mContactsWidget != NULL))
     {
         tAction = tMenu.addAction("Add to contacts");
         QIcon tIcon3;
@@ -186,8 +202,9 @@ void MessageWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEvent)
 
 void MessageWidget::AddPArticipantToContacts()
 {
-    if (mContactsWidget->InsertNew(mParticipant))
-        mTbAdd->hide();
+    if (mContactsWidget != NULL)
+        if (mContactsWidget->InsertNew(mParticipant))
+            mTbAdd->hide();
 }
 
 void MessageWidget::closeEvent(QCloseEvent *pEvent)

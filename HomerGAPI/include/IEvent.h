@@ -20,43 +20,73 @@
  *****************************************************************************/
 
 /*
- * Purpose: ISubscription
+ * Purpose: IEvents
  * Author:  Thomas Volkert
- * Since:   2011-12-08
+ * Since:   2012-04-18
  */
 
-#ifndef _GAPI_SOCKET_SUBSCRIPTION_
-#define _GAPI_SOCKET_SUBSCRIPTION_
+#ifndef _GAPI_IEVENT_
+#define _GAPI_IEVENT_
 
-#include <HBSocket.h>
-
-#include <Requirements.h>
+#include <Logger.h>
+#include <Events.h>
 
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class SocketSubscription:
-	public ISubscription
+// transport attributes
+//#define REQUIREMENT_TRANSMIT_LOSSLESS                   0x0101
+//#define REQUIREMENT_TRANSMIT_CHUNKS                     0x0102
+//#define REQUIREMENT_TRANSMIT_STREAM                     0x0103
+//#define REQUIREMENT_TRANSMIT_BIT_ERRORS                 0x0104
+//#define REQUIREMENT_TRANSMIT_ORDERED                    0x0105
+
+///////////////////////////////////////////////////////////////////////////////
+
+// forward declaration
+class Events;
+
+class IEvent
 {
 public:
-	SocketSubscription(std::string pTargetHost, unsigned int pTargetPort, Requirements *pRequirements);
-    virtual ~SocketSubscription( );
+	IEvent(int pType):mType(pType)
+	{
 
-    virtual bool isClosed();
-    virtual void read(char* pBuffer, int &pBufferSize);
-    virtual void write(char* pBuffer, int pBufferSize);
-    virtual void cancel();
-    virtual IName* name();
-    virtual IName* peer();
-    virtual bool update(Requirements *pRequirements);
+	}
+    virtual ~IEvent( )
+    {
+
+    }
+
+    virtual std::string getDescription() = 0;
+    virtual int getType()const
+    {
+        return mType;
+    }
 
 private:
-    int 		mSocketHandle;
-    Socket		*mSocket;
-    bool        mIsClosed;
-    std::string mTargetHost;
-    unsigned int mTargetPort;
+    int mType;
+};
+
+template <typename DerivedClass, int pType>
+class TEvent:
+    public IEvent
+{
+public:
+	TEvent():IEvent(pType)
+    {
+
+    }
+    virtual ~TEvent()
+    {
+
+    }
+
+    static int type()
+    {
+        return pType;
+    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////

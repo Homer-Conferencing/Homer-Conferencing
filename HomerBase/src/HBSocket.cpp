@@ -91,7 +91,7 @@ void Socket::SetDefaults(enum TransportType pTransportType)
 ///////////////////////////////////////////////////////////////////////////////
 /// server socket
 ///////////////////////////////////////////////////////////////////////////////
-Socket::Socket(unsigned int pListenerPort, enum TransportType pTransportType, unsigned int pProbeStepping, unsigned int pHighesPossibleListenerPort)
+Socket::Socket(unsigned int pListenerPort, enum TransportType pTransportType, unsigned int pProbeStepping, unsigned int pHighestPossibleListenerPort)
 {
     LOG(LOG_VERBOSE, "Created server socket object with listener port %u, transport type %s, port probing stepping %d", pListenerPort, TransportType2String(pTransportType).c_str(), pProbeStepping);
 
@@ -116,7 +116,7 @@ Socket::Socket(unsigned int pListenerPort, enum TransportType pTransportType, un
     SetDefaults(pTransportType);
     if (CreateSocket(SOCKET_IPv6))
     {
-    	if (!BindSocket(pListenerPort, pProbeStepping, pHighesPossibleListenerPort))
+    	if (!BindSocket(pListenerPort, pProbeStepping, pHighestPossibleListenerPort))
     	    mSocketHandle = -1;
     	if ((!pProbeStepping) && (mLocalPort != pListenerPort))
     		LOG(LOG_ERROR, "Bound socket %d to another port than requested", mSocketHandle);
@@ -248,6 +248,20 @@ std::string Socket::GetPeerName()
     string tResult = "";
 
     tResult = mPeerHost + "<" + toString(mPeerPort) + ">(" + TransportType2String(mSocketTransportType) + ")";
+
+    return tResult;
+}
+
+bool Socket::EnableReuse()
+{
+    bool tResult = false;
+
+    // activate reuse of socket per default
+    int tReuseAddr = 1;
+    if (setsockopt(mSocketHandle, SOL_SOCKET, SO_REUSEADDR, (char*)&tReuseAddr, sizeof(tReuseAddr)) < 0)
+        LOG(LOG_ERROR, "Failed to set socket option SO_REUSEADDR on socket %d", mSocketHandle);
+    else
+        tResult = true;
 
     return tResult;
 }
@@ -465,8 +479,10 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
 					LOG(LOG_ERROR, "Failed to set senders checksum coverage for UDPlite on socket %d", mSocketHandle);
 			#endif
 		case SOCKET_UDP:
+		    mPeerHostMutex.lock();
 		    mPeerHost = pTargetHost;
 		    mPeerPort = pTargetPort;
+		    mPeerHostMutex.unlock();
             #if defined(LINUX)
 				tSent = sendto(mSocketHandle, pBuffer, (size_t)pBufferSize, MSG_NOSIGNAL, &tAddressDescriptor.sa, tAddressDescriptorSize);
 			#endif
@@ -505,8 +521,10 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
 		        }else
 		        {
 		            mIsConnected = true;
+		            mPeerHostMutex.lock();
 		        	mPeerHost = pTargetHost;
 		        	mPeerPort = pTargetPort;
+		        	mPeerHostMutex.unlock();
 		        }
 			}
 			//#########################
@@ -582,9 +600,11 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
 			#endif
 		    if (tReceivedBytes >= 0)
 		    {
+		        mPeerHostMutex.lock();
 		    	mPeerHost = GetAddrFromDescriptor(&tAddressDescriptor, &mPeerPort);
 		    	if (mPeerHost == "")
 		            LOG(LOG_ERROR ,"Could not determine the UDP/UDPLite source address for socket %d", mSocketHandle);
+		    	mPeerHostMutex.unlock();
 		    }
             break;
 		case SOCKET_TCP:
@@ -614,9 +634,11 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
                     LOG(LOG_VERBOSE, "Having new IPv%d-TCP client socket %d connection on socket %d at local port %d", (mSocketNetworkType == SOCKET_IPv6) ? 6 : 4, mTcpClientSockeHandle, mSocketHandle, mLocalPort);
                     mIsConnected = true;
 
+                    mPeerHostMutex.lock();
     		    	mPeerHost = GetAddrFromDescriptor(&tAddressDescriptor, &mPeerPort);
     		    	if (mPeerHost == "")
                         LOG(LOG_ERROR ,"Could not determine the TCP source address for socket %d", mSocketHandle);
+    		    	mPeerHostMutex.unlock();
                 }
             }
 
@@ -1085,16 +1107,20 @@ bool Socket::CreateSocket(enum NetworkType pIpVersion)
             break;
     }
 
+    // do we have a valid socket?
     if (tResult)
     {
         LOG(LOG_VERBOSE, "Created IPv%d-%s socket with handle number %d", (tSelectedIPDomain == PF_INET6) ? 6 : 4, TransportType2String(mSocketTransportType).c_str(), mSocketHandle);
+
+        bool tSockOptResult = 0;
+
+        // activate dual stack
         if (tSelectedIPDomain == PF_INET6)
         {
             // we force hybrid sockets, otherwise Windows will complain: http://msdn.microsoft.com/en-us/library/bb513665%28v=vs.85%29.aspx
             int tOnlyIpv6Sockets = false;
-            bool tIpv6OnlyOkay = false;
-			tIpv6OnlyOkay = (setsockopt(mSocketHandle, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&tOnlyIpv6Sockets, sizeof(tOnlyIpv6Sockets)) == 0);
-            if (tIpv6OnlyOkay)
+            tSockOptResult = (setsockopt(mSocketHandle, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&tOnlyIpv6Sockets, sizeof(tOnlyIpv6Sockets)) == 0);
+            if (tSockOptResult)
                 LOG(LOG_VERBOSE, "Set %s socket with handle number %d to IPv6only state %d", TransportType2String(mSocketTransportType).c_str(), mSocketHandle, tOnlyIpv6Sockets);
             else
                 LOG(LOG_ERROR, "Failed to disable IPv6_only");

@@ -469,7 +469,29 @@ p, li { white-space: pre-wrap; }
           <item>
            <widget class="QToolButton" name="mTbDownloadUpdate">
             <property name="text">
-             <string>Download new version</string>
+             <string>Download new version
+as archive</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../../resources/Icons.qrc">
+              <normaloff>:/images/ArrowDownGreen.png</normaloff>:/images/ArrowDownGreen.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="toolButtonStyle">
+             <enum>Qt::ToolButtonTextUnderIcon</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="mTbDownloadUpdateInstaller">
+            <property name="text">
+             <string>Download new version
+as installer</string>
             </property>
             <property name="icon">
              <iconset resource="../../resources/Icons.qrc">

@@ -29,12 +29,12 @@
 #define _GAPI_REQUIREMENTS_
 
 // to simplify including of all requirements
-#include <RequirementUseIPv6.h>
 #include <RequirementTransmitLossless.h>
 #include <RequirementTransmitChunks.h>
-#include <RequirementTransmitWaterfall.h>
+#include <RequirementTransmitStream.h>
 #include <RequirementTransmitBitErrors.h>
-#include <RequirementTransmitFast.h>
+#include <RequirementTargetPort.h>
+#include <RequirementTransmitOrdered.h>
 #include <RequirementLimitDelay.h>
 #include <RequirementLimitDataRate.h>
 
@@ -55,7 +55,7 @@ class Requirements
 {
 public:
     Requirements();
-    Requirements(Requirements &pCopy);
+
     virtual ~Requirements();
 
     virtual std::string getDescription();

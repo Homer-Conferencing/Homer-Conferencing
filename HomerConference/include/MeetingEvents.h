@@ -89,11 +89,11 @@ public:
             case INT_START_NAT_DETECTION:
                 return "Internal signaling for NAT detection in SIP thread context";
             case OPTIONS:
-                return "Options of SIP server";
+                return "Options of SIP peer";
             case OPTIONS_ACCEPT:
-                return "Options from SIP server delivered";
+                return "Options from SIP peer delivered";
             case OPTIONS_UNAVAILABLE:
-                return "Options from SIP server unavailable";
+                return "Options from SIP peer unavailable";
             case GENERAL_ERROR:
                 return "General Error";
             case MESSAGE:
@@ -192,14 +192,16 @@ class OptionsUnavailableEvent:
     public TEvent<OptionsUnavailableEvent, OPTIONS_UNAVAILABLE>
 {
 public:
+    int     StatusCode;
+    string  Description;
 };
 
 class ErrorEvent:
     public TEvent<ErrorEvent, GENERAL_ERROR>
 {
 public:
-    int StatusCode;
-    string Description;
+    int     StatusCode;
+    string  Description;
 };
 
 class MessageEvent:
@@ -222,6 +224,9 @@ class MessageAcceptDelayedEvent:
 class MessageUnavailableEvent:
     public TEvent<MessageUnavailableEvent, MESSAGE_UNAVAILABLE>
 {
+public:
+    int     StatusCode;
+    string  Description;
 };
 
 class CallEvent:
@@ -276,6 +281,9 @@ public:
 class CallUnavailableEvent:
     public TEvent<CallUnavailableEvent, CALL_UNAVAILABLE>
 {
+public:
+    int     StatusCode;
+    string  Description;
 };
 
 class RegistrationEvent:
@@ -286,6 +294,9 @@ class RegistrationEvent:
 class RegistrationFailedEvent:
     public TEvent<RegistrationFailedEvent, REGISTRATION_FAILED>
 {
+public:
+    int     StatusCode;
+    string  Description;
 };
 
 class PublicationEvent:
@@ -296,6 +307,9 @@ class PublicationEvent:
 class PublicationFailedEvent:
     public TEvent<PublicationFailedEvent, PUBLICATION_FAILED>
 {
+public:
+    int     StatusCode;
+    string  Description;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

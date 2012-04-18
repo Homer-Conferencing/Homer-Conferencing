@@ -109,13 +109,13 @@ public:
     void HandleMessage(bool pIncoming, QString pSender, QString pMessage);
     void HandleMessageAccept(bool pIncoming);
     void HandleMessageAcceptDelayed(bool pIncoming);
-    void HandleMessageUnavailable(bool pIncoming);
+    void HandleMessageUnavailable(bool pIncoming, int pStatusCode, QString pDescription);
     void HandleCall(bool pIncoming, QString pRemoteApplication);
     void HandleCallAccept(bool pIncoming);
     void HandleCallCancel(bool pIncoming);
     void HandleCallHangup(bool pIncoming);
     void HandleCallTermination(bool pIncoming);
-    void HandleCallUnavailable(bool pIncoming);
+    void HandleCallUnavailable(bool pIncoming, int pStatusCode, QString pDescription);
     void HandleCallRinging(bool pIncoming);
     void HandleCallDenied(bool pIncoming);
     void HandleMediaUpdate(bool pIncoming, QString pRemoteAudioAdr, unsigned int pRemoteAudioPort, QString pRemoteAudioCodec, QString pRemoteVideoAdr, unsigned int pRemoteVideoPort, QString pRemoteVideoCodec);
@@ -138,7 +138,7 @@ private slots:
 	void SeekMovieFile(int pPos);
 
 private:
-	void initializeGUI();
+	void Init(OverviewContactsWidget *pContactsWidget, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, QString pParticipant);
     void FindSipInterface(QString pSessionName);
     virtual void contextMenuEvent(QContextMenuEvent *event);
     virtual void closeEvent(QCloseEvent* pEvent = NULL);
@@ -165,6 +165,7 @@ private:
     unsigned int        mRemoteVideoPort;
     QString             mRemoteVideoCodec;
     MediaSource         *mVideoSource, *mAudioSource;
+    Socket				*mVideoSendSocket, *mAudioSendSocket, *mVideoReceiveSocket, *mAudioReceiveSocket;
     QSound				*mSoundForIncomingCall;
     int                 mTimerId;
 };

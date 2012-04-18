@@ -89,11 +89,13 @@ void PacketStatistic::AnnouncePacket(int pSize)
             break;
     }
 
+    mEndTimeStamp = Time::GetTimeStamp();
+    if (mStartTimeStamp == 0)
+        mStartTimeStamp = mEndTimeStamp;
+
     StatisticEntry tStatEntry;
     tStatEntry.PacketSize = pSize;
-    tStatEntry.Timestamp = Time::GetTimeStamp();
-    if (mStartTimeStamp == 0)
-        mStartTimeStamp = tStatEntry.Timestamp;
+    tStatEntry.Timestamp = mEndTimeStamp;
 
     // lock
     mStatisticsMutex.lock();
@@ -125,11 +127,32 @@ void PacketStatistic::AnnouncePacket(int pSize)
     mLastTime = tCurTime;
 
     mStatistics.push_back(tStatEntry);
-    while (mStatistics.size() > STATISTIC_MOMENT_REFERENCE_SIZE)
+    while (mStatistics.size() > STATISTIC_MOMENT_DATARATE_REFERENCE_SIZE)
         mStatistics.pop_front();
 
     // unlock
     mStatisticsMutex.unlock();
+
+    DataRateHistoryDescriptor tHistEntry;
+    tHistEntry.TimeStamp = mEndTimeStamp - mStartTimeStamp;
+    tHistEntry.Time = mEndTimeStamp;
+    tHistEntry.DataRate = GetMomentAvgDataRate();
+
+    mDataRateHistoryMutex.lock();
+
+    while (mDataRateHistory.size() > STATISTIC_MOMENT_DATARATE_HISTORY)
+    {
+        if (mFirstDataRateHistoryLoss)
+        {
+            mFirstDataRateHistoryLoss = false;
+            LOG(LOG_ERROR, "List with measured values of data rate history has reached limit of %d entries", STATISTIC_MOMENT_DATARATE_HISTORY);
+        }
+        mDataRateHistory.pop_front();
+    }
+
+    mDataRateHistory.push_back(tHistEntry);
+
+    mDataRateHistoryMutex.unlock();
 }
 
 void PacketStatistic::ResetPacketStatistic()
@@ -138,11 +161,14 @@ void PacketStatistic::ResetPacketStatistic()
     mStatisticsMutex.lock();
 
     mStartTimeStamp = 0;
+    mEndTimeStamp = 0;
     mPacketCount = 0;
     mByteCount = 0;
     mMinPacketSize = INT_MAX;
     mMaxPacketSize = 0;
     mLostPacketCount = 0;
+    mDataRateHistory.clear();
+    mFirstDataRateHistoryLoss = true;
     mLastTime.InvalidateTimeStamp();
     mStatistics.clear();
 
@@ -157,7 +183,7 @@ void PacketStatistic::SetLostPacketCount(int pPacketCount)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int PacketStatistic::getAvgPacketSize()
+int PacketStatistic::GetAvgPacketSize()
 {
     int64_t tResult = 0, tCount = 0, tPacketsSize = 0;
 
@@ -169,7 +195,7 @@ int PacketStatistic::getAvgPacketSize()
     return (int)tResult;
 }
 
-int PacketStatistic::getAvgDataRate()
+int PacketStatistic::GetAvgDataRate()
 {
     double tDataRate = 0;
 
@@ -178,7 +204,7 @@ int PacketStatistic::getAvgDataRate()
 
     if (mStatistics.size() > 1)
     {
-        int64_t tCurrentTime = Time::GetTimeStamp();
+        int64_t tCurrentTime = mEndTimeStamp;
         int64_t tMeasurementStartTime = mStartTimeStamp;
         int64_t tMeasurementStartByteCount = 0;
         int tMeasuredValues = mPacketCount - 1;
@@ -198,7 +224,7 @@ int PacketStatistic::getAvgDataRate()
     return (int)tDataRate;
 }
 
-int PacketStatistic::getMomentAvgDataRate()
+int PacketStatistic::GetMomentAvgDataRate()
 {
     StatisticList::iterator tIt;
     double tDataRate = 0;
@@ -211,13 +237,13 @@ int PacketStatistic::getMomentAvgDataRate()
         int64_t tCurrentTime = Time::GetTimeStamp();
         int64_t tMeasurementStartTime = mStatistics.front().Timestamp;
         int64_t tMeasurementStartByteCount = mStatistics.front().ByteCount;
-        int tMeasuredValues = STATISTIC_MOMENT_REFERENCE_SIZE - 1;
+        int tMeasuredValues = STATISTIC_MOMENT_DATARATE_REFERENCE_SIZE - 1;
         int64_t tMeasuredTimeDifference = tCurrentTime - tMeasurementStartTime;
         int64_t tMeasuredByteCountDifference = mByteCount - tMeasurementStartByteCount;
 
-        tDataRate = 1000000 * tMeasuredByteCountDifference / tMeasuredTimeDifference;
-    }else
-        tDataRate = 0;
+        if (tMeasuredTimeDifference != 0)
+        	tDataRate = 1000000 * tMeasuredByteCountDifference / tMeasuredTimeDifference;
+    }
 
     // unlock
     mStatisticsMutex.unlock();
@@ -225,17 +251,17 @@ int PacketStatistic::getMomentAvgDataRate()
     return (int)tDataRate;
 }
 
-int64_t PacketStatistic::getByteCount()
+int64_t PacketStatistic::GetByteCount()
 {
     return mByteCount;
 }
 
-int PacketStatistic::getPacketCount()
+int PacketStatistic::GetPacketCount()
 {
     return mPacketCount;
 }
 
-int PacketStatistic::getMinPacketSize()
+int PacketStatistic::GetMinPacketSize()
 {
     if (mMinPacketSize != INT_MAX)
         return mMinPacketSize;
@@ -243,12 +269,12 @@ int PacketStatistic::getMinPacketSize()
         return 0;
 }
 
-int PacketStatistic::getMaxPacketSize()
+int PacketStatistic::GetMaxPacketSize()
 {
     return mMaxPacketSize;
 }
 
-int PacketStatistic::getLostPacketCount()
+int PacketStatistic::GetLostPacketCount()
 {
     return mLostPacketCount;
 }
@@ -326,16 +352,29 @@ PacketStatisticDescriptor PacketStatistic::GetPacketStatistic()
 	PacketStatisticDescriptor tStat;
 
     tStat.Outgoing = IsOutgoingStream();
-	tStat.MinPacketSize = getMinPacketSize();
-	tStat.MaxPacketSize = getMaxPacketSize();
-	tStat.PacketCount = getPacketCount();
-	tStat.ByteCount = getByteCount();
-	tStat.LostPacketCount = getLostPacketCount();
-	tStat.AvgPacketSize = getAvgPacketSize();
-	tStat.AvgDataRate = getAvgDataRate();
-    tStat.MomentAvgDataRate = getMomentAvgDataRate();
+	tStat.MinPacketSize = GetMinPacketSize();
+	tStat.MaxPacketSize = GetMaxPacketSize();
+	tStat.PacketCount = GetPacketCount();
+	tStat.ByteCount = GetByteCount();
+	tStat.LostPacketCount = GetLostPacketCount();
+	tStat.AvgPacketSize = GetAvgPacketSize();
+	tStat.AvgDataRate = GetAvgDataRate();
+    tStat.MomentAvgDataRate = GetMomentAvgDataRate();
 
 	return tStat;
+}
+
+DataRateHistory PacketStatistic::GetDataRateHistory()
+{
+    DataRateHistory tResult;
+
+    mDataRateHistoryMutex.lock();
+
+    tResult = mDataRateHistory;
+
+    mDataRateHistoryMutex.unlock();
+
+    return tResult;
 }
 
 void PacketStatistic::SetOutgoingStream()

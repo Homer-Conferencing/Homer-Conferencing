@@ -46,9 +46,9 @@ public:
 
     virtual void SetStunServer(std::string pServer);
     std::string GetStunServer();
-    std::string getStunNatIp();
-    int getStunNatPort();
-    std::string getStunNatType();
+    std::string GetStunNatIp();
+    int GetStunNatPort();
+    std::string GetStunNatType();
 
     void StunCallBack(stun_discovery_t *pStunDiscoveryHandle, int pStunAction, int pStunState);
 

@@ -29,7 +29,6 @@ SET (INCLUDE_DIRS
 	../../HomerBase/include
 	../../HomerGAPI/include
 	../../HomerMonitor/include
-	../../HomerWinLibs/FFMPEG
 	/usr/include/ffmpeg
 	${ALSA_INCLUDE_DIRS}
 )
@@ -136,12 +135,12 @@ SET (LIBS_APPLE
 	HomerGAPI
 	HomerMonitor
 )
-
 SET (LIBS_APPLE_STATIC
 	avdevice
 	avformat
 	avcodec
 	avfilter
+	swresample
 	swscale
 	avutil
 	mp3lame
@@ -151,10 +150,17 @@ SET (LIBS_APPLE_STATIC
 	bz2
 	z
 )
+SET (FRAMEWORKS_APPLE
+	CoreFoundation
+	CoreVideo
+	VideoDecodeAcceleration
+)
 
+# used libraries for LINUX environment
 IF (${BUILD} MATCHES "Default")
 	SET (LIBS_LINUX
 		HomerBase
+		HomerGAPI
 		HomerMonitor
 		${ALSA_LIBRARIES}
 		avdevice
@@ -189,6 +195,7 @@ ELSE ()
 		jack
 		theoraenc
 		theoradec
+		ogg
 		x264
 		bz2
 		z

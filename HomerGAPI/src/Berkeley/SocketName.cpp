@@ -20,39 +20,60 @@
  *****************************************************************************/
 
 /*
- * Purpose: SocketName
+ * Purpose: Implementation of G-Lab API
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
 
-#ifndef _GAPI_SOCKET_NAME_
-#define _GAPI_SOCKET_NAME_
+#include <GAPI.h>
+#include <Berkeley/SocketName.h>
 
-#include <IName.h>
+#include <Logger.h>
 
 #include <string>
 
 namespace Homer { namespace Base {
 
+using namespace std;
+
 ///////////////////////////////////////////////////////////////////////////////
 
-class SocketName:
-    public IName
+SocketName::SocketName(string pHost, unsigned int pPort):
+	Name(pHost), mHost(pHost), mPort(pPort)
 {
-public:
-	SocketName(std::string pHost, unsigned int pPort);
-    virtual ~SocketName();
 
-    virtual std::string toString();
-    virtual std::string getHost();
-    virtual unsigned int getPort();
-private:
-    std::string		mHost;
-    unsigned int    mPort;
-};
+}
+
+SocketName::~SocketName()
+{
+
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
-}} // namespaces
+template <typename T>
+inline std::string dataToString(T const& value_)
+{
+    std::stringstream ss;
+    ss << value_;
+    return ss.str();
+}
 
-#endif
+string SocketName::toString()
+{
+	return mHost + "<" + dataToString(mPort) + ">";
+}
+
+std::string SocketName::getHost()
+{
+    return mHost;
+}
+
+unsigned int SocketName::getPort()
+{
+    return mPort;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+}} //namespace
