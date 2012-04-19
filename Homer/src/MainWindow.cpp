@@ -1233,14 +1233,24 @@ void MainWindow::customEvent(QEvent* pEvent)
         case REGISTRATION:
                     //####################### REGISTRATION SUCCEEDED #############################
                     tREvent = (RegistrationEvent*) tEvent;
-                    mSysTrayIcon->showMessage("Registration successful", "Registered  \"" + CONF.GetSipUserName() + "\" at SIP server \"" + CONF.GetSipServer() + "\"!\n" \
-                                              "SIP server runs software \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".", QSystemTrayIcon::Information, CONF.GetSystrayTimeout());
+                    QString tRegUser = CONF.GetSipUserName();
+                    QString tRegHost = CONF.GetSipServer();
+                    if ((mSipServerRegistrationUser != tRegUser) || (mSipServerRegistrationHost != tRegHost))
+                    {
+                        mSysTrayIcon->showMessage("Registration successful", "Registered  \"" + CONF.GetSipUserName() + "\" at SIP server \"" + CONF.GetSipServer() + "\"!\n" \
+                                                  "SIP server runs software \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".", QSystemTrayIcon::Information, CONF.GetSystrayTimeout());
+                    }
+                    mSipServerRegistrationUser = tRegUser;
+                    mSipServerRegistrationHost = tRegHost;
                     return;
         case REGISTRATION_FAILED:
                     //####################### REGISTRATION FAILED #############################
                     tRFEvent = (RegistrationFailedEvent*) tEvent;
                     ShowError("Registration failed", "Could not register \"" + CONF.GetSipUserName() + "\" at the SIP server \"" + CONF.GetSipServer() + "\"! The reason is \"" + QString(tRFEvent->Description.c_str()) + "\"(" + QString("%1").arg(tRFEvent->StatusCode) + ")\n" \
                                                      "SIP server runs software \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
+                    // reset stored SIP server data
+                    mSipServerRegistrationUser = "";
+                    mSipServerRegistrationHost = "";
                     return;
         case PUBLICATION:
                     //####################### PUBLICATION SUCCEEDED #############################
