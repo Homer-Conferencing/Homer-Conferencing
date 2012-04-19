@@ -247,7 +247,9 @@ std::string Socket::GetPeerName()
 {
     string tResult = "";
 
+    mPeerDataMutex.lock();
     tResult = mPeerHost + "<" + toString(mPeerPort) + ">(" + TransportType2String(mSocketTransportType) + ")";
+    mPeerDataMutex.unlock();
 
     return tResult;
 }
@@ -293,7 +295,13 @@ unsigned int Socket::GetPeerPort()
 
 std::string Socket::GetPeerHost()
 {
-    return mPeerHost;
+    string tResult;
+
+    mPeerDataMutex.lock();
+    tResult = mPeerHost;
+    mPeerDataMutex.unlock();
+
+    return tResult;
 }
 
 bool Socket::SetQoS(const QoSSettings &pQoSSettings)
@@ -453,6 +461,7 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
 {
     SocketAddressDescriptor   tAddressDescriptor;
     unsigned int        tAddressDescriptorSize;
+    bool                tTcpNeedsReconnect = false;
     int                 tSent = 0;
     bool                tResult = false;
     unsigned short int  tLocalPort = 0;
@@ -479,10 +488,10 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
 					LOG(LOG_ERROR, "Failed to set senders checksum coverage for UDPlite on socket %d", mSocketHandle);
 			#endif
 		case SOCKET_UDP:
-		    mPeerHostMutex.lock();
+		    mPeerDataMutex.lock();
 		    mPeerHost = pTargetHost;
 		    mPeerPort = pTargetPort;
-		    mPeerHostMutex.unlock();
+		    mPeerDataMutex.unlock();
             #if defined(LINUX)
 				tSent = sendto(mSocketHandle, pBuffer, (size_t)pBufferSize, MSG_NOSIGNAL, &tAddressDescriptor.sa, tAddressDescriptorSize);
 			#endif
@@ -498,9 +507,13 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
 			//#########################
 			//### re-bind if required
 			//#########################
-			if ((mPeerHost != "") &&          (mPeerPort != 0) &&
-			   ((mPeerHost != pTargetHost) || (mPeerPort != pTargetPort)))
-			{
+		    mPeerDataMutex.lock();
+			if ((mPeerHost != "") && (mPeerPort != 0) && ((mPeerHost != pTargetHost) || (mPeerPort != pTargetPort)))
+			    tTcpNeedsReconnect = true;
+            mPeerDataMutex.unlock();
+
+            if (tTcpNeedsReconnect)
+            {
 				tLocalPort = mLocalPort;
 				DestroySocket(mSocketHandle);
 				if (CreateSocket())
@@ -521,10 +534,10 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
 		        }else
 		        {
 		            mIsConnected = true;
-		            mPeerHostMutex.lock();
+		            mPeerDataMutex.lock();
 		        	mPeerHost = pTargetHost;
 		        	mPeerPort = pTargetPort;
-		        	mPeerHostMutex.unlock();
+		        	mPeerDataMutex.unlock();
 		        }
 			}
 			//#########################
@@ -600,11 +613,11 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
 			#endif
 		    if (tReceivedBytes >= 0)
 		    {
-		        mPeerHostMutex.lock();
+		        mPeerDataMutex.lock();
 		    	mPeerHost = GetAddrFromDescriptor(&tAddressDescriptor, &mPeerPort);
 		    	if (mPeerHost == "")
 		            LOG(LOG_ERROR ,"Could not determine the UDP/UDPLite source address for socket %d", mSocketHandle);
-		    	mPeerHostMutex.unlock();
+		    	mPeerDataMutex.unlock();
 		    }
             break;
 		case SOCKET_TCP:
@@ -634,11 +647,11 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
                     LOG(LOG_VERBOSE, "Having new IPv%d-TCP client socket %d connection on socket %d at local port %d", (mSocketNetworkType == SOCKET_IPv6) ? 6 : 4, mTcpClientSockeHandle, mSocketHandle, mLocalPort);
                     mIsConnected = true;
 
-                    mPeerHostMutex.lock();
+                    mPeerDataMutex.lock();
     		    	mPeerHost = GetAddrFromDescriptor(&tAddressDescriptor, &mPeerPort);
     		    	if (mPeerHost == "")
                         LOG(LOG_ERROR ,"Could not determine the TCP source address for socket %d", mSocketHandle);
-    		    	mPeerHostMutex.unlock();
+    		    	mPeerDataMutex.unlock();
                 }
             }
 
@@ -666,8 +679,10 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
     // reset source description in case of receive error
     if (tReceivedBytes >= 0)
     {
+        mPeerDataMutex.lock();
         pSourceHost = mPeerHost;
         pSourcePort = mPeerPort;
+        mPeerDataMutex.unlock();
         #ifdef HBS_DEBUG_PACKETS
             LOG(LOG_VERBOSE, "Received %d bytes via socket %d at local port %d of %s socket", tReceivedBytes, mSocketHandle, mLocalPort, TransportType2String(mSocketTransportType).c_str());
         #endif
