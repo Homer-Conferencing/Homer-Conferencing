@@ -1233,15 +1233,13 @@ void MainWindow::customEvent(QEvent* pEvent)
         case REGISTRATION:
                     //####################### REGISTRATION SUCCEEDED #############################
                     tREvent = (RegistrationEvent*) tEvent;
-                    QString tRegUser = CONF.GetSipUserName();
-                    QString tRegHost = CONF.GetSipServer();
-                    if ((mSipServerRegistrationUser != tRegUser) || (mSipServerRegistrationHost != tRegHost))
+                    if ((mSipServerRegistrationUser != CONF.GetSipUserName()) || (mSipServerRegistrationHost != CONF.GetSipServer()))
                     {
                         mSysTrayIcon->showMessage("Registration successful", "Registered  \"" + CONF.GetSipUserName() + "\" at SIP server \"" + CONF.GetSipServer() + "\"!\n" \
                                                   "SIP server runs software \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".", QSystemTrayIcon::Information, CONF.GetSystrayTimeout());
                     }
-                    mSipServerRegistrationUser = tRegUser;
-                    mSipServerRegistrationHost = tRegHost;
+                    mSipServerRegistrationUser = CONF.GetSipUserName();
+                    mSipServerRegistrationHost = CONF.GetSipServer();
                     return;
         case REGISTRATION_FAILED:
                     //####################### REGISTRATION FAILED #############################
