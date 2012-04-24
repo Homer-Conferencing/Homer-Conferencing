@@ -141,15 +141,11 @@ IF (${BUILD} MATCHES "Release")
 ENDIF()
 
 ##############################################################
-# explicit shared object name
+# explicit shared object name with @rpath prefix for APPLE
 IF (DEFINED TARGET_LIB_NAME) 
 	IF (APPLE)
 		SET(LFLAGS "${LFLAGS} -Wl,-dylib_install_name,@rpath/lib${TARGET_LIB_NAME}.dylib")
 	ENDIF (APPLE)
-	
-	IF (LINUX)
-		SET(LFLAGS "${LFLAGS} -Wl,-soname,${TARGET_LIB_NAME}.so")
-	ENDIF (LINUX)
 ENDIF()
 
 ##############################################################
