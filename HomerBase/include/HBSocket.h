@@ -158,14 +158,16 @@ private:
     enum NetworkType    mSocketNetworkType;
     bool			    mIsConnected;
     bool                mIsListening;
-    std::string         mPeerHost;
-    unsigned int        mPeerPort;
     int                 mSocketHandle, mTcpClientSockeHandle;
     unsigned int        mLocalPort;
     std::string         mLocalHost;
     bool                mIsClientSocket;
     bool 				mNonBlockingMode;
-    Mutex               mPeerHostMutex;
+
+    /* peer data */
+    std::string         mPeerHost;
+    unsigned int        mPeerPort;
+    Mutex               mPeerDataMutex; // mutual exclusion of concurrent access to data about peer at remote side
 };
 
 ///////////////////////////////////////////////////////////////////////////////
