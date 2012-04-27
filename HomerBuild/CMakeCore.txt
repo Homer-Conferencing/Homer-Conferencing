@@ -53,12 +53,6 @@ IF (BSD)
 		${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerLibs/bsd${ARCH_BITS}
 	)
 ENDIF (BSD)
-IF (WIN32)
-	SET (LIB_DIRS
-		${LIB_DIRS}
-		${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerLibs/win${ARCH_BITS}
-	)
-ENDIF (WIN32)
 IF (APPLE)
 	SET (LIB_DIRS
 		${LIB_DIRS}
@@ -66,6 +60,13 @@ IF (APPLE)
 	)
 ENDIF (APPLE)
 ENDIF ()
+
+IF (WIN32)
+    SET (LIB_DIRS
+        ${LIB_DIRS}
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerLibs/win${ARCH_BITS}
+    )
+ENDIF (WIN32)
 
 ##############################################################
 # lib search path
