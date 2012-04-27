@@ -182,6 +182,9 @@ private:
     MediaSourceDesktop 		    *mSourceDesktop;
     QShortcut                   *mShortcutActivateDebugWidgets, *mShortcutActivateDebuggingGlobally;
     Homer::SoundOutput::WaveOut *mWaveOut;
+    /* SIP server registration */
+    QString                     mSipServerRegistrationHost;
+    QString                     mSipServerRegistrationUser;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

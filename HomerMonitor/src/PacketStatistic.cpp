@@ -167,7 +167,11 @@ void PacketStatistic::ResetPacketStatistic()
     mMinPacketSize = INT_MAX;
     mMaxPacketSize = 0;
     mLostPacketCount = 0;
+
+    mDataRateHistoryMutex.lock();
     mDataRateHistory.clear();
+    mDataRateHistoryMutex.unlock();
+
     mFirstDataRateHistoryLoss = true;
     mLastTime.InvalidateTimeStamp();
     mStatistics.clear();
