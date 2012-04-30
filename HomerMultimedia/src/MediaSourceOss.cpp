@@ -85,7 +85,7 @@ void MediaSourceOss::getAudioDevices(AudioDevicesList &pAList)
 
         if (((tFile = fopen(tDeviceFile.c_str(), "r")) != NULL) && (fclose(tFile) != EOF))
         {
-            tDevice.Name = "OSS: device ";
+            tDevice.Name = "OSS device ";
             if (tDeviceId != -1)
                 tDevice.Name += char(tDeviceId + 48);
             tDevice.Card = tDeviceFile;

@@ -102,7 +102,7 @@ void MediaSourceAlsa::getAudioDevices(AudioDevicesList &pAList)
             tNameStr.erase(tPos, 8);
             tNameStr.erase(tPos1 - 8, 5);
 
-            tDevice.Name = "ALSA: " + tNameStr;
+            tDevice.Name = tNameStr;
 
             char* tDesc = snd_device_name_get_hint(*tDeviceNamesIt, "DESC");
             if (tDesc)

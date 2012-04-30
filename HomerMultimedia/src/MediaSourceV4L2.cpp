@@ -91,7 +91,7 @@ void MediaSourceV4L2::getVideoDevices(VideoDevicesList &pVList)
         tDeviceFile += char(tDeviceId + 48);
         if (((tFile = fopen(tDeviceFile.c_str(), "r")) != NULL) && (fclose(tFile) != EOF))
         {
-            tDevice.Name = "V4L2: device ";
+            tDevice.Name = "V4L2 device ";
             tDevice.Name += char(tDeviceId + 48);
             tDevice.Card = tDeviceFile;
             tDevice.Desc = "V4L2 based video device";
@@ -106,7 +106,7 @@ void MediaSourceV4L2::getVideoDevices(VideoDevicesList &pVList)
                     LOG(LOG_ERROR, "Can't get device capabilities for \"%s\" because of \"%s\"", tDeviceFile.c_str(), strerror(errno));
                 else
                 {
-                    tDevice.Name = "V4L2: " + toString(tV4L2Caps.card);
+                    tDevice.Name = toString(tV4L2Caps.card);
                     tDevice.Desc += " \"" + toString(tV4L2Caps.card) + "\"";
                     if (tFirstCall)
                     {
