@@ -185,6 +185,8 @@ private:
     /* SIP server registration */
     QString                     mSipServerRegistrationHost;
     QString                     mSipServerRegistrationUser;
+    /* event handling */
+    static bool                 mShuttingDown;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
