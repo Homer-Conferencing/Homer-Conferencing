@@ -98,7 +98,7 @@ MediaSource::MediaSource(string pName):
 
     // allocate all needed buffers
     mRecorderEncoderChunkBuffer = (char*)malloc(MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE);
-    mRecorderSamplesTempBuffer = (char*)malloc(MEDIA_SOURCE_AUDIO_SAMPLE_BUFFER_SIZE);
+    mRecorderSamplesTempBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE);
 
     mFfmpegInitMutex.lock();
     if(!mFfmpegInitiated)
@@ -1419,7 +1419,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
                 mRecorderCodecContext->sample_fmt = SAMPLE_FMT_S16;
 
                 // init fifo buffer
-                mRecorderSampleFifo = HM_av_fifo_alloc(MEDIA_SOURCE_AUDIO_SAMPLE_BUFFER_SIZE * 2);
+                mRecorderSampleFifo = HM_av_fifo_alloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE * 2);
 
                 // Dump information about device file
                 av_dump_format(mRecorderFormatContext, 0, "MediaSource recorder (audio)", true);

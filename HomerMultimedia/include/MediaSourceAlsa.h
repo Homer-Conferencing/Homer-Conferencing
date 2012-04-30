@@ -42,9 +42,6 @@ namespace Homer { namespace Multimedia {
 // de/activate debugging of grabbed packets
 //#define MSA_DEBUG_PACKETS
 
-// amount of samples
-#define MEDIA_SOURCE_ALSA_BUFFER_SIZE               1024
-
 ///////////////////////////////////////////////////////////////////////////////
 
 class MediaSourceAlsa:
