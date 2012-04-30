@@ -327,7 +327,7 @@ int MediaSourceOss::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
         // acknowledge failed
         MarkGrabChunkFailed("grab buffer is NULL");
 
-        return -1;
+        return GRAB_RES_INVALID;
     }
 
     if (!mMediaSourceOpened)
@@ -338,7 +338,7 @@ int MediaSourceOss::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
         // acknowledge failed
         MarkGrabChunkFailed("audio source is closed");
 
-        return -1;
+        return GRAB_RES_INVALID;
     }
 
     if (mGrabbingStopped)
@@ -349,7 +349,7 @@ int MediaSourceOss::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
         // acknowledge failed
         MarkGrabChunkFailed("audio source is paused");
 
-        return -1;
+        return GRAB_RES_INVALID;
     }
 
     // Read new packet
@@ -365,7 +365,7 @@ int MediaSourceOss::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
             // acknowledge failed
             MarkGrabChunkFailed("couldn't read next audio frame");
 
-            return -1;
+            return GRAB_RES_INVALID;
         }
 
         //LOG(LOG_INFO, "    ..and stream ID: %d", tPacket.stream_index);

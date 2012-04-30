@@ -72,7 +72,8 @@ SET (SOURCES
 IF (WIN32)
 SET (SOURCES
 	${SOURCES}
-	../src/MediaSourceMMSys
+	# included in port audio: ../src/MediaSourceMMSys
+	../src/MediaSourcePortAudio
 	../src/MediaSourceVFW
 )
 ENDIF (WIN32)
@@ -80,24 +81,27 @@ ENDIF (WIN32)
 IF (APPLE)
 SET (SOURCES
 	${SOURCES}
-    ../src/MediaSourceCoreAudio
-    ../src/MediaSourceCoreVideo
+    	# included in port audio: ../src/MediaSourceCoreAudio
+    	../src/MediaSourceCoreVideo
+	../src/MediaSourcePortAudio
 )
 ENDIF (APPLE)
 
 IF (BSD)
 SET (SOURCES
 	${SOURCES}
-	../src/MediaSourceAlsa
-	../src/MediaSourceOss
+	# included in port audio: ../src/MediaSourceAlsa
+	# included in port audio: ../src/MediaSourceOss
+	../src/MediaSourcePortAudio
 )
 ENDIF (BSD)
 
 IF (LINUX)
 SET (SOURCES
 	${SOURCES}
-	../src/MediaSourceAlsa
-	../src/MediaSourceOss
+	# included in port audio: ../src/MediaSourceAlsa
+	# included in port audio: ../src/MediaSourceOss
+	../src/MediaSourcePortAudio
 	../src/MediaSourceV4L2
 )
 ENDIF (LINUX)
@@ -120,11 +124,11 @@ SET (LIBS_WINDOWS
 	HomerGAPI
 	HomerMonitor
 	ws2_32
-    avutil-51
-    avcodec-53
-    avformat-53
-    avdevice-53
-    swscale-2
+	avutil-51
+	avcodec-53
+	avformat-53
+	avdevice-53
+	swscale-2
 	Avicap32
 	Winmm
 )
@@ -149,6 +153,7 @@ SET (LIBS_APPLE_STATIC
 	x264
 	bz2
 	z
+	portaudio
 )
 SET (FRAMEWORKS_APPLE
 	CoreFoundation
@@ -170,6 +175,7 @@ IF (${BUILD} MATCHES "Default")
 		avfilter
 		swscale
 		x264
+		portaudio
 	)
 ELSE ()
 	# USED LIBRARIES for linux environment
@@ -198,7 +204,8 @@ ELSE ()
 		ogg
 		x264
 		bz2
-		z
+		z		
+		portaudio
 	)
 ENDIF ()
 
@@ -223,6 +230,7 @@ SET (LIBS_BSD_STATIC
 	x264
 	bz2
 	z
+	portaudio
 )
 
 ##############################################################

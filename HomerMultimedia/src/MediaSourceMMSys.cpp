@@ -53,7 +53,7 @@ MediaSourceMMSys::MediaSourceMMSys(string pDesiredDevice):
     ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
 
     mDesiredDevice = toString((int)WAVE_MAPPER);
-    mSampleBufferSize = MEDIA_SOURCE_MMSYS_BUFFER_SIZE_BYTES;
+    mSampleBufferSize = MEDIA_SOURCE_SAMPLES_BUFFER_SIZE;
     mCaptureHandle = NULL;
 
     bool tNewDeviceSelected = false;
@@ -223,13 +223,13 @@ bool MediaSourceMMSys::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     }
 
     mCurrentDevice = mDesiredDevice;
-    mSampleBufferSize = MEDIA_SOURCE_MMSYS_BUFFER_SIZE_BYTES;
+    mSampleBufferSize = MEDIA_SOURCE_SAMPLES_BUFFER_SIZE;
 
 	for (int i = 0; i < MEDIA_SOURCE_MMSYS_BUFFER_AMOUNT; i++)
 	{
-		mCaptureBuffer[i] = (char*)malloc(MEDIA_SOURCE_MMSYS_BUFFER_SIZE_BYTES);
+		mCaptureBuffer[i] = (char*)malloc(MEDIA_SOURCE_SAMPLES_BUFFER_SIZE);
 		mCaptureBufferDesc[i].lpData = (LPSTR)mCaptureBuffer[i];
-		mCaptureBufferDesc[i].dwBufferLength = MEDIA_SOURCE_MMSYS_BUFFER_SIZE_BYTES;
+		mCaptureBufferDesc[i].dwBufferLength = MEDIA_SOURCE_SAMPLES_BUFFER_SIZE;
 		mCaptureBufferDesc[i].dwBytesRecorded = 0;
 		mCaptureBufferDesc[i].dwUser = i;
 		mCaptureBufferDesc[i].dwFlags = 0L;
@@ -262,7 +262,7 @@ bool MediaSourceMMSys::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
 	for (int i = 0; i < MEDIA_SOURCE_MMSYS_BUFFER_QUEUE_SIZE; i++)
 	{
 		mQueue[i].Size = 0;
-		mQueue[i].Data = (char*)malloc(MEDIA_SOURCE_MMSYS_BUFFER_SIZE_BYTES);
+		mQueue[i].Data = (char*)malloc(MEDIA_SOURCE_SAMPLES_BUFFER_SIZE);
 	}
 
 	#ifdef MMSYS_DEBUG_PACKETS

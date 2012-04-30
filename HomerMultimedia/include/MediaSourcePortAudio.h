@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 2010 Thomas Volkert <thomas@homer-conferencing.com>
+ * Copyright (C) 2011 Thomas Volkert <thomas@homer-conferencing.com>
  *
  * This software is free software.
  * Your are allowed to redistribute it and/or modify it under the terms of
@@ -20,57 +20,39 @@
  *****************************************************************************/
 
 /*
- * Purpose: ffmpeg based local MMSys audio media source
+ * Purpose: PortAudio capture for OSX
  * Author:  Thomas Volkert
- * Since:   2010-10-29
+ * Since:   2012-04-25
  */
 
-#ifdef WIN32
-#ifndef _MULTIMEDIA_MEDIA_SOURCE_MMSYS_
-#define _MULTIMEDIA_MEDIA_SOURCE_MMSYS_
+#ifndef _MULTIMEDIA_MEDIA_SOURCE_CORE_AUDIO_
+#define _MULTIMEDIA_MEDIA_SOURCE_CORE_AUDIO_
 
+#include <MediaFifo.h>
 #include <MediaSource.h>
-#include <Header_MMSys.h>
-#include <HBCondition.h>
+#include <Header_PortAudio.h>
+
+#include <string.h>
 
 namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
 
 // de/activate debugging of grabbed packets
-//#define MMSYS_DEBUG_PACKETS
-
-// amount of samples
-#define MEDIA_SOURCE_MMSYS_BUFFER_AMOUNT			   16
-#define MEDIA_SOURCE_MMSYS_BUFFER_QUEUE_SIZE     	  128
+//#define MSPA_DEBUG_PACKETS
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef CALLBACK
-#define CALLBACK __stdcall
-#endif
-
-///////////////////////////////////////////////////////////////////////////////
-
-struct MMSysDataChunkDesc
-{
-	char  *Data;
-	int   Size;
-};
-
-class MediaSourceMMSys:
+class MediaSourcePortAudio:
     public MediaSource
 {
 public:
-	MediaSourceMMSys(std::string pDesiredDevice = "");
+    MediaSourcePortAudio(std::string pDesiredDevice = "");
 
-    virtual ~MediaSourceMMSys();
+    ~MediaSourcePortAudio();
 
     /* device control */
     virtual void getAudioDevices(AudioDevicesList &pAList);
-
-    /* recording */
-    virtual bool SupportsRecording();
 
     /* grabbing control */
     virtual void StopGrabbing();
@@ -81,25 +63,22 @@ public:
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97);
     virtual bool OpenAudioGrabDevice(int pSampleRate = 44100, bool pStereo = true);
     virtual bool CloseGrabDevice();
-    virtual int GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk = false);
+    virtual int GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropFrame = false);
 
 private:
-    static void CALLBACK EventHandler(HWAVEIN pCapturDevice, UINT pMessage, DWORD pInstance, DWORD pParam1, DWORD pParam2);
+    static int RecordedAudioHandler(const void *pInputBuffer, void *pOutputBuffer, unsigned long pInputSize, const PaStreamCallbackTimeInfo* pTimeInfo, PaStreamCallbackFlags pStatus, void *pUserData);
 
-    //HANDLE			mCaptureEvent;
-    HWAVEIN      	mCaptureHandle;
-    WAVEHDR			mCaptureBufferDesc[MEDIA_SOURCE_MMSYS_BUFFER_AMOUNT];
-    char			*mCaptureBuffer[MEDIA_SOURCE_MMSYS_BUFFER_AMOUNT];
-	int				mSampleBufferSize;
-	Mutex			mMutexStateData;
-	Condition 		mWaitCondition;
-	MMSysDataChunkDesc mQueue[MEDIA_SOURCE_MMSYS_BUFFER_QUEUE_SIZE];
-	int				mQueueWritePtr, mQueueReadPtr, mQueueSize;
+    /* capturing */
+    int                 mDefaultDevice;
+    PaStream            *mStream;
+    MediaFifo           *mCaptureFifo;
+    /* portaudio init. */
+    static Mutex        mPaInitMutex;
+    static bool         mPaInitiated;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
-}} // namespace
+}} //namespaces
 
-#endif
 #endif

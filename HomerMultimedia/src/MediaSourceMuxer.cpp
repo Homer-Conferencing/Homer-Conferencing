@@ -49,7 +49,7 @@ MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
 {
     mStreamPacketBuffer = (char*)malloc(MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE);
     mEncoderChunkBuffer = (char*)malloc(MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE);
-    mSamplesTempBuffer = (char*)malloc(MEDIA_SOURCE_AUDIO_SAMPLE_BUFFER_SIZE);
+    mSamplesTempBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE);
     SetOutgoingStream();
     mStreamCodecId = CODEC_ID_NONE;
     mStreamMaxPacketSize = 500;
@@ -646,7 +646,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     avformat_write_header(mFormatContext, NULL);
 
     // init fifo buffer
-    mSampleFifo = HM_av_fifo_alloc(MEDIA_SOURCE_AUDIO_SAMPLE_BUFFER_SIZE * 2);
+    mSampleFifo = HM_av_fifo_alloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE * 2);
 
     mMediaType = MEDIA_AUDIO;
     MarkOpenGrabDeviceSuccessful();

@@ -44,7 +44,7 @@ MediaSourceAlsa::MediaSourceAlsa(string pDesiredDevice):
     MediaSource("ALSA: local capture")
 {
     ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
-    mSampleBufferSize = MEDIA_SOURCE_ALSA_BUFFER_SIZE * 2 /* SND_PCM_FORMAT_S16_LE */ * 2 /* stereo */;
+    mSampleBufferSize = MEDIA_SOURCE_SAMPLES_PER_BUFFER * 2 /* SND_PCM_FORMAT_S16_LE */ * 2 /* stereo */;
     mCaptureHandle = NULL;
 
     bool tNewDeviceSelected = false;
@@ -210,7 +210,7 @@ bool MediaSourceAlsa::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
         return false;
     }
 
-    mSampleBufferSize = MEDIA_SOURCE_ALSA_BUFFER_SIZE * 2 /* SND_PCM_FORMAT_S16_LE */ * tChannels;
+    mSampleBufferSize = MEDIA_SOURCE_SAMPLES_PER_BUFFER * 2 /* SND_PCM_FORMAT_S16_LE */ * tChannels;
 
     //######################################################
     //### give some verbose output
@@ -292,7 +292,7 @@ int MediaSourceAlsa::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
         return GRAB_RES_INVALID;
     }
 
-    if (((tResult = snd_pcm_readi(mCaptureHandle, pChunkBuffer, MEDIA_SOURCE_ALSA_BUFFER_SIZE)) != MEDIA_SOURCE_ALSA_BUFFER_SIZE) && (!mGrabbingStopped))
+    if (((tResult = snd_pcm_readi(mCaptureHandle, pChunkBuffer, MEDIA_SOURCE_SAMPLES_PER_BUFFER)) != MEDIA_SOURCE_SAMPLES_PER_BUFFER) && (!mGrabbingStopped))
     {// insufficient data was grabbed or error occurred, but grabbing wasn't stopped yet
         LOG(LOG_INFO, "Can not grab enough audio samples because of \"%s\", return value was: %d", snd_strerror(tResult), tResult);
 
