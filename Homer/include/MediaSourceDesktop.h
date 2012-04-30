@@ -72,6 +72,10 @@ public:
 
     /* create screenshot and updates internal buffer */
     void CreateScreenshot();
+    void SetScreenshotSize(int pWidth, int pHeight);
+
+    /* recording */
+    virtual void StopRecording();
 
 public:
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97);
@@ -89,11 +93,14 @@ private:
     QPainter            *mTargetPainter;
     QWidget             *mWidget;
     int                 mGrabOffsetX, mGrabOffsetY;
-    void                *mScreenshot;
+    void                *mOutputScreenshot;
+    void                *mOriginalScreenshot;
     bool                mScreenshotUpdated;
     QTime               mLastTimeGrabbed;
     QMutex				mMutexScreenshot, mMutexGrabberActive;
     QWaitCondition      mWaitConditionScreenshotUpdated;
+    /* recording */
+    int                 mRecorderChunkNumber; // we need anoher chunk counter because recording is done asynchronously to capturing
 };
 
 ///////////////////////////////////////////////////////////////////////////////

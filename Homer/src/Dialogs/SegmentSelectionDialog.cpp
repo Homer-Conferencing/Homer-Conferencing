@@ -71,16 +71,6 @@ void SegmentSelectionDialog::initializeGUI()
            mMediaSourceDesktop->mSourceResY - (frameGeometry().height() - height()) - (frameGeometry().width() - width()) / 2);
     setSizeGripEnabled(true);
     move(mMediaSourceDesktop->mGrabOffsetX, mMediaSourceDesktop->mGrabOffsetY);
-
-//    QList<QAbstractButton*> tButtons = mBb->buttons();
-//    for (int i = 0; i < tButtons.size(); ++i)
-//    {
-//        if (mBb->standardButton(tButtons.at(i)) == QDialogButtonBox::Reset)
-//        {
-//            tButtons.at(i)->setFocus();
-//            break;
-//        }
-//    }
 }
 
 void SegmentSelectionDialog::ResetToDefaults()
@@ -172,16 +162,16 @@ void SegmentSelectionDialog::resizeEvent(QResizeEvent *pEvent)
     int tNewWidth = pEvent->size().width() + (frameGeometry().width() - width());
     if (tNewWidth < MIN_WIDTH)
         tNewWidth = MIN_WIDTH;
-    mMediaSourceDesktop->mSourceResX = tNewWidth;
     mLbResX->setText(QString("%1").arg(tNewWidth));
 
 
     int tNewHeight = pEvent->size().height() + (frameGeometry().height() - height()) + (frameGeometry().width() - width()) / 2;
     if (tNewHeight < MIN_HEIGHT)
         tNewHeight = MIN_HEIGHT;
-
-    mMediaSourceDesktop->mSourceResY = tNewHeight;
     mLbResY->setText(QString("%1").arg(tNewHeight));
+
+    mMediaSourceDesktop->SetScreenshotSize(tNewWidth, tNewHeight);
+
     QDialog::resizeEvent(pEvent);
 }
 
