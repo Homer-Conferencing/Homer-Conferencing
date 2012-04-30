@@ -47,6 +47,7 @@
 #include <LogSinkNet.h>
 #include <Meeting.h>
 #include <AudioOutSdl.h>
+#include <MediaSourcePortAudio.h>
 #include <MediaSourceV4L2.h>
 #include <MediaSourceMMSys.h>
 #include <MediaSourceVFW.h>
@@ -81,6 +82,10 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+bool MainWindow::mShuttingDown = false;
+
+///////////////////////////////////////////////////////////////////////////////
+
 MainWindow::MainWindow(const std::string& pAbsBinPath) :
     QMainWindow(),
     Ui_MainWindow(),
@@ -89,6 +94,7 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     SVC_PROCESS_STATISTIC.AssignThreadName("Qt-MainLoop");
     mAbsBinPath = pAbsBinPath;
     mSourceDesktop = NULL;
+
     QCoreApplication::setApplicationName("Homer");
     QCoreApplication::setApplicationVersion("1.0");
 
@@ -342,15 +348,18 @@ void MainWindow::initializeVideoAudioIO()
     LOG(LOG_VERBOSE, "Creating audio media objects..");
     mOwnAudioMuxer = new MediaSourceMuxer(NULL);
 	#ifdef LINUX
-		mOwnAudioMuxer->RegisterMediaSource(new MediaSourceAlsa(tASourceSelection));
-		mOwnAudioMuxer->RegisterMediaSource(new MediaSourceOss());
+		//mOwnAudioMuxer->RegisterMediaSource(new MediaSourceAlsa(tASourceSelection));
+		//mOwnAudioMuxer->RegisterMediaSource(new MediaSourceOss());
+        mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio());
 		mWaveOut = new WaveOutAlsa("");
 	#endif
 	#ifdef WIN32
-		mOwnAudioMuxer->RegisterMediaSource(new MediaSourceMMSys(tASourceSelection));
+		//mOwnAudioMuxer->RegisterMediaSource(new MediaSourceMMSys(tASourceSelection));
+        mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio());
         mWaveOut = new WaveOutMMSys("");
 	#endif
     #ifdef APPLE
+        mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio());
         mWaveOut = NULL;
     #endif
     // audio output
@@ -728,15 +737,13 @@ void MainWindow::loadSettings()
 
 void MainWindow::closeEvent(QCloseEvent* pEvent)
 {
-    static bool tShuttingDown = false;
-
-    if (tShuttingDown)
+    if (mShuttingDown)
     {
         LOG(LOG_VERBOSE, "Got repeated call for closing the main window");
         return;
     }
 
-    tShuttingDown = true;
+    mShuttingDown = true;
 
     LOG(LOG_VERBOSE, "Got signal for closing main window");
 
@@ -872,6 +879,13 @@ void MainWindow::customEvent(QEvent* pEvent)
                                                 (tEvent->getType() != PUBLICATION) &&
                                                 (tEvent->getType() != PUBLICATION_FAILED))
         return;
+
+    //HINT: we stop event processing and therefore avoid crashes or unsecure behavior because shutdown is going on in the meanwhile
+    if(mShuttingDown)
+    {
+        LOG(LOG_WARN, "Will ignore this event because the stutdown process was already started");
+        return;
+    }
 
     switch(tEvent->getType())
     {
