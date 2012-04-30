@@ -104,7 +104,7 @@ void MediaSourceVFW::getVideoDevices(VideoDevicesList &pVList)
 				LOG(LOG_INFO, "  ..name: %s", tDriverName);
 				LOG(LOG_INFO, "  ..version: %s", tDriverVersion);
 
-				tDevice.Name = "VFW: " + string(tDriverName);
+				tDevice.Name = string(tDriverName);
 				tDevice.Card = (char)i + 48;
 				tDevice.Desc = "VFW based video device " + tDevice.Card + " \"" + string(tDriverName) + "\"";
 				LOG(LOG_VERBOSE, "Found video device: %s (card: %s)", tDevice.Name.c_str(), tDevice.Card.c_str());

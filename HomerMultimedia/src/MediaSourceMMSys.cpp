@@ -91,7 +91,7 @@ void MediaSourceMMSys::getAudioDevices(AudioDevicesList &pAList)
     {
     	if (waveInGetDevCaps(i, (LPWAVEINCAPS)&tCaps, tCapsSize) == MMSYSERR_NOERROR)
     	{
-            tDevice.Name = "MMSYS: " + string(tCaps.szPname);
+            tDevice.Name = string(tCaps.szPname);
             tDevice.Card = (char)i + 48;
             tDevice.Desc = "Windows multimedia system (MMSYS) audio device " + tDevice.Card + " \"" + string(tCaps.szPname) + "\"";
 
