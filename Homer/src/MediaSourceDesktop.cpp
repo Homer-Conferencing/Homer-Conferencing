@@ -64,13 +64,15 @@ MediaSourceDesktop::MediaSourceDesktop(string pDesiredDevice):
     ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 
     mWidget = NULL;
-    mScreenshot = NULL;
+    mOutputScreenshot = NULL;
+    mOriginalScreenshot = NULL;
 
     // reset grabbing offset values
     mGrabOffsetX = 0;
     mGrabOffsetY = 0;
     mSourceResX = 352;
     mSourceResY = 288;
+    mRecorderChunkNumber = 0;
     mLastTimeGrabbed = QTime(0, 0, 0, 0);
 
     bool tNewDeviceSelected = false;
@@ -190,8 +192,7 @@ bool MediaSourceDesktop::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if ((mDesiredDevice == "auto") || (mDesiredDevice == "segment"))
     {// screen segment
         mWidget = QApplication::desktop()->screen(0); //per default support only grabbing from screen 0
-        mSourceResX = pResX;
-        mSourceResY = pResY;
+        SetScreenshotSize(pResX, pResY);
     }else
     {// screen 0/1/n
         if ((mDesiredDevice != "") && (mDesiredDevice.substr(0, 7) == "screen "))
@@ -206,9 +207,7 @@ bool MediaSourceDesktop::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         LOG(LOG_VERBOSE, "Try to access screen %d", tScreenId);
 
         mWidget = QApplication::desktop()->screen(tScreenId);
-
-        mSourceResX = mWidget->width();
-        mSourceResY = mWidget->height();
+        SetScreenshotSize(mWidget->width(), mWidget->height());
     }
 
     mCurrentDevice = mDesiredDevice;
@@ -218,8 +217,8 @@ bool MediaSourceDesktop::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     	pFps = MIN_GRABBING_FPS;
 
 	mFrameRate = pFps;
-    mScreenshot = malloc(mTargetResX * mTargetResY * 4 * sizeof(char));
-    if (mScreenshot == NULL)
+    mOutputScreenshot = malloc(mTargetResX * mTargetResY * MSD_BYTES_PER_PIXEL * sizeof(char));
+    if (mOutputScreenshot == NULL)
     {
         LOG(LOG_ERROR, "Buffer allocation failed");
         return false;
@@ -274,8 +273,10 @@ bool MediaSourceDesktop::CloseGrabDevice()
         mWidget = NULL;
 
         // free internal buffer
-        free(mScreenshot);
-        mScreenshot = NULL;
+        free(mOutputScreenshot);
+        mOutputScreenshot = NULL;
+        free(mOriginalScreenshot);
+        mOriginalScreenshot = NULL;
 
         LOG(LOG_INFO, "...closed");
 
@@ -298,17 +299,36 @@ void MediaSourceDesktop::DoSetVideoGrabResolution(int pResX, int pResY)
 
     mMutexScreenshot.lock();
 
-    free(mScreenshot);
+    free(mOutputScreenshot);
     mSourceResX = pResX;
     mSourceResY = pResY;
-    mScreenshot = malloc(mSourceResX * mSourceResY * 4 * sizeof(char));
+
+    mOutputScreenshot = malloc(mTargetResX * mTargetResY * MSD_BYTES_PER_PIXEL * sizeof(char));
 
     mMutexScreenshot.unlock();
+}
+
+void MediaSourceDesktop::SetScreenshotSize(int pWidth, int pHeight)
+{
+    free(mOriginalScreenshot);
+    mSourceResX = pWidth;
+    mSourceResY = pHeight;
+
+    mOriginalScreenshot = malloc(mSourceResX * mSourceResY * MSD_BYTES_PER_PIXEL * sizeof(char));
 }
 
 bool MediaSourceDesktop::SupportsRecording()
 {
 	return true;
+}
+
+void MediaSourceDesktop::StopRecording()
+{
+    if (mRecording)
+    {
+        MediaSource::StopRecording();
+        mRecorderChunkNumber = 0;
+    }
 }
 
 void MediaSourceDesktop::CreateScreenshot()
@@ -368,14 +388,7 @@ void MediaSourceDesktop::CreateScreenshot()
 		CGImageRef tOSXWindowImage = CGWindowListCreateImage(CGRectInfinite, kCGWindowListOptionOnScreenOnly, mWidget->winId(), kCGWindowImageDefault);
 		tSourcePixmap = QPixmap::fromMacCGImageRef(tOSXWindowImage).copy(mGrabOffsetX, mGrabOffsetY, mSourceResX, mSourceResY);
 	#else
-		tSourcePixmap = QPixmap::grabWindow(mWidget->winId(), mGrabOffsetX, mGrabOffsetY);
-		if((tSourcePixmap.width() != mSourceResX) || (tSourcePixmap.height() != mSourceResY))
-		{
-			#ifdef MSD_DEBUG_PACKETS
-				LOG(LOG_VERBOSE, "Clip the source pixmap from %d*%d to %d*%d", tSourcePixmap.width(), tSourcePixmap.height(), mSourceResX, mSourceResY);
-			#endif
-			tSourcePixmap = tSourcePixmap.copy(0, 0, mSourceResX, mSourceResY);
-		}
+		tSourcePixmap = QPixmap::grabWindow(mWidget->winId(), mGrabOffsetX, mGrabOffsetY, mSourceResX, mSourceResY);
 	#endif
 
     if(!tSourcePixmap.isNull())
@@ -388,19 +401,19 @@ void MediaSourceDesktop::CreateScreenshot()
 				LOG(LOG_ERROR, "Unable to allocate memory for RGB frame");
 			}else
 			{
-				void *tOriginalScreenShotData = malloc(mSourceResX * mSourceResY * 4 * sizeof(char));
-				QImage tSourceImage = QImage((unsigned char*)tOriginalScreenShotData, mSourceResX, mSourceResY, QImage::Format_RGB32);
+				QImage tSourceImage = QImage((unsigned char*)mOriginalScreenshot, mSourceResX, mSourceResY, QImage::Format_RGB32);
 				QPainter *tSourcePainter = new QPainter(&tSourceImage);
 				tSourcePainter->drawPixmap(0, 0, tSourcePixmap);
 				delete tSourcePainter;
 
 				// Assign appropriate parts of buffer to image planes in tRGBFrame
-				FillFrame(tRGBFrame, tOriginalScreenShotData, PIX_FMT_RGB32, mSourceResX, mSourceResY);
+				FillFrame(tRGBFrame, mOriginalScreenshot, PIX_FMT_RGB32, mSourceResX, mSourceResY);
 
 				// set frame number in corresponding entries within AVFrame structure
-				tRGBFrame->pts = mChunkNumber + 1;
-				tRGBFrame->coded_picture_number = mChunkNumber + 1;
-				tRGBFrame->display_picture_number = mChunkNumber + 1;
+				tRGBFrame->pts = mRecorderChunkNumber;
+				tRGBFrame->coded_picture_number = mRecorderChunkNumber;
+				tRGBFrame->display_picture_number = mRecorderChunkNumber;
+                mRecorderChunkNumber++;
 
 				// emulate set FPS
 				tRGBFrame->pts = FpsEmulationGetPts();
@@ -415,7 +428,7 @@ void MediaSourceDesktop::CreateScreenshot()
 
 		// lock screenshot buffer
 		mMutexScreenshot.lock();
-		QImage tTargetImage = QImage((unsigned char*)mScreenshot, mTargetResX, mTargetResY, QImage::Format_RGB32);
+		QImage tTargetImage = QImage((unsigned char*)mOutputScreenshot, mTargetResX, mTargetResY, QImage::Format_RGB32);
 		QPainter *tTargetPainter = new QPainter(&tTargetImage);
 		tTargetPainter->drawPixmap(0, 0, tTargetPixmap);
 		delete tTargetPainter;
@@ -488,7 +501,7 @@ int MediaSourceDesktop::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDro
 		return -1;
 	}
 
-    memcpy(pChunkBuffer, mScreenshot, mTargetResX * mTargetResY * MSD_BYTES_PER_PIXEL);
+    memcpy(pChunkBuffer, mOutputScreenshot, mTargetResX * mTargetResY * MSD_BYTES_PER_PIXEL);
     mScreenshotUpdated = false;
 
     // unlock again and enable new screenshots
