@@ -404,6 +404,17 @@ void MediaSourcePortAudio::StopGrabbing()
         PaError tErr = paNoError;
         if ((tErr = Pa_AbortStream(mStream)) != paNoError)
             LOG(LOG_ERROR, "Couldn't abort stream because \"%s\"", Pa_GetErrorText(tErr));
+
+        // wait until the port audio stream becomes inactive
+        while((Pa_IsStreamActive(mStream)) == 1)
+        {
+            // wait some time
+            Thread::Suspend(250 * 1000);
+        }
+
+        // make sure no one waits for audio anymore -> send an empty buffer to FIFO and force a return from a possible ReadFifo() call
+        char tData[4];
+        mCaptureFifo->WriteFifo(tData, 0);
     }
 }
 
