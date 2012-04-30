@@ -101,7 +101,6 @@ MediaSource::MediaSource(string pName):
     mRecorderSamplesTempBuffer = (char*)malloc(MEDIA_SOURCE_AUDIO_SAMPLE_BUFFER_SIZE);
 
     mFfmpegInitMutex.lock();
-
     if(!mFfmpegInitiated)
     {
 		// console logging of FFMPG
@@ -126,7 +125,6 @@ MediaSource::MediaSource(string pName):
 
 		mFfmpegInitiated = true;
     }
-
     mFfmpegInitMutex.unlock();
 
     // ###################################################################
