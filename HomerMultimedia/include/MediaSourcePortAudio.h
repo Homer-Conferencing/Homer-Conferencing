@@ -72,6 +72,7 @@ private:
     int                 mDefaultDevice;
     PaStream            *mStream;
     MediaFifo           *mCaptureFifo;
+    bool				mCaptureDuplicateMonoStream;
     /* portaudio init. */
     static Mutex        mPaInitMutex;
     static bool         mPaInitiated;

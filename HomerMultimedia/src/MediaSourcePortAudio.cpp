@@ -266,16 +266,33 @@ bool MediaSourcePortAudio::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
 
     LOG(LOG_VERBOSE, "Going to open stream..");
     LOG(LOG_VERBOSE, "..selected sample rate: %d", pSampleRate);
+    mCaptureDuplicateMonoStream = false;
     if((tErr = Pa_OpenStream(&mStream, &tInputParameters, NULL /* output parameters */, pSampleRate, MEDIA_SOURCE_SAMPLES_PER_BUFFER, paClipOff | paDitherOff, RecordedAudioHandler, this)) != paNoError)
     {
-        LOG(LOG_ERROR, "Couldn't open stream because \"%s\"", Pa_GetErrorText(tErr));
-        return false;
+    	if ((pStereo) && (tErr == paInvalidChannelCount))
+    	{
+    		LOG(LOG_WARN, "Got channel count problem when stereo mode is selected, will try mono mode instead");
+    	    tInputParameters.channelCount = 1;
+    	    if((tErr = Pa_OpenStream(&mStream, &tInputParameters, NULL /* output parameters */, pSampleRate, MEDIA_SOURCE_SAMPLES_PER_BUFFER, paClipOff | paDitherOff, RecordedAudioHandler, this)) != paNoError)
+    	    {
+        		LOG(LOG_ERROR, "Couldn't open stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
+        		return false;
+    	    }else
+    	    {
+    	    	mCaptureDuplicateMonoStream = true;
+    	    	mStereo = false;
+    	    }
+    	}else
+    	{
+    		LOG(LOG_ERROR, "Couldn't open stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
+    		return false;
+    	}
     }
 
     LOG(LOG_VERBOSE, "Going to start stream..");
     if((tErr = Pa_StartStream(mStream)) != paNoError)
     {
-        LOG(LOG_ERROR, "Couldn't start stream because \"%s\"", Pa_GetErrorText(tErr));
+        LOG(LOG_ERROR, "Couldn't start stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
         return false;
     }
 
@@ -326,7 +343,7 @@ bool MediaSourcePortAudio::CloseGrabDevice()
         PaError tErr = paNoError;
         if ((tErr = Pa_CloseStream(mStream)) != paNoError)
         {
-            LOG(LOG_ERROR, "Couldn't close stream because \"%s\"", Pa_GetErrorText(tErr));
+            LOG(LOG_ERROR, "Couldn't close stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
         }
 
         LOG(LOG_INFO, "...closed");
@@ -374,7 +391,23 @@ int MediaSourcePortAudio::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pD
         LOG(LOG_VERBOSE, "Waiting for a new chunk of %d captured samples", pChunkSize);
     #endif
     mCaptureFifo->ReadFifo((char*)pChunkBuffer, pChunkSize);
-
+    if (mCaptureDuplicateMonoStream)
+    {
+    	// assume buffer of 16 bit signed integer samples
+		short int *tBuffer = (short int*)pChunkBuffer;
+		// assume 16 bits per sample
+		int tSampleCount = pChunkSize / 2;
+		#ifdef MSPA_DEBUG_PACKETS
+			LOG(LOG_VERBOSE, "Duplicating %d sample from mono to stereo", tSampleCount);
+		#endif
+		// duplicate each sample: mono ==> stereo
+		for (int i = tSampleCount - 1; i > 0; i--)
+    	{
+			tBuffer[i * 2 + 1] = tBuffer[i];
+			tBuffer[i * 2] = tBuffer[i];
+    	}
+    	pChunkSize *= 2;
+    }
     #ifdef MSPA_DEBUG_PACKETS
         LOG(LOG_VERBOSE, "Delivering audio chunk of %d bytes", pChunkSize);
     #endif
