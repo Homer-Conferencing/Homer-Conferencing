@@ -83,7 +83,7 @@ SET (SOURCES
 	${SOURCES}
     	# included in port audio: ../src/MediaSourceCoreAudio
     	../src/MediaSourceCoreVideo
-	../src/MediaSourcePortAudio
+		../src/MediaSourcePortAudio
 )
 ENDIF (APPLE)
 
