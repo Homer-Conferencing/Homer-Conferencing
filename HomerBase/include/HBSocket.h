@@ -92,10 +92,10 @@ union SocketAddressDescriptor
 class Socket
 {
 public:
-    /* client sockets */
-	Socket(enum NetworkType pIpVersion, enum TransportType pTransportType = SOCKET_UDP);
     /* server socekts */
-    Socket(unsigned int pListenerPort /* start number for auto probing */, enum TransportType pTransportType, unsigned int pProbeStepping = 0, unsigned int pHighestPossibleListenerPort = 0);
+    Socket(enum TransportType pTransportType = SOCKET_UDP, unsigned int pListenerPort = 0 /* start number for auto probing */, bool pReusable = false, unsigned int pProbeStepping = 0, unsigned int pHighestPossibleListenerPort = 0);
+    /* client sockets */
+	Socket(enum NetworkType pIpVersion, enum TransportType pTransportType = SOCKET_UDP, unsigned int pSenderPort = 0, bool pReusable = false, unsigned int pProbeStepping = 0, unsigned int pHighestPossibleSenderPort = 0);
 
     virtual ~Socket( );
 
@@ -109,9 +109,6 @@ public:
     std::string GetName();
     std::string GetPeerName();
 
-    /* reusing of sockets */
-    bool EnableReuse();
-
     /* QoS interface */
     static bool IsQoSSupported();
     static void DisableQoSSupport();
@@ -120,6 +117,9 @@ public:
     static bool CreateQoSProfile(const std::string &pProfileName, const QoSSettings &pQoSSettings);
     static QoSProfileList GetQoSProfiles();
     bool SetQoS(const std::string &pProfileName);
+
+	/* allow reusing a port */
+    bool EnableReuse(bool pActive = true);
 
     /* transmission */
     bool Send(std::string pTargetHost, unsigned int pTargetPort, void *pBuffer, ssize_t pBufferSize);
@@ -149,7 +149,7 @@ private:
     void SetDefaults(enum TransportType pTransportType);
 
     bool CreateSocket(enum NetworkType pIpVersion = SOCKET_IPv6);
-    bool BindSocket(unsigned int pPort = 0, unsigned int pProbeStepping = 1, unsigned int pHighesPossibleListenerPort = 0);
+    bool BindSocket(unsigned int pPort = 0, unsigned int pProbeStepping = 1, unsigned int pHighesPossiblePort = 0);
     static void DestroySocket(int pHandle);
 
     QoSSettings			mQoSSettings;

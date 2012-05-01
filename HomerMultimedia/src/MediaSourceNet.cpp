@@ -92,7 +92,7 @@ MediaSourceNet::MediaSourceNet(unsigned int pPortNumber, enum TransportType pTra
 
     mListenerSocketOutside = false;
 
-    Init(new Socket(pPortNumber, pTransportType, 0), pRtpActivated);
+    Init(new Socket(pTransportType, pPortNumber), pRtpActivated);
 }
 
 MediaSourceNet::~MediaSourceNet()
