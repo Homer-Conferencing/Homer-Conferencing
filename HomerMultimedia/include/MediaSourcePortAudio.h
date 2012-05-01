@@ -25,8 +25,8 @@
  * Since:   2012-04-25
  */
 
-#ifndef _MULTIMEDIA_MEDIA_SOURCE_CORE_AUDIO_
-#define _MULTIMEDIA_MEDIA_SOURCE_CORE_AUDIO_
+#ifndef _MULTIMEDIA_MEDIA_SOURCE_PORT_AUDIO_
+#define _MULTIMEDIA_MEDIA_SOURCE_PORT_AUDIO_
 
 #include <MediaFifo.h>
 #include <MediaSource.h>
