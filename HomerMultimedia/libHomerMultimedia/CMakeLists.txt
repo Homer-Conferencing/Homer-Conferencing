@@ -158,6 +158,10 @@ SET (LIBS_APPLE_STATIC
 	portaudio
 )
 SET (FRAMEWORKS_APPLE
+	AudioToolbox
+	AudioUnit
+	Carbon
+	CoreAudio
 	CoreFoundation
 	CoreVideo
 	VideoDecodeAcceleration
