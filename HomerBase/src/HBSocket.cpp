@@ -91,7 +91,7 @@ void Socket::SetDefaults(enum TransportType pTransportType)
 ///////////////////////////////////////////////////////////////////////////////
 /// server socket
 ///////////////////////////////////////////////////////////////////////////////
-Socket::Socket(unsigned int pListenerPort, enum TransportType pTransportType, unsigned int pProbeStepping, unsigned int pHighestPossibleListenerPort)
+Socket::Socket(enum TransportType pTransportType, unsigned int pListenerPort, bool pReusable, unsigned int pProbeStepping, unsigned int pHighestPossibleListenerPort)
 {
     LOG(LOG_VERBOSE, "Created server socket object with listener port %u, transport type %s, port probing stepping %d", pListenerPort, TransportType2String(pTransportType).c_str(), pProbeStepping);
 
@@ -114,11 +114,15 @@ Socket::Socket(unsigned int pListenerPort, enum TransportType pTransportType, un
     }
 
     SetDefaults(pTransportType);
+
     if (CreateSocket(SOCKET_IPv6))
     {
-    	if (!BindSocket(pListenerPort, pProbeStepping, pHighestPossibleListenerPort))
+        if(pReusable)
+        	EnableReuse(pReusable);
+
+        if (!BindSocket(pListenerPort, pProbeStepping, pHighestPossibleListenerPort))
     	    mSocketHandle = -1;
-    	if ((!pProbeStepping) && (mLocalPort != pListenerPort))
+    	if ((!pProbeStepping) && (mLocalPort != pListenerPort) && (pListenerPort != 0))
     		LOG(LOG_ERROR, "Bound socket %d to another port than requested", mSocketHandle);
     }
     LOG(LOG_VERBOSE, "Created %s-listener for socket %d at local port %u with receive buffer of %d bytes", TransportType2String(mSocketTransportType).c_str(), mSocketHandle, mLocalPort, GetReceiveBufferSize());
@@ -127,7 +131,7 @@ Socket::Socket(unsigned int pListenerPort, enum TransportType pTransportType, un
 ///////////////////////////////////////////////////////////////////////////////
 /// client socket
 ///////////////////////////////////////////////////////////////////////////////
-Socket::Socket(enum NetworkType pIpVersion, enum TransportType pTransportType)
+Socket::Socket(enum NetworkType pIpVersion, enum TransportType pTransportType, unsigned int pSenderPort, bool pReusable, unsigned int pProbeStepping, unsigned int pHighestPossibleSenderPort)
 {
     LOG(LOG_VERBOSE, "Created client socket object with IP version %d, transport type %s", pIpVersion, TransportType2String(pTransportType).c_str());
 
@@ -156,10 +160,16 @@ Socket::Socket(enum NetworkType pIpVersion, enum TransportType pTransportType)
     }
 
     SetDefaults(pTransportType);
+
     if (CreateSocket(pIpVersion))
     {
-        if (!BindSocket())
-            mSocketHandle = -1;
+        if(pReusable)
+        	EnableReuse(pReusable);
+
+        if (!BindSocket(pSenderPort, pProbeStepping, pHighestPossibleSenderPort))
+    	    mSocketHandle = -1;
+    	if ((!pProbeStepping) && (mLocalPort != pSenderPort) && (pSenderPort != 0))
+    		LOG(LOG_ERROR, "Bound socket %d to another port than requested", mSocketHandle);
     }
     LOG(LOG_VERBOSE, "Created %s-sender for socket %d at local address %s:%u with receive buffer size of %d bytes", TransportType2String(mSocketTransportType).c_str(), mSocketHandle, mLocalHost.c_str(), mLocalPort, GetReceiveBufferSize());
 
@@ -254,16 +264,54 @@ std::string Socket::GetPeerName()
     return tResult;
 }
 
-bool Socket::EnableReuse()
+bool Socket::EnableReuse(bool pActive)
 {
     bool tResult = false;
 
-    // activate reuse of socket per default
-    int tReuseAddr = 1;
-    if (setsockopt(mSocketHandle, SOL_SOCKET, SO_REUSEADDR, (char*)&tReuseAddr, sizeof(tReuseAddr)) < 0)
-        LOG(LOG_ERROR, "Failed to set socket option SO_REUSEADDR on socket %d", mSocketHandle);
-    else
-        tResult = true;
+	if (pActive)
+	{
+		// deactivate exclusive use of socket
+		int tExclusiveOptionValue = 0;
+		if (setsockopt(mSocketHandle, SOL_SOCKET, SO_EXCLUSIVEADDRUSE, (char*)&tExclusiveOptionValue, sizeof(tExclusiveOptionValue)) < 0)
+			LOG(LOG_ERROR, "Failed to set socket option SO_EXCLUSIVEADDRUSE on socket %d", mSocketHandle);
+		else
+			tResult = true;
+
+		#if defined(APPLE) || defined(BSD)
+			int tReuseOption = SO_REUSEPORT;
+		#endif
+		#if defined(LINUX) || defined(WIN32) || defined (WIN64)
+			int tReuseOption = SO_REUSEADDR;
+		#endif
+
+		LOG(LOG_WARN, "Allow reusing of local port %u for future sockets", mLocalPort);
+
+		// activate reuse of socket
+		int tReuseOptionValue = 1;
+		if (setsockopt(mSocketHandle, SOL_SOCKET, tReuseOption, (char*)&tReuseOptionValue, sizeof(tReuseOptionValue)) < 0)
+		{
+			LOG(LOG_ERROR, "Failed to set socket option SO_REUSEADDR/SO_REUSEPORT on socket %d", mSocketHandle);
+			tResult = false;
+		}else
+			tResult = true;
+	}else
+	{
+		#if defined(APPLE) || defined(BSD)
+			int tReuseOption = SO_REUSEPORT;
+		#endif
+		#if defined(LINUX) || defined(WIN32) || defined (WIN64)
+			int tReuseOption = SO_REUSEADDR;
+		#endif
+
+		LOG(LOG_WARN, "Define local port %u for exclusive usage", mLocalPort);
+
+		// activate exclusive use of socket
+		int tExclusiveOptionValue = 1;
+		if (setsockopt(mSocketHandle, SOL_SOCKET, SO_EXCLUSIVEADDRUSE, (char*)&tExclusiveOptionValue, sizeof(tExclusiveOptionValue)) < 0)
+			LOG(LOG_ERROR, "Failed to set socket option SO_EXCLUSIVEADDRUSE on socket %d", mSocketHandle);
+		else
+			tResult = true;
+	}
 
     return tResult;
 }
@@ -727,7 +775,7 @@ bool Socket::SetReceiveBufferSize(int pSize)
 
     if(mSocketHandle != -1)
     {
-        LOG(LOG_VERBOSE, "Setting receive buffer size to %d bytes on socket %d", pSize, mSocketHandle);
+        LOG(LOG_WARN, "Setting receive buffer size to %d bytes on socket %d", pSize, mSocketHandle);
 
         if (setsockopt(mSocketHandle, SOL_SOCKET, SO_RCVBUF, (char*)&pSize, sizeof(pSize)) < 0)
             LOG(LOG_ERROR, "Failed to get receive buffer size on socket %d", mSocketHandle);
@@ -1161,7 +1209,7 @@ void Socket::DestroySocket(int pHandle)
     }
 }
 
-bool Socket::BindSocket(unsigned int pPort, unsigned int pProbeStepping, unsigned int pHighesPossibleListenerPort)
+bool Socket::BindSocket(unsigned int pPort, unsigned int pProbeStepping, unsigned int pHighesPossiblePort)
 {
     bool tResult = true;
     SocketAddressDescriptor tAddressDescriptor;
@@ -1197,7 +1245,7 @@ bool Socket::BindSocket(unsigned int pPort, unsigned int pProbeStepping, unsigne
 
         LOG(LOG_INFO, "Failed to bind IPv%d-%s socket %d to local port %d because \"%s\", will try next alternative", (mSocketNetworkType == SOCKET_IPv6) ? 6 : 4, TransportType2String(mSocketTransportType).c_str(), mSocketHandle, pPort, strerror(errno));
         pPort += pProbeStepping;
-        if ((pPort > 65535) || ((pPort > pHighesPossibleListenerPort) && (pHighesPossibleListenerPort != 0)))
+        if ((pPort > 65535) || ((pPort > pHighesPossiblePort) && (pHighesPossiblePort != 0)))
         {
             LOG(LOG_ERROR, "Auto-probing for port binding failed, no further port numbers allowed");
             tResult = false;

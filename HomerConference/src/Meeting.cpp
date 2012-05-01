@@ -365,25 +365,77 @@ bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort)
         tParticipantDescriptor.RemoteAudioPort = 0;
         tParticipantDescriptor.RemoteAudioCodec = "";
         tParticipantDescriptor.CallState = CALLSTATE_STANDBY;
-        tParticipantDescriptor.VideoReceiveSocket = new Socket(mVideoAudioStartPort, GetSocketTypeFromMediaTransportType(GetVideoTransportType()), 2);
-        if (tParticipantDescriptor.VideoReceiveSocket == NULL)
-            LOG(LOG_ERROR, "Invalid video socket");
-        else
-            mVideoAudioStartPort = tParticipantDescriptor.VideoReceiveSocket->GetLocalPort() + 2;
-        tParticipantDescriptor.AudioReceiveSocket = new Socket(mVideoAudioStartPort, GetSocketTypeFromMediaTransportType(GetAudioTransportType()), 2);
-        if (tParticipantDescriptor.AudioReceiveSocket == NULL)
-            LOG(LOG_ERROR, "Invalid audio socket");
-        else
-            mVideoAudioStartPort = tParticipantDescriptor.AudioReceiveSocket->GetLocalPort() + 2;
-        #ifdef MEETING_USE_BIRECTIONAL_MEDIASOCKETS
-            tParticipantDescriptor.VideoSendSocket = tParticipantDescriptor.VideoReceiveSocket;
-            tParticipantDescriptor.AudioSendSocket = tParticipantDescriptor.AudioReceiveSocket;
-        #else
-            tParticipantDescriptor.VideoSendSocket = new Socket(IS_IPV6_ADDRESS(pHost) ? SOCKET_IPv6 : SOCKET_IPv4, GetSocketTypeFromMediaTransportType(GetVideoTransportType()));
-            tParticipantDescriptor.AudioSendSocket = new Socket(IS_IPV6_ADDRESS(pHost) ? SOCKET_IPv6 : SOCKET_IPv4, GetSocketTypeFromMediaTransportType(GetVideoTransportType()));
-        #endif
 
-        mParticipants.push_back(tParticipantDescriptor);
+		#ifdef MEETING_USE_BIRECTIONAL_MEDIA_PORTS
+			// create video sender port
+			tParticipantDescriptor.VideoSendSocket = new Socket(IS_IPV6_ADDRESS(pHost) ? SOCKET_IPv6 : SOCKET_IPv4, GetSocketTypeFromMediaTransportType(GetVideoTransportType()), mVideoAudioStartPort, true, 2);
+			if (tParticipantDescriptor.VideoSendSocket == NULL)
+				LOG(LOG_ERROR, "Invalid video send socket");
+			else
+				mVideoAudioStartPort = tParticipantDescriptor.VideoSendSocket->GetLocalPort() + 2;
+
+			// create audio sender port
+			tParticipantDescriptor.AudioSendSocket = new Socket(IS_IPV6_ADDRESS(pHost) ? SOCKET_IPv6 : SOCKET_IPv4, GetSocketTypeFromMediaTransportType(GetAudioTransportType()), mVideoAudioStartPort, true, 2);
+			if (tParticipantDescriptor.AudioSendSocket == NULL)
+				LOG(LOG_ERROR, "Invalid audio send socket");
+			else
+				mVideoAudioStartPort = tParticipantDescriptor.AudioSendSocket->GetLocalPort() + 2;
+
+			// create video listener port
+        	//HINT: for Windows/BSD/OSX the client socket has to be created before the server socket when using both assigned to the same port, Linux doesn't care about the order
+        	tParticipantDescriptor.VideoReceiveSocket = new Socket(GetSocketTypeFromMediaTransportType(GetVideoTransportType()), tParticipantDescriptor.VideoSendSocket->GetLocalPort(), true, 0);
+			if (tParticipantDescriptor.VideoReceiveSocket == NULL)
+				LOG(LOG_ERROR, "Invalid video receive socket");
+			// create audio listener port
+        	tParticipantDescriptor.AudioReceiveSocket = new Socket(GetSocketTypeFromMediaTransportType(GetAudioTransportType()), tParticipantDescriptor.AudioSendSocket->GetLocalPort(), true, 0);
+			if (tParticipantDescriptor.AudioReceiveSocket == NULL)
+				LOG(LOG_ERROR, "Invalid audio receive socket");
+		#else
+			// create video sender port
+			tParticipantDescriptor.VideoSendSocket = new Socket(IS_IPV6_ADDRESS(pHost) ? SOCKET_IPv6 : SOCKET_IPv4, GetSocketTypeFromMediaTransportType(GetVideoTransportType()));
+			if (tParticipantDescriptor.VideoSendSocket == NULL)
+				LOG(LOG_ERROR, "Invalid video send socket");
+
+			// create audio sender port
+			tParticipantDescriptor.AudioSendSocket = new Socket(IS_IPV6_ADDRESS(pHost) ? SOCKET_IPv6 : SOCKET_IPv4, GetSocketTypeFromMediaTransportType(GetAudioTransportType()));
+			if (tParticipantDescriptor.AudioSendSocket == NULL)
+				LOG(LOG_ERROR, "Invalid audio send socket");
+
+			// create video listener port
+			tParticipantDescriptor.VideoReceiveSocket = new Socket(GetSocketTypeFromMediaTransportType(GetVideoTransportType()), mVideoAudioStartPort);
+			if (tParticipantDescriptor.VideoReceiveSocket == NULL)
+				LOG(LOG_ERROR, "Invalid video receive socket");
+			else
+				mVideoAudioStartPort = tParticipantDescriptor.VideoReceiveSocket->GetLocalPort() + 2;
+
+			// create audio listener port
+			tParticipantDescriptor.AudioReceiveSocket = new Socket(GetSocketTypeFromMediaTransportType(GetAudioTransportType()), mVideoAudioStartPort);
+			if (tParticipantDescriptor.AudioReceiveSocket == NULL)
+				LOG(LOG_ERROR, "Invalid audio receive socket");
+			else
+				mVideoAudioStartPort = tParticipantDescriptor.AudioReceiveSocket->GetLocalPort() + 2;
+		#endif
+
+
+//            tParticipantDescriptor.VideoReceiveSocket = new Socket(mVideoAudioStartPort, GetSocketTypeFromMediaTransportType(GetVideoTransportType()), 2);
+//        if (tParticipantDescriptor.VideoReceiveSocket == NULL)
+//            LOG(LOG_ERROR, "Invalid video socket");
+//        else
+//            mVideoAudioStartPort = tParticipantDescriptor.VideoReceiveSocket->GetLocalPort() + 2;
+//        tParticipantDescriptor.AudioReceiveSocket = new Socket(mVideoAudioStartPort, GetSocketTypeFromMediaTransportType(GetAudioTransportType()), 2);
+//        if (tParticipantDescriptor.AudioReceiveSocket == NULL)
+//            LOG(LOG_ERROR, "Invalid audio socket");
+//        else
+//            mVideoAudioStartPort = tParticipantDescriptor.AudioReceiveSocket->GetLocalPort() + 2;
+//        #ifdef MEETING_USE_BIRECTIONAL_MEDIA_PORTS
+//            tParticipantDescriptor.VideoSendSocket = tParticipantDescriptor.VideoReceiveSocket;
+//            tParticipantDescriptor.AudioSendSocket = tParticipantDescriptor.AudioReceiveSocket;
+//        #else
+//            tParticipantDescriptor.VideoSendSocket = new Socket(IS_IPV6_ADDRESS(pHost) ? SOCKET_IPv6 : SOCKET_IPv4, GetSocketTypeFromMediaTransportType(GetVideoTransportType()));
+//            tParticipantDescriptor.AudioSendSocket = new Socket(IS_IPV6_ADDRESS(pHost) ? SOCKET_IPv6 : SOCKET_IPv4, GetSocketTypeFromMediaTransportType(GetVideoTransportType()));
+//        #endif
+
+		mParticipants.push_back(tParticipantDescriptor);
 
     }else
         LOG(LOG_VERBOSE, "Participant session already exists, open request ignored");
@@ -411,10 +463,8 @@ bool Meeting::CloseParticipantSession(string pParticipant)
             // delete video/audio sockets
             delete (*tIt).VideoReceiveSocket;
             delete (*tIt).AudioReceiveSocket;
-            #ifndef MEETING_USE_BIRECTIONAL_MEDIASOCKETS
-                delete (*tIt).VideoSendSocket;
-                delete (*tIt).AudioSendSocket;
-            #endif
+			delete (*tIt).VideoSendSocket;
+			delete (*tIt).AudioSendSocket;
 
             // remove element from participants list
             tIt = mParticipants.erase(tIt);
@@ -475,10 +525,8 @@ void Meeting::CloseAllSessions()
         // delete video/audio sockets
         delete (*tIt).VideoReceiveSocket;
         delete (*tIt).AudioReceiveSocket;
-        #ifndef MEETING_USE_BIRECTIONAL_MEDIASOCKETS
-            delete (*tIt).VideoSendSocket;
-            delete (*tIt).AudioSendSocket;
-        #endif
+		delete (*tIt).VideoSendSocket;
+		delete (*tIt).AudioSendSocket;
 
         // remove element from participants list
         tIt = mParticipants.erase(tIt);
