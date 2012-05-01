@@ -116,7 +116,7 @@ SET (LIBS_WINDOWS_INSTALL
     avformat-53
     libgcc_s_dw2-1
     libstdc++-6
-    libportaudio-2
+    portaudio
     swresample-0
     swscale-2
 )
@@ -128,7 +128,7 @@ SET (LIBS_WINDOWS
 	HomerBase
 	HomerGAPI
 	HomerMonitor
-	libportaudio-2
+	portaudio
     swscale-2
 # replaced by portaudio:    Winmm
 	ws2_32
