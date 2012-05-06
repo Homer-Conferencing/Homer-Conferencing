@@ -56,6 +56,7 @@ private slots:
     void ClickedButton(QAbstractButton *pButton);
 
 private:
+    virtual void contextMenuEvent(QContextMenuEvent *event);
     virtual void mousePressEvent(QMouseEvent *pEvent);
     virtual void mouseMoveEvent(QMouseEvent *pEvent);
     virtual void moveEvent(QMoveEvent *pEvent);

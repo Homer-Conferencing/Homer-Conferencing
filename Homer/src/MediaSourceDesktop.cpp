@@ -115,42 +115,6 @@ void MediaSourceDesktop::getVideoDevices(VideoDevicesList &pVList)
         LOG(LOG_VERBOSE, "Found video device: %s (card: %s)", tDevice.Name.c_str(), tDevice.Card.c_str());
     pVList.push_back(tDevice);
 
-    QDesktopWidget *tDesktop = QApplication::desktop();
-    if (tDesktop != NULL)
-    {
-        if (tFirstCall)
-        {
-            LOG(LOG_VERBOSE, "Desktop found..");
-            LOG(LOG_VERBOSE, "  ..resolution: %d * %d", tDesktop->width(), tDesktop->height());
-            LOG(LOG_VERBOSE, "  ..screens: %d", tDesktop->numScreens());
-            LOG(LOG_VERBOSE, "  ..virtualized: %d", tDesktop->isVirtualDesktop());
-        }
-
-        for (int i = 0; i < tDesktop->numScreens(); i++)
-        {
-            QWidget *tScreen = tDesktop->screen(i);
-
-            string tScreenName = "screen ";
-            tScreenName += char(i + 48);
-            tDevice.Name = "Desktop ";
-            tDevice.Name += tScreenName;
-            tDevice.Card = tScreenName;
-			#ifdef APPLE
-            	tDevice.Desc = "OSX Cocoa based capturing from screen " + toString(i) + " with resolution " + toString(tScreen->width()) + "*" + toString(tScreen->height()) + " pixels";
-			#else
-            	tDevice.Desc = "Qt based capturing from screen " + toString(i) + " with resolution " + toString(tScreen->width()) + "*" + toString(tScreen->height()) + " pixels";
-			#endif
-
-            if (tFirstCall)
-            {
-                LOG(LOG_VERBOSE, "  ..screen %d with resolution: %d * %d", i, tScreen->width(), tScreen->height());
-                LOG(LOG_VERBOSE, "Found video device: %s (card: %s)", tDevice.Name.c_str(), tDevice.Card.c_str());
-            }
-
-            pVList.push_back(tDevice);
-        }
-    }
-
     tFirstCall = false;
 }
 
@@ -189,26 +153,8 @@ bool MediaSourceDesktop::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if (mMediaSourceOpened)
         return false;
 
-    if ((mDesiredDevice == "auto") || (mDesiredDevice == "segment"))
-    {// screen segment
-        mWidget = QApplication::desktop()->screen(0); //per default support only grabbing from screen 0
-        SetScreenshotSize(pResX, pResY);
-    }else
-    {// screen 0/1/n
-        if ((mDesiredDevice != "") && (mDesiredDevice.substr(0, 7) == "screen "))
-            tScreenId = mDesiredDevice.substr(7,1).c_str()[0] - 48;
-
-        if (tScreenId == -1)
-        {
-            LOG(LOG_ERROR, "Selected screen \"%s\" not found", mDesiredDevice.c_str());
-            return false;
-        }
-
-        LOG(LOG_VERBOSE, "Try to access screen %d", tScreenId);
-
-        mWidget = QApplication::desktop()->screen(tScreenId);
-        SetScreenshotSize(mWidget->width(), mWidget->height());
-    }
+    mWidget = QApplication::desktop()->screen(0); //per default support only grabbing from screen 0
+    SetScreenshotSize(pResX, pResY);
 
     mCurrentDevice = mDesiredDevice;
 
