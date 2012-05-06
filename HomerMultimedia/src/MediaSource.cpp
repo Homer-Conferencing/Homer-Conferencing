@@ -204,6 +204,16 @@ void MediaSource::GetMuxingResolution(int &pResX, int &pResY)
     pResY = 0;
 }
 
+int MediaSource::GetMuxingBufferCounter()
+{
+    return 0;
+}
+
+int MediaSource::GetMuxingBufferSize()
+{
+    return 0;
+}
+
 MediaSource* MediaSource::GetMediaSource()
 {
     LOG(LOG_VERBOSE, "This is only the dummy function");
@@ -800,7 +810,12 @@ int MediaSource::GetChunkDropCounter()
     return mChunkDropCounter;
 }
 
-int MediaSource::GetChunkBufferCounter()
+int MediaSource::GetFragmentBufferCounter()
+{
+    return 0;
+}
+
+int MediaSource::GetFragmentBufferSize()
 {
     return 0;
 }

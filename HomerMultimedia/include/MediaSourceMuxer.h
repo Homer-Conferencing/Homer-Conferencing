@@ -69,6 +69,8 @@ public:
     virtual bool SupportsMuxing();
     virtual std::string GetMuxingCodec();
     virtual void GetMuxingResolution(int &pResX, int &pResY);
+    virtual int GetMuxingBufferCounter();
+    virtual int GetMuxingBufferSize();
 
     /* relaying */
     virtual bool SupportsRelaying();

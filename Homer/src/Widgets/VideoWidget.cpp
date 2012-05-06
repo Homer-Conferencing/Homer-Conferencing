@@ -844,7 +844,7 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
 
         tPainter->setPen(QColor(Qt::darkRed));
         tPainter->drawText(5, 41, " Source: " + mVideoWorker->GetCurrentDevice());
-        tPainter->drawText(5, 61, " Frame: " + QString("%1").arg(pFrameNumber) + (mVideoSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropCounter()) + " lost packets)") : "") + (mVideoSource->GetChunkBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkBufferCounter()) + " buffered packets)") : ""));
+        tPainter->drawText(5, 61, " Frame: " + QString("%1").arg(pFrameNumber) + (mVideoSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropCounter()) + " lost packets)") : "") + (mVideoSource->GetFragmentBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetFragmentBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetFragmentBufferSize()) + " buffered packets)") : ""));
         tPainter->drawText(5, 81, " Fps: " + QString("%1").arg(pFps, 4, 'f', 2, ' '));
         tPainter->drawText(5, 101, " Codec: " + ((tCodecName != "") ? tCodecName : "unknown") + " (" + QString("%1").arg(tSourceResX) + "*" + QString("%1").arg(tSourceResY) + ")");
         tPainter->drawText(5, 121, " Output: " + QString("%1").arg(tFrameOutputWidth) + "*" + QString("%1").arg(tFrameOutputHeight) + " (" + tAspectRatio + ")" + (mSmoothPresentation ? "[smoothed]" : ""));
@@ -858,21 +858,21 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
         if (mVideoSource->SupportsMuxing())
         {
         	tPeerOutputOffs = 20;
-            tPainter->drawText(5, 141 + tMuxOutputOffs, " Mux codec: " + ((tMuxCodecName != "") ? tMuxCodecName : "unknown") + " (" + QString("%1").arg(tMuxResX) + "*" + QString("%1").arg(tMuxResY) + ")");
+            tPainter->drawText(5, 141 + tMuxOutputOffs, " Mux codec: " + ((tMuxCodecName != "") ? tMuxCodecName : "unknown") + " (" + QString("%1").arg(tMuxResX) + "*" + QString("%1").arg(tMuxResY) + ")" + (mVideoSource->GetMuxingBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetMuxingBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetMuxingBufferSize()) + " buffered frames)") : ""));
         }
         if (tPeerName != "")
         	tPainter->drawText(5, 141 + tMuxOutputOffs + tPeerOutputOffs, " Peer: " + tPeerName);
 
         tPainter->setPen(QColor(Qt::red));
         tPainter->drawText(4, 40, " Source: " + mVideoWorker->GetCurrentDevice());
-        tPainter->drawText(4, 60, " Frame: " + QString("%1").arg(pFrameNumber) + (mVideoSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropCounter()) + " lost packets)") : "") + (mVideoSource->GetChunkBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkBufferCounter()) + " buffered packets)") : ""));
+        tPainter->drawText(4, 60, " Frame: " + QString("%1").arg(pFrameNumber) + (mVideoSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropCounter()) + " lost packets)") : "") + (mVideoSource->GetFragmentBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetFragmentBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetFragmentBufferSize()) + " buffered packets)") : ""));
         tPainter->drawText(4, 80, " Fps: " + QString("%1").arg(pFps, 4, 'f', 2, ' '));
         tPainter->drawText(4, 100, " Codec: " + ((tCodecName != "") ? tCodecName : "unknown") + " (" + QString("%1").arg(tSourceResX) + "*" + QString("%1").arg(tSourceResY) + ")");
         tPainter->drawText(4, 120, " Output: "  + QString("%1").arg(tFrameOutputWidth) + "*" + QString("%1").arg(tFrameOutputHeight) + " (" + tAspectRatio + ")" + (mSmoothPresentation ? "[smoothed]" : ""));
         if (mVideoSource->SupportsSeeking())
 			tPainter->drawText(4, 140, " Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0'));
         if (mVideoSource->SupportsMuxing())
-            tPainter->drawText(4, 140 + tMuxOutputOffs, " Mux codec: " + ((tMuxCodecName != "") ? tMuxCodecName : "unknown") + " (" + QString("%1").arg(tMuxResX) + "*" + QString("%1").arg(tMuxResY) + ")");
+            tPainter->drawText(4, 140 + tMuxOutputOffs, " Mux codec: " + ((tMuxCodecName != "") ? tMuxCodecName : "unknown") + " (" + QString("%1").arg(tMuxResX) + "*" + QString("%1").arg(tMuxResY) + ")" + (mVideoSource->GetMuxingBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetMuxingBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetMuxingBufferSize()) + " buffered frames)") : ""));
         if (tPeerName != "")
         	tPainter->drawText(5, 140 + tMuxOutputOffs + tPeerOutputOffs, " Peer: " + tPeerName);
     }
