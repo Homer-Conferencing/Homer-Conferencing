@@ -295,7 +295,7 @@ void MainWindow::initializeConferenceManagement()
     {
         LOG(LOG_INFO, "Using IP address: %s", tLocalSourceIp.toStdString().c_str());
         CONF.SetSipListenerAddress(tLocalSourceIp);
-        MEETING.Init(tLocalSourceIp.toStdString(), mLocalAddresses, "BROADCAST", CONF.GetSipStartPort(), CONF.GetSipListenerTransport(), CONF.GetSipStartPort() + 10, CONF.GetVideoAudioStartPort());
+        MEETING.Init(tLocalSourceIp.toStdString(), mLocalAddresses, CONF.GetNatSupportActivation(), "BROADCAST", CONF.GetSipStartPort(), CONF.GetSipListenerTransport(), CONF.GetSipStartPort() + 10, CONF.GetVideoAudioStartPort());
         MEETING.AddObserver(this);
     } else
     {
@@ -304,7 +304,7 @@ void MainWindow::initializeConferenceManagement()
             LOG(LOG_INFO, "No fitting network interface towards outside found");
             LOG(LOG_INFO, "Using loopback interface with IP address: %s", tLocalLoopIp.toStdString().c_str());
             LOG(LOG_INFO, "==>>>>> NETWORK TIMEOUTS ARE POSSIBLE! APPLICATION MAY HANG FOR MOMENTS! <<<<<==");
-            MEETING.Init(tLocalLoopIp.toStdString(), mLocalAddresses, "BROADCAST", CONF.GetSipStartPort(), CONF.GetSipListenerTransport(), CONF.GetSipStartPort() + 10, CONF.GetVideoAudioStartPort());
+            MEETING.Init(tLocalLoopIp.toStdString(), mLocalAddresses, CONF.GetNatSupportActivation(), "BROADCAST", CONF.GetSipStartPort(), CONF.GetSipListenerTransport(), CONF.GetSipStartPort() + 10, CONF.GetVideoAudioStartPort());
             MEETING.AddObserver(this);
         } else
         {

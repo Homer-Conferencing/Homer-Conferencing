@@ -117,7 +117,7 @@ private:
     std::string InitGeneralEvent_FromSipReceivedResponseEvent(const sip_to_t *pRemote, const sip_to_t *pLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, GeneralEvent *pEvent, std::string pEventName, std::string &pSourceIp, unsigned int pSourcePort);
 
 protected:
-    void Init(int pStartPort = 5060, Homer::Base::TransportType pSipListenerTransport = SOCKET_UDP, int pStunPort = 5070);
+    void Init(int pStartPort = 5060, Homer::Base::TransportType pSipListenerTransport = SOCKET_UDP, bool pSipNatTraversalSupport = false, int pStunPort = 5070);
     void DeInit();
 
     void StopSipMainLoop();
@@ -186,6 +186,7 @@ protected:
     enum TransportType  mSipHostPortTransport;
     bool                mSipListenerNeeded;
     bool                mSipStackOnline;
+    bool                mSipNatTraversalSupport;
     int                 mSipRegisteredAtServer; //tri-state: 0 = unregistered, 1 = registered, -1 = registration failed
     int                 mSipPresencePublished; //tri-state: 0 = unpublished, 1 = published, -1 = publication failed
 };

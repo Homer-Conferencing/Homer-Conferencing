@@ -95,12 +95,13 @@ string SIP::GetSofiaSipVersion()
     return SOFIA_SIP_VERSION;
 }
 
-void SIP::Init(int pStartPort, TransportType pSipListenerTransport, int pStunPort)
+void SIP::Init(int pStartPort, TransportType pSipListenerTransport, bool pSipNatTraversalSupport, int pStunPort)
 {
     // default port is 5060, auto-probing within run()
     mSipHostPort = pStartPort;
     mSipHostPortTransport = pSipListenerTransport;
     mStunHostPort = pStunPort;
+    mSipNatTraversalSupport = pSipNatTraversalSupport;
 }
 
 void SIP::DeInit()

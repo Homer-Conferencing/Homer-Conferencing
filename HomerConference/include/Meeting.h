@@ -44,12 +44,9 @@ namespace Homer { namespace Conference {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// de/activate NAT traversal mechanism: setting explicitly the own contact IP address (used as video/audio destination)
-#define NAT_TRAVERSAL_SUPPORT
-
-// de/activate birectional sockets for video/audio transmission: local media socket is used both for sending stream to peer and for receiving stream from peer
+// birectional sockets for video/audio transmission: local media socket is used both for sending stream to peer and for receiving stream from peer
 //HINT: this is need for easier NAT traversal because it allows the assumption sending and receiving port number at remote side are the same and can be derived from SDP data
-#define MEETING_USE_BIRECTIONAL_MEDIA_PORTS
+#define MEETING_ALLOW_BIRECTIONAL_MEDIA_SOCKETS
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -97,7 +94,7 @@ public:
 
     static Meeting& GetInstance();
 
-    void Init(std::string pSipHostAdr, LocalAddressesList pLocalAddresses, std::string pBroadcastAdr = "Global messages", int pSipStartPort = 5060, Homer::Base::TransportType pSipListenerTransport = SOCKET_UDP, int pStunStartPort = 5070, int pVideoAudioStartPort = 5000);
+    void Init(std::string pSipHostAdr, LocalAddressesList pLocalAddresses, bool pNatTraversalSupport, std::string pBroadcastAdr = "Global messages", int pSipStartPort = 5060, Homer::Base::TransportType pSipListenerTransport = SOCKET_UDP, int pStunStartPort = 5070, int pVideoAudioStartPort = 5000);
     void Stop();
     void Deinit();
 
