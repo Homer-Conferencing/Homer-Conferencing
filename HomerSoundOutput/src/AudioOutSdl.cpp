@@ -210,7 +210,7 @@ void AudioOutSdl::ClosePlaybackDevice()
 
         mAudioOutOpened = false;
 
-        // clear the channel map
+        // clear the channel map TODO
         //HINT: Ignore this request in Windows because it uses different heaps to allocate
         //		when we deallocate perhaps Windows mixes the heaps and our app. crashes to hell -> it's better to lose some memory than go to binary hell
         //see http://mail-archives.apache.org/mod_mbox/xerces-c-dev/200004.mbox/%3C1DBD6F6FF0F9D311BD4000A0C9979E3201A4C7@cvo1.cvo.roguewave.com%3E
