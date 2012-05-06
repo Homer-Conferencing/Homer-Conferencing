@@ -495,6 +495,8 @@ void ConfigurationDialog::SaveConfiguration()
     CONF.SetSipServer(mLeSipServer->text());
     CONF.SetSipInfrastructureMode(mGrpServerRegistration->isChecked() ? 1 : 0);
 
+    if (mGrpNatSupport->isChecked() != CONF.GetNatSupportActivation())
+        tHaveToRestart = true;
     if (mCbLocalAdr->currentText() != CONF.GetSipListenerAddress())
         tHaveToRestart = true;
     CONF.SetSipListenerAddress(mCbLocalAdr->currentText());

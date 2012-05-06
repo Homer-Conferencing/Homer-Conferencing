@@ -1948,7 +1948,7 @@
             </font>
            </property>
            <property name="title">
-            <string> NAT detection </string>
+            <string> NAT traversal </string>
            </property>
            <property name="checkable">
             <bool>true</bool>
