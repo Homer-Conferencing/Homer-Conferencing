@@ -268,52 +268,23 @@ bool Socket::EnableReuse(bool pActive)
 {
     bool tResult = false;
 
-	if (pActive)
-	{
-		// deactivate exclusive use of socket
-		int tExclusiveOptionValue = 0;
-		if (setsockopt(mSocketHandle, SOL_SOCKET, SO_EXCLUSIVEADDRUSE, (char*)&tExclusiveOptionValue, sizeof(tExclusiveOptionValue)) < 0)
-			LOG(LOG_ERROR, "Failed to set socket option SO_EXCLUSIVEADDRUSE on socket %d", mSocketHandle);
-		else
-			tResult = true;
+	#if defined(APPLE) || defined(BSD)
+		int tReuseOption = SO_REUSEPORT;
+	#endif
+	#if defined(LINUX) || defined(WIN32) || defined (WIN64)
+		int tReuseOption = SO_REUSEADDR;
+	#endif
 
-		#if defined(APPLE) || defined(BSD)
-			int tReuseOption = SO_REUSEPORT;
-		#endif
-		#if defined(LINUX) || defined(WIN32) || defined (WIN64)
-			int tReuseOption = SO_REUSEADDR;
-		#endif
+	LOG(LOG_WARN, "Allow reusing of local port %u for future sockets", mLocalPort);
 
-		LOG(LOG_WARN, "Allow reusing of local port %u for future sockets", mLocalPort);
+	// activate reuse of socket
+	int tReuseOptionValue = pActive;
+	if (setsockopt(mSocketHandle, SOL_SOCKET, tReuseOption, (char*)&tReuseOptionValue, sizeof(tReuseOptionValue)) < 0)
+		LOG(LOG_ERROR, "Failed to set socket option SO_REUSEADDR/SO_REUSEPORT on socket %d", mSocketHandle);
+	else
+		tResult = true;
 
-		// activate reuse of socket
-		int tReuseOptionValue = 1;
-		if (setsockopt(mSocketHandle, SOL_SOCKET, tReuseOption, (char*)&tReuseOptionValue, sizeof(tReuseOptionValue)) < 0)
-		{
-			LOG(LOG_ERROR, "Failed to set socket option SO_REUSEADDR/SO_REUSEPORT on socket %d", mSocketHandle);
-			tResult = false;
-		}else
-			tResult = true;
-	}else
-	{
-		#if defined(APPLE) || defined(BSD)
-			int tReuseOption = SO_REUSEPORT;
-		#endif
-		#if defined(LINUX) || defined(WIN32) || defined (WIN64)
-			int tReuseOption = SO_REUSEADDR;
-		#endif
-
-		LOG(LOG_WARN, "Define local port %u for exclusive usage", mLocalPort);
-
-		// activate exclusive use of socket
-		int tExclusiveOptionValue = 1;
-		if (setsockopt(mSocketHandle, SOL_SOCKET, SO_EXCLUSIVEADDRUSE, (char*)&tExclusiveOptionValue, sizeof(tExclusiveOptionValue)) < 0)
-			LOG(LOG_ERROR, "Failed to set socket option SO_EXCLUSIVEADDRUSE on socket %d", mSocketHandle);
-		else
-			tResult = true;
-	}
-
-    return tResult;
+	return tResult;
 }
 
 enum NetworkType Socket::GetNetworkType()
