@@ -150,6 +150,8 @@ public:
     virtual bool SupportsMuxing();
     virtual std::string GetMuxingCodec();
     virtual void GetMuxingResolution(int &pResX, int &pResY);
+    virtual int GetMuxingBufferCounter(); // how many frames are currently buffered for transcoding?
+    virtual int GetMuxingBufferSize(); // how many frames can be buffered for transcoding?
 
     /* get access to current basic media source */
     virtual MediaSource* GetMediaSource();
@@ -183,7 +185,8 @@ public:
     virtual std::string GetCodecLongName();
     virtual bool SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset = false, bool pRtpActivated = true);
     virtual int GetChunkDropCounter(); // how many chunks were dropped?
-    virtual int GetChunkBufferCounter(); // how many chunks are currently buffered?
+    virtual int GetFragmentBufferCounter(); // how many fragments are currently buffered?
+    virtual int GetFragmentBufferSize(); // how many fragments can be buffered?
 
     /* simple relaying WITHOUT any reencoding functionality but WITH rtp support*/
 	// register/unregister: Berkeley sockets based media sinks

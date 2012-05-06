@@ -132,6 +132,16 @@ void MediaSourceMuxer::GetMuxingResolution(int &pResX, int &pResY)
     pResY = mCurrentStreamingResY;
 }
 
+int MediaSourceMuxer::GetMuxingBufferCounter()
+{
+    return mTranscoderFifo->UsedFifoSize();
+}
+
+int MediaSourceMuxer::GetMuxingBufferSize()
+{
+    return MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT;
+}
+
 bool MediaSourceMuxer::SupportsRelaying()
 {
     return true;
@@ -1473,7 +1483,7 @@ int MediaSourceMuxer::GetChunkDropCounter()
 int MediaSourceMuxer::GetChunkBufferCounter()
 {
     if (mMediaSource != NULL)
-        return mMediaSource->GetChunkBufferCounter();
+        return mMediaSource->GetFragmentBufferCounter();
     else
         return 0;
 }
