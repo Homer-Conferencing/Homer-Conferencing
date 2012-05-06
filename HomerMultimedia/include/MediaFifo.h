@@ -46,7 +46,7 @@ struct MediaFifoEntry
 {
 	char	*Data;
 	int		Size;
-	Mutex   *EntryMutex;
+	Mutex   EntryMutex;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

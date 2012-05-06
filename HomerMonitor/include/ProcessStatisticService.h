@@ -37,7 +37,7 @@ namespace Homer { namespace Monitor {
 
 #define SVC_PROCESS_STATISTIC ProcessStatisticService::GetInstance()
 
-typedef std::list<ProcessStatistic*>  ProcessStatisticsList;
+typedef std::list<ProcessStatistic>  ProcessStatisticsList;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -63,8 +63,8 @@ private:
     void UpdateThreadDatabase();
 
     /* registration interface (without locking, only used internally) */
-    ProcessStatistic* RegisterProcessStatistic(ProcessStatistic *pStat);
-    bool UnregisterProcessStatistic(ProcessStatistic *pStat);
+    bool RegisterProcessStatistic(ProcessStatistic pStat);
+    bool UnregisterProcessStatistic(ProcessStatistic pStat);
 
     ProcessStatisticsList mProcessStatistics;
     Mutex		   		  mProcessStatisticsMutex;

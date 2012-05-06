@@ -116,7 +116,7 @@ void SIP::SetStunServer(string pServer)
     InternalNatDetectionEvent *tINDEvent = new InternalNatDetectionEvent();
     tINDEvent->Failed = false;
     tINDEvent->FailureReason = "";
-    OutgoingEvents.Fire((GeneralEvent*) tINDEvent);
+    mOutgoingEvents.Fire((GeneralEvent*) tINDEvent);
 }
 
 string SIP::SipCreateId(string pUser, string pHost, string pPort)
@@ -3049,7 +3049,7 @@ void SIP::SipProcessOutgoingEvents()
     GeneralEvent *tEvent;
 
     // is there a waiting event?
-    while ((tEvent = OutgoingEvents.Scan()) != NULL)
+    while ((tEvent = mOutgoingEvents.Scan()) != NULL)
     {
         LOG(LOG_INFO, "............. SIP-new OUTGOING event with ID <%d> and name \"%s\" occurred ...........", tEvent->getType(), GeneralEvent::getNameFromType(tEvent->getType()).c_str());
         if (tEvent->getType() == MessageEvent::type())

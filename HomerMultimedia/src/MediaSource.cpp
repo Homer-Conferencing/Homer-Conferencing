@@ -83,6 +83,7 @@ MediaSource::MediaSource(string pName):
     mCurrentDeviceName = "";
     mRecorderRealTime = true;
     mLastGrabResultWasError = false;
+    mDuration = 0;
     mChunkNumber = 0;
     mChunkDropCounter = 0;
     mSampleRate = 44100;

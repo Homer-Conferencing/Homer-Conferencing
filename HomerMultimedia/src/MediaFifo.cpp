@@ -43,16 +43,15 @@ MediaFifo::MediaFifo(int pFifoSize, int pFifoEntrySize)
     mFifoWritePtr = 0;
     mFifoReadPtr = 0;
     mFifoAvailableEntries = 0;
-    mFifo = (MediaFifoEntry*)malloc(sizeof(MediaFifoEntry) * pFifoSize);
-	for (int i = 0; i < mFifoSize; i++)
+    mFifo = new MediaFifoEntry[mFifoSize];
+    for (int i = 0; i < mFifoSize; i++)
 	{
 		mFifo[i].Size = 0;
-		mFifo[i].Data = (char*)malloc(pFifoEntrySize);
+		mFifo[i].Data = (char*)malloc(mFifoEntrySize);
 		if (mFifo[i].Data == NULL)
 			LOG(LOG_ERROR, "Unable to allocate memory for FIFO");
-		mFifo[i].EntryMutex = new Mutex();
 	}
-	LOG(LOG_VERBOSE, "Created FIFO with %d entries of %d Kb", mFifoSize, pFifoEntrySize / 1024);
+	LOG(LOG_VERBOSE, "Created FIFO with %d entries of %d Kb", mFifoSize, mFifoEntrySize / 1024);
 }
 
 MediaFifo::~MediaFifo()
@@ -61,9 +60,8 @@ MediaFifo::~MediaFifo()
 	{
 		mFifo[i].Size = 0;
 		free(mFifo[i].Data);
-		delete mFifo[i].EntryMutex;
 	}
-    free(mFifo);
+    delete[] mFifo;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -111,7 +109,7 @@ void MediaFifo::ReadFifo(char *pBuffer, int &pBufferSize)
     mFifoAvailableEntries--;
 
     // release FIFO mutex and use fine grained mutex of corresponding FIFO entry instead for protecting memcpy
-    mFifo[tCurrentFifoReadPtr].EntryMutex->lock();
+    mFifo[tCurrentFifoReadPtr].EntryMutex.lock();
     mFifoMutex.unlock();
 
     // get captured data from Fifo
@@ -119,7 +117,7 @@ void MediaFifo::ReadFifo(char *pBuffer, int &pBufferSize)
     memcpy((void*)pBuffer, mFifo[tCurrentFifoReadPtr].Data, (size_t)pBufferSize);
 
     // unlock fine grained mutex again
-    mFifo[tCurrentFifoReadPtr].EntryMutex->unlock();
+    mFifo[tCurrentFifoReadPtr].EntryMutex.unlock();
 
 	#ifdef MF_DEBUG
 		LOG(LOG_VERBOSE, "Erased front element of size %d from FIFO, size afterwards: %d", (int)pBufferSize, (int)mFifoAvailableEntries);
@@ -183,7 +181,7 @@ int MediaFifo::ReadFifoExclusive(char **pBuffer, int &pBufferSize)
     mFifoAvailableEntries--;
 
     // release FIFO mutex and use fine grained mutex of corresponding FIFO entry instead for protecting memcpy
-    mFifo[tCurrentFifoReadPtr].EntryMutex->lock();
+    mFifo[tCurrentFifoReadPtr].EntryMutex.lock();
     mFifoMutex.unlock();
 
     // get captured data from Fifo
@@ -209,7 +207,7 @@ void MediaFifo::ReadFifoExclusiveFinished(int pEntryPointer)
         LOG(LOG_VERBOSE, "Finishing exclusive FIFO entry access to %d", pEntryPointer);
     #endif
 
-    mFifo[pEntryPointer].EntryMutex->unlock();
+    mFifo[pEntryPointer].EntryMutex.unlock();
 }
 
 void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize)
@@ -255,7 +253,7 @@ void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize)
     mFifoAvailableEntries++;
 
     // release FIFO mutex and use fine grained mutex of corresponding FIFO entry instead for protecting memcpy
-    mFifo[tCurrentFifoWritePtr].EntryMutex->lock();
+    mFifo[tCurrentFifoWritePtr].EntryMutex.lock();
     mFifoMutex.unlock();
 
     // add the new entry
@@ -263,7 +261,7 @@ void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize)
     memcpy((void*)mFifo[tCurrentFifoWritePtr].Data, (const void*)pBuffer, (size_t)pBufferSize);
 
     // unlock fine grained mutex again
-    mFifo[tCurrentFifoWritePtr].EntryMutex->unlock();
+    mFifo[tCurrentFifoWritePtr].EntryMutex.unlock();
 
     #ifdef MF_DEBUG
         LOG(LOG_VERBOSE, "FIFO length now: %d", mFifoAvailableEntries);

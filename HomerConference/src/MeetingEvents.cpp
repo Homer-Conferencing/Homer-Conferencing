@@ -66,7 +66,7 @@ void MeetingObservable::DeleteObserver(MeetingObserver *pObserver)
 EventManager::EventManager()
 {
     mRemainingEvents = 0;
-    for (int i = 0; i < 64; i++)
+    for (int i = 0; i < MEETING_EVENT_QUEUE_LENGTH; i++)
         mEvents[i] = NULL;
 }
 
@@ -84,8 +84,12 @@ bool EventManager::Fire(GeneralEvent* pEvent)
     if (!mMutex.tryLock(100))
         return false;
 
-    if (mRemainingEvents < QUEUE_LENGTH)
+    if (mRemainingEvents < MEETING_EVENT_QUEUE_LENGTH)
     {
+        // free memory of processed event
+        if (mEvents[mRemainingEvents] != NULL)
+            delete mEvents[mRemainingEvents];
+
         mEvents[mRemainingEvents] = pEvent;
         mRemainingEvents++;
         tResult = true;
@@ -107,9 +111,7 @@ GeneralEvent* EventManager::Scan()
     if (mRemainingEvents)
     {
         mRemainingEvents--;
-        /* store event pointer on temporary stack to protect it from being overwritten by other threads */
         tEvent = mEvents[mRemainingEvents];
-        mEvents[mRemainingEvents] = NULL;
     }else
         tEvent = NULL;
 
