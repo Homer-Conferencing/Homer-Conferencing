@@ -89,7 +89,7 @@ private:
     void showAudioLevel(int pLevel);
     virtual void closeEvent(QCloseEvent* pEvent);
     virtual void customEvent (QEvent* pEvent);
-    void contextMenuEvent(QContextMenuEvent *event);
+    virtual void contextMenuEvent(QContextMenuEvent *event);
     void DialogAddNetworkSink();
     void StartRecorder();
     void StopRecorder();

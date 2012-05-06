@@ -32,13 +32,14 @@
 #include <QMouseEvent>
 #include <QPaintEvent>
 #include <QPainter>
+#include <QMenu>
 
 namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define MIN_WIDTH       minimumWidth()
-#define MIN_HEIGHT      minimumHeight()
+#define MIN_WIDTH       352
+#define MIN_HEIGHT      288
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -58,6 +59,8 @@ SegmentSelectionDialog::~SegmentSelectionDialog()
 
 void SegmentSelectionDialog::initializeGUI()
 {
+    LOG(LOG_VERBOSE, "Found current segment resolution of %d*%d starting at %d*%d", mMediaSourceDesktop->mSourceResX, mMediaSourceDesktop->mSourceResY, mMediaSourceDesktop->mGrabOffsetX, mMediaSourceDesktop->mGrabOffsetY);
+
     setupUi(this);
     setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
 
@@ -66,17 +69,18 @@ void SegmentSelectionDialog::initializeGUI()
     mLbResX->setText(QString("%1").arg(mMediaSourceDesktop->mSourceResX));
     mLbResY->setText(QString("%1").arg(mMediaSourceDesktop->mSourceResY));
 
-    setSizeGripEnabled(false);
+    //setSizeGripEnabled(false);
     resize(mMediaSourceDesktop->mSourceResX - (frameGeometry().width() - width()),
            mMediaSourceDesktop->mSourceResY - (frameGeometry().height() - height()) - (frameGeometry().width() - width()) / 2);
-    setSizeGripEnabled(true);
+    //setSizeGripEnabled(true);
     move(mMediaSourceDesktop->mGrabOffsetX, mMediaSourceDesktop->mGrabOffsetY);
 }
 
 void SegmentSelectionDialog::ResetToDefaults()
 {
-    mMediaSourceDesktop->mSourceResX = MIN_WIDTH;
-    mMediaSourceDesktop->mSourceResY = MIN_HEIGHT;
+    LOG(LOG_VERBOSE, "Resetting to %d*%d", MIN_WIDTH, MIN_HEIGHT);
+
+    mMediaSourceDesktop->SetScreenshotSize(MIN_WIDTH, MIN_HEIGHT);
     mMediaSourceDesktop->mGrabOffsetX = 0;
     mMediaSourceDesktop->mGrabOffsetY = 0;
 
@@ -84,8 +88,9 @@ void SegmentSelectionDialog::ResetToDefaults()
     mLbOffsetY->setText("0");
     mLbResX->setText("352");
     mLbResY->setText("288");
-    move(0, 0);
+
     resize(MIN_WIDTH, MIN_HEIGHT);
+    move(0, 0);
 }
 
 void SegmentSelectionDialog::ClickedButton(QAbstractButton *pButton)
@@ -93,6 +98,28 @@ void SegmentSelectionDialog::ClickedButton(QAbstractButton *pButton)
     if (mBb->standardButton(pButton) == QDialogButtonBox::Reset)
     {
     	ResetToDefaults();
+    }
+}
+
+void SegmentSelectionDialog::contextMenuEvent(QContextMenuEvent *event)
+{
+    QAction *tAction;
+
+    QMenu tMenu(this);
+
+    tAction = tMenu.addAction("Reset to defaults");
+    QIcon tIcon;
+    tIcon.addPixmap(QPixmap(":/images/Reload.png"), QIcon::Normal, QIcon::Off);
+    tAction->setIcon(tIcon);
+
+    QAction* tPopupRes = tMenu.exec(QCursor::pos());
+    if (tPopupRes != NULL)
+    {
+        if (tPopupRes->text().compare("Reset to defaults") == 0)
+        {
+            ResetToDefaults();
+            return;
+        }
     }
 }
 
