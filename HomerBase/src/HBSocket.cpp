@@ -91,54 +91,40 @@ void Socket::SetDefaults(enum TransportType pTransportType)
 ///////////////////////////////////////////////////////////////////////////////
 /// server socket
 ///////////////////////////////////////////////////////////////////////////////
-Socket::Socket(enum TransportType pTransportType, unsigned int pListenerPort, bool pReusable, unsigned int pProbeStepping, unsigned int pHighestPossibleListenerPort)
+Socket* Socket::CreateServerSocket(enum NetworkType pIpVersion, enum TransportType pTransportType, unsigned int pListenerPort, bool pReusable, unsigned int pProbeStepping, unsigned int pHighestPossibleListenerPort)
 {
-    LOG(LOG_VERBOSE, "Created server socket object with listener port %u, transport type %s, port probing stepping %d", pListenerPort, TransportType2String(pTransportType).c_str(), pProbeStepping);
+    Socket* tResult = NULL;
 
-    if ((pTransportType == SOCKET_UDP_LITE) && (!IsTransportSupported(SOCKET_UDP_LITE)))
-    {
-        LOG(LOG_ERROR, "UDPlite not supported by system, falling back to UDP");
-        pTransportType = SOCKET_UDP;
-    }
+    tResult = new Socket(pIpVersion, pTransportType, pListenerPort, pReusable, pProbeStepping, pHighestPossibleListenerPort);
 
-    if ((pTransportType == SOCKET_DCCP) && (!IsTransportSupported(SOCKET_DCCP)))
-    {
-        LOG(LOG_ERROR, "DCCP not supported by system, falling back to UDP");
-        pTransportType = SOCKET_UDP;
-    }
+    LOGEX(Socket, LOG_VERBOSE, "Created %s-server socket at local address %s:%u with receive buffer size of %d bytes", TransportType2String(pTransportType).c_str(), tResult->mLocalHost.c_str(), tResult->mLocalPort, tResult->GetReceiveBufferSize());
 
-    if ((pTransportType == SOCKET_SCTP) && (!IsTransportSupported(SOCKET_SCTP)))
-    {
-        LOG(LOG_ERROR, "SCTP not supported by system, falling back to UDP");
-        pTransportType = SOCKET_UDP;
-    }
-
-    SetDefaults(pTransportType);
-
-    if (CreateSocket(SOCKET_IPv6))
-    {
-        if(pReusable)
-        	EnableReuse(pReusable);
-
-        if (!BindSocket(pListenerPort, pProbeStepping, pHighestPossibleListenerPort))
-    	    mSocketHandle = -1;
-    	if ((!pProbeStepping) && (mLocalPort != pListenerPort) && (pListenerPort != 0))
-    		LOG(LOG_ERROR, "Bound socket %d to another port than requested", mSocketHandle);
-    }
-    LOG(LOG_VERBOSE, "Created %s-listener for socket %d at local port %u with receive buffer of %d bytes", TransportType2String(mSocketTransportType).c_str(), mSocketHandle, mLocalPort, GetReceiveBufferSize());
+    return tResult;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 /// client socket
 ///////////////////////////////////////////////////////////////////////////////
-Socket::Socket(enum NetworkType pIpVersion, enum TransportType pTransportType, unsigned int pSenderPort, bool pReusable, unsigned int pProbeStepping, unsigned int pHighestPossibleSenderPort)
+Socket* Socket::CreateClientSocket(enum NetworkType pIpVersion, enum TransportType pTransportType, unsigned int pSenderPort, bool pReusable, unsigned int pProbeStepping, unsigned int pHighestPossibleSenderPort)
 {
-    LOG(LOG_VERBOSE, "Created client socket object with IP version %d, transport type %s", pIpVersion, TransportType2String(pTransportType).c_str());
+    Socket* tResult = NULL;
 
+    tResult = new Socket(pIpVersion, pTransportType, pSenderPort, pReusable, pProbeStepping, pHighestPossibleSenderPort);
+
+    LOGEX(Socket, LOG_VERBOSE, "Created %s-client socket at local address %s:%u with receive buffer size of %d bytes", TransportType2String(pTransportType).c_str(), tResult->mLocalHost.c_str(), tResult->mLocalPort, tResult->GetReceiveBufferSize());
+
+    tResult->mIsClientSocket = true;
+    SVC_SOCKET_CONTROL.RegisterClientSocket(tResult);
+
+    return tResult;
+}
+
+Socket::Socket(enum NetworkType pIpVersion, enum TransportType pTransportType, unsigned int pPort, bool pReusable, unsigned int pProbeStepping, unsigned int pHighestPossiblePort)
+{
     if ((pIpVersion == SOCKET_IPv6) && (!IsIPv6Supported()))
     {
-    	LOG(LOG_ERROR, "IPv6 not supported by system, falling back to IPv4");
-    	pIpVersion = SOCKET_IPv4;
+        LOG(LOG_ERROR, "IPv6 not supported by system, falling back to IPv4");
+        pIpVersion = SOCKET_IPv4;
     }
 
     if ((pTransportType == SOCKET_UDP_LITE) && (!IsTransportSupported(SOCKET_UDP_LITE)))
@@ -164,17 +150,13 @@ Socket::Socket(enum NetworkType pIpVersion, enum TransportType pTransportType, u
     if (CreateSocket(pIpVersion))
     {
         if(pReusable)
-        	EnableReuse(pReusable);
+            EnableReuse(pReusable);
 
-        if (!BindSocket(pSenderPort, pProbeStepping, pHighestPossibleSenderPort))
-    	    mSocketHandle = -1;
-    	if ((!pProbeStepping) && (mLocalPort != pSenderPort) && (pSenderPort != 0))
-    		LOG(LOG_ERROR, "Bound socket %d to another port than requested", mSocketHandle);
+        if (!BindSocket(pPort, pProbeStepping, pHighestPossiblePort))
+            mSocketHandle = -1;
+        if ((!pProbeStepping) && (mLocalPort != pPort) && (pPort != 0))
+            LOG(LOG_ERROR, "Bound socket %d to another port than requested", mSocketHandle);
     }
-    LOG(LOG_VERBOSE, "Created %s-sender for socket %d at local address %s:%u with receive buffer size of %d bytes", TransportType2String(mSocketTransportType).c_str(), mSocketHandle, mLocalHost.c_str(), mLocalPort, GetReceiveBufferSize());
-
-    mIsClientSocket = true;
-    SVC_SOCKET_CONTROL.RegisterClientSocket(this);
 }
 
 Socket::~Socket()

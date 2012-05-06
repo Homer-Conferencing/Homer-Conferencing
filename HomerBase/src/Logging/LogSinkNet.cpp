@@ -46,7 +46,7 @@ LogSinkNet::LogSinkNet(string pTargetHost, unsigned short pTargetPort)
     mTargetPort = pTargetPort;
     mLogSinkId = "NET: " + mTargetHost + "<" + toString(mTargetPort) + ">";
     if ((mTargetHost != "") && (mTargetPort != 0))
-        mDataSocket = new Socket(IS_IPV6_ADDRESS(mTargetHost) ? SOCKET_IPv6 : SOCKET_IPv4, SOCKET_UDP);
+        mDataSocket = Socket::CreateClientSocket(IS_IPV6_ADDRESS(mTargetHost) ? SOCKET_IPv6 : SOCKET_IPv4, SOCKET_UDP);
     printf("Logging debug output via IPv%d to net %s:%u\n", IS_IPV6_ADDRESS(mTargetHost) ? SOCKET_IPv6 : SOCKET_IPv4, mTargetHost.c_str(), mTargetPort);
 }
 

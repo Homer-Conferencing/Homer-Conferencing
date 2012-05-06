@@ -92,10 +92,8 @@ union SocketAddressDescriptor
 class Socket
 {
 public:
-    /* server socekts */
-    Socket(enum TransportType pTransportType = SOCKET_UDP, unsigned int pListenerPort = 0 /* start number for auto probing */, bool pReusable = false, unsigned int pProbeStepping = 0, unsigned int pHighestPossibleListenerPort = 0);
-    /* client sockets */
-	Socket(enum NetworkType pIpVersion, enum TransportType pTransportType = SOCKET_UDP, unsigned int pSenderPort = 0, bool pReusable = false, unsigned int pProbeStepping = 0, unsigned int pHighestPossibleSenderPort = 0);
+    static Socket* CreateServerSocket(enum NetworkType pIpVersion = SOCKET_IPv6, enum TransportType pTransportType = SOCKET_UDP, unsigned int pListenerPort = 0, bool pReusable = false, unsigned int pProbeStepping = 0, unsigned int pHighestPossibleListenerPort = 0);
+    static Socket* CreateClientSocket(enum NetworkType pIpVersion, enum TransportType pTransportType = SOCKET_UDP, unsigned int pSenderPort = 0, bool pReusable = false, unsigned int pProbeStepping = 0, unsigned int pHighestPossibleSenderPort = 0);
 
     virtual ~Socket( );
 
@@ -146,6 +144,8 @@ public:
     static bool FillAddrDescriptor(std::string pHost, unsigned int pPort, SocketAddressDescriptor *tAddressDescriptor, unsigned int &tAddressDescriptorSize);
 
 private:
+    Socket(enum NetworkType pIpVersion, enum TransportType pTransportType, unsigned int pSenderPort, bool pReusable, unsigned int pProbeStepping, unsigned int pHighestPossibleSenderPort);
+
     void SetDefaults(enum TransportType pTransportType);
 
     bool CreateSocket(enum NetworkType pIpVersion = SOCKET_IPv6);
