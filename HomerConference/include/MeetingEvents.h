@@ -344,7 +344,7 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////
 
-#define QUEUE_LENGTH    64
+#define MEETING_EVENT_QUEUE_LENGTH    64
 class EventManager
 {
 public:
@@ -357,7 +357,7 @@ public:
 
 private:
     Mutex               mMutex;
-    GeneralEvent        *mEvents[QUEUE_LENGTH];
+    GeneralEvent        *mEvents[MEETING_EVENT_QUEUE_LENGTH];
     int                 mRemainingEvents;
 };
 

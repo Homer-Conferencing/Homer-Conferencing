@@ -101,15 +101,14 @@ bool Condition::Wait(Mutex *pMutex, int pTime)
                 return !pthread_cond_wait(mCondition, pMutex->mMutex);
         else
         {
-            pthread_mutex_t* tMutex = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t));
-            pthread_mutex_init(tMutex, NULL);
-            pthread_mutex_lock(tMutex);
+            pthread_mutex_t tMutex;
+            pthread_mutex_init(&tMutex, NULL);
+            pthread_mutex_lock(&tMutex);
             if (pTime > 0)
-                return !pthread_cond_timedwait(mCondition, tMutex, &tTimeout);
+                return !pthread_cond_timedwait(mCondition, &tMutex, &tTimeout);
             else
-                return !pthread_cond_wait(mCondition, tMutex);
-            pthread_mutex_destroy(tMutex);
-            free(tMutex);
+                return !pthread_cond_wait(mCondition, &tMutex);
+            pthread_mutex_destroy(&tMutex);
         }
     #endif
 

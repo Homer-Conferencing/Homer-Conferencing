@@ -77,7 +77,7 @@ bool GapiService::registerImpl(ISetup* pSetupInterface, std::string pName)
 
 	for(tIt = mSetupInterfacesPool.begin(); tIt != mSetupInterfacesPool.end(); tIt++)
 	{
-		if(pName == (*tIt)->Name)
+		if(pName == tIt->Name)
 		{
 			tFound = true;
 		}
@@ -85,9 +85,9 @@ bool GapiService::registerImpl(ISetup* pSetupInterface, std::string pName)
 
 	if(!tFound)
 	{
-		SetupInterfaceDescription *tSetupInterfaceDescription = new SetupInterfaceDescription();
-		tSetupInterfaceDescription->Interface = pSetupInterface;
-		tSetupInterfaceDescription->Name = pName;
+		SetupInterfaceDescription tSetupInterfaceDescription;
+		tSetupInterfaceDescription.Interface = pSetupInterface;
+		tSetupInterfaceDescription.Name = pName;
 		mSetupInterfacesPool.push_back(tSetupInterfaceDescription);
 	}else
 	{
@@ -109,10 +109,10 @@ bool GapiService::selectImpl(std::string pName)
 
     for(tIt = mSetupInterfacesPool.begin(); tIt != mSetupInterfacesPool.end(); tIt++)
     {
-        if(pName == (*tIt)->Name)
+        if(pName == tIt->Name)
         {
             LOG(LOG_VERBOSE, "Setup interface \"%s\" selected", pName.c_str());
-            mSetupInterface = (*tIt)->Interface;
+            mSetupInterface = tIt->Interface;
             mSetupInterfaceName = pName;
             tFound = true;
         }
@@ -137,7 +137,7 @@ SetupInterfacesNames GapiService::getAllImplNames()
 
 	for(tIt = mSetupInterfacesPool.begin(); tIt != mSetupInterfacesPool.end(); tIt++)
 	{
-		tResult.push_back((*tIt)->Name);
+		tResult.push_back(tIt->Name);
 	}
 
 	mSetupInterfacesPoolMutex.unlock();

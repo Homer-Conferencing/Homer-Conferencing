@@ -2005,7 +2005,7 @@ void VideoWorkerThread::run()
 			{
 
 			    // has the source resolution changed in the meantime? -> thread it as new source
-			    int tSourceResX, tSourceResY;
+			    int tSourceResX = 0, tSourceResY = 0;
 			    mVideoSource->GetVideoSourceResolution(tSourceResX, tSourceResY);
 			    if ((mFrameWidthLastGrabbedFrame != tSourceResX) || (mFrameHeightLastGrabbedFrame != tSourceResY))
 			    {

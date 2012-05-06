@@ -133,9 +133,11 @@ void MediaSourceV4L2::getVideoDevices(VideoDevicesList &pVList)
 
                 if (tFirstCall)
                 {
-                    tV4L2Input.index = 0;
+                    int tIndex = 0;
                     for(;;)
                     {
+                        memset(&tV4L2Input, 0, sizeof(tV4L2Input));
+                        tV4L2Input.index = tIndex;
                         if (ioctl(tFd, VIDIOC_ENUMINPUT, &tV4L2Input) < 0)
                             break;
                         else
@@ -157,7 +159,7 @@ void MediaSourceV4L2::getVideoDevices(VideoDevicesList &pVList)
                             LOG(LOG_VERBOSE, "..input status: 0x%x", tV4L2Input.status);
 
                         }
-                        tV4L2Input.index++;
+                        tIndex++;
                     }
                 }
 

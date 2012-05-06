@@ -172,7 +172,7 @@ protected:
     bool SipLoginAtServer();
     void SipLogoutAtServer();
 
-    EventManager        OutgoingEvents; // from users point of view
+    EventManager        mOutgoingEvents; // from users point of view
     enum AvailabilityState mAvailabilityState;
     SipContext          *mSipContext;
     std::string         mSipHostAdr;

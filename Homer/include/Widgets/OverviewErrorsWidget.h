@@ -42,7 +42,7 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define VIEW_ERROR_LOG_UPDATE_PERIOD                         400 // each 400 ms an update
+#define VIEW_ERROR_LOG_UPDATE_PERIOD                        1000 // each 1000 ms an update
 
 ///////////////////////////////////////////////////////////////////////////////
 

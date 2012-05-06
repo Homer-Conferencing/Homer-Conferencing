@@ -811,6 +811,7 @@ AudioWorkerThread::AudioWorkerThread(MediaSource *pAudioSource, AudioWidget *pAu
 {
     mResetAudioSourceAsap = false;
     mStartRecorderAsap = false;
+    mSetInputStreamPreferencesAsap = false;
     mStopRecorderAsap = false;
     mSetCurrentDeviceAsap = false;
     mAudioOutMuted = false;

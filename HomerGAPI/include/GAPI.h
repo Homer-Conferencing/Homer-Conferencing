@@ -48,7 +48,7 @@ struct SetupInterfaceDescription{
 	std::string 	Name;
 };
 
-typedef std::list<SetupInterfaceDescription*> SetupInterfacesPool;
+typedef std::list<SetupInterfaceDescription> SetupInterfacesPool;
 typedef std::list<std::string> SetupInterfacesNames;
 
 // the following de/activates debugging of received packets

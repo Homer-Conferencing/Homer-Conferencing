@@ -113,7 +113,7 @@ void ProcessStatisticService::UpdateThreadDatabase()
 
             // search if thread is already known
             for (tDbIt = mProcessStatistics.begin(); tDbIt != mProcessStatistics.end(); tDbIt++)
-                if ((*tDbIt)->GetThreadStatisticId() == (*tIt))
+                if (tDbIt->GetThreadStatisticId() == (*tIt))
                     tKnownThread = true;
 
             // unlock
@@ -122,8 +122,8 @@ void ProcessStatisticService::UpdateThreadDatabase()
             // if it is a new thread then create a statistic for it (it automatically registers itself)
             if (!tKnownThread)
             {
-                ProcessStatistic *tProcStats = new ProcessStatistic((*tIt));
-                if (SVC_PROCESS_STATISTIC.RegisterProcessStatistic(tProcStats) != tProcStats)
+                ProcessStatistic tProcStats((*tIt));
+                if (!SVC_PROCESS_STATISTIC.RegisterProcessStatistic(tProcStats))
                     LOG(LOG_ERROR, "Error when registering process statistic");
             }
         }
@@ -138,11 +138,10 @@ void ProcessStatisticService::UpdateThreadDatabase()
 
         for (tDbIt = mProcessStatistics.begin(); tDbIt != mProcessStatistics.end(); tDbIt++)
         {
-            ProcessStatistic *tProcStat= (*tDbIt);
             tExists = false;
             for (tIt = tThreadIds.begin(); tIt != tThreadIds.end(); tIt++)
             {
-                if (tProcStat->GetThreadStatisticId() == (*tIt))
+                if (tDbIt->GetThreadStatisticId() == (*tIt))
                 {
                     tExists = true;
                     break;
@@ -151,10 +150,9 @@ void ProcessStatisticService::UpdateThreadDatabase()
             if (!tExists)
             {
                 // delete the unneeded statistic object
-                if (tProcStat->IsRemotelyCreated())
+                if (tDbIt->IsRemotelyCreated())
                 {
-                    SVC_PROCESS_STATISTIC.UnregisterProcessStatistic(tProcStat);
-                    delete tProcStat;
+                    SVC_PROCESS_STATISTIC.UnregisterProcessStatistic(*tDbIt);
                 }
                 break;
             }
@@ -187,34 +185,31 @@ void ProcessStatisticService::AssignThreadName(std::string pName)
     // search if thread is already known
     for (tDbIt = mProcessStatistics.begin(); tDbIt != mProcessStatistics.end(); tDbIt++)
     {
-        if ((*tDbIt)->GetThreadStatisticId() == tCurrentTid)
+        if (tDbIt->GetThreadStatisticId() == tCurrentTid)
         {
             tFound = true;
-            (*tDbIt)->AssignThreadName(pName);
+            tDbIt->AssignThreadName(pName);
         }
     }
     // unlock
     mProcessStatisticsMutex.unlock();
 }
 
-ProcessStatistic* ProcessStatisticService::RegisterProcessStatistic(ProcessStatistic *pStat)
+bool ProcessStatisticService::RegisterProcessStatistic(ProcessStatistic pStat)
 {
 	if (!sProcessStatisticSupported)
-		return NULL;
+		return false;
 
     ProcessStatisticsList::iterator tIt;
     bool tFound = false;
 
-    if (pStat == NULL)
-        return NULL;
-
-    LOG(LOG_VERBOSE, "Registering process statistic for thread %d", pStat->GetThreadStatisticId());
+    LOG(LOG_VERBOSE, "Registering process statistic for thread %d", pStat.GetThreadStatisticId());
 
     for (tIt = mProcessStatistics.begin(); tIt != mProcessStatistics.end(); tIt++)
     {
-        if ((*tIt == pStat) || ((*tIt)->GetThreadStatisticId() == pStat->GetThreadStatisticId()))
+        if (tIt->GetThreadStatisticId() == pStat.GetThreadStatisticId())
         {
-            LOG(LOG_VERBOSE, "Statistic for thread %d already registered", pStat->GetThreadStatisticId());
+            LOG(LOG_VERBOSE, "Statistic for thread %d already registered", pStat.GetThreadStatisticId());
             tFound = true;
             break;
         }
@@ -223,10 +218,10 @@ ProcessStatistic* ProcessStatisticService::RegisterProcessStatistic(ProcessStati
     if (!tFound)
     	mProcessStatistics.push_back(pStat);
 
-    return pStat;
+    return true;
 }
 
-bool ProcessStatisticService::UnregisterProcessStatistic(ProcessStatistic *pStat)
+bool ProcessStatisticService::UnregisterProcessStatistic(ProcessStatistic pStat)
 {
 	if (!sProcessStatisticSupported)
 		return false;
@@ -234,14 +229,11 @@ bool ProcessStatisticService::UnregisterProcessStatistic(ProcessStatistic *pStat
     ProcessStatisticsList::iterator tIt;
     bool tFound = false;
 
-    if (pStat == NULL)
-        return false;
-
-    LOG(LOG_VERBOSE, "Unregistering process statistic for thread %d", pStat->GetThreadStatisticId());
+    LOG(LOG_VERBOSE, "Unregistering process statistic for thread %d", pStat.GetThreadStatisticId());
 
     for (tIt = mProcessStatistics.begin(); tIt != mProcessStatistics.end(); tIt++)
     {
-        if ((*tIt)->GetThreadStatisticId() == pStat->GetThreadStatisticId())
+        if (tIt->GetThreadStatisticId() == pStat.GetThreadStatisticId())
         {
             tFound = true;
             mProcessStatistics.erase(tIt);

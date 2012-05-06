@@ -94,32 +94,38 @@ void AddNetworkSinkDialog::CreateNewMediaSink()
     enum TransportType tTransport = (enum TransportType)mCbTransport->currentIndex();
 
     Requirements tRequs;
+    RequirementTransmitBitErrors tReqBitErr(UDP_LITE_HEADER_SIZE + RTP_HEADER_SIZE);
+    RequirementTransmitChunks tReqChunks;
+    RequirementTransmitStream tReqStream;
+    RequirementTargetPort tReqPort(tPort.toInt());
+    RequirementLimitDelay tReqDelay(mSbDelay->value());
+    RequirementLimitDataRate tReqDataRate(mSbDataRate->value(), INT_MAX);
+    RequirementTransmitLossless tReqLossless;
+
     // add transport details depending on transport protocol selection
     switch(tTransport)
     {
         case SOCKET_UDP_LITE:
-            tRequs.add(new RequirementTransmitBitErrors(UDP_LITE_HEADER_SIZE + RTP_HEADER_SIZE));
+            tRequs.add(&tReqBitErr);
         case SOCKET_UDP:
-            tRequs.add(new RequirementTransmitChunks());
+            tRequs.add(&tReqChunks);
             break;
         case SOCKET_TCP:
-            tRequs.add(new RequirementTransmitLossless());
-            tRequs.add(new RequirementTransmitOrdered());
-            tRequs.add(new RequirementTransmitStream());
+            tRequs.add(&tReqStream);
             break;
         default:
             LOG(LOG_WARN, "Unsupported transport protocol selected");
             break;
     }
     // add target port
-    tRequs.add(new RequirementTargetPort(tPort.toInt()));
+    tRequs.add(&tReqPort);
     // add QoS parameter
     if (mCbDelay->isChecked())
-        tRequs.add(new RequirementLimitDelay(mSbDelay->value()));
+        tRequs.add(&tReqDelay);
     if (mCbDataRate->isChecked())
-        tRequs.add(new RequirementLimitDataRate(mSbDataRate->value(), INT_MAX));
+        tRequs.add(&tReqDataRate);
     if (mCbLossless->isChecked())
-        tRequs.add(new RequirementTransmitLossless());
+        tRequs.add(&tReqLossless);
 
     string tOldGAPIImpl = GAPI.getCurrentImplName();
     GAPI.selectImpl(mCbGAPIImpl->currentText().toStdString());

@@ -878,12 +878,16 @@ void MainWindow::customEvent(QEvent* pEvent)
                                                 (tEvent->getType() != OPTIONS_UNAVAILABLE) &&
                                                 (tEvent->getType() != PUBLICATION) &&
                                                 (tEvent->getType() != PUBLICATION_FAILED))
+    {
+        delete tEvent;
         return;
+    }
 
     //HINT: we stop event processing and therefore avoid crashes or unsecure behavior because shutdown is going on in the meanwhile
     if(mShuttingDown)
     {
         LOG(LOG_WARN, "Will ignore this event because the stutdown process was already started");
+        delete tEvent;
         return;
     }
 
@@ -893,18 +897,18 @@ void MainWindow::customEvent(QEvent* pEvent)
                     //####################### PARTICIPANT ADD #############################
                     tAPEvent = (AddParticipantEvent*) tEvent;
                     AddParticipantSession(tAPEvent->User, tAPEvent->Host, tAPEvent->Port, tAPEvent->Ip, tAPEvent->InitState);
-                    return;
+                    break;
         case DELETE_SESSION:
                     //####################### PARTICIPANT DELETE #############################
                     tDSEvent = (DeleteSessionEvent*) tEvent;
                     DeleteParticipantSession(tDSEvent->PWidget);
-                    return;
+                    break;
         case INT_START_NAT_DETECTION:
                     //####################### NAT DETECTION ANSWER ###########################
                     tINDEvent = (InternalNatDetectionEvent*) tEvent;
                     if (tINDEvent->Failed)
                         ShowError("NAT detection failed", "Could not detect NAT address and type via STUN server. The failure reason is \"" + QString(tINDEvent->FailureReason.c_str()) + "\".");
-                    return;
+                    break;
         case OPTIONS_ACCEPT:
                     //######################## OPTIONS ACCEPT ##########################
                     tOAEvent = (OptionsAcceptEvent*) tEvent;
@@ -921,12 +925,12 @@ void MainWindow::customEvent(QEvent* pEvent)
                             if ((*tIt)->IsThisParticipant(QString(tOAEvent->Sender.c_str())))
                             {
                                 (*tIt)->UpdateParticipantState(CONTACT_AVAILABLE);
-                                return;
+                                break;
                             }
                         }
                     }
 
-                    return;
+                    break;
         case OPTIONS_UNAVAILABLE:
                     //######################## OPTIONS UNAVAILABLE ##########################
                     tOUAEvent = (OptionsUnavailableEvent*) tEvent;
@@ -945,12 +949,12 @@ void MainWindow::customEvent(QEvent* pEvent)
                             if ((*tIt)->IsThisParticipant(QString(tOUAEvent->Sender.c_str())))
                             {
                                 (*tIt)->UpdateParticipantState(CONTACT_UNAVAILABLE);
-                                return;
+                                break;
                             }
                         }
                     }
 
-                    return;
+                    break;
         case GENERAL_ERROR:
                     //############################ GENERAL_ERROR #############################
                     tEEvent = (ErrorEvent*) tEvent;
@@ -961,10 +965,10 @@ void MainWindow::customEvent(QEvent* pEvent)
                         if ((*tIt)->IsThisParticipant(QString(tEEvent->Sender.c_str())))
                         {
                             (*tIt)->HandleGeneralError(tEEvent->IsIncomingEvent, tEEvent->StatusCode, QString(tEEvent->Description.c_str()));
-                            return;
+                            break;
                         }
                     }
-                    return;
+                    break;
         case MESSAGE:
                     //############################## MESSAGE #################################
                     tMEvent = (MessageEvent*) tEvent;
@@ -993,7 +997,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                                     if (tMEvent->SenderName.size())
                                         (*tIt)->UpdateParticipantName(QString(tMEvent->SenderName.c_str()));
                                     (*tIt)->HandleMessage(tMEvent->IsIncomingEvent, QString(tMEvent->SenderName.c_str()), QString(tMEvent->Text.c_str()));
-                                    return;
+                                    break;
                                 }
                             }
                         }
@@ -1009,7 +1013,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                             tParticipantWidget->HandleMessage(tMEvent->IsIncomingEvent, QString(tMEvent->SenderName.c_str()), QString(tMEvent->Text.c_str()));
                         } else
                             LOG(LOG_ERROR, "ParticipantWidget creation failed");
-                        return;
+                        break;
                     } else
                     {//broadcast message
                         if (tMEvent->SenderName.size())
@@ -1017,7 +1021,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                         else
                             mLocalUserParticipantWidget->HandleMessage(tMEvent->IsIncomingEvent, QString(tMEvent->SenderName.c_str()), QString(tMEvent->Text.c_str()));
                     }
-                    return;
+                    break;
         case MESSAGE_ACCEPT:
                     //######################## MESSAGE ACCEPT ##########################
                     tMAEvent = (MessageAcceptEvent*) tEvent;
@@ -1028,10 +1032,10 @@ void MainWindow::customEvent(QEvent* pEvent)
                         if ((*tIt)->IsThisParticipant(QString(tMAEvent->Sender.c_str())))
                         {
                             (*tIt)->HandleMessageAccept(tMAEvent->IsIncomingEvent);
-                            return;
+                            break;
                         }
                     }
-                    return;
+                    break;
         case MESSAGE_ACCEPT_DELAYED:
                     //##################### MESSAGE ACCEPT DELAYED ######################
                     tMADEvent = (MessageAcceptDelayedEvent*) tEvent;
@@ -1042,10 +1046,10 @@ void MainWindow::customEvent(QEvent* pEvent)
                         if ((*tIt)->IsThisParticipant(QString(tMADEvent->Sender.c_str())))
                         {
                             (*tIt)->HandleMessageAcceptDelayed(tMADEvent->IsIncomingEvent);
-                            return;
+                            break;
                         }
                     }
-                    return;
+                    break;
         case MESSAGE_UNAVAILABLE:
                     //######################## MESSAGE UNAVAILABLE ##########################
                     tMUEvent = (MessageUnavailableEvent*) tEvent;
@@ -1056,10 +1060,10 @@ void MainWindow::customEvent(QEvent* pEvent)
                         if ((*tIt)->IsThisParticipant(QString(tMUEvent->Sender.c_str())))
                         {
                             (*tIt)->HandleMessageUnavailable(tMUEvent->IsIncomingEvent, tMUEvent->StatusCode, QString(tMUEvent->Description.c_str()));
-                            return;
+                            break;
                         }
                     }
-                    return;
+                    break;
         case CALL:
                     //############################### CALL ##################################
                     tCEvent = (CallEvent*) tEvent;
@@ -1086,7 +1090,7 @@ void MainWindow::customEvent(QEvent* pEvent)
 
                                 if (!tCEvent->AutoAnswering)
                                     (*tIt)->HandleCall(tCEvent->IsIncomingEvent, QString(tEvent->SenderApplication.c_str()));
-                                return;
+                                break;
                             }
                         }
                     }
@@ -1104,7 +1108,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     } else
                         LOG(LOG_ERROR, "ParticipantWidget creation failed");
 
-                    return;
+                    break;
         case CALL_RINGING:
                     //############################# CALL RINGING ##############################
                     tCREvent = (CallRingingEvent*) tEvent;
@@ -1116,10 +1120,10 @@ void MainWindow::customEvent(QEvent* pEvent)
                             if (tCREvent->SenderName.size())
                                 (*tIt)->UpdateParticipantName(QString(tCREvent->SenderName.c_str()));
                             (*tIt)->HandleCallRinging(tCREvent->IsIncomingEvent);
-                            return;
+                            break;
                         }
                     }
-                    return;
+                    break;
         case CALL_ACCEPT:
                     //############################# CALL ACCEPT ##############################
                     tCAEvent = (CallAcceptEvent*) tEvent;
@@ -1131,10 +1135,10 @@ void MainWindow::customEvent(QEvent* pEvent)
                             if (tCAEvent->SenderName.size())
                                 (*tIt)->UpdateParticipantName(QString(tCAEvent->SenderName.c_str()));
                             (*tIt)->HandleCallAccept(tCAEvent->IsIncomingEvent);
-                            return;
+                            break;
                         }
                     }
-                    return;
+                    break;
         case CALL_CANCEL:
                     //############################# CALL CANCEL ##############################
                     tCCEvent = (CallCancelEvent*) tEvent;
@@ -1157,10 +1161,10 @@ void MainWindow::customEvent(QEvent* pEvent)
                             if (tCCEvent->SenderName.size())
                                 (*tIt)->UpdateParticipantName(QString(tCCEvent->SenderName.c_str()));
                             (*tIt)->HandleCallCancel(tCCEvent->IsIncomingEvent);
-                            return;
+                            break;
                         }
                     }
-                    return;
+                    break;
         case CALL_DENY:
                     //############################# CALL DENY ##############################
                     tCDEvent = (CallDenyEvent*) tEvent;
@@ -1172,10 +1176,10 @@ void MainWindow::customEvent(QEvent* pEvent)
                             if (tCDEvent->SenderName.size())
                                 (*tIt)->UpdateParticipantName(QString(tCDEvent->SenderName.c_str()));
                             (*tIt)->HandleCallDenied(tCDEvent->IsIncomingEvent);
-                            return;
+                            break;
                         }
                     }
-                    return;
+                    break;
         case CALL_UNAVAILABLE:
                     //########################### CALL UNAVAILABLE ###########################
                     tCUEvent = (CallUnavailableEvent*) tEvent;
@@ -1185,10 +1189,10 @@ void MainWindow::customEvent(QEvent* pEvent)
                         if ((*tIt)->IsThisParticipant(QString(tCUEvent->Sender.c_str())))
                         {
                             (*tIt)->HandleCallUnavailable(tCUEvent->IsIncomingEvent, tCUEvent->StatusCode, QString(tCUEvent->Description.c_str()));
-                            return;
+                            break;
                         }
                     }
-                    return;
+                    break;
         case CALL_HANGUP:
                     //############################# CALL HANGUP ##############################
                     tCHUEvent = (CallHangUpEvent*) tEvent;
@@ -1210,10 +1214,10 @@ void MainWindow::customEvent(QEvent* pEvent)
                             if (tCHUEvent->SenderName.size())
                                 (*tIt)->UpdateParticipantName(QString(tCHUEvent->SenderName.c_str()));
                             (*tIt)->HandleCallHangup(tCHUEvent->IsIncomingEvent);
-                            return;
+                            break;
                         }
                     }
-                    return;
+                    break;
         case CALL_TERMINATION:
                     //######################### CALL TERMINATION ############################
                     tCTEvent = (CallTerminationEvent*) tEvent;
@@ -1225,10 +1229,10 @@ void MainWindow::customEvent(QEvent* pEvent)
                             if (tCTEvent->SenderName.size())
                                 (*tIt)->UpdateParticipantName(QString(tCTEvent->SenderName.c_str()));
                             (*tIt)->HandleCallTermination(tCTEvent->IsIncomingEvent);
-                            return;
+                            break;
                         }
                     }
-                    return;
+                    break;
         case CALL_MEDIA_UPDATE:
                     //######################## CALL MEDIA UPDATE ############################
                     tCMUEvent = (CallMediaUpdateEvent*) tEvent;
@@ -1240,10 +1244,10 @@ void MainWindow::customEvent(QEvent* pEvent)
                             if (tCMUEvent->SenderName.size())
                                 (*tIt)->UpdateParticipantName(QString(tCMUEvent->SenderName.c_str()));
                             (*tIt)->HandleMediaUpdate(tCMUEvent->IsIncomingEvent, QString(tCMUEvent->RemoteAudioAddress.c_str()), tCMUEvent->RemoteAudioPort, QString(tCMUEvent->RemoteAudioCodec.c_str()), QString(tCMUEvent->RemoteVideoAddress.c_str()), tCMUEvent->RemoteVideoPort, QString(tCMUEvent->RemoteVideoCodec.c_str()));
-                            return;
+                            break;
                         }
                     }
-                    return;
+                    break;
         case REGISTRATION:
                     //####################### REGISTRATION SUCCEEDED #############################
                     tREvent = (RegistrationEvent*) tEvent;
@@ -1254,7 +1258,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     }
                     mSipServerRegistrationUser = CONF.GetSipUserName();
                     mSipServerRegistrationHost = CONF.GetSipServer();
-                    return;
+                    break;
         case REGISTRATION_FAILED:
                     //####################### REGISTRATION FAILED #############################
                     tRFEvent = (RegistrationFailedEvent*) tEvent;
@@ -1263,22 +1267,25 @@ void MainWindow::customEvent(QEvent* pEvent)
                     // reset stored SIP server data
                     mSipServerRegistrationUser = "";
                     mSipServerRegistrationHost = "";
-                    return;
+                    break;
         case PUBLICATION:
                     //####################### PUBLICATION SUCCEEDED #############################
                     tPEvent = (PublicationEvent*) tEvent;
                     //TODO: inform user
-                    return;
+                    break;
         case PUBLICATION_FAILED:
                     //####################### PUBLICATION FAILED #############################
                     tPFEvent = (PublicationFailedEvent*) tEvent;
                     ShowError("Presence publication failed", "Could not publish your new presence state at the SIP server \"" + CONF.GetSipServer() + "\"! The reason is \"" + QString(tPFEvent->Description.c_str()) + "\"(" + QString("%1").arg(tPFEvent->StatusCode) + ")\n" \
                                                              "SIP server runs software \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
-                    return;
+                    break;
         default:
                     LOG(LOG_ERROR, "We should never reach this point! Otherwise there is an ERROR IN STATE MACHINE");
-                    return;
+                    break;
     }
+
+    // free memory of event
+    delete tEvent;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

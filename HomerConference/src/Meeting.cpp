@@ -558,7 +558,7 @@ bool Meeting::SendBroadcastMessage(string pMessage)
             tMEvent->Receiver = "sip:" + SipCreateId(tIt->User, tIt->Host, tIt->Port);
             tMEvent->HandlePtr = &tIt->SipNuaHandleForMsgs;
             tMEvent->Text = pMessage;
-            OutgoingEvents.Fire((GeneralEvent*) tMEvent);
+            mOutgoingEvents.Fire((GeneralEvent*) tMEvent);
         }
 
         tResult = true;
@@ -614,7 +614,7 @@ bool Meeting::SendMessage(string pParticipant, string pMessage)
             tMEvent->Receiver = "sip:" + pParticipant;
             tMEvent->HandlePtr = tHandlePtr;
             tMEvent->Text = pMessage;
-            OutgoingEvents.Fire((GeneralEvent*) tMEvent);
+            mOutgoingEvents.Fire((GeneralEvent*) tMEvent);
         }
     }
 
@@ -660,7 +660,7 @@ bool Meeting::SendCall(string pParticipant)
             tCEvent->SenderComment = "";
             tCEvent->Receiver = "sip:" + pParticipant;
             tCEvent->HandlePtr = tHandlePtr;
-            OutgoingEvents.Fire((GeneralEvent*) tCEvent);
+            mOutgoingEvents.Fire((GeneralEvent*) tCEvent);
         }
     }
 
@@ -702,7 +702,7 @@ bool Meeting::SendCallAcknowledge(string pParticipant)
             tCREvent->SenderComment = "";
             tCREvent->Receiver = "sip:" + pParticipant;
             tCREvent->HandlePtr = tHandlePtr;
-            OutgoingEvents.Fire((GeneralEvent*) tCREvent);
+            mOutgoingEvents.Fire((GeneralEvent*) tCREvent);
         }
     }
 
@@ -742,7 +742,7 @@ bool Meeting::SendCallAccept(string pParticipant)
             tCAEvent->SenderComment = "";
             tCAEvent->Receiver = "sip:" + pParticipant;
             tCAEvent->HandlePtr = tHandlePtr;
-            OutgoingEvents.Fire((GeneralEvent*) tCAEvent);
+            mOutgoingEvents.Fire((GeneralEvent*) tCAEvent);
         }
     }
 
@@ -782,7 +782,7 @@ bool Meeting::SendCallCancel(string pParticipant)
             tCCEvent->SenderComment = "";
             tCCEvent->Receiver = "sip:" + pParticipant;
             tCCEvent->HandlePtr = tHandlePtr;
-            OutgoingEvents.Fire((GeneralEvent*) tCCEvent);
+            mOutgoingEvents.Fire((GeneralEvent*) tCCEvent);
         }
     }
 
@@ -822,7 +822,7 @@ bool Meeting::SendCallDeny(string pParticipant)
             tCDEvent->SenderComment = "";
             tCDEvent->Receiver = "sip:" + pParticipant;
             tCDEvent->HandlePtr = tHandlePtr;
-            OutgoingEvents.Fire((GeneralEvent*) tCDEvent);
+            mOutgoingEvents.Fire((GeneralEvent*) tCDEvent);
         }
     }
 
@@ -865,7 +865,7 @@ bool Meeting::SendHangUp(string pParticipant)
             tCHUEvent->SenderComment = "";
             tCHUEvent->Receiver = "sip:" + pParticipant;
             tCHUEvent->HandlePtr = tHandlePtr;
-            OutgoingEvents.Fire((GeneralEvent*) tCHUEvent);
+            mOutgoingEvents.Fire((GeneralEvent*) tCHUEvent);
         }
     }
 
@@ -899,7 +899,7 @@ bool Meeting::SendProbe(std::string pParticipant)
     tOEvent->SenderComment = "";
     tOEvent->Receiver = "sip:" + pParticipant;
     tOEvent->HandlePtr = NULL; // done within SIP class
-    OutgoingEvents.Fire((GeneralEvent*) tOEvent);
+    mOutgoingEvents.Fire((GeneralEvent*) tOEvent);
 
     return true;
 }
