@@ -89,7 +89,7 @@ SocketConnection::SocketConnection(std::string pTarget, Requirements *pRequireme
 
     if (tTcp)
     {
-        mSocket = new Socket(tIPv6 ? SOCKET_IPv6 : SOCKET_IPv4, SOCKET_TCP);
+        mSocket = Socket::CreateClientSocket(tIPv6 ? SOCKET_IPv6 : SOCKET_IPv4, SOCKET_TCP);
         tFoundTransport = true;
         mIsClosed = false;
     }
@@ -99,13 +99,7 @@ SocketConnection::SocketConnection(std::string pTarget, Requirements *pRequireme
     {
         if(!tFoundTransport)
         {
-            if(!tUdpLite)
-            {
-                mSocket = new Socket(tIPv6 ? SOCKET_IPv6 : SOCKET_IPv4, SOCKET_UDP);
-            }else
-            {
-                mSocket = new Socket(tIPv6 ? SOCKET_IPv6 : SOCKET_IPv4, SOCKET_UDP_LITE);
-            }
+            mSocket = Socket::CreateClientSocket(tIPv6 ? SOCKET_IPv6 : SOCKET_IPv4, tUdpLite ? SOCKET_UDP_LITE : SOCKET_UDP);
             tFoundTransport = true;
             mIsClosed = false;
         }else

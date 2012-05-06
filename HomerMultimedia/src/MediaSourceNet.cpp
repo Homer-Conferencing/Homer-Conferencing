@@ -92,7 +92,7 @@ MediaSourceNet::MediaSourceNet(unsigned int pPortNumber, enum TransportType pTra
 
     mListenerSocketOutside = false;
 
-    Init(new Socket(pTransportType, pPortNumber), pRtpActivated);
+    Init(Socket::CreateServerSocket(SOCKET_IPv6, pTransportType, pPortNumber), pRtpActivated);
 }
 
 MediaSourceNet::~MediaSourceNet()
@@ -275,7 +275,7 @@ void MediaSourceNet::StopGrabbing()
     if ((mDataSocket != NULL) && (((mOpenInputStream) && (mListenerRunning)) || (mListenerRunning) || ((!mOpenInputStream) && (!mGrabMutex.tryLock(100)))))
     {
         LOG(LOG_VERBOSE, "Try to do loopback signaling to local IPv%d listener at port %u, transport %d", mDataSocket->GetNetworkType(), 0xFFFF & mDataSocket->GetLocalPort(), mDataSocket->GetTransportType());
-        Socket  *tSocket = new Socket(mDataSocket->GetNetworkType(), mDataSocket->GetTransportType());
+        Socket  *tSocket = Socket::CreateClientSocket(mDataSocket->GetNetworkType(), mDataSocket->GetTransportType());
         char    tData[8];
         switch(tSocket->GetNetworkType())
         {
