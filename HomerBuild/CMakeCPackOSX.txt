@@ -1,0 +1,14 @@
+###############################################################################
+# Author:  Thomas Volkert
+# Since:   2012-05-08
+###############################################################################
+
+MESSAGE("### Supporting Bundle installer creation")
+
+###############################################################################
+set(CPACK_GENERATOR "Bundle")
+
+###############################################################################
+set(CPACK_BUNDLE_NAME "Homer Conferencing")
+set(CPACK_BUNDLE_ICON ${PACKAGE_TOP_SRC_DIR}/Homer/Homer.png) 
+#set(CPACK_BUNDLE_PLIST )

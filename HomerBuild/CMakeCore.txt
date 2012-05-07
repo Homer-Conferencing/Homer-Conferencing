@@ -137,8 +137,11 @@ IF (${BUILD} MATCHES "Debug")
 ELSE ()
 	SET (FLAGS "${FLAGS} -DRELEASE_VERSION")
 ENDIF ()
+# stripping for all platforms excluding APPLE
+IF (NOT APPLE)
 IF (${BUILD} MATCHES "Release")
 	SET (LFLAGS "${FLAGS} -s")
+ENDIF()
 ENDIF()
 
 ##############################################################
