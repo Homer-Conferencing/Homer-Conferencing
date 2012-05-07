@@ -38,8 +38,7 @@ Mutex::Mutex()
 {
 	bool tResult = false;
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
-		mMutex = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t));
-		tResult = (pthread_mutex_init(mMutex, NULL) == 0);
+		tResult = (pthread_mutex_init(&mMutex, NULL) == 0);
 	#endif
 	#if defined(WIN32) ||defined(WIN64)
 		mMutex = CreateMutex(NULL, false, NULL);
@@ -53,8 +52,7 @@ Mutex::~Mutex()
 {
     bool tResult = false;
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
-		tResult = (pthread_mutex_destroy(mMutex) == 0);
-	    free(mMutex);
+		tResult = (pthread_mutex_destroy(&mMutex) == 0);
 	#endif
 	#if defined(WIN32) ||defined(WIN64)
 	    tResult = (CloseHandle(mMutex) != 0);
@@ -68,7 +66,7 @@ Mutex::~Mutex()
 bool Mutex::lock()
 {
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
-		return !pthread_mutex_lock(mMutex);
+		return !pthread_mutex_lock(&mMutex);
 	#endif
 	#if defined(WIN32) ||defined(WIN64)
 		return (WaitForSingleObject(mMutex, INFINITE) != WAIT_FAILED);
@@ -78,7 +76,7 @@ bool Mutex::lock()
 bool Mutex::unlock()
 {
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
-		return !pthread_mutex_unlock(mMutex);
+		return !pthread_mutex_unlock(&mMutex);
 	#endif
 	#if defined(WIN32) ||defined(WIN64)
 		return (ReleaseMutex(mMutex) != 0);
@@ -89,7 +87,7 @@ bool Mutex::tryLock()
 {
 	bool tResult = false;
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
-		switch(pthread_mutex_trylock(mMutex))
+		switch(pthread_mutex_trylock(&mMutex))
 		{
 			case EDEADLK:
 				LOG(LOG_ERROR, "Lock already held by calling thread");
@@ -131,7 +129,7 @@ bool Mutex::tryLock(int pMSecs)
 	bool tResult = false;
     #if defined(APPLE) || defined(BSD)
 	    // OSX/BSD don't support pthread_mutex_timedlock() and clock_gettime(), fall back to simple pthread_mutex_trylock()
-        switch(pthread_mutex_trylock(mMutex))
+        switch(pthread_mutex_trylock(&mMutex))
         {
             case EDEADLK:
                 LOG(LOG_ERROR, "Lock already held by calling thread");
@@ -169,7 +167,7 @@ bool Mutex::tryLock(int pMSecs)
             LOG(LOG_VERBOSE, "       add sec.: %10d", tSecAdd);
             LOG(LOG_VERBOSE, "Locks stop time: %8ld:%09ld", tTimeout.tv_sec, tTimeout.tv_nsec);
         #endif
-		switch(pthread_mutex_timedlock(mMutex, &tTimeout))
+		switch(pthread_mutex_timedlock(&mMutex, &tTimeout))
 		{
 			case EDEADLK:
 				LOG(LOG_ERROR, "Lock already held by calling thread");

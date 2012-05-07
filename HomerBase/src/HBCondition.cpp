@@ -44,8 +44,7 @@ Condition::Condition()
 {
 	bool tResult = false;
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
-	    mCondition = (pthread_cond_t*)malloc(sizeof(pthread_cond_t));
-		tResult = (pthread_cond_init(mCondition, NULL) == 0);
+		tResult = (pthread_cond_init(&mCondition, NULL) == 0);
 	#endif
 	#if defined(WIN32) ||defined(WIN64)
 		mCondition = CreateEvent(NULL, true, false, NULL);
@@ -59,8 +58,7 @@ Condition::~Condition()
 {
     bool tResult = false;
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
-		tResult = (pthread_cond_destroy(mCondition) == 0);
-	    free(mCondition);
+		tResult = (pthread_cond_destroy(&mCondition) == 0);
 	#endif
 	#if defined(WIN32) ||defined(WIN64)
 	    tResult = (CloseHandle(mCondition) != 0);
@@ -96,18 +94,18 @@ bool Condition::Wait(Mutex *pMutex, int pTime)
 
         if (pMutex)
             if (pTime > 0)
-                return !pthread_cond_timedwait(mCondition, pMutex->mMutex, &tTimeout);
+                return !pthread_cond_timedwait(&mCondition, &pMutex->mMutex, &tTimeout);
             else
-                return !pthread_cond_wait(mCondition, pMutex->mMutex);
+                return !pthread_cond_wait(&mCondition, &pMutex->mMutex);
         else
         {
             pthread_mutex_t tMutex;
             pthread_mutex_init(&tMutex, NULL);
             pthread_mutex_lock(&tMutex);
             if (pTime > 0)
-                return !pthread_cond_timedwait(mCondition, &tMutex, &tTimeout);
+                return !pthread_cond_timedwait(&mCondition, &tMutex, &tTimeout);
             else
-                return !pthread_cond_wait(mCondition, &tMutex);
+                return !pthread_cond_wait(&mCondition, &tMutex);
             pthread_mutex_destroy(&tMutex);
         }
     #endif
@@ -120,7 +118,7 @@ bool Condition::Wait(Mutex *pMutex, int pTime)
 bool Condition::SignalOne()
 {
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
-		return !pthread_cond_signal(mCondition);
+		return !pthread_cond_signal(&mCondition);
 	#endif
 	#if defined(WIN32) ||defined(WIN64)
 		return (SetEvent(mCondition) != 0);
@@ -130,7 +128,7 @@ bool Condition::SignalOne()
 bool Condition::SignalAll()
 {
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
-        return !pthread_cond_broadcast(mCondition);
+        return !pthread_cond_broadcast(&mCondition);
     #endif
     #if defined(WIN32) ||defined(WIN64)
 		return (SetEvent(mCondition) != 0);
@@ -140,7 +138,7 @@ bool Condition::SignalAll()
 bool Condition::Reset()
 {
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
-        return (pthread_cond_init(mCondition, NULL) == 0);
+        return (pthread_cond_init(&mCondition, NULL) == 0);
 	#endif
 	#if defined(WIN32) ||defined(WIN64)
 		return (ResetEvent(mCondition) != 0);
