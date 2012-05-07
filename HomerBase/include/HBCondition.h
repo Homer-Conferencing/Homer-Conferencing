@@ -34,7 +34,7 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <errno.h>
-#define OS_DEP_COND pthread_cond_t*
+#define OS_DEP_COND pthread_cond_t
 #endif
 
 #include <Header_Windows.h>

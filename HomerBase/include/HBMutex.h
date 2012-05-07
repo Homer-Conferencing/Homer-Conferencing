@@ -32,7 +32,7 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <errno.h>
-#define OS_DEP_MUTEX pthread_mutex_t*
+#define OS_DEP_MUTEX pthread_mutex_t
 #endif
 
 #include <Header_Windows.h>
