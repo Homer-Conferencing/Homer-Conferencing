@@ -358,6 +358,10 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     // put sample parameters
     mCodecContext->bit_rate = 90000;
 
+	// mpeg1/2 codecs support only non-rational frame rates
+    if (((tFormat->video_codec == CODEC_ID_MPEG1VIDEO) || (tFormat->video_codec == CODEC_ID_MPEG2VIDEO)) && (mFrameRate = 29.97))
+        mFrameRate = 30.0;
+
     // resolution
     if (((mRequestedStreamingResX == -1) || (mRequestedStreamingResY == -1)) && (mMediaSource != NULL))
     {

@@ -258,10 +258,14 @@ void OpenVideoAudioPreviewDialog::LoadConfiguration()
         mCbCodecVideo->setCurrentIndex(2);
     if (tVideoStreamCodec == "H.264")
         mCbCodecVideo->setCurrentIndex(3);
-    if (tVideoStreamCodec == "MPEG4")
+    if (tVideoStreamCodec == "MPEG1")
         mCbCodecVideo->setCurrentIndex(4);
-    if (tVideoStreamCodec == "MJPEG")
+    if (tVideoStreamCodec == "MPEG2")
         mCbCodecVideo->setCurrentIndex(5);
+    if (tVideoStreamCodec == "MPEG4")
+        mCbCodecVideo->setCurrentIndex(6);
+    if (tVideoStreamCodec == "THEORA")
+        mCbCodecVideo->setCurrentIndex(7);
 
     QString tAudioStreamCodec = CONF.GetAudioCodec();
     if (tAudioStreamCodec == "MP3 (MPA)")
