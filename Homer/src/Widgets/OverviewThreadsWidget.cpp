@@ -202,9 +202,9 @@ void OverviewThreadsWidget::FillCellText(int pRow, int pCol, QString pText)
     }
 }
 
-void OverviewThreadsWidget::FillRow(int pRow, ProcessStatistic pStats)
+void OverviewThreadsWidget::FillRow(int pRow, ProcessStatistic *pStats)
 {
-	ThreadStatisticDescriptor tStatValues = pStats.GetThreadStatistic();
+	ThreadStatisticDescriptor tStatValues = pStats->GetThreadStatistic();
 
 	int tCpuCores = 1;
 	if (mSummarizeCpuCores)
@@ -214,9 +214,9 @@ void OverviewThreadsWidget::FillRow(int pRow, ProcessStatistic pStats)
         mTwThreads->insertRow(mTwThreads->rowCount());
 
     if (mTwThreads->item(pRow, 0) != NULL)
-        mTwThreads->item(pRow, 0)->setText(QString(pStats.GetThreadName().c_str()));
+        mTwThreads->item(pRow, 0)->setText(QString(pStats->GetThreadName().c_str()));
     else
-        mTwThreads->setItem(pRow, 0, new QTableWidgetItem(QString(pStats.GetThreadName().c_str())));
+        mTwThreads->setItem(pRow, 0, new QTableWidgetItem(QString(pStats->GetThreadName().c_str())));
     mTwThreads->item(pRow, 0)->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
     mTwThreads->item(pRow, 0)->setBackground(QBrush(QColor(Qt::lightGray)));
 
@@ -249,16 +249,8 @@ void OverviewThreadsWidget::UpdateView()
 
     // update widget content
     ProcessStatisticsList tStatList = SVC_PROCESS_STATISTIC.GetProcessStatistics();
-    if (tStatList.size() > 0)
-    {
-        tIt = tStatList.begin();
-
-        while (tIt != tStatList.end())
-        {
-            FillRow(tRow++, *tIt);
-            tIt++;
-        }
-    }
+    for (tIt = tStatList.begin(); tIt != tStatList.end(); tIt++)
+        FillRow(tRow++, *tIt);
 
     for (int i = mTwThreads->rowCount(); i > tRow; i--)
         mTwThreads->removeRow(i);

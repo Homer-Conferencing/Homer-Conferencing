@@ -29,6 +29,7 @@
 #define _MULTIMEDIA_PROCESS_STATISTIC_
 
 #include <HBMutex.h>
+#include <ProcessStatisticService.h>
 
 #include <string>
 #include <list>
@@ -55,13 +56,11 @@ struct ThreadStatisticDescriptor{
 typedef std::list<ThreadStatisticDescriptor> ThreadStatisticList;
 
 ///////////////////////////////////////////////////////////////////////////////
+class ProcessStatisticService;
 
 class ProcessStatistic
 {
 public:
-    /// The default constructor
-    ProcessStatistic(int pThreadId = -1);
-
     /// The destructor.
     virtual ~ProcessStatistic();
 
@@ -70,10 +69,12 @@ public:
     void AssignThreadName(std::string pName);
     std::string GetThreadName();
     int GetThreadStatisticId();
-    bool IsRemotelyCreated();
 
 private:
-    bool mRemotelyCreated;
+friend class ProcessStatisticService;
+    /// The default constructor
+    ProcessStatistic(int pThreadId);
+
     int mThreadId;
     std::string mName;
     unsigned long long mLastUserTicsThread;
