@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 2011 Thomas Volkert <thomas@homer-conferencing.com>
+ * Copyright (C) 2010 Thomas Volkert <thomas@homer-conferencing.com>
  *
  * This software is free software.
  * Your are allowed to redistribute it and/or modify it under the terms of
@@ -20,58 +20,53 @@
  *****************************************************************************/
 
 /*
- * Purpose: PortAudio capture for OSX
+ * Purpose: wave out based on PortAudio
  * Author:  Thomas Volkert
- * Since:   2012-04-25
+ * Since:   2012-05-07
  */
 
-#ifndef _MULTIMEDIA_MEDIA_SOURCE_PORT_AUDIO_
-#define _MULTIMEDIA_MEDIA_SOURCE_PORT_AUDIO_
+#ifndef _MULTIMEDIA_WAVE_OUT_PORT_AUDIO_
+#define _MULTIMEDIA_WAVE_OUT_PORT_AUDIO_
 
-#include <MediaFifo.h>
-#include <MediaSource.h>
+#include <Header_Ffmpeg.h>
 #include <Header_PortAudio.h>
-
-#include <string.h>
+#include <WaveOut.h>
 
 namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
 
 // de/activate debugging of grabbed packets
-//#define MSPA_DEBUG_PACKETS
+//#define WOPA_DEBUG_PACKETS
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class MediaSourcePortAudio:
-    public MediaSource
+class WaveOutPortAudio:
+    public WaveOut
 {
 public:
-    MediaSourcePortAudio(std::string pDesiredDevice = "");
+    WaveOutPortAudio(std::string pDesiredDevice = "");
 
-    ~MediaSourcePortAudio();
+    /// The destructor
+    virtual ~WaveOutPortAudio();
 
-    /* device control */
-    virtual void getAudioDevices(AudioDevicesList &pAList);
-
-    /* grabbing control */
-    virtual void StopGrabbing();
-    virtual std::string GetCodecName();
-    virtual std::string GetCodecLongName();
+    // playback control
+    virtual bool Play();
+    virtual void Stop();
 
 public:
-    virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97);
-    virtual bool OpenAudioGrabDevice(int pSampleRate = 44100, bool pStereo = true);
-    virtual bool CloseGrabDevice();
-    virtual int GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropFrame = false);
+    /* open/close */
+    virtual bool OpenWaveOutDevice(int pSampleRate = 44100, bool pStereo = true);
+    virtual bool CloseWaveOutDevice();
+    /* device interface */
+    virtual void getAudioDevices(AudioDevicesList &pAList);
+    /* playback control */
+    virtual bool WriteChunk(void* pChunkBuffer, int pChunkSize = 4096);
 
 private:
-    static int RecordedAudioHandler(const void *pInputBuffer, void *pOutputBuffer, unsigned long pInputSize, const PaStreamCallbackTimeInfo* pTimeInfo, PaStreamCallbackFlags pStatus, void *pUserData);
-
-    /* capturing */
+    /* playback */
     PaStream            *mStream;
-    MediaFifo           *mCaptureFifo;
-    bool				mCaptureDuplicateMonoStream;
+    AVFifoBuffer        *mSampleFifo;
     /* portaudio init. */
     static Mutex        mPaInitMutex;
     static bool         mPaInitiated;
@@ -79,6 +74,6 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-}} //namespaces
+}} // namespaces
 
 #endif

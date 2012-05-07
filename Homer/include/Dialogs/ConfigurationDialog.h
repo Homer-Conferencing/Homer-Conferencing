@@ -51,7 +51,7 @@ class ConfigurationDialog :
     Q_OBJECT;
 public:
     /// The default constructor
-    ConfigurationDialog(QWidget* pParent, std::list<std::string>  pLocalAdresses, VideoWorkerThread* pVideoWorker, AudioWorkerThread* pAudioWorker, Homer::SoundOutput::WaveOut *pWaveOut);
+    ConfigurationDialog(QWidget* pParent, std::list<std::string>  pLocalAdresses, VideoWorkerThread* pVideoWorker, AudioWorkerThread* pAudioWorker);
 
     /// The destructor.
     virtual ~ConfigurationDialog();
@@ -122,10 +122,9 @@ private:
     QHttp                   *mHttpGetSipServerList;
     static QStringList      mSipServerList;
 
-    Homer::SoundOutput::WaveOut *mWaveOut;
     QStringList             mVideoCaptureDevices;
     QStringList             mAudioCaptureDevices;
-    Homer::SoundOutput::AudioOutDevicesList mAudioPlaybackDevices;
+    Homer::Multimedia::AudioDevicesList mAudioPlaybackDevices;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

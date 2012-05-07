@@ -30,7 +30,6 @@
 
 #include <MediaSourceMuxer.h>
 #include <MediaSourceDesktop.h>
-#include <WaveOut.h>
 #include <Widgets/AudioWidget.h>
 #include <Widgets/AvailabilityWidget.h>
 #include <Widgets/StreamingControlWidget.h>
@@ -181,7 +180,6 @@ private:
     QMenu					    *mSysTrayMenu;
     MediaSourceDesktop 		    *mSourceDesktop;
     QShortcut                   *mShortcutActivateDebugWidgets, *mShortcutActivateDebuggingGlobally;
-    Homer::SoundOutput::WaveOut *mWaveOut;
     /* SIP server registration */
     QString                     mSipServerRegistrationHost;
     QString                     mSipServerRegistrationUser;

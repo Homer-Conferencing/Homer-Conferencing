@@ -46,7 +46,6 @@
 #include <LogSinkFile.h>
 #include <LogSinkNet.h>
 #include <Meeting.h>
-#include <AudioOutSdl.h>
 #include <MediaSourcePortAudio.h>
 #include <MediaSourceV4L2.h>
 #include <MediaSourceMMSys.h>
@@ -57,8 +56,6 @@
 #include <MediaSourceFile.h>
 #include <MediaSourceDesktop.h>
 #include <ProcessStatisticService.h>
-#include <WaveOutAlsa.h>
-#include <WaveOutMMSys.h>
 #include <Snippets.h>
 
 #include <QPlastiqueStyle>
@@ -75,7 +72,6 @@
 #include <QLabel>
 
 using namespace Homer::Monitor;
-using namespace Homer::SoundOutput;
 using namespace Homer::Conference;
 
 namespace Homer { namespace Gui {
@@ -351,20 +347,14 @@ void MainWindow::initializeVideoAudioIO()
 		//mOwnAudioMuxer->RegisterMediaSource(new MediaSourceAlsa(tASourceSelection));
 		//mOwnAudioMuxer->RegisterMediaSource(new MediaSourceOss());
         mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio());
-		mWaveOut = new WaveOutAlsa("");
 	#endif
 	#ifdef WIN32
 		//mOwnAudioMuxer->RegisterMediaSource(new MediaSourceMMSys(tASourceSelection));
         mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio());
-        mWaveOut = new WaveOutMMSys("");
 	#endif
     #ifdef APPLE
         mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio());
-        mWaveOut = NULL;
     #endif
-    // audio output
-	LOG(LOG_VERBOSE, "Opening audio output object..");
-    AUDIOOUTSDL.OpenPlaybackDevice(AUDIO_OUTPUT_SAMPLE_RATE, true, "alsa", "auto");
 }
 
 void MainWindow::initializeColoring()
@@ -804,9 +794,6 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
     delete mSysTrayIcon;
 
 	//HINT: mSourceDesktop will be deleted by VideoWidget which grabbed from there
-
-    // close audio output device
-    AUDIOOUTSDL.ClosePlaybackDevice();
 
     // make sure this main window will be deleted when control returns to Qt event loop (need especially in case of closeEvent from fullscreen video widget)
     deleteLater();
@@ -1419,7 +1406,7 @@ void MainWindow::actionConfiguration()
 {
     bool tFormerStateMeetingProbeContacts = CONF.GetSipContactsProbing();
 
-    ConfigurationDialog tConfigurationDialog(this, mLocalAddresses, mLocalUserParticipantWidget->GetVideoWorker(), mLocalUserParticipantWidget->GetAudioWorker(), mWaveOut);
+    ConfigurationDialog tConfigurationDialog(this, mLocalAddresses, mLocalUserParticipantWidget->GetVideoWorker(), mLocalUserParticipantWidget->GetAudioWorker());
 
     // inform the whole multimedia system about new settings if user has acknowledged the dialog settings
     if (tConfigurationDialog.exec() == QDialog::Accepted)

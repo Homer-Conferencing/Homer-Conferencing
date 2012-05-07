@@ -33,6 +33,7 @@
 #include <HBSocket.h>
 #include <Logger.h>
 #include <Snippets.h>
+#include <WaveOutPortAudio.h>
 
 #include <list>
 #include <string>
@@ -51,7 +52,6 @@ namespace Homer { namespace Gui {
 using namespace std;
 using namespace Homer::Base;
 using namespace Homer::Multimedia;
-using namespace Homer::SoundOutput;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -60,14 +60,13 @@ QStringList      ConfigurationDialog::mSipServerList;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-ConfigurationDialog::ConfigurationDialog(QWidget* pParent, list<string>  pLocalAdresses, VideoWorkerThread* pVideoWorker, AudioWorkerThread* pAudioWorker, WaveOut *pWaveOut):
+ConfigurationDialog::ConfigurationDialog(QWidget* pParent, list<string>  pLocalAdresses, VideoWorkerThread* pVideoWorker, AudioWorkerThread* pAudioWorker):
     QDialog(pParent)
 {
     mHttpGetStunServerList = NULL;
     mHttpGetSipServerList = NULL;
     mVideoWorker = pVideoWorker;
     mAudioWorker = pAudioWorker;
-    mWaveOut = pWaveOut;
     mLocalAdresses = pLocalAdresses;
     initializeGUI();
     LoadConfiguration();
@@ -160,8 +159,9 @@ void ConfigurationDialog::LoadConfiguration()
 
     mAudioCaptureDevices = mAudioWorker->GetPossibleDevices();
     mVideoCaptureDevices = mVideoWorker->GetPossibleDevices();
-    if(mWaveOut != NULL)
-        mWaveOut->getAudioDevices(mAudioPlaybackDevices);
+
+    WaveOutPortAudio tAudioOut;
+    tAudioOut.getAudioDevices(mAudioPlaybackDevices);
 
     //######################################################################
     //### VIDEO configuration
@@ -245,10 +245,9 @@ void ConfigurationDialog::LoadConfiguration()
     //### playback device
     mCbAudioSink->clear();
     QString tLocalAudioPlayback = CONF.GetLocalAudioSink();
-    AudioOutDevicesList::iterator tAudioOutDevicesIt;
-    for (tAudioOutDevicesIt = mAudioPlaybackDevices.begin(); tAudioOutDevicesIt != mAudioPlaybackDevices.end(); tAudioOutDevicesIt++)
+    for (tAudioDevicesIt = mAudioPlaybackDevices.begin(); tAudioDevicesIt != mAudioPlaybackDevices.end(); tAudioDevicesIt++)
     {
-        QString tNewAudioPlaybackDevice = QString(tAudioOutDevicesIt->Name.c_str());
+        QString tNewAudioPlaybackDevice = QString(tAudioDevicesIt->Name.c_str());
         // check if card is already inserted into QComboBox, if false then add the device to the selectable devices list
         if (mCbAudioSink->findText(tNewAudioPlaybackDevice) == -1)
             mCbAudioSink->addItem(tNewAudioPlaybackDevice);
@@ -590,13 +589,13 @@ void ConfigurationDialog::ShowAudioSourceInfo(QString pCurrentText)
 
 void ConfigurationDialog::ShowAudioSinkInfo(QString pCurrentText)
 {
-    AudioOutDevicesList::iterator tAudioOutDevicesIt;
+    AudioDevicesList::iterator tAudioDevicesIt;
     QString tInfoText = "";
 
-    for (tAudioOutDevicesIt = mAudioPlaybackDevices.begin(); tAudioOutDevicesIt != mAudioPlaybackDevices.end(); tAudioOutDevicesIt++)
+    for (tAudioDevicesIt = mAudioPlaybackDevices.begin(); tAudioDevicesIt != mAudioPlaybackDevices.end(); tAudioDevicesIt++)
     {
-        if (pCurrentText.compare(QString(tAudioOutDevicesIt->Name.c_str())) == 0)
-            tInfoText = QString(tAudioOutDevicesIt->Desc.c_str());
+        if (pCurrentText.compare(QString(tAudioDevicesIt->Name.c_str())) == 0)
+            tInfoText = QString(tAudioDevicesIt->Desc.c_str());
     }
 
     mLbAudioSinkInfo->setText(tInfoText);
