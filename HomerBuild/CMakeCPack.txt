@@ -7,66 +7,66 @@ MESSAGE("### Supporting installer creation")
 
 ###############################################################################
 #
-SET(PACKAGE_TOP_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
+set(PACKAGE_TOP_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
 ###############################################################################
 # package version number
-SET(CPACK_PACKAGE_VERSION "0.23.0")
-SET(CPACK_PACKAGE_VERSION_MAJOR "0")
-SET(CPACK_PACKAGE_VERSION_MINOR "23")
-SET(CPACK_PACKAGE_VERSION_PATCH "0")
+set(CPACK_PACKAGE_VERSION "0.23.0")
+set(CPACK_PACKAGE_VERSION_MAJOR "0")
+set(CPACK_PACKAGE_VERSION_MINOR "23")
+set(CPACK_PACKAGE_VERSION_PATCH "0")
 
 ###############################################################################
 
-SET(CPACK_PACKAGE_NAME "Homer-Conferencing")
-SET(CPACK_PACKAGE_VENDOR "Homer Conferencing project")
-SET(CPACK_PACKAGE_FILE_NAME "Homer-Install")
-SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Homer - live conferencing and more")
-SET(CPACK_PACKAGE_INSTALL_DIRECTORY "Homer")
-SET(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "Homer-Conferencing")
+set(CPACK_PACKAGE_NAME "Homer-Conferencing")
+set(CPACK_PACKAGE_VENDOR "Homer Conferencing project")
+set(CPACK_PACKAGE_FILE_NAME "Homer-Install")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Homer - live conferencing and more")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "Homer")
+set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "Homer-Conferencing")
 
 ###############################################################################
-SET(CPACK_RESOURCE_FILE_LICENSE ${PACKAGE_TOP_SRC_DIR}/COPYING)
+set(CPACK_RESOURCE_FILE_LICENSE ${PACKAGE_TOP_SRC_DIR}/COPYING)
 #CPACK_RESOURCE_FILE_README
 
 ###############################################################################
 # HINT: workaround for NSIS installer bug is to use "\\\\" construction at least once per variable
 
 IF (WIN32)
-    SET(CPACK_PACKAGE_EXECUTABLES "Homer" "Homer-Conferencing")
-    SET(CPACK_PACKAGE_ICON ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/images\\\\Homer-Banner.bmp)
-    SET(CPACK_RESOURCE_FILE_WELCOME ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/texts\\\\Homer-Welcome.txt)
+    set(CPACK_PACKAGE_EXECUTABLES "Homer" "Homer-Conferencing")
+    set(CPACK_PACKAGE_ICON ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/images\\\\Homer-Banner.bmp)
+    set(CPACK_RESOURCE_FILE_WELCOME ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/texts\\\\Homer-Welcome.txt)
 ELSE()
-    SET(CPACK_PACKAGE_EXECUTABLES "bin/Homer" "Homer-Conferencing")
-    SET(CPACK_PACKAGE_ICON ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/images/Homer-Banner.bmp)
-    SET(CPACK_RESOURCE_FILE_WELCOME ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/texts/Homer-Welcome.txt)
+    set(CPACK_PACKAGE_EXECUTABLES "bin/Homer" "Homer-Conferencing")
+    set(CPACK_PACKAGE_ICON ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/images/Homer-Banner.bmp)
+    set(CPACK_RESOURCE_FILE_WELCOME ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/texts/Homer-Welcome.txt)
 ENDIF()
 
 ###############################################################################
 
-SET(CPACK_COMPONENTS_ALL application libraries extlibraries sounds)
+set(CPACK_COMPONENTS_ALL application libraries extlibraries sounds)
 
-SET(CPACK_COMPONENT_APPLICATION_DISPLAY_NAME "Homer user interface")
-SET(CPACK_COMPONENT_LIBRARIES_DISPLAY_NAME "Homer libraries")
-SET(CPACK_COMPONENT_EXTLIBRARIES_DISPLAY_NAME "External libraries")
-SET(CPACK_COMPONENT_SOUNDS_DISPLAY_NAME "Sound files")
+set(CPACK_COMPONENT_APPLICATION_DISPLAY_NAME "Homer user interface")
+set(CPACK_COMPONENT_LIBRARIES_DISPLAY_NAME "Homer libraries")
+set(CPACK_COMPONENT_EXTLIBRARIES_DISPLAY_NAME "External libraries")
+set(CPACK_COMPONENT_SOUNDS_DISPLAY_NAME "Sound files")
 
-SET(CPACK_COMPONENT_APPLICATION_REQUIRED ON) 
-SET(CPACK_COMPONENT_LIBRARIES_REQUIRED ON) 
-SET(CPACK_COMPONENT_EXTLIBRARIES_REQUIRED ON) 
+set(CPACK_COMPONENT_APPLICATION_REQUIRED ON) 
+set(CPACK_COMPONENT_LIBRARIES_REQUIRED ON) 
+set(CPACK_COMPONENT_EXTLIBRARIES_REQUIRED ON) 
 
-SET(CPACK_COMPONENT_APPLICATION_DESCRIPTION "Homer-Conferencing is a free cross-platform SIP softphone with video support.") 
-SET(CPACK_COMPONENT_LIBRARIES_DESCRIPTION "Homer-Conferencing is a free cross-platform SIP softphone with video support.") 
-SET(CPACK_COMPONENT_EXTLIBRARIES_DESCRIPTION "Several libraries from external projects are needed for Homer-Conferencing.") 
-SET(CPACK_COMPONENT_SOUNDS_DESCRIPTION "Sound files to notify for new events like messages or calls.") 
+set(CPACK_COMPONENT_APPLICATION_DESCRIPTION "Homer-Conferencing is a free cross-platform SIP softphone with video support.") 
+set(CPACK_COMPONENT_LIBRARIES_DESCRIPTION "Homer-Conferencing is a free cross-platform SIP softphone with video support.") 
+set(CPACK_COMPONENT_EXTLIBRARIES_DESCRIPTION "Several libraries from external projects are needed for Homer-Conferencing.") 
+set(CPACK_COMPONENT_SOUNDS_DESCRIPTION "Sound files to notify for new events like messages or calls.") 
   
-SET(CPACK_COMPONENT_APPLICATION_DEPENDS libraries extlibraries)
-SET(CPACK_COMPONENT_LIBRARIES_DEPENDS extlibraries)
+set(CPACK_COMPONENT_APPLICATION_DEPENDS libraries extlibraries)
+set(CPACK_COMPONENT_LIBRARIES_DEPENDS extlibraries)
 
-SET(CPACK_COMPONENT_APPLICATION_GROUP "Runtime components")
-SET(CPACK_COMPONENT_LIBRARIES_GROUP "Runtime components")
-SET(CPACK_COMPONENT_EXTLIBRARIES_GROUP "Runtime components")
-SET(CPACK_COMPONENT_SOUNDS_GROUP "Usability add-ons")
+set(CPACK_COMPONENT_APPLICATION_GROUP "Runtime components")
+set(CPACK_COMPONENT_LIBRARIES_GROUP "Runtime components")
+set(CPACK_COMPONENT_EXTLIBRARIES_GROUP "Runtime components")
+set(CPACK_COMPONENT_SOUNDS_GROUP "Usability add-ons")
 
 ###############################################################################
 # NSIS specific configuration for Windows
@@ -74,6 +74,10 @@ IF (WIN32)
         INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../HomerBuild/CMakeCPackWin.txt)
 ENDIF(WIN32)
 
+# Bundle specific configuration for OSX
+IF (APPLE)
+        INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../HomerBuild/CMakeCPackOSX.txt)
+ENDIF(APPLE)
 
 ###############################################################################
 # include CPack in the end
