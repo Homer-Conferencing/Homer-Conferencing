@@ -20,37 +20,38 @@
  *****************************************************************************/
 
 /*
- * Purpose: wave out based on ALSA
+ * Purpose: wave out based on PortAudio
  * Author:  Thomas Volkert
- * Since:   2010-12-11
+ * Since:   2012-05-07
  */
 
-#ifdef LINUX
-#ifndef _SOUNDOUT_WAVE_OUT_ALSA_
-#define _SOUNDOUT_WAVE_OUT_ALSA_
+#ifndef _SOUNDOUT_WAVE_OUT_PORT_AUDIO_
+#define _SOUNDOUT_WAVE_OUT_PORT_AUDIO_
 
+#include <Header_Ffmpeg.h>
+#include <Header_PortAudio.h>
 #include <WaveOut.h>
-#include <Header_Alsa.h>
 
 namespace Homer { namespace SoundOutput {
 
 ///////////////////////////////////////////////////////////////////////////////
 
 // de/activate debugging of grabbed packets
-//#define WOA_DEBUG_PACKETS
+#define WOPA_DEBUG_PACKETS
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class WaveOutAlsa:
+class WaveOutPortAudio:
     public WaveOut
 {
 public:
-    WaveOutAlsa(std::string pDesiredDevice = "");
+    WaveOutPortAudio(std::string pDesiredDevice = "");
 
     /// The destructor
-    virtual ~WaveOutAlsa();
+    virtual ~WaveOutPortAudio();
 
     // playback control
+    virtual bool Play();
     virtual void Stop();
 
 public:
@@ -63,12 +64,16 @@ public:
     virtual bool WriteChunk(void* pChunkBuffer, int pChunkSize = 4096);
 
 private:
-    snd_pcm_t           *mPlaybackHandle;
+    /* playback */
+    PaStream            *mStream;
+    AVFifoBuffer        *mSampleFifo;
+    /* portaudio init. */
+    static Mutex        mPaInitMutex;
+    static bool         mPaInitiated;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
 }} // namespaces
 
-#endif
 #endif

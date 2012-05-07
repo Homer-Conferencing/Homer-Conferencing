@@ -32,6 +32,8 @@
 
 namespace Homer { namespace SoundOutput {
 
+#define SOUNDOUTPUT_SAMPLES_PER_BUFFER          1024
+
 /* audio */
 struct AudioOutDeviceDescriptor
 {
@@ -58,7 +60,12 @@ public:
     virtual bool SelectDevice(std::string pDeviceName = "");
 
     // playback control
-    virtual void StopPlayback();
+    virtual bool Play();
+    virtual void Stop();
+
+    /* volume control */
+    virtual int GetVolume(); // range: 0-200 %
+    virtual void SetVolume(int pValue);
 
 public:
     /* abstract interface which has to be implemented by derived classes */
@@ -75,10 +82,10 @@ protected:
     /* device state */
     bool                mWaveOutOpened;
     bool                mPlaybackStopped;
-    int                 mChunkNumber;
     /* device parameters */
     int                 mSampleRate;
     bool                mStereo;
+    int                 mVolume;
     /* device handling */
     std::string         mDesiredDevice;
     std::string         mCurrentDevice;

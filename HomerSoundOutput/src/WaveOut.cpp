@@ -41,7 +41,7 @@ WaveOut::WaveOut(string pName):
     mWaveOutOpened = false;
     mDesiredDevice = "";
     mCurrentDevice = "";
-    mChunkNumber = 0;
+    mVolume = 100;
 }
 
 WaveOut::~WaveOut()
@@ -88,9 +88,30 @@ bool WaveOut::SelectDevice(string pDeviceName)
     return tNewSelection;
 }
 
-void WaveOut::StopPlayback()
+void WaveOut::Stop()
 {
     mPlaybackStopped = true;
+}
+
+bool WaveOut::Play()
+{
+    mPlaybackStopped = false;
+
+    return true;
+}
+
+int WaveOut::GetVolume()
+{
+    return mVolume;
+}
+
+void WaveOut::SetVolume(int pValue)
+{
+    if (pValue < 0)
+        pValue = 0;
+    if(pValue > 200)
+        pValue = 200;
+    mVolume = pValue;
 }
 
 }} //namespaces

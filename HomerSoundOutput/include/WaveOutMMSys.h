@@ -56,7 +56,7 @@ public:
     virtual ~WaveOutMMSys();
 
     // playback control
-    virtual void StopPlayback();
+    virtual void Stop();
 
 public:
     /* open/close */

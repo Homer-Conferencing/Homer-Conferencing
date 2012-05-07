@@ -196,7 +196,6 @@ bool WaveOutAlsa::OpenWaveOutDevice(int pSampleRate, bool pStereo)
     LOG(LOG_INFO,"    ..sample format: %d", SND_PCM_FORMAT_S16_LE);
     //LOG(LOG_INFO,"    ..sample buffer size: %d", mSampleBufferSize);
 
-    mChunkNumber = 0;
     mWaveOutOpened = true;
     return true;
 }
@@ -234,13 +233,13 @@ bool WaveOutAlsa::WriteChunk(void* pChunkBuffer, int pChunkSize)
     if (mPlaybackStopped)
     {
         LOG(LOG_ERROR, "Tried to play while WaveOut device is paused");
-        return -1;
+        return false;
     }
 
     if (!mWaveOutOpened)
     {
         //LOG(LOG_ERROR, "Tried to play while WaveOut device is closed");
-        return -1;
+        return false;
     }
 
     if (((tResult = snd_pcm_writei(mPlaybackHandle, pChunkBuffer, tFramesCount)) != tFramesCount) && (!mPlaybackStopped))
@@ -250,21 +249,21 @@ bool WaveOutAlsa::WriteChunk(void* pChunkBuffer, int pChunkSize)
         if ((tResult = snd_pcm_recover(mPlaybackHandle, tResult, 0)) < 0)
         {
             LOG(LOG_ERROR, "Can not recover from failure state for audio device \"%s\" and remain with error \"%s\"", mCurrentDevice.c_str(), snd_strerror(tResult));
-            return -1;
+            return false;
         }
 
-        return -1;
+        return false;
     }
 
     // log statistics about raw PCM audio data stream
     AnnouncePacket(pChunkSize);
 
-    return ++mChunkNumber;
+    return true;
 }
 
-void WaveOutAlsa::StopPlayback()
+void WaveOutAlsa::Stop()
 {
-    WaveOut::StopPlayback();
+    WaveOut::Stop();
 
     int tRes = 0;
     if ((tRes = snd_pcm_drop(mPlaybackHandle)) < 0)

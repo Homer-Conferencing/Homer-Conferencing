@@ -98,6 +98,7 @@ SET (SOURCES
 	${SOURCES}
 	../src/AudioOutSdl
 	../src/WaveOut
+	../src/WaveOutPortAudio	
 )
 # SOURCES
 if (WIN32)
@@ -119,6 +120,7 @@ SET (LIBS_WINDOWS_INSTALL
     libgcc_s_dw2-1
     libstdc++-6
     ogg
+    ortaudio    
     SDL
     SDL_sound
     SDL_mixer
@@ -129,6 +131,7 @@ SET (LIBS_WINDOWS_INSTALL
 SET (LIBS_WINDOWS
 	HomerBase
 	HomerMonitor
+	portaudio
     SDL
     SDL_sound
     SDL_mixer
@@ -143,6 +146,7 @@ SET (LIBS_APPLE
 
 # USED STATIC libraries for linux environment ==> ordering of linking is IMPORTANT!!
 SET (LIBS_APPLE_STATIC
+	portaudio
 	SDL_mixer
 	SDL_sound
 	SDL
@@ -150,8 +154,10 @@ SET (LIBS_APPLE_STATIC
 
 # USED FRAMEWORKS for apple environment
 SET (FRAMEWORKS_APPLE
+	AudioToolbox
 	AppKit
 	AudioUnit
+	CoreAudio
 	CoreFoundation
 	Carbon
 	IOKit
@@ -162,10 +168,12 @@ IF (${BUILD} MATCHES "Default")
 	SET (LIBS_LINUX
 		HomerBase
 		HomerMonitor
+		portaudio
 		${ALSA_LIBRARIES}
 		${SDL_LIBRARY}
 		${SDL_SOUND_LIBRARY}
 		${SDLMIXER_LIBRARY}
+		avutil		
 	)
 ELSE ()
 	# USED LIBRARIES for linux environment
@@ -178,6 +186,7 @@ ELSE ()
 
 	# USED STATIC libraries for linux environment
 	SET (LIBS_LINUX_STATIC
+		avutil
 		SDL_mixer
 		smpeg
 		SDL_sound
@@ -188,6 +197,7 @@ ELSE ()
 		asyncns
 		audio
 		dbus-1
+		portaudio
 	)
 ENDIF ()
 
@@ -204,6 +214,7 @@ SET (LIBS_BSD_STATIC
 	SDL
 	vgl
 	usbhid
+	portaudio
 )
 ##############################################################
 SET (TARGET_LIB_NAME
