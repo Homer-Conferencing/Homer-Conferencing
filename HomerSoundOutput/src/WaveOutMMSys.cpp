@@ -284,12 +284,12 @@ bool WaveOutMMSys::WriteChunk(void* pChunkBuffer, int pChunkSize)
 	return false;
 }
 
-void WaveOutMMSys::StopPlayback()
+void WaveOutMMSys::Stop()
 {
     MMRESULT  tResult;
     char tErrorBuffer[256];
 
-    WaveOut::StopPlayback();
+    WaveOut::Stop();
 
     tResult = waveOutReset(mPlaybackHandle);
     if(tResult != MMSYSERR_NOERROR)
