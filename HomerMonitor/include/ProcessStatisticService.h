@@ -31,13 +31,16 @@
 #include <HBMutex.h>
 #include <ProcessStatistic.h>
 
+#include <string>
+#include <list>
+
 namespace Homer { namespace Monitor {
 
 ///////////////////////////////////////////////////////////////////////////////
 
 #define SVC_PROCESS_STATISTIC ProcessStatisticService::GetInstance()
-
-typedef std::list<ProcessStatistic>  ProcessStatisticsList;
+class ProcessStatistic;
+typedef std::list<ProcessStatistic*>  ProcessStatisticsList;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -63,12 +66,12 @@ private:
     void UpdateThreadDatabase();
 
     /* registration interface (without locking, only used internally) */
-    bool RegisterProcessStatistic(ProcessStatistic pStat);
-    bool UnregisterProcessStatistic(ProcessStatistic pStat);
+    bool RegisterProcessStatistic(int pThreadId);
+    bool UnregisterProcessStatistic(int pThreadId);
 
     ProcessStatisticsList mProcessStatistics;
-    Mutex		   		  mProcessStatisticsMutex;
-    Mutex                 mUpdateThreadDataBaseMutex;
+    Homer::Base::Mutex	  mProcessStatisticsMutex;
+    Homer::Base::Mutex    mUpdateThreadDataBaseMutex;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

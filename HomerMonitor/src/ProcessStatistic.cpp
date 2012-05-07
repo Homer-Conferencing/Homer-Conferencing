@@ -37,16 +37,7 @@ using namespace std;
 
 ProcessStatistic::ProcessStatistic(int pThreadId)
 {
-    if (pThreadId == -1)
-    {
-        mRemotelyCreated = false;
-        mThreadId = Thread::GetTId();
-    }else
-    {
-        mRemotelyCreated = true;
-        mThreadId = pThreadId;
-    }
-
+    mThreadId = pThreadId;
     mName = "hidden thread";
     mLastUserTicsThread = 0;
     mLastKernelTicsThread = 0;
@@ -63,11 +54,6 @@ ProcessStatistic::~ProcessStatistic()
 int ProcessStatistic::GetThreadStatisticId()
 {
     return mThreadId;
-}
-
-bool ProcessStatistic::IsRemotelyCreated()
-{
-    return mRemotelyCreated;
 }
 
 void ProcessStatistic::AssignThreadName(string pName)
@@ -89,6 +75,7 @@ ThreadStatisticDescriptor ProcessStatistic::GetThreadStatistic()
     Thread::GetThreadStatistic(mThreadId, tStat.MemVirtual, tStat.MemPhysical, tStat.Pid, tStat.PPid, tStat.LoadUser, tStat.LoadSystem, tStat.LoadTotal, tStat.Priority, tStat.PriorityBase, tStat.ThreadCount, mLastUserTicsThread, mLastKernelTicsThread, mLastUserTicsSystem, mLastKernelTicsSystem);
     tStat.Tid = mThreadId;
 
+    //LOG(LOG_VERBOSE, "Thread %d => %f total load", mThreadId, tStat.LoadTotal);
     return tStat;
 }
 
