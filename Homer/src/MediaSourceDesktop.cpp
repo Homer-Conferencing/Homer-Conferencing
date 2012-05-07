@@ -333,6 +333,7 @@ void MediaSourceDesktop::CreateScreenshot()
 	#ifdef APPLE
 		CGImageRef tOSXWindowImage = CGWindowListCreateImage(CGRectInfinite, kCGWindowListOptionOnScreenOnly, mWidget->winId(), kCGWindowImageDefault);
 		tSourcePixmap = QPixmap::fromMacCGImageRef(tOSXWindowImage).copy(mGrabOffsetX, mGrabOffsetY, mSourceResX, mSourceResY);
+		CGImageRelease(tOSXWindowImage);
 	#else
 		tSourcePixmap = QPixmap::grabWindow(mWidget->winId(), mGrabOffsetX, mGrabOffsetY, mSourceResX, mSourceResY);
 	#endif
