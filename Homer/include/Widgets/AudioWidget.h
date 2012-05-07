@@ -40,7 +40,7 @@
 #include <QList>
 
 #include <MediaSource.h>
-#include <AudioOutSdl.h>
+#include <WaveOutPortAudio.h>
 #include <ui_AudioWidget.h>
 
 namespace Homer { namespace Gui {
@@ -83,7 +83,7 @@ private slots:
 
 private:
     void initializeGUI();
-    void SetVolume(int pValue); // 0-100 %
+    void SetVolume(int pValue); // 0-200 %
     int GetVolume();
     void ShowSample(void* pBuffer, int pSampleSize, int pSampleNumber = 0);
     void showAudioLevel(int pLevel);
@@ -182,7 +182,6 @@ public slots:
 private:
     void OpenPlaybackDevice();
     void ClosePlaybackDevice();
-    void PlaySamples(void *pSampleBuffer, int pSampleBufferSize);
     void DoResetAudioSource();
     void DoSetInputStreamPreferences();
     void DoSetCurrentDevice();
@@ -206,7 +205,6 @@ private:
     bool                mDropSamples;
     int                 mResultingSps;
     bool                mAudioOutMuted;
-    int                 mAudioChannel;
     std::string         mSaveFileName;
     int                 mSaveFileQuality;
     QString             mCodec;
@@ -228,7 +226,7 @@ private:
     bool				mPlayNewFileAsap;
     bool                mSelectInputChannelAsap;
     /* playback */
-    AudioBuffer         *mAudioBuffer;
+    Homer::Multimedia::WaveOutPortAudio *mWaveOut;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

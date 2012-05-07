@@ -39,7 +39,6 @@ SET (INCLUDE_DIRS
 	../../HomerMonitor/include
 	../../HomerMultimedia/include
 	../../HomerConference/include
-	../../HomerSoundOutput/include
 	/usr/include/ffmpeg
 	${QT_INCLUDE_DIR}
 	${CMAKE_BINARY_DIR}/Homer/bin
@@ -246,7 +245,6 @@ SET (LIBS_WINDOWS
 	HomerMonitor
 	HomerMultimedia
 	HomerConference
-	HomerSoundOutput
 	mingw32
 	${QT_LIBRARIES}
 	${QT_QTCORE_LIBRARIES}
@@ -269,7 +267,6 @@ IF (${BUILD} MATCHES "Default")
 		HomerMonitor
 		HomerMultimedia
 		HomerConference
-		HomerSoundOutput
 		${QT_LIBRARIES}
 	)
 ELSE ()
@@ -280,7 +277,6 @@ ELSE ()
 		HomerMonitor
 		HomerMultimedia
 		HomerConference
-		HomerSoundOutput
 		QtCore
 		QtGui
 		#QtMultimedia
@@ -299,7 +295,6 @@ SET (LIBS_APPLE
 	HomerMonitor
 	HomerMultimedia
 	HomerConference
-	HomerSoundOutput
 	${QT_LIBRARIES}
 )
 SET (FRAMEWORKS_APPLE

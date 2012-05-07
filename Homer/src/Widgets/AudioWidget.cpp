@@ -28,7 +28,6 @@
 #include <MediaSourceFile.h>
 #include <ProcessStatisticService.h>
 #include <Widgets/AudioWidget.h>
-#include <AudioOutSdl.h>
 #include <Dialogs/AddNetworkSinkDialog.h>
 #include <Configuration.h>
 #include <Logger.h>
@@ -55,7 +54,7 @@ namespace Homer { namespace Gui {
 
 using namespace std;
 using namespace Homer::Conference;
-using namespace Homer::SoundOutput;
+using namespace Homer::Multimedia;
 using namespace Homer::Monitor;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -281,7 +280,7 @@ void AudioWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             //###############################################################################
             QMenu *tVolMenu = tAudioMenu->addMenu("Volume");
 
-            for (int i = 1; i < 5; i++)
+            for (int i = 1; i < 7; i++)
             {
                 QAction *tVolAction = tVolMenu->addAction(QString("%1 %").arg(i * 25));
                 tVolAction->setCheckable(true);
@@ -421,7 +420,7 @@ void AudioWidget::contextMenuEvent(QContextMenuEvent *pEvent)
                 return;
             }
         }
-        for (int i = 1; i < 5; i++)
+        for (int i = 1; i < 7; i++)
         {
             if(tPopupRes->text() == QString("%1 %").arg(i * 25))
             {
@@ -825,7 +824,7 @@ AudioWorkerThread::AudioWorkerThread(MediaSource *pAudioSource, AudioWidget *pAu
     mDesiredFile = "";
     mResX = 352;
     mResY = 288;
-    mAudioChannel = -1;
+    mWaveOut = NULL;
     if (pAudioSource == NULL)
         LOG(LOG_ERROR, "Audio source is NULL");
     mAudioSource = pAudioSource;
@@ -841,11 +840,13 @@ AudioWorkerThread::AudioWorkerThread(MediaSource *pAudioSource, AudioWidget *pAu
     mDropSamples = false;
     mWorkerWithNewData = false;
 
+    // open audio playback
     OpenPlaybackDevice();
 }
 
 AudioWorkerThread::~AudioWorkerThread()
 {
+    // close audio playback
     ClosePlaybackDevice();
 
     for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
@@ -856,8 +857,8 @@ void AudioWorkerThread::OpenPlaybackDevice()
 {
     LOG(LOG_VERBOSE, "Going to open playback device");
 
-
-    mAudioChannel = AUDIOOUTSDL.AllocateChannel();
+    mWaveOut = new WaveOutPortAudio();
+    mWaveOut->OpenWaveOutDevice();
 
     LOG(LOG_VERBOSE, "Finished to open playback device");
 }
@@ -865,38 +866,23 @@ void AudioWorkerThread::OpenPlaybackDevice()
 void AudioWorkerThread::ClosePlaybackDevice()
 {
     LOG(LOG_VERBOSE, "Going to close playback device");
-    // close the audio out
-    //AUDIOOUTSDL.Stop(mAudioChannel);
 
-    SetVolume(0);
-    AUDIOOUTSDL.ReleaseChannel(mAudioChannel);
+    // close the audio out
+    mWaveOut->CloseWaveOutDevice();
+    delete mWaveOut;
 
     LOG(LOG_VERBOSE, "Finished to close playback device");
-}
-
-void AudioWorkerThread::PlaySamples(void *pSampleBuffer, int pSampleBufferSize)
-{
-    //QTime tTime = QTime::currentTime();
-
-    //LOG(LOG_VERBOSE, "Playing buffer at %p with size %d", pSampleBuffer, pSampleBufferSize);
-    AUDIOOUTSDL.Enqueue(mAudioChannel, pSampleBuffer, pSampleBufferSize, false);
-    AUDIOOUTSDL.Play(mAudioChannel);
-
-    //QTime tTime2 = QTime::currentTime();
-
-    //LOG(LOG_VERBOSE, "Took %d ms, %s, %s", tTime2.msecsTo(tTime), tTime.toString("hh:mm:ss.zzz").toStdString().c_str(), tTime2.toString("hh:mm:ss.zzz").toStdString().c_str());
-
-//    qint64 tWrittenBytes = mAudioBuffer->write((const char*)pSampleBuffer, (qint64)pSampleBufferSize);
-//    if (mAudioOutput->state() != QAudio::ActiveState)
-//        mAudioOutput->start(mAudioBuffer);
 }
 
 void AudioWorkerThread::ToggleMuteState(bool pState)
 {
     if (pState)
-        mAudioOutMuted = false;
-    else
     {
+        mWaveOut->Play();
+        mAudioOutMuted = false;
+    }else
+    {
+        mWaveOut->Stop();
         mAudioOutMuted = true;
     }
     mAudioWidget->InformAboutNewMuteState();
@@ -904,17 +890,18 @@ void AudioWorkerThread::ToggleMuteState(bool pState)
 
 void AudioWorkerThread::SetVolume(int pValue)
 {
-	AUDIOOUTSDL.SetVolume(mAudioChannel, (128 * pValue) / 100);
+	mWaveOut->SetVolume(pValue);
 }
 
 void AudioWorkerThread::SetMuteState(bool pMuted)
 {
+    LOG(LOG_VERBOSE, "Setting mute state to %d", pMuted);
     mAudioOutMuted = pMuted;
     mAudioWidget->InformAboutNewMuteState();
     if(pMuted)
-    {
-        AUDIOOUTSDL.Stop(mAudioChannel);
-    }
+        mWaveOut->Stop();
+    else
+        mWaveOut->Play();
 }
 
 bool AudioWorkerThread::GetMuteState()
@@ -1063,9 +1050,8 @@ bool AudioWorkerThread::SupportsSeeking()
 void AudioWorkerThread::Seek(int pPos)
 {
     mAudioSource->Seek(mAudioSource->GetSeekEnd() * pPos / 1000, false);
-
-    // restart frame grabbing device
-    AUDIOOUTSDL.ClearChunkList(mAudioChannel);
+    mWaveOut->Stop();
+    mWaveOut->Play();
 }
 
 int64_t AudioWorkerThread::GetSeekPos()
@@ -1146,7 +1132,8 @@ void AudioWorkerThread::DoSelectInputChannel()
 
     // restart frame grabbing device
     mSourceAvailable = mAudioSource->SelectInputChannel(mDesiredInputChannel);
-    AUDIOOUTSDL.ClearChunkList(mAudioChannel);
+    mWaveOut->Stop();
+    mWaveOut->Play();
 
     mResetAudioSourceAsap = false;
     mSelectInputChannelAsap = false;
@@ -1164,7 +1151,8 @@ void AudioWorkerThread::DoResetAudioSource()
 
     // restart frame grabbing device
     mSourceAvailable = mAudioSource->Reset(MEDIA_AUDIO);
-    AUDIOOUTSDL.ClearChunkList(mAudioChannel);
+    mWaveOut->Stop();
+    mWaveOut->Play();
 
     mResetAudioSourceAsap = false;
     mPaused = false;
@@ -1236,7 +1224,8 @@ void AudioWorkerThread::DoSetCurrentDevice()
         mAudioWidget->InformAboutOpenError(mDeviceName);
 
     // reset audio output
-    AUDIOOUTSDL.ClearChunkList(mAudioChannel);
+    mWaveOut->Stop();
+    mWaveOut->Play();
 
     mSetCurrentDeviceAsap = false;
     mCurrentFile = mDesiredFile;
@@ -1277,9 +1266,6 @@ void AudioWorkerThread::run()
     bool  tGrabSuccess;
     int tSamplesSize;
     int tSampleNumber = -1, tLastSampleNumber = -1;
-
-    // open audio playback
-    //OpenPlaybackDevice();
 
     // if grabber was stopped before source has been opened this BOOL is reset
     mWorkerNeeded = true;
@@ -1352,7 +1338,7 @@ void AudioWorkerThread::run()
 
 			// play the sample block if audio out isn't currently muted
 			if ((!mAudioOutMuted) && (tSampleNumber >= 0) && (tSamplesSize> 0) && (!mDropSamples))
-			    PlaySamples(mSamples[mSampleGrabIndex], mSamplesSize[mSampleGrabIndex]);
+			    mWaveOut->WriteChunk(mSamples[mSampleGrabIndex], mSamplesSize[mSampleGrabIndex]);
 
 			// unlock
 			mGrabMutex.unlock();
@@ -1402,9 +1388,6 @@ void AudioWorkerThread::run()
     }
     mAudioSource->CloseGrabDevice();
     mAudioSource->DeleteAllRegisteredMediaSinks();
-
-    // close audio playback
-    //ClosePlaybackDevice();
 }
 
 void AudioWorkerThread::StopGrabber()

@@ -21,6 +21,18 @@ ELSE (LINUX)
 ENDIF (LINUX)
 
 ##############################################################
+# find package "SDL"
+IF (LINUX)
+MESSAGE("##### Searching for library SDL")
+Find_Package(SDL REQUIRED)
+IF (NOT SDL_FOUND)
+	MESSAGE(FATAL_ERROR "You need library SDL")
+ENDIF ()
+ELSE (LINUX)
+    SET(SDL_INCLUDE_DIR "/usr/include")
+ENDIF (LINUX)
+
+##############################################################
 # include dirs
 SET (INCLUDE_DIRS
 	${INCLUDE_DIRS}
@@ -31,6 +43,7 @@ SET (INCLUDE_DIRS
 	../../HomerMonitor/include
 	/usr/include/ffmpeg
 	${ALSA_INCLUDE_DIRS}
+	${SDL_INCLUDE_DIR}	
 )
 
 ##############################################################
@@ -66,14 +79,16 @@ SET (SOURCES
 	../src/MediaSourceMem
 	../src/MediaSourceMuxer
 	../src/MediaSourceNet
+	../src/MediaSourcePortAudio
 	../src/RTP
+	../src/WaveOut
+	../src/WaveOutPortAudio	
 )
 
 IF (WIN32)
 SET (SOURCES
 	${SOURCES}
 	# included in port audio: ../src/MediaSourceMMSys
-	../src/MediaSourcePortAudio
 	../src/MediaSourceVFW
 )
 ENDIF (WIN32)
@@ -83,7 +98,6 @@ SET (SOURCES
 	${SOURCES}
     	# included in port audio: ../src/MediaSourceCoreAudio
     	../src/MediaSourceCoreVideo
-		../src/MediaSourcePortAudio
 )
 ENDIF (APPLE)
 
@@ -92,7 +106,6 @@ SET (SOURCES
 	${SOURCES}
 	# included in port audio: ../src/MediaSourceAlsa
 	# included in port audio: ../src/MediaSourceOss
-	../src/MediaSourcePortAudio
 )
 ENDIF (BSD)
 
@@ -101,7 +114,6 @@ SET (SOURCES
 	${SOURCES}
 	# included in port audio: ../src/MediaSourceAlsa
 	# included in port audio: ../src/MediaSourceOss
-	../src/MediaSourcePortAudio
 	../src/MediaSourceV4L2
 )
 ENDIF (LINUX)
@@ -119,6 +131,7 @@ SET (LIBS_WINDOWS_INSTALL
     portaudio
     swresample-0
     swscale-2
+    SDL    
 )
 SET (LIBS_WINDOWS
     avutil-51
@@ -133,6 +146,7 @@ SET (LIBS_WINDOWS
 # replaced by portaudio:    Winmm
 	ws2_32
 	Avicap32
+	SDL
 )
 
 # USED LIBRARIES for apple environment
@@ -156,14 +170,18 @@ SET (LIBS_APPLE_STATIC
 	bz2
 	z
 	portaudio
+	SDL
 )
 SET (FRAMEWORKS_APPLE
+	AppKit
 	AudioToolbox
 	AudioUnit
 	Carbon
 	CoreAudio
 	CoreFoundation
 	CoreVideo
+	IOKit
+	OpenGL	
 	VideoDecodeAcceleration
 )
 
@@ -181,6 +199,7 @@ IF (${BUILD} MATCHES "Default")
 		avfilter
 		swscale
 		x264
+		${SDL_LIBRARY}		
 		portaudio
 	)
 ELSE ()
@@ -211,6 +230,7 @@ ELSE ()
 		x264
 		bz2
 		z		
+		SDL
 		portaudio
 	)
 ENDIF ()
@@ -237,6 +257,7 @@ SET (LIBS_BSD_STATIC
 	bz2
 	z
 	portaudio
+	SDL
 )
 
 ##############################################################

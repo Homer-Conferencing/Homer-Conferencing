@@ -53,17 +53,17 @@ MediaSourcePortAudio::MediaSourcePortAudio(string pDesiredDevice):
     {
         // initialize portaudio library
         LOG(LOG_VERBOSE, "Initiated portaudio with result: %d", Pa_Initialize());
+        mPaInitiated = true;
     }
     mPaInitMutex.unlock();
 
-    bool tNewDeviceSelected = false;
-    SelectDevice(pDesiredDevice, MEDIA_AUDIO, tNewDeviceSelected);
-    if (!tNewDeviceSelected)
+    if (pDesiredDevice != "")
     {
-        LOG(LOG_INFO, "Haven't selected new PortAudio device when creating source object");
+        bool tNewDeviceSelected = false;
+        SelectDevice(pDesiredDevice, MEDIA_AUDIO, tNewDeviceSelected);
+        if (!tNewDeviceSelected)
+            LOG(LOG_INFO, "Haven't selected new PortAudio device when creating source object");
     }
-
-    mDefaultDevice = 0;
 
     LOG(LOG_VERBOSE, "Created");
 }
@@ -85,7 +85,6 @@ void MediaSourcePortAudio::getAudioDevices(AudioDevicesList &pAList)
     static bool tFirstCall = true;
     AudioDeviceDescriptor tDevice;
     PaStreamParameters  inputParameters, outputParameters;
-    //PaError             err;
 
     #ifdef MSCA_DEBUG_PACKETS
         tFirstCall = true;
@@ -121,32 +120,27 @@ void MediaSourcePortAudio::getAudioDevices(AudioDevicesList &pAList)
             LOG(LOG_VERBOSE, "Device %d..", i );
 
             // mark global and API specific default devices
-            mDefaultDevice = 0;
             if (i == Pa_GetDefaultInputDevice())
             {
                 LOG(LOG_VERBOSE, "..is DEFAULT INPUT device");
-                mDefaultDevice = 1;
             } else
             {
                 if (i == Pa_GetHostApiInfo(tDeviceInfo->hostApi)->defaultInputDevice)
                 {
                     const PaHostApiInfo *tHostApiInfo = Pa_GetHostApiInfo(tDeviceInfo->hostApi);
                     LOG(LOG_VERBOSE, "..default %s input", tHostApiInfo->name );
-                    mDefaultDevice = 1;
                 }
             }
 
             if (i == Pa_GetDefaultOutputDevice())
             {
                 LOG(LOG_VERBOSE, "..is DEFAULT OUTPUT device");
-                mDefaultDevice = 1;
             } else
             {
                 if (i == Pa_GetHostApiInfo(tDeviceInfo->hostApi)->defaultOutputDevice)
                 {
                     const PaHostApiInfo *tHostApiInfo = Pa_GetHostApiInfo(tDeviceInfo->hostApi);
                     LOG(LOG_VERBOSE, "..default %s output", tHostApiInfo->name );
-                    mDefaultDevice = 1;
                 }
             }
 
@@ -265,15 +259,15 @@ bool MediaSourcePortAudio::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     tInputParameters.hostApiSpecificStreamInfo = NULL;
 
     LOG(LOG_VERBOSE, "Going to open stream..");
-    LOG(LOG_VERBOSE, "..selected sample rate: %d", pSampleRate);
+    LOG(LOG_VERBOSE, "..selected sample rate: %d", mSampleRate);
     mCaptureDuplicateMonoStream = false;
-    if((tErr = Pa_OpenStream(&mStream, &tInputParameters, NULL /* output parameters */, pSampleRate, MEDIA_SOURCE_SAMPLES_PER_BUFFER, paClipOff | paDitherOff, RecordedAudioHandler, this)) != paNoError)
+    if((tErr = Pa_OpenStream(&mStream, &tInputParameters, NULL /* output parameters */, mSampleRate, MEDIA_SOURCE_SAMPLES_PER_BUFFER, paClipOff | paDitherOff, RecordedAudioHandler, this)) != paNoError)
     {
     	if ((pStereo) && (tErr == paInvalidChannelCount))
     	{
     		LOG(LOG_WARN, "Got channel count problem when stereo mode is selected, will try mono mode instead");
     	    tInputParameters.channelCount = 1;
-    	    if((tErr = Pa_OpenStream(&mStream, &tInputParameters, NULL /* output parameters */, pSampleRate, MEDIA_SOURCE_SAMPLES_PER_BUFFER, paClipOff | paDitherOff, RecordedAudioHandler, this)) != paNoError)
+    	    if((tErr = Pa_OpenStream(&mStream, &tInputParameters, NULL /* output parameters */, mSampleRate, MEDIA_SOURCE_SAMPLES_PER_BUFFER, paClipOff | paDitherOff, RecordedAudioHandler, this)) != paNoError)
     	    {
         		LOG(LOG_ERROR, "Couldn't open stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
         		return false;
@@ -296,11 +290,13 @@ bool MediaSourcePortAudio::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
         return false;
     }
 
+    mCurrentDevice = mDesiredDevice;
+
     //######################################################
     //### give some verbose output
     //######################################################
     LOG(LOG_INFO, "%s-audio source opened...", "MediaSourcePortAudio");
-    LOG(LOG_INFO,"    ..sample rate: %d", pSampleRate);
+    LOG(LOG_INFO,"    ..sample rate: %d", mSampleRate);
     LOG(LOG_INFO,"    ..channels: %d", tChannels);
     LOG(LOG_INFO,"    ..desired device: %s", mDesiredDevice.c_str());
     LOG(LOG_INFO,"    ..selected device: %s", mCurrentDevice.c_str());
