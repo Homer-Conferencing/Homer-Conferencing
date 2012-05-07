@@ -174,6 +174,8 @@ int SDP::CodecNameToPayloadId(std::string pName)
     //video
     if (pName == "h261")
         tResult = 31;
+    if ((pName == "mpeg2video") || (pName == "mpeg1video") || (pName == "mpeg2"))
+        tResult = 32;
     if (pName == "h263")
         tResult = 34;
     if ((pName == "h263+") || (pName == "h263p"))
@@ -262,6 +264,10 @@ string SDP::CreateSdpData(int pAudioPort, int pVideoPort)
             tResult += " " + toString(CodecNameToPayloadId("theora"));
         if (tSupportedVideoCodecs & CODEC_MPEG4)
             tResult += " " + toString(CodecNameToPayloadId("m4v"));
+        if (tSupportedVideoCodecs & CODEC_MPEG1VIDEO)
+            tResult += " " + toString(CodecNameToPayloadId("mpeg1video"));
+        if (tSupportedVideoCodecs & CODEC_MPEG2VIDEO)
+            tResult += " " + toString(CodecNameToPayloadId("mpeg2video"));
         if (tSupportedVideoCodecs & CODEC_H264)
             tResult += " " + toString(CodecNameToPayloadId("h264"));
         if (tSupportedVideoCodecs & CODEC_H263P)
@@ -277,6 +283,10 @@ string SDP::CreateSdpData(int pAudioPort, int pVideoPort)
             tResult += "a=rtpmap:" + toString(CodecNameToPayloadId("theora")) + " theora/90000\r\n";
         if (tSupportedVideoCodecs & CODEC_MPEG4)
             tResult += "a=rtpmap:" + toString(CodecNameToPayloadId("m4v")) + " MP4V-ES/90000\r\n";
+        if (tSupportedVideoCodecs & CODEC_MPEG1VIDEO)
+            tResult += "a=rtpmap:" + toString(CodecNameToPayloadId("mpeg1video")) + " MPV/90000\r\n";
+        if (tSupportedVideoCodecs & CODEC_MPEG2VIDEO)
+            tResult += "a=rtpmap:" + toString(CodecNameToPayloadId("mpeg2video")) + " MPV/90000\r\n";
         if (tSupportedVideoCodecs & CODEC_H264)
             tResult += "a=rtpmap:" + toString(CodecNameToPayloadId("h264")) + " h264/90000\r\n";
         if (tSupportedVideoCodecs & CODEC_H263P)

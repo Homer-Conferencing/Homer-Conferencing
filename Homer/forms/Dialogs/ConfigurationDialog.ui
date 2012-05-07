@@ -763,6 +763,16 @@
                 </item>
                 <item>
                  <property name="text">
+                  <string>MPEG1</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>MPEG2</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
                   <string>MPEG4</string>
                  </property>
                 </item>

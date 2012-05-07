@@ -396,8 +396,12 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     tByteIoContext->max_packet_size = MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE;
 
     // find format
-    LOG(LOG_VERBOSE, "Going to find input format..");
-    tFormat = av_find_input_format(FfmpegId2FfmpegFormat(mStreamCodecId).c_str());
+    string tCodecName = FfmpegId2FfmpegFormat(mStreamCodecId);
+    // ffmpeg knows only the mpegvideo demuxer which is responsible for both MPEG1 and MPEG2 streams
+    if ((tCodecName == "mpeg1video") || (tCodecName == "mpeg2video"))
+        tCodecName = "mpegvideo";
+    LOG(LOG_VERBOSE, "Going to find input format for codec \"%s\"..", tCodecName.c_str());
+    tFormat = av_find_input_format(tCodecName.c_str());
 
     if (tFormat == NULL)
     {

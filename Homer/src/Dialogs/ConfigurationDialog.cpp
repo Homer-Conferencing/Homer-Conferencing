@@ -190,18 +190,14 @@ void ConfigurationDialog::LoadConfiguration()
 
     //### stream codec
     QString tVideoStreamCodec = CONF.GetVideoCodec();
-    if (tVideoStreamCodec == "H.261")
-        mCbVideoCodec->setCurrentIndex(0);
-    if (tVideoStreamCodec == "H.263")
-        mCbVideoCodec->setCurrentIndex(1);
-    if (tVideoStreamCodec == "H.263+")
-        mCbVideoCodec->setCurrentIndex(2);
-    if (tVideoStreamCodec == "H.264")
-        mCbVideoCodec->setCurrentIndex(3);
-    if (tVideoStreamCodec == "MPEG4")
-        mCbVideoCodec->setCurrentIndex(4);
-    if (tVideoStreamCodec == "THEORA")
-        mCbVideoCodec->setCurrentIndex(5);
+    for (int i = 0; i < mCbVideoCodec->count(); i++)
+    {
+        if (tVideoStreamCodec == mCbVideoCodec->itemText(i))
+        {
+            mCbVideoCodec->setCurrentIndex(i);
+            break;
+        }
+    }
 
     //### stream quality
     int tVideoStreamQuality = CONF.GetVideoQuality();
@@ -263,20 +259,14 @@ void ConfigurationDialog::LoadConfiguration()
 
     //### stream codec
     QString tAudioStreamCodec = CONF.GetAudioCodec();
-    if (tAudioStreamCodec == "MP3 (MPA)")
-        mCbAudioCodec->setCurrentIndex(0);
-    if (tAudioStreamCodec == "G711 A-law (PCMA)")
-        mCbAudioCodec->setCurrentIndex(1);
-    if (tAudioStreamCodec == "G711 �-law (PCMU)")
-        mCbAudioCodec->setCurrentIndex(2);
-    if (tAudioStreamCodec == "AAC")
-        mCbAudioCodec->setCurrentIndex(3);
-    if (tAudioStreamCodec == "PCM_S16_LE")
-        mCbAudioCodec->setCurrentIndex(4);
-    if (tAudioStreamCodec == "GSM")
-        mCbAudioCodec->setCurrentIndex(5);
-    if (tAudioStreamCodec == "AMR")
-        mCbAudioCodec->setCurrentIndex(6);
+    for (int i = 0; i < mCbAudioCodec->count(); i++)
+    {
+        if (tAudioStreamCodec == mCbAudioCodec->itemText(i))
+        {
+            mCbAudioCodec->setCurrentIndex(i);
+            break;
+        }
+    }
 
     //### stream quality
     int tAudioStreamQuality = CONF.GetAudioQuality();
@@ -404,9 +394,15 @@ void ConfigurationDialog::SaveConfiguration()
                 MEETING.SetVideoCodecsSupport(CODEC_H264);
                 break;
         case 4:
-                MEETING.SetVideoCodecsSupport(CODEC_MPEG4);
+                MEETING.SetVideoCodecsSupport(CODEC_MPEG1VIDEO);
                 break;
         case 5:
+                MEETING.SetVideoCodecsSupport(CODEC_MPEG2VIDEO);
+                break;
+        case 6:
+                MEETING.SetVideoCodecsSupport(CODEC_MPEG4);
+                break;
+        case 7:
                 MEETING.SetVideoCodecsSupport(CODEC_THEORA);
                 break;
         default:

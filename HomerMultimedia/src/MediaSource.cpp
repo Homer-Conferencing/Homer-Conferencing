@@ -35,6 +35,7 @@
     H.263: built-in ffmpeg: LGPL
     H.263+: built-in ffmpeg: LGPL
     H.264: GPL-2
+    MPEG2: built-in ffmpeg: LGPL
     MPEG4: built-in ffmpeg: LGPL
     MJPEG: LGPL
 
@@ -281,6 +282,10 @@ std::string MediaSource::CodecName2FfmpegName(std::string pStdName)
         tResult = "h263+";
     if (pStdName == "H.264")
         tResult = "h264";
+    if (pStdName == "MPEG1")
+        tResult = "mpeg1video";
+    if (pStdName == "MPEG2")
+        tResult = "mpeg2video";
     if (pStdName == "MPEG4")
         tResult = "m4v";
     if (pStdName == "MJPEG")
@@ -326,6 +331,10 @@ enum CodecID MediaSource::FfmpegName2FfmpegId(std::string pName)
         tResult = CODEC_ID_H263P;
     if ((pName == "h264") || (pName == "libx264"))
         tResult = CODEC_ID_H264;
+    if ((pName == "mpeg1") || (pName == "mpeg1video"))
+        tResult = CODEC_ID_MPEG1VIDEO;
+    if ((pName == "mpeg2") || (pName == "mpeg2video"))
+        tResult = CODEC_ID_MPEG2VIDEO;
     if ((pName == "m4v") || (pName == "mpeg4"))
         tResult = CODEC_ID_MPEG4;
     if (pName == "mjpeg")
@@ -373,6 +382,10 @@ string MediaSource::FfmpegName2FfmpegFormat(std::string pName)
         tResult = "h263"; // HINT: ffmpeg has no separate h263+ format
     if ((pName == "h264") || (pName == "libx264")) //GPL-2
         tResult = "h264";
+    if ((pName == "mpeg1") || (pName == "mpeg1video"))
+        tResult = "mpeg1video";
+    if ((pName == "mpeg2") || (pName == "mpeg2video"))
+        tResult = "mpeg2video";
     if ((pName == "m4v") || (pName == "mpeg4"))
         tResult = "mpeg4";
     if (pName == "mjpeg")
@@ -418,6 +431,10 @@ string MediaSource::FfmpegId2FfmpegFormat(enum CodecID pCodecId)
         tResult = "h263"; // HINT: ffmpeg has no separate h263+ format
     if (pCodecId == CODEC_ID_H264)
         tResult = "h264";
+    if (pCodecId == CODEC_ID_MPEG1VIDEO)
+        tResult = "mpeg1video";
+    if (pCodecId == CODEC_ID_MPEG2VIDEO)
+        tResult = "mpeg2video";
     if (pCodecId == CODEC_ID_MPEG4)
         tResult = "m4v";
     if (pCodecId == CODEC_ID_MJPEG)
@@ -444,7 +461,7 @@ string MediaSource::FfmpegId2FfmpegFormat(enum CodecID pCodecId)
     if (pCodecId == CODEC_ID_AMR_NB)
         tResult = "amr";
 
-    //LOG(LOG_VERBOSE, "Translated codec id %d to format %s", pCodecId, tResult.c_str());
+    //LOGEX(MediaSource, LOG_VERBOSE, "Translated codec id %d to format %s", pCodecId, tResult.c_str());
 
     return tResult;
 }
@@ -462,6 +479,10 @@ enum MediaType MediaSource::FfmpegName2MediaType(std::string pName)
     if (pName == "h263+")
         tResult = MEDIA_VIDEO;
     if (pName == "h264") //GPL-2
+        tResult = MEDIA_VIDEO;
+    if (pName == "mpeg1video")
+        tResult = MEDIA_VIDEO;
+    if (pName == "mpeg2video")
         tResult = MEDIA_VIDEO;
     if (pName == "m4v")
         tResult = MEDIA_VIDEO;

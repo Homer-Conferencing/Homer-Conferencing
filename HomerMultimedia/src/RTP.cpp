@@ -26,13 +26,15 @@
  */
 
 /*
-     Funktionsstatus:
-             Senden                         Empfangen                   Bemerkungen
-    ---------------------------------------------------------------------------------------------------------
-     h261:   ok (VC)                        ok (VC)                     (bei ekiga kommt es zu abstürzen oder aber nur bildfehlern)
-     h263:   nicht moeglich, h263+ anstatt  ok (linphone, ekiga, VC)    (ffmpeg unterstuetzt zum senden die entsprechende rtp-paketierung nicht, empfang laeuft ueber eigenen rtp-parser)
-    h263+:   ok (linphone, VC)              ok (linphone, VC)           (ekiga raucht bei dem codec sowohl beim senden und auch empfangen ab)
-     h264:   ok (linphone, VC)              ok (VC)                     (in ekiga nicht unterstützt) (linphone raucht beim senden genuesslich ab)
+     Result of functional validation:
+             Sending                        Receiving
+    --------------------------------------------------------------------
+     h261:   ok (VC)                        ok (VC)
+     h263:   not avail., h263+ instead      ok (linphone, ekiga, VC)
+    h263+:   ok (linphone, VC)              ok (linphone, VC)
+     h264:   ok (linphone, VC)              ok (VC)
+    Mpeg1:   ok (VC)                        ok (VC)
+    Mpeg2:   ok (VC)                        ok (VC)
     Mpeg4:   ok (linphone, ekiga, VC)       ok (linphone, ekiga, VC)
 
      pcma:   ok (VC)                        ?
@@ -44,13 +46,11 @@
 
      unsupported:
        mjpeg
- */
 
-/*
+
+
      RTP parameters: http://www.iana.org/assignments/rtp-parameters
- */
 
-/*
      MP3 hack:
          Problem: ffmpeg buffers mp3 fragments but there is no value in the RTP headers to store the size of the entire original MP3 buffer
          Solution: we store the size of all MP3 fragments in "mMp3Hack_EntireBufferSize" and set MBZ from the RTP header to this value
@@ -146,6 +146,56 @@ union MPAHeader{
     struct{
         unsigned short int Offset:16;       /* fragmentation offset */
         unsigned short int Mbz:16;          /* some funny zero values */
+    } __attribute__((__packed__));
+    uint32_t Data[1];
+};
+
+// ############################ MPV video #####################################
+union MPVHeader{
+    struct{
+        unsigned int Ffc:3;                 /* forward f code? */
+        unsigned int Ffv:1;                 /* full pel forward vector? */
+        unsigned int Bfc:3;                 /* backward f code? */
+        unsigned int Fbv:1;                 /* full pel backward vector? */
+        unsigned int PType:3;               /* picture type */
+        unsigned int E:1;                   /* end of slice? */
+        unsigned int B:1;                   /* beginning of slice? */
+        unsigned int S:1;                   /* sequence header present? */
+        unsigned int N:1;                   /* N bit: new picture header? */
+        unsigned int An:1;                  /* active N bit */
+        unsigned int Tr:10;                 /* temporal reference: chronological order of pictures within current GOP */
+        unsigned int T:1;                   /* two headers present? next one is MPEG 2 header */
+        unsigned int Mbz:5;                 /* some funny zero values */
+    } __attribute__((__packed__));
+    uint32_t Data[1];
+};
+
+// ####################### MPV mpeg2 extension #################################
+union MPVMpeg2Header{
+    struct{
+        unsigned short int dummy0;
+        unsigned short int dummy1;
+/*        X: Unused (1 bit). Must be set to zero in current
+           specification. This space is reserved for future use.
+        E: Extensions present (1 bit). If set to 1, this header
+        f_[0,0]: forward horizontal f_code (4 bits)
+        f_[0,1]: forward vertical f_code (4 bits)
+        f_[1,0]: backward horizontal f_code (4 bits)
+        f_[1,1]: backward vertical f_code (4 bits)
+        DC: intra_DC_precision (2 bits)
+        PS: picture_structure (2 bits)
+        T: top_field_first (1 bit)
+        P: frame_predicted_frame_dct (1 bit)
+        C: concealment_motion_vectors (1 bit)
+        Q: q_scale type (1 bit)
+        V: intra_vlc_format (1 bit)
+        A: alternate scan (1 bit)
+        R: repeat_first_field (1 bit)
+        H: chroma_420_type (1 bit)
+        G: progressive frame (1 bit)
+        D: composite_display_flag (1 bit). If set to 1, next 32 bits
+           following this one contains 12 zeros followed by 20 bits
+           of composite display information.*/
     } __attribute__((__packed__));
     uint32_t Data[1];
 };
@@ -580,8 +630,8 @@ bool RTP::IsPayloadSupported(enum CodecID pId)
             case CODEC_ID_H263:
             case CODEC_ID_H263P:
             case CODEC_ID_H264:
-//            case CODEC_ID_MPEG1VIDEO:
-//            case CODEC_ID_MPEG2VIDEO:
+            case CODEC_ID_MPEG1VIDEO:
+            case CODEC_ID_MPEG2VIDEO:
             case CODEC_ID_MPEG4:
             case CODEC_ID_AAC:
 //            case CODEC_ID_MP2:
@@ -633,8 +683,10 @@ int RTP::GetPayloadHeaderSizeMax(enum CodecID pCodec)
             case CODEC_ID_H264:
                 tResult = sizeof(H264Header);
                 break;
-//            case CODEC_ID_MPEG1VIDEO:
-//            case CODEC_ID_MPEG2VIDEO:
+            case CODEC_ID_MPEG1VIDEO:
+            case CODEC_ID_MPEG2VIDEO:
+                tResult = sizeof(MPVHeader); //HINT: we neglect the MPEG2 add-on header
+                break;
             case CODEC_ID_MPEG4:
                 tResult = 0;
                 break;
@@ -829,6 +881,10 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
                                             break;
                             case CODEC_ID_H261:
                                             tHeader->PayloadType = 31;
+                                            break;
+                            case CODEC_ID_MPEG1VIDEO:
+                            case CODEC_ID_MPEG2VIDEO:
+                                            tHeader->PayloadType = 32;
                                             break;
                             case CODEC_ID_AAC:
                                             tHeader->PayloadType = 100;
@@ -1027,6 +1083,8 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
             case CODEC_ID_H263:
             case CODEC_ID_H263P:
             case CODEC_ID_H264:
+            case CODEC_ID_MPEG1VIDEO:
+            case CODEC_ID_MPEG2VIDEO:
             case CODEC_ID_MPEG4:
                     break;
             default:
@@ -1084,6 +1142,9 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                     // video
                     case 31:
                         LOG(LOG_VERBOSE, "Payload type: old h261");
+                        break;
+                    case 32:
+                        LOG(LOG_VERBOSE, "Payload type: old mpv (mpeg1/2)");
                         break;
                     case 34:
                         LOG(LOG_VERBOSE, "Payload type: old h263");
@@ -1229,7 +1290,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
         mLastSequenceNumber = tRtpHeader->SequenceNumber;
         mLastTimestamp = tRtpHeader->Timestamp;
         // if payload type = 0 or 8 then marker bit does not represent a fragmentation marker
-        // if payload type = 14 then RFC 2250 defines the marker bit for discontinuous timestamps instead of fragmentation
+        // if payload type = 14 then RFC 2250 defines for audio the marker bit as representative for discontinuous timestamps
         mFrameFragmentation = ((tRtpHeader->PayloadType == 0 /* mulaw */) || (tRtpHeader->PayloadType == 8 /* alaw */) ||  (tRtpHeader->PayloadType == 14 /* mp3 */)) ? false : !tRtpHeader->Marked;
 
         // store the assigned SSRC identifier
@@ -1246,6 +1307,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
     // get pointer to codec header buffer
     AMRNBHeader* tAMRNBHeader = (AMRNBHeader*)pData;
     MPAHeader* tMPAHeader = (MPAHeader*)pData;
+    MPVHeader* tMPVHeader = (MPVHeader*)pData;
     G711Header* tG711Header = (G711Header*)pData;
     H261Header* tH261Header = (H261Header*)pData;
     H263Header* tH263Header = (H263Header*)pData;
@@ -1584,13 +1646,54 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                             }
 
                             break;
+            case CODEC_ID_MPEG1VIDEO:
+            case CODEC_ID_MPEG2VIDEO:
+                            // convert from network to host byte order
+                            tMPVHeader->Data[0] = ntohl(tMPVHeader->Data[0]);
+
+                            pData += 4;
+
+                            #ifdef RTP_DEBUG_PACKETS
+
+                                LOG(LOG_VERBOSE, "################# MPV (mpeg1/2) header ####################");
+                                switch(tMPVHeader->PType)
+                                {
+                                    case 1:
+                                        LOG(LOG_VERBOSE, "Picture type: i-frame");
+                                        break;
+                                    case 2:
+                                        LOG(LOG_VERBOSE, "Picture type: p-frame");
+                                        break;
+                                    case 3:
+                                        LOG(LOG_VERBOSE, "Picture type: b-frame");
+                                        break;
+                                    case 4:
+                                        LOG(LOG_VERBOSE, "Picture type: d-frame");
+                                        break;
+                                    default:
+                                        LOG(LOG_VERBOSE, "Picture type: %d", tMPVHeader->PType); //TODO: rfc 2250 says value "0" is forbidden but ffmpeg uses it for ... what?
+                                        break;
+                                }
+
+                                LOG(LOG_VERBOSE, "End of slice: %s", tMPVHeader->E ? "yes" : "no");
+                                LOG(LOG_VERBOSE, "Begin of slice: %s", tMPVHeader->B ? "yes" : "no");
+                                LOG(LOG_VERBOSE, "Sequence header: %s", tMPVHeader->S ? "yes" : "no");
+                                LOG(LOG_VERBOSE, "Temporal ref.: %d", tMPVHeader->Tr);
+                                LOG(LOG_VERBOSE, "Mpeg2 header present: %s", tMPVHeader->T ? "yes" : "no");
+                            #endif
+
+                            // is additional MPEG2 header present? => 4 bytes of additional data before raw mpeg data
+                            if(tMPVHeader->T)
+                                pData += 4;
+
+                            // convert from host to network byte order
+                            tMPVHeader->Data[0] = htonl(tMPVHeader->Data[0]);
+                            break;
             case CODEC_ID_MPEG4:
                             #ifdef RTP_DEBUG_PACKETS
                                 LOG(LOG_VERBOSE, "#################### MPEG4 header #######################");
                                 LOG(LOG_VERBOSE, "No additional information");
                             #endif
-                            // no fragmentation because our encoder sends raw data
-                            //mFrameFragmentation = false;
                             break;
             default:
                             LOG(LOG_ERROR, "Unsupported codec %d dropped by internal RTP parser", pCodecId);
@@ -1626,6 +1729,8 @@ int RTP::FfmpegNameToPayloadId(std::string pName)
     //video
     if (pName == "h261")
         tResult = 31;
+    if ((pName == "mpeg2video") || (pName == "mpegvideo") || (pName == "mpeg1video"))
+        tResult = 32;
     if (pName == "h263")
         tResult = 34;
     if ((pName == "h263+") || (pName == "h263p"))
@@ -1666,6 +1771,9 @@ string RTP::PayloadIdToFfmpegName(int pId)
         case 31:
                 tResult = "h261";
                 break;
+        case 32:
+                tResult = "mpeg video";
+                break;
         case 34:
         case 118:
                 tResult = "h263";
@@ -1694,7 +1802,7 @@ string RTP::PayloadIdToFfmpegName(int pId)
                 tResult = "alaw";
                 break;
         case 14:
-                tResult = "mp3";
+                tResult = "mpeg audio";
                 break;
         case 100:
                 tResult = "aac";
