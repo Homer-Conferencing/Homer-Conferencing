@@ -63,16 +63,21 @@ public:
 
     void WriteFifo(char* pBuffer, int pBufferSize);
     void ReadFifo(char *pBuffer, int &pBufferSize);
+    void ClearFifo();
 
     int ReadFifoExclusive(char **pBuffer, int &pBufferSize);
     void ReadFifoExclusiveFinished(int pEntryPointer);
 
-    int UsedFifoSize();
+    int GetUsage();
+    int GetSize();
 
 private:
     std::string			mName;
     MediaFifoEntry      *mFifo;
-	int					mFifoWritePtr, mFifoReadPtr, mFifoAvailableEntries, mFifoSize;
+	int					mFifoWritePtr;
+	int                 mFifoReadPtr;
+	int                 mFifoAvailableEntries;
+	int                 mFifoSize;
 	int 				mFifoEntrySize;
     Mutex				mFifoMutex;
     Condition			mFifoDataInputCondition;

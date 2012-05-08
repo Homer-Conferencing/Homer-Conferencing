@@ -28,6 +28,8 @@
 #include <MediaFifo.h>
 #include <Logger.h>
 
+#include <string.h> // memcpy
+
 namespace Homer { namespace Multimedia {
 
 using namespace Homer::Base;
@@ -127,12 +129,45 @@ void MediaFifo::ReadFifo(char *pBuffer, int &pBufferSize)
         LOG(LOG_VERBOSE, "%s-FIFO: data chunk with size 0 read", mName.c_str());
 }
 
-int MediaFifo::UsedFifoSize()
+void MediaFifo::ClearFifo()
+{
+    #ifdef MF_DEBUG
+        LOG(LOG_VERBOSE, "%s-FIFO: going to clear entire buffer", mName.c_str());
+    #endif
+
+    // make sure there is some pending data in the input Fifo
+    mFifoMutex.lock();
+
+    mFifoWritePtr = 0;
+    mFifoReadPtr = 0;
+    mFifoAvailableEntries = 0;
+    for (int i = 0; i < mFifoSize; i++)
+    {
+        mFifo[i].Size = 0;
+    }
+
+    // unlock
+    mFifoMutex.unlock();
+}
+
+int MediaFifo::GetUsage()
 {
     int tResult = 0;
     mFifoMutex.lock();
 
     tResult = mFifoAvailableEntries;
+
+    mFifoMutex.unlock();
+
+    return tResult;
+}
+
+int MediaFifo::GetSize()
+{
+    int tResult = 0;
+    mFifoMutex.lock();
+
+    tResult = mFifoSize;
 
     mFifoMutex.unlock();
 
