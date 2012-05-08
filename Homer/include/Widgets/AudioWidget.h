@@ -74,6 +74,8 @@ public:
     void InformAboutNewSamples();
     void InformAboutNewMuteState();
     AudioWorkerThread* GetWorker();
+    void SetVolume(int pValue); // 0-200 %
+    int GetVolume();
 
 public slots:
     void ToggleVisibility();
@@ -83,13 +85,11 @@ private slots:
 
 private:
     void initializeGUI();
-    void SetVolume(int pValue); // 0-200 %
-    int GetVolume();
     void ShowSample(void* pBuffer, int pSampleSize, int pSampleNumber = 0);
     void showAudioLevel(int pLevel);
     virtual void closeEvent(QCloseEvent* pEvent);
     virtual void customEvent (QEvent* pEvent);
-    virtual void contextMenuEvent(QContextMenuEvent *event);
+    virtual void contextMenuEvent(QContextMenuEvent *pEvent);
     void DialogAddNetworkSink();
     void StartRecorder();
     void StopRecorder();

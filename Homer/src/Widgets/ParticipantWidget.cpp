@@ -473,6 +473,13 @@ void ParticipantWidget::dropEvent(QDropEvent *pEvent)
     }
 }
 
+void ParticipantWidget::wheelEvent(QWheelEvent *pEvent)
+{
+    int tOffset = pEvent->delta() * 25 / 120;
+    LOG(LOG_VERBOSE, "Got new wheel event with delta %d, derived volume offset: %d", pEvent->delta(), tOffset);
+    mAudioWidget->SetVolume(mAudioWidget->GetVolume() + tOffset);
+}
+
 void ParticipantWidget::LookedUpParticipantHost(const QHostInfo &pHost)
 {
     if (pHost.error() != QHostInfo::NoError)

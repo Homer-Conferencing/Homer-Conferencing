@@ -112,8 +112,8 @@ void WaveOut::SetVolume(int pValue)
 	LOG(LOG_VERBOSE, "Setting volume to %d \%", pValue);
     if (pValue < 0)
         pValue = 0;
-    if(pValue > 200)
-        pValue = 200;
+    if(pValue > 300)
+        pValue = 300;
     mVolume = pValue;
 }
 
