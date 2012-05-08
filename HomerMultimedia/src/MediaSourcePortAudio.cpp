@@ -113,7 +113,10 @@ void MediaSourcePortAudio::getAudioDevices(AudioDevicesList &pAList)
 
         // if device is able to capture samples add this device to the result list
         if (tDevice.IoType.find("Input") != string::npos)
+        {
+            tDevice.Type = Microphone;
             pAList.push_back(tDevice);
+        }
 
         if (tFirstCall)
         {
@@ -204,7 +207,11 @@ void MediaSourcePortAudio::getAudioDevices(AudioDevicesList &pAList)
 int MediaSourcePortAudio::RecordedAudioHandler(const void *pInputBuffer, void *pOutputBuffer, unsigned long pInputSize, const PaStreamCallbackTimeInfo* pTimeInfo, PaStreamCallbackFlags pStatus, void *pUserData)
 {
     MediaSourcePortAudio *tMediaSourcePortAudio = (MediaSourcePortAudio*)pUserData;
-    int tResult = (tMediaSourcePortAudio->mGrabbingStopped) ? paComplete : paContinue;
+
+    tMediaSourcePortAudio->AssignThreadName();
+
+    if (tMediaSourcePortAudio->mGrabbingStopped)
+        return paComplete;
 
     #ifdef MSPA_DEBUG_PACKETS
         LOGEX(MediaSourcePortAudio, LOG_VERBOSE, "Captured %d audio samples, time stamp of first sample: %f, current time stamp: %f", pInputSize, pTimeInfo->inputBufferAdcTime, pTimeInfo->currentTime);
@@ -212,7 +219,16 @@ int MediaSourcePortAudio::RecordedAudioHandler(const void *pInputBuffer, void *p
 
     tMediaSourcePortAudio->mCaptureFifo->WriteFifo((char*)pInputBuffer, (int)pInputSize * 2 /* 16 bit LittleEndian */ * (tMediaSourcePortAudio->mStereo ? 2 : 1));
 
-    return tResult;
+    return paContinue;
+}
+
+void MediaSourcePortAudio::AssignThreadName()
+{
+    if (mHaveToAssignThreadName)
+    {
+        SVC_PROCESS_STATISTIC.AssignThreadName("PortAudio-Capture");
+        mHaveToAssignThreadName = false;
+    }
 }
 
 bool MediaSourcePortAudio::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
@@ -307,6 +323,7 @@ bool MediaSourcePortAudio::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     mChunkNumber = 0;
     mMediaType = MEDIA_AUDIO;
     mMediaSourceOpened = true;
+    mHaveToAssignThreadName = true;
 
     return true;
 }

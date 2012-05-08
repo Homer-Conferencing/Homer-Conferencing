@@ -77,11 +77,19 @@ enum VideoFormat
     HDTV,       /*     1920 x 1080      */
 };
 
+enum VideoDeviceType{
+    GeneralVideoDevice = 0,
+    VideoFile,
+    Camera,
+    Tv
+};
+
 struct VideoDeviceDescriptor
 {
     std::string Name; //used for device selection
     std::string Card; //used to open the real device
     std::string Desc; //additional more verbose device information
+    enum VideoDeviceType Type;
 };
 
 typedef std::list<VideoDeviceDescriptor> VideoDevicesList;
@@ -103,12 +111,19 @@ enum MediaType
 };
 
 /* audio */
+enum AudioDeviceType{
+    GeneralAudioDevice = 0,
+    AudioFile,
+    Microphone
+};
+
 struct AudioDeviceDescriptor
 {
     std::string Name;
     std::string Card;
     std::string Desc;
     std::string IoType;
+    enum AudioDeviceType Type;
 };
 
 typedef std::list<AudioDeviceDescriptor> AudioDevicesList;

@@ -67,7 +67,9 @@ public:
 
 private:
     static int RecordedAudioHandler(const void *pInputBuffer, void *pOutputBuffer, unsigned long pInputSize, const PaStreamCallbackTimeInfo* pTimeInfo, PaStreamCallbackFlags pStatus, void *pUserData);
+    void AssignThreadName();
 
+    bool                mHaveToAssignThreadName;
     /* capturing */
     PaStream            *mStream;
     MediaFifo           *mCaptureFifo;
