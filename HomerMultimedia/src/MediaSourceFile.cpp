@@ -49,7 +49,7 @@ MediaSourceFile::MediaSourceFile(string pSourceFile, bool pGrabInRealTime):
     mResampleContext = NULL;
     mDuration = 0;
     mCurPts = 0;
-    mCurrentDeviceName = "FILE: " + mDesiredDevice;
+    mCurrentDeviceName = mDesiredDevice;
     mResampleBuffer = (char*)malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
 }
 
@@ -67,7 +67,7 @@ void MediaSourceFile::getVideoDevices(VideoDevicesList &pVList)
 {
     VideoDeviceDescriptor tDevice;
 
-    tDevice.Name = "FILE: " + mDesiredDevice;
+    tDevice.Name = mDesiredDevice;
     tDevice.Card = mDesiredDevice;
     tDevice.Desc = "file source: \"" + mDesiredDevice + "\"";
 
@@ -78,7 +78,7 @@ void MediaSourceFile::getAudioDevices(AudioDevicesList &pAList)
 {
     AudioDeviceDescriptor tDevice;
 
-    tDevice.Name = "FILE: " + mDesiredDevice;
+    tDevice.Name = mDesiredDevice;
     tDevice.Card = mDesiredDevice;
     tDevice.Desc = "file source: \"" + mDesiredDevice + "\"";
     tDevice.IoType = "Input/Output";
@@ -139,7 +139,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     }
 
     mCurrentDevice = mDesiredDevice;
-    mCurrentDeviceName = "FILE: " + mDesiredDevice;
+    mCurrentDeviceName = mDesiredDevice;
 
     // limit frame analyzing time for ffmpeg internal codec auto detection
     mFormatContext->max_analyze_duration = AV_TIME_BASE / 4; //  1/4 recorded seconds
@@ -286,7 +286,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     }
 
     mCurrentDevice = mDesiredDevice;
-    mCurrentDeviceName = "FILE: " + mDesiredDevice;
+    mCurrentDeviceName = mDesiredDevice;
 
     // limit frame analyzing time for ffmpeg internal codec auto detection
     mFormatContext->max_analyze_duration = AV_TIME_BASE / 4; //  1/4 recorded seconds
