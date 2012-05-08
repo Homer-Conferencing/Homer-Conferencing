@@ -638,13 +638,6 @@ void AudioWidget::ToggleVisibility()
 
 void AudioWidget::ToggleMuteState(bool pState)
 {
-    if (pState)
-    {
-        mAudioWorker->SetVolume(mAudioVolume);
-    }else
-    {
-        mAudioWorker->SetVolume(0);
-    }
     mAudioWorker->ToggleMuteState(pState);
 }
 
@@ -818,6 +811,8 @@ AudioWorkerThread::AudioWorkerThread(MediaSource *pAudioSource, AudioWidget *pAu
     LOG(LOG_VERBOSE, "..Creating audio worker");
     mResetAudioSourceAsap = false;
     mStartRecorderAsap = false;
+    mStartPlaybackAsap = false;
+    mStopPlaybackAsap = false;
     mSetInputStreamPreferencesAsap = false;
     mStopRecorderAsap = false;
     mSetCurrentDeviceAsap = false;
@@ -825,6 +820,7 @@ AudioWorkerThread::AudioWorkerThread(MediaSource *pAudioSource, AudioWidget *pAu
     mPlayNewFileAsap = false;
     mSelectInputChannelAsap = false;
     mDesiredInputChannel = 0;
+    mPlaybackAvailable = false;
     mEofReached = false;
     mPaused = false;
     mSourceAvailable = false;
@@ -840,36 +836,28 @@ AudioWorkerThread::AudioWorkerThread(MediaSource *pAudioSource, AudioWidget *pAu
     blockSignals(true);
     mSampleCurrentIndex = SAMPLE_BUFFER_SIZE - 1;
     mSampleGrabIndex = 0;
-    LOG(LOG_VERBOSE, "..allocate audio buffers");
+    mDropSamples = false;
+    mWorkerWithNewData = false;
+}
+
+AudioWorkerThread::~AudioWorkerThread()
+{
+}
+
+void AudioWorkerThread::OpenPlaybackDevice()
+{
+    LOG(LOG_VERBOSE, "Allocating audio buffers");
     for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
     {
         mSamples[i] = mAudioSource->AllocChunkBuffer(mSamplesBufferSize[i], MEDIA_AUDIO);
         mSampleNumber[i] = 0;
     }
-    mDropSamples = false;
-    mWorkerWithNewData = false;
 
-    // open audio playback
-    LOG(LOG_VERBOSE, "..open playback device");
-    OpenPlaybackDevice();
-}
-
-AudioWorkerThread::~AudioWorkerThread()
-{
-    // close audio playback
-    ClosePlaybackDevice();
-
-    for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
-        mAudioSource->FreeChunkBuffer(mSamples[i]);
-}
-
-void AudioWorkerThread::OpenPlaybackDevice()
-{
     LOG(LOG_VERBOSE, "Going to open playback device");
 
     mWaveOut = new WaveOutPortAudio();
     mWaveOut->OpenWaveOutDevice();
-
+    mPlaybackAvailable = true;
     LOG(LOG_VERBOSE, "Finished to open playback device");
 }
 
@@ -877,22 +865,34 @@ void AudioWorkerThread::ClosePlaybackDevice()
 {
     LOG(LOG_VERBOSE, "Going to close playback device");
 
+    mPlaybackAvailable = false;
+
     // close the audio out
     mWaveOut->CloseWaveOutDevice();
     delete mWaveOut;
+
+    LOG(LOG_VERBOSE, "Releasing audio buffers");
+    for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
+        mAudioSource->FreeChunkBuffer(mSamples[i]);
 
     LOG(LOG_VERBOSE, "Finished to close playback device");
 }
 
 void AudioWorkerThread::ToggleMuteState(bool pState)
 {
+	if (!mPlaybackAvailable)
+	{
+		LOG(LOG_VERBOSE, "Playback device isn't available");
+		return;
+	}
+
     if (pState)
     {
-        mWaveOut->Play();
+    	mStartPlaybackAsap = true;
         mAudioOutMuted = false;
     }else
     {
-        mWaveOut->Stop();
+    	mStopPlaybackAsap = true;
         mAudioOutMuted = true;
     }
     mAudioWidget->InformAboutNewMuteState();
@@ -900,18 +900,30 @@ void AudioWorkerThread::ToggleMuteState(bool pState)
 
 void AudioWorkerThread::SetVolume(int pValue)
 {
+	if (!mPlaybackAvailable)
+	{
+		LOG(LOG_VERBOSE, "Playback device isn't available");
+		return;
+	}
+
 	mWaveOut->SetVolume(pValue);
 }
 
 void AudioWorkerThread::SetMuteState(bool pMuted)
 {
+	if (!mPlaybackAvailable)
+	{
+		LOG(LOG_VERBOSE, "Playback device isn't available");
+		return;
+	}
+
     LOG(LOG_VERBOSE, "Setting mute state to %d", pMuted);
     mAudioOutMuted = pMuted;
     mAudioWidget->InformAboutNewMuteState();
     if(pMuted)
-        mWaveOut->Stop();
+    	mStopPlaybackAsap = true;
     else
-        mWaveOut->Play();
+    	mStartPlaybackAsap = true;
 }
 
 bool AudioWorkerThread::GetMuteState()
@@ -1060,8 +1072,11 @@ bool AudioWorkerThread::SupportsSeeking()
 void AudioWorkerThread::Seek(int pPos)
 {
     mAudioSource->Seek(mAudioSource->GetSeekEnd() * pPos / 1000, false);
-    mWaveOut->Stop();
-    mWaveOut->Play();
+	if (mPlaybackAvailable)
+	{
+		mStopPlaybackAsap = true;
+		mStartPlaybackAsap = true;
+	}
 }
 
 int64_t AudioWorkerThread::GetSeekPos()
@@ -1142,8 +1157,11 @@ void AudioWorkerThread::DoSelectInputChannel()
 
     // restart frame grabbing device
     mSourceAvailable = mAudioSource->SelectInputChannel(mDesiredInputChannel);
-    mWaveOut->Stop();
-    mWaveOut->Play();
+	if (mPlaybackAvailable)
+	{
+		mStopPlaybackAsap = true;
+		mStartPlaybackAsap = true;
+	}
 
     mResetAudioSourceAsap = false;
     mSelectInputChannelAsap = false;
@@ -1161,8 +1179,11 @@ void AudioWorkerThread::DoResetAudioSource()
 
     // restart frame grabbing device
     mSourceAvailable = mAudioSource->Reset(MEDIA_AUDIO);
-    mWaveOut->Stop();
-    mWaveOut->Play();
+	if (mPlaybackAvailable)
+	{
+		mStopPlaybackAsap = true;
+		mStartPlaybackAsap = true;
+	}
 
     mResetAudioSourceAsap = false;
     mPaused = false;
@@ -1234,14 +1255,31 @@ void AudioWorkerThread::DoSetCurrentDevice()
         mAudioWidget->InformAboutOpenError(mDeviceName);
 
     // reset audio output
-    mWaveOut->Stop();
-    mWaveOut->Play();
+	if (mPlaybackAvailable)
+	{
+		mStopPlaybackAsap = true;
+		mStartPlaybackAsap = true;
+	}
 
     mSetCurrentDeviceAsap = false;
     mCurrentFile = mDesiredFile;
 
     // unlock
     mDeliverMutex.unlock();
+}
+
+void AudioWorkerThread::DoStartPlayback()
+{
+	mStartPlaybackAsap = false;
+	if (mPlaybackAvailable)
+		mWaveOut->Play();
+}
+
+void AudioWorkerThread::DoStopPlayback()
+{
+	mStopPlaybackAsap = false;
+	if (mPlaybackAvailable)
+		mWaveOut->Stop();
 }
 
 int AudioWorkerThread::GetCurrentSample(void **pSample, int& pSampleSize, int *pSps)
@@ -1279,6 +1317,10 @@ void AudioWorkerThread::run()
 
     // if grabber was stopped before source has been opened this BOOL is reset
     mWorkerNeeded = true;
+
+    // open audio playback
+    LOG(LOG_VERBOSE, "..open playback device");
+    OpenPlaybackDevice();
 
     // assign default thread name
     LOG(LOG_VERBOSE, "..assign thread name");
@@ -1335,6 +1377,14 @@ void AudioWorkerThread::run()
         if (mStopRecorderAsap)
             DoStopRecorder();
 
+        // stop playback
+        if (mStopPlaybackAsap)
+        	DoStopPlayback();
+
+        // start playback
+        if (mStartPlaybackAsap)
+        	DoStartPlayback();
+
         if ((!mPaused) && (mSourceAvailable))
         {
 			// set input samples size
@@ -1350,7 +1400,7 @@ void AudioWorkerThread::run()
 			//printf("SampleSize: %d Sample: %d\n", mSamplesSize[mSampleGrabIndex], tSampleNumber);
 
 			// play the sample block if audio out isn't currently muted
-			if ((!mAudioOutMuted) && (tSampleNumber >= 0) && (tSamplesSize> 0) && (!mDropSamples))
+			if ((!mAudioOutMuted) && (tSampleNumber >= 0) && (tSamplesSize> 0) && (!mDropSamples) && (mPlaybackAvailable))
 			    mWaveOut->WriteChunk(mSamples[mSampleGrabIndex], mSamplesSize[mSampleGrabIndex]);
 
 			// unlock
@@ -1401,6 +1451,9 @@ void AudioWorkerThread::run()
     }
     mAudioSource->CloseGrabDevice();
     mAudioSource->DeleteAllRegisteredMediaSinks();
+
+    // close audio playback
+    ClosePlaybackDevice();
 }
 
 void AudioWorkerThread::StopGrabber()
