@@ -95,6 +95,7 @@ void MediaSourceV4L2::getVideoDevices(VideoDevicesList &pVList)
             tDevice.Name += char(tDeviceId + 48);
             tDevice.Card = tDeviceFile;
             tDevice.Desc = "V4L2 based video device";
+            tDevice.Type = GeneralVideoDevice;
 
             if (tFirstCall)
                 if (tDevice.Name.size())
@@ -131,16 +132,28 @@ void MediaSourceV4L2::getVideoDevices(VideoDevicesList &pVList)
                     }
                 }
 
-                if (tFirstCall)
+                int tIndex = 0;
+                for(;;)
                 {
-                    int tIndex = 0;
-                    for(;;)
+                    memset(&tV4L2Input, 0, sizeof(tV4L2Input));
+                    tV4L2Input.index = tIndex;
+                    if (ioctl(tFd, VIDIOC_ENUMINPUT, &tV4L2Input) < 0)
+                        break;
+                    else
                     {
-                        memset(&tV4L2Input, 0, sizeof(tV4L2Input));
-                        tV4L2Input.index = tIndex;
-                        if (ioctl(tFd, VIDIOC_ENUMINPUT, &tV4L2Input) < 0)
-                            break;
-                        else
+                        switch(tV4L2Input.type)
+                        {
+                            case V4L2_INPUT_TYPE_TUNER:
+                                    if(tDevice.Type != Camera)
+                                        tDevice.Type = Tv;
+                                    break;
+                            case V4L2_INPUT_TYPE_CAMERA:
+                                    if (tDevice.Type != Tv)
+                                        tDevice.Type = Camera;
+                                    break;
+                        }
+
+                        if (tFirstCall)
                         {
                             LOG(LOG_VERBOSE, "..input index: %u", tV4L2Input.index);
                             LOG(LOG_VERBOSE, "..input name: %u", tV4L2Input.name);
@@ -157,10 +170,9 @@ void MediaSourceV4L2::getVideoDevices(VideoDevicesList &pVList)
                             // tuner
                             // std
                             LOG(LOG_VERBOSE, "..input status: 0x%x", tV4L2Input.status);
-
                         }
-                        tIndex++;
                     }
+                    tIndex++;
                 }
 
                 close(tFd);

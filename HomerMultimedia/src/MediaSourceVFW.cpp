@@ -107,6 +107,7 @@ void MediaSourceVFW::getVideoDevices(VideoDevicesList &pVList)
 				tDevice.Name = string(tDriverName);
 				tDevice.Card = (char)i + 48;
 				tDevice.Desc = "VFW based video device " + tDevice.Card + " \"" + string(tDriverName) + "\"";
+				tDevice.Type = Camera; // assume all as camera devices
 				LOG(LOG_VERBOSE, "Found video device: %s (card: %s)", tDevice.Name.c_str(), tDevice.Card.c_str());
 			}
 

@@ -33,8 +33,6 @@
 
 namespace Homer { namespace Multimedia {
 
-#define SOUNDOUTPUT_SAMPLES_PER_BUFFER          (MEDIA_SOURCE_SAMPLES_PER_BUFFER)
-
 ///////////////////////////////////////////////////////////////////////////////
 
 class WaveOut:

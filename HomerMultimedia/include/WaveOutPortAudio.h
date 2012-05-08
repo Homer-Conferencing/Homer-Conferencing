@@ -31,6 +31,7 @@
 #include <Header_Ffmpeg.h>
 #include <Header_PortAudio.h>
 #include <WaveOut.h>
+#include <MediaFifo.h>
 
 namespace Homer { namespace Multimedia {
 
@@ -64,9 +65,14 @@ public:
     virtual bool WriteChunk(void* pChunkBuffer, int pChunkSize = 4096);
 
 private:
+    static int PlayAudioHandler(const void *pInputBuffer, void *pOutputBuffer, unsigned long pInputSize, const PaStreamCallbackTimeInfo* pTimeInfo, PaStreamCallbackFlags pStatus, void *pUserData);
+    void AssignThreadName();
+
+    bool                mHaveToAssignThreadName;
     /* playback */
     PaStream            *mStream;
-    AVFifoBuffer        *mSampleFifo;
+    MediaFifo           *mPlaybackFifo; // needed as FIFO buffer with prepared audio buffers for playback, avoid expensive operations like malloc/free (used when using AVFifoBuffer)
+    AVFifoBuffer        *mSampleFifo; // needed to create audio buffers of fixed size (4096 bytes)
     /* portaudio init. */
     static Mutex        mPaInitMutex;
     static bool         mPaInitiated;
