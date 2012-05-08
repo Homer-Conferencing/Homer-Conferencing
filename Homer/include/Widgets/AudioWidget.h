@@ -151,7 +151,7 @@ public:
     //--
     QString GetCurrentDevice();
     void SetCurrentDevice(QString pName);
-    QStringList GetPossibleDevices();
+    AudioDevicesList GetPossibleDevices();
     QString GetDeviceDescription(QString pName);
     //--
     void PlayFile(QString pName);
@@ -174,6 +174,7 @@ public:
     /* audio out control */
     void SetMuteState(bool pMuted);
     bool GetMuteState();
+    bool IsPlaybackAvailable();
 
 public slots:
     void ToggleMuteState(bool pState = true);
@@ -191,6 +192,7 @@ private:
     void DoPlayNewFile();
     void DoStartPlayback();
     void DoStopPlayback();
+    void DoSourceSeek();
 
     MediaSource         *mAudioSource;
     AudioWidget         *mAudioWidget;
@@ -221,6 +223,8 @@ private:
     /* for forwarded interface to media source */
     int                 mDesiredInputChannel;
     QString             mDesiredFile;
+    bool                mSourceSeekAsap;
+    int                 mSourceSeekPos;
     bool                mSetInputStreamPreferencesAsap;
     bool                mSetCurrentDeviceAsap;
     bool                mResetAudioSourceAsap;

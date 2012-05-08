@@ -33,6 +33,7 @@
 #include <Logger.h>
 #include <Meeting.h>
 #include <Snippets.h>
+#include <HBThread.h>
 
 #include <QInputDialog>
 #include <QPalette>
@@ -157,6 +158,11 @@ void AudioWidget::Init(MediaSource *pAudioSource, QMenu *pMenu, QString pActionT
         mAudioWorker = new AudioWorkerThread(mAudioSource, this);
         LOG(LOG_VERBOSE, "..start audio worker");
         mAudioWorker->start(QThread::TimeCriticalPriority);
+        while(!mAudioWorker->IsPlaybackAvailable())
+        {
+            LOG(LOG_VERBOSE, "Waiting for available audio playback");
+            Thread::Suspend(100 * 1000);
+        }
         LOG(LOG_VERBOSE, "..set mute state to %d", pMuted);
         mAudioWorker->SetMuteState(pMuted);
     }
@@ -822,6 +828,7 @@ AudioWorkerThread::AudioWorkerThread(MediaSource *pAudioSource, AudioWidget *pAu
     mDesiredInputChannel = 0;
     mPlaybackAvailable = false;
     mEofReached = false;
+    mSourceSeekAsap = false;
     mPaused = false;
     mSourceAvailable = false;
     mPausedPos = 0;
@@ -886,6 +893,7 @@ void AudioWorkerThread::ToggleMuteState(bool pState)
 		return;
 	}
 
+    LOG(LOG_VERBOSE, "Setting mute state to %d", !pState);
     if (pState)
     {
     	mStartPlaybackAsap = true;
@@ -931,6 +939,11 @@ bool AudioWorkerThread::GetMuteState()
     return mAudioOutMuted;
 }
 
+bool AudioWorkerThread::IsPlaybackAvailable()
+{
+    return mPlaybackAvailable;
+}
+
 void AudioWorkerThread::SetSampleDropping(bool pDrop)
 {
     mDropSamples = pDrop;
@@ -971,15 +984,12 @@ void AudioWorkerThread::SetCurrentDevice(QString pName)
     }
 }
 
-QStringList AudioWorkerThread::GetPossibleDevices()
+AudioDevicesList AudioWorkerThread::GetPossibleDevices()
 {
-    QStringList tResult;
-    AudioDevicesList::iterator tIt;
-    AudioDevicesList tAList;
+    AudioDevicesList tResult;
 
-    mAudioSource->getAudioDevices(tAList);
-    for (tIt = tAList.begin(); tIt != tAList.end(); tIt++)
-        tResult.push_back(QString(tIt->Name.c_str()));
+    LOG(LOG_VERBOSE, "Enumerate all audio devices..");
+    mAudioSource->getAudioDevices(tResult);
 
     return tResult;
 }
@@ -1071,12 +1081,8 @@ bool AudioWorkerThread::SupportsSeeking()
 
 void AudioWorkerThread::Seek(int pPos)
 {
-    mAudioSource->Seek(mAudioSource->GetSeekEnd() * pPos / 1000, false);
-	if (mPlaybackAvailable)
-	{
-		mStopPlaybackAsap = true;
-		mStartPlaybackAsap = true;
-	}
+    mSourceSeekAsap = true;
+    mSourceSeekPos = pPos;
 }
 
 int64_t AudioWorkerThread::GetSeekPos()
@@ -1113,23 +1119,33 @@ void AudioWorkerThread::DoStopRecorder()
     mStopRecorderAsap = false;
 }
 
+void AudioWorkerThread::DoSourceSeek()
+{
+    LOG(LOG_VERBOSE, "DoSourceSeek now...");
+    mAudioSource->Seek(mAudioSource->GetSeekEnd() * mSourceSeekPos / 1000, false);
+    DoStopPlayback();
+    DoStartPlayback();
+    mSourceSeekAsap = false;
+}
 void AudioWorkerThread::DoPlayNewFile()
 {
-    QStringList tList = GetPossibleDevices();
-    int tPos = -1, i = 0;
-
     LOG(LOG_VERBOSE, "DoPlayNewFile now...");
-    for (i = 0; i < tList.size(); i++)
+
+    AudioDevicesList tList = GetPossibleDevices();
+    AudioDevicesList::iterator tIt;
+    bool tFound = false;
+
+    for (tIt = tList.begin(); tIt != tList.end(); tIt++)
     {
-        if (tList[i].contains("FILE: " + mDesiredFile))
+        if (QString(tIt->Name.c_str()).contains(mDesiredFile))
         {
-            tPos = i;
+            tFound = true;
             break;
         }
     }
 
     // found something?
-    if (tPos == -1)
+    if (!tFound)
     {
         LOG(LOG_VERBOSE, "File is new, going to add..");
     	MediaSourceFile *tASource = new MediaSourceFile(mDesiredFile.toStdString());
@@ -1138,11 +1154,11 @@ void AudioWorkerThread::DoPlayNewFile()
             AudioDevicesList tAList;
             tASource->getAudioDevices(tAList);
             mAudioSource->RegisterMediaSource(tASource);
-            SetCurrentDevice(QString(tAList.front().Name.c_str()));
+            SetCurrentDevice(mDesiredFile);
         }
     }else{
         LOG(LOG_VERBOSE, "File is already known, we select it as audio media source");
-        SetCurrentDevice(tList[tPos]);
+        SetCurrentDevice(mDesiredFile);
     }
 
     mPlayNewFileAsap = false;
@@ -1157,11 +1173,8 @@ void AudioWorkerThread::DoSelectInputChannel()
 
     // restart frame grabbing device
     mSourceAvailable = mAudioSource->SelectInputChannel(mDesiredInputChannel);
-	if (mPlaybackAvailable)
-	{
-		mStopPlaybackAsap = true;
-		mStartPlaybackAsap = true;
-	}
+    DoStopPlayback();
+    DoStartPlayback();
 
     mResetAudioSourceAsap = false;
     mSelectInputChannelAsap = false;
@@ -1179,11 +1192,8 @@ void AudioWorkerThread::DoResetAudioSource()
 
     // restart frame grabbing device
     mSourceAvailable = mAudioSource->Reset(MEDIA_AUDIO);
-	if (mPlaybackAvailable)
-	{
-		mStopPlaybackAsap = true;
-		mStartPlaybackAsap = true;
-	}
+    DoStopPlayback();
+    DoStartPlayback();
 
     mResetAudioSourceAsap = false;
     mPaused = false;
@@ -1255,11 +1265,8 @@ void AudioWorkerThread::DoSetCurrentDevice()
         mAudioWidget->InformAboutOpenError(mDeviceName);
 
     // reset audio output
-	if (mPlaybackAvailable)
-	{
-		mStopPlaybackAsap = true;
-		mStartPlaybackAsap = true;
-	}
+    DoStopPlayback();
+    DoStartPlayback();
 
     mSetCurrentDeviceAsap = false;
     mCurrentFile = mDesiredFile;
@@ -1270,13 +1277,15 @@ void AudioWorkerThread::DoSetCurrentDevice()
 
 void AudioWorkerThread::DoStartPlayback()
 {
-	mStartPlaybackAsap = false;
-	if (mPlaybackAvailable)
+    LOG(LOG_VERBOSE, "DoStartPlayback now...");
+    mStartPlaybackAsap = false;
+    if ((!mAudioOutMuted) && (mPlaybackAvailable))
 		mWaveOut->Play();
 }
 
 void AudioWorkerThread::DoStopPlayback()
 {
+    LOG(LOG_VERBOSE, "DoStopPlayback now...");
 	mStopPlaybackAsap = false;
 	if (mPlaybackAvailable)
 		mWaveOut->Stop();
@@ -1349,6 +1358,9 @@ void AudioWorkerThread::run()
         //LOG(LOG_ERROR, "GrabMutex");
         mGrabMutex.lock();
 
+        if (mSourceSeekAsap)
+            DoSourceSeek();
+
         // play new file from disc
         if (mPlayNewFileAsap)
         	DoPlayNewFile();
@@ -1400,7 +1412,7 @@ void AudioWorkerThread::run()
 			//printf("SampleSize: %d Sample: %d\n", mSamplesSize[mSampleGrabIndex], tSampleNumber);
 
 			// play the sample block if audio out isn't currently muted
-			if ((!mAudioOutMuted) && (tSampleNumber >= 0) && (tSamplesSize> 0) && (!mDropSamples) && (mPlaybackAvailable))
+			if ((!mAudioOutMuted) && (tSampleNumber >= 0) && (tSamplesSize > 0) && (!mDropSamples) && (mPlaybackAvailable))
 			    mWaveOut->WriteChunk(mSamples[mSampleGrabIndex], mSamplesSize[mSampleGrabIndex]);
 
 			// unlock

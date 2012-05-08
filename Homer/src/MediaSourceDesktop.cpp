@@ -104,7 +104,7 @@ void MediaSourceDesktop::getVideoDevices(VideoDevicesList &pVList)
     //#############################
     //### screen segment
     //#############################
-    tDevice.Name = "Desktop screen segment";
+    tDevice.Name = MSD_DESKTOP_SEGMENT;
     tDevice.Card = "segment";
 	#ifdef APPLE
     	tDevice.Desc = "OSX Cocoa based screen segment capturing";

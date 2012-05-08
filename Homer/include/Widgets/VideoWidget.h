@@ -179,7 +179,7 @@ public:
     QString GetCurrentDevice();
     QString GetCurrentDevicePeer();
     void SetCurrentDevice(QString pName);
-    QStringList GetPossibleDevices();
+    VideoDevicesList GetPossibleDevices();
     QString GetDeviceDescription(QString pName);
     //--
     void PlayFile(QString pName);
