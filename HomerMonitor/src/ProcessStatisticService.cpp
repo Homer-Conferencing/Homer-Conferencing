@@ -201,13 +201,13 @@ bool ProcessStatisticService::RegisterProcessStatistic(int pThreadId)
     ProcessStatisticsList::iterator tIt;
     bool tFound = false;
 
-    LOG(LOG_VERBOSE, "Registering process statistic for thread %d", pThreadId);
+    //LOG(LOG_VERBOSE, "Registering process statistic for thread %d", pThreadId);
 
     for (tIt = mProcessStatistics.begin(); tIt != mProcessStatistics.end(); tIt++)
     {
         if ((*tIt)->GetThreadStatisticId() == pThreadId)
         {
-            LOG(LOG_VERBOSE, "Statistic for thread %d already registered", pThreadId);
+            //LOG(LOG_VERBOSE, "Statistic for thread %d already registered", pThreadId);
             tFound = true;
             break;
         }
@@ -230,7 +230,7 @@ bool ProcessStatisticService::UnregisterProcessStatistic(int pThreadId)
     ProcessStatisticsList::iterator tIt;
     bool tFound = false;
 
-    LOG(LOG_VERBOSE, "Unregistering process statistic for thread %d", pThreadId);
+    //LOG(LOG_VERBOSE, "Unregistering process statistic for thread %d", pThreadId);
 
     for (tIt = mProcessStatistics.begin(); tIt != mProcessStatistics.end(); tIt++)
     {
@@ -238,7 +238,7 @@ bool ProcessStatisticService::UnregisterProcessStatistic(int pThreadId)
         {
             tFound = true;
             mProcessStatistics.erase(tIt);
-            LOG(LOG_VERBOSE, "..unregistered");
+            //LOG(LOG_VERBOSE, "..unregistered");
             break;
         }
     }
