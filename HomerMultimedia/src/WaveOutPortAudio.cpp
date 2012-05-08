@@ -27,7 +27,6 @@
 
 
 #include <WaveOutPortAudio.h>
-#include <Header_Ffmpeg.h>
 #include <Logger.h>
 #include <HBThread.h>
 
@@ -195,8 +194,6 @@ bool WaveOutPortAudio::OpenWaveOutDevice(int pSampleRate, bool pStereo)
         return false;
     }
 
-    Play();
-
     mCurrentDevice = mDesiredDevice;
 
     // init fifo buffer
@@ -217,6 +214,9 @@ bool WaveOutPortAudio::OpenWaveOutDevice(int pSampleRate, bool pStereo)
     LOG(LOG_INFO, "    ..fill size: %d bytes", av_fifo_size(mSampleFifo));
 
     mWaveOutOpened = true;
+
+    Play();
+
     return true;
 }
 
@@ -263,16 +263,21 @@ bool WaveOutPortAudio::WriteChunk(void* pChunkBuffer, int pChunkSize)
 {
     PaError           tErr = paNoError;
 
-    if (mPlaybackStopped)
-    {
-        LOG(LOG_ERROR, "Tried to play while WaveOut device is paused");
-        return false;
-    }
+    mPlayMutex.lock();
 
     if (!mWaveOutOpened)
     {
         LOG(LOG_ERROR, "Tried to play while WaveOut device is closed");
+        mPlayMutex.unlock();
         return false;
+    }
+
+    if (mPlaybackStopped)
+    {
+		LOG(LOG_VERBOSE, "Will automatically start the audio stream");
+		mPlayMutex.unlock();
+		Play();
+		mPlayMutex.lock();
     }
 
     if (mVolume != 100)
@@ -331,14 +336,25 @@ bool WaveOutPortAudio::WriteChunk(void* pChunkBuffer, int pChunkSize)
         #endif
         if((tErr = Pa_WriteStream(mStream, pChunkBuffer, pChunkSize / 4)) != paNoError)
         {
-            LOG(LOG_ERROR, "Couldn't write chunk to stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
-            return false;
+        	if (tErr == paStreamIsStopped)
+        	{
+        		LOG(LOG_VERBOSE, "Will automatically start the audio stream");
+        		Play();
+                tErr = Pa_WriteStream(mStream, pChunkBuffer, pChunkSize / 4);
+        	}
+        	if(tErr != paNoError)
+        	{
+        		LOG(LOG_ERROR, "Couldn't write chunk to stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
+        		mPlayMutex.unlock();
+        		return false;
+        	}
         }
 
         // log statistics about raw PCM audio data stream
         AnnouncePacket(pChunkSize);
 //    }
 
+	mPlayMutex.unlock();
     return true;
 }
 
@@ -346,45 +362,112 @@ bool WaveOutPortAudio::Play()
 {
     PaError           tErr = paNoError;
 
-    WaveOut::Play();
+    LOG(LOG_VERBOSE, "Starting playback stream..");
+
+    mPlayMutex.lock();
+
+    if (!mWaveOutOpened)
+    {
+        LOG(LOG_VERBOSE, "Playback device wasn't opened yet");
+        mPlayMutex.unlock();
+        return true;
+    }
+
+    if (!mPlaybackStopped)
+    {
+        LOG(LOG_VERBOSE, "Playback was already started");
+        mPlayMutex.unlock();
+        return true;
+    }
 
     // do we already play?
-    if (Pa_IsStreamActive(mStream) != 1)
+    if (Pa_IsStreamStopped(mStream) == 1)
     {
         LOG(LOG_VERBOSE, "Going to start stream..");
         if((tErr = Pa_StartStream(mStream)) != paNoError)
         {
             LOG(LOG_ERROR, "Couldn't start stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
+            mPlayMutex.unlock();
             return false;
         }
 
         // wait until the port audio stream becomes active
-        while((Pa_IsStreamActive(mStream)) != 1)
+        int tLoop = 0;
+        while((Pa_IsStreamStopped(mStream)) == 1)
         {
+        	if (tLoop > 10)
+        	{
+        		LOG(LOG_WARN, "Was not able to start playback stream");
+        	    mPlayMutex.unlock();
+        	    return false;
+        	}
+        	LOG(LOG_VERBOSE, "Wait for stream start, loop count: %d", tLoop);
+        	tLoop++;
             // wait some time
             Thread::Suspend(50 * 1000);
         }
-    }
+    }else
+    	LOG(LOG_VERBOSE, "Stream is already started");
+
+    WaveOut::Play();
+
+    mPlayMutex.unlock();
     return true;
 }
 
 void WaveOutPortAudio::Stop()
 {
-    WaveOut::Stop();
-
     PaError tErr = paNoError;
-    if (Pa_IsStreamActive(mStream) == 1)
+
+    LOG(LOG_VERBOSE, "Stopping playback stream..");
+
+    mPlayMutex.lock();
+
+    if (!mWaveOutOpened)
     {
-        if ((tErr = Pa_AbortStream(mStream)) != paNoError)
-            LOG(LOG_ERROR, "Couldn't abort stream because \"%s\"", Pa_GetErrorText(tErr));
+        LOG(LOG_VERBOSE, "Playback device wasn't opened yet");
+        mPlayMutex.unlock();
+        return;
+    }
+
+    if (mPlaybackStopped)
+    {
+        LOG(LOG_VERBOSE, "Playback was already stopped");
+        mPlayMutex.unlock();
+        return;
+    }
+
+    if (Pa_IsStreamStopped(mStream) == 0)
+    {
+        LOG(LOG_VERBOSE, "Going to stop stream..");
+        if ((tErr = Pa_StopStream(mStream)) != paNoError)
+        {
+            LOG(LOG_ERROR, "Couldn't stop stream because \"%s\"", Pa_GetErrorText(tErr));
+            mPlayMutex.unlock();
+            return;
+        }
 
         // wait until the port audio stream becomes inactive
-        while((Pa_IsStreamActive(mStream)) == 1)
+        int tLoop = 0;
+        while((Pa_IsStreamStopped(mStream)) == 0)
         {
+        	if (tLoop > 10)
+        	{
+        		LOG(LOG_WARN, "Was not able to stop playback stream");
+        	    mPlayMutex.unlock();
+        	    return;
+        	}
+        	LOG(LOG_VERBOSE, "Wait for stream stop, loop count: %d", tLoop);
+        	tLoop++;
             // wait some time
             Thread::Suspend(50 * 1000);
         }
-    }
+    }else
+    	LOG(LOG_VERBOSE, "Stream is already stopped");
+
+    WaveOut::Stop();
+
+    mPlayMutex.unlock();
 }
 
 }} //namespaces

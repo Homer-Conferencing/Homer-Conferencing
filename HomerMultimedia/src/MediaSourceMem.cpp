@@ -49,7 +49,7 @@ MediaSourceMem::MediaSourceMem(bool pRtpActivated):
     mOpenInputStream = false;
     mRtpActivated = pRtpActivated;
     RTPRegisterPacketStatistic(this);
-    mDecoderFifo = new MediaFifo(MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT, MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
+    mDecoderFifo = new MediaFifo(MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT, MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE, "MediaSourceMem");
 
     mStreamCodecId = CODEC_ID_NONE;
 

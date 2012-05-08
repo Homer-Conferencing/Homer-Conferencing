@@ -50,6 +50,7 @@
 									<listOptionValue builtIn="false" value="../../HomerGAPI/include"/>
 									<listOptionValue builtIn="false" value="../../HomerWinLibs/FFMPEG/libavformat"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/HomerMultimedia/include}&quot;"/>
+									<listOptionValue builtIn="false" value="../../../Homer-Release/HomerIncludes"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.943936581" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
