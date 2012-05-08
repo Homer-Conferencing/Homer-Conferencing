@@ -66,6 +66,7 @@ public:
 private:
 friend class Condition;
     OS_DEP_MUTEX mMutex;
+    int     mOwnerThreadId;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

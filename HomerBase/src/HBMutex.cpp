@@ -27,6 +27,7 @@
 
 #include <Logger.h>
 #include <HBMutex.h>
+#include <HBThread.h>
 
 namespace Homer { namespace Base {
 
@@ -36,7 +37,8 @@ using namespace std;
 
 Mutex::Mutex()
 {
-	bool tResult = false;
+    mOwnerThreadId = -1;
+    bool tResult = false;
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		tResult = (pthread_mutex_init(&mMutex, NULL) == 0);
 	#endif
@@ -65,6 +67,13 @@ Mutex::~Mutex()
 
 bool Mutex::lock()
 {
+    int tThreadId = Thread::GetTId();
+
+    if ((mOwnerThreadId != -1) && (mOwnerThreadId == tThreadId))
+        LOG(LOG_ERROR, "Recursive locking detected");
+
+    mOwnerThreadId = tThreadId;
+
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		return !pthread_mutex_lock(&mMutex);
 	#endif
@@ -75,6 +84,8 @@ bool Mutex::lock()
 
 bool Mutex::unlock()
 {
+    mOwnerThreadId = -1;
+
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		return !pthread_mutex_unlock(&mMutex);
 	#endif
@@ -170,7 +181,9 @@ bool Mutex::tryLock(int pMSecs)
 		switch(pthread_mutex_timedlock(&mMutex, &tTimeout))
 		{
 			case EDEADLK:
-				LOG(LOG_ERROR, "Lock already held by calling thread");
+                #ifdef HB_DEBUG_MUTEX
+                    printf("Lock already held by calling thread.\n");
+                #endif
 				break;
 			case EBUSY: // lock can't be obtained because it is busy
 				break;
@@ -181,7 +194,9 @@ bool Mutex::tryLock(int pMSecs)
 				LOG(LOG_ERROR, "Invalid lock pointer was given");
 				break;
 			case ETIMEDOUT:
-				LOG(LOG_INFO, "Lock couldn't be obtained in given time");
+                #ifdef HB_DEBUG_MUTEX
+				    printf("Lock couldn't be obtained in given time.\n");
+                #endif
 				break;
 			case 0: // lock was free and is obtained now
 				tResult = true;
