@@ -144,7 +144,8 @@ private:
     virtual void closeEvent(QCloseEvent* pEvent = NULL);
     virtual void dragEnterEvent(QDragEnterEvent *pEvent);
     virtual void dropEvent(QDropEvent *pEvent);
-    void timerEvent(QTimerEvent *pEvent);
+    virtual void wheelEvent(QWheelEvent *pEvent);
+    virtual void timerEvent(QTimerEvent *pEvent);
     void ShowNewState();
     void CallStopped(bool pIncoming);
 
