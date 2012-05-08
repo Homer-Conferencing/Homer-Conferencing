@@ -293,7 +293,7 @@ void AudioWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             //###############################################################################
             QMenu *tVolMenu = tAudioMenu->addMenu("Volume");
 
-            for (int i = 1; i < 7; i++)
+            for (int i = 1; i <10; i++)
             {
                 QAction *tVolAction = tVolMenu->addAction(QString("%1 %").arg(i * 25));
                 tVolAction->setCheckable(true);
@@ -433,7 +433,7 @@ void AudioWidget::contextMenuEvent(QContextMenuEvent *pEvent)
                 return;
             }
         }
-        for (int i = 1; i < 7; i++)
+        for (int i = 1; i < 10; i++)
         {
             if(tPopupRes->text() == QString("%1 %").arg(i * 25))
             {
