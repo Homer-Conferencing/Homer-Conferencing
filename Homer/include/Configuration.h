@@ -200,7 +200,7 @@ public:
 
     /* additional fixed values */
     int GetSystrayTimeout(){ return 6000; /* ms */ }
-    int GetContactPresenceCheckPeriod(){ return 60*1000; /* ms */ }
+    int GetContactPresenceCheckPeriod(){ return 1*1000; /* 1 second to allow NAT hole punching based on bidirectional SIP probe request ping-pong */ }
 
     /* debugging state machine */
     bool DebuggingEnabled();

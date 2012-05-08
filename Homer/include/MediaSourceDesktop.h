@@ -41,6 +41,8 @@ using namespace Homer::Multimedia;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define MSD_DESKTOP_SEGMENT         "Desktop screen segment"
+
 // the following de/activates debugging of packets
 //#define MSD_DEBUG_PACKETS
 

@@ -170,11 +170,11 @@ void ConfigurationDialog::LoadConfiguration()
 
     //### capture source
     mCbVideoSource->clear();
-    for (int i = 0; i < mVideoCaptureDevices.size(); i++)
+    for (tVideoDevicesIt = mVideoCaptureDevices.begin(); tVideoDevicesIt != mVideoCaptureDevices.end(); tVideoDevicesIt++)
     {
-        mCbVideoSource->addItem(mVideoCaptureDevices[i]);
+        mCbVideoSource->addItem(QString(tVideoDevicesIt->Name.c_str()));
         // if former selected device is current device then reselect it
-        if ((mVideoCaptureDevices[i] == mVideoWorker->GetCurrentDevice()) && (CONF.GetLocalVideoSource() != "auto"))
+        if ((tVideoDevicesIt->Name == mVideoWorker->GetCurrentDevice().toStdString()) && (CONF.GetLocalVideoSource() != "auto"))
             mCbVideoSource->setCurrentIndex(mCbVideoSource->count() - 1);
     }
     // reselect "auto" if it was the select the last time Home ran
@@ -231,11 +231,11 @@ void ConfigurationDialog::LoadConfiguration()
 
     //### capture source
     mCbAudioSource->clear();
-    for (int i = 0; i < mAudioCaptureDevices.size(); i++)
+    for (tAudioDevicesIt = mAudioCaptureDevices.begin(); tAudioDevicesIt != mAudioCaptureDevices.end(); tAudioDevicesIt++)
     {
-        mCbAudioSource->addItem(mAudioCaptureDevices[i]);
+        mCbAudioSource->addItem(QString(tAudioDevicesIt->Name.c_str()));
         // if former selected device is current device then reselect it
-        if ((mAudioCaptureDevices[i] == mAudioWorker->GetCurrentDevice()) && (CONF.GetLocalAudioSource() != "auto"))
+        if ((tAudioDevicesIt->Name == mAudioWorker->GetCurrentDevice().toStdString()) && (CONF.GetLocalAudioSource() != "auto"))
             mCbAudioSource->setCurrentIndex(mCbAudioSource->count() - 1);
     }
     // reselect "auto" if it was the select the last time Home ran

@@ -1517,18 +1517,12 @@ void VideoWorkerThread::SetCurrentDevice(QString pName)
     }
 }
 
-QStringList VideoWorkerThread::GetPossibleDevices()
+VideoDevicesList VideoWorkerThread::GetPossibleDevices()
 {
-    QStringList tResult;
-    VideoDevicesList::iterator tIt;
-    VideoDevicesList tVList;
+    VideoDevicesList tResult;
 
     LOG(LOG_VERBOSE, "Enumerate all video devices..");
-    mVideoSource->getVideoDevices(tVList);
-
-    LOG(LOG_VERBOSE, "Convert device info to processable format..");
-    for (tIt = tVList.begin(); tIt != tVList.end(); tIt++)
-        tResult.push_back(QString(tIt->Name.c_str()));
+    mVideoSource->getVideoDevices(tResult);
 
     return tResult;
 }
@@ -1692,19 +1686,21 @@ void VideoWorkerThread::DoPlayNewFile()
 {
     LOG(LOG_VERBOSE, "DoPlayNewFile now...");
 
-    QStringList tList = GetPossibleDevices();
-    int tPos = -1;
-    for (int i = 0; i < tList.size(); i++)
+    VideoDevicesList tList = GetPossibleDevices();
+    VideoDevicesList::iterator tIt;
+    bool tFound = false;
+
+    for (tIt = tList.begin(); tIt != tList.end(); tIt++)
     {
-        if (tList[i].contains("FILE: " + mDesiredFile))
+        if (QString(tIt->Name.c_str()).contains(mDesiredFile))
         {
-            tPos = i;
+            tFound = true;
             break;
         }
     }
 
     // found something?
-    if (tPos == -1)
+    if (!tFound)
     {
         LOG(LOG_VERBOSE, "File is new, going to add..");
     	MediaSourceFile *tVSource = new MediaSourceFile(mDesiredFile.toStdString());
@@ -1713,11 +1709,11 @@ void VideoWorkerThread::DoPlayNewFile()
             VideoDevicesList tVList;
             tVSource->getVideoDevices(tVList);
             mVideoSource->RegisterMediaSource(tVSource);
-            SetCurrentDevice(QString(tVList.front().Name.c_str()));
+            SetCurrentDevice(mDesiredFile);
         }
     }else{
         LOG(LOG_VERBOSE, "File is already known, we select it as video media source");
-        SetCurrentDevice(tList[tPos]);
+        SetCurrentDevice(mDesiredFile);
     }
 
     mPlayNewFileAsap = false;

@@ -105,9 +105,7 @@ void StreamingControlWidget::StartScreenSegmentStreaming()
     mOverviewPlaylistWidgetVideo->StopPlaylist();
     mOverviewPlaylistWidgetMovie->StopPlaylist();
 
-    QStringList tList = mVideoWorker->GetPossibleDevices();
-    if (tList.contains("DESKTOP: screen segment"))
-    mVideoWorker->SetCurrentDevice("DESKTOP: screen segment");
+    mVideoWorker->SetCurrentDevice(MSD_DESKTOP_SEGMENT); // used fixed name
 
     if (mVideoWorker->SupportsMultipleChannels())
         SetVideoInputSelectionVisible();
@@ -122,26 +120,29 @@ void StreamingControlWidget::StartCameraStreaming()
     mOverviewPlaylistWidgetVideo->StopPlaylist();
     mOverviewPlaylistWidgetMovie->StopPlaylist();
 
-    QStringList tList = mVideoWorker->GetPossibleDevices();
-    int tPos = -1, i = 0;
+    VideoDevicesList tList = mVideoWorker->GetPossibleDevices();
+    VideoDevicesList::iterator tIt;
+    QString tSelectedDevice = "";
 
-    for (i = 0; i < tList.size(); i++)
+    for (tIt = tList.begin(); tIt != tList.end(); tIt++)
     {
-        if ((tList[i].contains("V4L2")) || (tList[i].contains("VFW")))
+        if (tIt->Type == Camera)
         {
-            tPos = i;
+            tSelectedDevice = QString(tIt->Name.c_str());
             break;
         }
     }
 
     // found something?
-    if (tPos == -1)
+    if (tSelectedDevice == "")
     {
         ShowWarning("Missing camera", "No camera available. Please, select another source!");
         return;
     }
 
-    mVideoWorker->SetCurrentDevice(tList[tPos]);
+    LOG(LOG_VERBOSE, "Selecting %s", tSelectedDevice.toStdString().c_str());
+
+    mVideoWorker->SetCurrentDevice(tSelectedDevice);
     if (mVideoWorker->SupportsMultipleChannels())
         SetVideoInputSelectionVisible();
     else
@@ -153,26 +154,29 @@ void StreamingControlWidget::StartVoiceStreaming()
     mOverviewPlaylistWidgetAudio->StopPlaylist();
     mOverviewPlaylistWidgetMovie->StopPlaylist();
 
-    QStringList tList = mAudioWorker->GetPossibleDevices();
-    int tPos = -1, i = 0;
+    AudioDevicesList tList = mAudioWorker->GetPossibleDevices();
+    AudioDevicesList::iterator tIt;
+    QString tSelectedDevice = "";
 
-    for (i = 0; i < tList.size(); i++)
+    for (tIt = tList.begin(); tIt != tList.end(); tIt++)
     {
-        if ((tList[i].contains("ALSA")) || (tList[i].contains("MSYS")) || (tList[i].contains("OSS")))
+        if (tIt->Type == Microphone)
         {
-            tPos = i;
+            tSelectedDevice = QString(tIt->Name.c_str());
             break;
         }
     }
 
     // found something?
-    if (tPos == -1)
+    if (tSelectedDevice == "")
     {
         ShowWarning("Missing microphone", "No microphone available. Please, select another source!");
         return;
     }
 
-    mAudioWorker->SetCurrentDevice(tList[tPos]);
+    LOG(LOG_VERBOSE, "Selecting %s", tSelectedDevice.toStdString().c_str());
+
+    mAudioWorker->SetCurrentDevice(tSelectedDevice);
 }
 
 void StreamingControlWidget::StartVideoFileStreaming()

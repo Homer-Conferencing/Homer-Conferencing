@@ -122,8 +122,8 @@ private:
     QHttp                   *mHttpGetSipServerList;
     static QStringList      mSipServerList;
 
-    QStringList             mVideoCaptureDevices;
-    QStringList             mAudioCaptureDevices;
+    VideoDevicesList        mVideoCaptureDevices;
+    AudioDevicesList        mAudioCaptureDevices;
     Homer::Multimedia::AudioDevicesList mAudioPlaybackDevices;
 };
 
