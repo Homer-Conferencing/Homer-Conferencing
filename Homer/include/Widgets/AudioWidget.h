@@ -189,6 +189,8 @@ private:
     void DoStartRecorder();
     void DoStopRecorder();
     void DoPlayNewFile();
+    void DoStartPlayback();
+    void DoStopPlayback();
 
     MediaSource         *mAudioSource;
     AudioWidget         *mAudioWidget;
@@ -213,6 +215,7 @@ private:
     bool				mEofReached;
     bool				mPaused;
     bool				mSourceAvailable;
+    bool				mPlaybackAvailable;
     int64_t				mPausedPos;
 
     /* for forwarded interface to media source */
@@ -223,6 +226,8 @@ private:
     bool                mResetAudioSourceAsap;
     bool                mStartRecorderAsap;
     bool                mStopRecorderAsap;
+    bool				mStartPlaybackAsap;
+    bool				mStopPlaybackAsap;
     bool				mPlayNewFileAsap;
     bool                mSelectInputChannelAsap;
     /* playback */
