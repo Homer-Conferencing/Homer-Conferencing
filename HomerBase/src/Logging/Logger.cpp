@@ -223,27 +223,31 @@ void Logger::AddMessage(int pLevel, const char *pSource, int pLine, const char* 
     tFinalMessage = toString(tMessageBuffer);
 
     // lock
-    mLoggerMutex.lock();
-
-    if ((mLastMessage != tFinalMessage) || (mLastSource != tFinalSource) || (mLastLine != pLine))
+    if (mLoggerMutex.tryLock(50))
     {
-        if (mRepetitionCount)
+        if ((mLastMessage != tFinalMessage) || (mLastSource != tFinalSource) || (mLastLine != pLine))
         {
-            RelayMessageToLogSinks(mLastMessageLogLevel, tFinalTime, mLastSource, mLastLine, "        LAST MESSAGE WAS REPEATED " + toString(mRepetitionCount) + " TIME(S)");
-            mRepetitionCount = 0;
-        }
+            if (mRepetitionCount)
+            {
+                RelayMessageToLogSinks(mLastMessageLogLevel, tFinalTime, mLastSource, mLastLine, "        LAST MESSAGE WAS REPEATED " + toString(mRepetitionCount) + " TIME(S)");
+                mRepetitionCount = 0;
+            }
 
-        RelayMessageToLogSinks(pLevel, tFinalTime, tFinalSource, pLine, tFinalMessage);
+            RelayMessageToLogSinks(pLevel, tFinalTime, tFinalSource, pLine, tFinalMessage);
 
-        mLastMessageLogLevel = pLevel;
-        mLastSource = tFinalSource;
-        mLastMessage = tFinalMessage;
-        mLastLine = pLine;
+            mLastMessageLogLevel = pLevel;
+            mLastSource = tFinalSource;
+            mLastMessage = tFinalMessage;
+            mLastLine = pLine;
+        }else
+            mRepetitionCount++;
+
+        // unlock
+        mLoggerMutex.unlock();
     }else
-        mRepetitionCount++;
-
-    // unlock
-    mLoggerMutex.unlock();
+    {
+        printf("Failed to lock logger at %s for %s(%d) and message \"%s\", will ignore this.\n", tFinalTime.c_str(), pSource, pLine, tFinalMessage.c_str());
+    }
 }
 
 void Logger::Init(int pLevel)
