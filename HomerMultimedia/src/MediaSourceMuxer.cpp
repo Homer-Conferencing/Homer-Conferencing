@@ -463,6 +463,8 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     // allocate software scaler context
     mScalerContext = sws_getContext(mSourceResX, mSourceResY, PIX_FMT_RGB32, mCodecContext->width, mCodecContext->height, mCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
 
+    mMediaType = MEDIA_VIDEO;
+
     // init transcoder FIFO based for RGB32 pictures
     StartTranscoder(mSourceResX * mSourceResY * 4 /* bytes per pixel */);
 
@@ -472,7 +474,6 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     //######################################################
     //### give some verbose output
     //######################################################
-    mMediaType = MEDIA_VIDEO;
     mStreamMaxFps_LastFrame_Timestamp = Time::GetTimeStamp();
     MarkOpenGrabDeviceSuccessful();
     LOG(LOG_INFO, "    ..max packet size: %d bytes", mFormatContext->pb->max_packet_size);
@@ -653,6 +654,8 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     if (mCodecContext->frame_size == 1)
         mCodecContext->frame_size = 256;
 
+    mMediaType = MEDIA_AUDIO;
+
     // init transcoder FIFO based for 2048 samples with 16 bit and 2 channels, more samples are never produced by a media source per grabbing cycle
     StartTranscoder(8192);
 
@@ -662,7 +665,6 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     // init fifo buffer
     mSampleFifo = HM_av_fifo_alloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE * 2);
 
-    mMediaType = MEDIA_AUDIO;
     MarkOpenGrabDeviceSuccessful();
     LOG(LOG_INFO, "    ..max packet size: %d bytes", mFormatContext->pb->max_packet_size);
     LOG(LOG_INFO, "  stream...");
@@ -993,7 +995,7 @@ void MediaSourceMuxer::StartTranscoder(int pFifoEntrySize)
         delete mTranscoderFifo;
     }else
     {
-        mTranscoderFifo = new MediaFifo(MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT, pFifoEntrySize);
+        mTranscoderFifo = new MediaFifo(MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT, pFifoEntrySize, GetMediaTypeStr() + "-MediaSourceMuxer");
 
         mTranscoderNeeded = true;
 

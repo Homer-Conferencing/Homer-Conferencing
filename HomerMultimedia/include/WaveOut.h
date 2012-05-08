@@ -72,6 +72,7 @@ protected:
     /* device state */
     bool                mWaveOutOpened;
     bool                mPlaybackStopped;
+    Mutex				mPlayMutex;
     /* device parameters */
     int                 mSampleRate;
     bool                mStereo;

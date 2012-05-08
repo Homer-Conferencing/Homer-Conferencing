@@ -37,7 +37,7 @@ WaveOut::WaveOut(string pName):
     PacketStatistic(pName)
 {
     ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
-    mPlaybackStopped = false;
+    mPlaybackStopped = true;
     mWaveOutOpened = false;
     mDesiredDevice = "";
     mCurrentDevice = "";
@@ -90,11 +90,13 @@ bool WaveOut::SelectDevice(string pDeviceName)
 
 void WaveOut::Stop()
 {
+	LOG(LOG_VERBOSE, "Mark stream as stopped");
     mPlaybackStopped = true;
 }
 
 bool WaveOut::Play()
 {
+	LOG(LOG_VERBOSE, "Mark stream as started");
     mPlaybackStopped = false;
 
     return true;

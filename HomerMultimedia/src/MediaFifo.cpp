@@ -28,17 +28,17 @@
 #include <MediaFifo.h>
 #include <Logger.h>
 
-#include <string.h>
-
 namespace Homer { namespace Multimedia {
 
 using namespace Homer::Base;
+using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-MediaFifo::MediaFifo(int pFifoSize, int pFifoEntrySize)
+MediaFifo::MediaFifo(int pFifoSize, int pFifoEntrySize, string pName)
 {
-    mFifoSize = pFifoSize;
+    mName = pName;
+	mFifoSize = pFifoSize;
     mFifoEntrySize = pFifoEntrySize;
     mFifoWritePtr = 0;
     mFifoReadPtr = 0;
@@ -71,7 +71,7 @@ void MediaFifo::ReadFifo(char *pBuffer, int &pBufferSize)
     int tCurrentFifoReadPtr;
 
     #ifdef MF_DEBUG
-		LOG(LOG_VERBOSE, "Going to read data chunk from FIFO");
+		LOG(LOG_VERBOSE, "%s-FIFO: going to read data chunk", mName.c_str());
 	#endif
 
     // make sure there is some pending data in the input Fifo
@@ -79,25 +79,25 @@ void MediaFifo::ReadFifo(char *pBuffer, int &pBufferSize)
 	while(mFifoAvailableEntries < 1)
 	{
 		#ifdef MF_DEBUG
-			LOG(LOG_VERBOSE, "Waiting for a new FIFO input");
+			LOG(LOG_VERBOSE, "%s-FIFO: waiting for new input", mName.c_str());
 		#endif
 
 		mFifoDataInputCondition.Reset();
 		mFifoMutex.unlock();
 
 		while(!mFifoDataInputCondition.Wait())
-			LOG(LOG_ERROR, "Error when waiting for new FIFO input");
+			LOG(LOG_ERROR, "%s-FIFO: error when waiting for new input", mName.c_str());
 
 		mFifoMutex.lock();
 
 		if (mFifoAvailableEntries < 0)
-		    LOG(LOG_ERROR, "FIFO has negative amount of entries: %d", mFifoAvailableEntries);
+		    LOG(LOG_ERROR, "%s-FIFO: negative amount of entries: %d", mName.c_str(), mFifoAvailableEntries);
 	}
 
 	tCurrentFifoReadPtr = mFifoReadPtr;
 
     #ifdef MF_DEBUG
-        LOG(LOG_VERBOSE, "Reading FIFO entry %d", tCurrentFifoReadPtr);
+        LOG(LOG_VERBOSE, "%s-FIFO: reading entry %d", mName.c_str(), tCurrentFifoReadPtr);
     #endif
 
     // update FIFO read pointer
@@ -120,11 +120,11 @@ void MediaFifo::ReadFifo(char *pBuffer, int &pBufferSize)
     mFifo[tCurrentFifoReadPtr].EntryMutex.unlock();
 
 	#ifdef MF_DEBUG
-		LOG(LOG_VERBOSE, "Erased front element of size %d from FIFO, size afterwards: %d", (int)pBufferSize, (int)mFifoAvailableEntries);
+		LOG(LOG_VERBOSE, "%s-FIFO: erased front element of size %d, size afterwards: %d", mName.c_str(), (int)pBufferSize, (int)mFifoAvailableEntries);
 	#endif
 
     if (pBufferSize == 0)
-        LOG(LOG_VERBOSE, "Data chunk with size 0 read from FIFO");
+        LOG(LOG_VERBOSE, "%s-FIFO: data chunk with size 0 read", mName.c_str());
 }
 
 int MediaFifo::UsedFifoSize()
@@ -144,7 +144,7 @@ int MediaFifo::ReadFifoExclusive(char **pBuffer, int &pBufferSize)
     int tCurrentFifoReadPtr;
 
     #ifdef MF_DEBUG
-        LOG(LOG_VERBOSE, "Going to read data chunk from FIFO");
+        LOG(LOG_VERBOSE, "%s-FIFO: going to read data chunk", mName.c_str());
     #endif
 
     // make sure there is some pending data in the input Fifo
@@ -153,13 +153,13 @@ int MediaFifo::ReadFifoExclusive(char **pBuffer, int &pBufferSize)
     while (mFifoAvailableEntries < 1)
     {
         if (tRounds > 0)
-            LOG(LOG_VERBOSE, "Woke up but no new data found, already passed rounds: %d", tRounds);
+            LOG(LOG_VERBOSE, "%s-FIFO: woke up but no new data found, already passed rounds: %d", mName.c_str(), tRounds);
 
         mFifoDataInputCondition.Reset();
         mFifoMutex.unlock();
 
         while(!mFifoDataInputCondition.Wait())
-            LOG(LOG_ERROR, "Error when waiting for new FIFO input");
+            LOG(LOG_ERROR, "%s-FIFO: error when waiting for new input", mName.c_str());
 
         mFifoMutex.lock();
 
@@ -169,7 +169,7 @@ int MediaFifo::ReadFifoExclusive(char **pBuffer, int &pBufferSize)
     tCurrentFifoReadPtr = mFifoReadPtr;
 
     #ifdef MF_DEBUG
-        LOG(LOG_VERBOSE, "Reading exclusivle FIFO entry %d", tCurrentFifoReadPtr);
+        LOG(LOG_VERBOSE, "%s-FIFO: reading exclusively entry %d", mName.c_str(), tCurrentFifoReadPtr);
     #endif
 
     // update FIFO read pointer
@@ -192,11 +192,11 @@ int MediaFifo::ReadFifoExclusive(char **pBuffer, int &pBufferSize)
     // NO unlock of fine grained mutex again -> has to be triggered by caller via separated function: mFifo[tCurrentFifoReadPtr].EntryMutex->unlock();
 
     #ifdef MF_DEBUG
-        LOG(LOG_VERBOSE, "Erased front element of size %d from FIFO, size afterwards: %d", (int)pBufferSize, (int)mFifoAvailableEntries);
+        LOG(LOG_VERBOSE, "%s-FIFO: erased front element of size %d, size afterwards: %d", mName.c_str(), (int)pBufferSize, (int)mFifoAvailableEntries);
     #endif
 
     if (pBufferSize == 0)
-        LOG(LOG_VERBOSE, "Data chunk with size 0 read from FIFO");
+        LOG(LOG_VERBOSE, "%s-FIFO: data chunk with size 0 read", mName.c_str());
 
     return tCurrentFifoReadPtr;
 }
@@ -204,7 +204,7 @@ int MediaFifo::ReadFifoExclusive(char **pBuffer, int &pBufferSize)
 void MediaFifo::ReadFifoExclusiveFinished(int pEntryPointer)
 {
     #ifdef MF_DEBUG
-        LOG(LOG_VERBOSE, "Finishing exclusive FIFO entry access to %d", pEntryPointer);
+        LOG(LOG_VERBOSE, "%s-FIFO: finishing exclusive entry access to %d", mName.c_str(), pEntryPointer);
     #endif
 
     mFifo[pEntryPointer].EntryMutex.unlock();
@@ -215,22 +215,22 @@ void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize)
     int tCurrentFifoWritePtr;
 
     #ifdef MF_DEBUG
-		LOG(LOG_VERBOSE, "Going to write data chunk to FIFO");
+		LOG(LOG_VERBOSE, "%s-FIFO: going to write data chunk", mName.c_str());
 	#endif
 
 	if (pBufferSize > mFifoEntrySize)
 	{
-		LOG(LOG_ERROR, "FIFO entries are limited to %d bytes, current write request of %s bytes will be ignored", mFifoEntrySize, pBufferSize);
+		LOG(LOG_ERROR, "%-FIFO: entries are limited to %d bytes, current write request of %s bytes will be ignored", mName.c_str(), mFifoEntrySize, pBufferSize);
 		return;
 	}
 
 	if (pBufferSize == 0)
-	    LOG(LOG_VERBOSE, "Writing empty chunk to FIFO");
+	    LOG(LOG_VERBOSE, "%s-FIFO: writing empty chunk", mName.c_str());
 
 	mFifoMutex.lock();
 	if (mFifoAvailableEntries >= mFifoSize -1)
 	{
-	    LOG(LOG_WARN, "FIFO full (size is %d, read: %d, write %d) - dropping oldest (%d) data chunk", mFifoSize, mFifoReadPtr, mFifoWritePtr, mFifoReadPtr);
+	    LOG(LOG_WARN, "%s-FIFO: buffer full (size is %d, read: %d, write %d) - dropping oldest (%d) data chunk", mName.c_str(), mFifoSize, mFifoReadPtr, mFifoWritePtr, mFifoReadPtr);
 
 	    // update FIFO read pointer
         mFifoReadPtr++;
@@ -241,7 +241,7 @@ void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize)
 	tCurrentFifoWritePtr = mFifoWritePtr;
 
     #ifdef MF_DEBUG
-        LOG(LOG_VERBOSE, "Writing FIFO entry %d", tCurrentFifoWritePtr);
+        LOG(LOG_VERBOSE, "%s-FIFO: writing entry %d", mName.c_str(), tCurrentFifoWritePtr);
     #endif
 
     // update FIFO write pointer
@@ -264,7 +264,7 @@ void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize)
     mFifo[tCurrentFifoWritePtr].EntryMutex.unlock();
 
     #ifdef MF_DEBUG
-        LOG(LOG_VERBOSE, "FIFO length now: %d", mFifoAvailableEntries);
+        LOG(LOG_VERBOSE, "%s-FIFO: buffer size now: %d", mName.c_str(), mFifoAvailableEntries);
     #endif
 
     if (pBufferSize == 0)

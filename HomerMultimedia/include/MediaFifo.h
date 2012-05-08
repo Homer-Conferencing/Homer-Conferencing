@@ -31,6 +31,8 @@
 #include <HBCondition.h>
 #include <HBMutex.h>
 
+#include <string>
+
 using namespace Homer::Base;
 
 namespace Homer { namespace Multimedia {
@@ -55,7 +57,7 @@ class MediaFifo
 {
 public:
     /// The default constructor
-    MediaFifo(int pFifoSize, int pFifoEntrySize);
+    MediaFifo(int pFifoSize, int pFifoEntrySize, std::string pName = "");
     /// The destructor.
     virtual ~MediaFifo();
 
@@ -68,6 +70,7 @@ public:
     int UsedFifoSize();
 
 private:
+    std::string			mName;
     MediaFifoEntry      *mFifo;
 	int					mFifoWritePtr, mFifoReadPtr, mFifoAvailableEntries, mFifoSize;
 	int 				mFifoEntrySize;

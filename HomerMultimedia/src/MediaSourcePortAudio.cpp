@@ -46,7 +46,7 @@ MediaSourcePortAudio::MediaSourcePortAudio(string pDesiredDevice):
     MediaSource("PortAudio: local capture")
 {
     ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
-    mCaptureFifo = new MediaFifo(MEDIA_SOURCE_SAMPLES_FIFO_SIE, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE);
+    mCaptureFifo = new MediaFifo(MEDIA_SOURCE_SAMPLES_FIFO_SIE, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE, "MediaSourcePortAudio");
 
     mPaInitMutex.lock();
     if (!mPaInitiated)

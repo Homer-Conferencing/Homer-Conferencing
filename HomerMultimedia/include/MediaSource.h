@@ -56,7 +56,7 @@ namespace Homer { namespace Multimedia {
 #define MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE                         16 * 1000 * 1000 // HDTV RGB32 picture: 1920*1080*4 = ca. 7,9 MB
 
 // audio processing
-#define MEDIA_SOURCE_SAMPLES_FIFO_SIE                             16 // amount of caoture buffers within the FIFO
+#define MEDIA_SOURCE_SAMPLES_FIFO_SIE                             64 // amount of capture buffers within the FIFO
 #define MEDIA_SOURCE_SAMPLES_PER_BUFFER                           1024
 #define MEDIA_SOURCE_SAMPLES_BUFFER_SIZE                          (MEDIA_SOURCE_SAMPLES_PER_BUFFER * 2 /* 16 bit LittleEndian */ * 2 /* stereo */)
 #define MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE                    (4 * MEDIA_SOURCE_SAMPLES_BUFFER_SIZE)
