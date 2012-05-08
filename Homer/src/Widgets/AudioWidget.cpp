@@ -155,7 +155,7 @@ void AudioWidget::Init(MediaSource *pAudioSource, QMenu *pMenu, QString pActionT
     {
         LOG(LOG_VERBOSE, "..create audio worker");
         mAudioWorker = new AudioWorkerThread(mAudioSource, this);
-        LOG(LOG_VERBOSE, "..start broadcast video widget");
+        LOG(LOG_VERBOSE, "..start audio worker");
         mAudioWorker->start(QThread::TimeCriticalPriority);
         LOG(LOG_VERBOSE, "..set mute state to %d", pMuted);
         mAudioWorker->SetMuteState(pMuted);
@@ -1281,6 +1281,7 @@ void AudioWorkerThread::run()
     mWorkerNeeded = true;
 
     // assign default thread name
+    LOG(LOG_VERBOSE, "..assign thread name");
     SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Grabber()");
 
     // start the audio source
@@ -1289,12 +1290,14 @@ void AudioWorkerThread::run()
     {
         LOG(LOG_ERROR, "Invalid audio source");
     }
+    LOG(LOG_VERBOSE, "..open audio grab device");
     if(!(mSourceAvailable = mAudioSource->OpenAudioGrabDevice()))
     {
     	LOG(LOG_WARN, "Couldn't open audio grabbing device \"%s\"", mAudioSource->GetCurrentDeviceName().c_str());
     	mAudioWidget->InformAboutOpenError(QString(mAudioSource->GetCurrentDeviceName().c_str()));
     }
 
+    LOG(LOG_VERBOSE, "..start main loop");
     while(mWorkerNeeded)
     {
         // get the next frame from video source

@@ -290,7 +290,7 @@ bool WaveOutPortAudio::WriteChunk(void* pChunkBuffer, int pChunkSize)
                 tNewSample = -32767;
             if (tNewSample >  32767)
                 tNewSample =  32767;
-            tSamples[i] = tNewSample;
+            tSamples[i] = (short int)tNewSample;
         }
     }
     #ifdef WOPA_DEBUG_PACKETS
@@ -439,10 +439,10 @@ void WaveOutPortAudio::Stop()
 
     if (Pa_IsStreamStopped(mStream) == 0)
     {
-        LOG(LOG_VERBOSE, "Going to stop stream..");
-        if ((tErr = Pa_StopStream(mStream)) != paNoError)
+        LOG(LOG_VERBOSE, "Going to abort stream..");
+        if ((tErr = Pa_AbortStream(mStream)) != paNoError)
         {
-            LOG(LOG_ERROR, "Couldn't stop stream because \"%s\"", Pa_GetErrorText(tErr));
+            LOG(LOG_ERROR, "Couldn't abort stream because \"%s\"", Pa_GetErrorText(tErr));
             mPlayMutex.unlock();
             return;
         }
