@@ -319,7 +319,7 @@ int MediaSourceMem::GetChunkDropCounter()
 
 int MediaSourceMem::GetFragmentBufferCounter()
 {
-    return mDecoderFifo->UsedFifoSize();
+    return mDecoderFifo->GetUsage();
 }
 
 int MediaSourceMem::GetFragmentBufferSize()
