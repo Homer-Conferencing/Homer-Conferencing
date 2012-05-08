@@ -113,6 +113,7 @@ void AudioWidget::Init(MediaSource *pAudioSource, QMenu *pMenu, QString pActionT
 {
     mAudioSource = pAudioSource;
     mAudioTitle = pActionTitle;
+    LOG(LOG_VERBOSE, "Creating audio widget");
 
     //####################################################################
     //### create the remaining necessary menu item
@@ -144,6 +145,7 @@ void AudioWidget::Init(MediaSource *pAudioSource, QMenu *pMenu, QString pActionT
     //####################################################################
     //### update GUI
     //####################################################################
+    LOG(LOG_VERBOSE, "..init GUI elements");
     initializeGUI();
     setWindowTitle(pWidgetTitle);
     //setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -151,15 +153,20 @@ void AudioWidget::Init(MediaSource *pAudioSource, QMenu *pMenu, QString pActionT
         connect(mAssignedAction, SIGNAL(triggered()), this, SLOT(ToggleVisibility()));
     if (mAudioSource != NULL)
     {
+        LOG(LOG_VERBOSE, "..create audio worker");
         mAudioWorker = new AudioWorkerThread(mAudioSource, this);
+        LOG(LOG_VERBOSE, "..start broadcast video widget");
         mAudioWorker->start(QThread::TimeCriticalPriority);
+        LOG(LOG_VERBOSE, "..set mute state to %d", pMuted);
         mAudioWorker->SetMuteState(pMuted);
     }
 
     connect(mPbMute, SIGNAL(clicked(bool)), this, SLOT(ToggleMuteState(bool)));
 
+    LOG(LOG_VERBOSE, "..set visibility to %d", pVisible);
     SetVisible(pVisible);
 
+    LOG(LOG_VERBOSE, "..hide stream info");
     mLbStreamInfo->hide();
     mPbMute->setChecked(!pMuted);
     mLbRecording->setVisible(false);
@@ -808,6 +815,7 @@ qint64 AudioBuffer::writeData(const char * pData, qint64 pLen)
 AudioWorkerThread::AudioWorkerThread(MediaSource *pAudioSource, AudioWidget *pAudioWidget):
     QThread()
 {
+    LOG(LOG_VERBOSE, "..Creating audio worker");
     mResetAudioSourceAsap = false;
     mStartRecorderAsap = false;
     mSetInputStreamPreferencesAsap = false;
@@ -832,6 +840,7 @@ AudioWorkerThread::AudioWorkerThread(MediaSource *pAudioSource, AudioWidget *pAu
     blockSignals(true);
     mSampleCurrentIndex = SAMPLE_BUFFER_SIZE - 1;
     mSampleGrabIndex = 0;
+    LOG(LOG_VERBOSE, "..allocate audio buffers");
     for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
     {
         mSamples[i] = mAudioSource->AllocChunkBuffer(mSamplesBufferSize[i], MEDIA_AUDIO);
@@ -841,6 +850,7 @@ AudioWorkerThread::AudioWorkerThread(MediaSource *pAudioSource, AudioWidget *pAu
     mWorkerWithNewData = false;
 
     // open audio playback
+    LOG(LOG_VERBOSE, "..open playback device");
     OpenPlaybackDevice();
 }
 
