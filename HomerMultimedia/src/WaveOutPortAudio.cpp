@@ -374,14 +374,16 @@ bool WaveOutPortAudio::WriteChunk(void* pChunkBuffer, int pChunkSize)
 
     if (mVolume != 100)
     {
+        //LOG(LOG_WARN, "Got %d bytes and will adapt volume", pChunkSize);
         short int *tSamples = (short int*)pChunkBuffer;
-        for (int i = 0; pChunkSize / 4; i++)
+        for (int i = 0; i < pChunkSize / 2; i++)
         {
-            int tNewSample = tSamples[i] * (mVolume / 100);
+            int tNewSample = (int)tSamples[i] * mVolume / 100;
             if (tNewSample < -32767)
                 tNewSample = -32767;
             if (tNewSample >  32767)
                 tNewSample =  32767;
+            //LOG(LOG_WARN, "Entry %d from %d to %d", i, (int)tSamples[i], (int)tNewSample);
             tSamples[i] = (short int)tNewSample;
         }
     }
