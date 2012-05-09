@@ -562,9 +562,9 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
                 mCurPts = mDuration;
 
                 // acknowledge failed"
-                MarkGrabChunkFailed(GetMediaTypeStr() + " source has EOF reached");
+                MarkGrabChunkSuccessful(); // it is no real error
 
-                return GRAB_RES_EOF;
+                return GRAB_RES_EOF; // we report EOF to calling application
             }
             if (tRes == (int)AVERROR(EIO))
             {
