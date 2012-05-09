@@ -25,6 +25,10 @@
  * Since:   2011-11-16
  */
 
+//##############################################################################################################
+// DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED
+//##############################################################################################################
+
 #include <MediaSourceCoreAudio.h>
 #include <ProcessStatisticService.h>
 #include <Logger.h>
