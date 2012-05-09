@@ -40,6 +40,7 @@ namespace Homer { namespace Multimedia {
 
 // de/activate debugging of grabbed packets
 #define MSPA_DEBUG_PACKETS
+//#define MSPA_DEBUG_HANDLER
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -87,3 +88,4 @@ private:
 }} //namespaces
 
 #endif
+
