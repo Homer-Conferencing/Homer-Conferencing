@@ -39,6 +39,7 @@ namespace Homer { namespace Multimedia {
 
 // de/activate debugging of grabbed packets
 //#define WOPA_DEBUG_PACKETS
+//#define WOPA_DEBUG_HANDLER
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -308,12 +308,20 @@ bool WaveOutPortAudio::CloseWaveOutDevice()
  */
 int WaveOutPortAudio::PlayAudioHandler(const void *pInputBuffer, void *pOutputBuffer, unsigned long pOutputSize, const PaStreamCallbackTimeInfo* pTimeInfo, PaStreamCallbackFlags pStatus, void *pUserData)
 {
+	#ifdef WOPA_DEBUG_HANDLER
+		LOGEX(WaveOutPortAudio, LOG_ERROR, "PlayAudioHandler CALLED");
+	#endif
     WaveOutPortAudio *tWaveOutPortAudio = (WaveOutPortAudio*)pUserData;
 
     tWaveOutPortAudio->AssignThreadName();
 
     if (tWaveOutPortAudio->mPlaybackStopped)
+    {
+		#ifdef WOPA_DEBUG_HANDLER
+			LOGEX(WaveOutPortAudio, LOG_WARN, "PlayAudioHandler-start: RETURN WITH STREAM COMPLETE");
+		#endif
         return paComplete;
+    }
 
     #ifdef WOPA_DEBUG_PACKETS
         LOGEX(WaveOutPortAudio, LOG_VERBOSE, "Playing %d audio samples, time stamp of first sample: %f, current time stamp: %f", pOutputSize, pTimeInfo->outputBufferDacTime, pTimeInfo->currentTime);
@@ -322,7 +330,7 @@ int WaveOutPortAudio::PlayAudioHandler(const void *pInputBuffer, void *pOutputBu
 
     if (tWaveOutPortAudio->mPlaybackFifo->GetUsage() >= tWaveOutPortAudio->mPlaybackFifo->GetSize() - 1)
     {
-        #ifdef WOPA_DEBUG_PACKETS
+        #ifdef WOPA_DEBUG_HANDLER
             LOGEX(WaveOutPortAudio, LOG_WARN, "Audio FIFO buffer full, drop all audio chunks and restart");
         #endif
         tWaveOutPortAudio->mPlaybackFifo->ClearFifo();
@@ -335,9 +343,23 @@ int WaveOutPortAudio::PlayAudioHandler(const void *pInputBuffer, void *pOutputBu
         tBufferSize = tOutputBufferMaxSize;
         tWaveOutPortAudio->mPlaybackFifo->ReadFifo((char*)pOutputBuffer, tBufferSize);
 
+        // return with a "complete" if an empty fragment was read from FIFO
+        if (tBufferSize == 0)
+        {
+			#ifdef WOPA_DEBUG_HANDLER
+				LOGEX(WaveOutPortAudio, LOG_WARN, "PlayAudioHandler-end: RETURN WITH STREAM COMPLETE");
+			#endif
+            return paComplete;
+        }
+
         if ((tBufferSize != tOutputBufferMaxSize) && (tBufferSize != 0))
             LOGEX(WaveOutPortAudio, LOG_WARN, "Audio buffer has wrong size of %d bytes, %d bytes needed", tBufferSize, tOutputBufferMaxSize);
-    }while(tBufferSize != tOutputBufferMaxSize);
+
+    }while (tBufferSize != tOutputBufferMaxSize);
+
+	#ifdef WOPA_DEBUG_HANDLER
+		LOGEX(WaveOutPortAudio, LOG_WARN, "PlayAudioHandler RETURN WITH STREAM CONTINUE");
+	#endif
 
     return paContinue;
 }
