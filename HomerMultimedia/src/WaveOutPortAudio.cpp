@@ -381,16 +381,23 @@ bool WaveOutPortAudio::WriteChunk(void* pChunkBuffer, int pChunkSize)
 
     if (!mWaveOutOpened)
     {
-        LOG(LOG_ERROR, "Tried to play while WaveOut device is closed");
+        // unlock grabbing
         mPlayMutex.unlock();
+
+        LOG(LOG_ERROR, "Tried to play while WaveOut device is closed");
+
         return false;
     }
 
     if (mPlaybackStopped)
     {
-		LOG(LOG_VERBOSE, "Will automatically start the audio stream");
-		mPlayMutex.unlock();
-		//Play();
+        // unlock grabbing
+        mPlayMutex.unlock();
+
+        LOG(LOG_VERBOSE, "Will automatically start the audio stream");
+
+		Play();
+
 		mPlayMutex.lock();
     }
 
@@ -471,15 +478,21 @@ bool WaveOutPortAudio::Play()
 
     if (!mWaveOutOpened)
     {
-        LOG(LOG_VERBOSE, "Playback device wasn't opened yet");
+        // unlock grabbing
         mPlayMutex.unlock();
+
+        LOG(LOG_VERBOSE, "Playback device wasn't opened yet");
+
         return true;
     }
 
     if (!mPlaybackStopped)
     {
-        LOG(LOG_VERBOSE, "Playback was already started");
+        // unlock grabbing
         mPlayMutex.unlock();
+
+        LOG(LOG_VERBOSE, "Playback was already started");
+
         return true;
     }
 
@@ -495,8 +508,11 @@ bool WaveOutPortAudio::Play()
         LOG(LOG_VERBOSE, "..going to start stream..");
         if((tErr = Pa_StartStream(mStream)) != paNoError)
         {
-            LOG(LOG_ERROR, "Couldn't start stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
+            // unlock grabbing
             mPlayMutex.unlock();
+
+            LOG(LOG_ERROR, "Couldn't start stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
+
             return false;
         }
 
@@ -506,8 +522,11 @@ bool WaveOutPortAudio::Play()
         {
         	if (tLoop > 10)
         	{
-        		LOG(LOG_WARN, "Was not able to start playback stream");
-        	    mPlayMutex.unlock();
+                // unlock grabbing
+                mPlayMutex.unlock();
+
+                LOG(LOG_WARN, "Was not able to start playback stream");
+
         	    return false;
         	}
         	LOG(LOG_VERBOSE, "..wait for stream start, loop count: %d", tLoop);
@@ -519,7 +538,9 @@ bool WaveOutPortAudio::Play()
     }else
     	LOG(LOG_VERBOSE, "Stream was already started");
 
+    // unlock grabbing
     mPlayMutex.unlock();
+
     return true;
 }
 
@@ -533,15 +554,21 @@ void WaveOutPortAudio::Stop()
 
     if (!mWaveOutOpened)
     {
-        LOG(LOG_VERBOSE, "Playback device wasn't opened yet");
+        // unlock grabbing
         mPlayMutex.unlock();
+
+        LOG(LOG_VERBOSE, "Playback device wasn't opened yet");
+
         return;
     }
 
     if (mPlaybackStopped)
     {
-        LOG(LOG_VERBOSE, "Playback was already stopped");
+        // unlock grabbing
         mPlayMutex.unlock();
+
+        LOG(LOG_VERBOSE, "Playback was already stopped");
+
         return;
     }
 
@@ -553,12 +580,15 @@ void WaveOutPortAudio::Stop()
 
     if (Pa_IsStreamActive(mStream) == 1)
     {
-        LOG(LOG_VERBOSE, "..going to abort stream..");
+        LOG(LOG_VERBOSE, "..going to stop stream..");
 
-        if ((tErr = Pa_AbortStream(mStream)) != paNoError)
+        if ((tErr = Pa_StopStream(mStream)) != paNoError)
         {
-            LOG(LOG_ERROR, "Couldn't abort stream because \"%s\"", Pa_GetErrorText(tErr));
+            // unlock grabbing
             mPlayMutex.unlock();
+
+            LOG(LOG_ERROR, "Couldn't stop stream because \"%s\"", Pa_GetErrorText(tErr));
+
             return;
         }
 
@@ -571,8 +601,11 @@ void WaveOutPortAudio::Stop()
         {
         	if (tLoop > 10)
         	{
-        		LOG(LOG_WARN, "Was not able to stop playback stream");
-        	    mPlayMutex.unlock();
+                // unlock grabbing
+                mPlayMutex.unlock();
+
+                LOG(LOG_WARN, "Was not able to stop playback stream");
+
         	    return;
         	}
         	LOG(LOG_VERBOSE, "..wait for stream stop, loop count: %d", tLoop);
@@ -584,6 +617,7 @@ void WaveOutPortAudio::Stop()
     }else
     	LOG(LOG_VERBOSE, "Stream was already stopped");
 
+    // unlock grabbing
     mPlayMutex.unlock();
 }
 
