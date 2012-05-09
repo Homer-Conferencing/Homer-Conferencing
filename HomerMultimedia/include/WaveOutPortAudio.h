@@ -55,6 +55,7 @@ public:
     // playback control
     virtual bool Play();
     virtual void Stop();
+    virtual bool PlayFile(std::string pFileName);
 
 public:
     /* open/close */

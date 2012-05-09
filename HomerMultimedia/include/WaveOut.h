@@ -50,6 +50,7 @@ public:
     // playback control
     virtual bool Play();
     virtual void Stop();
+    virtual bool PlayFile(std::string pFileName);
 
     /* volume control */
     virtual int GetVolume(); // range: 0-200 %
