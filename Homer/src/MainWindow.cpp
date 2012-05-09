@@ -48,7 +48,7 @@
 #include <Meeting.h>
 #include <MediaSourcePortAudio.h>
 #include <MediaSourceV4L2.h>
-#include <MediaSourceDShow.h>
+//#include <MediaSourceDShow.h>
 #include <MediaSourceVFW.h>
 #include <MediaSourceMuxer.h>
 #include <MediaSourceFile.h>
