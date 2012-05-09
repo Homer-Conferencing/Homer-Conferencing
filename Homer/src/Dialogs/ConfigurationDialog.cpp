@@ -42,7 +42,6 @@
 #include <QCursor>
 #include <QString>
 #include <QFileDialog>
-#include <QSound>
 #include <QLineEdit>
 #include <QInputDialog>
 #include <QDesktopServices>
@@ -63,6 +62,8 @@ QStringList      ConfigurationDialog::mSipServerList;
 ConfigurationDialog::ConfigurationDialog(QWidget* pParent, list<string>  pLocalAdresses, VideoWorkerThread* pVideoWorker, AudioWorkerThread* pAudioWorker):
     QDialog(pParent)
 {
+    OpenPlaybackDevice();
+
     mHttpGetStunServerList = NULL;
     mHttpGetSipServerList = NULL;
     mVideoWorker = pVideoWorker;
@@ -104,6 +105,7 @@ ConfigurationDialog::ConfigurationDialog(QWidget* pParent, list<string>  pLocalA
 
 ConfigurationDialog::~ConfigurationDialog()
 {
+    ClosePlaybackDevice();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -160,8 +162,7 @@ void ConfigurationDialog::LoadConfiguration()
     mAudioCaptureDevices = mAudioWorker->GetPossibleDevices();
     mVideoCaptureDevices = mVideoWorker->GetPossibleDevices();
 
-    WaveOutPortAudio tAudioOut;
-    tAudioOut.getAudioDevices(mAudioPlaybackDevices);
+    mWaveOut->getAudioDevices(mAudioPlaybackDevices);
 
     //######################################################################
     //### VIDEO configuration
@@ -731,12 +732,37 @@ void ConfigurationDialog::ToggleSipServerPasswordVisibility()
         mLeSipPassword->setEchoMode(QLineEdit::Normal);
 }
 
+void ConfigurationDialog::OpenPlaybackDevice()
+{
+    LOG(LOG_VERBOSE, "Going to open playback device");
+
+    mWaveOut = new WaveOutPortAudio(CONF.GetLocalAudioSink().toStdString());
+    mWaveOut->OpenWaveOutDevice();
+    LOG(LOG_VERBOSE, "Finished to open playback device");
+}
+
+void ConfigurationDialog::ClosePlaybackDevice()
+{
+    LOG(LOG_VERBOSE, "Going to close playback device");
+
+    // close the audio out
+    mWaveOut->CloseWaveOutDevice();
+    delete mWaveOut;
+
+    LOG(LOG_VERBOSE, "Finished to close playback device");
+}
+
 QString ConfigurationDialog::SelectSoundFile(QString pEventName, QString pSuggestion)
 {
+    if (!QFile::exists(pSuggestion))
+        pSuggestion = CONF.GetDataDirectory();
+
     QString tSoundFile = QFileDialog::getOpenFileName(this, "Select sound file for acoustic notification for event \"" + pEventName + "\".", pSuggestion, "Sound file (*.wav)", NULL, QFileDialog::DontUseNativeDialog);
 
     if (tSoundFile.isEmpty())
         return "";
+
+    CONF.SetDataDirectory(tSoundFile.left(tSoundFile.lastIndexOf('/')));
 
     if (!tSoundFile.endsWith(".wav"))
         tSoundFile += ".wav";
@@ -770,7 +796,7 @@ void ConfigurationDialog::SelectNotifySoundFileForCall()
 
 void ConfigurationDialog::SelectNotifySoundFileForCallDeny()
 {
-    QString tSoundFile = SelectSoundFile("call canceled", CONF.GetCallDenySoundFile());
+    QString tSoundFile = SelectSoundFile("call denied", CONF.GetCallDenySoundFile());
 
     if (tSoundFile.isEmpty())
         return;
@@ -836,21 +862,11 @@ void ConfigurationDialog::SelectNotifySoundFileForRegistrationSuccessful()
 
 void ConfigurationDialog::PlayNotifySoundFile(QString pFile)
 {
-    if (!QSound::isAvailable())
-    {
-        #ifdef LINUX
-            ShowError("Sound output failed", "Sound output is unavailable. Check your NAS installation!");
-        #endif
-        #ifdef WIN32
-            ShowError("Sound output failed", "Sound output is unavailable. Check your Windows drivers!");
-        #endif
-        return;
-    }
-
     if (pFile != "")
     {
         LOG(LOG_VERBOSE, "Playing sound file: %s", pFile.toStdString().c_str());
-        QSound::play(pFile);
+        if (!mWaveOut->PlayFile(pFile.toStdString()))
+            ShowError("Failed to play file", "Was unable to play the file \"" + pFile + "\".");
     }
 }
 

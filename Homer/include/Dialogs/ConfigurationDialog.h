@@ -99,6 +99,8 @@ private slots:
     void ToggleSipServerPasswordVisibility();
 
 private:
+    void OpenPlaybackDevice();
+    void ClosePlaybackDevice();
     QString SelectSoundFile(QString pEventName, QString pSuggestion);
     void PlayNotifySoundFile(QString pFile);
 
@@ -125,6 +127,8 @@ private:
     VideoDevicesList        mVideoCaptureDevices;
     AudioDevicesList        mAudioCaptureDevices;
     Homer::Multimedia::AudioDevicesList mAudioPlaybackDevices;
+    /* playback */
+    Homer::Multimedia::WaveOutPortAudio *mWaveOut;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
