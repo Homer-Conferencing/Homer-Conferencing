@@ -442,6 +442,11 @@ int MediaSourcePortAudio::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pD
     return ++mChunkNumber;
 }
 
+bool MediaSourcePortAudio::SupportsRecording()
+{
+    return true;
+}
+
 void MediaSourcePortAudio::StopGrabbing()
 {
     MediaSource::StopGrabbing();

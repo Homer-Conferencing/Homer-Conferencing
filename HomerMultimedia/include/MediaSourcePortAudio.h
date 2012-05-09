@@ -39,7 +39,7 @@ namespace Homer { namespace Multimedia {
 ///////////////////////////////////////////////////////////////////////////////
 
 // de/activate debugging of grabbed packets
-//#define MSPA_DEBUG_PACKETS
+#define MSPA_DEBUG_PACKETS
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -53,6 +53,9 @@ public:
 
     /* device control */
     virtual void getAudioDevices(AudioDevicesList &pAList);
+
+    /* recording */
+    virtual bool SupportsRecording();
 
     /* grabbing control */
     virtual void StopGrabbing();
