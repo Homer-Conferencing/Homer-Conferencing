@@ -244,7 +244,7 @@ void ConfigurationDialog::LoadConfiguration()
 
     //### playback device
     mCbAudioSink->clear();
-    QString tLocalAudioPlayback = CONF.GetLocalAudioSink();
+    QString tCurrentAudioPlayback = CONF.GetLocalAudioSink();
     for (tAudioDevicesIt = mAudioPlaybackDevices.begin(); tAudioDevicesIt != mAudioPlaybackDevices.end(); tAudioDevicesIt++)
     {
         QString tNewAudioPlaybackDevice = QString(tAudioDevicesIt->Name.c_str());
@@ -252,7 +252,7 @@ void ConfigurationDialog::LoadConfiguration()
         if (mCbAudioSink->findText(tNewAudioPlaybackDevice) == -1)
             mCbAudioSink->addItem(tNewAudioPlaybackDevice);
         // if former selected device is current device then reselect it
-        if (tLocalAudioPlayback.compare(tNewAudioPlaybackDevice) == 0)
+        if (tCurrentAudioPlayback.compare(tNewAudioPlaybackDevice) == 0)
             mCbAudioSink->setCurrentIndex(mCbAudioSink->count() - 1);
     }
 
@@ -469,6 +469,8 @@ void ConfigurationDialog::SaveConfiguration()
     CONF.SetLocalAudioSource(mCbAudioSource->currentText());
 
     //### playback device
+    if (mCbAudioSink->currentText() != CONF.GetLocalAudioSink())
+        tOnlyFutureChanged = true;
     CONF.SetLocalAudioSink(mCbAudioSink->currentText());
 
     //### stream codec

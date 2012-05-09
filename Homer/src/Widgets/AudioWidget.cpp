@@ -868,7 +868,7 @@ void AudioWorkerThread::OpenPlaybackDevice()
 
     LOG(LOG_VERBOSE, "Going to open playback device");
 
-    mWaveOut = new WaveOutPortAudio();
+    mWaveOut = new WaveOutPortAudio(CONF.GetLocalAudioSink().toStdString());
     mWaveOut->OpenWaveOutDevice();
     mPlaybackAvailable = true;
     LOG(LOG_VERBOSE, "Finished to open playback device");
