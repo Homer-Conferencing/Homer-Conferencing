@@ -26,6 +26,7 @@
  */
 
 #include <ProcessStatisticService.h>
+#include <MediaSourceFile.h>
 #include <WaveOutPortAudio.h>
 #include <Logger.h>
 #include <HBThread.h>
@@ -234,8 +235,6 @@ bool WaveOutPortAudio::CloseWaveOutDevice()
 
     if (mWaveOutOpened)
     {
-        mWaveOutOpened = false;
-
         Stop();
 
         // wait until the port audio stream becomes inactive
@@ -256,6 +255,7 @@ bool WaveOutPortAudio::CloseWaveOutDevice()
 
         LOG(LOG_INFO, "...closed");
 
+        mWaveOutOpened = false;
         tResult = true;
     }else
         LOG(LOG_INFO, "...wasn't open");
@@ -619,6 +619,42 @@ void WaveOutPortAudio::Stop()
 
     // unlock grabbing
     mPlayMutex.unlock();
+}
+
+bool WaveOutPortAudio::PlayFile(string pFileName)
+{
+    bool tResult = true;
+
+    LOG(LOG_VERBOSE, "Try to play file: %s", pFileName.c_str());
+
+    MediaSourceFile *tAudioSource = new MediaSourceFile(pFileName);
+    if (tAudioSource->OpenAudioGrabDevice())
+    {
+        LOG(LOG_VERBOSE, "Audio file opened");
+
+        int tSampleBufferSize;
+        char* tSampleBuffer = (char*)tAudioSource->AllocChunkBuffer(tSampleBufferSize, MEDIA_AUDIO);
+
+        int tCaptureSize = tSampleBufferSize;
+        int tSampleNumber;
+        while ((tSampleNumber = tAudioSource->GrabChunk(tSampleBuffer, tCaptureSize)) >= 0)
+        {
+            if (tSampleNumber == GRAB_RES_INVALID)
+            {
+                tResult = false;
+                break;
+            }
+
+            //TODO: playen
+
+            tCaptureSize = tSampleBufferSize;
+        }
+
+        tAudioSource->CloseGrabDevice();
+    }else
+        tResult = false;
+
+    return tResult;
 }
 
 }} //namespaces

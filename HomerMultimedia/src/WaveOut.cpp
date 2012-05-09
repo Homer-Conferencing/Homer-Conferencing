@@ -88,6 +88,11 @@ bool WaveOut::SelectDevice(string pDeviceName)
     return tNewSelection;
 }
 
+bool WaveOut::PlayFile(string pFileName)
+{
+    LOG(LOG_VERBOSE, "Direct playback of an audio file is not supported here");
+}
+
 void WaveOut::Stop()
 {
 	LOG(LOG_VERBOSE, "Mark stream as stopped");
