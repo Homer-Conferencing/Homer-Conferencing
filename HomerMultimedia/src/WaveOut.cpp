@@ -91,6 +91,7 @@ bool WaveOut::SelectDevice(string pDeviceName)
 bool WaveOut::PlayFile(string pFileName)
 {
     LOG(LOG_VERBOSE, "Direct playback of an audio file is not supported here");
+    return true;
 }
 
 void WaveOut::Stop()
