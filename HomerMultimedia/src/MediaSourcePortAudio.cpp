@@ -111,8 +111,8 @@ void MediaSourcePortAudio::getAudioDevices(AudioDevicesList &pAList)
             tDevice.IoType = "Input/Outputs";
         tDevice.Desc = string(Pa_GetHostApiInfo( tDeviceInfo->hostApi)->name) + " based audio device";
 
-        // if device is able to capture samples add this device to the result list
-        if (tDevice.IoType.find("Input") != string::npos)
+        // if device is able to capture samples with 44.1 kHz add this device to the result list
+        if ((tDevice.IoType.find("Input") != string::npos)  && (tDeviceInfo->defaultSampleRate == 44100.0))
         {
             tDevice.Type = Microphone;
             pAList.push_back(tDevice);
@@ -120,7 +120,7 @@ void MediaSourcePortAudio::getAudioDevices(AudioDevicesList &pAList)
 
         if (tFirstCall)
         {
-            LOG(LOG_VERBOSE, "Device %d..", i );
+            LOG(LOG_VERBOSE, "Device %d.. %s", i, (tDeviceInfo->defaultSampleRate == 44100.0) ? " " : "[unsupported, sample rate must be 44.1 kHz]");
 
             // mark global and API specific default devices
             if (i == Pa_GetDefaultInputDevice())
@@ -283,6 +283,7 @@ bool MediaSourcePortAudio::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     	{
     		LOG(LOG_WARN, "Got channel count problem when stereo mode is selected, will try mono mode instead");
     	    tInputParameters.channelCount = 1;
+    	    tChannels = 1;
     	    if((tErr = Pa_OpenStream(&mStream, &tInputParameters, NULL /* output parameters */, mSampleRate, MEDIA_SOURCE_SAMPLES_PER_BUFFER, paClipOff | paDitherOff, RecordedAudioHandler, this)) != paNoError)
     	    {
         		LOG(LOG_ERROR, "Couldn't open stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
