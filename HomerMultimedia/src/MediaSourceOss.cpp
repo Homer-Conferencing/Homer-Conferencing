@@ -25,6 +25,10 @@
  * Since:   2009-02-11
  */
 
+//##############################################################################################################
+// DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED
+//##############################################################################################################
+
 #include <MediaSourceOss.h>
 #include <MediaSource.h>
 #include <ProcessStatisticService.h>
