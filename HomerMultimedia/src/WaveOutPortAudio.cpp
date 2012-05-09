@@ -114,13 +114,13 @@ void WaveOutPortAudio::getAudioDevices(AudioDevicesList &pAList)
             tDevice.IoType = "Input/Outputs";
         tDevice.Desc = string(Pa_GetHostApiInfo( tDeviceInfo->hostApi)->name) + " based audio device";
 
-        // if device is able to capture samples add this device to the result list
-        if (tDevice.IoType.find("Output") != string::npos)
+        // if device is able to play samples with 44.1 kHz add this device to the result list
+        if ((tDevice.IoType.find("Output") != string::npos) && (tDeviceInfo->defaultSampleRate == 44100.0))
             pAList.push_back(tDevice);
 
         if (tFirstCall)
         {
-            LOG(LOG_VERBOSE, "Device %d..", i );
+            LOG(LOG_VERBOSE, "Device %d.. %s", i, (tDeviceInfo->defaultSampleRate == 44100.0) ? " " : "[unsupported, sample rate must be 44.1 kHz]");
 
             // mark global and API specific default devices
             if (i == Pa_GetDefaultInputDevice())
@@ -152,11 +152,11 @@ void WaveOutPortAudio::getAudioDevices(AudioDevicesList &pAList)
             LOG(LOG_VERBOSE, "..host API: \"%s\"", Pa_GetHostApiInfo( tDeviceInfo->hostApi)->name);
             LOG(LOG_VERBOSE, "..max. inputs channels: %d", tDeviceInfo->maxInputChannels);
             LOG(LOG_VERBOSE, "..max. outputs channels: %d", tDeviceInfo->maxOutputChannels);
+            LOG(LOG_VERBOSE, "..default sample rate: %8.0f Hz", tDeviceInfo->defaultSampleRate);
             LOG(LOG_VERBOSE, "..default low input latency  : %8.4f seconds", tDeviceInfo->defaultLowInputLatency);
             LOG(LOG_VERBOSE, "..default low output latency : %8.4f seconds", tDeviceInfo->defaultLowOutputLatency);
             LOG(LOG_VERBOSE, "..default high input latency : %8.4f seconds", tDeviceInfo->defaultHighInputLatency);
             LOG(LOG_VERBOSE, "..default high output latency: %8.4f seconds", tDeviceInfo->defaultHighOutputLatency);
-            LOG(LOG_VERBOSE, "..default sample rate: %8.0f Hz", tDeviceInfo->defaultSampleRate);
         }
     }
 
