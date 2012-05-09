@@ -213,7 +213,7 @@ int MediaSourcePortAudio::RecordedAudioHandler(const void *pInputBuffer, void *p
     if (tMediaSourcePortAudio->mGrabbingStopped)
         return paComplete;
 
-    #ifdef MSPA_DEBUG_PACKETS
+    #ifdef MSPA_DEBUG_HANDLER
         LOGEX(MediaSourcePortAudio, LOG_VERBOSE, "Captured %d audio samples, time stamp of first sample: %f, current time stamp: %f", pInputSize, pTimeInfo->inputBufferAdcTime, pTimeInfo->currentTime);
     #endif
 
@@ -402,7 +402,7 @@ int MediaSourcePortAudio::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pD
     }
 
     #ifdef MSPA_DEBUG_PACKETS
-        LOG(LOG_VERBOSE, "Waiting for a new chunk of %d captured samples", pChunkSize);
+        LOG(LOG_VERBOSE, "Waiting for a new chunk of max. %d captured bytes", pChunkSize);
     #endif
     mCaptureFifo->ReadFifo((char*)pChunkBuffer, pChunkSize);
     if (mCaptureDuplicateMonoStream)
@@ -412,7 +412,7 @@ int MediaSourcePortAudio::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pD
 		// assume 16 bits per sample
 		int tSampleCount = pChunkSize / 2;
 		#ifdef MSPA_DEBUG_PACKETS
-			LOG(LOG_VERBOSE, "Duplicating %d sample from mono to stereo", tSampleCount);
+			LOG(LOG_VERBOSE, "Duplicating %d samples from mono to stereo", tSampleCount);
 		#endif
 		// duplicate each sample: mono ==> stereo
 		for (int i = tSampleCount - 1; i > 0; i--)
