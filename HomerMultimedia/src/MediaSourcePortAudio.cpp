@@ -404,7 +404,9 @@ int MediaSourcePortAudio::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pD
     #ifdef MSPA_DEBUG_PACKETS
         LOG(LOG_VERBOSE, "Waiting for a new chunk of max. %d captured bytes", pChunkSize);
     #endif
+
     mCaptureFifo->ReadFifo((char*)pChunkBuffer, pChunkSize);
+
     if (mCaptureDuplicateMonoStream)
     {
     	// assume buffer of 16 bit signed integer samples
