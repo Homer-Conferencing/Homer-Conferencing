@@ -88,7 +88,7 @@ SET (SOURCES
 IF (WIN32)
 SET (SOURCES
 	${SOURCES}
-	# included in port audio: ../src/MediaSourceMMSys
+	#TODO: ../src/MediaSourceDShow
 	../src/MediaSourceVFW
 )
 ENDIF (WIN32)
@@ -96,24 +96,19 @@ ENDIF (WIN32)
 IF (APPLE)
 SET (SOURCES
 	${SOURCES}
-    	# included in port audio: ../src/MediaSourceCoreAudio
-    	../src/MediaSourceCoreVideo
+	../src/MediaSourceCoreVideo
 )
 ENDIF (APPLE)
 
 IF (BSD)
 SET (SOURCES
 	${SOURCES}
-	# included in port audio: ../src/MediaSourceAlsa
-	# included in port audio: ../src/MediaSourceOss
 )
 ENDIF (BSD)
 
 IF (LINUX)
 SET (SOURCES
 	${SOURCES}
-	# included in port audio: ../src/MediaSourceAlsa
-	# included in port audio: ../src/MediaSourceOss
 	../src/MediaSourceV4L2
 )
 ENDIF (LINUX)
@@ -143,7 +138,6 @@ SET (LIBS_WINDOWS
 	HomerMonitor
 	portaudio
     swscale-2
-# replaced by portaudio:    Winmm
 	ws2_32
 	Avicap32
 	SDL

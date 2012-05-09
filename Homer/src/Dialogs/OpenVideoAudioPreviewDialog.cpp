@@ -27,7 +27,6 @@
 
 #include <Dialogs/OpenVideoAudioPreviewDialog.h>
 #include <Widgets/OverviewPlaylistWidget.h>
-#include <MediaSourceCoreAudio.h>
 #include <MediaSourceCoreVideo.h>
 #include <MediaSourceV4L2.h>
 #include <MediaSourceVFW.h>
@@ -156,21 +155,7 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceAudio()
 
     if (mRbDevice->isChecked())
     {
-        #ifdef WIN32
-            // included in port audio: return new MediaSourceMMSys(mCbDeviceAudio->currentText().toStdString());
-            return new MediaSourcePortAudio(mCbDeviceAudio->currentText().toStdString());
-        #endif
-        #ifdef APPLE
-            // included in port audio: return new MediaSourceCoreAudio(mCbDeviceAudio->currentText().toStdString());
-            return new MediaSourcePortAudio(mCbDeviceAudio->currentText().toStdString());
-        #endif
-        #ifdef BSD
-            return new MediaSourcePortAudio(mCbDeviceAudio->currentText().toStdString());
-        #endif
-        #ifdef LINUX
-            // included in port audio: return new MediaSourceAlsa(mCbDeviceAudio->currentText().toStdString());
-            return new MediaSourcePortAudio(mCbDeviceAudio->currentText().toStdString());
-        #endif
+		return new MediaSourcePortAudio(mCbDeviceAudio->currentText().toStdString());
     }
     if (mRbFile->isChecked())
     {
@@ -211,22 +196,17 @@ void OpenVideoAudioPreviewDialog::LoadConfiguration()
     //########################
     #ifdef WIN32
         MediaSourceVFW *tVSource = new MediaSourceVFW("");
-        // included in port audio: MediaSourceMMSys *tASource = new MediaSourceMMSys("");
-        MediaSourcePortAudio *tASource = new MediaSourcePortAudio("");
     #endif
     #ifdef APPLE
         MediaSourceCoreVideo *tVSource = new MediaSourceCoreVideo("");
-        // included in port audio: MediaSourceCoreAudio *tASource = new MediaSourceCoreAudio("");
-        MediaSourcePortAudio *tASource = new MediaSourcePortAudio("");
     #endif
 	#ifdef BSD
-        MediaSourcePortAudio *tASource = new MediaSourcePortAudio("");
+        //TODO
 	#endif
     #ifdef LINUX
         MediaSourceV4L2 *tVSource = new MediaSourceV4L2("");
-        // included in port audio: MediaSourceAlsa *tASource = new MediaSourceAlsa("");
-        MediaSourcePortAudio *tASource = new MediaSourcePortAudio("");
     #endif
+	MediaSourcePortAudio *tASource = new MediaSourcePortAudio("");
     tVSource->getVideoDevices(mVideoDevicesList);
     tASource->getAudioDevices(mAudioDevicesList);
     delete tVSource;

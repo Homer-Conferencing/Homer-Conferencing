@@ -48,11 +48,9 @@
 #include <Meeting.h>
 #include <MediaSourcePortAudio.h>
 #include <MediaSourceV4L2.h>
-#include <MediaSourceMMSys.h>
+#include <MediaSourceDShow.h>
 #include <MediaSourceVFW.h>
 #include <MediaSourceMuxer.h>
-#include <MediaSourceOss.h>
-#include <MediaSourceAlsa.h>
 #include <MediaSourceFile.h>
 #include <MediaSourceDesktop.h>
 #include <ProcessStatisticService.h>
@@ -336,6 +334,7 @@ void MainWindow::initializeVideoAudioIO()
 	#endif
 	#ifdef WIN32
 		mOwnVideoMuxer->RegisterMediaSource(new MediaSourceVFW(tVSourceSelection));
+		//TODO: mOwnVideoMuxer->RegisterMediaSource(new MediaSourceDShow());
 	#endif
     mOwnVideoMuxer->RegisterMediaSource(mSourceDesktop = new MediaSourceDesktop());
     // ############################
@@ -343,18 +342,7 @@ void MainWindow::initializeVideoAudioIO()
     // ############################
     LOG(LOG_VERBOSE, "Creating audio media objects..");
     mOwnAudioMuxer = new MediaSourceMuxer(NULL);
-	#ifdef LINUX
-		//mOwnAudioMuxer->RegisterMediaSource(new MediaSourceAlsa(tASourceSelection));
-		//mOwnAudioMuxer->RegisterMediaSource(new MediaSourceOss());
-        mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio());
-	#endif
-	#ifdef WIN32
-		//mOwnAudioMuxer->RegisterMediaSource(new MediaSourceMMSys(tASourceSelection));
-        mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio());
-	#endif
-    #ifdef APPLE
-        mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio());
-    #endif
+	mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio());
 }
 
 void MainWindow::initializeColoring()
