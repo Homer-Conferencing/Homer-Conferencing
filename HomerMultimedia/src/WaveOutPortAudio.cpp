@@ -40,8 +40,10 @@ Mutex WaveOutPortAudio::mPaInitMutex;
 bool WaveOutPortAudio::mPaInitiated = false;
 
 WaveOutPortAudio::WaveOutPortAudio(string pDesiredDevice):
-    WaveOut("Audio playback")
+    WaveOut("Audio playback"), Thread()
 {
+    mFilePlaybackSource = NULL;
+    mFilePlaybackNeeded = false;
     mPaInitMutex.lock();
     if (!mPaInitiated)
     {
@@ -61,6 +63,9 @@ WaveOutPortAudio::WaveOutPortAudio(string pDesiredDevice):
 
     mPlaybackFifo = new MediaFifo(MEDIA_SOURCE_SAMPLES_FIFO_SIE, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE, "WaveOutPortAudio");
 
+    LOG(LOG_VERBOSE, "Going to allocate file playback buffer");
+    mFilePlaybackBuffer = (char*)malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE + FF_INPUT_BUFFER_PADDING_SIZE);
+
     LOG(LOG_VERBOSE, "Created");
 }
 
@@ -73,6 +78,9 @@ WaveOutPortAudio::~WaveOutPortAudio()
     }
 
     delete mPlaybackFifo;
+
+    LOG(LOG_VERBOSE, "Going to release file playback buffer");
+    free(mFilePlaybackBuffer);
 
     LOG(LOG_VERBOSE, "Destroyed");
 }
@@ -235,14 +243,12 @@ bool WaveOutPortAudio::CloseWaveOutDevice()
 
     if (mWaveOutOpened)
     {
-        Stop();
+        // terminate possibly running main loop for file based playback
+        mFilePlaybackNeeded = false;
+        mFilePlaybackCondition.SignalAll();
+        StopThread(3000);
 
-        // wait until the port audio stream becomes inactive
-        while((Pa_IsStreamActive(mStream)) == 1)
-        {
-            // wait some time
-            Thread::Suspend(250 * 1000);
-        }
+        Stop();
 
         PaError tErr = paNoError;
         if ((tErr = Pa_CloseStream(mStream)) != paNoError)
@@ -309,7 +315,7 @@ bool WaveOutPortAudio::CloseWaveOutDevice()
 int WaveOutPortAudio::PlayAudioHandler(const void *pInputBuffer, void *pOutputBuffer, unsigned long pOutputSize, const PaStreamCallbackTimeInfo* pTimeInfo, PaStreamCallbackFlags pStatus, void *pUserData)
 {
 	#ifdef WOPA_DEBUG_HANDLER
-		LOGEX(WaveOutPortAudio, LOG_ERROR, "PlayAudioHandler CALLED");
+		LOGEX(WaveOutPortAudio, LOG_WARN, "PlayAudioHandler CALLED");
 	#endif
     WaveOutPortAudio *tWaveOutPortAudio = (WaveOutPortAudio*)pUserData;
 
@@ -623,38 +629,114 @@ void WaveOutPortAudio::Stop()
 
 bool WaveOutPortAudio::PlayFile(string pFileName)
 {
-    bool tResult = true;
-
     LOG(LOG_VERBOSE, "Try to play file: %s", pFileName.c_str());
 
-    MediaSourceFile *tAudioSource = new MediaSourceFile(pFileName);
-    if (tAudioSource->OpenAudioGrabDevice())
+    if (!mWaveOutOpened)
     {
-        LOG(LOG_VERBOSE, "Audio file opened");
+        LOG(LOG_VERBOSE, "Playback device wasn't opened yet");
+        return false;
+    }
 
-        int tSampleBufferSize;
-        char* tSampleBuffer = (char*)tAudioSource->AllocChunkBuffer(tSampleBufferSize, MEDIA_AUDIO);
+    if (mPlaybackStopped)
+    {
+        LOG(LOG_VERBOSE, "Playback was already stopped");
+        return false;
+    }
 
-        int tCaptureSize = tSampleBufferSize;
-        int tSampleNumber;
-        while ((tSampleNumber = tAudioSource->GrabChunk(tSampleBuffer, tCaptureSize)) >= 0)
+    mOpenNewFile.lock();
+
+    mCurrentFile = pFileName;
+    mOpenNewFileAsap = true;
+
+    mOpenNewFile.unlock();
+
+    if (!mFilePlaybackNeeded)
+    {
+        // start the playback thread for the first time
+        LOG(LOG_VERBOSE, "Starting thread for file based audio playback");
+        StartThread();
+    }else
+    {
+        // send wake up
+        LOG(LOG_VERBOSE, "Sending thread for file based audio playback a wake up signal");
+        mFilePlaybackCondition.SignalAll();
+    }
+
+    return true;
+}
+
+bool WaveOutPortAudio::DoOpenNewFile()
+{
+    bool tResult = true;
+
+    LOG(LOG_VERBOSE, "Doing DoOpenNewFile() now..");
+    LOG(LOG_VERBOSE, "Try to play file: %s", mCurrentFile.c_str());
+
+    mOpenNewFile.lock();
+
+    mOpenNewFileAsap = false;
+
+    if (mFilePlaybackSource != NULL)
+    {
+        Stop();
+        mFilePlaybackSource->CloseGrabDevice();
+        delete mFilePlaybackSource;
+    }
+
+    LOG(LOG_VERBOSE, "..clearing FIFO buffer");
+    mPlaybackFifo->ClearFifo();
+
+    mFilePlaybackSource = new MediaSourceFile(mCurrentFile);
+    if (!mFilePlaybackSource->OpenAudioGrabDevice())
+    {
+        LOG(LOG_ERROR, "Couldn't open audio file for playback");
+        delete mFilePlaybackSource;
+        tResult = false;
+    }else
+    {
+        SVC_PROCESS_STATISTIC.AssignThreadName("PortAudio-File");
+//        char tBuffer[MEDIA_SOURCE_SAMPLES_BUFFER_SIZE];
+//        memset(tBuffer, 0, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE);
+//        for (int i = 0; i < MEDIA_SOURCE_SAMPLES_FIFO_SIE - 1; i++)
+//            WriteChunk(tBuffer, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE);
+        Play();
+    }
+
+    mOpenNewFile.unlock();
+    return tResult;
+}
+
+void* WaveOutPortAudio::Run(void* pArgs)
+{
+    int tSamplesSize;
+    int tSampleNumber = -1, tLastSampleNumber = -1;
+
+    mFilePlaybackNeeded = true;
+
+    LOG(LOG_VERBOSE, "Starting main loop for file based playback");
+    while(mFilePlaybackNeeded)
+    {
+        if (mOpenNewFileAsap)
+            DoOpenNewFile();
+
+        // get new samples from audio file
+        tSamplesSize = AVCODEC_MAX_AUDIO_FRAME_SIZE + FF_INPUT_BUFFER_PADDING_SIZE;
+        tSampleNumber = mFilePlaybackSource->GrabChunk(mFilePlaybackBuffer, tSamplesSize);
+
+        if ((tSampleNumber >= 0) && (!mPlaybackStopped))
         {
-            if (tSampleNumber == GRAB_RES_INVALID)
-            {
-                tResult = false;
-                break;
-            }
-
-            //TODO: playen
-
-            tCaptureSize = tSampleBufferSize;
+            #ifdef WOPA_DEBUG_FILE
+                LOG(LOG_VERBOSE, "Sending audio chunk %d of %d bytes from file to playback device", tSampleNumber, tSamplesSize);
+            #endif
+            WriteChunk(mFilePlaybackBuffer, tSamplesSize);
         }
 
-        tAudioSource->CloseGrabDevice();
-    }else
-        tResult = false;
+        // if we have reached EOF then we wait until next file is scheduled for playback
+        if (tSampleNumber == GRAB_RES_EOF)
+            mFilePlaybackCondition.Wait();
+    }
 
-    return tResult;
+    return NULL;
 }
 
 }} //namespaces
