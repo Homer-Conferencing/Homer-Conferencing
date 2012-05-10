@@ -1357,7 +1357,7 @@ void AudioWorkerThread::run()
     LOG(LOG_VERBOSE, "..start main loop");
     while(mWorkerNeeded)
     {
-        // get the next frame from video source
+        // get the next frame from audio source
         tLastSampleNumber = tSampleNumber;
 
         // lock
