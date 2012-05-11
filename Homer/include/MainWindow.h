@@ -185,6 +185,8 @@ private:
     QString                     mSipServerRegistrationUser;
     /* event handling */
     static bool                 mShuttingDown;
+    /* program timing */
+    QTime                       mStartTime;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
