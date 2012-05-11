@@ -85,6 +85,8 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     Ui_MainWindow(),
     MeetingObserver()
 {
+    mStartTime = QTime::currentTime();
+
     SVC_PROCESS_STATISTIC.AssignThreadName("Qt-MainLoop");
     mAbsBinPath = pAbsBinPath;
     mSourceDesktop = NULL;
@@ -629,7 +631,18 @@ void MainWindow::GotAnswerForVersionRequest(bool pError)
 
 void MainWindow::CreateScreenShot()
 {
-	if(mSourceDesktop != NULL)
+    static int sShiftIndex = 0;
+    static QString sShiftingString = "                ";
+    sShiftIndex++;
+    if (sShiftIndex == 32)
+        sShiftIndex = 0;
+    if(sShiftIndex < 16)
+        sShiftingString[sShiftIndex] = '#';
+    else
+        sShiftingString[31 - sShiftIndex] = '#';
+	mStatusBar->showMessage("Program start: " + mStartTime.toString("hh::mm") + "       Time: " + QTime::currentTime().toString("hh:mm") + "  " + sShiftingString);
+    sShiftingString[sShiftIndex] = ' ';
+    if(mSourceDesktop != NULL)
 	    mSourceDesktop->CreateScreenshot();
     mScreenShotTimer->start(1000 / SCREEN_CAPTURE_FPS);
 }
