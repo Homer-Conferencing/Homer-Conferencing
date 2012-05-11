@@ -3104,6 +3104,7 @@ void SIP::SipProcessOutgoingEvents()
 
             return;
         }
+        delete tEvent;
     }
 }
 

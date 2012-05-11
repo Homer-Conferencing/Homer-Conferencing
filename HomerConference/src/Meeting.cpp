@@ -97,7 +97,7 @@ void Meeting::Init(string pSipHostAdr, LocalAddressesList pLocalAddresses, bool 
     SIP::Init(pSipStartPort, pSipListenerTransport, pNatTraversalSupport, pStunStartPort);
 
     // start value for port auto probing (default is 5000)
-    mVideoAudioStartPort = pVideoAudioStartPort;
+    SetVideoAudioStartPort(pVideoAudioStartPort);
 
     //SetHostAdr("0.0.0.0");//pSipHostAdr);
     SetHostAdr(pSipHostAdr);
@@ -160,6 +160,15 @@ void Meeting::Deinit()
     CloseAllSessions();
     SIP_stun::Deinit();
     SIP::Deinit();
+}
+
+void Meeting::SetVideoAudioStartPort(int pPort)
+{
+    if (pPort != mVideoAudioStartPort)
+    {
+        LOG(LOG_VERBOSE, "Setting start port for video/audio sockets to %d", pPort);
+        mVideoAudioStartPort = pPort;
+    }
 }
 
 string Meeting::CallStateAsString(int pCallState)
@@ -398,25 +407,31 @@ bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort)
 				LOG(LOG_ERROR, "Invalid audio receive socket");
 		}else
 		{
-			// create video sender port
-			tParticipantDescriptor.VideoSendSocket = Socket::CreateClientSocket(IS_IPV6_ADDRESS(pHost) ? SOCKET_IPv6 : SOCKET_IPv4, GetSocketTypeFromMediaTransportType(GetVideoTransportType()));
+            LOG(LOG_VERBOSE, "Using only unidirectional media sockets without NAT traversal support");
+
+            // create video sender port
+			tParticipantDescriptor.VideoSendSocket = Socket::CreateClientSocket(IS_IPV6_ADDRESS(pHost) ? SOCKET_IPv6 : SOCKET_IPv4, GetSocketTypeFromMediaTransportType(GetVideoTransportType()), mVideoAudioStartPort, false, 2);
 			if (tParticipantDescriptor.VideoSendSocket == NULL)
 				LOG(LOG_ERROR, "Invalid video send socket");
+            else
+                mVideoAudioStartPort = tParticipantDescriptor.VideoSendSocket->GetLocalPort() + 2;
 
 			// create audio sender port
-			tParticipantDescriptor.AudioSendSocket = Socket::CreateClientSocket(IS_IPV6_ADDRESS(pHost) ? SOCKET_IPv6 : SOCKET_IPv4, GetSocketTypeFromMediaTransportType(GetAudioTransportType()));
+			tParticipantDescriptor.AudioSendSocket = Socket::CreateClientSocket(IS_IPV6_ADDRESS(pHost) ? SOCKET_IPv6 : SOCKET_IPv4, GetSocketTypeFromMediaTransportType(GetAudioTransportType()), mVideoAudioStartPort, false, 2);
 			if (tParticipantDescriptor.AudioSendSocket == NULL)
 				LOG(LOG_ERROR, "Invalid audio send socket");
+            else
+                mVideoAudioStartPort = tParticipantDescriptor.AudioSendSocket->GetLocalPort() + 2;
 
 			// create video listener port
-			tParticipantDescriptor.VideoReceiveSocket = Socket::CreateServerSocket(SOCKET_IPv6, GetSocketTypeFromMediaTransportType(GetVideoTransportType()), mVideoAudioStartPort);
+			tParticipantDescriptor.VideoReceiveSocket = Socket::CreateServerSocket(SOCKET_IPv6, GetSocketTypeFromMediaTransportType(GetVideoTransportType()), mVideoAudioStartPort, false, 2);
 			if (tParticipantDescriptor.VideoReceiveSocket == NULL)
 				LOG(LOG_ERROR, "Invalid video receive socket");
 			else
 				mVideoAudioStartPort = tParticipantDescriptor.VideoReceiveSocket->GetLocalPort() + 2;
 
 			// create audio listener port
-			tParticipantDescriptor.AudioReceiveSocket = Socket::CreateServerSocket(SOCKET_IPv6, GetSocketTypeFromMediaTransportType(GetAudioTransportType()), mVideoAudioStartPort);
+			tParticipantDescriptor.AudioReceiveSocket = Socket::CreateServerSocket(SOCKET_IPv6, GetSocketTypeFromMediaTransportType(GetAudioTransportType()), mVideoAudioStartPort, false, 2);
 			if (tParticipantDescriptor.AudioReceiveSocket == NULL)
 				LOG(LOG_ERROR, "Invalid audio receive socket");
 			else
@@ -867,6 +882,9 @@ bool Meeting::SendProbe(std::string pParticipant)
 {
     LOG(LOG_VERBOSE, "Probing: %s", pParticipant.c_str());
 
+    // lock
+    mParticipantsMutex.lock();
+
     OptionsEvent *tOEvent = new OptionsEvent();
 
     // is participant user of the registered SIP server then acknowledge directly
@@ -877,6 +895,10 @@ bool Meeting::SendProbe(std::string pParticipant)
 
         tOAEvent->Sender = pParticipant;
         tOAEvent->Receiver = GetLocalConferenceId();
+
+        // unlock
+        mParticipantsMutex.unlock();
+
         notifyObservers(tOAEvent);
         return true;
     }
@@ -886,8 +908,12 @@ bool Meeting::SendProbe(std::string pParticipant)
     tOEvent->SenderName = GetLocalUserName();
     tOEvent->SenderComment = "";
     tOEvent->Receiver = "sip:" + pParticipant;
+    LOG(LOG_ERROR, "Receiver is %s" , tOEvent->Receiver.c_str());
     tOEvent->HandlePtr = NULL; // done within SIP class
     mOutgoingEvents.Fire((GeneralEvent*) tOEvent);
+
+    // unlock
+    mParticipantsMutex.unlock();
 
     return true;
 }
