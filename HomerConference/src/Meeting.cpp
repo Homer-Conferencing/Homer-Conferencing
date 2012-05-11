@@ -908,7 +908,6 @@ bool Meeting::SendProbe(std::string pParticipant)
     tOEvent->SenderName = GetLocalUserName();
     tOEvent->SenderComment = "";
     tOEvent->Receiver = "sip:" + pParticipant;
-    LOG(LOG_ERROR, "Receiver is %s" , tOEvent->Receiver.c_str());
     tOEvent->HandlePtr = NULL; // done within SIP class
     mOutgoingEvents.Fire((GeneralEvent*) tOEvent);
 
