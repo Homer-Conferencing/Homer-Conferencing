@@ -95,6 +95,7 @@ public:
     static Meeting& GetInstance();
 
     void Init(std::string pSipHostAdr, LocalAddressesList pLocalAddresses, bool pNatTraversalSupport, std::string pBroadcastAdr = "Global messages", int pSipStartPort = 5060, Homer::Base::TransportType pSipListenerTransport = SOCKET_UDP, int pStunStartPort = 5070, int pVideoAudioStartPort = 5000);
+    void SetVideoAudioStartPort(int pPort);
     void Stop();
     void Deinit();
 
