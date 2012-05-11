@@ -84,7 +84,7 @@ private:
     MediaFifo           *mPlaybackFifo; // needed as FIFO buffer with prepared audio buffers for playback, avoid expensive operations like malloc/free (used when using AVFifoBuffer)
     AVFifoBuffer        *mSampleFifo; // needed to create audio buffers of fixed size (4096 bytes)
     /* playback of file */
-    std::string         mCurrentFile;
+    std::string         mFilePlaybackFileName;
     bool                mOpenNewFileAsap;
     bool                mFilePlaybackNeeded;
     Mutex               mOpenNewFile;
