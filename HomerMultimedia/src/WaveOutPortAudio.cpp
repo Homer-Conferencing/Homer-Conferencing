@@ -641,7 +641,7 @@ bool WaveOutPortAudio::PlayFile(string pFileName, int pLoops)
     mOpenNewFile.lock();
 
     mFilePlaybackLoops = pLoops;
-    mCurrentFile = pFileName;
+    mFilePlaybackFileName = pFileName;
     mOpenNewFileAsap = true;
 
     mOpenNewFile.unlock();
@@ -663,7 +663,7 @@ bool WaveOutPortAudio::PlayFile(string pFileName, int pLoops)
 
 string WaveOutPortAudio::CurrentFile()
 {
-	return mCurrentFile;
+	return mFilePlaybackFileName;
 }
 
 bool WaveOutPortAudio::DoOpenNewFile()
@@ -671,7 +671,7 @@ bool WaveOutPortAudio::DoOpenNewFile()
     bool tResult = true;
 
     LOG(LOG_VERBOSE, "Doing DoOpenNewFile() now..");
-    LOG(LOG_VERBOSE, "Try to play file: %s", mCurrentFile.c_str());
+    LOG(LOG_VERBOSE, "Try to play file: %s", mFilePlaybackFileName.c_str());
 
     mOpenNewFile.lock();
 
@@ -687,7 +687,7 @@ bool WaveOutPortAudio::DoOpenNewFile()
     LOG(LOG_VERBOSE, "..clearing FIFO buffer");
     mPlaybackFifo->ClearFifo();
 
-    mFilePlaybackSource = new MediaSourceFile(mCurrentFile);
+    mFilePlaybackSource = new MediaSourceFile(mFilePlaybackFileName);
     if (!mFilePlaybackSource->OpenAudioGrabDevice())
     {
         LOG(LOG_ERROR, "Couldn't open audio file for playback");
@@ -737,6 +737,7 @@ void* WaveOutPortAudio::Run(void* pArgs)
         	// should we loop the file?
         	if (mFilePlaybackLoops > 0)
         	{// repeat file
+        	    LOG(LOG_VERBOSE, "Looping %s, remaining loops: %d", mFilePlaybackFileName.c_str(), mFilePlaybackLoops - 1);
         		mFilePlaybackSource->Seek(0);
         	}else
         	{// passive waiting until next trigger is received
