@@ -823,8 +823,10 @@ void ParticipantWidget::CallStopped(bool pIncoming)
     mIncomingCall = false;
 
     // stop sound output
+    LOG(LOG_VERBOSE, "Playing acoustic notification from file: %s", mWaveOut->CurrentFile().c_str());
     if ((mWaveOut->CurrentFile() == CONF.GetCallSoundFile().toStdString()) && (mWaveOut->IsPlaying()))
     {
+        LOG(LOG_VERBOSE, "Stopping playback of sound file");
     	mWaveOut->Stop();
     }
 }
@@ -910,6 +912,7 @@ void ParticipantWidget::HandleCallAccept(bool pIncoming)
     // stop sound output
     if ((mWaveOut->CurrentFile() == CONF.GetCallSoundFile().toStdString()) && (mWaveOut->IsPlaying()))
     {
+        LOG(LOG_VERBOSE, "Stopping playback of sound file");
     	mWaveOut->Stop();
     }
 
