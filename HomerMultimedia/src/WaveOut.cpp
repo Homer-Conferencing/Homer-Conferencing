@@ -108,6 +108,11 @@ bool WaveOut::Play()
     return true;
 }
 
+bool WaveOut::IsPlaying()
+{
+	return mPlaybackStopped;
+}
+
 int WaveOut::GetVolume()
 {
     return mVolume;

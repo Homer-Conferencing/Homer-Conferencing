@@ -579,6 +579,7 @@ void WaveOutPortAudio::Stop()
     }
 
     WaveOut::Stop();
+    mFilePlaybackLoops = 0;
 
     // make sure no one waits for audio anymore -> send an empty buffer to FIFO and force a return from a possible ReadFifo() call
     char tData[4];
@@ -627,7 +628,7 @@ void WaveOutPortAudio::Stop()
     mPlayMutex.unlock();
 }
 
-bool WaveOutPortAudio::PlayFile(string pFileName)
+bool WaveOutPortAudio::PlayFile(string pFileName, int pLoops)
 {
     LOG(LOG_VERBOSE, "Try to play file: %s", pFileName.c_str());
 
@@ -639,6 +640,7 @@ bool WaveOutPortAudio::PlayFile(string pFileName)
 
     mOpenNewFile.lock();
 
+    mFilePlaybackLoops = pLoops;
     mCurrentFile = pFileName;
     mOpenNewFileAsap = true;
 
@@ -657,6 +659,11 @@ bool WaveOutPortAudio::PlayFile(string pFileName)
     }
 
     return true;
+}
+
+string WaveOutPortAudio::CurrentFile()
+{
+	return mCurrentFile;
 }
 
 bool WaveOutPortAudio::DoOpenNewFile()
@@ -725,17 +732,26 @@ void* WaveOutPortAudio::Run(void* pArgs)
         // if we have reached EOF then we wait until next file is scheduled for playback
         if (tSampleNumber == GRAB_RES_EOF)
         {
-        	// wait until last chunk is played
-        	LOG(LOG_VERBOSE, "EOF reached, waiting for playback end");
-        	while(mPlaybackFifo->GetUsage() > 0)
-        		Suspend(50 * 1000);
+        	mFilePlaybackLoops--;
 
-        	// stop playback
-        	Stop();
+        	// should we loop the file?
+        	if (mFilePlaybackLoops > 0)
+        	{// repeat file
+        		mFilePlaybackSource->Seek(0);
+        	}else
+        	{// passive waiting until next trigger is received
+				// wait until last chunk is played
+        		LOG(LOG_VERBOSE, "EOF reached, waiting for playback end");
+				while(mPlaybackFifo->GetUsage() > 0)
+					Suspend(50 * 1000);
 
-        	// wait for next trigger
-        	mFilePlaybackCondition.Reset();
-        	mFilePlaybackCondition.Wait();
+				// stop playback
+				Stop();
+
+				// wait for next trigger
+				mFilePlaybackCondition.Reset();
+				mFilePlaybackCondition.Wait();
+        	}
         }
     }
 

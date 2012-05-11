@@ -58,7 +58,8 @@ public:
     // playback control
     virtual bool Play();
     virtual void Stop();
-    virtual bool PlayFile(std::string pFileName);
+    virtual bool PlayFile(std::string pFileName, int pLoops = 1);
+    virtual std::string CurrentFile();
 
 public:
     /* open/close */
@@ -88,6 +89,7 @@ private:
     bool                mFilePlaybackNeeded;
     Mutex               mOpenNewFile;
     MediaSourceFile     *mFilePlaybackSource;
+    int					mFilePlaybackLoops;
     char                *mFilePlaybackBuffer;
     Condition           mFilePlaybackCondition;
     /* portaudio init. */
