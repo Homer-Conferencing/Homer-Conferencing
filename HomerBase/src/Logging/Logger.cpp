@@ -204,7 +204,7 @@ void Logger::AddMessage(int pLevel, const char *pSource, int pLine, const char* 
 {
     if( !sLoggerReady)
     {
-    	printf("Tried to log message from %s(%d) when logger isn't available yet\n", pSource, pLine);
+    	printf("LOGGER: tried to log message from %s(%d) when logger instance isn't valid\n", pSource, pLine);
     	return;
     }
 
@@ -246,7 +246,7 @@ void Logger::AddMessage(int pLevel, const char *pSource, int pLine, const char* 
         mLoggerMutex.unlock();
     }else
     {
-        printf("Failed to lock logger at %s for %s(%d) and message \"%s\", will ignore this.\n", tFinalTime.c_str(), pSource, pLine, tFinalMessage.c_str());
+        printf("LOGGER: failed to lock at %s for %s(%d) and message \"%s\", will ignore this.\n", tFinalTime.c_str(), pSource, pLine, tFinalMessage.c_str());
     }
 }
 
