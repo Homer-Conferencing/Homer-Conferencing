@@ -50,6 +50,7 @@ public:
     // playback control
     virtual bool Play();
     virtual void Stop();
+    virtual bool IsPlaying();
     virtual bool PlayFile(std::string pFileName);
 
     /* volume control */
