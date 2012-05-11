@@ -807,6 +807,7 @@ void MainWindow::customEvent(QEvent* pEvent)
         return;
 
     // some necessary variables
+    bool tKnownParticipant = false;
     ParticipantWidgetList::iterator tIt;
     AddParticipantEvent *tAPEvent;
     DeleteSessionEvent *tDSEvent;
@@ -899,6 +900,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                         {
                             if ((*tIt)->IsThisParticipant(QString(tOAEvent->Sender.c_str())))
                             {
+                                tKnownParticipant = true;
                                 (*tIt)->UpdateParticipantState(CONTACT_AVAILABLE);
                                 break;
                             }
@@ -923,6 +925,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                         {
                             if ((*tIt)->IsThisParticipant(QString(tOUAEvent->Sender.c_str())))
                             {
+                                tKnownParticipant = true;
                                 (*tIt)->UpdateParticipantState(CONTACT_UNAVAILABLE);
                                 break;
                             }
@@ -939,6 +942,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     {
                         if ((*tIt)->IsThisParticipant(QString(tEEvent->Sender.c_str())))
                         {
+                            tKnownParticipant = true;
                             (*tIt)->HandleGeneralError(tEEvent->IsIncomingEvent, tEEvent->StatusCode, QString(tEEvent->Description.c_str()));
                             break;
                         }
@@ -969,6 +973,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                             {
                                 if ((*tIt)->IsThisParticipant(QString(tMEvent->Sender.c_str())))
                                 {
+                                    tKnownParticipant = true;
                                     if (tMEvent->SenderName.size())
                                         (*tIt)->UpdateParticipantName(QString(tMEvent->SenderName.c_str()));
                                     (*tIt)->HandleMessage(tMEvent->IsIncomingEvent, QString(tMEvent->SenderName.c_str()), QString(tMEvent->Text.c_str()));
@@ -977,17 +982,20 @@ void MainWindow::customEvent(QEvent* pEvent)
                             }
                         }
 
-                        // add without any OpenSession-check, the session is always added automatically by the meeting-layer
-                        tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mOverviewContactsWidget, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, QString(tMEvent->Sender.c_str()));
-
-                        if (tParticipantWidget != NULL)
+                        if (!tKnownParticipant)
                         {
-                            mParticipantWidgets.push_back(tParticipantWidget);
-                            if (tMEvent->SenderName.size())
-                                tParticipantWidget->UpdateParticipantName(QString(tMEvent->SenderName.c_str()));
-                            tParticipantWidget->HandleMessage(tMEvent->IsIncomingEvent, QString(tMEvent->SenderName.c_str()), QString(tMEvent->Text.c_str()));
-                        } else
-                            LOG(LOG_ERROR, "ParticipantWidget creation failed");
+                            // add without any OpenSession-check, the session is always added automatically by the meeting-layer
+                            tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mOverviewContactsWidget, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, QString(tMEvent->Sender.c_str()));
+
+                            if (tParticipantWidget != NULL)
+                            {
+                                mParticipantWidgets.push_back(tParticipantWidget);
+                                if (tMEvent->SenderName.size())
+                                    tParticipantWidget->UpdateParticipantName(QString(tMEvent->SenderName.c_str()));
+                                tParticipantWidget->HandleMessage(tMEvent->IsIncomingEvent, QString(tMEvent->SenderName.c_str()), QString(tMEvent->Text.c_str()));
+                            } else
+                                LOG(LOG_ERROR, "ParticipantWidget creation failed");
+                        }
                         break;
                     } else
                     {//broadcast message
@@ -1006,6 +1014,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     {
                         if ((*tIt)->IsThisParticipant(QString(tMAEvent->Sender.c_str())))
                         {
+                            tKnownParticipant = true;
                             (*tIt)->HandleMessageAccept(tMAEvent->IsIncomingEvent);
                             break;
                         }
@@ -1020,6 +1029,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     {
                         if ((*tIt)->IsThisParticipant(QString(tMADEvent->Sender.c_str())))
                         {
+                            tKnownParticipant = true;
                             (*tIt)->HandleMessageAcceptDelayed(tMADEvent->IsIncomingEvent);
                             break;
                         }
@@ -1034,6 +1044,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     {
                         if ((*tIt)->IsThisParticipant(QString(tMUEvent->Sender.c_str())))
                         {
+                            tKnownParticipant = true;
                             (*tIt)->HandleMessageUnavailable(tMUEvent->IsIncomingEvent, tMUEvent->StatusCode, QString(tMUEvent->Description.c_str()));
                             break;
                         }
@@ -1060,6 +1071,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                         {
                             if ((*tIt)->IsThisParticipant(QString(tCEvent->Sender.c_str())))
                             {
+                                tKnownParticipant = true;
                                 if (tCEvent->SenderName.size())
                                     (*tIt)->UpdateParticipantName(QString(tCEvent->SenderName.c_str()));
 
@@ -1070,19 +1082,21 @@ void MainWindow::customEvent(QEvent* pEvent)
                         }
                     }
 
-                    // add without any OpenSession-check, the session is always added automatically by the meeting-layer
-                    tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mOverviewContactsWidget, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, QString(tCEvent->Sender.c_str()));
-
-                    if (tParticipantWidget != NULL)
+                    if (!tKnownParticipant)
                     {
-                        mParticipantWidgets.push_back(tParticipantWidget);
-                        if (tCEvent->SenderName.size())
-                            tParticipantWidget->UpdateParticipantName(QString(tCEvent->SenderName.c_str()));
-                        if (!tCEvent->AutoAnswering)
-                            tParticipantWidget->HandleCall(tCEvent->IsIncomingEvent, QString(tCEvent->SenderApplication.c_str()));
-                    } else
-                        LOG(LOG_ERROR, "ParticipantWidget creation failed");
+                        // add without any OpenSession-check, the session is always added automatically by the meeting-layer
+                        tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mOverviewContactsWidget, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, QString(tCEvent->Sender.c_str()));
 
+                        if (tParticipantWidget != NULL)
+                        {
+                            mParticipantWidgets.push_back(tParticipantWidget);
+                            if (tCEvent->SenderName.size())
+                                tParticipantWidget->UpdateParticipantName(QString(tCEvent->SenderName.c_str()));
+                            if (!tCEvent->AutoAnswering)
+                                tParticipantWidget->HandleCall(tCEvent->IsIncomingEvent, QString(tCEvent->SenderApplication.c_str()));
+                        } else
+                            LOG(LOG_ERROR, "ParticipantWidget creation failed");
+                    }
                     break;
         case CALL_RINGING:
                     //############################# CALL RINGING ##############################
@@ -1092,6 +1106,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     {
                         if ((*tIt)->IsThisParticipant(QString(tCREvent->Sender.c_str())))
                         {
+                            tKnownParticipant = true;
                             if (tCREvent->SenderName.size())
                                 (*tIt)->UpdateParticipantName(QString(tCREvent->SenderName.c_str()));
                             (*tIt)->HandleCallRinging(tCREvent->IsIncomingEvent);
@@ -1107,6 +1122,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     {
                         if ((*tIt)->IsThisParticipant(QString(tCAEvent->Sender.c_str())))
                         {
+                            tKnownParticipant = true;
                             if (tCAEvent->SenderName.size())
                                 (*tIt)->UpdateParticipantName(QString(tCAEvent->SenderName.c_str()));
                             (*tIt)->HandleCallAccept(tCAEvent->IsIncomingEvent);
@@ -1133,6 +1149,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     {
                         if ((*tIt)->IsThisParticipant(QString(tCCEvent->Sender.c_str())))
                         {
+                            tKnownParticipant = true;
                             if (tCCEvent->SenderName.size())
                                 (*tIt)->UpdateParticipantName(QString(tCCEvent->SenderName.c_str()));
                             (*tIt)->HandleCallCancel(tCCEvent->IsIncomingEvent);
@@ -1148,6 +1165,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     {
                         if ((*tIt)->IsThisParticipant(QString(tCDEvent->Sender.c_str())))
                         {
+                            tKnownParticipant = true;
                             if (tCDEvent->SenderName.size())
                                 (*tIt)->UpdateParticipantName(QString(tCDEvent->SenderName.c_str()));
                             (*tIt)->HandleCallDenied(tCDEvent->IsIncomingEvent);
@@ -1163,6 +1181,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     {
                         if ((*tIt)->IsThisParticipant(QString(tCUEvent->Sender.c_str())))
                         {
+                            tKnownParticipant = true;
                             (*tIt)->HandleCallUnavailable(tCUEvent->IsIncomingEvent, tCUEvent->StatusCode, QString(tCUEvent->Description.c_str()));
                             break;
                         }
@@ -1186,6 +1205,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     {
                         if ((*tIt)->IsThisParticipant(QString(tCHUEvent->Sender.c_str())))
                         {
+                            tKnownParticipant = true;
                             if (tCHUEvent->SenderName.size())
                                 (*tIt)->UpdateParticipantName(QString(tCHUEvent->SenderName.c_str()));
                             (*tIt)->HandleCallHangup(tCHUEvent->IsIncomingEvent);
@@ -1201,6 +1221,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     {
                         if ((*tIt)->IsThisParticipant(QString(tCTEvent->Sender.c_str())))
                         {
+                            tKnownParticipant = true;
                             if (tCTEvent->SenderName.size())
                                 (*tIt)->UpdateParticipantName(QString(tCTEvent->SenderName.c_str()));
                             (*tIt)->HandleCallTermination(tCTEvent->IsIncomingEvent);
@@ -1216,6 +1237,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     {
                         if ((*tIt)->IsThisParticipant(QString(tCMUEvent->Sender.c_str())))
                         {
+                            tKnownParticipant = true;
                             if (tCMUEvent->SenderName.size())
                                 (*tIt)->UpdateParticipantName(QString(tCMUEvent->SenderName.c_str()));
                             (*tIt)->HandleMediaUpdate(tCMUEvent->IsIncomingEvent, QString(tCMUEvent->RemoteAudioAddress.c_str()), tCMUEvent->RemoteAudioPort, QString(tCMUEvent->RemoteAudioCodec.c_str()), QString(tCMUEvent->RemoteVideoAddress.c_str()), tCMUEvent->RemoteVideoPort, QString(tCMUEvent->RemoteVideoCodec.c_str()));
@@ -1259,6 +1281,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     break;
     }
 
+    LOG(LOG_VERBOSE, "Event was related to an already known participant");
     // free memory of event
     delete tEvent;
 }
@@ -1463,6 +1486,7 @@ void MainWindow::actionConfiguration()
             LOG(LOG_VERBOSE, "Do an explicit auto probing of known contacts because user has activated the auto-probing feature via confiuration dialogue");
             CONTACTSPOOL.ProbeAvailabilityForAll();
         }
+        MEETING.SetVideoAudioStartPort(CONF.GetVideoAudioStartPort());
     }
 }
 
