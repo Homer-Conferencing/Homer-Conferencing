@@ -526,8 +526,8 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
         // unlock grabbing
         mGrabMutex.unlock();
 
-        // acknowledge "failed"
-        MarkGrabChunkFailed(GetMediaTypeStr() + " seek position equals EOF");
+        // acknowledge "success"
+        MarkGrabChunkSuccessful(); // don't panic, it is only EOF
 
         return GRAB_RES_EOF;
     }
