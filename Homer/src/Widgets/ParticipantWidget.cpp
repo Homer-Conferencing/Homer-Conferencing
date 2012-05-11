@@ -68,6 +68,7 @@ namespace Homer { namespace Gui {
 ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, QMainWindow *pMainWindow, OverviewContactsWidget *pContactsWidget, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer, MediaSourceMuxer *pAudioSourceMuxer, QString pParticipant):
     QDockWidget(pMainWindow)
 {
+    LOG(LOG_VERBOSE, "Creating new participant widget..");
     OpenPlaybackDevice();
 
     hide();
@@ -545,6 +546,8 @@ void ParticipantWidget::FindSipInterface(QString pSessionName)
 
 bool ParticipantWidget::IsThisParticipant(QString pParticipant)
 {
+    bool tResult = false;
+
     if (mSessionType != PARTICIPANT)
         return false;
 
@@ -568,8 +571,10 @@ bool ParticipantWidget::IsThisParticipant(QString pParticipant)
     //LOG(LOG_VERBOSE, "IsThisParticipant-Compare: %s with %s", pParticipant.toStdString().c_str(), mSessionName.section(":", 0, 0).section("@", 1, 1).toStdString().c_str());
     //return pParticipant.contains(mSessionName.section(":", 0, 0).section("@", 1, 1));
 
-    LOG(LOG_VERBOSE, "CompareIsThisParticipant: %s with %s and %s", pParticipant.toStdString().c_str(), mSessionName.section("@", 1).toStdString().c_str(), mSipInterface.toStdString().c_str());
-    return (pParticipant.contains(mSessionName.section("@", 1)) || pParticipant.contains(mSipInterface));
+    tResult = (pParticipant.contains(mSessionName.section("@", 1)) || pParticipant.contains(mSipInterface));
+    LOG(LOG_VERBOSE, "CompareIsThisParticipant: %s with %s and %s ==> %s", pParticipant.toStdString().c_str(), mSessionName.section("@", 1).toStdString().c_str(), mSipInterface.toStdString().c_str(), tResult ? "MATCH" : "no match");
+
+    return tResult;
 }
 
 void ParticipantWidget::HandleMessage(bool pIncoming, QString pSender, QString pMessage)
