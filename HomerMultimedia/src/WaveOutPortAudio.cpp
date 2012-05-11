@@ -637,12 +637,6 @@ bool WaveOutPortAudio::PlayFile(string pFileName)
         return false;
     }
 
-    if (mPlaybackStopped)
-    {
-        LOG(LOG_VERBOSE, "Playback was already stopped");
-        return false;
-    }
-
     mOpenNewFile.lock();
 
     mCurrentFile = pFileName;
@@ -695,10 +689,7 @@ bool WaveOutPortAudio::DoOpenNewFile()
     }else
     {
         SVC_PROCESS_STATISTIC.AssignThreadName("PortAudio-File");
-//        char tBuffer[MEDIA_SOURCE_SAMPLES_BUFFER_SIZE];
-//        memset(tBuffer, 0, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE);
-//        for (int i = 0; i < MEDIA_SOURCE_SAMPLES_FIFO_SIE - 1; i++)
-//            WriteChunk(tBuffer, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE);
+
         Play();
     }
 
@@ -733,7 +724,19 @@ void* WaveOutPortAudio::Run(void* pArgs)
 
         // if we have reached EOF then we wait until next file is scheduled for playback
         if (tSampleNumber == GRAB_RES_EOF)
-            mFilePlaybackCondition.Wait();
+        {
+        	// wait until last chunk is played
+        	LOG(LOG_VERBOSE, "EOF reached, waiting for playback end");
+        	while(mPlaybackFifo->GetUsage() > 0)
+        		Suspend(50 * 1000);
+
+        	// stop playback
+        	Stop();
+
+        	// wait for next trigger
+        	mFilePlaybackCondition.Reset();
+        	mFilePlaybackCondition.Wait();
+        }
     }
 
     return NULL;
