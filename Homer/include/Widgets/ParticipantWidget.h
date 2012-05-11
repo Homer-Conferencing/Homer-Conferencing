@@ -40,7 +40,6 @@
 
 #include <list>
 
-#include <QSound>
 #include <QMenu>
 #include <QEvent>
 #include <QAction>
@@ -138,6 +137,8 @@ private slots:
 	void SeekMovieFile(int pPos);
 
 private:
+    void OpenPlaybackDevice();
+    void ClosePlaybackDevice();
 	void Init(OverviewContactsWidget *pContactsWidget, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, QString pParticipant);
     void FindSipInterface(QString pSessionName);
     virtual void contextMenuEvent(QContextMenuEvent *event);
@@ -167,8 +168,9 @@ private:
     QString             mRemoteVideoCodec;
     MediaSource         *mVideoSource, *mAudioSource;
     Socket				*mVideoSendSocket, *mAudioSendSocket, *mVideoReceiveSocket, *mAudioReceiveSocket;
-    QSound				*mSoundForIncomingCall;
     int                 mTimerId;
+    /* playback */
+    Homer::Multimedia::WaveOutPortAudio *mWaveOut;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
