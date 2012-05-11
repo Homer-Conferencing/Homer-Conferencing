@@ -169,7 +169,7 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceAudio()
         MediaSourceNet *tNetSource = new MediaSourceNet(mSbPortAudio->value(), (enum TransportType)mCbTransportAudio->currentIndex(), mCbRtpAudio->isChecked());
         if (tNetSource->getListenerPort() == 0)
         {
-            ShowError("Preview not possible", "The preview of the incoming video stream at local port \"" + QString("%1").arg(mSbPortAudio->value()) + "\" with transport \"" + QString(Socket::TransportType2String((enum TransportType)mCbTransportAudio->currentIndex()).c_str()) + "\" and codec \"" + mCbCodecAudio->currentText() + "\" is not possible!");
+            ShowError("Audio preview not possible", "The preview of the incoming audio stream at local port \"" + QString("%1").arg(mSbPortAudio->value()) + "\" with transport \"" + QString(Socket::TransportType2String((enum TransportType)mCbTransportAudio->currentIndex()).c_str()) + "\" and codec \"" + mCbCodecAudio->currentText() + "\" is not possible!");
             delete tNetSource;
             return NULL;
         }
