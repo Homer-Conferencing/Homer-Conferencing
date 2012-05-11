@@ -70,9 +70,9 @@ void MediaSourceNet::Init(Socket *pDataSocket, bool pRtpActivated)
 
         if (mDataSocket->GetTransportType() == SOCKET_TCP)
             mPacketStatAdditionalFragmentSize = TCP_FRAGMENT_HEADER_SIZE;
+        LOG(LOG_VERBOSE, "Listen for media packets at port %u, transport %d, IP version %d", mDataSocket->GetLocalPort(), mDataSocket->GetTransportType(), mDataSocket->GetNetworkType());
+        mCurrentDeviceName = "NET-IN: " + MediaSinkNet::CreateId(mDataSocket->GetLocalHost(), toString(mDataSocket->GetLocalPort()), mDataSocket->GetTransportType(), mRtpActivated);
     }
-    LOG(LOG_VERBOSE, "Listen for media packets at port %u, transport %d, IP version %d", mDataSocket->GetLocalPort(), mDataSocket->GetTransportType(), mDataSocket->GetNetworkType());
-    mCurrentDeviceName = "NET-IN: " + MediaSinkNet::CreateId(mDataSocket->GetLocalHost(), toString(mDataSocket->GetLocalPort()), mDataSocket->GetTransportType(), mRtpActivated);
     AssignStreamName(mCurrentDeviceName);
 }
 
@@ -212,7 +212,10 @@ void* MediaSourceNet::Run(void* pArgs)
 
 unsigned int MediaSourceNet::getListenerPort()
 {
-    return mDataSocket->GetLocalPort();
+    if (mDataSocket != NULL)
+        return mDataSocket->GetLocalPort();
+    else
+        return 0;
 }
 
 bool MediaSourceNet::OpenVideoGrabDevice(int pResX, int pResY, float pFps)

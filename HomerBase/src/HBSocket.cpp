@@ -96,6 +96,11 @@ Socket* Socket::CreateServerSocket(enum NetworkType pIpVersion, enum TransportTy
     Socket* tResult = NULL;
 
     tResult = new Socket(pIpVersion, pTransportType, pListenerPort, pReusable, pProbeStepping, pHighestPossibleListenerPort);
+    if (tResult->mSocketHandle == -1)
+    {
+        delete tResult;
+        return NULL;
+    }
 
     LOGEX(Socket, LOG_VERBOSE, "Created %s-server socket at local address %s:%u with receive buffer size of %d bytes", TransportType2String(pTransportType).c_str(), tResult->mLocalHost.c_str(), tResult->mLocalPort, tResult->GetReceiveBufferSize());
 
@@ -110,6 +115,11 @@ Socket* Socket::CreateClientSocket(enum NetworkType pIpVersion, enum TransportTy
     Socket* tResult = NULL;
 
     tResult = new Socket(pIpVersion, pTransportType, pSenderPort, pReusable, pProbeStepping, pHighestPossibleSenderPort);
+    if (tResult->mSocketHandle == -1)
+    {
+        delete tResult;
+        return NULL;
+    }
 
     LOGEX(Socket, LOG_VERBOSE, "Created %s-client socket at local address %s:%u with receive buffer size of %d bytes", TransportType2String(pTransportType).c_str(), tResult->mLocalHost.c_str(), tResult->mLocalPort, tResult->GetReceiveBufferSize());
 
