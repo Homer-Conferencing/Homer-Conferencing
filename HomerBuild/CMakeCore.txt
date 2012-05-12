@@ -139,9 +139,9 @@ ELSE ()
 ENDIF ()
 # stripping for all platforms excluding APPLE
 IF (NOT APPLE)
-IF (${BUILD} MATCHES "Release")
-	SET (LFLAGS "${FLAGS} -s")
-ENDIF()
+	IF (${BUILD} MATCHES "Release")
+		SET (LFLAGS "${LFLAGS} -s")
+	ENDIF()
 ENDIF()
 
 ##############################################################
