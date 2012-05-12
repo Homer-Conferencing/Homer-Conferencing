@@ -158,9 +158,11 @@ void AudioWidget::Init(MediaSource *pAudioSource, QMenu *pMenu, QString pActionT
         mAudioWorker = new AudioWorkerThread(mAudioSource, this);
         LOG(LOG_VERBOSE, "..start audio worker");
         mAudioWorker->start(QThread::TimeCriticalPriority);
+        int tLoop = 0;
         while(!mAudioWorker->IsPlaybackAvailable())
         {
-            LOG(LOG_VERBOSE, "Waiting for available audio playback");
+            tLoop++;
+            LOG(LOG_VERBOSE, "Waiting for available audio playback, loop %d", tLoop);
             Thread::Suspend(100 * 1000);
         }
         LOG(LOG_VERBOSE, "..set mute state to %d", pMuted);
