@@ -87,7 +87,7 @@ IF (NOT (${BUILD} MATCHES "Default"))
 				-Wl,-rpath,${INSTALL_LIBDIR}
 			)
 		ENDIF()
-	ELSE()
+	ELSE(APPLE)
 		SET (LFLAGS
 			${LFLAGS}
 			-Wl,-R.
