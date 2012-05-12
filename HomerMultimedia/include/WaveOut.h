@@ -51,7 +51,7 @@ public:
     virtual bool Play();
     virtual void Stop();
     virtual bool IsPlaying();
-    virtual bool PlayFile(std::string pFileName);
+    virtual bool PlayFile(std::string pFileName, int pLoops = 1);
 
     /* volume control */
     virtual int GetVolume(); // range: 0-200 %

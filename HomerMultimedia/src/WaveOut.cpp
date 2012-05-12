@@ -88,9 +88,9 @@ bool WaveOut::SelectDevice(string pDeviceName)
     return tNewSelection;
 }
 
-bool WaveOut::PlayFile(string pFileName)
+bool WaveOut::PlayFile(string pFileName, int pLoops)
 {
-    LOG(LOG_VERBOSE, "Direct playback of an audio file is not supported here");
+    LOG(LOG_WARN, "Direct playback of audio file %s is not supported here", pFileName.c_str());
     return true;
 }
 
