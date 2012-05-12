@@ -24,6 +24,24 @@ ELSE()
 ENDIF()
 
 ##############################################################
+# detect OSX
+if (APPLE)
+	exec_program(uname ARGS -v OUTPUT_VARIABLE DARWIN_VERSION)
+	string(REGEX MATCH "[0-9]+" DARWIN_VERSION ${DARWIN_VERSION})
+	if (DARWIN_VERSION LESS 10)
+		# 10.6 of Snow Leopard is minimum
+		MESSAGE(FATAL_ERROR "You need at least OSX Snow Leopard")
+	endif()
+	if (DARWIN_VERSION EQUAL 10)
+		MESSAGE("Detected DARWIN version 10 from OSX Snow Leopard")
+	elseif (DARWIN_VERSION EQUAL 11)
+		MESSAGE("Detected DARWIN version 11 from OSX Lion")
+	else()
+		message("Detected DARWIN version ${DARWIN_VERSION}")
+	endif()
+endif(APPLE)
+
+##############################################################
 # architecture
 IF (NOT DEFINED ARCH_BITS)
 IF ("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
