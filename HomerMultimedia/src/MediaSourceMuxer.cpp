@@ -134,7 +134,10 @@ void MediaSourceMuxer::GetMuxingResolution(int &pResX, int &pResY)
 
 int MediaSourceMuxer::GetMuxingBufferCounter()
 {
-    return mTranscoderFifo->GetUsage();
+    if (mTranscoderFifo != NULL)
+        return mTranscoderFifo->GetUsage();
+    else
+        return 0;
 }
 
 int MediaSourceMuxer::GetMuxingBufferSize()
