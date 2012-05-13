@@ -20,14 +20,16 @@ set(CPACK_PACKAGE_VERSION_PATCH "0")
 
 set(CPACK_PACKAGE_NAME "Homer-Conferencing")
 set(CPACK_PACKAGE_VENDOR "Homer Conferencing project")
-set(CPACK_PACKAGE_FILE_NAME "Homer-Install")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Homer - live conferencing and more")
+set(CPACK_PACKAGE_FILE_NAME "Homer-Conferencing")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Installs Homer - live conferencing and more")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "Homer")
 set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "Homer-Conferencing")
+set(CPACK_PACKAGE_CONTACT "Thomas Volkert <thomas@homer-conferencing.com>")
 
 ###############################################################################
-set(CPACK_RESOURCE_FILE_LICENSE ${PACKAGE_TOP_SRC_DIR}/COPYING)
-#CPACK_RESOURCE_FILE_README
+
+set(CPACK_RESOURCE_FILE_LICENSE ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/texts/License.txt)
+set(CPACK_RESOURCE_FILE_README ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/texts/Readme.txt)
 
 ###############################################################################
 # HINT: workaround for NSIS installer bug is to use "\\\\" construction at least once per variable
@@ -73,6 +75,11 @@ set(CPACK_COMPONENT_SOUNDS_GROUP "Usability add-ons")
 IF (WIN32)
         INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../HomerBuild/CMakeCPackWin.txt)
 ENDIF(WIN32)
+
+# STGZ/RPM/DEB specific configuration for Windows
+IF (LINUX)
+        INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../HomerBuild/CMakeCPackLinux.txt)
+ENDIF(LINUX)
 
 # Bundle specific configuration for OSX
 IF (APPLE)
