@@ -58,8 +58,10 @@ extern "C" {
     #define AV_GUESS_FORMAT av_guess_format
 #endif
 
-#ifndef CodecType
-    #define CodecType CodecID
+#ifndef APPLE // on OSX we would have redefinitions and conflicts with QuickTime
+	#ifndef CodecType
+		#define CodecType CodecID
+	#endif
 #endif
 
 #if LIBAVUTIL_VERSION_MAJOR < 51
