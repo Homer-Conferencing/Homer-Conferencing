@@ -148,7 +148,7 @@ ENDIF()
 # explicit shared object name with @rpath prefix for APPLE
 IF (DEFINED TARGET_LIB_NAME) 
 	IF (APPLE)
-		SET(LFLAGS "${LFLAGS} -Wl,-dylib_install_name,@executable_path/lib/lib${TARGET_LIB_NAME}.dylib")
+		SET(LFLAGS "${LFLAGS} -Wl,-dylib_install_name,@executable_path/../lib/lib${TARGET_LIB_NAME}.dylib")
 	ENDIF (APPLE)
 ENDIF()
 
@@ -349,6 +349,12 @@ IF (WIN32)
     FOREACH(LIBS_WINDOWS_INSTALL_ENTRY ${LIBS_WINDOWS_INSTALL})
         INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerLibs/win${ARCH_BITS}/${LIBS_WINDOWS_INSTALL_ENTRY}.dll DESTINATION . COMPONENT extlibraries)
     ENDFOREACH(LIBS_WINDOWS_INSTALL_ENTRY ${LIBS_WINDOWS_INSTALL})
+ENDIF()
+IF (APPLE)
+    MESSAGE("### Will additionally install OSX libraries: ${LIBS_APPLE_INSTALL}")
+    FOREACH(LIBS_APPLE_INSTALL_ENTRY ${LIBS_APPLE_INSTALL})
+        INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerLibs/apple${ARCH_BITS}/lib${LIBS_APPLE_INSTALL_ENTRY}.dylib DESTINATION lib COMPONENT libraries)
+    ENDFOREACH(LIBS_APPLE_INSTALL_ENTRY ${LIBS_APPLE_INSTALL})
 ENDIF()
 
 ##############################################################
