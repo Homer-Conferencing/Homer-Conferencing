@@ -556,6 +556,7 @@ int MediaSourceVFW::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
 
     return ++mChunkNumber;
 }
+
 bool MediaSourceVFW::SupportsRecording()
 {
 	return true;
