@@ -63,6 +63,13 @@ public:
     virtual std::string GetCodecName();
     virtual std::string GetCodecLongName();
 
+    /* global mutexing for port audio */
+    // put some additional locking around portaudio's PaInit()
+    static void PortAudioInit();
+    // put some additional locking around portaudio's stream interface
+    static void PortAudioLockStreamInterface();
+    static void PortAudioUnlockStreamInterface();
+
 public:
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97);
     virtual bool OpenAudioGrabDevice(int pSampleRate = 44100, bool pStereo = true);
@@ -81,6 +88,8 @@ private:
     /* portaudio init. */
     static Mutex        mPaInitMutex;
     static bool         mPaInitiated;
+    /* stream open/close mutex */
+    static Mutex        mPaStreamMutex;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

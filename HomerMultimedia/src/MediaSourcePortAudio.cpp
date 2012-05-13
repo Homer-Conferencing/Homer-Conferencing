@@ -41,6 +41,33 @@ using namespace Homer::Monitor;
 
 Mutex MediaSourcePortAudio::mPaInitMutex;
 bool MediaSourcePortAudio::mPaInitiated = false;
+Mutex MediaSourcePortAudio::mPaStreamMutex;
+
+void MediaSourcePortAudio::PortAudioInit()
+{
+    mPaInitMutex.lock();
+    if (!mPaInitiated)
+    {
+        // initialize portaudio library
+        LOGEX(MediaSourcePortAudio, LOG_VERBOSE, "Initiated portaudio with result: %d", Pa_Initialize());
+        mPaInitiated = true;
+    }
+    mPaInitMutex.unlock();
+}
+
+void MediaSourcePortAudio::PortAudioLockStreamInterface()
+{
+	LOGEX(MediaSourcePortAudio, LOG_VERBOSE, "Locking portaudio stream interface");
+	mPaStreamMutex.lock();
+	LOGEX(MediaSourcePortAudio, LOG_VERBOSE, "Stream interface locked");
+}
+
+void MediaSourcePortAudio::PortAudioUnlockStreamInterface()
+{
+	LOGEX(MediaSourcePortAudio, LOG_VERBOSE, "Unlocking portaudio stream interface");
+	mPaStreamMutex.unlock();
+	LOGEX(MediaSourcePortAudio, LOG_VERBOSE, "Stream interface unlocked");
+}
 
 MediaSourcePortAudio::MediaSourcePortAudio(string pDesiredDevice):
     MediaSource("PortAudio: local capture")
@@ -48,15 +75,7 @@ MediaSourcePortAudio::MediaSourcePortAudio(string pDesiredDevice):
     ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
     mCaptureFifo = new MediaFifo(MEDIA_SOURCE_SAMPLES_FIFO_SIE, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE, "MediaSourcePortAudio");
 
-    mPaInitMutex.lock();
-    if (!mPaInitiated)
-    {
-        // initialize portaudio library
-        LOG(LOG_VERBOSE, "Initiated portaudio with result: %d", Pa_Initialize());
-        mPaInitiated = true;
-    }
-    mPaInitMutex.unlock();
-
+    PortAudioInit();
     if (pDesiredDevice != "")
     {
         bool tNewDeviceSelected = false;
@@ -277,6 +296,7 @@ bool MediaSourcePortAudio::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     LOG(LOG_VERBOSE, "Going to open stream..");
     LOG(LOG_VERBOSE, "..selected sample rate: %d", mSampleRate);
     mCaptureDuplicateMonoStream = false;
+    PortAudioLockStreamInterface();
     if((tErr = Pa_OpenStream(&mStream, &tInputParameters, NULL /* output parameters */, mSampleRate, MEDIA_SOURCE_SAMPLES_PER_BUFFER, paClipOff | paDitherOff, RecordedAudioHandler, this)) != paNoError)
     {
     	if ((pStereo) && (tErr == paInvalidChannelCount))
@@ -287,6 +307,7 @@ bool MediaSourcePortAudio::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     	    if((tErr = Pa_OpenStream(&mStream, &tInputParameters, NULL /* output parameters */, mSampleRate, MEDIA_SOURCE_SAMPLES_PER_BUFFER, paClipOff | paDitherOff, RecordedAudioHandler, this)) != paNoError)
     	    {
         		LOG(LOG_ERROR, "Couldn't open stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
+        		PortAudioUnlockStreamInterface();
         		return false;
     	    }else
     	    {
@@ -296,16 +317,20 @@ bool MediaSourcePortAudio::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     	}else
     	{
     		LOG(LOG_ERROR, "Couldn't open stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
+    		PortAudioUnlockStreamInterface();
     		return false;
     	}
     }
+    LOG(LOG_VERBOSE, "..stream opened");
 
     LOG(LOG_VERBOSE, "Going to start stream..");
     if((tErr = Pa_StartStream(mStream)) != paNoError)
     {
         LOG(LOG_ERROR, "Couldn't start stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
+        PortAudioUnlockStreamInterface();
         return false;
     }
+    PortAudioUnlockStreamInterface();
 
     mCurrentDevice = mDesiredDevice;
 
@@ -355,10 +380,12 @@ bool MediaSourcePortAudio::CloseGrabDevice()
         }
 
         PaError tErr = paNoError;
+        PortAudioLockStreamInterface();
         if ((tErr = Pa_CloseStream(mStream)) != paNoError)
         {
             LOG(LOG_ERROR, "Couldn't close stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
         }
+        PortAudioUnlockStreamInterface();
 
         LOG(LOG_INFO, "...closed");
 
@@ -456,6 +483,7 @@ void MediaSourcePortAudio::StopGrabbing()
     if (mMediaSourceOpened)
     {
         PaError tErr = paNoError;
+        PortAudioLockStreamInterface();
         if ((tErr = Pa_AbortStream(mStream)) != paNoError)
             LOG(LOG_ERROR, "Couldn't abort stream because \"%s\"", Pa_GetErrorText(tErr));
 
@@ -465,6 +493,7 @@ void MediaSourcePortAudio::StopGrabbing()
             // wait some time
             Thread::Suspend(250 * 1000);
         }
+        PortAudioUnlockStreamInterface();
 
         // make sure no one waits for audio anymore -> send an empty buffer to FIFO and force a return from a possible ReadFifo() call
         char tData[4];
