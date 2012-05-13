@@ -12,10 +12,8 @@ set(CPACK_GENERATOR "PackageMaker")
 set(CPACK_MONOLITHIC_INSTALL 1)
 
 # set install root
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-	set(CMAKE_INSTALL_PREFIX "/Applications/Homer" CACHE PATH "Install path prefix" FORCE)
-endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-set(CPACK_PACKAGING_INSTALL_PREFIX "/Homer-Conferencing")
+set(CPACK_PACKAGE_DEFAULT_LOCATION "/Applications")
+set(CPACK_PACKAGING_INSTALL_PREFIX "/Homer-Conferencing" CACHE PATH "Package install path prefix" FORCE)
  
 ###############################################################################
 #set(CPACK_BUNDLE_NAME "Homer Conferencing")
