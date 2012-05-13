@@ -30,7 +30,7 @@
 #define _MULTIMEDIA_MEDIA_SOURCE_CORE_VIDEO_
 
 #include <MediaSource.h>
-#include <Header_CoreAudio.h>
+#include <Header_CoreVideo.h>
 
 #include <string.h>
 
@@ -53,6 +53,9 @@ public:
 
     /* device control */
     virtual void getVideoDevices(VideoDevicesList &pVList);
+
+    /* recording */
+    virtual bool SupportsRecording();
 
     /* grabbing control */
     virtual std::string GetCodecName();
