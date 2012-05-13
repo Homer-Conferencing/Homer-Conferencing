@@ -72,7 +72,7 @@ void MediaSourceCoreVideo::getVideoDevices(VideoDevicesList &pVList)
     if (tFirstCall)
         LOG(LOG_VERBOSE, "Enumerating hardware..");
 
-    //TODO: implement
+    //TODO: implement via C++ around QTKit (Objective-C) or opencv lib.?
 
     tFirstCall = false;
 }
@@ -204,6 +204,11 @@ int MediaSourceCoreVideo::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pD
     MarkGrabChunkSuccessful();
 
     return ++mChunkNumber;
+}
+
+bool MediaSourceCoreVideo::SupportsRecording()
+{
+	return true;
 }
 
 string MediaSourceCoreVideo::GetCodecName()
