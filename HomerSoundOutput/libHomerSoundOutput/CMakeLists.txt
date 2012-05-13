@@ -98,7 +98,6 @@ SET (SOURCES
 	${SOURCES}
 	../src/AudioOutSdl
 	../src/WaveOut
-	../src/WaveOutPortAudio	
 )
 # SOURCES
 if (WIN32)

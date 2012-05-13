@@ -64,7 +64,7 @@ AudioOutSdl& AudioOutSdl::getInstance()
  */
 bool AudioOutSdl::OpenPlaybackDevice(int pSampleRate, bool pStereo, string pDriver, string pDevice)
 {
-    int tReqChunksize = 4096, tReqChannels;
+    int tReqChunksize = 1024, tReqChannels;
     int tGotSampleRate, tGotChannels;
     Uint16 tGotSampleFormat;
 
@@ -343,11 +343,20 @@ bool AudioOutSdl::Play(int pChannel)
     bool tResult = false;
 
     if (pChannel == -1)
-        return false;
+    {
+    	LOG(LOG_WARN, "Given channel ID is invalid");
+    	return false;
+    }
 
     if (!mAudioOutOpened)
-        return false;
+    {
+    	LOG(LOG_ERROR, "Tried to output audio data when playback is closed");
+    	return false;
+    }
 
+	#ifdef DEBUG_AUDIO_OUT_SDL
+		LOG(LOG_VERBOSE, "Starting playback on channel %d", pChannel);
+	#endif
     if (mChannelMap.find(pChannel) != mChannelMap.end())
     {
         ChannelEntry* tChannelDesc = mChannelMap[pChannel];
@@ -368,6 +377,9 @@ bool AudioOutSdl::Play(int pChannel)
                 tChannelDesc->mMutex.unlock();
 
                 // play the new chunk (0 loops)
+				#ifdef DEBUG_AUDIO_OUT_SDL
+                	LOG(LOG_VERBOSE, "Starting playback on SDL channel %d", pChannel);
+				#endif
                 int tGotChannel = Mix_PlayChannel(pChannel, tChunk, 0);
 
                 // lock
@@ -392,6 +404,11 @@ bool AudioOutSdl::Play(int pChannel)
 
             // update the current chunk pointer
             tChannelDesc->LastChunk = tChunk;
+        }else
+        {
+			#ifdef DEBUG_AUDIO_OUT_SDL
+        		LOG(LOG_VERBOSE, "Channel %d is already playing", pChannel);
+			#endif
         }
 
         // were we successful?
@@ -399,6 +416,11 @@ bool AudioOutSdl::Play(int pChannel)
 
         // unlock
         tChannelDesc->mMutex.unlock();
+    }else
+    {
+		#ifdef DEBUG_AUDIO_OUT_SDL
+    		LOG(LOG_WARN, "Channel %d is unknown", pChannel);
+		#endif
     }
 
     return tResult;
@@ -412,8 +434,22 @@ bool AudioOutSdl::Stop(int pChannel)
     if (!mAudioOutOpened)
         return false;
 
+	#ifdef DEBUG_AUDIO_OUT_SDL
+		LOG(LOG_VERBOSE, "Stopping playback on SDL channel %d", pChannel);
+	#endif
+
     Mix_HaltChannel(pChannel);
     ClearChunkListInternal(pChannel);
+
+    ChannelEntry* tChannelDesc = mChannelMap[pChannel];
+
+    // lock
+    tChannelDesc->mMutex.lock();
+
+    tChannelDesc->IsPlaying = false;
+
+    // unlock
+    tChannelDesc->mMutex.unlock();
 
     return true;
 }
@@ -582,6 +618,10 @@ void AudioOutSdl::PlayerCallBack(int pChannel)
 
     Mix_Chunk* tChunk = NULL;
 
+	#ifdef DEBUG_AUDIO_OUT_SDL
+    	LOGEX(AudioOutSdl, LOG_WARN, "Got request for audio data for channel %d from SDL", pChannel);
+	#endif
+
     if (!AUDIOOUTSDL.mAudioOutOpened)
         return;
 
@@ -589,14 +629,14 @@ void AudioOutSdl::PlayerCallBack(int pChannel)
     {
         ChannelEntry* tChannelDesc = AUDIOOUTSDL.mChannelMap[pChannel];
 
+        tChannelDesc->IsPlaying = false;
+
         // lock
         if (!tChannelDesc->mMutex.tryLock(10000))
         {
-            LOGEX(AudioOutSdl, LOG_ERROR, "System is so terribly slow?, PlayerCallBack couldn't lock the mutex for channel %d", pChannel);
+            LOGEX(AudioOutSdl, LOG_WARN, "System is so terribly slow?, PlayerCallBack couldn't lock the mutex for channel %d", pChannel);
             return;
         }
-
-        tChannelDesc->IsPlaying = false;
 
         // play new chunk
         if ((tChannelDesc->Chunks.size() > 0) && (tChannelDesc->Assigned == true))

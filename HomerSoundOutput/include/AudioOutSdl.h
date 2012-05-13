@@ -46,7 +46,7 @@ namespace Homer { namespace SoundOutput {
 
 //#define DEBUG_AUDIO_OUT_SDL
 
-#define AUDIO_BUFFER_QUEUE_LIMIT                256
+#define AUDIO_BUFFER_QUEUE_LIMIT                2
 
 #define AUDIOOUTSDL AudioOutSdl::getInstance()
 // amount of mixing channels (independent from stereo/mono)
