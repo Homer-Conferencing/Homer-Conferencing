@@ -29,11 +29,7 @@
 #define _MULTIMEDIA_WAVE_OUT_PORT_AUDIO_
 
 #include <Header_PortAudio.h>
-#include <MediaSourceFile.h>
 #include <WaveOut.h>
-#include <MediaFifo.h>
-#include <HBThread.h>
-#include <HBCondition.h>
 
 namespace Homer { namespace Multimedia {
 
@@ -47,7 +43,7 @@ namespace Homer { namespace Multimedia {
 ///////////////////////////////////////////////////////////////////////////////
 
 class WaveOutPortAudio:
-    public WaveOut, Thread
+    public WaveOut
 {
 public:
     WaveOutPortAudio(std::string pDesiredDevice = "");
@@ -58,8 +54,6 @@ public:
     // playback control
     virtual bool Play();
     virtual void Stop();
-    virtual bool PlayFile(std::string pFileName, int pLoops = 1);
-    virtual std::string CurrentFile();
 
 public:
     /* open/close */
@@ -72,29 +66,13 @@ public:
 
 private:
     static int PlayAudioHandler(const void *pInputBuffer, void *pOutputBuffer, unsigned long pInputSize, const PaStreamCallbackTimeInfo* pTimeInfo, PaStreamCallbackFlags pStatus, void *pUserData);
-    void AssignThreadName();
+    virtual void AssignThreadName();
 
-    /* main loop to play audio file */
-    virtual void* Run(void* pArgs = NULL);
-    bool DoOpenNewFile();
-
-    bool                mHaveToAssignThreadName;
     /* playback */
     PaStream            *mStream;
-    MediaFifo           *mPlaybackFifo; // needed as FIFO buffer with prepared audio buffers for playback, avoid expensive operations like malloc/free (used when using AVFifoBuffer)
     AVFifoBuffer        *mSampleFifo; // needed to create audio buffers of fixed size (4096 bytes)
-    /* playback of file */
-    std::string         mFilePlaybackFileName;
-    bool                mOpenNewFileAsap;
-    bool                mFilePlaybackNeeded;
-    Mutex               mOpenNewFile;
-    MediaSourceFile     *mFilePlaybackSource;
-    int					mFilePlaybackLoops;
-    char                *mFilePlaybackBuffer;
-    Condition           mFilePlaybackCondition;
-    /* portaudio init. */
-    static Mutex        mPaInitMutex;
-    static bool         mPaInitiated;
+    /* recursion logger */
+    static int			mOpenStreams;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
