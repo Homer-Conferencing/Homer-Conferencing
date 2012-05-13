@@ -6,11 +6,22 @@
 MESSAGE("### Supporting Bundle installer creation")
 
 ###############################################################################
-set(CPACK_GENERATOR "Bundle")
+set(CPACK_GENERATOR "PackageMaker")
 
+# forcing monolithic install package, otherwise install will fail during runtime
+set(CPACK_MONOLITHIC_INSTALL 1)
+
+# set install root
+#set(CPACK_PACKAGING_INSTALL_PREFIX "Homer/${CPACK_PACKAGING_INSTALL_PREFIX}")
+ 
 ###############################################################################
-set(CPACK_BUNDLE_NAME "Homer Conferencing")
-set(CPACK_BUNDLE_ICON ${PACKAGE_TOP_SRC_DIR}/Homer/Homer.png) 
-#set(CPACK_BUNDLE_PLIST )
-set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "Build architectures for OSX" FORCE)
+#set(CPACK_BUNDLE_NAME "Homer Conferencing")
+#set(CPACK_BUNDLE_ICON ${PACKAGE_TOP_SRC_DIR}/Homer/Homer.png) 
+#set(CPACK_BUNDLE_PLIST ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/Info.plist)
+set(CPACK_PACKAGE_DEFAULT_LOCATION "/Applications")
+set(CPACK_PREFLIGHT_SCRIPT ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/OSXPreInstall)
+set(CPACK_POSTFLIGHT_SCRIPT ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/OSXPostInstall)
+set(CPACK_POSTUPGRADE_SCRIPT ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/OSXPostUpgrade)
+set(CPACK_OSX_PACKAGE_VERSION "10.6")
+#set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "Build architectures for OSX" FORCE)
 set(CPACK_SYSTEM_NAME "Homer Install")
