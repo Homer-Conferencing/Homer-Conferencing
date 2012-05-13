@@ -26,32 +26,21 @@
  */
 
 #include <ProcessStatisticService.h>
-#include <MediaSourceFile.h>
 #include <WaveOutPortAudio.h>
+#include <MediaSourcePortAudio.h>
 #include <Logger.h>
-#include <HBThread.h>
 
 using namespace std;
 using namespace Homer::Monitor;
 
 namespace Homer { namespace Multimedia {
 
-Mutex WaveOutPortAudio::mPaInitMutex;
-bool WaveOutPortAudio::mPaInitiated = false;
+int WaveOutPortAudio::mOpenStreams = 0;
 
 WaveOutPortAudio::WaveOutPortAudio(string pDesiredDevice):
-    WaveOut("Audio playback"), Thread()
+    WaveOut("PortAudio-Playback")
 {
-    mFilePlaybackSource = NULL;
-    mFilePlaybackNeeded = false;
-    mPaInitMutex.lock();
-    if (!mPaInitiated)
-    {
-        // initialize portaudio library
-        LOG(LOG_VERBOSE, "Initiated portaudio with result: %d", Pa_Initialize());
-        mPaInitiated = true;
-    }
-    mPaInitMutex.unlock();
+    MediaSourcePortAudio::PortAudioInit();
 
     if (pDesiredDevice != "")
     {
@@ -60,11 +49,6 @@ WaveOutPortAudio::WaveOutPortAudio(string pDesiredDevice):
         if (!tNewDeviceSelected)
             LOG(LOG_INFO, "Haven't selected new PortAudio device when creating source object");
     }
-
-    mPlaybackFifo = new MediaFifo(MEDIA_SOURCE_SAMPLES_FIFO_SIE, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE, "WaveOutPortAudio");
-
-    LOG(LOG_VERBOSE, "Going to allocate file playback buffer");
-    mFilePlaybackBuffer = (char*)malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE + FF_INPUT_BUFFER_PADDING_SIZE);
 
     LOG(LOG_VERBOSE, "Created");
 }
@@ -76,11 +60,6 @@ WaveOutPortAudio::~WaveOutPortAudio()
         Stop();
         CloseWaveOutDevice();
     }
-
-    delete mPlaybackFifo;
-
-    LOG(LOG_VERBOSE, "Going to release file playback buffer");
-    free(mFilePlaybackBuffer);
 
     LOG(LOG_VERBOSE, "Destroyed");
 }
@@ -203,21 +182,35 @@ bool WaveOutPortAudio::OpenWaveOutDevice(int pSampleRate, bool pStereo)
 
     LOG(LOG_VERBOSE, "Going to open stream..");
     LOG(LOG_VERBOSE, "..selected sample rate: %d", mSampleRate);
+    MediaSourcePortAudio::PortAudioLockStreamInterface();
+    LOG(LOG_VERBOSE, "Already open WaveOutPortAudio streams: %d", mOpenStreams);
+
+    // limit wave out for OSX: facing some problems in case the audio device is opened two times, this may also conflict with MediaSourcePortAudio
+    // HINT: use WaveOutSdl instead in OSX because PortAudio doesn't support more than 1 stream per device
+    #ifdef APPLE
+    	if (mOpenStreams > 0)
+    	{
+    		LOG(LOG_ERROR, "Couldn't open stream because maximum of 1 streams reached");
+    		MediaSourcePortAudio::PortAudioUnlockStreamInterface();
+    		return false;
+    	}
+	#endif
     if((tErr = Pa_OpenStream(&mStream, NULL /* input parameters */, &tOutputParameters, mSampleRate, MEDIA_SOURCE_SAMPLES_PER_BUFFER, paClipOff | paDitherOff, PlayAudioHandler /* callback */, this)) != paNoError)
     {
         LOG(LOG_ERROR, "Couldn't open stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
+        MediaSourcePortAudio::PortAudioUnlockStreamInterface();
         return false;
     }
+    mOpenStreams++;
+    MediaSourcePortAudio::PortAudioUnlockStreamInterface();
+    LOG(LOG_VERBOSE, "..stream opened");
 
     mCurrentDevice = mDesiredDevice;
-
-    // init fifo buffer
-    mSampleFifo = HM_av_fifo_alloc(MEDIA_SOURCE_SAMPLES_BUFFER_SIZE * 4);
 
     //######################################################
     //### give some verbose output
     //######################################################
-    LOG(LOG_INFO, "Wave out opened...");
+    LOG(LOG_INFO, "PortAudio wave out opened...");
     LOG(LOG_INFO,"    ..sample rate: %d", mSampleRate);
     LOG(LOG_INFO,"    ..channels: %d", tChannels);
     LOG(LOG_INFO,"    ..desired device: %s", mDesiredDevice.c_str());
@@ -251,13 +244,13 @@ bool WaveOutPortAudio::CloseWaveOutDevice()
         Stop();
 
         PaError tErr = paNoError;
+        MediaSourcePortAudio::PortAudioLockStreamInterface();
         if ((tErr = Pa_CloseStream(mStream)) != paNoError)
         {
             LOG(LOG_ERROR, "Couldn't close stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
         }
-
-        // free fifo buffer
-        av_fifo_free(mSampleFifo);
+        mOpenStreams--;
+        MediaSourcePortAudio::PortAudioUnlockStreamInterface();
 
         LOG(LOG_INFO, "...closed");
 
@@ -374,7 +367,7 @@ void WaveOutPortAudio::AssignThreadName()
 {
     if (mHaveToAssignThreadName)
     {
-        SVC_PROCESS_STATISTIC.AssignThreadName("PortAudio-Playback");
+        SVC_PROCESS_STATISTIC.AssignThreadName("WaveOutPortAudio-File");
         mHaveToAssignThreadName = false;
     }
 }
@@ -503,10 +496,10 @@ bool WaveOutPortAudio::Play()
     }
 
     WaveOut::Play();
-    mHaveToAssignThreadName = true;
 
     // do we already play?
-    if (Pa_IsStreamActive(mStream) == 0)
+	MediaSourcePortAudio::PortAudioLockStreamInterface();
+	if (Pa_IsStreamActive(mStream) == 0)
     {
         LOG(LOG_VERBOSE, "..clearing FIFO buffer");
         mPlaybackFifo->ClearFifo();
@@ -518,7 +511,7 @@ bool WaveOutPortAudio::Play()
             mPlayMutex.unlock();
 
             LOG(LOG_ERROR, "Couldn't start stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
-
+    		MediaSourcePortAudio::PortAudioUnlockStreamInterface();
             return false;
         }
 
@@ -532,7 +525,7 @@ bool WaveOutPortAudio::Play()
                 mPlayMutex.unlock();
 
                 LOG(LOG_WARN, "Was not able to start playback stream");
-
+        		MediaSourcePortAudio::PortAudioUnlockStreamInterface();
         	    return false;
         	}
         	LOG(LOG_VERBOSE, "..wait for stream start, loop count: %d", tLoop);
@@ -543,6 +536,7 @@ bool WaveOutPortAudio::Play()
         LOG(LOG_VERBOSE, "..stream was started");
     }else
     	LOG(LOG_VERBOSE, "Stream was already started");
+	MediaSourcePortAudio::PortAudioUnlockStreamInterface();
 
     // unlock grabbing
     mPlayMutex.unlock();
@@ -585,17 +579,19 @@ void WaveOutPortAudio::Stop()
     char tData[4];
     mPlaybackFifo->WriteFifo(tData, 0);
 
+	MediaSourcePortAudio::PortAudioLockStreamInterface();
     if (Pa_IsStreamActive(mStream) == 1)
     {
         LOG(LOG_VERBOSE, "..going to stop stream..");
 
+        //HINT: for OSX we use a patched portaudio version which doesn't call waitUntilBlioWriteBufferIsFlushed and therefore ignores pending audio buffers but doesn't hang here anymore
         if ((tErr = Pa_StopStream(mStream)) != paNoError)
         {
             // unlock grabbing
             mPlayMutex.unlock();
 
             LOG(LOG_ERROR, "Couldn't stop stream because \"%s\"", Pa_GetErrorText(tErr));
-
+    		MediaSourcePortAudio::PortAudioUnlockStreamInterface();
             return;
         }
 
@@ -612,7 +608,7 @@ void WaveOutPortAudio::Stop()
                 mPlayMutex.unlock();
 
                 LOG(LOG_WARN, "Was not able to stop playback stream");
-
+        		MediaSourcePortAudio::PortAudioUnlockStreamInterface();
         	    return;
         	}
         	LOG(LOG_VERBOSE, "..wait for stream stop, loop count: %d", tLoop);
@@ -623,140 +619,10 @@ void WaveOutPortAudio::Stop()
         LOG(LOG_VERBOSE, "..stream was stopped");
     }else
     	LOG(LOG_VERBOSE, "Stream was already stopped");
+	MediaSourcePortAudio::PortAudioUnlockStreamInterface();
 
     // unlock grabbing
     mPlayMutex.unlock();
-}
-
-bool WaveOutPortAudio::PlayFile(string pFileName, int pLoops)
-{
-    LOG(LOG_VERBOSE, "Try to play file: %s", pFileName.c_str());
-
-    if (!mWaveOutOpened)
-    {
-        LOG(LOG_VERBOSE, "Playback device wasn't opened yet");
-        return false;
-    }
-
-    mOpenNewFile.lock();
-
-    mFilePlaybackLoops = pLoops;
-    mFilePlaybackFileName = pFileName;
-    mOpenNewFileAsap = true;
-
-    mOpenNewFile.unlock();
-
-    if (!mFilePlaybackNeeded)
-    {
-        // start the playback thread for the first time
-        LOG(LOG_VERBOSE, "Starting thread for file based audio playback");
-        StartThread();
-    }else
-    {
-        // send wake up
-        LOG(LOG_VERBOSE, "Sending thread for file based audio playback a wake up signal");
-        mFilePlaybackCondition.SignalAll();
-    }
-
-    return true;
-}
-
-string WaveOutPortAudio::CurrentFile()
-{
-	return mFilePlaybackFileName;
-}
-
-bool WaveOutPortAudio::DoOpenNewFile()
-{
-    bool tResult = true;
-
-    LOG(LOG_VERBOSE, "Doing DoOpenNewFile() now..");
-    LOG(LOG_VERBOSE, "Try to play file: %s", mFilePlaybackFileName.c_str());
-
-    mOpenNewFile.lock();
-
-    mOpenNewFileAsap = false;
-
-    if (mFilePlaybackSource != NULL)
-    {
-        Stop();
-        mFilePlaybackSource->CloseGrabDevice();
-        delete mFilePlaybackSource;
-    }
-
-    LOG(LOG_VERBOSE, "..clearing FIFO buffer");
-    mPlaybackFifo->ClearFifo();
-
-    mFilePlaybackSource = new MediaSourceFile(mFilePlaybackFileName);
-    if (!mFilePlaybackSource->OpenAudioGrabDevice())
-    {
-        LOG(LOG_ERROR, "Couldn't open audio file for playback");
-        delete mFilePlaybackSource;
-        tResult = false;
-    }else
-    {
-        SVC_PROCESS_STATISTIC.AssignThreadName("PortAudio-File");
-
-        Play();
-    }
-
-    mOpenNewFile.unlock();
-    return tResult;
-}
-
-void* WaveOutPortAudio::Run(void* pArgs)
-{
-    int tSamplesSize;
-    int tSampleNumber = -1, tLastSampleNumber = -1;
-
-    mFilePlaybackNeeded = true;
-
-    LOG(LOG_VERBOSE, "Starting main loop for file based playback");
-    while(mFilePlaybackNeeded)
-    {
-        if (mOpenNewFileAsap)
-            DoOpenNewFile();
-
-        // get new samples from audio file
-        tSamplesSize = AVCODEC_MAX_AUDIO_FRAME_SIZE + FF_INPUT_BUFFER_PADDING_SIZE;
-        tSampleNumber = mFilePlaybackSource->GrabChunk(mFilePlaybackBuffer, tSamplesSize);
-
-        if ((tSampleNumber >= 0) && (!mPlaybackStopped))
-        {
-            #ifdef WOPA_DEBUG_FILE
-                LOG(LOG_VERBOSE, "Sending audio chunk %d of %d bytes from file to playback device", tSampleNumber, tSamplesSize);
-            #endif
-            WriteChunk(mFilePlaybackBuffer, tSamplesSize);
-        }
-
-        // if we have reached EOF then we wait until next file is scheduled for playback
-        if (tSampleNumber == GRAB_RES_EOF)
-        {
-        	mFilePlaybackLoops--;
-
-        	// should we loop the file?
-        	if (mFilePlaybackLoops > 0)
-        	{// repeat file
-        	    LOG(LOG_VERBOSE, "Looping %s, remaining loops: %d", mFilePlaybackFileName.c_str(), mFilePlaybackLoops - 1);
-        		mFilePlaybackSource->Seek(0);
-        	}else
-        	{// passive waiting until next trigger is received
-				// wait until last chunk is played
-        		LOG(LOG_VERBOSE, "EOF reached, waiting for playback end");
-				while(mPlaybackFifo->GetUsage() > 0)
-					Suspend(50 * 1000);
-
-				// stop playback
-				Stop();
-
-				// wait for next trigger
-				mFilePlaybackCondition.Reset();
-				mFilePlaybackCondition.Wait();
-        	}
-        }
-    }
-
-    return NULL;
 }
 
 }} //namespaces

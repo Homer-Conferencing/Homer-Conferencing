@@ -29,14 +29,18 @@
 #define _MULTIMEDIA_WAVE_OUT_
 
 #include <MediaSource.h>
+#include <MediaFifo.h>
+#include <MediaSourceFile.h>
 #include <PacketStatistic.h>
+#include <HBThread.h>
+#include <HBCondition.h>
 
 namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
 
 class WaveOut:
-    public Homer::Monitor::PacketStatistic
+    public Homer::Monitor::PacketStatistic, public Thread
 {
 public:
     WaveOut(std::string pName = "");
@@ -52,6 +56,7 @@ public:
     virtual void Stop();
     virtual bool IsPlaying();
     virtual bool PlayFile(std::string pFileName, int pLoops = 1);
+    virtual std::string CurrentFile();
 
     /* volume control */
     virtual int GetVolume(); // range: 0-200 %
@@ -68,7 +73,16 @@ public:
     /* playback control */
     virtual bool WriteChunk(void* pChunkBuffer, int pChunkSize = 4096) = 0;
 
+private:
+    /* playback of file */
+    virtual void* Run(void* pArgs = NULL);
+    bool DoOpenNewFile();
+
 protected:
+    virtual void AssignThreadName();
+
+    /* file based playback - thread naming */
+    bool                mHaveToAssignThreadName;
     /* device state */
     bool                mWaveOutOpened;
     bool                mPlaybackStopped;
@@ -80,7 +94,18 @@ protected:
     /* device handling */
     std::string         mDesiredDevice;
     std::string         mCurrentDevice;
-};
+    /* playback */
+    AVFifoBuffer        *mSampleFifo; // needed to create audio buffers of fixed size (4096 bytes)
+    MediaFifo           *mPlaybackFifo; // needed as FIFO buffer with prepared audio buffers for playback, avoid expensive operations like malloc/free (used when using AVFifoBuffer)
+    /* playback of file */
+    std::string         mFilePlaybackFileName;
+    bool                mOpenNewFileAsap;
+    bool                mFilePlaybackNeeded;
+    Mutex               mOpenNewFile;
+    MediaSourceFile     *mFilePlaybackSource;
+    int					mFilePlaybackLoops;
+    char                *mFilePlaybackBuffer;
+    Condition           mFilePlaybackCondition;};
 
 ///////////////////////////////////////////////////////////////////////////////
 
