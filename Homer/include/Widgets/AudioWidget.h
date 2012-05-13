@@ -40,7 +40,7 @@
 #include <QList>
 
 #include <MediaSource.h>
-#include <WaveOutPortAudio.h>
+#include <WaveOut.h>
 #include <ui_AudioWidget.h>
 
 namespace Homer { namespace Gui {
@@ -235,7 +235,7 @@ private:
     bool				mPlayNewFileAsap;
     bool                mSelectInputChannelAsap;
     /* playback */
-    Homer::Multimedia::WaveOutPortAudio *mWaveOut;
+    Homer::Multimedia::WaveOut *mWaveOut;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

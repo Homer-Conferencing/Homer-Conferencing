@@ -50,6 +50,7 @@
 #include <MediaSourceV4L2.h>
 //#include <MediaSourceDShow.h>
 #include <MediaSourceVFW.h>
+#include <MediaSourceCoreVideo.h>
 #include <MediaSourceMuxer.h>
 #include <MediaSourceFile.h>
 #include <MediaSourceDesktop.h>
@@ -337,6 +338,9 @@ void MainWindow::initializeVideoAudioIO()
 	#ifdef WIN32
 		mOwnVideoMuxer->RegisterMediaSource(new MediaSourceVFW(tVSourceSelection));
 		//TODO: mOwnVideoMuxer->RegisterMediaSource(new MediaSourceDShow());
+	#endif
+	#ifdef APPLE
+		mOwnVideoMuxer->RegisterMediaSource(new MediaSourceCoreVideo(tVSourceSelection));
 	#endif
     mOwnVideoMuxer->RegisterMediaSource(mSourceDesktop = new MediaSourceDesktop());
     // ############################

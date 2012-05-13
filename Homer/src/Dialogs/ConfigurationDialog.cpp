@@ -34,6 +34,7 @@
 #include <Logger.h>
 #include <Snippets.h>
 #include <WaveOutPortAudio.h>
+#include <WaveOutSdl.h>
 
 #include <list>
 #include <string>
@@ -736,7 +737,11 @@ void ConfigurationDialog::OpenPlaybackDevice()
 {
     LOG(LOG_VERBOSE, "Going to open playback device");
 
-    mWaveOut = new WaveOutPortAudio(CONF.GetLocalAudioSink().toStdString());
+	#ifndef APPLE
+		mWaveOut = new WaveOutPortAudio(CONF.GetLocalAudioSink().toStdString());
+	#else
+		mWaveOut = new WaveOutSdl(CONF.GetLocalAudioSink().toStdString());
+	#endif
     mWaveOut->OpenWaveOutDevice();
     LOG(LOG_VERBOSE, "Finished to open playback device");
 }

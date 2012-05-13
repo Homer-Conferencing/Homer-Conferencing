@@ -26,6 +26,8 @@
  */
 
 #include <MediaSourceFile.h>
+#include <WaveOutPortAudio.h>
+#include <WaveOutSdl.h>
 #include <ProcessStatisticService.h>
 #include <Widgets/AudioWidget.h>
 #include <Dialogs/AddNetworkSinkDialog.h>
@@ -870,8 +872,12 @@ void AudioWorkerThread::OpenPlaybackDevice()
 
     LOG(LOG_VERBOSE, "Going to open playback device");
 
-    mWaveOut = new WaveOutPortAudio(CONF.GetLocalAudioSink().toStdString());
-    mWaveOut->OpenWaveOutDevice();
+	#ifndef APPLE
+    	mWaveOut = new WaveOutPortAudio(CONF.GetLocalAudioSink().toStdString());
+	#else
+    	mWaveOut = new WaveOutSdl(CONF.GetLocalAudioSink().toStdString());
+	#endif
+	mWaveOut->OpenWaveOutDevice();
     mPlaybackAvailable = true;
     LOG(LOG_VERBOSE, "Finished to open playback device");
 }

@@ -128,7 +128,7 @@ private:
     AudioDevicesList        mAudioCaptureDevices;
     Homer::Multimedia::AudioDevicesList mAudioPlaybackDevices;
     /* playback */
-    Homer::Multimedia::WaveOutPortAudio *mWaveOut;
+    Homer::Multimedia::WaveOut *mWaveOut;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
