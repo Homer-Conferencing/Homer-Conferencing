@@ -41,6 +41,7 @@ SET (INCLUDE_DIRS
 	../../HomerBase/include
 	../../HomerGAPI/include
 	../../HomerMonitor/include
+	../../HomerSoundOutput/include
 	/usr/include/ffmpeg
 	${ALSA_INCLUDE_DIRS}
 	${SDL_INCLUDE_DIR}	
@@ -97,6 +98,7 @@ IF (APPLE)
 SET (SOURCES
 	${SOURCES}
 	../src/MediaSourceCoreVideo
+	../src/WaveOutSdl
 )
 ENDIF (APPLE)
 
@@ -148,6 +150,7 @@ SET (LIBS_APPLE
 	HomerBase
 	HomerGAPI
 	HomerMonitor
+	HomerSoundOutput
 )
 SET (LIBS_APPLE_STATIC
 	avdevice
