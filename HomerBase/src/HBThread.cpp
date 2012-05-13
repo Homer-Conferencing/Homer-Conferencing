@@ -91,8 +91,7 @@ int Thread::GetTId()
 		return syscall(__NR_gettid);
 	#endif
     #if defined(APPLE) || defined(BSD)
-        //TODO
-		return 0;
+		return (int)pthread_mach_thread_np(pthread_self()); //HINT: original result is "unsigned int" (defined somewhere in _types.h)
     #endif
 	#ifdef WIN32
 		return (int)GetCurrentThreadId();
