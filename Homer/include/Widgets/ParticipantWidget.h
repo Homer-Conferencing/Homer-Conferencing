@@ -37,6 +37,7 @@
 #include <MediaSourceMuxer.h>
 #include <MeetingEvents.h>
 #include <MediaSource.h>
+#include <WaveOut.h>
 
 #include <list>
 
@@ -170,7 +171,7 @@ private:
     Socket				*mVideoSendSocket, *mAudioSendSocket, *mVideoReceiveSocket, *mAudioReceiveSocket;
     int                 mTimerId;
     /* playback */
-    Homer::Multimedia::WaveOutPortAudio *mWaveOut;
+    Homer::Multimedia::WaveOut *mWaveOut;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

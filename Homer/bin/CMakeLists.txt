@@ -279,7 +279,6 @@ ELSE ()
 		HomerConference
 		QtCore
 		QtGui
-		#QtMultimedia
 		QtNetwork
 		QtXml
 		QtWebKit
@@ -295,8 +294,24 @@ SET (LIBS_APPLE
 	HomerMonitor
 	HomerMultimedia
 	HomerConference
-	${QT_LIBRARIES}
 )
+IF (${BUILD} MATCHES "Release")
+	SET (LIBS_APPLE
+		${LIBS_APPLE}
+		QtCore
+		QtGui
+		QtNetwork
+		QtXml
+		QtXmlPatterns
+		QtWebKit
+	)
+else()
+	SET (LIBS_APPLE
+		${LIBS_APPLE}
+		${QT_LIBRARIES}
+	)
+endif()
+
 SET (FRAMEWORKS_APPLE
 	Cocoa
 	ApplicationServices

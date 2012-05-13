@@ -31,6 +31,8 @@
 #include <Widgets/VideoWidget.h>
 #include <Widgets/OverviewPlaylistWidget.h>
 #include <MediaSourceNet.h>
+#include <WaveOutPortAudio.h>
+#include <WaveOutSdl.h>
 #include <Widgets/AudioWidget.h>
 #include <MediaSourceNet.h>
 #include <Widgets/MessageWidget.h>
@@ -323,7 +325,11 @@ void ParticipantWidget::OpenPlaybackDevice()
 {
     LOG(LOG_VERBOSE, "Going to open playback device");
 
-    mWaveOut = new WaveOutPortAudio(CONF.GetLocalAudioSink().toStdString());
+	#ifndef APPLE
+		mWaveOut = new WaveOutPortAudio(CONF.GetLocalAudioSink().toStdString());
+	#else
+		mWaveOut = new WaveOutSdl(CONF.GetLocalAudioSink().toStdString());
+	#endif
     mWaveOut->OpenWaveOutDevice();
     LOG(LOG_VERBOSE, "Finished to open playback device");
 }
