@@ -40,6 +40,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/HomerSoundOutput/include}&quot;"/>
 									<listOptionValue builtIn="false" value="../../HomerMonitor/include"/>
 									<listOptionValue builtIn="false" value="../../HomerMultimedia/include"/>
+									<listOptionValue builtIn="false" value="../../../Homer-Release/HomerIncludes/SDL"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.689652821" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
