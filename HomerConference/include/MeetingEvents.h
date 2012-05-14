@@ -31,6 +31,7 @@
 #include <Header_SofiaSipForwDecl.h>
 #include <HBMutex.h>
 
+#include <list>
 #include <string>
 
 using namespace std;
@@ -344,7 +345,11 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////
 
-#define MEETING_EVENT_QUEUE_LENGTH    64
+typedef std::list<GeneralEvent*>	MeetingEventList;
+
+//////////////////////////////////////////////////////////////////////////////
+
+#define MEETING_EVENT_QUEUE_LENGTH    2048
 class EventManager
 {
 public:
@@ -356,8 +361,9 @@ public:
     GeneralEvent* Scan();
 
 private:
-    Mutex               mMutex;
-    GeneralEvent        *mEvents[MEETING_EVENT_QUEUE_LENGTH];
+    Mutex               mEventsMutex;
+    MeetingEventList    mEvents;
+    //GeneralEvent        *mEvents[MEETING_EVENT_QUEUE_LENGTH];
     int                 mRemainingEvents;
 };
 

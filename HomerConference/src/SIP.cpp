@@ -3004,7 +3004,6 @@ void SIP::SipSendCallHangUp(CallHangUpEvent *pCHUEvent)
 
 void SIP::SipSendOptionsRequest(OptionsEvent *pOEvent)
 {
-    nua_handle_t *tHandle;
     sip_to_t *to;
     sip_from_t *from;
 
@@ -3027,7 +3026,7 @@ void SIP::SipSendOptionsRequest(OptionsEvent *pOEvent)
         from->a_url->url_password = pOEvent->SenderComment.c_str();
 
     // create operation handle
-    tHandle = nua_handle(mSipContext->Nua, NULL, SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), SIPTAG_TO(to), /*SIPTAG_FROM(from),*/ TAG_END());
+    nua_handle_t *tHandle = nua_handle(mSipContext->Nua, NULL, SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), SIPTAG_TO(to), /*SIPTAG_FROM(from),*/ TAG_END());
 
     if (tHandle == NULL)
     {
@@ -3056,42 +3055,34 @@ void SIP::SipProcessOutgoingEvents()
         if (tEvent->getType() == MessageEvent::type())
         {
             SipSendMessage((MessageEvent*) tEvent);
-            return;
         }
         if (tEvent->getType() == CallEvent::type())
         {
             SipSendCall((CallEvent*) tEvent);
-            return;
         }
         if (tEvent->getType() == CallRingingEvent::type())
         {
             SipSendCallRinging((CallRingingEvent*) tEvent);
-            return;
         }
         if (tEvent->getType() == CallCancelEvent::type())
         {
             SipSendCallCancel((CallCancelEvent*) tEvent);
-            return;
         }
         if (tEvent->getType() == CallAcceptEvent::type())
         {
             SipSendCallAccept((CallAcceptEvent*) tEvent);
-            return;
         }
         if (tEvent->getType() == CallDenyEvent::type())
         {
             SipSendCallDeny((CallDenyEvent*) tEvent);
-            return;
         }
         if (tEvent->getType() == CallHangUpEvent::type())
         {
             SipSendCallHangUp((CallHangUpEvent*) tEvent);
-            return;
         }
         if (tEvent->getType() == OptionsEvent::type())
         {
             SipSendOptionsRequest((OptionsEvent*) tEvent);
-            return;
         }
         if (tEvent->getType() == InternalNatDetectionEvent::type())
         {
@@ -3101,8 +3092,6 @@ void SIP::SipProcessOutgoingEvents()
             tINDEvent->Failed = !DetectNatViaStun(tINDEvent->FailureReason);
 
             MEETING.notifyObservers(tINDEvent);
-
-            return;
         }
         delete tEvent;
     }

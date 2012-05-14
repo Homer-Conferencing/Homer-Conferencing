@@ -26,7 +26,7 @@
  */
 
 #include <MeetingEvents.h>
-
+#include <Logger.h>
 #include <string>
 
 namespace Homer { namespace Conference {
@@ -65,9 +65,6 @@ void MeetingObservable::DeleteObserver(MeetingObserver *pObserver)
 
 EventManager::EventManager()
 {
-    mRemainingEvents = 0;
-    for (int i = 0; i < MEETING_EVENT_QUEUE_LENGTH; i++)
-        mEvents[i] = NULL;
 }
 
 EventManager::~EventManager()
@@ -79,44 +76,43 @@ bool EventManager::Fire(GeneralEvent* pEvent)
 {
     bool tResult = false;
 
+    LOG(LOG_VERBOSE, "Firing new meeting event");
+
     // lock
     // return false if timeout occurred while waiting for mutex
-    if (!mMutex.tryLock(100))
+    if (!mEventsMutex.tryLock(100))
         return false;
 
-    if (mRemainingEvents < MEETING_EVENT_QUEUE_LENGTH)
+    while (mEvents.size() > MEETING_EVENT_QUEUE_LENGTH)
     {
-        // free memory of processed event
-        if (mEvents[mRemainingEvents] != NULL)
-            delete mEvents[mRemainingEvents];
+    	LOG(LOG_WARN, "System too slow?, dropping meeting event of type %s", GeneralEvent::getNameFromType(pEvent->getType()).c_str());
+    	mEvents.pop_front();
+    }
 
-        mEvents[mRemainingEvents] = pEvent;
-        mRemainingEvents++;
-        tResult = true;
-    }else
-        tResult = false;
+    mEvents.push_back(pEvent);
 
     // unlock
-    mMutex.unlock();
-    return tResult;
+    mEventsMutex.unlock();
+    LOG(LOG_VERBOSE, "Successful event fire");
+
+    return true;
 }
 
 GeneralEvent* EventManager::Scan()
 {
-    GeneralEvent* tEvent;
+    GeneralEvent* tEvent = NULL;
 
     // lock
-    mMutex.lock();
+    mEventsMutex.lock();
 
-    if (mRemainingEvents)
+    if(mEvents.size() > 0)
     {
-        mRemainingEvents--;
-        tEvent = mEvents[mRemainingEvents];
-    }else
-        tEvent = NULL;
+    	tEvent = mEvents.front();
+    	mEvents.pop_front();
+    }
 
     // unlock
-    mMutex.unlock();
+    mEventsMutex.unlock();
 
     return tEvent;
 }
