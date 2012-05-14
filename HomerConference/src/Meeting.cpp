@@ -880,12 +880,10 @@ bool Meeting::SendHangUp(string pParticipant)
 
 bool Meeting::SendProbe(std::string pParticipant)
 {
-    LOG(LOG_VERBOSE, "Probing: %s", pParticipant.c_str());
+    //LOG(LOG_VERBOSE, "Probing: %s", pParticipant.c_str());
 
     // lock
     mParticipantsMutex.lock();
-
-    OptionsEvent *tOEvent = new OptionsEvent();
 
     // is participant user of the registered SIP server then acknowledge directly
     if ((pParticipant.find(mSipRegisterServer) != string::npos) && (GetServerRegistrationState()))
@@ -900,19 +898,20 @@ bool Meeting::SendProbe(std::string pParticipant)
         mParticipantsMutex.unlock();
 
         notifyObservers(tOAEvent);
-        return true;
+    }else
+    {
+		// probe P2P SIP participants
+        OptionsEvent *tOEvent = new OptionsEvent();
+		tOEvent->Sender = "sip:" + GetLocalConferenceId();
+		tOEvent->SenderName = GetLocalUserName();
+		tOEvent->SenderComment = "";
+		tOEvent->Receiver = "sip:" + pParticipant;
+		tOEvent->HandlePtr = NULL; // done within SIP class
+		mOutgoingEvents.Fire((GeneralEvent*) tOEvent);
+
+		// unlock
+		mParticipantsMutex.unlock();
     }
-
-    // probe P2P SIP participants
-    tOEvent->Sender = "sip:" + GetLocalConferenceId();
-    tOEvent->SenderName = GetLocalUserName();
-    tOEvent->SenderComment = "";
-    tOEvent->Receiver = "sip:" + pParticipant;
-    tOEvent->HandlePtr = NULL; // done within SIP class
-    mOutgoingEvents.Fire((GeneralEvent*) tOEvent);
-
-    // unlock
-    mParticipantsMutex.unlock();
 
     return true;
 }
