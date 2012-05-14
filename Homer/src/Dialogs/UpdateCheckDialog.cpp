@@ -164,11 +164,11 @@ void UpdateCheckDialog::DownloadInstallerStart()
 	QString tReleaseFileType;
 
 	#ifdef WIN32
-		tReleaseFileName = "Homer-Install.exe";
+		tReleaseFileName = "Homer-Conferencing.exe";
 		tReleaseFileType = "Windows executable file (*.exe)";
 	#endif
 	#ifdef LINUX
-		tReleaseFileName = "Homer-Install.sh";
+		tReleaseFileName = "Homer-Conferencing.sh";
 		tReleaseFileType = "Linux shell script (*.sh)";
 	#endif
 	#ifdef BSD
