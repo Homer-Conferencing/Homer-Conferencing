@@ -168,13 +168,15 @@ void UpdateCheckDialog::DownloadInstallerStart()
 		tReleaseFileType = "Windows executable file (*.exe)";
 	#endif
 	#ifdef LINUX
-		return;
+		tReleaseFileName = "Homer-Install.sh";
+		tReleaseFileType = "Linux shell script (*.sh)";
 	#endif
 	#ifdef BSD
 		return;
 	#endif
 	#ifdef APPLE
-		return;
+		tReleaseFileName = "Homer-Conferencing.dmg";
+		tReleaseFileType = "Apple disc image file (*.dmg)";
 	#endif
 
 	// ask for target location for new release installer
@@ -318,12 +320,8 @@ void UpdateCheckDialog::GotAnswerForVersionRequest(bool pError)
                 mLbVersionServer->setText("<font color='red'><b>" + mServerVersion + "</b></font>");
                 mTbDownloadUpdate->show();
 
-                // show download button for installer on Windows
-                #ifdef WIN32
-                	mTbDownloadUpdateInstaller->show();
-                #else
-                    mTbDownloadUpdateInstaller->hide();
-                #endif
+                // show download button for installer
+				mTbDownloadUpdateInstaller->show();
             }else
                 mLbVersionServer->setText("<font color='green'><b>" + mServerVersion + "</b></font>");
         }
