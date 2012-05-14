@@ -185,7 +185,11 @@ int inet_pton4(const char *pSrc, u_char *pDst)
 
 int inet_pton6(const char *pSrc, u_char *pDst)
 {
-	static const char tXDigits[] = "0123456789abcdef";
+	#ifdef WIN32
+		const char tXDigits[] = "0123456789abcdef";
+	#else
+		static const char tXDigits[] = "0123456789abcdef";
+	#endif
 	u_char tTmp[NS_IN6ADDRSZ], *tTp, *tEndP, *tColonP;
 	const char *tCurrentToken;
 	int tChar, tSawXDigit;
