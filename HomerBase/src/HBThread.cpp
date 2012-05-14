@@ -542,7 +542,7 @@ bool Thread::StartThread(void* pArgs)
     #ifdef WIN32
         mThreadHandle = CreateThread(
              NULL,                   // default security attributes
-             0,                      // use default stack size
+             THREAD_DEFAULT_STACK_SIZE,        // use Linux pthread default stack size, Windows would use 1 MB
              (LPTHREAD_START_ROUTINE)StartThreadStaticWrapperRun, // thread function name
              (LPVOID)this,           // argument to thread function
              0,                      // use default creation flags
@@ -550,7 +550,10 @@ bool Thread::StartThread(void* pArgs)
         if (mThreadHandle == 0)
         	LOG(LOG_ERROR, "Creation of thread failed because of code \"%d\"", GetLastError());
         else
+        {
+            LOG(LOG_VERBOSE, "Thread started with stack size of %d bytes", THREAD_DEFAULT_STACK_SIZE);
         	tResult = true;
+        }
     #endif
 
     return tResult;

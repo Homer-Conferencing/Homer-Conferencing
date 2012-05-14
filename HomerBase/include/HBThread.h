@@ -42,6 +42,8 @@ typedef void*(*THREAD_MAIN)(void*);
 
 #include <vector>
 
+#define THREAD_DEFAULT_STACK_SIZE			(2 * 1024 * 1024)
+
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
