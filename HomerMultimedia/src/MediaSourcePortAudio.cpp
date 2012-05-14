@@ -287,10 +287,19 @@ bool MediaSourcePortAudio::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     int tDeviceId= mDesiredDevice[0] - 48;
     LOG(LOG_VERBOSE, "Will open port audio device %d", tDeviceId);
 
+    if (tDeviceId < 0)
+    {
+    	LOG(LOG_ERROR, "Selected audio device id %d is invalid", tDeviceId);
+    	return false;
+    }
     tInputParameters.device = tDeviceId;
     tInputParameters.channelCount = tChannels;
     tInputParameters.sampleFormat = paInt16;
-    tInputParameters.suggestedLatency = Pa_GetDeviceInfo(tInputParameters.device)->defaultLowInputLatency;
+    const PaDeviceInfo *tDevInfo = Pa_GetDeviceInfo(tInputParameters.device);
+    if (tDevInfo != NULL)
+    	tInputParameters.suggestedLatency = tDevInfo->defaultLowInputLatency;
+    else
+    	tInputParameters.suggestedLatency = 0.100;
     tInputParameters.hostApiSpecificStreamInfo = NULL;
 
     LOG(LOG_VERBOSE, "Going to open stream..");
