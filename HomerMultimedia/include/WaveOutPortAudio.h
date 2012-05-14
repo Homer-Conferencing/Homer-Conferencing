@@ -70,7 +70,6 @@ private:
 
     /* playback */
     PaStream            *mStream;
-    AVFifoBuffer        *mSampleFifo; // needed to create audio buffers of fixed size (4096 bytes)
     /* recursion logger */
     static int			mOpenStreams;
 };

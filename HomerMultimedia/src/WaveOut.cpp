@@ -44,15 +44,20 @@ WaveOut::WaveOut(string pName):
     mCurrentDevice = "";
     mVolume = 100;
     mFilePlaybackSource = NULL;
+    mSampleFifo = NULL;
     mFilePlaybackNeeded = false;
 
+    LOG(LOG_VERBOSE, "Going to allocate playback FIFO");
     mPlaybackFifo = new MediaFifo(MEDIA_SOURCE_SAMPLES_FIFO_SIE, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE, "WaveOutPortAudio");
 
     LOG(LOG_VERBOSE, "Going to allocate file playback buffer");
     mFilePlaybackBuffer = (char*)malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE + FF_INPUT_BUFFER_PADDING_SIZE);
 
     // init fifo buffer
+    LOG(LOG_VERBOSE, "Going to allocate sample size FIFO");
     mSampleFifo = HM_av_fifo_alloc(MEDIA_SOURCE_SAMPLES_BUFFER_SIZE * 4);
+    if (mSampleFifo == NULL)
+    	LOG(LOG_ERROR, "Sample size FIFO is invalid");
 }
 
 WaveOut::~WaveOut()

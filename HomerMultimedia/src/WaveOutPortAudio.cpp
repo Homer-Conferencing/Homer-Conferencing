@@ -219,10 +219,12 @@ bool WaveOutPortAudio::OpenWaveOutDevice(int pSampleRate, bool pStereo)
     LOG(LOG_INFO,"    ..sample format: %d", paInt16);
     //LOG(LOG_INFO,"    ..sample buffer size: %d", mSampleBufferSize);
     LOG(LOG_INFO, "Fifo opened...");
-    LOG(LOG_INFO, "    ..fill size: %d bytes", av_fifo_size(mSampleFifo));
+    if (mSampleFifo != NULL)
+    	LOG(LOG_INFO, "    ..fill size: %d bytes", av_fifo_size(mSampleFifo));
+    else
+    	LOG(LOG_WARN, "    ..fill size: invalid");
 
     mWaveOutOpened = true;
-
     Play();
 
     return true;
