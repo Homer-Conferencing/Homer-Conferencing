@@ -2,7 +2,9 @@
 # Author:  Thomas Volkert
 # Since:   2012-02-28
 ###############################################################################
+INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/CMakePreDefs.txt)
 
+###############################################################################
 # we are inside HomerBuild!
 SET (INSIDE_HOMER_BUILD "true")
 cmake_minimum_required (VERSION 2.6)
@@ -22,4 +24,4 @@ ENDIF()
 
 ##############################################################################
 # include CPack configuration to generate installers for Win/OSX
-INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../HomerBuild/CMakeCPack.txt)
+INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/CMakeCPack.txt)
