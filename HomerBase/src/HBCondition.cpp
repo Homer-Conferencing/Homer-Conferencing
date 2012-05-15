@@ -99,14 +99,62 @@ bool Condition::Wait(Mutex *pMutex, int pTime)
                 return !pthread_cond_wait(&mCondition, &pMutex->mMutex);
         else
         {
+        	bool tResult = false;
             pthread_mutex_t tMutex;
             pthread_mutex_init(&tMutex, NULL);
             pthread_mutex_lock(&tMutex);
             if (pTime > 0)
-                return !pthread_cond_timedwait(&mCondition, &tMutex, &tTimeout);
-            else
-                return !pthread_cond_wait(&mCondition, &tMutex);
+            {
+                int tRes = pthread_cond_timedwait(&mCondition, &tMutex, &tTimeout);
+				switch(tRes)
+				{
+					case EDEADLK:
+						LOG(LOG_ERROR, "Condition already held by calling thread");
+						break;
+					case EBUSY: // Condition can't be obtained because it is busy
+						break;
+					case EINVAL:
+						LOG(LOG_ERROR, "Condition was found in uninitialized state");
+						break;
+					case EFAULT:
+						LOG(LOG_ERROR, "Invalid condition pointer was given");
+						break;
+					case ETIMEDOUT:
+						LOG(LOG_WARN, "Condition couldn't be obtained in given time.\n");
+						break;
+					case 0: // Condition was free and is obtained now
+						tResult = true;
+						break;
+					default:
+						LOG(LOG_ERROR, "Error occurred while trying to get condition: code %d", tRes);
+						break;
+				}
+        	}else
+            {
+            	int tRes = pthread_cond_wait(&mCondition, &tMutex);
+        		switch(tRes)
+        		{
+        			case EDEADLK:
+        				LOG(LOG_ERROR, "Condition already held by calling thread");
+        				break;
+        			case EBUSY: // Condition can't be obtained because it is busy
+        				break;
+        			case EINVAL:
+        				LOG(LOG_ERROR, "Condition was found in uninitialized state");
+        				break;
+        			case EFAULT:
+        				LOG(LOG_ERROR, "Invalid condition pointer was given");
+        				break;
+        			case 0: // Condition was free and is obtained now
+        				tResult = true;
+        				break;
+        			default:
+        				LOG(LOG_ERROR, "Error occurred while trying to get condition: code %d", tRes);
+        				break;
+        		}
+            }
             pthread_mutex_destroy(&tMutex);
+    		return tResult;
         }
     #endif
 
