@@ -6,7 +6,8 @@
 MESSAGE("### Supporting PackageMaker installer creation")
 
 ###############################################################################
-set(CPACK_GENERATOR "PackageMaker")
+set(CPACK_GENERATOR "Bundle")
+#set(CPACK_GENERATOR "PackageMaker")
 
 # forcing monolithic install package, otherwise install will fail during runtime
 set(CPACK_MONOLITHIC_INSTALL 1)
@@ -16,13 +17,17 @@ set(CPACK_PACKAGE_DEFAULT_LOCATION "/Applications")
 set(CPACK_PACKAGING_INSTALL_PREFIX "/Homer-Conferencing" CACHE PATH "Package install path prefix" FORCE)
  
 ###############################################################################
-#set(CPACK_BUNDLE_NAME "Homer Conferencing")
-#set(CPACK_BUNDLE_ICON ${PACKAGE_TOP_SRC_DIR}/Homer/winres/Homer.ico) 
-#set(CPACK_BUNDLE_PLIST ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/Info.plist)
-#set(CPACK_PACKAGE_DEFAULT_LOCATION "/Applications")
+set(CPACK_BUNDLE_NAME "Homer-Conferencing")
+set(MACOSX_BUNDLE_BUNDLE_NAME Homer-Conferencing)
+set(MACOSX_BUNDLE_GUI_IDENTIFIER "Homer-Conferencing")
+set(MACOSX_BUNDLE_ICON_FILE ${PACKAGE_TOP_SRC_DIR}/Homer/Homer.png)
+set(MACOSX_BUNDLE_BUNDLE_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+set(MACOSX_BUNDLE_INFO_STRING "Homer-Conferencing ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}, Copyright 2008 Thomas Volkert" )
+set(CPACK_BUNDLE_ICON ${PACKAGE_TOP_SRC_DIR}/Homer/Homer.png) 
+set(CPACK_BUNDLE_PLIST ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/Info.plist) # copied from cmake output for "Homer"
 set(CPACK_PREFLIGHT_SCRIPT ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/OSXPreInstall)
 set(CPACK_POSTFLIGHT_SCRIPT ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/OSXPostInstall)
 set(CPACK_POSTUPGRADE_SCRIPT ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/OSXPostUpgrade)
 set(CPACK_OSX_PACKAGE_VERSION "10.6")
-#set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "Build architectures for OSX" FORCE)
+set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "Build architectures for OSX" FORCE)
 set(CPACK_SYSTEM_NAME "Homer Install")
