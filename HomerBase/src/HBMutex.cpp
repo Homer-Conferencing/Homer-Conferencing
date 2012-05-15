@@ -98,7 +98,7 @@ bool Mutex::tryLock()
 {
 	bool tResult = false;
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
-		switch(pthread_mutex_trylock(&mMutex))
+		switch(int tRes = pthread_mutex_trylock(&mMutex))
 		{
 			case EDEADLK:
 				LOG(LOG_ERROR, "Lock already held by calling thread");
@@ -115,7 +115,7 @@ bool Mutex::tryLock()
 				tResult = true;
 				break;
 			default:
-				LOG(LOG_ERROR, "Error occurred while trying to get lock: code %d", tResult);
+				LOG(LOG_ERROR, "Error occurred while trying to get lock: code %d", tRes);
 				break;
 		}
 	#endif
