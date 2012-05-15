@@ -870,7 +870,7 @@ QString Configuration::GetAudioCodec()
 
 int Configuration::GetAudioQuality()
 {
-    return mQSettings->value("Streaming/AudioStreamQuality", 70).toInt();
+    return mQSettings->value("Streaming/AudioStreamQuality", 100).toInt();
 }
 
 int Configuration::GetAudioMaxPacketSize()

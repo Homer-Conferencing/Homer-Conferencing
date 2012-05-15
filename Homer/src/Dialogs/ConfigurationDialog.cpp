@@ -940,7 +940,7 @@ void ConfigurationDialog::ClickedButton(QAbstractButton *pButton)
                 mCbAudioSource->setCurrentIndex(0);
                 mCbAudioSink->setCurrentIndex(0);
                 mCbAudioCodec->setCurrentIndex(0);//MP3
-                mCbAudioQuality->setCurrentIndex(6);//70 %
+                mCbAudioQuality->setCurrentIndex(9);//100 %
                 mCbAudioMaxPacketSize->setCurrentIndex(2);//1280
                 break;
             //### NETWORK configuration
