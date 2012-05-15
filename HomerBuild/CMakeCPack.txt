@@ -34,12 +34,11 @@ set(CPACK_RESOURCE_FILE_README ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/texts
 ###############################################################################
 # HINT: workaround for NSIS installer bug is to use "\\\\" construction at least once per variable
 
+set(CPACK_PACKAGE_EXECUTABLES "Homer;Homer-Conferencing")
 IF (WIN32)
-    set(CPACK_PACKAGE_EXECUTABLES "Homer" "Homer-Conferencing")
     set(CPACK_PACKAGE_ICON ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/images\\\\Homer-Banner.bmp)
     set(CPACK_RESOURCE_FILE_WELCOME ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/texts\\\\Homer-Welcome.txt)
 ELSE()
-    set(CPACK_PACKAGE_EXECUTABLES "bin/Homer" "Homer-Conferencing")
     set(CPACK_PACKAGE_ICON ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/images/Homer-Banner.bmp)
     set(CPACK_RESOURCE_FILE_WELCOME ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/texts/Homer-Welcome.txt)
 ENDIF()
