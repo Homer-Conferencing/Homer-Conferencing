@@ -149,7 +149,7 @@ ENDIF()
 # explicit shared object name with @rpath prefix for APPLE
 IF (DEFINED TARGET_LIB_NAME) 
 	IF (APPLE)
-		SET(LFLAGS "${LFLAGS} -Wl,-dylib_install_name,@executable_path/../lib/lib${TARGET_LIB_NAME}.dylib")
+		SET(LFLAGS "${LFLAGS} -Wl,-dylib_install_name,@executable_path/lib/lib${TARGET_LIB_NAME}.dylib")
 	ENDIF (APPLE)
 ENDIF()
 
