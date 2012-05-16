@@ -44,6 +44,8 @@ using namespace Homer::Base;
 MediaSourceMem::MediaSourceMem(bool pRtpActivated):
     MediaSource("MEM-IN:"), RTP()
 {
+    mStreamPacketBuffer = (char*)malloc(MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE);
+    mFragmentBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
     mPacketNumber = 0;
     mPacketStatAdditionalFragmentSize = 0;
     mOpenInputStream = false;
@@ -64,6 +66,8 @@ MediaSourceMem::~MediaSourceMem()
         CloseGrabDevice();
 
     delete mDecoderFifo;
+    free(mStreamPacketBuffer);
+    free(mFragmentBuffer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -501,7 +505,7 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     LOG(LOG_VERBOSE, "Going to open video codec..");
 
     // Open codec
-    if ((tResult = avcodec_open(mCodecContext, tCodec)) < 0)
+    if ((tResult = avcodec_open2(mCodecContext, tCodec, NULL)) < 0)
     {
         LOG(LOG_ERROR, "Couldn't open video codec because of \"%s\".", strerror(AVUNERROR(tResult)));
         return false;
@@ -651,7 +655,7 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     LOG(LOG_VERBOSE, "Going to open audio codec..");
 
     // Open codec
-    if ((tResult = avcodec_open(mCodecContext, tCodec)) < 0)
+    if ((tResult = avcodec_open2(mCodecContext, tCodec, NULL)) < 0)
     {
         LOG(LOG_ERROR, "Couldn't open audio codec because of \"%s\".", strerror(AVUNERROR(tResult)));
         // Close the audio stream

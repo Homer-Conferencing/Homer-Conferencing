@@ -98,10 +98,6 @@ MediaSource::MediaSource(string pName):
     mDesiredInputChannel = 0;
     mMediaType = MEDIA_UNKNOWN;
 
-    // allocate all needed buffers
-    mRecorderEncoderChunkBuffer = (char*)malloc(MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE);
-    mRecorderSamplesTempBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE);
-
     mFfmpegInitMutex.lock();
     if(!mFfmpegInitiated)
     {
@@ -183,9 +179,6 @@ MediaSource::MediaSource(string pName):
 MediaSource::~MediaSource()
 {
     DeleteAllRegisteredMediaSinks();
-
-    free(mRecorderSamplesTempBuffer);
-    free(mRecorderEncoderChunkBuffer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1493,7 +1486,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     }
 
     // Open codec
-    if ((tResult = avcodec_open(mRecorderCodecContext, tCodec)) < 0)
+    if ((tResult = avcodec_open2(mRecorderCodecContext, tCodec, NULL)) < 0)
     {
         LOG(LOG_ERROR, "Couldn't open %s codec because of \"%s\".", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
         // free codec and stream 0
@@ -1582,6 +1575,12 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     mRecording = true;
     mRecorderRealTime = pRealTime;
 
+    // allocate all needed buffers
+    LOG(LOG_VERBOSE, "Allocating needed recorder buffers");
+    mRecorderEncoderChunkBuffer = (char*)malloc(MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE);
+    if (mMediaType == MEDIA_AUDIO)
+        mRecorderSamplesTempBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE);
+
     return true;
 }
 
@@ -1632,6 +1631,11 @@ void MediaSource::StopRecording()
 
         // Close the format context
         av_free(mRecorderFormatContext);
+
+        LOG(LOG_VERBOSE, "Releasing recorder buffers");
+        if (mMediaType == MEDIA_AUDIO)
+            free(mRecorderSamplesTempBuffer);
+        free(mRecorderEncoderChunkBuffer);
 
         // unlock grabbing
         mGrabMutex.unlock();
@@ -2115,10 +2119,10 @@ void* MediaSource::AllocChunkBuffer(int& pChunkBufferSize, enum MediaType pMedia
     switch(tMediaType)
     {
         case MEDIA_VIDEO:
-            pChunkBufferSize = avpicture_get_size(PIX_FMT_RGB32, mTargetResX, mTargetResY) * sizeof(uint8_t);
+            pChunkBufferSize = avpicture_get_size(PIX_FMT_RGB32, mTargetResX, mTargetResY);
             return av_malloc(pChunkBufferSize);
         case MEDIA_AUDIO:
-            pChunkBufferSize = AVCODEC_MAX_AUDIO_FRAME_SIZE + FF_INPUT_BUFFER_PADDING_SIZE;
+            pChunkBufferSize = MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE * 2 + FF_INPUT_BUFFER_PADDING_SIZE;
             return av_malloc(pChunkBufferSize);
         default:
         	LOG(LOG_WARN, "Undefined media type, returning chunk buffer will be invalid");
