@@ -911,11 +911,9 @@ void AudioWorkerThread::ToggleMuteState(bool pState)
     if (pState)
     {
     	mStartPlaybackAsap = true;
-        mAudioOutMuted = false;
     }else
     {
     	mStopPlaybackAsap = true;
-        mAudioOutMuted = true;
     }
     mAudioWidget->InformAboutNewMuteState();
 }
@@ -940,7 +938,6 @@ void AudioWorkerThread::SetMuteState(bool pMuted)
 	}
 
     LOG(LOG_VERBOSE, "Setting mute state to %d", pMuted);
-    mAudioOutMuted = pMuted;
     mAudioWidget->InformAboutNewMuteState();
     if(pMuted)
     	mStopPlaybackAsap = true;
@@ -1295,6 +1292,7 @@ void AudioWorkerThread::DoStartPlayback()
     mStartPlaybackAsap = false;
     if ((!mAudioOutMuted) && (mPlaybackAvailable))
 		mWaveOut->Play();
+    mAudioOutMuted = false;
 }
 
 void AudioWorkerThread::DoStopPlayback()
@@ -1303,6 +1301,7 @@ void AudioWorkerThread::DoStopPlayback()
 	mStopPlaybackAsap = false;
 	if (mPlaybackAvailable)
 		mWaveOut->Stop();
+	mAudioOutMuted = true;
 }
 
 int AudioWorkerThread::GetCurrentSample(void **pSample, int& pSampleSize, int *pSps)
@@ -1427,7 +1426,14 @@ void AudioWorkerThread::run()
 
 			// play the sample block if audio out isn't currently muted
 			if ((!mAudioOutMuted) && (tSampleNumber >= 0) && (tSamplesSize > 0) && (!mDropSamples) && (mPlaybackAvailable))
+			{
 			    mWaveOut->WriteChunk(mSamples[mSampleGrabIndex], mSamplesSize[mSampleGrabIndex]);
+			}else
+			{
+				#ifdef DEBUG_AUDIOWIDGET_PERFORMANCE
+				    LOG(LOG_VERBOSE, "Ignoring audio buffer, mute state: %d, drop state: %d, device available: %d, sample nr.: %d, sample size: %d", mAudioOutMuted, mDropSamples, mPlaybackAvailable, tSampleNumber, tSamplesSize);
+			    #endif
+			}
 
 			// unlock
 			mGrabMutex.unlock();
