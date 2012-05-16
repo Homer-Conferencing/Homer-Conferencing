@@ -59,7 +59,7 @@ using namespace Homer::Multimedia;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define FRAME_BUFFER_SIZE              90 // 3 seconds of buffer
+#define FRAME_BUFFER_SIZE              30 // 1 second buffered
 
 #define FPS_MEASUREMENT_STEPS          60
 
