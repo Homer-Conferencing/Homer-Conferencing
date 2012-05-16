@@ -323,18 +323,24 @@ int WaveOutPortAudio::PlayAudioHandler(const void *pInputBuffer, void *pOutputBu
 		#endif
         return paComplete;
     }
+    int tUsedFifo = tWaveOutPortAudio->mPlaybackFifo->GetUsage();
 
     #ifdef WOPA_DEBUG_PACKETS
         LOGEX(WaveOutPortAudio, LOG_VERBOSE, "Playing %d audio samples, time stamp of first sample: %f, current time stamp: %f", pOutputSize, pTimeInfo->outputBufferDacTime, pTimeInfo->currentTime);
-        LOGEX(WaveOutPortAudio, LOG_VERBOSE, "Audio FIFO has %d available buffers, entire FIFO size is %d", tWaveOutPortAudio->mPlaybackFifo->GetUsage(), tWaveOutPortAudio->mPlaybackFifo->GetSize());
+        LOGEX(WaveOutPortAudio, LOG_VERBOSE, "Audio FIFO has %d available buffers, entire FIFO size is %d", tUsedFifo, tWaveOutPortAudio->mPlaybackFifo->GetSize());
     #endif
 
-    if (tWaveOutPortAudio->mPlaybackFifo->GetUsage() >= tWaveOutPortAudio->mPlaybackFifo->GetSize() - 1)
+    // should we drop the entire FIFO because we have a buffer overrun?
+    if (tUsedFifo >= tWaveOutPortAudio->mPlaybackFifo->GetSize() - 1)
     {
-        #ifdef WOPA_DEBUG_HANDLER
-            LOGEX(WaveOutPortAudio, LOG_WARN, "Audio FIFO buffer full, drop all audio chunks and restart");
-        #endif
+        LOGEX(WaveOutPortAudio, LOG_WARN, "Audio FIFO buffer full, drop all audio chunks and restart");
         tWaveOutPortAudio->mPlaybackFifo->ClearFifo();
+    }
+
+    // should be complain about buffer underrun?
+    if (tUsedFifo == 0)
+    {
+        LOGEX(WaveOutPortAudio, LOG_WARN, "Audio FIFO empty, playback might have gaps");
     }
 
     int tOutputBufferMaxSize;
@@ -390,17 +396,19 @@ bool WaveOutPortAudio::WriteChunk(void* pChunkBuffer, int pChunkSize)
         return false;
     }
 
-    if (mPlaybackStopped)
-    {
-        // unlock grabbing
-        mPlayMutex.unlock();
+    #ifdef WOPA_AUTO_START_PLAYBACK
+        if (mPlaybackStopped)
+        {
+            // unlock grabbing
+            mPlayMutex.unlock();
 
-        LOG(LOG_VERBOSE, "Will automatically start the audio stream");
+            LOG(LOG_VERBOSE, "Will automatically start the audio stream");
 
-		Play();
+            Play();
 
-		mPlayMutex.lock();
-    }
+            mPlayMutex.lock();
+        }
+    #endif
 
     if (mVolume != 100)
     {

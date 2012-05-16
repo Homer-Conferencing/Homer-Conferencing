@@ -40,6 +40,9 @@ namespace Homer { namespace Multimedia {
 //#define WOPA_DEBUG_HANDLER
 //#define WOPA_DEBUG_FILE
 
+// de/activate
+//#define WOPA_AUTO_START_PLAYBACK
+
 ///////////////////////////////////////////////////////////////////////////////
 
 class WaveOutPortAudio:
