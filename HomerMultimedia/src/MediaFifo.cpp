@@ -271,6 +271,10 @@ void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize)
         mFifoReadPtr++;
         if (mFifoReadPtr >= mFifoSize)
             mFifoReadPtr = mFifoReadPtr - mFifoSize;
+	}else
+	{
+	    // update FIFO counter
+	    mFifoAvailableEntries++;
 	}
 
 	tCurrentFifoWritePtr = mFifoWritePtr;
@@ -283,9 +287,6 @@ void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize)
     mFifoWritePtr++;
     if (mFifoWritePtr >= mFifoSize)
         mFifoWritePtr = mFifoWritePtr - mFifoSize;
-
-    // update FIFO counter
-    mFifoAvailableEntries++;
 
     // release FIFO mutex and use fine grained mutex of corresponding FIFO entry instead for protecting memcpy
     mFifo[tCurrentFifoWritePtr].EntryMutex.lock();
