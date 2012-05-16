@@ -113,7 +113,7 @@ private:
     unsigned short int  mLastSequenceNumber;
     unsigned int        mLastTimestamp;
     int                 mPayloadId;
-    bool                mFrameFragmentation;
+    bool                mIntermediateFragment;
     bool                mEncoderOpened;
     bool                mUseInternalEncoder;
     std::string         mTargetHost;
