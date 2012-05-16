@@ -1986,7 +1986,11 @@ void VideoWorkerThread::run()
 			tFrameSize = mFrameSize[mFrameGrabIndex];
 
 			// get new frame from video grabber
+			QTime tTime = QTime::currentTime();
 			tFrameNumber = mVideoSource->GrabChunk(mFrame[mFrameGrabIndex], tFrameSize, mDropFrames);
+            #ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
+			    LOG(LOG_WARN, "Grabbing new video frame took: %d ms", tTime.msecsTo(QTime::currentTime()));
+            #endif
 			mEofReached = (tFrameNumber == GRAB_RES_EOF);
 			if (mEofReached)
 			    mSourceAvailable = false;
