@@ -48,10 +48,10 @@ WaveOut::WaveOut(string pName):
     mFilePlaybackNeeded = false;
 
     LOG(LOG_VERBOSE, "Going to allocate playback FIFO");
-    mPlaybackFifo = new MediaFifo(MEDIA_SOURCE_SAMPLES_FIFO_SIE, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE, "WaveOutPortAudio");
+    mPlaybackFifo = new MediaFifo(MEDIA_SOURCE_SAMPLES_PLAYBACK_FIFO_SIZE, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE, "WaveOutPortAudio");
 
     LOG(LOG_VERBOSE, "Going to allocate file playback buffer");
-    mFilePlaybackBuffer = (char*)malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE + FF_INPUT_BUFFER_PADDING_SIZE);
+    mFilePlaybackBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE + FF_INPUT_BUFFER_PADDING_SIZE);
 
     // init fifo buffer
     LOG(LOG_VERBOSE, "Going to allocate sample size FIFO");
@@ -249,7 +249,7 @@ void* WaveOut::Run(void* pArgs)
         if (mFilePlaybackSource != NULL)
         {
 			// get new samples from audio file
-			tSamplesSize = AVCODEC_MAX_AUDIO_FRAME_SIZE + FF_INPUT_BUFFER_PADDING_SIZE;
+			tSamplesSize = MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE + FF_INPUT_BUFFER_PADDING_SIZE;
 			tSampleNumber = mFilePlaybackSource->GrabChunk(mFilePlaybackBuffer, tSamplesSize);
 
 			if ((tSampleNumber >= 0) && (!mPlaybackStopped))
