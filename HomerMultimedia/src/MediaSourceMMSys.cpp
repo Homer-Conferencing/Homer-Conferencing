@@ -542,10 +542,12 @@ int MediaSourceMMSys::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
     // log statistics about raw PCM audio data stream
     AnnouncePacket(pChunkSize);
 
-    // acknowledge success
-    MarkGrabChunkSuccessful();
+    mChunkNumber++;
 
-    return ++mChunkNumber;
+    // acknowledge success
+    MarkGrabChunkSuccessful(mChunkNumber);
+
+    return mChunkNumber;
 }
 
 bool MediaSourceMMSys::SupportsRecording()

@@ -421,7 +421,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
             else
                 mDuration = 0;
 
-    mResampleBuffer = (char*)malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
+    mResampleBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE);
     mCurPts = 0;
     mSeekingToPos = true;
     mMediaType = MEDIA_AUDIO;
@@ -527,8 +527,10 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
         // unlock grabbing
         mGrabMutex.unlock();
 
+        mChunkNumber++;
+
         // acknowledge "success"
-        MarkGrabChunkSuccessful(); // don't panic, it is only EOF
+        MarkGrabChunkSuccessful(mChunkNumber); // don't panic, it is only EOF
 
         return GRAB_RES_EOF;
     }
@@ -562,8 +564,10 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
             {
                 mCurPts = mDuration;
 
+                mChunkNumber++;
+
                 // acknowledge failed"
-                MarkGrabChunkSuccessful(); // it is no real error
+                MarkGrabChunkSuccessful(mChunkNumber); // it is no real error
 
                 return GRAB_RES_EOF; // we report EOF to calling application
             }
@@ -809,7 +813,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
 
                         //printf("DecodeFrame..\n");
                         // Decode the next chunk of data
-                        int tOutputBufferSize = AVCODEC_MAX_AUDIO_FRAME_SIZE;
+                        int tOutputBufferSize = MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE;
                         #ifdef MSF_DEBUG_PACKETS
                             LOG(LOG_VERBOSE, "Decoding audio samples into buffer of size: %d", tOutputBufferSize);
                         #endif
@@ -922,10 +926,12 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
         }
     }
 
-    // acknowledge success
-    MarkGrabChunkSuccessful();
+    mChunkNumber++;
 
-    return ++mChunkNumber;
+    // acknowledge success
+    MarkGrabChunkSuccessful(mChunkNumber);
+
+    return mChunkNumber;
 }
 
 void MediaSourceFile::DoSetVideoGrabResolution(int pResX, int pResY)
