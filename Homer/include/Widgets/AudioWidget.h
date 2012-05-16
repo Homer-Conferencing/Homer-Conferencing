@@ -49,6 +49,9 @@ using namespace Homer::Multimedia;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// debug performance of audio widget
+//#define DEBUG_AUDIOWIDGET_PERFORMANCE
+
 #define SAMPLE_BUFFER_SIZE               3
 
 // de/activate automatic sample dropping in case the audo widget is invisible (default is off)
