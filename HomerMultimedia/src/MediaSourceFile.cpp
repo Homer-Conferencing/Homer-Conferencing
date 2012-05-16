@@ -50,15 +50,12 @@ MediaSourceFile::MediaSourceFile(string pSourceFile, bool pGrabInRealTime):
     mDuration = 0;
     mCurPts = 0;
     mCurrentDeviceName = mDesiredDevice;
-    mResampleBuffer = (char*)malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
 }
 
 MediaSourceFile::~MediaSourceFile()
 {
     if (mMediaSourceOpened)
         CloseGrabDevice();
-
-    free(mResampleBuffer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -150,7 +147,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     {
         LOG(LOG_ERROR, "Couldn't find video stream information because of \"%s\".", strerror(AVUNERROR(tResult)));
         // Close the video file
-        av_close_input_file(mFormatContext);
+        avformat_close_input(&mFormatContext);
         return false;
     }
 
@@ -168,7 +165,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     {
         LOG(LOG_ERROR, "Couldn't find a video stream");
         // Close the video file
-        av_close_input_file(mFormatContext);
+        avformat_close_input(&mFormatContext);
         return false;
     }
 
@@ -189,7 +186,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     {
         LOG(LOG_ERROR, "Couldn't find resolution information within video file");
         // Close the video file
-        av_close_input_file(mFormatContext);
+        avformat_close_input(&mFormatContext);
         return false;
     }
 
@@ -198,20 +195,20 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     {
         LOG(LOG_ERROR, "Couldn't find a fitting video codec");
         // Close the video file
-        av_close_input_file(mFormatContext);
+        avformat_close_input(&mFormatContext);
         return false;
     }
 
     // Open codec
-    if ((tResult = avcodec_open(mCodecContext, tCodec)) < 0)
+    if ((tResult = avcodec_open2(mCodecContext, tCodec, NULL)) < 0)
     {
         LOG(LOG_ERROR, "Couldn't open video codec because \"%s\".", strerror(AVUNERROR(tResult)));
         // Close the video file
-        av_close_input_file(mFormatContext);
+        avformat_close_input(&mFormatContext);
         return false;
     }
 
-    if((tResult = av_seek_frame(mFormatContext, mMediaStreamIndex, 0, AVSEEK_FLAG_ANY)) < 0)
+    if((tResult = avformat_seek_file(mFormatContext, mMediaStreamIndex, 0, 0, MSF_SEEK_VARIANCE, AVSEEK_FLAG_ANY)) < 0)
     {
         LOG(LOG_WARN, "Couldn't seek to the start of video stream because \"%s\".", strerror(AVUNERROR(tResult)));
     }
@@ -297,7 +294,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     {
         LOG(LOG_ERROR, "Couldn't find audio stream information because of \"%s\".", strerror(AVUNERROR(tResult)));
         // Close the audio file
-        av_close_input_file(mFormatContext);
+        avformat_close_input(&mFormatContext);
         return false;
     }
 
@@ -356,7 +353,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     {
         LOG(LOG_ERROR, "Couldn't find an audio stream");
         // Close the audio file
-        av_close_input_file(mFormatContext);
+        avformat_close_input(&mFormatContext);
         return false;
     }
 
@@ -382,7 +379,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     {
         LOG(LOG_ERROR, "Couldn't find a fitting audio codec");
         // Close the audio file
-        av_close_input_file(mFormatContext);
+        avformat_close_input(&mFormatContext);
         return false;
     }
 
@@ -392,15 +389,15 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
         mCodecContext->flags |= CODEC_FLAG_TRUNCATED;
 
     // Open codec
-    if ((tResult = avcodec_open(mCodecContext, tCodec)) < 0)
+    if ((tResult = avcodec_open2(mCodecContext, tCodec, NULL)) < 0)
     {
         LOG(LOG_ERROR, "Couldn't open audio codec because of \"%s\".", strerror(AVUNERROR(tResult)));
         // Close the audio file
-        av_close_input_file(mFormatContext);
+        avformat_close_input(&mFormatContext);
         return false;
     }
 
-    if((tResult = av_seek_frame(mFormatContext, mMediaStreamIndex, 0, AVSEEK_FLAG_ANY)) < 0)
+    if((tResult = avformat_seek_file(mFormatContext, mMediaStreamIndex, 0, 0, MSF_SEEK_VARIANCE, AVSEEK_FLAG_ANY)) < 0)
     {
         LOG(LOG_WARN, "Couldn't seek to the start of audio stream because \"%s\".", strerror(AVUNERROR(tResult)));
     }
@@ -424,6 +421,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
             else
                 mDuration = 0;
 
+    mResampleBuffer = (char*)malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
     mCurPts = 0;
     mSeekingToPos = true;
     mMediaType = MEDIA_AUDIO;
@@ -459,9 +457,12 @@ bool MediaSourceFile::CloseGrabDevice()
         avcodec_close(mCodecContext);
 
         // Close the file
-        av_close_input_file(mFormatContext);
+        avformat_close_input(&mFormatContext);
 
         mInputChannels.clear();
+
+        if (mMediaType == MEDIA_AUDIO)
+            free(mResampleBuffer);
 
         LOG(LOG_INFO, "...closed, media type is \"%s\"", GetMediaTypeStr().c_str());
 
@@ -480,7 +481,7 @@ bool MediaSourceFile::CloseGrabDevice()
 int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk)
 {
     AVFrame             *tSourceFrame = NULL, *tRGBFrame = NULL;
-    AVPacket            tPacket;
+    AVPacket            tPacketStruc, *tPacket = &tPacketStruc;
     int                 tFrameFinished = 0;
     int                 tBytesDecoded = 0;
     int                 tRes = 0;
@@ -543,13 +544,13 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
         if (tReadIteration > 0)
         {
             // free packet buffer
-            av_free_packet(&tPacket);
+            av_free_packet(tPacket);
         }
 
         tReadIteration++;
 
         // read next sample from source - blocking
-        if ((tRes = av_read_frame(mFormatContext, &tPacket)) != 0)
+        if ((tRes = av_read_frame(mFormatContext, tPacket)) != 0)
         {
             // unlock grabbing
             mGrabMutex.unlock();
@@ -578,20 +579,28 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
         }
 
         #ifdef MSF_DEBUG_PACKETS
-            if (tPacket.stream_index != mMediaStreamIndex)
+            if (tPacket->stream_index != mMediaStreamIndex)
             {
-                LOG(LOG_VERBOSE, "Read stream %d instead of desired stream %d", tPacket.stream_index, mMediaStreamIndex);
+                LOG(LOG_VERBOSE, "Read stream %d instead of desired stream %d", tPacket->stream_index, mMediaStreamIndex);
             }
         #endif
 
-        // is "presentation timestamp" stored within media file?
-        if (tPacket.pts == (int64_t)AV_NOPTS_VALUE)
-        {// pts isn't stored in the media file, fall back to "decompression timestamp"
-            mCurPts = tPacket.dts;
+        if (tPacket->stream_index == mMediaStreamIndex)
+        {
+            // is "presentation timestamp" stored within media file?
+            if (tPacket->pts == (int64_t)AV_NOPTS_VALUE)
+            {// pts isn't stored in the media file, fall back to "decompression timestamp"
+                if (tPacket->dts < mCurPts)
+                    LOG(LOG_WARN, "DTS values non continuous in file, %ld is lower than last %ld", tPacket->dts, mCurPts);
+                mCurPts = tPacket->dts;
+            }else
+            {// pts is stored in the media file, use it
+                if (tPacket->pts < mCurPts)
+                    LOG(LOG_WARN, "PTS values non continuous in file, %ld is lower than last %ld", tPacket->pts, mCurPts);
+                mCurPts = tPacket->pts;
+            }
         }else
-        {// pts is stored in the media file, use it
-            mCurPts = tPacket.pts;
-        }
+            tFrameShouldBeDropped = true;
 
         #if MSF_FRAME_DROP_THRESHOLD > 0
 			// #########################################
@@ -630,23 +639,24 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
 				mSeekingToPos = false;
 			}
 		#endif
-    }while ((tPacket.stream_index != mMediaStreamIndex) || (tFrameShouldBeDropped));
+    }while (tFrameShouldBeDropped);
 
     #ifdef MSF_DEBUG_PACKETS
         if (tReadIteration > 1)
             LOG(LOG_VERBOSE, "Needed %d read iterations to get next media packet from source file", tReadIteration);
-        LOG(LOG_VERBOSE, "New read chunk %5d with size: %d and stream index: %d, media type %d", mMediaType, mChunkNumber + 1, tPacket.size, tPacket.stream_index);
+        LOG(LOG_VERBOSE, "New read chunk %5d with size: %d and stream index: %d, media type %d", mMediaType, mChunkNumber + 1, tPacket->size, tPacket->stream_index);
     #endif
 
-    if ((tPacket.data != NULL) && (tPacket.size > 0))
+    if ((tPacket->data != NULL) && (tPacket->size > 0))
     {
         #ifdef MSF_DEBUG_PACKETS
             LOG(LOG_VERBOSE, "New packet..");
-            LOG(LOG_VERBOSE, "      ..duration: %d", tPacket.duration);
-            LOG(LOG_VERBOSE, "      ..pts: %ld stream [%d] pts: %ld", tPacket.pts, mMediaStreamIndex, mFormatContext->streams[mMediaStreamIndex]->pts.val);
-            LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket.dts);
-            LOG(LOG_VERBOSE, "      ..size: %d", tPacket.size);
-            LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket.pos);
+            LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
+            LOG(LOG_VERBOSE, "      ..pts: %ld stream [%d] pts: %ld", tPacket->pts, mMediaStreamIndex, mFormatContext->streams[mMediaStreamIndex]->pts.val);
+            LOG(LOG_VERBOSE, "      ..stream: %ld", tPacket->stream_index);
+            LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket->dts);
+            LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
+            LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket->pos);
         #endif
 
         // #########################################
@@ -658,7 +668,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
                     if ((!pDropChunk) || (mRecording))
                     {
                         // log statistics
-                        AnnouncePacket(tPacket.size);
+                        AnnouncePacket(tPacket->size);
     //                        #ifdef MSF_DEBUG_PACKETS
     //                            LOG(LOG_VERBOSE, "Decode video frame..");
     //                        #endif
@@ -676,7 +686,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
                         }
 
                         // Decode the next chunk of data
-                        tBytesDecoded = HM_avcodec_decode_video(mCodecContext, tSourceFrame, &tFrameFinished, &tPacket);
+                        tBytesDecoded = HM_avcodec_decode_video(mCodecContext, tSourceFrame, &tFrameFinished, tPacket);
 
                         // transfer the presentation time value
                         tSourceFrame->pts = mCurPts;
@@ -715,7 +725,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
                                 av_free(tSourceFrame);
 
                             // free packet buffer
-                            av_free_packet(&tPacket);
+                            av_free_packet(tPacket);
 
                             // unlock grabbing
                             mGrabMutex.unlock();
@@ -743,7 +753,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
                                 av_free(tSourceFrame);
 
                             // free packet buffer
-                            av_free_packet(&tPacket);
+                            av_free_packet(tPacket);
 
                             // unlock grabbing
                             mGrabMutex.unlock();
@@ -795,7 +805,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
                     if ((!pDropChunk) || (mRecording))
                     {
                         // log statistics
-                        AnnouncePacket(tPacket.size);
+                        AnnouncePacket(tPacket->size);
 
                         //printf("DecodeFrame..\n");
                         // Decode the next chunk of data
@@ -808,11 +818,11 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
 
                         if ((mCodecContext->sample_rate == 44100) && (mCodecContext->channels == 2))
                         {
-                            tBytesDecoded = HM_avcodec_decode_audio(mCodecContext, (int16_t *)pChunkBuffer, &tOutputBufferSize, &tPacket);
+                            tBytesDecoded = HM_avcodec_decode_audio(mCodecContext, (int16_t *)pChunkBuffer, &tOutputBufferSize, tPacket);
                             pChunkSize = tOutputBufferSize;
                         }else
                         {// have to insert an intermediate step, which resamples the audio chunk to 44.1 kHz
-                            tBytesDecoded = HM_avcodec_decode_audio(mCodecContext, (int16_t *)mResampleBuffer, &tOutputBufferSize, &tPacket);
+                            tBytesDecoded = HM_avcodec_decode_audio(mCodecContext, (int16_t *)mResampleBuffer, &tOutputBufferSize, tPacket);
 
                             if(tOutputBufferSize > 0)
                             {
@@ -847,7 +857,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
                         if ((tBytesDecoded <= 0) || (tOutputBufferSize <= 0))
                         {
                             // free packet buffer
-                            av_free_packet(&tPacket);
+                            av_free_packet(tPacket);
 
                             // unlock grabbing
                             mGrabMutex.unlock();
@@ -871,7 +881,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
         LOG(LOG_ERROR, "Empty packet received, media type is \"%s\"", GetMediaTypeStr().c_str());
 
     // free packet buffer
-    av_free_packet(&tPacket);
+    av_free_packet(tPacket);
 
     // unlock grabbing
     mGrabMutex.unlock();
@@ -906,7 +916,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
             {
                 #ifdef MSF_DEBUG_TIMING
                     if (tDiffPtsUSecs < -MSF_FRAME_DROP_THRESHOLD)
-                        LOG(LOG_VERBOSE, "%s-system too busy (delay > %dms), decoded frame time diff.: %dms", GetMediaTypeStr().c_str(),MSF_FRAME_DROP_THRESHOLD / 1000, -tDiffPtsUSecs / 1000);
+                        LOG(LOG_VERBOSE, "%s-system too busy (delay threshold is %dms), decoded frame time diff.: %dms", GetMediaTypeStr().c_str(),MSF_FRAME_DROP_THRESHOLD / 1000, -tDiffPtsUSecs / 1000);
                 #endif
             }
         }
@@ -1067,7 +1077,8 @@ bool MediaSourceFile::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
 
     if ((tAbsoluteTimestamp >= 0) && (tAbsoluteTimestamp <= mDuration))
     {
-        tResult = (av_seek_frame(mFormatContext, mMediaStreamIndex, tAbsoluteTimestamp, pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) >= 0);
+        LOG(LOG_VERBOSE, "Seeking to second %d", pSeconds);
+        tResult = (avformat_seek_file(mFormatContext, mMediaStreamIndex, tAbsoluteTimestamp - MSF_SEEK_VARIANCE, tAbsoluteTimestamp, tAbsoluteTimestamp + MSF_SEEK_VARIANCE, pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) >= 0);
 
         // adopt the stored pts value which represent the start of the media presentation in real-time useconds
         int64_t tFrameNumber = tAbsoluteTimestamp - mSourceStartPts;
@@ -1116,7 +1127,8 @@ bool MediaSourceFile::SeekRelative(int64_t pSeconds, bool pOnlyKeyFrames)
 
     if ((tAbsoluteTimestamp >= 0) && (tAbsoluteTimestamp <= mDuration))
     {
-        tResult = (av_seek_frame(mFormatContext, mMediaStreamIndex, tAbsoluteTimestamp, pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) >= 0);
+        LOG(LOG_VERBOSE, "Seeking relative %d seconds", pSeconds);
+        tResult = (avformat_seek_file(mFormatContext, mMediaStreamIndex, tAbsoluteTimestamp - MSF_SEEK_VARIANCE, tAbsoluteTimestamp, tAbsoluteTimestamp + MSF_SEEK_VARIANCE, pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) >= 0);
 
         // adopt the stored pts value which represent the start of the media presentation in real-time useconds
         int64_t tFrameNumber = tAbsoluteTimestamp - mSourceStartPts;

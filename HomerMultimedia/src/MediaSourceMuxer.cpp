@@ -48,8 +48,6 @@ MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
     MediaSource("MUX: transcoded capture")
 {
     mStreamPacketBuffer = (char*)malloc(MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE);
-    mEncoderChunkBuffer = (char*)malloc(MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE);
-    mSamplesTempBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE);
     SetOutgoingStream();
     mStreamCodecId = CODEC_ID_NONE;
     mStreamMaxPacketSize = 500;
@@ -74,11 +72,10 @@ MediaSourceMuxer::~MediaSourceMuxer()
 {
     if (mMediaSourceOpened)
         mMediaSource->CloseGrabDevice();
-    free(mSamplesTempBuffer);
-    free(mEncoderChunkBuffer);
-    free(mStreamPacketBuffer);
 
     StopTranscoder();
+
+    free(mStreamPacketBuffer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -447,7 +444,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     }
 
     // Open codec
-    if ((tResult = avcodec_open(mCodecContext, tCodec)) < 0)
+    if ((tResult = avcodec_open2(mCodecContext, tCodec, NULL)) < 0)
     {
         LOG(LOG_ERROR, "Couldn't open video codec because of \"%s\".", strerror(AVUNERROR(tResult)));
         // free codec and stream 0
@@ -637,7 +634,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
 //        mCodecContext->flags |= CODEC_FLAG_TRUNCATED;
 
     // Open codec
-    if ((tResult = avcodec_open(mCodecContext, tCodec)) < 0)
+    if ((tResult = avcodec_open2(mCodecContext, tCodec, NULL)) < 0)
     {
         LOG(LOG_ERROR, "Couldn't open audio codec because of \"%s\".", strerror(AVUNERROR(tResult)));
         // free codec and stream 0
@@ -660,7 +657,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     mMediaType = MEDIA_AUDIO;
 
     // init transcoder FIFO based for 2048 samples with 16 bit and 2 channels, more samples are never produced by a media source per grabbing cycle
-    StartTranscoder(8192);
+    StartTranscoder(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE * 2);
 
     // allocate streams private data buffer and write the streams header, if any
     avformat_write_header(mFormatContext, NULL);
@@ -992,6 +989,11 @@ void MediaSourceMuxer::StartTranscoder(int pFifoEntrySize)
 {
     LOG(LOG_VERBOSE, "Starting transcoder with FIFO entry size of %d bytes", pFifoEntrySize);
 
+    mEncoderChunkBuffer = (char*)malloc(MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE);
+
+    if (mMediaType == MEDIA_AUDIO)
+        mSamplesTempBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE);
+
     if (mTranscoderFifo != NULL)
     {
         LOG(LOG_ERROR, "FIFO already initiated");
@@ -1031,6 +1033,12 @@ void MediaSourceMuxer::StopTranscoder()
         }while(!StopThread(1000));
 
         delete mTranscoderFifo;
+
+        if (mMediaType == MEDIA_AUDIO)
+            free(mSamplesTempBuffer);
+
+        free(mEncoderChunkBuffer);
+
         mTranscoderFifo = NULL;
     }
 

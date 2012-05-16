@@ -38,12 +38,13 @@ namespace Homer { namespace Multimedia {
 ///////////////////////////////////////////////////////////////////////////////
 
 // the following de/activates debugging of received packets
-//#define MSF_DEBUG_PACKETS
-//#define MSF_DEBUG_TIMING
+#define MSF_DEBUG_PACKETS
+#define MSF_DEBUG_TIMING
 
 // 33 ms delay for 30 fps -> rounded to 35 ms
 #define MSF_FRAME_DROP_THRESHOLD            0 //in us, 0 deactivates frame dropping
 
+#define MSF_SEEK_VARIANCE              (10 * AV_TIME_BASE)
 ///////////////////////////////////////////////////////////////////////////////
 
 class MediaSourceFile:

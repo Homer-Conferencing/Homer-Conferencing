@@ -50,7 +50,7 @@ namespace Homer { namespace Multimedia {
 // size of one single fragment of a frame packet
 #define MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE                8*1024 // 8 kB (for jumbo packets!)
 
-#define MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT 	        16* 1024 // 16*1024 entries á 8 kB
+#define MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT 	            512 // 512 entries á 8 kB
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -100,8 +100,8 @@ protected:
 
     unsigned long       mPacketNumber;
     enum CodecID        mStreamCodecId;
-    char                mStreamPacketBuffer[MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE];
-    char                mFragmentBuffer[MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE];
+    char                *mStreamPacketBuffer;
+    char                *mFragmentBuffer;
     int					mFrameWidthLastGrabbedFrame;
     bool                mRtpActivated;
     bool                mOpenInputStream;
