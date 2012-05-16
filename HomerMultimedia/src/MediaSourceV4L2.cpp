@@ -654,10 +654,12 @@ int MediaSourceV4L2::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
     // unlock grabbing
     mGrabMutex.unlock();
 
-    // acknowledge success
-    MarkGrabChunkSuccessful();
+    mChunkNumber++;
 
-    return ++mChunkNumber;
+    // acknowledge success
+    MarkGrabChunkSuccessful(mChunkNumber);
+
+    return mChunkNumber;
 }
 
 GrabResolutions MediaSourceV4L2::GetSupportedVideoGrabResolutions()

@@ -73,7 +73,7 @@ MediaSourcePortAudio::MediaSourcePortAudio(string pDesiredDevice):
     MediaSource("PortAudio: local capture")
 {
     ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
-    mCaptureFifo = new MediaFifo(MEDIA_SOURCE_SAMPLES_FIFO_SIE, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE, "MediaSourcePortAudio");
+    mCaptureFifo = new MediaFifo(MEDIA_SOURCE_SAMPLES_CAPTURE_FIFO_SIZE, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE, "MediaSourcePortAudio");
 
     PortAudioInit();
     if (pDesiredDevice != "")
@@ -474,10 +474,12 @@ int MediaSourcePortAudio::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pD
     // log statistics about raw PCM audio data stream
     AnnouncePacket(pChunkSize);
 
-    // acknowledge success
-    MarkGrabChunkSuccessful();
+    mChunkNumber++;
 
-    return ++mChunkNumber;
+    // acknowledge success
+    MarkGrabChunkSuccessful(mChunkNumber);
+
+    return mChunkNumber;
 }
 
 bool MediaSourcePortAudio::SupportsRecording()

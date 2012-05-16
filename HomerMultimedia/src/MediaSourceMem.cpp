@@ -969,7 +969,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                     {
                         //printf("DecodeFrame..\n");
                         // Decode the next chunk of data
-                        int tOutputBufferSize = AVCODEC_MAX_AUDIO_FRAME_SIZE;
+                        int tOutputBufferSize = MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE;
                         int tBytesDecoded = HM_avcodec_decode_audio(mCodecContext, (int16_t *)pChunkBuffer, &tOutputBufferSize, &tPacket);
                         pChunkSize = tOutputBufferSize;
 
@@ -1011,10 +1011,12 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
     // unlock grabbing
     mGrabMutex.unlock();
 
-    // acknowledge success
-    MarkGrabChunkSuccessful();
+    mChunkNumber++;
 
-    return ++mChunkNumber;
+    // acknowledge success
+    MarkGrabChunkSuccessful(mChunkNumber);
+
+    return mChunkNumber;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -2246,21 +2246,21 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     mMediaSourceOpened = true;
 }
 
-void MediaSource::EventGrabChunkSuccessful(string pSource, int pLine)
+void MediaSource::EventGrabChunkSuccessful(string pSource, int pLine, int pChunkNumber)
 {
     if (mLastGrabResultWasError)
     {
         switch(mMediaType)
         {
             case MEDIA_VIDEO:
-                LOG_REMOTE(LOG_WARN, pSource, pLine, "Grabbing successful-recovered from error state of last video grabbing");
+                LOG_REMOTE(LOG_WARN, pSource, pLine, "Grabbing successful with chunk %d -recovered from error state of last video grabbing", pChunkNumber);
                 break;
             case MEDIA_AUDIO:
-                LOG_REMOTE(LOG_WARN, pSource, pLine, "Grabbing successful-recovered from error state of last audio grabbing");
+                LOG_REMOTE(LOG_WARN, pSource, pLine, "Grabbing successful with chunk %d -recovered from error state of last audio grabbing", pChunkNumber);
                 break;
             default:
                 LOG_REMOTE(LOG_ERROR, pSource, pLine, "Media type unknown");
-                LOG_REMOTE(LOG_WARN, pSource, pLine, "Grabbing successful-recovered from error state of last grabbing");
+                LOG_REMOTE(LOG_WARN, pSource, pLine, "Grabbing successful with chunk %d -recovered from error state of last grabbing", pChunkNumber);
                 break;
         }
     }

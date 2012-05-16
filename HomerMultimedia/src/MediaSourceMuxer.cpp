@@ -946,7 +946,7 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
     mGrabMutex.unlock();
 
     // acknowledge success
-    MarkGrabChunkSuccessful();
+    MarkGrabChunkSuccessful(tResult);
 
     return tResult;
 }

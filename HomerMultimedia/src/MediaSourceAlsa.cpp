@@ -324,10 +324,12 @@ int MediaSourceAlsa::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
     // log statistics about raw PCM audio data stream
     AnnouncePacket(pChunkSize);
 
-    // acknowledge success
-    MarkGrabChunkSuccessful();
+    mChunkNumber++;
 
-    return ++mChunkNumber;
+    // acknowledge success
+    MarkGrabChunkSuccessful(mChunkNumber);
+
+    return mChunkNumber;
 }
 
 bool MediaSourceAlsa::SupportsRecording()

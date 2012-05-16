@@ -551,10 +551,12 @@ int MediaSourceVFW::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
     // unlock grabbing
     mGrabMutex.unlock();
 
-    // acknowledge success
-    MarkGrabChunkSuccessful();
+    mChunkNumber++;
 
-    return ++mChunkNumber;
+    // acknowledge success
+    MarkGrabChunkSuccessful(mChunkNumber);
+
+    return mChunkNumber;
 }
 
 bool MediaSourceVFW::SupportsRecording()
