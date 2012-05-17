@@ -1231,11 +1231,9 @@ void VideoWidget::paintEvent(QPaintEvent *pEvent)
         mCurrentApplicationFocusedWidget = tWidget;
     }
 
-    if ((mNeedBackgroundUpdate) || (mNeedBackgroundUpdatesUntillNextFrame))
+//TODO: fix the repaint bugs and deactivate continuous background-painting again
+//    if ((mNeedBackgroundUpdate) || (mNeedBackgroundUpdatesUntillNextFrame))
     {
-        #ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
-            LOG(LOG_ERROR, "Background-update %d, %d", mNeedBackgroundUpdate, mNeedBackgroundUpdatesUntillNextFrame);
-        #endif
         //### calculate background surrounding the current frame
         int tFrameWidth = width() - mCurrentFrame.width();
         if (tFrameWidth > 0)
@@ -1251,6 +1249,10 @@ void VideoWidget::paintEvent(QPaintEvent *pEvent)
             tPainter.fillRect(tFrameWidth / 2, 0, mCurrentFrame.width(), tFrameHeight / 2, tBackgroundColor);
             tPainter.fillRect(tFrameWidth / 2, mCurrentFrame.height() + tFrameHeight / 2, mCurrentFrame.width(), tFrameHeight / 2 + 1, tBackgroundColor);
         }
+        #ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
+            LOG(LOG_VERBOSE, "Background-update %d, %d", mNeedBackgroundUpdate, mNeedBackgroundUpdatesUntillNextFrame);
+            LOG(LOG_VERBOSE, "Current frame size: %dx%d, widget size: %dx%d, background size: %dx%d", mCurrentFrame.width(), mCurrentFrame.height(), width(), height(), tFrameWidth, tFrameHeight);
+        #endif
         mNeedBackgroundUpdate = false;
     }
 
