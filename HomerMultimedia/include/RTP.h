@@ -112,6 +112,7 @@ private:
     URLContext          *mURLContext;
     unsigned short int  mLastSequenceNumber;
     unsigned int        mLastTimestamp;
+    unsigned int        mLastCompleteFrameTimestamp;
     int                 mPayloadId;
     bool                mIntermediateFragment;
     bool                mEncoderOpened;

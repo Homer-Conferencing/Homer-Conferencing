@@ -393,6 +393,7 @@ RTP::RTP()
     LOG(LOG_VERBOSE, "Created");
     mLastSequenceNumber = 0;
     mLastTimestamp = 0;
+    mLastCompleteFrameTimestamp = 0;
     mLostPackets = 0;
     mIntermediateFragment = 0;
     mPacketStatistic = NULL;
@@ -1285,7 +1286,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
         mIntermediateFragment = ((tRtpHeader->PayloadType == 0 /* mulaw */) || (tRtpHeader->PayloadType == 8 /* alaw */) ||  (tRtpHeader->PayloadType == 14 /* mp3 */)) ? false : !tRtpHeader->Marked;
 
         // check if there was a new frame begun before the last was finished
-        if ((mIntermediateFragment) && (mLastTimestamp != tRtpHeader->Timestamp))
+        if ((mLastCompleteFrameTimestamp != mLastTimestamp) && (mLastTimestamp != tRtpHeader->Timestamp))
         {
             AnnounceLostPackets(1);
             LOG(LOG_ERROR, "Packet belongs to new frame while last frame is incomplete, overall packet loss is now %u", mLostPackets);
@@ -1294,6 +1295,9 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
         mPayloadId = tRtpHeader->PayloadType;
         mLastSequenceNumber = tRtpHeader->SequenceNumber;
         mLastTimestamp = tRtpHeader->Timestamp;
+
+        if (!mIntermediateFragment)
+            mLastCompleteFrameTimestamp = tRtpHeader->Timestamp;
 
         // store the assigned SSRC identifier
         mSsrc = tRtpHeader->Ssrc;
