@@ -1201,6 +1201,8 @@ void VideoWidget::StopRecorder()
 
 void VideoWidget::paintEvent(QPaintEvent *pEvent)
 {
+    QWidget::paintEvent(pEvent);
+
     QPainter tPainter(this);
     QColor tBackgroundColor;
 
@@ -1230,6 +1232,11 @@ void VideoWidget::paintEvent(QPaintEvent *pEvent)
         mNeedBackgroundUpdate = true;
         mCurrentApplicationFocusedWidget = tWidget;
     }
+
+    #ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
+        if ((mCurrentFrame.width() > width()) || (mCurrentFrame.height() > height()))
+            LOG(LOG_WARN, "Current frame is too big: %dx%d with available widget area: %dx%d", mCurrentFrame.width(), mCurrentFrame.height(), width(), height());
+    #endif
 
 //TODO: fix the repaint bugs and deactivate continuous background-painting again
 //    if ((mNeedBackgroundUpdate) || (mNeedBackgroundUpdatesUntillNextFrame))
