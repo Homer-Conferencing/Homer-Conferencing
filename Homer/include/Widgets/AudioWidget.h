@@ -147,36 +147,40 @@ public:
     /* forwarded interface to media source */
     void ResetSource();
     void SetInputStreamPreferences(QString pCodec);
+
     /* recording */
     void StartRecorder(std::string pSaveFileName, int pQuality);
     void StopRecorder();
-    //--
+
+    /* naming */
     void SetStreamName(QString pName);
     QString GetStreamName();
-    //--
+
+    /* device control */
     QString GetCurrentDevice();
     void SetCurrentDevice(QString pName);
     AudioDevicesList GetPossibleDevices();
     QString GetDeviceDescription(QString pName);
-    //--
+
+    /* file based audio playback */
     void PlayFile(QString pName);
     void PauseFile();
     void StopFile();
     bool EofReached();
     QString CurrentFile();
-    //--
     bool SupportsSeeking();
     void Seek(int pPos); // max. value is 1000
     int64_t GetSeekPos();
     int64_t GetSeekEnd();
-    //--
+
+    /* multiple channels control */
     void SelectInputChannel(int pIndex);
 
     /* frame grabbing */
     void SetSampleDropping(bool pDrop);
     int GetCurrentSample(void **pSample, int& pSampleSize, int *pFps = NULL);
 
-    /* audio out control */
+    /* audio playback control */
     void SetMuteState(bool pMuted);
     bool GetMuteState();
     bool IsPlaybackAvailable();

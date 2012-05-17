@@ -1052,16 +1052,24 @@ void AudioWorkerThread::PlayFile(QString pName)
 
 void AudioWorkerThread::PauseFile()
 {
-	LOG(LOG_VERBOSE, "Trigger pause state");
-	mPausedPos = mAudioSource->GetSeekPos();
-	mPaused = true;
+    if (mAudioSource->SupportsSeeking())
+    {
+        LOG(LOG_VERBOSE, "Trigger pause state");
+        mPausedPos = mAudioSource->GetSeekPos();
+        mPaused = true;
+    }else
+        LOG(LOG_VERBOSE, "Seeking not supported, PauseFile() aborted");
 }
 
 void AudioWorkerThread::StopFile()
 {
-	LOG(LOG_VERBOSE, "Trigger stop state");
-	mPausedPos = 0;
-	mPaused = true;
+    if (mAudioSource->SupportsSeeking())
+    {
+        LOG(LOG_VERBOSE, "Trigger stop state");
+        mPausedPos = 0;
+        mPaused = true;
+    }else
+        LOG(LOG_VERBOSE, "Seeking not supported, StopFile() aborted");
 }
 
 bool AudioWorkerThread::EofReached()
@@ -1076,7 +1084,10 @@ bool AudioWorkerThread::EofReached()
 
 QString AudioWorkerThread::CurrentFile()
 {
-	return mCurrentFile;
+    if (mAudioSource->SupportsSeeking())
+        return mCurrentFile;
+    else
+        return "";
 }
 
 void AudioWorkerThread::SelectInputChannel(int pIndex)

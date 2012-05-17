@@ -1575,16 +1575,24 @@ void VideoWorkerThread::PlayFile(QString pName)
 
 void VideoWorkerThread::PauseFile()
 {
-	LOG(LOG_VERBOSE, "Trigger pause state");
-	mPausedPos = mVideoSource->GetSeekPos();
-	mPaused = true;
+    if (mVideoSource->SupportsSeeking())
+    {
+        LOG(LOG_VERBOSE, "Trigger pause state");
+        mPausedPos = mVideoSource->GetSeekPos();
+        mPaused = true;
+    }else
+        LOG(LOG_VERBOSE, "Seeking not supported, PauseFile() aborted");
 }
 
 void VideoWorkerThread::StopFile()
 {
-	LOG(LOG_VERBOSE, "Trigger stop state");
-	mPausedPos = 0;
-	mPaused = true;
+    if (mVideoSource->SupportsSeeking())
+    {
+        LOG(LOG_VERBOSE, "Trigger stop state");
+        mPausedPos = 0;
+        mPaused = true;
+    }else
+        LOG(LOG_VERBOSE, "Seeking not supported, StopFile() aborted");
 }
 
 bool VideoWorkerThread::EofReached()
@@ -1594,7 +1602,10 @@ bool VideoWorkerThread::EofReached()
 
 QString VideoWorkerThread::CurrentFile()
 {
-	return mCurrentFile;
+    if (mVideoSource->SupportsSeeking())
+    	return mCurrentFile;
+    else
+        return "";
 }
 
 bool VideoWorkerThread::SupportsSeeking()
