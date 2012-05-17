@@ -53,7 +53,7 @@ MediaFifo::MediaFifo(int pFifoSize, int pFifoEntrySize, string pName)
 		if (mFifo[i].Data == NULL)
 			LOG(LOG_ERROR, "Unable to allocate memory for FIFO");
 	}
-	LOG(LOG_VERBOSE, "Created FIFO with %d entries of %d Kb", mFifoSize, mFifoEntrySize / 1024);
+	LOG(LOG_VERBOSE, "Created FIFO for %s with %d entries of %d bytes", pName.c_str(), mFifoSize, mFifoEntrySize);
 }
 
 MediaFifo::~MediaFifo()
@@ -263,7 +263,7 @@ void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize)
 	    LOG(LOG_VERBOSE, "%s-FIFO: writing empty chunk", mName.c_str());
 
 	mFifoMutex.lock();
-	if (mFifoAvailableEntries >= mFifoSize -1)
+	if (mFifoAvailableEntries >= mFifoSize)
 	{
 	    LOG(LOG_WARN, "%s-FIFO: buffer full (size is %d, read: %d, write %d) - dropping oldest (%d) data chunk", mName.c_str(), mFifoSize, mFifoReadPtr, mFifoWritePtr, mFifoReadPtr);
 

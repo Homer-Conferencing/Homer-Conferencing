@@ -72,7 +72,9 @@ private:
     virtual void AssignThreadName();
 
     /* playback */
+    bool                mWaitingForFirstBuffer;
     PaStream            *mStream;
+    int                 mPossiblePlaybackGaps;
     /* recursion logger */
     static int			mOpenStreams;
 };
