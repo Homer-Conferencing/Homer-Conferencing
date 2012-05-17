@@ -842,6 +842,7 @@ AudioWorkerThread::AudioWorkerThread(MediaSource *pAudioSource, AudioWidget *pAu
     mPaused = false;
     mSourceAvailable = false;
     mPausedPos = 0;
+    mAudioPlaybackDelayCount = 0;
     mDesiredFile = "";
     mResX = 352;
     mResY = 288;
@@ -908,14 +909,12 @@ void AudioWorkerThread::ToggleMuteState(bool pState)
 	}
 
     LOG(LOG_VERBOSE, "Setting mute state to %d", !pState);
-    if (pState)
-    {
-    	mStartPlaybackAsap = true;
-    }else
-    {
-    	mStopPlaybackAsap = true;
-    }
+    mAudioOutMuted = !pState;
     mAudioWidget->InformAboutNewMuteState();
+    if (pState)
+    	mStartPlaybackAsap = true;
+    else
+    	mStopPlaybackAsap = true;
 }
 
 void AudioWorkerThread::SetVolume(int pValue)
@@ -938,9 +937,10 @@ void AudioWorkerThread::SetMuteState(bool pMuted)
 	}
 
     LOG(LOG_VERBOSE, "Setting mute state to %d", pMuted);
+    mAudioOutMuted = pMuted;
     mAudioWidget->InformAboutNewMuteState();
     if(pMuted)
-    	mStopPlaybackAsap = true;
+        mStopPlaybackAsap = true;
     else
     	mStartPlaybackAsap = true;
 }
@@ -1134,8 +1134,7 @@ void AudioWorkerThread::DoSourceSeek()
 {
     LOG(LOG_VERBOSE, "DoSourceSeek now...");
     mAudioSource->Seek(mAudioSource->GetSeekEnd() * mSourceSeekPos / 1000, false);
-    DoStopPlayback();
-    DoStartPlayback();
+    ResetPlayback();
     mSourceSeekAsap = false;
 }
 void AudioWorkerThread::DoPlayNewFile()
@@ -1184,8 +1183,7 @@ void AudioWorkerThread::DoSelectInputChannel()
 
     // restart frame grabbing device
     mSourceAvailable = mAudioSource->SelectInputChannel(mDesiredInputChannel);
-    DoStopPlayback();
-    DoStartPlayback();
+    ResetPlayback();
 
     mResetAudioSourceAsap = false;
     mSelectInputChannelAsap = false;
@@ -1203,8 +1201,7 @@ void AudioWorkerThread::DoResetAudioSource()
 
     // restart frame grabbing device
     mSourceAvailable = mAudioSource->Reset(MEDIA_AUDIO);
-    DoStopPlayback();
-    DoStartPlayback();
+    ResetPlayback();
 
     mResetAudioSourceAsap = false;
     mPaused = false;
@@ -1276,8 +1273,7 @@ void AudioWorkerThread::DoSetCurrentDevice()
         mAudioWidget->InformAboutOpenError(mDeviceName);
 
     // reset audio output
-    DoStopPlayback();
-    DoStartPlayback();
+    ResetPlayback();
 
     mSetCurrentDeviceAsap = false;
     mCurrentFile = mDesiredFile;
@@ -1286,12 +1282,36 @@ void AudioWorkerThread::DoSetCurrentDevice()
     mDeliverMutex.unlock();
 }
 
+void AudioWorkerThread::ResetPlayback()
+{
+    DoStopPlayback();
+    if (!mAudioOutMuted)
+        DoStartPlayback();
+}
+
 void AudioWorkerThread::DoStartPlayback()
 {
-    LOG(LOG_VERBOSE, "DoStartPlayback now...");
+    // are we already waiting for some initial audio buffers?
+    if (mAudioPlaybackDelayCount > 1)
+    {
+        LOG(LOG_VERBOSE, "Waiting for %d initial audio buffers", mAudioPlaybackDelayCount);
+        return;
+    }
+
+    // if audio was muted we have to wait for an initial time
+    if ((!mWaveOut->IsPlaying()) && (mAudioPlaybackDelayCount == 0))
+    {
+        mAudioPlaybackDelayCount = AUDIO_INITIAL_MINIMUM_PLAYBACK_QUEUE;
+        mStartPlaybackAsap = true;
+        return;
+    }
+
+    // okay don't have to wait, time to start playback
+    LOG(LOG_VERBOSE, "DoStartPlayback now...(playing: %d, delay count: %d)", mWaveOut->IsPlaying(), mAudioPlaybackDelayCount);
     mStartPlaybackAsap = false;
-    if ((!mAudioOutMuted) && (mPlaybackAvailable))
-		mWaveOut->Play();
+    if (mPlaybackAvailable)
+        mWaveOut->Play();
+    mAudioPlaybackDelayCount = 0;
     mAudioOutMuted = false;
 }
 
@@ -1428,6 +1448,8 @@ void AudioWorkerThread::run()
 			if ((!mAudioOutMuted) && (tSampleNumber >= 0) && (tSamplesSize > 0) && (!mDropSamples) && (mPlaybackAvailable))
 			{
 			    mWaveOut->WriteChunk(mSamples[mSampleGrabIndex], mSamplesSize[mSampleGrabIndex]);
+			    if(mAudioPlaybackDelayCount)
+			        mAudioPlaybackDelayCount--;
 			}else
 			{
 				#ifdef DEBUG_AUDIOWIDGET_PERFORMANCE
