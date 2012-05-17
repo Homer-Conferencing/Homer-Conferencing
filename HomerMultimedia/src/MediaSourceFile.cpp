@@ -1199,7 +1199,9 @@ bool MediaSourceFile::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
     {
         LOG(LOG_VERBOSE, "Seeking to second %d", pSeconds);
         mDecoderMutex.lock();
-        tResult = (avformat_seek_file(mFormatContext, mMediaStreamIndex, tAbsoluteTimestamp - MSF_SEEK_VARIANCE, tAbsoluteTimestamp, tAbsoluteTimestamp + MSF_SEEK_VARIANCE, pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) >= 0);
+        tResult = (avformat_seek_file(mFormatContext, mMediaStreamIndex, tAbsoluteTimestamp - MSF_SEEK_VARIANCE, tAbsoluteTimestamp, tAbsoluteTimestamp + MSF_SEEK_VARIANCE, (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) | (tAbsoluteTimestamp < mCurPts ? AVSEEK_FLAG_BACKWARD : 0)) >= 0);
+        mDecoderFifo->ClearFifo();
+        mDecoderMetaDataFifo->ClearFifo();
         mDecoderMutex.unlock();
 
         // adopt the stored pts value which represent the start of the media presentation in real-time useconds
@@ -1251,7 +1253,9 @@ bool MediaSourceFile::SeekRelative(int64_t pSeconds, bool pOnlyKeyFrames)
     {
         LOG(LOG_VERBOSE, "Seeking relative %d seconds", pSeconds);
         mDecoderMutex.lock();
-        tResult = (avformat_seek_file(mFormatContext, mMediaStreamIndex, tAbsoluteTimestamp - MSF_SEEK_VARIANCE, tAbsoluteTimestamp, tAbsoluteTimestamp + MSF_SEEK_VARIANCE, pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) >= 0);
+        tResult = (avformat_seek_file(mFormatContext, mMediaStreamIndex, tAbsoluteTimestamp - MSF_SEEK_VARIANCE, tAbsoluteTimestamp, tAbsoluteTimestamp + MSF_SEEK_VARIANCE, (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) | (tAbsoluteTimestamp < mCurPts ? AVSEEK_FLAG_BACKWARD : 0)) >= 0);
+        mDecoderFifo->ClearFifo();
+        mDecoderMetaDataFifo->ClearFifo();
         mDecoderMutex.unlock();
 
         // adopt the stored pts value which represent the start of the media presentation in real-time useconds
