@@ -548,7 +548,9 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
 
     if (mDecoderFifo->GetUsage() == 0)
     {
-        LOG(LOG_VERBOSE, "Signal to decoder that new data is needed");
+        #ifdef MSF_DEBUG_TIMING
+            LOG(LOG_VERBOSE, "Signal to decoder that new data is needed");
+        #endif
         mDecoderMutex.lock();
         DecoderNeedWorkCondition.SignalAll();
         mDecoderMutex.unlock();
@@ -605,7 +607,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
                 #ifdef MSF_DEBUG_TIMING
                     LOG(LOG_WARN, "%s-sleeping for %d us", GetMediaTypeStr().c_str(), tDiffPtsUSecs);
                 #endif
-				Thread::Suspend(40*1000);//tDiffPtsUSecs);
+				Thread::Suspend(tDiffPtsUSecs);
             }else
             {
                 #ifdef MSF_DEBUG_TIMING
@@ -777,7 +779,7 @@ void* MediaSourceFile::Run(void* pArgs)
                         }else
                         {// pts is stored in the media file, use it
                             if (tPacket->pts < mDecoderLastReadPts)
-                                LOG(LOG_WARN, "PTS values non continuous in file, %ld is lower than last %ld", tPacket->pts, mDecoderLastReadPts);
+                                LOG(LOG_WARN, "PTS values non continuous in file, %ld is lower than last %ld, difference is: %ld", tPacket->pts, mDecoderLastReadPts, mDecoderLastReadPts - tPacket->pts);
                             tCurrentChunkPts = tPacket->pts;
                             mDecoderLastReadPts = tCurrentChunkPts;
                         }

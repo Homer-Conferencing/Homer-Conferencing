@@ -32,6 +32,7 @@
 #include <MediaSource.h>
 #include <MediaFifo.h>
 #include <HBThread.h>
+#include <HBCondition.h>
 
 #include <string.h>
 
@@ -40,7 +41,7 @@ namespace Homer { namespace Multimedia {
 ///////////////////////////////////////////////////////////////////////////////
 
 // the following de/activates debugging of received packets
-#define MSF_DEBUG_PACKETS
+//#define MSF_DEBUG_PACKETS
 //#define MSF_DEBUG_TIMING
 
 #define MEDIA_SOURCE_FILE_INPUT_QUEUE_SIZE_LIMIT                  5 // in frames or audio sample blocks
@@ -108,6 +109,8 @@ private:
     bool                mDecoderNeeded;
     MediaFifo           *mDecoderFifo;
     MediaFifo           *mDecoderMetaDataFifo;
+    int64_t             mDecoderLastReadPts;
+    Condition           DecoderNeedWorkCondition;
     bool                mEOFReached;
     /* */
     bool                mGrabInRealTime;
