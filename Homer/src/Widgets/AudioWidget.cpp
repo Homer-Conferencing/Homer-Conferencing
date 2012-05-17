@@ -1295,8 +1295,10 @@ void AudioWorkerThread::DoSetCurrentDevice()
 
 void AudioWorkerThread::ResetPlayback()
 {
+    bool tAudioWasMuted = mAudioOutMuted;
+
     DoStopPlayback();
-    if (!mAudioOutMuted)
+    if (!tAudioWasMuted)
         DoStartPlayback();
 }
 
@@ -1306,6 +1308,7 @@ void AudioWorkerThread::DoStartPlayback()
     if (mAudioPlaybackDelayCount > 1)
     {
         LOG(LOG_VERBOSE, "Waiting for %d initial audio buffers", mAudioPlaybackDelayCount);
+        mStartPlaybackAsap = true;
         return;
     }
 
@@ -1450,8 +1453,14 @@ void AudioWorkerThread::run()
 			tSampleNumber = mAudioSource->GrabChunk(mSamples[mSampleGrabIndex], tSamplesSize, mDropSamples);
             mSamplesSize[mSampleGrabIndex] = tSamplesSize;
 			mEofReached = (tSampleNumber == GRAB_RES_EOF);
-            if (mEofReached)
+            if (!mEofReached)
+            {
+                if ((mAudioPlaybackDelayCount) && (tSampleNumber >= 0))
+                    mAudioPlaybackDelayCount--;
+            }else
+            {
                 mSourceAvailable = false;
+            }
 
 			//printf("SampleSize: %d Sample: %d\n", mSamplesSize[mSampleGrabIndex], tSampleNumber);
 
@@ -1459,8 +1468,6 @@ void AudioWorkerThread::run()
 			if ((!mAudioOutMuted) && (tSampleNumber >= 0) && (tSamplesSize > 0) && (!mDropSamples) && (mPlaybackAvailable))
 			{
 			    mWaveOut->WriteChunk(mSamples[mSampleGrabIndex], mSamplesSize[mSampleGrabIndex]);
-			    if(mAudioPlaybackDelayCount)
-			        mAudioPlaybackDelayCount--;
 			}else
 			{
 				#ifdef DEBUG_AUDIOWIDGET_PERFORMANCE
