@@ -70,7 +70,7 @@ bool Mutex::lock()
     int tThreadId = Thread::GetTId();
 
     if ((mOwnerThreadId != -1) && (mOwnerThreadId == tThreadId))
-        LOG(LOG_ERROR, "Recursive locking detected");
+        LOG(LOG_ERROR, "Recursive locking in thread %d detected", tThreadId);
 
     mOwnerThreadId = tThreadId;
 

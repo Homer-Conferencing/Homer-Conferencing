@@ -50,6 +50,9 @@ WaveOutPortAudio::WaveOutPortAudio(string pDesiredDevice):
             LOG(LOG_INFO, "Haven't selected new PortAudio device when creating source object");
     }
 
+    mWaitingForFirstBuffer = false;
+    mPossiblePlaybackGaps = 0;
+
     LOG(LOG_VERBOSE, "Created");
 }
 
@@ -338,9 +341,9 @@ int WaveOutPortAudio::PlayAudioHandler(const void *pInputBuffer, void *pOutputBu
     }
 
     // should be complain about buffer underrun?
-    if (tUsedFifo == 0)
+    if ((tUsedFifo == 0) && (!tWaveOutPortAudio->mWaitingForFirstBuffer))
     {
-        LOGEX(WaveOutPortAudio, LOG_WARN, "Audio FIFO empty, playback might have gaps");
+        LOGEX(WaveOutPortAudio, LOG_WARN, "Audio FIFO empty, playback might be non continuous, found gaps %d", ++tWaveOutPortAudio->mPossiblePlaybackGaps);
     }
 
     int tOutputBufferMaxSize;
@@ -349,6 +352,13 @@ int WaveOutPortAudio::PlayAudioHandler(const void *pInputBuffer, void *pOutputBu
         tOutputBufferMaxSize = (int)pOutputSize * 2 /* 16 bit LittleEndian */ * (tWaveOutPortAudio->mStereo ? 2 : 1);
         tBufferSize = tOutputBufferMaxSize;
         tWaveOutPortAudio->mPlaybackFifo->ReadFifo((char*)pOutputBuffer, tBufferSize);
+        if (tWaveOutPortAudio->mWaitingForFirstBuffer)
+        {
+            tWaveOutPortAudio->mWaitingForFirstBuffer = false;
+            #ifdef WOPA_DEBUG_HANDLER
+                LOGEX(WaveOutPortAudio, LOG_VERBOSE, "Got first audio buffer for playback");
+            #endif
+        }
 
         // return with a "complete" if an empty fragment was read from FIFO
         if (tBufferSize == 0)
@@ -375,7 +385,10 @@ void WaveOutPortAudio::AssignThreadName()
 {
     if (mHaveToAssignThreadName)
     {
-        SVC_PROCESS_STATISTIC.AssignThreadName("WaveOutPortAudio-File");
+        if (mFilePlaybackLoops)
+            SVC_PROCESS_STATISTIC.AssignThreadName("WaveOutPortAudio-File");
+        else
+            SVC_PROCESS_STATISTIC.AssignThreadName("WaveOutPortAudio-Mem");
         mHaveToAssignThreadName = false;
     }
 }
@@ -515,6 +528,7 @@ bool WaveOutPortAudio::Play()
         mPlaybackFifo->ClearFifo();
 
         LOG(LOG_VERBOSE, "..going to start stream..");
+        mWaitingForFirstBuffer = true;
         if((tErr = Pa_StartStream(mStream)) != paNoError)
         {
             // unlock grabbing

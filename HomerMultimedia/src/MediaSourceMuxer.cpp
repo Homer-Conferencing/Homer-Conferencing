@@ -1290,8 +1290,10 @@ void* MediaSourceMuxer::Run(void* pArgs)
             // release FIFO entry lock
             mTranscoderFifo->ReadFifoExclusiveFinished(tFifoEntry);
         }else
-            Suspend(100 * 1000); // check every 1/10 seconds the state of the FIFO
+            Suspend(10 * 1000); // check every 1/100 seconds the state of the FIFO
     }
+
+    LOG(LOG_VERBOSE, "Transcoder loop finished");
 
     return NULL;
 }
