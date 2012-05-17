@@ -40,7 +40,7 @@ namespace Homer { namespace Multimedia {
 ///////////////////////////////////////////////////////////////////////////////
 
 // the following de/activates debugging of received packets
-//#define MSF_DEBUG_PACKETS
+#define MSF_DEBUG_PACKETS
 //#define MSF_DEBUG_TIMING
 
 #define MEDIA_SOURCE_FILE_INPUT_QUEUE_SIZE_LIMIT                  5 // in frames or audio sample blocks
