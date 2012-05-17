@@ -29,6 +29,7 @@
 #include <ProcessStatisticService.h>
 #include <Logger.h>
 #include <HBThread.h>
+#include <HBCondition.h>
 
 #include <algorithm>
 #include <string>
@@ -545,6 +546,14 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
         return GRAB_RES_EOF;
     }
 
+    if (mDecoderFifo->GetUsage() == 0)
+    {
+        LOG(LOG_VERBOSE, "Signal to decoder that new data is needed");
+        mDecoderMutex.lock();
+        DecoderNeedWorkCondition.SignalAll();
+        mDecoderMutex.unlock();
+    }
+
     // read chunk data from FIFO
     mDecoderFifo->ReadFifo((char*)pChunkBuffer, pChunkSize);
     mChunkNumber++;
@@ -596,7 +605,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
                 #ifdef MSF_DEBUG_TIMING
                     LOG(LOG_WARN, "%s-sleeping for %d us", GetMediaTypeStr().c_str(), tDiffPtsUSecs);
                 #endif
-				Thread::Suspend(tDiffPtsUSecs);
+				Thread::Suspend(40*1000);//tDiffPtsUSecs);
             }else
             {
                 #ifdef MSF_DEBUG_TIMING
@@ -654,9 +663,9 @@ void MediaSourceFile::StopDecoder()
                 LOG(LOG_WARN, "Signaling round %d to stop decoder, system has high load", tSignalingRound);
             tSignalingRound++;
 
-            // write fake data to awake transcoder thread as long as it still runs
-            mDecoderFifo->WriteFifo(tTmp, 0);
-        }while(!StopThread(1000));
+            // force a wake up of decoder thread
+            DecoderNeedWorkCondition.SignalAll();
+        }while(!StopThread(250));
 
         delete mDecoderFifo;
         delete mDecoderMetaDataFifo;
@@ -710,6 +719,9 @@ void* MediaSourceFile::Run(void* pArgs)
 
     while((mDecoderNeeded) && (!mEOFReached))
     {
+        #ifdef MSF_DEBUG_TIMING
+            LOG(LOG_VERBOSE, "Decoder loop");
+        #endif
         if ((mDecoderFifo != NULL) && (mDecoderFifo->GetUsage() < MEDIA_SOURCE_FILE_INPUT_QUEUE_SIZE_LIMIT - 1 /* one slot for a 0 byte signaling chunk*/) /* meta data FIFO has always the same size => hence, we don't have to check its size */)
         {
             mDecoderMutex.lock();
@@ -734,9 +746,6 @@ void* MediaSourceFile::Run(void* pArgs)
                 // read next sample from source - blocking
                 if ((tRes = av_read_frame(mFormatContext, tPacket)) != 0)
                 {// failed to read frame
-//                    // unlock grabbing
-//                    mGrabMutex.unlock();
-
                     if ((!mGrabbingStopped) && (tRes != (int)AVERROR_EOF) && (tRes != (int)AVERROR(EIO)))
                         LOG(LOG_ERROR, "Couldn't grab a frame because of \"%s\"(%d), media type is \"%s\"", strerror(AVUNERROR(tRes)), tRes, GetMediaTypeStr().c_str());
 
@@ -817,9 +826,6 @@ void* MediaSourceFile::Run(void* pArgs)
                                 // Allocate video frame for source and RGB format
                                 if ((tSourceFrame = avcodec_alloc_frame()) == NULL)
                                 {
-//                                    // unlock grabbing
-//                                    mGrabMutex.unlock();
-
                                     // acknowledge failed"
                                     LOG(LOG_ERROR, "Out of video memory");
                                 }
@@ -845,10 +851,9 @@ void* MediaSourceFile::Run(void* pArgs)
                                 int tCurrentFrameResX = (tSourceFrame->linesize[0] - 32);
                             }
 
-//TODO: echtzeit?
                             // re-encode the frame and write it to file
-//                            if (mRecording)
-//                                RecordFrame(tSourceFrame);
+                            if (mRecording)
+                                RecordFrame(tSourceFrame);
 
                             // scale only if frame shouldn't be dropped
                             if (!tDropChunks)
@@ -856,9 +861,6 @@ void* MediaSourceFile::Run(void* pArgs)
                                 // Allocate video frame for RGB format
                                 if ((tRGBFrame = avcodec_alloc_frame()) == NULL)
                                 {
-//                                    // unlock grabbing
-//                                    mGrabMutex.unlock();
-
                                     // acknowledge failed"
                                     LOG(LOG_ERROR, "Out of video memory");
 
@@ -904,9 +906,6 @@ void* MediaSourceFile::Run(void* pArgs)
                                     #endif
                                 }else
                                 {
-//                                    // unlock grabbing
-//                                    mGrabMutex.unlock();
-
                                     // only print debug output if it is not "operation not permitted"
                                     //if ((tBytesDecoded < 0) && (AVUNERROR(tBytesDecoded) != EPERM))
                                     // acknowledge failed"
@@ -970,7 +969,6 @@ void* MediaSourceFile::Run(void* pArgs)
                                     }
                                 }
 
-//TODO: echtzeit?
                                 // re-encode the frame and write it to file
                                 if ((mRecording) && (tCurrentChunkSize > 0))
                                     RecordSamples((int16_t *)tChunkBuffer, tCurrentChunkSize);
@@ -981,9 +979,6 @@ void* MediaSourceFile::Run(void* pArgs)
 
                                 if ((tBytesDecoded <= 0) || (tOutputBufferSize <= 0))
                                 {
-//                                    // unlock grabbing
-//                                    mGrabMutex.unlock();
-
                                     // only print debug output if it is not "operation not permitted"
                                     //if (AVUNERROR(tBytesDecoded) != EPERM)
                                     // acknowledge failed"
@@ -1028,7 +1023,8 @@ void* MediaSourceFile::Run(void* pArgs)
             #ifdef MSF_DEBUG_TIMING
                 LOG(LOG_VERBOSE, "Nothing to do for decoder, wait some time and check again, loop %d", ++tWaitLoop);
             #endif
-            Suspend(10 * 1000); // check every 1/100 seconds the state of the FIFO
+            DecoderNeedWorkCondition.Reset();
+            DecoderNeedWorkCondition.Wait();
         }
     }
 
@@ -1206,6 +1202,7 @@ bool MediaSourceFile::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
         mDecoderFifo->ClearFifo();
         mDecoderMetaDataFifo->ClearFifo();
         mDecoderLastReadPts = 0;
+        DecoderNeedWorkCondition.SignalAll();
         mDecoderMutex.unlock();
 
         // adopt the stored pts value which represent the start of the media presentation in real-time useconds
@@ -1261,6 +1258,7 @@ bool MediaSourceFile::SeekRelative(int64_t pSeconds, bool pOnlyKeyFrames)
         mDecoderFifo->ClearFifo();
         mDecoderMetaDataFifo->ClearFifo();
         mDecoderLastReadPts = 0;
+        DecoderNeedWorkCondition.SignalAll();
         mDecoderMutex.unlock();
 
         // adopt the stored pts value which represent the start of the media presentation in real-time useconds
