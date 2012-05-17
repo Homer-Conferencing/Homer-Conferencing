@@ -594,7 +594,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
             if (tDiffPtsUSecs > 0)
             {
                 #ifdef MSF_DEBUG_TIMING
-                    LOG(LOG_VERBOSE, "%s-sleeping for %d us", GetMediaTypeStr().c_str(), tDiffPtsUSecs);
+                    LOG(LOG_WARN, "%s-sleeping for %d us", GetMediaTypeStr().c_str(), tDiffPtsUSecs);
                 #endif
 				Thread::Suspend(tDiffPtsUSecs);
             }else
@@ -680,7 +680,7 @@ void* MediaSourceFile::Run(void* pArgs)
     int                 tWaitLoop;
     /* current chunk */
     int                 tCurrentChunkSize = 0;
-    int64_t             tCurrentChunkPts = 0, tLastChunkPts = 0;
+    int64_t             tCurrentChunkPts = 0;
 
     LOG(LOG_VERBOSE, "Transcoder started, media type is \"%s\"", GetMediaTypeStr().c_str());
     switch(mMediaType)
@@ -704,6 +704,9 @@ void* MediaSourceFile::Run(void* pArgs)
 
     // reset EOF marker
     mEOFReached = false;
+
+    // reset last PTS
+    mDecoderLastReadPts = 0;
 
     while((mDecoderNeeded) && (!mEOFReached))
     {
@@ -758,16 +761,16 @@ void* MediaSourceFile::Run(void* pArgs)
                         // is "presentation timestamp" stored within media file?
                         if (tPacket->pts == (int64_t)AV_NOPTS_VALUE)
                         {// pts isn't stored in the media file, fall back to "decompression timestamp"
-                            if (tPacket->dts < tLastChunkPts)
-                                LOG(LOG_WARN, "DTS values non continuous in file, %ld is lower than last %ld", tPacket->dts, tLastChunkPts);
+                            if (tPacket->dts < mDecoderLastReadPts)
+                                LOG(LOG_WARN, "DTS values non continuous in file, %ld is lower than last %ld", tPacket->dts, mDecoderLastReadPts);
                             tCurrentChunkPts = tPacket->dts;
-                            tLastChunkPts = tCurrentChunkPts;
+                            mDecoderLastReadPts = tCurrentChunkPts;
                         }else
                         {// pts is stored in the media file, use it
-                            if (tPacket->pts < tLastChunkPts)
-                                LOG(LOG_WARN, "PTS values non continuous in file, %ld is lower than last %ld", tPacket->pts, tLastChunkPts);
+                            if (tPacket->pts < mDecoderLastReadPts)
+                                LOG(LOG_WARN, "PTS values non continuous in file, %ld is lower than last %ld", tPacket->pts, mDecoderLastReadPts);
                             tCurrentChunkPts = tPacket->pts;
-                            tLastChunkPts = tCurrentChunkPts;
+                            mDecoderLastReadPts = tCurrentChunkPts;
                         }
                     }else
                     {
@@ -1202,6 +1205,7 @@ bool MediaSourceFile::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
         tResult = (avformat_seek_file(mFormatContext, mMediaStreamIndex, tAbsoluteTimestamp - MSF_SEEK_VARIANCE, tAbsoluteTimestamp, tAbsoluteTimestamp + MSF_SEEK_VARIANCE, (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) | (tAbsoluteTimestamp < mCurPts ? AVSEEK_FLAG_BACKWARD : 0)) >= 0);
         mDecoderFifo->ClearFifo();
         mDecoderMetaDataFifo->ClearFifo();
+        mDecoderLastReadPts = 0;
         mDecoderMutex.unlock();
 
         // adopt the stored pts value which represent the start of the media presentation in real-time useconds
@@ -1256,6 +1260,7 @@ bool MediaSourceFile::SeekRelative(int64_t pSeconds, bool pOnlyKeyFrames)
         tResult = (avformat_seek_file(mFormatContext, mMediaStreamIndex, tAbsoluteTimestamp - MSF_SEEK_VARIANCE, tAbsoluteTimestamp, tAbsoluteTimestamp + MSF_SEEK_VARIANCE, (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) | (tAbsoluteTimestamp < mCurPts ? AVSEEK_FLAG_BACKWARD : 0)) >= 0);
         mDecoderFifo->ClearFifo();
         mDecoderMetaDataFifo->ClearFifo();
+        mDecoderLastReadPts = 0;
         mDecoderMutex.unlock();
 
         // adopt the stored pts value which represent the start of the media presentation in real-time useconds
