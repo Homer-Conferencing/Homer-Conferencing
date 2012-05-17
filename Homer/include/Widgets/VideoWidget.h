@@ -169,30 +169,34 @@ public:
     void SetGrabResolution(int mX, int mY);
     void ResetSource();
     void SetInputStreamPreferences(QString pCodec);
+
     /* recording */
     void StartRecorder(std::string pSaveFileName, int pQuality);
     void StopRecorder();
-    //--
+
+    /* naming */
     void SetStreamName(QString pName);
     QString GetStreamName();
-    //--
+
+    /* device control */
     QString GetCurrentDevice();
     QString GetCurrentDevicePeer();
     void SetCurrentDevice(QString pName);
     VideoDevicesList GetPossibleDevices();
     QString GetDeviceDescription(QString pName);
-    //--
+
+    /* file based video playback */
     void PlayFile(QString pName);
     void PauseFile();
     void StopFile();
     bool EofReached();
     QString CurrentFile();
-    //--
     bool SupportsSeeking();
     void Seek(int pPos); // max. value is 1000
     int64_t GetSeekPos();
     int64_t GetSeekEnd();
-    //--
+
+    /* multiple channels control */
     bool SupportsMultipleChannels();
     QString GetCurrentChannel();
     void SelectInputChannel(int pIndex);
