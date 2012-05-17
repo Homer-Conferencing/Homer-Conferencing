@@ -47,6 +47,8 @@ MediaSourceFile::MediaSourceFile(string pSourceFile, bool pGrabInRealTime):
     mDesiredDevice = pSourceFile;
     mGrabInRealTime = pGrabInRealTime;
     mResampleContext = NULL;
+    mDecoderFifo = NULL;
+    mDecoderMetaDataFifo = NULL;
     mDuration = 0;
     mCurPts = 0;
     mCurrentDeviceName = mDesiredDevice;
@@ -231,7 +233,11 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     mCurPts = 0;
     mSeekingToPos = true;
     mMediaType = MEDIA_VIDEO;
+
     MarkOpenGrabDeviceSuccessful();
+
+    // init transcoder FIFO based for RGB32 pictures
+    StartDecoder(mTargetResX * mTargetResY * 4 /* bytes per pixel */);
 
     return true;
 }
@@ -421,11 +427,15 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
             else
                 mDuration = 0;
 
-    mResampleBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE);
+    mResampleBuffer = (char*)malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
     mCurPts = 0;
     mSeekingToPos = true;
     mMediaType = MEDIA_AUDIO;
+
     MarkOpenGrabDeviceSuccessful();
+
+    // init decoder FIFO based for 2048 samples with 16 bit and 2 channels, more samples are never produced by a media source per grabbing cycle
+    StartDecoder(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE * 2);
 
     return true;
 }
@@ -441,6 +451,9 @@ bool MediaSourceFile::CloseGrabDevice()
         StopRecording();
 
         mMediaSourceOpened = false;
+
+        // make sure we can free the memory structures
+        StopDecoder();
 
         // free the software scaler context
         if (mMediaType == MEDIA_VIDEO)
@@ -480,12 +493,9 @@ bool MediaSourceFile::CloseGrabDevice()
 
 int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk)
 {
-    AVFrame             *tSourceFrame = NULL, *tRGBFrame = NULL;
-    AVPacket            tPacketStruc, *tPacket = &tPacketStruc;
-    int                 tFrameFinished = 0;
-    int                 tBytesDecoded = 0;
-    int                 tRes = 0;
-
+    #ifdef MSF_DEBUG_PACKETS
+        LOG(LOG_VERBOSE, "Going to grab new chunk from FIFO");
+    #endif
     // lock grabbing
     mGrabMutex.lock();
 
@@ -522,7 +532,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
         return GRAB_RES_INVALID;
     }
 
-    if (mCurPts == mDuration)
+    if ((mDecoderFifo->GetUsage() == 0) && (mEOFReached))
     {
         // unlock grabbing
         mGrabMutex.unlock();
@@ -535,357 +545,28 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
         return GRAB_RES_EOF;
     }
 
-    // Read new packet
-    // return 0 if OK, < 0 if error or end of file.
-    bool tFrameShouldBeDropped;
-    int tReadIteration = 0;
-    do
-    {
-        tFrameShouldBeDropped = false;
-
-        if (tReadIteration > 0)
-        {
-            // free packet buffer
-            av_free_packet(tPacket);
-        }
-
-        tReadIteration++;
-
-        // read next sample from source - blocking
-        if ((tRes = av_read_frame(mFormatContext, tPacket)) != 0)
-        {
-            // unlock grabbing
-            mGrabMutex.unlock();
-
-            if ((!mGrabbingStopped) && (tRes != (int)AVERROR_EOF) && (tRes != (int)AVERROR(EIO)))
-                LOG(LOG_ERROR, "Couldn't grab a frame because of \"%s\"(%d), media type is \"%s\"", strerror(AVUNERROR(tRes)), tRes, GetMediaTypeStr().c_str());
-
-            if (tRes == (int)AVERROR_EOF)
-            {
-                mCurPts = mDuration;
-
-                mChunkNumber++;
-
-                // acknowledge failed"
-                MarkGrabChunkSuccessful(mChunkNumber); // it is no real error
-
-                return GRAB_RES_EOF; // we report EOF to calling application
-            }
-            if (tRes == (int)AVERROR(EIO))
-            {
-                // acknowledge failed"
-                MarkGrabChunkFailed(GetMediaTypeStr() + " source has I/O error");
-
-                // signal EOF instead of I/O error
-                return GRAB_RES_EOF;
-            }
-            return GRAB_RES_INVALID;
-        }
-
-        #ifdef MSF_DEBUG_PACKETS
-            if (tPacket->stream_index != mMediaStreamIndex)
-            {
-                LOG(LOG_VERBOSE, "Read stream %d instead of desired stream %d", tPacket->stream_index, mMediaStreamIndex);
-            }
-        #endif
-
-        if (tPacket->stream_index == mMediaStreamIndex)
-        {
-            // is "presentation timestamp" stored within media file?
-            if (tPacket->pts == (int64_t)AV_NOPTS_VALUE)
-            {// pts isn't stored in the media file, fall back to "decompression timestamp"
-                if (tPacket->dts < mCurPts)
-                    LOG(LOG_WARN, "DTS values non continuous in file, %ld is lower than last %ld", tPacket->dts, mCurPts);
-                mCurPts = tPacket->dts;
-            }else
-            {// pts is stored in the media file, use it
-                if (tPacket->pts < mCurPts)
-                    LOG(LOG_WARN, "PTS values non continuous in file, %ld is lower than last %ld", tPacket->pts, mCurPts);
-                mCurPts = tPacket->pts;
-            }
-        }else
-            tFrameShouldBeDropped = true;
-
-        #if MSF_FRAME_DROP_THRESHOLD > 0
-			// #########################################
-			// frame dropping
-			//      video: seek to start, drop during play out
-			//      audio: seek to start, no dropping during play out
-			// #########################################
-			if (mGrabInRealTime)
-			{
-				// should we initiate the StartPts value?
-				if (mSourceStartPts == -1)
-					mSourceStartPts = mCurPts;
-				else
-				{
-					int64_t tRelativePacketTimeUSecs, tRelativeRealTimeUSecs, tDiffPtsUSecs;
-					double tPacketRealPtsTmp = 1000000 * (mCurPts - mSourceStartPts) / mFrameRate; // current presentation time in useconds of the current packet from the file source
-					tRelativePacketTimeUSecs = (int64_t)tPacketRealPtsTmp;
-					tRelativeRealTimeUSecs = av_gettime() - mStartPtsUSecs;
-					tDiffPtsUSecs = tRelativePacketTimeUSecs - tRelativeRealTimeUSecs;
-					#ifdef MSF_DEBUG_PACKETS
-						LOG(LOG_VERBOSE, "Current pts: %8ld (Fps: %3.2f) Stream start pts: %6ld Rel. Packet pts: %8ld Diff time: %8ld us", tRelativeRealTimeUSecs, mFrameRate, mSourceStartPts, tRelativePacketTimeUSecs, tDiffPtsUSecs);
-					#endif
-					if ((tDiffPtsUSecs < -MSF_FRAME_DROP_THRESHOLD) && ((mMediaType == MEDIA_VIDEO) || (mSeekingToPos)))
-					{
-						++mChunkNumber;
-						if (!mSeekingToPos)
-						{
-							++mChunkDropCounter;
-							#ifdef MSF_DEBUG_PACKETS
-								LOG(LOG_VERBOSE, "System too busy (delay > %dms), read frame time diff.: %dms, frame is dropped (%d/%d dropped), media type is \"%s\"", MSF_FRAME_DROP_THRESHOLD / 1000, -tDiffPtsUSecs / 1000, mChunkDropCounter, mChunkNumber, mMediaType, GetMediaTypeStr().c_str());
-							#endif
-						}
-						tFrameShouldBeDropped = true;
-					}
-				}
-				mSeekingToPos = false;
-			}
-		#endif
-    }while (tFrameShouldBeDropped);
-
+    // read chunk data from FIFO
+    mDecoderFifo->ReadFifo((char*)pChunkBuffer, pChunkSize);
+    mChunkNumber++;
     #ifdef MSF_DEBUG_PACKETS
-        if (tReadIteration > 1)
-            LOG(LOG_VERBOSE, "Needed %d read iterations to get next media packet from source file", tReadIteration);
-        LOG(LOG_VERBOSE, "New read chunk %5d with size: %d and stream index: %d, media type %d", mMediaType, mChunkNumber + 1, tPacket->size, tPacket->stream_index);
+        LOG(LOG_VERBOSE, "Grabbed chunk %d of size %d from decoder FIFO", mChunkNumber, pChunkSize);
     #endif
 
-    if ((tPacket->data != NULL) && (tPacket->size > 0))
-    {
-        #ifdef MSF_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "New packet..");
-            LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
-            LOG(LOG_VERBOSE, "      ..pts: %ld stream [%d] pts: %ld", tPacket->pts, mMediaStreamIndex, mFormatContext->streams[mMediaStreamIndex]->pts.val);
-            LOG(LOG_VERBOSE, "      ..stream: %ld", tPacket->stream_index);
-            LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket->dts);
-            LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
-            LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket->pos);
-        #endif
-
-        // #########################################
-        // process packet
-        // #########################################
-        switch(mMediaType)
-        {
-            case MEDIA_VIDEO:
-                    if ((!pDropChunk) || (mRecording))
-                    {
-                        // log statistics
-                        AnnouncePacket(tPacket->size);
-    //                        #ifdef MSF_DEBUG_PACKETS
-    //                            LOG(LOG_VERBOSE, "Decode video frame..");
-    //                        #endif
-
-                        // Allocate video frame for source and RGB format
-                        if ((tSourceFrame = avcodec_alloc_frame()) == NULL)
-                        {
-                            // unlock grabbing
-                            mGrabMutex.unlock();
-
-                            // acknowledge failed"
-                            MarkGrabChunkFailed("out of video memory");
-
-                            return GRAB_RES_INVALID;
-                        }
-
-                        // Decode the next chunk of data
-                        tBytesDecoded = HM_avcodec_decode_video(mCodecContext, tSourceFrame, &tFrameFinished, tPacket);
-
-                        // transfer the presentation time value
-                        tSourceFrame->pts = mCurPts;
-
-    //                        #ifdef MSF_DEBUG_PACKETS
-    //                            LOG(LOG_VERBOSE, "    ..with result(!= 0 => OK): %d bytes: %i\n", tFrameFinished, tBytesDecoded);
-    //                        #endif
-
-                        // log lost packets: difference between currently received frame number and the number of locally processed frames
-                        SetLostPacketCount(tSourceFrame->coded_picture_number - mChunkNumber);
-
-    //                        #ifdef MSF_DEBUG_PACKETS
-    //                            LOG(LOG_VERBOSE, "Video frame coded: %d internal frame number: %d", tSourceFrame->coded_picture_number, mChunkNumber);
-    //                        #endif
-
-                        // hint: 32 bytes additional data per line within ffmpeg
-                        int tCurrentFrameResX = (tSourceFrame->linesize[0] - 32);
-                    }
-
-                    // re-encode the frame and write it to file
-                    if (mRecording)
-                        RecordFrame(tSourceFrame);
-
-                    // scale only if frame shouldn't be dropped
-                    if (!pDropChunk)
-                    {
-    //                        #ifdef MSF_DEBUG_PACKETS
-    //                            LOG(LOG_VERBOSE, "Convert video frame..");
-    //                        #endif
-
-                        // Allocate video frame for RGB format
-                        if ((tRGBFrame = avcodec_alloc_frame()) == NULL)
-                        {
-                            // Free the YUV frame
-                            if (tSourceFrame != NULL)
-                                av_free(tSourceFrame);
-
-                            // free packet buffer
-                            av_free_packet(tPacket);
-
-                            // unlock grabbing
-                            mGrabMutex.unlock();
-
-                            // acknowledge failed"
-                            MarkGrabChunkFailed("out of audio memory");
-
-                            return GRAB_RES_INVALID;
-                        }
-
-                        // Assign appropriate parts of buffer to image planes in tRGBFrame
-                        avpicture_fill((AVPicture *)tRGBFrame, (uint8_t *)pChunkBuffer, PIX_FMT_RGB32, mTargetResX, mTargetResY);
-
-                        // convert frame from YUV to RGB format
-                        if ((tFrameFinished != 0) && (tBytesDecoded >= 0))
-                        {
-                            HM_sws_scale(mScalerContext, tSourceFrame->data, tSourceFrame->linesize, 0, mCodecContext->height, tRGBFrame->data, tRGBFrame->linesize);
-                        }else
-                        {
-                            // Free the RGB frame
-                            av_free(tRGBFrame);
-
-                            // Free the YUV frame
-                            if (tSourceFrame != NULL)
-                                av_free(tSourceFrame);
-
-                            // free packet buffer
-                            av_free_packet(tPacket);
-
-                            // unlock grabbing
-                            mGrabMutex.unlock();
-
-                            // only print debug output if it is not "operation not permitted"
-                            //if ((tBytesDecoded < 0) && (AVUNERROR(tBytesDecoded) != EPERM))
-                            // acknowledge failed"
-                            MarkGrabChunkFailed("couldn't decode video frame-" + toString(strerror(AVUNERROR(tBytesDecoded))) + "(" + toString(AVUNERROR(tBytesDecoded)) + ")");
-
-                            return GRAB_RES_INVALID;
-                        }
-                        #ifdef MSF_DEBUG_PACKETS
-                            LOG(LOG_VERBOSE, "New video frame..");
-                            LOG(LOG_VERBOSE, "      ..key frame: %d", tSourceFrame->key_frame);
-                            switch(tSourceFrame->pict_type)
-                            {
-                                    case FF_I_TYPE:
-                                        LOG(LOG_VERBOSE, "      ..picture type: i-frame");
-                                        break;
-                                    case FF_P_TYPE:
-                                        LOG(LOG_VERBOSE, "      ..picture type: p-frame");
-                                        break;
-                                    case FF_B_TYPE:
-                                        LOG(LOG_VERBOSE, "      ..picture type: b-frame");
-                                        break;
-                                    default:
-                                        LOG(LOG_VERBOSE, "      ..picture type: %d", tSourceFrame->pict_type);
-                                        break;
-                            }
-                            LOG(LOG_VERBOSE, "      ..pts: %ld", tSourceFrame->pts);
-                            LOG(LOG_VERBOSE, "      ..coded pic number: %d", tSourceFrame->coded_picture_number);
-                            LOG(LOG_VERBOSE, "      ..display pic number: %d", tSourceFrame->display_picture_number);
-                        #endif
-
-                        // return size of decoded frame
-                        pChunkSize = avpicture_get_size(PIX_FMT_RGB32, mTargetResX, mTargetResY) * sizeof(uint8_t);
-
-                        // Free the RGB frame
-                        av_free(tRGBFrame);
-                    }
-
-                    // Free the YUV frame
-                    if (tSourceFrame != NULL)
-                        av_free(tSourceFrame);
-
-                    break;
-
-            case MEDIA_AUDIO:
-                    if ((!pDropChunk) || (mRecording))
-                    {
-                        // log statistics
-                        AnnouncePacket(tPacket->size);
-
-                        //printf("DecodeFrame..\n");
-                        // Decode the next chunk of data
-                        int tOutputBufferSize = MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE;
-                        #ifdef MSF_DEBUG_PACKETS
-                            LOG(LOG_VERBOSE, "Decoding audio samples into buffer of size: %d", tOutputBufferSize);
-                        #endif
-
-                        int tBytesDecoded;
-
-                        if ((mCodecContext->sample_rate == 44100) && (mCodecContext->channels == 2))
-                        {
-                            tBytesDecoded = HM_avcodec_decode_audio(mCodecContext, (int16_t *)pChunkBuffer, &tOutputBufferSize, tPacket);
-                            pChunkSize = tOutputBufferSize;
-                        }else
-                        {// have to insert an intermediate step, which resamples the audio chunk to 44.1 kHz
-                            tBytesDecoded = HM_avcodec_decode_audio(mCodecContext, (int16_t *)mResampleBuffer, &tOutputBufferSize, tPacket);
-
-                            if(tOutputBufferSize > 0)
-                            {
-                                //HINT: we always assume 16 bit samples and a stereo signal, so we have to divide/multiply by 4
-                                int tResampledBytes = (2 /*16 signed char*/ * 2 /*channels*/) * audio_resample(mResampleContext, (short*)pChunkBuffer, (short*)mResampleBuffer, tOutputBufferSize / (2 * mCodecContext->channels));
-                                #ifdef MSF_DEBUG_PACKETS
-                                    LOG(LOG_VERBOSE, "Have resampled %d bytes of sample rate %dHz and %d channels to %d bytes of sample rate 44100Hz and 2 channels", tOutputBufferSize, mCodecContext->sample_rate, mCodecContext->channels, tResampledBytes);
-                                #endif
-                                if(tResampledBytes > 0)
-                                {
-                                    pChunkSize = tResampledBytes;
-                                }else
-                                {
-                                    LOG(LOG_ERROR, "Amount of resampled bytes (%d) is invalid", tResampledBytes);
-                                    pChunkSize = 0;
-                                }
-                            }else
-                            {
-                                LOG(LOG_ERROR, "Output buffer size %d from audio decoder is invalid", tOutputBufferSize);
-                                pChunkSize = 0;
-                            }
-                        }
-
-                        // re-encode the frame and write it to file
-                        if ((mRecording) && (pChunkSize > 0))
-                            RecordSamples((int16_t *)pChunkBuffer, pChunkSize);
-
-                        #ifdef MSF_DEBUG_PACKETS
-                            LOG(LOG_VERBOSE, "Result is an audio frame with size of %d bytes from %d encoded bytes", tOutputBufferSize, tBytesDecoded);
-                        #endif
-
-                        if ((tBytesDecoded <= 0) || (tOutputBufferSize <= 0))
-                        {
-                            // free packet buffer
-                            av_free_packet(tPacket);
-
-                            // unlock grabbing
-                            mGrabMutex.unlock();
-
-                            // only print debug output if it is not "operation not permitted"
-                            //if (AVUNERROR(tBytesDecoded) != EPERM)
-                            // acknowledge failed"
-                            MarkGrabChunkFailed("couldn't decode audio frame-" + toString(strerror(AVUNERROR(tBytesDecoded))) + "(" + toString(AVUNERROR(tBytesDecoded)) + ")");
-
-                            return GRAB_RES_INVALID;
-                        }
-                    }
-                    break;
-
-            default:
-                    LOG(LOG_ERROR, "Media type unknown");
-                    break;
-
-        }
-    }else
-        LOG(LOG_ERROR, "Empty packet received, media type is \"%s\"", GetMediaTypeStr().c_str());
-
-    // free packet buffer
-    av_free_packet(tPacket);
+    // read meta description about current chunk from different FIFO
+    struct ChunkDescriptor tChunkDesc;
+    int tChunkDescSize = sizeof(tChunkDesc);
+    mDecoderMetaDataFifo->ReadFifo((char*)&tChunkDesc, tChunkDescSize);
+    #ifdef MSF_DEBUG_PACKETS
+        LOG(LOG_VERBOSE, "Grabbed meta data of size %d from decoder FIFO", tChunkDescSize);
+    #endif
+    if (tChunkDescSize != sizeof(tChunkDesc))
+        LOG(LOG_ERROR, "Read from FIFO a chunk with wrong size of %d bytes, expected size is %d bytes", tChunkDescSize, sizeof(tChunkDesc));
+    mCurPts = tChunkDesc.Pts;
+    #ifdef MSF_DEBUG_PACKETS
+        LOG(LOG_VERBOSE, "PTS of grabbed chunk is %d", mCurPts);
+    #endif
+    if (mCurPts == mDuration)
+        mEOFReached = true;
 
     // unlock grabbing
     mGrabMutex.unlock();
@@ -926,23 +607,456 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
         }
     }
 
-    mChunkNumber++;
-
     // acknowledge success
     MarkGrabChunkSuccessful(mChunkNumber);
 
     return mChunkNumber;
 }
 
+void MediaSourceFile::StartDecoder(int pFifoEntrySize)
+{
+    LOG(LOG_VERBOSE, "Starting decoder with FIFO entry size of %d bytes", pFifoEntrySize);
+
+    mDecoderTargetResX = mTargetResX;
+    mDecoderTargetResY = mTargetResY;
+    if (mDecoderFifo != NULL)
+    {
+        LOG(LOG_ERROR, "FIFO already initiated");
+        delete mDecoderFifo;
+    }else
+    {
+        mDecoderFifo = new MediaFifo(MEDIA_SOURCE_FILE_INPUT_QUEUE_SIZE_LIMIT, pFifoEntrySize, GetMediaTypeStr() + "-MediaSourceFile");
+        mDecoderMetaDataFifo = new MediaFifo(MEDIA_SOURCE_FILE_INPUT_QUEUE_SIZE_LIMIT, sizeof(ChunkDescriptor), GetMediaTypeStr() + "-MediaSourceFile");
+
+        mDecoderNeeded = true;
+
+        // start transcoder main loop
+        StartThread();
+    }
+}
+
+void MediaSourceFile::StopDecoder()
+{
+    int tSignalingRound = 0;
+    char tTmp[4];
+
+    LOG(LOG_VERBOSE, "Stopping decoder");
+
+    if (mDecoderFifo != NULL)
+    {
+        // tell transcoder thread it isn't needed anymore
+        mDecoderNeeded = false;
+
+        // wait for termination of decoder thread
+        do
+        {
+            if(tSignalingRound > 0)
+                LOG(LOG_WARN, "Signaling round %d to stop decoder, system has high load", tSignalingRound);
+            tSignalingRound++;
+
+            // write fake data to awake transcoder thread as long as it still runs
+            mDecoderFifo->WriteFifo(tTmp, 0);
+        }while(!StopThread(1000));
+
+        delete mDecoderFifo;
+        delete mDecoderMetaDataFifo;
+
+        mDecoderFifo = NULL;
+    }
+
+    LOG(LOG_VERBOSE, "Decoder stopped");
+}
+
+void* MediaSourceFile::Run(void* pArgs)
+{
+    AVFrame             *tSourceFrame = NULL, *tRGBFrame = NULL;
+    AVPacket            tPacketStruc, *tPacket = &tPacketStruc;
+    int                 tFrameFinished = 0;
+    int                 tBytesDecoded = 0;
+    int                 tRes = 0;
+    bool                tDropChunks = false;
+    int                 tChunkBufferSize = 0;
+    uint8_t             *tChunkBuffer;
+    int                 tWaitLoop;
+    /* current chunk */
+    int                 tCurrentChunkSize = 0;
+    int64_t             tCurrentChunkPts = 0, tLastChunkPts = 0;
+
+    LOG(LOG_VERBOSE, "Transcoder started, media type is \"%s\"", GetMediaTypeStr().c_str());
+    switch(mMediaType)
+    {
+        case MEDIA_VIDEO:
+            SVC_PROCESS_STATISTIC.AssignThreadName("Video-Decoder(FILE," + FfmpegId2FfmpegFormat(mCodecContext->codec_id) + ")");
+            tChunkBufferSize = mDecoderTargetResX * mDecoderTargetResY * 4 /* bytes per pixel */;
+            break;
+        case MEDIA_AUDIO:
+            SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Decoder(FILE," + FfmpegId2FfmpegFormat(mCodecContext->codec_id) + ")");
+            tChunkBufferSize = AVCODEC_MAX_AUDIO_FRAME_SIZE;
+            break;
+        default:
+            SVC_PROCESS_STATISTIC.AssignThreadName("Decoder(FILE," + FfmpegId2FfmpegFormat(mCodecContext->codec_id) + ")");
+            tChunkBufferSize = MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE;
+            break;
+    }
+
+    // allocate chunk buffer
+    tChunkBuffer = (uint8_t*)malloc(tChunkBufferSize);
+
+    // reset EOF marker
+    mEOFReached = false;
+
+    while((mDecoderNeeded) && (!mEOFReached))
+    {
+        if ((mDecoderFifo != NULL) && (mDecoderFifo->GetUsage() < MEDIA_SOURCE_FILE_INPUT_QUEUE_SIZE_LIMIT - 1 /* one slot for a 0 byte signaling chunk*/) /* meta data FIFO has always the same size => hence, we don't have to check its size */)
+        {
+            mDecoderMutex.lock();
+            tWaitLoop = 0;
+
+            // Read new packet
+            // return 0 if OK, < 0 if error or end of file.
+            bool tShouldReadNext;
+            int tReadIteration = 0;
+            do
+            {
+                tShouldReadNext = false;
+
+                if (tReadIteration > 0)
+                {
+                    // free packet buffer
+                    av_free_packet(tPacket);
+                }
+
+                tReadIteration++;
+
+                // read next sample from source - blocking
+                if ((tRes = av_read_frame(mFormatContext, tPacket)) != 0)
+                {// failed to read frame
+//                    // unlock grabbing
+//                    mGrabMutex.unlock();
+
+                    if ((!mGrabbingStopped) && (tRes != (int)AVERROR_EOF) && (tRes != (int)AVERROR(EIO)))
+                        LOG(LOG_ERROR, "Couldn't grab a frame because of \"%s\"(%d), media type is \"%s\"", strerror(AVUNERROR(tRes)), tRes, GetMediaTypeStr().c_str());
+
+                    if (tRes == (int)AVERROR_EOF)
+                    {
+                        tCurrentChunkPts = mDuration;
+                        mEOFReached = true;
+                    }
+                    if (tRes == (int)AVERROR(EIO))
+                    {
+                        // acknowledge failed"
+                        MarkGrabChunkFailed(GetMediaTypeStr() + " source has I/O error");
+
+                        // signal EOF instead of I/O error
+                        mEOFReached = true;
+                    }
+                    tShouldReadNext = true;
+                }else
+                {// new frame was read
+                    if (tPacket->stream_index == mMediaStreamIndex)
+                    {
+                        // is "presentation timestamp" stored within media file?
+                        if (tPacket->pts == (int64_t)AV_NOPTS_VALUE)
+                        {// pts isn't stored in the media file, fall back to "decompression timestamp"
+                            if (tPacket->dts < tLastChunkPts)
+                                LOG(LOG_WARN, "DTS values non continuous in file, %ld is lower than last %ld", tPacket->dts, tLastChunkPts);
+                            tCurrentChunkPts = tPacket->dts;
+                            tLastChunkPts = tCurrentChunkPts;
+                        }else
+                        {// pts is stored in the media file, use it
+                            if (tPacket->pts < tLastChunkPts)
+                                LOG(LOG_WARN, "PTS values non continuous in file, %ld is lower than last %ld", tPacket->pts, tLastChunkPts);
+                            tCurrentChunkPts = tPacket->pts;
+                            tLastChunkPts = tCurrentChunkPts;
+                        }
+                    }else
+                    {
+                        tShouldReadNext = true;
+                        #ifdef MSF_DEBUG_PACKETS
+                            LOG(LOG_VERBOSE, "Read stream %d instead of desired stream %d", tPacket->stream_index, mMediaStreamIndex);
+                        #endif
+                    }
+                }
+            }while ((tShouldReadNext) && (!mEOFReached));
+
+            #ifdef MSF_DEBUG_PACKETS
+                if (tReadIteration > 1)
+                    LOG(LOG_VERBOSE, "Needed %d read iterations to get next media packet from source file", tReadIteration);
+                LOG(LOG_VERBOSE, "New %s chunk with size: %d and stream index: %d", GetMediaTypeStr().c_str(), tPacket->size, tPacket->stream_index);
+            #endif
+
+            if ((!mEOFReached) && ((tPacket->data != NULL) && (tPacket->size > 0)))
+            {
+                #ifdef MSF_DEBUG_PACKETS
+                    LOG(LOG_VERBOSE, "New packet..");
+                    LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
+                    LOG(LOG_VERBOSE, "      ..pts: %ld stream [%d] pts: %ld", tPacket->pts, mMediaStreamIndex, mFormatContext->streams[mMediaStreamIndex]->pts.val);
+                    LOG(LOG_VERBOSE, "      ..stream: %ld", tPacket->stream_index);
+                    LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket->dts);
+                    LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
+                    LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket->pos);
+                #endif
+
+                // #########################################
+                // process packet
+                // #########################################
+                switch(mMediaType)
+                {
+                    case MEDIA_VIDEO:
+                            if ((!tDropChunks) || (mRecording))
+                            {
+                                // log statistics
+                                AnnouncePacket(tPacket->size);
+                                #ifdef MSF_DEBUG_PACKETS
+                                    LOG(LOG_VERBOSE, "Decode video frame..");
+                                #endif
+
+                                // Allocate video frame for source and RGB format
+                                if ((tSourceFrame = avcodec_alloc_frame()) == NULL)
+                                {
+//                                    // unlock grabbing
+//                                    mGrabMutex.unlock();
+
+                                    // acknowledge failed"
+                                    LOG(LOG_ERROR, "Out of video memory");
+                                }
+
+                                // Decode the next chunk of data
+                                tBytesDecoded = HM_avcodec_decode_video(mCodecContext, tSourceFrame, &tFrameFinished, tPacket);
+
+                                // transfer the presentation time value
+                                tSourceFrame->pts = tCurrentChunkPts;
+
+                                #ifdef MSF_DEBUG_PACKETS
+                                    LOG(LOG_VERBOSE, "    ..with result(!= 0 => OK): %d bytes: %i\n", tFrameFinished, tBytesDecoded);
+                                #endif
+
+                                // log lost packets: difference between currently received frame number and the number of locally processed frames
+                                SetLostPacketCount(tSourceFrame->coded_picture_number - mChunkNumber);
+
+                                #ifdef MSF_DEBUG_PACKETS
+                                    LOG(LOG_VERBOSE, "Video frame %d decoded", tSourceFrame->coded_picture_number);
+                                #endif
+
+                                // hint: 32 bytes additional data per line within ffmpeg
+                                int tCurrentFrameResX = (tSourceFrame->linesize[0] - 32);
+                            }
+
+//TODO: echtzeit?
+                            // re-encode the frame and write it to file
+//                            if (mRecording)
+//                                RecordFrame(tSourceFrame);
+
+                            // scale only if frame shouldn't be dropped
+                            if (!tDropChunks)
+                            {
+                                // Allocate video frame for RGB format
+                                if ((tRGBFrame = avcodec_alloc_frame()) == NULL)
+                                {
+//                                    // unlock grabbing
+//                                    mGrabMutex.unlock();
+
+                                    // acknowledge failed"
+                                    LOG(LOG_ERROR, "Out of video memory");
+
+                                    tCurrentChunkSize = 0;
+                                }
+
+                                // Assign appropriate parts of buffer to image planes in tRGBFrame
+                                avpicture_fill((AVPicture *)tRGBFrame, (uint8_t *)tChunkBuffer, PIX_FMT_RGB32, mDecoderTargetResX, mDecoderTargetResY);
+
+                                // convert frame from YUV to RGB format
+                                if ((tFrameFinished != 0) && (tBytesDecoded >= 0))
+                                {
+                                    #ifdef MSF_DEBUG_PACKETS
+                                        LOG(LOG_VERBOSE, "Scale video frame..");
+                                    #endif
+                                    HM_sws_scale(mScalerContext, tSourceFrame->data, tSourceFrame->linesize, 0, mCodecContext->height, tRGBFrame->data, tRGBFrame->linesize);
+
+                                    // return size of decoded frame
+                                    tCurrentChunkSize = avpicture_get_size(PIX_FMT_RGB32, mDecoderTargetResX, mDecoderTargetResY);
+
+                                    #ifdef MSF_DEBUG_PACKETS
+                                        LOG(LOG_VERBOSE, "New video frame..");
+                                        LOG(LOG_VERBOSE, "      ..key frame: %d", tSourceFrame->key_frame);
+                                        switch(tSourceFrame->pict_type)
+                                        {
+                                                case FF_I_TYPE:
+                                                    LOG(LOG_VERBOSE, "      ..picture type: i-frame");
+                                                    break;
+                                                case FF_P_TYPE:
+                                                    LOG(LOG_VERBOSE, "      ..picture type: p-frame");
+                                                    break;
+                                                case FF_B_TYPE:
+                                                    LOG(LOG_VERBOSE, "      ..picture type: b-frame");
+                                                    break;
+                                                default:
+                                                    LOG(LOG_VERBOSE, "      ..picture type: %d", tSourceFrame->pict_type);
+                                                    break;
+                                        }
+                                        LOG(LOG_VERBOSE, "      ..pts: %ld", tSourceFrame->pts);
+                                        LOG(LOG_VERBOSE, "      ..coded pic number: %d", tSourceFrame->coded_picture_number);
+                                        LOG(LOG_VERBOSE, "      ..display pic number: %d", tSourceFrame->display_picture_number);
+                                        LOG(LOG_VERBOSE, "Resulting frame size is %d bytes", tCurrentChunkSize);
+                                    #endif
+                                }else
+                                {
+//                                    // unlock grabbing
+//                                    mGrabMutex.unlock();
+
+                                    // only print debug output if it is not "operation not permitted"
+                                    //if ((tBytesDecoded < 0) && (AVUNERROR(tBytesDecoded) != EPERM))
+                                    // acknowledge failed"
+                                    LOG(LOG_WARN, "Couldn't decode video frame because \"%s\"(%d)", strerror(AVUNERROR(tBytesDecoded)), AVUNERROR(tBytesDecoded));
+
+                                    tCurrentChunkSize = 0;
+                                }
+
+                                // Free the RGB frame
+                                av_free(tRGBFrame);
+                            }
+
+                            // Free the YUV frame
+                            if (tSourceFrame != NULL)
+                                av_free(tSourceFrame);
+
+                            break;
+
+                    case MEDIA_AUDIO:
+                            if ((!tDropChunks) || (mRecording))
+                            {
+                                // log statistics
+                                AnnouncePacket(tPacket->size);
+
+                                //printf("DecodeFrame..\n");
+                                // Decode the next chunk of data
+                                int tOutputBufferSize = tChunkBufferSize;
+                                #ifdef MSF_DEBUG_PACKETS
+                                    LOG(LOG_VERBOSE, "Decoding audio samples into buffer of size: %d", tOutputBufferSize);
+                                #endif
+
+                                int tBytesDecoded;
+
+                                if ((mCodecContext->sample_rate == 44100) && (mCodecContext->channels == 2))
+                                {
+                                    tBytesDecoded = HM_avcodec_decode_audio(mCodecContext, (int16_t *)tChunkBuffer, &tOutputBufferSize, tPacket);
+                                    tCurrentChunkSize = tOutputBufferSize;
+                                }else
+                                {// have to insert an intermediate step, which resamples the audio chunk to 44.1 kHz
+                                    tBytesDecoded = HM_avcodec_decode_audio(mCodecContext, (int16_t *)mResampleBuffer, &tOutputBufferSize, tPacket);
+
+                                    if(tOutputBufferSize > 0)
+                                    {
+                                        //HINT: we always assume 16 bit samples and a stereo signal, so we have to divide/multiply by 4
+                                        int tResampledBytes = (2 /*16 signed char*/ * 2 /*channels*/) * audio_resample(mResampleContext, (short*)tChunkBuffer, (short*)mResampleBuffer, tOutputBufferSize / (2 * mCodecContext->channels));
+                                        #ifdef MSF_DEBUG_PACKETS
+                                            LOG(LOG_VERBOSE, "Have resampled %d bytes of sample rate %dHz and %d channels to %d bytes of sample rate 44100Hz and 2 channels", tOutputBufferSize, mCodecContext->sample_rate, mCodecContext->channels, tResampledBytes);
+                                        #endif
+                                        if(tResampledBytes > 0)
+                                        {
+                                            tCurrentChunkSize = tResampledBytes;
+                                        }else
+                                        {
+                                            LOG(LOG_ERROR, "Amount of resampled bytes (%d) is invalid", tResampledBytes);
+                                            tCurrentChunkSize = 0;
+                                        }
+                                    }else
+                                    {
+                                        LOG(LOG_ERROR, "Output buffer size %d from audio decoder is invalid", tOutputBufferSize);
+                                        tCurrentChunkSize = 0;
+                                    }
+                                }
+
+//TODO: echtzeit?
+                                // re-encode the frame and write it to file
+                                if ((mRecording) && (tCurrentChunkSize > 0))
+                                    RecordSamples((int16_t *)tChunkBuffer, tCurrentChunkSize);
+
+                                #ifdef MSF_DEBUG_PACKETS
+                                    LOG(LOG_VERBOSE, "Result is an audio frame with size of %d bytes from %d encoded bytes", tOutputBufferSize, tBytesDecoded);
+                                #endif
+
+                                if ((tBytesDecoded <= 0) || (tOutputBufferSize <= 0))
+                                {
+//                                    // unlock grabbing
+//                                    mGrabMutex.unlock();
+
+                                    // only print debug output if it is not "operation not permitted"
+                                    //if (AVUNERROR(tBytesDecoded) != EPERM)
+                                    // acknowledge failed"
+                                    LOG(LOG_WARN, "Couldn't decode audio samples because \"%s\"(%d)", strerror(AVUNERROR(tBytesDecoded)), AVUNERROR(tBytesDecoded));
+
+                                    tCurrentChunkSize = 0;
+                                }
+                            }
+                            break;
+
+                    default:
+                            LOG(LOG_ERROR, "Media type unknown");
+                            break;
+
+                }
+
+                // was there an error during decoding process?
+                if (tCurrentChunkSize > 0)
+                {
+                    // add new chunk to FIFO
+                    #ifdef MSF_DEBUG_PACKETS
+                        LOG(LOG_VERBOSE, "Writing %d bytes to FIFO", tCurrentChunkSize);
+                    #endif
+                    mDecoderFifo->WriteFifo((char*)tChunkBuffer, tCurrentChunkSize);
+                    // add meta description about current chunk to different FIFO
+                    struct ChunkDescriptor tChunkDesc;
+                    tChunkDesc.Pts = tCurrentChunkPts;
+                    mDecoderMetaDataFifo->WriteFifo((char*) &tChunkDesc, sizeof(tChunkDesc));
+                    #ifdef MSF_DEBUG_PACKETS
+                        LOG(LOG_VERBOSE, "Successful decoder loop");
+                    #endif
+                }
+            }else
+                LOG(LOG_ERROR, "Empty packet received, media type is \"%s\"", GetMediaTypeStr().c_str());
+
+            // free packet buffer
+            av_free_packet(tPacket);
+
+            mDecoderMutex.unlock();
+        }else
+        {
+            #ifdef MSF_DEBUG_TIMING
+                LOG(LOG_VERBOSE, "Nothing to do for decoder, wait some time and check again, loop %d", ++tWaitLoop);
+            #endif
+            Suspend(10 * 1000); // check every 1/100 seconds the state of the FIFO
+        }
+    }
+
+    free((void*)tChunkBuffer);
+
+    LOG(LOG_VERBOSE, "Decoder loop finished");
+
+    return NULL;
+}
+
 void MediaSourceFile::DoSetVideoGrabResolution(int pResX, int pResY)
 {
+    LOG(LOG_VERBOSE, "Going to execute DoSetVideoGrabResolution()");
+
     if ((mMediaSourceOpened) && (mScalerContext != NULL))
     {
+        if (mMediaType == MEDIA_UNKNOWN)
+        {
+            LOG(LOG_WARN, "Media type is still unknown when DoSetVideoGrabResolution is called, setting type to VIDEO ");
+            mMediaType = MEDIA_VIDEO;
+        }
+
+        StopDecoder();
+
         // free the software scaler context
         sws_freeContext(mScalerContext);
 
         // allocate software scaler context
         mScalerContext = sws_getContext(mCodecContext->width, mCodecContext->height, mCodecContext->pix_fmt, pResX, pResY, PIX_FMT_RGB32, SWS_BICUBIC, NULL, NULL, NULL);
+
+        StartDecoder(mTargetResX * mTargetResY * 4 /* bytes per pixel */);
     }
 }
 
@@ -1084,7 +1198,9 @@ bool MediaSourceFile::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
     if ((tAbsoluteTimestamp >= 0) && (tAbsoluteTimestamp <= mDuration))
     {
         LOG(LOG_VERBOSE, "Seeking to second %d", pSeconds);
+        mDecoderMutex.lock();
         tResult = (avformat_seek_file(mFormatContext, mMediaStreamIndex, tAbsoluteTimestamp - MSF_SEEK_VARIANCE, tAbsoluteTimestamp, tAbsoluteTimestamp + MSF_SEEK_VARIANCE, pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) >= 0);
+        mDecoderMutex.unlock();
 
         // adopt the stored pts value which represent the start of the media presentation in real-time useconds
         int64_t tFrameNumber = tAbsoluteTimestamp - mSourceStartPts;
@@ -1134,7 +1250,9 @@ bool MediaSourceFile::SeekRelative(int64_t pSeconds, bool pOnlyKeyFrames)
     if ((tAbsoluteTimestamp >= 0) && (tAbsoluteTimestamp <= mDuration))
     {
         LOG(LOG_VERBOSE, "Seeking relative %d seconds", pSeconds);
+        mDecoderMutex.lock();
         tResult = (avformat_seek_file(mFormatContext, mMediaStreamIndex, tAbsoluteTimestamp - MSF_SEEK_VARIANCE, tAbsoluteTimestamp, tAbsoluteTimestamp + MSF_SEEK_VARIANCE, pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) >= 0);
+        mDecoderMutex.unlock();
 
         // adopt the stored pts value which represent the start of the media presentation in real-time useconds
         int64_t tFrameNumber = tAbsoluteTimestamp - mSourceStartPts;

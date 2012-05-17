@@ -30,6 +30,8 @@
 
 #include <Header_Ffmpeg.h>
 #include <MediaSource.h>
+#include <MediaFifo.h>
+#include <HBThread.h>
 
 #include <string.h>
 
@@ -38,8 +40,10 @@ namespace Homer { namespace Multimedia {
 ///////////////////////////////////////////////////////////////////////////////
 
 // the following de/activates debugging of received packets
-#define MSF_DEBUG_PACKETS
-#define MSF_DEBUG_TIMING
+//#define MSF_DEBUG_PACKETS
+//#define MSF_DEBUG_TIMING
+
+#define MEDIA_SOURCE_FILE_INPUT_QUEUE_SIZE_LIMIT                  5 // in frames or audio sample blocks
 
 // 33 ms delay for 30 fps -> rounded to 35 ms
 #define MSF_FRAME_DROP_THRESHOLD            0 //in us, 0 deactivates frame dropping
@@ -48,7 +52,7 @@ namespace Homer { namespace Multimedia {
 ///////////////////////////////////////////////////////////////////////////////
 
 class MediaSourceFile:
-    public MediaSource
+    public MediaSource, public Thread
 {
 public:
     MediaSourceFile(std::string pSourceFile, bool pGrabInRealTime = true /* 1 = frame rate emulation, 0 = grab as fast as possible */);
@@ -92,6 +96,20 @@ protected:
     virtual void DoSetVideoGrabResolution(int pResX = 352, int pResY = 288);
 
 private:
+    /* decoder */
+    virtual void* Run(void* pArgs = NULL); // transcoder main loop
+    void StartDecoder(int pFifoEntrySize);
+    void StopDecoder();
+
+    /* decoding */
+    int                 mDecoderTargetResX;
+    int                 mDecoderTargetResY;
+    Mutex               mDecoderMutex;
+    bool                mDecoderNeeded;
+    MediaFifo           *mDecoderFifo;
+    MediaFifo           *mDecoderMetaDataFifo;
+    bool                mEOFReached;
+    /* */
     bool                mGrabInRealTime;
     int64_t             mCurPts; // we have to determine this manually during grabbing because cur_dts and everything else in AVStream is buggy for some video/audio files
     bool                mSeekingToPos; // seek to starting point because initial stream detection consumes the first n frames, or seeking to explicit position ("Seek" was called)
