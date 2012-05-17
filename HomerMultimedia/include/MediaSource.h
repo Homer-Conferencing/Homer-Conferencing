@@ -129,6 +129,11 @@ struct AudioDeviceDescriptor
 
 typedef std::list<AudioDeviceDescriptor> AudioDevicesList;
 
+struct ChunkDescriptor
+{
+    int64_t     Pts;
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #define Grabbing
