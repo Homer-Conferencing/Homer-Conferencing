@@ -14,7 +14,7 @@
    <string>Participant widget</string>
   </property>
   <widget class="QWidget" name="mParticipantWidgetContent">
-   <layout class="QGridLayout" name="gridLayout">
+   <layout class="QVBoxLayout" name="verticalLayout_2">
     <property name="leftMargin">
      <number>3</number>
     </property>
@@ -27,7 +27,7 @@
     <property name="bottomMargin">
      <number>3</number>
     </property>
-    <item row="0" column="0">
+    <item>
      <widget class="QSplitter" name="mSplitter">
       <property name="orientation">
        <enum>Qt::Vertical</enum>

@@ -456,6 +456,15 @@ void MainWindow::initializeWidgetsAndMenus()
     mMenuParticipantMessageWidgets = new QMenu("Participant messages");
     mActionParticipantMessageWidgets->setMenu(mMenuParticipantMessageWidgets);
 
+
+    LOG(LOG_VERBOSE, "..contacts widget");
+    mOverviewContactsWidget = new OverviewContactsWidget(mActionOverviewContactsWidget, this);
+    LOG(LOG_VERBOSE, "..errors widget");
+    mOverviewErrorsWidget = new OverviewErrorsWidget(mActionOverviewErrorsWidget, this);
+    LOG(LOG_VERBOSE, "..file transfers widget");
+    mOverviewFileTransfersWidget = new OverviewFileTransfersWidget(mActionOverviewFileTransfersWidget, this);
+    tabifyDockWidget(mOverviewContactsWidget, mOverviewFileTransfersWidget);
+
     LOG(LOG_VERBOSE, "..local broadcast widget");
     mLocalUserParticipantWidget = new ParticipantWidget(BROADCAST, this, mOverviewContactsWidget, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer);
     setCentralWidget(mLocalUserParticipantWidget);
@@ -493,11 +502,6 @@ void MainWindow::initializeWidgetsAndMenus()
 
     mShortcutActivateDebugWidgets = new QShortcut(QKeySequence(Qt::ALT + Qt::Key_A), this);
     mShortcutActivateDebuggingGlobally = new QShortcut(QKeySequence(Qt::ALT + Qt::Key_D), this);
-
-    mOverviewContactsWidget = new OverviewContactsWidget(mActionOverviewContactsWidget, this);
-    mOverviewErrorsWidget = new OverviewErrorsWidget(mActionOverviewErrorsWidget, this);
-    mOverviewFileTransfersWidget = new OverviewFileTransfersWidget(mActionOverviewFileTransfersWidget, this);
-    tabifyDockWidget(mOverviewContactsWidget, mOverviewFileTransfersWidget);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
