@@ -52,6 +52,8 @@ using namespace Homer::Multimedia;
 // debug performance of audio widget
 //#define DEBUG_AUDIOWIDGET_PERFORMANCE
 
+#define AUDIO_INITIAL_MINIMUM_PLAYBACK_QUEUE        4
+
 #define SAMPLE_BUFFER_SIZE               3
 
 // de/activate automatic sample dropping in case the audo widget is invisible (default is off)
@@ -184,6 +186,7 @@ public slots:
     void SetVolume(int pValue);
 
 private:
+    void ResetPlayback();
     void OpenPlaybackDevice();
     void ClosePlaybackDevice();
     void DoResetAudioSource();
@@ -212,6 +215,7 @@ private:
     bool                mDropSamples;
     int                 mResultingSps;
     bool                mAudioOutMuted;
+    int                 mAudioPlaybackDelayCount;
     std::string         mSaveFileName;
     int                 mSaveFileQuality;
     QString             mCodec;
