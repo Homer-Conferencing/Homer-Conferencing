@@ -1965,9 +1965,6 @@ void VideoWorkerThread::run()
     	// store last frame number
         tLastFrameNumber = tFrameNumber;
 
-        // lock
-        mGrabMutex.lock();
-
         // play new file from disc
         if (mPlayNewFileAsap)
         	DoPlayNewFile();
@@ -2016,9 +2013,6 @@ void VideoWorkerThread::run()
 			    mSourceAvailable = false;
 
 			//LOG(LOG_ERROR, "DO THE BEST %d %d", tFrameNumber, tFrameSize);
-
-			// unlock
-			mGrabMutex.unlock();
 
 			// do we have a valid new video frame?
 			if ((tFrameNumber >= 0) && (tFrameSize > 0))
@@ -2077,9 +2071,6 @@ void VideoWorkerThread::run()
 			}
         }else
         {
-			// unlock
-			mGrabMutex.unlock();
-
         	if (mSourceAvailable)
         		LOG(LOG_VERBOSE, "VideoWorkerThread is in pause state");
         	else

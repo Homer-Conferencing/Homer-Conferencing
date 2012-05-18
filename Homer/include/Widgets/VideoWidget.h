@@ -225,7 +225,7 @@ private:
     unsigned long       mFrameNumber[FRAME_BUFFER_SIZE];
     int                 mFrameSize[FRAME_BUFFER_SIZE];
     int                 mFrameCurrentIndex, mFrameGrabIndex;
-    QMutex              mDeliverMutex, mGrabMutex;
+    QMutex              mDeliverMutex;
     int                 mResX;
     int                 mResY;
     int					mFrameWidthLastGrabbedFrame;

@@ -1401,10 +1401,6 @@ void AudioWorkerThread::run()
         // get the next frame from audio source
         tLastSampleNumber = tSampleNumber;
 
-        // lock
-        //LOG(LOG_ERROR, "GrabMutex");
-        mGrabMutex.lock();
-
         if (mSourceSeekAsap)
             DoSourceSeek();
 
@@ -1475,9 +1471,6 @@ void AudioWorkerThread::run()
 			    #endif
 			}
 
-			// unlock
-			mGrabMutex.unlock();
-
 			if(!mDropSamples)
 			{
                 if ((tSampleNumber >= 0) && (mSamplesSize[mSampleGrabIndex] > 0))
@@ -1510,9 +1503,6 @@ void AudioWorkerThread::run()
             }
         }else
         {
-			// unlock
-			mGrabMutex.unlock();
-
         	if (mSourceAvailable)
         		LOG(LOG_VERBOSE, "AudioWorkerThread is in pause state");
         	else
