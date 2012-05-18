@@ -34,6 +34,7 @@
 #include <QMenu>
 #include <QThread>
 #include <QMutex>
+#include <QWaitCondition>
 #include <QContextMenuEvent>
 #include <QBuffer>
 #include <QQueue>
@@ -212,6 +213,8 @@ private:
     int                 mSamplesBufferSize[SAMPLE_BUFFER_SIZE];
     int                 mSampleCurrentIndex, mSampleGrabIndex;
     QMutex              mDeliverMutex;
+    QMutex              mGrabbingStateMutex; // secures mPaused, mSourceAvailable in public functions
+    QWaitCondition      mGrabbingCondition;
     int                 mResX;
     int                 mResY;
     bool                mWorkerNeeded;
