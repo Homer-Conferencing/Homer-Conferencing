@@ -211,7 +211,7 @@ private:
     int                 mSamplesSize[SAMPLE_BUFFER_SIZE];
     int                 mSamplesBufferSize[SAMPLE_BUFFER_SIZE];
     int                 mSampleCurrentIndex, mSampleGrabIndex;
-    QMutex              mDeliverMutex, mGrabMutex;
+    QMutex              mDeliverMutex;
     int                 mResX;
     int                 mResY;
     bool                mWorkerNeeded;
