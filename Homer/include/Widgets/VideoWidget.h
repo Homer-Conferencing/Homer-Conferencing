@@ -39,6 +39,7 @@
 #include <QThread>
 #include <QList>
 #include <QMutex>
+#include <QWaitCondition>
 #include <QContextMenuEvent>
 #include <QKeyEvent>
 #include <QMainWindow>
@@ -226,6 +227,8 @@ private:
     int                 mFrameSize[FRAME_BUFFER_SIZE];
     int                 mFrameCurrentIndex, mFrameGrabIndex;
     QMutex              mDeliverMutex;
+    QMutex              mGrabbingStateMutex; // secures mPaused, mSourceAvailable in public functions
+    QWaitCondition      mGrabbingCondition;
     int                 mResX;
     int                 mResY;
     int					mFrameWidthLastGrabbedFrame;

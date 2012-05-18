@@ -915,6 +915,7 @@ void AudioWorkerThread::ToggleMuteState(bool pState)
     	mStartPlaybackAsap = true;
     else
     	mStopPlaybackAsap = true;
+    mGrabbingCondition.wakeAll();
 }
 
 void AudioWorkerThread::SetVolume(int pValue)
@@ -943,6 +944,7 @@ void AudioWorkerThread::SetMuteState(bool pMuted)
         mStopPlaybackAsap = true;
     else
     	mStartPlaybackAsap = true;
+    mGrabbingCondition.wakeAll();
 }
 
 bool AudioWorkerThread::GetMuteState()
@@ -963,12 +965,14 @@ void AudioWorkerThread::SetSampleDropping(bool pDrop)
 void AudioWorkerThread::ResetSource()
 {
     mResetAudioSourceAsap = true;
+    mGrabbingCondition.wakeAll();
 }
 
 void AudioWorkerThread::SetInputStreamPreferences(QString pCodec)
 {
     mCodec = pCodec;
     mSetInputStreamPreferencesAsap = true;
+    mGrabbingCondition.wakeAll();
 }
 
 void AudioWorkerThread::SetStreamName(QString pName)
@@ -992,6 +996,7 @@ void AudioWorkerThread::SetCurrentDevice(QString pName)
     {
         mDeviceName = pName;
         mSetCurrentDeviceAsap = true;
+        mGrabbingCondition.wakeAll();
     }
 }
 
@@ -1041,12 +1046,16 @@ void AudioWorkerThread::PlayFile(QString pName)
 	{
 		LOG(LOG_VERBOSE, "Continue playback of file: %s", pName.toStdString().c_str());
 		mAudioSource->Seek(mPausedPos, false);
-		mPaused = false;
+        mGrabbingStateMutex.lock();
+        mPaused = false;
+        mGrabbingCondition.wakeAll();
+        mGrabbingStateMutex.unlock();
 	}else
 	{
 		LOG(LOG_VERBOSE, "Trigger playback of file: %s", pName.toStdString().c_str());
 		mDesiredFile = pName;
 		mPlayNewFileAsap = true;
+        mGrabbingCondition.wakeAll();
 	}
 }
 
@@ -1056,7 +1065,9 @@ void AudioWorkerThread::PauseFile()
     {
         LOG(LOG_VERBOSE, "Trigger pause state");
         mPausedPos = mAudioSource->GetSeekPos();
+        mGrabbingStateMutex.lock();
         mPaused = true;
+        mGrabbingStateMutex.unlock();
     }else
         LOG(LOG_VERBOSE, "Seeking not supported, PauseFile() aborted");
 }
@@ -1067,7 +1078,9 @@ void AudioWorkerThread::StopFile()
     {
         LOG(LOG_VERBOSE, "Trigger stop state");
         mPausedPos = 0;
+        mGrabbingStateMutex.lock();
         mPaused = true;
+        mGrabbingStateMutex.unlock();
     }else
         LOG(LOG_VERBOSE, "Seeking not supported, StopFile() aborted");
 }
@@ -1094,6 +1107,7 @@ void AudioWorkerThread::SelectInputChannel(int pIndex)
 {
     mDesiredInputChannel = pIndex;
     mSelectInputChannelAsap = true;
+    mGrabbingCondition.wakeAll();
 }
 
 bool AudioWorkerThread::SupportsSeeking()
@@ -1103,8 +1117,9 @@ bool AudioWorkerThread::SupportsSeeking()
 
 void AudioWorkerThread::Seek(int pPos)
 {
-    mSourceSeekAsap = true;
     mSourceSeekPos = pPos;
+    mSourceSeekAsap = true;
+    mGrabbingCondition.wakeAll();
 }
 
 int64_t AudioWorkerThread::GetSeekPos()
@@ -1122,11 +1137,13 @@ void AudioWorkerThread::StartRecorder(std::string pSaveFileName, int pQuality)
     mSaveFileName = pSaveFileName;
     mSaveFileQuality = pQuality;
     mStartRecorderAsap = true;
+    mGrabbingCondition.wakeAll();
 }
 
 void AudioWorkerThread::StopRecorder()
 {
     mStopRecorderAsap = true;
+    mGrabbingCondition.wakeAll();
 }
 
 void AudioWorkerThread::DoStartRecorder()
@@ -1440,9 +1457,13 @@ void AudioWorkerThread::run()
         if (mStartPlaybackAsap)
         	DoStartPlayback();
 
+        mGrabbingStateMutex.lock();
+
         if ((!mPaused) && (mSourceAvailable))
         {
-			// set input samples size
+            mGrabbingStateMutex.unlock();
+
+            // set input samples size
 			tSamplesSize = mSamplesBufferSize[mSampleGrabIndex];
 
 			// get new samples from audio grabber
@@ -1498,7 +1519,7 @@ void AudioWorkerThread::run()
                 }else
                 {
                     LOG(LOG_VERBOSE, "Invalid grabbing result: %d, current sample size: %d", tSampleNumber, mSamplesSize[mSampleGrabIndex]);
-                    usleep(500 * 1000); // check for new frames every 1/10 seconds
+                    usleep(100 * 1000); // check for new frames every 1/10 seconds
                 }
             }
         }else
@@ -1507,7 +1528,11 @@ void AudioWorkerThread::run()
         		LOG(LOG_VERBOSE, "AudioWorkerThread is in pause state");
         	else
         		LOG(LOG_VERBOSE, "AudioWorkerThread waits for available grabbing device");
-        	usleep(500 * 1000); // check for new pause state every 3 seconds
+
+            mGrabbingCondition.wait(&mGrabbingStateMutex);
+            mGrabbingStateMutex.unlock();
+
+            LOG(LOG_VERBOSE, "Continuing processing");
         }
 
     }
@@ -1522,6 +1547,7 @@ void AudioWorkerThread::StopGrabber()
 {
     LOG(LOG_VERBOSE, "StobGrabber now...");
     mWorkerNeeded = false;
+    mGrabbingCondition.wakeAll();
     mAudioSource->StopGrabbing();
 }
 

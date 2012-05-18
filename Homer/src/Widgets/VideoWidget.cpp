@@ -1483,18 +1483,22 @@ void VideoWorkerThread::SetGrabResolution(int mX, int mY)
         mResX = mX;
         mResY = mY;
         mSetGrabResolutionAsap = true;
+        mGrabbingCondition.wakeAll();
+
     }
 }
 
 void VideoWorkerThread::ResetSource()
 {
     mResetVideoSourceAsap = true;
+    mGrabbingCondition.wakeAll();
 }
 
 void VideoWorkerThread::SetInputStreamPreferences(QString pCodec)
 {
     mCodec = pCodec;
     mSetInputStreamPreferencesAsap = true;
+    mGrabbingCondition.wakeAll();
 }
 
 void VideoWorkerThread::SetStreamName(QString pName)
@@ -1523,6 +1527,7 @@ void VideoWorkerThread::SetCurrentDevice(QString pName)
     {
         mDeviceName = pName;
         mSetCurrentDeviceAsap = true;
+        mGrabbingCondition.wakeAll();
     }
 }
 
@@ -1572,13 +1577,17 @@ void VideoWorkerThread::PlayFile(QString pName)
 	{
 		LOG(LOG_VERBOSE, "Continue playback of file: %s", pName.toStdString().c_str());
 		mVideoSource->Seek(mPausedPos, false);
+		mGrabbingStateMutex.lock();
 		mPaused = false;
+        mGrabbingStateMutex.unlock();
+		mGrabbingCondition.wakeAll();
         mFrameTimestamps.clear();
 	}else
 	{
 		LOG(LOG_VERBOSE, "Trigger playback of file: %s", pName.toStdString().c_str());
 		mDesiredFile = pName;
 		mPlayNewFileAsap = true;
+        mGrabbingCondition.wakeAll();
 	}
 }
 
@@ -1588,7 +1597,9 @@ void VideoWorkerThread::PauseFile()
     {
         LOG(LOG_VERBOSE, "Trigger pause state");
         mPausedPos = mVideoSource->GetSeekPos();
+        mGrabbingStateMutex.lock();
         mPaused = true;
+        mGrabbingStateMutex.unlock();
     }else
         LOG(LOG_VERBOSE, "Seeking not supported, PauseFile() aborted");
 }
@@ -1599,7 +1610,9 @@ void VideoWorkerThread::StopFile()
     {
         LOG(LOG_VERBOSE, "Trigger stop state");
         mPausedPos = 0;
+        mGrabbingStateMutex.lock();
         mPaused = true;
+        mGrabbingStateMutex.unlock();
     }else
         LOG(LOG_VERBOSE, "Seeking not supported, StopFile() aborted");
 }
@@ -1660,6 +1673,7 @@ void VideoWorkerThread::SelectInputChannel(int pIndex)
         LOG(LOG_VERBOSE, "Will select new input channel %d after some short time", pIndex);
         mDesiredInputChannel = pIndex;
         mSelectInputChannelAsap = true;
+        mGrabbingCondition.wakeAll();
     }else
     {
         LOG(LOG_WARN, "Will not select new input channel -1, ignoring this request");
@@ -1683,11 +1697,13 @@ void VideoWorkerThread::StartRecorder(std::string pSaveFileName, int pQuality)
     mSaveFileName = pSaveFileName;
     mSaveFileQuality = pQuality;
     mStartRecorderAsap = true;
+    mGrabbingCondition.wakeAll();
 }
 
 void VideoWorkerThread::StopRecorder()
 {
     mStopRecorderAsap = true;
+    mGrabbingCondition.wakeAll();
 }
 
 void VideoWorkerThread::DoStartRecorder()
@@ -1997,9 +2013,13 @@ void VideoWorkerThread::run()
         if (mStopRecorderAsap)
             DoStopRecorder();
 
+        mGrabbingStateMutex.lock();
+
         if ((!mPaused) && (mSourceAvailable))
         {
-			// set input frame size
+            mGrabbingStateMutex.unlock();
+
+            // set input frame size
 			tFrameSize = mFrameSize[mFrameGrabIndex];
 
 			// get new frame from video grabber
@@ -2011,6 +2031,7 @@ void VideoWorkerThread::run()
 			mEofReached = (tFrameNumber == GRAB_RES_EOF);
 			if (mEofReached)
 			    mSourceAvailable = false;
+
 
 			//LOG(LOG_ERROR, "DO THE BEST %d %d", tFrameNumber, tFrameSize);
 
@@ -2067,7 +2088,7 @@ void VideoWorkerThread::run()
 			}else
 			{
 				LOG(LOG_VERBOSE, "Invalid grabbing result");
-				usleep(500 * 1000); // check for new frames every 1/10 seconds
+				usleep(100 * 1000); // check for new frames every 1/10 seconds
 			}
         }else
         {
@@ -2075,7 +2096,11 @@ void VideoWorkerThread::run()
         		LOG(LOG_VERBOSE, "VideoWorkerThread is in pause state");
         	else
         		LOG(LOG_VERBOSE, "VideoWorkerThread waits for available grabbing device");
-        	usleep(500 * 1000); // check for new pause state every 3 seconds
+
+        	mGrabbingCondition.wait(&mGrabbingStateMutex);
+            mGrabbingStateMutex.unlock();
+
+        	LOG(LOG_VERBOSE, "Continuing processing");
         }
     }
     mVideoSource->CloseGrabDevice();
@@ -2086,6 +2111,7 @@ void VideoWorkerThread::StopGrabber()
 {
     LOG(LOG_VERBOSE, "StobGrabber now...");
     mWorkerNeeded = false;
+    mGrabbingCondition.wakeAll();
     mVideoSource->StopGrabbing();
 }
 
