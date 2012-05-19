@@ -192,6 +192,13 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
 
 void MediaSourceMem::WriteFragment(char *pBuffer, int pBufferSize)
 {
+	if (pBufferSize > 0)
+	{
+        // log statistics
+        // mFragmentHeaderSize to add additional TCPFragmentHeader to the statistic if TCP is used, this is triggered by MediaSourceNet
+        AnnouncePacket((int)pBufferSize + mPacketStatAdditionalFragmentSize);
+	}
+	
     mDecoderFifo->WriteFifo(pBuffer, pBufferSize);
 }
 
@@ -203,10 +210,6 @@ void MediaSourceMem::ReadFragment(char *pData, ssize_t &pDataSize)
 
     if (pDataSize > 0)
     {
-        // log statistics
-        // mFragmentHeaderSize to add additional TCPFragmentHeader to the statistic if TCP is used, this is triggered by MediaSourceNet
-        AnnouncePacket((int)pDataSize + mPacketStatAdditionalFragmentSize);
-
         #ifdef MSMEM_DEBUG_PACKETS
             LOG(LOG_VERBOSE, "Delivered packet with number %5u at %p with size: %5d", (unsigned int)++mPacketNumber, pData, (int)pDataSize);
         #endif

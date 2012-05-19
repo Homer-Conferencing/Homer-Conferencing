@@ -35,6 +35,8 @@ namespace Homer { namespace Gui {
 
 using namespace Homer::Multimedia;
 
+#define                             USE_GAPI
+
 ///////////////////////////////////////////////////////////////////////////////
 
 class OpenVideoAudioPreviewDialog :

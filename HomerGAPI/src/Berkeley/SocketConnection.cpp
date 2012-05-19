@@ -54,16 +54,16 @@ SocketConnection::SocketConnection(std::string pTarget, Requirements *pRequireme
     bool tFoundTransport = false;
 
     mBlockingMode = true;
-    mTargetHost = pTarget;
+    mPeerHost = pTarget;
     RequirementTargetPort *tRequPort = (RequirementTargetPort*)pRequirements->get(RequirementTargetPort::type());
     if (tRequPort != NULL)
     {
-        mTargetPort = tRequPort->getPort();
+        mPeerPort = tRequPort->getPort();
 
     }else
     {
         LOG(LOG_WARN, "No target port given within requirement set, falling back to port 0");
-        mTargetPort = 0;
+        mPeerPort = 0;
     }
     mIsClosed = true;
 
@@ -88,25 +88,22 @@ SocketConnection::SocketConnection(std::string pTarget, Requirements *pRequireme
                     (pRequirements->contains(RequirementTransmitBitErrors::type())));
 
     if (tTcp)
-    {
         mSocket = Socket::CreateClientSocket(tIPv6 ? SOCKET_IPv6 : SOCKET_IPv4, SOCKET_TCP);
-        tFoundTransport = true;
-        mIsClosed = false;
-    }
-
 
     if (tUdp)
     {
         if(!tFoundTransport)
-        {
             mSocket = Socket::CreateClientSocket(tIPv6 ? SOCKET_IPv6 : SOCKET_IPv4, tUdpLite ? SOCKET_UDP_LITE : SOCKET_UDP);
-            tFoundTransport = true;
-            mIsClosed = false;
-        }else
-        {
+        else
             LOG(LOG_ERROR, "Ambiguous requirements");
-        }
     }
+
+    if (mSocket != NULL)
+    {
+        tFoundTransport = true;
+        mIsClosed = false;
+    }else
+        LOG(LOG_ERROR, "Socket object invalid");
 
     if(!tFoundTransport)
     {
@@ -115,11 +112,26 @@ SocketConnection::SocketConnection(std::string pTarget, Requirements *pRequireme
 
     /* QoS requirements and additional transport requirements */
     changeRequirements(pRequirements);
+
+    LOG(LOG_VERBOSE, "New IP association with target %s and requirements %s created", getRemoteName()->toString().c_str(), mRequirements.getDescription().c_str());
+}
+
+SocketConnection::SocketConnection(Socket *pSocket)
+{
+    mIsClosed = false;
+    mSocket = pSocket;
+    mBlockingMode = true;
+    mPeerHost = "";
+    mPeerPort = 0;
+    LOG(LOG_VERBOSE, "New IP association with local name %s created", getName()->toString().c_str(), mRequirements.getDescription().c_str());
 }
 
 SocketConnection::~SocketConnection()
 {
+    cancel();
+
     delete mSocket;
+    mSocket = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -142,18 +154,23 @@ void SocketConnection::read(char* pBuffer, int &pBufferSize)
         unsigned int tSourcePort;
         ssize_t tBufferSize = pBufferSize;
         mIsClosed = !mSocket->Receive(tSourceHost, tSourcePort, (void*)pBuffer, tBufferSize);
+        mPeerHost = tSourceHost;
+        mPeerPort = tSourcePort;
         pBufferSize = (int)tBufferSize;
         //TODO: extended error signaling
-    }
+    }else
+        LOG(LOG_ERROR, "Invalid socket");
 }
 
 void SocketConnection::write(char* pBuffer, int pBufferSize)
 {
     if(mSocket != NULL)
     {
-        mIsClosed = !mSocket->Send(mTargetHost, mTargetPort, (void*)pBuffer, (ssize_t) pBufferSize);
+        if ((mPeerHost != "") && (mPeerPort != 0))
+        mIsClosed = !mSocket->Send(mPeerHost, mPeerPort, (void*)pBuffer, (ssize_t) pBufferSize);
         //TODO: extended error signaling
-    }
+    }else
+        LOG(LOG_ERROR, "Invalid socket");
 }
 
 bool SocketConnection::getBlocking()
@@ -170,9 +187,30 @@ void SocketConnection::cancel()
 {
     if(mSocket != NULL)
     {
-        LOG(LOG_VERBOSE, "Connection will be canceled now");
-        delete mSocket;
-        mSocket = NULL;
+        LOG(LOG_VERBOSE, "Connection to %s will be canceled now", getName()->toString().c_str());
+        if (mBlockingMode) //TODO: do this only if a call to read() is still blocked
+        {
+            LOG(LOG_VERBOSE, "Try to do loopback signaling to local IPv%d listener at port %u, transport %d", mSocket->GetNetworkType(), 0xFFFF & mSocket->GetLocalPort(), mSocket->GetTransportType());
+            Socket  *tSocket = Socket::CreateClientSocket(mSocket->GetNetworkType(), mSocket->GetTransportType());
+            char    tData[8];
+            switch(tSocket->GetNetworkType())
+            {
+                case SOCKET_IPv4:
+                    LOG(LOG_VERBOSE, "Doing loopback signaling to IPv4 listener to port %u", mSocket->GetLocalPort());
+                    if (!tSocket->Send("127.0.0.1", mSocket->GetLocalPort(), tData, 0))
+                        LOG(LOG_ERROR, "Error when sending data through loopback IPv4-UDP socket");
+                    break;
+                case SOCKET_IPv6:
+                    LOG(LOG_VERBOSE, "Doing loopback signaling to IPv6 listener to port %u", mSocket->GetLocalPort());
+                    if (!tSocket->Send("::1", mSocket->GetLocalPort(), tData, 0))
+                        LOG(LOG_ERROR, "Error when sending data through loopback IPv6-UDP socket");
+                    break;
+                default:
+                    LOG(LOG_ERROR, "Unknown network type");
+                    break;
+            }
+            delete tSocket;
+        }
     }
 }
 

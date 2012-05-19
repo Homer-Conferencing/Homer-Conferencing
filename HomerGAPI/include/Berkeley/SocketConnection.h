@@ -41,6 +41,7 @@ class SocketConnection:
 {
 public:
 	SocketConnection(std::string pTarget, Requirements *pRequirements);
+	SocketConnection(Socket *pSocket);
     virtual ~SocketConnection( );
 
     virtual bool isClosed();
@@ -57,13 +58,12 @@ public:
     virtual Events getEvents();
 
 private:
-    bool		mBlockingMode;
-    Requirements mRequirements;
-    int 		mSocketHandle;
-    Socket		*mSocket;
-    bool        mIsClosed;
-    std::string mTargetHost;
-    unsigned int mTargetPort;
+    bool		    mBlockingMode;
+    Requirements    mRequirements;
+    Socket		    *mSocket;
+    bool            mIsClosed;
+    std::string     mPeerHost;
+    unsigned int    mPeerPort;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
