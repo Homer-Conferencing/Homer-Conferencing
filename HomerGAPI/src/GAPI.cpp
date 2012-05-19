@@ -43,7 +43,7 @@ GapiService sGapiService;
 
 GapiService::GapiService()
 {
-	mSetupInterface = 0;
+	mSetupInterface = NULL;
 	mSetupInterfaceName = "";
 	registerImpl(new SocketSetup(), BERKEYLEY_SOCKETS);
 	registerImpl(new ChannelSetup(), VIRTUAL_CHANNELS);
@@ -151,7 +151,7 @@ IConnection* GapiService::connect(Name *pName, Requirements *pRequirements)
 
 	LOG(LOG_VERBOSE, "Got call to GAPI::connect() with name \"%s\" and requirements \"%s\"", pName->toString().c_str(), (pRequirements != NULL) ? pRequirements->getDescription().c_str() : "none");
 
-	if(mSetupInterface == 0)
+	if(mSetupInterface == NULL)
 		LOG(LOG_ERROR, "No setup interface available");
 	else
 		tResult = mSetupInterface->connect(pName, pRequirements);
@@ -165,7 +165,7 @@ IBinding* GapiService::bind(Name *pName, Requirements *pRequirements)
 
 	LOG(LOG_VERBOSE, "Got call to GAPI::bind() with name \"%s\" and requirements \"%s\"", pName->toString().c_str(), (pRequirements != NULL) ? pRequirements->getDescription().c_str() : "none");
 
-	if(mSetupInterface == 0)
+	if(mSetupInterface == NULL)
 		LOG(LOG_ERROR, "No setup interface available");
 	else
 		tResult = mSetupInterface->bind(pName, pRequirements);
@@ -179,7 +179,7 @@ Requirements GapiService::getCapabilities(Name *pName, Requirements *pImportantR
 
 	LOG(LOG_VERBOSE, "Got call to GAPI::getCapabilities() with name \"%s\" and requirements \"%s\"", pName->toString().c_str(), (pImportantRequirements != NULL) ? pImportantRequirements->getDescription().c_str() : "none");
 
-	if(mSetupInterface == 0)
+	if(mSetupInterface == NULL)
 		LOG(LOG_ERROR, "No setup interface available");
 	else
 		tResult = mSetupInterface->getCapabilities(pName, pImportantRequirements);

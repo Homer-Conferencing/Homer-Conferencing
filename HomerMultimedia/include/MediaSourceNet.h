@@ -66,6 +66,7 @@ public:
     /// The constructor
     MediaSourceNet(Socket *pDataSocket, bool pRtpActivated = true);
     MediaSourceNet(unsigned int pPortNumber, enum TransportType pTransportType, bool pRtpActivated = true);
+    MediaSourceNet(std::string pLocalName, Requirements *pTransportRequirements, bool pRtpActivated = true);
 
     /// The destructor
     virtual ~MediaSourceNet();
@@ -82,16 +83,23 @@ public:
     virtual std::string GetCurrentDevicePeerName();
 
 private:
-    void Init(Socket *pDataSocket, bool pRtpActivated = true);
+    void Init(Socket *pDataSocket, unsigned int pLocalPort, bool pRtpActivated = true);
+    bool DoReceiveFragment(std::string &pSourceHost, unsigned int &pSourcePort, char* pData, int &pSize);
 
 protected:
 
     char                *mPacketBuffer;
-    unsigned int        mListenerPort;
-    Socket              *mDataSocket;
     bool				mListenerRunning;
-    bool                mListenerSocketOutside;
+    bool                mListenerSocketCreatedOutside;
     int                 mReceiveErrors;
+    bool                mStreamedTransport;
+    /* Berkeley sockets based transport */
+    Socket              *mDataSocket;
+    unsigned int        mListenerPort;
+    /* GAPI based transport */
+    IConnection         *mGAPIDataSocket;
+    IBinding            *mGAPIBinding;
+    bool                mGAPIUsed;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

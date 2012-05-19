@@ -117,8 +117,10 @@ void AddNetworkSinkDialog::CreateNewMediaSink()
             LOG(LOG_WARN, "Unsupported transport protocol selected");
             break;
     }
+
     // add target port
     tRequs.add(&tReqPort);
+
     // add QoS parameter
     if (mCbDelay->isChecked())
         tRequs.add(&tReqDelay);

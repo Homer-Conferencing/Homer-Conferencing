@@ -88,7 +88,7 @@ MediaSinkNet::MediaSinkNet(string pTarget, Requirements *pTransportRequirements,
     mTargetHost = pTarget;
 
     // get transport type
-    mStreamedTransport = (pTransportRequirements->contains(RequirementTransmitLossless::type()) || pTransportRequirements->contains(RequirementTransmitStream::type()));
+    mStreamedTransport = pTransportRequirements->contains(pTransportRequirements->contains(RequirementTransmitStream::type()));
     enum TransportType tTransportType = (mStreamedTransport ? SOCKET_TCP : (pTransportRequirements->contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
     if (mStreamedTransport)
     	mStreamFragmentCopyBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
@@ -98,7 +98,7 @@ MediaSinkNet::MediaSinkNet(string pTarget, Requirements *pTransportRequirements,
     {
         LOG(LOG_VERBOSE, "Remote media sink at: %s<%d>%s", mTargetHost.c_str(), tTargetPort, mRtpActivated ? "(RTP)" : "");
 
-        // finally subscribe to the target server/service
+        // finally associate to the target server/service
         Name tName(pTarget);
         mGAPIDataSocket = GAPI.connect(&tName, pTransportRequirements); //new Socket(IS_IPV6_ADDRESS(pTargetHost) ? SOCKET_IPv6 : SOCKET_IPv4, pSocketType);
     }
@@ -107,16 +107,16 @@ MediaSinkNet::MediaSinkNet(string pTarget, Requirements *pTransportRequirements,
     AssignStreamName("NET-OUT: " + mMediaId);
 }
 
-MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, Socket* pSocket, enum MediaSinkType pType, bool pRtpActivated):
+MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, Socket* pLocalSocket, enum MediaSinkType pType, bool pRtpActivated):
     MediaSink(pType), RTP()
 {
     BasicInit(pTargetHost, pTargetPort, pType, pRtpActivated);
     mGAPIUsed = false;
-    mStreamedTransport = (pSocket->GetTransportType() == SOCKET_TCP);
+    mStreamedTransport = (pLocalSocket->GetTransportType() == SOCKET_TCP);
     if (mStreamedTransport)
     	mStreamFragmentCopyBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
 
-    mDataSocket = pSocket;
+    mDataSocket = pLocalSocket;
 
     // define QoS settings
     QoSSettings tQoSSettings;
@@ -152,10 +152,7 @@ MediaSinkNet::~MediaSinkNet()
     if(mGAPIUsed)
     {
 		if (mGAPIDataSocket != NULL)
-		{
-			mGAPIDataSocket->cancel();
 			delete mGAPIDataSocket;
-		}
     }else
     {
     	//HINT: socket object has to be deleted outside

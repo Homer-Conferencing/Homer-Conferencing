@@ -20,36 +20,49 @@
  *****************************************************************************/
 
 /*
- * Purpose: SocketName
+ * Purpose: SocketBinding
  * Author:  Thomas Volkert
- * Since:   2011-12-08
+ * Since:   2012-05-19
  */
 
-#ifndef _GAPI_SOCKET_NAME_
-#define _GAPI_SOCKET_NAME_
+#ifndef _GAPI_SOCKET_BINDING_
+#define _GAPI_SOCKET_BINDING_
 
-#include <Name.h>
+#include <HBSocket.h>
+#include <HBMutex.h>
 
-#include <string>
+#include <Requirements.h>
+
+#include <list>
 
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class SocketName:
-    public Name
+typedef std::list<IConnection*> IConnectionList;
+
+
+class SocketBinding:
+	public IBinding
 {
 public:
-	SocketName(std::string pHost, unsigned int pPort);
-    virtual ~SocketName();
+	SocketBinding(std::string pLocalName, Requirements *pRequirements);
+    virtual ~SocketBinding( );
 
-    virtual std::string toString();
-    virtual std::string getHost();
-    virtual unsigned int getPort();
+    virtual IConnection* readConnection();
+    virtual Name* getName();
+    virtual void cancel();
+    virtual bool changeRequirements(Requirements *pRequirements);
+    virtual Requirements getRequirements();
+    virtual Events getEvents();
+
 private:
-    std::string		mHost;
-    unsigned int    mPort;
-    std::string     mTransport;
+    IConnection*    mConnection; // we support only one association
+    Requirements    mRequirements;
+    Socket		    *mSocket;
+    bool            mIsClosed;
+    std::string     mLocalHost;
+    unsigned int    mLocalPort;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

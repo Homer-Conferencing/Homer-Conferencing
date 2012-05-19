@@ -55,7 +55,7 @@ public:
 	// general purpose constructor which uses GAPI library
 	MediaSinkNet(string pTarget, Requirements *pTransportRequirements, enum MediaSinkType pType, bool pRtpActivated);
 	// constructor to send media data via the same port of an existing already allocated socket object (can be used in conferences to support NAT traversal)
-	MediaSinkNet(std::string pTargetHost, unsigned int pTargetPort, Socket* pSocket, enum MediaSinkType pType, bool pRtpActivated);
+	MediaSinkNet(std::string pTargetHost, unsigned int pTargetPort, Socket* pLocalSocket, enum MediaSinkType pType, bool pRtpActivated);
 
     virtual ~MediaSinkNet();
 
@@ -91,7 +91,7 @@ private:
     /* Berkeley sockets based transport */
     Socket				*mDataSocket;
     /* GAPI based transport */
-    IConnection       *mGAPIDataSocket;
+    IConnection         *mGAPIDataSocket;
     bool 				mGAPIUsed;
 };
 

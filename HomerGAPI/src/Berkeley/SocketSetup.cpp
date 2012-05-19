@@ -27,6 +27,7 @@
 
 #include <GAPI.h>
 #include <Berkeley/SocketSetup.h>
+#include <Berkeley/SocketBinding.h>
 #include <Berkeley/SocketConnection.h>
 
 #include <Logger.h>
@@ -57,8 +58,7 @@ IConnection* SocketSetup::connect(Name *pName, Requirements *pRequirements)
 
 IBinding* SocketSetup::bind(Name *pName, Requirements *pRequirements)
 {
-	//TODO:
-	return 0;
+    return new SocketBinding(pName->toString(), pRequirements);
 }
 
 Requirements SocketSetup::getCapabilities(Name *pName, Requirements *pImportantRequirements)

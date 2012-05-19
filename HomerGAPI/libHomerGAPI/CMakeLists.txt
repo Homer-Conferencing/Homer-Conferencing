@@ -43,6 +43,7 @@ SET (SOURCES
 	../src/Requirements
 	../src/Berkeley/SocketName
 	../src/Berkeley/SocketSetup
+	../src/Berkeley/SocketBinding
 	../src/Berkeley/SocketConnection
 	../src/Simulation/ChannelSetup
 	../src/Simulation/ChannelConnection
