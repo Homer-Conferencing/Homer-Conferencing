@@ -96,6 +96,10 @@ Socket* Socket::CreateServerSocket(enum NetworkType pIpVersion, enum TransportTy
     Socket* tResult = NULL;
 
     tResult = new Socket(pIpVersion, pTransportType, pListenerPort, pReusable, pProbeStepping, pHighestPossibleListenerPort);
+
+    if (tResult == NULL)
+        return NULL;
+
     if (tResult->mSocketHandle == -1)
     {
         delete tResult;
@@ -115,6 +119,10 @@ Socket* Socket::CreateClientSocket(enum NetworkType pIpVersion, enum TransportTy
     Socket* tResult = NULL;
 
     tResult = new Socket(pIpVersion, pTransportType, pSenderPort, pReusable, pProbeStepping, pHighestPossibleSenderPort);
+
+    if (tResult == NULL)
+        return NULL;
+
     if (tResult->mSocketHandle == -1)
     {
         delete tResult;
