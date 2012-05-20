@@ -38,6 +38,7 @@
 #include <Snippets.h>
 #include <HBSocket.h>
 #include <GAPI.h>
+#include <Meeting.h>
 
 #include <Configuration.h>
 
@@ -60,28 +61,24 @@ OpenVideoAudioPreviewDialog::~OpenVideoAudioPreviewDialog()
 void OpenVideoAudioPreviewDialog::initializeGUI()
 {
     setupUi(this);
-
-    connect(mCbDeviceVideo, SIGNAL(currentIndexChanged(int)), this, SLOT(selectDevicesPlayback()));
-    connect(mCbDeviceAudio, SIGNAL(currentIndexChanged(int)), this, SLOT(selectDevicesPlayback()));
+    if (!CONF.DebuggingEnabled())
+    {
+        mGbInterfaceVideo->hide();
+        mLbHostVideo->hide();
+        mLeHostVideo->hide();
+        mGbInterfaceAudio->hide();
+        mLbHostAudio->hide();
+        mLeHostAudio->hide();
+        // minimize layout
+        resize(0, 0);
+    }
 
     connect(mPbFile, SIGNAL(clicked()), this, SLOT(actionGetFile()));
-
-    connect(mSbPortVideo, SIGNAL(valueChanged(int)), this, SLOT(selectStreaming()));
-    connect(mCbTransportVideo, SIGNAL(currentIndexChanged(int)), this, SLOT(selectStreaming()));
-    connect(mCbCodecVideo, SIGNAL(currentIndexChanged(int)), this, SLOT(selectStreaming()));
-    connect(mCbRtpVideo, SIGNAL(stateChanged(int)), this, SLOT(selectStreaming()));
-    connect(mSbPortAudio, SIGNAL(valueChanged(int)), this, SLOT(selectStreaming()));
-    connect(mCbTransportAudio, SIGNAL(currentIndexChanged(int)), this, SLOT(selectStreaming()));
-    connect(mCbCodecAudio, SIGNAL(currentIndexChanged(int)), this, SLOT(selectStreaming()));
-    connect(mCbRtpAudio, SIGNAL(stateChanged(int)), this, SLOT(selectStreaming()));
 
     connect(mCbVideoEnabled, SIGNAL(clicked(bool)), this, SLOT(actionVideoEnabled(bool)));
     connect(mCbAudioEnabled, SIGNAL(clicked(bool)), this, SLOT(actionAudioEnabled(bool)));
 
     LoadConfiguration();
-
-    // use network streaming as default selection
-    mRbStream->setChecked(true);
 }
 
 int OpenVideoAudioPreviewDialog::exec()
@@ -103,153 +100,161 @@ int OpenVideoAudioPreviewDialog::exec()
 
 MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceVideo()
 {
+    MediaSourceNet *tNetSource = NULL;
+    string tOldGAPIImpl;
+    QString tHost = mLeHostVideo->text();
+    QString tPort = QString("%1").arg(mSbPortVideo->value());
+    enum TransportType tTransport = (enum TransportType)mCbTransportVideo->currentIndex();
+
+    Requirements tRequs;
+    RequirementTransmitBitErrors tReqBitErr(UDP_LITE_HEADER_SIZE + RTP_HEADER_SIZE);
+    RequirementTransmitChunks tReqChunks;
+    RequirementTransmitStream tReqStream;
+    RequirementTargetPort tReqPort(tPort.toInt());
+
     if(!mCbVideoEnabled->isChecked())
         return NULL;
 
-    if (mRbDevice->isChecked())
+    switch(mSwPreviewPages->currentIndex())
     {
-        #ifdef WIN32
-            return new MediaSourceVFW(mCbDeviceVideo->currentText().toStdString());
-        #endif
-		#ifdef APPLE
-			return new MediaSourceCoreVideo(mCbDeviceVideo->currentText().toStdString());
-		#endif
-		#ifdef BSD
-			//TODO
-		#endif
-        #ifdef LINUX
-            return new MediaSourceV4L2(mCbDeviceVideo->currentText().toStdString());
-        #endif
-    }
-    if (mRbFile->isChecked())
-    {
-        if (mLbFile->text() != "")
-            return new MediaSourceFile(mLbFile->text().toStdString());
-        else
-            return NULL;
-    }
-    if (mRbStream->isChecked())
-    {
-        #ifdef USE_GAPI
-            QString tHost = "";//TODO: mLeHost->text();
-            QString tPort = QString("%1").arg(mSbPortVideo->value());
-            enum TransportType tTransport = (enum TransportType)mCbTransportVideo->currentIndex();
+        case 0: // devices
+            #ifdef WIN32
+                return new MediaSourceVFW(mCbDeviceVideo->currentText().toStdString());
+            #endif
+            #ifdef APPLE
+                return new MediaSourceCoreVideo(mCbDeviceVideo->currentText().toStdString());
+            #endif
+            #ifdef BSD
+                //TODO
+            #endif
+            #ifdef LINUX
+                return new MediaSourceV4L2(mCbDeviceVideo->currentText().toStdString());
+            #endif
+            break;
+        case 1: // file
+            if (mLbFile->text() != "")
+                return new MediaSourceFile(mLbFile->text().toStdString());
+            else
+                return NULL;
+            break;
+        case 2: // network streaming
+            #ifdef USE_GAPI
+                // add transport details depending on transport protocol selection
+                switch(tTransport)
+                {
+                    case SOCKET_UDP_LITE:
+                        tRequs.add(&tReqBitErr);
+                    case SOCKET_UDP:
+                        tRequs.add(&tReqChunks);
+                        break;
+                    case SOCKET_TCP:
+                        tRequs.add(&tReqStream);
+                        break;
+                    default:
+                        LOG(LOG_WARN, "Unsupported transport protocol selected");
+                        break;
+                }
 
-            Requirements tRequs;
-            RequirementTransmitBitErrors tReqBitErr(UDP_LITE_HEADER_SIZE + RTP_HEADER_SIZE);
-            RequirementTransmitChunks tReqChunks;
-            RequirementTransmitStream tReqStream;
-            RequirementTargetPort tReqPort(tPort.toInt());
+                // add local port
+                tRequs.add(&tReqPort);
 
-            // add transport details depending on transport protocol selection
-            switch(tTransport)
+                tOldGAPIImpl = GAPI.getCurrentImplName();
+                GAPI.selectImpl(mCbGAPIImplVideo->currentText().toStdString());
+                tNetSource = new MediaSourceNet(tHost.toStdString(), &tRequs, mCbRtpVideo->isChecked());
+                GAPI.selectImpl(tOldGAPIImpl);
+            #else
+                MediaSourceNet *tNetSource = new MediaSourceNet(mSbPortVideo->value(), (enum TransportType)mCbTransportVideo->currentIndex(), mCbRtpVideo->isChecked());
+            #endif
+            if (tNetSource->getListenerPort() == 0)
             {
-                case SOCKET_UDP_LITE:
-                    tRequs.add(&tReqBitErr);
-                case SOCKET_UDP:
-                    tRequs.add(&tReqChunks);
-                    break;
-                case SOCKET_TCP:
-                    tRequs.add(&tReqStream);
-                    break;
-                default:
-                    LOG(LOG_WARN, "Unsupported transport protocol selected");
-                    break;
+                ShowError("Video preview not possible", "The preview of the incoming video stream at local port \"" + QString("%1").arg(mSbPortVideo->value()) + "\" with transport \"" + QString(Socket::TransportType2String((enum TransportType)mCbTransportVideo->currentIndex()).c_str()) + "\" and codec \"" + mCbCodecVideo->currentText() + "\" is not possible!");
+                delete tNetSource;
+                return NULL;
             }
-
-            // add local port
-            tRequs.add(&tReqPort);
-
-            string tOldGAPIImpl = GAPI.getCurrentImplName();
-            //TODO: GAPI.selectImpl(mCbGAPIImpl->currentText().toStdString());
-            MediaSourceNet *tNetSource = new MediaSourceNet(tHost.toStdString(), &tRequs, mCbRtpVideo->isChecked());
-            GAPI.selectImpl(tOldGAPIImpl);
-        #else
-            MediaSourceNet *tNetSource = new MediaSourceNet(mSbPortVideo->value(), (enum TransportType)mCbTransportVideo->currentIndex(), mCbRtpVideo->isChecked());
-        #endif
-        if (tNetSource->getListenerPort() == 0)
-        {
-            ShowError("Video preview not possible", "The preview of the incoming video stream at local port \"" + QString("%1").arg(mSbPortVideo->value()) + "\" with transport \"" + QString(Socket::TransportType2String((enum TransportType)mCbTransportVideo->currentIndex()).c_str()) + "\" and codec \"" + mCbCodecVideo->currentText() + "\" is not possible!");
-            delete tNetSource;
-            return NULL;
-        }
-        tNetSource->SetInputStreamPreferences(mCbCodecVideo->currentText().toStdString(), false, mCbRtpVideo->isChecked());
-        return tNetSource;
+            tNetSource->SetInputStreamPreferences(mCbCodecVideo->currentText().toStdString(), false, mCbRtpVideo->isChecked());
+            return tNetSource;
+            break;
+        default:
+            LOG(LOG_ERROR, "Invalid index");
+            break;
     }
-
     return NULL;
 }
 
 bool OpenVideoAudioPreviewDialog::FileSourceSelected()
 {
-    return mRbFile->isChecked();
+    return (mSwPreviewPages->currentIndex() == 1);
 }
 
 MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceAudio()
 {
+    MediaSourceNet *tNetSource = NULL;
+    string tOldGAPIImpl;
+    QString tHost = mLeHostAudio->text();
+    QString tPort = QString("%1").arg(mSbPortAudio->value());
+    enum TransportType tTransport = (enum TransportType)mCbTransportAudio->currentIndex();
+
+    Requirements tRequs;
+    RequirementTransmitBitErrors tReqBitErr(UDP_LITE_HEADER_SIZE + RTP_HEADER_SIZE);
+    RequirementTransmitChunks tReqChunks;
+    RequirementTransmitStream tReqStream;
+    RequirementTargetPort tReqPort(tPort.toInt());
+
     if(!mCbAudioEnabled->isChecked())
         return NULL;
 
-    if (mRbDevice->isChecked())
+    switch(mSwPreviewPages->currentIndex())
     {
-		return new MediaSourcePortAudio(mCbDeviceAudio->currentText().toStdString());
-    }
-    if (mRbFile->isChecked())
-    {
-        if (mLbFile->text() != "")
-            return new MediaSourceFile(mLbFile->text().toStdString());
-        else
-            return NULL;
-    }
-    if (mRbStream->isChecked())
-    {
-        #ifdef USE_GAPI
-            QString tHost = "";//TODO: mLeHost->text();
-            QString tPort = QString("%1").arg(mSbPortAudio->value());
-            enum TransportType tTransport = (enum TransportType)mCbTransportAudio->currentIndex();
+        case 0: // devices
+            return new MediaSourcePortAudio(mCbDeviceAudio->currentText().toStdString());
+            break;
+        case 1: // file
+            if (mLbFile->text() != "")
+                return new MediaSourceFile(mLbFile->text().toStdString());
+            else
+                return NULL;
+            break;
+        case 2: // network streaming
+            #ifdef USE_GAPI
+                // add transport details depending on transport protocol selection
+                switch(tTransport)
+                {
+                    case SOCKET_UDP_LITE:
+                        tRequs.add(&tReqBitErr);
+                    case SOCKET_UDP:
+                        tRequs.add(&tReqChunks);
+                        break;
+                    case SOCKET_TCP:
+                        tRequs.add(&tReqStream);
+                        break;
+                    default:
+                        LOG(LOG_WARN, "Unsupported transport protocol selected");
+                        break;
+                }
 
-            Requirements tRequs;
-            RequirementTransmitBitErrors tReqBitErr(UDP_LITE_HEADER_SIZE + RTP_HEADER_SIZE);
-            RequirementTransmitChunks tReqChunks;
-            RequirementTransmitStream tReqStream;
-            RequirementTargetPort tReqPort(tPort.toInt());
+                // add local port
+                tRequs.add(&tReqPort);
 
-            // add transport details depending on transport protocol selection
-            switch(tTransport)
+                tOldGAPIImpl = GAPI.getCurrentImplName();
+                GAPI.selectImpl(mCbGAPIImplAudio->currentText().toStdString());
+                tNetSource = new MediaSourceNet(tHost.toStdString(), &tRequs, mCbRtpAudio->isChecked());
+                GAPI.selectImpl(tOldGAPIImpl);
+            #else
+                MediaSourceNet *tNetSource = new MediaSourceNet(mSbPortAudio->value(), (enum TransportType)mCbTransportAudio->currentIndex(), mCbRtpAudio->isChecked());
+            #endif
+            if (tNetSource->getListenerPort() == 0)
             {
-                case SOCKET_UDP_LITE:
-                    tRequs.add(&tReqBitErr);
-                case SOCKET_UDP:
-                    tRequs.add(&tReqChunks);
-                    break;
-                case SOCKET_TCP:
-                    tRequs.add(&tReqStream);
-                    break;
-                default:
-                    LOG(LOG_WARN, "Unsupported transport protocol selected");
-                    break;
+                ShowError("Audio preview not possible", "The preview of the incoming audio stream at local port \"" + QString("%1").arg(mSbPortAudio->value()) + "\" with transport \"" + QString(Socket::TransportType2String((enum TransportType)mCbTransportAudio->currentIndex()).c_str()) + "\" and codec \"" + mCbCodecAudio->currentText() + "\" is not possible!");
+                delete tNetSource;
+                return NULL;
             }
-
-            // add local port
-            tRequs.add(&tReqPort);
-
-            string tOldGAPIImpl = GAPI.getCurrentImplName();
-            //TODO: GAPI.selectImpl(mCbGAPIImpl->currentText().toStdString());
-            MediaSourceNet *tNetSource = new MediaSourceNet(tHost.toStdString(), &tRequs, mCbRtpAudio->isChecked());
-            GAPI.selectImpl(tOldGAPIImpl);
-        #else
-            MediaSourceNet *tNetSource = new MediaSourceNet(mSbPortAudio->value(), (enum TransportType)mCbTransportAudio->currentIndex(), mCbRtpAudio->isChecked());
-        #endif
-        if (tNetSource->getListenerPort() == 0)
-        {
-            ShowError("Audio preview not possible", "The preview of the incoming audio stream at local port \"" + QString("%1").arg(mSbPortAudio->value()) + "\" with transport \"" + QString(Socket::TransportType2String((enum TransportType)mCbTransportAudio->currentIndex()).c_str()) + "\" and codec \"" + mCbCodecAudio->currentText() + "\" is not possible!");
-            delete tNetSource;
-            return NULL;
-        }
-        tNetSource->SetInputStreamPreferences(mCbCodecAudio->currentText().toStdString(), false, mCbRtpAudio->isChecked());
-        return tNetSource;
+            tNetSource->SetInputStreamPreferences(mCbCodecAudio->currentText().toStdString(), false, mCbRtpAudio->isChecked());
+            return tNetSource;
+            break;
+        default:
+            LOG(LOG_ERROR, "Invalid index");
+            break;
     }
-
     return NULL;
 }
 
@@ -336,6 +341,13 @@ void OpenVideoAudioPreviewDialog::LoadConfiguration()
     if (tAudioStreamCodec == "AMR")
         mCbCodecAudio->setCurrentIndex(6);
 
+
+    //########################
+    //### host
+    //########################
+    mLeHostVideo->setText(QString(MEETING.GetHostAdr().c_str()));
+    mLeHostAudio->setText(QString(MEETING.GetHostAdr().c_str()));
+
     //########################
     //### transport type
     //########################
@@ -370,6 +382,19 @@ void OpenVideoAudioPreviewDialog::LoadConfiguration()
             mCbTransportAudio->setCurrentIndex(i);
             break;
         }
+    }
+
+    //########################
+    //### network interface
+    //########################
+    list<string> tGAPIImpls = GAPI.getAllImplNames();
+    list<string>::iterator tGAPIImplsIt;
+    mCbGAPIImplVideo->clear();
+    mCbGAPIImplAudio->clear();
+    for (tGAPIImplsIt = tGAPIImpls.begin(); tGAPIImplsIt != tGAPIImpls.end(); tGAPIImplsIt++)
+    {
+        mCbGAPIImplVideo->addItem(QString(tGAPIImplsIt->c_str()));
+        mCbGAPIImplAudio->addItem(QString(tGAPIImplsIt->c_str()));
     }
 
     //########################
@@ -412,22 +437,6 @@ void OpenVideoAudioPreviewDialog::actionGetFile()
         return;
 
     mLbFile->setText(tFileName);
-    selectFilePlayback();
-}
-
-void OpenVideoAudioPreviewDialog::selectStreaming()
-{
-	mRbStream->setChecked(true);
-}
-
-void OpenVideoAudioPreviewDialog::selectDevicesPlayback()
-{
-	mRbDevice->setChecked(true);
-}
-
-void OpenVideoAudioPreviewDialog::selectFilePlayback()
-{
-	mRbFile->setChecked(true);
 }
 
 void OpenVideoAudioPreviewDialog::actionVideoEnabled(bool pState)

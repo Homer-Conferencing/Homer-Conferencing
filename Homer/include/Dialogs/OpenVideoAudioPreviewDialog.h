@@ -62,9 +62,6 @@ private slots:
     void actionGetFile();
     void actionVideoEnabled(bool pState);
     void actionAudioEnabled(bool pState);
-    void selectStreaming();
-    void selectDevicesPlayback();
-    void selectFilePlayback();
 
 private:
     void initializeGUI();
