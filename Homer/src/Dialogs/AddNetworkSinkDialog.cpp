@@ -68,6 +68,8 @@ void AddNetworkSinkDialog::initializeGUI()
     {
         mGbRequirements->hide();
         mGbInterface->hide();
+        // minimize layout
+        resize(0, 0);
     }
 }
 
