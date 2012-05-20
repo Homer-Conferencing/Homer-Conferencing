@@ -224,7 +224,7 @@ void MainWindow::initializeLogging(QStringList pArguments)
     // console based log sink
     if (pArguments.contains("-DebugLevel=Error"))
     {
-        CONF.SetDebugging(true);
+        CONF.SetDebugging(false);
     }else
         if (pArguments.contains("-DebugLevel=Info"))
         {
