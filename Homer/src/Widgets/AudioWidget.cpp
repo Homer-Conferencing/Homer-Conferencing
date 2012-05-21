@@ -109,7 +109,6 @@ AudioWidget::AudioWidget(QWidget* pParent):
     mAudioPaused = false;
 
     hide();
-    parentWidget()->hide();
 }
 
 void AudioWidget::Init(MediaSource *pAudioSource, QMenu *pMenu, QString pActionTitle, QString pWidgetTitle, bool pVisible, bool pMuted)
@@ -674,7 +673,6 @@ void AudioWidget::SetVisible(bool pVisible)
         #endif
         move(mWinPos);
         show();
-        parentWidget()->show();
         if (mAssignedAction != NULL)
             mAssignedAction->setChecked(true);
         mAudioWorker->SetVolume(mAudioVolume);
@@ -685,7 +683,6 @@ void AudioWidget::SetVisible(bool pVisible)
         #endif
         mWinPos = pos();
         hide();
-        parentWidget()->hide();
         if (mAssignedAction != NULL)
             mAssignedAction->setChecked(false);
         mAudioWorker->SetVolume(0);

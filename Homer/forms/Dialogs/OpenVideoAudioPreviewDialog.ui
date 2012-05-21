@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>801</width>
-    <height>705</height>
+    <height>755</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -47,6 +47,11 @@
          <width>105</width>
          <height>16777215</height>
         </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
        </property>
        <property name="frameShape">
         <enum>QFrame::WinPanel</enum>
