@@ -22,6 +22,11 @@
     <height>16777215</height>
    </size>
   </property>
+  <property name="font">
+   <font>
+    <family>Arial</family>
+   </font>
+  </property>
   <property name="focusPolicy">
    <enum>Qt::ClickFocus</enum>
   </property>
@@ -90,34 +95,9 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_7">
       <item>
-       <widget class="QLabel" name="label_2">
-        <property name="font">
-         <font>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
-        <property name="text">
-         <string>Capture below this window...</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <layout class="QHBoxLayout" name="horizontalLayout_14">
         <item>
          <widget class="QFrame" name="mFrameMove">
-          <property name="minimumSize">
-           <size>
-            <width>113</width>
-            <height>144</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>113</width>
-            <height>144</height>
-           </size>
-          </property>
           <property name="frameShape">
            <enum>QFrame::WinPanel</enum>
           </property>
@@ -153,21 +133,21 @@
               <widget class="QLabel" name="label_19">
                <property name="minimumSize">
                 <size>
-                 <width>30</width>
-                 <height>30</height>
+                 <width>32</width>
+                 <height>32</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>30</width>
-                 <height>30</height>
+                 <width>32</width>
+                 <height>32</height>
                 </size>
                </property>
                <property name="text">
                 <string/>
                </property>
                <property name="pixmap">
-                <pixmap resource="../../resources/Icons.qrc">:/images/ArrowUp.png</pixmap>
+                <pixmap resource="../../resources/Icons.qrc">:/images/32_32/ArrowUp.png</pixmap>
                </property>
                <property name="scaledContents">
                 <bool>true</bool>
@@ -201,21 +181,21 @@
               <widget class="QLabel" name="label_14">
                <property name="minimumSize">
                 <size>
-                 <width>30</width>
-                 <height>30</height>
+                 <width>32</width>
+                 <height>32</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>30</width>
-                 <height>30</height>
+                 <width>32</width>
+                 <height>32</height>
                 </size>
                </property>
                <property name="text">
                 <string/>
                </property>
                <property name="pixmap">
-                <pixmap resource="../../resources/Icons.qrc">:/images/ArrowLeft.png</pixmap>
+                <pixmap resource="../../resources/Icons.qrc">:/images/32_32/ArrowLeft.png</pixmap>
                </property>
                <property name="scaledContents">
                 <bool>true</bool>
@@ -235,21 +215,21 @@
                </property>
                <property name="minimumSize">
                 <size>
-                 <width>30</width>
-                 <height>30</height>
+                 <width>32</width>
+                 <height>32</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>30</width>
-                 <height>30</height>
+                 <width>32</width>
+                 <height>32</height>
                 </size>
                </property>
                <property name="text">
                 <string/>
                </property>
                <property name="pixmap">
-                <pixmap resource="../../resources/Icons.qrc">:/images/Computer.png</pixmap>
+                <pixmap resource="../../resources/Icons.qrc">:/images/32_32/Screencasting.png</pixmap>
                </property>
                <property name="scaledContents">
                 <bool>true</bool>
@@ -263,24 +243,24 @@
               <widget class="QLabel" name="label_18">
                <property name="minimumSize">
                 <size>
-                 <width>30</width>
-                 <height>30</height>
+                 <width>32</width>
+                 <height>32</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>30</width>
-                 <height>30</height>
+                 <width>32</width>
+                 <height>32</height>
                 </size>
                </property>
                <property name="text">
                 <string/>
                </property>
                <property name="pixmap">
-                <pixmap resource="../../resources/Icons.qrc">:/images/ArrowRight.png</pixmap>
+                <pixmap resource="../../resources/Icons.qrc">:/images/32_32/ArrowRight.png</pixmap>
                </property>
                <property name="scaledContents">
-                <bool>true</bool>
+                <bool>false</bool>
                </property>
               </widget>
              </item>
@@ -317,24 +297,24 @@
                </property>
                <property name="minimumSize">
                 <size>
-                 <width>30</width>
-                 <height>30</height>
+                 <width>32</width>
+                 <height>32</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>30</width>
-                 <height>30</height>
+                 <width>32</width>
+                 <height>32</height>
                 </size>
                </property>
                <property name="text">
                 <string/>
                </property>
                <property name="pixmap">
-                <pixmap resource="../../resources/Icons.qrc">:/images/ArrowDown.png</pixmap>
+                <pixmap resource="../../resources/Icons.qrc">:/images/32_32/ArrowDown.png</pixmap>
                </property>
                <property name="scaledContents">
-                <bool>true</bool>
+                <bool>false</bool>
                </property>
               </widget>
              </item>

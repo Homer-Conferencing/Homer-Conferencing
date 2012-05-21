@@ -149,43 +149,6 @@ void OverviewPlaylistWidget::initializeGUI()
     QBrush brush3(QColor(98, 99, 98, 255));
     QBrush brush4(QColor(100, 102, 100, 255));
     QBrush brush(QColor(0, 255, 255, 255));
-    switch(CONF.GetColoringScheme())
-    {
-        case 0:
-            // no coloring
-            break;
-        case 1:
-            brush.setStyle(Qt::SolidPattern);
-            palette.setBrush(QPalette::Active, QPalette::WindowText, brush);
-            brush1.setStyle(Qt::SolidPattern);
-            palette.setBrush(QPalette::Active, QPalette::Button, brush1);
-            brush2.setStyle(Qt::SolidPattern);
-            palette.setBrush(QPalette::Active, QPalette::ButtonText, brush2);
-
-            palette.setBrush(QPalette::Inactive, QPalette::WindowText, brush);
-            palette.setBrush(QPalette::Inactive, QPalette::Button, brush1);
-            palette.setBrush(QPalette::Inactive, QPalette::ButtonText, brush2);
-
-            brush3.setStyle(Qt::SolidPattern);
-            palette.setBrush(QPalette::Disabled, QPalette::WindowText, brush3);
-            palette.setBrush(QPalette::Disabled, QPalette::Button, brush1);
-            brush4.setStyle(Qt::SolidPattern);
-            palette.setBrush(QPalette::Disabled, QPalette::ButtonText, brush4);
-            setPalette(palette);
-
-            setStyleSheet(QString::fromUtf8(" QDockWidget::close-button, QDockWidget::float-button {\n"
-                                            "     border: 1px solid;\n"
-                                            "     background: #9BDCC6;\n"
-                                            " }\n"
-                                            " QDockWidget::title {\n"
-                                            "     padding-left: 20px;\n"
-                                            "     text-align: left;\n"
-                                            "     background: #008080;\n"
-                                            " }"));
-            break;
-        default:
-            break;
-    }
 }
 
 void OverviewPlaylistWidget::closeEvent(QCloseEvent* pEvent)
@@ -230,14 +193,14 @@ void OverviewPlaylistWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEve
 
     tAction = tMenu.addAction("Add an entry");
     QIcon tIcon1;
-    tIcon1.addPixmap(QPixmap(":/images/Plus.png"), QIcon::Normal, QIcon::Off);
+    tIcon1.addPixmap(QPixmap(":/images/22_22/Plus.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon1);
 
     if (!mLwFiles->selectedItems().isEmpty())
     {
         tAction = tMenu.addAction("Delete selected");
         QIcon tIcon2;
-        tIcon2.addPixmap(QPixmap(":/images/Minus.png"), QIcon::Normal, QIcon::Off);
+        tIcon2.addPixmap(QPixmap(":/images/22_22/Minus.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon2);
     }
 

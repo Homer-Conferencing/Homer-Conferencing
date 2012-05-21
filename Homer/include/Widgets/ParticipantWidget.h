@@ -149,6 +149,7 @@ private:
     virtual void wheelEvent(QWheelEvent *pEvent);
     virtual void timerEvent(QTimerEvent *pEvent);
     void ShowNewState();
+    void ShowStreamPosition(int64_t tCurPos, int64_t tEndPos);
     void CallStopped(bool pIncoming);
 
     QMainWindow         *mMainWindow;

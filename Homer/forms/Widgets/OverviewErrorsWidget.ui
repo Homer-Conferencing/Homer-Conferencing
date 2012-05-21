@@ -7,11 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>262</width>
-    <height>218</height>
+    <height>222</height>
    </rect>
   </property>
   <property name="font">
    <font>
+    <family>Arial</family>
+    <pointsize>10</pointsize>
     <weight>75</weight>
     <bold>true</bold>
    </font>
@@ -32,6 +34,12 @@
     </property>
     <item row="0" column="0">
      <widget class="QTextEdit" name="mTeErrorLog">
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>9</pointsize>
+       </font>
+      </property>
       <property name="contextMenuPolicy">
        <enum>Qt::CustomContextMenu</enum>
       </property>

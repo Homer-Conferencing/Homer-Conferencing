@@ -6,9 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1124</width>
-    <height>810</height>
+    <width>834</width>
+    <height>551</height>
    </rect>
+  </property>
+  <property name="font">
+   <font>
+    <family>Arial</family>
+   </font>
   </property>
   <property name="windowTitle">
    <string>Check for software updates</string>
@@ -474,12 +479,12 @@ as archive</string>
             </property>
             <property name="icon">
              <iconset resource="../../resources/Icons.qrc">
-              <normaloff>:/images/ArrowDownGreen.png</normaloff>:/images/ArrowDownGreen.png</iconset>
+              <normaloff>:/images/22_22/Save.png</normaloff>:/images/22_22/Save.png</iconset>
             </property>
             <property name="iconSize">
              <size>
-              <width>20</width>
-              <height>20</height>
+              <width>22</width>
+              <height>22</height>
              </size>
             </property>
             <property name="toolButtonStyle">
@@ -495,12 +500,12 @@ as installer</string>
             </property>
             <property name="icon">
              <iconset resource="../../resources/Icons.qrc">
-              <normaloff>:/images/ArrowDownGreen.png</normaloff>:/images/ArrowDownGreen.png</iconset>
+              <normaloff>:/images/22_22/Save.png</normaloff>:/images/22_22/Save.png</iconset>
             </property>
             <property name="iconSize">
              <size>
-              <width>20</width>
-              <height>20</height>
+              <width>22</width>
+              <height>22</height>
              </size>
             </property>
             <property name="toolButtonStyle">
@@ -571,6 +576,7 @@ as installer</string>
   <tabstop>buttonBox</tabstop>
  </tabstops>
  <resources>
+  <include location="../../resources/Icons.qrc"/>
   <include location="../../resources/Icons.qrc"/>
   <include location="../../resources/Icons.qrc"/>
   <include location="../../resources/Icons.qrc"/>

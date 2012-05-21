@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>693</width>
-    <height>423</height>
+    <width>492</width>
+    <height>464</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,6 +18,8 @@
   </property>
   <property name="font">
    <font>
+    <family>Arial</family>
+    <pointsize>10</pointsize>
     <weight>75</weight>
     <bold>true</bold>
    </font>
@@ -37,7 +39,7 @@
      <widget class="QGroupBox" name="mGrpAudio">
       <property name="font">
        <font>
-        <pointsize>8</pointsize>
+        <pointsize>10</pointsize>
         <weight>75</weight>
         <bold>true</bold>
        </font>
@@ -62,6 +64,7 @@
          </property>
          <property name="font">
           <font>
+           <family>Arial</family>
            <pointsize>9</pointsize>
            <weight>50</weight>
            <bold>false</bold>
@@ -266,7 +269,7 @@
      <widget class="QGroupBox" name="mGrpVideo">
       <property name="font">
        <font>
-        <pointsize>8</pointsize>
+        <pointsize>10</pointsize>
         <weight>75</weight>
         <bold>true</bold>
        </font>
@@ -288,6 +291,7 @@
         <widget class="QTableWidget" name="mTwVideo">
          <property name="font">
           <font>
+           <family>Arial</family>
            <pointsize>9</pointsize>
            <weight>50</weight>
            <bold>false</bold>
