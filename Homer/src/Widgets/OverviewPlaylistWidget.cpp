@@ -193,14 +193,14 @@ void OverviewPlaylistWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEve
 
     tAction = tMenu.addAction("Add an entry");
     QIcon tIcon1;
-    tIcon1.addPixmap(QPixmap(":/images/Plus.png"), QIcon::Normal, QIcon::Off);
+    tIcon1.addPixmap(QPixmap(":/images/22_22/Plus.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon1);
 
     if (!mLwFiles->selectedItems().isEmpty())
     {
         tAction = tMenu.addAction("Delete selected");
         QIcon tIcon2;
-        tIcon2.addPixmap(QPixmap(":/images/Minus.png"), QIcon::Normal, QIcon::Off);
+        tIcon2.addPixmap(QPixmap(":/images/22_22/Minus.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon2);
     }
 
