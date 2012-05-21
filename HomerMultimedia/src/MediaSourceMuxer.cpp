@@ -1673,8 +1673,7 @@ bool MediaSourceMuxer::SelectDevice(std::string pDesiredDevice, enum MediaType p
                                 LOG(LOG_WARN, "Failed to open new video media source, selecting old one");
                                 mMediaSource = tOldMediaSource;
                                 pIsNewDevice = false;
-                                tResult = false;
-                                while((!OpenVideoGrabDevice(mSourceResX, mSourceResY, mFrameRate)) && (tIt != mMediaSources.end()))
+                                while((!(tResult = OpenVideoGrabDevice(mSourceResX, mSourceResY, mFrameRate))) && (tIt != mMediaSources.end()))
                                 {
                                     LOG(LOG_VERBOSE, "Couldn't open basic video device, will probe next possible basic device");
                                     tIt++;
@@ -1688,8 +1687,12 @@ bool MediaSourceMuxer::SelectDevice(std::string pDesiredDevice, enum MediaType p
                                 LOG(LOG_WARN, "Failed to open new audio media source, selecting old one");
                                 mMediaSource = tOldMediaSource;
                                 pIsNewDevice = false;
-                                tResult = false;
-                                OpenAudioGrabDevice(mSampleRate, mStereo);
+                                while((!(tResult = OpenAudioGrabDevice(mSampleRate, mStereo))) && (tIt != mMediaSources.end()))
+                                {
+                                    LOG(LOG_VERBOSE, "Couldn't open basic audio device, will probe next possible basic device");
+                                    tIt++;
+                                    (*tIt)->SelectDevice(pDesiredDevice, tMediaType, pIsNewDevice);
+                                }
                             }
                             break;
                         case MEDIA_UNKNOWN:
