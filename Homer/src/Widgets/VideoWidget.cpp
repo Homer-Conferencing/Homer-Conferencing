@@ -1864,17 +1864,21 @@ void VideoWorkerThread::DoSetCurrentDevice()
             mSourceAvailable = mVideoSource->Reset(MEDIA_VIDEO);
         }else
         {
-            // seek to the beginning if we have reselected the source file
             if (!tNewSourceSelected)
             {
-                LOG(LOG_VERBOSE, "Seeking to the beginning of the source file");
-                mVideoSource->Seek(0);
-            }
+                if (mVideoSource->GetCurrentDeviceName() == mDeviceName.toStdString())
+                { // do we have what we required?
+                    // seek to the beginning if we have reselected the source file
+                    LOG(LOG_VERBOSE, "Seeking to the beginning of the source file");
+                    mVideoSource->Seek(0);
 
-            if ((!tNewSourceSelected) && (mResetVideoSourceAsap))
-            {
-                LOG(LOG_VERBOSE, "Haven't selected new media source, reset of current media source forced");
-                mSourceAvailable = mVideoSource->Reset(MEDIA_VIDEO);
+                    if (mResetVideoSourceAsap)
+                    {
+                        LOG(LOG_VERBOSE, "Haven't selected new video source, reset of current source forced");
+                        mSourceAvailable = mVideoSource->Reset(MEDIA_VIDEO);
+                    }
+                }else
+                    mVideoWidget->InformAboutOpenError(mDeviceName);
             }
         }
         // we had an source reset in every case because "SelectDevice" does this if old source was already opened

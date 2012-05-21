@@ -1269,19 +1269,25 @@ void AudioWorkerThread::DoSetCurrentDevice()
             // seek to the beginning if we have reselected the source file
             if (!tNewSourceSelected)
             {
-                LOG(LOG_VERBOSE, "Seeking to the beginning of the source file");
-                mAudioSource->Seek(0);
-            }
+                if (mAudioSource->GetCurrentDeviceName() == mDeviceName.toStdString())
+                { // do we have what we required?
+                    // seek to the beginning if we have reselected the source file
+                    LOG(LOG_VERBOSE, "Seeking to the beginning of the source file");
+                    mAudioSource->Seek(0);
 
-            if ((!tNewSourceSelected) && (mResetAudioSourceAsap))
-            {
-                LOG(LOG_VERBOSE, "Haven't selected new media source, reset of current media source forced");
-                mSourceAvailable = mAudioSource->Reset(MEDIA_AUDIO);
+                    if (mResetAudioSourceAsap)
+                    {
+                        LOG(LOG_VERBOSE, "Haven't selected new audio source, reset of current source forced");
+                        mSourceAvailable = mAudioSource->Reset(MEDIA_AUDIO);
+                    }
+                }else
+                    mAudioWidget->InformAboutOpenError(mDeviceName);
             }
         }
         // we had an source reset in every case because "SelectDevice" does this if old source was already opened
         mResetAudioSourceAsap = false;
         mPaused = false;
+        //mAudioWidget->InformAboutNewSource();
     }else
         mAudioWidget->InformAboutOpenError(mDeviceName);
 
