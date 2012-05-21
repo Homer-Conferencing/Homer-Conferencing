@@ -378,6 +378,7 @@ bool MediaSourcePortAudio::CloseGrabDevice()
     if (mMediaSourceOpened)
     {
         StopRecording();
+        StopGrabbing();
 
         mMediaSourceOpened = false;
 
