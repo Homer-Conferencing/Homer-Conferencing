@@ -355,95 +355,9 @@ void MainWindow::initializeColoring()
 {
     LOG(LOG_VERBOSE, "Initialization of coloring..");
 
-    switch(CONF.GetColoringScheme())
-    {
-        case 0:
-            // no coloring
-            break;
-        case 1:
-            mMenuParticipantVideoWidgets->setStyleSheet(" QMenu { background-color: #ABABAB; border: 1px solid black; } QMenu::item { background-color: transparent; } QMenu::item:selected { background-color: #654321; }");
-            mMenuParticipantAudioWidgets->setStyleSheet(" QMenu { background-color: #ABABAB; border: 1px solid black; } QMenu::item { background-color: transparent; } QMenu::item:selected { background-color: #654321; }");
-            mMenuParticipantMessageWidgets->setStyleSheet(" QMenu { background-color: #ABABAB; border: 1px solid black; } QMenu::item { background-color: transparent; } QMenu::item:selected { background-color: #654321; }");
-            mMenuBar->setStyleSheet(QString::fromUtf8(  " QMenuBar {\n"
-                                                        "     background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,\n"
-                                                        "                                       stop:0 lightgray, stop:1 darkgray);\n"
-                                                        " }\n"
-                                                        "\n"
-                                                        " QMenuBar::item {\n"
-                                                        "     spacing: 3px; /* spacing between menu bar items */\n"
-                                                        "     padding: 1px 4px;\n"
-                                                        "     background: transparent;\n"
-                                                        "     border-radius: 4px;\n"
-                                                        " }\n"
-                                                        "\n"
-                                                        " QMenuBar::item:selected { /* when selected using mouse or keyboard */\n"
-                                                        "     background: #008080;\n"
-                                                        " }\n"
-                                                        "\n"
-                                                        " QMenuBar::item:pressed {\n"
-                                                        "     background: #008080;\n"
-                                                        " }"));
-            mMenuSettings->setStyleSheet(QString::fromUtf8( " QMenu {\n"
-                                                        "     background-color: #ABABAB; /* sets background of the menu */\n"
-                                                        "     border: 1px solid black;\n"
-                                                        " }\n"
-                                                        "\n"
-                                                        " QMenu::item {\n"
-                                                        "     /* sets background of menu item. set this to something non-transparent\n"
-                                                        "         if you want menu color and menu item color to be different */\n"
-                                                        "     background-color: transparent;\n"
-                                                        " }\n"
-                                                        "\n"
-                                                        " QMenu::item:selected { /* when user selects item using mouse or keyboard */\n"
-                                                        "     background-color: #654321;\n"
-                                                        " }"));
-            mMenuHomer->setStyleSheet(QString::fromUtf8( " QMenu {\n"
-                                                        "     background-color: #ABABAB; /* sets background of the menu */\n"
-                                                        "     border: 1px solid black;\n"
-                                                        " }\n"
-                                                        "\n"
-                                                        " QMenu::item {\n"
-                                                        "     /* sets background of menu item. set this to something non-transparent\n"
-                                                        "         if you want menu color and menu item color to be different */\n"
-                                                        "     background-color: transparent;\n"
-                                                        " }\n"
-                                                        "\n"
-                                                        " QMenu::item:selected { /* when user selects item using mouse or keyboard */\n"
-                                                        "     background-color: #654321;\n"
-                                                        " }"));
-            mMenuWindows->setStyleSheet(QString::fromUtf8(  " QMenu {\n"
-                                                            "     background-color: #ABABAB; /* sets background of the menu */\n"
-                                                            "     border: 1px solid black;\n"
-                                                            " }\n"
-                                                            "\n"
-                                                            " QMenu::item {\n"
-                                                            "     /* sets background of menu item. set this to something non-transparent\n"
-                                                            "         if you want menu color and menu item color to be different */\n"
-                                                            "     background-color: transparent;\n"
-                                                            " }\n"
-                                                            "\n"
-                                                            " QMenu::item:selected { /* when user selects item using mouse or keyboard */\n"
-                                                            "     background-color: #654321;\n"
-                                                            " }"));
-            mMenuMain->setStyleSheet(QString::fromUtf8( " QMenu {\n"
-                                                        "     background-color: #ABABAB; /* sets background of the menu */\n"
-                                                        "     border: 1px solid black;\n"
-                                                        " }\n"
-                                                        "\n"
-                                                        " QMenu::item {\n"
-                                                        "     /* sets background of menu item. set this to something non-transparent\n"
-                                                        "         if you want menu color and menu item color to be different */\n"
-                                                        "     background-color: transparent;\n"
-                                                        " }\n"
-                                                        "\n"
-                                                        " QMenu::item:selected { /* when user selects item using mouse or keyboard */\n"
-                                                        "     background-color: #654321;\n"
-                                                        " }"));
-
-            break;
-        default:
-            break;
-    }
+    // tool bars
+	mToolBarOnlineStatus->setStyleSheet("background-color: qlineargradient(x1:0, y1:1, x2:0, y2:0, stop:0 rgba(176, 176, 176, 255), stop:1 rgba(255, 255, 255, 255)); border: 0px solid black");
+	mToolBarMediaSources->setStyleSheet("background-color: qlineargradient(x1:0, y1:1, x2:0, y2:0, stop:0 rgba(176, 176, 176, 255), stop:1 rgba(255, 255, 255, 255)); border: 0px solid black");
 }
 
 void MainWindow::initializeWidgetsAndMenus()
@@ -648,7 +562,7 @@ void MainWindow::CreateScreenShot()
         sShiftingString[sShiftIndex] = '#';
     else
         sShiftingString[31 - sShiftIndex] = '#';
-	mStatusBar->showMessage("Program start: " + mStartTime.toString("hh::mm") + "       Time: " + QTime::currentTime().toString("hh:mm") + "  " + sShiftingString);
+	mStatusBar->showMessage("Program start  " + mStartTime.toString("hh::mm") + "       Time  " + QTime::currentTime().toString("hh:mm") + "    " + sShiftingString);
     sShiftingString[sShiftIndex] = ' ';
     if(mSourceDesktop != NULL)
 	    mSourceDesktop->CreateScreenshot();
@@ -804,7 +718,7 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
 
 	//HINT: mSourceDesktop will be deleted by VideoWidget which grabbed from there
 
-    // make sure this main window will be deleted when control returns to Qt event loop (need especially in case of closeEvent from fullscreen video widget)
+    // make sure this main window will be deleted when control returns to Qt event loop (needed especially in case of closeEvent comes from fullscreen video widget)
     deleteLater();
 }
 

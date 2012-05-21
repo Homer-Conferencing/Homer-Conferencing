@@ -18,6 +18,7 @@
   </property>
   <property name="font">
    <font>
+    <family>Arial</family>
     <weight>75</weight>
     <bold>true</bold>
    </font>

@@ -69,18 +69,6 @@ void MessageWidget::Init(QMenu *pMenu, QString pParticipant, OverviewContactsWid
     //### create the remaining necessary menu item and short cuts
     //####################################################################
 
-    switch(CONF.GetColoringScheme())
-    {
-        case 0:
-            // no coloring
-            break;
-        case 1:
-            setAutoFillBackground(true);
-            break;
-        default:
-            break;
-    }
-
     if (pMenu != NULL)
     {
         mAssignedAction = pMenu->addAction(pParticipant);

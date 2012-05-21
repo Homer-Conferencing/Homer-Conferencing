@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>500</width>
-    <height>29</height>
+    <width>612</width>
+    <height>42</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,14 +19,19 @@
   <property name="minimumSize">
    <size>
     <width>0</width>
-    <height>29</height>
+    <height>42</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>16777215</width>
-    <height>29</height>
+    <height>42</height>
    </size>
+  </property>
+  <property name="font">
+   <font>
+    <family>Arial</family>
+   </font>
   </property>
   <property name="windowTitle">
    <string>GeneralControlWidget</string>
@@ -45,7 +50,7 @@
      </property>
      <property name="sizeHint" stdset="0">
       <size>
-       <width>5</width>
+       <width>10</width>
        <height>20</height>
       </size>
      </property>
@@ -53,6 +58,12 @@
    </item>
    <item>
     <widget class="QLabel" name="label_4">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>30</height>
+      </size>
+     </property>
      <property name="font">
       <font>
        <pointsize>10</pointsize>
@@ -66,28 +77,58 @@
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="mPbBroadcastVideoFile">
+    <spacer name="horizontalSpacer_3">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>5</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QToolButton" name="mPbBroadcastVideoFile">
      <property name="minimumSize">
       <size>
-       <width>27</width>
-       <height>27</height>
+       <width>30</width>
+       <height>30</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
-       <width>27</width>
-       <height>27</height>
+       <width>30</width>
+       <height>30</height>
       </size>
      </property>
      <property name="toolTip">
       <string>broadcast video file</string>
      </property>
+     <property name="styleSheet">
+      <string notr="true">QToolButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QToolButton:pressed{
+background-color: rgb(150, 150, 150);
+} 
+</string>
+     </property>
      <property name="text">
       <string/>
      </property>
      <property name="icon">
       <iconset resource="../../resources/Icons.qrc">
-       <normaloff>:/images/BoxOpen.png</normaloff>:/images/BoxOpen.png</iconset>
+       <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -98,31 +139,61 @@
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="mPbBroadcastScreenSegment">
+    <spacer name="horizontalSpacer_8">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>5</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QToolButton" name="mPbBroadcastScreenSegment">
      <property name="enabled">
       <bool>true</bool>
      </property>
      <property name="minimumSize">
       <size>
-       <width>27</width>
-       <height>27</height>
+       <width>30</width>
+       <height>30</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
-       <width>27</width>
-       <height>27</height>
+       <width>30</width>
+       <height>30</height>
       </size>
      </property>
      <property name="toolTip">
       <string>broadcast screen segment</string>
      </property>
+     <property name="styleSheet">
+      <string notr="true">QToolButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QToolButton:pressed{
+background-color: rgb(150, 150, 150);
+} 
+</string>
+     </property>
      <property name="text">
       <string/>
      </property>
      <property name="icon">
       <iconset resource="../../resources/Icons.qrc">
-       <normaloff>:/images/DesktopShare.png</normaloff>:/images/DesktopShare.png</iconset>
+       <normaloff>:/images/22_22/Screencasting.png</normaloff>:/images/22_22/Screencasting.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -133,20 +204,36 @@
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="mPbBroadcastCamera">
+    <spacer name="horizontalSpacer_9">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>5</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QToolButton" name="mPbBroadcastCamera">
      <property name="enabled">
       <bool>true</bool>
      </property>
      <property name="minimumSize">
       <size>
-       <width>27</width>
-       <height>27</height>
+       <width>30</width>
+       <height>30</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
-       <width>27</width>
-       <height>27</height>
+       <width>30</width>
+       <height>30</height>
       </size>
      </property>
      <property name="sizeIncrement">
@@ -158,12 +245,26 @@
      <property name="toolTip">
       <string>broadcast camera picture</string>
      </property>
+     <property name="styleSheet">
+      <string notr="true">QToolButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QToolButton:pressed{
+background-color: rgb(150, 150, 150);
+} 
+</string>
+     </property>
      <property name="text">
       <string/>
      </property>
      <property name="icon">
       <iconset resource="../../resources/Icons.qrc">
-       <normaloff>:/images/Camera.png</normaloff>:/images/Camera.png</iconset>
+       <normaloff>:/images/22_22/Camera.png</normaloff>:/images/22_22/Camera.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -184,7 +285,7 @@
      <property name="minimumSize">
       <size>
        <width>80</width>
-       <height>25</height>
+       <height>24</height>
       </size>
      </property>
      <property name="maximumSize">
@@ -214,7 +315,29 @@
     </widget>
    </item>
    <item>
+    <spacer name="horizontalSpacer_4">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>5</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
     <widget class="QLabel" name="label">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>30</height>
+      </size>
+     </property>
      <property name="font">
       <font>
        <pointsize>10</pointsize>
@@ -228,31 +351,61 @@
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="mPbBroadcastAudioFile">
+    <spacer name="horizontalSpacer_5">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>5</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QToolButton" name="mPbBroadcastAudioFile">
      <property name="enabled">
       <bool>true</bool>
      </property>
      <property name="minimumSize">
       <size>
-       <width>27</width>
-       <height>27</height>
+       <width>30</width>
+       <height>30</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
-       <width>27</width>
-       <height>27</height>
+       <width>30</width>
+       <height>30</height>
       </size>
      </property>
      <property name="toolTip">
       <string>broadcast audio file</string>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QToolButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QToolButton:pressed{
+background-color: rgb(150, 150, 150);
+} 
+</string>
      </property>
      <property name="text">
       <string/>
      </property>
      <property name="icon">
       <iconset resource="../../resources/Icons.qrc">
-       <normaloff>:/images/BoxOpen.png</normaloff>:/images/BoxOpen.png</iconset>
+       <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -263,28 +416,58 @@
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="mPbBroadcastVoice">
+    <spacer name="horizontalSpacer_10">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>5</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QToolButton" name="mPbBroadcastVoice">
      <property name="minimumSize">
       <size>
-       <width>27</width>
-       <height>27</height>
+       <width>30</width>
+       <height>30</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
-       <width>27</width>
-       <height>27</height>
+       <width>30</width>
+       <height>30</height>
       </size>
      </property>
      <property name="toolTip">
       <string>broadcast voice</string>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QToolButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QToolButton:pressed{
+background-color: rgb(150, 150, 150);
+} 
+</string>
      </property>
      <property name="text">
       <string/>
      </property>
      <property name="icon">
       <iconset resource="../../resources/Icons.qrc">
-       <normaloff>:/images/Microphone.png</normaloff>:/images/Microphone.png</iconset>
+       <normaloff>:/images/22_22/Microphone.png</normaloff>:/images/22_22/Microphone.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -302,7 +485,29 @@
     </widget>
    </item>
    <item>
+    <spacer name="horizontalSpacer_7">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>5</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
     <widget class="QLabel" name="label_3">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>30</height>
+      </size>
+     </property>
      <property name="font">
       <font>
        <pointsize>10</pointsize>
@@ -316,31 +521,61 @@
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="mPbBroadcastMovieFile">
+    <spacer name="horizontalSpacer_6">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>5</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QToolButton" name="mPbBroadcastMovieFile">
      <property name="enabled">
       <bool>true</bool>
      </property>
      <property name="minimumSize">
       <size>
-       <width>27</width>
-       <height>27</height>
+       <width>30</width>
+       <height>30</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
-       <width>27</width>
-       <height>27</height>
+       <width>30</width>
+       <height>30</height>
       </size>
      </property>
      <property name="toolTip">
       <string>broadcast movie</string>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QToolButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QToolButton:pressed{
+background-color: rgb(150, 150, 150);
+} 
+</string>
      </property>
      <property name="text">
       <string/>
      </property>
      <property name="icon">
       <iconset resource="../../resources/Icons.qrc">
-       <normaloff>:/images/BoxOpen.png</normaloff>:/images/BoxOpen.png</iconset>
+       <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -356,11 +591,11 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="sizeType">
-      <enum>QSizePolicy::Fixed</enum>
+      <enum>QSizePolicy::MinimumExpanding</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
-       <width>5</width>
+       <width>10</width>
        <height>20</height>
       </size>
      </property>

@@ -142,44 +142,6 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
     QBrush brush4(QColor(100, 102, 100, 255));
     QBrush tBrush5(QColor(250, 250, 255, 255));
     QBrush tBrush6(QColor(145, 191, 155, 255));
-    switch(CONF.GetColoringScheme())
-    {
-        case 0:
-            // no coloring
-            break;
-        case 1:
-            // set coloring of the DockWidget
-            brush.setStyle(Qt::SolidPattern);
-            tPalette.setBrush(QPalette::Active, QPalette::WindowText, brush);
-            tBrush1.setStyle(Qt::SolidPattern);
-            tPalette.setBrush(QPalette::Active, QPalette::Button, tBrush1);
-            brush2.setStyle(Qt::SolidPattern);
-            tPalette.setBrush(QPalette::Active, QPalette::ButtonText, brush2);
-            tPalette.setBrush(QPalette::Inactive, QPalette::WindowText, brush);
-            tPalette.setBrush(QPalette::Inactive, QPalette::Button, tBrush1);
-            tPalette.setBrush(QPalette::Inactive, QPalette::ButtonText, brush2);
-            brush3.setStyle(Qt::SolidPattern);
-            tPalette.setBrush(QPalette::Disabled, QPalette::WindowText, brush3);
-            tPalette.setBrush(QPalette::Disabled, QPalette::Button, tBrush1);
-            brush4.setStyle(Qt::SolidPattern);
-            tPalette.setBrush(QPalette::Disabled, QPalette::ButtonText, brush4);
-            tBrush5.setStyle(Qt::SolidPattern);
-            tPalette.setBrush(QPalette::Active, QPalette::Base, tBrush5);
-            tBrush6.setStyle(Qt::SolidPattern);
-            tPalette.setBrush(QPalette::Active, QPalette::Window, tBrush6);
-            tPalette.setBrush(QPalette::Inactive, QPalette::Base, tBrush5);
-            tPalette.setBrush(QPalette::Inactive, QPalette::Window, tBrush6);
-            tPalette.setBrush(QPalette::Disabled, QPalette::Base, tBrush5);
-            tPalette.setBrush(QPalette::Disabled, QPalette::Window, tBrush6);
-            setPalette(tPalette);
-
-            setAutoFillBackground(true);
-            // manipulate stylesheet for buttons on the top right of the DockWidget and the title bar
-            setStyleSheet("QDockWidget::close-button, QDockWidget::float-button { border: 1px solid; background: #9BDCC6; } QDockWidget::title { padding-left: 20px; text-align: left; background: #008080; }");
-            break;
-        default:
-            break;
-    }
 
     QFont font;
     font.setPointSize(8);
@@ -1139,6 +1101,25 @@ AudioWorkerThread* ParticipantWidget::GetAudioWorker()
         return NULL;
 }
 
+void ParticipantWidget::ShowStreamPosition(int64_t tCurPos, int64_t tEndPos)
+{
+    int tHour, tMin, tSec;
+
+    tHour = tCurPos / 3600;
+    tCurPos %= 3600;
+    tMin = tCurPos / 60;
+    tCurPos %= 60;
+    tSec = tCurPos;
+    mLbCurPos->setText(QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0'));
+
+    tHour = tEndPos / 3600;
+    tEndPos %= 3600;
+    tMin = tEndPos / 60;
+    tEndPos %= 60;
+    tSec = tEndPos;
+    mLbEndPos->setText(QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0'));
+}
+
 void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
 {
     #ifdef DEBUG_TIMING
@@ -1179,7 +1160,7 @@ void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
 
         // update GUI widgets
         mSlMovie->setValue(tTmp);
-        mMoviePosWidget->showPosition(tCurPos, tEndPos);
+        ShowStreamPosition(tCurPos, tEndPos);
     }
 }
 

@@ -112,7 +112,6 @@ public:
     bool GetVisibilityToolBarMediaSources();
     bool GetVisibilityToolBarOnlineStatus();
 
-    int GetColoringScheme();
     bool GetParticipantWidgetsSeparation();
     bool GetParticipantWidgetsCloseImmediately();
 
@@ -252,7 +251,6 @@ private:
 
     void SetSmoothVideoPresentation(bool pActive);
     void SetAutoUpdateCheck(bool pActive);
-    void SetColoringScheme(int pColoringScheme);
 
     /* user settings */
     void SetUserName(QString pUserName);
