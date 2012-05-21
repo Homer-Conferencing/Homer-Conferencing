@@ -189,19 +189,11 @@ void AddNetworkSinkDialog::LoadConfiguration()
     {// audio
         mCbRtp->setChecked(CONF.GetAudioRtp());
         tTransport = QString(Socket::TransportType2String(CONF.GetAudioTransportType()).c_str());
+        tGAPIImpl = CONF.GetAudioStreamingGAPIImpl();
 
         mSbPort->setValue(5002);
         mSbDelay->setValue(100);
         mSbDataRate->setValue(8);
-        for (int i = 0; i < mCbGAPIImpl->count(); i++)
-        {
-            QString tCurTransport = mCbGAPIImpl->itemText(i);
-            if (tTransport == tCurTransport)
-            {
-                mCbGAPIImpl->setCurrentIndex(i);
-                break;
-            }
-        }
     }
 
     mCbDataRate->setChecked(true);
