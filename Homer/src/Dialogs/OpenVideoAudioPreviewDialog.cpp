@@ -264,6 +264,9 @@ void OpenVideoAudioPreviewDialog::SaveConfiguration()
     CONF.SetVideoTransport(Socket::String2TransportType(mCbTransportVideo->currentText().toStdString()));
     CONF.SetAudioRtp(mCbRtpAudio->isChecked());
     CONF.SetAudioTransport(Socket::String2TransportType(mCbTransportAudio->currentText().toStdString()));
+
+    CONF.SetVideoStreamingGAPIImpl(mCbGAPIImplVideo->currentText());
+    CONF.SetAudioStreamingGAPIImpl(mCbGAPIImplAudio->currentText());
 }
 
 void OpenVideoAudioPreviewDialog::LoadConfiguration()
@@ -395,6 +398,16 @@ void OpenVideoAudioPreviewDialog::LoadConfiguration()
     {
         mCbGAPIImplVideo->addItem(QString(tGAPIImplsIt->c_str()));
         mCbGAPIImplAudio->addItem(QString(tGAPIImplsIt->c_str()));
+    }
+    QString tGAPIImplVideo = CONF.GetVideoStreamingGAPIImpl();
+    QString tGAPIImplAudio = CONF.GetAudioStreamingGAPIImpl();
+    for (int i = 0; i < mCbGAPIImplVideo->count(); i++)
+    {
+        QString tCurGAPIImpl = mCbGAPIImplVideo->itemText(i);
+        if (tGAPIImplVideo == tCurGAPIImpl)
+            mCbGAPIImplVideo->setCurrentIndex(i);
+        if (tGAPIImplAudio == tCurGAPIImpl)
+            mCbGAPIImplAudio->setCurrentIndex(i);
     }
 
     //########################
