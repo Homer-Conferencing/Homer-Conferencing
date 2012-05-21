@@ -1103,21 +1103,22 @@ AudioWorkerThread* ParticipantWidget::GetAudioWorker()
 
 void ParticipantWidget::ShowStreamPosition(int64_t tCurPos, int64_t tEndPos)
 {
-    int tHour, tMin, tSec;
+    int tHour, tMin, tSec, tEndHour, tEndMin, tEndSec;
 
     tHour = tCurPos / 3600;
     tCurPos %= 3600;
     tMin = tCurPos / 60;
     tCurPos %= 60;
     tSec = tCurPos;
-    mLbCurPos->setText(QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0'));
 
-    tHour = tEndPos / 3600;
+    tEndHour = tEndPos / 3600;
     tEndPos %= 3600;
-    tMin = tEndPos / 60;
+    tEndMin = tEndPos / 60;
     tEndPos %= 60;
-    tSec = tEndPos;
-    mLbEndPos->setText(QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0'));
+    tEndSec = tEndPos;
+
+    mLbCurPos->setText(QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "\n" + \
+                       QString("%1:%2:%3").arg(tEndHour, 2, 10, (QLatin1Char)'0').arg(tEndMin, 2, 10, (QLatin1Char)'0').arg(tEndSec, 2, 10, (QLatin1Char)'0') );
 }
 
 void ParticipantWidget::timerEvent(QTimerEvent *pEvent)

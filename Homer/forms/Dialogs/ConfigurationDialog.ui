@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>685</width>
-    <height>570</height>
+    <height>599</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -40,6 +40,7 @@
        <property name="font">
         <font>
          <family>Arial</family>
+         <pointsize>10</pointsize>
         </font>
        </property>
        <property name="frameShape">
@@ -153,7 +154,7 @@
         </property>
         <property name="icon">
          <iconset resource="../../resources/Icons.qrc">
-          <normaloff>:/images/Flag.png</normaloff>:/images/Flag.png</iconset>
+          <normaloff>:/images/46_46/Flag.png</normaloff>:/images/46_46/Flag.png</iconset>
         </property>
        </item>
       </widget>

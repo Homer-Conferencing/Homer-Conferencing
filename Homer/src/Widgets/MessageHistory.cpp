@@ -71,12 +71,12 @@ void MessageHistory::contextMenuEvent(QContextMenuEvent *pEvent)
 
     tAction = tMenu.addAction("Save history");
     QIcon tIcon2;
-    tIcon2.addPixmap(QPixmap(":/images/DriveSave.png"), QIcon::Normal, QIcon::Off);
+    tIcon2.addPixmap(QPixmap(":/images/22_22/Save.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon2);
 
     tAction = tMenu.addAction("Close messages");
     QIcon tIcon1;
-    tIcon1.addPixmap(QPixmap(":/images/Close.png"), QIcon::Normal, QIcon::Off);
+    tIcon1.addPixmap(QPixmap(":/images/22_22/Close.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon1);
 
     QAction* tPopupRes = tMenu.exec(pEvent->globalPos());
