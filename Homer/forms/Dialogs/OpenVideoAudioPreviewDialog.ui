@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>706</width>
-    <height>699</height>
+    <width>801</width>
+    <height>705</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -15,6 +15,11 @@
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
+  </property>
+  <property name="font">
+   <font>
+    <family>Arial</family>
+   </font>
   </property>
   <property name="windowTitle">
    <string>Open video/audio preview</string>
@@ -92,7 +97,7 @@
         <bool>true</bool>
        </property>
        <property name="currentRow">
-        <number>2</number>
+        <number>-1</number>
        </property>
        <item>
         <property name="text">
@@ -103,7 +108,7 @@
         </property>
         <property name="icon">
          <iconset resource="../../resources/Icons.qrc">
-          <normaloff>:/images/Hardware.png</normaloff>:/images/Hardware.png</iconset>
+          <normaloff>:/images/46_46/Hardware.png</normaloff>:/images/46_46/Hardware.png</iconset>
         </property>
        </item>
        <item>
@@ -115,7 +120,7 @@
         </property>
         <property name="icon">
          <iconset resource="../../resources/Icons.qrc">
-          <normaloff>:/images/Multimedia1.png</normaloff>:/images/Multimedia1.png</iconset>
+          <normaloff>:/images/46_46/BoxOpen.png</normaloff>:/images/46_46/BoxOpen.png</iconset>
         </property>
        </item>
        <item>
@@ -161,63 +166,83 @@
              <number>3</number>
             </property>
             <item>
-             <layout class="QVBoxLayout" name="verticalLayout_4">
+             <layout class="QHBoxLayout">
               <item>
-               <layout class="QHBoxLayout">
+               <widget class="QLabel" name="label_5">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>16777215</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Device selection:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeType">
+                 <enum>QSizePolicy::MinimumExpanding</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>5</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QComboBox" name="mCbDeviceVideo">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>24</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>16777215</width>
+                  <height>24</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
+                <property name="layoutDirection">
+                 <enum>Qt::LeftToRight</enum>
+                </property>
+                <property name="currentIndex">
+                 <number>0</number>
+                </property>
+                <property name="sizeAdjustPolicy">
+                 <enum>QComboBox::AdjustToContentsOnFirstShow</enum>
+                </property>
                 <item>
-                 <widget class="QLabel" name="label_5">
-                  <property name="font">
-                   <font>
-                    <weight>50</weight>
-                    <bold>false</bold>
-                   </font>
-                  </property>
-                  <property name="text">
-                   <string>Device selection:</string>
-                  </property>
-                 </widget>
+                 <property name="text">
+                  <string>/dev/video0</string>
+                 </property>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeType">
-                   <enum>QSizePolicy::MinimumExpanding</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>5</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item>
-                 <widget class="QComboBox" name="mCbDeviceVideo">
-                  <property name="font">
-                   <font>
-                    <weight>50</weight>
-                    <bold>false</bold>
-                   </font>
-                  </property>
-                  <property name="layoutDirection">
-                   <enum>Qt::LeftToRight</enum>
-                  </property>
-                  <property name="currentIndex">
-                   <number>0</number>
-                  </property>
-                  <property name="sizeAdjustPolicy">
-                   <enum>QComboBox::AdjustToContentsOnFirstShow</enum>
-                  </property>
-                  <item>
-                   <property name="text">
-                    <string>/dev/video0</string>
-                   </property>
-                  </item>
-                 </widget>
-                </item>
-               </layout>
+               </widget>
               </item>
              </layout>
             </item>
@@ -259,6 +284,18 @@
              <layout class="QHBoxLayout" name="_2">
               <item>
                <widget class="QLabel" name="label_6">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>16777215</width>
+                  <height>30</height>
+                 </size>
+                </property>
                 <property name="font">
                  <font>
                   <weight>50</weight>
@@ -288,6 +325,18 @@
               </item>
               <item>
                <widget class="QComboBox" name="mCbDeviceAudio">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>24</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>16777215</width>
+                  <height>24</height>
+                 </size>
+                </property>
                 <property name="font">
                  <font>
                   <weight>50</weight>
@@ -348,6 +397,18 @@
              <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,1,1,0">
               <item>
                <widget class="QLabel" name="label_8">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>16777215</width>
+                  <height>30</height>
+                 </size>
+                </property>
                 <property name="font">
                  <font>
                   <weight>50</weight>
@@ -389,14 +450,14 @@
                <widget class="QPushButton" name="mPbFile">
                 <property name="minimumSize">
                  <size>
-                  <width>22</width>
-                  <height>22</height>
+                  <width>30</width>
+                  <height>30</height>
                  </size>
                 </property>
                 <property name="maximumSize">
                  <size>
-                  <width>22</width>
-                  <height>22</height>
+                  <width>30</width>
+                  <height>30</height>
                  </size>
                 </property>
                 <property name="toolTip">
@@ -407,7 +468,7 @@
                 </property>
                 <property name="icon">
                  <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/BoxOpen.png</normaloff>:/images/BoxOpen.png</iconset>
+                  <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
                 </property>
                 <property name="iconSize">
                  <size>
@@ -454,8 +515,17 @@
             <bool>true</bool>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_6">
-            <property name="margin">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
              <number>11</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
             </property>
             <item>
              <widget class="QGroupBox" name="groupBox_6">
@@ -467,6 +537,18 @@
                 <layout class="QHBoxLayout" name="horizontalLayout">
                  <item>
                   <widget class="QLabel" name="mLbCodecVideo">
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>16777215</width>
+                     <height>30</height>
+                    </size>
+                   </property>
                    <property name="font">
                     <font>
                      <weight>50</weight>
@@ -493,6 +575,18 @@
                  </item>
                  <item>
                   <widget class="QComboBox" name="mCbCodecVideo">
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>24</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>16777215</width>
+                     <height>24</height>
+                    </size>
+                   </property>
                    <property name="font">
                     <font>
                      <weight>50</weight>
@@ -565,13 +659,13 @@
                      <property name="minimumSize">
                       <size>
                        <width>65</width>
-                       <height>16</height>
+                       <height>30</height>
                       </size>
                      </property>
                      <property name="maximumSize">
                       <size>
                        <width>65</width>
-                       <height>16</height>
+                       <height>30</height>
                       </size>
                      </property>
                      <property name="font">
@@ -590,13 +684,13 @@
                      <property name="minimumSize">
                       <size>
                        <width>200</width>
-                       <height>22</height>
+                       <height>30</height>
                       </size>
                      </property>
                      <property name="maximumSize">
                       <size>
                        <width>16777215</width>
-                       <height>16777215</height>
+                       <height>30</height>
                       </size>
                      </property>
                      <property name="font">
@@ -619,13 +713,13 @@
                      <property name="minimumSize">
                       <size>
                        <width>65</width>
-                       <height>0</height>
+                       <height>30</height>
                       </size>
                      </property>
                      <property name="maximumSize">
                       <size>
                        <width>65</width>
-                       <height>16777215</height>
+                       <height>30</height>
                       </size>
                      </property>
                      <property name="font">
@@ -697,13 +791,13 @@
                      <property name="minimumSize">
                       <size>
                        <width>60</width>
-                       <height>0</height>
+                       <height>30</height>
                       </size>
                      </property>
                      <property name="maximumSize">
                       <size>
                        <width>60</width>
-                       <height>16777215</height>
+                       <height>30</height>
                       </size>
                      </property>
                      <property name="font">
@@ -722,13 +816,13 @@
                      <property name="minimumSize">
                       <size>
                        <width>65</width>
-                       <height>0</height>
+                       <height>24</height>
                       </size>
                      </property>
                      <property name="maximumSize">
                       <size>
                        <width>65</width>
-                       <height>16777215</height>
+                       <height>24</height>
                       </size>
                      </property>
                      <property name="font">
@@ -780,13 +874,13 @@
                      <property name="minimumSize">
                       <size>
                        <width>45</width>
-                       <height>0</height>
+                       <height>30</height>
                       </size>
                      </property>
                      <property name="maximumSize">
                       <size>
                        <width>45</width>
-                       <height>16777215</height>
+                       <height>30</height>
                       </size>
                      </property>
                      <property name="font">
@@ -823,6 +917,18 @@
                 <layout class="QHBoxLayout" name="_6">
                  <item>
                   <widget class="QLabel" name="label_7">
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>16777215</width>
+                     <height>30</height>
+                    </size>
+                   </property>
                    <property name="font">
                     <font>
                      <weight>50</weight>
@@ -852,6 +958,18 @@
                  </item>
                  <item>
                   <widget class="QComboBox" name="mCbGAPIImplVideo">
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>24</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>16777215</width>
+                     <height>24</height>
+                    </size>
+                   </property>
                    <property name="font">
                     <font>
                      <weight>50</weight>
@@ -895,8 +1013,17 @@
             <bool>true</bool>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_8">
-            <property name="margin">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
              <number>11</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
             </property>
             <item>
              <widget class="QGroupBox" name="groupBox_7">
@@ -908,6 +1035,18 @@
                 <layout class="QHBoxLayout" name="horizontalLayout_2">
                  <item>
                   <widget class="QLabel" name="mLbCodecAudio">
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>16777215</width>
+                     <height>30</height>
+                    </size>
+                   </property>
                    <property name="font">
                     <font>
                      <weight>50</weight>
@@ -934,6 +1073,18 @@
                  </item>
                  <item>
                   <widget class="QComboBox" name="mCbCodecAudio">
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>24</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>16777215</width>
+                     <height>24</height>
+                    </size>
+                   </property>
                    <property name="font">
                     <font>
                      <weight>50</weight>
@@ -1010,13 +1161,13 @@
                    <property name="minimumSize">
                     <size>
                      <width>65</width>
-                     <height>16</height>
+                     <height>30</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
                      <width>65</width>
-                     <height>16</height>
+                     <height>30</height>
                     </size>
                    </property>
                    <property name="font">
@@ -1035,13 +1186,13 @@
                    <property name="minimumSize">
                     <size>
                      <width>200</width>
-                     <height>22</height>
+                     <height>30</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
                      <width>16777215</width>
-                     <height>16777215</height>
+                     <height>30</height>
                     </size>
                    </property>
                    <property name="font">
@@ -1064,13 +1215,13 @@
                    <property name="minimumSize">
                     <size>
                      <width>65</width>
-                     <height>0</height>
+                     <height>30</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
                      <width>65</width>
-                     <height>16777215</height>
+                     <height>30</height>
                     </size>
                    </property>
                    <property name="font">
@@ -1089,13 +1240,13 @@
                    <property name="minimumSize">
                     <size>
                      <width>70</width>
-                     <height>22</height>
+                     <height>30</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
                      <width>70</width>
-                     <height>22</height>
+                     <height>30</height>
                     </size>
                    </property>
                    <property name="font">
@@ -1142,13 +1293,13 @@
                    <property name="minimumSize">
                     <size>
                      <width>60</width>
-                     <height>0</height>
+                     <height>30</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
                      <width>60</width>
-                     <height>16777215</height>
+                     <height>30</height>
                     </size>
                    </property>
                    <property name="font">
@@ -1167,13 +1318,13 @@
                    <property name="minimumSize">
                     <size>
                      <width>65</width>
-                     <height>0</height>
+                     <height>24</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
                      <width>65</width>
-                     <height>16777215</height>
+                     <height>24</height>
                     </size>
                    </property>
                    <property name="font">
@@ -1225,13 +1376,13 @@
                    <property name="minimumSize">
                     <size>
                      <width>45</width>
-                     <height>0</height>
+                     <height>30</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
                      <width>45</width>
-                     <height>16777215</height>
+                     <height>30</height>
                     </size>
                    </property>
                    <property name="font">
@@ -1266,6 +1417,18 @@
                 <layout class="QHBoxLayout" name="_9">
                  <item>
                   <widget class="QLabel" name="label_9">
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>16777215</width>
+                     <height>30</height>
+                    </size>
+                   </property>
                    <property name="font">
                     <font>
                      <weight>50</weight>
@@ -1295,6 +1458,18 @@
                  </item>
                  <item>
                   <widget class="QComboBox" name="mCbGAPIImplAudio">
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>24</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>16777215</width>
+                     <height>24</height>
+                    </size>
+                   </property>
                    <property name="font">
                     <font>
                      <weight>50</weight>
@@ -1383,6 +1558,18 @@
         </item>
         <item>
          <widget class="QCheckBox" name="mCbVideoEnabled">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>30</height>
+           </size>
+          </property>
           <property name="font">
            <font>
             <weight>75</weight>
@@ -1391,6 +1578,16 @@
           </property>
           <property name="text">
            <string>Video playback enabled</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../../resources/Icons.qrc">
+            <normaloff>:/images/46_46/VideoReel.png</normaloff>:/images/46_46/VideoReel.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>22</width>
+            <height>22</height>
+           </size>
           </property>
           <property name="checked">
            <bool>true</bool>
@@ -1412,6 +1609,18 @@
         </item>
         <item>
          <widget class="QCheckBox" name="mCbAudioEnabled">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>30</height>
+           </size>
+          </property>
           <property name="font">
            <font>
             <weight>75</weight>
@@ -1420,6 +1629,16 @@
           </property>
           <property name="text">
            <string>Audio playback enabled</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../../resources/Icons.qrc">
+            <normaloff>:/images/46_46/Speaker.png</normaloff>:/images/46_46/Speaker.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>22</width>
+            <height>22</height>
+           </size>
           </property>
           <property name="checked">
            <bool>true</bool>
@@ -1545,7 +1764,4 @@
    </hints>
   </connection>
  </connections>
- <buttongroups>
-  <buttongroup name="buttonGroup"/>
- </buttongroups>
 </ui>

@@ -156,7 +156,6 @@ SET (SOURCES
 	../src/Widgets/OverviewThreadsWidget
 	../src/Widgets/ParticipantWidget
 	../src/Widgets/SessionInfoWidget
-	../src/Widgets/StreamPositionWidget
 	../src/Widgets/StreamingControlWidget
 	../src/Widgets/VideoWidget
 )
@@ -187,7 +186,6 @@ SET (QT_MOC_SOURCES
 	../include/Widgets/OverviewThreadsWidget.h
 	../include/Widgets/ParticipantWidget.h
 	../include/Widgets/SessionInfoWidget.h
-	../include/Widgets/StreamPositionWidget.h
 	../include/Widgets/StreamingControlWidget.h
 	../include/Widgets/VideoWidget.h
 )
@@ -215,7 +213,6 @@ SET (QT_UI_SOURCES
 	../forms/Widgets/OverviewThreadsWidget.ui
 	../forms/Widgets/ParticipantWidget.ui
 	../forms/Widgets/SessionInfoWidget.ui
-	../forms/Widgets/StreamPositionWidget.ui
 	../forms/Widgets/StreamingControlWidget.ui
 	../forms/Widgets/VideoWidget.ui
 )

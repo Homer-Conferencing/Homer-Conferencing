@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>379</width>
-    <height>195</height>
+    <width>430</width>
+    <height>220</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -15,6 +15,11 @@
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
+  </property>
+  <property name="font">
+   <font>
+    <family>Arial</family>
+   </font>
   </property>
   <property name="windowTitle">
    <string>Edit contact</string>
@@ -64,13 +69,13 @@
              <property name="minimumSize">
               <size>
                <width>80</width>
-               <height>16</height>
+               <height>30</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
                <width>80</width>
-               <height>16</height>
+               <height>30</height>
               </size>
              </property>
              <property name="font">
@@ -101,14 +106,14 @@
             <widget class="QLineEdit" name="mLeName">
              <property name="minimumSize">
               <size>
-               <width>200</width>
-               <height>22</height>
+               <width>230</width>
+               <height>30</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>200</width>
-               <height>22</height>
+               <width>230</width>
+               <height>30</height>
               </size>
              </property>
              <property name="font">
@@ -137,13 +142,13 @@
              <property name="minimumSize">
               <size>
                <width>80</width>
-               <height>16</height>
+               <height>30</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
                <width>80</width>
-               <height>16</height>
+               <height>30</height>
               </size>
              </property>
              <property name="font">
@@ -172,6 +177,18 @@
            </item>
            <item>
             <widget class="QLabel" name="label">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>30</height>
+              </size>
+             </property>
              <property name="font">
               <font>
                <weight>50</weight>
@@ -191,14 +208,14 @@
             <widget class="QLineEdit" name="mLeAddress">
              <property name="minimumSize">
               <size>
-               <width>200</width>
-               <height>22</height>
+               <width>230</width>
+               <height>30</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>200</width>
-               <height>22</height>
+               <width>230</width>
+               <height>30</height>
               </size>
              </property>
              <property name="font">
@@ -227,13 +244,13 @@
              <property name="minimumSize">
               <size>
                <width>80</width>
-               <height>16</height>
+               <height>30</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
                <width>80</width>
-               <height>16</height>
+               <height>30</height>
               </size>
              </property>
              <property name="font">
@@ -265,13 +282,13 @@
              <property name="minimumSize">
               <size>
                <width>70</width>
-               <height>22</height>
+               <height>30</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
                <width>70</width>
-               <height>22</height>
+               <height>30</height>
               </size>
              </property>
              <property name="font">

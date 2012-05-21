@@ -22,6 +22,11 @@
     <height>0</height>
    </size>
   </property>
+  <property name="font">
+   <font>
+    <family>Arial</family>
+   </font>
+  </property>
   <property name="acceptDrops">
    <bool>true</bool>
   </property>
@@ -143,14 +148,14 @@
          <widget class="QLabel" name="mLbPartitipantState">
           <property name="minimumSize">
            <size>
-            <width>24</width>
-            <height>24</height>
+            <width>22</width>
+            <height>22</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>24</width>
-            <height>24</height>
+            <width>22</width>
+            <height>22</height>
            </size>
           </property>
           <property name="text">
@@ -160,7 +165,10 @@
            <enum>Qt::LogText</enum>
           </property>
           <property name="pixmap">
-           <pixmap resource="../../resources/Icons.qrc">:/images/UserAvailable.png</pixmap>
+           <pixmap resource="../../resources/Icons.qrc">:/images/20_20/UserAvailable.png</pixmap>
+          </property>
+          <property name="scaledContents">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -335,13 +343,13 @@
           <property name="minimumSize">
            <size>
             <width>120</width>
-            <height>22</height>
+            <height>30</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>120</width>
-            <height>22</height>
+            <height>30</height>
            </size>
           </property>
           <property name="toolTip">
@@ -356,8 +364,8 @@
           </property>
           <property name="iconSize">
            <size>
-            <width>14</width>
-            <height>14</height>
+            <width>22</width>
+            <height>22</height>
            </size>
           </property>
          </widget>
@@ -386,13 +394,13 @@
           <property name="minimumSize">
            <size>
             <width>120</width>
-            <height>22</height>
+            <height>30</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>120</width>
-            <height>22</height>
+            <height>30</height>
            </size>
           </property>
           <property name="toolTip">
@@ -403,12 +411,12 @@
           </property>
           <property name="icon">
            <iconset resource="../../resources/Icons.qrc">
-            <normaloff>:/images/Message.png</normaloff>:/images/Message.png</iconset>
+            <normaloff>:/images/22_22/Message.png</normaloff>:/images/22_22/Message.png</iconset>
           </property>
           <property name="iconSize">
            <size>
-            <width>14</width>
-            <height>14</height>
+            <width>22</width>
+            <height>22</height>
            </size>
           </property>
          </widget>
@@ -451,13 +459,13 @@
           <property name="minimumSize">
            <size>
             <width>120</width>
-            <height>22</height>
+            <height>30</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>120</width>
-            <height>22</height>
+            <height>30</height>
            </size>
           </property>
           <property name="toolTip">
@@ -468,12 +476,12 @@
           </property>
           <property name="icon">
            <iconset resource="../../resources/Icons.qrc">
-            <normaloff>:/images/BoxOpen.png</normaloff>:/images/BoxOpen.png</iconset>
+            <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
           </property>
           <property name="iconSize">
            <size>
-            <width>14</width>
-            <height>14</height>
+            <width>22</width>
+            <height>22</height>
            </size>
           </property>
          </widget>
@@ -502,13 +510,13 @@
           <property name="minimumSize">
            <size>
             <width>120</width>
-            <height>22</height>
+            <height>30</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>120</width>
-            <height>22</height>
+            <height>30</height>
            </size>
           </property>
           <property name="toolTip">
@@ -523,8 +531,8 @@
           </property>
           <property name="iconSize">
            <size>
-            <width>14</width>
-            <height>14</height>
+            <width>22</width>
+            <height>22</height>
            </size>
           </property>
          </widget>
@@ -573,6 +581,7 @@
   <tabstop>mPbWeb</tabstop>
  </tabstops>
  <resources>
+  <include location="../../resources/Icons.qrc"/>
   <include location="../../resources/Icons.qrc"/>
   <include location="../../resources/Icons.qrc"/>
  </resources>

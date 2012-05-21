@@ -15,6 +15,7 @@
   </property>
   <property name="font">
    <font>
+    <family>Arial</family>
     <pointsize>8</pointsize>
    </font>
   </property>
@@ -43,7 +44,7 @@
      <x>0</x>
      <y>0</y>
      <width>385</width>
-     <height>23</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="mMenuSettings">
@@ -84,7 +85,7 @@
      </property>
      <property name="icon">
       <iconset resource="../resources/Icons.qrc">
-       <normaloff>:/images/Document.png</normaloff>:/images/Document.png</iconset>
+       <normaloff>:/images/22_22/Playlist.png</normaloff>:/images/22_22/Playlist.png</iconset>
      </property>
      <addaction name="mActionOverviewVideoPlaylistWidget"/>
      <addaction name="mActionOverviewAudioPlaylistWidget"/>
@@ -96,7 +97,7 @@
      </property>
      <property name="icon">
       <iconset resource="../resources/Icons.qrc">
-       <normaloff>:/images/VideoReel.png</normaloff>:/images/VideoReel.png</iconset>
+       <normaloff>:/images/46_46/VideoReel.png</normaloff>:/images/46_46/VideoReel.png</iconset>
      </property>
      <addaction name="separator"/>
     </widget>
@@ -106,7 +107,7 @@
      </property>
      <property name="icon">
       <iconset resource="../resources/Icons.qrc">
-       <normaloff>:/images/Speaker.png</normaloff>:/images/Speaker.png</iconset>
+       <normaloff>:/images/46_46/Speaker.png</normaloff>:/images/46_46/Speaker.png</iconset>
      </property>
     </widget>
     <addaction name="mMenuParticipantVideoWidgets"/>
@@ -138,6 +139,17 @@
    <addaction name="mMenuHomer"/>
   </widget>
   <widget class="QToolBar" name="mToolBarOnlineStatus">
+   <property name="minimumSize">
+    <size>
+     <width>0</width>
+     <height>42</height>
+    </size>
+   </property>
+   <property name="font">
+    <font>
+     <family>Arial</family>
+    </font>
+   </property>
    <property name="contextMenuPolicy">
     <enum>Qt::DefaultContextMenu</enum>
    </property>
@@ -169,8 +181,25 @@
    </property>
   </widget>
   <widget class="QToolBar" name="mToolBarMediaSources">
+   <property name="minimumSize">
+    <size>
+     <width>0</width>
+     <height>0</height>
+    </size>
+   </property>
+   <property name="font">
+    <font>
+     <family>Arial</family>
+    </font>
+   </property>
    <property name="windowTitle">
     <string>Video/audio source</string>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>22</width>
+     <height>22</height>
+    </size>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -219,7 +248,7 @@
   <action name="mActionIdentity">
    <property name="icon">
     <iconset resource="../resources/Icons.qrc">
-     <normaloff>:/images/UserMale.png</normaloff>:/images/UserMale.png</iconset>
+     <normaloff>:/images/22_22/UserMale.png</normaloff>:/images/22_22/UserMale.png</iconset>
    </property>
    <property name="text">
     <string>Identity</string>
@@ -280,7 +309,7 @@
   <action name="mActionExit">
    <property name="icon">
     <iconset resource="../resources/Icons.qrc">
-     <normaloff>:/images/Exit.png</normaloff>:/images/Exit.png</iconset>
+     <normaloff>:/images/22_22/Exit.png</normaloff>:/images/22_22/Exit.png</iconset>
    </property>
    <property name="text">
     <string>Exit</string>
@@ -317,7 +346,7 @@
   <action name="mActionParticipantMessageWidgets">
    <property name="icon">
     <iconset resource="../resources/Icons.qrc">
-     <normaloff>:/images/Message.png</normaloff>:/images/Message.png</iconset>
+     <normaloff>:/images/22_22/Message.png</normaloff>:/images/22_22/Message.png</iconset>
    </property>
    <property name="text">
     <string>Message windows</string>

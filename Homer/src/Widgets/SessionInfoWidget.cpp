@@ -168,26 +168,6 @@ void SessionInfoWidget::initializeGUI()
     QPalette palette;
     QBrush brush(QColor(250, 250, 255, 255));
     QBrush brush1(QColor(145, 191, 155, 255));
-
-    switch(CONF.GetColoringScheme())
-    {
-        case 0:
-            // no coloring
-            break;
-        case 1:
-            brush.setStyle(Qt::SolidPattern);
-            palette.setBrush(QPalette::Active, QPalette::Base, brush);
-            brush1.setStyle(Qt::SolidPattern);
-            palette.setBrush(QPalette::Active, QPalette::Window, brush1);
-            palette.setBrush(QPalette::Inactive, QPalette::Base, brush);
-            palette.setBrush(QPalette::Inactive, QPalette::Window, brush1);
-            palette.setBrush(QPalette::Disabled, QPalette::Base, brush1);
-            palette.setBrush(QPalette::Disabled, QPalette::Window, brush1);
-            setPalette(palette);
-            break;
-        default:
-            break;
-    }
 }
 
 

@@ -223,13 +223,6 @@ void Configuration::SetAutoUpdateCheck(bool pActive)
     mQSettings->endGroup();
 }
 
-void Configuration::SetColoringScheme(int pColoringScheme)
-{
-    mQSettings->beginGroup("Global");
-    mQSettings->setValue("ColoringScheme", pColoringScheme);
-    mQSettings->endGroup();
-}
-
 void Configuration::SetUserName(QString pUserName)
 {
     mQSettings->beginGroup("User");
@@ -776,11 +769,6 @@ bool Configuration::GetSmoothVideoPresentation()
 bool Configuration::GetAutoUpdateCheck()
 {
     return mQSettings->value("Global/AutomaticUpdateCheck", false).toBool();
-}
-
-int Configuration::GetColoringScheme()
-{
-    return mQSettings->value("Global/ColoringScheme", 0).toInt();
 }
 
 QString Configuration::GetUserName()
