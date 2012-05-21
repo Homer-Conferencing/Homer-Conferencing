@@ -44,6 +44,7 @@ inline void DoShowMessage(std::string pSource, int pLine, QWidget *pParent, QStr
 {
     LOG_REMOTE(LOG_INFO, pSource, pLine, pMessage.toStdString().c_str());
     QMessageBox *tMb = new QMessageBox(QMessageBox::NoIcon, pTitle, pMessage, QMessageBox::Close, pParent);
+    tMb->setStyleSheet("");
     tMb->exec();
     delete tMb;
 }
@@ -53,6 +54,7 @@ inline void DoShowInfo(std::string pSource, int pLine, QWidget *pParent, QString
 {
     LOG_REMOTE(LOG_INFO, pSource, pLine, pMessage.toStdString().c_str());
     QMessageBox *tMb = new QMessageBox(QMessageBox::Information, pTitle, pMessage, QMessageBox::Close, pParent);
+    tMb->setStyleSheet("");
     tMb->exec();
     delete tMb;
 }
@@ -62,6 +64,7 @@ inline void DoShowWarning(std::string pSource, int pLine, QWidget *pParent, QStr
 {
     LOG_REMOTE(LOG_WARN, pSource, pLine, pMessage.toStdString().c_str());
     QMessageBox *tMb = new QMessageBox(QMessageBox::Warning, pTitle, pMessage, QMessageBox::Close, pParent);
+    tMb->setStyleSheet("");
     tMb->exec();
     delete tMb;
 }
@@ -71,6 +74,7 @@ inline void DoShowError(std::string pSource, int pLine, QWidget *pParent, QStrin
 {
     LOG_REMOTE(LOG_ERROR, pSource, pLine, pMessage.toStdString().c_str());
     QMessageBox *tMb = new QMessageBox(QMessageBox::Critical, pTitle, pMessage, QMessageBox::Close, pParent);
+    tMb->setStyleSheet("");
     tMb->exec();
     delete tMb;
 }
