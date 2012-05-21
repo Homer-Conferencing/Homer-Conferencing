@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>466</width>
-    <height>391</height>
+    <width>538</width>
+    <height>407</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -15,6 +15,11 @@
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
+  </property>
+  <property name="font">
+   <font>
+    <family>Arial</family>
+   </font>
   </property>
   <property name="windowTitle">
    <string>Add network sink</string>
@@ -64,13 +69,13 @@
              <property name="minimumSize">
               <size>
                <width>50</width>
-               <height>16</height>
+               <height>30</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
                <width>50</width>
-               <height>16</height>
+               <height>30</height>
               </size>
              </property>
              <property name="font">
@@ -89,13 +94,13 @@
              <property name="minimumSize">
               <size>
                <width>70</width>
-               <height>22</height>
+               <height>30</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
                <width>70</width>
-               <height>22</height>
+               <height>30</height>
               </size>
              </property>
              <property name="font">
@@ -139,6 +144,12 @@
            </item>
            <item>
             <widget class="QLabel" name="label">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>30</height>
+              </size>
+             </property>
              <property name="font">
               <font>
                <weight>50</weight>
@@ -152,6 +163,18 @@
            </item>
            <item>
             <widget class="QComboBox" name="mCbTransport">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>24</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>24</height>
+              </size>
+             </property>
              <property name="font">
               <font>
                <weight>50</weight>
@@ -201,6 +224,12 @@
            </item>
            <item>
             <widget class="QCheckBox" name="mCbRtp">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>30</height>
+              </size>
+             </property>
              <property name="font">
               <font>
                <weight>50</weight>
@@ -233,13 +262,13 @@
              <property name="minimumSize">
               <size>
                <width>50</width>
-               <height>16</height>
+               <height>30</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
                <width>50</width>
-               <height>16</height>
+               <height>30</height>
               </size>
              </property>
              <property name="font">
@@ -258,7 +287,7 @@
              <property name="minimumSize">
               <size>
                <width>200</width>
-               <height>22</height>
+               <height>30</height>
               </size>
              </property>
              <property name="maximumSize">
@@ -302,7 +331,7 @@
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>22</height>
+               <height>30</height>
               </size>
              </property>
              <property name="font">
@@ -340,7 +369,13 @@
              <property name="minimumSize">
               <size>
                <width>50</width>
-               <height>22</height>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>30</height>
               </size>
              </property>
              <property name="font">
@@ -372,7 +407,7 @@
              <property name="minimumSize">
               <size>
                <width>35</width>
-               <height>22</height>
+               <height>30</height>
               </size>
              </property>
              <property name="maximumSize">
@@ -401,7 +436,7 @@
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>22</height>
+               <height>30</height>
               </size>
              </property>
              <property name="font">
@@ -439,7 +474,13 @@
              <property name="minimumSize">
               <size>
                <width>50</width>
-               <height>22</height>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>30</height>
               </size>
              </property>
              <property name="font">
@@ -471,7 +512,7 @@
              <property name="minimumSize">
               <size>
                <width>35</width>
-               <height>22</height>
+               <height>30</height>
               </size>
              </property>
              <property name="maximumSize">
@@ -500,7 +541,7 @@
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>22</height>
+               <height>30</height>
               </size>
              </property>
              <property name="font">
@@ -551,6 +592,12 @@
           <layout class="QHBoxLayout" name="_6">
            <item>
             <widget class="QLabel" name="label_5">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>30</height>
+              </size>
+             </property>
              <property name="font">
               <font>
                <weight>50</weight>
@@ -580,6 +627,18 @@
            </item>
            <item>
             <widget class="QComboBox" name="mCbGAPIImpl">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>24</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>24</height>
+              </size>
+             </property>
              <property name="font">
               <font>
                <weight>50</weight>

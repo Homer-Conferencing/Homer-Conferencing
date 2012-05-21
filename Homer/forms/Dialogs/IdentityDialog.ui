@@ -6,9 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>649</width>
-    <height>380</height>
+    <width>648</width>
+    <height>402</height>
    </rect>
+  </property>
+  <property name="font">
+   <font>
+    <family>Arial</family>
+   </font>
   </property>
   <property name="windowTitle">
    <string>Edit own identity</string>
@@ -66,7 +71,7 @@
              <property name="minimumSize">
               <size>
                <width>140</width>
-               <height>22</height>
+               <height>30</height>
               </size>
              </property>
              <property name="font">
@@ -101,7 +106,7 @@
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>22</height>
+               <height>30</height>
               </size>
              </property>
              <property name="font">
@@ -124,7 +129,7 @@
              <property name="minimumSize">
               <size>
                <width>140</width>
-               <height>22</height>
+               <height>30</height>
               </size>
              </property>
              <property name="font">
@@ -159,7 +164,7 @@
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>22</height>
+               <height>30</height>
               </size>
              </property>
              <property name="font">
@@ -197,7 +202,7 @@
              <property name="minimumSize">
               <size>
                <width>170</width>
-               <height>22</height>
+               <height>30</height>
               </size>
              </property>
              <property name="font">
@@ -229,6 +234,12 @@
            </item>
            <item>
             <widget class="QLabel" name="mLbServerAddress">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>30</height>
+              </size>
+             </property>
              <property name="font">
               <font>
                <family>Bitstream Vera Sans</family>
@@ -284,7 +295,10 @@
               <string/>
              </property>
              <property name="pixmap">
-              <pixmap resource="../../resources/Icons.qrc">:/images/UserUnavailable.png</pixmap>
+              <pixmap resource="../../resources/Icons.qrc">:/images/20_20/UserUnavailable.png</pixmap>
+             </property>
+             <property name="scaledContents">
+              <bool>true</bool>
              </property>
             </widget>
            </item>
@@ -313,7 +327,7 @@
              <property name="minimumSize">
               <size>
                <width>170</width>
-               <height>22</height>
+               <height>30</height>
               </size>
              </property>
              <property name="font">
@@ -345,6 +359,12 @@
            </item>
            <item>
             <widget class="QLabel" name="mLbDirectAddress">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>30</height>
+              </size>
+             </property>
              <property name="font">
               <font>
                <family>Bitstream Vera Sans</family>
@@ -400,7 +420,10 @@
               <string/>
              </property>
              <property name="pixmap">
-              <pixmap resource="../../resources/Icons.qrc">:/images/UserAvailable.png</pixmap>
+              <pixmap resource="../../resources/Icons.qrc">:/images/20_20/UserAvailable.png</pixmap>
+             </property>
+             <property name="scaledContents">
+              <bool>true</bool>
              </property>
             </widget>
            </item>
@@ -444,7 +467,7 @@
              <property name="minimumSize">
               <size>
                <width>110</width>
-               <height>22</height>
+               <height>30</height>
               </size>
              </property>
              <property name="font">
@@ -473,6 +496,12 @@
            </item>
            <item>
             <widget class="QLabel" name="mLbNatAdr">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>30</height>
+              </size>
+             </property>
              <property name="font">
               <font>
                <family>Bitstream Vera Sans</family>
@@ -503,7 +532,7 @@
              <property name="minimumSize">
               <size>
                <width>110</width>
-               <height>22</height>
+               <height>30</height>
               </size>
              </property>
              <property name="font">
@@ -532,6 +561,12 @@
            </item>
            <item>
             <widget class="QLabel" name="mLbNatType">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>30</height>
+              </size>
+             </property>
              <property name="font">
               <font>
                <family>Bitstream Vera Sans</family>
@@ -572,6 +607,7 @@
   <tabstop>mBb</tabstop>
  </tabstops>
  <resources>
+  <include location="../../resources/Icons.qrc"/>
   <include location="../../resources/Icons.qrc"/>
   <include location="../../resources/Icons.qrc"/>
   <include location="../../resources/Icons.qrc"/>

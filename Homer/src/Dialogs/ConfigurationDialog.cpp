@@ -328,8 +328,6 @@ void ConfigurationDialog::LoadConfiguration()
     //### GENERAL configuration
     //######################################################################
     mCbAutoUpdateCheck->setChecked(CONF.GetAutoUpdateCheck());
-    if ((CONF.GetColoringScheme() > -1) && (CONF.GetColoringScheme() < mCbColoring->count()))
-        mCbColoring->setCurrentIndex(CONF.GetColoringScheme());
     mCbSeparatedParticipantWidgets->setChecked(CONF.GetParticipantWidgetsSeparation());
     mCbCloseParticipantWidgetsImmediately->setChecked(CONF.GetParticipantWidgetsCloseImmediately());
 
@@ -528,7 +526,6 @@ void ConfigurationDialog::SaveConfiguration()
     //### GENERAL configuration
     //######################################################################
     CONF.SetAutoUpdateCheck(mCbAutoUpdateCheck->isChecked());
-    CONF.SetColoringScheme(mCbColoring->currentIndex());
     CONF.SetParticipantWidgetsSeparation(mCbSeparatedParticipantWidgets->isChecked());
     CONF.SetParticipantWidgetsCloseImmediately(mCbCloseParticipantWidgetsImmediately->isChecked());
 
@@ -959,7 +956,6 @@ void ConfigurationDialog::ClickedButton(QAbstractButton *pButton)
             //### GENERAL configuration
             case 3:
                 mCbAutoUpdateCheck->setChecked(false);
-                mCbColoring->setCurrentIndex(0);
                 mCbSeparatedParticipantWidgets->setChecked(false);
                 mCbCloseParticipantWidgetsImmediately->setChecked(true);
                 break;

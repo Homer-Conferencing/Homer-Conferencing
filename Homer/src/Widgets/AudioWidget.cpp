@@ -122,18 +122,6 @@ void AudioWidget::Init(MediaSource *pAudioSource, QMenu *pMenu, QString pActionT
     //### create the remaining necessary menu item
     //####################################################################
 
-    switch(CONF.GetColoringScheme())
-    {
-        case 0:
-            // no coloring
-            break;
-        case 1:
-            setAutoFillBackground(true);
-            break;
-        default:
-            break;
-    }
-
     if (pMenu != NULL)
     {
         mAssignedAction = pMenu->addAction(pActionTitle);

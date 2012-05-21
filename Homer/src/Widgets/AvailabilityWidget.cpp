@@ -25,6 +25,8 @@
  * Since:   2009-05-09
  */
 
+//HINT: we add two space after each entry in the combo box in order to move the QMenu arrow more to the right
+
 #include <Widgets/AvailabilityWidget.h>
 #include <Configuration.h>
 #include <Meeting.h>
@@ -58,7 +60,7 @@ void AvailabilityWidget::initializeGUI()
     mMenu = new QMenu(this);
     InitializeMenuOnlineStatus(mMenu);
     mTbAvailability->setMenu(mMenu);
-    mTbAvailability->setText(QString(MEETING.getAvailabilityStateStr().c_str()));
+    mTbAvailability->setText(QString(MEETING.getAvailabilityStateStr().c_str()) + "  ");
     if (MEETING.getAvailabilityStateStr() == "Online (auto)")
     {
         mTbAvailability->setIcon(QPixmap(":/images/UserAvailable.png"));
@@ -77,21 +79,9 @@ void AvailabilityWidget::initializeGUI()
 
 void AvailabilityWidget::InitializeMenuOnlineStatus(QMenu *pMenu)
 {
-    switch(CONF.GetColoringScheme())
-    {
-        case 0:
-            // no coloring
-            break;
-        case 1:
-        	pMenu->setStyleSheet(" QMenu { background-color: #ABABAB; border: 1px solid black; } QMenu::item { background-color: transparent; } QMenu::item:selected { background-color: #654321; }");
-            break;
-        default:
-            break;
-    }
-
-    pMenu->addAction(QPixmap(":/images/UserAvailable.png"), "Online (auto)");
-    pMenu->addAction(QPixmap(":/images/UserAvailable.png"),"Online");
-    pMenu->addAction(QPixmap(":/images/UserUnavailable.png"),"Offline");
+    pMenu->addAction(QPixmap(":/images/UserAvailable.png"), "Online (auto)  ");
+    pMenu->addAction(QPixmap(":/images/UserAvailable.png"),"Online  ");
+    pMenu->addAction(QPixmap(":/images/UserUnavailable.png"),"Offline  ");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -100,7 +90,7 @@ void AvailabilityWidget::Selected(QAction *pAction)
 {
     mTbAvailability->setText(pAction->text());
     mTbAvailability->setIcon(pAction->icon());
-    QString tNewState = pAction->text();
+    QString tNewState = pAction->text().left(pAction->text().length() - 2);
 
     if ((MEETING.GetServerRegistrationState()) && (pAction->text() == "Offline"))
     {

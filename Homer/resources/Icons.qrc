@@ -1,5 +1,55 @@
 <RCC>
   <qresource>
+    <file>images/32_32/Screencasting.png</file>
+    <file>images/32_32/ArrowDown.png</file>
+    <file>images/32_32/ArrowLeft.png</file>
+    <file>images/32_32/ArrowRight.png</file>
+    <file>images/32_32/ArrowUp.png</file>
+    <file>images/46_46/BoxOpen.png</file>
+    <file>images/46_46/Hardware.png</file>
+    <file>images/22_22/Audio_Back.png</file>
+    <file>images/22_22/ArrowDown.png</file>
+    <file>images/22_22/ArrowRight.png</file>
+    <file>images/22_22/Audio_Forward.png</file>
+    <file>images/22_22/Audio_Pause.png</file>
+    <file>images/22_22/Audio_Paused.png</file>
+    <file>images/22_22/Audio_Play.png</file>
+    <file>images/22_22/Audio_Record.png</file>
+    <file>images/22_22/Audio_Record_active.png</file>
+    <file>images/22_22/Audio_Stop.png</file>
+    <file>images/22_22/BoxOpen.png</file>
+    <file>images/22_22/Camera.png</file>
+    <file>images/22_22/Checked.png</file>
+    <file>images/22_22/Close.png</file>
+    <file>images/22_22/Errors.png</file>
+    <file>images/22_22/Exit.png</file>
+    <file>images/22_22/Help.png</file>
+    <file>images/22_22/Info.png</file>
+    <file>images/22_22/Key.png</file>
+    <file>images/22_22/Message.png</file>
+    <file>images/22_22/Microphone.png</file>
+    <file>images/22_22/Minus.png</file>
+    <file>images/22_22/Playlist.png</file>
+    <file>images/22_22/Plus.png</file>
+    <file>images/22_22/Reload.png</file>
+    <file>images/22_22/Resize.png</file>
+    <file>images/22_22/Save.png</file>
+    <file>images/22_22/Screencasting.png</file>
+    <file>images/22_22/SoftwareUpdate.png</file>
+    <file>images/22_22/SpeakerLoud.png</file>
+    <file>images/22_22/SpeakerMuted.png</file>
+    <file>images/22_22/UserMale.png</file>
+    <file>images/32_32/UserAvailable.png</file>
+    <file>images/32_32/UserUnavailable.png</file>
+    <file>images/46_46/Flag.png</file>
+    <file>images/46_46/Gears.png</file>
+    <file>images/46_46/Network.png</file>
+    <file>images/46_46/Speaker.png</file>
+    <file>images/46_46/VideoReel.png</file>
+    <file>images/22_22/Hardware.png</file>
+    <file>images/22_22/Hardwareinfo.png</file>
+    <file>images/20_20/UserAvailable.png</file>
+    <file>images/20_20/UserUnavailable.png</file>
     <file>images/LogoHomer3.png</file>
     <file>images/LogoHomer2.png</file>
     <file>images/LogoHomer.png</file>
@@ -139,6 +189,7 @@
     <file>images/Processor.png</file>
     <file>images/Radiation.png</file>
     <file>images/RedFlag.png</file>
+    <file>images/Flag.png</file>
     <file>images/Refresh.png</file>
     <file>images/Reload.png</file>
     <file>images/Resize.png</file>
