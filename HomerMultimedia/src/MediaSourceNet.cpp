@@ -30,6 +30,7 @@
 #include <MediaSourceNet.h>
 #include <MediaSource.h>
 #include <ProcessStatisticService.h>
+#include <RequirementTransmitBitErrors.h>
 #include <RTP.h>
 #include <Logger.h>
 
@@ -48,6 +49,8 @@ void MediaSourceNet::Init(Socket *pDataSocket, unsigned int pLocalPort, bool pRt
     mListenerPort = pLocalPort;
     mPacketNumber = 0;
     mReceiveErrors = 0;
+    mPeerHost = "";
+    mPeerPort = 0;
     mOpenInputStream = false;
     mListenerRunning = false;
     mRtpActivated = pRtpActivated;
@@ -84,7 +87,8 @@ void MediaSourceNet::Init(Socket *pDataSocket, unsigned int pLocalPort, bool pRt
         }
 
         LOG(LOG_VERBOSE, "Listen for media packets at GAPI interface: %s, local port specified as: %d, TCP-like transport: %d", mGAPIDataSocket->getName()->toString().c_str(), getListenerPort(), mStreamedTransport);
-        mCurrentDeviceName = "NET-IN: " + mGAPIDataSocket->getName()->toString() + (mRtpActivated ? "(RTP)" : "");
+        // assume Berkeley-Socket implementation behind GAPI interface => therefore we can easily conclude on "UDP/TCP/UDPlite"
+        mCurrentDeviceName = "NET-IN: " + mGAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mGAPIDataSocket->getRequirements().contains(RequirementTransmitBitErrors::type()) ? "UDPlite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
     }else
     {
         mListenerPort = 0;
@@ -151,9 +155,10 @@ MediaSourceNet::MediaSourceNet(string pLocalName, Requirements *pTransportRequir
     if (mGAPIDataSocket == NULL)
         LOG(LOG_ERROR, "Invalid GAPI association");
 
+    mStreamedTransport = pTransportRequirements->contains(pTransportRequirements->contains(RequirementTransmitStream::type()));
+
     Init(NULL, tLocalPort, pRtpActivated);
 
-    mStreamedTransport = pTransportRequirements->contains(pTransportRequirements->contains(RequirementTransmitStream::type()));
     mGAPIUsed = true;
 }
 
@@ -224,10 +229,10 @@ void* MediaSourceNet::Run(void* pArgs)
         switch(mMediaType)
         {
             case MEDIA_VIDEO:
-                SVC_PROCESS_STATISTIC.AssignThreadName("Video-InputListener(GAPI)");
+                SVC_PROCESS_STATISTIC.AssignThreadName("Video-InputListener(GAPI," + FfmpegId2FfmpegFormat(mStreamCodecId) + ")");
                 break;
             case MEDIA_AUDIO:
-                SVC_PROCESS_STATISTIC.AssignThreadName("Audio-InputListener(GAPI)");
+                SVC_PROCESS_STATISTIC.AssignThreadName("Audio-InputListener(GAPI," + FfmpegId2FfmpegFormat(mStreamCodecId) + ")");
                 break;
             default:
                 LOG(LOG_ERROR, "Unknown media type");
@@ -238,10 +243,10 @@ void* MediaSourceNet::Run(void* pArgs)
         switch(mMediaType)
         {
             case MEDIA_VIDEO:
-                SVC_PROCESS_STATISTIC.AssignThreadName("Video-InputListener(NET)");
+                SVC_PROCESS_STATISTIC.AssignThreadName("Video-InputListener(NET," + FfmpegId2FfmpegFormat(mStreamCodecId) + ")");
                 break;
             case MEDIA_AUDIO:
-                SVC_PROCESS_STATISTIC.AssignThreadName("Audio-InputListener(NET)");
+                SVC_PROCESS_STATISTIC.AssignThreadName("Audio-InputListener(NET," + FfmpegId2FfmpegFormat(mStreamCodecId) + ")");
                 break;
             default:
                 LOG(LOG_ERROR, "Unknown media type");
@@ -275,21 +280,29 @@ void* MediaSourceNet::Run(void* pArgs)
 
 		if ((tDataSize > 0) && (tSourceHost != "") && (tSourcePort != 0))
 		{
-		    if (mGAPIUsed)
+		    // some news about the peer?
+		    if ((mPeerHost != tSourceHost) || (mPeerPort != tSourcePort))
 		    {
-		        mCurrentDeviceName = "NET-IN: " + mGAPIDataSocket->getName()->toString() + (mRtpActivated ? "(RTP)" : "");
-		        enum TransportType tTransportType = (mStreamedTransport ? SOCKET_TCP : (mGAPIDataSocket->getRequirements().contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
-                // update category for packet statistics
-                enum NetworkType tNetworkType = (IS_IPV6_ADDRESS(tSourceHost)) ? SOCKET_IPv6 : SOCKET_IPv4;
-                ClassifyStream(GetDataType(), tTransportType, tNetworkType);
-		    }else
-		    {
-		        mCurrentDeviceName = "NET-IN: " + MediaSinkNet::CreateId(mDataSocket->GetLocalHost(), toString(mDataSocket->GetLocalPort()), mDataSocket->GetTransportType(), mRtpActivated);
-	            // update category for packet statistics
-	            enum NetworkType tNetworkType = (IS_IPV6_ADDRESS(tSourceHost)) ? SOCKET_IPv6 : SOCKET_IPv4;
-	            ClassifyStream(GetDataType(), mDataSocket->GetTransportType(), tNetworkType);
+                if (mGAPIUsed)
+                {
+                    // assume Berkeley-Socket implementation behind GAPI interface => therefore we can easily conclude on "UDP/TCP/UDPlite"
+                    mCurrentDeviceName = "NET-IN: " + mGAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mGAPIDataSocket->getRequirements().contains(RequirementTransmitBitErrors::type()) ? "UDPlite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
+
+                    enum TransportType tTransportType = (mStreamedTransport ? SOCKET_TCP : (mGAPIDataSocket->getRequirements().contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
+                    // update category for packet statistics
+                    enum NetworkType tNetworkType = (IS_IPV6_ADDRESS(tSourceHost)) ? SOCKET_IPv6 : SOCKET_IPv4;
+                    ClassifyStream(GetDataType(), tTransportType, tNetworkType);
+                }else
+                {
+                    mCurrentDeviceName = "NET-IN: " + MediaSinkNet::CreateId(mDataSocket->GetLocalHost(), toString(mDataSocket->GetLocalPort()), mDataSocket->GetTransportType(), mRtpActivated);
+                    // update category for packet statistics
+                    enum NetworkType tNetworkType = (IS_IPV6_ADDRESS(tSourceHost)) ? SOCKET_IPv6 : SOCKET_IPv4;
+                    ClassifyStream(GetDataType(), mDataSocket->GetTransportType(), tNetworkType);
+                }
+                AssignStreamName(mCurrentDeviceName);
+                mPeerHost = tSourceHost;
+                mPeerPort = tSourcePort;
 		    }
-		    AssignStreamName(mCurrentDeviceName);
 
 			#ifdef MSN_DEBUG_PACKETS
 				LOG(LOG_VERBOSE, "Received packet number %5d at %p with size: %5d from %s:%u", (int)++mPacketNumber, mPacketBuffer, (int)tDataSize, tSourceHost.c_str(), tSourcePort);
@@ -303,9 +316,9 @@ void* MediaSourceNet::Run(void* pArgs)
 
                 while(tDataSize > 0)
                 {
-//                    #ifdef MSN_DEBUG_PACKETS
+                    #ifdef MSN_DEBUG_PACKETS
                         LOG(LOG_VERBOSE, "Extracting a fragment from TCP stream");
-//                    #endif
+                    #endif
                     tHeader = (TCPFragmentHeader*)tData;
                     tData += TCP_FRAGMENT_HEADER_SIZE;
                     tDataSize -= TCP_FRAGMENT_HEADER_SIZE;

@@ -96,6 +96,8 @@ protected:
     /* Berkeley sockets based transport */
     Socket              *mDataSocket;
     unsigned int        mListenerPort;
+    std::string         mPeerHost;
+    unsigned int        mPeerPort;
     /* GAPI based transport */
     IConnection         *mGAPIDataSocket;
     IBinding            *mGAPIBinding;
