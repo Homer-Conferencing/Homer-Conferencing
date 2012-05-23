@@ -35,6 +35,7 @@
 #include <sys/ioctl.h>
 #include <linux/videodev2.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 namespace Homer { namespace Multimedia {
 
