@@ -32,6 +32,26 @@ SET (INCLUDE_DIRS
 	/usr/local/include/sofia-sip
 	/usr/local/include/sofia-sip-1.12
 	../../../Homer-Release/HomerIncludes/sofia-sip/
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/bnf
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/features
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/http
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/ipt
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/iptsec
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/msg
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/nea
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/nta
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/nth
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/nua
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/sdp
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/sip
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/soa
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/sresolv
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/stun
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/su
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/tport
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/url
+	../../../Homer-Release/HomerIncludes/sofia-sip/win32
+    ../../../Homer-Release/HomerIncludes/sofia-sip/
 	${OPENSSL_INCLUDE_DIR}
 )
 
