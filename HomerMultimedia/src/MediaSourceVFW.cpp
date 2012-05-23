@@ -258,7 +258,7 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     {
         LOG(LOG_ERROR, "Couldn't find stream information because of \"%s\".", strerror(tResult));
         // Close the VFW video file
-        avformat_close_input(&mFormatContext);
+        av_close_input_file(&mFormatContext);
         return false;
     }
 
@@ -276,7 +276,7 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     {
         LOG(LOG_ERROR, "Couldn't find a video stream");
         // Close the VFW video file
-        avformat_close_input(&mFormatContext);
+        av_close_input_file(&mFormatContext);
         return false;
     }
 
@@ -305,7 +305,7 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     {
         LOG(LOG_ERROR, "Couldn't find a fitting codec");
         // Close the VFW video file
-        avformat_close_input(&mFormatContext);
+        av_close_input_file(&mFormatContext);
         return false;
     }
 
@@ -323,7 +323,7 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     {
         LOG(LOG_ERROR, "Couldn't open codec because of \"%s\".", strerror(AVUNERROR(tResult)));
         // Close the VFW video file
-        avformat_close_input(&mFormatContext);
+        av_close_input_file(&mFormatContext);
         return false;
     }
 
@@ -375,7 +375,7 @@ bool MediaSourceVFW::CloseGrabDevice()
         avcodec_close(mCodecContext);
 
 		// Close the VFW video file
-        avformat_close_input(&mFormatContext);
+        av_close_input_file(&mFormatContext);
 
         LOG(LOG_INFO, "...closed");
 
