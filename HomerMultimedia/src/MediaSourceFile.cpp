@@ -607,7 +607,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
                 #ifdef MSF_DEBUG_TIMING
                     LOG(LOG_WARN, "%s-sleeping for %d us", GetMediaTypeStr().c_str(), tDiffPtsUSecs);
                 #endif
-				Thread::Suspend(tDiffPtsUSecs);
+                Thread::Suspend(tDiffPtsUSecs);
             }else
             {
                 #ifdef MSF_DEBUG_TIMING
@@ -751,7 +751,7 @@ void* MediaSourceFile::Run(void* pArgs)
                     if ((!mGrabbingStopped) && (tRes != (int)AVERROR_EOF) && (tRes != (int)AVERROR(EIO)))
                         LOG(LOG_ERROR, "Couldn't grab a frame because of \"%s\"(%d), media type is \"%s\"", strerror(AVUNERROR(tRes)), tRes, GetMediaTypeStr().c_str());
 
-                    if (tRes == (int)AVERROR_EOF)
+                    if ((tPacket->size == 0) || (tRes == (int)AVERROR_EOF))
                     {
                         tCurrentChunkPts = mDuration;
                         mEOFReached = true;
@@ -1014,7 +1014,7 @@ void* MediaSourceFile::Run(void* pArgs)
                     #endif
                 }
             }else
-                LOG(LOG_ERROR, "Empty packet received, media type is \"%s\"", GetMediaTypeStr().c_str());
+                LOG(LOG_VERBOSE, "Empty packet received, media type is \"%s\"", GetMediaTypeStr().c_str());
 
             // free packet buffer
             av_free_packet(tPacket);
@@ -1133,7 +1133,7 @@ GrabResolutions MediaSourceFile::GetSupportedVideoGrabResolutions()
 
 bool MediaSourceFile::SupportsRecording()
 {
-	return true;
+    return true;
 }
 
 bool MediaSourceFile::SupportsSeeking()
