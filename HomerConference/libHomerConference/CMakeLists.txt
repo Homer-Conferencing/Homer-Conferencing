@@ -31,25 +31,7 @@ SET (INCLUDE_DIRS
 	/usr/include/sofia-sip-1.12
 	/usr/local/include/sofia-sip
 	/usr/local/include/sofia-sip-1.12
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/bnf
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/features
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/http
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/ipt
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/iptsec
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/msg
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/nea
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/nta
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/nth
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/nua
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/sdp
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/sip
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/soa
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/sresolv
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/stun
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/su
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/tport
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/url
-	../../HomerWinLibs/SOFIA-SIP/win32
+	../../../Homer-Release/HomerIncludes/sofia-sip/
 	${OPENSSL_INCLUDE_DIR}
 )
 

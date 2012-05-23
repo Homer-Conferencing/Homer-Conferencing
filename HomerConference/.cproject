@@ -32,25 +32,8 @@
 									<listOptionValue builtIn="false" value="/usr/lib64/gcc/x86_64-pc-linux-gnu/4.4.5/include/g++-v4"/>
 									<listOptionValue builtIn="false" value="&quot;C:\MinGW\include\c++\3.4.5&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\MinGW\include\&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\SOFIA-SIP\libsofia-sip-ua\bnf&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\SOFIA-SIP\libsofia-sip-ua\url&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\SOFIA-SIP\libsofia-sip-ua\tport&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\SOFIA-SIP\libsofia-sip-ua\su&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\SOFIA-SIP\libsofia-sip-ua\stun&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\SOFIA-SIP\libsofia-sip-ua\sresolv&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\SOFIA-SIP\libsofia-sip-ua\nua&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\SOFIA-SIP\libsofia-sip-ua\nth&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\SOFIA-SIP\libsofia-sip-ua\sdp&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\SOFIA-SIP\libsofia-sip-ua\sip&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\SOFIA-SIP\libsofia-sip-ua\nta&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\SOFIA-SIP\libsofia-sip-ua\soa&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\SOFIA-SIP\libsofia-sip-ua\http&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\SOFIA-SIP\libsofia-sip-ua\ipt&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\SOFIA-SIP\libsofia-sip-ua\iptsec&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\SOFIA-SIP\libsofia-sip-ua\msg&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\SOFIA-SIP\libsofia-sip-ua\features&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\SOFIA-SIP\libsofia-sip-ua\nea&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/HomerConference/include}&quot;"/>
+									<listOptionValue builtIn="false" value="../../../Homer-Release/HomerIncludes/sofia-sip/"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.2023351185" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -79,7 +62,11 @@
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 		<project id="HomerConference.null.917848998" name="HomerConference"/>
 	</storageModule>
-	<storageModule moduleId="refreshScope"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Default">
+			<resource resourceType="PROJECT" workspacePath="/HomerConference"/>
+		</configuration>
+	</storageModule>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile"/>
 		<profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
@@ -329,4 +316,6 @@
 			</profile>
 		</scannerConfigBuildInfo>
 	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 </cproject>
