@@ -31,25 +31,27 @@ SET (INCLUDE_DIRS
 	/usr/include/sofia-sip-1.12
 	/usr/local/include/sofia-sip
 	/usr/local/include/sofia-sip-1.12
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/bnf
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/features
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/http
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/ipt
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/iptsec
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/msg
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/nea
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/nta
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/nth
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/nua
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/sdp
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/sip
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/soa
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/sresolv
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/stun
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/su
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/tport
-	../../HomerWinLibs/SOFIA-SIP/libsofia-sip-ua/url
-	../../HomerWinLibs/SOFIA-SIP/win32
+	../../../Homer-Release/HomerIncludes/sofia-sip/
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/bnf
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/features
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/http
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/ipt
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/iptsec
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/msg
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/nea
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/nta
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/nth
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/nua
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/sdp
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/sip
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/soa
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/sresolv
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/stun
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/su
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/tport
+	../../../Homer-Release/HomerIncludes/sofia-sip/libsofia-sip-ua/url
+	../../../Homer-Release/HomerIncludes/sofia-sip/win32
+    ../../../Homer-Release/HomerIncludes/sofia-sip/
 	${OPENSSL_INCLUDE_DIR}
 )
 
