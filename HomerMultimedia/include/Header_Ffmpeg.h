@@ -148,4 +148,13 @@ inline int HM_sws_scale(struct SwsContext *context, const uint8_t* const srcSlic
     #endif
 }
 
+inline void HM_close_input(AVFormatContext *s)
+{
+	#if LIBAVFORMAT_VERSION_MAJOR < 54
+		av_close_input_file(s);
+	#else
+		avformat_close_input(&s);
+	#endif
+}
+
 #endif
