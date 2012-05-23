@@ -35,6 +35,7 @@
 #include <sys/ioctl.h>
 #include <linux/videodev2.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 namespace Homer { namespace Multimedia {
 
@@ -309,7 +310,7 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
             LOG(LOG_ERROR, "Couldn't find stream information because \"%s\".", strerror(AVUNERROR(tResult)));
 
             // Close the V4L2 video file
-            avformat_close_input(&mFormatContext);
+            HM_close_input(mFormatContext);
 
             // HINT: we probe all available devices now
         }else
@@ -337,7 +338,7 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
                 {
                     LOG(LOG_WARN, "Couldn't find stream information for device %s because \"%s\".", tDesiredDevice.c_str(), strerror(AVUNERROR(tResult)));
                     // Close the V4L2 video file
-                    avformat_close_input(&mFormatContext);
+                    HM_close_input(mFormatContext);
                     continue;
                 }else
                 {
@@ -407,7 +408,7 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     {
         LOG(LOG_ERROR, "Couldn't find a fitting codec");
         // Close the V4L2 video file
-        avformat_close_input(&mFormatContext);
+        HM_close_input(mFormatContext);
         return false;
     }
 
@@ -423,7 +424,7 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     {
         LOG(LOG_ERROR, "Couldn't open codec because of \"%s\".", strerror(AVUNERROR(tResult)));
         // Close the V4L2 video file
-        avformat_close_input(&mFormatContext);
+        HM_close_input(mFormatContext);
         return false;
     }
 
@@ -477,7 +478,7 @@ bool MediaSourceV4L2::CloseGrabDevice()
         avcodec_close(mCodecContext);
 
         // Close the V4L2 video file
-        avformat_close_input(&mFormatContext);
+        HM_close_input(mFormatContext);
 
         LOG(LOG_INFO, "...closed");
 

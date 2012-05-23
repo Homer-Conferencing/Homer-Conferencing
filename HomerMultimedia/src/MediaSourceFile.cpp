@@ -150,7 +150,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     {
         LOG(LOG_ERROR, "Couldn't find video stream information because of \"%s\".", strerror(AVUNERROR(tResult)));
         // Close the video file
-        avformat_close_input(&mFormatContext);
+        HM_close_input(mFormatContext);
         return false;
     }
 
@@ -168,7 +168,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     {
         LOG(LOG_ERROR, "Couldn't find a video stream");
         // Close the video file
-        avformat_close_input(&mFormatContext);
+        HM_close_input(mFormatContext);
         return false;
     }
 
@@ -189,7 +189,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     {
         LOG(LOG_ERROR, "Couldn't find resolution information within video file");
         // Close the video file
-        avformat_close_input(&mFormatContext);
+        HM_close_input(mFormatContext);
         return false;
     }
 
@@ -198,7 +198,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     {
         LOG(LOG_ERROR, "Couldn't find a fitting video codec");
         // Close the video file
-        avformat_close_input(&mFormatContext);
+        HM_close_input(mFormatContext);
         return false;
     }
 
@@ -207,7 +207,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     {
         LOG(LOG_ERROR, "Couldn't open video codec because \"%s\".", strerror(AVUNERROR(tResult)));
         // Close the video file
-        avformat_close_input(&mFormatContext);
+        HM_close_input(mFormatContext);
         return false;
     }
 
@@ -301,7 +301,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     {
         LOG(LOG_ERROR, "Couldn't find audio stream information because of \"%s\".", strerror(AVUNERROR(tResult)));
         // Close the audio file
-        avformat_close_input(&mFormatContext);
+        HM_close_input(mFormatContext);
         return false;
     }
 
@@ -360,7 +360,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     {
         LOG(LOG_ERROR, "Couldn't find an audio stream");
         // Close the audio file
-        avformat_close_input(&mFormatContext);
+        HM_close_input(mFormatContext);
         return false;
     }
 
@@ -386,7 +386,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     {
         LOG(LOG_ERROR, "Couldn't find a fitting audio codec");
         // Close the audio file
-        avformat_close_input(&mFormatContext);
+        HM_close_input(mFormatContext);
         return false;
     }
 
@@ -400,7 +400,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     {
         LOG(LOG_ERROR, "Couldn't open audio codec because of \"%s\".", strerror(AVUNERROR(tResult)));
         // Close the audio file
-        avformat_close_input(&mFormatContext);
+        HM_close_input(mFormatContext);
         return false;
     }
 
@@ -471,7 +471,7 @@ bool MediaSourceFile::CloseGrabDevice()
         avcodec_close(mCodecContext);
 
         // Close the file
-        avformat_close_input(&mFormatContext);
+        HM_close_input(mFormatContext);
 
         mInputChannels.clear();
 
