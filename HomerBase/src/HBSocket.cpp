@@ -38,6 +38,7 @@
 #include <list>
 #include <in_ext.h>
 #include <inet_ext.h>
+#include <unistd.h>
 #include <socket_ext.h>
 
 namespace Homer { namespace Base {
