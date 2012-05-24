@@ -60,12 +60,6 @@ SET (FLAGS
 )
 
 ##############################################################
-# link flags
-SET (LFLAGS
-	${LFLAGS}
-	-mthreads
-)
-
 # set rapth entries for non-default builds
 IF (NOT (${BUILD} MATCHES "Default"))
 	IF (APPLE)
