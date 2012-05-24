@@ -92,25 +92,25 @@ Build Homer-Conferencing with debug symbols / as developer:
 
 
 
-Install libraries to a different directory than the Homer-Conferencing binary:
-==============================================================================
+Install libraries and data files to a different directory than the Homer-Conferencing binary:
+=============================================================================================
 
  It is possible to install all built libraries to an explicitly given directory.
  This can be triggered via:
  
-     >"make install INSTALL_PREFIX=/foo/bar INSTALL_LIBDIR=/foo/bar/lib64"
+     >"make install INSTALL_PREFIX=/foo/bar INSTALL_LIBDIR=/foo/bar/lib64 INSTALL_DATADIR=/foo/bar/share"
      
-     This will install all libraries to the directory "/foo/bar/lib64" instead
-     of "/foo/bar/lib". 
+     This will install all libraries to the directory "/foo/bar/lib64" instead of "/foo/bar/lib". 
+     Additionally, this will install all data files, e.g. Homer.png, to "/foo/bar/share". 
 
 
 Additional information to build Homer-Conferencing on Windows systems:
 ======================================================================
 
  To build Homer on Windows you need a minimal Linux environment. At the moment
- each Windows release is built with MSys32, which depends on MinGW32. For 
- compiling gcc version 4.6 and for linking binutils 2.22 are used. Additionally,
- cmake 2.6 is used to generate system depending Makefiles.
+ the Windows releases are built with MSys32, which depends on MinGW32. GCC version
+ 4.6 and binutils 2.22 are used. Additionally, cmake 2.6 is used to generate system 
+ depending Makefiles for the build process.
 
 
 
