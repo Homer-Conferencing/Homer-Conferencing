@@ -60,12 +60,6 @@ SET (FLAGS
 )
 
 ##############################################################
-# link flags
-SET (LFLAGS
-	${LFLAGS}
-	-mthreads
-)
-
 # set rapth entries for non-default builds
 IF (NOT (${BUILD} MATCHES "Default"))
 	IF (APPLE)
@@ -223,19 +217,21 @@ SET (QT_QRC_SOURCES
 
 ##############################################################
 # USED LIBRARIES for win32 environment
-SET (LIBS_WINDOWS_INSTALL   
-	libgcc_s_dw2-1
-	libstdc++-6
-	mingwm10
-	QtCore4
-	QtGui4
-	#QtMultimedia4
-	QtNetwork4
-	QtWebKit4
-	QtXml4
-	QtXmlPatterns4
-	phonon4
-)
+IF (NOT (${BUILD} MATCHES "Default"))
+	SET (LIBS_WINDOWS_INSTALL   
+		libgcc_s_dw2-1
+		libstdc++-6
+		mingwm10
+		QtCore4
+		QtGui4
+		#QtMultimedia4
+		QtNetwork4
+		QtWebKit4
+		QtXml4
+		QtXmlPatterns4
+		phonon4
+	)
+ENDIF()
 SET (LIBS_WINDOWS	
 	stdc++
 	HomerBase
@@ -283,42 +279,43 @@ ELSE ()
 		resolv
 	)
 ENDIF ()
-SET (LIBS_LINUX_INSTALL
-	libQtCore.so.4
-	libQtGui.so.4
-	libQtWebKit.so.4
-	libgstapp-0.10.so
-	libgstbase-0.10.so.0
-	libgstinterfaces-0.10.so.0.24.0
-	libgstreamer-0.10.so         
-	libgstvideo-0.10.so.0
-	libstdc++.so.6.0.14
-	libQtCore.so.4.8.0
-	libQtGui.so.4.8.0
-	libQtWebKit.so.4.9.0
-	libgstapp-0.10.so.0
-	libgstbase-0.10.so.0.29.0
-	libgstpbutils-0.10.so
-	libgstreamer-0.10.so.0
-	libgstvideo-0.10.so.0.24.0
-	libQtDBus.so.4 
-	libQtNetwork.so.4
-	libQtXml.so.4  
-	libgstapp-0.10.so.0.24.0  
-	libgstinterfaces-0.10.so    
-	libgstpbutils-0.10.so.0          
-	libgstreamer-0.10.so.0.29.0  
-	libstdc++.so
-	libQtDBus.so.4.8.0
-	libQtNetwork.so.4.8.0
-	libQtXml.so.4.8.0     
-	libgstbase-0.10.so
-	libgstinterfaces-0.10.so.0  
-	libgstpbutils-0.10.so.0.24.0     
-	libgstvideo-0.10.so          
-	libstdc++.so.6
-)
-
+IF (NOT (${BUILD} MATCHES "Default"))
+	SET (LIBS_LINUX_INSTALL
+		libQtCore.so.4
+		libQtGui.so.4
+		libQtWebKit.so.4
+		libgstapp-0.10.so
+		libgstbase-0.10.so.0
+		libgstinterfaces-0.10.so.0.24.0
+		libgstreamer-0.10.so         
+		libgstvideo-0.10.so.0
+		libstdc++.so.6.0.14
+		libQtCore.so.4.8.0
+		libQtGui.so.4.8.0
+		libQtWebKit.so.4.9.0
+		libgstapp-0.10.so.0
+		libgstbase-0.10.so.0.29.0
+		libgstpbutils-0.10.so
+		libgstreamer-0.10.so.0
+		libgstvideo-0.10.so.0.24.0
+		libQtDBus.so.4 
+		libQtNetwork.so.4
+		libQtXml.so.4  
+		libgstapp-0.10.so.0.24.0  
+		libgstinterfaces-0.10.so    
+		libgstpbutils-0.10.so.0          
+		libgstreamer-0.10.so.0.29.0  
+		libstdc++.so
+		libQtDBus.so.4.8.0
+		libQtNetwork.so.4.8.0
+		libQtXml.so.4.8.0     
+		libgstbase-0.10.so
+		libgstinterfaces-0.10.so.0  
+		libgstpbutils-0.10.so.0.24.0     
+		libgstvideo-0.10.so          
+		libstdc++.so.6
+	)
+ENDIF()
 # USED LIBRARIES for apple environment
 SET (LIBS_APPLE
 	stdc++

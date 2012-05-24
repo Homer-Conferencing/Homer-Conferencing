@@ -494,18 +494,21 @@ void MediaSourcePortAudio::StopGrabbing()
 
     if (mMediaSourceOpened)
     {
-        PaError tErr = paNoError;
-        PortAudioLockStreamInterface();
-        if ((tErr = Pa_AbortStream(mStream)) != paNoError)
-            LOG(LOG_ERROR, "Couldn't abort stream because \"%s\"", Pa_GetErrorText(tErr));
-
-        // wait until the port audio stream becomes inactive
-        while((Pa_IsStreamActive(mStream)) == 1)
+        if (Pa_IsStreamActive(mStream) == 1)
         {
-            // wait some time
-            Thread::Suspend(250 * 1000);
+            PaError tErr = paNoError;
+            PortAudioLockStreamInterface();
+            if ((tErr = Pa_AbortStream(mStream)) != paNoError)
+                LOG(LOG_ERROR, "Couldn't abort stream because \"%s\"", Pa_GetErrorText(tErr));
+
+            // wait until the port audio stream becomes inactive
+            while((Pa_IsStreamActive(mStream)) == 1)
+            {
+                // wait some time
+                Thread::Suspend(250 * 1000);
+            }
+            PortAudioUnlockStreamInterface();
         }
-        PortAudioUnlockStreamInterface();
 
         // make sure no one waits for audio anymore -> send an empty buffer to FIFO and force a return from a possible ReadFifo() call
         char tData[4];
