@@ -537,7 +537,7 @@ void OverviewPlaylistWidget::PlayItem(QListWidgetItem *pItem)
             break;
     }
     mCurrentFileId = mLwFiles->row(pItem);
-    LOG(LOG_VERBOSE, "Setting to file %d in playlist %d", mCurrentFileId, mPlaylistId);
+    LOG(LOG_VERBOSE, "Setting current row to %d in playlist %d", mCurrentFileId, mPlaylistId);
     mLwFiles->setCurrentRow(mCurrentFileId, QItemSelectionModel::Clear | QItemSelectionModel::Select);
 }
 
@@ -635,6 +635,7 @@ void OverviewPlaylistWidget::timerEvent(QTimerEvent *pEvent)
             	// do we already play the desired file and are we at EOF?
                 if ((mLwFiles->item(mCurrentFileId) != NULL) && (mVideoWorker->GetCurrentDevice().contains(mLwFiles->item(mCurrentFileId)->data(Qt::DisplayRole).toString())) && (mVideoWorker->EofReached()))
                 {
+                    LOG(LOG_VERBOSE, "Playing next entry in video list");
                 	PlayNext();
                 }
                 break;
@@ -646,6 +647,7 @@ void OverviewPlaylistWidget::timerEvent(QTimerEvent *pEvent)
             	// do we already play the desired file and are we at EOF?
                 if ((mLwFiles->item(mCurrentFileId) != NULL) && (mAudioWorker->GetCurrentDevice().contains(mLwFiles->item(mCurrentFileId)->data(Qt::DisplayRole).toString())) && (mAudioWorker->EofReached()))
                 {
+                    LOG(LOG_VERBOSE, "Playing next entry in audio list");
                 	PlayNext();
                 }
                 break;
@@ -659,6 +661,7 @@ void OverviewPlaylistWidget::timerEvent(QTimerEvent *pEvent)
                 	(mVideoWorker->GetCurrentDevice().contains(mLwFiles->item(mCurrentFileId)->data(Qt::DisplayRole).toString())) && (mVideoWorker->EofReached()) &&
                 	(mAudioWorker->GetCurrentDevice().contains(mLwFiles->item(mCurrentFileId)->data(Qt::DisplayRole).toString())) && (mAudioWorker->EofReached()))
                 {
+                    LOG(LOG_VERBOSE, "Playing next entry in movie list");
                 	PlayNext();
                 }
                 break;

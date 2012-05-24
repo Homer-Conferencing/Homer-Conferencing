@@ -381,7 +381,7 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     {
         LOG(LOG_ERROR, "Couldn't find a video stream");
         // Close the V4L2 video file
-        avformat_close_input(&mFormatContext);
+        HM_close_input(mFormatContext);
         return false;
     }
 
