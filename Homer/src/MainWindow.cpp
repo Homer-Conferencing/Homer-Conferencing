@@ -356,8 +356,8 @@ void MainWindow::initializeColoring()
     LOG(LOG_VERBOSE, "Initialization of coloring..");
 
     // tool bars
-	mToolBarOnlineStatus->setStyleSheet("background-color: qlineargradient(x1:0, y1:1, x2:0, y2:0, stop:0 rgba(176, 176, 176, 255), stop:1 rgba(255, 255, 255, 255)); border: 0px solid black");
-	mToolBarMediaSources->setStyleSheet("background-color: qlineargradient(x1:0, y1:1, x2:0, y2:0, stop:0 rgba(176, 176, 176, 255), stop:1 rgba(255, 255, 255, 255)); border: 0px solid black");
+	mToolBarOnlineStatus->setStyleSheet("QToolBar#mToolBarOnlineStatus{ background-color: qlineargradient(x1:0, y1:1, x2:0, y2:0, stop:0 rgba(176, 176, 176, 255), stop:1 rgba(255, 255, 255, 255)); border: 0px solid black }");
+	mToolBarMediaSources->setStyleSheet("QToolBar#mToolBarMediaSources{ background-color: qlineargradient(x1:0, y1:1, x2:0, y2:0, stop:0 rgba(176, 176, 176, 255), stop:1 rgba(255, 255, 255, 255)); border: 0px solid black }");
 }
 
 void MainWindow::initializeWidgetsAndMenus()
@@ -1552,7 +1552,7 @@ void MainWindow::UpdateSysTrayContextMenu()
 	{
 	    tAction = mSysTrayMenu->addAction("Hide window");
 	}
-    tIcon = new QIcon(":/images/Resize.png");
+    tIcon = new QIcon(":/images/22_22/Resize.png");
     tAction->setIcon(*tIcon);
     connect(tAction, SIGNAL(triggered()), this, SLOT(actionToggleWindowState()));
 
@@ -1561,17 +1561,17 @@ void MainWindow::UpdateSysTrayContextMenu()
     if (mLocalUserParticipantWidget->GetAudioWorker()->GetMuteState())
     {
     	tAction = mSysTrayMenu->addAction("Unmute me");
-    	tIcon = new QIcon(":/images/Speaker.png");
+    	tIcon = new QIcon(":/images/22_22/SpeakerLoud.png");
     }else
     {
     	tAction = mSysTrayMenu->addAction("Mute me");
-    	tIcon = new QIcon(":/images/SpeakerMuted.png");
+    	tIcon = new QIcon(":/images/22_22/SpeakerMuted.png");
     }
 	tAction->setIcon(*tIcon);
 	connect(tAction, SIGNAL(triggered()), this, SLOT(actionMuteMe()));
 
 	tAction = mSysTrayMenu->addAction("Mute others");
-	tIcon = new QIcon(":/images/SpeakerMuted.png");
+	tIcon = new QIcon(":/images/22_22/SpeakerMuted.png");
 	tAction->setIcon(*tIcon);
 	connect(tAction, SIGNAL(triggered()), this, SLOT(actionMuteOthers()));
 
@@ -1586,7 +1586,7 @@ void MainWindow::UpdateSysTrayContextMenu()
 	mSysTrayMenu->addSeparator();
 
 	tAction = mSysTrayMenu->addAction("Exit");
-	tIcon = new QIcon(":/images/Exit.png");
+	tIcon = new QIcon(":/images/22_22/Exit.png");
 	tAction->setIcon(*tIcon);
 	connect(tAction, SIGNAL(triggered()), this, SLOT(actionExit()));
 }
