@@ -108,7 +108,7 @@
          </layout>
         </item>
         <item>
-         <widget class="QFrame" name="frame">
+         <widget class="QFrame" name="mMovieAudioControlsFrame">
           <property name="minimumSize">
            <size>
             <width>0</width>
@@ -127,7 +127,7 @@
            </font>
           </property>
           <property name="styleSheet">
-           <string notr="true">QFrame{ background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0, stop:0 rgba(176, 176, 176, 255), stop:1 rgba(255, 255, 255, 255)); }</string>
+           <string notr="true">QFrame#mMovieAudioControlsFrame{ background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0, stop:0 rgba(176, 176, 176, 255), stop:1 rgba(255, 255, 255, 255)); }</string>
           </property>
           <property name="frameShape">
            <enum>QFrame::Panel</enum>
