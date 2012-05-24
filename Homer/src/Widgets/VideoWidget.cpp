@@ -1418,6 +1418,8 @@ VideoWorkerThread::VideoWorkerThread(MediaSource *pVideoSource, VideoWidget *pVi
     mSetInputStreamPreferencesAsap = false;
     mDesiredInputChannel = 0;
     mPlayNewFileAsap = false;
+    mSeekAsap = false;
+    mSeekPosition = 0;
     mSelectInputChannelAsap = false;
     mSourceAvailable = false;
     mEofReached = false;
@@ -1576,7 +1578,7 @@ void VideoWorkerThread::PlayFile(QString pName)
 	if ((mPaused) && (pName == mDesiredFile))
 	{
 		LOG(LOG_VERBOSE, "Continue playback of file: %s", pName.toStdString().c_str());
-		mVideoSource->Seek(mPausedPos, false);
+		Seek(mPausedPos);
 		mGrabbingStateMutex.lock();
 		mPaused = false;
         mGrabbingStateMutex.unlock();
@@ -1619,7 +1621,7 @@ void VideoWorkerThread::StopFile()
 
 bool VideoWorkerThread::EofReached()
 {
-	return (((mEofReached) && (!mResetVideoSourceAsap) && (!mPlayNewFileAsap)) || (mPlayNewFileAsap) || (mSetCurrentDeviceAsap));
+	return (((mEofReached) && (!mResetVideoSourceAsap) && (!mPlayNewFileAsap) && (!mSeekAsap)) || (mPlayNewFileAsap) || (mSetCurrentDeviceAsap));
 }
 
 QString VideoWorkerThread::CurrentFile()
@@ -1640,7 +1642,8 @@ bool VideoWorkerThread::SupportsSeeking()
 
 void VideoWorkerThread::Seek(int pPos)
 {
-    mVideoSource->Seek(mVideoSource->GetSeekEnd() * pPos / 1000, false);
+    mSeekPosition = pPos;
+    mSeekAsap = true;
 }
 
 int64_t VideoWorkerThread::GetSeekPos()
@@ -1752,6 +1755,7 @@ void VideoWorkerThread::DoPlayNewFile()
         SetCurrentDevice(mDesiredFile);
     }
 
+    mEofReached = false;
     mPlayNewFileAsap = false;
 	mPaused = false;
 	mFrameTimestamps.clear();
@@ -1776,6 +1780,21 @@ void VideoWorkerThread::DoSetGrabResolution()
     mVideoWidget->InformAboutNewSourceResolution();
     mSetGrabResolutionAsap = false;
     mFrameTimestamps.clear();
+
+    // unlock
+    mDeliverMutex.unlock();
+}
+
+void VideoWorkerThread::DoSeek()
+{
+    LOG(LOG_VERBOSE, "VideoWorkerThread-DoSeek now...");
+
+    // lock
+    mDeliverMutex.lock();
+
+    mVideoSource->Seek(mVideoSource->GetSeekEnd() * mSeekPosition / 1000, false);
+    mEofReached = false;
+    mSeekAsap = false;
 
     // unlock
     mDeliverMutex.unlock();
@@ -1871,6 +1890,7 @@ void VideoWorkerThread::DoSetCurrentDevice()
                     // seek to the beginning if we have reselected the source file
                     LOG(LOG_VERBOSE, "Seeking to the beginning of the source file");
                     mVideoSource->Seek(0);
+                    mSeekAsap = false;
 
                     if (mResetVideoSourceAsap)
                     {
@@ -2017,6 +2037,9 @@ void VideoWorkerThread::run()
         if (mStopRecorderAsap)
             DoStopRecorder();
 
+        if (mSeekAsap)
+            DoSeek();
+
         mGrabbingStateMutex.lock();
 
         if ((!mPaused) && (mSourceAvailable))
@@ -2091,7 +2114,7 @@ void VideoWorkerThread::run()
 					LOG(LOG_ERROR, "Frame ordering problem detected (%d -> %d)", tLastFrameNumber, tFrameNumber);
 			}else
 			{
-				LOG(LOG_VERBOSE, "Invalid grabbing result");
+				LOG(LOG_VERBOSE, "Invalid grabbing result: %d", tFrameNumber);
 				usleep(100 * 1000); // check for new frames every 1/10 seconds
 			}
         }else
