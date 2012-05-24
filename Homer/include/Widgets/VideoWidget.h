@@ -219,6 +219,7 @@ private:
     void DoStartRecorder();
     void DoStopRecorder();
     void DoPlayNewFile();
+    void DoSeek();
 
     MediaSource         *mVideoSource;
     VideoWidget         *mVideoWidget;
@@ -251,6 +252,7 @@ private:
 
     /* for forwarded interface to media source */
     int                 mDesiredInputChannel;
+    /* delegated tasks */
     bool                mSetInputStreamPreferencesAsap;
     bool                mSetCurrentDeviceAsap;
     bool                mSetGrabResolutionAsap;
@@ -258,6 +260,8 @@ private:
     bool                mStartRecorderAsap;
     bool                mStopRecorderAsap;
     bool				mPlayNewFileAsap;
+    bool                mSeekAsap;
+    int64_t             mSeekPosition;
     bool                mSelectInputChannelAsap;
 };
 
