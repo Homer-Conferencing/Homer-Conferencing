@@ -335,6 +335,11 @@ IF (DEFINED TARGET_LIB_NAME)
 	ENDIF()
 ENDIF ()
 
+# INSTALL data files
+IF (DEFINED INSTALL_DATADIR)
+	MESSAGE("##### Data files will be installed to " ${INSTALL_DATADIR})
+ENDIF()  
+
 # INSTALL executable: define install target
 IF (DEFINED TARGET_PROGRAM_NAME)
     IF(WIN32)

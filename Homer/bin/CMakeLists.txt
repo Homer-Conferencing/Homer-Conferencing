@@ -375,7 +375,11 @@ QT4_ADD_RESOURCES(SOURCES ${QT_QRC_SOURCES})
 ##############################################################
 # extend install target by "Homer.png" for non Windows systems
 IF(NOT WIN32)
-        INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../Homer.png DESTINATION share/Homer)
+	IF (DEFINED INSTALL_LIBDIR)
+        	INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../Homer.png DESTINATION ${INSTALL_DATADIR})
+	ELSE()
+        	INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../Homer.png DESTINATION .)
+	ENDIF()
 ENDIF()
 
 ##############################################################
