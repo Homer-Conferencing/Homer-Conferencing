@@ -28,7 +28,6 @@
 #ifndef _MULTIMEDIA_MEDIA_SOURCE_NET_
 #define _MULTIMEDIA_MEDIA_SOURCE_NET_
 
-#include <Header_Ffmpeg.h>
 #include <HBSocket.h>
 #include <HBThread.h>
 #include <MediaSource.h>

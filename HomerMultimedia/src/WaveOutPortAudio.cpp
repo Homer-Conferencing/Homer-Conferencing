@@ -25,6 +25,7 @@
  * Since:   2012-05-07
  */
 
+#include <Header_PortAudio.h>
 #include <ProcessStatisticService.h>
 #include <WaveOutPortAudio.h>
 #include <MediaSourcePortAudio.h>
@@ -310,7 +311,7 @@ bool WaveOutPortAudio::CloseWaveOutDevice()
  buffer irrespective of its return value.
 
  */
-int WaveOutPortAudio::PlayAudioHandler(const void *pInputBuffer, void *pOutputBuffer, unsigned long pOutputSize, const PaStreamCallbackTimeInfo* pTimeInfo, PaStreamCallbackFlags pStatus, void *pUserData)
+int WaveOutPortAudio::PlayAudioHandler(const void *pInputBuffer, void *pOutputBuffer, unsigned long pOutputSize, const PaStreamCallbackTimeInfo* pTimeInfo, unsigned long pStatus, void *pUserData)
 {
 	#ifdef WOPA_DEBUG_HANDLER
 		LOGEX(WaveOutPortAudio, LOG_WARN, "PlayAudioHandler CALLED");

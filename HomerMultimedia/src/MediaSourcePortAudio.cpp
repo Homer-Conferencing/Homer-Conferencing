@@ -25,6 +25,7 @@
  * Since:   2012-04-25
  */
 
+#include <Header_PortAudio.h>
 #include <MediaFifo.h>
 #include <MediaSourcePortAudio.h>
 #include <ProcessStatisticService.h>
