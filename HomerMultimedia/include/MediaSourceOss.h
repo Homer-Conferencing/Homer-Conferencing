@@ -29,7 +29,6 @@
 #ifndef _MULTIMEDIA_MEDIA_SOURCE_OSS_
 #define _MULTIMEDIA_MEDIA_SOURCE_OSS_
 
-#include <Header_Ffmpeg.h>
 #include <MediaSource.h>
 
 #include <string.h>

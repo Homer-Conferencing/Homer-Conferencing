@@ -28,8 +28,8 @@
 #ifndef _MULTIMEDIA_WAVE_OUT_PORT_AUDIO_
 #define _MULTIMEDIA_WAVE_OUT_PORT_AUDIO_
 
-#include <Header_PortAudio.h>
 #include <WaveOut.h>
+struct PaStreamCallbackTimeInfo; // avoid dependency on PortAudio header files here
 
 namespace Homer { namespace Multimedia {
 
@@ -68,12 +68,12 @@ public:
     virtual bool WriteChunk(void* pChunkBuffer, int pChunkSize = 4096);
 
 private:
-    static int PlayAudioHandler(const void *pInputBuffer, void *pOutputBuffer, unsigned long pInputSize, const PaStreamCallbackTimeInfo* pTimeInfo, PaStreamCallbackFlags pStatus, void *pUserData);
+    static int PlayAudioHandler(const void *pInputBuffer, void *pOutputBuffer, unsigned long pInputSize, const PaStreamCallbackTimeInfo* pTimeInfo, unsigned long pStatus, void *pUserData);
     virtual void AssignThreadName();
 
     /* playback */
     bool                mWaitingForFirstBuffer;
-    PaStream            *mStream;
+    void                *mStream;
     int                 mPossiblePlaybackGaps;
     /* recursion logger */
     static int			mOpenStreams;

@@ -30,9 +30,9 @@
 
 #include <MediaFifo.h>
 #include <MediaSource.h>
-#include <Header_PortAudio.h>
 
 #include <string.h>
+struct PaStreamCallbackTimeInfo;
 
 namespace Homer { namespace Multimedia {
 
@@ -77,12 +77,12 @@ public:
     virtual int GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropFrame = false);
 
 private:
-    static int RecordedAudioHandler(const void *pInputBuffer, void *pOutputBuffer, unsigned long pInputSize, const PaStreamCallbackTimeInfo* pTimeInfo, PaStreamCallbackFlags pStatus, void *pUserData);
+    static int RecordedAudioHandler(const void *pInputBuffer, void *pOutputBuffer, unsigned long pInputSize, const PaStreamCallbackTimeInfo* pTimeInfo, unsigned long pStatus, void *pUserData);
     void AssignThreadName();
 
     bool                mHaveToAssignThreadName;
     /* capturing */
-    PaStream            *mStream;
+    void                *mStream;
     MediaFifo           *mCaptureFifo;
     bool				mCaptureDuplicateMonoStream;
     /* portaudio init. */

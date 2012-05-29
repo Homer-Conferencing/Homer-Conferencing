@@ -29,7 +29,6 @@
 #ifndef _MULTIMEDIA_MEDIA_SOURCE_V4L2_
 #define _MULTIMEDIA_MEDIA_SOURCE_V4L2_
 
-#include <Header_Ffmpeg.h>
 #include <MediaSource.h>
 
 namespace Homer { namespace Multimedia {
