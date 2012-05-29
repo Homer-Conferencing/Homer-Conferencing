@@ -535,10 +535,10 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
 
     if ((mDecoderFifo->GetUsage() == 0) && (mEOFReached))
     {
+        mChunkNumber++;
+
         // unlock grabbing
         mGrabMutex.unlock();
-
-        mChunkNumber++;
 
         // acknowledge "success"
         MarkGrabChunkSuccessful(mChunkNumber); // don't panic, it is only EOF
@@ -559,6 +559,19 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
     // read chunk data from FIFO
     mDecoderFifo->ReadFifo((char*)pChunkBuffer, pChunkSize);
     mChunkNumber++;
+
+    // did we read an empty frame?
+    if (pChunkSize == 0)
+    {
+        // unlock grabbing
+        mGrabMutex.unlock();
+
+        // acknowledge "success"
+        MarkGrabChunkSuccessful(mChunkNumber); // don't panic, it is only EOF
+
+        return GRAB_RES_EOF;
+    }
+
     #ifdef MSF_DEBUG_PACKETS
         LOG(LOG_VERBOSE, "Grabbed chunk %d of size %d from decoder FIFO", mChunkNumber, pChunkSize);
     #endif
@@ -1029,28 +1042,41 @@ void* MediaSourceFile::Run(void* pArgs)
 
             if (mEOFReached)
             {// EOF, wait until restart
-//                #ifdef MSF_DEBUG_TIMING
+                // add empty chunk to FIFO
+                #ifdef MSF_DEBUG_PACKETS
+                    LOG(LOG_VERBOSE, "Writing empty chunk to FIFO");
+                #endif
+                char tData[4];
+                mDecoderFifo->WriteFifo(tData, 0);
+
+                // add meta description about current chunk to different FIFO
+                struct ChunkDescriptor tChunkDesc;
+                tChunkDesc.Pts = 0;
+                mDecoderMetaDataFifo->WriteFifo((char*) &tChunkDesc, sizeof(tChunkDesc));
+
+                // time to sleep
+                #ifdef MSF_DEBUG_DECODER_STATE
                     LOG(LOG_VERBOSE, "EOF for %s source reached, wait some time and check again, loop %d", GetMediaTypeStr().c_str(), ++tWaitLoop);
-//                #endif
+                #endif
                 DecoderNeedWorkCondition.Reset();
                 DecoderNeedWorkCondition.Wait(&mDecoderMutex);
                 mDecoderLastReadPts = 0;
                 mEOFReached = false;
-//                #ifdef MSF_DEBUG_TIMING
+                #ifdef MSF_DEBUG_DECODER_STATE
                     LOG(LOG_VERBOSE, "Continuing after file decoding was restarted");
-//                #endif
+                #endif
             }
         }else
         {// decoder FIFO is full, nothing to be done
-//            #ifdef MSF_DEBUG_TIMING
+            #ifdef MSF_DEBUG_DECODER_STATE
                 LOG(LOG_VERBOSE, "Nothing to do for decoder, wait some time and check again, loop %d", ++tWaitLoop);
-//            #endif
+            #endif
             DecoderNeedWorkCondition.Reset();
             DecoderNeedWorkCondition.Wait(&mDecoderMutex);
             mDecoderLastReadPts = 0;
-//            #ifdef MSF_DEBUG_TIMING
+            #ifdef MSF_DEBUG_DECODER_STATE
                 LOG(LOG_VERBOSE, "Continuing after new data is needed, current FIFO size is: %d", mDecoderFifo->GetUsage());
-//            #endif
+            #endif
         }
 
         mDecoderMutex.unlock();
