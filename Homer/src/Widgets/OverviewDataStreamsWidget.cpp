@@ -150,7 +150,7 @@ void OverviewDataStreamsWidget::contextMenuEvent(QContextMenuEvent *pContextMenu
 
     tAction = tMenu.addAction("Save statistic");
     QIcon tIcon1;
-    tIcon1.addPixmap(QPixmap(":/images/DriveSave.png"), QIcon::Normal, QIcon::Off);
+    tIcon1.addPixmap(QPixmap(":/images/22_22/Save.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon1);
 
     QAction* tPopupRes = tMenu.exec(pContextMenuEvent->globalPos());
@@ -172,7 +172,7 @@ void OverviewDataStreamsWidget::TwVideoCustomContextMenuEvent(const QPoint &pPos
 
     tAction = tMenu.addAction("Save all");
     QIcon tIcon1;
-    tIcon1.addPixmap(QPixmap(":/images/DriveSave.png"), QIcon::Normal, QIcon::Off);
+    tIcon1.addPixmap(QPixmap(":/images/22_22/Save.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon1);
 
     tAction = tMenu.addAction("Save row history");
@@ -180,7 +180,7 @@ void OverviewDataStreamsWidget::TwVideoCustomContextMenuEvent(const QPoint &pPos
 
     tAction = tMenu.addAction("Reset row");
     QIcon tIcon2;
-    tIcon2.addPixmap(QPixmap(":/images/Reload.png"), QIcon::Normal, QIcon::Off);
+    tIcon2.addPixmap(QPixmap(":/images/22_22/Reload.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon2);
 
     QAction* tPopupRes = tMenu.exec(QCursor::pos());
@@ -212,7 +212,7 @@ void OverviewDataStreamsWidget::TwAudioCustomContextMenuEvent(const QPoint &pPos
 
     tAction = tMenu.addAction("Save all");
     QIcon tIcon1;
-    tIcon1.addPixmap(QPixmap(":/images/DriveSave.png"), QIcon::Normal, QIcon::Off);
+    tIcon1.addPixmap(QPixmap(":/images/22_22/Save.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon1);
 
     tAction = tMenu.addAction("Save row history");
@@ -220,7 +220,7 @@ void OverviewDataStreamsWidget::TwAudioCustomContextMenuEvent(const QPoint &pPos
 
     tAction = tMenu.addAction("Reset row");
     QIcon tIcon2;
-    tIcon2.addPixmap(QPixmap(":/images/Reload.png"), QIcon::Normal, QIcon::Off);
+    tIcon2.addPixmap(QPixmap(":/images/22_22/Reload.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon2);
 
     QAction* tPopupRes = tMenu.exec(QCursor::pos());
@@ -505,9 +505,9 @@ void OverviewDataStreamsWidget::FillRow(QTableWidget *pTable, int pRow, PacketSt
     pTable->item(pRow, 7)->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
     QIcon tIcon11;
     if (tStatValues.Outgoing)
-        tIcon11.addPixmap(QPixmap(":/images/ArrowRightGreen.png"), QIcon::Normal, QIcon::Off);
+        tIcon11.addPixmap(QPixmap(":/images/32_32/ArrowRight.png"), QIcon::Normal, QIcon::Off);
     else
-        tIcon11.addPixmap(QPixmap(":/images/ArrowLeftYellow.png"), QIcon::Normal, QIcon::Off);
+        tIcon11.addPixmap(QPixmap(":/images/32_32/ArrowLeft.png"), QIcon::Normal, QIcon::Off);
     pTable->item(pRow, 7)->setIcon(tIcon11);
 
 }

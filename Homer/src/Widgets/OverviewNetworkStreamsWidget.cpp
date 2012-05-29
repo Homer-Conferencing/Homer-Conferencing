@@ -346,7 +346,7 @@ void OverviewNetworkStreamsWidget::contextMenuEvent(QContextMenuEvent *pContextM
 
     tAction = tMenu.addAction("Save values");
     QIcon tIcon1;
-    tIcon1.addPixmap(QPixmap(":/images/DriveSave.png"), QIcon::Normal, QIcon::Off);
+    tIcon1.addPixmap(QPixmap(":/images/22_22/Save.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon1);
 
     QAction* tPopupRes = tMenu.exec(pContextMenuEvent->globalPos());
@@ -368,7 +368,7 @@ void OverviewNetworkStreamsWidget::TwOutgoingStreamsCustomContextMenuEvent(const
 
     tAction = tMenu.addAction("Save values");
     QIcon tIcon1;
-    tIcon1.addPixmap(QPixmap(":/images/DriveSave.png"), QIcon::Normal, QIcon::Off);
+    tIcon1.addPixmap(QPixmap(":/images/22_22/Save.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon1);
 
     QAction* tPopupRes = tMenu.exec(QCursor::pos());
