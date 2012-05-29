@@ -556,7 +556,7 @@ void OverviewPlaylistWidget::PlayNext()
     		tNewFileId = 0;
     	}else
     	{
-    		LOG(LOG_VERBOSE, "End of playlist %d reached", mPlaylistId);
+    		//LOG(LOG_VERBOSE, "End of playlist %d reached", mPlaylistId);
     		return;
     	}
     }
@@ -635,7 +635,6 @@ void OverviewPlaylistWidget::timerEvent(QTimerEvent *pEvent)
             	// do we already play the desired file and are we at EOF?
                 if ((mLwFiles->item(mCurrentFileId) != NULL) && (mVideoWorker->GetCurrentDevice().contains(mLwFiles->item(mCurrentFileId)->data(Qt::DisplayRole).toString())) && (mVideoWorker->EofReached()))
                 {
-                    LOG(LOG_VERBOSE, "Playing next entry in video list");
                 	PlayNext();
                 }
                 break;
@@ -647,7 +646,6 @@ void OverviewPlaylistWidget::timerEvent(QTimerEvent *pEvent)
             	// do we already play the desired file and are we at EOF?
                 if ((mLwFiles->item(mCurrentFileId) != NULL) && (mAudioWorker->GetCurrentDevice().contains(mLwFiles->item(mCurrentFileId)->data(Qt::DisplayRole).toString())) && (mAudioWorker->EofReached()))
                 {
-                    LOG(LOG_VERBOSE, "Playing next entry in audio list");
                 	PlayNext();
                 }
                 break;
@@ -661,7 +659,6 @@ void OverviewPlaylistWidget::timerEvent(QTimerEvent *pEvent)
                 	(mVideoWorker->GetCurrentDevice().contains(mLwFiles->item(mCurrentFileId)->data(Qt::DisplayRole).toString())) && (mVideoWorker->EofReached()) &&
                 	(mAudioWorker->GetCurrentDevice().contains(mLwFiles->item(mCurrentFileId)->data(Qt::DisplayRole).toString())) && (mAudioWorker->EofReached()))
                 {
-                    LOG(LOG_VERBOSE, "Playing next entry in movie list");
                 	PlayNext();
                 }
                 break;
