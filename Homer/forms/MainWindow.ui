@@ -623,8 +623,8 @@
    </property>
    <property name="icon">
     <iconset resource="../resources/Icons.qrc">
-     <normaloff>:/images/Warning.png</normaloff>
-     <normalon>:/images/22_22/Checked.png</normalon>:/images/Warning.png</iconset>
+     <normaloff>:/images/22_22/Errors.png</normaloff>
+     <normalon>:/images/22_22/Checked.png</normalon>:/images/22_22/Errors.png</iconset>
    </property>
    <property name="text">
     <string>Errors</string>

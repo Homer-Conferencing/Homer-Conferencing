@@ -724,9 +724,10 @@ void* MediaSourceFile::Run(void* pArgs)
         #ifdef MSF_DEBUG_TIMING
             LOG(LOG_VERBOSE, "Decoder loop");
         #endif
+        mDecoderMutex.lock();
+
         if ((mDecoderFifo != NULL) && (mDecoderFifo->GetUsage() < MEDIA_SOURCE_FILE_INPUT_QUEUE_SIZE_LIMIT - 1 /* one slot for a 0 byte signaling chunk*/) /* meta data FIFO has always the same size => hence, we don't have to check its size */)
         {
-            mDecoderMutex.lock();
 
             if (mEOFReached)
                 LOG(LOG_WARN, "Error in state machine, we started when EOF was already reached");
@@ -1026,15 +1027,13 @@ void* MediaSourceFile::Run(void* pArgs)
             // free packet buffer
             av_free_packet(tPacket);
 
-            mDecoderMutex.unlock();
-
             if (mEOFReached)
-            {
+            {// EOF, wait until restart
 //                #ifdef MSF_DEBUG_TIMING
                     LOG(LOG_VERBOSE, "EOF for %s source reached, wait some time and check again, loop %d", GetMediaTypeStr().c_str(), ++tWaitLoop);
 //                #endif
                 DecoderNeedWorkCondition.Reset();
-                DecoderNeedWorkCondition.Wait();
+                DecoderNeedWorkCondition.Wait(&mDecoderMutex);
                 mDecoderLastReadPts = 0;
                 mEOFReached = false;
 //                #ifdef MSF_DEBUG_TIMING
@@ -1042,17 +1041,19 @@ void* MediaSourceFile::Run(void* pArgs)
 //                #endif
             }
         }else
-        {
+        {// decoder FIFO is full, nothing to be done
 //            #ifdef MSF_DEBUG_TIMING
                 LOG(LOG_VERBOSE, "Nothing to do for decoder, wait some time and check again, loop %d", ++tWaitLoop);
 //            #endif
             DecoderNeedWorkCondition.Reset();
-            DecoderNeedWorkCondition.Wait();
+            DecoderNeedWorkCondition.Wait(&mDecoderMutex);
             mDecoderLastReadPts = 0;
 //            #ifdef MSF_DEBUG_TIMING
-                LOG(LOG_VERBOSE, "Continuing after new data is needed");
+                LOG(LOG_VERBOSE, "Continuing after new data is needed, current FIFO size is: %d", mDecoderFifo->GetUsage());
 //            #endif
         }
+
+        mDecoderMutex.unlock();
     }
 
     free((void*)tChunkBuffer);
@@ -1197,14 +1198,13 @@ bool MediaSourceFile::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
         return false;
     }
 
-    //LOG(LOG_VERBOSE, "pSecs: %ld CurPts: %ld", pSeconds, mCurPts);
     int64_t tAbsoluteTimestamp = pSeconds * (int64_t)mFrameRate; // later the value for mCurPts will be changed to the same value like tAbsoluteTimestamp
 
     //LOG(LOG_VERBOSE, "Rel: %ld Abs: %ld", tRelativeTimestamp, tAbsoluteTimestamp);
 
     if ((tAbsoluteTimestamp >= 0) && (tAbsoluteTimestamp <= mDuration))
     {
-        LOG(LOG_VERBOSE, "Seeking to second %d", pSeconds);
+        LOG(LOG_VERBOSE, "Seeking to second %ld, current pts is %ld", pSeconds, mCurPts);
 
         mDecoderMutex.lock();
         int64_t tMin = tAbsoluteTimestamp - MSF_SEEK_VARIANCE;
