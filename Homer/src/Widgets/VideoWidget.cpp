@@ -262,11 +262,11 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
 		if (mVideoSource->IsRecording())
 		{
 			tAction = tMenu.addAction("Stop recording");
-			tIcon5.addPixmap(QPixmap(":/images/Audio - Stop.png"), QIcon::Normal, QIcon::Off);
+			tIcon5.addPixmap(QPixmap(":/images/22_22/Audio_Stop.png"), QIcon::Normal, QIcon::Off);
 		}else
 		{
 			tAction = tMenu.addAction("Record video");
-			tIcon5.addPixmap(QPixmap(":/images/Audio - Record.png"), QIcon::Normal, QIcon::Off);
+			tIcon5.addPixmap(QPixmap(":/images/22_22/Audio_Record.png"), QIcon::Normal, QIcon::Off);
 		}
 		tAction->setIcon(tIcon5);
     }
@@ -281,7 +281,7 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
     else
         tAction = tMenu.addAction("Show stream info");
     QIcon tIcon4;
-    tIcon4.addPixmap(QPixmap(":/images/Info.png"), QIcon::Normal, QIcon::Off);
+    tIcon4.addPixmap(QPixmap(":/images/22_22/Info.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon4);
     tAction->setCheckable(true);
     tAction->setChecked(mShowLiveStats);
@@ -455,17 +455,17 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
     {
         QMenu *tVideoSinksMenu = tMenu.addMenu("Relay stream");
         QIcon tIcon7;
-        tIcon7.addPixmap(QPixmap(":/images/ArrowRightGreen.png"), QIcon::Normal, QIcon::Off);
+        tIcon7.addPixmap(QPixmap(":/images/22_22/ArrowRight.png"), QIcon::Normal, QIcon::Off);
         tVideoSinksMenu->setIcon(tIcon7);
 
         tAction =  tVideoSinksMenu->addAction("Add network sink");
         QIcon tIcon8;
-        tIcon8.addPixmap(QPixmap(":/images/Plus.png"), QIcon::Normal, QIcon::Off);
+        tIcon8.addPixmap(QPixmap(":/images/22_22/Plus.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon8);
 
         QMenu *tRegisteredVideoSinksMenu = tVideoSinksMenu->addMenu("Registered sinks");
         QIcon tIcon9;
-        tIcon9.addPixmap(QPixmap(":/images/ArrowRightGreen.png"), QIcon::Normal, QIcon::Off);
+        tIcon9.addPixmap(QPixmap(":/images/22_22/ArrowRight.png"), QIcon::Normal, QIcon::Off);
         tRegisteredVideoSinksMenu->setIcon(tIcon9);
 
         if (tRegisteredVideoSinks.size())
@@ -488,11 +488,11 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
         if (mVideoPaused)
         {
             tAction = tMenu.addAction("Continue stream");
-            tIcon10.addPixmap(QPixmap(":/images/Audio - Play.png"), QIcon::Normal, QIcon::Off);
+            tIcon10.addPixmap(QPixmap(":/images/22_22/Audio_Play.png"), QIcon::Normal, QIcon::Off);
         }else
         {
             tAction = tMenu.addAction("Drop stream");
-            tIcon10.addPixmap(QPixmap(":/images/Audio - Pause.png"), QIcon::Normal, QIcon::Off);
+            tIcon10.addPixmap(QPixmap(":/images/22_22/Exit.png"), QIcon::Normal, QIcon::Off);
         }
         tAction->setIcon(tIcon10);
     }
@@ -504,7 +504,7 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
     //###############################################################################
     tAction = tMenu.addAction("Reset source");
     QIcon tIcon2;
-    tIcon2.addPixmap(QPixmap(":/images/Reload.png"), QIcon::Normal, QIcon::Off);
+    tIcon2.addPixmap(QPixmap(":/images/22_22/Reload.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon2);
 
     //###############################################################################
@@ -512,7 +512,7 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
     //###############################################################################
     tAction = tMenu.addAction("Close video");
     QIcon tIcon1;
-    tIcon1.addPixmap(QPixmap(":/images/Close.png"), QIcon::Normal, QIcon::Off);
+    tIcon1.addPixmap(QPixmap(":/images/22_22/Close.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon1);
 
     //###############################################################################
@@ -880,10 +880,17 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
     //#############################################################
     //### draw record icon
     //#############################################################
-    if ((mVideoSource->IsRecording()) and (tMSecs % 500 < 250))
+    if (mVideoSource->IsRecording())
     {
-        QPixmap tPixmap = QPixmap(":/images/Audio - Record.png");
-        tPainter->drawPixmap(10, 10, tPixmap);
+        if (tMSecs % 500 < 250)
+        {
+            QPixmap tPixmap = QPixmap(":/images/22_22/Audio_Record_active.png");
+            tPainter->drawPixmap(10, 10, tPixmap);
+        }else
+        {
+            QPixmap tPixmap = QPixmap(":/images/22_22/Audio_Record.png");
+            tPainter->drawPixmap(10, 10, tPixmap);
+        }
     }
 
     //#############################################################
@@ -891,7 +898,7 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
     //#############################################################
     if ((mVideoPaused) and (tMSecs % 500 < 250))
     {
-        QPixmap tPixmap = QPixmap(":/images/Audio - Paused.png");
+        QPixmap tPixmap = QPixmap(":/images/22_22/Audio_Paused.png");
         tPainter->drawPixmap(30, 10, tPixmap);
     }
 

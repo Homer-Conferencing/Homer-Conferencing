@@ -44,7 +44,7 @@
      <x>0</x>
      <y>0</y>
      <width>385</width>
-     <height>21</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="mMenuSettings">
@@ -380,7 +380,7 @@
    <property name="icon">
     <iconset resource="../resources/Icons.qrc">
      <normaloff>:/images/Multimedia1.png</normaloff>
-     <normalon>:/images/Success.png</normalon>:/images/Multimedia1.png</iconset>
+     <normalon>:/images/22_22/Checked.png</normalon>:/images/Multimedia1.png</iconset>
    </property>
    <property name="text">
     <string>Data streams</string>
@@ -399,7 +399,7 @@
    <property name="icon">
     <iconset resource="../resources/Icons.qrc">
      <normaloff>:/images/Processor.png</normaloff>
-     <normalon>:/images/Success.png</normalon>:/images/Processor.png</iconset>
+     <normalon>:/images/22_22/Checked.png</normalon>:/images/Processor.png</iconset>
    </property>
    <property name="text">
     <string>System threads</string>
@@ -448,7 +448,7 @@
    <property name="icon">
     <iconset resource="../resources/Icons.qrc">
      <normaloff>:/images/UserFamily.png</normaloff>
-     <normalon>:/images/Success.png</normalon>:/images/UserFamily.png</iconset>
+     <normalon>:/images/22_22/Checked.png</normalon>:/images/UserFamily.png</iconset>
    </property>
    <property name="text">
     <string>Online status</string>
@@ -467,7 +467,7 @@
    <property name="icon">
     <iconset resource="../resources/Icons.qrc">
      <normaloff>:/images/Network.png</normaloff>
-     <normalon>:/images/Success.png</normalon>:/images/Network.png</iconset>
+     <normalon>:/images/22_22/Checked.png</normalon>:/images/Network.png</iconset>
    </property>
    <property name="text">
     <string>Video/Audio source</string>
@@ -479,7 +479,7 @@
   <action name="mActionUpdateCheck">
    <property name="icon">
     <iconset resource="../resources/Icons.qrc">
-     <normaloff>:/images/SoftwareUpdate.png</normaloff>:/images/SoftwareUpdate.png</iconset>
+     <normaloff>:/images/22_22/SoftwareUpdate.png</normaloff>:/images/22_22/SoftwareUpdate.png</iconset>
    </property>
    <property name="text">
     <string>Update check</string>
@@ -494,7 +494,7 @@
   <action name="mActionHelp">
    <property name="icon">
     <iconset resource="../resources/Icons.qrc">
-     <normaloff>:/images/Help.png</normaloff>:/images/Help.png</iconset>
+     <normaloff>:/images/22_22/Help.png</normaloff>:/images/22_22/Help.png</iconset>
    </property>
    <property name="text">
     <string>Online help</string>
@@ -516,7 +516,7 @@
    <property name="icon">
     <iconset resource="../resources/Icons.qrc">
      <normaloff>:/images/UserGroup.png</normaloff>
-     <normalon>:/images/Success.png</normalon>:/images/UserGroup.png</iconset>
+     <normalon>:/images/22_22/Checked.png</normalon>:/images/UserGroup.png</iconset>
    </property>
    <property name="text">
     <string>Contact list</string>
@@ -535,7 +535,7 @@
    <property name="icon">
     <iconset resource="../resources/Icons.qrc">
      <normaloff>:/images/NetworkShare.png</normaloff>
-     <normalon>:/images/Success.png</normalon>:/images/NetworkShare.png</iconset>
+     <normalon>:/images/22_22/Checked.png</normalon>:/images/NetworkShare.png</iconset>
    </property>
    <property name="text">
     <string>File transfer list</string>
@@ -551,7 +551,7 @@
    <property name="icon">
     <iconset resource="../resources/Icons.qrc">
      <normaloff>:/images/Monitor.png</normaloff>
-     <normalon>:/images/Success.png</normalon>:/images/Monitor.png</iconset>
+     <normalon>:/images/22_22/Checked.png</normalon>:/images/Monitor.png</iconset>
    </property>
    <property name="text">
     <string>Broadcast data</string>
@@ -567,7 +567,7 @@
    <property name="icon">
     <iconset resource="../resources/Icons.qrc">
      <normaloff>:/images/VideoReel.png</normaloff>
-     <normalon>:/images/Success.png</normalon>:/images/VideoReel.png</iconset>
+     <normalon>:/images/22_22/Checked.png</normalon>:/images/VideoReel.png</iconset>
    </property>
    <property name="text">
     <string>Video playlist</string>
@@ -583,7 +583,7 @@
    <property name="icon">
     <iconset resource="../resources/Icons.qrc">
      <normaloff>:/images/Speaker.png</normaloff>
-     <normalon>:/images/Success.png</normalon>:/images/Speaker.png</iconset>
+     <normalon>:/images/22_22/Checked.png</normalon>:/images/Speaker.png</iconset>
    </property>
    <property name="text">
     <string>Audio playlist</string>
@@ -599,7 +599,7 @@
    <property name="icon">
     <iconset resource="../resources/Icons.qrc">
      <normaloff>:/images/FilmStrip1.png</normaloff>
-     <normalon>:/images/Success.png</normalon>:/images/FilmStrip1.png</iconset>
+     <normalon>:/images/22_22/Checked.png</normalon>:/images/FilmStrip1.png</iconset>
    </property>
    <property name="text">
     <string>Movie playlist</string>
@@ -624,7 +624,7 @@
    <property name="icon">
     <iconset resource="../resources/Icons.qrc">
      <normaloff>:/images/Warning.png</normaloff>
-     <normalon>:/images/Success.png</normalon>:/images/Warning.png</iconset>
+     <normalon>:/images/22_22/Checked.png</normalon>:/images/Warning.png</iconset>
    </property>
    <property name="text">
     <string>Errors</string>
@@ -668,7 +668,7 @@
    <property name="icon">
     <iconset resource="../resources/Icons.qrc">
      <normaloff>:/images/NetworkSocket.png</normaloff>
-     <normalon>:/images/Success.png</normalon>:/images/NetworkSocket.png</iconset>
+     <normalon>:/images/22_22/Checked.png</normalon>:/images/NetworkSocket.png</iconset>
    </property>
    <property name="text">
     <string>Network streams</string>
