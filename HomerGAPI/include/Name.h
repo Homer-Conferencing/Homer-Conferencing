@@ -37,7 +37,7 @@ namespace Homer { namespace Base {
 class Name
 {
 public:
-	Name(std::string pName):mName(pName){ }
+	Name(std::string pName = ""):mName(pName){ }
     virtual ~Name(){ }
 
     virtual std::string toString(){ return mName; }
