@@ -282,16 +282,22 @@ void OpenVideoAudioPreviewDialog::LoadConfiguration()
         MediaSourceCoreVideo *tVSource = new MediaSourceCoreVideo("");
     #endif
 	#ifdef BSD
-        //TODO
+        MediaSource *tVSource = NULL; //TODO: replace with a specialized implementation
 	#endif
     #ifdef LINUX
         MediaSourceV4L2 *tVSource = new MediaSourceV4L2("");
     #endif
 	MediaSourcePortAudio *tASource = new MediaSourcePortAudio("");
-    tVSource->getVideoDevices(mVideoDevicesList);
-    tASource->getAudioDevices(mAudioDevicesList);
-    delete tVSource;
-    delete tASource;
+    if (tVSource != NULL)
+    {
+        tVSource->getVideoDevices(mVideoDevicesList);
+        delete tVSource;
+    }
+    if (tASource != NULL)
+    {
+        tASource->getAudioDevices(mAudioDevicesList);
+        delete tASource;
+    }
 
     mCbDeviceVideo->clear();
     VideoDevicesList::iterator tItVideo;
