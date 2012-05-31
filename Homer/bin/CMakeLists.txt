@@ -39,6 +39,7 @@ SET (INCLUDE_DIRS
 	../../HomerGAPI/include
 	../../HomerMonitor/include
 	../../HomerMultimedia/include
+	../../HomerNetworkSimulator/include
 	../../HomerConference/include
 	/usr/include/ffmpeg
 	${QT_INCLUDE_DIR}
@@ -238,6 +239,7 @@ SET (LIBS_WINDOWS
 	HomerGAPI
 	HomerMonitor
 	HomerMultimedia
+	HomerNetworkSimulator
 	HomerConference
 	mingw32
 	${QT_LIBRARIES}
@@ -260,6 +262,7 @@ IF (${BUILD} MATCHES "Default")
 		HomerGAPI
 		HomerMonitor
 		HomerMultimedia
+		HomerNetworkSimulator
 		HomerConference
 		${QT_LIBRARIES}
 	)
@@ -270,6 +273,7 @@ ELSE ()
 		HomerGAPI
 		HomerMonitor
 		HomerMultimedia
+		HomerNetworkSimulator
 		HomerConference
 		QtCore
 		QtGui
@@ -323,6 +327,7 @@ SET (LIBS_APPLE
 	HomerGAPI
 	HomerMonitor
 	HomerMultimedia
+	HomerNetworkSimulator
 	HomerConference
 )
 IF (${BUILD} MATCHES "Release")

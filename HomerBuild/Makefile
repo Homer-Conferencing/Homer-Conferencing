@@ -12,6 +12,7 @@ HOMER_GAPI=HomerGAPI
 HOMER_GUI=Homer
 HOMER_MONITOR=HomerMonitor
 HOMER_MULTIMEDIA=HomerMultimedia
+HOMER_NETWORK_SIMULATOR=HomerNetworkSimulator
 HOMER_SOUNDOUTPUT=HomerSoundOutput
 
 ###############################################################################
@@ -27,6 +28,9 @@ ifneq ($(wildcard $(CURDIR)/../$(HOMER_GAPI)),)
 endif
 ifneq ($(wildcard $(CURDIR)/../$(HOMER_MULTIMEDIA)),)
 	@cd $(CURDIR)/../$(HOMER_MULTIMEDIA) && $(MAKE) -s cleaner
+endif
+ifneq ($(wildcard $(CURDIR)/../$(HOMER_NETWORK_SIMULATOR)),)
+	@cd $(CURDIR)/../$(HOMER_NETWORK_SIMULATOR) && $(MAKE) -s cleaner
 endif
 ifneq ($(wildcard $(CURDIR)/../$(HOMER_CONFERENCE)),)
 	@cd $(CURDIR)/../$(HOMER_CONFERENCE) && $(MAKE) -s cleaner
