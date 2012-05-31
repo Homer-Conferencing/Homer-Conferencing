@@ -24,9 +24,9 @@
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.187480690" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.2075065895" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
 								<option id="gnu.cpp.compiler.option.include.paths.1602030922" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="../../../HomerGAPI/include"/>
-									<listOptionValue builtIn="false" value="../../../HomerBase/include"/>
-									<listOptionValue builtIn="false" value="../../../HomerBase/include/Logging"/>
+									<listOptionValue builtIn="false" value="../../HomerBase/include/Logging"/>
+									<listOptionValue builtIn="false" value="../../HomerBase/include"/>
+									<listOptionValue builtIn="false" value="../../HomerGAPI/include"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1972935720" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
