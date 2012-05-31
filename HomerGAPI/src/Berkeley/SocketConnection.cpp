@@ -89,21 +89,24 @@ SocketConnection::SocketConnection(std::string pTarget, Requirements *pRequireme
                     (pRequirements->contains(RequirementTransmitBitErrors::type())));
 
     if (tTcp)
+    {
         mSocket = Socket::CreateClientSocket(tIPv6 ? SOCKET_IPv6 : SOCKET_IPv4, SOCKET_TCP);
+        tFoundTransport = true;
+    }
 
     if (tUdp)
     {
         if(!tFoundTransport)
+        {
             mSocket = Socket::CreateClientSocket(tIPv6 ? SOCKET_IPv6 : SOCKET_IPv4, tUdpLite ? SOCKET_UDP_LITE : SOCKET_UDP);
-        else
+            tFoundTransport = true;
+        }else
             LOG(LOG_ERROR, "Ambiguous requirements");
     }
 
     if (mSocket != NULL)
-    {
-        tFoundTransport = true;
         mIsClosed = false;
-    }else
+    else
         LOG(LOG_ERROR, "Socket object invalid");
 
     if(!tFoundTransport)
