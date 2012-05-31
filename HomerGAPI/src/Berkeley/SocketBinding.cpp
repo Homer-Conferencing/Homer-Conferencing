@@ -165,7 +165,7 @@ void SocketBinding::cancel()
 {
     if(mSocket != NULL)
     {
-        LOG(LOG_VERBOSE, "All connection will be canceled now");
+        LOG(LOG_VERBOSE, "All connections will be canceled now");
 
         if (mConnection != NULL)
         {

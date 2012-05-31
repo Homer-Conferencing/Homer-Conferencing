@@ -49,7 +49,6 @@ public:
 private:
     std::string		mHost;
     unsigned int    mPort;
-    std::string     mTransport;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
