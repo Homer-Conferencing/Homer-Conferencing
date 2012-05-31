@@ -52,6 +52,7 @@ using namespace std;
 SocketConnection::SocketConnection(std::string pTarget, Requirements *pRequirements)
 {
     bool tFoundTransport = false;
+    mSocket = NULL;
 
     mBlockingMode = true;
     mPeerHost = pTarget;
