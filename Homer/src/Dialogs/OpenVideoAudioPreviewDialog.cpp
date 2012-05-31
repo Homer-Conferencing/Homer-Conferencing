@@ -39,6 +39,7 @@
 #include <HBSocket.h>
 #include <GAPI.h>
 #include <Meeting.h>
+#include <Berkeley/SocketSetup.h>
 
 #include <Configuration.h>
 
@@ -77,6 +78,9 @@ void OpenVideoAudioPreviewDialog::initializeGUI()
 
     connect(mCbVideoEnabled, SIGNAL(clicked(bool)), this, SLOT(actionVideoEnabled(bool)));
     connect(mCbAudioEnabled, SIGNAL(clicked(bool)), this, SLOT(actionAudioEnabled(bool)));
+
+    connect(mCbGAPIImplVideo, SIGNAL(currentIndexChanged(QString)), this, SLOT(GAPIVideoSelectionChanged(QString)));
+    connect(mCbGAPIImplAudio, SIGNAL(currentIndexChanged(QString)), this, SLOT(GAPIAudioSelectionChanged(QString)));
 
     LoadConfiguration();
 }
@@ -267,6 +271,28 @@ void OpenVideoAudioPreviewDialog::SaveConfiguration()
 
     CONF.SetVideoStreamingGAPIImpl(mCbGAPIImplVideo->currentText());
     CONF.SetAudioStreamingGAPIImpl(mCbGAPIImplAudio->currentText());
+}
+
+void OpenVideoAudioPreviewDialog::GAPIVideoSelectionChanged(QString pSelection)
+{
+    if (pSelection == BERKEYLEY_SOCKETS)
+    {
+        mLeHostVideo->setText(QString(MEETING.GetHostAdr().c_str()));
+    }else
+    {
+        mLeHostVideo->setText("Destination");
+    }
+}
+
+void OpenVideoAudioPreviewDialog::GAPIAudioSelectionChanged(QString pSelection)
+{
+    if (pSelection == BERKEYLEY_SOCKETS)
+    {
+        mLeHostAudio->setText(QString(MEETING.GetHostAdr().c_str()));
+    }else
+    {
+        mLeHostAudio->setText("Destination");
+    }
 }
 
 void OpenVideoAudioPreviewDialog::LoadConfiguration()

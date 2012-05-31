@@ -62,6 +62,8 @@ private slots:
     void actionGetFile();
     void actionVideoEnabled(bool pState);
     void actionAudioEnabled(bool pState);
+    void GAPIVideoSelectionChanged(QString pSelection);
+    void GAPIAudioSelectionChanged(QString pSelection);
 
 private:
     void initializeGUI();

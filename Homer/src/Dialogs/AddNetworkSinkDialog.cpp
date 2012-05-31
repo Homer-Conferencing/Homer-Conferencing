@@ -34,6 +34,7 @@
 #include <Dialogs/AddNetworkSinkDialog.h>
 
 #include <GAPI.h>
+#include <Berkeley/SocketSetup.h>
 
 #include <string>
 #include <list>
@@ -64,6 +65,8 @@ AddNetworkSinkDialog::~AddNetworkSinkDialog()
 void AddNetworkSinkDialog::initializeGUI()
 {
     setupUi(this);
+    connect(mCbGAPIImpl, SIGNAL(currentIndexChanged(QString)), this, SLOT(GAPISelectionChanged(QString)));
+
     if (!CONF.DebuggingEnabled())
     {
         mGbRequirements->hide();
@@ -151,6 +154,18 @@ void AddNetworkSinkDialog::SaveConfiguration()
         CONF.SetAudioStreamingGAPIImpl(mCbGAPIImpl->currentText());
     }
 }
+
+void AddNetworkSinkDialog::GAPISelectionChanged(QString pSelection)
+{
+    if (pSelection == BERKEYLEY_SOCKETS)
+    {
+        mLeHost->setText(QString(MEETING.GetHostAdr().c_str()));
+    }else
+    {
+        mLeHost->setText("Destination");
+    }
+}
+
 void AddNetworkSinkDialog::LoadConfiguration()
 {
     QString tTransport;
@@ -175,7 +190,6 @@ void AddNetworkSinkDialog::LoadConfiguration()
         mCbGAPIImpl->addItem(QString(tGAPIImplsIt->c_str()));
     }
 
-    mLeHost->setText(QString(MEETING.GetHostAdr().c_str()));
     if (mMediaSource->GetMediaType() == MEDIA_VIDEO)
     {// video
         mCbRtp->setChecked(CONF.GetVideoRtp());
