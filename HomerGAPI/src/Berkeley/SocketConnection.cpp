@@ -117,7 +117,8 @@ SocketConnection::SocketConnection(std::string pTarget, Requirements *pRequireme
     /* QoS requirements and additional transport requirements */
     changeRequirements(pRequirements);
 
-    LOG(LOG_VERBOSE, "New IP association with target %s and requirements %s created", getRemoteName()->toString().c_str(), mRequirements.getDescription().c_str());
+    if (mSocket != NULL)
+        LOG(LOG_VERBOSE, "New IP association with target %s and requirements %s created", getRemoteName()->toString().c_str(), mRequirements.getDescription().c_str());
 }
 
 SocketConnection::SocketConnection(Socket *pSocket)
