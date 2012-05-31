@@ -50,6 +50,9 @@ public:
 
     int exec();
 
+private slots:
+    void GAPISelectionChanged(QString pSelection);
+
 private:
     void initializeGUI();
     void SaveConfiguration();
