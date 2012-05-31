@@ -54,6 +54,7 @@
 #include <MediaSourceMuxer.h>
 #include <MediaSourceFile.h>
 #include <MediaSourceDesktop.h>
+#include <NetworkSimulator.h>
 #include <ProcessStatisticService.h>
 #include <Snippets.h>
 
@@ -130,6 +131,8 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     triggerUpdateCheck();
     // init screen capturing
     initializeScreenCapturing();
+    // init network simulator
+    initializeNetworkSimulator();
     // delayed call to register at Stun and Sip server
     QTimer::singleShot(2000, this, SLOT(registerAtStunSipServer()));
 }
@@ -199,6 +202,14 @@ void MainWindow::initializeScreenCapturing()
     mScreenShotTimer->start(3000);
 }
 
+void MainWindow::initializeNetworkSimulator()
+{
+    LOG(LOG_VERBOSE, "Initialization network simulator..");
+
+    mNetworkSimulator = new NetworkSimulator();
+    if (!mNetworkSimulator->Init())
+        LOG(LOG_ERROR, "Failed to initialize network simulator");
+}
 void MainWindow::initializeFeatureDisablers(QStringList pArguments)
 {
     // file based log sinks
