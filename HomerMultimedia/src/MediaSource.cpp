@@ -1201,18 +1201,20 @@ list<string> MediaSource::ListRegisteredMediaSinks()
     MediaSinksList::iterator tIt;
 
     // lock
-    mMediaSinksMutex.lock();
-
-    if(mMediaSinks.size() > 0)
+    if (mMediaSinksMutex.tryLock(250))
     {
-        for (tIt = mMediaSinks.begin(); tIt != mMediaSinks.end(); tIt++)
+        if(mMediaSinks.size() > 0)
         {
-            tResult.push_back((*tIt)->GetId());
+            for (tIt = mMediaSinks.begin(); tIt != mMediaSinks.end(); tIt++)
+            {
+                tResult.push_back((*tIt)->GetId());
+            }
         }
-    }
 
-    // unlock
-    mMediaSinksMutex.unlock();
+        // unlock
+        mMediaSinksMutex.unlock();
+    }else
+        LOG(LOG_WARN, "Failed to lock mutex in specified time");
 
     return tResult;
 }
