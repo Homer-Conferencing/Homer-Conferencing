@@ -20,45 +20,42 @@
  *****************************************************************************/
 
 /*
- * Purpose: Link
+ * Purpose: Coordinator
  * Author:  Thomas Volkert
- * Since:   2012-05-30
+ * Since:   2012-06-01
  */
 
-#ifndef _GAPI_SIMULATION_LINK_
-#define _GAPI_SIMULATION_LINK_
-
-#include <Core/Cep.h>
+#ifndef _GAPI_SIMULATION_COORDINATOR_
+#define _GAPI_SIMULATION_COORDINATOR_
 
 #include <HBMutex.h>
-#include <Name.h>
+
+#include <Core/Node.h>
 
 #include <list>
+#include <string>
 
 namespace Homer { namespace Base {
 
-class Link;
-typedef std::list<Link*> LinkList;
+///////////////////////////////////////////////////////////////////////////////
 
 class Node;
 
-///////////////////////////////////////////////////////////////////////////////
-
-class Link
+class Coordinator
 {
 public:
-    Link(Node *pNodeOne, Node *pNodeTwo);
-    virtual ~Link();
+    Coordinator(Node *pNode, std::string pClusterName, int pHierarchyLevel);
+    virtual ~Coordinator();
 
-    bool HandlePacket(Packet *pPacket, Node* pLastNode);
-
-    //TODO: QoS parameter adaption
+    void AddClusterMember(Node *pNode);
 
 private:
-    Node            *mNodes[2];
-    unsigned int    mDataRatePhysical;
-    unsigned int    mDataRateAvailable;
-    unsigned int    mDelayPhysical;
+    int             mHierarchyLevel;
+    std::string     mClusterName;
+    Node            *mNode;
+
+    NodeList        mClusterMembers;
+    Mutex           mClusterMembersMutex;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

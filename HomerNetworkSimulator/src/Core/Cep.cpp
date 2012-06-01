@@ -26,6 +26,7 @@
  */
 
 #include <Core/Cep.h>
+#include <Core/DomainNameService.h>
 #include <Core/Node.h>
 
 #include <GAPI.h>
@@ -37,33 +38,42 @@
 namespace Homer { namespace Base {
 
 using namespace std;
+using namespace Homer::Multimedia;
 
 ///////////////////////////////////////////////////////////////////////////////
 
 Cep::Cep(Node *pNode, enum TransportType pTransportType, unsigned int pLocalPort)
 {
+    mClosed = false;
     mLocalPort = pLocalPort;
     mPeerPort = 0;
     mPeerNode = "";
     mNode = pNode;
     mTransportType = pTransportType;
+    mPacketQueue = new MediaFifo(CEP_QUEUE_SIZE, CEP_QUEUE_ENTRY_SIZE, "PacketQueue@" + pNode->GetAddress());
+
+    LOG(LOG_VERBOSE, "Created new server CEP on node %s for local port %u", pNode->GetAddress().c_str(), pLocalPort);
 }
 
 Cep::Cep(Node *pNode, enum TransportType pTransportType, string pTarget, unsigned int pTargetPort)
 {
     static int sLastClientPort = 1023;
 
+    mClosed = false;
     mNode = pNode;
     mLocalPort = ++sLastClientPort;
 
     mPeerNode = pTarget;
     mPeerPort = pTargetPort;
     mTransportType = pTransportType;
+    mPacketQueue = new MediaFifo(CEP_QUEUE_SIZE, CEP_QUEUE_ENTRY_SIZE, "PacketQueue@" + pNode->GetAddress());
+
+    LOG(LOG_VERBOSE, "Created new client CEP on node %s for target %s:%u", pNode->GetAddress().c_str(), pTarget.c_str(), pTargetPort);
 }
 
 Cep::~Cep()
 {
-
+    delete mPacketQueue;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -72,29 +82,62 @@ bool Cep::SetQoS(const QoSSettings &pQoSSettings)
 {
     LOG(LOG_VERBOSE, "Desired QoS: %u KB/s min. data rate, %u ms max. delay, features: 0x%hX", pQoSSettings.DataRate, pQoSSettings.Delay, pQoSSettings.Features);
 
-    //TODO
-//    mQoSSettings = pQoSSettings;
-//
-//    if (IsQoSSupported())
-//    {
-//        setqos(mSocketHandle, pQoSSettings.DataRate, pQoSSettings.Delay, pQoSSettings.Features);
-//    }else
-//        LOG(LOG_WARN, "QoS support deactivated, settings will be ignored");
+    mQoSSettings = pQoSSettings;
 
     return true;
+}
+
+bool Cep::Close()
+{
+    if (!mClosed)
+    {
+        mClosed = true;
+        char tData[4];
+        mPacketQueue->WriteFifo(tData, 0);
+        mPacketQueue->WriteFifo(tData, 0);
+        return true;
+    }
+        return false;
 }
 
 bool Cep::Send(std::string pTargetNode, unsigned int pTargetPort, void *pBuffer, ssize_t pBufferSize)
 {
     LOG(LOG_VERBOSE, "Sending %d bytes to %s:%u", (int)pBufferSize, mPeerNode.c_str(), mPeerPort);
 
-    //TODO: add FIFO here
-    return true;
+    if (mClosed)
+    {
+        LOG(LOG_WARN, "CEP is already closed, ignoring send request");
+        return false;
+    }
+
+    // create packet descriptor
+    Packet *tPacket = new Packet();
+    tPacket->Source = mNode->GetAddress();
+    tPacket->Destination = DNS.query(pTargetNode);
+    tPacket->SourcePort = mLocalPort;
+    tPacket->DestinationPort = pTargetPort;
+    tPacket->QoSRequirements = mQoSSettings;
+    tPacket->Data = pBuffer;
+    tPacket->DataSize = pBufferSize;
+
+    // send packet towards destination
+    return mNode->HandlePacket(tPacket);
 }
 
 bool Cep::Receive(std::string &pPeerNode, unsigned int &pPeerPort, void *pBuffer, ssize_t &pBufferSize)
 {
-    //TODO: add FIFO here
+    if (mClosed)
+    {
+        LOG(LOG_WARN, "CEP is already closed, ignoring receive request");
+        return false;
+    }
+
+    int tBufferSize = pBufferSize;
+    mPacketQueue->ReadFifo((char*)pBuffer, tBufferSize);
+    pBufferSize = tBufferSize;
+    pPeerNode = mPeerNode;
+    pPeerPort = mPeerPort;
+
     LOG(LOG_VERBOSE, "Received %d bytes from %s:%u", (int)pBufferSize, mPeerNode.c_str(), mPeerPort);
 
     return true;
@@ -112,7 +155,34 @@ unsigned int Cep::GetLocalPort()
 
 string Cep::GetLocalNode()
 {
-    return mNode->GetName();
+    if (mNode->GetName() != "")
+        return mNode->GetName() + "/" + mNode->GetAddress();
+    else
+        return mNode->GetAddress();
+}
+
+unsigned int Cep::GetPeerPort()
+{
+    return mPeerPort;
+}
+
+string Cep::GetPeerNode()
+{
+    return mPeerNode;
+}
+
+bool Cep::HandlePacket(Packet *pPacket)
+{
+    LOG(LOG_VERBOSE, "Handling packet from %s at CEP@node %s(%s)", pPacket->Source.c_str(), mNode->GetName().c_str(), mNode->GetAddress().c_str());
+
+    mPacketQueue->WriteFifo((char*)pPacket->Data, pPacket->DataSize);
+    mPeerNode = pPacket->Source;
+    mPeerPort = pPacket->SourcePort;
+
+    // EOL for packet descriptor
+    delete pPacket;
+
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -15,6 +15,8 @@ SET (INCLUDE_DIRS
 	../../HomerBase/include
 	../../HomerBase/include/Logging
 	../../HomerGAPI/include
+	../../HomerMonitor/include
+	../../HomerMultimedia/include
 )
 
 ##############################################################
@@ -44,6 +46,7 @@ SET (SOURCES
 	../src/Core/ChannelBinding
 	../src/Core/ChannelConnection
 	../src/Core/Cep
+	../src/Core/Coordinator
 	../src/Core/DomainNameService
 	../src/Core/Link
 	../src/Core/Node
@@ -60,24 +63,28 @@ SET (LIBS_WINDOWS_INSTALL
 SET (LIBS_WINDOWS
 	HomerBase
 	HomerGAPI
+	HomerMultimedia
 )
 	
 # USED LIBRARIES for BSD environment
 SET (LIBS_BSD
 	HomerBase
 	HomerGAPI
+	HomerMultimedia
 )
 
 # USED LIBRARIES for linux environment
 SET (LIBS_LINUX
 	HomerBase
 	HomerGAPI
+	HomerMultimedia
 )
 
 # USED LIBRARIES for apple environment
 SET (LIBS_APPLE
 	HomerBase
 	HomerGAPI
+	HomerMultimedia
 )
 
 ##############################################################

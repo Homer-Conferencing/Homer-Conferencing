@@ -30,6 +30,7 @@
 
 #include <HBMutex.h>
 #include <Name.h>
+#include <Core/Coordinator.h>
 #include <Core/Link.h>
 #include <Core/Node.h>
 
@@ -62,11 +63,18 @@ private:
     Scenario();
 
     /* topology management */
-    bool AddNode(std::string pName, std::string pAddressHint = "");
-    bool AddLink(std::string pFromAddress, std::string pToAddress);
+    // complex topology structures
+    Coordinator* AddDomain(std::string pDomainPrefix, int pNodeCount);
+    // basic topology elements
+    Node* AddNode(std::string pName, std::string pAddressHint = "");
+    Link* AddLink(std::string pFromAddress, std::string pToAddress);
+    Coordinator* AddCoordinator(std::string pNodeAddress, std::string pClusterName, int pHierarchyLevel);
 
     /* database management */
     Node* FindNode(std::string pNodeIdentifier);
+
+    /* DNS */
+    bool registerName(string pName, string pAddress);
 
     Name        mName;
     NodeList    mNodes;

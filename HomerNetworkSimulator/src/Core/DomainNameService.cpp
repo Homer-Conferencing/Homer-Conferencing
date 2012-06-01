@@ -104,7 +104,7 @@ string DomainNameService::query(string pName)
 
     mDnsMappingMutex.unlock();
 
-    LOG(LOG_VERBOSE, "DNS lookup for %s resulted in %s", pName.c_str(), tResult.c_str());
+    //LOG(LOG_VERBOSE, "DNS lookup for %s resulted in %s", pName.c_str(), tResult.c_str());
 
     return tResult;
 }

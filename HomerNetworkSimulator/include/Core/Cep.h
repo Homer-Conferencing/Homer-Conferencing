@@ -20,7 +20,7 @@
  *****************************************************************************/
 
 /*
- * Purpose: Node
+ * Purpose: Cep
  * Author:  Thomas Volkert
  * Since:   2012-05-30
  */
@@ -32,16 +32,33 @@
 #include <HBSocketQoSSettings.h>
 #include <Name.h>
 
+#include <MediaFifo.h>
+#include <MediaSourceMem.h>
+
 #include <list>
 #include <string>
 
 namespace Homer { namespace Base {
 
+///////////////////////////////////////////////////////////////////////////////
+#define CEP_QUEUE_SIZE              256
+#define CEP_QUEUE_ENTRY_SIZE        (MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE)
+///////////////////////////////////////////////////////////////////////////////
 
 class Node;
 
 class Cep;
 typedef std::list<Cep*> CepList;
+
+struct Packet{
+    std::string     Source;
+    std::string     Destination;
+    unsigned int    SourcePort;
+    unsigned int    DestinationPort;
+    QoSSettings     QoSRequirements;
+    void            *Data;
+    ssize_t         DataSize;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -62,16 +79,25 @@ public:
     /* transfer */
     bool Send(std::string pTargetNode, unsigned int pTargetPort, void *pBuffer, ssize_t pBufferSize);
     bool Receive(std::string &pPeerNode, unsigned int &pPeerPort, void *pBuffer, ssize_t &pBufferSize);
+    bool Close();
     enum TransportType GetTransportType();
     unsigned int GetLocalPort();
     std::string GetLocalNode();
+    unsigned int GetPeerPort();
+    std::string GetPeerNode();
+
+    bool HandlePacket(Packet *pPacket);
 
 private:
-    unsigned int    mLocalPort;
-    Node            *mNode;
-    std::string     mPeerNode;
-    unsigned int    mPeerPort;
-    enum TransportType mTransportType;
+    bool                mClosed;
+    unsigned int        mLocalPort;
+    Node                *mNode;
+    std::string         mPeerNode;
+    unsigned int        mPeerPort;
+    enum TransportType  mTransportType;
+    Homer::Multimedia::MediaFifo *mPacketQueue;
+    /* QoS parameter */
+    QoSSettings         mQoSSettings;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
