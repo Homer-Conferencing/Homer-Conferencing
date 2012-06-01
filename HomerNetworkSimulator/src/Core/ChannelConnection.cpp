@@ -193,11 +193,9 @@ void ChannelConnection::cancel()
     if(mCep != NULL)
     {
         LOG(LOG_VERBOSE, "Channel to %s will be canceled now", getName()->toString().c_str());
-        if (mBlockingMode) //TODO: do this only if a call to read() is still blocked
+        if (mBlockingMode)
         {
             mCep->Close();
-            delete mCep;
-            mCep = NULL;
         }
     }
 }
