@@ -64,6 +64,7 @@ private:
     bool		    mBlockingMode;
     Requirements    mRequirements;
     Cep             *mCep;
+    Scenario        *mScenario;
     bool            mIsClosed;
     std::string     mPeerNode;
     unsigned int    mPeerPort;

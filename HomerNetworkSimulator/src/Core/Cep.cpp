@@ -73,6 +73,7 @@ Cep::Cep(Node *pNode, enum TransportType pTransportType, string pTarget, unsigne
 
 Cep::~Cep()
 {
+    LOG(LOG_VERBOSE, "Deleting CEP on node %s and peer %s:%u", mNode->GetAddress().c_str(), mPeerNode.c_str(), mPeerPort);
     delete mPacketQueue;
 }
 
@@ -155,10 +156,7 @@ unsigned int Cep::GetLocalPort()
 
 string Cep::GetLocalNode()
 {
-    if (mNode->GetName() != "")
-        return mNode->GetName() + "/" + mNode->GetAddress();
-    else
-        return mNode->GetAddress();
+    return mNode->GetAddress();
 }
 
 unsigned int Cep::GetPeerPort()

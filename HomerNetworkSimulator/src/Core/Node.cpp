@@ -112,6 +112,8 @@ Coordinator* Node::SetAsCoordinator(string pClusterName, int pHierarchyLevel)
 
 Cep* Node::AddServer(enum TransportType pTransportType, unsigned int pPort)
 {
+    LOG(LOG_VERBOSE, "Adding server for port %u", pPort);
+
     Cep *tCep = new Cep(this, pTransportType, pPort);
 
     mServerCepsMutex.lock();
@@ -123,9 +125,28 @@ Cep* Node::AddServer(enum TransportType pTransportType, unsigned int pPort)
 
 bool Node::DeleteServer(unsigned int pPort)
 {
-    //TODO
+    bool tResult = false;
 
-    return true;
+    LOG(LOG_VERBOSE, "Deleting server at port %u", pPort);
+
+    mServerCepsMutex.lock();
+    if (mServerCeps.size() > 0)
+    {
+        CepList::iterator tIt;
+        for (tIt = mServerCeps.begin(); tIt != mServerCeps.end(); tIt)
+        {
+            //LOG(LOG_VERBOSE, "Comparing CEP with local port %u and desired port %u", (*tIt)->GetLocalPort(), pPort);
+            if ((*tIt)->GetLocalPort() == pPort)
+            {
+                mServerCeps.erase(tIt);
+                tResult = true;
+                break;
+            }
+        }
+    }
+    mServerCepsMutex.unlock();
+
+    return tResult;
 }
 
 Cep* Node::AddClient(enum TransportType pTransportType, string pTarget, unsigned pTargetPort)
@@ -160,7 +181,7 @@ Cep* Node::FindServerCep(unsigned int pPort)
         CepList::iterator tIt;
         for (tIt = mServerCeps.begin(); tIt != mServerCeps.end(); tIt)
         {
-            LOG(LOG_VERBOSE, "Comparing CEP with local port %u and desired port %u", (*tIt)->GetLocalPort(), pPort);
+            //LOG(LOG_VERBOSE, "Comparing CEP with local port %u and desired port %u", (*tIt)->GetLocalPort(), pPort);
             if ((*tIt)->GetLocalPort() == pPort)
             {
                 tResult = *tIt;
@@ -180,6 +201,7 @@ bool Node::HandlePacket(Packet *pPacket)
     // are we the packet's destination?
     if (pPacket->Destination == mAddress)
     {
+        LOG(LOG_VERBOSE, "Destination %s reached at node %s(%s)", pPacket->Destination.c_str(), mName.c_str(), mAddress.c_str());
         Cep *tServerCep = FindServerCep(pPacket->DestinationPort);
 
         // have we found a fitting server CEP?
