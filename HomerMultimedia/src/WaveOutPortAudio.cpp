@@ -42,8 +42,9 @@ WaveOutPortAudio::WaveOutPortAudio(string pDesiredDevice):
     WaveOut("PortAudio-Playback")
 {
     MediaSourcePortAudio::PortAudioInit();
+    LOG(LOG_VERBOSE, "Creating wave out for device %s", pDesiredDevice.c_str());
 
-    if (pDesiredDevice != "")
+    if ((pDesiredDevice != "") && (pDesiredDevice != "auto"))
     {
         bool tNewDeviceSelected = false;
         tNewDeviceSelected = SelectDevice(pDesiredDevice);
@@ -108,7 +109,12 @@ void WaveOutPortAudio::getAudioDevices(AudioDevicesList &pAList)
 
         // if device is able to play samples with 44.1 kHz add this device to the result list
         if ((tDevice.IoType.find("Output") != string::npos) && (tDeviceInfo->defaultSampleRate == 44100.0))
+        {
+            #ifdef WOPA_AVOID_OSS_PLAY
+                if (string(Pa_GetHostApiInfo( tDeviceInfo->hostApi)->name) != "OSS")
+            #endif
             pAList.push_back(tDevice);
+        }
 
         if (tFirstCall)
         {
@@ -168,6 +174,8 @@ bool WaveOutPortAudio::OpenWaveOutDevice(int pSampleRate, bool pStereo)
 
     mSampleRate = pSampleRate;
     mStereo = pStereo;
+
+    LOG(LOG_VERBOSE, "Desired device is %s", mDesiredDevice.c_str());
 
     if ((mDesiredDevice == "") || (mDesiredDevice == "auto") || (mDesiredDevice == "automatic"))
     {

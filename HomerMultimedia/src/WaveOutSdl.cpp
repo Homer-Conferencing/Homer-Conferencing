@@ -59,7 +59,7 @@ void WaveOutSdl::SdlAudioInit(string pDeviceName)
 WaveOutSdl::WaveOutSdl(string pDesiredDevice):
     WaveOut("SDL-Playback")
 {
-    if (pDesiredDevice != "")
+    if ((pDesiredDevice != "") && (pDesiredDevice != "auto"))
     {
         bool tNewDeviceSelected = false;
         tNewDeviceSelected = SelectDevice(pDesiredDevice);
