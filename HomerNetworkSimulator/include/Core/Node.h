@@ -33,13 +33,21 @@
 #include <list>
 #include <string>
 
-#include <Core/Link.h>
 #include <Core/Cep.h>
+
+#include <Core/Link.h>
 
 namespace Homer { namespace Base {
 
 class Node;
 typedef std::list<Node*> NodeList;
+
+
+class Coordinator;
+
+///////////////////////////////////////////////////////////////////////////////
+
+#define MAX_HIERARCHY_DEPTH             10
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -48,7 +56,13 @@ struct FibEntry{
     Link *ViaLink;
 };
 
+struct RibEntry{
+    string Destination;
+    string NextNode;
+};
+
 typedef std::list<FibEntry*> FibTable;
+typedef std::list<RibEntry*> RibTable;
 
 class Node
 {
@@ -58,6 +72,12 @@ public:
 
     /* FIB management */
     bool AddFibEntry(Link *pLink, Node *pNextNode);
+
+    /* RIB management */
+    bool AddRibEntry(std::string pDestination, std::string pNextNode);
+
+    /* coordinator handling */
+    Coordinator* SetAsCoordinator(std::string pClusterName, int pHierarchyLevel);
 
     /* CEP management */
     Cep* AddServer(enum TransportType pTransportType, unsigned int pPort);
@@ -69,16 +89,33 @@ public:
 
     /* name management */
     std::string GetName();
+    void SetName(std::string pName);
+
+    bool HandlePacket(Packet *pPacket);
 
 private:
+    /* RIB lookup */
+    std::string GetNextHop(std::string pDestination, const QoSSettings pQoSRequirements);
+    RibTable    mRibTable;
+    Mutex       mRibTableMutex;
+
+    /* FIB lookup */
+    Link*       GetNextLink(std::string pNextNodeAdr);
     FibTable    mFibTable;
     Mutex       mFibTableMutex;
 
-    std::string mAddress;
-    std::string mName;
+    /* coordinators */
+    Coordinator *mCoordinators[MAX_HIERARCHY_DEPTH];
+    Mutex       mCoordinatorsMutex;
 
+    /* server CEPs */
+    Cep*        FindServerCep(unsigned int pPort);
     CepList     mServerCeps;
     Mutex       mServerCepsMutex;
+
+    /* addressing, naming */
+    std::string mAddress;
+    std::string mName;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

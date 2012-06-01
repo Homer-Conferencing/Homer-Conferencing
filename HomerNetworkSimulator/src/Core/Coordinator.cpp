@@ -7,7 +7,7 @@
  * the GNU General Public License version 2 as published by the Free Software
  * Foundation.
  *
- * This source is published in the hope that it will be useful, but
+ * This Peer is published in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License version 2 for more details.
  *
@@ -20,49 +20,48 @@
  *****************************************************************************/
 
 /*
- * Purpose: Link
+ * Purpose: Implementation of Coordinator
  * Author:  Thomas Volkert
- * Since:   2012-05-30
+ * Since:   2012-06-01
  */
 
-#ifndef _GAPI_SIMULATION_LINK_
-#define _GAPI_SIMULATION_LINK_
+#include <Core/Coordinator.h>
+#include <Core/Node.h>
 
-#include <Core/Cep.h>
+#include <Logger.h>
 
-#include <HBMutex.h>
-#include <Name.h>
-
-#include <list>
+#include <string>
 
 namespace Homer { namespace Base {
 
-class Link;
-typedef std::list<Link*> LinkList;
-
-class Node;
+using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class Link
+Coordinator::Coordinator(Node *pNode, string pClusterName, int pHierarchyLevel)
 {
-public:
-    Link(Node *pNodeOne, Node *pNodeTwo);
-    virtual ~Link();
+    mHierarchyLevel = pHierarchyLevel;
+    mNode = pNode;
+    mClusterName = pClusterName;
 
-    bool HandlePacket(Packet *pPacket, Node* pLastNode);
+    LOG(LOG_INFO, "Setting node %s as coordinator for cluster %s and hierarchy level %d", mNode->GetAddress().c_str(), pClusterName.c_str(), pHierarchyLevel);
+}
 
-    //TODO: QoS parameter adaption
-
-private:
-    Node            *mNodes[2];
-    unsigned int    mDataRatePhysical;
-    unsigned int    mDataRateAvailable;
-    unsigned int    mDelayPhysical;
-};
+Coordinator::~Coordinator()
+{
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
-}} // namespaces
+void Coordinator::AddClusterMember(Node *pNode)
+{
+    LOG(LOG_INFO, "Adding node %s to cluster %s at hierarchy level %d", pNode->GetAddress().c_str(), mClusterName.c_str(), mHierarchyLevel);
 
-#endif
+    mClusterMembersMutex.lock();
+    mClusterMembers.push_back(pNode);
+    mClusterMembersMutex.unlock();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+}} //namespace
