@@ -62,6 +62,7 @@ private:
     IConnection*    mConnection; // we support only one association
     Requirements    mRequirements;
     Cep 		    *mCep;
+    Scenario        *mScenario;
     bool            mIsClosed;
     std::string     mLocalHost;
     unsigned int    mLocalPort;

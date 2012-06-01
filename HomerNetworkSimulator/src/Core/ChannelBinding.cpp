@@ -51,6 +51,7 @@ using namespace std;
 //HINT: lossless transmission is not implemented by using TCP but by rely on a reaction by the network
 ChannelBinding::ChannelBinding(Scenario *pScenario, std::string pLocalName, Requirements *pRequirements)
 {
+    mScenario = pScenario;
     bool tFoundTransport = false;
     unsigned int tLocalPort = 0;
     //TODO: parse pLocalName and bind to a defined local IP address
@@ -86,7 +87,7 @@ ChannelBinding::ChannelBinding(Scenario *pScenario, std::string pLocalName, Requ
 
     if (tTcp)
     {
-        mCep = pScenario->AddServerCep(SOCKET_TCP, Name(pLocalName), tLocalPort);
+        mCep = mScenario->AddServerCep(SOCKET_TCP, Name(pLocalName), tLocalPort);
         tFoundTransport = true;
         mIsClosed = false;
     }
@@ -96,7 +97,7 @@ ChannelBinding::ChannelBinding(Scenario *pScenario, std::string pLocalName, Requ
     {
         if(!tFoundTransport)
         {
-            mCep = pScenario->AddServerCep(tUdpLite ? SOCKET_UDP_LITE : SOCKET_UDP, Name(pLocalName), tLocalPort);
+            mCep = mScenario->AddServerCep(tUdpLite ? SOCKET_UDP_LITE : SOCKET_UDP, Name(pLocalName), tLocalPort);
             tFoundTransport = true;
             mIsClosed = false;
         }else
@@ -161,6 +162,7 @@ void ChannelBinding::cancel()
 
         if (mConnection != NULL)
         {
+            mScenario->DeleteServerCep(mCep->GetLocalNode(), mCep->GetLocalPort());
             delete mConnection;
             mConnection = NULL;
         }else
