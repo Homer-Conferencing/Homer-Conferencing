@@ -27,6 +27,8 @@
 
 #include <GAPI.h>
 #include <Berkeley/SocketSetup.h>
+#include <Simulation/ChannelSetup.h>
+#include <NextGenNet/NGNSocketSetup.h>
 
 #include <Logger.h>
 
@@ -44,7 +46,9 @@ GapiService::GapiService()
 {
 	mSetupInterface = NULL;
 	mSetupInterfaceName = "";
-	registerImpl(new SocketSetup(), BERKEYLEY_SOCKETS);
+	registerImpl(new SocketSetup(),  BERKEYLEY_SOCKETS);
+	registerImpl(new NGNSocketSetup(), NGN_SOCKETS);
+	registerImpl(new ChannelSetup(), VIRTUAL_CHANNELS);
 }
 
 GapiService::~GapiService()
