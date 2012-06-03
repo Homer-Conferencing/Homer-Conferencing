@@ -52,6 +52,7 @@ using namespace std;
 ///////////////////////////////////////////////////////////////////////////////
 ChannelConnection::ChannelConnection(Scenario *pScenario, std::string pTarget, Requirements *pRequirements)
 {
+    mScenario = pScenario;
     if (pScenario == NULL)
         LOG(LOG_ERROR, "Scenario is invalid");
 
@@ -123,6 +124,7 @@ ChannelConnection::ChannelConnection(Scenario *pScenario, std::string pTarget, R
 
 ChannelConnection::ChannelConnection(Cep *pCep)
 {
+    mScenario = NULL;
     mIsClosed = false;
     mCep = pCep;
     mBlockingMode = true;
@@ -195,6 +197,8 @@ void ChannelConnection::cancel()
         LOG(LOG_VERBOSE, "Channel to %s will be canceled now", getName()->toString().c_str());
         if (mBlockingMode)
         {
+            if (mScenario != NULL)
+                mScenario->DeleteClientCep(mCep->GetLocalNode(), mCep->GetLocalPort());
             mCep->Close();
         }
     }

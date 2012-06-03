@@ -88,6 +88,11 @@ bool Cep::SetQoS(const QoSSettings &pQoSSettings)
     return true;
 }
 
+QoSSettings Cep::GetQoS()
+{
+    return mQoSSettings;
+}
+
 bool Cep::Close()
 {
     if (!mClosed)
@@ -120,6 +125,7 @@ bool Cep::Send(std::string pTargetNode, unsigned int pTargetPort, void *pBuffer,
     tPacket->QoSRequirements = mQoSSettings;
     tPacket->Data = pBuffer;
     tPacket->DataSize = pBufferSize;
+    tPacket->TTL = TTL_INIT;
 
     // send packet towards destination
     return mNode->HandlePacket(tPacket);
@@ -171,7 +177,18 @@ string Cep::GetPeerNode()
 
 bool Cep::HandlePacket(Packet *pPacket)
 {
-    LOG(LOG_VERBOSE, "Handling packet from %s at CEP@node %s(%s)", pPacket->Source.c_str(), mNode->GetName().c_str(), mNode->GetAddress().c_str());
+    #ifdef DEBUG_ROUTING
+        LOG(LOG_VERBOSE, "Handling packet from %s at CEP@node %s(%s)", pPacket->Source.c_str(), mNode->GetName().c_str(), mNode->GetAddress().c_str());
+    #endif
+
+    #ifdef DEBUG_ROUTING_RECORDS
+        LOG(LOG_INFO, "Received packet from %s", pPacket->Source.c_str());
+        list<string>::iterator tIt;
+        for (tIt = pPacket->RecordedRoute.begin(); tIt != pPacket->RecordedRoute.end(); tIt++)
+        {
+            LOG(LOG_INFO, "  via %s", (*tIt).c_str());
+        }
+    #endif
 
     mPacketQueue->WriteFifo((char*)pPacket->Data, pPacket->DataSize);
     mPeerNode = pPacket->Source;

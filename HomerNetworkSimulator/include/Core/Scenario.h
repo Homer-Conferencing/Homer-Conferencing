@@ -55,6 +55,16 @@ public:
 
     /* client CEP management */
     Cep* AddClientCep(enum TransportType pTransportType, Name pTargetNodeName, unsigned pTargetPort);
+    bool DeleteClientCep(Name pNodeName, unsigned int pPort);
+    CepList GetStreams(); // for GUI
+
+    /* list topology */
+    NodeList GetNodes(); // for GUI
+    LinkList GetLinks(); // for GUI
+    Coordinator* GetRootCoordinator();
+
+    /* routing */
+    void UpdateRouting();
 
     /* name management */
     //TODO
@@ -66,9 +76,9 @@ private:
     // complex topology structures
     Coordinator* AddDomain(std::string pDomainPrefix, int pNodeCount);
     // basic topology elements
-    Node* AddNode(std::string pName, std::string pAddressHint = "");
+    Node* AddNode(std::string pName, std::string pAddressHint = "", std::string pDomainPrefix = "");
     Link* AddLink(std::string pFromAddress, std::string pToAddress);
-    Coordinator* AddCoordinator(std::string pNodeAddress, std::string pClusterName, int pHierarchyLevel);
+    Coordinator* AddCoordinator(std::string pNodeAddress, int pHierarchyLevel);
 
     /* database management */
     Node* FindNode(std::string pNodeIdentifier);
@@ -77,10 +87,19 @@ private:
     bool registerName(string pName, string pAddress);
 
     Name        mName;
+
+    void        SetRootCoordinator(Coordinator *pCoordinator);
+    Coordinator *mRootCoordinator;
+
     NodeList    mNodes;
     Mutex       mNodesMutex;
+
     LinkList    mLinks;
     Mutex       mLinksMutex;
+
+    /* client CEPs */
+    CepList     mClientCeps;
+    Mutex       mClientCepsMutex;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -41,6 +41,12 @@
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
+// de/activate debugging of packet routing
+//#define DEBUG_NEIOGHBOR_DISCOVERY
+#define DEBUG_ROUTING
+#define DEBUG_ROUTING_RECORDS
+
+#define TTL_INIT                    16 // maximum of nodes a packet is allowed to pass
 #define CEP_QUEUE_SIZE              256
 #define CEP_QUEUE_ENTRY_SIZE        (MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE)
 ///////////////////////////////////////////////////////////////////////////////
@@ -58,6 +64,8 @@ struct Packet{
     QoSSettings     QoSRequirements;
     void            *Data;
     ssize_t         DataSize;
+    int             TTL;
+    std::list<std::string> RecordedRoute;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -75,6 +83,7 @@ public:
 
     /* QoS management */
     bool SetQoS(const QoSSettings &pQoSSettings);
+    QoSSettings GetQoS(); // for GUI
 
     /* transfer */
     bool Send(std::string pTargetNode, unsigned int pTargetPort, void *pBuffer, ssize_t pBufferSize);

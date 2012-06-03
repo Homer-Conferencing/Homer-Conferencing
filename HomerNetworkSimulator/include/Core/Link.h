@@ -52,13 +52,12 @@ public:
 
     bool HandlePacket(Packet *pPacket, Node* pLastNode);
 
-    //TODO: QoS parameter adaption
+    void SetQoSCapabilities(QoSSettings pCaps);
+    QoSSettings GetQoSCapabilities();
 
 private:
     Node            *mNodes[2];
-    unsigned int    mDataRatePhysical;
-    unsigned int    mDataRateAvailable;
-    unsigned int    mDelayPhysical;
+    QoSSettings     mQoSCapabilities;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

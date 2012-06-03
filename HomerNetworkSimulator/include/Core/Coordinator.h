@@ -39,23 +39,49 @@ namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define HIEARACHY_DEPTH                     4
+
+///////////////////////////////////////////////////////////////////////////////
+
+class Coordinator;
+typedef std::list<Coordinator*> CoordinatorList;
+
 class Node;
 
 class Coordinator
 {
 public:
-    Coordinator(Node *pNode, std::string pClusterName, int pHierarchyLevel);
+    Coordinator(Node *pNode, std::string pClusterAddress, int pHierarchyLevel);
     virtual ~Coordinator();
 
     void AddClusterMember(Node *pNode);
+    void AddChildCoordinator(Coordinator *pChild);
+
+    NodeList GetClusterMembers(); // for GUI
+    CoordinatorList GetChildCoordinators(); // for GUI
+
+    std::string GetClusterAddress();
+
+    /* RIB management */
+    bool DistributeRibEntry(std::string pDestination, std::string pNextCluster, int pHopCount = 1, QoSSettings *pQoSSettings = NULL);
+    void UpdateRouting();
+    RibTable GetNeighbors();
 
 private:
+    bool IsForeignAddress(std::string pAddress);
+
+    void            SetSuperior(Coordinator *pSuperior);
+    Coordinator     *mSuperior;
+
     int             mHierarchyLevel;
-    std::string     mClusterName;
+    std::string     mClusterAddress;
     Node            *mNode;
 
     NodeList        mClusterMembers;
     Mutex           mClusterMembersMutex;
+
+    CoordinatorList mChildCoordinators;
+    Mutex           mChildCoordinatorsMutex;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -59,6 +59,20 @@ Scenario* Scenario::CreateScenario(int pIndex)
 {
     Scenario *tScenario = NULL;
 
+    // some tests
+//    Node::GetDomain("1.2.3.4.5", 0);
+//    Node::GetDomain("1.2.3.4.5", 1);
+//    Node::GetDomain("1.2.3.4.5", 2);
+//    Node::GetDomain("1.2.3.4.5", 3);
+//    Node::GetDomain("1.2.3.4.5", 4);
+//
+//    Node::IsDomain("1.2.3.0");
+//    Node::IsDomain("1.2.3.1");
+//
+//    Node::IsAddressOfDomain("12.3.4", "12.3.4");
+//    Node::IsAddressOfDomain("12.3.4.8", "12.3.4");
+//    Node::IsAddressOfDomain("12.3.4", "12.3.4.0.0.0");
+
     tScenario = new Scenario();
 
     // ### domains ###
@@ -66,14 +80,29 @@ Scenario* Scenario::CreateScenario(int pIndex)
     Coordinator *tCoord0_1_1_2 = tScenario->AddDomain("1.1.2", 3);
     Coordinator *tCoord0_1_1_3 = tScenario->AddDomain("1.1.3", 3);
 
+    Coordinator *tCoord1_1_1 = tScenario->AddCoordinator("1.1.1.1", 1);
+    tCoord1_1_1->AddChildCoordinator(tCoord0_1_1_1);
+    tCoord1_1_1->AddChildCoordinator(tCoord0_1_1_2);
+    tCoord1_1_1->AddChildCoordinator(tCoord0_1_1_3);
+
+
     Coordinator *tCoord0_1_2_1 = tScenario->AddDomain("1.2.1", 3);
     Coordinator *tCoord0_1_2_2 = tScenario->AddDomain("1.2.2", 3);
     Coordinator *tCoord0_1_2_3 = tScenario->AddDomain("1.2.3", 3);
 
+    Coordinator *tCoord1_1_2 = tScenario->AddCoordinator("1.2.3.1", 1);
+    tCoord1_1_2->AddChildCoordinator(tCoord0_1_2_1);
+    tCoord1_1_2->AddChildCoordinator(tCoord0_1_2_2);
+    tCoord1_1_2->AddChildCoordinator(tCoord0_1_2_3);
+
+    Coordinator *tCoord2_1 = tScenario->AddCoordinator("1.2.3.1", 2);
+    tCoord2_1->AddChildCoordinator(tCoord1_1_1);
+    tCoord2_1->AddChildCoordinator(tCoord1_1_2);
+
     // ### inter-domain links ###
     tScenario->AddLink("1.1.1.2", "1.1.2.1");
     tScenario->AddLink("1.1.2.3", "1.1.3.2");
-    tScenario->AddLink("1.1.1.3", "1.1.3.1");
+//    tScenario->AddLink("1.1.1.3", "1.1.3.1");
 
     tScenario->AddLink("1.2.1.2", "1.2.2.1");
     tScenario->AddLink("1.2.2.3", "1.2.3.2");
@@ -83,10 +112,25 @@ Scenario* Scenario::CreateScenario(int pIndex)
     tScenario->AddLink("1.1.3.3", "1.2.3.3");
 
     // ### DNS entries ###
-    tScenario->registerName("Source", "1.1.1.3");
-    tScenario->registerName("Destination", "1.1.1.2");//TODO: "1.2.2.2");
+    tScenario->registerName("Source", "1.1.1.1");
+    tScenario->registerName("Destination", "1.2.1.2");
+    tScenario->registerName("Destination1", "1.2.2.2");
+    tScenario->registerName("Destination2", "1.2.3.2");
+
+    tScenario->SetRootCoordinator(tCoord2_1);
+
+    // ### routing update ###
+    tScenario->UpdateRouting();
+    tScenario->UpdateRouting();
+    tScenario->UpdateRouting();
 
     return tScenario;
+}
+
+void Scenario::UpdateRouting()
+{
+    if (mRootCoordinator != NULL)
+        mRootCoordinator->UpdateRouting();
 }
 
 Cep* Scenario::AddServerCep(enum TransportType pTransportType, Name pNodeName, unsigned pPort)
@@ -128,7 +172,76 @@ Cep* Scenario::AddClientCep(enum TransportType pTransportType, Name pTargetNodeN
     }
 
     // create CEP
-    return tNode->AddClient(pTransportType, pTargetNodeName.toString(), pTargetPort);
+    Cep* tCep = tNode->AddClient(pTransportType, pTargetNodeName.toString(), pTargetPort);
+
+    mClientCepsMutex.lock();
+    mClientCeps.push_back(tCep);
+    mClientCepsMutex.unlock();
+
+    return tCep;
+}
+
+bool Scenario::DeleteClientCep(Name pNodeName, unsigned int pPort)
+{
+    bool tResult = false;
+
+    mClientCepsMutex.lock();
+    if (mClientCeps.size() > 0)
+    {
+        CepList::iterator tIt;
+        for (tIt = mClientCeps.begin(); tIt != mClientCeps.end(); tIt)
+        {
+            //LOG(LOG_VERBOSE, "Comparing CEP with local port %u and desired port %u", (*tIt)->GetLocalPort(), pPort);
+            if (((*tIt)->GetLocalPort() == pPort) && ((*tIt)->GetLocalNode() == pNodeName.toString()))
+            {
+                LOG(LOG_VERBOSE, "Deleting client at %s:%u", pNodeName.toString().c_str(), pPort);
+                mClientCeps.erase(tIt);
+                tResult = true;
+                break;
+            }
+        }
+    }
+    mClientCepsMutex.unlock();
+
+    return tResult;
+}
+
+CepList Scenario::GetStreams()
+{
+    CepList tResult;
+
+    mClientCepsMutex.lock();
+    tResult = mClientCeps;
+    mClientCepsMutex.unlock();
+
+    return tResult;
+}
+
+NodeList Scenario::GetNodes()
+{
+    NodeList tResult;
+
+    mNodesMutex.lock();
+    tResult = mNodes;
+    mNodesMutex.unlock();
+
+    return tResult;
+}
+
+LinkList Scenario::GetLinks()
+{
+    LinkList tResult;
+
+    mLinksMutex.lock();
+    tResult = mLinks;
+    mLinksMutex.unlock();
+
+    return tResult;
+}
+
+Coordinator* Scenario::GetRootCoordinator()
+{
+    return mRootCoordinator;
 }
 
 Coordinator* Scenario::AddDomain(std::string pDomainPrefix, int pNodeCount)
@@ -140,7 +253,7 @@ Coordinator* Scenario::AddDomain(std::string pDomainPrefix, int pNodeCount)
     for(int i = 1; i < pNodeCount + 1; i++)
     {
         string tCurAddr = pDomainPrefix + '.' + toString(i);
-        tNode = AddNode("", tCurAddr);
+        tNode = AddNode("", tCurAddr, pDomainPrefix);
         if (tNode == NULL)
         {
             LOG(LOG_ERROR, "Failed to create node");
@@ -163,7 +276,7 @@ Coordinator* Scenario::AddDomain(std::string pDomainPrefix, int pNodeCount)
     }
 
     // create coordinator for this domain
-    Coordinator *tCoordinator = AddCoordinator(pDomainPrefix + ".1", pDomainPrefix, 0);
+    Coordinator *tCoordinator = AddCoordinator(pDomainPrefix + ".1", 0);
     if (tCoordinator == NULL)
     {
         LOG(LOG_ERROR, "Failed to create coordinator");
@@ -180,14 +293,14 @@ Coordinator* Scenario::AddDomain(std::string pDomainPrefix, int pNodeCount)
     return tCoordinator;
 }
 
-Node* Scenario::AddNode(string pName, std::string pAddressHint)
+Node* Scenario::AddNode(string pName, std::string pAddressHint, std::string pDomainPrefix)
 {
     // do we already know this address?
     if (FindNode(pAddressHint) != NULL)
         return NULL;
 
     mNodesMutex.lock();
-    Node *tNode = new Node(pName, pAddressHint);
+    Node *tNode = new Node(pName, pAddressHint, pDomainPrefix);
     mNodes.push_back(tNode);
     mNodesMutex.unlock();
 
@@ -219,13 +332,13 @@ Link* Scenario::AddLink(std::string pFromAddress, std::string pToAddress)
     return tLink;
 }
 
-Coordinator* Scenario::AddCoordinator(string pNodeAddress, string pClusterName, int pHierarchyLevel)
+Coordinator* Scenario::AddCoordinator(string pNodeAddress, int pHierarchyLevel)
 {
     Coordinator *tResult = NULL;
     Node *tNode = FindNode(pNodeAddress);
     if (tNode != NULL)
     {
-        tResult = tNode->SetAsCoordinator(pClusterName, pHierarchyLevel);
+        tResult = tNode->SetAsCoordinator(pHierarchyLevel);
     }else
         LOG(LOG_ERROR, "Cannot create a coordinator instance on node %s", pNodeAddress.c_str());
 
@@ -269,6 +382,12 @@ bool Scenario::registerName(string pName, string pAddress)
         tNode->SetName(pName);
 
     return tResult;
+}
+
+void Scenario::SetRootCoordinator(Coordinator *pCoordinator)
+{
+    LOG(LOG_VERBOSE, "Setting coordinator %s as root", pCoordinator->GetClusterAddress().c_str());
+    mRootCoordinator = pCoordinator;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

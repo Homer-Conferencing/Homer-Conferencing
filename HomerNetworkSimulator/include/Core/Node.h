@@ -57,8 +57,10 @@ struct FibEntry{
 };
 
 struct RibEntry{
-    string Destination;
-    string NextNode;
+    string      Destination;
+    string      NextNode;
+    int         HopCount;
+    QoSSettings QoSCapabilities;
 };
 
 typedef std::list<FibEntry*> FibTable;
@@ -67,17 +69,26 @@ typedef std::list<RibEntry*> RibTable;
 class Node
 {
 public:
-    Node(std::string pName, std::string pAddressHint = "");
+    Node(std::string pName, std::string pAddressHint = "", std::string pDomainPrefix = "");
     virtual ~Node();
 
     /* FIB management */
     bool AddFibEntry(Link *pLink, Node *pNextNode);
+    FibTable GetFib(); // for GUI
 
     /* RIB management */
-    bool AddRibEntry(std::string pDestination, std::string pNextNode);
+    bool AddRibEntry(std::string pDestination, std::string pNextNode, int pHopCount = 1, QoSSettings *pQoSSettings = NULL);
+    RibTable GetRib(); // for GUI
+    void UpdateRouting(); // reset RIB to physical RIB and update QoS capabilities
+    bool IsGateway(); // for GUI
+    // physical RIB: the topology data which is collected based on physical link data
+    bool IsNeighbor(std::string pAddress);
+    RibTable GetNeighbors();
 
     /* coordinator handling */
-    Coordinator* SetAsCoordinator(std::string pClusterName, int pHierarchyLevel);
+    Coordinator* SetAsCoordinator(int pHierarchyLevel);
+    void SetCoordinator(Coordinator *pCoordinator);
+    std::string GetDomain();
 
     /* CEP management */
     Cep* AddServer(enum TransportType pTransportType, unsigned int pPort);
@@ -93,11 +104,23 @@ public:
 
     bool HandlePacket(Packet *pPacket);
 
+    /* helper */
+    static bool IsAddressOfDomain(const std::string pAddress, const std::string pDomain);
+    static std::string GetDomain(const std::string pAddress, int pHierarchyDepth);
+    static bool IsDomain(const std::string pAddress);
+
 private:
+    // physical RIB: the topology data which is collected based on physical link data
+    bool AddTopologyEntry(std::string pDestination, std::string pNextNode, QoSSettings *pQoSSettings = NULL);
+    friend class Link; // allow setting of topology data
+
     /* RIB lookup */
     std::string GetNextHop(std::string pDestination, const QoSSettings pQoSRequirements);
     RibTable    mRibTable;
     Mutex       mRibTableMutex;
+    RibTable    mTopologyTable;
+    Mutex       mTopologyTableMutex;
+    bool        mIsGateway;
 
     /* FIB lookup */
     Link*       GetNextLink(std::string pNextNodeAdr);
@@ -105,6 +128,7 @@ private:
     Mutex       mFibTableMutex;
 
     /* coordinators */
+    Coordinator *mCoordinator; // assigned coordinator of hierarchy level 0
     Coordinator *mCoordinators[MAX_HIERARCHY_DEPTH];
     Mutex       mCoordinatorsMutex;
 
@@ -116,6 +140,7 @@ private:
     /* addressing, naming */
     std::string mAddress;
     std::string mName;
+    std::string mDomain;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
