@@ -40,15 +40,19 @@ using namespace std;
 
 Link::Link(Node *pNodeOne, Node *pNodeTwo)
 {
-
     LOG(LOG_INFO, "Created link from %s to %s", pNodeOne->GetAddress().c_str(), pNodeTwo->GetAddress().c_str());
 
     mNodes[0] = pNodeOne;
     mNodes[1] = pNodeTwo;
+    mQoSCapabilities.DataRate = 0;
+    mQoSCapabilities.Delay = 0;
+    mQoSCapabilities.Features = 0;
+
+    // simulate hello protocol
     mNodes[0]->AddFibEntry(this, mNodes[1]);
-    mNodes[0]->AddRibEntry(mNodes[1]->GetAddress(), mNodes[1]->GetAddress());
+    mNodes[0]->AddTopologyEntry(mNodes[1]->GetAddress(), mNodes[1]->GetAddress());
     mNodes[1]->AddFibEntry(this, mNodes[0]);
-    mNodes[1]->AddRibEntry(mNodes[0]->GetAddress(), mNodes[0]->GetAddress());
+    mNodes[1]->AddTopologyEntry(mNodes[0]->GetAddress(), mNodes[0]->GetAddress());
 }
 
 Link::~Link()
@@ -60,17 +64,33 @@ Link::~Link()
 
 bool Link::HandlePacket(Packet *pPacket, Node* pLastNode)
 {
-    LOG(LOG_VERBOSE, "Handling packet from %s at link between %s and %s", pPacket->Source.c_str(), mNodes[0]->GetAddress().c_str(), mNodes[1]->GetAddress().c_str());
+    #ifdef DEBUG_ROUTING
+        LOG(LOG_VERBOSE, "Handling packet from %s at link between %s and %s", pPacket->Source.c_str(), mNodes[0]->GetAddress().c_str(), mNodes[1]->GetAddress().c_str());
+    #endif
 
     // check from which interface the packet was received and forward it to the other one
     if (pLastNode->GetAddress() == mNodes[0]->GetAddress())
+    {
+        pPacket->RecordedRoute.push_back("link " + mNodes[0]->GetAddress() + "/" + mNodes[1]->GetAddress());
         return mNodes[1]->HandlePacket(pPacket);
-    else if (pLastNode->GetAddress() == mNodes[1]->GetAddress())
+    }else if (pLastNode->GetAddress() == mNodes[1]->GetAddress())
+    {
+        pPacket->RecordedRoute.push_back("link " + mNodes[1]->GetAddress() + "/" + mNodes[0]->GetAddress());
         return mNodes[0]->HandlePacket(pPacket);
-    else{ // last node was none of the linked nodes! -> invalid behavior
+    }else{ // last node was none of the linked nodes! -> invalid behavior
         LOG(LOG_ERROR, "Forwarding failure on link between %s and %s, this should never happen but it did!", mNodes[0]->GetName().c_str(), mNodes[1]->GetName().c_str());
         return false;
     }
+}
+
+void Link::SetQoSCapabilities(QoSSettings pCaps)
+{
+    mQoSCapabilities = pCaps;
+}
+
+QoSSettings Link::GetQoSCapabilities()
+{
+    return mQoSCapabilities;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
