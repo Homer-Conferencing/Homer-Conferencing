@@ -85,13 +85,6 @@ void OverviewContactsWidget::initializeGUI()
 {
     setupUi(this);
 
-    QPalette palette;
-    QBrush brush(QColor(0, 255, 255, 255));
-    QBrush brush1(QColor(0, 128, 128, 255));
-    QBrush brush2(QColor(155, 220, 198, 255));
-    QBrush brush3(QColor(98, 99, 98, 255));
-    QBrush brush4(QColor(100, 102, 100, 255));
-
     mTvContacts->header()->resizeSection(0, 25);
     mTvContacts->header()->resizeSection(1, 150);
     mTvContacts->sortByColumn(1);

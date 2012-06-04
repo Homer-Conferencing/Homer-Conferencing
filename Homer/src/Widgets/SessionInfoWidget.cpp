@@ -164,10 +164,6 @@ void SessionInfoWidget::SetSipInterface(QString pSipInterface)
 void SessionInfoWidget::initializeGUI()
 {
     setupUi(this);
-
-    QPalette palette;
-    QBrush brush(QColor(250, 250, 255, 255));
-    QBrush brush1(QColor(145, 191, 155, 255));
 }
 
 

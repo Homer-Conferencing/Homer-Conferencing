@@ -134,15 +134,6 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
 {
     setupUi(this);
 
-    QPalette tPalette;
-    QBrush brush(QColor(0, 255, 255, 255));
-    QBrush tBrush1(QColor(0, 128, 128, 255));
-    QBrush brush2(QColor(155, 220, 198, 255));
-    QBrush brush3(QColor(98, 99, 98, 255));
-    QBrush brush4(QColor(100, 102, 100, 255));
-    QBrush tBrush5(QColor(250, 250, 255, 255));
-    QBrush tBrush6(QColor(145, 191, 155, 255));
-
     QFont font;
     font.setPointSize(8);
     font.setBold(true);
