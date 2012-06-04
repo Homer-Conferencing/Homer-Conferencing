@@ -69,7 +69,7 @@ typedef std::list<RibEntry*> RibTable;
 class Node
 {
 public:
-    Node(std::string pName, std::string pAddressHint = "", std::string pDomainPrefix = "");
+    Node(std::string pName, std::string pAddressHint = "", std::string pDomainPrefix = "", int pPosXHint = 0, int pPosYHint = 0);
     virtual ~Node();
 
     /* FIB management */
@@ -84,6 +84,10 @@ public:
     // physical RIB: the topology data which is collected based on physical link data
     bool IsNeighbor(std::string pAddress);
     RibTable GetNeighbors();
+
+    /* position hint for GUI */
+    int GetPosXHint();
+    int GetPosYHint();
 
     /* hierarchy */
     NodeList GetSiblings(); // for GUI
@@ -144,6 +148,10 @@ private:
     std::string mAddress;
     std::string mName;
     std::string mDomain;
+
+    /* pos. in GUI */
+    int         mPosXHint;
+    int         mPosYHint;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

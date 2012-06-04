@@ -93,6 +93,16 @@ QoSSettings Link::GetQoSCapabilities()
     return mQoSCapabilities;
 }
 
+Node* Link::GetNode0()
+{
+    return mNodes[0];
+}
+
+Node* Link::GetNode1()
+{
+    return mNodes[1];
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 }} //namespace

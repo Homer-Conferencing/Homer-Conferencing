@@ -55,6 +55,8 @@ public:
     void SetQoSCapabilities(QoSSettings pCaps);
     QoSSettings GetQoSCapabilities();
 
+    Node* GetNode0();
+    Node* GetNode1();
 private:
     Node            *mNodes[2];
     QoSSettings     mQoSCapabilities;

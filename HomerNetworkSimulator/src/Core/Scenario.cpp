@@ -41,6 +41,9 @@ using namespace std;
 
 #define SIMULATION_SOURCE_NODE              "Source"
 
+#define NODE_SHAPE_WIDTH                    40
+#define NODE_SHAPE_HEIGHT                   40
+
 ///////////////////////////////////////////////////////////////////////////////
 
 Scenario::Scenario()
@@ -76,9 +79,9 @@ Scenario* Scenario::CreateScenario(int pIndex)
     tScenario = new Scenario();
 
     // ### domains ###
-    Coordinator *tCoord0_1_1_1 = tScenario->AddDomain("1.1.1", 3);
-    Coordinator *tCoord0_1_1_2 = tScenario->AddDomain("1.1.2", 3);
-    Coordinator *tCoord0_1_1_3 = tScenario->AddDomain("1.1.3", 3);
+    Coordinator *tCoord0_1_1_1 = tScenario->AddDomain3("1.1.1", (-3) * NODE_SHAPE_WIDTH + (-8) * NODE_SHAPE_WIDTH, (-3) * NODE_SHAPE_HEIGHT);
+    Coordinator *tCoord0_1_1_2 = tScenario->AddDomain3("1.1.2", (+3) * NODE_SHAPE_WIDTH + (-8) * NODE_SHAPE_WIDTH, (-3) * NODE_SHAPE_HEIGHT);
+    Coordinator *tCoord0_1_1_3 = tScenario->AddDomain3("1.1.3", (0) * NODE_SHAPE_WIDTH + (-8) * NODE_SHAPE_WIDTH, (+3) * NODE_SHAPE_HEIGHT);
 
     Coordinator *tCoord1_1_1 = tScenario->AddCoordinator("1.1.1.1", 1);
     tCoord1_1_1->AddChildCoordinator(tCoord0_1_1_1);
@@ -86,9 +89,9 @@ Scenario* Scenario::CreateScenario(int pIndex)
     tCoord1_1_1->AddChildCoordinator(tCoord0_1_1_3);
 
 
-    Coordinator *tCoord0_1_2_1 = tScenario->AddDomain("1.2.1", 3);
-    Coordinator *tCoord0_1_2_2 = tScenario->AddDomain("1.2.2", 3);
-    Coordinator *tCoord0_1_2_3 = tScenario->AddDomain("1.2.3", 3);
+    Coordinator *tCoord0_1_2_1 = tScenario->AddDomain3("1.2.1", (-3) * NODE_SHAPE_WIDTH + (8) * NODE_SHAPE_WIDTH, (-3) * NODE_SHAPE_HEIGHT);
+    Coordinator *tCoord0_1_2_2 = tScenario->AddDomain3("1.2.2", (+3) * NODE_SHAPE_WIDTH + (8) * NODE_SHAPE_WIDTH, (-3) * NODE_SHAPE_HEIGHT);
+    Coordinator *tCoord0_1_2_3 = tScenario->AddDomain3("1.2.3", (0) * NODE_SHAPE_WIDTH + (8) * NODE_SHAPE_WIDTH, (+3) * NODE_SHAPE_HEIGHT);
 
     Coordinator *tCoord1_1_2 = tScenario->AddCoordinator("1.2.3.1", 1);
     tCoord1_1_2->AddChildCoordinator(tCoord0_1_2_1);
@@ -256,7 +259,7 @@ Coordinator* Scenario::GetRootCoordinator()
     return mRootCoordinator;
 }
 
-Coordinator* Scenario::AddDomain(std::string pDomainPrefix, int pNodeCount)
+Coordinator* Scenario::AddDomain(std::string pDomainPrefix, int pNodeCount, int pPosXHint, int pPosYHint)
 {
     NodeList tNodes;
     Node *tNode;
@@ -305,14 +308,77 @@ Coordinator* Scenario::AddDomain(std::string pDomainPrefix, int pNodeCount)
     return tCoordinator;
 }
 
-Node* Scenario::AddNode(string pName, std::string pAddressHint, std::string pDomainPrefix)
+Coordinator* Scenario::AddDomain3(std::string pDomainPrefix, int pPosXHint, int pPosYHint)
+{
+    NodeList tNodes;
+    Node *tNode;
+
+    // create all nodes
+    for(int i = 1; i < 3 + 1; i++)
+    {
+        string tCurAddr = pDomainPrefix + '.' + toString(i);
+        switch(i)
+        {
+            case 1:
+                tNode = AddNode("", tCurAddr, pDomainPrefix, pPosXHint + (NODE_SHAPE_WIDTH * (-1)), pPosYHint + (NODE_SHAPE_HEIGHT * (-1)));
+                break;
+            case 2:
+                tNode = AddNode("", tCurAddr, pDomainPrefix, pPosXHint + (NODE_SHAPE_WIDTH * (+1)), pPosYHint + (NODE_SHAPE_HEIGHT * (-1)));
+                break;
+            case 3:
+                tNode = AddNode("", tCurAddr, pDomainPrefix, pPosXHint + (NODE_SHAPE_WIDTH * (0)), pPosYHint + (NODE_SHAPE_HEIGHT * (+1)));
+                break;
+            default:
+                tNode = AddNode("", tCurAddr, pDomainPrefix);
+                break;
+        }
+        if (tNode == NULL)
+        {
+            LOG(LOG_ERROR, "Failed to create node");
+            return NULL;
+        }
+        tNodes.push_back(tNode);
+    }
+
+    // create a full meshed network within domain: we do not
+    for (int i = 1; i < 3; i++)
+    {
+        for (int j = i + 1; j < 3 + 1; j++)
+        {
+            if (!AddLink(pDomainPrefix + '.' + toString(i), pDomainPrefix + '.' + toString(j)))
+            {
+                LOG(LOG_ERROR, "Failed to create link");
+                return NULL;
+            }
+        }
+    }
+
+    // create coordinator for this domain
+    Coordinator *tCoordinator = AddCoordinator(pDomainPrefix + ".1", 0);
+    if (tCoordinator == NULL)
+    {
+        LOG(LOG_ERROR, "Failed to create coordinator");
+        return NULL;
+    }
+
+    // inform coordinator about nodes
+    NodeList::iterator tIt;
+    for(tIt = tNodes.begin(); tIt != tNodes.end(); tIt++)
+    {
+        tCoordinator->AddClusterMember(*tIt);
+    }
+
+    return tCoordinator;
+}
+
+Node* Scenario::AddNode(string pName, std::string pAddressHint, std::string pDomainPrefix, int pPosXHint, int pPosYHint)
 {
     // do we already know this address?
     if (FindNode(pAddressHint) != NULL)
         return NULL;
 
     mNodesMutex.lock();
-    Node *tNode = new Node(pName, pAddressHint, pDomainPrefix);
+    Node *tNode = new Node(pName, pAddressHint, pDomainPrefix, pPosXHint, pPosYHint);
     mNodes.push_back(tNode);
     mNodesMutex.unlock();
 
