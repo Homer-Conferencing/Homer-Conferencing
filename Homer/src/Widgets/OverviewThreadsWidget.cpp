@@ -98,13 +98,6 @@ void OverviewThreadsWidget::initializeGUI()
     mTwThreads->horizontalHeader()->resizeSection(7, mTwThreads->horizontalHeader()->sectionSize(7) * 2);
     mTwThreads->horizontalHeader()->resizeSection(8, mTwThreads->horizontalHeader()->sectionSize(8) * 2);
 
-    QPalette palette;
-    QBrush brush(QColor(0, 255, 255, 255));
-    QBrush brush1(QColor(0, 128, 128, 255));
-    QBrush brush2(QColor(155, 220, 198, 255));
-    QBrush brush3(QColor(98, 99, 98, 255));
-    QBrush brush4(QColor(100, 102, 100, 255));
-
     UpdateView();
 }
 

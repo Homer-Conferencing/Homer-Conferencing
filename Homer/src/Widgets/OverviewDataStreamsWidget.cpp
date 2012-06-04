@@ -111,13 +111,6 @@ void OverviewDataStreamsWidget::initializeGUI()
     mTwVideo->horizontalHeader()->resizeSection(10, mTwVideo->horizontalHeader()->sectionSize(9) * 2);
     mTwVideo->horizontalHeader()->resizeSection(11, mTwVideo->horizontalHeader()->sectionSize(10) * 2);
 
-    QPalette palette;
-    QBrush brush1(QColor(0, 128, 128, 255));
-    QBrush brush2(QColor(155, 220, 198, 255));
-    QBrush brush3(QColor(98, 99, 98, 255));
-    QBrush brush4(QColor(100, 102, 100, 255));
-    QBrush brush(QColor(0, 255, 255, 255));
-
     UpdateView();
 }
 
