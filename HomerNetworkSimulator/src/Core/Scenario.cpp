@@ -206,12 +206,24 @@ bool Scenario::DeleteClientCep(Name pNodeName, unsigned int pPort)
     return tResult;
 }
 
-CepList Scenario::GetStreams()
+StreamList Scenario::GetStreams()
 {
-    CepList tResult;
+    StreamList tResult;
+    tResult.clear();
 
     mClientCepsMutex.lock();
-    tResult = mClientCeps;
+    CepList::iterator tIt;
+    StreamDescriptor tEntry;
+    for(tIt = mClientCeps.begin(); tIt != mClientCeps.end(); tIt++)
+    {
+        tEntry.PacketCount = (*tIt)->GetPacketCount();
+        tEntry.QoSRequs = (*tIt)->GetQoS();
+        tEntry.LocalNode = (*tIt)->GetLocalNode();
+        tEntry.LocalPort = (*tIt)->GetLocalPort();
+        tEntry.PeerNode = (*tIt)->GetPeerNode();
+        tEntry.PeerPort = (*tIt)->GetPeerPort();
+        tResult.push_back(tEntry);
+    }
     mClientCepsMutex.unlock();
 
     return tResult;

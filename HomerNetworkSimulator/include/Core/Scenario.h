@@ -41,6 +41,14 @@ namespace Homer { namespace Base {
 class Link;
 typedef std::list<Link*> LinkList;
 
+struct StreamDescriptor{
+    int         PacketCount;
+    QoSSettings QoSRequs;
+    std::string LocalNode, PeerNode;
+    int         LocalPort, PeerPort;
+};
+typedef std::list<struct StreamDescriptor> StreamList;
+
 ///////////////////////////////////////////////////////////////////////////////
 
 class Scenario
@@ -56,7 +64,7 @@ public:
     /* client CEP management */
     Cep* AddClientCep(enum TransportType pTransportType, Name pTargetNodeName, unsigned pTargetPort);
     bool DeleteClientCep(Name pNodeName, unsigned int pPort);
-    CepList GetStreams(); // for GUI
+    StreamList GetStreams(); // for GUI
 
     /* list topology */
     NodeList GetNodes(); // for GUI

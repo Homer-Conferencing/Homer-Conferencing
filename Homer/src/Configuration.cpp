@@ -167,6 +167,13 @@ void Configuration::SetVisibilityThreadsWidget(bool pActive)
     mQSettings->endGroup();
 }
 
+void Configuration::SetVisibilityNetworkSimulationWidget(bool pActive)
+{
+    mQSettings->beginGroup("Global");
+    mQSettings->setValue("VisibilityNetworkSimulationWidget", pActive);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetVisibilityNetworkStreamsWidget(bool pActive)
 {
     mQSettings->beginGroup("Global");
@@ -729,6 +736,11 @@ bool Configuration::GetVisibilityPlaylistWidgetMovie()
 bool Configuration::GetVisibilityThreadsWidget()
 {
     return mQSettings->value("Global/VisibilityThreadsWidget", false).toBool();
+}
+
+bool Configuration::GetVisibilityNetworkSimulationWidget()
+{
+    return mQSettings->value("Global/VisibilityNetworkSimulationWidget", false).toBool();
 }
 
 bool Configuration::GetVisibilityNetworkStreamsWidget()

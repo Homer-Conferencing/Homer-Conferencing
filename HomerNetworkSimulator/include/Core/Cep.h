@@ -43,6 +43,7 @@ namespace Homer { namespace Base {
 ///////////////////////////////////////////////////////////////////////////////
 // de/activate debugging of packet routing
 //#define DEBUG_NEIOGHBOR_DISCOVERY
+//#define DEBUG_FORWARDING
 #define DEBUG_ROUTING
 #define DEBUG_ROUTING_RECORDS
 
@@ -94,10 +95,12 @@ public:
     std::string GetLocalNode();
     unsigned int GetPeerPort();
     std::string GetPeerNode();
+    long GetPacketCount();
 
     bool HandlePacket(Packet *pPacket);
 
 private:
+    long                mPacketCount;
     bool                mClosed;
     unsigned int        mLocalPort;
     Node                *mNode;

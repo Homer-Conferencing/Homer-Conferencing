@@ -85,6 +85,9 @@ public:
     bool IsNeighbor(std::string pAddress);
     RibTable GetNeighbors();
 
+    /* hierarchy */
+    NodeList GetSiblings(); // for GUI
+
     /* coordinator handling */
     Coordinator* SetAsCoordinator(int pHierarchyLevel);
     void SetCoordinator(Coordinator *pCoordinator);
