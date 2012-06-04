@@ -40,7 +40,7 @@ using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-Node::Node(string pName, string pAddressHint, string pDomainPrefix)
+Node::Node(string pName, string pAddressHint, string pDomainPrefix, int pPosXHint, int pPosYHint)
 {
     LOG(LOG_INFO, "Created node %s(address %s)", pName.c_str(), pAddressHint.c_str());
     for (int i = 0; i < MAX_HIERARCHY_DEPTH; i++)
@@ -48,6 +48,8 @@ Node::Node(string pName, string pAddressHint, string pDomainPrefix)
     mName = pName;
     mAddress = pAddressHint; //TODO: SO address management
     mDomain = pDomainPrefix;
+    mPosXHint = pPosXHint;
+    mPosYHint = pPosYHint;
     mIsGateway = false;
 
     if ((pName != "") && (pAddressHint != ""))
@@ -607,6 +609,16 @@ Link* Node::GetNextLink(string pNextNodeAdr)
     mFibTableMutex.unlock();
 
     return tResult;
+}
+
+int Node::GetPosXHint()
+{
+    return mPosXHint;
+}
+
+int Node::GetPosYHint()
+{
+    return mPosYHint;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

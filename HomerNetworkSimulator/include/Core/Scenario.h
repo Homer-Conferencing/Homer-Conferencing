@@ -82,9 +82,10 @@ private:
 
     /* topology management */
     // complex topology structures
-    Coordinator* AddDomain(std::string pDomainPrefix, int pNodeCount);
+    Coordinator* AddDomain(std::string pDomainPrefix, int pNodeCount, int pPosXHint = 0, int pPosYHint = 0);
+    Coordinator* AddDomain3(std::string pDomainPrefix, int pPosXHint = 0, int pPosYHint = 0);
     // basic topology elements
-    Node* AddNode(std::string pName, std::string pAddressHint = "", std::string pDomainPrefix = "");
+    Node* AddNode(std::string pName, std::string pAddressHint = "", std::string pDomainPrefix = "", int pPosXHint = 0, int pPosYHint = 0);
     Link* AddLink(std::string pFromAddress, std::string pToAddress);
     Coordinator* AddCoordinator(std::string pNodeAddress, int pHierarchyLevel);
 

@@ -34,8 +34,13 @@
 #include <Configuration.h>
 #include <Logger.h>
 
+#include <QGraphicsPixmapItem>
+#include <QGraphicsLineItem>
+#include <QGraphicsItem>
+#include <QGraphicsScene>
 #include <QStandardItemModel>
 #include <QStandardItem>
+#include <QTableWidgetItem>
 #include <QStyledItemDelegate>
 #include <QDockWidget>
 #include <QModelIndex>
@@ -88,6 +93,132 @@ private:
     QString                 mText;
 };
 
+#define GUI_NODE_TYPE   (QGraphicsItem::UserType + 1)
+class GuiNode:
+    public QGraphicsPixmapItem
+{
+public:
+    GuiNode(Node* pNode, QWidget* pParent):QGraphicsPixmapItem(QPixmap(":/images/46_46/Hardware.png"), NULL), mNode(pNode), mParent(pParent)
+    {
+        setFlag(QGraphicsItem::ItemIsMovable, true);
+        setFlag(QGraphicsItem::ItemIsSelectable, true);
+        setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
+    }
+    ~GuiNode()
+    {
+
+    }
+
+    virtual int type() const
+    {
+        return GUI_NODE_TYPE;
+    }
+
+    Node* GetNode()
+    {
+        return mNode;
+    }
+private:
+    Node        *mNode;
+    QWidget*    mParent;
+};
+
+#define GUI_LINK_TYPE   (QGraphicsItem::UserType + 2)
+class GuiLink:
+    public QGraphicsLineItem
+{
+public:
+    GuiLink(GuiNode* pGuiNode0, GuiNode* pGuiNode1, QWidget* pParent):QGraphicsLineItem(), mGuiNode0(pGuiNode0), mGuiNode1(pGuiNode1), mParent(pParent)
+    {
+        setFlag(QGraphicsItem::ItemIsSelectable, true);
+        setPen(QPen(Qt::black, 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        setZValue(-1000.0);
+    }
+    ~GuiLink()
+    {
+
+    }
+
+    virtual int type() const
+    {
+        return GUI_LINK_TYPE;
+    }
+
+    void paint(QPainter *pPainter, const QStyleOptionGraphicsItem *, QWidget *)
+    {
+        if (mGuiNode0->collidesWithItem(mGuiNode1))
+            return;
+
+//        QPen myPen = pen();
+//        myPen.setColor(Qt::black);
+//        qreal arrowSize = 20;
+//        pPainter->setPen(myPen);
+//        pPainter->setBrush(Qt::black);
+//
+//        QLineF centerLine(mGuiNode0->pos(), mGuiNode1->pos());
+//        QPolygonF endPolygon = mGuiNode1->polygon();
+//        QPointF p1 = endPolygon.first() + mGuiNode1->pos();
+//        QPointF p2;
+//        QPointF intersectPoint;
+//        QLineF polyLine;
+//        for (int i = 1; i < endPolygon.count(); ++i)
+//        {
+//            p2 = endPolygon.at(i) + mGuiNode1->pos();
+//            polyLine = QLineF(p1, p2);
+//            QLineF::IntersectType intersectType = polyLine.intersect(centerLine, &intersectPoint);
+//            if (intersectType == QLineF::BoundedIntersection)
+//                break;
+//            p1 = p2;
+//        }
+//
+//        setLine(QLineF(intersectPoint, mGuiNode0->pos()));
+
+//        if (line().dy() >= 0)
+        pPainter->drawLine(line());
+        if (isSelected())
+        {
+            pPainter->setPen(QPen(Qt::red, 1, Qt::DashLine));
+            QLineF myLine = line();
+            myLine.translate(0, 4.0);
+            pPainter->drawLine(myLine);
+            myLine.translate(0,-8.0);
+            pPainter->drawLine(myLine);
+        }
+    }
+
+    void UpdatePosition()
+    {
+        QLineF line(mapFromItem(mGuiNode0, 0, 0), mapFromItem(mGuiNode1, 0, 0));
+        setLine(line);
+    }
+
+    GuiNode* GetGuiNode0()
+    {
+        return mGuiNode0;
+    }
+    GuiNode* GetGuiNode1()
+    {
+        return mGuiNode1;
+    }
+private:
+    GuiNode     *mGuiNode0, *mGuiNode1;
+    QWidget*    mParent;
+};
+
+class NetworkScene:
+    public QGraphicsScene
+{
+public:
+    NetworkScene(OverviewNetworkSimulationWidget *pParent): QGraphicsScene(pParent)
+    {
+        connect(this, SIGNAL(selectionChanged()), pParent, SLOT(SelectedNewNetworkItem()));
+    }
+    ~NetworkScene()
+    {
+
+    }
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 
 OverviewNetworkSimulationWidget::OverviewNetworkSimulationWidget(QAction *pAssignedAction, QMainWindow* pMainWindow, Scenario *pScenario):
@@ -100,6 +231,7 @@ OverviewNetworkSimulationWidget::OverviewNetworkSimulationWidget(QAction *pAssig
     mHierarchyRow = 0;
     mHierarchyCol = 0;
     mHierarchyEntry = NULL;
+    mSelectedNode = NULL;
 
     initializeGUI();
 
@@ -118,11 +250,7 @@ OverviewNetworkSimulationWidget::OverviewNetworkSimulationWidget(QAction *pAssig
     SetVisible(CONF.GetVisibilityNetworkSimulationWidget());
     mAssignedAction->setChecked(CONF.GetVisibilityNetworkSimulationWidget());
 
-    mTvHierarchyModel = new QStandardItemModel(this);
-    mTvHierarchy->setModel(mTvHierarchyModel);
-    mTvStreamsModel = new QStandardItemModel(this);
-    mTvStreams->setModel(mTvStreamsModel);
-
+    InitNetworkView();
     UpdateHierarchyView();
     UpdateStreamsView();
 }
@@ -139,6 +267,14 @@ OverviewNetworkSimulationWidget::~OverviewNetworkSimulationWidget()
 void OverviewNetworkSimulationWidget::initializeGUI()
 {
     setupUi(this);
+
+    mTvHierarchyModel = new QStandardItemModel(this);
+    mTvHierarchy->setModel(mTvHierarchyModel);
+    mTvStreamsModel = new QStandardItemModel(this);
+    mTvStreams->setModel(mTvStreamsModel);
+
+    mNetworkScene = new NetworkScene(this);
+    mGvNetwork->setScene(mNetworkScene);
 }
 
 void OverviewNetworkSimulationWidget::closeEvent(QCloseEvent* pEvent)
@@ -194,6 +330,7 @@ void OverviewNetworkSimulationWidget::timerEvent(QTimerEvent *pEvent)
     {
         UpdateStreamsView();
         UpdateNetworkView();
+        UpdateRoutingView();
     }
 }
 
@@ -408,9 +545,131 @@ void OverviewNetworkSimulationWidget::UpdateStreamsView()
 // #####################################################################
 // ############ network view
 // #####################################################################
+GuiNode* OverviewNetworkSimulationWidget::GetGuiNode(Node *pNode)
+{
+    GuiNode *tGuiNode;
+    foreach(tGuiNode, mGuiNodes)
+    {
+        if (tGuiNode->GetNode()->GetAddress() == pNode->GetAddress())
+        {
+            return tGuiNode;
+        }
+    }
+
+    LOG(LOG_ERROR, "Cannot determine GuiNode object for the given node %s", pNode->GetAddress().c_str());
+
+    return NULL;
+}
+
+void OverviewNetworkSimulationWidget::InitNetworkView()
+{
+    // create all node GUI elements
+    NodeList tNodes = mScenario->GetNodes();
+    NodeList::iterator tIt;
+    for (tIt = tNodes.begin(); tIt != tNodes.end(); tIt++)
+    {
+        GuiNode *tGuiNode = new GuiNode(*tIt, this);
+        mGuiNodes.append(tGuiNode);
+        mNetworkScene->addItem(tGuiNode);
+        tGuiNode->setPos((*tIt)->GetPosXHint(), (*tIt)->GetPosYHint());
+        LOG(LOG_VERBOSE, "Set pos. of node %s to %d,%d", (*tIt)->GetAddress().c_str(), (*tIt)->GetPosXHint(), (*tIt)->GetPosYHint());
+        QGraphicsTextItem *tText = new QGraphicsTextItem(QString((*tIt)->GetAddress().c_str()), tGuiNode);
+        tText->setPos(0, 45);
+    }
+
+    // create all link GUI elements
+    LinkList tLinks = mScenario->GetLinks();
+    LinkList::iterator tIt2;
+    for (tIt2 = tLinks.begin(); tIt2 != tLinks.end(); tIt2++)
+    {
+        GuiLink *tGuiLink = new GuiLink(GetGuiNode((*tIt2)->GetNode0()), GetGuiNode((*tIt2)->GetNode1()), this);
+        mNetworkScene->addItem(tGuiLink);
+    }
+}
+
 void OverviewNetworkSimulationWidget::UpdateNetworkView()
 {
+    GuiLink *tGuiLink;
+    foreach(tGuiLink, mGuiLinks)
+    {
+        tGuiLink->UpdatePosition();
+    }
+}
 
+// #####################################################################
+// ############ routing view
+// #####################################################################
+void OverviewNetworkSimulationWidget::SelectedNewNetworkItem()
+{
+    QList<QGraphicsItem*> tItems = mNetworkScene->selectedItems();
+    QList<QGraphicsItem*>::iterator tIt;
+    for (tIt = tItems.begin(); tIt != tItems.end(); tIt++)
+    {
+        // our way of "reflections": show routing table of first selected node
+        if ((*tIt)->type() == GUI_NODE_TYPE)
+        {
+            LOG(LOG_VERBOSE, "New node item selected");
+            GuiNode *tSelectedGuiNode = (GuiNode*)tItems.first();
+            mSelectedNode = tSelectedGuiNode->GetNode();
+            break;
+        }
+        if ((*tIt)->type() == GUI_LINK_TYPE)
+        {
+            LOG(LOG_VERBOSE, "New link item selected");
+        }
+    }
+}
+
+void OverviewNetworkSimulationWidget::FillRoutingTableCell(int pRow, int pCol, QString pText)
+{
+    if (mTwRouting->item(pRow, pCol) != NULL)
+        mTwRouting->item(pRow, pCol)->setText(pText);
+    else
+    {
+        QTableWidgetItem *tItem =  new QTableWidgetItem(pText);
+        tItem->setTextAlignment(Qt::AlignCenter|Qt::AlignVCenter);
+        mTwRouting->setItem(pRow, pCol, tItem);
+    }
+}
+
+void OverviewNetworkSimulationWidget::FillRoutingTableRow(int pRow, RibEntry* pEntry)
+{
+    if (pRow > mTwRouting->rowCount() - 1)
+        mTwRouting->insertRow(mTwRouting->rowCount());
+
+    FillRoutingTableCell(pRow, 0, QString(pEntry->Destination.c_str()));
+    FillRoutingTableCell(pRow, 1, QString(pEntry->NextNode.c_str()));
+    FillRoutingTableCell(pRow, 2, QString("%1").arg(pEntry->HopCount));
+    FillRoutingTableCell(pRow, 3, QString("%1").arg(pEntry->QoSCapabilities.DataRate));
+    FillRoutingTableCell(pRow, 4, QString("%1").arg(pEntry->QoSCapabilities.Delay));
+}
+
+void OverviewNetworkSimulationWidget::UpdateRoutingView()
+{
+    NodeList tNodes = mScenario->GetNodes();
+
+    if ((mSelectedNode == NULL) && (tNodes.size() > 0))
+    {
+        // select first in list
+        mSelectedNode = *tNodes.begin();
+    }
+
+    if (mSelectedNode == NULL)
+        return;
+
+    mGrpRouting->setTitle(" Routing table " + QString(mSelectedNode->GetAddress().c_str()));
+    RibTable tRib = mSelectedNode->GetRib();
+    RibTable::iterator tIt;
+    int tRow = 0;
+    for (tIt = tRib.begin(); tIt != tRib.end(); tIt++)
+    {
+        FillRoutingTableRow(tRow++, *tIt);
+    }
+
+    for (int i = mTwRouting->rowCount(); i > tRow; i--)
+        mTwRouting->removeRow(i);
+
+    mTwRouting->setRowCount(tRow);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

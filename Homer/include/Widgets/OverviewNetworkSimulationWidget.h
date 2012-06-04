@@ -43,6 +43,9 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 class HierarchyItem;
+class NetworkScene;
+class GuiNode;
+class GuiLink;
 
 class OverviewNetworkSimulationWidget :
     public QDockWidget,
@@ -58,6 +61,7 @@ public:
 
 public slots:
     void SetVisible(bool pVisible);
+    void SelectedNewNetworkItem();
 
 private slots:
     void SelectedCoordinator(QModelIndex pIndex);
@@ -65,17 +69,22 @@ private slots:
 
 private:
     void initializeGUI();
+    void InitNetworkView();
 
     /* update views */
     void UpdateHierarchyView();
     void UpdateStreamsView();
     void UpdateNetworkView();
+    void UpdateRoutingView();
 
     /* helpers for updating views */
     void ShowHierarchyDetails(Coordinator *pCoordinator, Node* pNode);
     void AppendHierarchySubItems(HierarchyItem *pParentItem);
     void ShowStreamDetails(const struct StreamDescriptor pDesc);
     QString CreateStreamId(const struct StreamDescriptor tDesc);
+    void FillRoutingTableCell(int pRow, int pCol, QString pText);
+    void FillRoutingTableRow(int pRow, RibEntry* pEntry);
+    GuiNode *GetGuiNode(Node *pNode);
 
     virtual void closeEvent(QCloseEvent* pEvent);
     virtual void contextMenuEvent(QContextMenuEvent *pEvent);
@@ -87,10 +96,20 @@ private:
     QAction                 *mAssignedAction;
     QStandardItemModel      *mTvHierarchyModel, *mTvStreamsModel;
     int                     mTimerId;
+
+    NetworkScene            *mNetworkScene;
+    /* manage selection in views */
+    // stream view
     int                     mStreamRow;
+    // hierarchy view
     void                    *mHierarchyEntry;
     int                     mHierarchyRow;
     int                     mHierarchyCol;
+    // network view
+    QList<GuiLink*>         mGuiLinks;
+    QList<GuiNode*>         mGuiNodes;
+    // routing view
+    Node                    *mSelectedNode;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

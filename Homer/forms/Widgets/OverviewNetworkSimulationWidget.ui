@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>975</width>
-    <height>469</height>
+    <width>882</width>
+    <height>340</height>
    </rect>
   </property>
   <property name="font">
@@ -43,7 +43,7 @@
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_7">
+      <layout class="QVBoxLayout" name="verticalLayout_8">
        <item>
         <widget class="QSplitter" name="splitter_2">
          <property name="orientation">
@@ -114,7 +114,7 @@
                     </property>
                     <property name="maximumSize">
                      <size>
-                      <width>16777215</width>
+                      <width>80</width>
                       <height>30</height>
                      </size>
                     </property>
@@ -175,7 +175,7 @@
                     </property>
                     <property name="maximumSize">
                      <size>
-                      <width>16777215</width>
+                      <width>80</width>
                       <height>30</height>
                      </size>
                     </property>
@@ -201,7 +201,7 @@
                    <widget class="QLabel" name="mLbSiblings">
                     <property name="minimumSize">
                      <size>
-                      <width>50</width>
+                      <width>20</width>
                       <height>0</height>
                      </size>
                     </property>
@@ -227,13 +227,13 @@
                    <widget class="QLabel" name="label_7">
                     <property name="minimumSize">
                      <size>
-                      <width>0</width>
+                      <width>80</width>
                       <height>30</height>
                      </size>
                     </property>
                     <property name="maximumSize">
                      <size>
-                      <width>16777215</width>
+                      <width>80</width>
                       <height>30</height>
                      </size>
                     </property>
@@ -259,7 +259,7 @@
                    <widget class="QLabel" name="mLbChildren">
                     <property name="minimumSize">
                      <size>
-                      <width>50</width>
+                      <width>20</width>
                       <height>0</height>
                      </size>
                     </property>
@@ -350,7 +350,7 @@
                     </property>
                     <property name="maximumSize">
                      <size>
-                      <width>16777215</width>
+                      <width>80</width>
                       <height>30</height>
                      </size>
                     </property>
@@ -390,7 +390,7 @@
                      </font>
                     </property>
                     <property name="text">
-                     <string>1123456789</string>
+                     <string>12345678</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -411,7 +411,7 @@
                     </property>
                     <property name="maximumSize">
                      <size>
-                      <width>16777215</width>
+                      <width>80</width>
                       <height>30</height>
                      </size>
                     </property>
@@ -448,7 +448,7 @@
                      </font>
                     </property>
                     <property name="text">
-                     <string>01234567</string>
+                     <string>50000</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -483,7 +483,7 @@
                     </property>
                     <property name="maximumSize">
                      <size>
-                      <width>16777215</width>
+                      <width>80</width>
                       <height>30</height>
                      </size>
                     </property>
@@ -520,7 +520,7 @@
                      </font>
                     </property>
                     <property name="text">
-                     <string>1000</string>
+                     <string>5000</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -562,8 +562,81 @@
             </item>
            </layout>
           </widget>
+          <widget class="QGroupBox" name="mGrpRouting">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="title">
+            <string> Routing table </string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_7">
+            <item>
+             <widget class="QTableWidget" name="mTwRouting">
+              <property name="font">
+               <font>
+                <pointsize>8</pointsize>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
+              </property>
+              <property name="selectionMode">
+               <enum>QAbstractItemView::NoSelection</enum>
+              </property>
+              <attribute name="horizontalHeaderDefaultSectionSize">
+               <number>80</number>
+              </attribute>
+              <attribute name="horizontalHeaderMinimumSectionSize">
+               <number>20</number>
+              </attribute>
+              <attribute name="horizontalHeaderStretchLastSection">
+               <bool>true</bool>
+              </attribute>
+              <attribute name="verticalHeaderDefaultSectionSize">
+               <number>20</number>
+              </attribute>
+              <attribute name="verticalHeaderMinimumSectionSize">
+               <number>20</number>
+              </attribute>
+              <column>
+               <property name="text">
+                <string>Destination</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Next hop</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Costs</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Data rate</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Delay</string>
+               </property>
+              </column>
+             </widget>
+            </item>
+           </layout>
+          </widget>
          </widget>
          <widget class="QGroupBox" name="groupBox_3">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
           <property name="title">
            <string> Network (routing view) </string>
           </property>
