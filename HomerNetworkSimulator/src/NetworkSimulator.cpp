@@ -68,6 +68,10 @@ bool NetworkSimulator::Init()
     return true;
 }
 
+Scenario* NetworkSimulator::GetScenario()
+{
+    return mScenario;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 

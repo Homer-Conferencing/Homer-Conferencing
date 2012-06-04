@@ -39,6 +39,7 @@
 #include <Widgets/OverviewDataStreamsWidget.h>
 #include <Widgets/OverviewErrorsWidget.h>
 #include <Widgets/OverviewFileTransfersWidget.h>
+#include <Widgets/OverviewNetworkSimulationWidget.h>
 #include <Widgets/OverviewNetworkStreamsWidget.h>
 #include <Widgets/OverviewThreadsWidget.h>
 #include <Widgets/ParticipantWidget.h>
@@ -104,6 +105,7 @@ public:
     bool GetVisibilityPlaylistWidgetMovie();
 
     bool GetVisibilityThreadsWidget();
+    bool GetVisibilityNetworkSimulationWidget();
     bool GetVisibilityNetworkStreamsWidget();
     bool GetVisibilityDataStreamsWidget();
     bool GetVisibilityBroadcastMessageWidget();
@@ -216,6 +218,7 @@ private:
     friend class OverviewContactsWidget;
     friend class OverviewErrorsWidget;
     friend class OverviewFileTransfersWidget;
+    friend class OverviewNetworkSimulationWidget;
     friend class OverviewNetworkStreamsWidget;
     friend class OverviewPlaylistWidget;
     friend class OverviewThreadsWidget;
@@ -241,6 +244,7 @@ private:
     void SetVisibilityPlaylistWidgetMovie(bool pActive);
 
     void SetVisibilityThreadsWidget(bool pActive);
+    void SetVisibilityNetworkSimulationWidget(bool pActive);
     void SetVisibilityNetworkStreamsWidget(bool pActive);
     void SetVisibilityDataStreamsWidget(bool pActive);
     void SetVisibilityBroadcastMessageWidget(bool pActive);

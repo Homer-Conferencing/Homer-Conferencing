@@ -87,6 +87,35 @@ CoordinatorList Coordinator::GetChildCoordinators()
     return tResult;
 }
 
+CoordinatorList Coordinator::GetSiblings()
+{
+    CoordinatorList tResult;
+
+    if (mSuperior != NULL)
+        tResult = mSuperior->GetChildCoordinators();
+
+    // remove self pointer
+    if (tResult.size() > 0)
+    {
+        CoordinatorList::iterator tIt;
+        for (tIt = tResult.begin(); tIt != tResult.end(); tIt++)
+        {
+            if ((*tIt)->GetClusterAddress() == GetClusterAddress())
+            {
+                tResult.erase(tIt);
+                break;
+            }
+        }
+    }
+
+    return tResult;
+}
+
+int Coordinator::GetHierarchyLevel()
+{
+    return mHierarchyLevel;
+}
+
 void Coordinator::AddClusterMember(Node *pNode)
 {
     LOG(LOG_INFO, "Adding node %s to cluster %s at hierarchy level %d", pNode->GetAddress().c_str(), mClusterAddress.c_str(), mHierarchyLevel);

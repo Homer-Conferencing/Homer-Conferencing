@@ -43,6 +43,8 @@ public:
 
     bool Init();//QAction *pAssignedAction, QMainWindow *pMainWindow
 
+    Scenario *GetScenario();
+
 private:
     ChannelSetup    *mGAPISetup;
     Scenario        *mScenario;

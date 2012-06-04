@@ -59,6 +59,8 @@ public:
 
     NodeList GetClusterMembers(); // for GUI
     CoordinatorList GetChildCoordinators(); // for GUI
+    CoordinatorList GetSiblings(); // for GUI
+    int GetHierarchyLevel(); // for GUI
 
     std::string GetClusterAddress();
 

@@ -64,7 +64,7 @@ Link::~Link()
 
 bool Link::HandlePacket(Packet *pPacket, Node* pLastNode)
 {
-    #ifdef DEBUG_ROUTING
+    #ifdef DEBUG_FORWARDING
         LOG(LOG_VERBOSE, "Handling packet from %s at link between %s and %s", pPacket->Source.c_str(), mNodes[0]->GetAddress().c_str(), mNodes[1]->GetAddress().c_str());
     #endif
 

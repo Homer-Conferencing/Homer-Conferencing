@@ -146,6 +146,7 @@ SET (SOURCES
 	../src/Widgets/OverviewDataStreamsWidget
 	../src/Widgets/OverviewErrorsWidget
 	../src/Widgets/OverviewFileTransfersWidget
+	../src/Widgets/OverviewNetworkSimulationWidget
 	../src/Widgets/OverviewNetworkStreamsWidget
 	../src/Widgets/OverviewPlaylistWidget
 	../src/Widgets/OverviewThreadsWidget
@@ -176,6 +177,7 @@ SET (QT_MOC_SOURCES
 	../include/Widgets/OverviewDataStreamsWidget.h
 	../include/Widgets/OverviewErrorsWidget.h
 	../include/Widgets/OverviewFileTransfersWidget.h
+	../include/Widgets/OverviewNetworkSimulationWidget.h
 	../include/Widgets/OverviewNetworkStreamsWidget.h
 	../include/Widgets/OverviewPlaylistWidget.h
 	../include/Widgets/OverviewThreadsWidget.h
@@ -203,6 +205,7 @@ SET (QT_UI_SOURCES
 	../forms/Widgets/OverviewDataStreamsWidget.ui
 	../forms/Widgets/OverviewErrorsWidget.ui
 	../forms/Widgets/OverviewFileTransfersWidget.ui
+	../forms/Widgets/OverviewNetworkSimulationWidget.ui
 	../forms/Widgets/OverviewNetworkStreamsWidget.ui
 	../forms/Widgets/OverviewPlaylistWidget.ui
 	../forms/Widgets/OverviewThreadsWidget.ui

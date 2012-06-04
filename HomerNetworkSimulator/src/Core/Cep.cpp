@@ -126,6 +126,7 @@ bool Cep::Send(std::string pTargetNode, unsigned int pTargetPort, void *pBuffer,
     tPacket->Data = pBuffer;
     tPacket->DataSize = pBufferSize;
     tPacket->TTL = TTL_INIT;
+    mPacketCount++;
 
     // send packet towards destination
     return mNode->HandlePacket(tPacket);
@@ -144,6 +145,7 @@ bool Cep::Receive(std::string &pPeerNode, unsigned int &pPeerPort, void *pBuffer
     pBufferSize = tBufferSize;
     pPeerNode = mPeerNode;
     pPeerPort = mPeerPort;
+    mPacketCount++;
 
     LOG(LOG_VERBOSE, "Received %d bytes from %s:%u", (int)pBufferSize, mPeerNode.c_str(), mPeerPort);
 
@@ -175,9 +177,14 @@ string Cep::GetPeerNode()
     return mPeerNode;
 }
 
+long Cep::GetPacketCount()
+{
+    return mPacketCount;
+}
+
 bool Cep::HandlePacket(Packet *pPacket)
 {
-    #ifdef DEBUG_ROUTING
+    #ifdef DEBUG_FORWARDING
         LOG(LOG_VERBOSE, "Handling packet from %s at CEP@node %s(%s)", pPacket->Source.c_str(), mNode->GetName().c_str(), mNode->GetAddress().c_str());
     #endif
 

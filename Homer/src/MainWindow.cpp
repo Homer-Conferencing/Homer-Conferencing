@@ -209,6 +209,8 @@ void MainWindow::initializeNetworkSimulator()
     mNetworkSimulator = new NetworkSimulator();
     if (!mNetworkSimulator->Init())
         LOG(LOG_ERROR, "Failed to initialize network simulator");
+    else
+        mOverviewNetworkSimulationWidget = new OverviewNetworkSimulationWidget(mActionOverviewNetworkSimulatorWidget, this, mNetworkSimulator->GetScenario());
 }
 void MainWindow::initializeFeatureDisablers(QStringList pArguments)
 {
@@ -714,6 +716,7 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
     delete mShortcutActivateDebuggingGlobally;
 
     delete mOverviewDataStreamsWidget;
+    delete mOverviewNetworkSimulationWidget;
     delete mOverviewNetworkStreamsWidget;
     delete mOverviewThreadsWidget;
 
@@ -1535,6 +1538,7 @@ void MainWindow::actionActivateDebuggingWidgets()
 {
     printf("Activating verbose debug widgets\n");
     mActionOverviewDataStreamsWidget->setVisible(true);
+    mActionOverviewNetworkSimulatorWidget->setVisible(true);
     mActionOverviewNetworkStreamsWidget->setVisible(true);
     mActionOverviewThreadsWidget->setVisible(true);
     mOverviewDataStreamsWidget->toggleViewAction()->setVisible(true);

@@ -44,7 +44,7 @@
      <x>0</x>
      <y>0</y>
      <width>385</width>
-     <height>23</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="mMenuSettings">
@@ -122,6 +122,7 @@
     <addaction name="mActionOverviewFileTransfersWidget"/>
     <addaction name="separator"/>
     <addaction name="mActionOverviewErrorsWidget"/>
+    <addaction name="mActionOverviewNetworkSimulatorWidget"/>
     <addaction name="mActionOverviewNetworkStreamsWidget"/>
     <addaction name="mActionOverviewDataStreamsWidget"/>
     <addaction name="mActionOverviewThreadsWidget"/>
@@ -684,6 +685,22 @@
    </property>
    <property name="shortcut">
     <string>Alt+W</string>
+   </property>
+  </action>
+  <action name="mActionOverviewNetworkSimulatorWidget">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/46_46/Network.png</normaloff>
+     <normalon>:/images/22_22/Checked.png</normalon>:/images/46_46/Network.png</iconset>
+   </property>
+   <property name="text">
+    <string>Network simulator</string>
    </property>
   </action>
  </widget>

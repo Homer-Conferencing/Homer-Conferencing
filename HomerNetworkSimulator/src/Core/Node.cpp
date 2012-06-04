@@ -256,6 +256,30 @@ RibTable Node::GetNeighbors()
     return tResult;
 }
 
+NodeList Node::GetSiblings()
+{
+    NodeList tResult;
+
+    if (mCoordinator != NULL)
+        tResult = mCoordinator->GetClusterMembers();
+
+    // remove self pointer
+    if (tResult.size() > 0)
+    {
+        NodeList::iterator tIt;
+        for (tIt = tResult.begin(); tIt != tResult.end(); tIt++)
+        {
+            if ((*tIt)->GetAddress() == GetAddress())
+            {
+                tResult.erase(tIt);
+                break;
+            }
+        }
+    }
+
+    return tResult;
+}
+
 void Node::UpdateRouting()
 {
     #ifdef DEBUG_ROUTING
@@ -473,7 +497,7 @@ Cep* Node::FindServerCep(unsigned int pPort)
 
 bool Node::HandlePacket(Packet *pPacket)
 {
-    #ifdef DEBUG_ROUTING
+    #ifdef DEBUG_FORWARDING
         LOG(LOG_VERBOSE, "Handling packet from %s at node %s(%s) with destination %s", pPacket->Source.c_str(), mName.c_str(), mAddress.c_str(), pPacket->Destination.c_str());
     #endif
 
@@ -482,7 +506,9 @@ bool Node::HandlePacket(Packet *pPacket)
     // are we the packet's destination?
     if (pPacket->Destination == mAddress)
     {
-        LOG(LOG_VERBOSE, "Destination %s reached at node %s(%s)", pPacket->Destination.c_str(), mName.c_str(), mAddress.c_str());
+        #ifdef DEBUG_FORWARDING
+            LOG(LOG_VERBOSE, "Destination %s reached at node %s(%s)", pPacket->Destination.c_str(), mName.c_str(), mAddress.c_str());
+        #endif
         Cep *tServerCep = FindServerCep(pPacket->DestinationPort);
 
         // have we found a fitting server CEP?
