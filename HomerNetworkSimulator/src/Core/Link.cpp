@@ -68,6 +68,11 @@ bool Link::HandlePacket(Packet *pPacket, Node* pLastNode)
         LOG(LOG_VERBOSE, "Handling packet from %s at link between %s and %s", pPacket->Source.c_str(), mNodes[0]->GetAddress().c_str(), mNodes[1]->GetAddress().c_str());
     #endif
 
+    // store stream id in internal list
+    mSeenStreamsMutex.lock();
+    mSeenStreams.push_back(pPacket->TrackingStreamId);
+    mSeenStreamsMutex.unlock();
+
     // check from which interface the packet was received and forward it to the other one
     if (pLastNode->GetAddress() == mNodes[0]->GetAddress())
     {
@@ -101,6 +106,18 @@ Node* Link::GetNode0()
 Node* Link::GetNode1()
 {
     return mNodes[1];
+}
+
+list<int> Link::GetSeenStreams()
+{
+    list<int> tResult;
+
+    mSeenStreamsMutex.lock();
+    tResult = mSeenStreams;
+    mSeenStreams.clear();
+    mSeenStreamsMutex.unlock();
+
+    return tResult;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

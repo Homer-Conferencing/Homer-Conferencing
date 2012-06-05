@@ -41,9 +41,11 @@ using namespace std;
 using namespace Homer::Multimedia;
 
 ///////////////////////////////////////////////////////////////////////////////
+static int sStreamId = 0;
 
 Cep::Cep(Node *pNode, enum TransportType pTransportType, unsigned int pLocalPort)
 {
+    mStreamId = sStreamId++;
     mClosed = false;
     mLocalPort = pLocalPort;
     mPeerPort = 0;
@@ -59,6 +61,7 @@ Cep::Cep(Node *pNode, enum TransportType pTransportType, string pTarget, unsigne
 {
     static int sLastClientPort = 1023;
 
+    mStreamId = sStreamId++;
     mClosed = false;
     mNode = pNode;
     mLocalPort = ++sLastClientPort;
@@ -108,7 +111,9 @@ bool Cep::Close()
 
 bool Cep::Send(std::string pTargetNode, unsigned int pTargetPort, void *pBuffer, ssize_t pBufferSize)
 {
-    LOG(LOG_VERBOSE, "Sending %d bytes to %s:%u", (int)pBufferSize, mPeerNode.c_str(), mPeerPort);
+    #ifdef DEBUG_FORWARDING
+        LOG(LOG_VERBOSE, "Sending %d bytes to %s:%u", (int)pBufferSize, mPeerNode.c_str(), mPeerPort);
+    #endif
 
     if (mClosed)
     {
@@ -126,6 +131,7 @@ bool Cep::Send(std::string pTargetNode, unsigned int pTargetPort, void *pBuffer,
     tPacket->Data = pBuffer;
     tPacket->DataSize = pBufferSize;
     tPacket->TTL = TTL_INIT;
+    tPacket->TrackingStreamId = mStreamId;
     mPacketCount++;
 
     // send packet towards destination
@@ -147,7 +153,9 @@ bool Cep::Receive(std::string &pPeerNode, unsigned int &pPeerPort, void *pBuffer
     pPeerPort = mPeerPort;
     mPacketCount++;
 
-    LOG(LOG_VERBOSE, "Received %d bytes from %s:%u", (int)pBufferSize, mPeerNode.c_str(), mPeerPort);
+    #ifdef DEBUG_FORWARDING
+        LOG(LOG_VERBOSE, "Received %d bytes from %s:%u", (int)pBufferSize, mPeerNode.c_str(), mPeerPort);
+    #endif
 
     return true;
 }
@@ -180,6 +188,11 @@ string Cep::GetPeerNode()
 long Cep::GetPacketCount()
 {
     return mPacketCount;
+}
+
+int Cep::GetStreamId()
+{
+    return mStreamId;
 }
 
 bool Cep::HandlePacket(Packet *pPacket)

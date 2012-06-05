@@ -57,9 +57,13 @@ public:
 
     Node* GetNode0();
     Node* GetNode1();
+
+    std::list<int> GetSeenStreams();
 private:
     Node            *mNodes[2];
     QoSSettings     mQoSCapabilities;
+    std::list<int>  mSeenStreams;
+    Mutex           mSeenStreamsMutex;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

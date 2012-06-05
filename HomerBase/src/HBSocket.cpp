@@ -710,7 +710,7 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
 
         if (tReceivedBytes == pBufferSize)
         {
-            LOG(LOG_WARN, "Full buffer size was used, maybe given application buffer is too small?");
+            LOG(LOG_WARN, "Entire buffer of %d bytes was used, maybe given application buffer is too small?", tReceivedBytes);
         }
     }else
     {
