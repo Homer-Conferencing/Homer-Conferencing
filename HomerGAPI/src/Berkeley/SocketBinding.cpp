@@ -92,7 +92,6 @@ SocketBinding::SocketBinding(std::string pLocalName, Requirements *pRequirements
     {
         mSocket = Socket::CreateServerSocket(tIPv6 ? SOCKET_IPv6 : SOCKET_IPv4, SOCKET_TCP, tLocalPort);
         tFoundTransport = true;
-        mIsClosed = false;
     }
 
 
@@ -102,7 +101,6 @@ SocketBinding::SocketBinding(std::string pLocalName, Requirements *pRequirements
         {
             mSocket = Socket::CreateServerSocket(tIPv6 ? SOCKET_IPv6 : SOCKET_IPv4, tUdpLite ? SOCKET_UDP_LITE : SOCKET_UDP, tLocalPort);
             tFoundTransport = true;
-            mIsClosed = false;
         }else
         {
             LOG(LOG_ERROR, "Ambiguous requirements");
@@ -111,15 +109,21 @@ SocketBinding::SocketBinding(std::string pLocalName, Requirements *pRequirements
 
     if(tFoundTransport)
     {
-        // per default we set receive buffer of 2 MB
-        mSocket->SetReceiveBufferSize(2 * 1024 * 1024);
+        if (mSocket != NULL)
+        {
+            // per default we set receive buffer of 2 MB
+            mSocket->SetReceiveBufferSize(2 * 1024 * 1024);
+
+            mIsClosed = false;
+
+            /* QoS requirements and additional transport requirements */
+            changeRequirements(pRequirements);
+        }else
+            LOG(LOG_ERROR, "Returned Berkeley socket is invalid");
     }else
     {
         LOG(LOG_ERROR, "Haven't found correct mapping from application requirements to transport protocol");
     }
-
-    /* QoS requirements and additional transport requirements */
-    changeRequirements(pRequirements);
 }
 
 SocketBinding::~SocketBinding()
@@ -131,6 +135,9 @@ SocketBinding::~SocketBinding()
 
 IConnection* SocketBinding::readConnection()
 {
+    if (mIsClosed)
+        return NULL;
+
     if (mConnection == NULL)
     {
         LOG(LOG_VERBOSE, "Creating new association");

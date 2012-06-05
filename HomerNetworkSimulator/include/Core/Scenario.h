@@ -46,6 +46,7 @@ struct StreamDescriptor{
     QoSSettings QoSRequs;
     std::string LocalNode, PeerNode;
     int         LocalPort, PeerPort;
+    int         Id;
 };
 typedef std::list<struct StreamDescriptor> StreamList;
 

@@ -59,12 +59,12 @@ public:
     GuiNode(Node* pNode, OverviewNetworkSimulationWidget* pNetSimWidget);
     ~GuiNode();
 
+    virtual int type() const;
+    Node* GetNode();
+
     void AddGuiLink(GuiLink *pGuiLink);
     int GetWidth();
     int GetHeight();
-    Node* GetNode();
-
-    virtual int type() const;
 
 private:
     virtual QVariant itemChange(GraphicsItemChange pChange, const QVariant &pValue);
@@ -83,18 +83,21 @@ class GuiLink:
     public QGraphicsLineItem
 {
 public:
-    GuiLink(GuiNode* pGuiNode0, GuiNode* pGuiNode1, QWidget* pParent);
+    GuiLink(Link *pLink, OverviewNetworkSimulationWidget* pNetSimWidget);
     ~GuiLink();
 
     virtual int type() const;
+    Link* GetLink();
 
     void UpdatePosition();
+    void UpdateColoring();
     GuiNode* GetGuiNode0();
     GuiNode* GetGuiNode1();
 
 private:
     GuiNode     *mGuiNode0, *mGuiNode1;
-    QWidget*    mParent;
+    OverviewNetworkSimulationWidget* mNetSimWidget;
+    Link        *mLink;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -134,11 +137,13 @@ public:
 public slots:
     void SetVisible(bool pVisible);
     void SelectedNewNetworkItem();
+    void NetworkViewZoomChanged(int pZoom);
+
+    GuiNode *GetGuiNode(Node *pNode);
 
 private slots:
     void SelectedCoordinator(QModelIndex pIndex);
     void SelectedStream(QModelIndex pIndex);
-    void NetworkViewZoomChanged(int pZoom);
 
 private:
     void initializeGUI();
@@ -156,7 +161,6 @@ private:
     QString CreateStreamId(const struct StreamDescriptor tDesc);
     void FillRoutingTableCell(int pRow, int pCol, QString pText);
     void FillRoutingTableRow(int pRow, RibEntry* pEntry);
-    GuiNode *GetGuiNode(Node *pNode);
 
     virtual void closeEvent(QCloseEvent* pEvent);
     virtual void contextMenuEvent(QContextMenuEvent *pEvent);

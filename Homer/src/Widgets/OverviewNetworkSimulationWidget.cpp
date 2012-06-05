@@ -25,8 +25,9 @@
  * Since:   2012-06-03
  */
 
-#define DEBUG_TOPOLOGY_CREATION
+//#define DEBUG_GUI_SIMULATION_TOPOLOGY_CREATION
 //#define DEBUG_GUI_SIMULATION_TIMING
+//#define DEBUG_GUI_SIMULATION_INTERACTION
 
 #include <Core/Coordinator.h>
 #include <Core/Scenario.h>
@@ -57,7 +58,10 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static struct StreamDescriptor sEmptyStreamDesc = {0, {0, 0, 0}, "", "", 0, 0};
+static struct StreamDescriptor sEmptyStreamDesc = {0, {0, 0, 0}, "", "", 0, 0, 0};
+#define STREAM_COLORS           14
+static QColor sStreamColor[STREAM_COLORS] = {Qt::red, Qt::green, Qt:: blue, Qt::cyan, Qt::magenta, Qt::yellow, Qt::gray,
+                                      Qt::darkRed, Qt::darkGreen, Qt::darkBlue, Qt::darkCyan, Qt::darkMagenta, Qt::darkYellow, Qt::darkGray};
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -112,7 +116,7 @@ GuiNode::GuiNode(Node* pNode, OverviewNetworkSimulationWidget* pNetSimWidget):
     setFlag(QGraphicsItem::ItemIsMovable, true);
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
-    #ifdef DEBUG_TOPOLOGY_CREATION
+    #ifdef DEBUG_GUI_SIMULATION_TOPOLOGY_CREATION
         LOG(LOG_WARN, "Created GUI node %s", pNode->GetAddress().c_str());
     #endif
 
@@ -184,16 +188,20 @@ Node* GuiNode::GetNode()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-GuiLink::GuiLink(GuiNode* pGuiNode0, GuiNode* pGuiNode1, QWidget* pParent):QGraphicsLineItem(), mGuiNode0(pGuiNode0), mGuiNode1(pGuiNode1), mParent(pParent)
+GuiLink::GuiLink(Link *pLink, OverviewNetworkSimulationWidget* pNetSimWidget):QGraphicsLineItem()
 {
+    mGuiNode0 = pNetSimWidget->GetGuiNode(pLink->GetNode0());
+    mGuiNode1 = pNetSimWidget->GetGuiNode(pLink->GetNode1());
+    mNetSimWidget = pNetSimWidget;
+    mLink = pLink;
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setPen(QPen(Qt::black, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     setZValue(-1000.0);
-    pGuiNode0->AddGuiLink(this);
-    pGuiNode1->AddGuiLink(this);
+    mGuiNode0->AddGuiLink(this);
+    mGuiNode1->AddGuiLink(this);
     UpdatePosition();
-    #ifdef DEBUG_TOPOLOGY_CREATION
-        LOG(LOG_WARN, "Created GUI link between %s and %s", pGuiNode0->GetNode()->GetAddress().c_str(), pGuiNode1->GetNode()->GetAddress().c_str());
+    #ifdef DEBUG_GUI_SIMULATION_TOPOLOGY_CREATION
+        LOG(LOG_WARN, "Created GUI link between %s and %s", mGuiNode0->GetNode()->GetAddress().c_str(), mGuiNode1->GetNode()->GetAddress().c_str());
     #endif
 }
 GuiLink::~GuiLink()
@@ -204,6 +212,23 @@ GuiLink::~GuiLink()
 int GuiLink::type() const
 {
     return GUI_LINK_TYPE;
+}
+
+Link* GuiLink::GetLink()
+{
+    return mLink;
+}
+
+void GuiLink::UpdateColoring()
+{
+    list<int>tSeenStreams = mLink->GetSeenStreams();
+    if (tSeenStreams.size() > 0)
+    {
+        int tFirstStreamId = *tSeenStreams.begin();
+        QColor tColor = sStreamColor[tFirstStreamId % STREAM_COLORS];
+        setPen(QPen(tColor, 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    }else
+        setPen(QPen(Qt::black, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
 }
 
 void GuiLink::UpdatePosition()
@@ -231,7 +256,7 @@ GuiNode* GuiLink::GetGuiNode1()
 ///////////////////////////////////////////////////////////////////////////////
 
 NetworkScene::NetworkScene(OverviewNetworkSimulationWidget *pNetSimWidget):
-    QGraphicsScene(pParent)
+    QGraphicsScene(pNetSimWidget)
 {
     mNetSimWidget = pNetSimWidget;
     connect(this, SIGNAL(selectionChanged()), mNetSimWidget, SLOT(SelectedNewNetworkItem()));
@@ -246,13 +271,20 @@ NetworkScene::~NetworkScene()
 void NetworkScene::wheelEvent(QGraphicsSceneWheelEvent *pEvent)
 {
     int tOffset = pEvent->delta() * 5 / 120;
-    LOG(LOG_VERBOSE, "Got new wheel event with delta %d, results in offset: %d", pEvent->delta(), tOffset);
+    #ifdef DEBUG_GUI_SIMULATION_INTERACTION
+        LOG(LOG_VERBOSE, "Got new wheel event with delta %d, results in offset: %d", pEvent->delta(), tOffset);
+    #endif
 
     mNetSimWidget->NetworkViewZoomChanged((mScaleFactor * 100.0) + tOffset);
+    pEvent->ignore();
 }
 
 void NetworkScene::Scale(qreal pFactor)
 {
+    #ifdef DEBUG_GUI_SIMULATION_INTERACTION
+        LOG(LOG_VERBOSE, "Setting scaling of network scene to %f", pFactor);
+    #endif
+
     QGraphicsView *tView = views().first();
     mScaleFactor = pFactor;
     QMatrix tOldMatrix = tView->matrix();
@@ -281,6 +313,7 @@ OverviewNetworkSimulationWidget::OverviewNetworkSimulationWidget(QAction *pAssig
     pMainWindow->addDockWidget(Qt::TopDockWidgetArea, this);
 
     if (mAssignedAction != NULL)
+
     {
         connect(mAssignedAction, SIGNAL(triggered(bool)), this, SLOT(SetVisible(bool)));
         mAssignedAction->setChecked(true);
@@ -431,9 +464,12 @@ void OverviewNetworkSimulationWidget::SelectedStream(QModelIndex pIndex)
 
 void OverviewNetworkSimulationWidget::NetworkViewZoomChanged(int pZoom)
 {
+    #ifdef DEBUG_GUI_SIMULATION_INTERACTION
+        LOG(LOG_VERBOSE, "Setting zoom of network view to %d", pZoom);
+    #endif
     qreal tScaleFactor = (qreal)pZoom / 100.0;
 
-    if ((pZoom < 0.25) || (pZoom > 1.75))
+    if ((tScaleFactor < 0.25) || (tScaleFactor > 1.75))
         return;
 
     if (mSlZoom->value() != pZoom)
@@ -532,7 +568,7 @@ void OverviewNetworkSimulationWidget::ShowStreamDetails(const struct StreamDescr
 
 QString OverviewNetworkSimulationWidget::CreateStreamId(const struct StreamDescriptor pDesc)
 {
-    return QString(pDesc.LocalNode.c_str()) + ":" + QString("%1").arg(pDesc.LocalPort) + " <==> " +QString(pDesc.PeerNode.c_str()) + ":" + QString("%1").arg(pDesc.PeerPort);
+    return QString("%1").arg(pDesc.Id) + "> " + QString(pDesc.LocalNode.c_str()) + ":" + QString("%1").arg(pDesc.LocalPort) + " <==> " +QString(pDesc.PeerNode.c_str()) + ":" + QString("%1").arg(pDesc.PeerPort);
 }
 
 void OverviewNetworkSimulationWidget::UpdateStreamsView()
@@ -563,7 +599,7 @@ void OverviewNetworkSimulationWidget::UpdateStreamsView()
             StreamItem* tCurItem = (StreamItem*) mTvStreamsModel->item(tCount, 0);
             if (tCurItem != NULL)
             {
-                LOG(LOG_WARN, "Comparing %s and %s", tDesiredString.toStdString().c_str(), tCurItem->GetText().toStdString().c_str());
+                //LOG(LOG_WARN, "Comparing %s and %s", tDesiredString.toStdString().c_str(), tCurItem->GetText().toStdString().c_str());
                 if (tDesiredString != tCurItem->GetText())
                     tResetNeeded = true;
             }else
@@ -629,7 +665,7 @@ void OverviewNetworkSimulationWidget::InitNetworkView()
         mGuiNodes.append(tGuiNode);
         mNetworkScene->addItem(tGuiNode);
         tGuiNode->setPos((*tIt)->GetPosXHint(), (*tIt)->GetPosYHint());
-        LOG(LOG_VERBOSE, "Set pos. of node %s to %d,%d", (*tIt)->GetAddress().c_str(), (*tIt)->GetPosXHint(), (*tIt)->GetPosYHint());
+        //LOG(LOG_VERBOSE, "Set pos. of node %s to %d,%d", (*tIt)->GetAddress().c_str(), (*tIt)->GetPosXHint(), (*tIt)->GetPosYHint());
     }
 
     // create all link GUI elements
@@ -637,7 +673,7 @@ void OverviewNetworkSimulationWidget::InitNetworkView()
     LinkList::iterator tIt2;
     for (tIt2 = tLinks.begin(); tIt2 != tLinks.end(); tIt2++)
     {
-        GuiLink *tGuiLink = new GuiLink(GetGuiNode((*tIt2)->GetNode0()), GetGuiNode((*tIt2)->GetNode1()), this);
+        GuiLink *tGuiLink = new GuiLink(*tIt2, this);
         mGuiLinks.append(tGuiLink);
         mNetworkScene->addItem(tGuiLink);
     }
@@ -645,11 +681,12 @@ void OverviewNetworkSimulationWidget::InitNetworkView()
 
 void OverviewNetworkSimulationWidget::UpdateNetworkView()
 {
-//    GuiLink *tGuiLink;
-//    foreach(tGuiLink, mGuiLinks)
-//    {
-//        tGuiLink->UpdatePosition();
-//    }
+    GuiLink *tGuiLink;
+    foreach(tGuiLink, mGuiLinks)
+    {
+        tGuiLink->UpdateColoring();
+        tGuiLink->UpdatePosition();
+    }
 }
 
 // #####################################################################
@@ -664,14 +701,18 @@ void OverviewNetworkSimulationWidget::SelectedNewNetworkItem()
         // our way of "reflections": show routing table of first selected node
         if ((*tIt)->type() == GUI_NODE_TYPE)
         {
-            LOG(LOG_VERBOSE, "New node item selected");
+            #ifdef DEBUG_GUI_SIMULATION_INTERACTION
+                LOG(LOG_VERBOSE, "New node item selected");
+            #endif
             GuiNode *tSelectedGuiNode = (GuiNode*)tItems.first();
             mSelectedNode = tSelectedGuiNode->GetNode();
             break;
         }
         if ((*tIt)->type() == GUI_LINK_TYPE)
         {
-            LOG(LOG_VERBOSE, "New link item selected");
+            #ifdef DEBUG_GUI_SIMULATION_INTERACTION
+                LOG(LOG_VERBOSE, "New link item selected");
+            #endif
         }
     }
 }

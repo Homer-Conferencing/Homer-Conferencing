@@ -112,7 +112,7 @@ Scenario* Scenario::CreateScenario(int pIndex)
     tScenario->AddLink("1.2.1.3", "1.2.3.1");
 
     tScenario->AddLink("1.1.2.2", "1.2.1.1");
-    tScenario->AddLink("1.1.3.3", "1.2.3.3");
+//    tScenario->AddLink("1.1.3.3", "1.2.3.3");
 
     // ### DNS entries ###
     tScenario->registerName("Source", "1.1.1.1");
@@ -225,6 +225,7 @@ StreamList Scenario::GetStreams()
         tEntry.LocalPort = (*tIt)->GetLocalPort();
         tEntry.PeerNode = (*tIt)->GetPeerNode();
         tEntry.PeerPort = (*tIt)->GetPeerPort();
+        tEntry.Id = (*tIt)->GetStreamId();
         tResult.push_back(tEntry);
     }
     mClientCepsMutex.unlock();

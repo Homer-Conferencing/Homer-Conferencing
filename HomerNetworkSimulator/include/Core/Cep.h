@@ -45,7 +45,7 @@ namespace Homer { namespace Base {
 //#define DEBUG_NEIOGHBOR_DISCOVERY
 //#define DEBUG_FORWARDING
 #define DEBUG_ROUTING
-#define DEBUG_ROUTING_RECORDS
+//#define DEBUG_ROUTING_RECORDS
 
 #define TTL_INIT                    16 // maximum of nodes a packet is allowed to pass
 #define CEP_QUEUE_SIZE              256
@@ -66,7 +66,10 @@ struct Packet{
     void            *Data;
     ssize_t         DataSize;
     int             TTL;
+    /* for recording the route */
     std::list<std::string> RecordedRoute;
+    /* for tracking the packet through the entire network */
+    int             TrackingStreamId;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -96,10 +99,12 @@ public:
     unsigned int GetPeerPort();
     std::string GetPeerNode();
     long GetPacketCount();
+    int GetStreamId(); // for GUI
 
     bool HandlePacket(Packet *pPacket);
 
 private:
+    int                 mStreamId;
     long                mPacketCount;
     bool                mClosed;
     unsigned int        mLocalPort;
