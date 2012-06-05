@@ -25,6 +25,9 @@
  * Since:   2012-06-03
  */
 
+#define DEBUG_TOPOLOGY_CREATION
+//#define DEBUG_GUI_SIMULATION_TIMING
+
 #include <Core/Coordinator.h>
 #include <Core/Scenario.h>
 #include <Dialogs/ContactEditDialog.h>
@@ -34,6 +37,8 @@
 #include <Configuration.h>
 #include <Logger.h>
 
+#include <QFont>
+#include <QGraphicsView>
 #include <QGraphicsPixmapItem>
 #include <QGraphicsLineItem>
 #include <QGraphicsItem>
@@ -49,6 +54,10 @@
 #include <QFileDialog>
 
 namespace Homer { namespace Gui {
+
+///////////////////////////////////////////////////////////////////////////////
+
+static struct StreamDescriptor sEmptyStreamDesc = {0, {0, 0, 0}, "", "", 0, 0};
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -72,7 +81,7 @@ private:
     Node* mNode;
 };
 
-static struct StreamDescriptor sEmptyStreamDesc = {0, {0, 0, 0}, "", "", 0, 0};
+///////////////////////////////////////////////////////////////////////////////
 
 class StreamItem:
     public QStandardItem
@@ -93,131 +102,164 @@ private:
     QString                 mText;
 };
 
-#define GUI_NODE_TYPE   (QGraphicsItem::UserType + 1)
-class GuiNode:
-    public QGraphicsPixmapItem
+///////////////////////////////////////////////////////////////////////////////
+
+GuiNode::GuiNode(Node* pNode, OverviewNetworkSimulationWidget* pNetSimWidget):
+    QGraphicsPixmapItem(QPixmap(":/images/46_46/Hardware.png"), NULL)
 {
-public:
-    GuiNode(Node* pNode, QWidget* pParent):QGraphicsPixmapItem(QPixmap(":/images/46_46/Hardware.png"), NULL), mNode(pNode), mParent(pParent)
-    {
-        setFlag(QGraphicsItem::ItemIsMovable, true);
-        setFlag(QGraphicsItem::ItemIsSelectable, true);
-        setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
-    }
-    ~GuiNode()
-    {
+    mNode = pNode;
+    mNetSimWidget = pNetSimWidget;
+    setFlag(QGraphicsItem::ItemIsMovable, true);
+    setFlag(QGraphicsItem::ItemIsSelectable, true);
+    setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
+    #ifdef DEBUG_TOPOLOGY_CREATION
+        LOG(LOG_WARN, "Created GUI node %s", pNode->GetAddress().c_str());
+    #endif
 
-    }
-
-    virtual int type() const
-    {
-        return GUI_NODE_TYPE;
-    }
-
-    Node* GetNode()
-    {
-        return mNode;
-    }
-private:
-    Node        *mNode;
-    QWidget*    mParent;
-};
-
-#define GUI_LINK_TYPE   (QGraphicsItem::UserType + 2)
-class GuiLink:
-    public QGraphicsLineItem
+    // create GUI node text object (uses node's address)
+    mTextItem = new QGraphicsTextItem(QString(pNode->GetAddress().c_str()), this);
+    mTextItem->setPos(0, 45);
+    mTextItem->setDefaultTextColor(Qt::black);
+    mTextItem->setFont(QFont("Arial", 9, QFont::Normal, false));
+}
+GuiNode::~GuiNode()
 {
-public:
-    GuiLink(GuiNode* pGuiNode0, GuiNode* pGuiNode1, QWidget* pParent):QGraphicsLineItem(), mGuiNode0(pGuiNode0), mGuiNode1(pGuiNode1), mParent(pParent)
-    {
-        setFlag(QGraphicsItem::ItemIsSelectable, true);
-        setPen(QPen(Qt::black, 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-        setZValue(-1000.0);
-    }
-    ~GuiLink()
-    {
 
-    }
+}
 
-    virtual int type() const
-    {
-        return GUI_LINK_TYPE;
-    }
-
-    void paint(QPainter *pPainter, const QStyleOptionGraphicsItem *, QWidget *)
-    {
-        if (mGuiNode0->collidesWithItem(mGuiNode1))
-            return;
-
-//        QPen myPen = pen();
-//        myPen.setColor(Qt::black);
-//        qreal arrowSize = 20;
-//        pPainter->setPen(myPen);
-//        pPainter->setBrush(Qt::black);
-//
-//        QLineF centerLine(mGuiNode0->pos(), mGuiNode1->pos());
-//        QPolygonF endPolygon = mGuiNode1->polygon();
-//        QPointF p1 = endPolygon.first() + mGuiNode1->pos();
-//        QPointF p2;
-//        QPointF intersectPoint;
-//        QLineF polyLine;
-//        for (int i = 1; i < endPolygon.count(); ++i)
-//        {
-//            p2 = endPolygon.at(i) + mGuiNode1->pos();
-//            polyLine = QLineF(p1, p2);
-//            QLineF::IntersectType intersectType = polyLine.intersect(centerLine, &intersectPoint);
-//            if (intersectType == QLineF::BoundedIntersection)
-//                break;
-//            p1 = p2;
-//        }
-//
-//        setLine(QLineF(intersectPoint, mGuiNode0->pos()));
-
-//        if (line().dy() >= 0)
-        pPainter->drawLine(line());
-        if (isSelected())
-        {
-            pPainter->setPen(QPen(Qt::red, 1, Qt::DashLine));
-            QLineF myLine = line();
-            myLine.translate(0, 4.0);
-            pPainter->drawLine(myLine);
-            myLine.translate(0,-8.0);
-            pPainter->drawLine(myLine);
-        }
-    }
-
-    void UpdatePosition()
-    {
-        QLineF line(mapFromItem(mGuiNode0, 0, 0), mapFromItem(mGuiNode1, 0, 0));
-        setLine(line);
-    }
-
-    GuiNode* GetGuiNode0()
-    {
-        return mGuiNode0;
-    }
-    GuiNode* GetGuiNode1()
-    {
-        return mGuiNode1;
-    }
-private:
-    GuiNode     *mGuiNode0, *mGuiNode1;
-    QWidget*    mParent;
-};
-
-class NetworkScene:
-    public QGraphicsScene
+int GuiNode::type() const
 {
-public:
-    NetworkScene(OverviewNetworkSimulationWidget *pParent): QGraphicsScene(pParent)
-    {
-        connect(this, SIGNAL(selectionChanged()), pParent, SLOT(SelectedNewNetworkItem()));
-    }
-    ~NetworkScene()
-    {
+    return GUI_NODE_TYPE;
+}
 
+QVariant GuiNode::itemChange(GraphicsItemChange pChange, const QVariant &pValue)
+{
+    switch(pChange)
+    {
+        case QGraphicsItem::ItemPositionChange:
+            GuiLink* tGuiLink;
+            foreach (tGuiLink, mGuiLinks)
+            {
+                tGuiLink->UpdatePosition();
+            }
+            break;
+        case QGraphicsItem::ItemSelectedChange:
+            if (pValue.toBool())
+            {
+                mTextItem->setFont(QFont("Arial", 9, QFont::Bold, false));
+                mTextItem->setDefaultTextColor(Qt::red);
+                mNetSimWidget->UpdateRoutingView();
+            }else
+            {
+                mTextItem->setFont(QFont("Arial", 9, QFont::Normal, false));
+                mTextItem->setDefaultTextColor(Qt::black);
+            }
+            break;
+        default:
+            break;
     }
-};
+
+    return QGraphicsItem::itemChange(pChange, pValue);
+}
+
+void GuiNode::AddGuiLink(GuiLink *pGuiLink)
+{
+    mGuiLinks.append(pGuiLink);
+}
+
+int GuiNode::GetWidth()
+{
+    return (int)boundingRect().width();
+}
+
+int GuiNode::GetHeight()
+{
+    return (int)boundingRect().height();
+}
+
+Node* GuiNode::GetNode()
+{
+    return mNode;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+GuiLink::GuiLink(GuiNode* pGuiNode0, GuiNode* pGuiNode1, QWidget* pParent):QGraphicsLineItem(), mGuiNode0(pGuiNode0), mGuiNode1(pGuiNode1), mParent(pParent)
+{
+    setFlag(QGraphicsItem::ItemIsSelectable, true);
+    setPen(QPen(Qt::black, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    setZValue(-1000.0);
+    pGuiNode0->AddGuiLink(this);
+    pGuiNode1->AddGuiLink(this);
+    UpdatePosition();
+    #ifdef DEBUG_TOPOLOGY_CREATION
+        LOG(LOG_WARN, "Created GUI link between %s and %s", pGuiNode0->GetNode()->GetAddress().c_str(), pGuiNode1->GetNode()->GetAddress().c_str());
+    #endif
+}
+GuiLink::~GuiLink()
+{
+
+}
+
+int GuiLink::type() const
+{
+    return GUI_LINK_TYPE;
+}
+
+void GuiLink::UpdatePosition()
+{
+    QPointF tPoint0 = mapFromItem(mGuiNode0, 0, 0);
+    tPoint0.setX(tPoint0.x() + mGuiNode0->GetWidth() / 2);
+    tPoint0.setY(tPoint0.y() + mGuiNode0->GetHeight() / 2);
+    QPointF tPoint1 = mapFromItem(mGuiNode1, 0, 0);
+    tPoint1.setX(tPoint1.x() + mGuiNode1->GetWidth() / 2);
+    tPoint1.setY(tPoint1.y() + mGuiNode1->GetHeight() / 2);
+    //LOG(LOG_VERBOSE, "Line from %d,%d to %d,%d", (int)tPoint0.x(), (int)tPoint0.y(), (int)tPoint1.x(), (int)tPoint1.y());
+    QLineF tLine(tPoint0, tPoint1);
+    setLine(tLine);
+}
+
+GuiNode* GuiLink::GetGuiNode0()
+{
+    return mGuiNode0;
+}
+GuiNode* GuiLink::GetGuiNode1()
+{
+    return mGuiNode1;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+NetworkScene::NetworkScene(OverviewNetworkSimulationWidget *pNetSimWidget):
+    QGraphicsScene(pParent)
+{
+    mNetSimWidget = pNetSimWidget;
+    connect(this, SIGNAL(selectionChanged()), mNetSimWidget, SLOT(SelectedNewNetworkItem()));
+    mScaleFactor = 1.0;
+}
+
+NetworkScene::~NetworkScene()
+{
+
+}
+
+void NetworkScene::wheelEvent(QGraphicsSceneWheelEvent *pEvent)
+{
+    int tOffset = pEvent->delta() * 5 / 120;
+    LOG(LOG_VERBOSE, "Got new wheel event with delta %d, results in offset: %d", pEvent->delta(), tOffset);
+
+    mNetSimWidget->NetworkViewZoomChanged((mScaleFactor * 100.0) + tOffset);
+}
+
+void NetworkScene::Scale(qreal pFactor)
+{
+    QGraphicsView *tView = views().first();
+    mScaleFactor = pFactor;
+    QMatrix tOldMatrix = tView->matrix();
+    tView->resetMatrix();
+    tView->translate(tOldMatrix.dx(), tOldMatrix.dy());
+    tView->scale(pFactor, pFactor);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -246,6 +288,7 @@ OverviewNetworkSimulationWidget::OverviewNetworkSimulationWidget(QAction *pAssig
     connect(toggleViewAction(), SIGNAL(toggled(bool)), mAssignedAction, SLOT(setChecked(bool)));
     connect(mTvHierarchy, SIGNAL(clicked(QModelIndex)), this, SLOT(SelectedCoordinator(QModelIndex)));
     connect(mTvStreams, SIGNAL(clicked(QModelIndex)), this, SLOT(SelectedStream(QModelIndex)));
+    connect(mSlZoom, SIGNAL(valueChanged (int)), this, SLOT(NetworkViewZoomChanged(int)));
 
     SetVisible(CONF.GetVisibilityNetworkSimulationWidget());
     mAssignedAction->setChecked(CONF.GetVisibilityNetworkSimulationWidget());
@@ -323,7 +366,7 @@ void OverviewNetworkSimulationWidget::contextMenuEvent(QContextMenuEvent *pEvent
 
 void OverviewNetworkSimulationWidget::timerEvent(QTimerEvent *pEvent)
 {
-    #ifdef DEBUG_TIMING
+    #ifdef DEBUG_GUI_SIMULATION_TIMING
         LOG(LOG_VERBOSE, "New timer event");
     #endif
     if (pEvent->timerId() == mTimerId)
@@ -384,6 +427,19 @@ void OverviewNetworkSimulationWidget::SelectedStream(QModelIndex pIndex)
         LOG(LOG_VERBOSE, "Update of streams view needed");
         mStreamRow = tCurStreamRow;
     }
+}
+
+void OverviewNetworkSimulationWidget::NetworkViewZoomChanged(int pZoom)
+{
+    qreal tScaleFactor = (qreal)pZoom / 100.0;
+
+    if ((pZoom < 0.25) || (pZoom > 1.75))
+        return;
+
+    if (mSlZoom->value() != pZoom)
+        mSlZoom->setValue(pZoom);
+
+    mNetworkScene->Scale(tScaleFactor);
 }
 
 void OverviewNetworkSimulationWidget::ShowHierarchyDetails(Coordinator *pCoordinator, Node* pNode)
@@ -568,13 +624,12 @@ void OverviewNetworkSimulationWidget::InitNetworkView()
     NodeList::iterator tIt;
     for (tIt = tNodes.begin(); tIt != tNodes.end(); tIt++)
     {
+        // create GUI node object
         GuiNode *tGuiNode = new GuiNode(*tIt, this);
         mGuiNodes.append(tGuiNode);
         mNetworkScene->addItem(tGuiNode);
         tGuiNode->setPos((*tIt)->GetPosXHint(), (*tIt)->GetPosYHint());
         LOG(LOG_VERBOSE, "Set pos. of node %s to %d,%d", (*tIt)->GetAddress().c_str(), (*tIt)->GetPosXHint(), (*tIt)->GetPosYHint());
-        QGraphicsTextItem *tText = new QGraphicsTextItem(QString((*tIt)->GetAddress().c_str()), tGuiNode);
-        tText->setPos(0, 45);
     }
 
     // create all link GUI elements
@@ -583,17 +638,18 @@ void OverviewNetworkSimulationWidget::InitNetworkView()
     for (tIt2 = tLinks.begin(); tIt2 != tLinks.end(); tIt2++)
     {
         GuiLink *tGuiLink = new GuiLink(GetGuiNode((*tIt2)->GetNode0()), GetGuiNode((*tIt2)->GetNode1()), this);
+        mGuiLinks.append(tGuiLink);
         mNetworkScene->addItem(tGuiLink);
     }
 }
 
 void OverviewNetworkSimulationWidget::UpdateNetworkView()
 {
-    GuiLink *tGuiLink;
-    foreach(tGuiLink, mGuiLinks)
-    {
-        tGuiLink->UpdatePosition();
-    }
+//    GuiLink *tGuiLink;
+//    foreach(tGuiLink, mGuiLinks)
+//    {
+//        tGuiLink->UpdatePosition();
+//    }
 }
 
 // #####################################################################

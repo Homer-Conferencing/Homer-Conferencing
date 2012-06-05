@@ -31,6 +31,11 @@
 #include <Core/Scenario.h>
 
 #include <QDockWidget>
+#include <QGraphicsSceneWheelEvent>
+#include <QGraphicsScene>
+#include <QGraphicsPixmapItem>
+#include <QGraphicsTextItem>
+#include <QGraphicsLineItem>
 #include <QStandardItemModel>
 
 #include <ui_OverviewNetworkSimulationWidget.h>
@@ -42,11 +47,76 @@ namespace Homer { namespace Gui {
 #define NETWORK_SIMULATION_GUI_UPDATE_TIME              250
 
 ///////////////////////////////////////////////////////////////////////////////
-class HierarchyItem;
-class NetworkScene;
-class GuiNode;
-class GuiLink;
 
+#define GUI_NODE_TYPE   (QGraphicsItem::UserType + 1)
+
+class GuiLink;
+class OverviewNetworkSimulationWidget;
+class GuiNode:
+    public QGraphicsPixmapItem
+{
+public:
+    GuiNode(Node* pNode, OverviewNetworkSimulationWidget* pNetSimWidget);
+    ~GuiNode();
+
+    void AddGuiLink(GuiLink *pGuiLink);
+    int GetWidth();
+    int GetHeight();
+    Node* GetNode();
+
+    virtual int type() const;
+
+private:
+    virtual QVariant itemChange(GraphicsItemChange pChange, const QVariant &pValue);
+
+    Node            *mNode;
+    OverviewNetworkSimulationWidget* mNetSimWidget;
+    QGraphicsTextItem *mTextItem;
+    QList<GuiLink*> mGuiLinks;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+#define GUI_LINK_TYPE   (QGraphicsItem::UserType + 2)
+
+class GuiLink:
+    public QGraphicsLineItem
+{
+public:
+    GuiLink(GuiNode* pGuiNode0, GuiNode* pGuiNode1, QWidget* pParent);
+    ~GuiLink();
+
+    virtual int type() const;
+
+    void UpdatePosition();
+    GuiNode* GetGuiNode0();
+    GuiNode* GetGuiNode1();
+
+private:
+    GuiNode     *mGuiNode0, *mGuiNode1;
+    QWidget*    mParent;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class NetworkScene:
+    public QGraphicsScene
+{
+public:
+    NetworkScene(OverviewNetworkSimulationWidget *pNetSimWidget);
+    ~NetworkScene();
+
+    virtual void wheelEvent(QGraphicsSceneWheelEvent  *pEvent);
+
+    void Scale(qreal pFactor);
+private:
+    qreal     mScaleFactor;
+    OverviewNetworkSimulationWidget *mNetSimWidget;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class HierarchyItem;
 class OverviewNetworkSimulationWidget :
     public QDockWidget,
     public Ui_OverviewNetworkSimulationWidget
@@ -59,6 +129,8 @@ public:
     /// The destructor.
     virtual ~OverviewNetworkSimulationWidget();
 
+    void UpdateRoutingView();
+
 public slots:
     void SetVisible(bool pVisible);
     void SelectedNewNetworkItem();
@@ -66,6 +138,7 @@ public slots:
 private slots:
     void SelectedCoordinator(QModelIndex pIndex);
     void SelectedStream(QModelIndex pIndex);
+    void NetworkViewZoomChanged(int pZoom);
 
 private:
     void initializeGUI();
@@ -75,7 +148,6 @@ private:
     void UpdateHierarchyView();
     void UpdateStreamsView();
     void UpdateNetworkView();
-    void UpdateRoutingView();
 
     /* helpers for updating views */
     void ShowHierarchyDetails(Coordinator *pCoordinator, Node* pNode);
