@@ -40,20 +40,21 @@ using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-Node::Node(string pName, string pAddressHint, string pDomainPrefix, int pPosXHint, int pPosYHint)
+Node::Node(string pName, string pAddressHint, int pPosXHint, int pPosYHint)
 {
-    LOG(LOG_INFO, "Created node %s(address %s)", pName.c_str(), pAddressHint.c_str());
     for (int i = 0; i < MAX_HIERARCHY_DEPTH; i++)
         mCoordinators[i] = NULL;
     mName = pName;
     mAddress = pAddressHint; //TODO: SO address management
-    mDomain = pDomainPrefix;
+    mDomain = GetDomain(pAddressHint, HIERARCHY_HEIGHT - 1);
     mPosXHint = pPosXHint;
     mPosYHint = pPosYHint;
     mIsGateway = false;
 
     if ((pName != "") && (pAddressHint != ""))
         DNS.registerName(pName, pAddressHint);
+
+    LOG(LOG_INFO, "Created node %s(address %s), domain %s", mName.c_str(), mAddress.c_str(), mDomain.c_str());
 }
 
 Node::~Node()
@@ -87,26 +88,14 @@ FibTable Node::GetFib()
     return tResult;
 }
 
-bool Node::AddRibEntry(string pDestination, string pNextNode, int pHopCount, QoSSettings *pQoSSettings)
+bool Node::AddRibEntry(string pNodeAddress, RibTable *pTable, std::string pDestination, std::string pNextNode, int pHopCount, QoSSettings *pQoSSettings)
 {
     bool tRouteAlreadyKnown = false;
 
-    if (pNextNode == mAddress)
+    if (pNextNode == pNodeAddress)
     {
-        LOG(LOG_ERROR, "Routing loop detected, will drop this RIB entry");
+        LOGEX(Node, LOG_ERROR, "Routing loop detected, will drop this RIB entry");
         return false;
-    }
-
-    // does the next node belongs to our cluster domain?
-    if (pNextNode.compare(0, mDomain.length(), mDomain.c_str()) != 0)
-    {
-        if (!mIsGateway)
-        {
-            #ifdef DEBUG_NEIOGHBOR_DISCOVERY
-                LOG(LOG_VERBOSE, "Mark node %s as gateway", mAddress.c_str());
-            #endif
-            mIsGateway = true;
-        }
     }
 
     //TODO: search duplicates and remove more fine granular entries
@@ -127,42 +116,73 @@ bool Node::AddRibEntry(string pDestination, string pNextNode, int pHopCount, QoS
     // if next node is a domain then we have to check if we already know the first part of the route towards this destination domain
     if (IsDomain(pNextNode))
     {
+        #ifdef DEBUG_ROUTING
+            //LOGEX(Node, LOG_WARN, "Next node is domain %s", pNextNode.c_str());
+        #endif
         QoSSettings tQoSRequs;
         tQoSRequs.DataRate = 0;
         tQoSRequs.Delay = 0;
         tQoSRequs.Features = 0;
-        string tNextNode = GetNextHop(pNextNode, tQoSRequs);
+        string tNextNode = GetNextHop(pTable, pNextNode, tQoSRequs);
         if (tNextNode != "")
+        {
+            //LOGEX(Node, LOG_ERROR, "Set next hop to %s", tNextNode.c_str());
             tRibEntry->NextNode = tNextNode;
+        }
     }
 
-    mRibTableMutex.lock();
     RibTable::iterator tIt;
-    for (tIt = mRibTable.begin(); tIt != mRibTable.end(); tIt++)
+    if (pTable->size() > 0)
     {
-        if (((*tIt)->Destination == tRibEntry->Destination) && ((*tIt)->NextNode == tRibEntry->NextNode))
+        int tRibPosition = 0;
+        for (tIt = pTable->begin(); tIt != pTable->end(); tIt++)
         {
-            tRouteAlreadyKnown = true;
-            break;
+            if (((*tIt)->Destination == tRibEntry->Destination) && ((*tIt)->NextNode == tRibEntry->NextNode))
+            {
+                #ifdef DEBUG_ROUTING
+                    LOGEX(Node, LOG_WARN, "Already stored in RIB of node %s the entry: %s via %s at position %d", pNodeAddress.c_str(), tRibEntry->Destination.c_str(), tRibEntry->NextNode.c_str(), tRibPosition);
+                #endif
+                tRouteAlreadyKnown = true;
+                break;
+            }
+            //LOG(LOG_ERROR, "Comparing %s and %s", GetForeignDomain((*tIt)->Destination).c_str(), GetForeignDomain(tRibEntry->Destination).c_str());
+            if ((GetForeignDomain(pNodeAddress, (*tIt)->Destination) == GetForeignDomain(pNodeAddress, tRibEntry->Destination)) && ((*tIt)->NextNode == tRibEntry->NextNode))
+            {
+                #ifdef DEBUG_ROUTING
+                    LOGEX(Node, LOG_WARN, "Replacing in RIB of node %s the entry: %s via %s by the aggregated entry %s via %s", pNodeAddress.c_str(), (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str(), tRibEntry->Destination.c_str(), tRibEntry->NextNode.c_str());
+                #endif
+            }
+            tRibPosition++;
         }
     }
     // add entry to RIB
     if (!tRouteAlreadyKnown)
     {// new RIB entry
         #ifdef DEBUG_ROUTING
-            LOG(LOG_WARN, "Adding to RIB of node %s the entry: %s via %s", mAddress.c_str(), tRibEntry->Destination.c_str(), tRibEntry->NextNode.c_str());
+            LOGEX(Node, LOG_WARN, "Adding to RIB of node %s the entry: %s via %s", pNodeAddress.c_str(), tRibEntry->Destination.c_str(), tRibEntry->NextNode.c_str());
         #endif
-        mRibTable.push_back(tRibEntry);
+            pTable->push_back(tRibEntry);
     }else
     {// already known RIB entry -> drop it
         #ifdef DEBUG_ROUTING
-            //LOG(LOG_WARN, "Already stored in RIB of node %s the entry: %s via %s", mAddress.c_str(), tRibEntry->Destination.c_str(), tRibEntry->NextNode.c_str());
+            //LOGEX(Node, LOG_WARN, "Already stored in RIB of node %s the entry: %s via %s", pNodeAddress.c_str(), tRibEntry->Destination.c_str(), tRibEntry->NextNode.c_str());
         #endif
         delete tRibEntry;
     }
-    mRibTableMutex.unlock();
 
     return !tRouteAlreadyKnown;
+}
+
+bool Node::AddRibEntry(string pDestination, string pNextNode, int pHopCount, QoSSettings *pQoSSettings)
+{
+    bool tResult = false;
+    mRibTableMutex.lock();
+
+    tResult = AddRibEntry(mAddress, &mRibTable, pDestination, pNextNode, pHopCount, pQoSSettings);
+
+    mRibTableMutex.unlock();
+
+    return tResult;
 }
 
 RibTable Node::GetRib()
@@ -176,6 +196,20 @@ RibTable Node::GetRib()
     return tResult;
 }
 
+void Node::LogRib()
+{
+    RibTable::iterator tIt;
+
+    mRibTableMutex.lock();
+    int tCount = 0;
+    for (tIt = mRibTable.begin(); tIt != mRibTable.end(); tIt++)
+    {
+        LOG(LOG_VERBOSE, "Entry %d: %s via %s", tCount, (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str());
+        tCount++;
+    }
+    mRibTableMutex.unlock();
+}
+
 bool Node::AddTopologyEntry(string pDestination, string pNextNode, QoSSettings *pQoSSettings)
 {
     if (pNextNode == mAddress)
@@ -183,18 +217,17 @@ bool Node::AddTopologyEntry(string pDestination, string pNextNode, QoSSettings *
         LOG(LOG_ERROR, "Routing loop detected, will drop this RIB entry");
         return false;
     }
-
     // does the next node belongs to our cluster domain?
-    if (pNextNode.compare(0, mDomain.length(), mDomain.c_str()) != 0)
+    if (GetDomain(pNextNode, HIERARCHY_HEIGHT - 1)  !=  mDomain)
     {
         if (!mIsGateway)
         {
-            LOG(LOG_VERBOSE, "Mark node %s as gateway", mAddress.c_str());
+            #ifdef DEBUG_NEIOGHBOR_DISCOVERY
+                LOG(LOG_VERBOSE, "Mark node %s as gateway to domain %s", mAddress.c_str(), GetDomain(pNextNode, HIERARCHY_HEIGHT - 1).c_str());
+            #endif
             mIsGateway = true;
         }
     }
-
-    //TODO: search duplicates and remove more fine granular entries
 
     RibEntry *tRibEntry = new RibEntry();
     tRibEntry->Destination = pDestination;
@@ -247,17 +280,6 @@ bool Node::IsNeighbor(std::string pAddress)
     return tResult;
 }
 
-RibTable Node::GetNeighbors()
-{
-    RibTable tResult;
-
-    mTopologyTableMutex.lock();
-    tResult = mTopologyTable;
-    mTopologyTableMutex.unlock();
-
-    return tResult;
-}
-
 NodeList Node::GetSiblings()
 {
     NodeList tResult;
@@ -286,6 +308,7 @@ void Node::UpdateRouting()
 {
     #ifdef DEBUG_ROUTING
         LOG(LOG_WARN, "################## Updating routing of node %s ##################", mAddress.c_str());
+        LOG(LOG_WARN, "Resetting RIB of node %s", mAddress.c_str());
     #endif
 
     // delete old RIB
@@ -304,7 +327,7 @@ void Node::UpdateRouting()
         Link *tLink = GetNextLink((*tIt)->NextNode);
         if (tLink != NULL)
             tQoSSet = tLink->GetQoSCapabilities();
-        AddRibEntry((*tIt)->Destination, (*tIt)->NextNode, 1, &tQoSSet);
+        AddRibEntry(GetForeignDomain(mAddress, (*tIt)->Destination), (*tIt)->NextNode, 1, &tQoSSet);
     }
     mTopologyTableMutex.unlock();
 }
@@ -328,7 +351,7 @@ Coordinator* Node::SetAsCoordinator(int pHierarchyLevel)
     }
 
     // determine cluster address
-    string tClusterAddress = GetDomain(mAddress, HIEARACHY_DEPTH - pHierarchyLevel - 2);
+    string tClusterAddress = GetDomain(mAddress, HIERARCHY_HEIGHT - pHierarchyLevel - 1);
 
     // create new
     tResult = new Coordinator(this, tClusterAddress, pHierarchyLevel);
@@ -347,6 +370,11 @@ void Node::SetCoordinator(Coordinator *pCoordinator)
 string Node::GetDomain()
 {
     return mDomain;
+}
+
+bool Node::IsCoordinator()
+{
+    return (mCoordinators[0] != NULL);
 }
 
 bool Node::IsAddressOfDomain(const string pAddress, const string pDomain)
@@ -391,10 +419,36 @@ string Node::GetDomain(const string pAddress, int pHierarchyDepth)
 
     tResult = pAddress.substr(0, tPos);
 
-    for (int i = 0; i < HIEARACHY_DEPTH - tOrgDepth - 1; i++)
+    for (int i = 0; i < HIERARCHY_HEIGHT - tOrgDepth; i++)
         tResult += ".0";
 
     //LOGEX(Node, LOG_VERBOSE, "Address %s belongs to domain %s at hierarchy depth %d", pAddress.c_str(), tResult.c_str(), tOrgDepth);
+
+    return tResult;
+}
+
+string Node::GetForeignDomain(const string pOwnAddress, const string pAddress)
+{
+    int tHierarchyLevel = 1;
+    string tResult = "";
+
+    size_t tPos = pAddress.length();
+    size_t tLastPos = tPos;
+    do{
+        tPos = pAddress.rfind(".", tPos - 1);
+        if (pOwnAddress.substr(0, tPos) == pAddress.substr(0, tPos))
+            break;
+        tHierarchyLevel++;
+        tLastPos = tPos;
+        //LOGEX(Node, LOG_WARN, "   Foreign dom: %s, pos: %d", pAddress.substr(0, tPos).c_str(), (int)tPos);
+    }while(tHierarchyLevel < HIERARCHY_HEIGHT);
+
+    tResult = pAddress.substr(0, tLastPos);
+
+    for (int i = 0; i < tHierarchyLevel - 1; i++)
+        tResult += ".0";
+
+    //LOGEX(Node, LOG_VERBOSE, "Foreign domain of %s is %s", pAddress.c_str(), tResult.c_str());
 
     return tResult;
 }
@@ -540,7 +594,8 @@ bool Node::HandlePacket(Packet *pPacket)
     string tNextHop = GetNextHop(pPacket->Destination, pPacket->QoSRequirements);
     if (tNextHop == "")
     {
-        LOG(LOG_ERROR, "Routing failure on node %s: cannot determine next hop for %s", mAddress.c_str(), pPacket->Destination.c_str());
+        LOG(LOG_ERROR, "Routing failure on node %s: cannot determine next hop for %s, routing table is..", mAddress.c_str(), pPacket->Destination.c_str());
+        LogRib();
         return false;
     }
 
@@ -556,34 +611,52 @@ bool Node::HandlePacket(Packet *pPacket)
     return tNextLink->HandlePacket(pPacket, this);
 }
 
-string Node::GetNextHop(string pDestination, const QoSSettings pQoSRequirements)
+string Node::GetNextHop(RibTable *pTable, string pDestination, const QoSSettings pQoSRequirements)
 {
     string tResult = "";
     int tBestHopCosts = INT_MAX;
 
-    mRibTableMutex.lock();
-    if (mRibTable.size() > 0)
+    if (pTable->size() > 0)
     {
         RibTable::iterator tIt;
-        for (tIt = mRibTable.begin(); tIt != mRibTable.end(); tIt++)
+        for (tIt = pTable->begin(); tIt != pTable->end(); tIt++)
         {
             if (tBestHopCosts > (*tIt)->HopCount)
             {
                 //TODO: QoS
-                if ((*tIt)->Destination == pDestination)
-                {// MATCH: entry is an explicit destination
+                if (!IsDomain((*tIt)->NextNode))
+                {
+                    //LOGEX(Node, LOG_ERROR, "Comparing %s and %s", pDestination.c_str(), (*tIt)->Destination.c_str());
+                    if ((*tIt)->Destination == pDestination)
+                    {// MATCH: entry is an explicit destination
 
-                    tResult = (*tIt)->NextNode;
-                    tBestHopCosts = (*tIt)->HopCount;
-                }
-                if ((IsDomain((*tIt)->Destination)) && (IsAddressOfDomain(pDestination, (*tIt)->Destination)))
-                {// MATCH: entry is a cluster domain
-                    tResult = (*tIt)->NextNode;
-                    tBestHopCosts = (*tIt)->HopCount;
+                        tResult = (*tIt)->NextNode;
+                        tBestHopCosts = (*tIt)->HopCount;
+                        break;
+                    }
+                    //LOGEX(Node, LOG_ERROR, "Comparing %s and (%s via %s)", pDestination.c_str(), (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str());
+                    if ((IsDomain((*tIt)->Destination)) && ((IsAddressOfDomain((*tIt)->Destination, pDestination)) || (IsAddressOfDomain(pDestination, (*tIt)->Destination))))
+                    {// MATCH: entry is a cluster domain
+                        tResult = (*tIt)->NextNode;
+                        tBestHopCosts = (*tIt)->HopCount;
+                        break;
+                    }
                 }
             }
         }
     }
+
+    return tResult;
+}
+
+string Node::GetNextHop(string pDestination, const QoSSettings pQoSRequirements)
+{
+    string tResult = "";
+
+    mRibTableMutex.lock();
+
+    tResult = GetNextHop(&mRibTable, pDestination, pQoSRequirements);
+
     mRibTableMutex.unlock();
 
     return tResult;

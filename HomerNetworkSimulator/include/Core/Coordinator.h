@@ -39,7 +39,7 @@ namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define HIEARACHY_DEPTH                     4
+#define HIERARCHY_HEIGHT                     3
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -67,7 +67,7 @@ public:
     /* RIB management */
     bool DistributeRibEntry(std::string pDestination, std::string pNextCluster, int pHopCount = 1, QoSSettings *pQoSSettings = NULL);
     void UpdateRouting();
-    RibTable GetNeighbors();
+    RibTable GetRib();
 
 private:
     bool IsForeignAddress(std::string pAddress);
@@ -78,6 +78,8 @@ private:
     int             mHierarchyLevel;
     std::string     mClusterAddress;
     Node            *mNode;
+
+    std::list<RibTable*> mRibUpdateTables;
 
     NodeList        mClusterMembers;
     Mutex           mClusterMembersMutex;

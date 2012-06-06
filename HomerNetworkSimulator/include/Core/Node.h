@@ -69,7 +69,7 @@ typedef std::list<RibEntry*> RibTable;
 class Node
 {
 public:
-    Node(std::string pName, std::string pAddressHint = "", std::string pDomainPrefix = "", int pPosXHint = 0, int pPosYHint = 0);
+    Node(std::string pName, std::string pAddressHint = "", int pPosXHint = 0, int pPosYHint = 0);
     virtual ~Node();
 
     /* FIB management */
@@ -83,7 +83,6 @@ public:
     bool IsGateway(); // for GUI
     // physical RIB: the topology data which is collected based on physical link data
     bool IsNeighbor(std::string pAddress);
-    RibTable GetNeighbors();
 
     /* position hint for GUI */
     int GetPosXHint();
@@ -96,6 +95,7 @@ public:
     Coordinator* SetAsCoordinator(int pHierarchyLevel);
     void SetCoordinator(Coordinator *pCoordinator);
     std::string GetDomain();
+    bool IsCoordinator();
 
     /* CEP management */
     Cep* AddServer(enum TransportType pTransportType, unsigned int pPort);
@@ -113,20 +113,29 @@ public:
 
     /* helper */
     static bool IsAddressOfDomain(const std::string pAddress, const std::string pDomain);
-    static std::string GetDomain(const std::string pAddress, int pHierarchyDepth);
+    static std::string GetDomain(const std::string pAddress, int pHierarchyDepth); //TODO: DELETE
+    static std::string GetForeignDomain(const std::string pOwnAddress, const std::string pAddress);
     static bool IsDomain(const std::string pAddress);
+    static bool AddRibEntry(std::string pNodeAddress, RibTable *pTable, std::string pDestination, std::string pNextNode, int pHopCount = 1, QoSSettings *pQoSSettings = NULL);
+    static std::string GetNextHop(RibTable *pTable, std::string pDestination, const QoSSettings pQoSRequirements);
 
 private:
+
+    void LogRib();
+
     // physical RIB: the topology data which is collected based on physical link data
     bool AddTopologyEntry(std::string pDestination, std::string pNextNode, QoSSettings *pQoSSettings = NULL);
     friend class Link; // allow setting of topology data
 
     /* RIB lookup */
     std::string GetNextHop(std::string pDestination, const QoSSettings pQoSRequirements);
+
     RibTable    mRibTable;
     Mutex       mRibTableMutex;
+
     RibTable    mTopologyTable;
     Mutex       mTopologyTableMutex;
+
     bool        mIsGateway;
 
     /* FIB lookup */

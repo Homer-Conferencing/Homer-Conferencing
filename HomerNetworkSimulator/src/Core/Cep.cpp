@@ -41,11 +41,11 @@ using namespace std;
 using namespace Homer::Multimedia;
 
 ///////////////////////////////////////////////////////////////////////////////
-static int sStreamId = 0;
+static int sClientStreamId = 0;
 
 Cep::Cep(Node *pNode, enum TransportType pTransportType, unsigned int pLocalPort)
 {
-    mStreamId = sStreamId++;
+    mStreamId = -1;
     mClosed = false;
     mLocalPort = pLocalPort;
     mPeerPort = 0;
@@ -61,7 +61,7 @@ Cep::Cep(Node *pNode, enum TransportType pTransportType, string pTarget, unsigne
 {
     static int sLastClientPort = 1023;
 
-    mStreamId = sStreamId++;
+    mStreamId = sClientStreamId++;
     mClosed = false;
     mNode = pNode;
     mLocalPort = ++sLastClientPort;

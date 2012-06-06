@@ -37,6 +37,7 @@
 #include <QGraphicsTextItem>
 #include <QGraphicsLineItem>
 #include <QStandardItemModel>
+#include <QGraphicsSceneContextMenuEvent>
 
 #include <ui_OverviewNetworkSimulationWidget.h>
 
@@ -68,6 +69,7 @@ public:
 
 private:
     virtual QVariant itemChange(GraphicsItemChange pChange, const QVariant &pValue);
+    void UpdateText(bool pSelected);
 
     Node            *mNode;
     OverviewNetworkSimulationWidget* mNetSimWidget;
@@ -94,6 +96,9 @@ public:
     GuiNode* GetGuiNode0();
     GuiNode* GetGuiNode1();
 
+    void ShowContextMenu(QGraphicsSceneContextMenuEvent *pEvent);
+    void ShowCapSettings();
+
 private:
     GuiNode     *mGuiNode0, *mGuiNode1;
     OverviewNetworkSimulationWidget* mNetSimWidget;
@@ -110,6 +115,7 @@ public:
     ~NetworkScene();
 
     virtual void wheelEvent(QGraphicsSceneWheelEvent  *pEvent);
+    virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent *pEvent);
 
     void Scale(qreal pFactor);
 private:
@@ -163,7 +169,6 @@ private:
     void FillRoutingTableRow(int pRow, RibEntry* pEntry);
 
     virtual void closeEvent(QCloseEvent* pEvent);
-    virtual void contextMenuEvent(QContextMenuEvent *pEvent);
     virtual void timerEvent(QTimerEvent *pEvent);
 
     Scenario                *mScenario;
