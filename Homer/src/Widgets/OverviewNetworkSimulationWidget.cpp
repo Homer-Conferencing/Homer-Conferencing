@@ -31,6 +31,7 @@
 
 #include <Core/Coordinator.h>
 #include <Core/Scenario.h>
+#include <Dialogs/AddNetworkSinkDialog.h>
 #include <Dialogs/ContactEditDialog.h>
 #include <Widgets/OverviewNetworkSimulationWidget.h>
 #include <MainWindow.h>
@@ -161,6 +162,37 @@ void GuiNode::UpdateText(bool pSelected)
     mTextItem->setFont(QFont("Arial", tSize, tWeight, false));
 }
 
+void GuiNode::ShowContextMenu(QGraphicsSceneContextMenuEvent *pEvent)
+{
+    LOG(LOG_VERBOSE, "Context menu request for node %s", mNode->GetAddress().c_str());
+
+    QAction *tAction;
+
+    QMenu tMenu(mNetSimWidget);
+
+    QIcon tIcon;
+    tIcon.addPixmap(QPixmap(":/images/22_22/ArrowRight.png"), QIcon::Normal, QIcon::Off);
+    tAction = tMenu.addAction("Create video stream");
+    tAction->setIcon(tIcon);
+    tAction = tMenu.addAction("Open video viewer");
+    tAction->setIcon(tIcon);
+
+    QAction* tPopupRes = tMenu.exec(pEvent->screenPos());
+    if (tPopupRes != NULL)
+    {
+        if (tPopupRes->text().compare("Create video stream") == 0)
+        {
+            mNetSimWidget->SendVideo(mNode);
+            return;
+        }
+        if (tPopupRes->text().compare("Open video viewer") == 0)
+        {
+            mNetSimWidget->ReceiveVideo(mNode);
+            return;
+        }
+    }
+}
+
 QVariant GuiNode::itemChange(GraphicsItemChange pChange, const QVariant &pValue)
 {
     switch(pChange)
@@ -273,30 +305,6 @@ GuiNode* GuiLink::GetGuiNode1()
 void GuiLink::ShowContextMenu(QGraphicsSceneContextMenuEvent *pEvent)
 {
     LOG(LOG_VERBOSE, "Context menu request for link %s - %s", mGuiNode0->GetNode()->GetAddress().c_str(), mGuiNode1->GetNode()->GetAddress().c_str());
-
-    QAction *tAction;
-
-    QMenu tMenu(mNetSimWidget);
-
-    tAction = tMenu.addAction("Link capabilities");
-    QIcon tIcon;
-    tIcon.addPixmap(QPixmap(":/images/22_22/ArrowRight.png"), QIcon::Normal, QIcon::Off);
-    tAction->setIcon(tIcon);
-
-    QAction* tPopupRes = tMenu.exec(pEvent->screenPos());
-    if (tPopupRes != NULL)
-    {
-        if (tPopupRes->text().compare("Link capabilities") == 0)
-        {
-            ShowCapSettings();
-            return;
-        }
-    }
-}
-
-void GuiLink::ShowCapSettings()
-{
-    LOG(LOG_VERBOSE, "Show capability settings dialog");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -365,12 +373,19 @@ void NetworkScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *pEvent)
     {
         GuiLink *tLink = (GuiLink*)tItem;
         tLink->ShowContextMenu(pEvent);
+        return;
+    }
+    if (tItem->type() == GUI_NODE_TYPE)
+    {
+        GuiNode *tNode = (GuiNode*)tItem;
+        tNode->ShowContextMenu(pEvent);
+        return;
     }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-OverviewNetworkSimulationWidget::OverviewNetworkSimulationWidget(QAction *pAssignedAction, QMainWindow* pMainWindow, Scenario *pScenario):
+OverviewNetworkSimulationWidget::OverviewNetworkSimulationWidget(QAction *pAssignedAction, MainWindow* pMainWindow, Scenario *pScenario):
     QDockWidget(pMainWindow)
 {
     mAssignedAction = pAssignedAction;
@@ -833,6 +848,22 @@ void OverviewNetworkSimulationWidget::UpdateRoutingView()
         mTwRouting->removeRow(i);
 
     mTwRouting->setRowCount(tRow);
+}
+
+void OverviewNetworkSimulationWidget::SendVideo(Node *pNode)
+{
+    LOG(LOG_VERBOSE, "Send video from node %s", pNode->GetAddress().c_str());
+
+    AddNetworkSinkDialog tANSDialog(this, mMainWindow->GetVideoMuxer());
+
+    tANSDialog.exec();
+}
+
+void OverviewNetworkSimulationWidget::ReceiveVideo(Node *pNode)
+{
+    LOG(LOG_VERBOSE, "Receive video on node %s", pNode->GetAddress().c_str());
+
+    mMainWindow->actionOpenVideoAudioPreview();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

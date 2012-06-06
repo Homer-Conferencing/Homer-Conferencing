@@ -1351,6 +1351,16 @@ void MainWindow::DeleteParticipantSession(ParticipantWidget *pParticipantWidget)
     }
 }
 
+MediaSourceMuxer* MainWindow::GetVideoMuxer()
+{
+    return mOwnVideoMuxer;
+}
+
+MediaSourceMuxer* MainWindow::GetAudioMuxer()
+{
+    return mOwnAudioMuxer;
+}
+
 void MainWindow::actionExit()
 {
     close();

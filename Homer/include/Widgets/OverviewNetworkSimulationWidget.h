@@ -67,6 +67,8 @@ public:
     int GetWidth();
     int GetHeight();
 
+    void ShowContextMenu(QGraphicsSceneContextMenuEvent *pEvent);
+
 private:
     virtual QVariant itemChange(GraphicsItemChange pChange, const QVariant &pValue);
     void UpdateText(bool pSelected);
@@ -97,7 +99,6 @@ public:
     GuiNode* GetGuiNode1();
 
     void ShowContextMenu(QGraphicsSceneContextMenuEvent *pEvent);
-    void ShowCapSettings();
 
 private:
     GuiNode     *mGuiNode0, *mGuiNode1;
@@ -125,6 +126,7 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
+class MainWindow;
 class HierarchyItem;
 class OverviewNetworkSimulationWidget :
     public QDockWidget,
@@ -133,7 +135,7 @@ class OverviewNetworkSimulationWidget :
     Q_OBJECT;
 public:
     /// The default constructor
-    OverviewNetworkSimulationWidget(QAction *pAssignedAction, QMainWindow *pMainWindow, Scenario *pScenario);
+    OverviewNetworkSimulationWidget(QAction *pAssignedAction, MainWindow *pMainWindow, Scenario *pScenario);
 
     /// The destructor.
     virtual ~OverviewNetworkSimulationWidget();
@@ -155,6 +157,10 @@ private:
     void initializeGUI();
     void InitNetworkView();
 
+    friend class GuiNode;
+    void SendVideo(Node *pNode);
+    void ReceiveVideo(Node *pNode);
+
     /* update views */
     void UpdateHierarchyView();
     void UpdateStreamsView();
@@ -172,7 +178,7 @@ private:
     virtual void timerEvent(QTimerEvent *pEvent);
 
     Scenario                *mScenario;
-    QMainWindow             *mMainWindow;
+    MainWindow              *mMainWindow;
     QPoint                  mWinPos;
     QAction                 *mAssignedAction;
     QStandardItemModel      *mTvHierarchyModel, *mTvStreamsModel;

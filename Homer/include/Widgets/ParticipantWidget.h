@@ -93,7 +93,7 @@ public:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-
+class MainWindow;
 class ParticipantWidget:
     public QDockWidget,
     public Ui_ParticipantWidget
@@ -101,7 +101,7 @@ class ParticipantWidget:
     Q_OBJECT;
 
 public:
-    ParticipantWidget(enum SessionType pSessionType, QMainWindow *pMainWindow, OverviewContactsWidget *pContactsWidget, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer = NULL, MediaSourceMuxer *pAudioSourceMuxer = NULL, QString pParticipant = "unknown");
+    ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow, OverviewContactsWidget *pContactsWidget, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer = NULL, MediaSourceMuxer *pAudioSourceMuxer = NULL, QString pParticipant = "unknown");
 
     virtual ~ParticipantWidget();
 
@@ -152,7 +152,7 @@ private:
     void ShowStreamPosition(int64_t tCurPos, int64_t tEndPos);
     void CallStopped(bool pIncoming);
 
-    QMainWindow         *mMainWindow;
+    MainWindow          *mMainWindow;
     QMessageBox         *mCallBox;
     QString             mSessionName;
     QString				mSipInterface; // service access point name in form "IP:PORT" or "[IPv6]:PORT"

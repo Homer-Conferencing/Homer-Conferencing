@@ -104,13 +104,17 @@ public:
     /// The destructor
     virtual ~MainWindow();
 
+    MediaSourceMuxer* GetVideoMuxer();
+    MediaSourceMuxer* GetAudioMuxer();
+
+public slots:
+    void actionOpenVideoAudioPreview();
+
 private slots:
     void actionExit();
 
     void actionIdentity();
     void actionConfiguration();
-
-    void actionOpenVideoAudioPreview();
 
     void actionHelp();
     void actionUpdateCheck();
