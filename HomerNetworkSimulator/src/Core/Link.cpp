@@ -69,8 +69,16 @@ bool Link::HandlePacket(Packet *pPacket, Node* pLastNode)
     #endif
 
     // store stream id in internal list
+    std::list<int>::iterator tIt;
+    bool tFound = false;
     mSeenStreamsMutex.lock();
-    mSeenStreams.push_back(pPacket->TrackingStreamId);
+    for (tIt = mSeenStreams.begin(); tIt != mSeenStreams.end(); tIt++)
+    {
+        if (*tIt == pPacket->TrackingStreamId)
+            tFound = true;
+    }
+    if (!tFound)
+        mSeenStreams.push_back(pPacket->TrackingStreamId);
     mSeenStreamsMutex.unlock();
 
     // check from which interface the packet was received and forward it to the other one

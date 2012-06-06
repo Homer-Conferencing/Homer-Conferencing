@@ -61,7 +61,7 @@ namespace Homer { namespace Gui {
 static struct StreamDescriptor sEmptyStreamDesc = {0, {0, 0, 0}, "", "", 0, 0, 0};
 #define STREAM_COLORS           14
 static QColor sStreamColor[STREAM_COLORS] = {Qt::red, Qt::green, Qt:: blue, Qt::cyan, Qt::magenta, Qt::yellow, Qt::gray,
-                                      Qt::darkRed, Qt::darkGreen, Qt::darkBlue, Qt::darkCyan, Qt::darkMagenta, Qt::darkYellow, Qt::darkGray};
+                                             Qt::darkRed, Qt::darkGreen, Qt::darkBlue, Qt::darkCyan, Qt::darkMagenta, Qt::darkYellow, Qt::darkGray};
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -122,9 +122,7 @@ GuiNode::GuiNode(Node* pNode, OverviewNetworkSimulationWidget* pNetSimWidget):
 
     // create GUI node text object (uses node's address)
     mTextItem = new QGraphicsTextItem(QString(pNode->GetAddress().c_str()), this);
-    mTextItem->setPos(0, 45);
-    mTextItem->setDefaultTextColor(Qt::black);
-    mTextItem->setFont(QFont("Arial", 9, QFont::Normal, false));
+    UpdateText(false);
 }
 GuiNode::~GuiNode()
 {
@@ -134,6 +132,33 @@ GuiNode::~GuiNode()
 int GuiNode::type() const
 {
     return GUI_NODE_TYPE;
+}
+
+void GuiNode::UpdateText(bool pSelected)
+{
+    int tSize = 16;
+    int tWeight = QFont::Normal;
+
+    // size and weight
+    if (pSelected)
+    {
+        tSize = 24;
+        tWeight = QFont::Bold;
+        mTextItem->setPos(-25, 45);
+        mNetSimWidget->UpdateRoutingView();
+    }else
+    {
+        mTextItem->setPos(-10, 45);
+    }
+
+    // coloring
+    if (mNode->IsCoordinator())
+        mTextItem->setDefaultTextColor(Qt::red);
+    else
+        mTextItem->setDefaultTextColor(Qt::black);
+
+    // set the font
+    mTextItem->setFont(QFont("Arial", tSize, tWeight, false));
 }
 
 QVariant GuiNode::itemChange(GraphicsItemChange pChange, const QVariant &pValue)
@@ -148,16 +173,7 @@ QVariant GuiNode::itemChange(GraphicsItemChange pChange, const QVariant &pValue)
             }
             break;
         case QGraphicsItem::ItemSelectedChange:
-            if (pValue.toBool())
-            {
-                mTextItem->setFont(QFont("Arial", 9, QFont::Bold, false));
-                mTextItem->setDefaultTextColor(Qt::red);
-                mNetSimWidget->UpdateRoutingView();
-            }else
-            {
-                mTextItem->setFont(QFont("Arial", 9, QFont::Normal, false));
-                mTextItem->setDefaultTextColor(Qt::black);
-            }
+            UpdateText(pValue.toBool());
             break;
         default:
             break;
@@ -195,10 +211,10 @@ GuiLink::GuiLink(Link *pLink, OverviewNetworkSimulationWidget* pNetSimWidget):QG
     mNetSimWidget = pNetSimWidget;
     mLink = pLink;
     setFlag(QGraphicsItem::ItemIsSelectable, true);
-    setPen(QPen(Qt::black, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     setZValue(-1000.0);
     mGuiNode0->AddGuiLink(this);
     mGuiNode1->AddGuiLink(this);
+    UpdateColoring();
     UpdatePosition();
     #ifdef DEBUG_GUI_SIMULATION_TOPOLOGY_CREATION
         LOG(LOG_WARN, "Created GUI link between %s and %s", mGuiNode0->GetNode()->GetAddress().c_str(), mGuiNode1->GetNode()->GetAddress().c_str());
@@ -222,13 +238,14 @@ Link* GuiLink::GetLink()
 void GuiLink::UpdateColoring()
 {
     list<int>tSeenStreams = mLink->GetSeenStreams();
-    if (tSeenStreams.size() > 0)
+    int tStreamCount = tSeenStreams.size();
+    if (tStreamCount > 0)
     {
         int tFirstStreamId = *tSeenStreams.begin();
         QColor tColor = sStreamColor[tFirstStreamId % STREAM_COLORS];
-        setPen(QPen(tColor, 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        setPen(QPen(tColor, 3 * tStreamCount, Qt::SolidLine, Qt::FlatCap, Qt::RoundJoin));
     }else
-        setPen(QPen(Qt::black, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        setPen(QPen(Qt::black, 1, Qt::SolidLine, Qt::FlatCap, Qt::RoundJoin));
 }
 
 void GuiLink::UpdatePosition()
@@ -251,6 +268,35 @@ GuiNode* GuiLink::GetGuiNode0()
 GuiNode* GuiLink::GetGuiNode1()
 {
     return mGuiNode1;
+}
+
+void GuiLink::ShowContextMenu(QGraphicsSceneContextMenuEvent *pEvent)
+{
+    LOG(LOG_VERBOSE, "Context menu request for link %s - %s", mGuiNode0->GetNode()->GetAddress().c_str(), mGuiNode1->GetNode()->GetAddress().c_str());
+
+    QAction *tAction;
+
+    QMenu tMenu(mNetSimWidget);
+
+    tAction = tMenu.addAction("Link capabilities");
+    QIcon tIcon;
+    tIcon.addPixmap(QPixmap(":/images/22_22/ArrowRight.png"), QIcon::Normal, QIcon::Off);
+    tAction->setIcon(tIcon);
+
+    QAction* tPopupRes = tMenu.exec(pEvent->screenPos());
+    if (tPopupRes != NULL)
+    {
+        if (tPopupRes->text().compare("Link capabilities") == 0)
+        {
+            ShowCapSettings();
+            return;
+        }
+    }
+}
+
+void GuiLink::ShowCapSettings()
+{
+    LOG(LOG_VERBOSE, "Show capability settings dialog");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -293,6 +339,35 @@ void NetworkScene::Scale(qreal pFactor)
     tView->scale(pFactor, pFactor);
 }
 
+void NetworkScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *pEvent)
+{
+    qreal tX = pEvent->scenePos().x();
+    qreal tY = pEvent->scenePos().y();
+    QGraphicsItem*  tItem = itemAt(tX, tY);
+
+    if (tItem == NULL)
+        return;
+
+    switch(tItem->type())
+    {
+        case GUI_LINK_TYPE:
+            LOG(LOG_VERBOSE, "Context menu request for item of \"link\"");
+            break;
+        case GUI_NODE_TYPE:
+            LOG(LOG_VERBOSE, "Context menu request for item of \"node\"");
+            break;
+        default:
+            LOG(LOG_VERBOSE, "Context menu request for item of type %d", tItem->type());
+            break;
+    }
+
+    if (tItem->type() == GUI_LINK_TYPE)
+    {
+        GuiLink *tLink = (GuiLink*)tItem;
+        tLink->ShowContextMenu(pEvent);
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 OverviewNetworkSimulationWidget::OverviewNetworkSimulationWidget(QAction *pAssignedAction, QMainWindow* pMainWindow, Scenario *pScenario):
@@ -329,6 +404,8 @@ OverviewNetworkSimulationWidget::OverviewNetworkSimulationWidget(QAction *pAssig
     InitNetworkView();
     UpdateHierarchyView();
     UpdateStreamsView();
+
+    mGbStreams->hide();
 }
 
 OverviewNetworkSimulationWidget::~OverviewNetworkSimulationWidget()
@@ -351,6 +428,8 @@ void OverviewNetworkSimulationWidget::initializeGUI()
 
     mNetworkScene = new NetworkScene(this);
     mGvNetwork->setScene(mNetworkScene);
+
+    NetworkViewZoomChanged(50);
 }
 
 void OverviewNetworkSimulationWidget::closeEvent(QCloseEvent* pEvent)
@@ -373,28 +452,6 @@ void OverviewNetworkSimulationWidget::SetVisible(bool pVisible)
         mWinPos = pos();
         hide();
     }
-}
-
-void OverviewNetworkSimulationWidget::contextMenuEvent(QContextMenuEvent *pEvent)
-{
-//    QAction *tAction;
-//
-//    QMenu tMenu(this);
-//
-//    tAction = tMenu.addAction("Add contact");
-//    QIcon tIcon1;
-//    tIcon1.addPixmap(QPixmap(":/images/22_22/Plus.png"), QIcon::Normal, QIcon::Off);
-//    tAction->setIcon(tIcon1);
-//
-//    QAction* tPopupRes = tMenu.exec(pEvent->globalPos());
-//    if (tPopupRes != NULL)
-//    {
-//        if (tPopupRes->text().compare("Add contact") == 0)
-//        {
-//            InsertNew();
-//            return;
-//        }
-//    }
 }
 
 void OverviewNetworkSimulationWidget::timerEvent(QTimerEvent *pEvent)
@@ -568,7 +625,7 @@ void OverviewNetworkSimulationWidget::ShowStreamDetails(const struct StreamDescr
 
 QString OverviewNetworkSimulationWidget::CreateStreamId(const struct StreamDescriptor pDesc)
 {
-    return QString("%1").arg(pDesc.Id) + "> " + QString(pDesc.LocalNode.c_str()) + ":" + QString("%1").arg(pDesc.LocalPort) + " <==> " +QString(pDesc.PeerNode.c_str()) + ":" + QString("%1").arg(pDesc.PeerPort);
+    return QString("Stream %1").arg(pDesc.Id) + ":  " + QString(pDesc.LocalNode.c_str()) + ":" + QString("%1").arg(pDesc.LocalPort) + " ==> " +QString(pDesc.PeerNode.c_str()) + ":" + QString("%1").arg(pDesc.PeerPort);
 }
 
 void OverviewNetworkSimulationWidget::UpdateStreamsView()
@@ -578,19 +635,28 @@ void OverviewNetworkSimulationWidget::UpdateStreamsView()
     //LOG(LOG_VERBOSE, "Updating streams view");
 
     StreamList tStreams = mScenario->GetStreams();
-    StreamList::iterator tIt;
     QStandardItem *tRootItem = mTvStreamsModel->invisibleRootItem();
 
     if (tStreams.size() == 0)
     {
-        ShowStreamDetails(sEmptyStreamDesc);
-        // if the QTreeView is already empty we can return immediately
-        if (tRootItem->rowCount() == 0)
-            return;
+        if (mTvStreamsModel->rowCount(tRootItem->index()))
+        {
+            ShowStreamDetails(sEmptyStreamDesc);
+
+            mGbStreams->hide();
+
+            mTvStreamsModel->clear();
+        }
+
+        return;
     }
+
+    if (mGbStreams->isHidden())
+        mGbStreams->show();
 
     int tCount = 0;
     // check if update is need
+    StreamList::iterator tIt;
     if (tRootItem->rowCount() != 0)
     {
         for(tIt = tStreams.begin(); tIt != tStreams.end(); tIt++)

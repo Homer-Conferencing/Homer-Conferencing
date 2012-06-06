@@ -93,26 +93,26 @@ Scenario* Scenario::CreateScenario(int pIndex)
     Coordinator *tCoord0_1_2_2 = tScenario->AddDomain3("1.2.2", (+3) * NODE_SHAPE_WIDTH + (8) * NODE_SHAPE_WIDTH, (-3) * NODE_SHAPE_HEIGHT);
     Coordinator *tCoord0_1_2_3 = tScenario->AddDomain3("1.2.3", (0) * NODE_SHAPE_WIDTH + (8) * NODE_SHAPE_WIDTH, (+3) * NODE_SHAPE_HEIGHT);
 
-    Coordinator *tCoord1_1_2 = tScenario->AddCoordinator("1.2.3.1", 1);
+    Coordinator *tCoord1_1_2 = tScenario->AddCoordinator("1.2.1.1", 1);
     tCoord1_1_2->AddChildCoordinator(tCoord0_1_2_1);
     tCoord1_1_2->AddChildCoordinator(tCoord0_1_2_2);
     tCoord1_1_2->AddChildCoordinator(tCoord0_1_2_3);
 
-    Coordinator *tCoord2_1 = tScenario->AddCoordinator("1.2.3.1", 2);
+    Coordinator *tCoord2_1 = tScenario->AddCoordinator("1.2.1.1", 2);
     tCoord2_1->AddChildCoordinator(tCoord1_1_1);
     tCoord2_1->AddChildCoordinator(tCoord1_1_2);
 
     // ### inter-domain links ###
     tScenario->AddLink("1.1.1.2", "1.1.2.1");
     tScenario->AddLink("1.1.2.3", "1.1.3.2");
-//    tScenario->AddLink("1.1.1.3", "1.1.3.1");
+    tScenario->AddLink("1.1.1.3", "1.1.3.1");
 
     tScenario->AddLink("1.2.1.2", "1.2.2.1");
     tScenario->AddLink("1.2.2.3", "1.2.3.2");
     tScenario->AddLink("1.2.1.3", "1.2.3.1");
 
     tScenario->AddLink("1.1.2.2", "1.2.1.1");
-//    tScenario->AddLink("1.1.3.3", "1.2.3.3");
+    tScenario->AddLink("1.1.3.3", "1.2.3.3");
 
     // ### DNS entries ###
     tScenario->registerName("Source", "1.1.1.1");
@@ -124,8 +124,8 @@ Scenario* Scenario::CreateScenario(int pIndex)
 
     // ### routing update ###
     tScenario->UpdateRouting();
-    tScenario->UpdateRouting();
-    tScenario->UpdateRouting();
+//    tScenario->UpdateRouting();
+//    tScenario->UpdateRouting();
 
     return tScenario;
 }
@@ -199,6 +199,7 @@ bool Scenario::DeleteClientCep(Name pNodeName, unsigned int pPort)
             {
                 LOG(LOG_VERBOSE, "Deleting client at %s:%u", pNodeName.toString().c_str(), pPort);
                 mClientCeps.erase(tIt);
+                LOG(LOG_VERBOSE, "New stream count: %d", mClientCeps.size());
                 tResult = true;
                 break;
             }
@@ -269,7 +270,7 @@ Coordinator* Scenario::AddDomain(std::string pDomainPrefix, int pNodeCount, int 
     for(int i = 1; i < pNodeCount + 1; i++)
     {
         string tCurAddr = pDomainPrefix + '.' + toString(i);
-        tNode = AddNode("", tCurAddr, pDomainPrefix);
+        tNode = AddNode("", tCurAddr);
         if (tNode == NULL)
         {
             LOG(LOG_ERROR, "Failed to create node");
@@ -321,16 +322,16 @@ Coordinator* Scenario::AddDomain3(std::string pDomainPrefix, int pPosXHint, int 
         switch(i)
         {
             case 1:
-                tNode = AddNode("", tCurAddr, pDomainPrefix, pPosXHint + (NODE_SHAPE_WIDTH * (-1)), pPosYHint + (NODE_SHAPE_HEIGHT * (-1)));
+                tNode = AddNode("", tCurAddr, pPosXHint + (NODE_SHAPE_WIDTH * (-1)), pPosYHint + (NODE_SHAPE_HEIGHT * (-1)));
                 break;
             case 2:
-                tNode = AddNode("", tCurAddr, pDomainPrefix, pPosXHint + (NODE_SHAPE_WIDTH * (+1)), pPosYHint + (NODE_SHAPE_HEIGHT * (-1)));
+                tNode = AddNode("", tCurAddr, pPosXHint + (NODE_SHAPE_WIDTH * (+1)), pPosYHint + (NODE_SHAPE_HEIGHT * (-1)));
                 break;
             case 3:
-                tNode = AddNode("", tCurAddr, pDomainPrefix, pPosXHint + (NODE_SHAPE_WIDTH * (0)), pPosYHint + (NODE_SHAPE_HEIGHT * (+1)));
+                tNode = AddNode("", tCurAddr, pPosXHint + (NODE_SHAPE_WIDTH * (0)), pPosYHint + (NODE_SHAPE_HEIGHT * (+1)));
                 break;
             default:
-                tNode = AddNode("", tCurAddr, pDomainPrefix);
+                tNode = AddNode("", tCurAddr);
                 break;
         }
         if (tNode == NULL)
@@ -372,14 +373,14 @@ Coordinator* Scenario::AddDomain3(std::string pDomainPrefix, int pPosXHint, int 
     return tCoordinator;
 }
 
-Node* Scenario::AddNode(string pName, std::string pAddressHint, std::string pDomainPrefix, int pPosXHint, int pPosYHint)
+Node* Scenario::AddNode(string pName, std::string pAddressHint, int pPosXHint, int pPosYHint)
 {
     // do we already know this address?
     if (FindNode(pAddressHint) != NULL)
         return NULL;
 
     mNodesMutex.lock();
-    Node *tNode = new Node(pName, pAddressHint, pDomainPrefix, pPosXHint, pPosYHint);
+    Node *tNode = new Node(pName, pAddressHint, pPosXHint, pPosYHint);
     mNodes.push_back(tNode);
     mNodesMutex.unlock();
 
