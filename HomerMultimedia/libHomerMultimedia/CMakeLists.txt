@@ -74,6 +74,7 @@ SET (SOURCES
 	../src/MediaFifo
 	../src/MediaSink
 	../src/MediaSinkFile
+	../src/MediaSinkMem
 	../src/MediaSinkNet
 	../src/MediaSource
 	../src/MediaSourceFile
