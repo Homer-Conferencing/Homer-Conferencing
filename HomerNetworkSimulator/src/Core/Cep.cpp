@@ -25,6 +25,9 @@
  * Since:   2012-05-30
  */
 
+#include <HBThread.h>
+#include <HBMutex.h>
+
 #include <Core/Cep.h>
 #include <Core/DomainNameService.h>
 #include <Core/Node.h>
@@ -42,6 +45,7 @@ using namespace Homer::Multimedia;
 
 ///////////////////////////////////////////////////////////////////////////////
 static int sClientStreamId = 0;
+Mutex Cep::sGlobalForwardingMutex;
 
 Cep::Cep(Node *pNode, enum TransportType pTransportType, unsigned int pLocalPort)
 {
@@ -50,6 +54,10 @@ Cep::Cep(Node *pNode, enum TransportType pTransportType, unsigned int pLocalPort
     mLocalPort = pLocalPort;
     mPeerPort = 0;
     mPeerNode = "";
+    mPacketCount = 0;
+    mQoSSettings.DataRate = 0;
+    mQoSSettings.Delay = 0;
+    mQoSSettings.Features = 0;
     mNode = pNode;
     mTransportType = pTransportType;
     mPacketQueue = new MediaFifo(CEP_QUEUE_SIZE, CEP_QUEUE_ENTRY_SIZE, "PacketQueue@" + pNode->GetAddress());
@@ -63,11 +71,14 @@ Cep::Cep(Node *pNode, enum TransportType pTransportType, string pTarget, unsigne
 
     mStreamId = sClientStreamId++;
     mClosed = false;
-    mNode = pNode;
     mLocalPort = ++sLastClientPort;
-
-    mPeerNode = pTarget;
     mPeerPort = pTargetPort;
+    mPeerNode = pTarget;
+    mPacketCount = 0;
+    mQoSSettings.DataRate = 0;
+    mQoSSettings.Delay = 0;
+    mQoSSettings.Features = 0;
+    mNode = pNode;
     mTransportType = pTransportType;
     mPacketQueue = new MediaFifo(CEP_QUEUE_SIZE, CEP_QUEUE_ENTRY_SIZE, "PacketQueue@" + pNode->GetAddress());
 
@@ -91,9 +102,21 @@ bool Cep::SetQoS(const QoSSettings &pQoSSettings)
     return true;
 }
 
+bool Cep::SetQoSResults(const QoSSettings &pQoS)
+{
+    mQoSResults = pQoS;
+
+    return true;
+}
+
 QoSSettings Cep::GetQoS()
 {
     return mQoSSettings;
+}
+
+QoSSettings Cep::GetQoSResults()
+{
+    return mQoSResults;
 }
 
 bool Cep::Close()
@@ -128,14 +151,22 @@ bool Cep::Send(std::string pTargetNode, unsigned int pTargetPort, void *pBuffer,
     tPacket->SourcePort = mLocalPort;
     tPacket->DestinationPort = pTargetPort;
     tPacket->QoSRequirements = mQoSSettings;
+    tPacket->QoSResults.DataRate = INT_MAX;
+    tPacket->QoSResults.Delay = 0;
+    tPacket->QoSResults.Features = mQoSSettings.Features;
     tPacket->Data = pBuffer;
     tPacket->DataSize = pBufferSize;
     tPacket->TTL = TTL_INIT;
     tPacket->TrackingStreamId = mStreamId;
+    tPacket->SendingCep = this;
     mPacketCount++;
 
     // send packet towards destination
-    return mNode->HandlePacket(tPacket);
+    LockGlobalForwarding();
+    bool tResult = mNode->HandlePacket(tPacket);
+    UnlockGlobalForwarding();
+
+    return tResult;
 }
 
 bool Cep::Receive(std::string &pPeerNode, unsigned int &pPeerPort, void *pBuffer, ssize_t &pBufferSize)
@@ -151,11 +182,18 @@ bool Cep::Receive(std::string &pPeerNode, unsigned int &pPeerPort, void *pBuffer
     pBufferSize = tBufferSize;
     pPeerNode = mPeerNode;
     pPeerPort = mPeerPort;
-    mPacketCount++;
 
     #ifdef DEBUG_FORWARDING
         LOG(LOG_VERBOSE, "Received %d bytes from %s:%u", (int)pBufferSize, mPeerNode.c_str(), mPeerPort);
     #endif
+
+    int64_t tTimeDiff = mCurrentReceiveTime - Time::GetTimeStamp();
+    //LOG(LOG_VERBOSE, "Current time diff: %ld", tTimeDiff);
+    if (tTimeDiff > 0)
+    {
+        //LOG(LOG_VERBOSE, "Waiting for %ld us", tTimeDiff);
+        Thread::Suspend(tTimeDiff / 2); // we only simulate a delay
+    }
 
     return true;
 }
@@ -211,13 +249,29 @@ bool Cep::HandlePacket(Packet *pPacket)
     #endif
 
     mPacketQueue->WriteFifo((char*)pPacket->Data, pPacket->DataSize);
+    mPacketCount++;
     mPeerNode = pPacket->Source;
     mPeerPort = pPacket->SourcePort;
+    mQoSSettings = pPacket->QoSRequirements;
+    mQoSResults = pPacket->QoSResults;
+    //LOG(LOG_VERBOSE, "Current time: %ld, additional delay: %d", Time::GetTimeStamp(), pPacket->QoSResults.Delay);
+    mCurrentReceiveTime = Time::GetTimeStamp() /* in µs */ + (pPacket->QoSResults.Delay /* in ms */ * 1000);
+    pPacket->SendingCep->SetQoSResults(pPacket->QoSResults); // feedback signaling about resulting QoS values, sending CEP is still alive because this function is called in context of this sending CEP!
 
     // EOL for packet descriptor
     delete pPacket;
 
     return true;
+}
+
+void Cep::LockGlobalForwarding()
+{
+    sGlobalForwardingMutex.lock();
+}
+
+void Cep::UnlockGlobalForwarding()
+{
+    sGlobalForwardingMutex.unlock();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

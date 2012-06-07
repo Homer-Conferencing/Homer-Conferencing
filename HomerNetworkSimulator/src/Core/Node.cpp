@@ -551,6 +551,20 @@ Cep* Node::FindServerCep(unsigned int pPort)
     return tResult;
 }
 
+void Node::LogServerCeps()
+{
+    CepList::iterator tIt;
+
+    mServerCepsMutex.lock();
+    int tCount = 0;
+    for (tIt = mServerCeps.begin(); tIt != mServerCeps.end(); tIt++)
+    {
+        LOG(LOG_VERBOSE, "Entry %d: %s:%u", tCount, (*tIt)->GetLocalNode().c_str(), (*tIt)->GetLocalPort());
+        tCount++;
+    }
+    mServerCepsMutex.unlock();
+}
+
 bool Node::HandlePacket(Packet *pPacket)
 {
     #ifdef DEBUG_FORWARDING
@@ -570,7 +584,8 @@ bool Node::HandlePacket(Packet *pPacket)
         // have we found a fitting server CEP?
         if (tServerCep == NULL)
         {
-            LOG(LOG_ERROR, "No server CEP matched");
+            LOG(LOG_ERROR, "No server CEP matched on node %s, registered CEPs are..", mAddress.c_str());
+            LogServerCeps();
             return false;
         }
 

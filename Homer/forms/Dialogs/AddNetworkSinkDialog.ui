@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>538</width>
-    <height>407</height>
+    <height>439</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -344,7 +344,7 @@
               <string>Desired minimum data rate:</string>
              </property>
              <property name="checked">
-              <bool>true</bool>
+              <bool>false</bool>
              </property>
             </widget>
            </item>
@@ -449,7 +449,7 @@
               <string>Desired maximum overall delay:</string>
              </property>
              <property name="checked">
-              <bool>true</bool>
+              <bool>false</bool>
              </property>
             </widget>
            </item>

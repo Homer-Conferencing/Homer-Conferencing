@@ -106,8 +106,10 @@ ChannelConnection::ChannelConnection(Scenario *pScenario, std::string pTarget, R
     }
 
     if (mCep != NULL)
+    {
         mIsClosed = false;
-    else
+        mPeerNode = mCep->GetPeerNode(); // maybe the scenario has changed the destination to a pre-defined one? -> this happens if the network simulator view is used to create a stream
+    }else
         LOG(LOG_ERROR, "CEP object invalid");
 
     if(!tFoundTransport)

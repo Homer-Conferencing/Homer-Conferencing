@@ -120,7 +120,7 @@ public:
     static std::string GetNextHop(RibTable *pTable, std::string pDestination, const QoSSettings pQoSRequirements);
 
 private:
-
+    void LogServerCeps();
     void LogRib();
 
     // physical RIB: the topology data which is collected based on physical link data

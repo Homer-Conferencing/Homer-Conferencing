@@ -27,6 +27,7 @@
 
 #include <Core/DomainNameService.h>
 #include <Core/Scenario.h>
+#include <Core/Cep.h>
 
 #include <Logger.h>
 
@@ -48,6 +49,8 @@ using namespace std;
 
 Scenario::Scenario()
 {
+    mSourceNode = NULL;
+    mDestinationNode = NULL;
 }
 
 
@@ -132,14 +135,22 @@ Scenario* Scenario::CreateScenario(int pIndex)
 
 void Scenario::UpdateRouting()
 {
+    Cep::LockGlobalForwarding();
     if (mRootCoordinator != NULL)
         mRootCoordinator->UpdateRouting();
+    Cep::UnlockGlobalForwarding();
 }
 
 Cep* Scenario::AddServerCep(enum TransportType pTransportType, Name pNodeName, unsigned pPort)
 {
     // get reference to the right node
-    Node *tNode = FindNode(pNodeName.toString());
+    Node *tNode;
+
+    if (mDestinationNode != NULL)
+        tNode = mDestinationNode;
+    else
+        tNode = FindNode(pNodeName.toString());
+
     if (tNode == NULL)
     {
         LOG(LOG_ERROR, "Node name \"%s\" is unknown to the simulation", pNodeName.toString().c_str());
@@ -164,18 +175,21 @@ bool Scenario::DeleteServerCep(Name pNodeName, unsigned int pPort)
     return tNode->DeleteServer(pPort);
 }
 
-Cep* Scenario::AddClientCep(enum TransportType pTransportType, Name pTargetNodeName, unsigned pTargetPort)
+Cep* Scenario::AddClientCep(enum TransportType pTransportType, Name pTargetNodeIdentifier, unsigned pTargetPort)
 {
     // get reference to the right node
-    Node *tNode = FindNode(SIMULATION_SOURCE_NODE);
+    Node *tNode = mSourceNode;
     if (tNode == NULL)
     {
-        LOG(LOG_ERROR, "Target node name \"%s\" is unknown to the simulation", pTargetNodeName.toString().c_str());
+        LOG(LOG_ERROR, "Source node name \"%s\" is unknown to the simulation", pTargetNodeIdentifier.toString().c_str());
         return NULL;
     }
 
+    if (mDestinationNode != NULL)
+        pTargetNodeIdentifier = mDestinationNode->GetAddress();
+
     // create CEP
-    Cep* tCep = tNode->AddClient(pTransportType, pTargetNodeName.toString(), pTargetPort);
+    Cep* tCep = tNode->AddClient(pTransportType, pTargetNodeIdentifier.toString(), pTargetPort);
 
     mClientCepsMutex.lock();
     mClientCeps.push_back(tCep);
@@ -222,6 +236,7 @@ StreamList Scenario::GetStreams()
     {
         tEntry.PacketCount = (*tIt)->GetPacketCount();
         tEntry.QoSRequs = (*tIt)->GetQoS();
+        tEntry.QoSRes = (*tIt)->GetQoSResults();
         tEntry.LocalNode = (*tIt)->GetLocalNode();
         tEntry.LocalPort = (*tIt)->GetLocalPort();
         tEntry.PeerNode = (*tIt)->GetPeerNode();
@@ -232,6 +247,28 @@ StreamList Scenario::GetStreams()
     mClientCepsMutex.unlock();
 
     return tResult;
+}
+
+void Scenario::SetSourceNode(std::string pAddress)
+{
+    mClientCepsMutex.lock();
+
+    LOG(LOG_VERBOSE, "Setting source node to %s", pAddress.c_str());
+    Node *tSource = FindNode(pAddress);
+    mSourceNode = tSource;
+
+    mClientCepsMutex.unlock();
+}
+
+void Scenario::SetDestinationNode(std::string pAddress)
+{
+    mClientCepsMutex.lock();
+
+    LOG(LOG_VERBOSE, "Setting destination node to %s", pAddress.c_str());
+    Node *tSource = FindNode(pAddress);
+    mDestinationNode = tSource;
+
+    mClientCepsMutex.unlock();
 }
 
 NodeList Scenario::GetNodes()
@@ -383,6 +420,10 @@ Node* Scenario::AddNode(string pName, std::string pAddressHint, int pPosXHint, i
     Node *tNode = new Node(pName, pAddressHint, pPosXHint, pPosYHint);
     mNodes.push_back(tNode);
     mNodesMutex.unlock();
+
+    // set first created node as source node
+    if (mSourceNode == NULL)
+        mSourceNode = tNode;
 
     return tNode;
 }
