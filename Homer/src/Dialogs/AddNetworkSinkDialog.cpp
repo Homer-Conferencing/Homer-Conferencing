@@ -210,8 +210,6 @@ void AddNetworkSinkDialog::LoadConfiguration()
         mSbDataRate->setValue(8);
     }
 
-    mCbDataRate->setChecked(true);
-    mCbDelay->setChecked(true);
 
     for (int i = 0; i < mCbGAPIImpl->count(); i++)
     {

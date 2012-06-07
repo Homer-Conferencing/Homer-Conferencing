@@ -44,6 +44,7 @@ typedef std::list<Link*> LinkList;
 struct StreamDescriptor{
     int         PacketCount;
     QoSSettings QoSRequs;
+    QoSSettings QoSRes;
     std::string LocalNode, PeerNode;
     int         LocalPort, PeerPort;
     int         Id;
@@ -63,9 +64,11 @@ public:
     bool DeleteServerCep(Name pNodeName, unsigned int pPort);
 
     /* client CEP management */
-    Cep* AddClientCep(enum TransportType pTransportType, Name pTargetNodeName, unsigned pTargetPort);
+    Cep* AddClientCep(enum TransportType pTransportType, Name pTargetNodeIdentifier, unsigned pTargetPort);
     bool DeleteClientCep(Name pNodeName, unsigned int pPort);
     StreamList GetStreams(); // for GUI
+    void SetSourceNode(std::string pAddress);
+    void SetDestinationNode(std::string pAddress);
 
     /* list topology */
     NodeList GetNodes(); // for GUI
@@ -101,6 +104,7 @@ private:
     void        SetRootCoordinator(Coordinator *pCoordinator);
     Coordinator *mRootCoordinator;
 
+    Node        *mSourceNode, *mDestinationNode;
     NodeList    mNodes;
     Mutex       mNodesMutex;
 

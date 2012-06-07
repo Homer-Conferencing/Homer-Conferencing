@@ -52,11 +52,15 @@ public:
 
     bool HandlePacket(Packet *pPacket, Node* pLastNode);
 
+    /* QoS settings */
     void SetQoSCapabilities(QoSSettings pCaps);
     QoSSettings GetQoSCapabilities();
 
     Node* GetNode0();
     Node* GetNode1();
+
+    /* statistics */
+    int GetPacketCount();
 
     std::list<int> GetSeenStreams();
 private:
@@ -64,6 +68,7 @@ private:
     QoSSettings     mQoSCapabilities;
     std::list<int>  mSeenStreams;
     Mutex           mSeenStreamsMutex;
+    int             mPacketCount;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

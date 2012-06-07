@@ -28,6 +28,7 @@
 //#define DEBUG_GUI_SIMULATION_TOPOLOGY_CREATION
 //#define DEBUG_GUI_SIMULATION_TIMING
 //#define DEBUG_GUI_SIMULATION_INTERACTION
+#define DEBUG_GUI_SIMULATION_QOS
 
 #include <Core/Coordinator.h>
 #include <Core/Scenario.h>
@@ -59,7 +60,7 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static struct StreamDescriptor sEmptyStreamDesc = {0, {0, 0, 0}, "", "", 0, 0, 0};
+static struct StreamDescriptor sEmptyStreamDesc = {0, {0, 0, 0}, {0, 0, 0}, "", "", 0, 0, 0};
 #define STREAM_COLORS           14
 static QColor sStreamColor[STREAM_COLORS] = {Qt::red, Qt::green, Qt:: blue, Qt::cyan, Qt::magenta, Qt::yellow, Qt::gray,
                                              Qt::darkRed, Qt::darkGreen, Qt::darkBlue, Qt::darkCyan, Qt::darkMagenta, Qt::darkYellow, Qt::darkGray};
@@ -172,20 +173,20 @@ void GuiNode::ShowContextMenu(QGraphicsSceneContextMenuEvent *pEvent)
 
     QIcon tIcon;
     tIcon.addPixmap(QPixmap(":/images/22_22/ArrowRight.png"), QIcon::Normal, QIcon::Off);
-    tAction = tMenu.addAction("Create video stream");
+    tAction = tMenu.addAction("Send video from here");
     tAction->setIcon(tIcon);
-    tAction = tMenu.addAction("Open video viewer");
+    tAction = tMenu.addAction("Receive video here");
     tAction->setIcon(tIcon);
 
     QAction* tPopupRes = tMenu.exec(pEvent->screenPos());
     if (tPopupRes != NULL)
     {
-        if (tPopupRes->text().compare("Create video stream") == 0)
+        if (tPopupRes->text().compare("Send video from here") == 0)
         {
             mNetSimWidget->SendVideo(mNode);
             return;
         }
-        if (tPopupRes->text().compare("Open video viewer") == 0)
+        if (tPopupRes->text().compare("Receive video here") == 0)
         {
             mNetSimWidget->ReceiveVideo(mNode);
             return;
@@ -396,6 +397,7 @@ OverviewNetworkSimulationWidget::OverviewNetworkSimulationWidget(QAction *pAssig
     mHierarchyCol = 0;
     mHierarchyEntry = NULL;
     mSelectedNode = NULL;
+    mSelectedLink = NULL;
 
     initializeGUI();
 
@@ -412,11 +414,15 @@ OverviewNetworkSimulationWidget::OverviewNetworkSimulationWidget(QAction *pAssig
     connect(mTvHierarchy, SIGNAL(clicked(QModelIndex)), this, SLOT(SelectedCoordinator(QModelIndex)));
     connect(mTvStreams, SIGNAL(clicked(QModelIndex)), this, SLOT(SelectedStream(QModelIndex)));
     connect(mSlZoom, SIGNAL(valueChanged (int)), this, SLOT(NetworkViewZoomChanged(int)));
+    connect(mSbLinkDataRate, SIGNAL(valueChanged(int)), this, SLOT(SelectedLinkDataRate(int)));
+    connect(mSbLinkDelay, SIGNAL(valueChanged(int)), this, SLOT(SelectedLinkDelay(int)));
 
     SetVisible(CONF.GetVisibilityNetworkSimulationWidget());
     mAssignedAction->setChecked(CONF.GetVisibilityNetworkSimulationWidget());
 
     InitNetworkView();
+    InitRoutingView();
+    InitLinkView();
     UpdateHierarchyView();
     UpdateStreamsView();
 
@@ -479,6 +485,7 @@ void OverviewNetworkSimulationWidget::timerEvent(QTimerEvent *pEvent)
         UpdateStreamsView();
         UpdateNetworkView();
         UpdateRoutingView();
+        UpdateLinkView();
     }
 }
 
@@ -636,6 +643,8 @@ void OverviewNetworkSimulationWidget::ShowStreamDetails(const struct StreamDescr
     mLbPackets->setText(QString("%1").arg(pDesc.PacketCount));
     mLbDataRate->setText(QString("%1").arg(pDesc.QoSRequs.DataRate));
     mLbDelay->setText(QString("%1").arg(pDesc.QoSRequs.Delay));
+    mLbE2EDataRate->setText(QString("%1").arg(pDesc.QoSRes.DataRate));
+    mLbE2EDelay->setText(QString("%1").arg(pDesc.QoSRes.Delay));
 }
 
 QString OverviewNetworkSimulationWidget::CreateStreamId(const struct StreamDescriptor pDesc)
@@ -786,7 +795,12 @@ void OverviewNetworkSimulationWidget::SelectedNewNetworkItem()
                 LOG(LOG_VERBOSE, "New node item selected");
             #endif
             GuiNode *tSelectedGuiNode = (GuiNode*)tItems.first();
-            mSelectedNode = tSelectedGuiNode->GetNode();
+            Node* tNewNode = tSelectedGuiNode->GetNode();
+            if (tNewNode != mSelectedNode)
+            {
+                mSelectedNode = tNewNode;
+                InitRoutingView();
+            }
             break;
         }
         if ((*tIt)->type() == GUI_LINK_TYPE)
@@ -794,6 +808,14 @@ void OverviewNetworkSimulationWidget::SelectedNewNetworkItem()
             #ifdef DEBUG_GUI_SIMULATION_INTERACTION
                 LOG(LOG_VERBOSE, "New link item selected");
             #endif
+            GuiLink *tSelectedGuiLink = (GuiLink*)tItems.first();
+            Link* tNewLink = tSelectedGuiLink->GetLink();
+            if (tNewLink != mSelectedLink)
+            {
+                mSelectedLink = tNewLink;
+                InitLinkView();
+            }
+            break;
         }
     }
 }
@@ -822,7 +844,7 @@ void OverviewNetworkSimulationWidget::FillRoutingTableRow(int pRow, RibEntry* pE
     FillRoutingTableCell(pRow, 4, QString("%1").arg(pEntry->QoSCapabilities.Delay));
 }
 
-void OverviewNetworkSimulationWidget::UpdateRoutingView()
+void OverviewNetworkSimulationWidget::InitRoutingView()
 {
     NodeList tNodes = mScenario->GetNodes();
 
@@ -836,6 +858,13 @@ void OverviewNetworkSimulationWidget::UpdateRoutingView()
         return;
 
     mGrpRouting->setTitle(" Routing table " + QString(mSelectedNode->GetAddress().c_str()));
+}
+
+void OverviewNetworkSimulationWidget::UpdateRoutingView()
+{
+    if (mSelectedNode == NULL)
+        return;
+
     RibTable tRib = mSelectedNode->GetRib();
     RibTable::iterator tIt;
     int tRow = 0;
@@ -854,8 +883,8 @@ void OverviewNetworkSimulationWidget::SendVideo(Node *pNode)
 {
     LOG(LOG_VERBOSE, "Send video from node %s", pNode->GetAddress().c_str());
 
+    mScenario->SetSourceNode(pNode->GetAddress());
     AddNetworkSinkDialog tANSDialog(this, mMainWindow->GetVideoMuxer());
-
     tANSDialog.exec();
 }
 
@@ -863,7 +892,72 @@ void OverviewNetworkSimulationWidget::ReceiveVideo(Node *pNode)
 {
     LOG(LOG_VERBOSE, "Receive video on node %s", pNode->GetAddress().c_str());
 
+    mScenario->SetDestinationNode(pNode->GetAddress());
     mMainWindow->actionOpenVideoAudioPreview();
+}
+
+// #####################################################################
+// ############ link view
+// #####################################################################
+void OverviewNetworkSimulationWidget::InitLinkView()
+{
+    LinkList tLinks = mScenario->GetLinks();
+
+    if ((mSelectedLink == NULL) && (tLinks.size() > 0))
+    {
+        // select first in list
+        mSelectedLink = *tLinks.begin();
+    }
+
+    if (mSelectedLink == NULL)
+        return;
+
+    QoSSettings tQoSSettings = mSelectedLink->GetQoSCapabilities();
+
+    mGrpLinkCaps->setTitle(" Link capabilities " + QString(mSelectedLink->GetNode0()->GetAddress().c_str())+ "/" + QString(mSelectedLink->GetNode1()->GetAddress().c_str()));
+
+    mSbLinkDataRate->setValue(tQoSSettings.DataRate);
+    mSbLinkDelay->setValue(tQoSSettings.Delay);
+}
+
+void OverviewNetworkSimulationWidget::UpdateLinkView()
+{
+    if (mSelectedLink == NULL)
+        return;
+
+    mLbLinkPackets->setText(QString("%1").arg(mSelectedLink->GetPacketCount()));
+}
+
+void OverviewNetworkSimulationWidget::SelectedLinkDataRate(int pValue)
+{
+    if (mSelectedLink == NULL)
+        return;
+
+    #ifdef DEBUG_GUI_SIMULATION_QOS
+        LOG(LOG_VERBOSE, "Setting data rate to %d for link between %s and %s", pValue, mSelectedLink->GetNode0()->GetAddress().c_str(), mSelectedLink->GetNode1()->GetAddress().c_str());
+    #endif
+
+    QoSSettings tSet = mSelectedLink->GetQoSCapabilities();
+    tSet.DataRate = pValue;
+    mSelectedLink->SetQoSCapabilities(tSet);
+
+    mScenario->UpdateRouting();
+}
+
+void OverviewNetworkSimulationWidget::SelectedLinkDelay(int pValue)
+{
+    if (mSelectedLink == NULL)
+        return;
+
+    #ifdef DEBUG_GUI_SIMULATION_QOS
+        LOG(LOG_VERBOSE, "Setting delay to %d for link between %s and %s", pValue, mSelectedLink->GetNode0()->GetAddress().c_str(), mSelectedLink->GetNode1()->GetAddress().c_str());
+    #endif
+
+    QoSSettings tSet = mSelectedLink->GetQoSCapabilities();
+    tSet.Delay = pValue;
+    mSelectedLink->SetQoSCapabilities(tSet);
+
+    mScenario->UpdateRouting();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

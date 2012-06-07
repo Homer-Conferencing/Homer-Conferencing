@@ -42,10 +42,11 @@ Link::Link(Node *pNodeOne, Node *pNodeTwo)
 {
     LOG(LOG_INFO, "Created link from %s to %s", pNodeOne->GetAddress().c_str(), pNodeTwo->GetAddress().c_str());
 
+    mPacketCount = 0;
     mNodes[0] = pNodeOne;
     mNodes[1] = pNodeTwo;
-    mQoSCapabilities.DataRate = 0;
-    mQoSCapabilities.Delay = 0;
+    mQoSCapabilities.DataRate = 40;
+    mQoSCapabilities.Delay = 5;
     mQoSCapabilities.Features = 0;
 
     // simulate hello protocol
@@ -71,6 +72,8 @@ bool Link::HandlePacket(Packet *pPacket, Node* pLastNode)
     // store stream id in internal list
     std::list<int>::iterator tIt;
     bool tFound = false;
+
+    // store as seen stream
     mSeenStreamsMutex.lock();
     for (tIt = mSeenStreams.begin(); tIt != mSeenStreams.end(); tIt++)
     {
@@ -80,6 +83,16 @@ bool Link::HandlePacket(Packet *pPacket, Node* pLastNode)
     if (!tFound)
         mSeenStreams.push_back(pPacket->TrackingStreamId);
     mSeenStreamsMutex.unlock();
+
+    // increase the E2E delay of this packet
+    pPacket->QoSResults.Delay += mQoSCapabilities.Delay;
+
+    // store the minimum data rate along the entire route within the packet
+    if (pPacket->QoSResults.DataRate > mQoSCapabilities.DataRate)
+        pPacket->QoSResults.DataRate = mQoSCapabilities.DataRate;
+
+    // packet statistic
+    mPacketCount++;
 
     // check from which interface the packet was received and forward it to the other one
     if (pLastNode->GetAddress() == mNodes[0]->GetAddress())
@@ -114,6 +127,11 @@ Node* Link::GetNode0()
 Node* Link::GetNode1()
 {
     return mNodes[1];
+}
+
+int Link::GetPacketCount()
+{
+    return mPacketCount;
 }
 
 list<int> Link::GetSeenStreams()

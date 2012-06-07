@@ -141,6 +141,7 @@ public:
     virtual ~OverviewNetworkSimulationWidget();
 
     void UpdateRoutingView();
+    void UpdateLinkView();
 
 public slots:
     void SetVisible(bool pVisible);
@@ -152,6 +153,10 @@ public slots:
 private slots:
     void SelectedCoordinator(QModelIndex pIndex);
     void SelectedStream(QModelIndex pIndex);
+
+    // link view
+    void SelectedLinkDataRate(int pValue);
+    void SelectedLinkDelay(int pValue);
 
 private:
     void initializeGUI();
@@ -167,12 +172,18 @@ private:
     void UpdateNetworkView();
 
     /* helpers for updating views */
+    // hierarchy view
     void ShowHierarchyDetails(Coordinator *pCoordinator, Node* pNode);
     void AppendHierarchySubItems(HierarchyItem *pParentItem);
+    // stream view
     void ShowStreamDetails(const struct StreamDescriptor pDesc);
     QString CreateStreamId(const struct StreamDescriptor tDesc);
+    // routing view
+    void InitRoutingView();
     void FillRoutingTableCell(int pRow, int pCol, QString pText);
     void FillRoutingTableRow(int pRow, RibEntry* pEntry);
+    // link view
+    void InitLinkView();
 
     virtual void closeEvent(QCloseEvent* pEvent);
     virtual void timerEvent(QTimerEvent *pEvent);
@@ -197,6 +208,7 @@ private:
     QList<GuiNode*>         mGuiNodes;
     // routing view
     Node                    *mSelectedNode;
+    Link                    *mSelectedLink;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

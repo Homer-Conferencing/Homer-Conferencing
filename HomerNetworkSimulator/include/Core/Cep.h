@@ -28,6 +28,7 @@
 #ifndef _GAPI_SIMULATION_CEP_
 #define _GAPI_SIMULATION_CEP_
 
+#include <HBTime.h>
 #include <HBSocket.h>
 #include <HBSocketQoSSettings.h>
 #include <Name.h>
@@ -63,6 +64,7 @@ struct Packet{
     unsigned int    SourcePort;
     unsigned int    DestinationPort;
     QoSSettings     QoSRequirements;
+    QoSSettings     QoSResults;
     void            *Data;
     ssize_t         DataSize;
     int             TTL;
@@ -70,6 +72,7 @@ struct Packet{
     std::list<std::string> RecordedRoute;
     /* for tracking the packet through the entire network */
     int             TrackingStreamId;
+    Cep             *SendingCep; // simulate feedback signaling about the resulting E2E QoS values
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -87,6 +90,7 @@ public:
 
     /* QoS management */
     bool SetQoS(const QoSSettings &pQoSSettings);
+    QoSSettings GetQoSResults();
     QoSSettings GetQoS(); // for GUI
 
     /* transfer */
@@ -103,7 +107,13 @@ public:
 
     bool HandlePacket(Packet *pPacket);
 
+    static void LockGlobalForwarding();
+    static void UnlockGlobalForwarding();
+
 private:
+    bool SetQoSResults(const QoSSettings &pQoS); // use for feedback signaling about the E2E QoS results
+
+    static Mutex        sGlobalForwardingMutex;
     int                 mStreamId;
     long                mPacketCount;
     bool                mClosed;
@@ -115,6 +125,9 @@ private:
     Homer::Multimedia::MediaFifo *mPacketQueue;
     /* QoS parameter */
     QoSSettings         mQoSSettings;
+    QoSSettings         mQoSResults;
+    /* artificial receive delay, depending on the calculated E2E of the simulation */
+    int64_t             mCurrentReceiveTime; // in µs
 };
 
 ///////////////////////////////////////////////////////////////////////////////
