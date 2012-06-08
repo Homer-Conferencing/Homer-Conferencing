@@ -104,21 +104,26 @@ SocketConnection::SocketConnection(std::string pTarget, Requirements *pRequireme
             LOG(LOG_ERROR, "Ambiguous requirements");
     }
 
-    if (mSocket != NULL)
-        mIsClosed = false;
-    else
-        LOG(LOG_ERROR, "Socket object invalid");
+    if(tFoundTransport)
+    {
+        if (mSocket != NULL)
+        {
+            // per default we set receive/send buffer of 2 MB
+            mSocket->SetReceiveBufferSize(2 * 1024 * 1024);
+            mSocket->SetSendBufferSize(2 * 1024 * 1024);
 
-    if(!tFoundTransport)
+            mIsClosed = false;
+
+            /* QoS requirements and additional transport requirements */
+            changeRequirements(pRequirements);
+
+            LOG(LOG_VERBOSE, "New IP association with target %s and requirements %s created", getRemoteName()->toString().c_str(), mRequirements.getDescription().c_str());
+        }else
+            LOG(LOG_ERROR, "Returned Berkeley socket is invalid");
+    }else
     {
         LOG(LOG_ERROR, "Haven't found correct mapping from application requirements to transport protocol");
     }
-
-    /* QoS requirements and additional transport requirements */
-    changeRequirements(pRequirements);
-
-    if (mSocket != NULL)
-        LOG(LOG_VERBOSE, "New IP association with target %s and requirements %s created", getRemoteName()->toString().c_str(), mRequirements.getDescription().c_str());
 }
 
 SocketConnection::SocketConnection(Socket *pSocket)
@@ -128,6 +133,10 @@ SocketConnection::SocketConnection(Socket *pSocket)
     mBlockingMode = true;
     mPeerHost = "";
     mPeerPort = 0;
+
+    // per default we set receive buffer of 2 MB
+    mSocket->SetSendBufferSize(2 * 1024 * 1024);
+
     LOG(LOG_VERBOSE, "New IP association with local name %s created", getName()->toString().c_str(), mRequirements.getDescription().c_str());
 }
 
