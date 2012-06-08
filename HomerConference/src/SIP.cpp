@@ -296,7 +296,18 @@ void* SIP::Run(void*)
             if (mSipContext->Nua != NULL)
                 break;
             else
-                LOG(LOG_INFO, "Another agent is already listening at %s<%d>:udp. Probing alternatives...", mSipHostAdr.c_str(), mSipHostPort);
+            {
+                switch(mSipHostPortTransport)
+                {
+                    default:
+                    case SOCKET_UDP:
+                        LOG(LOG_INFO, "Another agent is already listening at %s<%d>(UDP). Probing alternatives...", mSipHostAdr.c_str(), mSipHostPort);
+                        break;
+                    case SOCKET_TCP:
+                        LOG(LOG_INFO, "Another agent is already listening at %s<%d>(TCP). Probing alternatives...", mSipHostAdr.c_str(), mSipHostPort);
+                        break;
+                }
+            }
             mSipHostPort++;
         }
 
