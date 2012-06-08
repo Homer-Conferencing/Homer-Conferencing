@@ -179,6 +179,12 @@ bool Cep::Receive(std::string &pPeerNode, unsigned int &pPeerPort, void *pBuffer
 
     int tBufferSize = pBufferSize;
     mPacketQueue->ReadFifo((char*)pBuffer, tBufferSize);
+    // if FIFO is overloaded drop all frames and reset FIFO
+    if (mPacketQueue->GetUsage() > CEP_QUEUE_SIZE - 8)
+    {
+        LOG(LOG_WARN, "FIFO full, dropping all stored packets");
+        mPacketQueue->ClearFifo();
+    }
     pBufferSize = tBufferSize;
     pPeerNode = mPeerNode;
     pPeerPort = mPeerPort;

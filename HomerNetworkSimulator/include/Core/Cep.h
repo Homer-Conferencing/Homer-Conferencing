@@ -49,7 +49,7 @@ namespace Homer { namespace Base {
 //#define DEBUG_ROUTING_RECORDS
 
 #define TTL_INIT                    16 // maximum of nodes a packet is allowed to pass
-#define CEP_QUEUE_SIZE              256
+#define CEP_QUEUE_SIZE              4096
 #define CEP_QUEUE_ENTRY_SIZE        (MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE)
 ///////////////////////////////////////////////////////////////////////////////
 
