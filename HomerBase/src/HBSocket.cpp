@@ -107,7 +107,7 @@ Socket* Socket::CreateServerSocket(enum NetworkType pIpVersion, enum TransportTy
         return NULL;
     }
 
-    LOGEX(Socket, LOG_VERBOSE, "Created %s-server socket at local address %s:%u with receive buffer size of %d bytes", TransportType2String(pTransportType).c_str(), tResult->mLocalHost.c_str(), tResult->mLocalPort, tResult->GetReceiveBufferSize());
+    LOGEX(Socket, LOG_VERBOSE, "Created %s-server socket at local address %s:%u with receive buffer size of %d bytes and send buffer size of %d bytes", TransportType2String(pTransportType).c_str(), tResult->mLocalHost.c_str(), tResult->mLocalPort, tResult->GetReceiveBufferSize(), tResult->GetSendBufferSize());
 
     return tResult;
 }
@@ -130,7 +130,7 @@ Socket* Socket::CreateClientSocket(enum NetworkType pIpVersion, enum TransportTy
         return NULL;
     }
 
-    LOGEX(Socket, LOG_VERBOSE, "Created %s-client socket at local address %s:%u with receive buffer size of %d bytes", TransportType2String(pTransportType).c_str(), tResult->mLocalHost.c_str(), tResult->mLocalPort, tResult->GetReceiveBufferSize());
+    LOGEX(Socket, LOG_VERBOSE, "Created %s-client socket at local address %s:%u with receive buffer size of %d bytes and send buffer size of %d bytes", TransportType2String(pTransportType).c_str(), tResult->mLocalHost.c_str(), tResult->mLocalPort, tResult->GetReceiveBufferSize(), tResult->GetSendBufferSize());
 
     tResult->mIsClientSocket = true;
     SVC_SOCKET_CONTROL.RegisterClientSocket(tResult);
@@ -720,6 +720,41 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
     }
 
     pBufferSize = tReceivedBytes;
+
+    return tResult;
+}
+
+int Socket::GetSendBufferSize()
+{
+    int tResult = -1;
+    socklen_t tResultSize = sizeof(tResult);
+
+    if(mSocketHandle != -1)
+    {
+        int tCallRes = getsockopt(mSocketHandle, SOL_SOCKET, SO_SNDBUF, (char *)&tResult, &tResultSize);
+        if (tCallRes < 0)
+            LOG(LOG_ERROR, "Failed to get send buffer size on socket %d", mSocketHandle);
+        else
+            LOG(LOG_VERBOSE, "Determined send buffer size with %d bytes on socket %d", tResult, mSocketHandle);
+    }
+
+    return tResult;
+}
+
+bool Socket::SetSendBufferSize(int pSize)
+{
+    bool tResult = false;
+
+    if(mSocketHandle != -1)
+    {
+        LOG(LOG_WARN, "Setting send buffer size to %d bytes on socket %d", pSize, mSocketHandle);
+
+        if (setsockopt(mSocketHandle, SOL_SOCKET, SO_SNDBUF, (char*)&pSize, sizeof(pSize)) < 0)
+            LOG(LOG_ERROR, "Failed to get send buffer size on socket %d", mSocketHandle);
+        else
+            tResult = true;
+    }else
+        LOG(LOG_ERROR, "Socket is invalid");
 
     return tResult;
 }
