@@ -313,13 +313,28 @@ void* MediaSourceNet::Run(void* pArgs)
             {
                 TCPFragmentHeader *tHeader;
                 char *tData = mPacketBuffer;
+                char *tDataEnd = mPacketBuffer + tDataSize;
 
                 while(tDataSize > 0)
                 {
+                    if (tData > tDataEnd)
+                    {
+                        LOG(LOG_ERROR, "Have found an unplausible data position at %p while the data ends at %p", tData, tDataEnd);
+                        break;
+                    }
                     #ifdef MSN_DEBUG_PACKETS
                         LOG(LOG_VERBOSE, "Extracting a fragment from TCP stream");
                     #endif
+
                     tHeader = (TCPFragmentHeader*)tData;
+
+                    if (tData + tHeader->FragmentSize > tDataEnd)
+                    {
+                        LOG(LOG_ERROR, "Have found an unplausible fragment size of %u bytes which is beyond the reported packet reception size", tHeader->FragmentSize);
+                        break;
+                    }
+					//TODO: detect packet boaundaries: maybe we get the last part of a former packet and the first part of the next packet -> this results in an error message at the moment, however, we could compensate this by a fragment buffer
+					//       -> picture errors occur if the video quality is high enough and causes a high data rate
                     tData += TCP_FRAGMENT_HEADER_SIZE;
                     tDataSize -= TCP_FRAGMENT_HEADER_SIZE;
                     WriteFragment(tData, (int)tHeader->FragmentSize);
