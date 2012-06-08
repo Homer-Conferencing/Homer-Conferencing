@@ -122,6 +122,8 @@ public:
     /* transmission */
     bool Send(std::string pTargetHost, unsigned int pTargetPort, void *pBuffer, ssize_t pBufferSize);
     bool Receive(std::string &pSourceHost, unsigned int &pSourcePort, void *pBuffer, ssize_t &pBufferSize);
+    int GetSendBufferSize();
+    bool SetSendBufferSize(int pSize);
     int GetReceiveBufferSize();
     bool SetReceiveBufferSize(int pSize);
 
