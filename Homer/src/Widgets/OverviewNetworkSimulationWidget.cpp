@@ -276,9 +276,9 @@ void GuiLink::UpdateColoring()
     {
         int tFirstStreamId = *tSeenStreams.begin();
         QColor tColor = sStreamColor[tFirstStreamId % STREAM_COLORS];
-        setPen(QPen(tColor, 3 * tStreamCount, Qt::SolidLine, Qt::FlatCap, Qt::RoundJoin));
+        setPen(QPen(tColor, 2 + 2 * tStreamCount, Qt::SolidLine, Qt::FlatCap, Qt::RoundJoin));
     }else
-        setPen(QPen(Qt::black, 1, Qt::SolidLine, Qt::FlatCap, Qt::RoundJoin));
+        setPen(QPen(Qt::black, 2, Qt::SolidLine, Qt::FlatCap, Qt::RoundJoin));
 }
 
 void GuiLink::UpdatePosition()
