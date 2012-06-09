@@ -45,11 +45,13 @@ namespace Homer { namespace Base {
 // de/activate debugging of packet routing
 //#define DEBUG_NEIOGHBOR_DISCOVERY
 //#define DEBUG_FORWARDING
-#define DEBUG_ROUTING
+//#define DEBUG_ROUTING
 //#define DEBUG_ROUTING_RECORDS
 #define DEBUG_PACKET_LOSS
 
-#define TTL_INIT                    16 // maximum of nodes a packet is allowed to pass
+#define MAX_DELAY                   16*1024 // ms
+#define MAX_DATARATE                INT_MAX
+#define MAX_HOP_COUNT               16 // maximum of nodes a packet is allowed to pass
 #define CEP_QUEUE_SIZE              4096
 #define CEP_QUEUE_ENTRY_SIZE        (MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE)
 ///////////////////////////////////////////////////////////////////////////////
