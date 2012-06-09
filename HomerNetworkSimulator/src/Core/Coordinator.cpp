@@ -36,6 +36,8 @@ namespace Homer { namespace Base {
 
 using namespace std;
 
+#define MIN(x,y)     ((x < y) ? x : y )
+
 ///////////////////////////////////////////////////////////////////////////////
 
 Coordinator::Coordinator(Node *pNode, string pClusterAddress, int pHierarchyLevel)
@@ -288,6 +290,8 @@ void Coordinator::UpdateRouting()
                             //LOG(LOG_ERROR, "%s and %s", tCurNodeAddr.c_str(), (*tIt2)->GetAddress().c_str());
                             if (tCurNodeAddr != (*tIt2)->GetAddress())
                             {// tell other nodes that the current node can reach a foreign cluster
+//                                QoSSettings *tQoSSet = new QoSSettings();
+//                                tQoSSet->DataRate = MIN(*tRibIt)->QoSCapabilities
                                 Node::AddRibEntry((*tIt2)->GetAddress(), (*tUpdateRibIt), (*tRibIt)->Destination, tCurNodeAddr, 2, &(*tRibIt)->QoSCapabilities);
                             }
 //                            // tell other nodes that the current node can reach a foreign cluster

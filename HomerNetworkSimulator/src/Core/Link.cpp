@@ -52,10 +52,8 @@ Link::Link(Node *pNodeOne, Node *pNodeTwo)
     mQoSCapabilities.Features = 0;
 
     // simulate hello protocol
-    mNodes[0]->AddFibEntry(this, mNodes[1]);
-    mNodes[0]->AddTopologyEntry(mNodes[1]->GetAddress(), mNodes[1]->GetAddress());
-    mNodes[1]->AddFibEntry(this, mNodes[0]);
-    mNodes[1]->AddTopologyEntry(mNodes[0]->GetAddress(), mNodes[0]->GetAddress());
+    mNodes[0]->AddLink(this);
+    mNodes[1]->AddLink(this);
 }
 
 Link::~Link()
@@ -64,6 +62,14 @@ Link::~Link()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+Node* Link::GetPeerNode(Node *pNode)
+{
+    if (pNode->GetAddress() == mNodes[0]->GetAddress())
+        return mNodes[1];
+    else
+        return mNodes[0];
+}
 
 bool Link::HandlePacket(Packet *pPacket, Node* pLastNode)
 {
