@@ -66,11 +66,12 @@ public:
     Node* GetNode();
 
     /* RIB management */
-    bool DistributeRibEntry(std::string pDestination, std::string pNextCluster, int pHopCount = 1, QoSSettings *pQoSSettings = NULL);
+    bool DistributeAggregatedRibEntry(std::string pDestination, std::string pNextCluster, int pHopCosts = 1, QoSSettings *pQoSSettings = NULL);
     void UpdateRouting();
     RibTable GetRib();
 
 private:
+    void MergeIntraClusterCosts(std::string pFromAddress, std::string pToAddress, QoSSettings *pQoSSet, int *pHopCots);
     bool IsForeignAddress(std::string pAddress);
 
     void            SetSuperior(Coordinator *pSuperior);

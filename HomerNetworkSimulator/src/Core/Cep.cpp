@@ -156,7 +156,7 @@ bool Cep::Send(std::string pTargetNode, unsigned int pTargetPort, void *pBuffer,
     tPacket->QoSResults.Features = mQoSSettings.Features;
     tPacket->Data = pBuffer;
     tPacket->DataSize = pBufferSize;
-    tPacket->TTL = TTL_INIT;
+    tPacket->TTL = MAX_HOP_COUNT;
     tPacket->TrackingStreamId = mStreamId;
     tPacket->SendingCep = this;
     tPacket->mStreamDataRate = 20;
