@@ -561,6 +561,7 @@ void OverviewNetworkSimulationWidget::ShowHierarchyDetails(Coordinator *pCoordin
 {
     if (pCoordinator != NULL)
     {
+        mLbCoordinatorNode->setText(QString(pCoordinator->GetNode()->GetAddress().c_str()));
         mLbHierarchyLevel->setText(QString("%1").arg(pCoordinator->GetHierarchyLevel()));
         mLbSiblings->setText(QString("%1").arg(pCoordinator->GetSiblings().size()));
         if (pCoordinator->GetHierarchyLevel() != 0)
@@ -571,11 +572,13 @@ void OverviewNetworkSimulationWidget::ShowHierarchyDetails(Coordinator *pCoordin
     {
         if (pNode != NULL)
         {
+            mLbCoordinatorNode->setText(QString(pNode->GetAddress().c_str()));
             mLbHierarchyLevel->setText("node");
             mLbSiblings->setText(QString("%1").arg(pNode->GetSiblings().size()));
             mLbChildren->setText("0");
         }else
         {
+            mLbCoordinatorNode->setText("-");
             mLbHierarchyLevel->setText("-");
             mLbSiblings->setText("-");
             mLbChildren->setText("-");
@@ -926,6 +929,7 @@ void OverviewNetworkSimulationWidget::UpdateLinkView()
         return;
 
     mLbLinkPackets->setText(QString("%1").arg(mSelectedLink->GetPacketCount()));
+    mLbLinkLostPackets->setText(QString("%1").arg(mSelectedLink->GetLostPacketCount()));
 }
 
 void OverviewNetworkSimulationWidget::SelectedLinkDataRate(int pValue)

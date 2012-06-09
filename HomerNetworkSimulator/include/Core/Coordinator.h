@@ -63,6 +63,7 @@ public:
     int GetHierarchyLevel(); // for GUI
 
     std::string GetClusterAddress();
+    Node* GetNode();
 
     /* RIB management */
     bool DistributeRibEntry(std::string pDestination, std::string pNextCluster, int pHopCount = 1, QoSSettings *pQoSSettings = NULL);

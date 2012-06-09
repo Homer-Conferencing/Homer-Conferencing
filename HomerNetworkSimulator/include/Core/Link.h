@@ -61,6 +61,7 @@ public:
 
     /* statistics */
     int GetPacketCount();
+    int GetLostPacketCount();
 
     std::list<int> GetSeenStreams();
 private:
@@ -69,6 +70,7 @@ private:
     std::list<int>  mSeenStreams;
     Mutex           mSeenStreamsMutex;
     int             mPacketCount;
+    int             mPacketLossCount;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
