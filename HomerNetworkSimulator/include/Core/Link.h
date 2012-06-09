@@ -58,6 +58,7 @@ public:
 
     Node* GetNode0();
     Node* GetNode1();
+    Node* GetPeerNode(Node *pNode);
 
     /* statistics */
     int GetPacketCount();

@@ -210,15 +210,21 @@ void Node::LogRib()
     mRibTableMutex.unlock();
 }
 
-bool Node::AddTopologyEntry(string pDestination, string pNextNode, QoSSettings *pQoSSettings)
+bool Node::AddLink(Link *pLink)
 {
-    if (pNextNode == mAddress)
+    Node* tPeerNode = pLink->GetPeerNode(this);
+
+    AddFibEntry(pLink, tPeerNode);
+
+    string tPeerNodeAddr = tPeerNode->GetAddress();
+
+    if (tPeerNodeAddr == mAddress)
     {
         LOG(LOG_ERROR, "Routing loop detected, will drop this RIB entry");
         return false;
     }
     // does the next node belongs to our cluster domain?
-    if (GetDomain(pNextNode, HIERARCHY_HEIGHT - 1)  !=  mDomain)
+    if (GetDomain(tPeerNodeAddr, HIERARCHY_HEIGHT - 1)  !=  mDomain)
     {
         if (!mIsGateway)
         {
@@ -230,26 +236,20 @@ bool Node::AddTopologyEntry(string pDestination, string pNextNode, QoSSettings *
     }
 
     RibEntry *tRibEntry = new RibEntry();
-    tRibEntry->Destination = pDestination;
-    tRibEntry->NextNode = pNextNode;
+    tRibEntry->Destination = tPeerNodeAddr;
+    tRibEntry->NextNode = tPeerNodeAddr;
     tRibEntry->HopCount = 1;
-    if (pQoSSettings != NULL)
-        tRibEntry->QoSCapabilities = *pQoSSettings;
-    else{
-        tRibEntry->QoSCapabilities.DataRate = 0;
-        tRibEntry->QoSCapabilities.Delay = 0;
-        tRibEntry->QoSCapabilities.Features = 0;
-    }
+    tRibEntry->QoSCapabilities = pLink->GetQoSCapabilities();
 
     #ifdef DEBUG_ROUTING
-        LOG(LOG_WARN, "Adding to (phys.) RIB of node %s the entry: %s via %s", mAddress.c_str(), pDestination.c_str(), pNextNode.c_str());
+        LOG(LOG_WARN, "Adding to (phys.) RIB of node %s the entry: %s via %s", mAddress.c_str(), tPeerNodeAddr.c_str(), tPeerNodeAddr.c_str());
     #endif
 
     mTopologyTableMutex.lock();
     mTopologyTable.push_back(tRibEntry);
     mTopologyTableMutex.unlock();
 
-    AddRibEntry(pDestination, pNextNode, 1, pQoSSettings);
+    AddRibEntry(tPeerNodeAddr, tPeerNodeAddr, 1, &tRibEntry->QoSCapabilities);
 
     return true;
 }

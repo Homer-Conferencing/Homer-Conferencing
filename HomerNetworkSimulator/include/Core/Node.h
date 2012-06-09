@@ -72,15 +72,11 @@ public:
     Node(std::string pName, std::string pAddressHint = "", int pPosXHint = 0, int pPosYHint = 0);
     virtual ~Node();
 
-    /* FIB management */
-    bool AddFibEntry(Link *pLink, Node *pNextNode);
-    FibTable GetFib(); // for GUI
-
     /* RIB management */
     bool AddRibEntry(std::string pDestination, std::string pNextNode, int pHopCount = 1, QoSSettings *pQoSSettings = NULL);
-    RibTable GetRib(); // for GUI
+    RibTable GetRib();
     void UpdateRouting(); // reset RIB to physical RIB and update QoS capabilities
-    bool IsGateway(); // for GUI
+    bool IsGateway();
     // physical RIB: the topology data which is collected based on physical link data
     bool IsNeighbor(std::string pAddress);
 
@@ -123,8 +119,12 @@ private:
     void LogServerCeps();
     void LogRib();
 
+    /* FIB management */
+    bool AddFibEntry(Link *pLink, Node *pNextNode);
+    FibTable GetFib();
+
     // physical RIB: the topology data which is collected based on physical link data
-    bool AddTopologyEntry(std::string pDestination, std::string pNextNode, QoSSettings *pQoSSettings = NULL);
+    bool AddLink(Link *pLink);
     friend class Link; // allow setting of topology data
 
     /* RIB lookup */
