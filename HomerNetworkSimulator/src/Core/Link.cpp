@@ -27,6 +27,7 @@
 
 #include <Core/Link.h>
 #include <Core/Node.h>
+#include <Core/Cep.h>
 
 #include <Logger.h>
 
@@ -43,6 +44,7 @@ Link::Link(Node *pNodeOne, Node *pNodeTwo)
     LOG(LOG_INFO, "Created link from %s to %s", pNodeOne->GetAddress().c_str(), pNodeTwo->GetAddress().c_str());
 
     mPacketCount = 0;
+    mPacketLossCount = 0;
     mNodes[0] = pNodeOne;
     mNodes[1] = pNodeTwo;
     mQoSCapabilities.DataRate = 40;
@@ -83,6 +85,23 @@ bool Link::HandlePacket(Packet *pPacket, Node* pLastNode)
     if (!tFound)
         mSeenStreams.push_back(pPacket->TrackingStreamId);
     mSeenStreamsMutex.unlock();
+
+    // check if available data rate on this link matches the desired data rate of the packet:
+    //TODO later: derive the available data rate from the formerly seen packets in a defined time slot
+    if (pPacket->mStreamDataRate > (int)mQoSCapabilities.DataRate)
+    {
+        // simulate packet loss
+        float tLossProb =  1.0 - ((float)mQoSCapabilities.DataRate / pPacket->mStreamDataRate);
+        int tLossRandRange = tLossProb * RAND_MAX;
+        if (rand() < tLossRandRange)
+        {
+            mPacketLossCount++;
+            #ifdef DEBUG_PACKET_LOSS
+                LOG(LOG_WARN, "Packet is lost within simulation at link %s/%s, loss probability: %f", mNodes[0]->GetAddress().c_str(), mNodes[1]->GetAddress().c_str(), tLossProb);
+            #endif
+            return true;
+        }
+    }
 
     // increase the E2E delay of this packet
     pPacket->QoSResults.Delay += mQoSCapabilities.Delay;
@@ -132,6 +151,11 @@ Node* Link::GetNode1()
 int Link::GetPacketCount()
 {
     return mPacketCount;
+}
+
+int Link::GetLostPacketCount()
+{
+    return mPacketLossCount;
 }
 
 list<int> Link::GetSeenStreams()

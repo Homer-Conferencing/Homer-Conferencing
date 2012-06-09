@@ -47,6 +47,7 @@ namespace Homer { namespace Base {
 //#define DEBUG_FORWARDING
 #define DEBUG_ROUTING
 //#define DEBUG_ROUTING_RECORDS
+#define DEBUG_PACKET_LOSS
 
 #define TTL_INIT                    16 // maximum of nodes a packet is allowed to pass
 #define CEP_QUEUE_SIZE              4096
@@ -72,7 +73,10 @@ struct Packet{
     std::list<std::string> RecordedRoute;
     /* for tracking the packet through the entire network */
     int             TrackingStreamId;
-    Cep             *SendingCep; // simulate feedback signaling about the resulting E2E QoS values
+    /* simulate feedback signaling about the resulting E2E QoS values */
+    Cep             *SendingCep;
+    /* store a simulated data rate */
+    int             mStreamDataRate;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -59,6 +59,11 @@ string Coordinator::GetClusterAddress()
     return mClusterAddress;
 }
 
+Node* Coordinator::GetNode()
+{
+    return mNode;
+}
+
 void Coordinator::SetSuperior(Coordinator *pSuperior)
 {
     LOG(LOG_INFO, "Setting coordinator %s as superior of cluster %s at hierarchy level %d", pSuperior->GetClusterAddress().c_str(), mClusterAddress.c_str(), mHierarchyLevel);
