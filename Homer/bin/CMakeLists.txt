@@ -256,6 +256,13 @@ SET (LIBS_WINDOWS
 
 # USED LIBRARIES for BSD environment
 SET (LIBS_BSD
+                HomerBase
+                HomerGAPI
+                HomerMonitor
+                HomerMultimedia
+                HomerNetworkSimulator
+                HomerConference
+                ${QT_LIBRARIES}
 )
 
 # USED LIBRARIES for linux environment

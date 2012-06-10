@@ -250,7 +250,6 @@ SET (LIBS_BSD_STATIC
 	mp3lame
 	opencore-amrnb
 	opencore-amrwb
-	jack
 	x264
 	bz2
 	z
