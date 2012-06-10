@@ -17,14 +17,9 @@ ENDIF ()
 
 ##############################################################
 # minimum required GCC version
-IF (APPLE)
-	# allow usage of xcode with Apple's gcc 4.2
-	SET(REQUIRED_GCC_VERSION 4.2)
-ENDIF()
-IF (BSD)
+IF (APPLE OR BSD)
 	SET(REQUIRED_GCC_VERSION 4.2)
 ELSE()
-	# for usage of current gcc release
 	SET(REQUIRED_GCC_VERSION 4.4)
 ENDIF()
 

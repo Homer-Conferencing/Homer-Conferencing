@@ -28,16 +28,13 @@
 #ifndef _BASE_SOCKET_
 #define _BASE_SOCKET_
 
-#if defined(BSD)
-#include <sys/types.h>
-#include <sys/param.h>
-#endif
-
 #if defined(LINUX) || defined(APPLE) || defined(BSD)
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#include <sys/types.h>
+#include <sys/param.h>
 #endif
 
 #include <Header_Windows.h>

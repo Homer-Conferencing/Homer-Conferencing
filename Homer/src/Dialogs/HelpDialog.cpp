@@ -91,7 +91,7 @@ void HelpDialog::initializeGUI()
                                     );
 
     #endif
-	#ifdef TODO_BSD
+	#ifdef BSD
 		QString tCurArch = (System::GetMachineType() == "x86") ? "bsd32" : "bsd64";
 		mSystemData->setText(       "Operating System:  Linux\n"\
 									"Kernel:  " + "??" + "\n"\

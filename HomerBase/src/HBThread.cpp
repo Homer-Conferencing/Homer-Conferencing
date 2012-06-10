@@ -90,11 +90,11 @@ int Thread::GetTId()
 		// some magic from the depth of linux sources
 		return syscall(__NR_gettid);
 	#endif
-    #if defined(APPLE) 
+    #if defined(APPLE)
 		return (int)pthread_mach_thread_np(pthread_self()); //HINT: original result is "unsigned int" (defined somewhere in _types.h)
     #endif
     #if defined(BSD)
-                return (int)pthread_self(); 
+		return (int)pthread_self(); 
     #endif
 	#ifdef WIN32
 		return (int)GetCurrentThreadId();
