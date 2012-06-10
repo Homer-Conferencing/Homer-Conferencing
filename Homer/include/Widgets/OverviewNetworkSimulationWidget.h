@@ -33,6 +33,7 @@
 #include <QDockWidget>
 #include <QGraphicsSceneWheelEvent>
 #include <QGraphicsScene>
+#include <QGraphicsPolygonItem>
 #include <QGraphicsPixmapItem>
 #include <QGraphicsTextItem>
 #include <QGraphicsLineItem>
@@ -52,6 +53,7 @@ namespace Homer { namespace Gui {
 #define GUI_NODE_TYPE   (QGraphicsItem::UserType + 1)
 
 class GuiLink;
+class GuiDomain;
 class OverviewNetworkSimulationWidget;
 class GuiNode:
     public QGraphicsPixmapItem
@@ -63,6 +65,7 @@ public:
     virtual int type() const;
     Node* GetNode();
 
+    void AddDomain(GuiDomain *pGuiDomain);
     void AddGuiLink(GuiLink *pGuiLink);
     int GetWidth();
     int GetHeight();
@@ -73,6 +76,7 @@ private:
     virtual QVariant itemChange(GraphicsItemChange pChange, const QVariant &pValue);
     void UpdateText(bool pSelected);
 
+    GuiDomain       *mGuiDomain;
     Node            *mNode;
     OverviewNetworkSimulationWidget* mNetSimWidget;
     QGraphicsTextItem *mTextItem;
@@ -104,6 +108,33 @@ private:
     GuiNode     *mGuiNode0, *mGuiNode1;
     OverviewNetworkSimulationWidget* mNetSimWidget;
     Link        *mLink;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+#define GUI_DOMAIN_TYPE   (QGraphicsItem::UserType + 3)
+
+class GuiDomain:
+    public QGraphicsPolygonItem
+{
+public:
+    GuiDomain(Domain *pDomain, OverviewNetworkSimulationWidget* pNetSimWidget);
+    ~GuiDomain();
+
+    virtual int type() const;
+    Domain* GetDomain();
+
+    void UpdatePosition();
+
+    void ShowContextMenu(QGraphicsSceneContextMenuEvent *pEvent);
+
+private:
+    void AddGuiNode(GuiNode *pGuiNode);
+    friend class GuiNode;
+
+    OverviewNetworkSimulationWidget* mNetSimWidget;
+    Domain          *mDomain;
+    QList<GuiNode*> mGuiNodes;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -206,6 +237,7 @@ private:
     // network view
     QList<GuiLink*>         mGuiLinks;
     QList<GuiNode*>         mGuiNodes;
+    QList<GuiDomain*>       mGuiDomains;
     // routing view
     Node                    *mSelectedNode;
     Link                    *mSelectedLink;

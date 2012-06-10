@@ -31,6 +31,7 @@
 #include <HBMutex.h>
 #include <Name.h>
 #include <Core/Coordinator.h>
+#include <Core/Domain.h>
 #include <Core/Link.h>
 #include <Core/Node.h>
 
@@ -71,6 +72,7 @@ public:
     void SetDestinationNode(std::string pAddress);
 
     /* list topology */
+    DomainList GetDomains(); // for GUI
     NodeList GetNodes(); // for GUI
     LinkList GetLinks(); // for GUI
     Coordinator* GetRootCoordinator();
@@ -107,6 +109,9 @@ private:
     Node        *mSourceNode, *mDestinationNode;
     NodeList    mNodes;
     Mutex       mNodesMutex;
+
+    DomainList  mDomains;
+    Mutex       mDomainsMutex;
 
     LinkList    mLinks;
     Mutex       mLinksMutex;
