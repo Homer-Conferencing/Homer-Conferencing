@@ -26,9 +26,9 @@
  */
 
 #include <GAPI.h>
-#include <NextGenNet/NGNSocketSetup.h>
-#include <NextGenNet/NGNSocketBinding.h>
-#include <NextGenNet/NGNSocketConnection.h>
+#include <NGNSocketSetup.h>
+#include <NGNSocketBinding.h>
+#include <NGNSocketConnection.h>
 
 #include <Logger.h>
 

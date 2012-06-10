@@ -74,21 +74,19 @@ private:
     int mSocket;	// Socket Descriptor for initialisation
 
     union sock_union{
-		struct sockaddr sa;
-		struct sockaddr_in s4;
+		struct sockaddr     sa;
+		struct sockaddr_in  s4;
 		struct sockaddr_in6 s6;
 	} mSock_addr;
-    socklen_t mAddr_len;
-    char 		*mpLocal_addr_ptr;
+    socklen_t       mAddr_len;
+    char 		    *mpLocal_addr_ptr;
     unsigned int 	mNr_local_addr;
-    uint16_t 	mPort;
-    int 	mBufsize;
+    uint16_t 	    mPort;
+    int 	        mBufsize;
     struct sctp_assoc_value mAV;
-    bool mUnordered;
-    bool mIpv4only;
-    bool mIpv6only;
-  
-
+    bool            mUnordered;
+    bool            mIpv4only;
+    bool            mIpv6only;
 #ifdef SCTP_REMOTE_UDP_ENCAPS_PORT
     struct sctp_udpencaps mEncaps;
 #endif

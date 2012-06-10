@@ -26,7 +26,7 @@
  */
 
 #include <GAPI.h>
-#include <NextGenNet/NGNSocketName.h>
+#include <NGNSocketName.h>
 
 #include <Logger.h>
 
@@ -59,7 +59,7 @@ inline std::string dataToString(T const& value_)
     return ss.str();
 }
 
-string NGNSocketName::toString()
+string NGNSocketName::toString() //TODO: use toString() of Logger.h instead of dataToString() !
 {
 	return mHost + "<" + dataToString(mPort) + ">";
 }

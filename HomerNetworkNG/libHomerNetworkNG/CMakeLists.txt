@@ -1,6 +1,6 @@
 ###############################################################################
 # Author:  Thomas Volkert
-# Since:   2011-12-08
+# Since:   2012-06-10
 ###############################################################################
 INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakePreDefs.txt)
 
@@ -14,7 +14,8 @@ SET (INCLUDE_DIRS
     ../include
 	../../HomerBase/include
 	../../HomerBase/include/Logging
-	../../HomerNetworkNG/include
+	../../HomerGAPI/include
+	../../HomerMonitor/include
 )
 
 ##############################################################
@@ -39,13 +40,10 @@ SET (FLAGS
 ##############################################################
 # SOURCES
 SET (SOURCES
-	../src/Events
-	../src/GAPI
-	../src/Requirements
-	../src/Berkeley/SocketName
-	../src/Berkeley/SocketSetup
-	../src/Berkeley/SocketBinding
-	../src/Berkeley/SocketConnection
+	../src/NGNSocketName
+	../src/NGNSocketSetup
+    	../src/NGNSocketBinding
+    	../src/NGNSocketConnection
 )
 
 ##############################################################
@@ -61,13 +59,12 @@ SET (LIBS_WINDOWS
 # USED LIBRARIES for BSD environment
 SET (LIBS_BSD
 	HomerBase
-	HomerNetworkNG
 )
 
 # USED LIBRARIES for linux environment
 SET (LIBS_LINUX
 	HomerBase
-	HomerNetworkNG
+	sctp
 )
 
 # USED LIBRARIES for apple environment
@@ -77,7 +74,7 @@ SET (LIBS_APPLE
 
 ##############################################################
 SET (TARGET_LIB_NAME
-	HomerGAPI
+	HomerNetworkNG
 )
 
 INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakeCore.txt)

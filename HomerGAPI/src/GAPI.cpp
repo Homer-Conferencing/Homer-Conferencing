@@ -27,7 +27,7 @@
 
 #include <GAPI.h>
 #include <Berkeley/SocketSetup.h>
-#include <NextGenNet/NGNSocketSetup.h>
+#include <NGNSocketSetup.h>
 
 #include <Logger.h>
 
@@ -46,7 +46,11 @@ GapiService::GapiService()
 	mSetupInterface = NULL;
 	mSetupInterfaceName = "";
 	registerImpl(new SocketSetup(), BERKEYLEY_SOCKETS);
-	registerImpl(new NGNSocketSetup(), NGN_SOCKETS);
+
+	// for Linux/BSD the sctp support is available
+	#if defined(LINUX) || defined(BSD)
+	    registerImpl(new NGNSocketSetup(), NGN_SOCKETS);
+    #endif
 }
 
 GapiService::~GapiService()

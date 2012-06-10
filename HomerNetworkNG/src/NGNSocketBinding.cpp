@@ -26,9 +26,9 @@
  */
 
 #include <GAPI.h>
-#include <NextGenNet/NGNSocketName.h>
-#include <NextGenNet/NGNSocketConnection.h>
-#include <NextGenNet/NGNSocketBinding.h>
+#include <NGNSocketName.h>
+#include <NGNSocketConnection.h>
+#include <NGNSocketBinding.h>
 #include <RequirementTransmitLossless.h>
 #include <RequirementTransmitChunks.h>
 #include <RequirementTransmitStream.h>
@@ -54,10 +54,8 @@ using namespace std;
 //HINT: lossless transmission is not implemented by using TCP but by rely on a reaction by the network
 NGNSocketBinding::NGNSocketBinding(std::string pLocalName, Requirements *pRequirements)
 {
-  
-     
     LOG(LOG_VERBOSE, "Start SCTP Server for %s", pLocalName.c_str());
-   // resolution of conection by target and requirents. 
+    // resolution of connection by target and requirements.
     LOG(LOG_VERBOSE, "memset mSock_addr with sizof %i", sizeof(mSock_addr));
     memset((void *) &mSock_addr, 0, sizeof(mSock_addr));
     mUnordered = false;
@@ -92,7 +90,7 @@ NGNSocketBinding::NGNSocketBinding(std::string pLocalName, Requirements *pRequir
     // - TCP is used for SCTP in one-to-one TCP style
     if ((pRequirements->contains(RequirementTransmitChunks::type())) && (pRequirements->contains(RequirementTransmitStream::type())))
     {
-      LOG(LOG_ERROR, "Detected requirement conflict between \"Req:Chunks\" and \"Req:Stream\"");
+        LOG(LOG_ERROR, "Detected requirement conflict between \"Req:Chunks\" and \"Req:Stream\"");
     }
 
     bool tTcp = (((!pRequirements->contains(RequirementTransmitChunks::type())) &&
@@ -103,37 +101,42 @@ NGNSocketBinding::NGNSocketBinding(std::string pLocalName, Requirements *pRequir
 
     if(((pRequirements->contains(RequirementTransmitChunks::type())) &&
                     (!pRequirements->contains(RequirementTransmitStream::type())) &&
-                    (pRequirements->contains(RequirementTransmitBitErrors::type())))){
+                    (pRequirements->contains(RequirementTransmitBitErrors::type()))))
+    {
 
-      LOG(LOG_ERROR, "The UDP light option is not valid in this context");  
+        LOG(LOG_ERROR, "The UDP light option is not valid in this context");
     }
 
     LOG(LOG_VERBOSE, "Setup the address stuff for  %s port %i", pLocalName.c_str(), mPort);
+
     if(tTcp)
-      LOG(LOG_VERBOSE, "Use default TCP style");
+        LOG(LOG_VERBOSE, "Use default TCP style");
     else if (tUdp)
-      LOG(LOG_VERBOSE, "Use default UDP encapsulation style");
+        LOG(LOG_VERBOSE, "Use default UDP encapsulation style");
     else
-      LOG(LOG_VERBOSE, "Style not supported");
+        LOG(LOG_VERBOSE, "Style not supported");
      
     ///////////////////////////////////////////////////
     // Setup the address stuff
     
-    if (inet_pton(AF_INET6, ((char*) pLocalName.c_str()), &mSock_addr.s6.sin6_addr)) {
-            LOG(LOG_VERBOSE, "Setup IPv4 Adress for SCTP");
+    if (inet_pton(AF_INET6, ((char*) pLocalName.c_str()), &mSock_addr.s6.sin6_addr))
+    {
+        LOG(LOG_VERBOSE, "Setup IPv4 address for SCTP");
 	    mSock_addr.s6.sin6_family = AF_INET6;
 #ifdef HAVE_SIN_LEN
 	    mSock_addr.s6.sin6_len = sizeof(struct sockaddr_in6);
 #endif
 	    mSock_addr.s6.sin6_port = htons(mPort);
 	    addr_len = sizeof(struct sockaddr_in6);
-	    if (mIpv4only) {
+	    if (mIpv4only)
+	    {
 		    LOG(LOG_ERROR, "Can't use IPv6 address when IPv4 only\n");
 	    }
-     }else {
+     }else
+     {
 	    if (inet_pton(AF_INET, ((char*) pLocalName.c_str()), &mSock_addr.s4.sin_addr))
 	    {
-		    LOG(LOG_VERBOSE, "Setup IPv4 Adress for SCTP");
+		    LOG(LOG_VERBOSE, "Setup IPv4 address for SCTP");
 		    mSock_addr.s4.sin_family = AF_INET;
 #ifdef HAVE_SIN_LEN
 		    mSock_addr.s4.sin_len = sizeof(struct sockaddr_in);
@@ -141,10 +144,12 @@ NGNSocketBinding::NGNSocketBinding(std::string pLocalName, Requirements *pRequir
 		    mSock_addr.s4.sin_port = htons(mPort);
 		    addr_len = sizeof(struct sockaddr_in);
 
-		    if (mIpv6only) {
+		    if (mIpv6only)
+		    {
 			    LOG(LOG_ERROR, "Can't use IPv4 address when IPv6 only\n");			
 		    }
-	    } else {
+	    }else
+	    {
 		    LOG(LOG_ERROR, "Invalid address\n");
 	    }
     }
@@ -153,8 +158,9 @@ NGNSocketBinding::NGNSocketBinding(std::string pLocalName, Requirements *pRequir
     LOG(LOG_VERBOSE, "Setup Socket for %s : %i", pLocalName.c_str(), mPort);
     ////////////////////////////////////////////////////////////////////////////////
     // In every case we need a SCTP Socket
-    if ((mSocket = socket((mIpv4only ? AF_INET : AF_INET6), SOCK_STREAM, IPPROTO_SCTP)) < 0){
-      LOG(LOG_ERROR, "Socket Error");
+    if ((mSocket = socket((mIpv4only ? AF_INET : AF_INET6), SOCK_STREAM, IPPROTO_SCTP)) < 0)
+    {
+        LOG(LOG_ERROR, "Socket Error");
     }
 //    const int on = 1;
 //    const int off = 0;
@@ -168,33 +174,32 @@ NGNSocketBinding::NGNSocketBinding(std::string pLocalName, Requirements *pRequir
 //	    }
 //    }
 
-if(SPECIAL_PORT == mPort){  
-  memset(&mEncaps, 0, sizeof(struct sctp_udpencaps));
-  mEncaps.sue_address.ss_family = (mIpv4only ? AF_INET : AF_INET6);
-  mEncaps.sue_port = htons(UDP_ENCAPSULATION);
-  if (setsockopt(mSocket, IPPROTO_SCTP, SCTP_REMOTE_UDP_ENCAPS_PORT, (const void*)&mEncaps, (socklen_t)sizeof(struct sctp_udpencaps)) < 0) {
-	    LOG(LOG_ERROR, "Socketopt Error UDP encapsulation");
-  }
-  else
-    LOG(LOG_VERBOSE,"UDP encapsulation supported");
-}
-else
-  LOG(LOG_VERBOSE,"%i is not the UDP encapsulation Port %i", mPort, SPECIAL_PORT);
+    #ifdef SCTP_REMOTE_UDP_ENCAPS_PORT
+        if(SPECIAL_PORT == mPort)
+        {
+            memset(&mEncaps, 0, sizeof(struct sctp_udpencaps));
+            mEncaps.sue_address.ss_family = (mIpv4only ? AF_INET : AF_INET6);
+            mEncaps.sue_port = htons(UDP_ENCAPSULATION);
+            if (setsockopt(mSocket, IPPROTO_SCTP, SCTP_REMOTE_UDP_ENCAPS_PORT, (const void*)&mEncaps, (socklen_t)sizeof(struct sctp_udpencaps)) < 0)
+            {
+                LOG(LOG_ERROR, "Socketopt Error UDP encapsulation");
+            }else
+                LOG(LOG_VERBOSE,"UDP encapsulation supported");
+        }else
+            LOG(LOG_VERBOSE,"%i is not the UDP encapsulation Port %i", mPort, SPECIAL_PORT);
+    #endif
 
-LOG(LOG_VERBOSE,"MY");    
+    LOG(LOG_VERBOSE,"MY");
 
     ///////////////////////////////////////////////////////////////////////////
     // start a parser tree for SCTP QoS requirements and additional transport requirements for SCTP
 //    changeRequirements(pRequirements);
 
-
-
-
     if (bind(mSocket, (struct sockaddr *)&mSock_addr, addr_len) != 0)
-	LOG(LOG_ERROR, "bind %i", errno);
+        LOG(LOG_ERROR, "bind %i", errno);
 
     if (listen(mSocket, 1) < 0)
-	LOG(LOG_ERROR, "listen %i", errno);   
+        LOG(LOG_ERROR, "listen %i", errno);
   
 }
 
@@ -207,7 +212,6 @@ NGNSocketBinding::~NGNSocketBinding()
 
 IConnection* NGNSocketBinding::readConnection()
 {
-    
     return (IConnection*) (new NGNSocketConnection(mSocket));
 }
 
