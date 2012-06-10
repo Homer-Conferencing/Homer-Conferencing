@@ -48,7 +48,7 @@ class MediaSinkMem:
 {
 
 public:
-    MediaSinkMem(std::string pMemoryId, enum MediaSinkType pType= MEDIA_SINK_UNKNOWN);
+    MediaSinkMem(std::string pMemoryId, enum MediaSinkType pType, bool pRtpActivated);
 
     virtual ~MediaSinkMem();
 

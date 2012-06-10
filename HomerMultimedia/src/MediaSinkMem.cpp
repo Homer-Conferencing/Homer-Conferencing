@@ -44,8 +44,8 @@ using namespace Homer::Monitor;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-MediaSinkMem::MediaSinkMem(string pMemoryId, enum MediaSinkType pType):
-    MediaSinkNet("memory", 0, NULL, pType, false)
+MediaSinkMem::MediaSinkMem(string pMemoryId, enum MediaSinkType pType, bool pRtpActivated):
+    MediaSinkNet("memory", 0, NULL, pType, pRtpActivated)
 {
     // overwrite id from MediaSinkNet
     mMemoryId = pMemoryId;
@@ -79,7 +79,9 @@ void MediaSinkMem::SendFragment(char* pData, unsigned int pSize)
         {
             char *tPacketData = pData;
             unsigned int tPacketSize = pSize;
-            RtpParse(tPacketData, tPacketSize, mCurrentStream->codec->codec_id);
+            bool tLastFragment;
+            bool tFragmentIsSenderReport;
+            RtpParse(tPacketData, tPacketSize, tLastFragment, tFragmentIsSenderReport, mCurrentStream->codec->codec_id, true);
         }
     #endif
     AnnouncePacket(pSize);
