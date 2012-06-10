@@ -33,6 +33,8 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#include <sys/types.h>
+#include <sys/param.h>
 #endif
 
 #include <Header_Windows.h>
@@ -122,6 +124,8 @@ public:
     /* transmission */
     bool Send(std::string pTargetHost, unsigned int pTargetPort, void *pBuffer, ssize_t pBufferSize);
     bool Receive(std::string &pSourceHost, unsigned int &pSourcePort, void *pBuffer, ssize_t &pBufferSize);
+    int GetSendBufferSize();
+    bool SetSendBufferSize(int pSize);
     int GetReceiveBufferSize();
     bool SetReceiveBufferSize(int pSize);
 

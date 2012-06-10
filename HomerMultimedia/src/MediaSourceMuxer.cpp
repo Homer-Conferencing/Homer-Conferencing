@@ -444,7 +444,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     }
 
     // Open codec
-    if ((tResult = avcodec_open2(mCodecContext, tCodec, NULL)) < 0)
+    if ((tResult = HM_avcodec_open(mCodecContext, tCodec)) < 0)
     {
         LOG(LOG_ERROR, "Couldn't open video codec because of \"%s\".", strerror(AVUNERROR(tResult)));
         // free codec and stream 0
@@ -634,7 +634,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
 //        mCodecContext->flags |= CODEC_FLAG_TRUNCATED;
 
     // Open codec
-    if ((tResult = avcodec_open2(mCodecContext, tCodec, NULL)) < 0)
+    if ((tResult = HM_avcodec_open(mCodecContext, tCodec)) < 0)
     {
         LOG(LOG_ERROR, "Couldn't open audio codec because of \"%s\".", strerror(AVUNERROR(tResult)));
         // free codec and stream 0
@@ -1000,7 +1000,7 @@ void MediaSourceMuxer::StartTranscoder(int pFifoEntrySize)
         delete mTranscoderFifo;
     }else
     {
-        mTranscoderFifo = new MediaFifo(MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT, pFifoEntrySize, GetMediaTypeStr() + "-MediaSourceMuxer");
+        mTranscoderFifo = new MediaFifo(MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT, pFifoEntrySize, GetMediaTypeStr() + "-Transcoder");
 
         mTranscoderNeeded = true;
 
@@ -1289,6 +1289,15 @@ void* MediaSourceMuxer::Run(void* pArgs)
 
             // release FIFO entry lock
             mTranscoderFifo->ReadFifoExclusiveFinished(tFifoEntry);
+
+            // is FIFO near overload situation?
+            if (mTranscoderFifo->GetUsage() >= MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT - 4)
+            {
+                LOG(LOG_WARN, "Transcoder FIFO is near overload situation, deleting all stored frames");
+
+                // delete all stored frames: it is a better for the encoding to have a gap instead of frames which have high picture differences
+                mTranscoderFifo->ClearFifo();
+            }
         }else
             Suspend(10 * 1000); // check every 1/100 seconds the state of the FIFO
     }

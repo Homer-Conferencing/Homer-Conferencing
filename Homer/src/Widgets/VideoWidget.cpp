@@ -154,7 +154,7 @@ void VideoWidget::Init(QMainWindow* pMainWindow, MediaSource *pVideoSource, QMen
         mAssignedAction->setCheckable(true);
         mAssignedAction->setChecked(pVisible);
         QIcon tIcon;
-        tIcon.addPixmap(QPixmap(":/images/Checked.png"), QIcon::Normal, QIcon::On);
+        tIcon.addPixmap(QPixmap(":/images/22_22/Checked.png"), QIcon::Normal, QIcon::On);
         tIcon.addPixmap(QPixmap(":/images/Unchecked.png"), QIcon::Normal, QIcon::Off);
         mAssignedAction->setIcon(tIcon);
     }
@@ -185,11 +185,8 @@ void VideoWidget::Init(QMainWindow* pMainWindow, MediaSource *pVideoSource, QMen
     setAttribute(Qt::WA_PaintOnScreen, true);
     setAttribute(Qt::WA_OpaquePaintEvent, true);
 
-    setMinimumSize(352, 288);
-    mMainWindow->adjustSize();
     SetVisible(pVisible);
     mNeedBackgroundUpdatesUntillNextFrame = true;
-    setMaximumSize(16777215, 16777215);
 }
 
 VideoWidget::~VideoWidget()
@@ -1022,8 +1019,8 @@ void VideoWidget::SetResolution(int mX, int mY)
 
 			if ((windowState() & Qt::WindowFullScreen) == 0)
 			{
-				setMinimumSize(mResX, mResY);
-				resize(0, 0);
+				setMinimumSize(0, 0);//mResX, mResY);
+				//resize(0, 0);
 			}
 		}
 		setUpdatesEnabled(true);
@@ -1278,10 +1275,6 @@ void VideoWidget::paintEvent(QPaintEvent *pEvent)
 
 void VideoWidget::resizeEvent(QResizeEvent *pEvent)
 {
-	// user triggered resize event?
-//	if (QApplication::mouseButtons() & Qt::LeftButton)
-//		setMinimumSize(192, 96);
-
 	setUpdatesEnabled(false);
     QWidget::resizeEvent(pEvent);
     mNeedBackgroundUpdatesUntillNextFrame = true;

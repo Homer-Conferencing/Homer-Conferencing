@@ -45,6 +45,10 @@ SET (SOURCES
 	../src/Berkeley/SocketSetup
 	../src/Berkeley/SocketBinding
 	../src/Berkeley/SocketConnection
+	../src/NextGenNet/NGNSocketName
+    ../src/NextGenNet/NGNSocketSetup
+    ../src/NextGenNet/NGNSocketBinding
+    ../src/NextGenNet/NGNSocketConnection
 )
 
 ##############################################################

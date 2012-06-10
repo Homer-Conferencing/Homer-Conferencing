@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 2011 Thomas Volkert <thomas@homer-conferencing.com>
+ * Copyright (C) 2011 Martin.Becke@uni-due.de
  *
  * This software is free software.
  * Your are allowed to redistribute it and/or modify it under the terms of
@@ -20,62 +20,60 @@
  *****************************************************************************/
 
 /*
- * Purpose: Link
- * Author:  Thomas Volkert
+ * Purpose: Implementation of G-Lab API
+ * Author:  MArtin Becke
  * Since:   2012-05-30
  */
 
-#ifndef _GAPI_SIMULATION_LINK_
-#define _GAPI_SIMULATION_LINK_
+#include <GAPI.h>
+#include <NextGenNet/NGNSocketName.h>
 
-#include <Core/Cep.h>
+#include <Logger.h>
 
-#include <HBMutex.h>
-#include <Name.h>
-
-#include <list>
+#include <string>
 
 namespace Homer { namespace Base {
 
-class Link;
-typedef std::list<Link*> LinkList;
-
-class Node;
+using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class Link
+NGNSocketName::NGNSocketName(string pHost, unsigned int pPort):
+	Name(pHost), mHost(pHost), mPort(pPort)
 {
-public:
-    Link(Node *pNodeOne, Node *pNodeTwo);
-    virtual ~Link();
 
-    bool HandlePacket(Packet *pPacket, Node* pLastNode);
+}
 
-    /* QoS settings */
-    void SetQoSCapabilities(QoSSettings pCaps);
-    QoSSettings GetQoSCapabilities();
+NGNSocketName::~NGNSocketName()
+{
 
-    Node* GetNode0();
-    Node* GetNode1();
-    Node* GetPeerNode(Node *pNode);
-
-    /* statistics */
-    int GetPacketCount();
-    int GetLostPacketCount();
-
-    std::list<int> GetSeenStreams();
-private:
-    Node            *mNodes[2];
-    QoSSettings     mQoSCapabilities;
-    std::list<int>  mSeenStreams;
-    Mutex           mSeenStreamsMutex;
-    int             mPacketCount;
-    int             mPacketLossCount;
-};
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
-}} // namespaces
+template <typename T>
+inline std::string dataToString(T const& value_)
+{
+    std::stringstream ss;
+    ss << value_;
+    return ss.str();
+}
 
-#endif
+string NGNSocketName::toString()
+{
+	return mHost + "<" + dataToString(mPort) + ">";
+}
+
+std::string NGNSocketName::getHost()
+{
+    return mHost;
+}
+
+unsigned int NGNSocketName::getPort()
+{
+    return mPort;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+}} //namespace

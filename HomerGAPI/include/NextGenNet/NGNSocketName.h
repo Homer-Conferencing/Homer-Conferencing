@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 2011 Thomas Volkert <thomas@homer-conferencing.com>
+ * Copyright (C) 2012 Martin.Becke@uni-due.de
  *
  * This software is free software.
  * Your are allowed to redistribute it and/or modify it under the terms of
@@ -20,58 +20,35 @@
  *****************************************************************************/
 
 /*
- * Purpose: Link
- * Author:  Thomas Volkert
+ * Purpose: SocketName
+ * Author:  Martin Becke
  * Since:   2012-05-30
  */
 
-#ifndef _GAPI_SIMULATION_LINK_
-#define _GAPI_SIMULATION_LINK_
+#ifndef _GAPI_NGNSOCKET_NAME_
+#define _GAPI_NGNSOCKET_NAME_
 
-#include <Core/Cep.h>
-
-#include <HBMutex.h>
 #include <Name.h>
-
-#include <list>
+#include <string>
 
 namespace Homer { namespace Base {
 
-class Link;
-typedef std::list<Link*> LinkList;
-
-class Node;
-
 ///////////////////////////////////////////////////////////////////////////////
 
-class Link
+class NGNSocketName:
+    public Name
 {
 public:
-    Link(Node *pNodeOne, Node *pNodeTwo);
-    virtual ~Link();
+    NGNSocketName(std::string pHost, unsigned int pPort);
+    virtual ~NGNSocketName();
 
-    bool HandlePacket(Packet *pPacket, Node* pLastNode);
-
-    /* QoS settings */
-    void SetQoSCapabilities(QoSSettings pCaps);
-    QoSSettings GetQoSCapabilities();
-
-    Node* GetNode0();
-    Node* GetNode1();
-    Node* GetPeerNode(Node *pNode);
-
-    /* statistics */
-    int GetPacketCount();
-    int GetLostPacketCount();
-
-    std::list<int> GetSeenStreams();
+    virtual std::string toString();
+    virtual std::string getHost();
+    virtual unsigned int getPort();
 private:
-    Node            *mNodes[2];
-    QoSSettings     mQoSCapabilities;
-    std::list<int>  mSeenStreams;
-    Mutex           mSeenStreamsMutex;
-    int             mPacketCount;
-    int             mPacketLossCount;
+    std::string		mHost;
+    unsigned int    mPort;
+    std::string     mTransport;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

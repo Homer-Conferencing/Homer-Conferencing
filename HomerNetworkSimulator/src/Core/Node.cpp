@@ -88,7 +88,7 @@ FibTable Node::GetFib()
     return tResult;
 }
 
-bool Node::AddRibEntry(string pNodeAddress, RibTable *pTable, std::string pDestination, std::string pNextNode, int pHopCount, QoSSettings *pQoSSettings)
+bool Node::AddRibEntry(string pNodeAddress, RibTable *pTable, std::string pDestination, std::string pNextNode, int pHopCosts, QoSSettings *pQoSSettings)
 {
     bool tRouteAlreadyKnown = false;
 
@@ -104,7 +104,7 @@ bool Node::AddRibEntry(string pNodeAddress, RibTable *pTable, std::string pDesti
     RibEntry *tRibEntry = new RibEntry();
     tRibEntry->Destination = pDestination;
     tRibEntry->NextNode = pNextNode;
-    tRibEntry->HopCount = pHopCount;
+    tRibEntry->HopCount = pHopCosts;
     if (pQoSSettings != NULL)
         tRibEntry->QoSCapabilities = *pQoSSettings;
     else{
@@ -139,12 +139,24 @@ bool Node::AddRibEntry(string pNodeAddress, RibTable *pTable, std::string pDesti
         {
             if (((*tIt)->Destination == tRibEntry->Destination) && ((*tIt)->NextNode == tRibEntry->NextNode))
             {
-                #ifdef DEBUG_ROUTING
-                    LOGEX(Node, LOG_WARN, "Already stored in RIB of node %s the entry: %s via %s at position %d", pNodeAddress.c_str(), tRibEntry->Destination.c_str(), tRibEntry->NextNode.c_str(), tRibPosition);
-                #endif
-                tRouteAlreadyKnown = true;
-                break;
-            }
+                if (((*tIt)->HopCount < tRibEntry->HopCount) || ((*tIt)->QoSCapabilities.Delay < tRibEntry->QoSCapabilities.Delay) || ((*tIt)->QoSCapabilities.DataRate > tRibEntry->QoSCapabilities.DataRate))
+                {
+                    #ifdef DEBUG_ROUTING
+                        LOGEX(Node, LOG_WARN, "Already stored in RIB of node %s the entry: %s via %s at position %d (has better QoS than the new one)", pNodeAddress.c_str(), tRibEntry->Destination.c_str(), tRibEntry->NextNode.c_str(), tRibPosition);
+                    #endif
+                    tRouteAlreadyKnown = true;
+                    break;
+                }else
+                {
+                    #ifdef DEBUG_ROUTING
+                        LOGEX(Node, LOG_WARN, "Replacing in RIB of node %s the QoS values of entry: %s via %s (hc: %d, dr: %d, delay: %d) by (hc: %d, dr: %d, delay: %d)", pNodeAddress.c_str(), (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str(), (*tIt)->HopCount, (*tIt)->QoSCapabilities.DataRate, (*tIt)->QoSCapabilities.Delay, tRibEntry->HopCount, tRibEntry->QoSCapabilities.DataRate, tRibEntry->QoSCapabilities.Delay);
+                    #endif
+                    pTable->erase(tIt);
+                    tIt = pTable->begin();
+                    if (tIt == pTable->end())
+                        break;
+                }
+            }else
             //LOG(LOG_ERROR, "Comparing %s and %s", GetForeignDomain((*tIt)->Destination).c_str(), GetForeignDomain(tRibEntry->Destination).c_str());
             if ((GetForeignDomain(pNodeAddress, (*tIt)->Destination) == GetForeignDomain(pNodeAddress, tRibEntry->Destination)) && ((*tIt)->NextNode == tRibEntry->NextNode))
             {
@@ -159,7 +171,7 @@ bool Node::AddRibEntry(string pNodeAddress, RibTable *pTable, std::string pDesti
     if (!tRouteAlreadyKnown)
     {// new RIB entry
         #ifdef DEBUG_ROUTING
-            LOGEX(Node, LOG_WARN, "Adding to RIB of node %s the entry: %s via %s", pNodeAddress.c_str(), tRibEntry->Destination.c_str(), tRibEntry->NextNode.c_str());
+            LOGEX(Node, LOG_WARN, "Adding to RIB of node %s the entry: %s via %s (hc: %d, dr: %d, delay: %d)", pNodeAddress.c_str(), tRibEntry->Destination.c_str(), tRibEntry->NextNode.c_str(), tRibEntry->HopCount, tRibEntry->QoSCapabilities.DataRate, tRibEntry->QoSCapabilities.Delay);
         #endif
             pTable->push_back(tRibEntry);
     }else
@@ -173,12 +185,69 @@ bool Node::AddRibEntry(string pNodeAddress, RibTable *pTable, std::string pDesti
     return !tRouteAlreadyKnown;
 }
 
-bool Node::AddRibEntry(string pDestination, string pNextNode, int pHopCount, QoSSettings *pQoSSettings)
+bool Node::AddRibEntry(string pDestination, string pNextNode, int pHopCosts, QoSSettings *pQoSSettings)
 {
     bool tResult = false;
     mRibTableMutex.lock();
 
-    tResult = AddRibEntry(mAddress, &mRibTable, pDestination, pNextNode, pHopCount, pQoSSettings);
+    tResult = AddRibEntry(mAddress, &mRibTable, pDestination, pNextNode, pHopCosts, pQoSSettings);
+
+    mRibTableMutex.unlock();
+
+    return tResult;
+}
+
+bool Node::DistributeAggregatedRibEntry(string pDestination, string pNextNode, int pHopCosts, QoSSettings *pQoSSettings)
+{
+    string tIntermediateRouteDestination = "";
+    bool tEntryIsUsable = false;
+    bool tResult = false;
+
+    if (pQoSSettings == NULL)
+    {
+        LOG(LOG_ERROR, "Invalid QoS settings");
+        return false;
+    }
+
+    // prepare QoS settings
+    QoSSettings *tQoSSet = new QoSSettings();
+    *tQoSSet = *pQoSSettings;
+
+    mRibTableMutex.lock();
+
+    int tHopCosts;
+    RibTable::iterator tRibIt;
+
+    // ITERATE over all RIB entries
+    for (tRibIt = mRibTable.begin(); tRibIt != mRibTable.end(); tRibIt++)
+    {
+        // link combination possible?
+        if ((*tRibIt)->Destination == pNextNode)
+        {
+            #ifdef DEBUG_ROUTING
+                LOG(LOG_WARN, "..use route to %s via %s (hc: %d, dr: %d, delay: %d) for a route towards %s", (*tRibIt)->Destination.c_str(), (*tRibIt)->NextNode.c_str(), (*tRibIt)->HopCount, (*tRibIt)->QoSCapabilities.DataRate, (*tRibIt)->QoSCapabilities.Delay, pDestination.c_str());
+            #endif
+            tIntermediateRouteDestination = (*tRibIt)->NextNode;
+            tEntryIsUsable = true;
+            // AGGREGATE QOS: derive the new QoS settings from the known RIB entry and the new settings for the extended route
+            tQoSSet->DataRate = MIN((*tRibIt)->QoSCapabilities.DataRate, pQoSSettings->DataRate);
+            tQoSSet->Delay = (*tRibIt)->QoSCapabilities.Delay + pQoSSettings->Delay;
+            tQoSSet->Features = 0; // TODO: use this for lossless transmission
+            tHopCosts = (*tRibIt)->HopCount + pHopCosts;
+            break;
+        }else
+        {
+            #ifdef DEBUG_ROUTING
+                //LOG(LOG_VERBOSE, "..DON'T USE route to %s via %s for a route towards %s", (*tRibIt)->Destination.c_str(), (*tRibIt)->NextNode.c_str(), pDestination.c_str());
+            #endif
+        }
+    }
+
+    if (tEntryIsUsable)
+    {
+
+        tResult = AddRibEntry(mAddress, &mRibTable, pDestination, pNextNode, tHopCosts, tQoSSet);
+    }
 
     mRibTableMutex.unlock();
 
@@ -210,15 +279,21 @@ void Node::LogRib()
     mRibTableMutex.unlock();
 }
 
-bool Node::AddTopologyEntry(string pDestination, string pNextNode, QoSSettings *pQoSSettings)
+bool Node::AddLink(Link *pLink)
 {
-    if (pNextNode == mAddress)
+    Node* tPeerNode = pLink->GetPeerNode(this);
+
+    AddFibEntry(pLink, tPeerNode);
+
+    string tPeerNodeAddr = tPeerNode->GetAddress();
+
+    if (tPeerNodeAddr == mAddress)
     {
         LOG(LOG_ERROR, "Routing loop detected, will drop this RIB entry");
         return false;
     }
     // does the next node belongs to our cluster domain?
-    if (GetDomain(pNextNode, HIERARCHY_HEIGHT - 1)  !=  mDomain)
+    if (GetDomain(tPeerNodeAddr, HIERARCHY_HEIGHT - 1)  !=  mDomain)
     {
         if (!mIsGateway)
         {
@@ -230,26 +305,20 @@ bool Node::AddTopologyEntry(string pDestination, string pNextNode, QoSSettings *
     }
 
     RibEntry *tRibEntry = new RibEntry();
-    tRibEntry->Destination = pDestination;
-    tRibEntry->NextNode = pNextNode;
+    tRibEntry->Destination = tPeerNodeAddr;
+    tRibEntry->NextNode = tPeerNodeAddr;
     tRibEntry->HopCount = 1;
-    if (pQoSSettings != NULL)
-        tRibEntry->QoSCapabilities = *pQoSSettings;
-    else{
-        tRibEntry->QoSCapabilities.DataRate = 0;
-        tRibEntry->QoSCapabilities.Delay = 0;
-        tRibEntry->QoSCapabilities.Features = 0;
-    }
+    tRibEntry->QoSCapabilities = pLink->GetQoSCapabilities();
 
     #ifdef DEBUG_ROUTING
-        LOG(LOG_WARN, "Adding to (phys.) RIB of node %s the entry: %s via %s", mAddress.c_str(), pDestination.c_str(), pNextNode.c_str());
+        LOG(LOG_WARN, "Adding to (phys.) RIB of node %s the entry: %s via %s", mAddress.c_str(), tPeerNodeAddr.c_str(), tPeerNodeAddr.c_str());
     #endif
 
     mTopologyTableMutex.lock();
     mTopologyTable.push_back(tRibEntry);
     mTopologyTableMutex.unlock();
 
-    AddRibEntry(pDestination, pNextNode, 1, pQoSSettings);
+    AddRibEntry(tPeerNodeAddr, tPeerNodeAddr, 1, &tRibEntry->QoSCapabilities);
 
     return true;
 }
@@ -536,7 +605,7 @@ Cep* Node::FindServerCep(unsigned int pPort)
     if (mServerCeps.size() > 0)
     {
         CepList::iterator tIt;
-        for (tIt = mServerCeps.begin(); tIt != mServerCeps.end(); tIt)
+        for (tIt = mServerCeps.begin(); tIt != mServerCeps.end(); tIt++)
         {
             //LOG(LOG_VERBOSE, "Comparing CEP with local port %u and desired port %u", (*tIt)->GetLocalPort(), pPort);
             if ((*tIt)->GetLocalPort() == pPort)
@@ -606,7 +675,7 @@ bool Node::HandlePacket(Packet *pPacket)
     }
 
     // we are not the destination, we lookup the next node via our RIB
-    string tNextHop = GetNextHop(pPacket->Destination, pPacket->QoSRequirements);
+    string tNextHop = GetNextHop(pPacket);
     if (tNextHop == "")
     {
         LOG(LOG_ERROR, "Routing failure on node %s: cannot determine next hop for %s, routing table is..", mAddress.c_str(), pPacket->Destination.c_str());
@@ -656,6 +725,11 @@ string Node::GetNextHop(RibTable *pTable, string pDestination, const QoSSettings
                         tBestHopCosts = (*tIt)->HopCount;
                         break;
                     }
+                }else
+                {
+                    #ifdef DEBUG_ROUTING
+                        //LOGEX(Node, LOG_ERROR, "RIB entry has domain as next node: %s via %s", (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str());
+                    #endif
                 }
             }
         }
@@ -664,13 +738,147 @@ string Node::GetNextHop(RibTable *pTable, string pDestination, const QoSSettings
     return tResult;
 }
 
-string Node::GetNextHop(string pDestination, const QoSSettings pQoSRequirements)
+long long Node::GetRouteCosts(std::string pDestination)
 {
-    string tResult = "";
+    int tBestRouteCosts = INT_MAX;
 
     mRibTableMutex.lock();
 
-    tResult = GetNextHop(&mRibTable, pDestination, pQoSRequirements);
+    if (mRibTable.size() > 0)
+    {
+        RibTable::iterator tIt;
+        for (tIt = mRibTable.begin(); tIt != mRibTable.end(); tIt++)
+        {
+            /***************
+             * ROUTE COSTS
+             ***************
+             *
+             *   The route costs are calculated by the formula:
+             *      costs = (hop count) + (delay diff.) * (MAX_HOP_COUNT) + (data rate diff.) * (MAX_HOP_COUNT * MAX_DELAY)
+             *      delay diff.     = (allowed E2E delay - delay since packet was sent) - delay of the route
+             *      data rate diff. = required data rate - data rate of the route
+             *
+             *   This defines the following cost priorities:
+             *      2  ==>  data rate costs
+             *      1  ==>  delay costs
+             *      0  ==>  hop count
+             *
+             */
+
+            // ROUTE COSTS: hop count
+            long long tRouteCosts = (*tIt)->HopCount;
+
+            // ROUTE COSTS: QoS delay
+            tRouteCosts += (*tIt)->QoSCapabilities.Delay * MAX_HOP_COUNT;
+
+            // ROUTE COSTS: QoS data rate
+            tRouteCosts += (MAX_DATARATE - (*tIt)->QoSCapabilities.DataRate) * MAX_HOP_COUNT * MAX_DELAY;
+
+            if (tBestRouteCosts > tRouteCosts)
+            {
+                if (!IsDomain((*tIt)->NextNode))
+                {
+                    #ifdef DEBUG_ROUTING
+//                        if (tBestRouteCosts == INT_MAX)
+//                            LOG(LOG_ERROR, "Found route on %s (%s via %s, hc: %d, dr: %d, delay: %d)", mAddress.c_str(), (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str(), (*tIt)->HopCount, (*tIt)->QoSCapabilities.DataRate, (*tIt)->QoSCapabilities.Delay);
+//                        else
+//                            LOG(LOG_ERROR, "Found better route on %s (%s via %s, hc: %d, dr: %d, delay: %d)", mAddress.c_str(), (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str(), (*tIt)->HopCount, (*tIt)->QoSCapabilities.DataRate, (*tIt)->QoSCapabilities.Delay);
+                    #endif
+                    if ((*tIt)->Destination == pDestination)
+                    {// MATCH: entry is an explicit destination
+
+                        tBestRouteCosts = tRouteCosts;
+                    }
+                    if ((IsDomain((*tIt)->Destination)) && ((IsAddressOfDomain((*tIt)->Destination, pDestination)) || (IsAddressOfDomain(pDestination, (*tIt)->Destination))))
+                    {// MATCH: entry is a cluster domain
+                        tBestRouteCosts = tRouteCosts;
+                    }
+                }else
+                    LOG(LOG_ERROR, "RIB entry has domain as next node: %s via %s", (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str());
+            }
+        }
+    }
+
+    mRibTableMutex.unlock();
+
+    return tBestRouteCosts;
+}
+
+string Node::GetNextHop(Packet *pPacket)
+{
+    string tResult = "";
+    int tBestRouteCosts = INT_MAX;
+
+    mRibTableMutex.lock();
+
+    string tDestination = pPacket->Destination;
+    QoSSettings tQoSSet = pPacket->QoSRequirements;
+
+    if (mRibTable.size() > 0)
+    {
+        RibTable::iterator tIt;
+        for (tIt = mRibTable.begin(); tIt != mRibTable.end(); tIt++)
+        {
+            /***************
+             * ROUTE COSTS
+             ***************
+             *
+             *   The route costs are calculated by the formula:
+             *      costs = (hop count) + (delay diff.) * (MAX_HOP_COUNT) + (data rate diff.) * (MAX_HOP_COUNT * MAX_DELAY)
+             *      delay diff.     = (allowed E2E delay - delay since packet was sent) - delay of the route
+             *      data rate diff. = required data rate - data rate of the route
+             *
+             *   This defines the following cost priorities:
+             *      2  ==>  data rate costs
+             *      1  ==>  delay costs
+             *      0  ==>  hop count
+             *
+             */
+
+            // ROUTE COSTS: hop count
+            long long tRouteCosts = (*tIt)->HopCount;
+
+            // ROUTE COSTS: QoS delay, if value is defined in packet and it is still important for further route decisions
+            if ((pPacket->QoSRequirements.Delay > 0) && ((pPacket->QoSRequirements.Delay > pPacket->QoSResults.Delay)))
+            {
+                int tAllowedDelay = (int)pPacket->QoSRequirements.Delay - pPacket->QoSResults.Delay;
+                // tend to use a best-fit route here! (use the route which is as close as possible to the desired QoS values)
+                tRouteCosts += (((*tIt)->QoSCapabilities.Delay - tAllowedDelay)) * MAX_HOP_COUNT;
+            }
+
+            // ROUTE COSTS: QoS data rate, if value is defined in packet and it is still important for further route decisions
+            if ((pPacket->QoSRequirements.DataRate > 0) && ((pPacket->QoSRequirements.DataRate > (*tIt)->QoSCapabilities.DataRate)))
+            {
+                // tend to use a best-fit route here! (use the route which is as close as possible to the desired QoS values)
+                tRouteCosts += (((int)pPacket->QoSRequirements.DataRate - (*tIt)->QoSCapabilities.DataRate)) * MAX_HOP_COUNT * MAX_DELAY;
+            }
+
+            if (tBestRouteCosts > tRouteCosts)
+            {
+                if (!IsDomain((*tIt)->NextNode))
+                {
+                    #ifdef DEBUG_ROUTING
+                        if (tBestRouteCosts == INT_MAX)
+                            LOG(LOG_ERROR, "Found route on %s (%s via %s, hc: %d, dr: %d, delay: %d)", mAddress.c_str(), (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str(), (*tIt)->HopCount, (*tIt)->QoSCapabilities.DataRate, (*tIt)->QoSCapabilities.Delay);
+                        else
+                            LOG(LOG_ERROR, "Found better route on %s (%s via %s, hc: %d, dr: %d, delay: %d)", mAddress.c_str(), (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str(), (*tIt)->HopCount, (*tIt)->QoSCapabilities.DataRate, (*tIt)->QoSCapabilities.Delay);
+                    #endif
+                    if ((*tIt)->Destination == tDestination)
+                    {// MATCH: entry is an explicit destination
+
+                        tResult = (*tIt)->NextNode;
+                        tBestRouteCosts = tRouteCosts;
+                    }
+                    if ((IsDomain((*tIt)->Destination)) && ((IsAddressOfDomain((*tIt)->Destination, tDestination)) || (IsAddressOfDomain(tDestination, (*tIt)->Destination))))
+                    {// MATCH: entry is a cluster domain
+                        tResult = (*tIt)->NextNode;
+                        tBestRouteCosts = tRouteCosts;
+                    }
+                }else
+                    LOG(LOG_ERROR, "RIB entry has domain as next node: %s via %s", (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str());
+            }
+        }
+    }
 
     mRibTableMutex.unlock();
 

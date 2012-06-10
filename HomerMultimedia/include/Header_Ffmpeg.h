@@ -101,6 +101,15 @@ inline AVDictionaryEntry* HM_av_metadata_get(AVDictionary *pm, const char *key, 
     #endif
 }
 
+inline int HM_avcodec_open(AVCodecContext *avctx, AVCodec *codec)
+{
+    #if (LIBAVCODEC_VERSION_MAJOR < 54)
+        return avcodec_open(avctx, codec);
+    #else
+        return avcodec_open2(avctx, codec, NULL);
+    #endif
+}
+
 inline int HM_avcodec_decode_video(AVCodecContext *avctx, AVFrame *picture, int *got_picture_ptr, AVPacket *avpkt)
 {
     #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(52, 21, 0)

@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 2011 Thomas Volkert <thomas@homer-conferencing.com>
+ * Copyright (C) 2012 Martin.Becke@uni-due.de
  *
  * This software is free software.
  * Your are allowed to redistribute it and/or modify it under the terms of
@@ -20,58 +20,35 @@
  *****************************************************************************/
 
 /*
- * Purpose: Link
- * Author:  Thomas Volkert
+ * Purpose: SocketSetup
+ * Author:  Martin Becke
  * Since:   2012-05-30
  */
 
-#ifndef _GAPI_SIMULATION_LINK_
-#define _GAPI_SIMULATION_LINK_
+#ifndef _GAPI_NGNSOCKET_SETUP_
+#define _GAPI_NGNSOCKET_SETUP_
 
-#include <Core/Cep.h>
-
-#include <HBMutex.h>
 #include <Name.h>
-
-#include <list>
+#include <ISetup.h>
 
 namespace Homer { namespace Base {
 
-class Link;
-typedef std::list<Link*> LinkList;
+///////////////////////////////////////////////////////////////////////////////
 
-class Node;
+#define NGN_SOCKETS           "Next Generation Network Sockets"
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class Link
+class NGNSocketSetup:
+	public ISetup
 {
 public:
-    Link(Node *pNodeOne, Node *pNodeTwo);
-    virtual ~Link();
+    NGNSocketSetup();
+    virtual ~NGNSocketSetup();
 
-    bool HandlePacket(Packet *pPacket, Node* pLastNode);
-
-    /* QoS settings */
-    void SetQoSCapabilities(QoSSettings pCaps);
-    QoSSettings GetQoSCapabilities();
-
-    Node* GetNode0();
-    Node* GetNode1();
-    Node* GetPeerNode(Node *pNode);
-
-    /* statistics */
-    int GetPacketCount();
-    int GetLostPacketCount();
-
-    std::list<int> GetSeenStreams();
-private:
-    Node            *mNodes[2];
-    QoSSettings     mQoSCapabilities;
-    std::list<int>  mSeenStreams;
-    Mutex           mSeenStreamsMutex;
-    int             mPacketCount;
-    int             mPacketLossCount;
+    virtual IConnection* connect(Name *pName, Requirements *pRequirements = 0);
+    virtual IBinding* bind(Name *pName, Requirements *pRequirements = 0);
+    virtual Requirements getCapabilities(Name *pName, Requirements *pImportantRequirements = 0);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

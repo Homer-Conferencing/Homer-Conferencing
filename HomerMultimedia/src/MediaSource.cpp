@@ -1488,7 +1488,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     }
 
     // Open codec
-    if ((tResult = avcodec_open2(mRecorderCodecContext, tCodec, NULL)) < 0)
+    if ((tResult = HM_avcodec_open(mRecorderCodecContext, tCodec)) < 0)
     {
         LOG(LOG_ERROR, "Couldn't open %s codec because of \"%s\".", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
         // free codec and stream 0

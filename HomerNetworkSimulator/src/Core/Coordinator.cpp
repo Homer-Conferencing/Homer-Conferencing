@@ -59,6 +59,11 @@ string Coordinator::GetClusterAddress()
     return mClusterAddress;
 }
 
+Node* Coordinator::GetNode()
+{
+    return mNode;
+}
+
 void Coordinator::SetSuperior(Coordinator *pSuperior)
 {
     LOG(LOG_INFO, "Setting coordinator %s as superior of cluster %s at hierarchy level %d", pSuperior->GetClusterAddress().c_str(), mClusterAddress.c_str(), mHierarchyLevel);
@@ -146,10 +151,68 @@ bool Coordinator::IsForeignAddress(std::string pAddress)
     return !Node::IsAddressOfDomain(pAddress, mClusterAddress);
 }
 
-bool Coordinator::DistributeRibEntry(string pDestination, string pNextCluster, int pHopCount, QoSSettings *pQoSSettings)
+void Coordinator::MergeIntraClusterCosts(std::string pFromAddress, std::string pToAddress, QoSSettings *pQoSSet, int *pHopCosts)
+{
+    QoSSettings tFoundQoSSet;
+    tFoundQoSSet.DataRate = 0;
+    tFoundQoSSet.Delay = SHRT_MAX;
+    tFoundQoSSet.Features = 0;
+    Node* tSourceNode = NULL;
+    string tDestinationNodeAddr = "";
+
+    if (mHierarchyLevel == 0)
+    {// level 0 coordinator
+        #ifdef DEBUG_ROUTING
+            LOG(LOG_VERBOSE, "Determining intra-domain costs for a route from %s to %s through %s", pFromAddress.c_str(), pToAddress.c_str(), mClusterAddress.c_str());
+        #endif
+
+        //*pHopCosts += 1; /* one hop for traversing this cluster */
+
+        //HINT: no locking of mClusterMembersMutex because this function is called from UpdateRouting which controls the mutex
+        NodeList::iterator tIt, tIt2;
+        long long tBestCostForRouteTowardsSource = INT_MAX;
+
+        // ITERATE over all known cluster nodes
+        for (tIt = mClusterMembers.begin(); tIt != mClusterMembers.end(); tIt++)
+        {
+            string tCurNodeAddr = (*tIt)->GetAddress();
+
+            // has node interesting routing data? (use this for implementation speed-up, otherwise we would have to search the entire RIB database for interesting entries)
+            if ((*tIt)->IsGateway())
+            {
+                long long tCosts = (*tIt)->GetRouteCosts(pFromAddress);
+                if (tBestCostForRouteTowardsSource > tCosts)
+                {
+                    tSourceNode = *tIt;
+                }
+            }
+        }
+
+        #ifdef DEBUG_ROUTING
+            if (tSourceNode != NULL)
+                LOG(LOG_VERBOSE, "..ingres node: %s", tSourceNode->GetAddress().c_str());
+        #endif
+    }else
+    {// higher coordinator
+        #ifdef DEBUG_ROUTING
+            //LOG(LOG_VERBOSE, "Determining intra-cluster costs for a route from %s to %s through %s", pFromAddress.c_str(), pToAddress.c_str(), mClusterAddress.c_str());
+        #endif
+
+        *pHopCosts += 1; /* one hop for traversing this cluster */
+        //LOG(LOG_ERROR, "Implement MergeIntraClusterRouteQoS() here"); //TODO: not needed in demo, will be needed if there is a "topology line" of 3 higher coordinators
+    }
+}
+
+bool Coordinator::DistributeAggregatedRibEntry(string pDestination, string pNextCluster, int pHopCosts, QoSSettings *pQoSSettings)
 {
     string tIntermediateRouteDestination = "";
     bool tEntryIsUsable = false;
+
+    if (pQoSSettings == NULL)
+    {
+        LOG(LOG_ERROR, "Invalid QoS settings");
+        return false;
+    }
 
     if (!IsForeignAddress(pNextCluster))
     {
@@ -157,12 +220,17 @@ bool Coordinator::DistributeRibEntry(string pDestination, string pNextCluster, i
         return false;
     }
 
-    //TODO: search duplicates and remove more fine granular entries
+    // prepare QoS settings
+    QoSSettings *tQoSSet = new QoSSettings();
+    *tQoSSet = *pQoSSettings;
+
+    //TODO: adapt QoS settings
 
     #ifdef DEBUG_ROUTING
-        LOG(LOG_VERBOSE, "Adding to RIB's of children of coordinator %s the entry: %s via %s", mClusterAddress.c_str(), pDestination.c_str(), pNextCluster.c_str());
+        LOG(LOG_VERBOSE, "Adding to RIB's of children of coordinator %s the entry: %s via %s (hc: %d, dr: %d, delay: %d)", mClusterAddress.c_str(), pDestination.c_str(), pNextCluster.c_str(), pHopCosts, pQoSSettings->DataRate, pQoSSettings->Delay);
     #endif
 
+    int tHopCosts = 0;
     RibTable tRib = GetRib();
     RibTable::iterator tRibIt;
 
@@ -173,10 +241,15 @@ bool Coordinator::DistributeRibEntry(string pDestination, string pNextCluster, i
         if ((*tRibIt)->Destination == pNextCluster)
         {
             #ifdef DEBUG_ROUTING
-                LOG(LOG_WARN, "..use route to %s via %s for a route towards %s", (*tRibIt)->Destination.c_str(), (*tRibIt)->NextNode.c_str(), pDestination.c_str());
+                LOG(LOG_WARN, "..use route to %s via %s (hc: %d, dr: %d, delay: %d) for a route towards %s", (*tRibIt)->Destination.c_str(), (*tRibIt)->NextNode.c_str(), (*tRibIt)->HopCount, (*tRibIt)->QoSCapabilities.DataRate, (*tRibIt)->QoSCapabilities.Delay, pDestination.c_str());
             #endif
             tIntermediateRouteDestination = (*tRibIt)->NextNode;
             tEntryIsUsable = true;
+            // AGGREGATE QOS: derive the new QoS settings from the known RIB entry and the new settings for the extended route
+            tQoSSet->DataRate = MIN((*tRibIt)->QoSCapabilities.DataRate, pQoSSettings->DataRate);
+            tQoSSet->Delay = (*tRibIt)->QoSCapabilities.Delay + pQoSSettings->Delay;
+            tQoSSet->Features = 0; // TODO: use this for lossless transmission
+            tHopCosts = (*tRibIt)->HopCount + pHopCosts;
             break;
         }else
         {
@@ -195,11 +268,11 @@ bool Coordinator::DistributeRibEntry(string pDestination, string pNextCluster, i
             for (tIt2 = mClusterMembers.begin(); tIt2 != mClusterMembers.end(); tIt2++)
             {
                 if (!(*tIt2)->IsNeighbor(tIntermediateRouteDestination))
-                {// next cluster is only reachable via intermediate node
-                    (*tIt2)->AddRibEntry(pDestination, pNextCluster, pHopCount + 1 /* one for traversing this cluster */, pQoSSettings);
+                {// next cluster is only reachable via intermediate cluster
+                    (*tIt2)->AddRibEntry(pDestination, pNextCluster, tHopCosts + 1 /* one for traversing this cluster */, tQoSSet);
                 }else
                 {// next cluster is a direct neighbor
-                    (*tIt2)->AddRibEntry(pDestination, pNextCluster, pHopCount, pQoSSettings);
+                    (*tIt2)->AddRibEntry(pDestination, pNextCluster, tHopCosts, tQoSSet);
                 }
             }
         }else
@@ -216,6 +289,9 @@ bool Coordinator::DistributeRibEntry(string pDestination, string pNextCluster, i
             LOG(LOG_VERBOSE, "..ignoring this RIB entry");
         #endif
     }
+
+    // cleanup memory
+    delete tQoSSet;
 
     return tEntryIsUsable;
 }
@@ -274,16 +350,23 @@ void Coordinator::UpdateRouting()
                     // does link belong to this domain?
                     if (IsForeignAddress((*tRibIt)->Destination))
                     {
-                        //string tDomain1s = (*tIt)->GetForeignDomain((*tRibIt)->Destination);
-                        LOG(LOG_VERBOSE, "Found RIB entry (destination %s via %s) at %s", (*tRibIt)->Destination.c_str(), (*tRibIt)->NextNode.c_str(), tCurNodeAddr.c_str());
+                        LOG(LOG_VERBOSE, "Found RIB entry (destination %s via %s, hc: %d, dr: %d, delay: %d) at %s", (*tRibIt)->Destination.c_str(), (*tRibIt)->NextNode.c_str(), (*tRibIt)->HopCount, (*tRibIt)->QoSCapabilities.DataRate, (*tRibIt)->QoSCapabilities.Delay, tCurNodeAddr.c_str());
 
+                        // ITERATE over all known cluster nodes and prepare an update RIB for all of them
                         std::list<RibTable*>::iterator tUpdateRibIt = mRibUpdateTables.begin();
                         for (tIt2 = mClusterMembers.begin(); tIt2 != mClusterMembers.end(); tIt2++)
                         {
+                            // calculate inner cluster QoS and "add" them
+                            QoSSettings tQoSSet = (*tRibIt)->QoSCapabilities;
+                            int tHopCosts = (*tRibIt)->HopCount;
+                            MergeIntraClusterCosts((*tRibIt)->Destination, tCurNodeAddr, &tQoSSet, &tHopCosts);
+
                             //LOG(LOG_ERROR, "%s and %s", tCurNodeAddr.c_str(), (*tIt2)->GetAddress().c_str());
                             if (tCurNodeAddr != (*tIt2)->GetAddress())
                             {// tell other nodes that the current node can reach a foreign cluster
-                                Node::AddRibEntry((*tIt2)->GetAddress(), (*tUpdateRibIt), (*tRibIt)->Destination, tCurNodeAddr, 2, &(*tRibIt)->QoSCapabilities);
+//                                QoSSettings *tQoSSet = new QoSSettings();
+//                                tQoSSet->DataRate = MIN(*tRibIt)->QoSCapabilities
+                                Node::AddRibEntry((*tIt2)->GetAddress(), (*tUpdateRibIt), (*tRibIt)->Destination, tCurNodeAddr, tHopCosts, &tQoSSet);
                             }
 //                            // tell other nodes that the current node can reach a foreign cluster
 //                            if (tCurNodeAddr != (*tIt2)->GetAddress())
@@ -310,7 +393,7 @@ void Coordinator::UpdateRouting()
         {
             for (tRibIt = (*tUpdateRibIt)->begin(); tRibIt != (*tUpdateRibIt)->end(); tRibIt++)
             {
-                (*tIt)->AddRibEntry((*tRibIt)->Destination, (*tRibIt)->NextNode, (*tRibIt)->HopCount, &(*tRibIt)->QoSCapabilities);
+                (*tIt)->DistributeAggregatedRibEntry((*tRibIt)->Destination, (*tRibIt)->NextNode, (*tRibIt)->HopCount, &(*tRibIt)->QoSCapabilities);
             }
             tUpdateRibIt++;
         }
@@ -344,7 +427,7 @@ void Coordinator::UpdateRouting()
                 LOG(LOG_ERROR, "Update RIB table is invalid");
         }
 
-        // ITERATE over all known cluster nodes
+        // ITERATE over all child coordinators
         for (tIt = mChildCoordinators.begin(); tIt != mChildCoordinators.end(); tIt++)
         {
             string tCurClusterAddr = (*tIt)->GetClusterAddress();
@@ -361,15 +444,21 @@ void Coordinator::UpdateRouting()
                     // does link belong to this domain?
                     if (!IsForeignAddress((*tRibIt)->Destination))
                     {// cluster internal link
+                        // AGGREGATE TOPOLOGY
                         string tDomain = Node::GetDomain((*tRibIt)->Destination, HIERARCHY_HEIGHT - 1 - mHierarchyLevel + 1);
                         #ifdef DEBUG_ROUTING
                             LOG(LOG_VERBOSE, "Found higher coordinator RIB entry (destination %s via %s) at %s which routes to its sibling domain %s", (*tRibIt)->Destination.c_str(), (*tRibIt)->NextNode.c_str(), tCurClusterAddr.c_str(), tDomain.c_str());
                         #endif
 
-                        // AGGREGATE ROUTE and distribute topology knowledge among cluster nodes
+                        // ITERATE over all child coordinators and prepare an update RIB for all of them
                         std::list<RibTable*>::iterator tUpdateRibIt = mRibUpdateTables.begin();
                         for (tIt2 = mChildCoordinators.begin(); tIt2 != mChildCoordinators.end(); tIt2++)
                         {
+                            // calculate inner cluster QoS and "add" them
+                            QoSSettings tQoSSet = (*tRibIt)->QoSCapabilities;
+                            int tHopCosts = (*tRibIt)->HopCount;
+                            MergeIntraClusterCosts((*tIt2)->GetClusterAddress(), tDomain, &tQoSSet, &tHopCosts);
+
                             // tell other child clusters that the current cluster can reach a foreign cluster
                             if ((*tIt)->GetClusterAddress() != (*tIt2)->GetClusterAddress())
                             {
@@ -377,7 +466,8 @@ void Coordinator::UpdateRouting()
                                 if ((*tIt2)->GetClusterAddress() != tDomain)
                                 {
                                     //LOG(LOG_ERROR, "Cluster %s via %s", tDomain.c_str(), tCurClusterAddr.c_str());
-                                    Node::AddRibEntry((*tIt2)->GetClusterAddress(), (*tUpdateRibIt), tDomain, tCurClusterAddr, (*tRibIt)->HopCount + 2 /* one hop for traversing this higher cluster and one for traversing this child cluster */, &(*tRibIt)->QoSCapabilities);
+                                    //TODO: calculate QoS values for traversing this cluster
+                                    Node::AddRibEntry((*tIt2)->GetClusterAddress(), (*tUpdateRibIt), tDomain, tCurClusterAddr, tHopCosts, &tQoSSet);
 //                                    (*tIt2)->DistributeRibEntry(tDomain, tCurClusterAddr, (*tRibIt)->HopCount + 2 /* one hop for traversing this higher cluster and one for traversing this child cluster */, &(*tRibIt)->QoSCapabilities);
                                 }
                             }else
@@ -388,22 +478,29 @@ void Coordinator::UpdateRouting()
                         }
                     }else
                     {// link to foreign cluster
+                        // AGGREGATE TOPOLOGY
                         string tDomain = Node::GetDomain((*tRibIt)->Destination, HIERARCHY_HEIGHT - 1 - mHierarchyLevel);
                         #ifdef DEBUG_ROUTING
                             LOG(LOG_VERBOSE, "Found higher coordinator RIB entry (destination %s via %s) at %s which routes to foreign domain %s", (*tRibIt)->Destination.c_str(), (*tRibIt)->NextNode.c_str(), tCurClusterAddr.c_str(), tDomain.c_str());
                         #endif
 
-                        // AGGREGATE ROUTE and distribute topology knowledge among cluster nodes
+                        // ITERATE over all child coordinators and prepare an update RIB for all of them
                         std::list<RibTable*>::iterator tUpdateRibIt = mRibUpdateTables.begin();
                         for (tIt2 = mChildCoordinators.begin(); tIt2 != mChildCoordinators.end(); tIt2++)
                         {
+                            // calculate inner cluster QoS and "add" them
+                            QoSSettings tQoSSet = (*tRibIt)->QoSCapabilities;
+                            int tHopCosts = (*tRibIt)->HopCount;
+                            MergeIntraClusterCosts((*tIt2)->GetClusterAddress(), tDomain, &tQoSSet, &tHopCosts);
+
                             // tell other child clusters that the current cluster can reach a foreign cluster
                             if ((*tIt)->GetClusterAddress() != (*tIt2)->GetClusterAddress())
                             {
                                 // don't tell the next cluster about a route to itself
                                 if ((*tIt2)->GetClusterAddress() != tDomain)
                                 {
-                                    Node::AddRibEntry((*tIt2)->GetClusterAddress(), (*tUpdateRibIt), tDomain, tCurClusterAddr, (*tRibIt)->HopCount + 2 /* one hop for traversing this higher cluster and one for traversing this child cluster */, &(*tRibIt)->QoSCapabilities);
+                                    //TODO: calculate QoS values for traversing this cluster
+                                    Node::AddRibEntry((*tIt2)->GetClusterAddress(), (*tUpdateRibIt), tDomain, tCurClusterAddr, tHopCosts, &tQoSSet);
 //                                    (*tIt2)->DistributeRibEntry(tDomain, tCurClusterAddr, (*tRibIt)->HopCount + 2 /* one hop for traversing this higher cluster and one for traversing this child cluster */, &(*tRibIt)->QoSCapabilities);
                                 }
                             }else
@@ -428,7 +525,7 @@ void Coordinator::UpdateRouting()
         {
             for (tRibIt = (*tUpdateRibIt)->begin(); tRibIt != (*tUpdateRibIt)->end(); tRibIt++)
             {
-                (*tIt)->DistributeRibEntry((*tRibIt)->Destination, (*tRibIt)->NextNode, (*tRibIt)->HopCount, &(*tRibIt)->QoSCapabilities);
+                (*tIt)->DistributeAggregatedRibEntry((*tRibIt)->Destination, (*tRibIt)->NextNode, (*tRibIt)->HopCount, &(*tRibIt)->QoSCapabilities);
             }
             tUpdateRibIt++;
         }
@@ -466,8 +563,8 @@ RibTable Coordinator::GetRib()
                 {
                     //LOG(LOG_ERROR, "RIB entry: %s via %s", (*tRibIt)->Destination.c_str(), (*tRibIt)->NextNode.c_str());
 
-                    // does destination belong to foreign domain and this link is a direct one?
-                    if ((IsForeignAddress((*tRibIt)->Destination)))// && ((*tRibIt)->HopCount == 1))
+                    // does destination belong to foreign domain?
+                    if (IsForeignAddress((*tRibIt)->Destination))
                     {
                         string tDomain = Node::GetDomain((*tRibIt)->Destination, HIERARCHY_HEIGHT - 1 - mHierarchyLevel);
                         #ifdef DEBUG_NEIOGHBOR_DISCOVERY

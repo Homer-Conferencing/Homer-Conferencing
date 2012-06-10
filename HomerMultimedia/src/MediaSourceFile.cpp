@@ -203,7 +203,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     }
 
     // Open codec
-    if ((tResult = avcodec_open2(mCodecContext, tCodec, NULL)) < 0)
+    if ((tResult = HM_avcodec_open(mCodecContext, tCodec)) < 0)
     {
         LOG(LOG_ERROR, "Couldn't open video codec because \"%s\".", strerror(AVUNERROR(tResult)));
         // Close the video file
@@ -396,7 +396,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
         mCodecContext->flags |= CODEC_FLAG_TRUNCATED;
 
     // Open codec
-    if ((tResult = avcodec_open2(mCodecContext, tCodec, NULL)) < 0)
+    if ((tResult = HM_avcodec_open(mCodecContext, tCodec)) < 0)
     {
         LOG(LOG_ERROR, "Couldn't open audio codec because of \"%s\".", strerror(AVUNERROR(tResult)));
         // Close the audio file

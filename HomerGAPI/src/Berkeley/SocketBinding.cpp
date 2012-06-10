@@ -111,13 +111,16 @@ SocketBinding::SocketBinding(std::string pLocalName, Requirements *pRequirements
     {
         if (mSocket != NULL)
         {
-            // per default we set receive buffer of 2 MB
+            // per default we set receive/send buffer of 2 MB
             mSocket->SetReceiveBufferSize(2 * 1024 * 1024);
+            mSocket->SetSendBufferSize(2 * 1024 * 1024);
 
             mIsClosed = false;
 
             /* QoS requirements and additional transport requirements */
             changeRequirements(pRequirements);
+
+            LOG(LOG_VERBOSE, "New IP binding at %s and requirements %s created", getName()->toString().c_str(), mRequirements.getDescription().c_str());
         }else
             LOG(LOG_ERROR, "Returned Berkeley socket is invalid");
     }else

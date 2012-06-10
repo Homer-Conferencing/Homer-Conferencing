@@ -156,9 +156,10 @@ bool Cep::Send(std::string pTargetNode, unsigned int pTargetPort, void *pBuffer,
     tPacket->QoSResults.Features = mQoSSettings.Features;
     tPacket->Data = pBuffer;
     tPacket->DataSize = pBufferSize;
-    tPacket->TTL = TTL_INIT;
+    tPacket->TTL = MAX_HOP_COUNT;
     tPacket->TrackingStreamId = mStreamId;
     tPacket->SendingCep = this;
+    tPacket->mStreamDataRate = 20;
     mPacketCount++;
 
     // send packet towards destination
@@ -198,7 +199,9 @@ bool Cep::Receive(std::string &pPeerNode, unsigned int &pPeerPort, void *pBuffer
     if (tTimeDiff > 0)
     {
         //LOG(LOG_VERBOSE, "Waiting for %ld us", tTimeDiff);
-        Thread::Suspend(tTimeDiff / 2); // we only simulate a delay
+
+        // simulate a delay
+        Thread::Suspend(tTimeDiff / 2);
     }
 
     return true;

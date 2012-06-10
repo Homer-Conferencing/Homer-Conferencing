@@ -20,58 +20,47 @@
  *****************************************************************************/
 
 /*
- * Purpose: Link
+ * Purpose: Domain
  * Author:  Thomas Volkert
- * Since:   2012-05-30
+ * Since:   2012-06-10
  */
 
-#ifndef _GAPI_SIMULATION_LINK_
-#define _GAPI_SIMULATION_LINK_
+#ifndef _GAPI_SIMULATION_DOMAIN_
+#define _GAPI_SIMULATION_DOMAIN_
 
-#include <Core/Cep.h>
+#include <Core/Node.h>
 
 #include <HBMutex.h>
-#include <Name.h>
 
 #include <list>
+#include <string>
 
 namespace Homer { namespace Base {
 
-class Link;
-typedef std::list<Link*> LinkList;
+class Domain;
+typedef std::list<Domain*> DomainList;
 
 class Node;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class Link
+class Domain
 {
 public:
-    Link(Node *pNodeOne, Node *pNodeTwo);
-    virtual ~Link();
+    Domain(std::string pDomainAddress);
+    virtual ~Domain();
 
-    bool HandlePacket(Packet *pPacket, Node* pLastNode);
+    std::string GetDomainAddress();
 
-    /* QoS settings */
-    void SetQoSCapabilities(QoSSettings pCaps);
-    QoSSettings GetQoSCapabilities();
+    void AddNode(Node *pNode);
+    NodeList GetNodes();
+    Node* GetNode(int pIndex);
+    int GetNodeCount();
 
-    Node* GetNode0();
-    Node* GetNode1();
-    Node* GetPeerNode(Node *pNode);
-
-    /* statistics */
-    int GetPacketCount();
-    int GetLostPacketCount();
-
-    std::list<int> GetSeenStreams();
 private:
-    Node            *mNodes[2];
-    QoSSettings     mQoSCapabilities;
-    std::list<int>  mSeenStreams;
-    Mutex           mSeenStreamsMutex;
-    int             mPacketCount;
-    int             mPacketLossCount;
+    std::string         mDomainAddress;
+    NodeList            mNodes;
+    Mutex               mNodesMutex;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

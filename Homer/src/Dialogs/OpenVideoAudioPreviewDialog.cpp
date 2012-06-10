@@ -271,6 +271,9 @@ void OpenVideoAudioPreviewDialog::SaveConfiguration()
 
     CONF.SetVideoStreamingGAPIImpl(mCbGAPIImplVideo->currentText());
     CONF.SetAudioStreamingGAPIImpl(mCbGAPIImplAudio->currentText());
+
+    CONF.SetPreviewSelectionAudio(mCbAudioEnabled->isChecked());
+    CONF.SetPreviewSelectionVideo(mCbVideoEnabled->isChecked());
 }
 
 void OpenVideoAudioPreviewDialog::GAPIVideoSelectionChanged(QString pSelection)
@@ -461,6 +464,9 @@ void OpenVideoAudioPreviewDialog::LoadConfiguration()
     int tParticipantSessions = MEETING.CountParticipantSessions() -1;
     mSbPortVideo->setValue(5000 + tParticipantSessions * 4);
     mSbPortAudio->setValue(5002 + tParticipantSessions * 4);
+
+    mCbAudioEnabled->setChecked(CONF.GetPreviewSelectionAudio());
+    mCbVideoEnabled->setChecked(CONF.GetPreviewSelectionVideo());
 }
 
 void OpenVideoAudioPreviewDialog::actionGetFile()

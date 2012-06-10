@@ -508,7 +508,7 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     LOG(LOG_VERBOSE, "Going to open video codec..");
 
     // Open codec
-    if ((tResult = avcodec_open2(mCodecContext, tCodec, NULL)) < 0)
+    if ((tResult = HM_avcodec_open(mCodecContext, tCodec)) < 0)
     {
         LOG(LOG_ERROR, "Couldn't open video codec because of \"%s\".", strerror(AVUNERROR(tResult)));
         return false;
@@ -658,7 +658,7 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     LOG(LOG_VERBOSE, "Going to open audio codec..");
 
     // Open codec
-    if ((tResult = avcodec_open2(mCodecContext, tCodec, NULL)) < 0)
+    if ((tResult = HM_avcodec_open(mCodecContext, tCodec)) < 0)
     {
         LOG(LOG_ERROR, "Couldn't open audio codec because of \"%s\".", strerror(AVUNERROR(tResult)));
         // Close the audio stream

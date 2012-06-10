@@ -47,6 +47,8 @@ class Coordinator;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define MIN(x,y)     ((x < y) ? x : y )
+
 #define MAX_HIERARCHY_DEPTH             10
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -72,17 +74,16 @@ public:
     Node(std::string pName, std::string pAddressHint = "", int pPosXHint = 0, int pPosYHint = 0);
     virtual ~Node();
 
-    /* FIB management */
-    bool AddFibEntry(Link *pLink, Node *pNextNode);
-    FibTable GetFib(); // for GUI
-
     /* RIB management */
-    bool AddRibEntry(std::string pDestination, std::string pNextNode, int pHopCount = 1, QoSSettings *pQoSSettings = NULL);
-    RibTable GetRib(); // for GUI
+    bool AddRibEntry(std::string pDestination, std::string pNextNode, int pHopCosts = 1, QoSSettings *pQoSSettings = NULL);
+    bool DistributeAggregatedRibEntry(std::string pDestination, std::string pNextNode, int pHopCosts = 1, QoSSettings *pQoSSettings = NULL);
+    RibTable GetRib();
     void UpdateRouting(); // reset RIB to physical RIB and update QoS capabilities
-    bool IsGateway(); // for GUI
+    bool IsGateway();
     // physical RIB: the topology data which is collected based on physical link data
     bool IsNeighbor(std::string pAddress);
+    /* RIB lookup */
+    long long GetRouteCosts(std::string pDestination);
 
     /* position hint for GUI */
     int GetPosXHint();
@@ -123,12 +124,16 @@ private:
     void LogServerCeps();
     void LogRib();
 
+    /* FIB management */
+    bool AddFibEntry(Link *pLink, Node *pNextNode);
+    FibTable GetFib();
+
     // physical RIB: the topology data which is collected based on physical link data
-    bool AddTopologyEntry(std::string pDestination, std::string pNextNode, QoSSettings *pQoSSettings = NULL);
+    bool AddLink(Link *pLink);
     friend class Link; // allow setting of topology data
 
     /* RIB lookup */
-    std::string GetNextHop(std::string pDestination, const QoSSettings pQoSRequirements);
+    std::string GetNextHop(Packet *pPacket);
 
     RibTable    mRibTable;
     Mutex       mRibTableMutex;
