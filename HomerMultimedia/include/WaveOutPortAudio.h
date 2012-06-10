@@ -44,7 +44,7 @@ namespace Homer { namespace Multimedia {
 //#define WOPA_AUTO_START_PLAYBACK
 
 // deactivate OSS playback: leads to program stops
-//#define WOPA_AVOID_OSS_PLAY
+#define WOPA_AVOID_OSS_PLAY
 
 ///////////////////////////////////////////////////////////////////////////////
 
