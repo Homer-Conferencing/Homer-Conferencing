@@ -444,7 +444,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     }
 
     // Open codec
-    if ((tResult = avcodec_open(mCodecContext, tCodec)) < 0)
+    if ((tResult = HM_avcodec_open(mCodecContext, tCodec)) < 0)
     {
         LOG(LOG_ERROR, "Couldn't open video codec because of \"%s\".", strerror(AVUNERROR(tResult)));
         // free codec and stream 0
@@ -634,7 +634,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
 //        mCodecContext->flags |= CODEC_FLAG_TRUNCATED;
 
     // Open codec
-    if ((tResult = avcodec_open(mCodecContext, tCodec)) < 0)
+    if ((tResult = HM_avcodec_open(mCodecContext, tCodec)) < 0)
     {
         LOG(LOG_ERROR, "Couldn't open audio codec because of \"%s\".", strerror(AVUNERROR(tResult)));
         // free codec and stream 0
