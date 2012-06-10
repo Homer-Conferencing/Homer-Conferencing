@@ -75,7 +75,7 @@ void MessageWidget::Init(QMenu *pMenu, QString pParticipant, OverviewContactsWid
         mAssignedAction->setCheckable(true);
         mAssignedAction->setChecked(pVisible);
         QIcon tIcon;
-        tIcon.addPixmap(QPixmap(":/images/Checked.png"), QIcon::Normal, QIcon::On);
+        tIcon.addPixmap(QPixmap(":/images/22_22/Checked.png"), QIcon::Normal, QIcon::On);
         tIcon.addPixmap(QPixmap(":/images/Unchecked.png"), QIcon::Normal, QIcon::Off);
         mAssignedAction->setIcon(tIcon);
     }

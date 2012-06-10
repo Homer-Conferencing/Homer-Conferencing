@@ -97,7 +97,11 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
 ParticipantWidget::~ParticipantWidget()
 {
     if (mSessionType == BROADCAST)
+    {
         CONF.SetVisibilityBroadcastWidget(isVisible());
+        CONF.SetVisibilityBroadcastAudio(mAudioWidget->isVisible());
+        CONF.SetVisibilityBroadcastVideo(mVideoWidget->isVisible());
+    }
 
     // inform the call partner
     switch (MEETING.GetCallState(QString(mSessionName.toLocal8Bit()).toStdString()))
@@ -177,11 +181,11 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
                     if (mVideoSourceMuxer != NULL)
                     {
                         mVideoWidgetFrame->show();
-                        mVideoWidget->Init(mMainWindow, mVideoSourceMuxer, pVideoMenu, mSessionName, mSessionName, true);
+                        mVideoWidget->Init(mMainWindow, mVideoSourceMuxer, pVideoMenu, mSessionName, mSessionName, CONF.GetVisibilityBroadcastVideo());
                     }
                     LOG(LOG_VERBOSE, "..init broadcast audio widget");
                     if (mAudioSourceMuxer != NULL)
-                        mAudioWidget->Init(mAudioSourceMuxer, pAudioMenu, mSessionName, mSessionName, true, true);
+                        mAudioWidget->Init(mAudioSourceMuxer, pAudioMenu, mSessionName, mSessionName, CONF.GetVisibilityBroadcastAudio(), true);
                     setFeatures(QDockWidget::NoDockWidgetFeatures);
                     break;
         case PARTICIPANT:
@@ -330,6 +334,8 @@ void ParticipantWidget::closeEvent(QCloseEvent* pEvent)
                     if (pEvent != NULL)
                         pEvent->accept();
                     QCoreApplication::postEvent(mMainWindow, (QEvent*) new QMeetingEvent(new DeleteSessionEvent(this)));
+                    break;
+        case BROADCAST:
                     break;
         default:
                     break;
@@ -1126,9 +1132,16 @@ void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
     if ((mAudioSource) && (mAudioWidget->GetWorker()->SupportsSeeking()))
         tShowMovieControls = true;
     if (tShowMovieControls)
+    {
         mMovieControlsFrame->show();
-    else
+        if (mMovieAudioControlsFrame->isHidden())
+            mMovieAudioControlsFrame->show();
+    }else
+    {
         mMovieControlsFrame->hide();
+        if (mAudioWidget->isHidden())
+            mMovieAudioControlsFrame->hide();
+    }
 
     if ((pEvent->timerId() == mTimerId) && (tShowMovieControls))
     {
