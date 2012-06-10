@@ -216,6 +216,34 @@ void Configuration::SetVisibilityToolBarOnlineStatus(bool pActive)
     mQSettings->endGroup();
 }
 
+void Configuration::SetVisibilityBroadcastAudio(bool pActive)
+{
+    mQSettings->beginGroup("Global");
+    mQSettings->setValue("VisibilityBroadcastAudio", pActive);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetVisibilityBroadcastVideo(bool pActive)
+{
+    mQSettings->beginGroup("Global");
+    mQSettings->setValue("VisibilityBroadcastVideo", pActive);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetPreviewSelectionVideo(bool pActive)
+{
+    mQSettings->beginGroup("Playback");
+    mQSettings->setValue("PreviewSelectionVideo", pActive);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetPreviewSelectionAudio(bool pActive)
+{
+    mQSettings->beginGroup("Playback");
+    mQSettings->setValue("PreviewSelectionAudio", pActive);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetSmoothVideoPresentation(bool pActive)
 {
     mQSettings->beginGroup("Global");
@@ -773,9 +801,29 @@ bool Configuration::GetVisibilityToolBarOnlineStatus()
     return mQSettings->value("Global/VisibilityToolBarOnlineStatus", true).toBool();
 }
 
+bool Configuration::GetPreviewSelectionVideo()
+{
+    return mQSettings->value("Playback/PreviewSelectionVideo", true).toBool();
+}
+
+bool Configuration::GetPreviewSelectionAudio()
+{
+    return mQSettings->value("Playback/PreviewSelectionAudio", true).toBool();
+}
+
 bool Configuration::GetSmoothVideoPresentation()
 {
     return mQSettings->value("Global/SmoothVideoPresentation", false).toBool();
+}
+
+bool Configuration::GetVisibilityBroadcastAudio()
+{
+    return mQSettings->value("Global/VisibilityBroadcastAudio", true).toBool();
+}
+
+bool Configuration::GetVisibilityBroadcastVideo()
+{
+    return mQSettings->value("Global/VisibilityBroadcastVideo", true).toBool();
 }
 
 bool Configuration::GetAutoUpdateCheck()

@@ -114,6 +114,12 @@ public:
     bool GetVisibilityToolBarMediaSources();
     bool GetVisibilityToolBarOnlineStatus();
 
+    bool GetVisibilityBroadcastAudio();
+    bool GetVisibilityBroadcastVideo();
+
+    bool GetPreviewSelectionVideo();
+    bool GetPreviewSelectionAudio();
+
     bool GetParticipantWidgetsSeparation();
     bool GetParticipantWidgetsCloseImmediately();
 
@@ -252,6 +258,12 @@ private:
 
     void SetVisibilityToolBarMediaSources(bool pActive);
     void SetVisibilityToolBarOnlineStatus(bool pActive);
+
+    void SetVisibilityBroadcastAudio(bool pActive);
+    void SetVisibilityBroadcastVideo(bool pActive);
+
+    void SetPreviewSelectionVideo(bool pActive);
+    void SetPreviewSelectionAudio(bool pActive);
 
     void SetSmoothVideoPresentation(bool pActive);
     void SetAutoUpdateCheck(bool pActive);
