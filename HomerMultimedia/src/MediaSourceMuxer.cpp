@@ -1500,6 +1500,14 @@ string MediaSourceMuxer::GetCodecLongName()
         return "";
 }
 
+bool MediaSourceMuxer::SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset, bool pRtpActivated)
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->SetInputStreamPreferences(pStreamCodec, pDoReset, pRtpActivated);
+    else
+        return 0;
+}
+
 int MediaSourceMuxer::GetChunkDropCounter()
 {
     if (mMediaSource != NULL)
