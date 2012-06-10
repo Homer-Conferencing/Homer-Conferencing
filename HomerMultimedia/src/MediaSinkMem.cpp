@@ -27,6 +27,7 @@
 
 #include <Header_Ffmpeg.h>
 #include <MediaSinkMem.h>
+#include <MediaSourceMem.h>
 #include <MediaFifo.h>
 #include <MediaSinkNet.h>
 #include <MediaSourceNet.h>
@@ -49,6 +50,7 @@ MediaSinkMem::MediaSinkMem(string pMemoryId, enum MediaSinkType pType):
     // overwrite id from MediaSinkNet
     mMemoryId = pMemoryId;
     mMediaId = mMemoryId;
+    mSinkFifo = new MediaFifo(MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT, MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE, "MediaSinkMem");
     switch(pType)
     {
         case MEDIA_SINK_VIDEO:
@@ -64,6 +66,7 @@ MediaSinkMem::MediaSinkMem(string pMemoryId, enum MediaSinkType pType):
 
 MediaSinkMem::~MediaSinkMem()
 {
+    delete mSinkFifo;
 }
 
 void MediaSinkMem::SendFragment(char* pData, unsigned int pSize)
