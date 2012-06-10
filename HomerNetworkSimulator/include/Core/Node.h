@@ -47,7 +47,9 @@ class Coordinator;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef MIN
 #define MIN(x,y)     ((x < y) ? x : y )
+#endif
 
 #define MAX_HIERARCHY_DEPTH             10
 
