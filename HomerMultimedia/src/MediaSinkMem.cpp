@@ -84,12 +84,9 @@ void MediaSinkMem::SendFragment(char* pData, unsigned int pSize)
     mSinkFifo->WriteFifo(pData, (int)pSize);
 }
 
-void MediaSinkMem::ReadFragment(char *pData, ssize_t &pDataSize)
+void MediaSinkMem::ReadFragment(char *pData, int &pDataSize)
 {
-    int tDataSize = pDataSize;
-    mSinkFifo->ReadFifo(&pData[0], tDataSize);
-    pDataSize = tDataSize;
-
+    mSinkFifo->ReadFifo(&pData[0], pDataSize);
     if (pDataSize > 0)
     {
         #ifdef MSIM_DEBUG_PACKETS

@@ -52,7 +52,7 @@ public:
 
     virtual ~MediaSinkMem();
 
-    virtual void ReadFragment(char *pData, ssize_t &pDataSize);
+    virtual void ReadFragment(char *pData, int &pDataSize);
     virtual void StopReading();
 
 protected:
