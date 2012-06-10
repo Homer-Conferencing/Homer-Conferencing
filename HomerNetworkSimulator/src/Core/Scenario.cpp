@@ -271,6 +271,17 @@ void Scenario::SetDestinationNode(std::string pAddress)
     mClientCepsMutex.unlock();
 }
 
+DomainList Scenario::GetDomains()
+{
+    DomainList tResult;
+
+    mDomainsMutex.lock();
+    tResult = mDomains;
+    mDomainsMutex.unlock();
+
+    return tResult;
+}
+
 NodeList Scenario::GetNodes()
 {
     NodeList tResult;
@@ -303,6 +314,9 @@ Coordinator* Scenario::AddDomain(std::string pDomainPrefix, int pNodeCount, int 
     NodeList tNodes;
     Node *tNode;
 
+    // create domain
+    Domain *tDomain = new Domain(pDomainPrefix);
+
     // create all nodes
     for(int i = 1; i < pNodeCount + 1; i++)
     {
@@ -314,6 +328,9 @@ Coordinator* Scenario::AddDomain(std::string pDomainPrefix, int pNodeCount, int 
             return NULL;
         }
         tNodes.push_back(tNode);
+
+        // add node to domain
+        tDomain->AddNode(tNode);
     }
 
     // create a full meshed network within domain: we do not
@@ -328,6 +345,11 @@ Coordinator* Scenario::AddDomain(std::string pDomainPrefix, int pNodeCount, int 
             }
         }
     }
+
+    // store domain
+    mDomainsMutex.lock();
+    mDomains.push_back(tDomain);
+    mDomainsMutex.unlock();
 
     // create coordinator for this domain
     Coordinator *tCoordinator = AddCoordinator(pDomainPrefix + ".1", 0);
@@ -351,6 +373,9 @@ Coordinator* Scenario::AddDomain3(std::string pDomainPrefix, int pPosXHint, int 
 {
     NodeList tNodes;
     Node *tNode;
+
+    // create domain
+    Domain *tDomain = new Domain(pDomainPrefix);
 
     // create all nodes
     for(int i = 1; i < 3 + 1; i++)
@@ -377,6 +402,9 @@ Coordinator* Scenario::AddDomain3(std::string pDomainPrefix, int pPosXHint, int 
             return NULL;
         }
         tNodes.push_back(tNode);
+
+        // add node to domain
+        tDomain->AddNode(tNode);
     }
 
     // create a full meshed network within domain: we do not
@@ -391,6 +419,11 @@ Coordinator* Scenario::AddDomain3(std::string pDomainPrefix, int pPosXHint, int 
             }
         }
     }
+
+    // store domain
+    mDomainsMutex.lock();
+    mDomains.push_back(tDomain);
+    mDomainsMutex.unlock();
 
     // create coordinator for this domain
     Coordinator *tCoordinator = AddCoordinator(pDomainPrefix + ".1", 0);

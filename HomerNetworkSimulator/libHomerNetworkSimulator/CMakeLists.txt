@@ -47,6 +47,7 @@ SET (SOURCES
 	../src/Core/ChannelConnection
 	../src/Core/Cep
 	../src/Core/Coordinator
+	../src/Core/Domain
 	../src/Core/DomainNameService
 	../src/Core/Link
 	../src/Core/Node

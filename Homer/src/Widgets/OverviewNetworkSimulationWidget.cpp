@@ -43,6 +43,7 @@
 #include <QFont>
 #include <QGraphicsView>
 #include <QGraphicsPixmapItem>
+#include <QGraphicsPolygonItem>
 #include <QGraphicsLineItem>
 #include <QGraphicsItem>
 #include <QGraphicsScene>
@@ -113,6 +114,7 @@ private:
 GuiNode::GuiNode(Node* pNode, OverviewNetworkSimulationWidget* pNetSimWidget):
     QGraphicsPixmapItem(QPixmap(":/images/46_46/Hardware.png"), NULL)
 {
+    mGuiDomain = NULL;
     mNode = pNode;
     mNetSimWidget = pNetSimWidget;
     setFlag(QGraphicsItem::ItemIsMovable, true);
@@ -204,6 +206,8 @@ QVariant GuiNode::itemChange(GraphicsItemChange pChange, const QVariant &pValue)
             {
                 tGuiLink->UpdatePosition();
             }
+            if (mGuiDomain != NULL)
+                mGuiDomain->UpdatePosition();
             break;
         case QGraphicsItem::ItemSelectedChange:
             UpdateText(pValue.toBool());
@@ -213,6 +217,12 @@ QVariant GuiNode::itemChange(GraphicsItemChange pChange, const QVariant &pValue)
     }
 
     return QGraphicsItem::itemChange(pChange, pValue);
+}
+
+void GuiNode::AddDomain(GuiDomain *pGuiDomain)
+{
+    mGuiDomain = pGuiDomain;
+    pGuiDomain->AddGuiNode(this);
 }
 
 void GuiNode::AddGuiLink(GuiLink *pGuiLink)
@@ -306,6 +316,73 @@ GuiNode* GuiLink::GetGuiNode1()
 void GuiLink::ShowContextMenu(QGraphicsSceneContextMenuEvent *pEvent)
 {
     LOG(LOG_VERBOSE, "Context menu request for link %s - %s", mGuiNode0->GetNode()->GetAddress().c_str(), mGuiNode1->GetNode()->GetAddress().c_str());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+GuiDomain::GuiDomain(Domain *pDomain, OverviewNetworkSimulationWidget* pNetSimWidget):QGraphicsPolygonItem()
+{
+    mNetSimWidget = pNetSimWidget;
+    mDomain = pDomain;
+
+    NodeList tNodes = pDomain->GetNodes();
+    if (tNodes.size() > 0)
+    {
+        NodeList::iterator tIt;
+        for(tIt = tNodes.begin(); tIt != tNodes.end(); tIt++)
+        {
+            GuiNode* tGuiNode = pNetSimWidget->GetGuiNode(*tIt);
+            tGuiNode->AddDomain(this);
+        }
+    }
+
+    setZValue(-2000.0);
+    setPen(QPen(QColor(0xdd, 0xdd, 0xdd), 1, Qt::SolidLine, Qt::FlatCap, Qt::RoundJoin));
+    setBrush(QColor(0xdd, 0xdd, 0xdd));
+    UpdatePosition();
+    #ifdef DEBUG_GUI_SIMULATION_TOPOLOGY_CREATION
+        LOG(LOG_WARN, "Created GUI domain %s", mDomain->GetDomainAddress().c_str());
+    #endif
+}
+GuiDomain::~GuiDomain()
+{
+
+}
+
+int GuiDomain::type() const
+{
+    return GUI_DOMAIN_TYPE;
+}
+
+Domain* GuiDomain::GetDomain()
+{
+    return mDomain;
+}
+
+void GuiDomain::UpdatePosition()
+{
+    LOG(LOG_ERROR, "Updating position of GUI domain %s", mDomain->GetDomainAddress().c_str());
+
+    QPolygon tPolygon;
+    GuiNode* tGuiNode;
+    foreach(tGuiNode, mGuiNodes)
+    {
+        QPointF tPoint = mapFromItem(tGuiNode, 0, 0);
+        tPoint.setX(tPoint.x() + tGuiNode->GetWidth() / 2);
+        tPoint.setY(tPoint.y() + tGuiNode->GetHeight() / 2);
+        tPolygon.append(tPoint.toPoint());
+    }
+    setPolygon(tPolygon);
+}
+
+void GuiDomain::AddGuiNode(GuiNode *pGuiNode)
+{
+    mGuiNodes.append(pGuiNode);
+}
+
+void GuiDomain::ShowContextMenu(QGraphicsSceneContextMenuEvent *pEvent)
+{
+    LOG(LOG_VERBOSE, "Context menu request for domain %s", mDomain->GetDomainAddress().c_str());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -769,6 +846,16 @@ void OverviewNetworkSimulationWidget::InitNetworkView()
         GuiLink *tGuiLink = new GuiLink(*tIt2, this);
         mGuiLinks.append(tGuiLink);
         mNetworkScene->addItem(tGuiLink);
+    }
+
+    // create all domain elemts
+    DomainList tDomains = mScenario->GetDomains();
+    DomainList::iterator tIt3;
+    for (tIt3 = tDomains.begin(); tIt3 != tDomains.end(); tIt3++)
+    {
+        GuiDomain *tGuiDomain = new GuiDomain(*tIt3, this);
+        mGuiDomains.append(tGuiDomain);
+        mNetworkScene->addItem(tGuiDomain);
     }
 }
 
