@@ -361,7 +361,7 @@ Domain* GuiDomain::GetDomain()
 
 void GuiDomain::UpdatePosition()
 {
-    LOG(LOG_ERROR, "Updating position of GUI domain %s", mDomain->GetDomainAddress().c_str());
+    //LOG(LOG_VERBOSE, "Updating position of GUI domain %s", mDomain->GetDomainAddress().c_str());
 
     QPolygon tPolygon;
     GuiNode* tGuiNode;
@@ -442,6 +442,9 @@ void NetworkScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *pEvent)
         case GUI_NODE_TYPE:
             LOG(LOG_VERBOSE, "Context menu request for item of \"node\"");
             break;
+        case GUI_DOMAIN_TYPE:
+            LOG(LOG_VERBOSE, "Context menu request for item of \"domain\"");
+            break;
         default:
             LOG(LOG_VERBOSE, "Context menu request for item of type %d", tItem->type());
             break;
@@ -457,6 +460,12 @@ void NetworkScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *pEvent)
     {
         GuiNode *tNode = (GuiNode*)tItem;
         tNode->ShowContextMenu(pEvent);
+        return;
+    }
+    if (tItem->type() == GUI_DOMAIN_TYPE)
+    {
+        GuiDomain *tDomain = (GuiDomain*)tItem;
+        tDomain->ShowContextMenu(pEvent);
         return;
     }
 }
