@@ -559,7 +559,7 @@ bool Node::DeleteServer(unsigned int pPort)
     if (mServerCeps.size() > 0)
     {
         CepList::iterator tIt;
-        for (tIt = mServerCeps.begin(); tIt != mServerCeps.end(); tIt)
+        for (tIt = mServerCeps.begin(); tIt != mServerCeps.end(); tIt++)
         {
             //LOG(LOG_VERBOSE, "Comparing CEP with local port %u and desired port %u", (*tIt)->GetLocalPort(), pPort);
             if ((*tIt)->GetLocalPort() == pPort)

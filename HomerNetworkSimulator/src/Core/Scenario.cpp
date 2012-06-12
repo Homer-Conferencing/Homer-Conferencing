@@ -206,7 +206,7 @@ bool Scenario::DeleteClientCep(Name pNodeName, unsigned int pPort)
     if (mClientCeps.size() > 0)
     {
         CepList::iterator tIt;
-        for (tIt = mClientCeps.begin(); tIt != mClientCeps.end(); tIt)
+        for (tIt = mClientCeps.begin(); tIt != mClientCeps.end(); tIt++)
         {
             //LOG(LOG_VERBOSE, "Comparing CEP with local port %u and desired port %u", (*tIt)->GetLocalPort(), pPort);
             if (((*tIt)->GetLocalPort() == pPort) && ((*tIt)->GetLocalNode() == pNodeName.toString()))

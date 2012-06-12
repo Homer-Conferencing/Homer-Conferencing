@@ -140,7 +140,7 @@ int GuiNode::type() const
 
 void GuiNode::UpdateText(bool pSelected)
 {
-    int tSize = 16;
+    int tSize = 18;
     int tWeight = QFont::Normal;
 
     // size and weight
@@ -152,7 +152,7 @@ void GuiNode::UpdateText(bool pSelected)
         mNetSimWidget->UpdateRoutingView();
     }else
     {
-        mTextItem->setPos(-10, 45);
+        mTextItem->setPos(-12, 45);
     }
 
     // coloring
@@ -286,7 +286,7 @@ void GuiLink::UpdateColoring()
     {
         int tFirstStreamId = *tSeenStreams.begin();
         QColor tColor = sStreamColor[tFirstStreamId % STREAM_COLORS];
-        setPen(QPen(tColor, 2 + 2 * tStreamCount, Qt::SolidLine, Qt::FlatCap, Qt::RoundJoin));
+        setPen(QPen(tColor, 4 + 2 * tStreamCount, Qt::SolidLine, Qt::FlatCap, Qt::RoundJoin));
     }else
         setPen(QPen(Qt::black, 2, Qt::SolidLine, Qt::FlatCap, Qt::RoundJoin));
 }
