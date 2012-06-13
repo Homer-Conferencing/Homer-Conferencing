@@ -568,13 +568,15 @@ void MainWindow::CreateScreenShot()
 {
     static int sShiftIndex = 0;
     static QString sShiftingString = "                ";
-    sShiftIndex++;
-    if (sShiftIndex == 32)
-        sShiftIndex = 0;
-    if(sShiftIndex < 16)
-        sShiftingString[sShiftIndex] = '#';
-    else
-        sShiftingString[31 - sShiftIndex] = '#';
+    #ifndef DEBUG_VERSION
+        sShiftIndex++;
+        if (sShiftIndex == 32)
+            sShiftIndex = 0;
+        if(sShiftIndex < 16)
+            sShiftingString[sShiftIndex] = '#';
+        else
+            sShiftingString[31 - sShiftIndex] = '#';
+    #endif
 	mStatusBar->showMessage("Program start  " + mStartTime.toString("hh::mm") + "       Time  " + QTime::currentTime().toString("hh:mm") + "    " + sShiftingString);
     sShiftingString[sShiftIndex] = ' ';
     if(mSourceDesktop != NULL)
