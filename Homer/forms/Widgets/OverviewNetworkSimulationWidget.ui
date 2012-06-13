@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1523</width>
-    <height>513</height>
+    <width>1510</width>
+    <height>503</height>
    </rect>
   </property>
   <property name="font">
@@ -109,13 +109,13 @@
                     <property name="minimumSize">
                      <size>
                       <width>70</width>
-                      <height>30</height>
+                      <height>20</height>
                      </size>
                     </property>
                     <property name="maximumSize">
                      <size>
                       <width>70</width>
-                      <height>30</height>
+                      <height>20</height>
                      </size>
                     </property>
                     <property name="font">
@@ -176,13 +176,13 @@
                     <property name="minimumSize">
                      <size>
                       <width>70</width>
-                      <height>30</height>
+                      <height>20</height>
                      </size>
                     </property>
                     <property name="maximumSize">
                      <size>
                       <width>80</width>
-                      <height>30</height>
+                      <height>20</height>
                      </size>
                     </property>
                     <property name="text">
@@ -237,13 +237,13 @@
                     <property name="minimumSize">
                      <size>
                       <width>70</width>
-                      <height>30</height>
+                      <height>20</height>
                      </size>
                     </property>
                     <property name="maximumSize">
                      <size>
                       <width>80</width>
-                      <height>30</height>
+                      <height>20</height>
                      </size>
                     </property>
                     <property name="text">
@@ -295,13 +295,13 @@
                     <property name="minimumSize">
                      <size>
                       <width>70</width>
-                      <height>30</height>
+                      <height>20</height>
                      </size>
                     </property>
                     <property name="maximumSize">
                      <size>
                       <width>80</width>
-                      <height>30</height>
+                      <height>20</height>
                      </size>
                     </property>
                     <property name="text">
@@ -414,14 +414,14 @@
                    <widget class="QLabel" name="mLbPacketsDesc">
                     <property name="minimumSize">
                      <size>
-                      <width>115</width>
-                      <height>30</height>
+                      <width>80</width>
+                      <height>20</height>
                      </size>
                     </property>
                     <property name="maximumSize">
                      <size>
-                      <width>115</width>
-                      <height>30</height>
+                      <width>80</width>
+                      <height>20</height>
                      </size>
                     </property>
                     <property name="font">
@@ -481,14 +481,14 @@
                    <widget class="QLabel" name="label">
                     <property name="minimumSize">
                      <size>
-                      <width>115</width>
-                      <height>30</height>
+                      <width>80</width>
+                      <height>20</height>
                      </size>
                     </property>
                     <property name="maximumSize">
                      <size>
-                      <width>115</width>
-                      <height>30</height>
+                      <width>80</width>
+                      <height>20</height>
                      </size>
                     </property>
                     <property name="font">
@@ -498,7 +498,7 @@
                      </font>
                     </property>
                     <property name="text">
-                     <string>Req. data rate:</string>
+                     <string>Req. rate:</string>
                     </property>
                    </widget>
                   </item>
@@ -559,14 +559,14 @@
                    <widget class="QLabel" name="label_4">
                     <property name="minimumSize">
                      <size>
-                      <width>115</width>
-                      <height>30</height>
+                      <width>80</width>
+                      <height>20</height>
                      </size>
                     </property>
                     <property name="maximumSize">
                      <size>
-                      <width>115</width>
-                      <height>30</height>
+                      <width>80</width>
+                      <height>20</height>
                      </size>
                     </property>
                     <property name="font">
@@ -653,14 +653,14 @@
                    <widget class="QLabel" name="label_13">
                     <property name="minimumSize">
                      <size>
-                      <width>115</width>
-                      <height>30</height>
+                      <width>80</width>
+                      <height>20</height>
                      </size>
                     </property>
                     <property name="maximumSize">
                      <size>
-                      <width>115</width>
-                      <height>30</height>
+                      <width>80</width>
+                      <height>20</height>
                      </size>
                     </property>
                     <property name="text">
@@ -725,18 +725,18 @@
                    <widget class="QLabel" name="label_15">
                     <property name="minimumSize">
                      <size>
-                      <width>115</width>
-                      <height>30</height>
+                      <width>80</width>
+                      <height>20</height>
                      </size>
                     </property>
                     <property name="maximumSize">
                      <size>
-                      <width>115</width>
-                      <height>30</height>
+                      <width>80</width>
+                      <height>20</height>
                      </size>
                     </property>
                     <property name="text">
-                     <string>E2E data rate:</string>
+                     <string>E2E rate:</string>
                     </property>
                    </widget>
                   </item>
@@ -880,13 +880,13 @@
                   <property name="minimumSize">
                    <size>
                     <width>65</width>
-                    <height>30</height>
+                    <height>20</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
                     <width>80</width>
-                    <height>30</height>
+                    <height>20</height>
                    </size>
                   </property>
                   <property name="font">
@@ -947,13 +947,13 @@
                   <property name="minimumSize">
                    <size>
                     <width>65</width>
-                    <height>30</height>
+                    <height>20</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
                     <width>80</width>
-                    <height>30</height>
+                    <height>20</height>
                    </size>
                   </property>
                   <property name="font">
@@ -1028,13 +1028,13 @@
                   <property name="minimumSize">
                    <size>
                     <width>65</width>
-                    <height>30</height>
+                    <height>20</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
                     <width>80</width>
-                    <height>30</height>
+                    <height>20</height>
                    </size>
                   </property>
                   <property name="font">
@@ -1122,13 +1122,13 @@
                   <property name="minimumSize">
                    <size>
                     <width>100</width>
-                    <height>30</height>
+                    <height>20</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
                     <width>100</width>
-                    <height>30</height>
+                    <height>20</height>
                    </size>
                   </property>
                   <property name="font">

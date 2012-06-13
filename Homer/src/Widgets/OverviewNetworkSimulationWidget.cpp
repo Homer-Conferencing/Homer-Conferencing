@@ -96,6 +96,7 @@ class StreamItem:
 public:
     StreamItem(QString pText, struct StreamDescriptor pStreamDesc):QStandardItem(pText), mText(pText)
     {
+        setForeground(QBrush(sStreamColor[pStreamDesc.Id % STREAM_COLORS]));
         mStreamDesc = pStreamDesc;
         //LOG(LOG_VERBOSE, "Creating stream item %s", pText.toStdString().c_str());
     }
@@ -738,7 +739,7 @@ void OverviewNetworkSimulationWidget::ShowStreamDetails(const struct StreamDescr
 
 QString OverviewNetworkSimulationWidget::CreateStreamId(const struct StreamDescriptor pDesc)
 {
-    return QString("Stream %1").arg(pDesc.Id) + ":  " + QString(pDesc.LocalNode.c_str()) + ":" + QString("%1").arg(pDesc.LocalPort) + " ==> " +QString(pDesc.PeerNode.c_str()) + ":" + QString("%1").arg(pDesc.PeerPort);
+    return QString(pDesc.LocalNode.c_str()) + QString("<%1>").arg(pDesc.LocalPort) + " ==> " +QString(pDesc.PeerNode.c_str()) + QString("<%1>").arg(pDesc.PeerPort);
 }
 
 void OverviewNetworkSimulationWidget::UpdateStreamsView()
