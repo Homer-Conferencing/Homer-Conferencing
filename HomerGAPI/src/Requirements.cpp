@@ -72,30 +72,6 @@ string Requirements::getDescription()
     return tResult;
 }
 
-//void Requirements::operator+=(IRequirement &pAddRequ)
-//{
-//    add(pAddRequ);
-//}
-//
-//void Requirements::operator|=(IRequirement &pAddRequ)
-//{
-//    add(pAddRequ);
-//}
-//
-//Requirements& Requirements::operator|(IRequirement &pAddRequ)
-//{
-//    Requirements *tResult = new Requirements(*this);
-//    tResult->add(pAddRequ);
-//    return *tResult;
-//}
-//
-//Requirements& Requirements::operator+(IRequirement &pAddRequ)
-//{
-//    Requirements *tResult = new Requirements(*this);
-//    tResult->add(pAddRequ);
-//    return *tResult;
-//}
-//
 bool Requirements::add(IRequirement *pAddRequ)
 {
     bool tResult = true;
@@ -124,20 +100,6 @@ bool Requirements::add(IRequirement *pAddRequ)
     mRequirementSetMutex.unlock();
 
     return tResult;
-}
-
-void Requirements::add(RequirementSet pSet)
-{
-    RequirementSet::iterator tIt;
-
-    mRequirementSetMutex.lock();
-
-    for (tIt = pSet.begin(); tIt != pSet.end(); tIt++)
-    {
-        mRequirementSet.push_back(*tIt);
-    }
-
-    mRequirementSetMutex.unlock();
 }
 
 bool Requirements::contains(int pType)
@@ -182,28 +144,6 @@ IRequirement* Requirements::get(int pType)
     return tResult;
 }
 
-RequirementSet Requirements::getAll()
-{
-    return mRequirementSet;
-}
-
-void Requirements::removeAll()
-{
-    RequirementSet::iterator tIt;
-
-    mRequirementSetMutex.lock();
-
-    LOG(LOG_VERBOSE, "Removing %d stored requirements", mRequirementSet.size());
-
-    tIt = mRequirementSet.begin();
-    while (tIt != mRequirementSet.end())
-    {
-        delete (*mRequirementSet.begin());
-        tIt = mRequirementSet.begin();
-    }
-
-    mRequirementSetMutex.unlock();
-}
 ///////////////////////////////////////////////////////////////////////////////
 
 }} //namespace

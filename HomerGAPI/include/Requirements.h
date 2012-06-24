@@ -60,13 +60,7 @@ public:
 
     virtual std::string getDescription();
 
-    /* overloaded operators */
-//    void operator+=(IRequirement pAddRequ);
-//    void operator|=(IRequirement pAddRequ);
-//    Requirements& operator+(IRequirement pAddRequ);
-//    Requirements& operator|(IRequirement pAddRequ);
-
-    /* set manipulation */
+    /* manipulation */
     bool add(IRequirement *pRequ);
 
     /* query functions */
@@ -74,10 +68,6 @@ public:
     IRequirement* get(int pType);
 
 private:
-    void add(RequirementSet pSet);
-    RequirementSet getAll();
-    void removeAll();
-
     RequirementSet      mRequirementSet;
     Mutex               mRequirementSetMutex;
 };
