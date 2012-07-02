@@ -31,6 +31,7 @@
 #include <Core/Scenario.h>
 
 #include <QDockWidget>
+#include <QMainWindow>
 #include <QGraphicsSceneWheelEvent>
 #include <QGraphicsScene>
 #include <QGraphicsPolygonItem>
@@ -166,7 +167,7 @@ class OverviewNetworkSimulationWidget :
     Q_OBJECT;
 public:
     /// The default constructor
-    OverviewNetworkSimulationWidget(QAction *pAssignedAction, MainWindow *pMainWindow, Scenario *pScenario);
+    OverviewNetworkSimulationWidget(QAction *pAssignedAction, QMainWindow *pMainWindow, Scenario *pScenario);
 
     /// The destructor.
     virtual ~OverviewNetworkSimulationWidget();
@@ -220,7 +221,7 @@ private:
     virtual void timerEvent(QTimerEvent *pEvent);
 
     Scenario                *mScenario;
-    MainWindow              *mMainWindow;
+    QMainWindow             *mMainWindow;
     QPoint                  mWinPos;
     QAction                 *mAssignedAction;
     QStandardItemModel      *mTvHierarchyModel, *mTvStreamsModel;
