@@ -61,35 +61,6 @@ using namespace Homer::Multimedia;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////
-// use the SIP-Events-structure for signaling the deletion of a participant ///
-///////////////////////////////////////////////////////////////////////////////
-#define ADD_VIDEO_RELAY                                           300000
-
-class AddVideoRelayEvent:
-    public Homer::Conference::TEvent<AddVideoRelayEvent, ADD_VIDEO_RELAY>
-{
-public:
-    AddVideoRelayEvent()
-    {
-
-    }
-};
-
-#define ADD_VIDEO_PREVIEW                                          300001
-
-class AddVideoPreviewEvent:
-    public Homer::Conference::TEvent<AddVideoPreviewEvent, ADD_VIDEO_PREVIEW>
-{
-public:
-    AddVideoPreviewEvent()
-    {
-
-    }
-};
-
-///////////////////////////////////////////////////////////////////////////////
-
 #define FRAME_BUFFER_SIZE              30 // 1 second buffered
 
 #define FPS_MEASUREMENT_STEPS          60

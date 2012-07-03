@@ -30,6 +30,7 @@
 #include <WaveOutSdl.h>
 #include <ProcessStatisticService.h>
 #include <Widgets/AudioWidget.h>
+#include <Widgets/OverviewPlaylistWidget.h>
 #include <Dialogs/AddNetworkSinkDialog.h>
 #include <Configuration.h>
 #include <Logger.h>

@@ -48,6 +48,8 @@
 #include <Meeting.h>
 #include <MeetingEvents.h>
 
+#include <QMeetingEvents.h>
+
 #include <QMainWindow>
 #include <QMenu>
 #include <QMutex>
@@ -71,24 +73,6 @@ using namespace Homer::Conference;
 ///////////////////////////////////////////////////////////////////////////////
 
 #define SCREEN_CAPTURE_FPS					15
-
-///////////////////////////////////////////////////////////////////////////////
-
-class QMeetingEvent: public QEvent {
-public:
-    QMeetingEvent(GeneralEvent *pEvent) :
-        QEvent(QEvent::User) {
-        mMeetingEvent = pEvent;
-    }
-    virtual ~QMeetingEvent() {
-    }
-public:
-    GeneralEvent* getEvent() {
-        return mMeetingEvent;
-    }
-private:
-    GeneralEvent *mMeetingEvent;
-};
 
 ///////////////////////////////////////////////////////////////////////////////
 class MainWindow: public QMainWindow,

@@ -31,6 +31,7 @@
 #include <Configuration.h>
 #include <Requirements.h>
 #include <HBSocket.h>
+#include <Meeting.h>
 #include <Dialogs/AddNetworkSinkDialog.h>
 
 #include <GAPI.h>
@@ -41,6 +42,7 @@
 #include <limits.h>
 
 using namespace Homer::Base;
+using namespace Homer::Multimedia;
 using namespace Homer::Conference;
 
 namespace Homer { namespace Gui {

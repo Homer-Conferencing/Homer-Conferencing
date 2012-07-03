@@ -41,6 +41,8 @@
 
 namespace Homer { namespace Gui {
 
+using namespace Homer::Conference;
+
 ///////////////////////////////////////////////////////////////////////////////
 
 HelpDialog::HelpDialog(QWidget* pParent) :

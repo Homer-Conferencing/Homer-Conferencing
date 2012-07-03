@@ -38,6 +38,7 @@
 #include <QFileDialog>
 #include <QSizePolicy>
 #include <QScrollBar>
+#include <QLineEdit>
 #include <QMenu>
 #include <QContextMenuEvent>
 #include <QItemDelegate>

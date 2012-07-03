@@ -94,6 +94,7 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     mAbsBinPath = pAbsBinPath;
     mSourceDesktop = NULL;
     mNetworkSimulator = NULL;
+    mOverviewNetworkSimulationWidget = NULL;
 
     QCoreApplication::setApplicationName("Homer");
     QCoreApplication::setApplicationVersion("1.0");
@@ -207,16 +208,18 @@ void MainWindow::initializeScreenCapturing()
 
 void MainWindow::initializeNetworkSimulator(QStringList pArguments, bool pForce)
 {
-    if (pArguments.contains("-Enable=NetSim"))
-    {
-        pForce = true;
-    }
-
-    if (!pForce)
-        return;
-
     if (mNetworkSimulator != NULL)
         return;
+
+    if (pArguments.contains("-Enable=NetSim"))
+        pForce = true;
+
+    if (!pForce)
+    {
+        mActionOverviewNetworkSimulatorWidget->setVisible(false);
+        return;
+    }else
+        mActionOverviewNetworkSimulatorWidget->setVisible(true);
 
     LOG(LOG_VERBOSE, "Initialization network simulator..");
 
@@ -663,6 +666,7 @@ void MainWindow::loadSettings()
     if (!tNewDeviceSelected)
     {
         ShowWarning("Video device not availabe", "Can't use formerly selected video device: \"" + CONF.GetLocalVideoSource() + "\", will use one of the available devices instead!");
+        CONF.SetLocalVideoSource("auto");
         mOwnVideoMuxer->SelectDevice("auto", MEDIA_VIDEO, tNewDeviceSelected);
     }
     mOwnVideoMuxer->SetVideoFlipping(CONF.GetLocalVideoSourceHFlip(), CONF.GetLocalVideoSourceVFlip());
@@ -675,6 +679,7 @@ void MainWindow::loadSettings()
     if (!tNewDeviceSelected)
     {
         ShowWarning("Audio device not available", "Can't use formerly selected audio device: \"" + CONF.GetLocalAudioSource() + "\", will use one of the available devices instead!");
+        CONF.SetLocalAudioSource("auto");
         mOwnAudioMuxer->SelectDevice("auto", MEDIA_AUDIO, tNewDeviceSelected);
     }
 }
@@ -735,7 +740,8 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
     delete mShortcutActivateNetworkSimulationWidgets;
 
     delete mOverviewDataStreamsWidget;
-    delete mOverviewNetworkSimulationWidget;
+    if (mOverviewNetworkSimulationWidget != NULL)
+        delete mOverviewNetworkSimulationWidget;
     delete mOverviewNetworkStreamsWidget;
     delete mOverviewThreadsWidget;
 
@@ -1582,7 +1588,6 @@ void MainWindow::actionActivateDebuggingWidgets()
 {
     printf("Activating verbose debug widgets\n");
     mActionOverviewDataStreamsWidget->setVisible(true);
-    mActionOverviewNetworkSimulatorWidget->setVisible(true);
     mActionOverviewNetworkStreamsWidget->setVisible(true);
     mActionOverviewThreadsWidget->setVisible(true);
     mOverviewDataStreamsWidget->toggleViewAction()->setVisible(true);

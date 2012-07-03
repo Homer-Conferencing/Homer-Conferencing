@@ -38,6 +38,8 @@
 #include <QHeaderView>
 #include <QSizePolicy>
 #include <QScrollBar>
+#include <QMenu>
+#include <QContextMenuEvent>
 
 namespace Homer { namespace Gui {
 

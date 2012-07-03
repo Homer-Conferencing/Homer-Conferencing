@@ -40,10 +40,12 @@
 #include <GAPI.h>
 #include <Meeting.h>
 #include <Berkeley/SocketSetup.h>
-
+#include <Meeting.h>
 #include <Configuration.h>
 
 namespace Homer { namespace Gui {
+
+using namespace Homer::Conference;
 
 ///////////////////////////////////////////////////////////////////////////////
 
