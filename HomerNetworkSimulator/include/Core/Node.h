@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 2011 Thomas Volkert <thomas@homer-conferencing.com>
+ * Copyright (C) 2012 Thomas Volkert <thomas@homer-conferencing.com>
  *
  * This software is free software.
  * Your are allowed to redistribute it and/or modify it under the terms of
@@ -86,6 +86,7 @@ public:
     bool IsNeighbor(std::string pAddress);
     /* RIB lookup */
     long long GetRouteCosts(std::string pDestination);
+    void AddRouteCosts(std::string pDestination, QoSSettings *pQoSSet, int *pHopCosts);
 
     /* position hint for GUI */
     int GetPosXHint();
@@ -120,7 +121,8 @@ public:
     static std::string GetForeignDomain(const std::string pOwnAddress, const std::string pAddress);
     static bool IsDomain(const std::string pAddress);
     static bool AddRibEntry(std::string pNodeAddress, RibTable *pTable, std::string pDestination, std::string pNextNode, int pHopCount = 1, QoSSettings *pQoSSettings = NULL);
-    static std::string GetNextHop(RibTable *pTable, std::string pDestination, const QoSSettings pQoSRequirements);
+    static std::string GetShortestPathToDomain(RibTable *pTable, std::string pDestination);
+    static QoSSettings MergeQoSSettings(const QoSSettings& pFirst, const QoSSettings& pSecond);
 
 private:
     void LogServerCeps();
@@ -136,6 +138,7 @@ private:
 
     /* RIB lookup */
     std::string GetNextHop(Packet *pPacket);
+    static long long CalcRouteCosts(RibEntry *pRibEntry);
 
     RibTable    mRibTable;
     Mutex       mRibTableMutex;

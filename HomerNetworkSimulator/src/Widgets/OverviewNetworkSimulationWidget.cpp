@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 2011 Thomas Volkert <thomas@homer-conferencing.com>
+ * Copyright (C) 2012 Thomas Volkert <thomas@homer-conferencing.com>
  *
  * This software is free software.
  * Your are allowed to redistribute it and/or modify it under the terms of
@@ -32,12 +32,9 @@
 
 #include <Core/Coordinator.h>
 #include <Core/Scenario.h>
-#include <Dialogs/AddNetworkSinkDialog.h>
-#include <Dialogs/ContactEditDialog.h>
-#include <Widgets/OverviewNetworkSimulationWidget.h>
-#include <MainWindow.h>
-#include <ContactsPool.h>
 #include <Configuration.h>
+#include <Widgets/OverviewNetworkSimulationWidget.h>
+#include <QMeetingEvents.h>
 #include <Logger.h>
 
 #include <QFont>
@@ -55,6 +52,7 @@
 #include <QModelIndex>
 #include <QHostInfo>
 #include <QPoint>
+#include <QMenu>
 #include <QFileDialog>
 
 namespace Homer { namespace Gui {
@@ -96,6 +94,7 @@ class StreamItem:
 public:
     StreamItem(QString pText, struct StreamDescriptor pStreamDesc):QStandardItem(pText), mText(pText)
     {
+        setForeground(QBrush(sStreamColor[pStreamDesc.Id % STREAM_COLORS]));
         mStreamDesc = pStreamDesc;
         //LOG(LOG_VERBOSE, "Creating stream item %s", pText.toStdString().c_str());
     }
@@ -140,7 +139,7 @@ int GuiNode::type() const
 
 void GuiNode::UpdateText(bool pSelected)
 {
-    int tSize = 16;
+    int tSize = 18;
     int tWeight = QFont::Normal;
 
     // size and weight
@@ -152,7 +151,7 @@ void GuiNode::UpdateText(bool pSelected)
         mNetSimWidget->UpdateRoutingView();
     }else
     {
-        mTextItem->setPos(-10, 45);
+        mTextItem->setPos(-12, 45);
     }
 
     // coloring
@@ -286,7 +285,7 @@ void GuiLink::UpdateColoring()
     {
         int tFirstStreamId = *tSeenStreams.begin();
         QColor tColor = sStreamColor[tFirstStreamId % STREAM_COLORS];
-        setPen(QPen(tColor, 2 + 2 * tStreamCount, Qt::SolidLine, Qt::FlatCap, Qt::RoundJoin));
+        setPen(QPen(tColor, 4 + 2 * tStreamCount, Qt::SolidLine, Qt::FlatCap, Qt::RoundJoin));
     }else
         setPen(QPen(Qt::black, 2, Qt::SolidLine, Qt::FlatCap, Qt::RoundJoin));
 }
@@ -361,7 +360,7 @@ Domain* GuiDomain::GetDomain()
 
 void GuiDomain::UpdatePosition()
 {
-    LOG(LOG_ERROR, "Updating position of GUI domain %s", mDomain->GetDomainAddress().c_str());
+    //LOG(LOG_VERBOSE, "Updating position of GUI domain %s", mDomain->GetDomainAddress().c_str());
 
     QPolygon tPolygon;
     GuiNode* tGuiNode;
@@ -442,6 +441,9 @@ void NetworkScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *pEvent)
         case GUI_NODE_TYPE:
             LOG(LOG_VERBOSE, "Context menu request for item of \"node\"");
             break;
+        case GUI_DOMAIN_TYPE:
+            LOG(LOG_VERBOSE, "Context menu request for item of \"domain\"");
+            break;
         default:
             LOG(LOG_VERBOSE, "Context menu request for item of type %d", tItem->type());
             break;
@@ -459,11 +461,17 @@ void NetworkScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *pEvent)
         tNode->ShowContextMenu(pEvent);
         return;
     }
+    if (tItem->type() == GUI_DOMAIN_TYPE)
+    {
+        GuiDomain *tDomain = (GuiDomain*)tItem;
+        tDomain->ShowContextMenu(pEvent);
+        return;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-OverviewNetworkSimulationWidget::OverviewNetworkSimulationWidget(QAction *pAssignedAction, MainWindow* pMainWindow, Scenario *pScenario):
+OverviewNetworkSimulationWidget::OverviewNetworkSimulationWidget(QAction *pAssignedAction, QMainWindow* pMainWindow, Scenario *pScenario):
     QDockWidget(pMainWindow)
 {
     mAssignedAction = pAssignedAction;
@@ -729,7 +737,7 @@ void OverviewNetworkSimulationWidget::ShowStreamDetails(const struct StreamDescr
 
 QString OverviewNetworkSimulationWidget::CreateStreamId(const struct StreamDescriptor pDesc)
 {
-    return QString("Stream %1").arg(pDesc.Id) + ":  " + QString(pDesc.LocalNode.c_str()) + ":" + QString("%1").arg(pDesc.LocalPort) + " ==> " +QString(pDesc.PeerNode.c_str()) + ":" + QString("%1").arg(pDesc.PeerPort);
+    return QString(pDesc.LocalNode.c_str()) + QString("<%1>").arg(pDesc.LocalPort) + " ==> " +QString(pDesc.PeerNode.c_str()) + QString("<%1>").arg(pDesc.PeerPort);
 }
 
 void OverviewNetworkSimulationWidget::UpdateStreamsView()
@@ -974,8 +982,7 @@ void OverviewNetworkSimulationWidget::SendVideo(Node *pNode)
     LOG(LOG_VERBOSE, "Send video from node %s", pNode->GetAddress().c_str());
 
     mScenario->SetSourceNode(pNode->GetAddress());
-    AddNetworkSinkDialog tANSDialog(this, mMainWindow->GetVideoMuxer());
-    tANSDialog.exec();
+    QCoreApplication::postEvent(mMainWindow, (QEvent*) new QMeetingEvent(new AddVideoRelayEvent()));
 }
 
 void OverviewNetworkSimulationWidget::ReceiveVideo(Node *pNode)
@@ -983,7 +990,7 @@ void OverviewNetworkSimulationWidget::ReceiveVideo(Node *pNode)
     LOG(LOG_VERBOSE, "Receive video on node %s", pNode->GetAddress().c_str());
 
     mScenario->SetDestinationNode(pNode->GetAddress());
-    mMainWindow->actionOpenVideoAudioPreview();
+    QCoreApplication::postEvent(mMainWindow, (QEvent*) new QMeetingEvent(new AddVideoPreviewEvent()));
 }
 
 // #####################################################################

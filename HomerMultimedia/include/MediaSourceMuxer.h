@@ -93,6 +93,7 @@ public:
     virtual bool Reset(enum MediaType = MEDIA_UNKNOWN);
     virtual std::string GetCodecName();
     virtual std::string GetCodecLongName();
+    virtual bool SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset = false, bool pRtpActivated = true);
     virtual int GetChunkDropCounter();
     virtual int GetChunkBufferCounter();
 

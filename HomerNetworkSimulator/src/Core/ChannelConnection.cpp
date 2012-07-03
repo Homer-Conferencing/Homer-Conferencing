@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 2011 Thomas Volkert <thomas@homer-conferencing.com>
+ * Copyright (C) 2012 Thomas Volkert <thomas@homer-conferencing.com>
  *
  * This software is free software.
  * Your are allowed to redistribute it and/or modify it under the terms of
@@ -22,7 +22,7 @@
 /*
  * Purpose: ChannelConnection
  * Author:  Thomas Volkert
- * Since:   2011-12-08
+ * Since:   2012-04-14
  */
 
 #include <GAPI.h>

@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 2011 Thomas Volkert <thomas@homer-conferencing.com>
+ * Copyright (C) 2012 Thomas Volkert <thomas@homer-conferencing.com>
  *
  * This software is free software.
  * Your are allowed to redistribute it and/or modify it under the terms of
@@ -45,7 +45,8 @@ namespace Homer { namespace Base {
 // de/activate debugging of packet routing
 //#define DEBUG_NEIOGHBOR_DISCOVERY
 //#define DEBUG_FORWARDING
-//#define DEBUG_ROUTING
+#define DEBUG_ROUTING
+//#define DEBUG_ROUTING_TRAVERSAL_COSTS
 //#define DEBUG_ROUTING_RECORDS
 #define DEBUG_PACKET_LOSS
 

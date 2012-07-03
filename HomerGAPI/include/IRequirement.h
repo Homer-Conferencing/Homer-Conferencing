@@ -29,7 +29,6 @@
 #define _GAPI_IREQUIREMENT_
 
 #include <Logger.h>
-#include <Requirements.h>
 
 namespace Homer { namespace Base {
 
@@ -50,9 +49,6 @@ namespace Homer { namespace Base {
 #define REQUIREMENT_LIMIT_DATARATE                      0x0202
 
 ///////////////////////////////////////////////////////////////////////////////
-
-// forward declaration
-class Requirements;
 
 class IRequirement
 {

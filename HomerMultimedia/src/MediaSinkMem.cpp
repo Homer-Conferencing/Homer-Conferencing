@@ -27,6 +27,7 @@
 
 #include <Header_Ffmpeg.h>
 #include <MediaSinkMem.h>
+#include <MediaSourceMem.h>
 #include <MediaFifo.h>
 #include <MediaSinkNet.h>
 #include <MediaSourceNet.h>
@@ -43,12 +44,13 @@ using namespace Homer::Monitor;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-MediaSinkMem::MediaSinkMem(string pMemoryId, enum MediaSinkType pType):
-    MediaSinkNet("memory", 0, NULL, pType, false)
+MediaSinkMem::MediaSinkMem(string pMemoryId, enum MediaSinkType pType, bool pRtpActivated):
+    MediaSinkNet("memory", 0, NULL, pType, pRtpActivated)
 {
     // overwrite id from MediaSinkNet
     mMemoryId = pMemoryId;
     mMediaId = mMemoryId;
+    mSinkFifo = new MediaFifo(MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT, MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE, "MediaSinkMem");
     switch(pType)
     {
         case MEDIA_SINK_VIDEO:
@@ -64,6 +66,7 @@ MediaSinkMem::MediaSinkMem(string pMemoryId, enum MediaSinkType pType):
 
 MediaSinkMem::~MediaSinkMem()
 {
+    delete mSinkFifo;
 }
 
 void MediaSinkMem::SendFragment(char* pData, unsigned int pSize)
@@ -76,7 +79,9 @@ void MediaSinkMem::SendFragment(char* pData, unsigned int pSize)
         {
             char *tPacketData = pData;
             unsigned int tPacketSize = pSize;
-            RtpParse(tPacketData, tPacketSize, mCurrentStream->codec->codec_id);
+            bool tLastFragment;
+            bool tFragmentIsSenderReport;
+            RtpParse(tPacketData, tPacketSize, tLastFragment, tFragmentIsSenderReport, mCurrentStream->codec->codec_id, true);
         }
     #endif
     AnnouncePacket(pSize);
@@ -84,12 +89,9 @@ void MediaSinkMem::SendFragment(char* pData, unsigned int pSize)
     mSinkFifo->WriteFifo(pData, (int)pSize);
 }
 
-void MediaSinkMem::ReadFragment(char *pData, ssize_t &pDataSize)
+void MediaSinkMem::ReadFragment(char *pData, int &pDataSize)
 {
-    int tDataSize = pDataSize;
-    mSinkFifo->ReadFifo(&pData[0], tDataSize);
-    pDataSize = tDataSize;
-
+    mSinkFifo->ReadFifo(&pData[0], pDataSize);
     if (pDataSize > 0)
     {
         #ifdef MSIM_DEBUG_PACKETS

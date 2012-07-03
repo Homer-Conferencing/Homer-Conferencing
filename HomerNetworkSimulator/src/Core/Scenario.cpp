@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 2011 Thomas Volkert <thomas@homer-conferencing.com>
+ * Copyright (C) 2012 Thomas Volkert <thomas@homer-conferencing.com>
  *
  * This software is free software.
  * Your are allowed to redistribute it and/or modify it under the terms of
@@ -206,7 +206,7 @@ bool Scenario::DeleteClientCep(Name pNodeName, unsigned int pPort)
     if (mClientCeps.size() > 0)
     {
         CepList::iterator tIt;
-        for (tIt = mClientCeps.begin(); tIt != mClientCeps.end(); tIt)
+        for (tIt = mClientCeps.begin(); tIt != mClientCeps.end(); tIt++)
         {
             //LOG(LOG_VERBOSE, "Comparing CEP with local port %u and desired port %u", (*tIt)->GetLocalPort(), pPort);
             if (((*tIt)->GetLocalPort() == pPort) && ((*tIt)->GetLocalNode() == pNodeName.toString()))

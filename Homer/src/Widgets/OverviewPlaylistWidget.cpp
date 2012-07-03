@@ -37,6 +37,7 @@
 #include <QFileDialog>
 #include <QSizePolicy>
 #include <QMenu>
+#include <QUrl>
 #include <QContextMenuEvent>
 
 namespace Homer { namespace Gui {

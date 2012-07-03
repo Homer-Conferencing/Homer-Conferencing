@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 2011 Thomas Volkert <thomas@homer-conferencing.com>
+ * Copyright (C) 2012 Thomas Volkert <thomas@homer-conferencing.com>
  *
  * This software is free software.
  * Your are allowed to redistribute it and/or modify it under the terms of
@@ -20,16 +20,20 @@
  *****************************************************************************/
 
 /*
- * Purpose: Node
+ * Purpose: Network simulation
  * Author:  Thomas Volkert
  * Since:   2012-05-31
  */
 
-#ifndef _GAPI_SIMULATION_
-#define _GAPI_SIMULATION_
+#ifndef _NETWORK_SIMULATION_
+#define _NETWORK_SIMULATION_
 
 #include <Core/Scenario.h>
 #include <Core/ChannelSetup.h>
+#include <Widgets/OverviewNetworkSimulationWidget.h>
+
+#include <QMenu>
+#include <QMainWindow>
 
 namespace Homer { namespace Base {
 
@@ -41,13 +45,14 @@ public:
     NetworkSimulator();
     virtual ~NetworkSimulator();
 
-    bool Init();//QAction *pAssignedAction, QMainWindow *pMainWindow
+    bool Init(QMenu *pAssignedMenu, QMainWindow *pMainWindow);
 
     Scenario *GetScenario();
 
 private:
     ChannelSetup    *mGAPISetup;
     Scenario        *mScenario;
+    Homer::Gui::OverviewNetworkSimulationWidget *mOverviewNetworkSimulationWidget;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -111,38 +111,46 @@ MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, Socket*
     MediaSink(pType), RTP()
 {
     BasicInit(pTargetHost, pTargetPort, pType, pRtpActivated);
-    mGAPIUsed = false;
-    mStreamedTransport = (pLocalSocket->GetTransportType() == SOCKET_TCP);
-    if (mStreamedTransport)
-    	mStreamFragmentCopyBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
-
     mDataSocket = pLocalSocket;
+    mGAPIUsed = false;
+    enum TransportType tTransportType = SOCKET_RAW;
+    enum NetworkType tNetworkType = SOCKET_RAWNET;
 
-    // define QoS settings
-    QoSSettings tQoSSettings;
-    switch(pType)
+    if (mDataSocket != NULL)
     {
-        case MEDIA_SINK_VIDEO:
-            ClassifyStream(DATA_TYPE_VIDEO, mDataSocket->GetTransportType(), mDataSocket->GetNetworkType());
-            tQoSSettings.DataRate = 20;
-            tQoSSettings.Delay = 250;
-            tQoSSettings.Features = QOS_FEATURE_NONE;
-            break;
-        case MEDIA_SINK_AUDIO:
-            ClassifyStream(DATA_TYPE_AUDIO, mDataSocket->GetTransportType(), mDataSocket->GetNetworkType());
-            tQoSSettings.DataRate = 8;
-            tQoSSettings.Delay = 100;
-            tQoSSettings.Features = QOS_FEATURE_NONE;
-            break;
-        default:
-            LOG(LOG_ERROR, "Undefined media type");
-            break;
+        tTransportType = mDataSocket->GetTransportType();
+        tNetworkType = mDataSocket->GetNetworkType();
+
+        // define QoS settings
+        QoSSettings tQoSSettings;
+        switch(pType)
+        {
+            case MEDIA_SINK_VIDEO:
+                ClassifyStream(DATA_TYPE_VIDEO, tTransportType, tNetworkType);
+                tQoSSettings.DataRate = 20;
+                tQoSSettings.Delay = 250;
+                tQoSSettings.Features = QOS_FEATURE_NONE;
+                break;
+            case MEDIA_SINK_AUDIO:
+                ClassifyStream(DATA_TYPE_AUDIO, tTransportType, tNetworkType);
+                tQoSSettings.DataRate = 8;
+                tQoSSettings.Delay = 100;
+                tQoSSettings.Features = QOS_FEATURE_NONE;
+                break;
+            default:
+                LOG(LOG_ERROR, "Undefined media type");
+                break;
+        }
+        mDataSocket->SetQoS(tQoSSettings);
     }
-    mDataSocket->SetQoS(tQoSSettings);
 
-	LOG(LOG_VERBOSE, "Remote media sink at: %s<%d>%s", pTargetHost.c_str(), pTargetPort, mRtpActivated ? "(RTP)" : "");
+    mStreamedTransport = (tTransportType == SOCKET_TCP);
+    if (mStreamedTransport)
+        mStreamFragmentCopyBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
 
-    mMediaId = CreateId(pTargetHost, toString(pTargetPort), mDataSocket->GetTransportType(), pRtpActivated);
+    LOG(LOG_VERBOSE, "Remote media sink at: %s<%d>%s", pTargetHost.c_str(), pTargetPort, mRtpActivated ? "(RTP)" : "");
+
+    mMediaId = CreateId(pTargetHost, toString(pTargetPort), tTransportType, pRtpActivated);
     AssignStreamName("NET-OUT: " + mMediaId);
 }
 

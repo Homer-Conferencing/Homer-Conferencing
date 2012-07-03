@@ -38,7 +38,6 @@
 #include <Widgets/OverviewContactsWidget.h>
 #include <Widgets/OverviewDataStreamsWidget.h>
 #include <Widgets/OverviewErrorsWidget.h>
-#include <Widgets/OverviewNetworkSimulationWidget.h>
 #include <Widgets/OverviewNetworkStreamsWidget.h>
 #include <Widgets/OverviewThreadsWidget.h>
 #include <Widgets/OverviewFileTransfersWidget.h>
@@ -47,6 +46,8 @@
 #include <Widgets/VideoWidget.h>
 #include <Meeting.h>
 #include <MeetingEvents.h>
+
+#include <QMeetingEvents.h>
 
 #include <QMainWindow>
 #include <QMenu>
@@ -71,24 +72,6 @@ using namespace Homer::Conference;
 ///////////////////////////////////////////////////////////////////////////////
 
 #define SCREEN_CAPTURE_FPS					15
-
-///////////////////////////////////////////////////////////////////////////////
-
-class QMeetingEvent: public QEvent {
-public:
-    QMeetingEvent(GeneralEvent *pEvent) :
-        QEvent(QEvent::User) {
-        mMeetingEvent = pEvent;
-    }
-    virtual ~QMeetingEvent() {
-    }
-public:
-    GeneralEvent* getEvent() {
-        return mMeetingEvent;
-    }
-private:
-    GeneralEvent *mMeetingEvent;
-};
 
 ///////////////////////////////////////////////////////////////////////////////
 class MainWindow: public QMainWindow,
@@ -126,6 +109,7 @@ private slots:
 
     void actionActivateDebuggingWidgets();
     void actionActivateDebuggingGlobally();
+    void actionActivateNetworkSimulationWidgets();
 
     void activatedSysTray(QSystemTrayIcon::ActivationReason pReason);
 
@@ -145,7 +129,7 @@ private:
     void initializeColoring();
     void initializeWidgetsAndMenus();
     void initializeScreenCapturing();
-    void initializeNetworkSimulator();
+    void initializeNetworkSimulator(QStringList pArguments, bool pForce = false);
     void connectSignalsSlots();
 
     virtual void closeEvent(QCloseEvent* pEvent);
@@ -174,7 +158,6 @@ private:
     OverviewDataStreamsWidget   *mOverviewDataStreamsWidget;
     OverviewErrorsWidget        *mOverviewErrorsWidget;
     OverviewFileTransfersWidget *mOverviewFileTransfersWidget;
-    OverviewNetworkSimulationWidget *mOverviewNetworkSimulationWidget;
     OverviewNetworkStreamsWidget *mOverviewNetworkStreamsWidget;
     OverviewPlaylistWidget	    *mOverviewPlaylistWidgetVideo, *mOverviewPlaylistWidgetAudio, *mOverviewPlaylistWidgetMovie;
     OverviewThreadsWidget 	    *mOverviewThreadsWidget;
@@ -187,7 +170,7 @@ private:
     QSystemTrayIcon			    *mSysTrayIcon;
     QMenu					    *mSysTrayMenu;
     MediaSourceDesktop 		    *mSourceDesktop;
-    QShortcut                   *mShortcutActivateDebugWidgets, *mShortcutActivateDebuggingGlobally;
+    QShortcut                   *mShortcutActivateDebugWidgets, *mShortcutActivateDebuggingGlobally, *mShortcutActivateNetworkSimulationWidgets;
     /* SIP server registration */
     QString                     mSipServerRegistrationHost;
     QString                     mSipServerRegistrationUser;

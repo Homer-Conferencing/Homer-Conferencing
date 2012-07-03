@@ -20,62 +20,68 @@
  *****************************************************************************/
 
 /*
- * Purpose: Link
+ * Purpose: QEvent management
  * Author:  Thomas Volkert
- * Since:   2012-05-30
+ * Since:   2012-07-03
  */
 
-#ifndef _GAPI_SIMULATION_LINK_
-#define _GAPI_SIMULATION_LINK_
+#ifndef _QMEETING_EVENTS_
+#define _QMEETING_EVENTS_
 
-#include <Core/Cep.h>
+#include <MeetingEvents.h>
 
-#include <HBMutex.h>
-#include <Name.h>
+using namespace std;
+using namespace Homer::Conference;
 
-#include <list>
-
-namespace Homer { namespace Base {
-
-class Link;
-typedef std::list<Link*> LinkList;
-
-class Node;
+namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class Link
-{
+#define ADD_VIDEO_RELAY                         300000
+#define ADD_VIDEO_PREVIEW                       300001
+
+///////////////////////////////////////////////////////////////////////////////
+
+class QMeetingEvent: public QEvent {
 public:
-    Link(Node *pNodeOne, Node *pNodeTwo);
-    virtual ~Link();
-
-    bool HandlePacket(Packet *pPacket, Node* pLastNode);
-
-    /* QoS settings */
-    void SetQoSCapabilities(QoSSettings pCaps);
-    QoSSettings GetQoSCapabilities();
-
-    Node* GetNode0();
-    Node* GetNode1();
-    Node* GetPeerNode(Node *pNode);
-
-    /* statistics */
-    int GetPacketCount();
-    int GetLostPacketCount();
-
-    std::list<int> GetSeenStreams();
+    QMeetingEvent(GeneralEvent *pEvent) :
+        QEvent(QEvent::User) {
+        mMeetingEvent = pEvent;
+    }
+    virtual ~QMeetingEvent() {
+    }
+public:
+    GeneralEvent* getEvent() {
+        return mMeetingEvent;
+    }
 private:
-    Node            *mNodes[2];
-    QoSSettings     mQoSCapabilities;
-    std::list<int>  mSeenStreams;
-    Mutex           mSeenStreamsMutex;
-    int             mPacketCount;
-    int             mPacketLossCount;
+    GeneralEvent *mMeetingEvent;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
-}} // namespaces
+class AddVideoRelayEvent:
+    public Homer::Conference::TEvent<AddVideoRelayEvent, ADD_VIDEO_RELAY>
+{
+public:
+    AddVideoRelayEvent()
+    {
+
+    }
+};
+
+class AddVideoPreviewEvent:
+    public Homer::Conference::TEvent<AddVideoPreviewEvent, ADD_VIDEO_PREVIEW>
+{
+public:
+    AddVideoPreviewEvent()
+    {
+
+    }
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+}}
 
 #endif

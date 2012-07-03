@@ -45,6 +45,7 @@
 #include <QMainWindow>
 
 #include <MediaSource.h>
+#include <MeetingEvents.h>
 
 namespace Homer { namespace Gui {
 
