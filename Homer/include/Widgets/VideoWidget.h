@@ -45,6 +45,7 @@
 #include <QMainWindow>
 
 #include <MediaSource.h>
+#include <MeetingEvents.h>
 
 namespace Homer { namespace Gui {
 
@@ -57,6 +58,35 @@ using namespace Homer::Multimedia;
 
 // de/activate automatic frame dropping in case the video widget is invisible (default is off)
 //#define VIDEO_WIDGET_DROP_WHEN_INVISIBLE
+
+///////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////
+// use the SIP-Events-structure for signaling the deletion of a participant ///
+///////////////////////////////////////////////////////////////////////////////
+#define ADD_VIDEO_RELAY                                           300000
+
+class AddVideoRelayEvent:
+    public Homer::Conference::TEvent<AddVideoRelayEvent, ADD_VIDEO_RELAY>
+{
+public:
+    AddVideoRelayEvent()
+    {
+
+    }
+};
+
+#define ADD_VIDEO_PREVIEW                                          300001
+
+class AddVideoPreviewEvent:
+    public Homer::Conference::TEvent<AddVideoPreviewEvent, ADD_VIDEO_PREVIEW>
+{
+public:
+    AddVideoPreviewEvent()
+    {
+
+    }
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 

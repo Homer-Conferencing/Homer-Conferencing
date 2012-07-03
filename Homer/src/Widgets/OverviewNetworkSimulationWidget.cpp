@@ -36,6 +36,7 @@
 #include <Dialogs/ContactEditDialog.h>
 #include <Widgets/OverviewNetworkSimulationWidget.h>
 #include <MainWindow.h>
+#include <Widgets/VideoWidget.h>
 #include <ContactsPool.h>
 #include <Configuration.h>
 #include <Logger.h>
@@ -473,7 +474,7 @@ void NetworkScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *pEvent)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-OverviewNetworkSimulationWidget::OverviewNetworkSimulationWidget(QAction *pAssignedAction, MainWindow* pMainWindow, Scenario *pScenario):
+OverviewNetworkSimulationWidget::OverviewNetworkSimulationWidget(QAction *pAssignedAction, QMainWindow* pMainWindow, Scenario *pScenario):
     QDockWidget(pMainWindow)
 {
     mAssignedAction = pAssignedAction;
@@ -984,8 +985,7 @@ void OverviewNetworkSimulationWidget::SendVideo(Node *pNode)
     LOG(LOG_VERBOSE, "Send video from node %s", pNode->GetAddress().c_str());
 
     mScenario->SetSourceNode(pNode->GetAddress());
-    AddNetworkSinkDialog tANSDialog(this, mMainWindow->GetVideoMuxer());
-    tANSDialog.exec();
+    QCoreApplication::postEvent(mMainWindow, (QEvent*) new QMeetingEvent(new AddVideoRelayEvent()));
 }
 
 void OverviewNetworkSimulationWidget::ReceiveVideo(Node *pNode)
@@ -993,7 +993,7 @@ void OverviewNetworkSimulationWidget::ReceiveVideo(Node *pNode)
     LOG(LOG_VERBOSE, "Receive video on node %s", pNode->GetAddress().c_str());
 
     mScenario->SetDestinationNode(pNode->GetAddress());
-    mMainWindow->actionOpenVideoAudioPreview();
+    QCoreApplication::postEvent(mMainWindow, (QEvent*) new QMeetingEvent(new AddVideoPreviewEvent()));
 }
 
 // #####################################################################

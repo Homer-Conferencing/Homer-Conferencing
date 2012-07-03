@@ -126,6 +126,7 @@ private slots:
 
     void actionActivateDebuggingWidgets();
     void actionActivateDebuggingGlobally();
+    void actionActivateNetworkSimulationWidgets();
 
     void activatedSysTray(QSystemTrayIcon::ActivationReason pReason);
 
@@ -145,7 +146,7 @@ private:
     void initializeColoring();
     void initializeWidgetsAndMenus();
     void initializeScreenCapturing();
-    void initializeNetworkSimulator();
+    void initializeNetworkSimulator(QStringList pArguments, bool pForce = false);
     void connectSignalsSlots();
 
     virtual void closeEvent(QCloseEvent* pEvent);
@@ -187,7 +188,7 @@ private:
     QSystemTrayIcon			    *mSysTrayIcon;
     QMenu					    *mSysTrayMenu;
     MediaSourceDesktop 		    *mSourceDesktop;
-    QShortcut                   *mShortcutActivateDebugWidgets, *mShortcutActivateDebuggingGlobally;
+    QShortcut                   *mShortcutActivateDebugWidgets, *mShortcutActivateDebuggingGlobally, *mShortcutActivateNetworkSimulationWidgets;
     /* SIP server registration */
     QString                     mSipServerRegistrationHost;
     QString                     mSipServerRegistrationUser;
