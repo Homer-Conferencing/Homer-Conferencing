@@ -32,7 +32,6 @@
 
 #include <Core/Coordinator.h>
 #include <Core/Scenario.h>
-#include <Configuration.h>
 #include <Widgets/OverviewNetworkSimulationWidget.h>
 #include <QMeetingEvents.h>
 #include <Logger.h>
@@ -502,8 +501,8 @@ OverviewNetworkSimulationWidget::OverviewNetworkSimulationWidget(QAction *pAssig
     connect(mSbLinkDataRate, SIGNAL(valueChanged(int)), this, SLOT(SelectedLinkDataRate(int)));
     connect(mSbLinkDelay, SIGNAL(valueChanged(int)), this, SLOT(SelectedLinkDelay(int)));
 
-    SetVisible(CONF.GetVisibilityNetworkSimulationWidget());
-    mAssignedAction->setChecked(CONF.GetVisibilityNetworkSimulationWidget());
+    SetVisible(true);//CONF.GetVisibilityNetworkSimulationWidget());
+    mAssignedAction->setChecked(true);//CONF.GetVisibilityNetworkSimulationWidget());
 
     InitNetworkView();
     InitRoutingView();
@@ -516,7 +515,7 @@ OverviewNetworkSimulationWidget::OverviewNetworkSimulationWidget(QAction *pAssig
 
 OverviewNetworkSimulationWidget::~OverviewNetworkSimulationWidget()
 {
-    CONF.SetVisibilityNetworkSimulationWidget(isVisible());
+   // CONF.SetVisibilityNetworkSimulationWidget(isVisible());
     delete mTvHierarchyModel;
     delete mTvStreamsModel;
 }

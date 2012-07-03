@@ -32,7 +32,6 @@
 #include <GAPI.h>
 
 #include <Logger.h>
-#include <Configuration.h>
 
 #include <QAction>
 #include <QMenu>
@@ -75,7 +74,7 @@ bool NetworkSimulator::Init(QMenu *pAssignedMenu, QMainWindow *pMainWindow)
 
     QAction *tAction = new QAction("Network simulator", pMainWindow);
     tAction->setCheckable(true);
-    tAction->setChecked(CONF.GetVisibilityNetworkSimulationWidget());
+    tAction->setChecked(true);//CONF.GetVisibilityNetworkSimulationWidget());
     QIcon icon29;
     icon29.addFile(QString::fromUtf8(":/images/46_46/Network.png"), QSize(), QIcon::Normal, QIcon::Off);
     icon29.addFile(QString::fromUtf8(":/images/22_22/Checked.png"), QSize(), QIcon::Normal, QIcon::On);
