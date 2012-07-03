@@ -91,7 +91,7 @@ void HelpDialog::initializeGUI()
                                     );
 
     #endif
-	#ifdef BSD
+	#if (defined BSD) && (not defined APPLE)
 		QString tCurArch = (System::GetMachineType() == "x86") ? "bsd32" : "bsd64";
 		mSystemData->setText(       "Operating System:  Linux\n"\
 									"Kernel:  " + "??" + "\n"\

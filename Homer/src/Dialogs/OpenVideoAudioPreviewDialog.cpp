@@ -310,7 +310,7 @@ void OpenVideoAudioPreviewDialog::LoadConfiguration()
     #ifdef APPLE
         MediaSourceCoreVideo *tVSource = new MediaSourceCoreVideo("");
     #endif
-	#ifdef BSD
+	#if (defined BSD) && (not defined APPLE)
         MediaSource *tVSource = NULL; //TODO: replace with a specialized implementation
 	#endif
     #ifdef LINUX
