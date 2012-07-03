@@ -29,6 +29,8 @@
 									<listOptionValue builtIn="false" value="../../HomerGAPI/include"/>
 									<listOptionValue builtIn="false" value="../../HomerMultimedia/include"/>
 									<listOptionValue builtIn="false" value=".././include"/>
+									<listOptionValue builtIn="false" value="../../Homer/include"/>
+									<listOptionValue builtIn="false" value="../../Homer/include/Widgets"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1972935720" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
