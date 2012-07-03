@@ -1282,7 +1282,7 @@
   </widget>
  </widget>
  <resources>
-  <include location="../../resources/Icons.qrc"/>
+  <include location="../../../Homer/resources/Icons.qrc"/>
  </resources>
  <connections/>
 </ui>

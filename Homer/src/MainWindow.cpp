@@ -29,6 +29,7 @@
 #include <ContactsPool.h>
 #include <MainWindow.h>
 #include <Configuration.h>
+#include <Dialogs/AddNetworkSinkDialog.h>
 #include <Dialogs/VersionDialog.h>
 #include <Dialogs/IdentityDialog.h>
 #include <Dialogs/ConfigurationDialog.h>
@@ -92,6 +93,7 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     SVC_PROCESS_STATISTIC.AssignThreadName("Qt-MainLoop");
     mAbsBinPath = pAbsBinPath;
     mSourceDesktop = NULL;
+    mNetworkSimulator = NULL;
 
     QCoreApplication::setApplicationName("Homer");
     QCoreApplication::setApplicationVersion("1.0");
@@ -132,7 +134,7 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     // init screen capturing
     initializeScreenCapturing();
     // init network simulator
-    initializeNetworkSimulator();
+    initializeNetworkSimulator(tArguments);
     // delayed call to register at Stun and Sip server
     QTimer::singleShot(2000, this, SLOT(registerAtStunSipServer()));
 }
@@ -163,6 +165,7 @@ void MainWindow::connectSignalsSlots()
     connect(mActionVersion, SIGNAL(triggered()), this, SLOT(actionVersion()));
 
     connect(mShortcutActivateDebugWidgets, SIGNAL(activated()), this, SLOT(actionActivateDebuggingWidgets()));
+    connect(mShortcutActivateNetworkSimulationWidgets, SIGNAL(activated()), this, SLOT(actionActivateNetworkSimulationWidgets()));
     connect(mShortcutActivateDebuggingGlobally, SIGNAL(activated()), this, SLOT(actionActivateDebuggingGlobally()));
 
     connect(mActionToolBarOnlineStatus, SIGNAL(toggled(bool)), mToolBarOnlineStatus, SLOT(setVisible(bool)));
@@ -202,16 +205,22 @@ void MainWindow::initializeScreenCapturing()
     mScreenShotTimer->start(3000);
 }
 
-void MainWindow::initializeNetworkSimulator()
+void MainWindow::initializeNetworkSimulator(QStringList pArguments, bool pForce)
 {
-    LOG(LOG_VERBOSE, "Initialization network simulator..");
+    if (mNetworkSimulator != NULL)
+        return;
 
-    mNetworkSimulator = new NetworkSimulator();
-    if (!mNetworkSimulator->Init())
-        LOG(LOG_ERROR, "Failed to initialize network simulator");
-    else
-        mOverviewNetworkSimulationWidget = new OverviewNetworkSimulationWidget(mActionOverviewNetworkSimulatorWidget, this, mNetworkSimulator->GetScenario());
+    if (pArguments.contains("-Enable=NetSim"))
+        pForce = true;
+
+    if (pForce)
+    {
+        mNetworkSimulator = new NetworkSimulator();
+        if (!mNetworkSimulator->Init(mMenuWindows, this))
+            LOG(LOG_ERROR, "Failed to initialize network simulator");
+    }
 }
+
 void MainWindow::initializeFeatureDisablers(QStringList pArguments)
 {
     // file based log sinks
@@ -429,6 +438,7 @@ void MainWindow::initializeWidgetsAndMenus()
 
     mShortcutActivateDebugWidgets = new QShortcut(QKeySequence(Qt::ALT + Qt::Key_A), this);
     mShortcutActivateDebuggingGlobally = new QShortcut(QKeySequence(Qt::ALT + Qt::Key_D), this);
+    mShortcutActivateNetworkSimulationWidgets = new QShortcut(QKeySequence(Qt::ALT + Qt::Key_S), this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -647,6 +657,7 @@ void MainWindow::loadSettings()
     if (!tNewDeviceSelected)
     {
         ShowWarning("Video device not availabe", "Can't use formerly selected video device: \"" + CONF.GetLocalVideoSource() + "\", will use one of the available devices instead!");
+        CONF.SetLocalVideoSource("auto");
         mOwnVideoMuxer->SelectDevice("auto", MEDIA_VIDEO, tNewDeviceSelected);
     }
     mOwnVideoMuxer->SetVideoFlipping(CONF.GetLocalVideoSourceHFlip(), CONF.GetLocalVideoSourceVFlip());
@@ -659,6 +670,7 @@ void MainWindow::loadSettings()
     if (!tNewDeviceSelected)
     {
         ShowWarning("Audio device not available", "Can't use formerly selected audio device: \"" + CONF.GetLocalAudioSource() + "\", will use one of the available devices instead!");
+        CONF.SetLocalAudioSource("auto");
         mOwnAudioMuxer->SelectDevice("auto", MEDIA_AUDIO, tNewDeviceSelected);
     }
 }
@@ -714,11 +726,14 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
     // deinit
     MEETING.Deinit();
 
+    if (mNetworkSimulator != NULL)
+        delete mNetworkSimulator;
+
     delete mShortcutActivateDebugWidgets;
     delete mShortcutActivateDebuggingGlobally;
+    delete mShortcutActivateNetworkSimulationWidgets;
 
     delete mOverviewDataStreamsWidget;
-    delete mOverviewNetworkSimulationWidget;
     delete mOverviewNetworkStreamsWidget;
     delete mOverviewThreadsWidget;
 
@@ -785,7 +800,7 @@ void MainWindow::customEvent(QEvent* pEvent)
     OptionsUnavailableEvent *tOUAEvent;
     GeneralEvent *tEvent = ((QMeetingEvent*) pEvent)->getEvent();
     ParticipantWidget *tParticipantWidget;
-
+    AddNetworkSinkDialog *tANSDialog =  NULL;
     QString tEventSender, tEventSenderApp;
 
     if(tEvent->getType() != ADD_PARTICIPANT)
@@ -829,6 +844,16 @@ void MainWindow::customEvent(QEvent* pEvent)
                     //####################### PARTICIPANT DELETE #############################
                     tDSEvent = (DeleteSessionEvent*) tEvent;
                     DeleteParticipantSession(tDSEvent->PWidget);
+                    break;
+        case ADD_VIDEO_RELAY:
+                    //####################### VIDEO ADD RELAY #############################
+                    tANSDialog = new AddNetworkSinkDialog(this, GetVideoMuxer());
+                    tANSDialog->exec();
+                    delete tANSDialog;
+                    break;
+        case ADD_VIDEO_PREVIEW:
+                    //####################### VIDEO ADD PREVIEW #############################
+                    actionOpenVideoAudioPreview();
                     break;
         case INT_START_NAT_DETECTION:
                     //####################### NAT DETECTION ANSWER ###########################
@@ -1546,11 +1571,15 @@ void MainWindow::actionMuteOthers()
     }
 }
 
+void MainWindow::actionActivateNetworkSimulationWidgets()
+{
+    initializeNetworkSimulator(QStringList(), true);
+}
+
 void MainWindow::actionActivateDebuggingWidgets()
 {
     printf("Activating verbose debug widgets\n");
     mActionOverviewDataStreamsWidget->setVisible(true);
-    mActionOverviewNetworkSimulatorWidget->setVisible(true);
     mActionOverviewNetworkStreamsWidget->setVisible(true);
     mActionOverviewThreadsWidget->setVisible(true);
     mOverviewDataStreamsWidget->toggleViewAction()->setVisible(true);

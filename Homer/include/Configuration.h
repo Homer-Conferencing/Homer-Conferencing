@@ -28,26 +28,11 @@
 #ifndef _CONFIGURATION_
 #define _CONFIGURATION_
 
-#include <MainWindow.h>
-#include <Dialogs/IdentityDialog.h>
-#include <Dialogs/ConfigurationDialog.h>
-#include <Dialogs/UpdateCheckDialog.h>
-#include <Dialogs/OpenVideoAudioPreviewDialog.h>
-#include <Widgets/VideoWidget.h>
-#include <Widgets/StreamingControlWidget.h>
-#include <Widgets/OverviewContactsWidget.h>
-#include <Widgets/OverviewDataStreamsWidget.h>
-#include <Widgets/OverviewErrorsWidget.h>
-#include <Widgets/OverviewFileTransfersWidget.h>
-#include <Widgets/OverviewNetworkSimulationWidget.h>
-#include <Widgets/OverviewNetworkStreamsWidget.h>
-#include <Widgets/OverviewThreadsWidget.h>
-#include <Widgets/ParticipantWidget.h>
-#include <Widgets/StreamingControlWidget.h>
-
 #include <string>
 
 #include <QSettings>
+
+#include <Widgets/OverviewNetworkSimulationWidget.h>
 
 namespace Homer { namespace Gui {
 
@@ -212,26 +197,8 @@ public:
     /* debugging state machine */
     bool DebuggingEnabled();
 
-private:
-    friend class MainWindow;
-    friend class ConfigurationDialog;
-    friend class ContactsPool;
-    friend class IdentityDialog;
-    friend class UpdateCheckDialog;
-    friend class AddNetworkSinkDialog;
-    friend class MessageWidget;
-    friend class OpenVideoAudioPreviewDialog;
-    friend class OverviewContactsWidget;
-    friend class OverviewErrorsWidget;
-    friend class OverviewFileTransfersWidget;
-    friend class OverviewNetworkSimulationWidget;
-    friend class OverviewNetworkStreamsWidget;
-    friend class OverviewPlaylistWidget;
-    friend class OverviewThreadsWidget;
-    friend class OverviewDataStreamsWidget;
-    friend class ParticipantWidget;
-    friend class StreamingControlWidget;
-    friend class VideoWidget;
+
+
 
     /* global settings */
     void SetConferenceAvailability(QString pState);

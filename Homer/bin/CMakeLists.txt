@@ -45,6 +45,7 @@ SET (INCLUDE_DIRS
 	${QT_INCLUDE_DIR}
 	${CMAKE_BINARY_DIR}/Homer/bin
 	${CMAKE_BINARY_DIR}/bin
+	${CMAKE_BINARY_DIR}/HomerNetworkSimulator/libHomerNetworkSimulator
 )
 
 ##############################################################
@@ -146,7 +147,6 @@ SET (SOURCES
 	../src/Widgets/OverviewDataStreamsWidget
 	../src/Widgets/OverviewErrorsWidget
 	../src/Widgets/OverviewFileTransfersWidget
-	../src/Widgets/OverviewNetworkSimulationWidget
 	../src/Widgets/OverviewNetworkStreamsWidget
 	../src/Widgets/OverviewPlaylistWidget
 	../src/Widgets/OverviewThreadsWidget
@@ -177,7 +177,6 @@ SET (QT_MOC_SOURCES
 	../include/Widgets/OverviewDataStreamsWidget.h
 	../include/Widgets/OverviewErrorsWidget.h
 	../include/Widgets/OverviewFileTransfersWidget.h
-	../include/Widgets/OverviewNetworkSimulationWidget.h
 	../include/Widgets/OverviewNetworkStreamsWidget.h
 	../include/Widgets/OverviewPlaylistWidget.h
 	../include/Widgets/OverviewThreadsWidget.h
@@ -205,7 +204,6 @@ SET (QT_UI_SOURCES
 	../forms/Widgets/OverviewDataStreamsWidget.ui
 	../forms/Widgets/OverviewErrorsWidget.ui
 	../forms/Widgets/OverviewFileTransfersWidget.ui
-	../forms/Widgets/OverviewNetworkSimulationWidget.ui
 	../forms/Widgets/OverviewNetworkStreamsWidget.ui
 	../forms/Widgets/OverviewPlaylistWidget.ui
 	../forms/Widgets/OverviewThreadsWidget.ui
@@ -228,7 +226,6 @@ IF (NOT (${BUILD} MATCHES "Default"))
 		mingwm10
 		QtCore4
 		QtGui4
-		#QtMultimedia4
 		QtNetwork4
 		QtWebKit4
 		QtXml4
@@ -248,7 +245,6 @@ SET (LIBS_WINDOWS
 	${QT_LIBRARIES}
 	${QT_QTCORE_LIBRARIES}
 	${QT_QTGUI_LIBRARIES}
-	#${QT_QTMULTIMEDIA_LIBRARIES}
 	${QT_QTNETWORK_LIBRARIES}
 	${QT_QTXML_LIBRARIES}
 	${QT_QTWEBKIT_LIBRARIES}
@@ -256,35 +252,33 @@ SET (LIBS_WINDOWS
 
 # USED LIBRARIES for BSD environment
 SET (LIBS_BSD
-                HomerBase
-                HomerGAPI
-                HomerMonitor
-                HomerMultimedia
-                HomerNetworkSimulator
-                HomerConference
-                ${QT_LIBRARIES}
+        HomerBase
+        HomerGAPI
+        HomerMonitor
+        HomerMultimedia
+        HomerNetworkSimulator
+        HomerConference
+        ${QT_LIBRARIES}
 )
 
 # USED LIBRARIES for linux environment
+SET (LIBS_LINUX
+	HomerBase
+	HomerGAPI
+	HomerMonitor
+	HomerMultimedia
+	HomerNetworkSimulator
+	HomerConference
+)
 IF (${BUILD} MATCHES "Default")
 	SET (LIBS_LINUX
-		HomerBase
-		HomerGAPI
-		HomerMonitor
-		HomerMultimedia
-		HomerNetworkSimulator
-		HomerConference
+		${LIBS_LINUX}
 		${QT_LIBRARIES}
 	)
 ELSE ()
 	SET (LIBS_LINUX
 		stdc++
-		HomerBase
-		HomerGAPI
-		HomerMonitor
-		HomerMultimedia
-		HomerNetworkSimulator
-		HomerConference
+		${LIBS_LINUX}
 		QtCore
 		QtGui
 		QtNetwork
@@ -304,8 +298,8 @@ IF (NOT (${BUILD} MATCHES "Default"))
 		libgstreamer-0.10.so         
 		libgstvideo-0.10.so.0
 		libstdc++.so.6.0.14
-		libQtCore.so.4.8.0
-		libQtGui.so.4.8.0
+		libQtCore.so.4.8.1
+		libQtGui.so.4.8.1
 		libQtWebKit.so.4.9.0
 		libgstapp-0.10.so.0
 		libgstbase-0.10.so.0.29.0
@@ -320,9 +314,9 @@ IF (NOT (${BUILD} MATCHES "Default"))
 		libgstpbutils-0.10.so.0          
 		libgstreamer-0.10.so.0.29.0  
 		libstdc++.so
-		libQtDBus.so.4.8.0
-		libQtNetwork.so.4.8.0
-		libQtXml.so.4.8.0     
+		libQtDBus.so.4.8.1
+		libQtNetwork.so.4.8.1
+		libQtXml.so.4.8.1     
 		libgstbase-0.10.so
 		libgstinterfaces-0.10.so.0  
 		libgstpbutils-0.10.so.0.24.0     

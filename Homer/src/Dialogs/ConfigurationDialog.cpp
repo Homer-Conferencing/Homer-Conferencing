@@ -28,6 +28,7 @@
 #include <Dialogs/ConfigurationDialog.h>
 
 #include <Configuration.h>
+#include <Meeting.h>
 #include <MediaSourceMuxer.h>
 #include <MediaSourceFile.h>
 #include <HBSocket.h>
@@ -39,6 +40,7 @@
 #include <list>
 #include <string>
 
+#include <QUrl>
 #include <QToolTip>
 #include <QCursor>
 #include <QString>
@@ -52,6 +54,7 @@ namespace Homer { namespace Gui {
 using namespace std;
 using namespace Homer::Base;
 using namespace Homer::Multimedia;
+using namespace Homer::Conference;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -718,7 +721,7 @@ void ConfigurationDialog::CreateAccountAtSipServer()
         return;
     }
 
-    QDesktopServices::openUrl("http://" + mLeSipServer->text());
+    QDesktopServices::openUrl(QUrl("http://" + mLeSipServer->text()));
     ShowInfo("Web browser opened", "Your web browser was opened with the url <font color='blue'><b>http://" + mLeSipServer->text() + "</b></font> for your account creation!");
 }
 

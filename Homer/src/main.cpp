@@ -234,6 +234,7 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
         printf("Options for features:\n");
         printf("   -Disable=IPv6                       disable IPv6 support\n");
         printf("   -Disable=QoS                        disable QoS support\n");
+        printf("   -Enable=NetSim                      enables network simulator\n");
         printf("\n");
 	    exit(0);
 	}
