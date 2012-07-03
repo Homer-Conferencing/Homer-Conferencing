@@ -20,7 +20,7 @@
  *****************************************************************************/
 
 /*
- * Purpose: Implementation of NetworkSimulator
+ * Purpose: Implementation of network simulator
  * Author:  Thomas Volkert
  * Since:   2012-05-31
  */
@@ -36,22 +36,24 @@
 namespace Homer { namespace Base {
 
 using namespace std;
+using namespace Homer::Gui;
 
 ///////////////////////////////////////////////////////////////////////////////
 
 NetworkSimulator::NetworkSimulator()
 {
-
+    mOverviewNetworkSimulationWidget = NULL;
 }
 
 NetworkSimulator::~NetworkSimulator()
 {
-
+    if (mOverviewNetworkSimulationWidget != NULL)
+        delete mOverviewNetworkSimulationWidget;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool NetworkSimulator::Init()
+bool NetworkSimulator::Init(QAction *pAssignedAction, QMainWindow *pMainWindow)
 {
     LOG(LOG_VERBOSE, "Creating network simulator scenario..");
     mScenario = Scenario::CreateScenario();
@@ -64,6 +66,8 @@ bool NetworkSimulator::Init()
 
     LOG(LOG_VERBOSE, "Registering GAPI setup at GAPI service..");
     GAPI.registerImpl(mGAPISetup, NETWORK_SIMULATION);
+
+    mOverviewNetworkSimulationWidget = new OverviewNetworkSimulationWidget(pAssignedAction, pMainWindow, mScenario);
 
     return true;
 }

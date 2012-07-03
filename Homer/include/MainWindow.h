@@ -38,7 +38,6 @@
 #include <Widgets/OverviewContactsWidget.h>
 #include <Widgets/OverviewDataStreamsWidget.h>
 #include <Widgets/OverviewErrorsWidget.h>
-#include <Widgets/OverviewNetworkSimulationWidget.h>
 #include <Widgets/OverviewNetworkStreamsWidget.h>
 #include <Widgets/OverviewThreadsWidget.h>
 #include <Widgets/OverviewFileTransfersWidget.h>
@@ -159,7 +158,6 @@ private:
     OverviewDataStreamsWidget   *mOverviewDataStreamsWidget;
     OverviewErrorsWidget        *mOverviewErrorsWidget;
     OverviewFileTransfersWidget *mOverviewFileTransfersWidget;
-    OverviewNetworkSimulationWidget *mOverviewNetworkSimulationWidget;
     OverviewNetworkStreamsWidget *mOverviewNetworkStreamsWidget;
     OverviewPlaylistWidget	    *mOverviewPlaylistWidgetVideo, *mOverviewPlaylistWidgetAudio, *mOverviewPlaylistWidgetMovie;
     OverviewThreadsWidget 	    *mOverviewThreadsWidget;

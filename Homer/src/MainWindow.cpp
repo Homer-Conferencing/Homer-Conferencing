@@ -94,7 +94,6 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     mAbsBinPath = pAbsBinPath;
     mSourceDesktop = NULL;
     mNetworkSimulator = NULL;
-    mOverviewNetworkSimulationWidget = NULL;
 
     QCoreApplication::setApplicationName("Homer");
     QCoreApplication::setApplicationVersion("1.0");
@@ -224,10 +223,8 @@ void MainWindow::initializeNetworkSimulator(QStringList pArguments, bool pForce)
     LOG(LOG_VERBOSE, "Initialization network simulator..");
 
     mNetworkSimulator = new NetworkSimulator();
-    if (!mNetworkSimulator->Init())
+    if (!mNetworkSimulator->Init(mActionOverviewNetworkSimulatorWidget, this))
         LOG(LOG_ERROR, "Failed to initialize network simulator");
-    else
-        mOverviewNetworkSimulationWidget = new OverviewNetworkSimulationWidget(mActionOverviewNetworkSimulatorWidget, this, mNetworkSimulator->GetScenario());
 }
 
 void MainWindow::initializeFeatureDisablers(QStringList pArguments)
@@ -740,8 +737,6 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
     delete mShortcutActivateNetworkSimulationWidgets;
 
     delete mOverviewDataStreamsWidget;
-    if (mOverviewNetworkSimulationWidget != NULL)
-        delete mOverviewNetworkSimulationWidget;
     delete mOverviewNetworkStreamsWidget;
     delete mOverviewThreadsWidget;
 
