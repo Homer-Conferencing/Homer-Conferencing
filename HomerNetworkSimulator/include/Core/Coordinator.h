@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 2011 Thomas Volkert <thomas@homer-conferencing.com>
+ * Copyright (C) 2012 Thomas Volkert <thomas@homer-conferencing.com>
  *
  * This software is free software.
  * Your are allowed to redistribute it and/or modify it under the terms of
@@ -71,7 +71,9 @@ public:
     RibTable GetRib();
 
 private:
-    void MergeIntraClusterCosts(std::string pFromAddress, std::string pToAddress, QoSSettings *pQoSSet, int *pHopCots);
+    Coordinator* GetSibling(std::string pClusterAddress);
+//    void MergeIntraClusterCosts(std::string pFromAddress, std::string pToAddress, QoSSettings *pQoSSet, int *pHopCosts);
+    void AddClusterTraversalCosts(std::string pFromAddress, std::string pToAddress, QoSSettings *pQoSSet, int *pHopCosts);
     bool IsForeignAddress(std::string pAddress);
 
     void            SetSuperior(Coordinator *pSuperior);

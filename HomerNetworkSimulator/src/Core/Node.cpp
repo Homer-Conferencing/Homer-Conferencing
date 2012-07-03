@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 2011 Thomas Volkert <thomas@homer-conferencing.com>
+ * Copyright (C) 2012 Thomas Volkert <thomas@homer-conferencing.com>
  *
  * This software is free software.
  * Your are allowed to redistribute it and/or modify it under the terms of
@@ -94,7 +94,7 @@ bool Node::AddRibEntry(string pNodeAddress, RibTable *pTable, std::string pDesti
 
     if (pNextNode == pNodeAddress)
     {
-        LOGEX(Node, LOG_ERROR, "Routing loop detected, will drop this RIB entry");
+        LOGEX(Node, LOG_ERROR, "Routing loop detected (%s = %s), will drop this RIB entry", pNextNode.c_str(), pNodeAddress.c_str());
         return false;
     }
 
@@ -123,10 +123,12 @@ bool Node::AddRibEntry(string pNodeAddress, RibTable *pTable, std::string pDesti
         tQoSRequs.DataRate = 0;
         tQoSRequs.Delay = 0;
         tQoSRequs.Features = 0;
-        string tNextNode = GetNextHop(pTable, pNextNode, tQoSRequs);
+        string tNextNode = GetShortestPathToDomain(pTable, pNextNode);
         if (tNextNode != "")
         {
-            //LOGEX(Node, LOG_ERROR, "Set next hop to %s", tNextNode.c_str());
+            #ifdef DEBUG_ROUTING
+                LOGEX(Node, LOG_VERBOSE, "Set next hop to %s for a route towards next domain %s from node %s", tNextNode.c_str(), pNextNode.c_str(), pNodeAddress.c_str());
+            #endif
             tRibEntry->NextNode = tNextNode;
         }
     }
@@ -155,6 +157,7 @@ bool Node::AddRibEntry(string pNodeAddress, RibTable *pTable, std::string pDesti
                     tIt = pTable->begin();
                     if (tIt == pTable->end())
                         break;
+                    continue;
                 }
             }else
             //LOG(LOG_ERROR, "Comparing %s and %s", GetForeignDomain((*tIt)->Destination).c_str(), GetForeignDomain(tRibEntry->Destination).c_str());
@@ -230,9 +233,7 @@ bool Node::DistributeAggregatedRibEntry(string pDestination, string pNextNode, i
             tIntermediateRouteDestination = (*tRibIt)->NextNode;
             tEntryIsUsable = true;
             // AGGREGATE QOS: derive the new QoS settings from the known RIB entry and the new settings for the extended route
-            tQoSSet->DataRate = MIN((*tRibIt)->QoSCapabilities.DataRate, pQoSSettings->DataRate);
-            tQoSSet->Delay = (*tRibIt)->QoSCapabilities.Delay + pQoSSettings->Delay;
-            tQoSSet->Features = 0; // TODO: use this for lossless transmission
+            *tQoSSet = MergeQoSSettings((*tRibIt)->QoSCapabilities, *pQoSSettings);
             tHopCosts = (*tRibIt)->HopCount + pHopCosts;
             break;
         }else
@@ -245,7 +246,6 @@ bool Node::DistributeAggregatedRibEntry(string pDestination, string pNextNode, i
 
     if (tEntryIsUsable)
     {
-
         tResult = AddRibEntry(mAddress, &mRibTable, pDestination, pNextNode, tHopCosts, tQoSSet);
     }
 
@@ -695,40 +695,43 @@ bool Node::HandlePacket(Packet *pPacket)
     return tNextLink->HandlePacket(pPacket, this);
 }
 
-string Node::GetNextHop(RibTable *pTable, string pDestination, const QoSSettings pQoSRequirements)
+string Node::GetShortestPathToDomain(RibTable *pTable, string pDestination)
 {
     string tResult = "";
-    int tBestHopCosts = INT_MAX;
+    long long tBestRouteCosts = LONG_LONG_MAX;
 
     if (pTable->size() > 0)
     {
         RibTable::iterator tIt;
         for (tIt = pTable->begin(); tIt != pTable->end(); tIt++)
         {
-            if (tBestHopCosts > (*tIt)->HopCount)
+            //HINT: if we take all QoS cap. into account it might happen that we neglect alternative links because we would use only the link with the best QoS caps.
+            long long tRouteCosts = (*tIt)->HopCount;
+            if (tBestRouteCosts > tRouteCosts)
             {
-                //TODO: QoS
                 if (!IsDomain((*tIt)->NextNode))
                 {
-                    //LOGEX(Node, LOG_ERROR, "Comparing %s and %s", pDestination.c_str(), (*tIt)->Destination.c_str());
+//                    #ifdef DEBUG_ROUTING
+//                        if (tBestRouteCosts == INT_MAX)
+//                            LOGEX(Node, LOG_ERROR, "Found route (%s via %s, hc: %d, dr: %d, delay: %d)", (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str(), (*tIt)->HopCount, (*tIt)->QoSCapabilities.DataRate, (*tIt)->QoSCapabilities.Delay);
+//                        else
+//                            LOGEX(Node, LOG_ERROR, "Found better (%s via %s, hc: %d, dr: %d, delay: %d)", (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str(), (*tIt)->HopCount, (*tIt)->QoSCapabilities.DataRate, (*tIt)->QoSCapabilities.Delay);
+//                    #endif
                     if ((*tIt)->Destination == pDestination)
                     {// MATCH: entry is an explicit destination
 
+                        tBestRouteCosts = tRouteCosts;
                         tResult = (*tIt)->NextNode;
-                        tBestHopCosts = (*tIt)->HopCount;
-                        break;
                     }
-                    //LOGEX(Node, LOG_ERROR, "Comparing %s and (%s via %s)", pDestination.c_str(), (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str());
                     if ((IsDomain((*tIt)->Destination)) && ((IsAddressOfDomain((*tIt)->Destination, pDestination)) || (IsAddressOfDomain(pDestination, (*tIt)->Destination))))
                     {// MATCH: entry is a cluster domain
+                        tBestRouteCosts = tRouteCosts;
                         tResult = (*tIt)->NextNode;
-                        tBestHopCosts = (*tIt)->HopCount;
-                        break;
                     }
                 }else
                 {
                     #ifdef DEBUG_ROUTING
-                        //LOGEX(Node, LOG_ERROR, "RIB entry has domain as next node: %s via %s", (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str());
+//                        LOGEX(Node, LOG_VERBOSE, "RIB entry has domain as next node: %s via %s", (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str());
                     #endif
                 }
             }
@@ -738,9 +741,58 @@ string Node::GetNextHop(RibTable *pTable, string pDestination, const QoSSettings
     return tResult;
 }
 
-long long Node::GetRouteCosts(std::string pDestination)
+QoSSettings Node::MergeQoSSettings(const QoSSettings& pFirst, const QoSSettings& pSecond)
 {
-    int tBestRouteCosts = INT_MAX;
+    QoSSettings tResult;
+
+    tResult.DataRate = MIN(pFirst.DataRate, pSecond.DataRate);
+    tResult.Delay = pFirst.Delay + pSecond.Delay;
+    tResult.Features = 0; // TODO: use this for lossless transmission
+
+    return tResult;
+}
+
+long long Node::CalcRouteCosts(RibEntry *pRibEntry)
+{
+    long long tRouteCosts = 0;
+
+    /***************
+     * ROUTE COSTS
+     ***************
+     *
+     *   The route costs are calculated by the formula:
+     *      costs = (hop count) + (delay diff.) * (MAX_HOP_COUNT) + (data rate diff.) * (MAX_HOP_COUNT * MAX_DELAY)
+     *      delay diff.     = (allowed E2E delay - delay since packet was sent) - delay of the route
+     *      data rate diff. = required data rate - data rate of the route
+     *
+     *   This defines the following cost priorities:
+     *      2  ==>  data rate costs
+     *      1  ==>  delay costs
+     *      0  ==>  hop count
+     *
+     */
+
+    // ROUTE COSTS: hop count
+    tRouteCosts = pRibEntry->HopCount;
+
+    // ROUTE COSTS: QoS delay
+    tRouteCosts += pRibEntry->QoSCapabilities.Delay * MAX_HOP_COUNT;
+
+    // ROUTE COSTS: QoS data rate
+    tRouteCosts += (MAX_DATARATE - pRibEntry->QoSCapabilities.DataRate) * MAX_HOP_COUNT * MAX_DELAY;
+
+    return tRouteCosts;
+}
+
+void Node::AddRouteCosts(string pDestination, QoSSettings *pQoSSet, int *pHopCosts)
+{
+    QoSSettings tQoSSet;
+    tQoSSet.DataRate = 0;
+    tQoSSet.Delay = 0;
+    tQoSSet.Features = 0;
+    int tHopCosts = 0;
+
+    long long tBestRouteCosts = LONG_LONG_MAX;
 
     mRibTableMutex.lock();
 
@@ -749,41 +801,73 @@ long long Node::GetRouteCosts(std::string pDestination)
         RibTable::iterator tIt;
         for (tIt = mRibTable.begin(); tIt != mRibTable.end(); tIt++)
         {
-            /***************
-             * ROUTE COSTS
-             ***************
-             *
-             *   The route costs are calculated by the formula:
-             *      costs = (hop count) + (delay diff.) * (MAX_HOP_COUNT) + (data rate diff.) * (MAX_HOP_COUNT * MAX_DELAY)
-             *      delay diff.     = (allowed E2E delay - delay since packet was sent) - delay of the route
-             *      data rate diff. = required data rate - data rate of the route
-             *
-             *   This defines the following cost priorities:
-             *      2  ==>  data rate costs
-             *      1  ==>  delay costs
-             *      0  ==>  hop count
-             *
-             */
-
-            // ROUTE COSTS: hop count
-            long long tRouteCosts = (*tIt)->HopCount;
-
-            // ROUTE COSTS: QoS delay
-            tRouteCosts += (*tIt)->QoSCapabilities.Delay * MAX_HOP_COUNT;
-
-            // ROUTE COSTS: QoS data rate
-            tRouteCosts += (MAX_DATARATE - (*tIt)->QoSCapabilities.DataRate) * MAX_HOP_COUNT * MAX_DELAY;
-
+            long long tRouteCosts = CalcRouteCosts(*tIt);
+            #ifdef DEBUG_ROUTING_TRAVERSAL_COSTS
+                LOG(LOG_VERBOSE, "Check route costs on %s (%s via %s, hc: %d, dr: %d, delay: %d) => %lld", mAddress.c_str(), (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str(), (*tIt)->HopCount, (*tIt)->QoSCapabilities.DataRate, (*tIt)->QoSCapabilities.Delay, tRouteCosts);
+            #endif
             if (tBestRouteCosts > tRouteCosts)
             {
                 if (!IsDomain((*tIt)->NextNode))
                 {
-                    #ifdef DEBUG_ROUTING
-//                        if (tBestRouteCosts == INT_MAX)
-//                            LOG(LOG_ERROR, "Found route on %s (%s via %s, hc: %d, dr: %d, delay: %d)", mAddress.c_str(), (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str(), (*tIt)->HopCount, (*tIt)->QoSCapabilities.DataRate, (*tIt)->QoSCapabilities.Delay);
-//                        else
-//                            LOG(LOG_ERROR, "Found better route on %s (%s via %s, hc: %d, dr: %d, delay: %d)", mAddress.c_str(), (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str(), (*tIt)->HopCount, (*tIt)->QoSCapabilities.DataRate, (*tIt)->QoSCapabilities.Delay);
+                    #ifdef DEBUG_ROUTING_TRAVERSAL_COSTS
+                        if (tBestRouteCosts == INT_MAX)
+                            LOG(LOG_VERBOSE, "Found route on %s (%s via %s, hc: %d, dr: %d, delay: %d)", mAddress.c_str(), (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str(), (*tIt)->HopCount, (*tIt)->QoSCapabilities.DataRate, (*tIt)->QoSCapabilities.Delay);
+                        else
+                            LOG(LOG_VERBOSE, "Found better route on %s (%s via %s, hc: %d, dr: %d, delay: %d)", mAddress.c_str(), (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str(), (*tIt)->HopCount, (*tIt)->QoSCapabilities.DataRate, (*tIt)->QoSCapabilities.Delay);
                     #endif
+                    if ((*tIt)->Destination == pDestination)
+                    {// MATCH: entry is an explicit destination
+
+                        tBestRouteCosts = tRouteCosts;
+                        tQoSSet = (*tIt)->QoSCapabilities;
+                        tHopCosts = (*tIt)->HopCount;
+                    }
+                    if ((IsDomain((*tIt)->Destination)) && ((IsAddressOfDomain((*tIt)->Destination, pDestination)) || (IsAddressOfDomain(pDestination, (*tIt)->Destination))))
+                    {// MATCH: entry is a cluster domain
+                        tBestRouteCosts = tRouteCosts;
+                    }
+                }else
+                {
+                    #ifdef DEBUG_ROUTING_TRAVERSAL_COSTS
+                        LOG(LOG_VERBOSE, "RIB entry has domain as next node: %s via %s", (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str());
+                    #endif
+                }
+            }
+        }
+    }else
+        LOG(LOG_WARN, "RIB empty");
+
+    mRibTableMutex.unlock();
+
+    *pQoSSet = MergeQoSSettings(*pQoSSet, tQoSSet);
+    *pHopCosts += tHopCosts;
+}
+
+long long Node::GetRouteCosts(std::string pDestination)
+{
+    long long tBestRouteCosts = LONG_LONG_MAX;
+
+    mRibTableMutex.lock();
+
+    if (mRibTable.size() > 0)
+    {
+        RibTable::iterator tIt;
+        for (tIt = mRibTable.begin(); tIt != mRibTable.end(); tIt++)
+        {
+            long long tRouteCosts = CalcRouteCosts(*tIt);
+            #ifdef DEBUG_ROUTING
+                //LOG(LOG_VERBOSE, "Check route costs on %s (%s via %s, hc: %d, dr: %d, delay: %d) => %lld", mAddress.c_str(), (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str(), (*tIt)->HopCount, (*tIt)->QoSCapabilities.DataRate, (*tIt)->QoSCapabilities.Delay, tRouteCosts);
+            #endif
+            if (tBestRouteCosts > tRouteCosts)
+            {
+                if (!IsDomain((*tIt)->NextNode))
+                {
+//                    #ifdef DEBUG_ROUTING
+//                        if (tBestRouteCosts == INT_MAX)
+//                            LOG(LOG_VERBOSE, "Found route on %s (%s via %s, hc: %d, dr: %d, delay: %d)", mAddress.c_str(), (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str(), (*tIt)->HopCount, (*tIt)->QoSCapabilities.DataRate, (*tIt)->QoSCapabilities.Delay);
+//                        else
+//                            LOG(LOG_VERBOSE, "Found better route on %s (%s via %s, hc: %d, dr: %d, delay: %d)", mAddress.c_str(), (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str(), (*tIt)->HopCount, (*tIt)->QoSCapabilities.DataRate, (*tIt)->QoSCapabilities.Delay);
+//                    #endif
                     if ((*tIt)->Destination == pDestination)
                     {// MATCH: entry is an explicit destination
 
@@ -794,10 +878,15 @@ long long Node::GetRouteCosts(std::string pDestination)
                         tBestRouteCosts = tRouteCosts;
                     }
                 }else
-                    LOG(LOG_ERROR, "RIB entry has domain as next node: %s via %s", (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str());
+                {
+                    #ifdef DEBUG_ROUTING
+                        LOG(LOG_VERBOSE, "RIB entry has domain as next node: %s via %s", (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str());
+                    #endif
+                }
             }
         }
-    }
+    }else
+        LOG(LOG_WARN, "RIB empty");
 
     mRibTableMutex.unlock();
 
@@ -807,7 +896,7 @@ long long Node::GetRouteCosts(std::string pDestination)
 string Node::GetNextHop(Packet *pPacket)
 {
     string tResult = "";
-    int tBestRouteCosts = INT_MAX;
+    long long tBestRouteCosts = LONG_LONG_MAX;
 
     mRibTableMutex.lock();
 
@@ -858,7 +947,7 @@ string Node::GetNextHop(Packet *pPacket)
                 if (!IsDomain((*tIt)->NextNode))
                 {
                     #ifdef DEBUG_ROUTING
-                        if (tBestRouteCosts == INT_MAX)
+                        if (tBestRouteCosts == LONG_LONG_MAX)
                             LOG(LOG_ERROR, "Found route on %s (%s via %s, hc: %d, dr: %d, delay: %d)", mAddress.c_str(), (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str(), (*tIt)->HopCount, (*tIt)->QoSCapabilities.DataRate, (*tIt)->QoSCapabilities.Delay);
                         else
                             LOG(LOG_ERROR, "Found better route on %s (%s via %s, hc: %d, dr: %d, delay: %d)", mAddress.c_str(), (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str(), (*tIt)->HopCount, (*tIt)->QoSCapabilities.DataRate, (*tIt)->QoSCapabilities.Delay);
