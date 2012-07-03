@@ -213,18 +213,12 @@ void MainWindow::initializeNetworkSimulator(QStringList pArguments, bool pForce)
     if (pArguments.contains("-Enable=NetSim"))
         pForce = true;
 
-    if (!pForce)
+    if (pForce)
     {
-        mActionOverviewNetworkSimulatorWidget->setVisible(false);
-        return;
-    }else
-        mActionOverviewNetworkSimulatorWidget->setVisible(true);
-
-    LOG(LOG_VERBOSE, "Initialization network simulator..");
-
-    mNetworkSimulator = new NetworkSimulator();
-    if (!mNetworkSimulator->Init(mActionOverviewNetworkSimulatorWidget, this))
-        LOG(LOG_ERROR, "Failed to initialize network simulator");
+        mNetworkSimulator = new NetworkSimulator();
+        if (!mNetworkSimulator->Init(mMenuWindows, this))
+            LOG(LOG_ERROR, "Failed to initialize network simulator");
+    }
 }
 
 void MainWindow::initializeFeatureDisablers(QStringList pArguments)
@@ -731,6 +725,9 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
 
     // deinit
     MEETING.Deinit();
+
+    if (mNetworkSimulator != NULL)
+        delete mNetworkSimulator;
 
     delete mShortcutActivateDebugWidgets;
     delete mShortcutActivateDebuggingGlobally;

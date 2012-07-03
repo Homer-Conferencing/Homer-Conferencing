@@ -31,6 +31,7 @@
 									<listOptionValue builtIn="false" value=".././include"/>
 									<listOptionValue builtIn="false" value="../../Homer/include"/>
 									<listOptionValue builtIn="false" value="../../Homer/include/Widgets"/>
+									<listOptionValue builtIn="false" value="/usr/include/qt4/QtGui"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1972935720" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>

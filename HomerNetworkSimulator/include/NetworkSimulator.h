@@ -32,7 +32,7 @@
 #include <Core/ChannelSetup.h>
 #include <Widgets/OverviewNetworkSimulationWidget.h>
 
-#include <QAction>
+#include <QMenu>
 #include <QMainWindow>
 
 namespace Homer { namespace Base {
@@ -45,7 +45,7 @@ public:
     NetworkSimulator();
     virtual ~NetworkSimulator();
 
-    bool Init(QAction *pAssignedAction, QMainWindow *pMainWindow);
+    bool Init(QMenu *pAssignedMenu, QMainWindow *pMainWindow);
 
     Scenario *GetScenario();
 

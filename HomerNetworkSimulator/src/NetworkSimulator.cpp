@@ -32,6 +32,10 @@
 #include <GAPI.h>
 
 #include <Logger.h>
+#include <Configuration.h>
+
+#include <QAction>
+#include <QMenu>
 
 namespace Homer { namespace Base {
 
@@ -53,21 +57,32 @@ NetworkSimulator::~NetworkSimulator()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool NetworkSimulator::Init(QAction *pAssignedAction, QMainWindow *pMainWindow)
+bool NetworkSimulator::Init(QMenu *pAssignedMenu, QMainWindow *pMainWindow)
 {
-    LOG(LOG_VERBOSE, "Creating network simulator scenario..");
+    LOG(LOG_VERBOSE, "Initialization of network simulator..");
+
+    LOG(LOG_VERBOSE, "..creating network simulator scenario..");
     mScenario = Scenario::CreateScenario();
 
-    LOG(LOG_VERBOSE, "Creating GAPI setup..");
+    LOG(LOG_VERBOSE, "..creating GAPI setup..");
     mGAPISetup = new ChannelSetup();
 
-    LOG(LOG_VERBOSE, "Registering network simulator scenario at GAPI setup..");
+    LOG(LOG_VERBOSE, "..registering network simulator scenario at GAPI setup..");
     mGAPISetup->registerScenario(mScenario);
 
-    LOG(LOG_VERBOSE, "Registering GAPI setup at GAPI service..");
+    LOG(LOG_VERBOSE, "..registering GAPI setup at GAPI service..");
     GAPI.registerImpl(mGAPISetup, NETWORK_SIMULATION);
 
-    mOverviewNetworkSimulationWidget = new OverviewNetworkSimulationWidget(pAssignedAction, pMainWindow, mScenario);
+    QAction *tAction = new QAction("Network simulator", pMainWindow);
+    tAction->setCheckable(true);
+    tAction->setChecked(CONF.GetVisibilityNetworkSimulationWidget());
+    QIcon icon29;
+    icon29.addFile(QString::fromUtf8(":/images/46_46/Network.png"), QSize(), QIcon::Normal, QIcon::Off);
+    icon29.addFile(QString::fromUtf8(":/images/22_22/Checked.png"), QSize(), QIcon::Normal, QIcon::On);
+    tAction->setIcon(icon29);
+    pAssignedMenu->addAction(tAction);
+
+    mOverviewNetworkSimulationWidget = new OverviewNetworkSimulationWidget(tAction, pMainWindow, mScenario);
 
     return true;
 }
