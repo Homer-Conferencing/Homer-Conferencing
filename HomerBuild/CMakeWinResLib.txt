@@ -3,7 +3,7 @@
 # Since:   2012-07-04
 ###############################################################################
 
-MESSAGE("##### Homer library versioning for Windows environments")
+MESSAGE("##### Homer library RC file generation for Windows environments")
 
 ##############################################################
 # WINDOWS: create Homer.rc automatically as additional object for linking process
@@ -21,16 +21,4 @@ IF (WIN32)
 		${SOURCES}
 		${CMAKE_CURRENT_BINARY_DIR}/HomerLib.rc	
 	)
-ENDIF()
-
-##############################################################
-# LINUX/BSD/APPLE: add library versioning
-IF (NOT WIN32)
-	# library versioning
-	SET_TARGET_PROPERTIES(
-     	${TARGET_LIB_NAME}
-   		PROPERTIES
-     		SOVERSION ${HOMER_VERSION_MAJOR}
-     		VERSION ${HOMER_VERSION}
-   	)
 ENDIF()

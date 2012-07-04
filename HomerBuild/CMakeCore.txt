@@ -31,10 +31,12 @@ ENDIF()
 
 ##############################################################
 # Homer versioning
-IF (DEFINED TARGET_LIB_NAME) 
-	INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakeVersioningLib.txt)
-ELSE()
-	INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakeVersioningApp.txt)
+IF(WIN32)
+	IF (DEFINED TARGET_LIB_NAME) 
+		INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakeWinResLib.txt)
+	ELSE()
+		INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakeWinResApp.txt)
+	ENDIF()
 ENDIF()
 
 ##############################################################
@@ -300,7 +302,13 @@ IF (DEFINED TARGET_LIB_NAME)
 	SET(TARGET_NAME
 		${TARGET_LIB_NAME}
 	)
-
+	# library versioning
+	SET_TARGET_PROPERTIES(
+     	${TARGET_LIB_NAME}
+   		PROPERTIES
+     		SOVERSION ${HOMER_VERSION_MAJOR}
+     		VERSION ${HOMER_VERSION}
+   	)
 ENDIF ()
 # generate program from given source files
 IF (DEFINED TARGET_PROGRAM_NAME) 
@@ -324,6 +332,12 @@ IF (DEFINED TARGET_PROGRAM_NAME)
 	SET(TARGET_NAME
 		${TARGET_PROGRAM_NAME}
 	)
+	# application versioning
+	SET_TARGET_PROPERTIES(
+     	${TARGET_PROGRAM_NAME}
+   		PROPERTIES
+     		VERSION ${HOMER_VERSION}
+   	)
 ENDIF ()
 
 ##############################################################
