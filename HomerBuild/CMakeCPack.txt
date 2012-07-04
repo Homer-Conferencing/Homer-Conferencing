@@ -6,6 +6,19 @@
 MESSAGE("### Supporting installer creation")
 
 ###############################################################################
+# generate Welcome.txt
+IF (WIN32)
+	configure_file(
+		${CMAKE_CURRENT_SOURCE_DIR}/../HomerBuild/resources/texts/Homer-Welcome.txt.in
+	  	${CMAKE_CURRENT_BINARY_DIR}\\\\Homer-Welcome.txt
+	@ONLY)
+ELSE()
+	configure_file(
+		${CMAKE_CURRENT_SOURCE_DIR}/../HomerBuild/resources/texts/Homer-Welcome.txt.in
+	  	${CMAKE_CURRENT_BINARY_DIR}/Homer-Welcome.txt
+	@ONLY)
+ENDIF()
+###############################################################################
 #
 set(PACKAGE_TOP_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
@@ -37,10 +50,10 @@ set(CPACK_RESOURCE_FILE_README ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/texts
 set(CPACK_PACKAGE_EXECUTABLES "Homer;Homer-Conferencing")
 IF (WIN32)
     set(CPACK_PACKAGE_ICON ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/images\\\\Homer-Banner.bmp)
-    set(CPACK_RESOURCE_FILE_WELCOME ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/texts\\\\Homer-Welcome.txt)
+    set(CPACK_RESOURCE_FILE_WELCOME ${CMAKE_CURRENT_BINARY_DIR}\\\\Homer-Welcome.txt)
 ELSE()
     set(CPACK_PACKAGE_ICON ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/images/Homer-Banner.bmp)
-    set(CPACK_RESOURCE_FILE_WELCOME ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/texts/Homer-Welcome.txt)
+    set(CPACK_RESOURCE_FILE_WELCOME ${CMAKE_CURRENT_BINARY_DIR}/Homer-Welcome.txt)
 ENDIF()
 
 ###############################################################################
