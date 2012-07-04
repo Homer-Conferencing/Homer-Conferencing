@@ -29,6 +29,7 @@
 #define _CONFIGURATION_
 
 #include <string>
+#include "config.h"
 
 #include <QSettings>
 
@@ -45,7 +46,8 @@ namespace Homer { namespace Gui {
 //#define DEBUG_TIMING
 
 // version string which is checked/used in the whole application
-#define RELEASE_VERSION_STRING          "Beta 0.23.1"
+//#define RELEASE_VERSION -> is now defined automatically via build system
+#define RELEASE_VERSION_STRING          "Beta "RELEASE_VERSION
 
 // for home calls
 #define RELEASE_SERVER                  "www.homer-conferencing.com"
