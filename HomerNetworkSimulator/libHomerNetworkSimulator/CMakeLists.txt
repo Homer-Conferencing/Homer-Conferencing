@@ -2,7 +2,7 @@
 # Author:  Thomas Volkert
 # Since:   2012-05-31
 ###############################################################################
-INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakePreDefs.txt)
+INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakeConfig.txt)
 
 ##############################################################
 # Configuration
@@ -191,7 +191,7 @@ SET (LIBS_APPLE
 	HomerGAPI
 	HomerMultimedia
 )
-IF (${BUILD} MATCHES "Release")
+IF (NOT(${BUILD} MATCHES "Default"))
 	SET (LIBS_APPLE_INSTALL
 		QtCore
 		QtGui

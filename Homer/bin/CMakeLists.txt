@@ -2,7 +2,7 @@
 # Author:  Thomas Volkert
 # Since:   2012-02-12
 ###############################################################################
-INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakePreDefs.txt)
+INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakeConfig.txt)
 
 ##############################################################
 # Configuration
@@ -108,10 +108,6 @@ IF (NOT (${BUILD} MATCHES "Default"))
 ENDIF()
 
 IF (WIN32)
-	SET (LFLAGS
-		${LFLAGS}
-		${CMAKE_CURRENT_SOURCE_DIR}/../winres/Homer-WinRes.o	
-	)
 	IF (${BUILD} MATCHES "Debug")
 		SET (LFLAGS	"${LFLAGS} -Wl,--subsystem,console")
 	ELSE()
@@ -334,7 +330,7 @@ SET (LIBS_APPLE
 	HomerNetworkSimulator
 	HomerConference
 )
-IF (${BUILD} MATCHES "Release")
+IF (NOT(${BUILD} MATCHES "Default"))
 	SET (LIBS_APPLE_INSTALL
 		QtCore
 		QtGui

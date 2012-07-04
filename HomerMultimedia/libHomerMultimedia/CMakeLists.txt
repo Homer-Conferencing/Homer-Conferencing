@@ -2,7 +2,7 @@
 # Author:  Thomas Volkert
 # Since:   2011-02-19
 ###############################################################################
-INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakePreDefs.txt)
+INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakeConfig.txt)
 
 ##############################################################
 # Configuration
