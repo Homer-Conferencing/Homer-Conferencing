@@ -6,6 +6,13 @@
 MESSAGE("##### Preparing configuration")
 
 ##############################################################
+# Homer version: every version information in the rest of the build system is generated from teh following entries
+set(HOMER_VERSION_MAJOR "0")
+set(HOMER_VERSION_MINOR "23")
+set(HOMER_VERSION_PATCH "1")
+set(HOMER_VERSION "${HOMER_VERSION_MAJOR}.${HOMER_VERSION_MINOR}.${HOMER_VERSION_PATCH}")
+
+##############################################################
 # detect FreeBSD
 IF (${CMAKE_SYSTEM} MATCHES "FreeBSD.*")
 	SET (BSD "true")

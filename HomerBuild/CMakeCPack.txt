@@ -11,10 +11,10 @@ set(PACKAGE_TOP_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
 ###############################################################################
 # package version number
-set(CPACK_PACKAGE_VERSION "0.23.1")
-set(CPACK_PACKAGE_VERSION_MAJOR "0")
-set(CPACK_PACKAGE_VERSION_MINOR "23")
-set(CPACK_PACKAGE_VERSION_PATCH "1")
+set(CPACK_PACKAGE_VERSION "${HOMER_VERSION}")
+set(CPACK_PACKAGE_VERSION_MAJOR ${HOMER_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${HOMER_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${HOMER_VERSION_PATCH})
 
 ###############################################################################
 

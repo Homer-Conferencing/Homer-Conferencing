@@ -1,0 +1,29 @@
+IDI_ICON1               ICON    DISCARDABLE     "@CMAKE_CURRENT_SOURCE_DIR@/../../HomerBuild/resources/images/Homer.ico"
+
+1 VERSIONINFO
+FILEVERSION     @HOMER_VERSION_MAJOR@,@HOMER_VERSION_MINOR@,@HOMER_VERSION_PATCH@,0
+PRODUCTVERSION  @HOMER_VERSION_MAJOR@,@HOMER_VERSION_MINOR@,@HOMER_VERSION_PATCH@,0
+
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904E4"
+    BEGIN
+      VALUE "ProductName", "Homer Conferencing"
+      VALUE "FileDescription", "Homer Conferencing"
+      VALUE "ProductVersion", "Beta @HOMER_VERSION@"
+      VALUE "CompanyName", "Homer Conferencing project"
+      VALUE "Comments", "GNU General Public License 2 (GPLv2.0)"
+      VALUE "FileVersion", "@HOMER_VERSION@.0"
+      VALUE "OriginalFilename", "@TARGET_LIB_NAME@.dll"
+      VALUE "InternalName", "@TARGET_LIB_NAME@.dll"
+      VALUE "LegalCopyright", "(C) 2008 Thomas Volkert <thomas@homer-conferencing.com>"
+      
+    END
+  END
+
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x409, 1252
+  END
+END

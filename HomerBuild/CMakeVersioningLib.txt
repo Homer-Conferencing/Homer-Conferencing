@@ -1,0 +1,36 @@
+###############################################################################
+# Author:  Thomas Volkert
+# Since:   2012-07-04
+###############################################################################
+
+MESSAGE("##### Homer library versioning for Windows environments")
+
+##############################################################
+# WINDOWS: create Homer.rc automatically as additional object for linking process
+IF(WIN32)
+	configure_file(
+		${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/resources/HomerLib.rc.in
+	  	${CMAKE_CURRENT_BINARY_DIR}/HomerLib.rc
+	@ONLY)
+ENDIF()
+
+##############################################################
+# WINDOWS: add rc file to linking process
+IF (WIN32)
+	SET (SOURCES
+		${SOURCES}
+		${CMAKE_CURRENT_BINARY_DIR}/HomerLib.rc	
+	)
+ENDIF()
+
+##############################################################
+# LINUX/BSD/APPLE: add library versioning
+IF (NOT WIN32)
+	# library versioning
+	SET_TARGET_PROPERTIES(
+     	${TARGET_LIB_NAME}
+   		PROPERTIES
+     		SOVERSION ${HOMER_VERSION_MAJOR}
+     		VERSION ${HOMER_VERSION}
+   	)
+ENDIF()
