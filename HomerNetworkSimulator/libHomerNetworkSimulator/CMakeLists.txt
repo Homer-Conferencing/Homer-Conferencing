@@ -191,7 +191,7 @@ SET (LIBS_APPLE
 	HomerGAPI
 	HomerMultimedia
 )
-IF (${BUILD} MATCHES "Release")
+IF (NOT(${BUILD} MATCHES "Default"))
 	SET (LIBS_APPLE_INSTALL
 		QtCore
 		QtGui

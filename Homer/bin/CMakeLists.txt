@@ -334,7 +334,7 @@ SET (LIBS_APPLE
 	HomerNetworkSimulator
 	HomerConference
 )
-IF (${BUILD} MATCHES "Release")
+IF (NOT(${BUILD} MATCHES "Default"))
 	SET (LIBS_APPLE_INSTALL
 		QtCore
 		QtGui
