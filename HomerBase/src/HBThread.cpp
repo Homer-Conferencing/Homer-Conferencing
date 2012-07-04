@@ -91,10 +91,21 @@ int Thread::GetTId()
 		return syscall(__NR_gettid);
 	#endif
     #if defined(APPLE)
-		return (int)pthread_mach_thread_np(pthread_self()); //HINT: original result is "unsigned int" (defined somewhere in _types.h)
+		thread_info_data_t tThreadInfoData;
+		thread_identifier_info_t tThreadIdentInfo;
+		mach_msg_type_number_t tThreadInfoSize = THREAD_INFO_MAX;
+		tThreadInfoSize = THREAD_INFO_MAX;
+		if (thread_info(mach_thread_self(), THREAD_IDENTIFIER_INFO, (thread_info_t)tThreadInfoData, &tThreadInfoSize) != KERN_SUCCESS)
+		{
+			LOGEX(Thread, LOG_ERROR, "Failed to call thread_info()");
+		}
+		tThreadIdentInfo = (thread_identifier_info_t)tThreadInfoData;
+		return (int)tThreadIdentInfo->thread_id;
     #endif
     #if defined(BSD)
-		return (int)pthread_self(); 
+		long tLwpid;
+		thr_self(&tLwpid);
+		return (int)tLwpid;
     #endif
 	#ifdef WIN32
 		return (int)GetCurrentThreadId();
@@ -167,8 +178,40 @@ vector<int> Thread::GetTIds()
 		}
 		closedir(tDir);
 	#endif
-    #if defined(APPLE) || defined(BSD)
+	#if defined(BSD)
 		//TODO
+	#endif
+    #if defined(APPLE)
+		thread_array_t tThreadList;
+		mach_msg_type_number_t tThreadCount;
+
+		if (task_threads(mach_task_self(), &tThreadList, &tThreadCount) == KERN_SUCCESS)
+		{
+			//LOGEX(Thread, LOG_VERBOSE, "Found %u threads", tThreadCount);
+			for (unsigned int u = 0; u < tThreadCount; u++)
+			{
+				thread_info_data_t tThreadInfoData;
+				thread_basic_info_t tThreadBasicInfo;
+				thread_identifier_info_t tThreadIdentInfo;
+
+				mach_msg_type_number_t tThreadInfoSize = THREAD_INFO_MAX;
+				if (thread_info(tThreadList[u], THREAD_IDENTIFIER_INFO, (thread_info_t)tThreadInfoData, &tThreadInfoSize) != KERN_SUCCESS)
+				{
+					LOGEX(Thread, LOG_ERROR, "Failed to call thread_info()");
+				}
+				tThreadIdentInfo = (thread_identifier_info_t)tThreadInfoData;
+
+				tResult.push_back((int)tThreadIdentInfo->thread_id);
+
+				//LOGEX(Thread, LOG_VERBOSE, "..thread %u with TID %u", u, (unsigned int)tThreadIdentInfo->thread_id);
+			}
+			if (vm_deallocate(mach_task_self(), (vm_address_t)tThreadList, sizeof(tThreadList) * tThreadCount) != KERN_SUCCESS)
+			{
+				LOGEX(Thread, LOG_ERROR, "Failed to deallocate memory of thread list");
+			}
+		}else{
+			LOGEX(Thread, LOG_ERROR, "Failed to get the list of OSX threads");
+		}
     #endif
 	#ifdef WIN32
 		HANDLE tSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD /* include all system thread */, 0 /* current process only */);
@@ -327,17 +370,84 @@ bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned l
         pLastUserTicsSystem = tSystemJiffiesUser;
 		pLastKernelTicsSystem = tSystemJiffiesKernel;
 	#endif
-    #if defined(APPLE) || defined(BSD)
-        pMemPhysical = 0;
+	#if defined(APPLE)
+		pPid = GetPId();
+		pPPid = GetPPId();
+
+		thread_array_t tThreadList;
+		mach_msg_type_number_t tThreadCount;
+		mach_msg_type_number_t tThreadInfoSize = THREAD_INFO_MAX;
+
+		if (task_threads(mach_task_self(), &tThreadList, &tThreadCount) == KERN_SUCCESS)
+		{
+			pThreadCount = tThreadCount;
+
+			//LOGEX(Thread, LOG_VERBOSE, "Found %u threads", tThreadCount);
+
+			// get statistic info per thread
+			for (unsigned int u = 0; u < tThreadCount; u++)
+			{
+				thread_info_data_t tThreadInfoData;
+				thread_basic_info_t tThreadBasicInfo;
+				thread_identifier_info_t tThreadIdentInfo;
+
+				tThreadInfoSize = THREAD_INFO_MAX;
+				if (thread_info(tThreadList[u], THREAD_BASIC_INFO, (thread_info_t)tThreadInfoData, &tThreadInfoSize) != KERN_SUCCESS)
+				{
+					LOGEX(Thread, LOG_ERROR, "Failed to call thread_info()");
+				}
+				tThreadBasicInfo = (thread_basic_info_t)tThreadInfoData;
+			    pPriority = tThreadBasicInfo->policy;
+
+				//LOGEX(Thread, LOG_VERBOSE, "..thread %u with TID %u", u, (unsigned int)tThreadIdentInfo->thread_id);
+			}
+
+			// get statistic info for our task
+			task_basic_info_t tTaskBasicInfo;
+			task_info_data_t tTaskInfoData;
+			mach_msg_type_number_t tTaskInfoSize = TASK_INFO_MAX;
+			if (task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)tTaskInfoData, &tTaskInfoSize) != KERN_SUCCESS)
+			{
+				LOGEX(Thread, LOG_ERROR, "Failed to call task_info()");
+			}
+			tTaskBasicInfo = (task_basic_info_t)tTaskInfoData;
+			pMemPhysical = tTaskBasicInfo->resident_size;
+			pMemVirtual = tTaskBasicInfo->virtual_size;
+			pBasePriority = tTaskBasicInfo->policy;
+
+			if (vm_deallocate(mach_task_self(), (vm_address_t)tThreadList, sizeof(tThreadList) * tThreadCount) != KERN_SUCCESS)
+			{
+				LOGEX(Thread, LOG_ERROR, "Failed to deallocate memory of thread list");
+			}
+		}else{
+			LOGEX(Thread, LOG_ERROR, "Failed to get the list of OSX threads");
+		}
+
+		//TODO:
         pLoadUser = 0;
         pLoadSystem = 0;
+        pLoadTotal = 0;
+        pLastUserTicsThread = 0;
+        pLastKernelTicsThread = 0;
+        pLastUserTicsSystem = 0;
+        pLastKernelTicsSystem = 0;
+    #endif
+    #if defined(BSD)
+		pPid = GetPId();
+		pPPid = GetPPId();
+		//TODO:
+		pThreadCount = 0;
+        pMemPhysical = 0;
+        pMemVirtual = 0;
+        pLoadUser = 0;
+        pLoadSystem = 0;
+        pLoadTotal = 0;
         pLastUserTicsThread = 0;
         pLastKernelTicsThread = 0;
         pLastUserTicsSystem = 0;
         pLastKernelTicsSystem = 0;
         pPriority = 0;
         pBasePriority = 0;
-		//TODO
     #endif
 	#ifdef WIN32
 		/* Windows thread priorities: (based on http://msdn.microsoft.com/en-us/library/ms683235%28VS.85%29.aspx)
