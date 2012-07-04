@@ -47,7 +47,7 @@ namespace Homer { namespace Gui {
 
 // version string which is checked/used in the whole application
 //#define RELEASE_VERSION -> is now defined automatically via build system
-#define RELEASE_VERSION_STRING          "Beta "RELEASE_VERSION
+#define RELEASE_VERSION_STRING          "Beta "HOMER_VERSION
 
 // for home calls
 #define RELEASE_SERVER                  "www.homer-conferencing.com"
