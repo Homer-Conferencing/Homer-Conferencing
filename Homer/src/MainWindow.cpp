@@ -89,6 +89,7 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     MeetingObserver()
 {
     mStartTime = QTime::currentTime();
+    QApplication::setWindowIcon(QPixmap(":/images/LogoHomer3.png"));
 
     SVC_PROCESS_STATISTIC.AssignThreadName("Qt-MainLoop");
     mAbsBinPath = pAbsBinPath;
@@ -96,7 +97,7 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     mNetworkSimulator = NULL;
 
     QCoreApplication::setApplicationName("Homer");
-    QCoreApplication::setApplicationVersion("1.0");
+    QCoreApplication::setApplicationVersion(HOMER_VERSION);
 
     // get the program arguments
     QStringList tArguments = QCoreApplication::arguments();
