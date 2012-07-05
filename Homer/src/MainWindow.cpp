@@ -623,6 +623,8 @@ void MainWindow::loadSettings()
         MEETING.SetVideoCodecsSupport(CODEC_MPEG4);
     if (tVideoStreamCodec == "THEORA")
         MEETING.SetVideoCodecsSupport(CODEC_THEORA);
+    if (tVideoStreamCodec == "VP8")
+        MEETING.SetVideoCodecsSupport(CODEC_VP8);
     MEETING.SetVideoTransportType(MEDIA_TRANSPORT_RTP_UDP); // always use RTP/AVP as profile (RTP/UDP)
 
     // init audio codec for network streaming, but only support ONE codec and not multiple

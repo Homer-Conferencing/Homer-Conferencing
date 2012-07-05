@@ -407,6 +407,9 @@ void ConfigurationDialog::SaveConfiguration()
         case 7:
                 MEETING.SetVideoCodecsSupport(CODEC_THEORA);
                 break;
+        case 8:
+                MEETING.SetVideoCodecsSupport(CODEC_VP8);
+                break;
         default:
                 break;
     }
