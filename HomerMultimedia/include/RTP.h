@@ -39,7 +39,7 @@ namespace Homer { namespace Multimedia {
 ///////////////////////////////////////////////////////////////////////////////
 
 // the following de/activates debugging of RTP packets
-//#define RTP_DEBUG_PACKETS
+#define RTP_DEBUG_PACKETS
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -103,13 +103,18 @@ public:
 
 private:
     void AnnounceLostPackets(unsigned int pCount);
+
+    /* internal RTP packetizer for h.261 */
     bool OpenRtpEncoderH261(std::string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream);
     bool RtpCreateH261(char *&pData, unsigned int &pDataSize);
 
+    /* RTP packet stream */
+    static int StoreRtpPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize);
+    void OpenRtpPacketStream();
+    int CloseRtpPacketStream(char** pBuffer);
 
     Homer::Monitor::PacketStatistic *mPacketStatistic;
     AVFormatContext     *mRtpFormatContext;
-    URLContext          *mURLContext;
     unsigned short int  mLastSequenceNumber;
     unsigned int        mLastTimestamp;
     unsigned int        mLastCompleteFrameTimestamp;
@@ -126,6 +131,11 @@ private:
     unsigned int 		mCurrentTimestamp;
     /* MP3 RTP hack */
     unsigned int        mMp3Hack_EntireBufferSize;
+    /* RTP packet stream */
+    AVIOContext         *mAVIOContext;
+    char                *mRtpPacketBuffer;
+    char                *mRtpPacketStream;
+    char                *mRtpPacketStreamPos;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

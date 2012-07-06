@@ -400,6 +400,8 @@ RTP::RTP()
     mPayloadId = 0;
     mEncoderOpened = false;
     mUseInternalEncoder = false;
+    mRtpPacketStream = NULL;
+    mRtpPacketBuffer = NULL;
     // set SRC to 0 as ffmpeg does
     mSsrc = 0;
 }
@@ -451,6 +453,17 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
 {
     if (mEncoderOpened)
         return false;
+
+    mRtpPacketStream = (char*)malloc(MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE);
+    if (mRtpPacketStream == NULL)
+        LOG(LOG_ERROR, "Error when allocating memory for RTP packet stream");
+    else
+        LOG(LOG_VERBOSE, "Created RTP packet stream memory of %d bytes at %p", MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE, mRtpPacketStream);
+    mRtpPacketBuffer = (char*)malloc(MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE);
+    if (mRtpPacketBuffer == NULL)
+        LOG(LOG_ERROR, "Error when allocating memory for RTP packet buffer");
+    else
+        LOG(LOG_VERBOSE, "Created RTP packet buffer memory of %d bytes at %p", MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE, mRtpPacketBuffer);
 
     const char *tCodecName = pInnerStream->codec->codec->name;
     mPayloadId = FfmpegNameToPayloadId(tCodecName);
@@ -504,43 +517,20 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     // set target coordinates for rtp stream
     snprintf(mRtpFormatContext->filename, sizeof(mRtpFormatContext->filename), "rtp://%s:%u", pTargetHost.c_str(), pTargetPort);
 
-    // open streaming
-    if (url_open(&mURLContext, mRtpFormatContext->filename, URL_WRONLY) < 0)
-    {
-        LOG(LOG_ERROR, "Could not open RTP streaming to %s:%u", pTargetHost.c_str(), pTargetPort);
+    // create I/O context which splits RTP stream into packets
+    mAVIOContext = avio_alloc_context((uint8_t*) mRtpPacketBuffer, MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE, 1, this, NULL, StoreRtpPacket, NULL);
 
-        // free codec and stream 0
-        av_freep(&mRtpFormatContext->streams[0]);
+    // set max. packet size to rtp payload limit of the original stream
+    mAVIOContext->max_packet_size = tOuterStream->codec->rtp_payload_size;
 
-        // Close the format context
-        av_free(mRtpFormatContext);
+    // open RTP stream for avformat_Write_header()
+    OpenRtpPacketStream();
 
-        return false;
-    }
-    // patch the max. packet size to rtp payload limit of the original stream
-    mURLContext->max_packet_size = tOuterStream->codec->rtp_payload_size;
-
-    int tMaxPacketSize = url_get_max_packet_size(mURLContext);
-
-    // create memory stream and init ffmpeg internal strucutres
-    if ((tResult = url_open_dyn_packet_buf(&mRtpFormatContext->pb, tMaxPacketSize)) < 0)
-    {
-        LOG(LOG_ERROR, "Creation of memory stream failed because of \"%s\".", strerror(AVUNERROR(tResult)));
-
-        // close RTP stream
-        url_close(mURLContext);
-
-        // free codec and stream 0
-        av_freep(&mRtpFormatContext->streams[0]);
-
-        // Close the format context
-        av_free(mRtpFormatContext);
-
-        return false;
-    }
+    // set new I/O context
+    mRtpFormatContext->pb = mAVIOContext;
 
     // limit packet size, otherwise ffmpeg will deliver unpredictable results ;)
-    mRtpFormatContext->pb->max_packet_size = tMaxPacketSize;
+    mRtpFormatContext->pb->max_packet_size = mAVIOContext->max_packet_size;
 
     // Dump information about device file
     av_dump_format(mRtpFormatContext, 0, "RTP Encoder", true);
@@ -549,9 +539,8 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     avformat_write_header(mRtpFormatContext, NULL);
 
     // close memory stream
-    uint8_t *tBuffer = NULL;
-    url_close_dyn_buf(mRtpFormatContext->pb, &tBuffer);
-    av_free(tBuffer);
+    char *tBuffer = NULL;
+    CloseRtpPacketStream(&tBuffer);
 
     LOG(LOG_INFO, "Opened...");
     LOG(LOG_INFO, "    ..rtp target: %s:%u", pTargetHost.c_str(), pTargetPort);
@@ -574,7 +563,7 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     LOG(LOG_INFO, "    ..pixel format: %d", (int)tOuterStream->codec->pix_fmt);
     LOG(LOG_INFO, "    ..sample format: %d", (int)tOuterStream->codec->sample_fmt);
     LOG(LOG_INFO, "    ..frame size: %d bytes", tOuterStream->codec->frame_size);
-    LOG(LOG_INFO, "    ..max packet size: %d bytes", mRtpFormatContext->pb->max_packet_size);
+    LOG(LOG_INFO, "    ..max packet size: %d bytes", mAVIOContext->max_packet_size);
     LOG(LOG_INFO, "    ..rtp payload size: %d bytes", tOuterStream->codec->rtp_payload_size);
 
     mEncoderOpened = true;
@@ -595,7 +584,7 @@ bool RTP::CloseRtpEncoder()
             av_write_trailer(mRtpFormatContext);
 
             // close RTP stream
-            url_close(mURLContext);
+            av_free(mAVIOContext);
 
             // free stream 0
             av_freep(&mRtpFormatContext->streams[0]);
@@ -604,6 +593,13 @@ bool RTP::CloseRtpEncoder()
             av_free(mRtpFormatContext);
         }
 
+        if (mRtpPacketStream != NULL)
+        {
+            delete mRtpPacketBuffer;
+            mRtpPacketBuffer = NULL;
+            delete mRtpPacketStream;
+            mRtpPacketStream = NULL;
+        }
         LOG(LOG_INFO, "...closed");
     }else
         LOG(LOG_INFO, "...wasn't open");
@@ -650,7 +646,7 @@ bool RTP::IsPayloadSupported(enum CodecID pId)
 //            case CODEC_ID_AMR_WB:
 //            case CODEC_ID_VORBIS:
             case CODEC_ID_THEORA:
-//            case CODEC_ID_VP8:
+            case CODEC_ID_VP8:
 //            case CODEC_ID_ADPCM_G722:
 //            case CODEC_ID_ADPCM_G726:
                             tResult = true;
@@ -730,6 +726,44 @@ int RTP::GetHeaderSizeMax(enum CodecID pCodec)
     return RTP_HEADER_SIZE + GetPayloadHeaderSizeMax(pCodec);
 }
 
+void RTP::OpenRtpPacketStream()
+{
+    mRtpPacketStreamPos = mRtpPacketStream;
+}
+
+int RTP::CloseRtpPacketStream(char** pBuffer)
+{
+    *pBuffer = mRtpPacketStream;
+    return (mRtpPacketStreamPos - mRtpPacketStream);
+}
+
+int RTP::StoreRtpPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize)
+{
+    RTP* tRTPInstance = (RTP*)pOpaque;
+
+    if (!tRTPInstance->mEncoderOpened)
+        LOGEX(RTP, LOG_ERROR, "RTP instance wasn't opened yet, RTP packetizing not available");
+
+    // write RTP packet size
+    unsigned int *tRtpPacketSize = (unsigned int*)tRTPInstance->mRtpPacketStreamPos;
+
+    *tRtpPacketSize = 0;
+    *tRtpPacketSize = htonl((uint32_t) pBufferSize);
+
+    // increase RTP stream position by 4
+    tRTPInstance->mRtpPacketStreamPos += 4;
+
+    // copy data from original buffer
+    char *tRtpPacket = (char*)tRTPInstance->mRtpPacketStreamPos;
+    memcpy(tRtpPacket, pBuffer, pBufferSize);
+
+    // increase RTP stream position by size of RTP packet
+    tRTPInstance->mRtpPacketStreamPos += pBufferSize;
+
+    // return the size of the entire RTP packet buffer as result of write operation
+    return pBufferSize;
+}
+
 bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
 {
     AVPacket                    tPacket;
@@ -780,19 +814,12 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
     //####################################################################
     // create memory stream and init ffmpeg internal structures
     //####################################################################
-    int tMaxPacketSize = url_get_max_packet_size(mURLContext);
     #ifdef RTP_DEBUG_PACKETS
-        LOG(LOG_VERBOSE, "Encapsulate frame with format %s of size: %u while maximum resulting RTP packet size is: %d", MediaSource::FfmpegId2FfmpegFormat(mRtpFormatContext->streams[0]->codec->codec_id).c_str(), pDataSize, tMaxPacketSize);
+        LOG(LOG_VERBOSE, "Encapsulate frame with format %s of size: %u while maximum resulting RTP packet size is: %d", MediaSource::FfmpegId2FfmpegFormat(mRtpFormatContext->streams[0]->codec->codec_id).c_str(), pDataSize, mAVIOContext->max_packet_size);
     #endif
-    if ((tResult = url_open_dyn_packet_buf(&mRtpFormatContext->pb, tMaxPacketSize)) < 0)
-    {
-        LOG(LOG_ERROR, "Creation of memory stream failed because of \"%s\".", strerror(AVUNERROR(tResult)));
 
-        return false;
-    }
-
-    // limit packet size, otherwise ffmpeg will deliver unpredictable results ;)
-    mRtpFormatContext->pb->max_packet_size = tMaxPacketSize;
+    // open RTP stream for av_Write_frame()
+    OpenRtpPacketStream();
 
     //####################################################################
     // send encoded frame to the RTP muxer
@@ -805,8 +832,8 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
     }
 
     // close memory stream and get all the resulting packets for sending
-    uint8_t *tData = NULL;
-    pDataSize = url_close_dyn_buf(mRtpFormatContext->pb, &tData);
+    char *tData = NULL;
+    pDataSize = CloseRtpPacketStream(&tData);
     pData = (char*)tData;
     #ifdef RTP_DEBUG_PACKETS
         if (pDataSize == 0)
@@ -831,6 +858,10 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
         do{
             tRtpPacketSize = ntohl(*(uint32_t*)(tRtpPacket - 4));
 
+            #ifdef RTP_DEBUG_PACKETS
+                LOG(LOG_VERBOSE, "Found RTP packet at %p with size of %u bytes", tRtpPacket, tRtpPacketSize);
+            #endif
+
             // if there is no packet data we should leave the send loop
             if (tRtpPacketSize == 0)
                 break;
@@ -842,7 +873,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
                 tHeader->Data[i] = ntohl(tHeader->Data[i]);
 
             #ifdef RTP_DEBUG_PACKETS
-                LOG(LOG_VERBOSE, "Got RTP packet with payload type: %d", tHeader->PayloadType);
+                LOG(LOG_VERBOSE, "RTP packet has payload type: %d", tHeader->PayloadType);
             #endif
 
             //#################################################################################
@@ -940,6 +971,10 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize)
     if (!mEncoderOpened)
         return false;
 
+    #ifdef RTP_DEBUG_PACKETS
+        LOG(LOG_VERBOSE, "Encapsulate frame with format h261 of size: %u while maximum resulting RTP packet size is: %d", pDataSize, mH261PayloadSizeMax);
+    #endif
+
     // calculate the amount of needed RTP packets to encapsulate the whole frame
     unsigned int tPacketCount = (pDataSize + (unsigned int)RTP_MAX_H261_PAYLOAD_SIZE - 1);
     tPacketCount /= (unsigned short int)(RTP_MAX_H261_PAYLOAD_SIZE);
@@ -949,14 +984,16 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize)
     // allocate memory for the RTP packet stream
     // HINT: the size of memory for storing the stream of RTP packets is rounded to multiples of (RTP_MAX_PACKET_SIZE + 4)
     unsigned int tRtpStreamDataMaxSize = tPacketCount * (RTP_MAX_H261_PAYLOAD_SIZE + H261_HEADER_SIZE + RTP_HEADER_SIZE + 4 /* overhead for packet length field */);
-    char *tRtpStreamData = (char *)av_malloc(tRtpStreamDataMaxSize);
     unsigned int tRtpStreamDataSize = 0;
     // get a timestamp
     time_t tTimestamp;
     time(&tTimestamp);
 
     // get pointer to the current working address inside rtp packet stream
-    char *tCurrentRtpStreamData = tRtpStreamData;
+    char *tCurrentRtpStreamData = mRtpPacketStream;
+    #ifdef RTP_DEBUG_PACKETS
+        LOG(LOG_VERBOSE, "Packet stream at %p", mRtpPacketStream);
+    #endif
     for (unsigned int tPacketIndex = 0; tPacketIndex < tPacketCount; tPacketIndex++)
     {
         // size of current frame chunk
@@ -970,7 +1007,7 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize)
         tRtpStreamDataSize += 4 + RTP_HEADER_SIZE + H261_HEADER_SIZE + tChunkSize;
         if (tRtpStreamDataSize > tRtpStreamDataMaxSize)
         {
-            LOG(LOG_ERROR, "Stream of RTP packets for H261 ecnapsulation too big");
+            LOG(LOG_ERROR, "Stream of RTP packets for H261 encapsulation too big");
             return false;
         }
 
@@ -1038,7 +1075,7 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize)
         // go to the next packet header
         tCurrentRtpStreamData += tChunkSize;
     }
-    pData = tRtpStreamData;
+    pData = mRtpPacketStream;
     pDataSize = tRtpStreamDataSize;
 
     return true;
