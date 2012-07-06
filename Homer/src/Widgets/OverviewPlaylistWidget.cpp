@@ -233,16 +233,11 @@ void OverviewPlaylistWidget::DelEntryDialog()
     if (tItems.isEmpty())
         return;
 
-    QMessageBox tMB(QMessageBox::Question, "Acknowledge", "Do you really want to delete " + QString("%1").arg(tItems.count()) + " item(s) from \"" + windowTitle() + "\"?", QMessageBox::Yes | QMessageBox::No);
-
-    if (tMB.exec() == QMessageBox::Yes)
+    QListWidgetItem* tItem;
+    foreach(tItem, tItems)
     {
-        QListWidgetItem* tItem;
-        foreach(tItem, tItems)
-        {
-            mLwFiles->removeItemWidget(tItem);
-            delete tItem;
-        }
+        mLwFiles->removeItemWidget(tItem);
+        delete tItem;
     }
 }
 
