@@ -1312,15 +1312,17 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
     }
     if (pEvent->key() == Qt::Key_Space)
     {
-        if ((mVideoWorker->IsPaused()) || mParticipantWidget->GetAudioWorker()->IsPaused())
+        if ((mVideoWorker->IsPaused()) || ((mParticipantWidget->GetAudioWorker() != NULL) && (mParticipantWidget->GetAudioWorker()->IsPaused())))
         {
             mVideoWorker->PlayFile();
-            mParticipantWidget->GetAudioWorker()->PlayFile();
+            if (mParticipantWidget->GetAudioWorker() != NULL)
+                mParticipantWidget->GetAudioWorker()->PlayFile();
             return;
         }else
         {
             mVideoWorker->PauseFile();
-            mParticipantWidget->GetAudioWorker()->PauseFile();
+            if (mParticipantWidget->GetAudioWorker() != NULL)
+                mParticipantWidget->GetAudioWorker()->PauseFile();
             return;
         }
     }
@@ -1632,7 +1634,10 @@ void VideoWorkerThread::PauseFile()
 
 bool VideoWorkerThread::IsPaused()
 {
-    return mPaused;
+    if ((mVideoSource != NULL) && (mVideoSource->SupportsSeeking()))
+        return mPaused;
+    else
+        return false;
 }
 
 void VideoWorkerThread::StopFile()
