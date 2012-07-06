@@ -132,9 +132,9 @@ public:
     AudioWorkerThread* GetAudioWorker();
 
 private slots:
+    void PlayMovieFile();
+    void PauseMovieFile();
 	void LookedUpParticipantHost(const QHostInfo &pHost);
-	void PlayMovieFile();
-	void PauseMovieFile();
 	void SeekMovieFile(int pPos);
 
 private:

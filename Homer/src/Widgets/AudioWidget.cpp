@@ -827,7 +827,7 @@ AudioWorkerThread::AudioWorkerThread(MediaSource *pAudioSource, AudioWidget *pAu
     mDesiredInputChannel = 0;
     mPlaybackAvailable = false;
     mEofReached = false;
-    mSourceSeekAsap = false;
+    mSeekAsap = false;
     mPaused = false;
     mSourceAvailable = false;
     mPausedPos = 0;
@@ -1014,6 +1014,9 @@ QString AudioWorkerThread::GetDeviceDescription(QString pName)
 
 void AudioWorkerThread::PlayFile(QString pName)
 {
+    if (pName == "")
+        pName = mCurrentFile;
+
     // remove "file:///" and "file://" from the beginning if existing
     #ifdef WIN32
         if (pName.startsWith("file:///"))
@@ -1033,12 +1036,12 @@ void AudioWorkerThread::PlayFile(QString pName)
 
 	if ((mPaused) && (pName == mDesiredFile))
 	{
-		LOG(LOG_VERBOSE, "Continue playback of file: %s", pName.toStdString().c_str());
-		mAudioSource->Seek(mPausedPos, false);
+        LOG(LOG_VERBOSE, "Continue playback of file: %s at pos.: %ld", pName.toStdString().c_str(), mPausedPos);
+		Seek(mPausedPos);
         mGrabbingStateMutex.lock();
         mPaused = false;
-        mGrabbingCondition.wakeAll();
         mGrabbingStateMutex.unlock();
+        mGrabbingCondition.wakeAll();
 	}else
 	{
 		LOG(LOG_VERBOSE, "Trigger playback of file: %s", pName.toStdString().c_str());
@@ -1052,13 +1055,18 @@ void AudioWorkerThread::PauseFile()
 {
     if (mAudioSource->SupportsSeeking())
     {
-        LOG(LOG_VERBOSE, "Trigger pause state");
         mPausedPos = mAudioSource->GetSeekPos();
         mGrabbingStateMutex.lock();
         mPaused = true;
         mGrabbingStateMutex.unlock();
+        LOG(LOG_VERBOSE, "Triggered pause state at position: %ld", mPausedPos);
     }else
         LOG(LOG_VERBOSE, "Seeking not supported, PauseFile() aborted");
+}
+
+bool AudioWorkerThread::IsPaused()
+{
+    return mPaused;
 }
 
 void AudioWorkerThread::StopFile()
@@ -1081,7 +1089,7 @@ bool AudioWorkerThread::EofReached()
 //	LOG(LOG_VERBOSE, "mResetAudioSourceAsap: %d", mResetAudioSourceAsap);
 //	LOG(LOG_VERBOSE, "mPlayNewFileAsap: %d", mPlayNewFileAsap);
 //	LOG(LOG_VERBOSE, "mSetCurrentDeviceAsap: %d", mSetCurrentDeviceAsap);
-	return (((mEofReached) && (!mResetAudioSourceAsap) && (!mPlayNewFileAsap)) || (mPlayNewFileAsap) || (mSetCurrentDeviceAsap));
+	return (((mEofReached) && (!mResetAudioSourceAsap) && (!mPlayNewFileAsap) && (!mSeekAsap)) || (mPlayNewFileAsap) || (mSetCurrentDeviceAsap));
 }
 
 QString AudioWorkerThread::CurrentFile()
@@ -1092,22 +1100,18 @@ QString AudioWorkerThread::CurrentFile()
         return "";
 }
 
-void AudioWorkerThread::SelectInputChannel(int pIndex)
-{
-    mDesiredInputChannel = pIndex;
-    mSelectInputChannelAsap = true;
-    mGrabbingCondition.wakeAll();
-}
-
 bool AudioWorkerThread::SupportsSeeking()
 {
-    return mAudioSource->SupportsSeeking();
+    if(mAudioSource != NULL)
+        return mAudioSource->SupportsSeeking();
+    else
+        return false;
 }
 
-void AudioWorkerThread::Seek(int pPos)
+void AudioWorkerThread::Seek(int64_t pPos)
 {
-    mSourceSeekPos = pPos;
-    mSourceSeekAsap = true;
+    mSeekPos = pPos;
+    mSeekAsap = true;
     mGrabbingCondition.wakeAll();
 }
 
@@ -1119,6 +1123,45 @@ int64_t AudioWorkerThread::GetSeekPos()
 int64_t AudioWorkerThread::GetSeekEnd()
 {
     return mAudioSource->GetSeekEnd();
+}
+
+bool AudioWorkerThread::SupportsMultipleChannels()
+{
+    if (mAudioSource != NULL)
+        return mAudioSource->SupportsMultipleInputChannels();
+    else
+        return false;
+}
+
+QString AudioWorkerThread::GetCurrentChannel()
+{
+    return QString(mAudioSource->CurrentInputChannel().c_str());
+}
+
+void AudioWorkerThread::SelectInputChannel(int pIndex)
+{
+    if (pIndex != -1)
+    {
+        LOG(LOG_VERBOSE, "Will select new input channel %d after some short time", pIndex);
+        mDesiredInputChannel = pIndex;
+        mSelectInputChannelAsap = true;
+        mGrabbingCondition.wakeAll();
+    }else
+    {
+        LOG(LOG_WARN, "Will not select new input channel -1, ignoring this request");
+    }
+}
+
+QStringList AudioWorkerThread::GetPossibleChannels()
+{
+    QStringList tResult;
+
+    list<string> tList = mAudioSource->GetInputChannels();
+    list<string>::iterator tIt;
+    for (tIt = tList.begin(); tIt != tList.end(); tIt++)
+        tResult.push_back(QString((*tIt).c_str()));
+
+    return tResult;
 }
 
 void AudioWorkerThread::StartRecorder(std::string pSaveFileName, int pQuality)
@@ -1147,13 +1190,6 @@ void AudioWorkerThread::DoStopRecorder()
     mStopRecorderAsap = false;
 }
 
-void AudioWorkerThread::DoSourceSeek()
-{
-    LOG(LOG_VERBOSE, "DoSourceSeek now...");
-    mAudioSource->Seek(mAudioSource->GetSeekEnd() * mSourceSeekPos / 1000, false);
-    ResetPlayback();
-    mSourceSeekAsap = false;
-}
 void AudioWorkerThread::DoPlayNewFile()
 {
     LOG(LOG_VERBOSE, "DoPlayNewFile now...");
@@ -1188,13 +1224,35 @@ void AudioWorkerThread::DoPlayNewFile()
         SetCurrentDevice(mDesiredFile);
     }
 
+    mEofReached = false;
     mPlayNewFileAsap = false;
-	mPaused = false;
+    mPaused = false;
+}
+
+void AudioWorkerThread::DoSourceSeek()
+{
+    LOG(LOG_VERBOSE, "DoSeek now...");
+
+    // lock
+    mDeliverMutex.lock();
+
+    LOG(LOG_VERBOSE, "Seeking now to position %d", mSeekPos);
+    mAudioSource->Seek(mSeekPos, false);
+    mEofReached = false;
+    ResetPlayback();
+    mSeekAsap = false;
+
+    // unlock
+    mDeliverMutex.unlock();
 }
 
 void AudioWorkerThread::DoSelectInputChannel()
 {
-    LOG(LOG_VERBOSE, "AudioWorkerThread-DoSelectInputChannel now...");
+    LOG(LOG_VERBOSE, "DoSelectInputChannel now...");
+
+    if(mDesiredInputChannel == -1)
+        return;
+
     // lock
     mDeliverMutex.lock();
 
@@ -1212,7 +1270,7 @@ void AudioWorkerThread::DoSelectInputChannel()
 
 void AudioWorkerThread::DoResetAudioSource()
 {
-    LOG(LOG_VERBOSE, "AudioWorkerThread-DoResetAudioSource now...");
+    LOG(LOG_VERBOSE, "DoResetAudioSource now...");
     // lock
     mDeliverMutex.lock();
 
@@ -1278,6 +1336,7 @@ void AudioWorkerThread::DoSetCurrentDevice()
                     // seek to the beginning if we have reselected the source file
                     LOG(LOG_VERBOSE, "Seeking to the beginning of the source file");
                     mAudioSource->Seek(0);
+                    mSeekAsap = false;
 
                     if (mResetAudioSourceAsap)
                     {
@@ -1413,7 +1472,7 @@ void AudioWorkerThread::run()
         // get the next frame from audio source
         tLastSampleNumber = tSampleNumber;
 
-        if (mSourceSeekAsap)
+        if (mSeekAsap)
             DoSourceSeek();
 
         // play new file from disc

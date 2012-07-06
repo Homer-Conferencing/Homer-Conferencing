@@ -38,8 +38,9 @@
 
  */
 
-#include <Widgets/VideoWidget.h>
 #include <Widgets/OverviewPlaylistWidget.h>
+#include <Widgets/ParticipantWidget.h>
+#include <Widgets/VideoWidget.h>
 #include <ProcessStatisticService.h>
 #include <MediaSource.h>
 #include <MediaSourceFile.h>
@@ -138,11 +139,12 @@ VideoWidget::VideoWidget(QWidget* pParent):
     hide();
 }
 
-void VideoWidget::Init(QMainWindow* pMainWindow, MediaSource *pVideoSource, QMenu *pMenu, QString pActionTitle, QString pWidgetTitle, bool pVisible)
+void VideoWidget::Init(QMainWindow* pMainWindow, ParticipantWidget *pParticipantWidget, MediaSource *pVideoSource, QMenu *pMenu, QString pActionTitle, QString pWidgetTitle, bool pVisible)
 {
     mVideoSource = pVideoSource;
     mVideoTitle = pActionTitle;
     mMainWindow = pMainWindow;
+    mParticipantWidget = pParticipantWidget;
 
     //####################################################################
     //### create the remaining necessary menu item
@@ -221,6 +223,7 @@ void VideoWidget::closeEvent(QCloseEvent* pEvent)
 	if (windowState() & Qt::WindowFullScreen)
     {
         LOG(LOG_VERBOSE, "Got closeEvent in VideoWidget while it is in fullscreen mode, will forward this to main window");
+        pEvent->ignore();
         QApplication::postEvent(mMainWindow, new QCloseEvent());
     }else
     {
@@ -1288,14 +1291,17 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
 	{
         setWindowFlags(windowFlags() ^ Qt::Window);
         showNormal();
+        return;
 	}
     if (pEvent->key() == Qt::Key_F)
     {
         ToggleFullScreenMode();
+        return;
     }
     if (pEvent->key() == Qt::Key_S)
     {
         ToggleSmoothPresentationMode();
+        return;
     }
     if (pEvent->key() == Qt::Key_I)
     {
@@ -1304,12 +1310,27 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
         else
         	mShowLiveStats = true;
     }
+    if (pEvent->key() == Qt::Key_Space)
+    {
+        if ((mVideoWorker->IsPaused()) || mParticipantWidget->GetAudioWorker()->IsPaused())
+        {
+            mVideoWorker->PlayFile();
+            mParticipantWidget->GetAudioWorker()->PlayFile();
+            return;
+        }else
+        {
+            mVideoWorker->PauseFile();
+            mParticipantWidget->GetAudioWorker()->PauseFile();
+            return;
+        }
+    }
     if (pEvent->key() == Qt::Key_A)
     {
     	mAspectRatio++;
     	if(mAspectRatio > ASPECT_RATIO_16x10)
     		mAspectRatio = ASPECT_RATIO_ORIGINAL;
     	mNeedBackgroundUpdatesUntillNextFrame = true;
+    	return;
     }
 }
 
@@ -1419,7 +1440,7 @@ VideoWorkerThread::VideoWorkerThread(MediaSource *pVideoSource, VideoWidget *pVi
     mDesiredInputChannel = 0;
     mPlayNewFileAsap = false;
     mSeekAsap = false;
-    mSeekPosition = 0;
+    mSeekPos = 0;
     mSelectInputChannelAsap = false;
     mSourceAvailable = false;
     mEofReached = false;
@@ -1558,6 +1579,9 @@ QString VideoWorkerThread::GetDeviceDescription(QString pName)
 
 void VideoWorkerThread::PlayFile(QString pName)
 {
+    if (pName == "")
+        pName = mCurrentFile;
+
     // remove "file:///" and "file://" from the beginning if existing
     #ifdef WIN32
         if (pName.startsWith("file:///"))
@@ -1577,7 +1601,7 @@ void VideoWorkerThread::PlayFile(QString pName)
 
 	if ((mPaused) && (pName == mDesiredFile))
 	{
-		LOG(LOG_VERBOSE, "Continue playback of file: %s", pName.toStdString().c_str());
+		LOG(LOG_VERBOSE, "Continue playback of file: %s at pos.: %ld", pName.toStdString().c_str(), mPausedPos);
 		Seek(mPausedPos);
 		mGrabbingStateMutex.lock();
 		mPaused = false;
@@ -1597,13 +1621,18 @@ void VideoWorkerThread::PauseFile()
 {
     if (mVideoSource->SupportsSeeking())
     {
-        LOG(LOG_VERBOSE, "Trigger pause state");
         mPausedPos = mVideoSource->GetSeekPos();
         mGrabbingStateMutex.lock();
         mPaused = true;
         mGrabbingStateMutex.unlock();
+        LOG(LOG_VERBOSE, "Triggered pause state at position: %ld", mPausedPos);
     }else
         LOG(LOG_VERBOSE, "Seeking not supported, PauseFile() aborted");
+}
+
+bool VideoWorkerThread::IsPaused()
+{
+    return mPaused;
 }
 
 void VideoWorkerThread::StopFile()
@@ -1640,10 +1669,11 @@ bool VideoWorkerThread::SupportsSeeking()
         return false;
 }
 
-void VideoWorkerThread::Seek(int pPos)
+void VideoWorkerThread::Seek(int64_t pPos)
 {
-    mSeekPosition = pPos;
+    mSeekPos = pPos;
     mSeekAsap = true;
+    mGrabbingCondition.wakeAll();
 }
 
 int64_t VideoWorkerThread::GetSeekPos()
@@ -1787,12 +1817,13 @@ void VideoWorkerThread::DoSetGrabResolution()
 
 void VideoWorkerThread::DoSeek()
 {
-    LOG(LOG_VERBOSE, "VideoWorkerThread-DoSeek now...");
+    LOG(LOG_VERBOSE, "DoSeek now...");
 
     // lock
     mDeliverMutex.lock();
 
-    mVideoSource->Seek(mVideoSource->GetSeekEnd() * mSeekPosition / 1000, false);
+    LOG(LOG_VERBOSE, "Seeking now to position %d", mSeekPos);
+    mVideoSource->Seek(mSeekPos, false);
     mEofReached = false;
     mSeekAsap = false;
 
@@ -1802,7 +1833,7 @@ void VideoWorkerThread::DoSeek()
 
 void VideoWorkerThread::DoSelectInputChannel()
 {
-    LOG(LOG_VERBOSE, "VideoWorkerThread-DoSelectInputChannel now...");
+    LOG(LOG_VERBOSE, "DoSelectInputChannel now...");
 
     if(mDesiredInputChannel == -1)
         return;

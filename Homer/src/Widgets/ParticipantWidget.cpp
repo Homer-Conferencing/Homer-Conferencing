@@ -181,7 +181,7 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
                     if (mVideoSourceMuxer != NULL)
                     {
                         mVideoWidgetFrame->show();
-                        mVideoWidget->Init(mMainWindow, mVideoSourceMuxer, pVideoMenu, mSessionName, mSessionName, CONF.GetVisibilityBroadcastVideo());
+                        mVideoWidget->Init(mMainWindow, this, mVideoSourceMuxer, pVideoMenu, mSessionName, mSessionName, CONF.GetVisibilityBroadcastVideo());
                     }
                     LOG(LOG_VERBOSE, "..init broadcast audio widget");
                     if (mAudioSourceMuxer != NULL)
@@ -203,7 +203,7 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
                         mVideoSource = new MediaSourceNet(mVideoReceiveSocket, CONF.GetVideoRtp());
                         mVideoSource->SetInputStreamPreferences(CONF.GetVideoCodec().toStdString());
                         mVideoWidgetFrame->hide();
-                        mVideoWidget->Init(mMainWindow, mVideoSource, pVideoMenu, mSessionName);
+                        mVideoWidget->Init(mMainWindow, this, mVideoSource, pVideoMenu, mSessionName);
                     }else
                         LOG(LOG_ERROR, "Determined video socket is NULL");
                     if (mAudioReceiveSocket != NULL)
@@ -228,7 +228,7 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
                             {
                                 tVDesc = QString(mVideoSource->GetCurrentDeviceName().c_str());
                                 mVideoWidgetFrame->show();
-                                mVideoWidget->Init(mMainWindow, mVideoSource, pVideoMenu, mSessionName, mSessionName, true);
+                                mVideoWidget->Init(mMainWindow, this, mVideoSource, pVideoMenu, mSessionName, mSessionName, true);
                                 tFoundPreviewSource = true;
                             }
 
@@ -1078,8 +1078,8 @@ void ParticipantWidget::PauseMovieFile()
 
 void ParticipantWidget::SeekMovieFile(int pPos)
 {
-    mVideoWidget->GetWorker()->Seek(pPos);
-    mAudioWidget->GetWorker()->Seek(pPos);
+    mVideoWidget->GetWorker()->Seek(mVideoWidget->GetWorker()->GetSeekEnd() * pPos / 1000);
+    mAudioWidget->GetWorker()->Seek(mAudioWidget->GetWorker()->GetSeekEnd() * pPos / 1000);
 }
 
 VideoWorkerThread* ParticipantWidget::GetVideoWorker()
