@@ -315,9 +315,6 @@ void MediaSinkNet::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
                         LOG(LOG_VERBOSE, "Remaining RTP data: %d bytes at %p(%u) ", tRemainingRtpDataSize, tRtpPacket - 4, tRtpPacket - 4);
                 #endif
             }while (tRemainingRtpDataSize > RTP_HEADER_SIZE);
-
-            // free the temporary RTP stream packets buffer
-            av_free(pPacketData);
         }
     }else
     {

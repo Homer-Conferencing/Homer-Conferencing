@@ -89,6 +89,7 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     MeetingObserver()
 {
     mStartTime = QTime::currentTime();
+    QApplication::setWindowIcon(QPixmap(":/images/LogoHomer3.png"));
 
     SVC_PROCESS_STATISTIC.AssignThreadName("Qt-MainLoop");
     mAbsBinPath = pAbsBinPath;
@@ -96,7 +97,7 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     mNetworkSimulator = NULL;
 
     QCoreApplication::setApplicationName("Homer");
-    QCoreApplication::setApplicationVersion("1.0");
+    QCoreApplication::setApplicationVersion(HOMER_VERSION);
 
     // get the program arguments
     QStringList tArguments = QCoreApplication::arguments();
@@ -147,6 +148,7 @@ void MainWindow::initializeGUI()
 {
     LOG(LOG_VERBOSE, "Initialization of GUI..");
     setupUi(this);
+    setWindowTitle("Homer Conferencing "HOMER_VERSION);
     move(CONF.GetMainWindowPosition());
     resize(CONF.GetMainWindowSize());
 }
@@ -621,6 +623,8 @@ void MainWindow::loadSettings()
         MEETING.SetVideoCodecsSupport(CODEC_MPEG4);
     if (tVideoStreamCodec == "THEORA")
         MEETING.SetVideoCodecsSupport(CODEC_THEORA);
+    if (tVideoStreamCodec == "VP8")
+        MEETING.SetVideoCodecsSupport(CODEC_VP8);
     MEETING.SetVideoTransportType(MEDIA_TRANSPORT_RTP_UDP); // always use RTP/AVP as profile (RTP/UDP)
 
     // init audio codec for network streaming, but only support ONE codec and not multiple

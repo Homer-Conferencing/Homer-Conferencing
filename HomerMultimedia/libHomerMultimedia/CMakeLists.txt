@@ -226,6 +226,7 @@ ELSE ()
 		theoradec
 		ogg
 		x264
+		vpx
 		bz2
 		z		
 		SDL

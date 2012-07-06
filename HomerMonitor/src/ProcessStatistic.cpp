@@ -60,7 +60,7 @@ void ProcessStatistic::AssignThreadName(string pName)
 {
     mName = pName;
 
-    LOG(LOG_WARN, "Assign name \"%s\" for thread (Pid:%d Tid:%d)", pName.c_str(), Thread::GetPId(), mThreadId);
+    LOG(LOG_WARN, "Assign name \"%s\" for thread (Pid:%d Tid:%d)", pName.c_str(), Thread::GetTId(), mThreadId);
 }
 
 string ProcessStatistic::GetThreadName()

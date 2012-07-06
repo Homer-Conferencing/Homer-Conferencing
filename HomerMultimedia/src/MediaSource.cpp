@@ -285,6 +285,8 @@ std::string MediaSource::CodecName2FfmpegName(std::string pStdName)
         tResult = "mjpeg";
     if (pStdName == "THEORA")
         tResult = "theora";
+    if (pStdName == "VP8")
+        tResult = "vp8";
 
     /* audio */
     // translate from standardized names to FFMPEG internal names
@@ -332,6 +334,8 @@ enum CodecID MediaSource::FfmpegName2FfmpegId(std::string pName)
         tResult = CODEC_ID_MPEG4;
     if (pName == "mjpeg")
         tResult = CODEC_ID_MJPEG;
+    if ((pName == "vp8") || (pName == "VP8") || (pName == "libvpx"))
+        tResult = CODEC_ID_VP8;
     if ((pName == "theora") || (pName == "THEORA") || (pName == "libtheora"))
         tResult = CODEC_ID_THEORA;
 
@@ -383,6 +387,8 @@ string MediaSource::FfmpegName2FfmpegFormat(std::string pName)
         tResult = "mpeg4";
     if (pName == "mjpeg")
         tResult = "mjpeg";
+    if ((pName == "vp8") || (pName == "VP8") || (pName == "libvpx"))
+        tResult = "vp8";
     if ((pName == "theora") || (pName == "THEORA") || (pName == "libtheora"))
         tResult = "theora";
 
@@ -432,6 +438,8 @@ string MediaSource::FfmpegId2FfmpegFormat(enum CodecID pCodecId)
         tResult = "m4v";
     if (pCodecId == CODEC_ID_MJPEG)
         tResult = "mjpeg";
+    if (pCodecId == CODEC_ID_VP8)
+        tResult = "vp8";
     if (pCodecId == CODEC_ID_THEORA)
         tResult = "theora";
 
@@ -480,6 +488,8 @@ enum MediaType MediaSource::FfmpegName2MediaType(std::string pName)
     if (pName == "m4v")
         tResult = MEDIA_VIDEO;
     if (pName == "mjpeg")
+        tResult = MEDIA_VIDEO;
+    if (pName == "vp8")
         tResult = MEDIA_VIDEO;
     if (pName == "theora")
         tResult = MEDIA_VIDEO;

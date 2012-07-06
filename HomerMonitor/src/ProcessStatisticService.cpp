@@ -85,24 +85,25 @@ ProcessStatisticsList ProcessStatisticService::GetProcessStatistics()
 
 void ProcessStatisticService::UpdateThreadDatabase()
 {
-	if (!sProcessStatisticSupported)
-		return;
-
-    // return immediately for APPLE environment because HomerBase lacks support for thread statistics in APPLE environment
-	#if defined(APPLE) || (BSD)
-        return;//TODO
-    #endif
-
-	mUpdateThreadDataBaseMutex.lock();
-
     ProcessStatisticsList tNewThreads;
     ProcessStatisticsList::iterator tDbIt;
     vector<int> tThreadIds;
     vector<int>::iterator tIt;
 
-    //LOG(LOG_VERBOSE, "Updating thread database");
+    if (!sProcessStatisticSupported)
+		return;
 
     tThreadIds = Thread::GetTIds();
+
+    // return immediately for APPLE environment because HomerBase lacks support for thread statistics in APPLE environment
+	#if defined(BSD)
+        return;//TODO
+    #endif
+
+	mUpdateThreadDataBaseMutex.lock();
+
+    //LOG(LOG_VERBOSE, "Updating thread database");
+
     if(tThreadIds.size())
     {
         for (tIt = tThreadIds.begin(); tIt != tThreadIds.end(); tIt++)
