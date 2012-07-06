@@ -70,6 +70,7 @@ SET (LIBS_LINUX
 # USED LIBRARIES for apple environment
 SET (LIBS_APPLE
 	HomerBase
+	sctp
 )
 
 ##############################################################
