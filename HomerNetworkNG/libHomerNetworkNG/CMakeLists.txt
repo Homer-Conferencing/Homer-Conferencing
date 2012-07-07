@@ -44,6 +44,9 @@ SET (SOURCES
 	../src/NGNSocketSetup
     	../src/NGNSocketBinding
     	../src/NGNSocketConnection
+	../../HomerGAPI/src/Requirements
+	../../HomerGAPI/src/Events
+	../../HomerGAPI/src/Berkeley/SocketName
 )
 
 ##############################################################
