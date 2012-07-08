@@ -216,7 +216,7 @@ void OverviewFileTransfersWidget::contextMenuEvent(QContextMenuEvent *pContextMe
 
 void OverviewFileTransfersWidget::UpdateView()
 {
-	PacketStatisticsList::iterator tIt;
+	PacketStatistics::iterator tIt;
     int tRowAudio = 0, tRowVideo = 0;
     int tSelectedRow = -1;
 

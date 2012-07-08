@@ -68,7 +68,7 @@ MediaSourceV4L2::~MediaSourceV4L2()
         CloseGrabDevice();
 }
 
-void MediaSourceV4L2::getVideoDevices(VideoDevicesList &pVList)
+void MediaSourceV4L2::getVideoDevices(VideoDevices &pVList)
 {
     static bool tFirstCall = true;
     struct v4l2_capability tV4L2Caps;
@@ -358,8 +358,8 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     mCurrentDevice = mDesiredDevice;
     mCurrentInputChannel = mDesiredInputChannel;
 
-    VideoDevicesList tAvailDevs;
-    VideoDevicesList::iterator tDevIt;
+    VideoDevices tAvailDevs;
+    VideoDevices::iterator tDevIt;
     getVideoDevices(tAvailDevs);
     for(tDevIt = tAvailDevs.begin(); tDevIt != tAvailDevs.end(); tDevIt++)
     {
@@ -817,9 +817,9 @@ bool MediaSourceV4L2::SelectInputChannel(int pIndex)
     return tResult;
 }
 
-list<string> MediaSourceV4L2::GetInputChannels()
+vector<string> MediaSourceV4L2::GetInputChannels()
 {
-    list<string> tResult;
+    vector<string> tResult;
 
     struct v4l2_input tV4L2Input;
     int tFd = 0;

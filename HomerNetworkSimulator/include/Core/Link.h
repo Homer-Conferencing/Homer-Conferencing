@@ -33,12 +33,12 @@
 #include <HBMutex.h>
 #include <Name.h>
 
-#include <list>
+#include <vector>
 
 namespace Homer { namespace Base {
 
 class Link;
-typedef std::list<Link*> LinkList;
+typedef std::vector<Link*> Links;
 
 class Node;
 
@@ -64,11 +64,11 @@ public:
     int GetPacketCount();
     int GetLostPacketCount();
 
-    std::list<int> GetSeenStreams();
+    std::vector<int> GetSeenStreams();
 private:
     Node            *mNodes[2];
     QoSSettings     mQoSCapabilities;
-    std::list<int>  mSeenStreams;
+    std::vector<int> mSeenStreams;
     Mutex           mSeenStreamsMutex;
     int             mPacketCount;
     int             mPacketLossCount;

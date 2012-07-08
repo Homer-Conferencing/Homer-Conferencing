@@ -100,7 +100,7 @@ MediaSourcePortAudio::~MediaSourcePortAudio()
     LOG(LOG_VERBOSE, "Destroyed");
 }
 
-void MediaSourcePortAudio::getAudioDevices(AudioDevicesList &pAList)
+void MediaSourcePortAudio::getAudioDevices(AudioDevices &pAList)
 {
     static bool tFirstCall = true;
     AudioDeviceDescriptor tDevice;

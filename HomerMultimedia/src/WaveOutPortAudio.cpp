@@ -69,7 +69,7 @@ WaveOutPortAudio::~WaveOutPortAudio()
     LOG(LOG_VERBOSE, "Destroyed");
 }
 
-void WaveOutPortAudio::getAudioDevices(AudioDevicesList &pAList)
+void WaveOutPortAudio::getAudioDevices(AudioDevices &pAList)
 {
     static bool tFirstCall = true;
     AudioDeviceDescriptor tDevice;

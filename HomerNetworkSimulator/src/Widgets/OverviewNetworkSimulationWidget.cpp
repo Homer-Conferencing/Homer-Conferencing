@@ -278,7 +278,7 @@ Link* GuiLink::GetLink()
 
 void GuiLink::UpdateColoring()
 {
-    list<int>tSeenStreams = mLink->GetSeenStreams();
+    vector<int>tSeenStreams = mLink->GetSeenStreams();
     int tStreamCount = tSeenStreams.size();
     if (tStreamCount > 0)
     {
@@ -323,10 +323,10 @@ GuiDomain::GuiDomain(Domain *pDomain, OverviewNetworkSimulationWidget* pNetSimWi
     mNetSimWidget = pNetSimWidget;
     mDomain = pDomain;
 
-    NodeList tNodes = pDomain->GetNodes();
+    Nodes tNodes = pDomain->GetNodes();
     if (tNodes.size() > 0)
     {
-        NodeList::iterator tIt;
+        Nodes::iterator tIt;
         for(tIt = tNodes.begin(); tIt != tNodes.end(); tIt++)
         {
             GuiNode* tGuiNode = pNetSimWidget->GetGuiNode(*tIt);
@@ -696,8 +696,8 @@ void OverviewNetworkSimulationWidget::AppendHierarchySubItems(HierarchyItem *pPa
 
     if (tParentCoordinator->GetHierarchyLevel() == 0)
     {// end of tree reached
-        NodeList tNodeList = tParentCoordinator->GetClusterMembers();
-        NodeList::iterator tIt;
+        Nodes tNodeList = tParentCoordinator->GetClusterMembers();
+        Nodes::iterator tIt;
         int tCount = 0;
         for (tIt = tNodeList.begin(); tIt != tNodeList.end(); tIt++)
         {
@@ -707,8 +707,8 @@ void OverviewNetworkSimulationWidget::AppendHierarchySubItems(HierarchyItem *pPa
         }
     }else
     {// further sub trees possible
-        CoordinatorList tCoordinatorList = tParentCoordinator->GetChildCoordinators();
-        CoordinatorList::iterator tIt;
+        Coordinators tCoordinatorList = tParentCoordinator->GetChildCoordinators();
+        Coordinators::iterator tIt;
         QList<QStandardItem*> tItems;
         int tCount = 0;
         for (tIt = tCoordinatorList.begin(); tIt != tCoordinatorList.end(); tIt++)
@@ -745,7 +745,7 @@ void OverviewNetworkSimulationWidget::UpdateStreamsView()
 
     //LOG(LOG_VERBOSE, "Updating streams view");
 
-    StreamList tStreams = mScenario->GetStreams();
+    Streams tStreams = mScenario->GetStreams();
     QStandardItem *tRootItem = mTvStreamsModel->invisibleRootItem();
 
     if (tStreams.size() == 0)
@@ -767,7 +767,7 @@ void OverviewNetworkSimulationWidget::UpdateStreamsView()
 
     int tCount = 0;
     // check if update is need
-    StreamList::iterator tIt;
+    Streams::iterator tIt;
     if (tRootItem->rowCount() != 0)
     {
         for(tIt = tStreams.begin(); tIt != tStreams.end(); tIt++)
@@ -833,8 +833,8 @@ GuiNode* OverviewNetworkSimulationWidget::GetGuiNode(Node *pNode)
 void OverviewNetworkSimulationWidget::InitNetworkView()
 {
     // create all node GUI elements
-    NodeList tNodes = mScenario->GetNodes();
-    NodeList::iterator tIt;
+    Nodes tNodes = mScenario->GetNodes();
+    Nodes::iterator tIt;
     for (tIt = tNodes.begin(); tIt != tNodes.end(); tIt++)
     {
         // create GUI node object
@@ -846,8 +846,8 @@ void OverviewNetworkSimulationWidget::InitNetworkView()
     }
 
     // create all link GUI elements
-    LinkList tLinks = mScenario->GetLinks();
-    LinkList::iterator tIt2;
+    Links tLinks = mScenario->GetLinks();
+    Links::iterator tIt2;
     for (tIt2 = tLinks.begin(); tIt2 != tLinks.end(); tIt2++)
     {
         GuiLink *tGuiLink = new GuiLink(*tIt2, this);
@@ -856,8 +856,8 @@ void OverviewNetworkSimulationWidget::InitNetworkView()
     }
 
     // create all domain elemts
-    DomainList tDomains = mScenario->GetDomains();
-    DomainList::iterator tIt3;
+    Domains tDomains = mScenario->GetDomains();
+    Domains::iterator tIt3;
     for (tIt3 = tDomains.begin(); tIt3 != tDomains.end(); tIt3++)
     {
         GuiDomain *tGuiDomain = new GuiDomain(*tIt3, this);
@@ -943,7 +943,7 @@ void OverviewNetworkSimulationWidget::FillRoutingTableRow(int pRow, RibEntry* pE
 
 void OverviewNetworkSimulationWidget::InitRoutingView()
 {
-    NodeList tNodes = mScenario->GetNodes();
+    Nodes tNodes = mScenario->GetNodes();
 
     if ((mSelectedNode == NULL) && (tNodes.size() > 0))
     {
@@ -997,7 +997,7 @@ void OverviewNetworkSimulationWidget::ReceiveVideo(Node *pNode)
 // #####################################################################
 void OverviewNetworkSimulationWidget::InitLinkView()
 {
-    LinkList tLinks = mScenario->GetLinks();
+    Links tLinks = mScenario->GetLinks();
 
     if ((mSelectedLink == NULL) && (tLinks.size() > 0))
     {

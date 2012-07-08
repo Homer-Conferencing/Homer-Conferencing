@@ -70,7 +70,7 @@
 #include <QDesktopWidget>
 
 #include <stdlib.h>
-#include <list>
+#include <vector>
 
 namespace Homer { namespace Gui {
 
@@ -238,8 +238,8 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
     GrabResolutions tGrabResolutions = mVideoSource->GetSupportedVideoGrabResolutions();
     GrabResolutions::iterator tIt;
     int tCurResX, tCurResY;
-    list<string> tRegisteredVideoSinks = mVideoSource->ListRegisteredMediaSinks();
-    list<string>::iterator tRegisteredVideoSinksIt;
+    vector<string> tRegisteredVideoSinks = mVideoSource->ListRegisteredMediaSinks();
+    vector<string>::iterator tRegisteredVideoSinksIt;
 
     mVideoSource->GetVideoGrabResolution(tCurResX, tCurResY);
 
@@ -1396,7 +1396,12 @@ void VideoWidget::customEvent(QEvent *pEvent)
                     //printf("VideoWidget-Frame number: %d\n", mCurrentFrameNumber);
                     // do we have a frame order problem?
                     if ((mLastFrameNumber > mCurrentFrameNumber) && (mCurrentFrameNumber  > 32 /* -1 means error, 1 is received after every reset, use "32" because of possible latencies */))
-                        LOG(LOG_WARN, "Frames received in wrong order, [%d->%d]", mLastFrameNumber, mCurrentFrameNumber);
+                    {
+                        if (mLastFrameNumber - mCurrentFrameNumber == FRAME_BUFFER_SIZE -1)
+                            LOG(LOG_WARN, "Buffer underrun occurred, received frames in wrong order, [%d->%d]", mLastFrameNumber, mCurrentFrameNumber);
+                        else
+                            LOG(LOG_WARN, "Frames received in wrong order, [%d->%d]", mLastFrameNumber, mCurrentFrameNumber);
+                    }
                     //if (tlFrameNumber == tFrameNumber)
                         //printf("VideoWidget-unnecessary frame grabbing detected!\n");
                 }else
@@ -1556,9 +1561,9 @@ void VideoWorkerThread::SetCurrentDevice(QString pName)
     }
 }
 
-VideoDevicesList VideoWorkerThread::GetPossibleDevices()
+VideoDevices VideoWorkerThread::GetPossibleDevices()
 {
-    VideoDevicesList tResult;
+    VideoDevices tResult;
 
     LOG(LOG_VERBOSE, "Enumerate all video devices..");
     mVideoSource->getVideoDevices(tResult);
@@ -1568,8 +1573,8 @@ VideoDevicesList VideoWorkerThread::GetPossibleDevices()
 
 QString VideoWorkerThread::GetDeviceDescription(QString pName)
 {
-    VideoDevicesList::iterator tIt;
-    VideoDevicesList tVList;
+    VideoDevices::iterator tIt;
+    VideoDevices tVList;
 
     mVideoSource->getVideoDevices(tVList);
     for (tIt = tVList.begin(); tIt != tVList.end(); tIt++)
@@ -1722,8 +1727,8 @@ QStringList VideoWorkerThread::GetPossibleChannels()
 {
     QStringList tResult;
 
-    list<string> tList = mVideoSource->GetInputChannels();
-    list<string>::iterator tIt;
+    vector<string> tList = mVideoSource->GetInputChannels();
+    vector<string>::iterator tIt;
     for (tIt = tList.begin(); tIt != tList.end(); tIt++)
         tResult.push_back(QString((*tIt).c_str()));
 
@@ -1760,8 +1765,8 @@ void VideoWorkerThread::DoPlayNewFile()
 {
     LOG(LOG_VERBOSE, "DoPlayNewFile now...");
 
-    VideoDevicesList tList = GetPossibleDevices();
-    VideoDevicesList::iterator tIt;
+    VideoDevices tList = GetPossibleDevices();
+    VideoDevices::iterator tIt;
     bool tFound = false;
 
     for (tIt = tList.begin(); tIt != tList.end(); tIt++)
@@ -1780,7 +1785,7 @@ void VideoWorkerThread::DoPlayNewFile()
     	MediaSourceFile *tVSource = new MediaSourceFile(mDesiredFile.toStdString());
         if (tVSource != NULL)
         {
-            VideoDevicesList tVList;
+            VideoDevices tVList;
             tVSource->getVideoDevices(tVList);
             mVideoSource->RegisterMediaSource(tVSource);
             SetCurrentDevice(mDesiredFile);

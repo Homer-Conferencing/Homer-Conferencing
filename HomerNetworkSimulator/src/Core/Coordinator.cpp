@@ -70,9 +70,9 @@ void Coordinator::SetSuperior(Coordinator *pSuperior)
     mSuperior = pSuperior;
 }
 
-NodeList Coordinator::GetClusterMembers()
+Nodes Coordinator::GetClusterMembers()
 {
-    NodeList tResult;
+    Nodes tResult;
 
     mClusterMembersMutex.lock();
     tResult = mClusterMembers;
@@ -81,9 +81,9 @@ NodeList Coordinator::GetClusterMembers()
     return tResult;
 }
 
-CoordinatorList Coordinator::GetChildCoordinators()
+Coordinators Coordinator::GetChildCoordinators()
 {
-    CoordinatorList tResult;
+    Coordinators tResult;
 
     mChildCoordinatorsMutex.lock();
     tResult = mChildCoordinators;
@@ -92,9 +92,9 @@ CoordinatorList Coordinator::GetChildCoordinators()
     return tResult;
 }
 
-CoordinatorList Coordinator::GetSiblings()
+Coordinators Coordinator::GetSiblings()
 {
-    CoordinatorList tResult;
+    Coordinators tResult;
 
     if (mSuperior != NULL)
         tResult = mSuperior->GetChildCoordinators();
@@ -102,7 +102,7 @@ CoordinatorList Coordinator::GetSiblings()
     // remove self pointer
     if (tResult.size() > 0)
     {
-        CoordinatorList::iterator tIt;
+        Coordinators::iterator tIt;
         for (tIt = tResult.begin(); tIt != tResult.end(); tIt++)
         {
             if ((*tIt)->GetClusterAddress() == GetClusterAddress())
@@ -158,8 +158,8 @@ Coordinator* Coordinator::GetSibling(std::string pClusterAddress)
     if (mSuperior == NULL)
         return NULL;
 
-    CoordinatorList tSiblings = mSuperior->mChildCoordinators;;
-    CoordinatorList::iterator tIt;
+    Coordinators tSiblings = mSuperior->mChildCoordinators;;
+    Coordinators::iterator tIt;
     for (tIt = tSiblings.begin(); tIt != tSiblings.end(); tIt++)
     {
         if ((*tIt)->GetClusterAddress() == pClusterAddress)
@@ -238,7 +238,7 @@ void Coordinator::AddClusterTraversalCosts(string pFromAddress, string pToAddres
         #endif
 
         //HINT: no locking of mClusterMembersMutex because this function is called from UpdateRouting which controls the mutex
-        NodeList::iterator tIt, tIt2;
+        Nodes::iterator tIt, tIt2;
 
         //########### calculate best ingres node
         Node* tIngresNode = NULL;
@@ -334,7 +334,7 @@ bool Coordinator::DistributeAggregatedRibEntry(string pDestination, string pNext
     int tHopCosts = pHopCosts;
     if (mHierarchyLevel == 0)
     {// level 0 coordinator
-        NodeList::iterator tIt2;
+        Nodes::iterator tIt2;
         // AGGREGATE ROUTE and distribute topology knowledge among cluster nodes
         for (tIt2 = mClusterMembers.begin(); tIt2 != mClusterMembers.end(); tIt2++)
         {
@@ -358,7 +358,7 @@ void Coordinator::UpdateRouting()
     if (mHierarchyLevel == 0)
     {// layer 0 coordinator
         mClusterMembersMutex.lock();
-        NodeList::iterator tIt, tIt2;
+        Nodes::iterator tIt, tIt2;
         // ITERATE over all known cluster nodes and update their routing
         for (tIt = mClusterMembers.begin(); tIt != mClusterMembers.end(); tIt++)
         {
@@ -406,7 +406,7 @@ void Coordinator::UpdateRouting()
                         LOG(LOG_VERBOSE, "Found RIB entry (destination %s via %s, hc: %d, dr: %d, delay: %d) at %s", (*tRibIt)->Destination.c_str(), (*tRibIt)->NextNode.c_str(), (*tRibIt)->HopCount, (*tRibIt)->QoSCapabilities.DataRate, (*tRibIt)->QoSCapabilities.Delay, tCurNodeAddr.c_str());
 
                         // ITERATE over all known cluster nodes and prepare an update RIB for all of them
-                        std::list<RibTable*>::iterator tUpdateRibIt = mRibUpdateTables.begin();
+                        RibTables::iterator tUpdateRibIt = mRibUpdateTables.begin();
                         for (tIt2 = mClusterMembers.begin(); tIt2 != mClusterMembers.end(); tIt2++)
                         {
                             // calculate inner cluster QoS and "add" them
@@ -441,7 +441,7 @@ void Coordinator::UpdateRouting()
 
         // now send the updates to all nodes
         RibTable::iterator tRibIt;
-        std::list<RibTable*>::iterator tUpdateRibIt = mRibUpdateTables.begin();
+        RibTables::iterator tUpdateRibIt = mRibUpdateTables.begin();
         for (tIt = mClusterMembers.begin(); tIt != mClusterMembers.end(); tIt++)
         {
             for (tRibIt = (*tUpdateRibIt)->begin(); tRibIt != (*tUpdateRibIt)->end(); tRibIt++)
@@ -455,7 +455,7 @@ void Coordinator::UpdateRouting()
     }else
     {// higher coordinator
         mChildCoordinatorsMutex.lock();
-        CoordinatorList::iterator tIt, tIt2;
+        Coordinators::iterator tIt, tIt2;
         // ITERATE over all known cluster nodes and update their routing
         for (tIt = mChildCoordinators.begin(); tIt != mChildCoordinators.end(); tIt++)
         {
@@ -504,7 +504,7 @@ void Coordinator::UpdateRouting()
                         #endif
 
                         // ITERATE over all child coordinators and prepare an update RIB for all of them
-                        std::list<RibTable*>::iterator tUpdateRibIt = mRibUpdateTables.begin();
+                        RibTables::iterator tUpdateRibIt = mRibUpdateTables.begin();
                         for (tIt2 = mChildCoordinators.begin(); tIt2 != mChildCoordinators.end(); tIt2++)
                         {
                             // calculate inner cluster QoS and "add" them
@@ -538,7 +538,7 @@ void Coordinator::UpdateRouting()
                         #endif
 
                         // ITERATE over all child coordinators and prepare an update RIB for all of them
-                        list<RibTable*>::iterator tUpdateRibIt = mRibUpdateTables.begin();
+                        RibTables::iterator tUpdateRibIt = mRibUpdateTables.begin();
                         for (tIt2 = mChildCoordinators.begin(); tIt2 != mChildCoordinators.end(); tIt2++)
                         {
                             // calculate inner cluster QoS and "add" them
@@ -572,7 +572,7 @@ void Coordinator::UpdateRouting()
 
         // now send the updates to all nodes
         RibTable::iterator tRibIt;
-        std::list<RibTable*>::iterator tUpdateRibIt = mRibUpdateTables.begin();
+        RibTables::iterator tUpdateRibIt = mRibUpdateTables.begin();
         for (tIt = mChildCoordinators.begin(); tIt != mChildCoordinators.end(); tIt++)
         {
             for (tRibIt = (*tUpdateRibIt)->begin(); tRibIt != (*tUpdateRibIt)->end(); tRibIt++)
@@ -598,7 +598,7 @@ RibTable Coordinator::GetRib()
     if (mHierarchyLevel == 0)
     {// layer 0 coordinator
         mClusterMembersMutex.lock();
-        NodeList::iterator tIt, tIt2;
+        Nodes::iterator tIt, tIt2;
         // ITERATE over all known cluster nodes
         for (tIt = mClusterMembers.begin(); tIt != mClusterMembers.end(); tIt++)
         {
@@ -639,7 +639,7 @@ RibTable Coordinator::GetRib()
     }else
     {// higher coordinator
         mChildCoordinatorsMutex.lock();
-        CoordinatorList::iterator tIt, tIt2;
+        Coordinators::iterator tIt, tIt2;
         // ITERATE over all known cluster nodes
         for (tIt = mChildCoordinators.begin(); tIt != mChildCoordinators.end(); tIt++)
         {

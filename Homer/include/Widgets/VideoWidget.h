@@ -63,7 +63,7 @@ class ParticipantWidget;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define FRAME_BUFFER_SIZE              30 // 1 second buffered
+#define FRAME_BUFFER_SIZE              5
 
 #define FPS_MEASUREMENT_STEPS          60
 
@@ -187,7 +187,7 @@ public:
     QString GetCurrentDevice();
     QString GetCurrentDevicePeer();
     void SetCurrentDevice(QString pName);
-    VideoDevicesList GetPossibleDevices();
+    VideoDevices GetPossibleDevices();
     QString GetDeviceDescription(QString pName);
 
     /* file based video playback */

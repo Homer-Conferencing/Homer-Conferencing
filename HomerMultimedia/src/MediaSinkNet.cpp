@@ -270,7 +270,12 @@ void MediaSinkNet::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
         #ifdef MSIN_DEBUG_PACKETS
             LOG(LOG_VERBOSE, "Encapsulating codec packet of size %d at memory position %p", pPacketSize, pPacketData);
         #endif
+        int64_t tTime = Time::GetTimeStamp();
         bool tRtpCreationSucceed = RtpCreate(pPacketData, pPacketSize);
+        #ifdef MSIN_DEBUG_TIMING
+            int64_t tTime2 = Time::GetTimeStamp();
+            LOG(LOG_VERBOSE, "               generating RTP envelope took %ld us", tTime2 - tTime);
+        #endif
         #ifdef MSIN_DEBUG_PACKETS
             LOG(LOG_VERBOSE, "Creation of RTP packets resulted in a buffer at %p with size %u", pPacketData, pPacketSize);
         #endif
@@ -289,6 +294,7 @@ void MediaSinkNet::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
         //####################################################################
         if ((tRtpCreationSucceed) && (pPacketData != 0) && (pPacketSize > 0))
         {
+            tTime = Time::GetTimeStamp();
             char *tRtpPacket = pPacketData + 4;
             uint32_t tRtpPacketSize = 0;
             uint32_t tRemainingRtpDataSize = pPacketSize;
@@ -315,6 +321,10 @@ void MediaSinkNet::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
                         LOG(LOG_VERBOSE, "Remaining RTP data: %d bytes at %p(%u) ", tRemainingRtpDataSize, tRtpPacket - 4, tRtpPacket - 4);
                 #endif
             }while (tRemainingRtpDataSize > RTP_HEADER_SIZE);
+            #ifdef MSIN_DEBUG_TIMING
+                tTime2 = Time::GetTimeStamp();
+                LOG(LOG_VERBOSE, "                             sending RTP packets to network took %ld us", tTime2 - tTime);
+            #endif
         }
     }else
     {
@@ -375,6 +385,7 @@ void MediaSinkNet::SendFragment(char* pData, unsigned int pSize)
     char *tFragmentData = pData;
     while (tFragmentCount)
     {
+        int64_t tTime = Time::GetTimeStamp();
         if (!mRtpActivated)
             tFragmentSize = (unsigned int)(((int)pSize > mMaxNetworkPacketSize)? mMaxNetworkPacketSize : pSize);
 
@@ -394,11 +405,20 @@ void MediaSinkNet::SendFragment(char* pData, unsigned int pSize)
             }
         }
 
+        int64_t tTime3 = Time::GetTimeStamp();
         AnnouncePacket(tFragmentSize);
+        #ifdef MSIN_DEBUG_TIMING
+            int64_t tTime4 = Time::GetTimeStamp();
+            LOG(LOG_VERBOSE, "       SendFragment::AnnouncePacket for a fragment of %u bytes took %ld us", tFragmentSize, tTime4 - tTime3);
+        #endif
         DoSendFragment(tFragmentData, tFragmentSize);
 
         tFragmentData = tFragmentData + tFragmentSize;
         tFragmentCount--;
+        #ifdef MSIN_DEBUG_TIMING
+            int64_t tTime2 = Time::GetTimeStamp();
+            LOG(LOG_VERBOSE, "       SendFragment::Loop for a fragment of %u bytes took %ld us", tFragmentSize, tTime2 - tTime);
+        #endif
         if ((tFragmentData > (pData + pSize)) && (tFragmentCount))
         {
             LOG(LOG_ERROR, "Something went wrong, we have too many fragments and would read over the last byte of the fragment buffer");
@@ -409,6 +429,7 @@ void MediaSinkNet::SendFragment(char* pData, unsigned int pSize)
 
 void MediaSinkNet::DoSendFragment(char* pData, unsigned int pSize)
 {
+    int64_t tTime = Time::GetTimeStamp();
 	if(mGAPIUsed)
 	{
 		if (mGAPIDataSocket != NULL)
@@ -431,6 +452,10 @@ void MediaSinkNet::DoSendFragment(char* pData, unsigned int pSize)
 			}
 		}
 	}
+    #ifdef MSIN_DEBUG_TIMING
+        int64_t tTime2 = Time::GetTimeStamp();
+        LOG(LOG_VERBOSE, "       sending a packet of %u bytes took %ld us", pSize, tTime2 - tTime);
+    #endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -349,9 +349,9 @@ bool Node::IsNeighbor(std::string pAddress)
     return tResult;
 }
 
-NodeList Node::GetSiblings()
+Nodes Node::GetSiblings()
 {
-    NodeList tResult;
+    Nodes tResult;
 
     if (mCoordinator != NULL)
         tResult = mCoordinator->GetClusterMembers();
@@ -359,7 +359,7 @@ NodeList Node::GetSiblings()
     // remove self pointer
     if (tResult.size() > 0)
     {
-        NodeList::iterator tIt;
+        Nodes::iterator tIt;
         for (tIt = tResult.begin(); tIt != tResult.end(); tIt++)
         {
             if ((*tIt)->GetAddress() == GetAddress())
@@ -558,7 +558,7 @@ bool Node::DeleteServer(unsigned int pPort)
     mServerCepsMutex.lock();
     if (mServerCeps.size() > 0)
     {
-        CepList::iterator tIt;
+        Ceps::iterator tIt;
         for (tIt = mServerCeps.begin(); tIt != mServerCeps.end(); tIt++)
         {
             //LOG(LOG_VERBOSE, "Comparing CEP with local port %u and desired port %u", (*tIt)->GetLocalPort(), pPort);
@@ -604,7 +604,7 @@ Cep* Node::FindServerCep(unsigned int pPort)
     mServerCepsMutex.lock();
     if (mServerCeps.size() > 0)
     {
-        CepList::iterator tIt;
+        Ceps::iterator tIt;
         for (tIt = mServerCeps.begin(); tIt != mServerCeps.end(); tIt++)
         {
             //LOG(LOG_VERBOSE, "Comparing CEP with local port %u and desired port %u", (*tIt)->GetLocalPort(), pPort);
@@ -622,7 +622,7 @@ Cep* Node::FindServerCep(unsigned int pPort)
 
 void Node::LogServerCeps()
 {
-    CepList::iterator tIt;
+    Ceps::iterator tIt;
 
     mServerCepsMutex.lock();
     int tCount = 0;
@@ -666,7 +666,7 @@ bool Node::HandlePacket(Packet *pPacket)
     if (pPacket->TTL <= 0)
     {
         LOG(LOG_ERROR, "TTL exceeded for packet from %s at node %s, packet was transfered..", pPacket->Source.c_str(), mAddress.c_str());
-        list<string>::iterator tIt;
+        vector<string>::iterator tIt;
         for (tIt = pPacket->RecordedRoute.begin(); tIt != pPacket->RecordedRoute.end(); tIt++)
         {
             LOG(LOG_ERROR, "..via %s", (*tIt).c_str());
@@ -948,9 +948,9 @@ string Node::GetNextHop(Packet *pPacket)
                 {
                     #ifdef DEBUG_ROUTING
                         if (tBestRouteCosts == LONG_LONG_MAX)
-                            LOG(LOG_ERROR, "Found route on %s (%s via %s, hc: %d, dr: %d, delay: %d)", mAddress.c_str(), (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str(), (*tIt)->HopCount, (*tIt)->QoSCapabilities.DataRate, (*tIt)->QoSCapabilities.Delay);
+                            LOG(LOG_VERBOSE, "Found route on %s (%s via %s, hc: %d, dr: %d, delay: %d)", mAddress.c_str(), (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str(), (*tIt)->HopCount, (*tIt)->QoSCapabilities.DataRate, (*tIt)->QoSCapabilities.Delay);
                         else
-                            LOG(LOG_ERROR, "Found better route on %s (%s via %s, hc: %d, dr: %d, delay: %d)", mAddress.c_str(), (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str(), (*tIt)->HopCount, (*tIt)->QoSCapabilities.DataRate, (*tIt)->QoSCapabilities.Delay);
+                            LOG(LOG_VERBOSE, "Found better route on %s (%s via %s, hc: %d, dr: %d, delay: %d)", mAddress.c_str(), (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str(), (*tIt)->HopCount, (*tIt)->QoSCapabilities.DataRate, (*tIt)->QoSCapabilities.Delay);
                     #endif
                     if ((*tIt)->Destination == tDestination)
                     {// MATCH: entry is an explicit destination

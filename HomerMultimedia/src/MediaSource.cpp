@@ -847,7 +847,7 @@ int MediaSource::GetFragmentBufferSize()
 
 MediaSinkNet* MediaSource::RegisterMediaSink(string pTarget, Requirements *pTransportRequirements, bool pRtpActivation, int pMaxFps)
 {
-    MediaSinksList::iterator tIt;
+    MediaSinks::iterator tIt;
     bool tFound = false;
     MediaSinkNet *tResult = NULL;
     string tId = pTarget + "[" + pTransportRequirements->getDescription() + "]" + (pRtpActivation ? "(RTP)" : "");
@@ -890,7 +890,7 @@ MediaSinkNet* MediaSource::RegisterMediaSink(string pTarget, Requirements *pTran
 bool MediaSource::UnregisterMediaSink(string pTarget, Requirements *pTransportRequirements, bool pAutoDelete)
 {
     bool tResult = false;
-    MediaSinksList::iterator tIt;
+    MediaSinks::iterator tIt;
     string tId = pTarget + "[" + pTransportRequirements->getDescription() + "]";
 
     if (pTarget == "")
@@ -929,7 +929,7 @@ bool MediaSource::UnregisterMediaSink(string pTarget, Requirements *pTransportRe
 
 MediaSinkNet* MediaSource::RegisterMediaSink(string pTargetHost, unsigned int pTargetPort, Socket* pSocket, bool pRtpActivation, int pMaxFps)
 {
-    MediaSinksList::iterator tIt;
+    MediaSinks::iterator tIt;
     bool tFound = false;
     MediaSinkNet *tResult = NULL;
     string tId = MediaSinkNet::CreateId(pTargetHost, toString(pTargetPort), pSocket->GetTransportType(), pRtpActivation);
@@ -972,7 +972,7 @@ MediaSinkNet* MediaSource::RegisterMediaSink(string pTargetHost, unsigned int pT
 bool MediaSource::UnregisterMediaSink(string pTargetHost, unsigned int pTargetPort, bool pAutoDelete)
 {
     bool tResult = false;
-    MediaSinksList::iterator tIt;
+    MediaSinks::iterator tIt;
     string tId = MediaSinkNet::CreateId(pTargetHost, toString(pTargetPort));
 
     if ((pTargetHost == "") || (pTargetPort == 0))
@@ -1011,7 +1011,7 @@ bool MediaSource::UnregisterMediaSink(string pTargetHost, unsigned int pTargetPo
 
 MediaSinkFile* MediaSource::RegisterMediaSink(string pTargetFile)
 {
-    MediaSinksList::iterator tIt;
+    MediaSinks::iterator tIt;
     bool tFound = false;
     MediaSinkFile *tResult = NULL;
     string tId = pTargetFile;
@@ -1053,7 +1053,7 @@ MediaSinkFile* MediaSource::RegisterMediaSink(string pTargetFile)
 bool MediaSource::UnregisterMediaSink(string pTargetFile, bool pAutoDelete)
 {
     bool tResult = false;
-    MediaSinksList::iterator tIt;
+    MediaSinks::iterator tIt;
     string tId = pTargetFile;
 
     if (pTargetFile == "")
@@ -1092,7 +1092,7 @@ bool MediaSource::UnregisterMediaSink(string pTargetFile, bool pAutoDelete)
 
 MediaSink* MediaSource::RegisterMediaSink(MediaSink* pMediaSink)
 {
-    MediaSinksList::iterator tIt;
+    MediaSinks::iterator tIt;
     bool tFound = false;
     string tId = pMediaSink->GetId();
 
@@ -1129,7 +1129,7 @@ MediaSink* MediaSource::RegisterMediaSink(MediaSink* pMediaSink)
 bool MediaSource::UnregisterMediaSink(MediaSink* pMediaSink, bool pAutoDelete)
 {
     bool tResult = false;
-    MediaSinksList::iterator tIt;
+    MediaSinks::iterator tIt;
     string tId = pMediaSink->GetId();
 
     if (tId == "")
@@ -1169,7 +1169,7 @@ bool MediaSource::UnregisterMediaSink(MediaSink* pMediaSink, bool pAutoDelete)
 bool MediaSource::UnregisterGeneralMediaSink(string pId, bool pAutoDelete)
 {
     bool tResult = false;
-    MediaSinksList::iterator tIt;
+    MediaSinks::iterator tIt;
 
     if (pId == "")
         return false;
@@ -1205,10 +1205,10 @@ bool MediaSource::UnregisterGeneralMediaSink(string pId, bool pAutoDelete)
     return tResult;
 }
 
-list<string> MediaSource::ListRegisteredMediaSinks()
+vector<string> MediaSource::ListRegisteredMediaSinks()
 {
-    list<string> tResult;
-    MediaSinksList::iterator tIt;
+    vector<string> tResult;
+    MediaSinks::iterator tIt;
 
     // lock
     if (mMediaSinksMutex.tryLock(250))
@@ -1231,8 +1231,7 @@ list<string> MediaSource::ListRegisteredMediaSinks()
 
 void MediaSource::DeleteAllRegisteredMediaSinks()
 {
-    list<string> tResult;
-    MediaSinksList::iterator tIt;
+    MediaSinks::iterator tIt;
 
     // lock
     mMediaSinksMutex.lock();
@@ -1275,7 +1274,7 @@ bool MediaSource::SupportsRelaying()
 
 void MediaSource::RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacketSize, bool pIsKeyFrame)
 {
-    MediaSinksList::iterator tIt;
+    MediaSinks::iterator tIt;
 
     // lock
     mMediaSinksMutex.lock();
@@ -1971,7 +1970,7 @@ enum MediaType MediaSource::GetMediaType()
 	return mMediaType;
 }
 
-void MediaSource::getVideoDevices(VideoDevicesList &pVList)
+void MediaSource::getVideoDevices(VideoDevices &pVList)
 {
     VideoDeviceDescriptor tDevice;
 
@@ -1982,7 +1981,7 @@ void MediaSource::getVideoDevices(VideoDevicesList &pVList)
     pVList.push_back(tDevice);
 }
 
-void MediaSource::getAudioDevices(AudioDevicesList &pAList)
+void MediaSource::getAudioDevices(AudioDevices &pAList)
 {
     AudioDeviceDescriptor tDevice;
 
@@ -1996,10 +1995,10 @@ void MediaSource::getAudioDevices(AudioDevicesList &pAList)
 
 bool MediaSource::SelectDevice(std::string pDeviceName, enum MediaType pMediaType, bool &pIsNewDevice)
 {
-    VideoDevicesList::iterator tVIt;
-    VideoDevicesList tVList;
-    AudioDevicesList::iterator tAIt;
-    AudioDevicesList tAList;
+    VideoDevices::iterator tVIt;
+    VideoDevices tVList;
+    AudioDevices::iterator tAIt;
+    AudioDevices tAList;
     string tOldDesiredDevice = mDesiredDevice;
     bool tAutoSelect = false;
     int tMediaType = mMediaType;
@@ -2182,9 +2181,9 @@ bool MediaSource::SelectInputChannel(int pIndex)
     return false;
 }
 
-list<string> MediaSource::GetInputChannels()
+vector<string> MediaSource::GetInputChannels()
 {
-    list<string> tResult;
+    vector<string> tResult;
 
     return tResult;
 }

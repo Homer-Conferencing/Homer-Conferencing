@@ -31,13 +31,15 @@
 #include <HBMutex.h>
 #include <PacketStatistic.h>
 
+#include <vector>
+
 namespace Homer { namespace Monitor {
 
 ///////////////////////////////////////////////////////////////////////////////
 
 #define SVC_PACKET_STATISTIC PacketStatisticService::GetInstance()
 
-typedef std::list<PacketStatistic*>  PacketStatisticsList;
+typedef std::vector<PacketStatistic*>  PacketStatistics;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -53,7 +55,7 @@ public:
     static PacketStatisticService& GetInstance();
 
     /* get statistics */
-    PacketStatisticsList GetPacketStatisticsAccess();
+    PacketStatistics GetPacketStatisticsAccess();
     void ReleasePacketStatisticsAccess();
 
     /* registration interface */
@@ -61,7 +63,7 @@ public:
     bool UnregisterPacketStatistic(PacketStatistic *pStat);
 
 private:
-    PacketStatisticsList mPacketStatistics;
+    PacketStatistics mPacketStatistics;
     Mutex				 mPacketStatisticsMutex;
 };
 

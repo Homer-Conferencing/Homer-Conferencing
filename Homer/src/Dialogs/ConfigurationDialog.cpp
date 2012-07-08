@@ -159,8 +159,8 @@ int ConfigurationDialog::VideoString2ResolutionIndex(string pString)
 
 void ConfigurationDialog::LoadConfiguration()
 {
-    AudioDevicesList::iterator tAudioDevicesIt;
-    VideoDevicesList::iterator tVideoDevicesIt;
+    AudioDevices::iterator tAudioDevicesIt;
+    VideoDevices::iterator tVideoDevicesIt;
     QString tCurMaxPackSize;
 
     mAudioCaptureDevices = mAudioWorker->GetPossibleDevices();
@@ -596,7 +596,7 @@ void ConfigurationDialog::ShowAudioSourceInfo(QString pCurrentText)
 
 void ConfigurationDialog::ShowAudioSinkInfo(QString pCurrentText)
 {
-    AudioDevicesList::iterator tAudioDevicesIt;
+    AudioDevices::iterator tAudioDevicesIt;
     QString tInfoText = "";
 
     for (tAudioDevicesIt = mAudioPlaybackDevices.begin(); tAudioDevicesIt != mAudioPlaybackDevices.end(); tAudioDevicesIt++)

@@ -194,7 +194,7 @@ void OverviewThreadsWidget::FillRow(int pRow, ProcessStatistic *pStats)
 
 void OverviewThreadsWidget::UpdateView()
 {
-    ProcessStatisticsList::iterator tIt;
+    ProcessStatistics::iterator tIt;
     int tRow = 0;
     int tSelectedRow = -1;
 
@@ -206,7 +206,7 @@ void OverviewThreadsWidget::UpdateView()
         tSelectedRow = mTwThreads->selectionModel()->currentIndex().row();
 
     // update widget content
-    ProcessStatisticsList tStatList = SVC_PROCESS_STATISTIC.GetProcessStatistics();
+    ProcessStatistics tStatList = SVC_PROCESS_STATISTIC.GetProcessStatistics();
     for (tIt = tStatList.begin(); tIt != tStatList.end(); tIt++)
         FillRow(tRow++, *tIt);
 

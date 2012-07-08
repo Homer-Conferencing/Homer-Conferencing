@@ -32,7 +32,7 @@
 
 #include <Requirements.h>
 
-#include <list>
+#include <vector>
 
 #include <Core/Cep.h>
 #include <Core/Scenario.h>
@@ -40,9 +40,6 @@
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
-
-typedef std::list<IConnection*> IConnectionList;
-
 
 class ChannelBinding:
 	public IBinding

@@ -36,7 +36,7 @@
 #include <MediaFifo.h>
 #include <RTP.h>
 
-#include <list>
+#include <vector>
 #include <string>
 
 using namespace Homer::Base;
@@ -48,10 +48,13 @@ namespace Homer { namespace Multimedia {
 // maximum packet size of a reeencoded frame, must not be more than 64 kB - otherwise it can't be used via networks!
 #define MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE               MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE
 
-#define MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT                  128
+#define MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT                  32
 
 // the following de/activates debugging of sent packets
 //#define MSM_DEBUG_PACKETS
+
+// the following de/activates debugging of the time behavior of the transcoding
+#define MSM_DEBUG_TIMING
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -107,8 +110,8 @@ public:
     void SetActivation(bool pState);
 
     /* device control */
-    virtual void getVideoDevices(VideoDevicesList &pVList);
-    virtual void getAudioDevices(AudioDevicesList &pAList);
+    virtual void getVideoDevices(VideoDevices &pVList);
+    virtual void getAudioDevices(AudioDevices &pAList);
     virtual bool SelectDevice(std::string pDesiredDevice, enum MediaType pMediaType, bool &pIsNewDevice); // returns if the new device should be reseted
     virtual std::string GetCurrentDeviceName();
     virtual std::string GetCurrentDevicePeerName();
@@ -133,7 +136,7 @@ public:
     virtual bool SupportsMultipleInputChannels();
     virtual bool SelectInputChannel(int pIndex);
     virtual std::string CurrentInputChannel();
-    virtual std::list<std::string> GetInputChannels();
+    virtual std::vector<std::string> GetInputChannels();
 
 public:
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97);
@@ -153,8 +156,8 @@ private:
 
     /* transcoder */
     virtual void* Run(void* pArgs = NULL); // transcoder main loop
-    void StartTranscoder(int pFifoEntrySize);
-    void StopTranscoder();
+    void StartEncoder(int pFifoEntrySize);
+    void StopEncoder();
 
     static int DistributePacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize);
 
@@ -166,13 +169,13 @@ private:
     int64_t				mStreamMaxFps_LastFrame_Timestamp;
     bool                mStreamActivated;
     char                *mStreamPacketBuffer;
+    /* encoding */
     char                *mEncoderChunkBuffer;
-    /* transcoding */
-    bool                mTranscoderNeeded;
-    MediaFifo           *mTranscoderFifo;
-    bool				mTranscoderHasKeyFrame;
+    bool                mEncoderNeeded;
+    MediaFifo           *mEncoderFifo;
+    bool				mEncoderHasKeyFrame;
     /* device control */
-    MediaSourcesList    mMediaSources;
+    MediaSources        mMediaSources;
     Mutex               mMediaSourcesMutex;
     /* video */
     int                 mCurrentStreamingResX, mRequestedStreamingResX;

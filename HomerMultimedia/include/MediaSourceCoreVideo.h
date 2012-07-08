@@ -52,7 +52,7 @@ public:
     ~MediaSourceCoreVideo();
 
     /* device control */
-    virtual void getVideoDevices(VideoDevicesList &pVList);
+    virtual void getVideoDevices(VideoDevices &pVList);
 
     /* recording */
     virtual bool SupportsRecording();

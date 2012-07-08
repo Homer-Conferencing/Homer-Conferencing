@@ -30,6 +30,7 @@
 #include <HBSocketControlService.h>
 #include <HBSystem.h>
 #include <HBMutex.h>
+#include <HBTime.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -487,6 +488,7 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
     unsigned short int  tLocalPort = 0;
     bool                tTargetIsIPv6 = IS_IPV6_ADDRESS(pTargetHost);
     int                 tUdpLiteChecksumCoverage = mUdpLiteChecksumCoverage;
+    int64_t             tTime, tTime2;
 
     if (mSocketHandle == -1)
         return false;
@@ -512,6 +514,7 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
 		    mPeerHost = pTargetHost;
 		    mPeerPort = pTargetPort;
 		    mPeerDataMutex.unlock();
+	        tTime = Time::GetTimeStamp();
             #if defined(LINUX)
 				tSent = sendto(mSocketHandle, pBuffer, (size_t)pBufferSize, MSG_NOSIGNAL, &tAddressDescriptor.sa, tAddressDescriptorSize);
 			#endif
@@ -521,6 +524,10 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
 			#if defined(WIN32) ||defined(WIN64)
 				tSent = sendto(mSocketHandle, (const char*)pBuffer, (int)pBufferSize, 0, &tAddressDescriptor.sa, (int)tAddressDescriptorSize);
 			#endif
+            #ifdef HBS_DEBUG_TIMING
+                tTime2 = Time::GetTimeStamp();
+                LOG(LOG_VERBOSE, "Sending %d bytes to network via UDP took %ld us", (int)pBufferSize, tTime2 - tTime);
+            #endif
 			break;
 		case SOCKET_TCP:
 

@@ -76,7 +76,7 @@ MediaSourceMMSys::~MediaSourceMMSys()
         CloseGrabDevice();
 }
 
-void MediaSourceMMSys::getAudioDevices(AudioDevicesList &pAList)
+void MediaSourceMMSys::getAudioDevices(AudioDevices &pAList)
 {
     static bool tFirstCall = true;
     AudioDeviceDescriptor tDevice;

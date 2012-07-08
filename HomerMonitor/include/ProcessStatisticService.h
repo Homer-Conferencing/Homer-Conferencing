@@ -32,7 +32,7 @@
 #include <ProcessStatistic.h>
 
 #include <string>
-#include <list>
+#include <vector>
 
 namespace Homer { namespace Monitor {
 
@@ -40,7 +40,7 @@ namespace Homer { namespace Monitor {
 
 #define SVC_PROCESS_STATISTIC ProcessStatisticService::GetInstance()
 class ProcessStatistic;
-typedef std::list<ProcessStatistic*>  ProcessStatisticsList;
+typedef std::vector<ProcessStatistic*>  ProcessStatistics;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -58,7 +58,7 @@ public:
     void AssignThreadName(std::string pName);
 
     /* get statistics */
-    ProcessStatisticsList GetProcessStatistics();
+    ProcessStatistics GetProcessStatistics();
 
     static void DisableProcessStatisticSupport();
 
@@ -69,7 +69,7 @@ private:
     bool RegisterProcessStatistic(int pThreadId);
     bool UnregisterProcessStatistic(int pThreadId);
 
-    ProcessStatisticsList mProcessStatistics;
+    ProcessStatistics mProcessStatistics;
     Homer::Base::Mutex	  mProcessStatisticsMutex;
     Homer::Base::Mutex    mUpdateThreadDataBaseMutex;
 };

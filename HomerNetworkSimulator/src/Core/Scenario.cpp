@@ -205,7 +205,7 @@ bool Scenario::DeleteClientCep(Name pNodeName, unsigned int pPort)
     mClientCepsMutex.lock();
     if (mClientCeps.size() > 0)
     {
-        CepList::iterator tIt;
+        Ceps::iterator tIt;
         for (tIt = mClientCeps.begin(); tIt != mClientCeps.end(); tIt++)
         {
             //LOG(LOG_VERBOSE, "Comparing CEP with local port %u and desired port %u", (*tIt)->GetLocalPort(), pPort);
@@ -224,13 +224,13 @@ bool Scenario::DeleteClientCep(Name pNodeName, unsigned int pPort)
     return tResult;
 }
 
-StreamList Scenario::GetStreams()
+Streams Scenario::GetStreams()
 {
-    StreamList tResult;
+    Streams tResult;
     tResult.clear();
 
     mClientCepsMutex.lock();
-    CepList::iterator tIt;
+    Ceps::iterator tIt;
     StreamDescriptor tEntry;
     for(tIt = mClientCeps.begin(); tIt != mClientCeps.end(); tIt++)
     {
@@ -271,9 +271,9 @@ void Scenario::SetDestinationNode(std::string pAddress)
     mClientCepsMutex.unlock();
 }
 
-DomainList Scenario::GetDomains()
+Domains Scenario::GetDomains()
 {
-    DomainList tResult;
+    Domains tResult;
 
     mDomainsMutex.lock();
     tResult = mDomains;
@@ -282,9 +282,9 @@ DomainList Scenario::GetDomains()
     return tResult;
 }
 
-NodeList Scenario::GetNodes()
+Nodes Scenario::GetNodes()
 {
-    NodeList tResult;
+    Nodes tResult;
 
     mNodesMutex.lock();
     tResult = mNodes;
@@ -293,9 +293,9 @@ NodeList Scenario::GetNodes()
     return tResult;
 }
 
-LinkList Scenario::GetLinks()
+Links Scenario::GetLinks()
 {
-    LinkList tResult;
+    Links tResult;
 
     mLinksMutex.lock();
     tResult = mLinks;
@@ -311,7 +311,7 @@ Coordinator* Scenario::GetRootCoordinator()
 
 Coordinator* Scenario::AddDomain(std::string pDomainPrefix, int pNodeCount, int pPosXHint, int pPosYHint)
 {
-    NodeList tNodes;
+    Nodes tNodes;
     Node *tNode;
 
     // create domain
@@ -360,7 +360,7 @@ Coordinator* Scenario::AddDomain(std::string pDomainPrefix, int pNodeCount, int 
     }
 
     // inform coordinator about nodes
-    NodeList::iterator tIt;
+    Nodes::iterator tIt;
     for(tIt = tNodes.begin(); tIt != tNodes.end(); tIt++)
     {
         tCoordinator->AddClusterMember(*tIt);
@@ -371,7 +371,7 @@ Coordinator* Scenario::AddDomain(std::string pDomainPrefix, int pNodeCount, int 
 
 Coordinator* Scenario::AddDomain3(std::string pDomainPrefix, int pPosXHint, int pPosYHint)
 {
-    NodeList tNodes;
+    Nodes tNodes;
     Node *tNode;
 
     // create domain
@@ -434,7 +434,7 @@ Coordinator* Scenario::AddDomain3(std::string pDomainPrefix, int pPosXHint, int 
     }
 
     // inform coordinator about nodes
-    NodeList::iterator tIt;
+    Nodes::iterator tIt;
     for(tIt = tNodes.begin(); tIt != tNodes.end(); tIt++)
     {
         tCoordinator->AddClusterMember(*tIt);
@@ -502,7 +502,7 @@ Coordinator* Scenario::AddCoordinator(string pNodeAddress, int pHierarchyLevel)
 Node* Scenario::FindNode(std::string pNodeIdentifier)
 {
     Node* tResult = NULL;
-    NodeList::iterator tIt;
+    Nodes::iterator tIt;
 
     //TODO: support names and do not map 1:1
 

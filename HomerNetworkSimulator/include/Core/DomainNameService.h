@@ -30,7 +30,7 @@
 
 #include <HBMutex.h>
 
-#include <list>
+#include <vector>
 #include <string>
 
 namespace Homer { namespace Base {
@@ -46,7 +46,7 @@ struct DnsEntry{
     std::string     Address;
 };
 
-typedef std::list<DnsEntry>     DnsMappingList;
+typedef std::vector<DnsEntry>     DnsMappings;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -62,7 +62,7 @@ public:
     std::string query(std::string pName);
 
 private:
-    DnsMappingList      mDnsMapping;
+    DnsMappings         mDnsMapping;
     Mutex               mDnsMappingMutex;
 };
 

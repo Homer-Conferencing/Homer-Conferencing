@@ -83,7 +83,7 @@ WaveOutSdl::~WaveOutSdl()
     LOG(LOG_VERBOSE, "Destroyed");
 }
 
-void WaveOutSdl::getAudioDevices(AudioDevicesList &pAList) // use PortAudio to enumerate audio devices for SDL based playback
+void WaveOutSdl::getAudioDevices(AudioDevices &pAList) // use PortAudio to enumerate audio devices for SDL based playback
 {
     static bool tFirstCall = true;
     AudioDeviceDescriptor tDevice;

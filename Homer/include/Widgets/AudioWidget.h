@@ -160,7 +160,7 @@ public:
     /* device control */
     QString GetCurrentDevice();
     void SetCurrentDevice(QString pName);
-    AudioDevicesList GetPossibleDevices();
+    AudioDevices GetPossibleDevices();
     QString GetDeviceDescription(QString pName);
 
     /* file based audio playback */

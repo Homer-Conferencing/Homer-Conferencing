@@ -56,7 +56,7 @@ public:
     virtual std::string GetCodecLongName();
 
     /* device control */
-    virtual void getVideoDevices(VideoDevicesList &pVList);
+    virtual void getVideoDevices(VideoDevices &pVList);
     virtual bool SelectDevice(std::string pDeviceName, enum MediaType pMediaType, bool &pIsNewDevice);
 
     /* recording */
@@ -66,7 +66,7 @@ public:
     virtual bool SupportsMultipleInputChannels();
     virtual bool SelectInputChannel(int pIndex);
     virtual std::string CurrentInputChannel();
-    virtual std::list<std::string> GetInputChannels();
+    virtual std::vector<std::string> GetInputChannels();
 
 public:
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 30);

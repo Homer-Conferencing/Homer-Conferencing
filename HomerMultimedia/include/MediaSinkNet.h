@@ -45,6 +45,8 @@ namespace Homer { namespace Multimedia {
 // the following de/activates debugging of received packets
 //#define MSIN_DEBUG_PACKETS
 
+//#define MSIN_DEBUG_TIMING
+
 ///////////////////////////////////////////////////////////////////////////////
 
 class MediaSinkNet:

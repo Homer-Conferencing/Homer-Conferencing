@@ -36,7 +36,7 @@
 #include <MediaFifo.h>
 #include <MediaSourceMem.h>
 
-#include <list>
+#include <vector>
 #include <string>
 
 namespace Homer { namespace Base {
@@ -45,7 +45,9 @@ namespace Homer { namespace Base {
 // de/activate debugging of packet routing
 //#define DEBUG_NEIOGHBOR_DISCOVERY
 //#define DEBUG_FORWARDING
-#define DEBUG_ROUTING
+
+//#define DEBUG_ROUTING
+
 //#define DEBUG_ROUTING_TRAVERSAL_COSTS
 //#define DEBUG_ROUTING_RECORDS
 #define DEBUG_PACKET_LOSS
@@ -60,7 +62,7 @@ namespace Homer { namespace Base {
 class Node;
 
 class Cep;
-typedef std::list<Cep*> CepList;
+typedef std::vector<Cep*> Ceps;
 
 struct Packet{
     std::string     Source;
@@ -73,7 +75,7 @@ struct Packet{
     ssize_t         DataSize;
     int             TTL;
     /* for recording the route */
-    std::list<std::string> RecordedRoute;
+    std::vector<std::string> RecordedRoute;
     /* for tracking the packet through the entire network */
     int             TrackingStreamId;
     /* simulate feedback signaling about the resulting E2E QoS values */

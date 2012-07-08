@@ -63,9 +63,9 @@ void Domain::AddNode(Node *pNode)
     mNodesMutex.unlock();
 }
 
-NodeList Domain::GetNodes()
+Nodes Domain::GetNodes()
 {
-    NodeList tResult;
+    Nodes tResult;
 
     mNodesMutex.lock();
     tResult = mNodes;
@@ -77,7 +77,7 @@ NodeList Domain::GetNodes()
 Node* Domain::GetNode(int pIndex)
 {
     Node *tResult = NULL;
-    NodeList::iterator tIt;
+    Nodes::iterator tIt;
 
     int tCount = 0;
     mNodesMutex.lock();

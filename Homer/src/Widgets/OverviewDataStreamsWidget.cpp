@@ -242,8 +242,8 @@ void OverviewDataStreamsWidget::SaveHistory(enum DataType pDataType, int pIndex)
     DataRateHistory tHistory;
 
     int tCount = 0;
-    PacketStatisticsList::iterator tIt;
-    PacketStatisticsList tStatList = SVC_PACKET_STATISTIC.GetPacketStatisticsAccess();
+    PacketStatistics::iterator tIt;
+    PacketStatistics tStatList = SVC_PACKET_STATISTIC.GetPacketStatisticsAccess();
 
     if (tStatList.size() > 0)
     {
@@ -337,8 +337,8 @@ void OverviewDataStreamsWidget::SaveHistory(enum DataType pDataType, int pIndex)
 void OverviewDataStreamsWidget::ResetStatistic(enum DataType pDataType, int pIndex)
 {
     int tCount = 0;
-    PacketStatisticsList::iterator tIt;
-    PacketStatisticsList tStatList = SVC_PACKET_STATISTIC.GetPacketStatisticsAccess();
+    PacketStatistics::iterator tIt;
+    PacketStatistics tStatList = SVC_PACKET_STATISTIC.GetPacketStatisticsAccess();
 
     if (tStatList.size() > 0)
     {
@@ -397,8 +397,8 @@ void OverviewDataStreamsWidget::SaveCompleteStatistic()
     //### write one entry per line
     //#####################################################
     QString tLine;
-    PacketStatisticsList::iterator tIt;
-    PacketStatisticsList tStatList = SVC_PACKET_STATISTIC.GetPacketStatisticsAccess();
+    PacketStatistics::iterator tIt;
+    PacketStatistics tStatList = SVC_PACKET_STATISTIC.GetPacketStatisticsAccess();
 
     if (tStatList.size() > 0)
     {
@@ -507,7 +507,7 @@ void OverviewDataStreamsWidget::FillRow(QTableWidget *pTable, int pRow, PacketSt
 
 void OverviewDataStreamsWidget::UpdateView()
 {
-	PacketStatisticsList::iterator tIt;
+	PacketStatistics::iterator tIt;
     int tRowAudio = 0, tRowVideo = 0;
     int tASelectedRow = -1, tVSelectedRow = -1;
 
@@ -524,7 +524,7 @@ void OverviewDataStreamsWidget::UpdateView()
         tVSelectedRow = mTwVideo->selectionModel()->currentIndex().row();
 
     // update widget content
-    PacketStatisticsList tStatList = SVC_PACKET_STATISTIC.GetPacketStatisticsAccess();
+    PacketStatistics tStatList = SVC_PACKET_STATISTIC.GetPacketStatisticsAccess();
     if (tStatList.size() > 0)
     {
         tIt = tStatList.begin();

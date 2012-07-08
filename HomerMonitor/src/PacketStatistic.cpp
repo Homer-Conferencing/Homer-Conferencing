@@ -97,6 +97,7 @@ void PacketStatistic::AnnouncePacket(int pSize)
     tStatEntry.PacketSize = pSize;
     tStatEntry.Timestamp = mEndTimeStamp;
 
+    int64_t tTime = Time::GetTimeStamp();
     // lock
     mStatisticsMutex.lock();
     
@@ -128,17 +129,26 @@ void PacketStatistic::AnnouncePacket(int pSize)
 
     mStatistics.push_back(tStatEntry);
     while (mStatistics.size() > STATISTIC_MOMENT_DATARATE_REFERENCE_SIZE)
-        mStatistics.pop_front();
+    {
+        mStatistics.erase(mStatistics.begin());
+    }
 
     // unlock
     mStatisticsMutex.unlock();
+
+    #ifdef STATISTIC_DEBUG_TIMING
+        int64_t tTime2 = Time::GetTimeStamp();
+        LOG(LOG_VERBOSE, "PacketStatistic::Lock1 took %ld us", tTime2 - tTime);
+    #endif
 
     DataRateHistoryDescriptor tHistEntry;
     tHistEntry.TimeStamp = mEndTimeStamp - mStartTimeStamp;
     tHistEntry.Time = mEndTimeStamp;
     tHistEntry.DataRate = GetMomentAvgDataRate();
 
+    tTime = Time::GetTimeStamp();
     mDataRateHistoryMutex.lock();
+    int64_t tTime3 = Time::GetTimeStamp();
 
     while (mDataRateHistory.size() > STATISTIC_MOMENT_DATARATE_HISTORY)
     {
@@ -147,12 +157,18 @@ void PacketStatistic::AnnouncePacket(int pSize)
             mFirstDataRateHistoryLoss = false;
             LOG(LOG_ERROR, "List with measured values of data rate history has reached limit of %d entries", STATISTIC_MOMENT_DATARATE_HISTORY);
         }
-        mDataRateHistory.pop_front();
+        mDataRateHistory.erase(mDataRateHistory.begin());
     }
 
     mDataRateHistory.push_back(tHistEntry);
 
     mDataRateHistoryMutex.unlock();
+    #ifdef STATISTIC_DEBUG_TIMING
+        tTime2 = Time::GetTimeStamp();
+        LOG(LOG_VERBOSE, "PacketStatistic::Lock2 took %ld us", tTime2 - tTime);
+        tTime2 = Time::GetTimeStamp();
+        LOG(LOG_VERBOSE, "PacketStatistic::Lock2-mutex took %ld us", tTime3 - tTime);
+    #endif
 }
 
 void PacketStatistic::ResetPacketStatistic()
@@ -230,7 +246,7 @@ int PacketStatistic::GetAvgDataRate()
 
 int PacketStatistic::GetMomentAvgDataRate()
 {
-    StatisticList::iterator tIt;
+    Statistics::iterator tIt;
     double tDataRate = 0;
 
     // lock

@@ -53,6 +53,7 @@
 
 #include <stdlib.h>
 #include <string>
+#include <vector>
 
 namespace Homer { namespace Gui {
 
@@ -205,10 +206,10 @@ void AudioWidget::closeEvent(QCloseEvent* pEvent)
 
 void AudioWidget::contextMenuEvent(QContextMenuEvent *pEvent)
 {
-    list<string>::iterator tIt;
+    vector<string>::iterator tIt;
     QAction *tAction;
-    list<string> tRegisteredAudioSinks = mAudioSource->ListRegisteredMediaSinks();
-    list<string>::iterator tRegisteredAudioSinksIt;
+    vector<string> tRegisteredAudioSinks = mAudioSource->ListRegisteredMediaSinks();
+    vector<string>::iterator tRegisteredAudioSinksIt;
 
     QMenu tMenu(this);
 
@@ -248,7 +249,7 @@ void AudioWidget::contextMenuEvent(QContextMenuEvent *pEvent)
     //###############################################################################
     //### TRACKS
     //###############################################################################
-    list<string> tInputChannels = mAudioSource->GetInputChannels();
+    vector<string> tInputChannels = mAudioSource->GetInputChannels();
     if (mAudioSource->SupportsMultipleInputChannels())
     {
         QMenu *tStreamMenu = tMenu.addMenu("Audio streams");
@@ -989,9 +990,9 @@ void AudioWorkerThread::SetCurrentDevice(QString pName)
     }
 }
 
-AudioDevicesList AudioWorkerThread::GetPossibleDevices()
+AudioDevices AudioWorkerThread::GetPossibleDevices()
 {
-    AudioDevicesList tResult;
+    AudioDevices tResult;
 
     LOG(LOG_VERBOSE, "Enumerate all audio devices..");
     mAudioSource->getAudioDevices(tResult);
@@ -1001,8 +1002,8 @@ AudioDevicesList AudioWorkerThread::GetPossibleDevices()
 
 QString AudioWorkerThread::GetDeviceDescription(QString pName)
 {
-    AudioDevicesList::iterator tIt;
-    AudioDevicesList tAList;
+    AudioDevices::iterator tIt;
+    AudioDevices tAList;
 
     mAudioSource->getAudioDevices(tAList);
     for (tIt = tAList.begin(); tIt != tAList.end(); tIt++)
@@ -1159,8 +1160,8 @@ QStringList AudioWorkerThread::GetPossibleChannels()
 {
     QStringList tResult;
 
-    list<string> tList = mAudioSource->GetInputChannels();
-    list<string>::iterator tIt;
+    vector<string> tList = mAudioSource->GetInputChannels();
+    vector<string>::iterator tIt;
     for (tIt = tList.begin(); tIt != tList.end(); tIt++)
         tResult.push_back(QString((*tIt).c_str()));
 
@@ -1197,8 +1198,8 @@ void AudioWorkerThread::DoPlayNewFile()
 {
     LOG(LOG_VERBOSE, "DoPlayNewFile now...");
 
-    AudioDevicesList tList = GetPossibleDevices();
-    AudioDevicesList::iterator tIt;
+    AudioDevices tList = GetPossibleDevices();
+    AudioDevices::iterator tIt;
     bool tFound = false;
 
     for (tIt = tList.begin(); tIt != tList.end(); tIt++)
@@ -1217,7 +1218,7 @@ void AudioWorkerThread::DoPlayNewFile()
     	MediaSourceFile *tASource = new MediaSourceFile(mDesiredFile.toStdString());
         if (tASource != NULL)
         {
-            AudioDevicesList tAList;
+            AudioDevices tAList;
             tASource->getAudioDevices(tAList);
             mAudioSource->RegisterMediaSource(tASource);
             SetCurrentDevice(mDesiredFile);

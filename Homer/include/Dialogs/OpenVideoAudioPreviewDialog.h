@@ -70,8 +70,8 @@ private:
     void SaveConfiguration();
     void LoadConfiguration();
 
-    VideoDevicesList mVideoDevicesList;
-    AudioDevicesList mAudioDevicesList;
+    VideoDevices mVideoDevicesList;
+    AudioDevices mAudioDevicesList;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

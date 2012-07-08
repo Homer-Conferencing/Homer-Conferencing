@@ -63,7 +63,7 @@ MediaSourceFile::~MediaSourceFile()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void MediaSourceFile::getVideoDevices(VideoDevicesList &pVList)
+void MediaSourceFile::getVideoDevices(VideoDevices &pVList)
 {
     VideoDeviceDescriptor tDevice;
 
@@ -74,7 +74,7 @@ void MediaSourceFile::getVideoDevices(VideoDevicesList &pVList)
     pVList.push_back(tDevice);
 }
 
-void MediaSourceFile::getAudioDevices(AudioDevicesList &pAList)
+void MediaSourceFile::getAudioDevices(AudioDevices &pAList)
 {
     AudioDeviceDescriptor tDevice;
 
@@ -1369,9 +1369,9 @@ bool MediaSourceFile::SelectInputChannel(int pIndex)
     return tResult;
 }
 
-list<string> MediaSourceFile::GetInputChannels()
+vector<string> MediaSourceFile::GetInputChannels()
 {
-    list<string> tResult;
+    vector<string> tResult;
 
     // lock grabbing
     mGrabMutex.lock();
@@ -1391,7 +1391,7 @@ string MediaSourceFile::CurrentInputChannel()
 {
     AVCodec *tCodec;
     string tResult = "";
-    list<string>::iterator tIt;
+    vector<string>::iterator tIt;
 
     int tCount = 0;
 
