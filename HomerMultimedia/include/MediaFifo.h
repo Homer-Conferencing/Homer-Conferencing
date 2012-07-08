@@ -62,10 +62,10 @@ public:
     virtual ~MediaFifo();
 
     void WriteFifo(char* pBuffer, int pBufferSize);
-    void ReadFifo(char *pBuffer, int &pBufferSize);
+    void ReadFifo(char *pBuffer, int &pBufferSize); // memory copy, returns entire memory
     void ClearFifo();
 
-    int ReadFifoExclusive(char **pBuffer, int &pBufferSize);
+    int ReadFifoExclusive(char **pBuffer, int &pBufferSize); // avoids memory copy, returns a pointer to memory
     void ReadFifoExclusiveFinished(int pEntryPointer);
 
     int GetUsage();
