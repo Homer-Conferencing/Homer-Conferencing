@@ -54,7 +54,7 @@ namespace Homer { namespace Multimedia {
 //#define MSM_DEBUG_PACKETS
 
 // the following de/activates debugging of the time behavior of the transcoding
-#define MSM_DEBUG_TIMING
+//#define MSM_DEBUG_TIMING
 
 ///////////////////////////////////////////////////////////////////////////////
 
