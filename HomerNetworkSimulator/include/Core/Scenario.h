@@ -35,12 +35,12 @@
 #include <Core/Link.h>
 #include <Core/Node.h>
 
-#include <list>
+#include <vector>
 
 namespace Homer { namespace Base {
 
 class Link;
-typedef std::list<Link*> LinkList;
+typedef std::vector<Link*> Links;
 
 struct StreamDescriptor{
     int         PacketCount;
@@ -50,7 +50,7 @@ struct StreamDescriptor{
     int         LocalPort, PeerPort;
     int         Id;
 };
-typedef std::list<struct StreamDescriptor> StreamList;
+typedef std::vector<struct StreamDescriptor> Streams;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -67,14 +67,14 @@ public:
     /* client CEP management */
     Cep* AddClientCep(enum TransportType pTransportType, Name pTargetNodeIdentifier, unsigned pTargetPort);
     bool DeleteClientCep(Name pNodeName, unsigned int pPort);
-    StreamList GetStreams(); // for GUI
+    Streams GetStreams(); // for GUI
     void SetSourceNode(std::string pAddress);
     void SetDestinationNode(std::string pAddress);
 
     /* list topology */
-    DomainList GetDomains(); // for GUI
-    NodeList GetNodes(); // for GUI
-    LinkList GetLinks(); // for GUI
+    Domains GetDomains(); // for GUI
+    Nodes GetNodes(); // for GUI
+    Links GetLinks(); // for GUI
     Coordinator* GetRootCoordinator();
 
     /* routing */
@@ -107,17 +107,17 @@ private:
     Coordinator *mRootCoordinator;
 
     Node        *mSourceNode, *mDestinationNode;
-    NodeList    mNodes;
+    Nodes    mNodes;
     Mutex       mNodesMutex;
 
-    DomainList  mDomains;
+    Domains  mDomains;
     Mutex       mDomainsMutex;
 
-    LinkList    mLinks;
+    Links    mLinks;
     Mutex       mLinksMutex;
 
     /* client CEPs */
-    CepList     mClientCeps;
+    Ceps     mClientCeps;
     Mutex       mClientCepsMutex;
 };
 

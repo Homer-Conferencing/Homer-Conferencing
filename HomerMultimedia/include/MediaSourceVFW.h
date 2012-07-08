@@ -49,7 +49,7 @@ public:
     virtual ~MediaSourceVFW();
 
     /* device control */
-    virtual void getVideoDevices(VideoDevicesList &pVList);
+    virtual void getVideoDevices(VideoDevices &pVList);
 
     /* recording */
     virtual bool SupportsRecording();
@@ -71,7 +71,7 @@ private:
 	bool				mFirstPixelformatError;
 	//HINT: We use an internal cache, which describes available VFW devices. The cache is used for every second and further device query.
 	//		Without this cache every direct device query would lead to repeating VFW dialogues, which have to be acknowledged by the user.
-	VideoDevicesList	mFoundVFWDevices;
+	VideoDevices	mFoundVFWDevices;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -65,7 +65,7 @@ MediaSourceAlsa::~MediaSourceAlsa()
     LOG(LOG_VERBOSE, "Destroyed");
 }
 
-void MediaSourceAlsa::getAudioDevices(AudioDevicesList &pAList)
+void MediaSourceAlsa::getAudioDevices(AudioDevices &pAList)
 {
     static bool tFirstCall = true;
     AudioDeviceDescriptor tDevice;

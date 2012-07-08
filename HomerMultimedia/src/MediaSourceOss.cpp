@@ -67,7 +67,7 @@ MediaSourceOss::~MediaSourceOss()
         CloseGrabDevice();
 }
 
-void MediaSourceOss::getAudioDevices(AudioDevicesList &pAList)
+void MediaSourceOss::getAudioDevices(AudioDevices &pAList)
 {
     static bool tFirstCall = true;
     AudioDeviceDescriptor tDevice;

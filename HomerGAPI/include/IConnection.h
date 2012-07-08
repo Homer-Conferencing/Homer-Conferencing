@@ -32,6 +32,8 @@
 #include <Requirements.h>
 #include <Events.h>
 
+#include <vector>
+
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -55,6 +57,8 @@ public:
     virtual Requirements getRequirements() = 0;
     virtual Events getEvents() = 0;
 };
+
+typedef std::vector<IConnection*> IConnections;
 
 ///////////////////////////////////////////////////////////////////////////////
 

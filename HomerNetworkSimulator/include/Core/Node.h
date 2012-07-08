@@ -30,7 +30,7 @@
 
 #include <HBMutex.h>
 
-#include <list>
+#include <vector>
 #include <string>
 
 #include <Core/Cep.h>
@@ -40,7 +40,7 @@
 namespace Homer { namespace Base {
 
 class Node;
-typedef std::list<Node*> NodeList;
+typedef std::vector<Node*> Nodes;
 
 
 class Coordinator;
@@ -67,8 +67,9 @@ struct RibEntry{
     QoSSettings QoSCapabilities;
 };
 
-typedef std::list<FibEntry*> FibTable;
-typedef std::list<RibEntry*> RibTable;
+typedef std::vector<FibEntry*> FibTable;
+typedef std::vector<RibEntry*> RibTable;
+typedef std::vector<RibTable*> RibTables;
 
 class Node
 {
@@ -93,7 +94,7 @@ public:
     int GetPosYHint();
 
     /* hierarchy */
-    NodeList GetSiblings(); // for GUI
+    Nodes GetSiblings(); // for GUI
 
     /* coordinator handling */
     Coordinator* SetAsCoordinator(int pHierarchyLevel);
@@ -160,7 +161,7 @@ private:
 
     /* server CEPs */
     Cep*        FindServerCep(unsigned int pPort);
-    CepList     mServerCeps;
+    Ceps     mServerCeps;
     Mutex       mServerCepsMutex;
 
     /* addressing, naming */

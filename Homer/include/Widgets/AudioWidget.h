@@ -160,22 +160,27 @@ public:
     /* device control */
     QString GetCurrentDevice();
     void SetCurrentDevice(QString pName);
-    AudioDevicesList GetPossibleDevices();
+    AudioDevices GetPossibleDevices();
     QString GetDeviceDescription(QString pName);
 
     /* file based audio playback */
-    void PlayFile(QString pName);
+    void PlayFile(QString pName = "");
     void PauseFile();
+    bool IsPaused();
     void StopFile();
     bool EofReached();
     QString CurrentFile();
     bool SupportsSeeking();
-    void Seek(int pPos); // max. value is 1000
+    void Seek(int64_t pPos); // max. value is 1000
     int64_t GetSeekPos();
     int64_t GetSeekEnd();
 
     /* multiple channels control */
+    /* multiple channels control */
+    bool SupportsMultipleChannels();
+    QString GetCurrentChannel();
     void SelectInputChannel(int pIndex);
+    QStringList GetPossibleChannels();
 
     /* frame grabbing */
     void SetSampleDropping(bool pDrop);
@@ -237,8 +242,8 @@ private:
     /* for forwarded interface to media source */
     int                 mDesiredInputChannel;
     QString             mDesiredFile;
-    bool                mSourceSeekAsap;
-    int                 mSourceSeekPos;
+    bool                mSeekAsap;
+    int64_t             mSeekPos;
     bool                mSetInputStreamPreferencesAsap;
     bool                mSetCurrentDeviceAsap;
     bool                mResetAudioSourceAsap;

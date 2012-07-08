@@ -67,7 +67,7 @@ public:
     virtual ~MediaSourceMMSys();
 
     /* device control */
-    virtual void getAudioDevices(AudioDevicesList &pAList);
+    virtual void getAudioDevices(AudioDevices &pAList);
 
     /* recording */
     virtual bool SupportsRecording();

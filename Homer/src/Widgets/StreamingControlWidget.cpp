@@ -120,8 +120,8 @@ void StreamingControlWidget::StartCameraStreaming()
     mOverviewPlaylistWidgetVideo->StopPlaylist();
     mOverviewPlaylistWidgetMovie->StopPlaylist();
 
-    VideoDevicesList tList = mVideoWorker->GetPossibleDevices();
-    VideoDevicesList::iterator tIt;
+    VideoDevices tList = mVideoWorker->GetPossibleDevices();
+    VideoDevices::iterator tIt;
     QString tSelectedDevice = "";
 
     for (tIt = tList.begin(); tIt != tList.end(); tIt++)
@@ -154,8 +154,8 @@ void StreamingControlWidget::StartVoiceStreaming()
     mOverviewPlaylistWidgetAudio->StopPlaylist();
     mOverviewPlaylistWidgetMovie->StopPlaylist();
 
-    AudioDevicesList tList = mAudioWorker->GetPossibleDevices();
-    AudioDevicesList::iterator tIt;
+    AudioDevices tList = mAudioWorker->GetPossibleDevices();
+    AudioDevices::iterator tIt;
     QString tSelectedDevice = "";
 
     for (tIt = tList.begin(); tIt != tList.end(); tIt++)

@@ -38,8 +38,9 @@
 
  */
 
-#include <Widgets/VideoWidget.h>
 #include <Widgets/OverviewPlaylistWidget.h>
+#include <Widgets/ParticipantWidget.h>
+#include <Widgets/VideoWidget.h>
 #include <ProcessStatisticService.h>
 #include <MediaSource.h>
 #include <MediaSourceFile.h>
@@ -69,7 +70,7 @@
 #include <QDesktopWidget>
 
 #include <stdlib.h>
-#include <list>
+#include <vector>
 
 namespace Homer { namespace Gui {
 
@@ -138,11 +139,12 @@ VideoWidget::VideoWidget(QWidget* pParent):
     hide();
 }
 
-void VideoWidget::Init(QMainWindow* pMainWindow, MediaSource *pVideoSource, QMenu *pMenu, QString pActionTitle, QString pWidgetTitle, bool pVisible)
+void VideoWidget::Init(QMainWindow* pMainWindow, ParticipantWidget *pParticipantWidget, MediaSource *pVideoSource, QMenu *pMenu, QString pActionTitle, QString pWidgetTitle, bool pVisible)
 {
     mVideoSource = pVideoSource;
     mVideoTitle = pActionTitle;
     mMainWindow = pMainWindow;
+    mParticipantWidget = pParticipantWidget;
 
     //####################################################################
     //### create the remaining necessary menu item
@@ -221,6 +223,7 @@ void VideoWidget::closeEvent(QCloseEvent* pEvent)
 	if (windowState() & Qt::WindowFullScreen)
     {
         LOG(LOG_VERBOSE, "Got closeEvent in VideoWidget while it is in fullscreen mode, will forward this to main window");
+        pEvent->ignore();
         QApplication::postEvent(mMainWindow, new QCloseEvent());
     }else
     {
@@ -235,8 +238,8 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
     GrabResolutions tGrabResolutions = mVideoSource->GetSupportedVideoGrabResolutions();
     GrabResolutions::iterator tIt;
     int tCurResX, tCurResY;
-    list<string> tRegisteredVideoSinks = mVideoSource->ListRegisteredMediaSinks();
-    list<string>::iterator tRegisteredVideoSinksIt;
+    vector<string> tRegisteredVideoSinks = mVideoSource->ListRegisteredMediaSinks();
+    vector<string>::iterator tRegisteredVideoSinksIt;
 
     mVideoSource->GetVideoGrabResolution(tCurResX, tCurResY);
 
@@ -1288,14 +1291,17 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
 	{
         setWindowFlags(windowFlags() ^ Qt::Window);
         showNormal();
+        return;
 	}
     if (pEvent->key() == Qt::Key_F)
     {
         ToggleFullScreenMode();
+        return;
     }
     if (pEvent->key() == Qt::Key_S)
     {
         ToggleSmoothPresentationMode();
+        return;
     }
     if (pEvent->key() == Qt::Key_I)
     {
@@ -1304,12 +1310,29 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
         else
         	mShowLiveStats = true;
     }
+    if (pEvent->key() == Qt::Key_Space)
+    {
+        if ((mVideoWorker->IsPaused()) || ((mParticipantWidget->GetAudioWorker() != NULL) && (mParticipantWidget->GetAudioWorker()->IsPaused())))
+        {
+            mVideoWorker->PlayFile();
+            if (mParticipantWidget->GetAudioWorker() != NULL)
+                mParticipantWidget->GetAudioWorker()->PlayFile();
+            return;
+        }else
+        {
+            mVideoWorker->PauseFile();
+            if (mParticipantWidget->GetAudioWorker() != NULL)
+                mParticipantWidget->GetAudioWorker()->PauseFile();
+            return;
+        }
+    }
     if (pEvent->key() == Qt::Key_A)
     {
     	mAspectRatio++;
     	if(mAspectRatio > ASPECT_RATIO_16x10)
     		mAspectRatio = ASPECT_RATIO_ORIGINAL;
     	mNeedBackgroundUpdatesUntillNextFrame = true;
+    	return;
     }
 }
 
@@ -1373,7 +1396,12 @@ void VideoWidget::customEvent(QEvent *pEvent)
                     //printf("VideoWidget-Frame number: %d\n", mCurrentFrameNumber);
                     // do we have a frame order problem?
                     if ((mLastFrameNumber > mCurrentFrameNumber) && (mCurrentFrameNumber  > 32 /* -1 means error, 1 is received after every reset, use "32" because of possible latencies */))
-                        LOG(LOG_WARN, "Frames received in wrong order, [%d->%d]", mLastFrameNumber, mCurrentFrameNumber);
+                    {
+                        if (mLastFrameNumber - mCurrentFrameNumber == FRAME_BUFFER_SIZE -1)
+                            LOG(LOG_WARN, "Buffer underrun occurred, received frames in wrong order, [%d->%d]", mLastFrameNumber, mCurrentFrameNumber);
+                        else
+                            LOG(LOG_WARN, "Frames received in wrong order, [%d->%d]", mLastFrameNumber, mCurrentFrameNumber);
+                    }
                     //if (tlFrameNumber == tFrameNumber)
                         //printf("VideoWidget-unnecessary frame grabbing detected!\n");
                 }else
@@ -1419,7 +1447,7 @@ VideoWorkerThread::VideoWorkerThread(MediaSource *pVideoSource, VideoWidget *pVi
     mDesiredInputChannel = 0;
     mPlayNewFileAsap = false;
     mSeekAsap = false;
-    mSeekPosition = 0;
+    mSeekPos = 0;
     mSelectInputChannelAsap = false;
     mSourceAvailable = false;
     mEofReached = false;
@@ -1533,9 +1561,9 @@ void VideoWorkerThread::SetCurrentDevice(QString pName)
     }
 }
 
-VideoDevicesList VideoWorkerThread::GetPossibleDevices()
+VideoDevices VideoWorkerThread::GetPossibleDevices()
 {
-    VideoDevicesList tResult;
+    VideoDevices tResult;
 
     LOG(LOG_VERBOSE, "Enumerate all video devices..");
     mVideoSource->getVideoDevices(tResult);
@@ -1545,8 +1573,8 @@ VideoDevicesList VideoWorkerThread::GetPossibleDevices()
 
 QString VideoWorkerThread::GetDeviceDescription(QString pName)
 {
-    VideoDevicesList::iterator tIt;
-    VideoDevicesList tVList;
+    VideoDevices::iterator tIt;
+    VideoDevices tVList;
 
     mVideoSource->getVideoDevices(tVList);
     for (tIt = tVList.begin(); tIt != tVList.end(); tIt++)
@@ -1558,6 +1586,9 @@ QString VideoWorkerThread::GetDeviceDescription(QString pName)
 
 void VideoWorkerThread::PlayFile(QString pName)
 {
+    if (pName == "")
+        pName = mCurrentFile;
+
     // remove "file:///" and "file://" from the beginning if existing
     #ifdef WIN32
         if (pName.startsWith("file:///"))
@@ -1577,7 +1608,7 @@ void VideoWorkerThread::PlayFile(QString pName)
 
 	if ((mPaused) && (pName == mDesiredFile))
 	{
-		LOG(LOG_VERBOSE, "Continue playback of file: %s", pName.toStdString().c_str());
+		LOG(LOG_VERBOSE, "Continue playback of file: %s at pos.: %ld", pName.toStdString().c_str(), mPausedPos);
 		Seek(mPausedPos);
 		mGrabbingStateMutex.lock();
 		mPaused = false;
@@ -1597,13 +1628,21 @@ void VideoWorkerThread::PauseFile()
 {
     if (mVideoSource->SupportsSeeking())
     {
-        LOG(LOG_VERBOSE, "Trigger pause state");
         mPausedPos = mVideoSource->GetSeekPos();
         mGrabbingStateMutex.lock();
         mPaused = true;
         mGrabbingStateMutex.unlock();
+        LOG(LOG_VERBOSE, "Triggered pause state at position: %ld", mPausedPos);
     }else
         LOG(LOG_VERBOSE, "Seeking not supported, PauseFile() aborted");
+}
+
+bool VideoWorkerThread::IsPaused()
+{
+    if ((mVideoSource != NULL) && (mVideoSource->SupportsSeeking()))
+        return mPaused;
+    else
+        return false;
 }
 
 void VideoWorkerThread::StopFile()
@@ -1640,10 +1679,11 @@ bool VideoWorkerThread::SupportsSeeking()
         return false;
 }
 
-void VideoWorkerThread::Seek(int pPos)
+void VideoWorkerThread::Seek(int64_t pPos)
 {
-    mSeekPosition = pPos;
+    mSeekPos = pPos;
     mSeekAsap = true;
+    mGrabbingCondition.wakeAll();
 }
 
 int64_t VideoWorkerThread::GetSeekPos()
@@ -1687,8 +1727,8 @@ QStringList VideoWorkerThread::GetPossibleChannels()
 {
     QStringList tResult;
 
-    list<string> tList = mVideoSource->GetInputChannels();
-    list<string>::iterator tIt;
+    vector<string> tList = mVideoSource->GetInputChannels();
+    vector<string>::iterator tIt;
     for (tIt = tList.begin(); tIt != tList.end(); tIt++)
         tResult.push_back(QString((*tIt).c_str()));
 
@@ -1725,8 +1765,8 @@ void VideoWorkerThread::DoPlayNewFile()
 {
     LOG(LOG_VERBOSE, "DoPlayNewFile now...");
 
-    VideoDevicesList tList = GetPossibleDevices();
-    VideoDevicesList::iterator tIt;
+    VideoDevices tList = GetPossibleDevices();
+    VideoDevices::iterator tIt;
     bool tFound = false;
 
     for (tIt = tList.begin(); tIt != tList.end(); tIt++)
@@ -1745,7 +1785,7 @@ void VideoWorkerThread::DoPlayNewFile()
     	MediaSourceFile *tVSource = new MediaSourceFile(mDesiredFile.toStdString());
         if (tVSource != NULL)
         {
-            VideoDevicesList tVList;
+            VideoDevices tVList;
             tVSource->getVideoDevices(tVList);
             mVideoSource->RegisterMediaSource(tVSource);
             SetCurrentDevice(mDesiredFile);
@@ -1787,12 +1827,13 @@ void VideoWorkerThread::DoSetGrabResolution()
 
 void VideoWorkerThread::DoSeek()
 {
-    LOG(LOG_VERBOSE, "VideoWorkerThread-DoSeek now...");
+    LOG(LOG_VERBOSE, "DoSeek now...");
 
     // lock
     mDeliverMutex.lock();
 
-    mVideoSource->Seek(mVideoSource->GetSeekEnd() * mSeekPosition / 1000, false);
+    LOG(LOG_VERBOSE, "Seeking now to position %d", mSeekPos);
+    mVideoSource->Seek(mSeekPos, false);
     mEofReached = false;
     mSeekAsap = false;
 
@@ -1802,7 +1843,7 @@ void VideoWorkerThread::DoSeek()
 
 void VideoWorkerThread::DoSelectInputChannel()
 {
-    LOG(LOG_VERBOSE, "VideoWorkerThread-DoSelectInputChannel now...");
+    LOG(LOG_VERBOSE, "DoSelectInputChannel now...");
 
     if(mDesiredInputChannel == -1)
         return;

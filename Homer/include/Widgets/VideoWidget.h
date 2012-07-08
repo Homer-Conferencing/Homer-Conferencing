@@ -51,6 +51,8 @@ namespace Homer { namespace Gui {
 
 using namespace Homer::Multimedia;
 
+class ParticipantWidget;
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // debug performance of video widget: background repainting
@@ -61,7 +63,7 @@ using namespace Homer::Multimedia;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define FRAME_BUFFER_SIZE              30 // 1 second buffered
+#define FRAME_BUFFER_SIZE              5
 
 #define FPS_MEASUREMENT_STEPS          60
 
@@ -86,7 +88,7 @@ class VideoWidget:
 
 public:
     VideoWidget(QWidget* pParent = NULL);
-    void Init(QMainWindow* pMainWindow, MediaSource *pVideoSource, QMenu *pVideoMenu, QString pActionTitle = "Video", QString pWidgetTitle = "Video", bool pVisible = false);
+    void Init(QMainWindow* pMainWindow, ParticipantWidget* pParticipantWidget,  MediaSource *pVideoSource, QMenu *pVideoMenu, QString pActionTitle = "Video", QString pWidgetTitle = "Video", bool pVisible = false);
 
     virtual ~VideoWidget();
     void SetVisible(bool pVisible);
@@ -153,6 +155,7 @@ private:
     VideoWorkerThread   *mVideoWorker;
     MediaSource         *mVideoSource;
     int                 mPendingNewFrameSignals;
+    ParticipantWidget   *mParticipantWidget;
 };
 
 
@@ -184,17 +187,18 @@ public:
     QString GetCurrentDevice();
     QString GetCurrentDevicePeer();
     void SetCurrentDevice(QString pName);
-    VideoDevicesList GetPossibleDevices();
+    VideoDevices GetPossibleDevices();
     QString GetDeviceDescription(QString pName);
 
     /* file based video playback */
-    void PlayFile(QString pName);
+    void PlayFile(QString pName = "");
     void PauseFile();
+    bool IsPaused();
     void StopFile();
     bool EofReached();
     QString CurrentFile();
     bool SupportsSeeking();
-    void Seek(int pPos); // max. value is 1000
+    void Seek(int64_t pPos);
     int64_t GetSeekPos();
     int64_t GetSeekEnd();
 
@@ -262,7 +266,7 @@ private:
     bool                mStopRecorderAsap;
     bool				mPlayNewFileAsap;
     bool                mSeekAsap;
-    int64_t             mSeekPosition;
+    int64_t             mSeekPos;
     bool                mSelectInputChannelAsap;
 };
 

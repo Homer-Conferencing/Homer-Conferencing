@@ -32,7 +32,7 @@
 
 #include <Core/Node.h>
 
-#include <list>
+#include <vector>
 #include <string>
 
 namespace Homer { namespace Base {
@@ -44,7 +44,7 @@ namespace Homer { namespace Base {
 ///////////////////////////////////////////////////////////////////////////////
 
 class Coordinator;
-typedef std::list<Coordinator*> CoordinatorList;
+typedef std::vector<Coordinator*> Coordinators;
 
 class Node;
 
@@ -57,9 +57,9 @@ public:
     void AddClusterMember(Node *pNode);
     void AddChildCoordinator(Coordinator *pChild);
 
-    NodeList GetClusterMembers(); // for GUI
-    CoordinatorList GetChildCoordinators(); // for GUI
-    CoordinatorList GetSiblings(); // for GUI
+    Nodes GetClusterMembers(); // for GUI
+    Coordinators GetChildCoordinators(); // for GUI
+    Coordinators GetSiblings(); // for GUI
     int GetHierarchyLevel(); // for GUI
 
     std::string GetClusterAddress();
@@ -83,12 +83,12 @@ private:
     std::string     mClusterAddress;
     Node            *mNode;
 
-    std::list<RibTable*> mRibUpdateTables;
+    RibTables       mRibUpdateTables;
 
-    NodeList        mClusterMembers;
+    Nodes           mClusterMembers;
     Mutex           mClusterMembersMutex;
 
-    CoordinatorList mChildCoordinators;
+    Coordinators    mChildCoordinators;
     Mutex           mChildCoordinatorsMutex;
 };
 

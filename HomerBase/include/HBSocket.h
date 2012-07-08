@@ -52,6 +52,8 @@ namespace Homer { namespace Base {
 // the following de/activates debugging of received packets
 //#define HBS_DEBUG_PACKETS
 
+//#define HBS_DEBUG_TIMING
+
 // maximum TCP connections a TCP based socket supports
 #define MAX_INCOMING_CONNECTIONS        1 //TODO: support multiple clients
 

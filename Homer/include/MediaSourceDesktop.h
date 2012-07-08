@@ -70,7 +70,7 @@ public:
     virtual bool SupportsRecording();
 
     /* device control */
-    virtual void getVideoDevices(VideoDevicesList &pVList);
+    virtual void getVideoDevices(VideoDevices &pVList);
 
     /* create screenshot and updates internal buffer */
     void CreateScreenshot();

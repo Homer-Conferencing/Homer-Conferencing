@@ -53,6 +53,7 @@
 
 #include <stdlib.h>
 #include <string>
+#include <vector>
 
 namespace Homer { namespace Gui {
 
@@ -205,10 +206,10 @@ void AudioWidget::closeEvent(QCloseEvent* pEvent)
 
 void AudioWidget::contextMenuEvent(QContextMenuEvent *pEvent)
 {
-    list<string>::iterator tIt;
+    vector<string>::iterator tIt;
     QAction *tAction;
-    list<string> tRegisteredAudioSinks = mAudioSource->ListRegisteredMediaSinks();
-    list<string>::iterator tRegisteredAudioSinksIt;
+    vector<string> tRegisteredAudioSinks = mAudioSource->ListRegisteredMediaSinks();
+    vector<string>::iterator tRegisteredAudioSinksIt;
 
     QMenu tMenu(this);
 
@@ -248,7 +249,7 @@ void AudioWidget::contextMenuEvent(QContextMenuEvent *pEvent)
     //###############################################################################
     //### TRACKS
     //###############################################################################
-    list<string> tInputChannels = mAudioSource->GetInputChannels();
+    vector<string> tInputChannels = mAudioSource->GetInputChannels();
     if (mAudioSource->SupportsMultipleInputChannels())
     {
         QMenu *tStreamMenu = tMenu.addMenu("Audio streams");
@@ -571,21 +572,21 @@ void AudioWidget::ShowSample(void* pBuffer, int pSampleSize, int pSampleNumber)
         QFont tFont = QFont("Tahoma", 10, QFont::Bold);
         tFont.setFixedPitch(true);
         mLbStreamInfo->setFont(tFont);
+        QString tMuxCodecName = QString(mAudioSource->GetMuxingCodec().c_str());
+        QString tText = "<font color=red><b>"                                                                                                \
+                /*"Source: " + mAudioWorker->GetCurrentDevice() + "<br>" +                                                            \*/
+/*                                   "Buffer: " + QString("%1").arg(pSampleNumber) + (mAudioSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mAudioSource->GetChunkDropCounter()) + " dropped)") : "") + "<br>" + \ */
+                "Codec: " + QString((mAudioSource->GetCodecName() != "") ? mAudioSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(mAudioSource->GetSampleRate()) + "Hz)" + \
+/*                                   "Output: " + QString("%1").arg(AUDIO_OUTPUT_SAMPLE_RATE) + " Hz" + "<br>" + \*/
+                "";
         if (mAudioSource->SupportsSeeking())
-            mLbStreamInfo->setText("<font color=red><b>"                                                                                                \
-                                   /*"Source: " + mAudioWorker->GetCurrentDevice() + "<br>" +                                                            \*/
-                                   "Buffer: " + QString("%1").arg(pSampleNumber) + (mAudioSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mAudioSource->GetChunkDropCounter()) + " dropped)") : "") + "<br>" + \
-                                   "Codec: " + QString((mAudioSource->GetCodecName() != "") ? mAudioSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(mAudioSource->GetSampleRate()) + "Hz)<br>" + \
-                                   "Output: " + QString("%1").arg(AUDIO_OUTPUT_SAMPLE_RATE) + " Hz" + "<br>" + \
-                                   "Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0') + \
-                                   "</b></font>");
-        else
-            mLbStreamInfo->setText("<font color=red><b>"                                                                                                \
-                                   "Source: " + mAudioWorker->GetCurrentDevice() + "<br>" +                                                            \
-                                   "Buffer: " + QString("%1").arg(pSampleNumber) + (mAudioSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mAudioSource->GetChunkDropCounter()) + " dropped)") : "") + "<br>" + \
-                                   "Codec: " + QString((mAudioSource->GetCodecName() != "") ? mAudioSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(mAudioSource->GetSampleRate()) + "Hz)<br>" + \
-                                   "Output: " + QString("%1").arg(AUDIO_OUTPUT_SAMPLE_RATE) + " Hz" + "<br>" + \
-                                   "</b></font>");
+            tText +=    "<br>Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0');
+
+        if (mAudioSource->SupportsMuxing())
+            tText +=     "<br>Mux codec: " + ((tMuxCodecName != "") ? tMuxCodecName : "unknown") + (mAudioSource->GetMuxingBufferCounter() ? (" (" + QString("%1").arg(mAudioSource->GetMuxingBufferCounter()) + "/" + QString("%1").arg(mAudioSource->GetMuxingBufferSize()) + " buffered frames)") : "");
+
+        tText +=        "</b></font>";
+        mLbStreamInfo->setText(tText);
     }
 
     //#############################################################
@@ -827,7 +828,7 @@ AudioWorkerThread::AudioWorkerThread(MediaSource *pAudioSource, AudioWidget *pAu
     mDesiredInputChannel = 0;
     mPlaybackAvailable = false;
     mEofReached = false;
-    mSourceSeekAsap = false;
+    mSeekAsap = false;
     mPaused = false;
     mSourceAvailable = false;
     mPausedPos = 0;
@@ -989,9 +990,9 @@ void AudioWorkerThread::SetCurrentDevice(QString pName)
     }
 }
 
-AudioDevicesList AudioWorkerThread::GetPossibleDevices()
+AudioDevices AudioWorkerThread::GetPossibleDevices()
 {
-    AudioDevicesList tResult;
+    AudioDevices tResult;
 
     LOG(LOG_VERBOSE, "Enumerate all audio devices..");
     mAudioSource->getAudioDevices(tResult);
@@ -1001,8 +1002,8 @@ AudioDevicesList AudioWorkerThread::GetPossibleDevices()
 
 QString AudioWorkerThread::GetDeviceDescription(QString pName)
 {
-    AudioDevicesList::iterator tIt;
-    AudioDevicesList tAList;
+    AudioDevices::iterator tIt;
+    AudioDevices tAList;
 
     mAudioSource->getAudioDevices(tAList);
     for (tIt = tAList.begin(); tIt != tAList.end(); tIt++)
@@ -1014,6 +1015,9 @@ QString AudioWorkerThread::GetDeviceDescription(QString pName)
 
 void AudioWorkerThread::PlayFile(QString pName)
 {
+    if (pName == "")
+        pName = mCurrentFile;
+
     // remove "file:///" and "file://" from the beginning if existing
     #ifdef WIN32
         if (pName.startsWith("file:///"))
@@ -1033,12 +1037,12 @@ void AudioWorkerThread::PlayFile(QString pName)
 
 	if ((mPaused) && (pName == mDesiredFile))
 	{
-		LOG(LOG_VERBOSE, "Continue playback of file: %s", pName.toStdString().c_str());
-		mAudioSource->Seek(mPausedPos, false);
+        LOG(LOG_VERBOSE, "Continue playback of file: %s at pos.: %ld", pName.toStdString().c_str(), mPausedPos);
+		Seek(mPausedPos);
         mGrabbingStateMutex.lock();
         mPaused = false;
-        mGrabbingCondition.wakeAll();
         mGrabbingStateMutex.unlock();
+        mGrabbingCondition.wakeAll();
 	}else
 	{
 		LOG(LOG_VERBOSE, "Trigger playback of file: %s", pName.toStdString().c_str());
@@ -1052,13 +1056,21 @@ void AudioWorkerThread::PauseFile()
 {
     if (mAudioSource->SupportsSeeking())
     {
-        LOG(LOG_VERBOSE, "Trigger pause state");
         mPausedPos = mAudioSource->GetSeekPos();
         mGrabbingStateMutex.lock();
         mPaused = true;
         mGrabbingStateMutex.unlock();
+        LOG(LOG_VERBOSE, "Triggered pause state at position: %ld", mPausedPos);
     }else
         LOG(LOG_VERBOSE, "Seeking not supported, PauseFile() aborted");
+}
+
+bool AudioWorkerThread::IsPaused()
+{
+    if ((mAudioSource != NULL) && (mAudioSource->SupportsSeeking()))
+        return mPaused;
+    else
+        return false;
 }
 
 void AudioWorkerThread::StopFile()
@@ -1081,7 +1093,7 @@ bool AudioWorkerThread::EofReached()
 //	LOG(LOG_VERBOSE, "mResetAudioSourceAsap: %d", mResetAudioSourceAsap);
 //	LOG(LOG_VERBOSE, "mPlayNewFileAsap: %d", mPlayNewFileAsap);
 //	LOG(LOG_VERBOSE, "mSetCurrentDeviceAsap: %d", mSetCurrentDeviceAsap);
-	return (((mEofReached) && (!mResetAudioSourceAsap) && (!mPlayNewFileAsap)) || (mPlayNewFileAsap) || (mSetCurrentDeviceAsap));
+	return (((mEofReached) && (!mResetAudioSourceAsap) && (!mPlayNewFileAsap) && (!mSeekAsap)) || (mPlayNewFileAsap) || (mSetCurrentDeviceAsap));
 }
 
 QString AudioWorkerThread::CurrentFile()
@@ -1092,22 +1104,18 @@ QString AudioWorkerThread::CurrentFile()
         return "";
 }
 
-void AudioWorkerThread::SelectInputChannel(int pIndex)
-{
-    mDesiredInputChannel = pIndex;
-    mSelectInputChannelAsap = true;
-    mGrabbingCondition.wakeAll();
-}
-
 bool AudioWorkerThread::SupportsSeeking()
 {
-    return mAudioSource->SupportsSeeking();
+    if(mAudioSource != NULL)
+        return mAudioSource->SupportsSeeking();
+    else
+        return false;
 }
 
-void AudioWorkerThread::Seek(int pPos)
+void AudioWorkerThread::Seek(int64_t pPos)
 {
-    mSourceSeekPos = pPos;
-    mSourceSeekAsap = true;
+    mSeekPos = pPos;
+    mSeekAsap = true;
     mGrabbingCondition.wakeAll();
 }
 
@@ -1119,6 +1127,45 @@ int64_t AudioWorkerThread::GetSeekPos()
 int64_t AudioWorkerThread::GetSeekEnd()
 {
     return mAudioSource->GetSeekEnd();
+}
+
+bool AudioWorkerThread::SupportsMultipleChannels()
+{
+    if (mAudioSource != NULL)
+        return mAudioSource->SupportsMultipleInputChannels();
+    else
+        return false;
+}
+
+QString AudioWorkerThread::GetCurrentChannel()
+{
+    return QString(mAudioSource->CurrentInputChannel().c_str());
+}
+
+void AudioWorkerThread::SelectInputChannel(int pIndex)
+{
+    if (pIndex != -1)
+    {
+        LOG(LOG_VERBOSE, "Will select new input channel %d after some short time", pIndex);
+        mDesiredInputChannel = pIndex;
+        mSelectInputChannelAsap = true;
+        mGrabbingCondition.wakeAll();
+    }else
+    {
+        LOG(LOG_WARN, "Will not select new input channel -1, ignoring this request");
+    }
+}
+
+QStringList AudioWorkerThread::GetPossibleChannels()
+{
+    QStringList tResult;
+
+    vector<string> tList = mAudioSource->GetInputChannels();
+    vector<string>::iterator tIt;
+    for (tIt = tList.begin(); tIt != tList.end(); tIt++)
+        tResult.push_back(QString((*tIt).c_str()));
+
+    return tResult;
 }
 
 void AudioWorkerThread::StartRecorder(std::string pSaveFileName, int pQuality)
@@ -1147,19 +1194,12 @@ void AudioWorkerThread::DoStopRecorder()
     mStopRecorderAsap = false;
 }
 
-void AudioWorkerThread::DoSourceSeek()
-{
-    LOG(LOG_VERBOSE, "DoSourceSeek now...");
-    mAudioSource->Seek(mAudioSource->GetSeekEnd() * mSourceSeekPos / 1000, false);
-    ResetPlayback();
-    mSourceSeekAsap = false;
-}
 void AudioWorkerThread::DoPlayNewFile()
 {
     LOG(LOG_VERBOSE, "DoPlayNewFile now...");
 
-    AudioDevicesList tList = GetPossibleDevices();
-    AudioDevicesList::iterator tIt;
+    AudioDevices tList = GetPossibleDevices();
+    AudioDevices::iterator tIt;
     bool tFound = false;
 
     for (tIt = tList.begin(); tIt != tList.end(); tIt++)
@@ -1178,7 +1218,7 @@ void AudioWorkerThread::DoPlayNewFile()
     	MediaSourceFile *tASource = new MediaSourceFile(mDesiredFile.toStdString());
         if (tASource != NULL)
         {
-            AudioDevicesList tAList;
+            AudioDevices tAList;
             tASource->getAudioDevices(tAList);
             mAudioSource->RegisterMediaSource(tASource);
             SetCurrentDevice(mDesiredFile);
@@ -1188,13 +1228,35 @@ void AudioWorkerThread::DoPlayNewFile()
         SetCurrentDevice(mDesiredFile);
     }
 
+    mEofReached = false;
     mPlayNewFileAsap = false;
-	mPaused = false;
+    mPaused = false;
+}
+
+void AudioWorkerThread::DoSourceSeek()
+{
+    LOG(LOG_VERBOSE, "DoSeek now...");
+
+    // lock
+    mDeliverMutex.lock();
+
+    LOG(LOG_VERBOSE, "Seeking now to position %d", mSeekPos);
+    mAudioSource->Seek(mSeekPos, false);
+    mEofReached = false;
+    ResetPlayback();
+    mSeekAsap = false;
+
+    // unlock
+    mDeliverMutex.unlock();
 }
 
 void AudioWorkerThread::DoSelectInputChannel()
 {
-    LOG(LOG_VERBOSE, "AudioWorkerThread-DoSelectInputChannel now...");
+    LOG(LOG_VERBOSE, "DoSelectInputChannel now...");
+
+    if(mDesiredInputChannel == -1)
+        return;
+
     // lock
     mDeliverMutex.lock();
 
@@ -1212,7 +1274,7 @@ void AudioWorkerThread::DoSelectInputChannel()
 
 void AudioWorkerThread::DoResetAudioSource()
 {
-    LOG(LOG_VERBOSE, "AudioWorkerThread-DoResetAudioSource now...");
+    LOG(LOG_VERBOSE, "DoResetAudioSource now...");
     // lock
     mDeliverMutex.lock();
 
@@ -1278,6 +1340,7 @@ void AudioWorkerThread::DoSetCurrentDevice()
                     // seek to the beginning if we have reselected the source file
                     LOG(LOG_VERBOSE, "Seeking to the beginning of the source file");
                     mAudioSource->Seek(0);
+                    mSeekAsap = false;
 
                     if (mResetAudioSourceAsap)
                     {
@@ -1413,7 +1476,7 @@ void AudioWorkerThread::run()
         // get the next frame from audio source
         tLastSampleNumber = tSampleNumber;
 
-        if (mSourceSeekAsap)
+        if (mSeekAsap)
             DoSourceSeek();
 
         // play new file from disc

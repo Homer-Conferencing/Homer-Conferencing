@@ -34,6 +34,7 @@
 #include <HBThread.h>
 #include <HBCondition.h>
 
+#include <vector>
 #include <string.h>
 
 namespace Homer { namespace Multimedia {
@@ -65,8 +66,8 @@ public:
     virtual GrabResolutions GetSupportedVideoGrabResolutions();
 
     /* pseudo device control */
-    virtual void getVideoDevices(VideoDevicesList &pVList);
-    virtual void getAudioDevices(AudioDevicesList &pAList);
+    virtual void getVideoDevices(VideoDevices &pVList);
+    virtual void getAudioDevices(AudioDevices &pAList);
 
     /* fps */
     virtual void SetFrameRate(float pFps);
@@ -85,7 +86,7 @@ public:
     virtual bool SupportsMultipleInputChannels();
     virtual bool SelectInputChannel(int pIndex);
     virtual std::string CurrentInputChannel();
-    virtual std::list<std::string> GetInputChannels();
+    virtual std::vector<std::string> GetInputChannels();
 
 public:
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97);
@@ -119,7 +120,7 @@ private:
     bool                mSeekingToPos; // seek to starting point because initial stream detection consumes the first n frames, or seeking to explicit position ("Seek" was called)
     char                *mResampleBuffer;
     ReSampleContext     *mResampleContext;
-    list<string>        mInputChannels;
+    std::vector<string> mInputChannels;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

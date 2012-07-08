@@ -331,14 +331,14 @@ void OpenVideoAudioPreviewDialog::LoadConfiguration()
     }
 
     mCbDeviceVideo->clear();
-    VideoDevicesList::iterator tItVideo;
+    VideoDevices::iterator tItVideo;
     for (tItVideo = mVideoDevicesList.begin(); tItVideo != mVideoDevicesList.end(); tItVideo++)
     {
         mCbDeviceVideo->addItem(QString(tItVideo->Name.c_str()));
     }
 
     mCbDeviceAudio->clear();
-    AudioDevicesList::iterator tItAudio;
+    AudioDevices::iterator tItAudio;
     for (tItAudio = mAudioDevicesList.begin(); tItAudio != mAudioDevicesList.end(); tItAudio++)
     {
         mCbDeviceAudio->addItem(QString(tItAudio->Name.c_str()));

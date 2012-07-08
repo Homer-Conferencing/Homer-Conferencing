@@ -32,13 +32,13 @@
 
 #include <HBMutex.h>
 
-#include <list>
+#include <vector>
 #include <string>
 
 namespace Homer { namespace Base {
 
 class Domain;
-typedef std::list<Domain*> DomainList;
+typedef std::vector<Domain*> Domains;
 
 class Node;
 
@@ -53,13 +53,13 @@ public:
     std::string GetDomainAddress();
 
     void AddNode(Node *pNode);
-    NodeList GetNodes();
+    Nodes GetNodes();
     Node* GetNode(int pIndex);
     int GetNodeCount();
 
 private:
     std::string         mDomainAddress;
-    NodeList            mNodes;
+    Nodes            mNodes;
     Mutex               mNodesMutex;
 };
 

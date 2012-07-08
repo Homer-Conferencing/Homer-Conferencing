@@ -31,7 +31,7 @@
 #include <HBMutex.h>
 #include <HBTime.h>
 
-#include <list>
+#include <vector>
 #include <string>
 #include <HBSocket.h>
 
@@ -44,6 +44,8 @@ namespace Homer { namespace Monitor {
 // reference buffer size for average data rate measurement (current value!)
 #define STATISTIC_MOMENT_DATARATE_REFERENCE_SIZE                   8
 #define STATISTIC_MOMENT_DATARATE_HISTORY                     5 * 1000 * 1000 // limits the measurement array
+
+//#define STATISTIC_DEBUG_TIMING
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -74,7 +76,7 @@ struct DataRateHistoryDescriptor{
     int     DataRate;
 };
 
-typedef std::list<DataRateHistoryDescriptor> DataRateHistory;
+typedef std::vector<DataRateHistoryDescriptor> DataRateHistory;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -133,7 +135,7 @@ private:
         int64_t ByteCount;
     };
 
-    typedef std::list<StatisticEntry>      StatisticList;
+    typedef std::vector<StatisticEntry>      Statistics;
 
     int           mMinPacketSize;
     int           mMaxPacketSize;
@@ -143,7 +145,7 @@ private:
     int64_t       mEndTimeStamp;
     int           mLostPacketCount;
     Time          mLastTime;
-    StatisticList mStatistics;
+    Statistics mStatistics;
     Mutex         mStatisticsMutex;
     std::string	  mName;
     enum DataType mStreamDataType;

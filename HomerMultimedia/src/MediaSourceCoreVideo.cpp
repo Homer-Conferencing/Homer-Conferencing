@@ -60,7 +60,7 @@ MediaSourceCoreVideo::~MediaSourceCoreVideo()
     LOG(LOG_VERBOSE, "Destroyed");
 }
 
-void MediaSourceCoreVideo::getVideoDevices(VideoDevicesList &pVList)
+void MediaSourceCoreVideo::getVideoDevices(VideoDevices &pVList)
 {
     static bool tFirstCall = true;
     VideoDeviceDescriptor tDevice;

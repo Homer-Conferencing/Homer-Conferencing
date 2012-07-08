@@ -53,9 +53,9 @@ PacketStatisticService& PacketStatisticService::GetInstance()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PacketStatisticsList PacketStatisticService::GetPacketStatisticsAccess()
+PacketStatistics PacketStatisticService::GetPacketStatisticsAccess()
 {
-	PacketStatisticsList tResult;
+	PacketStatistics tResult;
 
 	// lock
     mPacketStatisticsMutex.lock();
@@ -73,7 +73,7 @@ void PacketStatisticService::ReleasePacketStatisticsAccess()
 
 PacketStatistic* PacketStatisticService::RegisterPacketStatistic(PacketStatistic *pStat)
 {
-    PacketStatisticsList::iterator tIt;
+    PacketStatistics::iterator tIt;
     bool tFound = false;
 
     if (pStat == NULL)
@@ -105,7 +105,7 @@ PacketStatistic* PacketStatisticService::RegisterPacketStatistic(PacketStatistic
 
 bool PacketStatisticService::UnregisterPacketStatistic(PacketStatistic *pStat)
 {
-    PacketStatisticsList::iterator tIt;
+    PacketStatistics::iterator tIt;
     bool tFound = false;
 
     if (pStat == NULL)

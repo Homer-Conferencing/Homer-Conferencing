@@ -78,7 +78,7 @@ bool Link::HandlePacket(Packet *pPacket, Node* pLastNode)
     #endif
 
     // store stream id in internal list
-    std::list<int>::iterator tIt;
+    std::vector<int>::iterator tIt;
     bool tFound = false;
 
     // store as seen stream
@@ -164,9 +164,9 @@ int Link::GetLostPacketCount()
     return mPacketLossCount;
 }
 
-list<int> Link::GetSeenStreams()
+vector<int> Link::GetSeenStreams()
 {
-    list<int> tResult;
+    vector<int> tResult;
 
     mSeenStreamsMutex.lock();
     tResult = mSeenStreams;

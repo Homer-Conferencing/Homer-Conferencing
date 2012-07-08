@@ -62,10 +62,10 @@ void ProcessStatisticService::DisableProcessStatisticSupport()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-ProcessStatisticsList ProcessStatisticService::GetProcessStatistics()
+ProcessStatistics ProcessStatisticService::GetProcessStatistics()
 {
-	ProcessStatisticsList tResult;
-	ProcessStatisticsList::iterator tIt;
+	ProcessStatistics tResult;
+	ProcessStatistics::iterator tIt;
 
 	if (!sProcessStatisticSupported)
 		return tResult;
@@ -85,8 +85,8 @@ ProcessStatisticsList ProcessStatisticService::GetProcessStatistics()
 
 void ProcessStatisticService::UpdateThreadDatabase()
 {
-    ProcessStatisticsList tNewThreads;
-    ProcessStatisticsList::iterator tDbIt;
+    ProcessStatistics tNewThreads;
+    ProcessStatistics::iterator tDbIt;
     vector<int> tThreadIds;
     vector<int>::iterator tIt;
 
@@ -173,7 +173,7 @@ void ProcessStatisticService::AssignThreadName(std::string pName)
 		return;
 
     int tCurrentTid = Thread::GetTId();
-    ProcessStatisticsList::iterator tDbIt;
+    ProcessStatistics::iterator tDbIt;
     bool tFound = false;
 
     UpdateThreadDatabase();
@@ -199,7 +199,7 @@ bool ProcessStatisticService::RegisterProcessStatistic(int pThreadId)
 	if (!sProcessStatisticSupported)
 		return false;
 
-    ProcessStatisticsList::iterator tIt;
+    ProcessStatistics::iterator tIt;
     bool tFound = false;
 
     //LOG(LOG_VERBOSE, "Registering process statistic for thread %d", pThreadId);
@@ -228,7 +228,7 @@ bool ProcessStatisticService::UnregisterProcessStatistic(int pThreadId)
 	if (!sProcessStatisticSupported)
 		return false;
 
-    ProcessStatisticsList::iterator tIt;
+    ProcessStatistics::iterator tIt;
     bool tFound = false;
 
     //LOG(LOG_VERBOSE, "Unregistering process statistic for thread %d", pThreadId);

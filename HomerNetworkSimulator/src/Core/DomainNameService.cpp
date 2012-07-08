@@ -84,7 +84,7 @@ string DomainNameService::query(string pName)
     mDnsMappingMutex.lock();
     if (mDnsMapping.size() > 0)
     {
-        DnsMappingList::iterator tIt;
+        DnsMappings::iterator tIt;
         for (tIt = mDnsMapping.begin(); tIt != mDnsMapping.end(); tIt ++)
         {
             if (tIt->Name == pName)

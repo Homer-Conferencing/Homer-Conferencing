@@ -63,7 +63,7 @@ MediaSourceFile::~MediaSourceFile()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void MediaSourceFile::getVideoDevices(VideoDevicesList &pVList)
+void MediaSourceFile::getVideoDevices(VideoDevices &pVList)
 {
     VideoDeviceDescriptor tDevice;
 
@@ -74,7 +74,7 @@ void MediaSourceFile::getVideoDevices(VideoDevicesList &pVList)
     pVList.push_back(tDevice);
 }
 
-void MediaSourceFile::getAudioDevices(AudioDevicesList &pAList)
+void MediaSourceFile::getAudioDevices(AudioDevices &pAList)
 {
     AudioDeviceDescriptor tDevice;
 
@@ -1232,19 +1232,24 @@ bool MediaSourceFile::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
     {
         LOG(LOG_VERBOSE, "Seeking to second %ld, current pts is %ld", pSeconds, mCurPts);
 
-        mDecoderMutex.lock();
-        int64_t tMin = tAbsoluteTimestamp - MSF_SEEK_VARIANCE;
-        int64_t tMax = tAbsoluteTimestamp + MSF_SEEK_VARIANCE;
-        if (tMin < 0)
-            tMin = 0;
-        if (tMax > mDuration)
-            tMax = mDuration;
-        tResult = (avformat_seek_file(mFormatContext, mMediaStreamIndex, tMin, tAbsoluteTimestamp, tMax, (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) | (tAbsoluteTimestamp < mCurPts ? AVSEEK_FLAG_BACKWARD : 0)) >= 0);
+        // seek only if it is necessary
+        if (pSeconds != GetSeekPos())
+        {
+            mDecoderMutex.lock();
+            int64_t tMin = tAbsoluteTimestamp - MSF_SEEK_VARIANCE;
+            int64_t tMax = tAbsoluteTimestamp + MSF_SEEK_VARIANCE;
+            if (tMin < 0)
+                tMin = 0;
+            if (tMax > mDuration)
+                tMax = mDuration;
+            tResult = (avformat_seek_file(mFormatContext, mMediaStreamIndex, tMin, tAbsoluteTimestamp, tMax, (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) | (tAbsoluteTimestamp < mCurPts ? AVSEEK_FLAG_BACKWARD : 0)) >= 0);
 
-        mDecoderFifo->ClearFifo();
-        mDecoderMetaDataFifo->ClearFifo();
-        DecoderNeedWorkCondition.SignalAll();
-        mDecoderMutex.unlock();
+            mDecoderFifo->ClearFifo();
+            mDecoderMetaDataFifo->ClearFifo();
+            DecoderNeedWorkCondition.SignalAll();
+            mDecoderMutex.unlock();
+        }else
+            LOG(LOG_VERBOSE, "Seeking in file skipped because position is already the desired one");
 
         // adopt the stored pts value which represent the start of the media presentation in real-time useconds
         int64_t tFrameNumber = tAbsoluteTimestamp - mSourceStartPts;
@@ -1364,9 +1369,9 @@ bool MediaSourceFile::SelectInputChannel(int pIndex)
     return tResult;
 }
 
-list<string> MediaSourceFile::GetInputChannels()
+vector<string> MediaSourceFile::GetInputChannels()
 {
-    list<string> tResult;
+    vector<string> tResult;
 
     // lock grabbing
     mGrabMutex.lock();
@@ -1386,7 +1391,7 @@ string MediaSourceFile::CurrentInputChannel()
 {
     AVCodec *tCodec;
     string tResult = "";
-    list<string>::iterator tIt;
+    vector<string>::iterator tIt;
 
     int tCount = 0;
 

@@ -76,7 +76,7 @@ MediaSourceVFW::~MediaSourceVFW()
         CloseGrabDevice();
 }
 
-void MediaSourceVFW::getVideoDevices(VideoDevicesList &pVList)
+void MediaSourceVFW::getVideoDevices(VideoDevices &pVList)
 {
     static bool tFirstCall = true;
     HWND tWinHandle = NULL;
@@ -161,7 +161,7 @@ void MediaSourceVFW::getVideoDevices(VideoDevicesList &pVList)
     }
     tFirstCall = false;
 
-    VideoDevicesList::iterator tIt;
+    VideoDevices::iterator tIt;
     for (tIt = mFoundVFWDevices.begin(); tIt != mFoundVFWDevices.end(); tIt++)
     {
     	pVList.push_back(*tIt);

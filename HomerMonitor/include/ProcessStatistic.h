@@ -32,7 +32,7 @@
 #include <ProcessStatisticService.h>
 
 #include <string>
-#include <list>
+#include <vector>
 
 using namespace Homer::Base;
 
@@ -53,7 +53,7 @@ struct ThreadStatisticDescriptor{
     unsigned long MemPhysical;
 };
 
-typedef std::list<ThreadStatisticDescriptor> ThreadStatisticList;
+typedef std::vector<ThreadStatisticDescriptor> ThreadStatistics;
 
 ///////////////////////////////////////////////////////////////////////////////
 class ProcessStatisticService;

@@ -35,7 +35,7 @@
 #include <MediaSink.h>
 #include <HBMutex.h>
 
-#include <list>
+#include <vector>
 #include <string>
 
 using namespace Homer::Base;
@@ -93,7 +93,7 @@ struct VideoDeviceDescriptor
     enum VideoDeviceType Type;
 };
 
-typedef std::list<VideoDeviceDescriptor> VideoDevicesList;
+typedef std::vector<VideoDeviceDescriptor> VideoDevices;
 
 struct VideoFormatDescriptor
 {
@@ -102,7 +102,7 @@ struct VideoFormatDescriptor
     int                 ResY;
 };
 
-typedef std::list<VideoFormatDescriptor> GrabResolutions;
+typedef std::vector<VideoFormatDescriptor> GrabResolutions;
 
 enum MediaType
 {
@@ -127,7 +127,7 @@ struct AudioDeviceDescriptor
     enum AudioDeviceType Type;
 };
 
-typedef std::list<AudioDeviceDescriptor> AudioDevicesList;
+typedef std::vector<AudioDeviceDescriptor> AudioDevices;
 
 struct ChunkDescriptor
 {
@@ -140,8 +140,8 @@ struct ChunkDescriptor
 
 /* relaying */
 class MediaSource;
-typedef std::list<MediaSink*>        MediaSinksList;
-typedef std::list<MediaSource*>      MediaSourcesList;
+typedef std::vector<MediaSink*>        MediaSinks;
+typedef std::vector<MediaSource*>      MediaSources;
 
 // possible GrabChunk results
 #define GRAB_RES_INVALID                            -1
@@ -224,7 +224,7 @@ public:
     	bool UnregisterMediaSink(MediaSink *pMediaSink, bool pAutoDelete = true);
 	// register/unregister: media sink of any type
     	bool UnregisterGeneralMediaSink(std::string pId, bool pAutoDelete = true);
-    std::list<std::string> ListRegisteredMediaSinks();
+    std::vector<std::string> ListRegisteredMediaSinks();
     void DeleteAllRegisteredMediaSinks();
     void SetRtpActivation(bool pState);
     bool GetRtpActivation();
@@ -239,8 +239,8 @@ public:
     /* device control */
     virtual std::string GetMediaTypeStr();
     virtual enum MediaType GetMediaType();
-    virtual void getVideoDevices(VideoDevicesList &pVList);
-    virtual void getAudioDevices(AudioDevicesList &pAList);
+    virtual void getVideoDevices(VideoDevices &pVList);
+    virtual void getAudioDevices(AudioDevices &pAList);
     virtual bool SelectDevice(std::string pDeviceName, enum MediaType pMediaType, bool &pIsNewDevice);
     virtual std::string GetCurrentDeviceName();
     virtual std::string GetCurrentDevicePeerName();
@@ -265,7 +265,7 @@ public:
     virtual bool SupportsMultipleInputChannels();
     virtual bool SelectInputChannel(int pIndex);
     virtual std::string CurrentInputChannel();
-    virtual std::list<std::string> GetInputChannels();
+    virtual std::vector<std::string> GetInputChannels();
 
 public:
     /* abstract interface which has to be implemented by derived classes */
@@ -331,7 +331,7 @@ protected:
     float               mFrameRate;
     SwsContext          *mScalerContext;
     /* relaying */
-    MediaSinksList      mMediaSinks;
+    MediaSinks      mMediaSinks;
     Mutex               mMediaSinksMutex;
     bool                mRtpActivated;
     /* recording */

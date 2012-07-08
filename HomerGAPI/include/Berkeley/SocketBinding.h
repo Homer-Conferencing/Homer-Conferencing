@@ -39,9 +39,6 @@ namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-typedef std::list<IConnection*> IConnectionList;
-
-
 class SocketBinding:
 	public IBinding
 {

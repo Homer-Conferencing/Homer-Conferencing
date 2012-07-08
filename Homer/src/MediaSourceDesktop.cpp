@@ -89,7 +89,7 @@ MediaSourceDesktop::~MediaSourceDesktop()
         CloseGrabDevice();
 }
 
-void MediaSourceDesktop::getVideoDevices(VideoDevicesList &pVList)
+void MediaSourceDesktop::getVideoDevices(VideoDevices &pVList)
 {
     static bool tFirstCall = true;
     VideoDeviceDescriptor tDevice;
