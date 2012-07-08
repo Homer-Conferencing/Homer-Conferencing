@@ -48,7 +48,7 @@ GapiService::GapiService()
 	registerImpl(new SocketSetup(), BERKEYLEY_SOCKETS);
 
 	// for Linux/BSD the sctp support is available
-	#if defined(LINUX) || defined(BSD)
+	#if defined(LINUX) || defined(BSD) || defined(APPLE)
 	    registerImpl(new NGNSocketSetup(), NGN_SOCKETS);
     #endif
 }

@@ -50,7 +50,7 @@
 
 const int SERVER =  0;
 const int CLIENT = -1;
-const int UDP_ENCAPSULATION = 9898;
+const int UDP_ENCAPSULATION = 9899;
 const int SPECIAL_PORT 	    = 6000;
 namespace Homer { namespace Base {
 
