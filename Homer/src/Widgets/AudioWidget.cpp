@@ -572,21 +572,21 @@ void AudioWidget::ShowSample(void* pBuffer, int pSampleSize, int pSampleNumber)
         QFont tFont = QFont("Tahoma", 10, QFont::Bold);
         tFont.setFixedPitch(true);
         mLbStreamInfo->setFont(tFont);
-        if (mAudioSource->SupportsSeeking())
-            mLbStreamInfo->setText("<font color=red><b>"                                                                                                \
-                                   /*"Source: " + mAudioWorker->GetCurrentDevice() + "<br>" +                                                            \*/
+        QString tMuxCodecName = QString(mAudioSource->GetMuxingCodec().c_str());
+        QString tText = "<font color=red><b>"                                                                                                \
+                /*"Source: " + mAudioWorker->GetCurrentDevice() + "<br>" +                                                            \*/
 /*                                   "Buffer: " + QString("%1").arg(pSampleNumber) + (mAudioSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mAudioSource->GetChunkDropCounter()) + " dropped)") : "") + "<br>" + \ */
-                                   "Codec: " + QString((mAudioSource->GetCodecName() != "") ? mAudioSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(mAudioSource->GetSampleRate()) + "Hz)<br>" + \
+                "Codec: " + QString((mAudioSource->GetCodecName() != "") ? mAudioSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(mAudioSource->GetSampleRate()) + "Hz)" + \
 /*                                   "Output: " + QString("%1").arg(AUDIO_OUTPUT_SAMPLE_RATE) + " Hz" + "<br>" + \*/
-                                   "Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0') + \
-                                   "</b></font>");
-        else
-            mLbStreamInfo->setText("<font color=red><b>"                                                                                                \
-                                   "Source: " + mAudioWorker->GetCurrentDevice() + "<br>" +                                                            \
-/*                                   "Buffer: " + QString("%1").arg(pSampleNumber) + (mAudioSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mAudioSource->GetChunkDropCounter()) + " dropped)") : "") + "<br>" + \*/
-                                   "Codec: " + QString((mAudioSource->GetCodecName() != "") ? mAudioSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(mAudioSource->GetSampleRate()) + "Hz)<br>" + \
-/*                                   "Output: " + QString("%1").arg(AUDIO_OUTPUT_SAMPLE_RATE) + " Hz" + "<br>" + \*/
-                                   "</b></font>");
+                "";
+        if (mAudioSource->SupportsSeeking())
+            tText +=    "<br>Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0');
+
+        if (mAudioSource->SupportsMuxing())
+            tText +=     "<br>Mux codec: " + ((tMuxCodecName != "") ? tMuxCodecName : "unknown") + (mAudioSource->GetMuxingBufferCounter() ? (" (" + QString("%1").arg(mAudioSource->GetMuxingBufferCounter()) + "/" + QString("%1").arg(mAudioSource->GetMuxingBufferSize()) + " buffered frames)") : "");
+
+        tText +=        "</b></font>";
+        mLbStreamInfo->setText(tText);
     }
 
     //#############################################################
