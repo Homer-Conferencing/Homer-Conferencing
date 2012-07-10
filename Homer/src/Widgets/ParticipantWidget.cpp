@@ -582,7 +582,7 @@ void ParticipantWidget::HandleGeneralError(bool pIncoming, int pCode, QString pD
     }
 
     UpdateParticipantState(CONTACT_UNDEFINED_STATE);
-    CONTACTSPOOL.UpdateContactState(mSessionName, CONTACT_UNDEFINED_STATE);
+    CONTACTS.UpdateContactState(mSessionName, CONTACT_UNDEFINED_STATE);
 
     ShowError("General error occurred", "General error of code " + QString("%1").arg(pCode) + " occurred. The error is described with \"" + pDescription + "\"");
 }
@@ -597,7 +597,7 @@ void ParticipantWidget::HandleMessageAccept(bool pIncoming)
     }
 
     UpdateParticipantState(CONTACT_AVAILABLE);
-    CONTACTSPOOL.UpdateContactState(mSessionName, CONTACT_AVAILABLE);
+    CONTACTS.UpdateContactState(mSessionName, CONTACT_AVAILABLE);
 }
 
 void ParticipantWidget::HandleMessageAcceptDelayed(bool pIncoming)
@@ -613,7 +613,7 @@ void ParticipantWidget::HandleMessageAcceptDelayed(bool pIncoming)
         mMessageWidget->AddMessage("", "server delays message(s)", true);
 
     UpdateParticipantState(CONTACT_UNDEFINED_STATE);
-    CONTACTSPOOL.UpdateContactState(mSessionName, CONTACT_UNDEFINED_STATE);
+    CONTACTS.UpdateContactState(mSessionName, CONTACT_UNDEFINED_STATE);
 }
 
 void ParticipantWidget::HandleMessageUnavailable(bool pIncoming, int pStatusCode, QString pDescription)
@@ -626,7 +626,7 @@ void ParticipantWidget::HandleMessageUnavailable(bool pIncoming, int pStatusCode
     }
 
     UpdateParticipantState(CONTACT_UNAVAILABLE);
-    CONTACTSPOOL.UpdateContactState(mSessionName, CONTACT_UNAVAILABLE);
+    CONTACTS.UpdateContactState(mSessionName, CONTACT_UNAVAILABLE);
     ShowError("Participant unavailable", "The participant " + mSessionName + " is currently unavailable for an instant message! The reason is \"" + pDescription + "\"(" + QString("%1").arg(pStatusCode) + ").");
 }
 
@@ -809,7 +809,7 @@ void ParticipantWidget::HandleCallUnavailable(bool pIncoming, int pStatusCode, Q
     {
     	CallStopped(pIncoming);
         UpdateParticipantState(CONTACT_UNAVAILABLE);
-        CONTACTSPOOL.UpdateContactState(mSessionName, CONTACT_UNAVAILABLE);
+        CONTACTS.UpdateContactState(mSessionName, CONTACT_UNAVAILABLE);
 
         ShowError("Participant unavailable", "The participant " + mSessionName + " is currently unavailable for a call! The reason is \"" + pDescription + "\"(" + QString("%1").arg(pStatusCode) + ").");
     }else
@@ -859,7 +859,7 @@ void ParticipantWidget::HandleCallAccept(bool pIncoming)
     }
 
     UpdateParticipantState(CONTACT_AVAILABLE);
-    CONTACTSPOOL.UpdateContactState(mSessionName, CONTACT_AVAILABLE);
+    CONTACTS.UpdateContactState(mSessionName, CONTACT_AVAILABLE);
 
     if (mMessageWidget != NULL)
         mMessageWidget->AddMessage("", "session established", true);

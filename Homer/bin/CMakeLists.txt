@@ -119,7 +119,7 @@ ENDIF (WIN32)
 # SOURCES 
 SET (SOURCES
 	../src/Configuration
-	../src/ContactsPool
+	../src/ContactsManager
 	../src/MainWindow
 	../src/MediaSourceDesktop
 	../src/main

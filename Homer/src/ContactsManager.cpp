@@ -29,7 +29,7 @@
 #include <fstream>
 #include <exception>
 
-#include <ContactsPool.h>
+#include <ContactsManager.h>
 #include <Configuration.h>
 #include <Logger.h>
 #include <Meeting.h>
@@ -46,28 +46,28 @@ namespace Homer { namespace Gui {
 using namespace std;
 using namespace Homer::Conference;
 
-ContactsPool sContactsPool;
+ContactsManager sContactsManager;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-ContactsPool::ContactsPool()
+ContactsManager::ContactsManager()
 {
     mContactsModel = NULL;
     mContactsFile = "";
 }
 
-ContactsPool::~ContactsPool()
+ContactsManager::~ContactsManager()
 {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-ContactsPool& ContactsPool::getInstance()
+ContactsManager& ContactsManager::getInstance()
 {
-    return (sContactsPool);
+    return (sContactsManager);
 }
 
-void ContactsPool::Init(const std::string& pContactsFile)
+void ContactsManager::Init(const std::string& pContactsFile)
 {
     LOG(LOG_VERBOSE, "Initializing contacts..");
 
@@ -75,12 +75,12 @@ void ContactsPool::Init(const std::string& pContactsFile)
     LoadPool();
 }
 
-string ContactsPool::getContactsFilePath()
+string ContactsManager::getContactsFilePath()
 {
     return mContactsFile;
 }
 
-void ContactsPool::SavePool(string pContactsFile)
+void ContactsManager::SavePool(string pContactsFile)
 {
     // should we use an old contacts file?
     if (pContactsFile == "")
@@ -139,7 +139,7 @@ void ContactsPool::SavePool(string pContactsFile)
     CONF.SetContactFile(tFile.fileName());
 }
 
-void ContactsPool::LoadPool(string pContactsFile)
+void ContactsManager::LoadPool(string pContactsFile)
 {
     // should we use an old contacts file?
     if (pContactsFile == "")
@@ -224,7 +224,7 @@ void ContactsPool::LoadPool(string pContactsFile)
     CONF.SetContactFile(tFile.fileName());
 }
 
-void ContactsPool::AddContact(ContactDescriptor &pContact)
+void ContactsManager::AddContact(ContactDescriptor &pContact)
 {
     pContact.State = CONTACT_UNAVAILABLE;
 
@@ -239,7 +239,7 @@ void ContactsPool::AddContact(ContactDescriptor &pContact)
     SavePool();
 }
 
-void ContactsPool::RemoveContact(unsigned int pId)
+void ContactsManager::RemoveContact(unsigned int pId)
 {
     mContactsMutex.lock();
     ContactsVector::iterator tIt, tItEnd = mContacts.end();
@@ -263,7 +263,7 @@ void ContactsPool::RemoveContact(unsigned int pId)
     mContactsMutex.unlock();
 }
 
-bool ContactsPool::IsKnownContact(QString pUser, QString pHost, QString pPort)
+bool ContactsManager::IsKnownContact(QString pUser, QString pHost, QString pPort)
 {
     bool tFound = false;
 
@@ -286,7 +286,7 @@ bool ContactsPool::IsKnownContact(QString pUser, QString pHost, QString pPort)
     return tFound;
 }
 
-int ContactsPool::ContactCount()
+int ContactsManager::ContactCount()
 {
     int tResult;
     mContactsMutex.lock();
@@ -296,7 +296,7 @@ int ContactsPool::ContactCount()
 
 }
 
-ContactDescriptor* ContactsPool::CreateContactDescriptor(QString pUser, QString pHost, QString pPort)
+ContactDescriptor* ContactsManager::CreateContactDescriptor(QString pUser, QString pHost, QString pPort)
 {
     ContactDescriptor *tResult = new ContactDescriptor();
 
@@ -307,7 +307,7 @@ ContactDescriptor* ContactsPool::CreateContactDescriptor(QString pUser, QString 
     return tResult;
 }
 
-bool ContactsPool::SplitAddress(QString pAddr, QString &pUser, QString &pHost, QString &pPort)
+bool ContactsManager::SplitAddress(QString pAddr, QString &pUser, QString &pHost, QString &pPort)
 {
     int tPos;
 
@@ -342,7 +342,7 @@ bool ContactsPool::SplitAddress(QString pAddr, QString &pUser, QString &pHost, Q
     return true;
 }
 
-ContactDescriptor* ContactsPool::GetContactById(unsigned int pId)
+ContactDescriptor* ContactsManager::GetContactById(unsigned int pId)
 {
     mContactsMutex.lock();
 
@@ -361,7 +361,7 @@ ContactDescriptor* ContactsPool::GetContactById(unsigned int pId)
     return NULL;
 }
 
-ContactDescriptor* ContactsPool::GetContactByIndex(unsigned int pIndex)
+ContactDescriptor* ContactsManager::GetContactByIndex(unsigned int pIndex)
 {
     ContactDescriptor *tResult = NULL;
 
@@ -375,7 +375,7 @@ ContactDescriptor* ContactsPool::GetContactByIndex(unsigned int pIndex)
     return tResult;
 }
 
-bool ContactsPool::FavorizedContact(QString pUser, QString pHost, QString pPort)
+bool ContactsManager::FavorizedContact(QString pUser, QString pHost, QString pPort)
 {
     mContactsMutex.lock();
 
@@ -425,7 +425,7 @@ bool ContactsPool::FavorizedContact(QString pUser, QString pHost, QString pPort)
     return tFound;
 }
 
-void ContactsPool::ProbeAvailabilityForAll()
+void ContactsManager::ProbeAvailabilityForAll()
 {
     if (!CONF.GetSipContactsProbing())
         return;
@@ -442,7 +442,7 @@ void ContactsPool::ProbeAvailabilityForAll()
     mContactsMutex.unlock();
 }
 
-void ContactsPool::UpdateContactState(QString pContact, bool pState)
+void ContactsManager::UpdateContactState(QString pContact, bool pState)
 {
     mContactsMutex.lock();
 
@@ -467,7 +467,7 @@ void ContactsPool::UpdateContactState(QString pContact, bool pState)
         mContactsModel->UpdateView();
 }
 
-void ContactsPool::SortByState(bool pDescending)
+void ContactsManager::SortByState(bool pDescending)
 {
     mSortDescending = pDescending;
     mSortByState = true;
@@ -516,7 +516,7 @@ void ContactsPool::SortByState(bool pDescending)
         mContactsModel->UpdateView();
 }
 
-void ContactsPool::SortByName(bool pDescending)
+void ContactsManager::SortByName(bool pDescending)
 {
     mSortDescending = pDescending;
     mSortByState = false;
@@ -565,7 +565,7 @@ void ContactsPool::SortByName(bool pDescending)
         mContactsModel->UpdateView();
 }
 
-void ContactsPool::UpdateSorting()
+void ContactsManager::UpdateSorting()
 {
     if (mSortByState)
         SortByState(mSortDescending);
@@ -573,7 +573,7 @@ void ContactsPool::UpdateSorting()
         SortByName(mSortDescending);
 }
 
-int ContactsPool::GetNextFreeId()
+int ContactsManager::GetNextFreeId()
 {
     mContactsMutex.lock();
 
@@ -591,7 +591,7 @@ int ContactsPool::GetNextFreeId()
     return ++tMaxId;
 }
 
-void ContactsPool::RegisterAtController(ContactListModel *pContactsModel)
+void ContactsManager::RegisterAtController(ContactListModel *pContactsModel)
 {
     mContactsModel = pContactsModel;
 }

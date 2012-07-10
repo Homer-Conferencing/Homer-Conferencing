@@ -26,7 +26,7 @@
  */
 #include <string>
 
-#include <ContactsPool.h>
+#include <ContactsManager.h>
 #include <MainWindow.h>
 #include <Configuration.h>
 #include <Dialogs/AddNetworkSinkDialog.h>
@@ -127,7 +127,7 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     // set coloring for GUI objects
     initializeColoring();
     // init contact database
-    CONTACTSPOOL.Init(CONF.GetContactFile().toStdString());
+    CONTACTS.Init(CONF.GetContactFile().toStdString());
     // connect signals and slots, set visibility of some GUI objects
     connectSignalsSlots();
     // auto update check
@@ -870,7 +870,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     tOAEvent = (OptionsAcceptEvent*) tEvent;
 
                     // inform contacts pool about online state
-                    CONTACTSPOOL.UpdateContactState(QString::fromLocal8Bit(tOAEvent->Sender.c_str()), CONTACT_AVAILABLE);
+                    CONTACTS.UpdateContactState(QString::fromLocal8Bit(tOAEvent->Sender.c_str()), CONTACT_AVAILABLE);
 
                     // inform participant widget about new state
                     if (mParticipantWidgets.size())
@@ -893,7 +893,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     tOUAEvent = (OptionsUnavailableEvent*) tEvent;
 
                     // inform contacts pool about online state
-                    CONTACTSPOOL.UpdateContactState(QString::fromLocal8Bit(tOUAEvent->Sender.c_str()), CONTACT_UNAVAILABLE);
+                    CONTACTS.UpdateContactState(QString::fromLocal8Bit(tOUAEvent->Sender.c_str()), CONTACT_UNAVAILABLE);
 
                 	LOG(LOG_WARN, "Contact unavailable, reason is \"%s\"(%d).", tOUAEvent->Description.c_str(), tOUAEvent->StatusCode);
 
@@ -1474,7 +1474,7 @@ void MainWindow::actionConfiguration()
         if ((!tFormerStateMeetingProbeContacts) && (CONF.GetSipContactsProbing()))
         {
             LOG(LOG_VERBOSE, "Do an explicit auto probing of known contacts because user has activated the auto-probing feature via confiuration dialogue");
-            CONTACTSPOOL.ProbeAvailabilityForAll();
+            CONTACTS.ProbeAvailabilityForAll();
         }
         MEETING.SetVideoAudioStartPort(CONF.GetVideoAudioStartPort());
     }

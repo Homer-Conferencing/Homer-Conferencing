@@ -27,7 +27,7 @@
 
 #include <Widgets/MessageHistory.h>
 #include <Logger.h>
-#include <ContactsPool.h>
+#include <ContactsManager.h>
 
 #include <QTextBrowser>
 #include <QEvent>
