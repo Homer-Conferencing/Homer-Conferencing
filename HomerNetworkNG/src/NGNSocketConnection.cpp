@@ -33,12 +33,12 @@
 #include <Berkeley/SocketName.h>  // TODO needed for the getNAme and getRemoteName functions... 
 #include <Logger.h>
 #include <string>
-
+#include <NGNParseNetworkRequirment.h>
 namespace Homer {  namespace Base {
 
 using namespace std;
 
-
+int NGNSocketConnection::mStream = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 //HINT: lossless transmission is not implemented by using TCP but by rely on a reaction by the network
@@ -176,6 +176,7 @@ NGNSocketConnection::NGNSocketConnection(std::string pTarget, Requirements *pReq
     {
         LOG(LOG_ERROR, "Socket error connect");
     }
+    mStream++;  // This Socket only communicate over this stream id!
     LOG(LOG_VERBOSE, "Init of client finished and connected");
 }
 
@@ -185,6 +186,7 @@ NGNSocketConnection::NGNSocketConnection(int fd)
     LOG(LOG_VERBOSE, "Setup a connection for server listen on socket ID %i", fd);
     mClient = SERVER;
     mSocket = fd;
+    mStream++; 
     LOG(LOG_VERBOSE, "Setup a server configuration");
 }
 

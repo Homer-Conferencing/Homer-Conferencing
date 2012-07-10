@@ -76,10 +76,12 @@ public:
     virtual bool changeRequirements(Requirements *pRequirements);
     virtual Requirements getRequirements();
     virtual Events getEvents();
-
+    
+   
 private:
     int mSocket;	// Socket Descriptor for initialisation
     int mClient;
+
     union sock_union{
 		struct sockaddr sa;
 		struct sockaddr_in s4;
@@ -95,7 +97,9 @@ private:
     bool mUnordered;
     bool mIpv4only;
     bool mIpv6only;
-  
+    static int mStream;
+    // sendControlMessage();
+
 #ifdef SCTP_REMOTE_UDP_ENCAPS_PORT
     struct sctp_udpencaps mEncaps;
 #endif
