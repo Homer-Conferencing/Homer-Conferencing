@@ -10,14 +10,12 @@ BEGIN
     BLOCK "040904E4"
     BEGIN
       VALUE "ProductName", "Homer Conferencing"
-      VALUE "FileDescription", "Homer Conferencing"
-      VALUE "ProductVersion", "Beta @HOMER_VERSION@"
-      VALUE "CompanyName", "Homer Conferencing project"
-      VALUE "Comments", "GNU General Public License 2 (GPLv2.0)"
+      VALUE "CompanyName", "http://www.homer-conferencing.com"
+      VALUE "FileDescription", "Homer Conferencing Library"
       VALUE "FileVersion", "@HOMER_VERSION@.0"
-      VALUE "OriginalFilename", "@TARGET_LIB_NAME@.dll"
-      VALUE "InternalName", "@TARGET_LIB_NAME@.dll"
       VALUE "LegalCopyright", "(C) 2008 Thomas Volkert <thomas@homer-conferencing.com>"
+      VALUE "Comments", "GNU General Public License 2 (GPLv2.0)"
+      VALUE "OriginalFilename", "@TARGET_LIB_NAME@.dll"
       
     END
   END
