@@ -48,7 +48,7 @@ WaveOut::WaveOut(string pName):
     mFilePlaybackNeeded = false;
 
     LOG(LOG_VERBOSE, "Going to allocate playback FIFO");
-    mPlaybackFifo = new MediaFifo(MEDIA_SOURCE_SAMPLES_PLAYBACK_FIFO_SIZE, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE, "WaveOutPortAudio");
+    mPlaybackFifo = new MediaFifo(MEDIA_SOURCE_SAMPLES_PLAYBACK_FIFO_SIZE, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE, "WaveOut");
 
     LOG(LOG_VERBOSE, "Going to allocate file playback buffer");
     mFilePlaybackBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE + FF_INPUT_BUFFER_PADDING_SIZE);
@@ -62,6 +62,7 @@ WaveOut::WaveOut(string pName):
 
 WaveOut::~WaveOut()
 {
+	LOG(LOG_VERBOSE, "Going to release playback FIFO");
     delete mPlaybackFifo;
 
     LOG(LOG_VERBOSE, "Going to release file playback buffer");
@@ -69,6 +70,7 @@ WaveOut::~WaveOut()
 
     // free fifo buffer
     av_fifo_free(mSampleFifo);
+    LOG(LOG_VERBOSE, "Destroyed");
 }
 
 ///////////////////////////////////////////////////////////////////////////////

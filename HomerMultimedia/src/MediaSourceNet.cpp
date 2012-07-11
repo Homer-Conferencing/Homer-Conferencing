@@ -164,26 +164,38 @@ MediaSourceNet::MediaSourceNet(string pLocalName, Requirements *pTransportRequir
 
 MediaSourceNet::~MediaSourceNet()
 {
+	LOG(LOG_VERBOSE, "Going to destroy network based media source");
+
+	LOG(LOG_VERBOSE, "..stopping grabbing");
     StopGrabbing();
 
     if (mMediaSourceOpened)
         CloseGrabDevice();
 
     // check every 100 ms if listener thread is still running
+	LOG(LOG_VERBOSE, "..wait for end of listener thread");
     while(mListenerRunning)
     	Suspend(100000);
+	LOG(LOG_VERBOSE, "..end of listener thread reached");
 
     free(mPacketBuffer);
 
     if(mGAPIUsed)
     {
         if (mGAPIBinding != NULL)
-            delete mGAPIBinding; //HINT: this stops all listeners automatically
+        {
+        	LOG(LOG_VERBOSE, "..destroying GAPI bind object");
+        	delete mGAPIBinding; //HINT: this stops all listeners automatically
+        }
     }else
     {
         if (!mListenerSocketCreatedOutside)
+        {
+        	LOG(LOG_VERBOSE, "..destroying socket object");
             delete mDataSocket;
+        }
     }
+	LOG(LOG_VERBOSE, "Destroyed");
 }
 
 bool MediaSourceNet::DoReceiveFragment(std::string &pSourceHost, unsigned int &pSourcePort, char* pData, int &pSize)
