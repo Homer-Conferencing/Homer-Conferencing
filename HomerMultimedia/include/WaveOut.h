@@ -105,7 +105,8 @@ protected:
     MediaSourceFile     *mFilePlaybackSource;
     int					mFilePlaybackLoops;
     char                *mFilePlaybackBuffer;
-    Condition           mFilePlaybackCondition;};
+    Condition           mFilePlaybackCondition;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 
