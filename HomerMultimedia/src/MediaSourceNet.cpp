@@ -280,6 +280,7 @@ void* MediaSourceNet::Run(void* pArgs)
 		    if (mReceiveErrors == MAX_RECEIVE_ERRORS)
 		    {
 		        LOG(LOG_ERROR, "Maximum number of continuous receive errors(%d) is exceeded, will stop network listener", MAX_RECEIVE_ERRORS);
+		        mListenerRunning = false;
 		        break;
 		    }else
 		        mReceiveErrors++;
