@@ -200,11 +200,11 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceAudio()
     QString tPort = QString("%1").arg(mSbPortAudio->value());
     enum TransportType tTransport = (enum TransportType)mCbTransportAudio->currentIndex();
 
-    Requirements tRequs;
-    RequirementTransmitBitErrors tReqBitErr(UDP_LITE_HEADER_SIZE + RTP_HEADER_SIZE);
-    RequirementTransmitChunks tReqChunks;
-    RequirementTransmitStream tReqStream;
-    RequirementTargetPort tReqPort(tPort.toInt());
+    Requirements *tRequs = new Requirements();
+    RequirementTransmitBitErrors *tReqBitErr = new RequirementTransmitBitErrors(UDP_LITE_HEADER_SIZE + RTP_HEADER_SIZE);
+    RequirementTransmitChunks *tReqChunks = new RequirementTransmitChunks();
+    RequirementTransmitStream *tReqStream = new RequirementTransmitStream();
+    RequirementTargetPort *tReqPort = new RequirementTargetPort(tPort.toInt());
 
     if(!mCbAudioEnabled->isChecked())
         return NULL;
@@ -226,12 +226,12 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceAudio()
                 switch(tTransport)
                 {
                     case SOCKET_UDP_LITE:
-                        tRequs.add(&tReqBitErr);
+                        tRequs->add(tReqBitErr);
                     case SOCKET_UDP:
-                        tRequs.add(&tReqChunks);
+                        tRequs->add(tReqChunks);
                         break;
                     case SOCKET_TCP:
-                        tRequs.add(&tReqStream);
+                        tRequs->add(tReqStream);
                         break;
                     default:
                         LOG(LOG_WARN, "Unsupported transport protocol selected");
@@ -239,11 +239,11 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceAudio()
                 }
 
                 // add local port
-                tRequs.add(&tReqPort);
+                tRequs->add(tReqPort);
 
                 tOldGAPIImpl = GAPI.getCurrentImplName();
                 GAPI.selectImpl(mCbGAPIImplAudio->currentText().toStdString());
-                tNetSource = new MediaSourceNet(tHost.toStdString(), &tRequs, mCbRtpAudio->isChecked());
+                tNetSource = new MediaSourceNet(tHost.toStdString(), tRequs, mCbRtpAudio->isChecked());
                 GAPI.selectImpl(tOldGAPIImpl);
             #else
                 MediaSourceNet *tNetSource = new MediaSourceNet(mSbPortAudio->value(), (enum TransportType)mCbTransportAudio->currentIndex(), mCbRtpAudio->isChecked());
