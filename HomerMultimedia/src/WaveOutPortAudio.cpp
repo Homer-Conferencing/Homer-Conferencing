@@ -251,9 +251,14 @@ bool WaveOutPortAudio::CloseWaveOutDevice()
     if (mWaveOutOpened)
     {
         // terminate possibly running main loop for file based playback
-        mFilePlaybackNeeded = false;
-        mFilePlaybackCondition.SignalAll();
-        StopThread(3000);
+    	if (mFilePlaybackNeeded)
+    	{
+			mFilePlaybackNeeded = false;
+			mFilePlaybackCondition.SignalAll();
+			LOG(LOG_VERBOSE, "..loopback wake-up signal sent");
+			StopThread(3000);
+			LOG(LOG_VERBOSE, "..playback thread stopped");
+    	}
 
         Stop();
 
