@@ -40,33 +40,33 @@ namespace Homer { namespace Multimedia {
 using namespace std;
 using namespace Homer::Monitor;
 
-Mutex MediaSourcePortAudio::mPaInitMutex;
-bool MediaSourcePortAudio::mPaInitiated = false;
-Mutex MediaSourcePortAudio::mPaStreamMutex;
+Mutex MediaSourcePortAudio::sPaInitMutex;
+bool MediaSourcePortAudio::sPaInitiated = false;
+Mutex MediaSourcePortAudio::sPaStreamMutex;
 
 void MediaSourcePortAudio::PortAudioInit()
 {
-    mPaInitMutex.lock();
-    if (!mPaInitiated)
+    sPaInitMutex.lock();
+    if (!sPaInitiated)
     {
         // initialize portaudio library
         LOGEX(MediaSourcePortAudio, LOG_VERBOSE, "Initiated portaudio with result: %d", Pa_Initialize());
-        mPaInitiated = true;
+        sPaInitiated = true;
     }
-    mPaInitMutex.unlock();
+    sPaInitMutex.unlock();
 }
 
 void MediaSourcePortAudio::PortAudioLockStreamInterface()
 {
 	LOGEX(MediaSourcePortAudio, LOG_VERBOSE, "Locking portaudio stream interface");
-	mPaStreamMutex.lock();
+	sPaStreamMutex.lock();
 	LOGEX(MediaSourcePortAudio, LOG_VERBOSE, "Stream interface locked");
 }
 
 void MediaSourcePortAudio::PortAudioUnlockStreamInterface()
 {
 	LOGEX(MediaSourcePortAudio, LOG_VERBOSE, "Unlocking portaudio stream interface");
-	mPaStreamMutex.unlock();
+	sPaStreamMutex.unlock();
 	LOGEX(MediaSourcePortAudio, LOG_VERBOSE, "Stream interface unlocked");
 }
 
@@ -392,10 +392,12 @@ bool MediaSourcePortAudio::CloseGrabDevice()
 
         PaError tErr = paNoError;
         PortAudioLockStreamInterface();
+        LOG(LOG_VERBOSE, "..closing PulseAudio stream");
         if ((tErr = Pa_CloseStream(mStream)) != paNoError)
         {
             LOG(LOG_ERROR, "Couldn't close stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
-        }
+        }else
+            LOG(LOG_VERBOSE, "..PulseAudio stream closed");
         PortAudioUnlockStreamInterface();
 
         LOG(LOG_INFO, "...closed");
