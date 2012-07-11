@@ -178,9 +178,9 @@ AudioWidget::~AudioWidget()
     if (mAudioWorker != NULL)
     {
         mAudioWorker->StopGrabber();
-        if (!mAudioWorker->wait(250))
+        if (!mAudioWorker->wait(2000))
         {
-            LOG(LOG_VERBOSE, "Going to force termination of worker thread");
+            LOG(LOG_WARN, "Going to force termination of worker thread");
             mAudioWorker->terminate();
         }
 
