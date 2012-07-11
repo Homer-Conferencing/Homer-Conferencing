@@ -117,7 +117,7 @@ SocketConnection::SocketConnection(std::string pTarget, Requirements *pRequireme
             /* QoS requirements and additional transport requirements */
             changeRequirements(pRequirements);
 
-            LOG(LOG_VERBOSE, "New IP association with target %s and requirements %s created", mPeerHost.c_str(), mRequirements.getDescription().c_str());
+            LOG(LOG_VERBOSE, "New IP association with target %s and requirements %s created", mPeerHost.c_str(), mRequirements->getDescription().c_str());
         }else
             LOG(LOG_ERROR, "Returned Berkeley socket is invalid");
     }else
@@ -137,7 +137,7 @@ SocketConnection::SocketConnection(Socket *pSocket)
     // per default we set receive buffer of 2 MB
     mSocket->SetSendBufferSize(2 * 1024 * 1024);
 
-    LOG(LOG_VERBOSE, "New IP association with local name %s created", getName()->toString().c_str(), mRequirements.getDescription().c_str());
+    LOG(LOG_VERBOSE, "New IP association with local name %s created", getName()->toString().c_str(), mRequirements->getDescription().c_str());
 }
 
 SocketConnection::~SocketConnection()
@@ -310,18 +310,14 @@ bool SocketConnection::changeRequirements(Requirements *pRequirements)
         tResult = mSocket->SetQoS(tQoSSettings);
     }
 
-    mRequirements = *pRequirements; //TODO: maybe some requirements were dropped?
+    mRequirements = pRequirements; //TODO: maybe some requirements were dropped?
 
     return tResult;
 }
 
-Requirements SocketConnection::getRequirements()
+Requirements* SocketConnection::getRequirements()
 {
-	Requirements tResult;
-
-	//TODO: tResult = mRequirements;
-
-	return tResult;
+	return mRequirements;
 }
 
 Events SocketConnection::getEvents()

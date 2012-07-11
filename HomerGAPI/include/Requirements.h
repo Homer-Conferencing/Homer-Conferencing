@@ -41,13 +41,13 @@
 #include <IRequirement.h>
 #include <HBMutex.h>
 
-#include <list>
+#include <vector>
 
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-typedef std::list<IRequirement*> RequirementSet;
+typedef std::vector<IRequirement*> RequirementSet;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -55,7 +55,6 @@ class Requirements
 {
 public:
     Requirements();
-    //TODO: Requirements(const Requirements& pCopy);
 
     virtual ~Requirements();
 
@@ -69,6 +68,8 @@ public:
     IRequirement* get(int pType);
 
 private:
+    void delAll();
+
     RequirementSet      mRequirementSet;
     Mutex               mRequirementSetMutex;
 };

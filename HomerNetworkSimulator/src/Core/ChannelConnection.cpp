@@ -121,7 +121,7 @@ ChannelConnection::ChannelConnection(Scenario *pScenario, std::string pTarget, R
     changeRequirements(pRequirements);
 
     if (mCep != NULL)
-        LOG(LOG_VERBOSE, "New simulation association with target %s and requirements %s created", getRemoteName()->toString().c_str(), mRequirements.getDescription().c_str());
+        LOG(LOG_VERBOSE, "New simulation association with target %s and requirements %s created", getRemoteName()->toString().c_str(), mRequirements->getDescription().c_str());
 }
 
 ChannelConnection::ChannelConnection(Cep *pCep)
@@ -132,7 +132,7 @@ ChannelConnection::ChannelConnection(Cep *pCep)
     mBlockingMode = true;
     mPeerNode = "";
     mPeerPort = 0;
-    LOG(LOG_VERBOSE, "New simulation association with local name %s created", getName()->toString().c_str(), mRequirements.getDescription().c_str());
+    LOG(LOG_VERBOSE, "New simulation association with local name %s created", getName()->toString().c_str(), mRequirements->getDescription().c_str());
 }
 
 ChannelConnection::~ChannelConnection()
@@ -268,18 +268,14 @@ bool ChannelConnection::changeRequirements(Requirements *pRequirements)
         tResult = mCep->SetQoS(tQoSSettings);
     }
 
-    mRequirements = *pRequirements; //TODO: maybe some requirements were dropped?
+    mRequirements = pRequirements; //TODO: maybe some requirements were dropped?
 
     return tResult;
 }
 
-Requirements ChannelConnection::getRequirements()
+Requirements* ChannelConnection::getRequirements()
 {
-	Requirements tResult;
-
-	//TODO tResult = mRequirements;
-
-	return tResult;
+	return mRequirements;
 }
 
 Events ChannelConnection::getEvents()

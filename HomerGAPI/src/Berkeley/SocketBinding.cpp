@@ -120,7 +120,7 @@ SocketBinding::SocketBinding(std::string pLocalName, Requirements *pRequirements
             /* QoS requirements and additional transport requirements */
             changeRequirements(pRequirements);
 
-            LOG(LOG_VERBOSE, "New IP binding at %s and requirements %s created", getName()->toString().c_str(), mRequirements.getDescription().c_str());
+            LOG(LOG_VERBOSE, "New IP binding at %s and requirements %s created", getName()->toString().c_str(), mRequirements->getDescription().c_str());
         }else
             LOG(LOG_ERROR, "Returned Berkeley socket is invalid");
     }else
@@ -213,18 +213,14 @@ bool SocketBinding::changeRequirements(Requirements *pRequirements)
         tResult = mConnection->changeRequirements(pRequirements);
 
     if (tResult)
-        mRequirements = *pRequirements;
+        mRequirements = pRequirements;
 
     return tResult;
 }
 
-Requirements SocketBinding::getRequirements()
+Requirements* SocketBinding::getRequirements()
 {
-	Requirements tResult;
-
-	//TODO tResult = mRequirements;
-
-	return tResult;
+	return mRequirements;
 }
 
 Events SocketBinding::getEvents()

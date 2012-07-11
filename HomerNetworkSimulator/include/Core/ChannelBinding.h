@@ -53,12 +53,12 @@ public:
     virtual Name* getName();
     virtual void cancel();
     virtual bool changeRequirements(Requirements *pRequirements);
-    virtual Requirements getRequirements();
+    virtual Requirements* getRequirements();
     virtual Events getEvents();
 
 private:
-    IConnection*    mConnection; // we support only one association
-    Requirements    mRequirements;
+    IConnection     *mConnection; // we support only one association
+    Requirements    *mRequirements;
     Cep 		    *mCep;
     Scenario        *mScenario;
     bool            mIsClosed;

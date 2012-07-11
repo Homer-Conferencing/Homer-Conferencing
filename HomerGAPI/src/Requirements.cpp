@@ -43,26 +43,9 @@ Requirements::Requirements()
 {
 }
 
-//Requirements::Requirements(const Requirements& pCopy)
-//{
-//    pCopy.mRequirementSetMutex.lock();
-//
-//    RequirementSet::iterator tIt;
-//    for(tIt = pCopy.mRequirementSet.begin(); tIt != pCopy.mRequirementSet.end(); tIt++)
-//    {
-//        if((*tIt)->getType() == pType)
-//        {
-//            tResult = true;
-//        }
-//    }
-//
-//    pCopy.mRequirementSetMutex.unlock();
-//}
-
-
 Requirements::~Requirements()
 {
-
+	delAll();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -162,6 +145,24 @@ IRequirement* Requirements::get(int pType)
     return tResult;
 }
 
+void Requirements::delAll()
+{
+    RequirementSet::iterator tIt;
+
+    mRequirementSetMutex.lock();
+
+    LOG(LOG_VERBOSE, "Deleting %d stored requirements", mRequirementSet.size());
+
+    tIt = mRequirementSet.begin();
+    while (tIt != mRequirementSet.end())
+    {
+        mRequirementSet.erase(tIt);
+    	delete (*tIt);
+        tIt = mRequirementSet.begin();
+    }
+
+    mRequirementSetMutex.unlock();
+}
 ///////////////////////////////////////////////////////////////////////////////
 
 }} //namespace

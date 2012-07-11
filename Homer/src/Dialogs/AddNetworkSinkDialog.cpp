@@ -100,25 +100,25 @@ void AddNetworkSinkDialog::CreateNewMediaSink()
     QString tPort = QString("%1").arg(mSbPort->value());
     enum TransportType tTransport = (enum TransportType)mCbTransport->currentIndex();
 
-    Requirements tRequs;
-    RequirementTransmitBitErrors tReqBitErr(UDP_LITE_HEADER_SIZE + RTP_HEADER_SIZE);
-    RequirementTransmitChunks tReqChunks;
-    RequirementTransmitStream tReqStream;
-    RequirementTargetPort tReqPort(tPort.toInt());
-    RequirementLimitDelay tReqDelay(mSbDelay->value());
-    RequirementLimitDataRate tReqDataRate(mSbDataRate->value(), INT_MAX);
-    RequirementTransmitLossless tReqLossless;
+    Requirements *tRequs = new Requirements();
+    RequirementTransmitBitErrors *tReqBitErr = new RequirementTransmitBitErrors(UDP_LITE_HEADER_SIZE + RTP_HEADER_SIZE);
+    RequirementTransmitChunks *tReqChunks = new RequirementTransmitChunks();
+    RequirementTransmitStream *tReqStream = new RequirementTransmitStream();
+    RequirementTargetPort *tReqPort = new RequirementTargetPort(tPort.toInt());
+    RequirementLimitDelay *tReqDelay = new RequirementLimitDelay(mSbDelay->value());
+    RequirementLimitDataRate *tReqDataRate = new RequirementLimitDataRate(mSbDataRate->value(), INT_MAX);
+    RequirementTransmitLossless *tReqLossless = new RequirementTransmitLossless();
 
     // add transport details depending on transport protocol selection
     switch(tTransport)
     {
         case SOCKET_UDP_LITE:
-            tRequs.add(&tReqBitErr);
+            tRequs->add(tReqBitErr);
         case SOCKET_UDP:
-            tRequs.add(&tReqChunks);
+            tRequs->add(tReqChunks);
             break;
         case SOCKET_TCP:
-            tRequs.add(&tReqStream);
+            tRequs->add(tReqStream);
             break;
         default:
             LOG(LOG_WARN, "Unsupported transport protocol selected");
@@ -126,19 +126,19 @@ void AddNetworkSinkDialog::CreateNewMediaSink()
     }
 
     // add target port
-    tRequs.add(&tReqPort);
+    tRequs->add(tReqPort);
 
     // add QoS parameter
     if (mCbDelay->isChecked())
-        tRequs.add(&tReqDelay);
+        tRequs->add(tReqDelay);
     if (mCbDataRate->isChecked())
-        tRequs.add(&tReqDataRate);
+        tRequs->add(tReqDataRate);
     if (mCbLossless->isChecked())
-        tRequs.add(&tReqLossless);
+        tRequs->add(tReqLossless);
 
     string tOldGAPIImpl = GAPI.getCurrentImplName();
     GAPI.selectImpl(mCbGAPIImpl->currentText().toStdString());
-    mMediaSource->RegisterMediaSink(tHost.toStdString(), &tRequs, mCbRtp->isChecked());
+    mMediaSource->RegisterMediaSink(tHost.toStdString(), tRequs, mCbRtp->isChecked());
     GAPI.selectImpl(tOldGAPIImpl);
 }
 
