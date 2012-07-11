@@ -129,11 +129,15 @@ ParticipantWidget::~ParticipantWidget()
     if (mAudioSourceMuxer != NULL)
         mAudioSourceMuxer->UnregisterMediaSink(mRemoteAudioAdr.toStdString(), mRemoteAudioPort);
 
-	LOG(LOG_VERBOSE, "..destroying video source");
-	delete mVideoSource;
-	LOG(LOG_VERBOSE, "..destroying audio source");
-	delete mAudioSource;
+    if (mSessionType != BROADCAST)
+    {
+		LOG(LOG_VERBOSE, "..destroying video source");
+		delete mVideoSource;
+		LOG(LOG_VERBOSE, "..destroying audio source");
+		delete mAudioSource;
+    }
 
+	LOG(LOG_VERBOSE, "..closing playback device");
     ClosePlaybackDevice();
     LOG(LOG_VERBOSE, "Destroyed");
 }
