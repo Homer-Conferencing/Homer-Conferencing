@@ -69,18 +69,18 @@ class ContactListModel;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define CONTACTSPOOL ContactsPool::getInstance()
+#define CONTACTS ContactsManager::getInstance()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class ContactsPool
+class ContactsManager
 {
 public:
-    ContactsPool();
+    ContactsManager();
 
-    virtual ~ContactsPool();
+    virtual ~ContactsManager();
 
-    static ContactsPool& getInstance();
+    static ContactsManager& getInstance();
 
     void Init(const std::string& pContactsFile);
     std::string getContactsFilePath();

@@ -120,7 +120,7 @@ SocketBinding::SocketBinding(std::string pLocalName, Requirements *pRequirements
             /* QoS requirements and additional transport requirements */
             changeRequirements(pRequirements);
 
-            LOG(LOG_VERBOSE, "New IP binding at %s and requirements %s created", getName()->toString().c_str(), mRequirements.getDescription().c_str());
+            LOG(LOG_VERBOSE, "New IP binding at %s and requirements %s created", getName()->toString().c_str(), mRequirements->getDescription().c_str());
         }else
             LOG(LOG_ERROR, "Returned Berkeley socket is invalid");
     }else
@@ -131,10 +131,20 @@ SocketBinding::SocketBinding(std::string pLocalName, Requirements *pRequirements
 
 SocketBinding::~SocketBinding()
 {
-    cancel();
+	LOG(LOG_VERBOSE, "Destroying GAPI bind object..");
+    if (!isClosed())
+    {
+    	cancel();
+    }
+    LOG(LOG_VERBOSE, "Destroyed");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+bool SocketBinding::isClosed()
+{
+	return mIsClosed;
+}
 
 IConnection* SocketBinding::readConnection()
 {
@@ -173,18 +183,26 @@ Name* SocketBinding::getName()
 
 void SocketBinding::cancel()
 {
-    if(mSocket != NULL)
+    if ((mSocket != NULL) && (!isClosed()))
     {
         LOG(LOG_VERBOSE, "All connections will be canceled now");
 
         if (mConnection != NULL)
         {
+            LOG(LOG_VERBOSE, "..destroying connection");
             delete mConnection;
+            LOG(LOG_VERBOSE, "..connection destroyed");
             mConnection = NULL;
+            LOG(LOG_VERBOSE, "..variable reset");
         }else
+        {
+            LOG(LOG_VERBOSE, "..destroying Berkeley socket");
             delete mSocket;
+        }
         mSocket = NULL;
     }
+    LOG(LOG_VERBOSE, "Canceled");
+    mIsClosed = true;
 }
 
 bool SocketBinding::changeRequirements(Requirements *pRequirements)
@@ -195,12 +213,12 @@ bool SocketBinding::changeRequirements(Requirements *pRequirements)
         tResult = mConnection->changeRequirements(pRequirements);
 
     if (tResult)
-        mRequirements = *pRequirements;
+        mRequirements = pRequirements;
 
     return tResult;
 }
 
-Requirements SocketBinding::getRequirements()
+Requirements* SocketBinding::getRequirements()
 {
 	return mRequirements;
 }

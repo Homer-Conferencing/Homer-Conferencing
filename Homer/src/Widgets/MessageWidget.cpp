@@ -30,7 +30,7 @@
 #include <Configuration.h>
 #include <Meeting.h>
 #include <Logger.h>
-#include <ContactsPool.h>
+#include <ContactsManager.h>
 #include <Snippets.h>
 
 #include <QWidget>
@@ -136,8 +136,8 @@ MessageWidget::~MessageWidget()
 bool MessageWidget::IsKnownContact()
 {
     QString tUser, tHost, tPort;
-    CONTACTSPOOL.SplitAddress(mParticipant, tUser, tHost, tPort);
-    return CONTACTSPOOL.IsKnownContact(tUser, tHost, tPort);
+    CONTACTS.SplitAddress(mParticipant, tUser, tHost, tPort);
+    return CONTACTS.IsKnownContact(tUser, tHost, tPort);
 }
 
 void MessageWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEvent)

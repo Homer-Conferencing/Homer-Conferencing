@@ -57,12 +57,12 @@ public:
     virtual Name* getName();
     virtual Name* getRemoteName();
     virtual bool changeRequirements(Requirements *pRequirements);
-    virtual Requirements getRequirements();
+    virtual Requirements* getRequirements();
     virtual Events getEvents();
 
 private:
     bool		    mBlockingMode;
-    Requirements    mRequirements;
+    Requirements    *mRequirements;
     Cep             *mCep;
     Scenario        *mScenario;
     bool            mIsClosed;

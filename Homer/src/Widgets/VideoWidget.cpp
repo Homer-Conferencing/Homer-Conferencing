@@ -193,6 +193,8 @@ void VideoWidget::Init(QMainWindow* pMainWindow, ParticipantWidget *pParticipant
 
 VideoWidget::~VideoWidget()
 {
+    LOG(LOG_VERBOSE, "Going to destroy video widget..");
+
 	// we are going to destroy mCurrentFrame -> stop repainting now!
 	setUpdatesEnabled(false);
 
@@ -201,7 +203,7 @@ VideoWidget::~VideoWidget()
     	mVideoWorker->StopGrabber();
     	if (!mVideoWorker->wait(250))
         {
-            LOG(LOG_VERBOSE, "Going to force termination of worker thread");
+            LOG(LOG_WARN, "Going to force termination of worker thread");
             mVideoWorker->terminate();
         }
 
@@ -213,6 +215,8 @@ VideoWidget::~VideoWidget()
     }
     if (mAssignedAction != NULL)
         delete mAssignedAction;
+
+    LOG(LOG_VERBOSE, "Destroyed");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1665,7 +1669,7 @@ bool VideoWorkerThread::EofReached()
 
 QString VideoWorkerThread::CurrentFile()
 {
-    if (mVideoSource->SupportsSeeking())
+    if ((mVideoSource != NULL) && (mVideoSource->SupportsSeeking()))
     	return mCurrentFile;
     else
         return "";

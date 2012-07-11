@@ -46,16 +46,17 @@ public:
 	SocketBinding(std::string pLocalName, Requirements *pRequirements);
     virtual ~SocketBinding( );
 
+    virtual bool isClosed();
     virtual IConnection* readConnection();
     virtual Name* getName();
     virtual void cancel();
     virtual bool changeRequirements(Requirements *pRequirements);
-    virtual Requirements getRequirements();
+    virtual Requirements* getRequirements();
     virtual Events getEvents();
 
 private:
     IConnection*    mConnection; // we support only one association
-    Requirements    mRequirements;
+    Requirements	*mRequirements;
     Socket		    *mSocket;
     bool            mIsClosed;
     std::string     mLocalHost;

@@ -173,12 +173,14 @@ void AudioWidget::Init(MediaSource *pAudioSource, QMenu *pMenu, QString pActionT
 
 AudioWidget::~AudioWidget()
 {
+    LOG(LOG_VERBOSE, "Going to destroy audio widget..");
+
     if (mAudioWorker != NULL)
     {
         mAudioWorker->StopGrabber();
-        if (!mAudioWorker->wait(250))
+        if (!mAudioWorker->wait(2000))
         {
-            LOG(LOG_VERBOSE, "Going to force termination of worker thread");
+            LOG(LOG_WARN, "Going to force termination of worker thread");
             mAudioWorker->terminate();
         }
 
@@ -190,6 +192,8 @@ AudioWidget::~AudioWidget()
     }
     if (mAssignedAction != NULL)
         delete mAssignedAction;
+
+    LOG(LOG_VERBOSE, "Destroyed");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1098,7 +1102,7 @@ bool AudioWorkerThread::EofReached()
 
 QString AudioWorkerThread::CurrentFile()
 {
-    if (mAudioSource->SupportsSeeking())
+    if ((mAudioSource != NULL) && (mAudioSource->SupportsSeeking()))
         return mCurrentFile;
     else
         return "";

@@ -30,7 +30,7 @@
 
 #include <Dialogs/ContactEditDialog.h>
 #include <MeetingEvents.h>
-#include <ContactsPool.h>
+#include <ContactsManager.h>
 
 #include <QDockWidget>
 #include <QModelIndex>

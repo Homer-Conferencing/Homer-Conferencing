@@ -26,7 +26,7 @@
  */
 #include <string>
 
-#include <ContactsPool.h>
+#include <ContactsManager.h>
 #include <MainWindow.h>
 #include <Configuration.h>
 #include <Dialogs/AddNetworkSinkDialog.h>
@@ -127,7 +127,7 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     // set coloring for GUI objects
     initializeColoring();
     // init contact database
-    CONTACTSPOOL.Init(CONF.GetContactFile().toStdString());
+    CONTACTS.Init(CONF.GetContactFile().toStdString());
     // connect signals and slots, set visibility of some GUI objects
     connectSignalsSlots();
     // auto update check
@@ -694,8 +694,7 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
     // remove ourself as observer for new Meeting events
     MEETING.DeleteObserver(this);
 
-    ParticipantWidgetList::iterator tIt;
-
+    LOG(LOG_VERBOSE, "..saving main window layout");
     CONF.SetMainWindowPosition(pos());
     CONF.SetMainWindowSize(size());
     CONF.SetVisibilityToolBarMediaSources(mToolBarMediaSources->isVisible());
@@ -705,20 +704,42 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
     //setIpStatistic(MEETING.GetHostAdr(), MEETING.getStunNatIp());
 
     // save the availability state within settings
+    LOG(LOG_VERBOSE, "..saving conference availability");
     CONF.SetConferenceAvailability(QString(MEETING.getAvailabilityStateStr().c_str()));
 
     // ###### begin shutdown ################
     // stop the screenshot creating timer function
+    LOG(LOG_VERBOSE, "..stopping GUI capturing");
     mScreenShotTimer->stop();
 
     // prevent the system from further incoming events
+    LOG(LOG_VERBOSE, "..stopping conference manager");
     MEETING.Stop();
 
+    //HINT: delete MediaSourcesControlWidget before local participant widget to avoid crashes caused by race conditions (control widget has a timer which calls local participant widget's video widget!)
+    LOG(LOG_VERBOSE, "..destroying media source control widget");
+    delete mMediaSourcesControlWidget;
+
+    //HINT: delete before local participant widget is destroyed
+    LOG(LOG_VERBOSE, "..destroying playlist widget");
+    delete mOverviewPlaylistWidgetVideo;
+    delete mOverviewPlaylistWidgetAudio;
+    delete mOverviewPlaylistWidgetMovie;
+
     // should be the last because video/audio workers could otherwise be deleted while they are still called
+    LOG(LOG_VERBOSE, "..destroying broadcast widget");
     if (mLocalUserParticipantWidget != NULL)
         delete mLocalUserParticipantWidget;
 
+    // delete video/audio muxer
+    LOG(LOG_VERBOSE, "..destroying broadcast video muxer");
+    delete mOwnVideoMuxer;
+    LOG(LOG_VERBOSE, "..destroying broadcast audio muxer");
+    delete mOwnAudioMuxer;
+
 	// destroy all participant widgets
+    LOG(LOG_VERBOSE, "..destroying all participant widgets");
+    ParticipantWidgetList::iterator tIt;
     if (mParticipantWidgets.size())
     {
         for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
@@ -728,15 +749,19 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
     }
 
     // deinit
+    LOG(LOG_VERBOSE, "..destroying conference manager");
     MEETING.Deinit();
 
+    LOG(LOG_VERBOSE, "..destroying simulator widget");
     if (mNetworkSimulator != NULL)
         delete mNetworkSimulator;
 
+    LOG(LOG_VERBOSE, "..destroying shortcuts");
     delete mShortcutActivateDebugWidgets;
     delete mShortcutActivateDebuggingGlobally;
     delete mShortcutActivateNetworkSimulationWidgets;
 
+    LOG(LOG_VERBOSE, "..destroying remaining widgets");
     delete mOverviewDataStreamsWidget;
     delete mOverviewNetworkStreamsWidget;
     delete mOverviewThreadsWidget;
@@ -744,11 +769,9 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
     delete mOverviewContactsWidget;
     delete mOverviewErrorsWidget;
     delete mOverviewFileTransfersWidget;
-    delete mOverviewPlaylistWidgetVideo;
-    delete mOverviewPlaylistWidgetAudio;
-    delete mOverviewPlaylistWidgetMovie;
-    delete mMediaSourcesControlWidget;
+    LOG(LOG_VERBOSE, "..destroying online status widget");
     delete mOnlineStatusWidget;
+    LOG(LOG_VERBOSE, "..destroying system tray icon");
     delete mSysTrayIcon;
 
 	//HINT: mSourceDesktop will be deleted by VideoWidget which grabbed from there
@@ -870,7 +893,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     tOAEvent = (OptionsAcceptEvent*) tEvent;
 
                     // inform contacts pool about online state
-                    CONTACTSPOOL.UpdateContactState(QString::fromLocal8Bit(tOAEvent->Sender.c_str()), CONTACT_AVAILABLE);
+                    CONTACTS.UpdateContactState(QString::fromLocal8Bit(tOAEvent->Sender.c_str()), CONTACT_AVAILABLE);
 
                     // inform participant widget about new state
                     if (mParticipantWidgets.size())
@@ -893,7 +916,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     tOUAEvent = (OptionsUnavailableEvent*) tEvent;
 
                     // inform contacts pool about online state
-                    CONTACTSPOOL.UpdateContactState(QString::fromLocal8Bit(tOUAEvent->Sender.c_str()), CONTACT_UNAVAILABLE);
+                    CONTACTS.UpdateContactState(QString::fromLocal8Bit(tOUAEvent->Sender.c_str()), CONTACT_UNAVAILABLE);
 
                 	LOG(LOG_WARN, "Contact unavailable, reason is \"%s\"(%d).", tOUAEvent->Description.c_str(), tOUAEvent->StatusCode);
 
@@ -1474,7 +1497,7 @@ void MainWindow::actionConfiguration()
         if ((!tFormerStateMeetingProbeContacts) && (CONF.GetSipContactsProbing()))
         {
             LOG(LOG_VERBOSE, "Do an explicit auto probing of known contacts because user has activated the auto-probing feature via confiuration dialogue");
-            CONTACTSPOOL.ProbeAvailabilityForAll();
+            CONTACTS.ProbeAvailabilityForAll();
         }
         MEETING.SetVideoAudioStartPort(CONF.GetVideoAudioStartPort());
     }

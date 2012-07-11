@@ -96,6 +96,11 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
 
 ParticipantWidget::~ParticipantWidget()
 {
+    LOG(LOG_VERBOSE, "Going to destroy %s participant widget..", mSessionName.toStdString().c_str());
+
+    if (mTimerId != -1)
+        killTimer(mTimerId);
+
     if (mSessionType == BROADCAST)
     {
         CONF.SetVisibilityBroadcastWidget(isVisible());
@@ -113,23 +118,28 @@ ParticipantWidget::~ParticipantWidget()
                     MEETING.SendCallCancel(QString(mSessionName.toLocal8Bit()).toStdString());
                     break;
     }
+    LOG(LOG_VERBOSE, "..destroying all widgets");
     delete mVideoWidget;
     delete mAudioWidget;
     delete mMessageWidget;
     delete mSessionInfoWidget;
-
-    delete mVideoSource;
-    delete mAudioSource;
 
     if (mVideoSourceMuxer != NULL)
         mVideoSourceMuxer->UnregisterMediaSink(mRemoteVideoAdr.toStdString(), mRemoteVideoPort);
     if (mAudioSourceMuxer != NULL)
         mAudioSourceMuxer->UnregisterMediaSink(mRemoteAudioAdr.toStdString(), mRemoteAudioPort);
 
-    if (mTimerId != -1)
-        killTimer(mTimerId);
+    if (mSessionType != BROADCAST)
+    {
+		LOG(LOG_VERBOSE, "..destroying video source");
+		delete mVideoSource;
+		LOG(LOG_VERBOSE, "..destroying audio source");
+		delete mAudioSource;
+    }
 
+	LOG(LOG_VERBOSE, "..closing playback device");
     ClosePlaybackDevice();
+    LOG(LOG_VERBOSE, "Destroyed");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -287,16 +297,18 @@ void ParticipantWidget::OpenPlaybackDevice()
 	#else
 		mWaveOut = new WaveOutSdl(CONF.GetLocalAudioSink().toStdString());
 	#endif
-    mWaveOut->OpenWaveOutDevice();
+	if (mWaveOut == NULL)
+		LOG(LOG_ERROR, "Error when creating wave out object");
+	else
+		mWaveOut->OpenWaveOutDevice();
     LOG(LOG_VERBOSE, "Finished to open playback device");
 }
 
 void ParticipantWidget::ClosePlaybackDevice()
 {
-    LOG(LOG_VERBOSE, "Going to close playback device");
+    LOG(LOG_VERBOSE, "Going to close playback device at %p", mWaveOut);
 
     // close the audio out
-    mWaveOut->CloseWaveOutDevice();
     delete mWaveOut;
 
     LOG(LOG_VERBOSE, "Finished to close playback device");
@@ -582,7 +594,7 @@ void ParticipantWidget::HandleGeneralError(bool pIncoming, int pCode, QString pD
     }
 
     UpdateParticipantState(CONTACT_UNDEFINED_STATE);
-    CONTACTSPOOL.UpdateContactState(mSessionName, CONTACT_UNDEFINED_STATE);
+    CONTACTS.UpdateContactState(mSessionName, CONTACT_UNDEFINED_STATE);
 
     ShowError("General error occurred", "General error of code " + QString("%1").arg(pCode) + " occurred. The error is described with \"" + pDescription + "\"");
 }
@@ -597,7 +609,7 @@ void ParticipantWidget::HandleMessageAccept(bool pIncoming)
     }
 
     UpdateParticipantState(CONTACT_AVAILABLE);
-    CONTACTSPOOL.UpdateContactState(mSessionName, CONTACT_AVAILABLE);
+    CONTACTS.UpdateContactState(mSessionName, CONTACT_AVAILABLE);
 }
 
 void ParticipantWidget::HandleMessageAcceptDelayed(bool pIncoming)
@@ -613,7 +625,7 @@ void ParticipantWidget::HandleMessageAcceptDelayed(bool pIncoming)
         mMessageWidget->AddMessage("", "server delays message(s)", true);
 
     UpdateParticipantState(CONTACT_UNDEFINED_STATE);
-    CONTACTSPOOL.UpdateContactState(mSessionName, CONTACT_UNDEFINED_STATE);
+    CONTACTS.UpdateContactState(mSessionName, CONTACT_UNDEFINED_STATE);
 }
 
 void ParticipantWidget::HandleMessageUnavailable(bool pIncoming, int pStatusCode, QString pDescription)
@@ -626,7 +638,7 @@ void ParticipantWidget::HandleMessageUnavailable(bool pIncoming, int pStatusCode
     }
 
     UpdateParticipantState(CONTACT_UNAVAILABLE);
-    CONTACTSPOOL.UpdateContactState(mSessionName, CONTACT_UNAVAILABLE);
+    CONTACTS.UpdateContactState(mSessionName, CONTACT_UNAVAILABLE);
     ShowError("Participant unavailable", "The participant " + mSessionName + " is currently unavailable for an instant message! The reason is \"" + pDescription + "\"(" + QString("%1").arg(pStatusCode) + ").");
 }
 
@@ -809,7 +821,7 @@ void ParticipantWidget::HandleCallUnavailable(bool pIncoming, int pStatusCode, Q
     {
     	CallStopped(pIncoming);
         UpdateParticipantState(CONTACT_UNAVAILABLE);
-        CONTACTSPOOL.UpdateContactState(mSessionName, CONTACT_UNAVAILABLE);
+        CONTACTS.UpdateContactState(mSessionName, CONTACT_UNAVAILABLE);
 
         ShowError("Participant unavailable", "The participant " + mSessionName + " is currently unavailable for a call! The reason is \"" + pDescription + "\"(" + QString("%1").arg(pStatusCode) + ").");
     }else
@@ -859,7 +871,7 @@ void ParticipantWidget::HandleCallAccept(bool pIncoming)
     }
 
     UpdateParticipantState(CONTACT_AVAILABLE);
-    CONTACTSPOOL.UpdateContactState(mSessionName, CONTACT_AVAILABLE);
+    CONTACTS.UpdateContactState(mSessionName, CONTACT_AVAILABLE);
 
     if (mMessageWidget != NULL)
         mMessageWidget->AddMessage("", "session established", true);

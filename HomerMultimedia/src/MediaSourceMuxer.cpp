@@ -70,12 +70,17 @@ MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
 
 MediaSourceMuxer::~MediaSourceMuxer()
 {
-    if (mMediaSourceOpened)
+	LOG(LOG_VERBOSE, "Going to destroy muxer");
+
+	if (mMediaSourceOpened)
         mMediaSource->CloseGrabDevice();
 
+	LOG(LOG_VERBOSE, "..stopping encoder");
     StopEncoder();
 
+	LOG(LOG_VERBOSE, "..freeing stream packet buffer");
     free(mStreamPacketBuffer);
+    LOG(LOG_VERBOSE, "Destroyed");
 }
 
 ///////////////////////////////////////////////////////////////////////////////

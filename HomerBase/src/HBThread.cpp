@@ -727,6 +727,8 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
     if (mThreadHandle == 0)
     {
         LOG(LOG_VERBOSE, "Thread handle is NULL, assume thread was already stopped");
+    	if (pResults != NULL)
+    		*pResults = NULL;
         return true;
     }
 

@@ -45,6 +45,7 @@ Requirements::Requirements()
 
 Requirements::~Requirements()
 {
+	delAll();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -144,6 +145,24 @@ IRequirement* Requirements::get(int pType)
     return tResult;
 }
 
+void Requirements::delAll()
+{
+    RequirementSet::iterator tIt;
+
+    mRequirementSetMutex.lock();
+
+    LOG(LOG_VERBOSE, "Deleting %d stored requirements", mRequirementSet.size());
+
+    tIt = mRequirementSet.begin();
+    while (tIt != mRequirementSet.end())
+    {
+        mRequirementSet.erase(tIt);
+    	delete (*tIt);
+        tIt = mRequirementSet.begin();
+    }
+
+    mRequirementSetMutex.unlock();
+}
 ///////////////////////////////////////////////////////////////////////////////
 
 }} //namespace
