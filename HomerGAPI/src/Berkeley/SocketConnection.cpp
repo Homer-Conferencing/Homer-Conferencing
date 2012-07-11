@@ -321,7 +321,7 @@ Requirements SocketConnection::getRequirements()
 {
 	Requirements tResult;
 
-	tResult = mRequirements;
+	//TODO: tResult = mRequirements;
 
 	return tResult;
 }
