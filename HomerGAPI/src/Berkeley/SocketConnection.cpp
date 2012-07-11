@@ -171,14 +171,12 @@ int SocketConnection::availableBytes()
 
 void SocketConnection::read(char* pBuffer, int &pBufferSize)
 {
-LOG(LOG_ERROR, "Receive here");
     if (mSocket != NULL)
     {
         string tSourceHost;
         unsigned int tSourcePort;
         ssize_t tBufferSize = pBufferSize;
         mIsClosed = !mSocket->Receive(tSourceHost, tSourcePort, (void*)pBuffer, tBufferSize);
-LOG(LOG_ERROR, "Got it");
         if (mIsClosed)
         	LOG(LOG_ERROR, "GAPI connection marked as closed");
         mPeerHost = tSourceHost;
