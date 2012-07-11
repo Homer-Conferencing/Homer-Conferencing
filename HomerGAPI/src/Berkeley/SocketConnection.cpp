@@ -117,7 +117,7 @@ SocketConnection::SocketConnection(std::string pTarget, Requirements *pRequireme
             /* QoS requirements and additional transport requirements */
             changeRequirements(pRequirements);
 
-            LOG(LOG_VERBOSE, "New IP association with target %s and requirements %s created", getRemoteName()->toString().c_str(), mRequirements.getDescription().c_str());
+            LOG(LOG_VERBOSE, "New IP association with target %s and requirements %s created", mPeerHost.c_str(), mRequirements->getDescription().c_str());
         }else
             LOG(LOG_ERROR, "Returned Berkeley socket is invalid");
     }else
@@ -137,15 +137,26 @@ SocketConnection::SocketConnection(Socket *pSocket)
     // per default we set receive buffer of 2 MB
     mSocket->SetSendBufferSize(2 * 1024 * 1024);
 
-    LOG(LOG_VERBOSE, "New IP association with local name %s created", getName()->toString().c_str(), mRequirements.getDescription().c_str());
+    mRequirements = new Requirements();
+
+    LOG(LOG_VERBOSE, "New IP association with local name %s created", getName()->toString().c_str(), mRequirements->getDescription().c_str());
 }
 
 SocketConnection::~SocketConnection()
 {
-    cancel();
+	LOG(LOG_VERBOSE, "Going to destroy socket connection for local %s and remote %s", getName()->toString().c_str(), getRemoteName()->toString().c_str());
 
+	if (!isClosed())
+	{
+		LOG(LOG_VERBOSE, "..cancel the socket connection");
+		cancel();
+	}
+
+	LOG(LOG_VERBOSE, "..destroying the Berkeley socket");
     delete mSocket;
     mSocket = NULL;
+
+	LOG(LOG_VERBOSE, "Destroyed");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -162,12 +173,14 @@ int SocketConnection::availableBytes()
 
 void SocketConnection::read(char* pBuffer, int &pBufferSize)
 {
-    if(mSocket != NULL)
+    if (mSocket != NULL)
     {
         string tSourceHost;
         unsigned int tSourcePort;
         ssize_t tBufferSize = pBufferSize;
         mIsClosed = !mSocket->Receive(tSourceHost, tSourcePort, (void*)pBuffer, tBufferSize);
+        if (mIsClosed)
+        	LOG(LOG_ERROR, "GAPI connection marked as closed");
         mPeerHost = tSourceHost;
         mPeerPort = tSourcePort;
         pBufferSize = (int)tBufferSize;
@@ -178,10 +191,12 @@ void SocketConnection::read(char* pBuffer, int &pBufferSize)
 
 void SocketConnection::write(char* pBuffer, int pBufferSize)
 {
-    if(mSocket != NULL)
+    if (mSocket != NULL)
     {
         if ((mPeerHost != "") && (mPeerPort != 0))
         mIsClosed = !mSocket->Send(mPeerHost, mPeerPort, (void*)pBuffer, (ssize_t) pBufferSize);
+        if (mIsClosed)
+        	LOG(LOG_ERROR, "GAPI connection marked as closed");
         //TODO: extended error signaling
     }else
         LOG(LOG_ERROR, "Invalid socket");
@@ -199,33 +214,39 @@ void SocketConnection::setBlocking(bool pState)
 
 void SocketConnection::cancel()
 {
-    if(mSocket != NULL)
+    if ((mSocket != NULL) && (!isClosed()))
     {
-        LOG(LOG_VERBOSE, "Connection to %s will be canceled now", getName()->toString().c_str());
-        if (mBlockingMode) //TODO: do this only if a call to read() is still blocked
+        LOG(LOG_VERBOSE, "Connection for local %s will be canceled now", getName()->toString().c_str());
+        if (mBlockingMode) //TODO: do this only if a call to read() is blocked
         {
             LOG(LOG_VERBOSE, "Try to do loopback signaling to local IPv%d listener at port %u, transport %d", mSocket->GetNetworkType(), 0xFFFF & mSocket->GetLocalPort(), mSocket->GetTransportType());
             Socket  *tSocket = Socket::CreateClientSocket(mSocket->GetNetworkType(), mSocket->GetTransportType());
-            char    tData[8];
-            switch(tSocket->GetNetworkType())
+            if (tSocket != NULL)
             {
-                case SOCKET_IPv4:
-                    LOG(LOG_VERBOSE, "Doing loopback signaling to IPv4 listener to port %u", mSocket->GetLocalPort());
-                    if (!tSocket->Send("127.0.0.1", mSocket->GetLocalPort(), tData, 0))
-                        LOG(LOG_ERROR, "Error when sending data through loopback IPv4-UDP socket");
-                    break;
-                case SOCKET_IPv6:
-                    LOG(LOG_VERBOSE, "Doing loopback signaling to IPv6 listener to port %u", mSocket->GetLocalPort());
-                    if (!tSocket->Send("::1", mSocket->GetLocalPort(), tData, 0))
-                        LOG(LOG_ERROR, "Error when sending data through loopback IPv6-UDP socket");
-                    break;
-                default:
-                    LOG(LOG_ERROR, "Unknown network type");
-                    break;
-            }
-            delete tSocket;
+				char    tData[8];
+				switch(tSocket->GetNetworkType())
+				{
+					case SOCKET_IPv4:
+						LOG(LOG_VERBOSE, "Doing loopback signaling to IPv4 listener at port %u", mSocket->GetLocalPort());
+						if (!tSocket->Send("127.0.0.1", mSocket->GetLocalPort(), tData, 0))
+							LOG(LOG_ERROR, "Error when sending data through loopback IPv4-UDP socket");
+						break;
+					case SOCKET_IPv6:
+						LOG(LOG_VERBOSE, "Doing loopback signaling to IPv6 listener at port %u", mSocket->GetLocalPort());
+						if (!tSocket->Send("::1", mSocket->GetLocalPort(), tData, 0))
+							LOG(LOG_ERROR, "Error when sending data through loopback IPv6-UDP socket");
+						break;
+					default:
+						LOG(LOG_ERROR, "Unknown network type");
+						break;
+				}
+				delete tSocket;
+            }else
+            	LOG(LOG_WARN, "Got invalid socket for loopback signaling");
         }
     }
+    LOG(LOG_VERBOSE, "Canceled");
+    mIsClosed = true;
 }
 
 Name* SocketConnection::getName()
@@ -291,12 +312,12 @@ bool SocketConnection::changeRequirements(Requirements *pRequirements)
         tResult = mSocket->SetQoS(tQoSSettings);
     }
 
-    mRequirements = *pRequirements; //TODO: maybe some requirements were dropped?
+    mRequirements = pRequirements; //TODO: maybe some requirements were dropped?
 
     return tResult;
 }
 
-Requirements SocketConnection::getRequirements()
+Requirements* SocketConnection::getRequirements()
 {
 	return mRequirements;
 }

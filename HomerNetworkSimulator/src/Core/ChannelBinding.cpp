@@ -122,6 +122,11 @@ ChannelBinding::~ChannelBinding()
 
 ///////////////////////////////////////////////////////////////////////////////
 
+bool ChannelBinding::isClosed()
+{
+	return mIsClosed;
+}
+
 IConnection* ChannelBinding::readConnection()
 {
     if (mConnection == NULL)
@@ -179,12 +184,12 @@ bool ChannelBinding::changeRequirements(Requirements *pRequirements)
         tResult = mConnection->changeRequirements(pRequirements);
 
     if (tResult)
-        mRequirements = *pRequirements;
+        mRequirements = pRequirements;
 
     return tResult;
 }
 
-Requirements ChannelBinding::getRequirements()
+Requirements* ChannelBinding::getRequirements()
 {
 	return mRequirements;
 }

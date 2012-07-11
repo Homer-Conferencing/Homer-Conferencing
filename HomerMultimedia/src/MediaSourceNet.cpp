@@ -88,7 +88,7 @@ void MediaSourceNet::Init(Socket *pDataSocket, unsigned int pLocalPort, bool pRt
 
         LOG(LOG_VERBOSE, "Listen for media packets at GAPI interface: %s, local port specified as: %d, TCP-like transport: %d", mGAPIDataSocket->getName()->toString().c_str(), getListenerPort(), mStreamedTransport);
         // assume Berkeley-Socket implementation behind GAPI interface => therefore we can easily conclude on "UDP/TCP/UDPlite"
-        mCurrentDeviceName = "NET-IN: " + mGAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mGAPIDataSocket->getRequirements().contains(RequirementTransmitBitErrors::type()) ? "UDPlite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
+        mCurrentDeviceName = "NET-IN: " + mGAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mGAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? "UDPlite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
     }else
     {
         mListenerPort = 0;
@@ -164,26 +164,38 @@ MediaSourceNet::MediaSourceNet(string pLocalName, Requirements *pTransportRequir
 
 MediaSourceNet::~MediaSourceNet()
 {
+	LOG(LOG_VERBOSE, "Going to destroy network based media source");
+
+	LOG(LOG_VERBOSE, "..stopping grabbing");
     StopGrabbing();
 
     if (mMediaSourceOpened)
         CloseGrabDevice();
 
     // check every 100 ms if listener thread is still running
+	LOG(LOG_VERBOSE, "..wait for end of listener thread");
     while(mListenerRunning)
     	Suspend(100000);
+	LOG(LOG_VERBOSE, "..end of listener thread reached");
 
     free(mPacketBuffer);
 
     if(mGAPIUsed)
     {
         if (mGAPIBinding != NULL)
-            delete mGAPIBinding; //HINT: this stops all listeners automatically
+        {
+        	LOG(LOG_VERBOSE, "..destroying GAPI bind object");
+        	delete mGAPIBinding; //HINT: this stops all listeners automatically
+        }
     }else
     {
         if (!mListenerSocketCreatedOutside)
+        {
+        	LOG(LOG_VERBOSE, "..destroying socket object");
             delete mDataSocket;
+        }
     }
+	LOG(LOG_VERBOSE, "Destroyed");
 }
 
 bool MediaSourceNet::DoReceiveFragment(std::string &pSourceHost, unsigned int &pSourcePort, char* pData, int &pSize)
@@ -268,6 +280,7 @@ void* MediaSourceNet::Run(void* pArgs)
 		    if (mReceiveErrors == MAX_RECEIVE_ERRORS)
 		    {
 		        LOG(LOG_ERROR, "Maximum number of continuous receive errors(%d) is exceeded, will stop network listener", MAX_RECEIVE_ERRORS);
+		        mListenerRunning = false;
 		        break;
 		    }else
 		        mReceiveErrors++;
@@ -286,9 +299,9 @@ void* MediaSourceNet::Run(void* pArgs)
                 if (mGAPIUsed)
                 {
                     // assume Berkeley-Socket implementation behind GAPI interface => therefore we can easily conclude on "UDP/TCP/UDPlite"
-                    mCurrentDeviceName = "NET-IN: " + mGAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mGAPIDataSocket->getRequirements().contains(RequirementTransmitBitErrors::type()) ? "UDPlite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
+                    mCurrentDeviceName = "NET-IN: " + mGAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mGAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? "UDPlite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
 
-                    enum TransportType tTransportType = (mStreamedTransport ? SOCKET_TCP : (mGAPIDataSocket->getRequirements().contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
+                    enum TransportType tTransportType = (mStreamedTransport ? SOCKET_TCP : (mGAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
                     // update category for packet statistics
                     enum NetworkType tNetworkType = (IS_IPV6_ADDRESS(tSourceHost)) ? SOCKET_IPv6 : SOCKET_IPv4;
                     ClassifyStream(GetDataType(), tTransportType, tNetworkType);
@@ -390,7 +403,7 @@ bool MediaSourceNet::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         enum TransportType tTransportType;
 	    // set category for packet statistics
         if (mGAPIUsed)
-            tTransportType = (mStreamedTransport ? SOCKET_TCP : (mGAPIDataSocket->getRequirements().contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
+            tTransportType = (mStreamedTransport ? SOCKET_TCP : (mGAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
         else
             tTransportType = mDataSocket->GetTransportType();
         ClassifyStream(DATA_TYPE_VIDEO, tTransportType);
@@ -417,7 +430,7 @@ bool MediaSourceNet::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
         enum TransportType tTransportType;
 	    // set category for packet statistics
         if (mGAPIUsed)
-            tTransportType = (mStreamedTransport ? SOCKET_TCP : (mGAPIDataSocket->getRequirements().contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
+            tTransportType = (mStreamedTransport ? SOCKET_TCP : (mGAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
         else
             tTransportType = mDataSocket->GetTransportType();
         ClassifyStream(DATA_TYPE_AUDIO, tTransportType);

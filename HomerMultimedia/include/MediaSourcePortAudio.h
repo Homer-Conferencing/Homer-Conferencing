@@ -86,10 +86,10 @@ private:
     MediaFifo           *mCaptureFifo;
     bool				mCaptureDuplicateMonoStream;
     /* portaudio init. */
-    static Mutex        mPaInitMutex;
-    static bool         mPaInitiated;
+    static Mutex        sPaInitMutex;
+    static bool         sPaInitiated;
     /* stream open/close mutex */
-    static Mutex        mPaStreamMutex;
+    static Mutex        sPaStreamMutex;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

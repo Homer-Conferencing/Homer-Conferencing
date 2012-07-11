@@ -41,10 +41,12 @@ public:
     virtual ~IBinding( ){}
 
     virtual IConnection* readConnection() = 0;
+
+    virtual bool isClosed() = 0;
     virtual Name* getName() = 0;
     virtual void cancel() = 0;
     virtual bool changeRequirements(Requirements *pRequirements) = 0;
-    virtual Requirements getRequirements() = 0;
+    virtual Requirements* getRequirements() = 0;
     virtual Events getEvents() = 0;
 };
 

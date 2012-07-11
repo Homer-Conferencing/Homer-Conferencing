@@ -60,11 +60,15 @@ WaveOutPortAudio::WaveOutPortAudio(string pDesiredDevice):
 
 WaveOutPortAudio::~WaveOutPortAudio()
 {
+	LOG(LOG_VERBOSE, "Going to destroy PulseAudio wave out object..");
     if (mWaveOutOpened)
     {
+    	LOG(LOG_VERBOSE, "..stopping wave out");
         Stop();
+        LOG(LOG_VERBOSE, "..closing wave out device");
         CloseWaveOutDevice();
-    }
+    }else
+    	LOG(LOG_VERBOSE, "Skipped CloseWaveOutDevice() because device is already closed");
 
     LOG(LOG_VERBOSE, "Destroyed");
 }
@@ -246,19 +250,25 @@ bool WaveOutPortAudio::CloseWaveOutDevice()
 {
     bool tResult = false;
 
-    LOG(LOG_VERBOSE, "Going to close");
+    LOG(LOG_VERBOSE, "Going to close..");
 
     if (mWaveOutOpened)
     {
         // terminate possibly running main loop for file based playback
-        mFilePlaybackNeeded = false;
-        mFilePlaybackCondition.SignalAll();
-        StopThread(3000);
+    	if (mFilePlaybackNeeded)
+    	{
+			mFilePlaybackNeeded = false;
+			mFilePlaybackCondition.SignalAll();
+			LOG(LOG_VERBOSE, "..loopback wake-up signal sent");
+			StopThread(3000);
+			LOG(LOG_VERBOSE, "..playback thread stopped");
+    	}
 
         Stop();
 
         PaError tErr = paNoError;
         MediaSourcePortAudio::PortAudioLockStreamInterface();
+		LOG(LOG_VERBOSE, "..closing stream");
         if ((tErr = Pa_CloseStream(mStream)) != paNoError)
         {
             LOG(LOG_ERROR, "Couldn't close stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
@@ -361,6 +371,13 @@ int WaveOutPortAudio::PlayAudioHandler(const void *pInputBuffer, void *pOutputBu
         tOutputBufferMaxSize = (int)pOutputSize * 2 /* 16 bit LittleEndian */ * (tWaveOutPortAudio->mStereo ? 2 : 1);
         tBufferSize = tOutputBufferMaxSize;
         tWaveOutPortAudio->mPlaybackFifo->ReadFifo((char*)pOutputBuffer, tBufferSize);
+        if (tWaveOutPortAudio->mPlaybackStopped)
+        {
+    		#ifdef WOPA_DEBUG_HANDLER
+    			LOGEX(WaveOutPortAudio, LOG_WARN, "PlayAudioHandler-end: RETURN WITH STREAM COMPLETE");
+    		#endif
+            return paComplete;
+        }
         if (tWaveOutPortAudio->mWaitingForFirstBuffer)
         {
             tWaveOutPortAudio->mWaitingForFirstBuffer = false;
@@ -378,6 +395,9 @@ int WaveOutPortAudio::PlayAudioHandler(const void *pInputBuffer, void *pOutputBu
             return paComplete;
         }
 
+		#ifdef WOPA_DEBUG_HANDLER
+        	LOGEX(WaveOutPortAudio, LOG_WARN, "Got sample buffer of %d bytes for playback", tBufferSize);
+		#endif
         if ((tBufferSize != tOutputBufferMaxSize) && (tBufferSize != 0))
             LOGEX(WaveOutPortAudio, LOG_WARN, "Audio buffer has wrong size of %d bytes, %d bytes needed", tBufferSize, tOutputBufferMaxSize);
 
@@ -609,10 +629,13 @@ void WaveOutPortAudio::Stop()
     mFilePlaybackLoops = 0;
 
     // make sure no one waits for audio anymore -> send an empty buffer to FIFO and force a return from a possible ReadFifo() call
+    LOG(LOG_VERBOSE, "..writing empty packets to FIFO to force wake up");
     char tData[4];
     mPlaybackFifo->WriteFifo(tData, 0);
 
-	MediaSourcePortAudio::PortAudioLockStreamInterface();
+    LOG(LOG_VERBOSE, "..empty packets to FIFO to force wake up were written");
+
+    MediaSourcePortAudio::PortAudioLockStreamInterface();
     if (Pa_IsStreamActive(mStream) == 1)
     {
         LOG(LOG_VERBOSE, "..going to stop stream..");
