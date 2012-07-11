@@ -299,7 +299,6 @@ void ParticipantWidget::ClosePlaybackDevice()
     LOG(LOG_VERBOSE, "Going to close playback device");
 
     // close the audio out
-    mWaveOut->CloseWaveOutDevice();
     delete mWaveOut;
 
     LOG(LOG_VERBOSE, "Finished to close playback device");
