@@ -132,7 +132,10 @@ SocketBinding::SocketBinding(std::string pLocalName, Requirements *pRequirements
 SocketBinding::~SocketBinding()
 {
 	LOG(LOG_VERBOSE, "Destroying GAPI bind object..");
-    cancel();
+    if (!isClosed())
+    {
+    	cancel();
+    }
     LOG(LOG_VERBOSE, "Destroyed");
 }
 
@@ -199,6 +202,7 @@ void SocketBinding::cancel()
         mSocket = NULL;
     }
     LOG(LOG_VERBOSE, "Canceled");
+    mIsClosed = true;
 }
 
 bool SocketBinding::changeRequirements(Requirements *pRequirements)

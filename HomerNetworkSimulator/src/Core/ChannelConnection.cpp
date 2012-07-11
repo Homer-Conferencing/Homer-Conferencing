@@ -137,7 +137,10 @@ ChannelConnection::ChannelConnection(Cep *pCep)
 
 ChannelConnection::~ChannelConnection()
 {
-    cancel();
+	if (!isClosed())
+	{
+		cancel();
+	}
 
     delete mCep;
     mCep = NULL;
@@ -204,6 +207,7 @@ void ChannelConnection::cancel()
             mCep->Close();
         }
     }
+    mIsClosed = true;
 }
 
 Name* ChannelConnection::getName()

@@ -144,8 +144,11 @@ SocketConnection::~SocketConnection()
 {
 	LOG(LOG_VERBOSE, "Going to destroy socket connection for remote %s", getRemoteName()->toString().c_str());
 
-	LOG(LOG_VERBOSE, "..cancel the socket connection");
-    cancel();
+	if (!isClosed())
+	{
+		LOG(LOG_VERBOSE, "..cancel the socket connection");
+		cancel();
+	}
 
 	LOG(LOG_VERBOSE, "..destroying the Berkeley socket");
     delete mSocket;
@@ -235,9 +238,9 @@ void SocketConnection::cancel()
             }else
             	LOG(LOG_WARN, "Got invalid socket for loopback signaling");
         }
-        mIsClosed = true;
     }
     LOG(LOG_VERBOSE, "Canceled");
+    mIsClosed = true;
 }
 
 Name* SocketConnection::getName()
