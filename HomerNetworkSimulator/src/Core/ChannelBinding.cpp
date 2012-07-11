@@ -122,6 +122,11 @@ ChannelBinding::~ChannelBinding()
 
 ///////////////////////////////////////////////////////////////////////////////
 
+bool ChannelBinding::isClosed()
+{
+	return mIsClosed;
+}
+
 IConnection* ChannelBinding::readConnection()
 {
     if (mConnection == NULL)

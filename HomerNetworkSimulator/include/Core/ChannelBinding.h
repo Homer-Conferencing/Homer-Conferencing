@@ -48,6 +48,7 @@ public:
 	ChannelBinding(Scenario *pScenario, std::string pLocalName, Requirements *pRequirements);
     virtual ~ChannelBinding( );
 
+    virtual bool isClosed();
     virtual IConnection* readConnection();
     virtual Name* getName();
     virtual void cancel();
