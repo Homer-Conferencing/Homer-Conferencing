@@ -185,7 +185,7 @@ Socket::~Socket()
         SVC_SOCKET_CONTROL.UnregisterClientSocket(this);
 
     DestroySocket(mSocketHandle);
-    LOG(LOG_VERBOSE, "Destroyed");
+    LOG(LOG_VERBOSE, "Destroyed %d", mSocketHandle);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1211,6 +1211,8 @@ bool Socket::CreateSocket(enum NetworkType pIpVersion)
 
 void Socket::DestroySocket(int pHandle)
 {
+	LOGEX(Socket, LOG_VERBOSE, "Destroying socket %d", pHandle);
+
     if (pHandle > 0)
     {
         #if defined(LINUX) || defined(APPLE) || defined(BSD)
