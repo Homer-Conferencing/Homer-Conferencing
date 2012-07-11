@@ -1665,7 +1665,7 @@ bool VideoWorkerThread::EofReached()
 
 QString VideoWorkerThread::CurrentFile()
 {
-    if (mVideoSource->SupportsSeeking())
+    if ((mVideoSource != NULL) && (mVideoSource->SupportsSeeking()))
     	return mCurrentFile;
     else
         return "";

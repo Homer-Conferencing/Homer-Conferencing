@@ -1098,7 +1098,7 @@ bool AudioWorkerThread::EofReached()
 
 QString AudioWorkerThread::CurrentFile()
 {
-    if (mAudioSource->SupportsSeeking())
+    if ((mAudioSource != NULL) && (mAudioSource->SupportsSeeking()))
         return mCurrentFile;
     else
         return "";
