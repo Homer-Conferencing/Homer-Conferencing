@@ -203,7 +203,7 @@ VideoWidget::~VideoWidget()
     	mVideoWorker->StopGrabber();
     	if (!mVideoWorker->wait(250))
         {
-            LOG(LOG_VERBOSE, "Going to force termination of worker thread");
+            LOG(LOG_WARN, "Going to force termination of worker thread");
             mVideoWorker->terminate();
         }
 
