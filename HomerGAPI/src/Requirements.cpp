@@ -43,8 +43,26 @@ Requirements::Requirements()
 {
 }
 
+//Requirements::Requirements(const Requirements& pCopy)
+//{
+//    pCopy.mRequirementSetMutex.lock();
+//
+//    RequirementSet::iterator tIt;
+//    for(tIt = pCopy.mRequirementSet.begin(); tIt != pCopy.mRequirementSet.end(); tIt++)
+//    {
+//        if((*tIt)->getType() == pType)
+//        {
+//            tResult = true;
+//        }
+//    }
+//
+//    pCopy.mRequirementSetMutex.unlock();
+//}
+
+
 Requirements::~Requirements()
 {
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////

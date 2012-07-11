@@ -55,6 +55,7 @@ class Requirements
 {
 public:
     Requirements();
+    //TODO: Requirements(const Requirements& pCopy);
 
     virtual ~Requirements();
 

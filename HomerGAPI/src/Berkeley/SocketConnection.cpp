@@ -142,7 +142,7 @@ SocketConnection::SocketConnection(Socket *pSocket)
 
 SocketConnection::~SocketConnection()
 {
-	LOG(LOG_VERBOSE, "Going to destroy socket connection for remote %s", getRemoteName()->toString().c_str());
+	LOG(LOG_VERBOSE, "Going to destroy socket connection for local %s and remote %s", getName()->toString().c_str(), getRemoteName()->toString().c_str());
 
 	if (!isClosed())
 	{
@@ -171,12 +171,16 @@ int SocketConnection::availableBytes()
 
 void SocketConnection::read(char* pBuffer, int &pBufferSize)
 {
-    if(mSocket != NULL)
+LOG(LOG_ERROR, "Receive here");
+    if (mSocket != NULL)
     {
         string tSourceHost;
         unsigned int tSourcePort;
         ssize_t tBufferSize = pBufferSize;
         mIsClosed = !mSocket->Receive(tSourceHost, tSourcePort, (void*)pBuffer, tBufferSize);
+LOG(LOG_ERROR, "Got it");
+        if (mIsClosed)
+        	LOG(LOG_ERROR, "GAPI connection marked as closed");
         mPeerHost = tSourceHost;
         mPeerPort = tSourcePort;
         pBufferSize = (int)tBufferSize;
@@ -187,10 +191,12 @@ void SocketConnection::read(char* pBuffer, int &pBufferSize)
 
 void SocketConnection::write(char* pBuffer, int pBufferSize)
 {
-    if(mSocket != NULL)
+    if (mSocket != NULL)
     {
         if ((mPeerHost != "") && (mPeerPort != 0))
         mIsClosed = !mSocket->Send(mPeerHost, mPeerPort, (void*)pBuffer, (ssize_t) pBufferSize);
+        if (mIsClosed)
+        	LOG(LOG_ERROR, "GAPI connection marked as closed");
         //TODO: extended error signaling
     }else
         LOG(LOG_ERROR, "Invalid socket");
@@ -313,7 +319,11 @@ bool SocketConnection::changeRequirements(Requirements *pRequirements)
 
 Requirements SocketConnection::getRequirements()
 {
-	return mRequirements;
+	Requirements tResult;
+
+	tResult = mRequirements;
+
+	return tResult;
 }
 
 Events SocketConnection::getEvents()
