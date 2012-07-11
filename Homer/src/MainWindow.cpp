@@ -731,6 +731,12 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
     if (mLocalUserParticipantWidget != NULL)
         delete mLocalUserParticipantWidget;
 
+    // delete video/audio muxer
+    LOG(LOG_VERBOSE, "..destroying broadcast video muxer");
+    delete mOwnVideoMuxer;
+    LOG(LOG_VERBOSE, "..destroying broadcast audio muxer");
+    delete mOwnAudioMuxer;
+
 	// destroy all participant widgets
     LOG(LOG_VERBOSE, "..destroying all participant widgets");
     ParticipantWidgetList::iterator tIt;
