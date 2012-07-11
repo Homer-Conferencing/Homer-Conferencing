@@ -275,7 +275,11 @@ bool ChannelConnection::changeRequirements(Requirements *pRequirements)
 
 Requirements ChannelConnection::getRequirements()
 {
-	return mRequirements;
+	Requirements tResult;
+
+	//TODO tResult = mRequirements;
+
+	return tResult;
 }
 
 Events ChannelConnection::getEvents()

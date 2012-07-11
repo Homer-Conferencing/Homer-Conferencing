@@ -220,7 +220,11 @@ bool SocketBinding::changeRequirements(Requirements *pRequirements)
 
 Requirements SocketBinding::getRequirements()
 {
-	return mRequirements;
+	Requirements tResult;
+
+	//TODO tResult = mRequirements;
+
+	return tResult;
 }
 
 Events SocketBinding::getEvents()

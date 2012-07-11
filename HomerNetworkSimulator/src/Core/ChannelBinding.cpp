@@ -191,7 +191,11 @@ bool ChannelBinding::changeRequirements(Requirements *pRequirements)
 
 Requirements ChannelBinding::getRequirements()
 {
-	return mRequirements;
+	Requirements tResult;
+
+	//TODO tResult = mRequirements;
+
+	return tResult;
 }
 
 Events ChannelBinding::getEvents()
