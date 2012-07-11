@@ -40,6 +40,7 @@ public:
 	IBinding(){}
     virtual ~IBinding( ){}
 
+    virtual bool isClosed() = 0;
     virtual IConnection* readConnection() = 0;
     virtual Name* getName() = 0;
     virtual void cancel() = 0;

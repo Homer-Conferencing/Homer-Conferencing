@@ -46,6 +46,7 @@ public:
 	SocketBinding(std::string pLocalName, Requirements *pRequirements);
     virtual ~SocketBinding( );
 
+    virtual bool isClosed();
     virtual IConnection* readConnection();
     virtual Name* getName();
     virtual void cancel();

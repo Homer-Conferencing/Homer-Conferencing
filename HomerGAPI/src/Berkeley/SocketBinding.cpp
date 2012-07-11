@@ -138,6 +138,11 @@ SocketBinding::~SocketBinding()
 
 ///////////////////////////////////////////////////////////////////////////////
 
+bool SocketBinding::isClosed()
+{
+	return mIsClosed;
+}
+
 IConnection* SocketBinding::readConnection()
 {
     if (mIsClosed)
@@ -175,7 +180,7 @@ Name* SocketBinding::getName()
 
 void SocketBinding::cancel()
 {
-    if(mSocket != NULL)
+    if ((mSocket != NULL) && (!isClosed()))
     {
         LOG(LOG_VERBOSE, "All connections will be canceled now");
 
@@ -183,8 +188,9 @@ void SocketBinding::cancel()
         {
             LOG(LOG_VERBOSE, "..destroying connection");
             delete mConnection;
-            mConnection = NULL;
             LOG(LOG_VERBOSE, "..connection destroyed");
+            mConnection = NULL;
+            LOG(LOG_VERBOSE, "..variable reset");
         }else
         {
             LOG(LOG_VERBOSE, "..destroying Berkeley socket");
