@@ -694,8 +694,7 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
     // remove ourself as observer for new Meeting events
     MEETING.DeleteObserver(this);
 
-    ParticipantWidgetList::iterator tIt;
-
+    LOG(LOG_VERBOSE, "..saving main window layout");
     CONF.SetMainWindowPosition(pos());
     CONF.SetMainWindowSize(size());
     CONF.SetVisibilityToolBarMediaSources(mToolBarMediaSources->isVisible());
@@ -705,28 +704,36 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
     //setIpStatistic(MEETING.GetHostAdr(), MEETING.getStunNatIp());
 
     // save the availability state within settings
+    LOG(LOG_VERBOSE, "..saving conference availability");
     CONF.SetConferenceAvailability(QString(MEETING.getAvailabilityStateStr().c_str()));
 
     // ###### begin shutdown ################
     // stop the screenshot creating timer function
+    LOG(LOG_VERBOSE, "..stopping GUI capturing");
     mScreenShotTimer->stop();
 
     // prevent the system from further incoming events
+    LOG(LOG_VERBOSE, "..stopping conference manager");
     MEETING.Stop();
 
     //HINT: delete MediaSourcesControlWidget before local participant widget to avoid crashes caused by race conditions (control widget has a timer which calls local participant widget's video widget!)
+    LOG(LOG_VERBOSE, "..destroying media source control widget");
     delete mMediaSourcesControlWidget;
 
     //HINT: delete before local participant widget is destroyed
+    LOG(LOG_VERBOSE, "..destroying playlist widget");
     delete mOverviewPlaylistWidgetVideo;
     delete mOverviewPlaylistWidgetAudio;
     delete mOverviewPlaylistWidgetMovie;
 
     // should be the last because video/audio workers could otherwise be deleted while they are still called
+    LOG(LOG_VERBOSE, "..destroying broadcast widget");
     if (mLocalUserParticipantWidget != NULL)
         delete mLocalUserParticipantWidget;
 
 	// destroy all participant widgets
+    LOG(LOG_VERBOSE, "..destroying all participant widgets");
+    ParticipantWidgetList::iterator tIt;
     if (mParticipantWidgets.size())
     {
         for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
@@ -736,15 +743,19 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
     }
 
     // deinit
+    LOG(LOG_VERBOSE, "..destroying conference manager");
     MEETING.Deinit();
 
+    LOG(LOG_VERBOSE, "..destroying simulator widget");
     if (mNetworkSimulator != NULL)
         delete mNetworkSimulator;
 
+    LOG(LOG_VERBOSE, "..destroying shortcuts");
     delete mShortcutActivateDebugWidgets;
     delete mShortcutActivateDebuggingGlobally;
     delete mShortcutActivateNetworkSimulationWidgets;
 
+    LOG(LOG_VERBOSE, "..destroying remaining widgets");
     delete mOverviewDataStreamsWidget;
     delete mOverviewNetworkStreamsWidget;
     delete mOverviewThreadsWidget;
@@ -752,7 +763,9 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
     delete mOverviewContactsWidget;
     delete mOverviewErrorsWidget;
     delete mOverviewFileTransfersWidget;
+    LOG(LOG_VERBOSE, "..destroying online status widget");
     delete mOnlineStatusWidget;
+    LOG(LOG_VERBOSE, "..destroying system tray icon");
     delete mSysTrayIcon;
 
 	//HINT: mSourceDesktop will be deleted by VideoWidget which grabbed from there
