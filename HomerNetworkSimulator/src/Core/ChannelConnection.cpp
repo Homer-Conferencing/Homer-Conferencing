@@ -132,6 +132,9 @@ ChannelConnection::ChannelConnection(Cep *pCep)
     mBlockingMode = true;
     mPeerNode = "";
     mPeerPort = 0;
+
+    mRequirements = new Requirements();
+
     LOG(LOG_VERBOSE, "New simulation association with local name %s created", getName()->toString().c_str(), mRequirements->getDescription().c_str());
 }
 

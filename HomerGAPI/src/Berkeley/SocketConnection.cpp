@@ -137,6 +137,8 @@ SocketConnection::SocketConnection(Socket *pSocket)
     // per default we set receive buffer of 2 MB
     mSocket->SetSendBufferSize(2 * 1024 * 1024);
 
+    mRequirements = new Requirements();
+
     LOG(LOG_VERBOSE, "New IP association with local name %s created", getName()->toString().c_str(), mRequirements->getDescription().c_str());
 }
 
