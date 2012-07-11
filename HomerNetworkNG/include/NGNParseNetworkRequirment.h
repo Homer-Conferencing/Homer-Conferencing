@@ -62,12 +62,12 @@ class NGNParseNetworkRequirment
 public:
    
     static int parse(NGNSocketBinding* tmp, int kind=FIRST_CALL_REQUIRMENT){
-        Requirements r = (tmp->getRequirements());
-        return parseAndSignal(&r,kind);
+        Requirements *r = (tmp->getRequirements());
+        return parseAndSignal(r,kind);
     }
     static int parse(NGNSocketConnection* tmp,int kind=FIRST_CALL_REQUIRMENT){
-        Requirements r = (tmp->getRequirements());
-        return parseAndSignal(&r,kind);
+        Requirements *r = (tmp->getRequirements());
+        return parseAndSignal(r,kind);
     }                        
                               
     static int parseAndSignal(Requirements* r = NULL,int kind=FIRST_CALL_REQUIRMENT){

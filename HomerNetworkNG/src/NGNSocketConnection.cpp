@@ -44,6 +44,8 @@ int NGNSocketConnection::mStream = 0;
 //HINT: lossless transmission is not implemented by using TCP but by rely on a reaction by the network
 NGNSocketConnection::NGNSocketConnection(std::string pTarget, Requirements *pRequirements)
 {
+    mIsClosed = true;
+
     //////////////////////////////////////////////////////
     // Step 1: the basic setup
 
@@ -178,30 +180,38 @@ NGNSocketConnection::NGNSocketConnection(std::string pTarget, Requirements *pReq
     }
     mStream++;  // This Socket only communicate over this stream id!
     LOG(LOG_VERBOSE, "Init of client finished and connected");
+
+    mIsClosed = false;
 }
 
 // In the end this is the client side implementation
 NGNSocketConnection::NGNSocketConnection(int fd)
 {
+    mIsClosed = false;
     LOG(LOG_VERBOSE, "Setup a connection for server listen on socket ID %i", fd);
     mClient = SERVER;
     mSocket = fd;
     mStream++; 
+    mRequirements = new Requirements();
     LOG(LOG_VERBOSE, "Setup a server configuration");
 }
 
 NGNSocketConnection::~NGNSocketConnection()
 {
-    cancel();
+    if (!isClosed())
+    {
+        cancel();
+    }
     close(mSocket);
     mSocket = -1;
+    LOG(LOG_VERBOSE, "Destroyed");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 bool NGNSocketConnection::isClosed()
 {
-    if(mSocket < 0)
+    if ((mSocket < 0) || (mIsClosed))
         return true;
     return false;
 }
@@ -221,6 +231,7 @@ void NGNSocketConnection::read(char* pBuffer, int &pBufferSize)
             LOG(LOG_VERBOSE, "Start Accept");
             if ((mClient = accept(mSocket, (struct sockaddr *)&mSock_addr, &mAddr_len)) < 0)
             {
+                //TODO: handling of mIsClosed = true;
                 LOG(LOG_ERROR, "Error accept");
             }
             LOG(LOG_VERBOSE, "Finished Accept");
@@ -246,6 +257,7 @@ void NGNSocketConnection::write(char* pBuffer, int pBufferSize)
             LOG(LOG_VERBOSE, "Start Accept");
             if ((mClient = accept(mSocket, (struct sockaddr *)&mSock_addr, &mAddr_len)) < 0)
             {
+                //TODO: handling of mIsClosed = true;
                 LOG(LOG_ERROR, "Error accept");
             }
             LOG(LOG_VERBOSE, "Finished Accept");
@@ -254,6 +266,7 @@ void NGNSocketConnection::write(char* pBuffer, int pBufferSize)
             fd = mClient;
         if (sctp_sendmsg(fd, (void*)pBuffer, pBufferSize, NULL, 0, 0, 0, 0, 0, 0) < 0)
         {
+            //TODO: handling of mIsClosed = true;
             LOG(LOG_ERROR, "sctp_sendmsg %i", errno);
         }
     }else
@@ -309,6 +322,8 @@ void NGNSocketConnection::cancel()
     else
         close(mSocket);
     }
+    LOG(LOG_VERBOSE, "Canceled");
+    mIsClosed = true;
 }
 
 Name* NGNSocketConnection::getName()
@@ -347,12 +362,12 @@ bool NGNSocketConnection::changeRequirements(Requirements *pRequirements)
     // - multihoming
     // - etc...
     
-    mRequirements = *pRequirements; //TODO: maybe some requirements were dropped?
+    mRequirements = pRequirements; //TODO: maybe some requirements were dropped?
 
     return true;
 }
 
-Requirements NGNSocketConnection::getRequirements()
+Requirements* NGNSocketConnection::getRequirements()
 {
 	return mRequirements;
 }

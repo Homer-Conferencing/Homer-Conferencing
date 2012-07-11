@@ -54,6 +54,7 @@ using namespace std;
 //HINT: lossless transmission is not implemented by using TCP but by rely on a reaction by the network
 NGNSocketBinding::NGNSocketBinding(std::string pLocalName, Requirements *pRequirements)
 {
+    mIsClosed = true;
     LOG(LOG_VERBOSE, "Start SCTP Server for %s", pLocalName.c_str());
     // resolution of connection by target and requirements.
     LOG(LOG_VERBOSE, "memset mSock_addr with sizof %i", sizeof(mSock_addr));
@@ -200,18 +201,32 @@ NGNSocketBinding::NGNSocketBinding(std::string pLocalName, Requirements *pRequir
 
     if (listen(mSocket, 1) < 0)
         LOG(LOG_ERROR, "listen %i", errno);
-  
+
+    mIsClosed = false;
 }
 
 NGNSocketBinding::~NGNSocketBinding()
 {
-    cancel();
+    LOG(LOG_VERBOSE, "Destroying GAPI NGN bind object..");
+    if (!isClosed())
+    {
+        cancel();
+    }
+    LOG(LOG_VERBOSE, "Destroyed");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
+bool NGNSocketBinding::isClosed()
+{
+    return mIsClosed;
+}
+
 IConnection* NGNSocketBinding::readConnection()
 {
+    if (mIsClosed)
+        return NULL;
+
     return (IConnection*) (new NGNSocketConnection(mSocket));
 }
 
@@ -228,13 +243,15 @@ Name* NGNSocketBinding::getName()
 
 void NGNSocketBinding::cancel()
 {
-    if(mSocket > 0)
+    if ((mSocket != NULL) && (!isClosed()))
     {
         LOG(LOG_VERBOSE, "All connection will be canceled now");
 	
         close (mSocket);
         mSocket = -1;
     }
+    LOG(LOG_VERBOSE, "Canceled");
+    mIsClosed = true;
 }
 
 bool NGNSocketBinding::changeRequirements(Requirements *pRequirements)
@@ -245,12 +262,12 @@ bool NGNSocketBinding::changeRequirements(Requirements *pRequirements)
 //        tResult = mConnection->changeRequirements(pRequirements);
 
     if (tResult)
-        mRequirements = *pRequirements;
+        mRequirements = pRequirements;
 
     return tResult;
 }
 
-Requirements NGNSocketBinding::getRequirements()
+Requirements* NGNSocketBinding::getRequirements()
 {
 	return mRequirements;
 }

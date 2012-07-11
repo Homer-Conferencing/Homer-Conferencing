@@ -63,16 +63,17 @@ public:
     NGNSocketBinding(std::string pLocalName, Requirements *pRequirements);
     virtual ~NGNSocketBinding( );
 
+    virtual bool isClosed();
     virtual IConnection* readConnection();
     virtual Name* getName();
     virtual void cancel();
     virtual bool changeRequirements(Requirements *pRequirements);
-    virtual Requirements getRequirements();
+    virtual Requirements* getRequirements();
     virtual Events getEvents();
 
 private:
     int mSocket;	// Socket Descriptor for initialisation
-
+    bool    mIsClosed;
     union sock_union{
 		struct sockaddr     sa;
 		struct sockaddr_in  s4;
@@ -90,7 +91,7 @@ private:
 #ifdef SCTP_REMOTE_UDP_ENCAPS_PORT
     struct sctp_udpencaps mEncaps;
 #endif
-    Requirements    mRequirements;
+    Requirements    *mRequirements;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

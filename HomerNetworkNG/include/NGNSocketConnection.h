@@ -74,11 +74,12 @@ public:
     virtual Name* getName();
     virtual Name* getRemoteName();
     virtual bool changeRequirements(Requirements *pRequirements);
-    virtual Requirements getRequirements();
+    virtual Requirements* getRequirements();
     virtual Events getEvents();
     
    
 private:
+    bool    mIsClosed;
     int mSocket;	// Socket Descriptor for initialisation
     int mClient;
 
@@ -103,7 +104,7 @@ private:
 #ifdef SCTP_REMOTE_UDP_ENCAPS_PORT
     struct sctp_udpencaps mEncaps;
 #endif
-    Requirements    mRequirements;
+    Requirements    *mRequirements;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
