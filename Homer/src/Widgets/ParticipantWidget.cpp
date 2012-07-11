@@ -96,6 +96,11 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
 
 ParticipantWidget::~ParticipantWidget()
 {
+    LOG(LOG_VERBOSE, "Going to destroy participant widget..");
+
+    if (mTimerId != -1)
+        killTimer(mTimerId);
+
     if (mSessionType == BROADCAST)
     {
         CONF.SetVisibilityBroadcastWidget(isVisible());
@@ -126,10 +131,8 @@ ParticipantWidget::~ParticipantWidget()
     if (mAudioSourceMuxer != NULL)
         mAudioSourceMuxer->UnregisterMediaSink(mRemoteAudioAdr.toStdString(), mRemoteAudioPort);
 
-    if (mTimerId != -1)
-        killTimer(mTimerId);
-
     ClosePlaybackDevice();
+    LOG(LOG_VERBOSE, "Destroyed");
 }
 
 ///////////////////////////////////////////////////////////////////////////////

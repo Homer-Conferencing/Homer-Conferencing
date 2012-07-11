@@ -193,6 +193,8 @@ void VideoWidget::Init(QMainWindow* pMainWindow, ParticipantWidget *pParticipant
 
 VideoWidget::~VideoWidget()
 {
+    LOG(LOG_VERBOSE, "Going to destroy video widget..");
+
 	// we are going to destroy mCurrentFrame -> stop repainting now!
 	setUpdatesEnabled(false);
 
@@ -213,6 +215,8 @@ VideoWidget::~VideoWidget()
     }
     if (mAssignedAction != NULL)
         delete mAssignedAction;
+
+    LOG(LOG_VERBOSE, "Destroyed");
 }
 
 ///////////////////////////////////////////////////////////////////////////////

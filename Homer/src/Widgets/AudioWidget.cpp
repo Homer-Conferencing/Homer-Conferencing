@@ -173,6 +173,8 @@ void AudioWidget::Init(MediaSource *pAudioSource, QMenu *pMenu, QString pActionT
 
 AudioWidget::~AudioWidget()
 {
+    LOG(LOG_VERBOSE, "Going to destroy audio widget..");
+
     if (mAudioWorker != NULL)
     {
         mAudioWorker->StopGrabber();
@@ -190,6 +192,8 @@ AudioWidget::~AudioWidget()
     }
     if (mAssignedAction != NULL)
         delete mAssignedAction;
+
+    LOG(LOG_VERBOSE, "Destroyed");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
