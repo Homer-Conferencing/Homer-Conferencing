@@ -142,10 +142,16 @@ SocketConnection::SocketConnection(Socket *pSocket)
 
 SocketConnection::~SocketConnection()
 {
+	LOG(LOG_VERBOSE, "Going to destroy socket connection for remote %s", getRemoteName()->toString().c_str());
+
+	LOG(LOG_VERBOSE, "..cancel the socket connection");
     cancel();
 
+	LOG(LOG_VERBOSE, "..destroying the Berkeley socket");
     delete mSocket;
     mSocket = NULL;
+
+	LOG(LOG_VERBOSE, "Destroyed");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -206,26 +212,31 @@ void SocketConnection::cancel()
         {
             LOG(LOG_VERBOSE, "Try to do loopback signaling to local IPv%d listener at port %u, transport %d", mSocket->GetNetworkType(), 0xFFFF & mSocket->GetLocalPort(), mSocket->GetTransportType());
             Socket  *tSocket = Socket::CreateClientSocket(mSocket->GetNetworkType(), mSocket->GetTransportType());
-            char    tData[8];
-            switch(tSocket->GetNetworkType())
+            if (tSocket != NULL)
             {
-                case SOCKET_IPv4:
-                    LOG(LOG_VERBOSE, "Doing loopback signaling to IPv4 listener to port %u", mSocket->GetLocalPort());
-                    if (!tSocket->Send("127.0.0.1", mSocket->GetLocalPort(), tData, 0))
-                        LOG(LOG_ERROR, "Error when sending data through loopback IPv4-UDP socket");
-                    break;
-                case SOCKET_IPv6:
-                    LOG(LOG_VERBOSE, "Doing loopback signaling to IPv6 listener to port %u", mSocket->GetLocalPort());
-                    if (!tSocket->Send("::1", mSocket->GetLocalPort(), tData, 0))
-                        LOG(LOG_ERROR, "Error when sending data through loopback IPv6-UDP socket");
-                    break;
-                default:
-                    LOG(LOG_ERROR, "Unknown network type");
-                    break;
-            }
-            delete tSocket;
+				char    tData[8];
+				switch(tSocket->GetNetworkType())
+				{
+					case SOCKET_IPv4:
+						LOG(LOG_VERBOSE, "Doing loopback signaling to IPv4 listener to port %u", mSocket->GetLocalPort());
+						if (!tSocket->Send("127.0.0.1", mSocket->GetLocalPort(), tData, 0))
+							LOG(LOG_ERROR, "Error when sending data through loopback IPv4-UDP socket");
+						break;
+					case SOCKET_IPv6:
+						LOG(LOG_VERBOSE, "Doing loopback signaling to IPv6 listener to port %u", mSocket->GetLocalPort());
+						if (!tSocket->Send("::1", mSocket->GetLocalPort(), tData, 0))
+							LOG(LOG_ERROR, "Error when sending data through loopback IPv6-UDP socket");
+						break;
+					default:
+						LOG(LOG_ERROR, "Unknown network type");
+						break;
+				}
+				delete tSocket;
+            }else
+            	LOG(LOG_WARN, "Got invalid socket for loopback signaling");
         }
     }
+    LOG(LOG_VERBOSE, "Canceled");
 }
 
 Name* SocketConnection::getName()

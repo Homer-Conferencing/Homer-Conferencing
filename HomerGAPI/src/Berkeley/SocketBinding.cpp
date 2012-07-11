@@ -131,7 +131,9 @@ SocketBinding::SocketBinding(std::string pLocalName, Requirements *pRequirements
 
 SocketBinding::~SocketBinding()
 {
+	LOG(LOG_VERBOSE, "Destroying GAPI bind object..");
     cancel();
+    LOG(LOG_VERBOSE, "Destroyed");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -179,12 +181,18 @@ void SocketBinding::cancel()
 
         if (mConnection != NULL)
         {
+            LOG(LOG_VERBOSE, "..destroying connection");
             delete mConnection;
             mConnection = NULL;
+            LOG(LOG_VERBOSE, "..connection destroyed");
         }else
+        {
+            LOG(LOG_VERBOSE, "..destroying Berkeley socket");
             delete mSocket;
+        }
         mSocket = NULL;
     }
+    LOG(LOG_VERBOSE, "Canceled");
 }
 
 bool SocketBinding::changeRequirements(Requirements *pRequirements)
