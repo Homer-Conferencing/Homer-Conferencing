@@ -714,6 +714,14 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
     // prevent the system from further incoming events
     MEETING.Stop();
 
+    //HINT: delete MediaSourcesControlWidget before local participant widget to avoid crashes caused by race conditions (control widget has a timer which calls local participant widget's video widget!)
+    delete mMediaSourcesControlWidget;
+
+    //HINT: delete before local participant widget is destroyed
+    delete mOverviewPlaylistWidgetVideo;
+    delete mOverviewPlaylistWidgetAudio;
+    delete mOverviewPlaylistWidgetMovie;
+
     // should be the last because video/audio workers could otherwise be deleted while they are still called
     if (mLocalUserParticipantWidget != NULL)
         delete mLocalUserParticipantWidget;
@@ -744,10 +752,6 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
     delete mOverviewContactsWidget;
     delete mOverviewErrorsWidget;
     delete mOverviewFileTransfersWidget;
-    delete mOverviewPlaylistWidgetVideo;
-    delete mOverviewPlaylistWidgetAudio;
-    delete mOverviewPlaylistWidgetMovie;
-    delete mMediaSourcesControlWidget;
     delete mOnlineStatusWidget;
     delete mSysTrayIcon;
 
