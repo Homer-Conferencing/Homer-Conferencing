@@ -26,21 +26,6 @@
  */
 
 #include <Configuration.h>
-//#include <MainWindow.h>
-//#include <Dialogs/IdentityDialog.h>
-//#include <Dialogs/ConfigurationDialog.h>
-//#include <Dialogs/UpdateCheckDialog.h>
-//#include <Dialogs/OpenVideoAudioPreviewDialog.h>
-//#include <Widgets/StreamingControlWidget.h>
-//#include <Widgets/OverviewContactsWidget.h>
-//#include <Widgets/OverviewDataStreamsWidget.h>
-//#include <Widgets/OverviewErrorsWidget.h>
-//#include <Widgets/OverviewFileTransfersWidget.h>
-//#include <Widgets/OverviewNetworkStreamsWidget.h>
-//#include <Widgets/OverviewThreadsWidget.h>
-//#include <Widgets/ParticipantWidget.h>
-//#include <Widgets/StreamingControlWidget.h>
-//#include <Widgets/VideoWidget.h>
 #include <Logger.h>
 #include <Meeting.h>
 
@@ -49,6 +34,7 @@
 #include <QHostInfo>
 #include <QDir>
 #include <QDesktopWidget>
+#include <QApplication>
 
 namespace Homer { namespace Gui {
 

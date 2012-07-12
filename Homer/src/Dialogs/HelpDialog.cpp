@@ -31,6 +31,7 @@
 #include <Logger.h>
 #include <HBSystem.h>
 #include <Snippets.h>
+#include <Header_Ffmpeg.h>
 
 #include <QHttp>
 #include <QUrl>

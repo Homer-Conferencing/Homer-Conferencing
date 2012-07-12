@@ -28,6 +28,7 @@
 #ifndef _CONFIGURATION_
 #define _CONFIGURATION_
 
+#include <HBSocket.h>
 #include <string>
 #include "config.h"
 
@@ -72,7 +73,7 @@ public:
 
     static Configuration& GetInstance();
 
-    void Init(string pAbsBinPath);
+    void Init(std::string pAbsBinPath);
 
     /* general settings */
     QString GetBinaryPath();

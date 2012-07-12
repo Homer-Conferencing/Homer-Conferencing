@@ -42,6 +42,7 @@
 #include <QMenu>
 #include <QContextMenuEvent>
 #include <QItemDelegate>
+#include <QLabel>
 
 #include <string>
 
