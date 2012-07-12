@@ -39,7 +39,7 @@
 
 #include <string>
 #include <list>
-#ifdef (BSD)
+#ifdef BSD
 #include <HomerGLimits.h>
 #else
 #include <limits.h>

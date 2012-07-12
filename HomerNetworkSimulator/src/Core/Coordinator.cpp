@@ -32,7 +32,7 @@
 
 #include <string>
 
-#ifdef (BSD)
+#ifdef BSD
 #include <HomerGLimits.h>
 #endif
 
