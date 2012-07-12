@@ -46,11 +46,14 @@
 #include <RequirementLimitDelay.h>
 #include <RequirementLimitDataRate.h>
 
-#define FIRST_CALL_REQUIRMENT    0
-#define RECALL_REQUIRMENT        1
+
+#include <NGNFroggerMSG.h>
+
+#define FIRST_CALL_REQUIRMENT    true
+#define RECALL_REQUIRMENT        false
 
 #define NOT_A_VALID_CLASS       -1
-
+#define NOT_A_VALID_TARGET      -2
 
 namespace Homer { namespace Base {    
 ///////////////////////////////////////////////////////////////////////////////
@@ -61,62 +64,112 @@ class NGNParseNetworkRequirment
 {
 public:
    
-    static int parse(NGNSocketBinding* tmp, int kind=FIRST_CALL_REQUIRMENT){
+    static int parse(NGNSocketBinding* tmp, NGNSocketConnection* target, int kind=FIRST_CALL_REQUIRMENT){
         Requirements *r = (tmp->getRequirements());
-        return parseAndSignal(r,kind);
+        return parseAndSignal(r, target, kind);
     }
-    static int parse(NGNSocketConnection* tmp,int kind=FIRST_CALL_REQUIRMENT){
+    static int parse(NGNSocketConnection* tmp, NGNSocketConnection* target, int kind=FIRST_CALL_REQUIRMENT){
         Requirements *r = (tmp->getRequirements());
-        return parseAndSignal(r,kind);
+        return parseAndSignal(r, target, kind);
     }                        
                               
-    static int parseAndSignal(Requirements* r = NULL,int kind=FIRST_CALL_REQUIRMENT){
+    static int parseAndSignal(Requirements* r = NULL, NGNSocketConnection* target = NULL, bool kind=FIRST_CALL_REQUIRMENT){
        if(r==NULL)
-            return NOT_A_VALID_CLASS;
+           return NOT_A_VALID_CLASS;
+       if(target==NULL)
+           return NOT_A_VALID_TARGET;
         
-        
-        // Parse it like thomas it did
-        bool tResult = false;
-        
-        /* additional transport requirements */
-        if (r->contains(RequirementTransmitBitErrors::type()))
-        {
-            RequirementTransmitBitErrors* tReqBitErr = (RequirementTransmitBitErrors*)r->get(RequirementTransmitBitErrors::type());
-            int tSecuredFrontDataSize = tReqBitErr->getSecuredFrontDataSize();
- //           mSocket->UDPLiteSetCheckLength(tSecuredFrontDataSize);
-        }
-        
-        /* QoS requirements */
-        int tMaxDelay = 0;
-        int tMinDataRate = 0;
-        int tMaxDataRate = 0;
-        // get lossless transmission activation
-        bool tLossless = r->contains(RequirementTransmitLossless::type());
-        // get delay values
-        if(r->contains(RequirementLimitDelay::type()))
-        {
+        // Parse it like Thomas by the List from Thomas
+       /*
+            + RequirementLimitDelay         => DONE
+            + RequirementLimitDataRate      => DONE
+            + RequirementTransmitLossless   => DONE
+            + RequirementTransmitChunks     => DONE ->  requires choice of UDP/UDPLite
+            + RequirementTransmitStream     => DONE ->  requires choice of TCP
+            + RequirementTransmitBitErrors  => DONE ->  requires UDPLite
+
+            Video IP:
+            + RequirementTransmitChunks  <- falls UDP/UDPLite gewählt
+            + RequirementTransmitStream  <- falls TCP gewählt ==> kannst du für diese Demo gnorieren
+            + RequirementTransmitBitErrors  <- falls UDPLite gewählt ==> kannst du für diese Demo gnorieren, da das ein Widerspruch zu "lossless" ist
+
+
+
+            Folgende Requirements übermittelt dann der Filetransfer:
+            File NGN:
+            + RequirementTransmitChunks
+            + RequirementTransmitLossless
+        */
+       //######################
+       // RequirementLimitDelay
+       if(r->contains(RequirementLimitDelay::type()))
+       {
+
+            const int v_cnt = 1;
+            const int tMaxDelay = 0;
+            const int len = FOG_COMON_HEADER + v_cnt;
+            char buf[len];
+            int values[v_cnt];
             RequirementLimitDelay* tReqDelay = (RequirementLimitDelay*)r->get(RequirementLimitDelay::type());
-            tMaxDelay = tReqDelay->getMaxDelay();
-        }
-        // get data rate values
-        if(r->contains(RequirementLimitDataRate::type()))
-        {
+            values[tMaxDelay] = tReqDelay->getMaxDelay();
+            NGNFroggerMSG::setupRequirment(buf,len,target->mStream,NGNFroggerMSG::CV_LIMIT_DELAY,values,v_cnt,kind);
+       }
+
+       //######################
+       // RequirementLimitDataRate
+       if(r->contains(RequirementLimitDataRate::type()))
+       {
+            const int v_cnt = 2;
+            const int len = FOG_COMON_HEADER + v_cnt;
+            char buf[len];
+            const int tMinDataRate_cnt = 0;
+            const int tMaxDataRate_cnt = 1;
+            int values[v_cnt];
             RequirementLimitDataRate* tReqDataRate = (RequirementLimitDataRate*)r->get(RequirementLimitDataRate::type());
-            tMinDataRate = tReqDataRate->getMinDataRate();
-            tMaxDataRate = tReqDataRate->getMaxDataRate();
-        }
-        
-        if((tLossless) || (tMaxDelay) || (tMinDataRate))
-        {
-            QoSSettings tQoSSettings;
-            tQoSSettings.DataRate = tMinDataRate;
-            tQoSSettings.Delay = tMaxDelay;
-            tQoSSettings.Features = (tLossless ? QOS_FEATURE_LOSSLESS : 0);
-//            tResult = mSocket->SetQoS(tQoSSettings);
-        }
-        
-//        mRequirements = *pRequirements; //TODO: maybe some requirements were dropped?
-        return 0;
+            values[tMinDataRate_cnt] = tReqDataRate->getMinDataRate();
+            values[tMaxDataRate_cnt] = tReqDataRate->getMaxDataRate();
+            NGNFroggerMSG::setupRequirment(buf,len,target->mStream,NGNFroggerMSG::CV_LIMIT_DATA_RATE,values,v_cnt,kind);
+       }
+       //######################
+       // RequirementTransmitLossless
+       if(r->contains(RequirementTransmitLossless::type())){
+           const int v_cnt = 0;
+           const int len = FOG_COMON_HEADER + v_cnt;
+           char buf[len];
+           int values[v_cnt];
+           NGNFroggerMSG::setupRequirment(buf,len,target->mStream,NGNFroggerMSG::CV_TRANSMIT_LOSSLESS,values,v_cnt,kind);
+
+       }
+       //######################
+       // RequirementTransmitChunks
+       if(r->contains(RequirementTransmitChunks::type())){
+           const int v_cnt = 0;
+           const int len = FOG_COMON_HEADER + v_cnt;
+           int buf[len];
+       }
+       // RequirementTransmitStream
+       //######################
+       if(r->contains(RequirementTransmitStream::type())){
+           const int v_cnt = 0;
+           const int len = FOG_COMON_HEADER + v_cnt;
+           char buf[len];
+           int values[v_cnt];
+           NGNFroggerMSG::setupRequirment(buf,len,target->mStream,NGNFroggerMSG::CV_TRANSMIT_STREAM,values,v_cnt,kind);
+
+       }
+       //######################
+       // RequirementTransmitBitErrors
+       if(r->contains(RequirementTransmitBitErrors::type())){
+           const int v_cnt = 1;
+           const int len = FOG_COMON_HEADER + v_cnt;
+           char buf[len];
+           const int tSecuredFrontDataSize_cnt = 0;
+           int values[v_cnt];
+           RequirementTransmitBitErrors* tReqBitErr = (RequirementTransmitBitErrors*)r->get(RequirementTransmitBitErrors::type());
+           values[tSecuredFrontDataSize_cnt] = tReqBitErr->getSecuredFrontDataSize();
+           NGNFroggerMSG::setupRequirment(buf,len,target->mStream,NGNFroggerMSG::CV_TRANSMIT_BIT_ERRORS,values,v_cnt,kind);
+       }
+       return 0;
 
     };
 };

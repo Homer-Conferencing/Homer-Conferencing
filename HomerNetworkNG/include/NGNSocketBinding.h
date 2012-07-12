@@ -72,7 +72,7 @@ public:
     virtual Events getEvents();
 
 private:
-    int mSocket;	// Socket Descriptor for initialisation
+    int mSocket;	// Socket Descriptor for initialization
     bool    mIsClosed;
     union sock_union{
 		struct sockaddr     sa;

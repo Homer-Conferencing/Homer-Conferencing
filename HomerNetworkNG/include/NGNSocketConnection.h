@@ -77,6 +77,9 @@ public:
     virtual Requirements* getRequirements();
     virtual Events getEvents();
     
+    // Static Class Counter
+    // TODO Possible overrun, but I expect not more than 65000 transmissions
+    static int mStream;
    
 private:
     bool    mIsClosed;
@@ -98,8 +101,13 @@ private:
     bool mUnordered;
     bool mIpv4only;
     bool mIpv6only;
-    static int mStream;
-    // sendControlMessage();
+
+
+
+    // helper function to write in different streams.
+    // TODO currently every new socket send over a new stream.
+    void writeToStream(char* pBuffer, int pBufferSize,int iStream);
+    void printFroggerMSG(const char* buf, int len);
 
 #ifdef SCTP_REMOTE_UDP_ENCAPS_PORT
     struct sctp_udpencaps mEncaps;

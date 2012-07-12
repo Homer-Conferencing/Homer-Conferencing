@@ -34,6 +34,9 @@
 #include <Logger.h>
 #include <string>
 #include <NGNParseNetworkRequirment.h>
+
+#define SCTP_SIGNALING_STREAM 0
+
 namespace Homer {  namespace Base {
 
 using namespace std;
@@ -224,6 +227,8 @@ int NGNSocketConnection::availableBytes()
 void NGNSocketConnection::read(char* pBuffer, int &pBufferSize)
 {
     int fd = mSocket;
+    struct sctp_sndrcvinfo sri;
+    bool bSignal = true;
     if(mSocket > 0)
     {
         if(mClient == SERVER)
@@ -241,10 +246,73 @@ void NGNSocketConnection::read(char* pBuffer, int &pBufferSize)
     
         socklen_t len = (socklen_t)0;;
         int flags = 0;
-        pBufferSize = sctp_recvmsg(fd, (void*)pBuffer, pBufferSize, NULL, &len, NULL, &flags);
+        while(bSignal){
+            pBufferSize = sctp_recvmsg(fd, (void*)pBuffer, pBufferSize, NULL, &len, &sri, &flags);
+            switch(sri.sinfo_stream){
+                case SCTP_SIGNALING_STREAM:
+                    printFroggerMSG(pBuffer,pBufferSize);
+                    LOG(LOG_VERBOSE, "Ignore Signal...wait for Data");
+                    break;
+                default:
+                    bSignal = false;
+                    break;
+            }
+        }
+
     }else
         LOG(LOG_ERROR, "Invalid socket");
 }
+
+void NGNSocketConnection::printFroggerMSG(const char* buf, int len){
+       if(len > 3){
+           T_FROGGER_MSG* msg = (T_FROGGER_MSG*) buf;
+           switch(msg->msg_type){
+           case NGNFroggerMSG::RQ_NEW:
+               LOG(LOG_VERBOSE,"New Requirement: Signal %i",msg->msg_type);
+               break;
+           case NGNFroggerMSG::RQ_RENEW:
+               LOG(LOG_VERBOSE,"Reset Requirement: Signal %i",msg->msg_type);
+               LOG(LOG_VERBOSE,"Set Req. for Stream:      %i",msg->stream);
+               break;
+           default:
+               LOG(LOG_ERROR, "Type Not Supported");
+               break;
+           }
+           LOG(LOG_VERBOSE,"Get Event:                   %i",msg->event);
+           switch(msg->event){
+           case NGNFroggerMSG::CV_RELIABLE  :
+               LOG(LOG_VERBOSE,"CV_RELIABLE");
+               break;
+           case NGNFroggerMSG::CV_LIMIT_DELAY :
+               LOG(LOG_VERBOSE,"CV_LIMIT_DELAY");
+               break;
+           case NGNFroggerMSG::CV_LIMIT_DATA_RATE :
+               LOG(LOG_VERBOSE,"SCV_LIMIT_DELAY");
+               break;
+           case NGNFroggerMSG::CV_TRANSMIT_LOSSLESS :
+               LOG(LOG_VERBOSE,"CV_LIMIT_DELAY");
+               break;
+           case NGNFroggerMSG::CV_TRANSMIT_CHUNKS :
+               LOG(LOG_VERBOSE,"CV_LIMIT_DELAY");
+               break;
+           case NGNFroggerMSG::CV_TRANSMIT_STREAM:
+               LOG(LOG_VERBOSE,"CV_LIMIT_DELAY");
+               break;
+           case NGNFroggerMSG::CV_TRANSMIT_BIT_ERRORS :
+               LOG(LOG_VERBOSE,"CV_TRANSMIT_BIT_ERRORS");
+               break;
+           default:
+               break;
+           }
+           LOG(LOG_VERBOSE,"The message have attributes  %i",msg->value_cnt);
+           for(int j =0; j< msg->value_cnt;){
+               int value = msg->values[j];
+               LOG(LOG_VERBOSE,"Value %i = %i",++j,value);
+           }
+       }
+       else
+           LOG(LOG_ERROR, "Not a valid signal message");
+   }
 
 void NGNSocketConnection::write(char* pBuffer, int pBufferSize)
 {
@@ -262,15 +330,33 @@ void NGNSocketConnection::write(char* pBuffer, int pBufferSize)
             }
             LOG(LOG_VERBOSE, "Finished Accept");
         }
-        if(mClient > SERVER)
-            fd = mClient;
-        if (sctp_sendmsg(fd, (void*)pBuffer, pBufferSize, NULL, 0, 0, 0, 0, 0, 0) < 0)
-        {
-            //TODO: handling of mIsClosed = true;
-            LOG(LOG_ERROR, "sctp_sendmsg %i", errno);
+        else{
+            writeToStream(pBuffer,pBufferSize,mStream);
         }
+
     }else
         LOG(LOG_ERROR, "Invalid socket");
+}
+
+void NGNSocketConnection::writeToStream(char* pBuffer, int pBufferSize,int iStream){
+    struct sctp_sndrcvinfo sinfo;
+    int fd = mSocket;
+    // Prepare stream transfer
+    // TODO Currently the signalling will be sind over 0
+
+    if(SCTP_SIGNALING_STREAM == iStream){
+        LOG(LOG_VERBOSE, "We send signal information");
+    }
+    if(mClient > SERVER)
+              int fd = mClient;
+    else
+        LOG(LOG_ERROR, "Invalid socket %i", mClient);
+
+    if (sctp_sendmsg(fd, (void*)pBuffer, pBufferSize, NULL, 0, 0, 0, iStream, 0, 0) < 0)
+    {
+       //TODO: handling of mIsClosed = true;
+       LOG(LOG_ERROR, "sctp_sendmsg %i", errno);
+    }
 }
 
 bool NGNSocketConnection::getBlocking()
@@ -353,16 +439,9 @@ Name* NGNSocketConnection::getRemoteName()
 bool NGNSocketConnection::changeRequirements(Requirements *pRequirements)
 {
 
-    // TODO SCTP specific requirments
-    // possible:
-    // - out of order
-    // - notification
-    // - partial reliable 
-    // - mobility
-    // - multihoming
-    // - etc...
-    
+
     mRequirements = pRequirements; //TODO: maybe some requirements were dropped?
+    NGNParseNetworkRequirment::parse(this,this);
 
     return true;
 }

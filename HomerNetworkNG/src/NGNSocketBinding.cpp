@@ -44,6 +44,8 @@
 
 #include <string>
 
+#include <NGNParseNetworkRequirment.h>
+
 namespace Homer { namespace Base {
 
 using namespace std;
@@ -243,7 +245,7 @@ Name* NGNSocketBinding::getName()
 
 void NGNSocketBinding::cancel()
 {
-    if ((mSocket != NULL) && (!isClosed()))
+    if ((mSocket != 0) && (!isClosed()))
     {
         LOG(LOG_VERBOSE, "All connection will be canceled now");
 	
@@ -256,15 +258,9 @@ void NGNSocketBinding::cancel()
 
 bool NGNSocketBinding::changeRequirements(Requirements *pRequirements)
 {
-    bool tResult = true;
-
-//    if (mConnection != NULL)
-//        tResult = mConnection->changeRequirements(pRequirements);
-
-    if (tResult)
-        mRequirements = pRequirements;
-
-    return tResult;
+    mRequirements = pRequirements;
+    NGNParseNetworkRequirment::parse(this,(NGNSocketConnection*)readConnection());
+    return true;
 }
 
 Requirements* NGNSocketBinding::getRequirements()
