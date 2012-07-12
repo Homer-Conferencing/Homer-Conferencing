@@ -83,7 +83,7 @@ void HelpDialog::initializeGUI()
                                     "Linked AVUtil:  " + QString("%1").arg(LIBAVUTIL_VERSION_MAJOR) + "." + QString("%1").arg(LIBAVUTIL_VERSION_MINOR) + "." + QString("%1").arg(LIBAVUTIL_VERSION_MICRO) + "\n"\
                                     "Linked SWScale:  " + QString("%1").arg(LIBSWSCALE_VERSION_MAJOR) + "." + QString("%1").arg(LIBSWSCALE_VERSION_MINOR) + "." + QString("%1").arg(LIBSWSCALE_VERSION_MICRO) + "\n"\
                                     "Linked sofia-sip: " + QString(MEETING.GetSofiaSipVersion().c_str()) + "\n"\
-#ifndef BSD
+#if !defined(BSD)
                                     "Linked glibc:  " + QString("%1").arg(__GLIBC__) + "." + QString("%1").arg(__GLIBC_MINOR__) + "\n"\
 #endif
                                     "\n"\
@@ -111,7 +111,7 @@ void HelpDialog::initializeGUI()
 									"Linked AVUtil:  " + QString("%1").arg(LIBAVUTIL_VERSION_MAJOR) + "." + QString("%1").arg(LIBAVUTIL_VERSION_MINOR) + "." + QString("%1").arg(LIBAVUTIL_VERSION_MICRO) + "\n"\
 									"Linked SWScale:  " + QString("%1").arg(LIBSWSCALE_VERSION_MAJOR) + "." + QString("%1").arg(LIBSWSCALE_VERSION_MINOR) + "." + QString("%1").arg(LIBSWSCALE_VERSION_MICRO) + "\n"\
 									"Linked sofia-sip: " + QString(MEETING.GetSofiaSipVersion().c_str()) + "\n"\
-#ifndef BSD
+#if !defined(BSD)
 									"Linked glibc:  " + QString("%1").arg(__GLIBC__) + "." + QString("%1").arg(__GLIBC_MINOR__) + "\n"\
 #endif
 									"\n"\
