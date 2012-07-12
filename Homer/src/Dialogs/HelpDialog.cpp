@@ -83,7 +83,9 @@ void HelpDialog::initializeGUI()
                                     "Linked AVUtil:  " + QString("%1").arg(LIBAVUTIL_VERSION_MAJOR) + "." + QString("%1").arg(LIBAVUTIL_VERSION_MINOR) + "." + QString("%1").arg(LIBAVUTIL_VERSION_MICRO) + "\n"\
                                     "Linked SWScale:  " + QString("%1").arg(LIBSWSCALE_VERSION_MAJOR) + "." + QString("%1").arg(LIBSWSCALE_VERSION_MINOR) + "." + QString("%1").arg(LIBSWSCALE_VERSION_MICRO) + "\n"\
                                     "Linked sofia-sip: " + QString(MEETING.GetSofiaSipVersion().c_str()) + "\n"\
+#ifndef BSD
                                     "Linked glibc:  " + QString("%1").arg(__GLIBC__) + "." + QString("%1").arg(__GLIBC_MINOR__) + "\n"\
+#endif
                                     "\n"\
                                     "QoS supported: " + (Socket::IsQoSSupported() ? "yes" : "no") + "\n"\
                                     "IPv6 supported: " + (Socket::IsIPv6Supported() ? "yes" : "no") + "\n"\
