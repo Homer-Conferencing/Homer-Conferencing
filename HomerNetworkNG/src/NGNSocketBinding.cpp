@@ -243,7 +243,7 @@ Name* NGNSocketBinding::getName()
 
 void NGNSocketBinding::cancel()
 {
-    if ((mSocket != NULL) && (!isClosed()))
+    if ((mSocket != 0) && (!isClosed()))
     {
         LOG(LOG_VERBOSE, "All connection will be canceled now");
 	

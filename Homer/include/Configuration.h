@@ -28,12 +28,13 @@
 #ifndef _CONFIGURATION_
 #define _CONFIGURATION_
 
-#include <string>
+#include <HBSocket.h>
+#include <string.h>
 #include "config.h"
 
 #include <QSettings>
 
-#include <Widgets/OverviewNetworkSimulationWidget.h>
+//#include <Widgets/OverviewNetworkSimulationWidget.h>
 
 namespace Homer { namespace Gui {
 
@@ -72,7 +73,7 @@ public:
 
     static Configuration& GetInstance();
 
-    void Init(string pAbsBinPath);
+    void Init(std::string pAbsBinPath);
 
     /* general settings */
     QString GetBinaryPath();

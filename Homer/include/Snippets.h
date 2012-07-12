@@ -37,6 +37,8 @@
 
 namespace Homer { namespace Gui {
 
+using namespace Homer::Base;
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #define ShowMessage(pTitle, pMessage) DoShowMessage(GetObjectNameStr(this).c_str(), __LINE__, this, pTitle, pMessage)

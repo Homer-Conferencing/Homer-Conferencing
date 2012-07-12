@@ -55,7 +55,7 @@
 #include <MediaSourceMuxer.h>
 #include <MediaSourceFile.h>
 #include <MediaSourceDesktop.h>
-#include <NetworkSimulator.h>
+//#include <NetworkSimulator.h>
 #include <ProcessStatisticService.h>
 #include <Snippets.h>
 
@@ -94,7 +94,7 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     SVC_PROCESS_STATISTIC.AssignThreadName("Qt-MainLoop");
     mAbsBinPath = pAbsBinPath;
     mSourceDesktop = NULL;
-    mNetworkSimulator = NULL;
+//    mNetworkSimulator = NULL;
 
     QCoreApplication::setApplicationName("Homer");
     QCoreApplication::setApplicationVersion(HOMER_VERSION);
@@ -135,7 +135,7 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     // init screen capturing
     initializeScreenCapturing();
     // init network simulator
-    initializeNetworkSimulator(tArguments);
+//    initializeNetworkSimulator(tArguments);
     // delayed call to register at Stun and Sip server
     QTimer::singleShot(2000, this, SLOT(registerAtStunSipServer()));
 }
@@ -207,21 +207,21 @@ void MainWindow::initializeScreenCapturing()
     mScreenShotTimer->start(3000);
 }
 
-void MainWindow::initializeNetworkSimulator(QStringList pArguments, bool pForce)
-{
-    if (mNetworkSimulator != NULL)
-        return;
-
-    if (pArguments.contains("-Enable=NetSim"))
-        pForce = true;
-
-    if (pForce)
-    {
-        mNetworkSimulator = new NetworkSimulator();
-        if (!mNetworkSimulator->Init(mMenuWindows, this))
-            LOG(LOG_ERROR, "Failed to initialize network simulator");
-    }
-}
+//void MainWindow::initializeNetworkSimulator(QStringList pArguments, bool pForce)
+//{
+//    if (mNetworkSimulator != NULL)
+//        return;
+//
+//    if (pArguments.contains("-Enable=NetSim"))
+//        pForce = true;
+//
+//    if (pForce)
+//    {
+//        mNetworkSimulator = new NetworkSimulator();
+//        if (!mNetworkSimulator->Init(mMenuWindows, this))
+//            LOG(LOG_ERROR, "Failed to initialize network simulator");
+//    }
+//}
 
 void MainWindow::initializeFeatureDisablers(QStringList pArguments)
 {
@@ -753,8 +753,8 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
     MEETING.Deinit();
 
     LOG(LOG_VERBOSE, "..destroying simulator widget");
-    if (mNetworkSimulator != NULL)
-        delete mNetworkSimulator;
+//    if (mNetworkSimulator != NULL)
+//        delete mNetworkSimulator;
 
     LOG(LOG_VERBOSE, "..destroying shortcuts");
     delete mShortcutActivateDebugWidgets;
@@ -1600,7 +1600,7 @@ void MainWindow::actionMuteOthers()
 
 void MainWindow::actionActivateNetworkSimulationWidgets()
 {
-    initializeNetworkSimulator(QStringList(), true);
+//    initializeNetworkSimulator(QStringList(), true);
 }
 
 void MainWindow::actionActivateDebuggingWidgets()
