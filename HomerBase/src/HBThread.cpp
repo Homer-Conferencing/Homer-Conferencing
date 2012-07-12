@@ -103,9 +103,7 @@ int Thread::GetTId()
 		return (int)tThreadIdentInfo->thread_id;
     #endif
     #if defined(BSD)
-		long tLwpid;
-		thr_self(&tLwpid);
-		return (int)tLwpid;
+		return (int)pthread_self();
     #endif
 	#ifdef WIN32
 		return (int)GetCurrentThreadId();
