@@ -69,7 +69,7 @@ void HelpDialog::initializeGUI()
     connect(mHttpGetHelpUrl, SIGNAL(done(bool)), this, SLOT(GotAnswerForHelpRequest(bool)));
     mHttpGetHelpUrl->setHost(RELEASE_SERVER);
     mHttpGetHelpUrl->get(PATH_HELP_TXT);
-#ifdef LINUX
+    #ifdef LINUX
         QString tCurArch = (System::GetMachineType() == "x86") ? "linux32" : "linux64";
         mSystemData->setText(       "Operating System:  Linux\n"\
                                     "Kernel:  " + QString(System::GetLinuxKernelVersion().c_str()) + "\n"\
@@ -94,11 +94,10 @@ void HelpDialog::initializeGUI()
                                     "SCTP supported: " + (Socket::IsTransportSupported(SOCKET_SCTP) ? "yes" : "no") + "\n"\
                                     );
 
-#endif
-// TODO TV The output is not valid for Freebsd
-#if (not defined BSD) && (not defined APPLE)
+    #endif
+    #if (not defined BSD) && (not defined APPLE)
 		QString tCurArch = (System::GetMachineType() == "x86") ? "bsd32" : "bsd64";
-		mSystemData->setText(       "Operating System:  Linux\n"\
+		mSystemData->setText(       "Operating System:  BSD\n"\
 									"Kernel:  " + "??" + "\n"\
 									"Library Qt:  " + QString(qVersion()) + "\n"\
 									"\n"\
@@ -112,7 +111,6 @@ void HelpDialog::initializeGUI()
 									"Linked AVUtil:  " + QString("%1").arg(LIBAVUTIL_VERSION_MAJOR) + "." + QString("%1").arg(LIBAVUTIL_VERSION_MINOR) + "." + QString("%1").arg(LIBAVUTIL_VERSION_MICRO) + "\n"\
 									"Linked SWScale:  " + QString("%1").arg(LIBSWSCALE_VERSION_MAJOR) + "." + QString("%1").arg(LIBSWSCALE_VERSION_MINOR) + "." + QString("%1").arg(LIBSWSCALE_VERSION_MICRO) + "\n"\
 									"Linked sofia-sip: " + QString(MEETING.GetSofiaSipVersion().c_str()) + "\n"\
-//									"Linked glibc:  " + QString("%1").arg(__GLIBC__) + "." + QString("%1").arg(__GLIBC_MINOR__) + "\n"\
 									"\n"\
 									"QoS supported: " + (Socket::IsQoSSupported() ? "yes" : "no") + "\n"\
 									"IPv6 supported: " + (Socket::IsIPv6Supported() ? "yes" : "no") + "\n"\
@@ -121,8 +119,8 @@ void HelpDialog::initializeGUI()
 									"SCTP supported: " + (Socket::IsTransportSupported(SOCKET_SCTP) ? "yes" : "no") + "\n"\
 									);
 
-#endif
-#ifdef APPLE
+    #endif
+    #ifdef APPLE
         QString tOsxVer = "";
         int tOsxMajor = 0, tOsxMinor = 0;
 

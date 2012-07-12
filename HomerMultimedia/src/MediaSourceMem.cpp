@@ -527,7 +527,8 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 
     mMediaType = MEDIA_VIDEO;
     MarkOpenGrabDeviceSuccessful();
-    mFrameWidthLastGrabbedFrame = 0;
+    mResXLastGrabbedFrame = 0;
+    mResYLastGrabbedFrame = 0;
 
     return true;
 }
@@ -827,12 +828,10 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
 //                            LOG(LOG_VERBOSE, "Video frame coded: %d internal frame number: %d", tSourceFrame->coded_picture_number, mChunkNumber);
 //                        #endif
 
-                        // hint: 32 bytes additional data per line within ffmpeg
-                        int tCurrentFrameResX = (tSourceFrame->linesize[0] - 32);
-                        if (mFrameWidthLastGrabbedFrame != tCurrentFrameResX)
+                        if ((mResXLastGrabbedFrame != mCodecContext->width) || (mResYLastGrabbedFrame != mCodecContext->height))
                         {
 							// check if video resolution has changed within remote GUI
-							if ((tCurrentFrameResX != -32) && (mSourceResX != tCurrentFrameResX))
+							if ((mSourceResX != mCodecContext->width) || (mSourceResY != mCodecContext->height))
 							{
 								LOG(LOG_INFO, "Video resolution change at remote side detected");
 
@@ -849,7 +848,8 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                                 LOG(LOG_INFO, "Video resolution changed to %d * %d", mCodecContext->width, mCodecContext->height);
 							}
 
-							mFrameWidthLastGrabbedFrame = tCurrentFrameResX;
+							mResXLastGrabbedFrame = mCodecContext->width;
+                            mResYLastGrabbedFrame = mCodecContext->height;
                         }
                     }
 

@@ -16,12 +16,14 @@ set(HOMER_VERSION "${HOMER_VERSION_MAJOR}.${HOMER_VERSION_MINOR}.${HOMER_VERSION
 
 ##############################################################
 # detect FreeBSD
+IF (DEFINED INSIDE_HOMER_BUILD)
 IF (${CMAKE_SYSTEM} MATCHES "FreeBSD.*")
 	SET (BSD "true")
 	MESSAGE("Detected system is FreeBSD")
 ELSE()
 	SET (BSD "false")
 	MESSAGE("Detected system is ${CMAKE_SYSTEM}") 
+ENDIF()
 ENDIF()
 
 ##############################################################
@@ -52,6 +54,7 @@ endif(APPLE)
 
 ##############################################################
 # architecture
+IF (DEFINED INSIDE_HOMER_BUILD)
 IF (NOT DEFINED ARCH_BITS)
 	IF ("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
 		set(ARCH_BITS "64")
@@ -65,6 +68,7 @@ IF (NOT DEFINED ARCH_BITS)
 ELSE()
 	MESSAGE("Architecture was explicitly defined as ${ARCH_BITS} bit")
 ENDIF (NOT DEFINED ARCH_BITS)
+ENDIF()
 
 ##############################################################
 SET (PRE_DEFINITIONS_EXECUTED "true")
