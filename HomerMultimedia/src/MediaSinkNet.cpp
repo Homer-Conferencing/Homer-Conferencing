@@ -437,7 +437,7 @@ void MediaSinkNet::DoSendFragment(char* pData, unsigned int pSize)
 			mGAPIDataSocket->write(pData, (int)pSize);
 			if (mGAPIDataSocket->isClosed())
 			{
-				LOG(LOG_ERROR, "Error when sending data through GAPI subscription to %s:%u, will skip further transmissions", mTargetHost.c_str(), mTargetPort);
+				LOG(LOG_ERROR, "Error when sending data through GAPI connection to %s:%u, will skip further transmissions", mTargetHost.c_str(), mTargetPort);
 				mBrokenPipe = true;
 			}
 		}
