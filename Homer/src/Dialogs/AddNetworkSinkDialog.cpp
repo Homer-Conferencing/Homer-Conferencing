@@ -43,6 +43,7 @@
 #include <HomerGLimits.h>
 #else
 #include <limits.h>
+#endif
 
 using namespace Homer::Base;
 using namespace Homer::Multimedia;

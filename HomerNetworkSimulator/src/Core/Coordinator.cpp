@@ -32,6 +32,10 @@
 
 #include <string>
 
+#ifdef (BSD)
+#include <HomerGLimits.h>
+#endif
+
 namespace Homer { namespace Base {
 
 using namespace std;
