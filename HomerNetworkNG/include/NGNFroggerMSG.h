@@ -33,26 +33,36 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <Logger.h>
 
 #define NOT_ENOUGH_BUF              -1
 #define STREAM_ID_NOT_VALID         -2
 #define NOT_SUPPORTED_REQUIRMENT    -3
 #define VALUE_NOT_SUPPORTED         -4
 
-
+/*
+ * Format
+ *   -------------------------------------------------------------------------------
+ *  |   Type    |   Stream  |   Event   | Values Count  |  Values 1 | ... | Value n |
+ *
+ *
+ *
+ */
+#define FOG_COMON_HEADER 4   // 4 = 4 x Integer
 
 namespace Homer { namespace Base {
 typedef struct _T_FROGGER_MSG{
     int     msg_type;
     int     stream;
     int     event;
-    int     value;
+    int     value_cnt;
+    int*    values;
 } T_FROGGER_MSG;
    
 typedef int FROGGER_MSG_TYPE;
 typedef int FROGGER_MSG_STREAM;
 typedef int FROGGER_REQUIRMENT;
-typedef int FROGGER_REQUIRMENT_VALUE;
+typedef int FROGGER_REQUIRMENT_VALUES;
     
 ///////////////////////////////////////////////////////////////////////////////
 /**
@@ -62,7 +72,8 @@ class NGNFroggerMSG
 {
 public:
     // Numbering TBD    
-    static const int RQ_TYPE                    = 1;
+    static const int RQ_NEW                     = 1;
+    static const int RQ_RENEW                   = 2;
     // Numbering TBD    
     static const int CV_RELIABLE                = 1;
     static const int CV_LIMIT_DELAY             = 2;
@@ -71,16 +82,15 @@ public:
     static const int CV_TRANSMIT_CHUNKS         = 5;
     static const int CV_TRANSMIT_STREAM         = 6;
     static const int CV_TRANSMIT_BIT_ERRORS     = 7;
-    
-    static int setupRequirment(const char* buf, size_t len, FROGGER_MSG_STREAM aStream, FROGGER_REQUIRMENT aRequirment, FROGGER_REQUIRMENT_VALUE aValue=0){
+
+    static int setupRequirment(const char* buf, size_t len, FROGGER_MSG_STREAM aStream, FROGGER_REQUIRMENT aRequirment, FROGGER_REQUIRMENT_VALUES* aValue, int value_count = 0, bool first= true){
         
-//        if(len < (sizof(T_FROGGER_MSG)))
-//            return NOT_ENOUGH_BUF;
-        // Prepare Requirment MSG
         memset((void*)buf,0,sizeof(T_FROGGER_MSG));
         T_FROGGER_MSG* msg = (T_FROGGER_MSG*) buf;
-        msg->msg_type = RQ_TYPE;
-        
+        if(first)
+            msg->msg_type = RQ_NEW;
+        else
+            msg->msg_type = RQ_RENEW;
         // Proof and set Stream ID
         if(aStream > 16365)
             return STREAM_ID_NOT_VALID;
@@ -106,12 +116,14 @@ public:
            aRequirment==CV_RELIABLE){
             if(aValue != 0)
                 return VALUE_NOT_SUPPORTED;
-            msg->value = 0;
+            msg->value_cnt = 0;
         }
         else{
             if(aValue <= 0)
                 return VALUE_NOT_SUPPORTED;
-            msg->value = aValue;
+            msg->value_cnt = value_count;
+            size_t n = sizeof(int) * value_count;
+            memcpy(msg->values,aValue,n);
         }
         return sizeof(T_FROGGER_MSG);
     }

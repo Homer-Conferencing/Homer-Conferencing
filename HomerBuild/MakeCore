@@ -18,6 +18,7 @@ BUILD_DIR_RELEASE=$(BUILD_DIR)/Release
 BUILD_DIR_DEFAULT=$(BUILD_DIR)/Default
 BUILD_DIR_DEBUG=$(BUILD_DIR)/Debug
 BUILD_OS := $(shell echo "$$OSTYPE")
+LCMAKE=cmake
 
 ##############################################################
 # Option for cmake: define an explicit install directory if the command line provides a INSTALL_PREFIX variable
@@ -69,7 +70,7 @@ $(TOP_DIR)/$(BUILD_DIR_RELEASE32)/Makefile:
 	@rm -rf CMakeFiles
 	@rm -f CMakeCache.txt
 	@mkdir -p $(TOP_DIR)/$(BUILD_DIR_RELEASE32)
-	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE32) && cmake $(CMAKE_OPTIONS) -DBUILD=Release ../.. -DARCH_BITS="32"
+	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE32) && $(LCMAKE) $(CMAKE_OPTIONS) -DBUILD=Release ../.. -DARCH_BITS="32"
 
 $(TOP_DIR)/$(BUILD_DIR_RELEASE)/Makefile:
 	@echo "##### Creating RELEASE build system in $(TOP_DIR) #####"
@@ -83,14 +84,14 @@ $(TOP_DIR)/$(BUILD_DIR_DEFAULT)/Makefile:
 	@rm -rf CMakeFiles
 	@rm -f CMakeCache.txt
 	@mkdir -p $(TOP_DIR)/$(BUILD_DIR_DEFAULT)
-	@cd $(TOP_DIR)/$(BUILD_DIR_DEFAULT) && cmake $(CMAKE_OPTIONS) -DBUILD=Default ../..
+	@cd $(TOP_DIR)/$(BUILD_DIR_DEFAULT) && $(LCMAKE) $(CMAKE_OPTIONS) -DBUILD=Default ../..
 
 $(TOP_DIR)/$(BUILD_DIR_DEBUG)/Makefile:
 	@echo "##### Creating DEBUG build system in $(TOP_DIR) #####"
 	@rm -rf CMakeFiles
 	@rm -f CMakeCache.txt
 	@mkdir -p $(TOP_DIR)/$(BUILD_DIR_DEBUG)
-	@cd $(TOP_DIR)/$(BUILD_DIR_DEBUG) && cmake $(CMAKE_OPTIONS) -DBUILD=Debug ../..
+	@cd $(TOP_DIR)/$(BUILD_DIR_DEBUG) && $(LCMAKE) $(CMAKE_OPTIONS) -DBUILD=Debug ../..
 
 ##############################################################
 # Makefile targets 
