@@ -39,6 +39,9 @@
 
 #include <string>
 #include <list>
+#ifdef (BSD)
+#include <HomerGLimits.h>
+#else
 #include <limits.h>
 
 using namespace Homer::Base;
