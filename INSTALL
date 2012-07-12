@@ -50,13 +50,14 @@ System dependencies:
     - Library "HomerMonitor": no additional dependencies
     - Library "HomerGAPI": no additional dependencies
     - Library "HomerMultimedia": ffmpeg(**), x264
-	only for Linux: ALSA,
-	only for Windows: Winmm, avicap32, ws2_32
+	                            only for Linux: ALSA,
+	                            only for Windows: Winmm, avicap32, ws2_32
     - Library "HomerConference": sofia-sip (1.12), openssl (1.0)
     - Library "HomerSoundOutput": SDL (1.2), SDL_sound (1.0, SDL_mixer (1.2),
-	only for Linux: ALSA,
-	only for Windows: Winmm,
-	only for OS X: AppKit, AudioUnit, CoreFoundation, Carbon, IOKit, OpenGL
+	                            only for Linux: ALSA,
+	                            only for Windows: Winmm,
+	                            only for OS X: AppKit, AudioUnit, CoreFoundation, 
+	                                           Carbon, IOKit, OpenGL
     - Library "Homer" GUI: Qt (4.6)
 
     **) On some systems the library "ffmpeg" is split into separate libraries:
@@ -77,20 +78,6 @@ Removing old build data and restoring default data:
     build run on the disc.
 
 
-Build Homer-Conferencing with debug symbols / as developer:
-===========================================================
-
- Create debug build via:
-
-    > "cd HomerBuild"
-    > "make" (or explicit via "make debug")
-
-    This will create all needed libraries and binaries based on the pre-compiled 
-    files from the Homer-Release packages. All binary files are build with debug 
-    symbols and the output isn't stripped. If you need the Homer-Release package 
-    see https://github.com/Homer-Conferencing/Homer-Release.
-
-
 
 Install libraries and data files to a different directory than the Homer-Conferencing binary:
 =============================================================================================
@@ -102,6 +89,7 @@ Install libraries and data files to a different directory than the Homer-Confere
      
      This will install all libraries to the directory "/foo/bar/lib64" instead of "/foo/bar/lib". 
      Additionally, this will install all data files, e.g. Homer.png, to "/foo/bar/share". 
+
 
 
 Additional information to build Homer-Conferencing on Windows systems:
@@ -120,3 +108,32 @@ Additional information to build Homer-Conferencing on OS X systems:
  Current OS X releases of Homer are built with cmake 2.6 for OS X and Apple's 
  Xcode 3.2.6, which includes both gcc and binutils in current versions.
 
+
+DEVELOPER: build Homer-Conferencing with debug symbols:
+=======================================================
+
+ Create a debug build via:
+
+    > "cd HomerBuild"
+    > "make" (alternatively "make debug")
+
+    This will create all needed libraries and binaries based on the pre-compiled 
+    files from the Homer-Release packages. All binary files are build with debug 
+    symbols and the output isn't stripped. If you need the Homer-Release package 
+    see https://github.com/Homer-Conferencing/Homer-Release.
+
+
+DEVELOPER: debug the build process:
+===================================
+
+ In general, GNU Make supports the parameter "VERBOSE=1". The Homer build system 
+ does supports this parameter, too.
+  
+ Verbose output during build process via:
+
+    > "cd HomerBuild"
+    > "make VERBOSE=1"
+
+ This shows several more verbose outputs and often gives a good hint why the linking
+ fails or which paths are involved during linking process.
+  

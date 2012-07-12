@@ -21,21 +21,28 @@ BUILD_OS := $(shell echo "$$OSTYPE")
 LCMAKE=cmake
 
 ##############################################################
-# Options for cmake: define an explicit install directory if the command line provides a INSTALL_PREFIX variable
+# Option for cmake: define an explicit install directory if the command line provides a INSTALL_PREFIX variable
 ifneq ($(INSTALL_PREFIX),)
 	OPTION_INSTALL_PREFIX = -DCMAKE_INSTALL_PREFIX=$(INSTALL_PREFIX)
 endif
+# Option for cmake: define an explicit library directory if the command line provides a INSTALL_LIBDIR variable
 ifneq ($(INSTALL_LIBDIR),)
 	OPTION_INSTALL_LIBDIR = -DINSTALL_LIBDIR=$(INSTALL_LIBDIR)
 endif
+# Option for cmake: define an explicit data (Homer.png a.s.o.) directory if the command line provides a INSTALL_DATADIR variable
 ifneq ($(INSTALL_DATADIR),)
 	OPTION_INSTALL_DATADIR = -DINSTALL_DATADIR=$(INSTALL_DATADIR)
 endif
+# Option for cmake: activate verbose makefiles if the command line provides a VERBOSE=1 parameter
+ifeq ($(VERBOSE),1)
+	OPTION_VERBOSE = -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+endif
+
 # Options for cmake: set relocation directory, deactivate special warnings, for MSys32/MinGW32 environment Unix makefiles are created by default
 ifeq ($(BUILD_OS),msys)
-	CMAKE_OPTIONS= -DCMAKE_SKIP_RPATH:BOOL=ON -DRELOCATION_DIR=../../../../bin/ -Wno-dev -G "MSYS Makefiles" $(OPTION_INSTALL_PREFIX) ${OPTION_INSTALL_LIBDIR} ${OPTION_INSTALL_DATADIR}
+	CMAKE_OPTIONS= -DCMAKE_SKIP_RPATH:BOOL=ON -DRELOCATION_DIR=../../../../bin/ -Wno-dev -G "MSYS Makefiles" $(OPTION_INSTALL_PREFIX) ${OPTION_INSTALL_LIBDIR} ${OPTION_INSTALL_DATADIR} ${OPTION_VERBOSE}
 else
-	CMAKE_OPTIONS= -DCMAKE_SKIP_RPATH:BOOL=ON -DRELOCATION_DIR=../../../../bin/ -Wno-dev $(OPTION_INSTALL_PREFIX) ${OPTION_INSTALL_LIBDIR} ${OPTION_INSTALL_DATADIR}
+	CMAKE_OPTIONS= -DCMAKE_SKIP_RPATH:BOOL=ON -DRELOCATION_DIR=../../../../bin/ -Wno-dev $(OPTION_INSTALL_PREFIX) ${OPTION_INSTALL_LIBDIR} ${OPTION_INSTALL_DATADIR} ${OPTION_VERBOSE}
 endif
 	
 ##############################################################

@@ -102,7 +102,7 @@ protected:
     enum CodecID        mStreamCodecId;
     char                *mStreamPacketBuffer;
     char                *mFragmentBuffer;
-    int					mFrameWidthLastGrabbedFrame;
+    int					mResXLastGrabbedFrame, mResYLastGrabbedFrame;
     bool                mRtpActivated;
     bool                mOpenInputStream;
     int                 mWrappingHeaderSize;
