@@ -62,6 +62,7 @@ SET (LIBS_WINDOWS
 # USED LIBRARIES for BSD environment
 SET (LIBS_BSD
 	HomerBase
+	sctp
 )
 
 # USED LIBRARIES for linux environment
