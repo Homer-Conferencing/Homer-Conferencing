@@ -49,6 +49,7 @@
 #include <QHostInfo>
 #include <QDir>
 #include <QDesktopWidget>
+#include <QApplication>
 
 namespace Homer { namespace Gui {
 

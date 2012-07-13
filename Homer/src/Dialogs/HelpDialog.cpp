@@ -33,6 +33,7 @@
 #include <Logger.h>
 #include <HBSystem.h>
 #include <Snippets.h>
+#include <Header_Ffmpeg.h>
 
 #include <QHttp>
 #include <QUrl>
@@ -95,7 +96,7 @@ void HelpDialog::initializeGUI()
                                     );
 
     #endif
-    #if (not defined BSD) && (not defined APPLE)
+    #if (defined BSD) && (not defined APPLE)
 		QString tCurArch = (System::GetMachineType() == "x86") ? "bsd32" : "bsd64";
 		mSystemData->setText(       "Operating System:  BSD\n"\
 									"Kernel:  " + "??" + "\n"\
