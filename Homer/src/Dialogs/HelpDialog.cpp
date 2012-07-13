@@ -97,7 +97,7 @@ void HelpDialog::initializeGUI()
 	#if (defined BSD) && (not defined APPLE)
 		QString tCurArch = (System::GetMachineType() == "x86") ? "bsd32" : "bsd64";
 		mSystemData->setText(       "Operating System:  BSD\n"\
-									"Kernel:  " + "??" + "\n"\
+									"Kernel:  ?? \n"\
 									"Library Qt:  " + QString(qVersion()) + "\n"\
 									"\n"\
 									"Number of cpu cores: " + QString("%1").arg(System::GetMachineCores()) + "\n"\
