@@ -90,7 +90,7 @@ SocketBinding::SocketBinding(std::string pLocalName, Requirements *pRequirements
 
     if (tTcp)
     {
-        mSocket = Socket::CreateServerSocket(tIPv6 ? SOCKET_IPv6 : SOCKET_IPv4, SOCKET_TCP, tLocalPort);
+        mSocket = Socket::CreateServerSocket(tIPv6 ? SOCKET_IPv6 : SOCKET_IPv4, SOCKET_TCP, tLocalPort, false, 1);
         tFoundTransport = true;
     }
 
@@ -99,7 +99,7 @@ SocketBinding::SocketBinding(std::string pLocalName, Requirements *pRequirements
     {
         if(!tFoundTransport)
         {
-            mSocket = Socket::CreateServerSocket(tIPv6 ? SOCKET_IPv6 : SOCKET_IPv4, tUdpLite ? SOCKET_UDP_LITE : SOCKET_UDP, tLocalPort);
+            mSocket = Socket::CreateServerSocket(tIPv6 ? SOCKET_IPv6 : SOCKET_IPv4, tUdpLite ? SOCKET_UDP_LITE : SOCKET_UDP, tLocalPort, false, 1);
             tFoundTransport = true;
         }else
         {
