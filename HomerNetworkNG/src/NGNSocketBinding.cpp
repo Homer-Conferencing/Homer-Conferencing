@@ -82,7 +82,6 @@ NGNSocketBinding::NGNSocketBinding(std::string pLocalName, Requirements *pRequir
     if (tRequPort != NULL)
     {
         mPort = tRequPort->getPort();
-
     }else
     {
         LOG(LOG_WARN, "No target port given within requirement set, falling back to port 0");
@@ -264,6 +263,7 @@ void NGNSocketBinding::cancel()
         close (mSocket);
         mSocket = -1;
     }
+
     LOG(LOG_VERBOSE, "Canceled");
     mIsClosed = true;
 }

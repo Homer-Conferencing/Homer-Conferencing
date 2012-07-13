@@ -202,10 +202,7 @@ NGNSocketConnection::NGNSocketConnection(int fd)
 
 NGNSocketConnection::~NGNSocketConnection()
 {
-    if (!isClosed())
-    {
-        cancel();
-    }
+    cancel(); // Just to be sure
     close(mSocket);
     mSocket = -1;
     LOG(LOG_VERBOSE, "Destroyed");
@@ -215,8 +212,10 @@ NGNSocketConnection::~NGNSocketConnection()
 
 bool NGNSocketConnection::isClosed()
 {
-    if ((mSocket < 0) || (mIsClosed))
+    if ((mSocket < 0) || (mIsClosed)){
+        mSocket = -1;
         return true;
+    }
     return false;
 }
 
@@ -604,7 +603,7 @@ void NGNSocketConnection::cancel()
 //            }
 //            delete tSocket;
 //        }
-	
+	// TODO Works only in 1:1 relation (One Server <-> One Client
     if(mClient != SERVER)
     {
         close(mClient);
@@ -618,11 +617,12 @@ void NGNSocketConnection::cancel()
 }
 
 Name* NGNSocketConnection::getName()
-{//TODO: result should be different to the one of getRemoteName() !
+{
     LOG(LOG_VERBOSE, "Get Name");
     if(mSocket > 0)
     {
-        return  new SocketName("Remote Next Generation Network",0);
+        // TODO Perhaps more information are possible
+        return  new SocketName("Local Next Generation Network",0);
     }else
     {
         return NULL;
@@ -631,9 +631,9 @@ Name* NGNSocketConnection::getName()
 
 Name* NGNSocketConnection::getRemoteName()
 {
-//    LOG(LOG_VERBOSE, "Get Remote Name");
     if(mSocket  > 0)
     {
+        // TODO Perhaps more information are possible
         return new SocketName("Remote Next Generation Network",0);
     }else
     {
@@ -643,9 +643,8 @@ Name* NGNSocketConnection::getRemoteName()
 
 bool NGNSocketConnection::changeRequirements(Requirements *pRequirements)
 {
-
-
-    mRequirements = pRequirements; //TODO: maybe some requirements were dropped?
+    mRequirements = pRequirements;
+    //TODO: MBE Future Work, SCTP should react on Requirements
     NGNParseNetworkRequirment::parse(this,this);
 
     return true;
@@ -659,9 +658,6 @@ Requirements* NGNSocketConnection::getRequirements()
 Events NGNSocketConnection::getEvents()
 {
 	Events tResult;
-
-	//TODO:
-
 	return tResult;
 }
 

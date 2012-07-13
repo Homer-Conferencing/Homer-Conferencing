@@ -20,7 +20,7 @@
  *****************************************************************************/
 
 /*
- * Purpose: SocketConnection
+ * Purpose: NGNSocketConnection
  * Author:  Martin Becke
  * Since:   2012-05-30
  */
