@@ -42,10 +42,11 @@ public:
 
     virtual std::string getDescription(){ return "Requ(TargetPort[" + toString(mPort) + "])"; }
 
-    int getPort(){ return mPort; }
+    unsigned int getPort(){ return mPort; }
     void setPort(int pPort){ mPort = pPort; }
+
 private:
-    int     mPort;
+    unsigned int     mPort;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
