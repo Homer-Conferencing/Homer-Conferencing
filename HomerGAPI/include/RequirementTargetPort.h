@@ -43,7 +43,7 @@ public:
     virtual std::string getDescription(){ return "Requ(TargetPort[" + toString(mPort) + "])"; }
 
     int getPort(){ return mPort; }
-    int setPort(int pPort){ mPort = pPort; }
+    void setPort(int pPort){ mPort = pPort; }
 private:
     int     mPort;
 };
