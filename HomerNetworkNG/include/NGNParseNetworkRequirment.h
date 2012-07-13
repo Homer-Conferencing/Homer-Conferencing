@@ -54,6 +54,7 @@
 
 #define NOT_A_VALID_CLASS       -1
 #define NOT_A_VALID_TARGET      -2
+#define TO_BIG_FOR_BUNDLING 1400        // NOTE We have to avoid bundling
 
 namespace Homer { namespace Base {    
 ///////////////////////////////////////////////////////////////////////////////
@@ -79,8 +80,8 @@ public:
        if(target==NULL)
            return NOT_A_VALID_TARGET;
         
-        // Parse it like Thomas by the List from Thomas
-       /*
+
+       /*   Parse it like Thomas by the List from Thomas
             + RequirementLimitDelay         => DONE
             + RequirementLimitDataRate      => DONE
             + RequirementTransmitLossless   => DONE
@@ -100,6 +101,7 @@ public:
             + RequirementTransmitChunks
             + RequirementTransmitLossless
         */
+
        //######################
        // RequirementLimitDelay
        if(r->contains(RequirementLimitDelay::type()))
@@ -107,12 +109,12 @@ public:
 
             const int v_cnt = 1;
             const int tMaxDelay = 0;
-            const int len = FOG_COMON_HEADER + v_cnt;
-            char buf[len];
+            char buf[TO_BIG_FOR_BUNDLING];
             int values[v_cnt];
             RequirementLimitDelay* tReqDelay = (RequirementLimitDelay*)r->get(RequirementLimitDelay::type());
             values[tMaxDelay] = tReqDelay->getMaxDelay();
-            NGNFroggerMSG::setupRequirment(buf,len,target->mStream,NGNFroggerMSG::CV_LIMIT_DELAY,values,v_cnt,kind);
+            NGNFroggerMSG::setupRequirment(&buf[0],TO_BIG_FOR_BUNDLING,target->mStream,NGNFroggerMSG::CV_LIMIT_DELAY,values,v_cnt,kind);
+            target->writeToStream(buf, TO_BIG_FOR_BUNDLING, SCTP_SIGNALING_STREAM);
        }
 
        //######################
@@ -120,54 +122,56 @@ public:
        if(r->contains(RequirementLimitDataRate::type()))
        {
             const int v_cnt = 2;
-            const int len = FOG_COMON_HEADER + v_cnt;
-            char buf[len];
+            char buf[TO_BIG_FOR_BUNDLING];
             const int tMinDataRate_cnt = 0;
             const int tMaxDataRate_cnt = 1;
             int values[v_cnt];
             RequirementLimitDataRate* tReqDataRate = (RequirementLimitDataRate*)r->get(RequirementLimitDataRate::type());
             values[tMinDataRate_cnt] = tReqDataRate->getMinDataRate();
             values[tMaxDataRate_cnt] = tReqDataRate->getMaxDataRate();
-            NGNFroggerMSG::setupRequirment(buf,len,target->mStream,NGNFroggerMSG::CV_LIMIT_DATA_RATE,values,v_cnt,kind);
+            NGNFroggerMSG::setupRequirment(&buf[0],TO_BIG_FOR_BUNDLING,target->mStream,NGNFroggerMSG::CV_LIMIT_DATA_RATE,values,v_cnt,kind);
+            target->writeToStream(buf, TO_BIG_FOR_BUNDLING, SCTP_SIGNALING_STREAM);
        }
        //######################
        // RequirementTransmitLossless
        if(r->contains(RequirementTransmitLossless::type())){
            const int v_cnt = 0;
-           const int len = FOG_COMON_HEADER + v_cnt;
-           char buf[len];
+           char buf[TO_BIG_FOR_BUNDLING];
            int values[v_cnt];
-           NGNFroggerMSG::setupRequirment(buf,len,target->mStream,NGNFroggerMSG::CV_TRANSMIT_LOSSLESS,values,v_cnt,kind);
+           NGNFroggerMSG::setupRequirment(&buf[0],TO_BIG_FOR_BUNDLING,target->mStream,NGNFroggerMSG::CV_TRANSMIT_LOSSLESS,values,v_cnt,kind);
+           target->writeToStream(buf, TO_BIG_FOR_BUNDLING, SCTP_SIGNALING_STREAM);
 
        }
        //######################
        // RequirementTransmitChunks
        if(r->contains(RequirementTransmitChunks::type())){
            const int v_cnt = 0;
-           const int len = FOG_COMON_HEADER + v_cnt;
-           int buf[len];
+           char buf[TO_BIG_FOR_BUNDLING];
+           int values[v_cnt];
+           NGNFroggerMSG::setupRequirment(&buf[0],TO_BIG_FOR_BUNDLING,target->mStream,NGNFroggerMSG::CV_TRANSMIT_CHUNKS,values,v_cnt,kind);
+           target->writeToStream(buf, TO_BIG_FOR_BUNDLING, SCTP_SIGNALING_STREAM);
        }
        // RequirementTransmitStream
        //######################
        if(r->contains(RequirementTransmitStream::type())){
            const int v_cnt = 0;
-           const int len = FOG_COMON_HEADER + v_cnt;
-           char buf[len];
+           char buf[TO_BIG_FOR_BUNDLING];
            int values[v_cnt];
-           NGNFroggerMSG::setupRequirment(buf,len,target->mStream,NGNFroggerMSG::CV_TRANSMIT_STREAM,values,v_cnt,kind);
+           NGNFroggerMSG::setupRequirment(&buf[0],TO_BIG_FOR_BUNDLING,target->mStream,NGNFroggerMSG::CV_TRANSMIT_STREAM,values,v_cnt,kind);
+           target->writeToStream(buf, TO_BIG_FOR_BUNDLING, SCTP_SIGNALING_STREAM);
 
        }
        //######################
        // RequirementTransmitBitErrors
        if(r->contains(RequirementTransmitBitErrors::type())){
            const int v_cnt = 1;
-           const int len = FOG_COMON_HEADER + v_cnt;
-           char buf[len];
+           char buf[TO_BIG_FOR_BUNDLING];
            const int tSecuredFrontDataSize_cnt = 0;
            int values[v_cnt];
            RequirementTransmitBitErrors* tReqBitErr = (RequirementTransmitBitErrors*)r->get(RequirementTransmitBitErrors::type());
            values[tSecuredFrontDataSize_cnt] = tReqBitErr->getSecuredFrontDataSize();
-           NGNFroggerMSG::setupRequirment(buf,len,target->mStream,NGNFroggerMSG::CV_TRANSMIT_BIT_ERRORS,values,v_cnt,kind);
+           NGNFroggerMSG::setupRequirment(&buf[0],TO_BIG_FOR_BUNDLING,target->mStream,NGNFroggerMSG::CV_TRANSMIT_BIT_ERRORS,values,v_cnt,kind);
+           target->writeToStream(buf, TO_BIG_FOR_BUNDLING, SCTP_SIGNALING_STREAM);
        }
        return 0;
 

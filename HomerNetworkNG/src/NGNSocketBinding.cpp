@@ -61,11 +61,14 @@ NGNSocketBinding::NGNSocketBinding(std::string pLocalName, Requirements *pRequir
     // resolution of connection by target and requirements.
     LOG(LOG_VERBOSE, "memset mSock_addr with sizof %i", sizeof(mSock_addr));
     memset((void *) &mSock_addr, 0, sizeof(mSock_addr));
+    struct sctp_event_subscribe event;
+    bzero(&event, sizeof(event));
     mUnordered = false;
     mIpv4only  = true; // For UDP encapsulation only IPv4 is supported
     mIpv6only  = false;
     // helper
     socklen_t addr_len;
+    int on = 1;
 
     
     // parse of the needed requirements
@@ -197,6 +200,15 @@ NGNSocketBinding::NGNSocketBinding(std::string pLocalName, Requirements *pRequir
     ///////////////////////////////////////////////////////////////////////////
     // start a parser tree for SCTP QoS requirements and additional transport requirements for SCTP
 //    changeRequirements(pRequirements);
+#ifdef SCTP_RCVINFO
+    setsockopt(mSocket, IPPROTO_SCTP, SCTP_RECVRCVINFO, &on, sizeof(on));
+#else
+    memset(&event, 0, sizeof(event));
+    event.sctp_data_io_event = 1;
+    if (setsockopt(mSocket, IPPROTO_SCTP, SCTP_EVENTS, &event, sizeof(event)) != 0) {
+        perror("set event failed");
+    }
+#endif
 
     if (bind(mSocket, (struct sockaddr *)&mSock_addr, addr_len) != 0)
         LOG(LOG_ERROR, "bind %i", errno);

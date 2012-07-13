@@ -47,6 +47,7 @@
 
 #include <Requirements.h>
 
+#define SCTP_SIGNALING_STREAM 0
 
 const int SERVER =  0;
 const int CLIENT = -1;
@@ -79,8 +80,10 @@ public:
     
     // Static Class Counter
     // TODO Possible overrun, but I expect not more than 65000 transmissions
-    static int mStream;
-   
+    static int static_stream_cnt;
+    int mStream;
+    void writeToStream(char* pBuffer, int pBufferSize,int iStream);
+
 private:
     bool    mIsClosed;
     int mSocket;	// Socket Descriptor for initialisation
@@ -105,9 +108,8 @@ private:
 
 
     // helper function to write in different streams.
-    // TODO currently every new socket send over a new stream.
-    void writeToStream(char* pBuffer, int pBufferSize,int iStream);
     void printFroggerMSG(const char* buf, int len);
+    void print_notification(void *buf);
 
 #ifdef SCTP_REMOTE_UDP_ENCAPS_PORT
     struct sctp_udpencaps mEncaps;

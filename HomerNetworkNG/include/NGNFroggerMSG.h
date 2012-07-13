@@ -34,6 +34,9 @@
 #include <string.h>
 
 #include <Logger.h>
+#include <assert.h>
+
+
 
 #define NOT_ENOUGH_BUF              -1
 #define STREAM_ID_NOT_VALID         -2
@@ -44,9 +47,10 @@
  * Format
  *   -------------------------------------------------------------------------------
  *  |   Type    |   Stream  |   Event   | Values Count  |  Values 1 | ... | Value n |
- *
- *
- *
+ *   -------------------------------------------------------------------------------
+ *  Note: All 32 Bit Integer see struct T_FROGGER_MSG
+ *  TODO Need we typsafe datatypes?
+ *  TODO Values Not supported yet
  */
 #define FOG_COMON_HEADER 4   // 4 = 4 x Integer
 
@@ -83,7 +87,7 @@ public:
     static const int CV_TRANSMIT_STREAM         = 6;
     static const int CV_TRANSMIT_BIT_ERRORS     = 7;
 
-    static int setupRequirment(const char* buf, size_t len, FROGGER_MSG_STREAM aStream, FROGGER_REQUIRMENT aRequirment, FROGGER_REQUIRMENT_VALUES* aValue, int value_count = 0, bool first= true){
+    static int setupRequirment(char* buf, size_t len, FROGGER_MSG_STREAM aStream, FROGGER_REQUIRMENT aRequirment, FROGGER_REQUIRMENT_VALUES* aValue, int value_count = 0, bool first= true){
         
         memset((void*)buf,0,sizeof(T_FROGGER_MSG));
         T_FROGGER_MSG* msg = (T_FROGGER_MSG*) buf;
@@ -92,40 +96,45 @@ public:
         else
             msg->msg_type = RQ_RENEW;
         // Proof and set Stream ID
-        if(aStream > 16365)
-            return STREAM_ID_NOT_VALID;
+        if(aStream > 65365){
+            assert(false);
+        }
         msg->stream = aStream;
         
-        // Proof and set requirment
-        if(!(aRequirment==CV_RELIABLE ||
-             aRequirment==CV_LIMIT_DELAY ||
-             aRequirment==CV_LIMIT_DATA_RATE ||
-             aRequirment==CV_TRANSMIT_LOSSLESS ||
-             aRequirment==CV_TRANSMIT_CHUNKS ||
-             aRequirment==CV_TRANSMIT_STREAM ||
-             aRequirment==CV_TRANSMIT_BIT_ERRORS
-             ))
-            return NOT_SUPPORTED_REQUIRMENT;
-        msg->event = aRequirment;
-        
-        // Proof and set value of requirment
-        if(aRequirment==CV_TRANSMIT_LOSSLESS ||
-           aRequirment==CV_TRANSMIT_CHUNKS ||
-           aRequirment==CV_TRANSMIT_STREAM ||
-           aRequirment==CV_TRANSMIT_BIT_ERRORS||
-           aRequirment==CV_RELIABLE){
-            if(aValue != 0)
-                return VALUE_NOT_SUPPORTED;
-            msg->value_cnt = 0;
-        }
-        else{
-            if(aValue <= 0)
-                return VALUE_NOT_SUPPORTED;
-            msg->value_cnt = value_count;
-            size_t n = sizeof(int) * value_count;
-            memcpy(msg->values,aValue,n);
-        }
-        return sizeof(T_FROGGER_MSG);
+       switch(aRequirment){
+            case CV_RELIABLE:
+            case CV_LIMIT_DELAY:
+            case CV_LIMIT_DATA_RATE:
+            case CV_TRANSMIT_LOSSLESS:
+            case CV_TRANSMIT_CHUNKS:
+            case CV_TRANSMIT_STREAM:
+            case CV_TRANSMIT_BIT_ERRORS:
+                msg->event = aRequirment;
+                break;
+            default:
+                msg->event = -1;
+                assert(false);
+                break;
+       };
+       switch(aRequirment){
+            case CV_LIMIT_DELAY:
+            case CV_LIMIT_DATA_RATE:
+            case CV_TRANSMIT_BIT_ERRORS:{
+                  msg->value_cnt  = 0;
+// TODO VALUES
+//                msg->value_cnt = value_count;
+//                size_t n = sizeof(int) * value_count;
+//                memcpy(msg->values,aValue,n);
+            }
+                break;
+            default:
+               msg->value_cnt = 0;
+               if(aValue != 0){
+                   msg->value_cnt = -1;
+               }
+               break;
+       };
+       return sizeof(T_FROGGER_MSG);
     }
 };
 
