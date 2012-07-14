@@ -237,6 +237,8 @@ void MainWindow::initializeFeatureDisablers(QStringList pArguments)
                 Socket::DisableIPv6Support();
             if(tFeatureName == "QoS")
                 Socket::DisableQoSSupport();
+            if(tFeatureName == "AudioOutput")
+                CONF.DisableAudioOutput();
         }
     }
 }
