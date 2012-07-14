@@ -929,7 +929,7 @@ void VideoWidget::ShowHourGlass()
     mCurrentFrame = QImage(tWidth, tHeight, QImage::Format_RGB32);
     mCurrentFrame.fill(QColor(Qt::darkGray).rgb());
 
-    QPixmap tPixmap = QPixmap(":/images/Sandglass1.png");
+    QPixmap tPixmap = QPixmap(":/images/Sandglass.png");
     if (!tPixmap.isNull())
     	tPixmap = tPixmap.scaledToHeight(40, Qt::SmoothTransformation);
 
