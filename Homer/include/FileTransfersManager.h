@@ -43,9 +43,9 @@
 // timeouts
 #define FTM_DATA_PACKET_TIMEOUT         200 // ms
 
-#define FTM_OFFSET_SOURCE_ID            ((uint64_t)0x0000000100000000)
-#define FTM_MASK_SOURCE_ID              ((uint64_t)0xFFFFFFFF00000000)
-#define FTM_MASK_SESSION_ID             ((uint64_t)0x00000000FFFFFFFF)
+#define FTM_OFFSET_SOURCE_ID            ((uint64_t)0x0000000100000000LLU)
+#define FTM_MASK_SOURCE_ID              ((uint64_t)0xFFFFFFFF00000000LLU)
+#define FTM_MASK_SESSION_ID             ((uint64_t)0x00000000FFFFFFFFLLU)
 
 namespace Homer { namespace Gui {
 
