@@ -299,7 +299,9 @@ bool FileTransfer::MatchesId(uint64_t pId)
 
 uint64_t FileTransfer::CreateId(uint32_t pSourceId, uint32_t pSessionId)
 {
-    return pSessionId + pSourceId * FTM_OFFSET_SOURCE_ID;
+    double tResult = pSessionId + pSourceId * FTM_OFFSET_SOURCE_ID;
+
+    return (uint64_t)tResult;
 }
 
 uint64_t FileTransfer::GetId()
