@@ -50,6 +50,7 @@ MediaSourceFile::MediaSourceFile(string pSourceFile, bool pGrabInRealTime):
     mResampleContext = NULL;
     mDecoderFifo = NULL;
     mDecoderMetaDataFifo = NULL;
+    mEOFReached = false;
     mDuration = 0;
     mCurPts = 0;
     mCurrentDeviceName = mDesiredDevice;
@@ -540,6 +541,8 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
         // unlock grabbing
         mGrabMutex.unlock();
 
+        LOG(LOG_VERBOSE, "No video frame in FIFO available and EOF marker is active");
+
         // acknowledge "success"
         MarkGrabChunkSuccessful(mChunkNumber); // don't panic, it is only EOF
 
@@ -706,7 +709,10 @@ void* MediaSourceFile::Run(void* pArgs)
     int                 tCurrentChunkSize = 0;
     int64_t             tCurrentChunkPts = 0;
 
-    LOG(LOG_VERBOSE, "%s-Decoder started", GetMediaTypeStr().c_str());
+    // reset EOF marker
+    mEOFReached = false;
+
+    LOG(LOG_VERBOSE, "%s-Decoding thread started", GetMediaTypeStr().c_str());
     switch(mMediaType)
     {
         case MEDIA_VIDEO:
@@ -725,9 +731,6 @@ void* MediaSourceFile::Run(void* pArgs)
 
     // allocate chunk buffer
     tChunkBuffer = (uint8_t*)malloc(tChunkBufferSize);
-
-    // reset EOF marker
-    mEOFReached = false;
 
     // reset last PTS
     mDecoderLastReadPts = 0;

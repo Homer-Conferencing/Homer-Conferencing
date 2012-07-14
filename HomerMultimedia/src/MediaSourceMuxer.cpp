@@ -1067,7 +1067,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
     AVPacket                    tPacketStruc, *tPacket = &tPacketStruc;
     int                         tFrameSize;
 
-    LOG(LOG_VERBOSE, "%s-Encoder started", GetMediaTypeStr().c_str());
+    LOG(LOG_VERBOSE, "%s-Encoding thread started", GetMediaTypeStr().c_str());
     switch(mMediaType)
     {
         case MEDIA_VIDEO:
