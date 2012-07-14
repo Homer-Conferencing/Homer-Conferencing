@@ -239,7 +239,7 @@ void* MediaSourceNet::Run(void* pArgs)
     unsigned int tSourcePort = 0;
     int tDataSize;
 
-    LOG(LOG_VERBOSE, "Socket-Listener for port %u started, media type is \"%s\"", getListenerPort(), GetMediaTypeStr().c_str());
+    LOG(LOG_VERBOSE, "%s Socket-Listener for port %u started", GetMediaTypeStr().c_str(), getListenerPort());
     if (mGAPIUsed)
     {
         switch(mMediaType)
@@ -366,20 +366,20 @@ void* MediaSourceNet::Run(void* pArgs)
 		{
 			if (tDataSize == 0)
 			{
-				LOG(LOG_VERBOSE, "Zero byte packet received, media type is \"%s\"", GetMediaTypeStr().c_str());
+				LOG(LOG_VERBOSE, "Zero byte %s packet received", GetMediaTypeStr().c_str());
 
 				// add also a zero byte packet to enable early thread termination
 				WriteFragment(mPacketBuffer, 0);
 			}else
 			{
-				LOG(LOG_VERBOSE, "Got faulty packet, media type is \"%s\"", GetMediaTypeStr().c_str());
+				LOG(LOG_VERBOSE, "Got faulty %s packet", GetMediaTypeStr().c_str());
 				tDataSize = -1;
 			}
 		}
     }while(!mGrabbingStopped);
 
     mListenerRunning = false;
-    LOG(LOG_VERBOSE, "Socket-Listener for port %u stopped, media type is \"%s\"", getListenerPort(), GetMediaTypeStr().c_str());
+    LOG(LOG_VERBOSE, "%s Socket-Listener for port %u stopped", GetMediaTypeStr().c_str(), getListenerPort());
 
     return NULL;
 }

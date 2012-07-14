@@ -445,7 +445,7 @@ bool MediaSourceFile::CloseGrabDevice()
 {
     bool tResult = false;
 
-    LOG(LOG_VERBOSE, "Going to close, media type is \"%s\"", GetMediaTypeStr().c_str());
+    LOG(LOG_VERBOSE, "Going to close %s file", GetMediaTypeStr().c_str());
 
     if (mMediaSourceOpened)
     {
@@ -478,11 +478,11 @@ bool MediaSourceFile::CloseGrabDevice()
         if (mMediaType == MEDIA_AUDIO)
             free(mResampleBuffer);
 
-        LOG(LOG_INFO, "...closed, media type is \"%s\"", GetMediaTypeStr().c_str());
+        LOG(LOG_INFO, "...%s file closed", GetMediaTypeStr().c_str());
 
         tResult = true;
     }else
-        LOG(LOG_INFO, "...wasn't open, media type is \"%s\"", GetMediaTypeStr().c_str());
+        LOG(LOG_INFO, "...%s file is already closed", GetMediaTypeStr().c_str());
 
     mGrabbingStopped = false;
     mMediaType = MEDIA_UNKNOWN;
@@ -675,7 +675,7 @@ void MediaSourceFile::StopDecoder()
         do
         {
             if(tSignalingRound > 0)
-                LOG(LOG_WARN, "Signaling round %d to stop decoder, system has high load", tSignalingRound);
+                LOG(LOG_WARN, "Signaling round %d to stop %s decoder, system has high load", tSignalingRound, GetMediaTypeStr().c_str());
             tSignalingRound++;
 
             // force a wake up of decoder thread
@@ -706,19 +706,19 @@ void* MediaSourceFile::Run(void* pArgs)
     int                 tCurrentChunkSize = 0;
     int64_t             tCurrentChunkPts = 0;
 
-    LOG(LOG_VERBOSE, "Transcoder started, media type is \"%s\"", GetMediaTypeStr().c_str());
+    LOG(LOG_VERBOSE, "%s-Decoder started", GetMediaTypeStr().c_str());
     switch(mMediaType)
     {
         case MEDIA_VIDEO:
-            SVC_PROCESS_STATISTIC.AssignThreadName("Video-Decoder(FILE," + FfmpegId2FfmpegFormat(mCodecContext->codec_id) + ")");
+            SVC_PROCESS_STATISTIC.AssignThreadName("Video-Decoder(FILE");
             tChunkBufferSize = mDecoderTargetResX * mDecoderTargetResY * 4 /* bytes per pixel */;
             break;
         case MEDIA_AUDIO:
-            SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Decoder(FILE," + FfmpegId2FfmpegFormat(mCodecContext->codec_id) + ")");
+            SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Decoder(FILE");
             tChunkBufferSize = AVCODEC_MAX_AUDIO_FRAME_SIZE;
             break;
         default:
-            SVC_PROCESS_STATISTIC.AssignThreadName("Decoder(FILE," + FfmpegId2FfmpegFormat(mCodecContext->codec_id) + ")");
+            SVC_PROCESS_STATISTIC.AssignThreadName("Decoder(FILE)");
             tChunkBufferSize = MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE;
             break;
     }
@@ -767,7 +767,7 @@ void* MediaSourceFile::Run(void* pArgs)
                 if ((tRes = av_read_frame(mFormatContext, tPacket)) != 0)
                 {// failed to read frame
                     if ((!mGrabbingStopped) && (tRes != (int)AVERROR_EOF) && (tRes != (int)AVERROR(EIO)))
-                        LOG(LOG_ERROR, "Couldn't grab a frame because of \"%s\"(%d), media type is \"%s\"", strerror(AVUNERROR(tRes)), tRes, GetMediaTypeStr().c_str());
+                        LOG(LOG_ERROR, "Couldn't grab a %s frame because \"%s\"(%d)", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)), tRes);
 
                     if (tPacket->size == 0)
                         tShouldReadNext = true;
@@ -1208,7 +1208,7 @@ bool MediaSourceFile::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
 
     if ((pSeconds < 0) || (pSeconds > tSeekEnd))
     {
-        LOG(LOG_ERROR, "Seek position is out of range (%ld/%ld), media type is \"%s\"", pSeconds, tSeekEnd, GetMediaTypeStr().c_str());
+        LOG(LOG_ERROR, "Seek position is out of range (%ld/%ld) for %s file", pSeconds, tSeekEnd, GetMediaTypeStr().c_str());
         return false;
     }
 
@@ -1220,7 +1220,7 @@ bool MediaSourceFile::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
         // unlock grabbing
         mGrabMutex.unlock();
 
-        //LOG(LOG_ERROR, "Tried to seek while source is closed, media type is \"%s\"", GetMediaTypeStr().c_str());
+        //LOG(LOG_ERROR, "Tried to seek while %s file is closed", GetMediaTypeStr().c_str());
         return false;
     }
 
@@ -1266,7 +1266,7 @@ bool MediaSourceFile::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
             mCurPts = tAbsoluteTimestamp;
         }
     }else
-        LOG(LOG_ERROR, "Seek position is out of range, media type is \"%s\"", GetMediaTypeStr().c_str());
+        LOG(LOG_ERROR, "Seek position is out of range for %s file", GetMediaTypeStr().c_str());
 
     // inform about seeking state, don't inform about dropped frames because they are dropped caused by seeking and not by timing problems
     mSeekingToPos = true;
@@ -1317,11 +1317,11 @@ bool MediaSourceFile::SeekRelative(int64_t pSeconds, bool pOnlyKeyFrames)
         //LOG(LOG_VERBOSE, "New start: %ld", mStartPtsUSecs);
 
         if (tResult < 0)
-            LOG(LOG_ERROR, "Error during relative seeking in source file, media type is \"%s\"", GetMediaTypeStr().c_str());
+            LOG(LOG_ERROR, "Error during relative seeking in %s file", GetMediaTypeStr().c_str());
         else
             mCurPts = tAbsoluteTimestamp;
     }else
-        LOG(LOG_ERROR, "Seek position is out of range, media type is \"%s\"", GetMediaTypeStr().c_str());
+        LOG(LOG_ERROR, "Seek position is out of range for %s file", GetMediaTypeStr().c_str());
 
     // inform about seeking state, don't inform about dropped frames because they are dropped caused by seeking and not by timing problems
     mSeekingToPos = true;
