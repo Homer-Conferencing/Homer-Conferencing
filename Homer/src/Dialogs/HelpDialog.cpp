@@ -102,7 +102,7 @@ void HelpDialog::initializeGUI()
 									"\n"\
 									"Number of cpu cores: " + QString("%1").arg(System::GetMachineCores()) + "\n"\
 									"Current architecture: " + tCurArch + "\n"\
-									"Target architecture: linux" + QString("%1").arg(ARCH_BITS) + "\n"\
+									"Target architecture: bsd" + QString("%1").arg(ARCH_BITS) + "\n"\
 									"\n"\
 									"Linked AVCodec:  " + QString("%1").arg(LIBAVCODEC_VERSION_MAJOR) + "." + QString("%1").arg(LIBAVCODEC_VERSION_MINOR) + "." + QString("%1").arg(LIBAVCODEC_VERSION_MICRO) + "\n"\
 									"Linked AVDevice:  " + QString("%1").arg(LIBAVDEVICE_VERSION_MAJOR) + "." + QString("%1").arg(LIBAVDEVICE_VERSION_MINOR) + "." + QString("%1").arg(LIBAVDEVICE_VERSION_MICRO) + "\n"\
