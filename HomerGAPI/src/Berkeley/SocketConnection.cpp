@@ -112,6 +112,8 @@ SocketConnection::SocketConnection(std::string pTarget, Requirements *pRequireme
             mSocket->SetReceiveBufferSize(2 * 1024 * 1024);
             mSocket->SetSendBufferSize(2 * 1024 * 1024);
 
+            mSocket->SetPeerHost(mPeerHost);
+            mSocket->SetPeerPort(mPeerPort);
             mIsClosed = false;
 
             /* QoS requirements and additional transport requirements */

@@ -120,6 +120,7 @@ ENDIF (WIN32)
 SET (SOURCES
 	../src/Configuration
 	../src/ContactsManager
+	../src/FileTransfersManager
 	../src/MainWindow
 	../src/MediaSourceDesktop
 	../src/main

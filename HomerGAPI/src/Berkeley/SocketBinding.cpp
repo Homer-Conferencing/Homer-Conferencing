@@ -90,7 +90,7 @@ SocketBinding::SocketBinding(std::string pLocalName, Requirements *pRequirements
 
     if (tTcp)
     {
-        mSocket = Socket::CreateServerSocket(tIPv6 ? SOCKET_IPv6 : SOCKET_IPv4, SOCKET_TCP, tLocalPort);
+        mSocket = Socket::CreateServerSocket(tIPv6 ? SOCKET_IPv6 : SOCKET_IPv4, SOCKET_TCP, tLocalPort, false, 1);
         tFoundTransport = true;
     }
 
@@ -99,7 +99,7 @@ SocketBinding::SocketBinding(std::string pLocalName, Requirements *pRequirements
     {
         if(!tFoundTransport)
         {
-            mSocket = Socket::CreateServerSocket(tIPv6 ? SOCKET_IPv6 : SOCKET_IPv4, tUdpLite ? SOCKET_UDP_LITE : SOCKET_UDP, tLocalPort);
+            mSocket = Socket::CreateServerSocket(tIPv6 ? SOCKET_IPv6 : SOCKET_IPv4, tUdpLite ? SOCKET_UDP_LITE : SOCKET_UDP, tLocalPort, false, 1);
             tFoundTransport = true;
         }else
         {
@@ -111,6 +111,11 @@ SocketBinding::SocketBinding(std::string pLocalName, Requirements *pRequirements
     {
         if (mSocket != NULL)
         {
+            if (mSocket->GetLocalPort() != tLocalPort)
+            {
+                LOG(LOG_WARN, "Berkeley socket was bound to another port (%u) than requested (%u)", mSocket->GetLocalPort(), tLocalPort);
+                tRequPort->setPort(mSocket->GetLocalPort());
+            }
             // per default we set receive/send buffer of 2 MB
             mSocket->SetReceiveBufferSize(2 * 1024 * 1024);
             mSocket->SetSendBufferSize(2 * 1024 * 1024);

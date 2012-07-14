@@ -142,6 +142,10 @@ public:
     QString GetAudioStreamingGAPIImpl();
     QString GetLocalAudioSource();
 
+    /* app data */
+    enum Homer::Base::TransportType GetAppDataTransportType();
+    QString GetAppDataGAPIImpl();
+
     /* playback settings */
     QString GetLocalAudioSink();
 
@@ -200,7 +204,8 @@ public:
     /* debugging state machine */
     bool DebuggingEnabled();
 
-
+    /* audio output */
+    bool AudioOutputEnabled();
 
 
     /* global settings */
@@ -266,6 +271,10 @@ public:
     void SetAudioStreamingGAPIImpl(QString pImpl);
     void SetLocalAudioSource(QString pASource);
 
+    /* app data */
+    void SetAppDataTransport(enum Homer::Base::TransportType pType);
+    void SetAppDataGAPIImpl(QString pImpl);
+
     /* playback settings */
     void SetLocalAudioSink(QString pASink);
 
@@ -319,12 +328,17 @@ public:
     /* debug state */
     void SetDebugging(bool pState = true);
 
+    /* audio output */
+    void DisableAudioOutput();
+
     // important because some write operations might be delayed
     void Sync();
+
 
     std::string             mAbsBinPath;
     QSettings               *mQSettings;
     bool                    mDebuggingEnabled;
+    bool                    mAudioOutputEnabled;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

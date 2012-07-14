@@ -29,7 +29,7 @@
 #define _ADD_NETWORK_SINK_DIALOG_
 
 #include <MediaSource.h>
-
+#include <PacketStatistic.h>
 #include <ui_AddNetworkSinkDialog.h>
 
 namespace Homer { namespace Gui {
@@ -43,10 +43,13 @@ class AddNetworkSinkDialog :
     Q_OBJECT;
 public:
     /// The default constructor
-    AddNetworkSinkDialog(QWidget* pParent, Homer::Multimedia::MediaSource *pMediaSource);
+    AddNetworkSinkDialog(QWidget* pParent, QString pTitle, Homer::Monitor::DataType pDataType, Homer::Multimedia::MediaSource *pMediaSource);
 
     /// The destructor.
     virtual ~AddNetworkSinkDialog();
+
+    Requirements* GetRequirements();
+    QString GetTarget();
 
     int exec();
 
@@ -59,6 +62,7 @@ private:
     void LoadConfiguration();
     void CreateNewMediaSink();
 
+    Homer::Monitor::DataType    mDataType;
     Homer::Multimedia::MediaSource *mMediaSource;
 };
 

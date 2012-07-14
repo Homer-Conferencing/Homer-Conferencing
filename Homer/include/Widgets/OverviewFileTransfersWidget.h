@@ -31,9 +31,10 @@
 #include <QDockWidget>
 #include <QTimerEvent>
 #include <QMutex>
+#include <QList>
 
 #include <PacketStatistic.h>
-
+#include <FileTransfersManager.h>
 #include <ui_OverviewFileTransfersWidget.h>
 
 namespace Homer { namespace Gui {
@@ -42,8 +43,18 @@ namespace Homer { namespace Gui {
 
 class OverviewFileTransfersWidget :
     public QDockWidget,
+    public FileTransfersManagerObserver,
     public Ui_OverviewFileTransfersWidget
 {
+    struct FileTransferEntry{
+        bool     Outgoing;
+        uint64_t Id;
+        QString  Peer;
+        QString  FileName;
+        uint64_t FileTransferredSize;
+        uint64_t FileSize;
+        int      GuiId;
+    };
     Q_OBJECT;
 public:
     /// The default constructor
@@ -52,21 +63,41 @@ public:
     /// The destructor.
     virtual ~OverviewFileTransfersWidget();
 
+    void Init();
+
+    /* event call backs */
+    virtual void handleFileTransfersManagerEventTransferBeginRequest(uint64_t pId, std::string pPeerName, std::string pFileName, uint64_t pFileSize);
+    virtual void handleFileTransfersManagerEventTransferBegin(uint64_t pId, std::string pPeerName, std::string pFileName, uint64_t pFileSize);
+    virtual void handleFileTransfersManagerEventTransferData(uint64_t pId, uint64_t pTransferredSize);
+
+private slots:
+    void AddEntryDialog();
+    void DelEntryDialog();
+
 public slots:
     void SetVisible(bool pVisible);
 
 private:
+    virtual void customEvent(QEvent* pEvent);
     virtual void closeEvent(QCloseEvent* pEvent);
     virtual void timerEvent(QTimerEvent *pEvent);
     virtual void contextMenuEvent(QContextMenuEvent *pContextMenuEvent);
 
+    void AddTransferEntry(FileTransferEntry pEntry);
     void initializeGUI();
     void UpdateView();
-    //void FillRow(QTableWidget *pTable, int pRow, Homer::Monitor::PacketStatistic *pStats);
+    void FillCellText(QTableWidget *pTable, int pRow, int pCol, QString pText);
+    void FillRow(QTableWidget *pTable, int pRow, const FileTransferEntry &pEntry);
 
     QPoint              mWinPos;
     QAction             *mAssignedAction;
     int                 mTimerId;
+    /* ask for file transfers */
+    QList<FileTransferEntry> mAskFileTransfers;
+    QMutex              mAskFileTransfersMutex;
+    /* known file transfers */
+    QList<FileTransferEntry> mFileTransfers;
+    QMutex              mFileTransfersMutex;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

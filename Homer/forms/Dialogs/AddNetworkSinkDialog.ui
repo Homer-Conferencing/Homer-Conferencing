@@ -45,7 +45,7 @@
      </property>
      <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="0">
-       <widget class="QGroupBox" name="groupBox">
+       <widget class="QGroupBox" name="mGrpTarget">
         <property name="font">
          <font>
           <weight>75</weight>

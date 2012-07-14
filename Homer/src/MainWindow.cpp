@@ -237,6 +237,8 @@ void MainWindow::initializeFeatureDisablers(QStringList pArguments)
                 Socket::DisableIPv6Support();
             if(tFeatureName == "QoS")
                 Socket::DisableQoSSupport();
+            if(tFeatureName == "AudioOutput")
+                CONF.DisableAudioOutput();
         }
     }
 }
@@ -874,7 +876,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     break;
         case ADD_VIDEO_RELAY:
                     //####################### VIDEO ADD RELAY #############################
-                    tANSDialog = new AddNetworkSinkDialog(this, GetVideoMuxer());
+                    tANSDialog = new AddNetworkSinkDialog(this, "Configure video streaming", DATA_TYPE_VIDEO, GetVideoMuxer());
                     tANSDialog->exec();
                     delete tANSDialog;
                     break;

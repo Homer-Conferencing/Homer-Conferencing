@@ -46,7 +46,7 @@ namespace Homer { namespace Multimedia {
 //#define MSN_DEBUG_PACKETS
 
 // maximum number of acceptable continuous receive errors
-#define MAX_RECEIVE_ERRORS                                  3
+#define MEDIA_SOURCE_NET_MAX_RECEIVE_ERRORS                           3
 #define SOCKET_RECEIVE_BUFFER_SIZE                      2 * 1024 * 1024
 
 ///////////////////////////////////////////////////////////////////////////////

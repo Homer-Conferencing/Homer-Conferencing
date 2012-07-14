@@ -70,6 +70,7 @@ ConfigurationDialog::ConfigurationDialog(QWidget* pParent, list<string>  pLocalA
 
     mHttpGetStunServerList = NULL;
     mHttpGetSipServerList = NULL;
+    mWaveOut = NULL;
     mVideoWorker = pVideoWorker;
     mAudioWorker = pAudioWorker;
     mLocalAdresses = pLocalAdresses;
@@ -166,7 +167,8 @@ void ConfigurationDialog::LoadConfiguration()
     mAudioCaptureDevices = mAudioWorker->GetPossibleDevices();
     mVideoCaptureDevices = mVideoWorker->GetPossibleDevices();
 
-    mWaveOut->getAudioDevices(mAudioPlaybackDevices);
+    if (mWaveOut != NULL)
+        mWaveOut->getAudioDevices(mAudioPlaybackDevices);
 
     //######################################################################
     //### VIDEO configuration
@@ -740,12 +742,18 @@ void ConfigurationDialog::OpenPlaybackDevice()
 {
     LOG(LOG_VERBOSE, "Going to open playback device");
 
-	#ifndef APPLE
-		mWaveOut = new WaveOutPortAudio(CONF.GetLocalAudioSink().toStdString());
-	#else
-		mWaveOut = new WaveOutSdl(CONF.GetLocalAudioSink().toStdString());
-	#endif
-    mWaveOut->OpenWaveOutDevice();
+    if (CONF.AudioOutputEnabled())
+    {
+        #ifndef APPLE
+            mWaveOut = new WaveOutPortAudio(CONF.GetLocalAudioSink().toStdString());
+        #else
+            mWaveOut = new WaveOutSdl(CONF.GetLocalAudioSink().toStdString());
+        #endif
+        if (mWaveOut != NULL)
+            mWaveOut->OpenWaveOutDevice();
+        else
+            LOG(LOG_ERROR, "Error when allocating wave out instance");
+    }
     LOG(LOG_VERBOSE, "Finished to open playback device");
 }
 
@@ -754,8 +762,11 @@ void ConfigurationDialog::ClosePlaybackDevice()
     LOG(LOG_VERBOSE, "Going to close playback device");
 
     // close the audio out
-    mWaveOut->CloseWaveOutDevice();
-    delete mWaveOut;
+    if (mWaveOut != NULL)
+    {
+        mWaveOut->CloseWaveOutDevice();
+        delete mWaveOut;
+    }
 
     LOG(LOG_VERBOSE, "Finished to close playback device");
 }
@@ -870,11 +881,14 @@ void ConfigurationDialog::SelectNotifySoundFileForRegistrationSuccessful()
 
 void ConfigurationDialog::PlayNotifySoundFile(QString pFile)
 {
-    if (pFile != "")
+    if (mWaveOut != NULL)
     {
-        LOG(LOG_VERBOSE, "Playing sound file: %s", pFile.toStdString().c_str());
-        if (!mWaveOut->PlayFile(pFile.toStdString()))
-            ShowError("Failed to play file", "Was unable to play the file \"" + pFile + "\".");
+        if (pFile != "")
+        {
+            LOG(LOG_VERBOSE, "Playing sound file: %s", pFile.toStdString().c_str());
+            if (!mWaveOut->PlayFile(pFile.toStdString()))
+                ShowError("Failed to play file", "Was unable to play the file \"" + pFile + "\".");
+        }
     }
 }
 

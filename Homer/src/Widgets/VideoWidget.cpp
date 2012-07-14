@@ -685,7 +685,7 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
 
 void VideoWidget::DialogAddNetworkSink()
 {
-    AddNetworkSinkDialog tANSDialog(this, mVideoSource);
+    AddNetworkSinkDialog tANSDialog(this, "Configure video streaming", DATA_TYPE_VIDEO, mVideoSource);
 
     tANSDialog.exec();
 }

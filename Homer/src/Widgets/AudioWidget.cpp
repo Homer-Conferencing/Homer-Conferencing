@@ -495,7 +495,7 @@ void AudioWidget::StopRecorder()
 
 void AudioWidget::DialogAddNetworkSink()
 {
-    AddNetworkSinkDialog tANSDialog(this, mAudioSource);
+    AddNetworkSinkDialog tANSDialog(this, "Configure audio streaming", DATA_TYPE_AUDIO, mAudioSource);
 
     tANSDialog.exec();
 }
@@ -867,12 +867,18 @@ void AudioWorkerThread::OpenPlaybackDevice()
 
     LOG(LOG_VERBOSE, "Going to open playback device");
 
-	#ifndef APPLE
-    	mWaveOut = new WaveOutPortAudio(CONF.GetLocalAudioSink().toStdString());
-	#else
-    	mWaveOut = new WaveOutSdl(CONF.GetLocalAudioSink().toStdString());
-	#endif
-	mWaveOut->OpenWaveOutDevice();
+    if (CONF.AudioOutputEnabled())
+    {
+        #ifndef APPLE
+            mWaveOut = new WaveOutPortAudio(CONF.GetLocalAudioSink().toStdString());
+        #else
+            mWaveOut = new WaveOutSdl(CONF.GetLocalAudioSink().toStdString());
+        #endif
+        if (mWaveOut != NULL)
+            mWaveOut->OpenWaveOutDevice();
+        else
+            LOG(LOG_ERROR, "Error when allocatin wave out instance");
+    }
     mPlaybackAvailable = true;
     LOG(LOG_VERBOSE, "Finished to open playback device");
 }
@@ -883,9 +889,11 @@ void AudioWorkerThread::ClosePlaybackDevice()
 
     mPlaybackAvailable = false;
 
-    // close the audio out
-    mWaveOut->CloseWaveOutDevice();
-    delete mWaveOut;
+    if (mWaveOut != NULL)
+    {
+        // close the audio output
+        delete mWaveOut;
+    }
 
     LOG(LOG_VERBOSE, "Releasing audio buffers");
     for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
@@ -920,7 +928,8 @@ void AudioWorkerThread::SetVolume(int pValue)
 		return;
 	}
 
-	mWaveOut->SetVolume(pValue);
+	if (mWaveOut != NULL)
+	    mWaveOut->SetVolume(pValue);
 }
 
 void AudioWorkerThread::SetMuteState(bool pMuted)
@@ -1392,7 +1401,7 @@ void AudioWorkerThread::DoStartPlayback()
     }
 
     // if audio was muted we have to wait for an initial time
-    if ((!mWaveOut->IsPlaying()) && (mAudioPlaybackDelayCount == 0))
+    if ((mWaveOut != NULL) && (!mWaveOut->IsPlaying()) && (mAudioPlaybackDelayCount == 0))
     {
         mAudioPlaybackDelayCount = AUDIO_INITIAL_MINIMUM_PLAYBACK_QUEUE;
         mStartPlaybackAsap = true;
@@ -1400,10 +1409,13 @@ void AudioWorkerThread::DoStartPlayback()
     }
 
     // okay don't have to wait, time to start playback
-    LOG(LOG_VERBOSE, "DoStartPlayback now...(playing: %d, delay count: %d)", mWaveOut->IsPlaying(), mAudioPlaybackDelayCount);
+    LOG(LOG_VERBOSE, "DoStartPlayback now...(playing: %d, delay count: %d)", (mWaveOut != NULL) ? mWaveOut->IsPlaying() : false, mAudioPlaybackDelayCount);
     mStartPlaybackAsap = false;
     if (mPlaybackAvailable)
-        mWaveOut->Play();
+    {
+        if (mWaveOut != NULL)
+            mWaveOut->Play();
+    }
     mAudioPlaybackDelayCount = 0;
     mAudioOutMuted = false;
 }
@@ -1413,7 +1425,10 @@ void AudioWorkerThread::DoStopPlayback()
     LOG(LOG_VERBOSE, "DoStopPlayback now...");
 	mStopPlaybackAsap = false;
 	if (mPlaybackAvailable)
-		mWaveOut->Stop();
+	{
+	    if (mWaveOut != NULL)
+	        mWaveOut->Stop();
+	}
 	mAudioOutMuted = true;
 }
 
@@ -1546,7 +1561,8 @@ void AudioWorkerThread::run()
 			// play the sample block if audio out isn't currently muted
 			if ((!mAudioOutMuted) && (tSampleNumber >= 0) && (tSamplesSize > 0) && (!mDropSamples) && (mPlaybackAvailable))
 			{
-			    mWaveOut->WriteChunk(mSamples[mSampleGrabIndex], mSamplesSize[mSampleGrabIndex]);
+			    if (mWaveOut != NULL)
+			        mWaveOut->WriteChunk(mSamples[mSampleGrabIndex], mSamplesSize[mSampleGrabIndex]);
 			}else
 			{
 				#ifdef DEBUG_AUDIOWIDGET_PERFORMANCE

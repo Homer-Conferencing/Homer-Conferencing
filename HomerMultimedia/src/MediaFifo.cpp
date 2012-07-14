@@ -85,12 +85,11 @@ void MediaFifo::ReadFifo(char *pBuffer, int &pBufferSize)
 		#endif
 
 		mFifoDataInputCondition.Reset();
-		mFifoMutex.unlock();
 
-		while(!mFifoDataInputCondition.Wait())
+		while(!mFifoDataInputCondition.Wait(&mFifoMutex))
+		{
 			LOG(LOG_ERROR, "%s-FIFO: error when waiting for new input", mName.c_str());
-
-		mFifoMutex.lock();
+		}
 
 		if (mFifoAvailableEntries < 0)
 		    LOG(LOG_ERROR, "%s-FIFO: negative amount of entries: %d", mName.c_str(), mFifoAvailableEntries);
@@ -191,12 +190,11 @@ int MediaFifo::ReadFifoExclusive(char **pBuffer, int &pBufferSize)
             LOG(LOG_VERBOSE, "%s-FIFO: woke up but no new data found, already passed rounds: %d", mName.c_str(), tRounds);
 
         mFifoDataInputCondition.Reset();
-        mFifoMutex.unlock();
 
-        while(!mFifoDataInputCondition.Wait())
+        while(!mFifoDataInputCondition.Wait(&mFifoMutex))
+        {
             LOG(LOG_ERROR, "%s-FIFO: error when waiting for new input", mName.c_str());
-
-        mFifoMutex.lock();
+        }
 
         tRounds++;
     }
