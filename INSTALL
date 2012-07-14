@@ -127,13 +127,13 @@ DEVELOPER: debug the build process:
 ===================================
 
  In general, GNU Make supports the parameter "VERBOSE=1". The Homer build system 
- does supports this parameter, too.
+ supports this parameter, too.
   
- Verbose output during build process via:
+ Get verbose output during build process via:
 
     > "cd HomerBuild"
     > "make VERBOSE=1"
 
- This shows several more verbose outputs and often gives a good hint why the linking
- fails or which paths are involved during linking process.
+ This shows several very verbose outputs and often gives a good hint why header files
+ weren't found or why linking fails.
   
