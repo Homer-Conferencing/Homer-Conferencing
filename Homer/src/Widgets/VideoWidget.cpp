@@ -1875,7 +1875,8 @@ void VideoWorkerThread::DoResetVideoSource()
 
     // restart frame grabbing device
     mSourceAvailable = mVideoSource->Reset(MEDIA_VIDEO);
-
+    if (!mSourceAvailable)
+        LOG(LOG_VERBOSE, "Video source is (temporary) not available after Reset() in DoResetVideoSource()");
     mResetVideoSourceAsap = false;
     mPaused = false;
     mFrameTimestamps.clear();
@@ -1893,6 +1894,8 @@ void VideoWorkerThread::DoSetInputStreamPreferences()
     if (mVideoSource->SetInputStreamPreferences(mCodec.toStdString()))
     {
     	mSourceAvailable = mVideoSource->Reset(MEDIA_VIDEO);
+        if (!mSourceAvailable)
+            LOG(LOG_VERBOSE, "Video source is (temporary) not available after Reset() in DoSetInputStreamPreferences()");
         mResetVideoSourceAsap = false;
     }
 
@@ -1951,7 +1954,11 @@ void VideoWorkerThread::DoSetCurrentDevice()
         mPaused = false;
         mVideoWidget->InformAboutNewSource();
     }else
+    {
+        if (!mSourceAvailable)
+            LOG(LOG_VERBOSE, "Video source is (temporary) not available after SelectDevice() in DoSetCurrentDevice()");
         mVideoWidget->InformAboutOpenError(mDeviceName);
+    }
 
     mSetCurrentDeviceAsap = false;
     mCurrentFile = mDesiredFile;
@@ -2102,7 +2109,10 @@ void VideoWorkerThread::run()
             #endif
 			mEofReached = (tFrameNumber == GRAB_RES_EOF);
 			if (mEofReached)
+			{
 			    mSourceAvailable = false;
+			    LOG(LOG_VERBOSE, "Derived EOF and mark video source as unavailable");
+			}
 
 
 			//LOG(LOG_ERROR, "DO THE BEST %d %d", tFrameNumber, tFrameSize);
