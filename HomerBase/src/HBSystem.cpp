@@ -75,19 +75,35 @@ bool System::GetWindowsKernelVersion(int &pMajor, int &pMinor)
     return true;
 }
 
-string System::GetLinuxKernelVersion()
+string System::GetKernelVersion()
 {
     string tResult = "???";
 
-    #if defined(LINUX)
+    #if defined(LINUX) || defined(APPLE) || defined(BSD)
         struct utsname tInfo;
         uname(&tInfo);
 
         if (tInfo.release != NULL)
             tResult = string(tInfo.release);
     #endif
+    #ifdef WIN32
+        OSVERSIONINFOEX tVersionInfo;
+        ZeroMemory(&tVersionInfo, sizeof(OSVERSIONINFOEX));
+        tVersionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+        if (GetVersionEx((LPOSVERSIONINFO)&tVersionInfo) == 0)
+        {
+            LOGEX(System, LOG_ERROR, "Failed when calling \"GetVersionEx\"");
+            return false;
+        }
+        int tMajor = tVersionInfo.dwMajorVersion;
+        int tMinor = tVersionInfo.dwMinorVersion;
+        char tVersionStr[32];
+        sprintf(tVersionStr, "%d.%d", tMajor, tMinor);
 
-    LOGEX(System, LOG_VERBOSE, "Found linux kernel \"%s\"", tResult.c_str());
+        tResult = string(tVersionStr);
+    #endif
+
+    LOGEX(System, LOG_VERBOSE, "Found kernel \"%s\"", tResult.c_str());
 
     return tResult;
 }
@@ -97,7 +113,6 @@ int System::GetMachineCores()
     int tResult = 1;
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
         tResult = sysconf(_SC_NPROCESSORS_ONLN);
-
     #endif
     #ifdef WIN32
         SYSTEM_INFO tSysInfo;
