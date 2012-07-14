@@ -720,14 +720,15 @@ void OverviewPlaylistWidget::AddFileToList(QString pFile)
                     LOG(LOG_VERBOSE, "Found playlist entry: %s", tLineString.toStdString().c_str());
                     switch(mPlaylistId)
                     {
+                        //TODO: remove audio/video playlist and merge to movie playlist
                         case PLAYLIST_VIDEO:
-                            mLwFiles->addItem(new QListWidgetItem(QIcon(":/images/VideoReel.png"), tDir + "/" + tLineString));
+                            mLwFiles->addItem(new QListWidgetItem(QIcon(":/images/22_22/VideoReel.png"), tDir + "/" + tLineString));
                             break;
                         case PLAYLIST_AUDIO:
                             mLwFiles->addItem(new QListWidgetItem(QIcon(":/images/Speaker.png"), tDir + "/" + tLineString));
                             break;
                         case PLAYLIST_MOVIE:
-                            mLwFiles->addItem(new QListWidgetItem(QIcon(":/images/FilmStrip1.png"), tDir + "/" + tLineString));
+                            mLwFiles->addItem(new QListWidgetItem(QIcon(":/images/22_22/ArrowRight.png"), tDir + "/" + tLineString));
                             break;
                         default:
                             break;
@@ -750,7 +751,7 @@ void OverviewPlaylistWidget::AddFileToList(QString pFile)
                 mLwFiles->addItem(new QListWidgetItem(QIcon(":/images/Speaker.png"), pFile));
                 break;
             case PLAYLIST_MOVIE:
-                mLwFiles->addItem(new QListWidgetItem(QIcon(":/images/FilmStrip1.png"), pFile));
+                mLwFiles->addItem(new QListWidgetItem(QIcon(":/images/22_22/ArrowRight.png"), pFile));
                 break;
             default:
                 break;

@@ -165,7 +165,7 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
     if ((CONF.GetParticipantWidgetsSeparation()) && (mSessionType == PARTICIPANT))
     {
         setParent(NULL);
-        setWindowIcon(QPixmap(":/images/UserUnavailable.png"));
+        setWindowIcon(QPixmap(":/images/32_32/UserUnavailable.png"));
         setFeatures(QDockWidget::DockWidgetClosable);
     }else
     {
@@ -382,7 +382,7 @@ void ParticipantWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             tAction->setChecked(false);
         }
         QIcon tIcon2;
-        tIcon2.addPixmap(QPixmap(":/images/Info.png"), QIcon::Normal, QIcon::Off);
+        tIcon2.addPixmap(QPixmap(":/images/22_22/Info.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon2);
 
         QAction* tPopupRes = tMenu.exec(pEvent->globalPos());
@@ -1082,14 +1082,14 @@ void ParticipantWidget::UpdateParticipantState(int pState)
     switch(pState)
     {
         case CONTACT_UNAVAILABLE:
-            setWindowIcon(QPixmap(":/images/UserUnavailable.png"));
+            setWindowIcon(QPixmap(":/images/32_32/UserUnavailable.png"));
             break;
         case CONTACT_AVAILABLE:
-            setWindowIcon(QPixmap(":/images/UserAvailable.png"));
+            setWindowIcon(QPixmap(":/images/32_32/UserAvailable.png"));
             break;
         default:
         case CONTACT_UNDEFINED_STATE:
-            setWindowIcon(QPixmap(":/images/Warning.png").scaled(24, 24, Qt::KeepAspectRatio, Qt::FastTransformation));
+            setWindowIcon(QPixmap(":/images/22_22/Error.png").scaled(24, 24, Qt::KeepAspectRatio, Qt::FastTransformation));
             break;
     }
 }

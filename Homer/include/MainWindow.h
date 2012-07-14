@@ -161,7 +161,6 @@ private:
     OverviewNetworkStreamsWidget *mOverviewNetworkStreamsWidget;
     OverviewPlaylistWidget	    *mOverviewPlaylistWidgetVideo, *mOverviewPlaylistWidgetAudio, *mOverviewPlaylistWidgetMovie;
     OverviewThreadsWidget 	    *mOverviewThreadsWidget;
-    QMenu 					    *mMenuParticipantMessageWidgets;
     ParticipantWidgetList 	    mParticipantWidgets;
     ParticipantWidget 		    *mLocalUserParticipantWidget;
     MediaSourceMuxer 		    *mOwnVideoMuxer;

@@ -44,7 +44,7 @@
         </font>
        </property>
        <property name="frameShape">
-        <enum>QFrame::WinPanel</enum>
+        <enum>QFrame::StyledPanel</enum>
        </property>
        <property name="frameShadow">
         <enum>QFrame::Sunken</enum>
@@ -106,7 +106,7 @@
         </property>
         <property name="icon">
          <iconset resource="../../resources/Icons.qrc">
-          <normaloff>:/images/VideoReel.png</normaloff>:/images/VideoReel.png</iconset>
+          <normaloff>:/images/46_46/VideoReel.png</normaloff>:/images/46_46/VideoReel.png</iconset>
         </property>
        </item>
        <item>
@@ -118,7 +118,7 @@
         </property>
         <property name="icon">
          <iconset resource="../../resources/Icons.qrc">
-          <normaloff>:/images/Speaker.png</normaloff>:/images/Speaker.png</iconset>
+          <normaloff>:/images/46_46/Speaker.png</normaloff>:/images/46_46/Speaker.png</iconset>
         </property>
        </item>
        <item>
@@ -130,7 +130,7 @@
         </property>
         <property name="icon">
          <iconset resource="../../resources/Icons.qrc">
-          <normaloff>:/images/Network.png</normaloff>:/images/Network.png</iconset>
+          <normaloff>:/images/46_46/Network.png</normaloff>:/images/46_46/Network.png</iconset>
         </property>
        </item>
        <item>
@@ -142,7 +142,7 @@
         </property>
         <property name="icon">
          <iconset resource="../../resources/Icons.qrc">
-          <normaloff>:/images/Gears.png</normaloff>:/images/Gears.png</iconset>
+          <normaloff>:/images/46_46/Gears.png</normaloff>:/images/46_46/Gears.png</iconset>
         </property>
        </item>
        <item>
@@ -167,7 +167,7 @@
         </font>
        </property>
        <property name="frameShape">
-        <enum>QFrame::WinPanel</enum>
+        <enum>QFrame::StyledPanel</enum>
        </property>
        <property name="frameShadow">
         <enum>QFrame::Raised</enum>
@@ -1881,7 +1881,7 @@ background-color: rgb(150, 150, 150);
                  <string>...</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
+                 <iconset>
                   <normaloff>:/images/22_22/UserMale.png</normaloff>:/images/22_22/UserMale.png</iconset>
                 </property>
                 <property name="iconSize">

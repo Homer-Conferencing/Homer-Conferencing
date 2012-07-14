@@ -130,7 +130,7 @@ void AudioWidget::Init(MediaSource *pAudioSource, QMenu *pMenu, QString pActionT
         mAssignedAction->setChecked(pVisible);
         QIcon tIcon;
         tIcon.addPixmap(QPixmap(":/images/22_22/Checked.png"), QIcon::Normal, QIcon::On);
-        tIcon.addPixmap(QPixmap(":/images/Unchecked.png"), QIcon::Normal, QIcon::Off);
+        tIcon.addPixmap(QPixmap(":/images/22_22/Unchecked.png"), QIcon::Normal, QIcon::Off);
         mAssignedAction->setIcon(tIcon);
     }
 

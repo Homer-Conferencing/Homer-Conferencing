@@ -398,10 +398,6 @@ void MainWindow::initializeWidgetsAndMenus()
     // set fixed style "plastic"
     QApplication::setStyle(new QPlastiqueStyle());
 
-    mMenuParticipantMessageWidgets = new QMenu("Participant messages");
-    mActionParticipantMessageWidgets->setMenu(mMenuParticipantMessageWidgets);
-
-
     LOG(LOG_VERBOSE, "..contacts widget");
     mOverviewContactsWidget = new OverviewContactsWidget(mActionOverviewContactsWidget, this);
     LOG(LOG_VERBOSE, "..errors widget");

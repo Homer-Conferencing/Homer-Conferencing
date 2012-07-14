@@ -157,7 +157,7 @@ void VideoWidget::Init(QMainWindow* pMainWindow, ParticipantWidget *pParticipant
         mAssignedAction->setChecked(pVisible);
         QIcon tIcon;
         tIcon.addPixmap(QPixmap(":/images/22_22/Checked.png"), QIcon::Normal, QIcon::On);
-        tIcon.addPixmap(QPixmap(":/images/Unchecked.png"), QIcon::Normal, QIcon::Off);
+        tIcon.addPixmap(QPixmap(":/images/22_22/Unchecked.png"), QIcon::Normal, QIcon::Off);
         mAssignedAction->setIcon(tIcon);
     }
 
@@ -254,7 +254,7 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
     //###############################################################################
     tAction = tMenu.addAction("Save picture");
     QIcon tIcon6;
-    tIcon6.addPixmap(QPixmap(":/images/Photo.png"), QIcon::Normal, QIcon::Off);
+    tIcon6.addPixmap(QPixmap(":/images/22_22/Save_Picture.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon6);
 
     //###############################################################################
@@ -298,7 +298,7 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
     //### Video settings
     //###############################################################################
     QIcon tIcon3;
-    tIcon3.addPixmap(QPixmap(":/images/Computer.png"), QIcon::Normal, QIcon::Off);
+    tIcon3.addPixmap(QPixmap(":/images/22_22/Configuration_Video.png"), QIcon::Normal, QIcon::Off);
     QMenu *tVideoMenu = tMenu.addMenu("Video settings");
 
             //###############################################################################

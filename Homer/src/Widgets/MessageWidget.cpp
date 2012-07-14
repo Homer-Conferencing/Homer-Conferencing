@@ -76,7 +76,7 @@ void MessageWidget::Init(QMenu *pMenu, QString pParticipant, OverviewContactsWid
         mAssignedAction->setChecked(pVisible);
         QIcon tIcon;
         tIcon.addPixmap(QPixmap(":/images/22_22/Checked.png"), QIcon::Normal, QIcon::On);
-        tIcon.addPixmap(QPixmap(":/images/Unchecked.png"), QIcon::Normal, QIcon::Off);
+        tIcon.addPixmap(QPixmap(":/images/22_22/Unchecked.png"), QIcon::Normal, QIcon::Off);
         mAssignedAction->setIcon(tIcon);
     }
 
@@ -389,12 +389,12 @@ void MessageWidget::UpdateParticipantState(int pState)
             break;
         case CONTACT_UNAVAILABLE:
             mLbPartitipantState->setEnabled(true);
-            mLbPartitipantState->setPixmap(QPixmap(":/images/Warning.png").scaled(24, 24, Qt::KeepAspectRatio, Qt::FastTransformation));
+            mLbPartitipantState->setPixmap(QPixmap(":/images/22_22/Error.png").scaled(24, 24, Qt::KeepAspectRatio, Qt::FastTransformation));
             mLbPartitipantState->setToolTip("contact is unavailable");
             break;
         case CONTACT_AVAILABLE:
             mLbPartitipantState->setEnabled(true);
-            mLbPartitipantState->setPixmap(QPixmap(":/images/UserAvailable.png"));
+            mLbPartitipantState->setPixmap(QPixmap(":/images/32_32/UserAvailable.png"));
             mLbPartitipantState->setToolTip("contact is available");
             break;
         default:

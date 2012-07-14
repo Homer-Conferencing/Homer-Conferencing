@@ -252,7 +252,7 @@ void OverviewFileTransfersWidget::contextMenuEvent(QContextMenuEvent *pContextMe
 //
 //    tAction = tMenu.addAction("Save statistic");
 //    QIcon tIcon1;
-//    tIcon1.addPixmap(QPixmap(":/images/DriveSave.png"), QIcon::Normal, QIcon::Off);
+//    tIcon1.addPixmap(QPixmap(":/images/22_22/Save.png"), QIcon::Normal, QIcon::Off);
 //    tAction->setIcon(tIcon1);
 //
 //    QAction* tPopupRes = tMenu.exec(pContextMenuEvent->globalPos());
