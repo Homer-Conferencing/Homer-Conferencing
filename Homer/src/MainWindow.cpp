@@ -73,6 +73,7 @@
 #include <QLabel>
 
 using namespace Homer::Monitor;
+using namespace Homer::Multimedia;
 using namespace Homer::Conference;
 
 namespace Homer { namespace Gui {
@@ -676,7 +677,10 @@ void MainWindow::loadSettings()
     // if former selected device isn't available we use one of the available instead
     if (!tNewDeviceSelected)
     {
-        ShowWarning("Audio device not available", "Can't use formerly selected audio device: \"" + CONF.GetLocalAudioSource() + "\", will use one of the available devices instead!");
+        AudioDevices tAList;
+        mOwnAudioMuxer->getAudioDevices(tAList);
+        if (tAList.size() > 1)
+            ShowWarning("Audio device not available", "Can't use formerly selected audio device: \"" + CONF.GetLocalAudioSource() + "\", will use one of the available devices instead!");
         CONF.SetLocalAudioSource("auto");
         mOwnAudioMuxer->SelectDevice("auto", MEDIA_AUDIO, tNewDeviceSelected);
     }
