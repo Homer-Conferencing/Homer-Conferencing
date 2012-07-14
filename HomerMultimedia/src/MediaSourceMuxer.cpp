@@ -1778,7 +1778,7 @@ bool MediaSourceMuxer::SelectDevice(std::string pDesiredDevice, enum MediaType p
 		}else
 		    LOG(LOG_WARN, "Couldn't select device \"%s\", media type is \"%s\"", pDesiredDevice.c_str(), GetMediaTypeStr().c_str());
     }else
-    	LOG(LOG_ERROR, "No basic media source registered until now. Device selection is impossible, media type is \"%s\"", GetMediaTypeStr().c_str());
+    	LOG(LOG_WARN, "No basic media source registered until now. Device selection is impossible, media type is \"%s\"", GetMediaTypeStr().c_str());
 
     // unlock
     mMediaSourcesMutex.unlock();
@@ -1908,7 +1908,7 @@ void* MediaSourceMuxer::AllocChunkBuffer(int& pChunkBufferSize, enum MediaType p
     	tResult = mMediaSource->AllocChunkBuffer(pChunkBufferSize, pMediaType);
     }else
     {
-    	LOG(LOG_WARN, "%s-muxer has no valid base media source registered, allocating chunk buffer via MediaSource::AllocChunkBuffer", GetMediaTypeStr().c_str());
+    	LOG(LOG_VERBOSE, "%s-muxer has no valid base media source registered, allocating chunk buffer via MediaSource::AllocChunkBuffer", GetMediaTypeStr().c_str());
     	tResult = MediaSource::AllocChunkBuffer(pChunkBufferSize, pMediaType);
     }
     LOG(LOG_VERBOSE, "%s-muxer allocated buffer at %p with size of %d bytes", GetMediaTypeStr().c_str(), tResult, pChunkBufferSize);
