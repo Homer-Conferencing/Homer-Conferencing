@@ -1153,6 +1153,28 @@ void Configuration::SetDebugging(bool pState)
     mDebuggingEnabled = pState;
 }
 
+bool Configuration::AudioOutputEnabled()
+{
+    return mAudioOutputEnabled;
+}
+
+void Configuration::DisableAudioOutput()
+{
+    printf("Audio output disabled\n");
+    mAudioOutputEnabled = false;
+}
+
+bool Configuration::AudioCaptureEnabled()
+{
+    return mAudioCaptureEnabled;
+}
+
+void Configuration::DisableAudioCapture()
+{
+    printf("Audio capture disabled\n");
+    mAudioCaptureEnabled = false;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 }} //namespace

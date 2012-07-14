@@ -204,7 +204,11 @@ public:
     /* debugging state machine */
     bool DebuggingEnabled();
 
+    /* audio output */
+    bool AudioOutputEnabled();
 
+    /* audio capture */
+    bool AudioCaptureEnabled();
 
 
     /* global settings */
@@ -327,12 +331,21 @@ public:
     /* debug state */
     void SetDebugging(bool pState = true);
 
+    /* audio output */
+    void DisableAudioOutput();
+
+    /* audio capture */
+    void DisableAudioCapture();
+
     // important because some write operations might be delayed
     void Sync();
+
 
     std::string             mAbsBinPath;
     QSettings               *mQSettings;
     bool                    mDebuggingEnabled;
+    bool                    mAudioOutputEnabled;
+    bool                    mAudioCaptureEnabled;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
