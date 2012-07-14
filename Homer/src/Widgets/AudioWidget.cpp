@@ -495,7 +495,7 @@ void AudioWidget::StopRecorder()
 
 void AudioWidget::DialogAddNetworkSink()
 {
-    AddNetworkSinkDialog tANSDialog(this, mAudioSource);
+    AddNetworkSinkDialog tANSDialog(this, "Configure audio streaming", DATA_TYPE_AUDIO, mAudioSource);
 
     tANSDialog.exec();
 }

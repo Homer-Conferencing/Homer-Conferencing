@@ -25,9 +25,11 @@
  * Since:   2011-01-30
  */
 
+#include <Dialogs/AddNetworkSinkDialog.h>
 #include <Widgets/OverviewFileTransfersWidget.h>
 #include <PacketStatisticService.h>
 #include <Configuration.h>
+#include <FileTransfersManager.h>
 
 #include <QDockWidget>
 #include <QMainWindow>
@@ -37,6 +39,7 @@
 #include <QSizePolicy>
 #include <QMenu>
 #include <QContextMenuEvent>
+#include <QFileDialog>
 
 namespace Homer { namespace Gui {
 
@@ -61,13 +64,18 @@ OverviewFileTransfersWidget::OverviewFileTransfersWidget(QAction *pAssignedActio
         connect(mAssignedAction, SIGNAL(triggered(bool)), this, SLOT(SetVisible(bool)));
         mAssignedAction->setChecked(false);
     }
+    connect(mTbAdd, SIGNAL(clicked()), this, SLOT(AddEntryDialog()));
+    connect(mTbDel, SIGNAL(clicked()), this, SLOT(DelEntryDialog()));
     connect(toggleViewAction(), SIGNAL(toggled(bool)), mAssignedAction, SLOT(setChecked(bool)));
     SetVisible(CONF.GetVisibilityFileTransfersWidget());
     mAssignedAction->setChecked(CONF.GetVisibilityFileTransfersWidget());
+
+    Init();
 }
 
 OverviewFileTransfersWidget::~OverviewFileTransfersWidget()
 {
+    FTMAN.DeleteObserver(this);
     CONF.SetVisibilityFileTransfersWidget(isVisible());
 }
 
@@ -78,11 +86,138 @@ void OverviewFileTransfersWidget::initializeGUI()
     setupUi(this);
 
     // hide id column
-    mTwFiles->setColumnHidden(5, true);
-    mTwFiles->sortItems(5);
+    mTwFiles->setColumnHidden(4, true);
+    mTwFiles->sortItems(4);
     mTwFiles->horizontalHeader()->setResizeMode(QHeaderView::Interactive);
-    for (int i = 0; i < 2; i++)
-        mTwFiles->horizontalHeader()->resizeSection(i, mTwFiles->horizontalHeader()->sectionSize(i) * 2);
+//    for (int i = 0; i < 2; i++)
+//        mTwFiles->horizontalHeader()->resizeSection(i, mTwFiles->horizontalHeader()->sectionSize(i) * 2);
+
+    UpdateView();
+}
+
+void OverviewFileTransfersWidget::Init()
+{
+    QString tHost = "0.0.0.0"; //TODO: allow configuration by user
+
+    Requirements *tRequs = new Requirements();
+    RequirementTransmitChunks *tReqChunks = new RequirementTransmitChunks();
+    RequirementTransmitLossless *tReqLossLess = new RequirementTransmitLossless();
+    RequirementTargetPort *tReqPort = new RequirementTargetPort(FTM_DEFAULT_PORT); //TODO: allow configuration by user
+
+    tRequs->add(tReqChunks);
+    tRequs->add(tReqLossLess);
+
+    // add local port
+    tRequs->add(tReqPort);
+
+    FTMAN.Init(tHost.toStdString(), tRequs);
+    FTMAN.AddObserver(this);
+}
+
+void OverviewFileTransfersWidget::handleFileTransfersManagerEventTransferBeginRequest(uint64_t pId, std::string pPeerName, std::string pFileName, uint64_t pFileSize)
+{
+    FileTransferEntry tEntry;
+    tEntry.FileName = QString(pFileName.c_str());
+    tEntry.FileSize = pFileSize;
+    tEntry.Id = pId;
+    tEntry.Peer = QString(pPeerName.c_str());
+
+    mAskFileTransfersMutex.lock();
+    mAskFileTransfers.push_back(tEntry);
+    //fire user defined Qt event only one time
+    if (mAskFileTransfers.size() < 2)
+        QApplication::postEvent(this, new QEvent(QEvent::User));
+    mAskFileTransfersMutex.unlock();
+}
+
+void OverviewFileTransfersWidget::handleFileTransfersManagerEventTransferBegin(uint64_t pId, std::string pPeerName, std::string pFileName, uint64_t pFileSize)
+{
+    FileTransferEntry tEntry;
+    tEntry.FileName = QString(pFileName.c_str());
+    tEntry.FileSize = pFileSize;
+    tEntry.Id = pId;
+    tEntry.Peer = QString(pPeerName.c_str());
+    tEntry.FileTransferredSize = 0;
+    tEntry.Outgoing = (FTMAN.IsFromLocalhost(pId));
+
+    // RECEIVING A FILE: add entry to file transfer database
+    AddTransferEntry(tEntry);
+}
+
+void OverviewFileTransfersWidget::handleFileTransfersManagerEventTransferData(uint64_t pId, uint64_t pTransferredSize)
+{
+    QList<FileTransferEntry>::iterator tIt;
+    bool tFound = false;
+
+    mFileTransfersMutex.lock();
+
+    for(tIt = mFileTransfers.begin(); tIt != mFileTransfers.end(); tIt++)
+    {
+        if (tIt->Id == pId)
+        {
+            tFound = true;
+            tIt->FileTransferredSize = pTransferredSize;
+            //LOG(LOG_VERBOSE, "Updating entry: %lu transferred, %lu overall", pTransferredSize, tEntry.FileSize);
+            break;
+        }
+    }
+
+    mFileTransfersMutex.unlock();
+
+    //fire user defined Qt event
+    if (tFound)
+        QApplication::postEvent(this, new QEvent(QEvent::User));
+}
+
+void OverviewFileTransfersWidget::AddTransferEntry(FileTransferEntry pEntry)
+{
+    mFileTransfersMutex.lock();
+    pEntry.GuiId = mFileTransfers.size();
+    mFileTransfers.push_back(pEntry);
+    //fire user defined Qt event
+    QApplication::postEvent(this, new QEvent(QEvent::User));
+    mFileTransfersMutex.unlock();
+}
+
+void OverviewFileTransfersWidget::customEvent(QEvent* pEvent)
+{
+    FileTransferEntry tEntry;
+
+    if (pEvent->type() != QEvent::User)
+    {
+        LOG(LOG_WARN, "Unexpected event type");
+        return;
+    }
+
+    bool tShouldShowAskFileTransfersDialog;
+
+    do
+    {
+        tShouldShowAskFileTransfersDialog = false;
+        mAskFileTransfersMutex.lock();
+        if (mAskFileTransfers.size() > 0)
+        {
+            tShouldShowAskFileTransfersDialog = true;
+            tEntry = mAskFileTransfers.first();
+            mAskFileTransfers.pop_front();
+        }
+        mAskFileTransfersMutex.unlock();
+
+        if (tShouldShowAskFileTransfersDialog)
+        {
+            QString tFileName = QFileDialog::getSaveFileName(parentWidget(), "Store file " + tEntry.FileName + "(" + QString("%1").arg(tEntry.FileSize) + " bytes) from " + tEntry.Peer + " to.. ",
+                                                                    CONF.GetDataDirectory() + "/" + tEntry.FileName,
+                                                                    "",
+                                                                    NULL,
+                                                                    QFileDialog::DontUseNativeDialog);
+
+            if (!tFileName.isEmpty())
+            {
+                CONF.SetDataDirectory(tFileName.left(tFileName.lastIndexOf('/')));
+                FTMAN.AcknowledgeTransfer(tEntry.Id, tFileName.toStdString());
+            }
+        }
+    }while(tShouldShowAskFileTransfersDialog);
 
     UpdateView();
 }
@@ -131,122 +266,73 @@ void OverviewFileTransfersWidget::contextMenuEvent(QContextMenuEvent *pContextMe
 //    }
 }
 
-//void OverviewFileTransfersWidget::FillRow(QTableWidget *pTable, int pRow, PacketStatistic *pStats)
-//{
-//	if (pStats == NULL)
-//		return;
-//
-//	PacketStatisticDescriptor tStatValues = pStats->GetPacketStatistic();
-//
-//	if (pRow > pTable->rowCount() - 1)
-//        pTable->insertRow(pTable->rowCount());
-//
-//    if (pTable->item(pRow, 0) != NULL)
-//        pTable->item(pRow, 0)->setText(QString(pStats->GetStreamName().c_str()));
-//    else
-//        pTable->setItem(pRow, 0, new QTableWidgetItem(QString(pStats->GetStreamName().c_str())));
-//    pTable->item(pRow, 0)->setBackground(QBrush(QColor(Qt::lightGray)));
-//
-//	if (pTable->item(pRow, 1) != NULL)
-//		pTable->item(pRow, 1)->setText(Int2String(tStatValues.MinPacketSize) + " bytes");
-//	else
-//		pTable->setItem(pRow, 1, new QTableWidgetItem(Int2String(tStatValues.MinPacketSize) + " bytes"));
-//	pTable->item(pRow, 1)->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
-//
-//	if (pTable->item(pRow, 2) != NULL)
-//		pTable->item(pRow, 2)->setText(Int2String(tStatValues.MaxPacketSize) + " bytes");
-//	else
-//		pTable->setItem(pRow, 2, new QTableWidgetItem(Int2String(tStatValues.MaxPacketSize) + " bytes"));
-//	pTable->item(pRow, 2)->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
-//
-//	if (pTable->item(pRow, 3) != NULL)
-//		pTable->item(pRow, 3)->setText(Int2String(tStatValues.AvgPacketSize) + " bytes");
-//	else
-//		pTable->setItem(pRow, 3, new QTableWidgetItem(Int2String(tStatValues.AvgPacketSize) + " bytes"));
-//	pTable->item(pRow, 3)->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
-//
-//	if (pTable->item(pRow, 4) != NULL)
-//		pTable->item(pRow, 4)->setText(QString("%1").arg(tStatValues.PacketCount));
-//	else
-//		pTable->setItem(pRow, 4, new QTableWidgetItem(QString("%1").arg(tStatValues.PacketCount)));
-//	pTable->item(pRow, 4)->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
-//
-//	if (pTable->item(pRow, 5) != NULL)
-//		pTable->item(pRow, 5)->setText(QString("%1").arg(tStatValues.LostPacketCount));
-//	else
-//		pTable->setItem(pRow, 5, new QTableWidgetItem(QString("%1").arg(tStatValues.LostPacketCount)));
-//	pTable->item(pRow, 5)->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
-//
-//	if (pTable->item(pRow, 6) != NULL)
-//        if (tStatValues.Outgoing)
-//            pTable->item(pRow, 6)->setText(QString("outgoing"));
-//        else
-//            pTable->item(pRow, 6)->setText(QString("incoming"));
-//    else if (tStatValues.Outgoing)
-//        pTable->setItem(pRow, 6, new QTableWidgetItem(QString("outgoing")));
-//    else
-//        pTable->setItem(pRow, 6, new QTableWidgetItem(QString("incoming")));
-//    pTable->item(pRow, 6)->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-//    QIcon tIcon11;
-//    if (tStatValues.Outgoing)
-//        tIcon11.addPixmap(QPixmap(":/images/ArrowRightGreen.png"), QIcon::Normal, QIcon::Off);
-//    else
-//        tIcon11.addPixmap(QPixmap(":/images/ArrowLeftYellow.png"), QIcon::Normal, QIcon::Off);
-//    pTable->item(pRow, 6)->setIcon(tIcon11);
-//
-//    QString tPacketTypeStr = QString(pStats->GetPacketTypeStr().c_str());
-//    if (pTable->item(pRow, 7) != NULL)
-//        pTable->item(pRow, 7)->setText(tPacketTypeStr);
-//    else
-//        pTable->setItem(pRow, 7, new QTableWidgetItem(tPacketTypeStr));
-//    pTable->item(pRow, 7)->setTextAlignment(Qt::AlignCenter|Qt::AlignVCenter);
-//
-//    if (pTable->item(pRow, 8) != NULL)
-//        pTable->item(pRow, 8)->setText(Int2String(tStatValues.AvgBandwidth) + " bytes/s");
-//    else
-//        pTable->setItem(pRow, 8, new QTableWidgetItem(Int2String(tStatValues.AvgBandwidth) + " bytes/s"));
-//    pTable->item(pRow, 8)->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
-//
-//    if (pTable->item(pRow, 9) != NULL)
-//        pTable->item(pRow, 9)->setText(QString("%1").arg(pRow));
-//    else
-//        pTable->setItem(pRow, 9, new QTableWidgetItem(QString("%1").arg(pRow)));
-//    pTable->item(pRow, 9)->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
-//}
+void OverviewFileTransfersWidget::FillCellText(QTableWidget *pTable, int pRow, int pCol, QString pText)
+{
+    if (pTable->item(pRow, pCol) != NULL)
+        pTable->item(pRow, pCol)->setText(pText);
+    else
+    {
+        QTableWidgetItem *tItem =  new QTableWidgetItem(pText);
+        tItem->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
+        pTable->setItem(pRow, pCol, tItem);
+    }
+}
+
+void OverviewFileTransfersWidget::FillRow(QTableWidget *pTable, int pRow, const FileTransferEntry &pEntry)
+{
+	if (pRow > pTable->rowCount() - 1)
+        pTable->insertRow(pTable->rowCount());
+
+    if (pTable->item(pRow, 0) != NULL)
+        if (pEntry.Outgoing)
+            pTable->item(pRow, 0)->setText(QString("outgoing"));
+        else
+            pTable->item(pRow, 0)->setText(QString("incoming"));
+    else if (pEntry.Outgoing)
+        pTable->setItem(pRow, 0, new QTableWidgetItem(QString("outgoing")));
+    else
+        pTable->setItem(pRow, 0, new QTableWidgetItem(QString("incoming")));
+    pTable->item(pRow, 0)->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    QIcon tIcon11;
+    if (pEntry.Outgoing)
+        tIcon11.addPixmap(QPixmap(":/images/32_32/ArrowRight.png"), QIcon::Normal, QIcon::Off);
+    else
+        tIcon11.addPixmap(QPixmap(":/images/32_32/ArrowLeft.png"), QIcon::Normal, QIcon::Off);
+    pTable->item(pRow, 0)->setIcon(tIcon11);
+
+    FillCellText(pTable, pRow, 1, pEntry.FileName);
+    double tProgress = 100 * pEntry.FileTransferredSize / pEntry.FileSize;
+    //LOG(LOG_VERBOSE, "Progress is: %d, %lu / %lu", (int)tProgress,  pEntry.FileTransferredSize, pEntry.FileSize);
+    FillCellText(pTable, pRow, 2, QString("%1 %").arg(tProgress));
+    FillCellText(pTable, pRow, 3, QString("%1").arg(pEntry.FileSize));
+    FillCellText(pTable, pRow, 4, QString("%1").arg(pEntry.GuiId));
+}
 
 void OverviewFileTransfersWidget::UpdateView()
 {
 	PacketStatistics::iterator tIt;
-    int tRowAudio = 0, tRowVideo = 0;
+    int tRow = 0;
     int tSelectedRow = -1;
 
-    //PacketStatisticsList tStatList = SVC_PACKET_STATISTIC.GetPacketStatistics();
+    //LOG(LOG_VERBOSE, "Updating view");
 
     if (mTwFiles->selectionModel()->currentIndex().isValid())
         tSelectedRow = mTwFiles->selectionModel()->currentIndex().row();
 
     // reset all
-    mTwFiles->clearContents();
+    mFileTransfersMutex.lock();
 
-//    if (tStatList.size() > 0)
-//    {
-//        tIt = tStatList.begin();
-//
-//        while (tIt != tStatList.end())
-//        {
-//        	switch((*tIt)->GetDataType())
-//        	{
-//				case DATA_TYPE_VIDEO:
-//                    FillRow(mTwVideo, tRowVideo++, *tIt);
-//					break;
-//				case DATA_TYPE_AUDIO:
-//                    FillRow(mTwAudio, tRowAudio++, *tIt);
-//					break;
-//        	}
-//            tIt++;
-//        }
-//    }
-    //mTwFiles->setRowCount(tRowAudio);
+    if (mFileTransfers.size() > 0)
+    {
+        FileTransferEntry tEntry;
+        foreach(tEntry, mFileTransfers)
+        {
+            FillRow(mTwFiles, tRow++, tEntry);
+        }
+    }
+    mTwFiles->setRowCount(tRow);
+
+    mFileTransfersMutex.unlock();
 
     if (tSelectedRow != -1)
         mTwFiles->selectRow(tSelectedRow);
@@ -259,6 +345,51 @@ void OverviewFileTransfersWidget::timerEvent(QTimerEvent *pEvent)
     #endif
     if (pEvent->timerId() == mTimerId)
         UpdateView();
+}
+
+void OverviewFileTransfersWidget::DelEntryDialog()
+{
+    QList<QTableWidgetItem*> tItems = mTwFiles->selectedItems();
+
+    if (tItems.isEmpty())
+        return;
+
+    QTableWidgetItem* tItem;
+    foreach(tItem, tItems)
+    {
+//        mTwFiles->removeItemWidget(tItem);
+//        delete tItem;
+    }
+}
+
+void OverviewFileTransfersWidget::AddEntryDialog()
+{
+    QStringList tFileNames;
+
+    tFileNames = QFileDialog::getOpenFileNames(this,       "Select files for transfer",
+                                                               CONF.GetDataDirectory(),
+                                                               "All files (*)",
+                                                               NULL,
+                                                               QFileDialog::DontUseNativeDialog);
+
+    if (tFileNames.isEmpty())
+        return;
+
+    QString tFirstFileName = *tFileNames.constBegin();
+    CONF.SetDataDirectory(tFirstFileName.left(tFirstFileName.lastIndexOf('/')));
+
+    AddNetworkSinkDialog tANSDialog(this, "Configure target for " + QString("%1").arg(tFileNames.size()) + " file(s)", DATA_TYPE_FILE, NULL);
+    if (tANSDialog.exec() != QDialog::Accepted)
+        return;
+
+    Requirements *tRequs = tANSDialog.GetRequirements();
+    QString tTarget = tANSDialog.GetTarget();
+
+    QString tFile;
+    foreach (tFile, tFileNames)
+    {
+        FTMAN.SendFile(tTarget.toStdString(), tRequs, tFile.toStdString());
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

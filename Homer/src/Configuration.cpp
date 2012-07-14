@@ -407,6 +407,20 @@ void Configuration::SetAudioStreamingGAPIImpl(QString pImpl)
     mQSettings->endGroup();
 }
 
+void Configuration::SetAppDataTransport(enum TransportType pType)
+{
+    mQSettings->beginGroup("Network");
+    mQSettings->setValue("AppDataTransportType", QString(Socket::TransportType2String(pType).c_str()));
+    mQSettings->endGroup();
+}
+
+void Configuration::SetAppDataGAPIImpl(QString pImpl)
+{
+    mQSettings->beginGroup("Network");
+    mQSettings->setValue("AppDataGAPIImpl", pImpl);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetLocalAudioSource(QString pASource)
 {
     mQSettings->beginGroup("Capturing");
@@ -936,6 +950,16 @@ enum TransportType Configuration::GetAudioTransportType()
 QString Configuration::GetAudioStreamingGAPIImpl()
 {
     return mQSettings->value("Streaming/AudioStreamGAPIImpl", QString(BERKEYLEY_SOCKETS)).toString();
+}
+
+enum TransportType Configuration::GetAppDataTransportType()
+{
+    return Socket::String2TransportType(mQSettings->value("Network/AppDataTransportType", QString("UDP")).toString().toStdString());
+}
+
+QString Configuration::GetAppDataGAPIImpl()
+{
+    return mQSettings->value("Network/AppDataGAPIImpl", QString(BERKEYLEY_SOCKETS)).toString();
 }
 
 int Configuration::GetVideoAudioStartPort()

@@ -142,6 +142,10 @@ public:
     QString GetAudioStreamingGAPIImpl();
     QString GetLocalAudioSource();
 
+    /* app data */
+    enum Homer::Base::TransportType GetAppDataTransportType();
+    QString GetAppDataGAPIImpl();
+
     /* playback settings */
     QString GetLocalAudioSink();
 
@@ -265,6 +269,10 @@ public:
     void SetAudioTransport(enum Homer::Base::TransportType pType);
     void SetAudioStreamingGAPIImpl(QString pImpl);
     void SetLocalAudioSource(QString pASource);
+
+    /* app data */
+    void SetAppDataTransport(enum Homer::Base::TransportType pType);
+    void SetAppDataGAPIImpl(QString pImpl);
 
     /* playback settings */
     void SetLocalAudioSink(QString pASink);
