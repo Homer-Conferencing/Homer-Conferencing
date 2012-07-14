@@ -79,6 +79,7 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
     mRemoteAudioAdr = "";
     mRemoteVideoPort = 0;
     mRemoteAudioPort = 0;
+    mWaveOut = NULL;
     mCallBox = NULL;
     mVideoSourceMuxer = pVideoSourceMuxer;
     mAudioSourceMuxer = pAudioSourceMuxer;
