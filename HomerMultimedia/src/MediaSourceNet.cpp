@@ -210,7 +210,11 @@ bool MediaSourceNet::DoReceiveFragment(std::string &pSourceHost, unsigned int &p
             if (!mGAPIDataSocket->isClosed())
             {// success
                 tResult = true;
-                pSourceHost = mGAPIDataSocket->getRemoteName()->toString();
+                string tRemoteName = mGAPIDataSocket->getRemoteName()->toString();
+                int tPos = tRemoteName.find('<');
+                if (tPos != (int)string::npos)
+                    tRemoteName = tRemoteName.substr(0, tPos);
+                pSourceHost = tRemoteName;
                 pSourcePort = 1;
             }
         }else
