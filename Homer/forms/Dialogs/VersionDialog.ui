@@ -40,7 +40,7 @@
      <item>
       <widget class="QFrame" name="frame">
        <property name="frameShape">
-        <enum>QFrame::Panel</enum>
+        <enum>QFrame::StyledPanel</enum>
        </property>
        <property name="frameShadow">
         <enum>QFrame::Raised</enum>
@@ -397,7 +397,7 @@ p, li { white-space: pre-wrap; }
      <item>
       <widget class="QFrame" name="frame_3">
        <property name="frameShape">
-        <enum>QFrame::Panel</enum>
+        <enum>QFrame::StyledPanel</enum>
        </property>
        <property name="frameShadow">
         <enum>QFrame::Raised</enum>
@@ -589,7 +589,7 @@ p, li { white-space: pre-wrap; }
                         <string/>
                        </property>
                        <property name="pixmap">
-                        <pixmap resource="../../resources/Icons.qrc">:/images/ArrowRightGreen.png</pixmap>
+                        <pixmap resource="../../resources/Icons.qrc">:/images/32_32/ArrowRight.png</pixmap>
                        </property>
                        <property name="scaledContents">
                         <bool>true</bool>
@@ -840,7 +840,7 @@ p, li { white-space: pre-wrap; }
                         <string/>
                        </property>
                        <property name="pixmap">
-                        <pixmap resource="../../resources/Icons.qrc">:/images/ArrowRightGreen.png</pixmap>
+                        <pixmap resource="../../resources/Icons.qrc">:/images/32_32/ArrowRight.png</pixmap>
                        </property>
                        <property name="scaledContents">
                         <bool>true</bool>
@@ -1089,7 +1089,7 @@ p, li { white-space: pre-wrap; }
                         <string/>
                        </property>
                        <property name="pixmap">
-                        <pixmap resource="../../resources/Icons.qrc">:/images/ArrowRightGreen.png</pixmap>
+                        <pixmap resource="../../resources/Icons.qrc">:/images/32_32/ArrowRight.png</pixmap>
                        </property>
                        <property name="scaledContents">
                         <bool>true</bool>
@@ -1340,7 +1340,7 @@ p, li { white-space: pre-wrap; }
                         <string/>
                        </property>
                        <property name="pixmap">
-                        <pixmap resource="../../resources/Icons.qrc">:/images/ArrowRightGreen.png</pixmap>
+                        <pixmap resource="../../resources/Icons.qrc">:/images/32_32/ArrowRight.png</pixmap>
                        </property>
                        <property name="scaledContents">
                         <bool>true</bool>
@@ -1591,7 +1591,7 @@ p, li { white-space: pre-wrap; }
                         <string/>
                        </property>
                        <property name="pixmap">
-                        <pixmap resource="../../resources/Icons.qrc">:/images/ArrowRightGreen.png</pixmap>
+                        <pixmap resource="../../resources/Icons.qrc">:/images/32_32/ArrowRight.png</pixmap>
                        </property>
                        <property name="scaledContents">
                         <bool>true</bool>
