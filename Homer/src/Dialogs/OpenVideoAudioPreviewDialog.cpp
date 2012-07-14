@@ -318,16 +318,19 @@ void OpenVideoAudioPreviewDialog::LoadConfiguration()
     #ifdef LINUX
         MediaSourceV4L2 *tVSource = new MediaSourceV4L2("");
     #endif
-	MediaSourcePortAudio *tASource = new MediaSourcePortAudio("");
+    if (CONF.AudioCaptureEnabled())
+    {
+        MediaSourcePortAudio *tASource = new MediaSourcePortAudio("");
+        if (tASource != NULL)
+        {
+            tASource->getAudioDevices(mAudioDevicesList);
+            delete tASource;
+        }
+    }
     if (tVSource != NULL)
     {
         tVSource->getVideoDevices(mVideoDevicesList);
         delete tVSource;
-    }
-    if (tASource != NULL)
-    {
-        tASource->getAudioDevices(mAudioDevicesList);
-        delete tASource;
     }
 
     mCbDeviceVideo->clear();

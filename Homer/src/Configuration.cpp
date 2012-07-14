@@ -1163,6 +1163,18 @@ void Configuration::DisableAudioOutput()
     printf("Audio output disabled\n");
     mAudioOutputEnabled = false;
 }
+
+bool Configuration::AudioCaptureEnabled()
+{
+    return mAudioCaptureEnabled;
+}
+
+void Configuration::DisableAudioCapture()
+{
+    printf("Audio capture disabled\n");
+    mAudioCaptureEnabled = false;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 }} //namespace

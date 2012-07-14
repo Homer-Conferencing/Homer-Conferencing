@@ -239,6 +239,8 @@ void MainWindow::initializeFeatureDisablers(QStringList pArguments)
                 Socket::DisableQoSSupport();
             if(tFeatureName == "AudioOutput")
                 CONF.DisableAudioOutput();
+            if(tFeatureName == "AudioCapture")
+                CONF.DisableAudioCapture();
         }
     }
 }
@@ -374,7 +376,10 @@ void MainWindow::initializeVideoAudioIO()
     // ############################
     LOG(LOG_VERBOSE, "Creating audio media objects..");
     mOwnAudioMuxer = new MediaSourceMuxer(NULL);
-	mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio());
+    if (CONF.AudioCaptureEnabled())
+    {
+        mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio());
+    }
 }
 
 void MainWindow::initializeColoring()

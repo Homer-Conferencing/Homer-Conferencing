@@ -207,6 +207,9 @@ public:
     /* audio output */
     bool AudioOutputEnabled();
 
+    /* audio capture */
+    bool AudioCaptureEnabled();
+
 
     /* global settings */
     void SetConferenceAvailability(QString pState);
@@ -331,6 +334,9 @@ public:
     /* audio output */
     void DisableAudioOutput();
 
+    /* audio capture */
+    void DisableAudioCapture();
+
     // important because some write operations might be delayed
     void Sync();
 
@@ -339,6 +345,7 @@ public:
     QSettings               *mQSettings;
     bool                    mDebuggingEnabled;
     bool                    mAudioOutputEnabled;
+    bool                    mAudioCaptureEnabled;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
