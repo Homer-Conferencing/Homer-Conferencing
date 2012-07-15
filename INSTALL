@@ -134,6 +134,11 @@ DEVELOPER: debug the build process:
     > "cd HomerBuild"
     > "make VERBOSE=1"
 
- This shows several very verbose outputs and often gives a good hint why header files
- weren't found or why linking fails.
+ This shows several verbose outputs and often gives a good hint why header files
+ weren't found or why linking failed.
+
+ Get even more verbose output during build process via:
+
+    > "cd HomerBuild"
+    > "make VERBOSE=2"
   
