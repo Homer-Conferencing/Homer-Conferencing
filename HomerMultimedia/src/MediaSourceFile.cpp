@@ -718,11 +718,11 @@ void* MediaSourceFile::Run(void* pArgs)
     switch(mMediaType)
     {
         case MEDIA_VIDEO:
-            SVC_PROCESS_STATISTIC.AssignThreadName("Video-Decoder(FILE");
+            SVC_PROCESS_STATISTIC.AssignThreadName("Video-Decoder(FILE)");
             tChunkBufferSize = mDecoderTargetResX * mDecoderTargetResY * 4 /* bytes per pixel */;
             break;
         case MEDIA_AUDIO:
-            SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Decoder(FILE");
+            SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Decoder(FILE)");
             tChunkBufferSize = AVCODEC_MAX_AUDIO_FRAME_SIZE;
             break;
         default:
