@@ -1554,6 +1554,7 @@ void AudioWorkerThread::run()
             }else
             {
                 mSourceAvailable = false;
+                LOG(LOG_VERBOSE, "Derived EOF and mark audio source as unavailable");
             }
 
 			//printf("SampleSize: %d Sample: %d\n", mSamplesSize[mSampleGrabIndex], tSampleNumber);
