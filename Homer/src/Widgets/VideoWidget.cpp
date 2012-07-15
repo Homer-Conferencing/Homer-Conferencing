@@ -1455,6 +1455,7 @@ VideoWorkerThread::VideoWorkerThread(MediaSource *pVideoSource, VideoWidget *pVi
     mSelectInputChannelAsap = false;
     mSourceAvailable = false;
     mEofReached = false;
+    mTryingToOpenAFile = false;
     mPaused = false;
     mPausedPos = 0;
     mMissingFrames = 0;
@@ -1624,6 +1625,7 @@ void VideoWorkerThread::PlayFile(QString pName)
 		LOG(LOG_VERBOSE, "Trigger playback of file: %s", pName.toStdString().c_str());
 		mDesiredFile = pName;
 		mPlayNewFileAsap = true;
+		mTryingToOpenAFile = true;
         mGrabbingCondition.wakeAll();
 	}
 }
@@ -1946,7 +1948,12 @@ void VideoWorkerThread::DoSetCurrentDevice()
                         mSourceAvailable = mVideoSource->Reset(MEDIA_VIDEO);
                     }
                 }else
-                    mVideoWidget->InformAboutOpenError(mDeviceName);
+                {
+                    if (!mTryingToOpenAFile)
+                        mVideoWidget->InformAboutOpenError(mDeviceName);
+                    else
+                        LOG(LOG_VERBOSE, "Couldn't open video file source %s", mDeviceName.toStdString().c_str());
+                }
             }
         }
         // we had an source reset in every case because "SelectDevice" does this if old source was already opened
@@ -1957,9 +1964,13 @@ void VideoWorkerThread::DoSetCurrentDevice()
     {
         if (!mSourceAvailable)
             LOG(LOG_VERBOSE, "Video source is (temporary) not available after SelectDevice() in DoSetCurrentDevice()");
-        mVideoWidget->InformAboutOpenError(mDeviceName);
+        if (!mTryingToOpenAFile)
+            mVideoWidget->InformAboutOpenError(mDeviceName);
+        else
+            LOG(LOG_VERBOSE, "Couldn't open video file source %s", mDeviceName.toStdString().c_str());
     }
 
+    mTryingToOpenAFile = false;
     mSetCurrentDeviceAsap = false;
     mCurrentFile = mDesiredFile;
     mFrameTimestamps.clear();
