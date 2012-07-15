@@ -560,12 +560,27 @@ bool WaveOutPortAudio::Play()
         mWaitingForFirstBuffer = true;
         if((tErr = Pa_StartStream(mStream)) != paNoError)
         {
-            // unlock grabbing
-            mPlayMutex.unlock();
+            if (tErr == paStreamIsNotStopped)
+            {
+                LOG(LOG_VERBOSE, "Couldn't start stream because it wasn't stopped", Pa_GetErrorText(tErr), tErr);
+                if ((tErr = Pa_StopStream(mStream)) != paNoError)
+                {
+                    LOG(LOG_ERROR, "Couldn't stop stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
+                }else
+                {
+                    tErr = Pa_StartStream(mStream);
+                }
+            }
 
-            LOG(LOG_ERROR, "Couldn't start stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
-    		MediaSourcePortAudio::PortAudioUnlockStreamInterface();
-            return false;
+            if (tErr != paNoError)
+            {
+                // unlock grabbing
+                mPlayMutex.unlock();
+
+                LOG(LOG_ERROR, "Couldn't start stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
+                MediaSourcePortAudio::PortAudioUnlockStreamInterface();
+                return false;
+            }
         }
 
         // wait until the port audio stream becomes active
