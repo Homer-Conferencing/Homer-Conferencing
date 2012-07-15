@@ -51,7 +51,6 @@ MediaSourceFile::MediaSourceFile(string pSourceFile, bool pGrabInRealTime):
     mResampleContext = NULL;
     mDecoderFifo = NULL;
     mDecoderMetaDataFifo = NULL;
-    mEOFReached = false;
     mDuration = 0;
     mCurPts = 0;
     mCurrentDeviceName = mDesiredDevice;
@@ -237,6 +236,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 
     mCurPts = 0;
     mSeekingToPos = true;
+    mEOFReached = false;
     mMediaType = MEDIA_VIDEO;
 
     MarkOpenGrabDeviceSuccessful();
@@ -316,7 +316,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     AVDictionaryEntry *tDictEntry;
     char tLanguageBuffer[256];
     int tAudioStreamCount = 0;
-    LOG(LOG_VERBOSE, "Probing for multiple input channels for device %s", mCurrentDevice.c_str());
+    LOG(LOG_VERBOSE, "Probing for multiple audio input channels for device %s", mCurrentDevice.c_str());
     mInputChannels.clear();
     mMediaStreamIndex = -1;
     for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
@@ -435,6 +435,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     mResampleBuffer = (char*)malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
     mCurPts = 0;
     mSeekingToPos = true;
+    mEOFReached = false;
     mMediaType = MEDIA_AUDIO;
 
     MarkOpenGrabDeviceSuccessful();
@@ -544,7 +545,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
         // unlock grabbing
         mGrabMutex.unlock();
 
-        LOG(LOG_VERBOSE, "No video frame in FIFO available and EOF marker is active");
+        LOG(LOG_VERBOSE, "No %s frame in FIFO available and EOF marker is active", GetMediaTypeStr().c_str());
 
         // acknowledge "success"
         MarkGrabChunkSuccessful(mChunkNumber); // don't panic, it is only EOF
@@ -595,7 +596,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
     #ifdef MSF_DEBUG_PACKETS
         LOG(LOG_VERBOSE, "PTS of grabbed chunk is %d", mCurPts);
     #endif
-    if (mCurPts == mDuration)
+    if ((mCurPts == mDuration) && (mDuration != 0))
         mEOFReached = true;
 
     // unlock grabbing
