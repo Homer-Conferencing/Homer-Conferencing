@@ -33,8 +33,10 @@ ifneq ($(INSTALL_DATADIR),)
 	OPTION_INSTALL_DATADIR = -DINSTALL_DATADIR=$(INSTALL_DATADIR)
 endif
 # Option for cmake: activate verbose makefiles if the command line provides a VERBOSE=1 parameter
-ifeq ($(VERBOSE),1)
+ifeq ($(VERBOSE),2)
 	OPTION_VERBOSE = -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+else ifeq ($(VERBOSE),)
+	MAKE_OPTION_SILENCE = -s
 endif
 
 # Options for cmake: set relocation directory, deactivate special warnings, for MSys32/MinGW32 environment Unix makefiles are created by default
@@ -97,16 +99,16 @@ $(TOP_DIR)/$(BUILD_DIR_DEBUG)/Makefile:
 
 
 release32: $(TOP_DIR)/$(BUILD_DIR_RELEASE32)/Makefile
-	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE32) && $(MAKE) -s
+	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE32) && $(MAKE) $(MAKE_OPTION_SILENCE)
 
 release: $(TOP_DIR)/$(BUILD_DIR_RELEASE)/Makefile
-	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE) && $(MAKE) -s
+	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE) && $(MAKE) $(MAKE_OPTION_SILENCE)
 
 default: $(TOP_DIR)/$(BUILD_DIR_DEFAULT)/Makefile
-	@cd $(TOP_DIR)/$(BUILD_DIR_DEFAULT) && $(MAKE) -s
+	@cd $(TOP_DIR)/$(BUILD_DIR_DEFAULT) && $(MAKE) $(MAKE_OPTION_SILENCE)
 
 debug: $(TOP_DIR)/$(BUILD_DIR_DEBUG)/Makefile
-	@cd $(TOP_DIR)/$(BUILD_DIR_DEBUG) && $(MAKE) -s
+	@cd $(TOP_DIR)/$(BUILD_DIR_DEBUG) && $(MAKE) $(MAKE_OPTION_SILENCE)
 
 install: all
 ifneq ($(INSTALL_PREFIX),)
@@ -114,22 +116,22 @@ ifneq ($(INSTALL_PREFIX),)
 else
 	@echo "##### Installing to default directory"
 endif
-	@cd $(TOP_DIR)/$(BUILD_DIR_DEFAULT) && $(MAKE) -s install
+	@cd $(TOP_DIR)/$(BUILD_DIR_DEFAULT) && $(MAKE) $(MAKE_OPTION_SILENCE) install
 	
 ###############################################################################
 # Targets for building a special sub target in one of our configurations 
 
 %_release32: $(TOP_DIR)/$(BUILD_DIR_RELEASE32)/Makefile
-	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE32) && $(MAKE) -s $*
+	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE32) && $(MAKE) $(MAKE_OPTION_SILENCE) $*
 
 %_release: $(TOP_DIR)/$(BUILD_DIR_RELEASE)/Makefile
-	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE) && $(MAKE) -s $*
+	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE) && $(MAKE) $(MAKE_OPTION_SILENCE) $*
 
 %_default: $(TOP_DIR)/$(BUILD_DIR_DEFAULT)/Makefile
-	@cd $(TOP_DIR)/$(BUILD_DIR_DEFAULT) && $(MAKE) -s $*
+	@cd $(TOP_DIR)/$(BUILD_DIR_DEFAULT) && $(MAKE) $(MAKE_OPTION_SILENCE) $*
 
 %_debug: $(TOP_DIR)/$(BUILD_DIR_DEBUG)/Makefile
-	@cd $(TOP_DIR)/$(BUILD_DIR_DEBUG) && $(MAKE) -s $*
+	@cd $(TOP_DIR)/$(BUILD_DIR_DEBUG) && $(MAKE) $(MAKE_OPTION_SILENCE) $*
 
 ###############################################################################
 %MakeCore:
@@ -142,12 +144,12 @@ Makefile:
 # catch all unhandled targets
 %: 
 ifneq ($(wildcard $(TOP_DIR)/$(BUILD_DIR_RELEASE)),) 
-	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE) && $(MAKE) -s $*
+	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE) && $(MAKE) $(MAKE_OPTION_SILENCE) $*
 endif
 ifneq ($(wildcard $(TOP_DIR)/$(BUILD_DIR_DEFAULT)),) 
-	@cd $(TOP_DIR)/$(BUILD_DIR_DEFAULT) && $(MAKE) -s $*
+	@cd $(TOP_DIR)/$(BUILD_DIR_DEFAULT) && $(MAKE) $(MAKE_OPTION_SILENCE) $*
 endif
 ifneq ($(wildcard $(TOP_DIR)/$(BUILD_DIR_DEBUG)),) 
-	@cd $(TOP_DIR)/$(BUILD_DIR_DEBUG) && $(MAKE) -s $*
+	@cd $(TOP_DIR)/$(BUILD_DIR_DEBUG) && $(MAKE) $(MAKE_OPTION_SILENCE) $*
 endif
 
