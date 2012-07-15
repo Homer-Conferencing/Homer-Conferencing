@@ -142,8 +142,9 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     mCurrentDevice = mDesiredDevice;
     mCurrentDeviceName = mDesiredDevice;
 
-    // limit frame analyzing time for ffmpeg internal codec auto detection
-    mFormatContext->max_analyze_duration = AV_TIME_BASE / 4; //  1/4 recorded seconds
+    //HINT: don't limit frame analyzing time for ffmpeg internal codec auto detection, otherwise ffmpeg probing might run into detection problems
+    //mFormatContext->max_analyze_duration = AV_TIME_BASE / 4; //  1/4 recorded seconds
+
     // verbose timestamp debugging    mFormatContext->debug = FF_FDEBUG_TS;
 
     // Retrieve stream information
@@ -159,6 +160,9 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     mMediaStreamIndex = -1;
     for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
     {
+        // Dump information about device file
+        av_dump_format(mFormatContext, i, "MediaSourceFile(video)", false);
+
         if(mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO)
         {
             mMediaStreamIndex = i;
@@ -173,8 +177,6 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         return false;
     }
 
-    // Dump information about device file
-    av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceFile(video)", false);
     //printf("    ..video stream found with ID: %d, number of available streams: %d\n", mMediaStreamIndex, mFormatContext->nb_streams);
 
     // Get a pointer to the codec context for the video stream
@@ -293,8 +295,9 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     mCurrentDevice = mDesiredDevice;
     mCurrentDeviceName = mDesiredDevice;
 
-    // limit frame analyzing time for ffmpeg internal codec auto detection
-    mFormatContext->max_analyze_duration = AV_TIME_BASE / 4; //  1/4 recorded seconds
+    //HINT: don't limit frame analyzing time for ffmpeg internal codec auto detection, otherwise ffmpeg probing might run into detection problems
+    //mFormatContext->max_analyze_duration = AV_TIME_BASE / 4; //  1/4 recorded seconds
+
     // verbose timestamp debugging    mFormatContext->debug = FF_FDEBUG_TS;
 
     // Retrieve stream information
@@ -317,6 +320,9 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     mMediaStreamIndex = -1;
     for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
     {
+        // Dump information about device file
+        av_dump_format(mFormatContext, i, "MediaSourceFile(audio)", false);
+
         if(mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
         {
             tCodec = avcodec_find_decoder(mFormatContext->streams[i]->codec->codec_id);
@@ -366,10 +372,6 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     }
 
     mCurrentInputChannel = mDesiredInputChannel;
-
-    // Dump information about device file
-    av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceFile(audio)", false);
-    //printf("    ..audio stream found with ID: %d, number of available streams: %d\n", mMediaStreamIndex, mFormatContext->nb_streams);
 
     // Get a pointer to the codec context for the audio stream
     mCodecContext = mFormatContext->streams[mMediaStreamIndex]->codec;
