@@ -79,18 +79,6 @@
      <addaction name="mActionToolBarOnlineStatus"/>
      <addaction name="mActionToolBarMediaSources"/>
     </widget>
-    <widget class="QMenu" name="mMenuOverviewPlaylistWidgets">
-     <property name="title">
-      <string>Playlist</string>
-     </property>
-     <property name="icon">
-      <iconset resource="../resources/Icons.qrc">
-       <normaloff>:/images/22_22/Playlist.png</normaloff>:/images/22_22/Playlist.png</iconset>
-     </property>
-     <addaction name="mActionOverviewVideoPlaylistWidget"/>
-     <addaction name="mActionOverviewAudioPlaylistWidget"/>
-     <addaction name="mActionOverviewMoviePlaylistWidget"/>
-    </widget>
     <widget class="QMenu" name="mMenuParticipantVideoWidgets">
      <property name="title">
       <string>Video windows</string>
@@ -126,7 +114,7 @@
     <addaction name="separator"/>
     <addaction name="mActionOpenVideoAudioPreview"/>
     <addaction name="separator"/>
-    <addaction name="mMenuOverviewPlaylistWidgets"/>
+    <addaction name="mActionOverviewPlaylistWidget"/>
     <addaction name="mActionOverviewContactsWidget"/>
     <addaction name="mActionOverviewFileTransfersWidget"/>
     <addaction name="separator"/>
@@ -702,6 +690,22 @@
   <action name="actionHh">
    <property name="text">
     <string>hh</string>
+   </property>
+  </action>
+  <action name="mActionOverviewPlaylistWidget">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/22_22/Playlist.png</normaloff>
+     <normalon>:/images/22_22/Checked.png</normalon>:/images/22_22/Playlist.png</iconset>
+   </property>
+   <property name="text">
+    <string>Playlist</string>
    </property>
   </action>
  </widget>

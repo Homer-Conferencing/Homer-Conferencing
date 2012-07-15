@@ -48,24 +48,20 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-StreamingControlWidget::StreamingControlWidget(ParticipantWidget* pBroadcastParticipantWidget, MediaSourceDesktop *pMediaSourceDesktop, OverviewPlaylistWidget *pOverviewPlaylistWidgetVideo, OverviewPlaylistWidget *pOverviewPlaylistWidgetAudio, OverviewPlaylistWidget *pOverviewPlaylistWidgetMovie):
+StreamingControlWidget::StreamingControlWidget(ParticipantWidget* pBroadcastParticipantWidget, MediaSourceDesktop *pMediaSourceDesktop, OverviewPlaylistWidget *pOverviewPlaylistWidget):
     QWidget()
 {
     mVideoWorker = pBroadcastParticipantWidget->GetVideoWorker();
     mAudioWorker = pBroadcastParticipantWidget->GetAudioWorker();
     mBroadcastParticipantWidget = pBroadcastParticipantWidget;
     mMediaSourceDesktop = pMediaSourceDesktop;
-    mOverviewPlaylistWidgetVideo = pOverviewPlaylistWidgetVideo;
-    mOverviewPlaylistWidgetAudio = pOverviewPlaylistWidgetAudio;
-    mOverviewPlaylistWidgetMovie = pOverviewPlaylistWidgetMovie;
+    mOverviewPlaylistWidget = pOverviewPlaylistWidget;
 
     initializeGUI();
     connect(mPbBroadcastScreenSegment, SIGNAL(clicked()), this, SLOT(StartScreenSegmentStreaming()));
     connect(mPbBroadcastCamera, SIGNAL(clicked()), this, SLOT(StartCameraStreaming()));
     connect(mPbBroadcastVoice, SIGNAL(clicked()), this, SLOT(StartVoiceStreaming()));
-    connect(mPbBroadcastVideoFile, SIGNAL(clicked()), this, SLOT(StartVideoFileStreaming()));
-    connect(mPbBroadcastAudioFile, SIGNAL(clicked()), this, SLOT(StartAudioFileStreaming()));
-    connect(mPbBroadcastMovieFile, SIGNAL(clicked()), this, SLOT(StartMovieFileStreaming()));
+    connect(mPbBroadcastFile, SIGNAL(clicked()), this, SLOT(StartFileStreaming()));
     connect(mCbVideoInput, SIGNAL(currentIndexChanged(int)), this, SLOT(SelectedNewVideoInputChannel(int)));
 
     mTimerId = startTimer(1000);
@@ -102,9 +98,6 @@ void StreamingControlWidget::initializeGUI()
 
 void StreamingControlWidget::StartScreenSegmentStreaming()
 {
-    mOverviewPlaylistWidgetVideo->StopPlaylist();
-    mOverviewPlaylistWidgetMovie->StopPlaylist();
-
     mVideoWorker->SetCurrentDevice(MSD_DESKTOP_SEGMENT); // used fixed name
 
     if (mVideoWorker->SupportsMultipleChannels())
@@ -117,9 +110,6 @@ void StreamingControlWidget::StartScreenSegmentStreaming()
 
 void StreamingControlWidget::StartCameraStreaming()
 {
-    mOverviewPlaylistWidgetVideo->StopPlaylist();
-    mOverviewPlaylistWidgetMovie->StopPlaylist();
-
     VideoDevices tList = mVideoWorker->GetPossibleDevices();
     VideoDevices::iterator tIt;
     QString tSelectedDevice = "";
@@ -151,9 +141,6 @@ void StreamingControlWidget::StartCameraStreaming()
 
 void StreamingControlWidget::StartVoiceStreaming()
 {
-    mOverviewPlaylistWidgetAudio->StopPlaylist();
-    mOverviewPlaylistWidgetMovie->StopPlaylist();
-
     AudioDevices tList = mAudioWorker->GetPossibleDevices();
     AudioDevices::iterator tIt;
     QString tSelectedDevice = "";
@@ -179,23 +166,9 @@ void StreamingControlWidget::StartVoiceStreaming()
     mAudioWorker->SetCurrentDevice(tSelectedDevice);
 }
 
-void StreamingControlWidget::StartVideoFileStreaming()
+void StreamingControlWidget::StartFileStreaming()
 {
-    mOverviewPlaylistWidgetMovie->StopPlaylist();
-    mOverviewPlaylistWidgetVideo->StartPlaylist();
-}
-
-void StreamingControlWidget::StartAudioFileStreaming()
-{
-    mOverviewPlaylistWidgetMovie->StopPlaylist();
-    mOverviewPlaylistWidgetAudio->StartPlaylist();
-}
-
-void StreamingControlWidget::StartMovieFileStreaming()
-{
-    mOverviewPlaylistWidgetVideo->StopPlaylist();
-    mOverviewPlaylistWidgetAudio->StopPlaylist();
-    mOverviewPlaylistWidgetMovie->StartPlaylist();
+    mOverviewPlaylistWidget->StartPlaylist();
 }
 
 void StreamingControlWidget::SetVideoInputSelectionVisible(bool pVisible)

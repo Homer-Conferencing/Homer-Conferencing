@@ -47,7 +47,7 @@ class StreamingControlWidget :
     Q_OBJECT;
 public:
     /// The default constructor
-    StreamingControlWidget(ParticipantWidget* pBroadcastParticipantWidget, MediaSourceDesktop *pMediaSourceDesktop, OverviewPlaylistWidget *pOverviewPlaylistWidgetVideo, OverviewPlaylistWidget *pOverviewPlaylistWidgetAudio, OverviewPlaylistWidget *pOverviewPlaylistWidgetMovie);
+    StreamingControlWidget(ParticipantWidget* pBroadcastParticipantWidget, MediaSourceDesktop *pMediaSourceDesktop, OverviewPlaylistWidget *pOverviewPlaylistWidget);
 
     /// The destructor.
     virtual ~StreamingControlWidget();
@@ -58,9 +58,7 @@ private slots:
     void StartScreenSegmentStreaming();
     void StartVoiceStreaming();
     void StartCameraStreaming();
-	void StartVideoFileStreaming();
-	void StartAudioFileStreaming();
-    void StartMovieFileStreaming();
+    void StartFileStreaming();
 	void SelectedNewVideoInputChannel(int pIndex);
 
 private:
@@ -71,9 +69,7 @@ private:
     AudioWorkerThread       *mAudioWorker;
     ParticipantWidget       *mBroadcastParticipantWidget;
     MediaSourceDesktop      *mMediaSourceDesktop;
-    OverviewPlaylistWidget 	*mOverviewPlaylistWidgetVideo;
-    OverviewPlaylistWidget 	*mOverviewPlaylistWidgetAudio;
-    OverviewPlaylistWidget 	*mOverviewPlaylistWidgetMovie;
+    OverviewPlaylistWidget 	*mOverviewPlaylistWidget;
     int 					mTimerId;
 };
 

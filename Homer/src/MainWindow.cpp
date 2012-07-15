@@ -418,13 +418,9 @@ void MainWindow::initializeWidgetsAndMenus()
     CreateSysTray();
 
     LOG(LOG_VERBOSE, "Creating playlist control widgets..");
-    mOverviewPlaylistWidgetVideo = new OverviewPlaylistWidget(mActionOverviewVideoPlaylistWidget, this, PLAYLIST_VIDEO, mLocalUserParticipantWidget->GetVideoWorker(), mLocalUserParticipantWidget->GetAudioWorker());
-    mOverviewPlaylistWidgetAudio = new OverviewPlaylistWidget(mActionOverviewAudioPlaylistWidget, this, PLAYLIST_AUDIO, mLocalUserParticipantWidget->GetVideoWorker(), mLocalUserParticipantWidget->GetAudioWorker());
-    mOverviewPlaylistWidgetMovie = new OverviewPlaylistWidget(mActionOverviewMoviePlaylistWidget, this, PLAYLIST_MOVIE, mLocalUserParticipantWidget->GetVideoWorker(), mLocalUserParticipantWidget->GetAudioWorker());
-    tabifyDockWidget(mOverviewPlaylistWidgetVideo, mOverviewPlaylistWidgetAudio);
-    tabifyDockWidget(mOverviewPlaylistWidgetAudio, mOverviewPlaylistWidgetMovie);
+    mOverviewPlaylistWidget = new OverviewPlaylistWidget(mActionOverviewPlaylistWidget, this, mLocalUserParticipantWidget->GetVideoWorker(), mLocalUserParticipantWidget->GetAudioWorker());
 
-    mMediaSourcesControlWidget = new StreamingControlWidget(mLocalUserParticipantWidget, mSourceDesktop, mOverviewPlaylistWidgetVideo, mOverviewPlaylistWidgetAudio, mOverviewPlaylistWidgetMovie);
+    mMediaSourcesControlWidget = new StreamingControlWidget(mLocalUserParticipantWidget, mSourceDesktop, mOverviewPlaylistWidget);
     mToolBarMediaSources->addWidget(mMediaSourcesControlWidget);
     if (mOwnVideoMuxer->SupportsMultipleInputChannels())
         mMediaSourcesControlWidget->SetVideoInputSelectionVisible();
@@ -729,9 +725,7 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
 
     //HINT: delete before local participant widget is destroyed
     LOG(LOG_VERBOSE, "..destroying playlist widget");
-    delete mOverviewPlaylistWidgetVideo;
-    delete mOverviewPlaylistWidgetAudio;
-    delete mOverviewPlaylistWidgetMovie;
+    delete mOverviewPlaylistWidget;
 
     // should be the last because video/audio workers could otherwise be deleted while they are still called
     LOG(LOG_VERBOSE, "..destroying broadcast widget");

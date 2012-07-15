@@ -159,7 +159,7 @@ private:
     OverviewErrorsWidget        *mOverviewErrorsWidget;
     OverviewFileTransfersWidget *mOverviewFileTransfersWidget;
     OverviewNetworkStreamsWidget *mOverviewNetworkStreamsWidget;
-    OverviewPlaylistWidget	    *mOverviewPlaylistWidgetVideo, *mOverviewPlaylistWidgetAudio, *mOverviewPlaylistWidgetMovie;
+    OverviewPlaylistWidget	    *mOverviewPlaylistWidget;
     OverviewThreadsWidget 	    *mOverviewThreadsWidget;
     ParticipantWidgetList 	    mParticipantWidgets;
     ParticipantWidget 		    *mLocalUserParticipantWidget;
