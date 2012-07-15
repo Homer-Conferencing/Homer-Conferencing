@@ -100,8 +100,7 @@ bool Condition::Wait(Mutex *pMutex, int pTime)
         else
         {
         	bool tResult = false;
-            pthread_mutex_t tMutex;
-            pthread_mutex_init(&tMutex, NULL);
+            pthread_mutex_t tMutex = PTHREAD_MUTEX_INITIALIZER;
             pthread_mutex_lock(&tMutex);
             if (pTime > 0)
             {
