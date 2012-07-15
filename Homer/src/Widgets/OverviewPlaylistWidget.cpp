@@ -426,6 +426,8 @@ QStringList OverviewPlaylistWidget::LetUserSelectMediaFile(QWidget *pParent, QSt
 
 void OverviewPlaylistWidget::AddEntryDialog()
 {
+    LOG(LOG_VERBOSE, "User wants to add a new entry to playlist");
+
     bool tListWasEmpty = (mLwFiles->count() == 0);
 
 	QStringList tFileNames;
@@ -525,8 +527,11 @@ void OverviewPlaylistWidget::Play(int pIndex)
 	mIsPlayed = true;
 	mCurrentFile = GetListEntry(pIndex);
 
-	mVideoWorker->PlayFile(mCurrentFile);
-    mAudioWorker->PlayFile(mCurrentFile);
+	// VIDEO: we don't support video streaming yet, otherwise we play the file
+	if (!mCurrentFile.startsWith("http://"))
+        mVideoWorker->PlayFile(mCurrentFile);
+	// AUDIO: play the file
+	mAudioWorker->PlayFile(mCurrentFile);
 
     mCurrentFileId = pIndex;
     LOG(LOG_VERBOSE, "Setting current row to %d in playlist", mCurrentFileId);
@@ -798,8 +803,7 @@ void OverviewPlaylistWidget::AddPLSToList(QString pFilePlaylist)
                     // nothing to do
                 }else
                 {
-                    LOG(LOG_ERROR, "Error in PLS file entry: %s", tLineString.toStdString().c_str());
-                    return;
+                    LOG(LOG_VERBOSE, "Unexpected token in PLS playlist: \"%s\"", tLineString.toStdString().c_str());
                 }
             }
 
