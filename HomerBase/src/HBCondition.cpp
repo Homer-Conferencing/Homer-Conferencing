@@ -89,8 +89,24 @@ bool Condition::Wait(Mutex *pMutex, int pTime)
             tTimeout.tv_nsec = tMachTimeSpec.tv_nsec;
         #endif
 
-        // add msecs to current time stamp
+        // add complete seconds if pTime is bigger than 1 sec
+        if (pTime >= 1000)
+        {
+            tTimeout.tv_sec += pTime / 1000;
+            pTime %= 1000;
+        }
         tTimeout.tv_nsec += pTime * 1000 * 1000;
+        if (tTimeout.tv_nsec > (int64_t)60 * 1000 * 1000 * 1000)
+        {
+            int64_t tAddSecs = tTimeout.tv_nsec / 60  / 1000 / 1000 / 1000;
+            int64_t tNanoDiff = tAddSecs * 60 * 1000 * 1000 * 1000;
+            int64_t tNanoSecs = tTimeout.tv_nsec - tNanoDiff;
+            tTimeout.tv_nsec = tNanoSecs;
+            tTimeout.tv_sec += tAddSecs;
+            #ifdef HBC_DEBUG_TIMED
+                LOG(LOG_WARN, "Condition ns part of timeout exceeds by %ld seconds", tAddSecs);
+            #endif
+        }
 
         if (pMutex)
             if (pTime > 0)
@@ -113,7 +129,7 @@ bool Condition::Wait(Mutex *pMutex, int pTime)
 					case EBUSY: // Condition can't be obtained because it is busy
 						break;
 					case EINVAL:
-						LOG(LOG_ERROR, "Condition was found in uninitialized state");
+						LOG(LOG_ERROR, "Specified time of %d was invalid", pTime);
 						break;
 					case EFAULT:
 						LOG(LOG_ERROR, "Invalid condition pointer was given");
@@ -152,6 +168,7 @@ bool Condition::Wait(Mutex *pMutex, int pTime)
         				break;
         		}
             }
+            pthread_mutex_unlock(&tMutex);
             pthread_mutex_destroy(&tMutex);
     		return tResult;
         }
