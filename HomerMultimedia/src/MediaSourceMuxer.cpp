@@ -1611,6 +1611,22 @@ void MediaSourceMuxer::SetActivation(bool pState)
     mStreamActivated = pState;
 }
 
+string MediaSourceMuxer::GetSourceTypeStr()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->GetSourceTypeStr();
+    else
+        return "unknown";
+}
+
+enum SourceType MediaSourceMuxer::GetSourceType()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->GetSourceType();
+    else
+        return SOURCE_UNKNOWN;
+}
+
 void MediaSourceMuxer::getVideoDevices(VideoDevices &pVList)
 {
     VideoDeviceDescriptor tDevice;
