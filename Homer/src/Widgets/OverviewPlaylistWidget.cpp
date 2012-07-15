@@ -919,6 +919,11 @@ void OverviewPlaylistWidget::UpdateView()
     if (mLwFiles->selectionModel()->currentIndex().isValid())
         tSelectedRow = mLwFiles->currentRow();
 
+    if (GetListSize() != mLwFiles->count())
+    {
+        mLwFiles->clear();
+    }
+
     mPlaylistMutex.lock();
 
     if (mPlaylist.size() > 0)
