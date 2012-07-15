@@ -111,8 +111,10 @@ MediaSource::MediaSource(string pName):
 		// Register all formats and codecs
 		av_register_all();
 
-		// init network support once instead for every stream
-		//avformat_network_init();
+        #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53, 32, 100)
+            // init network support once instead for every stream
+            avformat_network_init();
+        #endif
 
 		// Register all supported input and output devices
 		avdevice_register_all();
