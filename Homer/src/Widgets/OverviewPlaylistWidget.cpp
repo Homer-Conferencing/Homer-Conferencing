@@ -693,52 +693,46 @@ void OverviewPlaylistWidget::dropEvent(QDropEvent *pEvent)
         PlayItem(mLwFiles->item(mCurrentFileId));
 }
 
+void OverviewPlaylistWidget::AddM3UToList(QString pFilePlaylist)
+{
+    QString tDir = pFilePlaylist.left(pFilePlaylist.lastIndexOf('/'));
+    LOG(LOG_VERBOSE, "Opening playlist file %s", pFilePlaylist.toStdString().c_str());
+    LOG(LOG_VERBOSE, "..in directory: %s", tDir.toStdString().c_str());
+
+    QFile tPlaylistFile(pFilePlaylist);
+    if (!tPlaylistFile.open(QIODevice::ReadOnly))
+    {
+        LOG(LOG_ERROR, "Couldn't read playlist from %s", pFilePlaylist.toStdString().c_str());
+    }else
+    {
+        QByteArray tLine;
+        tLine = tPlaylistFile.readLine();
+        while (!tLine.isEmpty())
+        {
+            QString tLineString = QString(tLine);
+            while((tLineString.endsWith(QChar(0x0A))) || (tLineString.endsWith(QChar(0x0D))))
+                tLineString = tLineString.left(tLineString.length() - 1); //remove any "new line" char from the end
+
+            if (!tLineString.startsWith("#EXT"))
+            {
+                LOG(LOG_VERBOSE, "Found playlist entry: %s", tLineString.toStdString().c_str());
+                if (tLineString.startsWith("http://"))
+                    AddFileToList(tLineString);
+                else
+                    AddFileToList(tDir + "/" + tLineString);
+            }else
+                LOG(LOG_VERBOSE, "Found playlist extended entry: %s", tLineString.toStdString().c_str());
+
+            tLine = tPlaylistFile.readLine();
+        }
+    }
+}
+
 void OverviewPlaylistWidget::AddFileToList(QString pFile)
 {
     if (pFile.endsWith(".m3u"))
     {
-        QString tDir = pFile.left(pFile.lastIndexOf('/'));
-        LOG(LOG_VERBOSE, "Found playlist file %s", pFile.toStdString().c_str());
-        LOG(LOG_VERBOSE, "Found in directory: %s", tDir.toStdString().c_str());
-
-        QFile tPlaylispFile(pFile);
-        if (!tPlaylispFile.open(QIODevice::ReadOnly))
-        {
-            LOG(LOG_ERROR, "Couldn't read playlist from %s", pFile.toStdString().c_str());
-        }else
-        {
-            QByteArray tLine;
-            tLine = tPlaylispFile.readLine();
-            while (!tLine.isEmpty())
-            {
-                QString tLineString = QString(tLine);
-                while((tLineString.endsWith(QChar(0x0A))) || (tLineString.endsWith(QChar(0x0D))))
-                    tLineString = tLineString.left(tLineString.length() - 1); //remove any "new line" char from the end
-
-                if (!tLineString.startsWith("#EXT"))
-                {
-                    LOG(LOG_VERBOSE, "Found playlist entry: %s", tLineString.toStdString().c_str());
-                    switch(mPlaylistId)
-                    {
-                        //TODO: remove audio/video playlist and merge to movie playlist
-                        case PLAYLIST_VIDEO:
-                            mLwFiles->addItem(new QListWidgetItem(QIcon(":/images/22_22/VideoReel.png"), tDir + "/" + tLineString));
-                            break;
-                        case PLAYLIST_AUDIO:
-                            mLwFiles->addItem(new QListWidgetItem(QIcon(":/images/Speaker.png"), tDir + "/" + tLineString));
-                            break;
-                        case PLAYLIST_MOVIE:
-                            mLwFiles->addItem(new QListWidgetItem(QIcon(":/images/22_22/ArrowRight.png"), tDir + "/" + tLineString));
-                            break;
-                        default:
-                            break;
-                    }
-                }else
-                    LOG(LOG_VERBOSE, "Found playlist extended entry: %s", tLineString.toStdString().c_str());
-
-                tLine = tPlaylispFile.readLine();
-            }
-        }
+        AddM3UToList(pFile);
     }else
     {
         LOG(LOG_VERBOSE, "Adding to playlist: %s", pFile.toStdString().c_str());

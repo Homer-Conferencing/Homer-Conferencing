@@ -100,6 +100,7 @@ private:
 
     void initializeGUI();
     void AddFileToList(QString pFile);
+    void AddM3UToList(QString pFilePlaylist);
 
     bool 				mEndlessLoop;
     bool				mIsPlayed;
