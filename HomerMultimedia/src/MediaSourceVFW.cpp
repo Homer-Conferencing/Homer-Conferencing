@@ -56,6 +56,7 @@ using namespace Homer::Monitor;
 MediaSourceVFW::MediaSourceVFW(string pDesiredDevice):
     MediaSource("VFW: local capture")
 {
+    mSourceType = SOURCE_DEVICE;
     // set category for packet statistics
     ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 

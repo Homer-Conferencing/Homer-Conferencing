@@ -47,6 +47,7 @@ namespace Homer { namespace Multimedia {
 MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
     MediaSource("MUX: transcoded capture")
 {
+    mSourceType = SOURCE_MUXER;
     mStreamPacketBuffer = (char*)malloc(MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE);
     SetOutgoingStream();
     mStreamCodecId = CODEC_ID_NONE;

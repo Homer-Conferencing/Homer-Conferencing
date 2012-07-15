@@ -46,6 +46,7 @@ using namespace Homer::Base;
 
 void MediaSourceNet::Init(Socket *pDataSocket, unsigned int pLocalPort, bool pRtpActivated)
 {
+    mSourceType = SOURCE_NETWORK;
     mListenerPort = pLocalPort;
     mPacketNumber = 0;
     mReceiveErrors = 0;
