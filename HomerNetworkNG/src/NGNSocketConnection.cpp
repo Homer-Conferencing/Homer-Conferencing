@@ -36,7 +36,6 @@
 #include <NGNParseNetworkRequirment.h>
 
 
-#include <netinet/sctp_uio.h>
 
 
 namespace Homer {  namespace Base {
@@ -258,10 +257,13 @@ void NGNSocketConnection::read(char* pBuffer, int &pBufferSize)
                  struct sockaddr_in6 sin6;
             } addr;
             socklen_t       fromlen, infolen;
+#if defined(BSD) || defined(APLLE)
             struct sctp_rcvinfo info;
+            struct sctp_event event;
+#endif
             unsigned int    infotype;
             struct iovec    iov;
-            struct sctp_event event;
+#if defined(BSD) || defined(APLLE)
             uint16_t        event_types[] = { SCTP_ASSOC_CHANGE,
                SCTP_PEER_ADDR_CHANGE,
                SCTP_SHUTDOWN_EVENT,
@@ -276,6 +278,7 @@ void NGNSocketConnection::read(char* pBuffer, int &pBufferSize)
                    LOG(LOG_ERROR,"setsockopt");
                }
             }
+#endif
 
 //          TODO Future Feature autocloser
             /* Configure auto-close timer. */
@@ -286,18 +289,21 @@ void NGNSocketConnection::read(char* pBuffer, int &pBufferSize)
 //            }
 
             /* Enable delivery of SCTP_RCVINFO. */
+#if defined(BSD) || defined(APLLE)
             on = 1;
             if (setsockopt(fd, IPPROTO_SCTP, SCTP_RECVRCVINFO, &on, sizeof(on)) < 0) {
                 LOG(LOG_ERROR,"setsockopt SCTP_RECVRCVINFO");
                exit(-1);
             }
-
+#endif
             flags = 0;
             memset(&addr, 0, sizeof(addr));
             fromlen = (socklen_t) sizeof(addr);
+#if defined(BSD) || defined(APLLE)
             memset(&info, 0, sizeof(info));
             infolen = (socklen_t) sizeof(info);
             infotype = 0;
+#endif
             iov.iov_base = &pBuffer[0];
             iov.iov_len = pBufferSize;
             LOG(LOG_VERBOSE,"Use buf of size %i", pBufferSize);
@@ -306,6 +312,7 @@ void NGNSocketConnection::read(char* pBuffer, int &pBufferSize)
 			int n = sctp_recvmsg(fd,&pBuffer[0],pBufferSize,NULL,NULL,NULL,0);
             bSignal = false;
             pBufferSize = n;
+#if defined(BSD) || defined(APLLE)
             if (flags & MSG_NOTIFICATION) {
                        print_notification(iov.iov_base);
             } else {
@@ -359,6 +366,7 @@ void NGNSocketConnection::read(char* pBuffer, int &pBufferSize)
                     break;
                 }
             }
+#endif
         }
     }else
         LOG(LOG_ERROR, "Invalid socket");
@@ -534,12 +542,16 @@ void NGNSocketConnection::writeToStream(char* pBuffer, int pBufferSize,int iStre
 //    TODO Setup for future features
 //    struct sctp_status status;
 //    struct sctp_initmsg init;
+#if defined(BSD) || defined(APLLE)
     struct sctp_sndinfo info;
+#endif
 
     int len;
     // Prepare stream transfer
     // TODO Currently the signalling will be sind over 0
+#if defined(BSD) || defined(APLLE)
     bzero(&info,sizeof(info));
+#endif
     if(SCTP_SIGNALING_STREAM == iStream){
         LOG(LOG_VERBOSE, "We send signal information stream %i len %i", iStream, pBufferSize);
         printFroggerMSG(pBuffer, pBufferSize);
@@ -549,14 +561,14 @@ void NGNSocketConnection::writeToStream(char* pBuffer, int pBufferSize,int iStre
     else{
         LOG(LOG_VERBOSE, "Use mSocket (Im Server?) %i", mSocket);
     }
-
+#if defined(BSD) || defined(APLLE)
     memset(&info, 0, sizeof(info));
     info.snd_ppid = htonl(0);
     info.snd_flags = 0; //SCTP_UNORDERED;
 //    info.snd_sid = iStream;
     iov.iov_base = &pBuffer[0];
     iov.iov_len = pBufferSize;
-
+#endif
 //    len = sctp_sendv(fd,(const struct iovec *) &iov, 1, NULL, 0, &info, sizeof(info), SCTP_SENDV_SNDINFO, 0);
     len = sctp_sendmsg(fd,&pBuffer[0],pBufferSize,NULL,0,0,0,iStream,0,0);
 
