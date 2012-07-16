@@ -178,16 +178,19 @@ AudioWidget::~AudioWidget()
     if (mAudioWorker != NULL)
     {
         mAudioWorker->StopGrabber();
+        LOG(LOG_VERBOSE, "..waiting for end of audio worker thread");
         if (!mAudioWorker->wait(2000))
         {
-            LOG(LOG_WARN, "Going to force termination of worker thread");
+            LOG(LOG_WARN, "..going to force termination of worker thread");
             mAudioWorker->terminate();
         }
 
+        LOG(LOG_VERBOSE, "..waiting for termination of audio worker thread");
         if (!mAudioWorker->wait(5000))
         {
             LOG(LOG_ERROR, "Termination of AudioWorker-Thread timed out");
         }
+    	LOG(LOG_VERBOSE, "Going to delete audio worker..");
         delete mAudioWorker;
     }
     if (mAssignedAction != NULL)
@@ -855,6 +858,7 @@ AudioWorkerThread::AudioWorkerThread(MediaSource *pAudioSource, AudioWidget *pAu
 
 AudioWorkerThread::~AudioWorkerThread()
 {
+    LOG(LOG_VERBOSE, "Destroyed");
 }
 
 void AudioWorkerThread::OpenPlaybackDevice()
@@ -1428,9 +1432,16 @@ void AudioWorkerThread::DoStopPlayback()
 	if (mPlaybackAvailable)
 	{
 	    if (mWaveOut != NULL)
+	    {
+	        LOG(LOG_VERBOSE, "..triggering playback stop");
 	        mWaveOut->Stop();
-	}
+	        LOG(LOG_VERBOSE, "..playback stopped");
+	    }
+	}else
+		LOG(LOG_VERBOSE, "Playback can't be stopped because it is not available");
+
 	mAudioOutMuted = true;
+	LOG(LOG_VERBOSE, "Playback is stopped");
 }
 
 int AudioWorkerThread::GetCurrentSample(void **pSample, int& pSampleSize, int *pSps)
