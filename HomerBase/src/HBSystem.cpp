@@ -93,7 +93,7 @@ string System::GetKernelVersion()
         if (GetVersionEx((LPOSVERSIONINFO)&tVersionInfo) == 0)
         {
             LOGEX(System, LOG_ERROR, "Failed when calling \"GetVersionEx\"");
-            return false;
+            return "";
         }
         int tMajor = tVersionInfo.dwMajorVersion;
         int tMinor = tVersionInfo.dwMinorVersion;
