@@ -288,7 +288,6 @@ void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize)
 
     // release FIFO mutex and use fine grained mutex of corresponding FIFO entry instead for protecting memcpy
     mFifo[tCurrentFifoWritePtr].EntryMutex.lock();
-    mFifoMutex.unlock();
 
     // add the new entry
     mFifo[tCurrentFifoWritePtr].Size = pBufferSize;
@@ -305,6 +304,7 @@ void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize)
         LOG(LOG_VERBOSE, "Send wake up signal for empty chunk");
 
     mFifoDataInputCondition.SignalAll();
+    mFifoMutex.unlock();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
