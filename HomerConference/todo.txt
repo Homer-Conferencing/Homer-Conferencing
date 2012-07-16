@@ -1,2 +1,0 @@
-- server based presence publishing and subscribing
-- request timeout for invites/messages/options to get faster feedback from sofia-sip in case of errors

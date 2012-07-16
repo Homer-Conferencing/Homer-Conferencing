@@ -104,6 +104,18 @@ struct VideoFormatDescriptor
 
 typedef std::vector<VideoFormatDescriptor> GrabResolutions;
 
+// source reflection
+enum SourceType
+{
+    SOURCE_UNKNOWN = -1,
+    SOURCE_ABSTRACT = 0,
+    SOURCE_MUXER,
+    SOURCE_DEVICE,
+    SOURCE_MEMORY,
+    SOURCE_NETWORK,
+    SOURCE_FILE
+};
+
 enum MediaType
 {
     MEDIA_UNKNOWN = -1,
@@ -237,6 +249,8 @@ public:
     virtual bool IsRecording();
 
     /* device control */
+    virtual std::string GetSourceTypeStr();
+    virtual enum SourceType GetSourceType();
     virtual std::string GetMediaTypeStr();
     virtual enum MediaType GetMediaType();
     virtual void getVideoDevices(VideoDevices &pVList);
@@ -312,6 +326,7 @@ protected:
     int                 mChunkDropCounter;
     Mutex               mGrabMutex;
     enum MediaType      mMediaType;
+    enum SourceType     mSourceType;
     AVFormatContext     *mFormatContext;
     AVCodecContext      *mCodecContext;
     int                 mMediaStreamIndex;
@@ -331,7 +346,7 @@ protected:
     float               mFrameRate;
     SwsContext          *mScalerContext;
     /* relaying */
-    MediaSinks      mMediaSinks;
+    MediaSinks          mMediaSinks;
     Mutex               mMediaSinksMutex;
     bool                mRtpActivated;
     /* recording */

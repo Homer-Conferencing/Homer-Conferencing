@@ -110,6 +110,8 @@ public:
     void SetActivation(bool pState);
 
     /* device control */
+    virtual std::string GetSourceTypeStr();
+    virtual enum SourceType GetSourceType();
     virtual void getVideoDevices(VideoDevices &pVList);
     virtual void getAudioDevices(AudioDevices &pAList);
     virtual bool SelectDevice(std::string pDesiredDevice, enum MediaType pMediaType, bool &pIsNewDevice); // returns if the new device should be reseted

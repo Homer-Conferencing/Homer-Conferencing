@@ -28,13 +28,16 @@
 #ifndef _OVERVIEW_PLAYLIST_WIDGET_
 #define _OVERVIEW_PLAYLIST_WIDGET_
 
+#include <Widgets/VideoWidget.h>
+#include <Widgets/AudioWidget.h>
+#include <PacketStatistic.h>
+
 #include <QDockWidget>
 #include <QTimerEvent>
 #include <QShortcut>
 #include <QMutex>
-#include <Widgets/VideoWidget.h>
-#include <Widgets/AudioWidget.h>
-#include <PacketStatistic.h>
+#include <QIcon>
+#include <QListWidget>
 
 #include <ui_OverviewPlaylistWidget.h>
 
@@ -44,9 +47,14 @@ namespace Homer { namespace Gui {
 
 //#define SYNCHRONIZE_AUDIO_VIDEO
 
-#define	PLAYLIST_VIDEO						1
-#define	PLAYLIST_AUDIO						2
-#define	PLAYLIST_MOVIE						3
+///////////////////////////////////////////////////////////////////////////////
+
+struct PlaylistEntry{
+    QString     Name;
+    QString     Location;
+    QIcon       Icon;
+};
+typedef QList<PlaylistEntry>    Playlist;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -57,7 +65,7 @@ class OverviewPlaylistWidget :
     Q_OBJECT;
 public:
     /// The default constructor
-    OverviewPlaylistWidget(QAction *pAssignedAction, QMainWindow* pMainWindow, int pPlaylistId, VideoWorkerThread *pVideoWorker, AudioWorkerThread *pAudioWorker);
+    OverviewPlaylistWidget(QAction *pAssignedAction, QMainWindow* pMainWindow, VideoWorkerThread *pVideoWorker, AudioWorkerThread *pAudioWorker);
 
     /// The destructor.
     virtual ~OverviewPlaylistWidget();
@@ -73,7 +81,7 @@ private slots:
     void DelEntryDialog();
     void DelEntryDialogSc();
     void SaveListDialog();
-    void PlayItem(QListWidgetItem *pItem);
+    void Play(int pIndex = -1);
     void PlayNext();
     void PlayLast();
     void ActionPlay();
@@ -90,8 +98,10 @@ public:
     static QString LetUserSelectAudioSaveFile(QWidget *pParent, QString pDescription);
     static bool IsAudioFile(QString pFileName);
     static QStringList LetUserSelectMovieFile(QWidget *pParent, QString pDescription, bool pMultipleFiles = true);
+    static QStringList LetUserSelectMediaFile(QWidget *pParent, QString pDescription, bool pMultipleFiles = true);
 
 private:
+    virtual void customEvent(QEvent* pEvent);
     virtual void closeEvent(QCloseEvent* pEvent);
     virtual void contextMenuEvent(QContextMenuEvent *pContextMenuEvent);
     void timerEvent(QTimerEvent *pEvent);
@@ -99,7 +109,15 @@ private:
     void dropEvent(QDropEvent *pEvent);
 
     void initializeGUI();
-    void AddFileToList(QString pFile);
+    void FillRow(int pRow, const PlaylistEntry &pEntry);
+    void UpdateView();
+
+    int GetListSize();
+    void AddEntry(QString pLocation, QString pName = "");
+    void AddM3UToList(QString pFilePlaylist);
+    void AddPLSToList(QString pFilePlaylist);
+    QString GetListEntry(int pIndex);
+    void DeleteListEntry(int pIndex);
 
     bool 				mEndlessLoop;
     bool				mIsPlayed;
@@ -107,11 +125,12 @@ private:
     QPoint              mWinPos;
     QAction             *mAssignedAction;
     QShortcut           *mShortcutDel, *mShortcutIns;
-    int					mPlaylistId;
     int 				mTimerId;
     VideoWorkerThread   *mVideoWorker;
     AudioWorkerThread   *mAudioWorker;
     QString 			mCurrentFile;
+    Playlist            mPlaylist;
+    QMutex              mPlaylistMutex;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -69,6 +69,7 @@ bool MediaSource::mFfmpegInitiated = false;
 MediaSource::MediaSource(string pName):
     PacketStatistic(pName)
 {
+    mSourceType = SOURCE_ABSTRACT;
     mMediaSourceOpened = false;
     mGrabbingStopped = false;
     mRecording = false;
@@ -110,8 +111,10 @@ MediaSource::MediaSource(string pName):
 		// Register all formats and codecs
 		av_register_all();
 
-		// init network support once instead for every stream
-		//avformat_network_init();
+        #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53, 32, 100)
+            // init network support once instead for every stream
+            avformat_network_init();
+        #endif
 
 		// Register all supported input and output devices
 		avdevice_register_all();
@@ -1949,6 +1952,34 @@ void MediaSource::RecordSamples(int16_t *pSourceSamples, int pSourceSamplesSize)
     }
 
     mRecorderChunkNumber++;
+}
+
+string MediaSource::GetSourceTypeStr()
+{
+    switch (mSourceType)
+    {
+        case SOURCE_ABSTRACT:
+            return "ABSTRACT";
+        case SOURCE_MUXER:
+            return "MUXER";
+        case SOURCE_DEVICE:
+            return "DEVICE";
+        case SOURCE_MEMORY:
+            return "MEMORY";
+        case SOURCE_NETWORK:
+            return "NETWORK";
+        case SOURCE_FILE:
+            return "FILE";
+        case SOURCE_UNKNOWN:
+        default:
+            return "unknown";
+    }
+    return "unknown";
+}
+
+enum SourceType MediaSource::GetSourceType()
+{
+    return mSourceType;
 }
 
 string MediaSource::GetMediaTypeStr()

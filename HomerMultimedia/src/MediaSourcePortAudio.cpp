@@ -73,6 +73,7 @@ void MediaSourcePortAudio::PortAudioUnlockStreamInterface()
 MediaSourcePortAudio::MediaSourcePortAudio(string pDesiredDevice):
     MediaSource("PortAudio: local capture")
 {
+    mSourceType = SOURCE_DEVICE;
     ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
     mCaptureFifo = new MediaFifo(MEDIA_SOURCE_SAMPLES_CAPTURE_FIFO_SIZE, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE, "MediaSourcePortAudio");
 

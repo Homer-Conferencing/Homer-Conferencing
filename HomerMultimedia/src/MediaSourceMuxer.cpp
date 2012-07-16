@@ -47,6 +47,7 @@ namespace Homer { namespace Multimedia {
 MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
     MediaSource("MUX: transcoded capture")
 {
+    mSourceType = SOURCE_MUXER;
     mStreamPacketBuffer = (char*)malloc(MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE);
     SetOutgoingStream();
     mStreamCodecId = CODEC_ID_NONE;
@@ -507,7 +508,7 @@ bool MediaSourceMuxer::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     // save new fps for later internal calls to OpenVideoGrabDevice of underlaying media source
     mFrameRate = pFps;
 
-    LOG(LOG_VERBOSE, "Going to open muxed video grab device, media type is \"%s\"", GetMediaTypeStr().c_str());
+    LOG(LOG_VERBOSE, "Going to open %s grab device", GetMediaTypeStr().c_str());
 
     // set media type early to have verbose debug outputs in case of failures
     mMediaType = MEDIA_VIDEO;
@@ -540,7 +541,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     AVCodec             *tCodec;
     AVStream            *tStream;
 
-    LOG(LOG_VERBOSE, "Going to open muxer, media type is \"%s\"", GetMediaTypeStr().c_str());
+    LOG(LOG_VERBOSE, "Going to open %s-muxer", GetMediaTypeStr().c_str());
 
     if (mMediaSourceOpened)
         return false;
@@ -692,7 +693,7 @@ bool MediaSourceMuxer::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
 {
     bool tResult = false;
 
-    LOG(LOG_VERBOSE, "Going to open muxed audio grab device, media type is \"%s\"", GetMediaTypeStr().c_str());
+    LOG(LOG_VERBOSE, "Going to open %s grab device", GetMediaTypeStr().c_str());
 
     // set media type early to have verbose debug outputs in case of failures
     mMediaType = MEDIA_AUDIO;
@@ -721,7 +722,7 @@ bool MediaSourceMuxer::CloseMuxer()
 {
     bool tResult = false;
 
-    LOG(LOG_VERBOSE, "Going to close muxer, media type is \"%s\"", GetMediaTypeStr().c_str());
+    LOG(LOG_VERBOSE, "Going to close %s-muxer", GetMediaTypeStr().c_str());
 
     // HINT: no mMediaSinksMutex usage because StopEncoder will stop all media sink usage and this CloseMuxer doesn't change the registered media sinks
 
@@ -762,11 +763,11 @@ bool MediaSourceMuxer::CloseMuxer()
         // Close the format context
         av_free(mFormatContext);
 
-        LOG(LOG_INFO, "...closed, media type is \"%s\"", GetMediaTypeStr().c_str());
+        LOG(LOG_INFO, "...%s-muxer closed", GetMediaTypeStr().c_str());
 
         tResult = true;
     }else
-        LOG(LOG_INFO, "...wasn't open, media type is \"%s\"", GetMediaTypeStr().c_str());
+        LOG(LOG_INFO, "...%s-muxer wasn't opened", GetMediaTypeStr().c_str());
 
     mMediaType = MEDIA_UNKNOWN;
 
@@ -779,7 +780,7 @@ bool MediaSourceMuxer::CloseGrabDevice()
 {
     bool tResult = false;
 
-    LOG(LOG_VERBOSE, "Going to close, media type is \"%s\"", GetMediaTypeStr().c_str());
+    LOG(LOG_VERBOSE, "Going to cloase %s grab device", GetMediaTypeStr().c_str());
 
     if (mMediaSourceOpened)
     {
@@ -787,12 +788,12 @@ bool MediaSourceMuxer::CloseGrabDevice()
 
         tResult = true;
     }else
-    	LOG(LOG_INFO, "The muxer was never opened, media type is \"%s\"", GetMediaTypeStr().c_str());
+    	LOG(LOG_INFO, "%s-muxer is already closed", GetMediaTypeStr().c_str());
 
     if (mMediaSource != NULL)
     	tResult = mMediaSource->CloseGrabDevice() && tResult;
     else
-    	LOG(LOG_INFO, "No media source available, media type is \"%s\"", GetMediaTypeStr().c_str());
+    	LOG(LOG_INFO, "No %s source available", GetMediaTypeStr().c_str());
 
     mGrabbingStopped = false;
 
@@ -1067,7 +1068,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
     AVPacket                    tPacketStruc, *tPacket = &tPacketStruc;
     int                         tFrameSize;
 
-    LOG(LOG_VERBOSE, "Encoder started, media type is \"%s\"", GetMediaTypeStr().c_str());
+    LOG(LOG_VERBOSE, "%s-Encoding thread started", GetMediaTypeStr().c_str());
     switch(mMediaType)
     {
         case MEDIA_VIDEO:
@@ -1490,7 +1491,7 @@ void MediaSourceMuxer::SetVideoFlipping(bool pHFlip, bool pVFlip)
 
 void MediaSourceMuxer::StopGrabbing()
 {
-    LOG(LOG_VERBOSE, "Going to stop muxer, media type is \"%s\"", GetMediaTypeStr().c_str());
+    LOG(LOG_VERBOSE, "Going to stop %s-muxer", GetMediaTypeStr().c_str());
     if (mMediaSource != NULL)
     	mMediaSource->StopGrabbing();
     mGrabbingStopped = true;
@@ -1610,6 +1611,22 @@ void MediaSourceMuxer::SetActivation(bool pState)
     mStreamActivated = pState;
 }
 
+string MediaSourceMuxer::GetSourceTypeStr()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->GetSourceTypeStr();
+    else
+        return "unknown";
+}
+
+enum SourceType MediaSourceMuxer::GetSourceType()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->GetSourceType();
+    else
+        return SOURCE_UNKNOWN;
+}
+
 void MediaSourceMuxer::getVideoDevices(VideoDevices &pVList)
 {
     VideoDeviceDescriptor tDevice;
@@ -1672,7 +1689,7 @@ bool MediaSourceMuxer::SelectDevice(std::string pDesiredDevice, enum MediaType p
         tMediaType = pMediaType;
     }
 
-    LOG(LOG_INFO, "Selecting new device: \"%s\", current device: \"%s\", media type is \"%s\"", pDesiredDevice.c_str(), mCurrentDevice.c_str(), GetMediaTypeStr().c_str());
+    LOG(LOG_INFO, "Selecting new device: \"%s\", current %s device: \"%s\"", pDesiredDevice.c_str(), GetMediaTypeStr().c_str(), mCurrentDevice.c_str());
     mDesiredDevice = pDesiredDevice;
 
     // lock
@@ -1771,14 +1788,14 @@ bool MediaSourceMuxer::SelectDevice(std::string pDesiredDevice, enum MediaType p
                 }
 			}else
 			{
-			    LOG(LOG_VERBOSE, "Reset of original media source skipped because it was only re-selected, media type is \"%s\"", GetMediaTypeStr().c_str());
+			    LOG(LOG_VERBOSE, "Reset of original %s source skipped because it was only re-selected", GetMediaTypeStr().c_str());
 			    pIsNewDevice = false;
 			}
             mCurrentDevice = mDesiredDevice;
 		}else
-		    LOG(LOG_WARN, "Couldn't select device \"%s\", media type is \"%s\"", pDesiredDevice.c_str(), GetMediaTypeStr().c_str());
+		    LOG(LOG_WARN, "Couldn't select %s device \"%s\"", GetMediaTypeStr().c_str(), pDesiredDevice.c_str());
     }else
-    	LOG(LOG_ERROR, "No basic media source registered until now. Device selection is impossible, media type is \"%s\"", GetMediaTypeStr().c_str());
+    	LOG(LOG_WARN, "No basic %s source registered until now. Device selection not possible", GetMediaTypeStr().c_str());
 
     // unlock
     mMediaSourcesMutex.unlock();
@@ -1908,7 +1925,7 @@ void* MediaSourceMuxer::AllocChunkBuffer(int& pChunkBufferSize, enum MediaType p
     	tResult = mMediaSource->AllocChunkBuffer(pChunkBufferSize, pMediaType);
     }else
     {
-    	LOG(LOG_WARN, "%s-muxer has no valid base media source registered, allocating chunk buffer via MediaSource::AllocChunkBuffer", GetMediaTypeStr().c_str());
+    	LOG(LOG_VERBOSE, "%s-muxer has no valid base media source registered, allocating chunk buffer via MediaSource::AllocChunkBuffer", GetMediaTypeStr().c_str());
     	tResult = MediaSource::AllocChunkBuffer(pChunkBufferSize, pMediaType);
     }
     LOG(LOG_VERBOSE, "%s-muxer allocated buffer at %p with size of %d bytes", GetMediaTypeStr().c_str(), tResult, pChunkBufferSize);

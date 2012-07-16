@@ -1,6 +1,31 @@
 <RCC>
   <qresource>
+    <file>images/22_22/Unchecked.png</file>
+    <file>images/LogoCivilLounge.png</file>
+    <file>images/LogoComnart.png</file>
+    <file>images/LogoFacebook.png</file>
+    <file>images/LogoFem.png</file>
+    <file>images/LogoHomer.png</file>
+    <file>images/LogoHomer2.png</file>
+    <file>images/LogoHomer3.png</file>
+    <file>images/LogoHomer3_white.png</file>
+    <file>images/LogoHomer4.png</file>
+    <file>images/Sandglass.png</file>
+    <file>images/LogoMetralabs.png</file>
+    <file>images/LogoIcs.png</file>
+    <file>images/LogoHomer6.png</file>
+    <file>images/LogoHomer5.png</file>
+    <file>images/22_22/Save_Clipboard.png</file>
+    <file>images/22_22/Configuration.png</file>
+    <file>images/22_22/Configuration_Video.png</file>
+    <file>images/22_22/Contact_Duplicate.png</file>
+    <file>images/22_22/Phone.png</file>
+    <file>images/22_22/Contact_Edit.png</file>
+    <file>images/22_22/NetworkConnection.png</file>
+    <file>images/22_22/Save_Picture.png</file>
+    <file>images/22_22/User_Multiple.png</file>
     <file>images/32_32/Screencasting.png</file>
+    <file>images/22_22/User.png</file>
     <file>images/32_32/ArrowDown.png</file>
     <file>images/32_32/ArrowLeft.png</file>
     <file>images/32_32/ArrowRight.png</file>
@@ -21,7 +46,7 @@
     <file>images/22_22/Camera.png</file>
     <file>images/22_22/Checked.png</file>
     <file>images/22_22/Close.png</file>
-    <file>images/22_22/Errors.png</file>
+    <file>images/22_22/Error.png</file>
     <file>images/22_22/Exit.png</file>
     <file>images/22_22/Help.png</file>
     <file>images/22_22/Info.png</file>
@@ -38,7 +63,6 @@
     <file>images/22_22/SoftwareUpdate.png</file>
     <file>images/22_22/SpeakerLoud.png</file>
     <file>images/22_22/SpeakerMuted.png</file>
-    <file>images/22_22/UserMale.png</file>
     <file>images/32_32/UserAvailable.png</file>
     <file>images/32_32/UserUnavailable.png</file>
     <file>images/46_46/Flag.png</file>
@@ -50,187 +74,9 @@
     <file>images/22_22/Hardwareinfo.png</file>
     <file>images/20_20/UserAvailable.png</file>
     <file>images/20_20/UserUnavailable.png</file>
-    <file>images/LogoHomer3.png</file>
-    <file>images/LogoHomer2.png</file>
-    <file>images/LogoHomer.png</file>
-    <file>images/LogoCivilLounge.png</file>
-    <file>images/ArrowDown.png</file>
-    <file>images/ArrowDownGreen.png</file>
-    <file>images/ArrowLeft.png</file>
-    <file>images/ArrowLeftYellow.png</file>
-    <file>images/ArrowRight.png</file>
-    <file>images/LogoFacebook.png</file>
-    <file>images/ArrowRightGreen.png</file>
-    <file>images/ArrowUp.png</file>
-    <file>images/ArrowUpRed.png</file>
-    <file>images/Audio - Back.png</file>
-    <file>images/Audio - Eject.png</file>
-    <file>images/Audio - Forward.png</file>
-    <file>images/Audio - Pause.png</file>
-    <file>images/Audio - Paused.png</file>
-    <file>images/Audio - Play.png</file>
-    <file>images/Audio - Record.png</file>
-    <file>images/Audio - Stop.png</file>
-    <file>images/Box.png</file>
-    <file>images/BoxDownload.png</file>
-    <file>images/BoxOpen.png</file>
-    <file>images/BoxUpload.png</file>
-    <file>images/Camera.png</file>
-    <file>images/Camera1.png</file>
-    <file>images/Key.png</file>
-    <file>images/Cancel.png</file>
-    <file>images/Catalog.png</file>
-    <file>images/Checked.png</file>
-    <file>images/Clear.png</file>
-    <file>images/Clipboard.png</file>
-    <file>images/Close.png</file>
-    <file>images/ColoredPanels.png</file>
-    <file>images/Compression.png</file>
-    <file>images/Computer.png</file>
-    <file>images/Counter.png</file>
-    <file>images/Cut.png</file>
-    <file>images/Database.png</file>
-    <file>images/Database1.png</file>
-    <file>images/Delete.png</file>
-    <file>images/Delete1.png</file>
-    <file>images/Denied.png</file>
-    <file>images/Desktop.png</file>
-    <file>images/DesktopShare.png</file>
-    <file>images/DesktopWriting.png</file>
-    <file>images/DocSearch.png</file>
-    <file>images/DocSearch1.png</file>
-    <file>images/DocSound.png</file>
-    <file>images/DocSpreadsheet.png</file>
-    <file>images/DocText.png</file>
-    <file>images/DocText1.png</file>
-    <file>images/DocVideo.png</file>
-    <file>images/Document.png</file>
-    <file>images/Documents.png</file>
-    <file>images/DownBlue.png</file>
-    <file>images/Drive.png</file>
-    <file>images/DriveSave.png</file>
-    <file>images/Exit.png</file>
-    <file>images/Fail.png</file>
-    <file>images/FilmStrip.png</file>
-    <file>images/FilmStrip1.png</file>
-    <file>images/FilmStrip2.png</file>
-    <file>images/Floppy.png</file>
-    <file>images/FolderBlue.png</file>
-    <file>images/FolderDesktop.png</file>
-    <file>images/FolderHome.png</file>
-    <file>images/FolderInternet.png</file>
-    <file>images/FolderOrange.png</file>
-    <file>images/FolderRed.png</file>
-    <file>images/FolderSound.png</file>
-    <file>images/FolderVideo.png</file>
-    <file>images/GameArcade.png</file>
-    <file>images/GameBoard.png</file>
-    <file>images/GameCards.png</file>
-    <file>images/Gear.png</file>
-    <file>images/Gears.png</file>
-    <file>images/Gears1.png</file>
-    <file>images/Globe.png</file>
-    <file>images/Globe1.png</file>
-    <file>images/Globe2.png</file>
-    <file>images/Globe3.png</file>
-    <file>images/Hardware.png</file>
-    <file>images/Hardware1.png</file>
-    <file>images/HardwareInfo.png</file>
-    <file>images/HardwareSettings.png</file>
-    <file>images/Headset.png</file>
-    <file>images/HeadsetMicro.png</file>
-    <file>images/HeadsetPlay.png</file>
-    <file>images/Help.png</file>
-    <file>images/HelpSearch.png</file>
-    <file>images/HomeBlue.png</file>
-    <file>images/HomeHouse.png</file>
-    <file>images/HomeHouse1.png</file>
-    <file>images/HomeRed.png</file>
-    <file>images/Important.png</file>
-    <file>images/InBox.png</file>
-    <file>images/Info.png</file>
-    <file>images/Keys.png</file>
-    <file>images/LogoIcs.png</file>
-    <file>images/LogoMetralabs.png</file>
-    <file>images/LogoFem.png</file>
-    <file>images/LogoComnart.png</file>
-    <file>images/Mail.png</file>
-    <file>images/Memory.png</file>
-    <file>images/Message.png</file>
-    <file>images/Microphone.png</file>
-    <file>images/Minus.png</file>
-    <file>images/Monitor.png</file>
-    <file>images/Mouse.png</file>
-    <file>images/Multimedia.png</file>
-    <file>images/Multimedia1.png</file>
-    <file>images/Music.png</file>
-    <file>images/MusicalNote.png</file>
-    <file>images/Network.png</file>
-    <file>images/NetworkConnection.png</file>
-    <file>images/NetworkDrive.png</file>
-    <file>images/NetworkShare.png</file>
-    <file>images/NetworkSocket.png</file>
-    <file>images/Notes.png</file>
-    <file>images/Okay.png</file>
-    <file>images/Pacman.png</file>
-    <file>images/PaintingPallet.png</file>
-    <file>images/Pause.png</file>
-    <file>images/Pen.png</file>
-    <file>images/Percent.png</file>
-    <file>images/Person.png</file>
-    <file>images/Phone.png</file>
-    <file>images/PhoneAvailable.png</file>
-    <file>images/PhoneHungup.png</file>
-    <file>images/Photo.png</file>
-    <file>images/Plus.png</file>
-    <file>images/PresenceAvailable.png</file>
-    <file>images/PresenceAway.png</file>
-    <file>images/Printer.png</file>
-    <file>images/Processor.png</file>
-    <file>images/Radiation.png</file>
-    <file>images/RedFlag.png</file>
-    <file>images/Refresh.png</file>
-    <file>images/Reload.png</file>
-    <file>images/Resize.png</file>
-    <file>images/Restart.png</file>
-    <file>images/Run.png</file>
-    <file>images/Sandglass1.png</file>
-    <file>images/Sandglass2.png</file>
-    <file>images/Server.png</file>
-    <file>images/Settings.png</file>
-    <file>images/Shortcut.png</file>
-    <file>images/Shutdown.png</file>
-    <file>images/SoftwarePackage.png</file>
-    <file>images/SoftwareUpdate.png</file>
-    <file>images/Speaker.png</file>
-    <file>images/SpeakerLoud.png</file>
-    <file>images/SpeakerMuted.png</file>
-    <file>images/SpeakerTool.png</file>
-    <file>images/Splash.png</file>
-    <file>images/Star.png</file>
-    <file>images/Star1.png</file>
-    <file>images/Stop.png</file>
-    <file>images/Success.png</file>
-    <file>images/Sync.png</file>
-    <file>images/TV.png</file>
-    <file>images/Terminal.png</file>
-    <file>images/Tools.png</file>
-    <file>images/Tools1.png</file>
-    <file>images/Tools2.png</file>
-    <file>images/Tools3.png</file>
-    <file>images/Unchecked.png</file>
-    <file>images/UserAdd.png</file>
-    <file>images/UserAvailable.png</file>
-    <file>images/UserFamily.png</file>
-    <file>images/UserFemale.png</file>
-    <file>images/UserGroup.png</file>
-    <file>images/UserMale.png</file>
-    <file>images/UserOperator.png</file>
-    <file>images/UserUnavailable.png</file>
-    <file>images/Users.png</file>
-    <file>images/Users1.png</file>
-    <file>images/UsersAdd.png</file>
-    <file>images/VideoReel.png</file>
-    <file>images/Warning.png</file>
   </qresource>
+  <qresource prefix="newPrefix"/>
+  <qresource prefix="newPrefix"/>
+  <qresource prefix="newPrefix"/>
+  <qresource prefix="newPrefix"/>
 </RCC>

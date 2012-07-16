@@ -30,6 +30,15 @@ IF(NOT GCC_VERSION VERSION_GREATER ${REQUIRED_GCC_VERSION} AND NOT GCC_VERSION V
 ENDIF()
 
 ##############################################################
+# verbose command line output
+IF (${CMAKE_VERBOSE_MAKEFILE} MATCHES "ON")
+	SET (FLAGS 
+		${FLAGS}
+		-v
+	)
+ENDIF()
+
+##############################################################
 # Homer versioning
 IF(WIN32)
 	IF (DEFINED TARGET_LIB_NAME) 

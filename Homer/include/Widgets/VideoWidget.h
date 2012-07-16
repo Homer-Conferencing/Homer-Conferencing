@@ -255,8 +255,12 @@ private:
     QList<int64_t>      mFrameTimestamps;
     int                 mMissingFrames;
 
+    /* store if we try to open a file or a device/network/memory based video source */
+    bool                mTryingToOpenAFile;
+
     /* for forwarded interface to media source */
     int                 mDesiredInputChannel;
+
     /* delegated tasks */
     bool                mSetInputStreamPreferencesAsap;
     bool                mSetCurrentDeviceAsap;

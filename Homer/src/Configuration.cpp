@@ -47,6 +47,9 @@ Configuration sConfiguration;
 
 Configuration::Configuration()
 {
+    mAudioOutputEnabled = true;
+    mAudioCaptureEnabled = true;
+    mDebuggingEnabled = false;
     mQSettings = new QSettings("Homer Software", "Homer");
     LOG(LOG_VERBOSE, "Created");
 }

@@ -54,7 +54,7 @@
         </font>
        </property>
        <property name="frameShape">
-        <enum>QFrame::WinPanel</enum>
+        <enum>QFrame::StyledPanel</enum>
        </property>
        <property name="frameShadow">
         <enum>QFrame::Sunken</enum>
@@ -137,7 +137,7 @@
         </property>
         <property name="icon">
          <iconset resource="../../resources/Icons.qrc">
-          <normaloff>:/images/Network.png</normaloff>:/images/Network.png</iconset>
+          <normaloff>:/images/46_46/Network.png</normaloff>:/images/46_46/Network.png</iconset>
         </property>
        </item>
       </widget>
@@ -145,7 +145,7 @@
      <item row="0" column="1">
       <widget class="QStackedWidget" name="mSwPreviewPages">
        <property name="frameShape">
-        <enum>QFrame::WinPanel</enum>
+        <enum>QFrame::StyledPanel</enum>
        </property>
        <property name="frameShadow">
         <enum>QFrame::Raised</enum>
@@ -878,13 +878,13 @@
                     <widget class="QCheckBox" name="mCbRtpVideo">
                      <property name="minimumSize">
                       <size>
-                       <width>45</width>
+                       <width>55</width>
                        <height>30</height>
                       </size>
                      </property>
                      <property name="maximumSize">
                       <size>
-                       <width>45</width>
+                       <width>55</width>
                        <height>30</height>
                       </size>
                      </property>
@@ -1380,13 +1380,13 @@
                   <widget class="QCheckBox" name="mCbRtpAudio">
                    <property name="minimumSize">
                     <size>
-                     <width>45</width>
+                     <width>55</width>
                      <height>30</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>45</width>
+                     <width>55</width>
                      <height>30</height>
                     </size>
                    </property>
@@ -1521,7 +1521,7 @@
    <item>
     <widget class="QFrame" name="frame_2">
      <property name="frameShape">
-      <enum>QFrame::Panel</enum>
+      <enum>QFrame::StyledPanel</enum>
      </property>
      <property name="frameShadow">
       <enum>QFrame::Raised</enum>

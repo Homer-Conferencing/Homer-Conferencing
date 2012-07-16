@@ -73,7 +73,7 @@ void HelpDialog::initializeGUI()
     #ifdef LINUX
         QString tCurArch = (System::GetMachineType() == "x86") ? "linux32" : "linux64";
         mSystemData->setText(       "Operating System:  Linux\n"\
-                                    "Kernel:  " + QString(System::GetLinuxKernelVersion().c_str()) + "\n"\
+                                    "Kernel:  " + QString(System::GetKernelVersion().c_str()) + "\n"\
                                     "Library Qt:  " + QString(qVersion()) + "\n"\
                                     "\n"\
                                     "Number of cpu cores: " + QString("%1").arg(System::GetMachineCores()) + "\n"\
@@ -99,12 +99,12 @@ void HelpDialog::initializeGUI()
     #if (defined BSD) && (not defined APPLE)
 		QString tCurArch = (System::GetMachineType() == "x86") ? "bsd32" : "bsd64";
 		mSystemData->setText(       "Operating System:  BSD\n"\
-									"Kernel:  ?? \n"\
+                                    "Kernel:  " + QString(System::GetKernelVersion().c_str()) + "\n"\
 									"Library Qt:  " + QString(qVersion()) + "\n"\
 									"\n"\
 									"Number of cpu cores: " + QString("%1").arg(System::GetMachineCores()) + "\n"\
 									"Current architecture: " + tCurArch + "\n"\
-									"Target architecture: linux" + QString("%1").arg(ARCH_BITS) + "\n"\
+									"Target architecture: bsd" + QString("%1").arg(ARCH_BITS) + "\n"\
 									"\n"\
 									"Linked AVCodec:  " + QString("%1").arg(LIBAVCODEC_VERSION_MAJOR) + "." + QString("%1").arg(LIBAVCODEC_VERSION_MINOR) + "." + QString("%1").arg(LIBAVCODEC_VERSION_MICRO) + "\n"\
 									"Linked AVDevice:  " + QString("%1").arg(LIBAVDEVICE_VERSION_MAJOR) + "." + QString("%1").arg(LIBAVDEVICE_VERSION_MINOR) + "." + QString("%1").arg(LIBAVDEVICE_VERSION_MICRO) + "\n"\
