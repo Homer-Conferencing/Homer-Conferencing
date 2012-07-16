@@ -181,7 +181,12 @@ bool Condition::Wait(Mutex *pMutex, int pTime)
     #endif
 
     #if defined(WIN32) ||defined(WIN64)
+        //TODO: fix this - mutex handling here is nothing to rely on!
+        if (pMutex != NULL)
+        	pMutex->unlock();
         return (WaitForSingleObject(mCondition, (pTime == 0) ? INFINITE : pTime) == WAIT_OBJECT_0);
+        if (pMutex != NULL)
+        	pMutex->lock();
     #endif
 }
 
