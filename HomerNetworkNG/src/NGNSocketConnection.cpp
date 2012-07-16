@@ -185,25 +185,19 @@ NGNSocketConnection::NGNSocketConnection(std::string pTarget, Requirements *pReq
 
     /* start a parser tree for SCTP QoS requirements and additional transport requirements for SCTP */
    changeRequirements(pRequirements);
-   if(mSocket<0)
-       mIsClosed = true;
-   else
-       mIsClosed = false;
+
+    mIsClosed = false;
 }
 
 // In the end this is the client side implementation
 NGNSocketConnection::NGNSocketConnection(int fd)
 {
-
+    mIsClosed = false;
     LOG(LOG_VERBOSE, "Setup a connection for server listen on socket ID %i", fd);
     mClient = SERVER;
     mSocket = fd;
     mStream = static_stream_cnt;
     mRequirements = new Requirements();
-    if(mSocket < 0)
-        mIsClosed = true;
-    else
-        mIsClosed = false;
     LOG(LOG_VERBOSE, "Setup a server configuration");
 }
 
