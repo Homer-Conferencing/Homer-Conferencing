@@ -237,6 +237,10 @@ void MainWindow::initializeFeatureDisablers(QStringList pArguments)
                 Socket::DisableIPv6Support();
             if(tFeatureName == "QoS")
                 Socket::DisableQoSSupport();
+            if(tFeatureName == "AudioOutput")
+                CONF.DisableAudioOutput();
+            if(tFeatureName == "AudioCapture")
+                CONF.DisableAudioCapture();
         }
     }
 }
@@ -372,7 +376,10 @@ void MainWindow::initializeVideoAudioIO()
     // ############################
     LOG(LOG_VERBOSE, "Creating audio media objects..");
     mOwnAudioMuxer = new MediaSourceMuxer(NULL);
-	mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio());
+    if (CONF.AudioCaptureEnabled())
+    {
+        mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio());
+    }
 }
 
 void MainWindow::initializeColoring()
@@ -874,7 +881,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     break;
         case ADD_VIDEO_RELAY:
                     //####################### VIDEO ADD RELAY #############################
-                    tANSDialog = new AddNetworkSinkDialog(this, GetVideoMuxer());
+                    tANSDialog = new AddNetworkSinkDialog(this, "Configure video streaming", DATA_TYPE_VIDEO, GetVideoMuxer());
                     tANSDialog->exec();
                     delete tANSDialog;
                     break;

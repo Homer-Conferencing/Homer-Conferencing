@@ -210,7 +210,11 @@ bool MediaSourceNet::DoReceiveFragment(std::string &pSourceHost, unsigned int &p
             if (!mGAPIDataSocket->isClosed())
             {// success
                 tResult = true;
-                pSourceHost = mGAPIDataSocket->getRemoteName()->toString();
+                string tRemoteName = mGAPIDataSocket->getRemoteName()->toString();
+                int tPos = tRemoteName.find('<');
+                if (tPos != (int)string::npos)
+                    tRemoteName = tRemoteName.substr(0, tPos);
+                pSourceHost = tRemoteName;
                 pSourcePort = 1;
             }
         }else
@@ -277,9 +281,9 @@ void* MediaSourceNet::Run(void* pArgs)
 		tSourceHost = "";
 		if (!DoReceiveFragment(tSourceHost, tSourcePort, mPacketBuffer, tDataSize))
 		{
-		    if (mReceiveErrors == MAX_RECEIVE_ERRORS)
+		    if (mReceiveErrors == MEDIA_SOURCE_NET_MAX_RECEIVE_ERRORS)
 		    {
-		        LOG(LOG_ERROR, "Maximum number of continuous receive errors(%d) is exceeded, will stop network listener", MAX_RECEIVE_ERRORS);
+		        LOG(LOG_ERROR, "Maximum number of continuous receive errors(%d) is exceeded, will stop network listener", MEDIA_SOURCE_NET_MAX_RECEIVE_ERRORS);
 		        mListenerRunning = false;
 		        break;
 		    }else

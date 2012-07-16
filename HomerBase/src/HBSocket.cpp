@@ -266,6 +266,18 @@ std::string Socket::GetPeerName()
     return tResult;
 }
 
+void Socket::SetPeerHost(std::string pHost)
+{
+    mPeerDataMutex.lock();
+    mPeerHost = pHost;
+    mPeerDataMutex.unlock();
+}
+
+void Socket::SetPeerPort(unsigned int pPort)
+{
+    mPeerPort = pPort;
+}
+
 bool Socket::EnableReuse(bool pActive)
 {
     bool tResult = false;

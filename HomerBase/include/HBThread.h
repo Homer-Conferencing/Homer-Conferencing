@@ -55,7 +55,7 @@ public:
 
     virtual ~Thread( );
 
-    virtual void* Run(void* pArgs = NULL);
+    virtual void* Run(void* pArgs = NULL) = 0;
     bool StartThread(void* pArgs = NULL);
     bool StartThread(THREAD_MAIN pMain, void* pArgs = NULL);
     bool StopThread(int pTimeoutInMSecs = 0, void** pResults = NULL); // return pointer to result of thread

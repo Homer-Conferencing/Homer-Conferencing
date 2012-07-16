@@ -111,6 +111,9 @@ public:
     std::string GetName();
     std::string GetPeerName();
 
+    void SetPeerHost(std::string pHost);
+    void SetPeerPort(unsigned int pPort);
+
     /* QoS interface */
     static bool IsQoSSupported();
     static void DisableQoSSupport();

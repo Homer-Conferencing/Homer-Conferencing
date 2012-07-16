@@ -26,21 +26,6 @@
  */
 
 #include <Configuration.h>
-//#include <MainWindow.h>
-//#include <Dialogs/IdentityDialog.h>
-//#include <Dialogs/ConfigurationDialog.h>
-//#include <Dialogs/UpdateCheckDialog.h>
-//#include <Dialogs/OpenVideoAudioPreviewDialog.h>
-//#include <Widgets/StreamingControlWidget.h>
-//#include <Widgets/OverviewContactsWidget.h>
-//#include <Widgets/OverviewDataStreamsWidget.h>
-//#include <Widgets/OverviewErrorsWidget.h>
-//#include <Widgets/OverviewFileTransfersWidget.h>
-//#include <Widgets/OverviewNetworkStreamsWidget.h>
-//#include <Widgets/OverviewThreadsWidget.h>
-//#include <Widgets/ParticipantWidget.h>
-//#include <Widgets/StreamingControlWidget.h>
-//#include <Widgets/VideoWidget.h>
 #include <Logger.h>
 #include <Meeting.h>
 
@@ -419,6 +404,20 @@ void Configuration::SetAudioStreamingGAPIImpl(QString pImpl)
 {
     mQSettings->beginGroup("Streaming");
     mQSettings->setValue("AudioStreamGAPIImpl", pImpl);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetAppDataTransport(enum TransportType pType)
+{
+    mQSettings->beginGroup("Network");
+    mQSettings->setValue("AppDataTransportType", QString(Socket::TransportType2String(pType).c_str()));
+    mQSettings->endGroup();
+}
+
+void Configuration::SetAppDataGAPIImpl(QString pImpl)
+{
+    mQSettings->beginGroup("Network");
+    mQSettings->setValue("AppDataGAPIImpl", pImpl);
     mQSettings->endGroup();
 }
 
@@ -953,6 +952,16 @@ QString Configuration::GetAudioStreamingGAPIImpl()
     return mQSettings->value("Streaming/AudioStreamGAPIImpl", QString(BERKEYLEY_SOCKETS)).toString();
 }
 
+enum TransportType Configuration::GetAppDataTransportType()
+{
+    return Socket::String2TransportType(mQSettings->value("Network/AppDataTransportType", QString("UDP")).toString().toStdString());
+}
+
+QString Configuration::GetAppDataGAPIImpl()
+{
+    return mQSettings->value("Network/AppDataGAPIImpl", QString(BERKEYLEY_SOCKETS)).toString();
+}
+
 int Configuration::GetVideoAudioStartPort()
 {
     return mQSettings->value("Network/VideoAudioListenerStartPort", 5000).toInt();
@@ -1142,6 +1151,28 @@ bool Configuration::DebuggingEnabled()
 void Configuration::SetDebugging(bool pState)
 {
     mDebuggingEnabled = pState;
+}
+
+bool Configuration::AudioOutputEnabled()
+{
+    return mAudioOutputEnabled;
+}
+
+void Configuration::DisableAudioOutput()
+{
+    printf("Audio output disabled\n");
+    mAudioOutputEnabled = false;
+}
+
+bool Configuration::AudioCaptureEnabled()
+{
+    return mAudioCaptureEnabled;
+}
+
+void Configuration::DisableAudioCapture()
+{
+    printf("Audio capture disabled\n");
+    mAudioCaptureEnabled = false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

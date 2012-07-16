@@ -797,12 +797,6 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
 	return tResult;
 }
 
-void* Thread::Run(void* pArgs)
-{
-    LOG(LOG_ERROR, "You should overload the RUN method with your own implementation");
-    return NULL;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 }} //namespace
