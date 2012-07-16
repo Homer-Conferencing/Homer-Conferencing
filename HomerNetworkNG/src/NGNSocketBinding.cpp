@@ -179,8 +179,8 @@ NGNSocketBinding::NGNSocketBinding(std::string pLocalName, Requirements *pRequir
 //	    }
 //    }
 
-    #ifdef SCTP_REMOTE_UDP_ENCAPS_PORT
-        if(SPECIAL_PORT == mPort)
+#ifdef SCTP_REMOTE_UDP_ENCAPS_PORT
+        if(SPECIAL_PORT_RT == mPort || SPECIAL_PORT_DT == mPort )
         {
             memset(&mEncaps, 0, sizeof(struct sctp_udpencaps));
             mEncaps.sue_address.ss_family = (mIpv4only ? AF_INET : AF_INET6);
@@ -191,8 +191,8 @@ NGNSocketBinding::NGNSocketBinding(std::string pLocalName, Requirements *pRequir
             }else
                 LOG(LOG_VERBOSE,"UDP encapsulation supported");
         }else
-            LOG(LOG_VERBOSE,"%i is not the UDP encapsulation Port %i", mPort, SPECIAL_PORT);
-    #endif
+            LOG(LOG_VERBOSE,"%i is not the UDP encapsulation Port %i %i", mPort, SPECIAL_PORT_RT, SPECIAL_PORT_DT);
+#endif
 
     LOG(LOG_VERBOSE,"MY");
 

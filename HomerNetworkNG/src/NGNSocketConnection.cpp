@@ -157,7 +157,7 @@ NGNSocketConnection::NGNSocketConnection(std::string pTarget, Requirements *pReq
     }
 
 #ifdef SCTP_REMOTE_UDP_ENCAPS_PORT
-        if(SPECIAL_PORT == mPort)
+        if(SPECIAL_PORT_RT == mPort || SPECIAL_PORT_DT == mPort)
         {
             memset(&mEncaps, 0, sizeof(struct sctp_udpencaps));
             mEncaps.sue_address.ss_family = (mIpv4only ? AF_INET : AF_INET6);
@@ -170,7 +170,7 @@ NGNSocketConnection::NGNSocketConnection(std::string pTarget, Requirements *pReq
             else
                 LOG(LOG_VERBOSE,"UDP encapsulation supported");
         }else
-            LOG(LOG_VERBOSE,"%i is not the UDP encapsulation port %i", mPort, SPECIAL_PORT);
+            LOG(LOG_VERBOSE,"%i is not the UDP encapsulation port %i %i", mPort, SPECIAL_PORT_RT, SPECIAL_PORT_DT);
 #endif
 
     /* now enable SCTP association */
