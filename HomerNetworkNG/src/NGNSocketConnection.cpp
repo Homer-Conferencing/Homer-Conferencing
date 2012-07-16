@@ -36,6 +36,8 @@
 #include <NGNParseNetworkRequirment.h>
 
 
+#include <netinet/sctp_uio.h>
+
 
 namespace Homer {  namespace Base {
 
@@ -299,8 +301,9 @@ void NGNSocketConnection::read(char* pBuffer, int &pBufferSize)
             iov.iov_base = &pBuffer[0];
             iov.iov_len = pBufferSize;
             LOG(LOG_VERBOSE,"Use buf of size %i", pBufferSize);
-            int n = sctp_recvv(fd, &iov, 1, &addr.sa, &fromlen, &info, &infolen, &infotype, &flags);
-
+            
+////            int n = sctp_recvv(fd, &iov, 1, &addr.sa, &fromlen, &info, &infolen, &infotype, &flags);
+			int n = sctp_recvmsg(fd,&pBuffer[0],pBufferSize,NULL,NULL,NULL,0);
             bSignal = false;
             pBufferSize = n;
             if (flags & MSG_NOTIFICATION) {
@@ -550,14 +553,14 @@ void NGNSocketConnection::writeToStream(char* pBuffer, int pBufferSize,int iStre
     memset(&info, 0, sizeof(info));
     info.snd_ppid = htonl(0);
     info.snd_flags = 0; //SCTP_UNORDERED;
-    info.snd_sid = iStream;
+//    info.snd_sid = iStream;
     iov.iov_base = &pBuffer[0];
     iov.iov_len = pBufferSize;
 
-    len = sctp_sendv(fd,(const struct iovec *) &iov, 1, NULL, 0, &info, sizeof(info), SCTP_SENDV_SNDINFO, 0);
+//    len = sctp_sendv(fd,(const struct iovec *) &iov, 1, NULL, 0, &info, sizeof(info), SCTP_SENDV_SNDINFO, 0);
+    len = sctp_sendmsg(fd,&pBuffer[0],pBufferSize,NULL,0,0,0,iStream,0,0);
 
-
-    LOG(LOG_VERBOSE, "Send %i Data over Stream %i",len, info.snd_sid);
+//    LOG(LOG_VERBOSE, "Send %i Data over Stream %i",len, info.snd_sid);
     if (len < 0)
     {
        //TODO: handling of mIsClosed = true;
