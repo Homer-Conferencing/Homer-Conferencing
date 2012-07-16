@@ -236,7 +236,6 @@ SET (LIBS_WINDOWS
 	HomerGAPI
 	HomerMonitor
 	HomerMultimedia
-	HomerNetworkSimulator
 	HomerConference
 	mingw32
 	${QT_LIBRARIES}
@@ -253,7 +252,6 @@ SET (LIBS_BSD
         HomerGAPI
         HomerMonitor
         HomerMultimedia
-        HomerNetworkSimulator
         HomerConference
         ${QT_LIBRARIES}
 )
@@ -264,7 +262,6 @@ SET (LIBS_LINUX
 	HomerGAPI
 	HomerMonitor
 	HomerMultimedia
-	HomerNetworkSimulator
 	HomerConference
 )
 IF (${BUILD} MATCHES "Default")
