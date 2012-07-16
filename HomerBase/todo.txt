@@ -1,1 +1,0 @@
-- speedup snapshots (Windows) => TH32CS_SNAPNOHEAPS = 0x40000000  as flag?

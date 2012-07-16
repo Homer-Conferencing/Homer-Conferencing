@@ -44,6 +44,7 @@ using namespace Homer::Base;
 MediaSourceMem::MediaSourceMem(bool pRtpActivated):
     MediaSource("MEM-IN:"), RTP()
 {
+    mSourceType = SOURCE_MEMORY;
     mStreamPacketBuffer = (char*)malloc(MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE);
     mFragmentBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
     mPacketNumber = 0;
@@ -527,7 +528,8 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 
     mMediaType = MEDIA_VIDEO;
     MarkOpenGrabDeviceSuccessful();
-    mFrameWidthLastGrabbedFrame = 0;
+    mResXLastGrabbedFrame = 0;
+    mResYLastGrabbedFrame = 0;
 
     return true;
 }
@@ -827,48 +829,28 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
 //                            LOG(LOG_VERBOSE, "Video frame coded: %d internal frame number: %d", tSourceFrame->coded_picture_number, mChunkNumber);
 //                        #endif
 
-                        // hint: 32 bytes additional data per line within ffmpeg
-                        int tCurrentFrameResX = (tSourceFrame->linesize[0] - 32);
-
-                        if (mFrameWidthLastGrabbedFrame != tCurrentFrameResX)
+                        if ((mResXLastGrabbedFrame != mCodecContext->width) || (mResYLastGrabbedFrame != mCodecContext->height))
                         {
 							// check if video resolution has changed within remote GUI
-							if ((tCurrentFrameResX != -32) && (mSourceResX != tCurrentFrameResX))
+							if ((mSourceResX != mCodecContext->width) || (mSourceResY != mCodecContext->height))
 							{
 								LOG(LOG_INFO, "Video resolution change at remote side detected");
 
-								GrabResolutions::iterator tIt, tItEnd = mSupportedVideoFormats.end();
-								bool tFound = false;
+                                // free the software scaler context
+                                sws_freeContext(mScalerContext);
 
-								for (tIt = mSupportedVideoFormats.begin(); tIt != tItEnd; tIt++)
-								{
-									if (tIt->ResX == tCurrentFrameResX)
-									{
-										tFound = true;
-										break;
-									}
-								}
+                                // set grabbing resolution to the resolution from the codec, which has automatically detected the new resolution
+                                mSourceResX = mCodecContext->width;
+                                mSourceResY = mCodecContext->height;
 
-								if (tFound)
-								{
-									// free the software scaler context
-									sws_freeContext(mScalerContext);
+                                // allocate software scaler context
+                                mScalerContext = sws_getContext(mCodecContext->width, mCodecContext->height, mCodecContext->pix_fmt, mTargetResX, mTargetResY, PIX_FMT_RGB32, SWS_BICUBIC, NULL, NULL, NULL);
 
-									// set grabbing resolution to the resulting ones delivered by received frame
-									mSourceResX = tIt->ResX;
-									mCodecContext->width = tIt->ResX;
-									mSourceResY = tIt->ResY;
-									mCodecContext->height = tIt->ResY;
-
-									// allocate software scaler context
-									mScalerContext = sws_getContext(mCodecContext->width, mCodecContext->height, mCodecContext->pix_fmt, mTargetResX, mTargetResY, PIX_FMT_RGB32, SWS_BICUBIC, NULL, NULL, NULL);
-
-									LOG(LOG_INFO, "Video resolution changed to \"%s\"(%d * %d)", tIt->Name.c_str(), tIt->ResX, tIt->ResY);
-								}else
-									LOG(LOG_WARN, "Video resolution changed to unknown width: %d", tCurrentFrameResX);
+                                LOG(LOG_INFO, "Video resolution changed to %d * %d", mCodecContext->width, mCodecContext->height);
 							}
 
-							mFrameWidthLastGrabbedFrame = tCurrentFrameResX;
+							mResXLastGrabbedFrame = mCodecContext->width;
+                            mResYLastGrabbedFrame = mCodecContext->height;
                         }
                     }
 

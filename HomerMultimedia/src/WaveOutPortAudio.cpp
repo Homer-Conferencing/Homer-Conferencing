@@ -348,8 +348,8 @@ int WaveOutPortAudio::PlayAudioHandler(const void *pInputBuffer, void *pOutputBu
     int tUsedFifo = tWaveOutPortAudio->mPlaybackFifo->GetUsage();
 
     #ifdef WOPA_DEBUG_PACKETS
-        LOGEX(WaveOutPortAudio, LOG_VERBOSE, "Playing %d audio samples, time stamp of first sample: %f, current time stamp: %f", pOutputSize, pTimeInfo->outputBufferDacTime, pTimeInfo->currentTime);
-        LOGEX(WaveOutPortAudio, LOG_VERBOSE, "Audio FIFO has %d available buffers, entire FIFO size is %d", tUsedFifo, tWaveOutPortAudio->mPlaybackFifo->GetSize());
+        LOGEX(WaveOutPortAudio, LOG_WARN, "Playing %d audio samples, time stamp of first sample: %f, current time stamp: %f", pOutputSize, pTimeInfo->outputBufferDacTime, pTimeInfo->currentTime);
+        LOGEX(WaveOutPortAudio, LOG_WARN, "Audio FIFO has %d available buffers, entire FIFO size is %d", tUsedFifo, tWaveOutPortAudio->mPlaybackFifo->GetSize());
     #endif
 
     // should we drop the entire FIFO because we have a buffer overrun?
@@ -370,7 +370,13 @@ int WaveOutPortAudio::PlayAudioHandler(const void *pInputBuffer, void *pOutputBu
     do {
         tOutputBufferMaxSize = (int)pOutputSize * 2 /* 16 bit LittleEndian */ * (tWaveOutPortAudio->mStereo ? 2 : 1);
         tBufferSize = tOutputBufferMaxSize;
+		#ifdef WOPA_DEBUG_HANDLER
+			LOGEX(WaveOutPortAudio, LOG_WARN, "PlayAudioHandler: reading the FIFO");
+		#endif
         tWaveOutPortAudio->mPlaybackFifo->ReadFifo((char*)pOutputBuffer, tBufferSize);
+		#ifdef WOPA_DEBUG_HANDLER
+			LOGEX(WaveOutPortAudio, LOG_WARN, "PlayAudioHandler: got %d bytes from FIFO", tBufferSize);
+		#endif
         if (tWaveOutPortAudio->mPlaybackStopped)
         {
     		#ifdef WOPA_DEBUG_HANDLER
@@ -382,7 +388,7 @@ int WaveOutPortAudio::PlayAudioHandler(const void *pInputBuffer, void *pOutputBu
         {
             tWaveOutPortAudio->mWaitingForFirstBuffer = false;
             #ifdef WOPA_DEBUG_HANDLER
-                LOGEX(WaveOutPortAudio, LOG_VERBOSE, "Got first audio buffer for playback");
+                LOGEX(WaveOutPortAudio, LOG_WARN, "Got first audio buffer for playback");
             #endif
         }
 
@@ -560,12 +566,27 @@ bool WaveOutPortAudio::Play()
         mWaitingForFirstBuffer = true;
         if((tErr = Pa_StartStream(mStream)) != paNoError)
         {
-            // unlock grabbing
-            mPlayMutex.unlock();
+            if (tErr == paStreamIsNotStopped)
+            {
+                LOG(LOG_VERBOSE, "Couldn't start stream because it wasn't stopped", Pa_GetErrorText(tErr), tErr);
+                if ((tErr = Pa_StopStream(mStream)) != paNoError)
+                {
+                    LOG(LOG_ERROR, "Couldn't stop stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
+                }else
+                {
+                    tErr = Pa_StartStream(mStream);
+                }
+            }
 
-            LOG(LOG_ERROR, "Couldn't start stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
-    		MediaSourcePortAudio::PortAudioUnlockStreamInterface();
-            return false;
+            if (tErr != paNoError)
+            {
+                // unlock grabbing
+                mPlayMutex.unlock();
+
+                LOG(LOG_ERROR, "Couldn't start stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
+                MediaSourcePortAudio::PortAudioUnlockStreamInterface();
+                return false;
+            }
         }
 
         // wait until the port audio stream becomes active

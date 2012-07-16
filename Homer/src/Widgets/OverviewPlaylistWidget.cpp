@@ -47,10 +47,9 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-OverviewPlaylistWidget::OverviewPlaylistWidget(QAction *pAssignedAction, QMainWindow* pMainWindow, int pPlaylistId, VideoWorkerThread *pVideoWorker, AudioWorkerThread *pAudioWorker):
+OverviewPlaylistWidget::OverviewPlaylistWidget(QAction *pAssignedAction, QMainWindow* pMainWindow, VideoWorkerThread *pVideoWorker, AudioWorkerThread *pAudioWorker):
     QDockWidget(pMainWindow)
 {
-	mPlaylistId = pPlaylistId;
     mAssignedAction = pAssignedAction;
     mVideoWorker = pVideoWorker;
     mAudioWorker = pAudioWorker;
@@ -73,7 +72,7 @@ OverviewPlaylistWidget::OverviewPlaylistWidget(QAction *pAssignedAction, QMainWi
     connect(mTbAdd, SIGNAL(clicked()), this, SLOT(AddEntryDialog()));
     connect(mTbDel, SIGNAL(clicked()), this, SLOT(DelEntryDialog()));
     connect(mTbSaveList, SIGNAL(clicked()), this, SLOT(SaveListDialog()));
-    connect(mLwFiles, SIGNAL(itemDoubleClicked(QListWidgetItem *)), this, SLOT(PlayItem(QListWidgetItem *)));
+    connect(mLwFiles, SIGNAL(itemDoubleClicked(QListWidgetItem *)), this, SLOT(Play()));
     mShortcutDel = new QShortcut(Qt::Key_Delete, mLwFiles);
     mShortcutIns = new QShortcut(Qt::Key_Insert, mLwFiles);
     mShortcutDel->setEnabled(true);
@@ -88,26 +87,8 @@ OverviewPlaylistWidget::OverviewPlaylistWidget(QAction *pAssignedAction, QMainWi
     connect(mTbNext, SIGNAL(clicked()), this, SLOT(ActionNext()));
     connect(mTbLast, SIGNAL(clicked()), this, SLOT(ActionLast()));
     mTimerId = startTimer(PLAYLIST_UPDATE_DELAY);
-    switch(mPlaylistId)
-    {
-		case PLAYLIST_VIDEO:
-			setWindowTitle("Video playlist");
-			SetVisible(CONF.GetVisibilityPlaylistWidgetVideo());
-		    mAssignedAction->setChecked(CONF.GetVisibilityPlaylistWidgetVideo());
-			break;
-		case PLAYLIST_AUDIO:
-			setWindowTitle("Audio playlist");
-			SetVisible(CONF.GetVisibilityPlaylistWidgetAudio());
-		    mAssignedAction->setChecked(CONF.GetVisibilityPlaylistWidgetAudio());
-			break;
-		case PLAYLIST_MOVIE:
-			setWindowTitle("Movie playlist");
-			SetVisible(CONF.GetVisibilityPlaylistWidgetMovie());
-		    mAssignedAction->setChecked(CONF.GetVisibilityPlaylistWidgetMovie());
-			break;
-		default:
-			break;
-    }
+    SetVisible(CONF.GetVisibilityPlaylistWidgetMovie());
+    mAssignedAction->setChecked(CONF.GetVisibilityPlaylistWidgetMovie());
 }
 
 OverviewPlaylistWidget::~OverviewPlaylistWidget()
@@ -115,20 +96,7 @@ OverviewPlaylistWidget::~OverviewPlaylistWidget()
 	if (mTimerId != -1)
 		killTimer(mTimerId);
 
-    switch(mPlaylistId)
-    {
-		case PLAYLIST_VIDEO:
-		    CONF.SetVisibilityPlaylistWidgetVideo(isVisible());
-			break;
-		case PLAYLIST_AUDIO:
-		    CONF.SetVisibilityPlaylistWidgetAudio(isVisible());
-			break;
-		case PLAYLIST_MOVIE:
-		    CONF.SetVisibilityPlaylistWidgetMovie(isVisible());
-			break;
-		default:
-			break;
-    }
+    CONF.SetVisibilityPlaylistWidgetMovie(isVisible());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -165,13 +133,14 @@ void OverviewPlaylistWidget::SetVisible(bool pVisible)
 
 void OverviewPlaylistWidget::StartPlaylist()
 {
-	if (!mIsPlayed)
-	{
-		if (mLwFiles->count() == 0)
-			AddEntryDialog();
+    if (GetListSize() == 0)
+    {
+        LOG(LOG_VERBOSE, "Playlist start triggered but we don't have entries in the list, asking user..");
+        AddEntryDialog();
+    }else
+        LOG(LOG_VERBOSE, "Playlist start triggered and we already have entries in the list");
 
-		PlayItem(mLwFiles->item(mCurrentFileId));
-	}
+    Play(mCurrentFileId);
 }
 
 void OverviewPlaylistWidget::StopPlaylist()
@@ -220,7 +189,7 @@ void OverviewPlaylistWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEve
         if (tPopupRes->text().compare("Endless loop") == 0)
         {
             mEndlessLoop = !mEndlessLoop;
-            LOG(LOG_VERBOSE, "Playlist %d has now endless loop activation %d", mPlaylistId, mEndlessLoop);
+            LOG(LOG_VERBOSE, "Playlist has now endless loop activation %d", mEndlessLoop);
             return;
         }
     }
@@ -228,16 +197,13 @@ void OverviewPlaylistWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEve
 
 void OverviewPlaylistWidget::DelEntryDialog()
 {
-    QList<QListWidgetItem*> tItems = mLwFiles->selectedItems();
+    int tSelectectRow = -1;
 
-    if (tItems.isEmpty())
-        return;
-
-    QListWidgetItem* tItem;
-    foreach(tItem, tItems)
+    if (mLwFiles->selectionModel()->currentIndex().isValid())
     {
-        mLwFiles->removeItemWidget(tItem);
-        delete tItem;
+        int tSelectedRow = mLwFiles->selectionModel()->currentIndex().row();
+        DeleteListEntry(tSelectedRow);
+        UpdateView();
     }
 }
 
@@ -420,26 +386,53 @@ QStringList OverviewPlaylistWidget::LetUserSelectMovieFile(QWidget *pParent, QSt
     return tResult;
 }
 
+static QString sAllLoadMediaFilter = "All supported formats (*.asf *.avi *.dv *.mka *.mkv *.mov *.mpg *.mpeg *.mp3 *.mp4 *.mp4a *.m3u *.pls *.swf *.vob *.wav *.wmv *.3gp)";
+static QString sLoadMediaFilters = sAllLoadMediaFilter + ";;"\
+                    "Advanced Systems Format (*.asf);;"\
+                    "Audio Video Interleave Format (*.avi);;"\
+                    "Digital Video Format (*.dv);;"\
+                    "Matroska Format (*.mka *.mkv);;"\
+                    "MPEG Audio Layer 2/3 Format (*.mp3);;"\
+                    "MPEG-Program Stream Format (*.mpg *.mpeg);;"\
+                    "M3U Playlist file (*.m3u);;"\
+                    "PLS Playlist file (*.pls);;"\
+                    "Quicktime/MPEG4 Format (*.mov *.mp4 *.mp4a *.3gp);;"\
+                    "Small Web Format (*.swf);;"\
+                    "Video Object Format (*.vob);;" \
+                    "Waveform Audio File Format (*.wav)" \
+                    "Windows Media Video Format (*.wmv)";
+QStringList OverviewPlaylistWidget::LetUserSelectMediaFile(QWidget *pParent, QString pDescription, bool pMultipleFiles)
+{
+    QStringList tResult;
+
+    if (pMultipleFiles)
+        tResult = QFileDialog::getOpenFileNames(pParent,  pDescription,
+                                                                CONF.GetDataDirectory() + "/Homer-Movie.avi",
+                                                                sLoadMediaFilters,
+                                                                &sAllLoadMediaFilter,
+                                                                QFileDialog::DontUseNativeDialog);
+    else
+        tResult = QStringList(QFileDialog::getOpenFileName(pParent,  pDescription,
+                                                                CONF.GetDataDirectory() + "/Homer-Movie.avi",
+                                                                sLoadMediaFilters,
+                                                                &sAllLoadMediaFilter,
+                                                                QFileDialog::DontUseNativeDialog));
+
+    if (!tResult.isEmpty())
+        CONF.SetDataDirectory(tResult.first().left(tResult.first().lastIndexOf('/')));
+
+    return tResult;
+}
+
 void OverviewPlaylistWidget::AddEntryDialog()
 {
+    LOG(LOG_VERBOSE, "User wants to add a new entry to playlist");
+
     bool tListWasEmpty = (mLwFiles->count() == 0);
 
 	QStringList tFileNames;
 
-	switch(mPlaylistId)
-	{
-		case PLAYLIST_VIDEO:
-		    tFileNames = LetUserSelectVideoFile(this, "Add video files to playlist");
-		    break;
-		case PLAYLIST_AUDIO:
-			tFileNames = LetUserSelectAudioFile(this, "Add audio files to playlist");
-			break;
-		case PLAYLIST_MOVIE:
-			tFileNames = LetUserSelectMovieFile(this,  "Add movie files to playlist");
-			break;
-		default:
-			break;
-	}
+    tFileNames = LetUserSelectMediaFile(this,  "Add media files to playlist");
 
     if (tFileNames.isEmpty())
         return;
@@ -447,13 +440,13 @@ void OverviewPlaylistWidget::AddEntryDialog()
     QString tFile;
     foreach(tFile, tFileNames)
     {
-        AddFileToList(tFile);
+        AddEntry(tFile);
     }
 
     if((tListWasEmpty) && (mLwFiles->count() > 0))
     {
         mCurrentFileId = 0;
-        LOG(LOG_VERBOSE, "Setting to file %d in playlist %d", mCurrentFileId, mPlaylistId);
+        LOG(LOG_VERBOSE, "Setting to file %d in playlist", mCurrentFileId);
         mLwFiles->setCurrentRow(mCurrentFileId, QItemSelectionModel::Clear | QItemSelectionModel::Select);
         if (!isVisible())
         	SetVisible(true);
@@ -474,6 +467,9 @@ void OverviewPlaylistWidget::DelEntryDialogSc()
 
 void OverviewPlaylistWidget::SaveListDialog()
 {
+    if (GetListSize() < 1)
+        return;
+
     QString tFileName;
     tFileName = QFileDialog::getSaveFileName(this,  "Save playlist to..",
                                                                 CONF.GetDataDirectory() + "/Homer.m3u",
@@ -485,14 +481,18 @@ void OverviewPlaylistWidget::SaveListDialog()
         return;
 
     QString tPlaylistData;
-    QFile tPlaylistFile(tFileName);
-    for (int i = 0; i < mLwFiles->count(); i++)
+    PlaylistEntry tEntry;
+    mPlaylistMutex.lock();
+    foreach(tEntry, mPlaylist)
     {
-        QListWidgetItem* tItem = mLwFiles->item(i);
-        QString tEntry = tItem->data(Qt::DisplayRole).toString();
-        LOG(LOG_VERBOSE, "Writing to m3u: %s the entry %s", tFileName.toStdString().c_str(), tEntry.toStdString().c_str());
-        tPlaylistData += tEntry + '\n';
+        QString tPlaylistEntry = tEntry.Location;
+        LOG(LOG_VERBOSE, "Writing to m3u %s the entry %s", tFileName.toStdString().c_str(), tPlaylistEntry.toStdString().c_str());
+        tPlaylistData += tPlaylistEntry + '\n';
+
     }
+    mPlaylistMutex.unlock();
+
+    QFile tPlaylistFile(tFileName);
     if (!tPlaylistFile.open(QIODevice::WriteOnly))
     {
     	ShowError("Could not store playlist file", "Couldn't write playlist in " + tFileName);
@@ -503,30 +503,38 @@ void OverviewPlaylistWidget::SaveListDialog()
     tPlaylistFile.close();
 }
 
-void OverviewPlaylistWidget::PlayItem(QListWidgetItem *pItem)
+void OverviewPlaylistWidget::Play(int pIndex)
 {
-	if (pItem == NULL)
-		return;
+    LOG(LOG_VERBOSE, "Got trigger to play entry %d", pIndex);
+
+    if (pIndex == -1)
+	{
+	    if (mLwFiles->selectionModel()->currentIndex().isValid())
+	        pIndex = mLwFiles->selectionModel()->currentIndex().row();
+	}
+
+    if ((pIndex == -1) && (GetListSize() > 0))
+    {
+        pIndex = 0;
+    }
+
+    if (pIndex == -1)
+	{
+	    LOG(LOG_VERBOSE, "Index is invalid, playback start skipped");
+	    return;
+	}
 
 	mIsPlayed = true;
-	mCurrentFile = pItem->data(Qt::DisplayRole).toString();
-    switch(mPlaylistId)
-    {
-        case PLAYLIST_VIDEO:
-            mVideoWorker->PlayFile(mCurrentFile);
-            break;
-        case PLAYLIST_AUDIO:
-            mAudioWorker->PlayFile(mCurrentFile);
-            break;
-        case PLAYLIST_MOVIE:
-            mVideoWorker->PlayFile(mCurrentFile);
-            mAudioWorker->PlayFile(mCurrentFile);
-            break;
-        default:
-            break;
-    }
-    mCurrentFileId = mLwFiles->row(pItem);
-    LOG(LOG_VERBOSE, "Setting current row to %d in playlist %d", mCurrentFileId, mPlaylistId);
+	mCurrentFile = GetListEntry(pIndex);
+
+	// VIDEO: we don't support video streaming yet, otherwise we play the file
+	if (!mCurrentFile.startsWith("http://"))
+        mVideoWorker->PlayFile(mCurrentFile);
+	// AUDIO: play the file
+	mAudioWorker->PlayFile(mCurrentFile);
+
+    mCurrentFileId = pIndex;
+    LOG(LOG_VERBOSE, "Setting current row to %d in playlist", mCurrentFileId);
     mLwFiles->setCurrentRow(mCurrentFileId, QItemSelectionModel::Clear | QItemSelectionModel::Select);
 }
 
@@ -535,7 +543,7 @@ void OverviewPlaylistWidget::PlayNext()
     int tNewFileId = -1;
 
     // derive file id of next file which should be played
-	if (mCurrentFileId < mLwFiles->count() -1)
+	if (mCurrentFileId < GetListSize() -1)
     {
 		tNewFileId = mCurrentFileId + 1;
     }else
@@ -545,7 +553,7 @@ void OverviewPlaylistWidget::PlayNext()
     		tNewFileId = 0;
     	}else
     	{
-    		//LOG(LOG_VERBOSE, "End of playlist %d reached", mPlaylistId);
+    		//LOG(LOG_VERBOSE, "End of playlist reached");
     		return;
     	}
     }
@@ -553,41 +561,13 @@ void OverviewPlaylistWidget::PlayNext()
 	LOG(LOG_VERBOSE, "Playing file entry %d", tNewFileId);
 
 	// finally play the next file
-	switch(mPlaylistId)
-	{
-		case PLAYLIST_VIDEO:
-			PlayItem(mLwFiles->item(tNewFileId));
-			break;
-		case PLAYLIST_AUDIO:
-			PlayItem(mLwFiles->item(tNewFileId));
-			break;
-		case PLAYLIST_MOVIE:
-			PlayItem(mLwFiles->item(tNewFileId));
-			break;
-		default:
-			break;
-	}
+    Play(tNewFileId);
 }
 
 void OverviewPlaylistWidget::PlayLast()
 {
-	switch(mPlaylistId)
-    {
-        case PLAYLIST_VIDEO:
-            if (mCurrentFileId > 0)
-                PlayItem(mLwFiles->item(mCurrentFileId - 1));
-            break;
-        case PLAYLIST_AUDIO:
-            if (mCurrentFileId > 0)
-                PlayItem(mLwFiles->item(mCurrentFileId - 1));
-            break;
-        case PLAYLIST_MOVIE:
-            if (mCurrentFileId > 0)
-                PlayItem(mLwFiles->item(mCurrentFileId - 1));
-            break;
-        default:
-            break;
-    }
+    if (mCurrentFileId > 0)
+        Play(mCurrentFileId - 1);
 }
 
 void OverviewPlaylistWidget::timerEvent(QTimerEvent *pEvent)
@@ -597,13 +577,11 @@ void OverviewPlaylistWidget::timerEvent(QTimerEvent *pEvent)
     #endif
     if (pEvent->timerId() == mTimerId)
     {
-//    	if (mPlaylistId == PLAYLIST_VIDEO)
-//    		LOG(LOG_ERROR, "mCurrentFileId %d mLwFiles->count() %d", mCurrentFileId, mLwFiles->count());
 
 		#ifdef SYNCHRONIZE_AUDIO_VIDEO
 			// synch. video and audio by seeking in audio stream based on the position of the video stream, the other way round it would be more time consuming!
 			int64_t tTimeDiff = mVideoWorker->GetSeekPos() - mAudioWorker->GetSeekPos();
-			if ((mPlaylistId == PLAYLIST_MOVIE) && ((tTimeDiff < -ALLOWED_AV_TIME_DIFF) || (tTimeDiff > ALLOWED_AV_TIME_DIFF)))
+			if (((tTimeDiff < -ALLOWED_AV_TIME_DIFF) || (tTimeDiff > ALLOWED_AV_TIME_DIFF)))
 			{
 				if ((!mVideoWorker->EofReached()) && (!mAudioWorker->EofReached()) && (mVideoWorker->GetCurrentDevice() == mAudioWorker->GetCurrentDevice()))
 				{
@@ -614,45 +592,16 @@ void OverviewPlaylistWidget::timerEvent(QTimerEvent *pEvent)
 		#endif
 
     	// play next if EOF is reached
-    	switch(mPlaylistId)
+        // stop if current file wasn't yet switched to the desired one;
+        if ((mVideoWorker->CurrentFile() != mCurrentFile) || (mAudioWorker->CurrentFile() != mCurrentFile))
+            return;
+
+        // do we already play the desired file and are we at EOF?
+        if ((mCurrentFileId != -1) &&
+            (mVideoWorker->GetCurrentDevice().contains(GetListEntry(mCurrentFileId))) && (mVideoWorker->EofReached()) &&
+            (mAudioWorker->GetCurrentDevice().contains(GetListEntry(mCurrentFileId))) && (mAudioWorker->EofReached()))
         {
-            case PLAYLIST_VIDEO:
-            	// stop if current file wasn't yet switched to the desired one;
-            	if (mVideoWorker->CurrentFile() != mCurrentFile)
-            		return;
-
-            	// do we already play the desired file and are we at EOF?
-                if ((mLwFiles->item(mCurrentFileId) != NULL) && (mVideoWorker->GetCurrentDevice().contains(mLwFiles->item(mCurrentFileId)->data(Qt::DisplayRole).toString())) && (mVideoWorker->EofReached()))
-                {
-                	PlayNext();
-                }
-                break;
-            case PLAYLIST_AUDIO:
-            	// stop if current file wasn't yet switched to the desired one;
-            	if (mAudioWorker->CurrentFile() != mCurrentFile)
-            		return;
-
-            	// do we already play the desired file and are we at EOF?
-                if ((mLwFiles->item(mCurrentFileId) != NULL) && (mAudioWorker->GetCurrentDevice().contains(mLwFiles->item(mCurrentFileId)->data(Qt::DisplayRole).toString())) && (mAudioWorker->EofReached()))
-                {
-                	PlayNext();
-                }
-                break;
-            case PLAYLIST_MOVIE:
-            	// stop if current file wasn't yet switched to the desired one;
-            	if ((mVideoWorker->CurrentFile() != mCurrentFile) || (mAudioWorker->CurrentFile() != mCurrentFile))
-            		return;
-
-            	// do we already play the desired file and are we at EOF?
-                if ((mLwFiles->item(mCurrentFileId) != NULL) &&
-                	(mVideoWorker->GetCurrentDevice().contains(mLwFiles->item(mCurrentFileId)->data(Qt::DisplayRole).toString())) && (mVideoWorker->EofReached()) &&
-                	(mAudioWorker->GetCurrentDevice().contains(mLwFiles->item(mCurrentFileId)->data(Qt::DisplayRole).toString())) && (mAudioWorker->EofReached()))
-                {
-                	PlayNext();
-                }
-                break;
-            default:
-                break;
+            PlayNext();
         }
     }
 }
@@ -674,7 +623,7 @@ void OverviewPlaylistWidget::dragEnterEvent(QDragEnterEvent *pEvent)
 
 void OverviewPlaylistWidget::dropEvent(QDropEvent *pEvent)
 {
-    bool tListWasEmpty = (mLwFiles->count() == 0);
+    bool tListWasEmpty = (GetListSize() == 0);
 
     if (pEvent->mimeData()->hasUrls())
     {
@@ -683,85 +632,234 @@ void OverviewPlaylistWidget::dropEvent(QDropEvent *pEvent)
         QUrl tUrl;
         foreach(tUrl, tUrlList)
         {
-            AddFileToList(tUrl.toLocalFile());
+            AddEntry(tUrl.toLocalFile());
         }
         pEvent->acceptProposedAction();
         return;
     }
 
-    if ((tListWasEmpty) && (mLwFiles->count() > 0) && (mIsPlayed))
-        PlayItem(mLwFiles->item(mCurrentFileId));
+    if ((tListWasEmpty) && (GetListSize() > 0) && (mIsPlayed))
+        Play(mCurrentFileId);
 }
 
-void OverviewPlaylistWidget::AddFileToList(QString pFile)
+int OverviewPlaylistWidget::GetListSize()
 {
-    if (pFile.endsWith(".m3u"))
+    int tResult = 0;
+
+    mPlaylistMutex.lock();
+    tResult = mPlaylist.size();
+    mPlaylistMutex.unlock();
+
+    return tResult;
+}
+
+void OverviewPlaylistWidget::AddEntry(QString pLocation, QString pName)
+{
+    if (pLocation.endsWith(".m3u"))
     {
-        QString tDir = pFile.left(pFile.lastIndexOf('/'));
-        LOG(LOG_VERBOSE, "Found playlist file %s", pFile.toStdString().c_str());
-        LOG(LOG_VERBOSE, "Found in directory: %s", tDir.toStdString().c_str());
-
-        QFile tPlaylispFile(pFile);
-        if (!tPlaylispFile.open(QIODevice::ReadOnly))
-        {
-            LOG(LOG_ERROR, "Couldn't read playlist from %s", pFile.toStdString().c_str());
-        }else
-        {
-            QByteArray tLine;
-            tLine = tPlaylispFile.readLine();
-            while (!tLine.isEmpty())
-            {
-                QString tLineString = QString(tLine);
-                while((tLineString.endsWith(QChar(0x0A))) || (tLineString.endsWith(QChar(0x0D))))
-                    tLineString = tLineString.left(tLineString.length() - 1); //remove any "new line" char from the end
-
-                if (!tLineString.startsWith("#EXT"))
-                {
-                    LOG(LOG_VERBOSE, "Found playlist entry: %s", tLineString.toStdString().c_str());
-                    switch(mPlaylistId)
-                    {
-                        case PLAYLIST_VIDEO:
-                            mLwFiles->addItem(new QListWidgetItem(QIcon(":/images/VideoReel.png"), tDir + "/" + tLineString));
-                            break;
-                        case PLAYLIST_AUDIO:
-                            mLwFiles->addItem(new QListWidgetItem(QIcon(":/images/Speaker.png"), tDir + "/" + tLineString));
-                            break;
-                        case PLAYLIST_MOVIE:
-                            mLwFiles->addItem(new QListWidgetItem(QIcon(":/images/FilmStrip1.png"), tDir + "/" + tLineString));
-                            break;
-                        default:
-                            break;
-                    }
-                }else
-                    LOG(LOG_VERBOSE, "Found playlist extended entry: %s", tLineString.toStdString().c_str());
-
-                tLine = tPlaylispFile.readLine();
-            }
-        }
+        AddM3UToList(pLocation);
+    }else if (pLocation.endsWith(".pls"))
+    {
+        AddPLSToList(pLocation);
     }else
     {
-        LOG(LOG_VERBOSE, "Adding to playlist: %s", pFile.toStdString().c_str());
-        switch(mPlaylistId)
+        if (pName == "")
         {
-            case PLAYLIST_VIDEO:
-                mLwFiles->addItem(new QListWidgetItem(QIcon(":/images/VideoReel.png"), pFile));
-                break;
-            case PLAYLIST_AUDIO:
-                mLwFiles->addItem(new QListWidgetItem(QIcon(":/images/Speaker.png"), pFile));
-                break;
-            case PLAYLIST_MOVIE:
-                mLwFiles->addItem(new QListWidgetItem(QIcon(":/images/FilmStrip1.png"), pFile));
-                break;
-            default:
-                break;
+            if (!pLocation.startsWith("http://"))
+            {
+                int tPos = pLocation.lastIndexOf('\\');
+                if (tPos == -1)
+                    tPos = pLocation.lastIndexOf('/');
+                if (tPos != -1)
+                {
+                    tPos += 1;
+                    pName = pLocation.mid(tPos, pLocation.size() - tPos);
+                }else
+                    pName = pLocation;
+            }else
+                pName = pLocation;
+        }
+
+        LOG(LOG_VERBOSE, "Adding to playlist: %s at location %s", pName.toStdString().c_str(), pLocation.toStdString().c_str());
+
+        // create playlist entry
+        PlaylistEntry tEntry;
+        tEntry.Name = pName;
+        tEntry.Location = pLocation;
+        if (pLocation.startsWith("http://"))
+            tEntry.Icon = QIcon(":/images/22_22/NetworkConnection.png");
+        else
+            tEntry.Icon = QIcon(":/images/22_22/ArrowRight.png");
+
+        // save playlist entry
+        mPlaylistMutex.lock();
+        mPlaylist.push_back(tEntry);
+        mPlaylistMutex.unlock();
+
+        // trigger GUI update
+        QApplication::postEvent(this, new QEvent(QEvent::User));
+    }
+}
+
+void OverviewPlaylistWidget::AddM3UToList(QString pFilePlaylist)
+{
+    QString tDir = pFilePlaylist.left(pFilePlaylist.lastIndexOf('/'));
+    LOG(LOG_VERBOSE, "Opening M3U playlist file %s", pFilePlaylist.toStdString().c_str());
+    LOG(LOG_VERBOSE, "..in directory: %s", tDir.toStdString().c_str());
+
+    QFile tPlaylistFile(pFilePlaylist);
+    if (!tPlaylistFile.open(QIODevice::ReadOnly))
+    {
+        LOG(LOG_ERROR, "Couldn't read M3U playlist from %s", pFilePlaylist.toStdString().c_str());
+    }else
+    {
+        QByteArray tLine;
+        tLine = tPlaylistFile.readLine();
+        while (!tLine.isEmpty())
+        {
+            QString tLineString = QString(tLine);
+
+            // remove line delimiters
+            while((tLineString.endsWith(QChar(0x0A))) || (tLineString.endsWith(QChar(0x0D))))
+                tLineString = tLineString.left(tLineString.length() - 1); //remove any "new line" char from the end
+
+            // parse the playlist line
+            if (!tLineString.startsWith("#EXT"))
+            {
+                LOG(LOG_VERBOSE, "Found playlist entry: %s", tLineString.toStdString().c_str());
+                if (tLineString.startsWith("http://"))
+                    AddEntry(tLineString);
+                else
+                    AddEntry(tDir + "/" + tLineString);
+            }else
+                LOG(LOG_VERBOSE, "Found playlist extended entry: %s", tLineString.toStdString().c_str());
+
+            tLine = tPlaylistFile.readLine();
         }
     }
+}
+
+void OverviewPlaylistWidget::AddPLSToList(QString pFilePlaylist)
+{
+    QString tDir = pFilePlaylist.left(pFilePlaylist.lastIndexOf('/'));
+    LOG(LOG_VERBOSE, "Opening PLS playlist file %s", pFilePlaylist.toStdString().c_str());
+    LOG(LOG_VERBOSE, "..in directory: %s", tDir.toStdString().c_str());
+
+    QFile tPlaylistFile(pFilePlaylist);
+    if (!tPlaylistFile.open(QIODevice::ReadOnly))
+    {
+        LOG(LOG_ERROR, "Couldn't read PLS playlist from %s", pFilePlaylist.toStdString().c_str());
+    }else
+    {
+        QByteArray tLine;
+        tLine = tPlaylistFile.readLine();
+        int tPlaylistEntries = 0;
+        int tFoundPlaylisEntries = -1;
+        bool tPlaylistEntryParsed = false;
+        PlaylistEntry tPlaylistEntry;
+        while ((tFoundPlaylisEntries < tPlaylistEntries) && (!tLine.isEmpty()))
+        {
+            QString tLineString = QString(tLine);
+
+            // remove line delimiters
+            while((tLineString.endsWith(QChar(0x0A))) || (tLineString.endsWith(QChar(0x0D))))
+                tLineString = tLineString.left(tLineString.length() - 1); //remove any "new line" char from the end
+
+            QStringList tLineSplit = tLineString.split(("="));
+            if (tLineSplit.size() == 2)
+            {
+                QString tKey = tLineSplit[0];
+                QString tValue = tLineSplit[1];
+                LOG(LOG_VERBOSE, "Found key \"%s\" with value \"%s\"", tKey.toStdString().c_str(), tValue.toStdString().c_str());
+                // parse the playlist line
+                if (tKey.startsWith("NumberOfEntries"))
+                {// "NumberOfEntries"
+                    bool tConversionWasOkay = false;
+                    tPlaylistEntries = tValue.toInt(&tConversionWasOkay);
+                    if (!tConversionWasOkay)
+                    {
+                        LOG(LOG_ERROR, "Unable to convert \"%s\" into an integer value", tValue.toStdString().c_str());
+                        return;
+                    }
+                }else if (tKey.startsWith("File"))
+                {// "File"
+                    tPlaylistEntry.Location = tValue;
+                }else if (tKey.startsWith("Title"))
+                {// "File"
+                    tFoundPlaylisEntries++;
+                    tPlaylistEntryParsed = true;
+                    tPlaylistEntry.Name = tValue;
+                }
+                if (tPlaylistEntryParsed)
+                {
+                    tPlaylistEntryParsed = false;
+                    LOG(LOG_VERBOSE, "Found playlist entry: \"%s\" at location \"%s\"", tPlaylistEntry.Name.toStdString().c_str(), tPlaylistEntry.Location.toStdString().c_str());
+                    AddEntry(tPlaylistEntry.Location, tPlaylistEntry.Name);
+                }
+            }else
+            {
+                if (tLineString.startsWith("["))
+                {// "[playlist]"
+                    // nothing to do
+                }else
+                {
+                    LOG(LOG_VERBOSE, "Unexpected token in PLS playlist: \"%s\"", tLineString.toStdString().c_str());
+                }
+            }
+
+            tLine = tPlaylistFile.readLine();
+        }
+    }
+}
+
+QString OverviewPlaylistWidget::GetListEntry(int pIndex)
+{
+    QString tResult = "";
+
+    mPlaylistMutex.lock();
+    PlaylistEntry tEntry;
+    int tIndex = 0;
+    foreach(tEntry, mPlaylist)
+    {
+        if (tIndex == pIndex)
+        {
+            tResult = tEntry.Location;
+            break;
+        }
+        tIndex++;
+    }
+    mPlaylistMutex.unlock();
+
+    return tResult;
+}
+
+void OverviewPlaylistWidget::DeleteListEntry(int pIndex)
+{
+    int tIndex = 0;
+    Playlist::iterator tIt;
+
+    mPlaylistMutex.lock();
+
+    if (mPlaylist.size() > 0)
+    {
+        for (tIt = mPlaylist.begin(); tIt != mPlaylist.end(); tIt++)
+        {
+            if (tIndex == pIndex)
+            {
+                mPlaylist.erase(tIt);
+                break;
+            }
+            tIndex++;
+        }
+    }
+
+    mPlaylistMutex.unlock();
 }
 
 void OverviewPlaylistWidget::ActionPlay()
 {
 	LOG(LOG_VERBOSE, "Triggered play");
-	PlayItem(mLwFiles->item(mCurrentFileId));
+	Play(mCurrentFileId);
 }
 
 void OverviewPlaylistWidget::ActionPause()
@@ -770,21 +868,8 @@ void OverviewPlaylistWidget::ActionPause()
 		return;
 
 	LOG(LOG_VERBOSE, "Triggered pause");
-    switch(mPlaylistId)
-    {
-        case PLAYLIST_VIDEO:
-        	mVideoWorker->PauseFile();
-            break;
-        case PLAYLIST_AUDIO:
-        	mAudioWorker->PauseFile();
-            break;
-        case PLAYLIST_MOVIE:
-        	mVideoWorker->PauseFile();
-        	mAudioWorker->PauseFile();
-            break;
-        default:
-            break;
-    }
+    mVideoWorker->PauseFile();
+    mAudioWorker->PauseFile();
 }
 
 void OverviewPlaylistWidget::ActionStop()
@@ -793,21 +878,8 @@ void OverviewPlaylistWidget::ActionStop()
 		return;
 
 	LOG(LOG_VERBOSE, "Triggered stop");
-    switch(mPlaylistId)
-    {
-        case PLAYLIST_VIDEO:
-        	mVideoWorker->StopFile();
-            break;
-        case PLAYLIST_AUDIO:
-        	mAudioWorker->StopFile();
-            break;
-        case PLAYLIST_MOVIE:
-        	mVideoWorker->StopFile();
-        	mAudioWorker->StopFile();
-            break;
-        default:
-            break;
-    }
+    mVideoWorker->StopFile();
+    mAudioWorker->StopFile();
 }
 
 void OverviewPlaylistWidget::ActionLast()
@@ -826,6 +898,62 @@ void OverviewPlaylistWidget::ActionNext()
 
 	LOG(LOG_VERBOSE, "Triggered next");
 	PlayNext();
+}
+
+void OverviewPlaylistWidget::FillRow(int pRow, const PlaylistEntry &pEntry)
+{
+    if (mLwFiles->item(pRow) != NULL)
+        mLwFiles->item(pRow)->setText(pEntry.Name);
+    else
+    {
+        QListWidgetItem *tItem = new QListWidgetItem(pEntry.Icon, pEntry.Name);
+        tItem->setTextAlignment(Qt::AlignLeft|Qt::AlignVCenter);
+        mLwFiles->insertItem(pRow, tItem);
+    }
+}
+
+void OverviewPlaylistWidget::UpdateView()
+{
+    Playlist::iterator tIt;
+    int tRow = 0;
+    int tSelectedRow = -1;
+
+    //LOG(LOG_VERBOSE, "Updating view");
+
+    if (mLwFiles->selectionModel()->currentIndex().isValid())
+        tSelectedRow = mLwFiles->currentRow();
+
+    if (GetListSize() != mLwFiles->count())
+    {
+        mLwFiles->clear();
+    }
+
+    mPlaylistMutex.lock();
+
+    if (mPlaylist.size() > 0)
+    {
+        PlaylistEntry tEntry;
+        foreach(tEntry, mPlaylist)
+        {
+            FillRow(tRow++, tEntry);
+        }
+    }
+
+    mPlaylistMutex.unlock();
+
+    if (tSelectedRow != -1)
+        mLwFiles->setCurrentRow (tSelectedRow);
+}
+
+void OverviewPlaylistWidget::customEvent(QEvent* pEvent)
+{
+    if (pEvent->type() != QEvent::User)
+    {
+        LOG(LOG_ERROR, "Wrong Qt event type detected");
+        return;
+    }
+
+    UpdateView();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

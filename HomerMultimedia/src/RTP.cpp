@@ -787,7 +787,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
     // check for supported codecs
     if(!IsPayloadSupported(mRtpFormatContext->streams[0]->codec->codec_id))
     {
-        LOG(LOG_ERROR, "Codec %d is unsupported", mRtpFormatContext->streams[0]->codec->codec_id);
+        LOG(LOG_ERROR, "Codec %s(%d) is unsupported", mRtpFormatContext->streams[0]->codec->codec_name, mRtpFormatContext->streams[0]->codec->codec_id);
         pDataSize = 0;
         return true;
     }

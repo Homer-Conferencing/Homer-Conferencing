@@ -57,7 +57,7 @@ struct QoSIpOption{
     unsigned int  InternetAddress;  // time stamp specific
 
     struct QoSSettings Settings;
-}AATRIBUTE_PACKED;
+}ATTRIBUTE_PACKED;
 
 // define setqos if is not defined by linked libs
 #ifndef setqos

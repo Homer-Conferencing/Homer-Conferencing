@@ -49,6 +49,7 @@ using namespace Homer::Monitor;
 MediaSourceV4L2::MediaSourceV4L2(string pDesiredDevice):
     MediaSource("V4L2: local capture")
 {
+    mSourceType = SOURCE_DEVICE;
     // set category for packet statistics
     ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 

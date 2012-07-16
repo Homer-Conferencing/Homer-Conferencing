@@ -63,15 +63,15 @@ void AvailabilityWidget::initializeGUI()
     mTbAvailability->setText(QString(MEETING.getAvailabilityStateStr().c_str()) + "  ");
     if (MEETING.getAvailabilityStateStr() == "Online (auto)")
     {
-        mTbAvailability->setIcon(QPixmap(":/images/UserAvailable.png"));
+        mTbAvailability->setIcon(QPixmap(":/images/32_32/UserAvailable.png"));
     }
     if (MEETING.getAvailabilityStateStr() == "Online")
     {
-        mTbAvailability->setIcon(QPixmap(":/images/UserAvailable.png"));
+        mTbAvailability->setIcon(QPixmap(":/images/32_32/UserAvailable.png"));
     }
     if (MEETING.getAvailabilityStateStr() == "Offline")
     {
-        mTbAvailability->setIcon(QPixmap(":/images/UserUnavailable.png"));
+        mTbAvailability->setIcon(QPixmap(":/images/32_32/UserUnavailable.png"));
     }
 
     connect(mTbAvailability, SIGNAL(triggered(QAction *)), this, SLOT(Selected(QAction *)));
@@ -79,9 +79,9 @@ void AvailabilityWidget::initializeGUI()
 
 void AvailabilityWidget::InitializeMenuOnlineStatus(QMenu *pMenu)
 {
-    pMenu->addAction(QPixmap(":/images/UserAvailable.png"), "Online (auto)  ");
-    pMenu->addAction(QPixmap(":/images/UserAvailable.png"),"Online  ");
-    pMenu->addAction(QPixmap(":/images/UserUnavailable.png"),"Offline  ");
+    pMenu->addAction(QPixmap(":/images/32_32/UserAvailable.png"), "Online (auto)  ");
+    pMenu->addAction(QPixmap(":/images/32_32/UserAvailable.png"),"Online  ");
+    pMenu->addAction(QPixmap(":/images/32_32/UserUnavailable.png"),"Offline  ");
 }
 
 ///////////////////////////////////////////////////////////////////////////////

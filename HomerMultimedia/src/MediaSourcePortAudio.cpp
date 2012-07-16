@@ -73,6 +73,7 @@ void MediaSourcePortAudio::PortAudioUnlockStreamInterface()
 MediaSourcePortAudio::MediaSourcePortAudio(string pDesiredDevice):
     MediaSource("PortAudio: local capture")
 {
+    mSourceType = SOURCE_DEVICE;
     ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
     mCaptureFifo = new MediaFifo(MEDIA_SOURCE_SAMPLES_CAPTURE_FIFO_SIZE, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE, "MediaSourcePortAudio");
 
@@ -90,6 +91,8 @@ MediaSourcePortAudio::MediaSourcePortAudio(string pDesiredDevice):
 
 MediaSourcePortAudio::~MediaSourcePortAudio()
 {
+    LOG(LOG_VERBOSE, "Destroying PortAudio grabber");
+
     StopGrabbing();
 
     if (mMediaSourceOpened)
@@ -493,6 +496,9 @@ bool MediaSourcePortAudio::SupportsRecording()
 
 void MediaSourcePortAudio::StopGrabbing()
 {
+    LOG(LOG_VERBOSE, "Stopping PortAudio grabbing..");
+
+    LOG(LOG_VERBOSE, "..mark as stopped");
     MediaSource::StopGrabbing();
 
     if (mMediaSourceOpened)
@@ -501,6 +507,7 @@ void MediaSourcePortAudio::StopGrabbing()
         {
             PaError tErr = paNoError;
             PortAudioLockStreamInterface();
+            LOG(LOG_VERBOSE, "..abort PortAudio stream");
             if ((tErr = Pa_AbortStream(mStream)) != paNoError)
                 LOG(LOG_ERROR, "Couldn't abort stream because \"%s\"", Pa_GetErrorText(tErr));
 
@@ -508,6 +515,7 @@ void MediaSourcePortAudio::StopGrabbing()
             while((Pa_IsStreamActive(mStream)) == 1)
             {
                 // wait some time
+                LOG(LOG_VERBOSE, "..waiting for deactivated PortAudio stream");
                 Thread::Suspend(250 * 1000);
             }
             PortAudioUnlockStreamInterface();

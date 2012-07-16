@@ -44,7 +44,7 @@
      <x>0</x>
      <y>0</y>
      <width>385</width>
-     <height>22</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="mMenuSettings">
@@ -74,22 +74,10 @@
      </property>
      <property name="icon">
       <iconset resource="../resources/Icons.qrc">
-       <normaloff>:/images/Tools.png</normaloff>:/images/Tools.png</iconset>
+       <normaloff>:/images/22_22/Contact_Edit.png</normaloff>:/images/22_22/Contact_Edit.png</iconset>
      </property>
      <addaction name="mActionToolBarOnlineStatus"/>
      <addaction name="mActionToolBarMediaSources"/>
-    </widget>
-    <widget class="QMenu" name="mMenuOverviewPlaylistWidgets">
-     <property name="title">
-      <string>Playlists</string>
-     </property>
-     <property name="icon">
-      <iconset resource="../resources/Icons.qrc">
-       <normaloff>:/images/22_22/Playlist.png</normaloff>:/images/22_22/Playlist.png</iconset>
-     </property>
-     <addaction name="mActionOverviewVideoPlaylistWidget"/>
-     <addaction name="mActionOverviewAudioPlaylistWidget"/>
-     <addaction name="mActionOverviewMoviePlaylistWidget"/>
     </widget>
     <widget class="QMenu" name="mMenuParticipantVideoWidgets">
      <property name="title">
@@ -110,14 +98,23 @@
        <normaloff>:/images/46_46/Speaker.png</normaloff>:/images/46_46/Speaker.png</iconset>
      </property>
     </widget>
+    <widget class="QMenu" name="mMenuParticipantMessageWidgets">
+     <property name="title">
+      <string>Message windows</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../resources/Icons.qrc">
+       <normaloff>:/images/22_22/Message.png</normaloff>:/images/22_22/Message.png</iconset>
+     </property>
+    </widget>
     <addaction name="mMenuParticipantVideoWidgets"/>
     <addaction name="mMenuParticipantAudioWidgets"/>
-    <addaction name="mActionParticipantMessageWidgets"/>
+    <addaction name="mMenuParticipantMessageWidgets"/>
     <addaction name="mMenuToolBars"/>
     <addaction name="separator"/>
     <addaction name="mActionOpenVideoAudioPreview"/>
     <addaction name="separator"/>
-    <addaction name="mMenuOverviewPlaylistWidgets"/>
+    <addaction name="mActionOverviewPlaylistWidget"/>
     <addaction name="mActionOverviewContactsWidget"/>
     <addaction name="mActionOverviewFileTransfersWidget"/>
     <addaction name="separator"/>
@@ -219,7 +216,7 @@
   </action>
   <action name="mActionCloseSessions">
    <property name="icon">
-    <iconset resource="../resources/Icons.qrc">
+    <iconset>
      <normaloff>:/images/Close.png</normaloff>:/images/Close.png</iconset>
    </property>
    <property name="text">
@@ -228,7 +225,7 @@
   </action>
   <action name="mActionRemoveParticipant">
    <property name="icon">
-    <iconset resource="../resources/Icons.qrc">
+    <iconset>
      <normaloff>:/images/Delete.png</normaloff>:/images/Delete.png</iconset>
    </property>
    <property name="text">
@@ -248,7 +245,7 @@
   <action name="mActionIdentity">
    <property name="icon">
     <iconset resource="../resources/Icons.qrc">
-     <normaloff>:/images/22_22/UserMale.png</normaloff>:/images/22_22/UserMale.png</iconset>
+     <normaloff>:/images/22_22/User.png</normaloff>:/images/22_22/User.png</iconset>
    </property>
    <property name="text">
     <string>Identity</string>
@@ -263,7 +260,7 @@
   <action name="mActionConfiguration">
    <property name="icon">
     <iconset resource="../resources/Icons.qrc">
-     <normaloff>:/images/Tools2.png</normaloff>:/images/Tools2.png</iconset>
+     <normaloff>:/images/22_22/Configuration.png</normaloff>:/images/22_22/Configuration.png</iconset>
    </property>
    <property name="text">
     <string>Configuration</string>
@@ -343,21 +340,9 @@
     <string>Event history</string>
    </property>
   </action>
-  <action name="mActionParticipantMessageWidgets">
-   <property name="icon">
-    <iconset resource="../resources/Icons.qrc">
-     <normaloff>:/images/22_22/Message.png</normaloff>:/images/22_22/Message.png</iconset>
-   </property>
-   <property name="text">
-    <string>Message windows</string>
-   </property>
-   <property name="iconVisibleInMenu">
-    <bool>true</bool>
-   </property>
-  </action>
   <action name="mActionContacts">
    <property name="icon">
-    <iconset resource="../resources/Icons.qrc">
+    <iconset>
      <normaloff>:/images/Catalog.png</normaloff>:/images/Catalog.png</iconset>
    </property>
    <property name="text">
@@ -379,8 +364,8 @@
    </property>
    <property name="icon">
     <iconset resource="../resources/Icons.qrc">
-     <normaloff>:/images/Multimedia1.png</normaloff>
-     <normalon>:/images/22_22/Checked.png</normalon>:/images/Multimedia1.png</iconset>
+     <normaloff>:/images/22_22/Unchecked.png</normaloff>
+     <normalon>:/images/22_22/Checked.png</normalon>:/images/22_22/Unchecked.png</iconset>
    </property>
    <property name="text">
     <string>Data streams</string>
@@ -398,8 +383,8 @@
    </property>
    <property name="icon">
     <iconset resource="../resources/Icons.qrc">
-     <normaloff>:/images/Processor.png</normaloff>
-     <normalon>:/images/22_22/Checked.png</normalon>:/images/Processor.png</iconset>
+     <normaloff>:/images/22_22/Unchecked.png</normaloff>
+     <normalon>:/images/22_22/Checked.png</normalon>:/images/22_22/Unchecked.png</iconset>
    </property>
    <property name="text">
     <string>System threads</string>
@@ -410,7 +395,7 @@
   </action>
   <action name="mActionSaveContacts">
    <property name="icon">
-    <iconset resource="../resources/Icons.qrc">
+    <iconset>
      <normaloff>:/images/DriveSave.png</normaloff>:/images/DriveSave.png</iconset>
    </property>
    <property name="text">
@@ -425,7 +410,7 @@
   </action>
   <action name="mActionLoadContacts">
    <property name="icon">
-    <iconset resource="../resources/Icons.qrc">
+    <iconset>
      <normaloff>:/images/BoxOpen.png</normaloff>:/images/BoxOpen.png</iconset>
    </property>
    <property name="text">
@@ -446,7 +431,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../resources/Icons.qrc">
+    <iconset>
      <normaloff>:/images/UserFamily.png</normaloff>
      <normalon>:/images/22_22/Checked.png</normalon>:/images/UserFamily.png</iconset>
    </property>
@@ -465,7 +450,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../resources/Icons.qrc">
+    <iconset>
      <normaloff>:/images/Network.png</normaloff>
      <normalon>:/images/22_22/Checked.png</normalon>:/images/Network.png</iconset>
    </property>
@@ -515,8 +500,8 @@
    </property>
    <property name="icon">
     <iconset resource="../resources/Icons.qrc">
-     <normaloff>:/images/UserGroup.png</normaloff>
-     <normalon>:/images/22_22/Checked.png</normalon>:/images/UserGroup.png</iconset>
+     <normaloff>:/images/22_22/User_Multiple.png</normaloff>
+     <normalon>:/images/22_22/Checked.png</normalon>:/images/22_22/User_Multiple.png</iconset>
    </property>
    <property name="text">
     <string>Contact list</string>
@@ -534,8 +519,8 @@
    </property>
    <property name="icon">
     <iconset resource="../resources/Icons.qrc">
-     <normaloff>:/images/NetworkShare.png</normaloff>
-     <normalon>:/images/22_22/Checked.png</normalon>:/images/NetworkShare.png</iconset>
+     <normaloff>:/images/22_22/NetworkConnection.png</normaloff>
+     <normalon>:/images/22_22/Checked.png</normalon>:/images/22_22/NetworkConnection.png</iconset>
    </property>
    <property name="text">
     <string>File transfer list</string>
@@ -550,8 +535,8 @@
    </property>
    <property name="icon">
     <iconset resource="../resources/Icons.qrc">
-     <normaloff>:/images/Monitor.png</normaloff>
-     <normalon>:/images/22_22/Checked.png</normalon>:/images/Monitor.png</iconset>
+     <normaloff>:/images/32_32/Screencasting.png</normaloff>
+     <normalon>:/images/22_22/Checked.png</normalon>:/images/32_32/Screencasting.png</iconset>
    </property>
    <property name="text">
     <string>Broadcast data</string>
@@ -565,7 +550,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../resources/Icons.qrc">
+    <iconset>
      <normaloff>:/images/VideoReel.png</normaloff>
      <normalon>:/images/22_22/Checked.png</normalon>:/images/VideoReel.png</iconset>
    </property>
@@ -581,7 +566,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../resources/Icons.qrc">
+    <iconset>
      <normaloff>:/images/Speaker.png</normaloff>
      <normalon>:/images/22_22/Checked.png</normalon>:/images/Speaker.png</iconset>
    </property>
@@ -597,7 +582,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../resources/Icons.qrc">
+    <iconset>
      <normaloff>:/images/FilmStrip1.png</normaloff>
      <normalon>:/images/22_22/Checked.png</normalon>:/images/FilmStrip1.png</iconset>
    </property>
@@ -607,7 +592,7 @@
   </action>
   <action name="mActionOpenVideoPreview">
    <property name="icon">
-    <iconset resource="../resources/Icons.qrc">
+    <iconset>
      <normaloff>:/images/Monitor.png</normaloff>:/images/Monitor.png</iconset>
    </property>
    <property name="text">
@@ -623,8 +608,8 @@
    </property>
    <property name="icon">
     <iconset resource="../resources/Icons.qrc">
-     <normaloff>:/images/22_22/Errors.png</normaloff>
-     <normalon>:/images/22_22/Checked.png</normalon>:/images/22_22/Errors.png</iconset>
+     <normaloff>:/images/22_22/Error.png</normaloff>
+     <normalon>:/images/22_22/Checked.png</normalon>:/images/22_22/Error.png</iconset>
    </property>
    <property name="text">
     <string>Errors</string>
@@ -635,7 +620,7 @@
   </action>
   <action name="mActionOpenAudioPreview">
    <property name="icon">
-    <iconset resource="../resources/Icons.qrc">
+    <iconset>
      <normaloff>:/images/MusicalNote.png</normaloff>:/images/MusicalNote.png</iconset>
    </property>
    <property name="text">
@@ -650,7 +635,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../resources/Icons.qrc">
+    <iconset>
      <normaloff>:/images/Server.png</normaloff>
      <normalon>:/images/Success.png</normalon>:/images/Server.png</iconset>
    </property>
@@ -667,8 +652,8 @@
    </property>
    <property name="icon">
     <iconset resource="../resources/Icons.qrc">
-     <normaloff>:/images/NetworkSocket.png</normaloff>
-     <normalon>:/images/22_22/Checked.png</normalon>:/images/NetworkSocket.png</iconset>
+     <normaloff>:/images/22_22/Unchecked.png</normaloff>
+     <normalon>:/images/22_22/Checked.png</normalon>:/images/22_22/Unchecked.png</iconset>
    </property>
    <property name="text">
     <string>Network streams</string>
@@ -677,7 +662,7 @@
   <action name="mActionOpenVideoAudioPreview">
    <property name="icon">
     <iconset resource="../resources/Icons.qrc">
-     <normaloff>:/images/Multimedia1.png</normaloff>:/images/Multimedia1.png</iconset>
+     <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
    </property>
    <property name="text">
     <string>Open video/audio preview</string>
@@ -700,6 +685,27 @@
    </property>
    <property name="text">
     <string>Network simulator</string>
+   </property>
+  </action>
+  <action name="actionHh">
+   <property name="text">
+    <string>hh</string>
+   </property>
+  </action>
+  <action name="mActionOverviewPlaylistWidget">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/22_22/Playlist.png</normaloff>
+     <normalon>:/images/22_22/Checked.png</normalon>:/images/22_22/Playlist.png</iconset>
+   </property>
+   <property name="text">
+    <string>Playlist</string>
    </property>
   </action>
  </widget>

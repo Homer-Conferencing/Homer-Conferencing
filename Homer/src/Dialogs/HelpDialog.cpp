@@ -31,6 +31,7 @@
 #include <Logger.h>
 #include <HBSystem.h>
 #include <Snippets.h>
+#include <Header_Ffmpeg.h>
 
 #include <QHttp>
 #include <QUrl>
@@ -70,7 +71,7 @@ void HelpDialog::initializeGUI()
     #ifdef LINUX
         QString tCurArch = (System::GetMachineType() == "x86") ? "linux32" : "linux64";
         mSystemData->setText(       "Operating System:  Linux\n"\
-                                    "Kernel:  " + QString(System::GetLinuxKernelVersion().c_str()) + "\n"\
+                                    "Kernel:  " + QString(System::GetKernelVersion().c_str()) + "\n"\
                                     "Library Qt:  " + QString(qVersion()) + "\n"\
                                     "\n"\
                                     "Number of cpu cores: " + QString("%1").arg(System::GetMachineCores()) + "\n"\
@@ -95,13 +96,13 @@ void HelpDialog::initializeGUI()
     #endif
 	#if (defined BSD) && (not defined APPLE)
 		QString tCurArch = (System::GetMachineType() == "x86") ? "bsd32" : "bsd64";
-		mSystemData->setText(       "Operating System:  Linux\n"\
-									"Kernel:  " + "??" + "\n"\
+		mSystemData->setText(       "Operating System:  BSD\n"\
+                                    "Kernel:  " + QString(System::GetKernelVersion().c_str()) + "\n"\
 									"Library Qt:  " + QString(qVersion()) + "\n"\
 									"\n"\
 									"Number of cpu cores: " + QString("%1").arg(System::GetMachineCores()) + "\n"\
 									"Current architecture: " + tCurArch + "\n"\
-									"Target architecture: linux" + QString("%1").arg(ARCH_BITS) + "\n"\
+									"Target architecture: bsd" + QString("%1").arg(ARCH_BITS) + "\n"\
 									"\n"\
 									"Linked AVCodec:  " + QString("%1").arg(LIBAVCODEC_VERSION_MAJOR) + "." + QString("%1").arg(LIBAVCODEC_VERSION_MINOR) + "." + QString("%1").arg(LIBAVCODEC_VERSION_MICRO) + "\n"\
 									"Linked AVDevice:  " + QString("%1").arg(LIBAVDEVICE_VERSION_MAJOR) + "." + QString("%1").arg(LIBAVDEVICE_VERSION_MINOR) + "." + QString("%1").arg(LIBAVDEVICE_VERSION_MICRO) + "\n"\
@@ -109,7 +110,6 @@ void HelpDialog::initializeGUI()
 									"Linked AVUtil:  " + QString("%1").arg(LIBAVUTIL_VERSION_MAJOR) + "." + QString("%1").arg(LIBAVUTIL_VERSION_MINOR) + "." + QString("%1").arg(LIBAVUTIL_VERSION_MICRO) + "\n"\
 									"Linked SWScale:  " + QString("%1").arg(LIBSWSCALE_VERSION_MAJOR) + "." + QString("%1").arg(LIBSWSCALE_VERSION_MINOR) + "." + QString("%1").arg(LIBSWSCALE_VERSION_MICRO) + "\n"\
 									"Linked sofia-sip: " + QString(MEETING.GetSofiaSipVersion().c_str()) + "\n"\
-									"Linked glibc:  " + QString("%1").arg(__GLIBC__) + "." + QString("%1").arg(__GLIBC_MINOR__) + "\n"\
 									"\n"\
 									"QoS supported: " + (Socket::IsQoSSupported() ? "yes" : "no") + "\n"\
 									"IPv6 supported: " + (Socket::IsIPv6Supported() ? "yes" : "no") + "\n"\

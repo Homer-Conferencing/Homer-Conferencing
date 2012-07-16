@@ -42,15 +42,9 @@
 									<listOptionValue builtIn="false" value="../../HomerSoundOutput/include"/>
 									<listOptionValue builtIn="false" value="../../HomerBase/include/Logging"/>
 									<listOptionValue builtIn="false" value="../../HomerMultimedia/include"/>
-									<listOptionValue builtIn="false" value="../../HomerWinLibs/QT/include/"/>
-									<listOptionValue builtIn="false" value="../../HomerWinLibs/QT/include/Qt"/>
-									<listOptionValue builtIn="false" value="../../HomerWinLibs/QT/include/QtCore"/>
-									<listOptionValue builtIn="false" value="../../HomerWinLibs/QT/include/QtGui"/>
-									<listOptionValue builtIn="false" value="../../HomerWinLibs/QT/include/QtNetwork"/>
 									<listOptionValue builtIn="false" value="/usr/lib64/gcc/x86_64-pc-linux-gnu/4.4.5/include/g++-v4"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Homer/include}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/include/qt4/"/>
-									<listOptionValue builtIn="false" value="/Users/Chaos/QtSDK/Desktop/Qt/4.8.0/gcc/include"/>
 									<listOptionValue builtIn="false" value="../../HomerGAPI/include"/>
 									<listOptionValue builtIn="false" value="../../HomerNetworkSimulator/include"/>
 								</option>
@@ -68,9 +62,7 @@
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.base.2007636385" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.base.1801633697" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.base">
-								<option id="gnu.cpp.link.option.paths.131983306" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
-									<listOptionValue builtIn="false" value="/home/chaos/workspace/Homer-Conferencing/lib"/>
-								</option>
+								<option id="gnu.cpp.link.option.paths.131983306" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.832035440" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>

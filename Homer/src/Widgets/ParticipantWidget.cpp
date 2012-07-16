@@ -79,6 +79,7 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
     mRemoteAudioAdr = "";
     mRemoteVideoPort = 0;
     mRemoteAudioPort = 0;
+    mWaveOut = NULL;
     mCallBox = NULL;
     mVideoSourceMuxer = pVideoSourceMuxer;
     mAudioSourceMuxer = pAudioSourceMuxer;
@@ -165,7 +166,7 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
     if ((CONF.GetParticipantWidgetsSeparation()) && (mSessionType == PARTICIPANT))
     {
         setParent(NULL);
-        setWindowIcon(QPixmap(":/images/UserUnavailable.png"));
+        setWindowIcon(QPixmap(":/images/32_32/UserUnavailable.png"));
         setFeatures(QDockWidget::DockWidgetClosable);
     }else
     {
@@ -292,15 +293,18 @@ void ParticipantWidget::OpenPlaybackDevice()
 {
     LOG(LOG_VERBOSE, "Going to open playback device");
 
-	#ifndef APPLE
-		mWaveOut = new WaveOutPortAudio(CONF.GetLocalAudioSink().toStdString());
-	#else
-		mWaveOut = new WaveOutSdl(CONF.GetLocalAudioSink().toStdString());
-	#endif
-	if (mWaveOut == NULL)
-		LOG(LOG_ERROR, "Error when creating wave out object");
-	else
-		mWaveOut->OpenWaveOutDevice();
+    if (CONF.AudioOutputEnabled())
+    {
+        #ifndef APPLE
+            mWaveOut = new WaveOutPortAudio(CONF.GetLocalAudioSink().toStdString());
+        #else
+            mWaveOut = new WaveOutSdl(CONF.GetLocalAudioSink().toStdString());
+        #endif
+        if (mWaveOut == NULL)
+            LOG(LOG_ERROR, "Error when creating wave out object");
+        else
+            mWaveOut->OpenWaveOutDevice();
+    }
     LOG(LOG_VERBOSE, "Finished to open playback device");
 }
 
@@ -308,8 +312,11 @@ void ParticipantWidget::ClosePlaybackDevice()
 {
     LOG(LOG_VERBOSE, "Going to close playback device at %p", mWaveOut);
 
-    // close the audio out
-    delete mWaveOut;
+    if (mWaveOut != NULL)
+    {
+        // close the audio out
+        delete mWaveOut;
+    }
 
     LOG(LOG_VERBOSE, "Finished to close playback device");
 }
@@ -376,7 +383,7 @@ void ParticipantWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             tAction->setChecked(false);
         }
         QIcon tIcon2;
-        tIcon2.addPixmap(QPixmap(":/images/Info.png"), QIcon::Normal, QIcon::Off);
+        tIcon2.addPixmap(QPixmap(":/images/22_22/Info.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon2);
 
         QAction* tPopupRes = tMenu.exec(pEvent->globalPos());
@@ -573,13 +580,16 @@ void ParticipantWidget::HandleMessage(bool pIncoming, QString pSender, QString p
     if (mMessageWidget != NULL)
     {
         mMessageWidget->AddMessage(pSender, pMessage);
-        if (pIncoming)
+        if (mWaveOut != NULL)
         {
-			if (CONF.GetImSound())
-			{
-			    if (!mWaveOut->PlayFile(CONF.GetImSoundFile().toStdString()))
-					LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetImSoundFile().toStdString().c_str());
-			}
+            if (pIncoming)
+            {
+                if (CONF.GetImSound())
+                {
+                    if (!mWaveOut->PlayFile(CONF.GetImSoundFile().toStdString()))
+                        LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetImSoundFile().toStdString().c_str());
+                }
+            }
         }
     }
 }
@@ -594,7 +604,7 @@ void ParticipantWidget::HandleGeneralError(bool pIncoming, int pCode, QString pD
     }
 
     UpdateParticipantState(CONTACT_UNDEFINED_STATE);
-    CONTACTSPOOL.UpdateContactState(mSessionName, CONTACT_UNDEFINED_STATE);
+    CONTACTS.UpdateContactState(mSessionName, CONTACT_UNDEFINED_STATE);
 
     ShowError("General error occurred", "General error of code " + QString("%1").arg(pCode) + " occurred. The error is described with \"" + pDescription + "\"");
 }
@@ -609,7 +619,7 @@ void ParticipantWidget::HandleMessageAccept(bool pIncoming)
     }
 
     UpdateParticipantState(CONTACT_AVAILABLE);
-    CONTACTSPOOL.UpdateContactState(mSessionName, CONTACT_AVAILABLE);
+    CONTACTS.UpdateContactState(mSessionName, CONTACT_AVAILABLE);
 }
 
 void ParticipantWidget::HandleMessageAcceptDelayed(bool pIncoming)
@@ -625,7 +635,7 @@ void ParticipantWidget::HandleMessageAcceptDelayed(bool pIncoming)
         mMessageWidget->AddMessage("", "server delays message(s)", true);
 
     UpdateParticipantState(CONTACT_UNDEFINED_STATE);
-    CONTACTSPOOL.UpdateContactState(mSessionName, CONTACT_UNDEFINED_STATE);
+    CONTACTS.UpdateContactState(mSessionName, CONTACT_UNDEFINED_STATE);
 }
 
 void ParticipantWidget::HandleMessageUnavailable(bool pIncoming, int pStatusCode, QString pDescription)
@@ -638,7 +648,7 @@ void ParticipantWidget::HandleMessageUnavailable(bool pIncoming, int pStatusCode
     }
 
     UpdateParticipantState(CONTACT_UNAVAILABLE);
-    CONTACTSPOOL.UpdateContactState(mSessionName, CONTACT_UNAVAILABLE);
+    CONTACTS.UpdateContactState(mSessionName, CONTACT_UNAVAILABLE);
     ShowError("Participant unavailable", "The participant " + mSessionName + " is currently unavailable for an instant message! The reason is \"" + pDescription + "\"(" + QString("%1").arg(pStatusCode) + ").");
 }
 
@@ -653,12 +663,15 @@ void ParticipantWidget::HandleCallRinging(bool pIncoming)
 
     ShowNewState();
 
-    if (pIncoming)
+    if (mWaveOut != NULL)
     {
-		if (CONF.GetCallAcknowledgeSound())
+        if (pIncoming)
 		{
-		    if (!mWaveOut->PlayFile(CONF.GetCallAcknowledgeSoundFile().toStdString()))
-				LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetCallAcknowledgeSoundFile().toStdString().c_str());
+            if (CONF.GetCallAcknowledgeSound())
+            {
+                if (!mWaveOut->PlayFile(CONF.GetCallAcknowledgeSoundFile().toStdString()))
+                    LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetCallAcknowledgeSoundFile().toStdString().c_str());
+            }
 		}
     }
 }
@@ -684,12 +697,15 @@ void ParticipantWidget::HandleCall(bool pIncoming, QString pRemoteApplication)
         mCallBox = new QMessageBox(QMessageBox::Question, "Incoming call from application " + pRemoteApplication, "Do you want to accept the incoming call from " + mSessionName + "?", QMessageBox::Yes | QMessageBox::Cancel, this);
 
         // start sound output
-        if (pIncoming)
+        if (mWaveOut != NULL)
         {
-			if (CONF.GetCallSound())
-			{
-			    if (!mWaveOut->PlayFile(CONF.GetCallSoundFile().toStdString(), SOUND_FOR_CALL_LOOPS))
-					LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetCallSoundFile().toStdString().c_str());
+            if (pIncoming)
+            {
+                if (CONF.GetCallSound())
+                {
+                    if (!mWaveOut->PlayFile(CONF.GetCallSoundFile().toStdString(), SOUND_FOR_CALL_LOOPS))
+                        LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetCallSoundFile().toStdString().c_str());
+                }
 			}
         }
 
@@ -717,12 +733,15 @@ void ParticipantWidget::HandleCallCancel(bool pIncoming)
 
     CallStopped(pIncoming);
 
-    if (pIncoming)
+    if (mWaveOut != NULL)
     {
-		if (CONF.GetCallHangupSound())
-		{
-		    if (!mWaveOut->PlayFile(CONF.GetCallHangupSoundFile().toStdString()))
-				LOG(LOG_ERROR, "Was unable to play the file \"%s\".",  CONF.GetCallHangupSoundFile().toStdString().c_str());
+        if (pIncoming)
+        {
+            if (CONF.GetCallHangupSound())
+            {
+                if (!mWaveOut->PlayFile(CONF.GetCallHangupSoundFile().toStdString()))
+                    LOG(LOG_ERROR, "Was unable to play the file \"%s\".",  CONF.GetCallHangupSoundFile().toStdString().c_str());
+            }
 		}
     }
 }
@@ -738,12 +757,15 @@ void ParticipantWidget::HandleCallHangup(bool pIncoming)
 
     CallStopped(pIncoming);
 
-    if (pIncoming)
+    if (mWaveOut != NULL)
     {
-		if (CONF.GetCallHangupSound())
-		{
-		    if (!mWaveOut->PlayFile(CONF.GetCallHangupSoundFile().toStdString()))
-				LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetCallHangupSoundFile().toStdString().c_str());
+        if (pIncoming)
+        {
+            if (CONF.GetCallHangupSound())
+            {
+                if (!mWaveOut->PlayFile(CONF.GetCallHangupSoundFile().toStdString()))
+                    LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetCallHangupSoundFile().toStdString().c_str());
+            }
 		}
     }
 }
@@ -759,12 +781,15 @@ void ParticipantWidget::HandleCallTermination(bool pIncoming)
 
     CallStopped(pIncoming);
 
-    if (pIncoming)
+    if (mWaveOut != NULL)
     {
-		if (CONF.GetErrorSound())
-		{
-		    if (!mWaveOut->PlayFile(CONF.GetErrorSoundFile().toStdString()))
-				LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetErrorSoundFile().toStdString().c_str());
+        if (pIncoming)
+        {
+            if (CONF.GetErrorSound())
+            {
+                if (!mWaveOut->PlayFile(CONF.GetErrorSoundFile().toStdString()))
+                    LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetErrorSoundFile().toStdString().c_str());
+            }
 		}
     }
 }
@@ -799,12 +824,15 @@ void ParticipantWidget::CallStopped(bool pIncoming)
         mAudioWidget->SetVisible(false);
     mIncomingCall = false;
 
-    // stop sound output
-    LOG(LOG_VERBOSE, "Playing acoustic notification from file: %s", mWaveOut->CurrentFile().c_str());
-    if ((mWaveOut->CurrentFile() == CONF.GetCallSoundFile().toStdString()) && (mWaveOut->IsPlaying()))
+    if (mWaveOut != NULL)
     {
-        LOG(LOG_VERBOSE, "Stopping playback of sound file");
-    	mWaveOut->Stop();
+        // stop sound output
+        LOG(LOG_VERBOSE, "Playing acoustic notification from file: %s", mWaveOut->CurrentFile().c_str());
+        if ((mWaveOut->CurrentFile() == CONF.GetCallSoundFile().toStdString()) && (mWaveOut->IsPlaying()))
+        {
+            LOG(LOG_VERBOSE, "Stopping playback of sound file");
+            mWaveOut->Stop();
+        }
     }
 }
 
@@ -821,18 +849,21 @@ void ParticipantWidget::HandleCallUnavailable(bool pIncoming, int pStatusCode, Q
     {
     	CallStopped(pIncoming);
         UpdateParticipantState(CONTACT_UNAVAILABLE);
-        CONTACTSPOOL.UpdateContactState(mSessionName, CONTACT_UNAVAILABLE);
+        CONTACTS.UpdateContactState(mSessionName, CONTACT_UNAVAILABLE);
 
         ShowError("Participant unavailable", "The participant " + mSessionName + " is currently unavailable for a call! The reason is \"" + pDescription + "\"(" + QString("%1").arg(pStatusCode) + ").");
     }else
     	CallStopped(pIncoming);
 
-    if (pIncoming)
+    if (mWaveOut != NULL)
     {
-		if (CONF.GetErrorSound())
-		{
-		    if (!mWaveOut->PlayFile(CONF.GetErrorSoundFile().toStdString()))
-				LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetErrorSoundFile().toStdString().c_str());
+        if (pIncoming)
+        {
+            if (CONF.GetErrorSound())
+            {
+                if (!mWaveOut->PlayFile(CONF.GetErrorSoundFile().toStdString()))
+                    LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetErrorSoundFile().toStdString().c_str());
+            }
 		}
     }
 }
@@ -853,11 +884,14 @@ void ParticipantWidget::HandleCallDenied(bool pIncoming)
 
     if (pIncoming)
     {
-		if (CONF.GetCallDenySound())
-		{
-		    if (!mWaveOut->PlayFile(CONF.GetCallDenySoundFile().toStdString()))
-				LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetCallDenySoundFile().toStdString().c_str());
-		}
+        if (mWaveOut != NULL)
+        {
+            if (CONF.GetCallDenySound())
+            {
+                if (!mWaveOut->PlayFile(CONF.GetCallDenySoundFile().toStdString()))
+                    LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetCallDenySoundFile().toStdString().c_str());
+            }
+        }
     }
 }
 
@@ -871,7 +905,7 @@ void ParticipantWidget::HandleCallAccept(bool pIncoming)
     }
 
     UpdateParticipantState(CONTACT_AVAILABLE);
-    CONTACTSPOOL.UpdateContactState(mSessionName, CONTACT_AVAILABLE);
+    CONTACTS.UpdateContactState(mSessionName, CONTACT_AVAILABLE);
 
     if (mMessageWidget != NULL)
         mMessageWidget->AddMessage("", "session established", true);
@@ -886,20 +920,23 @@ void ParticipantWidget::HandleCallAccept(bool pIncoming)
         mAudioWidget->SetVisible(true);
     mIncomingCall = false;
 
-    // stop sound output
-    if ((mWaveOut->CurrentFile() == CONF.GetCallSoundFile().toStdString()) && (mWaveOut->IsPlaying()))
+    if (mWaveOut != NULL)
     {
-        LOG(LOG_VERBOSE, "Stopping playback of sound file");
-    	mWaveOut->Stop();
-    }
+        // stop sound output
+        if ((mWaveOut->CurrentFile() == CONF.GetCallSoundFile().toStdString()) && (mWaveOut->IsPlaying()))
+        {
+            LOG(LOG_VERBOSE, "Stopping playback of sound file");
+            mWaveOut->Stop();
+        }
 
-    if (pIncoming)
-    {
-		if (CONF.GetCallAcknowledgeSound())
-		{
-		    if (!mWaveOut->PlayFile(CONF.GetCallAcknowledgeSoundFile().toStdString()))
-				LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetCallAcknowledgeSoundFile().toStdString().c_str());
-		}
+        if (pIncoming)
+        {
+            if (CONF.GetCallAcknowledgeSound())
+            {
+                if (!mWaveOut->PlayFile(CONF.GetCallAcknowledgeSoundFile().toStdString()))
+                    LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetCallAcknowledgeSoundFile().toStdString().c_str());
+            }
+        }
     }
 }
 
@@ -1046,14 +1083,14 @@ void ParticipantWidget::UpdateParticipantState(int pState)
     switch(pState)
     {
         case CONTACT_UNAVAILABLE:
-            setWindowIcon(QPixmap(":/images/UserUnavailable.png"));
+            setWindowIcon(QPixmap(":/images/32_32/UserUnavailable.png"));
             break;
         case CONTACT_AVAILABLE:
-            setWindowIcon(QPixmap(":/images/UserAvailable.png"));
+            setWindowIcon(QPixmap(":/images/32_32/UserAvailable.png"));
             break;
         default:
         case CONTACT_UNDEFINED_STATE:
-            setWindowIcon(QPixmap(":/images/Warning.png").scaled(24, 24, Qt::KeepAspectRatio, Qt::FastTransformation));
+            setWindowIcon(QPixmap(":/images/22_22/Error.png").scaled(24, 24, Qt::KeepAspectRatio, Qt::FastTransformation));
             break;
     }
 }

@@ -30,6 +30,15 @@ IF(NOT GCC_VERSION VERSION_GREATER ${REQUIRED_GCC_VERSION} AND NOT GCC_VERSION V
 ENDIF()
 
 ##############################################################
+# verbose command line output
+IF (${CMAKE_VERBOSE_MAKEFILE} MATCHES "ON")
+	SET (FLAGS 
+		${FLAGS}
+		-v
+	)
+ENDIF()
+
+##############################################################
 # Homer versioning
 IF(WIN32)
 	IF (DEFINED TARGET_LIB_NAME) 
@@ -430,12 +439,6 @@ IF (BSD)
 ENDIF (BSD)
 
 IF (LINUX)
-	IF (${BUILD} MATCHES "Default")
-		FOREACH(LIBS_LINUX_STATIC_ENTRY ${LIBS_LINUX_STATIC})
-			SET(LIBS_LINUX "${LIBS_LINUX};${LIBS_LINUX_STATIC_ENTRY}")
-		ENDFOREACH(LIBS_LINUX_STATIC_ENTRY ${LIBS_LINUX_STATIC})
-		SET (LIBS_LINUX_STATIC "")	
-	ENDIF ()
 	MESSAGE("### Linking dynamic Linux libraries: ${LIBS_LINUX}")
 	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_LINUX})
 

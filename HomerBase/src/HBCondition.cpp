@@ -73,6 +73,7 @@ bool Condition::Wait(Mutex *pMutex, int pTime)
 {
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
         struct timespec tTimeout;
+        struct timespec tTimeout1;
 
         #if defined(LINUX) || defined(BSD)
             if (clock_gettime(CLOCK_REALTIME, &tTimeout) == -1)
@@ -88,9 +89,28 @@ bool Condition::Wait(Mutex *pMutex, int pTime)
             tTimeout.tv_sec = tMachTimeSpec.tv_sec;
             tTimeout.tv_nsec = tMachTimeSpec.tv_nsec;
         #endif
+        int tTime = pTime;
 
-        // add msecs to current time stamp
-        tTimeout.tv_nsec += pTime * 1000 * 1000;
+        tTimeout1 = tTimeout;
+
+        // add complete seconds if pTime is bigger than 1 sec
+        if (tTime >= 1000)
+        {
+            tTimeout.tv_sec += tTime / 1000;
+            tTime %= 1000;
+        }
+        tTimeout.tv_nsec += tTime * 1000 * 1000;
+        if (tTimeout.tv_nsec > (int64_t) 1000 * 1000 * 1000)
+        {
+            int64_t tAddSecs = tTimeout.tv_nsec / 1000 / 1000 / 1000;
+            int64_t tNanoDiff = tAddSecs * 1000 * 1000 * 1000;
+            int64_t tNanoSecs = tTimeout.tv_nsec - tNanoDiff;
+            tTimeout.tv_nsec = tNanoSecs;
+            tTimeout.tv_sec += tAddSecs;
+            #ifdef HBC_DEBUG_TIMED
+                LOG(LOG_WARN, "Condition ns part of timeout exceeds by %ld seconds", tAddSecs);
+            #endif
+        }
 
         if (pMutex)
             if (pTime > 0)
@@ -100,8 +120,7 @@ bool Condition::Wait(Mutex *pMutex, int pTime)
         else
         {
         	bool tResult = false;
-            pthread_mutex_t tMutex;
-            pthread_mutex_init(&tMutex, NULL);
+            pthread_mutex_t tMutex = PTHREAD_MUTEX_INITIALIZER;
             pthread_mutex_lock(&tMutex);
             if (pTime > 0)
             {
@@ -114,13 +133,15 @@ bool Condition::Wait(Mutex *pMutex, int pTime)
 					case EBUSY: // Condition can't be obtained because it is busy
 						break;
 					case EINVAL:
-						LOG(LOG_ERROR, "Condition was found in uninitialized state");
+			            LOG(LOG_WARN, "Ref.  time: %ld / %ld", tTimeout1.tv_sec, tTimeout1.tv_nsec);
+			            LOG(LOG_WARN, "Final time: %ld / %ld", tTimeout.tv_sec, tTimeout.tv_nsec);
+						LOG(LOG_ERROR, "Specified time of %d was invalid", pTime);
 						break;
 					case EFAULT:
 						LOG(LOG_ERROR, "Invalid condition pointer was given");
 						break;
 					case ETIMEDOUT:
-						LOG(LOG_WARN, "Condition couldn't be obtained in given time.\n");
+						LOG(LOG_WARN, "Condition couldn't be obtained in given time of %d ms", pTime);
 						break;
 					case 0: // Condition was free and is obtained now
 						tResult = true;
@@ -153,13 +174,19 @@ bool Condition::Wait(Mutex *pMutex, int pTime)
         				break;
         		}
             }
+            pthread_mutex_unlock(&tMutex);
             pthread_mutex_destroy(&tMutex);
     		return tResult;
         }
     #endif
 
     #if defined(WIN32) ||defined(WIN64)
+        //TODO: fix this - mutex handling here is nothing to rely on!
+        if (pMutex != NULL)
+        	pMutex->unlock();
         return (WaitForSingleObject(mCondition, (pTime == 0) ? INFINITE : pTime) == WAIT_OBJECT_0);
+        if (pMutex != NULL)
+        	pMutex->lock();
     #endif
 }
 

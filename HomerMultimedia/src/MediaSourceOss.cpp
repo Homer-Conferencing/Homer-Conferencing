@@ -50,6 +50,7 @@ using namespace Homer::Monitor;
 MediaSourceOss::MediaSourceOss(string pDesiredDevice):
     MediaSource("OSS: local capture")
 {
+    mSourceType = SOURCE_DEVICE;
     // set category for packet statistics
     ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
 

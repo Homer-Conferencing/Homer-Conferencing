@@ -26,7 +26,7 @@
  */
 #include <string>
 
-#include <ContactsPool.h>
+#include <ContactsManager.h>
 #include <MainWindow.h>
 #include <Configuration.h>
 #include <Dialogs/AddNetworkSinkDialog.h>
@@ -73,6 +73,7 @@
 #include <QLabel>
 
 using namespace Homer::Monitor;
+using namespace Homer::Multimedia;
 using namespace Homer::Conference;
 
 namespace Homer { namespace Gui {
@@ -127,7 +128,7 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     // set coloring for GUI objects
     initializeColoring();
     // init contact database
-    CONTACTSPOOL.Init(CONF.GetContactFile().toStdString());
+    CONTACTS.Init(CONF.GetContactFile().toStdString());
     // connect signals and slots, set visibility of some GUI objects
     connectSignalsSlots();
     // auto update check
@@ -237,6 +238,10 @@ void MainWindow::initializeFeatureDisablers(QStringList pArguments)
                 Socket::DisableIPv6Support();
             if(tFeatureName == "QoS")
                 Socket::DisableQoSSupport();
+            if(tFeatureName == "AudioOutput")
+                CONF.DisableAudioOutput();
+            if(tFeatureName == "AudioCapture")
+                CONF.DisableAudioCapture();
         }
     }
 }
@@ -372,7 +377,10 @@ void MainWindow::initializeVideoAudioIO()
     // ############################
     LOG(LOG_VERBOSE, "Creating audio media objects..");
     mOwnAudioMuxer = new MediaSourceMuxer(NULL);
-	mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio());
+    if (CONF.AudioCaptureEnabled())
+    {
+        mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio());
+    }
 }
 
 void MainWindow::initializeColoring()
@@ -390,10 +398,6 @@ void MainWindow::initializeWidgetsAndMenus()
 
     // set fixed style "plastic"
     QApplication::setStyle(new QPlastiqueStyle());
-
-    mMenuParticipantMessageWidgets = new QMenu("Participant messages");
-    mActionParticipantMessageWidgets->setMenu(mMenuParticipantMessageWidgets);
-
 
     LOG(LOG_VERBOSE, "..contacts widget");
     mOverviewContactsWidget = new OverviewContactsWidget(mActionOverviewContactsWidget, this);
@@ -414,13 +418,9 @@ void MainWindow::initializeWidgetsAndMenus()
     CreateSysTray();
 
     LOG(LOG_VERBOSE, "Creating playlist control widgets..");
-    mOverviewPlaylistWidgetVideo = new OverviewPlaylistWidget(mActionOverviewVideoPlaylistWidget, this, PLAYLIST_VIDEO, mLocalUserParticipantWidget->GetVideoWorker(), mLocalUserParticipantWidget->GetAudioWorker());
-    mOverviewPlaylistWidgetAudio = new OverviewPlaylistWidget(mActionOverviewAudioPlaylistWidget, this, PLAYLIST_AUDIO, mLocalUserParticipantWidget->GetVideoWorker(), mLocalUserParticipantWidget->GetAudioWorker());
-    mOverviewPlaylistWidgetMovie = new OverviewPlaylistWidget(mActionOverviewMoviePlaylistWidget, this, PLAYLIST_MOVIE, mLocalUserParticipantWidget->GetVideoWorker(), mLocalUserParticipantWidget->GetAudioWorker());
-    tabifyDockWidget(mOverviewPlaylistWidgetVideo, mOverviewPlaylistWidgetAudio);
-    tabifyDockWidget(mOverviewPlaylistWidgetAudio, mOverviewPlaylistWidgetMovie);
+    mOverviewPlaylistWidget = new OverviewPlaylistWidget(mActionOverviewPlaylistWidget, this, mLocalUserParticipantWidget->GetVideoWorker(), mLocalUserParticipantWidget->GetAudioWorker());
 
-    mMediaSourcesControlWidget = new StreamingControlWidget(mLocalUserParticipantWidget, mSourceDesktop, mOverviewPlaylistWidgetVideo, mOverviewPlaylistWidgetAudio, mOverviewPlaylistWidgetMovie);
+    mMediaSourcesControlWidget = new StreamingControlWidget(mLocalUserParticipantWidget, mSourceDesktop, mOverviewPlaylistWidget);
     mToolBarMediaSources->addWidget(mMediaSourcesControlWidget);
     if (mOwnVideoMuxer->SupportsMultipleInputChannels())
         mMediaSourcesControlWidget->SetVideoInputSelectionVisible();
@@ -673,7 +673,10 @@ void MainWindow::loadSettings()
     // if former selected device isn't available we use one of the available instead
     if (!tNewDeviceSelected)
     {
-        ShowWarning("Audio device not available", "Can't use formerly selected audio device: \"" + CONF.GetLocalAudioSource() + "\", will use one of the available devices instead!");
+        AudioDevices tAList;
+        mOwnAudioMuxer->getAudioDevices(tAList);
+        if (tAList.size() > 1)
+            ShowWarning("Audio device not available", "Can't use formerly selected audio device: \"" + CONF.GetLocalAudioSource() + "\", will use one of the available devices instead!");
         CONF.SetLocalAudioSource("auto");
         mOwnAudioMuxer->SelectDevice("auto", MEDIA_AUDIO, tNewDeviceSelected);
     }
@@ -722,9 +725,7 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
 
     //HINT: delete before local participant widget is destroyed
     LOG(LOG_VERBOSE, "..destroying playlist widget");
-    delete mOverviewPlaylistWidgetVideo;
-    delete mOverviewPlaylistWidgetAudio;
-    delete mOverviewPlaylistWidgetMovie;
+    delete mOverviewPlaylistWidget;
 
     // should be the last because video/audio workers could otherwise be deleted while they are still called
     LOG(LOG_VERBOSE, "..destroying broadcast widget");
@@ -874,7 +875,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     break;
         case ADD_VIDEO_RELAY:
                     //####################### VIDEO ADD RELAY #############################
-                    tANSDialog = new AddNetworkSinkDialog(this, GetVideoMuxer());
+                    tANSDialog = new AddNetworkSinkDialog(this, "Configure video streaming", DATA_TYPE_VIDEO, GetVideoMuxer());
                     tANSDialog->exec();
                     delete tANSDialog;
                     break;
@@ -893,7 +894,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     tOAEvent = (OptionsAcceptEvent*) tEvent;
 
                     // inform contacts pool about online state
-                    CONTACTSPOOL.UpdateContactState(QString::fromLocal8Bit(tOAEvent->Sender.c_str()), CONTACT_AVAILABLE);
+                    CONTACTS.UpdateContactState(QString::fromLocal8Bit(tOAEvent->Sender.c_str()), CONTACT_AVAILABLE);
 
                     // inform participant widget about new state
                     if (mParticipantWidgets.size())
@@ -916,7 +917,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     tOUAEvent = (OptionsUnavailableEvent*) tEvent;
 
                     // inform contacts pool about online state
-                    CONTACTSPOOL.UpdateContactState(QString::fromLocal8Bit(tOUAEvent->Sender.c_str()), CONTACT_UNAVAILABLE);
+                    CONTACTS.UpdateContactState(QString::fromLocal8Bit(tOUAEvent->Sender.c_str()), CONTACT_UNAVAILABLE);
 
                 	LOG(LOG_WARN, "Contact unavailable, reason is \"%s\"(%d).", tOUAEvent->Description.c_str(), tOUAEvent->StatusCode);
 
@@ -1497,7 +1498,7 @@ void MainWindow::actionConfiguration()
         if ((!tFormerStateMeetingProbeContacts) && (CONF.GetSipContactsProbing()))
         {
             LOG(LOG_VERBOSE, "Do an explicit auto probing of known contacts because user has activated the auto-probing feature via confiuration dialogue");
-            CONTACTSPOOL.ProbeAvailabilityForAll();
+            CONTACTS.ProbeAvailabilityForAll();
         }
         MEETING.SetVideoAudioStartPort(CONF.GetVideoAudioStartPort());
     }

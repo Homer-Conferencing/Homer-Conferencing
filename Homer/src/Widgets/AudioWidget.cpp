@@ -130,7 +130,7 @@ void AudioWidget::Init(MediaSource *pAudioSource, QMenu *pMenu, QString pActionT
         mAssignedAction->setChecked(pVisible);
         QIcon tIcon;
         tIcon.addPixmap(QPixmap(":/images/22_22/Checked.png"), QIcon::Normal, QIcon::On);
-        tIcon.addPixmap(QPixmap(":/images/Unchecked.png"), QIcon::Normal, QIcon::Off);
+        tIcon.addPixmap(QPixmap(":/images/22_22/Unchecked.png"), QIcon::Normal, QIcon::Off);
         mAssignedAction->setIcon(tIcon);
     }
 
@@ -178,16 +178,19 @@ AudioWidget::~AudioWidget()
     if (mAudioWorker != NULL)
     {
         mAudioWorker->StopGrabber();
+        LOG(LOG_VERBOSE, "..waiting for end of audio worker thread");
         if (!mAudioWorker->wait(2000))
         {
-            LOG(LOG_WARN, "Going to force termination of worker thread");
+            LOG(LOG_WARN, "..going to force termination of worker thread");
             mAudioWorker->terminate();
         }
 
+        LOG(LOG_VERBOSE, "..waiting for termination of audio worker thread");
         if (!mAudioWorker->wait(5000))
         {
             LOG(LOG_ERROR, "Termination of AudioWorker-Thread timed out");
         }
+    	LOG(LOG_VERBOSE, "Going to delete audio worker..");
         delete mAudioWorker;
     }
     if (mAssignedAction != NULL)
@@ -495,7 +498,7 @@ void AudioWidget::StopRecorder()
 
 void AudioWidget::DialogAddNetworkSink()
 {
-    AddNetworkSinkDialog tANSDialog(this, mAudioSource);
+    AddNetworkSinkDialog tANSDialog(this, "Configure audio streaming", DATA_TYPE_AUDIO, mAudioSource);
 
     tANSDialog.exec();
 }
@@ -554,11 +557,6 @@ void AudioWidget::ShowSample(void* pBuffer, int pSampleSize, int pSampleNumber)
     //#############################################################
     //### draw statistics
     //#############################################################
-    if ((mShowLiveStats) && (!mLbStreamInfo->isVisible()))
-        mLbStreamInfo->setVisible(true);
-    if ((!mShowLiveStats) && (mLbStreamInfo->isVisible()))
-        mLbStreamInfo->setVisible(false);
-
     if (mShowLiveStats)
     {
         int tHour = 0, tMin = 0, tSec = 0, tTime = mAudioSource->GetSeekPos();
@@ -578,20 +576,26 @@ void AudioWidget::ShowSample(void* pBuffer, int pSampleSize, int pSampleNumber)
         mLbStreamInfo->setFont(tFont);
         QString tMuxCodecName = QString(mAudioSource->GetMuxingCodec().c_str());
         QString tText = "<font color=red><b>"                                                                                                \
-                /*"Source: " + mAudioWorker->GetCurrentDevice() + "<br>" +                                                            \*/
-/*                                   "Buffer: " + QString("%1").arg(pSampleNumber) + (mAudioSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mAudioSource->GetChunkDropCounter()) + " dropped)") : "") + "<br>" + \ */
+                "Source: " + mAudioWorker->GetCurrentDevice() + "<br>" +                                                            \
+/*                "Buffer: " + QString("%1").arg(pSampleNumber) + (mAudioSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mAudioSource->GetChunkDropCounter()) + " dropped)") : "") + ", "\*/
                 "Codec: " + QString((mAudioSource->GetCodecName() != "") ? mAudioSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(mAudioSource->GetSampleRate()) + "Hz)" + \
 /*                                   "Output: " + QString("%1").arg(AUDIO_OUTPUT_SAMPLE_RATE) + " Hz" + "<br>" + \*/
                 "";
         if (mAudioSource->SupportsSeeking())
-            tText +=    "<br>Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0');
+            tText +=    ", Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0');
 
-        if (mAudioSource->SupportsMuxing())
-            tText +=     "<br>Mux codec: " + ((tMuxCodecName != "") ? tMuxCodecName : "unknown") + (mAudioSource->GetMuxingBufferCounter() ? (" (" + QString("%1").arg(mAudioSource->GetMuxingBufferCounter()) + "/" + QString("%1").arg(mAudioSource->GetMuxingBufferSize()) + " buffered frames)") : "");
+//        if (mAudioSource->SupportsMuxing())
+//            tText +=     "<br>Mux codec: " + ((tMuxCodecName != "") ? tMuxCodecName : "unknown") + (mAudioSource->GetMuxingBufferCounter() ? (" (" + QString("%1").arg(mAudioSource->GetMuxingBufferCounter()) + "/" + QString("%1").arg(mAudioSource->GetMuxingBufferSize()) + " buffered frames)") : "");
 
         tText +=        "</b></font>";
         mLbStreamInfo->setText(tText);
     }
+    if ((mShowLiveStats) && (!mLbStreamInfo->isVisible()))
+    {
+        mLbStreamInfo->setVisible(true);
+    }
+    if ((!mShowLiveStats) && (mLbStreamInfo->isVisible()))
+        mLbStreamInfo->setVisible(false);
 
     //#############################################################
     //### draw record icon
@@ -854,6 +858,7 @@ AudioWorkerThread::AudioWorkerThread(MediaSource *pAudioSource, AudioWidget *pAu
 
 AudioWorkerThread::~AudioWorkerThread()
 {
+    LOG(LOG_VERBOSE, "Destroyed");
 }
 
 void AudioWorkerThread::OpenPlaybackDevice()
@@ -867,12 +872,18 @@ void AudioWorkerThread::OpenPlaybackDevice()
 
     LOG(LOG_VERBOSE, "Going to open playback device");
 
-	#ifndef APPLE
-    	mWaveOut = new WaveOutPortAudio(CONF.GetLocalAudioSink().toStdString());
-	#else
-    	mWaveOut = new WaveOutSdl(CONF.GetLocalAudioSink().toStdString());
-	#endif
-	mWaveOut->OpenWaveOutDevice();
+    if (CONF.AudioOutputEnabled())
+    {
+        #ifndef APPLE
+            mWaveOut = new WaveOutPortAudio(CONF.GetLocalAudioSink().toStdString());
+        #else
+            mWaveOut = new WaveOutSdl(CONF.GetLocalAudioSink().toStdString());
+        #endif
+        if (mWaveOut != NULL)
+            mWaveOut->OpenWaveOutDevice();
+        else
+            LOG(LOG_ERROR, "Error when allocatin wave out instance");
+    }
     mPlaybackAvailable = true;
     LOG(LOG_VERBOSE, "Finished to open playback device");
 }
@@ -883,9 +894,11 @@ void AudioWorkerThread::ClosePlaybackDevice()
 
     mPlaybackAvailable = false;
 
-    // close the audio out
-    mWaveOut->CloseWaveOutDevice();
-    delete mWaveOut;
+    if (mWaveOut != NULL)
+    {
+        // close the audio output
+        delete mWaveOut;
+    }
 
     LOG(LOG_VERBOSE, "Releasing audio buffers");
     for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
@@ -920,7 +933,8 @@ void AudioWorkerThread::SetVolume(int pValue)
 		return;
 	}
 
-	mWaveOut->SetVolume(pValue);
+	if (mWaveOut != NULL)
+	    mWaveOut->SetVolume(pValue);
 }
 
 void AudioWorkerThread::SetMuteState(bool pMuted)
@@ -1392,7 +1406,7 @@ void AudioWorkerThread::DoStartPlayback()
     }
 
     // if audio was muted we have to wait for an initial time
-    if ((!mWaveOut->IsPlaying()) && (mAudioPlaybackDelayCount == 0))
+    if ((mWaveOut != NULL) && (!mWaveOut->IsPlaying()) && (mAudioPlaybackDelayCount == 0))
     {
         mAudioPlaybackDelayCount = AUDIO_INITIAL_MINIMUM_PLAYBACK_QUEUE;
         mStartPlaybackAsap = true;
@@ -1400,10 +1414,13 @@ void AudioWorkerThread::DoStartPlayback()
     }
 
     // okay don't have to wait, time to start playback
-    LOG(LOG_VERBOSE, "DoStartPlayback now...(playing: %d, delay count: %d)", mWaveOut->IsPlaying(), mAudioPlaybackDelayCount);
+    LOG(LOG_VERBOSE, "DoStartPlayback now...(playing: %d, delay count: %d)", (mWaveOut != NULL) ? mWaveOut->IsPlaying() : false, mAudioPlaybackDelayCount);
     mStartPlaybackAsap = false;
     if (mPlaybackAvailable)
-        mWaveOut->Play();
+    {
+        if (mWaveOut != NULL)
+            mWaveOut->Play();
+    }
     mAudioPlaybackDelayCount = 0;
     mAudioOutMuted = false;
 }
@@ -1413,8 +1430,18 @@ void AudioWorkerThread::DoStopPlayback()
     LOG(LOG_VERBOSE, "DoStopPlayback now...");
 	mStopPlaybackAsap = false;
 	if (mPlaybackAvailable)
-		mWaveOut->Stop();
+	{
+	    if (mWaveOut != NULL)
+	    {
+	        LOG(LOG_VERBOSE, "..triggering playback stop");
+	        mWaveOut->Stop();
+	        LOG(LOG_VERBOSE, "..playback stopped");
+	    }
+	}else
+		LOG(LOG_VERBOSE, "Playback can't be stopped because it is not available");
+
 	mAudioOutMuted = true;
+	LOG(LOG_VERBOSE, "Playback is stopped");
 }
 
 int AudioWorkerThread::GetCurrentSample(void **pSample, int& pSampleSize, int *pSps)
@@ -1539,6 +1566,7 @@ void AudioWorkerThread::run()
             }else
             {
                 mSourceAvailable = false;
+                LOG(LOG_VERBOSE, "Derived EOF and mark audio source as unavailable");
             }
 
 			//printf("SampleSize: %d Sample: %d\n", mSamplesSize[mSampleGrabIndex], tSampleNumber);
@@ -1546,7 +1574,8 @@ void AudioWorkerThread::run()
 			// play the sample block if audio out isn't currently muted
 			if ((!mAudioOutMuted) && (tSampleNumber >= 0) && (tSamplesSize > 0) && (!mDropSamples) && (mPlaybackAvailable))
 			{
-			    mWaveOut->WriteChunk(mSamples[mSampleGrabIndex], mSamplesSize[mSampleGrabIndex]);
+			    if (mWaveOut != NULL)
+			        mWaveOut->WriteChunk(mSamples[mSampleGrabIndex], mSamplesSize[mSampleGrabIndex]);
 			}else
 			{
 				#ifdef DEBUG_AUDIOWIDGET_PERFORMANCE

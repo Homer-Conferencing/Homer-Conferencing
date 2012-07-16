@@ -30,7 +30,7 @@
 #include <Configuration.h>
 #include <Meeting.h>
 #include <Logger.h>
-#include <ContactsPool.h>
+#include <ContactsManager.h>
 #include <Snippets.h>
 
 #include <QWidget>
@@ -76,7 +76,7 @@ void MessageWidget::Init(QMenu *pMenu, QString pParticipant, OverviewContactsWid
         mAssignedAction->setChecked(pVisible);
         QIcon tIcon;
         tIcon.addPixmap(QPixmap(":/images/22_22/Checked.png"), QIcon::Normal, QIcon::On);
-        tIcon.addPixmap(QPixmap(":/images/Unchecked.png"), QIcon::Normal, QIcon::Off);
+        tIcon.addPixmap(QPixmap(":/images/22_22/Unchecked.png"), QIcon::Normal, QIcon::Off);
         mAssignedAction->setIcon(tIcon);
     }
 
@@ -136,8 +136,8 @@ MessageWidget::~MessageWidget()
 bool MessageWidget::IsKnownContact()
 {
     QString tUser, tHost, tPort;
-    CONTACTSPOOL.SplitAddress(mParticipant, tUser, tHost, tPort);
-    return CONTACTSPOOL.IsKnownContact(tUser, tHost, tPort);
+    CONTACTS.SplitAddress(mParticipant, tUser, tHost, tPort);
+    return CONTACTS.IsKnownContact(tUser, tHost, tPort);
 }
 
 void MessageWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEvent)
@@ -389,12 +389,12 @@ void MessageWidget::UpdateParticipantState(int pState)
             break;
         case CONTACT_UNAVAILABLE:
             mLbPartitipantState->setEnabled(true);
-            mLbPartitipantState->setPixmap(QPixmap(":/images/Warning.png").scaled(24, 24, Qt::KeepAspectRatio, Qt::FastTransformation));
+            mLbPartitipantState->setPixmap(QPixmap(":/images/22_22/Error.png").scaled(24, 24, Qt::KeepAspectRatio, Qt::FastTransformation));
             mLbPartitipantState->setToolTip("contact is unavailable");
             break;
         case CONTACT_AVAILABLE:
             mLbPartitipantState->setEnabled(true);
-            mLbPartitipantState->setPixmap(QPixmap(":/images/UserAvailable.png"));
+            mLbPartitipantState->setPixmap(QPixmap(":/images/32_32/UserAvailable.png"));
             mLbPartitipantState->setToolTip("contact is available");
             break;
         default:

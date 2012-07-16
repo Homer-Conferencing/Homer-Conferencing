@@ -103,9 +103,7 @@ int Thread::GetTId()
 		return (int)tThreadIdentInfo->thread_id;
     #endif
     #if defined(BSD)
-		long tLwpid;
-		thr_self(&tLwpid);
-		return (int)tLwpid;
+		return (int)pthread_self();
     #endif
 	#ifdef WIN32
 		return (int)GetCurrentThreadId();
@@ -797,12 +795,6 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
 		*pResults = tThreadResult;
 
 	return tResult;
-}
-
-void* Thread::Run(void* pArgs)
-{
-    LOG(LOG_ERROR, "You should overload the RUN method with your own implementation");
-    return NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

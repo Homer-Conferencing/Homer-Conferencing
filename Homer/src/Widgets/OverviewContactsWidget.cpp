@@ -25,10 +25,8 @@
  * Since:   2011-01-07
  */
 
-#include <Dialogs/ContactEditDialog.h>
 #include <Widgets/OverviewContactsWidget.h>
 #include <MainWindow.h>
-#include <ContactsPool.h>
 #include <Configuration.h>
 #include <Logger.h>
 
@@ -146,7 +144,7 @@ void OverviewContactsWidget::timerEvent(QTimerEvent *pEvent)
     #endif
     if (pEvent->timerId() == mTimerId)
     {
-        CONTACTSPOOL.ProbeAvailabilityForAll();
+        CONTACTS.ProbeAvailabilityForAll();
         mContactListModel->UpdateView();
     }
 }
@@ -196,7 +194,7 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
 
         tAction = tMenu.addAction("Conference");
         QIcon tIcon5;
-        tIcon5.addPixmap(QPixmap(":/images/Phone.png"), QIcon::Normal, QIcon::Off);
+        tIcon5.addPixmap(QPixmap(":/images/22_22/Phone.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon5);
 
         tMenu.addSeparator();
@@ -214,7 +212,7 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
     {
         tAction = tMenu.addAction("Edit contact");
         QIcon tIcon3;
-        tIcon3.addPixmap(QPixmap(":/images/Pen.png"), QIcon::Normal, QIcon::Off);
+        tIcon3.addPixmap(QPixmap(":/images/22_22/Contact_Edit.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon3);
         QList<QKeySequence> tEditKeys;
         tEditKeys.push_back(Qt::Key_F2);
@@ -222,7 +220,7 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
 
         tAction = tMenu.addAction("Duplicate contact");
         QIcon tIcon2;
-        tIcon2.addPixmap(QPixmap(":/images/Documents.png"), QIcon::Normal, QIcon::Off);
+        tIcon2.addPixmap(QPixmap(":/images/22_22/Contact_Duplicate.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon2);
 
         tAction = tMenu.addAction("Delete contact");
@@ -281,7 +279,7 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
 
             // trigger an explicit auto probing in case the user has activated this feature
             if (!tOldState)
-                CONTACTSPOOL.ProbeAvailabilityForAll();
+                CONTACTS.ProbeAvailabilityForAll();
 
             return;
         }
@@ -303,7 +301,7 @@ void OverviewContactsWidget::Dialog2Contact(ContactEditDialog *pCED, ContactDesc
     pContact->Port      = (QString("%1").arg(pCED->mSbPort->value()));
     if (pNewContact)
     {
-        pContact->Id    = CONTACTSPOOL.GetNextFreeId();
+        pContact->Id    = CONTACTS.GetNextFreeId();
     }
 }
 
@@ -316,7 +314,7 @@ void OverviewContactsWidget::Contact2Dialog(ContactDescriptor *pContact, Contact
 
 void OverviewContactsWidget::ContactParticipantDelegateToMainWindow(ContactDescriptor *pContact, QString pIp, bool pCallAfterwards)
 {
-    //CONTACTSPOOL.FavorizedContact(pContact->User, pContact->Host, pContact->Port);
+    //CONTACTS.FavorizedContact(pContact->User, pContact->Host, pContact->Port);
     if (pCallAfterwards)
         QCoreApplication::postEvent(mMainWindow, (QEvent*) new QMeetingEvent(new AddParticipantEvent(pContact->User, pContact->Host, pContact->Port, pIp, CALLSTATE_RINGING)));
     else
@@ -373,7 +371,7 @@ bool OverviewContactsWidget::InsertNew(QString pParticipant)
     QString tPort;
     QString tHost;
 
-    CONTACTSPOOL.SplitAddress(pParticipant, tUser, tHost, tPort);
+    CONTACTS.SplitAddress(pParticipant, tUser, tHost, tPort);
 
     tCED.mLeAddress->setText(tUser + "@" + tHost);
     int tPortScal;
@@ -394,7 +392,7 @@ bool OverviewContactsWidget::InsertNew(QString pParticipant)
         ContactDescriptor tContact;
 
         Dialog2Contact(&tCED, &tContact, true);
-        CONTACTSPOOL.AddContact(tContact);
+        CONTACTS.AddContact(tContact);
         mTvContacts->setVisible(true);
         mContactListModel->UpdateView();
         tWasAdded = true;
@@ -418,7 +416,7 @@ void OverviewContactsWidget::InsertNew()
         ContactDescriptor tContact;
 
         Dialog2Contact(&tCED, &tContact, true);
-        CONTACTSPOOL.AddContact(tContact);
+        CONTACTS.AddContact(tContact);
         mTvContacts->setVisible(true);
         mContactListModel->UpdateView();
     }
@@ -444,7 +442,7 @@ void OverviewContactsWidget::EditSelected()
     if (tCED.exec() == QDialog::Accepted)
     {
         Dialog2Contact(&tCED, tContact, false);
-        CONTACTSPOOL.SavePool();
+        CONTACTS.SavePool();
         mContactListModel->UpdateView();
     }
 }
@@ -464,7 +462,7 @@ void OverviewContactsWidget::DeleteSelected()
 
     if (tMB.exec() == QMessageBox::Yes)
     {
-        CONTACTSPOOL.RemoveContact(tContact->Id);
+        CONTACTS.RemoveContact(tContact->Id);
     }
 }
 
@@ -499,7 +497,7 @@ void OverviewContactsWidget::InsertCopy(ContactDescriptor *pContact)
         ContactDescriptor tContact;
 
         Dialog2Contact(&tCED, &tContact, true);
-        CONTACTSPOOL.AddContact(tContact);
+        CONTACTS.AddContact(tContact);
     }
 }
 
@@ -519,7 +517,7 @@ void OverviewContactsWidget::SaveList()
     if (!tContactsFile.endsWith(".xml"))
         tContactsFile += ".xml";
 
-    CONTACTSPOOL.SavePool(tContactsFile.toStdString());
+    CONTACTS.SavePool(tContactsFile.toStdString());
 }
 
 void OverviewContactsWidget::LoadList()
@@ -532,7 +530,7 @@ void OverviewContactsWidget::LoadList()
     if (!tContactsFile.endsWith(".xml"))
         tContactsFile += ".xml";
 
-    CONTACTSPOOL.LoadPool(tContactsFile.toStdString());
+    CONTACTS.LoadPool(tContactsFile.toStdString());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -543,7 +541,7 @@ ContactListModel::ContactListModel(OverviewContactsWidget *pOverviewContactsWidg
     QAbstractItemModel(pOverviewContactsWidget)
 {
 	mOverviewContactsWidget = pOverviewContactsWidget;
-    CONTACTSPOOL.RegisterAtController(this);
+    CONTACTS.RegisterAtController(this);
 }
 
 ContactListModel::~ContactListModel()
@@ -585,7 +583,7 @@ QVariant ContactListModel::data(const QModelIndex &pIndex, int pRole) const
                     		}
                     	}else
                     	{
-							tResult = QPixmap(":/images/Users1.png").scaled(20, 20, Qt::KeepAspectRatio, Qt::FastTransformation);
+							tResult = QPixmap(":/images/22_22/User.png").scaled(20, 20, Qt::KeepAspectRatio, Qt::FastTransformation);
                     	}
                         break;
                     case 1:
@@ -648,7 +646,7 @@ QModelIndex ContactListModel::index(int pRow, int pColumn, const QModelIndex &pP
 
     if (!pParent.isValid())
     {
-        if (pRow < CONTACTSPOOL.ContactCount())
+        if (pRow < CONTACTS.ContactCount())
             tResult = createIndex(pRow, pColumn, GetContactPointer(pRow));
     }
 
@@ -671,7 +669,7 @@ int ContactListModel::rowCount(const QModelIndex &pParent) const
     int tResult = 0;
 
     if (!pParent.isValid())
-        tResult =  CONTACTSPOOL.ContactCount();
+        tResult =  CONTACTS.ContactCount();
 
     //LOG(LOG_VERBOSE, "row count for %d:%d => %d", pParent.column(), pParent.row(), tResult);
 
@@ -698,10 +696,10 @@ QVariant ContactListModel::headerData(int pSection, Qt::Orientation pOrientation
                 switch(pSection)
                 {
                     case 0:
-                        tResult = QPixmap(":/images/NetworkConnection.png");
+                        tResult = QPixmap(":/images/22_22/NetworkConnection.png");
                         break;
                     case 1:
-                        tResult = QPixmap(":/images/22_22/UserMale.png");
+                        tResult = QPixmap(":/images/22_22/User.png");
                         break;
                     default:
                         break;
@@ -767,12 +765,12 @@ void ContactListModel::sort (int pColumn, Qt::SortOrder pOrder)
     switch(pColumn)
     {
         case 0:
-            CONTACTSPOOL.SortByState(pOrder);
-            CONTACTSPOOL.SavePool();
+            CONTACTS.SortByState(pOrder);
+            CONTACTS.SavePool();
             break;
         case 1:
-            CONTACTSPOOL.SortByName(pOrder);
-            CONTACTSPOOL.SavePool();
+            CONTACTS.SortByName(pOrder);
+            CONTACTS.SavePool();
             break;
     }
 }
@@ -795,7 +793,7 @@ bool ContactListModel::GetContactAvailability(const QModelIndex &pIndex) const
 
 void *ContactListModel::GetContactPointer(unsigned int pIndex) const
 {
-    return (void*)CONTACTSPOOL.GetContactByIndex(pIndex);
+    return (void*)CONTACTS.GetContactByIndex(pIndex);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

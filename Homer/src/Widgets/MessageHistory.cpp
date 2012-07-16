@@ -27,7 +27,7 @@
 
 #include <Widgets/MessageHistory.h>
 #include <Logger.h>
-#include <ContactsPool.h>
+#include <ContactsManager.h>
 
 #include <QTextBrowser>
 #include <QEvent>
@@ -65,7 +65,7 @@ void MessageHistory::contextMenuEvent(QContextMenuEvent *pEvent)
     {
         tAction = tMenu.addAction("Copy to clipboard");
         QIcon tIcon3;
-        tIcon3.addPixmap(QPixmap(":/images/Documents.png"), QIcon::Normal, QIcon::Off);
+        tIcon3.addPixmap(QPixmap(":/images/22_22/Save_Clipboard.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon3);
     }
 

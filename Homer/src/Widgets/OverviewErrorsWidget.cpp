@@ -118,7 +118,7 @@ void OverviewErrorsWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEvent
 
     tAction = tMenu.addAction("Save error log");
     QIcon tIcon1;
-    tIcon1.addPixmap(QPixmap(":/images/DriveSave.png"), QIcon::Normal, QIcon::Off);
+    tIcon1.addPixmap(QPixmap(":/images/22_22/Save.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon1);
 
     QAction* tPopupRes = tMenu.exec(pContextMenuEvent->globalPos());
@@ -140,7 +140,7 @@ void OverviewErrorsWidget::ErrorLogCustomContextMenuEvent(const QPoint &pPos)
 
     tAction = tMenu.addAction("Save error log");
     QIcon tIcon1;
-    tIcon1.addPixmap(QPixmap(":/images/DriveSave.png"), QIcon::Normal, QIcon::Off);
+    tIcon1.addPixmap(QPixmap(":/images/22_22/Save.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon1);
 
     QAction* tPopupRes = tMenu.exec(QCursor::pos());

@@ -159,9 +159,8 @@ private:
     OverviewErrorsWidget        *mOverviewErrorsWidget;
     OverviewFileTransfersWidget *mOverviewFileTransfersWidget;
     OverviewNetworkStreamsWidget *mOverviewNetworkStreamsWidget;
-    OverviewPlaylistWidget	    *mOverviewPlaylistWidgetVideo, *mOverviewPlaylistWidgetAudio, *mOverviewPlaylistWidgetMovie;
+    OverviewPlaylistWidget	    *mOverviewPlaylistWidget;
     OverviewThreadsWidget 	    *mOverviewThreadsWidget;
-    QMenu 					    *mMenuParticipantMessageWidgets;
     ParticipantWidgetList 	    mParticipantWidgets;
     ParticipantWidget 		    *mLocalUserParticipantWidget;
     MediaSourceMuxer 		    *mOwnVideoMuxer;

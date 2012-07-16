@@ -157,7 +157,7 @@ void VideoWidget::Init(QMainWindow* pMainWindow, ParticipantWidget *pParticipant
         mAssignedAction->setChecked(pVisible);
         QIcon tIcon;
         tIcon.addPixmap(QPixmap(":/images/22_22/Checked.png"), QIcon::Normal, QIcon::On);
-        tIcon.addPixmap(QPixmap(":/images/Unchecked.png"), QIcon::Normal, QIcon::Off);
+        tIcon.addPixmap(QPixmap(":/images/22_22/Unchecked.png"), QIcon::Normal, QIcon::Off);
         mAssignedAction->setIcon(tIcon);
     }
 
@@ -254,7 +254,7 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
     //###############################################################################
     tAction = tMenu.addAction("Save picture");
     QIcon tIcon6;
-    tIcon6.addPixmap(QPixmap(":/images/Photo.png"), QIcon::Normal, QIcon::Off);
+    tIcon6.addPixmap(QPixmap(":/images/22_22/Save_Picture.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon6);
 
     //###############################################################################
@@ -298,7 +298,7 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
     //### Video settings
     //###############################################################################
     QIcon tIcon3;
-    tIcon3.addPixmap(QPixmap(":/images/Computer.png"), QIcon::Normal, QIcon::Off);
+    tIcon3.addPixmap(QPixmap(":/images/22_22/Configuration_Video.png"), QIcon::Normal, QIcon::Off);
     QMenu *tVideoMenu = tMenu.addMenu("Video settings");
 
             //###############################################################################
@@ -685,7 +685,7 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
 
 void VideoWidget::DialogAddNetworkSink()
 {
-    AddNetworkSinkDialog tANSDialog(this, mVideoSource);
+    AddNetworkSinkDialog tANSDialog(this, "Configure video streaming", DATA_TYPE_VIDEO, mVideoSource);
 
     tANSDialog.exec();
 }
@@ -929,7 +929,7 @@ void VideoWidget::ShowHourGlass()
     mCurrentFrame = QImage(tWidth, tHeight, QImage::Format_RGB32);
     mCurrentFrame.fill(QColor(Qt::darkGray).rgb());
 
-    QPixmap tPixmap = QPixmap(":/images/Sandglass1.png");
+    QPixmap tPixmap = QPixmap(":/images/Sandglass.png");
     if (!tPixmap.isNull())
     	tPixmap = tPixmap.scaledToHeight(40, Qt::SmoothTransformation);
 
@@ -1455,6 +1455,7 @@ VideoWorkerThread::VideoWorkerThread(MediaSource *pVideoSource, VideoWidget *pVi
     mSelectInputChannelAsap = false;
     mSourceAvailable = false;
     mEofReached = false;
+    mTryingToOpenAFile = false;
     mPaused = false;
     mPausedPos = 0;
     mMissingFrames = 0;
@@ -1624,6 +1625,7 @@ void VideoWorkerThread::PlayFile(QString pName)
 		LOG(LOG_VERBOSE, "Trigger playback of file: %s", pName.toStdString().c_str());
 		mDesiredFile = pName;
 		mPlayNewFileAsap = true;
+		mTryingToOpenAFile = true;
         mGrabbingCondition.wakeAll();
 	}
 }
@@ -1875,7 +1877,8 @@ void VideoWorkerThread::DoResetVideoSource()
 
     // restart frame grabbing device
     mSourceAvailable = mVideoSource->Reset(MEDIA_VIDEO);
-
+    if (!mSourceAvailable)
+        LOG(LOG_VERBOSE, "Video source is (temporary) not available after Reset() in DoResetVideoSource()");
     mResetVideoSourceAsap = false;
     mPaused = false;
     mFrameTimestamps.clear();
@@ -1893,6 +1896,8 @@ void VideoWorkerThread::DoSetInputStreamPreferences()
     if (mVideoSource->SetInputStreamPreferences(mCodec.toStdString()))
     {
     	mSourceAvailable = mVideoSource->Reset(MEDIA_VIDEO);
+        if (!mSourceAvailable)
+            LOG(LOG_VERBOSE, "Video source is (temporary) not available after Reset() in DoSetInputStreamPreferences()");
         mResetVideoSourceAsap = false;
     }
 
@@ -1943,7 +1948,12 @@ void VideoWorkerThread::DoSetCurrentDevice()
                         mSourceAvailable = mVideoSource->Reset(MEDIA_VIDEO);
                     }
                 }else
-                    mVideoWidget->InformAboutOpenError(mDeviceName);
+                {
+                    if (!mTryingToOpenAFile)
+                        mVideoWidget->InformAboutOpenError(mDeviceName);
+                    else
+                        LOG(LOG_VERBOSE, "Couldn't open video file source %s", mDeviceName.toStdString().c_str());
+                }
             }
         }
         // we had an source reset in every case because "SelectDevice" does this if old source was already opened
@@ -1951,8 +1961,16 @@ void VideoWorkerThread::DoSetCurrentDevice()
         mPaused = false;
         mVideoWidget->InformAboutNewSource();
     }else
-        mVideoWidget->InformAboutOpenError(mDeviceName);
+    {
+        if (!mSourceAvailable)
+            LOG(LOG_VERBOSE, "Video source is (temporary) not available after SelectDevice() in DoSetCurrentDevice()");
+        if (!mTryingToOpenAFile)
+            mVideoWidget->InformAboutOpenError(mDeviceName);
+        else
+            LOG(LOG_VERBOSE, "Couldn't open video file source %s", mDeviceName.toStdString().c_str());
+    }
 
+    mTryingToOpenAFile = false;
     mSetCurrentDeviceAsap = false;
     mCurrentFile = mDesiredFile;
     mFrameTimestamps.clear();
@@ -2102,7 +2120,10 @@ void VideoWorkerThread::run()
             #endif
 			mEofReached = (tFrameNumber == GRAB_RES_EOF);
 			if (mEofReached)
+			{
 			    mSourceAvailable = false;
+			    LOG(LOG_VERBOSE, "Derived EOF and mark video source as unavailable");
+			}
 
 
 			//LOG(LOG_ERROR, "DO THE BEST %d %d", tFrameNumber, tFrameSize);

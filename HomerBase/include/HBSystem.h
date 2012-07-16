@@ -42,7 +42,7 @@ public:
     virtual ~System( );
 
     static bool GetWindowsKernelVersion(int &pMajor, int &pMinor);
-    static std::string GetLinuxKernelVersion();
+    static std::string GetKernelVersion();
     static int GetMachineCores();
     static std::string GetMachineType();
 private:

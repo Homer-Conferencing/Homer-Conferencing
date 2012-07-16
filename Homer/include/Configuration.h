@@ -28,6 +28,7 @@
 #ifndef _CONFIGURATION_
 #define _CONFIGURATION_
 
+#include <HBSocket.h>
 #include <string>
 #include "config.h"
 
@@ -72,7 +73,7 @@ public:
 
     static Configuration& GetInstance();
 
-    void Init(string pAbsBinPath);
+    void Init(std::string pAbsBinPath);
 
     /* general settings */
     QString GetBinaryPath();
@@ -141,6 +142,10 @@ public:
     QString GetAudioStreamingGAPIImpl();
     QString GetLocalAudioSource();
 
+    /* app data */
+    enum Homer::Base::TransportType GetAppDataTransportType();
+    QString GetAppDataGAPIImpl();
+
     /* playback settings */
     QString GetLocalAudioSink();
 
@@ -199,7 +204,11 @@ public:
     /* debugging state machine */
     bool DebuggingEnabled();
 
+    /* audio output */
+    bool AudioOutputEnabled();
 
+    /* audio capture */
+    bool AudioCaptureEnabled();
 
 
     /* global settings */
@@ -265,6 +274,10 @@ public:
     void SetAudioStreamingGAPIImpl(QString pImpl);
     void SetLocalAudioSource(QString pASource);
 
+    /* app data */
+    void SetAppDataTransport(enum Homer::Base::TransportType pType);
+    void SetAppDataGAPIImpl(QString pImpl);
+
     /* playback settings */
     void SetLocalAudioSink(QString pASink);
 
@@ -318,12 +331,21 @@ public:
     /* debug state */
     void SetDebugging(bool pState = true);
 
+    /* audio output */
+    void DisableAudioOutput();
+
+    /* audio capture */
+    void DisableAudioCapture();
+
     // important because some write operations might be delayed
     void Sync();
+
 
     std::string             mAbsBinPath;
     QSettings               *mQSettings;
     bool                    mDebuggingEnabled;
+    bool                    mAudioOutputEnabled;
+    bool                    mAudioCaptureEnabled;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

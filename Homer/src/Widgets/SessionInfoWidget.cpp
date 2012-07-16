@@ -76,7 +76,7 @@ void SessionInfoWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEvent)
 
     tAction = tMenu.addAction("Close session info");
     QIcon tIcon1;
-    tIcon1.addPixmap(QPixmap(":/images/Close.png"), QIcon::Normal, QIcon::Off);
+    tIcon1.addPixmap(QPixmap(":/images/22_22/Close.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon1);
 
     QAction* tPopupRes = tMenu.exec(pContextMenuEvent->globalPos());

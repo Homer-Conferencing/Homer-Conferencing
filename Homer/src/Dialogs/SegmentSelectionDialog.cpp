@@ -109,7 +109,7 @@ void SegmentSelectionDialog::contextMenuEvent(QContextMenuEvent *event)
 
     tAction = tMenu.addAction("Reset to defaults");
     QIcon tIcon;
-    tIcon.addPixmap(QPixmap(":/images/Reload.png"), QIcon::Normal, QIcon::Off);
+    tIcon.addPixmap(QPixmap(":/images/22_22/Reload.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon);
 
     QAction* tPopupRes = tMenu.exec(QCursor::pos());

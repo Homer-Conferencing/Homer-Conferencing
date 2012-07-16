@@ -46,6 +46,7 @@ using namespace Homer::Base;
 
 void MediaSourceNet::Init(Socket *pDataSocket, unsigned int pLocalPort, bool pRtpActivated)
 {
+    mSourceType = SOURCE_NETWORK;
     mListenerPort = pLocalPort;
     mPacketNumber = 0;
     mReceiveErrors = 0;
@@ -210,7 +211,11 @@ bool MediaSourceNet::DoReceiveFragment(std::string &pSourceHost, unsigned int &p
             if (!mGAPIDataSocket->isClosed())
             {// success
                 tResult = true;
-                pSourceHost = mGAPIDataSocket->getRemoteName()->toString();
+                string tRemoteName = mGAPIDataSocket->getRemoteName()->toString();
+                int tPos = tRemoteName.find('<');
+                if (tPos != (int)string::npos)
+                    tRemoteName = tRemoteName.substr(0, tPos);
+                pSourceHost = tRemoteName;
                 pSourcePort = 1;
             }
         }else
@@ -235,7 +240,7 @@ void* MediaSourceNet::Run(void* pArgs)
     unsigned int tSourcePort = 0;
     int tDataSize;
 
-    LOG(LOG_VERBOSE, "Socket-Listener for port %u started, media type is \"%s\"", getListenerPort(), GetMediaTypeStr().c_str());
+    LOG(LOG_VERBOSE, "%s Socket-Listener for port %u started", GetMediaTypeStr().c_str(), getListenerPort());
     if (mGAPIUsed)
     {
         switch(mMediaType)
@@ -277,9 +282,9 @@ void* MediaSourceNet::Run(void* pArgs)
 		tSourceHost = "";
 		if (!DoReceiveFragment(tSourceHost, tSourcePort, mPacketBuffer, tDataSize))
 		{
-		    if (mReceiveErrors == MAX_RECEIVE_ERRORS)
+		    if (mReceiveErrors == MEDIA_SOURCE_NET_MAX_RECEIVE_ERRORS)
 		    {
-		        LOG(LOG_ERROR, "Maximum number of continuous receive errors(%d) is exceeded, will stop network listener", MAX_RECEIVE_ERRORS);
+		        LOG(LOG_ERROR, "Maximum number of continuous receive errors(%d) is exceeded, will stop network listener", MEDIA_SOURCE_NET_MAX_RECEIVE_ERRORS);
 		        mListenerRunning = false;
 		        break;
 		    }else
@@ -362,20 +367,20 @@ void* MediaSourceNet::Run(void* pArgs)
 		{
 			if (tDataSize == 0)
 			{
-				LOG(LOG_VERBOSE, "Zero byte packet received, media type is \"%s\"", GetMediaTypeStr().c_str());
+				LOG(LOG_VERBOSE, "Zero byte %s packet received", GetMediaTypeStr().c_str());
 
 				// add also a zero byte packet to enable early thread termination
 				WriteFragment(mPacketBuffer, 0);
 			}else
 			{
-				LOG(LOG_VERBOSE, "Got faulty packet, media type is \"%s\"", GetMediaTypeStr().c_str());
+				LOG(LOG_VERBOSE, "Got faulty %s packet", GetMediaTypeStr().c_str());
 				tDataSize = -1;
 			}
 		}
     }while(!mGrabbingStopped);
 
     mListenerRunning = false;
-    LOG(LOG_VERBOSE, "Socket-Listener for port %u stopped, media type is \"%s\"", getListenerPort(), GetMediaTypeStr().c_str());
+    LOG(LOG_VERBOSE, "%s Socket-Listener for port %u stopped", GetMediaTypeStr().c_str(), getListenerPort());
 
     return NULL;
 }
