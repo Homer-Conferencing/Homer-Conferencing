@@ -246,10 +246,10 @@ void OverviewFileTransfersWidget::SetVisible(bool pVisible)
 
 void OverviewFileTransfersWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEvent)
 {
-//    QAction *tAction;
-//
-//    QMenu tMenu(this);
-//
+    QAction *tAction;
+
+    QMenu tMenu(this);
+
 //    tAction = tMenu.addAction("Save statistic");
 //    QIcon tIcon1;
 //    tIcon1.addPixmap(QPixmap(":/images/22_22/Save.png"), QIcon::Normal, QIcon::Off);
@@ -305,7 +305,7 @@ void OverviewFileTransfersWidget::FillRow(QTableWidget *pTable, int pRow, const 
     //LOG(LOG_VERBOSE, "Progress is: %d, %lu / %lu", (int)tProgress,  pEntry.FileTransferredSize, pEntry.FileSize);
     FillCellText(pTable, pRow, 2, QString("%1 %").arg(tProgress));
     FillCellText(pTable, pRow, 3, QString("%1").arg(pEntry.FileSize));
-    FillCellText(pTable, pRow, 4, QString("%1").arg(pEntry.GuiId));
+    FillCellText(pTable, pRow, 4, QString("%1 bytes").arg(pEntry.GuiId));
 }
 
 void OverviewFileTransfersWidget::UpdateView()

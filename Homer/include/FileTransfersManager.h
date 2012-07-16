@@ -34,30 +34,35 @@
 #include <HBMutex.h>
 #include <HBThread.h>
 
-// de/activate acknowledgments of file data packets
-//#define FTM_ACK_DATA_PACKETS
-
-#define FTM_DEFAULT_PORT                6000
-#define FTM_DATA_PACKET_SIZE            1200
-
-// timeouts
-#define FTM_DATA_PACKET_TIMEOUT         200 // ms
-
-#define FTM_OFFSET_SOURCE_ID            ((uint64_t)0x0000000100000000LLU)
-#define FTM_MASK_SOURCE_ID              ((uint64_t)0xFFFFFFFF00000000LLU)
-#define FTM_MASK_SESSION_ID             ((uint64_t)0x00000000FFFFFFFFLLU)
-
 namespace Homer { namespace Gui {
 
 using namespace Homer::Base;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define FTMAN FileTransfersManager::getInstance()
+// de/activate acknowledgments of file data packets
+//#define FTM_ACK_DATA_PACKETS
 
 //#define FTM_DEBUG_TIMING
 
-//#define FTM_DEBUG_DATA_PACKETS
+#define FTM_DEBUG_DATA_PACKETS
+
+///////////////////////////////////////////////////////////////////////////////
+
+#define FTM_DEFAULT_PORT                6000
+#define FTM_DATA_PACKET_SIZE            1200
+
+// timeouts
+#define FTM_DATA_ACK_TIME               3000 // ms
+#define FTM_KEEP_ALIVE_TIME             5000 // ms
+
+#define FTM_OFFSET_SOURCE_ID            ((uint64_t)0x0000000100000000LLU)
+#define FTM_MASK_SOURCE_ID              ((uint64_t)0xFFFFFFFF00000000LLU)
+#define FTM_MASK_SESSION_ID             ((uint64_t)0x00000000FFFFFFFFLLU)
+
+///////////////////////////////////////////////////////////////////////////////
+
+#define FTMAN FileTransfersManager::getInstance()
 
 ///////////////////////////////////////////////////////////////////////////////
 
