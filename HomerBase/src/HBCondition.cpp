@@ -73,6 +73,7 @@ bool Condition::Wait(Mutex *pMutex, int pTime)
 {
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
         struct timespec tTimeout;
+        struct timespec tTimeout1;
 
         #if defined(LINUX) || defined(BSD)
             if (clock_gettime(CLOCK_REALTIME, &tTimeout) == -1)
@@ -88,18 +89,21 @@ bool Condition::Wait(Mutex *pMutex, int pTime)
             tTimeout.tv_sec = tMachTimeSpec.tv_sec;
             tTimeout.tv_nsec = tMachTimeSpec.tv_nsec;
         #endif
+        int tTime = pTime;
+
+        tTimeout1 = tTimeout;
 
         // add complete seconds if pTime is bigger than 1 sec
-        if (pTime >= 1000)
+        if (tTime >= 1000)
         {
-            tTimeout.tv_sec += pTime / 1000;
-            pTime %= 1000;
+            tTimeout.tv_sec += tTime / 1000;
+            tTime %= 1000;
         }
-        tTimeout.tv_nsec += pTime * 1000 * 1000;
-        if (tTimeout.tv_nsec > (int64_t)60 * 1000 * 1000 * 1000)
+        tTimeout.tv_nsec += tTime * 1000 * 1000;
+        if (tTimeout.tv_nsec > (int64_t) 1000 * 1000 * 1000)
         {
-            int64_t tAddSecs = tTimeout.tv_nsec / 60  / 1000 / 1000 / 1000;
-            int64_t tNanoDiff = tAddSecs * 60 * 1000 * 1000 * 1000;
+            int64_t tAddSecs = tTimeout.tv_nsec / 1000 / 1000 / 1000;
+            int64_t tNanoDiff = tAddSecs * 1000 * 1000 * 1000;
             int64_t tNanoSecs = tTimeout.tv_nsec - tNanoDiff;
             tTimeout.tv_nsec = tNanoSecs;
             tTimeout.tv_sec += tAddSecs;
@@ -129,13 +133,15 @@ bool Condition::Wait(Mutex *pMutex, int pTime)
 					case EBUSY: // Condition can't be obtained because it is busy
 						break;
 					case EINVAL:
+			            LOG(LOG_WARN, "Ref.  time: %ld / %ld", tTimeout1.tv_sec, tTimeout1.tv_nsec);
+			            LOG(LOG_WARN, "Final time: %ld / %ld", tTimeout.tv_sec, tTimeout.tv_nsec);
 						LOG(LOG_ERROR, "Specified time of %d was invalid", pTime);
 						break;
 					case EFAULT:
 						LOG(LOG_ERROR, "Invalid condition pointer was given");
 						break;
 					case ETIMEDOUT:
-						LOG(LOG_WARN, "Condition couldn't be obtained in given time.\n");
+						LOG(LOG_WARN, "Condition couldn't be obtained in given time of %d ms", pTime);
 						break;
 					case 0: // Condition was free and is obtained now
 						tResult = true;
