@@ -91,6 +91,10 @@ void MediaFifo::ReadFifo(char *pBuffer, int &pBufferSize)
 			LOG(LOG_ERROR, "%s-FIFO: error when waiting for new input", mName.c_str());
 		}
 
+		#ifdef MF_DEBUG
+			LOG(LOG_VERBOSE, "%s-FIFO: woke up from waiting on new data", mName.c_str());
+		#endif
+
 		if (mFifoAvailableEntries < 0)
 		    LOG(LOG_ERROR, "%s-FIFO: negative amount of entries: %d", mName.c_str(), mFifoAvailableEntries);
 	}
@@ -261,6 +265,9 @@ void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize)
 	    LOG(LOG_VERBOSE, "%s-FIFO: writing empty chunk", mName.c_str());
 
 	mFifoMutex.lock();
+	if (pBufferSize == 0)
+	    LOG(LOG_VERBOSE, "%s-FIFO: got lock for empty chunk", mName.c_str());
+
 	if (mFifoAvailableEntries >= mFifoSize)
 	{
 	    LOG(LOG_WARN, "%s-FIFO: buffer full (size is %d, read: %d, write %d) - dropping oldest (%d) data chunk", mName.c_str(), mFifoSize, mFifoReadPtr, mFifoWritePtr, mFifoReadPtr);
@@ -288,7 +295,6 @@ void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize)
 
     // release FIFO mutex and use fine grained mutex of corresponding FIFO entry instead for protecting memcpy
     mFifo[tCurrentFifoWritePtr].EntryMutex.lock();
-    mFifoMutex.unlock();
 
     // add the new entry
     mFifo[tCurrentFifoWritePtr].Size = pBufferSize;
@@ -305,6 +311,9 @@ void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize)
         LOG(LOG_VERBOSE, "Send wake up signal for empty chunk");
 
     mFifoDataInputCondition.SignalAll();
+    mFifoMutex.unlock();
+	if (pBufferSize == 0)
+	    LOG(LOG_VERBOSE, "%s-FIFO: released lock after writing empty chunk", mName.c_str());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

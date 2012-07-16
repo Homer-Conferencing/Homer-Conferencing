@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>612</width>
+    <width>646</width>
     <height>42</height>
    </rect>
   </property>
@@ -84,68 +84,6 @@
    </item>
    <item>
     <spacer name="horizontalSpacer_3">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="sizeType">
-      <enum>QSizePolicy::Fixed</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>5</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item>
-    <widget class="QToolButton" name="mPbBroadcastVideoFile">
-     <property name="minimumSize">
-      <size>
-       <width>30</width>
-       <height>30</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>30</width>
-       <height>30</height>
-      </size>
-     </property>
-     <property name="toolTip">
-      <string>broadcast video file</string>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">QToolButton{
-background-color: rgb(239, 239, 239);
-color: rgb(239, 239, 239);
-border-style: outset;
-border-width: 2px;
-border-color:  rgb(200, 200, 200);
-border-radius: 6px;
-}
-QToolButton:pressed{
-background-color: rgb(150, 150, 150);
-} 
-</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-     <property name="icon">
-      <iconset resource="../../resources/Icons.qrc">
-       <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
-     </property>
-     <property name="iconSize">
-      <size>
-       <width>22</width>
-       <height>22</height>
-      </size>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <spacer name="horizontalSpacer_8">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
@@ -379,71 +317,6 @@ background-color: rgb(150, 150, 150);
     </spacer>
    </item>
    <item>
-    <widget class="QToolButton" name="mPbBroadcastAudioFile">
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>30</width>
-       <height>30</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>30</width>
-       <height>30</height>
-      </size>
-     </property>
-     <property name="toolTip">
-      <string>broadcast audio file</string>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">QToolButton{
-background-color: rgb(239, 239, 239);
-color: rgb(239, 239, 239);
-border-style: outset;
-border-width: 2px;
-border-color:  rgb(200, 200, 200);
-border-radius: 6px;
-}
-QToolButton:pressed{
-background-color: rgb(150, 150, 150);
-} 
-</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-     <property name="icon">
-      <iconset resource="../../resources/Icons.qrc">
-       <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
-     </property>
-     <property name="iconSize">
-      <size>
-       <width>22</width>
-       <height>22</height>
-      </size>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <spacer name="horizontalSpacer_10">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="sizeType">
-      <enum>QSizePolicy::Fixed</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>5</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item>
     <widget class="QToolButton" name="mPbBroadcastVoice">
      <property name="minimumSize">
       <size>
@@ -555,7 +428,7 @@ background-color: rgb(150, 150, 150);
     </spacer>
    </item>
    <item>
-    <widget class="QToolButton" name="mPbBroadcastMovieFile">
+    <widget class="QToolButton" name="mPbBroadcastFile">
      <property name="enabled">
       <bool>true</bool>
      </property>

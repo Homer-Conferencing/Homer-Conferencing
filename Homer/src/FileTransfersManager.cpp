@@ -56,6 +56,7 @@ uint32_t sLocalSessionId = 0;
 #define FTM_PDU_TRANSFER_PAUSE              0x04
 #define FTM_PDU_TRANSFER_CONTINUE           0x05
 #define FTM_PDU_TRANSFER_DATA               0x10
+#define FTM_PDU_TRANSFER_SEEK               0x11
 
 static string getNameFromPduType(int pType)
 {
@@ -73,6 +74,8 @@ static string getNameFromPduType(int pType)
             return "Transfer continued";
         case FTM_PDU_TRANSFER_DATA:
             return "Transfer data";
+        case FTM_PDU_TRANSFER_SEEK:
+            return "Transfer seek";
         default:
             "Unsupported PDU type";
     }
@@ -112,6 +115,13 @@ union HomerFtmDataHeader{
         uint64_t     End;               /* fragment's end offset */
     } __attribute__((__packed__));
     uint32_t Data[4];
+};
+
+union HomerFtmSeekHeader{
+    struct{
+        uint64_t     Position;          /* position in transfer stream */
+    } __attribute__((__packed__));
+    uint32_t Data[2];
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -179,7 +189,8 @@ public:
     void PauseFileTransfer();
     void ContinueFileTransfer();
     void CancelFileTransfer();
-    void AcknowledgeTransfer(std::string pLocalFileName);
+    // step 3 & 4 of 4 - way hand-shake for transfer start
+    void ReceiverAcknowledgesTransferBegin(std::string pLocalFileName);
 
     /* interface to FTM: data (request/response) received */
     void FtmCallBack(HomerFtmHeader *pHeader, char *pPayload, unsigned int pPayloadSize);
@@ -196,12 +207,14 @@ private:
 
     /* sending requests */
     bool SendRequest(int pRequestType, char *pData, unsigned int pDataSize);
+    // step 1 & 2 of 4 - way hand-shake for transfer start
     bool SendRequestTransferBegin();
     bool SendRequestTransferSuccess();
     bool SendRequestTransferCancel();
     bool SendRequestTransferPause();
     bool SendRequestTransferContinue();
     bool SendRequestTransferData(char *pData, unsigned int pDataSize, uint64_t pStart, uint64_t pEnd);
+    bool SendRequestTransferSeek(uint64_t pPosition);
 
     /* acknowledge */
     bool AcknowledgeRequest(HomerFtmHeader *pHeader);
@@ -219,10 +232,13 @@ private:
         void ReceivedTransferContinueResponse(HomerFtmHeader *pHeader);
     void ReceivedTransferData(HomerFtmHeader *pHeader, char *pPayload, unsigned int pPayloadSize);
         void ReceivedTransferDataResponse(HomerFtmHeader *pHeader);
+    void ReceivedTransferSeek(HomerFtmHeader *pHeader, char *pPayload, unsigned int pPayloadSize);
+        void ReceivedTransferSeekResponse(HomerFtmHeader *pHeader);
 
+    bool                mRemoteClosedTransfer;
     bool                mUsesDataAcks;
     bool                mCanceled;
-    Condition           mConditionRemoteWantsTransferBegin, mConditionRemoteAcksTransferData;
+    Condition           mConditionRemoteWantsTransferBegin, mConditionRemoteAcksTransferData, mConditionRemoteAcksTransferEnd;
     unsigned int        mSessionId;
     unsigned int        mSourceId;
     uint64_t            mId;
@@ -231,6 +247,7 @@ private:
     char                *mPacketSendBuffer;
     bool                mSenderActive;
     FILE                *mLocalFile;
+    Mutex               mFileReadMutex;
     std::string         mFileName;
     uint64_t            mFileSize;
     uint64_t            mFileTransferredSize;
@@ -414,10 +431,11 @@ void FileTransfer::CancelFileTransfer()
         LOG(LOG_ERROR, "SendRequestTransferCancel() failed");
 }
 
-void FileTransfer::AcknowledgeTransfer(string pLocalFileName)
+void FileTransfer::ReceiverAcknowledgesTransferBegin(string pLocalFileName)
 {
     LOG(LOG_VERBOSE, "Acknowledging file transfer for %s and trigger start for download to \"%s\"", mFileName.c_str(), pLocalFileName.c_str());
     mFileName = pLocalFileName;
+
     if (!SendRequestTransferBegin())
         LOG(LOG_ERROR, "SendRequestTransferBegin() failed");
     else
@@ -585,14 +603,28 @@ bool FileTransfer::SendRequestTransferData(char *pData, unsigned int pDataSize, 
     memcpy(tBuffer + sizeof(HomerFtmDataHeader) , pData, pDataSize);
 
     #ifdef FTM_DEBUG_DATA_PACKETS
-        LOG(LOG_VERBOSE, "Sending of file \"%s\" the fragment from %lu to %lu towards %s:%u", mFileName.c_str(), tDataHeader->Start, tDataHeader->End, mPeerName.c_str(), mPeerPort);
+        LOG(LOG_ERROR, "Sending of file \"%s\" the fragment from %lu to %lu towards %s:%u", mFileName.c_str(), tDataHeader->Start, tDataHeader->End, mPeerName.c_str(), mPeerPort);
     #endif
 
     tResult = SendRequest(FTM_PDU_TRANSFER_DATA, tBuffer, sizeof(HomerFtmDataHeader) + pDataSize);
 
-    mFileTransferredSize += pDataSize;
-
     FTMAN.notifyObserverTransferData(GetId(), mFileTransferredSize);
+
+    return tResult;
+}
+
+bool FileTransfer::SendRequestTransferSeek(uint64_t pPosition)
+{
+    bool tResult = false;
+
+    HomerFtmSeekHeader tSeekHeader;
+
+    // set file size in FTM begin header
+    tSeekHeader.Position = pPosition;
+
+    tResult = SendRequest(FTM_PDU_TRANSFER_SEEK, (char*)&tSeekHeader, sizeof(tSeekHeader));
+
+    //TODO: signal to observer
 
     return tResult;
 }
@@ -617,7 +649,7 @@ void FileTransfer::ReceivedTransferBegin(HomerFtmHeader *pHeader, char *pPayload
     // who are we?
     if (IsSenderActive())
     {// we are sender
-        LOG(LOG_VERBOSE, "Hand-shake finished, remote acknowledged transfer of file \"%s\" with size %ld", mFileName.c_str(), mFileSize);
+        LOG(LOG_VERBOSE, "TRANSFER-BEGIN hand-shake finished, remote acknowledged transfer of file \"%s\" with size %ld", mFileName.c_str(), mFileSize);
         mConditionRemoteWantsTransferBegin.SignalAll();
     }else
     {// we are receiver
@@ -636,15 +668,33 @@ void FileTransfer::ReceivedTransferSuccess(HomerFtmHeader *pHeader)
 
     AcknowledgeRequest(pHeader);
 
-    if (mLocalFile != NULL)
-    {
-        fclose(mLocalFile);
-        mLocalFile = NULL;
-    }
+    // who are we?
+    if (IsSenderActive())
+    {// we are sender
+        LOG(LOG_VERBOSE, "TRANSFER-END hand-shake finished, remote acknowledged transfer of file \"%s\" with size %ld", mFileName.c_str(), mFileSize);
+        mRemoteClosedTransfer = true;
+        #ifdef FTM_DEBUG_DATA_PACKETS
+            LOG(LOG_WARN, "Sending wake up to \"RemoteAcksTransferEnd\"");
+        #endif
+        mConditionRemoteAcksTransferEnd.SignalAll();
+    }else
+    {// we are receiver
+        // does the file size match the desired one (was initially reported in TransferBegin)?
+        if (mFileSize != mFileTransferredSize)
+            LOG(LOG_WARN, "File size differs, received data: %lu bytes, expected data: %lu bytes", mFileTransferredSize, mFileSize);
 
-    if (mFileSize != mFileTransferredSize)
-    {
-        LOG(LOG_WARN, "File size differs, received data: %lu bytes, expected data: %lu bytes", mFileTransferredSize, mFileSize);
+        // tell the sender that we don't need more data and transfer can be closed
+        if (mFileTransferredSize == mFileSize)
+        {
+            // close the file if we haven't done this already
+            if (mLocalFile != NULL)
+            {
+                fclose(mLocalFile);
+                mLocalFile = NULL;
+            }
+
+            SendRequestTransferSuccess();
+        }
     }
 
     //TODO: notifyObserver
@@ -656,11 +706,11 @@ void FileTransfer::ReceivedTransferCancel(HomerFtmHeader *pHeader)
 
     AcknowledgeRequest(pHeader);
 
-    if (mLocalFile != NULL)
-    {
-        fclose(mLocalFile);
-        mLocalFile = NULL;
-    }
+    mRemoteClosedTransfer = true;
+    #ifdef FTM_DEBUG_DATA_PACKETS
+        LOG(LOG_WARN, "Sending wake up to \"RemoteAcksTransferEnd\"");
+    #endif
+    mConditionRemoteAcksTransferEnd.SignalAll();
 
     //TODO: notifyObserver
 }
@@ -691,10 +741,24 @@ void FileTransfer::ReceivedTransferData(HomerFtmHeader *pHeader, char *pPayload,
         LOG(LOG_VERBOSE, "Remote signaled %d bytes of transfer data for file %s with size %ld", (int)tFragmentSize, mFileName.c_str(), mFileSize);
     #endif
 
+    if (tDataHeader->Start != mFileTransferredSize)
+    {
+        LOG(LOG_WARN, "Detected a gap in received transfer stream: %lu bytes successfully received, current fragment starts at position %lu", mFileTransferredSize, tDataHeader->Start);
+
+        // ACK this fragment
+        if (mUsesDataAcks)
+            AcknowledgeRequest(pHeader);
+
+        // seek within sender's stream to position after last successfully received byte
+        SendRequestTransferSeek(mFileTransferredSize);
+
+        return;
+    }
+
     if (mLocalFile != NULL)
     {
         #ifdef FTM_DEBUG_DATA_PACKETS
-            LOG(LOG_VERBOSE, "Storing in file \"%s\" the fragment from %lu to %lu", mFileName.c_str(), tDataHeader->Start, tDataHeader->End);
+            LOG(LOG_ERROR, "Storing in file \"%s\" the fragment from %lu to %lu", mFileName.c_str(), tDataHeader->Start, tDataHeader->End);
         #endif
 
         char *tFragment = pPayload + sizeof(HomerFtmDataHeader);
@@ -712,6 +776,41 @@ void FileTransfer::ReceivedTransferData(HomerFtmHeader *pHeader, char *pPayload,
         AcknowledgeRequest(pHeader);
 
     FTMAN.notifyObserverTransferData(GetId(), mFileTransferredSize);
+}
+
+void FileTransfer::ReceivedTransferSeek(HomerFtmHeader *pHeader, char *pPayload, unsigned int pPayloadSize)
+{
+    if (pPayloadSize != sizeof(HomerFtmSeekHeader))
+        LOG(LOG_WARN, "Size of payload differs from size of HomerFtmBeginHeader");
+
+    HomerFtmSeekHeader *tSeekHeader = (HomerFtmSeekHeader*)pPayload;
+
+    LOG(LOG_VERBOSE, "Remote signaled transfer seek to %lu for file \"%s\" with size %ld", tSeekHeader->Position, mFileName.c_str(), mFileSize);
+
+    mFileReadMutex.lock();
+
+    if (mLocalFile != NULL)
+    {
+        mFileTransferredSize = tSeekHeader->Position;
+        int tRes = 0;
+        if ((tRes = fseek(mLocalFile, mFileTransferredSize, SEEK_SET)) < 0)
+        {
+            LOG(LOG_ERROR, "File seeking failed because \"%s\"", strerror(tRes));
+        }
+    }else
+        LOG(LOG_WARN, "Local file %s is closed", mFileName.c_str());
+
+    mFileReadMutex.unlock();
+
+    // send ACK
+    AcknowledgeRequest(pHeader);
+
+    #ifdef FTM_DEBUG_DATA_PACKETS
+        LOG(LOG_WARN, "Sending wake up to \"RemoteAcksTransferEnd\" because of seek request");
+    #endif
+    mConditionRemoteAcksTransferEnd.SignalAll();
+
+    //TODO: notifyObserver
 }
 
 void FileTransfer::ReceivedTransferBeginResponse(HomerFtmHeader *pHeader)
@@ -756,6 +855,15 @@ void FileTransfer::ReceivedTransferDataResponse(HomerFtmHeader *pHeader)
     #endif
 
     mConditionRemoteAcksTransferData.SignalAll();
+
+    //TODO: timeout handling
+}
+
+void FileTransfer::ReceivedTransferSeekResponse(HomerFtmHeader *pHeader)
+{
+    #ifdef FTM_DEBUG_DATA_PACKETS
+        LOG(LOG_VERBOSE, "Remote acknowledged transfer seek for file %s with size %ld", mFileName.c_str(), mFileSize);
+    #endif
 
     //TODO: timeout handling
 }
@@ -812,6 +920,12 @@ void FileTransfer::FtmCallBack(HomerFtmHeader *pHeader, char *pPayload, unsigned
             else
                 ReceivedTransferDataResponse(pHeader);
             break;
+        case FTM_PDU_TRANSFER_SEEK:
+            if (pHeader->Request == true)
+                ReceivedTransferSeek(pHeader, pPayload, pPayloadSize);
+            else
+                ReceivedTransferSeekResponse(pHeader);
+            break;
         default:
             LOG(LOG_WARN, "Unsupported PDU type");
             break;
@@ -855,42 +969,81 @@ void* FileTransfer::Run(void* pArgs)
                 char tBuffer[FTM_DATA_PACKET_SIZE];
                 size_t tResult = 0;
                 bool tEof = false;
+                mRemoteClosedTransfer = false;
                 do
                 {
-                    int64_t tStart = ftell(mLocalFile);
-                    tResult = fread((void*)tBuffer, 1, FTM_DATA_PACKET_SIZE, mLocalFile);
-                    if (tResult != FTM_DATA_PACKET_SIZE)
+                    do
                     {
+                        // ###################################################
+                        // read fragment from local file
+                        // ###################################################
+                        int64_t tStart = INT_MAX;
+                        int64_t tEnd = 0;
+                        mFileReadMutex.lock();
                         if (!feof(mLocalFile))
-                            LOG(LOG_ERROR, "Error when reading in local file \"%s\"", mFileName.c_str());
-                        else
-                            tEof = true;
-                    }
-                    int64_t tEnd = ftell(mLocalFile);
-                    bool tRetransmission;
-                    do{
-                        tRetransmission = false;
-                        SendRequestTransferData(tBuffer, tResult, tStart, tEnd);
-                        if(mUsesDataAcks)
                         {
-                            // wait until hand-shake is completed
-                            mConditionRemoteAcksTransferData.Reset();
-                            if (!mConditionRemoteAcksTransferData.Wait(NULL, FTM_DATA_PACKET_TIMEOUT))
+                            tStart = ftell(mLocalFile);
+                            tResult = fread((void*)tBuffer, 1, FTM_DATA_PACKET_SIZE, mLocalFile);
+                            if (tResult != FTM_DATA_PACKET_SIZE)
                             {
-                                LOG(LOG_WARN, "Timeout occurred while waiting for ACK of data transfer, retransmitting the packet");
-                                tRetransmission = true;
+                                if (!feof(mLocalFile))
+                                    LOG(LOG_ERROR, "Error when reading in local file \"%s\"", mFileName.c_str());
+                                else
+                                    tEof = true;
                             }
+                            tEnd = ftell(mLocalFile);
+                            mFileTransferredSize = tEnd;
+                        }else
+                            LOG(LOG_VERBOSE, "EOF reached");
+                        mFileReadMutex.unlock();
+
+                        // ###################################################
+                        // transmit file fragment (and retransmit if necessary)
+                        // ###################################################
+                        bool tRetransmission;
+                        if (tStart < tEnd)
+                        {
+                            do{
+                                tRetransmission = false;
+                                SendRequestTransferData(tBuffer, tResult, tStart, tEnd);
+                                if(mUsesDataAcks)
+                                {
+                                    // wait until hand-shake is completed
+                                    mConditionRemoteAcksTransferData.Reset();
+                                    if (!mConditionRemoteAcksTransferData.Wait(NULL, FTM_DATA_ACK_TIME))
+                                    {
+                                        LOG(LOG_WARN, "Timeout occurred while waiting for ACK of data transfer, retransmitting the packet");
+                                        tRetransmission = true;
+                                    }
+                                }
+                            }while(tRetransmission);
                         }
-                    }while(tRetransmission);
-                }while(!tEof);
+                    }while(!tEof);
+
+                    LOG(LOG_VERBOSE, ">>> Ready to finish transmission of file \"%s\" to %s:%u, waiting for peer", mFileName.c_str(), mPeerName.c_str(), mPeerPort);
+                    SendRequestTransferSuccess();
+
+                    // wait until hand-shake is completed
+                    mConditionRemoteAcksTransferEnd.Reset();
+                    if (!mConditionRemoteAcksTransferEnd.Wait(NULL, FTM_KEEP_ALIVE_TIME * 2))
+                    {
+                        LOG(LOG_WARN, "Timeout occurred while waiting for ACK of data transfer end");
+                        mRemoteClosedTransfer = true;
+                    }else
+                    {
+                        #ifdef FTM_DEBUG_DATA_PACKETS
+                            LOG(LOG_WARN, "Returned from conditional waiting for a remote ACK for transfer end, remote closed transfer: %d", mRemoteClosedTransfer);
+                        #endif
+                    }
+                }while(!mRemoteClosedTransfer);
 
                 fclose(mLocalFile);
+                mLocalFile = NULL;
             }else
                 LOG(LOG_ERROR, "Unable to open file %s", mFileName.c_str());
 
-            LOG(LOG_VERBOSE, ">>> Going to successfully finish transmission of file \"%s\" to %s:%u", mFileName.c_str(), mPeerName.c_str(), mPeerPort);
+            LOG(LOG_VERBOSE, ">>> Going to finish successfully the transmission of file \"%s\" to %s:%u", mFileName.c_str(), mPeerName.c_str(), mPeerPort);
 
-            SendRequestTransferSuccess();
         }else
             LOG(LOG_VERBOSE, "Transfer was canceled");
     }
@@ -1009,7 +1162,7 @@ void FileTransfersManager::AcknowledgeTransfer(uint64_t pId, std::string pLocalF
     LOG(LOG_VERBOSE, "Acknowledging transfer %lu, local file name defined as \"%s\"", pId, pLocalFileName.c_str());
     FileTransfer *tTransfer = SearchTransfer(pId);
     if (tTransfer != NULL)
-        tTransfer->AcknowledgeTransfer(pLocalFileName);
+        tTransfer->ReceiverAcknowledgesTransferBegin(pLocalFileName);
 }
 
 void FileTransfersManager::PauseTransfer(uint64_t pId)
@@ -1178,7 +1331,7 @@ void* FileTransfersManager::Run(void* pArgs)
                     // register new instance in internal database
                     RegisterTransfer(tFileTransfer);
                 }else
-                    LOG(LOG_ERROR, "Unexpected PDU of type %s from %s:%u received", getNameFromPduType(tHeader->PduType).c_str(), tSourceHost.c_str(), tSourcePort);
+                    LOG(LOG_WARN, "Unexpected PDU of type %s from %s:%u received, will ignore this", getNameFromPduType(tHeader->PduType).c_str(), tSourceHost.c_str(), tSourcePort);
             }
 
             // forward received data to correct receiver object

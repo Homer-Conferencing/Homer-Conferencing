@@ -194,7 +194,7 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
 
         tAction = tMenu.addAction("Conference");
         QIcon tIcon5;
-        tIcon5.addPixmap(QPixmap(":/images/Phone.png"), QIcon::Normal, QIcon::Off);
+        tIcon5.addPixmap(QPixmap(":/images/22_22/Phone.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon5);
 
         tMenu.addSeparator();
@@ -212,7 +212,7 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
     {
         tAction = tMenu.addAction("Edit contact");
         QIcon tIcon3;
-        tIcon3.addPixmap(QPixmap(":/images/Pen.png"), QIcon::Normal, QIcon::Off);
+        tIcon3.addPixmap(QPixmap(":/images/22_22/Contact_Edit.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon3);
         QList<QKeySequence> tEditKeys;
         tEditKeys.push_back(Qt::Key_F2);
@@ -220,7 +220,7 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
 
         tAction = tMenu.addAction("Duplicate contact");
         QIcon tIcon2;
-        tIcon2.addPixmap(QPixmap(":/images/Documents.png"), QIcon::Normal, QIcon::Off);
+        tIcon2.addPixmap(QPixmap(":/images/22_22/Contact_Duplicate.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon2);
 
         tAction = tMenu.addAction("Delete contact");
@@ -583,7 +583,7 @@ QVariant ContactListModel::data(const QModelIndex &pIndex, int pRole) const
                     		}
                     	}else
                     	{
-							tResult = QPixmap(":/images/Users1.png").scaled(20, 20, Qt::KeepAspectRatio, Qt::FastTransformation);
+							tResult = QPixmap(":/images/22_22/User.png").scaled(20, 20, Qt::KeepAspectRatio, Qt::FastTransformation);
                     	}
                         break;
                     case 1:
@@ -696,10 +696,10 @@ QVariant ContactListModel::headerData(int pSection, Qt::Orientation pOrientation
                 switch(pSection)
                 {
                     case 0:
-                        tResult = QPixmap(":/images/NetworkConnection.png");
+                        tResult = QPixmap(":/images/22_22/NetworkConnection.png");
                         break;
                     case 1:
-                        tResult = QPixmap(":/images/22_22/UserMale.png");
+                        tResult = QPixmap(":/images/22_22/User.png");
                         break;
                     default:
                         break;

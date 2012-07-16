@@ -73,10 +73,10 @@ void IdentityDialog::LoadConfiguration()
 
 	if(MEETING.GetServerRegistrationState())
 	{
-		mServerStatus->setPixmap(QPixmap(":/images/UserAvailable.png"));
+		mServerStatus->setPixmap(QPixmap(":/images/32_32/UserAvailable.png"));
 	}else
 	{
-		mServerStatus->setPixmap(QPixmap(":/images/UserUnavailable.png"));
+		mServerStatus->setPixmap(QPixmap(":/images/32_32/UserUnavailable.png"));
 	}
 
     if (MEETING.GetStunNatIp() != "")

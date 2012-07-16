@@ -73,6 +73,7 @@
 #include <QLabel>
 
 using namespace Homer::Monitor;
+using namespace Homer::Multimedia;
 using namespace Homer::Conference;
 
 namespace Homer { namespace Gui {
@@ -398,10 +399,6 @@ void MainWindow::initializeWidgetsAndMenus()
     // set fixed style "plastic"
     QApplication::setStyle(new QPlastiqueStyle());
 
-    mMenuParticipantMessageWidgets = new QMenu("Participant messages");
-    mActionParticipantMessageWidgets->setMenu(mMenuParticipantMessageWidgets);
-
-
     LOG(LOG_VERBOSE, "..contacts widget");
     mOverviewContactsWidget = new OverviewContactsWidget(mActionOverviewContactsWidget, this);
     LOG(LOG_VERBOSE, "..errors widget");
@@ -421,13 +418,9 @@ void MainWindow::initializeWidgetsAndMenus()
     CreateSysTray();
 
     LOG(LOG_VERBOSE, "Creating playlist control widgets..");
-    mOverviewPlaylistWidgetVideo = new OverviewPlaylistWidget(mActionOverviewVideoPlaylistWidget, this, PLAYLIST_VIDEO, mLocalUserParticipantWidget->GetVideoWorker(), mLocalUserParticipantWidget->GetAudioWorker());
-    mOverviewPlaylistWidgetAudio = new OverviewPlaylistWidget(mActionOverviewAudioPlaylistWidget, this, PLAYLIST_AUDIO, mLocalUserParticipantWidget->GetVideoWorker(), mLocalUserParticipantWidget->GetAudioWorker());
-    mOverviewPlaylistWidgetMovie = new OverviewPlaylistWidget(mActionOverviewMoviePlaylistWidget, this, PLAYLIST_MOVIE, mLocalUserParticipantWidget->GetVideoWorker(), mLocalUserParticipantWidget->GetAudioWorker());
-    tabifyDockWidget(mOverviewPlaylistWidgetVideo, mOverviewPlaylistWidgetAudio);
-    tabifyDockWidget(mOverviewPlaylistWidgetAudio, mOverviewPlaylistWidgetMovie);
+    mOverviewPlaylistWidget = new OverviewPlaylistWidget(mActionOverviewPlaylistWidget, this, mLocalUserParticipantWidget->GetVideoWorker(), mLocalUserParticipantWidget->GetAudioWorker());
 
-    mMediaSourcesControlWidget = new StreamingControlWidget(mLocalUserParticipantWidget, mSourceDesktop, mOverviewPlaylistWidgetVideo, mOverviewPlaylistWidgetAudio, mOverviewPlaylistWidgetMovie);
+    mMediaSourcesControlWidget = new StreamingControlWidget(mLocalUserParticipantWidget, mSourceDesktop, mOverviewPlaylistWidget);
     mToolBarMediaSources->addWidget(mMediaSourcesControlWidget);
     if (mOwnVideoMuxer->SupportsMultipleInputChannels())
         mMediaSourcesControlWidget->SetVideoInputSelectionVisible();
@@ -680,7 +673,10 @@ void MainWindow::loadSettings()
     // if former selected device isn't available we use one of the available instead
     if (!tNewDeviceSelected)
     {
-        ShowWarning("Audio device not available", "Can't use formerly selected audio device: \"" + CONF.GetLocalAudioSource() + "\", will use one of the available devices instead!");
+        AudioDevices tAList;
+        mOwnAudioMuxer->getAudioDevices(tAList);
+        if (tAList.size() > 1)
+            ShowWarning("Audio device not available", "Can't use formerly selected audio device: \"" + CONF.GetLocalAudioSource() + "\", will use one of the available devices instead!");
         CONF.SetLocalAudioSource("auto");
         mOwnAudioMuxer->SelectDevice("auto", MEDIA_AUDIO, tNewDeviceSelected);
     }
@@ -729,9 +725,7 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
 
     //HINT: delete before local participant widget is destroyed
     LOG(LOG_VERBOSE, "..destroying playlist widget");
-    delete mOverviewPlaylistWidgetVideo;
-    delete mOverviewPlaylistWidgetAudio;
-    delete mOverviewPlaylistWidgetMovie;
+    delete mOverviewPlaylistWidget;
 
     // should be the last because video/audio workers could otherwise be deleted while they are still called
     LOG(LOG_VERBOSE, "..destroying broadcast widget");

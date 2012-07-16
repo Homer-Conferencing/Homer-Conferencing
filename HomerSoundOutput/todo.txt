@@ -1,2 +1,0 @@
-- finish wave out for Alsa & MMSYS
-
