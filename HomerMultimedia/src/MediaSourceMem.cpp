@@ -215,6 +215,15 @@ void MediaSourceMem::ReadFragment(char *pData, ssize_t &pDataSize)
             LOG(LOG_VERBOSE, "Delivered packet with number %5u at %p with size: %5d", (unsigned int)++mPacketNumber, pData, (int)pDataSize);
         #endif
     }
+
+    // is FIFO near overload situation?
+    if (mDecoderFifo->GetUsage() >= MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT - 4)
+    {
+        LOG(LOG_WARN, "Decoder FIFO is near overload situation, deleting all stored frames");
+
+        // delete all stored frames: it is a better for the decoding!
+        mDecoderFifo->ClearFifo();
+    }
 }
 
 GrabResolutions MediaSourceMem::GetSupportedVideoGrabResolutions()
