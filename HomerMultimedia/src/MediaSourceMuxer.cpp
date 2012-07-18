@@ -508,10 +508,10 @@ bool MediaSourceMuxer::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     // save new fps for later internal calls to OpenVideoGrabDevice of underlaying media source
     mFrameRate = pFps;
 
-    LOG(LOG_VERBOSE, "Going to open %s grab device", GetMediaTypeStr().c_str());
-
     // set media type early to have verbose debug outputs in case of failures
     mMediaType = MEDIA_VIDEO;
+
+    LOG(LOG_VERBOSE, "Going to open %s grab device", GetMediaTypeStr().c_str());
 
     // first open hardware video source
     if (mMediaSource != NULL)
@@ -693,10 +693,10 @@ bool MediaSourceMuxer::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
 {
     bool tResult = false;
 
-    LOG(LOG_VERBOSE, "Going to open %s grab device", GetMediaTypeStr().c_str());
-
     // set media type early to have verbose debug outputs in case of failures
     mMediaType = MEDIA_AUDIO;
+
+    LOG(LOG_VERBOSE, "Going to open %s grab device", GetMediaTypeStr().c_str());
 
     // first open hardware video source
     if (mMediaSource != NULL)
