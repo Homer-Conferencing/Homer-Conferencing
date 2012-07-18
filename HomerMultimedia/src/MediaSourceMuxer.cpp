@@ -780,7 +780,7 @@ bool MediaSourceMuxer::CloseGrabDevice()
 {
     bool tResult = false;
 
-    LOG(LOG_VERBOSE, "Going to cloase %s grab device", GetMediaTypeStr().c_str());
+    LOG(LOG_VERBOSE, "Going to close %s grab device", GetMediaTypeStr().c_str());
 
     if (mMediaSourceOpened)
     {
