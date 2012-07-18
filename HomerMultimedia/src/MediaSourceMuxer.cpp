@@ -1495,7 +1495,7 @@ void MediaSourceMuxer::StopGrabbing()
     if (mMediaSource != NULL)
     	mMediaSource->StopGrabbing();
     mGrabbingStopped = true;
-    LOG(LOG_VERBOSE, "Stopping of muxer completed");
+    LOG(LOG_VERBOSE, "Stopping of %s-muxer completed", GetMediaTypeStr().c_str());
 }
 
 bool MediaSourceMuxer::Reset(enum MediaType pMediaType)
