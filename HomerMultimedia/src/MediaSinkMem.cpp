@@ -112,6 +112,14 @@ void MediaSinkMem::ReadFragment(char *pData, int &pDataSize)
         #endif
     }
 
+    // is FIFO near overload situation?
+    if (mSinkFifo->GetUsage() >= MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT - 4)
+    {
+        LOG(LOG_WARN, "Decoder FIFO is near overload situation, deleting all stored frames");
+
+        // delete all stored frames: it is a better for the decoding!
+        mSinkFifo->ClearFifo();
+    }
 }
 
 void MediaSinkMem::StopReading()
