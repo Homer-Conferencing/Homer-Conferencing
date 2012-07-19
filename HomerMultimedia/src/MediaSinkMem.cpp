@@ -89,6 +89,19 @@ void MediaSinkMem::SendFragment(char* pData, unsigned int pSize)
     mSinkFifo->WriteFifo(pData, (int)pSize);
 }
 
+int MediaSinkMem::GetFragmentBufferCounter()
+{
+    if (mSinkFifo != NULL)
+        return mSinkFifo->GetUsage();
+    else
+        return 0;
+}
+
+int MediaSinkMem::GetFragmentBufferSize()
+{
+    return MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT;
+}
+
 void MediaSinkMem::ReadFragment(char *pData, int &pDataSize)
 {
     mSinkFifo->ReadFifo(&pData[0], pDataSize);

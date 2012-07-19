@@ -52,6 +52,9 @@ public:
 
     virtual ~MediaSinkMem();
 
+    virtual int GetFragmentBufferCounter();
+    virtual int GetFragmentBufferSize();
+
     virtual void ReadFragment(char *pData, int &pDataSize);
     virtual void StopReading();
 
