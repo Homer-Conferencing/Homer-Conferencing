@@ -195,7 +195,7 @@ NGNSocketBinding::NGNSocketBinding(std::string pLocalName, Requirements *pRequir
 #endif
 
     LOG(LOG_VERBOSE,"MY");
-
+    mIsClosed = false;
     ///////////////////////////////////////////////////////////////////////////
     // start a parser tree for SCTP QoS requirements and additional transport requirements for SCTP
 //    changeRequirements(pRequirements);
@@ -209,13 +209,17 @@ NGNSocketBinding::NGNSocketBinding(std::string pLocalName, Requirements *pRequir
     }
 #endif
 
-    if (bind(mSocket, (struct sockaddr *)&mSock_addr, addr_len) != 0)
+    if (bind(mSocket, (struct sockaddr *)&mSock_addr, addr_len) != 0){
         LOG(LOG_ERROR, "bind %i", errno);
-
-    if (listen(mSocket, 1) < 0)
+        mSocket = -1;
+        mIsClosed = true;
+    }
+    if (listen(mSocket, 1) < 0){
         LOG(LOG_ERROR, "listen %i", errno);
+        mSocket = -1;
+        mIsClosed = true;
+    }
 
-    mIsClosed = false;
 }
 
 NGNSocketBinding::~NGNSocketBinding()
