@@ -54,6 +54,64 @@
  */
 #define FOG_COMON_HEADER 4   // 4 = 4 x Integer
 
+/*
+ * Example SCTP Packet:
+ *  SCTP HEADER
+ *  0                   1                   2                   3
+ *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |     Source Port Number        |     Destination Port Number   |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                      Verification Tag                         |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                           Checksum                            |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  Data Chunk
+ *  0                   1                   2                   3
+ *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |   Type = 0    | Reserved|U|B|E|    Length                     |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                              TSN                              |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |      Stream Identifier S      |   Stream Sequence Number n    |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                  Payload Protocol Identifier                  |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  \                                                               \
+ *  /                 User Data (seq n of Stream S)                 /
+ *  \                                                               \
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *
+ * To identifier the stream, it is possible to use the stream ID. Or because we use different ports for different Streams the port number.
+ * So crtieria could be
+ * - Dest. Port   2 Bytes   6000 or 5000
+ * - Stream ID    2 Byte    if chunk type = 0; Special Stream ID 0 = Signaling for Requirments
+ *
+ * Example
+ *
+ * Payload of UDP => SCTP Header
+ *        [ 1 ] [ 2 ] [     3   ] [    4    ] [5][6] [ 7 ]
+ * 0000   ea d6 13 88 9e 20 c6 da 42 99 d6 a4 00  03 04 b0  ..... ..B.......
+ *        [    8    ] [   9  ]
+ * 0010   bd fd 09 7f 00 01 00 0f 00 00 00 00              ............
+ *
+ *
+ *
+ * SCTP Common Header
+ * 1 = Source Port  2 Bytes
+ * 2 = Dest. Port   2 Bytes here 5000 !!!!!!
+ * 3 = VTag         4 Bytes
+ * 4 = Checksum     4 Bytes
+ * SCTP Chunk (Because we use different sockets for different streams we have no Bundling, so it is enough to trace the first chunk)
+ * 5 = Chunk Type   1 Byte  here 0 !!!!!!!!!
+ * 6 = Chunk Flag   1 Byte
+ * 7 = Chunk length 2 Byte
+ * 8 = TSN          4 Byte
+ * 9 = Stream ID    2 Byte  here 1 !!!!!!!!!
+ *
+ */
+
 namespace Homer { namespace Base {
 typedef struct _T_FROGGER_MSG{
     int     msg_type;
