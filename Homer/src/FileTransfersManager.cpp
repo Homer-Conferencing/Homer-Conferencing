@@ -33,6 +33,9 @@
 #include <HBTime.h>
 #include <Header_Ffmpeg.h>
 
+#include <Berkeley/SocketSetup.h>
+#include <NGNSocketSetup.h>
+
 #include <stdio.h>
 #include <sys/stat.h>
 
@@ -1110,7 +1113,12 @@ void FileTransfersManager::Init(string pLocalName, Requirements *pTransportRequi
     }
 
     Name tName(pLocalName);
+//    mGAPIBinding = GAPI.bind(&tName, pTransportRequirements);
+    string tOldGAPIImpl = GAPI.getCurrentImplName();
+    GAPI.selectImpl("Next Generation Network Sockets");
     mGAPIBinding = GAPI.bind(&tName, pTransportRequirements);
+    GAPI.selectImpl(tOldGAPIImpl);
+
     if (mGAPIBinding == NULL)
         LOG(LOG_ERROR, "Invalid GAPI setup interface, name is %s, requirements are %s", pLocalName.c_str(), pTransportRequirements->getDescription().c_str());
     mReceiverSocket = mGAPIBinding->readConnection();
@@ -1323,7 +1331,11 @@ void* FileTransfersManager::Run(void* pArgs)
                     tRequs->add(tReqPort);
 
                     // create response socket
+//                    IConnection *tSocket = GAPI.connect(new Name(tSourceHost), tRequs);
+                    string tOldGAPIImpl = GAPI.getCurrentImplName();
+                    GAPI.selectImpl(NGN_SOCKETS);
                     IConnection *tSocket = GAPI.connect(new Name(tSourceHost), tRequs);
+                    GAPI.selectImpl(tOldGAPIImpl);
 
                     // create transfer object
                     tFileTransfer = FileTransfer::CreateFileReceiver(tSocket, tHeader, tBeginHeader);
