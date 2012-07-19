@@ -15,6 +15,14 @@ ENDIF()
 set(HOMER_VERSION "${HOMER_VERSION_MAJOR}.${HOMER_VERSION_MINOR}.${HOMER_VERSION_PATCH}")
 
 ##############################################################
+# Include feature selection from HomerFeatures.txt
+IF (DEFINED INSIDE_HOMER_BUILD)
+	INCLUDE (${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/config/HomerFeatures.txt)
+ELSE()
+	INCLUDE (${CMAKE_CURRENT_SOURCE_DIR}/../HomerBuild/config/HomerFeatures.txt)
+ENDIF()
+
+##############################################################
 # detect FreeBSD
 IF (DEFINED INSIDE_HOMER_BUILD)
 IF (${CMAKE_SYSTEM} MATCHES "FreeBSD.*")

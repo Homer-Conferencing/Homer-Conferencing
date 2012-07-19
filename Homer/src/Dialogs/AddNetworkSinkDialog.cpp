@@ -210,6 +210,11 @@ QString AddNetworkSinkDialog::GetTarget()
     return mLeHost->text();
 }
 
+QString AddNetworkSinkDialog::GetGAPIImplementation()
+{
+    return mCbGAPIImpl->currentText();
+}
+
 void AddNetworkSinkDialog::SaveConfiguration()
 {
     switch(mDataType)

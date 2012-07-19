@@ -312,12 +312,14 @@ IF (DEFINED TARGET_LIB_NAME)
 		${TARGET_LIB_NAME}
 	)
 	# library versioning
-	SET_TARGET_PROPERTIES(
-     	${TARGET_LIB_NAME}
-   		PROPERTIES
-     		SOVERSION ${HOMER_VERSION_MAJOR}
-     		VERSION ${HOMER_VERSION}
-   	)
+	IF (${HOMER_LIBS_WITH_VERSIONING} MATCHES "ON")
+		SET_TARGET_PROPERTIES(
+	     		${TARGET_LIB_NAME}
+	   		PROPERTIES
+	     		SOVERSION ${HOMER_VERSION_MAJOR}
+	     		VERSION ${HOMER_VERSION}
+	   	)
+   	ENDIF()
 ENDIF ()
 # generate program from given source files
 IF (DEFINED TARGET_PROGRAM_NAME) 
@@ -342,11 +344,13 @@ IF (DEFINED TARGET_PROGRAM_NAME)
 		${TARGET_PROGRAM_NAME}
 	)
 	# application versioning
-	SET_TARGET_PROPERTIES(
-     	${TARGET_PROGRAM_NAME}
-   		PROPERTIES
-     		VERSION ${HOMER_VERSION}
-   	)
+	IF (${HOMER_APP_WITH_VERSIONING} MATCHES "ON")
+		SET_TARGET_PROPERTIES(
+		     	${TARGET_PROGRAM_NAME}
+	   		PROPERTIES
+	     		VERSION ${HOMER_VERSION}
+	   	)
+   	ENDIF()
 ENDIF ()
 
 ##############################################################

@@ -232,8 +232,8 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
         printf("   -DebugOutputNetwork=<host>:<port>   send verbose debug data to the given target host and port, UDP is used for message transport\n");
         printf("\n");
         printf("Options for features:\n");
-        printf("   -Disable=AudioCapture               disable Audio capture from devices\n");
-        printf("   -Disable=AudioOutput                disable Audio playback support\n");
+        printf("   -Disable=AudioCapture               disable audio capture from devices\n");
+        printf("   -Disable=AudioOutput                disable audio playback support\n");
         printf("   -Disable=IPv6                       disable IPv6 support\n");
         printf("   -Disable=QoS                        disable QoS support\n");
         printf("   -Enable=NetSim                      enables network simulator\n");

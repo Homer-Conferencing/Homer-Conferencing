@@ -50,6 +50,7 @@ public:
 
     Requirements* GetRequirements();
     QString GetTarget();
+    QString GetGAPIImplementation();
 
     int exec();
 
