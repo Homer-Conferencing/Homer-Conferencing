@@ -1110,13 +1110,8 @@ void FileTransfersManager::Init(string pLocalName, Requirements *pTransportRequi
     }
 
     Name tName(pLocalName);
-//    mGAPIBinding = GAPI.bind(&tName, pTransportRequirements);
-    string tOldGAPIImpl = GAPI.getCurrentImplName();
-    GAPI.selectImpl("Next Generation Network Sockets");
-    mGAPIBinding = GAPI.bind(&tName, pTransportRequirements); 
-    GAPI.selectImpl(tOldGAPIImpl);
-   
-     if (mGAPIBinding == NULL)
+    mGAPIBinding = GAPI.bind(&tName, pTransportRequirements);
+    if (mGAPIBinding == NULL)
         LOG(LOG_ERROR, "Invalid GAPI setup interface, name is %s, requirements are %s", pLocalName.c_str(), pTransportRequirements->getDescription().c_str());
     mReceiverSocket = mGAPIBinding->readConnection();
     if (mReceiverSocket == NULL)

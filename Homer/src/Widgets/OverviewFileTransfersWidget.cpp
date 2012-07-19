@@ -30,6 +30,7 @@
 #include <PacketStatisticService.h>
 #include <Configuration.h>
 #include <FileTransfersManager.h>
+#include <NGNSocketSetup.h>
 
 #include <QDockWidget>
 #include <QMainWindow>
@@ -110,7 +111,10 @@ void OverviewFileTransfersWidget::Init()
     // add local port
     tRequs->add(tReqPort);
 
+    string tOldGAPIImpl = GAPI.getCurrentImplName();
+    GAPI.selectImpl(NGN_SOCKETS);
     FTMAN.Init(tHost.toStdString(), tRequs);
+    GAPI.selectImpl(tOldGAPIImpl);
     FTMAN.AddObserver(this);
 }
 

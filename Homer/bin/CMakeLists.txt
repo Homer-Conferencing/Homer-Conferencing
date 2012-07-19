@@ -37,6 +37,7 @@ SET (INCLUDE_DIRS
 	../../HomerBase/include/Logging
 	../../HomerBase/include
 	../../HomerGAPI/include
+	../../HomerNetworkNG/include
 	../../HomerMonitor/include
 	../../HomerMultimedia/include
 	../../HomerNetworkSimulator/include
