@@ -1111,6 +1111,16 @@ void FileTransfersManager::Init(string pLocalName, Requirements *pTransportRequi
 
     Name tName(pLocalName);
     mGAPIBinding = GAPI.bind(&tName, pTransportRequirements);
+
+    // auto probe for alternative ports if needed
+    while (mGAPIBinding->isClosed())
+    {
+        LOG(LOG_VERBOSE, "Binding to port %u did not work, trying port %u now", tReqPort->getPort(), tReqPort->getPort() + 1);
+        tReqPort->setPort(tReqPort->getPort() + 1);
+        delete mGAPIBinding;
+        mGAPIBinding = GAPI.bind(&tName, pTransportRequirements);
+    }
+
     if (mGAPIBinding == NULL)
         LOG(LOG_ERROR, "Invalid GAPI setup interface, name is %s, requirements are %s", pLocalName.c_str(), pTransportRequirements->getDescription().c_str());
     mReceiverSocket = mGAPIBinding->readConnection();
