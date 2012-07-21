@@ -155,9 +155,10 @@ void PacketStatistic::AnnouncePacket(int pSize)
         if (mFirstDataRateHistoryLoss)
         {
             mFirstDataRateHistoryLoss = false;
-            LOG(LOG_ERROR, "List with measured values of data rate history has reached limit of %d entries", STATISTIC_MOMENT_DATARATE_HISTORY);
+            LOG(LOG_WARN, "List with measured values of data rate history has reached limit of %d entries", STATISTIC_MOMENT_DATARATE_HISTORY);
         }
         mDataRateHistory.erase(mDataRateHistory.begin());
+        LOG(LOG_VERBOSE, "Dropping measurement data ");
     }
 
     mDataRateHistory.push_back(tHistEntry);
