@@ -70,7 +70,9 @@ SocketBinding::SocketBinding(std::string pLocalName, Requirements *pRequirements
 
 
     /* network requirements */
-    bool tIPv6 = IS_IPV6_ADDRESS(pLocalName);
+    bool tIPv6 = true;
+    if ((pLocalName != "") && (!IS_IPV6_ADDRESS(pLocalName)))
+        tIPv6 = false;
 
     /* transport requirements */
     if ((pRequirements->contains(RequirementTransmitChunks::type())) && (pRequirements->contains(RequirementTransmitStream::type())))
