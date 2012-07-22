@@ -1881,8 +1881,8 @@ background-color: rgb(150, 150, 150);
                  <string>...</string>
                 </property>
                 <property name="icon">
-                 <iconset>
-                  <normaloff>:/images/22_22/UserMale.png</normaloff>:/images/22_22/UserMale.png</iconset>
+                 <iconset resource="../../resources/Icons.qrc">
+                  <normaloff>:/images/22_22/User.png</normaloff>:/images/22_22/User.png</iconset>
                 </property>
                 <property name="iconSize">
                  <size>
