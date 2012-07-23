@@ -573,7 +573,7 @@ void NGNSocketConnection::writeToStream(char* pBuffer, int pBufferSize,int iStre
 #if defined(BSD) || defined(APPLE)
     memset(&info, 0, sizeof(info));
     info.snd_ppid = htonl(0);
-    info.snd_flags = 0; //SCTP_UNORDERED;
+    info.snd_flags = SCTP_UNORDERED ; // 0; //SCTP_UNORDERED;
     info.snd_sid = iStream;
     iov.iov_base = &pBuffer[0];
     iov.iov_len = pBufferSize;
@@ -650,7 +650,10 @@ Name* NGNSocketConnection::getName()
     if(mSocket > 0)
     {
         // TODO Perhaps more information are possible
-        return  new SocketName("Local Next Generation Network",0);
+        if(mPort<5001)
+            return  new SocketName("Local NGN - High Performing",mPort);
+
+        return  new SocketName("Local NGN - Low Performing",mPort);
     }else
     {
         return NULL;
@@ -662,7 +665,10 @@ Name* NGNSocketConnection::getRemoteName()
     if(mSocket  > 0)
     {
         // TODO Perhaps more information are possible
-        return new SocketName("Remote Next Generation Network",0);
+        if(mPort<5001)
+                  return  new SocketName("Local NGN - High Performing",mPort);
+
+        return  new SocketName("Local NGN - Low Performing",mPort);
     }else
     {
         return NULL;
