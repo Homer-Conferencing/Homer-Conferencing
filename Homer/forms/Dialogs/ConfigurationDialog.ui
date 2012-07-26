@@ -1432,22 +1432,7 @@
                 </item>
                 <item>
                  <property name="text">
-                  <string>AAC</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
                   <string>PCM_S16_LE</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>GSM</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>AMR</string>
                  </property>
                 </item>
                </widget>
