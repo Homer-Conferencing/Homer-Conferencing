@@ -559,7 +559,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
             LOG(LOG_VERBOSE, "Signal to decoder that new data is needed");
         #endif
         mDecoderMutex.lock();
-        DecoderNeedWorkCondition.SignalAll();
+        mDecoderNeedWorkCondition.SignalAll();
         mDecoderMutex.unlock();
     }
 
@@ -686,7 +686,7 @@ void MediaSourceFile::StopDecoder()
             tSignalingRound++;
 
             // force a wake up of decoder thread
-            DecoderNeedWorkCondition.SignalAll();
+            mDecoderNeedWorkCondition.SignalAll();
         }while(!StopThread(250));
 
         delete mDecoderFifo;
@@ -1065,8 +1065,8 @@ void* MediaSourceFile::Run(void* pArgs)
                 #ifdef MSF_DEBUG_DECODER_STATE
                     LOG(LOG_VERBOSE, "EOF for %s source reached, wait some time and check again, loop %d", GetMediaTypeStr().c_str(), ++tWaitLoop);
                 #endif
-                DecoderNeedWorkCondition.Reset();
-                DecoderNeedWorkCondition.Wait(&mDecoderMutex);
+                mDecoderNeedWorkCondition.Reset();
+                mDecoderNeedWorkCondition.Wait(&mDecoderMutex);
                 mDecoderLastReadPts = 0;
                 mEOFReached = false;
                 #ifdef MSF_DEBUG_DECODER_STATE
@@ -1078,8 +1078,8 @@ void* MediaSourceFile::Run(void* pArgs)
             #ifdef MSF_DEBUG_DECODER_STATE
                 LOG(LOG_VERBOSE, "Nothing to do for decoder, wait some time and check again, loop %d", ++tWaitLoop);
             #endif
-            DecoderNeedWorkCondition.Reset();
-            DecoderNeedWorkCondition.Wait(&mDecoderMutex);
+            mDecoderNeedWorkCondition.Reset();
+            mDecoderNeedWorkCondition.Wait(&mDecoderMutex);
             mDecoderLastReadPts = 0;
             #ifdef MSF_DEBUG_DECODER_STATE
                 LOG(LOG_VERBOSE, "Continuing after new data is needed, current FIFO size is: %d", mDecoderFifo->GetUsage());
@@ -1253,7 +1253,7 @@ bool MediaSourceFile::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
 
             mDecoderFifo->ClearFifo();
             mDecoderMetaDataFifo->ClearFifo();
-            DecoderNeedWorkCondition.SignalAll();
+            mDecoderNeedWorkCondition.SignalAll();
             mDecoderMutex.unlock();
         }else
             LOG(LOG_VERBOSE, "Seeking in file skipped because position is already the desired one");
@@ -1313,7 +1313,7 @@ bool MediaSourceFile::SeekRelative(int64_t pSeconds, bool pOnlyKeyFrames)
         tResult = (avformat_seek_file(mFormatContext, mMediaStreamIndex, tAbsoluteTimestamp - MSF_SEEK_VARIANCE, tAbsoluteTimestamp, tAbsoluteTimestamp + MSF_SEEK_VARIANCE, (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) | (tAbsoluteTimestamp < mCurPts ? AVSEEK_FLAG_BACKWARD : 0)) >= 0);
         mDecoderFifo->ClearFifo();
         mDecoderMetaDataFifo->ClearFifo();
-        DecoderNeedWorkCondition.SignalAll();
+        mDecoderNeedWorkCondition.SignalAll();
         mDecoderMutex.unlock();
 
         // adopt the stored pts value which represent the start of the media presentation in real-time useconds
