@@ -61,9 +61,19 @@ namespace Homer { namespace Gui {
 
 #define CONF Configuration::GetInstance()
 
+#define USE_NATIVE_DIALOGS
+
 #define AUDIO_OUTPUT_SAMPLE_RATE        44100
 
 ///////////////////////////////////////////////////////////////////////////////
+#ifdef USE_NATIVE_DIALOGS
+	#define CONF_NATIVE_DIALOGS			0
+#else
+	#define CONF_NATIVE_DIALOGS			QFileDialog::DontUseNativeDialog
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
+
 class Configuration
 {
 public:

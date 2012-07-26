@@ -229,13 +229,13 @@ QStringList OverviewPlaylistWidget::LetUserSelectVideoFile(QWidget *pParent, QSt
                                                                 CONF.GetDataDirectory() + "/Homer-Video.avi",
                                                                 sLoadVideoFilters,
                                                                 &sAllLoadVideoFilter,
-                                                                QFileDialog::DontUseNativeDialog);
+                                                                CONF_NATIVE_DIALOGS);
     else
         tResult = QStringList(QFileDialog::getOpenFileName(pParent,  pDescription,
                                                                 CONF.GetDataDirectory() + "/Homer-Video.avi",
                                                                 sLoadVideoFilters,
                                                                 &sAllLoadVideoFilter,
-                                                                QFileDialog::DontUseNativeDialog));
+                                                                CONF_NATIVE_DIALOGS));
 
     if (!tResult.isEmpty())
         CONF.SetDataDirectory(tResult.first().left(tResult.first().lastIndexOf('/')));
@@ -254,7 +254,7 @@ QString OverviewPlaylistWidget::LetUserSelectVideoSaveFile(QWidget *pParent, QSt
                                                             CONF.GetDataDirectory() + "/Homer-Video.avi",
                                                             sSaveVideoFilters,
                                                             &sAllSaveVideoFilter,
-                                                            QFileDialog::DontUseNativeDialog);
+                                                            CONF_NATIVE_DIALOGS);
 
     if (!tResult.isEmpty())
         CONF.SetDataDirectory(tResult.left(tResult.lastIndexOf('/')));
@@ -299,13 +299,13 @@ QStringList OverviewPlaylistWidget::LetUserSelectAudioFile(QWidget *pParent, QSt
                                                                 CONF.GetDataDirectory() + "/Homer-Audio.mp3",
                                                                 sLoadAudioFilters,
                                                                 &sAllLoadAudioFilter,
-                                                                QFileDialog::DontUseNativeDialog);
+                                                                CONF_NATIVE_DIALOGS);
     else
         tResult = QStringList(QFileDialog::getOpenFileName(pParent,  pDescription,
                                                                 CONF.GetDataDirectory() + "/Homer-Audio.mp3",
                                                                 sLoadAudioFilters,
                                                                 &sAllLoadAudioFilter,
-                                                                QFileDialog::DontUseNativeDialog));
+                                                                CONF_NATIVE_DIALOGS));
 
     if (!tResult.isEmpty())
         CONF.SetDataDirectory(tResult.first().left(tResult.first().lastIndexOf('/')));
@@ -324,7 +324,7 @@ QString OverviewPlaylistWidget::LetUserSelectAudioSaveFile(QWidget *pParent, QSt
                                                             CONF.GetDataDirectory() + "/Homer-Audio.mp3",
                                                             sSaveAudioFilters,
                                                             &sAllSaveAudioFilter,
-                                                            QFileDialog::DontUseNativeDialog);
+                                                            CONF_NATIVE_DIALOGS);
 
     if (!tResult.isEmpty())
         CONF.SetDataDirectory(tResult.left(tResult.lastIndexOf('/')));
@@ -372,13 +372,13 @@ QStringList OverviewPlaylistWidget::LetUserSelectMovieFile(QWidget *pParent, QSt
                                                                 CONF.GetDataDirectory() + "/Homer-Movie.avi",
                                                                 sLoadMovieFilters,
                                                                 &sAllLoadMovieFilter,
-                                                                QFileDialog::DontUseNativeDialog);
+                                                                CONF_NATIVE_DIALOGS);
     else
         tResult = QStringList(QFileDialog::getOpenFileName(pParent,  pDescription,
                                                                 CONF.GetDataDirectory() + "/Homer-Movie.avi",
                                                                 sLoadMovieFilters,
                                                                 &sAllLoadMovieFilter,
-                                                                QFileDialog::DontUseNativeDialog));
+                                                                CONF_NATIVE_DIALOGS));
 
     if (!tResult.isEmpty())
         CONF.SetDataDirectory(tResult.first().left(tResult.first().lastIndexOf('/')));
@@ -410,13 +410,13 @@ QStringList OverviewPlaylistWidget::LetUserSelectMediaFile(QWidget *pParent, QSt
                                                                 CONF.GetDataDirectory() + "/Homer-Movie.avi",
                                                                 sLoadMediaFilters,
                                                                 &sAllLoadMediaFilter,
-                                                                QFileDialog::DontUseNativeDialog);
+                                                                CONF_NATIVE_DIALOGS);
     else
         tResult = QStringList(QFileDialog::getOpenFileName(pParent,  pDescription,
                                                                 CONF.GetDataDirectory() + "/Homer-Movie.avi",
                                                                 sLoadMediaFilters,
                                                                 &sAllLoadMediaFilter,
-                                                                QFileDialog::DontUseNativeDialog));
+                                                                CONF_NATIVE_DIALOGS));
 
     if (!tResult.isEmpty())
         CONF.SetDataDirectory(tResult.first().left(tResult.first().lastIndexOf('/')));
@@ -475,7 +475,7 @@ void OverviewPlaylistWidget::SaveListDialog()
                                                                 CONF.GetDataDirectory() + "/Homer.m3u",
                                                                 "Playlist file (*.m3u)",
                                                                 &*(new QString("Playlist file (*.m3u)")),
-                                                                QFileDialog::DontUseNativeDialog);
+                                                                CONF_NATIVE_DIALOGS);
 
     if (tFileName.isEmpty())
         return;
