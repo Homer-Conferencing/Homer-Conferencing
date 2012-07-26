@@ -1318,31 +1318,14 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
             LOG(LOG_ERROR, "Packet loss detected (last SN: %d; current SN: %d), lost %u packets, overall packet loss is now %u", mLastSequenceNumber, tRtpHeader->SequenceNumber, tLostPackets, mLostPackets);
         }
 
-        // if payload type = 0 or 8 then marker bit does not represent a fragmentation marker
-        // if payload type = 14 then RFC 2250 defines for audio the marker bit as representative for discontinuous timestamps
-        mIntermediateFragment = ((tRtpHeader->PayloadType == 0 /* mulaw */) || (tRtpHeader->PayloadType == 8 /* alaw */) ||  (tRtpHeader->PayloadType == 14 /* mp3 */)) ? false : !tRtpHeader->Marked;
-
-        // check if there was a new frame begun before the last was finished
-        if ((mLastCompleteFrameTimestamp != mLastTimestamp) && (mLastTimestamp != tRtpHeader->Timestamp))
-        {
-            AnnounceLostPackets(1);
-            LOG(LOG_ERROR, "Packet belongs to new frame while last frame is incomplete, overall packet loss is now %u", mLostPackets);
-        }
+        // use stanard RTP definition to detect fragments, some codecs have a different understanding about this - this is included below
+        mIntermediateFragment = !tRtpHeader->Marked;
 
         mPayloadId = tRtpHeader->PayloadType;
-        mLastSequenceNumber = tRtpHeader->SequenceNumber;
-        mLastTimestamp = tRtpHeader->Timestamp;
-
-        if (!mIntermediateFragment)
-            mLastCompleteFrameTimestamp = tRtpHeader->Timestamp;
-
+        
         // store the assigned SSRC identifier
         mSsrc = tRtpHeader->Ssrc;
     }
-
-    // convert from host to network byte order again
-    for (int i = 0; i < 3; i++)
-        tRtpHeader->Data[i] = htonl(tRtpHeader->Data[i]);
 
     // #############################################################
     // HEADER: codec headers => parse
@@ -1420,7 +1403,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                             if (tMPAHeader->Mbz > 0)
                             {
                                 // if fragment ends at packet size or behind (to make sure we are not running into inconsistency) we should mark as complete packet
-                                if ((unsigned short int)tMPAHeader->Offset + (pDataSize - (pData - tDataOriginal)) >= tMPAHeader->Mbz)
+                                if ((unsigned short int)tMPAHeader->Offset + (pDataSize - (pData - tDataOriginal)) >= tMPAHeader->Mbz -1 /* a difference of 1 is sometimes caused by the MP3 encoder */)
                                     mIntermediateFragment = false;
                                 else
                                     mIntermediateFragment = true;
@@ -1743,24 +1726,47 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                             break;
     }
 
+	#ifdef RTP_DEBUG_PACKETS
+		if (mIntermediateFragment)
+			LOG(LOG_VERBOSE, "FRAGMENT");
+		else
+			LOG(LOG_VERBOSE, "MESSAGE COMPLETE");
+	#endif
+
+	if (!pReadOnly)
+	{
+		// check if there was a new frame begun before the last was finished
+		if ((mLastCompleteFrameTimestamp != mLastTimestamp) && (mLastTimestamp != tRtpHeader->Timestamp))
+		{
+			AnnounceLostPackets(1);
+			LOG(LOG_ERROR, "Packet belongs to new frame while last frame is incomplete, overall packet loss is now %u, last complete time stamp: %u, last time stamp: %u", mLostPackets, mLastCompleteFrameTimestamp, mLastTimestamp);
+		}
+		// store the time stamp of the last complete frame
+		if (!mIntermediateFragment)
+			mLastCompleteFrameTimestamp = tRtpHeader->Timestamp;
+
+		mLastSequenceNumber = tRtpHeader->SequenceNumber;
+		mLastTimestamp = tRtpHeader->Timestamp;
+	}
+
+    // convert from host to network byte order again
+    for (int i = 0; i < 3; i++)
+        tRtpHeader->Data[i] = htonl(tRtpHeader->Data[i]);
+
     // decrease data size by the size of the found header structures
     if ((pData - tDataOriginal) > (int)pDataSize)
     {
         LOG(LOG_ERROR, "Illegal value for calculated data size (%u - %u)", pDataSize, pData - tDataOriginal);
+
         pIsLastFragment = true;
+
         return false;
     }
     pDataSize -= (pData - tDataOriginal);
 
-    #ifdef RTP_DEBUG_PACKETS
-        if (mIntermediateFragment)
-            LOG(LOG_VERBOSE, "FRAGMENT");
-        else
-            LOG(LOG_VERBOSE, "MESSAGE COMPLETE");
-    #endif
-
     // return if packet contains the last fragment of the current frame
     pIsLastFragment = !mIntermediateFragment;
+
     return true;
 }
 
