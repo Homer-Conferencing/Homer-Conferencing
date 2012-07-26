@@ -140,6 +140,7 @@ SET (FLAGS
 	-Wno-format
 	-Wno-uninitialized
 	-Wno-unused-parameter
+	-Wno-invalid-source-encoding
 )
 IF (NOT (${BUILD} MATCHES "Default"))
 	SET (FLAGS
