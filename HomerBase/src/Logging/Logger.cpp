@@ -246,7 +246,7 @@ void Logger::AddMessage(int pLevel, const char *pSource, int pLine, const char* 
         mLoggerMutex.unlock();
     }else
     {
-        printf("LOGGER: failed to lock at %s for %s(%d) and message \"%s\", will ignore this.\n", tFinalTime.c_str(), pSource, pLine, tFinalMessage.c_str());
+        printf("LOGGER: system load is high, skipped locking at %s for %s(%d) and message \"%s\", will ignore this.\n", tFinalTime.c_str(), pSource, pLine, tFinalMessage.c_str());
     }
 }
 
