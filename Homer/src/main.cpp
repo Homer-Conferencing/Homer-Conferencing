@@ -253,9 +253,11 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
         printf("For updates visit http://www.homer-conferencing.com\n");
     #endif
 
-    qInstallMsgHandler(sQtDebugMessageOutput);
+	LOGEX(MainWindow, LOG_VERBOSE, "Setting Qt message handler");
+	qInstallMsgHandler(sQtDebugMessageOutput);
 
     string tAbsBinPath;
+    LOGEX(MainWindow, LOG_VERBOSE, "Creating QApplication instance");
     QApplication *tApp = new QApplication(pArgc, pArgv);
 
     // make sure every icon is visible within menus: otherwise the Ubuntu-packages will have no icons visible
@@ -295,14 +297,17 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
 
     QStringList tArguments = QCoreApplication::arguments();
 
+	LOGEX(MainWindow, LOG_VERBOSE, "Setting Logger parameters");
     if (tArguments.contains("-DebugLevel=Error"))
     {
         LOGGER.Init(LOG_ERROR);
     }else
+    {
         if (tArguments.contains("-DebugLevel=Info"))
         {
             LOGGER.Init(LOG_INFO);
         }else
+        {
             if (tArguments.contains("-DebugLevel=Verbose"))
             {
                 LOGGER.Init(LOG_VERBOSE);
@@ -314,9 +319,12 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
                     LOGGER.Init(LOG_VERBOSE);
                 #endif
             }
-    showMood();
-    LOGEX(MainWindow, LOG_VERBOSE, "Creating Qt main window");
+        }
+    }
 
+    showMood();
+
+    LOGEX(MainWindow, LOG_VERBOSE, "Creating Qt main window");
     MainWindow *tMainWindow = new MainWindow(tAbsBinPath);
 
     LOGEX(MainWindow, LOG_VERBOSE, "Showing Qt main window");
