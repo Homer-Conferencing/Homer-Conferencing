@@ -99,7 +99,7 @@ int MediaSourceMuxer::DistributePacket(void *pOpaque, uint8_t *pBuffer, int pBuf
     // ###################################################################
     #ifdef MSM_DEBUG_PACKETS
         LOGEX(MediaSourceMuxer, LOG_VERBOSE, "Distribute packet of size: %d, chunk number: %d", pBufferSize, tMuxer->mChunkNumber);
-        if (pBufferSize > MAX_SOCKET_BUFFER)
+        if (pBufferSize > MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE)
         {
             LOGEX(MediaSourceMuxer, LOG_WARN, "Encoded media data of %d bytes is too big for network streaming", pBufferSize);
         }
