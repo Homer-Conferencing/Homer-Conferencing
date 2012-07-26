@@ -656,9 +656,12 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
         return false;
     }
 
-    // avoid packets with frame size of 1 in case of PCM codec
-    if (mCodecContext->frame_size == 1)
-        mCodecContext->frame_size = 256;
+    // fix frame size of 0 for some audio codecs and use default caudio capture frame size instead to allow 1:1 transformation
+    // old PCM implementation delivered often a frame size of 1
+    // some audio codecs (excl. MP3) deliver a frame size of 0
+    // ==> we use 32 as threshold to catch most of the inefficient values for the frame size
+    if (mCodecContext->frame_size < 32)
+    	mCodecContext->frame_size = 1024;
 
     mMediaType = MEDIA_AUDIO;
 
