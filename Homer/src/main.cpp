@@ -162,6 +162,7 @@ static void sQtDebugMessageOutput(QtMsgType pType, const char *pMsg)
 			case QtFatalMsg:
 				LOGEX(MainWindow, LOG_ERROR, "\033[01;33m QtFatal: \"%s\"", pMsg);
 				abort();
+				break;
 		}
 	#endif
 	#ifdef WIN32
@@ -179,6 +180,7 @@ static void sQtDebugMessageOutput(QtMsgType pType, const char *pMsg)
 			case QtFatalMsg:
 				LOGEX(MainWindow, LOG_ERROR, " QtFatal: \"%s\"", pMsg);
 				abort();
+				break;
 		}
 	#endif
 }
