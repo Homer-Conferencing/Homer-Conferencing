@@ -77,52 +77,59 @@ bool System::GetWindowsKernelVersion(int &pMajor, int &pMinor)
 
 string System::GetKernelVersion()
 {
-    string tResult = "???";
+    static string tResult = "";
 
-    #if defined(LINUX) || defined(APPLE) || defined(BSD)
-        struct utsname tInfo;
-        uname(&tInfo);
+    if (tResult == "")
+    {
+		#if defined(LINUX) || defined(APPLE) || defined(BSD)
+			struct utsname tInfo;
+			uname(&tInfo);
 
-        if (tInfo.release != NULL)
-            tResult = string(tInfo.release);
-    #endif
-    #ifdef WIN32
-        OSVERSIONINFOEX tVersionInfo;
-        ZeroMemory(&tVersionInfo, sizeof(OSVERSIONINFOEX));
-        tVersionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-        if (GetVersionEx((LPOSVERSIONINFO)&tVersionInfo) == 0)
-        {
-            LOGEX(System, LOG_ERROR, "Failed when calling \"GetVersionEx\"");
-            return "";
-        }
-        int tMajor = tVersionInfo.dwMajorVersion;
-        int tMinor = tVersionInfo.dwMinorVersion;
-        char tVersionStr[32];
-        sprintf(tVersionStr, "%d.%d", tMajor, tMinor);
+			if (tInfo.release != NULL)
+				tResult = string(tInfo.release);
+		#endif
+		#ifdef WIN32
+			OSVERSIONINFOEX tVersionInfo;
+			ZeroMemory(&tVersionInfo, sizeof(OSVERSIONINFOEX));
+			tVersionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+			if (GetVersionEx((LPOSVERSIONINFO)&tVersionInfo) == 0)
+			{
+				LOGEX(System, LOG_ERROR, "Failed when calling \"GetVersionEx\"");
+				return "";
+			}
+			int tMajor = tVersionInfo.dwMajorVersion;
+			int tMinor = tVersionInfo.dwMinorVersion;
+			char tVersionStr[32];
+			sprintf(tVersionStr, "%d.%d", tMajor, tMinor);
 
-        tResult = string(tVersionStr);
-    #endif
+			tResult = string(tVersionStr);
+		#endif
 
-    LOGEX(System, LOG_VERBOSE, "Found kernel \"%s\"", tResult.c_str());
+		LOGEX(System, LOG_VERBOSE, "Found kernel \"%s\"", tResult.c_str());
+    }
 
     return tResult;
 }
 
 int System::GetMachineCores()
 {
-    int tResult = 1;
-    #if defined(LINUX) || defined(APPLE) || defined(BSD)
-        tResult = sysconf(_SC_NPROCESSORS_ONLN);
-    #endif
-    #ifdef WIN32
-        SYSTEM_INFO tSysInfo;
+    static int tResult = -1;
 
-        GetSystemInfo(&tSysInfo);
+    if (tResult == -1)
+    {
+		#if defined(LINUX) || defined(APPLE) || defined(BSD)
+			tResult = sysconf(_SC_NPROCESSORS_ONLN);
+		#endif
+		#ifdef WIN32
+			SYSTEM_INFO tSysInfo;
 
-        tResult = tSysInfo.dwNumberOfProcessors;
-    #endif
+			GetSystemInfo(&tSysInfo);
 
-    LOGEX(System, LOG_VERBOSE, "Found machine cores: %d", tResult);
+			tResult = tSysInfo.dwNumberOfProcessors;
+		#endif
+
+		LOGEX(System, LOG_VERBOSE, "Found machine cores: %d", tResult);
+    }
 
     return tResult;
 }
@@ -137,48 +144,51 @@ int System::GetMachineCores()
  */
 string System::GetMachineType()
 {
-    string tResult = "unknown";
+    string tResult = "";
 
-    #if defined(LINUX) || defined(APPLE) || defined(BSD)
-        struct utsname tInfo;
-        uname(&tInfo);
+    if (tResult == "")
+    {
+		#if defined(LINUX) || defined(APPLE) || defined(BSD)
+			struct utsname tInfo;
+			uname(&tInfo);
 
-        if (tInfo.machine != NULL)
-        {
-            string tType = string(tInfo.machine);
-            if(tType == "i686")
-                tResult = "x86";
-            if(tType == "x86_64")
-                tResult = "amd64";
-        }
-    #endif
-    #ifdef WIN32
-        SYSTEM_INFO tSysInfo;
+			if (tInfo.machine != NULL)
+			{
+				string tType = string(tInfo.machine);
+				if(tType == "i686")
+					tResult = "x86";
+				if(tType == "x86_64")
+					tResult = "amd64";
+			}
+		#endif
+		#ifdef WIN32
+			SYSTEM_INFO tSysInfo;
 
-        GetSystemInfo(&tSysInfo);
+			GetSystemInfo(&tSysInfo);
 
-        switch(tSysInfo.wProcessorArchitecture)
-        {
-            case PROCESSOR_ARCHITECTURE_AMD64:
-                tResult = "amd64";
-                break;
-            case PROCESSOR_ARCHITECTURE_IA64:
-                tResult = "ia-64";
-                break;
-            case PROCESSOR_ARCHITECTURE_INTEL:
-                tResult = "x86";
-                break;
-            case PROCESSOR_ARCHITECTURE_UNKNOWN:
-                LOGEX(System, LOG_VERBOSE, "Windows reported unknown machine architecture");
-                tResult = "unknown";
-                break;
-            default:
-                LOGEX(System, LOG_ERROR, "Unsupported result code");
-                break;
-        }
-    #endif
+			switch(tSysInfo.wProcessorArchitecture)
+			{
+				case PROCESSOR_ARCHITECTURE_AMD64:
+					tResult = "amd64";
+					break;
+				case PROCESSOR_ARCHITECTURE_IA64:
+					tResult = "ia-64";
+					break;
+				case PROCESSOR_ARCHITECTURE_INTEL:
+					tResult = "x86";
+					break;
+				case PROCESSOR_ARCHITECTURE_UNKNOWN:
+					LOGEX(System, LOG_VERBOSE, "Windows reported unknown machine architecture");
+					tResult = "unknown";
+					break;
+				default:
+					LOGEX(System, LOG_ERROR, "Unsupported result code");
+					break;
+			}
+		#endif
 
-    LOGEX(System, LOG_VERBOSE, "Found machine type \"%s\"", tResult.c_str());
+		LOGEX(System, LOG_VERBOSE, "Found machine type \"%s\"", tResult.c_str());
+    }
 
     return tResult;
 }
