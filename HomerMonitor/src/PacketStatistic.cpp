@@ -150,18 +150,15 @@ void PacketStatistic::AnnouncePacket(int pSize)
     mDataRateHistoryMutex.lock();
     int64_t tTime3 = Time::GetTimeStamp();
 
-    while (mDataRateHistory.size() > STATISTIC_MOMENT_DATARATE_HISTORY)
+    if (mDataRateHistory.size() > STATISTIC_MOMENT_DATARATE_HISTORY)
     {
         if (mFirstDataRateHistoryLoss)
         {
             mFirstDataRateHistoryLoss = false;
-            LOG(LOG_WARN, "List with measured values of data rate history has reached limit of %d entries", STATISTIC_MOMENT_DATARATE_HISTORY);
+            LOG(LOG_WARN, "List with measured values of data rate history has reached limit of %d entries, stopping measurement", STATISTIC_MOMENT_DATARATE_HISTORY);
         }
-        mDataRateHistory.erase(mDataRateHistory.begin());
-        LOG(LOG_VERBOSE, "Dropping measurement data ");
-    }
-
-    mDataRateHistory.push_back(tHistEntry);
+    }else
+        mDataRateHistory.push_back(tHistEntry);
 
     mDataRateHistoryMutex.unlock();
     #ifdef STATISTIC_DEBUG_TIMING
