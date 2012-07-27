@@ -190,19 +190,12 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
                         LOG(LOG_VERBOSE, "Resolution %d*%d supported by H.261", pResX, pResY);
                     }else
                     {
-                        LOG(LOG_WARN, "Resolution %d*%d unsupported by H.261, will switch to default resolution of 352*288", pResX, pResY);
+                        if ((pResX != -1) && (pResY != -1))
+                        	LOG(LOG_WARN, "Resolution %d*%d unsupported by H.261, will switch to default resolution of 352*288", pResX, pResY);
                         tResX = 352;
                         tResY = 288;
                         break;
                     }
-                    if (pResX > 352)
-                        tResX = 352;
-                    if (pResX < 176)
-                        tResX = 176;
-                    if (pResY > 288)
-                        tResY = 288;
-                    if (pResY < 144)
-                        tResY = 144;
                     break;
             case CODEC_ID_H263:  // supports SQCIF, QCIF, CIF, CIF4,CIF16
                     if (((pResX == 128) && (pResY == 96)) || ((pResX == 176) && (pResY == 144)) || ((pResX == 352) && (pResY == 288)) || ((pResX == 704) && (pResY == 576)) || ((pResX == 1408) && (pResY == 1152)))
@@ -210,19 +203,12 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
                         LOG(LOG_VERBOSE, "Resolution %d*%d supported by H.263", pResX, pResY);
                     }else
                     {
-                        LOG(LOG_WARN, "Resolution %d*%d unsupported by H.263, will switch to default resolution of 352*288", pResX, pResY);
+                        if ((pResX != -1) && (pResY != -1))
+                        	LOG(LOG_WARN, "Resolution %d*%d unsupported by H.263, will switch to default resolution of 352*288", pResX, pResY);
                         tResX = 352;
                         tResY = 288;
                         break;
                     }
-                    if (pResX > 704)
-                        tResX = 704;
-                    if (pResX < 176)
-                        tResX = 176;
-                    if (pResY > 576)
-                        tResY = 576;
-                    if (pResY < 144)
-                        tResY = 144;
                     break;
             case CODEC_ID_H263P:
             default:
@@ -230,7 +216,10 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
         }
         if ((tResX != pResX) || (tResY != pResY))
         {
-            LOG(LOG_WARN, "Codec doesn't support selected video resolution, changed resolution from %d*%d to %d*%d", pResX, pResY, tResX, tResY);
+            if ((pResX != -1) && (pResY != -1))
+            	LOG(LOG_WARN, "Codec doesn't support selected video resolution, changed resolution from %d*%d to %d*%d", pResX, pResY, tResX, tResY);
+            else
+            	LOG(LOG_VERBOSE, "Selected auto-detect resolution %d*%d", tResX, tResY);
             pResX = tResX;
             pResY = tResY;
         }
@@ -247,7 +236,7 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
         (GetRtpActivation() != pRtpActivated) ||
         (mStreamQuality != pMediaStreamQuality) ||
         (mStreamMaxPacketSize != pMaxPacketSize) ||
-        ((mCurrentStreamingResX != pResX) &&  (pResX != -1)) || ((mCurrentStreamingResY != pResY) && (pResY != -1)))
+        (mCurrentStreamingResX != pResX) || (mCurrentStreamingResY != pResY))
     {
         LOG(LOG_VERBOSE, "Setting new %s streaming preferences", GetMediaTypeStr().c_str());
 
