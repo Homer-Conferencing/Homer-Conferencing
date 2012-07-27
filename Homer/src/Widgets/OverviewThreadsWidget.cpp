@@ -53,7 +53,7 @@ OverviewThreadsWidget::OverviewThreadsWidget(QAction *pAssignedAction, QMainWind
 {
     mAssignedAction = pAssignedAction;
     mTimerId = -1;
-    mSummarizeCpuCores = true;
+    mScaleToOneCpuCore = true;
     mCpuCores = System::GetMachineCores();
 
     initializeGUI();
@@ -114,17 +114,17 @@ void OverviewThreadsWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEven
 
     QMenu tMenu(this);
 
-    tAction = tMenu.addAction("Summarize cpu cores");
+    tAction = tMenu.addAction("Scale to one cpu core");
     tAction->setCheckable(true);
-    tAction->setChecked(mSummarizeCpuCores);
+    tAction->setChecked(mScaleToOneCpuCore);
 
     QAction* tPopupRes = tMenu.exec(pContextMenuEvent->globalPos());
     if (tPopupRes != NULL)
     {
-        if (tPopupRes->text().compare("Summarize cpu cores") == 0)
+        if (tPopupRes->text().compare("Scale to one cpu core") == 0)
         {
-            mSummarizeCpuCores = !mSummarizeCpuCores;
-            LOG(LOG_VERBOSE, "Cpu cores are summarized: %d", mSummarizeCpuCores);
+            mScaleToOneCpuCore = !mScaleToOneCpuCore;
+            LOG(LOG_VERBOSE, "Scale to one cpu core: %d", mScaleToOneCpuCore);
             UpdateView();
             return;
         }
@@ -164,9 +164,9 @@ void OverviewThreadsWidget::FillRow(int pRow, ProcessStatistic *pStats)
 {
 	ThreadStatisticDescriptor tStatValues = pStats->GetThreadStatistic();
 
-	int tCpuCores = 1;
-	if (mSummarizeCpuCores)
-	    tCpuCores = mCpuCores;
+	int tScaleFactor = 1;
+	if (mScaleToOneCpuCore)
+	    tScaleFactor = mCpuCores;
 
 	if (pRow > mTwThreads->rowCount() - 1)
         mTwThreads->insertRow(mTwThreads->rowCount());
@@ -186,9 +186,9 @@ void OverviewThreadsWidget::FillRow(int pRow, ProcessStatistic *pStats)
     FillCellText(pRow, 6, QString("%1").arg(tStatValues.Priority));
     FillCellText(pRow, 7, Int2ByteExpression(tStatValues.MemVirtual) + " bytes");
     FillCellText(pRow, 8, Int2ByteExpression(tStatValues.MemPhysical) + " bytes");
-    FillCellText(pRow, 9, QString("%1 %").arg(tStatValues.LoadUser * tCpuCores, 0, 'f', 2));
-    FillCellText(pRow, 10, QString("%1 %").arg(tStatValues.LoadSystem * tCpuCores, 0, 'f', 2));
-    FillCellText(pRow, 11, QString("%1 %").arg(tStatValues.LoadTotal * tCpuCores, 0, 'f', 2));
+    FillCellText(pRow, 9, QString("%1 %").arg(tStatValues.LoadUser * tScaleFactor, 0, 'f', 2));
+    FillCellText(pRow, 10, QString("%1 %").arg(tStatValues.LoadSystem * tScaleFactor, 0, 'f', 2));
+    FillCellText(pRow, 11, QString("%1 %").arg(tStatValues.LoadTotal * tScaleFactor, 0, 'f', 2));
     FillCellText(pRow, 12, QString("%1").arg(pRow));
 }
 

@@ -41,8 +41,7 @@ ProcessStatistic::ProcessStatistic(int pThreadId)
     mName = "hidden thread";
     mLastUserTicsThread = 0;
     mLastKernelTicsThread = 0;
-    mLastUserTicsSystem = 0;
-    mLastKernelTicsSystem = 0;
+    mLastSystemTime = 0;
 }
 
 ProcessStatistic::~ProcessStatistic()
@@ -72,7 +71,7 @@ ThreadStatisticDescriptor ProcessStatistic::GetThreadStatistic()
 {
     ThreadStatisticDescriptor tStat;
 
-    Thread::GetThreadStatistic(mThreadId, tStat.MemVirtual, tStat.MemPhysical, tStat.Pid, tStat.PPid, tStat.LoadUser, tStat.LoadSystem, tStat.LoadTotal, tStat.Priority, tStat.PriorityBase, tStat.ThreadCount, mLastUserTicsThread, mLastKernelTicsThread, mLastUserTicsSystem, mLastKernelTicsSystem);
+    Thread::GetThreadStatistic(mThreadId, tStat.MemVirtual, tStat.MemPhysical, tStat.Pid, tStat.PPid, tStat.LoadUser, tStat.LoadSystem, tStat.LoadTotal, tStat.Priority, tStat.PriorityBase, tStat.ThreadCount, mLastUserTicsThread, mLastKernelTicsThread, mLastSystemTime);
     tStat.Tid = mThreadId;
 
     //LOG(LOG_VERBOSE, "Thread %d => %f total load", mThreadId, tStat.LoadTotal);

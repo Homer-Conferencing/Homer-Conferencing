@@ -68,7 +68,7 @@ private:
     QAction             *mAssignedAction;
     int                 mTimerId;
     int                 mSelectedRow;
-    bool                mSummarizeCpuCores;
+    bool                mScaleToOneCpuCore;
     int                 mCpuCores;
 };
 
