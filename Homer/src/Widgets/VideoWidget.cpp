@@ -1487,6 +1487,7 @@ void VideoWorkerThread::InitFrameBuffers()
 
         mFrameNumber[i] = 0;
 
+        LOG(LOG_VERBOSE, "Initiating frame buffer %d with resolution %d*%d", i, mResX, mResY);
         QImage tFrameImage = QImage((unsigned char*)mFrame[i], mResX, mResY, QImage::Format_RGB32);
         QPainter *tPainter = new QPainter(&tFrameImage);
         tPainter->setRenderHint(QPainter::TextAntialiasing, true);
