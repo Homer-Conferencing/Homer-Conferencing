@@ -75,7 +75,6 @@ protected:
     virtual void DoSendFragment(char* pData, unsigned int pSize);
 
     bool                mRtpActivated;
-    AVStream            *mCurrentStream;
 
 private:
     void BasicInit(string pTargetHost, unsigned int pTargetPort, enum MediaSinkType pType, bool pRtpActivated);
@@ -83,6 +82,8 @@ private:
     std::string         mCodec;
     bool                mStreamerOpened;
     bool                mWaitUntillFirstKeyFrame;
+    AVStream*			mIncomingAVStream;
+    AVCodecContext*	 	mIncomingAVStreamCodecContext;
     /* general transport */
     int                 mMaxNetworkPacketSize;
     bool                mBrokenPipe;

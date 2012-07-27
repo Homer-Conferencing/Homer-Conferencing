@@ -51,13 +51,14 @@ using namespace Homer::Base;
 void MediaSinkNet::BasicInit(string pTargetHost, unsigned int pTargetPort, enum MediaSinkType pType, bool pRtpActivated)
 {
 	mStreamFragmentCopyBuffer = NULL;
+	mIncomingAVStream = NULL;
+	mIncomingAVStreamCodecContext = NULL;
     mGAPIDataSocket = NULL;
     mDataSocket = NULL;
     mCodec = "unknown";
     mStreamerOpened = false;
     mBrokenPipe = false;
     mMaxNetworkPacketSize = 1280;
-    mCurrentStream = NULL;
     mTargetHost = pTargetHost;
     mTargetPort = pTargetPort;
     mRtpActivated = pRtpActivated;
@@ -181,7 +182,9 @@ bool MediaSinkNet::OpenStreamer(AVStream *pStream)
         OpenRtpEncoder(mTargetHost, mTargetPort, pStream);
 
     mStreamerOpened = true;
-    mCurrentStream = pStream;
+
+    mIncomingAVStream = pStream;
+	mIncomingAVStreamCodecContext = pStream->codec;
 
     return true;
 }
@@ -201,7 +204,9 @@ bool MediaSinkNet::CloseStreamer()
 
 void MediaSinkNet::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AVStream *pStream, bool pIsKeyFrame)
 {
-    // check for key frame if we wait for the first key frame
+	bool tResetNeeded = false;
+
+	// check for key frame if we wait for the first key frame
     if (mWaitUntillFirstKeyFrame)
     {
         if (!pIsKeyFrame)
@@ -210,6 +215,19 @@ void MediaSinkNet::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
         {
             LOG(LOG_VERBOSE, "Sending frame as first key frame to network sink");
             mWaitUntillFirstKeyFrame = false;
+        }
+    }
+
+    if (mIncomingAVStream != pStream)
+    {
+        LOG(LOG_VERBOSE, "Incoming AV stream changed from %p to %p (codec %s), resetting RTP streamer..", mIncomingAVStream, pStream, pStream->codec->codec->name);
+    	tResetNeeded = true;
+    }else
+    {
+        if (mIncomingAVStreamCodecContext != pStream->codec)
+        {
+            LOG(LOG_WARN, "Incoming AV stream unchanged but stream codec context changed from %p to %p (codec %s), resetting RTP streamer..", mIncomingAVStreamCodecContext, pStream->codec, pStream->codec->codec->name);
+        	tResetNeeded = true;
         }
     }
 
@@ -236,7 +254,7 @@ void MediaSinkNet::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
         }
 
         // stream changed
-        if (mCurrentStream != pStream)
+        if (tResetNeeded)
         {
             LOG(LOG_VERBOSE, "Restarting RTP encoder");
             CloseStreamer();
