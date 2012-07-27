@@ -2027,7 +2027,7 @@ int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFps)
         tResult = mFrameNumber[mFrameCurrentIndex];
         //printf("[%3lu %3lu %3lu] cur: %d grab: %d\n", mFrameNumber[0], mFrameNumber[1], mFrameNumber[2], mFrameCurrentIndex, mFrameGrabIndex);
     }else
-        LOG(LOG_WARN, "No current frame available, pending frames: %d, grab resolution invalid: %d, have to reset source: %d", mPendingNewFrames, mSetGrabResolutionAsap, mResetVideoSourceAsap);
+        LOG(LOG_WARN, "Can't deliver new frame, pending frames: %d, grab resolution invalid: %d, have to reset source: %d", mPendingNewFrames, mSetGrabResolutionAsap, mResetVideoSourceAsap);
 
     // unlock
     mDeliverMutex.unlock();
