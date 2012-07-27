@@ -56,7 +56,7 @@ public:
 public:
     virtual void ProcessPacket(char* pPacketData, unsigned int pPacketSize, AVStream *pStream, bool pIsKeyFrame) = 0;
 
-    std::string GetId() { return mMediaId; }
+    std::string GetId();
 
     /* FPS limitation */
     void SetMaxFps(int pMaxFps);
