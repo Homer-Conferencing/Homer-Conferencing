@@ -207,7 +207,7 @@ void OverviewPlaylistWidget::DelEntryDialog()
     }
 }
 
-static QString sAllLoadVideoFilter = "All supported formats (*.asf *.avi *.dv *.mkv *.mov *.mpg *.mpeg *.mp4 *.mp4a *.m3u *.swf *.vob *.wmv *.3gp)";
+static QString sAllLoadVideoFilter = "All supported formats (*.asf *.avi *.dv *.m4v *.mkv *.mov *.mpg *.mpeg *.mp4 *.mp4a *.m3u *.swf *.vob *.wmv *.3gp)";
 static QString sLoadVideoFilters = sAllLoadVideoFilter + ";;"\
                     "Advanced Systems Format (*.asf);;"\
                     "Audio Video Interleave Format (*.avi);;"\
@@ -215,7 +215,7 @@ static QString sLoadVideoFilters = sAllLoadVideoFilter + ";;"\
                     "Matroska Format (*.mkv);;"\
                     "MPEG-Program Stream Format (*.mpg *.mpeg);;"\
                     "Playlist file (*.m3u);;"\
-                    "Quicktime/MPEG4 Format (*.mov *.mp4 *.mp4a *.3gp);;"\
+                    "Quicktime/MPEG4 Format (*.m4v *.mov *.mp4 *.mp4a *.3gp);;"\
                     "Small Web Format (*.swf);;"\
                     "Video Object Format (*.vob);;" \
                     "Windows Media Video Format (*.wmv)";
@@ -243,10 +243,10 @@ QStringList OverviewPlaylistWidget::LetUserSelectVideoFile(QWidget *pParent, QSt
     return tResult;
 }
 
-static QString sAllSaveVideoFilter = "All supported formats (*.avi *.mov *.mp4 *.mp4a *.3gp)";
+static QString sAllSaveVideoFilter = "All supported formats (*.avi *.m4v *.mov *.mp4 *.mp4a *.3gp)";
 static QString sSaveVideoFilters = sAllSaveVideoFilter + ";;"\
                     "Audio Video Interleave Format (*.avi);;"\
-                    "Quicktime/MPEG4 Format (*.mov *.mp4 *.mp4a *.3gp)";
+                    "Quicktime/MPEG4 Format (*.m4v *.mov *.mp4 *.mp4a *.3gp)";
 
 QString OverviewPlaylistWidget::LetUserSelectVideoSaveFile(QWidget *pParent, QString pDescription)
 {
@@ -352,13 +352,13 @@ bool OverviewPlaylistWidget::IsAudioFile(QString pFileName)
         return false;
 }
 
-QString sAllLoadMovieFilter = "All supported formats (*.avi *.mkv *.mov *.mpeg *.mp4 *.mp4a *.m3u *.swf *.vob *.wmv *.3gp)";
+QString sAllLoadMovieFilter = "All supported formats (*.avi *.m4v *.mkv *.mov *.mpeg *.mp4 *.mp4a *.m3u *.swf *.vob *.wmv *.3gp)";
 QString sLoadMovieFilters =  sAllLoadMovieFilter + ";;"\
                     "Audio Video Interleave Format (*.avi);;"\
                     "Matroska Format (*.mkv);;"\
                     "MPEG-Program Stream Format (*.mpeg);;"\
                     "Playlist file (*.m3u);;"\
-                    "Quicktime/MPEG4 Format (*.mov *.mp4 *.mp4a *.3gp);;"\
+                    "Quicktime/MPEG4 Format (*.m4v *.mov *.mp4 *.mp4a *.3gp);;"\
                     "Small Web Format (*.swf);;"\
                     "Video Object Format (*.vob);;" \
                     "Windows Media Video Format (*.wmv)";
@@ -386,7 +386,7 @@ QStringList OverviewPlaylistWidget::LetUserSelectMovieFile(QWidget *pParent, QSt
     return tResult;
 }
 
-static QString sAllLoadMediaFilter = "All supported formats (*.asf *.avi *.dv *.mka *.mkv *.mov *.mpg *.mpeg *.mp3 *.mp4 *.mp4a *.m3u *.pls *.swf *.vob *.wav *.wmv *.3gp)";
+static QString sAllLoadMediaFilter = "All supported formats (*.asf *.avi *.dv *.m4v *.mka *.mkv *.mov *.mpg *.mpeg *.mp3 *.mp4 *.mp4a *.m3u *.pls *.swf *.vob *.wav *.wmv *.3gp)";
 static QString sLoadMediaFilters = sAllLoadMediaFilter + ";;"\
                     "Advanced Systems Format (*.asf);;"\
                     "Audio Video Interleave Format (*.avi);;"\
@@ -396,7 +396,7 @@ static QString sLoadMediaFilters = sAllLoadMediaFilter + ";;"\
                     "MPEG-Program Stream Format (*.mpg *.mpeg);;"\
                     "M3U Playlist file (*.m3u);;"\
                     "PLS Playlist file (*.pls);;"\
-                    "Quicktime/MPEG4 Format (*.mov *.mp4 *.mp4a *.3gp);;"\
+                    "Quicktime/MPEG4 Format (*.m4v *.mov *.mp4 *.mp4a *.3gp);;"\
                     "Small Web Format (*.swf);;"\
                     "Video Object Format (*.vob);;" \
                     "Waveform Audio File Format (*.wav)" \
