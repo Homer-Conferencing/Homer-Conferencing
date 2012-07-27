@@ -61,9 +61,12 @@ class ParticipantWidget;
 // de/activate automatic frame dropping in case the video widget is invisible (default is off)
 //#define VIDEO_WIDGET_DROP_WHEN_INVISIBLE
 
+// de/activate frame handling
+//#define VIDEO_WIDGET_DEBUG_FRAMES
+
 ///////////////////////////////////////////////////////////////////////////////
 
-#define FRAME_BUFFER_SIZE              5
+#define FRAME_BUFFER_SIZE              4
 
 #define FPS_MEASUREMENT_STEPS          60
 
