@@ -473,12 +473,15 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     MarkOpenGrabDeviceSuccessful();
     LOG(LOG_INFO, "    ..max packet size: %d bytes", mFormatContext->pb->max_packet_size);
     LOG(LOG_INFO, "  stream...");
+    LOG(LOG_INFO, "    ..AV stream context at: %p", mFormatContext->streams[0]);
+    LOG(LOG_INFO, "    ..AV stream codec is: %s(%d)", mFormatContext->streams[0]->codec->codec->name, mFormatContext->streams[0]->codec->codec_id);
+    LOG(LOG_INFO, "    ..AV stream codec context at: %p", mFormatContext->streams[0]->codec);
+    LOG(LOG_INFO, "    ..AV stream codec codec context at: %p", mFormatContext->streams[0]->codec->codec);
     if (mRtpActivated)
         LOG(LOG_INFO, "    ..rtp encapsulation: yes");
     else
         LOG(LOG_INFO, "    ..rtp encapsulation: no");
     LOG(LOG_INFO, "    ..max. packet size: %d bytes", mStreamMaxPacketSize);
-
     // unlock
     mMediaSinksMutex.unlock();
 
