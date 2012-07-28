@@ -321,10 +321,10 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             //###############################################################################
             if (mSmoothPresentation)
             {
-                tAction = tVideoMenu->addAction("Show smooth video");
+                tAction = tVideoMenu->addAction("Show fast video");
             }else
             {
-                tAction = tVideoMenu->addAction("Show fast video");
+                tAction = tVideoMenu->addAction("Show smooth video");
             }
             QList<QKeySequence> tSPKeys;
             tSPKeys.push_back(Qt::Key_S);
