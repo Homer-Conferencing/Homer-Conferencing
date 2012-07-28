@@ -41,7 +41,9 @@ MediaSink::MediaSink(enum MediaSinkType pType):
 {
     SetOutgoingStream();
     mPacketNumber = 0;
+    mMediaId = "";
     mMaxFps = 0;
+    mCodec = "";
     mMaxFpsTimestampLastFragment = 0;
     mMaxFpsFrameNumberLastFragment = 0;
     switch(pType)
