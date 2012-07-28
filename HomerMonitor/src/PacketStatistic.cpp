@@ -323,6 +323,32 @@ enum DataType PacketStatistic::GetDataType()
 	return mStreamDataType;
 }
 
+string PacketStatistic::GetDataTypeStr()
+{
+	string tResult = "";
+
+	switch(mStreamDataType)
+	{
+		case DATA_TYPE_VIDEO:
+			tResult = "VIDEO";
+			break;
+		case DATA_TYPE_AUDIO:
+			tResult = "AUDIO";
+			break;
+		case DATA_TYPE_FILE:
+			tResult = "FILE";
+			break;
+		case DATA_TYPE_GENDATA:
+			tResult = "DATA";
+			break;
+		default:
+			tResult = "N/A";
+			break;
+	}
+
+	return tResult;
+}
+
 enum TransportType PacketStatistic::GetTransportType()
 {
     return mStreamTransportType;
