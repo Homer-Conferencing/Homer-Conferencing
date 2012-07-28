@@ -255,17 +255,42 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
         printf("For updates visit http://www.homer-conferencing.com\n");
     #endif
 
+	QApplication *tApp = new QApplication(pArgc, pArgv);
+
+	QStringList tArguments = QCoreApplication::arguments();
+
+	if (tArguments.contains("-DebugLevel=Error"))
+	{
+		LOGGER.Init(LOG_ERROR);
+	}else
+	{
+		if (tArguments.contains("-DebugLevel=Info"))
+		{
+			LOGGER.Init(LOG_INFO);
+		}else
+		{
+			if (tArguments.contains("-DebugLevel=Verbose"))
+			{
+				LOGGER.Init(LOG_VERBOSE);
+			}else
+			{
+				#ifdef RELEASE_VERSION
+					LOGGER.Init(LOG_ERROR);
+				#else
+					LOGGER.Init(LOG_VERBOSE);
+				#endif
+			}
+		}
+	}
+
 	LOGEX(MainWindow, LOG_VERBOSE, "Setting Qt message handler");
 	qInstallMsgHandler(sQtDebugMessageOutput);
-
-    string tAbsBinPath;
-    LOGEX(MainWindow, LOG_VERBOSE, "Creating QApplication instance");
-    QApplication *tApp = new QApplication(pArgc, pArgv);
 
     // make sure every icon is visible within menus: otherwise the Ubuntu-packages will have no icons visible
     tApp->setAttribute(Qt::AA_DontShowIconsInMenus, false);
 
     // get the absolute path to our binary
+    string tAbsBinPath;
     if (pArgc > 0)
     {
     	string tArgv0 = "";
@@ -296,33 +321,6 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
         tSplashScreen.show();
         Thread::Suspend(2 * 1000 * 1000);
     #endif
-
-    QStringList tArguments = QCoreApplication::arguments();
-
-	LOGEX(MainWindow, LOG_VERBOSE, "Setting Logger parameters");
-    if (tArguments.contains("-DebugLevel=Error"))
-    {
-        LOGGER.Init(LOG_ERROR);
-    }else
-    {
-        if (tArguments.contains("-DebugLevel=Info"))
-        {
-            LOGGER.Init(LOG_INFO);
-        }else
-        {
-            if (tArguments.contains("-DebugLevel=Verbose"))
-            {
-                LOGGER.Init(LOG_VERBOSE);
-            }else
-            {
-                #ifdef RELEASE_VERSION
-                    LOGGER.Init(LOG_ERROR);
-                #else
-                    LOGGER.Init(LOG_VERBOSE);
-                #endif
-            }
-        }
-    }
 
     showMood();
 
