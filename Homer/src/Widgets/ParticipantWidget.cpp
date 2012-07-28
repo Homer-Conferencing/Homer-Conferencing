@@ -1184,12 +1184,16 @@ void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
     {
         mMovieControlsFrame->show();
         if (mMovieAudioControlsFrame->isHidden())
+        {
             mMovieAudioControlsFrame->show();
+        }
     }else
     {
         mMovieControlsFrame->hide();
         if (mAudioWidget->isHidden())
+        {
             mMovieAudioControlsFrame->hide();
+        }
     }
 
     if ((pEvent->timerId() == mTimerId) && (tShowMovieControls))
@@ -1212,8 +1216,9 @@ void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
         else
             tTmp = 0;
 
-        // update GUI widgets
-        mSlMovie->setValue(tTmp);
+        // update movie slider only if user doesn't currently adjust the playback position
+        if (!mSlMovie->isSliderDown())
+        	mSlMovie->setValue(tTmp);
         ShowStreamPosition(tCurPos, tEndPos);
     }
 }
