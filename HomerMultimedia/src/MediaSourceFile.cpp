@@ -230,7 +230,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
             mDuration = mFormatContext->streams[mMediaStreamIndex]->nb_frames;
         else
             if (mFormatContext->duration > 0)
-                mDuration = mFormatContext->duration;
+                mDuration = mFormatContext->duration / AV_TIME_BASE; //TODO: value is in seconds, should be related to time base!
             else
                 mDuration = 0;
 
@@ -1202,8 +1202,8 @@ bool MediaSourceFile::SupportsSeeking()
 
 int64_t MediaSourceFile::GetSeekEnd()
 {
-    if (mFrameRate != 0)
-        return (mDuration / ((int64_t)mFrameRate));
+    if (mFormatContext != NULL)
+        return (mFormatContext->duration / AV_TIME_BASE);
     else
         return 0;
 }
