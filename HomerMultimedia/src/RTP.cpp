@@ -402,6 +402,8 @@ RTP::RTP()
     mUseInternalEncoder = false;
     mRtpPacketStream = NULL;
     mRtpPacketBuffer = NULL;
+    mTargetHost = "";
+    mTargetPort = 0;
     // set SRC to 0 as ffmpeg does
     mSsrc = 0;
 }

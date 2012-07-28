@@ -1043,7 +1043,7 @@ MediaSinkFile* MediaSource::RegisterMediaSink(string pTargetFile)
 
     if (!tFound)
     {
-        MediaSinkFile *tMediaSinkFile = new MediaSinkFile(pTargetFile, (mMediaType == MEDIA_VIDEO)?MEDIA_SINK_VIDEO:MEDIA_SINK_AUDIO);
+        MediaSinkFile *tMediaSinkFile = new MediaSinkFile(pTargetFile, (mMediaType == MEDIA_VIDEO)?MEDIA_SINK_VIDEO:MEDIA_SINK_AUDIO, mRtpActivated);
         mMediaSinks.push_back(tMediaSinkFile);
         tResult = tMediaSinkFile;
     }

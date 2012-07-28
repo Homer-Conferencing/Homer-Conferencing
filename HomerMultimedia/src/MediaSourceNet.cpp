@@ -380,7 +380,7 @@ void* MediaSourceNet::Run(void* pArgs)
     }while(!mGrabbingStopped);
 
     mListenerRunning = false;
-    LOG(LOG_VERBOSE, "%s Socket-Listener for port %u stopped", GetMediaTypeStr().c_str(), getListenerPort());
+    LOG(LOG_VERBOSE, "%s Socket-Listener for port %u finished", GetMediaTypeStr().c_str(), getListenerPort());
 
     return NULL;
 }

@@ -1348,7 +1348,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
         }
     }
 
-    LOG(LOG_VERBOSE, "Encoder loop finished");
+    LOG(LOG_VERBOSE, "Encoder thread finished");
 
     return NULL;
 }
