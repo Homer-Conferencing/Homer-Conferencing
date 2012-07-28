@@ -1712,6 +1712,7 @@ bool VideoWorkerThread::SupportsSeeking()
 
 void VideoWorkerThread::Seek(int64_t pPos)
 {
+	LOG(LOG_VERBOSE, "Seeking to position: %ld", pPos);
     mSeekPos = pPos;
     mSeekAsap = true;
     mGrabbingCondition.wakeAll();
@@ -1724,7 +1725,12 @@ int64_t VideoWorkerThread::GetSeekPos()
 
 int64_t VideoWorkerThread::GetSeekEnd()
 {
-    return mVideoSource->GetSeekEnd();
+	int64_t tResult = 0;
+
+    tResult = mVideoSource->GetSeekEnd();
+    //LOG(LOG_VERBOSE, "Determined seek end with %ld", tResult);
+
+    return tResult;
 }
 
 bool VideoWorkerThread::SupportsMultipleChannels()

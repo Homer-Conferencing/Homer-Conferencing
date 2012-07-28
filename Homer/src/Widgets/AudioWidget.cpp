@@ -1132,6 +1132,7 @@ bool AudioWorkerThread::SupportsSeeking()
 
 void AudioWorkerThread::Seek(int64_t pPos)
 {
+	LOG(LOG_VERBOSE, "Seeking to position: %ld", pPos);
     mSeekPos = pPos;
     mSeekAsap = true;
     mGrabbingCondition.wakeAll();
@@ -1144,7 +1145,12 @@ int64_t AudioWorkerThread::GetSeekPos()
 
 int64_t AudioWorkerThread::GetSeekEnd()
 {
-    return mAudioSource->GetSeekEnd();
+	int64_t tResult = 0;
+
+    tResult = mAudioSource->GetSeekEnd();
+    //LOG(LOG_VERBOSE, "Determined seek end with %ld", tResult);
+
+    return tResult;
 }
 
 bool AudioWorkerThread::SupportsMultipleChannels()
