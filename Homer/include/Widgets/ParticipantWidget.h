@@ -136,6 +136,7 @@ private slots:
     void PauseMovieFile();
 	void LookedUpParticipantHost(const QHostInfo &pHost);
 	void SeekMovieFile(int pPos);
+	void SeekMovieFileToPos(int pPos);
 
 private:
     void OpenPlaybackDevice();
@@ -148,6 +149,7 @@ private:
     virtual void dropEvent(QDropEvent *pEvent);
     virtual void wheelEvent(QWheelEvent *pEvent);
     virtual void timerEvent(QTimerEvent *pEvent);
+
     void ShowNewState();
     void ShowStreamPosition(int64_t tCurPos, int64_t tEndPos);
     void CallStopped(bool pIncoming);
@@ -171,6 +173,7 @@ private:
     MediaSource         *mVideoSource, *mAudioSource;
     Socket				*mVideoSendSocket, *mAudioSendSocket, *mVideoReceiveSocket, *mAudioReceiveSocket;
     int                 mTimerId;
+    int					mMovieSliderPosition;
     /* playback */
     Homer::Multimedia::WaveOut *mWaveOut;
 };

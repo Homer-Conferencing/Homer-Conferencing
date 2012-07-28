@@ -263,7 +263,7 @@ background-color: rgb(150, 150, 150);
                </spacer>
               </item>
               <item>
-               <widget class="QSlider" name="mSlMovie">
+               <widget class="Homer::Gui::PlaybackSlider" name="mSlMovie">
                 <property name="minimumSize">
                  <size>
                   <width>100</width>
@@ -302,6 +302,9 @@ background-color: rgb(150, 150, 150);
                 </property>
                 <property name="tickPosition">
                  <enum>QSlider::TicksBelow</enum>
+                </property>
+                <property name="tickInterval">
+                 <number>100</number>
                 </property>
                </widget>
               </item>
@@ -648,6 +651,11 @@ p, li { white-space: pre-wrap; }
    <extends>QWidget</extends>
    <header location="global">Widgets/AudioWidget.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Homer::Gui::PlaybackSlider</class>
+   <extends>QSlider</extends>
+   <header location="global">Widgets/PlaybackSlider.h</header>
   </customwidget>
  </customwidgets>
  <resources>

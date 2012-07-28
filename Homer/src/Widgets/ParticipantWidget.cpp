@@ -75,6 +75,7 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
 
     hide();
     mMainWindow = pMainWindow;
+    mMovieSliderPosition = 0;
     mRemoteVideoAdr = "";
     mRemoteAudioAdr = "";
     mRemoteVideoPort = 0;
@@ -158,7 +159,7 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
     connect(mTbPlay, SIGNAL(clicked()), this, SLOT(PlayMovieFile()));
     connect(mTbPause, SIGNAL(clicked()), this, SLOT(PauseMovieFile()));
     connect(mSlMovie, SIGNAL(sliderMoved(int)), this, SLOT(SeekMovieFile(int)));
-
+    connect(mSlMovie, SIGNAL(valueChanged(int)), this, SLOT(SeekMovieFileToPos(int)));
 
     //####################################################################
     //### create additional widget and allocate resources
@@ -1127,8 +1128,20 @@ void ParticipantWidget::PauseMovieFile()
 
 void ParticipantWidget::SeekMovieFile(int pPos)
 {
+	LOG(LOG_VERBOSE, "User moved playback slider to position %d", pPos);
     mVideoWidget->GetWorker()->Seek(mVideoWidget->GetWorker()->GetSeekEnd() * pPos / 1000);
     mAudioWidget->GetWorker()->Seek(mAudioWidget->GetWorker()->GetSeekEnd() * pPos / 1000);
+}
+
+void ParticipantWidget::SeekMovieFileToPos(int pPos)
+{
+	//LOG(LOG_VERBOSE, "Value of playback slider changed to %d", pPos);
+	if (mMovieSliderPosition != pPos)
+	{
+		LOG(LOG_VERBOSE, "User clicked playback slider at position %d", pPos);
+	    mVideoWidget->GetWorker()->Seek(mVideoWidget->GetWorker()->GetSeekEnd() * pPos / 1000);
+	    mAudioWidget->GetWorker()->Seek(mAudioWidget->GetWorker()->GetSeekEnd() * pPos / 1000);
+	}
 }
 
 VideoWorkerThread* ParticipantWidget::GetVideoWorker()
@@ -1216,10 +1229,15 @@ void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
         else
             tTmp = 0;
 
+        //LOG(LOG_VERBOSE, "Updating slider position, slider is down: %d", mSlMovie->isSliderDown());
+
         // update movie slider only if user doesn't currently adjust the playback position
         if (!mSlMovie->isSliderDown())
+        {
+        	mMovieSliderPosition = tTmp;
         	mSlMovie->setValue(tTmp);
-        ShowStreamPosition(tCurPos, tEndPos);
+        }
+		ShowStreamPosition(tCurPos, tEndPos);
     }
 }
 
