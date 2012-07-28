@@ -1215,7 +1215,7 @@ bool MediaSourceFile::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
 
     if ((pSeconds < 0) || (pSeconds > tSeekEnd))
     {
-        LOG(LOG_ERROR, "Seek position is out of range (%ld/%ld) for %s file", pSeconds, tSeekEnd, GetMediaTypeStr().c_str());
+        LOG(LOG_ERROR, "%s-seek position is out of range (%ld/%ld) for %s file", GetMediaTypeStr().c_str(), pSeconds, tSeekEnd, GetMediaTypeStr().c_str());
         return false;
     }
 
@@ -1237,7 +1237,7 @@ bool MediaSourceFile::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
 
     if ((tAbsoluteTimestamp >= 0) && (tAbsoluteTimestamp <= mDuration))
     {
-        LOG(LOG_VERBOSE, "Seeking to second %ld, current pts is %ld", pSeconds, mCurPts);
+        LOG(LOG_VERBOSE, "%s-seeking to second %ld, current pts is %ld", GetMediaTypeStr().c_str(), pSeconds, mCurPts);
 
         // seek only if it is necessary
         if (pSeconds != GetSeekPos())
@@ -1256,7 +1256,7 @@ bool MediaSourceFile::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
             mDecoderNeedWorkCondition.SignalAll();
             mDecoderMutex.unlock();
         }else
-            LOG(LOG_VERBOSE, "Seeking in file skipped because position is already the desired one");
+            LOG(LOG_VERBOSE, "%s-seeking in file skipped because position is already the desired one", GetMediaTypeStr().c_str());
 
         // adopt the stored pts value which represent the start of the media presentation in real-time useconds
         int64_t tFrameNumber = tAbsoluteTimestamp - mSourceStartPts;
