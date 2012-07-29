@@ -1342,7 +1342,7 @@ bool MediaSourceFile::SeekRelative(int64_t pSeconds, bool pOnlyKeyFrames)
 int64_t MediaSourceFile::GetSeekPos()
 {
 	int64_t tSeekEnd = GetSeekEnd();
-	if (tSeekEnd > 0)
+	if (mNumberOfFrames > 0)
         return (tSeekEnd * mCurPts / mNumberOfFrames);
     else
         return 0;
