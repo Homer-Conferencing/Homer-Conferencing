@@ -755,68 +755,6 @@ void AudioWidget::customEvent(QEvent* pEvent)
 }
 
 //####################################################################
-//###################### BUFFER ######################################
-//####################################################################
-AudioBuffer::AudioBuffer(QObject * pParent):
-    QBuffer(pParent)
-{
-    if (!open(QIODevice::ReadWrite))
-        LOG(LOG_ERROR, "Unable to open audio buffer");
-    seek(0);
-    LOG(LOG_VERBOSE, "Audio buffer is sequential: %d", isSequential());
-}
-AudioBuffer::~AudioBuffer()
-{
-    close();
-}
-
-qint64 AudioBuffer::readData(char * pData, qint64 pLen)
-{
-    qint64 tResult = -1;
-    //printf("Got a call to read %d bytes at %p from audio buffer\n", (int)pLen, pData);
-
-    mMutex.lock();
-    qint64 tPos = pos();
-    seek(0);
-    tResult =  QBuffer::readData(pData, pLen);
-    seek(tPos);
-
-    if(tResult > 0)
-    {
-        close();
-        setData(buffer().right(size() - tResult));
-        if (!open(QIODevice::ReadWrite))
-            LOG(LOG_ERROR, "Unable to open audio buffer");
-
-        printf("READ(%d): ", (int)tResult);
-        for (int i = 0; i < 92; i++)
-            printf("%hx ", 0xFF & pData[i]);
-        printf("\n");
-    }
-    mMutex.unlock();
-
-    return tResult;
-}
-
-qint64 AudioBuffer::writeData(const char * pData, qint64 pLen)
-{
-    qint64 tResult = 0;
-    //printf("Got a call to write data to audio buffer\n");
-    mMutex.lock();
-    tResult =  QBuffer::writeData(pData, pLen);
-    printf("WRITE(%d to %d => %d): ", (int)tResult, (int)pos(), (int)size());
-    for (int i = 0; i < 92; i++)
-        printf("%hx ", 0xFF & pData[i]);
-    printf("\n");
-    //LOG(LOG_VERBOSE, "New pos: %d", pos());
-    if (tResult == -1)
-        LOG(LOG_ERROR, "Error in writeData: %s", errorString().toStdString().c_str());
-    mMutex.unlock();
-    return tResult;
-}
-
-
-//####################################################################
 //###################### WORKER ######################################
 //####################################################################
 AudioWorkerThread::AudioWorkerThread(MediaSource *pAudioSource, AudioWidget *pAudioWidget):
@@ -927,14 +865,25 @@ void AudioWorkerThread::ToggleMuteState(bool pState)
 
 void AudioWorkerThread::SetVolume(int pValue)
 {
-	if (!mPlaybackAvailable)
-	{
-		LOG(LOG_VERBOSE, "Playback device isn't available");
-		return;
-	}
+	if (mAudioWidget->GetVolume() != pValue)
+	{// call from outside
+		mAudioWidget->SetVolume(pValue);
+	}else
+	{// call from audio widget
+		if (!mPlaybackAvailable)
+		{
+			LOG(LOG_VERBOSE, "Playback device isn't available");
+			return;
+		}
 
-	if (mWaveOut != NULL)
-	    mWaveOut->SetVolume(pValue);
+		if (mWaveOut != NULL)
+		    mWaveOut->SetVolume(pValue);
+	}
+}
+
+int AudioWorkerThread::GetVolume()
+{
+	return mAudioWidget->GetVolume();
 }
 
 void AudioWorkerThread::SetMuteState(bool pMuted)

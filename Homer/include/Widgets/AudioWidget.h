@@ -80,7 +80,7 @@ public:
     void InformAboutNewSamples();
     void InformAboutNewMuteState();
     AudioWorkerThread* GetWorker();
-    void SetVolume(int pValue); // 0-200 %
+    void SetVolume(int pValue); // 0-300 %
     int GetVolume();
 
 public slots:
@@ -116,22 +116,6 @@ private:
     int                 mLastSampleNumber;
     AudioWorkerThread   *mAudioWorker;
     MediaSource         *mAudioSource;
-};
-
-
-class AudioBuffer:
-    public QBuffer
-{
-public:
-    AudioBuffer(QObject * pParent = NULL);
-    ~AudioBuffer();
-
-protected:
-    virtual qint64 readData(char * pData, qint64 pLen);
-    virtual qint64 writeData(const char * pData, qint64 pLen);
-
-private:
-    QMutex              mMutex;
 };
 
 class AudioWorkerThread:
@@ -176,7 +160,6 @@ public:
     int64_t GetSeekEnd();
 
     /* multiple channels control */
-    /* multiple channels control */
     bool SupportsMultipleChannels();
     QString GetCurrentChannel();
     void SelectInputChannel(int pIndex);
@@ -189,6 +172,7 @@ public:
     /* audio playback control */
     void SetMuteState(bool pMuted);
     bool GetMuteState();
+    int GetVolume();
     bool IsPlaybackAvailable();
 
 public slots:
