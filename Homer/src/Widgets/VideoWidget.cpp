@@ -908,18 +908,13 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
     }
 
     //#############################################################
-    //### draw status text per OSD
+    //### draw muted icon
     //#############################################################
-	// are we a fullscreen widget?
-	if ((windowState() & Qt::WindowFullScreen) && (mOsdStatusMessage != "") && (Time::GetTimeStamp() < mOsdStatusMessageTimeout))
-	{
-        QFont tFont1 = QFont("Arial", 32, QFont::Bold);
-        tFont1.setFixedPitch(true);
-        tPainter->setRenderHint(QPainter::TextAntialiasing, true);
-        tPainter->setFont(tFont1);
-        tPainter->setPen(QColor(Qt::white));
-		tPainter->drawText(5, 200, mOsdStatusMessage);
-	}
+    if ((mParticipantWidget->GetAudioWorker()->GetMuteState()) and (tMSecs % 500 < 250))
+    {
+        QPixmap tPixmap = QPixmap(":/images/22_22/SpeakerMuted.png");
+        tPainter->drawPixmap(50, 10, tPixmap);
+    }
 
     delete tPainter;
     setUpdatesEnabled(true);
@@ -1308,6 +1303,33 @@ void VideoWidget::paintEvent(QPaintEvent *pEvent)
     if ((mCurrentFrame.width() <= width()) && (mCurrentFrame.height() <= height()))
         tPainter.drawImage((width() - mCurrentFrame.width()) / 2, (height() - mCurrentFrame.height()) / 2, mCurrentFrame);
 
+    //#############################################################
+    //### draw status text per OSD
+    //#############################################################
+	// are we a fullscreen widget?
+	if ((windowState() & Qt::WindowFullScreen) && (mOsdStatusMessage != "") && (Time::GetTimeStamp() < mOsdStatusMessageTimeout))
+	{
+		// define font for OSD text
+		QFont tFont1 = QFont("Arial", 26, QFont::Light);
+        tFont1.setFixedPitch(true);
+        tPainter.setRenderHint(QPainter::TextAntialiasing, true);
+        tPainter.setFont(tFont1);
+
+        // select color white
+        tPainter.setPen(QColor(Qt::white));
+
+        // calculate text width and height
+	    QFontMetrics tFm = tPainter.fontMetrics();
+	    int tTextWidth = tFm.width(mOsdStatusMessage);
+	    int tTextHeight = tFm.height();
+
+	    // draw OSD text
+	    if ((tTextWidth > width()) || (tTextHeight > height()))
+			tPainter.drawText(5, 40, mOsdStatusMessage);
+	    else
+	    	tPainter.drawText((width() - tTextWidth) / 2, tTextHeight, mOsdStatusMessage);
+	}
+
     pEvent->accept();
 }
 
@@ -1358,7 +1380,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
         	ShowOsdMessage("Audio output active");
 		return;
     }
-    if (pEvent->key() == Qt::Key_Space)
+    if ((pEvent->key() == Qt::Key_Space) || (pEvent->key() == Qt::Key_MediaTogglePlayPause) || (pEvent->key() == Qt::Key_MediaPlay) || (pEvent->key() == Qt::Key_Play))
     {
         if ((mVideoWorker->IsPaused()) || ((mParticipantWidget->GetAudioWorker() != NULL) && (mParticipantWidget->GetAudioWorker()->IsPaused())))
         {
@@ -1399,7 +1421,7 @@ void VideoWidget::wheelEvent(QWheelEvent *pEvent)
     int tNewVolumeValue = mParticipantWidget->GetAudioWorker()->GetVolume() + tOffset;
     if ((tNewVolumeValue > 0) && (tNewVolumeValue <= 300))
     {
-        ShowOsdMessage("Volume set to " + QString("%1 %").arg(tNewVolumeValue));
+        ShowOsdMessage("Volume: " + QString("%1 %").arg(tNewVolumeValue));
         mParticipantWidget->GetAudioWorker()->SetVolume(tNewVolumeValue);
     }
 }
