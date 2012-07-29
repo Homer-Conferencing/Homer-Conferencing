@@ -67,9 +67,9 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef USE_NATIVE_DIALOGS
-	#define CONF_NATIVE_DIALOGS			0
+	#define CONF_NATIVE_DIALOGS			(QFileDialog::DontResolveSymlinks)
 #else
-	#define CONF_NATIVE_DIALOGS			QFileDialog::DontUseNativeDialog
+	#define CONF_NATIVE_DIALOGS			(QFileDialog::DontResolveSymlinks | FileDialog::DontUseNativeDialog)
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////

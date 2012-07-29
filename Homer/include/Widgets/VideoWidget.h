@@ -66,6 +66,7 @@ class ParticipantWidget;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define VIDEO_WIDGET_OSD_PERIOD	       3 // seconds
 #define FRAME_BUFFER_SIZE              4
 
 #define FPS_MEASUREMENT_STEPS          60
@@ -123,6 +124,9 @@ private:
     void ShowFullScreen();
     bool SetOriginalResolution();
 
+    /* status message per OSD text */
+    void ShowOsdMessage(QString pText);
+
     virtual void paintEvent(QPaintEvent *pEvent);
     virtual void resizeEvent(QResizeEvent *pEvent);
     virtual void keyPressEvent(QKeyEvent *pEvent);
@@ -161,6 +165,9 @@ private:
     int                 mPendingNewFrameSignals;
     ParticipantWidget   *mParticipantWidget;
     int64_t 			mPaintEventCounter;
+    /* status messages per OSD text */
+    QString				mOsdStatusMessage;
+    int64_t				mOsdStatusMessageTimeout;
 };
 
 

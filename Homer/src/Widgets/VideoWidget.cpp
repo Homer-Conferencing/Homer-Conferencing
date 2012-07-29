@@ -907,6 +907,20 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
         tPainter->drawPixmap(30, 10, tPixmap);
     }
 
+    //#############################################################
+    //### draw status text per OSD
+    //#############################################################
+	// are we a fullscreen widget?
+	if ((windowState() & Qt::WindowFullScreen) && (mOsdStatusMessage != "") && (Time::GetTimeStamp() < mOsdStatusMessageTimeout))
+	{
+        QFont tFont1 = QFont("Arial", 32, QFont::Bold);
+        tFont1.setFixedPitch(true);
+        tPainter->setRenderHint(QPainter::TextAntialiasing, true);
+        tPainter->setFont(tFont1);
+        tPainter->setPen(QColor(Qt::white));
+		tPainter->drawText(5, 200, mOsdStatusMessage);
+	}
+
     delete tPainter;
     setUpdatesEnabled(true);
 
@@ -1003,6 +1017,12 @@ bool VideoWidget::SetOriginalResolution()
     }
 
     return tResult;
+}
+
+void VideoWidget::ShowOsdMessage(QString pText)
+{
+	mOsdStatusMessage = pText;
+	mOsdStatusMessageTimeout = Time::GetTimeStamp() + VIDEO_WIDGET_OSD_PERIOD * 1000 * 1000;
 }
 
 VideoWorkerThread* VideoWidget::GetWorker()
@@ -1108,6 +1128,10 @@ void VideoWidget::ToggleFullScreenMode()
 void VideoWidget::ToggleSmoothPresentationMode()
 {
     mSmoothPresentation = !mSmoothPresentation;
+    if (mSmoothPresentation)
+    	ShowOsdMessage("Bilinear filtering activated");
+    else
+    	ShowOsdMessage("Bilinear filtering deactivated");
 }
 
 void VideoWidget::ToggleVisibility()
@@ -1328,18 +1352,24 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
     if (pEvent->key() == Qt::Key_M)
     {
 		mParticipantWidget->GetAudioWorker()->SetMuteState(!mParticipantWidget->GetAudioWorker()->GetMuteState());
+        if (mParticipantWidget->GetAudioWorker()->GetMuteState())
+        	ShowOsdMessage("Audio muted");
+        else
+        	ShowOsdMessage("Audio output active");
 		return;
     }
     if (pEvent->key() == Qt::Key_Space)
     {
         if ((mVideoWorker->IsPaused()) || ((mParticipantWidget->GetAudioWorker() != NULL) && (mParticipantWidget->GetAudioWorker()->IsPaused())))
         {
+        	ShowOsdMessage("Playing..");
             mVideoWorker->PlayFile();
             if (mParticipantWidget->GetAudioWorker() != NULL)
                 mParticipantWidget->GetAudioWorker()->PlayFile();
             return;
         }else
         {
+        	ShowOsdMessage("Pausing..");
             mVideoWorker->PauseFile();
             if (mParticipantWidget->GetAudioWorker() != NULL)
                 mParticipantWidget->GetAudioWorker()->PauseFile();
@@ -1366,7 +1396,12 @@ void VideoWidget::wheelEvent(QWheelEvent *pEvent)
 {
     int tOffset = pEvent->delta() * 25 / 120;
     LOG(LOG_VERBOSE, "Got new wheel event with delta %d, derived volume offset: %d", pEvent->delta(), tOffset);
-    mParticipantWidget->GetAudioWorker()->SetVolume(mParticipantWidget->GetAudioWorker()->GetVolume() + tOffset);
+    int tNewVolumeValue = mParticipantWidget->GetAudioWorker()->GetVolume() + tOffset;
+    if ((tNewVolumeValue > 0) && (tNewVolumeValue <= 300))
+    {
+        ShowOsdMessage("Volume set to " + QString("%1 %").arg(tNewVolumeValue));
+        mParticipantWidget->GetAudioWorker()->SetVolume(tNewVolumeValue);
+    }
 }
 
 void VideoWidget::customEvent(QEvent *pEvent)

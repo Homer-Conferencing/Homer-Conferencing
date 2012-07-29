@@ -226,13 +226,13 @@ QStringList OverviewPlaylistWidget::LetUserSelectVideoFile(QWidget *pParent, QSt
 
     if (pMultipleFiles)
         tResult = QFileDialog::getOpenFileNames(pParent, pDescription,
-                                                                CONF.GetDataDirectory() + "/Homer-Video.avi",
+                                                                CONF.GetDataDirectory(),
                                                                 sLoadVideoFilters,
                                                                 &sAllLoadVideoFilter,
                                                                 CONF_NATIVE_DIALOGS);
     else
         tResult = QStringList(QFileDialog::getOpenFileName(pParent,  pDescription,
-                                                                CONF.GetDataDirectory() + "/Homer-Video.avi",
+                                                                CONF.GetDataDirectory(),
                                                                 sLoadVideoFilters,
                                                                 &sAllLoadVideoFilter,
                                                                 CONF_NATIVE_DIALOGS));
@@ -296,13 +296,13 @@ QStringList OverviewPlaylistWidget::LetUserSelectAudioFile(QWidget *pParent, QSt
 
     if (pMultipleFiles)
         tResult = QFileDialog::getOpenFileNames(pParent,  pDescription,
-                                                                CONF.GetDataDirectory() + "/Homer-Audio.mp3",
+                                                                CONF.GetDataDirectory(),
                                                                 sLoadAudioFilters,
                                                                 &sAllLoadAudioFilter,
                                                                 CONF_NATIVE_DIALOGS);
     else
         tResult = QStringList(QFileDialog::getOpenFileName(pParent,  pDescription,
-                                                                CONF.GetDataDirectory() + "/Homer-Audio.mp3",
+                                                                CONF.GetDataDirectory(),
                                                                 sLoadAudioFilters,
                                                                 &sAllLoadAudioFilter,
                                                                 CONF_NATIVE_DIALOGS));
@@ -369,13 +369,13 @@ QStringList OverviewPlaylistWidget::LetUserSelectMovieFile(QWidget *pParent, QSt
 
     if (pMultipleFiles)
         tResult = QFileDialog::getOpenFileNames(pParent,  pDescription,
-                                                                CONF.GetDataDirectory() + "/Homer-Movie.avi",
+                                                                CONF.GetDataDirectory(),
                                                                 sLoadMovieFilters,
                                                                 &sAllLoadMovieFilter,
                                                                 CONF_NATIVE_DIALOGS);
     else
         tResult = QStringList(QFileDialog::getOpenFileName(pParent,  pDescription,
-                                                                CONF.GetDataDirectory() + "/Homer-Movie.avi",
+                                                                CONF.GetDataDirectory(),
                                                                 sLoadMovieFilters,
                                                                 &sAllLoadMovieFilter,
                                                                 CONF_NATIVE_DIALOGS));
@@ -399,21 +399,22 @@ static QString sLoadMediaFilters = sAllLoadMediaFilter + ";;"\
                     "Quicktime/MPEG4 Format (*.m4v *.mov *.mp4 *.mp4a *.3gp);;"\
                     "Small Web Format (*.swf);;"\
                     "Video Object Format (*.vob);;" \
-                    "Waveform Audio File Format (*.wav)" \
+                    "Waveform Audio File Format (*.wav);;" \
                     "Windows Media Video Format (*.wmv)";
 QStringList OverviewPlaylistWidget::LetUserSelectMediaFile(QWidget *pParent, QString pDescription, bool pMultipleFiles)
 {
     QStringList tResult;
+    LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Current data directory is \"%s\"", CONF.GetDataDirectory().toStdString().c_str());
 
     if (pMultipleFiles)
         tResult = QFileDialog::getOpenFileNames(pParent,  pDescription,
-                                                                CONF.GetDataDirectory() + "/Homer-Movie.avi",
+                                                                CONF.GetDataDirectory(),
                                                                 sLoadMediaFilters,
                                                                 &sAllLoadMediaFilter,
                                                                 CONF_NATIVE_DIALOGS);
     else
         tResult = QStringList(QFileDialog::getOpenFileName(pParent,  pDescription,
-                                                                CONF.GetDataDirectory() + "/Homer-Movie.avi",
+                                                                CONF.GetDataDirectory(),
                                                                 sLoadMediaFilters,
                                                                 &sAllLoadMediaFilter,
                                                                 CONF_NATIVE_DIALOGS));
@@ -432,7 +433,7 @@ void OverviewPlaylistWidget::AddEntryDialog()
 
 	QStringList tFileNames;
 
-    tFileNames = LetUserSelectMediaFile(this,  "Add media files to playlist");
+    tFileNames = LetUserSelectMediaFile(this, "Add media files to playlist");
 
     if (tFileNames.isEmpty())
         return;
