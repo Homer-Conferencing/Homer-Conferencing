@@ -44,7 +44,7 @@
      <x>0</x>
      <y>0</y>
      <width>385</width>
-     <height>24</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="mMenuSettings">
@@ -431,9 +431,9 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>:/images/UserFamily.png</normaloff>
-     <normalon>:/images/22_22/Checked.png</normalon>:/images/UserFamily.png</iconset>
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/22_22/User_Multiple.png</normaloff>
+     <normalon>:/images/22_22/Checked.png</normalon>:/images/22_22/User_Multiple.png</iconset>
    </property>
    <property name="text">
     <string>Online status</string>
@@ -450,9 +450,9 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>:/images/Network.png</normaloff>
-     <normalon>:/images/22_22/Checked.png</normalon>:/images/Network.png</iconset>
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/22_22/Configuration_Video.png</normaloff>
+     <normalon>:/images/22_22/Checked.png</normalon>:/images/22_22/Configuration_Video.png</iconset>
    </property>
    <property name="text">
     <string>Video/Audio source</string>
