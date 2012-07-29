@@ -43,16 +43,16 @@ namespace Homer { namespace Multimedia {
 ///////////////////////////////////////////////////////////////////////////////
 
 class MediaSinkFile:
-    public MediaSinkNet
+    public MediaSinkMem
 {
 
 public:
-    MediaSinkFile(std::string pSinkFile, enum MediaSinkType pType= MEDIA_SINK_UNKNOWN);
+    MediaSinkFile(std::string pSinkFile, enum MediaSinkType pType, bool pRtpActivated);
 
     virtual ~MediaSinkFile();
 
 protected:
-    virtual void SendFragment(char* pData, unsigned int pSize);
+    virtual void WriteFragment(char* pData, unsigned int pSize);
 
 private:
     std::string         mSinkFile;

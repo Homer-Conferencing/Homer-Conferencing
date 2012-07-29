@@ -391,7 +391,7 @@ void OverviewNetworkStreamsWidget::SaveValues()
                                                      QDir::homePath() + "/NetworkStreamsParameters.csv",
                                                      "Comma-Separated Values File (*.csv)",
                                                      NULL,
-                                                     QFileDialog::DontUseNativeDialog);
+                                                     CONF_NATIVE_DIALOGS);
 
     if (tFileName.isEmpty())
         return;

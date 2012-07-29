@@ -26,6 +26,7 @@
  */
 
 #include <HBThread.h>
+#include <HBSystem.h>
 #include <Logger.h>
 
 #include <Header_Windows.h>
@@ -189,7 +190,6 @@ vector<int> Thread::GetTIds()
 			for (unsigned int u = 0; u < tThreadCount; u++)
 			{
 				thread_info_data_t tThreadInfoData;
-				thread_basic_info_t tThreadBasicInfo;
 				thread_identifier_info_t tThreadIdentInfo;
 
 				mach_msg_type_number_t tThreadInfoSize = THREAD_INFO_MAX;
@@ -253,14 +253,23 @@ vector<int> Thread::GetTIds()
 	return tResult;
 }
 
-bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned long &pMemPhysical, int &pPid, int &pPPid, float &pLoadUser, float &pLoadSystem, float &pLoadTotal, int &pPriority, int &pBasePriority, int &pThreadCount, unsigned long long &pLastUserTicsThread, unsigned long long &pLastKernelTicsThread, unsigned long long &pLastUserTicsSystem, unsigned long long &pLastKernelTicsSystem)
+bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned long &pMemPhysical, int &pPid, int &pPPid, float &pLoadUser, float &pLoadSystem, float &pLoadTotal, int &pPriority, int &pBasePriority, int &pThreadCount, unsigned long long &pLastUserTicsThread, unsigned long long &pLastKernelTicsThread, unsigned long long &pLastSystemTime)
 {
 	bool tResult = false;
 
+	pThreadCount = 0;
+    pMemPhysical = 0;
+    pMemVirtual = 0;
+    pLoadUser = 0;
+    pLoadSystem = 0;
+    pLoadTotal = 0;
+    pPriority = 0;
+    pBasePriority = 0;
+
     #if defined(LINUX)
 	    /*
-	     * HINT: For Linux we show relative cpu usage statistic which depend on the amount of available cpu cores.
-	     *       Hence, one task can have a maximum of 25 % cpu usage for a 4 core cpu. This behavior is how Windows deals with cpu usage values.
+	     * HINT: Linux reports relative cpu usage statistic which depends on the amount of available cpu cores.
+	     *       Hence, one task can have a maximum of 25 % cpu usage for a 4 core cpu. This behavior is the same like in Windows.
 	     */
 
 		FILE *tFile;
@@ -361,16 +370,30 @@ bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned l
 			tResult = true;
 		}
 		pMemPhysical *= 4096; // this value is given in 4k pages
-		pLoadUser = 100 * ((float)(tJiffiesUserMode - pLastUserTicsThread)) / (float)(tSystemJiffies - pLastUserTicsSystem - pLastKernelTicsSystem);
-		pLoadSystem = 100 * ((float)(tJiffiesKernelMode - pLastKernelTicsThread)) / (float)(tSystemJiffies - pLastUserTicsSystem - pLastKernelTicsSystem);
+		pLoadUser = 100 * ((float)(tJiffiesUserMode - pLastUserTicsThread)) / (float)(tSystemJiffies - pLastSystemTime);
+		pLoadSystem = 100 * ((float)(tJiffiesKernelMode - pLastKernelTicsThread)) / (float)(tSystemJiffies - pLastSystemTime);
 		pLastUserTicsThread = tJiffiesUserMode;
 		pLastKernelTicsThread = tJiffiesKernelMode;
-        pLastUserTicsSystem = tSystemJiffiesUser;
-		pLastKernelTicsSystem = tSystemJiffiesKernel;
+        pLastSystemTime = tSystemJiffies;
 	#endif
 	#if defined(APPLE)
+	    /*
+	     * HINT: OSX reports absolute cpu usage statistic.
+	     *       Hence, one task can have a maximum of 100 % cpu usage. In this case the task consumes the calculation power of exactly one cpu core.
+	     *       We have to align these values to the ones which are reported by Windows/Linux. This is done by dividing them by the amount of physically available cpu cores.
+	     */
 		pPid = GetPId();
 		pPPid = GetPPId();
+
+        // apple specific implementation for clock_gettime()
+        unsigned long long tSystemTime = 0;
+        clock_serv_t tCalenderClock;
+        mach_timespec_t tMachTimeSpec;
+        host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &tCalenderClock);
+        clock_get_time(tCalenderClock, &tMachTimeSpec);
+        mach_port_deallocate(mach_task_self(), tCalenderClock);
+        tSystemTime += tMachTimeSpec.tv_sec * 1000 * 1000;
+        tSystemTime += tMachTimeSpec.tv_nsec / 1000;
 
 		thread_array_t tThreadList;
 		mach_msg_type_number_t tThreadCount;
@@ -386,16 +409,47 @@ bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned l
 			for (unsigned int u = 0; u < tThreadCount; u++)
 			{
 				thread_info_data_t tThreadInfoData;
-				thread_basic_info_t tThreadBasicInfo;
-				thread_identifier_info_t tThreadIdentInfo;
 
 				tThreadInfoSize = THREAD_INFO_MAX;
-				if (thread_info(tThreadList[u], THREAD_BASIC_INFO, (thread_info_t)tThreadInfoData, &tThreadInfoSize) != KERN_SUCCESS)
+
+				// get THREAD_IDENTIFIER
+				if (thread_info(tThreadList[u], THREAD_IDENTIFIER_INFO, (thread_info_t)tThreadInfoData, &tThreadInfoSize) == KERN_SUCCESS)
+				{
+					thread_basic_info_t tThreadBasicInfo;
+					thread_identifier_info_t tThreadIdentInfo = (thread_identifier_info_t)tThreadInfoData;
+
+					if ((int)tThreadIdentInfo->thread_id == pTid)
+					{
+						tThreadInfoSize = THREAD_INFO_MAX;
+
+						// get THREAD_BASIC
+						if (thread_info(tThreadList[u], THREAD_BASIC_INFO, (thread_info_t)tThreadInfoData, &tThreadInfoSize) == KERN_SUCCESS)
+						{
+					        unsigned long tTimeUserMode = 0, tTimeKernelMode = 0;
+
+							tThreadBasicInfo = (thread_basic_info_t)tThreadInfoData;
+							pPriority = tThreadBasicInfo->policy;
+
+							// we need to know how many cores we have to scale the cpu usage
+							int tCores = System::GetMachineCores();
+
+							tTimeUserMode = tThreadBasicInfo->user_time.seconds * 1000 * 1000 + tThreadBasicInfo->user_time.microseconds;
+							tTimeKernelMode = tThreadBasicInfo->system_time.seconds * 1000 * 1000 + tThreadBasicInfo->system_time.microseconds;
+							pLoadUser = 100 * ((float)(tTimeUserMode - pLastUserTicsThread)) / (float)(tSystemTime - pLastSystemTime) / tCores;
+							pLoadSystem = 100 * ((float)(tTimeKernelMode - pLastKernelTicsThread)) / (float)(tSystemTime - pLastSystemTime) / tCores;
+							pLastUserTicsThread = tTimeUserMode;
+							pLastKernelTicsThread = tTimeKernelMode;
+					        pLastSystemTime = tSystemTime;
+						}else
+						{
+							LOGEX(Thread, LOG_ERROR, "Failed to call thread_info()");
+						}
+						break;
+					}
+				}else
 				{
 					LOGEX(Thread, LOG_ERROR, "Failed to call thread_info()");
 				}
-				tThreadBasicInfo = (thread_basic_info_t)tThreadInfoData;
-			    pPriority = tThreadBasicInfo->policy;
 
 				//LOGEX(Thread, LOG_VERBOSE, "..thread %u with TID %u", u, (unsigned int)tThreadIdentInfo->thread_id);
 			}
@@ -412,7 +466,7 @@ bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned l
 			pMemPhysical = tTaskBasicInfo->resident_size;
 			pMemVirtual = tTaskBasicInfo->virtual_size;
 			pBasePriority = tTaskBasicInfo->policy;
-
+			
 			if (vm_deallocate(mach_task_self(), (vm_address_t)tThreadList, sizeof(tThreadList) * tThreadCount) != KERN_SUCCESS)
 			{
 				LOGEX(Thread, LOG_ERROR, "Failed to deallocate memory of thread list");
@@ -420,15 +474,6 @@ bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned l
 		}else{
 			LOGEX(Thread, LOG_ERROR, "Failed to get the list of OSX threads");
 		}
-
-		//TODO:
-        pLoadUser = 0;
-        pLoadSystem = 0;
-        pLoadTotal = 0;
-        pLastUserTicsThread = 0;
-        pLastKernelTicsThread = 0;
-        pLastUserTicsSystem = 0;
-        pLastKernelTicsSystem = 0;
     #endif
     #if defined(BSD)
 		pPid = GetPId();
@@ -442,7 +487,7 @@ bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned l
         pLoadTotal = 0;
         pLastUserTicsThread = 0;
         pLastKernelTicsThread = 0;
-        pLastUserTicsSystem = 0;
+        pLastSystemTime = 0;
         pLastKernelTicsSystem = 0;
         pPriority = 0;
         pBasePriority = 0;
@@ -533,7 +578,10 @@ bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned l
 				do
 				{
 					if (((int)tThreadEntry.th32OwnerProcessID == tCurrentPid) && ((int)tThreadEntry.th32ThreadID == pTid))
+					{
 						pBasePriority = tThreadEntry.tpBasePri;
+						break;
+					}
 				} while (Thread32Next(tSnapshot, &tThreadEntry));
 			}else
 				LOGEX(Thread, LOG_ERROR, "No threads found");
@@ -569,11 +617,11 @@ bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned l
 				tSysTimeUserMode.HighPart = tSystemUserTime.dwHighDateTime;
 				tSysTime.QuadPart = tSysTimeUserMode.QuadPart + tSysTimeKernelMode.QuadPart;
 				// calculate the values for load related to user and kernel mode
-				pLoadUser = 100 * ((float)(tTimeUserMode.QuadPart - pLastUserTicsThread)) / (float)(tSysTime.QuadPart - pLastUserTicsSystem - pLastKernelTicsSystem);
-				pLoadSystem = 100 * ((float)(tTimeKernelMode.QuadPart - pLastKernelTicsThread)) / (float)(tSysTime.QuadPart - pLastUserTicsSystem - pLastKernelTicsSystem);
+				pLoadUser = 100 * ((float)(tTimeUserMode.QuadPart - pLastUserTicsThread)) / (float)(tSysTime.QuadPart - pLastSystemTime - pLastKernelTicsSystem);
+				pLoadSystem = 100 * ((float)(tTimeKernelMode.QuadPart - pLastKernelTicsThread)) / (float)(tSysTime.QuadPart - pLastSystemTime - pLastKernelTicsSystem);
 				pLastUserTicsThread = tTimeUserMode.QuadPart;
 				pLastKernelTicsThread = tTimeKernelMode.QuadPart;
-		        pLastUserTicsSystem = tSysTimeUserMode.QuadPart;
+		        pLastSystemTime = tSysTimeUserMode.QuadPart;
 				pLastKernelTicsSystem = tSysTimeKernelMode.QuadPart;
 			}else
 			{
@@ -582,7 +630,7 @@ bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned l
 		        pLoadSystem = 0;
 				pLastUserTicsThread = 0;
 				pLastKernelTicsThread = 0;
-		        pLastUserTicsSystem = 0;
+		        pLastSystemTime = 0;
 				pLastKernelTicsSystem = 0;
 			}
 			// get thread priority
@@ -593,7 +641,6 @@ bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned l
 			CloseHandle(tThreadHandle);
 		}else
 			LOGEX(Thread, LOG_VERBOSE, "Could not create thread handle, maybe thread was destroyed meanwhile");
-
 	#endif
 
 	pLoadTotal = pLoadUser + pLoadSystem;

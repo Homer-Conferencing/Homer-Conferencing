@@ -114,6 +114,7 @@ private:
 VideoWidget::VideoWidget(QWidget* pParent):
     QWidget(pParent)
 {
+	mPaintEventCounter = 0;
     mResX = 640;
     mResY = 480;
     mVideoScaleFactor = 1.0;
@@ -321,10 +322,10 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             //###############################################################################
             if (mSmoothPresentation)
             {
-                tAction = tVideoMenu->addAction("Show smooth video");
+                tAction = tVideoMenu->addAction("Show fast video");
             }else
             {
-                tAction = tVideoMenu->addAction("Show fast video");
+                tAction = tVideoMenu->addAction("Show smooth video");
             }
             QList<QKeySequence> tSPKeys;
             tSPKeys.push_back(Qt::Key_S);
@@ -906,6 +907,17 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
         tPainter->drawPixmap(30, 10, tPixmap);
     }
 
+    //#############################################################
+    //### draw muted icon
+    //#############################################################
+	#ifdef VIDEO_WIDGET_SHOW_MUTE_STATE_IN_FULLSCREEN
+    	if ((mParticipantWidget->GetAudioWorker()->GetMuteState()) and (tMSecs % 500 < 250))
+		{
+			QPixmap tPixmap = QPixmap(":/images/22_22/SpeakerMuted.png");
+			tPainter->drawPixmap(50, 10, tPixmap);
+		}
+	#endif
+
     delete tPainter;
     setUpdatesEnabled(true);
 
@@ -1002,6 +1014,12 @@ bool VideoWidget::SetOriginalResolution()
     }
 
     return tResult;
+}
+
+void VideoWidget::ShowOsdMessage(QString pText)
+{
+	mOsdStatusMessage = pText;
+	mOsdStatusMessageTimeout = Time::GetTimeStamp() + VIDEO_WIDGET_OSD_PERIOD * 1000 * 1000;
 }
 
 VideoWorkerThread* VideoWidget::GetWorker()
@@ -1107,6 +1125,10 @@ void VideoWidget::ToggleFullScreenMode()
 void VideoWidget::ToggleSmoothPresentationMode()
 {
     mSmoothPresentation = !mSmoothPresentation;
+    if (mSmoothPresentation)
+    	ShowOsdMessage("Bilinear filtering activated");
+    else
+    	ShowOsdMessage("Bilinear filtering deactivated");
 }
 
 void VideoWidget::ToggleVisibility()
@@ -1156,7 +1178,7 @@ void VideoWidget::SavePicture()
                                                      "X11 Bitmap (*.xbm);;"\
                                                      "X11 Pixmap (*.xpm)",
                                                      &*(new QString("Portable Network Graphics (*.png)")),
-                                                     QFileDialog::DontUseNativeDialog);
+                                                     CONF_NATIVE_DIALOGS);
 
     if (tFileName.isEmpty())
         return;
@@ -1212,7 +1234,12 @@ void VideoWidget::StopRecorder()
 
 void VideoWidget::paintEvent(QPaintEvent *pEvent)
 {
-    QWidget::paintEvent(pEvent);
+	mPaintEventCounter ++;
+	#ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
+		LOG(LOG_VERBOSE, "Paint event %ld", mPaintEventCounter);
+	#endif
+
+	QWidget::paintEvent(pEvent);
 
     QPainter tPainter(this);
     QColor tBackgroundColor;
@@ -1277,11 +1304,42 @@ void VideoWidget::paintEvent(QPaintEvent *pEvent)
     // draw only fitting new frames (otherwise we could have a race condition and a too big frame which might be drawn)
     if ((mCurrentFrame.width() <= width()) && (mCurrentFrame.height() <= height()))
         tPainter.drawImage((width() - mCurrentFrame.width()) / 2, (height() - mCurrentFrame.height()) / 2, mCurrentFrame);
+
+    //#############################################################
+    //### draw status text per OSD
+    //#############################################################
+	// are we a fullscreen widget?
+	if ((windowState() & Qt::WindowFullScreen) && (mOsdStatusMessage != "") && (Time::GetTimeStamp() < mOsdStatusMessageTimeout))
+	{
+		// define font for OSD text
+		QFont tFont1 = QFont("Arial", 26, QFont::Light);
+        tFont1.setFixedPitch(true);
+        tPainter.setRenderHint(QPainter::TextAntialiasing, true);
+        tPainter.setFont(tFont1);
+
+        // select color white
+        tPainter.setPen(QColor(Qt::white));
+
+        // calculate text width and height
+	    QFontMetrics tFm = tPainter.fontMetrics();
+	    int tTextWidth = tFm.width(mOsdStatusMessage);
+	    int tTextHeight = tFm.height();
+
+	    // draw OSD text
+	    if ((tTextWidth > width()) || (tTextHeight > height()))
+			tPainter.drawText(5, 40, mOsdStatusMessage);
+	    else
+	    	tPainter.drawText((width() - tTextWidth) / 2, tTextHeight, mOsdStatusMessage);
+	}
+
     pEvent->accept();
 }
 
 void VideoWidget::resizeEvent(QResizeEvent *pEvent)
 {
+	// enforce an update of the currently depicted video picture
+	InformAboutNewFrame();
+
 	setUpdatesEnabled(false);
     QWidget::resizeEvent(pEvent);
     mNeedBackgroundUpdatesUntillNextFrame = true;
@@ -1313,17 +1371,29 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
         	mShowLiveStats = false;
         else
         	mShowLiveStats = true;
+        return;
     }
-    if (pEvent->key() == Qt::Key_Space)
+    if (pEvent->key() == Qt::Key_M)
+    {
+		mParticipantWidget->GetAudioWorker()->SetMuteState(!mParticipantWidget->GetAudioWorker()->GetMuteState());
+        if (mParticipantWidget->GetAudioWorker()->GetMuteState())
+        	ShowOsdMessage("Audio muted");
+        else
+        	ShowOsdMessage("Audio output active");
+		return;
+    }
+    if ((pEvent->key() == Qt::Key_Space) || (pEvent->key() == Qt::Key_MediaTogglePlayPause) || (pEvent->key() == Qt::Key_MediaPlay) || (pEvent->key() == Qt::Key_Play))
     {
         if ((mVideoWorker->IsPaused()) || ((mParticipantWidget->GetAudioWorker() != NULL) && (mParticipantWidget->GetAudioWorker()->IsPaused())))
         {
+        	ShowOsdMessage("Playing..");
             mVideoWorker->PlayFile();
             if (mParticipantWidget->GetAudioWorker() != NULL)
                 mParticipantWidget->GetAudioWorker()->PlayFile();
             return;
         }else
         {
+        	ShowOsdMessage("Pausing..");
             mVideoWorker->PauseFile();
             if (mParticipantWidget->GetAudioWorker() != NULL)
                 mParticipantWidget->GetAudioWorker()->PauseFile();
@@ -1338,12 +1408,43 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
     	mNeedBackgroundUpdatesUntillNextFrame = true;
     	return;
     }
+    if ((pEvent->key() == Qt::Key_Plus) || (pEvent->key() == Qt::Key_Up))
+    {
+		int tOffset = 25;
+		int tNewVolumeValue = mParticipantWidget->GetAudioWorker()->GetVolume() + tOffset;
+		if ((tNewVolumeValue > 0) && (tNewVolumeValue <= 300))
+		{
+			ShowOsdMessage("Volume: " + QString("%1 %").arg(tNewVolumeValue));
+			mParticipantWidget->GetAudioWorker()->SetVolume(tNewVolumeValue);
+		}
+	}
+    if ((pEvent->key() == Qt::Key_Minus) || (pEvent->key() == Qt::Key_Down))
+    {
+		int tOffset = -25;
+		int tNewVolumeValue = mParticipantWidget->GetAudioWorker()->GetVolume() + tOffset;
+		if ((tNewVolumeValue > 0) && (tNewVolumeValue <= 300))
+		{
+			ShowOsdMessage("Volume: " + QString("%1 %").arg(tNewVolumeValue));
+			mParticipantWidget->GetAudioWorker()->SetVolume(tNewVolumeValue);
+		}
+	}
 }
-
 void VideoWidget::mouseDoubleClickEvent(QMouseEvent *pEvent)
 {
     ToggleFullScreenMode();
     pEvent->accept();
+}
+
+void VideoWidget::wheelEvent(QWheelEvent *pEvent)
+{
+    int tOffset = pEvent->delta() * 25 / 120;
+    LOG(LOG_VERBOSE, "Got new wheel event with delta %d, derived volume offset: %d", pEvent->delta(), tOffset);
+    int tNewVolumeValue = mParticipantWidget->GetAudioWorker()->GetVolume() + tOffset;
+    if ((tNewVolumeValue > 0) && (tNewVolumeValue <= 300))
+    {
+        ShowOsdMessage("Volume: " + QString("%1 %").arg(tNewVolumeValue));
+        mParticipantWidget->GetAudioWorker()->SetVolume(tNewVolumeValue);
+    }
 }
 
 void VideoWidget::customEvent(QEvent *pEvent)
@@ -1363,55 +1464,79 @@ void VideoWidget::customEvent(QEvent *pEvent)
     switch(tVideoEvent->GetReason())
     {
         case VIDEO_NEW_FRAME:
-            mPendingNewFrameSignals--;
-			#ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
-				if (mPendingNewFrameSignals > 2)
-					LOG(LOG_VERBOSE, "System too slow?, %d pending signals about new frames", mPendingNewFrameSignals);
-			#endif
+        	if (mPendingNewFrameSignals)
+        	{
+				#ifdef VIDEO_WIDGET_DEBUG_FRAMES
+					if (mPendingNewFrameSignals > 2)
+						LOG(LOG_VERBOSE, "System too slow?, %d pending signals about new frames", mPendingNewFrameSignals);
+				#endif
 
-            tVideoEvent->accept();
-            if (isVisible())
-            {
-                mLastFrameNumber = mCurrentFrameNumber;
-                // hint: we don't have to synchronize with resolution changes because Qt has only one synchronous working event loop!
-                mCurrentFrameNumber = mVideoWorker->GetCurrentFrame(&tFrame, &tFps);
-                if (mCurrentFrameNumber > -1)
-                {
-                    // make sure there is no hour glass anymore
-                    if (mHourGlassTimer->isActive())
-                    {
-                        LOG(LOG_VERBOSE, "Deactivating hour glass because first frame was received");
+				// acknowledge the event to Qt
+				tVideoEvent->accept();
 
-                        mHourGlassTimer->stop();
+				mLastFrameNumber = mCurrentFrameNumber;
+				// hint: we don't have to synchronize with resolution changes because Qt has only one synchronous working event loop!
 
-                        //#############################################################################
-                        //### deactivate background painting and speedup video presentation
-                        //### each future painting task will be managed by our own paintEvent function
-                        //#############################################################################
-                        setAutoFillBackground(false);
-                        setAttribute(Qt::WA_NoSystemBackground, true);
-                        setAttribute(Qt::WA_PaintOnScreen, true);
-                        setAttribute(Qt::WA_OpaquePaintEvent, true);
-                        mNeedBackgroundUpdatesUntillNextFrame = true;
-                    }
+				int tLoopCount = 0;
+				while (mPendingNewFrameSignals)
+				{
+					tLoopCount++;
+					if (tLoopCount > 1)
+						LOG(LOG_VERBOSE, "Called GetCurrentFrame() %d times", tLoopCount);
+					mPendingNewFrameSignals--;
+					mCurrentFrameNumber = mVideoWorker->GetCurrentFrame(&tFrame, &tFps);
+				}
 
-                    // display the current video frame
-                    ShowFrame(tFrame, tFps, mCurrentFrameNumber);
-                    //printf("VideoWidget-Frame number: %d\n", mCurrentFrameNumber);
-                    // do we have a frame order problem?
-                    if ((mLastFrameNumber > mCurrentFrameNumber) && (mCurrentFrameNumber  > 32 /* -1 means error, 1 is received after every reset, use "32" because of possible latencies */))
-                    {
-                        if (mLastFrameNumber - mCurrentFrameNumber == FRAME_BUFFER_SIZE -1)
-                            LOG(LOG_WARN, "Buffer underrun occurred, received frames in wrong order, [%d->%d]", mLastFrameNumber, mCurrentFrameNumber);
-                        else
-                            LOG(LOG_WARN, "Frames received in wrong order, [%d->%d]", mLastFrameNumber, mCurrentFrameNumber);
-                    }
-                    //if (tlFrameNumber == tFrameNumber)
-                        //printf("VideoWidget-unnecessary frame grabbing detected!\n");
-                }else
-                    LOG(LOG_WARN, "Current frame number is invalid (%d)", mCurrentFrameNumber);
-            }
-            break;
+				if (isVisible())
+				{
+					if (mCurrentFrameNumber > -1)
+					{
+						// make sure there is no hour glass anymore
+						if (mHourGlassTimer->isActive())
+						{
+							LOG(LOG_VERBOSE, "Deactivating hour glass because first frame was received");
+
+							mHourGlassTimer->stop();
+
+							//#############################################################################
+							//### deactivate background painting and speedup video presentation
+							//### each future painting task will be managed by our own paintEvent function
+							//#############################################################################
+							setAutoFillBackground(false);
+							setAttribute(Qt::WA_NoSystemBackground, true);
+							setAttribute(Qt::WA_PaintOnScreen, true);
+							setAttribute(Qt::WA_OpaquePaintEvent, true);
+							mNeedBackgroundUpdatesUntillNextFrame = true;
+						}
+
+						// display the current video frame
+						ShowFrame(tFrame, tFps, mCurrentFrameNumber);
+						#ifdef VIDEO_WIDGET_DEBUG_FRAMES
+							LOG(LOG_WARN, "Showing frame: %d, pending signals about new frames %d", mCurrentFrameNumber, mPendingNewFrameSignals);
+						#endif
+
+						// do we have a gap?
+						if (mLastFrameNumber < mCurrentFrameNumber - 1)
+						{
+							LOG(LOG_WARN, "Gap between frames, [%d->%d]", mLastFrameNumber, mCurrentFrameNumber);
+						}
+
+						// do we have a frame order problem?
+						if ((mLastFrameNumber > mCurrentFrameNumber) && (mCurrentFrameNumber  > 32 /* -1 means error, 1 is received after every reset, use "32" because of possible latencies */))
+						{
+							if (mLastFrameNumber - mCurrentFrameNumber == FRAME_BUFFER_SIZE -1)
+								LOG(LOG_WARN, "Buffer overrun occurred, received frames in wrong order, [%d->%d]", mLastFrameNumber, mCurrentFrameNumber);
+							else
+								LOG(LOG_WARN, "Frames received in wrong order, [%d->%d]", mLastFrameNumber, mCurrentFrameNumber);
+						}
+						//if (tlFrameNumber == tFrameNumber)
+							//printf("VideoWidget-unnecessary frame grabbing detected!\n");
+					}else
+						LOG(LOG_WARN, "Current frame number is invalid (%d)", mCurrentFrameNumber);
+				}
+        	}else
+        		LOG(LOG_VERBOSE, "Got signal about new frame but frame queue is already empty");
+			break;
         case VIDEO_OPEN_ERROR:
             tVideoEvent->accept();
             if (tVideoEvent->GetDescription() != "")
@@ -1487,6 +1612,7 @@ void VideoWorkerThread::InitFrameBuffers()
 
         mFrameNumber[i] = 0;
 
+        LOG(LOG_VERBOSE, "Initiating frame buffer %d with resolution %d*%d", i, mResX, mResY);
         QImage tFrameImage = QImage((unsigned char*)mFrame[i], mResX, mResY, QImage::Format_RGB32);
         QPainter *tPainter = new QPainter(&tFrameImage);
         tPainter->setRenderHint(QPainter::TextAntialiasing, true);
@@ -1687,6 +1813,7 @@ bool VideoWorkerThread::SupportsSeeking()
 
 void VideoWorkerThread::Seek(int64_t pPos)
 {
+	LOG(LOG_VERBOSE, "Seeking to position: %ld", pPos);
     mSeekPos = pPos;
     mSeekAsap = true;
     mGrabbingCondition.wakeAll();
@@ -1699,7 +1826,12 @@ int64_t VideoWorkerThread::GetSeekPos()
 
 int64_t VideoWorkerThread::GetSeekEnd()
 {
-    return mVideoSource->GetSeekEnd();
+	int64_t tResult = 0;
+
+    tResult = mVideoSource->GetSeekEnd();
+    //LOG(LOG_VERBOSE, "Determined seek end with %ld", tResult);
+
+    return tResult;
 }
 
 bool VideoWorkerThread::SupportsMultipleChannels()
@@ -1994,7 +2126,7 @@ int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFps)
     {
         if (mPendingNewFrames)
         {
-			#ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
+			#ifdef VIDEO_WIDGET_DEBUG_FRAMES
 				if (mPendingNewFrames > 1)
 					LOG(LOG_VERBOSE, "Found %d pending frames", mPendingNewFrames);
 			#endif
@@ -2003,10 +2135,19 @@ int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFps)
             if (mFrameCurrentIndex >= FRAME_BUFFER_SIZE)
                 mFrameCurrentIndex = 0;
             mPendingNewFrames--;
+
+            if (mFrameCurrentIndex == mFrameGrabIndex)
+			{
+				LOG(LOG_WARN, "Current index %d is the current grab index, delivering old frame instead", mFrameCurrentIndex);
+	            mFrameCurrentIndex--;
+	            if (mFrameCurrentIndex < 0)
+	                mFrameCurrentIndex = FRAME_BUFFER_SIZE - 1;
+
+			}
         }else
         {
             mMissingFrames++;
-            LOG(LOG_WARN, "Missing new frame (%d overall missed frames), delivering old frame instead", mMissingFrames);
+            LOG(LOG_VERBOSE, "Missing new frame (%d overall missed frames), delivering old frame instead", mMissingFrames);
         }
 
         // calculate FPS
@@ -2019,19 +2160,22 @@ int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFps)
 
             // now finally calculate the FPS as follows: "count of measured values / measured time difference"
             *pFps = ((float)tMeasuredValues) / tMeasuredTimeDifference;
-            //LOG(LOG_WARN, "FPS: %f, frames %d, interval %f, oldest %ld", *pFps, tMeasuredValues, tMeasuredSeconds, tMeasurementStartTimestamp);
+			#ifdef VIDEO_WIDGET_DEBUG_FRAMES
+            	LOG(LOG_VERBOSE, "FPS: %f, interval %d, oldest %ld", *pFps, tMeasuredValues, tMeasurementStartTime);
+			#endif
         }
 
         *pFrame = mFrame[mFrameCurrentIndex];
         tResult = mFrameNumber[mFrameCurrentIndex];
-        //printf("[%3lu %3lu %3lu] cur: %d grab: %d\n", mFrameNumber[0], mFrameNumber[1], mFrameNumber[2], mFrameCurrentIndex, mFrameGrabIndex);
     }else
-        LOG(LOG_WARN, "No current frame available, pending frames: %d, grab resolution invalid: %d, have to reset source: %d", mPendingNewFrames, mSetGrabResolutionAsap, mResetVideoSourceAsap);
+        LOG(LOG_WARN, "Can't deliver new frame, pending frames: %d, grab resolution invalid: %d, have to reset source: %d", mPendingNewFrames, mSetGrabResolutionAsap, mResetVideoSourceAsap);
 
     // unlock
     mDeliverMutex.unlock();
 
-    //printf("GUI-GetFrame -> %d\n", mFrameCurrentIndex);
+	#ifdef VIDEO_WIDGET_DEBUG_FRAMES
+    	LOG(LOG_VERBOSE, "GetCurrentFrame() delivered frame %d from index %d, pending frames: %d, dropped frames: %d, missing frames: %d, grab index: %d", tResult, mFrameCurrentIndex, mPendingNewFrames, mDroppedFrames, mMissingFrames, mFrameGrabIndex);
+	#endif
 
     return tResult;
 }
@@ -2125,8 +2269,9 @@ void VideoWorkerThread::run()
 			    LOG(LOG_VERBOSE, "Derived EOF and mark video source as unavailable");
 			}
 
-
-			//LOG(LOG_ERROR, "DO THE BEST %d %d", tFrameNumber, tFrameSize);
+			#ifdef VIDEO_WIDGET_DEBUG_FRAMES
+				LOG(LOG_WARN, "Got from media source the frame %d with size of %d bytes and stored it as index %d, already pending frames: %d", tFrameNumber, tFrameSize, mFrameGrabIndex, mPendingNewFrames);
+			#endif
 
 			// do we have a valid new video frame?
 			if ((tFrameNumber >= 0) && (tFrameSize > 0))
@@ -2150,10 +2295,19 @@ void VideoWorkerThread::run()
 				mDeliverMutex.lock();
 
 				mFrameNumber[mFrameGrabIndex] = tFrameNumber;
-                if (mPendingNewFrames == FRAME_BUFFER_SIZE)
-                    LOG(LOG_WARN, "System too slow?, frame buffer of %d entries is full, will drop oldest frame", FRAME_BUFFER_SIZE);
-                mPendingNewFrames++;
+                if (mPendingNewFrames < FRAME_BUFFER_SIZE)
+                {
+                    mPendingNewFrames++;
+                    mVideoWidget->InformAboutNewFrame();
+               }else
+                {
+                    LOG(LOG_WARN, "System too slow?, frame buffer of %d entries is full, will drop all frames, grab index: %d, current read index: %d", FRAME_BUFFER_SIZE, mFrameGrabIndex, mFrameCurrentIndex);
+                    mPendingNewFrames = 1;
+                    mFrameCurrentIndex = mFrameGrabIndex -1;
+                    if (mFrameCurrentIndex < 0)
+                    	mFrameCurrentIndex = FRAME_BUFFER_SIZE - 1;
 
+                }
 				mFrameGrabIndex++;
 				if (mFrameGrabIndex >= FRAME_BUFFER_SIZE)
 				    mFrameGrabIndex = 0;
@@ -2168,13 +2322,8 @@ void VideoWorkerThread::run()
                         mFrameTimestamps.removeFirst();
 				}
 
-                mVideoWidget->InformAboutNewFrame();
-
-                // unlock
+                 // unlock
 				mDeliverMutex.unlock();
-
-				//printf("VideoWorker--> %d\n", mFrameGrabIndex);
-				//printf("VideoWorker-grabbing FPS: %2d grabbed frame number: %d\n", mResultingFps, tFrameNumber);
 
 				if ((tLastFrameNumber > tFrameNumber) && (tFrameNumber > 9 /* -1 means error, 1 is received after every reset, use "9" because of possible latencies */))
 					LOG(LOG_ERROR, "Frame ordering problem detected (%d -> %d)", tLastFrameNumber, tFrameNumber);

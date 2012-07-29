@@ -20,56 +20,35 @@
  *****************************************************************************/
 
 /*
- * Purpose: process statistic dock widget
+ * Purpose: modified QSlider for file playback
  * Author:  Thomas Volkert
- * Since:   2009-05-17
+ * Since:   2012-07-29
  */
 
-#ifndef _OVERVIEW_THREADS_WIDGET_
-#define _OVERVIEW_THREADS_WIDGET_
+#ifndef PLAYBACK_SLIDER_H
+#define PLAYBACK_SLIDER_H
 
-#include <QDockWidget>
-#include <QTimerEvent>
-#include <QMutex>
-
-#include <ProcessStatistic.h>
-
-#include <ui_OverviewThreadsWidget.h>
+#include <QSlider>
+#include <QMouseEvent>
+#include <QWidget>
 
 namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class OverviewThreadsWidget :
-    public QDockWidget,
-    public Ui_OverviewThreadsWidget
+class PlaybackSlider :
+    public QSlider
 {
     Q_OBJECT;
 public:
     /// The default constructor
-    OverviewThreadsWidget(QAction *pAssignedAction, QMainWindow *pMainWindow);
+    PlaybackSlider(QWidget* pParent = NULL);
 
     /// The destructor.
-    virtual ~OverviewThreadsWidget();
-
-public slots:
-    void SetVisible(bool pVisible);
+    virtual ~PlaybackSlider();
 
 private:
-    void initializeGUI();
-    void UpdateView();
-    virtual void closeEvent(QCloseEvent* pEvent);
-    virtual void timerEvent(QTimerEvent *pEvent);
-    virtual void contextMenuEvent(QContextMenuEvent *pContextMenuEvent);
-    void FillCellText(int pRow, int pCol, QString pText);
-    void FillRow(int pRow, Homer::Monitor::ProcessStatistic *pStats);
-
-    QPoint              mWinPos;
-    QAction             *mAssignedAction;
-    int                 mTimerId;
-    int                 mSelectedRow;
-    bool                mScaleToOneCpuCore;
-    int                 mCpuCores;
+    virtual void mousePressEvent(QMouseEvent *pEvent);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -77,4 +56,3 @@ private:
 }}
 
 #endif
-

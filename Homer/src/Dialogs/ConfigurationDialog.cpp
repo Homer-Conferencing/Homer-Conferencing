@@ -458,16 +458,7 @@ void ConfigurationDialog::SaveConfiguration()
                 MEETING.SetAudioCodecsSupport(CODEC_G711U);
                 break;
         case 3:
-                MEETING.SetAudioCodecsSupport(CODEC_AAC);
-                break;
-        case 4:
                 MEETING.SetAudioCodecsSupport(CODEC_PCMS16LE);
-                break;
-        case 5:
-                MEETING.SetAudioCodecsSupport(CODEC_GSM);
-                break;
-        case 6:
-                MEETING.SetAudioCodecsSupport(CODEC_AMR);
                 break;
         default:
                 break;
@@ -776,7 +767,7 @@ QString ConfigurationDialog::SelectSoundFile(QString pEventName, QString pSugges
     if (!QFile::exists(pSuggestion))
         pSuggestion = CONF.GetDataDirectory();
 
-    QString tSoundFile = QFileDialog::getOpenFileName(this, "Select sound file for acoustic notification for event \"" + pEventName + "\".", pSuggestion, "Sound file (*.wav)", NULL, QFileDialog::DontUseNativeDialog);
+    QString tSoundFile = QFileDialog::getOpenFileName(this, "Select sound file for acoustic notification for event \"" + pEventName + "\".", pSuggestion, "Sound file (*.wav)", NULL, CONF_NATIVE_DIALOGS);
 
     if (tSoundFile.isEmpty())
         return "";

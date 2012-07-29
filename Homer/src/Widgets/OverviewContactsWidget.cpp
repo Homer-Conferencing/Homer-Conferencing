@@ -509,7 +509,7 @@ void OverviewContactsWidget::ContactParticipantDoubleClick(const QModelIndex &pI
 
 void OverviewContactsWidget::SaveList()
 {
-    QString tContactsFile = QFileDialog::getSaveFileName(this, "Save contact list", CONF.GetContactFile(), "Contact list (*.xml)", NULL, QFileDialog::DontUseNativeDialog);
+    QString tContactsFile = QFileDialog::getSaveFileName(this, "Save contact list", CONF.GetContactFile(), "Contact list (*.xml)", NULL, CONF_NATIVE_DIALOGS);
 
     if (tContactsFile.isEmpty())
         return;
@@ -522,7 +522,7 @@ void OverviewContactsWidget::SaveList()
 
 void OverviewContactsWidget::LoadList()
 {
-    QString tContactsFile = QFileDialog::getOpenFileName(this, "Load contact list", CONF.GetContactFile(), "Contact list (*.xml)", NULL, QFileDialog::DontUseNativeDialog);
+    QString tContactsFile = QFileDialog::getOpenFileName(this, "Load contact list", CONF.GetContactFile(), "Contact list (*.xml)", NULL, CONF_NATIVE_DIALOGS);
 
     if (tContactsFile.isEmpty())
         return;

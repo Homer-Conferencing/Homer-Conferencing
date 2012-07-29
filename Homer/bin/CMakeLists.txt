@@ -149,6 +149,7 @@ SET (SOURCES
 	../src/Widgets/OverviewPlaylistWidget
 	../src/Widgets/OverviewThreadsWidget
 	../src/Widgets/ParticipantWidget
+	../src/Widgets/PlaybackSlider
 	../src/Widgets/SessionInfoWidget
 	../src/Widgets/StreamingControlWidget
 	../src/Widgets/VideoWidget
@@ -179,6 +180,7 @@ SET (QT_MOC_SOURCES
 	../include/Widgets/OverviewPlaylistWidget.h
 	../include/Widgets/OverviewThreadsWidget.h
 	../include/Widgets/ParticipantWidget.h
+	../include/Widgets/PlaybackSlider.h
 	../include/Widgets/SessionInfoWidget.h
 	../include/Widgets/StreamingControlWidget.h
 	../include/Widgets/VideoWidget.h

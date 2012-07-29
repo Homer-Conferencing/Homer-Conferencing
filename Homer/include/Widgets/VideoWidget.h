@@ -61,9 +61,16 @@ class ParticipantWidget;
 // de/activate automatic frame dropping in case the video widget is invisible (default is off)
 //#define VIDEO_WIDGET_DROP_WHEN_INVISIBLE
 
+// de/activate frame handling
+//#define VIDEO_WIDGET_DEBUG_FRAMES
+
+// de/activate fullscreen display of mute state
+//#define VIDEO_WIDGET_SHOW_MUTE_STATE_IN_FULLSCREEN
+
 ///////////////////////////////////////////////////////////////////////////////
 
-#define FRAME_BUFFER_SIZE              5
+#define VIDEO_WIDGET_OSD_PERIOD	       3 // seconds
+#define FRAME_BUFFER_SIZE              4
 
 #define FPS_MEASUREMENT_STEPS          60
 
@@ -120,12 +127,16 @@ private:
     void ShowFullScreen();
     bool SetOriginalResolution();
 
+    /* status message per OSD text */
+    void ShowOsdMessage(QString pText);
+
     virtual void paintEvent(QPaintEvent *pEvent);
     virtual void resizeEvent(QResizeEvent *pEvent);
     virtual void keyPressEvent(QKeyEvent *pEvent);
     virtual void mouseDoubleClickEvent(QMouseEvent *pEvent);
     virtual void closeEvent(QCloseEvent* pEvent);
     virtual void customEvent (QEvent* pEvent);
+    virtual void wheelEvent(QWheelEvent *pEvent);
 
     QWidget             *mCurrentApplicationFocusedWidget;
     QImage              mCurrentFrame;
@@ -156,6 +167,10 @@ private:
     MediaSource         *mVideoSource;
     int                 mPendingNewFrameSignals;
     ParticipantWidget   *mParticipantWidget;
+    int64_t 			mPaintEventCounter;
+    /* status messages per OSD text */
+    QString				mOsdStatusMessage;
+    int64_t				mOsdStatusMessageTimeout;
 };
 
 

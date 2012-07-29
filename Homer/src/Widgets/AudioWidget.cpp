@@ -293,7 +293,7 @@ void AudioWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             //###############################################################################
             QMenu *tVolMenu = tAudioMenu->addMenu("Volume");
 
-            for (int i = 1; i <13; i++)
+            for (int i = 0; i <13; i++)
             {
                 QAction *tVolAction = tVolMenu->addAction(QString("%1 %").arg(i * 25));
                 tVolAction->setCheckable(true);
@@ -433,7 +433,7 @@ void AudioWidget::contextMenuEvent(QContextMenuEvent *pEvent)
                 return;
             }
         }
-        for (int i = 1; i < 13; i++)
+        for (int i = 0; i < 13; i++)
         {
             if(tPopupRes->text() == QString("%1 %").arg(i * 25))
             {
@@ -632,8 +632,8 @@ int AudioWidget::GetVolume()
 
 void AudioWidget::SetVolume(int pValue)
 {
-    if (pValue < 25)
-        pValue = 25;
+    if (pValue < 0)
+        pValue = 0;
     if (pValue > 300)
         pValue = 300;
     LOG(LOG_VERBOSE, "Setting audio volume to %d \%", pValue);
@@ -755,68 +755,6 @@ void AudioWidget::customEvent(QEvent* pEvent)
 }
 
 //####################################################################
-//###################### BUFFER ######################################
-//####################################################################
-AudioBuffer::AudioBuffer(QObject * pParent):
-    QBuffer(pParent)
-{
-    if (!open(QIODevice::ReadWrite))
-        LOG(LOG_ERROR, "Unable to open audio buffer");
-    seek(0);
-    LOG(LOG_VERBOSE, "Audio buffer is sequential: %d", isSequential());
-}
-AudioBuffer::~AudioBuffer()
-{
-    close();
-}
-
-qint64 AudioBuffer::readData(char * pData, qint64 pLen)
-{
-    qint64 tResult = -1;
-    //printf("Got a call to read %d bytes at %p from audio buffer\n", (int)pLen, pData);
-
-    mMutex.lock();
-    qint64 tPos = pos();
-    seek(0);
-    tResult =  QBuffer::readData(pData, pLen);
-    seek(tPos);
-
-    if(tResult > 0)
-    {
-        close();
-        setData(buffer().right(size() - tResult));
-        if (!open(QIODevice::ReadWrite))
-            LOG(LOG_ERROR, "Unable to open audio buffer");
-
-        printf("READ(%d): ", (int)tResult);
-        for (int i = 0; i < 92; i++)
-            printf("%hx ", 0xFF & pData[i]);
-        printf("\n");
-    }
-    mMutex.unlock();
-
-    return tResult;
-}
-
-qint64 AudioBuffer::writeData(const char * pData, qint64 pLen)
-{
-    qint64 tResult = 0;
-    //printf("Got a call to write data to audio buffer\n");
-    mMutex.lock();
-    tResult =  QBuffer::writeData(pData, pLen);
-    printf("WRITE(%d to %d => %d): ", (int)tResult, (int)pos(), (int)size());
-    for (int i = 0; i < 92; i++)
-        printf("%hx ", 0xFF & pData[i]);
-    printf("\n");
-    //LOG(LOG_VERBOSE, "New pos: %d", pos());
-    if (tResult == -1)
-        LOG(LOG_ERROR, "Error in writeData: %s", errorString().toStdString().c_str());
-    mMutex.unlock();
-    return tResult;
-}
-
-
-//####################################################################
 //###################### WORKER ######################################
 //####################################################################
 AudioWorkerThread::AudioWorkerThread(MediaSource *pAudioSource, AudioWidget *pAudioWidget):
@@ -927,14 +865,25 @@ void AudioWorkerThread::ToggleMuteState(bool pState)
 
 void AudioWorkerThread::SetVolume(int pValue)
 {
-	if (!mPlaybackAvailable)
-	{
-		LOG(LOG_VERBOSE, "Playback device isn't available");
-		return;
-	}
+	if (mAudioWidget->GetVolume() != pValue)
+	{// call from outside
+		mAudioWidget->SetVolume(pValue);
+	}else
+	{// call from audio widget
+		if (!mPlaybackAvailable)
+		{
+			LOG(LOG_VERBOSE, "Playback device isn't available");
+			return;
+		}
 
-	if (mWaveOut != NULL)
-	    mWaveOut->SetVolume(pValue);
+		if (mWaveOut != NULL)
+		    mWaveOut->SetVolume(pValue);
+	}
+}
+
+int AudioWorkerThread::GetVolume()
+{
+	return mAudioWidget->GetVolume();
 }
 
 void AudioWorkerThread::SetMuteState(bool pMuted)
@@ -1132,6 +1081,7 @@ bool AudioWorkerThread::SupportsSeeking()
 
 void AudioWorkerThread::Seek(int64_t pPos)
 {
+	LOG(LOG_VERBOSE, "Seeking to position: %ld", pPos);
     mSeekPos = pPos;
     mSeekAsap = true;
     mGrabbingCondition.wakeAll();
@@ -1144,7 +1094,12 @@ int64_t AudioWorkerThread::GetSeekPos()
 
 int64_t AudioWorkerThread::GetSeekEnd()
 {
-    return mAudioSource->GetSeekEnd();
+	int64_t tResult = 0;
+
+    tResult = mAudioSource->GetSeekEnd();
+    //LOG(LOG_VERBOSE, "Determined seek end with %ld", tResult);
+
+    return tResult;
 }
 
 bool AudioWorkerThread::SupportsMultipleChannels()
@@ -1588,7 +1543,6 @@ void AudioWorkerThread::run()
                 if ((tSampleNumber >= 0) && (mSamplesSize[mSampleGrabIndex] > 0))
                 {
                     // lock
-                    //LOG(LOG_ERROR, "DeliverMutex");
                     mDeliverMutex.lock();
 
                     mSampleNumber[mSampleGrabIndex] = tSampleNumber;
@@ -1601,9 +1555,6 @@ void AudioWorkerThread::run()
                     mDeliverMutex.unlock();
 
                     mAudioWidget->InformAboutNewSamples();
-
-                    //printf("AudioWorker--> %d\n", mSampleGrabIndex);
-                    //printf("AudioWorker-grabbing FPS: %2d grabbed frame number: %d\n", mResultingFps, tSampleNumber);
 
                     if ((tLastSampleNumber > tSampleNumber) && (tSampleNumber > 9 /* -1 means error, 1 is received after every reset, use "9" because of possible latencies */))
                         LOG(LOG_ERROR, "Sample ordering problem detected");

@@ -99,7 +99,7 @@ int MediaSourceMuxer::DistributePacket(void *pOpaque, uint8_t *pBuffer, int pBuf
     // ###################################################################
     #ifdef MSM_DEBUG_PACKETS
         LOGEX(MediaSourceMuxer, LOG_VERBOSE, "Distribute packet of size: %d, chunk number: %d", pBufferSize, tMuxer->mChunkNumber);
-        if (pBufferSize > MAX_SOCKET_BUFFER)
+        if (pBufferSize > MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE)
         {
             LOGEX(MediaSourceMuxer, LOG_WARN, "Encoded media data of %d bytes is too big for network streaming", pBufferSize);
         }
@@ -190,19 +190,12 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
                         LOG(LOG_VERBOSE, "Resolution %d*%d supported by H.261", pResX, pResY);
                     }else
                     {
-                        LOG(LOG_WARN, "Resolution %d*%d unsupported by H.261, will switch to default resolution of 352*288", pResX, pResY);
+                        if ((pResX != -1) && (pResY != -1))
+                        	LOG(LOG_WARN, "Resolution %d*%d unsupported by H.261, will switch to default resolution of 352*288", pResX, pResY);
                         tResX = 352;
                         tResY = 288;
                         break;
                     }
-                    if (pResX > 352)
-                        tResX = 352;
-                    if (pResX < 176)
-                        tResX = 176;
-                    if (pResY > 288)
-                        tResY = 288;
-                    if (pResY < 144)
-                        tResY = 144;
                     break;
             case CODEC_ID_H263:  // supports SQCIF, QCIF, CIF, CIF4,CIF16
                     if (((pResX == 128) && (pResY == 96)) || ((pResX == 176) && (pResY == 144)) || ((pResX == 352) && (pResY == 288)) || ((pResX == 704) && (pResY == 576)) || ((pResX == 1408) && (pResY == 1152)))
@@ -210,19 +203,12 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
                         LOG(LOG_VERBOSE, "Resolution %d*%d supported by H.263", pResX, pResY);
                     }else
                     {
-                        LOG(LOG_WARN, "Resolution %d*%d unsupported by H.263, will switch to default resolution of 352*288", pResX, pResY);
+                        if ((pResX != -1) && (pResY != -1))
+                        	LOG(LOG_WARN, "Resolution %d*%d unsupported by H.263, will switch to default resolution of 352*288", pResX, pResY);
                         tResX = 352;
                         tResY = 288;
                         break;
                     }
-                    if (pResX > 704)
-                        tResX = 704;
-                    if (pResX < 176)
-                        tResX = 176;
-                    if (pResY > 576)
-                        tResY = 576;
-                    if (pResY < 144)
-                        tResY = 144;
                     break;
             case CODEC_ID_H263P:
             default:
@@ -230,7 +216,10 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
         }
         if ((tResX != pResX) || (tResY != pResY))
         {
-            LOG(LOG_WARN, "Codec doesn't support selected video resolution, changed resolution from %d*%d to %d*%d", pResX, pResY, tResX, tResY);
+            if ((pResX != -1) && (pResY != -1))
+            	LOG(LOG_WARN, "Codec doesn't support selected video resolution, changed resolution from %d*%d to %d*%d", pResX, pResY, tResX, tResY);
+            else
+            	LOG(LOG_VERBOSE, "Selected auto-detect resolution %d*%d", tResX, tResY);
             pResX = tResX;
             pResY = tResY;
         }
@@ -247,7 +236,7 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
         (GetRtpActivation() != pRtpActivated) ||
         (mStreamQuality != pMediaStreamQuality) ||
         (mStreamMaxPacketSize != pMaxPacketSize) ||
-        ((mCurrentStreamingResX != pResX) &&  (pResX != -1)) || ((mCurrentStreamingResY != pResY) && (pResY != -1)))
+        (mCurrentStreamingResX != pResX) || (mCurrentStreamingResY != pResY))
     {
         LOG(LOG_VERBOSE, "Setting new %s streaming preferences", GetMediaTypeStr().c_str());
 
@@ -484,12 +473,15 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     MarkOpenGrabDeviceSuccessful();
     LOG(LOG_INFO, "    ..max packet size: %d bytes", mFormatContext->pb->max_packet_size);
     LOG(LOG_INFO, "  stream...");
+    LOG(LOG_INFO, "    ..AV stream context at: %p", mFormatContext->streams[0]);
+    LOG(LOG_INFO, "    ..AV stream codec is: %s(%d)", mFormatContext->streams[0]->codec->codec->name, mFormatContext->streams[0]->codec->codec_id);
+    LOG(LOG_INFO, "    ..AV stream codec context at: %p", mFormatContext->streams[0]->codec);
+    LOG(LOG_INFO, "    ..AV stream codec codec context at: %p", mFormatContext->streams[0]->codec->codec);
     if (mRtpActivated)
         LOG(LOG_INFO, "    ..rtp encapsulation: yes");
     else
         LOG(LOG_INFO, "    ..rtp encapsulation: no");
     LOG(LOG_INFO, "    ..max. packet size: %d bytes", mStreamMaxPacketSize);
-
     // unlock
     mMediaSinksMutex.unlock();
 
@@ -656,9 +648,12 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
         return false;
     }
 
-    // avoid packets with frame size of 1 in case of PCM codec
-    if (mCodecContext->frame_size == 1)
-        mCodecContext->frame_size = 256;
+    // fix frame size of 0 for some audio codecs and use default caudio capture frame size instead to allow 1:1 transformation
+    // old PCM implementation delivered often a frame size of 1
+    // some audio codecs (excl. MP3) deliver a frame size of 0
+    // ==> we use 32 as threshold to catch most of the inefficient values for the frame size
+    if (mCodecContext->frame_size < 32)
+    	mCodecContext->frame_size = 1024;
 
     mMediaType = MEDIA_AUDIO;
 
@@ -1353,7 +1348,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
         }
     }
 
-    LOG(LOG_VERBOSE, "Encoder loop finished");
+    LOG(LOG_VERBOSE, "Encoder thread finished");
 
     return NULL;
 }

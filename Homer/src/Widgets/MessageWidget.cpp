@@ -328,7 +328,7 @@ void MessageWidget::SendFile(QList<QUrl> *tFileUrls)
                                                                    CONF.GetDataDirectory(),
                                                                    "All files (*)",
                                                                    NULL,
-                                                                   QFileDialog::DontUseNativeDialog);
+                                                                   CONF_NATIVE_DIALOGS);
 
         if (tSelectedFiles.isEmpty())
             return;

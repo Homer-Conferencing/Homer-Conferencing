@@ -109,6 +109,7 @@ public:
     void AssignStreamName(std::string pName);
     std::string GetStreamName();
     enum DataType GetDataType();
+    std::string GetDataTypeStr();
     enum TransportType GetTransportType();
     std::string GetTransportTypeStr();
     enum NetworkType GetNetworkType();

@@ -162,6 +162,7 @@ static void sQtDebugMessageOutput(QtMsgType pType, const char *pMsg)
 			case QtFatalMsg:
 				LOGEX(MainWindow, LOG_ERROR, "\033[01;33m QtFatal: \"%s\"", pMsg);
 				abort();
+				break;
 		}
 	#endif
 	#ifdef WIN32
@@ -179,6 +180,7 @@ static void sQtDebugMessageOutput(QtMsgType pType, const char *pMsg)
 			case QtFatalMsg:
 				LOGEX(MainWindow, LOG_ERROR, " QtFatal: \"%s\"", pMsg);
 				abort();
+				break;
 		}
 	#endif
 }
@@ -253,15 +255,42 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
         printf("For updates visit http://www.homer-conferencing.com\n");
     #endif
 
-    qInstallMsgHandler(sQtDebugMessageOutput);
+	QApplication *tApp = new QApplication(pArgc, pArgv);
 
-    string tAbsBinPath;
-    QApplication *tApp = new QApplication(pArgc, pArgv);
+	QStringList tArguments = QCoreApplication::arguments();
+
+	if (tArguments.contains("-DebugLevel=Error"))
+	{
+		LOGGER.Init(LOG_ERROR);
+	}else
+	{
+		if (tArguments.contains("-DebugLevel=Info"))
+		{
+			LOGGER.Init(LOG_INFO);
+		}else
+		{
+			if (tArguments.contains("-DebugLevel=Verbose"))
+			{
+				LOGGER.Init(LOG_VERBOSE);
+			}else
+			{
+				#ifdef RELEASE_VERSION
+					LOGGER.Init(LOG_ERROR);
+				#else
+					LOGGER.Init(LOG_VERBOSE);
+				#endif
+			}
+		}
+	}
+
+	LOGEX(MainWindow, LOG_VERBOSE, "Setting Qt message handler");
+	qInstallMsgHandler(sQtDebugMessageOutput);
 
     // make sure every icon is visible within menus: otherwise the Ubuntu-packages will have no icons visible
     tApp->setAttribute(Qt::AA_DontShowIconsInMenus, false);
 
     // get the absolute path to our binary
+    string tAbsBinPath;
     if (pArgc > 0)
     {
     	string tArgv0 = "";
@@ -293,30 +322,9 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
         Thread::Suspend(2 * 1000 * 1000);
     #endif
 
-    QStringList tArguments = QCoreApplication::arguments();
-
-    if (tArguments.contains("-DebugLevel=Error"))
-    {
-        LOGGER.Init(LOG_ERROR);
-    }else
-        if (tArguments.contains("-DebugLevel=Info"))
-        {
-            LOGGER.Init(LOG_INFO);
-        }else
-            if (tArguments.contains("-DebugLevel=Verbose"))
-            {
-                LOGGER.Init(LOG_VERBOSE);
-            }else
-            {
-                #ifdef RELEASE_VERSION
-                    LOGGER.Init(LOG_ERROR);
-                #else
-                    LOGGER.Init(LOG_VERBOSE);
-                #endif
-            }
     showMood();
-    LOGEX(MainWindow, LOG_VERBOSE, "Creating Qt main window");
 
+    LOGEX(MainWindow, LOG_VERBOSE, "Creating Qt main window");
     MainWindow *tMainWindow = new MainWindow(tAbsBinPath);
 
     LOGEX(MainWindow, LOG_VERBOSE, "Showing Qt main window");

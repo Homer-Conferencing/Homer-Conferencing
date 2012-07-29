@@ -77,15 +77,13 @@ public:
 
     virtual void StopGrabbing();
 
-    virtual void* Run(void* pArgs = NULL);
-
     virtual std::string GetCurrentDevicePeerName();
 
-private:
+protected:
+    virtual void* Run(void* pArgs = NULL);
+
     void Init(Socket *pDataSocket, unsigned int pLocalPort, bool pRtpActivated = true);
     bool DoReceiveFragment(std::string &pSourceHost, unsigned int &pSourcePort, char* pData, int &pSize);
-
-protected:
 
     char                *mPacketBuffer;
     bool				mListenerRunning;

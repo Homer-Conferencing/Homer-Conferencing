@@ -31,7 +31,6 @@
 									<listOptionValue builtIn="false" value="APPLE=1"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.include.paths.1138424256" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="/usr/include"/>
 									<listOptionValue builtIn="false" value="&quot;C:\MinGW\include\c++\3.4.5&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\MinGW\include\&quot;"/>
 									<listOptionValue builtIn="false" value="../../HomerBase/include/Logging"/>

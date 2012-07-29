@@ -277,7 +277,7 @@ void OverviewDataStreamsWidget::SaveHistory(enum DataType pDataType, int pIndex)
                                                          QDir::homePath() + "/DataRateHistory.csv",
                                                          "Comma-Separated Values File (*.csv)",
                                                          NULL,
-                                                         QFileDialog::DontUseNativeDialog);
+                                                         CONF_NATIVE_DIALOGS);
 
         if (tFileName.isEmpty())
             return;
@@ -373,7 +373,7 @@ void OverviewDataStreamsWidget::SaveCompleteStatistic()
                                                      QDir::homePath() + "/PacketStatistic.csv",
                                                      "Comma-Separated Values File (*.csv)",
                                                      NULL,
-                                                     QFileDialog::DontUseNativeDialog);
+                                                     CONF_NATIVE_DIALOGS);
 
     if (tFileName.isEmpty())
         return;

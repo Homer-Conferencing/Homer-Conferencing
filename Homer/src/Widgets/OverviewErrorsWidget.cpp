@@ -161,7 +161,7 @@ void OverviewErrorsWidget::SaveLog()
                                                      QDir::homePath() + "/HomerErrorLog.txt",
                                                      "Text Document File (*.txt)",
                                                      NULL,
-                                                     QFileDialog::DontUseNativeDialog);
+                                                     CONF_NATIVE_DIALOGS);
 
     if (tFileName.isEmpty())
         return;

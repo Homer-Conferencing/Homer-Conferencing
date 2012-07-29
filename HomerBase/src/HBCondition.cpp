@@ -188,6 +188,9 @@ bool Condition::Wait(Mutex *pMutex, int pTime)
         if (pMutex != NULL)
         	pMutex->lock();
     #endif
+
+	LOG(LOG_ERROR, "We should never reach this point but we did");
+	return false;
 }
 
 bool Condition::SignalOne()

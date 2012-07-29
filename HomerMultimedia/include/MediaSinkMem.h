@@ -31,7 +31,7 @@
 #include <string>
 
 #include <MediaFifo.h>
-#include <MediaSinkNet.h>
+#include <MediaSink.h>
 #include <RTP.h>
 
 namespace Homer { namespace Multimedia {
@@ -41,29 +41,47 @@ namespace Homer { namespace Multimedia {
 // the following de/activates debugging of received packets
 //#define MSIM_DEBUG_PACKETS
 
+//#define MSIM_DEBUG_TIMING
+
 ///////////////////////////////////////////////////////////////////////////////
 
 class MediaSinkMem:
-    public MediaSinkNet
+    public MediaSink, public RTP
 {
 
 public:
-    MediaSinkMem(std::string pMemoryId, enum MediaSinkType pType, bool pRtpActivated);
+    MediaSinkMem(std::string pMediaId, enum MediaSinkType pType, bool pRtpActivated);
 
     virtual ~MediaSinkMem();
+
+    virtual void ProcessPacket(char* pPacketData, unsigned int pPacketSize, AVStream *pStream = NULL, bool pIsKeyFrame = false);
 
     virtual int GetFragmentBufferCounter();
     virtual int GetFragmentBufferSize();
 
     virtual void ReadFragment(char *pData, int &pDataSize);
-    virtual void StopReading();
+    virtual void StopProcessing();
 
 protected:
-    virtual void SendFragment(char* pData, unsigned int pSize);
+    virtual void WriteFragment(char* pData, unsigned int pSize);
 
-private:
-    std::string     mMemoryId;
-    MediaFifo       *mSinkFifo;
+    /* RTP stream handling */
+    virtual bool OpenStreamer(AVStream *pStream);
+    virtual bool CloseStreamer();
+
+protected:
+    /* target */
+    std::string         mTargetHost;
+    unsigned int        mTargetPort;
+    /* RTP stream handling */
+    bool                mRtpActivated;
+    bool                mRtpStreamOpened;
+    AVStream*			mIncomingAVStream;
+    AVCodecContext*	 	mIncomingAVStreamCodecContext;
+    /* general stream handling */
+    bool                mWaitUntillFirstKeyFrame;
+    /* queue handling */
+    MediaFifo       	*mSinkFifo;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

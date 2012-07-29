@@ -112,7 +112,7 @@ private:
     MediaFifo           *mDecoderFifo;
     MediaFifo           *mDecoderMetaDataFifo;
     int64_t             mDecoderLastReadPts;
-    Condition           DecoderNeedWorkCondition;
+    Condition           mDecoderNeedWorkCondition;
     bool                mEOFReached;
     /* */
     bool                mGrabInRealTime;

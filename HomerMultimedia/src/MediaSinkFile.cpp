@@ -41,12 +41,12 @@ using namespace Homer::Monitor;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-MediaSinkFile::MediaSinkFile(string pSinkFile, enum MediaSinkType pType):
-    MediaSinkNet(pSinkFile, 0, NULL, pType, false)
+MediaSinkFile::MediaSinkFile(string pSinkFile, enum MediaSinkType pType, bool pRtpActivated):
+	MediaSinkMem(pSinkFile, pType, pRtpActivated)
 {
     mSinkFile = pSinkFile;
-    // overwrite id from MediaSinkNet
     mMediaId = pSinkFile;
+    AssignStreamName("FILE-OUT: " + mMediaId);
     switch(pType)
     {
         case MEDIA_SINK_VIDEO:
@@ -64,7 +64,7 @@ MediaSinkFile::~MediaSinkFile()
 {
 }
 
-void MediaSinkFile::SendFragment(char* pData, unsigned int pSize)
+void MediaSinkFile::WriteFragment(char* pData, unsigned int pSize)
 {
     #ifdef MSIF_DEBUG_PACKETS
         LOG(LOG_VERBOSE, "Storing packet number %6ld at %p with size %4u(%3u header) in file %s", ++mPacketNumber, pData, pSize, RTP_HEADER_SIZE, mSinkFile.c_str());

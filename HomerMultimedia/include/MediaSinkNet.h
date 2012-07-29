@@ -31,8 +31,8 @@
 #include <Header_Ffmpeg.h>
 #include <GAPI.h>
 #include <HBSocket.h>
-#include <MediaSink.h>
-#include <RTP.h>
+#include <HBThread.h>
+#include <MediaSinkMem.h>
 
 #include <string>
 
@@ -50,7 +50,7 @@ namespace Homer { namespace Multimedia {
 ///////////////////////////////////////////////////////////////////////////////
 
 class MediaSinkNet:
-    public MediaSink, public RTP
+    public MediaSinkMem, public Thread
 {
 
 public:
@@ -66,28 +66,24 @@ public:
     /* network oriented ID */
     static std::string CreateId(std::string pHost, std::string pPort, enum TransportType pSocketTransportType = SOCKET_TRANSPORT_TYPE_INVALID, bool pRtpActivated = true);
 
-protected:
-    /* automatic state handling */
-    virtual bool OpenStreamer(AVStream *pStream);
-    virtual bool CloseStreamer();
-    /* sending one single fragment of an (rtp) packet stream */
-    virtual void SendFragment(char* pData, unsigned int pSize);
-    virtual void DoSendFragment(char* pData, unsigned int pSize);
-
-    bool                mRtpActivated;
-    AVStream            *mCurrentStream;
+    virtual void StopProcessing();
 
 private:
-    void BasicInit(string pTargetHost, unsigned int pTargetPort, enum MediaSinkType pType, bool pRtpActivated);
+    /* sender thread */
+    virtual void* Run(void* pArgs = NULL);
+    void StartSender();
+    void StopSender();
 
-    std::string         mCodec;
-    bool                mStreamerOpened;
-    bool                mWaitUntillFirstKeyFrame;
+    /* sending one single fragment of an (rtp) packet stream */
+    virtual void SendPacket(char* pData, unsigned int pSize);
+    virtual void DoSendPacket(char* pData, unsigned int pSize);
+
+    void BasicInit(string pTargetHost, unsigned int pTargetPort);
+
     /* general transport */
+    bool				mSenderNeeded;
     int                 mMaxNetworkPacketSize;
     bool                mBrokenPipe;
-    std::string         mTargetHost;
-    unsigned int        mTargetPort;
     bool                mStreamedTransport;
     char                *mStreamFragmentCopyBuffer;
     /* Berkeley sockets based transport */

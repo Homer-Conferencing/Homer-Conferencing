@@ -85,7 +85,7 @@ MediaSource::MediaSource(string pName):
     mCurrentDeviceName = "";
     mRecorderRealTime = true;
     mLastGrabResultWasError = false;
-    mDuration = 0;
+    mNumberOfFrames = 0;
     mChunkNumber = 0;
     mChunkDropCounter = 0;
     mSampleRate = 44100;
@@ -260,6 +260,7 @@ int MediaSource::FfmpegLockManager(void **pMutex, enum AVLockOp pMutexOperation)
             return 0;
         default:
         	LOGEX(MediaSource, LOG_ERROR, "We should never reach this point. Unknown mutex operation requested by ffmpeg library.");
+        	break;
     }
     return 1;
 }
@@ -1042,7 +1043,7 @@ MediaSinkFile* MediaSource::RegisterMediaSink(string pTargetFile)
 
     if (!tFound)
     {
-        MediaSinkFile *tMediaSinkFile = new MediaSinkFile(pTargetFile, (mMediaType == MEDIA_VIDEO)?MEDIA_SINK_VIDEO:MEDIA_SINK_AUDIO);
+        MediaSinkFile *tMediaSinkFile = new MediaSinkFile(pTargetFile, (mMediaType == MEDIA_VIDEO)?MEDIA_SINK_VIDEO:MEDIA_SINK_AUDIO, mRtpActivated);
         mMediaSinks.push_back(tMediaSinkFile);
         tResult = tMediaSinkFile;
     }
@@ -1557,7 +1558,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     LOG(LOG_INFO, "    ..qmin: %d", mRecorderCodecContext->qmin);
     LOG(LOG_INFO, "    ..qmax: %d", mRecorderCodecContext->qmax);
     LOG(LOG_INFO, "    ..frame size: %d", mRecorderCodecContext->frame_size);
-    LOG(LOG_INFO, "    ..duration: %ld frames", mDuration);
+    LOG(LOG_INFO, "    ..duration: %ld frames", mNumberOfFrames);
     LOG(LOG_INFO, "    ..stream context duration: %ld frames, %.0f seconds, format context duration: %ld, nr. of frames: %ld", mRecorderFormatContext->streams[tMediaStreamIndex]->duration, (float)mRecorderFormatContext->streams[tMediaStreamIndex]->duration / mFrameRate, mRecorderFormatContext->duration, mRecorderFormatContext->streams[tMediaStreamIndex]->nb_frames);
     switch(mMediaType)
     {
@@ -2255,7 +2256,7 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..qmin: %d", mCodecContext->qmin);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..qmax: %d", mCodecContext->qmax);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame size: %d", mCodecContext->frame_size);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..duration: %ld frames", mDuration);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..duration: %ld frames", mNumberOfFrames);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context duration: %ld frames, %.0f seconds, format context duration: %ld seconds, nr. of frames: %ld", mFormatContext->streams[mMediaStreamIndex]->duration, (float)mFormatContext->streams[mMediaStreamIndex]->duration / mFrameRate, mFormatContext->duration / AV_TIME_BASE, mFormatContext->streams[mMediaStreamIndex]->nb_frames);
     switch(mMediaType)
     {

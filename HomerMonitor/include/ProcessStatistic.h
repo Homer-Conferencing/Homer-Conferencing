@@ -79,8 +79,7 @@ friend class ProcessStatisticService;
     std::string mName;
     unsigned long long mLastUserTicsThread;
     unsigned long long mLastKernelTicsThread;
-    unsigned long long mLastUserTicsSystem;
-    unsigned long long mLastKernelTicsSystem;
+    unsigned long long mLastSystemTime;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

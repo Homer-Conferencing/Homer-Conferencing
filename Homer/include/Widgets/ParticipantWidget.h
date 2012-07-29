@@ -70,6 +70,19 @@ typedef std::list<ParticipantWidget*>  ParticipantWidgetList;
 #define	SOUND_FOR_CALL_LOOPS										10
 #define STREAM_POS_UPDATE_DELAY                                     250 //ms
 
+// de/activate A/V synch. for file playback
+#define FILE_PLAYBACK_SYNC_AUDIO_VIDEO
+// max. allowed drift between audio and video playback
+#define FILE_PLAYBACK_MAX_AUDIO_VIDEO_DRIFT							0 //seconds
+// min. time difference between two synch. processes
+#define FILE_PLAYBACK_SYNC_AUDIO_VIDEO_MIN_PERIOD			       10 // seconds
+// how many times do we have to detect continuous asynch. A/V playback before we synch. audio and video? (to avoid false-positives)
+#define FILE_PLAYBACK_SYNC_AUDIO_VIDEO_CONTINUOUS_ASYNC_THRESHOLD   2 // checked every STREAM_POS_UPDATE_DELAY ms
+
+///////////////////////////////////////////////////////////////////////////////
+
+//#define PARTICIPANT_WIDGET_DEBUG_AV_SYNC
+
 ///////////////////////////////////////////////////////////////////////////////
 // use the SIP-Events-structure for signaling the deletion of a participant ///
 ///////////////////////////////////////////////////////////////////////////////
@@ -136,6 +149,7 @@ private slots:
     void PauseMovieFile();
 	void LookedUpParticipantHost(const QHostInfo &pHost);
 	void SeekMovieFile(int pPos);
+	void SeekMovieFileToPos(int pPos);
 
 private:
     void OpenPlaybackDevice();
@@ -148,6 +162,7 @@ private:
     virtual void dropEvent(QDropEvent *pEvent);
     virtual void wheelEvent(QWheelEvent *pEvent);
     virtual void timerEvent(QTimerEvent *pEvent);
+
     void ShowNewState();
     void ShowStreamPosition(int64_t tCurPos, int64_t tEndPos);
     void CallStopped(bool pIncoming);
@@ -171,8 +186,12 @@ private:
     MediaSource         *mVideoSource, *mAudioSource;
     Socket				*mVideoSendSocket, *mAudioSendSocket, *mVideoReceiveSocket, *mAudioReceiveSocket;
     int                 mTimerId;
+    int					mMovieSliderPosition;
     /* playback */
     Homer::Multimedia::WaveOut *mWaveOut;
+    /* A/V synch. */
+    int64_t				mTimeOfLastAVSynch;
+    int 				mContinuousAVAsync;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

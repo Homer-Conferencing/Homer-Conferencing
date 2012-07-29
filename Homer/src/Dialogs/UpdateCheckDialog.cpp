@@ -125,7 +125,7 @@ void UpdateCheckDialog::DownloadStart()
 																CONF.GetDataDirectory() + "/" + tReleaseFileName,
 																tReleaseFileType,
 																&tReleaseFileType,
-																QFileDialog::DontUseNativeDialog);
+																CONF_NATIVE_DIALOGS);
 
 	if (tFileName.isEmpty())
 		return;
@@ -185,7 +185,7 @@ void UpdateCheckDialog::DownloadInstallerStart()
 																CONF.GetDataDirectory() + "/" + tReleaseFileName,
 																tReleaseFileType,
 																&tReleaseFileType,
-																QFileDialog::DontUseNativeDialog);
+																CONF_NATIVE_DIALOGS);
 
 	if (tFileName.isEmpty())
 		return;

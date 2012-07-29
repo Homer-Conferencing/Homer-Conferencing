@@ -26,7 +26,9 @@
  */
 
 #include <Header_Ffmpeg.h>
+#include <ProcessStatisticService.h>
 #include <MediaSinkNet.h>
+#include <MediaSinkMem.h>
 #include <MediaSourceMem.h>
 #include <MediaSourceNet.h>
 #include <PacketStatistic.h>
@@ -48,26 +50,21 @@ using namespace Homer::Monitor;
 using namespace Homer::Base;
 
 ///////////////////////////////////////////////////////////////////////////////
-void MediaSinkNet::BasicInit(string pTargetHost, unsigned int pTargetPort, enum MediaSinkType pType, bool pRtpActivated)
+void MediaSinkNet::BasicInit(string pTargetHost, unsigned int pTargetPort)
 {
 	mStreamFragmentCopyBuffer = NULL;
     mGAPIDataSocket = NULL;
     mDataSocket = NULL;
-    mCodec = "unknown";
-    mStreamerOpened = false;
     mBrokenPipe = false;
     mMaxNetworkPacketSize = 1280;
-    mCurrentStream = NULL;
     mTargetHost = pTargetHost;
     mTargetPort = pTargetPort;
-    mRtpActivated = pRtpActivated;
-    mWaitUntillFirstKeyFrame = (pType == MEDIA_SINK_VIDEO) ? true : false;
 }
 
 MediaSinkNet::MediaSinkNet(string pTarget, Requirements *pTransportRequirements, enum MediaSinkType pType, bool pRtpActivated):
-    MediaSink(pType), RTP()
+    MediaSinkMem("memory", pType, pRtpActivated)
 {
-    BasicInit(pTarget, 0, pType, pRtpActivated);
+    BasicInit(pTarget, 0);
     mGAPIUsed = true;
 
     // get target port
@@ -90,6 +87,7 @@ MediaSinkNet::MediaSinkNet(string pTarget, Requirements *pTransportRequirements,
     // get transport type
     mStreamedTransport = pTransportRequirements->contains(pTransportRequirements->contains(RequirementTransmitStream::type()));
     enum TransportType tTransportType = (mStreamedTransport ? SOCKET_TCP : (pTransportRequirements->contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
+    enum NetworkType tNetworkType = (IS_IPV6_ADDRESS(pTarget)) ? SOCKET_IPv6 : SOCKET_IPv4;
     if (mStreamedTransport)
     	mStreamFragmentCopyBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
 
@@ -103,18 +101,40 @@ MediaSinkNet::MediaSinkNet(string pTarget, Requirements *pTransportRequirements,
         mGAPIDataSocket = GAPI.connect(&tName, pTransportRequirements); //new Socket(IS_IPV6_ADDRESS(pTargetHost) ? SOCKET_IPv6 : SOCKET_IPv4, pSocketType);
     }
 
+    switch(pType)
+    {
+        case MEDIA_SINK_VIDEO:
+            ClassifyStream(DATA_TYPE_VIDEO, tTransportType, tNetworkType);
+            break;
+        case MEDIA_SINK_AUDIO:
+            ClassifyStream(DATA_TYPE_AUDIO, tTransportType, tNetworkType);
+            break;
+        default:
+            LOG(LOG_ERROR, "Undefined media type");
+            break;
+    }
+
     mMediaId = CreateId(mTargetHost, toString(mTargetPort), tTransportType, pRtpActivated);
     AssignStreamName("NET-OUT: " + mMediaId);
+
+    StartSender();
 }
 
 MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, Socket* pLocalSocket, enum MediaSinkType pType, bool pRtpActivated):
-    MediaSink(pType), RTP()
+	MediaSinkMem("memory", pType, pRtpActivated)
 {
-    BasicInit(pTargetHost, pTargetPort, pType, pRtpActivated);
+    BasicInit(pTargetHost, pTargetPort);
     mDataSocket = pLocalSocket;
     mGAPIUsed = false;
     enum TransportType tTransportType = SOCKET_RAW;
     enum NetworkType tNetworkType = SOCKET_RAWNET;
+
+    // get transport type
+    mStreamedTransport = (tTransportType == SOCKET_TCP);
+    if (mStreamedTransport)
+        mStreamFragmentCopyBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
+
+    LOG(LOG_VERBOSE, "Remote media sink at: %s<%d>%s", pTargetHost.c_str(), pTargetPort, mRtpActivated ? "(RTP)" : "");
 
     if (mDataSocket != NULL)
     {
@@ -144,20 +164,17 @@ MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, Socket*
         mDataSocket->SetQoS(tQoSSettings);
     }
 
-    mStreamedTransport = (tTransportType == SOCKET_TCP);
-    if (mStreamedTransport)
-        mStreamFragmentCopyBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
-
-    LOG(LOG_VERBOSE, "Remote media sink at: %s<%d>%s", pTargetHost.c_str(), pTargetPort, mRtpActivated ? "(RTP)" : "");
-
     mMediaId = CreateId(pTargetHost, toString(pTargetPort), tTransportType, pRtpActivated);
     AssignStreamName("NET-OUT: " + mMediaId);
+
+    StartSender();
 }
 
 MediaSinkNet::~MediaSinkNet()
 {
-    CloseStreamer();
-    if(mGAPIUsed)
+	StopSender();
+
+	if(mGAPIUsed)
     {
 		if (mGAPIDataSocket != NULL)
 			delete mGAPIDataSocket;
@@ -168,169 +185,16 @@ MediaSinkNet::~MediaSinkNet()
     free(mStreamFragmentCopyBuffer);
 }
 
-bool MediaSinkNet::OpenStreamer(AVStream *pStream)
-{
-    if (mStreamerOpened)
-    {
-        LOG(LOG_ERROR, "Already opened");
-        return false;
-    }
-
-    mCodec = pStream->codec->codec->name;
-    if (mRtpActivated)
-        OpenRtpEncoder(mTargetHost, mTargetPort, pStream);
-
-    mStreamerOpened = true;
-    mCurrentStream = pStream;
-
-    return true;
-}
-
-bool MediaSinkNet::CloseStreamer()
-{
-    if (!mStreamerOpened)
-        return false;
-
-    if (mRtpActivated)
-        CloseRtpEncoder();
-
-    mStreamerOpened = false;
-
-    return true;
-}
+///////////////////////////////////////////////////////////////////////////////
 
 void MediaSinkNet::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AVStream *pStream, bool pIsKeyFrame)
 {
-    // check for key frame if we wait for the first key frame
-    if (mWaitUntillFirstKeyFrame)
-    {
-        if (!pIsKeyFrame)
-            return;
-        else
-        {
-            LOG(LOG_VERBOSE, "Sending frame as first key frame to network sink");
-            mWaitUntillFirstKeyFrame = false;
-        }
-    }
-
-    // save maximum network packet size to use it later within SendFragment() function
+    // save maximum network packet size to use it later within SendPacket() function
     mMaxNetworkPacketSize = pStream->codec->rtp_payload_size;
     if ((mMaxNetworkPacketSize == 0) && (pStream->codec->codec_id == CODEC_ID_H261))
         mMaxNetworkPacketSize = RTP::GetH261PayloadSizeMax() + RTP_HEADER_SIZE + 4 /* H.261 rtp payload header */;
 
-    //####################################################################
-    // send packet(s) with frame data to the correct target host and port
-    //####################################################################
-    if (mRtpActivated)
-    {
-        if (!mStreamerOpened)
-        {
-            if (pStream == NULL)
-            {
-                LOG(LOG_ERROR, "Tried to process packets while streaming is closed, implicit open impossible");
-
-                return;
-            }
-
-            OpenStreamer(pStream);
-        }
-
-        // stream changed
-        if (mCurrentStream != pStream)
-        {
-            LOG(LOG_VERBOSE, "Restarting RTP encoder");
-            CloseStreamer();
-            OpenStreamer(pStream);
-        }
-
-        //####################################################################
-        // limit the outgoing stream to the defined maximum FPS value
-        //####################################################################
-        if ((!BelowMaxFps(pStream->nb_frames)) && (!pIsKeyFrame))
-        {
-			#ifdef MSIN_DEBUG_PACKETS
-        		LOG(LOG_VERBOSE, "Max. FPS reached, packet skipped");
-			#endif
-
-        	return;
-        }
-
-        //####################################################################
-        // convert new packet to a list of RTP encapsulated frame data packets
-        //####################################################################
-//        char buf[256];
-//        size_t size = 256;
-//        if (pPacketSize < 256)
-//            size = pPacketSize;
-//        memcpy(buf, pPacketData, size);
-//        for (unsigned int i = 0; i < 64; i++)
-//            if (pPacketSize >= i)
-//                LOG(LOG_VERBOSE, "FRAME data (%2u): %02hx(%3d)", i, pPacketData[i] & 0xFF, pPacketData[i] & 0xFF);
-
-        #ifdef MSIN_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "Encapsulating codec packet of size %d at memory position %p", pPacketSize, pPacketData);
-        #endif
-        int64_t tTime = Time::GetTimeStamp();
-        bool tRtpCreationSucceed = RtpCreate(pPacketData, pPacketSize);
-        #ifdef MSIN_DEBUG_TIMING
-            int64_t tTime2 = Time::GetTimeStamp();
-            LOG(LOG_VERBOSE, "               generating RTP envelope took %ld us", tTime2 - tTime);
-        #endif
-        #ifdef MSIN_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "Creation of RTP packets resulted in a buffer at %p with size %u", pPacketData, pPacketSize);
-        #endif
-
-//        for (unsigned int i = 0; i < 64; i++)
-//            if (pPacketSize >= i)
-//                LOG(LOG_VERBOSE, "stream data (%2u): FRAME %02hx(%3d)  RTP+12 %02hx(%3d)  RTP %02hx(%3d)", i, buf[i] & 0xFF, buf[i] & 0xFF, pPacketData[i + 12] & 0xFF, pPacketData[i + 12] & 0xFF, pPacketData[i] & 0xFF, pPacketData[i] & 0xFF);
-
-        //####################################################################
-        // find the RTP packets and send them to the destination
-        //####################################################################
-        // HINT: a packet from the RTP muxer has the following structure:
-        // 0..3     4 byte big endian (network byte order!) header giving
-        //          the packet size of the following packet in bytes
-        // 4..n     RTP packet data (including parts of the encoded frame)
-        //####################################################################
-        if ((tRtpCreationSucceed) && (pPacketData != 0) && (pPacketSize > 0))
-        {
-            tTime = Time::GetTimeStamp();
-            char *tRtpPacket = pPacketData + 4;
-            uint32_t tRtpPacketSize = 0;
-            uint32_t tRemainingRtpDataSize = pPacketSize;
-            int tRtpPacketNumber = 0;
-
-            do{
-                tRtpPacketSize = ntohl(*(uint32_t*)(tRtpPacket - 4));
-                #ifdef MSIN_DEBUG_PACKETS
-                    LOG(LOG_VERBOSE, "Found RTP packet %d with size of %u bytes", ++tRtpPacketNumber, tRtpPacketSize);
-                #endif
-                // if there is no packet data we should leave the send loop
-                if (tRtpPacketSize == 0)
-                    break;
-
-                // send final packet
-                SendFragment(tRtpPacket, tRtpPacketSize);
-
-                // go to the next RTP packet
-                tRtpPacket = tRtpPacket + (tRtpPacketSize + 4);
-                tRemainingRtpDataSize -= (tRtpPacketSize + 4);
-
-                #ifdef MSIN_DEBUG_PACKETS
-                    if (tRemainingRtpDataSize > RTP_HEADER_SIZE)
-                        LOG(LOG_VERBOSE, "Remaining RTP data: %d bytes at %p(%u) ", tRemainingRtpDataSize, tRtpPacket - 4, tRtpPacket - 4);
-                #endif
-            }while (tRemainingRtpDataSize > RTP_HEADER_SIZE);
-            #ifdef MSIN_DEBUG_TIMING
-                tTime2 = Time::GetTimeStamp();
-                LOG(LOG_VERBOSE, "                             sending RTP packets to network took %ld us", tTime2 - tTime);
-            #endif
-        }
-    }else
-    {
-        // send final packet
-        SendFragment(pPacketData, pPacketSize);
-    }
+    MediaSinkMem::ProcessPacket(pPacketData, pPacketSize, pStream, pIsKeyFrame);
 }
 
 string MediaSinkNet::CreateId(string pHost, string pPort, enum TransportType pSocketTransportType, bool pRtpActivated)
@@ -341,7 +205,127 @@ string MediaSinkNet::CreateId(string pHost, string pPort, enum TransportType pSo
         return pHost + "<" + toString(pPort) + ">(" + Socket::TransportType2String(pSocketTransportType) + (pRtpActivated ? "/RTP" : "") + ")";
 }
 
-void MediaSinkNet::SendFragment(char* pData, unsigned int pSize)
+void MediaSinkNet::StopProcessing()
+{
+	mSenderNeeded = false;
+	MediaSinkNet::StopProcessing();
+}
+
+void MediaSinkNet::StartSender()
+{
+    LOG(LOG_VERBOSE, "Starting sender for target %s:%u", mTargetHost.c_str(), mTargetPort);
+
+	mSenderNeeded = true;
+
+	// start sender main loop
+	StartThread();
+}
+
+void MediaSinkNet::StopSender()
+{
+    int tSignalingRound = 0;
+    char tTmp[4];
+
+    LOG(LOG_VERBOSE, "Stopping sender");
+
+    if (mSinkFifo != NULL)
+    {
+        // tell sender thread it isn't needed anymore
+    	mSenderNeeded = false;
+
+        // wait for termination of sender thread
+        do
+        {
+            if(tSignalingRound > 0)
+                LOG(LOG_WARN, "Signaling round %d to stop sender, system has high load", tSignalingRound);
+            tSignalingRound++;
+
+            // write fake data to awake sender thread as long as it still runs
+            mSinkFifo->WriteFifo(tTmp, 0);
+        }while(!StopThread(1000));
+    }
+
+    LOG(LOG_VERBOSE, "Encoder stopped");
+}
+
+void* MediaSinkNet::Run(void* pArgs)
+{
+    int tDataSize;
+    int tFifoEntry = 0;
+    char *tBuffer;
+    int tBufferSize;
+
+    LOG(LOG_VERBOSE, "%s Stream relay for target %s:%u started", GetDataTypeStr().c_str(), mTargetHost.c_str(), mTargetPort);
+    if (mGAPIUsed)
+    {
+        switch(GetDataType())
+        {
+            case DATA_TYPE_VIDEO:
+                SVC_PROCESS_STATISTIC.AssignThreadName("Video-Relay(GAPI," + mCodec + ")");
+                break;
+            case DATA_TYPE_AUDIO:
+                SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Relay(GAPI," + mCodec + ")");
+                break;
+            default:
+                LOG(LOG_ERROR, "Unknown media type");
+                break;
+        }
+    }else
+    {
+        switch(GetDataType())
+        {
+            case MEDIA_VIDEO:
+                SVC_PROCESS_STATISTIC.AssignThreadName("Video-Relay(NET," + mCodec + ")");
+                break;
+            case MEDIA_AUDIO:
+                SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Relay(NET," + mCodec + ")");
+                break;
+            default:
+                LOG(LOG_ERROR, "Unknown media type");
+                break;
+        }
+    }
+
+    while(mSenderNeeded)
+    {
+    	if (mSinkFifo != NULL)
+    	{
+            tFifoEntry = mSinkFifo->ReadFifoExclusive(&tBuffer, tBufferSize);
+
+            if ((tBufferSize > 0) && (mSenderNeeded))
+            {
+            	SendPacket(tBuffer, tBufferSize);
+            }
+
+            // release FIFO entry lock
+            mSinkFifo->ReadFifoExclusiveFinished(tFifoEntry);
+
+			if (tDataSize == 0)
+			{
+				LOG(LOG_VERBOSE, "Zero byte %s packet received", GetDataTypeStr().c_str());
+			}
+
+			// is FIFO near overload situation?
+            if (mSinkFifo->GetUsage() >= MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT - 4)
+            {
+                LOG(LOG_WARN, "Relay FIFO is near overload situation, deleting all stored frames");
+
+                // delete all stored frames: it is a better for the encoding to have a gap instead of frames which have high picture differences
+                mSinkFifo->ClearFifo();
+            }
+    	}else
+        {
+            LOG(LOG_VERBOSE, "Suspending the sender thread for 10 ms");
+            Suspend(10 * 1000); // check every 1/100 seconds the state of the FIFO
+        }
+    }
+
+    LOG(LOG_VERBOSE, "%s Socket-Listener for target %s:%u finished", GetDataTypeStr().c_str(), mTargetHost.c_str(), mTargetPort);
+
+    return NULL;
+}
+
+void MediaSinkNet::SendPacket(char* pData, unsigned int pSize)
 {
     if ((mTargetHost == "") || (mTargetPort == 0))
     {
@@ -411,7 +395,7 @@ void MediaSinkNet::SendFragment(char* pData, unsigned int pSize)
             int64_t tTime4 = Time::GetTimeStamp();
             LOG(LOG_VERBOSE, "       SendFragment::AnnouncePacket for a fragment of %u bytes took %ld us", tFragmentSize, tTime4 - tTime3);
         #endif
-        DoSendFragment(tFragmentData, tFragmentSize);
+        DoSendPacket(tFragmentData, tFragmentSize);
 
         tFragmentData = tFragmentData + tFragmentSize;
         tFragmentCount--;
@@ -427,7 +411,7 @@ void MediaSinkNet::SendFragment(char* pData, unsigned int pSize)
     }
 }
 
-void MediaSinkNet::DoSendFragment(char* pData, unsigned int pSize)
+void MediaSinkNet::DoSendPacket(char* pData, unsigned int pSize)
 {
     int64_t tTime = Time::GetTimeStamp();
 	if(mGAPIUsed)

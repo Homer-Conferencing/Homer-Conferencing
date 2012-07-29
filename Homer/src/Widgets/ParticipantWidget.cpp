@@ -75,10 +75,13 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
 
     hide();
     mMainWindow = pMainWindow;
+    mMovieSliderPosition = 0;
     mRemoteVideoAdr = "";
     mRemoteAudioAdr = "";
+    mContinuousAVAsync = 0;
     mRemoteVideoPort = 0;
     mRemoteAudioPort = 0;
+    mTimeOfLastAVSynch = Time::GetTimeStamp();
     mWaveOut = NULL;
     mCallBox = NULL;
     mVideoSourceMuxer = pVideoSourceMuxer;
@@ -158,7 +161,7 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
     connect(mTbPlay, SIGNAL(clicked()), this, SLOT(PlayMovieFile()));
     connect(mTbPause, SIGNAL(clicked()), this, SLOT(PauseMovieFile()));
     connect(mSlMovie, SIGNAL(sliderMoved(int)), this, SLOT(SeekMovieFile(int)));
-
+    connect(mSlMovie, SIGNAL(valueChanged(int)), this, SLOT(SeekMovieFileToPos(int)));
 
     //####################################################################
     //### create additional widget and allocate resources
@@ -1127,8 +1130,20 @@ void ParticipantWidget::PauseMovieFile()
 
 void ParticipantWidget::SeekMovieFile(int pPos)
 {
+	LOG(LOG_VERBOSE, "User moved playback slider to position %d", pPos);
     mVideoWidget->GetWorker()->Seek(mVideoWidget->GetWorker()->GetSeekEnd() * pPos / 1000);
     mAudioWidget->GetWorker()->Seek(mAudioWidget->GetWorker()->GetSeekEnd() * pPos / 1000);
+}
+
+void ParticipantWidget::SeekMovieFileToPos(int pPos)
+{
+	//LOG(LOG_VERBOSE, "Value of playback slider changed to %d", pPos);
+	if (mMovieSliderPosition != pPos)
+	{
+		LOG(LOG_VERBOSE, "User clicked playback slider at position %d", pPos);
+	    mVideoWidget->GetWorker()->Seek(mVideoWidget->GetWorker()->GetSeekEnd() * pPos / 1000);
+	    mAudioWidget->GetWorker()->Seek(mAudioWidget->GetWorker()->GetSeekEnd() * pPos / 1000);
+	}
 }
 
 VideoWorkerThread* ParticipantWidget::GetVideoWorker()
@@ -1175,47 +1190,117 @@ void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
     int tTmp = 0;
     int tHour, tMin, tSec;
 
-    bool tShowMovieControls = false;
-    if ((mVideoSource) && (mVideoWidget->GetWorker()->SupportsSeeking()))
-        tShowMovieControls = true;
-    if ((mAudioSource) && (mAudioWidget->GetWorker()->SupportsSeeking()))
-        tShowMovieControls = true;
-    if (tShowMovieControls)
+    if (pEvent->timerId() != mTimerId)
     {
-        mMovieControlsFrame->show();
+    	LOG(LOG_WARN, "Qt event timer ID %d doesn't match the expected one %d", pEvent->timerId(), mTimerId);
+        pEvent->ignore();
+    	return;
+    }
+
+    // do play a file?
+    int tShowMovieControls = 0;
+
+    if ((mVideoSource) && (mVideoWidget->GetWorker()->SupportsSeeking()))
+        tShowMovieControls++;
+    if ((mAudioSource) && (mAudioWidget->GetWorker()->SupportsSeeking()))
+        tShowMovieControls++;
+
+    // do we play a file?
+    if (tShowMovieControls > 0)
+    {
+    	//#################
+		// A/V synch.
+    	//#################
+		#ifdef FILE_PLAYBACK_SYNC_AUDIO_VIDEO
+    		// A/V synch. if both video and audio source allow seeking (are files)
+			int64_t tCurTime = Time::GetTimeStamp();
+    		if ((tShowMovieControls == 2) && (tCurTime - mTimeOfLastAVSynch  >= FILE_PLAYBACK_SYNC_AUDIO_VIDEO_MIN_PERIOD * 1000 * 1000))
+			{
+    			// do we play video and audio from the same file?
+    			if (mVideoWidget->GetWorker()->CurrentFile() == mAudioWidget->GetWorker()->CurrentFile())
+    			{
+    				// synch. video and audio by seeking in video stream based to the position of the audio stream, the other way around it would be more obvious to the user because he would hear audio gaps
+    				int64_t tTimeDiff = mVideoWidget->GetWorker()->GetSeekPos() - mAudioWidget->GetWorker()->GetSeekPos();
+
+    				// are audio and video playback out of synch.?
+    				if (((tTimeDiff < -FILE_PLAYBACK_MAX_AUDIO_VIDEO_DRIFT) || (tTimeDiff > FILE_PLAYBACK_MAX_AUDIO_VIDEO_DRIFT)))
+    				{
+    					if ((!mVideoWidget->GetWorker()->EofReached()) && (!mAudioWidget->GetWorker()->EofReached()) && (mVideoWidget->GetWorker()->GetCurrentDevice() == mAudioWidget->GetWorker()->GetCurrentDevice()))
+    					{
+    						if (mContinuousAVAsync >= FILE_PLAYBACK_SYNC_AUDIO_VIDEO_CONTINUOUS_ASYNC_THRESHOLD)
+    						{
+    							mContinuousAVAsync = 0;
+    							if (tTimeDiff > 0)
+    								LOG(LOG_WARN, "Detected asynchronous A/V playback, drift is %lld seconds (video before audio), max. allowed drift is %d seconds, last synch. was at %lld, synchronizing now..", tTimeDiff, FILE_PLAYBACK_MAX_AUDIO_VIDEO_DRIFT, mTimeOfLastAVSynch);
+    							else
+    								LOG(LOG_WARN, "Detected asynchronous A/V playback, drift is %lld seconds (audio before video), max. allowed drift is %d seconds, last synch. was at %lld, synchronizing now..", tTimeDiff, FILE_PLAYBACK_MAX_AUDIO_VIDEO_DRIFT, mTimeOfLastAVSynch);
+    							mTimeOfLastAVSynch = tCurTime;
+    							mVideoWidget->GetWorker()->Seek(mAudioWidget->GetWorker()->GetSeekPos());
+    						}else
+    						{
+    							mContinuousAVAsync ++;
+    							#ifdef PARTICIPANT_WIDGET_DEBUG_AV_SYNC
+    								if (tTimeDiff > 0)
+    									LOG(LOG_WARN, "Detected asynchronous A/V playback %d times, drift is %lld seconds (video before audio), max. allowed drift is %d seconds, last synch. was at %lld, synchronizing now..", mContinuousAVAsync, tTimeDiff, FILE_PLAYBACK_MAX_AUDIO_VIDEO_DRIFT, mTimeOfLastAVSynch);
+    								else
+    									LOG(LOG_WARN, "Detected asynchronous A/V playback %d times, drift is %lld seconds (audio before video), max. allowed drift is %d seconds, last synch. was at %lld, synchronizing now..", mContinuousAVAsync, tTimeDiff, FILE_PLAYBACK_MAX_AUDIO_VIDEO_DRIFT, mTimeOfLastAVSynch);
+    							#endif
+    						}
+    					}
+    				}else
+    					mContinuousAVAsync = 0;
+    			}
+			}
+    	#endif
+
+    	//#################
+        // update movie slider and position display
+        //#################
+		int64_t tCurPos = 0;
+		int64_t tEndPos = 0;
+		if(mVideoWidget->GetWorker()->SupportsSeeking())
+		{
+			// get current stream position from video source and use it as movie position
+			tCurPos = mVideoWidget->GetWorker()->GetSeekPos();
+			tEndPos = mVideoWidget->GetWorker()->GetSeekEnd();
+		}else
+		{
+			// get current stream position from audio source and use it as movie position
+			tCurPos = mAudioWidget->GetWorker()->GetSeekPos();
+			tEndPos = mAudioWidget->GetWorker()->GetSeekEnd();
+		}
+		if(tEndPos)
+			tTmp = 1000 * tCurPos / tEndPos;
+		else
+			tTmp = 0;
+
+		//LOG(LOG_VERBOSE, "Updating slider position, slider is down: %d", mSlMovie->isSliderDown());
+		// update movie slider only if user doesn't currently adjust the playback position
+		if (!mSlMovie->isSliderDown())
+		{
+			mMovieSliderPosition = tTmp;
+			mSlMovie->setValue(tTmp);
+		}
+		ShowStreamPosition(tCurPos, tEndPos);
+
+    	//#################
+    	// make sure the movie slider is displayed
+    	//#################
+    	mMovieControlsFrame->show();
         if (mMovieAudioControlsFrame->isHidden())
+        {
             mMovieAudioControlsFrame->show();
+        }
     }else
     {
         mMovieControlsFrame->hide();
         if (mAudioWidget->isHidden())
+        {
             mMovieAudioControlsFrame->hide();
-    }
-
-    if ((pEvent->timerId() == mTimerId) && (tShowMovieControls))
-    {
-        int64_t tCurPos = 0;
-        int64_t tEndPos = 0;
-        if(mVideoWidget->GetWorker()->SupportsSeeking())
-        {
-            // get current stream position from video source and use it as movie position
-            tCurPos = mVideoWidget->GetWorker()->GetSeekPos();
-            tEndPos = mVideoWidget->GetWorker()->GetSeekEnd();
-        }else
-        {
-            // get current stream position from audio source and use it as movie position
-            tCurPos = mAudioWidget->GetWorker()->GetSeekPos();
-            tEndPos = mAudioWidget->GetWorker()->GetSeekEnd();
         }
-        if(tEndPos)
-            tTmp = 1000 * tCurPos / tEndPos;
-        else
-            tTmp = 0;
-
-        // update GUI widgets
-        mSlMovie->setValue(tTmp);
-        ShowStreamPosition(tCurPos, tEndPos);
     }
+
+    pEvent->accept();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -369,7 +369,7 @@ void MainWindow::initializeVideoAudioIO()
 		//TODO: mOwnVideoMuxer->RegisterMediaSource(new MediaSourceDShow());
 	#endif
 	#ifdef APPLE
-		mOwnVideoMuxer->RegisterMediaSource(new MediaSourceCoreVideo(tVSourceSelection));
+		//mOwnVideoMuxer->RegisterMediaSource(new MediaSourceCoreVideo(tVSourceSelection));
 	#endif
     mOwnVideoMuxer->RegisterMediaSource(mSourceDesktop = new MediaSourceDesktop());
     // ############################
