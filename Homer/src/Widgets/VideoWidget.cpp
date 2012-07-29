@@ -1352,6 +1352,13 @@ void VideoWidget::mouseDoubleClickEvent(QMouseEvent *pEvent)
     pEvent->accept();
 }
 
+void VideoWidget::wheelEvent(QWheelEvent *pEvent)
+{
+    int tOffset = pEvent->delta() * 25 / 120;
+    LOG(LOG_VERBOSE, "Got new wheel event with delta %d, derived volume offset: %d", pEvent->delta(), tOffset);
+    mParticipantWidget->GetAudioWorker()->SetVolume(mParticipantWidget->GetAudioWorker()->GetVolume() + tOffset);
+}
+
 void VideoWidget::customEvent(QEvent *pEvent)
 {
     void* tFrame;

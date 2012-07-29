@@ -129,6 +129,7 @@ private:
     virtual void mouseDoubleClickEvent(QMouseEvent *pEvent);
     virtual void closeEvent(QCloseEvent* pEvent);
     virtual void customEvent (QEvent* pEvent);
+    virtual void wheelEvent(QWheelEvent *pEvent);
 
     QWidget             *mCurrentApplicationFocusedWidget;
     QImage              mCurrentFrame;
