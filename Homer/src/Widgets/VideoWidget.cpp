@@ -1313,6 +1313,12 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
         	mShowLiveStats = false;
         else
         	mShowLiveStats = true;
+        return;
+    }
+    if (pEvent->key() == Qt::Key_M)
+    {
+		mParticipantWidget->GetAudioWorker()->SetMuteState(!mParticipantWidget->GetAudioWorker()->GetMuteState());
+		return;
     }
     if (pEvent->key() == Qt::Key_Space)
     {
