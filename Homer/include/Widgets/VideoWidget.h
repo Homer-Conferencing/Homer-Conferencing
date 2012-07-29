@@ -160,6 +160,7 @@ private:
     MediaSource         *mVideoSource;
     int                 mPendingNewFrameSignals;
     ParticipantWidget   *mParticipantWidget;
+    int64_t 			mPaintEventCounter;
 };
 
 

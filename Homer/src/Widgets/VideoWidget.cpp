@@ -114,6 +114,7 @@ private:
 VideoWidget::VideoWidget(QWidget* pParent):
     QWidget(pParent)
 {
+	mPaintEventCounter = 0;
     mResX = 640;
     mResY = 480;
     mVideoScaleFactor = 1.0;
@@ -1212,7 +1213,12 @@ void VideoWidget::StopRecorder()
 
 void VideoWidget::paintEvent(QPaintEvent *pEvent)
 {
-    QWidget::paintEvent(pEvent);
+	mPaintEventCounter ++;
+	#ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
+		LOG(LOG_VERBOSE, "Paint event %ld", mPaintEventCounter);
+	#endif
+
+	QWidget::paintEvent(pEvent);
 
     QPainter tPainter(this);
     QColor tBackgroundColor;
@@ -1277,11 +1283,15 @@ void VideoWidget::paintEvent(QPaintEvent *pEvent)
     // draw only fitting new frames (otherwise we could have a race condition and a too big frame which might be drawn)
     if ((mCurrentFrame.width() <= width()) && (mCurrentFrame.height() <= height()))
         tPainter.drawImage((width() - mCurrentFrame.width()) / 2, (height() - mCurrentFrame.height()) / 2, mCurrentFrame);
+
     pEvent->accept();
 }
 
 void VideoWidget::resizeEvent(QResizeEvent *pEvent)
 {
+	// enforce an update of the currently depicted video picture
+	InformAboutNewFrame();
+
 	setUpdatesEnabled(false);
     QWidget::resizeEvent(pEvent);
     mNeedBackgroundUpdatesUntillNextFrame = true;
@@ -2059,7 +2069,7 @@ int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFps)
         }else
         {
             mMissingFrames++;
-            LOG(LOG_WARN, "Missing new frame (%d overall missed frames), delivering old frame instead", mMissingFrames);
+            LOG(LOG_VERBOSE, "Missing new frame (%d overall missed frames), delivering old frame instead", mMissingFrames);
         }
 
         // calculate FPS
