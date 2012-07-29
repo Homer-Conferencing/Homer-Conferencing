@@ -331,7 +331,7 @@ protected:
     AVCodecContext      *mCodecContext;
     int                 mMediaStreamIndex;
     int64_t             mStartPtsUSecs /* only used in MediasourceNet and MediaSourceFile */, mSourceStartPts; // for synchronized playback we calculate the position within a media stream and write the value into PTS entry of an encoded packet
-    int64_t             mDuration;
+    int64_t             mNumberOfFrames;
     /* audio */
     AVFifoBuffer        *mRecorderSampleFifo;
     char                *mRecorderSamplesTempBuffer;
