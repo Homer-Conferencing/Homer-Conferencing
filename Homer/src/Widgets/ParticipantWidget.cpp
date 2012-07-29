@@ -1216,36 +1216,40 @@ void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
 			int64_t tCurTime = Time::GetTimeStamp();
     		if ((tShowMovieControls == 2) && (tCurTime - mTimeOfLastAVSynch  >= FILE_PLAYBACK_SYNC_AUDIO_VIDEO_MIN_PERIOD * 1000 * 1000))
 			{
-				// synch. video and audio by seeking in video stream based to the position of the audio stream, the other way around it would be more obvious to the user because he would hear audio gaps
-				int64_t tTimeDiff = mVideoWidget->GetWorker()->GetSeekPos() - mAudioWidget->GetWorker()->GetSeekPos();
+    			// do we play video and audio from the same file?
+    			if (mVideoWidget->GetWorker()->CurrentFile() == mAudioWidget->GetWorker()->CurrentFile())
+    			{
+    				// synch. video and audio by seeking in video stream based to the position of the audio stream, the other way around it would be more obvious to the user because he would hear audio gaps
+    				int64_t tTimeDiff = mVideoWidget->GetWorker()->GetSeekPos() - mAudioWidget->GetWorker()->GetSeekPos();
 
-				// are audio and video playback out of synch.?
-				if (((tTimeDiff < -FILE_PLAYBACK_MAX_AUDIO_VIDEO_DRIFT) || (tTimeDiff > FILE_PLAYBACK_MAX_AUDIO_VIDEO_DRIFT)))
-				{
-					if ((!mVideoWidget->GetWorker()->EofReached()) && (!mAudioWidget->GetWorker()->EofReached()) && (mVideoWidget->GetWorker()->GetCurrentDevice() == mAudioWidget->GetWorker()->GetCurrentDevice()))
-					{
-						if (mContinuousAVAsync >= FILE_PLAYBACK_SYNC_AUDIO_VIDEO_CONTINUOUS_ASYNC_THRESHOLD)
-						{
-							mContinuousAVAsync = 0;
-							if (tTimeDiff > 0)
-								LOG(LOG_WARN, "Detected asynchronous A/V playback, drift is %lld seconds (video before audio), max. allowed drift is %d seconds, last synch. was at %lld, synchronizing now..", tTimeDiff, FILE_PLAYBACK_MAX_AUDIO_VIDEO_DRIFT, mTimeOfLastAVSynch);
-							else
-								LOG(LOG_WARN, "Detected asynchronous A/V playback, drift is %lld seconds (audio before video), max. allowed drift is %d seconds, last synch. was at %lld, synchronizing now..", tTimeDiff, FILE_PLAYBACK_MAX_AUDIO_VIDEO_DRIFT, mTimeOfLastAVSynch);
-							mTimeOfLastAVSynch = tCurTime;
-							mVideoWidget->GetWorker()->Seek(mAudioWidget->GetWorker()->GetSeekPos());
-						}else
-						{
-							mContinuousAVAsync ++;
-							#ifdef PARTICIPANT_WIDGET_DEBUG_AV_SYNC
-								if (tTimeDiff > 0)
-									LOG(LOG_WARN, "Detected asynchronous A/V playback %d times, drift is %lld seconds (video before audio), max. allowed drift is %d seconds, last synch. was at %lld, synchronizing now..", mContinuousAVAsync, tTimeDiff, FILE_PLAYBACK_MAX_AUDIO_VIDEO_DRIFT, mTimeOfLastAVSynch);
-								else
-									LOG(LOG_WARN, "Detected asynchronous A/V playback %d times, drift is %lld seconds (audio before video), max. allowed drift is %d seconds, last synch. was at %lld, synchronizing now..", mContinuousAVAsync, tTimeDiff, FILE_PLAYBACK_MAX_AUDIO_VIDEO_DRIFT, mTimeOfLastAVSynch);
-							#endif
-						}
-					}
-				}else
-					mContinuousAVAsync = 0;
+    				// are audio and video playback out of synch.?
+    				if (((tTimeDiff < -FILE_PLAYBACK_MAX_AUDIO_VIDEO_DRIFT) || (tTimeDiff > FILE_PLAYBACK_MAX_AUDIO_VIDEO_DRIFT)))
+    				{
+    					if ((!mVideoWidget->GetWorker()->EofReached()) && (!mAudioWidget->GetWorker()->EofReached()) && (mVideoWidget->GetWorker()->GetCurrentDevice() == mAudioWidget->GetWorker()->GetCurrentDevice()))
+    					{
+    						if (mContinuousAVAsync >= FILE_PLAYBACK_SYNC_AUDIO_VIDEO_CONTINUOUS_ASYNC_THRESHOLD)
+    						{
+    							mContinuousAVAsync = 0;
+    							if (tTimeDiff > 0)
+    								LOG(LOG_WARN, "Detected asynchronous A/V playback, drift is %lld seconds (video before audio), max. allowed drift is %d seconds, last synch. was at %lld, synchronizing now..", tTimeDiff, FILE_PLAYBACK_MAX_AUDIO_VIDEO_DRIFT, mTimeOfLastAVSynch);
+    							else
+    								LOG(LOG_WARN, "Detected asynchronous A/V playback, drift is %lld seconds (audio before video), max. allowed drift is %d seconds, last synch. was at %lld, synchronizing now..", tTimeDiff, FILE_PLAYBACK_MAX_AUDIO_VIDEO_DRIFT, mTimeOfLastAVSynch);
+    							mTimeOfLastAVSynch = tCurTime;
+    							mVideoWidget->GetWorker()->Seek(mAudioWidget->GetWorker()->GetSeekPos());
+    						}else
+    						{
+    							mContinuousAVAsync ++;
+    							#ifdef PARTICIPANT_WIDGET_DEBUG_AV_SYNC
+    								if (tTimeDiff > 0)
+    									LOG(LOG_WARN, "Detected asynchronous A/V playback %d times, drift is %lld seconds (video before audio), max. allowed drift is %d seconds, last synch. was at %lld, synchronizing now..", mContinuousAVAsync, tTimeDiff, FILE_PLAYBACK_MAX_AUDIO_VIDEO_DRIFT, mTimeOfLastAVSynch);
+    								else
+    									LOG(LOG_WARN, "Detected asynchronous A/V playback %d times, drift is %lld seconds (audio before video), max. allowed drift is %d seconds, last synch. was at %lld, synchronizing now..", mContinuousAVAsync, tTimeDiff, FILE_PLAYBACK_MAX_AUDIO_VIDEO_DRIFT, mTimeOfLastAVSynch);
+    							#endif
+    						}
+    					}
+    				}else
+    					mContinuousAVAsync = 0;
+    			}
 			}
     	#endif
 
