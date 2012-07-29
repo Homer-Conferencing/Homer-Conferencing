@@ -1406,8 +1406,27 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
     	mNeedBackgroundUpdatesUntillNextFrame = true;
     	return;
     }
+    if ((pEvent->key() == Qt::Key_Plus) || (pEvent->key() == Qt::Key_Up))
+    {
+		int tOffset = 25;
+		int tNewVolumeValue = mParticipantWidget->GetAudioWorker()->GetVolume() + tOffset;
+		if ((tNewVolumeValue > 0) && (tNewVolumeValue <= 300))
+		{
+			ShowOsdMessage("Volume: " + QString("%1 %").arg(tNewVolumeValue));
+			mParticipantWidget->GetAudioWorker()->SetVolume(tNewVolumeValue);
+		}
+	}
+    if ((pEvent->key() == Qt::Key_Minus) || (pEvent->key() == Qt::Key_Down))
+    {
+		int tOffset = -25;
+		int tNewVolumeValue = mParticipantWidget->GetAudioWorker()->GetVolume() + tOffset;
+		if ((tNewVolumeValue > 0) && (tNewVolumeValue <= 300))
+		{
+			ShowOsdMessage("Volume: " + QString("%1 %").arg(tNewVolumeValue));
+			mParticipantWidget->GetAudioWorker()->SetVolume(tNewVolumeValue);
+		}
+	}
 }
-
 void VideoWidget::mouseDoubleClickEvent(QMouseEvent *pEvent)
 {
     ToggleFullScreenMode();
