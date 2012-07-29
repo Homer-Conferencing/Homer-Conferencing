@@ -28,6 +28,7 @@
 #include <Widgets/MessageHistory.h>
 #include <Logger.h>
 #include <ContactsManager.h>
+#include <Configuration.h>
 
 #include <QTextBrowser>
 #include <QEvent>
@@ -130,7 +131,7 @@ void MessageHistory::Save()
                                                      QDir::homePath() + "/MessageHistory.txt",
                                                      "Text File (*.txt)",
                                                      NULL,
-                                                     QFileDialog::DontUseNativeDialog);
+                                                     CONF_NATIVE_DIALOGS);
 
     if (tFileName.isEmpty())
         return;

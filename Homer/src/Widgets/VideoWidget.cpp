@@ -1156,7 +1156,7 @@ void VideoWidget::SavePicture()
                                                      "X11 Bitmap (*.xbm);;"\
                                                      "X11 Pixmap (*.xpm)",
                                                      &*(new QString("Portable Network Graphics (*.png)")),
-                                                     QFileDialog::DontUseNativeDialog);
+                                                     CONF_NATIVE_DIALOGS);
 
     if (tFileName.isEmpty())
         return;

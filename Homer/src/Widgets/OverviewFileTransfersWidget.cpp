@@ -209,7 +209,7 @@ void OverviewFileTransfersWidget::customEvent(QEvent* pEvent)
                                                                     CONF.GetDataDirectory() + "/" + tEntry.FileName,
                                                                     "",
                                                                     NULL,
-                                                                    QFileDialog::DontUseNativeDialog);
+                                                                    CONF_NATIVE_DIALOGS);
 
             if (!tFileName.isEmpty())
             {
@@ -370,7 +370,7 @@ void OverviewFileTransfersWidget::AddEntryDialog()
                                                                CONF.GetDataDirectory(),
                                                                "All files (*)",
                                                                NULL,
-                                                               QFileDialog::DontUseNativeDialog);
+                                                               CONF_NATIVE_DIALOGS);
 
     if (tFileNames.isEmpty())
         return;
