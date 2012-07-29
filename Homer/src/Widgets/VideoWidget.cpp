@@ -2224,9 +2224,6 @@ void VideoWorkerThread::run()
                  // unlock
 				mDeliverMutex.unlock();
 
-				//printf("VideoWorker--> %d\n", mFrameGrabIndex);
-				//printf("VideoWorker-grabbing FPS: %2d grabbed frame number: %d\n", mResultingFps, tFrameNumber);
-
 				if ((tLastFrameNumber > tFrameNumber) && (tFrameNumber > 9 /* -1 means error, 1 is received after every reset, use "9" because of possible latencies */))
 					LOG(LOG_ERROR, "Frame ordering problem detected (%d -> %d)", tLastFrameNumber, tFrameNumber);
 			}else

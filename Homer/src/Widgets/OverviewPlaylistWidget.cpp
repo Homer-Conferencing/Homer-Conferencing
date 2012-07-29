@@ -577,20 +577,6 @@ void OverviewPlaylistWidget::timerEvent(QTimerEvent *pEvent)
     #endif
     if (pEvent->timerId() == mTimerId)
     {
-
-		#ifdef SYNCHRONIZE_AUDIO_VIDEO
-			// synch. video and audio by seeking in audio stream based on the position of the video stream, the other way round it would be more time consuming!
-			int64_t tTimeDiff = mVideoWorker->GetSeekPos() - mAudioWorker->GetSeekPos();
-			if (((tTimeDiff < -ALLOWED_AV_TIME_DIFF) || (tTimeDiff > ALLOWED_AV_TIME_DIFF)))
-			{
-				if ((!mVideoWorker->EofReached()) && (!mAudioWorker->EofReached()) && (mVideoWorker->GetCurrentDevice() == mAudioWorker->GetCurrentDevice()))
-				{
-					LOG(LOG_ERROR, "AV stream asynchronous (difference: %lld seconds, max is %d seconds), synchronizing now..", tTimeDiff, ALLOWED_AV_TIME_DIFF);
-					mAudioWorker->Seek(mVideoWorker->GetSeekPos());
-				}
-			}
-		#endif
-
     	// play next if EOF is reached
         // stop if current file wasn't yet switched to the desired one;
         if ((mVideoWorker->CurrentFile() != mCurrentFile) || (mAudioWorker->CurrentFile() != mCurrentFile))

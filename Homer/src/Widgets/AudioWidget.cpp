@@ -1594,7 +1594,6 @@ void AudioWorkerThread::run()
                 if ((tSampleNumber >= 0) && (mSamplesSize[mSampleGrabIndex] > 0))
                 {
                     // lock
-                    //LOG(LOG_ERROR, "DeliverMutex");
                     mDeliverMutex.lock();
 
                     mSampleNumber[mSampleGrabIndex] = tSampleNumber;
@@ -1607,9 +1606,6 @@ void AudioWorkerThread::run()
                     mDeliverMutex.unlock();
 
                     mAudioWidget->InformAboutNewSamples();
-
-                    //printf("AudioWorker--> %d\n", mSampleGrabIndex);
-                    //printf("AudioWorker-grabbing FPS: %2d grabbed frame number: %d\n", mResultingFps, tSampleNumber);
 
                     if ((tLastSampleNumber > tSampleNumber) && (tSampleNumber > 9 /* -1 means error, 1 is received after every reset, use "9" because of possible latencies */))
                         LOG(LOG_ERROR, "Sample ordering problem detected");
