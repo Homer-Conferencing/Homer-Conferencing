@@ -910,11 +910,13 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
     //#############################################################
     //### draw muted icon
     //#############################################################
-    if ((mParticipantWidget->GetAudioWorker()->GetMuteState()) and (tMSecs % 500 < 250))
-    {
-        QPixmap tPixmap = QPixmap(":/images/22_22/SpeakerMuted.png");
-        tPainter->drawPixmap(50, 10, tPixmap);
-    }
+	#ifdef VIDEO_WIDGET_SHOW_MUTE_STATE_IN_FULLSCREEN
+    	if ((mParticipantWidget->GetAudioWorker()->GetMuteState()) and (tMSecs % 500 < 250))
+		{
+			QPixmap tPixmap = QPixmap(":/images/22_22/SpeakerMuted.png");
+			tPainter->drawPixmap(50, 10, tPixmap);
+		}
+	#endif
 
     delete tPainter;
     setUpdatesEnabled(true);

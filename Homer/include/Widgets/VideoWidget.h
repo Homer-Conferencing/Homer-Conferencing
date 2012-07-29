@@ -64,6 +64,9 @@ class ParticipantWidget;
 // de/activate frame handling
 //#define VIDEO_WIDGET_DEBUG_FRAMES
 
+// de/activate fullscreen display of mute state
+//#define VIDEO_WIDGET_SHOW_MUTE_STATE_IN_FULLSCREEN
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #define VIDEO_WIDGET_OSD_PERIOD	       3 // seconds
