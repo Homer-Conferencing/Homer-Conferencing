@@ -742,7 +742,7 @@ void* MediaSourceFile::Run(void* pArgs)
     while(mDecoderNeeded)
     {
         #ifdef MSF_DEBUG_TIMING
-            LOG(LOG_VERBOSE, "Decoder loop");
+            LOG(LOG_VERBOSE, "%s-decoder loop", GetMediaTypeStr().c_str());
         #endif
         mDecoderMutex.lock();
 
@@ -812,10 +812,13 @@ void* MediaSourceFile::Run(void* pArgs)
                             tCurrentChunkPts = tPacket->pts;
                             mDecoderLastReadPts = tCurrentChunkPts;
                         }
+                        #ifdef MSF_DEBUG_DECODER_STATE
+                            LOG(LOG_VERBOSE, "Decoded %s frame number %ld", GetMediaTypeStr().c_str(), tCurrentChunkPts);
+                        #endif
                     }else
                     {
                         tShouldReadNext = true;
-                        #ifdef MSF_DEBUG_PACKETS
+                        #ifdef MSF_DEBUG_DECODER_STATE
                             LOG(LOG_VERBOSE, "Read stream %d instead of desired stream %d", tPacket->stream_index, mMediaStreamIndex);
                         #endif
                     }
@@ -1076,7 +1079,7 @@ void* MediaSourceFile::Run(void* pArgs)
         }else
         {// decoder FIFO is full, nothing to be done
             #ifdef MSF_DEBUG_DECODER_STATE
-                LOG(LOG_VERBOSE, "Nothing to do for decoder, wait some time and check again, loop %d", ++tWaitLoop);
+                LOG(LOG_VERBOSE, "Nothing to do for %s decoder, wait some time and check again, loop %d", GetMediaTypeStr().c_str(), ++tWaitLoop);
             #endif
             mDecoderNeedWorkCondition.Reset();
             mDecoderNeedWorkCondition.Wait(&mDecoderMutex);
@@ -1257,7 +1260,7 @@ bool MediaSourceFile::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
                 tMax = INT64_MAX;
             }
             LOG(LOG_VERBOSE, "%s-seeking to second %ld at pts %ld, current pts is %ld, max. pts is %ld", GetMediaTypeStr().c_str(), pSeconds, tFrameIndex, mCurPts, mFormatContext->duration);
-            tResult = (avformat_seek_file(mFormatContext, mMediaStreamIndex, tMin, tFrameIndex, tMax, (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) | (tFrameIndex < mCurPts ? AVSEEK_FLAG_BACKWARD : 0)) >= 0);
+            tResult = (avformat_seek_file(mFormatContext, mMediaStreamIndex, tMin, tFrameIndex, tMax, (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) | AVSEEK_FLAG_FRAME | (tFrameIndex < mCurPts ? AVSEEK_FLAG_BACKWARD : 0)) >= 0);
 
             // flush ffmpeg internal buffers
             avcodec_flush_buffers(mCodecContext);
