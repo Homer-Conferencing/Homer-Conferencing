@@ -488,7 +488,6 @@ bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned l
         pLastUserTicsThread = 0;
         pLastKernelTicsThread = 0;
         pLastSystemTime = 0;
-        pLastKernelTicsSystem = 0;
         pPriority = 0;
         pBasePriority = 0;
     #endif
