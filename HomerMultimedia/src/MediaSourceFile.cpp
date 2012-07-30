@@ -1237,19 +1237,30 @@ bool MediaSourceFile::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
 
     if ((tFrameIndex >= 0) && (tFrameIndex <= mNumberOfFrames))
     {
-        LOG(LOG_VERBOSE, "%s-seeking to second %ld, current pts is %ld", GetMediaTypeStr().c_str(), pSeconds, mCurPts);
-
         // seek only if it is necessary
         if (pSeconds != GetSeekPos())
         {
             mDecoderMutex.lock();
-            int64_t tMin = tFrameIndex - MSF_SEEK_VARIANCE;
-            int64_t tMax = tFrameIndex + MSF_SEEK_VARIANCE;
-            if (tMin < 0)
-                tMin = 0;
-            if (tMax > mNumberOfFrames)
-                tMax = mNumberOfFrames;
+            int64_t tMin = tFrameIndex;// - MSF_SEEK_VARIANCE;
+            int64_t tMax = tFrameIndex;// + MSF_SEEK_VARIANCE;
+//            if (tMin < 0)
+//                tMin = 0;
+//            if (tMax > mNumberOfFrames)
+//                tMax = mNumberOfFrames;
+            if (tFrameIndex > mCurPts)
+            {
+                tMin = INT64_MIN;
+                tMax = tFrameIndex + 2;
+            }else
+            {
+                tMin = tFrameIndex - 2;
+                tMax = INT64_MAX;
+            }
+            LOG(LOG_VERBOSE, "%s-seeking to second %ld at pts %ld, current pts is %ld, max. pts is %ld", GetMediaTypeStr().c_str(), pSeconds, tFrameIndex, mCurPts, mFormatContext->duration);
             tResult = (avformat_seek_file(mFormatContext, mMediaStreamIndex, tMin, tFrameIndex, tMax, (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) | (tFrameIndex < mCurPts ? AVSEEK_FLAG_BACKWARD : 0)) >= 0);
+
+            // flush ffmpeg internal buffers
+            avcodec_flush_buffers(mCodecContext);
 
             mDecoderFifo->ClearFifo();
             mDecoderMetaDataFifo->ClearFifo();
