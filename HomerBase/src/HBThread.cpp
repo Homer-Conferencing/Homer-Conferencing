@@ -606,7 +606,7 @@ bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned l
 			if (GetThreadTimes(tThreadHandle, &tThreadCreationTime, &tThreadExitTime, &tThreadKernelTime, &tThreadUserTime))
 			{
 				// follow the nebulous instructions of MSDN and convert the FILETIME structures to _ULARG_INTEGER structures at first
-				_ULARGE_INTEGER tTimeUserMode, tTimeKernelMode, tSysTime, tSysTimeKernelMode, tSysTimeUserMode;
+				_ULARGE_INTEGER tTimeUserMode, tTimeKernelMode, tSystemTime, tSysTimeKernelMode, tSysTimeUserMode;
 				tTimeUserMode.LowPart = tThreadUserTime.dwLowDateTime;
 				tTimeUserMode.HighPart = tThreadUserTime.dwHighDateTime;
 				tTimeKernelMode.LowPart = tThreadKernelTime.dwLowDateTime;
@@ -615,14 +615,13 @@ bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned l
 				tSysTimeKernelMode.HighPart = tSystemKernelTime.dwHighDateTime;
 				tSysTimeUserMode.LowPart = tSystemUserTime.dwLowDateTime;
 				tSysTimeUserMode.HighPart = tSystemUserTime.dwHighDateTime;
-				tSysTime.QuadPart = tSysTimeUserMode.QuadPart + tSysTimeKernelMode.QuadPart;
+				tSystemTime.QuadPart = tSysTimeUserMode.QuadPart + tSysTimeKernelMode.QuadPart;
 				// calculate the values for load related to user and kernel mode
-				pLoadUser = 100 * ((float)(tTimeUserMode.QuadPart - pLastUserTicsThread)) / (float)(tSysTime.QuadPart - pLastSystemTime - pLastKernelTicsSystem);
-				pLoadSystem = 100 * ((float)(tTimeKernelMode.QuadPart - pLastKernelTicsThread)) / (float)(tSysTime.QuadPart - pLastSystemTime - pLastKernelTicsSystem);
+				pLoadUser = 100 * ((float)(tTimeUserMode.QuadPart - pLastUserTicsThread)) / (float)(tSystemTime.QuadPart - pLastSystemTime);
+				pLoadSystem = 100 * ((float)(tTimeKernelMode.QuadPart - pLastKernelTicsThread)) / (float)(tSystemTime.QuadPart - pLastSystemTime);
 				pLastUserTicsThread = tTimeUserMode.QuadPart;
 				pLastKernelTicsThread = tTimeKernelMode.QuadPart;
-		        pLastSystemTime = tSysTimeUserMode.QuadPart;
-				pLastKernelTicsSystem = tSysTimeKernelMode.QuadPart;
+		        pLastSystemTime = tSysTimeUserMode.QuadPart + tSysTimeKernelMode.QuadPart;
 			}else
 			{
 				LOGEX(Thread, LOG_ERROR, "Failed to get thread times");
@@ -631,7 +630,6 @@ bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned l
 				pLastUserTicsThread = 0;
 				pLastKernelTicsThread = 0;
 		        pLastSystemTime = 0;
-				pLastKernelTicsSystem = 0;
 			}
 			// get thread priority
 			pPriority = GetThreadPriority(tThreadHandle);
