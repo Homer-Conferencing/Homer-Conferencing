@@ -1405,7 +1405,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                             if (tMPAHeader->Mbz > 0)
                             {
                                 // if fragment ends at packet size or behind (to make sure we are not running into inconsistency) we should mark as complete packet
-                                if ((unsigned short int)tMPAHeader->Offset + (pDataSize - (pData - tDataOriginal)) >= tMPAHeader->Mbz -1 /* a difference of 1 is sometimes caused by the MP3 encoder */)
+                                if ((int)tMPAHeader->Offset + ((int)pDataSize - (pData - tDataOriginal)) >= (int)tMPAHeader->Mbz -1 /* a difference of 1 is sometimes caused by the MP3 encoder */)
                                     mIntermediateFragment = false;
                                 else
                                     mIntermediateFragment = true;
