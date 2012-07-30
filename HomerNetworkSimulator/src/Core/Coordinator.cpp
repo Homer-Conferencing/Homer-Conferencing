@@ -242,7 +242,7 @@ void Coordinator::AddClusterTraversalCosts(string pFromAddress, string pToAddres
 
         //########### calculate best ingres node
         Node* tIngresNode = NULL;
-        long long tBestCostsForRouteTowardsSource = LONG_LONG_MAX;
+        long long tBestCostsForRouteTowardsSource = LLONG_MAX;
         // ITERATE over all known cluster nodes
         for (tIt = mClusterMembers.begin(); tIt != mClusterMembers.end(); tIt++)
         {
@@ -260,7 +260,7 @@ void Coordinator::AddClusterTraversalCosts(string pFromAddress, string pToAddres
 
         //########### calculate best outgres node
         Node* tOutgresNode = NULL;
-        long long tBestCostsForRouteTowardsDestination = LONG_LONG_MAX;
+        long long tBestCostsForRouteTowardsDestination = LLONG_MAX;
         // ITERATE over all known cluster nodes
         for (tIt = mClusterMembers.begin(); tIt != mClusterMembers.end(); tIt++)
         {

@@ -698,7 +698,7 @@ bool Node::HandlePacket(Packet *pPacket)
 string Node::GetShortestPathToDomain(RibTable *pTable, string pDestination)
 {
     string tResult = "";
-    long long tBestRouteCosts = LONG_LONG_MAX;
+    long long tBestRouteCosts = LLONG_MAX;
 
     if (pTable->size() > 0)
     {
@@ -792,7 +792,7 @@ void Node::AddRouteCosts(string pDestination, QoSSettings *pQoSSet, int *pHopCos
     tQoSSet.Features = 0;
     int tHopCosts = 0;
 
-    long long tBestRouteCosts = LONG_LONG_MAX;
+    long long tBestRouteCosts = LLONG_MAX;
 
     mRibTableMutex.lock();
 
@@ -845,7 +845,7 @@ void Node::AddRouteCosts(string pDestination, QoSSettings *pQoSSet, int *pHopCos
 
 long long Node::GetRouteCosts(std::string pDestination)
 {
-    long long tBestRouteCosts = LONG_LONG_MAX;
+    long long tBestRouteCosts = LLONG_MAX;
 
     mRibTableMutex.lock();
 
@@ -896,7 +896,7 @@ long long Node::GetRouteCosts(std::string pDestination)
 string Node::GetNextHop(Packet *pPacket)
 {
     string tResult = "";
-    long long tBestRouteCosts = LONG_LONG_MAX;
+    long long tBestRouteCosts = LLONG_MAX;
 
     mRibTableMutex.lock();
 
@@ -947,7 +947,7 @@ string Node::GetNextHop(Packet *pPacket)
                 if (!IsDomain((*tIt)->NextNode))
                 {
                     #ifdef DEBUG_ROUTING
-                        if (tBestRouteCosts == LONG_LONG_MAX)
+                        if (tBestRouteCosts == LLONG_MAX)
                             LOG(LOG_VERBOSE, "Found route on %s (%s via %s, hc: %d, dr: %d, delay: %d)", mAddress.c_str(), (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str(), (*tIt)->HopCount, (*tIt)->QoSCapabilities.DataRate, (*tIt)->QoSCapabilities.Delay);
                         else
                             LOG(LOG_VERBOSE, "Found better route on %s (%s via %s, hc: %d, dr: %d, delay: %d)", mAddress.c_str(), (*tIt)->Destination.c_str(), (*tIt)->NextNode.c_str(), (*tIt)->HopCount, (*tIt)->QoSCapabilities.DataRate, (*tIt)->QoSCapabilities.Delay);
