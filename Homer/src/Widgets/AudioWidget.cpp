@@ -1363,6 +1363,7 @@ void AudioWorkerThread::DoStartPlayback()
     // if audio was muted we have to wait for an initial time
     if ((mWaveOut != NULL) && (!mWaveOut->IsPlaying()) && (mAudioPlaybackDelayCount == 0))
     {
+    	LOG(LOG_VERBOSE, "Wait for %d audio buffers before audio playback will start", AUDIO_INITIAL_MINIMUM_PLAYBACK_QUEUE);
         mAudioPlaybackDelayCount = AUDIO_INITIAL_MINIMUM_PLAYBACK_QUEUE;
         mStartPlaybackAsap = true;
         return;
