@@ -241,7 +241,6 @@ bool WaveOutPortAudio::OpenWaveOutDevice(int pSampleRate, bool pStereo)
     	LOG(LOG_WARN, "    ..fill size: invalid");
 
     mWaveOutOpened = true;
-    Play();
 
     return true;
 }
