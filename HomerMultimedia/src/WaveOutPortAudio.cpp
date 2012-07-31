@@ -38,6 +38,16 @@ namespace Homer { namespace Multimedia {
 
 int WaveOutPortAudio::mOpenStreams = 0;
 
+///////////////////////////////////////////////////////////////////////////////
+
+// de/activate
+//#define WOPA_AUTO_START_PLAYBACK
+
+// deactivate OSS playback: leads to program stops
+//#define WOPA_AVOID_OSS_PLAY
+
+///////////////////////////////////////////////////////////////////////////////
+
 WaveOutPortAudio::WaveOutPortAudio(string pDesiredDevice):
     WaveOut("PortAudio-Playback")
 {

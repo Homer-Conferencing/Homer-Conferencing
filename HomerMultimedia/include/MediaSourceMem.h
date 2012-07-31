@@ -44,8 +44,7 @@ namespace Homer { namespace Multimedia {
 // the following de/activates debugging of received packets
 //#define MSMEM_DEBUG_PACKETS
 
-// maximum packet size, including encoded data and RTP/TS
-#define MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE          MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE
+///////////////////////////////////////////////////////////////////////////////
 
 // size of one single fragment of a frame packet
 #define MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE                8*1024 // 8 kB (for jumbo packets!)

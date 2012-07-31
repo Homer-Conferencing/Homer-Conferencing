@@ -40,9 +40,11 @@ namespace Homer { namespace Multimedia {
 // de/activate debugging of grabbed packets
 //#define MMSYS_DEBUG_PACKETS
 
+///////////////////////////////////////////////////////////////////////////////
+
 // amount of samples
-#define MEDIA_SOURCE_MMSYS_BUFFER_AMOUNT			   16
-#define MEDIA_SOURCE_MMSYS_BUFFER_QUEUE_SIZE     	  128
+#define MEDIA_SOURCE_MMSYS_BUFFER_AMOUNT               16
+#define MEDIA_SOURCE_MMSYS_BUFFER_QUEUE_SIZE          128
 
 ///////////////////////////////////////////////////////////////////////////////
 

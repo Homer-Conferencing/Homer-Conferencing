@@ -43,7 +43,7 @@ using namespace Homer::Monitor;
 ///////////////////////////////////////////////////////////////////////////////
 
 #define MEDIA_SOURCE_FILE_QUEUE_FOR_VIDEO                  6 // in frames (each max. 16 MB for HDTV, one entry is reserved for 0-byte signaling)
-#define MEDIA_SOURCE_FILE_QUEUE_FOR_AUDIO                 32 // in audio sample blocks (each about 4 kB)
+#define MEDIA_SOURCE_FILE_QUEUE_FOR_AUDIO                  6 // in audio sample blocks (each about 4 kB)
 
 // 33 ms delay for 30 fps -> rounded to 35 ms
 #define MSF_FRAME_DROP_THRESHOLD                           0 //in us, 0 deactivates frame dropping
@@ -946,7 +946,7 @@ void* MediaSourceFile::Run(void* pArgs)
                                     // only print debug output if it is not "operation not permitted"
                                     //if ((tBytesDecoded < 0) && (AVUNERROR(tBytesDecoded) != EPERM))
                                     // acknowledge failed"
-                                    LOG(LOG_WARN, "Couldn't decode video frame because \"%s\"(%d)", strerror(AVUNERROR(tBytesDecoded)), AVUNERROR(tBytesDecoded));
+                                    LOG(LOG_WARN, "Couldn't decode video frame %ld because \"%s\"(%d)", tCurrentChunkPts, strerror(AVUNERROR(tBytesDecoded)), AVUNERROR(tBytesDecoded));
 
                                     tCurrentChunkSize = 0;
                                 }
@@ -1019,7 +1019,7 @@ void* MediaSourceFile::Run(void* pArgs)
                                     // only print debug output if it is not "operation not permitted"
                                     //if (AVUNERROR(tBytesDecoded) != EPERM)
                                     // acknowledge failed"
-                                    LOG(LOG_WARN, "Couldn't decode audio samples because \"%s\"(%d)", strerror(AVUNERROR(tBytesDecoded)), AVUNERROR(tBytesDecoded));
+                                    LOG(LOG_WARN, "Couldn't decode audio samples %ld  because \"%s\"(%d)", tCurrentChunkPts, strerror(AVUNERROR(tBytesDecoded)), AVUNERROR(tBytesDecoded));
 
                                     tCurrentChunkSize = 0;
                                 }
@@ -1221,7 +1221,7 @@ bool MediaSourceFile::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
 
     if ((pSeconds < 0) || (pSeconds > tSeekEnd))
     {
-        LOG(LOG_ERROR, "%s-seek position is out of range (%ld/%ld) for %s file", GetMediaTypeStr().c_str(), pSeconds, tSeekEnd, GetMediaTypeStr().c_str());
+        LOG(LOG_ERROR, "%s-seek position at %d seconds (%ld pts) is out of range (%ld/%ld) for %s file", GetMediaTypeStr().c_str(), pSeconds, tSeekEnd, GetMediaTypeStr().c_str());
         return false;
     }
 

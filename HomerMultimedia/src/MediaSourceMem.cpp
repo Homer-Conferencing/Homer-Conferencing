@@ -41,6 +41,11 @@ using namespace Homer::Base;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// maximum packet size, including encoded data and RTP/TS
+#define MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE          MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE
+
+///////////////////////////////////////////////////////////////////////////////
+
 MediaSourceMem::MediaSourceMem(bool pRtpActivated):
     MediaSource("MEM-IN:"), RTP()
 {

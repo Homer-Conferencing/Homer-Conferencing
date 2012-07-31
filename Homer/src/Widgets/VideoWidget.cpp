@@ -1971,7 +1971,7 @@ void VideoWorkerThread::DoSeek()
     mDeliverMutex.lock();
 
     LOG(LOG_VERBOSE, "Seeking now to position %d", mSeekPos);
-    mVideoSource->Seek(mSeekPos);
+    mVideoSource->Seek(mSeekPos, false);
     mEofReached = false;
     mSeekAsap = false;
 

@@ -1214,7 +1214,7 @@ void AudioWorkerThread::DoSourceSeek()
     mDeliverMutex.lock();
 
     LOG(LOG_VERBOSE, "Seeking now to position %d", mSeekPos);
-    mAudioSource->Seek(mSeekPos);
+    mAudioSource->Seek(mSeekPos, false);
     mEofReached = false;
     ResetPlayback();
     mSeekAsap = false;

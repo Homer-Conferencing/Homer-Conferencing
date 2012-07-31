@@ -51,7 +51,6 @@ namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-
 // video processing
 #define MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE                         16 * 1000 * 1000 // HDTV RGB32 picture: 1920*1080*4 = ca. 7,9 MB
 
@@ -148,13 +147,6 @@ struct ChunkDescriptor
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define Grabbing
-
-/* relaying */
-class MediaSource;
-typedef std::vector<MediaSink*>        MediaSinks;
-typedef std::vector<MediaSource*>      MediaSources;
-
 // possible GrabChunk results
 #define GRAB_RES_INVALID                            -1
 #define GRAB_RES_EOF                                -2
@@ -167,6 +159,11 @@ typedef std::vector<MediaSource*>      MediaSources;
 #define         MarkGrabChunkFailed(Reason)                 EventGrabChunkFailed(GetObjectNameStr(this).c_str(), __LINE__, Reason)
 
 ///////////////////////////////////////////////////////////////////////////////
+
+/* relaying */
+class MediaSource;
+typedef std::vector<MediaSink*>        MediaSinks;
+typedef std::vector<MediaSource*>      MediaSources;
 
 class MediaSource :
     public Homer::Monitor::PacketStatistic

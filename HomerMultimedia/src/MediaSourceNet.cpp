@@ -44,6 +44,10 @@ using namespace Homer::Base;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define SOCKET_RECEIVE_BUFFER_SIZE                      2 * 1024 * 1024
+
+///////////////////////////////////////////////////////////////////////////////
+
 void MediaSourceNet::Init(Socket *pDataSocket, unsigned int pLocalPort, bool pRtpActivated)
 {
     mSourceType = SOURCE_NETWORK;
