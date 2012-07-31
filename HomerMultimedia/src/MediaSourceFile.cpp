@@ -40,6 +40,18 @@ namespace Homer { namespace Multimedia {
 using namespace std;
 using namespace Homer::Monitor;
 
+///////////////////////////////////////////////////////////////////////////////
+
+#define MEDIA_SOURCE_FILE_QUEUE_FOR_VIDEO                  6 // in frames (each max. 16 MB for HDTV, one entry is reserved for 0-byte signaling)
+#define MEDIA_SOURCE_FILE_QUEUE_FOR_AUDIO                 32 // in audio sample blocks (each about 4 kB)
+
+// 33 ms delay for 30 fps -> rounded to 35 ms
+#define MSF_FRAME_DROP_THRESHOLD                           0 //in us, 0 deactivates frame dropping
+
+#define MSF_SEEK_VARIANCE                                  2 // frames
+
+///////////////////////////////////////////////////////////////////////////////
+
 #define MEDIA_SOURCE_FILE_QUEUE         ((mMediaType == MEDIA_AUDIO) ? MEDIA_SOURCE_FILE_QUEUE_FOR_AUDIO : MEDIA_SOURCE_FILE_QUEUE_FOR_VIDEO)
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -47,6 +59,7 @@ using namespace Homer::Monitor;
 MediaSourceFile::MediaSourceFile(string pSourceFile, bool pGrabInRealTime):
     MediaSource("FILE: " + pSourceFile)
 {
+    mGrabInRealTimeWaitForNextFrameAfterSeeking = false;
     mSourceType = SOURCE_FILE;
     mDesiredDevice = pSourceFile;
     mGrabInRealTime = pGrabInRealTime;
@@ -54,7 +67,7 @@ MediaSourceFile::MediaSourceFile(string pSourceFile, bool pGrabInRealTime):
     mDecoderFifo = NULL;
     mDecoderMetaDataFifo = NULL;
     mNumberOfFrames = 0;
-    mCurPts = 0;
+    mCurrentFrameIndex = 0;
     mCurrentDeviceName = mDesiredDevice;
 }
 
@@ -236,7 +249,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
             else
                 mNumberOfFrames = 0;
 
-    mCurPts = 0;
+    mCurrentFrameIndex = 0;
     mSeekingToPos = true;
     mEOFReached = false;
     mMediaType = MEDIA_VIDEO;
@@ -435,7 +448,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
                 mNumberOfFrames = 0;
 
     mResampleBuffer = (char*)malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
-    mCurPts = 0;
+    mCurrentFrameIndex = 0;
     mSeekingToPos = true;
     mEOFReached = false;
     mMediaType = MEDIA_AUDIO;
@@ -593,15 +606,12 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
     int tChunkDescSize = sizeof(tChunkDesc);
     mDecoderMetaDataFifo->ReadFifo((char*)&tChunkDesc, tChunkDescSize);
     #if defined(MSF_DEBUG_PACKETS) || defined(MSF_DEBUG_DECODER_STATE)
-        LOG(LOG_VERBOSE, "Grabbed meta data of size %d from decoder FIFO", tChunkDescSize);
+        LOG(LOG_VERBOSE, "Grabbed meta data of size %d for chunk with pts %ld", tChunkDescSize, tChunkDesc.Pts);
     #endif
     if (tChunkDescSize != sizeof(tChunkDesc))
         LOG(LOG_ERROR, "Read from FIFO a chunk with wrong size of %d bytes, expected size is %d bytes", tChunkDescSize, sizeof(tChunkDesc));
-    mCurPts = tChunkDesc.Pts;
-    #ifdef MSF_DEBUG_PACKETS
-        LOG(LOG_VERBOSE, "PTS of grabbed chunk is %d", mCurPts);
-    #endif
-    if ((mCurPts == mNumberOfFrames) && (mNumberOfFrames != 0))
+    mCurrentFrameIndex = tChunkDesc.Pts;
+    if ((mCurrentFrameIndex == mNumberOfFrames) && (mNumberOfFrames != 0))
         mEOFReached = true;
 
     // unlock grabbing
@@ -615,31 +625,19 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
     {
         // should we initiate the StartPts value?
         if (mSourceStartPts == -1)
-            mSourceStartPts = mCurPts;
+            mSourceStartPts = mCurrentFrameIndex;
         else
         {
-            int64_t tRelativePacketTimeUSecs, tRelativeRealTimeUSecs, tDiffPtsUSecs;
-            double tPacketRealPtsTmp = 1000000 * (mCurPts - mSourceStartPts) / mFrameRate; // current presentation time in useconds of the current packet from the file source
-            tRelativePacketTimeUSecs = (int64_t)tPacketRealPtsTmp;
-            tRelativeRealTimeUSecs = av_gettime() - mStartPtsUSecs;
-            tDiffPtsUSecs = tRelativePacketTimeUSecs - tRelativeRealTimeUSecs;
-            #ifdef MSF_DEBUG_TIMING
-                LOG(LOG_VERBOSE, "%s-current relative time: %8lld us (Fps: %3.2f), stream start time: %6lld us, packet's relative play out time: %8lld us, time difference: %8lld us", GetMediaTypeStr().c_str(), tRelativeRealTimeUSecs, mFrameRate, mSourceStartPts, tRelativePacketTimeUSecs, tDiffPtsUSecs);
-            #endif
-            // adapt timing to real-time, ignore timings between -5 ms and +5 ms
-            if (tDiffPtsUSecs > 0)
+            // do we wait for first successfully decode frame after we seeked within the file?
+            if (mGrabInRealTimeWaitForNextFrameAfterSeeking)
             {
-                #ifdef MSF_DEBUG_TIMING
-                    LOG(LOG_WARN, "%s-sleeping for %d us", GetMediaTypeStr().c_str(), tDiffPtsUSecs);
-                #endif
-                Thread::Suspend(tDiffPtsUSecs);
-            }else
-            {
-                #ifdef MSF_DEBUG_TIMING
-                    if (tDiffPtsUSecs < -MSF_FRAME_DROP_THRESHOLD)
-                        LOG(LOG_VERBOSE, "%s-system too busy (delay threshold is %dms), decoded frame time diff.: %dms", GetMediaTypeStr().c_str(),MSF_FRAME_DROP_THRESHOLD / 1000, -tDiffPtsUSecs / 1000);
-                #endif
+                mGrabInRealTimeWaitForNextFrameAfterSeeking = false;
+
+                // adapt the start pts value to the time shift once more because we dropped several frames during seek process
+                if (mGrabInRealTime)
+                    CalibrateRTGrabbing();
             }
+            WaitForRTGrabbing();
         }
     }
 
@@ -818,7 +816,7 @@ void* MediaSourceFile::Run(void* pArgs)
                             mDecoderLastReadPts = tCurrentChunkPts;
                         }
                         #ifdef MSF_DEBUG_DECODER_STATE
-                            LOG(LOG_VERBOSE, "Decoded %s frame number %ld", GetMediaTypeStr().c_str(), tCurrentChunkPts);
+                            LOG(LOG_VERBOSE, "Read %s frame number %ld from input file", GetMediaTypeStr().c_str(), tCurrentChunkPts);
                         #endif
                     }else
                     {
@@ -1239,7 +1237,7 @@ bool MediaSourceFile::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
         return false;
     }
 
-    int64_t tFrameIndex = pSeconds * (int64_t)mFrameRate; // later the value for mCurPts will be changed to the same value like tAbsoluteTimestamp
+    int64_t tFrameIndex = pSeconds * (int64_t)mFrameRate; // later the value for mCurrentFrameIndex will be changed to the same value like tAbsoluteTimestamp
 
     //LOG(LOG_VERBOSE, "Rel: %ld Abs: %ld", tRelativeTimestamp, tAbsoluteTimestamp);
 
@@ -1255,22 +1253,36 @@ bool MediaSourceFile::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
 //                tMin = 0;
 //            if (tMax > mNumberOfFrames)
 //                tMax = mNumberOfFrames;
-            if (tFrameIndex > mCurPts)
+            if (tFrameIndex > mCurrentFrameIndex)
             {
                 tMin = INT64_MIN;
-                tMax = tFrameIndex + 2;
+                tMax = tFrameIndex + MSF_SEEK_VARIANCE;
             }else
             {
-                tMin = tFrameIndex - 2;
+                tMin = tFrameIndex - MSF_SEEK_VARIANCE;
                 tMax = INT64_MAX;
             }
-            LOG(LOG_VERBOSE, "%s-seeking to second %ld at pts %ld(min: %ld, max: %ld), current pts is %ld, max. pts is %ld", GetMediaTypeStr().c_str(), pSeconds, tFrameIndex, tMin, tMax, mCurPts, mFormatContext->duration);
-            int tSeekFlags = (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) | AVSEEK_FLAG_FRAME | (tFrameIndex < mCurPts ? AVSEEK_FLAG_BACKWARD : 0);
+            LOG(LOG_VERBOSE, "%s-seeking from %ld seconds (pts %ld) to %ld seconds (pts %ld, min: %ld, max: %ld), max. pts is %ld", GetMediaTypeStr().c_str(), GetSeekPos(), mCurrentFrameIndex, pSeconds, tFrameIndex, tMin, tMax, mFormatContext->duration);
+            int tSeekFlags = (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) | AVSEEK_FLAG_FRAME | (tFrameIndex < mCurrentFrameIndex ? AVSEEK_FLAG_BACKWARD : 0);
 //HINT: we do not use tResult = (avformat_seek_file(mFormatContext, mMediaStreamIndex, tMin, tFrameIndex, tMax, tSeekFlags) >= 0); //here because this leads sometimes to unexpected behavior
             tResult = (av_seek_frame(mFormatContext, mMediaStreamIndex, tFrameIndex, tSeekFlags) >= 0);
+            if (tResult < 0)
+                LOG(LOG_ERROR, "Error during absolute seeking in %s source file because \"%s\"", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
+            else
+            {
+                LOG(LOG_VERBOSE, "Seeking in file to frame index %ld was successful", tFrameIndex);
+                mCurrentFrameIndex = tFrameIndex;
+            }
 
             // flush ffmpeg internal buffers
             avcodec_flush_buffers(mCodecContext);
+
+            // adapt the start pts value to the time shift once more because we dropped several frames during seek process
+            if (mGrabInRealTime)
+            {
+                CalibrateRTGrabbing();
+                mGrabInRealTimeWaitForNextFrameAfterSeeking = true;
+            }
 
             mDecoderFifo->ClearFifo();
             mDecoderMetaDataFifo->ClearFifo();
@@ -1278,21 +1290,6 @@ bool MediaSourceFile::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
             mDecoderMutex.unlock();
         }else
             LOG(LOG_VERBOSE, "%s-seeking in file skipped because position is already the desired one", GetMediaTypeStr().c_str());
-
-        // adopt the stored pts value which represent the start of the media presentation in real-time useconds
-        int64_t tFrameNumber = tFrameIndex - mSourceStartPts;
-        int64_t tRelativeRealTimeUSecs = 1000000 * tFrameNumber / (int64_t)mFrameRate;
-        //LOG(LOG_VERBOSE, "Old start: %ld", mStartPtsUSecs);
-        mStartPtsUSecs = av_gettime() - tRelativeRealTimeUSecs;
-        //LOG(LOG_VERBOSE, "New start: %ld", mStartPtsUSecs);
-
-        if (tResult < 0)
-            LOG(LOG_ERROR, "Error during absolute seeking in %s source file beause \"%s\"", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
-        else
-        {
-            LOG(LOG_VERBOSE, "Seeking in file was successful");
-            mCurPts = tFrameIndex;
-        }
     }else
         LOG(LOG_ERROR, "Seek position %ld is out of range (0 - %ld) for %s file", tFrameIndex, mNumberOfFrames, GetMediaTypeStr().c_str());
 
@@ -1322,9 +1319,9 @@ bool MediaSourceFile::SeekRelative(int64_t pSeconds, bool pOnlyKeyFrames)
         return false;
     }
 
-    //LOG(LOG_VERBOSE, "pSecs: %ld CurPts: %ld", pSeconds, mCurPts);
+    //LOG(LOG_VERBOSE, "pSecs: %ld CurPts: %ld", pSeconds, mCurrentFrameIndex);
     int64_t tRelativeFrameIndex = pSeconds * (int64_t)mFrameRate;
-    int64_t tFrameIndex = mCurPts + tRelativeFrameIndex; // later the value for mCurPts will be changed to the same value like tAbsoluteTimestamp
+    int64_t tFrameIndex = mCurrentFrameIndex + tRelativeFrameIndex; // later the value for mCurrentFrameIndex will be changed to the same value like tAbsoluteTimestamp
 
     //LOG(LOG_VERBOSE, "Rel: %ld Abs: %ld", tRelativeTimestamp, tAbsoluteTimestamp);
 
@@ -1332,7 +1329,7 @@ bool MediaSourceFile::SeekRelative(int64_t pSeconds, bool pOnlyKeyFrames)
     {
         LOG(LOG_VERBOSE, "Seeking relative %d seconds", pSeconds);
         mDecoderMutex.lock();
-        tResult = (avformat_seek_file(mFormatContext, mMediaStreamIndex, tFrameIndex - MSF_SEEK_VARIANCE, tFrameIndex, tFrameIndex + MSF_SEEK_VARIANCE, (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) | (tFrameIndex < mCurPts ? AVSEEK_FLAG_BACKWARD : 0)) >= 0);
+        tResult = (avformat_seek_file(mFormatContext, mMediaStreamIndex, tFrameIndex - MSF_SEEK_VARIANCE, tFrameIndex, tFrameIndex + MSF_SEEK_VARIANCE, (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) | (tFrameIndex < mCurrentFrameIndex ? AVSEEK_FLAG_BACKWARD : 0)) >= 0);
         mDecoderFifo->ClearFifo();
         mDecoderMetaDataFifo->ClearFifo();
         mDecoderNeedWorkCondition.SignalAll();
@@ -1348,7 +1345,7 @@ bool MediaSourceFile::SeekRelative(int64_t pSeconds, bool pOnlyKeyFrames)
         if (tResult < 0)
             LOG(LOG_ERROR, "Error during relative seeking in %s file", GetMediaTypeStr().c_str());
         else
-            mCurPts = tFrameIndex;
+            mCurrentFrameIndex = tFrameIndex;
     }else
         LOG(LOG_ERROR, "Seek position is out of range for %s file", GetMediaTypeStr().c_str());
 
@@ -1365,7 +1362,7 @@ int64_t MediaSourceFile::GetSeekPos()
 {
 	int64_t tSeekEnd = GetSeekEnd();
 	if (mNumberOfFrames > 0)
-        return (tSeekEnd * mCurPts / mNumberOfFrames);
+        return (tSeekEnd * mCurrentFrameIndex / mNumberOfFrames);
     else
         return 0;
 }
@@ -1445,6 +1442,43 @@ string MediaSourceFile::CurrentInputChannel()
     mGrabMutex.unlock();
 
     return tResult;
+}
+
+void MediaSourceFile::CalibrateRTGrabbing()
+{
+    // adopt the stored pts value which represent the start of the media presentation in real-time useconds
+    int64_t tRelativeFrameIndex = mCurrentFrameIndex - mSourceStartPts;
+    int64_t tRelativeTime = (int64_t)(1000000 * (double)tRelativeFrameIndex / mFrameRate);
+    LOG(LOG_VERBOSE, "Calibrating RT playback, old PTS start: %ld", mStartPtsUSecs);
+    mStartPtsUSecs = av_gettime() - tRelativeTime;
+    LOG(LOG_VERBOSE, "Calibrating RT playback: new PTS start: %ld, rel. frame index: %ld, rel. time: %ld ms", mStartPtsUSecs, tRelativeFrameIndex, tRelativeTime / 1000);
+}
+
+void MediaSourceFile::WaitForRTGrabbing()
+{
+    int64_t tRelativePacketTimeUSecs, tRelativeRealTimeUSecs, tDiffPtsUSecs;
+    int64_t tRelativeFrameIndex = mCurrentFrameIndex - mSourceStartPts;
+    double tPacketRealPtsTmp = 1000000 * (tRelativeFrameIndex) / mFrameRate; // current presentation time in us of the current packet from the file source
+    tRelativePacketTimeUSecs = (int64_t)tPacketRealPtsTmp;
+    tRelativeRealTimeUSecs = av_gettime() - mStartPtsUSecs;
+    tDiffPtsUSecs = tRelativePacketTimeUSecs - tRelativeRealTimeUSecs;
+    #ifdef MSF_DEBUG_TIMING
+        LOG(LOG_VERBOSE, "%s-current relative frame index: %ld, relative time: %8lld us (Fps: %3.2f), stream start time: %6lld us, packet's relative play out time: %8lld us, time difference: %8lld us", GetMediaTypeStr().c_str(), tRelativeFrameIndex, tRelativeRealTimeUSecs, mFrameRate, mSourceStartPts, tRelativePacketTimeUSecs, tDiffPtsUSecs);
+    #endif
+    // adapt timing to real-time, ignore timings between -5 ms and +5 ms
+    if (tDiffPtsUSecs > 0)
+    {
+        #ifdef MSF_DEBUG_TIMING
+            LOG(LOG_WARN, "%s-sleeping for %d ms", GetMediaTypeStr().c_str(), (int)tDiffPtsUSecs / 1000);
+        #endif
+        Thread::Suspend(tDiffPtsUSecs);
+    }else
+    {
+        #ifdef MSF_DEBUG_TIMING
+            if (tDiffPtsUSecs < -MSF_FRAME_DROP_THRESHOLD)
+                LOG(LOG_VERBOSE, "%s-system too busy (delay threshold is %dms), decoded frame time diff.: %dms", GetMediaTypeStr().c_str(),MSF_FRAME_DROP_THRESHOLD / 1000, -tDiffPtsUSecs / 1000);
+        #endif
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
