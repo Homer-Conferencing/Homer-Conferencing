@@ -1291,7 +1291,7 @@ bool MediaSourceFile::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
             mCurPts = tFrameIndex;
         }
     }else
-        LOG(LOG_ERROR, "Seek position is out of range for %s file", GetMediaTypeStr().c_str());
+        LOG(LOG_ERROR, "Seek position %ld is out of range (0 - %ld) for %s file", GetMediaTypeStr().c_str(), tFrameIndex, mNumberOfFrames);
 
     // inform about seeking state, don't inform about dropped frames because they are dropped caused by seeking and not by timing problems
     mSeekingToPos = true;
