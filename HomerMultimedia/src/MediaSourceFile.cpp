@@ -501,7 +501,7 @@ bool MediaSourceFile::CloseGrabDevice()
 
 int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk)
 {
-    #ifdef MSF_DEBUG_PACKETS
+    #if defined(MSF_DEBUG_PACKETS) || defined(MSF_DEBUG_DECODER_STATE)
         LOG(LOG_VERBOSE, "Going to grab new chunk from FIFO");
     #endif
     // lock grabbing
@@ -557,12 +557,15 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
 
     if (mDecoderFifo->GetUsage() < MEDIA_SOURCE_FILE_QUEUE)
     {
-        #ifdef MSF_DEBUG_TIMING
+        #ifdef MSF_DEBUG_DECODER_STATE
             LOG(LOG_VERBOSE, "Signal to decoder that new data is needed");
         #endif
         mDecoderMutex.lock();
         mDecoderNeedWorkCondition.SignalAll();
         mDecoderMutex.unlock();
+        #ifdef MSF_DEBUG_DECODER_STATE
+            LOG(LOG_VERBOSE, "Signaling to decoder done");
+        #endif
     }
 
     // read chunk data from FIFO
@@ -581,7 +584,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
         return GRAB_RES_EOF;
     }
 
-    #ifdef MSF_DEBUG_PACKETS
+    #if defined(MSF_DEBUG_PACKETS) || defined(MSF_DEBUG_DECODER_STATE)
         LOG(LOG_VERBOSE, "Grabbed chunk %d of size %d from decoder FIFO", mChunkNumber, pChunkSize);
     #endif
 
@@ -589,7 +592,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
     struct ChunkDescriptor tChunkDesc;
     int tChunkDescSize = sizeof(tChunkDesc);
     mDecoderMetaDataFifo->ReadFifo((char*)&tChunkDesc, tChunkDescSize);
-    #ifdef MSF_DEBUG_PACKETS
+    #if defined(MSF_DEBUG_PACKETS) || defined(MSF_DEBUG_DECODER_STATE)
         LOG(LOG_VERBOSE, "Grabbed meta data of size %d from decoder FIFO", tChunkDescSize);
     #endif
     if (tChunkDescSize != sizeof(tChunkDesc))
@@ -1291,7 +1294,7 @@ bool MediaSourceFile::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
             mCurPts = tFrameIndex;
         }
     }else
-        LOG(LOG_ERROR, "Seek position %ld is out of range (0 - %ld) for %s file", GetMediaTypeStr().c_str(), tFrameIndex, mNumberOfFrames);
+        LOG(LOG_ERROR, "Seek position %ld is out of range (0 - %ld) for %s file", tFrameIndex, mNumberOfFrames, GetMediaTypeStr().c_str());
 
     // inform about seeking state, don't inform about dropped frames because they are dropped caused by seeking and not by timing problems
     mSeekingToPos = true;
