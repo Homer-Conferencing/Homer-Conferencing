@@ -163,6 +163,10 @@ private:
     virtual void wheelEvent(QWheelEvent *pEvent);
     virtual void timerEvent(QTimerEvent *pEvent);
 
+    /* AV sync */
+    void ResetAVSync();
+    void AVSync();
+
     void ShowNewState();
     void ShowStreamPosition(int64_t tCurPos, int64_t tEndPos);
     void CallStopped(bool pIncoming);
