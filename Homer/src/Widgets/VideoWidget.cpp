@@ -1971,7 +1971,7 @@ void VideoWorkerThread::DoSeek()
     mDeliverMutex.lock();
 
     LOG(LOG_VERBOSE, "Seeking now to position %d", mSeekPos);
-    mVideoSource->Seek(mSeekPos, false);
+    mVideoSource->Seek(mSeekPos);
     mEofReached = false;
     mSeekAsap = false;
 
@@ -2174,7 +2174,7 @@ int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFps)
     mDeliverMutex.unlock();
 
 	#ifdef VIDEO_WIDGET_DEBUG_FRAMES
-    	LOG(LOG_VERBOSE, "GetCurrentFrame() delivered frame %d from index %d, pending frames: %d, dropped frames: %d, missing frames: %d, grab index: %d", tResult, mFrameCurrentIndex, mPendingNewFrames, mDroppedFrames, mMissingFrames, mFrameGrabIndex);
+    	LOG(LOG_VERBOSE, "GetCurrentFrame() delivered frame %d from index %d, pending frames: %d, missing frames: %d, grab index: %d", tResult, mFrameCurrentIndex, mPendingNewFrames, mMissingFrames, mFrameGrabIndex);
 	#endif
 
     return tResult;
