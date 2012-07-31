@@ -40,6 +40,8 @@ namespace Homer { namespace Multimedia {
 using namespace std;
 using namespace Homer::Monitor;
 
+#define MEDIA_SOURCE_FILE_QUEUE         ((mMediaType == MEDIA_AUDIO) ? MEDIA_SOURCE_FILE_QUEUE_FOR_AUDIO : MEDIA_SOURCE_FILE_QUEUE_FOR_VIDEO)
+
 ///////////////////////////////////////////////////////////////////////////////
 
 MediaSourceFile::MediaSourceFile(string pSourceFile, bool pGrabInRealTime):
@@ -553,7 +555,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
         return GRAB_RES_EOF;
     }
 
-    if (mDecoderFifo->GetUsage() == 0)
+    if (mDecoderFifo->GetUsage() < MEDIA_SOURCE_FILE_QUEUE)
     {
         #ifdef MSF_DEBUG_TIMING
             LOG(LOG_VERBOSE, "Signal to decoder that new data is needed");
@@ -656,8 +658,8 @@ void MediaSourceFile::StartDecoder(int pFifoEntrySize)
         delete mDecoderFifo;
     }else
     {
-        mDecoderFifo = new MediaFifo(MEDIA_SOURCE_FILE_INPUT_QUEUE_SIZE_LIMIT, pFifoEntrySize, GetMediaTypeStr() + "-MediaSourceFile");
-        mDecoderMetaDataFifo = new MediaFifo(MEDIA_SOURCE_FILE_INPUT_QUEUE_SIZE_LIMIT, sizeof(ChunkDescriptor), GetMediaTypeStr() + "-MediaSourceFile");
+        mDecoderFifo = new MediaFifo(MEDIA_SOURCE_FILE_QUEUE, pFifoEntrySize, GetMediaTypeStr() + "-MediaSourceFile");
+        mDecoderMetaDataFifo = new MediaFifo(MEDIA_SOURCE_FILE_QUEUE, sizeof(ChunkDescriptor), GetMediaTypeStr() + "-MediaSourceFile");
 
         mDecoderNeeded = true;
 
@@ -746,7 +748,7 @@ void* MediaSourceFile::Run(void* pArgs)
         #endif
         mDecoderMutex.lock();
 
-        if ((mDecoderFifo != NULL) && (mDecoderFifo->GetUsage() < MEDIA_SOURCE_FILE_INPUT_QUEUE_SIZE_LIMIT - 1 /* one slot for a 0 byte signaling chunk*/) /* meta data FIFO has always the same size => hence, we don't have to check its size */)
+        if ((mDecoderFifo != NULL) && (mDecoderFifo->GetUsage() < MEDIA_SOURCE_FILE_QUEUE - 1 /* one slot for a 0 byte signaling chunk*/) /* meta data FIFO has always the same size => hence, we don't have to check its size */)
         {
 
             if (mEOFReached)
@@ -1079,13 +1081,13 @@ void* MediaSourceFile::Run(void* pArgs)
         }else
         {// decoder FIFO is full, nothing to be done
             #ifdef MSF_DEBUG_DECODER_STATE
-                LOG(LOG_VERBOSE, "Nothing to do for %s decoder, wait some time and check again, loop %d", GetMediaTypeStr().c_str(), ++tWaitLoop);
+                LOG(LOG_VERBOSE, "Nothing to do for %s decoder, FIFO has %d of %d entries, wait some time and check again, loop %d", GetMediaTypeStr().c_str(), mDecoderFifo->GetUsage(), mDecoderFifo->GetSize(), ++tWaitLoop);
             #endif
             mDecoderNeedWorkCondition.Reset();
             mDecoderNeedWorkCondition.Wait(&mDecoderMutex);
             mDecoderLastReadPts = 0;
             #ifdef MSF_DEBUG_DECODER_STATE
-                LOG(LOG_VERBOSE, "Continuing after new data is needed, current FIFO size is: %d", mDecoderFifo->GetUsage());
+                LOG(LOG_VERBOSE, "Continuing after new data is needed, current FIFO size is: %d of %d", mDecoderFifo->GetUsage(), mDecoderFifo->GetSize());
             #endif
         }
 

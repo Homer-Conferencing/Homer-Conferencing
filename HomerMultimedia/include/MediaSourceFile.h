@@ -46,12 +46,14 @@ namespace Homer { namespace Multimedia {
 //#define MSF_DEBUG_TIMING
 //#define MSF_DEBUG_DECODER_STATE
 
-#define MEDIA_SOURCE_FILE_INPUT_QUEUE_SIZE_LIMIT                  5 // in frames or audio sample blocks
+#define MEDIA_SOURCE_FILE_QUEUE_FOR_VIDEO                  6 // in frames (each max. 16 MB for HDTV, one entry is reserved for 0-byte signaling)
+#define MEDIA_SOURCE_FILE_QUEUE_FOR_AUDIO                 32 // in audio sample blocks (each about 4 kB)
 
 // 33 ms delay for 30 fps -> rounded to 35 ms
 #define MSF_FRAME_DROP_THRESHOLD            0 //in us, 0 deactivates frame dropping
 
 #define MSF_SEEK_VARIANCE              (10 * AV_TIME_BASE)
+
 ///////////////////////////////////////////////////////////////////////////////
 
 class MediaSourceFile:
