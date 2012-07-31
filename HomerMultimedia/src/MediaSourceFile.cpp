@@ -821,7 +821,7 @@ void* MediaSourceFile::Run(void* pArgs)
                     {
                         tShouldReadNext = true;
                         #ifdef MSF_DEBUG_DECODER_STATE
-                            LOG(LOG_VERBOSE, "Read stream %d instead of desired stream %d", tPacket->stream_index, mMediaStreamIndex);
+                            LOG(LOG_VERBOSE, "Read frame %d of stream %d instead of desired stream %d", tPacket->pts, tPacket->stream_index, mMediaStreamIndex);
                         #endif
                     }
                 }
@@ -1261,8 +1261,10 @@ bool MediaSourceFile::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
                 tMin = tFrameIndex - 2;
                 tMax = INT64_MAX;
             }
-            LOG(LOG_VERBOSE, "%s-seeking to second %ld at pts %ld, current pts is %ld, max. pts is %ld", GetMediaTypeStr().c_str(), pSeconds, tFrameIndex, mCurPts, mFormatContext->duration);
-            tResult = (avformat_seek_file(mFormatContext, mMediaStreamIndex, tMin, tFrameIndex, tMax, (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) | AVSEEK_FLAG_FRAME | (tFrameIndex < mCurPts ? AVSEEK_FLAG_BACKWARD : 0)) >= 0);
+            LOG(LOG_VERBOSE, "%s-seeking to second %ld at pts %ld(min: %ld, max: %ld), current pts is %ld, max. pts is %ld", GetMediaTypeStr().c_str(), pSeconds, tFrameIndex, tMin, tMax, mCurPts, mFormatContext->duration);
+            int tSeekFlags = (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) | AVSEEK_FLAG_FRAME | (tFrameIndex < mCurPts ? AVSEEK_FLAG_BACKWARD : 0);
+//HINT: we do not use tResult = (avformat_seek_file(mFormatContext, mMediaStreamIndex, tMin, tFrameIndex, tMax, tSeekFlags) >= 0); //here because this leads sometimes to unexpected behavior
+            tResult = (av_seek_frame(mFormatContext, mMediaStreamIndex, tFrameIndex, tSeekFlags) >= 0);
 
             // flush ffmpeg internal buffers
             avcodec_flush_buffers(mCodecContext);
@@ -1300,6 +1302,7 @@ bool MediaSourceFile::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
     return tResult;
 }
 
+//TODO
 bool MediaSourceFile::SeekRelative(int64_t pSeconds, bool pOnlyKeyFrames)
 {
     bool tResult = false;

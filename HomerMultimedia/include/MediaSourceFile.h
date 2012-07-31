@@ -81,6 +81,7 @@ public:
     virtual bool SupportsSeeking();
     virtual int64_t GetSeekEnd(); // get maximum seek time in seconds
     virtual bool Seek(int64_t pSeconds, bool pOnlyKeyFrames = true); // seek to absolute position which is given in seconds
+    //TODO: following function!
     virtual bool SeekRelative(int64_t pSeconds, bool pOnlyKeyFrames = true); // seeks relative to the current position, distance is given in seconds
     virtual int64_t GetSeekPos(); // in seconds
 
