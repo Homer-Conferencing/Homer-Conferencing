@@ -120,7 +120,7 @@ private:
     std::vector<string> mInputChannels;
     /* real-time playback */
     bool                mGrabInRealTime;
-    bool                mGrabInRealTimeWaitForNextFrameAfterSeeking;
+    bool                mWaitForFirstFrameAfterSeeking;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

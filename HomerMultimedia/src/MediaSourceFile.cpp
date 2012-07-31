@@ -59,7 +59,7 @@ using namespace Homer::Monitor;
 MediaSourceFile::MediaSourceFile(string pSourceFile, bool pGrabInRealTime):
     MediaSource("FILE: " + pSourceFile)
 {
-    mGrabInRealTimeWaitForNextFrameAfterSeeking = false;
+    mWaitForFirstFrameAfterSeeking = false;
     mSourceType = SOURCE_FILE;
     mDesiredDevice = pSourceFile;
     mGrabInRealTime = pGrabInRealTime;
@@ -629,9 +629,9 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
         else
         {
             // do we wait for first successfully decode frame after we seeked within the file?
-            if (mGrabInRealTimeWaitForNextFrameAfterSeeking)
+            if (mWaitForFirstFrameAfterSeeking)
             {
-                mGrabInRealTimeWaitForNextFrameAfterSeeking = false;
+                mWaitForFirstFrameAfterSeeking = false;
 
                 // adapt the start pts value to the time shift once more because we dropped several frames during seek process
                 if (mGrabInRealTime)
@@ -845,6 +845,13 @@ void* MediaSourceFile::Run(void* pArgs)
                     LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
                     LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket->pos);
                 #endif
+
+                // are we waiting for first valid frame after we seeked within the input file?
+                if (mWaitForFirstFrameAfterSeeking)
+                {
+                    // flush ffmpeg internal buffers
+                    avcodec_flush_buffers(mCodecContext);
+                }
 
                 // #########################################
                 // process packet
@@ -1274,15 +1281,12 @@ bool MediaSourceFile::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
                 mCurrentFrameIndex = tFrameIndex;
             }
 
-            // flush ffmpeg internal buffers
-            avcodec_flush_buffers(mCodecContext);
-
             // adapt the start pts value to the time shift once more because we dropped several frames during seek process
             if (mGrabInRealTime)
-            {
                 CalibrateRTGrabbing();
-                mGrabInRealTimeWaitForNextFrameAfterSeeking = true;
-            }
+
+            // trigger a avcodec_flush_buffers()
+            mWaitForFirstFrameAfterSeeking = true;
 
             mDecoderFifo->ClearFifo();
             mDecoderMetaDataFifo->ClearFifo();
