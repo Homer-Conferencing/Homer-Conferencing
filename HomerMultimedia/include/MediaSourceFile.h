@@ -71,11 +71,11 @@ public:
 
     /* seek interface */
     virtual bool SupportsSeeking();
-    virtual int64_t GetSeekEnd(); // get maximum seek time in seconds
-    virtual bool Seek(int64_t pSeconds, bool pOnlyKeyFrames = true); // seek to absolute position which is given in seconds
+    virtual float GetSeekEnd(); // get maximum seek time in seconds
+    virtual bool Seek(float pSeconds, bool pOnlyKeyFrames = true); // seek to absolute position which is given in seconds
     //TODO: following function!
-    virtual bool SeekRelative(int64_t pSeconds, bool pOnlyKeyFrames = true); // seeks relative to the current position, distance is given in seconds
-    virtual int64_t GetSeekPos(); // in seconds
+    virtual bool SeekRelative(float pSeconds, bool pOnlyKeyFrames = true); // seeks relative to the current position, distance is given in seconds
+    virtual float GetSeekPos(); // in seconds
 
     /* multi channel input interface */
     virtual bool SupportsMultipleInputChannels();
@@ -114,13 +114,13 @@ private:
     Condition           mDecoderNeedWorkCondition;
     bool                mEOFReached;
     int64_t             mCurrentFrameIndex; // we have to determine this manually during grabbing because cur_dts and everything else in AVStream is buggy for some video/audio files
-    bool                mSeekingToPos; // seek to starting point because initial stream detection consumes the first n frames, or seeking to explicit position ("Seek" was called)
     char                *mResampleBuffer;
     ReSampleContext     *mResampleContext;
     std::vector<string> mInputChannels;
     /* real-time playback */
     bool                mGrabInRealTime;
-    bool                mWaitForFirstFrameAfterSeeking;
+    bool                mGrabInRealTimeWaitForFirstValidFrameAfterSeeking;
+    bool                mFlushBuffersAfterSeeking;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
