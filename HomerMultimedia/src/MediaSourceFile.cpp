@@ -1257,15 +1257,12 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
         if (pSeconds != GetSeekPos())
         {
             mDecoderMutex.lock();
-            int64_t tMin = tFrameIndex - MSF_SEEK_VARIANCE;
-            int64_t tMax = tFrameIndex + MSF_SEEK_VARIANCE;
-            if (tMin < 0)
-                tMin = 0;
-            if (tMax > mNumberOfFrames)
-                tMax = mNumberOfFrames;
+
             LOG(LOG_VERBOSE, "%s-seeking from %5.2f sec. (pts %ld) to %5.2f sec. (pts %ld), max. sec.: %ld (pts %ld), source start pts: %ld", GetMediaTypeStr().c_str(), GetSeekPos(), mCurrentFrameIndex, pSeconds, tFrameIndex, tSeekEnd, mNumberOfFrames, mSourceStartPts);
+
             int tSeekFlags = (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) | AVSEEK_FLAG_FRAME | (tFrameIndex < mCurrentFrameIndex ? AVSEEK_FLAG_BACKWARD : 0);
-            tRes = (avformat_seek_file(mFormatContext, mMediaStreamIndex, tMin, tFrameIndex, tMax, tSeekFlags) >= 0); //here because this leads sometimes to unexpected behavior
+
+            tRes = (avformat_seek_file(mFormatContext, mMediaStreamIndex, INT64_MIN, tFrameIndex, INT64_MAX, tSeekFlags) >= 0); //here because this leads sometimes to unexpected behavior
             if (tRes < 0)
             {
                 LOG(LOG_ERROR, "Error during absolute seeking in %s source file because \"%s\"", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
