@@ -188,7 +188,7 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
     }else
     {
         setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
-        setAllowedAreas(Qt::RightDockWidgetArea | Qt::BottomDockWidgetArea);
+        setAllowedAreas(Qt::AllDockWidgetAreas);
         mMainWindow->addDockWidget(Qt::RightDockWidgetArea, this, Qt::Horizontal);
     }
 
@@ -1234,7 +1234,7 @@ VideoWorkerThread* ParticipantWidget::GetVideoWorker()
 
 AudioWorkerThread* ParticipantWidget::GetAudioWorker()
 {
-    if ((mAudioWidget != NULL) && (mSessionType != PREVIEW))
+    if (mAudioWidget != NULL)
         return mAudioWidget->GetWorker();
     else
         return NULL;
