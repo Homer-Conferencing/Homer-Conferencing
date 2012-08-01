@@ -94,7 +94,7 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
         }
     }
 
-    if (mIncomingAVStream != pStream)
+    if ((mIncomingAVStream != NULL) && (mIncomingAVStream != pStream))
     {
         LOG(LOG_VERBOSE, "Incoming AV stream changed from %p to %p (codec %s), resetting RTP streamer..", mIncomingAVStream, pStream, pStream->codec->codec->name);
     	tResetNeeded = true;
@@ -122,6 +122,7 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
             }
 
             OpenStreamer(pStream);
+            tResetNeeded = false;
         }
 
         // stream changed
