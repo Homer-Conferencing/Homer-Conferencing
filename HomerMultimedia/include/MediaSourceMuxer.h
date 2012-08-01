@@ -124,10 +124,10 @@ public:
 
     /* seek interface */
     virtual bool SupportsSeeking();
-    virtual int64_t GetSeekEnd(); // get maximum seek time in seconds
-    virtual bool Seek(int64_t pSeconds, bool pOnlyKeyFrames = true);
-    virtual bool SeekRelative(int64_t pSeconds, bool pOnlyKeyFrames = true);
-    virtual int64_t GetSeekPos(); // in seconds
+    virtual float GetSeekEnd(); // get maximum seek time in seconds
+    virtual bool Seek(float pSeconds, bool pOnlyKeyFrames = true);
+    virtual bool SeekRelative(float pSeconds, bool pOnlyKeyFrames = true);
+    virtual float GetSeekPos(); // in seconds
 
     /* multi input interface */
     virtual bool SupportsMultipleInputChannels();
