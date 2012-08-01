@@ -213,9 +213,9 @@ public:
     bool EofReached();
     QString CurrentFile();
     bool SupportsSeeking();
-    void Seek(int64_t pPos);
-    int64_t GetSeekPos();
-    int64_t GetSeekEnd();
+    void Seek(float pPos);
+    float GetSeekPos();
+    float GetSeekEnd();
 
     /* multiple channels control */
     bool SupportsMultipleChannels();
@@ -284,9 +284,10 @@ private:
     bool                mStartRecorderAsap;
     bool                mStopRecorderAsap;
     bool				mPlayNewFileAsap;
-    bool                mSeekAsap;
-    int64_t             mSeekPos;
     bool                mSelectInputChannelAsap;
+    /* seeking */
+    bool                mSeekAsap;
+    float               mSeekPos;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

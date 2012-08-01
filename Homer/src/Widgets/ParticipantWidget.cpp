@@ -74,7 +74,7 @@ namespace Homer { namespace Gui {
 // max. allowed drift between audio and video playback
 #define AV_SYNC_MAX_DRIFT                                             0 //seconds
 // min. time difference between two synch. processes
-#define AV_SYNC_MIN_PERIOD                                           10 // seconds
+#define AV_SYNC_MIN_PERIOD                                            3 // seconds
 // how many times do we have to detect continuous asynch. A/V playback before we synch. audio and video? (to avoid false-positives)
 #define AV_SYNC_CONTINUOUS_ASYNC_THRESHOLD                            2 // checked every STREAM_POS_UPDATE_DELAY ms
 
@@ -1083,7 +1083,7 @@ void ParticipantWidget::AVSync()
                                     LOG(LOG_WARN, "Detected asynchronous A/V playback, drift is %lld seconds (video before audio), max. allowed drift is %d seconds, last synch. was at %lld, synchronizing now..", tTimeDiff, AV_SYNC_MAX_DRIFT, mTimeOfLastAVSynch);
                                 else
                                     LOG(LOG_WARN, "Detected asynchronous A/V playback, drift is %lld seconds (audio before video), max. allowed drift is %d seconds, last synch. was at %lld, synchronizing now..", tTimeDiff, AV_SYNC_MAX_DRIFT, mTimeOfLastAVSynch);
-                                mVideoWidget->GetWorker()->Seek(mAudioWidget->GetWorker()->GetSeekPos());
+                                mAudioWidget->GetWorker()->Seek(mVideoWidget->GetWorker()->GetSeekPos());
                                 ResetAVSync();
                             }else
                             {
@@ -1208,8 +1208,8 @@ void ParticipantWidget::SeekMovieFile(int pPos)
 {
 	LOG(LOG_VERBOSE, "User moved playback slider to position %d", pPos);
     ResetAVSync();
-    mVideoWidget->GetWorker()->Seek(mVideoWidget->GetWorker()->GetSeekEnd() * pPos / 1000);
-    mAudioWidget->GetWorker()->Seek(mAudioWidget->GetWorker()->GetSeekEnd() * pPos / 1000);
+    mVideoWidget->GetWorker()->Seek((double)mVideoWidget->GetWorker()->GetSeekEnd() * pPos / 1000);
+    mAudioWidget->GetWorker()->Seek((double)mAudioWidget->GetWorker()->GetSeekEnd() * pPos / 1000);
 }
 
 void ParticipantWidget::SeekMovieFileToPos(int pPos)
@@ -1219,8 +1219,8 @@ void ParticipantWidget::SeekMovieFileToPos(int pPos)
 	{
 		LOG(LOG_VERBOSE, "User clicked playback slider at position %d", pPos);
         ResetAVSync();
-	    mVideoWidget->GetWorker()->Seek(mVideoWidget->GetWorker()->GetSeekEnd() * pPos / 1000);
-	    mAudioWidget->GetWorker()->Seek(mAudioWidget->GetWorker()->GetSeekEnd() * pPos / 1000);
+	    mVideoWidget->GetWorker()->Seek((double)mVideoWidget->GetWorker()->GetSeekEnd() * pPos / 1000);
+	    mAudioWidget->GetWorker()->Seek((double)mAudioWidget->GetWorker()->GetSeekEnd() * pPos / 1000);
 	}
 }
 

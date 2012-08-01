@@ -70,7 +70,7 @@ typedef std::list<ParticipantWidget*>  ParticipantWidgetList;
 ///////////////////////////////////////////////////////////////////////////////
 
 // de/activate A/V synch. for file playback
-//#define PARTICIPANT_WIDGET_AV_SYNC
+#define PARTICIPANT_WIDGET_AV_SYNC
 
 //#define PARTICIPANT_WIDGET_DEBUG_AV_SYNC
 
