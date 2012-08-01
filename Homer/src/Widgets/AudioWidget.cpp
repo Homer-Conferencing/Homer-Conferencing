@@ -1079,25 +1079,25 @@ bool AudioWorkerThread::SupportsSeeking()
         return false;
 }
 
-void AudioWorkerThread::Seek(int64_t pPos)
+void AudioWorkerThread::Seek(float pPos)
 {
-	LOG(LOG_VERBOSE, "Seeking to position: %ld", pPos);
+	LOG(LOG_VERBOSE, "Seeking to position: %5.2f", pPos);
     mSeekPos = pPos;
     mSeekAsap = true;
     mGrabbingCondition.wakeAll();
 }
 
-int64_t AudioWorkerThread::GetSeekPos()
+float AudioWorkerThread::GetSeekPos()
 {
     return mAudioSource->GetSeekPos();
 }
 
-int64_t AudioWorkerThread::GetSeekEnd()
+float AudioWorkerThread::GetSeekEnd()
 {
-	int64_t tResult = 0;
+    float tResult = 0;
 
     tResult = mAudioSource->GetSeekEnd();
-    //LOG(LOG_VERBOSE, "Determined seek end with %ld", tResult);
+    //LOG(LOG_VERBOSE, "Determined seek end with %5.2f", tResult);
 
     return tResult;
 }
@@ -1213,8 +1213,12 @@ void AudioWorkerThread::DoSourceSeek()
     // lock
     mDeliverMutex.lock();
 
-    LOG(LOG_VERBOSE, "Seeking now to position %d", mSeekPos);
-    mAudioSource->Seek(mSeekPos, false);
+    LOG(LOG_VERBOSE, "Seeking now to position %5.2f", mSeekPos);
+    mSourceAvailable = mAudioSource->Seek(mSeekPos, false);
+    if(!mSourceAvailable)
+    {
+        LOG(LOG_WARN, "Source isn't available anymore after seeking");
+    }
     mEofReached = false;
     ResetPlayback();
     mSeekAsap = false;
@@ -1363,6 +1367,7 @@ void AudioWorkerThread::DoStartPlayback()
     // if audio was muted we have to wait for an initial time
     if ((mWaveOut != NULL) && (!mWaveOut->IsPlaying()) && (mAudioPlaybackDelayCount == 0))
     {
+    	LOG(LOG_VERBOSE, "Wait for %d audio buffers before audio playback will start", AUDIO_INITIAL_MINIMUM_PLAYBACK_QUEUE);
         mAudioPlaybackDelayCount = AUDIO_INITIAL_MINIMUM_PLAYBACK_QUEUE;
         mStartPlaybackAsap = true;
         return;
@@ -1521,7 +1526,7 @@ void AudioWorkerThread::run()
             }else
             {
                 mSourceAvailable = false;
-                LOG(LOG_VERBOSE, "Derived EOF and mark audio source as unavailable");
+                LOG(LOG_WARN, "Got EOF signal from audio source, marking audio source as unavailable");
             }
 
 			//printf("SampleSize: %d Sample: %d\n", mSamplesSize[mSampleGrabIndex], tSampleNumber);

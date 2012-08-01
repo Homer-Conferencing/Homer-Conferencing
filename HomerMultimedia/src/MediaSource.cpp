@@ -2183,22 +2183,22 @@ bool MediaSource::SupportsSeeking()
     return false;
 }
 
-int64_t MediaSource::GetSeekEnd()
+float MediaSource::GetSeekEnd()
 {
     return 0;
 }
 
-bool MediaSource::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
+bool MediaSource::Seek(float pSeconds, bool pOnlyKeyFrames)
 {
     return false;
 }
 
-bool MediaSource::SeekRelative(int64_t pSeconds, bool pOnlyKeyFrames)
+bool MediaSource::SeekRelative(float pSeconds, bool pOnlyKeyFrames)
 {
     return false;
 }
 
-int64_t MediaSource::GetSeekPos()
+float MediaSource::GetSeekPos()
 {
     return 0;
 }
@@ -2247,6 +2247,7 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec long name: %s", mCodecContext->codec->long_name);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec flags: 0x%x", mCodecContext->flags);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec time_base: %d/%d", mCodecContext->time_base.den, mCodecContext->time_base.num); // inverse
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream ID: %d", mMediaStreamIndex);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream rfps: %d/%d", mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num, mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->time_base.den, mFormatContext->streams[mMediaStreamIndex]->time_base.num); // inverse
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream codec time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->codec->time_base.den, mFormatContext->streams[mMediaStreamIndex]->codec->time_base.num); // inverse
@@ -2257,7 +2258,9 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..qmax: %d", mCodecContext->qmax);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame size: %d", mCodecContext->frame_size);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..duration: %ld frames", mNumberOfFrames);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context duration: %ld frames, %.0f seconds, format context duration: %ld seconds, nr. of frames: %ld", mFormatContext->streams[mMediaStreamIndex]->duration, (float)mFormatContext->streams[mMediaStreamIndex]->duration / mFrameRate, mFormatContext->duration / AV_TIME_BASE, mFormatContext->streams[mMediaStreamIndex]->nb_frames);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start PTS: %ld frames", mSourceStartPts);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..format context start PTS: %ld", mFormatContext->start_time);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context duration: %ld frames (%.0f seconds), format context duration: %ld seconds, nr. of frames: %ld", mFormatContext->streams[mMediaStreamIndex]->duration, (float)mFormatContext->streams[mMediaStreamIndex]->duration / mFrameRate, mFormatContext->duration / AV_TIME_BASE, mFormatContext->streams[mMediaStreamIndex]->nb_frames);
     switch(mMediaType)
     {
         case MEDIA_VIDEO:

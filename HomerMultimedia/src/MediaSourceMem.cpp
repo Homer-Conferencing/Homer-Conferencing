@@ -41,6 +41,11 @@ using namespace Homer::Base;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// maximum packet size, including encoded data and RTP/TS
+#define MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE          MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE
+
+///////////////////////////////////////////////////////////////////////////////
+
 MediaSourceMem::MediaSourceMem(bool pRtpActivated):
     MediaSource("MEM-IN:"), RTP()
 {
@@ -901,6 +906,18 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                             HM_sws_scale(mScalerContext, tSourceFrame->data, tSourceFrame->linesize, 0, mCodecContext->height, tRGBFrame->data, tRGBFrame->linesize);
                         }else
                         {
+                            // unlock grabbing
+                            mGrabMutex.unlock();
+
+                            // only print debug output if it is not "operation not permitted"
+                            //if ((tBytesDecoded < 0) && (AVUNERROR(tBytesDecoded) != EPERM))
+
+                            // acknowledge failed"
+                            if (tPacket.size != tBytesDecoded)
+                                MarkGrabChunkFailed("couldn't decode video frame-" + toString(strerror(AVUNERROR(tBytesDecoded))) + "(" + toString(AVUNERROR(tBytesDecoded)) + ")");
+                            else
+                                MarkGrabChunkFailed("couldn't decode video frame");
+
                             // Free the RGB frame
                             av_free(tRGBFrame);
 
@@ -910,15 +927,6 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
 
                             // free packet buffer
                             av_free_packet(&tPacket);
-
-                            // unlock grabbing
-                            mGrabMutex.unlock();
-
-                            // only print debug output if it is not "operation not permitted"
-                            //if ((tBytesDecoded < 0) && (AVUNERROR(tBytesDecoded) != EPERM))
-
-                            // acknowledge failed"
-                            MarkGrabChunkFailed("couldn't decode video frame-" + toString(strerror(AVUNERROR(tBytesDecoded))) + "(" + toString(AVUNERROR(tBytesDecoded)) + ")");
 
                             return -1;
                         }

@@ -155,9 +155,9 @@ public:
     bool EofReached();
     QString CurrentFile();
     bool SupportsSeeking();
-    void Seek(int64_t pPos); // max. value is 1000
-    int64_t GetSeekPos();
-    int64_t GetSeekEnd();
+    void Seek(float pPos);
+    float GetSeekPos();
+    float GetSeekEnd();
 
     /* multiple channels control */
     bool SupportsMultipleChannels();
@@ -226,8 +226,6 @@ private:
     /* for forwarded interface to media source */
     int                 mDesiredInputChannel;
     QString             mDesiredFile;
-    bool                mSeekAsap;
-    int64_t             mSeekPos;
     bool                mSetInputStreamPreferencesAsap;
     bool                mSetCurrentDeviceAsap;
     bool                mResetAudioSourceAsap;
@@ -237,6 +235,9 @@ private:
     bool				mStopPlaybackAsap;
     bool				mPlayNewFileAsap;
     bool                mSelectInputChannelAsap;
+    /* seeking */
+    bool                mSeekAsap;
+    float               mSeekPos;
     /* playback */
     Homer::Multimedia::WaveOut *mWaveOut;
 };

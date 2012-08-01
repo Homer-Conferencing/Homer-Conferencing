@@ -250,7 +250,6 @@ void MediaSinkNet::StopSender()
 
 void* MediaSinkNet::Run(void* pArgs)
 {
-    int tDataSize;
     int tFifoEntry = 0;
     char *tBuffer;
     int tBufferSize;
@@ -300,9 +299,9 @@ void* MediaSinkNet::Run(void* pArgs)
             // release FIFO entry lock
             mSinkFifo->ReadFifoExclusiveFinished(tFifoEntry);
 
-			if (tDataSize == 0)
+			if (tBufferSize == 0)
 			{
-				LOG(LOG_VERBOSE, "Zero byte %s packet received", GetDataTypeStr().c_str());
+				LOG(LOG_VERBOSE, "Zero byte %s packet in relay thread detected", GetDataTypeStr().c_str());
 			}
 
 			// is FIFO near overload situation?

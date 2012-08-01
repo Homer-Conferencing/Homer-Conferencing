@@ -44,6 +44,13 @@ namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// maximum packet size of a reeencoded frame, must not be more than 64 kB - otherwise it can't be used via networks!
+#define MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE               MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE
+
+#define MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT                  32
+
+///////////////////////////////////////////////////////////////////////////////
+
 MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
     MediaSource("MUX: transcoded capture")
 {
@@ -1418,7 +1425,7 @@ void MediaSourceMuxer::SetVideoGrabResolution(int pResX, int pResY)
 
         if ((tResX != pResX) || (tResY != pResY))
         {
-            LOG(LOG_WARN, "Codec doesn't support selected video resolution, changed resolution from %d*%d to %d*%d", pResX, pResY, tResX, tResY);
+            LOG(LOG_WARN, "Codec %s doesn't support video resolution, changed resolution from %d*%d to %d*%d", FfmpegId2FfmpegFormat(mStreamCodecId).c_str(), pResY, tResX, tResY);
             pResX = tResX;
             pResY = tResY;
         }
@@ -1952,7 +1959,7 @@ bool MediaSourceMuxer::SupportsSeeking()
         return false;
 }
 
-int64_t MediaSourceMuxer::GetSeekEnd()
+float MediaSourceMuxer::GetSeekEnd()
 {
     if (mMediaSource != NULL)
         return mMediaSource->GetSeekEnd();
@@ -1960,7 +1967,7 @@ int64_t MediaSourceMuxer::GetSeekEnd()
         return 0;
 }
 
-bool MediaSourceMuxer::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
+bool MediaSourceMuxer::Seek(float pSeconds, bool pOnlyKeyFrames)
 {
     if (mMediaSource != NULL)
         return mMediaSource->Seek(pSeconds, pOnlyKeyFrames);
@@ -1968,7 +1975,7 @@ bool MediaSourceMuxer::Seek(int64_t pSeconds, bool pOnlyKeyFrames)
         return false;
 }
 
-bool MediaSourceMuxer::SeekRelative(int64_t pSeconds, bool pOnlyKeyFrames)
+bool MediaSourceMuxer::SeekRelative(float pSeconds, bool pOnlyKeyFrames)
 {
     if (mMediaSource != NULL)
         return mMediaSource->SeekRelative(pSeconds, pOnlyKeyFrames);
@@ -1976,7 +1983,7 @@ bool MediaSourceMuxer::SeekRelative(int64_t pSeconds, bool pOnlyKeyFrames)
         return false;
 }
 
-int64_t MediaSourceMuxer::GetSeekPos()
+float MediaSourceMuxer::GetSeekPos()
 {
     if (mMediaSource != NULL)
         return mMediaSource->GetSeekPos();

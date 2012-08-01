@@ -45,11 +45,13 @@ namespace Homer { namespace Multimedia {
 // the following de/activates debugging of received packets
 //#define MSN_DEBUG_PACKETS
 
+///////////////////////////////////////////////////////////////////////////////
+
 // maximum number of acceptable continuous receive errors
 #define MEDIA_SOURCE_NET_MAX_RECEIVE_ERRORS                           3
-#define SOCKET_RECEIVE_BUFFER_SIZE                      2 * 1024 * 1024
 
 ///////////////////////////////////////////////////////////////////////////////
+
 struct TCPFragmentHeader{
     unsigned int    FragmentSize;
 };

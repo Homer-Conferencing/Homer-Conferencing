@@ -45,11 +45,6 @@ namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// maximum packet size of a reeencoded frame, must not be more than 64 kB - otherwise it can't be used via networks!
-#define MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE               MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE
-
-#define MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT                  32
-
 // the following de/activates debugging of sent packets
 //#define MSM_DEBUG_PACKETS
 
@@ -129,10 +124,10 @@ public:
 
     /* seek interface */
     virtual bool SupportsSeeking();
-    virtual int64_t GetSeekEnd(); // get maximum seek time in seconds
-    virtual bool Seek(int64_t pSeconds, bool pOnlyKeyFrames = true);
-    virtual bool SeekRelative(int64_t pSeconds, bool pOnlyKeyFrames = true);
-    virtual int64_t GetSeekPos(); // in seconds
+    virtual float GetSeekEnd(); // get maximum seek time in seconds
+    virtual bool Seek(float pSeconds, bool pOnlyKeyFrames = true);
+    virtual bool SeekRelative(float pSeconds, bool pOnlyKeyFrames = true);
+    virtual float GetSeekPos(); // in seconds
 
     /* multi input interface */
     virtual bool SupportsMultipleInputChannels();

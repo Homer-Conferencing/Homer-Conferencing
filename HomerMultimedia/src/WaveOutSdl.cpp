@@ -40,6 +40,8 @@ namespace Homer { namespace Multimedia {
 Mutex WaveOutSdl::mSdlInitMutex;
 bool WaveOutSdl::mSdlInitiated = false;
 
+///////////////////////////////////////////////////////////////////////////////
+
 void WaveOutSdl::SdlAudioInit(string pDeviceName)
 {
 	mSdlInitMutex.lock();
@@ -82,6 +84,8 @@ WaveOutSdl::~WaveOutSdl()
 
     LOG(LOG_VERBOSE, "Destroyed");
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
 void WaveOutSdl::getAudioDevices(AudioDevices &pAList) // use PortAudio to enumerate audio devices for SDL based playback
 {

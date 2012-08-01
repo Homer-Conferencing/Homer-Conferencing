@@ -918,6 +918,41 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
 		}
 	#endif
 
+    //#############################################################
+    //### draw status text per OSD
+    //#############################################################
+    // are we a fullscreen widget?
+    if ((windowState() & Qt::WindowFullScreen) && (mOsdStatusMessage != "") && (Time::GetTimeStamp() < mOsdStatusMessageTimeout))
+    {
+        // define font for OSD text
+        QFont tFont1 = QFont("Arial", 26, QFont::Light);
+        tFont1.setFixedPitch(true);
+        tPainter->setRenderHint(QPainter::TextAntialiasing, true);
+        tPainter->setFont(tFont1);
+
+        // calculate text width and height
+        QFontMetrics tFm = tPainter->fontMetrics();
+        int tTextWidth = tFm.width(mOsdStatusMessage);
+        int tTextHeight = tFm.height();
+
+        // select color white
+        tPainter->setPen(QColor(Qt::black));
+
+        // draw OSD text in black
+        if ((tTextWidth > width()) || (tTextHeight > height()))
+            tPainter->drawText(5, 41, mOsdStatusMessage);
+        else
+            tPainter->drawText((width() - tTextWidth) / 2 + 1, tTextHeight + 1, mOsdStatusMessage);
+
+        tPainter->setPen(QColor(Qt::white));
+
+        // draw OSD text in black
+        if ((tTextWidth > width()) || (tTextHeight > height()))
+            tPainter->drawText(4, 40, mOsdStatusMessage);
+        else
+            tPainter->drawText((width() - tTextWidth) / 2, tTextHeight, mOsdStatusMessage);
+    }
+
     delete tPainter;
     setUpdatesEnabled(true);
 
@@ -1252,6 +1287,7 @@ void VideoWidget::paintEvent(QPaintEvent *pEvent)
     #ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
         tBackgroundColor = QColor((int)((long)256 * qrand() / RAND_MAX), (int)((long)256 * qrand() / RAND_MAX), (int)((long)256 * qrand() / RAND_MAX));
     #endif
+
     // wait until valid new frame is available to be drawn
     if (mCurrentFrame.isNull())
     {
@@ -1304,33 +1340,6 @@ void VideoWidget::paintEvent(QPaintEvent *pEvent)
     // draw only fitting new frames (otherwise we could have a race condition and a too big frame which might be drawn)
     if ((mCurrentFrame.width() <= width()) && (mCurrentFrame.height() <= height()))
         tPainter.drawImage((width() - mCurrentFrame.width()) / 2, (height() - mCurrentFrame.height()) / 2, mCurrentFrame);
-
-    //#############################################################
-    //### draw status text per OSD
-    //#############################################################
-	// are we a fullscreen widget?
-	if ((windowState() & Qt::WindowFullScreen) && (mOsdStatusMessage != "") && (Time::GetTimeStamp() < mOsdStatusMessageTimeout))
-	{
-		// define font for OSD text
-		QFont tFont1 = QFont("Arial", 26, QFont::Light);
-        tFont1.setFixedPitch(true);
-        tPainter.setRenderHint(QPainter::TextAntialiasing, true);
-        tPainter.setFont(tFont1);
-
-        // select color white
-        tPainter.setPen(QColor(Qt::white));
-
-        // calculate text width and height
-	    QFontMetrics tFm = tPainter.fontMetrics();
-	    int tTextWidth = tFm.width(mOsdStatusMessage);
-	    int tTextHeight = tFm.height();
-
-	    // draw OSD text
-	    if ((tTextWidth > width()) || (tTextHeight > height()))
-			tPainter.drawText(5, 40, mOsdStatusMessage);
-	    else
-	    	tPainter.drawText((width() - tTextWidth) / 2, tTextHeight, mOsdStatusMessage);
-	}
 
     pEvent->accept();
 }
@@ -1439,12 +1448,16 @@ void VideoWidget::wheelEvent(QWheelEvent *pEvent)
 {
     int tOffset = pEvent->delta() * 25 / 120;
     LOG(LOG_VERBOSE, "Got new wheel event with delta %d, derived volume offset: %d", pEvent->delta(), tOffset);
-    int tNewVolumeValue = mParticipantWidget->GetAudioWorker()->GetVolume() + tOffset;
-    if ((tNewVolumeValue > 0) && (tNewVolumeValue <= 300))
+    if (mParticipantWidget->GetAudioWorker() != NULL)
     {
-        ShowOsdMessage("Volume: " + QString("%1 %").arg(tNewVolumeValue));
-        mParticipantWidget->GetAudioWorker()->SetVolume(tNewVolumeValue);
-    }
+        int tNewVolumeValue = mParticipantWidget->GetAudioWorker()->GetVolume() + tOffset;
+        if ((tNewVolumeValue >= 0) && (tNewVolumeValue <= 300))
+        {
+            ShowOsdMessage("Volume: " + QString("%1 %").arg(tNewVolumeValue));
+            mParticipantWidget->GetAudioWorker()->SetVolume(tNewVolumeValue);
+        }
+    }else
+        LOG(LOG_VERBOSE, "Cannot adjust audio volume because determined audio worker is invalid");
 }
 
 void VideoWidget::customEvent(QEvent *pEvent)
@@ -1811,25 +1824,25 @@ bool VideoWorkerThread::SupportsSeeking()
         return false;
 }
 
-void VideoWorkerThread::Seek(int64_t pPos)
+void VideoWorkerThread::Seek(float pPos)
 {
-	LOG(LOG_VERBOSE, "Seeking to position: %ld", pPos);
+	LOG(LOG_VERBOSE, "Seeking to position: %5.2f", pPos);
     mSeekPos = pPos;
     mSeekAsap = true;
     mGrabbingCondition.wakeAll();
 }
 
-int64_t VideoWorkerThread::GetSeekPos()
+float VideoWorkerThread::GetSeekPos()
 {
     return mVideoSource->GetSeekPos();
 }
 
-int64_t VideoWorkerThread::GetSeekEnd()
+float VideoWorkerThread::GetSeekEnd()
 {
-	int64_t tResult = 0;
+    float tResult = 0;
 
     tResult = mVideoSource->GetSeekEnd();
-    //LOG(LOG_VERBOSE, "Determined seek end with %ld", tResult);
+    //LOG(LOG_VERBOSE, "Determined seek end with %5.2f", tResult);
 
     return tResult;
 }
@@ -1970,8 +1983,12 @@ void VideoWorkerThread::DoSeek()
     // lock
     mDeliverMutex.lock();
 
-    LOG(LOG_VERBOSE, "Seeking now to position %d", mSeekPos);
-    mVideoSource->Seek(mSeekPos, false);
+    LOG(LOG_VERBOSE, "Seeking now to position %5.2f", mSeekPos);
+    mSourceAvailable = mVideoSource->Seek(mSeekPos);
+    if(!mSourceAvailable)
+    {
+        LOG(LOG_WARN, "Source isn't available anymore after seeking");
+    }
     mEofReached = false;
     mSeekAsap = false;
 
@@ -2174,7 +2191,7 @@ int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFps)
     mDeliverMutex.unlock();
 
 	#ifdef VIDEO_WIDGET_DEBUG_FRAMES
-    	LOG(LOG_VERBOSE, "GetCurrentFrame() delivered frame %d from index %d, pending frames: %d, dropped frames: %d, missing frames: %d, grab index: %d", tResult, mFrameCurrentIndex, mPendingNewFrames, mDroppedFrames, mMissingFrames, mFrameGrabIndex);
+    	LOG(LOG_VERBOSE, "GetCurrentFrame() delivered frame %d from index %d, pending frames: %d, missing frames: %d, grab index: %d", tResult, mFrameCurrentIndex, mPendingNewFrames, mMissingFrames, mFrameGrabIndex);
 	#endif
 
     return tResult;
@@ -2266,7 +2283,7 @@ void VideoWorkerThread::run()
 			if (mEofReached)
 			{
 			    mSourceAvailable = false;
-			    LOG(LOG_VERBOSE, "Derived EOF and mark video source as unavailable");
+                LOG(LOG_WARN, "Got EOF signal from video source, marking audio source as unavailable");
 			}
 
 			#ifdef VIDEO_WIDGET_DEBUG_FRAMES

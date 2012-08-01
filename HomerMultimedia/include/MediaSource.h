@@ -51,7 +51,6 @@ namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-
 // video processing
 #define MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE                         16 * 1000 * 1000 // HDTV RGB32 picture: 1920*1080*4 = ca. 7,9 MB
 
@@ -148,13 +147,6 @@ struct ChunkDescriptor
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define Grabbing
-
-/* relaying */
-class MediaSource;
-typedef std::vector<MediaSink*>        MediaSinks;
-typedef std::vector<MediaSource*>      MediaSources;
-
 // possible GrabChunk results
 #define GRAB_RES_INVALID                            -1
 #define GRAB_RES_EOF                                -2
@@ -167,6 +159,11 @@ typedef std::vector<MediaSource*>      MediaSources;
 #define         MarkGrabChunkFailed(Reason)                 EventGrabChunkFailed(GetObjectNameStr(this).c_str(), __LINE__, Reason)
 
 ///////////////////////////////////////////////////////////////////////////////
+
+/* relaying */
+class MediaSource;
+typedef std::vector<MediaSink*>        MediaSinks;
+typedef std::vector<MediaSource*>      MediaSources;
 
 class MediaSource :
     public Homer::Monitor::PacketStatistic
@@ -270,10 +267,10 @@ public:
 
     /* seek interface */
     virtual bool SupportsSeeking();
-    virtual int64_t GetSeekEnd(); // get maximum seek time in seconds
-    virtual bool Seek(int64_t pSeconds, bool pOnlyKeyFrames = true);
-    virtual bool SeekRelative(int64_t pSeconds, bool pOnlyKeyFrames = true);
-    virtual int64_t GetSeekPos(); // in seconds
+    virtual float GetSeekEnd(); // get maximum seek time in seconds
+    virtual bool Seek(float pSeconds, bool pOnlyKeyFrames = true);
+    virtual bool SeekRelative(float pSeconds, bool pOnlyKeyFrames = true);
+    virtual float GetSeekPos(); // in seconds
 
     /* multi channel input interface */
     virtual bool SupportsMultipleInputChannels();

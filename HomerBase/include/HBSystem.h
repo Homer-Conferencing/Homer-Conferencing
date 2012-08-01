@@ -28,7 +28,7 @@
 #ifndef _BASE_SYSTEM_
 #define _BASE_SYSTEM_
 
-#include <string.h>
+#include <string>
 
 namespace Homer { namespace Base {
 

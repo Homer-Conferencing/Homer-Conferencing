@@ -163,6 +163,12 @@ IF (NOT APPLE)
 		SET (LFLAGS "${LFLAGS} -s")
 	ENDIF()
 ENDIF()
+IF (NOT BSD)
+    SET (FLAGS
+		${FLAGS}
+		-Wno-invalid-source-encoding
+	)
+ENDIF(NOT BSD)
 
 ##############################################################
 # explicit shared object name with @rpath prefix for APPLE
