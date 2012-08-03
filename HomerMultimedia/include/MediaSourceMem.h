@@ -71,6 +71,7 @@ public:
     virtual ~MediaSourceMem();
 
     /* grabbing control */
+    virtual void StopGrabbing();
     virtual int GetChunkDropCounter();
     virtual int GetFragmentBufferCounter();
     virtual int GetFragmentBufferSize();
