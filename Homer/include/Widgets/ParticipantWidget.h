@@ -157,6 +157,9 @@ private:
     /* AV sync */
     void ResetAVSync();
     void AVSync();
+    float GetAVDrift(); // pos. value means "video before audio, audio is too late"
+    void InformAboutVideoSeekingComplete();
+    friend class VideoWidget;
 
     void ShowNewState();
     void ShowStreamPosition(int64_t tCurPos, int64_t tEndPos);

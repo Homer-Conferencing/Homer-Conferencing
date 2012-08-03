@@ -80,10 +80,19 @@ using namespace Homer::Monitor;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// how long should a OSD status message stay on the screen?
+#define VIDEO_WIDGET_OSD_PERIOD        3 // seconds
+
+// how many measurement steps do we use?
+#define FPS_MEASUREMENT_STEPS          60
+
+///////////////////////////////////////////////////////////////////////////////
+
 #define VIDEO_OPEN_ERROR                (QEvent::User + 1001)
 #define VIDEO_NEW_FRAME                 (QEvent::User + 1002)
 #define VIDEO_NEW_SOURCE                (QEvent::User + 1003)
 #define VIDEO_NEW_SOURCE_RESOLUTION     (QEvent::User + 1004)
+#define VIDEO_NEW_SEEKING               (QEvent::User + 1005)
 
 class VideoEvent:
     public QEvent
@@ -847,37 +856,73 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
         QString tMuxCodecName = QString(mVideoSource->GetMuxingCodec().c_str());
         QString tPeerName = QString(mVideoSource->GetCurrentDevicePeerName().c_str());
 
+        // OSD about current video frame
+        QString tLine_Frame;
+        tLine_Frame = " Frame: " + QString("%1").arg(pFrameNumber) + (mVideoSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropCounter()) + " lost packets)") : "") + (mVideoSource->GetFragmentBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetFragmentBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetFragmentBufferSize()) + " buffered packets)") : "");
+
+        // OSD about current video codec
+        QString tLine_Codec;
+        tLine_Codec = " Codec: " + ((tCodecName != "") ? tCodecName : "unknown") + " (" + QString("%1").arg(tSourceResX) + "*" + QString("%1").arg(tSourceResY) + ")";
+
+        // OSD about video output
+        QString tLine_Output = "";
+        tLine_Output = " Output: " + QString("%1").arg(tFrameOutputWidth) + "*" + QString("%1").arg(tFrameOutputHeight) + " (" + tAspectRatio + ")" + (mSmoothPresentation ? "[smoothed]" : "");
+
+        // OSD about current position within file
+        QString tLine_Time = "";
+        float tAVDrift = mParticipantWidget->GetAVDrift();
+        if (mVideoSource->SupportsSeeking())
+        {
+            tLine_Time = " Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0');
+            if (tAVDrift > 0.0)
+                tLine_Time += (tAVDrift != 0.0f ? QString(" (A/V drift: +%1 s)").arg(tAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
+            else if (tAVDrift < 0.0)
+                tLine_Time += (tAVDrift != 0.0f ? QString(" (A/V drift: %1 s)").arg(tAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
+        }
+
+
+        // OSD about video muxer
+        QString tLine_Muxer = "";
+        if (mVideoSource->SupportsMuxing())
+            tLine_Muxer = " Mux codec: " + ((tMuxCodecName != "") ? tMuxCodecName : "unknown") + " (" + QString("%1").arg(tMuxResX) + "*" + QString("%1").arg(tMuxResY) + ")" + (mVideoSource->GetMuxingBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetMuxingBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetMuxingBufferSize()) + " buffered frames)") : "");
+
+        // #######################
+        // ### shadow text
+        // #######################
         tPainter->setPen(QColor(Qt::darkRed));
         tPainter->drawText(5, 41, " Source: " + mVideoWorker->GetCurrentDevice());
-        tPainter->drawText(5, 61, " Frame: " + QString("%1").arg(pFrameNumber) + (mVideoSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropCounter()) + " lost packets)") : "") + (mVideoSource->GetFragmentBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetFragmentBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetFragmentBufferSize()) + " buffered packets)") : ""));
+        tPainter->drawText(5, 61, tLine_Frame);
         tPainter->drawText(5, 81, " Fps: " + QString("%1").arg(pFps, 4, 'f', 2, ' '));
-        tPainter->drawText(5, 101, " Codec: " + ((tCodecName != "") ? tCodecName : "unknown") + " (" + QString("%1").arg(tSourceResX) + "*" + QString("%1").arg(tSourceResY) + ")");
-        tPainter->drawText(5, 121, " Output: " + QString("%1").arg(tFrameOutputWidth) + "*" + QString("%1").arg(tFrameOutputHeight) + " (" + tAspectRatio + ")" + (mSmoothPresentation ? "[smoothed]" : ""));
+        tPainter->drawText(5, 101, tLine_Codec);
+        tPainter->drawText(5, 121, tLine_Output);
         int tMuxOutputOffs = 0;
         int tPeerOutputOffs = 0;
         if (mVideoSource->SupportsSeeking())
         {
             tMuxOutputOffs = 20;
-            tPainter->drawText(5, 141, " Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0'));
+            tPainter->drawText(5, 141, tLine_Time);
         }
         if (mVideoSource->SupportsMuxing())
         {
         	tPeerOutputOffs = 20;
-            tPainter->drawText(5, 141 + tMuxOutputOffs, " Mux codec: " + ((tMuxCodecName != "") ? tMuxCodecName : "unknown") + " (" + QString("%1").arg(tMuxResX) + "*" + QString("%1").arg(tMuxResY) + ")" + (mVideoSource->GetMuxingBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetMuxingBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetMuxingBufferSize()) + " buffered frames)") : ""));
+            tPainter->drawText(5, 141 + tMuxOutputOffs, tLine_Muxer);
         }
         if (tPeerName != "")
         	tPainter->drawText(5, 141 + tMuxOutputOffs + tPeerOutputOffs, " Peer: " + tPeerName);
 
+        // #######################
+        // ### foreground text
+        // #######################
         tPainter->setPen(QColor(Qt::red));
         tPainter->drawText(4, 40, " Source: " + mVideoWorker->GetCurrentDevice());
-        tPainter->drawText(4, 60, " Frame: " + QString("%1").arg(pFrameNumber) + (mVideoSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropCounter()) + " lost packets)") : "") + (mVideoSource->GetFragmentBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetFragmentBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetFragmentBufferSize()) + " buffered packets)") : ""));
+        tPainter->drawText(4, 60, tLine_Frame);
         tPainter->drawText(4, 80, " Fps: " + QString("%1").arg(pFps, 4, 'f', 2, ' '));
-        tPainter->drawText(4, 100, " Codec: " + ((tCodecName != "") ? tCodecName : "unknown") + " (" + QString("%1").arg(tSourceResX) + "*" + QString("%1").arg(tSourceResY) + ")");
-        tPainter->drawText(4, 120, " Output: "  + QString("%1").arg(tFrameOutputWidth) + "*" + QString("%1").arg(tFrameOutputHeight) + " (" + tAspectRatio + ")" + (mSmoothPresentation ? "[smoothed]" : ""));
+        tPainter->drawText(4, 100, tLine_Codec);
+        tPainter->drawText(4, 120, tLine_Output);
         if (mVideoSource->SupportsSeeking())
-			tPainter->drawText(4, 140, " Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0'));
+			tPainter->drawText(4, 140, tLine_Time);
         if (mVideoSource->SupportsMuxing())
-            tPainter->drawText(4, 140 + tMuxOutputOffs, " Mux codec: " + ((tMuxCodecName != "") ? tMuxCodecName : "unknown") + " (" + QString("%1").arg(tMuxResX) + "*" + QString("%1").arg(tMuxResY) + ")" + (mVideoSource->GetMuxingBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetMuxingBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetMuxingBufferSize()) + " buffered frames)") : ""));
+            tPainter->drawText(4, 140 + tMuxOutputOffs, tLine_Muxer);
         if (tPeerName != "")
         	tPainter->drawText(5, 140 + tMuxOutputOffs + tPeerOutputOffs, " Peer: " + tPeerName);
     }
@@ -939,18 +984,20 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
         tPainter->setPen(QColor(Qt::black));
 
         // draw OSD text in black
-        if ((tTextWidth > width()) || (tTextHeight > height()))
+        int tFrameWidth = mCurrentFrame.width();
+        int tFrameHeight = mCurrentFrame.height();
+        if ((tTextWidth > tFrameWidth) || (tTextHeight > tFrameHeight))
             tPainter->drawText(5, 41, mOsdStatusMessage);
         else
-            tPainter->drawText((width() - tTextWidth) / 2 + 1, tTextHeight + 1, mOsdStatusMessage);
+            tPainter->drawText((tFrameWidth - tTextWidth) / 2 + 1, tTextHeight + 1, mOsdStatusMessage);
 
         tPainter->setPen(QColor(Qt::white));
 
         // draw OSD text in black
-        if ((tTextWidth > width()) || (tTextHeight > height()))
+        if ((tTextWidth > tFrameWidth) || (tTextHeight > tFrameHeight))
             tPainter->drawText(4, 40, mOsdStatusMessage);
         else
-            tPainter->drawText((width() - tTextWidth) / 2, tTextHeight, mOsdStatusMessage);
+            tPainter->drawText((tFrameWidth - tTextWidth) / 2, tTextHeight, mOsdStatusMessage);
     }
 
     delete tPainter;
@@ -1005,6 +1052,11 @@ void VideoWidget::ShowHourGlass()
 
     delete tPainter1;
     setUpdatesEnabled(true);
+}
+
+void VideoWidget::InformAboutSeekingComplete()
+{
+    QApplication::postEvent(this, new VideoEvent(VIDEO_NEW_SEEKING, ""));
 }
 
 void VideoWidget::InformAboutNewFrame()
@@ -1571,6 +1623,9 @@ void VideoWidget::customEvent(QEvent *pEvent)
         case VIDEO_NEW_SOURCE_RESOLUTION:
         	mNeedBackgroundUpdatesUntillNextFrame = true;
             break;
+        case VIDEO_NEW_SEEKING:
+            mParticipantWidget->InformAboutVideoSeekingComplete();
+            break;
         default:
             break;
     }
@@ -1580,6 +1635,8 @@ void VideoWidget::customEvent(QEvent *pEvent)
 VideoWorkerThread::VideoWorkerThread(MediaSource *pVideoSource, VideoWidget *pVideoWidget):
     QThread()
 {
+    mSyncClockMasterSource = NULL;
+    mSyncClockAsap = false;
     mSetGrabResolutionAsap = false;
     mResetVideoSourceAsap = false;
     mStartRecorderAsap = false;
@@ -1592,6 +1649,7 @@ VideoWorkerThread::VideoWorkerThread(MediaSource *pVideoSource, VideoWidget *pVi
     mSeekPos = 0;
     mSelectInputChannelAsap = false;
     mSourceAvailable = false;
+    mWaitForFirstFrameAfterSeeking = false;
     mEofReached = false;
     mTryingToOpenAFile = false;
     mPaused = false;
@@ -1847,6 +1905,12 @@ float VideoWorkerThread::GetSeekEnd()
     return tResult;
 }
 
+void VideoWorkerThread::SyncClock(MediaSource* pSource)
+{
+    mSyncClockAsap = true;
+    mSyncClockMasterSource = pSource;
+}
+
 bool VideoWorkerThread::SupportsMultipleChannels()
 {
     if (mVideoSource != NULL)
@@ -1991,6 +2055,29 @@ void VideoWorkerThread::DoSeek()
     }
     mEofReached = false;
     mSeekAsap = false;
+    mWaitForFirstFrameAfterSeeking = true;
+
+    // unlock
+    mDeliverMutex.unlock();
+}
+
+void VideoWorkerThread::DoSyncClock()
+{
+    LOG(LOG_VERBOSE, "DoSyncClock now...");
+
+    // lock
+    mDeliverMutex.lock();
+
+    LOG(LOG_VERBOSE, "Synchronizing with media source %s", mSyncClockMasterSource->GetStreamName().c_str());
+    mSourceAvailable = mVideoSource->Seek(mSyncClockMasterSource->GetSeekPos(), false);
+    if(!mSourceAvailable)
+    {
+        LOG(LOG_WARN, "Source isn't available anymore after synch. with %s", mSyncClockMasterSource->GetStreamName().c_str());
+    }
+    mEofReached = false;
+    mSyncClockAsap = false;
+    mSeekAsap = false;
+    mWaitForFirstFrameAfterSeeking = true;
 
     // unlock
     mDeliverMutex.unlock();
@@ -2229,6 +2316,12 @@ void VideoWorkerThread::run()
     	// store last frame number
         tLastFrameNumber = tFrameNumber;
 
+        if (mSyncClockAsap)
+            DoSyncClock();
+
+        if (mSeekAsap)
+            DoSeek();
+
         // play new file from disc
         if (mPlayNewFileAsap)
         	DoPlayNewFile();
@@ -2261,9 +2354,6 @@ void VideoWorkerThread::run()
         if (mStopRecorderAsap)
             DoStopRecorder();
 
-        if (mSeekAsap)
-            DoSeek();
-
         mGrabbingStateMutex.lock();
 
         if ((!mPaused) && (mSourceAvailable))
@@ -2293,6 +2383,14 @@ void VideoWorkerThread::run()
 			// do we have a valid new video frame?
 			if ((tFrameNumber >= 0) && (tFrameSize > 0))
 			{
+			    if (mWaitForFirstFrameAfterSeeking)
+			    {
+			        LOG(LOG_VERBOSE, "Got first decoded frame %d after seeking", tFrameNumber);
+			        mWaitForFirstFrameAfterSeeking = false;
+
+			        // inform about new seeking position
+			        mVideoWidget->InformAboutSeekingComplete();
+			    }
 
 			    // has the source resolution changed in the meantime? -> thread it as new source
 			    int tSourceResX = 0, tSourceResY = 0;

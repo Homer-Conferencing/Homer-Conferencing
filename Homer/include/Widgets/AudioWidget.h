@@ -53,9 +53,7 @@ using namespace Homer::Multimedia;
 // debug performance of audio widget
 //#define DEBUG_AUDIOWIDGET_PERFORMANCE
 
-#define AUDIO_INITIAL_MINIMUM_PLAYBACK_QUEUE        4
-
-#define SAMPLE_BUFFER_SIZE               3
+#define SAMPLE_BUFFER_SIZE               16
 
 // de/activate automatic sample dropping in case the audo widget is invisible (default is off)
 //#define AUDIO_WIDGET_DROP_WHEN_INVISIBLE
@@ -158,6 +156,7 @@ public:
     void Seek(float pPos);
     float GetSeekPos();
     float GetSeekEnd();
+    void SyncClock(MediaSource* pSource);
 
     /* multiple channels control */
     bool SupportsMultipleChannels();
@@ -193,6 +192,7 @@ private:
     void DoStartPlayback();
     void DoStopPlayback();
     void DoSourceSeek();
+    void DoSyncClock();
 
     MediaSource         *mAudioSource;
     AudioWidget         *mAudioWidget;
@@ -240,6 +240,9 @@ private:
     float               mSeekPos;
     /* playback */
     Homer::Multimedia::WaveOut *mWaveOut;
+    /* A/V synch. */
+    bool                mSyncClockAsap;
+    MediaSource*        mSyncClockMasterSource;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

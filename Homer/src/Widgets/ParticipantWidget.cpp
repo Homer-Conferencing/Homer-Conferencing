@@ -34,6 +34,7 @@
 #include <WaveOutPortAudio.h>
 #include <WaveOutSdl.h>
 #include <Widgets/AudioWidget.h>
+#include <MediaSourceFile.h>
 #include <MediaSourceNet.h>
 #include <Widgets/MessageWidget.h>
 #include <Widgets/SessionInfoWidget.h>
@@ -70,13 +71,13 @@ namespace Homer { namespace Gui {
 // how often should we play the "call" event sound?
 #define SOUND_LOOPS_FOR_CALL                                        10
 // at what time period is timerEvent() called?
-#define STREAM_POS_UPDATE_DELAY                                     250 //ms
+#define STREAM_POS_UPDATE_DELAY                                    250 //ms
 // max. allowed drift between audio and video playback
-#define AV_SYNC_MAX_DRIFT                                           0.1 //seconds
+#define AV_SYNC_MAX_DRIFT                                          0.1 //seconds
 // min. time difference between two synch. processes
-#define AV_SYNC_MIN_PERIOD                                            3 // seconds
+#define AV_SYNC_MIN_PERIOD                                         500 // ms
 // how many times do we have to detect continuous asynch. A/V playback before we synch. audio and video? (to avoid false-positives)
-#define AV_SYNC_CONTINUOUS_ASYNC_THRESHOLD                            2 // checked every STREAM_POS_UPDATE_DELAY ms
+#define AV_SYNC_CONTINUOUS_ASYNC_THRESHOLD                           2 // checked every STREAM_POS_UPDATE_DELAY ms
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1061,7 +1062,7 @@ void ParticipantWidget::AVSync()
     #ifdef PARTICIPANT_WIDGET_AV_SYNC
         // A/V synch. if both video and audio source allow seeking (are files)
         int64_t tCurTime = Time::GetTimeStamp();
-        if ((tCurTime - mTimeOfLastAVSynch  >= AV_SYNC_MIN_PERIOD * 1000 * 1000))
+        if ((tCurTime - mTimeOfLastAVSynch  >= AV_SYNC_MIN_PERIOD * 1000))
         {
             // do we play video and audio from the same file?
             if (mVideoWidget->GetWorker()->CurrentFile() == mAudioWidget->GetWorker()->CurrentFile())
@@ -1070,7 +1071,7 @@ void ParticipantWidget::AVSync()
                 if (mVideoWidget->GetWorker()->CurrentFile() == mCurrentMovieFile)
                 {// we know the file and have to do A/V sync.
                     // synch. video and audio by seeking in video stream based to the position of the audio stream, the other way around it would be more obvious to the user because he would hear audio gaps
-                    float tTimeDiff = mVideoWidget->GetWorker()->GetSeekPos() - mAudioWidget->GetWorker()->GetSeekPos();
+                    float tTimeDiff = GetAVDrift();
 
                     // are audio and video playback out of synch.?
                     if (((tTimeDiff < -AV_SYNC_MAX_DRIFT) || (tTimeDiff > AV_SYNC_MAX_DRIFT)))
@@ -1083,7 +1084,9 @@ void ParticipantWidget::AVSync()
                                     LOG(LOG_WARN, "Detected asynchronous A/V playback, drift is %3.2f seconds (video before audio), max. allowed drift is %3.2f seconds, last synch. was at %lld, synchronizing now..", tTimeDiff, AV_SYNC_MAX_DRIFT, mTimeOfLastAVSynch);
                                 else
                                     LOG(LOG_WARN, "Detected asynchronous A/V playback, drift is %3.2f seconds (audio before video), max. allowed drift is %3.2f seconds, last synch. was at %lld, synchronizing now..", tTimeDiff, AV_SYNC_MAX_DRIFT, mTimeOfLastAVSynch);
-                                mAudioWidget->GetWorker()->Seek(mVideoWidget->GetWorker()->GetSeekPos());
+
+                                mAudioWidget->GetWorker()->SyncClock(mVideoSource);
+
                                 ResetAVSync();
                             }else
                             {
@@ -1107,6 +1110,25 @@ void ParticipantWidget::AVSync()
             }
         }
     #endif
+}
+
+float ParticipantWidget::GetAVDrift()
+{
+    float tResult = 0;
+
+    // do we play video and audio from the same file?
+    if (mVideoWidget->GetWorker()->CurrentFile() == mAudioWidget->GetWorker()->CurrentFile())
+    {
+        tResult = mVideoWidget->GetWorker()->GetSeekPos() - mAudioWidget->GetWorker()->GetSeekPos();
+    }
+
+    return tResult;
+}
+
+void ParticipantWidget::InformAboutVideoSeekingComplete()
+{
+    // sync. audio to video clock
+    AVSync();
 }
 
 void ParticipantWidget::ShowNewState()
@@ -1208,8 +1230,14 @@ void ParticipantWidget::SeekMovieFile(int pPos)
 {
 	LOG(LOG_VERBOSE, "User moved playback slider to position %d", pPos);
     ResetAVSync();
-    mVideoWidget->GetWorker()->Seek((double)mVideoWidget->GetWorker()->GetSeekEnd() * pPos / 1000);
-    mAudioWidget->GetWorker()->Seek((double)mAudioWidget->GetWorker()->GetSeekEnd() * pPos / 1000);
+    double tPos = (double)mVideoWidget->GetWorker()->GetSeekEnd() * pPos / 1000;
+    mVideoWidget->GetWorker()->Seek(tPos);
+    #ifdef PARTICIPANT_WIDGET_AV_SYNC
+        // force an AV sync
+        mTimeOfLastAVSynch = 0;
+    #else
+        mAudioWidget->GetWorker()->Seek(tPos);
+    #endif
 }
 
 void ParticipantWidget::SeekMovieFileToPos(int pPos)
@@ -1219,8 +1247,14 @@ void ParticipantWidget::SeekMovieFileToPos(int pPos)
 	{
 		LOG(LOG_VERBOSE, "User clicked playback slider at position %d", pPos);
         ResetAVSync();
-	    mVideoWidget->GetWorker()->Seek((double)mVideoWidget->GetWorker()->GetSeekEnd() * pPos / 1000);
-	    mAudioWidget->GetWorker()->Seek((double)mAudioWidget->GetWorker()->GetSeekEnd() * pPos / 1000);
+        double tPos = (double)mVideoWidget->GetWorker()->GetSeekEnd() * pPos / 1000;
+	    mVideoWidget->GetWorker()->Seek(tPos);
+        #ifdef PARTICIPANT_WIDGET_AV_SYNC
+            // force an AV sync
+            mTimeOfLastAVSynch = 0;
+        #else
+            mAudioWidget->GetWorker()->Seek(tPos);
+        #endif
 	}
 }
 

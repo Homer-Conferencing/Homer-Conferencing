@@ -64,6 +64,11 @@ using namespace Homer::Monitor;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// how many audio buffers do we await before we start audio playback?
+#define AUDIO_INITIAL_MINIMUM_PLAYBACK_QUEUE        2
+
+///////////////////////////////////////////////////////////////////////////////
+
 #define AUDIO_EVENT_NEW_SAMPLES               (QEvent::User + 1001)
 #define AUDIO_EVENT_OPEN_ERROR                (QEvent::User + 1002)
 #define AUDIO_EVENT_NEW_MUTE_STATE            (QEvent::User + 1003)
@@ -761,6 +766,8 @@ AudioWorkerThread::AudioWorkerThread(MediaSource *pAudioSource, AudioWidget *pAu
     QThread()
 {
     LOG(LOG_VERBOSE, "..Creating audio worker");
+    mSyncClockMasterSource = NULL;
+    mSyncClockAsap = false;
     mResetAudioSourceAsap = false;
     mStartRecorderAsap = false;
     mStartPlaybackAsap = false;
@@ -1102,6 +1109,12 @@ float AudioWorkerThread::GetSeekEnd()
     return tResult;
 }
 
+void AudioWorkerThread::SyncClock(MediaSource* pSource)
+{
+    mSyncClockAsap = true;
+    mSyncClockMasterSource = pSource;
+}
+
 bool AudioWorkerThread::SupportsMultipleChannels()
 {
     if (mAudioSource != NULL)
@@ -1220,7 +1233,29 @@ void AudioWorkerThread::DoSourceSeek()
         LOG(LOG_WARN, "Source isn't available anymore after seeking");
     }
     mEofReached = false;
-    ResetPlayback();
+    //ResetPlayback();
+    mSeekAsap = false;
+
+    // unlock
+    mDeliverMutex.unlock();
+}
+
+void AudioWorkerThread::DoSyncClock()
+{
+    LOG(LOG_VERBOSE, "DoSyncClock now...");
+
+    // lock
+    mDeliverMutex.lock();
+
+    LOG(LOG_VERBOSE, "Synchronizing with media source %s", mSyncClockMasterSource->GetStreamName().c_str());
+    mSourceAvailable = mAudioSource->Seek(mSyncClockMasterSource->GetSeekPos(), false);
+    if(!mSourceAvailable)
+    {
+        LOG(LOG_WARN, "Source isn't available anymore after synch. with %s", mSyncClockMasterSource->GetStreamName().c_str());
+    }
+    mEofReached = false;
+    mSyncClockAsap = false;
+    //ResetPlayback();
     mSeekAsap = false;
 
     // unlock
@@ -1467,6 +1502,9 @@ void AudioWorkerThread::run()
         // get the next frame from audio source
         tLastSampleNumber = tSampleNumber;
 
+        if (mSyncClockAsap)
+            DoSyncClock();
+
         if (mSeekAsap)
             DoSourceSeek();
 
@@ -1535,7 +1573,7 @@ void AudioWorkerThread::run()
 			if ((!mAudioOutMuted) && (tSampleNumber >= 0) && (tSamplesSize > 0) && (!mDropSamples) && (mPlaybackAvailable))
 			{
 			    if (mWaveOut != NULL)
-			        mWaveOut->WriteChunk(mSamples[mSampleGrabIndex], mSamplesSize[mSampleGrabIndex]);
+			        mWaveOut->WriteChunk(mSamples[mSampleGrabIndex], tSamplesSize);
 			}else
 			{
 				#ifdef DEBUG_AUDIOWIDGET_PERFORMANCE

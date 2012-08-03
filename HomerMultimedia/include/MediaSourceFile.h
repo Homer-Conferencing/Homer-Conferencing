@@ -113,14 +113,15 @@ private:
     int64_t             mDecoderLastReadPts;
     Condition           mDecoderNeedWorkCondition;
     bool                mEOFReached;
-    int64_t             mCurrentFrameIndex; // we have to determine this manually during grabbing because cur_dts and everything else in AVStream is buggy for some video/audio files
+    double              mCurrentFrameIndex; // we have to determine this manually during grabbing because cur_dts and everything else in AVStream is buggy for some video/audio files
     char                *mResampleBuffer;
     ReSampleContext     *mResampleContext;
     std::vector<string> mInputChannels;
     /* real-time playback */
     bool                mGrabInRealTime;
-    bool                mGrabInRealTimeWaitForFirstValidFrameAfterSeeking;
+    bool                mRecalibrateRealTimeGrabbingAfterSeeking;
     bool                mFlushBuffersAfterSeeking;
+    int64_t             mSeekingTargetFrameIndex;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

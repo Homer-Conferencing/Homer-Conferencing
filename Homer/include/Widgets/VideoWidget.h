@@ -69,10 +69,7 @@ class ParticipantWidget;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define VIDEO_WIDGET_OSD_PERIOD	       3 // seconds
 #define FRAME_BUFFER_SIZE              4
-
-#define FPS_MEASUREMENT_STEPS          60
 
 enum AspectRatio{
 	ASPECT_RATIO_ORIGINAL = 0,
@@ -101,6 +98,7 @@ public:
     void SetVisible(bool pVisible);
     virtual void contextMenuEvent(QContextMenuEvent *event);
     void InformAboutOpenError(QString pSourceName);
+    void InformAboutSeekingComplete();
     void InformAboutNewFrame();
     void InformAboutNewSourceResolution();
     void InformAboutNewSource();
@@ -216,6 +214,7 @@ public:
     void Seek(float pPos);
     float GetSeekPos();
     float GetSeekEnd();
+    void SyncClock(MediaSource* pSource);
 
     /* multiple channels control */
     bool SupportsMultipleChannels();
@@ -240,6 +239,7 @@ private:
     void DoStopRecorder();
     void DoPlayNewFile();
     void DoSeek();
+    void DoSyncClock();
 
     MediaSource         *mVideoSource;
     VideoWidget         *mVideoWidget;
@@ -288,6 +288,10 @@ private:
     /* seeking */
     bool                mSeekAsap;
     float               mSeekPos;
+    /* A/V synch. */
+    bool                mSyncClockAsap;
+    MediaSource*        mSyncClockMasterSource;
+    bool                mWaitForFirstFrameAfterSeeking;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
