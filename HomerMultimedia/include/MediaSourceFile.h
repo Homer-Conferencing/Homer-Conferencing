@@ -121,7 +121,7 @@ private:
     bool                mGrabInRealTime;
     bool                mRecalibrateRealTimeGrabbingAfterSeeking;
     bool                mFlushBuffersAfterSeeking;
-    int64_t             mSeekingTargetFrameIndex;
+    double              mSeekingTargetFrameIndex;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
