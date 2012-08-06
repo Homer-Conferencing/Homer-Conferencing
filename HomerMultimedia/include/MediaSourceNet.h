@@ -72,23 +72,25 @@ public:
     /// The destructor
     virtual ~MediaSourceNet();
 
-    unsigned int getListenerPort();
+    unsigned int GetListenerPort();
 
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97);
     virtual bool OpenAudioGrabDevice(int pSampleRate = 44100, bool pStereo = true);
 
-    virtual void StopGrabbing();
-
     virtual std::string GetCurrentDevicePeerName();
 
 protected:
+    /* network listener */
     virtual void* Run(void* pArgs = NULL);
+    void StartListener();
+    void StopListener();
 
     void Init(Socket *pDataSocket, unsigned int pLocalPort, bool pRtpActivated = true);
     bool DoReceiveFragment(std::string &pSourceHost, unsigned int &pSourcePort, char* pData, int &pSize);
 
+    /* general transport */
+    bool                mListenerNeeded;
     char                *mPacketBuffer;
-    bool				mListenerRunning;
     bool                mListenerSocketCreatedOutside;
     int                 mReceiveErrors;
     bool                mStreamedTransport;

@@ -104,6 +104,7 @@ private:
     void WaitForRTGrabbing();
 
     /* decoding */
+    bool                mForceFilePTSUsage;
     int                 mDecoderTargetResX;
     int                 mDecoderTargetResY;
     Mutex               mDecoderMutex;
