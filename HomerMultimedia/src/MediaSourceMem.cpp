@@ -334,10 +334,13 @@ bool MediaSourceMem::SupportsRelaying()
 void MediaSourceMem::StopGrabbing()
 {
 	MediaSource::StopGrabbing();
+
 	LOG(LOG_VERBOSE, "Going to stop memory based %s source", GetMediaTypeStr().c_str());
+
     char tData[4];
     mDecoderFifo->WriteFifo(tData, 0);
     mDecoderFifo->WriteFifo(tData, 0);
+
     LOG(LOG_VERBOSE, "Memory based %s source successfully stopped", GetMediaTypeStr().c_str());
 }
 
