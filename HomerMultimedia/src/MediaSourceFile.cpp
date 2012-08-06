@@ -63,6 +63,7 @@ using namespace Homer::Monitor;
 MediaSourceFile::MediaSourceFile(string pSourceFile, bool pGrabInRealTime):
     MediaSource("FILE: " + pSourceFile)
 {
+    mForceFilePTSUsage = false;
     mSeekingTargetFrameIndex = 0;
     mRecalibrateRealTimeGrabbingAfterSeeking = false;
     mFlushBuffersAfterSeeking = false;
@@ -810,15 +811,26 @@ void* MediaSourceFile::Run(void* pArgs)
                     if (tPacket->stream_index == mMediaStreamIndex)
                     {
                         // is "presentation timestamp" stored within media file?
-                        if (tPacket->dts != (int64_t)AV_NOPTS_VALUE)
+                        if ((tPacket->dts != (int64_t)AV_NOPTS_VALUE) && (!mForceFilePTSUsage))
                         { // DTS value
-                            if ((tPacket->dts < mDecoderLastReadPts) && (mDecoderLastReadPts != 0))
-                                LOG(LOG_WARN, "DTS values non continuous in file, %ld is lower than last %ld", tPacket->dts, mDecoderLastReadPts);
+                            if ((tPacket->dts < mDecoderLastReadPts) && (mDecoderLastReadPts != 0) && (tPacket->dts > 16 /* ignore the first frames */))
+                            {
+                                LOG(LOG_WARN, "%s-DTS values non continuous in file, %ld is lower than last %ld", GetMediaTypeStr().c_str(), tPacket->dts, mDecoderLastReadPts);
+                                LOG(LOG_WARN, "Starting to use PTS values instead of DTS");
+                                mForceFilePTSUsage = true;
+                            }
                             tCurrentChunkPts = tPacket->dts;
                         }else
                         {// PTS value
-                            if ((tPacket->pts < mDecoderLastReadPts) && (mDecoderLastReadPts != 0))
-                                LOG(LOG_WARN, "PTS values non continuous in file, %ld is lower than last %ld, difference is: %ld", tPacket->pts, mDecoderLastReadPts, mDecoderLastReadPts - tPacket->pts);
+                            if ((tPacket->pts < mDecoderLastReadPts) && (mDecoderLastReadPts != 0) && (tPacket->pts > 16 /* ignore the first frames */))
+                            {
+                                LOG(LOG_WARN, "%s-PTS values non continuous in file, %ld is lower than last %ld, difference is: %ld", GetMediaTypeStr().c_str(), tPacket->pts, mDecoderLastReadPts, mDecoderLastReadPts - tPacket->pts);
+                                if (mForceFilePTSUsage)
+                                {
+                                    LOG(LOG_ERROR, "%s-both PTS and DTS values are non continuous", GetMediaTypeStr().c_str());
+                                    mForceFilePTSUsage = false;
+                                }
+                            }
                             tCurrentChunkPts = tPacket->pts;
                         }
                         if (mRecalibrateRealTimeGrabbingAfterSeeking)
