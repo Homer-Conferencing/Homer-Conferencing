@@ -1115,6 +1115,16 @@ void AudioWorkerThread::SyncClock(MediaSource* pSource)
     mSyncClockMasterSource = pSource;
 }
 
+float AudioWorkerThread::GetUserAVDrift()
+{
+    return mUserAVDrift;
+}
+
+void AudioWorkerThread::SetUserAVDrift(float pDrift)
+{
+    mUserAVDrift = pDrift;
+}
+
 bool AudioWorkerThread::SupportsMultipleChannels()
 {
     if (mAudioSource != NULL)
@@ -1214,6 +1224,7 @@ void AudioWorkerThread::DoPlayNewFile()
         SetCurrentDevice(mDesiredFile);
     }
 
+    mUserAVDrift = 0;
     mEofReached = false;
     mPlayNewFileAsap = false;
     mPaused = false;
@@ -1227,7 +1238,7 @@ void AudioWorkerThread::DoSourceSeek()
     mDeliverMutex.lock();
 
     LOG(LOG_VERBOSE, "Seeking now to position %5.2f", mSeekPos);
-    mSourceAvailable = mAudioSource->Seek(mSeekPos, false);
+    mSourceAvailable = mAudioSource->Seek(mSeekPos);
     if(!mSourceAvailable)
     {
         LOG(LOG_WARN, "Source isn't available anymore after seeking");
@@ -1248,7 +1259,7 @@ void AudioWorkerThread::DoSyncClock()
     mDeliverMutex.lock();
 
     LOG(LOG_VERBOSE, "Synchronizing with media source %s", mSyncClockMasterSource->GetStreamName().c_str());
-    mSourceAvailable = mAudioSource->Seek(mSyncClockMasterSource->GetSeekPos(), false);
+    mSourceAvailable = mAudioSource->Seek(mSyncClockMasterSource->GetSeekPos() + mUserAVDrift, false);
     if(!mSourceAvailable)
     {
         LOG(LOG_WARN, "Source isn't available anymore after synch. with %s", mSyncClockMasterSource->GetStreamName().c_str());

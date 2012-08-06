@@ -156,7 +156,11 @@ public:
     void Seek(float pPos);
     float GetSeekPos();
     float GetSeekEnd();
+
+    /* A/V sync. */
     void SyncClock(MediaSource* pSource);
+    float GetUserAVDrift();
+    void SetUserAVDrift(float pDrift);
 
     /* multiple channels control */
     bool SupportsMultipleChannels();
@@ -243,6 +247,7 @@ private:
     /* A/V synch. */
     bool                mSyncClockAsap;
     MediaSource*        mSyncClockMasterSource;
+    float               mUserAVDrift;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
