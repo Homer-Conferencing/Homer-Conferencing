@@ -811,42 +811,50 @@ void* MediaSourceFile::Run(void* pArgs)
                     if (tPacket->stream_index == mMediaStreamIndex)
                     {
                         // is "presentation timestamp" stored within media file?
-                        if ((tPacket->dts != (int64_t)AV_NOPTS_VALUE) && (!mForceFilePTSUsage))
+                        if (tPacket->dts != (int64_t)AV_NOPTS_VALUE)
                         { // DTS value
+                            mForceFilePTSUsage = false;
                             if ((tPacket->dts < mDecoderLastReadPts) && (mDecoderLastReadPts != 0) && (tPacket->dts > 16 /* ignore the first frames */))
                             {
-                                LOG(LOG_WARN, "%s-DTS values non continuous in file, %ld is lower than last %ld", GetMediaTypeStr().c_str(), tPacket->dts, mDecoderLastReadPts);
-                                LOG(LOG_WARN, "Starting to use PTS values instead of DTS");
-                                mForceFilePTSUsage = true;
-                            }
-                            tCurrentChunkPts = tPacket->dts;
-                        }else
-                        {// PTS value
-                            if ((tPacket->pts < mDecoderLastReadPts) && (mDecoderLastReadPts != 0) && (tPacket->pts > 16 /* ignore the first frames */))
-                            {
-                                LOG(LOG_WARN, "%s-PTS values non continuous in file, %ld is lower than last %ld, difference is: %ld", GetMediaTypeStr().c_str(), tPacket->pts, mDecoderLastReadPts, mDecoderLastReadPts - tPacket->pts);
-                                if (mForceFilePTSUsage)
+                                LOG(LOG_WARN, "%s-DTS values are non continuous in file, read DTS: %ld, last %ld, alternative PTS: %ld", GetMediaTypeStr().c_str(), tPacket->dts, mDecoderLastReadPts, tPacket->pts);
+                                if ((tPacket->pts != (int64_t)AV_NOPTS_VALUE) && (tPacket->dts != tPacket->pts))
                                 {
-                                    LOG(LOG_ERROR, "%s-both PTS and DTS values are non continuous", GetMediaTypeStr().c_str());
-                                    mForceFilePTSUsage = false;
+                                    LOG(LOG_WARN, "Will use PTS value instead of DTS");
+                                    mForceFilePTSUsage = true;
                                 }
                             }
-                            tCurrentChunkPts = tPacket->pts;
-                        }
-                        if (mRecalibrateRealTimeGrabbingAfterSeeking)
-                        {
-                            LOG(LOG_VERBOSE, "Read %s frame number %ld from input file after seeking", GetMediaTypeStr().c_str(), tCurrentChunkPts);
                         }else
-                        {
-                            #if defined(MSF_DEBUG_DECODER_STATE) || defined(MSF_DEBUG_PACKETS)
-                                LOG(LOG_WARN, "Read %s frame number %ld from input file, last frame was %ld", GetMediaTypeStr().c_str(), tCurrentChunkPts, mDecoderLastReadPts);
-                            #endif
+                        {// PTS value
+                            if ((tPacket->pts < mDecoderLastReadPts) && (mDecoderLastReadPts != 0) && (tPacket->pts > 16 /* ignore the first frames */) && (mForceFilePTSUsage))
+                            {
+                                LOG(LOG_WARN, "%s-PTS values are also non continuous in file, %ld is lower than last %ld, difference is: %ld", GetMediaTypeStr().c_str(), tPacket->pts, mDecoderLastReadPts, mDecoderLastReadPts - tPacket->pts);
+                            }
+                            mForceFilePTSUsage = true;
                         }
+                        if (mForceFilePTSUsage)
+                            tCurrentChunkPts = tPacket->pts;
+                        else
+                            tCurrentChunkPts = tPacket->dts;
 
                         if (tCurrentChunkPts < mSeekingTargetFrameIndex)
                         {
-                            LOG(LOG_VERBOSE, "Dropping frame %ld because we are waiting for frame %.2f", tCurrentChunkPts, mSeekingTargetFrameIndex);
+                            #ifdef MSF_DEBUG_PACKETS
+                                LOG(LOG_VERBOSE, "Dropping %s frame %ld because we are waiting for frame %.2f", GetMediaTypeStr().c_str(), tCurrentChunkPts, mSeekingTargetFrameIndex);
+                            #endif
                             tShouldReadNext = true;
+                        }else
+                        {
+                            if (mRecalibrateRealTimeGrabbingAfterSeeking)
+                            {
+                                #ifdef MSF_DEBUG_PACKETS
+                                    LOG(LOG_VERBOSE, "Read %s frame number %ld from input file after seeking", GetMediaTypeStr().c_str(), tCurrentChunkPts);
+                                #endif
+                            }else
+                            {
+                                #if defined(MSF_DEBUG_DECODER_STATE) || defined(MSF_DEBUG_PACKETS)
+                                    LOG(LOG_WARN, "Read %s frame number %ld from input file, last frame was %ld", GetMediaTypeStr().c_str(), tCurrentChunkPts, mDecoderLastReadPts);
+                                #endif
+                            }
                         }
                         mDecoderLastReadPts = tCurrentChunkPts;
                     }else
@@ -918,7 +926,8 @@ void* MediaSourceFile::Run(void* pArgs)
 
                                 // transfer the presentation time value
                                 tSourceFrame->pts = tCurrentChunkPts;
-
+                                if (tSourceFrame->repeat_pict != 0)
+                                    LOG(LOG_WARN, "MPEG2 picture should be repeated for %d times", tSourceFrame->repeat_pict);
                                 #ifdef MSF_DEBUG_PACKETS
                                     LOG(LOG_VERBOSE, "    ..video decoding ended with result %d and %d bytes of output\n", tFrameFinished, tBytesDecoded);
                                 #endif
