@@ -238,6 +238,7 @@ vector<int> Thread::GetTIds()
 							// if still running we add this thread to the result
 							if (tThreadExitCode == STILL_ACTIVE)
 								tResult.push_back(tThreadEntry.th32ThreadID);
+
 							CloseHandle(tThreadHandle);
 						}else
 							LOGEX(Thread, LOG_ERROR, "Could not create thread handle");
@@ -527,6 +528,8 @@ bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned l
 
 			pMemPhysical = (unsigned long)tProcessMemInfo.WorkingSetSize;
 	        pMemVirtual = (unsigned long)tProcessMemInfo.PagefileUsage;
+
+	        CloseHandle(tProcessHandle);
 		}else
 		{
 			LOGEX(Thread, LOG_ERROR, "Could not create process handle");

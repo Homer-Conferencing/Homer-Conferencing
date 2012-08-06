@@ -51,7 +51,7 @@ MediaFifo::MediaFifo(int pFifoSize, int pFifoEntrySize, string pName)
 		mFifo[i].Size = 0;
 		mFifo[i].Data = (char*)malloc(mFifoEntrySize);
 		if (mFifo[i].Data == NULL)
-			LOG(LOG_ERROR, "Unable to allocate memory for FIFO");
+			LOG(LOG_ERROR, "Unable to allocate %d bytes of memory for FIFO %s", mFifoEntrySize, pName.c_str());
 	}
 	LOG(LOG_VERBOSE, "Created FIFO for %s with %d entries of %d bytes", pName.c_str(), mFifoSize, mFifoEntrySize);
 }
