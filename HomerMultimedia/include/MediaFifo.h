@@ -68,6 +68,7 @@ public:
     int ReadFifoExclusive(char **pBuffer, int &pBufferSize); // avoids memory copy, returns a pointer to memory
     void ReadFifoExclusiveFinished(int pEntryPointer);
 
+    int GetEntrySize();
     int GetUsage();
     int GetSize();
 

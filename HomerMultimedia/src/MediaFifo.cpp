@@ -153,6 +153,11 @@ void MediaFifo::ClearFifo()
     mFifoMutex.unlock();
 }
 
+int MediaFifo::GetEntrySize()
+{
+    return mFifoEntrySize;
+}
+
 int MediaFifo::GetUsage()
 {
     int tResult = 0;
