@@ -653,7 +653,9 @@ void* Thread::StartThreadStaticWrapperUniversal(void* pThread)
 	LOGEX(Thread, LOG_VERBOSE, "Going to start thread main");
 
     Thread *tThreadObject = (Thread*)pThread;
+    tThreadObject->mRunning = true;
     void* tResult = tThreadObject->mThreadMain(tThreadObject->mThreadArguments);
+    tThreadObject->mRunning = false;
     LOGEX(Thread, LOG_VERBOSE, "Thread finished");
     tThreadObject->Init();
     return tResult;
@@ -664,7 +666,9 @@ void* Thread::StartThreadStaticWrapperRun(void* pThread)
 	LOGEX(Thread, LOG_VERBOSE, "Going to start thread main (Run method)");
 
     Thread *tThreadObject = (Thread*)pThread;
+    tThreadObject->mRunning = true;
     void* tResult = tThreadObject->Run(tThreadObject->mThreadArguments);
+    tThreadObject->mRunning = false;
     LOGEX(Thread, LOG_VERBOSE, "Thread finished (Run method)");
     tThreadObject->Init();
     return tResult;
@@ -777,6 +781,12 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
         return true;
     }
 
+    if (!IsRunning())
+    {
+        LOG(LOG_VERBOSE, "Thread isn't running at the moment, skipped StopThread()");
+        return true;
+    }
+
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		struct timespec tTimeout;
 
@@ -792,7 +802,7 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
 		    if(pTimeoutInMSecs > 0)
 		    {
 		        if (int tRes = pthread_timedjoin_np(mThreadHandle, &tThreadResult, &tTimeout))
-                    LOG(LOG_INFO, "Waiting (time limited to %d ms) for end of thread failed because \"%s\"", pTimeoutInMSecs, strerror(tRes));
+                    LOG(LOG_INFO, "Waiting (time limited to %d ms) for end of thread failed because \"%s\"(%d)", pTimeoutInMSecs, strerror(tRes), tRes);
                 else
                 {
                     LOG(LOG_VERBOSE, "Got end signal and thread results at %p", tThreadResult);
@@ -842,6 +852,11 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
 		*pResults = tThreadResult;
 
 	return tResult;
+}
+
+bool Thread::IsRunning()
+{
+    return mRunning;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

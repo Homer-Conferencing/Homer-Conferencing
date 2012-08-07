@@ -59,6 +59,7 @@ public:
     bool StartThread(void* pArgs = NULL);
     bool StartThread(THREAD_MAIN pMain, void* pArgs = NULL);
     bool StopThread(int pTimeoutInMSecs = 0, void** pResults = NULL); // return pointer to result of thread
+    bool IsRunning();
     static void Suspend(unsigned int pUSecs);
     static int GetTId();
     static int GetPId();
@@ -71,9 +72,10 @@ private:
     static void* StartThreadStaticWrapperUniversal(void* pThread);
     static void* StartThreadStaticWrapperRun(void* pThread);
 
-    THREAD_MAIN mThreadMain;
-    void *mThreadArguments;
-    OS_DEP_THREAD mThreadHandle;
+    THREAD_MAIN     mThreadMain;
+    void            *mThreadArguments;
+    OS_DEP_THREAD   mThreadHandle;
+    bool            mRunning;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
