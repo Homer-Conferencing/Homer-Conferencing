@@ -30,6 +30,7 @@
 
 #include <Widgets/MessageWidget.h>
 #include <Widgets/OverviewContactsWidget.h>
+#include <Widgets/PlaybackSlider.h>
 #include <Widgets/SessionInfoWidget.h>
 #include <Widgets/VideoWidget.h>
 #include <MediaSourceMuxer.h>
@@ -136,11 +137,12 @@ public:
     AudioWorkerThread* GetAudioWorker();
 
 private slots:
-    void PlayMovieFile();
-    void PauseMovieFile();
+    void ActionPlayMovieFile();
+    void ActionPauseMovieFile();
 	void LookedUpParticipantHost(const QHostInfo &pHost);
-	void SeekMovieFile(int pPos);
-	void SeekMovieFileToPos(int pPos);
+	void ActionSeekMovieFile(int pPos);
+	void ActionSeekMovieFileToPos(int pPos);
+	friend class PlaybackSlider;
 
 private:
     void OpenPlaybackDevice();
@@ -158,6 +160,9 @@ private:
     void ResetAVSync();
     void AVSync();
     float GetAVDrift(); // pos. value means "video before audio, audio is too late"
+    float GetUserAVDrift();
+    float GetVideoDelayAVDrift();
+    void ReportVideoDelay(float pDelay); // adds an additional delay to audio if video presentation is delayed
     void InformAboutVideoSeekingComplete();
     friend class VideoWidget;
 

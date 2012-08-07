@@ -36,6 +36,7 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+class ParticipantWidget;
 class PlaybackSlider :
     public QSlider
 {
@@ -47,8 +48,12 @@ public:
     /// The destructor.
     virtual ~PlaybackSlider();
 
+    void Init(ParticipantWidget *pParticipantWidget);
+
 private:
     virtual void mousePressEvent(QMouseEvent *pEvent);
+
+    ParticipantWidget   *mParticipantWidget;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

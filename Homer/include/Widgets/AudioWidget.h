@@ -161,6 +161,8 @@ public:
     void SyncClock(MediaSource* pSource);
     float GetUserAVDrift();
     void SetUserAVDrift(float pDrift);
+    float GetVideoDelayAVDrift();
+    void SetVideoDelayAVDrift(float pDrift);
 
     /* multiple channels control */
     bool SupportsMultipleChannels();
@@ -225,7 +227,7 @@ private:
     bool				mPaused;
     bool				mSourceAvailable;
     bool				mPlaybackAvailable;
-    int64_t				mPausedPos;
+    float				mPausedPos;
 
     /* for forwarded interface to media source */
     int                 mDesiredInputChannel;
@@ -248,6 +250,7 @@ private:
     bool                mSyncClockAsap;
     MediaSource*        mSyncClockMasterSource;
     float               mUserAVDrift;
+    float               mVideoDelayAVDrift;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

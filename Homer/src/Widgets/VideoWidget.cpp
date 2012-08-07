@@ -878,6 +878,23 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
                 tLine_Time += (tAVDrift != 0.0f ? QString(" (A/V drift: +%1 s)").arg(tAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
             else if (tAVDrift < 0.0)
                 tLine_Time += (tAVDrift != 0.0f ? QString(" (A/V drift: %1 s)").arg(tAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
+
+            float tUserAVDrift = mParticipantWidget->GetUserAVDrift();
+            if (tUserAVDrift != 0)
+            {
+                if (tUserAVDrift > 0.0)
+                    tLine_Time += (tUserAVDrift != 0.0f ? QString(" [user A/V drift: +%1 s]").arg(tUserAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
+                else if (tAVDrift < 0.0)
+                    tLine_Time += (tUserAVDrift != 0.0f ? QString(" [user A/V drift: %1 s]").arg(tUserAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
+            }
+            float tVideoDelayAVDrift = mParticipantWidget->GetVideoDelayAVDrift();
+            if (tVideoDelayAVDrift != 0)
+            {
+                if (tVideoDelayAVDrift > 0.0)
+                    tLine_Time += (tVideoDelayAVDrift != 0.0f ? QString(" [A/V adjust: +%1 s]").arg(tVideoDelayAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
+                else if (tAVDrift < 0.0)
+                    tLine_Time += (tVideoDelayAVDrift != 0.0f ? QString(" [A/V adjust: %1 s]").arg(tVideoDelayAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
+            }
         }
 
 
@@ -1436,11 +1453,14 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
     }
     if (pEvent->key() == Qt::Key_M)
     {
-		mParticipantWidget->GetAudioWorker()->SetMuteState(!mParticipantWidget->GetAudioWorker()->GetMuteState());
-        if (mParticipantWidget->GetAudioWorker()->GetMuteState())
-        	ShowOsdMessage("Audio muted");
-        else
-        	ShowOsdMessage("Audio output active");
+		if (mParticipantWidget->GetAudioWorker() != NULL)
+		{
+            mParticipantWidget->GetAudioWorker()->SetMuteState(!mParticipantWidget->GetAudioWorker()->GetMuteState());
+            if (mParticipantWidget->GetAudioWorker()->GetMuteState())
+                ShowOsdMessage("Audio muted");
+            else
+                ShowOsdMessage("Audio output active");
+		}
 		return;
     }
     if ((pEvent->key() == Qt::Key_Space) || (pEvent->key() == Qt::Key_MediaTogglePlayPause) || (pEvent->key() == Qt::Key_MediaPlay) || (pEvent->key() == Qt::Key_Play))
@@ -1448,16 +1468,12 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
         if ((mVideoWorker->IsPaused()) || ((mParticipantWidget->GetAudioWorker() != NULL) && (mParticipantWidget->GetAudioWorker()->IsPaused())))
         {
         	ShowOsdMessage("Playing..");
-            mVideoWorker->PlayFile();
-            if (mParticipantWidget->GetAudioWorker() != NULL)
-                mParticipantWidget->GetAudioWorker()->PlayFile();
+            mParticipantWidget->ActionPlayMovieFile();
             return;
         }else
         {
         	ShowOsdMessage("Pausing..");
-            mVideoWorker->PauseFile();
-            if (mParticipantWidget->GetAudioWorker() != NULL)
-                mParticipantWidget->GetAudioWorker()->PauseFile();
+            mParticipantWidget->ActionPauseMovieFile();
             return;
         }
     }
@@ -1550,6 +1566,21 @@ void VideoWidget::customEvent(QEvent *pEvent)
 						LOG(LOG_VERBOSE, "Called GetCurrentFrame() %d times", tLoopCount);
 					mPendingNewFrameSignals--;
 					mCurrentFrameNumber = mVideoWorker->GetCurrentFrame(&tFrame, &tFps);
+
+					// video delay
+					int tWorkerLastFrame = mVideoWorker->GetLastFrameNumber();
+					if ((mCurrentFrameNumber != tWorkerLastFrame) && (mCurrentFrameNumber > 0) && (tWorkerLastFrame > 0))
+					{
+					    // video play out drift
+					    int tFrameDiff = tWorkerLastFrame - mCurrentFrameNumber;
+					    float tVideoDelay = tFrameDiff / tFps;
+					    //LOG(LOG_WARN, "We show frame %d while we already grabbed frame %d, video delay is %.2f", mCurrentFrameNumber, tWorkerLastFrame, tVideoDelay);
+					    mParticipantWidget->ReportVideoDelay(tVideoDelay);
+					}else
+                        mParticipantWidget->ReportVideoDelay(0);
+                    #ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
+                        LOG(LOG_VERBOSE, "We show frame %d while we already grabbed frame %d", mCurrentFrameNumber, tWorkerLastFrame);
+                    #endif
 				}
 
 				if (isVisible())
@@ -1635,6 +1666,7 @@ void VideoWidget::customEvent(QEvent *pEvent)
 VideoWorkerThread::VideoWorkerThread(MediaSource *pVideoSource, VideoWidget *pVideoWidget):
     QThread()
 {
+    mLastFrameNumber = 0;
     mSyncClockMasterSource = NULL;
     mSyncClockAsap = false;
     mSetGrabResolutionAsap = false;
@@ -1810,7 +1842,7 @@ void VideoWorkerThread::PlayFile(QString pName)
 
 	if ((mPaused) && (pName == mDesiredFile))
 	{
-		LOG(LOG_VERBOSE, "Continue playback of file: %s at pos.: %ld", pName.toStdString().c_str(), mPausedPos);
+		LOG(LOG_VERBOSE, "Continue playback of file: %s at pos.: %.2f", pName.toStdString().c_str(), mPausedPos);
 		Seek(mPausedPos);
 		mGrabbingStateMutex.lock();
 		mPaused = false;
@@ -1835,7 +1867,7 @@ void VideoWorkerThread::PauseFile()
         mGrabbingStateMutex.lock();
         mPaused = true;
         mGrabbingStateMutex.unlock();
-        LOG(LOG_VERBOSE, "Triggered pause state at position: %ld", mPausedPos);
+        LOG(LOG_VERBOSE, "Triggered pause state at position: %.2f", mPausedPos);
     }else
         LOG(LOG_VERBOSE, "Seeking not supported, PauseFile() aborted");
 }
@@ -1884,7 +1916,7 @@ bool VideoWorkerThread::SupportsSeeking()
 
 void VideoWorkerThread::Seek(float pPos)
 {
-	LOG(LOG_VERBOSE, "Seeking to position: %5.2f", pPos);
+	LOG(LOG_VERBOSE, "Seeking to position: %.2f", pPos);
     mSeekPos = pPos;
     mSeekAsap = true;
     mGrabbingCondition.wakeAll();
@@ -2069,7 +2101,7 @@ void VideoWorkerThread::DoSyncClock()
     mDeliverMutex.lock();
 
     LOG(LOG_VERBOSE, "Synchronizing with media source %s", mSyncClockMasterSource->GetStreamName().c_str());
-    mSourceAvailable = mVideoSource->Seek(mSyncClockMasterSource->GetSeekPos(), false);
+    mSourceAvailable = mVideoSource->Seek(mSyncClockMasterSource->GetSeekPos());
     if(!mSourceAvailable)
     {
         LOG(LOG_WARN, "Source isn't available anymore after synch. with %s", mSyncClockMasterSource->GetStreamName().c_str());
@@ -2284,12 +2316,17 @@ int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFps)
     return tResult;
 }
 
+int VideoWorkerThread::GetLastFrameNumber()
+{
+    return mLastFrameNumber;
+}
+
 void VideoWorkerThread::run()
 {
     int tFrameSize;
     const size_t tFpsMeasurementSteps = 10;
     bool  tGrabSuccess;
-    int tFrameNumber = -1, tLastFrameNumber = -1;
+    int tFrameNumber = -1;
 
     // if grabber was stopped before source has been opened this BOOL is reset
     mWorkerNeeded = true;
@@ -2311,10 +2348,12 @@ void VideoWorkerThread::run()
         mVideoWidget->InformAboutNewSource();
     }
 
+    mLastFrameNumber = 0;
+
     while(mWorkerNeeded)
     {
     	// store last frame number
-        tLastFrameNumber = tFrameNumber;
+        mLastFrameNumber = tFrameNumber;
 
         if (mSyncClockAsap)
             DoSyncClock();
@@ -2440,8 +2479,8 @@ void VideoWorkerThread::run()
                  // unlock
 				mDeliverMutex.unlock();
 
-				if ((tLastFrameNumber > tFrameNumber) && (tFrameNumber > 9 /* -1 means error, 1 is received after every reset, use "9" because of possible latencies */))
-					LOG(LOG_ERROR, "Frame ordering problem detected (%d -> %d)", tLastFrameNumber, tFrameNumber);
+				if ((mLastFrameNumber > tFrameNumber) && (tFrameNumber > 9 /* -1 means error, 1 is received after every reset, use "9" because of possible latencies */))
+					LOG(LOG_ERROR, "Frame ordering problem detected (%d -> %d)", mLastFrameNumber, tFrameNumber);
 			}else
 			{
 				LOG(LOG_VERBOSE, "Invalid grabbing result: %d", tFrameNumber);

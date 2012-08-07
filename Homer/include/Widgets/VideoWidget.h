@@ -225,6 +225,7 @@ public:
     /* frame grabbing */
     void SetFrameDropping(bool pDrop);
     int GetCurrentFrame(void **pFrame, float *pFps = NULL);
+    int GetLastFrameNumber();
 
 private:
     void InitFrameBuffers();
@@ -266,9 +267,12 @@ private:
     bool				mEofReached;
     bool				mPaused;
     bool				mSourceAvailable;
-    int64_t				mPausedPos;
+    float				mPausedPos;
     QList<int64_t>      mFrameTimestamps;
+
+    /* frame statistics */
     int                 mMissingFrames;
+    int                 mLastFrameNumber;
 
     /* store if we try to open a file or a device/network/memory based video source */
     bool                mTryingToOpenAFile;
@@ -285,9 +289,11 @@ private:
     bool                mStopRecorderAsap;
     bool				mPlayNewFileAsap;
     bool                mSelectInputChannelAsap;
+
     /* seeking */
     bool                mSeekAsap;
     float               mSeekPos;
+
     /* A/V synch. */
     bool                mSyncClockAsap;
     MediaSource*        mSyncClockMasterSource;

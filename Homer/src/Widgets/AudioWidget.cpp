@@ -785,6 +785,8 @@ AudioWorkerThread::AudioWorkerThread(MediaSource *pAudioSource, AudioWidget *pAu
     mPaused = false;
     mSourceAvailable = false;
     mPausedPos = 0;
+    mUserAVDrift = 0;
+    mVideoDelayAVDrift = 0;
     mAudioPlaybackDelayCount = 0;
     mDesiredFile = "";
     mResX = 352;
@@ -1011,7 +1013,7 @@ void AudioWorkerThread::PlayFile(QString pName)
 
 	if ((mPaused) && (pName == mDesiredFile))
 	{
-        LOG(LOG_VERBOSE, "Continue playback of file: %s at pos.: %ld", pName.toStdString().c_str(), mPausedPos);
+        LOG(LOG_VERBOSE, "Continue playback of file: %s at pos.: %.2f", pName.toStdString().c_str(), mPausedPos);
 		Seek(mPausedPos);
         mGrabbingStateMutex.lock();
         mPaused = false;
@@ -1034,7 +1036,7 @@ void AudioWorkerThread::PauseFile()
         mGrabbingStateMutex.lock();
         mPaused = true;
         mGrabbingStateMutex.unlock();
-        LOG(LOG_VERBOSE, "Triggered pause state at position: %ld", mPausedPos);
+        LOG(LOG_VERBOSE, "Triggered pause state at position: %.2f", mPausedPos);
     }else
         LOG(LOG_VERBOSE, "Seeking not supported, PauseFile() aborted");
 }
@@ -1122,7 +1124,29 @@ float AudioWorkerThread::GetUserAVDrift()
 
 void AudioWorkerThread::SetUserAVDrift(float pDrift)
 {
-    mUserAVDrift = pDrift;
+    int tDrift = 1000 * pDrift;
+    pDrift = tDrift / 1000;
+    if (mUserAVDrift != pDrift)
+    {
+        LOG(LOG_VERBOSE, "Setting user defined A/V drift from %f to %f", mUserAVDrift, pDrift);
+        mUserAVDrift = pDrift;
+    }
+}
+
+float AudioWorkerThread::GetVideoDelayAVDrift()
+{
+    return mVideoDelayAVDrift;
+}
+
+void AudioWorkerThread::SetVideoDelayAVDrift(float pDrift)
+{
+    int tDrift = 1000 * pDrift;
+    pDrift = tDrift / 1000;
+    if (mVideoDelayAVDrift != pDrift)
+    {
+        LOG(LOG_VERBOSE, "Setting video delay A/V drift from %f to %f", mVideoDelayAVDrift, pDrift);
+        mVideoDelayAVDrift = pDrift;
+    }
 }
 
 bool AudioWorkerThread::SupportsMultipleChannels()
@@ -1225,6 +1249,7 @@ void AudioWorkerThread::DoPlayNewFile()
     }
 
     mUserAVDrift = 0;
+    mVideoDelayAVDrift = 0;
     mEofReached = false;
     mPlayNewFileAsap = false;
     mPaused = false;
@@ -1238,7 +1263,7 @@ void AudioWorkerThread::DoSourceSeek()
     mDeliverMutex.lock();
 
     LOG(LOG_VERBOSE, "Seeking now to position %5.2f", mSeekPos);
-    mSourceAvailable = mAudioSource->Seek(mSeekPos);
+    mSourceAvailable = mAudioSource->Seek(mSeekPos, false);
     if(!mSourceAvailable)
     {
         LOG(LOG_WARN, "Source isn't available anymore after seeking");
@@ -1258,8 +1283,9 @@ void AudioWorkerThread::DoSyncClock()
     // lock
     mDeliverMutex.lock();
 
-    LOG(LOG_VERBOSE, "Synchronizing with media source %s", mSyncClockMasterSource->GetStreamName().c_str());
-    mSourceAvailable = mAudioSource->Seek(mSyncClockMasterSource->GetSeekPos() + mUserAVDrift, false);
+    float tSyncPos = mSyncClockMasterSource->GetSeekPos() - mUserAVDrift - mVideoDelayAVDrift;
+    LOG(LOG_VERBOSE, "Synchronizing with media source %s (pos.: %.2f)", mSyncClockMasterSource->GetStreamName().c_str(), tSyncPos);
+    mSourceAvailable = mAudioSource->Seek(tSyncPos, false);
     if(!mSourceAvailable)
     {
         LOG(LOG_WARN, "Source isn't available anymore after synch. with %s", mSyncClockMasterSource->GetStreamName().c_str());

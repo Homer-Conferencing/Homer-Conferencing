@@ -26,6 +26,7 @@
  */
 
 #include <Widgets/PlaybackSlider.h>
+#include <Widgets/ParticipantWidget.h>
 #include <Logger.h>
 
 using namespace Homer::Base;
@@ -37,6 +38,7 @@ namespace Homer { namespace Gui {
 PlaybackSlider::PlaybackSlider(QWidget* pParent) :
 	QSlider(pParent)
 {
+    mParticipantWidget = NULL;
 }
 
 PlaybackSlider::~PlaybackSlider()
@@ -44,6 +46,11 @@ PlaybackSlider::~PlaybackSlider()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+void PlaybackSlider::Init(ParticipantWidget *pParticipantWidget)
+{
+    mParticipantWidget = pParticipantWidget;
+}
 
 void PlaybackSlider::mousePressEvent(QMouseEvent *pEvent)
 {
@@ -56,7 +63,10 @@ void PlaybackSlider::mousePressEvent(QMouseEvent *pEvent)
 		else
 			tNewValue = minimum() + ((maximum()-minimum()) * pEvent->x()) / width();
 		LOG(LOG_VERBOSE, "User triggers direct jump to position: %d", tNewValue);
-		setValue(tNewValue);
+		if (!isSliderDown())
+		    setValue(tNewValue);
+		if (mParticipantWidget != NULL)
+		    mParticipantWidget->ActionSeekMovieFile(tNewValue);
 		pEvent->accept();
 	}
 	QSlider::mousePressEvent(pEvent);

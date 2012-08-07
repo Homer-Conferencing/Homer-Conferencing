@@ -173,9 +173,11 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
     font.setWeight(75);
     setFont(font);
 
-    connect(mTbPlay, SIGNAL(clicked()), this, SLOT(PlayMovieFile()));
-    connect(mTbPause, SIGNAL(clicked()), this, SLOT(PauseMovieFile()));
-    connect(mSlMovie, SIGNAL(sliderMoved(int)), this, SLOT(SeekMovieFile(int)));
+    mSlMovie->Init(this);
+
+    connect(mTbPlay, SIGNAL(clicked()), this, SLOT(ActionPlayMovieFile()));
+    connect(mTbPause, SIGNAL(clicked()), this, SLOT(ActionPauseMovieFile()));
+    connect(mSlMovie, SIGNAL(sliderMoved(int)), this, SLOT(ActionSeekMovieFile(int)));
     connect(mSlMovie, SIGNAL(valueChanged(int)), this, SLOT(SeekMovieFileToPos(int)));
 
     //####################################################################
@@ -1076,7 +1078,7 @@ void ParticipantWidget::AVSync()
                     // are audio and video playback out of synch.?
                     if (((tTimeDiff < -AV_SYNC_MAX_DRIFT) || (tTimeDiff > AV_SYNC_MAX_DRIFT)))
                     {
-                        if ((!mVideoWidget->GetWorker()->EofReached()) && (!mAudioWidget->GetWorker()->EofReached()) && (mVideoWidget->GetWorker()->GetCurrentDevice() == mAudioWidget->GetWorker()->GetCurrentDevice()))
+                        if ((!mVideoWidget->GetWorker()->EofReached()) && (mVideoWidget->GetWorker()->GetCurrentDevice() == mAudioWidget->GetWorker()->GetCurrentDevice()))
                         {
                             if (mContinuousAVAsync >= AV_SYNC_CONTINUOUS_ASYNC_THRESHOLD)
                             {
@@ -1116,13 +1118,72 @@ float ParticipantWidget::GetAVDrift()
 {
     float tResult = 0;
 
+    if (mVideoWidget->GetWorker() == NULL)
+        return 0;
+
+    if (mAudioWidget->GetWorker() == NULL)
+        return 0;
+
     // do we play video and audio from the same file?
     if (mVideoWidget->GetWorker()->CurrentFile() == mAudioWidget->GetWorker()->CurrentFile())
     {
-        tResult = mVideoWidget->GetWorker()->GetSeekPos() - mAudioWidget->GetWorker()->GetSeekPos();
+        tResult = mVideoWidget->GetWorker()->GetSeekPos() - mAudioWidget->GetWorker()->GetSeekPos() - mAudioWidget->GetWorker()->GetUserAVDrift() - mAudioWidget->GetWorker()->GetVideoDelayAVDrift();
     }
 
     return tResult;
+}
+
+float ParticipantWidget::GetUserAVDrift()
+{
+    float tResult = 0;
+
+    if (mVideoWidget->GetWorker() == NULL)
+        return 0;
+
+    if (mAudioWidget->GetWorker() == NULL)
+        return 0;
+
+    // do we play video and audio from the same file?
+    if (mVideoWidget->GetWorker()->CurrentFile() == mAudioWidget->GetWorker()->CurrentFile())
+    {
+        tResult = mAudioWidget->GetWorker()->GetUserAVDrift();
+    }
+
+    return tResult;
+}
+
+float ParticipantWidget::GetVideoDelayAVDrift()
+{
+    float tResult = 0;
+
+    if (mVideoWidget->GetWorker() == NULL)
+        return 0;
+
+    if (mAudioWidget->GetWorker() == NULL)
+        return 0;
+
+    // do we play video and audio from the same file?
+    if (mVideoWidget->GetWorker()->CurrentFile() == mAudioWidget->GetWorker()->CurrentFile())
+    {
+        tResult = mAudioWidget->GetWorker()->GetVideoDelayAVDrift();
+    }
+
+    return tResult;
+}
+
+void ParticipantWidget::ReportVideoDelay(float pDelay)
+{
+    if (mVideoWidget->GetWorker() == NULL)
+        return;
+
+    if (mAudioWidget->GetWorker() == NULL)
+        return;
+
+    // do we play video and audio from the same file?
+    if (mVideoWidget->GetWorker()->CurrentFile() == mAudioWidget->GetWorker()->CurrentFile())
+    {
+        mAudioWidget->GetWorker()->SetVideoDelayAVDrift(pDelay);
+    }
 }
 
 void ParticipantWidget::InformAboutVideoSeekingComplete()
@@ -1214,19 +1275,21 @@ QString ParticipantWidget::GetSipInterface()
 	return mSipInterface;
 }
 
-void ParticipantWidget::PlayMovieFile()
+void ParticipantWidget::ActionPlayMovieFile()
 {
-    mVideoWidget->GetWorker()->PlayFile(mVideoWidget->GetWorker()->CurrentFile());
-    mAudioWidget->GetWorker()->PlayFile(mAudioWidget->GetWorker()->CurrentFile());
+    LOG(LOG_VERBOSE, "User triggered play");
+    mVideoWidget->GetWorker()->PlayFile();
+    mAudioWidget->GetWorker()->PlayFile();
 }
 
-void ParticipantWidget::PauseMovieFile()
+void ParticipantWidget::ActionPauseMovieFile()
 {
+    LOG(LOG_VERBOSE, "User triggered pause");
     mVideoWidget->GetWorker()->PauseFile();
     mAudioWidget->GetWorker()->PauseFile();
 }
 
-void ParticipantWidget::SeekMovieFile(int pPos)
+void ParticipantWidget::ActionSeekMovieFile(int pPos)
 {
 	LOG(LOG_VERBOSE, "User moved playback slider to position %d", pPos);
     ResetAVSync();
@@ -1240,7 +1303,7 @@ void ParticipantWidget::SeekMovieFile(int pPos)
     #endif
 }
 
-void ParticipantWidget::SeekMovieFileToPos(int pPos)
+void ParticipantWidget::ActionSeekMovieFileToPos(int pPos)
 {
     //LOG(LOG_VERBOSE, "Value of playback slider changed to %d", pPos);
 	if (mMovieSliderPosition != pPos)
