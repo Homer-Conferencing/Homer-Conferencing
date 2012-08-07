@@ -142,6 +142,8 @@ private slots:
 	void LookedUpParticipantHost(const QHostInfo &pHost);
 	void ActionSeekMovieFile(int pPos);
 	void ActionSeekMovieFileToPos(int pPos);
+	void ActionUserAVDriftChanged(double pDrift);
+	void ActionToggleUserAVDriftWidget();
 	friend class PlaybackSlider;
 
 private:
@@ -162,6 +164,7 @@ private:
     float GetAVDrift(); // pos. value means "video before audio, audio is too late"
     float GetUserAVDrift();
     float GetVideoDelayAVDrift();
+    void SetUserAVDrift(float pDrift);
     void ReportVideoDelay(float pDelay); // adds an additional delay to audio if video presentation is delayed
     void InformAboutVideoSeekingComplete();
     friend class VideoWidget;

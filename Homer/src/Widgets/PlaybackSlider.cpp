@@ -72,6 +72,30 @@ void PlaybackSlider::mousePressEvent(QMouseEvent *pEvent)
 	QSlider::mousePressEvent(pEvent);
 }
 
+void PlaybackSlider::contextMenuEvent(QContextMenuEvent *pContextMenuEvent)
+{
+    QAction *tAction;
+
+    QMenu tMenu(this);
+
+    tAction = tMenu.addAction("Adjust A/V drift");
+    QIcon tIcon2;
+    tIcon2.addPixmap(QPixmap(":/images/22_22/Configuration_Video.png"), QIcon::Normal, QIcon::Off);
+    tAction->setIcon(tIcon2);
+    tAction->setCheckable(true);
+    tAction->setChecked(mParticipantWidget->mAVDriftFrame->isVisible());
+
+    QAction* tPopupRes = tMenu.exec(pContextMenuEvent->globalPos());
+    if (tPopupRes != NULL)
+    {
+        if (tPopupRes->text().compare("Adjust A/V drift") == 0)
+        {
+            mParticipantWidget->ActionToggleUserAVDriftWidget();
+            return;
+        }
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 }} //namespace

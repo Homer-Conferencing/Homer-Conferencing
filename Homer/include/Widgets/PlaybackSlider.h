@@ -31,6 +31,7 @@
 #include <QSlider>
 #include <QMouseEvent>
 #include <QWidget>
+#include <QContextMenuEvent>
 
 namespace Homer { namespace Gui {
 
@@ -52,6 +53,7 @@ public:
 
 private:
     virtual void mousePressEvent(QMouseEvent *pEvent);
+    virtual void contextMenuEvent(QContextMenuEvent *pContextMenuEvent);
 
     ParticipantWidget   *mParticipantWidget;
 };

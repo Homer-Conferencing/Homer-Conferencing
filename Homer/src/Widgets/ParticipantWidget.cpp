@@ -174,11 +174,13 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
     setFont(font);
 
     mSlMovie->Init(this);
+    mAVDriftFrame->hide();
 
     connect(mTbPlay, SIGNAL(clicked()), this, SLOT(ActionPlayMovieFile()));
     connect(mTbPause, SIGNAL(clicked()), this, SLOT(ActionPauseMovieFile()));
     connect(mSlMovie, SIGNAL(sliderMoved(int)), this, SLOT(ActionSeekMovieFile(int)));
-    connect(mSlMovie, SIGNAL(valueChanged(int)), this, SLOT(SeekMovieFileToPos(int)));
+    connect(mSlMovie, SIGNAL(valueChanged(int)), this, SLOT(ActionSeekMovieFileToPos(int)));
+    connect(mSbAVDrift, SIGNAL(valueChanged(double)), this, SLOT(ActionUserAVDriftChanged(double)));
 
     //####################################################################
     //### create additional widget and allocate resources
@@ -1161,6 +1163,21 @@ float ParticipantWidget::GetVideoDelayAVDrift()
     return tResult;
 }
 
+void ParticipantWidget::SetUserAVDrift(float pDrift)
+{
+    if (mVideoWidget->GetWorker() == NULL)
+        return;
+
+    if (mAudioWidget->GetWorker() == NULL)
+        return;
+
+    // do we play video and audio from the same file?
+    if (mVideoWidget->GetWorker()->CurrentFile() == mAudioWidget->GetWorker()->CurrentFile())
+    {
+        mAudioWidget->GetWorker()->SetUserAVDrift(pDrift);
+    }
+}
+
 void ParticipantWidget::ReportVideoDelay(float pDelay)
 {
     if (mVideoWidget->GetWorker() == NULL)
@@ -1309,6 +1326,20 @@ void ParticipantWidget::ActionSeekMovieFileToPos(int pPos)
             mAudioWidget->GetWorker()->Seek(tPos);
         #endif
 	}
+}
+
+void ParticipantWidget::ActionToggleUserAVDriftWidget()
+{
+    if (mAVDriftFrame->isVisible())
+        mAVDriftFrame->hide();
+    else
+        mAVDriftFrame->show();
+}
+
+void ParticipantWidget::ActionUserAVDriftChanged(double pDrift)
+{
+    LOG(LOG_VERBOSE, "User changed A/V drift to %.2f", (float)pDrift);
+    SetUserAVDrift(pDrift);
 }
 
 VideoWorkerThread* ParticipantWidget::GetVideoWorker()
