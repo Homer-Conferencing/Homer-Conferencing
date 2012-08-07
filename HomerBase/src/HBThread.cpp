@@ -784,6 +784,8 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
     if (!IsRunning())
     {
         LOG(LOG_VERBOSE, "Thread isn't running at the moment, skipped StopThread()");
+        if (pResults != NULL)
+            *pResults = NULL;
         return true;
     }
 
