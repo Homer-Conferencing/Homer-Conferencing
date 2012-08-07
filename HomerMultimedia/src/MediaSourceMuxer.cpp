@@ -1355,7 +1355,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
         }
     }
 
-    LOG(LOG_VERBOSE, "Encoder thread finished");
+    LOG(LOG_VERBOSE, "%s encoder thread finished", GetMediaTypeStr().c_str());
 
     return NULL;
 }

@@ -43,7 +43,7 @@ using namespace Homer::Monitor;
 ///////////////////////////////////////////////////////////////////////////////
 
 #define MEDIA_SOURCE_FILE_QUEUE_FOR_VIDEO                  6 // in frames (each max. 16 MB for HDTV, one entry is reserved for 0-byte signaling)
-#define MEDIA_SOURCE_FILE_QUEUE_FOR_AUDIO                  6 // in audio sample blocks (each about 4 kB)
+#define MEDIA_SOURCE_FILE_QUEUE_FOR_AUDIO                  16 // in audio sample blocks (each about 192 kB)
 
 // 33 ms delay for 30 fps -> rounded to 35 ms
 #define MSF_FRAME_DROP_THRESHOLD                           0 //in us, 0 deactivates frame dropping
@@ -450,7 +450,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     MarkOpenGrabDeviceSuccessful();
 
     // init decoder FIFO based for 2048 samples with 16 bit and 2 channels, more samples are never produced by a media source per grabbing cycle
-    StartDecoder(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE * 2);
+    StartDecoder(AVCODEC_MAX_AUDIO_FRAME_SIZE);
 
     return true;
 }
@@ -687,10 +687,8 @@ void MediaSourceFile::StartDecoder(int pFifoEntrySize)
         delete mDecoderFifo;
     }else
     {
-        mDecoderFifo = new MediaFifo(MEDIA_SOURCE_FILE_QUEUE, pFifoEntrySize, GetMediaTypeStr() + "-MediaSourceFile");
-        mDecoderMetaDataFifo = new MediaFifo(MEDIA_SOURCE_FILE_QUEUE, sizeof(ChunkDescriptor), GetMediaTypeStr() + "-MediaSourceFile");
-
-        mDecoderNeeded = true;
+        mDecoderFifo = new MediaFifo(MEDIA_SOURCE_FILE_QUEUE, pFifoEntrySize, GetMediaTypeStr() + "-MediaSourceFile(Data)");
+        mDecoderMetaDataFifo = new MediaFifo(MEDIA_SOURCE_FILE_QUEUE, sizeof(ChunkDescriptor), GetMediaTypeStr() + "-MediaSourceFile(MetaData)");
 
         // start transcoder main loop
         StartThread();
@@ -791,6 +789,8 @@ void* MediaSourceFile::Run(void* pArgs)
 
     // reset last PTS
     mDecoderLastReadPts = 0;
+
+    mDecoderNeeded = true;
 
     while(mDecoderNeeded)
     {
@@ -936,7 +936,7 @@ void* MediaSourceFile::Run(void* pArgs)
                     // flush ffmpeg internal buffers
                     avcodec_flush_buffers(mCodecContext);
 
-                    LOG(LOG_VERBOSE, "Read %s frame %ld after seeking in input file", GetMediaTypeStr().c_str(), tCurPacketPts);
+                    LOG(LOG_VERBOSE, "Read %s packet %ld of %d bytes after seeking in input file", GetMediaTypeStr().c_str(), tCurPacketPts, tPacket->size);
 
                     mFlushBuffersAfterSeeking = false;
                 }
@@ -1119,19 +1119,25 @@ void* MediaSourceFile::Run(void* pArgs)
 
                 // was there an error during decoding process?
                 if (tCurrentChunkSize > 0)
-                {
+                {// no error
                     // add new chunk to FIFO
                     #ifdef MSF_DEBUG_PACKETS
                         LOG(LOG_VERBOSE, "Writing %d bytes to FIFO", tCurrentChunkSize);
                     #endif
-                    mDecoderFifo->WriteFifo((char*)tChunkBuffer, tCurrentChunkSize);
-                    // add meta description about current chunk to different FIFO
-                    struct ChunkDescriptor tChunkDesc;
-                    tChunkDesc.Pts = tCurFramePts;
-                    mDecoderMetaDataFifo->WriteFifo((char*) &tChunkDesc, sizeof(tChunkDesc));
-                    #ifdef MSF_DEBUG_PACKETS
-                        LOG(LOG_VERBOSE, "Successful decoder loop");
-                    #endif
+                    if (tCurrentChunkSize <= mDecoderFifo->GetEntrySize())
+                    {
+                        mDecoderFifo->WriteFifo((char*)tChunkBuffer, tCurrentChunkSize);
+                        // add meta description about current chunk to different FIFO
+                        struct ChunkDescriptor tChunkDesc;
+                        tChunkDesc.Pts = tCurFramePts;
+                        mDecoderMetaDataFifo->WriteFifo((char*) &tChunkDesc, sizeof(tChunkDesc));
+                        #ifdef MSF_DEBUG_PACKETS
+                            LOG(LOG_VERBOSE, "Successful decoder loop");
+                        #endif
+                    }else
+                    {
+                        LOG(LOG_ERROR, "Cannot write a %s chunk of %d bytes to the FIFO with %d bytes slots", GetMediaTypeStr().c_str(),  tCurrentChunkSize, mDecoderFifo->GetEntrySize());
+                    }
                 }
             }
 
@@ -1302,7 +1308,7 @@ bool MediaSourceFile::SupportsSeeking()
 float MediaSourceFile::GetSeekEnd()
 {
     if (mFormatContext != NULL)
-        return ((float)mFormatContext->duration / AV_TIME_BASE);
+        return ((float)mFormatContext->duration / 1000000LL);
     else
         return 0;
 }
