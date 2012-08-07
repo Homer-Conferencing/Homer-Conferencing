@@ -344,6 +344,9 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             //### ASPECT RATION
             //###############################################################################
             QMenu *tAspectRatioMenu = tVideoMenu->addMenu("Aspect ratio");
+            QList<QKeySequence> tARKeys;
+            tARKeys.push_back(Qt::Key_A);
+            tAspectRatioMenu->menuAction()->setShortcuts(tARKeys);
             //###############################################################################
             //### "Keep aspect ratio"
             //###############################################################################
