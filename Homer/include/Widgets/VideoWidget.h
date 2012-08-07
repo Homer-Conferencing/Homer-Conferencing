@@ -128,6 +128,8 @@ private:
     /* status message per OSD text */
     void ShowOsdMessage(QString pText);
 
+    virtual void dragEnterEvent(QDragEnterEvent *pEvent);
+    virtual void dropEvent(QDropEvent *pEvent);
     virtual void paintEvent(QPaintEvent *pEvent);
     virtual void resizeEvent(QResizeEvent *pEvent);
     virtual void keyPressEvent(QKeyEvent *pEvent);

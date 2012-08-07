@@ -300,9 +300,6 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
     toggleViewAction()->setVisible(false);
     show();
 
-    // we support Drag+Drop here
-    setAcceptDrops(true);
-
     if (mSessionType == BROADCAST)
         setVisible(CONF.GetVisibilityBroadcastWidget());
 
@@ -473,15 +470,8 @@ void ParticipantWidget::dropEvent(QDropEvent *pEvent)
                             if (tList.size() == 1)
                             {
                                 QString tFileName = tList.begin()->toString();
-                                bool tAccept = false;
-                                if (OverviewPlaylistWidget::IsVideoFile(tFileName))
-                                    mVideoWidget->GetWorker()->PlayFile(tFileName);
-
-                                if (OverviewPlaylistWidget::IsAudioFile(tFileName))
-                                    mAudioWidget->GetWorker()->PlayFile(tFileName);
-
-                                if (tAccept)
-                                    pEvent->acceptProposedAction();
+                                ActionPlayMovieFile(tFileName);
+                                pEvent->acceptProposedAction();
                             }
                             break;
                 case PARTICIPANT:
@@ -1275,11 +1265,11 @@ QString ParticipantWidget::GetSipInterface()
 	return mSipInterface;
 }
 
-void ParticipantWidget::ActionPlayMovieFile()
+void ParticipantWidget::ActionPlayMovieFile(QString pFileName)
 {
     LOG(LOG_VERBOSE, "User triggered play");
-    mVideoWidget->GetWorker()->PlayFile();
-    mAudioWidget->GetWorker()->PlayFile();
+    mVideoWidget->GetWorker()->PlayFile(pFileName);
+    mAudioWidget->GetWorker()->PlayFile(pFileName);
 }
 
 void ParticipantWidget::ActionPauseMovieFile()

@@ -1336,6 +1336,18 @@ void VideoWidget::StopRecorder()
     mRecorderStarted = false;
 }
 
+void VideoWidget::dragEnterEvent(QDragEnterEvent *pEvent)
+{
+    // forward the event
+    mParticipantWidget->dragEnterEvent(pEvent);
+}
+
+void VideoWidget::dropEvent(QDropEvent *pEvent)
+{
+    // forward the event
+    mParticipantWidget->dropEvent(pEvent);
+}
+
 void VideoWidget::paintEvent(QPaintEvent *pEvent)
 {
 	mPaintEventCounter ++;

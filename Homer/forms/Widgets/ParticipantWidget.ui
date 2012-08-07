@@ -18,6 +18,9 @@
     <bold>true</bold>
    </font>
   </property>
+  <property name="acceptDrops">
+   <bool>true</bool>
+  </property>
   <property name="windowTitle">
    <string>Participant widget</string>
   </property>
@@ -94,7 +97,11 @@
               <number>3</number>
              </property>
              <item row="0" column="0">
-              <widget class="Homer::Gui::VideoWidget" name="mVideoWidget" native="true"/>
+              <widget class="Homer::Gui::VideoWidget" name="mVideoWidget" native="true">
+               <property name="acceptDrops">
+                <bool>true</bool>
+               </property>
+              </widget>
              </item>
             </layout>
            </widget>

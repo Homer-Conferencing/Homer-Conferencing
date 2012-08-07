@@ -137,7 +137,7 @@ public:
     AudioWorkerThread* GetAudioWorker();
 
 private slots:
-    void ActionPlayMovieFile();
+    void ActionPlayMovieFile(QString pFileName = "");
     void ActionPauseMovieFile();
 	void LookedUpParticipantHost(const QHostInfo &pHost);
 	void ActionSeekMovieFile(int pPos);
