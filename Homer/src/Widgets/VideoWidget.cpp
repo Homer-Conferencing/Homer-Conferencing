@@ -80,11 +80,16 @@ using namespace Homer::Monitor;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// at what time period is timerEvent() called?
+#define VIDEO_WIDGET_TIMER_PERIOD               250 //ms
+
+#define VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME       3 // seconds
+
 // how long should a OSD status message stay on the screen?
-#define VIDEO_WIDGET_OSD_PERIOD        3 // seconds
+#define VIDEO_WIDGET_OSD_PERIOD                   3 // seconds
 
 // how many measurement steps do we use?
-#define FPS_MEASUREMENT_STEPS          60
+#define FPS_MEASUREMENT_STEPS                    60
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -199,11 +204,17 @@ void VideoWidget::Init(QMainWindow* pMainWindow, ParticipantWidget *pParticipant
 
     SetVisible(pVisible);
     mNeedBackgroundUpdatesUntillNextFrame = true;
+
+    // trigger periodic timer event
+    mTimerId = startTimer(VIDEO_WIDGET_TIMER_PERIOD);
 }
 
 VideoWidget::~VideoWidget()
 {
     LOG(LOG_VERBOSE, "Going to destroy video widget..");
+
+    if (mTimerId != -1)
+        killTimer(mTimerId);
 
 	// we are going to destroy mCurrentFrame -> stop repainting now!
 	setUpdatesEnabled(false);
@@ -1220,9 +1231,15 @@ void VideoWidget::ToggleFullScreenMode()
     {
         setWindowFlags(windowFlags() ^ Qt::Window);
         showNormal();
+        if (cursor().shape() == Qt::BlankCursor)
+        {
+            unsetCursor();
+            LOG(LOG_VERBOSE, "Showing the mouse cursor again, current timeout is %d seconds", VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME);
+        }
     }else
     {
         setWindowFlags(windowFlags() | Qt::Window);
+        mTimeOfLastMouseMove = QTime::currentTime();
         ShowFullScreen();
     }
     setUpdatesEnabled(true);
@@ -1446,6 +1463,11 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
 	{
         setWindowFlags(windowFlags() ^ Qt::Window);
         showNormal();
+        if (cursor().shape() == Qt::BlankCursor)
+        {
+            unsetCursor();
+            LOG(LOG_VERBOSE, "Showing the mouse cursor again, current timeout is %d seconds", VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME);
+        }
         return;
 	}
     if (pEvent->key() == Qt::Key_F)
@@ -1541,6 +1563,58 @@ void VideoWidget::wheelEvent(QWheelEvent *pEvent)
         }
     }else
         LOG(LOG_VERBOSE, "Cannot adjust audio volume because determined audio worker is invalid");
+}
+
+void VideoWidget::mouseMoveEvent (QMouseEvent *pEvent)
+{
+    mTimeOfLastMouseMove = QTime::currentTime();
+    if (cursor().shape() == Qt::BlankCursor)
+    {
+        unsetCursor();
+        LOG(LOG_VERBOSE, "Showing the mouse cursor again, current timeout is %d seconds", VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME);
+    }
+    QWidget::mouseMoveEvent(pEvent);
+}
+
+void VideoWidget::timerEvent(QTimerEvent *pEvent)
+{
+    #ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
+        LOG(LOG_VERBOSE, "New timer event");
+    #endif
+
+        if (pEvent->timerId() != mTimerId)
+    {
+        LOG(LOG_WARN, "Qt event timer ID %d doesn't match the expected one %d", pEvent->timerId(), mTimerId);
+        pEvent->ignore();
+        return;
+    }
+
+    if (windowState() & Qt::WindowFullScreen)
+    {
+        int tTimeSinceLastMouseMove = mTimeOfLastMouseMove.msecsTo(QTime::currentTime());
+        if (tTimeSinceLastMouseMove > VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME * 1000)
+        {// mouse should be hidden
+            if (cursor().shape() != Qt::BlankCursor)
+            {
+                setCursor(Qt::BlankCursor);
+                LOG(LOG_VERBOSE, "Hiding the mouse cursor after timeout of %d seconds", VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME);
+            }
+        }else
+        {// mouse should be vissible
+            if (cursor().shape() == Qt::BlankCursor)
+            {
+                unsetCursor();
+                LOG(LOG_VERBOSE, "Showing the mouse cursor again, current timeout is %d seconds", VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME);
+            }
+        }
+    }else
+    {
+        if (cursor().shape() == Qt::BlankCursor)
+        {
+            unsetCursor();
+            LOG(LOG_VERBOSE, "Showing the mouse cursor again, current timeout is %d seconds", VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME);
+        }
+    }
 }
 
 void VideoWidget::customEvent(QEvent *pEvent)

@@ -37,6 +37,7 @@
 #include <QMenu>
 #include <QTimer>
 #include <QThread>
+#include <QTime>
 #include <QList>
 #include <QMutex>
 #include <QWaitCondition>
@@ -137,6 +138,8 @@ private:
     virtual void closeEvent(QCloseEvent* pEvent);
     virtual void customEvent (QEvent* pEvent);
     virtual void wheelEvent(QWheelEvent *pEvent);
+    virtual void mouseMoveEvent (QMouseEvent *pEvent);
+    virtual void timerEvent(QTimerEvent *pEvent);
 
     QWidget             *mCurrentApplicationFocusedWidget;
     QImage              mCurrentFrame;
@@ -171,6 +174,10 @@ private:
     /* status messages per OSD text */
     QString				mOsdStatusMessage;
     int64_t				mOsdStatusMessageTimeout;
+    /* mouse hiding */
+    QTime               mTimeOfLastMouseMove;
+    /* periodic tasks */
+    int                 mTimerId;
 };
 
 

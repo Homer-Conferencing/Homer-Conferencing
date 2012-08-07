@@ -209,7 +209,6 @@ SET (QT_UI_SOURCES
 	../forms/Widgets/ParticipantWidget.ui
 	../forms/Widgets/SessionInfoWidget.ui
 	../forms/Widgets/StreamingControlWidget.ui
-	../forms/Widgets/VideoWidget.ui
 )
 
 SET (QT_QRC_SOURCES
