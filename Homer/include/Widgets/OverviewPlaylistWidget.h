@@ -35,6 +35,8 @@
 #include <QDockWidget>
 #include <QTimerEvent>
 #include <QShortcut>
+#include <QDragEnterEvent>
+#include <QDragLeaveEvent>
 #include <QMutex>
 #include <QIcon>
 #include <QListWidget>
@@ -66,6 +68,15 @@ public:
     /// The destructor.
     virtual ~OverviewPlaylistWidget();
 
+    static QStringList LetUserSelectVideoFile(QWidget *pParent, QString pDescription, bool pMultipleFiles = true);
+    static QString LetUserSelectVideoSaveFile(QWidget *pParent, QString pDescription);
+    static bool IsVideoFile(QString pFileName);
+    static QStringList LetUserSelectAudioFile(QWidget *pParent, QString pDescription, bool pMultipleFiles = true);
+    static QString LetUserSelectAudioSaveFile(QWidget *pParent, QString pDescription);
+    static bool IsAudioFile(QString pFileName);
+    static QStringList LetUserSelectMovieFile(QWidget *pParent, QString pDescription, bool pMultipleFiles = true);
+    static QStringList LetUserSelectMediaFile(QWidget *pParent, QString pDescription, bool pMultipleFiles = true);
+
 public slots:
     void SetVisible(bool pVisible);
     void StartPlaylist();
@@ -86,16 +97,6 @@ private slots:
     void ActionNext();
     void ActionLast();
 
-public:
-    static QStringList LetUserSelectVideoFile(QWidget *pParent, QString pDescription, bool pMultipleFiles = true);
-    static QString LetUserSelectVideoSaveFile(QWidget *pParent, QString pDescription);
-    static bool IsVideoFile(QString pFileName);
-    static QStringList LetUserSelectAudioFile(QWidget *pParent, QString pDescription, bool pMultipleFiles = true);
-    static QString LetUserSelectAudioSaveFile(QWidget *pParent, QString pDescription);
-    static bool IsAudioFile(QString pFileName);
-    static QStringList LetUserSelectMovieFile(QWidget *pParent, QString pDescription, bool pMultipleFiles = true);
-    static QStringList LetUserSelectMediaFile(QWidget *pParent, QString pDescription, bool pMultipleFiles = true);
-
 private:
     virtual void customEvent(QEvent* pEvent);
     virtual void closeEvent(QCloseEvent* pEvent);
@@ -113,7 +114,12 @@ private:
     void AddM3UToList(QString pFilePlaylist);
     void AddPLSToList(QString pFilePlaylist);
     QString GetListEntry(int pIndex);
+    QString GetListEntryName(int pIndex);
     void DeleteListEntry(int pIndex);
+    void RenameListEntry(int pIndex, QString pName);
+    void ResetList();
+
+    void RenameDialog();
 
     bool 				mEndlessLoop;
     bool				mIsPlayed;

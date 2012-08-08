@@ -30,6 +30,7 @@
 #include <Logger.h>
 #include <Snippets.h>
 
+#include <QInputDialog>
 #include <QDockWidget>
 #include <QMainWindow>
 #include <QTimerEvent>
@@ -100,112 +101,8 @@ OverviewPlaylistWidget::~OverviewPlaylistWidget()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
-void OverviewPlaylistWidget::initializeGUI()
-{
-    setupUi(this);
-
-    // hide id column
-//    mTwFiles->setColumnHidden(5, true);
-//    mTwFiles->sortItems(5);
-//    mTwFiles->horizontalHeader()->setResizeMode(QHeaderView::Interactive);
-//    for (int i = 0; i < 2; i++)
-//        mTwFiles->horizontalHeader()->resizeSection(i, mTwFiles->horizontalHeader()->sectionSize(i) * 2);
-}
-
-void OverviewPlaylistWidget::closeEvent(QCloseEvent* pEvent)
-{
-    SetVisible(false);
-}
-
-void OverviewPlaylistWidget::SetVisible(bool pVisible)
-{
-    if (pVisible)
-    {
-        move(mWinPos);
-        show();
-    }else
-    {
-        mWinPos = pos();
-        hide();
-    }
-}
-
-void OverviewPlaylistWidget::StartPlaylist()
-{
-    if (GetListSize() == 0)
-    {
-        LOG(LOG_VERBOSE, "Playlist start triggered but we don't have entries in the list, asking user..");
-        AddEntryDialog();
-    }else
-        LOG(LOG_VERBOSE, "Playlist start triggered and we already have entries in the list");
-
-    Play(mCurrentFileId);
-}
-
-void OverviewPlaylistWidget::StopPlaylist()
-{
-	mIsPlayed = false;
-}
-
-void OverviewPlaylistWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEvent)
-{
-    QAction *tAction;
-
-    QMenu tMenu(this);
-
-    tAction = tMenu.addAction("Add an entry");
-    QIcon tIcon1;
-    tIcon1.addPixmap(QPixmap(":/images/22_22/Plus.png"), QIcon::Normal, QIcon::Off);
-    tAction->setIcon(tIcon1);
-
-    if (!mLwFiles->selectedItems().isEmpty())
-    {
-        tAction = tMenu.addAction("Delete selected");
-        QIcon tIcon2;
-        tIcon2.addPixmap(QPixmap(":/images/22_22/Minus.png"), QIcon::Normal, QIcon::Off);
-        tAction->setIcon(tIcon2);
-    }
-
-    tMenu.addSeparator();
-
-    tAction = tMenu.addAction("Endless loop");
-    tAction->setCheckable(true);
-    tAction->setChecked(mEndlessLoop);
-
-    QAction* tPopupRes = tMenu.exec(pContextMenuEvent->globalPos());
-    if (tPopupRes != NULL)
-    {
-        if (tPopupRes->text().compare("Add an entry") == 0)
-        {
-            AddEntryDialog();
-            return;
-        }
-        if (tPopupRes->text().compare("Delete selected") == 0)
-        {
-            DelEntryDialog();
-            return;
-        }
-        if (tPopupRes->text().compare("Endless loop") == 0)
-        {
-            mEndlessLoop = !mEndlessLoop;
-            LOG(LOG_VERBOSE, "Playlist has now endless loop activation %d", mEndlessLoop);
-            return;
-        }
-    }
-}
-
-void OverviewPlaylistWidget::DelEntryDialog()
-{
-    int tSelectectRow = -1;
-
-    if (mLwFiles->selectionModel()->currentIndex().isValid())
-    {
-        int tSelectedRow = mLwFiles->selectionModel()->currentIndex().row();
-        DeleteListEntry(tSelectedRow);
-        UpdateView();
-    }
-}
+/// some static helpers
+///////////////////////////////////////////////////////////////////////////////
 
 static QString sAllLoadVideoFilter = "All supported formats (*.asf *.avi *.bmp *.dv *.jpg *.jpeg *.m4v *.mkv *.mov *.mpg *.mpeg *.mp4 *.mp4a *.m3u *.pls *.png *.swf *.vob *.wmv *.3gp)";
 static QString sLoadVideoFilters = sAllLoadVideoFilter + ";;"\
@@ -441,6 +338,153 @@ QStringList OverviewPlaylistWidget::LetUserSelectMediaFile(QWidget *pParent, QSt
     return tResult;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
+void OverviewPlaylistWidget::initializeGUI()
+{
+    setupUi(this);
+
+    // hide id column
+//    mTwFiles->setColumnHidden(5, true);
+//    mTwFiles->sortItems(5);
+//    mTwFiles->horizontalHeader()->setResizeMode(QHeaderView::Interactive);
+//    for (int i = 0; i < 2; i++)
+//        mTwFiles->horizontalHeader()->resizeSection(i, mTwFiles->horizontalHeader()->sectionSize(i) * 2);
+}
+
+void OverviewPlaylistWidget::closeEvent(QCloseEvent* pEvent)
+{
+    SetVisible(false);
+}
+
+void OverviewPlaylistWidget::SetVisible(bool pVisible)
+{
+    if (pVisible)
+    {
+        move(mWinPos);
+        show();
+    }else
+    {
+        mWinPos = pos();
+        hide();
+    }
+}
+
+void OverviewPlaylistWidget::StartPlaylist()
+{
+    if (GetListSize() == 0)
+    {
+        LOG(LOG_VERBOSE, "Playlist start triggered but we don't have entries in the list, asking user..");
+        AddEntryDialog();
+    }else
+        LOG(LOG_VERBOSE, "Playlist start triggered and we already have entries in the list");
+
+    Play(mCurrentFileId);
+}
+
+void OverviewPlaylistWidget::StopPlaylist()
+{
+	mIsPlayed = false;
+}
+
+void OverviewPlaylistWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEvent)
+{
+    QAction *tAction;
+
+    QMenu tMenu(this);
+
+    if (!mLwFiles->selectedItems().isEmpty())
+    {
+        tAction = tMenu.addAction("Play selected");
+        QIcon tIcon0;
+        tIcon0.addPixmap(QPixmap(":/images/22_22/Audio_Play.png"), QIcon::Normal, QIcon::Off);
+        tAction->setIcon(tIcon0);
+
+        tMenu.addSeparator();
+    }
+
+    tAction = tMenu.addAction("Add an entry");
+    QIcon tIcon1;
+    tIcon1.addPixmap(QPixmap(":/images/22_22/Plus.png"), QIcon::Normal, QIcon::Off);
+    tAction->setIcon(tIcon1);
+
+    if (!mLwFiles->selectedItems().isEmpty())
+    {
+        tAction = tMenu.addAction("Rename selected");
+        QIcon tIcon15;
+        tIcon15.addPixmap(QPixmap(":/images/22_22/Contact_Edit.png"), QIcon::Normal, QIcon::Off);
+        tAction->setIcon(tIcon15);
+
+        tAction = tMenu.addAction("Delete selected");
+        QIcon tIcon2;
+        tIcon2.addPixmap(QPixmap(":/images/22_22/Minus.png"), QIcon::Normal, QIcon::Off);
+        tAction->setIcon(tIcon2);
+    }
+
+    tMenu.addSeparator();
+
+    if (GetListSize() > 0)
+    {
+        tAction = tMenu.addAction("Reset playlist");
+        QIcon tIcon3;
+        tIcon3.addPixmap(QPixmap(":/images/22_22/Reload.png"), QIcon::Normal, QIcon::Off);
+        tAction->setIcon(tIcon3);
+
+        tMenu.addSeparator();
+    }
+
+    tAction = tMenu.addAction("Endless loop");
+    tAction->setCheckable(true);
+    tAction->setChecked(mEndlessLoop);
+
+    QAction* tPopupRes = tMenu.exec(pContextMenuEvent->globalPos());
+    if (tPopupRes != NULL)
+    {
+        if (tPopupRes->text().compare("Play selected") == 0)
+        {
+            ActionPlay();
+            return;
+        }
+        if (tPopupRes->text().compare("Add an entry") == 0)
+        {
+            AddEntryDialog();
+            return;
+        }
+        if (tPopupRes->text().compare("Rename selected") == 0)
+        {
+            RenameDialog();
+            return;
+        }
+        if (tPopupRes->text().compare("Delete selected") == 0)
+        {
+            DelEntryDialog();
+            return;
+        }
+        if (tPopupRes->text().compare("Reset playlist") == 0)
+        {
+            ResetList();
+            return;
+        }
+        if (tPopupRes->text().compare("Endless loop") == 0)
+        {
+            mEndlessLoop = !mEndlessLoop;
+            LOG(LOG_VERBOSE, "Playlist has now endless loop activation %d", mEndlessLoop);
+            return;
+        }
+    }
+}
+
+void OverviewPlaylistWidget::DelEntryDialog()
+{
+    int tSelectectRow = -1;
+
+    if (mLwFiles->selectionModel()->currentIndex().isValid())
+    {
+        int tSelectedRow = mLwFiles->selectionModel()->currentIndex().row();
+        DeleteListEntry(tSelectedRow);
+    }
+}
+
 void OverviewPlaylistWidget::AddEntryDialog()
 {
     LOG(LOG_VERBOSE, "User wants to add a new entry to playlist");
@@ -619,7 +663,7 @@ void OverviewPlaylistWidget::dragEnterEvent(QDragEnterEvent *pEvent)
         int i = 0;
 
         foreach(tUrl, tList)
-            LOG(LOG_VERBOSE, "New drag+drop url (%d) \"%s\"", ++i, tUrl.toString().toStdString().c_str());
+            LOG(LOG_VERBOSE, "New entering drag+drop url (%d) \"%s\"", ++i, tUrl.toString().toStdString().c_str());
         return;
     }
 }
@@ -836,6 +880,27 @@ QString OverviewPlaylistWidget::GetListEntry(int pIndex)
     return tResult;
 }
 
+QString OverviewPlaylistWidget::GetListEntryName(int pIndex)
+{
+    QString tResult = "";
+
+    mPlaylistMutex.lock();
+    PlaylistEntry tEntry;
+    int tIndex = 0;
+    foreach(tEntry, mPlaylist)
+    {
+        if (tIndex == pIndex)
+        {
+            tResult = tEntry.Name;
+            break;
+        }
+        tIndex++;
+    }
+    mPlaylistMutex.unlock();
+
+    return tResult;
+}
+
 void OverviewPlaylistWidget::DeleteListEntry(int pIndex)
 {
     int tIndex = 0;
@@ -857,6 +922,75 @@ void OverviewPlaylistWidget::DeleteListEntry(int pIndex)
     }
 
     mPlaylistMutex.unlock();
+
+    UpdateView();
+}
+
+void OverviewPlaylistWidget::RenameListEntry(int pIndex, QString pName)
+{
+    int tIndex = 0;
+    Playlist::iterator tIt;
+
+    LOG(LOG_VERBOSE, "Renaming index %d to %s", pIndex, pName.toStdString().c_str());
+
+    mPlaylistMutex.lock();
+
+    if (mPlaylist.size() > 0)
+    {
+        for (tIt = mPlaylist.begin(); tIt != mPlaylist.end(); tIt++)
+        {
+            if (tIndex == pIndex)
+            {
+                tIt->Name = pName;
+                break;
+            }
+            tIndex++;
+        }
+    }
+
+    mPlaylistMutex.unlock();
+
+    UpdateView();
+}
+
+void OverviewPlaylistWidget::ResetList()
+{
+    Playlist::iterator tIt;
+
+    mPlaylistMutex.lock();
+
+    if (mPlaylist.size() > 0)
+    {
+        tIt = mPlaylist.begin();
+        while (tIt != mPlaylist.end())
+        {
+            mPlaylist.erase(tIt);
+            tIt = mPlaylist.begin();
+        }
+    }
+
+    mPlaylistMutex.unlock();
+
+    UpdateView();
+}
+
+void OverviewPlaylistWidget::RenameDialog()
+{
+    if (mLwFiles->selectionModel()->currentIndex().isValid())
+    {
+        int tSelectedRow = mLwFiles->selectionModel()->currentIndex().row();
+        QString tCurrentName = GetListEntryName(tSelectedRow);
+        QString tFillSpace = "";
+        for (int i = 0; i < tCurrentName.length(); i++)
+            tFillSpace += "  ";
+        LOG(LOG_VERBOSE, "User wants to rename \"%s\" at index %d", tCurrentName.toStdString().c_str(), tSelectedRow);
+        bool tOkay = false;
+        QString tNewName = QInputDialog::getText(this, "Rename \"" + tCurrentName + "\"", "New name:           " + tFillSpace, QLineEdit::Normal, tCurrentName, &tOkay);
+        if ((tOkay) && (!tNewName.isEmpty()))
+        {
+            RenameListEntry(tSelectedRow, tNewName);
+        }
+    }
 }
 
 void OverviewPlaylistWidget::ActionPlay()
