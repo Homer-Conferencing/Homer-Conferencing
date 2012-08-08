@@ -79,9 +79,7 @@ MediaSourceFile::MediaSourceFile(string pSourceFile, bool pGrabInRealTime):
     mNumberOfFrames = 0;
     mCurrentFrameIndex = 0;
     mCurrentDeviceName = mDesiredDevice;
-    mPictureBuffer = NULL;
     mPictureGrabbed = false;
-    mPictureBufferSize = 0;
 }
 
 MediaSourceFile::~MediaSourceFile()
@@ -261,8 +259,6 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     mNumberOfFrames = mFormatContext->duration / AV_TIME_BASE * mFrameRate;
 
     mCurrentFrameIndex = 0;
-    mPictureBuffer = NULL;
-    mPictureBufferSize = 0;
     mPictureGrabbed = false;
     mEOFReached = false;
     mRecalibrateRealTimeGrabbingAfterSeeking = true;
@@ -504,9 +500,6 @@ bool MediaSourceFile::CloseGrabDevice()
 
         if (mMediaType == MEDIA_AUDIO)
             free(mResampleBuffer);
-
-        if (mPictureBuffer != NULL)
-            free(mPictureBuffer);
 
         LOG(LOG_INFO, "...%s file closed", GetMediaTypeStr().c_str());
 
@@ -879,7 +872,10 @@ void* MediaSourceFile::Run(void* pArgs)
                         if (tPacket->stream_index == mMediaStreamIndex)
                         {
                             #ifdef MSF_DEBUG_PACKETS
-                                LOG(LOG_VERBOSE, "Read good frame %d with %d bytes from stream %d", tPacket->pts, tPacket->size, tPacket->stream_index);
+                        		if (!InputIsPicture())
+                        			LOG(LOG_VERBOSE, "Read good frame %d with %d bytes from stream %d", tPacket->pts, tPacket->size, tPacket->stream_index);
+                        		else
+                        			LOG(LOG_VERBOSE, "Read good picture %d with %d bytes from stream %d", tPacket->pts, tPacket->size, tPacket->stream_index);
                             #endif
 
                             // is "presentation timestamp" stored within media file?
@@ -938,37 +934,18 @@ void* MediaSourceFile::Run(void* pArgs)
                     }
                 }while ((tShouldReadNext) && (!mEOFReached) && (mDecoderNeeded));
 
-                // did we read a single picture?
-                if ((InputIsPicture()) && (!mPictureGrabbed) && (tPacket->size > 0))
-                {// store it
-                    LOG(LOG_VERBOSE, "Found picture of size %d, pts: %ld, dts: %ld", tPacket->size, tPacket->pts, tPacket->dts);
-                    mPictureBufferSize = tPacket->size;
-                    LOG(LOG_VERBOSE, "Storing the picture in a buffer of size: %d bytes", mPictureBufferSize);
-                    mPictureBuffer = (char*)malloc(mPictureBufferSize);
-                    memcpy((void*)mPictureBuffer, tPacket->data, tPacket->size);
-                    mPictureBufferSize = tPacket->size;
-                    mPictureGrabbed = true;
-                    tShouldReadNext = false;
-                    mEOFReached = false;
-                }
-
                 #ifdef MSF_DEBUG_PACKETS
                     if (tReadIteration > 1)
                         LOG(LOG_VERBOSE, "Needed %d read iterations to get next media packet from source file", tReadIteration);
                     //LOG(LOG_VERBOSE, "New %s chunk with size: %d and stream index: %d", GetMediaTypeStr().c_str(), tPacket->size, tPacket->stream_index);
                 #endif
             }else
-            {// we should reuse our stored picture
-                #ifdef MSF_DEBUG_PACKETS
-                    LOG(LOG_VERBOSE, "Reusing stored picture of %d bytes", mPictureBufferSize);
-                #endif
+            {// no packet was generated
+				// generate dummy packet (av_free_packet() will destroy it later)
                 av_init_packet(tPacket);
-                tPacket->data = (uint8_t*)mPictureBuffer;
-                tPacket->size = mPictureBufferSize;
-                tCurPacketPts++;
             }
-
-            if ((tPacket->data != NULL) && (tPacket->size > 0))
+            
+            if (((tPacket->data != NULL) && (tPacket->size > 0)) || ((mPictureGrabbed /* we already grabbed the single frame from the picture file */) && (mMediaType == MEDIA_VIDEO)))
             {
                 #ifdef MSF_DEBUG_PACKETS
                     LOG(LOG_VERBOSE, "New packet..");
@@ -1007,46 +984,92 @@ void* MediaSourceFile::Run(void* pArgs)
                 {
                     case MEDIA_VIDEO:
                         {
-                            // log statistics
-                            AnnouncePacket(tPacket->size);
-                            #ifdef MSF_DEBUG_PACKETS
-                                LOG(LOG_VERBOSE, "Decode video frame..");
-                            #endif
 
-                            // Decode the next chunk of data
-                            tFrameFinished = 0;
-                            tBytesDecoded = HM_avcodec_decode_video(mCodecContext, tSourceFrame, &tFrameFinished, tPacket);
+                            if ((!InputIsPicture()) || (!mPictureGrabbed))
+                            {// we try to decode packet(s) from input stream -> either the desired picture or a single frame from the stream
+								// log statistics
+								AnnouncePacket(tPacket->size);
+								#ifdef MSF_DEBUG_PACKETS
+									LOG(LOG_VERBOSE, "Decode video frame..");
+								#endif
 
-                            //LOG(LOG_VERBOSE, "New %s source frame: dts: %ld, pts: %ld, pos: %ld, pic. nr.: %d", GetMediaTypeStr().c_str(), tSourceFrame->pkt_dts, tSourceFrame->pkt_pts, tSourceFrame->pkt_pos, tSourceFrame->display_picture_number);
+								// did we read the single frame of a picture?
+								if ((InputIsPicture()) && (!mPictureGrabbed))
+								{// store it
+									LOG(LOG_VERBOSE, "Found picture packet of size %d, pts: %ld, dts: %ld and store it in the picture buffer", tPacket->size, tPacket->pts, tPacket->dts);
+									mPictureGrabbed = true;
+									mEOFReached = false;
+								}
 
-                            // MPEG2 picture repetition
-                            if (tSourceFrame->repeat_pict != 0)
-                                LOG(LOG_ERROR, "MPEG2 picture should be repeated for %d times, unsupported feature!", tSourceFrame->repeat_pict);
+								// Decode the next chunk of data
+								tFrameFinished = 0;
+								tBytesDecoded = HM_avcodec_decode_video(mCodecContext, tSourceFrame, &tFrameFinished, tPacket);
 
-                            #ifdef MSF_DEBUG_PACKETS
-                                LOG(LOG_VERBOSE, "    ..video decoding ended with result %d and %d bytes of output\n", tFrameFinished, tBytesDecoded);
-                            #endif
+								// store the data planes and line sizes for later usage (for decoder loops >= 2)
+								if ((InputIsPicture()) && (mPictureGrabbed))
+								{
+									for (int i = 0; i < AV_NUM_DATA_POINTERS; i++)
+									{
+										mPictureData[i] = tSourceFrame->data[i];
+										mPictureLineSize[i] = tSourceFrame->linesize[i];
+									}
+								}
 
-                            // log lost packets: difference between currently received frame number and the number of locally processed frames
-                            SetLostPacketCount(tSourceFrame->coded_picture_number - mChunkNumber);
+								//LOG(LOG_VERBOSE, "New %s source frame: dts: %ld, pts: %ld, pos: %ld, pic. nr.: %d", GetMediaTypeStr().c_str(), tSourceFrame->pkt_dts, tSourceFrame->pkt_pts, tSourceFrame->pkt_pos, tSourceFrame->display_picture_number);
 
-                            #ifdef MSF_DEBUG_PACKETS
-                                LOG(LOG_VERBOSE, "Video frame %d decoded", tSourceFrame->coded_picture_number);
-                            #endif
+								// MPEG2 picture repetition
+								if (tSourceFrame->repeat_pict != 0)
+									LOG(LOG_ERROR, "MPEG2 picture should be repeated for %d times, unsupported feature!", tSourceFrame->repeat_pict);
 
-                            // save PTS value to deliver it later to the frame grabbing thread
-                            if ((tSourceFrame->pkt_dts != (int64_t)AV_NOPTS_VALUE) && (!MSF_USE_REORDERED_PTS))
-                            {// use DTS value from decoder
-                                tCurFramePts = tSourceFrame->pkt_dts;
-                            }else if (tSourceFrame->pkt_pts != (int64_t)AV_NOPTS_VALUE)
-                            {// fall back to reordered PTS value
-                                tCurFramePts = tSourceFrame->pkt_pts;
+								//#ifdef MSF_DEBUG_PACKETS
+									LOG(LOG_VERBOSE, "    ..video decoding ended with result %d and %d bytes of output\n", tFrameFinished, tBytesDecoded);
+								//#endif
+
+								// log lost packets: difference between currently received frame number and the number of locally processed frames
+								SetLostPacketCount(tSourceFrame->coded_picture_number - mChunkNumber);
+
+								#ifdef MSF_DEBUG_PACKETS
+									LOG(LOG_VERBOSE, "Video frame %d decoded", tSourceFrame->coded_picture_number);
+								#endif
+
+								// save PTS value to deliver it later to the frame grabbing thread
+								if ((tSourceFrame->pkt_dts != (int64_t)AV_NOPTS_VALUE) && (!MSF_USE_REORDERED_PTS))
+								{// use DTS value from decoder
+									tCurFramePts = tSourceFrame->pkt_dts;
+								}else if (tSourceFrame->pkt_pts != (int64_t)AV_NOPTS_VALUE)
+								{// fall back to reordered PTS value
+									tCurFramePts = tSourceFrame->pkt_pts;
+								}else
+								{// fall back to packet's PTS value
+									tCurFramePts = tCurPacketPts;
+								}
+								if ((tSourceFrame->pkt_pts != tSourceFrame->pkt_dts) && (tSourceFrame->pkt_pts != (int64_t)AV_NOPTS_VALUE) && (tSourceFrame->pkt_dts != (int64_t)AV_NOPTS_VALUE))
+									LOG(LOG_VERBOSE, "PTS(%ld) and DTS(%ld) differ after decoding step", tSourceFrame->pkt_pts, tSourceFrame->pkt_dts);
                             }else
-                            {// fall back to packet's PTS value
-                                tCurFramePts = tCurPacketPts;
+                            {// reuse the stored picture
+								// restoring for ffmpeg the data planes and line sizes from the stored values
+								for (int i = 0; i < AV_NUM_DATA_POINTERS; i++)
+								{
+									tSourceFrame->data[i] = mPictureData[i];
+									tSourceFrame->linesize[i] = mPictureLineSize[i];
+								}
+
+								// simulate a monotonous increasing PTS value
+								tCurPacketPts++;
+
+								// store the derived PTS value in the fields of the source frame
+								tSourceFrame->pts = tCurPacketPts;
+								tSourceFrame->coded_picture_number = tCurPacketPts;
+								tSourceFrame->display_picture_number = tCurPacketPts;
+
+								// prepare the PTS value which is later delivered to the grabbing thread
+								tCurFramePts = tCurPacketPts;
+
+								// simulate a successful decoding step
+								tFrameFinished = 1;
+								// some value above 0
+								tBytesDecoded = INT_MAX;
                             }
-                            if ((tSourceFrame->pkt_pts != tSourceFrame->pkt_dts) && (tSourceFrame->pkt_pts != (int64_t)AV_NOPTS_VALUE) && (tSourceFrame->pkt_dts != (int64_t)AV_NOPTS_VALUE))
-                                LOG(LOG_VERBOSE, "PTS(%ld) and DTS(%ld) differ after decoding step", tSourceFrame->pkt_pts, tSourceFrame->pkt_dts);
 
                             // re-encode the frame and write it to file
                             if (mRecording)
@@ -1057,10 +1080,16 @@ void* MediaSourceFile::Run(void* pArgs)
                             {
                                 #ifdef MSF_DEBUG_PACKETS
                                     LOG(LOG_VERBOSE, "Scale video frame..");
+    								LOG(LOG_VERBOSE, "Video frame data: %p, %p", tSourceFrame->data[0], tSourceFrame->data[1]);
+    								LOG(LOG_VERBOSE, "Video frame line size: %d, %d", tSourceFrame->linesize[0], tSourceFrame->linesize[1]);
                                 #endif
-                                HM_sws_scale(mScalerContext, tSourceFrame->data, tSourceFrame->linesize, 0, mCodecContext->height, tRGBFrame->data, tRGBFrame->linesize);
 
-                                //LOG(LOG_VERBOSE, "New %s RGB frame: dts: %ld, pts: %ld, pos: %ld, pic. nr.: %d", GetMediaTypeStr().c_str(), tRGBFrame->pkt_dts, tRGBFrame->pkt_pts, tRGBFrame->pkt_pos, tRGBFrame->display_picture_number);
+								// scale the video frame
+								tRes = HM_sws_scale(mScalerContext, tSourceFrame->data, tSourceFrame->linesize, 0, mCodecContext->height, tRGBFrame->data, tRGBFrame->linesize);
+                                if (tRes == 0)
+                                	LOG(LOG_ERROR, "Failed to scale the video frame");
+
+								//LOG(LOG_VERBOSE, "New %s RGB frame: dts: %ld, pts: %ld, pos: %ld, pic. nr.: %d", GetMediaTypeStr().c_str(), tRGBFrame->pkt_dts, tRGBFrame->pkt_pts, tRGBFrame->pkt_pos, tRGBFrame->display_picture_number);
 
                                 // return size of decoded frame
                                 tCurrentChunkSize = avpicture_get_size(PIX_FMT_RGB32, mDecoderTargetResX, mDecoderTargetResY);

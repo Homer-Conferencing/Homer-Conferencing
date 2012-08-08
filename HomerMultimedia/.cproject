@@ -38,19 +38,10 @@
 									<listOptionValue builtIn="false" value="../../HomerMonitor/include"/>
 									<listOptionValue builtIn="false" value="../../HomerBase/include/Logging"/>
 									<listOptionValue builtIn="false" value="/usr/lib64/gcc/x86_64-pc-linux-gnu/4.4.5/include/g++-v4"/>
-									<listOptionValue builtIn="false" value="../../HomerWinLibs/SDL-MIXER/include"/>
-									<listOptionValue builtIn="false" value="../../HomerWinLibs/SDL/include"/>
-									<listOptionValue builtIn="false" value="../../HomerWinLibs/SDL-SOUND/include"/>
-									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\FFMPEG\libavcodec&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\FFMPEG\libavdevice&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\FFMPEG\libavfilter&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\FFMPEG\libavutil&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\FFMPEG\libswscale&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../..\HomerWinLibs\FFMPEG&quot;"/>
 									<listOptionValue builtIn="false" value="../../HomerGAPI/include"/>
-									<listOptionValue builtIn="false" value="../../HomerWinLibs/FFMPEG/libavformat"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/HomerMultimedia/include}&quot;"/>
 									<listOptionValue builtIn="false" value="../../HomerSoundOutput/include"/>
+									<listOptionValue builtIn="false" value="../../../Homer-Release/HomerIncludes"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.943936581" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>

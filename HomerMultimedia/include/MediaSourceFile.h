@@ -126,9 +126,9 @@ private:
     bool                mFlushBuffersAfterSeeking;
     double              mSeekingTargetFrameIndex;
     /* picture grabbing */
-    char                *mPictureBuffer;
-    int                 mPictureBufferSize;
     bool                mPictureGrabbed;
+    uint8_t 			*mPictureData[AV_NUM_DATA_POINTERS];
+    int					mPictureLineSize[AV_NUM_DATA_POINTERS];
 };
 
 ///////////////////////////////////////////////////////////////////////////////
