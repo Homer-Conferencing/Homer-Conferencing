@@ -1208,8 +1208,8 @@ void* MediaSourceMuxer::Run(void* pArgs)
                         case MEDIA_VIDEO:
                             {
                                 int64_t tTime3 = Time::GetTimeStamp();
-                                //####################################################################
-                                // re-encode the frame
+                                // ####################################################################
+                                // ### PREPARE RGB FRAME
                                 // ###################################################################
                                 // Assign appropriate parts of buffer to image planes in tRGBFrame
                                 avpicture_fill((AVPicture *)tRGBFrame, (uint8_t *)tBuffer, PIX_FMT_RGB32, mSourceResX, mSourceResY);
@@ -1247,6 +1247,9 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                     LOG(LOG_VERBOSE, "      ..display pic number: %d", tRGBFrame->display_picture_number);
                                 #endif
 
+                                // ####################################################################
+                                // ### SCALE RGB FRAME (CONVERT)
+                                // ###################################################################
                                 int64_t tTime = Time::GetTimeStamp();
                                 // convert fromn RGB to YUV420
                                 HM_sws_scale(mScalerContext, tRGBFrame->data, tRGBFrame->linesize, 0, mSourceResY, tYUVFrame->data, tYUVFrame->linesize);
@@ -1255,8 +1258,11 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                     LOG(LOG_VERBOSE, "     scaling video frame took %ld us", tTime2 - tTime);
                                 #endif
 
+                                //LOG(LOG_VERBOSE, "Video frame data: %p, %p, %p, %p", tYUVFrame->data[0], tYUVFrame->data[1], tYUVFrame->data[2], tYUVFrame->data[3]);
+                                //LOG(LOG_VERBOSE, "Video frame line size: %d, %d, %d, %d", tYUVFrame->linesize[0], tYUVFrame->linesize[1], tYUVFrame->linesize[2], tYUVFrame->linesize[3]);
+
                                 // #########################################
-                                // re-encode the frame
+                                // ### ENCODE FRAME
                                 // #########################################
                                 tTime = Time::GetTimeStamp();
                                 tFrameSize = avcodec_encode_video(mCodecContext, (uint8_t *)mEncoderChunkBuffer, MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE, tYUVFrame);
@@ -1265,6 +1271,9 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                     LOG(LOG_VERBOSE, "     encoding video frame took %ld us", tTime2 - tTime);
                                 #endif
 
+                                // #########################################
+                                // ### DISTRIBUTE FRAME
+                                // #########################################
                                 if (tFrameSize > 0)
                                 {
                                     av_init_packet(tPacket);
@@ -1302,9 +1311,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                         LOG(LOG_VERBOSE, "      ..key frame: %d", mEncoderHasKeyFrame);
                                     #endif
 
-                                    //####################################################################
-                                    // distribute the encoded frame
-                                    // ###################################################################
+                                    // write the encoded frame
                                     int64_t tTime = Time::GetTimeStamp();
                                     if (av_write_frame(mFormatContext, tPacket) != 0)
                                     {
