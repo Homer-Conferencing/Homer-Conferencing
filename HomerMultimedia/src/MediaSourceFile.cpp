@@ -256,7 +256,10 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     mScalerContext = sws_getContext(mCodecContext->width, mCodecContext->height, mCodecContext->pix_fmt, mTargetResX, mTargetResY, PIX_FMT_RGB32, SWS_BICUBIC, NULL, NULL, NULL);
 
     //set duration
-    mNumberOfFrames = mFormatContext->duration / AV_TIME_BASE * mFrameRate;
+    if (mFormatContext->duration != (int64_t)AV_NOPTS_VALUE)
+        mNumberOfFrames = mFormatContext->duration / AV_TIME_BASE * mFrameRate;
+    else
+        mNumberOfFrames = 0;
 
     mCurrentFrameIndex = 0;
     mPictureGrabbed = false;
@@ -447,7 +450,10 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     }
 
     //set duration
-    mNumberOfFrames = mFormatContext->duration / AV_TIME_BASE * mFrameRate;
+    if (mFormatContext->duration != (int64_t)AV_NOPTS_VALUE)
+        mNumberOfFrames = mFormatContext->duration / AV_TIME_BASE * mFrameRate;
+    else
+        mNumberOfFrames = 0;
 
     mResampleBuffer = (char*)malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
     mCurrentFrameIndex = 0;
@@ -1411,7 +1417,7 @@ bool MediaSourceFile::SupportsSeeking()
 
 float MediaSourceFile::GetSeekEnd()
 {
-    if (mFormatContext != NULL)
+    if ((mFormatContext != NULL) && (mFormatContext->duration != (int64_t)AV_NOPTS_VALUE))
         return ((float)mFormatContext->duration / 1000000LL);
     else
         return 0;
