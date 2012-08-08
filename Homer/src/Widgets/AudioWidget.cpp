@@ -1011,6 +1011,12 @@ void AudioWorkerThread::PlayFile(QString pName)
 
     pName = QString(pName.toLocal8Bit());
 
+    if (!OverviewPlaylistWidget::IsAudioFile(pName))
+    {
+        LOG(LOG_VERBOSE, "File %s is no audio file, skipping play", pName.toStdString().c_str());
+        return;
+    }
+
 	if ((mPaused) && (pName == mDesiredFile))
 	{
         LOG(LOG_VERBOSE, "Continue playback of file: %s at pos.: %.2f", pName.toStdString().c_str(), mPausedPos);
@@ -1386,11 +1392,13 @@ void AudioWorkerThread::DoSetCurrentDevice()
             {
                 if (mAudioSource->GetCurrentDeviceName() == mDeviceName.toStdString())
                 { // do we have what we required?
-                    // seek to the beginning if we have reselected the source file
-                    LOG(LOG_VERBOSE, "Seeking to the beginning of the source file");
-                    mAudioSource->Seek(0);
-                    mSeekAsap = false;
-
+                    if (mAudioSource->SupportsSeeking())
+                    {
+                        // seek to the beginning if we have reselected the source file
+                        LOG(LOG_VERBOSE, "Seeking to the beginning of the source file");
+                        mAudioSource->Seek(0);
+                        mSeekAsap = false;
+                    }
                     if (mResetAudioSourceAsap)
                     {
                         LOG(LOG_VERBOSE, "Haven't selected new audio source, reset of current source forced");

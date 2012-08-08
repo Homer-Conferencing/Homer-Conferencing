@@ -207,17 +207,21 @@ void OverviewPlaylistWidget::DelEntryDialog()
     }
 }
 
-static QString sAllLoadVideoFilter = "All supported formats (*.asf *.avi *.dv *.m4v *.mkv *.mov *.mpg *.mpeg *.mp4 *.mp4a *.m3u *.swf *.vob *.wmv *.3gp)";
+static QString sAllLoadVideoFilter = "All supported formats (*.asf *.avi *.bmp *.dv *.jpg *.jpeg *.m4v *.mkv *.mov *.mpg *.mpeg *.mp4 *.mp4a *.m3u *.pls *.png *.swf *.vob *.wmv *.3gp)";
 static QString sLoadVideoFilters = sAllLoadVideoFilter + ";;"\
                     "Advanced Systems Format (*.asf);;"\
                     "Audio Video Interleave Format (*.avi);;"\
                     "Digital Video Format (*.dv);;"\
+                    "Joint Photographic Experts Group (*.jpg *.jpeg);;"\
                     "Matroska Format (*.mkv);;"\
                     "MPEG-Program Stream Format (*.mpg *.mpeg);;"\
-                    "Playlist file (*.m3u);;"\
+                    "M3U Playlist file (*.m3u);;"\
+                    "PLS Playlist file (*.pls);;"\
+                    "Portable Network Graphics (*.png);;"\
                     "Quicktime/MPEG4 Format (*.m4v *.mov *.mp4 *.mp4a *.3gp);;"\
                     "Small Web Format (*.swf);;"\
                     "Video Object Format (*.vob);;" \
+                    "Windows Bitmap (*.bmp);;"\
                     "Windows Media Video Format (*.wmv)";
 
 QStringList OverviewPlaylistWidget::LetUserSelectVideoFile(QWidget *pParent, QString pDescription, bool pMultipleFiles)
@@ -282,14 +286,19 @@ bool OverviewPlaylistWidget::IsVideoFile(QString pFileName)
         return false;
 }
 
-static QString sAllLoadAudioFilter =  "All supported formats (*.mp3 *.avi *.mka *.mkv *.m3u *.wav)";
+static QString sAllLoadAudioFilter =  "All supported formats (*.3gp *.asf *.avi *.m3u *.m4v *.mka *.mkv *.mov *.mp3 *.mp4 *.mp4a *.mpg *.mpeg *.pls *.vob *.wav *.wmv)";
 static QString sLoadAudioFilters =  sAllLoadAudioFilter + ";;"\
+                    "Advanced Systems Format (*.asf);;"\
                     "Audio Video Interleave Format (*.avi);;"\
-                    "Matroska Format (*.mka);;"\
+                    "M3U Playlist file (*.m3u);;"\
+                    "Matroska Format (*.mka *.mkv);;"\
                     "MPEG Audio Layer 2/3 Format (*.mp3);;"\
-                    "Playlist file (*.m3u);;"\
-                    "Waveform Audio File Format (*.wav)";
-
+                    "MPEG-Program Stream Format (*.mpg *.mpeg);;"\
+                    "PLS Playlist file (*.pls);;"\
+                    "Quicktime/MPEG4 Format (*.m4v *.mov *.mp4 *.mp4a *.3gp);;"\
+                    "Video Object Format (*.vob);;" \
+                    "Waveform Audio File Format (*.wav);;" \
+                    "Windows Media Video Format (*.wmv)";
 QStringList OverviewPlaylistWidget::LetUserSelectAudioFile(QWidget *pParent, QString pDescription, bool pMultipleFiles)
 {
     QStringList tResult;
@@ -334,6 +343,10 @@ QString OverviewPlaylistWidget::LetUserSelectAudioSaveFile(QWidget *pParent, QSt
 
 bool OverviewPlaylistWidget::IsAudioFile(QString pFileName)
 {
+    // explicitly allow audio streams
+    if (pFileName.startsWith("http://"))
+        return true;
+
     pFileName = QString(pFileName.toLocal8Bit());
 
     int tPos = pFileName.lastIndexOf('.', -1);
@@ -386,20 +399,23 @@ QStringList OverviewPlaylistWidget::LetUserSelectMovieFile(QWidget *pParent, QSt
     return tResult;
 }
 
-static QString sAllLoadMediaFilter = "All supported formats (*.asf *.avi *.dv *.m4v *.mka *.mkv *.mov *.mpg *.mpeg *.mp3 *.mp4 *.mp4a *.m3u *.pls *.swf *.vob *.wav *.wmv *.3gp)";
+static QString sAllLoadMediaFilter = "All supported formats (*.asf *.avi *.bmp *.dv *.jpg *.jpeg *.m4v *.mka *.mkv *.mov *.mpg *.mpeg *.mp3 *.mp4 *.mp4a *.m3u *.pls *.png *.swf *.vob *.wav *.wmv *.3gp)";
 static QString sLoadMediaFilters = sAllLoadMediaFilter + ";;"\
                     "Advanced Systems Format (*.asf);;"\
                     "Audio Video Interleave Format (*.avi);;"\
                     "Digital Video Format (*.dv);;"\
+                    "Joint Photographic Experts Group (*.jpg *.jpeg);;"\
                     "Matroska Format (*.mka *.mkv);;"\
                     "MPEG Audio Layer 2/3 Format (*.mp3);;"\
                     "MPEG-Program Stream Format (*.mpg *.mpeg);;"\
                     "M3U Playlist file (*.m3u);;"\
+                    "Portable Network Graphics (*.png);;"\
                     "PLS Playlist file (*.pls);;"\
                     "Quicktime/MPEG4 Format (*.m4v *.mov *.mp4 *.mp4a *.3gp);;"\
                     "Small Web Format (*.swf);;"\
                     "Video Object Format (*.vob);;" \
                     "Waveform Audio File Format (*.wav);;" \
+                    "Windows Bitmap (*.bmp);;"\
                     "Windows Media Video Format (*.wmv)";
 QStringList OverviewPlaylistWidget::LetUserSelectMediaFile(QWidget *pParent, QString pDescription, bool pMultipleFiles)
 {

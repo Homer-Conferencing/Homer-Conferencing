@@ -1929,6 +1929,12 @@ void VideoWorkerThread::PlayFile(QString pName)
 
     pName = QString(pName.toLocal8Bit());
 
+    if (!OverviewPlaylistWidget::IsVideoFile(pName))
+    {
+        LOG(LOG_VERBOSE, "File %s is no video file, skipping play", pName.toStdString().c_str());
+        return;
+    }
+
 	if ((mPaused) && (pName == mDesiredFile))
 	{
 		LOG(LOG_VERBOSE, "Continue playback of file: %s at pos.: %.2f", pName.toStdString().c_str(), mPausedPos);
@@ -2294,11 +2300,13 @@ void VideoWorkerThread::DoSetCurrentDevice()
             {
                 if (mVideoSource->GetCurrentDeviceName() == mDeviceName.toStdString())
                 { // do we have what we required?
-                    // seek to the beginning if we have reselected the source file
-                    LOG(LOG_VERBOSE, "Seeking to the beginning of the source file");
-                    mVideoSource->Seek(0);
-                    mSeekAsap = false;
-
+                    if (mVideoSource->SupportsSeeking())
+                    {
+                        // seek to the beginning if we have reselected the source file
+                        LOG(LOG_VERBOSE, "Seeking to the beginning of the source file");
+                        mVideoSource->Seek(0);
+                        mSeekAsap = false;
+                    }
                     if (mResetVideoSourceAsap)
                     {
                         LOG(LOG_VERBOSE, "Haven't selected new video source, reset of current source forced");
@@ -2572,7 +2580,7 @@ void VideoWorkerThread::run()
 					LOG(LOG_ERROR, "Frame ordering problem detected (%d -> %d)", mLastFrameNumber, tFrameNumber);
 			}else
 			{
-				LOG(LOG_VERBOSE, "Invalid grabbing result: %d", tFrameNumber);
+				LOG(LOG_VERBOSE, "Invalid grabbing result: %d, frame size: %d", tFrameNumber, tFrameSize);
 				usleep(100 * 1000); // check for new frames every 1/10 seconds
 			}
         }else
