@@ -93,6 +93,8 @@ protected:
     /* internal video resolution switch */
     virtual void DoSetVideoGrabResolution(int pResX = 352, int pResY = 288);
 
+    virtual bool InputIsPicture();
+
 private:
     /* decoder */
     virtual void* Run(void* pArgs = NULL); // transcoder main loop
@@ -123,6 +125,10 @@ private:
     bool                mRecalibrateRealTimeGrabbingAfterSeeking;
     bool                mFlushBuffersAfterSeeking;
     double              mSeekingTargetFrameIndex;
+    /* picture grabbing */
+    char                *mPictureBuffer;
+    int                 mPictureBufferSize;
+    bool                mPictureGrabbed;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
