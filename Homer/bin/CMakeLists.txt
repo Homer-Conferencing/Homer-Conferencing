@@ -123,6 +123,7 @@ SET (SOURCES
 	../src/FileTransfersManager
 	../src/MainWindow
 	../src/MediaSourceDesktop
+	../src/MediaSourceGrabberThread
 	../src/main
 	../src/Dialogs/AddNetworkSinkDialog
 	../src/Dialogs/ConfigurationDialog
@@ -155,6 +156,7 @@ SET (SOURCES
 )
 SET (QT_MOC_SOURCES
 	../include/MainWindow.h
+	../include/MediaSourceGrabberThread.h
 	../include/Dialogs/AddNetworkSinkDialog.h
 	../include/Dialogs/ConfigurationDialog.h
 	../include/Dialogs/ContactEditDialog.h

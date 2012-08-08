@@ -1753,37 +1753,17 @@ void VideoWidget::customEvent(QEvent *pEvent)
 }
 
 VideoWorkerThread::VideoWorkerThread(MediaSource *pVideoSource, VideoWidget *pVideoWidget):
-    QThread()
+    MediaSourceGrabberThread(pVideoSource)
 {
     mLastFrameNumber = 0;
-    mSyncClockMasterSource = NULL;
-    mSyncClockAsap = false;
     mSetGrabResolutionAsap = false;
-    mResetVideoSourceAsap = false;
-    mStartRecorderAsap = false;
-    mStopRecorderAsap = false;
-    mSetCurrentDeviceAsap = false;
-    mSetInputStreamPreferencesAsap = false;
-    mDesiredInputChannel = 0;
-    mPlayNewFileAsap = false;
-    mSeekAsap = false;
-    mSeekPos = 0;
-    mSelectInputChannelAsap = false;
-    mSourceAvailable = false;
     mWaitForFirstFrameAfterSeeking = false;
-    mEofReached = false;
-    mTryingToOpenAFile = false;
-    mPaused = false;
-    mPausedPos = 0;
     mMissingFrames = 0;
-    mDesiredFile = "";
     mResX = 352;
     mResY = 288;
     if (pVideoSource == NULL)
         LOG(LOG_ERROR, "Video source is NULL");
-    mVideoSource = pVideoSource;
     mVideoWidget = pVideoWidget;
-    blockSignals(true);
     mFrameCurrentIndex = FRAME_BUFFER_SIZE - 1;
     mFrameGrabIndex = 0;
     mDropFrames = false;
@@ -1800,7 +1780,7 @@ void VideoWorkerThread::InitFrameBuffers()
     mPendingNewFrames = 0;
     for (int i = 0; i < FRAME_BUFFER_SIZE; i++)
     {
-        mFrame[i] = mVideoSource->AllocChunkBuffer(mFrameSize[i], MEDIA_VIDEO);
+        mFrame[i] = mMediaSource->AllocChunkBuffer(mFrameSize[i], MEDIA_VIDEO);
 
         mFrameNumber[i] = 0;
 
@@ -1820,7 +1800,7 @@ void VideoWorkerThread::DeinitFrameBuffers()
 {
     for (int i = 0; i < FRAME_BUFFER_SIZE; i++)
     {
-        mVideoSource->FreeChunkBuffer(mFrame[i]);
+        mMediaSource->FreeChunkBuffer(mFrame[i]);
     }
 }
 
@@ -1841,266 +1821,14 @@ void VideoWorkerThread::SetGrabResolution(int mX, int mY)
     }
 }
 
-void VideoWorkerThread::ResetSource()
-{
-    mResetVideoSourceAsap = true;
-    mGrabbingCondition.wakeAll();
-}
-
-void VideoWorkerThread::SetInputStreamPreferences(QString pCodec)
-{
-    mCodec = pCodec;
-    mSetInputStreamPreferencesAsap = true;
-    mGrabbingCondition.wakeAll();
-}
-
-void VideoWorkerThread::SetStreamName(QString pName)
-{
-    mVideoSource->AssignStreamName(pName.toStdString());
-}
-
-QString VideoWorkerThread::GetStreamName()
-{
-    return QString(mVideoSource->GetMediaSource()->GetStreamName().c_str());
-}
-
-QString VideoWorkerThread::GetCurrentDevicePeer()
-{
-    return QString(mVideoSource->GetCurrentDevicePeerName().c_str());
-}
-
-QString VideoWorkerThread::GetCurrentDevice()
-{
-    return QString(mVideoSource->GetCurrentDeviceName().c_str());
-}
-
-void VideoWorkerThread::SetCurrentDevice(QString pName)
-{
-    if ((pName != "auto") && (pName != "") && (pName != "auto") && (pName != "automatic"))
-    {
-        mDeviceName = pName;
-        mSetCurrentDeviceAsap = true;
-        mGrabbingCondition.wakeAll();
-    }
-}
-
 VideoDevices VideoWorkerThread::GetPossibleDevices()
 {
     VideoDevices tResult;
 
     LOG(LOG_VERBOSE, "Enumerate all video devices..");
-    mVideoSource->getVideoDevices(tResult);
+    mMediaSource->getVideoDevices(tResult);
 
     return tResult;
-}
-
-QString VideoWorkerThread::GetDeviceDescription(QString pName)
-{
-    VideoDevices::iterator tIt;
-    VideoDevices tVList;
-
-    mVideoSource->getVideoDevices(tVList);
-    for (tIt = tVList.begin(); tIt != tVList.end(); tIt++)
-        if (pName.toStdString() == tIt->Name)
-            return QString(tIt->Desc.c_str());
-
-    return "";
-}
-
-void VideoWorkerThread::PlayFile(QString pName)
-{
-    if (pName == "")
-        pName = mCurrentFile;
-
-    // remove "file:///" and "file://" from the beginning if existing
-    #ifdef WIN32
-        if (pName.startsWith("file:///"))
-            pName = pName.right(pName.size() - 8);
-
-        if (pName.startsWith("file://"))
-            pName = pName.right(pName.size() - 7);
-    #else
-        if (pName.startsWith("file:///"))
-            pName = pName.right(pName.size() - 7);
-
-        if (pName.startsWith("file://"))
-            pName = pName.right(pName.size() - 6);
-    #endif
-
-    pName = QString(pName.toLocal8Bit());
-
-    if (!OverviewPlaylistWidget::IsVideoFile(pName))
-    {
-        LOG(LOG_VERBOSE, "File %s is no video file, skipping play", pName.toStdString().c_str());
-        return;
-    }
-
-	if ((mPaused) && (pName == mDesiredFile))
-	{
-		LOG(LOG_VERBOSE, "Continue playback of file: %s at pos.: %.2f", pName.toStdString().c_str(), mPausedPos);
-		Seek(mPausedPos);
-		mGrabbingStateMutex.lock();
-		mPaused = false;
-        mGrabbingStateMutex.unlock();
-		mGrabbingCondition.wakeAll();
-        mFrameTimestamps.clear();
-	}else
-	{
-		LOG(LOG_VERBOSE, "Trigger playback of file: %s", pName.toStdString().c_str());
-		mDesiredFile = pName;
-		mPlayNewFileAsap = true;
-		mTryingToOpenAFile = true;
-        mGrabbingCondition.wakeAll();
-	}
-}
-
-void VideoWorkerThread::PauseFile()
-{
-    if (mVideoSource->SupportsSeeking())
-    {
-        mPausedPos = mVideoSource->GetSeekPos();
-        mGrabbingStateMutex.lock();
-        mPaused = true;
-        mGrabbingStateMutex.unlock();
-        LOG(LOG_VERBOSE, "Triggered pause state at position: %.2f", mPausedPos);
-    }else
-        LOG(LOG_VERBOSE, "Seeking not supported, PauseFile() aborted");
-}
-
-bool VideoWorkerThread::IsPaused()
-{
-    if ((mVideoSource != NULL) && (mVideoSource->SupportsSeeking()))
-        return mPaused;
-    else
-        return false;
-}
-
-void VideoWorkerThread::StopFile()
-{
-    if (mVideoSource->SupportsSeeking())
-    {
-        LOG(LOG_VERBOSE, "Trigger stop state");
-        mPausedPos = 0;
-        mGrabbingStateMutex.lock();
-        mPaused = true;
-        mGrabbingStateMutex.unlock();
-    }else
-        LOG(LOG_VERBOSE, "Seeking not supported, StopFile() aborted");
-}
-
-bool VideoWorkerThread::EofReached()
-{
-	return (((mEofReached) && (!mResetVideoSourceAsap) && (!mPlayNewFileAsap) && (!mSeekAsap)) || (mPlayNewFileAsap) || (mSetCurrentDeviceAsap));
-}
-
-QString VideoWorkerThread::CurrentFile()
-{
-    if ((mVideoSource != NULL) && (mVideoSource->SupportsSeeking()))
-    	return mCurrentFile;
-    else
-        return "";
-}
-
-bool VideoWorkerThread::SupportsSeeking()
-{
-    if(mVideoSource != NULL)
-        return mVideoSource->SupportsSeeking();
-    else
-        return false;
-}
-
-void VideoWorkerThread::Seek(float pPos)
-{
-	LOG(LOG_VERBOSE, "Seeking to position: %.2f", pPos);
-    mSeekPos = pPos;
-    mSeekAsap = true;
-    mGrabbingCondition.wakeAll();
-}
-
-float VideoWorkerThread::GetSeekPos()
-{
-    return mVideoSource->GetSeekPos();
-}
-
-float VideoWorkerThread::GetSeekEnd()
-{
-    float tResult = 0;
-
-    tResult = mVideoSource->GetSeekEnd();
-    //LOG(LOG_VERBOSE, "Determined seek end with %5.2f", tResult);
-
-    return tResult;
-}
-
-void VideoWorkerThread::SyncClock(MediaSource* pSource)
-{
-    mSyncClockAsap = true;
-    mSyncClockMasterSource = pSource;
-}
-
-bool VideoWorkerThread::SupportsMultipleChannels()
-{
-    if (mVideoSource != NULL)
-        return mVideoSource->SupportsMultipleInputChannels();
-    else
-        return false;
-}
-
-QString VideoWorkerThread::GetCurrentChannel()
-{
-    return QString(mVideoSource->CurrentInputChannel().c_str());
-}
-
-void VideoWorkerThread::SelectInputChannel(int pIndex)
-{
-    if (pIndex != -1)
-    {
-        LOG(LOG_VERBOSE, "Will select new input channel %d after some short time", pIndex);
-        mDesiredInputChannel = pIndex;
-        mSelectInputChannelAsap = true;
-        mGrabbingCondition.wakeAll();
-    }else
-    {
-        LOG(LOG_WARN, "Will not select new input channel -1, ignoring this request");
-    }
-}
-
-QStringList VideoWorkerThread::GetPossibleChannels()
-{
-    QStringList tResult;
-
-    vector<string> tList = mVideoSource->GetInputChannels();
-    vector<string>::iterator tIt;
-    for (tIt = tList.begin(); tIt != tList.end(); tIt++)
-        tResult.push_back(QString((*tIt).c_str()));
-
-    return tResult;
-}
-
-void VideoWorkerThread::StartRecorder(std::string pSaveFileName, int pQuality)
-{
-    mSaveFileName = pSaveFileName;
-    mSaveFileQuality = pQuality;
-    mStartRecorderAsap = true;
-    mGrabbingCondition.wakeAll();
-}
-
-void VideoWorkerThread::StopRecorder()
-{
-    mStopRecorderAsap = true;
-    mGrabbingCondition.wakeAll();
-}
-
-void VideoWorkerThread::DoStartRecorder()
-{
-    mVideoSource->StartRecording(mSaveFileName, mSaveFileQuality);
-    mStartRecorderAsap = false;
-}
-
-void VideoWorkerThread::DoStopRecorder()
-{
-    mVideoSource->StopRecording();
-    mStopRecorderAsap = false;
 }
 
 void VideoWorkerThread::DoPlayNewFile()
@@ -2129,7 +1857,7 @@ void VideoWorkerThread::DoPlayNewFile()
         {
             VideoDevices tVList;
             tVSource->getVideoDevices(tVList);
-            mVideoSource->RegisterMediaSource(tVSource);
+            mMediaSource->RegisterMediaSource(tVSource);
             SetCurrentDevice(mDesiredFile);
         }
     }else{
@@ -2154,7 +1882,7 @@ void VideoWorkerThread::DoSetGrabResolution()
     DeinitFrameBuffers();
 
     // set new resolution for frame grabbing
-    mVideoSource->SetVideoGrabResolution(mResX, mResY);
+    mMediaSource->SetVideoGrabResolution(mResX, mResY);
 
     // create new frame buffers
     InitFrameBuffers();
@@ -2169,23 +1897,8 @@ void VideoWorkerThread::DoSetGrabResolution()
 
 void VideoWorkerThread::DoSeek()
 {
-    LOG(LOG_VERBOSE, "DoSeek now...");
-
-    // lock
-    mDeliverMutex.lock();
-
-    LOG(LOG_VERBOSE, "Seeking now to position %5.2f", mSeekPos);
-    mSourceAvailable = mVideoSource->Seek(mSeekPos);
-    if(!mSourceAvailable)
-    {
-        LOG(LOG_WARN, "Source isn't available anymore after seeking");
-    }
-    mEofReached = false;
-    mSeekAsap = false;
+    MediaSourceGrabberThread::DoSeek();
     mWaitForFirstFrameAfterSeeking = true;
-
-    // unlock
-    mDeliverMutex.unlock();
 }
 
 void VideoWorkerThread::DoSyncClock()
@@ -2196,7 +1909,7 @@ void VideoWorkerThread::DoSyncClock()
     mDeliverMutex.lock();
 
     LOG(LOG_VERBOSE, "Synchronizing with media source %s", mSyncClockMasterSource->GetStreamName().c_str());
-    mSourceAvailable = mVideoSource->Seek(mSyncClockMasterSource->GetSeekPos());
+    mSourceAvailable = mMediaSource->Seek(mSyncClockMasterSource->GetSeekPos());
     if(!mSourceAvailable)
     {
         LOG(LOG_WARN, "Source isn't available anymore after synch. with %s", mSyncClockMasterSource->GetStreamName().c_str());
@@ -2210,67 +1923,6 @@ void VideoWorkerThread::DoSyncClock()
     mDeliverMutex.unlock();
 }
 
-void VideoWorkerThread::DoSelectInputChannel()
-{
-    LOG(LOG_VERBOSE, "DoSelectInputChannel now...");
-
-    if(mDesiredInputChannel == -1)
-        return;
-
-    // lock
-    mDeliverMutex.lock();
-
-    // restart frame grabbing device
-    mSourceAvailable = mVideoSource->SelectInputChannel(mDesiredInputChannel);
-
-    mResetVideoSourceAsap = false;
-    mSelectInputChannelAsap = false;
-    mPaused = false;
-    mFrameTimestamps.clear();
-
-    // unlock
-    mDeliverMutex.unlock();
-}
-
-void VideoWorkerThread::DoResetVideoSource()
-{
-    LOG(LOG_VERBOSE, "DoResetVideoSource now...");
-    // lock
-    mDeliverMutex.lock();
-
-    // restart frame grabbing device
-    mSourceAvailable = mVideoSource->Reset(MEDIA_VIDEO);
-    if (!mSourceAvailable)
-        LOG(LOG_VERBOSE, "Video source is (temporary) not available after Reset() in DoResetVideoSource()");
-    mResetVideoSourceAsap = false;
-    mPaused = false;
-    mFrameTimestamps.clear();
-
-    // unlock
-    mDeliverMutex.unlock();
-}
-
-void VideoWorkerThread::DoSetInputStreamPreferences()
-{
-    LOG(LOG_VERBOSE, "DoSetInputStreamPreferences now...");
-    // lock
-    mDeliverMutex.lock();
-
-    if (mVideoSource->SetInputStreamPreferences(mCodec.toStdString()))
-    {
-    	mSourceAvailable = mVideoSource->Reset(MEDIA_VIDEO);
-        if (!mSourceAvailable)
-            LOG(LOG_VERBOSE, "Video source is (temporary) not available after Reset() in DoSetInputStreamPreferences()");
-        mResetVideoSourceAsap = false;
-    }
-
-    mSetInputStreamPreferencesAsap = false;
-    mFrameTimestamps.clear();
-
-    // unlock
-    mDeliverMutex.unlock();
-}
-
 void VideoWorkerThread::DoSetCurrentDevice()
 {
     LOG(LOG_VERBOSE, "DoSetCurrentDevice now...");
@@ -2279,7 +1931,7 @@ void VideoWorkerThread::DoSetCurrentDevice()
 
     bool tNewSourceSelected = false;
 
-    if ((mSourceAvailable = mVideoSource->SelectDevice(mDeviceName.toStdString(), MEDIA_VIDEO, tNewSourceSelected)))
+    if ((mSourceAvailable = mMediaSource->SelectDevice(mDeviceName.toStdString(), MEDIA_VIDEO, tNewSourceSelected)))
     {
         bool tHadAlreadyInputData = false;
         for (int i = 0; i < FRAME_BUFFER_SIZE; i++)
@@ -2293,24 +1945,24 @@ void VideoWorkerThread::DoSetCurrentDevice()
         if (!tHadAlreadyInputData)
         {
             LOG(LOG_VERBOSE, "Haven't found any input data, will force a reset of video source");
-            mSourceAvailable = mVideoSource->Reset(MEDIA_VIDEO);
+            mSourceAvailable = mMediaSource->Reset(MEDIA_VIDEO);
         }else
         {
             if (!tNewSourceSelected)
             {
-                if (mVideoSource->GetCurrentDeviceName() == mDeviceName.toStdString())
+                if (mMediaSource->GetCurrentDeviceName() == mDeviceName.toStdString())
                 { // do we have what we required?
-                    if (mVideoSource->SupportsSeeking())
+                    if (mMediaSource->SupportsSeeking())
                     {
                         // seek to the beginning if we have reselected the source file
                         LOG(LOG_VERBOSE, "Seeking to the beginning of the source file");
-                        mVideoSource->Seek(0);
+                        mMediaSource->Seek(0);
                         mSeekAsap = false;
                     }
-                    if (mResetVideoSourceAsap)
+                    if (mResetMediaSourceAsap)
                     {
                         LOG(LOG_VERBOSE, "Haven't selected new video source, reset of current source forced");
-                        mSourceAvailable = mVideoSource->Reset(MEDIA_VIDEO);
+                        mSourceAvailable = mMediaSource->Reset(MEDIA_VIDEO);
                     }
                 }else
                 {
@@ -2322,7 +1974,7 @@ void VideoWorkerThread::DoSetCurrentDevice()
             }
         }
         // we had an source reset in every case because "SelectDevice" does this if old source was already opened
-        mResetVideoSourceAsap = false;
+        mResetMediaSourceAsap = false;
         mPaused = false;
         mVideoWidget->InformAboutNewSource();
     }else
@@ -2355,7 +2007,7 @@ int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFps)
         return -1;
     }
 
-    if ((!mSetGrabResolutionAsap) && (!mResetVideoSourceAsap))
+    if ((!mSetGrabResolutionAsap) && (!mResetMediaSourceAsap))
     {
         if (mPendingNewFrames)
         {
@@ -2401,7 +2053,7 @@ int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFps)
         *pFrame = mFrame[mFrameCurrentIndex];
         tResult = mFrameNumber[mFrameCurrentIndex];
     }else
-        LOG(LOG_WARN, "Can't deliver new frame, pending frames: %d, grab resolution invalid: %d, have to reset source: %d", mPendingNewFrames, mSetGrabResolutionAsap, mResetVideoSourceAsap);
+        LOG(LOG_WARN, "Can't deliver new frame, pending frames: %d, grab resolution invalid: %d, have to reset source: %d", mPendingNewFrames, mSetGrabResolutionAsap, mResetMediaSourceAsap);
 
     // unlock
     mDeliverMutex.unlock();
@@ -2436,10 +2088,10 @@ void VideoWorkerThread::run()
 
     // start the video source
     mCodec = CONF.GetVideoCodec();
-    if (!(mSourceAvailable = mVideoSource->OpenVideoGrabDevice(mResX, mResY)))
+    if (!(mSourceAvailable = mMediaSource->OpenVideoGrabDevice(mResX, mResY)))
     {
-    	LOG(LOG_WARN, "Couldn't open video grabbing device \"%s\"", mVideoSource->GetCurrentDeviceName().c_str());
-    	mVideoWidget->InformAboutOpenError(QString(mVideoSource->GetCurrentDeviceName().c_str()));
+    	LOG(LOG_WARN, "Couldn't open video grabbing device \"%s\"", mMediaSource->GetCurrentDeviceName().c_str());
+    	mVideoWidget->InformAboutOpenError(QString(mMediaSource->GetCurrentDeviceName().c_str()));
     }else
     {
         mVideoWidget->InformAboutNewSource();
@@ -2475,8 +2127,8 @@ void VideoWorkerThread::run()
             DoSelectInputChannel();
 
         // reset video source
-        if (mResetVideoSourceAsap)
-            DoResetVideoSource();
+        if (mResetMediaSourceAsap)
+            DoResetMediaSource();
 
         // change the resolution
         if (mSetGrabResolutionAsap)
@@ -2501,7 +2153,7 @@ void VideoWorkerThread::run()
 
 			// get new frame from video grabber
 			QTime tTime = QTime::currentTime();
-			tFrameNumber = mVideoSource->GrabChunk(mFrame[mFrameGrabIndex], tFrameSize, mDropFrames);
+			tFrameNumber = mMediaSource->GrabChunk(mFrame[mFrameGrabIndex], tFrameSize, mDropFrames);
             #ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
 			    LOG(LOG_WARN, "Grabbing new video frame took: %d ms", tTime.msecsTo(QTime::currentTime()));
             #endif
@@ -2530,7 +2182,7 @@ void VideoWorkerThread::run()
 
 			    // has the source resolution changed in the meantime? -> thread it as new source
 			    int tSourceResX = 0, tSourceResY = 0;
-			    mVideoSource->GetVideoSourceResolution(tSourceResX, tSourceResY);
+			    mMediaSource->GetVideoSourceResolution(tSourceResX, tSourceResY);
 			    if ((mFrameWidthLastGrabbedFrame != tSourceResX) || (mFrameHeightLastGrabbedFrame != tSourceResY))
 			    {
 					if ((tSourceResX != mResX) || (tSourceResY != mResY))
@@ -2596,16 +2248,8 @@ void VideoWorkerThread::run()
         	LOG(LOG_VERBOSE, "Continuing processing");
         }
     }
-    mVideoSource->CloseGrabDevice();
-    mVideoSource->DeleteAllRegisteredMediaSinks();
-}
-
-void VideoWorkerThread::StopGrabber()
-{
-    LOG(LOG_VERBOSE, "StobGrabber now...");
-    mWorkerNeeded = false;
-    mGrabbingCondition.wakeAll();
-    mVideoSource->StopGrabbing();
+    mMediaSource->CloseGrabDevice();
+    mMediaSource->DeleteAllRegisteredMediaSinks();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

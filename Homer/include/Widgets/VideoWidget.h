@@ -48,6 +48,8 @@
 #include <MediaSource.h>
 #include <MeetingEvents.h>
 
+#include <MediaSourceGrabberThread.h>
+
 namespace Homer { namespace Gui {
 
 using namespace Homer::Multimedia;
@@ -93,16 +95,19 @@ class VideoWidget:
 
 public:
     VideoWidget(QWidget* pParent = NULL);
-    void Init(QMainWindow* pMainWindow, ParticipantWidget* pParticipantWidget,  MediaSource *pVideoSource, QMenu *pVideoMenu, QString pActionTitle = "Video", QString pWidgetTitle = "Video", bool pVisible = false);
 
     virtual ~VideoWidget();
+
+    void Init(QMainWindow* pMainWindow, ParticipantWidget* pParticipantWidget,  MediaSource *pVideoSource, QMenu *pVideoMenu, QString pActionTitle = "Video", QString pWidgetTitle = "Video", bool pVisible = false);
+
     void SetVisible(bool pVisible);
-    virtual void contextMenuEvent(QContextMenuEvent *event);
+
     void InformAboutOpenError(QString pSourceName);
     void InformAboutSeekingComplete();
     void InformAboutNewFrame();
     void InformAboutNewSourceResolution();
     void InformAboutNewSource();
+
     VideoWorkerThread* GetWorker();
 
 public slots:
@@ -129,6 +134,7 @@ private:
     /* status message per OSD text */
     void ShowOsdMessage(QString pText);
 
+    virtual void contextMenuEvent(QContextMenuEvent *event);
     virtual void dragEnterEvent(QDragEnterEvent *pEvent);
     virtual void dropEvent(QDropEvent *pEvent);
     virtual void paintEvent(QPaintEvent *pEvent);
@@ -182,54 +188,21 @@ private:
 
 
 class VideoWorkerThread:
-    public QThread
+    public MediaSourceGrabberThread
 {
     Q_OBJECT;
 public:
     VideoWorkerThread(MediaSource *pVideoSource, VideoWidget *pVideoWidget);
 
     virtual ~VideoWorkerThread();
+
     virtual void run();
-    void StopGrabber();
 
     /* forwarded interface to media source */
     void SetGrabResolution(int mX, int mY);
-    void ResetSource();
-    void SetInputStreamPreferences(QString pCodec);
-
-    /* recording */
-    void StartRecorder(std::string pSaveFileName, int pQuality);
-    void StopRecorder();
-
-    /* naming */
-    void SetStreamName(QString pName);
-    QString GetStreamName();
 
     /* device control */
-    QString GetCurrentDevice();
-    QString GetCurrentDevicePeer();
-    void SetCurrentDevice(QString pName);
     VideoDevices GetPossibleDevices();
-    QString GetDeviceDescription(QString pName);
-
-    /* file based video playback */
-    void PlayFile(QString pName = "");
-    void PauseFile();
-    bool IsPaused();
-    void StopFile();
-    bool EofReached();
-    QString CurrentFile();
-    bool SupportsSeeking();
-    void Seek(float pPos);
-    float GetSeekPos();
-    float GetSeekEnd();
-    void SyncClock(MediaSource* pSource);
-
-    /* multiple channels control */
-    bool SupportsMultipleChannels();
-    QString GetCurrentChannel();
-    void SelectInputChannel(int pIndex);
-    QStringList GetPossibleChannels();
 
     /* frame grabbing */
     void SetFrameDropping(bool pDrop);
@@ -241,71 +214,31 @@ private:
     void DeinitFrameBuffers();
     void InitFrameBuffer(int pBufferId);
     void DoSetGrabResolution();
-    void DoSelectInputChannel();
-    void DoResetVideoSource();
-    void DoSetInputStreamPreferences();
-    void DoSetCurrentDevice();
-    void DoStartRecorder();
-    void DoStopRecorder();
-    void DoPlayNewFile();
-    void DoSeek();
-    void DoSyncClock();
+    virtual void DoSetCurrentDevice();
+    virtual void DoPlayNewFile();
+    virtual void DoSeek();
+    virtual void DoSyncClock();
 
-    MediaSource         *mVideoSource;
     VideoWidget         *mVideoWidget;
+
+    /* frame buffering */
     void                *mFrame[FRAME_BUFFER_SIZE];
     unsigned long       mFrameNumber[FRAME_BUFFER_SIZE];
     int                 mFrameSize[FRAME_BUFFER_SIZE];
     int                 mFrameCurrentIndex, mFrameGrabIndex;
-    QMutex              mDeliverMutex;
-    QMutex              mGrabbingStateMutex; // secures mPaused, mSourceAvailable in public functions
-    QWaitCondition      mGrabbingCondition;
+
     int                 mResX;
     int                 mResY;
     int					mFrameWidthLastGrabbedFrame;
     int					mFrameHeightLastGrabbedFrame;
-    bool                mWorkerNeeded;
     int                 mPendingNewFrames;
     bool                mDropFrames;
-    std::string         mSaveFileName;
-    int                 mSaveFileQuality;
-    QString             mCodec;
-    QString             mDeviceName;
-    QString				mDesiredFile;
-    QString 			mCurrentFile;
-    bool				mEofReached;
-    bool				mPaused;
-    bool				mSourceAvailable;
-    float				mPausedPos;
-    QList<int64_t>      mFrameTimestamps;
 
     /* frame statistics */
     int                 mMissingFrames;
     int                 mLastFrameNumber;
 
-    /* store if we try to open a file or a device/network/memory based video source */
-    bool                mTryingToOpenAFile;
-
-    /* for forwarded interface to media source */
-    int                 mDesiredInputChannel;
-
-    /* delegated tasks */
-    bool                mSetInputStreamPreferencesAsap;
-    bool                mSetCurrentDeviceAsap;
-    bool                mSetGrabResolutionAsap;
-    bool                mResetVideoSourceAsap;
-    bool                mStartRecorderAsap;
-    bool                mStopRecorderAsap;
-    bool				mPlayNewFileAsap;
-    bool                mSelectInputChannelAsap;
-
-    /* seeking */
-    bool                mSeekAsap;
-    float               mSeekPos;
-
     /* A/V synch. */
-    bool                mSyncClockAsap;
-    MediaSource*        mSyncClockMasterSource;
     bool                mWaitForFirstFrameAfterSeeking;
 };
 
