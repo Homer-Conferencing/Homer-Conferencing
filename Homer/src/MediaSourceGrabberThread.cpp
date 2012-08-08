@@ -139,14 +139,25 @@ void MediaSourceGrabberThread::SetCurrentDevice(QString pName)
 
 QString MediaSourceGrabberThread::GetDeviceDescription(QString pName)
 {
-    VideoDevices::iterator tIt;
-    VideoDevices tVList;
+    if (mMediaSource->GetMediaType() == MEDIA_VIDEO)
+    {
+        VideoDevices::iterator tIt;
+        VideoDevices tVList;
 
-    mMediaSource->getVideoDevices(tVList);
-    for (tIt = tVList.begin(); tIt != tVList.end(); tIt++)
-        if (pName.toStdString() == tIt->Name)
-            return QString(tIt->Desc.c_str());
+        mMediaSource->getVideoDevices(tVList);
+        for (tIt = tVList.begin(); tIt != tVList.end(); tIt++)
+            if (pName.toStdString() == tIt->Name)
+                return QString(tIt->Desc.c_str());
+    }else if (mMediaSource->GetMediaType() == MEDIA_AUDIO)
+    {
+        AudioDevices::iterator tIt;
+        AudioDevices tVList;
 
+        mMediaSource->getAudioDevices(tVList);
+        for (tIt = tVList.begin(); tIt != tVList.end(); tIt++)
+            if (pName.toStdString() == tIt->Name)
+                return QString(tIt->Desc.c_str());
+    }
     return "";
 }
 
@@ -172,9 +183,22 @@ void MediaSourceGrabberThread::PlayFile(QString pName)
 
     pName = QString(pName.toLocal8Bit());
 
-    if (!OverviewPlaylistWidget::IsVideoFile(pName))
-    {
-        LOG(LOG_VERBOSE, "File %s is no %s file, skipping play", pName.toStdString().c_str(), mMediaSource->GetMediaTypeStr().c_str());
+    if (mMediaSource->GetMediaType() == MEDIA_VIDEO)
+    {// video
+        if (!OverviewPlaylistWidget::IsVideoFile(pName))
+        {
+            LOG(LOG_VERBOSE, "File %s is no %s file, skipping play", pName.toStdString().c_str(), mMediaSource->GetMediaTypeStr().c_str());
+            return;
+        }
+    }else if (mMediaSource->GetMediaType() == MEDIA_AUDIO)
+    {// audio
+        if (!OverviewPlaylistWidget::IsAudioFile(pName))
+        {
+            LOG(LOG_VERBOSE, "File %s is no %s file, skipping play", pName.toStdString().c_str(), mMediaSource->GetMediaTypeStr().c_str());
+            return;
+        }
+    }else
+    {// unknown media type
         return;
     }
 
@@ -369,14 +393,14 @@ void MediaSourceGrabberThread::DoSelectInputChannel()
 
 void MediaSourceGrabberThread::DoResetMediaSource()
 {
-    LOG(LOG_VERBOSE, "DoResetVideoSource now...");
+    LOG(LOG_VERBOSE, "%s-DoResetMediaSource now...", mMediaSource->GetMediaTypeStr().c_str());
     // lock
     mDeliverMutex.lock();
 
     // restart frame grabbing device
     mSourceAvailable = mMediaSource->Reset();
     if (!mSourceAvailable)
-        LOG(LOG_VERBOSE, "%s source is (temporary) not available after Reset() in DoResetVideoSource()", mMediaSource->GetMediaTypeStr().c_str());
+        LOG(LOG_VERBOSE, "%s source is (temporary) not available after Reset() in DoResetMediaSource()", mMediaSource->GetMediaTypeStr().c_str());
     mResetMediaSourceAsap = false;
     mPaused = false;
     mFrameTimestamps.clear();
