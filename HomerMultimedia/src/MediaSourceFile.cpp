@@ -828,11 +828,11 @@ void* MediaSourceFile::Run(void* pArgs)
                     tReadIteration++;
                     tShouldReadNext = false;
 
-                    if (mCurrentFrameIndex != 0)
+                    if (tReadIteration > 1)
                     {
                         // free packet buffer
                         #ifdef MSF_DEBUG_PACKETS
-                            LOG(LOG_WARN, "Freeing the ffmpeg packet structure..");
+                            LOG(LOG_WARN, "Freeing the ffmpeg packet structure..(read loop: %d)", tReadIteration);
                         #endif
                         av_free_packet(tPacket);
                     }
@@ -1021,9 +1021,9 @@ void* MediaSourceFile::Run(void* pArgs)
 								if (tSourceFrame->repeat_pict != 0)
 									LOG(LOG_ERROR, "MPEG2 picture should be repeated for %d times, unsupported feature!", tSourceFrame->repeat_pict);
 
-								//#ifdef MSF_DEBUG_PACKETS
+								#ifdef MSF_DEBUG_PACKETS
 									LOG(LOG_VERBOSE, "    ..video decoding ended with result %d and %d bytes of output\n", tFrameFinished, tBytesDecoded);
-								//#endif
+								#endif
 
 								// log lost packets: difference between currently received frame number and the number of locally processed frames
 								SetLostPacketCount(tSourceFrame->coded_picture_number - mChunkNumber);
