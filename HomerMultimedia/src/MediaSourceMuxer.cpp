@@ -802,6 +802,74 @@ bool MediaSourceMuxer::CloseGrabDevice()
     return tResult;
 }
 
+static int sArrowWidth = 8;
+static int sArrowHeight = 16;
+static char sArrow [8 * 16] = { 1,0,0,0,0,0,0,0,
+                                1,1,0,0,0,0,0,0,
+                                1,2,1,0,0,0,0,0,
+                                1,2,2,1,0,0,0,0,
+                                1,2,2,2,1,0,0,0,
+                                1,2,2,2,2,1,0,0,
+                                1,2,2,2,2,2,1,0,
+                                1,2,2,2,2,2,2,1,
+                                1,2,2,2,2,1,1,1,
+                                1,1,1,2,2,1,0,0,
+                                0,0,1,2,2,1,0,0,
+                                0,0,0,1,2,2,1,0,
+                                0,0,0,1,2,2,1,0,
+                                0,0,0,1,2,2,1,0,
+                                0,0,0,0,1,1,1,0,
+                                0,0,0,0,0,0,0,0 };
+
+void SetPixel(char *pBuffer, int pWidth, int pHeight, int pX, int pY, char pRed, char pGreen, char pBlue)
+{
+    if ((pX >= 0) && (pX <= pWidth) && (pY >= 0) && (pY <= pHeight))
+    {
+        unsigned long tOffset = (pWidth * pY + pX) * 4;
+        char *tPixel = pBuffer + tOffset;
+        //LOGEX(MediaSourceMuxer, LOG_WARN, "Setting pixel at rel. pos.: %d, %d; offset: %u; pixel addres is %p (buffer address is %p)", pX, pY, tOffset, tPixel, pBuffer);
+        *tPixel = pRed;
+        tPixel++;
+        *tPixel = pGreen;
+        tPixel++;
+        *tPixel = pBlue;
+        tPixel++;
+        *tPixel = 0;
+    }
+}
+
+static void DrawArrow(char *pBuffer, int pWidth, int pHeight, int pPosX, int pPosY)
+{
+    int tXScale = pWidth / 400 + 1;
+    int tYScale = pHeight / 400 + 1;
+
+    for (int y = 0; y < sArrowHeight; y++)
+    {
+        for (int x = 0; x < sArrowWidth; x++)
+        {
+            for (int ys = 0; ys < tYScale; ys++)
+            {
+                for (int xs = 0; xs < tXScale; xs++)
+                {
+                    switch(sArrow[y * sArrowWidth + x])
+                    {
+                        case 0:
+                            break;
+                        case 1:
+                            SetPixel(pBuffer, pWidth, pHeight, pPosX + x * tXScale + xs, pPosY + y * tYScale + ys, 0, 0, 0);
+                            break;
+                        case 2:
+                            SetPixel(pBuffer, pWidth, pHeight, pPosX + x * tXScale + xs, pPosY + y * tYScale + ys , 255, 255, 255);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
+    }
+}
+
 int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk)
 {
     MediaSinks::iterator     tIt;
@@ -940,6 +1008,14 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
 
     // unlock
     mMediaSinksMutex.unlock();
+
+    //####################################################################
+    // live marker - OSD
+    //####################################################################
+    if (mMarkerActivated)
+    {
+        DrawArrow((char*)pChunkBuffer, mSourceResX, mSourceResY, mMarkerRelX * mSourceResX / 100, mMarkerRelY * mSourceResY / 100);
+    }
 
     //####################################################################
     // reencode frame and send it to the registered media sinks
@@ -2023,6 +2099,11 @@ vector<string> MediaSourceMuxer::GetInputChannels()
         return mMediaSource->GetInputChannels();
     else
         return tNone;
+}
+
+bool MediaSourceMuxer::SupportsMarking()
+{
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

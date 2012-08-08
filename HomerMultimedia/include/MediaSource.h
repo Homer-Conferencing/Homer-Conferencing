@@ -278,6 +278,12 @@ public:
     virtual std::string CurrentInputChannel();
     virtual std::vector<std::string> GetInputChannels();
 
+    /* live OSD marking */
+    virtual bool SupportsMarking();
+    virtual bool MarkerActive();
+    virtual void SetMarker(bool pActivation = true);
+    virtual void MoveMarker(float pRelX, float pRelY);
+
 public:
     /* abstract interface which has to be implemented by derived classes */
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97) = 0;
@@ -342,6 +348,10 @@ protected:
     int                 mTargetResY;
     float               mFrameRate;
     SwsContext          *mScalerContext;
+    /* live OSD marking */
+    float               mMarkerRelX;
+    float               mMarkerRelY;
+    bool                mMarkerActivated;
     /* relaying */
     MediaSinks          mMediaSinks;
     Mutex               mMediaSinksMutex;

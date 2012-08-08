@@ -128,6 +128,7 @@ private:
 VideoWidget::VideoWidget(QWidget* pParent):
     QWidget(pParent)
 {
+    mLiveMarkerActive = false;
 	mPaintEventCounter = 0;
     mResX = 640;
     mResY = 480;
@@ -505,6 +506,18 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
                 tSinkAction->setChecked(true);
             }
         }
+        if (mVideoSource->SupportsMarking())
+        {
+            tVideoSinksMenu->addSeparator();
+
+            tAction =  tVideoSinksMenu->addAction("Live marker");
+            tAction->setCheckable(true);
+            tAction->setChecked(mVideoSource->MarkerActive());
+
+            QList<QKeySequence> tVMKeys;
+            tVMKeys.push_back(Qt::Key_K);
+            tAction->setShortcuts(tVMKeys);
+        }
     }
 
     if(CONF.DebuggingEnabled())
@@ -619,6 +632,16 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
         if (tPopupRes->text().compare("Add network sink") == 0)
         {
             DialogAddNetworkSink();
+            return;
+        }
+        if (tPopupRes->text().compare("Live marker") == 0)
+        {
+            mLiveMarkerActive = !mVideoSource->MarkerActive();
+            if (mLiveMarkerActive)
+                setCursor(Qt::PointingHandCursor);
+            else
+                setCursor(Qt::ArrowCursor);
+            mVideoSource->SetMarker(mLiveMarkerActive);
             return;
         }
         if ((tPopupRes->text().compare("Show smooth video") == 0) || (tPopupRes->text().compare("Show fast video") == 0))
@@ -1470,6 +1493,16 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
         }
         return;
 	}
+    if (pEvent->key() == Qt::Key_K)
+    {
+        mLiveMarkerActive = !mVideoSource->MarkerActive();
+        if (mLiveMarkerActive)
+            setCursor(Qt::PointingHandCursor);
+        else
+            setCursor(Qt::ArrowCursor);
+        mVideoSource->SetMarker(mLiveMarkerActive);
+        return;
+    }
     if (pEvent->key() == Qt::Key_F)
     {
         ToggleFullScreenMode();
@@ -1565,7 +1598,7 @@ void VideoWidget::wheelEvent(QWheelEvent *pEvent)
         LOG(LOG_VERBOSE, "Cannot adjust audio volume because determined audio worker is invalid");
 }
 
-void VideoWidget::mouseMoveEvent (QMouseEvent *pEvent)
+void VideoWidget::mouseMoveEvent(QMouseEvent *pEvent)
 {
     mTimeOfLastMouseMove = QTime::currentTime();
     if (cursor().shape() == Qt::BlankCursor)
@@ -1573,6 +1606,21 @@ void VideoWidget::mouseMoveEvent (QMouseEvent *pEvent)
         unsetCursor();
         LOG(LOG_VERBOSE, "Showing the mouse cursor again, current timeout is %d seconds", VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME);
     }
+
+    /* live marker */
+    if (mLiveMarkerActive)
+    {
+        int tX = pEvent->x() - (width() - mCurrentFrame.width()) / 2;
+        int tY = pEvent->y() - (height() - mCurrentFrame.height()) / 2;
+        float tRelX = 100 * tX / mCurrentFrame.width();
+        float tRelY = 100 * tY / mCurrentFrame.height();
+        if ((tRelX >= 0) && (tRelX <= 100) && (tRelY >= 0) && (tRelY <= 100))
+        {
+            //LOG(LOG_WARN, "Calculated position: %d,%d, relative position in frame: %.2f, %.2f", tX, tY, tRelX, tRelY);
+            mVideoSource->MoveMarker(tRelX, tRelY);
+        }
+    }
+
     QWidget::mouseMoveEvent(pEvent);
 }
 

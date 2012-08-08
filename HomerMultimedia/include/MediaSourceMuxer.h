@@ -135,6 +135,9 @@ public:
     virtual std::string CurrentInputChannel();
     virtual std::vector<std::string> GetInputChannels();
 
+    /* live OSD marking */
+    virtual bool SupportsMarking();
+
 public:
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97);
     virtual bool OpenAudioGrabDevice(int pSampleRate = 44100, bool pStereo = true);

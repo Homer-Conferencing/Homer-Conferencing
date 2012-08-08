@@ -177,6 +177,8 @@ private:
     int                 mPendingNewFrameSignals;
     ParticipantWidget   *mParticipantWidget;
     int64_t 			mPaintEventCounter;
+    /* live marker - OSD */
+    bool                mLiveMarkerActive;
     /* status messages per OSD text */
     QString				mOsdStatusMessage;
     int64_t				mOsdStatusMessageTimeout;

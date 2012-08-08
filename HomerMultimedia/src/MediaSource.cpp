@@ -70,6 +70,7 @@ MediaSource::MediaSource(string pName):
     PacketStatistic(pName)
 {
     mSourceType = SOURCE_ABSTRACT;
+    mMarkerActivated = false;
     mMediaSourceOpened = false;
     mGrabbingStopped = false;
     mRecording = false;
@@ -2223,6 +2224,32 @@ vector<string> MediaSource::GetInputChannels()
 string MediaSource::CurrentInputChannel()
 {
     return mCurrentDevice;
+}
+
+bool MediaSource::SupportsMarking()
+{
+    return false;
+}
+
+bool MediaSource::MarkerActive()
+{
+    return mMarkerActivated;
+}
+
+void MediaSource::SetMarker(bool pActivation)
+{
+    LOG(LOG_VERBOSE, "Setting marker state to %d", pActivation);
+    mMarkerActivated = pActivation;
+}
+
+void MediaSource::MoveMarker(float pRelX, float pRelY)
+{
+    if (MarkerActive())
+    {
+        //LOG(LOG_VERBOSE, "Moving marker to %.2f, %.2f", pRelX, pRelY);
+        mMarkerRelX = pRelX;
+        mMarkerRelY = pRelY;
+    }
 }
 
 void MediaSource::FpsEmulationInit()
