@@ -66,6 +66,8 @@ using namespace Homer::Monitor;
 MediaSourceFile::MediaSourceFile(string pSourceFile, bool pGrabInRealTime):
     MediaSource("FILE: " + pSourceFile)
 {
+    mFinalPictureResX = 0;
+    mFinalPictureResY = 0;
     mUseFilePTS = false;
     mSeekingTargetFrameIndex = 0;
     mRecalibrateRealTimeGrabbingAfterSeeking = false;
@@ -991,6 +993,9 @@ void* MediaSourceFile::Run(void* pArgs)
                     case MEDIA_VIDEO:
                         {
 
+                            // ############################
+                            // ### DECODE FRAME
+                            // ############################
                             if ((!InputIsPicture()) || (!mPictureGrabbed))
                             {// we try to decode packet(s) from input stream -> either the desired picture or a single frame from the stream
 								// log statistics
@@ -1077,66 +1082,86 @@ void* MediaSourceFile::Run(void* pArgs)
 								tBytesDecoded = INT_MAX;
                             }
 
+                            // ############################
+                            // ### RECORD FRAME
+                            // ############################
                             // re-encode the frame and write it to file
                             if (mRecording)
                                 RecordFrame(tSourceFrame);
 
-                            // convert frame from YUV to RGB format
-                            if ((tFrameFinished != 0) && (tBytesDecoded >= 0))
+                            // ############################
+                            // ### SCALE FRAME (CONVERT)
+                            // ############################
+                            if ((!InputIsPicture()) || (mFinalPictureResX != mDecoderTargetResX) || (mFinalPictureResY != mDecoderTargetResY))
                             {
-                                #ifdef MSF_DEBUG_PACKETS
-                                    LOG(LOG_VERBOSE, "Scale video frame..");
-    								LOG(LOG_VERBOSE, "Video frame data: %p, %p", tSourceFrame->data[0], tSourceFrame->data[1]);
-    								LOG(LOG_VERBOSE, "Video frame line size: %d, %d", tSourceFrame->linesize[0], tSourceFrame->linesize[1]);
-                                #endif
+                                // convert frame from YUV to RGB format
+                                if ((tFrameFinished != 0) && (tBytesDecoded >= 0))
+                                {
+                                    #ifdef MSF_DEBUG_PACKETS
+                                        LOG(LOG_VERBOSE, "Scale video frame..");
+                                        LOG(LOG_VERBOSE, "Video frame data: %p, %p", tSourceFrame->data[0], tSourceFrame->data[1]);
+                                        LOG(LOG_VERBOSE, "Video frame line size: %d, %d", tSourceFrame->linesize[0], tSourceFrame->linesize[1]);
+                                    #endif
 
-								// scale the video frame
-								tRes = HM_sws_scale(mScalerContext, tSourceFrame->data, tSourceFrame->linesize, 0, mCodecContext->height, tRGBFrame->data, tRGBFrame->linesize);
-                                if (tRes == 0)
-                                	LOG(LOG_ERROR, "Failed to scale the video frame");
+                                    // scale the video frame
+                                    tRes = HM_sws_scale(mScalerContext, tSourceFrame->data, tSourceFrame->linesize, 0, mCodecContext->height, tRGBFrame->data, tRGBFrame->linesize);
+                                    if (tRes == 0)
+                                        LOG(LOG_ERROR, "Failed to scale the video frame");
 
-								//LOG(LOG_VERBOSE, "New %s RGB frame: dts: %ld, pts: %ld, pos: %ld, pic. nr.: %d", GetMediaTypeStr().c_str(), tRGBFrame->pkt_dts, tRGBFrame->pkt_pts, tRGBFrame->pkt_pos, tRGBFrame->display_picture_number);
+                                    //LOG(LOG_VERBOSE, "New %s RGB frame: dts: %ld, pts: %ld, pos: %ld, pic. nr.: %d", GetMediaTypeStr().c_str(), tRGBFrame->pkt_dts, tRGBFrame->pkt_pts, tRGBFrame->pkt_pos, tRGBFrame->display_picture_number);
 
+                                    // return size of decoded frame
+                                    tCurrentChunkSize = avpicture_get_size(PIX_FMT_RGB32, mDecoderTargetResX, mDecoderTargetResY);
+
+                                    #ifdef MSF_DEBUG_PACKETS
+                                        LOG(LOG_VERBOSE, "New video frame..");
+                                        LOG(LOG_VERBOSE, "      ..key frame: %d", tSourceFrame->key_frame);
+                                        switch(tSourceFrame->pict_type)
+                                        {
+                                                case FF_I_TYPE:
+                                                    LOG(LOG_VERBOSE, "      ..picture type: i-frame");
+                                                    break;
+                                                case FF_P_TYPE:
+                                                    LOG(LOG_VERBOSE, "      ..picture type: p-frame");
+                                                    break;
+                                                case FF_B_TYPE:
+                                                    LOG(LOG_VERBOSE, "      ..picture type: b-frame");
+                                                    break;
+                                                default:
+                                                    LOG(LOG_VERBOSE, "      ..picture type: %d", tSourceFrame->pict_type);
+                                                    break;
+                                        }
+                                        LOG(LOG_VERBOSE, "      ..pts: %ld", tSourceFrame->pts);
+                                        LOG(LOG_VERBOSE, "      ..pkt pts: %ld", tSourceFrame->pkt_pts);
+                                        LOG(LOG_VERBOSE, "      ..pkt dts: %ld", tSourceFrame->pkt_dts);
+                                        LOG(LOG_VERBOSE, "      ..resolution: %d * %d", tSourceFrame->width, tSourceFrame->height);
+                                        LOG(LOG_VERBOSE, "      ..coded pic number: %d", tSourceFrame->coded_picture_number);
+                                        LOG(LOG_VERBOSE, "      ..display pic number: %d", tSourceFrame->display_picture_number);
+                                        LOG(LOG_VERBOSE, "Resulting frame size is %d bytes", tCurrentChunkSize);
+                                    #endif
+                                    if (InputIsPicture())
+                                    {
+                                        mFinalPictureResX = mDecoderTargetResX;
+                                        mFinalPictureResY = mDecoderTargetResY;
+                                    }
+                                }else
+                                {
+                                    // only print debug output if it is not "operation not permitted"
+                                    //if ((tBytesDecoded < 0) && (AVUNERROR(tBytesDecoded) != EPERM))
+                                    // acknowledge failed"
+                                    if (tPacket->size != tBytesDecoded)
+                                        LOG(LOG_WARN, "Couldn't decode video frame %ld because \"%s\"(%d), got a decoder result: %d", tCurPacketPts, strerror(AVUNERROR(tBytesDecoded)), AVUNERROR(tBytesDecoded), (tFrameFinished == 0));
+                                    else
+                                        LOG(LOG_WARN, "Couldn't decode video frame %ld, got a decoder result: %d", tCurPacketPts, (tFrameFinished != 0));
+
+                                    tCurrentChunkSize = 0;
+                                }
+                            }else
+                            {// use stored RGB frame
                                 // return size of decoded frame
                                 tCurrentChunkSize = avpicture_get_size(PIX_FMT_RGB32, mDecoderTargetResX, mDecoderTargetResY);
 
-                                #ifdef MSF_DEBUG_PACKETS
-                                    LOG(LOG_VERBOSE, "New video frame..");
-                                    LOG(LOG_VERBOSE, "      ..key frame: %d", tSourceFrame->key_frame);
-                                    switch(tSourceFrame->pict_type)
-                                    {
-                                            case FF_I_TYPE:
-                                                LOG(LOG_VERBOSE, "      ..picture type: i-frame");
-                                                break;
-                                            case FF_P_TYPE:
-                                                LOG(LOG_VERBOSE, "      ..picture type: p-frame");
-                                                break;
-                                            case FF_B_TYPE:
-                                                LOG(LOG_VERBOSE, "      ..picture type: b-frame");
-                                                break;
-                                            default:
-                                                LOG(LOG_VERBOSE, "      ..picture type: %d", tSourceFrame->pict_type);
-                                                break;
-                                    }
-                                    LOG(LOG_VERBOSE, "      ..pts: %ld", tSourceFrame->pts);
-                                    LOG(LOG_VERBOSE, "      ..pkt pts: %ld", tSourceFrame->pkt_pts);
-                                    LOG(LOG_VERBOSE, "      ..pkt dts: %ld", tSourceFrame->pkt_dts);
-                                    LOG(LOG_VERBOSE, "      ..resolution: %d * %d", tSourceFrame->width, tSourceFrame->height);
-                                    LOG(LOG_VERBOSE, "      ..coded pic number: %d", tSourceFrame->coded_picture_number);
-                                    LOG(LOG_VERBOSE, "      ..display pic number: %d", tSourceFrame->display_picture_number);
-                                    LOG(LOG_VERBOSE, "Resulting frame size is %d bytes", tCurrentChunkSize);
-                                #endif
-                            }else
-                            {
-                                // only print debug output if it is not "operation not permitted"
-                                //if ((tBytesDecoded < 0) && (AVUNERROR(tBytesDecoded) != EPERM))
-                                // acknowledge failed"
-                                if (tPacket->size != tBytesDecoded)
-                                    LOG(LOG_WARN, "Couldn't decode video frame %ld because \"%s\"(%d), got a decoder result: %d", tCurPacketPts, strerror(AVUNERROR(tBytesDecoded)), AVUNERROR(tBytesDecoded), (tFrameFinished == 0));
-                                else
-                                    LOG(LOG_WARN, "Couldn't decode video frame %ld, got a decoder result: %d", tCurPacketPts, (tFrameFinished != 0));
-
-                                tCurrentChunkSize = 0;
+                                //HINT: tChunkBuffer is still valid from first decoder loop
                             }
                         }
                         break;

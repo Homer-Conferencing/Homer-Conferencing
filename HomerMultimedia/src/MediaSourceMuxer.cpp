@@ -1151,6 +1151,28 @@ void* MediaSourceMuxer::Run(void* pArgs)
     {
         case MEDIA_VIDEO:
             SVC_PROCESS_STATISTIC.AssignThreadName("Video-Encoder(" + FfmpegId2FfmpegFormat(mStreamCodecId) + ")");
+
+            // Allocate video frame for YUV format
+            if ((tYUVFrame = avcodec_alloc_frame()) == NULL)
+            {
+                // acknowledge failed"
+                LOG(LOG_ERROR, "Out of video memory in avcodec_alloc_frame()");
+            }
+
+            // Allocate video frame for RGB format
+            if ((tRGBFrame = avcodec_alloc_frame()) == NULL)
+            {
+                // acknowledge failed"
+                LOG(LOG_ERROR, "Out of video memory in avcodec_alloc_frame()");
+            }
+
+            // Assign appropriate parts of buffer to image planes in tYUVFrame
+            if (avpicture_alloc((AVPicture*)tYUVFrame, PIX_FMT_YUV420P, mCurrentStreamingResX, mCurrentStreamingResY) < 0)
+            {
+                // acknowledge failed"
+                LOG(LOG_ERROR, "Out of video memory in avpicture_alloc()");
+            }
+
             break;
         case MEDIA_AUDIO:
             SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Encoder(" + FfmpegId2FfmpegFormat(mStreamCodecId) + ")");
@@ -1189,130 +1211,114 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 //####################################################################
                                 // re-encode the frame
                                 // ###################################################################
-                                // Allocate video frame structure for RGB and YUV format, afterwards allocate data buffer for YUV format
-                                if (((tRGBFrame = avcodec_alloc_frame()) == NULL) || ((tYUVFrame = avcodec_alloc_frame()) == NULL) || (avpicture_alloc((AVPicture*)tYUVFrame, PIX_FMT_YUV420P, mCurrentStreamingResX, mCurrentStreamingResY) < 0))
-                                {
-                                    LOG(LOG_ERROR, "Couldn't allocate video frame memory");
-                                }else
-                                {
-                                    // Assign appropriate parts of buffer to image planes in tRGBFrame
-                                    avpicture_fill((AVPicture *)tRGBFrame, (uint8_t *)tBuffer, PIX_FMT_RGB32, mSourceResX, mSourceResY);
+                                // Assign appropriate parts of buffer to image planes in tRGBFrame
+                                avpicture_fill((AVPicture *)tRGBFrame, (uint8_t *)tBuffer, PIX_FMT_RGB32, mSourceResX, mSourceResY);
 
-                                    #ifdef MSM_DEBUG_TIMING
-                                        int64_t tTime5 = Time::GetTimeStamp();
-                                        LOG(LOG_VERBOSE, "     preparing data structures took %ld us", tTime5 - tTime3);
-                                    #endif
+                                #ifdef MSM_DEBUG_TIMING
+                                    int64_t tTime5 = Time::GetTimeStamp();
+                                    LOG(LOG_VERBOSE, "     preparing data structures took %ld us", tTime5 - tTime3);
+                                #endif
 
-                                    // set frame number in corresponding entries within AVFrame structure
-                                    tRGBFrame->pts = mChunkNumber + 1;
-                                    tRGBFrame->coded_picture_number = mChunkNumber + 1;
-                                    tRGBFrame->display_picture_number = mChunkNumber + 1;
+                                // set frame number in corresponding entries within AVFrame structure
+                                tRGBFrame->pts = mChunkNumber + 1;
+                                tRGBFrame->coded_picture_number = mChunkNumber + 1;
+                                tRGBFrame->display_picture_number = mChunkNumber + 1;
+
+                                #ifdef MSM_DEBUG_PACKETS
+                                    LOG(LOG_VERBOSE, "Reencoding video frame..");
+                                    LOG(LOG_VERBOSE, "      ..key frame: %d", tRGBFrame->key_frame);
+                                    switch(tRGBFrame->pict_type)
+                                    {
+                                            case FF_I_TYPE:
+                                                LOG(LOG_VERBOSE, "      ..picture type: i-frame");
+                                                break;
+                                            case FF_P_TYPE:
+                                                LOG(LOG_VERBOSE, "      ..picture type: p-frame");
+                                                break;
+                                            case FF_B_TYPE:
+                                                LOG(LOG_VERBOSE, "      ..picture type: b-frame");
+                                                break;
+                                            default:
+                                                LOG(LOG_VERBOSE, "      ..picture type: %d", tRGBFrame->pict_type);
+                                                break;
+                                    }
+                                    LOG(LOG_VERBOSE, "      ..pts: %ld", tRGBFrame->pts);
+                                    LOG(LOG_VERBOSE, "      ..coded pic number: %d", tRGBFrame->coded_picture_number);
+                                    LOG(LOG_VERBOSE, "      ..display pic number: %d", tRGBFrame->display_picture_number);
+                                #endif
+
+                                int64_t tTime = Time::GetTimeStamp();
+                                // convert fromn RGB to YUV420
+                                HM_sws_scale(mScalerContext, tRGBFrame->data, tRGBFrame->linesize, 0, mSourceResY, tYUVFrame->data, tYUVFrame->linesize);
+                                #ifdef MSM_DEBUG_TIMING
+                                    int64_t tTime2 = Time::GetTimeStamp();
+                                    LOG(LOG_VERBOSE, "     scaling video frame took %ld us", tTime2 - tTime);
+                                #endif
+
+                                // #########################################
+                                // re-encode the frame
+                                // #########################################
+                                tTime = Time::GetTimeStamp();
+                                tFrameSize = avcodec_encode_video(mCodecContext, (uint8_t *)mEncoderChunkBuffer, MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE, tYUVFrame);
+                                #ifdef MSM_DEBUG_TIMING
+                                    tTime2 = Time::GetTimeStamp();
+                                    LOG(LOG_VERBOSE, "     encoding video frame took %ld us", tTime2 - tTime);
+                                #endif
+
+                                if (tFrameSize > 0)
+                                {
+                                    av_init_packet(tPacket);
+                                    mChunkNumber++;
+
+                                    // adapt pts value
+                                    if ((mCodecContext->coded_frame) && (mCodecContext->coded_frame->pts != 0))
+                                    {
+                                        tPacket->pts = av_rescale_q(mCodecContext->coded_frame->pts, mCodecContext->time_base, mFormatContext->streams[mMediaStreamIndex]->time_base);
+                                        tPacket->dts = tPacket->pts;
+                                    }
+                                    // mark i-frame
+                                    if (mCodecContext->coded_frame->key_frame)
+                                    {
+                                        mEncoderHasKeyFrame = true;
+                                        tPacket->flags |= AV_PKT_FLAG_KEY;
+                                    }
+
+                                    // we only have one stream per video stream
+                                    tPacket->stream_index = 0;
+                                    tPacket->data = (uint8_t *)mEncoderChunkBuffer;
+                                    tPacket->size = tFrameSize;
+                                    tPacket->pts = mChunkNumber;
+                                    tPacket->dts = mChunkNumber;
+                                    //tPacket->pos = av_gettime() - mStartPts;
 
                                     #ifdef MSM_DEBUG_PACKETS
-                                        LOG(LOG_VERBOSE, "Reencoding video frame..");
-                                        LOG(LOG_VERBOSE, "      ..key frame: %d", tRGBFrame->key_frame);
-                                        switch(tRGBFrame->pict_type)
-                                        {
-                                                case FF_I_TYPE:
-                                                    LOG(LOG_VERBOSE, "      ..picture type: i-frame");
-                                                    break;
-                                                case FF_P_TYPE:
-                                                    LOG(LOG_VERBOSE, "      ..picture type: p-frame");
-                                                    break;
-                                                case FF_B_TYPE:
-                                                    LOG(LOG_VERBOSE, "      ..picture type: b-frame");
-                                                    break;
-                                                default:
-                                                    LOG(LOG_VERBOSE, "      ..picture type: %d", tRGBFrame->pict_type);
-                                                    break;
-                                        }
-                                        LOG(LOG_VERBOSE, "      ..pts: %ld", tRGBFrame->pts);
-                                        LOG(LOG_VERBOSE, "      ..coded pic number: %d", tRGBFrame->coded_picture_number);
-                                        LOG(LOG_VERBOSE, "      ..display pic number: %d", tRGBFrame->display_picture_number);
+                                        LOG(LOG_VERBOSE, "Sending video packet: %5d to %2d sink(s):", mChunkNumber, mMediaSinks.size());
+                                        LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
+                                        LOG(LOG_VERBOSE, "      ..flags: %d", tPacket->flags);
+                                        LOG(LOG_VERBOSE, "      ..pts: %ld stream [%d] pts: %ld", tPacket->pts, mMediaStreamIndex, mFormatContext->streams[mMediaStreamIndex]->pts);
+                                        LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket->dts);
+                                        LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
+                                        LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket->pos);
+                                        LOG(LOG_VERBOSE, "      ..key frame: %d", mEncoderHasKeyFrame);
                                     #endif
 
+                                    //####################################################################
+                                    // distribute the encoded frame
+                                    // ###################################################################
                                     int64_t tTime = Time::GetTimeStamp();
-                                    // convert fromn RGB to YUV420
-                                    HM_sws_scale(mScalerContext, tRGBFrame->data, tRGBFrame->linesize, 0, mSourceResY, tYUVFrame->data, tYUVFrame->linesize);
+                                    if (av_write_frame(mFormatContext, tPacket) != 0)
+                                    {
+                                        LOG(LOG_ERROR, "Couldn't distribute video frame among registered video sinks");
+                                    }
                                     #ifdef MSM_DEBUG_TIMING
                                         int64_t tTime2 = Time::GetTimeStamp();
-                                        LOG(LOG_VERBOSE, "     scaling video frame took %ld us", tTime2 - tTime);
+                                        LOG(LOG_VERBOSE, "     writing video frame to sinks took %ld us", tTime2 - tTime);
                                     #endif
 
-                                    // #########################################
-                                    // re-encode the frame
-                                    // #########################################
-                                    tTime = Time::GetTimeStamp();
-                                    tFrameSize = avcodec_encode_video(mCodecContext, (uint8_t *)mEncoderChunkBuffer, MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE, tYUVFrame);
-                                    #ifdef MSM_DEBUG_TIMING
-                                        tTime2 = Time::GetTimeStamp();
-                                        LOG(LOG_VERBOSE, "     encoding video frame took %ld us", tTime2 - tTime);
-                                    #endif
-
-                                    if (tFrameSize > 0)
-                                    {
-                                        av_init_packet(tPacket);
-                                        mChunkNumber++;
-
-                                        // adapt pts value
-                                        if ((mCodecContext->coded_frame) && (mCodecContext->coded_frame->pts != 0))
-                                        {
-                                            tPacket->pts = av_rescale_q(mCodecContext->coded_frame->pts, mCodecContext->time_base, mFormatContext->streams[mMediaStreamIndex]->time_base);
-                                            tPacket->dts = tPacket->pts;
-                                        }
-                                        // mark i-frame
-                                        if (mCodecContext->coded_frame->key_frame)
-                                        {
-                                            mEncoderHasKeyFrame = true;
-                                            tPacket->flags |= AV_PKT_FLAG_KEY;
-                                        }
-
-                                        // we only have one stream per video stream
-                                        tPacket->stream_index = 0;
-                                        tPacket->data = (uint8_t *)mEncoderChunkBuffer;
-                                        tPacket->size = tFrameSize;
-                                        tPacket->pts = mChunkNumber;
-                                        tPacket->dts = mChunkNumber;
-                                        //tPacket->pos = av_gettime() - mStartPts;
-
-                                        #ifdef MSM_DEBUG_PACKETS
-                                            LOG(LOG_VERBOSE, "Sending video packet: %5d to %2d sink(s):", mChunkNumber, mMediaSinks.size());
-                                            LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
-                                            LOG(LOG_VERBOSE, "      ..flags: %d", tPacket->flags);
-                                            LOG(LOG_VERBOSE, "      ..pts: %ld stream [%d] pts: %ld", tPacket->pts, mMediaStreamIndex, mFormatContext->streams[mMediaStreamIndex]->pts);
-                                            LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket->dts);
-                                            LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
-                                            LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket->pos);
-                                            LOG(LOG_VERBOSE, "      ..key frame: %d", mEncoderHasKeyFrame);
-                                        #endif
-
-                                        //####################################################################
-                                        // distribute the encoded frame
-                                        // ###################################################################
-                                        int64_t tTime = Time::GetTimeStamp();
-                                        if (av_write_frame(mFormatContext, tPacket) != 0)
-                                        {
-                                            LOG(LOG_ERROR, "Couldn't distribute video frame among registered video sinks");
-                                        }
-                                        #ifdef MSM_DEBUG_TIMING
-                                            int64_t tTime2 = Time::GetTimeStamp();
-                                            LOG(LOG_VERBOSE, "     writing video frame to sinks took %ld us", tTime2 - tTime);
-                                        #endif
-
-                                        // free packet buffer
-                                        av_free_packet(tPacket);
-                                    }else
-                                        LOG(LOG_WARN, "Couldn't re-encode current video frame");
-
-                                    // Free the RGB frame
-                                    av_free(tRGBFrame);
-
-                                    // Free the YUV frame's data buffer
-                                    avpicture_free((AVPicture*)tYUVFrame);
-
-                                    // Free the YUV frame
-                                    av_free(tYUVFrame);
-                                }
+                                    // free packet buffer
+                                    av_free_packet(tPacket);
+                                }else
+                                    LOG(LOG_WARN, "Couldn't re-encode current video frame");
                                 #ifdef MSM_DEBUG_TIMING
                                     int64_t tTime4 = Time::GetTimeStamp();
                                     LOG(LOG_VERBOSE, "Entire transcoding step took %ld us", tTime4 - tTime3);
@@ -1429,6 +1435,18 @@ void* MediaSourceMuxer::Run(void* pArgs)
             LOG(LOG_VERBOSE, "Suspending the transcoder thread for 10 ms");
             Suspend(10 * 1000); // check every 1/100 seconds the state of the FIFO
         }
+    }
+
+    if (mMediaType == MEDIA_VIDEO)
+    {
+        // Free the RGB frame
+        av_free(tRGBFrame);
+
+        // Free the YUV frame's data buffer
+        avpicture_free((AVPicture*)tYUVFrame);
+
+        // Free the YUV frame
+        av_free(tYUVFrame);
     }
 
     LOG(LOG_VERBOSE, "%s encoder thread finished", GetMediaTypeStr().c_str());
