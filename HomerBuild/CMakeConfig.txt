@@ -3,7 +3,9 @@
 # Since:   2011-11-19
 ###############################################################################
 
+MESSAGE("###########################################################################")
 MESSAGE("##### Preparing configuration")
+MESSAGE("###########################################################################")
 
 ##############################################################
 # Homer version: every version information in the rest of the build system is generated from teh following entries
@@ -86,7 +88,7 @@ SET (PRE_DEFINITIONS_EXECUTED "true")
 IF (DEFINED INSIDE_HOMER_BUILD)
 	INCLUDE (CheckIncludeFiles)
 	CONFIGURE_FILE(
-		${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/resources/config.h.in 
+		${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Conferencing/HomerBuild/config/config.h.in 
 		${CMAKE_CURRENT_BINARY_DIR}/config.h
 	)
 ENDIF()

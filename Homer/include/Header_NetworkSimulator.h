@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 2012 Thomas Volkert <thomas@homer-conferencing.com>
+ * Copyright (C) 2009 Thomas Volkert <thomas@homer-conferencing.com>
  *
  * This software is free software.
  * Your are allowed to redistribute it and/or modify it under the terms of
@@ -20,43 +20,26 @@
  *****************************************************************************/
 
 /*
- * Purpose: Network simulation
+ * Purpose: header includes for network simulator
  * Author:  Thomas Volkert
- * Since:   2012-05-31
+ * Since:   2012-08-09
  */
 
-#ifndef _NETWORK_SIMULATION_
-#define _NETWORK_SIMULATION_
+#ifndef _HEADER_NETWORK_SIMULATOR_
+#define _HEADER_NETWORK_SIMULATOR_
 
-#include <Core/Scenario.h>
-#include <Core/ChannelSetup.h>
-#include <Widgets/OverviewNetworkSimulationWidget.h>
-
-#include <QMenu>
-#include <QMainWindow>
-
-namespace Homer { namespace Base {
-
-///////////////////////////////////////////////////////////////////////////////
+#if HOMER_NETWORK_SIMULATOR
+    #include <Widgets/OverviewNetworkSimulationWidget.h>
+    #include <NetworkSimulator.h>
+#else
 
 class NetworkSimulator
 {
 public:
-    NetworkSimulator();
-    virtual ~NetworkSimulator();
-
-    bool Init(QMenu *pAssignedMenu, QMainWindow *pMainWindow);
-
-    Scenario *GetScenario();
-
-private:
-    ChannelSetup    *mGAPISetup;
-    Scenario        *mScenario;
-    Homer::Gui::OverviewNetworkSimulationWidget *mOverviewNetworkSimulationWidget;
+    NetworkSimulator(){}
+    virtual ~NetworkSimulator(){}
 };
 
-///////////////////////////////////////////////////////////////////////////////
-
-}} // namespaces
+#endif
 
 #endif

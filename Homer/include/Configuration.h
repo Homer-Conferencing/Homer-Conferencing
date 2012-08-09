@@ -34,8 +34,6 @@
 
 #include <QSettings>
 
-//#include <Widgets/OverviewNetworkSimulationWidget.h>
-
 namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////

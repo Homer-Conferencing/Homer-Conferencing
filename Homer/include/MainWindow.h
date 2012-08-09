@@ -30,7 +30,7 @@
 
 #include <MediaSourceMuxer.h>
 #include <MediaSourceDesktop.h>
-//#include <NetworkSimulator.h>
+#include <Header_NetworkSimulator.h>
 #include <Widgets/AudioWidget.h>
 #include <Widgets/AvailabilityWidget.h>
 #include <Widgets/StreamingControlWidget.h>
@@ -129,7 +129,7 @@ private:
     void initializeColoring();
     void initializeWidgetsAndMenus();
     void initializeScreenCapturing();
-//    void initializeNetworkSimulator(QStringList pArguments, bool pForce = false);
+    void initializeNetworkSimulator(QStringList pArguments, bool pForce = false);
     void connectSignalsSlots();
 
     virtual void closeEvent(QCloseEvent* pEvent);
