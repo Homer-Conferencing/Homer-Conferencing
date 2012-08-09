@@ -301,7 +301,9 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     if (pFps < 5)
         pFps = 5;
 
-    LOG(LOG_VERBOSE, "Going to open video muxer with resolution %d * %d", pResX, pResY);
+    mMediaType = MEDIA_VIDEO;
+
+    LOG(LOG_VERBOSE, "Going to open %s muxer with resolution %d * %d", GetMediaTypeStr().c_str(), pResX, pResY);
 
     if (mMediaSourceOpened)
         return false;
@@ -467,8 +469,6 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
         return false;
     }
 
-    mMediaType = MEDIA_VIDEO;
-
     // init transcoder FIFO based for RGB32 pictures
     StartEncoder();
 
@@ -541,6 +541,8 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     AVOutputFormat      *tFormat;
     AVCodec             *tCodec;
     AVStream            *tStream;
+
+    mMediaType = MEDIA_AUDIO;
 
     LOG(LOG_VERBOSE, "Going to open %s-muxer", GetMediaTypeStr().c_str());
 
@@ -663,8 +665,6 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     // ==> we use 32 as threshold to catch most of the inefficient values for the frame size
     if (mCodecContext->frame_size < 32)
     	mCodecContext->frame_size = 1024;
-
-    mMediaType = MEDIA_AUDIO;
 
     // init transcoder FIFO based for 2048 samples with 16 bit and 2 channels, more samples are never produced by a media source per grabbing cycle
     StartEncoder();
@@ -1638,6 +1638,8 @@ bool MediaSourceMuxer::Reset(enum MediaType pMediaType)
     // HINT: closing the grab device resets the media type!
     int tMediaType = (pMediaType == MEDIA_UNKNOWN) ? mMediaType : pMediaType;
 
+    LOG(LOG_VERBOSE, "Going to reset %s muxer", GetMediaTypeStr().c_str());
+
     //StopGrabbing();
 
     // lock grabbing
@@ -1656,7 +1658,7 @@ bool MediaSourceMuxer::Reset(enum MediaType pMediaType)
             tResult = OpenAudioMuxer(mSampleRate, mStereo);
             break;
         case MEDIA_UNKNOWN:
-            //LOG(LOG_ERROR, "Media type unknown");
+            LOG(LOG_ERROR, "Media type unknown");
             break;
     }
 
