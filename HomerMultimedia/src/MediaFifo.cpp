@@ -37,6 +37,18 @@ using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+MediaFifo::MediaFifo(std::string pName)
+{
+    mName = pName;
+    mFifoSize = 0;
+    mFifoEntrySize = 0;
+    mFifoWritePtr = 0;
+    mFifoReadPtr = 0;
+    mFifoAvailableEntries = 0;
+    mFifo = NULL;
+    LOG(LOG_VERBOSE, "Created abstract FIFO for %s with %d entries of %d bytes", pName.c_str(), mFifoSize, mFifoEntrySize);
+}
+
 MediaFifo::MediaFifo(int pFifoSize, int pFifoEntrySize, string pName)
 {
     mName = pName;
@@ -58,12 +70,18 @@ MediaFifo::MediaFifo(int pFifoSize, int pFifoEntrySize, string pName)
 
 MediaFifo::~MediaFifo()
 {
-    for (int i = 0; i < mFifoSize; i++)
-	{
-		mFifo[i].Size = 0;
-		free(mFifo[i].Data);
-	}
-    delete[] mFifo;
+    LOG(LOG_VERBOSE, "Destroying FIFO %s with size of %d", mName.c_str(), mFifoSize);
+
+    if (mFifo != NULL)
+    {
+        for (int i = 0; i < mFifoSize; i++)
+        {
+            mFifo[i].Size = 0;
+            free(mFifo[i].Data);
+        }
+        delete[] mFifo;
+        mFifo = NULL;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

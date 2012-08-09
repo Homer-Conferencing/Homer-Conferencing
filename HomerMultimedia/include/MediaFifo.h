@@ -57,22 +57,23 @@ class MediaFifo
 {
 public:
     /// The default constructor
+    MediaFifo(std::string pName = "");
     MediaFifo(int pFifoSize, int pFifoEntrySize, std::string pName = "");
     /// The destructor.
     virtual ~MediaFifo();
 
-    void WriteFifo(char* pBuffer, int pBufferSize);
-    void ReadFifo(char *pBuffer, int &pBufferSize); // memory copy, returns entire memory
-    void ClearFifo();
+    virtual void WriteFifo(char* pBuffer, int pBufferSize);
+    virtual void ReadFifo(char *pBuffer, int &pBufferSize); // memory copy, returns entire memory
+    virtual void ClearFifo();
 
-    int ReadFifoExclusive(char **pBuffer, int &pBufferSize); // avoids memory copy, returns a pointer to memory
-    void ReadFifoExclusiveFinished(int pEntryPointer);
+    virtual int ReadFifoExclusive(char **pBuffer, int &pBufferSize); // avoids memory copy, returns a pointer to memory
+    virtual void ReadFifoExclusiveFinished(int pEntryPointer);
 
-    int GetEntrySize();
-    int GetUsage();
-    int GetSize();
+    virtual int GetEntrySize();
+    virtual int GetUsage();
+    virtual int GetSize();
 
-private:
+protected:
     std::string			mName;
     MediaFifoEntry      *mFifo;
 	int					mFifoWritePtr;
