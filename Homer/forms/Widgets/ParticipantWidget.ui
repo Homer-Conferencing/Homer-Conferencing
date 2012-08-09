@@ -104,7 +104,6 @@
                <property name="acceptDrops">
                 <bool>true</bool>
                </property>
-               <zorder>mMovieAudioControlsFrame</zorder>
               </widget>
              </item>
             </layout>
