@@ -776,17 +776,11 @@ void* MediaSourceFile::Run(void* pArgs)
 
             // Allocate video frame for YUV format
             if ((tSourceFrame = avcodec_alloc_frame()) == NULL)
-            {
-                // acknowledge failed"
                 LOG(LOG_ERROR, "Out of video memory");
-            }
 
             // Allocate video frame for RGB format
             if ((tRGBFrame = avcodec_alloc_frame()) == NULL)
-            {
-                // acknowledge failed"
                 LOG(LOG_ERROR, "Out of video memory");
-            }
 
             // Assign appropriate parts of buffer to image planes in tRGBFrame
             avpicture_fill((AVPicture *)tRGBFrame, (uint8_t *)tChunkBuffer, PIX_FMT_RGB32, mDecoderTargetResX, mDecoderTargetResY);

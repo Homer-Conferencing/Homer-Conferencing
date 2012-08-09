@@ -1180,26 +1180,18 @@ void* MediaSourceMuxer::Run(void* pArgs)
 
             // Allocate video frame for YUV format
             if ((tYUVFrame = avcodec_alloc_frame()) == NULL)
-            {
-                // acknowledge failed"
                 LOG(LOG_ERROR, "Out of video memory in avcodec_alloc_frame()");
-            }
 
             mEncoderChunkBuffer = (char*)malloc(MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE);
             if (mEncoderChunkBuffer == NULL)
-            {
-                // acknowledge failed"
                 LOG(LOG_ERROR, "Out of video memory for encoder chunk buffer");
-            }
 
 
             // create video scaler
             LOG(LOG_VERBOSE, "Encoder thread starts scaler thread..");
             tVideoScaler = new VideoScaler();
             if(tVideoScaler == NULL)
-            {
                 LOG(LOG_ERROR, "Invalid video scaler instance, possible out of memory");
-            }
             tVideoScaler->StartScaler(mStreamCodecId, mSourceResX, mSourceResY, mCurrentStreamingResX, mCurrentStreamingResY);
 
             mEncoderFifoMutex.lock();
@@ -1215,26 +1207,17 @@ void* MediaSourceMuxer::Run(void* pArgs)
 
             mSamplesTempBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE);
             if (mSamplesTempBuffer == NULL)
-            {
-                // acknowledge failed"
                 LOG(LOG_ERROR, "Out of memory for sample buffer");
-            }
 
             mEncoderChunkBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE);
             if (mEncoderChunkBuffer == NULL)
-            {
-                // acknowledge failed"
                 LOG(LOG_ERROR, "Out of memory for encoder chunk buffer");
-            }
 
             mEncoderFifoMutex.lock();
 
             mEncoderFifo = new MediaFifo(MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT, MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE * 2, "AUDIO-Encoder");
             if (mEncoderFifo == NULL)
-            {
-                // acknowledge failed"
                 LOG(LOG_ERROR, "Out of memory for encoder FIFO");
-            }
 
             mEncoderFifoMutex.unlock();
 
