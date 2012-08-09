@@ -922,7 +922,7 @@ bool Socket::IsTransportSupported(enum TransportType pType)
                 #if defined(LINUX)
                     int tHandle = 0;
 
-                    if ((tHandle = socket(AF_INET, SOCK_DGRAM, IPPROTO_DCCP)) > 0)
+                    if ((tHandle = socket(AF_INET, SOCK_DCCP, IPPROTO_DCCP)) > 0)
                     {
                         LOGEX(Socket, LOG_INFO, ">>> DCCP sockets available <<<");
                         close(tHandle);
@@ -947,7 +947,7 @@ bool Socket::IsTransportSupported(enum TransportType pType)
                 #if defined(LINUX)
                     int tHandle = 0;
 
-                    if ((tHandle = socket(AF_INET, SOCK_DGRAM, IPPROTO_SCTP)) > 0)
+                    if ((tHandle = socket(AF_INET, SOCK_STREAM, IPPROTO_SCTP)) > 0)
                     {
                         LOGEX(Socket, LOG_INFO, ">>> SCTP sockets available <<<");
                         close(tHandle);
