@@ -433,6 +433,10 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     // limit packet size, otherwise ffmpeg will deliver unpredictable results ;)
     tByteIoContext->max_packet_size = MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE;
 
+    // there is no differentiation between H.263+ and H.263 when decoding an incoming video stream
+    if (mStreamCodecId == CODEC_ID_H263P)
+        mStreamCodecId = CODEC_ID_H263;
+
     // find format
     string tCodecName = FfmpegId2FfmpegFormat(mStreamCodecId);
     // ffmpeg knows only the mpegvideo demuxer which is responsible for both MPEG1 and MPEG2 streams
@@ -590,10 +594,6 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     tByteIoContext->seekable = 0;
     // limit packet size
     tByteIoContext->max_packet_size = MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE;
-
-    // there is no differentiation between H.263+ and H.263 when decoding an incoming video stream
-    if (mStreamCodecId == CODEC_ID_H263P)
-        mStreamCodecId = CODEC_ID_H263;
 
     // find format
     tFormat = av_find_input_format(FfmpegId2FfmpegFormat(mStreamCodecId).c_str());
