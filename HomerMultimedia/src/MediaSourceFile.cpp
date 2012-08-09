@@ -1480,7 +1480,11 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
         return false;
     }
 
-    double tFrameIndex = (mSourceStartPts + (double)pSeconds * mFrameRate); // later the value for mCurrentFrameIndex will be changed to the same value like tAbsoluteTimestamp
+    double tFrameIndex;
+    if (pSeconds <= 0)
+        tFrameIndex = 0;
+    else
+        tFrameIndex = (mSourceStartPts + (double)pSeconds * mFrameRate); // later the value for mCurrentFrameIndex will be changed to the same value like tAbsoluteTimestamp
     float tTimeDiff = pSeconds - GetSeekPos();
 
     //LOG(LOG_VERBOSE, "Rel: %ld Abs: %ld", tRelativeTimestamp, tAbsoluteTimestamp);
