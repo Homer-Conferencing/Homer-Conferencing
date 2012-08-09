@@ -178,6 +178,7 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
 
     connect(mTbPlay, SIGNAL(clicked()), this, SLOT(ActionPlayMovieFile()));
     connect(mTbPause, SIGNAL(clicked()), this, SLOT(ActionPauseMovieFile()));
+    connect(mTbRecord, SIGNAL(clicked()), this, SLOT(ActionRecordMovieFile()));
     connect(mSlMovie, SIGNAL(sliderMoved(int)), this, SLOT(ActionSeekMovieFile(int)));
     connect(mSlMovie, SIGNAL(valueChanged(int)), this, SLOT(ActionSeekMovieFileToPos(int)));
     connect(mSbAVDrift, SIGNAL(valueChanged(double)), this, SLOT(ActionUserAVDriftChanged(double)));
@@ -1294,6 +1295,11 @@ void ParticipantWidget::ActionPauseMovieFile()
     LOG(LOG_VERBOSE, "User triggered pause");
     mVideoWidget->GetWorker()->PauseFile();
     mAudioWidget->GetWorker()->PauseFile();
+}
+
+void ParticipantWidget::ActionRecordMovieFile()
+{
+    LOG(LOG_ERROR, "Implement ActionRecordMovieFile()");
 }
 
 void ParticipantWidget::ActionSeekMovieFile(int pPos)

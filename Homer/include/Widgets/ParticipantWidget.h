@@ -139,6 +139,7 @@ public:
 private slots:
     void ActionPlayMovieFile(QString pFileName = "");
     void ActionPauseMovieFile();
+    void ActionRecordMovieFile();
 	void LookedUpParticipantHost(const QHostInfo &pHost);
 	void ActionSeekMovieFile(int pPos);
 	void ActionSeekMovieFileToPos(int pPos);
