@@ -361,25 +361,32 @@ void OverviewPlaylistWidget::SetVisible(bool pVisible)
 {
     if (pVisible)
     {
-        move(mWinPos);
-        show();
+        if (!isVisible())
+        {
+            move(mWinPos);
+            show();
+        }
     }else
     {
-        mWinPos = pos();
-        hide();
+        if (isVisible())
+        {
+            mWinPos = pos();
+            hide();
+        }
     }
 }
 
 void OverviewPlaylistWidget::StartPlaylist()
 {
     if (GetListSize() == 0)
-    {
-        LOG(LOG_VERBOSE, "Playlist start triggered but we don't have entries in the list, asking user..");
-        AddEntryDialog();
-    }else
+        LOG(LOG_VERBOSE, "Playlist start triggered but we don't have entries in the list");
+    else
         LOG(LOG_VERBOSE, "Playlist start triggered and we already have entries in the list");
 
-    Play(mCurrentFileId);
+    AddEntryDialog();
+    Play(GetListSize() - 1);
+
+    SetVisible(true);
 }
 
 void OverviewPlaylistWidget::StopPlaylist()
