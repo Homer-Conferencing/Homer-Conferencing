@@ -47,51 +47,16 @@ namespace Homer { namespace Multimedia {
 
 // the following de/activates debugging of sent packets
 //#define MSM_DEBUG_PACKETS
-//#define VS_DEBUG_PACKETS
 
 // the following de/activates debugging of the time behavior of the transcoding
 //#define MSM_DEBUG_TIMING
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class VideoScaler:
-    public Thread, public MediaFifo
-{
-public:
-    VideoScaler();
+// amount of entries within the input FIFO
+#define MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT                  32
 
-    virtual ~VideoScaler();
-
-    void StartScaler(enum CodecID pTargetCodecId, int pSourceResX, int pSourceResY, int pTargetResX, int pTargetResY);
-    void StopScaler();
-
-    virtual void WriteFifo(char* pBuffer, int pBufferSize);
-    virtual void ReadFifo(char *pBuffer, int &pBufferSize); // memory copy, returns entire memory
-    virtual void ClearFifo();
-
-    // avoids memory copy, returns a pointer to memory
-    virtual int ReadFifoExclusive(char **pBuffer, int &pBufferSize); // return -1 if internal FIFO isn't available yet
-    virtual void ReadFifoExclusiveFinished(int pEntryPointer);
-
-    virtual int GetEntrySize();
-    virtual int GetUsage();
-    virtual int GetSize();
-
-private:
-    virtual void* Run(void* pArgs = NULL); // video scaler main loop
-
-    MediaFifo           *mInputFifo;
-    MediaFifo           *mOutputFifo;
-    bool                mScalerNeeded;
-    int                 mSourceResX;
-    int                 mSourceResY;
-    int                 mTargetResX;
-    int                 mTargetResY;
-    int                 mChunkNumber;
-    enum CodecID        mTargetCodecId;
-    enum PixelFormat    mTargetPixelFormat;
-    SwsContext          *mScalerContext;
-};
+///////////////////////////////////////////////////////////////////////////////
 
 class MediaSourceMuxer:
     public MediaSource, public Thread
@@ -200,8 +165,6 @@ private:
     void StopEncoder();
 
     static int DistributePacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize);
-
-    friend class VideoScaler;
 
     MediaSource         *mMediaSource;
     enum CodecID        mStreamCodecId;
