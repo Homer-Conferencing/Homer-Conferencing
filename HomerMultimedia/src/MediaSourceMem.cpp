@@ -591,6 +591,10 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     // limit packet size
     tByteIoContext->max_packet_size = MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE;
 
+    // there is no differentiation between H.263+ and H.263 when decoding an incoming video stream
+    if (mStreamCodecId == CODEC_ID_H263P)
+        mStreamCodecId = CODEC_ID_H263;
+
     // find format
     tFormat = av_find_input_format(FfmpegId2FfmpegFormat(mStreamCodecId).c_str());
 
@@ -856,6 +860,18 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
 //                            LOG(LOG_VERBOSE, "Video frame coded: %d internal frame number: %d", tSourceFrame->coded_picture_number, mChunkNumber);
 //                        #endif
 
+
+                        // do we have a video codec change at sender side?
+                        if (mStreamCodecId != mCodecContext->codec_id)
+                        {
+                            LOG(LOG_INFO, "Incoming video stream changed codec from %s(%d) to %s(%d)", FfmpegId2FfmpegFormat(mStreamCodecId).c_str(), mStreamCodecId, FfmpegId2FfmpegFormat(mCodecContext->codec_id).c_str(), mCodecContext->codec_id);
+
+                            LOG(LOG_ERROR, "Unsupported video codec change");
+
+                            mStreamCodecId = mCodecContext->codec_id;
+                        }
+
+                        // do we have a video resolution change at sender side?
                         if ((mResXLastGrabbedFrame != mCodecContext->width) || (mResYLastGrabbedFrame != mCodecContext->height))
                         {
 							// check if video resolution has changed within remote GUI
