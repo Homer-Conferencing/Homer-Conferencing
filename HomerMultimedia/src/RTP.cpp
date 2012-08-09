@@ -29,17 +29,18 @@
      Result of functional validation:
              Sending                        Receiving
     --------------------------------------------------------------------
-     h261:   ok (VC)                        ok (VC)
-     h263:   not avail., h263+ instead      ok (linphone, ekiga, VC)
-    h263+:   ok (linphone, VC)              ok (linphone, VC)
-     h264:   ok (linphone, VC)              ok (VC)
-    Mpeg1:   ok (VC)                        ok (VC)
-    Mpeg2:   ok (VC)                        ok (VC)
-    Mpeg4:   ok (linphone, ekiga, VC)       ok (linphone, ekiga, VC)
+     h261:   ok (HC)                        ok (HC)
+     h263:   not avail., h263+ instead      ok (linphone, ekiga, HC)
+    h263+:   ok (linphone, HC)              ok (linphone, HC)
+     h264:   ok (linphone, HC)              ok (HC)
+    Mpeg1:   ok (HC)                        ok (HC)
+    Mpeg2:   ok (HC)                        ok (HC)
+    Mpeg4:   ok (linphone, ekiga, HC)       ok (linphone, ekiga, HC)
 
-     pcma:   ok (VC)                        ?
-     pcmu:   ok (VC)                        ?
-      mp3:   ok (VC)                        ok (VC)
+     pcma:   ok (HC)                        ok (HC)
+     pcmu:   ok (HC)                        ok (HC)
+      mp3:   ok (HC)                        ok (HC)
+  pcm16le:   ok (HC)                        ok (HC)
       aac:   ?                              ?
       gsm:
       amr:
