@@ -300,8 +300,10 @@ float MediaSourceGrabberThread::GetSeekEnd()
 
 void MediaSourceGrabberThread::SyncClock(MediaSource* pSource)
 {
+    LOG(LOG_VERBOSE, "Trigger clock synch. with %s", pSource->GetStreamName().c_str());
     mSyncClockAsap = true;
     mSyncClockMasterSource = pSource;
+    mGrabbingCondition.wakeAll();
 }
 
 bool MediaSourceGrabberThread::SupportsMultipleChannels()
