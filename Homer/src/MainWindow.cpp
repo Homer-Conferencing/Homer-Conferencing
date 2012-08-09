@@ -55,7 +55,7 @@
 #include <MediaSourceMuxer.h>
 #include <MediaSourceFile.h>
 #include <MediaSourceDesktop.h>
-#include <NetworkSimulator.h>
+#include <Header_NetworkSimulator.h>
 #include <ProcessStatisticService.h>
 #include <Snippets.h>
 
@@ -210,18 +210,23 @@ void MainWindow::initializeScreenCapturing()
 
 void MainWindow::initializeNetworkSimulator(QStringList pArguments, bool pForce)
 {
-    if (mNetworkSimulator != NULL)
-        return;
+    // use defines here until plugin-interface is integrated completely
+    #if HOMER_NETWORK_SIMULATOR
+        if (mNetworkSimulator != NULL)
+            return;
 
-    if (pArguments.contains("-Enable=NetSim"))
-        pForce = true;
+        if (pArguments.contains("-Enable=NetSim"))
+            pForce = true;
 
-    if (pForce)
-    {
-        mNetworkSimulator = new NetworkSimulator();
-        if (!mNetworkSimulator->Init(mMenuWindows, this))
-            LOG(LOG_ERROR, "Failed to initialize network simulator");
-    }
+        if (pForce)
+        {
+            mNetworkSimulator = new NetworkSimulator();
+            if (!mNetworkSimulator->Init(mMenuWindows, this))
+                LOG(LOG_ERROR, "Failed to initialize network simulator");
+        }
+    #else
+        LOG(LOG_WARN, "Network simulator not included in this version");
+    #endif
 }
 
 void MainWindow::initializeFeatureDisablers(QStringList pArguments)

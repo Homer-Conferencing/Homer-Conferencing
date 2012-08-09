@@ -4,9 +4,13 @@
 ###############################################################################
 
 IF (DEFINED TARGET_PROGRAM_NAME) 
+	MESSAGE("##################################################################")
 	MESSAGE("##### Configuring program \"${TARGET_PROGRAM_NAME}\" to build \"${BUILD}\" version")
+	MESSAGE("##################################################################")
 ELSEIF (DEFINED TARGET_LIB_NAME) 
+	MESSAGE("##################################################################")
 	MESSAGE("##### Configuring library \"${TARGET_LIB_NAME}\" to build \"${BUILD}\" version")
+	MESSAGE("##################################################################")
 ENDIF ()
 
 ##############################################################
@@ -188,6 +192,7 @@ SET (DEFINITIONS_WINDOWS
 	-DWINVER=0x0501
 	-DWIN32
 	-D_REENTRANT
+	-DHOMER_NETWORK_SIMULATOR=${HOMER_NETWORK_SIMULATOR}
 	-DARCH_BITS=${ARCH_BITS}
 )
 
@@ -198,6 +203,7 @@ SET (DEFINITIONS_LINUX
 	-D__STDC_LIMIT_MACROS
 	-DLINUX
 	-D_REENTRANT
+	-DHOMER_NETWORK_SIMULATOR=${HOMER_NETWORK_SIMULATOR}
 	-DARCH_BITS=${ARCH_BITS}
 )
 
@@ -208,6 +214,7 @@ SET (DEFINITIONS_BSD
 	-D__STDC_LIMIT_MACROS
 	-DBSD
 	-D_REENTRANT
+	-DHOMER_NETWORK_SIMULATOR=${HOMER_NETWORK_SIMULATOR}
 	-DARCH_BITS=${ARCH_BITS}
 )
 
@@ -219,6 +226,7 @@ SET (DEFINITIONS_APPLE
 	-DAPPLE
 	-D_THREAD_SAFE
 	-D_REENTRANT
+	-DHOMER_NETWORK_SIMULATOR=${HOMER_NETWORK_SIMULATOR}
 	-DARCH_BITS=${ARCH_BITS}
 )
 

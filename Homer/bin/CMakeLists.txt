@@ -218,6 +218,11 @@ SET (QT_QRC_SOURCES
 )
 
 ##############################################################
+#IF(EXISTS "../../HomerNetworkSimulator" AND IS_DIRECTORY "../../HomerNetworkSimulator")
+IF (HOMER_NETWORK_SIMULATOR)
+	SET(NETWORK_SIMULATOR "HomerNetworkSimulator")
+ENDIF()
+
 # USED LIBRARIES for win32 environment
 IF (NOT (${BUILD} MATCHES "Default"))
 	SET (LIBS_WINDOWS_INSTALL   
@@ -239,7 +244,7 @@ SET (LIBS_WINDOWS
 	HomerGAPI
 	HomerMonitor
 	HomerMultimedia
-	HomerNetworkSimulator
+	${NETWORK_SIMULATOR}
 	HomerConference
 	mingw32
 	${QT_LIBRARIES}
@@ -256,7 +261,7 @@ SET (LIBS_BSD
         HomerGAPI
         HomerMonitor
         HomerMultimedia
-        HomerNetworkSimulator
+	${NETWORK_SIMULATOR}
         HomerConference
         ${QT_LIBRARIES}
 )
@@ -267,7 +272,7 @@ SET (LIBS_LINUX
 	HomerGAPI
 	HomerMonitor
 	HomerMultimedia
-	HomerNetworkSimulator
+	${NETWORK_SIMULATOR}
 	HomerConference
 )
 IF (${BUILD} MATCHES "Default")
@@ -331,7 +336,7 @@ SET (LIBS_APPLE
 	HomerGAPI
 	HomerMonitor
 	HomerMultimedia
-	HomerNetworkSimulator
+	${NETWORK_SIMULATOR}
 	HomerConference
 )
 IF (NOT(${BUILD} MATCHES "Default"))

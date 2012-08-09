@@ -30,7 +30,7 @@
 
 #include <MediaSourceMuxer.h>
 #include <MediaSourceDesktop.h>
-#include <NetworkSimulator.h>
+#include <Header_NetworkSimulator.h>
 #include <Widgets/AudioWidget.h>
 #include <Widgets/AvailabilityWidget.h>
 #include <Widgets/StreamingControlWidget.h>
