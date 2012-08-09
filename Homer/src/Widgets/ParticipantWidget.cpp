@@ -45,6 +45,7 @@
 #include <Logger.h>
 #include <Snippets.h>
 
+#include <QInputDialog>
 #include <QMenu>
 #include <QEvent>
 #include <QAction>
@@ -1299,6 +1300,59 @@ void ParticipantWidget::ActionPauseMovieFile()
 
 void ParticipantWidget::ActionRecordMovieFile()
 {
+    QString tFileName = OverviewPlaylistWidget::LetUserSelectVideoSaveFile(this, "Set file name for video/audio recording");
+
+    if (tFileName.isEmpty())
+        return;
+
+    // get the quality value from the user
+    bool tAck = false;
+    QStringList tPosQuals;
+    for (int i = 1; i < 11; i++)
+        tPosQuals.append(QString("%1").arg(i * 10));
+
+    // ################
+    // video quality
+    // ################
+    QString tVideoQualityStr = QInputDialog::getItem(this, "Select video recording quality", "Record video with quality:                                 ", tPosQuals, 0, false, &tAck);
+
+    if(tVideoQualityStr.isEmpty())
+        return;
+
+    if (!tAck)
+        return;
+
+    // convert QString to int
+    bool tConvOkay = false;
+    int tVideoQuality = tVideoQualityStr.toInt(&tConvOkay, 10);
+    if (!tConvOkay)
+    {
+        LOG(LOG_ERROR, "Error while converting QString to int for video quality");
+        return;
+    }
+
+    // ################
+    // audio quality
+    // ################
+    QString tAudioQualityStr = QInputDialog::getItem(this, "Select audio recording quality", "Record audio with quality:                                 ", tPosQuals, 0, false, &tAck);
+
+    if(tAudioQualityStr.isEmpty())
+        return;
+
+    if (!tAck)
+        return;
+
+    // convert QString to int
+    tConvOkay = false;
+    int tAudioQuality = tAudioQualityStr.toInt(&tConvOkay, 10);
+    if (!tConvOkay)
+    {
+        LOG(LOG_ERROR, "Error while converting QString to int for audio quality");
+        return;
+    }
+
+    // finally start the recording
+//TODO    mVideoWorker->StartRecorder(tFileName.toStdString(), tQuality);
     LOG(LOG_ERROR, "Implement ActionRecordMovieFile()");
 }
 
