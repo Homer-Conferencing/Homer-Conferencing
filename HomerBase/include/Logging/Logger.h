@@ -119,6 +119,7 @@ private:
 
     Mutex       mLoggerMutex, mLogSinksMutex;
     LogSinksList mLogSinks;
+    int         mRegisteredSinks;
     int         mLogLevel;
     int         mLastMessageLogLevel;
     std::string mLastMessage;
