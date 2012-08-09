@@ -30,6 +30,7 @@
 #include <Logger.h>
 #include <Snippets.h>
 
+#include <QInputDialog>
 #include <QDockWidget>
 #include <QMainWindow>
 #include <QTimerEvent>
@@ -100,124 +101,24 @@ OverviewPlaylistWidget::~OverviewPlaylistWidget()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+/// some static helpers
+///////////////////////////////////////////////////////////////////////////////
 
-void OverviewPlaylistWidget::initializeGUI()
-{
-    setupUi(this);
-
-    // hide id column
-//    mTwFiles->setColumnHidden(5, true);
-//    mTwFiles->sortItems(5);
-//    mTwFiles->horizontalHeader()->setResizeMode(QHeaderView::Interactive);
-//    for (int i = 0; i < 2; i++)
-//        mTwFiles->horizontalHeader()->resizeSection(i, mTwFiles->horizontalHeader()->sectionSize(i) * 2);
-}
-
-void OverviewPlaylistWidget::closeEvent(QCloseEvent* pEvent)
-{
-    SetVisible(false);
-}
-
-void OverviewPlaylistWidget::SetVisible(bool pVisible)
-{
-    if (pVisible)
-    {
-        move(mWinPos);
-        show();
-    }else
-    {
-        mWinPos = pos();
-        hide();
-    }
-}
-
-void OverviewPlaylistWidget::StartPlaylist()
-{
-    if (GetListSize() == 0)
-    {
-        LOG(LOG_VERBOSE, "Playlist start triggered but we don't have entries in the list, asking user..");
-        AddEntryDialog();
-    }else
-        LOG(LOG_VERBOSE, "Playlist start triggered and we already have entries in the list");
-
-    Play(mCurrentFileId);
-}
-
-void OverviewPlaylistWidget::StopPlaylist()
-{
-	mIsPlayed = false;
-}
-
-void OverviewPlaylistWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEvent)
-{
-    QAction *tAction;
-
-    QMenu tMenu(this);
-
-    tAction = tMenu.addAction("Add an entry");
-    QIcon tIcon1;
-    tIcon1.addPixmap(QPixmap(":/images/22_22/Plus.png"), QIcon::Normal, QIcon::Off);
-    tAction->setIcon(tIcon1);
-
-    if (!mLwFiles->selectedItems().isEmpty())
-    {
-        tAction = tMenu.addAction("Delete selected");
-        QIcon tIcon2;
-        tIcon2.addPixmap(QPixmap(":/images/22_22/Minus.png"), QIcon::Normal, QIcon::Off);
-        tAction->setIcon(tIcon2);
-    }
-
-    tMenu.addSeparator();
-
-    tAction = tMenu.addAction("Endless loop");
-    tAction->setCheckable(true);
-    tAction->setChecked(mEndlessLoop);
-
-    QAction* tPopupRes = tMenu.exec(pContextMenuEvent->globalPos());
-    if (tPopupRes != NULL)
-    {
-        if (tPopupRes->text().compare("Add an entry") == 0)
-        {
-            AddEntryDialog();
-            return;
-        }
-        if (tPopupRes->text().compare("Delete selected") == 0)
-        {
-            DelEntryDialog();
-            return;
-        }
-        if (tPopupRes->text().compare("Endless loop") == 0)
-        {
-            mEndlessLoop = !mEndlessLoop;
-            LOG(LOG_VERBOSE, "Playlist has now endless loop activation %d", mEndlessLoop);
-            return;
-        }
-    }
-}
-
-void OverviewPlaylistWidget::DelEntryDialog()
-{
-    int tSelectectRow = -1;
-
-    if (mLwFiles->selectionModel()->currentIndex().isValid())
-    {
-        int tSelectedRow = mLwFiles->selectionModel()->currentIndex().row();
-        DeleteListEntry(tSelectedRow);
-        UpdateView();
-    }
-}
-
-static QString sAllLoadVideoFilter = "All supported formats (*.asf *.avi *.dv *.m4v *.mkv *.mov *.mpg *.mpeg *.mp4 *.mp4a *.m3u *.swf *.vob *.wmv *.3gp)";
+static QString sAllLoadVideoFilter = "All supported formats (*.asf *.avi *.bmp *.dv *.jpg *.jpeg *.m4v *.mkv *.mov *.mpg *.mpeg *.mp4 *.mp4a *.m3u *.pls *.png *.swf *.vob *.wmv *.3gp)";
 static QString sLoadVideoFilters = sAllLoadVideoFilter + ";;"\
                     "Advanced Systems Format (*.asf);;"\
                     "Audio Video Interleave Format (*.avi);;"\
                     "Digital Video Format (*.dv);;"\
+                    "Joint Photographic Experts Group (*.jpg *.jpeg);;"\
                     "Matroska Format (*.mkv);;"\
                     "MPEG-Program Stream Format (*.mpg *.mpeg);;"\
-                    "Playlist file (*.m3u);;"\
+                    "M3U Playlist file (*.m3u);;"\
+                    "PLS Playlist file (*.pls);;"\
+                    "Portable Network Graphics (*.png);;"\
                     "Quicktime/MPEG4 Format (*.m4v *.mov *.mp4 *.mp4a *.3gp);;"\
                     "Small Web Format (*.swf);;"\
                     "Video Object Format (*.vob);;" \
+                    "Windows Bitmap (*.bmp);;"\
                     "Windows Media Video Format (*.wmv)";
 
 QStringList OverviewPlaylistWidget::LetUserSelectVideoFile(QWidget *pParent, QString pDescription, bool pMultipleFiles)
@@ -282,14 +183,19 @@ bool OverviewPlaylistWidget::IsVideoFile(QString pFileName)
         return false;
 }
 
-static QString sAllLoadAudioFilter =  "All supported formats (*.mp3 *.avi *.mka *.mkv *.m3u *.wav)";
+static QString sAllLoadAudioFilter =  "All supported formats (*.3gp *.asf *.avi *.m3u *.m4v *.mka *.mkv *.mov *.mp3 *.mp4 *.mp4a *.mpg *.mpeg *.pls *.vob *.wav *.wmv)";
 static QString sLoadAudioFilters =  sAllLoadAudioFilter + ";;"\
+                    "Advanced Systems Format (*.asf);;"\
                     "Audio Video Interleave Format (*.avi);;"\
-                    "Matroska Format (*.mka);;"\
+                    "M3U Playlist file (*.m3u);;"\
+                    "Matroska Format (*.mka *.mkv);;"\
                     "MPEG Audio Layer 2/3 Format (*.mp3);;"\
-                    "Playlist file (*.m3u);;"\
-                    "Waveform Audio File Format (*.wav)";
-
+                    "MPEG-Program Stream Format (*.mpg *.mpeg);;"\
+                    "PLS Playlist file (*.pls);;"\
+                    "Quicktime/MPEG4 Format (*.m4v *.mov *.mp4 *.mp4a *.3gp);;"\
+                    "Video Object Format (*.vob);;" \
+                    "Waveform Audio File Format (*.wav);;" \
+                    "Windows Media Video Format (*.wmv)";
 QStringList OverviewPlaylistWidget::LetUserSelectAudioFile(QWidget *pParent, QString pDescription, bool pMultipleFiles)
 {
     QStringList tResult;
@@ -334,6 +240,10 @@ QString OverviewPlaylistWidget::LetUserSelectAudioSaveFile(QWidget *pParent, QSt
 
 bool OverviewPlaylistWidget::IsAudioFile(QString pFileName)
 {
+    // explicitly allow audio streams
+    if (pFileName.startsWith("http://"))
+        return true;
+
     pFileName = QString(pFileName.toLocal8Bit());
 
     int tPos = pFileName.lastIndexOf('.', -1);
@@ -386,20 +296,23 @@ QStringList OverviewPlaylistWidget::LetUserSelectMovieFile(QWidget *pParent, QSt
     return tResult;
 }
 
-static QString sAllLoadMediaFilter = "All supported formats (*.asf *.avi *.dv *.m4v *.mka *.mkv *.mov *.mpg *.mpeg *.mp3 *.mp4 *.mp4a *.m3u *.pls *.swf *.vob *.wav *.wmv *.3gp)";
+static QString sAllLoadMediaFilter = "All supported formats (*.asf *.avi *.bmp *.dv *.jpg *.jpeg *.m4v *.mka *.mkv *.mov *.mpg *.mpeg *.mp3 *.mp4 *.mp4a *.m3u *.pls *.png *.swf *.vob *.wav *.wmv *.3gp)";
 static QString sLoadMediaFilters = sAllLoadMediaFilter + ";;"\
                     "Advanced Systems Format (*.asf);;"\
                     "Audio Video Interleave Format (*.avi);;"\
                     "Digital Video Format (*.dv);;"\
+                    "Joint Photographic Experts Group (*.jpg *.jpeg);;"\
                     "Matroska Format (*.mka *.mkv);;"\
                     "MPEG Audio Layer 2/3 Format (*.mp3);;"\
                     "MPEG-Program Stream Format (*.mpg *.mpeg);;"\
                     "M3U Playlist file (*.m3u);;"\
+                    "Portable Network Graphics (*.png);;"\
                     "PLS Playlist file (*.pls);;"\
                     "Quicktime/MPEG4 Format (*.m4v *.mov *.mp4 *.mp4a *.3gp);;"\
                     "Small Web Format (*.swf);;"\
                     "Video Object Format (*.vob);;" \
                     "Waveform Audio File Format (*.wav);;" \
+                    "Windows Bitmap (*.bmp);;"\
                     "Windows Media Video Format (*.wmv)";
 QStringList OverviewPlaylistWidget::LetUserSelectMediaFile(QWidget *pParent, QString pDescription, bool pMultipleFiles)
 {
@@ -423,6 +336,160 @@ QStringList OverviewPlaylistWidget::LetUserSelectMediaFile(QWidget *pParent, QSt
         CONF.SetDataDirectory(tResult.first().left(tResult.first().lastIndexOf('/')));
 
     return tResult;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void OverviewPlaylistWidget::initializeGUI()
+{
+    setupUi(this);
+
+    // hide id column
+//    mTwFiles->setColumnHidden(5, true);
+//    mTwFiles->sortItems(5);
+//    mTwFiles->horizontalHeader()->setResizeMode(QHeaderView::Interactive);
+//    for (int i = 0; i < 2; i++)
+//        mTwFiles->horizontalHeader()->resizeSection(i, mTwFiles->horizontalHeader()->sectionSize(i) * 2);
+}
+
+void OverviewPlaylistWidget::closeEvent(QCloseEvent* pEvent)
+{
+    SetVisible(false);
+}
+
+void OverviewPlaylistWidget::SetVisible(bool pVisible)
+{
+    if (pVisible)
+    {
+        if (!isVisible())
+        {
+            move(mWinPos);
+            show();
+        }
+    }else
+    {
+        if (isVisible())
+        {
+            mWinPos = pos();
+            hide();
+        }
+    }
+}
+
+void OverviewPlaylistWidget::StartPlaylist()
+{
+    if (GetListSize() == 0)
+        LOG(LOG_VERBOSE, "Playlist start triggered but we don't have entries in the list");
+    else
+        LOG(LOG_VERBOSE, "Playlist start triggered and we already have entries in the list");
+
+    AddEntryDialog();
+    Play(GetListSize() - 1);
+
+    SetVisible(true);
+}
+
+void OverviewPlaylistWidget::StopPlaylist()
+{
+	mIsPlayed = false;
+}
+
+void OverviewPlaylistWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEvent)
+{
+    QAction *tAction;
+
+    QMenu tMenu(this);
+
+    if (!mLwFiles->selectedItems().isEmpty())
+    {
+        tAction = tMenu.addAction("Play selected");
+        QIcon tIcon0;
+        tIcon0.addPixmap(QPixmap(":/images/22_22/Audio_Play.png"), QIcon::Normal, QIcon::Off);
+        tAction->setIcon(tIcon0);
+
+        tMenu.addSeparator();
+    }
+
+    tAction = tMenu.addAction("Add an entry");
+    QIcon tIcon1;
+    tIcon1.addPixmap(QPixmap(":/images/22_22/Plus.png"), QIcon::Normal, QIcon::Off);
+    tAction->setIcon(tIcon1);
+
+    if (!mLwFiles->selectedItems().isEmpty())
+    {
+        tAction = tMenu.addAction("Rename selected");
+        QIcon tIcon15;
+        tIcon15.addPixmap(QPixmap(":/images/22_22/Contact_Edit.png"), QIcon::Normal, QIcon::Off);
+        tAction->setIcon(tIcon15);
+
+        tAction = tMenu.addAction("Delete selected");
+        QIcon tIcon2;
+        tIcon2.addPixmap(QPixmap(":/images/22_22/Minus.png"), QIcon::Normal, QIcon::Off);
+        tAction->setIcon(tIcon2);
+    }
+
+    tMenu.addSeparator();
+
+    if (GetListSize() > 0)
+    {
+        tAction = tMenu.addAction("Reset playlist");
+        QIcon tIcon3;
+        tIcon3.addPixmap(QPixmap(":/images/22_22/Reload.png"), QIcon::Normal, QIcon::Off);
+        tAction->setIcon(tIcon3);
+
+        tMenu.addSeparator();
+    }
+
+    tAction = tMenu.addAction("Endless loop");
+    tAction->setCheckable(true);
+    tAction->setChecked(mEndlessLoop);
+
+    QAction* tPopupRes = tMenu.exec(pContextMenuEvent->globalPos());
+    if (tPopupRes != NULL)
+    {
+        if (tPopupRes->text().compare("Play selected") == 0)
+        {
+            ActionPlay();
+            return;
+        }
+        if (tPopupRes->text().compare("Add an entry") == 0)
+        {
+            AddEntryDialog();
+            return;
+        }
+        if (tPopupRes->text().compare("Rename selected") == 0)
+        {
+            RenameDialog();
+            return;
+        }
+        if (tPopupRes->text().compare("Delete selected") == 0)
+        {
+            DelEntryDialog();
+            return;
+        }
+        if (tPopupRes->text().compare("Reset playlist") == 0)
+        {
+            ResetList();
+            return;
+        }
+        if (tPopupRes->text().compare("Endless loop") == 0)
+        {
+            mEndlessLoop = !mEndlessLoop;
+            LOG(LOG_VERBOSE, "Playlist has now endless loop activation %d", mEndlessLoop);
+            return;
+        }
+    }
+}
+
+void OverviewPlaylistWidget::DelEntryDialog()
+{
+    int tSelectectRow = -1;
+
+    if (mLwFiles->selectionModel()->currentIndex().isValid())
+    {
+        int tSelectedRow = mLwFiles->selectionModel()->currentIndex().row();
+        DeleteListEntry(tSelectedRow);
+    }
 }
 
 void OverviewPlaylistWidget::AddEntryDialog()
@@ -603,7 +670,7 @@ void OverviewPlaylistWidget::dragEnterEvent(QDragEnterEvent *pEvent)
         int i = 0;
 
         foreach(tUrl, tList)
-            LOG(LOG_VERBOSE, "New drag+drop url (%d) \"%s\"", ++i, tUrl.toString().toStdString().c_str());
+            LOG(LOG_VERBOSE, "New entering drag+drop url (%d) \"%s\"", ++i, tUrl.toString().toStdString().c_str());
         return;
     }
 }
@@ -820,6 +887,27 @@ QString OverviewPlaylistWidget::GetListEntry(int pIndex)
     return tResult;
 }
 
+QString OverviewPlaylistWidget::GetListEntryName(int pIndex)
+{
+    QString tResult = "";
+
+    mPlaylistMutex.lock();
+    PlaylistEntry tEntry;
+    int tIndex = 0;
+    foreach(tEntry, mPlaylist)
+    {
+        if (tIndex == pIndex)
+        {
+            tResult = tEntry.Name;
+            break;
+        }
+        tIndex++;
+    }
+    mPlaylistMutex.unlock();
+
+    return tResult;
+}
+
 void OverviewPlaylistWidget::DeleteListEntry(int pIndex)
 {
     int tIndex = 0;
@@ -841,6 +929,75 @@ void OverviewPlaylistWidget::DeleteListEntry(int pIndex)
     }
 
     mPlaylistMutex.unlock();
+
+    UpdateView();
+}
+
+void OverviewPlaylistWidget::RenameListEntry(int pIndex, QString pName)
+{
+    int tIndex = 0;
+    Playlist::iterator tIt;
+
+    LOG(LOG_VERBOSE, "Renaming index %d to %s", pIndex, pName.toStdString().c_str());
+
+    mPlaylistMutex.lock();
+
+    if (mPlaylist.size() > 0)
+    {
+        for (tIt = mPlaylist.begin(); tIt != mPlaylist.end(); tIt++)
+        {
+            if (tIndex == pIndex)
+            {
+                tIt->Name = pName;
+                break;
+            }
+            tIndex++;
+        }
+    }
+
+    mPlaylistMutex.unlock();
+
+    UpdateView();
+}
+
+void OverviewPlaylistWidget::ResetList()
+{
+    Playlist::iterator tIt;
+
+    mPlaylistMutex.lock();
+
+    if (mPlaylist.size() > 0)
+    {
+        tIt = mPlaylist.begin();
+        while (tIt != mPlaylist.end())
+        {
+            mPlaylist.erase(tIt);
+            tIt = mPlaylist.begin();
+        }
+    }
+
+    mPlaylistMutex.unlock();
+
+    UpdateView();
+}
+
+void OverviewPlaylistWidget::RenameDialog()
+{
+    if (mLwFiles->selectionModel()->currentIndex().isValid())
+    {
+        int tSelectedRow = mLwFiles->selectionModel()->currentIndex().row();
+        QString tCurrentName = GetListEntryName(tSelectedRow);
+        QString tFillSpace = "";
+        for (int i = 0; i < tCurrentName.length(); i++)
+            tFillSpace += "  ";
+        LOG(LOG_VERBOSE, "User wants to rename \"%s\" at index %d", tCurrentName.toStdString().c_str(), tSelectedRow);
+        bool tOkay = false;
+        QString tNewName = QInputDialog::getText(this, "Rename \"" + tCurrentName + "\"", "New name:           " + tFillSpace, QLineEdit::Normal, tCurrentName, &tOkay);
+        if ((tOkay) && (!tNewName.isEmpty()))
+        {
+            RenameListEntry(tSelectedRow, tNewName);
+        }
+    }
 }
 
 void OverviewPlaylistWidget::ActionPlay()

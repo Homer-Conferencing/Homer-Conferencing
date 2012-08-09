@@ -83,6 +83,7 @@ SET (SOURCES
 	../src/MediaSourceNet
 	../src/MediaSourcePortAudio
 	../src/RTP
+	../src/VideoScaler
 	../src/WaveOut
 	../src/WaveOutPortAudio	
 )

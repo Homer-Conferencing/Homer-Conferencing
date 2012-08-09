@@ -53,7 +53,12 @@ namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class MediaSourceMuxer :
+// amount of entries within the input FIFO
+#define MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT                  32
+
+///////////////////////////////////////////////////////////////////////////////
+
+class MediaSourceMuxer:
     public MediaSource, public Thread
 {
 public:
@@ -135,6 +140,9 @@ public:
     virtual std::string CurrentInputChannel();
     virtual std::vector<std::string> GetInputChannels();
 
+    /* live OSD marking */
+    virtual bool SupportsMarking();
+
 public:
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97);
     virtual bool OpenAudioGrabDevice(int pSampleRate = 44100, bool pStereo = true);
@@ -153,7 +161,7 @@ private:
 
     /* transcoder */
     virtual void* Run(void* pArgs = NULL); // transcoder main loop
-    void StartEncoder(int pFifoEntrySize);
+    void StartEncoder();
     void StopEncoder();
 
     static int DistributePacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize);
@@ -171,6 +179,7 @@ private:
     bool                mEncoderNeeded;
     MediaFifo           *mEncoderFifo;
     bool				mEncoderHasKeyFrame;
+    Mutex               mEncoderFifoMutex;
     /* device control */
     MediaSources        mMediaSources;
     Mutex               mMediaSourcesMutex;

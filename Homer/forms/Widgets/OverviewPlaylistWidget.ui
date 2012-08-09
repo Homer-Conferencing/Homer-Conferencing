@@ -66,6 +66,9 @@
            <pointsize>9</pointsize>
           </font>
          </property>
+         <property name="acceptDrops">
+          <bool>true</bool>
+         </property>
          <property name="frameShape">
           <enum>QFrame::Panel</enum>
          </property>

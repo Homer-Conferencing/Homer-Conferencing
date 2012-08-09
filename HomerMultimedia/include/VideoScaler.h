@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 2011 Thomas Volkert <thomas@homer-conferencing.com>
+ * Copyright (C) 2012 Thomas Volkert <thomas@homer-conferencing.com>
  *
  * This software is free software.
  * Your are allowed to redistribute it and/or modify it under the terms of
@@ -20,17 +20,21 @@
  *****************************************************************************/
 
 /*
- * Purpose: FIFO memory for buffering media data in a preallocated data storage
+ * Purpose: video scaler
  * Author:  Thomas Volkert
- * Since:   2011-11-13
+ * Since:   2012-08-09
  */
 
-#ifndef _MULTIMEDIA_MEDIA_FIFO_
-#define _MULTIMEDIA_MEDIA_FIFO_
+#ifndef _MULTIMEDIA_VIDEO_SCALER_
+#define _MULTIMEDIA_VIDEO_SCALER_
 
-#include <HBCondition.h>
+#include <Header_Ffmpeg.h>
 #include <HBMutex.h>
+#include <HBThread.h>
+#include <MediaFifo.h>
+#include <RTP.h>
 
+#include <vector>
 #include <string>
 
 using namespace Homer::Base;
@@ -39,50 +43,48 @@ namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// the following de/activates debugging of received packets
-//#define MF_DEBUG
+// the following de/activates debugging of sent packets
+//#define VS_DEBUG_PACKETS
 
 ///////////////////////////////////////////////////////////////////////////////
 
-struct MediaFifoEntry
-{
-	char	*Data;
-	int		Size;
-	Mutex   EntryMutex;
-};
-
-///////////////////////////////////////////////////////////////////////////////
-
-class MediaFifo
+class VideoScaler:
+    public Thread, public MediaFifo
 {
 public:
-    /// The default constructor
-    MediaFifo(std::string pName = "");
-    MediaFifo(int pFifoSize, int pFifoEntrySize, std::string pName = "");
-    /// The destructor.
-    virtual ~MediaFifo();
+    VideoScaler();
+
+    virtual ~VideoScaler();
+
+    void StartScaler(enum CodecID pTargetCodecId, int pSourceResX, int pSourceResY, int pTargetResX, int pTargetResY);
+    void StopScaler();
 
     virtual void WriteFifo(char* pBuffer, int pBufferSize);
     virtual void ReadFifo(char *pBuffer, int &pBufferSize); // memory copy, returns entire memory
     virtual void ClearFifo();
 
-    virtual int ReadFifoExclusive(char **pBuffer, int &pBufferSize); // avoids memory copy, returns a pointer to memory
+    // avoids memory copy, returns a pointer to memory
+    virtual int ReadFifoExclusive(char **pBuffer, int &pBufferSize); // return -1 if internal FIFO isn't available yet
     virtual void ReadFifoExclusiveFinished(int pEntryPointer);
 
     virtual int GetEntrySize();
     virtual int GetUsage();
     virtual int GetSize();
 
-protected:
-    std::string			mName;
-    MediaFifoEntry      *mFifo;
-	int					mFifoWritePtr;
-	int                 mFifoReadPtr;
-	int                 mFifoAvailableEntries;
-	int                 mFifoSize;
-	int 				mFifoEntrySize;
-    Mutex				mFifoMutex;
-    Condition			mFifoDataInputCondition;
+private:
+    virtual void* Run(void* pArgs = NULL); // video scaler main loop
+
+    MediaFifo           *mInputFifo;
+    MediaFifo           *mOutputFifo;
+    bool                mScalerNeeded;
+    int                 mSourceResX;
+    int                 mSourceResY;
+    int                 mTargetResX;
+    int                 mTargetResY;
+    int                 mChunkNumber;
+    enum CodecID        mTargetCodecId;
+    enum PixelFormat    mTargetPixelFormat;
+    SwsContext          *mScalerContext;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

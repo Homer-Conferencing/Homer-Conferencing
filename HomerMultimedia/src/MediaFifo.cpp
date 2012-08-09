@@ -37,6 +37,18 @@ using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+MediaFifo::MediaFifo(std::string pName)
+{
+    mName = pName;
+    mFifoSize = 0;
+    mFifoEntrySize = 0;
+    mFifoWritePtr = 0;
+    mFifoReadPtr = 0;
+    mFifoAvailableEntries = 0;
+    mFifo = NULL;
+    LOG(LOG_VERBOSE, "Created abstract FIFO for %s with %d entries of %d bytes", pName.c_str(), mFifoSize, mFifoEntrySize);
+}
+
 MediaFifo::MediaFifo(int pFifoSize, int pFifoEntrySize, string pName)
 {
     mName = pName;
@@ -51,19 +63,25 @@ MediaFifo::MediaFifo(int pFifoSize, int pFifoEntrySize, string pName)
 		mFifo[i].Size = 0;
 		mFifo[i].Data = (char*)malloc(mFifoEntrySize);
 		if (mFifo[i].Data == NULL)
-			LOG(LOG_ERROR, "Unable to allocate memory for FIFO");
+			LOG(LOG_ERROR, "Unable to allocate %d bytes of memory for FIFO %s", mFifoEntrySize, pName.c_str());
 	}
 	LOG(LOG_VERBOSE, "Created FIFO for %s with %d entries of %d bytes", pName.c_str(), mFifoSize, mFifoEntrySize);
 }
 
 MediaFifo::~MediaFifo()
 {
-    for (int i = 0; i < mFifoSize; i++)
-	{
-		mFifo[i].Size = 0;
-		free(mFifo[i].Data);
-	}
-    delete[] mFifo;
+    LOG(LOG_VERBOSE, "Destroying FIFO %s with size of %d", mName.c_str(), mFifoSize);
+
+    if (mFifo != NULL)
+    {
+        for (int i = 0; i < mFifoSize; i++)
+        {
+            mFifo[i].Size = 0;
+            free(mFifo[i].Data);
+        }
+        delete[] mFifo;
+        mFifo = NULL;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -151,6 +169,11 @@ void MediaFifo::ClearFifo()
 
     // unlock
     mFifoMutex.unlock();
+}
+
+int MediaFifo::GetEntrySize()
+{
+    return mFifoEntrySize;
 }
 
 int MediaFifo::GetUsage()

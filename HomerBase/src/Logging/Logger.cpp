@@ -65,6 +65,7 @@ bool sLoggerReady = false;
 
 Logger::Logger()
 {
+    mRegisteredSinks = 0;
     mLogLevel = LOG_ERROR;
     mLastMessageLogLevel = LOG_ERROR;
     mLastSource = "";
@@ -118,7 +119,10 @@ void Logger::RegisterLogSink(LogSink* pLogSink)
     }
 
     if (!tFound)
+    {
         mLogSinks.push_back(pLogSink);
+        mRegisteredSinks++;
+    }
 
     // unlock
     mLogSinksMutex.unlock();
@@ -154,6 +158,7 @@ void Logger::UnregisterLogSink(LogSink* pLogSink)
             // remove registration of log sink object
             tFound = true;
             mLogSinks.erase(tIt);
+            mRegisteredSinks--;
             break;
         }
     }
@@ -206,6 +211,12 @@ void Logger::AddMessage(int pLevel, const char *pSource, int pLine, const char* 
     {
     	printf("LOGGER: tried to log message from %s(%d) when logger instance isn't valid\n", pSource, pLine);
     	return;
+    }
+
+    if ((pLevel <= mLogLevel /* we won't produce an output to console */) && (mRegisteredSinks == 0 /* only the console would get the message */))
+    {
+        // return immediately
+        return;
     }
 
     va_list tVArgs;

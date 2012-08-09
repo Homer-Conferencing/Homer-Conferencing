@@ -331,6 +331,19 @@ bool MediaSourceMem::SupportsRelaying()
     return true;
 }
 
+void MediaSourceMem::StopGrabbing()
+{
+	MediaSource::StopGrabbing();
+
+	LOG(LOG_VERBOSE, "Going to stop memory based %s source", GetMediaTypeStr().c_str());
+
+    char tData[4];
+    mDecoderFifo->WriteFifo(tData, 0);
+    mDecoderFifo->WriteFifo(tData, 0);
+
+    LOG(LOG_VERBOSE, "Memory based %s source successfully stopped", GetMediaTypeStr().c_str());
+}
+
 int MediaSourceMem::GetChunkDropCounter()
 {
     if (mRtpActivated)
@@ -419,6 +432,10 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     tByteIoContext->seekable = 0;
     // limit packet size, otherwise ffmpeg will deliver unpredictable results ;)
     tByteIoContext->max_packet_size = MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE;
+
+    // there is no differentiation between H.263+ and H.263 when decoding an incoming video stream
+    if (mStreamCodecId == CODEC_ID_H263P)
+        mStreamCodecId = CODEC_ID_H263;
 
     // find format
     string tCodecName = FfmpegId2FfmpegFormat(mStreamCodecId);
@@ -843,6 +860,18 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
 //                            LOG(LOG_VERBOSE, "Video frame coded: %d internal frame number: %d", tSourceFrame->coded_picture_number, mChunkNumber);
 //                        #endif
 
+
+                        // do we have a video codec change at sender side?
+                        if (mStreamCodecId != mCodecContext->codec_id)
+                        {
+                            LOG(LOG_INFO, "Incoming video stream changed codec from %s(%d) to %s(%d)", FfmpegId2FfmpegFormat(mStreamCodecId).c_str(), mStreamCodecId, FfmpegId2FfmpegFormat(mCodecContext->codec_id).c_str(), mCodecContext->codec_id);
+
+                            LOG(LOG_ERROR, "Unsupported video codec change");
+
+                            mStreamCodecId = mCodecContext->codec_id;
+                        }
+
+                        // do we have a video resolution change at sender side?
                         if ((mResXLastGrabbedFrame != mCodecContext->width) || (mResYLastGrabbedFrame != mCodecContext->height))
                         {
 							// check if video resolution has changed within remote GUI

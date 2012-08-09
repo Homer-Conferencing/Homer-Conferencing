@@ -70,6 +70,7 @@ MediaSource::MediaSource(string pName):
     PacketStatistic(pName)
 {
     mSourceType = SOURCE_ABSTRACT;
+    mMarkerActivated = false;
     mMediaSourceOpened = false;
     mGrabbingStopped = false;
     mRecording = false;
@@ -1558,7 +1559,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     LOG(LOG_INFO, "    ..qmin: %d", mRecorderCodecContext->qmin);
     LOG(LOG_INFO, "    ..qmax: %d", mRecorderCodecContext->qmax);
     LOG(LOG_INFO, "    ..frame size: %d", mRecorderCodecContext->frame_size);
-    LOG(LOG_INFO, "    ..duration: %ld frames", mNumberOfFrames);
+    LOG(LOG_INFO, "    ..duration: %.2f frames", mNumberOfFrames);
     LOG(LOG_INFO, "    ..stream context duration: %ld frames, %.0f seconds, format context duration: %ld, nr. of frames: %ld", mRecorderFormatContext->streams[tMediaStreamIndex]->duration, (float)mRecorderFormatContext->streams[tMediaStreamIndex]->duration / mFrameRate, mRecorderFormatContext->duration, mRecorderFormatContext->streams[tMediaStreamIndex]->nb_frames);
     switch(mMediaType)
     {
@@ -2225,6 +2226,32 @@ string MediaSource::CurrentInputChannel()
     return mCurrentDevice;
 }
 
+bool MediaSource::SupportsMarking()
+{
+    return false;
+}
+
+bool MediaSource::MarkerActive()
+{
+    return mMarkerActivated;
+}
+
+void MediaSource::SetMarker(bool pActivation)
+{
+    LOG(LOG_VERBOSE, "Setting marker state to %d", pActivation);
+    mMarkerActivated = pActivation;
+}
+
+void MediaSource::MoveMarker(float pRelX, float pRelY)
+{
+    if (MarkerActive())
+    {
+        //LOG(LOG_VERBOSE, "Moving marker to %.2f, %.2f", pRelX, pRelY);
+        mMarkerRelX = pRelX;
+        mMarkerRelY = pRelY;
+    }
+}
+
 void MediaSource::FpsEmulationInit()
 {
     mStartPtsUSecs = av_gettime();
@@ -2257,8 +2284,8 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..qmin: %d", mCodecContext->qmin);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..qmax: %d", mCodecContext->qmax);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame size: %d", mCodecContext->frame_size);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..duration: %ld frames", mNumberOfFrames);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start PTS: %ld frames", mSourceStartPts);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..duration: %.2f frames", mNumberOfFrames);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start PTS: %.2f frames", mSourceStartPts);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..format context start PTS: %ld", mFormatContext->start_time);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context duration: %ld frames (%.0f seconds), format context duration: %ld seconds, nr. of frames: %ld", mFormatContext->streams[mMediaStreamIndex]->duration, (float)mFormatContext->streams[mMediaStreamIndex]->duration / mFrameRate, mFormatContext->duration / AV_TIME_BASE, mFormatContext->streams[mMediaStreamIndex]->nb_frames);
     switch(mMediaType)

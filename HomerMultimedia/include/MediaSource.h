@@ -278,6 +278,12 @@ public:
     virtual std::string CurrentInputChannel();
     virtual std::vector<std::string> GetInputChannels();
 
+    /* live OSD marking */
+    virtual bool SupportsMarking();
+    virtual bool MarkerActive();
+    virtual void SetMarker(bool pActivation = true);
+    virtual void MoveMarker(float pRelX, float pRelY);
+
 public:
     /* abstract interface which has to be implemented by derived classes */
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97) = 0;
@@ -327,8 +333,8 @@ protected:
     AVFormatContext     *mFormatContext;
     AVCodecContext      *mCodecContext;
     int                 mMediaStreamIndex;
-    int64_t             mStartPtsUSecs /* only used in MediasourceNet and MediaSourceFile */, mSourceStartPts; // for synchronized playback we calculate the position within a media stream and write the value into PTS entry of an encoded packet
-    int64_t             mNumberOfFrames;
+    double              mStartPtsUSecs /* only used in MediasourceNet and MediaSourceFile */, mSourceStartPts; // for synchronized playback we calculate the position within a media stream and write the value into PTS entry of an encoded packet
+    double              mNumberOfFrames;
     /* audio */
     AVFifoBuffer        *mRecorderSampleFifo;
     char                *mRecorderSamplesTempBuffer;
@@ -342,6 +348,10 @@ protected:
     int                 mTargetResY;
     float               mFrameRate;
     SwsContext          *mScalerContext;
+    /* live OSD marking */
+    float               mMarkerRelX;
+    float               mMarkerRelY;
+    bool                mMarkerActivated;
     /* relaying */
     MediaSinks          mMediaSinks;
     Mutex               mMediaSinksMutex;

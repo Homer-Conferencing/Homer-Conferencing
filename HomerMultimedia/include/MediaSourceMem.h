@@ -71,6 +71,7 @@ public:
     virtual ~MediaSourceMem();
 
     /* grabbing control */
+    virtual void StopGrabbing();
     virtual int GetChunkDropCounter();
     virtual int GetFragmentBufferCounter();
     virtual int GetFragmentBufferSize();
@@ -91,6 +92,7 @@ public:
     virtual bool CloseGrabDevice();
     virtual int GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk = false);
 
+    // send input to the media source
     virtual void WriteFragment(char *pBuffer, int pBufferSize);
 
 protected:

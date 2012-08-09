@@ -57,7 +57,6 @@ void MediaSourceNet::Init(Socket *pDataSocket, unsigned int pLocalPort, bool pRt
     mPeerHost = "";
     mPeerPort = 0;
     mOpenInputStream = false;
-    mListenerRunning = false;
     mRtpActivated = pRtpActivated;
     mPacketBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
 
@@ -91,7 +90,7 @@ void MediaSourceNet::Init(Socket *pDataSocket, unsigned int pLocalPort, bool pRt
             mListenerPort = 0;
         }
 
-        LOG(LOG_VERBOSE, "Listen for media packets at GAPI interface: %s, local port specified as: %d, TCP-like transport: %d", mGAPIDataSocket->getName()->toString().c_str(), getListenerPort(), mStreamedTransport);
+        LOG(LOG_VERBOSE, "Listen for media packets at GAPI interface: %s, local port specified as: %d, TCP-like transport: %d", mGAPIDataSocket->getName()->toString().c_str(), GetListenerPort(), mStreamedTransport);
         // assume Berkeley-Socket implementation behind GAPI interface => therefore we can easily conclude on "UDP/TCP/UDPlite"
         mCurrentDeviceName = "NET-IN: " + mGAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mGAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? "UDPlite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
     }else
@@ -171,19 +170,15 @@ MediaSourceNet::~MediaSourceNet()
 {
 	LOG(LOG_VERBOSE, "Going to destroy network based media source");
 
-	LOG(LOG_VERBOSE, "..stopping grabbing");
+    LOG(LOG_VERBOSE, "..stopping grabbing");
     StopGrabbing();
 
+    LOG(LOG_VERBOSE, "..stopping network listener");
+    StopListener();
+
+    LOG(LOG_VERBOSE, "..closing media source");
     if (mMediaSourceOpened)
         CloseGrabDevice();
-
-    // check every 100 ms if listener thread is still running
-	LOG(LOG_VERBOSE, "..wait for end of listener thread");
-    while(mListenerRunning)
-    	Suspend(100000);
-	LOG(LOG_VERBOSE, "..end of listener thread reached");
-
-    free(mPacketBuffer);
 
     if(mGAPIUsed)
     {
@@ -200,6 +195,7 @@ MediaSourceNet::~MediaSourceNet()
             delete mDataSocket;
         }
     }
+    free(mPacketBuffer);
 	LOG(LOG_VERBOSE, "Destroyed");
 }
 
@@ -238,13 +234,77 @@ bool MediaSourceNet::DoReceiveFragment(std::string &pSourceHost, unsigned int &p
     return tResult;
 }
 
+void MediaSourceNet::StartListener()
+{
+    LOG(LOG_VERBOSE, "Starting network listener for local port %u", GetListenerPort());
+
+    mListenerNeeded = true;
+
+    // start socket listener
+    StartThread();
+}
+
+void MediaSourceNet::StopListener()
+{
+    int tSignalingRound = 0;
+    char tTmp[4];
+
+    LOG(LOG_VERBOSE, "Stopping network listener");
+
+    if (mDecoderFifo != NULL)
+    {
+        // tell transcoder thread it isn't needed anymore
+        mListenerNeeded = false;
+
+        LOG(LOG_VERBOSE, "..wait for end of listener thread");
+        while(!StopThread(500))
+        {
+            if(tSignalingRound > 0)
+                LOG(LOG_WARN, "Signaling round %d to stop network listener, system has high load", tSignalingRound);
+            tSignalingRound++;
+
+            if (mGAPIUsed)
+            {
+                mGAPIDataSocket->cancel();
+            }else
+            {
+                if (mDataSocket != NULL)
+                {
+                    LOG(LOG_VERBOSE, "Try to do loopback signaling to local IPv%d listener at port %u, transport %d", mDataSocket->GetNetworkType(), 0xFFFF & mDataSocket->GetLocalPort(), mDataSocket->GetTransportType());
+                    Socket  *tSocket = Socket::CreateClientSocket(mDataSocket->GetNetworkType(), mDataSocket->GetTransportType());
+                    char    tData[8];
+                    switch(tSocket->GetNetworkType())
+                    {
+                        case SOCKET_IPv4:
+                            LOG(LOG_VERBOSE, "Doing loopback signaling to IPv4 listener to port %u", GetListenerPort());
+                            if (!tSocket->Send("127.0.0.1", mDataSocket->GetLocalPort(), tData, 0))
+                                LOG(LOG_ERROR, "Error when sending data through loopback IPv4-UDP socket");
+                            break;
+                        case SOCKET_IPv6:
+                            LOG(LOG_VERBOSE, "Doing loopback signaling to IPv6 listener to port %u", GetListenerPort());
+                            if (!tSocket->Send("::1", mDataSocket->GetLocalPort(), tData, 0))
+                                LOG(LOG_ERROR, "Error when sending data through loopback IPv6-UDP socket");
+                            break;
+                        default:
+                            LOG(LOG_ERROR, "Unknown network type");
+                            break;
+                    }
+                    delete tSocket;
+                }
+            }
+        }
+    }
+
+    LOG(LOG_VERBOSE, "Network listener stopped");
+}
+
 void* MediaSourceNet::Run(void* pArgs)
 {
     string tSourceHost = "";
     unsigned int tSourcePort = 0;
     int tDataSize;
 
-    LOG(LOG_VERBOSE, "%s Socket-Listener for port %u started", GetMediaTypeStr().c_str(), getListenerPort());
+    LOG(LOG_VERBOSE, "%s Socket-Listener for port %u started", GetMediaTypeStr().c_str(), GetListenerPort());
     if (mGAPIUsed)
     {
         switch(mMediaType)
@@ -275,10 +335,8 @@ void* MediaSourceNet::Run(void* pArgs)
         }
     }
 
-    do
+    while ((mListenerNeeded) && (!mGrabbingStopped))
     {
-        mListenerRunning = true;
-
         //####################################################################
 		// receive packet from network socket
 		// ###################################################################
@@ -289,7 +347,7 @@ void* MediaSourceNet::Run(void* pArgs)
 		    if (mReceiveErrors == MEDIA_SOURCE_NET_MAX_RECEIVE_ERRORS)
 		    {
 		        LOG(LOG_ERROR, "Maximum number of continuous receive errors(%d) is exceeded, will stop network listener", MEDIA_SOURCE_NET_MAX_RECEIVE_ERRORS);
-		        mListenerRunning = false;
+		        mListenerNeeded = false;
 		        break;
 		    }else
 		        mReceiveErrors++;
@@ -381,15 +439,14 @@ void* MediaSourceNet::Run(void* pArgs)
 				tDataSize = -1;
 			}
 		}
-    }while(!mGrabbingStopped);
+    }
 
-    mListenerRunning = false;
-    LOG(LOG_VERBOSE, "%s Socket-Listener for port %u finished", GetMediaTypeStr().c_str(), getListenerPort());
+    LOG(LOG_VERBOSE, "%s Socket-Listener for port %u finished", GetMediaTypeStr().c_str(), GetListenerPort());
 
     return NULL;
 }
 
-unsigned int MediaSourceNet::getListenerPort()
+unsigned int MediaSourceNet::GetListenerPort()
 {
     return mListenerPort;
 }
@@ -402,7 +459,7 @@ bool MediaSourceNet::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 	mMediaType = MEDIA_VIDEO;
 
 	// start socket listener
-    StartThread();
+    StartListener();
 
     bool tResult = MediaSourceMem::OpenVideoGrabDevice(pResX, pResY, pFps);
 
@@ -429,7 +486,7 @@ bool MediaSourceNet::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
 	mMediaType = MEDIA_AUDIO;
 
 	// start socket listener
-    StartThread();
+    StartListener();
 
     bool tResult = MediaSourceMem::OpenAudioGrabDevice(pSampleRate, pStereo);
 
@@ -446,55 +503,6 @@ bool MediaSourceNet::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
 	}
 
     return tResult;
-}
-
-void MediaSourceNet::StopGrabbing()
-{
-    if (mGrabbingStopped)
-    {
-        LOG(LOG_VERBOSE, "Grabbing is already stopped");
-        return;
-    }
-
-    // mark as stopped
-    MediaSourceMem::StopGrabbing();
-
-    if ((((mOpenInputStream) && (mListenerRunning)) || (mListenerRunning) || ((!mOpenInputStream) && (!mGrabMutex.tryLock(100)))))
-    {
-        if (mGAPIUsed)
-        {
-            mGAPIDataSocket->cancel();
-        }else
-        {
-            if (mDataSocket != NULL)
-            {
-                LOG(LOG_VERBOSE, "Try to do loopback signaling to local IPv%d listener at port %u, transport %d", mDataSocket->GetNetworkType(), 0xFFFF & mDataSocket->GetLocalPort(), mDataSocket->GetTransportType());
-                Socket  *tSocket = Socket::CreateClientSocket(mDataSocket->GetNetworkType(), mDataSocket->GetTransportType());
-                char    tData[8];
-                switch(tSocket->GetNetworkType())
-                {
-                    case SOCKET_IPv4:
-                        LOG(LOG_VERBOSE, "Doing loopback signaling to IPv4 listener to port %u", getListenerPort());
-                        if (!tSocket->Send("127.0.0.1", mDataSocket->GetLocalPort(), tData, 0))
-                            LOG(LOG_ERROR, "Error when sending data through loopback IPv4-UDP socket");
-                        break;
-                    case SOCKET_IPv6:
-                        LOG(LOG_VERBOSE, "Doing loopback signaling to IPv6 listener to port %u", getListenerPort());
-                        if (!tSocket->Send("::1", mDataSocket->GetLocalPort(), tData, 0))
-                            LOG(LOG_ERROR, "Error when sending data through loopback IPv6-UDP socket");
-                        break;
-                    default:
-                        LOG(LOG_ERROR, "Unknown network type");
-                        break;
-                }
-                delete tSocket;
-            }
-        }
-    }else
-    {
-        LOG(LOG_VERBOSE, "Loopback signaling skipped, state of opening input stream: %d, state of listener thread: %d, grabbing stopped: %d", mOpenInputStream, mListenerRunning, mGrabbingStopped);
-        mGrabMutex.unlock();
-    }
 }
 
 string MediaSourceNet::GetCurrentDevicePeerName()

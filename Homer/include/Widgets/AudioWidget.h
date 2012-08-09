@@ -40,6 +40,7 @@
 #include <QQueue>
 #include <QList>
 
+#include <MediaSourceGrabberThread.h>
 #include <MediaSource.h>
 #include <WaveOut.h>
 #include <ui_AudioWidget.h>
@@ -53,9 +54,7 @@ using namespace Homer::Multimedia;
 // debug performance of audio widget
 //#define DEBUG_AUDIOWIDGET_PERFORMANCE
 
-#define AUDIO_INITIAL_MINIMUM_PLAYBACK_QUEUE        4
-
-#define SAMPLE_BUFFER_SIZE               3
+#define SAMPLE_BUFFER_SIZE               16
 
 // de/activate automatic sample dropping in case the audo widget is invisible (default is off)
 //#define AUDIO_WIDGET_DROP_WHEN_INVISIBLE
@@ -72,14 +71,20 @@ class AudioWidget:
 
 public:
     AudioWidget(QWidget* pParent = NULL);
-    void Init(MediaSource *pAudioSource, QMenu *pAudioMenu, QString pActionTitle = "Audio", QString pWidgetTitle = "Audio", bool pVisible = false, bool pMuted = false);
 
     virtual ~AudioWidget();
+
+    void Init(MediaSource *pAudioSource, QMenu *pAudioMenu, QString pActionTitle = "Audio", QString pWidgetTitle = "Audio", bool pVisible = false, bool pMuted = false);
+
     void SetVisible(bool pVisible);
+
     void InformAboutOpenError(QString pSourceName);
     void InformAboutNewSamples();
     void InformAboutNewMuteState();
+
     AudioWorkerThread* GetWorker();
+
+    /* volume control */
     void SetVolume(int pValue); // 0-300 %
     int GetVolume();
 
@@ -119,51 +124,24 @@ private:
 };
 
 class AudioWorkerThread:
-    public QThread
+    public MediaSourceGrabberThread
 {
     Q_OBJECT;
 public:
     AudioWorkerThread(MediaSource *pAudioSource, AudioWidget *pAudioWidget);
 
     virtual ~AudioWorkerThread();
+
     virtual void run();
-    void StopGrabber();
-
-    /* forwarded interface to media source */
-    void ResetSource();
-    void SetInputStreamPreferences(QString pCodec);
-
-    /* recording */
-    void StartRecorder(std::string pSaveFileName, int pQuality);
-    void StopRecorder();
-
-    /* naming */
-    void SetStreamName(QString pName);
-    QString GetStreamName();
 
     /* device control */
-    QString GetCurrentDevice();
-    void SetCurrentDevice(QString pName);
     AudioDevices GetPossibleDevices();
-    QString GetDeviceDescription(QString pName);
 
-    /* file based audio playback */
-    void PlayFile(QString pName = "");
-    void PauseFile();
-    bool IsPaused();
-    void StopFile();
-    bool EofReached();
-    QString CurrentFile();
-    bool SupportsSeeking();
-    void Seek(float pPos);
-    float GetSeekPos();
-    float GetSeekEnd();
-
-    /* multiple channels control */
-    bool SupportsMultipleChannels();
-    QString GetCurrentChannel();
-    void SelectInputChannel(int pIndex);
-    QStringList GetPossibleChannels();
+    /* A/V sync. */
+    float GetUserAVDrift();
+    void SetUserAVDrift(float pDrift);
+    float GetVideoDelayAVDrift();
+    void SetVideoDelayAVDrift(float pDrift);
 
     /* frame grabbing */
     void SetSampleDropping(bool pDrop);
@@ -180,66 +158,46 @@ public slots:
     void SetVolume(int pValue);
 
 private:
+    /* audio playback */
     void ResetPlayback();
     void OpenPlaybackDevice();
     void ClosePlaybackDevice();
-    void DoResetAudioSource();
-    void DoSetInputStreamPreferences();
-    void DoSetCurrentDevice();
-    void DoSelectInputChannel();
-    void DoStartRecorder();
-    void DoStopRecorder();
-    void DoPlayNewFile();
+
+    virtual void DoPlayNewFile();
+    virtual void DoSetCurrentDevice();
+    virtual void DoResetMediaSource();
+    virtual void DoSyncClock();
+
+    /* audio playback */
     void DoStartPlayback();
     void DoStopPlayback();
-    void DoSourceSeek();
 
-    MediaSource         *mAudioSource;
     AudioWidget         *mAudioWidget;
     void                *mSamples[SAMPLE_BUFFER_SIZE];
     unsigned long       mSampleNumber[SAMPLE_BUFFER_SIZE];
     int                 mSamplesSize[SAMPLE_BUFFER_SIZE];
     int                 mSamplesBufferSize[SAMPLE_BUFFER_SIZE];
     int                 mSampleCurrentIndex, mSampleGrabIndex;
-    QMutex              mDeliverMutex;
-    QMutex              mGrabbingStateMutex; // secures mPaused, mSourceAvailable in public functions
-    QWaitCondition      mGrabbingCondition;
-    int                 mResX;
-    int                 mResY;
-    bool                mWorkerNeeded;
     bool                mWorkerWithNewData;
     bool                mDropSamples;
     int                 mResultingSps;
     bool                mAudioOutMuted;
     int                 mAudioPlaybackDelayCount;
-    std::string         mSaveFileName;
-    int                 mSaveFileQuality;
-    QString             mCodec;
-    QString             mDeviceName;
-    QString 			mCurrentFile;
     bool				mEofReached;
     bool				mPaused;
     bool				mSourceAvailable;
     bool				mPlaybackAvailable;
-    int64_t				mPausedPos;
+    float				mPausedPos;
 
     /* for forwarded interface to media source */
     int                 mDesiredInputChannel;
-    QString             mDesiredFile;
-    bool                mSetInputStreamPreferencesAsap;
-    bool                mSetCurrentDeviceAsap;
-    bool                mResetAudioSourceAsap;
-    bool                mStartRecorderAsap;
-    bool                mStopRecorderAsap;
     bool				mStartPlaybackAsap;
     bool				mStopPlaybackAsap;
-    bool				mPlayNewFileAsap;
-    bool                mSelectInputChannelAsap;
-    /* seeking */
-    bool                mSeekAsap;
-    float               mSeekPos;
     /* playback */
     Homer::Multimedia::WaveOut *mWaveOut;
+    /* A/V synch. */
+    float               mUserAVDrift;
+    float               mVideoDelayAVDrift;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

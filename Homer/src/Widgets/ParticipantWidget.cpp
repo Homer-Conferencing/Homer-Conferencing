@@ -34,6 +34,7 @@
 #include <WaveOutPortAudio.h>
 #include <WaveOutSdl.h>
 #include <Widgets/AudioWidget.h>
+#include <MediaSourceFile.h>
 #include <MediaSourceNet.h>
 #include <Widgets/MessageWidget.h>
 #include <Widgets/SessionInfoWidget.h>
@@ -70,13 +71,13 @@ namespace Homer { namespace Gui {
 // how often should we play the "call" event sound?
 #define SOUND_LOOPS_FOR_CALL                                        10
 // at what time period is timerEvent() called?
-#define STREAM_POS_UPDATE_DELAY                                     250 //ms
+#define STREAM_POS_UPDATE_DELAY                                    250 //ms
 // max. allowed drift between audio and video playback
-#define AV_SYNC_MAX_DRIFT                                             0 //seconds
+#define AV_SYNC_MAX_DRIFT                                          0.1 //seconds
 // min. time difference between two synch. processes
-#define AV_SYNC_MIN_PERIOD                                            3 // seconds
+#define AV_SYNC_MIN_PERIOD                                         500 // ms
 // how many times do we have to detect continuous asynch. A/V playback before we synch. audio and video? (to avoid false-positives)
-#define AV_SYNC_CONTINUOUS_ASYNC_THRESHOLD                            2 // checked every STREAM_POS_UPDATE_DELAY ms
+#define AV_SYNC_CONTINUOUS_ASYNC_THRESHOLD                           2 // checked every STREAM_POS_UPDATE_DELAY ms
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -172,10 +173,15 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
     font.setWeight(75);
     setFont(font);
 
-    connect(mTbPlay, SIGNAL(clicked()), this, SLOT(PlayMovieFile()));
-    connect(mTbPause, SIGNAL(clicked()), this, SLOT(PauseMovieFile()));
-    connect(mSlMovie, SIGNAL(sliderMoved(int)), this, SLOT(SeekMovieFile(int)));
-    connect(mSlMovie, SIGNAL(valueChanged(int)), this, SLOT(SeekMovieFileToPos(int)));
+    mSlMovie->Init(this);
+    mAVDriftFrame->hide();
+
+    connect(mTbPlay, SIGNAL(clicked()), this, SLOT(ActionPlayMovieFile()));
+    connect(mTbPause, SIGNAL(clicked()), this, SLOT(ActionPauseMovieFile()));
+    connect(mTbRecord, SIGNAL(clicked()), this, SLOT(ActionRecordMovieFile()));
+    connect(mSlMovie, SIGNAL(sliderMoved(int)), this, SLOT(ActionSeekMovieFile(int)));
+    connect(mSlMovie, SIGNAL(valueChanged(int)), this, SLOT(ActionSeekMovieFileToPos(int)));
+    connect(mSbAVDrift, SIGNAL(valueChanged(double)), this, SLOT(ActionUserAVDriftChanged(double)));
 
     //####################################################################
     //### create additional widget and allocate resources
@@ -296,9 +302,6 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
     // hide automatic QAction within QDockWidget context menu
     toggleViewAction()->setVisible(false);
     show();
-
-    // we support Drag+Drop here
-    setAcceptDrops(true);
 
     if (mSessionType == BROADCAST)
         setVisible(CONF.GetVisibilityBroadcastWidget());
@@ -470,15 +473,8 @@ void ParticipantWidget::dropEvent(QDropEvent *pEvent)
                             if (tList.size() == 1)
                             {
                                 QString tFileName = tList.begin()->toString();
-                                bool tAccept = false;
-                                if (OverviewPlaylistWidget::IsVideoFile(tFileName))
-                                    mVideoWidget->GetWorker()->PlayFile(tFileName);
-
-                                if (OverviewPlaylistWidget::IsAudioFile(tFileName))
-                                    mAudioWidget->GetWorker()->PlayFile(tFileName);
-
-                                if (tAccept)
-                                    pEvent->acceptProposedAction();
+                                ActionPlayMovieFile(tFileName);
+                                pEvent->acceptProposedAction();
                             }
                             break;
                 case PARTICIPANT:
@@ -1061,7 +1057,7 @@ void ParticipantWidget::AVSync()
     #ifdef PARTICIPANT_WIDGET_AV_SYNC
         // A/V synch. if both video and audio source allow seeking (are files)
         int64_t tCurTime = Time::GetTimeStamp();
-        if ((tCurTime - mTimeOfLastAVSynch  >= AV_SYNC_MIN_PERIOD * 1000 * 1000))
+        if ((tCurTime - mTimeOfLastAVSynch  >= AV_SYNC_MIN_PERIOD * 1000))
         {
             // do we play video and audio from the same file?
             if (mVideoWidget->GetWorker()->CurrentFile() == mAudioWidget->GetWorker()->CurrentFile())
@@ -1070,29 +1066,31 @@ void ParticipantWidget::AVSync()
                 if (mVideoWidget->GetWorker()->CurrentFile() == mCurrentMovieFile)
                 {// we know the file and have to do A/V sync.
                     // synch. video and audio by seeking in video stream based to the position of the audio stream, the other way around it would be more obvious to the user because he would hear audio gaps
-                    int64_t tTimeDiff = mVideoWidget->GetWorker()->GetSeekPos() - mAudioWidget->GetWorker()->GetSeekPos();
+                    float tTimeDiff = GetAVDrift();
 
                     // are audio and video playback out of synch.?
                     if (((tTimeDiff < -AV_SYNC_MAX_DRIFT) || (tTimeDiff > AV_SYNC_MAX_DRIFT)))
                     {
-                        if ((!mVideoWidget->GetWorker()->EofReached()) && (!mAudioWidget->GetWorker()->EofReached()) && (mVideoWidget->GetWorker()->GetCurrentDevice() == mAudioWidget->GetWorker()->GetCurrentDevice()))
+                        if ((!mVideoWidget->GetWorker()->EofReached()) && (mVideoWidget->GetWorker()->GetCurrentDevice() == mAudioWidget->GetWorker()->GetCurrentDevice()))
                         {
                             if (mContinuousAVAsync >= AV_SYNC_CONTINUOUS_ASYNC_THRESHOLD)
                             {
                                 if (tTimeDiff > 0)
-                                    LOG(LOG_WARN, "Detected asynchronous A/V playback, drift is %lld seconds (video before audio), max. allowed drift is %d seconds, last synch. was at %lld, synchronizing now..", tTimeDiff, AV_SYNC_MAX_DRIFT, mTimeOfLastAVSynch);
+                                    LOG(LOG_WARN, "Detected asynchronous A/V playback, drift is %3.2f seconds (video before audio), max. allowed drift is %3.2f seconds, last synch. was at %lld, synchronizing now..", tTimeDiff, AV_SYNC_MAX_DRIFT, mTimeOfLastAVSynch);
                                 else
-                                    LOG(LOG_WARN, "Detected asynchronous A/V playback, drift is %lld seconds (audio before video), max. allowed drift is %d seconds, last synch. was at %lld, synchronizing now..", tTimeDiff, AV_SYNC_MAX_DRIFT, mTimeOfLastAVSynch);
-                                mAudioWidget->GetWorker()->Seek(mVideoWidget->GetWorker()->GetSeekPos());
+                                    LOG(LOG_WARN, "Detected asynchronous A/V playback, drift is %3.2f seconds (audio before video), max. allowed drift is %3.2f seconds, last synch. was at %lld, synchronizing now..", tTimeDiff, AV_SYNC_MAX_DRIFT, mTimeOfLastAVSynch);
+
+                                mAudioWidget->GetWorker()->SyncClock(mVideoSource);
+
                                 ResetAVSync();
                             }else
                             {
                                 mContinuousAVAsync ++;
                                 #ifdef PARTICIPANT_WIDGET_DEBUG_AV_SYNC
                                     if (tTimeDiff > 0)
-                                        LOG(LOG_WARN, "Detected asynchronous A/V playback %d times, drift is %lld seconds (video before audio), max. allowed drift is %d seconds, last synch. was at %lld, synchronizing now..", mContinuousAVAsync, tTimeDiff, AV_SYNC_MAX_DRIFT, mTimeOfLastAVSynch);
+                                        LOG(LOG_WARN, "Detected asynchronous A/V playback %d times, drift is %3.2f seconds (video before audio), max. allowed drift is %3.2f seconds, last synch. was at %lld, synchronizing now..", mContinuousAVAsync, tTimeDiff, AV_SYNC_MAX_DRIFT, mTimeOfLastAVSynch);
                                     else
-                                        LOG(LOG_WARN, "Detected asynchronous A/V playback %d times, drift is %lld seconds (audio before video), max. allowed drift is %d seconds, last synch. was at %lld, synchronizing now..", mContinuousAVAsync, tTimeDiff, AV_SYNC_MAX_DRIFT, mTimeOfLastAVSynch);
+                                        LOG(LOG_WARN, "Detected asynchronous A/V playback %d times, drift is %3.2f seconds (audio before video), max. allowed drift is %3.2f seconds, last synch. was at %lld, synchronizing now..", mContinuousAVAsync, tTimeDiff, AV_SYNC_MAX_DRIFT, mTimeOfLastAVSynch);
                                 #endif
                             }
                         }
@@ -1107,6 +1105,99 @@ void ParticipantWidget::AVSync()
             }
         }
     #endif
+}
+
+float ParticipantWidget::GetAVDrift()
+{
+    float tResult = 0;
+
+    if (mVideoWidget->GetWorker() == NULL)
+        return 0;
+
+    if (mAudioWidget->GetWorker() == NULL)
+        return 0;
+
+    // do we play video and audio from the same file?
+    if (mVideoWidget->GetWorker()->CurrentFile() == mAudioWidget->GetWorker()->CurrentFile())
+    {
+        tResult = mVideoWidget->GetWorker()->GetSeekPos() - mAudioWidget->GetWorker()->GetSeekPos() - mAudioWidget->GetWorker()->GetUserAVDrift() - mAudioWidget->GetWorker()->GetVideoDelayAVDrift();
+    }
+
+    return tResult;
+}
+
+float ParticipantWidget::GetUserAVDrift()
+{
+    float tResult = 0;
+
+    if (mVideoWidget->GetWorker() == NULL)
+        return 0;
+
+    if (mAudioWidget->GetWorker() == NULL)
+        return 0;
+
+    // do we play video and audio from the same file?
+    if (mVideoWidget->GetWorker()->CurrentFile() == mAudioWidget->GetWorker()->CurrentFile())
+    {
+        tResult = mAudioWidget->GetWorker()->GetUserAVDrift();
+    }
+
+    return tResult;
+}
+
+float ParticipantWidget::GetVideoDelayAVDrift()
+{
+    float tResult = 0;
+
+    if (mVideoWidget->GetWorker() == NULL)
+        return 0;
+
+    if (mAudioWidget->GetWorker() == NULL)
+        return 0;
+
+    // do we play video and audio from the same file?
+    if (mVideoWidget->GetWorker()->CurrentFile() == mAudioWidget->GetWorker()->CurrentFile())
+    {
+        tResult = mAudioWidget->GetWorker()->GetVideoDelayAVDrift();
+    }
+
+    return tResult;
+}
+
+void ParticipantWidget::SetUserAVDrift(float pDrift)
+{
+    if (mVideoWidget->GetWorker() == NULL)
+        return;
+
+    if (mAudioWidget->GetWorker() == NULL)
+        return;
+
+    // do we play video and audio from the same file?
+    if (mVideoWidget->GetWorker()->CurrentFile() == mAudioWidget->GetWorker()->CurrentFile())
+    {
+        mAudioWidget->GetWorker()->SetUserAVDrift(pDrift);
+    }
+}
+
+void ParticipantWidget::ReportVideoDelay(float pDelay)
+{
+    if (mVideoWidget->GetWorker() == NULL)
+        return;
+
+    if (mAudioWidget->GetWorker() == NULL)
+        return;
+
+    // do we play video and audio from the same file?
+    if (mVideoWidget->GetWorker()->CurrentFile() == mAudioWidget->GetWorker()->CurrentFile())
+    {
+        mAudioWidget->GetWorker()->SetVideoDelayAVDrift(pDelay);
+    }
+}
+
+void ParticipantWidget::InformAboutVideoSeekingComplete()
+{
+    // sync. audio to video clock
+    AVSync();
 }
 
 void ParticipantWidget::ShowNewState()
@@ -1192,36 +1283,69 @@ QString ParticipantWidget::GetSipInterface()
 	return mSipInterface;
 }
 
-void ParticipantWidget::PlayMovieFile()
+void ParticipantWidget::ActionPlayMovieFile(QString pFileName)
 {
-    mVideoWidget->GetWorker()->PlayFile(mVideoWidget->GetWorker()->CurrentFile());
-    mAudioWidget->GetWorker()->PlayFile(mAudioWidget->GetWorker()->CurrentFile());
+    LOG(LOG_VERBOSE, "User triggered play");
+    mVideoWidget->GetWorker()->PlayFile(pFileName);
+    mAudioWidget->GetWorker()->PlayFile(pFileName);
 }
 
-void ParticipantWidget::PauseMovieFile()
+void ParticipantWidget::ActionPauseMovieFile()
 {
+    LOG(LOG_VERBOSE, "User triggered pause");
     mVideoWidget->GetWorker()->PauseFile();
     mAudioWidget->GetWorker()->PauseFile();
 }
 
-void ParticipantWidget::SeekMovieFile(int pPos)
+void ParticipantWidget::ActionRecordMovieFile()
+{
+    LOG(LOG_ERROR, "Implement ActionRecordMovieFile()");
+}
+
+void ParticipantWidget::ActionSeekMovieFile(int pPos)
 {
 	LOG(LOG_VERBOSE, "User moved playback slider to position %d", pPos);
     ResetAVSync();
-    mVideoWidget->GetWorker()->Seek((double)mVideoWidget->GetWorker()->GetSeekEnd() * pPos / 1000);
-    mAudioWidget->GetWorker()->Seek((double)mAudioWidget->GetWorker()->GetSeekEnd() * pPos / 1000);
+    double tPos = (double)mVideoWidget->GetWorker()->GetSeekEnd() * pPos / 1000;
+    mVideoWidget->GetWorker()->Seek(tPos);
+    #ifdef PARTICIPANT_WIDGET_AV_SYNC
+        // force an AV sync
+        mTimeOfLastAVSynch = 0;
+    #else
+        mAudioWidget->GetWorker()->Seek(tPos);
+    #endif
 }
 
-void ParticipantWidget::SeekMovieFileToPos(int pPos)
+void ParticipantWidget::ActionSeekMovieFileToPos(int pPos)
 {
     //LOG(LOG_VERBOSE, "Value of playback slider changed to %d", pPos);
 	if (mMovieSliderPosition != pPos)
 	{
 		LOG(LOG_VERBOSE, "User clicked playback slider at position %d", pPos);
         ResetAVSync();
-	    mVideoWidget->GetWorker()->Seek((double)mVideoWidget->GetWorker()->GetSeekEnd() * pPos / 1000);
-	    mAudioWidget->GetWorker()->Seek((double)mAudioWidget->GetWorker()->GetSeekEnd() * pPos / 1000);
+        double tPos = (double)mVideoWidget->GetWorker()->GetSeekEnd() * pPos / 1000;
+	    mVideoWidget->GetWorker()->Seek(tPos);
+        #ifdef PARTICIPANT_WIDGET_AV_SYNC
+            // force an AV sync
+            mTimeOfLastAVSynch = 0;
+        #else
+            mAudioWidget->GetWorker()->Seek(tPos);
+        #endif
 	}
+}
+
+void ParticipantWidget::ActionToggleUserAVDriftWidget()
+{
+    if (mAVDriftFrame->isVisible())
+        mAVDriftFrame->hide();
+    else
+        mAVDriftFrame->show();
+}
+
+void ParticipantWidget::ActionUserAVDriftChanged(double pDrift)
+{
+    LOG(LOG_VERBOSE, "User changed A/V drift to %.2f", (float)pDrift);
+    SetUserAVDrift(pDrift);
 }
 
 VideoWorkerThread* ParticipantWidget::GetVideoWorker()

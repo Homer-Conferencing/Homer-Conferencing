@@ -124,6 +124,7 @@ SET (SOURCES
 	../src/FileTransfersManager
 	../src/MainWindow
 	../src/MediaSourceDesktop
+	../src/MediaSourceGrabberThread
 	../src/main
 	../src/Dialogs/AddNetworkSinkDialog
 	../src/Dialogs/ConfigurationDialog
@@ -156,6 +157,7 @@ SET (SOURCES
 )
 SET (QT_MOC_SOURCES
 	../include/MainWindow.h
+	../include/MediaSourceGrabberThread.h
 	../include/Dialogs/AddNetworkSinkDialog.h
 	../include/Dialogs/ConfigurationDialog.h
 	../include/Dialogs/ContactEditDialog.h
@@ -210,7 +212,6 @@ SET (QT_UI_SOURCES
 	../forms/Widgets/ParticipantWidget.ui
 	../forms/Widgets/SessionInfoWidget.ui
 	../forms/Widgets/StreamingControlWidget.ui
-	../forms/Widgets/VideoWidget.ui
 )
 
 SET (QT_QRC_SOURCES

@@ -238,6 +238,7 @@ vector<int> Thread::GetTIds()
 							// if still running we add this thread to the result
 							if (tThreadExitCode == STILL_ACTIVE)
 								tResult.push_back(tThreadEntry.th32ThreadID);
+
 							CloseHandle(tThreadHandle);
 						}else
 							LOGEX(Thread, LOG_ERROR, "Could not create thread handle");
@@ -527,6 +528,8 @@ bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned l
 
 			pMemPhysical = (unsigned long)tProcessMemInfo.WorkingSetSize;
 	        pMemVirtual = (unsigned long)tProcessMemInfo.PagefileUsage;
+
+	        CloseHandle(tProcessHandle);
 		}else
 		{
 			LOGEX(Thread, LOG_ERROR, "Could not create process handle");
@@ -650,7 +653,9 @@ void* Thread::StartThreadStaticWrapperUniversal(void* pThread)
 	LOGEX(Thread, LOG_VERBOSE, "Going to start thread main");
 
     Thread *tThreadObject = (Thread*)pThread;
+    tThreadObject->mRunning = true;
     void* tResult = tThreadObject->mThreadMain(tThreadObject->mThreadArguments);
+    tThreadObject->mRunning = false;
     LOGEX(Thread, LOG_VERBOSE, "Thread finished");
     tThreadObject->Init();
     return tResult;
@@ -661,7 +666,9 @@ void* Thread::StartThreadStaticWrapperRun(void* pThread)
 	LOGEX(Thread, LOG_VERBOSE, "Going to start thread main (Run method)");
 
     Thread *tThreadObject = (Thread*)pThread;
+    tThreadObject->mRunning = true;
     void* tResult = tThreadObject->Run(tThreadObject->mThreadArguments);
+    tThreadObject->mRunning = false;
     LOGEX(Thread, LOG_VERBOSE, "Thread finished (Run method)");
     tThreadObject->Init();
     return tResult;
@@ -774,6 +781,14 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
         return true;
     }
 
+    if (!IsRunning())
+    {
+        LOG(LOG_VERBOSE, "Thread isn't running at the moment, skipped StopThread()");
+        if (pResults != NULL)
+            *pResults = NULL;
+        return true;
+    }
+
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		struct timespec tTimeout;
 
@@ -789,7 +804,7 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
 		    if(pTimeoutInMSecs > 0)
 		    {
 		        if (int tRes = pthread_timedjoin_np(mThreadHandle, &tThreadResult, &tTimeout))
-                    LOG(LOG_INFO, "Waiting (time limited to %d ms) for end of thread failed because \"%s\"", pTimeoutInMSecs, strerror(tRes));
+                    LOG(LOG_INFO, "Waiting (time limited to %d ms) for end of thread failed because \"%s\"(%d)", pTimeoutInMSecs, strerror(tRes), tRes);
                 else
                 {
                     LOG(LOG_VERBOSE, "Got end signal and thread results at %p", tThreadResult);
@@ -839,6 +854,11 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
 		*pResults = tThreadResult;
 
 	return tResult;
+}
+
+bool Thread::IsRunning()
+{
+    return mRunning;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

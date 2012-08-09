@@ -30,6 +30,7 @@
 
 #include <Widgets/MessageWidget.h>
 #include <Widgets/OverviewContactsWidget.h>
+#include <Widgets/PlaybackSlider.h>
 #include <Widgets/SessionInfoWidget.h>
 #include <Widgets/VideoWidget.h>
 #include <MediaSourceMuxer.h>
@@ -69,7 +70,7 @@ typedef std::list<ParticipantWidget*>  ParticipantWidgetList;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// de/activate A/V synch. for file playback
+// de/activate A/V synch. for file playback: audio grabbing is always synchronized with video grabbing and not the other way around
 #define PARTICIPANT_WIDGET_AV_SYNC
 
 //#define PARTICIPANT_WIDGET_DEBUG_AV_SYNC
@@ -136,11 +137,15 @@ public:
     AudioWorkerThread* GetAudioWorker();
 
 private slots:
-    void PlayMovieFile();
-    void PauseMovieFile();
+    void ActionPlayMovieFile(QString pFileName = "");
+    void ActionPauseMovieFile();
+    void ActionRecordMovieFile();
 	void LookedUpParticipantHost(const QHostInfo &pHost);
-	void SeekMovieFile(int pPos);
-	void SeekMovieFileToPos(int pPos);
+	void ActionSeekMovieFile(int pPos);
+	void ActionSeekMovieFileToPos(int pPos);
+	void ActionUserAVDriftChanged(double pDrift);
+	void ActionToggleUserAVDriftWidget();
+	friend class PlaybackSlider;
 
 private:
     void OpenPlaybackDevice();
@@ -157,6 +162,13 @@ private:
     /* AV sync */
     void ResetAVSync();
     void AVSync();
+    float GetAVDrift(); // pos. value means "video before audio, audio is too late"
+    float GetUserAVDrift();
+    float GetVideoDelayAVDrift();
+    void SetUserAVDrift(float pDrift);
+    void ReportVideoDelay(float pDelay); // adds an additional delay to audio if video presentation is delayed
+    void InformAboutVideoSeekingComplete();
+    friend class VideoWidget;
 
     void ShowNewState();
     void ShowStreamPosition(int64_t tCurPos, int64_t tEndPos);

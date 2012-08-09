@@ -183,6 +183,7 @@ MediaSinkNet::~MediaSinkNet()
     	//HINT: socket object has to be deleted outside
     }
     free(mStreamFragmentCopyBuffer);
+    LOG(LOG_VERBOSE, "Destroyed");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -208,7 +209,7 @@ string MediaSinkNet::CreateId(string pHost, string pPort, enum TransportType pSo
 void MediaSinkNet::StopProcessing()
 {
 	mSenderNeeded = false;
-	MediaSinkNet::StopProcessing();
+	MediaSinkMem::StopProcessing();
 }
 
 void MediaSinkNet::StartSender()
