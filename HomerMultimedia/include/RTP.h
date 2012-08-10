@@ -39,10 +39,11 @@ namespace Homer { namespace Multimedia {
 ///////////////////////////////////////////////////////////////////////////////
 
 // the following de/activates debugging of RTP packets
-//#define RTP_DEBUG_PACKETS
+#define RTP_DEBUG_PACKETS
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// ########################## RTP ############################################
 union RtpHeader{
     struct{
         unsigned short int SequenceNumber; /* sequence number */
@@ -61,6 +62,29 @@ union RtpHeader{
         //unsigned int Csrc[1];               /* optional CSRC list */
     } __attribute__((__packed__));
     uint32_t Data[3];
+};
+
+// ########################## RTCP ###########################################
+union RtcpHeader{
+    struct{ // send via separate port
+        unsigned short int Length;          /* length of report */
+        unsigned int ReportType:8;          /* report type */
+        unsigned int RC:5;                  /* report counter */
+        unsigned int Padding:1;             /* padding flag */
+        unsigned int Version:2;             /* protocol version */
+
+        unsigned int Ssrc;                  /* synchronization source */
+    } __attribute__((__packed__))RtpBased;
+    struct{ // send within media stream as intermediate packets
+        unsigned short int Length;          /* length of report */
+        unsigned int PlType:8;              /* Payload type (PT) */
+        unsigned int Fmt:5;                 /* Feedback message type (FMT) */
+        unsigned int Padding:1;             /* padding flag */
+        unsigned int Version:2;             /* protocol version */
+
+        unsigned int Ssrc;                  /* synchronization source */
+    } __attribute__((__packed__))Feedback;
+    uint32_t Data[2];
 };
 
 // calculate the size of an RTP header: "size of structure"

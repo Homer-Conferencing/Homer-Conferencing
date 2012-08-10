@@ -87,29 +87,6 @@ namespace Homer { namespace Multimedia {
     Ethernet/WLan frame(1500) - IP(20)-UDP(8)-RTP(12) = 1460 bytes RTP payload limit
  */
 
-// ########################## RTCP ###########################################
-union RtcpHeader{
-    struct{ // send via separate port
-        unsigned short int Length;          /* length of report */
-        unsigned int ReportType:8;          /* report type */
-        unsigned int RC:5;                  /* report counter */
-        unsigned int Padding:1;             /* padding flag */
-        unsigned int Version:2;             /* protocol version */
-
-        unsigned int Ssrc;                  /* synchronization source */
-    } __attribute__((__packed__))RtpBased;
-    struct{ // send within media stream as intermediate packets
-        unsigned short int Length;          /* length of report */
-        unsigned int PlType:8;              /* Payload type (PT) */
-        unsigned int Fmt:5;                 /* Feedback message type (FMT) */
-        unsigned int Padding:1;             /* padding flag */
-        unsigned int Version:2;             /* protocol version */
-
-        unsigned int Ssrc;                  /* synchronization source */
-    } __attribute__((__packed__))Feedback;
-    uint32_t Data[2];
-};
-
 // ########################## AMR-NB (RFC 3267) ###########################################
 union AMRNBHeader{ //TODO
     struct{
@@ -1250,7 +1227,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
     // #############################################################
     if ((tRtpHeader->PayloadType >= 72) && (tRtpHeader->PayloadType <= 76))
     {// rtcp intermediate packet for streaming feedback received
-        RtcpHeader* tRtcpHeader = (RtcpHeader*)pData;
+        RtcpHeader* tRtcpHeader = (RtcpHeader*)pData + sizeof(RtpHeader);
 
         #ifdef RTP_DEBUG_PACKETS
             // convert from network to host byte order
@@ -1286,10 +1263,8 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
 
         pIsLastFragment = false;
         pIsSenderReport = true;
-
-        // convert from host to network byte order again
-        for (int i = 0; i < 3; i++)
-            tRtpHeader->Data[i] = htonl(tRtpHeader->Data[i]);
+        pData = (char*)tRtcpHeader;
+        pDataSize = tRtcpHeader->Feedback.Length;
 
         // inform that is not a fragment which includes data for an audio/video decoder, this RTCP packet belongs to the RTP abstraction level
         return false;
