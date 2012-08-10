@@ -208,7 +208,6 @@ ELSE ()
 		HomerGAPI
 		HomerMonitor
 		asound
-		va
 	)
 
 	SET (LIBS_LINUX_STATIC
