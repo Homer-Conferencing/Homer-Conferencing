@@ -475,7 +475,7 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     LOG(LOG_VERBOSE, "Successfully opened input stream");
 
     // limit frame analyzing time for ffmpeg internal codec auto detection
-    mFormatContext->max_analyze_duration = AV_TIME_BASE / 4; //  1/4 recorded seconds
+    //mFormatContext->max_analyze_duration = AV_TIME_BASE / 4; //  1/4 recorded seconds
     // verbose timestamp debugging    mFormatContext->debug = FF_FDEBUG_TS;
 
     // disable MT for H264, otherwise avformat_find_stream_info runs into trouble
@@ -644,7 +644,7 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     LOG(LOG_VERBOSE, "Successfully opened input stream");
 
     // limit frame analyzing time for ffmpeg internal codec auto detection
-    mFormatContext->max_analyze_duration = AV_TIME_BASE / 4; //  1/4 recorded seconds
+    //mFormatContext->max_analyze_duration = AV_TIME_BASE / 4; //  1/4 recorded seconds
     // verbose timestamp debugging    mFormatContext->debug = FF_FDEBUG_TS;
 
     // Retrieve stream information
