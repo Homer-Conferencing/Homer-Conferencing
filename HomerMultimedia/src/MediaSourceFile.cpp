@@ -210,6 +210,12 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     // Get a pointer to the codec context for the video stream
     mCodecContext = mFormatContext->streams[mMediaStreamIndex]->codec;
 
+    // check for VDPAU support
+    if ((mCodecContext->codec) && (mCodecContext->codec->capabilities & CODEC_CAP_HWACCEL_VDPAU))
+    {
+        LOG(LOG_WARN, "Codec %s supports VDPAU", mCodecContext->codec->name);
+    }
+
     // set grabbing resolution and frame-rate to the resulting ones delivered by opened video codec
     mSourceResX = mCodecContext->width;
     mSourceResY = mCodecContext->height;

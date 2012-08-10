@@ -443,7 +443,7 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if ((tCodecName == "mpeg1video") || (tCodecName == "mpeg2video"))
         tCodecName = "mpegvideo";
     LOG(LOG_VERBOSE, "Going to find input format for codec \"%s\"..", tCodecName.c_str());
-    tFormat = av_find_input_format(tCodecName.c_str());
+    tFormat = av_find_input_format("h.264");//tCodecName.c_str());
 
     if (tFormat == NULL)
     {
@@ -454,7 +454,7 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     LOG(LOG_VERBOSE, "Successfully found input format");
 
     // Open video stream
-    LOG(LOG_VERBOSE, "Going to open input stream..");
+    LOG(LOG_VERBOSE, "Going to open VIDEO input stream..");
     mOpenInputStream = true;
     if((tResult = av_open_input_stream(&mFormatContext, tByteIoContext, "", tFormat, NULL)) != 0)
     {
@@ -478,7 +478,7 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     // verbose timestamp debugging    mFormatContext->debug = FF_FDEBUG_TS;
 
     // Retrieve stream information
-    LOG(LOG_VERBOSE, "Going to find stream info..");
+    LOG(LOG_VERBOSE, "Going to find VIDEO stream info..");
     if ((tResult = av_find_stream_info(mFormatContext)) < 0)
     {
         if (!mGrabbingStopped)
@@ -489,7 +489,7 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         av_close_input_stream(mFormatContext);
         return false;
     }
-    LOG(LOG_VERBOSE, "Successfully found stream info");
+    LOG(LOG_VERBOSE, "Successfully found VIDEO stream info");
 
     // Find the first video stream
     mMediaStreamIndex = -1;
