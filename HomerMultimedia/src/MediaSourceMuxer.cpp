@@ -1374,7 +1374,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                     // free packet buffer
                                     av_free_packet(tPacket);
                                 }else
-                                    LOG(LOG_WARN, "Couldn't re-encode current video frame");
+                                    LOG(LOG_WARN, "Couldn't re-encode current video frame %ld", tYUVFrame->pts);
                                 #ifdef MSM_DEBUG_TIMING
                                     int64_t tTime4 = Time::GetTimeStamp();
                                     LOG(LOG_VERBOSE, "Entire transcoding step took %ld us", tTime4 - tTime3);
