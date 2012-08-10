@@ -152,15 +152,17 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if ((tFileType == "mpg") || (tFileType == "vob"))
         tFileType = "mpeg";
 
-    LOG(LOG_VERBOSE, "try to open \"%s\"", mDesiredDevice.c_str());
+    LOG(LOG_VERBOSE, "Try to open \"%s\"", mDesiredDevice.c_str());
 
     // open input: automatic content detection is done inside ffmpeg
     mFormatContext = AV_NEW_FORMAT_CONTEXT(); // make sure we have default values in format context, otherwise avformat_open_input() will crash
+    LOG(LOG_ERROR, "Going to open VIDEO stream input..");
     if ((tResult = avformat_open_input(&mFormatContext, mDesiredDevice.c_str(), NULL, &tFormatOpts)) != 0)
     {
         LOG(LOG_ERROR, "Couldn't open video file \"%s\" because of \"%s\".", mDesiredDevice.c_str(), strerror(AVUNERROR(tResult)));
         return false;
     }
+    LOG(LOG_ERROR, "Successfully opened VIDEO stream input");
 
     if ((tFormatOptsEntry = av_dict_get(tFormatOpts, "", NULL, AV_DICT_IGNORE_SUFFIX))) {
         LOG(LOG_ERROR, "Option %s not found.\n", tFormatOptsEntry->key);
@@ -176,16 +178,19 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     // verbose timestamp debugging    mFormatContext->debug = FF_FDEBUG_TS;
 
     // Retrieve stream information
-    if ((tResult = av_find_stream_info(mFormatContext)) < 0)
+    LOG(LOG_ERROR, "Going to find VIDEO stream info..");
+    if ((tResult = avformat_find_stream_info(mFormatContext, NULL)) < 0)
     {
         LOG(LOG_ERROR, "Couldn't find video stream information because of \"%s\".", strerror(AVUNERROR(tResult)));
         // Close the video file
         HM_close_input(mFormatContext);
         return false;
     }
+    LOG(LOG_ERROR, "Successfully found VIDEO stream info");
 
     // Find the first video stream
     mMediaStreamIndex = -1;
+    LOG(LOG_VERBOSE, "Going to find fitting stream..");
     for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
     {
         // Dump information about device file
@@ -231,6 +236,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     }
 
     // Find the decoder for the video stream
+    LOG(LOG_VERBOSE, "Going to find decoder..");
     if((tCodec = avcodec_find_decoder(mCodecContext->codec_id)) == NULL)
     {
         LOG(LOG_ERROR, "Couldn't find a fitting video codec");
@@ -238,8 +244,10 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         HM_close_input(mFormatContext);
         return false;
     }
+    LOG(LOG_VERBOSE, "Successfully found decoder");
 
     // Open codec
+    LOG(LOG_VERBOSE, "Going to open video codec..");
     if ((tResult = HM_avcodec_open(mCodecContext, tCodec, NULL)) < 0)
     {
         LOG(LOG_ERROR, "Couldn't open video codec because \"%s\".", strerror(AVUNERROR(tResult)));
@@ -247,6 +255,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         HM_close_input(mFormatContext);
         return false;
     }
+    LOG(LOG_VERBOSE, "Successfully opened codec");
 
     // do we have a picture file?
     if (mFormatContext->streams[mMediaStreamIndex]->duration > 1)
@@ -261,6 +270,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     }
 
     // allocate software scaler context
+    LOG(LOG_VERBOSE, "Going to create scaler context..");
     mScalerContext = sws_getContext(mCodecContext->width, mCodecContext->height, mCodecContext->pix_fmt, mTargetResX, mTargetResY, PIX_FMT_RGB32, SWS_BICUBIC, NULL, NULL, NULL);
 
     //set duration
