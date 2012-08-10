@@ -109,16 +109,21 @@ MediaSource::MediaSource(string pName):
 		else
 			av_log_set_level(AV_LOG_QUIET);
 
-		// Register all formats and codecs
-		av_register_all();
+		avcodec_register_all();
+
+        // register all supported input and output devices
+	    avdevice_register_all();
+
+	    // register all supported media filters
+	    avfilter_register_all();
+
+        // register all formats and codecs
+        av_register_all();
 
         #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53, 32, 100)
             // init network support once instead for every stream
             avformat_network_init();
         #endif
-
-		// Register all supported input and output devices
-		avdevice_register_all();
 
 		// register our own lock manager at ffmpeg
 		//HINT: we can do this as many times as this class is instanced
@@ -1490,7 +1495,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     if(mRecorderFormatContext->oformat->flags & AVFMT_GLOBALHEADER)
         mRecorderCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
 
-    // Find the encoder for the video stream
+    // find the encoder for the video stream
     if ((tCodec = avcodec_find_encoder(tSaveFileCodec)) == NULL)
     {
         LOG(LOG_ERROR, "Couldn't find a fitting %s codec", GetMediaTypeStr().c_str());
@@ -1507,7 +1512,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
         return false;
     }
 
-    // Open codec
+    // open codec
     if ((tResult = HM_avcodec_open(mRecorderCodecContext, tCodec)) < 0)
     {
         LOG(LOG_ERROR, "Couldn't open %s codec because of \"%s\".", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
@@ -1626,10 +1631,10 @@ void MediaSource::StopRecording()
                     // free the software scaler context
                     sws_freeContext(mRecorderScalerContext);
 
-                    // Free the file frame's data buffer
+                    // free the file frame's data buffer
                     avpicture_free((AVPicture*)mRecorderFinalFrame);
 
-                    // Free the file frame
+                    // free the file frame
                     av_free(mRecorderFinalFrame);
 
                     break;
@@ -1644,7 +1649,7 @@ void MediaSource::StopRecording()
                     break;
         }
 
-        // Close the codec
+        // close the codec
         avcodec_close(mRecorderCodecContext);
 
         // free codec and stream 0
@@ -1657,7 +1662,7 @@ void MediaSource::StopRecording()
             url_fclose(mRecorderFormatContext->pb);
         }
 
-        // Close the format context
+        // close the format context
         av_free(mRecorderFormatContext);
 
         LOG(LOG_VERBOSE, "Releasing recorder buffers");
@@ -1892,10 +1897,8 @@ void MediaSource::RecordSamples(int16_t *pSourceSamples, int pSourceSamplesSize)
         return;
     }
 
-    //LOG(LOG_VERBOSE, "ChunkSize: %d", pChunkSize);
     // write new samples into fifo buffer
     av_fifo_generic_write(mRecorderSampleFifo, pSourceSamples, pSourceSamplesSize, NULL);
-    //LOG(LOG_VERBOSE, "ChunkSize: %d", pChunkSize);
 
     while (av_fifo_size(mRecorderSampleFifo) > 2 * mRecorderCodecContext->frame_size * mRecorderCodecContext->channels)
     {
@@ -1915,7 +1918,6 @@ void MediaSource::RecordSamples(int16_t *pSourceSamples, int pSourceSamplesSize)
         #endif
         int tEncodingResult = avcodec_encode_audio(mRecorderCodecContext, (uint8_t *)mRecorderEncoderChunkBuffer, /* assume signed 16 bit */ 2 * mRecorderCodecContext->frame_size * mRecorderCodecContext->channels, (const short *)mRecorderSamplesTempBuffer);
 
-        //printf("encoded to mp3: %d\n\n", tSampleSize);
         if (tEncodingResult > 0)
         {
             av_init_packet(tPacket);
