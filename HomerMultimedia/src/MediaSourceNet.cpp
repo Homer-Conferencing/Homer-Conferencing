@@ -413,7 +413,7 @@ void* MediaSourceNet::Run(void* pArgs)
                         LOG(LOG_ERROR, "Have found an unplausible fragment size of %u bytes which is beyond the reported packet reception size", tHeader->FragmentSize);
                         break;
                     }
-					//TODO: detect packet boaundaries: maybe we get the last part of a former packet and the first part of the next packet -> this results in an error message at the moment, however, we could compensate this by a fragment buffer
+					//TODO: detect packet boundaries: maybe we get the last part of a former packet and the first part of the next packet -> this results in an error message at the moment, however, we could compensate this by a fragment buffer
 					//       -> picture errors occur if the video quality is high enough and causes a high data rate
                     tData += TCP_FRAGMENT_HEADER_SIZE;
                     tDataSize -= TCP_FRAGMENT_HEADER_SIZE;
