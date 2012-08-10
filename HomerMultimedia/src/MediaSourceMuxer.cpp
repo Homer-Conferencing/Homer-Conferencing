@@ -32,6 +32,7 @@
 #include <VideoScaler.h>
 #include <ProcessStatisticService.h>
 #include <HBSocket.h>
+#include <HBSystem.h>
 #include <RTP.h>
 #include <Logger.h>
 
@@ -47,6 +48,9 @@ namespace Homer { namespace Multimedia {
 
 // maximum packet size of a reeencoded frame, must not be more than 64 kB - otherwise it can't be used via networks!
 #define MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE               MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE
+
+// de/activate MT support during video encoding: ffmpeg supports MT only for encoding
+#define MEDIA_SOURCE_MUX_MULTI_THREADED_VIDEO_ENCODING
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -294,6 +298,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     AVOutputFormat      *tFormat;
     AVCodec             *tCodec;
     AVStream            *tStream;
+    AVDictionary        *tOptions = NULL;
 
     if (pFps > 29,97)
         pFps = 29,97;
@@ -493,8 +498,16 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
         return false;
     }
 
+    #ifdef MEDIA_SOURCE_MUX_MULTI_THREADED_VIDEO_ENCODING
+        // active multi-threading per default for the video encoding: leave two cpus for concurrent tasks (video grabbing/decoding, audio tasks)
+        av_dict_set(&tOptions, "threads", "auto", 0);
+
+        // trigger MT usage during video encoding
+        mCodecContext->thread_count = System::GetMachineCores() - 2;
+    #endif
+
     // Open codec
-    if ((tResult = HM_avcodec_open(mCodecContext, tCodec)) < 0)
+    if ((tResult = HM_avcodec_open(mCodecContext, tCodec, &tOptions)) < 0)
     {
         LOG(LOG_ERROR, "Couldn't open video codec because of \"%s\".", strerror(AVUNERROR(tResult)));
         // free codec and stream 0
@@ -684,7 +697,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
 //        mCodecContext->flags |= CODEC_FLAG_TRUNCATED;
 
     // Open codec
-    if ((tResult = HM_avcodec_open(mCodecContext, tCodec)) < 0)
+    if ((tResult = HM_avcodec_open(mCodecContext, tCodec, NULL)) < 0)
     {
         LOG(LOG_ERROR, "Couldn't open audio codec because of \"%s\".", strerror(AVUNERROR(tResult)));
         // free codec and stream 0
