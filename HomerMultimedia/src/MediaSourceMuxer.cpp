@@ -1270,6 +1270,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                     {
                         case MEDIA_VIDEO:
                             {
+                                mChunkNumber++;
                                 int64_t tTime3 = Time::GetTimeStamp();
                                 // ####################################################################
                                 // ### PREPARE YUV FRAME from SCALER
@@ -1283,9 +1284,9 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 #endif
 
                                 // set frame number in corresponding entries within AVFrame structure
-                                tYUVFrame->pts = mChunkNumber + 1;
-                                tYUVFrame->coded_picture_number = mChunkNumber + 1;
-                                tYUVFrame->display_picture_number = mChunkNumber + 1;
+                                tYUVFrame->pts = mChunkNumber;
+                                tYUVFrame->coded_picture_number = mChunkNumber;
+                                tYUVFrame->display_picture_number = mChunkNumber;
 
                                 #ifdef MSM_DEBUG_PACKETS
                                     LOG(LOG_VERBOSE, "Scaler returned video frame..");
@@ -1326,7 +1327,6 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 if (tSizeEncodedFrame > 0)
                                 {
                                     av_init_packet(tPacket);
-                                    mChunkNumber++;
 
                                     // adapt pts value
                                     if ((mCodecContext->coded_frame) && (mCodecContext->coded_frame->pts != 0))
