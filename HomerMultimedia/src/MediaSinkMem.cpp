@@ -28,6 +28,7 @@
 #include <Header_Ffmpeg.h>
 #include <MediaSinkMem.h>
 #include <MediaSourceMem.h>
+#include <MediaSourceMuxer.h>
 #include <MediaFifo.h>
 #include <MediaSinkNet.h>
 #include <MediaSourceNet.h>
@@ -44,6 +45,10 @@ using namespace Homer::Monitor;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define MEDIA_SINK_MEM_PLAIN_FRAGMENT_BUFFER_SIZE    MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE
+
+///////////////////////////////////////////////////////////////////////////////
+
 MediaSinkMem::MediaSinkMem(string pMediaId, enum MediaSinkType pType, bool pRtpActivated):
     MediaSink(pType), RTP()
 {
@@ -55,7 +60,10 @@ MediaSinkMem::MediaSinkMem(string pMediaId, enum MediaSinkType pType, bool pRtpA
 	mIncomingAVStreamCodecContext = NULL;
     mRtpActivated = pRtpActivated;
     mWaitUntillFirstKeyFrame = (pType == MEDIA_SINK_VIDEO) ? true : false;
-    mSinkFifo = new MediaFifo(MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT, MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE, GetDataTypeStr() + "-MediaSinkMem");
+    if (mRtpActivated)
+        mSinkFifo = new MediaFifo(MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT, MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE, GetDataTypeStr() + "-MediaSinkMem");
+    else
+        mSinkFifo = new MediaFifo(MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT, MEDIA_SINK_MEM_PLAIN_FRAGMENT_BUFFER_SIZE, GetDataTypeStr() + "-MediaSinkMem");
     AssignStreamName("MEM-OUT: " + mMediaId);
     switch(pType)
     {
@@ -94,24 +102,27 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
         }
     }
 
-    if ((mIncomingAVStream != NULL) && (mIncomingAVStream != pStream))
-    {
-        LOG(LOG_VERBOSE, "Incoming AV stream changed from %p to %p (codec %s), resetting RTP streamer..", mIncomingAVStream, pStream, pStream->codec->codec->name);
-    	tResetNeeded = true;
-    }else
-    {
-        if (mIncomingAVStreamCodecContext != pStream->codec)
-        {
-            LOG(LOG_WARN, "Incoming AV stream unchanged but stream codec context changed from %p to %p (codec %s), resetting RTP streamer..", mIncomingAVStreamCodecContext, pStream->codec, pStream->codec->codec->name);
-        	tResetNeeded = true;
-        }
-    }
-
-    //####################################################################
-    // send packet(s) with frame data to the correct target host and port
-    //####################################################################
     if (mRtpActivated)
     {
+        //####################################################################
+        // check if RTP encoder is valid for the current stream
+        //####################################################################
+        if ((mIncomingAVStream != NULL) && (mIncomingAVStream != pStream))
+        {
+            LOG(LOG_VERBOSE, "Incoming AV stream changed from %p to %p (codec %s), resetting RTP streamer..", mIncomingAVStream, pStream, pStream->codec->codec->name);
+            tResetNeeded = true;
+        }else
+        {
+            if (mIncomingAVStreamCodecContext != pStream->codec)
+            {
+                LOG(LOG_WARN, "Incoming AV stream unchanged but stream codec context changed from %p to %p (codec %s), resetting RTP streamer..", mIncomingAVStreamCodecContext, pStream->codec, pStream->codec->codec->name);
+                tResetNeeded = true;
+            }
+        }
+
+        //####################################################################
+        // send packet(s) with frame data to the correct target host and port
+        //####################################################################
         if (!mRtpStreamOpened)
         {
             if (pStream == NULL)
@@ -281,8 +292,11 @@ void MediaSinkMem::WriteFragment(char* pData, unsigned int pSize)
         }
     #endif
     AnnouncePacket(pSize);
-
-    mSinkFifo->WriteFifo(pData, (int)pSize);
+    if ((int)pSize <= mSinkFifo->GetEntrySize())
+    {
+        mSinkFifo->WriteFifo(pData, (int)pSize);
+    }else
+        LOG(LOG_ERROR, "Packet for media sink of %u bytes is too big for FIFO with entries of %d bytes", pSize, mSinkFifo->GetEntrySize());
 }
 
 bool MediaSinkMem::OpenStreamer(AVStream *pStream)
