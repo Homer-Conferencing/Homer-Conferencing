@@ -1276,7 +1276,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 // ### PREPARE YUV FRAME from SCALER
                                 // ###################################################################
                                 // Assign appropriate parts of buffer to image planes in tRGBFrame
-                                avpicture_fill((AVPicture *)tYUVFrame, (uint8_t *)tBuffer, mCodecContext->pix_fmt, mTargetResX, mTargetResY);
+                                avpicture_fill((AVPicture *)tYUVFrame, (uint8_t *)tBuffer, mCodecContext->pix_fmt, mCurrentStreamingResX, mCurrentStreamingResY);
 
                                 #ifdef MSM_DEBUG_TIMING
                                     int64_t tTime5 = Time::GetTimeStamp();
