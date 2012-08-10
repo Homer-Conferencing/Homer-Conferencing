@@ -112,6 +112,12 @@ void OverviewFileTransfersWidget::Init()
 
     FTMAN.Init(tHost.toStdString(), tRequs);
     FTMAN.AddObserver(this);
+
+    //TODO: remove the following if the feature is complete
+    #ifdef RELEASE_VERSION
+        hide();
+    #endif
+
 }
 
 void OverviewFileTransfersWidget::handleFileTransfersManagerEventTransferBeginRequest(uint64_t pId, std::string pPeerName, std::string pFileName, uint64_t pFileSize)

@@ -177,6 +177,11 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
     mSlMovie->Init(this);
     mAVDriftFrame->hide();
 
+    //TODO: remove the following if the feature is complete
+    #ifdef RELEASE_VERSION
+        mTbRecord->hide();
+    #endif
+
     connect(mTbPlay, SIGNAL(clicked()), this, SLOT(ActionPlayMovieFile()));
     connect(mTbPause, SIGNAL(clicked()), this, SLOT(ActionPauseMovieFile()));
     connect(mTbRecord, SIGNAL(clicked()), this, SLOT(ActionRecordMovieFile()));

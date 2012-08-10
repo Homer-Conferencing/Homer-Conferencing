@@ -412,6 +412,11 @@ void MainWindow::initializeWidgetsAndMenus()
     mOverviewFileTransfersWidget = new OverviewFileTransfersWidget(mActionOverviewFileTransfersWidget, this);
     tabifyDockWidget(mOverviewContactsWidget, mOverviewFileTransfersWidget);
 
+    //TODO: remove the following if the feature is complete
+    #ifdef RELEASE_VERSION
+        mActionOverviewFileTransfersWidget->setEnabled(false);
+    #endif
+
     LOG(LOG_VERBOSE, "..local broadcast widget");
     mLocalUserParticipantWidget = new ParticipantWidget(BROADCAST, this, mOverviewContactsWidget, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer);
     setCentralWidget(mLocalUserParticipantWidget);

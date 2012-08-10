@@ -84,6 +84,11 @@ void MessageWidget::Init(QMenu *pMenu, QString pParticipant, OverviewContactsWid
     //### update GUI
     //####################################################################
 
+    //TODO: remove the following if the feature is complete
+    #ifdef RELEASE_VERSION
+        mPbFile->setEnabled(false);
+    #endif
+
     setWindowTitle(mParticipant);
     if (mAssignedAction != NULL)
         connect(mAssignedAction, SIGNAL(triggered()), this, SLOT(ToggleVisibility()));
