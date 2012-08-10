@@ -1600,11 +1600,6 @@ void MediaSourceMuxer::SetVideoGrabResolution(int pResX, int pResY)
             pResY = tResY;
         }
 
-        mRequestedStreamingResX = pResX;
-        mRequestedStreamingResY = pResY;
-        mTargetResX = pResX;
-        mTargetResY = pResY;
-
         if (mMediaSourceOpened)
         {
             // lock grabbing
