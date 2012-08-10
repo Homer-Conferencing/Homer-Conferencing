@@ -199,7 +199,7 @@ MediaSourceNet::~MediaSourceNet()
 	LOG(LOG_VERBOSE, "Destroyed");
 }
 
-bool MediaSourceNet::DoReceiveFragment(std::string &pSourceHost, unsigned int &pSourcePort, char* pData, int &pSize)
+bool MediaSourceNet::ReceivePacket(std::string &pSourceHost, unsigned int &pSourcePort, char* pData, int &pSize)
 {
     bool tResult = false;
 
@@ -342,7 +342,7 @@ void* MediaSourceNet::Run(void* pArgs)
 		// ###################################################################
 		tDataSize = MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE;
 		tSourceHost = "";
-		if (!DoReceiveFragment(tSourceHost, tSourcePort, mPacketBuffer, tDataSize))
+		if (!ReceivePacket(tSourceHost, tSourcePort, mPacketBuffer, tDataSize))
 		{
 		    if (mReceiveErrors == MEDIA_SOURCE_NET_MAX_RECEIVE_ERRORS)
 		    {
