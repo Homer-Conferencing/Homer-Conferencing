@@ -1447,6 +1447,12 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
                 	mRecorderScalerContext = sws_getContext(mSourceResX, mSourceResY, PIX_FMT_RGB32, mSourceResX, mSourceResY, mRecorderCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
         		}
 
+                if ((mRecorderFinalFrame = avcodec_alloc_frame()) == NULL)
+                    LOG(LOG_ERROR, "Out of video memory in avcodec_alloc_frame()");
+
+                if (avpicture_alloc((AVPicture*)mRecorderFinalFrame, mRecorderCodecContext->pix_fmt, mSourceResX, mSourceResY) < 0)
+                    LOG(LOG_ERROR, "Out of video memory in avpicture_alloc()");
+
                 // Dump information about device file
         		av_dump_format(mRecorderFormatContext, 0, "MediaSource recorder (video)", true);
 
@@ -1620,6 +1626,12 @@ void MediaSource::StopRecording()
                     // free the software scaler context
                     sws_freeContext(mRecorderScalerContext);
 
+                    // Free the file frame's data buffer
+                    avpicture_free((AVPicture*)mRecorderFinalFrame);
+
+                    // Free the file frame
+                    av_free(mRecorderFinalFrame);
+
                     break;
             case MEDIA_AUDIO:
                     // free fifo buffer
@@ -1675,8 +1687,7 @@ bool MediaSource::IsRecording()
 
 void MediaSource::RecordFrame(AVFrame *pSourceFrame)
 {
-    AVFrame             *tFrame;
-    AVPacket            tPacket;
+    AVPacket            tPacketStruc, *tPacket = &tPacketStruc;
     int                 tFrameSize;
     int64_t             tCurrentPts = 1;
 
@@ -1760,94 +1771,83 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
         LOG(LOG_VERBOSE, "      ..display pic number: %d", pSourceFrame->display_picture_number);
     #endif
 
-    // transform pixel format to target format
-    if (((tFrame = avcodec_alloc_frame()) == NULL) || (avpicture_alloc((AVPicture*)tFrame, mRecorderCodecContext->pix_fmt, mSourceResX, mSourceResY) != 0))
+    mRecorderFinalFrame->coded_picture_number = tCurrentPts;
+    mRecorderFinalFrame->pts = tCurrentPts;
+    mRecorderFinalFrame->pict_type = pSourceFrame->pict_type;
+    mRecorderFinalFrame->key_frame = pSourceFrame->key_frame;
+
+    #ifdef MS_DEBUG_PACKETS
+        LOG(LOG_VERBOSE, "Recording video frame..");
+        LOG(LOG_VERBOSE, "      ..key frame: %d", mRecorderFinalFrame->key_frame);
+        switch(mRecorderFinalFrame->pict_type)
+        {
+                case FF_I_TYPE:
+                    LOG(LOG_VERBOSE, "      ..picture type: i-frame");
+                    break;
+                case FF_P_TYPE:
+                    LOG(LOG_VERBOSE, "      ..picture type: p-frame");
+                    break;
+                case FF_B_TYPE:
+                    LOG(LOG_VERBOSE, "      ..picture type: b-frame");
+                    break;
+                default:
+                    LOG(LOG_VERBOSE, "      ..picture type: %d", mRecorderFinalFrame->pict_type);
+                    break;
+        }
+        LOG(LOG_VERBOSE, "      ..pts: %ld", mRecorderFinalFrame->pts);
+        LOG(LOG_VERBOSE, "      ..coded pic number: %d", mRecorderFinalFrame->coded_picture_number);
+        LOG(LOG_VERBOSE, "      ..display pic number: %d", mRecorderFinalFrame->display_picture_number);
+    #endif
+
+    // convert pixel format in pSourceFrame and store it in mRecorderFinalFrame
+    //HINT: we should execute this step in every case (incl. when pixel format is equal), otherwise data structures are wrong
+    HM_sws_scale(mRecorderScalerContext, pSourceFrame->data, pSourceFrame->linesize, 0, mSourceResY, mRecorderFinalFrame->data, mRecorderFinalFrame->linesize);
+
+    // #########################################
+    // re-encode the frame
+    // #########################################
+    tFrameSize = avcodec_encode_video(mRecorderCodecContext, (uint8_t *)mRecorderEncoderChunkBuffer, MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE, mRecorderFinalFrame);
+
+    if (tFrameSize > 0)
     {
-        LOG(LOG_ERROR, "Couldn't allocate video frame memory");
-    }else
-    {
-        tFrame->coded_picture_number = tCurrentPts;
-        tFrame->pts = tCurrentPts;
-        tFrame->pict_type = pSourceFrame->pict_type;
-        tFrame->key_frame = pSourceFrame->key_frame;
+        av_init_packet(tPacket);
+
+        // mark i-frame
+        if (mRecorderCodecContext->coded_frame->key_frame)
+            tPacket->flags |= AV_PKT_FLAG_KEY;
+
+        // we only have one stream per video stream
+        tPacket->stream_index = 0;
+        tPacket->data = (uint8_t *)mRecorderEncoderChunkBuffer;
+        tPacket->size = tFrameSize;
+        tPacket->pts = tCurrentPts;
+        tPacket->dts = tCurrentPts;
+        tPacket->duration = 1; // always 1 because we increase pts for every packet by one
+        tPacket->pos = -1;
 
         #ifdef MS_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "Recording video frame..");
-            LOG(LOG_VERBOSE, "      ..key frame: %d", tFrame->key_frame);
-            switch(tFrame->pict_type)
-            {
-                    case FF_I_TYPE:
-                        LOG(LOG_VERBOSE, "      ..picture type: i-frame");
-                        break;
-                    case FF_P_TYPE:
-                        LOG(LOG_VERBOSE, "      ..picture type: p-frame");
-                        break;
-                    case FF_B_TYPE:
-                        LOG(LOG_VERBOSE, "      ..picture type: b-frame");
-                        break;
-                    default:
-                        LOG(LOG_VERBOSE, "      ..picture type: %d", tFrame->pict_type);
-                        break;
-            }
-            LOG(LOG_VERBOSE, "      ..pts: %ld", tFrame->pts);
-            LOG(LOG_VERBOSE, "      ..coded pic number: %d", tFrame->coded_picture_number);
-            LOG(LOG_VERBOSE, "      ..display pic number: %d", tFrame->display_picture_number);
+            LOG(LOG_VERBOSE, "Recording packet..");
+            LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
+            LOG(LOG_VERBOSE, "      ..pts: %ld (fps: %3.2f)", tPacket->pts, mFrameRate);
+            LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket->dts);
+            LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
+            LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket->pos);
         #endif
 
-        // convert pixel format in pSourceFrame and store it in tFrame
-        //HINT: we should execute this step in every case (incl. when pixel format is equal), otherwise data structures are wrong
-		HM_sws_scale(mRecorderScalerContext, pSourceFrame->data, pSourceFrame->linesize, 0, mSourceResY, tFrame->data, tFrame->linesize);
+         // distribute the encoded frame
+         if (av_write_frame(mRecorderFormatContext, tPacket) != 0)
+             LOG(LOG_ERROR, "Couldn't write video frame to file");
 
-        // #########################################
-        // re-encode the frame
-        // #########################################
-        tFrameSize = avcodec_encode_video(mRecorderCodecContext, (uint8_t *)mRecorderEncoderChunkBuffer, MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE, tFrame);
-
-        if (tFrameSize > 0)
-        {
-            av_init_packet(&tPacket);
-
-            // mark i-frame
-            if (mRecorderCodecContext->coded_frame->key_frame)
-                tPacket.flags |= AV_PKT_FLAG_KEY;
-
-            // we only have one stream per video stream
-            tPacket.stream_index = 0;
-            tPacket.data = (uint8_t *)mRecorderEncoderChunkBuffer;
-            tPacket.size = tFrameSize;
-            tPacket.pts = tCurrentPts;
-            tPacket.dts = tCurrentPts;
-            tPacket.duration = 1; // always 1 because we increase pts for every packet by one
-            tPacket.pos = -1;
-
-            #ifdef MS_DEBUG_PACKETS
-                LOG(LOG_VERBOSE, "Recording packet..");
-                LOG(LOG_VERBOSE, "      ..duration: %d", tPacket.duration);
-                LOG(LOG_VERBOSE, "      ..pts: %ld (fps: %3.2f)", tPacket.pts, mFrameRate);
-                LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket.dts);
-                LOG(LOG_VERBOSE, "      ..size: %d", tPacket.size);
-                LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket.pos);
-            #endif
-
-             // distribute the encoded frame
-             if (av_write_frame(mRecorderFormatContext, &tPacket) != 0)
-                 LOG(LOG_ERROR, "Couldn't write video frame to file");
-
-             // Free the file frame's data buffer
-             avpicture_free((AVPicture*)tFrame);
-
-             // Free the file frame
-             av_free(tFrame);
-        }else
-            LOG(LOG_ERROR, "Couldn't re-encode current video frame");
-    }
+         av_free_packet(tPacket);
+    }else
+        LOG(LOG_ERROR, "Couldn't re-encode current video frame");
 
     mRecorderChunkNumber++;
 }
 
 void MediaSource::RecordSamples(int16_t *pSourceSamples, int pSourceSamplesSize)
 {
-    AVPacket            tPacket;
+    AVPacket            tPacketStruc, *tPacket = &tPacketStruc;
     int                 tFrameSize;
     int64_t             tCurrentPts = 1;
 
@@ -1918,37 +1918,39 @@ void MediaSource::RecordSamples(int16_t *pSourceSamples, int pSourceSamplesSize)
         //printf("encoded to mp3: %d\n\n", tSampleSize);
         if (tEncodingResult > 0)
         {
-            av_init_packet(&tPacket);
+            av_init_packet(tPacket);
             mChunkNumber++;
 
             // adapt pts value
             if ((mRecorderCodecContext->coded_frame) && (mRecorderCodecContext->coded_frame->pts != 0))
-                tPacket.pts = av_rescale_q(mRecorderCodecContext->coded_frame->pts, mRecorderCodecContext->time_base, mRecorderFormatContext->streams[0]->time_base);
-            tPacket.flags |= AV_PKT_FLAG_KEY;
+                tPacket->pts = av_rescale_q(mRecorderCodecContext->coded_frame->pts, mRecorderCodecContext->time_base, mRecorderFormatContext->streams[0]->time_base);
+            tPacket->flags |= AV_PKT_FLAG_KEY;
 
             // we only have one stream per audio stream
-            tPacket.stream_index = 0;
-            tPacket.data = (uint8_t *)mRecorderEncoderChunkBuffer;
-            tPacket.size = tEncodingResult;
-            tPacket.pts = mRecorderChunkNumber;
-            tPacket.dts = mRecorderChunkNumber;
-//            tPacket.pos = av_gettime() - mStartPts;
+            tPacket->stream_index = 0;
+            tPacket->data = (uint8_t *)mRecorderEncoderChunkBuffer;
+            tPacket->size = tEncodingResult;
+            tPacket->pts = mRecorderChunkNumber;
+            tPacket->dts = mRecorderChunkNumber;
+//            tPacket->pos = av_gettime() - mStartPts;
 
             #ifdef MSM_DEBUG_PACKETS
                 LOG(LOG_VERBOSE, "Writing audio packet: %5d to file", mRecorderChunkNumber);
-                LOG(LOG_VERBOSE, "      ..pts: %ld", tPacket.pts);
-                LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket.dts);
-                LOG(LOG_VERBOSE, "      ..size: %d", tPacket.size);
-                LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket.pos);
+                LOG(LOG_VERBOSE, "      ..pts: %ld", tPacket->pts);
+                LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket->dts);
+                LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
+                LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket->pos);
             #endif
 
             //####################################################################
             // distribute the encoded frame
             // ###################################################################
-             if (av_write_frame(mRecorderFormatContext, &tPacket) != 0)
+             if (av_write_frame(mRecorderFormatContext, tPacket) != 0)
              {
                  LOG(LOG_ERROR, "Couldn't write audio sample to file");
              }
+
+             av_free_packet(tPacket);
         }else
             LOG(LOG_INFO, "Couldn't re-encode current audio sample");
     }

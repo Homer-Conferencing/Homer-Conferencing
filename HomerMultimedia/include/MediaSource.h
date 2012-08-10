@@ -364,6 +364,7 @@ protected:
     int                 mRecorderChunkNumber;
     int64_t             mRecorderStartPts; // for synchronized playback we calculate the position within a media stream and write the value into PTS entry of an encoded packet
     bool                mRecorderRealTime;
+    AVFrame             *mRecorderFinalFrame;
     /* device handling */
     std::string         mDesiredDevice;
     std::string         mCurrentDevice;
