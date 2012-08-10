@@ -1981,6 +1981,8 @@ void VideoWorkerThread::DoSetCurrentDevice()
 
     if ((mSourceAvailable = mMediaSource->SelectDevice(mDeviceName.toStdString(), MEDIA_VIDEO, tNewSourceSelected)))
     {
+        LOG(LOG_VERBOSE, "We opened a new source: %d", tNewSourceSelected);
+
         bool tHadAlreadyInputData = false;
         for (int i = 0; i < FRAME_BUFFER_SIZE; i++)
         {
@@ -1992,11 +1994,12 @@ void VideoWorkerThread::DoSetCurrentDevice()
         }
         if (!tHadAlreadyInputData)
         {
-            LOG(LOG_VERBOSE, "Haven't found any input data, will force a reset of video source");
-            mSourceAvailable = mMediaSource->Reset(MEDIA_VIDEO);
+            LOG(LOG_VERBOSE, "Haven't found any input data, will force a hard reset of video source");
+            mMediaSource->CloseGrabDevice();
+            mSourceAvailable = mMediaSource->OpenVideoGrabDevice(mResX, mResY);
             if (!mSourceAvailable)
             {
-                LOG(LOG_WARN, "Video source is (temporary) not available after Reset() in DoSetCurrentDevice()");
+                LOG(LOG_WARN, "Video source is (temporary) not available after hard reset of media source in DoSetCurrentDevice()");
             }
         }else
         {

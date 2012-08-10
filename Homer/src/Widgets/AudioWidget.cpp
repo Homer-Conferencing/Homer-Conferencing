@@ -1032,6 +1032,8 @@ void AudioWorkerThread::DoSetCurrentDevice()
 
     if ((mSourceAvailable = mMediaSource->SelectDevice(mDeviceName.toStdString(), MEDIA_AUDIO, tNewSourceSelected)))
     {
+        LOG(LOG_VERBOSE, "We opened a new source: %d", tNewSourceSelected);
+
         bool tHadAlreadyInputData = false;
         for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
         {
@@ -1044,10 +1046,11 @@ void AudioWorkerThread::DoSetCurrentDevice()
         if (!tHadAlreadyInputData)
         {
             LOG(LOG_VERBOSE, "Haven't found any input data, will force a reset of audio source");
-            mSourceAvailable = mMediaSource->Reset(MEDIA_AUDIO);
+            mMediaSource->CloseGrabDevice();
+            mSourceAvailable = mMediaSource->OpenAudioGrabDevice();
             if (!mSourceAvailable)
             {
-                LOG(LOG_WARN, "Audio source is (temporary) not available after Reset() in DoSetCurrentDevice()");
+                LOG(LOG_WARN, "Audio source is (temporary) not available after hard reset of media source in DoSetCurrentDevice()");
             }
         }else
         {
