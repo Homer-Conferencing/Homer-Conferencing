@@ -1994,6 +1994,10 @@ void VideoWorkerThread::DoSetCurrentDevice()
         {
             LOG(LOG_VERBOSE, "Haven't found any input data, will force a reset of video source");
             mSourceAvailable = mMediaSource->Reset(MEDIA_VIDEO);
+            if (!mSourceAvailable)
+            {
+                LOG(LOG_WARN, "Video source is (temporary) not available after Reset() in DoSetCurrentDevice()");
+            }
         }else
         {
             if (!tNewSourceSelected)
@@ -2011,6 +2015,10 @@ void VideoWorkerThread::DoSetCurrentDevice()
                     {
                         LOG(LOG_VERBOSE, "Haven't selected new video source, reset of current source forced");
                         mSourceAvailable = mMediaSource->Reset(MEDIA_VIDEO);
+                        if (!mSourceAvailable)
+                        {
+                            LOG(LOG_WARN, "Video source is (temporary) not available after Reset() in DoSetCurrentDevice()");
+                        }
                     }
                 }else
                 {
@@ -2028,7 +2036,7 @@ void VideoWorkerThread::DoSetCurrentDevice()
     }else
     {
         if (!mSourceAvailable)
-            LOG(LOG_VERBOSE, "Video source is (temporary) not available after SelectDevice() in DoSetCurrentDevice()");
+            LOG(LOG_WARN, "Video source is (temporary) not available after SelectDevice() in DoSetCurrentDevice()");
         if (!mTryingToOpenAFile)
             mVideoWidget->InformAboutOpenError(mDeviceName);
         else

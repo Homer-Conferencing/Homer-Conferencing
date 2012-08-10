@@ -1045,6 +1045,10 @@ void AudioWorkerThread::DoSetCurrentDevice()
         {
             LOG(LOG_VERBOSE, "Haven't found any input data, will force a reset of audio source");
             mSourceAvailable = mMediaSource->Reset(MEDIA_AUDIO);
+            if (!mSourceAvailable)
+            {
+                LOG(LOG_WARN, "Audio source is (temporary) not available after Reset() in DoSetCurrentDevice()");
+            }
         }else
         {
             // seek to the beginning if we have reselected the source file
@@ -1063,6 +1067,10 @@ void AudioWorkerThread::DoSetCurrentDevice()
                     {
                         LOG(LOG_VERBOSE, "Haven't selected new audio source, reset of current source forced");
                         mSourceAvailable = mMediaSource->Reset(MEDIA_AUDIO);
+                        if (!mSourceAvailable)
+                        {
+                            LOG(LOG_WARN, "Video source is (temporary) not available after Reset() in DoSetCurrentDevice()");
+                        }
                     }
                 }else
                     mAudioWidget->InformAboutOpenError(mDeviceName);
@@ -1073,7 +1081,14 @@ void AudioWorkerThread::DoSetCurrentDevice()
         mPaused = false;
         //mAudioWidget->InformAboutNewSource();
     }else
-        mAudioWidget->InformAboutOpenError(mDeviceName);
+    {
+        if (!mSourceAvailable)
+            LOG(LOG_WARN, "Audio source is (temporary) not available after SelectDevice() in DoSetCurrentDevice()");
+        if (!mTryingToOpenAFile)
+            mAudioWidget->InformAboutOpenError(mDeviceName);
+        else
+            LOG(LOG_VERBOSE, "Couldn't open audio file source %s", mDeviceName.toStdString().c_str());
+    }
 
     // reset audio output
     ResetPlayback();

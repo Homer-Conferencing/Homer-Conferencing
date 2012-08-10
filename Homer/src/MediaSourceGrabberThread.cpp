@@ -402,7 +402,7 @@ void MediaSourceGrabberThread::DoResetMediaSource()
     // restart frame grabbing device
     mSourceAvailable = mMediaSource->Reset();
     if (!mSourceAvailable)
-        LOG(LOG_VERBOSE, "%s source is (temporary) not available after Reset() in DoResetMediaSource()", mMediaSource->GetMediaTypeStr().c_str());
+        LOG(LOG_WARN, "%s source is (temporary) not available after Reset() in DoResetMediaSource()", mMediaSource->GetMediaTypeStr().c_str());
     mResetMediaSourceAsap = false;
     mPaused = false;
     mFrameTimestamps.clear();
@@ -422,7 +422,7 @@ void MediaSourceGrabberThread::DoSetInputStreamPreferences()
     {
     	mSourceAvailable = mMediaSource->Reset();
         if (!mSourceAvailable)
-            LOG(LOG_VERBOSE, "%s source is (temporary) not available after Reset() in DoSetInputStreamPreferences()", mMediaSource->GetMediaTypeStr().c_str());
+            LOG(LOG_WARN, "%s source is (temporary) not available after Reset() in DoSetInputStreamPreferences()", mMediaSource->GetMediaTypeStr().c_str());
         mResetMediaSourceAsap = false;
     }
 
