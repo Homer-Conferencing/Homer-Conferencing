@@ -472,7 +472,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     // activate ffmpeg internal fps emulation
     //mCodecContext->rate_emu = 1;
 
-    // some formats want stream headers to be separate
+    // some formats want stream headers to be separate, but this produces some very small packets!
 //    if(mFormatContext->oformat->flags & AVFMT_GLOBALHEADER)
 //        mCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
 
