@@ -1493,7 +1493,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
         }
         return;
 	}
-    if (pEvent->key() == Qt::Key_K)
+    if ((pEvent->key() == Qt::Key_K) && (mVideoSource->SupportsMarking()))
     {
         mLiveMarkerActive = !mVideoSource->MarkerActive();
         if (mLiveMarkerActive)
