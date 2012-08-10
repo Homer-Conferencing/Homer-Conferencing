@@ -1877,6 +1877,8 @@ bool MediaSourceMuxer::SelectDevice(std::string pDesiredDevice, enum MediaType p
 			    break;
 		}
 
+		LOG(LOG_VERBOSE, "Probing of all registered media source resulted in a new input source: %d", pIsNewDevice);
+
 		// if we haven't found the right media source yet we check if the selected device is a file
 		if ((!tResult) && (pDesiredDevice.size() > 6) && (pDesiredDevice.substr(0, 6) == "FILE: "))
 		{
@@ -1914,8 +1916,12 @@ bool MediaSourceMuxer::SelectDevice(std::string pDesiredDevice, enum MediaType p
                     mGrabMutex.lock();
 
                     CloseGrabDevice();
-                }
+                }else
+                    LOG(LOG_VERBOSE, "Old input source wasn't opened before");
+
+                // switch to new input source
                 mMediaSource = *tIt;
+
                 if (tOldMediaSourceOpened)
                 {
                     LOG(LOG_VERBOSE, "Going to open after new device selection");
@@ -1972,7 +1978,7 @@ bool MediaSourceMuxer::SelectDevice(std::string pDesiredDevice, enum MediaType p
     // unlock
     mMediaSourcesMutex.unlock();
 
-    // return true if a reset of the new selected device is needed
+    // return true if the process was successful
     return tResult;
 }
 
