@@ -280,7 +280,7 @@ void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize)
 
 	if (pBufferSize > mFifoEntrySize)
 	{
-		LOG(LOG_ERROR, "%-FIFO: entries are limited to %d bytes, current write request of %s bytes will be ignored", mName.c_str(), mFifoEntrySize, pBufferSize);
+		LOG(LOG_ERROR, "%-FIFO: entries are limited to %d bytes, current write request of %d bytes will be ignored", mName.c_str(), mFifoEntrySize, pBufferSize);
 		return;
 	}
 
