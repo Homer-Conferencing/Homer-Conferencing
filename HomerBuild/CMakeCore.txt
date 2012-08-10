@@ -144,8 +144,13 @@ SET (FLAGS
 	-Wno-format
 	-Wno-uninitialized
 	-Wno-unused-parameter
-	-Wno-invalid-source-encoding
 )
+IF (APPLE)
+	SET (FLAGS
+		${FLAGS}
+		-Wno-invalid-source-encoding
+	)
+ENDIF()
 IF (NOT (${BUILD} MATCHES "Default"))
 	SET (FLAGS
 		${FLAGS}
