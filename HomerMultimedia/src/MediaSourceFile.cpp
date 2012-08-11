@@ -1156,13 +1156,17 @@ void* MediaSourceFile::Run(void* pArgs)
                                     }
                                 }else
                                 {
-                                    // only print debug output if it is not "operation not permitted"
-                                    //if ((tBytesDecoded < 0) && (AVUNERROR(tBytesDecoded) != EPERM))
-                                    // acknowledge failed"
-                                    if (tPacket->size != tBytesDecoded)
-                                        LOG(LOG_WARN, "Couldn't decode video frame %ld because \"%s\"(%d), got a decoder result: %d", tCurPacketPts, strerror(AVUNERROR(tBytesDecoded)), AVUNERROR(tBytesDecoded), (tFrameFinished == 0));
-                                    else
-                                        LOG(LOG_WARN, "Couldn't decode video frame %ld, got a decoder result: %d", tCurPacketPts, (tFrameFinished != 0));
+                                    if(tBytesDecoded != 0)
+                                    {
+                                        // only print debug output if it is not "operation not permitted"
+                                        //if ((tBytesDecoded < 0) && (AVUNERROR(tBytesDecoded) != EPERM))
+                                        // acknowledge failed"
+                                        if (tPacket->size != tBytesDecoded)
+                                            LOG(LOG_WARN, "Couldn't decode video frame %ld because \"%s\"(%d), got a decoder result: %d", tCurPacketPts, strerror(AVUNERROR(tBytesDecoded)), AVUNERROR(tBytesDecoded), (tFrameFinished == 0));
+                                        else
+                                            LOG(LOG_WARN, "Couldn't decode video frame %ld, got a decoder result: %d", tCurPacketPts, (tFrameFinished != 0));
+                                    }else
+                                        LOG(LOG_VERBOSE, "Video decoder delivered no frame");
 
                                     tCurrentChunkSize = 0;
                                 }
