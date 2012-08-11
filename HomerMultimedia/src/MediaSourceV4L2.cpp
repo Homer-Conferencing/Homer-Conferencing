@@ -421,7 +421,7 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if(tCodec->capabilities & CODEC_CAP_TRUNCATED)
         mCodecContext->flags |= CODEC_FLAG_TRUNCATED;
 
-    if ((tResult = avcodec_open2(mCodecContext, tCodec, NULL)) < 0)
+    if ((tResult = HM_avcodec_open(mCodecContext, tCodec, NULL)) < 0)
     {
         LOG(LOG_ERROR, "Couldn't open codec because of \"%s\".", strerror(AVUNERROR(tResult)));
         // Close the V4L2 video file
