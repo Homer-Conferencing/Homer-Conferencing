@@ -115,7 +115,7 @@ MediaSource::MediaSource(string pName):
 	    avdevice_register_all();
 
 	    // register all supported media filters
-	    avfilter_register_all();
+	    //avfilter_register_all();
 
         // register all formats and codecs
         av_register_all();
