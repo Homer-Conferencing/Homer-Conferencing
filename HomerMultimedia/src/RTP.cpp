@@ -1683,7 +1683,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                                                     // use FU header as NAL header, reconstruct the original NAL header
                                                     if (!pReadOnly)
                                                     {
-                                                        #ifdef RTP_DEBUG_PACKETS
+                                                        #ifdef RTP_DEBUG_PACKETSdif
                                                             LOG(LOG_VERBOSE, "S bit is set: reconstruct NAL header");
                                                             LOG(LOG_VERBOSE, "..part F+NRI: %d", pData[0] & 0xE0);
                                                             LOG(LOG_VERBOSE, "..part TYPE: %d", pData[1] & 0x1F);
@@ -1708,10 +1708,17 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                             // HINT: inspired by "h264_handle_packet" from rtp_h264.c from ffmpeg package
                             if (((tH264HeaderType != 28) && (tH264HeaderType != 29)) || (tH264HeaderFragmentStart))
                             {
-                                pData -= 3;
-                                pData[0] = 0;
-                                pData[1] = 0;
-                                pData[2] = 1;
+                            	#ifdef RTP_DEBUG_PACKETS
+								#endif
+                            	if (!pReadOnly)
+                            	{
+    								//HINT: make sure that the byte order is correct here because we abuse the former RTP header memory
+									pData -= 3;
+									// create the start sequence "001"
+									pData[0] = 0;
+									pData[1] = 0;
+									pData[2] = 1;
+                            	}
                             }
 
                             break;
@@ -1777,7 +1784,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
 	#endif
 
 	if (!pReadOnly)
-	{
+	{// update the status variables
 		// check if there was a new frame begun before the last was finished
 		if ((mLastCompleteFrameTimestamp != mLastTimestamp) && (mLastTimestamp != tRtpHeader->Timestamp))
 		{
@@ -1790,11 +1797,13 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
 
 		mLastSequenceNumber = tRtpHeader->SequenceNumber;
 		mLastTimestamp = tRtpHeader->Timestamp;
-	}
+	}else
+	{// restore the original unchanged packet memory here
 
-    // convert from host to network byte order again
-    for (int i = 0; i < 3; i++)
-        tRtpHeader->Data[i] = htonl(tRtpHeader->Data[i]);
+	    // convert from host to network byte order again
+	    for (int i = 0; i < 3; i++)
+	        tRtpHeader->Data[i] = htonl(tRtpHeader->Data[i]);
+	}
 
     // decrease data size by the size of the found header structures
     if ((pData - tDataOriginal) > (int)pDataSize)
