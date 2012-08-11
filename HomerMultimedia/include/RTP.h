@@ -39,7 +39,7 @@ namespace Homer { namespace Multimedia {
 ///////////////////////////////////////////////////////////////////////////////
 
 // the following de/activates debugging of RTP packets
-#define RTP_DEBUG_PACKETS
+//#define RTP_DEBUG_PACKETS
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -74,6 +74,8 @@ union RtcpHeader{
         unsigned int Version:2;             /* protocol version */
 
         unsigned int Ssrc;                  /* synchronization source */
+
+        unsigned int dummy[5];                 /* TODO */
     } __attribute__((__packed__))RtpBased;
     struct{ // send within media stream as intermediate packets
         unsigned short int Length;          /* length of report */
@@ -82,9 +84,13 @@ union RtcpHeader{
         unsigned int Padding:1;             /* padding flag */
         unsigned int Version:2;             /* protocol version */
 
+        unsigned int Timestamp;             /* timestamp */
+
         unsigned int Ssrc;                  /* synchronization source */
+
+        unsigned int Data[4];
     } __attribute__((__packed__))Feedback;
-    uint32_t Data[2];
+    uint32_t Data[7];
 };
 
 // calculate the size of an RTP header: "size of structure"
@@ -117,8 +123,15 @@ public:
     static int GetHeaderSizeMax(enum CodecID pCodec);
     static void SetH261PayloadSizeMax(unsigned int pMaxSize);
     static unsigned int GetH261PayloadSizeMax();
+
+    /* RTCP packetizing */
+    static void LogRtcpHeader(RtcpHeader *pRtcpHeader);
+    bool RtcpParse(char *&pData, unsigned int &pDataSize, int &pPackets, int &pOctets);
+
+    /* RTP packetizing */
     bool RtpCreate(char *&pData, unsigned int &pDataSize);
     unsigned int GetLostPacketsFromRTP();
+    static void LogRtpHeader(RtpHeader *pRtpHeader);
     bool RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment, bool &pIsSenderReport, enum CodecID pCodecId, bool pReadOnly);
     bool OpenRtpEncoder(std::string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream);
     bool CloseRtpEncoder();

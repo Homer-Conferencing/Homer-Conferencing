@@ -1073,6 +1073,164 @@ void RTP::AnnounceLostPackets(unsigned int pCount)
         mPacketStatistic->SetLostPacketCount(mLostPackets);
 }
 
+void RTP::LogRtpHeader(RtpHeader *pRtpHeader)
+{
+    // convert from network to host byte order
+    for (int i = 0; i < 3; i++)
+        pRtpHeader->Data[i] = ntohl(pRtpHeader->Data[i]);
+
+    LOGEX(RTP, LOG_VERBOSE, "################## RTP header ########################");
+    LOGEX(RTP, LOG_VERBOSE, "Version: %d", pRtpHeader->Version);
+    if (pRtpHeader->Padding)
+        LOGEX(RTP, LOG_VERBOSE, "Padding: true");
+    else
+        LOGEX(RTP, LOG_VERBOSE, "Padding: false");
+    if (pRtpHeader->Extension)
+        LOGEX(RTP, LOG_VERBOSE, "Extension: true");
+    else
+        LOGEX(RTP, LOG_VERBOSE, "Extension: false");
+    LOGEX(RTP, LOG_VERBOSE, "SSRC: %u", pRtpHeader->Ssrc);
+    LOGEX(RTP, LOG_VERBOSE, "CSRC count: %u", pRtpHeader->CsrcCount);
+    // HINT: after converting from host to network byte order the original value within the RTP header can't be read anymore
+    switch(pRtpHeader->Marked)
+    {
+        case 0:
+                LOGEX(RTP, LOG_VERBOSE, "Marked: no");
+                break;
+        case 1:
+                LOGEX(RTP, LOG_VERBOSE, "Marked: yes");
+                break;
+    }
+    switch(pRtpHeader->PayloadType)
+    {
+                // audio
+                case 0:
+                    LOGEX(RTP, LOG_VERBOSE, "Payload type: old PCMU");
+                    break;
+                case 8:
+                    LOGEX(RTP, LOG_VERBOSE, "Payload type: old PCMA");
+                    break;
+                case 14:
+                    LOGEX(RTP, LOG_VERBOSE, "Payload type: old mpa (mp2, mp3)");
+                    break;
+                // video
+                case 31:
+                    LOGEX(RTP, LOG_VERBOSE, "Payload type: old h261");
+                    break;
+                case 32:
+                    LOGEX(RTP, LOG_VERBOSE, "Payload type: old mpv (mpeg1/2)");
+                    break;
+                case 34:
+                    LOGEX(RTP, LOG_VERBOSE, "Payload type: old h263");
+                    break;
+                case 72 ... 76:
+                    LOGEX(RTP, LOG_VERBOSE, "Payload type: rtcp");
+                    break;
+                case 100:
+                    LOGEX(RTP, LOG_VERBOSE, "Payload type: aac");
+                    break;
+                case 101:
+                    LOGEX(RTP, LOG_VERBOSE, "Payload type: amr");
+                    break;
+                case 118:
+                    LOGEX(RTP, LOG_VERBOSE, "Payload type: h263");
+                    break;
+                case 119:
+                    LOGEX(RTP, LOG_VERBOSE, "Payload type: h263+");
+                    break;
+                case 120:
+                    LOGEX(RTP, LOG_VERBOSE, "Payload type: h264");
+                    break;
+                case 121:
+                    LOGEX(RTP, LOG_VERBOSE, "Payload type: mpeg4");
+                    break;
+                default:
+                    LOGEX(RTP, LOG_VERBOSE, "Payload type: %d (name: %s)", pRtpHeader->PayloadType, PayloadIdToFfmpegName(pRtpHeader->PayloadType).c_str());
+                    break;
+    }
+    LOGEX(RTP, LOG_VERBOSE, "SequenceNumber: %u", pRtpHeader->SequenceNumber);
+    LOGEX(RTP, LOG_VERBOSE, "Time stamp: %10u", pRtpHeader->Timestamp);
+
+    // convert from host to network byte order
+    for (int i = 0; i < 3; i++)
+        pRtpHeader->Data[i] = htonl(pRtpHeader->Data[i]);
+}
+
+void RTP::LogRtcpHeader(RtcpHeader *pRtcpHeader)
+{
+    // convert from network to host byte order, HACK: exceed array boundaries
+    for (int i = 0; i < 3; i++)
+        pRtcpHeader->Data[i] = ntohl(pRtcpHeader->Data[i]);
+    int tRtcpHeaderLength = pRtcpHeader->Feedback.Length + 1;
+
+    // conver the rest
+    for (int i = 3; i < tRtcpHeaderLength; i++)
+        pRtcpHeader->Data[i] = ntohl(pRtcpHeader->Data[i]);
+
+    LOGEX(RTP, LOG_VERBOSE, "################## RTCP header ########################");
+    LOGEX(RTP, LOG_VERBOSE, "Version: %d", pRtcpHeader->Feedback.Version);
+    if (pRtcpHeader->Feedback.Padding)
+        LOGEX(RTP, LOG_VERBOSE, "Padding: true");
+    else
+        LOGEX(RTP, LOG_VERBOSE, "Padding: false");
+    switch(pRtcpHeader->Feedback.PlType)
+    {
+            case 200:
+                    LOGEX(RTP, LOG_VERBOSE, "Report type: sender report");
+                    break;
+            case 201:
+                    LOGEX(RTP, LOG_VERBOSE, "Report type: receiver report");
+                    break;
+            default:
+                    LOGEX(RTP, LOG_VERBOSE, "Report type: %d", pRtcpHeader->Feedback.PlType);
+                    break;
+    }
+    LOGEX(RTP, LOG_VERBOSE, "Report length: %d (entire packet size: %d)", pRtcpHeader->Feedback.Length, (pRtcpHeader->Feedback.Length + 1 /* length is reported minus one */) * 4 /* 32 bit words */);
+    LOGEX(RTP, LOG_VERBOSE, "Message type: %d", pRtcpHeader->Feedback.Fmt);
+    LOGEX(RTP, LOG_VERBOSE, "Time stamp: %10u", pRtcpHeader->Feedback.Timestamp);
+    LOGEX(RTP, LOG_VERBOSE, "SSRC: %u", pRtcpHeader->Feedback.Ssrc);
+    for (int i = 3; i < pRtcpHeader->Feedback.Length + 1; i++)
+    {
+        LOGEX(RTP, LOG_VERBOSE, "RTCP-SR data[%d] = %u", i - 3, pRtcpHeader->Data[i]);
+    }
+    // convert from host to network byte order, HACK: exceed array boundaries
+    for (int i = 0; i < tRtcpHeaderLength; i++)
+        pRtcpHeader->Data[i] = htonl(pRtcpHeader->Data[i]);
+}
+
+bool RTP::RtcpParse(char *&pData, unsigned int &pDataSize, int &pPackets, int &pOctets)
+{
+    bool tResult = false;
+    RtcpHeader* tRtcpHeader = (RtcpHeader*)pData;
+
+    // convert from network to host byte order, HACK: exceed array boundaries
+    for (int i = 0; i < 3; i++)
+        tRtcpHeader->Data[i] = ntohl(tRtcpHeader->Data[i]);
+    int tRtcpHeaderLength = tRtcpHeader->Feedback.Length + 1;
+
+    // conver the rest
+    for (int i = 3; i < tRtcpHeaderLength; i++)
+        tRtcpHeader->Data[i] = ntohl(tRtcpHeader->Data[i]);
+
+
+    if (tRtcpHeaderLength == 7 /* need 28 byte sender report */)
+    {// update values
+        pPackets = tRtcpHeader->Feedback.Data[2];
+        pOctets = tRtcpHeader->Feedback.Data[3];
+        tResult = true;
+    }else
+    {// set fall back values
+        pPackets = 0;
+        pOctets = 0;
+        tResult = false;
+    }
+    // convert from host to network byte order, HACK: exceed array boundaries
+    for (int i = 0; i < tRtcpHeaderLength; i++)
+        tRtcpHeader->Data[i] = htonl(tRtcpHeader->Data[i]);
+
+    return tResult;
+}
+
 // assumption: we are getting one single RTP encapsulated packet, not auto detection of following additional packets included
 bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment, bool &pIsSenderReport, enum CodecID pCodecId, bool pReadOnly)
 {
@@ -1117,85 +1275,14 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
     // #############################################################
     RtpHeader* tRtpHeader = (RtpHeader*)pData;
 
+    #ifdef RTP_DEBUG_PACKETS
+        // print some verbose outputs
+        LogRtpHeader(tRtpHeader);
+    #endif
+
     // convert from network to host byte order
     for (int i = 0; i < 3; i++)
         tRtpHeader->Data[i] = ntohl(tRtpHeader->Data[i]);
-
-    #ifdef RTP_DEBUG_PACKETS
-        // print some verbose outputs
-        LOG(LOG_VERBOSE, "################## RTP header ########################");
-        LOG(LOG_VERBOSE, "Version: %d", tRtpHeader->Version);
-        if (tRtpHeader->Padding)
-            LOG(LOG_VERBOSE, "Padding: true");
-        else
-            LOG(LOG_VERBOSE, "Padding: false");
-        if (tRtpHeader->Extension)
-            LOG(LOG_VERBOSE, "Extension: true");
-        else
-            LOG(LOG_VERBOSE, "Extension: false");
-        LOG(LOG_VERBOSE, "SSRC: %u", tRtpHeader->Ssrc);
-        LOG(LOG_VERBOSE, "CSRC count: %u", tRtpHeader->CsrcCount);
-        // HINT: after converting from host to network byte order the original value within the RTP header can't be read anymore
-        switch(tRtpHeader->Marked)
-        {
-            case 0:
-                    LOG(LOG_VERBOSE, "Marked: no");
-                    break;
-            case 1:
-                    LOG(LOG_VERBOSE, "Marked: yes");
-                    break;
-        }
-        switch(tRtpHeader->PayloadType)
-        {
-                    // audio
-                    case 0:
-                        LOG(LOG_VERBOSE, "Payload type: old PCMU");
-                        break;
-                    case 8:
-                        LOG(LOG_VERBOSE, "Payload type: old PCMA");
-                        break;
-                    case 14:
-                        LOG(LOG_VERBOSE, "Payload type: old mpa (mp2, mp3)");
-                        break;
-                    // video
-                    case 31:
-                        LOG(LOG_VERBOSE, "Payload type: old h261");
-                        break;
-                    case 32:
-                        LOG(LOG_VERBOSE, "Payload type: old mpv (mpeg1/2)");
-                        break;
-                    case 34:
-                        LOG(LOG_VERBOSE, "Payload type: old h263");
-                        break;
-                    case 72 ... 76:
-                        LOG(LOG_VERBOSE, "Payload type: rtcp");
-                        break;
-                    case 100:
-                        LOG(LOG_VERBOSE, "Payload type: aac");
-                        break;
-                    case 101:
-                        LOG(LOG_VERBOSE, "Payload type: amr");
-                        break;
-                    case 118:
-                        LOG(LOG_VERBOSE, "Payload type: h263");
-                        break;
-                    case 119:
-                        LOG(LOG_VERBOSE, "Payload type: h263+");
-                        break;
-                    case 120:
-                        LOG(LOG_VERBOSE, "Payload type: h264");
-                        break;
-                    case 121:
-                        LOG(LOG_VERBOSE, "Payload type: mpeg4");
-                        break;
-                    default:
-                        LOG(LOG_VERBOSE, "Payload type: %d (name: %s)", tRtpHeader->PayloadType, PayloadIdToFfmpegName(tRtpHeader->PayloadType).c_str());
-                        break;
-        }
-        LOG(LOG_VERBOSE, "SequenceNumber: %u", tRtpHeader->SequenceNumber);
-        LOG(LOG_VERBOSE, "Time stamp: %10u", tRtpHeader->Timestamp);
-
-    #endif
 
     unsigned int tCsrcCount = tRtpHeader->CsrcCount;
     if (tCsrcCount > 4)
@@ -1227,44 +1314,22 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
     // #############################################################
     if ((tRtpHeader->PayloadType >= 72) && (tRtpHeader->PayloadType <= 76))
     {// rtcp intermediate packet for streaming feedback received
-        RtcpHeader* tRtcpHeader = (RtcpHeader*)pData + sizeof(RtpHeader);
+        // RTCP in-stream feedback starts at the beginning of RTP header
+        RtcpHeader* tRtcpHeader = (RtcpHeader*)tDataOriginal;
+
+        // convert from host to network byte order again
+        for (int i = 0; i < 3; i++)
+            tRtpHeader->Data[i] = htonl(tRtpHeader->Data[i]);
 
         #ifdef RTP_DEBUG_PACKETS
-            // convert from network to host byte order
-            for (int i = 0; i < 2; i++)
-                tRtcpHeader->Data[i] = ntohl(tRtcpHeader->Data[i]);
-
-            LOG(LOG_VERBOSE, "################## RTCP header ########################");
-            LOG(LOG_VERBOSE, "Version: %d", tRtcpHeader->Feedback.Version);
-            if (tRtcpHeader->Feedback.Padding)
-                LOG(LOG_VERBOSE, "Padding: true");
-            else
-                LOG(LOG_VERBOSE, "Padding: false");
-            switch(tRtcpHeader->Feedback.PlType)
-            {
-                    case 200:
-                            LOG(LOG_VERBOSE, "Report type: sender report");
-                            break;
-                    case 201:
-                            LOG(LOG_VERBOSE, "Report type: receiver report");
-                            break;
-                    default:
-                            LOG(LOG_VERBOSE, "Report type: %d", tRtcpHeader->Feedback.PlType);
-                            break;
-            }
-            LOG(LOG_VERBOSE, "Report length: %d", tRtcpHeader->Feedback.Length);
-            LOG(LOG_VERBOSE, "Message type: %d", tRtcpHeader->Feedback.Fmt);
-            LOG(LOG_VERBOSE, "SSRC: %u", tRtcpHeader->Feedback.Ssrc);
-
-            // convert from host to network byte order again
-            for (int i = 0; i < 2; i++)
-                tRtcpHeader->Data[i] = htonl(tRtcpHeader->Data[i]);
+            LogRtpHeader(tRtpHeader);
+            LogRtcpHeader(tRtcpHeader);
         #endif
 
         pIsLastFragment = false;
         pIsSenderReport = true;
         pData = (char*)tRtcpHeader;
-        pDataSize = tRtcpHeader->Feedback.Length;
+        pDataSize = (tRtcpHeader->Feedback.Length + 1) * 4;
 
         // inform that is not a fragment which includes data for an audio/video decoder, this RTCP packet belongs to the RTP abstraction level
         return false;
