@@ -350,7 +350,7 @@ void MediaSinkNet::SendPacket(char* pData, unsigned int pSize)
             unsigned int tPacketSize = pSize;
             bool tIsLastFragment = false;
             bool tIsSenderReport = false;
-            RtpParse(tFragmentData, tPacketSize, tIsLastFragment, tIsSenderReport, mCurrentStream->codec->codec_id, true);
+            RtpParse(tFragmentData, tPacketSize, tIsLastFragment, tIsSenderReport, mIncomingAVStream->codec->codec_id, true);
         }
     #endif
 
