@@ -43,7 +43,7 @@ namespace Homer { namespace Multimedia {
 ///////////////////////////////////////////////////////////////////////////////
 
 // the following de/activates debugging of received packets
-#define MSN_DEBUG_PACKETS
+//#define MSN_DEBUG_PACKETS
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -89,6 +89,7 @@ protected:
     bool ReceivePacket(std::string &pSourceHost, unsigned int &pSourcePort, char* pData, int &pSize);
 
     /* general transport */
+    int                 mPacketNumber;
     bool                mListenerNeeded;
     char                *mPacketBuffer;
     bool                mListenerSocketCreatedOutside;

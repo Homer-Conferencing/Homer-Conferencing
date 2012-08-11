@@ -52,7 +52,7 @@ MediaSourceMem::MediaSourceMem(bool pRtpActivated):
     mSourceType = SOURCE_MEMORY;
     mStreamPacketBuffer = (char*)malloc(MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE);
     mFragmentBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
-    mPacketNumber = 0;
+    mFragmentNumber = 0;
     mPacketStatAdditionalFragmentSize = 0;
     mOpenInputStream = false;
     mRtpActivated = pRtpActivated;
@@ -86,6 +86,9 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
     char *tBuffer = (char*)pBuffer;
     ssize_t tBufferSize = (ssize_t) pBufferSize;
 
+    #ifdef MSMEM_DEBUG_PACKETS
+        LOGEX(MediaSourceMem, LOG_VERBOSE, "Got a call for GetNextPacket() with a packet buffer at %p and size of %d bytes", pBuffer, pBufferSize);
+    #endif
     if (tMediaSourceMemInstance->mRtpActivated)
     {// rtp is active, fragmentation possible!
      // we have to parse every incoming network packet and create a frame packet from the network packets (fragments)
@@ -156,7 +159,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
                     tLastFragment = false;
                     tBuffer = (char*)pBuffer;
                     tBufferSize = (ssize_t) pBufferSize;
-                    LOGEX(MediaSourceMem, LOG_ERROR, "Stream buffer too small for input, dropping received stream");
+                    LOGEX(MediaSourceMem, LOG_ERROR, "Stream buffer of %d bytes too small for input, dropping received stream", pBufferSize);
                 }
             }else
             {
@@ -164,14 +167,20 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
                     LOGEX(MediaSourceMem, LOG_WARN, "Current RTP packet was reported as invalid by RTP parser, ignoring this data");
                 else
                 {
-                    #ifdef MSMEM_DEBUG_PACKETS
-                        LOGEX(MediaSourceMem, LOG_VERBOSE, "Sender report found in data stream");
+                    int tPackets = 0;
+                    int tOctets = 0;
+                    if (tMediaSourceMemInstance->RtcpParse(tFragmentData, tFragmentDataSize, tPackets, tOctets))
+                        LOGEX(MediaSourceMem, LOG_VERBOSE, "Sender reports: %d packets and %d bytes transmitted", tPackets, tOctets);
+                    else
+                        LOGEX(MediaSourceMem, LOG_ERROR, "Unable to parse sender report in received RTCP packet");
+                    #ifdef MSMEM_DEBUG_SENDER_REPORTS
+                        RTP::LogRtcpHeader((RtcpHeader*)tFragmentData);
                     #endif
                 }
             }
         }while(!tLastFragment);
     }else
-    {// rtp is inactive, no fragmentation!
+    {// rtp is inactive
         tMediaSourceMemInstance->ReadFragment(tBuffer, tBufferSize);
         if (tMediaSourceMemInstance->mGrabbingStopped)
         {
@@ -190,7 +199,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
     }
 
     #ifdef MSMEM_DEBUG_PACKETS
-        LOGEX(MediaSourceMem, LOG_VERBOSE, "Returning frame of size %d", tBufferSize);
+        LOGEX(MediaSourceMem, LOG_ERROR, "Returning frame of size %d", tBufferSize);
     #endif
 
     return tBufferSize;
@@ -217,7 +226,7 @@ void MediaSourceMem::ReadFragment(char *pData, ssize_t &pDataSize)
     if (pDataSize > 0)
     {
         #ifdef MSMEM_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "Delivered packet with number %5u at %p with size: %5d", (unsigned int)++mPacketNumber, pData, (int)pDataSize);
+            LOG(LOG_VERBOSE, "Delivered fragment with number %5u at %p with size %5d towards decoder", (unsigned int)++mFragmentNumber, pData, (int)pDataSize);
         #endif
     }
 
@@ -398,10 +407,11 @@ bool MediaSourceMem::SetInputStreamPreferences(std::string pStreamCodec, bool pD
 bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 {
     int                 tResult;
-    ByteIOContext       *tByteIoContext;
+    AVIOContext         *tIoContext;
     AVInputFormat       *tFormat;
     AVCodec             *tCodec;
     AVDictionary        *tOptions = NULL;
+    AVDictionaryEntry   *tOptionsEntry = NULL;
 
     if (pFps > 29.97)
         pFps = 29.97;
@@ -428,11 +438,11 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     }
 
 	// build corresponding "ByteIOContext"
-    tByteIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, /* read-only */0, this, GetNextPacket, NULL, NULL);
+    tIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, /* read-only */0, this, GetNextPacket, NULL, NULL);
 
-    tByteIoContext->seekable = 0;
+    tIoContext->seekable = 0;
     // limit packet size, otherwise ffmpeg will deliver unpredictable results ;)
-    tByteIoContext->max_packet_size = MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE;
+    tIoContext->max_packet_size = MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE;
 
     // there is no differentiation between H.263+ and H.263 when decoding an incoming video stream
     if (mStreamCodecId == CODEC_ID_H263P)
@@ -443,7 +453,7 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     // ffmpeg knows only the mpegvideo demuxer which is responsible for both MPEG1 and MPEG2 streams
     if ((tCodecName == "mpeg1video") || (tCodecName == "mpeg2video"))
         tCodecName = "mpegvideo";
-    LOG(LOG_VERBOSE, "Going to find input format for codec \"%s\"..", tCodecName.c_str());
+    LOG(LOG_VERBOSE, "Going to find VIDEO input format for codec \"%s\"..", tCodecName.c_str());
     tFormat = av_find_input_format(tCodecName.c_str());
 
     if (tFormat == NULL)
@@ -452,43 +462,84 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
             LOG(LOG_ERROR, "Couldn't find video input format for codec %d", mStreamCodecId);
         return false;
     }
-    LOG(LOG_VERBOSE, "Successfully found input format");
+    LOG(LOG_ERROR, "Successfully found VIDEO input format with flags: %d", tFormat->flags);
 
-    // Open video stream
-    LOG(LOG_VERBOSE, "Going to open VIDEO input stream..");
+    // open input: automatic content detection is done inside ffmpeg
+    mFormatContext = AV_NEW_FORMAT_CONTEXT(); // make sure we have default values in format context, otherwise avformat_open_input() will crash
+    mFormatContext->pb = tIoContext;
     mOpenInputStream = true;
-    if((tResult = av_open_input_stream(&mFormatContext, tByteIoContext, "", tFormat, NULL)) != 0)
+    LOG(LOG_ERROR, "Going to open VIDEO stream input..");
+    if ((tResult = avformat_open_input(&mFormatContext, "", tFormat, &tOptions)) != 0)
     {
-        if (!mGrabbingStopped)
-            LOG(LOG_ERROR, "Couldn't open video input stream because of \"%s\".", strerror(AVUNERROR(tResult)));
-        else
-            LOG(LOG_VERBOSE, "Grabbing was stopped meanwhile");
-        mOpenInputStream = false;
+        LOG(LOG_ERROR, "Couldn't open video stream because of \"%s\"(%d)", strerror(AVUNERROR(tResult)), tResult);
         return false;
     }
     mOpenInputStream = false;
-    if (mGrabbingStopped)
-    {
-        LOG(LOG_VERBOSE, "Grabbing already stopped, will return immediately");
+    LOG(LOG_ERROR, "Successfully opened VIDEO stream input");
+
+    if ((tOptionsEntry = av_dict_get(tOptions, "", NULL, AV_DICT_IGNORE_SUFFIX))) {
+        LOG(LOG_ERROR, "Option %s not found.\n", tOptionsEntry->key);
         return false;
     }
-    LOG(LOG_VERBOSE, "Successfully opened input stream");
+    av_dict_free(&tOptions);
+    tOptions = NULL;
 
-    // limit frame analyzing time for ffmpeg internal codec auto detection
-    //mFormatContext->max_analyze_duration = AV_TIME_BASE / 4; //  1/4 recorded seconds
-    // verbose timestamp debugging    mFormatContext->debug = FF_FDEBUG_TS;
 
-    // disable MT for H264, otherwise avformat_find_stream_info runs into trouble
+
+
+//    // find format
+//    string tCodecName = FfmpegId2FfmpegFormat(mStreamCodecId);
+//    // ffmpeg knows only the mpegvideo demuxer which is responsible for both MPEG1 and MPEG2 streams
+//    if ((tCodecName == "mpeg1video") || (tCodecName == "mpeg2video"))
+//        tCodecName = "mpegvideo";
+//    LOG(LOG_VERBOSE, "Going to find VIDEO input format for codec \"%s\"..", tCodecName.c_str());
+//    tFormat = av_find_input_format(tCodecName.c_str());
+//
+//    if (tFormat == NULL)
+//    {
+//        if (!mGrabbingStopped)
+//            LOG(LOG_ERROR, "Couldn't find video input format for codec %d", mStreamCodecId);
+//        return false;
+//    }
+//    LOG(LOG_VERBOSE, "Successfully found VIDEO input format");
+//
+//    // Open video stream
+//    LOG(LOG_ERROR, "Going to open VIDEO input stream..");
+//    mOpenInputStream = true;
+//    if((tResult = av_open_input_stream(&mFormatContext, tByteIoContext, "", tFormat, NULL)) != 0)
+//    {
+//        if (!mGrabbingStopped)
+//            LOG(LOG_ERROR, "Couldn't open video input stream because of \"%s\".", strerror(AVUNERROR(tResult)));
+//        else
+//            LOG(LOG_VERBOSE, "Grabbing was stopped meanwhile");
+//        mOpenInputStream = false;
+//        return false;
+//    }
+//    mOpenInputStream = false;
+//    if (mGrabbingStopped)
+//    {
+//        LOG(LOG_VERBOSE, "Grabbing already stopped, will return immediately");
+//        return false;
+//    }
+//    LOG(LOG_ERROR, "Successfully opened input stream");
+
+    //H.264: force thread count to 1 since the h264 decoder will not extract SPS and PPS to extradata during multi-threaded decoding
     if (mStreamCodecId == CODEC_ID_H264)
     {
             LOG(LOG_VERBOSE, "Disabling MT during avformat_find_stream_info() for H264 codec");
 
-            // active multi-threading per default for the video encoding: leave two cpus for concurrent tasks (video grabbing/decoding, audio tasks)
+            // disable MT for H264, otherwise the decoder runs into trouble
             av_dict_set(&tOptions, "threads", "1", 0);
     }
 
     // Retrieve stream information
-    LOG(LOG_VERBOSE, "Going to find VIDEO stream info..");
+    LOG(LOG_ERROR, "Going to find VIDEO stream info..");
+    // limit frame analyzing time for ffmpeg internal codec auto detection
+    mFormatContext->max_analyze_duration = AV_TIME_BASE / 2; //  1/2 recorded seconds
+    // verbose timestamp debugging
+    mFormatContext->debug = FF_FDEBUG_TS;
+    mFormatContext->flags |= AVFMT_FLAG_DISCARD_CORRUPT;
+    LOG(LOG_VERBOSE, "Current format context flags: %d, packet buffer: %p, raw packet buffer: %p, nb streams: %d", mFormatContext->flags, mFormatContext->packet_buffer, mFormatContext->raw_packet_buffer, mFormatContext->nb_streams);
     if ((tResult = avformat_find_stream_info(mFormatContext, &tOptions)) < 0)
     {
         if (!mGrabbingStopped)
@@ -496,16 +547,26 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         else
             LOG(LOG_VERBOSE, "Grabbing was stopped meanwhile");
         // Close the video stream
-        av_close_input_stream(mFormatContext);
+        HM_close_input(mFormatContext);
         return false;
     }
-    LOG(LOG_VERBOSE, "Successfully found VIDEO stream info");
+    LOG(LOG_ERROR, "Successfully found VIDEO stream info");
+
+    if ((tOptionsEntry = av_dict_get(tOptions, "", NULL, AV_DICT_IGNORE_SUFFIX))) {
+        LOG(LOG_ERROR, "Option %s not found.\n", tOptionsEntry->key);
+        return false;
+    }
+    av_dict_free(&tOptions);
+    tOptions = NULL;
 
     // Find the first video stream
     mMediaStreamIndex = -1;
     LOG(LOG_VERBOSE, "Going to find fitting stream..");
     for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
     {
+        // Dump information about device file
+        av_dump_format(mFormatContext, i, "MediaSourceFile(video)", false);
+
         if(mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO)
         {
             mMediaStreamIndex = i;
@@ -516,19 +577,18 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     {
         LOG(LOG_ERROR, "Couldn't find a video stream");
         // Close the video stream
-        av_close_input_stream(mFormatContext);
+        HM_close_input(mFormatContext);
         return false;
     }
-
-    // Dump information about device file
-    av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceMem (video)", false);
-    //LOG(LOG_VERBOSE, "    ..video stream found with ID: %d, number of available streams: %d", mMediaStreamIndex, mFormatContext->nb_streams);
 
     // Get a pointer to the codec context for the video stream
     mCodecContext = mFormatContext->streams[mMediaStreamIndex]->codec;
 
-    // set quant. parameters
-    mCodecContext->qmin = 1; // default is 2
+    // check for VDPAU support
+    if ((mCodecContext->codec) && (mCodecContext->codec->capabilities & CODEC_CAP_HWACCEL_VDPAU))
+    {
+        LOG(LOG_WARN, "Codec %s supports VDPAU", mCodecContext->codec->name);
+    }
 
     // set grabbing resolution and frame-rate to the resulting ones delivered by opened video codec
     mSourceResX = mCodecContext->width;
@@ -536,22 +596,31 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     mFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num / mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den;
     LOG(LOG_INFO, "Detected frame rate: %f", mFrameRate);
 
+    if ((mSourceResX == 0) || (mSourceResY == 0))
+    {
+        LOG(LOG_ERROR, "Couldn't find resolution information within video stream");
+        // Close the video file
+        HM_close_input(mFormatContext);
+        return false;
+    }
+
     // Find the decoder for the video stream
     LOG(LOG_VERBOSE, "Going to find decoder..");
     if((tCodec = avcodec_find_decoder(mCodecContext->codec_id)) == NULL)
     {
         LOG(LOG_ERROR, "Couldn't find a fitting video codec");
         // Close the video stream
-        av_close_input_stream(mFormatContext);
+        HM_close_input(mFormatContext);
         return false;
     }
     LOG(LOG_VERBOSE, "Successfully found decoder");
 
-    // disable MT for H264, otherwise the decoder runs into trouble
+    //H.264: force thread count to 1 since the h264 decoder will not extract SPS and PPS to extradata during multi-threaded decoding
     if (mStreamCodecId == CODEC_ID_H264)
     {
             LOG(LOG_VERBOSE, "Disabling MT during avcodec_open2() for H264 codec");
 
+            // disable MT for H264, otherwise the decoder runs into trouble
             av_dict_set(&tOptions, "threads", "1", 0);
             mCodecContext->thread_count = 1;
     }
@@ -644,7 +713,7 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     LOG(LOG_VERBOSE, "Successfully opened input stream");
 
     // limit frame analyzing time for ffmpeg internal codec auto detection
-    //mFormatContext->max_analyze_duration = AV_TIME_BASE / 4; //  1/4 recorded seconds
+    mFormatContext->max_analyze_duration = AV_TIME_BASE / 2; //  1/2 recorded seconds
     // verbose timestamp debugging    mFormatContext->debug = FF_FDEBUG_TS;
 
     // Retrieve stream information
@@ -961,11 +1030,19 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                             // only print debug output if it is not "operation not permitted"
                             //if ((tBytesDecoded < 0) && (AVUNERROR(tBytesDecoded) != EPERM))
 
-                            // acknowledge failed"
-                            if (tPacket.size != tBytesDecoded)
-                                MarkGrabChunkFailed("couldn't decode video frame-" + toString(strerror(AVUNERROR(tBytesDecoded))) + "(" + toString(AVUNERROR(tBytesDecoded)) + ")");
-                            else
-                                MarkGrabChunkFailed("couldn't decode video frame");
+                            if (tBytesDecoded != 0)
+                            {
+                                // acknowledge failed"
+                                if (tPacket.size != tBytesDecoded)
+                                    MarkGrabChunkFailed("couldn't decode video frame-" + toString(strerror(AVUNERROR(tBytesDecoded))) + "(" + toString(AVUNERROR(tBytesDecoded)) + ")");
+                                else
+                                    MarkGrabChunkFailed("couldn't decode video frame");
+                            }else
+                            {
+                                LOG(LOG_VERBOSE, "Video decoder delivered no frame");
+
+                                MarkGrabChunkSuccessful(mChunkNumber);
+                            }
 
                             // Free the RGB frame
                             av_free(tRGBFrame);
