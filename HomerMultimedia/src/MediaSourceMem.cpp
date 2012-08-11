@@ -49,6 +49,9 @@ using namespace Homer::Base;
 MediaSourceMem::MediaSourceMem(bool pRtpActivated):
     MediaSource("MEM-IN:"), RTP()
 {
+	mResXLastGrabbedFrame = 0;
+	mResYLastGrabbedFrame = 0;
+	mWrappingHeaderSize= 0;
     mSourceType = SOURCE_MEMORY;
     mStreamPacketBuffer = (char*)malloc(MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE);
     mFragmentBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
@@ -462,7 +465,7 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
             LOG(LOG_ERROR, "Couldn't find video input format for codec %d", mStreamCodecId);
         return false;
     }
-    LOG(LOG_ERROR, "Successfully found VIDEO input format with flags: %d", tFormat->flags);
+    LOG(LOG_VERBOSE, "Successfully found VIDEO input format with flags: %d", tFormat->flags);
 
     // open input: automatic content detection is done inside ffmpeg
     mFormatContext = AV_NEW_FORMAT_CONTEXT(); // make sure we have default values in format context, otherwise avformat_open_input() will crash
@@ -475,71 +478,16 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         return false;
     }
     mOpenInputStream = false;
-    LOG(LOG_ERROR, "Successfully opened VIDEO stream input");
-
-    if ((tOptionsEntry = av_dict_get(tOptions, "", NULL, AV_DICT_IGNORE_SUFFIX))) {
-        LOG(LOG_ERROR, "Option %s not found.\n", tOptionsEntry->key);
-        return false;
-    }
-    av_dict_free(&tOptions);
-    tOptions = NULL;
-
-
-
-
-//    // find format
-//    string tCodecName = FfmpegId2FfmpegFormat(mStreamCodecId);
-//    // ffmpeg knows only the mpegvideo demuxer which is responsible for both MPEG1 and MPEG2 streams
-//    if ((tCodecName == "mpeg1video") || (tCodecName == "mpeg2video"))
-//        tCodecName = "mpegvideo";
-//    LOG(LOG_VERBOSE, "Going to find VIDEO input format for codec \"%s\"..", tCodecName.c_str());
-//    tFormat = av_find_input_format(tCodecName.c_str());
-//
-//    if (tFormat == NULL)
-//    {
-//        if (!mGrabbingStopped)
-//            LOG(LOG_ERROR, "Couldn't find video input format for codec %d", mStreamCodecId);
-//        return false;
-//    }
-//    LOG(LOG_VERBOSE, "Successfully found VIDEO input format");
-//
-//    // Open video stream
-//    LOG(LOG_ERROR, "Going to open VIDEO input stream..");
-//    mOpenInputStream = true;
-//    if((tResult = av_open_input_stream(&mFormatContext, tByteIoContext, "", tFormat, NULL)) != 0)
-//    {
-//        if (!mGrabbingStopped)
-//            LOG(LOG_ERROR, "Couldn't open video input stream because of \"%s\".", strerror(AVUNERROR(tResult)));
-//        else
-//            LOG(LOG_VERBOSE, "Grabbing was stopped meanwhile");
-//        mOpenInputStream = false;
-//        return false;
-//    }
-//    mOpenInputStream = false;
-//    if (mGrabbingStopped)
-//    {
-//        LOG(LOG_VERBOSE, "Grabbing already stopped, will return immediately");
-//        return false;
-//    }
-//    LOG(LOG_ERROR, "Successfully opened input stream");
-
-    //H.264: force thread count to 1 since the h264 decoder will not extract SPS and PPS to extradata during multi-threaded decoding
-    if (mStreamCodecId == CODEC_ID_H264)
-    {
-            LOG(LOG_VERBOSE, "Disabling MT during avformat_find_stream_info() for H264 codec");
-
-            // disable MT for H264, otherwise the decoder runs into trouble
-            av_dict_set(&tOptions, "threads", "1", 0);
-    }
+    LOG(LOG_VERBOSE, "Successfully opened VIDEO stream input");
 
     // Retrieve stream information
     LOG(LOG_ERROR, "Going to find VIDEO stream info..");
     // limit frame analyzing time for ffmpeg internal codec auto detection
     mFormatContext->max_analyze_duration = AV_TIME_BASE / 2; //  1/2 recorded seconds
     // verbose timestamp debugging
-    mFormatContext->debug = FF_FDEBUG_TS;
+    //mFormatContext->debug = FF_FDEBUG_TS;
     mFormatContext->flags |= AVFMT_FLAG_DISCARD_CORRUPT;
-    LOG(LOG_VERBOSE, "Current format context flags: %d, packet buffer: %p, raw packet buffer: %p, nb streams: %d", mFormatContext->flags, mFormatContext->packet_buffer, mFormatContext->raw_packet_buffer, mFormatContext->nb_streams);
+    //LOG(LOG_VERBOSE, "Current format context flags: %d, packet buffer: %p, raw packet buffer: %p, nb streams: %d", mFormatContext->flags, mFormatContext->packet_buffer, mFormatContext->raw_packet_buffer, mFormatContext->nb_streams);
     if ((tResult = avformat_find_stream_info(mFormatContext, &tOptions)) < 0)
     {
         if (!mGrabbingStopped)
@@ -551,13 +499,6 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         return false;
     }
     LOG(LOG_ERROR, "Successfully found VIDEO stream info");
-
-    if ((tOptionsEntry = av_dict_get(tOptions, "", NULL, AV_DICT_IGNORE_SUFFIX))) {
-        LOG(LOG_ERROR, "Option %s not found.\n", tOptionsEntry->key);
-        return false;
-    }
-    av_dict_free(&tOptions);
-    tOptions = NULL;
 
     // Find the first video stream
     mMediaStreamIndex = -1;
