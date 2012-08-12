@@ -58,7 +58,7 @@ using namespace std;
 Thread::Thread()
 {
 	mRunning = false;
-    mThreadHandle = NULL;
+    mThreadHandle = 0;
     LOG(LOG_VERBOSE, "Created thread object");
 }
 
@@ -75,7 +75,7 @@ void Thread::CloseThread()
 		if (mThreadHandle != NULL)
 			CloseHandle(mThreadHandle);
 	#endif
-	mThreadHandle = NULL;
+	mThreadHandle = 0;
 }
 
 void Thread::Suspend(unsigned int pUSecs)
@@ -684,7 +684,7 @@ bool Thread::StartThread(void* pArgs)
 {
     bool tResult = false;
 
-    if (mThreadHandle != NULL)
+    if (mThreadHandle != 0)
     {
     	LOG(LOG_VERBOSE, "Thread handle already initialized");
     	return false;
@@ -740,7 +740,7 @@ bool Thread::StartThread(THREAD_MAIN pMain, void* pArgs)
 {
 	bool tResult = false;
 
-    if (mThreadHandle != NULL)
+    if (mThreadHandle != 0)
     {
     	LOG(LOG_VERBOSE, "Thread handle already initialized");
     	return false;
