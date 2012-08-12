@@ -68,7 +68,8 @@ public:
     static bool GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned long &pMemPhysical, int &pPid, int &pPPid, float &pLoadUser, float &pLoadSystem, float &pLoadTotal, int &pPriority, int &pNice, int &pThreadCount, unsigned long long &pLastUserTicsThread, unsigned long long &pLastKernelTicsThread, unsigned long long &pLastSystemTime);
 
 private:
-    void Init();
+    void CloseThread();
+
     static void* StartThreadStaticWrapperUniversal(void* pThread);
     static void* StartThreadStaticWrapperRun(void* pThread);
 

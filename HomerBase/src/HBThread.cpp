@@ -57,20 +57,26 @@ using namespace std;
 
 Thread::Thread()
 {
-    Init();
+	mRunning = false;
+    mThreadHandle = NULL;
+    LOG(LOG_VERBOSE, "Created thread object");
 }
 
 Thread::~Thread()
 {
-}
-
-void Thread::Init()
-{
-    LOG(LOG_VERBOSE, "Initialize thread object");
-    mThreadHandle = 0;
+    LOG(LOG_VERBOSE, "Destroying thread object");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+void Thread::CloseThread()
+{
+	#ifdef WIN32
+		if (mThreadHandle != NULL)
+			CloseHandle(mThreadHandle);
+	#endif
+	mThreadHandle = NULL;
+}
 
 void Thread::Suspend(unsigned int pUSecs)
 {
@@ -656,6 +662,7 @@ void* Thread::StartThreadStaticWrapperUniversal(void* pThread)
     tThreadObject->mRunning = true;
     void* tResult = tThreadObject->mThreadMain(tThreadObject->mThreadArguments);
     tThreadObject->mRunning = false;
+    tThreadObject->CloseThread();
     LOGEX(Thread, LOG_VERBOSE, "Thread finished");
     return tResult;
 }
@@ -668,6 +675,7 @@ void* Thread::StartThreadStaticWrapperRun(void* pThread)
     tThreadObject->mRunning = true;
     void* tResult = tThreadObject->Run(tThreadObject->mThreadArguments);
     tThreadObject->mRunning = false;
+    tThreadObject->CloseThread();
     LOGEX(Thread, LOG_VERBOSE, "Thread finished (Run method)");
     return tResult;
 }
@@ -676,11 +684,17 @@ bool Thread::StartThread(void* pArgs)
 {
     bool tResult = false;
 
-    if (mThreadHandle != 0)
-        return false;
-
+    if (mThreadHandle != NULL)
+    {
+    	LOG(LOG_VERBOSE, "Thread handle already initialized");
+    	return false;
+    }
+    	
     if (IsRunning())
-    	return true;
+    {
+    	LOG(LOG_VERBOSE, "Thread already running, start skipped");
+    	return false;
+    }
 
     mThreadMain = 0;
     mThreadArguments = pArgs;
@@ -726,8 +740,17 @@ bool Thread::StartThread(THREAD_MAIN pMain, void* pArgs)
 {
 	bool tResult = false;
 
-    if (mThreadHandle != 0)
-        return false;
+    if (mThreadHandle != NULL)
+    {
+    	LOG(LOG_VERBOSE, "Thread handle already initialized");
+    	return false;
+    }
+
+    if (IsRunning())
+    {
+    	LOG(LOG_VERBOSE, "Thread already running, start skipped");
+    	return false;
+    }
 
     if (pMain == NULL)
         return false;
