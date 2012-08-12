@@ -199,6 +199,84 @@ MediaSourceNet::~MediaSourceNet()
 	LOG(LOG_VERBOSE, "Destroyed");
 }
 
+bool MediaSourceNet::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
+{
+    LOG(LOG_VERBOSE, "Trying to open the video source");
+
+    // setting this explicitly, otherwise the Run-method won't assign the thread name correctly
+	mMediaType = MEDIA_VIDEO;
+
+	// start socket listener
+    StartListener();
+
+    bool tResult = MediaSourceMem::OpenVideoGrabDevice(pResX, pResY, pFps);
+
+	if (tResult)
+	{
+        SVC_PROCESS_STATISTIC.AssignThreadName("Video-Grabber(NET)");
+        enum TransportType tTransportType;
+        enum NetworkType tNetworkType;
+
+		// set category for packet statistics
+        if (mGAPIUsed)
+        {
+            // assume Berkeley-Socket implementation behind GAPI interface => therefore we can easily conclude on "UDP/TCP/UDPlite"
+            mCurrentDeviceName = "NET-IN: " + mGAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mGAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? "UDPlite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
+
+            tTransportType = (mStreamedTransport ? SOCKET_TCP : (mGAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
+            tNetworkType = (IS_IPV6_ADDRESS(mGAPIDataSocket->getName()->toString()) ? SOCKET_IPv6 : SOCKET_IPv4); //TODO: this is not correct for unknown GAPI implementations which use some different type of network
+        }else
+        {
+            mCurrentDeviceName = "NET-IN: " + MediaSinkNet::CreateId(mDataSocket->GetLocalHost(), toString(mDataSocket->GetLocalPort()), mDataSocket->GetTransportType(), mRtpActivated);
+
+            tTransportType = mDataSocket->GetTransportType();
+            tNetworkType = mDataSocket->GetNetworkType();
+        }
+        ClassifyStream(DATA_TYPE_VIDEO, tTransportType, tNetworkType);
+	}
+
+    return tResult;
+}
+
+bool MediaSourceNet::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
+{
+    LOG(LOG_VERBOSE, "Trying to open the audio source");
+
+    // setting this explicitly, otherwise the Run-method won't assign the thread name correctly
+	mMediaType = MEDIA_AUDIO;
+
+	// start socket listener
+    StartListener();
+
+    bool tResult = MediaSourceMem::OpenAudioGrabDevice(pSampleRate, pStereo);
+
+	if (tResult)
+	{
+        SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Grabber(NET)");
+        enum TransportType tTransportType;
+        enum NetworkType tNetworkType;
+
+	    // set category for packet statistics
+        if (mGAPIUsed)
+        {
+            // assume Berkeley-Socket implementation behind GAPI interface => therefore we can easily conclude on "UDP/TCP/UDPlite"
+            mCurrentDeviceName = "NET-IN: " + mGAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mGAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? "UDPlite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
+
+            tTransportType = (mStreamedTransport ? SOCKET_TCP : (mGAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
+            tNetworkType = IS_IPV6_ADDRESS(mGAPIDataSocket->getName()->toString()) ? SOCKET_IPv6 : SOCKET_IPv4; //TODO: this is not correct for unknown GAPI implementations which use some different type of network
+        }else
+        {
+            mCurrentDeviceName = "NET-IN: " + MediaSinkNet::CreateId(mDataSocket->GetLocalHost(), toString(mDataSocket->GetLocalPort()), mDataSocket->GetTransportType(), mRtpActivated);
+
+            tTransportType = mDataSocket->GetTransportType();
+            tNetworkType = mDataSocket->GetNetworkType();
+        }
+        ClassifyStream(DATA_TYPE_AUDIO, tTransportType, tNetworkType);
+	}
+
+    return tResult;
+}
+
 bool MediaSourceNet::ReceivePacket(std::string &pSourceHost, unsigned int &pSourcePort, char* pData, int &pSize)
 {
     bool tResult = false;
@@ -335,6 +413,23 @@ void* MediaSourceNet::Run(void* pArgs)
         }
     }
 
+    if (mGAPIUsed)
+    {
+        // assume Berkeley-Socket implementation behind GAPI interface => therefore we can easily conclude on "UDP/TCP/UDPlite"
+        mCurrentDeviceName = "NET-IN: " + mGAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mGAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? "UDPlite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
+
+        enum TransportType tTransportType = (mStreamedTransport ? SOCKET_TCP : (mGAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
+        // update category for packet statistics
+        enum NetworkType tNetworkType = (IS_IPV6_ADDRESS(mGAPIDataSocket->getName()->toString())) ? SOCKET_IPv6 : SOCKET_IPv4;
+        ClassifyStream(GetDataType(), tTransportType, tNetworkType);
+    }else
+    {
+        mCurrentDeviceName = "NET-IN: " + MediaSinkNet::CreateId(mDataSocket->GetLocalHost(), toString(mDataSocket->GetLocalPort()), mDataSocket->GetTransportType(), mRtpActivated);
+        // update category for packet statistics
+        ClassifyStream(GetDataType(), mDataSocket->GetTransportType(), mDataSocket->GetNetworkType());
+    }
+    AssignStreamName(mCurrentDeviceName);
+
     while ((mListenerNeeded) && (!mGrabbingStopped))
     {
         //####################################################################
@@ -370,16 +465,16 @@ void* MediaSourceNet::Run(void* pArgs)
 
                     enum TransportType tTransportType = (mStreamedTransport ? SOCKET_TCP : (mGAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
                     // update category for packet statistics
-                    enum NetworkType tNetworkType = (IS_IPV6_ADDRESS(tSourceHost)) ? SOCKET_IPv6 : SOCKET_IPv4;
+                    enum NetworkType tNetworkType = (IS_IPV6_ADDRESS(mGAPIDataSocket->getName()->toString())) ? SOCKET_IPv6 : SOCKET_IPv4;
                     ClassifyStream(GetDataType(), tTransportType, tNetworkType);
                 }else
                 {
                     mCurrentDeviceName = "NET-IN: " + MediaSinkNet::CreateId(mDataSocket->GetLocalHost(), toString(mDataSocket->GetLocalPort()), mDataSocket->GetTransportType(), mRtpActivated);
+
                     // update category for packet statistics
-                    enum NetworkType tNetworkType = (IS_IPV6_ADDRESS(tSourceHost)) ? SOCKET_IPv6 : SOCKET_IPv4;
-                    ClassifyStream(GetDataType(), mDataSocket->GetTransportType(), tNetworkType);
+                    ClassifyStream(GetDataType(), mDataSocket->GetTransportType(), mDataSocket->GetNetworkType());
                 }
-                AssignStreamName(mCurrentDeviceName);
+				LOG(LOG_VERBOSE, "Setting device name to %s", mCurrentDeviceName.c_str());
                 mPeerHost = tSourceHost;
                 mPeerPort = tSourcePort;
 		    }
@@ -449,60 +544,6 @@ void* MediaSourceNet::Run(void* pArgs)
 unsigned int MediaSourceNet::GetListenerPort()
 {
     return mListenerPort;
-}
-
-bool MediaSourceNet::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
-{
-    LOG(LOG_VERBOSE, "Trying to open the video source");
-
-    // setting this explicitly, otherwise the Run-method won't assign the thread name correctly
-	mMediaType = MEDIA_VIDEO;
-
-	// start socket listener
-    StartListener();
-
-    bool tResult = MediaSourceMem::OpenVideoGrabDevice(pResX, pResY, pFps);
-
-	if (tResult)
-	{
-        SVC_PROCESS_STATISTIC.AssignThreadName("Video-Grabber(NET)");
-        enum TransportType tTransportType;
-	    // set category for packet statistics
-        if (mGAPIUsed)
-            tTransportType = (mStreamedTransport ? SOCKET_TCP : (mGAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
-        else
-            tTransportType = mDataSocket->GetTransportType();
-        ClassifyStream(DATA_TYPE_VIDEO, tTransportType);
-	}
-
-    return tResult;
-}
-
-bool MediaSourceNet::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
-{
-    LOG(LOG_VERBOSE, "Trying to open the audio source");
-
-    // setting this explicitly, otherwise the Run-method won't assign the thread name correctly
-	mMediaType = MEDIA_AUDIO;
-
-	// start socket listener
-    StartListener();
-
-    bool tResult = MediaSourceMem::OpenAudioGrabDevice(pSampleRate, pStereo);
-
-	if (tResult)
-	{
-        SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Grabber(NET)");
-        enum TransportType tTransportType;
-	    // set category for packet statistics
-        if (mGAPIUsed)
-            tTransportType = (mStreamedTransport ? SOCKET_TCP : (mGAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
-        else
-            tTransportType = mDataSocket->GetTransportType();
-        ClassifyStream(DATA_TYPE_AUDIO, tTransportType);
-	}
-
-    return tResult;
 }
 
 string MediaSourceNet::GetCurrentDevicePeerName()
