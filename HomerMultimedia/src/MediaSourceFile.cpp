@@ -51,6 +51,8 @@ using namespace Homer::Monitor;
 // seek variance
 #define MSF_SEEK_VARIANCE                                  2 // frames
 
+#define MSF_SEEK_MAX_EXPECTED_GOP_SIZE                    30 // every x frames a key frame
+
 // above which threshold value should we execute a hard file seeking? (below this threshold we do soft seeking by adjusting RT grabbing)
 #define MSF_SEEK_WAIT_THRESHOLD                          1.5 // seconds
 
@@ -509,7 +511,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
                 // adapt the start pts value to the time shift once more because we maybe dropped several frames during seek process
                 CalibrateRTGrabbing();
 
-                LOG(LOG_VERBOSE, "Read valid %s frame %.2f after seeking in input file", GetMediaTypeStr().c_str(), mCurrentFrameIndex);
+                LOG(LOG_VERBOSE, "Read valid %s frame %.2f after seeking in input file", GetMediaTypeStr().c_str(), (float)mCurrentFrameIndex);
 
                 mRecalibrateRealTimeGrabbingAfterSeeking = false;
             }
@@ -729,7 +731,9 @@ void* MediaSourceFile::Run(void* pArgs)
                             else
                                 tCurPacketPts = tPacket->dts;
 
-                            if (tCurPacketPts < mSeekingTargetFrameIndex)
+                            // for seeking: is the currently read frame close to target frame index?
+                            //HINT: we need a key frame in the remaining distance to the target frame)
+                            if (tCurPacketPts < mSeekingTargetFrameIndex - MSF_SEEK_MAX_EXPECTED_GOP_SIZE)
                             {
                                 #ifdef MSF_DEBUG_PACKETS
                                     LOG(LOG_VERBOSE, "Dropping %s frame %ld because we are waiting for frame %.2f", GetMediaTypeStr().c_str(), tCurPacketPts, mSeekingTargetFrameIndex);
@@ -739,6 +743,19 @@ void* MediaSourceFile::Run(void* pArgs)
                             {
                                 if (mRecalibrateRealTimeGrabbingAfterSeeking)
                                 {
+                                    // wait for next key frame
+                                    if (mSeekingWaitForNextKeyFrame)
+                                    {
+                                        if (tPacket->flags & AV_PKT_FLAG_KEY)
+                                            mSeekingWaitForNextKeyFrame = false;
+                                        else
+                                        {
+                                            #ifdef MSF_DEBUG_PACKETS
+                                                LOG(LOG_VERBOSE, "Dropping %s frame %ld because we are waiting for next key frame after seek target frame %.2f", GetMediaTypeStr().c_str(), tCurPacketPts, mSeekingTargetFrameIndex);
+                                            #endif
+                                           tShouldReadNext = true;
+                                        }
+                                    }
                                     #ifdef MSF_DEBUG_PACKETS
                                         LOG(LOG_VERBOSE, "Read %s frame number %ld from input file after seeking", GetMediaTypeStr().c_str(), tCurPacketPts);
                                     #endif
@@ -797,7 +814,7 @@ void* MediaSourceFile::Run(void* pArgs)
                     // flush ffmpeg internal buffers
                     avcodec_flush_buffers(mCodecContext);
 
-                    LOG(LOG_VERBOSE, "Read %s packet %ld of %d bytes after seeking in input file", GetMediaTypeStr().c_str(), tCurPacketPts, tPacket->size);
+                    LOG(LOG_VERBOSE, "Read %s packet %ld of %d bytes after seeking in input file, current stream DTS is %ld", GetMediaTypeStr().c_str(), tCurPacketPts, tPacket->size, mFormatContext->streams[mMediaStreamIndex]->cur_dts);
 
                     mFlushBuffersAfterSeeking = false;
                 }
@@ -1325,19 +1342,20 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
 
             if ((!mGrabInRealTime) || ((tTimeDiff > MSF_SEEK_WAIT_THRESHOLD) || (tTimeDiff < -MSF_SEEK_WAIT_THRESHOLD)))
             {
-                LOG(LOG_VERBOSE, "%s-SEEKING from %5.2f sec. (pts %.2f) to %5.2f sec. (pts %.2f), max. sec.: %ld (pts %.2f), source start pts: %.2f", GetMediaTypeStr().c_str(), GetSeekPos(), mCurrentFrameIndex, pSeconds, tFrameIndex, tSeekEnd, mNumberOfFrames, mSourceStartPts);
+                LOG(LOG_VERBOSE, "%s-SEEKING from %5.2f sec. (pts %.2f) to %5.2f sec. (pts %.2f), max. sec.: %.2f (pts %.2f), source start pts: %.2f", GetMediaTypeStr().c_str(), GetSeekPos(), mCurrentFrameIndex, pSeconds, tFrameIndex, tSeekEnd, mNumberOfFrames, mSourceStartPts);
 
-                int tSeekFlags = (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) /*| AVSEEK_FLAG_FRAME*/ | (tFrameIndex < mCurrentFrameIndex ? AVSEEK_FLAG_BACKWARD : 0);
+                int tSeekFlags = (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) | AVSEEK_FLAG_FRAME | (tFrameIndex < mCurrentFrameIndex ? AVSEEK_FLAG_BACKWARD : 0);
                 mSeekingTargetFrameIndex = (int64_t)tFrameIndex;
+                mSeekingWaitForNextKeyFrame = true;
 
-                tRes = (avformat_seek_file(mFormatContext, -1 /* mMediaStreamIndex */, INT_MIN, mSeekingTargetFrameIndex, INT_MAX, tSeekFlags) >= 0); //here because this leads sometimes to unexpected behavior
+                tRes = (avformat_seek_file(mFormatContext, /*-1*/ mMediaStreamIndex, INT_MIN, mSeekingTargetFrameIndex, INT_MAX, 0) >= 0);
                 if (tRes < 0)
                 {
                     LOG(LOG_ERROR, "Error during absolute seeking in %s source file because \"%s\"", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
                     tResult = false;
                 }else
                 {
-                    LOG(LOG_VERBOSE, "Seeking in %s file to frame index %.2f was successful", GetMediaTypeStr().c_str(), tFrameIndex);
+                    LOG(LOG_VERBOSE, "Seeking in %s file to frame index %.2f was successful, current dts is %ld", GetMediaTypeStr().c_str(), tFrameIndex, mFormatContext->streams[mMediaStreamIndex]->cur_dts);
                     mCurrentFrameIndex = tFrameIndex;
 
                     // seeking was successful

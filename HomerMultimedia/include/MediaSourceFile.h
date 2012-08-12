@@ -125,6 +125,7 @@ private:
     bool                mRecalibrateRealTimeGrabbingAfterSeeking;
     bool                mFlushBuffersAfterSeeking;
     double              mSeekingTargetFrameIndex;
+    bool                mSeekingWaitForNextKeyFrame;
     /* picture grabbing */
     bool                mPictureGrabbed;
     uint8_t 			*mPictureData[AV_NUM_DATA_POINTERS];
