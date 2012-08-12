@@ -441,10 +441,13 @@ void MediaSourceGrabberThread::DoSeek()
     mDeliverMutex.lock();
 
     LOG(LOG_VERBOSE, "Seeking now to position %5.2f", mSeekPos);
-    mSourceAvailable = mMediaSource->Seek(mSeekPos);
-    if(!mSourceAvailable)
+    if (mMediaSource->SupportsSeeking())
     {
-        LOG(LOG_WARN, "Source isn't available anymore after seeking");
+        mSourceAvailable = mMediaSource->Seek(mSeekPos);
+        if(!mSourceAvailable)
+        {
+            LOG(LOG_WARN, "Source isn't available anymore after seeking");
+        }
     }
     mEofReached = false;
     mSeekAsap = false;
