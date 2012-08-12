@@ -1343,9 +1343,12 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
 
                 int tSeekFlags = (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) | AVSEEK_FLAG_FRAME | (tFrameIndex < mCurrentFrameIndex ? AVSEEK_FLAG_BACKWARD : 0);
                 mSeekingTargetFrameIndex = (int64_t)tFrameIndex;
-                mSeekingWaitForNextKeyFrame = true;
 
-                tRes = (avformat_seek_file(mFormatContext, /*-1*/ mMediaStreamIndex, INT_MIN, mSeekingTargetFrameIndex, INT_MAX, 0) >= 0);
+                // VIDEO: trigger a seeking until next key frame
+                if (mMediaType == MEDIA_VIDEO)
+                    mSeekingWaitForNextKeyFrame = true;
+
+                tRes = (avformat_seek_file(mFormatContext, -1 /* mMediaStreamIndex */, INT_MIN, mSeekingTargetFrameIndex, INT_MAX, 0) >= 0);
                 if (tRes < 0)
                 {
                     LOG(LOG_ERROR, "Error during absolute seeking in %s source file because \"%s\"", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
