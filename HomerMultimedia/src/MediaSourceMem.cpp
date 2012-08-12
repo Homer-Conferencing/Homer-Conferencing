@@ -173,12 +173,13 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
                     int tPackets = 0;
                     int tOctets = 0;
                     if (tMediaSourceMemInstance->RtcpParse(tFragmentData, tFragmentDataSize, tPackets, tOctets))
-                        LOGEX(MediaSourceMem, LOG_VERBOSE, "Sender reports: %d packets and %d bytes transmitted", tPackets, tOctets);
-                    else
+                    {
+						#ifdef MSMEM_DEBUG_SENDER_REPORTS
+                    		RTP::LogRtcpHeader((RtcpHeader*)tFragmentData);
+                    		LOGEX(MediaSourceMem, LOG_VERBOSE, "Sender reports: %d packets and %d bytes transmitted", tPackets, tOctets);
+						#endif
+                    }else
                         LOGEX(MediaSourceMem, LOG_ERROR, "Unable to parse sender report in received RTCP packet");
-                    #ifdef MSMEM_DEBUG_SENDER_REPORTS
-                        RTP::LogRtcpHeader((RtcpHeader*)tFragmentData);
-                    #endif
                 }
             }
         }while(!tLastFragment);

@@ -2444,6 +2444,7 @@ bool MediaSource::FfmpegOpenInput(string pSource, int pLine, const char *pInputN
 		return false;
 	}
 
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Setting device (name) to %s", pInputName);
     mCurrentDevice = pInputName;
     mCurrentDeviceName = pInputName;
 
