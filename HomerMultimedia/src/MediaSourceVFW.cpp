@@ -178,18 +178,19 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     AVInputFormat       *tFormat;
     AVCodec             *tCodec;
 
-    LOG(LOG_VERBOSE, "Trying to open the video source");
+    mMediaType = MEDIA_VIDEO;
 
-    if (mMediaType == MEDIA_AUDIO)
-    {
-        LOG(LOG_ERROR, "Wrong media type detected");
-        return false;
-    }
+    if (pFps > 29.97)
+        pFps = 29.97;
+    if (pFps < 5)
+        pFps = 5;
+
+    LOG(LOG_VERBOSE, "Trying to open the video source");
 
     SVC_PROCESS_STATISTIC.AssignThreadName("Video-Grabber(VFW)");
 
-    if (mMediaSourceOpened)
-        return false;
+    // set category for packet statistics
+    ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 
     memset((void*)&tFormatParams, 0, sizeof(tFormatParams));
     tFormatParams.channel = 0;
@@ -253,80 +254,17 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     }
     mCurrentDevice = mDesiredDevice;
 
-    // Retrieve stream information
-    LOG(LOG_VERBOSE, "Going to find stream information..");
-    if ((tResult = av_find_stream_info(mFormatContext)) < 0)
-    {
-        LOG(LOG_ERROR, "Couldn't find stream information because of \"%s\".", strerror(tResult));
-        // Close the VFW video file
-        HM_close_input(mFormatContext);
-        return false;
-    }
+    if (!DetectAllStreams())
+    	return false;
 
-    // Find the first video stream
-    mMediaStreamIndex = -1;
-    for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
-    {
-        if(mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO)
-        {
-            mMediaStreamIndex = i;
-            break;
-        }
-    }
-    if (mMediaStreamIndex == -1)
-    {
-        LOG(LOG_ERROR, "Couldn't find a video stream");
-        // Close the VFW video file
-        HM_close_input(mFormatContext);
-        return false;
-    }
+    if (!SelectStream())
+    	return false;
 
-    //######################################################
-    //### dump ffmpeg information about format
-    //######################################################
     mFormatContext->streams[mMediaStreamIndex]->time_base.num = 100;
     mFormatContext->streams[mMediaStreamIndex]->time_base.den = (int)pFps * 100;
 
-    // Dump information about device file
-    av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceVFW (video)", false);
-
-    // Get a pointer to the codec context for the video stream
-    mCodecContext = mFormatContext->streams[mMediaStreamIndex]->codec;
-
-    // set grabbing resolution and frame-rate to the resulting ones delivered by opened video codec
-    mSourceResX = mCodecContext->width;
-    mSourceResY = mCodecContext->height;
-    mFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->time_base.den / mFormatContext->streams[mMediaStreamIndex]->time_base.num;
-
-    //######################################################
-    //### search for correct decoder for the video stream
-    //######################################################
-    LOG(LOG_VERBOSE, "Going to find decoder..");
-    if((tCodec = avcodec_find_decoder(mCodecContext->codec_id)) == NULL)
-    {
-        LOG(LOG_ERROR, "Couldn't find a fitting codec");
-        // Close the VFW video file
-        HM_close_input(mFormatContext);
-        return false;
-    }
-
-    //######################################################
-    //### open the selected codec
-    //######################################################
-    // Inform the codec that we can handle truncated bitstreams -- i.e.,
-    // bitstreams where frame boundaries can fall in the middle of packets
-//    if(tCodec->capabilities & CODEC_CAP_TRUNCATED)
-//        mCodecContext->flags |= CODEC_FLAG_TRUNCATED;
-
-    // Open codec
-    LOG(LOG_VERBOSE, "Going to open codec..");
-    if ((tResult = avcodec_open2(mCodecContext, tCodec, NULL)) < 0)
-    {
-        LOG(LOG_ERROR, "Couldn't open codec because of \"%s\".", strerror(AVUNERROR(tResult)));
-        // Close the VFW video file
-        HM_close_input(mFormatContext);
-        return false;
-    }
+    if (!OpenDecoder())
+    	return false;
 
     //######################################################
     //### create context for picture scaler
@@ -339,7 +277,6 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     //av_seek_frame(mFormatContext, mMediaStreamIndex, mFormatContext->streams[mMediaStreamIndex]->cur_dts, AVSEEK_FLAG_ANY);
 
     mFirstPixelformatError = true;
-    mMediaType = MEDIA_VIDEO;
     MarkOpenGrabDeviceSuccessful();
 
     return true;

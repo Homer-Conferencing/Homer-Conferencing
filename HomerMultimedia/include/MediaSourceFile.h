@@ -98,7 +98,7 @@ protected:
 private:
     /* decoder */
     virtual void* Run(void* pArgs = NULL); // transcoder main loop
-    void StartDecoder(int pFifoEntrySize);
+    void StartDecoder();
     void StopDecoder();
 
     /* real-time playback */

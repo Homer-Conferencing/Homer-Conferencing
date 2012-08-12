@@ -409,12 +409,10 @@ bool MediaSourceMem::SetInputStreamPreferences(std::string pStreamCodec, bool pD
 
 bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 {
-    int                 tResult;
     AVIOContext         *tIoContext;
     AVInputFormat       *tFormat;
-    AVCodec             *tCodec;
-    AVDictionary        *tOptions = NULL;
-    AVDictionaryEntry   *tOptionsEntry = NULL;
+
+    mMediaType = MEDIA_VIDEO;
 
     if (pFps > 29.97)
         pFps = 29.97;
@@ -423,170 +421,50 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 
     LOG(LOG_VERBOSE, "Trying to open the video source");
 
-    if (mMediaType == MEDIA_AUDIO)
-    {
-        LOG(LOG_ERROR, "Wrong media type detected");
-        return false;
-    }
-
     SVC_PROCESS_STATISTIC.AssignThreadName("Video-Grabber(MEM)");
 
     // set category for packet statistics
     ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 
-    if (mMediaSourceOpened)
-    {
-        LOG(LOG_ERROR, "Source already open");
-        return false;
-    }
-
-	// build corresponding "ByteIOContext"
-    tIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, /* read-only */0, this, GetNextPacket, NULL, NULL);
-
-    tIoContext->seekable = 0;
-    // limit packet size, otherwise ffmpeg will deliver unpredictable results ;)
-    tIoContext->max_packet_size = MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE;
-
     // there is no differentiation between H.263+ and H.263 when decoding an incoming video stream
     if (mStreamCodecId == CODEC_ID_H263P)
         mStreamCodecId = CODEC_ID_H263;
 
-    // find format
-    string tCodecName = FfmpegId2FfmpegFormat(mStreamCodecId);
-    // ffmpeg knows only the mpegvideo demuxer which is responsible for both MPEG1 and MPEG2 streams
-    if ((tCodecName == "mpeg1video") || (tCodecName == "mpeg2video"))
-        tCodecName = "mpegvideo";
-    LOG(LOG_VERBOSE, "Going to find VIDEO input format for codec \"%s\"..", tCodecName.c_str());
-    tFormat = av_find_input_format(tCodecName.c_str());
+    // get a format description
+    if (!DescribeInput(mStreamCodecId, &tFormat))
+    	return false;
 
-    if (tFormat == NULL)
-    {
-        if (!mGrabbingStopped)
-            LOG(LOG_ERROR, "Couldn't find video input format for codec %d", mStreamCodecId);
-        return false;
-    }
-    LOG(LOG_VERBOSE, "Successfully found VIDEO input format with flags: %d", tFormat->flags);
+	// build corresponding "AVIOContext"
+    CreateIOContext(mStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, GetNextPacket, NULL, this, &tIoContext);
 
-    // open input: automatic content detection is done inside ffmpeg
-    mFormatContext = AV_NEW_FORMAT_CONTEXT(); // make sure we have default values in format context, otherwise avformat_open_input() will crash
-    mFormatContext->pb = tIoContext;
+    // open the input for the described format and via the provided I/O control
     mOpenInputStream = true;
-    LOG(LOG_ERROR, "Going to open VIDEO stream input..");
-    if ((tResult = avformat_open_input(&mFormatContext, "", tFormat, &tOptions)) != 0)
-    {
-        LOG(LOG_ERROR, "Couldn't open video stream because of \"%s\"(%d)", strerror(AVUNERROR(tResult)), tResult);
-        return false;
-    }
+    bool tRes = OpenInput("", tFormat, tIoContext);
     mOpenInputStream = false;
-    LOG(LOG_VERBOSE, "Successfully opened VIDEO stream input");
+    if (!tRes)
+    	return false;
 
-    // Retrieve stream information
-    LOG(LOG_ERROR, "Going to find VIDEO stream info..");
-    // limit frame analyzing time for ffmpeg internal codec auto detection
-    mFormatContext->max_analyze_duration = AV_TIME_BASE / 2; //  1/2 recorded seconds
-    // verbose timestamp debugging
-    //mFormatContext->debug = FF_FDEBUG_TS;
-    mFormatContext->flags |= AVFMT_FLAG_DISCARD_CORRUPT;
-    //LOG(LOG_VERBOSE, "Current format context flags: %d, packet buffer: %p, raw packet buffer: %p, nb streams: %d", mFormatContext->flags, mFormatContext->packet_buffer, mFormatContext->raw_packet_buffer, mFormatContext->nb_streams);
-    if ((tResult = avformat_find_stream_info(mFormatContext, &tOptions)) < 0)
-    {
-        if (!mGrabbingStopped)
-            LOG(LOG_ERROR, "Couldn't find video stream information because of \"%s\".", strerror(AVUNERROR(tResult)));
-        else
-            LOG(LOG_VERBOSE, "Grabbing was stopped meanwhile");
-        // Close the video stream
-        HM_close_input(mFormatContext);
-        return false;
-    }
-    LOG(LOG_ERROR, "Successfully found VIDEO stream info");
+    // detect all available video/audio streams in the input
+    if (!DetectAllStreams())
+    	return false;
 
-    // Find the first video stream
-    mMediaStreamIndex = -1;
-    LOG(LOG_VERBOSE, "Going to find fitting stream..");
-    for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
-    {
-        // Dump information about device file
-        av_dump_format(mFormatContext, i, "MediaSourceFile(video)", false);
+    // select the first matching stream according to mMediaType
+    if (!SelectStream())
+    	return false;
 
-        if(mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO)
-        {
-            mMediaStreamIndex = i;
-            break;
-        }
-    }
-    if (mMediaStreamIndex == -1)
-    {
-        LOG(LOG_ERROR, "Couldn't find a video stream");
-        // Close the video stream
-        HM_close_input(mFormatContext);
-        return false;
-    }
-
-    // Get a pointer to the codec context for the video stream
-    mCodecContext = mFormatContext->streams[mMediaStreamIndex]->codec;
-
-    // check for VDPAU support
-    if ((mCodecContext->codec) && (mCodecContext->codec->capabilities & CODEC_CAP_HWACCEL_VDPAU))
-    {
-        LOG(LOG_WARN, "Codec %s supports VDPAU", mCodecContext->codec->name);
-    }
-
-    // set grabbing resolution and frame-rate to the resulting ones delivered by opened video codec
-    mSourceResX = mCodecContext->width;
-    mSourceResY = mCodecContext->height;
-    mFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num / mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den;
-    LOG(LOG_INFO, "Detected frame rate: %f", mFrameRate);
-
-    if ((mSourceResX == 0) || (mSourceResY == 0))
-    {
-        LOG(LOG_ERROR, "Couldn't find resolution information within video stream");
-        // Close the video file
-        HM_close_input(mFormatContext);
-        return false;
-    }
-
-    // Find the decoder for the video stream
-    LOG(LOG_VERBOSE, "Going to find decoder..");
-    if((tCodec = avcodec_find_decoder(mCodecContext->codec_id)) == NULL)
-    {
-        LOG(LOG_ERROR, "Couldn't find a fitting video codec");
-        // Close the video stream
-        HM_close_input(mFormatContext);
-        return false;
-    }
-    LOG(LOG_VERBOSE, "Successfully found decoder");
-
-    //H.264: force thread count to 1 since the h264 decoder will not extract SPS and PPS to extradata during multi-threaded decoding
-    if (mStreamCodecId == CODEC_ID_H264)
-    {
-            LOG(LOG_VERBOSE, "Disabling MT during avcodec_open2() for H264 codec");
-
-            // disable MT for H264, otherwise the decoder runs into trouble
-            av_dict_set(&tOptions, "threads", "1", 0);
-            mCodecContext->thread_count = 1;
-    }
-
-    LOG(LOG_VERBOSE, "Going to open video codec..");
-    // Open codec
-    if ((tResult = HM_avcodec_open(mCodecContext, tCodec, &tOptions)) < 0)
-    {
-        LOG(LOG_ERROR, "Couldn't open video codec because of \"%s\".", strerror(AVUNERROR(tResult)));
-        return false;
-    }
-    LOG(LOG_VERBOSE, "Successfully opened codec");
-
-    //HINT: we need to allow that input bit stream might be truncated at packet boundaries instead of frame boundaries, otherwise an UDP/TCP based transmission will fail because the decoder expects only complete packets as input
-    mCodecContext->flags2 |= CODEC_FLAG2_CHUNKS;
+    // finds and opens the correct decoder
+    if (!OpenDecoder())
+    	return false;
 
     // allocate software scaler context
-    LOG(LOG_VERBOSE, "Going to create scaler context..");
+    LOG(LOG_VERBOSE, "Going to create video scaler context..");
     mScalerContext = sws_getContext(mCodecContext->width, mCodecContext->height, mCodecContext->pix_fmt, mTargetResX, mTargetResY, PIX_FMT_RGB32, SWS_BICUBIC, NULL, NULL, NULL);
 
     // seek to the current position and drop data received during codec auto detect phase
     av_seek_frame(mFormatContext, mMediaStreamIndex, mFormatContext->streams[mMediaStreamIndex]->cur_dts, AVSEEK_FLAG_ANY);
 
-    mMediaType = MEDIA_VIDEO;
     MarkOpenGrabDeviceSuccessful();
+
     mResXLastGrabbedFrame = 0;
     mResYLastGrabbedFrame = 0;
 
@@ -595,142 +473,49 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 
 bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
 {
-    int                 tResult;
-    ByteIOContext       *tByteIoContext;
+    AVIOContext       	*tIoContext;
     AVInputFormat       *tFormat;
-    AVCodec             *tCodec;
+
+    mMediaType = MEDIA_AUDIO;
 
     LOG(LOG_VERBOSE, "Trying to open the audio source");
-
-    if (mMediaType == MEDIA_VIDEO)
-    {
-        LOG(LOG_ERROR, "Wrong media type detected");
-        return false;
-    }
 
     SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Grabber(MEM)");
 
     // set category for packet statistics
     ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
 
-    if (mMediaSourceOpened)
-        return false;
+    // get a format description
+    if (!DescribeInput(mStreamCodecId, &tFormat))
+    	return false;
 
-	// build corresponding "ByteIOContex
-    tByteIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, /* read-only */0, this, GetNextPacket, NULL, NULL);
+	// build corresponding "AVIOContext"
+    CreateIOContext(mStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, GetNextPacket, NULL, this, &tIoContext);
 
-    tByteIoContext->seekable = 0;
-    // limit packet size
-    tByteIoContext->max_packet_size = MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE;
-
-    // find format
-    tFormat = av_find_input_format(FfmpegId2FfmpegFormat(mStreamCodecId).c_str());
-
-    if (tFormat == NULL)
-    {
-        if (!mGrabbingStopped)
-            LOG(LOG_ERROR, "Couldn't find audio input format for codec %d", mStreamCodecId);
-        return false;
-    }
-    LOG(LOG_VERBOSE, "Successfully found input format");
-
-    // Open audio stream
+    // open the input for the described format and via the provided I/O control
     mOpenInputStream = true;
-    if((tResult = av_open_input_stream(&mFormatContext, tByteIoContext, "", tFormat, NULL)) != 0)
-    {
-        if (!mGrabbingStopped)
-            LOG(LOG_ERROR, "Couldn't open audio input stream because of \"%s\".", strerror(AVUNERROR(tResult)));
-        else
-            LOG(LOG_VERBOSE, "Grabbing was stopped meanwhile");
-        mOpenInputStream = false;
-        return false;
-    }
+    bool tRes = OpenInput("", tFormat, tIoContext);
     mOpenInputStream = false;
-    if (mGrabbingStopped)
-    {
-        LOG(LOG_VERBOSE, "Grabbing already stopped, will return immediately");
-        return false;
-    }
-    LOG(LOG_VERBOSE, "Successfully opened input stream");
+    if (!tRes)
+    	return false;
 
-    // limit frame analyzing time for ffmpeg internal codec auto detection
-    mFormatContext->max_analyze_duration = AV_TIME_BASE / 2; //  1/2 recorded seconds
-    // verbose timestamp debugging    mFormatContext->debug = FF_FDEBUG_TS;
+    // detect all available video/audio streams in the input
+    if (!DetectAllStreams())
+    	return false;
 
-    // Retrieve stream information
-    if ((tResult = av_find_stream_info(mFormatContext)) < 0)
-    {
-        if (!mGrabbingStopped)
-            LOG(LOG_ERROR, "Couldn't find audio stream information because of \"%s\".", strerror(AVUNERROR(tResult)));
-        else
-            LOG(LOG_VERBOSE, "Grabbing was stopped meanwhile");
-        // Close the audio stream
-        av_close_input_stream(mFormatContext);
-        return false;
-    }
-    LOG(LOG_VERBOSE, "Successfully found stream info");
+    // select the first matching stream according to mMediaType
+    if (!SelectStream())
+    	return false;
 
-    // Find the first audio stream
-    mMediaStreamIndex = -1;
-    for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
-    {
-        if(mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
-        {
-            mMediaStreamIndex = i;
-            break;
-        }
-    }
-    if (mMediaStreamIndex == -1)
-    {
-        LOG(LOG_ERROR, "Couldn't find an audio stream");
-        // Close the audio stream
-        av_close_input_stream(mFormatContext);
-        return false;
-    }
-
-    // Dump information about device file
-    av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceMem (audio)", false);
-    //printf("    ..audio stream found with ID: %d, number of available streams: %d\n", mMediaStreamIndex, mFormatContext->nb_streams);
-
-    // Get a pointer to the codec context for the audio stream
-    mCodecContext = mFormatContext->streams[mMediaStreamIndex]->codec;
-
-    // force signed 16 bit sample format
-    //mCodecContext->sample_fmt = SAMPLE_FMT_S16;
-
-    // set sample rate and bit rate to the resulting ones delivered by opened audio codec
-    mSampleRate = mCodecContext->sample_rate;
     mStereo = pStereo;
 
-    // Find the decoder for the audio stream
-    if((tCodec = avcodec_find_decoder(mCodecContext->codec_id)) == NULL)
-    {
-        LOG(LOG_ERROR, "Couldn't find a fitting codec");
-        // Close the audio stream
-        av_close_input_stream(mFormatContext);
-        return false;
-    }
-
-    // Inform the codec that we can handle truncated bitstreams -- i.e.,
-    // bitstreams where frame boundaries can fall in the middle of packets
-//    if(tCodec->capabilities & CODEC_CAP_TRUNCATED)
-//        mCodecContext->flags |= CODEC_FLAG_TRUNCATED;
-
-    LOG(LOG_VERBOSE, "Going to open audio codec..");
-
-    // Open codec
-    if ((tResult = HM_avcodec_open(mCodecContext, tCodec, NULL)) < 0)
-    {
-        LOG(LOG_ERROR, "Couldn't open audio codec because of \"%s\".", strerror(AVUNERROR(tResult)));
-        // Close the audio stream
-        av_close_input_stream(mFormatContext);
-        return false;
-    }
+    // finds and opens the correct decoder
+    if (!OpenDecoder())
+    	return false;
 
     // seek to the current position and drop data received during codec auto detect phase
     av_seek_frame(mFormatContext, mMediaStreamIndex, mFormatContext->streams[mMediaStreamIndex]->cur_dts, AVSEEK_FLAG_ANY);
 
-    mMediaType = MEDIA_AUDIO;
     MarkOpenGrabDeviceSuccessful();
 
     return true;

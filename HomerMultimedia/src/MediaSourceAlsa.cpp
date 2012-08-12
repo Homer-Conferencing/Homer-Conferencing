@@ -155,13 +155,9 @@ bool MediaSourceAlsa::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     unsigned int tChannels = pStereo?2:1;
     int tErr;
 
-    LOG(LOG_VERBOSE, "Trying to open the audio source");
+    mMediaType = MEDIA_AUDIO;
 
-    if (mMediaType == MEDIA_VIDEO)
-    {
-        LOG(LOG_ERROR, "Wrong media type detected");
-        return false;
-    }
+    LOG(LOG_VERBOSE, "Trying to open the audio source");
 
     SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Grabber(ALSA)");
 
@@ -226,7 +222,6 @@ bool MediaSourceAlsa::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     LOG(LOG_INFO,"    ..sample buffer size: %d", mSampleBufferSize);
 
     mChunkNumber = 0;
-    mMediaType = MEDIA_AUDIO;
     mMediaSourceOpened = true;
 
     return true;

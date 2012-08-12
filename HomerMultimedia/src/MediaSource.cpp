@@ -2356,6 +2356,292 @@ void MediaSource::EventGrabChunkFailed(string pSource, int pLine, string pReason
     mLastGrabFailureReason = pReason;
 }
 
+// ####################################################################################
+// ### FFMPEG helpers
+// ####################################################################################
+bool MediaSource::FfmpegDescribeInput(string pSource, int pLine, CodecID pCodecId, AVInputFormat **pFormat)
+{
+	AVInputFormat *tResult = NULL;
+
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Going to find %s input format for codec %d..", GetMediaTypeStr().c_str(), pCodecId);
+
+	if (pFormat == NULL)
+	{
+		LOG_REMOTE(LOG_ERROR, pSource, pLine, "Invalid format pointer");
+
+		return false;
+	}
+
+    // derive codec name from codec ID
+    string tCodecName = FfmpegId2FfmpegFormat(pCodecId);
+    // ffmpeg knows only the mpegvideo demuxer which is responsible for both MPEG1 and MPEG2 streams
+    if ((tCodecName == "mpeg1video") || (tCodecName == "mpeg2video"))
+        tCodecName = "mpegvideo";
+
+	if ((tResult = av_find_input_format(tCodecName.c_str())) == NULL)
+    {
+        if (!mGrabbingStopped)
+        	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't find %s input format for codec %s", GetMediaTypeStr().c_str(), tCodecName.c_str());
+
+        return NULL;
+    }
+
+	LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Successfully found %s input format with flags: %d", GetMediaTypeStr().c_str(), tResult->flags);
+
+    *pFormat = tResult;
+
+	return true;
+}
+
+bool MediaSource::FfmpegCreateIOContext(string pSource/* caller source */, int pLine /* caller line */, char *pPacketBuffer, int pPacketBufferSize, IOFunction pReadFunction, IOFunction pWriteFunction, void *pOpaque, AVIOContext **pIoContext)
+{
+	AVIOContext *tResult = NULL;
+
+	if (pIoContext == NULL)
+	{
+		LOG_REMOTE(LOG_ERROR, pSource, pLine, "Invalid I/O context pointer");
+
+		return false;
+	}
+
+	// create the I/O context
+	tResult = avio_alloc_context((uint8_t*) pPacketBuffer, pPacketBufferSize, (pWriteFunction != NULL) ? 1 : 0 /* read-only? */, pOpaque, pReadFunction, pWriteFunction, NULL);
+
+	//pPacketBuffermStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, /* read-only */0, this, GetNextPacket, NULL, NULL);
+	tResult->seekable = 0;
+
+	// limit packet size, otherwise ffmpeg will deliver unpredictable results ;)
+	tResult->max_packet_size = pPacketBufferSize;
+
+    *pIoContext = tResult;
+
+	return true;
+}
+bool MediaSource::FfmpegOpenInput(string pSource, int pLine, const char *pInputName, AVInputFormat *pInputFormat, AVIOContext *pIOContext)
+{
+	int 				tRes = 0;
+
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Going to open %s input..", GetMediaTypeStr().c_str());
+
+    if (mMediaSourceOpened)
+    {
+    	LOG_REMOTE(LOG_ERROR, pSource, pLine, "%s source already open", GetMediaTypeStr().c_str());
+
+        return false;
+    }
+
+    // alocate new format context
+    mFormatContext = AV_NEW_FORMAT_CONTEXT(); // make sure we have default values in format context, otherwise avformat_open_input() will crash
+
+    // define IO context if there is a customized one
+    mFormatContext->pb = pIOContext;
+
+    // open input: automatic content detection is done inside ffmpeg
+	if ((tRes = avformat_open_input(&mFormatContext, pInputName, pInputFormat, NULL)) != 0)
+	{
+    	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't open %s input because of \"%s\"(%d)", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)), tRes);
+
+		return false;
+	}
+
+    mCurrentDevice = pInputName;
+    mCurrentDeviceName = pInputName;
+
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "%s input opened", GetMediaTypeStr().c_str());
+
+	return true;
+}
+
+bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
+{
+	int 				tRes = 0;
+
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Going to detect all existing streams in input for selecting a %s stream later..", GetMediaTypeStr().c_str());
+
+    // limit frame analyzing time for ffmpeg internal codec auto detection
+    //mFormatContext->max_analyze_duration = AV_TIME_BASE / 2; //  1/2 recorded seconds
+
+    // verbose timestamp debugging
+    //mFormatContext->debug = FF_FDEBUG_TS;
+
+    // discard all corrupted frames
+    //mFormatContext->flags |= AVFMT_FLAG_DISCARD_CORRUPT;
+
+    //LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Current format context flags: %d, packet buffer: %p, raw packet buffer: %p, nb streams: %d", mFormatContext->flags, mFormatContext->packet_buffer, mFormatContext->raw_packet_buffer, mFormatContext->nb_streams);
+    if ((tRes = avformat_find_stream_info(mFormatContext, NULL)) < 0)
+    {
+        if (!mGrabbingStopped)
+        	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't find %s stream information because of \"%s\"(%d)", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)), tRes);
+        else
+            LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Grabbing was stopped meanwhile");
+
+        // Close the video stream
+        HM_close_input(mFormatContext);
+
+        return false;
+    }
+
+	LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected all streams");
+
+    return true;
+}
+
+bool MediaSource::FfmpegSelectStream(string pSource, int pLine)
+{
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Going to find fitting %s stream..", GetMediaTypeStr().c_str());
+
+    // reset used media stream ID
+    mMediaStreamIndex = -1;
+
+	enum AVMediaType tTargetMediaType;
+	switch(mMediaType)
+	{
+		case MEDIA_VIDEO:
+			tTargetMediaType = AVMEDIA_TYPE_VIDEO;
+			break;
+		case MEDIA_AUDIO:
+			tTargetMediaType = AVMEDIA_TYPE_AUDIO;
+			break;
+		default:
+			break;
+	}
+
+    //######################################################
+    //### check all detected streams for a matching one
+    //######################################################
+	for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
+	{
+	    //######################################################
+	    //### dump ffmpeg information about format
+	    //######################################################
+	    av_dump_format(mFormatContext, i, "MediaSourceFile(video)", false);
+
+	    if(mFormatContext->streams[i]->codec->codec_type == tTargetMediaType)
+	    {
+	        mMediaStreamIndex = i;
+	        break;
+	    }
+	}
+
+	if (mMediaStreamIndex == -1)
+    {
+	    LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't find a %s stream..", GetMediaTypeStr().c_str());
+
+	    // Close the video stream
+        HM_close_input(mFormatContext);
+
+        return false;
+    }
+
+	LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Found %s stream at index %d", GetMediaTypeStr().c_str(), mMediaStreamIndex);
+
+	return true;
+}
+
+bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
+{
+	int 				tRes = 0;
+    AVCodec             *tCodec;
+    AVDictionary        *tOptions = NULL;
+
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Going to open %s decoder..", GetMediaTypeStr().c_str());
+
+    // Get a pointer to the codec context for the video stream
+    mCodecContext = mFormatContext->streams[mMediaStreamIndex]->codec;
+
+    // check for VDPAU support
+    if ((mCodecContext->codec) && (mCodecContext->codec->capabilities & CODEC_CAP_HWACCEL_VDPAU))
+    {
+    	LOG_REMOTE(LOG_INFO, pSource, pLine, "%s codec %s supports VDPAU", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
+    }
+
+    switch(mMediaType)
+    {
+		case MEDIA_VIDEO:
+			// set grabbing resolution and frame-rate to the resulting ones delivered by opened video codec
+			mSourceResX = mCodecContext->width;
+			mSourceResY = mCodecContext->height;
+			break;
+		case MEDIA_AUDIO:
+			// set sample rate and bit rate to the resulting ones delivered by opened audio codec
+			mSampleRate = mCodecContext->sample_rate;
+			break;
+		default:
+			break;
+    }
+
+    // derive the FPS from the timebase of the selected input stream
+    mFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->time_base.den / mFormatContext->streams[mMediaStreamIndex]->time_base.num;
+
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected frame rate: %f", mFrameRate);
+
+    if ((mMediaType == MEDIA_VIDEO) && ((mSourceResX == 0) || (mSourceResY == 0)))
+    {
+    	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't detect VIDEO resolution information within input stream");
+
+        // Close the video file
+        HM_close_input(mFormatContext);
+
+        return false;
+    }
+
+    //######################################################
+    //### search for correct decoder for the A/V stream
+    //######################################################
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..going to find %s decoder..", GetMediaTypeStr().c_str());
+    if((tCodec = avcodec_find_decoder(mCodecContext->codec_id)) == NULL)
+    {
+    	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't find a fitting %s codec", GetMediaTypeStr().c_str());
+
+        // Close the video stream
+        HM_close_input(mFormatContext);
+
+        return false;
+    }
+
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..successfully found %s decoder", GetMediaTypeStr().c_str());
+
+    //H.264: force thread count to 1 since the h264 decoder will not extract SPS and PPS to extradata during multi-threaded decoding
+    if (mCodecContext->codec_id == CODEC_ID_H264)
+    {
+    		LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Disabling MT during avcodec_open2() for H264 codec");
+
+            // disable MT for H264, otherwise the decoder runs into trouble
+            av_dict_set(&tOptions, "threads", "1", 0);
+
+            mCodecContext->thread_count = 1;
+    }
+
+//    // Inform the codec that we can handle truncated bitstreams
+//    // bitstreams where sample boundaries can fall in the middle of packets
+//    if(tCodec->capabilities & CODEC_CAP_TRUNCATED)
+//        mCodecContext->flags |= CODEC_FLAG_TRUNCATED;
+
+    //######################################################
+    //### open the selected codec
+    //######################################################
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..going to open %s codec..", GetMediaTypeStr().c_str());
+    if ((tRes = HM_avcodec_open(mCodecContext, tCodec, &tOptions)) < 0)
+    {
+    	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't open video codec because of \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
+        return false;
+    }
+
+    //HINT: we allow the input bit stream to be truncated at packet boundaries instead of frame boundaries,
+    //		otherwise an UDP/TCP based transmission will fail because the decoder expects only complete packets as input
+    mCodecContext->flags2 |= CODEC_FLAG2_CHUNKS;
+
+    //set duration
+    if (mFormatContext->duration != (int64_t)AV_NOPTS_VALUE)
+        mNumberOfFrames = mFormatContext->duration / AV_TIME_BASE * mFrameRate;
+    else
+        mNumberOfFrames = 0;
+
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..successfully opened %s decoder", GetMediaTypeStr().c_str());
+
+    return true;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 }} //namespace

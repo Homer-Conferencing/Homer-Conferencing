@@ -154,9 +154,18 @@ struct ChunkDescriptor
 ///////////////////////////////////////////////////////////////////////////////
 
 // event handling
-#define         MarkOpenGrabDeviceSuccessful()              EventOpenGrabDeviceSuccessful(GetObjectNameStr(this).c_str(), __LINE__)
-#define         MarkGrabChunkSuccessful(ChunkNumber)        EventGrabChunkSuccessful(GetObjectNameStr(this).c_str(), __LINE__, ChunkNumber)
-#define         MarkGrabChunkFailed(Reason)                 EventGrabChunkFailed(GetObjectNameStr(this).c_str(), __LINE__, Reason)
+#define         MarkOpenGrabDeviceSuccessful()              	EventOpenGrabDeviceSuccessful(GetObjectNameStr(this).c_str(), __LINE__)
+#define         MarkGrabChunkSuccessful(ChunkNumber)        	EventGrabChunkSuccessful(GetObjectNameStr(this).c_str(), __LINE__, ChunkNumber)
+#define         MarkGrabChunkFailed(Reason)                 	EventGrabChunkFailed(GetObjectNameStr(this).c_str(), __LINE__, Reason)
+
+// ffmpeg helpers
+#define DescribeInput(CodecId, Format)							FfmpegDescribeInput(GetObjectNameStr(this).c_str(), __LINE__, CodecId, Format)
+#define CreateIOContext(PacketBuffer, PacketBufferSize, ReadFunction, WriteFunction, Opaque, IoContext) \
+																FfmpegCreateIOContext(GetObjectNameStr(this).c_str(), __LINE__, PacketBuffer, PacketBufferSize, ReadFunction, WriteFunction, Opaque, IoContext)
+#define OpenInput(InputName, InputFormat, IoContext)       		FfmpegOpenInput(GetObjectNameStr(this).c_str(), __LINE__, InputName, InputFormat, IoContext)
+#define DetectAllStreams()            							FfmpegDetectAllStreams(GetObjectNameStr(this).c_str(), __LINE__)
+#define SelectStream()              							FfmpegSelectStream(GetObjectNameStr(this).c_str(), __LINE__)
+#define OpenDecoder()											FfmpegOpenDecoder(GetObjectNameStr(this).c_str(), __LINE__)
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -164,6 +173,7 @@ struct ChunkDescriptor
 class MediaSource;
 typedef std::vector<MediaSink*>        MediaSinks;
 typedef std::vector<MediaSource*>      MediaSources;
+typedef int (*IOFunction)(void *pOpaque, uint8_t *pBuffer, int pBufferSize);
 
 class MediaSource :
     public Homer::Monitor::PacketStatistic
@@ -320,6 +330,16 @@ protected:
     void EventOpenGrabDeviceSuccessful(std::string pSource, int pLine);
     void EventGrabChunkSuccessful(std::string pSource, int pLine, int pChunkNumber);
     void EventGrabChunkFailed(std::string pSource, int pLine, std::string pReason);
+
+    /* FFMPEG helpers */
+    bool FfmpegDescribeInput(string pSource/* caller source */, int pLine /* caller line */, CodecID pCodecId, AVInputFormat **pFormat);
+public:
+    static bool FfmpegCreateIOContext(string pSource/* caller source */, int pLine /* caller line */, char *pPacketBuffer, int pPacketBufferSize, IOFunction pReadFunction, IOFunction pWriteFunction, void *pOpaque, AVIOContext **pIoContext);
+protected:
+    bool FfmpegOpenInput(string pSource /* caller source */, int pLine /* caller line */, const char *pInputName, AVInputFormat *pInputFormat = NULL, AVIOContext *pIOContext = NULL);
+    bool FfmpegDetectAllStreams(string pSource /* caller source */, int pLine /* caller line */); //avformat_open_input must be called before, return true on success
+    bool FfmpegSelectStream(string pSource /* caller source */, int pLine /* caller line */); //avformat_open_input & avformat_find_stream_info must be called before, returns true on success
+    bool FfmpegOpenDecoder(string pSource /* caller source */, int pLine /* caller line */); //avformat_open_input & avformat_find_stream_info must be called before, returns true on success
 
     bool                mMediaSourceOpened;
     bool                mGrabbingStopped;
