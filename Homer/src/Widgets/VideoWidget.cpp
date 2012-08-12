@@ -1699,8 +1699,10 @@ void VideoWidget::customEvent(QEvent *pEvent)
 				while (mPendingNewFrameSignals)
 				{
 					tLoopCount++;
-					if (tLoopCount > 1)
-						LOG(LOG_VERBOSE, "Called GetCurrentFrame() %d times", tLoopCount);
+					#ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
+						if (tLoopCount > 1)
+							LOG(LOG_VERBOSE, "Called GetCurrentFrame() %d times", tLoopCount);
+					#endif
 					mPendingNewFrameSignals--;
 					mCurrentFrameNumber = mVideoWorker->GetCurrentFrame(&tFrame, &tFps);
 
@@ -1751,7 +1753,9 @@ void VideoWidget::customEvent(QEvent *pEvent)
 						// do we have a gap?
 						if (mLastFrameNumber < mCurrentFrameNumber - 1)
 						{
-							LOG(LOG_WARN, "Gap between frames, [%d->%d]", mLastFrameNumber, mCurrentFrameNumber);
+							#ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
+								LOG(LOG_WARN, "Gap between frames, [%d->%d]", mLastFrameNumber, mCurrentFrameNumber);
+							#endif
 						}
 
 						// do we have a frame order problem?
@@ -2091,7 +2095,9 @@ int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFps)
         }else
         {
             mMissingFrames++;
-            LOG(LOG_VERBOSE, "Missing new frame (%d overall missed frames), delivering old frame instead", mMissingFrames);
+			#ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
+            	LOG(LOG_VERBOSE, "Missing new frame (%d overall missed frames), delivering old frame instead", mMissingFrames);
+			#endif
         }
 
         // calculate FPS

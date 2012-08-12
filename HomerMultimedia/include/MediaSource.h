@@ -51,7 +51,7 @@ namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// video processing
+// video/audio processing
 #define MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE                         16 * 1000 * 1000 // HDTV RGB32 picture: 1920*1080*4 = ca. 7,9 MB
 
 // audio processing
@@ -154,18 +154,18 @@ struct ChunkDescriptor
 ///////////////////////////////////////////////////////////////////////////////
 
 // event handling
-#define         MarkOpenGrabDeviceSuccessful()              	EventOpenGrabDeviceSuccessful(GetObjectNameStr(this).c_str(), __LINE__)
-#define         MarkGrabChunkSuccessful(ChunkNumber)        	EventGrabChunkSuccessful(GetObjectNameStr(this).c_str(), __LINE__, ChunkNumber)
-#define         MarkGrabChunkFailed(Reason)                 	EventGrabChunkFailed(GetObjectNameStr(this).c_str(), __LINE__, Reason)
+#define MarkOpenGrabDeviceSuccessful()              		EventOpenGrabDeviceSuccessful(GetObjectNameStr(this).c_str(), __LINE__)
+#define MarkGrabChunkSuccessful(ChunkNumber)        		EventGrabChunkSuccessful(GetObjectNameStr(this).c_str(), __LINE__, ChunkNumber)
+#define MarkGrabChunkFailed(Reason)                 		EventGrabChunkFailed(GetObjectNameStr(this).c_str(), __LINE__, Reason)
 
 // ffmpeg helpers
-#define DescribeInput(CodecId, Format)							FfmpegDescribeInput(GetObjectNameStr(this).c_str(), __LINE__, CodecId, Format)
+#define DescribeInput(CodecId, Format)						FfmpegDescribeInput(GetObjectNameStr(this).c_str(), __LINE__, CodecId, Format)
 #define CreateIOContext(PacketBuffer, PacketBufferSize, ReadFunction, WriteFunction, Opaque, IoContext) \
-																FfmpegCreateIOContext(GetObjectNameStr(this).c_str(), __LINE__, PacketBuffer, PacketBufferSize, ReadFunction, WriteFunction, Opaque, IoContext)
-#define OpenInput(InputName, InputFormat, IoContext)       		FfmpegOpenInput(GetObjectNameStr(this).c_str(), __LINE__, InputName, InputFormat, IoContext)
-#define DetectAllStreams()            							FfmpegDetectAllStreams(GetObjectNameStr(this).c_str(), __LINE__)
-#define SelectStream()              							FfmpegSelectStream(GetObjectNameStr(this).c_str(), __LINE__)
-#define OpenDecoder()											FfmpegOpenDecoder(GetObjectNameStr(this).c_str(), __LINE__)
+															FfmpegCreateIOContext(GetObjectNameStr(this).c_str(), __LINE__, PacketBuffer, PacketBufferSize, ReadFunction, WriteFunction, Opaque, IoContext)
+#define OpenInput(InputName, InputFormat, IoContext)       	FfmpegOpenInput(GetObjectNameStr(this).c_str(), __LINE__, InputName, InputFormat, IoContext)
+#define DetectAllStreams()            						FfmpegDetectAllStreams(GetObjectNameStr(this).c_str(), __LINE__)
+#define SelectStream()              						FfmpegSelectStream(GetObjectNameStr(this).c_str(), __LINE__)
+#define OpenDecoder()										FfmpegOpenDecoder(GetObjectNameStr(this).c_str(), __LINE__)
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -337,7 +337,7 @@ public:
     static bool FfmpegCreateIOContext(string pSource/* caller source */, int pLine /* caller line */, char *pPacketBuffer, int pPacketBufferSize, IOFunction pReadFunction, IOFunction pWriteFunction, void *pOpaque, AVIOContext **pIoContext);
 protected:
     bool FfmpegOpenInput(string pSource /* caller source */, int pLine /* caller line */, const char *pInputName, AVInputFormat *pInputFormat = NULL, AVIOContext *pIOContext = NULL);
-    bool FfmpegDetectAllStreams(string pSource /* caller source */, int pLine /* caller line */); //avformat_open_input must be called before, return true on success
+    bool FfmpegDetectAllStreams(string pSource /* caller source */, int pLine /* caller line */); //avformat_open_input must be called before, returns true on success
     bool FfmpegSelectStream(string pSource /* caller source */, int pLine /* caller line */); //avformat_open_input & avformat_find_stream_info must be called before, returns true on success
     bool FfmpegOpenDecoder(string pSource /* caller source */, int pLine /* caller line */); //avformat_open_input & avformat_find_stream_info must be called before, returns true on success
 

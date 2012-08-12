@@ -381,7 +381,7 @@ void MainWindow::initializeVideoAudioIO()
     // ### AUDIO
     // ############################
     LOG(LOG_VERBOSE, "Creating audio media objects..");
-    mOwnAudioMuxer = new MediaSourceMuxer(NULL);
+    mOwnAudioMuxer = new MediaSourceMuxer();
     if (CONF.AudioCaptureEnabled())
     {
         mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio());
