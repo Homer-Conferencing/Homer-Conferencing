@@ -468,9 +468,12 @@ void ConfigurationDialog::SaveConfiguration()
     CONF.SetLocalAudioSource(mCbAudioSource->currentText());
 
     //### playback device
-    if (mCbAudioSink->currentText() != CONF.GetLocalAudioSink())
-        tOnlyFutureChanged = true;
-    CONF.SetLocalAudioSink(mCbAudioSink->currentText());
+    if (mCbAudioSink->currentText() != "")
+    {
+        if (mCbAudioSink->currentText() != CONF.GetLocalAudioSink())
+            tOnlyFutureChanged = true;
+        CONF.SetLocalAudioSink(mCbAudioSink->currentText());
+    }
 
     //### stream codec
     CONF.SetAudioCodec(mCbAudioCodec->currentText());
