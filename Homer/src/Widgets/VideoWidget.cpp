@@ -1699,7 +1699,7 @@ void VideoWidget::customEvent(QEvent *pEvent)
 				while (mPendingNewFrameSignals)
 				{
 					tLoopCount++;
-					#ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
+					#ifdef DEBUG_VIDEOWIDGET_FRAME_DELIVERY
 						if (tLoopCount > 1)
 							LOG(LOG_VERBOSE, "Called GetCurrentFrame() %d times", tLoopCount);
 					#endif
@@ -1717,7 +1717,7 @@ void VideoWidget::customEvent(QEvent *pEvent)
 					    mParticipantWidget->ReportVideoDelay(tVideoDelay);
 					}else
                         mParticipantWidget->ReportVideoDelay(0);
-                    #ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
+                    #ifdef DEBUG_VIDEOWIDGET_FRAME_DELIVERY
                         LOG(LOG_VERBOSE, "We show frame %d while we already grabbed frame %d", mCurrentFrameNumber, tWorkerLastFrame);
                     #endif
 				}
@@ -1753,7 +1753,7 @@ void VideoWidget::customEvent(QEvent *pEvent)
 						// do we have a gap?
 						if (mLastFrameNumber < mCurrentFrameNumber - 1)
 						{
-							#ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
+							#ifdef DEBUG_VIDEOWIDGET_FRAME_DELIVERY
 								LOG(LOG_WARN, "Gap between frames, [%d->%d]", mLastFrameNumber, mCurrentFrameNumber);
 							#endif
 						}
@@ -1772,7 +1772,11 @@ void VideoWidget::customEvent(QEvent *pEvent)
 						LOG(LOG_WARN, "Current frame number is invalid (%d)", mCurrentFrameNumber);
 				}
         	}else
-        		LOG(LOG_VERBOSE, "Got signal about new frame but frame queue is already empty");
+        	{
+				#ifdef DEBUG_VIDEOWIDGET_FRAME_DELIVERY
+        			LOG(LOG_VERBOSE, "Got signal about new frame but frame queue is already empty");
+				#endif
+        	}
 			break;
         case VIDEO_OPEN_ERROR:
             tVideoEvent->accept();
@@ -2086,7 +2090,9 @@ int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFps)
 
             if (mFrameCurrentIndex == mFrameGrabIndex)
 			{
-				LOG(LOG_WARN, "Current index %d is the current grab index, delivering old frame instead", mFrameCurrentIndex);
+				#ifdef DEBUG_VIDEOWIDGET_FRAME_DELIVERY
+            		LOG(LOG_WARN, "Current index %d is the current grab index, delivering old frame instead", mFrameCurrentIndex);
+				#endif
 	            mFrameCurrentIndex--;
 	            if (mFrameCurrentIndex < 0)
 	                mFrameCurrentIndex = FRAME_BUFFER_SIZE - 1;
@@ -2095,7 +2101,7 @@ int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFps)
         }else
         {
             mMissingFrames++;
-			#ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
+			#ifdef DEBUG_VIDEOWIDGET_FRAME_DELIVERY
             	LOG(LOG_VERBOSE, "Missing new frame (%d overall missed frames), delivering old frame instead", mMissingFrames);
 			#endif
         }

@@ -552,7 +552,7 @@ void ContactsManager::SortByName(bool pDescending)
             }
         }
 
-        LOG(LOG_VERBOSE, "Picking entry %s, state %d", tItBestMatch->User.toStdString().c_str(), tItBestMatch->State);
+        //LOG(LOG_VERBOSE, "Picking entry %s, state %d", tItBestMatch->User.toStdString().c_str(), tItBestMatch->State);
         tNewDataBase.push_back((*tItBestMatch));
         mContacts.erase(tItBestMatch);
     }

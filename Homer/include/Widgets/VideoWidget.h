@@ -61,6 +61,8 @@ class ParticipantWidget;
 // debug performance of video widget: background repainting
 //#define DEBUG_VIDEOWIDGET_PERFORMANCE
 
+//#define DEBUG_VIDEOWIDGET_FRAME_DELIVERY
+
 // de/activate automatic frame dropping in case the video widget is invisible (default is off)
 //#define VIDEO_WIDGET_DROP_WHEN_INVISIBLE
 
