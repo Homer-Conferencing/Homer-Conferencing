@@ -197,15 +197,19 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     AVCodec             *tCodec;
     bool                tSelectedInputSupportsFps = false;
 
+    mMediaType = MEDIA_VIDEO;
+
+    if (pFps > 29.97)
+        pFps = 29.97;
+    if (pFps < 5)
+        pFps = 5;
+
     LOG(LOG_VERBOSE, "Trying to open the video source");
 
-    if (mMediaType == MEDIA_AUDIO)
-    {
-        LOG(LOG_ERROR, "Wrong media type detected");
-        return false;
-    }
-
     SVC_PROCESS_STATISTIC.AssignThreadName("Video-Grabber(V4L2)");
+
+    // set category for packet statistics
+    ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 
     if (mMediaSourceOpened)
         return false;
@@ -306,18 +310,8 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         //######################################################
         //### retrieve stream information and find right stream
         //######################################################
-        if ((tResult = av_find_stream_info(mFormatContext)) < 0)
-        {
-            LOG(LOG_ERROR, "Couldn't find stream information because \"%s\".", strerror(AVUNERROR(tResult)));
-
-            // Close the V4L2 video file
-            HM_close_input(mFormatContext);
-
-            // HINT: we probe all available devices now
-        }else
-        {
+        if (DetectAllStreams())
             tFound = true;
-        }
     }
     if(!tFound)
     {
@@ -335,17 +329,13 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
                 //######################################################
                 //### retrieve stream information and find right stream
                 //######################################################
-                if ((tResult = av_find_stream_info(mFormatContext)) < 0)
-                {
-                    LOG(LOG_WARN, "Couldn't find stream information for device %s because \"%s\".", tDesiredDevice.c_str(), strerror(AVUNERROR(tResult)));
-                    // Close the V4L2 video file
-                    HM_close_input(mFormatContext);
-                    continue;
-                }else
+                if (DetectAllStreams())
                 {
                     tFound = true;
                     break;
-                }
+                }else
+                    continue;
+
             }
         }
         if (!tFound)
@@ -368,66 +358,14 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
             mCurrentDeviceName = tDevIt->Name;
     }
 
-    // Find the first video stream
-    mMediaStreamIndex = -1;
-    for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
-    {
-        if(mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO)
-        {
-            mMediaStreamIndex = i;
-            break;
-        }
-    }
-    if (mMediaStreamIndex == -1)
-    {
-        LOG(LOG_ERROR, "Couldn't find a video stream");
-        // Close the V4L2 video file
-        HM_close_input(mFormatContext);
+    if (!SelectStream())
         return false;
-    }
 
-    //######################################################
-    //### dump ffmpeg information about format
-    //######################################################
     mFormatContext->streams[mMediaStreamIndex]->time_base.num = 100;
     mFormatContext->streams[mMediaStreamIndex]->time_base.den = (int)pFps * 100;
 
-    av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceV4L2 (video)", false);
-
-    // Get a pointer to the codec context for the video stream
-    mCodecContext = mFormatContext->streams[mMediaStreamIndex]->codec;
-
-    // set grabbing resolution and frame-rate to the resulting ones delivered by opened video codec
-    mSourceResX = mCodecContext->width;
-    mSourceResY = mCodecContext->height;
-    mFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->time_base.den / mFormatContext->streams[mMediaStreamIndex]->time_base.num;
-
-    //######################################################
-    //### search for correct decoder for the video stream
-    //######################################################
-    if((tCodec = avcodec_find_decoder(mCodecContext->codec_id)) == NULL)
-    {
-        LOG(LOG_ERROR, "Couldn't find a fitting codec");
-        // Close the V4L2 video file
-        HM_close_input(mFormatContext);
+    if (!OpenDecoder())
         return false;
-    }
-
-    //######################################################
-    //### open the selected codec
-    //######################################################
-    // Inform the codec that we can handle truncated bitstreams -- i.e.,
-    // bitstreams where frame boundaries can fall in the middle of packets
-    if(tCodec->capabilities & CODEC_CAP_TRUNCATED)
-        mCodecContext->flags |= CODEC_FLAG_TRUNCATED;
-
-    if ((tResult = HM_avcodec_open(mCodecContext, tCodec, NULL)) < 0)
-    {
-        LOG(LOG_ERROR, "Couldn't open codec because of \"%s\".", strerror(AVUNERROR(tResult)));
-        // Close the V4L2 video file
-        HM_close_input(mFormatContext);
-        return false;
-    }
 
     //######################################################
     //### create context for picture scaler
