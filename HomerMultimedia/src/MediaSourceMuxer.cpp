@@ -876,7 +876,7 @@ static char sArrow [8 * 16] = { 1,0,0,0,0,0,0,0,
 
 void SetPixel(char *pBuffer, int pWidth, int pHeight, int pX, int pY, char pRed, char pGreen, char pBlue)
 {
-    if ((pX >= 0) && (pX <= pWidth) && (pY >= 0) && (pY <= pHeight))
+    if ((pX >= 0) && (pX < pWidth) && (pY >= 0) && (pY < pHeight))
     {
         unsigned long tOffset = (pWidth * pY + pX) * 4;
         char *tPixel = pBuffer + tOffset;
