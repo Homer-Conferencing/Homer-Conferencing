@@ -91,6 +91,10 @@ using namespace Homer::Monitor;
 // how many measurement steps do we use?
 #define FPS_MEASUREMENT_STEPS                    60
 
+#define SEEK_SMALL_STEP                         10 // seconds
+#define SEEK_MEDIUM_STEP                        60 // seconds
+#define SEEK_BIG_STEP                          300 // seconds
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #define VIDEO_OPEN_ERROR                (QEvent::User + 1001)
@@ -1546,6 +1550,26 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
             mParticipantWidget->ActionPauseMovieFile();
             return;
         }
+    }
+    if ((pEvent->key() == Qt::Key_Right) && (windowState() & Qt::WindowFullScreen))
+    {
+        if (pEvent->modifiers() & Qt::ControlModifier)
+            mParticipantWidget->SeekMovieFileRelative(SEEK_BIG_STEP);
+        else if (pEvent->modifiers() & Qt::AltModifier)
+            mParticipantWidget->SeekMovieFileRelative(SEEK_MEDIUM_STEP);
+        else
+            mParticipantWidget->SeekMovieFileRelative(SEEK_SMALL_STEP);
+        return;
+    }
+    if ((pEvent->key() == Qt::Key_Left) && (windowState() & Qt::WindowFullScreen))
+    {
+        if (pEvent->modifiers() & Qt::ControlModifier)
+            mParticipantWidget->SeekMovieFileRelative(-SEEK_BIG_STEP);
+        else if (pEvent->modifiers() & Qt::AltModifier)
+            mParticipantWidget->SeekMovieFileRelative(-SEEK_MEDIUM_STEP);
+        else
+            mParticipantWidget->SeekMovieFileRelative(-SEEK_SMALL_STEP);
+        return;
     }
     if (pEvent->key() == Qt::Key_A)
     {

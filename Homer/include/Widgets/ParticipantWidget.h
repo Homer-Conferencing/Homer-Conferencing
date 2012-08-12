@@ -136,6 +136,8 @@ public:
     VideoWorkerThread* GetVideoWorker();
     AudioWorkerThread* GetAudioWorker();
 
+    void SeekMovieFileRelative(float pSeconds);
+
 private slots:
     void ActionPlayMovieFile(QString pFileName = "");
     void ActionPauseMovieFile();

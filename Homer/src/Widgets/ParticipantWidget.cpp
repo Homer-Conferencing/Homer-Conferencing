@@ -1361,6 +1361,14 @@ void ParticipantWidget::ActionRecordMovieFile()
     LOG(LOG_ERROR, "Implement ActionRecordMovieFile()");
 }
 
+void ParticipantWidget::SeekMovieFileRelative(float pSeconds)
+{
+    float tCurPos = mVideoWidget->GetWorker()->GetSeekPos();
+    float tTargetPos = tCurPos + pSeconds;
+    LOG(LOG_VERBOSE, "Seeking relative %.2f seconds to position %.2f", pSeconds, tTargetPos);
+    mVideoWidget->GetWorker()->Seek(tTargetPos);
+}
+
 void ParticipantWidget::ActionSeekMovieFile(int pPos)
 {
 	LOG(LOG_VERBOSE, "User moved playback slider to position %d", pPos);
