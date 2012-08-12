@@ -184,7 +184,7 @@ AudioWidget::~AudioWidget()
     {
         mAudioWorker->StopGrabber();
         LOG(LOG_VERBOSE, "..waiting for end of audio worker thread");
-        if (!mAudioWorker->wait(2000))
+        if (!mAudioWorker->wait(3000))
         {
             LOG(LOG_WARN, "..going to force termination of worker thread");
             mAudioWorker->terminate();
@@ -197,7 +197,9 @@ AudioWidget::~AudioWidget()
         }
     	LOG(LOG_VERBOSE, "Going to delete audio worker..");
         delete mAudioWorker;
-    }
+    }else
+    	LOG(LOG_VERBOSE, "Audio worker soesn't exist");
+
     if (mAssignedAction != NULL)
         delete mAssignedAction;
 
