@@ -359,7 +359,7 @@ void OverviewPlaylistWidget::closeEvent(QCloseEvent* pEvent)
 
 void OverviewPlaylistWidget::SetVisible(bool pVisible)
 {
-	LOG(LOG_ERROR, "Setting playlist widget visibility to %d", pVisible);
+	LOG(LOG_VERBOSE, "Setting playlist widget visibility to %d", pVisible);
 
     if (pVisible)
     {
