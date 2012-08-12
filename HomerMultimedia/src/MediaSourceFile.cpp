@@ -1297,11 +1297,10 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
 
     float tSeekEnd = GetSeekEnd();
 
-    if ((pSeconds < 0) || (pSeconds > tSeekEnd))
-    {
-        LOG(LOG_ERROR, "%s-seek position at %.2f seconds is out of range (max. is %.2f sec.)", GetMediaTypeStr().c_str(), pSeconds, tSeekEnd);
-        return false;
-    }
+    if (pSeconds <= 0)
+        pSeconds = 0;
+    if (pSeconds > tSeekEnd)
+        pSeconds = tSeekEnd;
 
     // if we have a picture as input we cannot seek but we pretend a successful seeking
     if (!SupportsSeeking())
