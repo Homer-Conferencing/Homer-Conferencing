@@ -2515,10 +2515,9 @@ bool MediaSource::FfmpegSelectStream(string pSource, int pLine)
 	    //######################################################
 	    //### dump ffmpeg information about format
 	    //######################################################
-	    av_dump_format(mFormatContext, i, "MediaSourceFile(video)", false);
-
 	    if(mFormatContext->streams[i]->codec->codec_type == tTargetMediaType)
 	    {
+	        av_dump_format(mFormatContext, i, "MediaSourceFile(video)", false);
 	        mMediaStreamIndex = i;
 	        break;
 	    }
