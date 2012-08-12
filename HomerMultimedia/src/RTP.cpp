@@ -439,7 +439,7 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
         LOG(LOG_ERROR, "Error when allocating memory for RTP packet stream");
     else
         LOG(LOG_VERBOSE, "Created RTP packet stream memory of %d bytes at %p", MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE, mRtpPacketStream);
-    mRtpPacketBuffer = (char*)malloc(MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE);
+    mRtpPacketBuffer = (char*)malloc(pInnerStream->codec->rtp_payload_size);
     if (mRtpPacketBuffer == NULL)
         LOG(LOG_ERROR, "Error when allocating memory for RTP packet buffer");
     else
@@ -498,10 +498,7 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     snprintf(mRtpFormatContext->filename, sizeof(mRtpFormatContext->filename), "rtp://%s:%u", pTargetHost.c_str(), pTargetPort);
 
     // create I/O context which splits RTP stream into packets
-    mAVIOContext = avio_alloc_context((uint8_t*) mRtpPacketBuffer, MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE, 1, this, NULL, StoreRtpPacket, NULL);
-
-    // set max. packet size to rtp payload limit of the original stream
-    mAVIOContext->max_packet_size = tOuterStream->codec->rtp_payload_size;
+    MediaSource::CreateIOContext(mRtpPacketBuffer, tOuterStream->codec->rtp_payload_size, NULL, StoreRtpPacket, this, &mAVIOContext);
 
     // open RTP stream for avformat_Write_header()
     OpenRtpPacketStream();
