@@ -1327,7 +1327,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
             {
                 LOG(LOG_VERBOSE, "%s-SEEKING from %5.2f sec. (pts %.2f) to %5.2f sec. (pts %.2f), max. sec.: %ld (pts %.2f), source start pts: %.2f", GetMediaTypeStr().c_str(), GetSeekPos(), mCurrentFrameIndex, pSeconds, tFrameIndex, tSeekEnd, mNumberOfFrames, mSourceStartPts);
 
-                int tSeekFlags = (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) | AVSEEK_FLAG_FRAME | (tFrameIndex < mCurrentFrameIndex ? AVSEEK_FLAG_BACKWARD : 0);
+                int tSeekFlags = (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) /*| AVSEEK_FLAG_FRAME*/ | (tFrameIndex < mCurrentFrameIndex ? AVSEEK_FLAG_BACKWARD : 0);
                 mSeekingTargetFrameIndex = (int64_t)tFrameIndex;
 
                 tRes = (avformat_seek_file(mFormatContext, -1 /* mMediaStreamIndex */, INT_MIN, mSeekingTargetFrameIndex, INT_MAX, tSeekFlags) >= 0); //here because this leads sometimes to unexpected behavior
