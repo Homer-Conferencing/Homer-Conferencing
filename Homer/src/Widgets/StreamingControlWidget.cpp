@@ -168,6 +168,7 @@ void StreamingControlWidget::StartVoiceStreaming()
 
 void StreamingControlWidget::StartFileStreaming()
 {
+	LOG(LOG_VERBOSE, "Trigger start of file based A/V grabbing");
     mOverviewPlaylistWidget->StartPlaylist();
 }
 
