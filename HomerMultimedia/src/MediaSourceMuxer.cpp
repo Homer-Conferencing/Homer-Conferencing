@@ -81,12 +81,12 @@ MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
 
 MediaSourceMuxer::~MediaSourceMuxer()
 {
-	LOG(LOG_VERBOSE, "Going to destroy muxer");
+	LOG(LOG_VERBOSE, "Going to destroy %s muxer", GetMediaTypeStr().c_str());
 
 	if (mMediaSourceOpened)
         mMediaSource->CloseGrabDevice();
 
-	LOG(LOG_VERBOSE, "..stopping encoder");
+	LOG(LOG_VERBOSE, "..stopping %s encoder", GetMediaTypeStr().c_str());
     StopEncoder();
 
 	LOG(LOG_VERBOSE, "..freeing stream packet buffer");
@@ -825,8 +825,6 @@ bool MediaSourceMuxer::CloseMuxer()
         tResult = true;
     }else
         LOG(LOG_INFO, "...%s-muxer wasn't opened", GetMediaTypeStr().c_str());
-
-    mMediaType = MEDIA_UNKNOWN;
 
     ResetPacketStatistic();
 
