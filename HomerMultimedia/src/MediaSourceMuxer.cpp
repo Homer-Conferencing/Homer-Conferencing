@@ -505,7 +505,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
         // trigger MT usage during video encoding
         int tThreadCount = System::GetMachineCores() - 2;
         if (tThreadCount > 1)
-            mCodecContext->thread_count = System::GetMachineCores() - 2;
+            mCodecContext->thread_count = tThreadCount;
     #endif
 
     // Open codec
