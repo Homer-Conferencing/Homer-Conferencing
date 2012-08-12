@@ -48,6 +48,11 @@ using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// avoid returning addresses like "::ffff:0.0.0.0"
+//#define SOCKET_AVOID_IPv4_IN_IPv6
+
+///////////////////////////////////////////////////////////////////////////////
+
 #ifdef QOS_SETTINGS
     int sQoSSupported = true;
 #else
@@ -735,7 +740,10 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
         }
     }else
     {
-    	pSourceHost = "0.0.0.0";
+    	if (mSocketNetworkType == SOCKET_IPv6)
+    		pSourceHost = "::";
+    	else
+    		pSourceHost = "0.0.0.0";
     	pSourcePort = 0;
     	LOG(LOG_ERROR, "Error when receiving data via socket %d at port %u because of \"%s\" (code: %d)", mSocketHandle, mLocalPort, strerror(errno), tReceivedBytes);
     }
@@ -1091,9 +1099,16 @@ string Socket::GetAddrFromDescriptor(SocketAddressDescriptor *tAddressDescriptor
     if (tSourceHostStr != NULL)
     {
         tResult = string(tSourceHostStr);
-        // IPv4 in IPv6 address?
-        if ((tResult.find(':') != string::npos) && (tResult.find('.') != string::npos))
-        	tResult.erase(0, tResult.rfind(':') + 1);
+
+		#ifdef SOCKET_AVOID_IPv4_IN_IPv6
+			// IPv4 in IPv6 address?
+			if ((tResult.find(':') != string::npos) && (tResult.find('.') != string::npos))
+				tResult.erase(0, tResult.rfind(':') + 1);
+
+			// transform an address of "::ffff:0.0.0.0" to a "::"
+			if ((tResult == "0.0.0.0") && (tAddressDescriptor->sa_stor.ss_family == AF_INET6))
+				tResult = "::";
+		#endif
     }else
     	tResult = "";
 
@@ -1253,7 +1268,8 @@ bool Socket::BindSocket(unsigned int pPort, unsigned int pProbeStepping, unsigne
 
     LOG(LOG_VERBOSE, "Trying to bind IPv%d-%s socket %d to local port %d", (mSocketNetworkType == SOCKET_IPv6) ? 6 : 4, TransportType2String(mSocketTransportType).c_str(), mSocketHandle, pPort);
 
-    if (!FillAddrDescriptor((mSocketNetworkType == SOCKET_IPv6) ? "::" : "*", pPort, &tAddressDescriptor, tAddressDescriptorSize))
+    mLocalHost = (mSocketNetworkType == SOCKET_IPv6) ? "::" : "*";
+    if (!FillAddrDescriptor(mLocalHost, pPort, &tAddressDescriptor, tAddressDescriptorSize))
     {
         LOG(LOG_ERROR ,"Could not process the bind address of socket %d", mSocketHandle);
         return false;
