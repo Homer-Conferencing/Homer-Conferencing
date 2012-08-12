@@ -48,9 +48,7 @@ using namespace Homer::Monitor;
 // 33 ms delay for 30 fps -> rounded to 35 ms
 #define MSF_FRAME_DROP_THRESHOLD                           0 //in us, 0 deactivates frame dropping
 
-// seek variance
-#define MSF_SEEK_VARIANCE                                  2 // frames
-
+// seeking: expected maximum GOP size, used if frames are dropped after seeking to find the next key frame close to the target frame
 #define MSF_SEEK_MAX_EXPECTED_GOP_SIZE                    30 // every x frames a key frame
 
 // above which threshold value should we execute a hard file seeking? (below this threshold we do soft seeking by adjusting RT grabbing)
@@ -155,7 +153,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if (mFormatContext->streams[mMediaStreamIndex]->duration > 1)
     {// video stream
     	int tResult = 0;
-        if((tResult = avformat_seek_file(mFormatContext, mMediaStreamIndex, 0, 0, MSF_SEEK_VARIANCE, AVSEEK_FLAG_ANY)) < 0)
+        if((tResult = avformat_seek_file(mFormatContext, mMediaStreamIndex, 0, 0, 0, AVSEEK_FLAG_ANY)) < 0)
         {
             LOG(LOG_WARN, "Couldn't seek to the start of video stream because \"%s\".", strerror(AVUNERROR(tResult)));
         }
@@ -273,7 +271,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     if (!OpenDecoder())
     	return false;
 
-    if((tRes = avformat_seek_file(mFormatContext, mMediaStreamIndex, 0, 0, MSF_SEEK_VARIANCE, AVSEEK_FLAG_ANY)) < 0)
+    if((tRes = avformat_seek_file(mFormatContext, mMediaStreamIndex, 0, 0, 0, AVSEEK_FLAG_ANY)) < 0)
     {
         LOG(LOG_WARN, "Couldn't seek to the start of audio stream because \"%s\".", strerror(AVUNERROR(tRes)));
     }
@@ -1411,55 +1409,19 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
     return tResult;
 }
 
-//TODO
 bool MediaSourceFile::SeekRelative(float pSeconds, bool pOnlyKeyFrames)
 {
     bool tResult = false;
 
-    // lock grabbing
-    mGrabMutex.lock();
+    float tTargetPos = GetSeekPos() + pSeconds;
+    if (tTargetPos < 0)
+        tTargetPos = 0;
+    if (tTargetPos > GetSeekEnd())
+        tTargetPos = GetSeekEnd();
 
-    if (!mMediaSourceOpened)
-    {
-        // unlock grabbing
-        mGrabMutex.unlock();
+    tResult = Seek(tTargetPos, pOnlyKeyFrames);
 
-        //LOG(LOG_ERROR, "Tried to seek while source is closed");
-        return false;
-    }
-
-    //LOG(LOG_VERBOSE, "pSecs: %ld CurPts: %ld", pSeconds, mCurrentFrameIndex);
-    int64_t tRelativeFrameIndex = pSeconds * (int64_t)mFrameRate;
-    int64_t tFrameIndex = mCurrentFrameIndex + tRelativeFrameIndex; // later the value for mCurrentFrameIndex will be changed to the same value like tAbsoluteTimestamp
-
-    //LOG(LOG_VERBOSE, "Rel: %ld Abs: %ld", tRelativeTimestamp, tAbsoluteTimestamp);
-
-    if ((tFrameIndex >= 0) && (tFrameIndex <= mNumberOfFrames))
-    {
-        LOG(LOG_VERBOSE, "Seeking relative %d seconds", pSeconds);
-        mDecoderMutex.lock();
-        tResult = (avformat_seek_file(mFormatContext, mMediaStreamIndex, tFrameIndex - MSF_SEEK_VARIANCE, tFrameIndex, tFrameIndex + MSF_SEEK_VARIANCE, (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) | (tFrameIndex < mCurrentFrameIndex ? AVSEEK_FLAG_BACKWARD : 0)) >= 0);
-        mDecoderFifo->ClearFifo();
-        mDecoderMetaDataFifo->ClearFifo();
-        mDecoderNeedWorkCondition.SignalAll();
-        mDecoderMutex.unlock();
-
-        // adopt the stored pts value which represent the start of the media presentation in real-time useconds
-        int64_t tFrameNumber = tFrameIndex - mSourceStartPts;
-        int64_t tRelativeRealTimeUSecs = 1000000 * tFrameNumber / (int64_t)mFrameRate;
-        //LOG(LOG_VERBOSE, "Old start: %ld", mStartPtsUSecs);
-        mStartPtsUSecs = av_gettime() - tRelativeRealTimeUSecs;
-        //LOG(LOG_VERBOSE, "New start: %ld", mStartPtsUSecs);
-
-        if (tResult < 0)
-            LOG(LOG_ERROR, "Error during relative seeking in %s file", GetMediaTypeStr().c_str());
-        else
-            mCurrentFrameIndex = tFrameIndex;
-    }else
-        LOG(LOG_ERROR, "Seek position is out of range for %s file", GetMediaTypeStr().c_str());
-
-    // unlock grabbing
-    mGrabMutex.unlock();
+    LOG(LOG_VERBOSE, "Seeking relative %.2f seconds to absolute position %.2f seconds resulted with state: %d", pSeconds, tTargetPos, tResult);
 
     return tResult;
 }
