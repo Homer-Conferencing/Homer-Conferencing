@@ -363,18 +363,12 @@ void OverviewPlaylistWidget::SetVisible(bool pVisible)
 
     if (pVisible)
     {
-        if (!isVisible())
-        {
-            move(mWinPos);
-            show();
-        }
+		move(mWinPos);
+		show();
     }else
     {
-        if (isVisible())
-        {
-            mWinPos = pos();
-            hide();
-        }
+		mWinPos = pos();
+		hide();
     }
 }
 
@@ -388,7 +382,8 @@ void OverviewPlaylistWidget::StartPlaylist()
     AddEntryDialog();
     Play(GetListSize() - 1);
 
-    SetVisible(true);
+    if (!isVisible())
+    	SetVisible(true);
 }
 
 void OverviewPlaylistWidget::StopPlaylist()
