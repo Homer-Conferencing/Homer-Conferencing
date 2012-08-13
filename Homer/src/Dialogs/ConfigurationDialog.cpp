@@ -924,8 +924,10 @@ void ConfigurationDialog::PlayNotifySoundFile(QString pFile)
             LOG(LOG_VERBOSE, "Playing sound file: %s", pFile.toStdString().c_str());
             if (!mWaveOut->PlayFile(pFile.toStdString()))
                 ShowError("Failed to play file", "Was unable to play the file \"" + pFile + "\".");
-        }
-    }
+        }else
+        	LOG(LOG_WARN, "Cannot play sound file because file name is empty");
+    }else
+    	LOG(LOG_VERBOSE, "Cannot play sound file %s because wave out is not available", pFile.toStdString().c_str());
 }
 
 void ConfigurationDialog::PlayNotifySoundFileForStart()
