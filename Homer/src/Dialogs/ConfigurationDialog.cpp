@@ -79,6 +79,8 @@ ConfigurationDialog::ConfigurationDialog(QWidget* pParent, list<string>  pLocalA
     connect(mCbVideoSource, SIGNAL(currentIndexChanged(QString)), this, SLOT(ShowVideoSourceInfo(QString)));
     connect(mCbAudioSource, SIGNAL(currentIndexChanged(QString)), this, SLOT(ShowAudioSourceInfo(QString)));
     connect(mCbAudioSink, SIGNAL(currentIndexChanged(QString)), this, SLOT(ShowAudioSinkInfo(QString)));
+    connect(mPbNotifySoundStartFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForStart()));
+    connect(mPbNotifySoundStopFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForStop()));
     connect(mPbNotifySoundImFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForIm()));
     connect(mPbNotifySoundCallFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForCall()));
     connect(mPbNotifySoundCallAcknowledgeFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForCallAcknowledge()));
@@ -87,6 +89,8 @@ ConfigurationDialog::ConfigurationDialog(QWidget* pParent, list<string>  pLocalA
     connect(mPbNotifySoundErrorFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForError()));
     connect(mPbNotifySoundRegistrationFailedFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForRegistrationFailed()));
     connect(mPbNotifySoundRegistrationSuccessfulFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForRegistrationSuccessful()));
+    connect(mTbPlaySoundStartFile, SIGNAL(clicked()), this, SLOT(PlayNotifySoundFileForStart()));
+    connect(mTbPlaySoundStopFile, SIGNAL(clicked()), this, SLOT(PlayNotifySoundFileForStop()));
     connect(mTbPlaySoundImFile, SIGNAL(clicked()), this, SLOT(PlayNotifySoundFileForIm()));
     connect(mTbPlaySoundCallFile, SIGNAL(clicked()), this, SLOT(PlayNotifySoundFileForCall()));
     connect(mTbPlaySoundCallAcknowledgeFile, SIGNAL(clicked()), this, SLOT(PlayNotifySoundFileForCallAcknowledge()));
@@ -339,6 +343,14 @@ void ConfigurationDialog::LoadConfiguration()
     //######################################################################
     //### NOTIFICATION configuration
     //######################################################################
+    mCbNotifySoundStart->setChecked(CONF.GetStartSound());
+    mCbNotifySystrayStart->setChecked(CONF.GetStartSystray());
+    mLbNotifySoundStartFile->setText(CONF.GetStartSoundFile());
+
+    mCbNotifySoundStop->setChecked(CONF.GetStopSound());
+    mCbNotifySystrayStop->setChecked(CONF.GetStopSystray());
+    mLbNotifySoundStopFile->setText(CONF.GetStopSoundFile());
+
     mCbNotifySoundIm->setChecked(CONF.GetImSound());
     mCbNotifySystrayIm->setChecked(CONF.GetImSystray());
     mLbNotifySoundImFile->setText(CONF.GetImSoundFile());
@@ -534,6 +546,14 @@ void ConfigurationDialog::SaveConfiguration()
     //######################################################################
     //### NOTIFICATION configuration
     //######################################################################
+    CONF.SetStartSound(mCbNotifySoundStart->isChecked());
+    CONF.SetStartSystray(mCbNotifySystrayStart->isChecked());
+    CONF.SetStartSoundFile(mLbNotifySoundStartFile->text());
+
+    CONF.SetStopSound(mCbNotifySoundStop->isChecked());
+    CONF.SetStopSystray(mCbNotifySystrayStop->isChecked());
+    CONF.SetStopSoundFile(mLbNotifySoundStopFile->text());
+
     CONF.SetImSound(mCbNotifySoundIm->isChecked());
     CONF.SetImSystray(mCbNotifySystrayIm->isChecked());
     CONF.SetImSoundFile(mLbNotifySoundImFile->text());
@@ -785,6 +805,28 @@ QString ConfigurationDialog::SelectSoundFile(QString pEventName, QString pSugges
     return tSoundFile;
 }
 
+void ConfigurationDialog::SelectNotifySoundFileForStart()
+{
+    QString tSoundFile = SelectSoundFile("program start", CONF.GetStartSoundFile());
+
+    if (tSoundFile.isEmpty())
+        return;
+
+    CONF.SetStartSoundFile(tSoundFile);
+    mLbNotifySoundStartFile->setText(tSoundFile);
+}
+
+void ConfigurationDialog::SelectNotifySoundFileForStop()
+{
+    QString tSoundFile = SelectSoundFile("program stop", CONF.GetStopSoundFile());
+
+    if (tSoundFile.isEmpty())
+        return;
+
+    CONF.SetStopSoundFile(tSoundFile);
+    mLbNotifySoundStopFile->setText(tSoundFile);
+}
+
 void ConfigurationDialog::SelectNotifySoundFileForIm()
 {
     QString tSoundFile = SelectSoundFile("new message", CONF.GetImSoundFile());
@@ -884,6 +926,16 @@ void ConfigurationDialog::PlayNotifySoundFile(QString pFile)
                 ShowError("Failed to play file", "Was unable to play the file \"" + pFile + "\".");
         }
     }
+}
+
+void ConfigurationDialog::PlayNotifySoundFileForStart()
+{
+	PlayNotifySoundFile(CONF.GetStartSoundFile());
+}
+
+void ConfigurationDialog::PlayNotifySoundFileForStop()
+{
+	PlayNotifySoundFile(CONF.GetStopSoundFile());
 }
 
 void ConfigurationDialog::PlayNotifySoundFileForIm()
@@ -986,6 +1038,9 @@ void ConfigurationDialog::ClickedButton(QAbstractButton *pButton)
 
 void ConfigurationDialog::SelectAllSound()
 {
+    mCbNotifySoundStart->setChecked(true);
+    mCbNotifySoundStop->setChecked(true);
+
     mCbNotifySoundIm->setChecked(true);
 
     mCbNotifySoundCall->setChecked(true);
@@ -999,6 +1054,9 @@ void ConfigurationDialog::SelectAllSound()
 
 void ConfigurationDialog::DeselectAllSound()
 {
+    mCbNotifySoundStart->setChecked(false);
+    mCbNotifySoundStop->setChecked(false);
+
     mCbNotifySoundIm->setChecked(false);
 
     mCbNotifySoundCall->setChecked(false);
@@ -1014,6 +1072,9 @@ void ConfigurationDialog::DeselectAllSound()
 
 void ConfigurationDialog::SelectAllSystray()
 {
+    mCbNotifySystrayStart->setChecked(true);
+    mCbNotifySystrayStop->setChecked(true);
+
     mCbNotifySystrayIm->setChecked(true);
 
     mCbNotifySystrayCall->setChecked(true);
@@ -1030,6 +1091,9 @@ void ConfigurationDialog::SelectAllSystray()
 
 void ConfigurationDialog::DeselectAllSystray()
 {
+    mCbNotifySystrayStart->setChecked(false);
+    mCbNotifySystrayStop->setChecked(false);
+
     mCbNotifySystrayIm->setChecked(false);
 
     mCbNotifySystrayCall->setChecked(false);

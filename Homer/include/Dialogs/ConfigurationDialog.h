@@ -72,6 +72,8 @@ private slots:
 
     void CreateAccountAtSipServer();
 
+    void SelectNotifySoundFileForStart();
+    void SelectNotifySoundFileForStop();
     void SelectNotifySoundFileForIm();
     void SelectNotifySoundFileForCall();
     void SelectNotifySoundFileForCallAcknowledge();
@@ -86,6 +88,8 @@ private slots:
     void SelectAllSystray();
     void DeselectAllSystray();
 
+    void PlayNotifySoundFileForStart();
+    void PlayNotifySoundFileForStop();
     void PlayNotifySoundFileForIm();
     void PlayNotifySoundFileForCall();
     void PlayNotifySoundFileForCallAcknowledge();

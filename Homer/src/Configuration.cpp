@@ -515,6 +515,48 @@ void Configuration::SetNatSupportActivation(bool pActivation)
     mQSettings->endGroup();
 }
 
+void Configuration::SetStartSoundFile(QString pSoundFile)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("StartSoundFile", pSoundFile);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetStartSound(bool pActivation)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("StartSound", pActivation);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetStartSystray(bool pActivation)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("StartSystray", pActivation);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetStopSoundFile(QString pSoundFile)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("StopSoundFile", pSoundFile);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetStopSound(bool pActivation)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("StopSound", pActivation);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetStopSystray(bool pActivation)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("StopSystray", pActivation);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetImSoundFile(QString pSoundFile)
 {
     mQSettings->beginGroup("Notification");
@@ -1018,6 +1060,36 @@ bool Configuration::GetNatSupportActivation()
 QString Configuration::GetStunServer()
 {
     return mQSettings->value("Network/StunServer", QString("stun.voipbuster.com")).toString();
+}
+
+QString Configuration::GetStartSoundFile()
+{
+    return mQSettings->value("Notification/StartSoundFile", QString((mAbsBinPath + "sounds/Start.wav").c_str())).toString();
+}
+
+bool Configuration::GetStartSound()
+{
+    return mQSettings->value("Notification/StartSound", false).toBool();
+}
+
+bool Configuration::GetStartSystray()
+{
+    return mQSettings->value("Notification/StartSystray", true).toBool();
+}
+
+QString Configuration::GetStopSoundFile()
+{
+    return mQSettings->value("Notification/StopSoundFile", QString((mAbsBinPath + "sounds/Stop.wav").c_str())).toString();
+}
+
+bool Configuration::GetStopSound()
+{
+    return mQSettings->value("Notification/StopSound", false).toBool();
+}
+
+bool Configuration::GetStopSystray()
+{
+    return mQSettings->value("Notification/StopSystray", true).toBool();
 }
 
 QString Configuration::GetImSoundFile()

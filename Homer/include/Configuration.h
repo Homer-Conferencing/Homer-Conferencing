@@ -172,6 +172,14 @@ public:
     int GetSipStartPort();
 
     /* notification settings */
+    // program start
+    QString GetStartSoundFile();
+    bool GetStartSound();
+    bool GetStartSystray();
+    // program stop
+    QString GetStopSoundFile();
+    bool GetStopSound();
+    bool GetStopSystray();
     // instant message
     QString GetImSoundFile();
     bool GetImSound();
@@ -303,6 +311,14 @@ public:
     void SetSipStartPort(int pPort);
 
     /* notification settings */
+    // program start
+    void SetStartSoundFile(QString pSoundFile);
+    void SetStartSound(bool pActivation);
+    void SetStartSystray(bool pActivation);
+    // program stop
+    void SetStopSoundFile(QString pSoundFile);
+    void SetStopSound(bool pActivation);
+    void SetStopSystray(bool pActivation);
     // instant message
     void SetImSoundFile(QString pSoundFile);
     void SetImSound(bool pActivation);
