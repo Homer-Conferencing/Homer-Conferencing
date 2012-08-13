@@ -66,14 +66,13 @@ QStringList      ConfigurationDialog::mSipServerList;
 ConfigurationDialog::ConfigurationDialog(QWidget* pParent, list<string>  pLocalAdresses, VideoWorkerThread* pVideoWorker, AudioWorkerThread* pAudioWorker):
     QDialog(pParent)
 {
-    OpenPlaybackDevice();
-
     mHttpGetStunServerList = NULL;
     mHttpGetSipServerList = NULL;
     mWaveOut = NULL;
     mVideoWorker = pVideoWorker;
     mAudioWorker = pAudioWorker;
     mLocalAdresses = pLocalAdresses;
+    OpenPlaybackDevice();
     initializeGUI();
     LoadConfiguration();
     connect(mCbVideoSource, SIGNAL(currentIndexChanged(QString)), this, SLOT(ShowVideoSourceInfo(QString)));
@@ -759,8 +758,10 @@ void ConfigurationDialog::OpenPlaybackDevice()
     if (CONF.AudioOutputEnabled())
     {
         #ifndef APPLE
+    		LOG(LOG_VERBOSE, "Opening PortAudio based playback");
             mWaveOut = new WaveOutPortAudio(CONF.GetLocalAudioSink().toStdString());
         #else
+    		LOG(LOG_VERBOSE, "Opening SDL based playback");
             mWaveOut = new WaveOutSdl(CONF.GetLocalAudioSink().toStdString());
         #endif
         if (mWaveOut != NULL)
@@ -768,7 +769,7 @@ void ConfigurationDialog::OpenPlaybackDevice()
         else
             LOG(LOG_ERROR, "Error when allocating wave out instance");
     }
-    LOG(LOG_VERBOSE, "Finished to open playback device");
+    LOG(LOG_VERBOSE, "Finished to open playback device, playback object at %p", mWaveOut);
 }
 
 void ConfigurationDialog::ClosePlaybackDevice()
