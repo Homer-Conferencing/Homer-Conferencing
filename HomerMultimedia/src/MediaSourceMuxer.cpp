@@ -1534,6 +1534,39 @@ void* MediaSourceMuxer::Run(void* pArgs)
     return NULL;
 }
 
+bool MediaSourceMuxer::SupportsDecoderFrameStatistics()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->SupportsDecoderFrameStatistics();
+    else
+        return false;
+}
+
+int64_t MediaSourceMuxer::DecodedIFrames()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->DecodedIFrames();
+    else
+        return mDecodedIFrames;
+}
+
+int64_t MediaSourceMuxer::DecodedPFrames()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->DecodedPFrames();
+    else
+        return mDecodedPFrames;
+
+}
+
+int64_t MediaSourceMuxer::DecodedBFrames()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->DecodedBFrames();
+    else
+        return mDecodedBFrames;
+}
+
 void MediaSourceMuxer::SetVideoGrabResolution(int pResX, int pResY)
 {
     if (mMediaType == MEDIA_AUDIO)

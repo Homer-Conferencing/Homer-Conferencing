@@ -85,6 +85,12 @@ public:
     bool SetOutputStreamPreferences(std::string pStreamCodec, int pMediaStreamQuality, int pMaxPacketSize = 1300 /* works only with RTP packetizing */, bool pDoReset = false, int pResX = 352, int pResY = 288, bool pRtpActivated = true, int pMaxFps = 0);
     enum CodecID GetStreamCodecId() { return mStreamCodecId; } // used in RTSPListenerMediaSession
 
+    /* frame stats */
+    virtual bool SupportsDecoderFrameStatistics();
+    virtual int64_t DecodedIFrames();
+    virtual int64_t DecodedPFrames();
+    virtual int64_t DecodedBFrames();
+
     /* video grabbing control */
     virtual void SetVideoGrabResolution(int pTargetResX, int pTargetResY);
     virtual GrabResolutions GetSupportedVideoGrabResolutions();

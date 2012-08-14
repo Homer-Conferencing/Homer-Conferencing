@@ -79,6 +79,9 @@ public:
     virtual int GetFragmentBufferCounter();
     virtual int GetFragmentBufferSize();
 
+    /* frame stats */
+    virtual bool SupportsDecoderFrameStatistics();
+
     /* video grabbing control */
     virtual GrabResolutions GetSupportedVideoGrabResolutions();
 
@@ -112,6 +115,9 @@ protected:
     int                 mWrappingHeaderSize;
     MediaFifo           *mDecoderFifo;
     int                 mPacketStatAdditionalFragmentSize; // used to adapt packet statistic to additional fragment header, which is used for TCP transmission
+    /* video decoding */
+    AVFrame             *mSourceFrame;
+    AVFrame             *mRGBFrame;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

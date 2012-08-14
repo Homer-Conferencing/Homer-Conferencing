@@ -48,6 +48,9 @@ public:
 
     virtual ~MediaSourceVFW();
 
+    /* frame stats */
+    virtual bool SupportsDecoderFrameStatistics();
+
     /* device control */
     virtual void getVideoDevices(VideoDevices &pVList);
 
@@ -72,6 +75,9 @@ private:
 	//HINT: We use an internal cache, which describes available VFW devices. The cache is used for every second and further device query.
 	//		Without this cache every direct device query would lead to repeating VFW dialogues, which have to be acknowledged by the user.
 	VideoDevices	mFoundVFWDevices;
+    /* video decoding */
+    AVFrame             *mSourceFrame;
+    AVFrame             *mRGBFrame;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

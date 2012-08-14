@@ -48,6 +48,9 @@ public:
 
     virtual ~MediaSourceV4L2();
 
+    /* frame stats */
+    virtual bool SupportsDecoderFrameStatistics();
+
     /* video grabbing control */
     virtual GrabResolutions GetSupportedVideoGrabResolutions();
 
@@ -79,6 +82,9 @@ private:
 
     std::string         mCurrentInputChannelName;
     bool                mSupportsMultipleInputChannels;
+    /* video decoding */
+    AVFrame             *mSourceFrame;
+    AVFrame             *mRGBFrame;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

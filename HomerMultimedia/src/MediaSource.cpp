@@ -69,6 +69,9 @@ bool MediaSource::mFfmpegInitiated = false;
 MediaSource::MediaSource(string pName):
     PacketStatistic(pName)
 {
+    mDecodedIFrames = 0;
+    mDecodedPFrames = 0;
+    mDecodedBFrames = 0;
     mSourceType = SOURCE_ABSTRACT;
     mMarkerActivated = false;
     mMediaSourceOpened = false;
@@ -683,6 +686,26 @@ void MediaSource::VideoString2Resolution(string pString, int& pX, int& pY)
         pX = 1920;
         pY = 1080;
     }
+}
+
+bool MediaSource::SupportsDecoderFrameStatistics()
+{
+    return false;
+}
+
+int64_t MediaSource::DecodedIFrames()
+{
+    return mDecodedIFrames;
+}
+
+int64_t MediaSource::DecodedPFrames()
+{
+    return mDecodedPFrames;
+}
+
+int64_t MediaSource::DecodedBFrames()
+{
+    return mDecodedBFrames;
 }
 
 void MediaSource::DoSetVideoGrabResolution(int pResX, int pResY)
@@ -1958,6 +1981,25 @@ void MediaSource::RecordSamples(int16_t *pSourceSamples, int pSourceSamplesSize)
     }
 
     mRecorderChunkNumber++;
+}
+
+void MediaSource::AnnounceFrame(AVFrame *pFrame)
+{
+    switch(pFrame->pict_type)
+    {
+            case FF_I_TYPE:
+                mDecodedIFrames++;
+                break;
+            case FF_P_TYPE:
+                mDecodedPFrames++;
+                break;
+            case FF_B_TYPE:
+                mDecodedBFrames++;
+                break;
+            default:
+                LOG(LOG_WARN, "Unknown picture type: %d", pFrame->pict_type);
+                break;
+    }
 }
 
 string MediaSource::GetSourceTypeStr()

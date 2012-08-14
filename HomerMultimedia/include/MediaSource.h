@@ -212,6 +212,12 @@ public:
     static void VideoFormat2Resolution(VideoFormat pFormat, int& pX, int& pY);
     static void VideoString2Resolution(std::string pString, int& pX, int& pY);
 
+    /* frame stats */
+    virtual bool SupportsDecoderFrameStatistics();
+    virtual int64_t DecodedIFrames();
+    virtual int64_t DecodedPFrames();
+    virtual int64_t DecodedBFrames();
+
     /* video grabbing control */
     virtual void SetVideoGrabResolution(int pResX = 352, int pResY = 288);
     virtual void GetVideoGrabResolution(int &pResX, int &pResY);
@@ -322,6 +328,9 @@ protected:
     void RecordFrame(AVFrame *pSourceFrame);
     void RecordSamples(int16_t *pSourceSamples, int pSourceSamplesSize);
 
+    /* frame stats */
+    void AnnounceFrame(AVFrame *pFrame);
+
     /* video fps emulation */
     void FpsEmulationInit(); // auto. called by MarkOpenGrabDeviceSuccessful
     int64_t FpsEmulationGetPts(); //needs correct mFrameRate value
@@ -368,6 +377,10 @@ protected:
     int                 mTargetResY;
     float               mFrameRate;
     SwsContext          *mScalerContext;
+    /* frame stats */
+    int64_t             mDecodedIFrames;
+    int64_t             mDecodedPFrames;
+    int64_t             mDecodedBFrames;
     /* live OSD marking */
     float               mMarkerRelX;
     float               mMarkerRelY;

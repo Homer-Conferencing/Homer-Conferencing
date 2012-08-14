@@ -34,6 +34,7 @@
 #include <algorithm>
 #include <string>
 #include <unistd.h>
+#include <stdint.h>
 
 namespace Homer { namespace Multimedia {
 
@@ -43,7 +44,7 @@ using namespace Homer::Monitor;
 ///////////////////////////////////////////////////////////////////////////////
 
 #define MEDIA_SOURCE_FILE_QUEUE_FOR_VIDEO                  6 // in frames (each max. 16 MB for HDTV, one entry is reserved for 0-byte signaling)
-#define MEDIA_SOURCE_FILE_QUEUE_FOR_AUDIO                  16 // in audio sample blocks (each about 192 kB)
+#define MEDIA_SOURCE_FILE_QUEUE_FOR_AUDIO                 16 // in audio sample blocks (each about 192 kB)
 
 // 33 ms delay for 30 fps -> rounded to 35 ms
 #define MSF_FRAME_DROP_THRESHOLD                           0 //in us, 0 deactivates frame dropping
@@ -171,6 +172,9 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     mEOFReached = false;
     mRecalibrateRealTimeGrabbingAfterSeeking = true;
     mFlushBuffersAfterSeeking = true;
+    mDecodedIFrames = 0;
+    mDecodedPFrames = 0;
+    mDecodedBFrames = 0;
 
     MarkOpenGrabDeviceSuccessful();
 
@@ -401,24 +405,31 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
             return GRAB_RES_INVALID;
         }
 
-        // missing input and EOF reached?
-        if ((mDecoderFifo->GetUsage() == 0) && (mEOFReached))
+        int tAvailableFrames = mDecoderFifo->GetUsage();
+
+        // missing input?
+        if (tAvailableFrames == 0)
         {
-            mChunkNumber++;
+            // EOF reached?
+            if (mEOFReached)
+            {
+                mChunkNumber++;
 
-            // unlock grabbing
-            mGrabMutex.unlock();
+                // unlock grabbing
+                mGrabMutex.unlock();
 
-            LOG(LOG_VERBOSE, "No %s frame in FIFO available and EOF marker is active", GetMediaTypeStr().c_str());
+                LOG(LOG_VERBOSE, "No %s frame in FIFO available and EOF marker is active", GetMediaTypeStr().c_str());
 
-            // acknowledge "success"
-            MarkGrabChunkSuccessful(mChunkNumber); // don't panic, it is only EOF
+                // acknowledge "success"
+                MarkGrabChunkSuccessful(mChunkNumber); // don't panic, it is only EOF
 
-            return GRAB_RES_EOF;
+                return GRAB_RES_EOF;
+            }else
+                LOG(LOG_WARN, "System too slow?, %s grabber detected a buffer underrun", GetMediaTypeStr().c_str());
         }
 
         // need more input from file but EOF is not reached?
-        if (mDecoderFifo->GetUsage() < MEDIA_SOURCE_FILE_QUEUE)
+        if (tAvailableFrames < MEDIA_SOURCE_FILE_QUEUE)
         {
             #ifdef MSF_DEBUG_DECODER_STATE
                 LOG(LOG_VERBOSE, "Signal to decoder that new data is needed");
@@ -731,9 +742,9 @@ void* MediaSourceFile::Run(void* pArgs)
 
                             // for seeking: is the currently read frame close to target frame index?
                             //HINT: we need a key frame in the remaining distance to the target frame)
-                            if (tCurPacketPts < mSeekingTargetFrameIndex - MSF_SEEK_MAX_EXPECTED_GOP_SIZE)
+                            if ((mSeekingTargetFrameIndex != 0) && (tCurPacketPts < mSeekingTargetFrameIndex - MSF_SEEK_MAX_EXPECTED_GOP_SIZE))
                             {
-                                #ifdef MSF_DEBUG_PACKETS
+                                #ifdef MSF_DEBUG_SEEKING
                                     LOG(LOG_VERBOSE, "Dropping %s frame %ld because we are waiting for frame %.2f", GetMediaTypeStr().c_str(), tCurPacketPts, mSeekingTargetFrameIndex);
                                 #endif
                                 tShouldReadNext = true;
@@ -741,20 +752,24 @@ void* MediaSourceFile::Run(void* pArgs)
                             {
                                 if (mRecalibrateRealTimeGrabbingAfterSeeking)
                                 {
-                                    // wait for next key frame
-                                    if (mSeekingWaitForNextKeyFrame)
+                                    // wait for next key frame packets (either i-frame or p-frame
+                                    if (mSeekingWaitForNextKeyFramePackets)
                                     {
                                         if (tPacket->flags & AV_PKT_FLAG_KEY)
-                                            mSeekingWaitForNextKeyFrame = false;
-                                        else
                                         {
-                                            #ifdef MSF_DEBUG_PACKETS
-                                                LOG(LOG_VERBOSE, "Dropping %s frame %ld because we are waiting for next key frame after seek target frame %.2f", GetMediaTypeStr().c_str(), tCurPacketPts, mSeekingTargetFrameIndex);
+                                            #ifdef MSF_DEBUG_SEEKING
+                                                LOG(LOG_VERBOSE, "Read first %s key packet in packet frame number %ld with flags %d from input file after seeking", GetMediaTypeStr().c_str(), tCurPacketPts, tPacket->flags);
+                                            #endif
+                                            mSeekingWaitForNextKeyFramePackets = false;
+                                        }else
+                                        {
+                                            #ifdef MSF_DEBUG_SEEKING
+                                                LOG(LOG_VERBOSE, "Dropping %s frame packet %ld because we are waiting for next key frame packets after seek target frame %.2f", GetMediaTypeStr().c_str(), tCurPacketPts, mSeekingTargetFrameIndex);
                                             #endif
                                            tShouldReadNext = true;
                                         }
                                     }
-                                    #ifdef MSF_DEBUG_PACKETS
+                                    #ifdef MSF_DEBUG_SEEKING
                                         LOG(LOG_VERBOSE, "Read %s frame number %ld from input file after seeking", GetMediaTypeStr().c_str(), tCurPacketPts);
                                     #endif
                                 }else
@@ -887,8 +902,8 @@ void* MediaSourceFile::Run(void* pArgs)
 								{// fall back to packet's PTS value
 									tCurFramePts = tCurPacketPts;
 								}
-								if ((tSourceFrame->pkt_pts != tSourceFrame->pkt_dts) && (tSourceFrame->pkt_pts != (int64_t)AV_NOPTS_VALUE) && (tSourceFrame->pkt_dts != (int64_t)AV_NOPTS_VALUE))
-									LOG(LOG_VERBOSE, "PTS(%ld) and DTS(%ld) differ after decoding step", tSourceFrame->pkt_pts, tSourceFrame->pkt_dts);
+                                if ((tSourceFrame->pkt_pts != tSourceFrame->pkt_dts) && (tSourceFrame->pkt_pts != (int64_t)AV_NOPTS_VALUE) && (tSourceFrame->pkt_dts != (int64_t)AV_NOPTS_VALUE))
+                                    LOG(LOG_VERBOSE, "PTS(%ld) and DTS(%ld) differ after decoding step", tSourceFrame->pkt_pts, tSourceFrame->pkt_dts);
                             }else
                             {// reuse the stored picture
 								// restoring for ffmpeg the data planes and line sizes from the stored values
@@ -915,67 +930,98 @@ void* MediaSourceFile::Run(void* pArgs)
 								tBytesDecoded = INT_MAX;
                             }
 
-                            // ############################
-                            // ### RECORD FRAME
-                            // ############################
-                            // re-encode the frame and write it to file
-                            if (mRecording)
-                                RecordFrame(tSourceFrame);
+                            // wait for next key frame packets (either i-frame or p-frame
+                            if (mSeekingWaitForNextKeyFrame)
+                            {// we are still waiting for the next key frame after seeking in the file
+                                if (tSourceFrame->pict_type == FF_I_TYPE)
+                                {
+                                    //#ifdef MSF_DEBUG_SEEKING
+                                        LOG(LOG_VERBOSE, "Read first %s key frame at frame number %ld with flags %d from input file after seeking", GetMediaTypeStr().c_str(), tCurFramePts, tPacket->flags);
+                                    //#endif
+                                    mSeekingWaitForNextKeyFrame = false;
+                                }else
+                                {
+                                    #ifdef MSF_DEBUG_SEEKING
+                                        LOG(LOG_VERBOSE, "Dropping %s frame %ld because we are waiting for next key frame after seeking", GetMediaTypeStr().c_str(), tCurFramePts);
+                                    #endif
+                                }
 
-                            // ############################
-                            // ### SCALE FRAME (CONVERT)
-                            // ############################
-                            if ((!InputIsPicture()) || (mFinalPictureResX != mDecoderTargetResX) || (mFinalPictureResY != mDecoderTargetResY))
-                            {
-                                // convert frame from YUV to RGB format
+                                tCurrentChunkSize = 0;
+                            }else
+                            {// we are not waiting for next key frame and can proceed as usual
+                                // do we have valid input from the video decoder?
                                 if ((tFrameFinished != 0) && (tBytesDecoded >= 0))
                                 {
-                                    #ifdef MSF_DEBUG_PACKETS
-                                        LOG(LOG_VERBOSE, "Scale video frame..");
-                                        LOG(LOG_VERBOSE, "Video frame data: %p, %p", tSourceFrame->data[0], tSourceFrame->data[1]);
-                                        LOG(LOG_VERBOSE, "Video frame line size: %d, %d", tSourceFrame->linesize[0], tSourceFrame->linesize[1]);
-                                    #endif
+                                    // ############################
+                                    // ### ANNOUNCE FRAME (statistics)
+                                    // ############################
+                                    AnnounceFrame(tSourceFrame);
 
-                                    // scale the video frame
-                                    tRes = HM_sws_scale(mScalerContext, tSourceFrame->data, tSourceFrame->linesize, 0, mCodecContext->height, tRGBFrame->data, tRGBFrame->linesize);
-                                    if (tRes == 0)
-                                        LOG(LOG_ERROR, "Failed to scale the video frame");
+                                    // ############################
+                                    // ### RECORD FRAME
+                                    // ############################
+                                    // re-encode the frame and write it to file
+                                    if (mRecording)
+                                        RecordFrame(tSourceFrame);
 
-                                    //LOG(LOG_VERBOSE, "New %s RGB frame: dts: %ld, pts: %ld, pos: %ld, pic. nr.: %d", GetMediaTypeStr().c_str(), tRGBFrame->pkt_dts, tRGBFrame->pkt_pts, tRGBFrame->pkt_pos, tRGBFrame->display_picture_number);
-
-                                    // return size of decoded frame
-                                    tCurrentChunkSize = avpicture_get_size(PIX_FMT_RGB32, mDecoderTargetResX, mDecoderTargetResY);
-
-                                    #ifdef MSF_DEBUG_PACKETS
-                                        LOG(LOG_VERBOSE, "New video frame..");
-                                        LOG(LOG_VERBOSE, "      ..key frame: %d", tSourceFrame->key_frame);
-                                        switch(tSourceFrame->pict_type)
-                                        {
-                                                case FF_I_TYPE:
-                                                    LOG(LOG_VERBOSE, "      ..picture type: i-frame");
-                                                    break;
-                                                case FF_P_TYPE:
-                                                    LOG(LOG_VERBOSE, "      ..picture type: p-frame");
-                                                    break;
-                                                case FF_B_TYPE:
-                                                    LOG(LOG_VERBOSE, "      ..picture type: b-frame");
-                                                    break;
-                                                default:
-                                                    LOG(LOG_VERBOSE, "      ..picture type: %d", tSourceFrame->pict_type);
-                                                    break;
-                                        }
-                                        LOG(LOG_VERBOSE, "      ..pts: %ld", tSourceFrame->pts);
-                                        LOG(LOG_VERBOSE, "      ..pkt pts: %ld", tSourceFrame->pkt_pts);
-                                        LOG(LOG_VERBOSE, "      ..pkt dts: %ld", tSourceFrame->pkt_dts);
-                                        LOG(LOG_VERBOSE, "      ..resolution: %d * %d", tSourceFrame->width, tSourceFrame->height);
-                                        LOG(LOG_VERBOSE, "      ..coded pic number: %d", tSourceFrame->coded_picture_number);
-                                        LOG(LOG_VERBOSE, "      ..display pic number: %d", tSourceFrame->display_picture_number);
-                                        LOG(LOG_VERBOSE, "Resulting frame size is %d bytes", tCurrentChunkSize);
-                                    #endif
-                                    if (InputIsPicture())
+                                    // ############################
+                                    // ### SCALE FRAME (CONVERT)
+                                    // ############################
+                                    if ((!InputIsPicture()) || (mFinalPictureResX != mDecoderTargetResX) || (mFinalPictureResY != mDecoderTargetResY))
                                     {
-                                        mFinalPictureResX = mDecoderTargetResX;
-                                        mFinalPictureResY = mDecoderTargetResY;
+                                        #ifdef MSF_DEBUG_PACKETS
+                                            LOG(LOG_VERBOSE, "Scale video frame..");
+                                            LOG(LOG_VERBOSE, "Video frame data: %p, %p", tSourceFrame->data[0], tSourceFrame->data[1]);
+                                            LOG(LOG_VERBOSE, "Video frame line size: %d, %d", tSourceFrame->linesize[0], tSourceFrame->linesize[1]);
+                                        #endif
+
+                                        // scale the video frame
+                                        tRes = HM_sws_scale(mScalerContext, tSourceFrame->data, tSourceFrame->linesize, 0, mCodecContext->height, tRGBFrame->data, tRGBFrame->linesize);
+                                        if (tRes == 0)
+                                            LOG(LOG_ERROR, "Failed to scale the video frame");
+
+                                        //LOG(LOG_VERBOSE, "New %s RGB frame: dts: %ld, pts: %ld, pos: %ld, pic. nr.: %d", GetMediaTypeStr().c_str(), tRGBFrame->pkt_dts, tRGBFrame->pkt_pts, tRGBFrame->pkt_pos, tRGBFrame->display_picture_number);
+
+                                        // return size of decoded frame
+                                        tCurrentChunkSize = avpicture_get_size(PIX_FMT_RGB32, mDecoderTargetResX, mDecoderTargetResY);
+
+                                        #ifdef MSF_DEBUG_PACKETS
+                                            LOG(LOG_VERBOSE, "New video frame..");
+                                            LOG(LOG_VERBOSE, "      ..key frame: %d", tSourceFrame->key_frame);
+                                            switch(tSourceFrame->pict_type)
+                                            {
+                                                    case FF_I_TYPE:
+                                                        LOG(LOG_VERBOSE, "      ..picture type: i-frame");
+                                                        break;
+                                                    case FF_P_TYPE:
+                                                        LOG(LOG_VERBOSE, "      ..picture type: p-frame");
+                                                        break;
+                                                    case FF_B_TYPE:
+                                                        LOG(LOG_VERBOSE, "      ..picture type: b-frame");
+                                                        break;
+                                                    default:
+                                                        LOG(LOG_VERBOSE, "      ..picture type: %d", tSourceFrame->pict_type);
+                                                        break;
+                                            }
+                                            LOG(LOG_VERBOSE, "      ..pts: %ld", tSourceFrame->pts);
+                                            LOG(LOG_VERBOSE, "      ..pkt pts: %ld", tSourceFrame->pkt_pts);
+                                            LOG(LOG_VERBOSE, "      ..pkt dts: %ld", tSourceFrame->pkt_dts);
+                                            LOG(LOG_VERBOSE, "      ..resolution: %d * %d", tSourceFrame->width, tSourceFrame->height);
+                                            LOG(LOG_VERBOSE, "      ..coded pic number: %d", tSourceFrame->coded_picture_number);
+                                            LOG(LOG_VERBOSE, "      ..display pic number: %d", tSourceFrame->display_picture_number);
+                                            LOG(LOG_VERBOSE, "Resulting frame size is %d bytes", tCurrentChunkSize);
+                                        #endif
+                                        if (InputIsPicture())
+                                        {
+                                            mFinalPictureResX = mDecoderTargetResX;
+                                            mFinalPictureResY = mDecoderTargetResY;
+                                        }
+                                    }else
+                                    {// use stored RGB frame
+                                        // return size of decoded frame
+                                        tCurrentChunkSize = avpicture_get_size(PIX_FMT_RGB32, mDecoderTargetResX, mDecoderTargetResY);
+
+                                        //HINT: tChunkBuffer is still valid from first decoder loop
                                     }
                                 }else
                                 {
@@ -993,12 +1039,6 @@ void* MediaSourceFile::Run(void* pArgs)
 
                                     tCurrentChunkSize = 0;
                                 }
-                            }else
-                            {// use stored RGB frame
-                                // return size of decoded frame
-                                tCurrentChunkSize = avpicture_get_size(PIX_FMT_RGB32, mDecoderTargetResX, mDecoderTargetResY);
-
-                                //HINT: tChunkBuffer is still valid from first decoder loop
                             }
                         }
                         break;
@@ -1202,6 +1242,11 @@ bool MediaSourceFile::InputIsPicture()
     return tResult;
 }
 
+bool MediaSourceFile::SupportsDecoderFrameStatistics()
+{
+    return (mMediaType == MEDIA_VIDEO);
+}
+
 GrabResolutions MediaSourceFile::GetSupportedVideoGrabResolutions()
 {
     VideoFormatDescriptor tFormat;
@@ -1285,7 +1330,7 @@ bool MediaSourceFile::SupportsSeeking()
 float MediaSourceFile::GetSeekEnd()
 {
     if ((mFormatContext != NULL) && (mFormatContext->duration != (int64_t)AV_NOPTS_VALUE))
-        return ((float)mFormatContext->duration / 1000000LL);
+        return ((float)mFormatContext->duration / AV_TIME_BASE);
     else
         return 0;
 }
@@ -1339,16 +1384,26 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
 
             if ((!mGrabInRealTime) || ((tTimeDiff > MSF_SEEK_WAIT_THRESHOLD) || (tTimeDiff < -MSF_SEEK_WAIT_THRESHOLD)))
             {
-                LOG(LOG_VERBOSE, "%s-SEEKING from %5.2f sec. (pts %.2f) to %5.2f sec. (pts %.2f), max. sec.: %.2f (pts %.2f), source start pts: %.2f", GetMediaTypeStr().c_str(), GetSeekPos(), mCurrentFrameIndex, pSeconds, tFrameIndex, tSeekEnd, mNumberOfFrames, mSourceStartPts);
+                float tTargetTimestamp = pSeconds * AV_TIME_BASE;
+                if (mFormatContext->start_time != (int64_t)AV_NOPTS_VALUE)
+                {
+                    LOG(LOG_VERBOSE, "Seeking: format context describes an additional start offset of %ld", mFormatContext->start_time);
+                    tTargetTimestamp += mFormatContext->start_time;
+                }
+
+                LOG(LOG_VERBOSE, "%s-SEEKING from %5.2f sec. (pts %.2f) to %5.2f sec. (pts %.2f, ts: %.2f), max. sec.: %.2f (pts %.2f), source start pts: %.2f", GetMediaTypeStr().c_str(), GetSeekPos(), mCurrentFrameIndex, pSeconds, tFrameIndex, tTargetTimestamp, tSeekEnd, mNumberOfFrames, mSourceStartPts);
 
                 int tSeekFlags = (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) | AVSEEK_FLAG_FRAME | (tFrameIndex < mCurrentFrameIndex ? AVSEEK_FLAG_BACKWARD : 0);
                 mSeekingTargetFrameIndex = (int64_t)tFrameIndex;
 
                 // VIDEO: trigger a seeking until next key frame
                 if (mMediaType == MEDIA_VIDEO)
+                {
                     mSeekingWaitForNextKeyFrame = true;
+                    mSeekingWaitForNextKeyFramePackets = true;
+                }
 
-                tRes = (avformat_seek_file(mFormatContext, -1 /* mMediaStreamIndex */, INT_MIN, mSeekingTargetFrameIndex, INT_MAX, 0) >= 0);
+                tRes = (avformat_seek_file(mFormatContext, -1, INT64_MIN, tTargetTimestamp, INT64_MAX, 0) >= 0);
                 if (tRes < 0)
                 {
                     LOG(LOG_ERROR, "Error during absolute seeking in %s source file because \"%s\"", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));

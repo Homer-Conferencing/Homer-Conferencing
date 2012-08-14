@@ -899,7 +899,10 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
 
         // OSD about current video frame
         QString tLine_Frame;
-        tLine_Frame = " Frame: " + QString("%1").arg(pFrameNumber) + (mVideoSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropCounter()) + " lost packets)") : "") + (mVideoSource->GetFragmentBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetFragmentBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetFragmentBufferSize()) + " buffered packets)") : "");
+        tLine_Frame = " Frame: " + QString("%1").arg(pFrameNumber);
+        if (mVideoSource->SupportsDecoderFrameStatistics())
+            tLine_Frame += "(" + QString("%1*i,").arg(mVideoSource->DecodedIFrames()) + QString("%1*p,").arg(mVideoSource->DecodedPFrames()) + QString("%1*b").arg(mVideoSource->DecodedBFrames()) + ")";
+        tLine_Frame += (mVideoSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropCounter()) + " lost packets)") : "") + (mVideoSource->GetFragmentBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetFragmentBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetFragmentBufferSize()) + " buffered packets)") : "");
 
         // OSD about current video codec
         QString tLine_Codec;
@@ -915,7 +918,7 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
         if (mVideoSource->SupportsSeeking())
         {
             tLine_Time = " Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0');
-            if (tAVDrift > 0.0)
+            if (tAVDrift >= 0.0)
                 tLine_Time += (tAVDrift != 0.0f ? QString(" (A/V drift: +%1 s)").arg(tAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
             else if (tAVDrift < 0.0)
                 tLine_Time += (tAVDrift != 0.0f ? QString(" (A/V drift: %1 s)").arg(tAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");

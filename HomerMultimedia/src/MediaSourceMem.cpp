@@ -52,6 +52,8 @@ MediaSourceMem::MediaSourceMem(bool pRtpActivated):
 	mResXLastGrabbedFrame = 0;
 	mResYLastGrabbedFrame = 0;
 	mWrappingHeaderSize= 0;
+	mSourceFrame = NULL;
+	mRGBFrame = NULL;
     mSourceType = SOURCE_MEMORY;
     mStreamPacketBuffer = (char*)malloc(MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE);
     mFragmentBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
@@ -242,6 +244,11 @@ void MediaSourceMem::ReadFragment(char *pData, ssize_t &pDataSize)
         // delete all stored frames: it is a better for the decoding!
         mDecoderFifo->ClearFifo();
     }
+}
+
+bool MediaSourceMem::SupportsDecoderFrameStatistics()
+{
+    return (mMediaType == MEDIA_VIDEO);
 }
 
 GrabResolutions MediaSourceMem::GetSupportedVideoGrabResolutions()
@@ -464,10 +471,19 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     // seek to the current position and drop data received during codec auto detect phase
     av_seek_frame(mFormatContext, mMediaStreamIndex, mFormatContext->streams[mMediaStreamIndex]->cur_dts, AVSEEK_FLAG_ANY);
 
+    // Allocate video frame for source and RGB format
+    if ((mSourceFrame = avcodec_alloc_frame()) == NULL)
+        return false;
+    if ((mRGBFrame = avcodec_alloc_frame()) == NULL)
+        return false;
+
     MarkOpenGrabDeviceSuccessful();
 
     mResXLastGrabbedFrame = 0;
     mResYLastGrabbedFrame = 0;
+    mDecodedIFrames = 0;
+    mDecodedPFrames = 0;
+    mDecodedBFrames = 0;
 
     return true;
 }
@@ -544,6 +560,10 @@ bool MediaSourceMem::CloseGrabDevice()
         // Close the video stream
         av_close_input_stream(mFormatContext);
 
+        // Free the frames
+        av_free(mRGBFrame);
+        av_free(mSourceFrame);
+
         LOG(LOG_INFO, "...closed");
 
         tResult = true;
@@ -560,7 +580,6 @@ bool MediaSourceMem::CloseGrabDevice()
 
 int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk)
 {
-    AVFrame             *tSourceFrame = NULL, *tRGBFrame = NULL;
     AVPacket            tPacket;
     int                 tFrameFinished = 0;
     int                 tBytesDecoded = 0;
@@ -645,23 +664,13 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                             LOG(LOG_VERBOSE, "Decode video frame..");
                         #endif
 
-                        // Allocate video frame for source and RGB format
-                        if ((tSourceFrame = avcodec_alloc_frame()) == NULL)
-                        {
-                            // unlock grabbing
-                            mGrabMutex.unlock();
-
-                            // acknowledge failed"
-                            MarkGrabChunkFailed("out of video memory");
-
-                            return GRAB_RES_INVALID;
-                        }
-
-                        // Decode the next chunk of data
-                        tBytesDecoded = HM_avcodec_decode_video(mCodecContext, tSourceFrame, &tFrameFinished, &tPacket);
+                        // ############################
+                        // ### DECODE FRAME
+                        // ############################
+                        tBytesDecoded = HM_avcodec_decode_video(mCodecContext, mSourceFrame, &tFrameFinished, &tPacket);
 
                         // emulate set FPS
-                        tSourceFrame->pts = FpsEmulationGetPts();
+                        mSourceFrame->pts = FpsEmulationGetPts();
 
                         #ifdef MSMEM_DEBUG_PACKETS
                             LOG(LOG_VERBOSE, "    ..with result(!= 0 => OK): %d bytes: %i\n", tFrameFinished, tBytesDecoded);
@@ -670,10 +679,10 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                         // log lost packets: difference between currently received frame number and the number of locally processed frames
                         //HINT: if RTP is active we rely on RTP parser, which automatically calls SetLostPacketCount()
                         if (!mRtpActivated)
-                            SetLostPacketCount(tSourceFrame->coded_picture_number - mChunkNumber);
+                            SetLostPacketCount(mSourceFrame->coded_picture_number - mChunkNumber);
 
                         #ifdef MSMEM_DEBUG_PACKETS
-                           LOG(LOG_VERBOSE, "Video frame coded: %d internal frame number: %d", tSourceFrame->coded_picture_number, mChunkNumber);
+                           LOG(LOG_VERBOSE, "Video frame coded: %d internal frame number: %d", mSourceFrame->coded_picture_number, mChunkNumber);
                         #endif
 
 
@@ -713,110 +722,90 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                         }
                     }
 
-                    // re-encode the frame and write it to file
-                    if (mRecording)
-                        RecordFrame(tSourceFrame);
-
-                    if (!pDropChunk)
+                    // do we have valid data from video decoder?
+                    if ((tFrameFinished != 0) && (tBytesDecoded >= 0))
                     {
-                        #ifdef MSMEM_DEBUG_PACKETS
-                            LOG(LOG_VERBOSE, "Convert video frame..");
-                        #endif
+                        // ############################
+                        // ### ANNOUNCE FRAME (statistics)
+                        // ############################
+                        AnnounceFrame(mSourceFrame);
 
-                        // Allocate video frame for RGB format
-                        if ((tRGBFrame = avcodec_alloc_frame()) == NULL)
+                        // ############################
+                        // ### RECORD FRAME
+                        // ############################
+                        if (mRecording)
+                            RecordFrame(mSourceFrame);
+
+                        // ############################
+                        // ### SCALE FRAME (CONVERT)
+                        // ############################
+                        if (!pDropChunk)
                         {
-                            // Free the YUV frame
-                            if (tSourceFrame != NULL)
-                                av_free(tSourceFrame);
+                            #ifdef MSMEM_DEBUG_PACKETS
+                                LOG(LOG_VERBOSE, "Convert video frame..");
+                            #endif
 
-                            // free packet buffer
-                            av_free_packet(&tPacket);
+                            // Assign appropriate parts of buffer to image planes in mRGBFrame
+                            avpicture_fill((AVPicture *)mRGBFrame, (uint8_t *)pChunkBuffer, PIX_FMT_RGB32, mTargetResX, mTargetResY);
 
-                            // unlock grabbing
-                            mGrabMutex.unlock();
+                            HM_sws_scale(mScalerContext, mSourceFrame->data, mSourceFrame->linesize, 0, mCodecContext->height, mRGBFrame->data, mRGBFrame->linesize);
 
-                            // acknowledge failed"
-                            MarkGrabChunkFailed("out of video memory");
+                            #ifdef MSMEM_DEBUG_PACKETS
+                                LOG(LOG_VERBOSE, "New video frame..");
+                                LOG(LOG_VERBOSE, "      ..key frame: %d", mSourceFrame->key_frame);
+                                switch(mSourceFrame->pict_type)
+                                {
+                                        case FF_I_TYPE:
+                                            LOG(LOG_VERBOSE, "      ..picture type: i-frame");
+                                            break;
+                                        case FF_P_TYPE:
+                                            LOG(LOG_VERBOSE, "      ..picture type: p-frame");
+                                            break;
+                                        case FF_B_TYPE:
+                                            LOG(LOG_VERBOSE, "      ..picture type: b-frame");
+                                            break;
+                                        default:
+                                            LOG(LOG_VERBOSE, "      ..picture type: %d", mSourceFrame->pict_type);
+                                            break;
+                                }
+                                LOG(LOG_VERBOSE, "      ..pts: %ld", mSourceFrame->pts);
+                                LOG(LOG_VERBOSE, "      ..coded pic number: %d", mSourceFrame->coded_picture_number);
+                                LOG(LOG_VERBOSE, "      ..display pic number: %d", mSourceFrame->display_picture_number);
+                            #endif
 
-                            return GRAB_RES_INVALID;
+                            // return size of decoded frame
+                            pChunkSize = avpicture_get_size(PIX_FMT_RGB32, mTargetResX, mTargetResY) * sizeof(uint8_t);
                         }
+                    }else
+                    {// decoder delivered no valid data
 
-                        // Assign appropriate parts of buffer to image planes in tRGBFrame
-                        avpicture_fill((AVPicture *)tRGBFrame, (uint8_t *)pChunkBuffer, PIX_FMT_RGB32, mTargetResX, mTargetResY);
+                        // unlock grabbing
+                        mGrabMutex.unlock();
 
-                        // convert frame from YUV to RGB format
-                        if ((tFrameFinished != 0) && (tBytesDecoded >= 0))
+                        // only print debug output if it is not "operation not permitted"
+                        //if ((tBytesDecoded < 0) && (AVUNERROR(tBytesDecoded) != EPERM))
+
+                        if (tBytesDecoded != 0)
                         {
-                            HM_sws_scale(mScalerContext, tSourceFrame->data, tSourceFrame->linesize, 0, mCodecContext->height, tRGBFrame->data, tRGBFrame->linesize);
+                            // acknowledge failed"
+                            if (tPacket.size != tBytesDecoded)
+                                MarkGrabChunkFailed("couldn't decode video frame-" + toString(strerror(AVUNERROR(tBytesDecoded))) + "(" + toString(AVUNERROR(tBytesDecoded)) + ")");
+                            else
+                                MarkGrabChunkFailed("couldn't decode video frame");
                         }else
                         {
-                            // unlock grabbing
-                            mGrabMutex.unlock();
+                            LOG(LOG_VERBOSE, "Video decoder delivered no frame");
 
-                            // only print debug output if it is not "operation not permitted"
-                            //if ((tBytesDecoded < 0) && (AVUNERROR(tBytesDecoded) != EPERM))
-
-                            if (tBytesDecoded != 0)
-                            {
-                                // acknowledge failed"
-                                if (tPacket.size != tBytesDecoded)
-                                    MarkGrabChunkFailed("couldn't decode video frame-" + toString(strerror(AVUNERROR(tBytesDecoded))) + "(" + toString(AVUNERROR(tBytesDecoded)) + ")");
-                                else
-                                    MarkGrabChunkFailed("couldn't decode video frame");
-                            }else
-                            {
-                                LOG(LOG_VERBOSE, "Video decoder delivered no frame");
-
-                                MarkGrabChunkSuccessful(mChunkNumber);
-                            }
-
-                            // Free the RGB frame
-                            av_free(tRGBFrame);
-
-                            // Free the YUV frame
-                            if (tSourceFrame != NULL)
-                                av_free(tSourceFrame);
-
-                            // free packet buffer
-                            av_free_packet(&tPacket);
-
-                            return GRAB_RES_INVALID;
+                            MarkGrabChunkSuccessful(mChunkNumber);
                         }
-                        #ifdef MSMEM_DEBUG_PACKETS
-                            LOG(LOG_VERBOSE, "New video frame..");
-                            LOG(LOG_VERBOSE, "      ..key frame: %d", tSourceFrame->key_frame);
-                            switch(tSourceFrame->pict_type)
-                            {
-                                    case FF_I_TYPE:
-                                        LOG(LOG_VERBOSE, "      ..picture type: i-frame");
-                                        break;
-                                    case FF_P_TYPE:
-                                        LOG(LOG_VERBOSE, "      ..picture type: p-frame");
-                                        break;
-                                    case FF_B_TYPE:
-                                        LOG(LOG_VERBOSE, "      ..picture type: b-frame");
-                                        break;
-                                    default:
-                                        LOG(LOG_VERBOSE, "      ..picture type: %d", tSourceFrame->pict_type);
-                                        break;
-                            }
-                            LOG(LOG_VERBOSE, "      ..pts: %ld", tSourceFrame->pts);
-                            LOG(LOG_VERBOSE, "      ..coded pic number: %d", tSourceFrame->coded_picture_number);
-                            LOG(LOG_VERBOSE, "      ..display pic number: %d", tSourceFrame->display_picture_number);
-                        #endif
 
-                        // return size of decoded frame
-                        pChunkSize = avpicture_get_size(PIX_FMT_RGB32, mTargetResX, mTargetResY) * sizeof(uint8_t);
+                        // free packet buffer
+                        av_free_packet(&tPacket);
 
-                        // Free the RGB frame
-                        av_free(tRGBFrame);
+                        pChunkSize = 0;
+
+                        return GRAB_RES_INVALID;
                     }
-
-                    // Free the YUV frame
-                    if (tSourceFrame != NULL)
-                        av_free(tSourceFrame);
-
                     break;
 
             case MEDIA_AUDIO:

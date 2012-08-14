@@ -42,6 +42,7 @@ namespace Homer { namespace Multimedia {
 ///////////////////////////////////////////////////////////////////////////////
 
 // the following de/activates debugging of received packets
+//#define MSF_DEBUG_SEEKING
 //#define MSF_DEBUG_PACKETS
 //#define MSF_DEBUG_TIMING
 //#define MSF_DEBUG_DECODER_STATE
@@ -55,6 +56,9 @@ public:
     MediaSourceFile(std::string pSourceFile, bool pGrabInRealTime = true /* 1 = frame rate emulation, 0 = grab as fast as possible */);
 
     virtual ~MediaSourceFile();
+
+    /* frame stats */
+    virtual bool SupportsDecoderFrameStatistics();
 
     /* video grabbing control */
     virtual GrabResolutions GetSupportedVideoGrabResolutions();
@@ -124,7 +128,8 @@ private:
     bool                mRecalibrateRealTimeGrabbingAfterSeeking;
     bool                mFlushBuffersAfterSeeking;
     double              mSeekingTargetFrameIndex;
-    bool                mSeekingWaitForNextKeyFrame;
+    bool                mSeekingWaitForNextKeyFrame; // after seeking we wait for next i -frames
+    bool                mSeekingWaitForNextKeyFramePackets; // after seeking we wait for next key frame packets -> either i-frames or p-frames
     /* picture grabbing */
     bool                mPictureGrabbed;
     uint8_t 			*mPictureData[AV_NUM_DATA_POINTERS];
