@@ -26,6 +26,7 @@
  */
 
 #include <Dialogs/ConfigurationDialog.h>
+#include <Widgets/OverviewPlaylistWidget.h>
 
 #include <Configuration.h>
 #include <Meeting.h>
@@ -791,15 +792,12 @@ QString ConfigurationDialog::SelectSoundFile(QString pEventName, QString pSugges
     if (!QFile::exists(pSuggestion))
         pSuggestion = CONF.GetDataDirectory();
 
-    QString tSoundFile = QFileDialog::getOpenFileName(this, "Select sound file for acoustic notification for event \"" + pEventName + "\".", pSuggestion, "Sound file (*.wav)", NULL, CONF_NATIVE_DIALOGS);
+    QString tSoundFile = OverviewPlaylistWidget::LetUserSelectAudioFile(this, "Select sound file for acoustic notification for event \"" + pEventName + "\".", false).first();
 
     if (tSoundFile.isEmpty())
         return "";
 
     CONF.SetDataDirectory(tSoundFile.left(tSoundFile.lastIndexOf('/')));
-
-    if (!tSoundFile.endsWith(".wav"))
-        tSoundFile += ".wav";
 
     LOG(LOG_VERBOSE, "Selected sound file: %s", tSoundFile.toStdString().c_str());
 
