@@ -1315,7 +1315,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 int64_t tTime = Time::GetTimeStamp();
                                 tSizeEncodedFrame = avcodec_encode_video(mCodecContext, (uint8_t *)mEncoderChunkBuffer, MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE, tYUVFrame);
                                 #ifdef MSM_DEBUG_TIMING
-                                    tTime2 = Time::GetTimeStamp();
+                                    int64_t tTime2 = Time::GetTimeStamp();
                                     LOG(LOG_VERBOSE, "     encoding video frame took %ld us", tTime2 - tTime);
                                 #endif
 
@@ -1417,7 +1417,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                     // ###################################################################
                                     // re-encode the sample
                                     #ifdef MSM_DEBUG_PACKETS
-                                        LOG(LOG_VERBOSE, "Reencoding audio frame..");
+                                        LOG(LOG_VERBOSE, "Encoding audio frame.. (frame size: %d, channels: %d, enc. buffeR: %p, samples buffer: %p)", mCodecContext->frame_size, mCodecContext->channels, mEncoderChunkBuffer, mSamplesTempBuffer);
                                     #endif
                                     //printf("Gonna encode with frame_size %d and channels %d\n", mCodecContext->frame_size, mCodecContext->channels);
                                     int tEncodingResult = avcodec_encode_audio(mCodecContext, (uint8_t *)mEncoderChunkBuffer, /* assume signed 16 bit */ 2 * mCodecContext->frame_size * mCodecContext->channels, (const short *)mSamplesTempBuffer);

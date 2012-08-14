@@ -220,6 +220,8 @@ void MediaSinkNet::StartSender()
 
 	// start sender main loop
 	StartThread();
+
+    LOG(LOG_VERBOSE, "Sender for target %s:%u started", mTargetHost.c_str(), mTargetPort);
 }
 
 void MediaSinkNet::StopSender()
