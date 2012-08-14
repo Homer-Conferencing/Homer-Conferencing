@@ -94,6 +94,8 @@ using namespace Homer::Monitor;
 #define SEEK_SMALL_STEP                         10 // seconds
 #define SEEK_MEDIUM_STEP                        60 // seconds
 #define SEEK_BIG_STEP                          300 // seconds
+// additional seeking drift when seeking backwards
+#define SEEK_BACKWARD_DRIFT                      5 // seconds
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1567,11 +1569,11 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
     if ((pEvent->key() == Qt::Key_Left) && (windowState() & Qt::WindowFullScreen))
     {
         if (pEvent->modifiers() & Qt::ControlModifier)
-            mParticipantWidget->SeekMovieFileRelative(-SEEK_BIG_STEP);
+            mParticipantWidget->SeekMovieFileRelative(-SEEK_BIG_STEP -SEEK_BACKWARD_DRIFT);
         else if (pEvent->modifiers() & Qt::AltModifier)
-            mParticipantWidget->SeekMovieFileRelative(-SEEK_MEDIUM_STEP);
+            mParticipantWidget->SeekMovieFileRelative(-SEEK_MEDIUM_STEP -SEEK_BACKWARD_DRIFT);
         else
-            mParticipantWidget->SeekMovieFileRelative(-SEEK_SMALL_STEP);
+            mParticipantWidget->SeekMovieFileRelative(-SEEK_SMALL_STEP - SEEK_BACKWARD_DRIFT);
         return;
     }
     if (pEvent->key() == Qt::Key_A)
