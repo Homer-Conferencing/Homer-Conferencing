@@ -136,7 +136,7 @@ string MediaSourceMuxer::GetMuxingCodec()
     if (mStreamCodecId == CODEC_ID_H263P)
         return "h263+";
     else
-        return FfmpegId2FfmpegFormat(mStreamCodecId);
+        return GetFormatName(mStreamCodecId);
 }
 
 void MediaSourceMuxer::GetMuxingResolution(int &pResX, int &pResY)
@@ -178,7 +178,7 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
 {
     // HINT: returns if something has changed
     bool tResult = false;
-    enum CodecID tStreamCodecId = MediaSource::FfmpegName2FfmpegId(MediaSource::CodecName2FfmpegName(pStreamCodec));
+    enum CodecID tStreamCodecId = MediaSource::GetCodecID(MediaSource::CodecName2FfmpegName(pStreamCodec));
 
     pMaxPacketSize -= IP6_HEADER_SIZE; // IPv6 overhead is bigger than IPv4
     pMaxPacketSize -= IP_OPTIONS_SIZE; // IP options size: used for QoS signaling
@@ -333,8 +333,8 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     mFormatContext = AV_NEW_FORMAT_CONTEXT();
 
     // find format
-    LOG(LOG_VERBOSE, "Guessing format for codec \"%s\"", FfmpegId2FfmpegFormat(mStreamCodecId).c_str());
-    tFormat = AV_GUESS_FORMAT(FfmpegId2FfmpegFormat(mStreamCodecId).c_str(), NULL, NULL);
+    LOG(LOG_VERBOSE, "Guessing format for codec \"%s\"", GetFormatName(mStreamCodecId).c_str());
+    tFormat = AV_GUESS_FORMAT(GetFormatName(mStreamCodecId).c_str(), NULL, NULL);
     if (tFormat == NULL)
     {
         LOG(LOG_ERROR, "Invalid suggested video format");
@@ -622,8 +622,8 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     mFormatContext = AV_NEW_FORMAT_CONTEXT();
 
     // find format
-    LOG(LOG_VERBOSE, "Guessing format for codec \"%s\"", FfmpegId2FfmpegFormat(mStreamCodecId).c_str());
-    tFormat = AV_GUESS_FORMAT(FfmpegId2FfmpegFormat(mStreamCodecId).c_str(), NULL, NULL);
+    LOG(LOG_VERBOSE, "Guessing format for codec \"%s\"", GetFormatName(mStreamCodecId).c_str());
+    tFormat = AV_GUESS_FORMAT(GetFormatName(mStreamCodecId).c_str(), NULL, NULL);
     if (tFormat == NULL)
     {
         LOG(LOG_ERROR, "Invalid suggested audio format for codec %d", mStreamCodecId);
@@ -1189,7 +1189,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
     switch(mMediaType)
     {
         case MEDIA_VIDEO:
-            SVC_PROCESS_STATISTIC.AssignThreadName("Video-Encoder(" + FfmpegId2FfmpegFormat(mStreamCodecId) + ")");
+            SVC_PROCESS_STATISTIC.AssignThreadName("Video-Encoder(" + GetFormatName(mStreamCodecId) + ")");
 
             // Allocate video frame for YUV format
             if ((tYUVFrame = avcodec_alloc_frame()) == NULL)
@@ -1216,7 +1216,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
 
             break;
         case MEDIA_AUDIO:
-            SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Encoder(" + FfmpegId2FfmpegFormat(mStreamCodecId) + ")");
+            SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Encoder(" + GetFormatName(mStreamCodecId) + ")");
 
             mSamplesTempBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE);
             if (mSamplesTempBuffer == NULL)
@@ -1236,7 +1236,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
 
             break;
         default:
-            SVC_PROCESS_STATISTIC.AssignThreadName("Encoder(" + FfmpegId2FfmpegFormat(mStreamCodecId) + ")");
+            SVC_PROCESS_STATISTIC.AssignThreadName("Encoder(" + GetFormatName(mStreamCodecId) + ")");
             break;
     }
 
@@ -1632,7 +1632,7 @@ void MediaSourceMuxer::SetVideoGrabResolution(int pResX, int pResY)
 
         if ((tResX != pResX) || (tResY != pResY))
         {
-            LOG(LOG_WARN, "Codec %s doesn't support video resolution, changed resolution from %d*%d to %d*%d", FfmpegId2FfmpegFormat(mStreamCodecId).c_str(), pResY, tResX, tResY);
+            LOG(LOG_WARN, "Codec %s doesn't support video resolution, changed resolution from %d*%d to %d*%d", GetFormatName(mStreamCodecId).c_str(), pResY, tResX, tResY);
             pResX = tResX;
             pResY = tResY;
         }

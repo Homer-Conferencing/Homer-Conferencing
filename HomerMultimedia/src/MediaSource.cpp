@@ -54,6 +54,7 @@
 #include <Logger.h>
 
 #include <string>
+#include <string.h>
 
 namespace Homer { namespace Multimedia {
 
@@ -103,39 +104,7 @@ MediaSource::MediaSource(string pName):
     mDesiredInputChannel = 0;
     mMediaType = MEDIA_UNKNOWN;
 
-    mFfmpegInitMutex.lock();
-    if(!mFfmpegInitiated)
-    {
-		// console logging of FFMPG
-		if (LOGGER.GetLogLevel() == LOG_VERBOSE)
-			av_log_set_level(AV_LOG_DEBUG);
-		else
-			av_log_set_level(AV_LOG_QUIET);
-
-		avcodec_register_all();
-
-        // register all supported input and output devices
-	    avdevice_register_all();
-
-	    // register all supported media filters
-	    //avfilter_register_all();
-
-        // register all formats and codecs
-        av_register_all();
-
-        #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53, 32, 100)
-            // init network support once instead for every stream
-            avformat_network_init();
-        #endif
-
-		// register our own lock manager at ffmpeg
-		//HINT: we can do this as many times as this class is instanced
-		if(av_lockmgr_register(FfmpegLockManager))
-			LOG(LOG_ERROR, "Registration of own lock manager at ffmpeg failed.");
-
-		mFfmpegInitiated = true;
-    }
-    mFfmpegInitMutex.unlock();
+    FfmpegInit();
 
     // ###################################################################
     // ### add all 6 default video formats to the list of supported ones
@@ -191,6 +160,205 @@ MediaSource::MediaSource(string pName):
 MediaSource::~MediaSource()
 {
     DeleteAllRegisteredMediaSinks();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void MediaSource::FfmpegInit()
+{
+    mFfmpegInitMutex.lock();
+    if(!mFfmpegInitiated)
+    {
+        LOGEX(MediaSource, LOG_VERBOSE, "Initializing ffmpeg libraries..");
+
+        // console logging of FFMPG
+        if (LOGGER.GetLogLevel() == LOG_VERBOSE)
+            av_log_set_level(AV_LOG_DEBUG);
+        else
+            av_log_set_level(AV_LOG_QUIET);
+
+        avcodec_register_all();
+
+        // register all supported input and output devices
+        avdevice_register_all();
+
+        // register all supported media filters
+        //avfilter_register_all();
+
+        // register all formats and codecs
+        av_register_all();
+
+        #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53, 32, 100)
+            // init network support once instead for every stream
+            avformat_network_init();
+        #endif
+
+        // register our own lock manager at ffmpeg
+        //HINT: we can do this as many times as this class is instanced
+        if(av_lockmgr_register(FfmpegLockManager))
+            LOGEX(MediaSource, LOG_ERROR, "Registration of own lock manager at ffmpeg failed.");
+
+        mFfmpegInitiated = true;
+    }
+    mFfmpegInitMutex.unlock();
+}
+
+void MediaSource::LogSupportedVideoCodecs(bool pSendToLoggerOnly)
+{
+    FfmpegInit();
+
+    AVCodec *tCodec = av_codec_next(NULL);
+    AVCodec *tNextCodec = av_codec_next(tCodec);
+
+    string tIntro = "Supported video codecs:\n"
+           " D . = Decoding supported\n"
+           " . E = Encoding supported\n";
+
+    if (pSendToLoggerOnly)
+        LOGEX(MediaSource, LOG_VERBOSE, "%s", tIntro.c_str());
+    else
+        printf("%s\n");
+
+    while ((tCodec != NULL))
+    {
+        if (tCodec->type == AVMEDIA_TYPE_VIDEO)
+        {
+            bool tEncode = (tCodec->encode != NULL);
+            bool tDecode = (tCodec->decode != NULL);
+            if ((tNextCodec != NULL) && (strcmp(tCodec->name, tNextCodec->name) == 0))
+            {
+                tEncode |= (tNextCodec->encode != NULL);
+                tDecode |= (tNextCodec->decode != NULL);
+                tCodec = tNextCodec;
+            }
+            if (pSendToLoggerOnly)
+                LOGEX(MediaSource, LOG_VERBOSE, " %s %s  %-15s %s",
+                   tDecode ? "D" : " ",
+                   tEncode ? "E" : " ",
+                   tCodec->name,
+                   tCodec->long_name ? tCodec->long_name : "");
+            else
+                printf(" %s %s  %-15s %s\n",
+                   tDecode ? "D" : " ",
+                   tEncode ? "E" : " ",
+                   tCodec->name,
+                   tCodec->long_name ? tCodec->long_name : "");
+        }
+
+        // go to next
+        tCodec = av_codec_next(tCodec);
+        if (tCodec != NULL)
+            tNextCodec = av_codec_next(tCodec);
+    }
+}
+
+void MediaSource::LogSupportedAudioCodecs(bool pSendToLoggerOnly)
+{
+    FfmpegInit();
+
+    AVCodec *tCodec = av_codec_next(NULL);
+    AVCodec *tNextCodec = av_codec_next(tCodec);
+
+    string tIntro = "Supported video codecs:\n"
+           " D . = Decoding supported\n"
+           " . E = Encoding supported\n";
+
+    if (pSendToLoggerOnly)
+        LOGEX(MediaSource, LOG_VERBOSE, "%s", tIntro.c_str());
+    else
+        printf("%s\n");
+
+    while ((tCodec != NULL))
+    {
+        if (tCodec->type == AVMEDIA_TYPE_AUDIO)
+        {
+            bool tEncode = (tCodec->encode != NULL);
+            bool tDecode = (tCodec->decode != NULL);
+            if ((tNextCodec != NULL) && (strcmp(tCodec->name, tNextCodec->name) == 0))
+            {
+                tEncode |= (tNextCodec->encode != NULL);
+                tDecode |= (tNextCodec->decode != NULL);
+                tCodec = tNextCodec;
+            }
+            if (pSendToLoggerOnly)
+                LOGEX(MediaSource, LOG_VERBOSE, " %s %s  %-15s %s",
+                   tDecode ? "D" : " ",
+                   tEncode ? "E" : " ",
+                   tCodec->name,
+                   tCodec->long_name ? tCodec->long_name : "");
+            else
+                printf(" %s %s  %-15s %s\n",
+                   tDecode ? "D" : " ",
+                   tEncode ? "E" : " ",
+                   tCodec->name,
+                   tCodec->long_name ? tCodec->long_name : "");
+        }
+
+        // go to next
+        tCodec = av_codec_next(tCodec);
+        if (tCodec != NULL)
+            tNextCodec = av_codec_next(tCodec);
+    }
+}
+
+void MediaSource::LogSupportedInputFormats(bool pSendToLoggerOnly)
+{
+    FfmpegInit();
+
+    AVInputFormat *tFormat = av_iformat_next(NULL);
+
+    string tIntro = "Supported input formats:\n";
+
+    if (pSendToLoggerOnly)
+        LOGEX(MediaSource, LOG_VERBOSE, "%s", tIntro.c_str());
+    else
+        printf("%s\n");
+
+    while ((tFormat != NULL))
+    {
+        if (pSendToLoggerOnly)
+            LOGEX(MediaSource, LOG_VERBOSE, " %-15s %s",
+                tFormat->name,
+                tFormat->long_name ? tFormat->long_name : "");
+        else
+            printf(" %-15s %s\n",
+                tFormat->name,
+                tFormat->long_name ? tFormat->long_name : "");
+
+        // go to next
+        tFormat = av_iformat_next(tFormat);
+    }
+
+}
+
+void MediaSource::LogSupportedOutputFormats(bool pSendToLoggerOnly)
+{
+    FfmpegInit();
+
+    AVOutputFormat *tFormat = av_oformat_next(NULL);
+
+    string tIntro = "Supported output formats:\n";
+
+    if (pSendToLoggerOnly)
+        LOGEX(MediaSource, LOG_VERBOSE, "%s", tIntro.c_str());
+    else
+        printf("%s\n");
+
+    while ((tFormat != NULL))
+    {
+        if (pSendToLoggerOnly)
+            LOGEX(MediaSource, LOG_VERBOSE, " %-15s %s",
+                tFormat->name,
+                tFormat->long_name ? tFormat->long_name : "");
+        else
+            printf(" %-15s %s\n",
+                tFormat->name,
+                tFormat->long_name ? tFormat->long_name : "");
+
+        // go to next
+        tFormat = av_oformat_next(tFormat);
+    }
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -325,7 +493,7 @@ std::string MediaSource::CodecName2FfmpegName(std::string pStdName)
     return tResult;
 }
 
-enum CodecID MediaSource::FfmpegName2FfmpegId(std::string pName)
+enum CodecID MediaSource::GetCodecID(std::string pName)
 {
     enum CodecID tResult = CODEC_ID_NONE;
 
@@ -347,9 +515,9 @@ enum CodecID MediaSource::FfmpegName2FfmpegId(std::string pName)
         tResult = CODEC_ID_MPEG4;
     if (pName == "mjpeg")
         tResult = CODEC_ID_MJPEG;
-    if ((pName == "vp8") || (pName == "VP8") || (pName == "libvpx"))
+    if ((pName == "vp8") || (pName == "VP8") || (pName == "libvpx") || (pName == "webm"))
         tResult = CODEC_ID_VP8;
-    if ((pName == "theora") || (pName == "THEORA") || (pName == "libtheora"))
+    if ((pName == "theora") || (pName == "THEORA") || (pName == "libtheora") || (pName == "ogg"))
         tResult = CODEC_ID_THEORA;
 
     /* audio */
@@ -376,7 +544,7 @@ enum CodecID MediaSource::FfmpegName2FfmpegId(std::string pName)
     return tResult;
 }
 
-string MediaSource::FfmpegName2FfmpegFormat(std::string pName)
+string MediaSource::GetCodecName(std::string pName)
 {
     string tResult = "";
 
@@ -400,9 +568,9 @@ string MediaSource::FfmpegName2FfmpegFormat(std::string pName)
         tResult = "mpeg4";
     if (pName == "mjpeg")
         tResult = "mjpeg";
-    if ((pName == "vp8") || (pName == "VP8") || (pName == "libvpx"))
+    if ((pName == "vp8") || (pName == "VP8") || (pName == "libvpx") || (pName == "webm"))
         tResult = "vp8";
-    if ((pName == "theora") || (pName == "THEORA") || (pName == "libtheora"))
+    if ((pName == "theora") || (pName == "THEORA") || (pName == "libtheora")|| (pName == "ogg"))
         tResult = "theora";
 
     /* audio */
@@ -429,7 +597,7 @@ string MediaSource::FfmpegName2FfmpegFormat(std::string pName)
     return tResult;
 }
 
-string MediaSource::FfmpegId2FfmpegFormat(enum CodecID pCodecId)
+string MediaSource::GetFormatName(enum CodecID pCodecId)
 {
     string tResult = "";
 
@@ -452,9 +620,9 @@ string MediaSource::FfmpegId2FfmpegFormat(enum CodecID pCodecId)
     if (pCodecId == CODEC_ID_MJPEG)
         tResult = "mjpeg";
     if (pCodecId == CODEC_ID_VP8)
-        tResult = "vp8";
+        tResult = "webm";
     if (pCodecId == CODEC_ID_THEORA)
-        tResult = "theora";
+        tResult = "ogg";
 
     /* audio */
     // translate from standardized names to FFMPEG internal names
@@ -476,57 +644,6 @@ string MediaSource::FfmpegId2FfmpegFormat(enum CodecID pCodecId)
         tResult = "amr";
 
     //LOGEX(MediaSource, LOG_VERBOSE, "Translated codec id %d to format %s", pCodecId, tResult.c_str());
-
-    return tResult;
-}
-
-enum MediaType MediaSource::FfmpegName2MediaType(std::string pName)
-{
-    enum MediaType tResult = MEDIA_UNKNOWN;
-
-    /* video */
-    // translate from standardized names to FFMPEG internal names
-    if (pName == "h261")
-        tResult = MEDIA_VIDEO;
-    if (pName == "h263")
-        tResult = MEDIA_VIDEO;
-    if (pName == "h263+")
-        tResult = MEDIA_VIDEO;
-    if (pName == "h264") //GPL-2
-        tResult = MEDIA_VIDEO;
-    if (pName == "mpeg1video")
-        tResult = MEDIA_VIDEO;
-    if (pName == "mpeg2video")
-        tResult = MEDIA_VIDEO;
-    if (pName == "m4v")
-        tResult = MEDIA_VIDEO;
-    if (pName == "mjpeg")
-        tResult = MEDIA_VIDEO;
-    if (pName == "vp8")
-        tResult = MEDIA_VIDEO;
-    if (pName == "theora")
-        tResult = MEDIA_VIDEO;
-
-    /* audio */
-    // translate from standardized names to FFMPEG internal names
-    if (pName == "ac3")
-        tResult = MEDIA_AUDIO;
-    if (pName == "aac")
-        tResult = MEDIA_AUDIO;
-    if (pName == "mp3")
-        tResult = MEDIA_AUDIO;
-    if (pName == "gsm")
-        tResult = MEDIA_AUDIO;
-    if (pName == "alaw")
-        tResult = MEDIA_AUDIO;
-    if (pName == "mulaw")
-        tResult = MEDIA_AUDIO;
-    if (pName == "pcms16le")
-        tResult = MEDIA_AUDIO;
-    if (pName == "amr")
-        tResult = MEDIA_AUDIO;
-
-    //LOG(LOG_VERBOSE, "Translated %s to %d", pName.c_str(), tResult);
 
     return tResult;
 }
@@ -828,7 +945,7 @@ string MediaSource::GetCodecName()
             if (mCodecContext->codec != NULL)
                 if (mCodecContext->codec->name != NULL)
                 {
-                	string tName = FfmpegName2FfmpegFormat(string(mCodecContext->codec->name));
+                	string tName = GetCodecName(string(mCodecContext->codec->name));
                 	if (tName != "")
                 		tResult = tName;
                 	else
@@ -2415,7 +2532,7 @@ bool MediaSource::FfmpegDescribeInput(string pSource, int pLine, CodecID pCodecI
 	}
 
     // derive codec name from codec ID
-    string tCodecName = FfmpegId2FfmpegFormat(pCodecId);
+    string tCodecName = GetFormatName(pCodecId);
     // ffmpeg knows only the mpegvideo demuxer which is responsible for both MPEG1 and MPEG2 streams
     if ((tCodecName == "mpeg1video") || (tCodecName == "mpeg2video"))
         tCodecName = "mpegvideo";

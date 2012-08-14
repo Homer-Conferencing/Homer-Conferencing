@@ -388,10 +388,10 @@ void* MediaSourceNet::Run(void* pArgs)
         switch(mMediaType)
         {
             case MEDIA_VIDEO:
-                SVC_PROCESS_STATISTIC.AssignThreadName("Video-InputListener(GAPI," + FfmpegId2FfmpegFormat(mStreamCodecId) + ")");
+                SVC_PROCESS_STATISTIC.AssignThreadName("Video-InputListener(GAPI," + GetFormatName(mStreamCodecId) + ")");
                 break;
             case MEDIA_AUDIO:
-                SVC_PROCESS_STATISTIC.AssignThreadName("Audio-InputListener(GAPI," + FfmpegId2FfmpegFormat(mStreamCodecId) + ")");
+                SVC_PROCESS_STATISTIC.AssignThreadName("Audio-InputListener(GAPI," + GetFormatName(mStreamCodecId) + ")");
                 break;
             default:
                 LOG(LOG_ERROR, "Unknown media type");
@@ -402,10 +402,10 @@ void* MediaSourceNet::Run(void* pArgs)
         switch(mMediaType)
         {
             case MEDIA_VIDEO:
-                SVC_PROCESS_STATISTIC.AssignThreadName("Video-InputListener(NET," + FfmpegId2FfmpegFormat(mStreamCodecId) + ")");
+                SVC_PROCESS_STATISTIC.AssignThreadName("Video-InputListener(NET," + GetFormatName(mStreamCodecId) + ")");
                 break;
             case MEDIA_AUDIO:
-                SVC_PROCESS_STATISTIC.AssignThreadName("Audio-InputListener(NET," + FfmpegId2FfmpegFormat(mStreamCodecId) + ")");
+                SVC_PROCESS_STATISTIC.AssignThreadName("Audio-InputListener(NET," + GetFormatName(mStreamCodecId) + ")");
                 break;
             default:
                 LOG(LOG_ERROR, "Unknown media type");

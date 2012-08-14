@@ -186,7 +186,7 @@ void* VideoScaler::Run(void* pArgs)
 
     LOG(LOG_VERBOSE, "Video scaling thread started");
 
-    SVC_PROCESS_STATISTIC.AssignThreadName("Video-Scaler(" + MediaSource::FfmpegId2FfmpegFormat(mTargetCodecId) + ")");
+    SVC_PROCESS_STATISTIC.AssignThreadName("Video-Scaler(" + MediaSource::GetFormatName(mTargetCodecId) + ")");
     int tOutputBufferSize = avpicture_get_size(mTargetPixelFormat, mTargetResX, mTargetResY);
 
     // allocate chunk buffer

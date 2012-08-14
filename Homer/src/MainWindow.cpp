@@ -115,6 +115,8 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     initializeFeatureDisablers(tArguments);
     // init log sinks
     initializeLogging(tArguments);
+    // show ffmpeg data
+    showFfmpegCaps(tArguments);
     // create basic GUI objects
     initializeGUI();
     // retrieve info about network devices and init Meeting
@@ -249,6 +251,18 @@ void MainWindow::initializeFeatureDisablers(QStringList pArguments)
                 CONF.DisableAudioCapture();
         }
     }
+}
+
+void MainWindow::showFfmpegCaps(QStringList pArguments)
+{
+    if (pArguments.contains("-ListVideoCodecs"))
+        MediaSource::LogSupportedVideoCodecs(CONF.DebuggingEnabled());
+    if (pArguments.contains("-ListAudioCodecs"))
+        MediaSource::LogSupportedAudioCodecs(CONF.DebuggingEnabled());
+    if (pArguments.contains("-ListInputFormats"))
+        MediaSource::LogSupportedInputFormats(CONF.DebuggingEnabled());
+    if (pArguments.contains("-ListOutputFormats"))
+        MediaSource::LogSupportedOutputFormats(CONF.DebuggingEnabled());
 }
 
 void MainWindow::initializeLogging(QStringList pArguments)

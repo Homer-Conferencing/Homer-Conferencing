@@ -388,7 +388,7 @@ int MediaSourceMem::GetFragmentBufferSize()
 bool MediaSourceMem::SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset, bool pRtpActivated)
 {
     bool tResult = false;
-    enum CodecID tStreamCodecId = MediaSource::FfmpegName2FfmpegId(MediaSource::CodecName2FfmpegName(pStreamCodec));
+    enum CodecID tStreamCodecId = MediaSource::GetCodecID(MediaSource::CodecName2FfmpegName(pStreamCodec));
 
     if ((mStreamCodecId != tStreamCodecId) ||
         (mRtpActivated != pRtpActivated))
@@ -689,7 +689,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                         // do we have a video codec change at sender side?
                         if (mStreamCodecId != mCodecContext->codec_id)
                         {
-                            LOG(LOG_INFO, "Incoming video stream changed codec from %s(%d) to %s(%d)", FfmpegId2FfmpegFormat(mStreamCodecId).c_str(), mStreamCodecId, FfmpegId2FfmpegFormat(mCodecContext->codec_id).c_str(), mCodecContext->codec_id);
+                            LOG(LOG_INFO, "Incoming video stream changed codec from %s(%d) to %s(%d)", GetFormatName(mStreamCodecId).c_str(), mStreamCodecId, GetFormatName(mCodecContext->codec_id).c_str(), mCodecContext->codec_id);
 
                             LOG(LOG_ERROR, "Unsupported video codec change");
 
