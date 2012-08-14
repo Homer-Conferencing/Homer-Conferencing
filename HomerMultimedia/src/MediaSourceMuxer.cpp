@@ -1199,13 +1199,17 @@ void* MediaSourceMuxer::Run(void* pArgs)
             if (mEncoderChunkBuffer == NULL)
                 LOG(LOG_ERROR, "Out of video memory for encoder chunk buffer");
 
-
             // create video scaler
             LOG(LOG_VERBOSE, "Encoder thread starts scaler thread..");
             tVideoScaler = new VideoScaler();
             if(tVideoScaler == NULL)
                 LOG(LOG_ERROR, "Invalid video scaler instance, possible out of memory");
-            tVideoScaler->StartScaler(mStreamCodecId, mSourceResX, mSourceResY, mCurrentStreamingResX, mCurrentStreamingResY);
+            enum PixelFormat tTargetPixelFormat;
+            if (mStreamCodecId == CODEC_ID_MJPEG)
+                tTargetPixelFormat = PIX_FMT_YUVJ420P;
+            else
+                tTargetPixelFormat = PIX_FMT_YUV420P;
+            tVideoScaler->StartScaler(MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT, mSourceResX, mSourceResY, PIX_FMT_RGB32, mCurrentStreamingResX, mCurrentStreamingResY, tTargetPixelFormat);
 
             mEncoderFifoMutex.lock();
 
@@ -1810,6 +1814,14 @@ bool MediaSourceMuxer::IsRecording()
     	return mMediaSource->IsRecording();
     else
     	return false;
+}
+
+int64_t MediaSourceMuxer::RecordingTime()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->RecordingTime();
+    else
+        return 0;
 }
 
 void MediaSourceMuxer::SetActivation(bool pState)

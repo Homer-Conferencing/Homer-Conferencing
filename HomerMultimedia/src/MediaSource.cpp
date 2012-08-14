@@ -1741,6 +1741,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     mRecordingSaveFileName = pSaveFileName;
     mRecording = true;
     mRecorderRealTime = pRealTime;
+    mRecorderStart = av_gettime();
 
     // allocate all needed buffers
     LOG(LOG_VERBOSE, "Allocating needed recorder buffers");
@@ -1828,6 +1829,16 @@ bool MediaSource::SupportsRecording()
 bool MediaSource::IsRecording()
 {
 	return mRecording;
+}
+
+int64_t MediaSource::RecordingTime()
+{
+    int64_t tResult = 0;
+
+    if (IsRecording())
+        tResult = (av_gettime() - mRecorderStart) / 1000 / 1000;
+
+    return tResult;
 }
 
 void MediaSource::RecordFrame(AVFrame *pSourceFrame)

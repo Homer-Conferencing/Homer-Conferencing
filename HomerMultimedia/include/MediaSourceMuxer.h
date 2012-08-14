@@ -111,6 +111,7 @@ public:
     virtual void StopRecording();
     virtual bool SupportsRecording();
     virtual bool IsRecording();
+    virtual int64_t RecordingTime(); // in seconds
 
     /* activation control */
     void SetActivation(bool pState);

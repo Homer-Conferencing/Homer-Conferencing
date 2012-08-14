@@ -266,6 +266,7 @@ public:
     virtual void StopRecording();
     virtual bool SupportsRecording();
     virtual bool IsRecording();
+    virtual int64_t RecordingTime(); // in seconds
 
     /* device control */
     virtual std::string GetSourceTypeStr();
@@ -404,6 +405,7 @@ protected:
     int64_t             mRecorderStartPts; // for synchronized playback we calculate the position within a media stream and write the value into PTS entry of an encoded packet
     bool                mRecorderRealTime;
     AVFrame             *mRecorderFinalFrame;
+    int64_t             mRecorderStart;
     /* device handling */
     std::string         mDesiredDevice;
     std::string         mCurrentDevice;
