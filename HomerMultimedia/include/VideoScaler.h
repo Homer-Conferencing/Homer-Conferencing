@@ -44,7 +44,7 @@ namespace Homer { namespace Multimedia {
 ///////////////////////////////////////////////////////////////////////////////
 
 // the following de/activates debugging of sent packets
-//#define VS_DEBUG_PACKETS
+#define VS_DEBUG_PACKETS
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -56,7 +56,7 @@ public:
 
     virtual ~VideoScaler();
 
-    void StartScaler(enum CodecID pTargetCodecId, int pSourceResX, int pSourceResY, int pTargetResX, int pTargetResY);
+    void StartScaler(int pInputQueueSize, int pSourceResX, int pSourceResY, enum PixelFormat pSourcePixelFormat, int pTargetResX, int pTargetResY, enum PixelFormat pTargetPixelFormat);
     void StopScaler();
 
     virtual void WriteFifo(char* pBuffer, int pBufferSize);
@@ -79,11 +79,12 @@ private:
     bool                mScalerNeeded;
     int                 mSourceResX;
     int                 mSourceResY;
+    enum PixelFormat    mSourcePixelFormat;
     int                 mTargetResX;
     int                 mTargetResY;
-    int                 mChunkNumber;
-    enum CodecID        mTargetCodecId;
     enum PixelFormat    mTargetPixelFormat;
+    int                 mQueueSize;
+    int                 mChunkNumber;
     SwsContext          *mScalerContext;
 };
 
