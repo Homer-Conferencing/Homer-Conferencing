@@ -64,6 +64,11 @@ using namespace Homer::Monitor;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+//de/activate VDPAU support
+//#define MEDIA_SOURCE_VDPAU_SUPPORT
+
+///////////////////////////////////////////////////////////////////////////////
+
 Mutex MediaSource::mFfmpegInitMutex;
 bool MediaSource::mFfmpegInitiated = false;
 
@@ -2711,7 +2716,7 @@ bool MediaSource::FfmpegSelectStream(string pSource, int pLine)
 bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 {
 	int 				tRes = 0;
-    AVCodec             *tCodec;
+    AVCodec             *tCodec = NULL;
     AVDictionary        *tOptions = NULL;
 
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Going to open %s decoder..", GetMediaTypeStr().c_str());
@@ -2722,7 +2727,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     // check for VDPAU support
     if ((mCodecContext->codec) && (mCodecContext->codec->capabilities & CODEC_CAP_HWACCEL_VDPAU))
     {
-    	LOG_REMOTE(LOG_INFO, pSource, pLine, "%s codec %s supports VDPAU", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
+    	LOG_REMOTE(LOG_WARN, pSource, pLine, "%s codec %s already supports VDPAU!", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
     }
 
     switch(mMediaType)
@@ -2759,7 +2764,37 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     //### search for correct decoder for the A/V stream
     //######################################################
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..going to find %s decoder..", GetMediaTypeStr().c_str());
-    if((tCodec = avcodec_find_decoder(mCodecContext->codec_id)) == NULL)
+
+    #ifdef MEDIA_SOURCE_VDPAU_SUPPORT
+        // try to find a vdpau decoder
+        switch(mCodecContext->codec_id)
+        {
+            case CODEC_ID_H264:
+                tCodec = avcodec_find_decoder_by_name("h264_vdpau");
+                break;
+            case CODEC_ID_MPEG1VIDEO:
+                tCodec = avcodec_find_decoder_by_name("mpeg1video_vdpau");
+                break;
+            case CODEC_ID_MPEG2VIDEO:
+                tCodec = avcodec_find_decoder_by_name("mpegvideo_vdpau");
+                break;
+            case CODEC_ID_MPEG4:
+                tCodec = avcodec_find_decoder_by_name("mpeg4_vdpau");
+                break;
+            case CODEC_ID_WMV3:
+                tCodec = avcodec_find_decoder_by_name("wmv3_vdpau");
+                break;
+            default:
+                break;
+        }
+    #endif
+    //TODO: additional VDPAU stuff needed here
+
+    // try to find a standard decoder
+    if (tCodec == NULL)
+        tCodec = avcodec_find_decoder(mCodecContext->codec_id);
+
+    if(tCodec == NULL)
     {
     	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't find a fitting %s codec", GetMediaTypeStr().c_str());
 
@@ -2774,12 +2809,18 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     //H.264: force thread count to 1 since the h264 decoder will not extract SPS and PPS to extradata during multi-threaded decoding
     if (mCodecContext->codec_id == CODEC_ID_H264)
     {
-    		LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Disabling MT during avcodec_open2() for H264 codec");
+            if (strcmp(mFormatContext->filename, "") == 0)
+            {// we have a net/mem based media source
+                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Disabling MT during avcodec_open2() for H264 codec");
 
-            // disable MT for H264, otherwise the decoder runs into trouble
-            av_dict_set(&tOptions, "threads", "1", 0);
+                // disable MT for H264, otherwise the decoder runs into trouble
+                av_dict_set(&tOptions, "threads", "1", 0);
 
-            mCodecContext->thread_count = 1;
+                mCodecContext->thread_count = 1;
+            }else
+            {// we have a file based media source and we can try to decode in MT mode
+                LOG(LOG_WARN, "Trying to decode H.264 with MT support");
+            }
     }
 
 //    // Inform the codec that we can handle truncated bitstreams
