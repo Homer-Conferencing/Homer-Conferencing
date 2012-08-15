@@ -364,6 +364,38 @@ union H264Header{
     uint32_t Data[1];
 };
 
+// ############################ THEORA) ############################################
+union THEORAHeader{
+    struct{
+        unsigned int Packets:4;             /* packet count */
+        unsigned int TDT:2;                 /* data type */
+        unsigned int F:2;                   /* fragment type */
+        unsigned int ConfigId:24;           /* configuration ID */
+    } __attribute__((__packed__));
+    uint32_t Data[1];
+};
+
+// ########################## VP8 (webm) ###########################################
+union VP8Header{
+    struct{
+        unsigned int PartID:4;              /* partition index */
+        unsigned int S:1;                   /* start of VP8 partition */
+        unsigned int N:1;                   /* non-reference frame */
+        unsigned int R:1;                   /* must be zero */
+        unsigned int X:1;                   /* Extended control bits present */
+    } __attribute__((__packed__));
+    uint8_t Data[1];
+};
+union VP8ExtendedHeader{
+    struct{
+        unsigned int RsvA:5;                 /* must be zero */
+        unsigned int T:1;                   /* TID present */
+        unsigned int L:1;                   /* TL0PICIDX present */
+        unsigned int I:1;                   /* picture ID present */
+    } __attribute__((__packed__));
+    uint8_t Data[1];
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 
 RTP::RTP()
@@ -690,6 +722,15 @@ int RTP::GetPayloadHeaderSizeMax(enum CodecID pCodec)
                 tResult = 0;//todo
                 break;
 //            case CODEC_ID_AMR_WB:
+//            case CODEC_ID_VORBIS:
+            case CODEC_ID_THEORA:
+                tResult = sizeof(THEORAHeader);
+                break;
+            case CODEC_ID_VP8:
+                tResult = sizeof(VP8Header); // we neglect the extended header and the 3 other optional header bytes
+                break;
+//            case CODEC_ID_ADPCM_G722:
+//            case CODEC_ID_ADPCM_G726:
             default:
                 tResult = 0;
                 break;
@@ -914,6 +955,12 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
                             case CODEC_ID_MPEG4:
                                             tHeader->PayloadType = 121; // defacto standard
                                             break;
+                            case CODEC_ID_THEORA:
+                                            tHeader->PayloadType = 122;
+                                            break;
+                            case CODEC_ID_VP8:
+                                            tHeader->PayloadType = 123;
+                                            break;
                 }
             }
 
@@ -1098,53 +1145,7 @@ void RTP::LogRtpHeader(RtpHeader *pRtpHeader)
                 LOGEX(RTP, LOG_VERBOSE, "Marked: yes");
                 break;
     }
-    switch(pRtpHeader->PayloadType)
-    {
-                // audio
-                case 0:
-                    LOGEX(RTP, LOG_VERBOSE, "Payload type: old PCMU");
-                    break;
-                case 8:
-                    LOGEX(RTP, LOG_VERBOSE, "Payload type: old PCMA");
-                    break;
-                case 14:
-                    LOGEX(RTP, LOG_VERBOSE, "Payload type: old mpa (mp2, mp3)");
-                    break;
-                // video
-                case 31:
-                    LOGEX(RTP, LOG_VERBOSE, "Payload type: old h261");
-                    break;
-                case 32:
-                    LOGEX(RTP, LOG_VERBOSE, "Payload type: old mpv (mpeg1/2)");
-                    break;
-                case 34:
-                    LOGEX(RTP, LOG_VERBOSE, "Payload type: old h263");
-                    break;
-                case 72 ... 76:
-                    LOGEX(RTP, LOG_VERBOSE, "Payload type: rtcp");
-                    break;
-                case 100:
-                    LOGEX(RTP, LOG_VERBOSE, "Payload type: aac");
-                    break;
-                case 101:
-                    LOGEX(RTP, LOG_VERBOSE, "Payload type: amr");
-                    break;
-                case 118:
-                    LOGEX(RTP, LOG_VERBOSE, "Payload type: h263");
-                    break;
-                case 119:
-                    LOGEX(RTP, LOG_VERBOSE, "Payload type: h263+");
-                    break;
-                case 120:
-                    LOGEX(RTP, LOG_VERBOSE, "Payload type: h264");
-                    break;
-                case 121:
-                    LOGEX(RTP, LOG_VERBOSE, "Payload type: mpeg4");
-                    break;
-                default:
-                    LOGEX(RTP, LOG_VERBOSE, "Payload type: %d (name: %s)", pRtpHeader->PayloadType, PayloadIdToFfmpegName(pRtpHeader->PayloadType).c_str());
-                    break;
-    }
+    LOGEX(RTP, LOG_VERBOSE, "Payload type: %s(%d)", PayloadIdToFfmpegName(pRtpHeader->PayloadType).c_str(), pRtpHeader->PayloadType);
     LOGEX(RTP, LOG_VERBOSE, "SequenceNumber: %u", pRtpHeader->SequenceNumber);
     LOGEX(RTP, LOG_VERBOSE, "Time stamp: %10u", pRtpHeader->Timestamp);
 
@@ -1259,6 +1260,8 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
             case CODEC_ID_MPEG1VIDEO:
             case CODEC_ID_MPEG2VIDEO:
             case CODEC_ID_MPEG4:
+            case CODEC_ID_THEORA:
+            case CODEC_ID_VP8:
                     break;
             default:
                     LOG(LOG_ERROR, "Codec %d is unsupported by internal RTP parser", pCodecId);
@@ -1380,6 +1383,8 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
     H263PHeader* tH263PHeader = (H263PHeader*)pData;
     bool tH263PPictureStart = false;
     H264Header* tH264Header = (H264Header*)pData;
+    THEORAHeader* tTHEORAHeader = (THEORAHeader*)pData;
+    VP8Header* tVP8Header = (VP8Header*)pData;
     unsigned char tH264HeaderType = 0;
     bool tH264HeaderFragmentStart = false;
     char tH264HeaderReconstructed = 0;
@@ -1768,6 +1773,54 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                                 LOG(LOG_VERBOSE, "No additional information");
                             #endif
                             break;
+            case CODEC_ID_THEORA:
+                            pData += sizeof(THEORAHeader);
+                            pData += 2;
+//                            // continuation fragment?
+//                            if (tTHEORAHeader->F == 2)
+//                                mIntermediateFragment = true;
+//
+//                            // end fragment?
+//                            if (tTHEORAHeader->F == 3)
+//                                mIntermediateFragment = false;
+
+                            #ifdef RTP_DEBUG_PACKETS
+                                LOG(LOG_VERBOSE, "################### THEORA header #######################");
+                                LOG(LOG_VERBOSE, "Configuration ID: %d", tTHEORAHeader->ConfigId);
+                                LOG(LOG_VERBOSE, "Fragment type: %d", tTHEORAHeader->F);
+                                LOG(LOG_VERBOSE, "Theora data type: %d", tTHEORAHeader->TDT);
+                                LOG(LOG_VERBOSE, "Payload packet count: %d", tTHEORAHeader->Packets);
+                            #endif
+                            break;
+            case CODEC_ID_VP8:
+                            pData++; // default VP 8 header = 1 byte
+
+                            // do we have extended control bits?
+                            if (tVP8Header->X)
+                            {
+                                VP8ExtendedHeader* tVP8ExtendedHeader = (VP8ExtendedHeader*)pData;
+                                pData++; // extended control bits = 1 byte
+
+                                // do we have a picture ID?
+                                if (tVP8ExtendedHeader->I)
+                                    pData++;
+
+                                // do we have a TL0PICIDX?
+                                if (tVP8ExtendedHeader->L)
+                                    pData++;
+
+                                // do we have a TID?
+                                if (tVP8ExtendedHeader->T)
+                                    pData++;
+                            }
+
+                            #ifdef RTP_DEBUG_PACKETS
+                                LOG(LOG_VERBOSE, "##################### VP8 header ########################");
+                                LOG(LOG_VERBOSE, "Extended bits: %d", tVP8Header->X);
+                                LOG(LOG_VERBOSE, "Non-reference frame: %d", tVP8Header->N);
+                                LOG(LOG_VERBOSE, "Start of partition: %d", tVP8Header->S);
+                            #endif
+                            break;
             default:
                             LOG(LOG_ERROR, "Unsupported codec %d dropped by internal RTP parser", pCodecId);
                             break;
@@ -1839,6 +1892,8 @@ int RTP::FfmpegNameToPayloadId(std::string pName)
         tResult = 121;
     if ((pName == "theora") || (pName == "THEORA"))
         tResult = 122;
+    if ((pName == "vp8") || (pName == "VP8"))
+        tResult = 123;
 
     //audio
     if ((pName == "mulaw") || (pName == "pcm_mulaw"))
@@ -1861,7 +1916,7 @@ int RTP::FfmpegNameToPayloadId(std::string pName)
 
 string RTP::PayloadIdToFfmpegName(int pId)
 {
-    string tResult = "unsupported";
+    string tResult = "unknown";
 
     switch(pId)
     {
@@ -1870,7 +1925,7 @@ string RTP::PayloadIdToFfmpegName(int pId)
                 tResult = "h261";
                 break;
         case 32:
-                tResult = "mpeg video";
+                tResult = "mpv (mpeg video)";
                 break;
         case 34:
         case 118:
@@ -1883,24 +1938,27 @@ string RTP::PayloadIdToFfmpegName(int pId)
                 tResult = "h264";
                 break;
         case 121:
-                tResult = "m4v";
+                tResult = "m4v (mpeg4)";
                 break;
         case 122:
                 tResult = "theora";
                 break;
+        case 123:
+                tResult = "vp8";
+                break;
 
         //audio
         case 0:
-                tResult = "mulaw";
+                tResult = "PCMU (mulaw)";
                 break;
         case 3:
                 tResult = "gsm";
                 break;
         case 8:
-                tResult = "alaw";
+                tResult = "PCMA (alaw)";
                 break;
         case 14:
-                tResult = "mpeg audio";
+                tResult = "mpa (mp2,mp3)";
                 break;
         case 100:
                 tResult = "aac";
@@ -1910,12 +1968,17 @@ string RTP::PayloadIdToFfmpegName(int pId)
                 break;
 
         //others
+        case 72 ... 76:
+                tResult = "rtcp";
+                break;
+
+        //others
         case 96 ... 99:
                 tResult = "ffmpeg dynamic";
                 break;
     }
 
-    LOGEX(RTP, LOG_VERBOSE, ("Translated %d to " + tResult).c_str(), pId);
+    //LOGEX(RTP, LOG_VERBOSE, ("Translated %d to " + tResult).c_str(), pId);
 
     return tResult;
 }
