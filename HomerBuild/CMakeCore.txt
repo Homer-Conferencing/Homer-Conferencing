@@ -122,9 +122,8 @@ SET (INCLUDE_DIRS
 )
 IF ((NOT ${BUILD} MATCHES "Default") OR (WIN32))
 SET (INCLUDE_DIRS
-	${INCLUDE_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerIncludes
-	${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerIncludes/SDL
+	${INCLUDE_DIRS}
 )
 ENDIF()
 MESSAGE("### Header search path: ${INCLUDE_DIRS}")

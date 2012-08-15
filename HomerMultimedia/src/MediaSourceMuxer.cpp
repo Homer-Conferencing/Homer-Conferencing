@@ -294,7 +294,7 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
 bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
 {
     int                 tResult;
-    ByteIOContext       *tByteIoContext;
+    AVIOContext       	*tIoContext;
     AVOutputFormat      *tFormat;
     AVCodec             *tCodec;
     AVStream            *tStream;
@@ -319,11 +319,11 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 
     // build correct IO-context
-    tByteIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE /*HINT: don't use mStreamMaxPacketSize here */, 1, this, NULL, DistributePacket, NULL);
+    tIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE /*HINT: don't use mStreamMaxPacketSize here */, 1, this, NULL, DistributePacket, NULL);
 
-    tByteIoContext->seekable = 0;
+    tIoContext->seekable = 0;
     // limit packet size
-    tByteIoContext->max_packet_size = mStreamMaxPacketSize;
+    tIoContext->max_packet_size = mStreamMaxPacketSize;
 
     mSourceResX = pResX;
     mSourceResY = pResY;
@@ -357,7 +357,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     // set correct output format
     mFormatContext->oformat = tFormat;
     // set correct IO-context
-    mFormatContext->pb = tByteIoContext;
+    mFormatContext->pb = tIoContext;
     // verbose timestamp debugging    mFormatContext->debug = FF_FDEBUG_TS;
 
     // allocate new stream structure
@@ -365,9 +365,6 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     mCodecContext = tStream->codec;
     mCodecContext->codec_id = tFormat->video_codec;
     mCodecContext->codec_type = AVMEDIA_TYPE_VIDEO;
-    // do some extra modifications for H263
-    if (tFormat->video_codec == CODEC_ID_H263P)
-        mCodecContext->flags |= CODEC_FLAG_H263P_SLICE_STRUCT | CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED | CODEC_FLAG_H263P_UMV | CODEC_FLAG_H263P_AIV;
     // put sample parameters
     mCodecContext->bit_rate = 90000;
 
@@ -593,7 +590,7 @@ bool MediaSourceMuxer::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
 {
     int                 tResult;
-    ByteIOContext       *tByteIoContext;
+    AVIOContext       	*tIoContext;
     AVOutputFormat      *tFormat;
     AVCodec             *tCodec;
     AVStream            *tStream;
@@ -612,11 +609,11 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
 
     // build correct IO-context
-    tByteIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE /*HINT: don't use mStreamMaxPacketSize here */, 1, this, NULL, DistributePacket, NULL);
+    tIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE /*HINT: don't use mStreamMaxPacketSize here */, 1, this, NULL, DistributePacket, NULL);
 
-    tByteIoContext->seekable = 0;
+    tIoContext->seekable = 0;
     // limit packet size
-    tByteIoContext->max_packet_size = mStreamMaxPacketSize;
+    tIoContext->max_packet_size = mStreamMaxPacketSize;
 
     // allocate new format context
     mFormatContext = AV_NEW_FORMAT_CONTEXT();
@@ -640,7 +637,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     // set correct output format
     mFormatContext->oformat = tFormat;
     // set correct IO-context
-    mFormatContext->pb = tByteIoContext;
+    mFormatContext->pb = tIoContext;
     // verbose timestamp debugging    mFormatContext->debug = FF_FDEBUG_TS;
 
     // allocate new stream structure
@@ -663,7 +660,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     mCodecContext->sample_rate = mSampleRate; // sampling rate: 22050, 44100
     mCodecContext->qmin = 2; // 2
     mCodecContext->qmax = 9;/*2 +(100 - mAudioStreamQuality) / 4; // 31*/
-    mCodecContext->sample_fmt = SAMPLE_FMT_S16;
+    mCodecContext->sample_fmt = AV_SAMPLE_FMT_S16;
     // set max. packet size for RTP based packets
     mCodecContext->rtp_payload_size = mStreamMaxPacketSize;
 

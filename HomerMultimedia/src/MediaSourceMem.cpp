@@ -558,7 +558,7 @@ bool MediaSourceMem::CloseGrabDevice()
         avcodec_close(mCodecContext);
 
         // Close the video stream
-        av_close_input_stream(mFormatContext);
+        HM_close_input(mFormatContext);
 
         // Free the frames
         av_free(mRGBFrame);

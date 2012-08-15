@@ -82,6 +82,23 @@ bool MediaSourceVFW::SupportsDecoderFrameStatistics()
     return (mMediaType == MEDIA_VIDEO);
 }
 
+GrabResolutions MediaSourceVFW::GetSupportedVideoGrabResolutions()
+{
+    VideoFormatDescriptor tFormat;
+
+    mSupportedVideoFormats.clear();
+
+    if (mMediaType == MEDIA_VIDEO)
+    {
+        tFormat.Name="CIF";        //      352 × 288
+        tFormat.ResX = 352;
+        tFormat.ResY = 288;
+        mSupportedVideoFormats.push_back(tFormat);
+    }
+
+    return mSupportedVideoFormats;
+}
+
 void MediaSourceVFW::getVideoDevices(VideoDevices &pVList)
 {
     static bool tFirstCall = true;
@@ -179,7 +196,7 @@ void MediaSourceVFW::getVideoDevices(VideoDevices &pVList)
 bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 {
     int                 tResult;
-    AVFormatParameters  tFormatParams;
+//    AVFormatParameters  tFormatParams;
     AVInputFormat       *tFormat;
     AVCodec             *tCodec;
 
@@ -197,16 +214,16 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     // set category for packet statistics
     ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 
-    memset((void*)&tFormatParams, 0, sizeof(tFormatParams));
-    tFormatParams.channel = 0;
-    tFormatParams.standard = NULL;
-    tFormatParams.time_base.num = 100;
-    tFormatParams.time_base.den = (int)pFps * 100;
-    LOG(LOG_VERBOSE, "Desired time_base: %d/%d (%3.2f)", tFormatParams.time_base.den, tFormatParams.time_base.num, pFps);
-    tFormatParams.width = pResX;
-    tFormatParams.height = pResY;
-    tFormatParams.initial_pause = 0;
-    tFormatParams.prealloced_context = 0;
+//    memset((void*)&tFormatParams, 0, sizeof(tFormatParams));
+//    tFormatParams.channel = 0;
+//    tFormatParams.standard = NULL;
+//    tFormatParams.time_base.num = 100;
+//    tFormatParams.time_base.den = (int)pFps * 100;
+//    LOG(LOG_VERBOSE, "Desired time_base: %d/%d (%3.2f)", tFormatParams.time_base.den, tFormatParams.time_base.num, pFps);
+//    tFormatParams.width = pResX;
+//    tFormatParams.height = pResY;
+//    tFormatParams.initial_pause = 0;
+//    tFormatParams.prealloced_context = 0;
     tFormat = av_find_input_format("vfwcap");
     if (tFormat == NULL)
     {
@@ -224,7 +241,7 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         //### probing given device file
         //########################################
         tResult = 0;
-        if ((tResult = av_open_input_file(&mFormatContext, (const char *)mDesiredDevice.c_str(), tFormat, 0, &tFormatParams)) != 0)
+        if ((tResult = avformat_open_input(&mFormatContext, (const char *)mDesiredDevice.c_str(), tFormat, NULL)) != 0)
         {
             LOG(LOG_ERROR, "Couldn't open device \"%s\" because of \"%s\".", mDesiredDevice.c_str(), strerror(AVUNERROR(tResult)));
             return false;
@@ -243,7 +260,7 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         		LOG(LOG_VERBOSE, "Probing VFW device number: %d", i);
 				mDesiredDevice = (char)i + 48;
 				tResult = 0;
-				if ((tResult = av_open_input_file(&mFormatContext, (const char *)mDesiredDevice.c_str(), tFormat, 0, &tFormatParams)) == 0)
+				if ((tResult = avformat_open_input(&mFormatContext, (const char *)mDesiredDevice.c_str(), tFormat, NULL)) == 0)
 				{
 					LOG(LOG_VERBOSE, " ..available device connected");
 					tFound = true;

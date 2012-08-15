@@ -284,7 +284,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     if ((mCodecContext->sample_rate != 44100) || (mCodecContext->channels != 2))
     {
         LOG(LOG_WARN, "Audio samples with rate of %d Hz have to be resampled to 44100 Hz", mCodecContext->sample_rate);
-        mResampleContext = av_audio_resample_init(2, mCodecContext->channels, 44100, mCodecContext->sample_rate, SAMPLE_FMT_S16, mCodecContext->sample_fmt, 16, 10, 0, 0.8);
+        mResampleContext = av_audio_resample_init(2, mCodecContext->channels, 44100, mCodecContext->sample_rate, AV_SAMPLE_FMT_S16, mCodecContext->sample_fmt, 16, 10, 0, 0.8);
     }
 
     //set duration
@@ -940,7 +940,7 @@ void* MediaSourceFile::Run(void* pArgs)
                             // wait for next key frame packets (either i-frame or p-frame
                             if (mSeekingWaitForNextKeyFrame)
                             {// we are still waiting for the next key frame after seeking in the file
-                                if (tSourceFrame->pict_type == FF_I_TYPE)
+                                if (tSourceFrame->pict_type == AV_PICTURE_TYPE_I)
                                 {
                                     #ifdef MSF_DEBUG_SEEKING
                                         LOG(LOG_VERBOSE, "Read first %s key frame at frame number %ld with flags %d from input file after seeking", GetMediaTypeStr().c_str(), tCurFramePts, tPacket->flags);

@@ -1543,10 +1543,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
                 mRecorderCodecContext->codec_id = tFormat->video_codec;
                 mRecorderCodecContext->codec_type = AVMEDIA_TYPE_VIDEO;
 
-                if (tFormat->video_codec == CODEC_ID_H263P)
-                    mRecorderCodecContext->flags |= CODEC_FLAG_H263P_SLICE_STRUCT | CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED | CODEC_FLAG_H263P_UMV | CODEC_FLAG_H263P_AIV;
                 // resolution
-
                 mRecorderCodecContext->width = mSourceResX;
                 mRecorderCodecContext->height = mSourceResY;
 
@@ -1618,7 +1615,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
 
                 mRecorderCodecContext->qmin = 2; // 2
                 mRecorderCodecContext->qmax = 9;/*2 +(100 - mAudioStreamQuality) / 4; // 31*/
-                mRecorderCodecContext->sample_fmt = SAMPLE_FMT_S16;
+                mRecorderCodecContext->sample_fmt = AV_SAMPLE_FMT_S16;
 
                 // init fifo buffer
                 mRecorderSampleFifo = HM_av_fifo_alloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE * 2);
@@ -1677,7 +1674,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     // open the output file, if needed
     if (!(tFormat->flags & AVFMT_NOFILE))
     {
-        if (url_fopen(&mRecorderFormatContext->pb, pSaveFileName.c_str(), URL_WRONLY) < 0)
+        if (avio_open(&mRecorderFormatContext->pb, pSaveFileName.c_str(), AVIO_FLAG_WRITE) < 0)
         {
             LOG(LOG_ERROR, "Could not open \"%s\"\n", pSaveFileName.c_str());
             // free codec and stream 0
@@ -1803,10 +1800,7 @@ void MediaSource::StopRecording()
         av_freep(&mRecorderFormatContext->streams[0]);
 
         if (!(mRecorderFormatContext->oformat->flags & AVFMT_NOFILE))
-        {
-            // close the output file
-            url_fclose(mRecorderFormatContext->pb);
-        }
+        	avio_close(mRecorderFormatContext->pb);
 
         // close the format context
         av_free(mRecorderFormatContext);
@@ -1914,13 +1908,13 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
         LOG(LOG_VERBOSE, "      ..key frame: %d", pSourceFrame->key_frame);
         switch(pSourceFrame->pict_type)
         {
-                case FF_I_TYPE:
+                case AV_PICTURE_TYPE_I:
                     LOG(LOG_VERBOSE, "      ..picture type: i-frame");
                     break;
-                case FF_P_TYPE:
+                case AV_PICTURE_TYPE_P:
                     LOG(LOG_VERBOSE, "      ..picture type: p-frame");
                     break;
-                case FF_B_TYPE:
+                case AV_PICTURE_TYPE_B:
                     LOG(LOG_VERBOSE, "      ..picture type: b-frame");
                     break;
                 default:
@@ -1942,13 +1936,13 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
         LOG(LOG_VERBOSE, "      ..key frame: %d", mRecorderFinalFrame->key_frame);
         switch(mRecorderFinalFrame->pict_type)
         {
-                case FF_I_TYPE:
+                case AV_PICTURE_TYPE_I:
                     LOG(LOG_VERBOSE, "      ..picture type: i-frame");
                     break;
-                case FF_P_TYPE:
+                case AV_PICTURE_TYPE_P:
                     LOG(LOG_VERBOSE, "      ..picture type: p-frame");
                     break;
-                case FF_B_TYPE:
+                case AV_PICTURE_TYPE_B:
                     LOG(LOG_VERBOSE, "      ..picture type: b-frame");
                     break;
                 default:
@@ -2120,13 +2114,13 @@ void MediaSource::AnnounceFrame(AVFrame *pFrame)
 {
     switch(pFrame->pict_type)
     {
-            case FF_I_TYPE:
+            case AV_PICTURE_TYPE_I:
                 mDecodedIFrames++;
                 break;
-            case FF_P_TYPE:
+            case AV_PICTURE_TYPE_P:
                 mDecodedPFrames++;
                 break;
-            case FF_B_TYPE:
+            case AV_PICTURE_TYPE_B:
                 mDecodedBFrames++;
                 break;
             default:

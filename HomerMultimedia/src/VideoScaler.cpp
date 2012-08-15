@@ -252,13 +252,13 @@ void* VideoScaler::Run(void* pArgs)
                     LOG(LOG_VERBOSE, "      ..key frame: %d", tInputFrame->key_frame);
                     switch(tInputFrame->pict_type)
                     {
-                            case FF_I_TYPE:
+                            case AV_PICTURE_TYPE_I:
                                 LOG(LOG_VERBOSE, "      ..picture type: i-frame");
                                 break;
-                            case FF_P_TYPE:
+                            case AV_PICTURE_TYPE_P:
                                 LOG(LOG_VERBOSE, "      ..picture type: p-frame");
                                 break;
-                            case FF_B_TYPE:
+                            case AV_PICTURE_TYPE_B:
                                 LOG(LOG_VERBOSE, "      ..picture type: b-frame");
                                 break;
                             default:
@@ -292,13 +292,13 @@ void* VideoScaler::Run(void* pArgs)
                     LOG(LOG_VERBOSE, "      ..key frame: %d", tOutputFrame->key_frame);
                     switch(tOutputFrame->pict_type)
                     {
-                            case FF_I_TYPE:
+                            case AV_PICTURE_TYPE_I:
                                 LOG(LOG_VERBOSE, "      ..picture type: i-frame");
                                 break;
-                            case FF_P_TYPE:
+                            case AV_PICTURE_TYPE_P:
                                 LOG(LOG_VERBOSE, "      ..picture type: p-frame");
                                 break;
-                            case FF_B_TYPE:
+                            case AV_PICTURE_TYPE_B:
                                 LOG(LOG_VERBOSE, "      ..picture type: b-frame");
                                 break;
                             default:
