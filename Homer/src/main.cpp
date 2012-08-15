@@ -239,6 +239,10 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
         printf("   -Disable=IPv6                       disable IPv6 support\n");
         printf("   -Disable=QoS                        disable QoS support\n");
         printf("   -Enable=NetSim                      enables network simulator\n");
+        printf("   -ListVideoCodecs                    list all supported video codecs of the used libavcodec\n");
+        printf("   -ListAudioCodecs                    list all supported audio codecs of the used libavcodec\n");
+        printf("   -ListInputFormats                   list all supported input formats of the used libavformat\n");
+        printf("   -ListOutputFormats                  list all supported output formats of the used libavformat\n");
         printf("\n");
 	    exit(0);
 	}

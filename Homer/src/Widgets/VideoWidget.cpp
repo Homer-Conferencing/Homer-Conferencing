@@ -94,6 +94,8 @@ using namespace Homer::Monitor;
 #define SEEK_SMALL_STEP                         10 // seconds
 #define SEEK_MEDIUM_STEP                        60 // seconds
 #define SEEK_BIG_STEP                          300 // seconds
+// additional seeking drift when seeking backwards
+#define SEEK_BACKWARD_DRIFT                      5 // seconds
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -941,6 +943,18 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
             }
         }
 
+        // OSD about current recorder position
+        QString tLine_RecorderTime = "";
+        if (mVideoSource->SupportsRecording())
+        {
+            int tHour = 0, tMin = 0, tSec = 0, tTime = mVideoSource->RecordingTime();
+            tSec = tTime % 60;
+            tTime /= 60;
+            tMin = tTime % 60;
+            tHour = tTime / 60;
+
+            tLine_RecorderTime = " Recorded: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0');
+        }
 
         // OSD about video muxer
         QString tLine_Muxer = "";
@@ -958,6 +972,7 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
         tPainter->drawText(5, 121, tLine_Output);
         int tMuxOutputOffs = 0;
         int tPeerOutputOffs = 0;
+        int tRecorderOutputOffs = 0;
         if (mVideoSource->SupportsSeeking())
         {
             tMuxOutputOffs = 20;
@@ -969,7 +984,13 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
             tPainter->drawText(5, 141 + tMuxOutputOffs, tLine_Muxer);
         }
         if (tPeerName != "")
-        	tPainter->drawText(5, 141 + tMuxOutputOffs + tPeerOutputOffs, " Peer: " + tPeerName);
+        {
+            tRecorderOutputOffs = 20;
+            tPainter->drawText(5, 141 + tMuxOutputOffs + tPeerOutputOffs, " Peer: " + tPeerName);
+        }
+        if (mVideoSource->IsRecording())
+            tPainter->drawText(5, 141 + tMuxOutputOffs + tPeerOutputOffs + tRecorderOutputOffs, tLine_RecorderTime);
+
 
         // #######################
         // ### foreground text
@@ -985,7 +1006,9 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
         if (mVideoSource->SupportsMuxing())
             tPainter->drawText(4, 140 + tMuxOutputOffs, tLine_Muxer);
         if (tPeerName != "")
-        	tPainter->drawText(5, 140 + tMuxOutputOffs + tPeerOutputOffs, " Peer: " + tPeerName);
+        	tPainter->drawText(4, 140 + tMuxOutputOffs + tPeerOutputOffs, " Peer: " + tPeerName);
+        if (mVideoSource->IsRecording())
+            tPainter->drawText(4, 140 + tMuxOutputOffs + tPeerOutputOffs + tRecorderOutputOffs, tLine_RecorderTime);
     }
 
     //#############################################################
@@ -1567,11 +1590,11 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
     if ((pEvent->key() == Qt::Key_Left) && (windowState() & Qt::WindowFullScreen))
     {
         if (pEvent->modifiers() & Qt::ControlModifier)
-            mParticipantWidget->SeekMovieFileRelative(-SEEK_BIG_STEP);
+            mParticipantWidget->SeekMovieFileRelative(-SEEK_BIG_STEP -SEEK_BACKWARD_DRIFT);
         else if (pEvent->modifiers() & Qt::AltModifier)
-            mParticipantWidget->SeekMovieFileRelative(-SEEK_MEDIUM_STEP);
+            mParticipantWidget->SeekMovieFileRelative(-SEEK_MEDIUM_STEP -SEEK_BACKWARD_DRIFT);
         else
-            mParticipantWidget->SeekMovieFileRelative(-SEEK_SMALL_STEP);
+            mParticipantWidget->SeekMovieFileRelative(-SEEK_SMALL_STEP - SEEK_BACKWARD_DRIFT);
         return;
     }
     if (pEvent->key() == Qt::Key_A)

@@ -124,6 +124,7 @@ private:
     void initializeGUI();
     void initializeFeatureDisablers(QStringList pArguments);
     void initializeLogging(QStringList pArguments);
+    void showFfmpegCaps(QStringList pArguments);
     void initializeConferenceManagement();
     void initializeVideoAudioIO();
     void initializeColoring();

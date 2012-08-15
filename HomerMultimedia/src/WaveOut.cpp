@@ -226,7 +226,7 @@ bool WaveOut::DoOpenNewFile()
         tResult = false;
     }else
     {
-        SVC_PROCESS_STATISTIC.AssignThreadName("Playback-File");
+        SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Grabber(WAVEOUT)");
 
         Play();
     }

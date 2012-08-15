@@ -184,6 +184,13 @@ public:
 
     virtual ~MediaSource();
 
+    static void FfmpegInit();
+
+    static void LogSupportedVideoCodecs(bool pSendToLoggerOnly = false);
+    static void LogSupportedAudioCodecs(bool pSendToLoggerOnly = false);
+    static void LogSupportedInputFormats(bool pSendToLoggerOnly = false);
+    static void LogSupportedOutputFormats(bool pSendToLoggerOnly = false);
+
     virtual void ResetPacketStatistic();
 
     /* multiplexing */
@@ -198,10 +205,9 @@ public:
 
     /* codec identifier translation */
     static std::string CodecName2FfmpegName(std::string pName);
-    static enum CodecID FfmpegName2FfmpegId(std::string pName);
-    static std::string FfmpegName2FfmpegFormat(std::string pName);
-    static std::string FfmpegId2FfmpegFormat(enum CodecID pCodecId);
-    static enum MediaType FfmpegName2MediaType(std::string pName);
+    static enum CodecID GetCodecID(std::string pName);
+    static std::string GetCodecName(std::string pName); // input is format name
+    static std::string GetFormatName(enum CodecID pCodecId);
 
     /* audio */
     static int AudioQuality2BitRate(int pQuality);
@@ -260,6 +266,7 @@ public:
     virtual void StopRecording();
     virtual bool SupportsRecording();
     virtual bool IsRecording();
+    virtual int64_t RecordingTime(); // in seconds
 
     /* device control */
     virtual std::string GetSourceTypeStr();
@@ -398,6 +405,7 @@ protected:
     int64_t             mRecorderStartPts; // for synchronized playback we calculate the position within a media stream and write the value into PTS entry of an encoded packet
     bool                mRecorderRealTime;
     AVFrame             *mRecorderFinalFrame;
+    int64_t             mRecorderStart;
     /* device handling */
     std::string         mDesiredDevice;
     std::string         mCurrentDevice;
