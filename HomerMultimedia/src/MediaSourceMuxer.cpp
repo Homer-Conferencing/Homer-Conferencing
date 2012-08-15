@@ -1204,12 +1204,8 @@ void* MediaSourceMuxer::Run(void* pArgs)
             tVideoScaler = new VideoScaler();
             if(tVideoScaler == NULL)
                 LOG(LOG_ERROR, "Invalid video scaler instance, possible out of memory");
-            enum PixelFormat tTargetPixelFormat;
-            if (mStreamCodecId == CODEC_ID_MJPEG)
-                tTargetPixelFormat = PIX_FMT_YUVJ420P;
-            else
-                tTargetPixelFormat = PIX_FMT_YUV420P;
-            tVideoScaler->StartScaler(MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT, mSourceResX, mSourceResY, PIX_FMT_RGB32, mCurrentStreamingResX, mCurrentStreamingResY, tTargetPixelFormat);
+
+            tVideoScaler->StartScaler(MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT, mSourceResX, mSourceResY, PIX_FMT_RGB32, mCurrentStreamingResX, mCurrentStreamingResY, mCodecContext->pix_fmt);
 
             mEncoderFifoMutex.lock();
 
