@@ -401,7 +401,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
             return GRAB_RES_INVALID;
         }
 
-        int tAvailableFrames = mDecoderFifo->GetUsage();
+        int tAvailableFrames = (mDecoderFifo != NULL) ? mDecoderFifo->GetUsage() : 0;
 
         // missing input?
         if (tAvailableFrames == 0)
@@ -439,7 +439,20 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
         }
 
         // read chunk data from FIFO
-        mDecoderFifo->ReadFifo((char*)pChunkBuffer, pChunkSize);
+        if (mDecoderFifo != NULL)
+            mDecoderFifo->ReadFifo((char*)pChunkBuffer, pChunkSize);
+        else
+        {// decoder thread not started
+            // unlock grabbing
+            mGrabMutex.unlock();
+
+            // acknowledge "success"
+            MarkGrabChunkFailed(GetMediaTypeStr() + " source is not yet ready");
+
+            return GRAB_RES_INVALID;
+        }
+
+        // increase chunk number which will be the result of the grabbing call
         mChunkNumber++;
 
         // did we read an empty frame?
