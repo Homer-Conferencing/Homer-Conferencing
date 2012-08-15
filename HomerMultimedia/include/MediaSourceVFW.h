@@ -51,6 +51,9 @@ public:
     /* frame stats */
     virtual bool SupportsDecoderFrameStatistics();
 
+    /* video grabbing control */
+    virtual GrabResolutions GetSupportedVideoGrabResolutions();
+
     /* device control */
     virtual void getVideoDevices(VideoDevices &pVList);
 

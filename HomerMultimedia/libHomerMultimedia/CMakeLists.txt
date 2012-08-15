@@ -121,10 +121,10 @@ ENDIF (LINUX)
 # USED LIBRARIES for win32 environment
 SET (LIBS_WINDOWS_INSTALL
     avutil-51
-    avcodec-53
-    avdevice-53
-    avfilter-2
-    avformat-53
+    avcodec-54
+    avdevice-54
+    avfilter-3
+    avformat-54
     libgcc_s_dw2-1
     libstdc++-6
     portaudio
@@ -134,9 +134,10 @@ SET (LIBS_WINDOWS_INSTALL
 )
 SET (LIBS_WINDOWS
     avutil-51
-    avcodec-53
-    avformat-53
-    avdevice-53
+    avcodec-54
+    avfilter-3
+    avformat-54
+    avdevice-54
 	HomerBase
 	HomerGAPI
 	HomerMonitor
