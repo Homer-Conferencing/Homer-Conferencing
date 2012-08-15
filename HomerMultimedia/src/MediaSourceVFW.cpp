@@ -33,6 +33,7 @@
 #include <MediaSource.h>
 #include <ProcessStatisticService.h>
 #include <Logger.h>
+#include <Header_Ffmpeg.h>
 
 #include <cstdio>
 #include <string.h>
@@ -80,23 +81,6 @@ MediaSourceVFW::~MediaSourceVFW()
 bool MediaSourceVFW::SupportsDecoderFrameStatistics()
 {
     return (mMediaType == MEDIA_VIDEO);
-}
-
-GrabResolutions MediaSourceVFW::GetSupportedVideoGrabResolutions()
-{
-    VideoFormatDescriptor tFormat;
-
-    mSupportedVideoFormats.clear();
-
-    if (mMediaType == MEDIA_VIDEO)
-    {
-        tFormat.Name="CIF";        //      352 × 288
-        tFormat.ResX = 352;
-        tFormat.ResY = 288;
-        mSupportedVideoFormats.push_back(tFormat);
-    }
-
-    return mSupportedVideoFormats;
 }
 
 void MediaSourceVFW::getVideoDevices(VideoDevices &pVList)
@@ -196,7 +180,7 @@ void MediaSourceVFW::getVideoDevices(VideoDevices &pVList)
 bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 {
     int                 tResult;
-//    AVFormatParameters  tFormatParams;
+    AVDictionary        *tOptions = NULL;
     AVInputFormat       *tFormat;
     AVCodec             *tCodec;
 
@@ -214,16 +198,9 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     // set category for packet statistics
     ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 
-//    memset((void*)&tFormatParams, 0, sizeof(tFormatParams));
-//    tFormatParams.channel = 0;
-//    tFormatParams.standard = NULL;
-//    tFormatParams.time_base.num = 100;
-//    tFormatParams.time_base.den = (int)pFps * 100;
-//    LOG(LOG_VERBOSE, "Desired time_base: %d/%d (%3.2f)", tFormatParams.time_base.den, tFormatParams.time_base.num, pFps);
-//    tFormatParams.width = pResX;
-//    tFormatParams.height = pResY;
-//    tFormatParams.initial_pause = 0;
-//    tFormatParams.prealloced_context = 0;
+    av_dict_set(&tOptions, "video_size", (toString(pResX) + "x" + toString(pResY)).c_str(), 0);
+    av_dict_set(&tOptions, "framerate", toString((int)pFps).c_str(), 0);
+
     tFormat = av_find_input_format("vfwcap");
     if (tFormat == NULL)
     {
@@ -241,7 +218,7 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         //### probing given device file
         //########################################
         tResult = 0;
-        if ((tResult = avformat_open_input(&mFormatContext, (const char *)mDesiredDevice.c_str(), tFormat, NULL)) != 0)
+        if ((tResult = avformat_open_input(&mFormatContext, (const char *)mDesiredDevice.c_str(), tFormat, &tOptions)) != 0)
         {
             LOG(LOG_ERROR, "Couldn't open device \"%s\" because of \"%s\".", mDesiredDevice.c_str(), strerror(AVUNERROR(tResult)));
             return false;
@@ -260,7 +237,7 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         		LOG(LOG_VERBOSE, "Probing VFW device number: %d", i);
 				mDesiredDevice = (char)i + 48;
 				tResult = 0;
-				if ((tResult = avformat_open_input(&mFormatContext, (const char *)mDesiredDevice.c_str(), tFormat, NULL)) == 0)
+				if ((tResult = avformat_open_input(&mFormatContext, (const char *)mDesiredDevice.c_str(), tFormat, &tOptions)) == 0)
 				{
 					LOG(LOG_VERBOSE, " ..available device connected");
 					tFound = true;
@@ -459,13 +436,13 @@ int MediaSourceVFW::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                 LOG(LOG_VERBOSE, "      ..key frame: %d", mSourceFrame->key_frame);
                 switch(mSourceFrame->pict_type)
                 {
-                        case FF_I_TYPE:
+                        case AV_PICTURE_TYPE_I:
                             LOG(LOG_VERBOSE, "      ..picture type: i-frame");
                             break;
-                        case FF_P_TYPE:
+                        case AV_PICTURE_TYPE_P:
                             LOG(LOG_VERBOSE, "      ..picture type: p-frame");
                             break;
-                        case FF_B_TYPE:
+                        case AV_PICTURE_TYPE_B:
                             LOG(LOG_VERBOSE, "      ..picture type: b-frame");
                             break;
                         default:

@@ -29,6 +29,7 @@
 #include <MediaSource.h>
 #include <ProcessStatisticService.h>
 #include <Logger.h>
+#include <Header_Ffmpeg.h>
 
 #include <cstdio>
 #include <string.h>
@@ -192,7 +193,7 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 {
     FILE                *tFile;
     int                 tResult;
-    AVFormatParameters  tFormatParams;
+    AVDictionary        *tOptions = NULL;
     AVInputFormat       *tFormat;
     AVCodec             *tCodec;
     bool                tSelectedInputSupportsFps = false;
@@ -268,29 +269,20 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     //##################################################################################
     // ### begin to open the selected input from the selected device
     //##################################################################################
-    memset((void*)&tFormatParams, 0, sizeof(tFormatParams));
-    tFormatParams.channel = mDesiredInputChannel;
-    tFormatParams.standard = NULL;
+    av_dict_set(&tOptions, "channel", toString(mDesiredInputChannel).c_str(), 0);
+    av_dict_set(&tOptions, "video_size", (toString(pResX) + "x" + toString(pResY)).c_str(), 0);
     if (tSelectedInputSupportsFps)
-    {
-        tFormatParams.time_base.num = 100;
-        tFormatParams.time_base.den = (int)pFps * 100;
-    }else
-    {
-        tFormatParams.time_base.num = 0;
-        tFormatParams.time_base.den = 0;
-    }
-    LOG(LOG_VERBOSE, "Desired time_base: %d/%d (%3.2f)", tFormatParams.time_base.den, tFormatParams.time_base.num, pFps);
-    tFormatParams.width = pResX;
-    tFormatParams.height = pResY;
-    tFormatParams.initial_pause = 0;
-    tFormatParams.prealloced_context = 0;
+        av_dict_set(&tOptions, "framerate", toString((int)pFps).c_str(), 0);
+
     tFormat = av_find_input_format("video4linux2");
     if (tFormat == NULL)
     {
         LOG(LOG_ERROR, "Couldn't find input format");
         return false;
     }
+
+    // alocate new format context
+    mFormatContext = AV_NEW_FORMAT_CONTEXT();
 
     bool tFound = false;
     if (mDesiredDevice != "")
@@ -299,7 +291,7 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         //### probing given device file
         //########################################
         tResult = 0;
-        if (((tFile = fopen(mDesiredDevice.c_str(), "r")) == NULL) || (fclose(tFile) != 0) || ((tResult = av_open_input_file(&mFormatContext, mDesiredDevice.c_str(), tFormat, 0, &tFormatParams)) != 0))
+        if (((tFile = fopen(mDesiredDevice.c_str(), "r")) == NULL) || (fclose(tFile) != 0) || ((tResult = avformat_open_input(&mFormatContext, mDesiredDevice.c_str(), tFormat, &tOptions)) != 0))
         {
             if (tResult != 0)
                 LOG(LOG_ERROR, "Couldn't open device \"%s\" because of \"%s\".", mDesiredDevice.c_str(), strerror(AVUNERROR(tResult)));
@@ -324,7 +316,7 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         {
             tDesiredDevice = "/dev/video" + toString(i);
             tResult = 0;
-            if (((tFile = fopen(tDesiredDevice.c_str(), "r")) != NULL) && (fclose(tFile) == 0) && ((tResult = av_open_input_file(&mFormatContext, tDesiredDevice.c_str(), tFormat, 0, &tFormatParams)) == 0))
+            if (((tFile = fopen(tDesiredDevice.c_str(), "r")) != NULL) && (fclose(tFile) == 0) && ((tResult = avformat_open_input(&mFormatContext, tDesiredDevice.c_str(), tFormat, &tOptions)) == 0))
             {
                 //######################################################
                 //### retrieve stream information and find right stream
@@ -540,13 +532,13 @@ int MediaSourceV4L2::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
                 LOG(LOG_VERBOSE, "      ..key frame: %d", mSourceFrame->key_frame);
                 switch(mSourceFrame->pict_type)
                 {
-                        case FF_I_TYPE:
+                        case AV_PICTURE_TYPE_I:
                             LOG(LOG_VERBOSE, "      ..picture type: i-frame");
                             break;
-                        case FF_P_TYPE:
+                        case AV_PICTURE_TYPE_P:
                             LOG(LOG_VERBOSE, "      ..picture type: p-frame");
                             break;
-                        case FF_B_TYPE:
+                        case AV_PICTURE_TYPE_B:
                             LOG(LOG_VERBOSE, "      ..picture type: b-frame");
                             break;
                         default:

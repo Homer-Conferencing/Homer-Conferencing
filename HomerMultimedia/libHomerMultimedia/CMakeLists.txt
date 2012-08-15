@@ -219,6 +219,7 @@ ELSE ()
 		swresample
 		swscale
 		avutil
+		postproc
 		mp3lame
 		faac
 		opencore-amrnb
