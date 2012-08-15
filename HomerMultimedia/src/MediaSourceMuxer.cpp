@@ -365,6 +365,20 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     mCodecContext = tStream->codec;
     mCodecContext->codec_id = tFormat->video_codec;
     mCodecContext->codec_type = AVMEDIA_TYPE_VIDEO;
+
+    // do some extra modifications for H263+ to make it easier for streaming
+    if (tFormat->video_codec == CODEC_ID_H263P)
+    {
+        mCodecContext->flags |= CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED;
+
+        // old codec codext flag CODEC_FLAG_H263P_SLICE_STRUCT
+        av_dict_set(&tOptions, "structured_slices", "1", 0);
+        // old codec codext flag CODEC_FLAG_H263P_UMV
+        av_dict_set(&tOptions, "umv", "1", 0);
+        // old codec codext flag CODEC_FLAG_H263P_AIV
+        av_dict_set(&tOptions, "aiv", "1", 0);
+    }
+
     // put sample parameters
     mCodecContext->bit_rate = 90000;
 
@@ -470,8 +484,8 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     //mCodecContext->rate_emu = 1;
 
     // some formats want stream headers to be separate, but this produces some very small packets!
-//    if(mFormatContext->oformat->flags & AVFMT_GLOBALHEADER)
-//        mCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
+    if(mFormatContext->oformat->flags & AVFMT_GLOBALHEADER)
+        mCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
 
     mMediaStreamIndex = 0;
 
