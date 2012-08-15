@@ -2819,7 +2819,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 
 //    // Inform the codec that we can handle truncated bitstreams
 //    // bitstreams where sample boundaries can fall in the middle of packets
-//    if(tCodec->capabilities & CODEC_CAP_TRUNCATED)
+//    if ((mMediaType == MEDIA_VIDEO) && (tCodec->capabilities & CODEC_CAP_TRUNCATED))
 //        mCodecContext->flags |= CODEC_FLAG_TRUNCATED;
 
     //######################################################
