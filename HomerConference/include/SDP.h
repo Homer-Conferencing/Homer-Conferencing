@@ -54,7 +54,7 @@ namespace Homer { namespace Conference {
 #define CODEC_MPEG4                             64
 #define CODEC_THEORA                            128
 #define CODEC_VP8                               256
-#define CODEC_ALL                               0xFF
+#define CODEC_ALL                               0x1FF
 
 enum MediaTransportType{
 	MEDIA_TRANSPORT_UDP = 1,
