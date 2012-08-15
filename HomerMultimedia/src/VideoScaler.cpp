@@ -123,12 +123,16 @@ void VideoScaler::ReadFifo(char *pBuffer, int &pBufferSize)
 {
     if (mOutputFifo != NULL)
         mOutputFifo->ReadFifo(pBuffer, pBufferSize);
+    else
+        pBufferSize = 0;
 }
 
 void VideoScaler::ClearFifo()
 {
     if (mInputFifo != NULL)
         mInputFifo->ClearFifo();
+    if (mOutputFifo != NULL)
+        mOutputFifo->ClearFifo();
 }
 
 int VideoScaler::ReadFifoExclusive(char **pBuffer, int &pBufferSize)
@@ -158,10 +162,14 @@ int VideoScaler::GetEntrySize()
 
 int VideoScaler::GetUsage()
 {
+    int tResult = 0;
+
     if (mOutputFifo != NULL)
-        return mOutputFifo->GetUsage();
-    else
-        return 0;
+        tResult += mOutputFifo->GetUsage();
+    if (mInputFifo != NULL)
+        tResult += mInputFifo->GetUsage();
+
+    return tResult;
 }
 
 int VideoScaler::GetSize()
@@ -191,17 +199,17 @@ void* VideoScaler::Run(void* pArgs)
     // allocate chunk buffer
     tOutputBuffer = (uint8_t*)malloc(tOutputBufferSize);
 
-    // Allocate video frame for YUV format
+    // Allocate video frame
     if ((tOutputFrame = avcodec_alloc_frame()) == NULL)
     {
         // acknowledge failed"
         LOG(LOG_ERROR, "Out of video memory in avcodec_alloc_frame()");
     }
 
-    // Assign appropriate parts of buffer to image planes in tYUVFrame
+    // Assign appropriate parts of buffer to image planes in frame
     avpicture_fill((AVPicture *)tOutputFrame, (uint8_t *)tOutputBuffer, mTargetPixelFormat, mTargetResX, mTargetResY);
 
-    // Allocate video frame for RGB format
+    // Allocate video frame for format
     if ((tInputFrame = avcodec_alloc_frame()) == NULL)
     {
         // acknowledge failed"
@@ -229,9 +237,9 @@ void* VideoScaler::Run(void* pArgs)
                 //HINT: media type is always MEDIA_VIDEO here
 
                 // ####################################################################
-                // ### PREPARE RGB FRAME
+                // ### PREPARE INPUT FRAME
                 // ###################################################################
-                // Assign appropriate parts of buffer to image planes in tRGBFrame
+                // Assign appropriate parts of buffer to image planes in tInputFrame
                 avpicture_fill((AVPicture *)tInputFrame, (uint8_t *)tBuffer, mSourcePixelFormat, mSourceResX, mSourceResY);
 
                 // set frame number in corresponding entries within AVFrame structure
@@ -263,10 +271,10 @@ void* VideoScaler::Run(void* pArgs)
                 #endif
 
                 // ####################################################################
-                // ### SCALE RGB FRAME (CONVERT)
+                // ### SCALE FRAME (CONVERT)
                 // ###################################################################
                 int64_t tTime = Time::GetTimeStamp();
-                // convert fromn RGB to YUV420
+                // convert
                 HM_sws_scale(mScalerContext, tInputFrame->data, tInputFrame->linesize, 0, mSourceResY, tOutputFrame->data, tOutputFrame->linesize);
                 #ifdef MSM_DEBUG_TIMING
                     int64_t tTime2 = Time::GetTimeStamp();
@@ -276,7 +284,7 @@ void* VideoScaler::Run(void* pArgs)
                 //LOG(LOG_VERBOSE, "Video frame data: %p, %p, %p, %p", tYUVFrame->data[0], tYUVFrame->data[1], tYUVFrame->data[2], tYUVFrame->data[3]);
                 //LOG(LOG_VERBOSE, "Video frame line size: %d, %d, %d, %d", tYUVFrame->linesize[0], tYUVFrame->linesize[1], tYUVFrame->linesize[2], tYUVFrame->linesize[3]);
 
-                // size of scaled YUV frame
+                // size of scaled output frame
                 tCurrentChunkSize = avpicture_get_size(mTargetPixelFormat, mTargetResX, mTargetResY);
 
                 #ifdef VS_DEBUG_PACKETS
@@ -363,10 +371,10 @@ void* VideoScaler::Run(void* pArgs)
     // free the software scaler context
     sws_freeContext(mScalerContext);
 
-    // Free the RGB frame
+    // Free the frame
     av_free(tInputFrame);
 
-    // Free the YUV frame
+    // Free the frame
     av_free(tOutputFrame);
 
     // free the output buffer
