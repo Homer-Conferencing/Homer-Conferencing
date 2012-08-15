@@ -180,6 +180,8 @@ private:
     QTime                       mStartTime;
     /* network simulator */
     NetworkSimulator            *mNetworkSimulator;
+    /* playback */
+    Homer::Multimedia::WaveOut *mWaveOut;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

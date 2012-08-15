@@ -765,7 +765,7 @@ void AudioWidget::customEvent(QEvent* pEvent)
 //###################### WORKER ######################################
 //####################################################################
 AudioWorkerThread::AudioWorkerThread(MediaSource *pAudioSource, AudioWidget *pAudioWidget):
-    MediaSourceGrabberThread(pAudioSource)
+    MediaSourceGrabberThread(pAudioSource), AudioPlayback()
 {
     LOG(LOG_VERBOSE, "..Creating audio worker");
     mStartPlaybackAsap = false;
@@ -777,7 +777,6 @@ AudioWorkerThread::AudioWorkerThread(MediaSource *pAudioSource, AudioWidget *pAu
     mUserAVDrift = 0;
     mVideoDelayAVDrift = 0;
     mAudioPlaybackDelayCount = 0;
-    mWaveOut = NULL;
     if (pAudioSource == NULL)
         LOG(LOG_ERROR, "Audio source is NULL");
     mAudioWidget = pAudioWidget;
@@ -801,41 +800,18 @@ void AudioWorkerThread::OpenPlaybackDevice()
         mSampleNumber[i] = 0;
     }
 
-    LOG(LOG_VERBOSE, "Going to open playback device");
+    AudioPlayback::OpenPlaybackDevice();
 
-    if (CONF.AudioOutputEnabled())
-    {
-        #ifndef APPLE
-            mWaveOut = new WaveOutPortAudio(CONF.GetLocalAudioSink().toStdString());
-        #else
-            mWaveOut = new WaveOutSdl(CONF.GetLocalAudioSink().toStdString());
-        #endif
-        if (mWaveOut != NULL)
-            mWaveOut->OpenWaveOutDevice();
-        else
-            LOG(LOG_ERROR, "Error when allocatin wave out instance");
-    }
     mPlaybackAvailable = true;
-    LOG(LOG_VERBOSE, "Finished to open playback device");
 }
 
 void AudioWorkerThread::ClosePlaybackDevice()
 {
-    LOG(LOG_VERBOSE, "Going to close playback device");
-
-    mPlaybackAvailable = false;
-
-    if (mWaveOut != NULL)
-    {
-        // close the audio output
-        delete mWaveOut;
-    }
+    AudioPlayback::ClosePlaybackDevice();
 
     LOG(LOG_VERBOSE, "Releasing audio buffers");
     for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
         mMediaSource->FreeChunkBuffer(mSamples[i]);
-
-    LOG(LOG_VERBOSE, "Finished to close playback device");
 }
 
 void AudioWorkerThread::ToggleMuteState(bool pState)

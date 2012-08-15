@@ -40,6 +40,7 @@
 #include <QQueue>
 #include <QList>
 
+#include <AudioPlayback.h>
 #include <MediaSourceGrabberThread.h>
 #include <MediaSource.h>
 #include <WaveOut.h>
@@ -124,7 +125,7 @@ private:
 };
 
 class AudioWorkerThread:
-    public MediaSourceGrabberThread
+    public MediaSourceGrabberThread, AudioPlayback
 {
     Q_OBJECT;
 public:
@@ -160,8 +161,8 @@ public slots:
 private:
     /* audio playback */
     void ResetPlayback();
-    void OpenPlaybackDevice();
-    void ClosePlaybackDevice();
+    virtual void OpenPlaybackDevice();
+    virtual void ClosePlaybackDevice();
 
     virtual void DoPlayNewFile();
     virtual void DoSetCurrentDevice();
@@ -193,8 +194,6 @@ private:
     int                 mDesiredInputChannel;
     bool				mStartPlaybackAsap;
     bool				mStopPlaybackAsap;
-    /* playback */
-    Homer::Multimedia::WaveOut *mWaveOut;
     /* A/V synch. */
     float               mUserAVDrift;
     float               mVideoDelayAVDrift;

@@ -83,7 +83,7 @@ namespace Homer { namespace Gui {
 ///////////////////////////////////////////////////////////////////////////////
 
 ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow, OverviewContactsWidget *pContactsWidget, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer, MediaSourceMuxer *pAudioSourceMuxer, QString pParticipant):
-    QDockWidget(pMainWindow)
+    QDockWidget(pMainWindow), AudioPlayback()
 {
     LOG(LOG_VERBOSE, "Creating new participant widget..");
     OpenPlaybackDevice();
@@ -98,7 +98,6 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
     mRemoteVideoPort = 0;
     mRemoteAudioPort = 0;
     mTimeOfLastAVSynch = Time::GetTimeStamp();
-    mWaveOut = NULL;
     mCallBox = NULL;
     mVideoSourceMuxer = pVideoSourceMuxer;
     mAudioSourceMuxer = pAudioSourceMuxer;
@@ -313,38 +312,6 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
         setVisible(CONF.GetVisibilityBroadcastWidget());
 
     mTimerId = startTimer(STREAM_POS_UPDATE_DELAY);
-}
-
-void ParticipantWidget::OpenPlaybackDevice()
-{
-    LOG(LOG_VERBOSE, "Going to open playback device");
-
-    if (CONF.AudioOutputEnabled())
-    {
-        #ifndef APPLE
-            mWaveOut = new WaveOutPortAudio(CONF.GetLocalAudioSink().toStdString());
-        #else
-            mWaveOut = new WaveOutSdl(CONF.GetLocalAudioSink().toStdString());
-        #endif
-        if (mWaveOut == NULL)
-            LOG(LOG_ERROR, "Error when creating wave out object");
-        else
-            mWaveOut->OpenWaveOutDevice();
-    }
-    LOG(LOG_VERBOSE, "Finished to open playback device");
-}
-
-void ParticipantWidget::ClosePlaybackDevice()
-{
-    LOG(LOG_VERBOSE, "Going to close playback device at %p", mWaveOut);
-
-    if (mWaveOut != NULL)
-    {
-        // close the audio out
-        delete mWaveOut;
-    }
-
-    LOG(LOG_VERBOSE, "Finished to close playback device");
 }
 
 void ParticipantWidget::closeEvent(QCloseEvent* pEvent)
@@ -599,15 +566,11 @@ void ParticipantWidget::HandleMessage(bool pIncoming, QString pSender, QString p
     if (mMessageWidget != NULL)
     {
         mMessageWidget->AddMessage(pSender, pMessage);
-        if (mWaveOut != NULL)
+        if (pIncoming)
         {
-            if (pIncoming)
+            if (CONF.GetImSound())
             {
-                if (CONF.GetImSound())
-                {
-                    if (!mWaveOut->PlayFile(CONF.GetImSoundFile().toStdString()))
-                        LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetImSoundFile().toStdString().c_str());
-                }
+                StartAudioPlayback(CONF.GetImSoundFile());
             }
         }
     }
@@ -682,16 +645,12 @@ void ParticipantWidget::HandleCallRinging(bool pIncoming)
 
     ShowNewState();
 
-    if (mWaveOut != NULL)
+    if (pIncoming)
     {
-        if (pIncoming)
-		{
-            if (CONF.GetCallAcknowledgeSound())
-            {
-                if (!mWaveOut->PlayFile(CONF.GetCallAcknowledgeSoundFile().toStdString()))
-                    LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetCallAcknowledgeSoundFile().toStdString().c_str());
-            }
-		}
+        if (CONF.GetCallAcknowledgeSound())
+        {
+            StartAudioPlayback(CONF.GetCallAcknowledgeSoundFile());
+        }
     }
 }
 
@@ -716,16 +675,12 @@ void ParticipantWidget::HandleCall(bool pIncoming, QString pRemoteApplication)
         mCallBox = new QMessageBox(QMessageBox::Question, "Incoming call from application " + pRemoteApplication, "Do you want to accept the incoming call from " + mSessionName + "?", QMessageBox::Yes | QMessageBox::Cancel, this);
 
         // start sound output
-        if (mWaveOut != NULL)
+        if (pIncoming)
         {
-            if (pIncoming)
+            if (CONF.GetCallSound())
             {
-                if (CONF.GetCallSound())
-                {
-                    if (!mWaveOut->PlayFile(CONF.GetCallSoundFile().toStdString(), SOUND_LOOPS_FOR_CALL))
-                        LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetCallSoundFile().toStdString().c_str());
-                }
-			}
+                StartAudioPlayback(CONF.GetCallSoundFile(), SOUND_LOOPS_FOR_CALL);
+            }
         }
 
         if (mCallBox->exec() == QMessageBox::Yes)
@@ -752,16 +707,12 @@ void ParticipantWidget::HandleCallCancel(bool pIncoming)
 
     CallStopped(pIncoming);
 
-    if (mWaveOut != NULL)
+    if (pIncoming)
     {
-        if (pIncoming)
+        if (CONF.GetCallHangupSound())
         {
-            if (CONF.GetCallHangupSound())
-            {
-                if (!mWaveOut->PlayFile(CONF.GetCallHangupSoundFile().toStdString()))
-                    LOG(LOG_ERROR, "Was unable to play the file \"%s\".",  CONF.GetCallHangupSoundFile().toStdString().c_str());
-            }
-		}
+            StartAudioPlayback(CONF.GetCallHangupSoundFile());
+        }
     }
 }
 
@@ -776,16 +727,12 @@ void ParticipantWidget::HandleCallHangup(bool pIncoming)
 
     CallStopped(pIncoming);
 
-    if (mWaveOut != NULL)
+    if (pIncoming)
     {
-        if (pIncoming)
+        if (CONF.GetCallHangupSound())
         {
-            if (CONF.GetCallHangupSound())
-            {
-                if (!mWaveOut->PlayFile(CONF.GetCallHangupSoundFile().toStdString()))
-                    LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetCallHangupSoundFile().toStdString().c_str());
-            }
-		}
+            StartAudioPlayback(CONF.GetCallHangupSoundFile());
+        }
     }
 }
 
@@ -800,16 +747,12 @@ void ParticipantWidget::HandleCallTermination(bool pIncoming)
 
     CallStopped(pIncoming);
 
-    if (mWaveOut != NULL)
+    if (pIncoming)
     {
-        if (pIncoming)
+        if (CONF.GetErrorSound())
         {
-            if (CONF.GetErrorSound())
-            {
-                if (!mWaveOut->PlayFile(CONF.GetErrorSoundFile().toStdString()))
-                    LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetErrorSoundFile().toStdString().c_str());
-            }
-		}
+            StartAudioPlayback(CONF.GetErrorSoundFile());
+        }
     }
 }
 
@@ -874,16 +817,12 @@ void ParticipantWidget::HandleCallUnavailable(bool pIncoming, int pStatusCode, Q
     }else
     	CallStopped(pIncoming);
 
-    if (mWaveOut != NULL)
+    if (pIncoming)
     {
-        if (pIncoming)
+        if (CONF.GetErrorSound())
         {
-            if (CONF.GetErrorSound())
-            {
-                if (!mWaveOut->PlayFile(CONF.GetErrorSoundFile().toStdString()))
-                    LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetErrorSoundFile().toStdString().c_str());
-            }
-		}
+            StartAudioPlayback(CONF.GetErrorSoundFile());
+        }
     }
 }
 
@@ -903,13 +842,9 @@ void ParticipantWidget::HandleCallDenied(bool pIncoming)
 
     if (pIncoming)
     {
-        if (mWaveOut != NULL)
+        if (CONF.GetCallDenySound())
         {
-            if (CONF.GetCallDenySound())
-            {
-                if (!mWaveOut->PlayFile(CONF.GetCallDenySoundFile().toStdString()))
-                    LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetCallDenySoundFile().toStdString().c_str());
-            }
+            StartAudioPlayback(CONF.GetCallDenySoundFile());
         }
     }
 }
@@ -952,8 +887,7 @@ void ParticipantWidget::HandleCallAccept(bool pIncoming)
         {
             if (CONF.GetCallAcknowledgeSound())
             {
-                if (!mWaveOut->PlayFile(CONF.GetCallAcknowledgeSoundFile().toStdString()))
-                    LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetCallAcknowledgeSoundFile().toStdString().c_str());
+                StartAudioPlayback(CONF.GetCallAcknowledgeSoundFile());
             }
         }
     }

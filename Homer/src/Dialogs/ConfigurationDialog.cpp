@@ -65,11 +65,10 @@ QStringList      ConfigurationDialog::mSipServerList;
 ///////////////////////////////////////////////////////////////////////////////
 
 ConfigurationDialog::ConfigurationDialog(QWidget* pParent, list<string>  pLocalAdresses, VideoWorkerThread* pVideoWorker, AudioWorkerThread* pAudioWorker):
-    QDialog(pParent)
+    QDialog(pParent), AudioPlayback()
 {
     mHttpGetStunServerList = NULL;
     mHttpGetSipServerList = NULL;
-    mWaveOut = NULL;
     mVideoWorker = pVideoWorker;
     mAudioWorker = pAudioWorker;
     mLocalAdresses = pLocalAdresses;
@@ -752,41 +751,6 @@ void ConfigurationDialog::ToggleSipServerPasswordVisibility()
         mLeSipPassword->setEchoMode(QLineEdit::Normal);
 }
 
-void ConfigurationDialog::OpenPlaybackDevice()
-{
-    LOG(LOG_VERBOSE, "Going to open playback device");
-
-    if (CONF.AudioOutputEnabled())
-    {
-        #ifndef APPLE
-    		LOG(LOG_VERBOSE, "Opening PortAudio based playback");
-            mWaveOut = new WaveOutPortAudio(CONF.GetLocalAudioSink().toStdString());
-        #else
-    		LOG(LOG_VERBOSE, "Opening SDL based playback");
-            mWaveOut = new WaveOutSdl(CONF.GetLocalAudioSink().toStdString());
-        #endif
-        if (mWaveOut != NULL)
-            mWaveOut->OpenWaveOutDevice();
-        else
-            LOG(LOG_ERROR, "Error when allocating wave out instance");
-    }
-    LOG(LOG_VERBOSE, "Finished to open playback device, playback object at %p", mWaveOut);
-}
-
-void ConfigurationDialog::ClosePlaybackDevice()
-{
-    LOG(LOG_VERBOSE, "Going to close playback device");
-
-    // close the audio out
-    if (mWaveOut != NULL)
-    {
-        mWaveOut->CloseWaveOutDevice();
-        delete mWaveOut;
-    }
-
-    LOG(LOG_VERBOSE, "Finished to close playback device");
-}
-
 QString ConfigurationDialog::SelectSoundFile(QString pEventName, QString pSuggestion)
 {
     if (!QFile::exists(pSuggestion))
@@ -916,17 +880,9 @@ void ConfigurationDialog::SelectNotifySoundFileForRegistrationSuccessful()
 
 void ConfigurationDialog::PlayNotifySoundFile(QString pFile)
 {
-    if (mWaveOut != NULL)
-    {
-        if (pFile != "")
-        {
-            LOG(LOG_VERBOSE, "Playing sound file: %s", pFile.toStdString().c_str());
-            if (!mWaveOut->PlayFile(pFile.toStdString()))
-                ShowError("Failed to play file", "Was unable to play the file \"" + pFile + "\".");
-        }else
-        	LOG(LOG_WARN, "Cannot play sound file because file name is empty");
-    }else
-    	LOG(LOG_VERBOSE, "Cannot play sound file %s because wave out is not available", pFile.toStdString().c_str());
+    LOG(LOG_VERBOSE, "Playing sound file: %s", pFile.toStdString().c_str());
+    if (!StartAudioPlayback(pFile))
+        ShowError("Failed to play file", "Was unable to play the file \"" + pFile + "\".");
 }
 
 void ConfigurationDialog::PlayNotifySoundFileForStart()

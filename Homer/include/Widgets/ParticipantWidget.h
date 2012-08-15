@@ -33,6 +33,8 @@
 #include <Widgets/PlaybackSlider.h>
 #include <Widgets/SessionInfoWidget.h>
 #include <Widgets/VideoWidget.h>
+#include <AudioPlayback.h>
+
 #include <MediaSourceMuxer.h>
 #include <Widgets/AudioWidget.h>
 #include <MediaSourceMuxer.h>
@@ -101,6 +103,7 @@ public:
 class MainWindow;
 class ParticipantWidget:
     public QDockWidget,
+    AudioPlayback,
     public Ui_ParticipantWidget
 {
     Q_OBJECT;
@@ -150,8 +153,6 @@ private slots:
 	friend class PlaybackSlider;
 
 private:
-    void OpenPlaybackDevice();
-    void ClosePlaybackDevice();
 	void Init(OverviewContactsWidget *pContactsWidget, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, QString pParticipant);
     void FindSipInterface(QString pSessionName);
     virtual void contextMenuEvent(QContextMenuEvent *event);
@@ -196,8 +197,6 @@ private:
     Socket				*mVideoSendSocket, *mAudioSendSocket, *mVideoReceiveSocket, *mAudioReceiveSocket;
     int                 mTimerId;
     int					mMovieSliderPosition;
-    /* playback */
-    Homer::Multimedia::WaveOut *mWaveOut;
     /* A/V synch. */
     int64_t				mTimeOfLastAVSynch;
     int 				mContinuousAVAsync;

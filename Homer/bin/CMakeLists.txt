@@ -118,6 +118,7 @@ ENDIF (WIN32)
 ##############################################################
 # SOURCES 
 SET (SOURCES
+	../src/AudioPlayback
 	../src/Configuration
 	../src/ContactsManager
 	../src/FileTransfersManager
