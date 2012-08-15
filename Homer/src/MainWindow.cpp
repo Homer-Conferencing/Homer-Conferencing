@@ -141,6 +141,13 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     initializeNetworkSimulator(tArguments);
     // delayed call to register at Stun and Sip server
     QTimer::singleShot(2000, this, SLOT(registerAtStunSipServer()));
+
+    // audio playback - start sound
+    //#ifdef RELEASE_VERSION
+        OpenPlaybackDevice();
+        if (CONF.GetStartSound())
+            StartAudioPlayback(CONF.GetStartSoundFile());
+    //#endif
 }
 
 MainWindow::~MainWindow()
@@ -718,6 +725,22 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
 
     LOG(LOG_VERBOSE, "Got signal for closing main window");
 
+    // audio playback - start sound
+    //#ifdef RELEASE_VERSION
+        if (CONF.GetStopSound())
+            StartAudioPlayback(CONF.GetStopSoundFile());
+        if (mWaveOut != NULL)
+        {
+            // wait for the end of playback
+            while(mWaveOut->IsPlaying())
+            {
+                LOG(LOG_VERBOSE, "Waiting for the end of acoustic notification");
+                Thread::Suspend(250 * 1000);
+            }
+        }
+    //#endif
+    ClosePlaybackDevice();
+
     // remove ourself as observer for new Meeting events
     MEETING.DeleteObserver(this);
 
@@ -799,7 +822,7 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
     LOG(LOG_VERBOSE, "..destroying system tray icon");
     delete mSysTrayIcon;
 
-	//HINT: mSourceDesktop will be deleted by VideoWidget which grabbed from there
+    //HINT: mSourceDesktop will be deleted by VideoWidget which grabbed from there
 
     // make sure this main window will be deleted when control returns to Qt event loop (needed especially in case of closeEvent comes from fullscreen video widget)
     deleteLater();

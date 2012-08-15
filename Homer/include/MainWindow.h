@@ -44,6 +44,7 @@
 #include <Widgets/OverviewPlaylistWidget.h>
 #include <Widgets/ParticipantWidget.h>
 #include <Widgets/VideoWidget.h>
+#include <AudioPlayback.h>
 #include <Meeting.h>
 #include <MeetingEvents.h>
 
@@ -74,7 +75,9 @@ using namespace Homer::Conference;
 #define SCREEN_CAPTURE_FPS					15
 
 ///////////////////////////////////////////////////////////////////////////////
-class MainWindow: public QMainWindow,
+class MainWindow:
+        public QMainWindow,
+        AudioPlayback,
         public Ui_MainWindow,
         public MeetingObserver
 {
@@ -180,8 +183,6 @@ private:
     QTime                       mStartTime;
     /* network simulator */
     NetworkSimulator            *mNetworkSimulator;
-    /* playback */
-    Homer::Multimedia::WaveOut *mWaveOut;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
