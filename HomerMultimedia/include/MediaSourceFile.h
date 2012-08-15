@@ -43,6 +43,7 @@ namespace Homer { namespace Multimedia {
 
 // the following de/activates debugging of received packets
 //#define MSF_DEBUG_SEEKING
+//#define MSF_DEBUG_CALIBRATION
 //#define MSF_DEBUG_PACKETS
 //#define MSF_DEBUG_TIMING
 //#define MSF_DEBUG_DECODER_STATE
