@@ -25,10 +25,6 @@
  * Since:   2010-10-19
  */
 
-//##############################################################################################################
-// DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED
-//##############################################################################################################
-
 #include <MediaSourceVFW.h>
 #include <MediaSource.h>
 #include <ProcessStatisticService.h>
