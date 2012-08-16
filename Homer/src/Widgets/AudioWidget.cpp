@@ -64,8 +64,8 @@ using namespace Homer::Monitor;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// how many audio buffers do we await before we start audio playback?
-#define AUDIO_INITIAL_MINIMUM_PLAYBACK_QUEUE        2
+// how many audio buffers do we allow for audio playback?
+#define AUDIO_MAX_PLAYBACK_QUEUE                            2
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -772,11 +772,9 @@ AudioWorkerThread::AudioWorkerThread(MediaSource *pAudioSource, AudioWidget *pAu
     mStopPlaybackAsap = false;
     mAudioOutMuted = false;
     mPlaybackAvailable = false;
-    mPaused = false;
     mSourceAvailable = false;
     mUserAVDrift = 0;
     mVideoDelayAVDrift = 0;
-    mAudioPlaybackDelayCount = 0;
     if (pAudioSource == NULL)
         LOG(LOG_ERROR, "Audio source is NULL");
     mAudioWidget = pAudioWidget;
@@ -971,6 +969,12 @@ void AudioWorkerThread::DoPlayNewFile()
     mPaused = false;
 }
 
+void AudioWorkerThread::DoSeek()
+{
+    MediaSourceGrabberThread::DoSeek();
+    ResetPlayback();
+}
+
 void AudioWorkerThread::DoSyncClock()
 {
     LOG(LOG_VERBOSE, "DoSyncClock now...");
@@ -987,7 +991,7 @@ void AudioWorkerThread::DoSyncClock()
     }
     mEofReached = false;
     mSyncClockAsap = false;
-    //ResetPlayback();
+    ResetPlayback();
     mSeekAsap = false;
 
     // unlock
@@ -1092,32 +1096,14 @@ void AudioWorkerThread::ResetPlayback()
 
 void AudioWorkerThread::DoStartPlayback()
 {
-    // are we already waiting for some initial audio buffers?
-    if (mAudioPlaybackDelayCount > 1)
-    {
-        LOG(LOG_VERBOSE, "Waiting for %d initial audio buffers", mAudioPlaybackDelayCount);
-        mStartPlaybackAsap = true;
-        return;
-    }
-
-    // if audio was muted we have to wait for an initial time
-    if ((mWaveOut != NULL) && (!mWaveOut->IsPlaying()) && (mAudioPlaybackDelayCount == 0))
-    {
-    	LOG(LOG_VERBOSE, "Wait for %d audio buffers before audio playback will start", AUDIO_INITIAL_MINIMUM_PLAYBACK_QUEUE);
-        mAudioPlaybackDelayCount = AUDIO_INITIAL_MINIMUM_PLAYBACK_QUEUE;
-        mStartPlaybackAsap = true;
-        return;
-    }
-
     // okay don't have to wait, time to start playback
-    LOG(LOG_VERBOSE, "DoStartPlayback now...(playing: %d, delay count: %d)", (mWaveOut != NULL) ? mWaveOut->IsPlaying() : false, mAudioPlaybackDelayCount);
+    LOG(LOG_VERBOSE, "DoStartPlayback now...(playing: %d)", (mWaveOut != NULL) ? mWaveOut->IsPlaying() : false);
     mStartPlaybackAsap = false;
     if (mPlaybackAvailable)
     {
         if (mWaveOut != NULL)
             mWaveOut->Play();
     }
-    mAudioPlaybackDelayCount = 0;
     mAudioOutMuted = false;
 }
 
@@ -1258,12 +1244,8 @@ void AudioWorkerThread::run()
 			tSampleNumber = mMediaSource->GrabChunk(mSamples[mSampleGrabIndex], tSamplesSize, mDropSamples);
             mSamplesSize[mSampleGrabIndex] = tSamplesSize;
 			mEofReached = (tSampleNumber == GRAB_RES_EOF);
-            if (!mEofReached)
-            {
-                if ((mAudioPlaybackDelayCount) && (tSampleNumber >= 0))
-                    mAudioPlaybackDelayCount--;
-            }else
-            {
+            if (mEofReached)
+            {// EOF
                 mSourceAvailable = false;
                 LOG(LOG_WARN, "Got EOF signal from audio source, marking audio source as unavailable");
             }
@@ -1275,6 +1257,7 @@ void AudioWorkerThread::run()
 			{
 			    if (mWaveOut != NULL)
 			        mWaveOut->WriteChunk(mSamples[mSampleGrabIndex], tSamplesSize);
+			    mWaveOut->LimitQueue(AUDIO_MAX_PLAYBACK_QUEUE);
 			}else
 			{
 				#ifdef DEBUG_AUDIOWIDGET_PERFORMANCE

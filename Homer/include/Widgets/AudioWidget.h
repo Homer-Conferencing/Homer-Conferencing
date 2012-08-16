@@ -167,6 +167,7 @@ private:
     virtual void DoPlayNewFile();
     virtual void DoSetCurrentDevice();
     virtual void DoResetMediaSource();
+    virtual void DoSeek();
     virtual void DoSyncClock();
 
     /* audio playback */
@@ -183,7 +184,6 @@ private:
     bool                mDropSamples;
     int                 mResultingSps;
     bool                mAudioOutMuted;
-    int                 mAudioPlaybackDelayCount;
     bool				mEofReached;
     bool				mPaused;
     bool				mSourceAvailable;
