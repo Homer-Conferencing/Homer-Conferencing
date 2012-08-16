@@ -143,11 +143,11 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     QTimer::singleShot(2000, this, SLOT(registerAtStunSipServer()));
 
     // audio playback - start sound
-    //#ifdef RELEASE_VERSION
+    #ifndef DEBUG_VERSION
         OpenPlaybackDevice();
         if (CONF.GetStartSound())
             StartAudioPlayback(CONF.GetStartSoundFile());
-    //#endif
+    #endif
 }
 
 MainWindow::~MainWindow()
@@ -725,8 +725,8 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
 
     LOG(LOG_VERBOSE, "Got signal for closing main window");
 
-    // audio playback - start sound
-    //#ifdef RELEASE_VERSION
+    // audio playback - stop sound
+    #ifndef DEBUG_VERSION
         if (CONF.GetStopSound())
             StartAudioPlayback(CONF.GetStopSoundFile());
         if (mWaveOut != NULL)
@@ -738,7 +738,7 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
                 Thread::Suspend(250 * 1000);
             }
         }
-    //#endif
+    #endif
     ClosePlaybackDevice();
 
     // remove ourself as observer for new Meeting events
