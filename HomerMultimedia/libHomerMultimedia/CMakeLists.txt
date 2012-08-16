@@ -91,7 +91,8 @@ SET (SOURCES
 IF (WIN32)
 SET (SOURCES
 	${SOURCES}
-	#TODO: ../src/MediaSourceDShow
+	../src/MediaSourceMMSys
+	../src/MediaSourceDShow
 	../src/MediaSourceVFW
 )
 ENDIF (WIN32)
@@ -145,6 +146,7 @@ SET (LIBS_WINDOWS
     swscale-2
 	ws2_32
 	Avicap32
+	Winmm
 	SDL
 )
 

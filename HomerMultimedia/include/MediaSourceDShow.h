@@ -20,33 +20,34 @@
  *****************************************************************************/
 
 /*
- * Purpose: ffmpeg based local VFW video media source
+ * Purpose: DirectShow based local video media source
  * Author:  Thomas Volkert
- * Since:   2010-10-19
+ * Since:   2012-08-16
  */
 
 #ifdef WIN32
-#ifndef _MULTIMEDIA_MEDIA_SOURCE_VFW_
-#define _MULTIMEDIA_MEDIA_SOURCE_VFW_
+#ifndef _MULTIMEDIA_MEDIA_SOURCE_DSHOW_
+#define _MULTIMEDIA_MEDIA_SOURCE_DSHOW_
 
 #include <MediaSource.h>
+#include <string>
 
 namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
 
 // de/activate debugging of grabbed packets
-//#define MSVFW_DEBUG_PACKETS
+//#define MSDS_DEBUG_PACKETS
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class MediaSourceVFW:
+class MediaSourceDShow:
     public MediaSource
 {
 public:
-    MediaSourceVFW(std::string pDesiredDevice = "");
+	MediaSourceDShow(std::string pDesiredDevice = "");
 
-    virtual ~MediaSourceVFW();
+    virtual ~MediaSourceDShow();
 
     /* frame stats */
     virtual bool SupportsDecoderFrameStatistics();
@@ -68,10 +69,6 @@ public:
     virtual int GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk = false);
 
 private:
-    bool				mDeviceAvailable[10];
-	//HINT: We use an internal cache, which describes available VFW devices. The cache is used for every second and further device query.
-	//		Without this cache every direct device query would lead to repeating VFW dialogues, which have to be acknowledged by the user.
-	VideoDevices		mFoundVFWDevices;
     /* video decoding */
     AVFrame             *mSourceFrame;
     AVFrame             *mRGBFrame;

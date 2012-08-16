@@ -25,10 +25,6 @@
  * Since:   2010-10-19
  */
 
-//##############################################################################################################
-// DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED
-//##############################################################################################################
-
 #include <MediaSourceVFW.h>
 #include <MediaSource.h>
 #include <ProcessStatisticService.h>
@@ -60,9 +56,6 @@ MediaSourceVFW::MediaSourceVFW(string pDesiredDevice):
     mSourceType = SOURCE_DEVICE;
     // set category for packet statistics
     ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
-
-    mCurrentInputChannel = 0;
-    mDesiredInputChannel = 0;
 
     bool tNewDeviceSelected = false;
     SelectDevice(pDesiredDevice, MEDIA_VIDEO, tNewDeviceSelected);
@@ -151,9 +144,6 @@ void MediaSourceVFW::getVideoDevices(VideoDevices &pVList)
 				DestroyWindow(tWinHandle);
 				continue;
 			}
-			// see http://msdn.microsoft.com/de-de/library/dd183376.aspx
-			mFramesAreUpsideDown[i] = (tInfo.bmiHeader.biHeight > 0);
-			LOG(LOG_INFO, "  ..pictures are upside down: %d", mFramesAreUpsideDown[i]);
 
 			DestroyWindow(tWinHandle);
 
@@ -211,13 +201,15 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if ((mDesiredDevice == "") || (mDesiredDevice == "auto") || (mDesiredDevice == "automatic"))
         mDesiredDevice = "";
 
+    // alocate new format context
+    mFormatContext = AV_NEW_FORMAT_CONTEXT();
+
     LOG(LOG_VERBOSE, "Going to open input device..");
     if (mDesiredDevice != "")
     {
         //########################################
         //### probing given device file
         //########################################
-        tResult = 0;
         if ((tResult = avformat_open_input(&mFormatContext, (const char *)mDesiredDevice.c_str(), tFormat, &tOptions)) != 0)
         {
             LOG(LOG_ERROR, "Couldn't open device \"%s\" because of \"%s\".", mDesiredDevice.c_str(), strerror(AVUNERROR(tResult)));
@@ -236,7 +228,6 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         	{
         		LOG(LOG_VERBOSE, "Probing VFW device number: %d", i);
 				mDesiredDevice = (char)i + 48;
-				tResult = 0;
 				if ((tResult = avformat_open_input(&mFormatContext, (const char *)mDesiredDevice.c_str(), tFormat, &tOptions)) == 0)
 				{
 					LOG(LOG_VERBOSE, " ..available device connected");
@@ -274,8 +265,6 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     //### seek to the current position and drop data received during codec auto detection phase
     //##########################################################################################
     //av_seek_frame(mFormatContext, mMediaStreamIndex, mFormatContext->streams[mMediaStreamIndex]->cur_dts, AVSEEK_FLAG_ANY);
-
-    mFirstPixelformatError = true;
 
     // Allocate video frame for source and RGB format
     if ((mSourceFrame = avcodec_alloc_frame()) == NULL)
