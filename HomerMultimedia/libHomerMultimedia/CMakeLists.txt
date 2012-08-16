@@ -91,7 +91,7 @@ SET (SOURCES
 IF (WIN32)
 SET (SOURCES
 	${SOURCES}
-	#TODO: ../src/MediaSourceDShow
+	../src/MediaSourceDShow
 	../src/MediaSourceVFW
 )
 ENDIF (WIN32)

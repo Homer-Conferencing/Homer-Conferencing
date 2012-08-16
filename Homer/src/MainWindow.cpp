@@ -49,7 +49,7 @@
 #include <Meeting.h>
 #include <MediaSourcePortAudio.h>
 #include <MediaSourceV4L2.h>
-//#include <MediaSourceDShow.h>
+#include <MediaSourceDShow.h>
 #include <MediaSourceVFW.h>
 #include <MediaSourceCoreVideo.h>
 #include <MediaSourceMuxer.h>
@@ -384,8 +384,13 @@ void MainWindow::initializeVideoAudioIO()
 		mOwnVideoMuxer->RegisterMediaSource(new MediaSourceV4L2(tVSourceSelection));
 	#endif
 	#ifdef WIN32
-		mOwnVideoMuxer->RegisterMediaSource(new MediaSourceVFW(tVSourceSelection));
-		//TODO: mOwnVideoMuxer->RegisterMediaSource(new MediaSourceDShow());
+		if (QSysInfo::windowsVersion() >= QSysInfo::WV_XP)
+		{// DirectShow
+			mOwnVideoMuxer->RegisterMediaSource(new MediaSourceDShow(tVSourceSelection));
+		}else
+		{// VFW fall back
+			mOwnVideoMuxer->RegisterMediaSource(new MediaSourceVFW(tVSourceSelection));
+		}
 	#endif
 	#ifdef APPLE
 		//mOwnVideoMuxer->RegisterMediaSource(new MediaSourceCoreVideo(tVSourceSelection));
