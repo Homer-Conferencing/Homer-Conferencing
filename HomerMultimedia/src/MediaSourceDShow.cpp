@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 2010 Thomas Volkert <thomas@homer-conferencing.com>
+ * Copyright (C) 2012 Thomas Volkert <thomas@homer-conferencing.com>
  *
  * This software is free software.
  * Your are allowed to redistribute it and/or modify it under the terms of
@@ -29,6 +29,7 @@
 //		"PlayCap" example from the Microsoft Windows SDK
 //		http://msdn.microsoft.com/en-us/library/windows/desktop/dd407292%28v=vs.85%29.aspx
 //		http://msdn.microsoft.com/en-us/library/windows/desktop/dd377566%28v=vs.85%29.aspx
+// 		http://msdn.microsoft.com/en-us/library/windows/desktop/dd375620%28v=vs.85%29.aspx
 //		http://sourceforge.net/tracker/?func=detail&atid=302435&aid=1819367&group_id=2435 - "Jan Wedekind"
 
 #include <MediaSourceDShow.h>
@@ -47,13 +48,9 @@
 #include <objidl.h>
 
 #define COM_NO_WINDOWS_H
-//#include <basetyps.h>
-//#include <unknwn.h>
 #include <oaidl.h>
 #include <ocidl.h>
 #include <winnls.h>
-//#include <windef.h>
-//#include <windows.h>
 
 namespace Homer { namespace Multimedia {
 
@@ -455,16 +452,13 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
 	}
 
 	int tCount = -1;
-	for(;;)
+	// access video input device
+	while(tClassEnumerator->Next (1, &tMoniker, NULL) == S_OK)
 	{
 		memset(tDeviceName, 0, sizeof(tDeviceName));
 		memset(tDeviceDescription, 0, sizeof(tDeviceDescription));
 		memset(tDevicePath, 0, sizeof(tDevicePath));
 		tCount++;
-		// access video input device
-		tRes = tClassEnumerator->Next (1, &tMoniker, NULL);
-		if ((tRes == S_FALSE) || (FAILED(tRes)))
-			break;
 
 		// bind to storage
 		tRes = tMoniker->BindToStorage(0, 0, IID_IPropertyBag, (void**)&tPropertyBag);
@@ -534,8 +528,8 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
 		pVList.push_back(tDevice);
 
 		tPropertyBag->Release();
+		tMoniker->Release();
 	}
-	tMoniker->Release();
 	tClassEnumerator->Release();
 
     tFirstCall = false;
@@ -580,7 +574,7 @@ bool MediaSourceDShow::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     // alocate new format context
     mFormatContext = AV_NEW_FORMAT_CONTEXT();
 
-    LOG(LOG_VERBOSE, "Going to open input device \"%s\"..", mDesiredDevice.c_str());
+    LOG(LOG_VERBOSE, "Going to open input device \"%s\" with resolution %d*%d..", mDesiredDevice.c_str(), pResX, pResY);
     if (mDesiredDevice != "")
     {
         //########################################
@@ -588,8 +582,20 @@ bool MediaSourceDShow::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         //########################################
         if ((tResult = avformat_open_input(&mFormatContext, (const char *)mDesiredDevice.c_str(), tFormat, &tOptions)) != 0)
         {
-            LOG(LOG_ERROR, "Couldn't open device \"%s\" because of \"%s\".", mDesiredDevice.c_str(), strerror(AVUNERROR(tResult)));
-            return false;
+            if (tResult != 0)
+            {
+				if ((pResX != 352) && (pResY != 288))
+				{
+					LOG(LOG_VERBOSE, "Device open failed - switching back to default video resolution of 352*288");
+					av_dict_set(&tOptions, "video_size", "352x288", 0);
+					tResult = avformat_open_input(&mFormatContext, (const char *)mDesiredDevice.c_str(), tFormat, &tOptions);
+				}
+            }
+            if (tResult != 0)
+            {
+        		LOG(LOG_ERROR, "Couldn't open device \"%s\" because of \"%s\".", mDesiredDevice.c_str(), strerror(AVUNERROR(tResult)));
+        		return false;
+            }
         }
     }else
     {
@@ -868,6 +874,197 @@ int MediaSourceDShow::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
     MarkGrabChunkSuccessful(mChunkNumber);
 
     return mChunkNumber;
+}
+
+GrabResolutions MediaSourceDShow::GetSupportedVideoGrabResolutions()
+{
+    static bool 			tFirstCall = true;
+    VARIANT 				tVariant;
+    TCHAR 					tDeviceName[256];
+    TCHAR 					tDevicePath[256];
+    TCHAR 					tDeviceDescription[256];
+    VideoDeviceDescriptor 	tDevice;
+    HRESULT 				tRes = S_OK;
+    IMoniker				*tMoniker =NULL;
+    ICreateDevEnum 			*tDeviceEnumerator =NULL;
+    IEnumMoniker 			*tClassEnumerator = NULL;
+    CLSID 					tClassId;
+    bool					tDeviceIsVFW;
+    IBaseFilter				*tSource;
+	IPropertyBag 			*tPropertyBag;
+	VideoFormatDescriptor 	tFormat;
+	IAMStreamConfig 		*tStreamConfig = NULL;
+	IEnumPins  				*tPinsEnum = NULL;
+	IPin					*tPin = NULL;
+	PIN_DIRECTION			tPinDir;
+
+    if (mMediaType != MEDIA_VIDEO)
+    {
+    	LOG(LOG_ERROR, "Invalid media type");
+		return mSupportedVideoFormats;
+    }
+
+    if (mCurrentDevice == "")
+    {
+    	LOG(LOG_ERROR, "Current device name is empty");
+		return mSupportedVideoFormats;
+    }
+
+    mSupportedVideoFormats.clear();
+
+    VariantInit(&tVariant);
+
+    // create system device enumerator
+    tRes = CoCreateInstance (CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC, IID_ICreateDevEnum, (void **) &tDeviceEnumerator);
+    if (FAILED(tRes))
+    {
+    	LOG(LOG_ERROR, "Could not create the Windows system device enumerator");
+    	return mSupportedVideoFormats;
+    }
+
+    // create enumerator capture devices
+    tRes = tDeviceEnumerator->CreateClassEnumerator (CLSID_VideoInputDeviceCategory, &tClassEnumerator, 0);
+	if (FAILED(tRes))
+	{
+    	LOG(LOG_ERROR, "Could not create the Windows enumerator for video input devices");
+    	return mSupportedVideoFormats;
+    }
+
+	if (tClassEnumerator == NULL)
+	{
+		LOG(LOG_VERBOSE, "No DirectShow video capture device was detected");
+		return mSupportedVideoFormats;
+	}
+
+	int tCount = -1;
+	// access video input device
+	while(tClassEnumerator->Next (1, &tMoniker, NULL) == S_OK)
+	{
+		memset(tDeviceName, 0, sizeof(tDeviceName));
+		memset(tDeviceDescription, 0, sizeof(tDeviceDescription));
+		memset(tDevicePath, 0, sizeof(tDevicePath));
+		tCount++;
+
+		// bind to storage
+		tRes = tMoniker->BindToStorage(0, 0, IID_IPropertyBag, (void**)&tPropertyBag);
+		if (FAILED(tRes))
+		{
+			LOG(LOG_ERROR, "Could not bind moniker to storage object");
+			continue;
+		}
+
+		// retrieve the device's name
+		tRes = tPropertyBag->Read(L"FriendlyName", &tVariant, 0);
+		if (FAILED(tRes))
+		{
+			LOG(LOG_ERROR, "Could not get property \"FriendlyName\" for device %d", tCount);
+			tPropertyBag->Release();
+			continue;
+		}
+		WideCharToMultiByte(CP_ACP, 0, tVariant.bstrVal, -1, tDeviceName, sizeof(tDeviceName), 0, 0);
+		VariantClear(&tVariant);
+
+		// have we found our current device in the enumeration?
+		string tDeviceNameStr = string(tDeviceName);
+		LOG(LOG_VERBOSE, "Comparing %s and %s for video resolution detection", tDeviceNameStr.c_str(), mCurrentDeviceName.c_str());
+		if (tDeviceNameStr == mCurrentDeviceName)
+		{
+			LOG(LOG_VERBOSE, "Will try to detect supported video resolutions for device %s", tDeviceNameStr.c_str());
+			// bint to object
+			tMoniker->BindToObject( 0, 0, IID_IBaseFilter, (void **)&tSource);
+
+			tRes = tSource->EnumPins(&tPinsEnum);
+			if (FAILED(tRes))
+			{
+				LOG(LOG_ERROR, "Could not enumerate pins");
+				tPropertyBag->Release();
+				break;
+			}
+
+			while (tPinsEnum->Next(1, &tPin, 0) == S_OK)
+			{
+				tRes = tPin->QueryDirection(&tPinDir);
+				if (FAILED(tRes))
+				{
+					LOG(LOG_ERROR, "Could not query pin direction");
+					break;
+				}
+
+				if (tPinDir == PINDIR_OUTPUT)
+				{
+					tRes = tPin->QueryInterface(IID_IAMStreamConfig, (void **)&tStreamConfig);
+					if (FAILED(tRes))
+					{
+						LOG(LOG_ERROR, "Could not query pin interface");
+						tPin->Release();
+						break;
+					}
+
+					int tCount, tSize;
+					tRes = tStreamConfig->GetNumberOfCapabilities( &tCount, &tSize);
+					LOG(LOG_VERBOSE, "Found %d capability entries", tCount);
+					if (FAILED(tRes))
+					{
+						LOG(LOG_ERROR, "Could not get number of caps");
+						tPin->Release();
+						break;
+					}
+
+			    	AM_MEDIA_TYPE *tMT;
+			    	BYTE *tCaps = new BYTE[tSize]; // VIDEO_STREAM_CONFIG_CAPS
+
+			    	for ( int i = 0; i < tCount; i++)
+				    {
+			    		tRes = tStreamConfig->GetStreamCaps(i, &tMT, tCaps);
+						if (FAILED(tRes))
+						{
+							LOG(LOG_ERROR, "Could not get stream cap %d", i);
+							break;
+						}
+
+					    if ((tMT->majortype == MEDIATYPE_Video) && (tMT->pbFormat !=0))
+					    {
+							VIDEOINFOHEADER *tVInfoHeader = (VIDEOINFOHEADER*)tMT->pbFormat;
+							int tWidth = tVInfoHeader->bmiHeader.biWidth;
+							int tHeight = tVInfoHeader->bmiHeader.biHeight;
+
+							LOG(LOG_VERBOSE, "Detected source video resolution %d*%d and sub type: %d", tWidth, tHeight, tMT->subtype);
+
+							if ((tWidth <= 1920) && (tHeight <= 1080))
+							{
+								tFormat.Name= "";
+								tFormat.ResX = tWidth;
+								tFormat.ResY = tHeight;
+								bool tAlreadyKnownResolution = false;
+								for (int i = 0; i < (int)mSupportedVideoFormats.size(); i++)
+								{
+									if ((mSupportedVideoFormats[i].ResX == tWidth) && (mSupportedVideoFormats[i].ResY == tHeight))
+									{
+										tAlreadyKnownResolution = true;
+										break;
+									}
+								}
+								if (!tAlreadyKnownResolution)
+								{
+									LOG(LOG_VERBOSE, "Adding resolution %d*%d to the supported ones", tWidth, tHeight);
+									mSupportedVideoFormats.push_back(tFormat);
+								}
+							}
+						}
+				    }
+			    	delete [] tCaps;
+				}
+				tPin->Release();
+			}
+			tPinsEnum->Release();
+		}
+
+		tPropertyBag->Release();
+		tMoniker->Release();
+	}
+	tClassEnumerator->Release();
+
+    return mSupportedVideoFormats;
 }
 
 bool MediaSourceDShow::SupportsRecording()

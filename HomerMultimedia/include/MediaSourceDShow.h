@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 2010 Thomas Volkert <thomas@homer-conferencing.com>
+ * Copyright (C) 2012 Thomas Volkert <thomas@homer-conferencing.com>
  *
  * This software is free software.
  * Your are allowed to redistribute it and/or modify it under the terms of
@@ -57,6 +57,9 @@ public:
 
     /* recording */
     virtual bool SupportsRecording();
+
+    /* video grabbing control */
+    virtual GrabResolutions GetSupportedVideoGrabResolutions();
 
     /* grabbing control */
     virtual std::string GetCodecName();
