@@ -71,7 +71,6 @@ public:
     virtual int GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk = false);
 
 private:
-    bool				mFramesAreUpsideDown[10];
     bool				mDeviceAvailable[10];
     int                 mCurrentInputChannel, mDesiredInputChannel;
 	bool				mFirstPixelformatError;

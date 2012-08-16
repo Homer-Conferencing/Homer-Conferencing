@@ -163,9 +163,6 @@ void MediaSourceVFW::getVideoDevices(VideoDevices &pVList)
 				DestroyWindow(tWinHandle);
 				continue;
 			}
-			// see http://msdn.microsoft.com/de-de/library/dd183376.aspx
-			mFramesAreUpsideDown[i] = (tInfo.bmiHeader.biHeight > 0);
-			LOG(LOG_INFO, "  ..pictures are upside down: %d", mFramesAreUpsideDown[i]);
 
 			DestroyWindow(tWinHandle);
 
