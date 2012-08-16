@@ -229,7 +229,7 @@ void MediaSourceGrabberThread::PauseFile()
         mGrabbingStateMutex.lock();
         mPaused = true;
         mGrabbingStateMutex.unlock();
-        LOG(LOG_VERBOSE, "Triggered pause state at position: %.2f", mPausedPos);
+        LOG(LOG_VERBOSE, "Triggered %s pause state at position: %.2f", mPausedPos, mMediaSource->GetMediaTypeStr().c_str());
     }else
         LOG(LOG_VERBOSE, "Seeking not supported, PauseFile() aborted");
 }
