@@ -1018,7 +1018,9 @@ GrabResolutions MediaSourceDShow::GetSupportedVideoGrabResolutions()
 			    		tRes = tStreamConfig->GetStreamCaps(i, &tMT, tCaps);
 						if (FAILED(tRes))
 						{
-							LOG(LOG_ERROR, "Could not get stream cap %d", i);
+							#ifdef MSDS_DEBUG_RESOLUTIONS
+								LOG(LOG_ERROR, "Could not get stream cap %d", i);
+							#endif
 							break;
 						}
 
@@ -1028,8 +1030,9 @@ GrabResolutions MediaSourceDShow::GetSupportedVideoGrabResolutions()
 							int tWidth = tVInfoHeader->bmiHeader.biWidth;
 							int tHeight = tVInfoHeader->bmiHeader.biHeight;
 
-							LOG(LOG_VERBOSE, "Detected source video resolution %d*%d and sub type: %d", tWidth, tHeight, tMT->subtype);
-
+							#ifdef MSDS_DEBUG_RESOLUTIONS
+								LOG(LOG_VERBOSE, "Detected source video resolution %d*%d and sub type: %d", tWidth, tHeight, tMT->subtype);
+							#endif
 							if ((tWidth <= 1920) && (tHeight <= 1080))
 							{
 								tFormat.Name= "";
