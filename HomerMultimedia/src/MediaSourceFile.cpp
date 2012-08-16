@@ -421,7 +421,16 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
 
                 return GRAB_RES_EOF;
             }else
-                LOG(LOG_WARN, "System too slow?, %s grabber detected a buffer underrun", GetMediaTypeStr().c_str());
+            {
+                if ((!mSeekingWaitForNextKeyFrame) && (!mSeekingWaitForNextKeyFramePackets))
+                {// okay, we want more output from the decoder thread
+                    LOG(LOG_WARN, "System too slow?, %s grabber detected a buffer underrun", GetMediaTypeStr().c_str());
+                }else
+                {// we have to wait until the decoder thread has new data after we triggered a seeking process
+
+                    // nothing to complain about
+                }
+            }
         }
 
         // need more input from file but EOF is not reached?
