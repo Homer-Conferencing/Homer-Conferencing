@@ -187,6 +187,34 @@ string WaveOut::CurrentFile()
 	return mFilePlaybackFileName;
 }
 
+int WaveOut::GetQueueUsage()
+{
+    if (mPlaybackFifo != NULL)
+        return mPlaybackFifo->GetUsage();
+    else
+        return 0;
+}
+
+void WaveOut::ClearQueue()
+{
+    if (mPlaybackFifo != NULL)
+        mPlaybackFifo->ClearFifo();
+}
+
+void WaveOut::LimitQueue(int pNewSize)
+{
+    if (mPlaybackFifo != NULL)
+    {
+        while (mPlaybackFifo->GetUsage() > pNewSize)
+        {
+            char *tBuffer;
+            int tBufferSize;
+            int tEntryId = mPlaybackFifo->ReadFifoExclusive(&tBuffer, tBufferSize);
+            mPlaybackFifo->ReadFifoExclusiveFinished(tEntryId);
+        }
+    }
+}
+
 void WaveOut::AssignThreadName()
 {
     if (mHaveToAssignThreadName)

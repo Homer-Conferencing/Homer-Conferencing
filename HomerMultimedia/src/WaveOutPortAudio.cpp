@@ -372,6 +372,11 @@ int WaveOutPortAudio::PlayAudioHandler(const void *pInputBuffer, void *pOutputBu
     if ((tUsedFifo == 0) && (!tWaveOutPortAudio->mWaitingForFirstBuffer))
     {
         LOGEX(WaveOutPortAudio, LOG_WARN, "Audio FIFO empty, playback might be non continuous, found gaps %d", ++tWaveOutPortAudio->mPossiblePlaybackGaps);
+    }else
+    {
+        #ifdef WOPA_DEBUG_HANDLER
+            LOGEX(WaveOutPortAudio, LOG_VERBOSE, "Audio buffers in playback FIFO: %d", tUsedFifo);
+        #endif
     }
 
     int tOutputBufferMaxSize;
@@ -568,9 +573,6 @@ bool WaveOutPortAudio::Play()
 	MediaSourcePortAudio::PortAudioLockStreamInterface();
 	if (Pa_IsStreamActive(mStream) == 0)
     {
-        LOG(LOG_VERBOSE, "..clearing FIFO buffer");
-        mPlaybackFifo->ClearFifo();
-
         LOG(LOG_VERBOSE, "..going to start stream..");
         mWaitingForFirstBuffer = true;
         if((tErr = Pa_StartStream(mStream)) != paNoError)
@@ -659,11 +661,11 @@ void WaveOutPortAudio::Stop()
     mFilePlaybackLoops = 0;
 
     // make sure no one waits for audio anymore -> send an empty buffer to FIFO and force a return from a possible ReadFifo() call
-    LOG(LOG_VERBOSE, "..writing empty packets to FIFO to force wake up");
+    LOG(LOG_VERBOSE, "..writing an empty packet to FIFO to force wake up");
     char tData[4];
     mPlaybackFifo->WriteFifo(tData, 0);
 
-    LOG(LOG_VERBOSE, "..empty packets to FIFO to force wake up were written");
+    LOG(LOG_VERBOSE, "..empty packets to FIFO were written to force a wake up");
 
     MediaSourcePortAudio::PortAudioLockStreamInterface();
     if (Pa_IsStreamActive(mStream) == 1)
