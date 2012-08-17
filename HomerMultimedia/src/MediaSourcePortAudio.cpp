@@ -421,6 +421,10 @@ int MediaSourcePortAudio::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pD
 {
     int tResult;
 
+    #ifdef MSPA_DEBUG_PACKETS
+        LOG(LOG_VERBOSE, "Going to grab new input data");
+    #endif
+
     // lock grabbing
     mGrabMutex.lock();
 

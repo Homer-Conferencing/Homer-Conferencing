@@ -205,7 +205,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
     }
 
     #ifdef MSMEM_DEBUG_PACKETS
-        LOGEX(MediaSourceMem, LOG_ERROR, "Returning frame of size %d", tBufferSize);
+        LOGEX(MediaSourceMem, LOG_VERBOSE, "Returning frame of size %d", tBufferSize);
     #endif
 
     return tBufferSize;
@@ -755,13 +755,13 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                                 LOG(LOG_VERBOSE, "      ..key frame: %d", mSourceFrame->key_frame);
                                 switch(mSourceFrame->pict_type)
                                 {
-                                        case FF_I_TYPE:
+                                        case AV_PICTURE_TYPE_I:
                                             LOG(LOG_VERBOSE, "      ..picture type: i-frame");
                                             break;
-                                        case FF_P_TYPE:
+                                        case AV_PICTURE_TYPE_P:
                                             LOG(LOG_VERBOSE, "      ..picture type: p-frame");
                                             break;
-                                        case FF_B_TYPE:
+                                        case AV_PICTURE_TYPE_B:
                                             LOG(LOG_VERBOSE, "      ..picture type: b-frame");
                                             break;
                                         default:
