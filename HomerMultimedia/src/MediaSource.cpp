@@ -1431,6 +1431,10 @@ void MediaSource::RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacke
 {
     MediaSinks::iterator tIt;
 
+    #ifdef MS_DEBUG_PACKETS
+        LOG(LOG_VERBOSE, "Relaying packets to media sinks");
+    #endif
+
     // lock
     mMediaSinksMutex.lock();
 
@@ -2629,7 +2633,7 @@ bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Going to detect all existing streams in input for selecting a %s stream later..", GetMediaTypeStr().c_str());
 
     // limit frame analyzing time for ffmpeg internal codec auto detection
-    mFormatContext->max_analyze_duration = AV_TIME_BASE; //  1 recorded seconds
+    //mFormatContext->max_analyze_duration = AV_TIME_BASE; //  1 recorded seconds
 
     // verbose timestamp debugging
     //mFormatContext->debug = FF_FDEBUG_TS;
