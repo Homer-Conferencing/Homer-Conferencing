@@ -65,7 +65,7 @@ using namespace Homer::Monitor;
 ///////////////////////////////////////////////////////////////////////////////
 
 // how many audio buffers do we allow for audio playback?
-#define AUDIO_MAX_PLAYBACK_QUEUE                            2
+#define AUDIO_MAX_PLAYBACK_QUEUE                            3
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -979,23 +979,27 @@ void AudioWorkerThread::DoSyncClock()
 {
     LOG(LOG_VERBOSE, "DoSyncClock now...");
 
-    // lock
-    mDeliverMutex.lock();
-
-    float tSyncPos = mSyncClockMasterSource->GetSeekPos() - mUserAVDrift - mVideoDelayAVDrift;
-    LOG(LOG_VERBOSE, "Synchronizing with media source %s (pos.: %.2f)", mSyncClockMasterSource->GetStreamName().c_str(), tSyncPos);
-    mSourceAvailable = mMediaSource->Seek(tSyncPos, false);
-    if(!mSourceAvailable)
+    if (mSyncClockMasterSource != NULL)
     {
-        LOG(LOG_WARN, "Source isn't available anymore after synch. with %s", mSyncClockMasterSource->GetStreamName().c_str());
-    }
-    mEofReached = false;
-    mSyncClockAsap = false;
-    ResetPlayback();
-    mSeekAsap = false;
+        // lock
+        mDeliverMutex.lock();
 
-    // unlock
-    mDeliverMutex.unlock();
+        float tSyncPos = mSyncClockMasterSource->GetSeekPos() - mUserAVDrift - mVideoDelayAVDrift;
+        LOG(LOG_VERBOSE, "Synchronizing with media source %s (pos.: %.2f)", mSyncClockMasterSource->GetStreamName().c_str(), tSyncPos);
+        mSourceAvailable = mMediaSource->Seek(tSyncPos, false);
+        if(!mSourceAvailable)
+        {
+            LOG(LOG_WARN, "Source isn't available anymore after synch. with %s", mSyncClockMasterSource->GetStreamName().c_str());
+        }
+        mEofReached = false;
+        mSyncClockAsap = false;
+        ResetPlayback();
+        mSeekAsap = false;
+
+        // unlock
+        mDeliverMutex.unlock();
+    }else
+        LOG(LOG_WARN, "Source of reference clock is invalid");
 }
 
 void AudioWorkerThread::DoResetMediaSource()
@@ -1089,9 +1093,11 @@ void AudioWorkerThread::ResetPlayback()
 {
     bool tAudioWasMuted = mAudioOutMuted;
 
-    DoStopPlayback();
     if (!tAudioWasMuted)
+    {
+        DoStopPlayback();
         DoStartPlayback();
+    }
 }
 
 void AudioWorkerThread::DoStartPlayback()
@@ -1250,14 +1256,24 @@ void AudioWorkerThread::run()
                 LOG(LOG_WARN, "Got EOF signal from audio source, marking audio source as unavailable");
             }
 
+            #ifdef AUDIO_WIDGET_DEBUG_FRAMES
+                LOG(LOG_WARN, "Got from media source the sample block %d with size of %d bytes and stored it as index %d", tSampleNumber, tSamplesSize, mSampleGrabIndex);
+            #endif
+
 			//printf("SampleSize: %d Sample: %d\n", mSamplesSize[mSampleGrabIndex], tSampleNumber);
 
 			// play the sample block if audio out isn't currently muted
 			if ((!mAudioOutMuted) && (tSampleNumber >= 0) && (tSamplesSize > 0) && (!mDropSamples) && (mPlaybackAvailable))
 			{
 			    if (mWaveOut != NULL)
+			    {
+                    #ifdef DEBUG_AUDIOWIDGET_PLAYBACK
+			            LOG(LOG_VERBOSE, "Writing buffer at index %d and size of %d bytes to audio output FIFO", mSampleGrabIndex, tSamplesSize);
+			            LOG(LOG_VERBOSE, "Writing buffer at %p with size of %d bytes to audio output FIFO", mSamples[mSampleGrabIndex], tSamplesSize);
+			        #endif
 			        mWaveOut->WriteChunk(mSamples[mSampleGrabIndex], tSamplesSize);
-			    mWaveOut->LimitQueue(AUDIO_MAX_PLAYBACK_QUEUE);
+			        mWaveOut->LimitQueue(AUDIO_MAX_PLAYBACK_QUEUE);
+			    }
 			}else
 			{
 				#ifdef DEBUG_AUDIOWIDGET_PERFORMANCE
