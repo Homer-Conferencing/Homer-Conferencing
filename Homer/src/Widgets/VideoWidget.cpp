@@ -903,7 +903,7 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
         QString tLine_Frame;
         tLine_Frame = " Frame: " + QString("%1").arg(pFrameNumber);
         if (mVideoSource->SupportsDecoderFrameStatistics())
-            tLine_Frame += "(" + QString("%1*i,").arg(mVideoSource->DecodedIFrames()) + QString("%1*p,").arg(mVideoSource->DecodedPFrames()) + QString("%1*b").arg(mVideoSource->DecodedBFrames()) + ")";
+            tLine_Frame += " (" + QString("%1*i,").arg(mVideoSource->DecodedIFrames()) + QString("%1*p,").arg(mVideoSource->DecodedPFrames()) + QString("%1*b").arg(mVideoSource->DecodedBFrames()) + ")";
         tLine_Frame += (mVideoSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropCounter()) + " lost packets)") : "") + (mVideoSource->GetFragmentBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetFragmentBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetFragmentBufferSize()) + " buffered packets)") : "");
 
         // OSD about current video codec

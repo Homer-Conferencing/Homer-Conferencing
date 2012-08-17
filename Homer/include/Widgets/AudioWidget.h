@@ -57,6 +57,9 @@ using namespace Homer::Multimedia;
 
 #define SAMPLE_BUFFER_SIZE               16
 
+// de/activate frame handling
+//#define AUDIO_WIDGET_DEBUG_FRAMES
+
 // de/activate automatic sample dropping in case the audo widget is invisible (default is off)
 //#define AUDIO_WIDGET_DROP_WHEN_INVISIBLE
 
@@ -184,11 +187,7 @@ private:
     bool                mDropSamples;
     int                 mResultingSps;
     bool                mAudioOutMuted;
-    bool				mEofReached;
-    bool				mPaused;
-    bool				mSourceAvailable;
     bool				mPlaybackAvailable;
-    float				mPausedPos;
 
     /* for forwarded interface to media source */
     int                 mDesiredInputChannel;
