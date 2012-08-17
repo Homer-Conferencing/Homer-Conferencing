@@ -135,10 +135,16 @@ void MediaFifo::ReadFifo(char *pBuffer, int &pBufferSize)
     mFifo[tCurrentFifoReadPtr].EntryMutex.lock();
     mFifoMutex.unlock();
 
-    // get captured data from Fifo
-	pBufferSize = mFifo[tCurrentFifoReadPtr].Size;
-    memcpy((void*)pBuffer, mFifo[tCurrentFifoReadPtr].Data, (size_t)pBufferSize);
-
+    if (pBufferSize >= mFifo[tCurrentFifoReadPtr].Size)
+    {// input buffer is okay
+        // get captured data from Fifo
+        pBufferSize = mFifo[tCurrentFifoReadPtr].Size;
+        memcpy((void*)pBuffer, mFifo[tCurrentFifoReadPtr].Data, (size_t)pBufferSize);
+    }else
+    {// input buffer is too small
+        LOG(LOG_ERROR, "Given read buffer is too small (%d bytes) for the current chunk of %d bytes from FIFO %s, dropping data", pBufferSize, mFifo[tCurrentFifoReadPtr].Size, mName.c_str());
+        pBufferSize = 0;
+    }
     // unlock fine grained mutex again
     mFifo[tCurrentFifoReadPtr].EntryMutex.unlock();
 
