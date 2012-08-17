@@ -641,11 +641,6 @@
                      <string>THEORA</string>
                     </property>
                    </item>
-                   <item>
-                    <property name="text">
-                     <string>VP8</string>
-                    </property>
-                   </item>
                   </widget>
                  </item>
                 </layout>
