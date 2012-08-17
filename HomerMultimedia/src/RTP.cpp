@@ -833,7 +833,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
     // create memory stream and init ffmpeg internal structures
     //####################################################################
     #ifdef RTP_DEBUG_PACKETS
-        LOG(LOG_VERBOSE, "Encapsulate frame with format %s of size: %u while maximum resulting RTP packet size is: %d", MediaSource::FfmpegId2FfmpegFormat(mRtpFormatContext->streams[0]->codec->codec_id).c_str(), pDataSize, mAVIOContext->max_packet_size);
+        LOG(LOG_VERBOSE, "Encapsulate frame with format %s of size: %u while maximum resulting RTP packet size is: %d", MediaSource::GetFormatName(mRtpFormatContext->streams[0]->codec->codec_id).c_str(), pDataSize, mAVIOContext->max_packet_size);
     #endif
 
     // open RTP stream for av_Write_frame()
@@ -1774,15 +1774,26 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                             #endif
                             break;
             case CODEC_ID_THEORA:
+                            // convert from network to host byte order
+                            tTHEORAHeader->Data[0] = ntohl(tTHEORAHeader->Data[0]);
                             pData += sizeof(THEORAHeader);
                             pData += 2;
-//                            // continuation fragment?
-//                            if (tTHEORAHeader->F == 2)
-//                                mIntermediateFragment = true;
-//
-//                            // end fragment?
-//                            if (tTHEORAHeader->F == 3)
-//                                mIntermediateFragment = false;
+
+                            // no fragmentmentation?
+                            if (tTHEORAHeader->F == 0)
+                                mIntermediateFragment = false;
+
+                            // start fragment?
+                            if (tTHEORAHeader->F == 1)
+                                mIntermediateFragment = true;
+
+                            // continuation fragment?
+                            if (tTHEORAHeader->F == 2)
+                                mIntermediateFragment = true;
+
+                            // end fragment?
+                            if (tTHEORAHeader->F == 3)
+                                mIntermediateFragment = false;
 
                             #ifdef RTP_DEBUG_PACKETS
                                 LOG(LOG_VERBOSE, "################### THEORA header #######################");
@@ -1791,6 +1802,8 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                                 LOG(LOG_VERBOSE, "Theora data type: %d", tTHEORAHeader->TDT);
                                 LOG(LOG_VERBOSE, "Payload packet count: %d", tTHEORAHeader->Packets);
                             #endif
+                            // convert from host to network byte order
+                            tTHEORAHeader->Data[0] = htonl(tTHEORAHeader->Data[0]);
                             break;
             case CODEC_ID_VP8:
                             pData++; // default VP 8 header = 1 byte
