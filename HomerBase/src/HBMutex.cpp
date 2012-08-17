@@ -37,6 +37,7 @@ using namespace std;
 
 Mutex::Mutex()
 {
+    mName = "";
     mOwnerThreadId = -1;
     bool tResult = false;
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
@@ -70,7 +71,12 @@ bool Mutex::lock()
     int tThreadId = Thread::GetTId();
 
     if ((mOwnerThreadId != -1) && (mOwnerThreadId == tThreadId))
-        LOG(LOG_ERROR, "Recursive locking in thread %d detected", tThreadId);
+    {
+        if (mName != "")
+            LOG(LOG_ERROR, "Recursive locking of mutex \"%s\" in thread %d detected", mName.c_str(), tThreadId);
+        else
+            LOG(LOG_ERROR, "Recursive locking in thread %d detected", tThreadId);
+    }
 
     mOwnerThreadId = tThreadId;
 
@@ -219,6 +225,11 @@ bool Mutex::tryLock(int pMSecs)
 		}
 	#endif
 	return tResult;
+}
+
+void Mutex::AssignName(string pName)
+{
+    mName = pName;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
