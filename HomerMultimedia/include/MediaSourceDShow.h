@@ -38,6 +38,7 @@ namespace Homer { namespace Multimedia {
 
 // de/activate debugging of grabbed packets
 //#define MSDS_DEBUG_PACKETS
+//#define MSDS_DEBUG_RESOLUTIONS
 
 ///////////////////////////////////////////////////////////////////////////////
 

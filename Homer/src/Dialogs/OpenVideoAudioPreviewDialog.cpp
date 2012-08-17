@@ -367,6 +367,8 @@ void OpenVideoAudioPreviewDialog::LoadConfiguration()
         mCbCodecVideo->setCurrentIndex(6);
     if (tVideoStreamCodec == "THEORA")
         mCbCodecVideo->setCurrentIndex(7);
+    if (tVideoStreamCodec == "VP8")
+        mCbCodecVideo->setCurrentIndex(8);
 
     QString tAudioStreamCodec = CONF.GetAudioCodec();
     if (tAudioStreamCodec == "MP3 (MPA)")
