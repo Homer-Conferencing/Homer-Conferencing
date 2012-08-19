@@ -335,10 +335,10 @@ void MediaSourceNet::StopListener()
         mListenerNeeded = false;
 
         LOG(LOG_VERBOSE, "..wait for end of listener thread");
-        while(!StopThread(500))
+        do
         {
             if(tSignalingRound > 0)
-                LOG(LOG_WARN, "Signaling round %d to stop network listener, system has high load", tSignalingRound);
+                LOG(LOG_WARN, "Signaling round %d to stop network listener", tSignalingRound);
             tSignalingRound++;
 
             if (mGAPIUsed)
@@ -370,7 +370,7 @@ void MediaSourceNet::StopListener()
                     delete tSocket;
                 }
             }
-        }
+        }while(!StopThread(500));
     }
 
     LOG(LOG_VERBOSE, "Network listener stopped");
