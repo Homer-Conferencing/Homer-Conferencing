@@ -165,9 +165,13 @@ SET (LIBS_APPLE_STATIC
 	swresample
 	swscale
 	avutil
+	postproc
 	mp3lame
 	opencore-amrnb
 	opencore-amrwb
+	theoraenc
+	theoradec
+	ogg
 	x264
 	bz2
 	z
