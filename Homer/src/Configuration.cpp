@@ -939,7 +939,7 @@ QString Configuration::GetVideoStreamingGAPIImpl()
 
 QString Configuration::GetVideoResolution()
 {
-    return mQSettings->value("Streaming/VideoStreamResolution", QString("352*288")).toString();
+    return mQSettings->value("Streaming/VideoStreamResolution", QString("auto")).toString();
 }
 
 bool Configuration::GetLocalVideoSourceHFlip()
