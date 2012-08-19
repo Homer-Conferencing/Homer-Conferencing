@@ -213,53 +213,56 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     // find correct audio stream, depending on the desired input channel
     string tEntry;
     AVDictionaryEntry *tDictEntry;
-    char tLanguageBuffer[256];
     int tAudioStreamCount = 0;
     LOG(LOG_VERBOSE, "Probing for multiple audio input channels for device %s", mCurrentDevice.c_str());
     mInputChannels.clear();
     mMediaStreamIndex = -1;
     for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
     {
-        // Dump information about device file
-        av_dump_format(mFormatContext, i, "MediaSourceFile(audio)", false);
-
         if(mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
         {
-        	AVCodec *tCodec = NULL;
+        	string tLanguage = "";
+        	string tTitle = "";
+            AVCodec *tCodec = NULL;
             tCodec = avcodec_find_decoder(mFormatContext->streams[i]->codec->codec_id);
             tDictEntry = NULL;
-            int tLanguageCount = 0;
-            memset(tLanguageBuffer, 0, 256);
-            while((tDictEntry = HM_av_metadata_get(mFormatContext->metadata, "", tDictEntry)))
-            {
-                if (strcmp("language", tDictEntry->key))
-                {
-                    if (i == tLanguageCount)
-                    {
-                        av_strlcpy(tLanguageBuffer, tDictEntry->value, sizeof(tLanguageBuffer));
-                        for (int j = 0; j < (int)strlen(tLanguageBuffer); j++)
-                        {
-                            if (tLanguageBuffer[j] == 0x0D)
-                                tLanguageBuffer[j]=0;
-                        }
-                        LOG(LOG_VERBOSE, "Language found: %s", tLanguageBuffer);
-                    }
-                    tLanguageCount++;
-                }
-            }
-            LOG(LOG_VERBOSE, "Desired inputchannel: %d, current found input channel: %d", mDesiredInputChannel, tAudioStreamCount);
+
+            // get the language of the stream
+            tDictEntry = HM_av_metadata_get(mFormatContext->streams[i]->metadata, "language", NULL);
+			if (tDictEntry != NULL)
+			{
+				if (tDictEntry->value != NULL)
+				{
+					tLanguage = string(tDictEntry->value);
+					std::transform(tLanguage.begin(), tLanguage.end(), tLanguage.begin(), ::toupper);
+					LOG(LOG_VERBOSE, "Language found: %s", tLanguage.c_str());
+				}
+			}
+
+            // get the title of the stream
+            tDictEntry = HM_av_metadata_get(mFormatContext->streams[i]->metadata, "title", NULL);
+			if (tDictEntry != NULL)
+			{
+				if (tDictEntry->value != NULL)
+				{
+					tTitle = string(tDictEntry->value);
+					LOG(LOG_VERBOSE, "Title found: %s", tTitle.c_str());
+				}
+			}
+
+			LOG(LOG_VERBOSE, "Desired audio input channel: %d, current found audio input channel: %d", mDesiredInputChannel, tAudioStreamCount);
             if(tAudioStreamCount == mDesiredInputChannel)
             {
                 mMediaStreamIndex = i;
                 LOG(LOG_VERBOSE, "Using audio input channel %d in stream %d for grabbing", mDesiredInputChannel, i);
+
+                // Dump information about device file
+                av_dump_format(mFormatContext, i, "MediaSourceFile(audio)", false);
             }
 
             tAudioStreamCount++;
 
-            if (strlen(tLanguageBuffer) > 0)
-                tEntry = "Audio " + toString(tAudioStreamCount) + ": " + toString(tCodec->name) + " [" + toString(mFormatContext->streams[i]->codec->channels) + " channel(s)] " + string(tLanguageBuffer);
-            else
-                tEntry = "Audio " + toString(tAudioStreamCount) + ": " + toString(tCodec->name) + " [" + toString(mFormatContext->streams[i]->codec->channels) + " channel(s)]";
+            tEntry = tLanguage + ": " + tTitle + " (" + toString(tCodec->name) + ", " + toString(mFormatContext->streams[i]->codec->channels) + " ch)";
             LOG(LOG_VERBOSE, "Found audio stream: %s", tEntry.c_str());
             mInputChannels.push_back(tEntry);
         }
@@ -575,8 +578,18 @@ void MediaSourceFile::StartDecoder()
     mDecoderTargetResX = mTargetResX;
     mDecoderTargetResY = mTargetResY;
 
+    mDecoderNeeded = false;
+
 	// start decoder main loop
 	StartThread();
+
+	int tLoops = 0;
+	while(!mDecoderNeeded)
+	{
+		if (tLoops % 10 == 0)
+			LOG(LOG_VERBOSE, "Waiting for start of %s decoding thread, loop count: %d", GetMediaTypeStr().c_str(), ++tLoops);
+		Thread::Suspend(100);
+	}
 }
 
 void MediaSourceFile::StopDecoder()
@@ -1700,7 +1713,7 @@ float MediaSourceFile::GetSeekPos()
 
 bool MediaSourceFile::SupportsMultipleInputChannels()
 {
-    if(mMediaType == MEDIA_AUDIO)
+    if ((mMediaType == MEDIA_AUDIO) && (mInputChannels.size() > 1))
         return true;
     else
         return false;
@@ -1719,7 +1732,7 @@ bool MediaSourceFile::SelectInputChannel(int pIndex)
 
     if (tResult)
     {
-        int64_t tCurPos = GetSeekPos();
+        float tCurPos = GetSeekPos();
         tResult &= Reset();
         Seek(tCurPos, false);
     }
