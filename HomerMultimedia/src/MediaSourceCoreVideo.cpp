@@ -32,6 +32,10 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <Carbon/Carbon.h>
+#include <CoreFoundation/CoreFoundation.h>
+#include <QuickTime/QuickTime.h>
+
 namespace Homer { namespace Multimedia {
 
 using namespace std;
@@ -41,6 +45,7 @@ MediaSourceCoreVideo::MediaSourceCoreVideo(string pDesiredDevice):
     MediaSource("CoreVideo: local capture")
 {
     mSourceType = SOURCE_DEVICE;
+    // set category for packet statistics
     ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 
     bool tNewDeviceSelected = false;
@@ -63,8 +68,10 @@ MediaSourceCoreVideo::~MediaSourceCoreVideo()
 
 void MediaSourceCoreVideo::getVideoDevices(VideoDevices &pVList)
 {
-    static bool tFirstCall = true;
-    VideoDeviceDescriptor tDevice;
+    static bool 			tFirstCall = true;
+    VideoDeviceDescriptor 	tDevice;
+    OSErr      				tRes = noErr;
+    //SGDeviceList 			tDeviceList = 0;
 
     #ifdef MSCV_DEBUG_PACKETS
         tFirstCall = true;
@@ -73,7 +80,48 @@ void MediaSourceCoreVideo::getVideoDevices(VideoDevices &pVList)
     if (tFirstCall)
         LOG(LOG_VERBOSE, "Enumerating hardware..");
 
-    //TODO: implement via C++ around QTKit (Objective-C) or opencv lib.?
+#if 0
+	ComponentDescription theDesc;
+	Component sgCompID;
+	ComponentResult result;
+	theDesc.componentType = SeqGrabComponentType;
+	theDesc.componentSubType = 0L;
+	theDesc.componentManufacturer = 'appl';
+	theDesc.componentFlags = 0L;
+	theDesc.componentFlagsMask = 0L;
+	sgCompID = FindNextComponent(NULL, &theDesc);
+	seqGrabber = OpenComponent(sgCompID);
+	result = SGInitialize(seqGrabber);
+	result = SGNewChannel(seqGrabber, VideoMediaType, &videoChannel);
+	SGDeviceList theDevices;
+	SGGetChannelDeviceList(videoChannel,
+			sgDeviceListDontCheckAvailability | sgDeviceListIncludeInputs,
+			&theDevices);
+
+	if (theDevices) {
+		int theDeviceIndex;
+		for (theDeviceIndex = 0; theDeviceIndex != (*theDevices)->count;
+				++theDeviceIndex) {
+			SGDeviceName theDeviceEntry = (*theDevices)->entry[theDeviceIndex];
+			cout << i << ".1. " << theDeviceEntry.name << endl;
+			// name of device is a pstring in theDeviceEntry.name
+
+			SGDeviceInputList theInputs = theDeviceEntry.inputs;
+			if (theInputs != NULL) {
+				int theInputIndex;
+				for (theInputIndex = 0; theInputIndex != (*theInputs)->count;
+						++theInputIndex) {
+					SGDeviceInputName theInput =
+							(*theInputs)->entry[theInputIndex];
+					cout << i << ".2. " << theInput.name << endl;
+					// name of input is a pstring in theInput.name
+				}
+			}
+		}
+	}
+#endif
+
+
 
     tFirstCall = false;
 }
@@ -81,7 +129,7 @@ void MediaSourceCoreVideo::getVideoDevices(VideoDevices &pVList)
 bool MediaSourceCoreVideo::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 {
     int                 tResult;
-    AVFormatParameters  tFormatParams;
+//    AVFormatParameters  tFormatParams;
     AVInputFormat       *tFormat;
     AVCodec             *tCodec;
 
