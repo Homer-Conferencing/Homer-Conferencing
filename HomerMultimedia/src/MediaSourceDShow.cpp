@@ -390,12 +390,14 @@ MediaSourceDShow::MediaSourceDShow(string pDesiredDevice):
     {
         LOG(LOG_INFO, "Haven't selected new vfw device when creating source object");
     }
+    LOG(LOG_VERBOSE, "Created");
 }
 
 MediaSourceDShow::~MediaSourceDShow()
 {
     if (mMediaSourceOpened)
         CloseGrabDevice();
+    LOG(LOG_VERBOSE, "Destroyed");
 }
 
 bool MediaSourceDShow::SupportsDecoderFrameStatistics()
