@@ -2465,6 +2465,8 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame size: %d", mCodecContext->frame_size);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..duration: %.2f frames", mNumberOfFrames);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start PTS: %.2f frames", mSourceStartPts);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS: %ld frames", mFormatContext->start_time);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS (RT): %ld frames", mFormatContext->start_time_realtime);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..format context start PTS: %ld", mFormatContext->start_time);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context duration: %ld frames (%.0f seconds), format context duration: %ld seconds, nr. of frames: %ld", mFormatContext->streams[mMediaStreamIndex]->duration, (float)mFormatContext->streams[mMediaStreamIndex]->duration / mFrameRate, mFormatContext->duration / AV_TIME_BASE, mFormatContext->streams[mMediaStreamIndex]->nb_frames);
     switch(mMediaType)
@@ -2490,7 +2492,6 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     //### initiate local variables
     //######################################################
     FpsEmulationInit();
-    mSourceStartPts = -1;
     mChunkNumber = 0;
     mChunkDropCounter = 0;
     mLastGrabFailureReason = "";
