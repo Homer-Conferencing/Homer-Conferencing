@@ -178,6 +178,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     mDecodedIFrames = 0;
     mDecodedPFrames = 0;
     mDecodedBFrames = 0;
+    mSourceStartPts =  mFormatContext->start_time;
 
     MarkOpenGrabDeviceSuccessful();
 
@@ -311,6 +312,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     mEOFReached = false;
     mRecalibrateRealTimeGrabbingAfterSeeking = true;
     mFlushBuffersAfterSeeking = false;
+    mSourceStartPts =  mFormatContext->start_time;
 
     MarkOpenGrabDeviceSuccessful();
 
@@ -536,33 +538,25 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
     // inspired by "output_packet" from ffmpeg.c
     if (mGrabInRealTime)
     {
-        // should we initiate the StartPts value?
-        if (mSourceStartPts == -1)
-        {
-            LOG(LOG_VERBOSE, "New %s start PTS: %.2f", GetMediaTypeStr().c_str(), (float)mCurrentFrameIndex);
-            mSourceStartPts = mCurrentFrameIndex;
-        }else
-        {
-            // are we waiting for first valid frame after we seeked within the input file?
-            if (mRecalibrateRealTimeGrabbingAfterSeeking)
-            {
-                #ifdef MSF_DEBUG_CALIBRATION
-                    LOG(LOG_VERBOSE, "Recalibrating RT %s grabbing after seeking in input file", GetMediaTypeStr().c_str());
-                #endif
+		// are we waiting for first valid frame after we seeked within the input file?
+		if (mRecalibrateRealTimeGrabbingAfterSeeking)
+		{
+			#ifdef MSF_DEBUG_CALIBRATION
+				LOG(LOG_VERBOSE, "Recalibrating RT %s grabbing after seeking in input file", GetMediaTypeStr().c_str());
+			#endif
 
-                // adapt the start pts value to the time shift once more because we maybe dropped several frames during seek process
-                CalibrateRTGrabbing();
+			// adapt the start pts value to the time shift once more because we maybe dropped several frames during seek process
+			CalibrateRTGrabbing();
 
-                #ifdef MSF_DEBUG_SEEKING
-                    LOG(LOG_VERBOSE, "Read valid %s frame %.2f after seeking in input file", GetMediaTypeStr().c_str(), (float)mCurrentFrameIndex);
-                #endif
+			#ifdef MSF_DEBUG_SEEKING
+				LOG(LOG_VERBOSE, "Read valid %s frame %.2f after seeking in input file", GetMediaTypeStr().c_str(), (float)mCurrentFrameIndex);
+			#endif
 
-                mRecalibrateRealTimeGrabbingAfterSeeking = false;
-            }
+			mRecalibrateRealTimeGrabbingAfterSeeking = false;
+		}
 
-            // RT grabbing - do we have to wait?
-            WaitForRTGrabbing();
-        }
+		// RT grabbing - do we have to wait?
+		WaitForRTGrabbing();
     }
 
     // acknowledge success
@@ -1677,7 +1671,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
             mRecalibrateRealTimeGrabbingAfterSeeking = true;
         }
     }else
-        LOG(LOG_ERROR, "Seek position %.2f is out of range (0 - %.2f) for %s file", tFrameIndex, mNumberOfFrames, GetMediaTypeStr().c_str());
+        LOG(LOG_ERROR, "Seek position PTS=%.2f(%.2f) is out of range (0 - %.2f) for %s file, fps: %.2f, start offset: %.2f", (float)tFrameIndex, pSeconds, (float)mNumberOfFrames, GetMediaTypeStr().c_str(), mFrameRate, (float)mSourceStartPts);
 
     // unlock grabbing
     mGrabMutex.unlock();
@@ -1723,7 +1717,7 @@ bool MediaSourceFile::SelectInputChannel(int pIndex)
 {
     bool tResult = false;
 
-    LOG(LOG_VERBOSE, "Selecting input channel: %d", pIndex);
+    LOG(LOG_WARN, "Selecting input channel: %d of %d max. channels", pIndex, (int)mInputChannels.size());
 
     if (mCurrentInputChannel != pIndex)
         tResult = true;
