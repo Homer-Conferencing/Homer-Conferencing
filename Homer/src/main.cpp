@@ -216,8 +216,6 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
 	}
 #endif
 
-	SetHandlers();
-
 	string tFirstArg = (pArgc > 1) ? pArgv[1] : "";
 
 	if ((tFirstArg == "-help") || (tFirstArg == "-?") || (tFirstArg == "-h") || (tFirstArg == "--help"))
@@ -258,6 +256,8 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
 	    printf("Copyright (C) 2008 Thomas Volkert <thomas@homer-conferencing.com>\n");
         printf("For updates visit http://www.homer-conferencing.com\n");
     #endif
+
+	SetHandlers();
 
 	QApplication *tApp = new QApplication(pArgc, pArgv);
 

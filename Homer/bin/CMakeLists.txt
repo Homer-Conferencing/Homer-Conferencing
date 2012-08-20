@@ -399,7 +399,7 @@ ENDIF()
 
 ##############################################################
 # Qt needs qt_menu.nib/keyedobjects.nib in the binary directory
-# we copied this file from Qt-Source 4.8.0
+# file from Qt-Source 4.8.2
 if (APPLE)
         INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerLibs/apple${ARCH_BITS}/qt_menu.nib/keyedobjects.nib DESTINATION lib/qt_menu.nib COMPONENT libraries)
 endif()
