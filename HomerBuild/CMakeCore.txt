@@ -144,12 +144,6 @@ SET (FLAGS
 	-Wno-uninitialized
 	-Wno-unused-parameter
 )
-IF (APPLE)
-	SET (FLAGS
-		${FLAGS}
-		-Wno-invalid-source-encoding
-	)
-ENDIF()
 IF (NOT (${BUILD} MATCHES "Default"))
 	SET (FLAGS
 		${FLAGS}
@@ -165,18 +159,21 @@ IF (${BUILD} MATCHES "Debug")
 ELSE ()
 	SET (FLAGS "${FLAGS} -DRELEASE_VERSION")
 ENDIF ()
+
+# define minimum OSX version as 10.6 - Homer is compatible to this version
+IF (APPLE)
+	SET(FLAGS
+		${FLAGS}
+		-mmacosx-version-min=${MIN_SUPPORTED_OSX_VERSION}
+	)
+ENDIF()
+
 # stripping for all platforms excluding APPLE
 IF (NOT APPLE)
 	IF (${BUILD} MATCHES "Release")
 		SET (LFLAGS "${LFLAGS} -s")
 	ENDIF()
 ENDIF()
-IF (NOT BSD)
-    SET (FLAGS
-		${FLAGS}
-		-Wno-invalid-source-encoding
-	)
-ENDIF(NOT BSD)
 
 ##############################################################
 # explicit shared object name with @rpath prefix for APPLE
