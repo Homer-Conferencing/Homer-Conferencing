@@ -282,12 +282,12 @@ void Meeting::SetLocalUserName(string pName)
             case 'a'...'z':
             case ' ':
             case '_':
-            case 'Ä':
-            case 'Ö':
-            case 'Ü':
-            case 'ä':
-            case 'ö':
-            case 'ü':
+            case 196 /* AE */:
+            case 214 /* OE */:
+            case 220 /* UE */:
+            case 218 /* ae */:
+            case 246 /* oe */:
+            case 252 /* ue */:
                 tFilteredString += pName[i];
                 break;
             default:
