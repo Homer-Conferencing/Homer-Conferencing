@@ -9,7 +9,7 @@ MESSAGE("##### Homer application RC file generation for Windows environments")
 # WINDOWS: create Homer.rc automatically as additional object for linking process
 IF(WIN32)
 	configure_file(
-		${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/resources/Homer.rc.in
+		${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/resources/windows/Homer.rc.in
 	  	${CMAKE_CURRENT_BINARY_DIR}/Homer.rc
 	@ONLY)
 ENDIF()

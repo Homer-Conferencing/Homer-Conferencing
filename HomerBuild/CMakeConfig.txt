@@ -92,3 +92,14 @@ IF (DEFINED INSIDE_HOMER_BUILD)
 		${CMAKE_CURRENT_BINARY_DIR}/config.h
 	)
 ENDIF()
+
+# create Info.plist
+IF (DEFINED INSIDE_HOMER_BUILD)
+	INCLUDE (CheckIncludeFiles)
+	IF(APPLE)
+		CONFIGURE_FILE(
+			${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Conferencing/HomerBuild/resources/osx/Info.plist.in 
+			${CMAKE_CURRENT_BINARY_DIR}/../../Info.plist
+		)
+	ENDIF()
+ENDIF()

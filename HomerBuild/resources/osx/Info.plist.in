@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleExecutable</key>
+	<string>Homer-Conferencing</string>
+	<key>CFBundleGetInfoString</key>
+	<string>Homer-Conferencing, Copyright 2008-2012 Thomas Volkert</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright 2008-2012 Thomas Volkert</string>
+	<key>CFBundleIconFile</key>
+	<string>Homer-Conferencing.icns</string>
+	<key>CFBundleName</key>
+	<string>Homer-Conferencing</string>
+	<key>CFBundleVersion</key>
+	<string>@HOMER_VERSION@</string>
+	<key>CFBundleShortVersionString</key>
+	<string>@HOMER_VERSION@</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>10.6.0</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>NSHighResolutionCapable</key>
+	<true/>
+	<key>CFBundleIdentifier</key>
+	<string>com.homer-conferencing</string>
+	<key>LSRequiresCarbon</key>
+	<true/>
+	
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleLongVersionString</key>
+	<string> Version @HOMER_VERSION@</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+
+</dict>
+</plist>
