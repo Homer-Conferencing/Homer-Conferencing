@@ -1286,9 +1286,9 @@ void* MediaSourceMuxer::Run(void* pArgs)
 
     while(mEncoderNeeded)
     {
-		//#ifdef MSM_DEBUG_TIMING
+		#ifdef MSM_DEBUG_TIMING
 			LOG(LOG_VERBOSE, "%s-encoder loop", GetMediaTypeStr().c_str());
-		//#endif
+		#endif
         if (mEncoderFifo != NULL)
         {
             tFifoEntry = mEncoderFifo->ReadFifoExclusive(&tBuffer, tBufferSize);
