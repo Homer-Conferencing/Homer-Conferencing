@@ -54,7 +54,7 @@ using namespace Homer::Monitor;
 #define OPTIONS_REQUEST_RETRIES                         0
 
 #define CALL_REQUEST_TIMEOUT                            3 // seconds
-#define SHUTDOWN_REQUEST_TIMEOUT						5 // seconds
+#define SHUTDOWN_REQUEST_TIMEOUT						3 // seconds
 
 ///////////////////////////////////////////////////////////////////////////////
 
