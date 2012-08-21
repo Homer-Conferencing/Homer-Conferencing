@@ -195,6 +195,7 @@ void MessageWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEvent)
 
 void MessageWidget::AddPArticipantToContacts()
 {
+	LOG(LOG_VERBOSE, "User wants to add user %s to his contact list", mParticipant.toStdString().c_str());
     if (mContactsWidget != NULL)
         if (mContactsWidget->InsertNew(mParticipant))
             mTbAdd->hide();
