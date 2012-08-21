@@ -668,7 +668,7 @@ void* MediaSourceFile::Run(void* pArgs)
 
 	            // create video scaler
     	        LOG(LOG_VERBOSE, "Decoder thread starts scaler thread..");
-        	    tVideoScaler = new VideoScaler();
+        	    tVideoScaler = new VideoScaler("Video-Decoder(FILE)");
             	if(tVideoScaler == NULL)
                 	LOG(LOG_ERROR, "Invalid video scaler instance, possible out of memory");
 	            tVideoScaler->StartScaler(MEDIA_SOURCE_FILE_QUEUE, mSourceResX, mSourceResY, mCodecContext->pix_fmt, mDecoderTargetResX, mDecoderTargetResY, PIX_FMT_RGB32);
@@ -1113,7 +1113,8 @@ void* MediaSourceFile::Run(void* pArgs)
                                             #endif
 
                                             // scale the video frame
-                                            tRes = HM_sws_scale(mScalerContext, tSourceFrame->data, tSourceFrame->linesize, 0, mCodecContext->height, tRGBFrame->data, tRGBFrame->linesize);
+											LOG(LOG_VERBOSE, "Scaling video input picture..");
+											tRes = HM_sws_scale(mScalerContext, tSourceFrame->data, tSourceFrame->linesize, 0, mCodecContext->height, tRGBFrame->data, tRGBFrame->linesize);
                                             if (tRes == 0)
                                                 LOG(LOG_ERROR, "Failed to scale the video frame");
 

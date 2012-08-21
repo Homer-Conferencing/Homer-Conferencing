@@ -52,7 +52,7 @@ class VideoScaler:
     public Thread, public MediaFifo
 {
 public:
-    VideoScaler();
+    VideoScaler(std::string pName);
 
     virtual ~VideoScaler();
 
@@ -74,6 +74,7 @@ public:
 private:
     virtual void* Run(void* pArgs = NULL); // video scaler main loop
 
+    std::string			mName;
     MediaFifo           *mInputFifo;
     MediaFifo           *mOutputFifo;
     bool                mScalerNeeded;

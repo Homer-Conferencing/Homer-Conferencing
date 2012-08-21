@@ -1240,12 +1240,13 @@ void* MediaSourceMuxer::Run(void* pArgs)
                 LOG(LOG_ERROR, "Out of video memory for encoder chunk buffer");
 
             // create video scaler
-            LOG(LOG_VERBOSE, "Encoder thread starts scaler thread..");
-            tVideoScaler = new VideoScaler();
+            LOG(LOG_VERBOSE, "..encoder thread starts scaler thread..");
+            tVideoScaler = new VideoScaler("Video-Encoder(" + GetFormatName(mStreamCodecId) + ")");
             if(tVideoScaler == NULL)
                 LOG(LOG_ERROR, "Invalid video scaler instance, possible out of memory");
 
             tVideoScaler->StartScaler(MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT, mSourceResX, mSourceResY, PIX_FMT_RGB32, mCurrentStreamingResX, mCurrentStreamingResY, mCodecContext->pix_fmt);
+            LOG(LOG_VERBOSE, "..video scaler thread started..");
 
             mEncoderFifoMutex.lock();
 
@@ -1285,6 +1286,9 @@ void* MediaSourceMuxer::Run(void* pArgs)
 
     while(mEncoderNeeded)
     {
+		//#ifdef MSM_DEBUG_TIMING
+			LOG(LOG_VERBOSE, "%s-encoder loop", GetMediaTypeStr().c_str());
+		//#endif
         if (mEncoderFifo != NULL)
         {
             tFifoEntry = mEncoderFifo->ReadFifoExclusive(&tBuffer, tBufferSize);
@@ -1670,7 +1674,7 @@ void MediaSourceMuxer::SetVideoGrabResolution(int pResX, int pResY)
 
         if ((tResX != pResX) || (tResY != pResY))
         {
-            LOG(LOG_WARN, "Codec %s doesn't support video resolution, changed resolution from %d*%d to %d*%d", GetFormatName(mStreamCodecId).c_str(), pResY, tResX, tResY);
+            LOG(LOG_WARN, "Codec %s doesn't support video resolution, changed resolution from %d*%d to %d*%d", GetFormatName(mStreamCodecId).c_str(), pResX, pResY, tResX, tResY);
             pResX = tResX;
             pResY = tResY;
         }
