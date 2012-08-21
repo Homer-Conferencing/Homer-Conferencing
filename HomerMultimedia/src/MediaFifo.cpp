@@ -91,7 +91,7 @@ void MediaFifo::ReadFifo(char *pBuffer, int &pBufferSize)
     int tCurrentFifoReadPtr;
 
     #ifdef MF_DEBUG
-		LOG(LOG_VERBOSE, "%s-FIFO: going to read data chunk", mName.c_str());
+		LOG(LOG_VERBOSE, "%s-FIFO: ReadFifo() START", mName.c_str());
 	#endif
 
     // make sure there is some pending data in the input Fifo
@@ -211,7 +211,7 @@ int MediaFifo::ReadFifoExclusive(char **pBuffer, int &pBufferSize)
     int tCurrentFifoReadPtr;
 
     #ifdef MF_DEBUG
-        LOG(LOG_VERBOSE, "%s-FIFO: going to read data chunk", mName.c_str());
+        LOG(LOG_VERBOSE, "%s-FIFO: ReadFifoExclusive() START", mName.c_str());
     #endif
 
     // make sure there is some pending data in the input Fifo
@@ -235,7 +235,7 @@ int MediaFifo::ReadFifoExclusive(char **pBuffer, int &pBufferSize)
     tCurrentFifoReadPtr = mFifoReadPtr;
 
     #ifdef MF_DEBUG
-        LOG(LOG_VERBOSE, "%s-FIFO: reading exclusively entry %d", mName.c_str(), tCurrentFifoReadPtr);
+        LOG(LOG_VERBOSE, "%s-FIFO: reading exclusively entry %d with %d bytes", mName.c_str(), tCurrentFifoReadPtr, mFifo[tCurrentFifoReadPtr].Size);
     #endif
 
     // update FIFO read pointer
@@ -281,7 +281,7 @@ void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize)
     int tCurrentFifoWritePtr;
 
     #ifdef MF_DEBUG
-		LOG(LOG_VERBOSE, "%s-FIFO: going to write data chunk", mName.c_str());
+		LOG(LOG_VERBOSE, "%s-FIFO: WriteFifo() START", mName.c_str());
 	#endif
 
 	if (pBufferSize > mFifoEntrySize)

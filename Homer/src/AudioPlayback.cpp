@@ -103,6 +103,8 @@ bool AudioPlayback::StartAudioPlayback(QString pFileName, int pLoops)
         return tResult;
     }
 
+    LOG(LOG_VERBOSE, "Starting playback of file: %s", pFileName.toStdString().c_str());
+
     if (!mWaveOut->PlayFile(pFileName.toStdString(), pLoops))
         LOG(LOG_ERROR, "Was unable to play the file \"%s\".", pFileName.toStdString().c_str());
     else

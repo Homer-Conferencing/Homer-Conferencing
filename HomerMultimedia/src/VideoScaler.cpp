@@ -116,7 +116,12 @@ void VideoScaler::StopScaler()
 void VideoScaler::WriteFifo(char* pBuffer, int pBufferSize)
 {
     if (mInputFifo != NULL)
-        mInputFifo->WriteFifo(pBuffer, pBufferSize);
+    {
+    	if (pBufferSize <= mInputFifo->GetEntrySize())
+    		mInputFifo->WriteFifo(pBuffer, pBufferSize);
+    	else
+    		LOG(LOG_ERROR, "Input buffer of %d bytes is too big for input FIFO", pBufferSize);
+    }
 }
 
 void VideoScaler::ReadFifo(char *pBuffer, int &pBufferSize)
@@ -227,8 +232,13 @@ void* VideoScaler::Run(void* pArgs)
     {
         if (mInputFifo != NULL)
         {
+			#ifdef VS_DEBUG_PACKETS
+        		LOG(LOG_VERBOSE, "Waiting for new input for scaling");
+			#endif
             tFifoEntry = mInputFifo->ReadFifoExclusive(&tBuffer, tBufferSize);
-
+			#ifdef VS_DEBUG_PACKETS
+	            LOG(LOG_VERBOSE, "Got new input of %d bytes for scaling", tBufferSize);
+			#endif
             if ((tBufferSize > 0) && (mScalerNeeded))
             {
                 //HINT: we only get input if mStreamActivated is set and we have some registered media sinks
