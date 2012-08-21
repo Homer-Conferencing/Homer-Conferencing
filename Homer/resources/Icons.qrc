@@ -1,7 +1,17 @@
 <RCC>
   <qresource>
+    <file>images/VersionLogoCiwiLounge.png</file>
+    <file>images/VersionLogoComnart.png</file>
+    <file>images/VersionLogoFacebook.png</file>
+    <file>images/VersionLogoFem.png</file>
+    <file>images/VersionLogoFfmpeg.png</file>
+    <file>images/VersionLogoHomer.png</file>
+    <file>images/VersionLogoIcs.png</file>
+    <file>images/VersionLogoMetralabs.png</file>
+    <file>images/VersionLogoSofiaSip.png</file>
+    <file>images/VersionLogoTwitter.png</file>
     <file>images/22_22/Unchecked.png</file>
-    <file>images/LogoCivilLounge.png</file>
+    <file>images/LogoCiwiLounge.png</file>
     <file>images/LogoComnart.png</file>
     <file>images/LogoFacebook.png</file>
     <file>images/LogoFem.png</file>
@@ -75,8 +85,4 @@
     <file>images/20_20/UserAvailable.png</file>
     <file>images/20_20/UserUnavailable.png</file>
   </qresource>
-  <qresource prefix="newPrefix"/>
-  <qresource prefix="newPrefix"/>
-  <qresource prefix="newPrefix"/>
-  <qresource prefix="newPrefix"/>
 </RCC>
