@@ -96,8 +96,6 @@ public:
     /* general */
     static std::string SipCreateId(std::string pUser, std::string pHost, std::string pPort = "");
     static bool SplitParticipantName(string pParticipant, string &pUser, string &Host, string &pPort);
-    bool IsThisParticipant(string pParticipant, string pUser, string pHost, string pPort);
-    bool IsThisParticipant(string pParticipantUser, string pParticipantHost, string pParticipantPort, string pUser, string pHost, string pPort);
 
     /* SIP call back */
     void SipCallBack(int pEvent, int pStatus, char const *pPhrase, nua_t *pNua, nua_magic_t *pMagic, nua_handle_t *pNuaHandle, nua_hmagic_t *pHMagic, sip_t const *pSip, void* pTags);
@@ -118,6 +116,10 @@ protected:
     void PrintSipHeaderInfo(const sip_to_t *pRemote, const sip_to_t *pLocal, sip_t const *pSip);
     void printFromToSendingSipEvent(nua_handle_t *pNuaHandle, GeneralEvent *pEvent, std::string pEventName);
     void initParticipantTriplet(const sip_to_t *pRemote, sip_t const *pSip, std::string &pSourceIp, unsigned int pSourcePort, std::string &pUser, std::string &pHost, std::string &pPort);
+
+    /* identify participant session */
+    bool IsThisParticipant(string pParticipant, string pUser, string pHost, string pPort);
+    bool IsThisParticipant(string pParticipantUser, string pParticipantHost, string pParticipantPort, string pUser, string pHost, string pPort);
 
     void SipReceivedError(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, const char* pPhrase, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort);
 
