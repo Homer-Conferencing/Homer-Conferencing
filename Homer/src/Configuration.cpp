@@ -55,6 +55,7 @@ Configuration::Configuration()
     mDebuggingEnabled = false;
     mQSettings = new QSettings("Homer Software", "Homer");
     LOG(LOG_VERBOSE, "Created");
+    LOG(LOG_VERBOSE, "Program settings are stored in: %s", mQSettings->fileName().toStdString().c_str());
 }
 
 Configuration::~Configuration()
@@ -1243,8 +1244,8 @@ bool Configuration::GetRegistrationSuccessfulSystray()
 
 void Configuration::Sync()
 {
-    LOG(LOG_VERBOSE, "Synch. of program settings");
-    printf("Synch. of program settings\n");
+    LOG(LOG_VERBOSE, "Synch. program settings with: %s", mQSettings->fileName().toStdString().c_str());
+    printf("Synch. program settings with: %s\n", mQSettings->fileName().toStdString().c_str());
     mQSettings->sync();
 }
 
