@@ -110,7 +110,7 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     }
 
     // init program configuration
-    CONF.Init(mAbsBinPath);
+    initializeConfiguration(tArguments);
     // disabling of features
     initializeFeatureDisablers(tArguments);
     // init log sinks
@@ -152,6 +152,13 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
 
 MainWindow::~MainWindow()
 {
+}
+
+void MainWindow::initializeConfiguration(QStringList pArguments)
+{
+    CONF.Init(mAbsBinPath);
+    if (pArguments.contains("-SetDefaults"))
+    	CONF.SetDefaults();
 }
 
 void MainWindow::initializeGUI()
@@ -723,6 +730,8 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
     mShuttingDown = true;
 
     LOG(LOG_VERBOSE, "Got signal for closing main window");
+
+    CONF.Sync();
 
     // audio playback - stop sound
     #ifndef DEBUG_VERSION

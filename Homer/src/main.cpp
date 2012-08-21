@@ -225,13 +225,16 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
         printf("Usage:\n");
         printf("   Homer [Options]\n");
         printf("\n");
-        printf("Options for logging:\n");
+        printf("Options:\n");
         printf("   -help                               show this help text and exit\n");
         printf("   -version                            show version information and exit\n");
+        printf("\n");
+        printf("Options for failure recovery:\n");
+        printf("   -SetDefaults                        start the program with default settings\n");
         printf("   -DebugOutputFile=<file>             write verbose debug data to the given file\n");
         printf("   -DebugOutputNetwork=<host>:<port>   send verbose debug data to the given target host and port, UDP is used for message transport\n");
         printf("\n");
-        printf("Options for features:\n");
+        printf("Options for feature selection:\n");
         printf("   -Disable=AudioCapture               disable audio capture from devices\n");
         printf("   -Disable=AudioOutput                disable audio playback support\n");
         printf("   -Disable=IPv6                       disable IPv6 support\n");

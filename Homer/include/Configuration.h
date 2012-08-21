@@ -82,6 +82,7 @@ public:
     static Configuration& GetInstance();
 
     void Init(std::string pAbsBinPath);
+    void SetDefaults();
 
     /* general settings */
     QString GetBinaryPath();

@@ -35,6 +35,9 @@
 #include <QDir>
 #include <QDesktopWidget>
 #include <QApplication>
+#ifdef APPLE
+	#include <CoreFoundation/CoreFoundation.h>
+#endif
 
 namespace Homer { namespace Gui {
 
@@ -70,6 +73,26 @@ Configuration& Configuration::GetInstance()
 void Configuration::Init(string pAbsBinPath)
 {
     mAbsBinPath = pAbsBinPath;
+	#ifdef APPLE
+		CFURLRef tAppUrlRef = CFBundleCopyBundleURL(CFBundleGetMainBundle());
+		CFStringRef tMacPath = CFURLCopyFileSystemPath(tAppUrlRef, kCFURLPOSIXPathStyle);
+		const char *tPath = CFStringGetCStringPtr(tMacPath, CFStringGetSystemEncoding());
+		LOG(LOG_VERBOSE, "Path to OSX bundle: %s", tPath);
+		CFRelease(tAppUrlRef);
+		CFRelease(tMacPath);
+		if (tPath != NULL)
+		{
+			mAbsBinPath = string(tPath) + "/Contents/Resources/";
+		}
+	#endif
+}
+
+void Configuration::SetDefaults()
+{
+	LOG(LOG_VERBOSE, "Setting program defaults");
+	printf("Setting program defaults\n");
+	mQSettings->clear();
+	Sync();
 }
 
 void Configuration::SetConferenceAvailability(QString pState)
@@ -1220,7 +1243,8 @@ bool Configuration::GetRegistrationSuccessfulSystray()
 
 void Configuration::Sync()
 {
-    LOG(LOG_VERBOSE, "Sync");
+    LOG(LOG_VERBOSE, "Synch. of program settings");
+    printf("Synch. of program settings\n");
     mQSettings->sync();
 }
 

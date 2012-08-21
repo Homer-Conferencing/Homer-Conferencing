@@ -124,6 +124,7 @@ private slots:
 private:
     friend class GeneralControlWidget;
 
+    void initializeConfiguration(QStringList pArguments);
     void initializeGUI();
     void initializeFeatureDisablers(QStringList pArguments);
     void initializeLogging(QStringList pArguments);
