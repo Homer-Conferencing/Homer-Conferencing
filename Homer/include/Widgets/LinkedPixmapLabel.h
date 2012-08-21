@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 2008 Thomas Volkert <thomas@homer-conferencing.com>
+ * Copyright (C) 2009 Thomas Volkert <thomas@homer-conferencing.com>
  *
  * This software is free software.
  * Your are allowed to redistribute it and/or modify it under the terms of
@@ -20,45 +20,44 @@
  *****************************************************************************/
 
 /*
- * Purpose: Implementation of a dialog for showing program version
+ * Purpose: modified QLabel for linked pixmaps
  * Author:  Thomas Volkert
- * Since:   2008-11-25
+ * Since:   2012-08-21
  */
 
-#include <Dialogs/VersionDialog.h>
-#include <Configuration.h>
+#ifndef LINKED_PIXMAP_LABEL_H
+#define LINKED_PIXMAP_LABEL_H
+
+#include <QLabel>
+#include <QString>
+#include <QMouseEvent>
+#include <QWidget>
 
 namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-VersionDialog::VersionDialog(QWidget* pParent) :
-    QDialog(pParent)
+class LinkedPixmapLabel :
+    public QLabel
 {
+    Q_OBJECT;
+public:
+    /// The default constructor
+    LinkedPixmapLabel(QWidget* pParent = NULL);
 
-    initializeGUI();
-    mLbVersion->setText(RELEASE_VERSION_STRING);
-}
+    /// The destructor.
+    virtual ~LinkedPixmapLabel();
 
-VersionDialog::~VersionDialog()
-{
-}
+    void Init(QString pLink);
+
+private:
+    virtual void mousePressEvent(QMouseEvent *pEvent);
+
+    QString mLink;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void VersionDialog::initializeGUI()
-{
-    setupUi(this);
-    mLbFfmpeg->Init("http://ffmpeg.org");
-    mLbSofiaSip->Init("http://sofia-sip.sourceforge.net/");
-    mLbIcs->Init("http://www.tu-ilmenau.de/ics");
-    mLbCiwiLounge->Init("http://www.werbeagentur-ciwilounge.de/");
-    mLbMetraLabs->Init("http://www.metralabs.com/");
-    mLbComnart->Init("http://www.comnart.de/");
-    mLbFem->Init("http://fem.tu-ilmenau.de/");
-    mLbFacebook->Init("http://www.facebook.com/homerconferencing");
-}
+}}
 
-///////////////////////////////////////////////////////////////////////////////
-
-}} //namespace
+#endif

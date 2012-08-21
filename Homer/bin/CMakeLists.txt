@@ -139,6 +139,7 @@ SET (SOURCES
 	../src/Widgets/AudioWidget
 	../src/Widgets/AvailabilityWidget
 	../src/Widgets/CallButton
+	../src/Widgets/LinkedPixmapLabel
 	../src/Widgets/MessageHistory
 	../src/Widgets/MessageInput
 	../src/Widgets/MessageWidget
@@ -171,6 +172,7 @@ SET (QT_MOC_SOURCES
 	../include/Widgets/AudioWidget.h
 	../include/Widgets/AvailabilityWidget.h
 	../include/Widgets/CallButton.h
+	../include/Widgets/LinkedPixmapLabel.h
 	../include/Widgets/MessageHistory.h
 	../include/Widgets/MessageInput.h
 	../include/Widgets/MessageWidget.h

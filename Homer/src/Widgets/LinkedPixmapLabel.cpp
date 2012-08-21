@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 2008 Thomas Volkert <thomas@homer-conferencing.com>
+ * Copyright (C) 2012 Thomas Volkert <thomas@homer-conferencing.com>
  *
  * This software is free software.
  * Your are allowed to redistribute it and/or modify it under the terms of
@@ -20,43 +20,48 @@
  *****************************************************************************/
 
 /*
- * Purpose: Implementation of a dialog for showing program version
+ * Purpose: Implementation of a modified QLabel for showing a linked pixmap
  * Author:  Thomas Volkert
- * Since:   2008-11-25
+ * Since:   2012-08-21
  */
 
-#include <Dialogs/VersionDialog.h>
-#include <Configuration.h>
+#include <Widgets/LinkedPixmapLabel.h>
+#include <Logger.h>
+#include <QLabel>
+#include <QDesktopServices>
+#include <QUrl>
+
+using namespace Homer::Base;
 
 namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-VersionDialog::VersionDialog(QWidget* pParent) :
-    QDialog(pParent)
+LinkedPixmapLabel::LinkedPixmapLabel(QWidget* pParent) :
+	QLabel(pParent)
 {
 
-    initializeGUI();
-    mLbVersion->setText(RELEASE_VERSION_STRING);
 }
 
-VersionDialog::~VersionDialog()
+LinkedPixmapLabel::~LinkedPixmapLabel()
 {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void VersionDialog::initializeGUI()
+void LinkedPixmapLabel::Init(QString pLink)
 {
-    setupUi(this);
-    mLbFfmpeg->Init("http://ffmpeg.org");
-    mLbSofiaSip->Init("http://sofia-sip.sourceforge.net/");
-    mLbIcs->Init("http://www.tu-ilmenau.de/ics");
-    mLbCiwiLounge->Init("http://www.werbeagentur-ciwilounge.de/");
-    mLbMetraLabs->Init("http://www.metralabs.com/");
-    mLbComnart->Init("http://www.comnart.de/");
-    mLbFem->Init("http://fem.tu-ilmenau.de/");
-    mLbFacebook->Init("http://www.facebook.com/homerconferencing");
+	mLink = pLink;
+}
+
+void LinkedPixmapLabel::mousePressEvent(QMouseEvent *pEvent)
+{
+  	LOG(LOG_VERBOSE, "User triggered mouse press event at %d*%d", pEvent->x(), pEvent->y());
+  	if (pEvent->button() == Qt::LeftButton)
+  	{
+  		QDesktopServices::openUrl(QUrl(mLink));
+  	}
+  	QLabel::mousePressEvent(pEvent);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
