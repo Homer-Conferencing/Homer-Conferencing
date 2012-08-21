@@ -852,7 +852,7 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
                 LOG(LOG_INFO, "Waiting for end of thread failed because \"%s\"", strerror(tRes));
             else
             {
-                LOG(LOG_VERBOSE, "Got end signal and thread results at %p", tThreadResult);
+                LOG(LOG_VERBOSE, "Received thread end signal and got thread results at %p", tThreadResult);
                 tResult = true;
             }
         #endif
