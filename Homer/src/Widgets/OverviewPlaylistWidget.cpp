@@ -710,18 +710,25 @@ int OverviewPlaylistWidget::GetListSize()
 
 void OverviewPlaylistWidget::AddEntry(QString pLocation, QString pName)
 {
+	bool tIsWebUrl = pLocation.startsWith("http://");
+
+	LOG(LOG_VERBOSE, "Adding entry %s", pLocation.toStdString().c_str());
+
     if (pLocation.endsWith(".m3u"))
-    {
+    {// an M3U playlist file
         AddM3UToList(pLocation);
     }else if (pLocation.endsWith(".pls"))
-    {
+    {// a PLS playlist file
         AddPLSToList(pLocation);
+    }else if ((!tIsWebUrl) && (QDir(pLocation).exists()))
+    {// a directory
+    	AddDIRToList(pLocation);
     }else
-    {
+    {// an url or a local file
         if (pName == "")
         {
-            if (!pLocation.startsWith("http://"))
-            {
+            if (!tIsWebUrl)
+            {// derive a descriptive name from the web url
                 int tPos = pLocation.lastIndexOf('\\');
                 if (tPos == -1)
                     tPos = pLocation.lastIndexOf('/');
@@ -735,24 +742,28 @@ void OverviewPlaylistWidget::AddEntry(QString pLocation, QString pName)
                 pName = pLocation;
         }
 
-        LOG(LOG_VERBOSE, "Adding to playlist: %s at location %s", pName.toStdString().c_str(), pLocation.toStdString().c_str());
+        if ((tIsWebUrl) || (IsVideoFile(pLocation)) || (IsAudioFile(pLocation)))
+        {
+            LOG(LOG_VERBOSE, "Adding to playlist: %s at location %s", pName.toStdString().c_str(), pLocation.toStdString().c_str());
 
-        // create playlist entry
-        PlaylistEntry tEntry;
-        tEntry.Name = pName;
-        tEntry.Location = pLocation;
-        if (pLocation.startsWith("http://"))
-            tEntry.Icon = QIcon(":/images/22_22/NetworkConnection.png");
-        else
-            tEntry.Icon = QIcon(":/images/22_22/ArrowRight.png");
+            // create playlist entry
+            PlaylistEntry tEntry;
+            tEntry.Name = pName;
+            tEntry.Location = pLocation;
+            if (pLocation.startsWith("http://"))
+                tEntry.Icon = QIcon(":/images/22_22/NetworkConnection.png");
+            else
+                tEntry.Icon = QIcon(":/images/22_22/ArrowRight.png");
 
-        // save playlist entry
-        mPlaylistMutex.lock();
-        mPlaylist.push_back(tEntry);
-        mPlaylistMutex.unlock();
+            // save playlist entry
+            mPlaylistMutex.lock();
+            mPlaylist.push_back(tEntry);
+            mPlaylistMutex.unlock();
 
-        // trigger GUI update
-        QApplication::postEvent(this, new QEvent(QEvent::User));
+            // trigger GUI update
+            QApplication::postEvent(this, new QEvent(QEvent::User));
+        }else
+        	LOG(LOG_VERBOSE, "Ignoring entry: %s at location %s", pName.toStdString().c_str(), pLocation.toStdString().c_str());
     }
 }
 
@@ -864,6 +875,22 @@ void OverviewPlaylistWidget::AddPLSToList(QString pFilePlaylist)
 
             tLine = tPlaylistFile.readLine();
         }
+    }
+}
+
+void OverviewPlaylistWidget::AddDIRToList(QString pDirectoryLocation)
+{
+	// ignore "." and ".."
+	if ((pDirectoryLocation.endsWith(".")) || (pDirectoryLocation.endsWith("..")))
+		return;
+
+    LOG(LOG_VERBOSE, "Opening directory %s", pDirectoryLocation.toStdString().c_str());
+    QDir tDirectory(pDirectoryLocation);
+    QStringList tDirEntries = tDirectory.entryList();
+    QString tDirEntry;
+    foreach(tDirEntry, tDirEntries)
+    {
+    	AddEntry(pDirectoryLocation + '/' + tDirEntry);
     }
 }
 

@@ -113,6 +113,7 @@ private:
     void AddEntry(QString pLocation, QString pName = "");
     void AddM3UToList(QString pFilePlaylist);
     void AddPLSToList(QString pFilePlaylist);
+    void AddDIRToList(QString pDirectoryLocation);
     QString GetListEntry(int pIndex);
     QString GetListEntryName(int pIndex);
     void DeleteListEntry(int pIndex);
