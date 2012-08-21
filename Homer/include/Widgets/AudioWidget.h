@@ -121,6 +121,7 @@ private:
     bool                mAudioOutAvailable;
     bool                mAudioPaused;
     int					mAudioVolume;
+    int					mAudioVolumeWhenHiding;
     int                 mCurrentSampleNumber;
     int                 mLastSampleNumber;
     AudioWorkerThread   *mAudioWorker;

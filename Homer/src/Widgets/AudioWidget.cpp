@@ -693,7 +693,9 @@ void AudioWidget::SetVisible(bool pVisible)
         show();
         if (mAssignedAction != NULL)
             mAssignedAction->setChecked(true);
-        mAudioWorker->SetVolume(mAudioVolume);
+        if (mAudioVolume == 0)
+        	mAudioVolume = mAudioVolumeWhenHiding;
+        SetVolume(mAudioVolume);
         if (parentWidget()->isHidden())
             parentWidget()->show();
     }else
@@ -705,7 +707,8 @@ void AudioWidget::SetVisible(bool pVisible)
         hide();
         if (mAssignedAction != NULL)
             mAssignedAction->setChecked(false);
-        mAudioWorker->SetVolume(0);
+        mAudioVolumeWhenHiding = mAudioVolume;
+        SetVolume(0);
     }
 }
 
