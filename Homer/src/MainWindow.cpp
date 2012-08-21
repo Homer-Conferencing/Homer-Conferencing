@@ -735,9 +735,10 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
 
     // audio playback - stop sound
     #ifndef DEBUG_VERSION
+    	bool tStartedPlayback = false;
         if (CONF.GetStopSound())
-            StartAudioPlayback(CONF.GetStopSoundFile());
-        if (mWaveOut != NULL)
+            tStartedPlayback = StartAudioPlayback(CONF.GetStopSoundFile());
+        if ((mWaveOut != NULL) && (tStartedPlayback))
         {
             // wait for the end of playback
             while(mWaveOut->IsPlaying())
@@ -746,7 +747,7 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
                 Thread::Suspend(250 * 1000);
             }
         }
-    #endif
+	#endif
     ClosePlaybackDevice();
 
     // remove ourself as observer for new Meeting events
