@@ -32,6 +32,7 @@
 #include <assert.h>
 
 #include <HBSocket.h>
+#include <HBTime.h>
 #include <Header_SofiaSip.h>
 #include <Meeting.h>
 #include <ProcessStatisticService.h>
@@ -45,6 +46,17 @@ namespace Homer { namespace Conference {
 using namespace std;
 using namespace Homer::Base;
 using namespace Homer::Monitor;
+
+///////////////////////////////////////////////////////////////////////////////
+
+#define CALL_REQUEST_RETRIES                            1
+#define MESSAGE_REQUEST_RETRIES                         1
+#define OPTIONS_REQUEST_RETRIES                         0
+
+#define CALL_REQUEST_TIMEOUT                            3 // seconds
+#define SHUTDOWN_REQUEST_TIMEOUT						5 // seconds
+
+///////////////////////////////////////////////////////////////////////////////
 
 #define                 SIP_STATE_OKAY                      200
 #define                 SIP_STATE_OKAY_DELAYED_DELIVERY     202
@@ -353,9 +365,15 @@ void* SIP::Run(void*)
             LOG(LOG_VERBOSE, "..shutdown NUA stack");
             nua_shutdown(mSipContext->Nua);
 
+            int64_t tTime = Time::GetTimeStamp();
             // wait for shutdown of NUA stack
             while (mSipStackOnline)
             {
+            	if (Time::GetTimeStamp() - tTime > SHUTDOWN_REQUEST_TIMEOUT * 1000 * 1000)
+            	{
+            		LOG(LOG_ERROR, "Timeout of %d seconds occurred during SIP stack shutdown", SHUTDOWN_REQUEST_TIMEOUT);
+            		break;
+            	}
                 LOG(LOG_VERBOSE, "Wait for Shutdown-Step");
 
                 // one step of main loop for processing of messages, timeout is set to 100 ms

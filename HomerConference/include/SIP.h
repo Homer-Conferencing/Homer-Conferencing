@@ -60,13 +60,6 @@ namespace Homer { namespace Conference {
 #define USER_AGENT_SIGNATURE                            "homer-conferencing.com"
 #define ORGANIZATION_SIGNATURE                          "homer-conferencing.com"
 
-#define CALL_REQUEST_RETRIES                            1
-#define MESSAGE_REQUEST_RETRIES                         1
-#define OPTIONS_REQUEST_RETRIES                         0
-
-#define CALL_REQUEST_TIMEOUT                            3 //seconds
-
-
 enum AvailabilityState{
 	AVAILABILITY_STATE_OFFLINE = 0,
 	AVAILABILITY_STATE_ONLINE = 1,
