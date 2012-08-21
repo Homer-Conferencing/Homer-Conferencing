@@ -220,56 +220,62 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     mMediaStreamIndex = -1;
     for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
     {
-        if(mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
+        if (mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
         {
-        	string tLanguage = "";
-        	string tTitle = "";
-            AVCodec *tCodec = NULL;
-            tCodec = avcodec_find_decoder(mFormatContext->streams[i]->codec->codec_id);
-            tDictEntry = NULL;
+        	if (mFormatContext->streams[i]->codec->channels < 7)
+        	{
+				string tLanguage = "";
+				string tTitle = "";
+				AVCodec *tCodec = NULL;
+				tCodec = avcodec_find_decoder(mFormatContext->streams[i]->codec->codec_id);
+				tDictEntry = NULL;
 
-            // get the language of the stream
-            tDictEntry = HM_av_metadata_get(mFormatContext->streams[i]->metadata, "language", NULL);
-			if (tDictEntry != NULL)
-			{
-				if (tDictEntry->value != NULL)
+				// get the language of the stream
+				tDictEntry = HM_av_metadata_get(mFormatContext->streams[i]->metadata, "language", NULL);
+				if (tDictEntry != NULL)
 				{
-					tLanguage = string(tDictEntry->value);
-					std::transform(tLanguage.begin(), tLanguage.end(), tLanguage.begin(), ::toupper);
-					LOG(LOG_VERBOSE, "Language found: %s", tLanguage.c_str());
+					if (tDictEntry->value != NULL)
+					{
+						tLanguage = string(tDictEntry->value);
+						std::transform(tLanguage.begin(), tLanguage.end(), tLanguage.begin(), ::toupper);
+						LOG(LOG_VERBOSE, "Language found: %s", tLanguage.c_str());
+					}
 				}
-			}
 
-            // get the title of the stream
-            tDictEntry = HM_av_metadata_get(mFormatContext->streams[i]->metadata, "title", NULL);
-			if (tDictEntry != NULL)
-			{
-				if (tDictEntry->value != NULL)
+				// get the title of the stream
+				tDictEntry = HM_av_metadata_get(mFormatContext->streams[i]->metadata, "title", NULL);
+				if (tDictEntry != NULL)
 				{
-					tTitle = string(tDictEntry->value);
-					LOG(LOG_VERBOSE, "Title found: %s", tTitle.c_str());
+					if (tDictEntry->value != NULL)
+					{
+						tTitle = string(tDictEntry->value);
+						LOG(LOG_VERBOSE, "Title found: %s", tTitle.c_str());
+					}
 				}
-			}
 
-			LOG(LOG_VERBOSE, "Desired audio input channel: %d, current found audio input channel: %d", mDesiredInputChannel, tAudioStreamCount);
-            if(tAudioStreamCount == mDesiredInputChannel)
-            {
-                mMediaStreamIndex = i;
-                LOG(LOG_VERBOSE, "Using audio input channel %d in stream %d for grabbing", mDesiredInputChannel, i);
+				LOG(LOG_VERBOSE, "Desired audio input channel: %d, current found audio input channel: %d", mDesiredInputChannel, tAudioStreamCount);
+				if(tAudioStreamCount == mDesiredInputChannel)
+				{
+					mMediaStreamIndex = i;
+					LOG(LOG_VERBOSE, "Using audio input channel %d in stream %d for grabbing", mDesiredInputChannel, i);
 
-                // Dump information about device file
-                av_dump_format(mFormatContext, i, "MediaSourceFile(audio)", false);
-            }
+					// Dump information about device file
+					av_dump_format(mFormatContext, i, "MediaSourceFile(audio)", false);
+				}
 
-            tAudioStreamCount++;
+				tAudioStreamCount++;
 
-            if ((tLanguage != "") || (tTitle != ""))
-            	tEntry = tLanguage + ": " + tTitle + " (" + toString(tCodec->name) + ", " + toString(mFormatContext->streams[i]->codec->channels) + " ch)";
-            else
-            	tEntry = "Audio " + toString(tAudioStreamCount) + " (" + toString(tCodec->name) + ", " + toString(mFormatContext->streams[i]->codec->channels) + " ch)";
-            LOG(LOG_VERBOSE, "Found audio stream: %s", tEntry.c_str());
-            mInputChannels.push_back(tEntry);
-        }
+				if ((tLanguage != "") || (tTitle != ""))
+					tEntry = tLanguage + ": " + tTitle + " (" + toString(tCodec->name) + ", " + toString(mFormatContext->streams[i]->codec->channels) + " ch)";
+				else
+					tEntry = "Audio " + toString(tAudioStreamCount) + " (" + toString(tCodec->name) + ", " + toString(mFormatContext->streams[i]->codec->channels) + " ch)";
+				LOG(LOG_VERBOSE, "Found audio stream: %s", tEntry.c_str());
+				mInputChannels.push_back(tEntry);
+        	}else
+        	{
+        		LOG(LOG_ERROR, "Detected unsupported audio channel setup with %d channels, will ignore this audio stream", mFormatContext->streams[i]->codec->channels);
+        	}
+		}
     }
     if (mMediaStreamIndex == -1)
     {
