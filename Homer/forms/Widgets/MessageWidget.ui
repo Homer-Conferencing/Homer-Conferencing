@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>280</width>
+    <width>300</width>
     <height>286</height>
    </rect>
   </property>
@@ -244,8 +244,8 @@
            <string/>
           </property>
           <property name="icon">
-           <iconset>
-            <normaloff>:/images/Plus.png</normaloff>:/images/Plus.png</iconset>
+           <iconset resource="../../resources/Icons.qrc">
+            <normaloff>:/images/22_22/Plus.png</normaloff>:/images/22_22/Plus.png</iconset>
           </property>
           <property name="iconSize">
            <size>
@@ -342,13 +342,13 @@
          <widget class="QPushButton" name="mPbWeb">
           <property name="minimumSize">
            <size>
-            <width>120</width>
+            <width>130</width>
             <height>30</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>120</width>
+            <width>130</width>
             <height>30</height>
            </size>
           </property>
@@ -393,13 +393,13 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>120</width>
+            <width>130</width>
             <height>30</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>120</width>
+            <width>130</width>
             <height>30</height>
            </size>
           </property>
@@ -458,13 +458,13 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>120</width>
+            <width>130</width>
             <height>30</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>120</width>
+            <width>130</width>
             <height>30</height>
            </size>
           </property>
@@ -509,13 +509,13 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>120</width>
+            <width>130</width>
             <height>30</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>120</width>
+            <width>130</width>
             <height>30</height>
            </size>
           </property>
