@@ -263,7 +263,10 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
 
             tAudioStreamCount++;
 
-            tEntry = tLanguage + ": " + tTitle + " (" + toString(tCodec->name) + ", " + toString(mFormatContext->streams[i]->codec->channels) + " ch)";
+            if ((tLanguage != "") || (tTitle != ""))
+            	tEntry = tLanguage + ": " + tTitle + " (" + toString(tCodec->name) + ", " + toString(mFormatContext->streams[i]->codec->channels) + " ch)";
+            else
+            	tEntry = "Audio " + toString(tAudioStreamCount) + " (" + toString(tCodec->name) + ", " + toString(mFormatContext->streams[i]->codec->channels) + " ch)";
             LOG(LOG_VERBOSE, "Found audio stream: %s", tEntry.c_str());
             mInputChannels.push_back(tEntry);
         }
@@ -1717,7 +1720,7 @@ bool MediaSourceFile::SelectInputChannel(int pIndex)
 {
     bool tResult = false;
 
-    LOG(LOG_WARN, "Selecting input channel: %d of %d max. channels", pIndex, (int)mInputChannels.size());
+    LOG(LOG_WARN, "Selecting input channel: %d of %d max. channels, current is %d", pIndex, (int)mInputChannels.size(), mCurrentInputChannel);
 
     if (mCurrentInputChannel != pIndex)
         tResult = true;
