@@ -43,10 +43,18 @@
 
 namespace Homer { namespace Gui {
 
-#define PLAYLIST_UPDATE_DELAY         250 //ms
-#define ALLOWED_AV_TIME_DIFF			2 //s
+///////////////////////////////////////////////////////////////////////////////
+
+#define PLAYLIST_UPDATE_DELAY         			 	  250  //ms
+
+#define ALLOWED_AV_TIME_DIFF							2  //s
+
+// maximum recursive calls
+#define MAX_PARSER_RECURSIONS						   32
 
 ///////////////////////////////////////////////////////////////////////////////
+
+int OverviewPlaylistWidget::sParseRecursionCount = 0;
 
 OverviewPlaylistWidget::OverviewPlaylistWidget(QAction *pAssignedAction, QMainWindow* pMainWindow, VideoWorkerThread *pVideoWorker, AudioWorkerThread *pAudioWorker):
     QDockWidget(pMainWindow)
@@ -209,12 +217,20 @@ QStringList OverviewPlaylistWidget::LetUserSelectAudioFile(QWidget *pParent, QSt
                                                                 &sAllLoadAudioFilter,
                                                                 CONF_NATIVE_DIALOGS);
     else
+    {
         tResult = QStringList(QFileDialog::getOpenFileName(pParent,  pDescription,
                                                                 CONF.GetDataDirectory(),
                                                                 sLoadAudioFilters,
                                                                 &sAllLoadAudioFilter,
                                                                 CONF_NATIVE_DIALOGS));
 
+        // use the file parser to avoid playlists and resolve them to one single entry
+        Playlist tPlaylist = Parse(tResult.first(), "", false);
+        if (tPlaylist.size() > 0)
+        	tResult = QStringList(tPlaylist.first().Location);
+		else
+			tResult.clear();
+    }
     if (!tResult.isEmpty())
         CONF.SetDataDirectory(tResult.first().left(tResult.first().lastIndexOf('/')));
 
@@ -708,75 +724,114 @@ int OverviewPlaylistWidget::GetListSize()
     return tResult;
 }
 
-void OverviewPlaylistWidget::AddEntry(QString pLocation, QString pName)
+void OverviewPlaylistWidget::AddEntry(QString pLocation)
 {
-	bool tIsWebUrl = pLocation.startsWith("http://");
+	Playlist tPlaylist = Parse(pLocation);
+	LOG(LOG_VERBOSE, "Parsed %d new playlist entries", tPlaylist.size());
 
-	LOG(LOG_VERBOSE, "Adding entry %s", pLocation.toStdString().c_str());
+	PlaylistEntry tPlaylistEntry;
+	foreach(tPlaylistEntry, tPlaylist)
+	{
+		LOG(LOG_VERBOSE, "Adding to playist: %s(%s)", tPlaylistEntry.Name.toStdString().c_str(), tPlaylistEntry.Location.toStdString().c_str());
+		mPlaylistMutex.lock();
+		mPlaylist.push_back(tPlaylistEntry);
+		mPlaylistMutex.unlock();
+	}
 
-    if (pLocation.endsWith(".m3u"))
-    {// an M3U playlist file
-        AddM3UToList(pLocation);
-    }else if (pLocation.endsWith(".pls"))
-    {// a PLS playlist file
-        AddPLSToList(pLocation);
-    }else if ((!tIsWebUrl) && (QDir(pLocation).exists()))
-    {// a directory
-    	AddDIRToList(pLocation);
-    }else
-    {// an url or a local file
-        if (pName == "")
-        {
-            if (!tIsWebUrl)
-            {// derive a descriptive name from the web url
-                int tPos = pLocation.lastIndexOf('\\');
-                if (tPos == -1)
-                    tPos = pLocation.lastIndexOf('/');
-                if (tPos != -1)
-                {
-                    tPos += 1;
-                    pName = pLocation.mid(tPos, pLocation.size() - tPos);
-                }else
-                    pName = pLocation;
-            }else
-                pName = pLocation;
-        }
-
-        if ((tIsWebUrl) || (IsVideoFile(pLocation)) || (IsAudioFile(pLocation)))
-        {
-            LOG(LOG_VERBOSE, "Adding to playlist: %s at location %s", pName.toStdString().c_str(), pLocation.toStdString().c_str());
-
-            // create playlist entry
-            PlaylistEntry tEntry;
-            tEntry.Name = pName;
-            tEntry.Location = pLocation;
-            if (pLocation.startsWith("http://"))
-                tEntry.Icon = QIcon(":/images/22_22/NetworkConnection.png");
-            else
-                tEntry.Icon = QIcon(":/images/22_22/ArrowRight.png");
-
-            // save playlist entry
-            mPlaylistMutex.lock();
-            mPlaylist.push_back(tEntry);
-            mPlaylistMutex.unlock();
-
-            // trigger GUI update
-            QApplication::postEvent(this, new QEvent(QEvent::User));
-        }else
-        	LOG(LOG_VERBOSE, "Ignoring entry: %s at location %s", pName.toStdString().c_str(), pLocation.toStdString().c_str());
-    }
+    // trigger GUI update
+    QApplication::postEvent(this, new QEvent(QEvent::User));
 }
 
-void OverviewPlaylistWidget::AddM3UToList(QString pFilePlaylist)
+Playlist OverviewPlaylistWidget::Parse(QString pLocation, QString pName, bool pAcceptVideo, bool pAcceptAudio)
 {
+	Playlist tResult;
+	PlaylistEntry tPlaylistEntry;
+
+	sParseRecursionCount ++;
+	if (sParseRecursionCount < MAX_PARSER_RECURSIONS)
+	{
+		bool tIsWebUrl = pLocation.startsWith("http://");
+
+		LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Parsing %s", pLocation.toStdString().c_str());
+
+		if (pLocation.endsWith(".m3u"))
+		{// an M3U playlist file
+			tResult += ParseM3U(pLocation, pAcceptVideo, pAcceptAudio);
+		}else if (pLocation.endsWith(".pls"))
+		{// a PLS playlist file
+			tResult += ParsePLS(pLocation, pAcceptVideo, pAcceptAudio);
+		}else if ((!tIsWebUrl) && (QDir(pLocation).exists()))
+		{// a directory
+			tResult += ParseDIR(pLocation, pAcceptVideo, pAcceptAudio);
+		}else
+		{// an url or a local file
+			// set the location
+			tPlaylistEntry.Location = pLocation;
+
+			if (pName == "")
+			{
+				// set the name
+				if (!tIsWebUrl)
+				{// derive a descriptive name from the location
+					int tPos = tPlaylistEntry.Location.lastIndexOf('\\');
+					if (tPos == -1)
+						tPos = tPlaylistEntry.Location.lastIndexOf('/');
+					if (tPos != -1)
+					{
+						tPos += 1;
+						tPlaylistEntry.Name = tPlaylistEntry.Location.mid(tPos, pLocation.size() - tPos);
+					}else
+					{
+						tPlaylistEntry.Name = tPlaylistEntry.Location;
+					}
+				}else
+				{// we have a web url
+					tPlaylistEntry.Name = tPlaylistEntry.Location;
+				}
+			}else
+				tPlaylistEntry.Name = pName;
+
+			// check file for A/V content
+			if ((pAcceptVideo && (IsVideoFile(tPlaylistEntry.Location))) || (pAcceptAudio && ((IsAudioFile(tPlaylistEntry.Location)) || tIsWebUrl)))
+			{
+				LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Adding to parsed playlist: %s at location %s", tPlaylistEntry.Name.toStdString().c_str(), tPlaylistEntry.Location.toStdString().c_str());
+
+				// create playlist entry
+				if (tIsWebUrl)
+					tPlaylistEntry.Icon = QIcon(":/images/22_22/NetworkConnection.png");
+				else
+					tPlaylistEntry.Icon = QIcon(":/images/22_22/ArrowRight.png");
+
+				// save playlist entry
+				tResult.push_back(tPlaylistEntry);
+			}else
+				LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Ignoring entry: %s at location %s", tPlaylistEntry.Name.toStdString().c_str(), tPlaylistEntry.Location.toStdString().c_str());
+		}
+	}else
+	{
+		LOGEX(OverviewPlaylistWidget, LOG_ERROR, "Maximum of %d parser recursions reached, terminating here", MAX_PARSER_RECURSIONS);
+	}
+
+    sParseRecursionCount--;
+
+    return tResult;
+}
+
+Playlist OverviewPlaylistWidget::ParseM3U(QString pFilePlaylist, bool pAcceptVideo, bool pAcceptAudio)
+{
+	Playlist tResult;
+	PlaylistEntry tPlaylistEntry;
+	tPlaylistEntry.Location = "";
+	tPlaylistEntry.Name = "";
+
     QString tDir = pFilePlaylist.left(pFilePlaylist.lastIndexOf('/'));
-    LOG(LOG_VERBOSE, "Opening M3U playlist file %s", pFilePlaylist.toStdString().c_str());
-    LOG(LOG_VERBOSE, "..in directory: %s", tDir.toStdString().c_str());
+    LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Parsing M3U playlist %s", pFilePlaylist.toStdString().c_str());
+    LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "..in directory: %s", tDir.toStdString().c_str());
 
     QFile tPlaylistFile(pFilePlaylist);
     if (!tPlaylistFile.open(QIODevice::ReadOnly))
     {
-        LOG(LOG_ERROR, "Couldn't read M3U playlist from %s", pFilePlaylist.toStdString().c_str());
+    	LOGEX(OverviewPlaylistWidget, LOG_ERROR, "Couldn't read M3U playlist from %s", pFilePlaylist.toStdString().c_str());
     }else
     {
         QByteArray tLine;
@@ -785,36 +840,60 @@ void OverviewPlaylistWidget::AddM3UToList(QString pFilePlaylist)
         {
             QString tLineString = QString(tLine);
 
-            // remove line delimiters
+            //remove any "new line" char from the end
             while((tLineString.endsWith(QChar(0x0A))) || (tLineString.endsWith(QChar(0x0D))))
-                tLineString = tLineString.left(tLineString.length() - 1); //remove any "new line" char from the end
+                tLineString = tLineString.left(tLineString.length() - 1);
 
             // parse the playlist line
-            if (!tLineString.startsWith("#EXT"))
-            {
-                LOG(LOG_VERBOSE, "Found playlist entry: %s", tLineString.toStdString().c_str());
-                if (tLineString.startsWith("http://"))
-                    AddEntry(tLineString);
-                else
-                    AddEntry(tDir + "/" + tLineString);
-            }else
-                LOG(LOG_VERBOSE, "Found playlist extended entry: %s", tLineString.toStdString().c_str());
+        	if (tLineString != "")
+        	{
+				if (!tLineString.startsWith("#EXT"))
+				{// we have a location and the entry is complete
+						LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Found playlist entry location: %s", tLineString.toStdString().c_str());
+						if (tLineString.startsWith("http://"))
+							tPlaylistEntry.Location = tLineString;
+						else
+							tPlaylistEntry.Location = tDir + "/" + tLineString;
+						if (tPlaylistEntry.Name == "")
+							tPlaylistEntry.Name = tPlaylistEntry.Location;
+						tResult += Parse(tPlaylistEntry.Location, tPlaylistEntry.Name, pAcceptVideo, pAcceptAudio);
+						tPlaylistEntry.Location = "";
+						tPlaylistEntry.Name = "";
+				}else
+				{
+					if (!tLineString.startsWith("#EXTINF"))
+					{// we have extended information including a name
+						if (tLineString.indexOf(',') != -1)
+						{
+							tLineString = tLineString.right(tLineString.size() - tLineString.indexOf(',') - 1);
+							LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Found playlist entry name: %s", tLineString.toStdString().c_str());
+							tPlaylistEntry.Name = tLineString;
+						}else
+							LOGEX(OverviewPlaylistWidget, LOG_WARN, "Invalid format of line: %s", tLineString.toStdString().c_str());
+					}else
+						LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Found playlist extended entry: %s", tLineString.toStdString().c_str());
+				}
+        	}
 
             tLine = tPlaylistFile.readLine();
         }
     }
+
+    return tResult;
 }
 
-void OverviewPlaylistWidget::AddPLSToList(QString pFilePlaylist)
+Playlist OverviewPlaylistWidget::ParsePLS(QString pFilePlaylist, bool pAcceptVideo, bool pAcceptAudio)
 {
+	Playlist tResult;
+
     QString tDir = pFilePlaylist.left(pFilePlaylist.lastIndexOf('/'));
-    LOG(LOG_VERBOSE, "Opening PLS playlist file %s", pFilePlaylist.toStdString().c_str());
-    LOG(LOG_VERBOSE, "..in directory: %s", tDir.toStdString().c_str());
+    LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Parsing PLS playlist file %s", pFilePlaylist.toStdString().c_str());
+    LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "..in directory: %s", tDir.toStdString().c_str());
 
     QFile tPlaylistFile(pFilePlaylist);
     if (!tPlaylistFile.open(QIODevice::ReadOnly))
     {
-        LOG(LOG_ERROR, "Couldn't read PLS playlist from %s", pFilePlaylist.toStdString().c_str());
+    	LOGEX(OverviewPlaylistWidget, LOG_ERROR, "Couldn't read PLS playlist from %s", pFilePlaylist.toStdString().c_str());
     }else
     {
         QByteArray tLine;
@@ -823,6 +902,9 @@ void OverviewPlaylistWidget::AddPLSToList(QString pFilePlaylist)
         int tFoundPlaylisEntries = -1;
         bool tPlaylistEntryParsed = false;
         PlaylistEntry tPlaylistEntry;
+        tPlaylistEntry.Location = "";
+        tPlaylistEntry.Name = "";
+
         while ((tFoundPlaylisEntries < tPlaylistEntries) && (!tLine.isEmpty()))
         {
             QString tLineString = QString(tLine);
@@ -836,7 +918,7 @@ void OverviewPlaylistWidget::AddPLSToList(QString pFilePlaylist)
             {
                 QString tKey = tLineSplit[0];
                 QString tValue = tLineSplit[1];
-                LOG(LOG_VERBOSE, "Found key \"%s\" with value \"%s\"", tKey.toStdString().c_str(), tValue.toStdString().c_str());
+                LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Found key \"%s\" with value \"%s\"", tKey.toStdString().c_str(), tValue.toStdString().c_str());
                 // parse the playlist line
                 if (tKey.startsWith("NumberOfEntries"))
                 {// "NumberOfEntries"
@@ -844,23 +926,20 @@ void OverviewPlaylistWidget::AddPLSToList(QString pFilePlaylist)
                     tPlaylistEntries = tValue.toInt(&tConversionWasOkay);
                     if (!tConversionWasOkay)
                     {
-                        LOG(LOG_ERROR, "Unable to convert \"%s\" into an integer value", tValue.toStdString().c_str());
-                        return;
+                    	LOGEX(OverviewPlaylistWidget, LOG_ERROR, "Unable to convert \"%s\" into an integer value", tValue.toStdString().c_str());
+                        return tResult;
                     }
                 }else if (tKey.startsWith("File"))
                 {// "File"
                     tPlaylistEntry.Location = tValue;
                 }else if (tKey.startsWith("Title"))
-                {// "File"
+                {// "Title"
                     tFoundPlaylisEntries++;
-                    tPlaylistEntryParsed = true;
                     tPlaylistEntry.Name = tValue;
-                }
-                if (tPlaylistEntryParsed)
-                {
-                    tPlaylistEntryParsed = false;
-                    LOG(LOG_VERBOSE, "Found playlist entry: \"%s\" at location \"%s\"", tPlaylistEntry.Name.toStdString().c_str(), tPlaylistEntry.Location.toStdString().c_str());
-                    AddEntry(tPlaylistEntry.Location, tPlaylistEntry.Name);
+                    LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Found playlist entry: \"%s\" at location \"%s\"", tPlaylistEntry.Name.toStdString().c_str(), tPlaylistEntry.Location.toStdString().c_str());
+					tResult += Parse(tPlaylistEntry.Location, tPlaylistEntry.Name, pAcceptVideo, pAcceptAudio);
+                    tPlaylistEntry.Location = "";
+                    tPlaylistEntry.Name = "";
                 }
             }else
             {
@@ -869,29 +948,35 @@ void OverviewPlaylistWidget::AddPLSToList(QString pFilePlaylist)
                     // nothing to do
                 }else
                 {
-                    LOG(LOG_VERBOSE, "Unexpected token in PLS playlist: \"%s\"", tLineString.toStdString().c_str());
+                    LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Unexpected token in PLS playlist: \"%s\"", tLineString.toStdString().c_str());
                 }
             }
 
             tLine = tPlaylistFile.readLine();
         }
     }
+
+    return tResult;
 }
 
-void OverviewPlaylistWidget::AddDIRToList(QString pDirectoryLocation)
+Playlist OverviewPlaylistWidget::ParseDIR(QString pDirLocation, bool pAcceptVideo, bool pAcceptAudio)
 {
-	// ignore "." and ".."
-	if ((pDirectoryLocation.endsWith(".")) || (pDirectoryLocation.endsWith("..")))
-		return;
+	Playlist tResult;
 
-    LOG(LOG_VERBOSE, "Opening directory %s", pDirectoryLocation.toStdString().c_str());
-    QDir tDirectory(pDirectoryLocation);
+	// ignore "." and ".."
+	if ((pDirLocation.endsWith(".")) || (pDirLocation.endsWith("..")))
+		return tResult;
+
+    LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Parsing directory %s", pDirLocation.toStdString().c_str());
+    QDir tDirectory(pDirLocation);
     QStringList tDirEntries = tDirectory.entryList();
     QString tDirEntry;
     foreach(tDirEntry, tDirEntries)
     {
-    	AddEntry(pDirectoryLocation + '/' + tDirEntry);
+    	tResult += Parse(pDirLocation + '/' + tDirEntry, "", pAcceptVideo, pAcceptAudio);
     }
+
+    return tResult;
 }
 
 QString OverviewPlaylistWidget::GetListEntry(int pIndex)

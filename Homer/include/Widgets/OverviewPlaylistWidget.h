@@ -110,10 +110,14 @@ private:
     void UpdateView();
 
     int GetListSize();
-    void AddEntry(QString pLocation, QString pName = "");
-    void AddM3UToList(QString pFilePlaylist);
-    void AddPLSToList(QString pFilePlaylist);
-    void AddDIRToList(QString pDirectoryLocation);
+
+    /* add/parse playlist entries */
+    void AddEntry(QString pLocation);
+    static Playlist Parse(QString pLocation, QString pName = "", bool pAcceptVideo = true, bool pAcceptAudio = true);
+    static Playlist ParseM3U(QString pFilePlaylist, bool pAcceptVideo, bool pAcceptAudio);
+    static Playlist ParsePLS(QString pFilePlaylist, bool pAcceptVideo, bool pAcceptAudio);
+    static Playlist ParseDIR(QString pDirLocation, bool pAcceptVideo, bool pAcceptAudio);
+
     QString GetListEntry(int pIndex);
     QString GetListEntryName(int pIndex);
     void DeleteListEntry(int pIndex);
@@ -134,6 +138,7 @@ private:
     QString 			mCurrentFile;
     Playlist            mPlaylist;
     QMutex              mPlaylistMutex;
+    static int			sParseRecursionCount;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
