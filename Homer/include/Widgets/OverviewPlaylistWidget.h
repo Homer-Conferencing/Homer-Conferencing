@@ -74,13 +74,11 @@ public:
 
     static OverviewPlaylistWidget& GetInstance();
 
-    static QStringList LetUserSelectVideoFile(QWidget *pParent, QString pDescription, bool pMultipleFiles = true);
     static QString LetUserSelectVideoSaveFile(QWidget *pParent, QString pDescription);
     static bool IsVideoFile(QString pFileName);
     static QStringList LetUserSelectAudioFile(QWidget *pParent, QString pDescription, bool pMultipleFiles = true);
     static QString LetUserSelectAudioSaveFile(QWidget *pParent, QString pDescription);
     static bool IsAudioFile(QString pFileName);
-    static QStringList LetUserSelectMovieFile(QWidget *pParent, QString pDescription, bool pMultipleFiles = true);
     static QStringList LetUserSelectMediaFile(QWidget *pParent, QString pDescription, bool pMultipleFiles = true);
 
     /* add playlist entries */

@@ -131,37 +131,14 @@ static QString sLoadVideoFilters = sAllLoadVideoFilter + ";;"\
                     "Matroska Format (*.mkv);;"\
                     "MPEG-Program Stream Format (*.mpg *.mpeg);;"\
                     "MPEG-2 Transport Stream (*.m2ts);;"\
-                    "M3U Playlist file (*.m3u);;"\
-                    "PLS Playlist file (*.pls);;"\
+                    "M3U Playlist File (*.m3u);;"\
+                    "PLS Playlist File (*.pls);;"\
                     "Portable Network Graphics (*.png);;"\
                     "Quicktime/MPEG4 Format (*.m4v *.mov *.mp4 *.mp4a *.3gp);;"\
                     "Small Web Format (*.swf);;"\
                     "Video Object Format (*.vob);;" \
                     "Windows Bitmap (*.bmp);;"\
                     "Windows Media Video Format (*.wmv)";
-
-QStringList OverviewPlaylistWidget::LetUserSelectVideoFile(QWidget *pParent, QString pDescription, bool pMultipleFiles)
-{
-    QStringList tResult;
-
-    if (pMultipleFiles)
-        tResult = QFileDialog::getOpenFileNames(pParent, pDescription,
-                                                                CONF.GetDataDirectory(),
-                                                                sLoadVideoFilters,
-                                                                &sAllLoadVideoFilter,
-                                                                CONF_NATIVE_DIALOGS);
-    else
-        tResult = QStringList(QFileDialog::getOpenFileName(pParent,  pDescription,
-                                                                CONF.GetDataDirectory(),
-                                                                sLoadVideoFilters,
-                                                                &sAllLoadVideoFilter,
-                                                                CONF_NATIVE_DIALOGS));
-
-    if (!tResult.isEmpty())
-        CONF.SetDataDirectory(tResult.first().left(tResult.first().lastIndexOf('/')));
-
-    return tResult;
-}
 
 static QString sAllSaveVideoFilter = "All supported formats (*.avi *.m4v *.mov *.mp4 *.mp4a *.3gp)";
 static QString sSaveVideoFilters = sAllSaveVideoFilter + ";;"\
@@ -207,15 +184,16 @@ static QString sLoadAudioFilters =  sAllLoadAudioFilter + ";;"\
                     "Advanced Systems Format (*.asf);;"\
                     "Audio Video Interleave Format (*.avi);;"\
                     "MPEG-2 Transport Stream (*.m2ts);;"\
-                    "M3U Playlist file (*.m3u);;"\
+                    "M3U Playlist File (*.m3u);;"\
                     "Matroska Format (*.mka *.mkv);;"\
                     "MPEG Audio Layer 2/3 Format (*.mp3);;"\
                     "MPEG-Program Stream Format (*.mpg *.mpeg);;"\
-                    "PLS Playlist file (*.pls);;"\
+                    "PLS Playlist File (*.pls);;"\
                     "Quicktime/MPEG4 Format (*.m4v *.mov *.mp4 *.mp4a *.3gp);;"\
                     "Video Object Format (*.vob);;" \
                     "Waveform Audio File Format (*.wav);;" \
                     "Windows Media Video Format (*.wmv)";
+
 QStringList OverviewPlaylistWidget::LetUserSelectAudioFile(QWidget *pParent, QString pDescription, bool pMultipleFiles)
 {
     QStringList tResult;
@@ -290,41 +268,6 @@ bool OverviewPlaylistWidget::IsAudioFile(QString pFileName)
         return false;
 }
 
-QString sAllLoadMovieFilter = "All supported formats (*.avi *.m4v *.mkv *.mov *.mpeg *.mp4 *.mp4a *.m2ts *.m3u *.swf *.vob *.wmv *.3gp)";
-QString sLoadMovieFilters =  sAllLoadMovieFilter + ";;"\
-                    "Audio Video Interleave Format (*.avi);;"\
-                    "Matroska Format (*.mkv);;"\
-                    "MPEG-Program Stream Format (*.mpeg);;"\
-                    "MPEG-2 Transport Stream (*.m2ts);;"\
-                    "M3U playlist file (*.m3u);;"\
-                    "Quicktime/MPEG4 Format (*.m4v *.mov *.mp4 *.mp4a *.3gp);;"\
-                    "Small Web Format (*.swf);;"\
-                    "Video Object Format (*.vob);;" \
-                    "Windows Media Video Format (*.wmv)";
-
-QStringList OverviewPlaylistWidget::LetUserSelectMovieFile(QWidget *pParent, QString pDescription, bool pMultipleFiles)
-{
-    QStringList tResult;
-
-    if (pMultipleFiles)
-        tResult = QFileDialog::getOpenFileNames(pParent,  pDescription,
-                                                                CONF.GetDataDirectory(),
-                                                                sLoadMovieFilters,
-                                                                &sAllLoadMovieFilter,
-                                                                CONF_NATIVE_DIALOGS);
-    else
-        tResult = QStringList(QFileDialog::getOpenFileName(pParent,  pDescription,
-                                                                CONF.GetDataDirectory(),
-                                                                sLoadMovieFilters,
-                                                                &sAllLoadMovieFilter,
-                                                                CONF_NATIVE_DIALOGS));
-
-    if (!tResult.isEmpty())
-        CONF.SetDataDirectory(tResult.first().left(tResult.first().lastIndexOf('/')));
-
-    return tResult;
-}
-
 static QString sAllLoadMediaFilter = "All supported formats (*.asf *.avi *.bmp *.dv *.jpg *.jpeg *.m4v *.mka *.mkv *.mov *.mpg *.mpeg *.mp3 *.mp4 *.mp4a *.m2ts *.m3u *.pls *.png *.swf *.vob *.wav *.wmv *.3gp)";
 static QString sLoadMediaFilters = sAllLoadMediaFilter + ";;"\
                     "Advanced Systems Format (*.asf);;"\
@@ -335,9 +278,9 @@ static QString sLoadMediaFilters = sAllLoadMediaFilter + ";;"\
                     "MPEG Audio Layer 2/3 Format (*.mp3);;"\
                     "MPEG-Program Stream Format (*.mpg *.mpeg);;"\
                     "MPEG-2 Transport Stream (*.m2ts);;"\
-                    "M3U Playlist file (*.m3u);;"\
+                    "M3U Playlist File (*.m3u);;"\
                     "Portable Network Graphics (*.png);;"\
-                    "PLS Playlist file (*.pls);;"\
+                    "PLS Playlist File (*.pls);;"\
                     "Quicktime/MPEG4 Format (*.m4v *.mov *.mp4 *.mp4a *.3gp);;"\
                     "Small Web Format (*.swf);;"\
                     "Video Object Format (*.vob);;" \
@@ -568,8 +511,8 @@ void OverviewPlaylistWidget::SaveListDialog()
     QString tFileName;
     tFileName = QFileDialog::getSaveFileName(this,  "Save playlist to..",
                                                                 CONF.GetDataDirectory() + "/Homer.m3u",
-                                                                "Playlist file (*.m3u)",
-                                                                &*(new QString("Playlist file (*.m3u)")),
+                                                                "Playlist File (*.m3u)",
+                                                                &*(new QString("Playlist File (*.m3u)")),
                                                                 CONF_NATIVE_DIALOGS);
 
     if (tFileName.isEmpty())

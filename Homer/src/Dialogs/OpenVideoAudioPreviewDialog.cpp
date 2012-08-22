@@ -480,16 +480,7 @@ void OpenVideoAudioPreviewDialog::actionGetFile()
 {
     QString tFileName;
 
-    if((mCbVideoEnabled->isChecked()) && (mCbAudioEnabled->isChecked()))
-    {
-        tFileName = OverviewPlaylistWidget::LetUserSelectMovieFile(this, "Select movie file for preview", false).first();
-    }else
-    {
-        if(mCbVideoEnabled->isChecked())
-            tFileName = OverviewPlaylistWidget::LetUserSelectVideoFile(this, "Select video file for preview", false).first();
-        if(mCbAudioEnabled->isChecked())
-            tFileName = OverviewPlaylistWidget::LetUserSelectAudioFile(this, "Select audio file for preview", false).first();
-    }
+	tFileName = OverviewPlaylistWidget::LetUserSelectMediaFile(this, "Select file for preview", false).first();
 
     if (tFileName.isEmpty())
         return;
