@@ -155,6 +155,7 @@ private slots:
 private:
 	void Init(OverviewContactsWidget *pContactsWidget, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, QString pParticipant);
     void FindSipInterface(QString pSessionName);
+    void UpdateMovieControls();
     virtual void contextMenuEvent(QContextMenuEvent *event);
     virtual void closeEvent(QCloseEvent* pEvent = NULL);
     virtual void dragEnterEvent(QDragEnterEvent *pEvent);

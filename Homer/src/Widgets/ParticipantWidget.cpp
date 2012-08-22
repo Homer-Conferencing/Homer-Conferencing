@@ -311,6 +311,8 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
     if (mSessionType == BROADCAST)
         setVisible(CONF.GetVisibilityBroadcastWidget());
 
+    UpdateMovieControls();
+
     mTimerId = startTimer(STREAM_POS_UPDATE_DELAY);
 }
 
@@ -1385,22 +1387,9 @@ void ParticipantWidget::ShowStreamPosition(int64_t tCurPos, int64_t tEndPos)
                        QString("%1:%2:%3").arg(tEndHour, 2, 10, (QLatin1Char)'0').arg(tEndMin, 2, 10, (QLatin1Char)'0').arg(tEndSec, 2, 10, (QLatin1Char)'0') );
 }
 
-void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
+void ParticipantWidget::UpdateMovieControls()
 {
-    #ifdef DEBUG_TIMING
-        LOG(LOG_VERBOSE, "New timer event");
-    #endif
-    int tTmp = 0;
-    int tHour, tMin, tSec;
-
-    if (pEvent->timerId() != mTimerId)
-    {
-    	LOG(LOG_WARN, "Qt event timer ID %d doesn't match the expected one %d", pEvent->timerId(), mTimerId);
-        pEvent->ignore();
-    	return;
-    }
-
-    // do play a file?
+    // do we play a file?
     int tShowMovieControls = 0;
 
     if ((mVideoSource) && (mVideoWidget->GetWorker()->SupportsSeeking()))
@@ -1463,6 +1452,24 @@ void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
             mMovieAudioControlsFrame->hide();
         }
     }
+}
+
+void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
+{
+    #ifdef DEBUG_TIMING
+        LOG(LOG_VERBOSE, "New timer event");
+    #endif
+    int tTmp = 0;
+    int tHour, tMin, tSec;
+
+    if (pEvent->timerId() != mTimerId)
+    {
+    	LOG(LOG_WARN, "Qt event timer ID %d doesn't match the expected one %d", pEvent->timerId(), mTimerId);
+        pEvent->ignore();
+    	return;
+    }
+
+    UpdateMovieComntrols();
 
     pEvent->accept();
 }
