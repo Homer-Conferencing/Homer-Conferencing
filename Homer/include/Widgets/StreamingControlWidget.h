@@ -31,7 +31,6 @@
 #include <MediaSourceDesktop.h>
 #include <Widgets/VideoWidget.h>
 #include <Widgets/AudioWidget.h>
-#include <Widgets/OverviewPlaylistWidget.h>
 #include <Widgets/ParticipantWidget.h>
 
 #include <ui_StreamingControlWidget.h>
@@ -47,7 +46,7 @@ class StreamingControlWidget :
     Q_OBJECT;
 public:
     /// The default constructor
-    StreamingControlWidget(ParticipantWidget* pBroadcastParticipantWidget, MediaSourceDesktop *pMediaSourceDesktop, OverviewPlaylistWidget *pOverviewPlaylistWidget);
+    StreamingControlWidget(ParticipantWidget* pBroadcastParticipantWidget, MediaSourceDesktop *pMediaSourceDesktop);
 
     /// The destructor.
     virtual ~StreamingControlWidget();
@@ -69,7 +68,6 @@ private:
     AudioWorkerThread       *mAudioWorker;
     ParticipantWidget       *mBroadcastParticipantWidget;
     MediaSourceDesktop      *mMediaSourceDesktop;
-    OverviewPlaylistWidget 	*mOverviewPlaylistWidget;
     int 					mTimerId;
 };
 

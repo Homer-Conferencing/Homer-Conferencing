@@ -46,7 +46,7 @@ class MessageWidget :
 public:
     /// The default constructor
     MessageWidget(QWidget* pParent = NULL);
-    void Init(QMenu *pMenu, QString pPartner = "unknown", OverviewContactsWidget *pContactsWidget = NULL, bool pVisible = true);
+    void Init(QMenu *pMenu, QString pPartner = "unknown", bool pVisible = true);
 
     /// The destructor.
     virtual ~MessageWidget();
@@ -78,7 +78,6 @@ private:
     QAction             *mAssignedAction;
     QString             mMessageHistory;
     QString             mParticipant;
-    OverviewContactsWidget *mContactsWidget;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

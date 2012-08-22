@@ -36,6 +36,7 @@
 #include <vector>
 #include <string>
 
+#define BROACAST_IDENTIFIER	"BROADCAST"
 #define DATABASE_IDENTIFIER "Homer_database"
 
 namespace Homer { namespace Gui {

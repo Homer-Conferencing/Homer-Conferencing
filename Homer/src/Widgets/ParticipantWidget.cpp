@@ -27,6 +27,7 @@
 
 #include <Dialogs/OpenVideoAudioPreviewDialog.h>
 #include <Widgets/StreamingControlWidget.h>
+#include <Widgets/OverviewPlaylistWidget.h>
 #include <Widgets/ParticipantWidget.h>
 #include <Widgets/VideoWidget.h>
 #include <Widgets/OverviewPlaylistWidget.h>
@@ -82,7 +83,7 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow, OverviewContactsWidget *pContactsWidget, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer, MediaSourceMuxer *pAudioSourceMuxer, QString pParticipant):
+ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer, MediaSourceMuxer *pAudioSourceMuxer, QString pParticipant):
     QDockWidget(pMainWindow), AudioPlayback()
 {
     LOG(LOG_VERBOSE, "Creating new participant widget..");
@@ -110,7 +111,7 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
     //### create the remaining necessary widgets, menu and layouts
     //####################################################################
     LOG(LOG_VERBOSE, "..init participant widget");
-    Init(pContactsWidget, pVideoMenu, pAudioMenu, pMessageMenu, pParticipant);
+    Init(pVideoMenu, pAudioMenu, pMessageMenu, pParticipant);
 }
 
 ParticipantWidget::~ParticipantWidget()
@@ -163,7 +164,7 @@ ParticipantWidget::~ParticipantWidget()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, QString pParticipant)
+void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, QString pParticipant)
 {
     setupUi(this);
 
@@ -210,10 +211,10 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
     switch(mSessionType)
     {
         case BROADCAST:
-                    LOG(LOG_VERBOSE, "Creating participant widget for BROADCAST");
-                    mSessionName = "BROADCAST";
+                    LOG(LOG_VERBOSE, "Creating participant widget for "BROACAST_IDENTIFIER);
+                    mSessionName = BROACAST_IDENTIFIER;
                     LOG(LOG_VERBOSE, "..init broadcast message widget");
-                    mMessageWidget->Init(pMessageMenu, mSessionName, NULL, CONF.GetVisibilityBroadcastMessageWidget());
+                    mMessageWidget->Init(pMessageMenu, mSessionName, CONF.GetVisibilityBroadcastMessageWidget());
                     LOG(LOG_VERBOSE, "..init broadcast video widget");
                     mVideoSource = mVideoSourceMuxer;
                     mAudioSource = mAudioSourceMuxer;
@@ -232,7 +233,7 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
                     mMovieControlsFrame->hide();
                     mSessionName = pParticipant;
                     FindSipInterface(pParticipant);
-                    mMessageWidget->Init(pMessageMenu, mSessionName, pContactsWidget);
+                    mMessageWidget->Init(pMessageMenu, mSessionName);
                     mVideoSendSocket = MEETING.GetVideoSendSocket(mSessionName.toStdString());
                     mAudioSendSocket = MEETING.GetAudioSendSocket(mSessionName.toStdString());
                     mVideoReceiveSocket = MEETING.GetVideoReceiveSocket(mSessionName.toStdString());
@@ -412,7 +413,7 @@ void ParticipantWidget::dragEnterEvent(QDragEnterEvent *pEvent)
         switch(mSessionType)
         {
             case BROADCAST:
-                        if (tList.size() == 1)
+                        if (tList.size() > 0)
                         {
                             QString tFileName = tList.begin()->toString();
                             if ((OverviewPlaylistWidget::IsVideoFile(tFileName)) || (OverviewPlaylistWidget::IsAudioFile(tFileName)))
@@ -445,10 +446,17 @@ void ParticipantWidget::dropEvent(QDropEvent *pEvent)
             switch(mSessionType)
             {
                 case BROADCAST:
-                            if (tList.size() == 1)
+                            if (tList.size() > 0)
                             {
-                                QString tFileName = tList.begin()->toString();
-                                ActionPlayMovieFile(tFileName);
+                            	bool tFirstEntry = true;
+                            	QUrl tEntry;
+                            	foreach(tEntry, tList)
+                            	{
+                                    QString tFileName = tEntry.toString();
+                                    PLAYLISTWIDGET.AddEntry(tFileName, tFirstEntry);
+									if (tFirstEntry)
+										tFirstEntry = false;
+                            	}
                                 pEvent->acceptProposedAction();
                             }
                             break;

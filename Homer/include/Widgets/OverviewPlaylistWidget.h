@@ -56,6 +56,10 @@ typedef QList<PlaylistEntry>    Playlist;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define PLAYLISTWIDGET OverviewPlaylistWidget::GetInstance()
+
+///////////////////////////////////////////////////////////////////////////////
+
 class OverviewPlaylistWidget :
     public QDockWidget,
     public Ui_OverviewPlaylistWidget
@@ -68,6 +72,8 @@ public:
     /// The destructor.
     virtual ~OverviewPlaylistWidget();
 
+    static OverviewPlaylistWidget& GetInstance();
+
     static QStringList LetUserSelectVideoFile(QWidget *pParent, QString pDescription, bool pMultipleFiles = true);
     static QString LetUserSelectVideoSaveFile(QWidget *pParent, QString pDescription);
     static bool IsVideoFile(QString pFileName);
@@ -76,6 +82,9 @@ public:
     static bool IsAudioFile(QString pFileName);
     static QStringList LetUserSelectMovieFile(QWidget *pParent, QString pDescription, bool pMultipleFiles = true);
     static QStringList LetUserSelectMediaFile(QWidget *pParent, QString pDescription, bool pMultipleFiles = true);
+
+    /* add playlist entries */
+    void AddEntry(QString pLocation, bool pStartPlayback = false);
 
 public slots:
     void SetVisible(bool pVisible);
@@ -111,8 +120,7 @@ private:
 
     int GetListSize();
 
-    /* add/parse playlist entries */
-    void AddEntry(QString pLocation);
+    /* parse playlist entries */
     static Playlist Parse(QString pLocation, QString pName = "", bool pAcceptVideo = true, bool pAcceptAudio = true);
     static Playlist ParseM3U(QString pFilePlaylist, bool pAcceptVideo, bool pAcceptAudio);
     static Playlist ParsePLS(QString pFilePlaylist, bool pAcceptVideo, bool pAcceptAudio);

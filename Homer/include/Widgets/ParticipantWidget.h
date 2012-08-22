@@ -29,7 +29,6 @@
 #define _PARTICIPANT_WIDGET_
 
 #include <Widgets/MessageWidget.h>
-#include <Widgets/OverviewContactsWidget.h>
 #include <Widgets/PlaybackSlider.h>
 #include <Widgets/SessionInfoWidget.h>
 #include <Widgets/VideoWidget.h>
@@ -109,7 +108,7 @@ class ParticipantWidget:
     Q_OBJECT;
 
 public:
-    ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow, OverviewContactsWidget *pContactsWidget, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer = NULL, MediaSourceMuxer *pAudioSourceMuxer = NULL, QString pParticipant = "unknown");
+    ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer = NULL, MediaSourceMuxer *pAudioSourceMuxer = NULL, QString pParticipant = "unknown");
 
     virtual ~ParticipantWidget();
 
@@ -153,7 +152,7 @@ private slots:
 	friend class PlaybackSlider;
 
 private:
-	void Init(OverviewContactsWidget *pContactsWidget, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, QString pParticipant);
+	void Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, QString pParticipant);
     void FindSipInterface(QString pSessionName);
     void UpdateMovieControls();
     virtual void contextMenuEvent(QContextMenuEvent *event);
@@ -178,30 +177,30 @@ private:
     void ShowStreamPosition(int64_t tCurPos, int64_t tEndPos);
     void CallStopped(bool pIncoming);
 
-    MainWindow          *mMainWindow;
-    QMessageBox         *mCallBox;
-    QString             mSessionName;
-    QString				mSipInterface; // service access point name in form "IP:PORT" or "[IPv6]:PORT"
-    QString             mWidgetTitle;
-    bool                mQuitForced;
-    bool                mIncomingCall;
-    enum SessionType    mSessionType;
-    MediaSourceMuxer    *mAudioSourceMuxer;
-    MediaSourceMuxer    *mVideoSourceMuxer;
-    QString             mRemoteAudioAdr;
-    unsigned int        mRemoteAudioPort;
-    QString             mRemoteAudioCodec;
-    QString             mRemoteVideoAdr;
-    unsigned int        mRemoteVideoPort;
-    QString             mRemoteVideoCodec;
-    MediaSource         *mVideoSource, *mAudioSource;
-    Socket				*mVideoSendSocket, *mAudioSendSocket, *mVideoReceiveSocket, *mAudioReceiveSocket;
-    int                 mTimerId;
-    int					mMovieSliderPosition;
+    MainWindow          	*mMainWindow;
+    QMessageBox         	*mCallBox;
+    QString            	 	mSessionName;
+    QString					mSipInterface; // service access point name in form "IP:PORT" or "[IPv6]:PORT"
+    QString            		mWidgetTitle;
+    bool                	mQuitForced;
+    bool                	mIncomingCall;
+    enum SessionType    	mSessionType;
+    MediaSourceMuxer    	*mAudioSourceMuxer;
+    MediaSourceMuxer    	*mVideoSourceMuxer;
+    QString             	mRemoteAudioAdr;
+    unsigned int        	mRemoteAudioPort;
+    QString            		mRemoteAudioCodec;
+    QString             	mRemoteVideoAdr;
+    unsigned int        	mRemoteVideoPort;
+    QString             	mRemoteVideoCodec;
+    MediaSource         	*mVideoSource, *mAudioSource;
+    Socket					*mVideoSendSocket, *mAudioSendSocket, *mVideoReceiveSocket, *mAudioReceiveSocket;
+    int                 	mTimerId;
+    int						mMovieSliderPosition;
     /* A/V synch. */
-    int64_t				mTimeOfLastAVSynch;
-    int 				mContinuousAVAsync;
-    QString             mCurrentMovieFile;
+    int64_t					mTimeOfLastAVSynch;
+    int 					mContinuousAVAsync;
+    QString             	mCurrentMovieFile;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

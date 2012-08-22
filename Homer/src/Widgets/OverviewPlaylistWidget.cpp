@@ -55,10 +55,20 @@ namespace Homer { namespace Gui {
 ///////////////////////////////////////////////////////////////////////////////
 
 int OverviewPlaylistWidget::sParseRecursionCount = 0;
+OverviewPlaylistWidget *sOverviewPlaylistWidget = NULL;
+
+OverviewPlaylistWidget& OverviewPlaylistWidget::GetInstance()
+{
+	if (sOverviewPlaylistWidget == NULL)
+		LOGEX(OverviewPlaylistWidget, LOG_WARN, "OverviewPlaylistWidget is still invalid");
+
+    return *sOverviewPlaylistWidget;
+}
 
 OverviewPlaylistWidget::OverviewPlaylistWidget(QAction *pAssignedAction, QMainWindow* pMainWindow, VideoWorkerThread *pVideoWorker, AudioWorkerThread *pAudioWorker):
     QDockWidget(pMainWindow)
 {
+	sOverviewPlaylistWidget = this;
     mAssignedAction = pAssignedAction;
     mVideoWorker = pVideoWorker;
     mAudioWorker = pAudioWorker;
@@ -620,7 +630,7 @@ void OverviewPlaylistWidget::Play(int pIndex)
 
     mCurrentFileId = pIndex;
     LOG(LOG_VERBOSE, "Setting current row to %d in playlist", mCurrentFileId);
-    mLwFiles->setCurrentRow(mCurrentFileId, QItemSelectionModel::Clear | QItemSelectionModel::Select);
+    mLwFiles->setCurrentRow(mCurrentFileId);
 }
 
 void OverviewPlaylistWidget::PlayNext()
@@ -724,22 +734,44 @@ int OverviewPlaylistWidget::GetListSize()
     return tResult;
 }
 
-void OverviewPlaylistWidget::AddEntry(QString pLocation)
+void OverviewPlaylistWidget::AddEntry(QString pLocation, bool pStartPlayback)
 {
+    // remove "file:///" and "file://" from the beginning if existing
+    #ifdef WIN32
+        if (pLocation.startsWith("file:///"))
+        	pLocation = pLocation.right(pLocation.size() - 8);
+
+        if (pLocation.startsWith("file://"))
+        	pLocation = pLocation.right(pLocation.size() - 7);
+    #else
+        if (pLocation.startsWith("file:///"))
+        	pLocation = pLocation.right(pLocation.size() - 7);
+
+        if (pLocation.startsWith("file://"))
+        	pLocation = pLocation.right(pLocation.size() - 6);
+    #endif
+
 	Playlist tPlaylist = Parse(pLocation);
 	LOG(LOG_VERBOSE, "Parsed %d new playlist entries", tPlaylist.size());
+
+	mPlaylistMutex.lock();
+
+	int tInsertionPosition = mPlaylist.size();
 
 	PlaylistEntry tPlaylistEntry;
 	foreach(tPlaylistEntry, tPlaylist)
 	{
 		LOG(LOG_VERBOSE, "Adding to playist: %s(%s)", tPlaylistEntry.Name.toStdString().c_str(), tPlaylistEntry.Location.toStdString().c_str());
-		mPlaylistMutex.lock();
 		mPlaylist.push_back(tPlaylistEntry);
-		mPlaylistMutex.unlock();
 	}
+
+	mPlaylistMutex.unlock();
 
     // trigger GUI update
     QApplication::postEvent(this, new QEvent(QEvent::User));
+
+    if (pStartPlayback)
+    	Play(tInsertionPosition);
 }
 
 Playlist OverviewPlaylistWidget::Parse(QString pLocation, QString pName, bool pAcceptVideo, bool pAcceptAudio)
@@ -791,8 +823,11 @@ Playlist OverviewPlaylistWidget::Parse(QString pLocation, QString pName, bool pA
 			}else
 				tPlaylistEntry.Name = pName;
 
+			bool tIsAudioFile = IsAudioFile(tPlaylistEntry.Location);
+			bool tIsVideoFile = IsVideoFile(tPlaylistEntry.Location);
+
 			// check file for A/V content
-			if ((pAcceptVideo && (IsVideoFile(tPlaylistEntry.Location))) || (pAcceptAudio && ((IsAudioFile(tPlaylistEntry.Location)) || tIsWebUrl)))
+			if ((pAcceptVideo && tIsVideoFile) || (pAcceptAudio && (tIsAudioFile || tIsWebUrl)))
 			{
 				LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Adding to parsed playlist: %s at location %s", tPlaylistEntry.Name.toStdString().c_str(), tPlaylistEntry.Location.toStdString().c_str());
 
@@ -800,7 +835,14 @@ Playlist OverviewPlaylistWidget::Parse(QString pLocation, QString pName, bool pA
 				if (tIsWebUrl)
 					tPlaylistEntry.Icon = QIcon(":/images/22_22/NetworkConnection.png");
 				else
-					tPlaylistEntry.Icon = QIcon(":/images/22_22/ArrowRight.png");
+				{
+					if (tIsVideoFile && !tIsAudioFile) // video file
+						tPlaylistEntry.Icon = QIcon(":/images/46_46/VideoReel.png");
+					else if (!tIsVideoFile && tIsAudioFile) // audio file
+						tPlaylistEntry.Icon = QIcon(":/images/46_46/Speaker.png");
+					else // audio/video file
+						tPlaylistEntry.Icon = QIcon(":/images/22_22/Audio_Play.png");
+				}
 
 				// save playlist entry
 				tResult.push_back(tPlaylistEntry);
@@ -1177,8 +1219,7 @@ void OverviewPlaylistWidget::UpdateView()
 
     //LOG(LOG_VERBOSE, "Updating view");
 
-    if (mLwFiles->selectionModel()->currentIndex().isValid())
-        tSelectedRow = mLwFiles->currentRow();
+    LOG(LOG_VERBOSE, "Found row selection: %d", mCurrentFileId);
 
     if (GetListSize() != mLwFiles->count())
     {
@@ -1198,8 +1239,8 @@ void OverviewPlaylistWidget::UpdateView()
 
     mPlaylistMutex.unlock();
 
-    if (tSelectedRow != -1)
-        mLwFiles->setCurrentRow (tSelectedRow);
+    if (mCurrentFileId != -1)
+        mLwFiles->setCurrentRow (mCurrentFileId);
 }
 
 void OverviewPlaylistWidget::customEvent(QEvent* pEvent)

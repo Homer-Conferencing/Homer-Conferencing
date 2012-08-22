@@ -41,9 +41,20 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+OverviewContactsWidget *sOverviewContactsWidget = NULL;
+
+OverviewContactsWidget& OverviewContactsWidget::GetInstance()
+{
+	if (sOverviewContactsWidget == NULL)
+		LOGEX(OverviewContactsWidget, LOG_WARN, "OverviewContactsWidget is still invalid");
+
+    return *sOverviewContactsWidget;
+}
+
 OverviewContactsWidget::OverviewContactsWidget(QAction *pAssignedAction, QMainWindow* pMainWindow):
     QDockWidget(pMainWindow)
 {
+	sOverviewContactsWidget = this;
     mAssignedAction = pAssignedAction;
     mMainWindow = pMainWindow;
 

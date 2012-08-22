@@ -445,7 +445,7 @@ void MainWindow::initializeWidgetsAndMenus()
     #endif
 
     LOG(LOG_VERBOSE, "..local broadcast widget");
-    mLocalUserParticipantWidget = new ParticipantWidget(BROADCAST, this, mOverviewContactsWidget, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer);
+    mLocalUserParticipantWidget = new ParticipantWidget(BROADCAST, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer);
     setCentralWidget(mLocalUserParticipantWidget);
 
     LOG(LOG_VERBOSE, "..availability widget");
@@ -457,7 +457,7 @@ void MainWindow::initializeWidgetsAndMenus()
     LOG(LOG_VERBOSE, "Creating playlist control widgets..");
     mOverviewPlaylistWidget = new OverviewPlaylistWidget(mActionOverviewPlaylistWidget, this, mLocalUserParticipantWidget->GetVideoWorker(), mLocalUserParticipantWidget->GetAudioWorker());
 
-    mMediaSourcesControlWidget = new StreamingControlWidget(mLocalUserParticipantWidget, mSourceDesktop, mOverviewPlaylistWidget);
+    mMediaSourcesControlWidget = new StreamingControlWidget(mLocalUserParticipantWidget, mSourceDesktop);
     mToolBarMediaSources->addWidget(mMediaSourcesControlWidget);
     if (mOwnVideoMuxer->SupportsMultipleInputChannels())
         mMediaSourcesControlWidget->SetVideoInputSelectionVisible();
@@ -1045,7 +1045,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                         if (!tKnownParticipant)
                         {
                             // add without any OpenSession-check, the session is always added automatically by the meeting-layer
-                            tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mOverviewContactsWidget, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, QString(tMEvent->Sender.c_str()));
+                            tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, QString(tMEvent->Sender.c_str()));
 
                             if (tParticipantWidget != NULL)
                             {
@@ -1145,7 +1145,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     if (!tKnownParticipant)
                     {
                         // add without any OpenSession-check, the session is always added automatically by the meeting-layer
-                        tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mOverviewContactsWidget, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, QString(tCEvent->Sender.c_str()));
+                        tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, QString(tCEvent->Sender.c_str()));
 
                         if (tParticipantWidget != NULL)
                         {
@@ -1420,7 +1420,7 @@ ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHos
         {
             QString tParticipant = QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str());
 
-            tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mOverviewContactsWidget, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, tParticipant);
+            tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, tParticipant);
 
             mParticipantWidgets.push_back(tParticipantWidget);
 
@@ -1582,7 +1582,7 @@ void MainWindow::actionOpenVideoAudioPreview()
 {
     ParticipantWidget *tParticipantWidget;
 
-    tParticipantWidget = new ParticipantWidget(PREVIEW, this, mOverviewContactsWidget, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, NULL);
+    tParticipantWidget = new ParticipantWidget(PREVIEW, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, NULL);
 
     mParticipantWidgets.push_back(tParticipantWidget);
 }

@@ -26,6 +26,7 @@
  */
 
 #include <Widgets/MessageWidget.h>
+#include <Widgets/OverviewContactsWidget.h>
 #include <Dialogs/FileTransferAckDialog.h>
 #include <Configuration.h>
 #include <Meeting.h>
@@ -56,10 +57,9 @@ MessageWidget::MessageWidget(QWidget* pParent):
     hide();
 }
 
-void MessageWidget::Init(QMenu *pMenu, QString pParticipant, OverviewContactsWidget *pContactsWidget, bool pVisible)
+void MessageWidget::Init(QMenu *pMenu, QString pParticipant, bool pVisible)
 {
     mParticipant = pParticipant;
-    mContactsWidget = pContactsWidget;
 
     initializeGUI();
 
@@ -117,7 +117,7 @@ void MessageWidget::Init(QMenu *pMenu, QString pParticipant, OverviewContactsWid
     mTeMessage->setFocus(Qt::TabFocusReason);
 
     // are we part of broadcast window?
-    if (mContactsWidget == NULL)
+    if (mParticipant == BROACAST_IDENTIFIER)
     {
         mTbAdd->hide();
         mPbCall->setEnabled(false);
@@ -127,7 +127,7 @@ void MessageWidget::Init(QMenu *pMenu, QString pParticipant, OverviewContactsWid
 MessageWidget::~MessageWidget()
 {
     // are we part of broadcast window?
-    if (mContactsWidget == NULL)
+    if (mParticipant == BROACAST_IDENTIFIER)
     {
         CONF.SetVisibilityBroadcastMessageWidget(isVisible());
     }
@@ -163,7 +163,7 @@ void MessageWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEvent)
 
     tMenu.addSeparator();
 
-    if ((!IsKnownContact()) && (mContactsWidget != NULL))
+    if ((!IsKnownContact()) && (mParticipant != BROACAST_IDENTIFIER))
     {
         tAction = tMenu.addAction("Add to contacts");
         QIcon tIcon3;
@@ -196,8 +196,8 @@ void MessageWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEvent)
 void MessageWidget::AddPArticipantToContacts()
 {
 	LOG(LOG_VERBOSE, "User wants to add user %s to his contact list", mParticipant.toStdString().c_str());
-    if (mContactsWidget != NULL)
-        if (mContactsWidget->InsertNew(mParticipant))
+    if (mParticipant != BROACAST_IDENTIFIER)
+        if (CONTACTSWIDGET.InsertNew(mParticipant))
             mTbAdd->hide();
 }
 
