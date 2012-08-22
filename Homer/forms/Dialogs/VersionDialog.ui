@@ -685,7 +685,7 @@ border-right: 0px solid rgb(0,0,0);</string>
            </spacer>
           </item>
           <item>
-           <widget class="QLabel" name="label_14">
+           <widget class="Homer::Gui::LinkedPixmapLabel" name="mLbOnlineforge">
             <property name="minimumSize">
              <size>
               <width>180</width>
@@ -698,8 +698,14 @@ border-right: 0px solid rgb(0,0,0);</string>
               <height>90</height>
              </size>
             </property>
+            <property name="cursor">
+             <cursorShape>PointingHandCursor</cursorShape>
+            </property>
             <property name="text">
              <string/>
+            </property>
+            <property name="pixmap">
+             <pixmap resource="../../resources/Icons.qrc">:/images/VersionLogoOnlineforge.png</pixmap>
             </property>
            </widget>
           </item>
