@@ -1389,6 +1389,8 @@ void ParticipantWidget::ShowStreamPosition(int64_t tCurPos, int64_t tEndPos)
 
 void ParticipantWidget::UpdateMovieControls()
 {
+    int tTmp = 0;
+
     // do we play a file?
     int tShowMovieControls = 0;
 
@@ -1459,17 +1461,15 @@ void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
     #ifdef DEBUG_TIMING
         LOG(LOG_VERBOSE, "New timer event");
     #endif
-    int tTmp = 0;
-    int tHour, tMin, tSec;
 
-    if (pEvent->timerId() != mTimerId)
+	if (pEvent->timerId() != mTimerId)
     {
     	LOG(LOG_WARN, "Qt event timer ID %d doesn't match the expected one %d", pEvent->timerId(), mTimerId);
         pEvent->ignore();
     	return;
     }
 
-    UpdateMovieComntrols();
+    UpdateMovieControls();
 
     pEvent->accept();
 }
