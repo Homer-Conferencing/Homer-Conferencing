@@ -180,7 +180,7 @@ Socket::Socket(enum NetworkType pIpVersion, enum TransportType pTransportType, u
         if (BindSocket(pPort, pProbeStepping, pHighestPossiblePort))
         {
             if ((mLocalPort != pPort) && (pPort != 0))
-                LOG(LOG_ERROR, "Bound socket %d to another port than requested", mSocketHandle);
+                LOG(LOG_WARN, "Bound socket %d to another port than requested", mSocketHandle);
         }else
             mSocketHandle = -1;
     }
