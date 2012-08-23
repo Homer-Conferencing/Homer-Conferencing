@@ -166,7 +166,7 @@ bool OverviewPlaylistWidget::IsVideoFile(QString pFileName)
     int tPos = pFileName.lastIndexOf('.', -1);
     if (tPos == -1)
     {
-        LOGEX(OverviewPlaylistWidget, LOG_ERROR, "Video file name lacks a correct format selecting end");
+        LOGEX(OverviewPlaylistWidget, LOG_ERROR, "Video file %s name lacks a correct format selecting end", pFileName.toStdString().c_str());
         return false;
     }
 
@@ -255,7 +255,7 @@ bool OverviewPlaylistWidget::IsAudioFile(QString pFileName)
     int tPos = pFileName.lastIndexOf('.', -1);
     if (tPos == -1)
     {
-        LOGEX(OverviewPlaylistWidget, LOG_ERROR, "Audio file name lacks a correct format selecting end");
+        LOGEX(OverviewPlaylistWidget, LOG_ERROR, "Audio file %s name lacks a correct format selecting end", pFileName.toStdString().c_str());
         return false;
     }
 
@@ -299,12 +299,20 @@ QStringList OverviewPlaylistWidget::LetUserSelectMediaFile(QWidget *pParent, QSt
                                                                 &sAllLoadMediaFilter,
                                                                 CONF_NATIVE_DIALOGS);
     else
+    {
         tResult = QStringList(QFileDialog::getOpenFileName(pParent,  pDescription,
                                                                 CONF.GetDataDirectory(),
                                                                 sLoadMediaFilters,
                                                                 &sAllLoadMediaFilter,
                                                                 CONF_NATIVE_DIALOGS));
 
+        // use the file parser to avoid playlists and resolve them to one single entry
+        Playlist tPlaylist = Parse(tResult.first(), "");
+        if (tPlaylist.size() > 0)
+        	tResult = QStringList(tPlaylist.first().Location);
+		else
+			tResult.clear();
+    }
     if (!tResult.isEmpty())
         CONF.SetDataDirectory(tResult.first().left(tResult.first().lastIndexOf('/')));
 
