@@ -1512,6 +1512,8 @@ void VideoWidget::resizeEvent(QResizeEvent *pEvent)
 
 void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
 {
+	LOG(LOG_VERBOSE, "Got key press event with key %d (mod: %d)", pEvent->key(), (int)pEvent->modifiers());
+
 	if ((pEvent->key() == Qt::Key_Escape) && (windowState() & Qt::WindowFullScreen))
 	{
         setWindowFlags(windowFlags() ^ Qt::Window);

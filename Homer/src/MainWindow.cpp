@@ -626,7 +626,7 @@ void MainWindow::CreateScreenShot()
         else
             sShiftingString[31 - sShiftIndex] = '#';
     #endif
-	mStatusBar->showMessage("Program start  " + mStartTime.toString("hh:mm") + "       Time  " + QTime::currentTime().toString("hh:mm") + "    " + sShiftingString);
+	mStatusBar->showMessage("Program Start  " + mStartTime.toString("hh:mm") + "       Time  " + QTime::currentTime().toString("hh:mm") + "    " + sShiftingString);
     sShiftingString[sShiftIndex] = ' ';
     if(mSourceDesktop != NULL)
 	    mSourceDesktop->CreateScreenshot();
