@@ -7,14 +7,8 @@
     <x>0</x>
     <y>0</y>
     <width>801</width>
-    <height>757</height>
+    <height>832</height>
    </rect>
-  </property>
-  <property name="sizePolicy">
-   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-    <horstretch>0</horstretch>
-    <verstretch>0</verstretch>
-   </sizepolicy>
   </property>
   <property name="font">
    <font>
@@ -153,7 +147,7 @@
        <property name="currentIndex">
         <number>2</number>
        </property>
-       <widget class="QWidget" name="Devices">
+       <widget class="QWidget" name="mPageDevices">
         <layout class="QVBoxLayout" name="verticalLayout_10">
          <item>
           <widget class="QGroupBox" name="groupBox">
@@ -381,7 +375,7 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="File">
+       <widget class="QWidget" name="mPageFile">
         <layout class="QVBoxLayout" name="verticalLayout_11">
          <item>
           <widget class="QGroupBox" name="groupBox_2">
@@ -503,7 +497,7 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="page">
+       <widget class="QWidget" name="mPageNetwork">
         <layout class="QVBoxLayout" name="verticalLayout_7">
          <item>
           <widget class="QGroupBox" name="mGrpStreamParamsVideo">

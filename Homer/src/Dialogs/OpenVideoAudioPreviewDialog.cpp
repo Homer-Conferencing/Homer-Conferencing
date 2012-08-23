@@ -76,10 +76,7 @@ void OpenVideoAudioPreviewDialog::initializeGUI()
         resize(0, 0);
     }
 
-    connect(mPbFile, SIGNAL(clicked()), this, SLOT(actionGetFile()));
-
-    connect(mCbVideoEnabled, SIGNAL(clicked(bool)), this, SLOT(actionVideoEnabled(bool)));
-    connect(mCbAudioEnabled, SIGNAL(clicked(bool)), this, SLOT(actionAudioEnabled(bool)));
+    connect(mPbFile, SIGNAL(clicked()), this, SLOT(ActionGetFile()));
 
     connect(mCbGAPIImplVideo, SIGNAL(currentIndexChanged(QString)), this, SLOT(GAPIVideoSelectionChanged(QString)));
     connect(mCbGAPIImplAudio, SIGNAL(currentIndexChanged(QString)), this, SLOT(GAPIAudioSelectionChanged(QString)));
@@ -476,7 +473,7 @@ void OpenVideoAudioPreviewDialog::LoadConfiguration()
     mCbVideoEnabled->setChecked(CONF.GetPreviewSelectionVideo());
 }
 
-void OpenVideoAudioPreviewDialog::actionGetFile()
+void OpenVideoAudioPreviewDialog::ActionGetFile()
 {
     QString tFileName;
 
@@ -486,31 +483,6 @@ void OpenVideoAudioPreviewDialog::actionGetFile()
         return;
 
     mLbFile->setText(tFileName);
-}
-
-void OpenVideoAudioPreviewDialog::actionVideoEnabled(bool pState)
-{
-
-    if(pState)
-    {
-
-    }else
-    {
-
-    }
-    mLbFile->setText("");
-}
-
-void OpenVideoAudioPreviewDialog::actionAudioEnabled(bool pState)
-{
-    if(pState)
-    {
-
-    }else
-    {
-
-    }
-    mLbFile->setText("");
 }
 
 }} //namespace
