@@ -808,6 +808,7 @@ void MediaSource::VideoString2Resolution(string pString, int& pX, int& pY)
         pX = 1920;
         pY = 1080;
     }
+    //LOGEX(MediaSource, LOG_VERBOSE, "Derived video resolution: %d*%d", pX, pY);
 }
 
 bool MediaSource::SupportsDecoderFrameStatistics()
@@ -2842,7 +2843,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 
     //HINT: we allow the input bit stream to be truncated at packet boundaries instead of frame boundaries,
     //		otherwise an UDP/TCP based transmission will fail because the decoder expects only complete packets as input
-    mCodecContext->flags2 |= CODEC_FLAG2_CHUNKS;
+    mCodecContext->flags2 |= CODEC_FLAG2_CHUNKS | CODEC_FLAG2_SHOW_ALL;
 
     //set duration
     if (mFormatContext->duration != (int64_t)AV_NOPTS_VALUE)
