@@ -375,6 +375,22 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     mCodecContext->codec_id = tFormat->video_codec;
     mCodecContext->codec_type = AVMEDIA_TYPE_VIDEO;
 
+    //data_partitioning
+    // do some extra modifications for H263 to make it easier for streaming
+    if (tFormat->video_codec == CODEC_ID_MPEG4)
+    {
+        mCodecContext->flags |= CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED;
+    }
+
+    // do some extra modifications for H263 to make it easier for streaming
+    if (tFormat->video_codec == CODEC_ID_H263)
+    {
+        mCodecContext->flags |= CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED;
+
+        // old codec codext flag CODEC_FLAG_H263P_SLICE_STRUCT
+        av_dict_set(&tOptions, "structured_slices", "1", 0);
+    }
+
     // do some extra modifications for H263+ to make it easier for streaming
     if (tFormat->video_codec == CODEC_ID_H263P)
     {
@@ -403,54 +419,52 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
             case CODEC_ID_H261: // supports QCIF, CIF
                     if (mSourceResX > 176)
                     {// CIF
-                        mRequestedStreamingResX = 352;
-                        mRequestedStreamingResY = 288;
+                    	mCurrentStreamingResX = 352;
+                    	mCurrentStreamingResY = 288;
                     }else
                     {// QCIF
-                        mRequestedStreamingResX = 176;
-                        mRequestedStreamingResY = 144;
+                    	mCurrentStreamingResX = 176;
+                    	mCurrentStreamingResY = 144;
                     }
-                    LOG(LOG_VERBOSE, "Resolution %d*%d for codec H.261 automatically selected", mRequestedStreamingResX, mRequestedStreamingResY);
+                    LOG(LOG_VERBOSE, "Resolution %d*%d for codec H.261 automatically selected", mCurrentStreamingResX, mCurrentStreamingResY);
                     break;
             case CODEC_ID_H263:  // supports SQCIF, QCIF, CIF, CIF4,CIF16
                     if(mSourceResX > 704)
                     {// CIF16
-                        mRequestedStreamingResX = 1408;
-                        mRequestedStreamingResY = 1152;
+                    	mCurrentStreamingResX = 1408;
+                    	mCurrentStreamingResY = 1152;
                     }else if (mSourceResX > 352)
                     {// CIF 4
-                        mRequestedStreamingResX = 704;
-                        mRequestedStreamingResY = 576;
+                    	mCurrentStreamingResX = 704;
+                    	mCurrentStreamingResY = 576;
                     }else if (mSourceResX > 176)
                     {// CIF
-                        mRequestedStreamingResX = 352;
-                        mRequestedStreamingResY = 288;
+                    	mCurrentStreamingResX = 352;
+                    	mCurrentStreamingResY = 288;
                     }else if (mSourceResX > 128)
                     {// QCIF
-                        mRequestedStreamingResX = 176;
-                        mRequestedStreamingResY = 144;
+                    	mCurrentStreamingResX = 176;
+                    	mCurrentStreamingResY = 144;
                     }else
                     {// SQCIF
-                        mRequestedStreamingResX = 128;
-                        mRequestedStreamingResY = 96;
+                    	mCurrentStreamingResX = 128;
+                    	mCurrentStreamingResY = 96;
                     }
-                    LOG(LOG_VERBOSE, "Resolution %d*%d for codec H.263 automatically selected", mRequestedStreamingResX, mRequestedStreamingResY);
+                    LOG(LOG_VERBOSE, "Resolution %d*%d for codec H.263 automatically selected", mCurrentStreamingResX, mCurrentStreamingResY);
                     break;
             case CODEC_ID_THEORA:
-                    mRequestedStreamingResX = 352;
-                    mRequestedStreamingResY = 288;
+            		mCurrentStreamingResX = 352;
+            		mCurrentStreamingResY = 288;
                     break;
             case CODEC_ID_H263P:
             default:
-                    mRequestedStreamingResX = mSourceResX;
-                    mRequestedStreamingResY = mSourceResY;
+            		mCurrentStreamingResX = mSourceResX;
+            		mCurrentStreamingResY = mSourceResY;
                     break;
         }
     }
-    mCurrentStreamingResX = mRequestedStreamingResX;
-    mCodecContext->width = mRequestedStreamingResX;
-    mCurrentStreamingResY = mRequestedStreamingResY;
-    mCodecContext->height = mRequestedStreamingResY;
+    mCodecContext->width = mCurrentStreamingResX;
+    mCodecContext->height = mCurrentStreamingResY;
 
     /*
      * time base: this is the fundamental unit of time (in seconds) in terms
