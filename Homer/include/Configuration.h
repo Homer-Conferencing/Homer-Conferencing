@@ -57,6 +57,8 @@ namespace Homer { namespace Gui {
 #define PATH_SIP_SERVER_TXT             "/live/sip_server.txt"
 #define PATH_HOMER_RELEASES				"http://"RELEASE_SERVER"/releases/"
 
+#define PATH_DEFAULT_LOGFILE			(QDir::homePath() + "/Homer.log")
+
 #define CONF Configuration::GetInstance()
 
 #define USE_NATIVE_DIALOGS

@@ -63,6 +63,7 @@
 #include <QApplication>
 #include <QTime>
 #include <QDir>
+#include <QFile>
 #include <QTimer>
 #include <QTextEdit>
 #include <QMenu>
@@ -371,9 +372,15 @@ void MainWindow::initializeLogging(QStringList &pArguments)
         }
     }
 
-    //#ifdef DEBUG_VERSION
-    	LOGGER.RegisterLogSink(new LogSinkFile(QDir::homePath().toStdString() + "/Homer.log"));
-	//#endif
+    // delete old default log file
+    if (QFile::exists(PATH_DEFAULT_LOGFILE))
+    {
+    	QFile tFile(PATH_DEFAULT_LOGFILE);
+    	tFile.remove();
+    }
+
+    // log to default log file
+    LOGGER.RegisterLogSink(new LogSinkFile(PATH_DEFAULT_LOGFILE.toStdString()));
 
 	// network based log sinks
     QStringList tPorts = pArguments.filter("-DebugOutputNetwork=");
