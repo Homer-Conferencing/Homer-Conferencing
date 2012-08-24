@@ -1512,7 +1512,7 @@ void VideoWidget::resizeEvent(QResizeEvent *pEvent)
 
 void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
 {
-	LOG(LOG_VERBOSE, "Got video window key press event with key %s(%d, mod: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
+	//LOG(LOG_VERBOSE, "Got video window key press event with key %s(%d, mod: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
 
 	if ((pEvent->key() == Qt::Key_Escape) && (windowState() & Qt::WindowFullScreen))
 	{
@@ -1671,7 +1671,8 @@ void VideoWidget::mouseMoveEvent(QMouseEvent *pEvent)
 		tPoint = pEvent->globalPos() - mMovingMainWindowReferencePos;
 		mMovingMainWindowReferencePos = pEvent->globalPos();
 		//LOG(LOG_VERBOSE, "Moving main window to relative position: (%d,%d)", tPoint.x(), tPoint.y());
-		mMainWindow->move(mMainWindow->pos() + tPoint);
+		if (mMainWindow->pos() + tPoint != mMainWindow->pos())
+			mMainWindow->move(mMainWindow->pos() + tPoint);
 	}
     mTimeOfLastMouseMove = QTime::currentTime();
     if (cursor().shape() == Qt::BlankCursor)

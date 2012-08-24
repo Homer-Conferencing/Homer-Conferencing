@@ -477,7 +477,7 @@ void ParticipantWidget::dropEvent(QDropEvent *pEvent)
 
 void ParticipantWidget::keyPressEvent(QKeyEvent *pEvent)
 {
-	LOG(LOG_VERBOSE, "Got participant window key press event with key %s(%d, mod: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
+	//LOG(LOG_VERBOSE, "Got participant window key press event with key %s(%d, mod: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
 
 	// forward the event to the video widget
 	QCoreApplication::postEvent(mVideoWidget, new QKeyEvent(QEvent::KeyPress, pEvent->key(), pEvent->modifiers()));
