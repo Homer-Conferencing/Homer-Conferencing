@@ -273,13 +273,13 @@ static QString sLoadMediaFilters = sAllLoadMediaFilter + ";;"\
                     "Advanced Systems Format (*.asf);;"\
                     "Audio Video Interleave Format (*.avi);;"\
                     "Digital Video Format (*.dv);;"\
-                    "Joint Photographic Experts Group (*.jpg *.jpeg);;"\
+                    "Joint Photographic Experts Group Format (*.jpg *.jpeg);;"\
                     "Matroska Format (*.mka *.mkv);;"\
                     "MPEG Audio Layer 2/3 Format (*.mp3);;"\
                     "MPEG-Program Stream Format (*.mpg *.mpeg);;"\
                     "MPEG-2 Transport Stream (*.m2ts);;"\
                     "M3U Playlist File (*.m3u);;"\
-                    "Portable Network Graphics (*.png);;"\
+                    "Portable Network Graphics Format (*.png);;"\
                     "PLS Playlist File (*.pls);;"\
                     "Quicktime/MPEG4 Format (*.m4v *.mov *.mp4 *.mp4a *.3gp);;"\
                     "Small Web Format (*.swf);;"\
