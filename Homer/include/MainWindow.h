@@ -72,7 +72,7 @@ using namespace Homer::Conference;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define SCREEN_CAPTURE_FPS					15
+#define SCREEN_CAPTURE_FPS					(29.97)
 
 ///////////////////////////////////////////////////////////////////////////////
 class MainWindow:
@@ -122,22 +122,23 @@ private slots:
     void registerAtStunSipServer();
 
 private:
-    friend class GeneralControlWidget;
-
-    void initializeConfiguration(QStringList pArguments);
+    void removeArguments(QStringList &pArguments, QString pFilter);
+    void initializeConfiguration(QStringList &pArguments);
     void initializeGUI();
-    void initializeFeatureDisablers(QStringList pArguments);
-    void initializeLogging(QStringList pArguments);
-    void showFfmpegCaps(QStringList pArguments);
+    void initializeFeatureDisablers(QStringList &pArguments);
+    void initializeLogging(QStringList &pArguments);
+    void ShowFfmpegCaps(QStringList &pArguments);
     void initializeConferenceManagement();
     void initializeVideoAudioIO();
     void initializeColoring();
     void initializeWidgetsAndMenus();
     void initializeScreenCapturing();
-    void initializeNetworkSimulator(QStringList pArguments, bool pForce = false);
+    void initializeNetworkSimulator(QStringList &pArguments, bool pForce = false);
+    void ProcessRemainingArguments(QStringList &pArguments);
     void connectSignalsSlots();
 
     virtual void closeEvent(QCloseEvent* pEvent);
+    virtual void keyPressEvent(QKeyEvent *pEvent);
     virtual void customEvent(QEvent* pEvent);
 
     void triggerUpdateCheck();

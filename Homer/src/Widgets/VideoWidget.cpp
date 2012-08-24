@@ -81,21 +81,21 @@ using namespace Homer::Monitor;
 ///////////////////////////////////////////////////////////////////////////////
 
 // at what time period is timerEvent() called?
-#define VIDEO_WIDGET_TIMER_PERIOD               250 //ms
+#define VIDEO_WIDGET_TIMER_PERIOD               	  250 //ms
 
-#define VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME       3 // seconds
+#define VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME       		3 // seconds
 
 // how long should a OSD status message stay on the screen?
-#define VIDEO_WIDGET_OSD_PERIOD                   3 // seconds
+#define VIDEO_WIDGET_OSD_PERIOD                   		3 // seconds
 
 // how many measurement steps do we use?
-#define FPS_MEASUREMENT_STEPS                    60
+#define FPS_MEASUREMENT_STEPS                    		60
 
-#define SEEK_SMALL_STEP                         10 // seconds
-#define SEEK_MEDIUM_STEP                        60 // seconds
-#define SEEK_BIG_STEP                          300 // seconds
+#define SEEK_SMALL_STEP                         		10 // seconds
+#define SEEK_MEDIUM_STEP                        	    60 // seconds
+#define SEEK_BIG_STEP                          	       300 // seconds
 // additional seeking drift when seeking backwards
-#define SEEK_BACKWARD_DRIFT                      5 // seconds
+#define SEEK_BACKWARD_DRIFT                      		 5 // seconds
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1512,7 +1512,7 @@ void VideoWidget::resizeEvent(QResizeEvent *pEvent)
 
 void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
 {
-	LOG(LOG_VERBOSE, "Got key press event with key %d (mod: %d)", pEvent->key(), (int)pEvent->modifiers());
+	LOG(LOG_VERBOSE, "Got video window key press event with key %s(%d, mod: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
 
 	if ((pEvent->key() == Qt::Key_Escape) && (windowState() & Qt::WindowFullScreen))
 	{
@@ -1523,6 +1523,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
             unsetCursor();
             LOG(LOG_VERBOSE, "Showing the mouse cursor again, current timeout is %d seconds", VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME);
         }
+        pEvent->accept();
         return;
 	}
     if ((pEvent->key() == Qt::Key_K) && (mVideoSource->SupportsMarking()))
@@ -1533,16 +1534,19 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
         else
             setCursor(Qt::ArrowCursor);
         mVideoSource->SetMarker(mLiveMarkerActive);
+        pEvent->accept();
         return;
     }
     if (pEvent->key() == Qt::Key_F)
     {
         ToggleFullScreenMode();
+        pEvent->accept();
         return;
     }
     if (pEvent->key() == Qt::Key_S)
     {
         ToggleSmoothPresentationMode();
+        pEvent->accept();
         return;
     }
     if (pEvent->key() == Qt::Key_I)
@@ -1551,6 +1555,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
         	mShowLiveStats = false;
         else
         	mShowLiveStats = true;
+        pEvent->accept();
         return;
     }
     if (pEvent->key() == Qt::Key_M)
@@ -1563,6 +1568,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
             else
                 ShowOsdMessage("Audio output active");
 		}
+		pEvent->accept();
 		return;
     }
     if ((pEvent->key() == Qt::Key_Space) || (pEvent->key() == Qt::Key_MediaTogglePlayPause) || (pEvent->key() == Qt::Key_MediaPlay) || (pEvent->key() == Qt::Key_Play))
@@ -1571,11 +1577,13 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
         {
         	ShowOsdMessage("Playing..");
             mParticipantWidget->ActionPlayMovieFile();
+            pEvent->accept();
             return;
         }else
         {
         	ShowOsdMessage("Pausing..");
             mParticipantWidget->ActionPauseMovieFile();
+			pEvent->accept();
             return;
         }
     }
@@ -1587,6 +1595,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
             mParticipantWidget->SeekMovieFileRelative(SEEK_MEDIUM_STEP);
         else
             mParticipantWidget->SeekMovieFileRelative(SEEK_SMALL_STEP);
+        pEvent->accept();
         return;
     }
     if ((pEvent->key() == Qt::Key_Left) && (windowState() & Qt::WindowFullScreen))
@@ -1597,6 +1606,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
             mParticipantWidget->SeekMovieFileRelative(-SEEK_MEDIUM_STEP -SEEK_BACKWARD_DRIFT);
         else
             mParticipantWidget->SeekMovieFileRelative(-SEEK_SMALL_STEP - SEEK_BACKWARD_DRIFT);
+        pEvent->accept();
         return;
     }
     if (pEvent->key() == Qt::Key_A)
@@ -1605,6 +1615,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
     	if(mAspectRatio > ASPECT_RATIO_16x10)
     		mAspectRatio = ASPECT_RATIO_ORIGINAL;
     	mNeedBackgroundUpdatesUntillNextFrame = true;
+    	pEvent->accept();
     	return;
     }
     if ((pEvent->key() == Qt::Key_Plus) || (pEvent->key() == Qt::Key_Up))
@@ -1627,6 +1638,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
 			mParticipantWidget->GetAudioWorker()->SetVolume(tNewVolumeValue);
 		}
 	}
+    QWidget::keyPressEvent(pEvent);
 }
 void VideoWidget::mouseDoubleClickEvent(QMouseEvent *pEvent)
 {
@@ -1652,6 +1664,15 @@ void VideoWidget::wheelEvent(QWheelEvent *pEvent)
 
 void VideoWidget::mouseMoveEvent(QMouseEvent *pEvent)
 {
+	//LOG(LOG_VERBOSE, "Got video window mouse move event with mouse buttons %d and position: (%d,%d)", (int)pEvent->buttons(), pEvent->pos().x(), pEvent->pos().y());
+	if (pEvent->buttons() & Qt::LeftButton)
+	{
+		QPoint tPoint;
+		tPoint = pEvent->globalPos() - mMovingMainWindowReferencePos;
+		mMovingMainWindowReferencePos = pEvent->globalPos();
+		//LOG(LOG_VERBOSE, "Moving main window to relative position: (%d,%d)", tPoint.x(), tPoint.y());
+		mMainWindow->move(mMainWindow->pos() + tPoint);
+	}
     mTimeOfLastMouseMove = QTime::currentTime();
     if (cursor().shape() == Qt::BlankCursor)
     {
@@ -1674,6 +1695,29 @@ void VideoWidget::mouseMoveEvent(QMouseEvent *pEvent)
     }
 
     QWidget::mouseMoveEvent(pEvent);
+}
+
+void VideoWidget::mousePressEvent(QMouseEvent *pEvent)
+{
+	if (pEvent->button() == Qt::LeftButton)
+	{
+		mIsMovingMainWindow = true;
+		mMovingMainWindowReferencePos = pEvent->globalPos();
+	}
+	QWidget::mousePressEvent(pEvent);
+}
+
+void VideoWidget::mouseReleaseEvent(QMouseEvent *pEvent)
+{
+	if (pEvent->button() == Qt::LeftButton)
+		mIsMovingMainWindow = false;
+	QWidget::mouseReleaseEvent(pEvent);
+}
+
+void VideoWidget::focusOutEvent(QFocusEvent *pEvent)
+{
+	mIsMovingMainWindow = false;
+	QWidget::focusOutEvent(pEvent);
 }
 
 void VideoWidget::timerEvent(QTimerEvent *pEvent)
@@ -2356,7 +2400,13 @@ void VideoWorkerThread::run()
 			}else
 			{
 				LOG(LOG_VERBOSE, "Invalid grabbing result: %d, frame size: %d", tFrameNumber, tFrameSize);
-				usleep(100 * 1000); // check for new frames every 1/10 seconds
+				if (mMediaSource->GetSourceType() != SOURCE_NETWORK)
+				{// file/mem/dev based source
+					usleep(100 * 1000); // check for new frames every 1/10 seconds
+				}else
+				{// network based source
+
+				}
 			}
         }else
         {

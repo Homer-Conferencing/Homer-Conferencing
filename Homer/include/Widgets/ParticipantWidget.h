@@ -159,6 +159,7 @@ private:
     virtual void closeEvent(QCloseEvent* pEvent = NULL);
     virtual void dragEnterEvent(QDragEnterEvent *pEvent);
     virtual void dropEvent(QDropEvent *pEvent);
+    virtual void keyPressEvent(QKeyEvent *pEvent);
     virtual void wheelEvent(QWheelEvent *pEvent);
     virtual void timerEvent(QTimerEvent *pEvent);
 

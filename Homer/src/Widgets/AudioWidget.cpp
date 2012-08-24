@@ -693,9 +693,6 @@ void AudioWidget::SetVisible(bool pVisible)
         show();
         if (mAssignedAction != NULL)
             mAssignedAction->setChecked(true);
-        if (mAudioVolume == 0)
-        	mAudioVolume = mAudioVolumeWhenHiding;
-        SetVolume(mAudioVolume);
         if (parentWidget()->isHidden())
             parentWidget()->show();
     }else
@@ -707,8 +704,6 @@ void AudioWidget::SetVisible(bool pVisible)
         hide();
         if (mAssignedAction != NULL)
             mAssignedAction->setChecked(false);
-        mAudioVolumeWhenHiding = mAudioVolume;
-        SetVolume(0);
     }
 }
 
@@ -1307,7 +1302,13 @@ void AudioWorkerThread::run()
                 }else
                 {
                     LOG(LOG_VERBOSE, "Invalid grabbing result: %d, current sample size: %d", tSampleNumber, mSamplesSize[mSampleGrabIndex]);
-                    usleep(100 * 1000); // check for new frames every 1/10 seconds
+    				if (mMediaSource->GetSourceType() != SOURCE_NETWORK)
+    				{// file/mem/dev based source
+    					usleep(100 * 1000); // check for new frames every 1/10 seconds
+    				}else
+    				{// network based source
+
+    				}
                 }
             }
         }else

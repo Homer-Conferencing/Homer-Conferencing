@@ -108,6 +108,8 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     {
         LOG(LOG_VERBOSE, "Argument[%d]: \"%s\"", i++, tArg.toStdString().c_str());
     }
+    //remove the self pointer
+    tArguments.erase(tArguments.begin());
 
     // init program configuration
     initializeConfiguration(tArguments);
@@ -116,7 +118,7 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     // init log sinks
     initializeLogging(tArguments);
     // show ffmpeg data
-    showFfmpegCaps(tArguments);
+    ShowFfmpegCaps(tArguments);
     // create basic GUI objects
     initializeGUI();
     // retrieve info about network devices and init Meeting
@@ -148,17 +150,32 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
         if (CONF.GetStartSound())
             StartAudioPlayback(CONF.GetStartSoundFile());
     #endif
+	ProcessRemainingArguments(tArguments);
 }
 
 MainWindow::~MainWindow()
 {
 }
 
-void MainWindow::initializeConfiguration(QStringList pArguments)
+void MainWindow::removeArguments(QStringList &pArguments, QString pFilter)
+{
+	QString tArgument;
+	QStringList::iterator tIt;
+	for (tIt = pArguments.begin(); tIt != pArguments.end(); tIt++)
+	{
+		tArgument = *tIt;
+		if (tArgument.contains(pFilter))
+			tIt = pArguments.erase(tIt);
+	}
+}
+
+void MainWindow::initializeConfiguration(QStringList &pArguments)
 {
     CONF.Init(mAbsBinPath);
     if (pArguments.contains("-SetDefaults"))
     	CONF.SetDefaults();
+
+    removeArguments(pArguments, "-SetDefaults");
 }
 
 void MainWindow::initializeGUI()
@@ -168,6 +185,24 @@ void MainWindow::initializeGUI()
     setWindowTitle("Homer Conferencing "HOMER_VERSION);
     move(CONF.GetMainWindowPosition());
     resize(CONF.GetMainWindowSize());
+}
+
+void MainWindow::ProcessRemainingArguments(QStringList &pArguments)
+{
+	bool tFirst = true;
+	QString tArgument;
+	foreach(tArgument, pArguments)
+	{
+		if (tFirst)
+		{
+			tFirst = false;
+			PLAYLISTWIDGET.AddEntry(tArgument, true);
+		}else
+		{
+			LOG(LOG_VERBOSE, "Found unknown command line argument: %s", tArgument.toStdString().c_str());
+			printf("Found unknown command line argument: %s\n", tArgument.toStdString().c_str());
+		}
+	}
 }
 
 void MainWindow::connectSignalsSlots()
@@ -221,10 +256,10 @@ void MainWindow::initializeScreenCapturing()
 
     mScreenShotTimer = new QTimer(this);
     connect(mScreenShotTimer, SIGNAL(timeout()), this, SLOT(CreateScreenShot()));
-    mScreenShotTimer->start(3000);
+    mScreenShotTimer->start(50);
 }
 
-void MainWindow::initializeNetworkSimulator(QStringList pArguments, bool pForce)
+void MainWindow::initializeNetworkSimulator(QStringList &pArguments, bool pForce)
 {
     // use defines here until plugin-interface is integrated completely
     #if HOMER_NETWORK_SIMULATOR
@@ -245,7 +280,7 @@ void MainWindow::initializeNetworkSimulator(QStringList pArguments, bool pForce)
     #endif
 }
 
-void MainWindow::initializeFeatureDisablers(QStringList pArguments)
+void MainWindow::initializeFeatureDisablers(QStringList &pArguments)
 {
     // file based log sinks
     QStringList tFiles = pArguments.filter("-Disable=");
@@ -265,9 +300,11 @@ void MainWindow::initializeFeatureDisablers(QStringList pArguments)
                 CONF.DisableAudioCapture();
         }
     }
+
+    removeArguments(pArguments, "-Disable");
 }
 
-void MainWindow::showFfmpegCaps(QStringList pArguments)
+void MainWindow::ShowFfmpegCaps(QStringList &pArguments)
 {
     if (pArguments.contains("-ListVideoCodecs"))
         MediaSource::LogSupportedVideoCodecs(CONF.DebuggingEnabled());
@@ -277,9 +314,11 @@ void MainWindow::showFfmpegCaps(QStringList pArguments)
         MediaSource::LogSupportedInputFormats(CONF.DebuggingEnabled());
     if (pArguments.contains("-ListOutputFormats"))
         MediaSource::LogSupportedOutputFormats(CONF.DebuggingEnabled());
+
+    removeArguments(pArguments, "-List");
 }
 
-void MainWindow::initializeLogging(QStringList pArguments)
+void MainWindow::initializeLogging(QStringList &pArguments)
 {
     LOG(LOG_VERBOSE, "Initialization of logging..");
 
@@ -340,6 +379,8 @@ void MainWindow::initializeLogging(QStringList pArguments)
         	}
         }
     }
+
+    removeArguments(pArguments, "-Debug");
 }
 
 void MainWindow::initializeConferenceManagement()
@@ -848,6 +889,14 @@ void MainWindow::GetEventSource(GeneralEvent *pEvent, QString &pSender, QString 
     pSenderApp = (pEvent->SenderApplication != "") ? QString(pEvent->SenderApplication.c_str()) : "";
     if (pSenderApp == USER_AGENT_SIGNATURE)
     	pSenderApp = "Homer-Conferencing";
+}
+
+void MainWindow::keyPressEvent(QKeyEvent *pEvent)
+{
+	LOG(LOG_VERBOSE, "Got main window key press event with key %s(%d, mod: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
+
+	// forward the event to the local participant widget
+	QCoreApplication::postEvent(mLocalUserParticipantWidget, new QKeyEvent(QEvent::KeyPress, pEvent->key(), pEvent->modifiers()));
 }
 
 void MainWindow::customEvent(QEvent* pEvent)
@@ -1657,7 +1706,8 @@ void MainWindow::actionMuteOthers()
 
 void MainWindow::actionActivateNetworkSimulationWidgets()
 {
-    initializeNetworkSimulator(QStringList(), true);
+	QStringList tArguments;
+    initializeNetworkSimulator(tArguments, true);
 }
 
 void MainWindow::actionActivateDebuggingWidgets()
