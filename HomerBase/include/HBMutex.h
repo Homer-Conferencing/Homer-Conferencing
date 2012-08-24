@@ -62,8 +62,7 @@ public:
     /* every function returns TRUE if successful */
     bool lock();
     bool unlock();
-    bool tryLock();
-    bool tryLock(int pMSecs);
+    bool tryLock(int pMSecs = 0);
 
     /* for debbuging */
     void AssignName(std::string pName);
