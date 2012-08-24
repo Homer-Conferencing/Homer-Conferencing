@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
 	<key>CFBundleExecutable</key>
 	<string>Homer-Conferencing</string>
 	<key>CFBundleGetInfoString</key>
@@ -16,6 +18,8 @@
 	<string>@HOMER_VERSION@</string>
 	<key>CFBundleShortVersionString</key>
 	<string>@HOMER_VERSION@</string>
+	<key>CFBundleLongVersionString</key>
+	<string> Version @HOMER_VERSION@</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.6.0</string>
 	<key>CFBundleDevelopmentRegion</key>
@@ -26,13 +30,235 @@
 	<string>com.homer-conferencing</string>
 	<key>LSRequiresCarbon</key>
 	<true/>
-	
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Folder</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>fold</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>asf</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>Homer-Conferencing.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Advanced Systems Format</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>avi</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>Homer-Conferencing.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Audio Video Interleave Format</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>dv</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>Homer-Conferencing.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Digital Video Format</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>jpg</string>
+				<string>jpeg</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>Homer-Conferencing.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Joint Photographic Experts Group Format</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>mka</string>
+				<string>mkv</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>Homer-Conferencing.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Matroska Format</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>mp3</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>Homer-Conferencing.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>MPEG Audio Layer 2/3 Format</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>mpg</string>
+				<string>mpeg</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>Homer-Conferencing.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>MPEG-Program Stream Format</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>m2ts</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>Homer-Conferencing.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>MPEG-2 Transport Stream</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>m3u</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>Homer-Conferencing.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>M3U Playlist File</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>png</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>Homer-Conferencing.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Portable Network Graphics Format</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>		
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>pls</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>Homer-Conferencing.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>PLS Playlist File</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>	
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>m4v</string>
+				<string>mov</string>
+				<string>mp4</string>
+				<string>mp4a</string>
+				<string>3gp</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>Homer-Conferencing.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Quicktime/MPEG4 Format</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>		
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>swf</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>Homer-Conferencing.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Small Web Format</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>vob</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>Homer-Conferencing.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Video Object Format</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>wav</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>Homer-Conferencing.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Waveform Audio File Format</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>		
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>bmp</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>Homer-Conferencing.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Windows Bitmap Format</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>wmv</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>Homer-Conferencing.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Windows Media Video Format</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+	</array>
+	<key>CSResourcesFileMapped</key>
+	<false/>
+
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
-	<key>CFBundleLongVersionString</key>
-	<string> Version @HOMER_VERSION@</string>
-	<key>CFBundlePackageType</key>
-	<string>APPL</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 
