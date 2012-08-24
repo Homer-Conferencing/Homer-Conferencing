@@ -25,7 +25,6 @@
  * Since:   2008-11-25
 */
 
-#include <QApplication>
 #include <QDate>
 #include <QWidget>
 #include <QPixmap>
@@ -34,6 +33,7 @@
 #include <QResource>
 
 #include <HBTime.h>
+#include <HomerApplication.h>
 #include <MainWindow.h>
 #include <Logger.h>
 #include <Configuration.h>
@@ -262,7 +262,7 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
 
 	SetHandlers();
 
-	QApplication *tApp = new QApplication(pArgc, pArgv);
+	HomerApplication *tApp = new HomerApplication(pArgc, pArgv);
 
 	QStringList tArguments = QCoreApplication::arguments();
 

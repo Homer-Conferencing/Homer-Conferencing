@@ -139,6 +139,8 @@ private:
 
     virtual void closeEvent(QCloseEvent* pEvent);
     virtual void keyPressEvent(QKeyEvent *pEvent);
+    virtual void dragEnterEvent(QDragEnterEvent *pEvent);
+    virtual void dropEvent(QDropEvent *pEvent);
     virtual void customEvent(QEvent* pEvent);
 
     void triggerUpdateCheck();
@@ -173,7 +175,7 @@ private:
     MediaSourceMuxer 		    *mOwnAudioMuxer;
     QTimer 					    *mScreenShotTimer;
     QSystemTrayIcon			    *mSysTrayIcon;
-    QMenu					    *mSysTrayMenu;
+    QMenu					    *mSysTrayMenu, *mDockMenu /* OSX dock menu */;
     MediaSourceDesktop 		    *mSourceDesktop;
     QShortcut                   *mShortcutActivateDebugWidgets, *mShortcutActivateDebuggingGlobally, *mShortcutActivateNetworkSimulationWidgets;
     /* SIP server registration */

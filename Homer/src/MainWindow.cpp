@@ -62,6 +62,7 @@
 #include <QPlastiqueStyle>
 #include <QApplication>
 #include <QTime>
+#include <QDir>
 #include <QTimer>
 #include <QTextEdit>
 #include <QMenu>
@@ -75,6 +76,11 @@
 using namespace Homer::Monitor;
 using namespace Homer::Multimedia;
 using namespace Homer::Conference;
+
+#ifdef APPLE
+	// manually declare qt_mac_set_dock_menu(QMenu*) to set a custom dock menu
+	extern void qt_mac_set_dock_menu(QMenu *); // http://doc.trolltech.com/qq/qq18-macfeatures.html
+#endif
 
 namespace Homer { namespace Gui {
 
@@ -93,6 +99,8 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     QApplication::setWindowIcon(QPixmap(":/images/LogoHomer3.png"));
 
     SVC_PROCESS_STATISTIC.AssignThreadName("Qt-MainLoop");
+    mDockMenu= NULL;
+    mSysTrayMenu = NULL;
     mAbsBinPath = pAbsBinPath;
     mSourceDesktop = NULL;
     mNetworkSimulator = NULL;
@@ -102,6 +110,10 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
 
     // get the program arguments
     QStringList tArguments = QCoreApplication::arguments();
+    // init log sinks
+    initializeLogging(tArguments);
+
+    // verbose output of arguments
     QString tArg;
     int i = 0;
     foreach(tArg, tArguments)
@@ -115,8 +127,6 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     initializeConfiguration(tArguments);
     // disabling of features
     initializeFeatureDisablers(tArguments);
-    // init log sinks
-    initializeLogging(tArguments);
     // show ffmpeg data
     ShowFfmpegCaps(tArguments);
     // create basic GUI objects
@@ -171,7 +181,13 @@ void MainWindow::removeArguments(QStringList &pArguments, QString pFilter)
 
 void MainWindow::initializeConfiguration(QStringList &pArguments)
 {
-    CONF.Init(mAbsBinPath);
+	#ifdef RELEASE_VERSION
+		LOG(LOG_VERBOSE, "This is the RELEASE version");
+	#endif
+	#ifdef DEBUG_VERSION
+		LOG(LOG_VERBOSE, "This is the DEBUG version");
+	#endif
+	CONF.Init(mAbsBinPath);
     if (pArguments.contains("-SetDefaults"))
     	CONF.SetDefaults();
 
@@ -355,7 +371,11 @@ void MainWindow::initializeLogging(QStringList &pArguments)
         }
     }
 
-    // network based log sinks
+    //#ifdef DEBUG_VERSION
+    	LOGGER.RegisterLogSink(new LogSinkFile(QDir::homePath().toStdString() + "/Homer.log"));
+	//#endif
+
+	// network based log sinks
     QStringList tPorts = pArguments.filter("-DebugOutputNetwork=");
     if (tPorts.size())
     {
@@ -897,6 +917,37 @@ void MainWindow::keyPressEvent(QKeyEvent *pEvent)
 
 	// forward the event to the local participant widget
 	QCoreApplication::postEvent(mLocalUserParticipantWidget, new QKeyEvent(QEvent::KeyPress, pEvent->key(), pEvent->modifiers()));
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *pEvent)
+{
+    if (pEvent->mimeData()->hasUrls())
+    {
+        pEvent->acceptProposedAction();
+        QList<QUrl> tList = pEvent->mimeData()->urls();
+        QUrl tUrl;
+        int i = 0;
+
+        foreach(tUrl, tList)
+            LOG(LOG_VERBOSE, "New entering drag+drop url (%d) \"%s\"", ++i, tUrl.toString().toStdString().c_str());
+        return;
+    }
+}
+
+void MainWindow::dropEvent(QDropEvent *pEvent)
+{
+    if (pEvent->mimeData()->hasUrls())
+    {
+        LOG(LOG_VERBOSE, "Got some dropped urls");
+        QList<QUrl> tUrlList = pEvent->mimeData()->urls();
+        QUrl tUrl;
+        foreach(tUrl, tUrlList)
+        {
+            LOG(LOG_VERBOSE, "Dropped url: %s", tUrl.toLocalFile().toStdString().c_str());
+        }
+        pEvent->acceptProposedAction();
+        return;
+    }
 }
 
 void MainWindow::customEvent(QEvent* pEvent)
@@ -1643,7 +1694,6 @@ void MainWindow::CreateSysTray()
 {
     LOG(LOG_VERBOSE, "Creating system tray object..");
     mSysTrayMenu = new QMenu(this);
-    UpdateSysTrayContextMenu();
 
     mSysTrayIcon = new QSystemTrayIcon(QIcon(":/images/LogoHomer3.png"), this);
     mSysTrayIcon->setContextMenu(mSysTrayMenu);
@@ -1651,6 +1701,14 @@ void MainWindow::CreateSysTray()
     mSysTrayIcon->show();
 
     connect(mSysTrayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(activatedSysTray(QSystemTrayIcon::ActivationReason)));
+
+	#ifdef APPLE
+		mDockMenu = new QMenu(this);
+
+		qt_mac_set_dock_menu(mDockMenu);
+	#endif
+
+	UpdateSysTrayContextMenu();
 }
 
 void MainWindow::actionToggleWindowState()
@@ -1733,52 +1791,100 @@ void MainWindow::UpdateSysTrayContextMenu()
     QIcon *tIcon;
     QMenu *tMenu;
 
-    mSysTrayMenu->clear();
-
-    if (isMinimized())
-	{
-	    tAction = mSysTrayMenu->addAction("Show window");
-	}else
-	{
-	    tAction = mSysTrayMenu->addAction("Hide window");
-	}
-    tIcon = new QIcon(":/images/22_22/Resize.png");
-    tAction->setIcon(*tIcon);
-    connect(tAction, SIGNAL(triggered()), this, SLOT(actionToggleWindowState()));
-
-    mSysTrayMenu->addSeparator();
-
-    if (mLocalUserParticipantWidget->GetAudioWorker()->GetMuteState())
+    if (mSysTrayMenu != NULL)
     {
-    	tAction = mSysTrayMenu->addAction("Unmute me");
-    	tIcon = new QIcon(":/images/22_22/SpeakerLoud.png");
-    }else
-    {
-    	tAction = mSysTrayMenu->addAction("Mute me");
-    	tIcon = new QIcon(":/images/22_22/SpeakerMuted.png");
+		mSysTrayMenu->clear();
+
+		if (isMinimized())
+		{
+			tAction = mSysTrayMenu->addAction("Show window");
+		}else
+		{
+			tAction = mSysTrayMenu->addAction("Hide window");
+		}
+		tIcon = new QIcon(":/images/22_22/Resize.png");
+		tAction->setIcon(*tIcon);
+		connect(tAction, SIGNAL(triggered()), this, SLOT(actionToggleWindowState()));
+
+		mSysTrayMenu->addSeparator();
+
+		if (mLocalUserParticipantWidget->GetAudioWorker()->GetMuteState())
+		{
+			tAction = mSysTrayMenu->addAction("Unmute me");
+			tIcon = new QIcon(":/images/22_22/SpeakerLoud.png");
+		}else
+		{
+			tAction = mSysTrayMenu->addAction("Mute me");
+			tIcon = new QIcon(":/images/22_22/SpeakerMuted.png");
+		}
+		tAction->setIcon(*tIcon);
+		connect(tAction, SIGNAL(triggered()), this, SLOT(actionMuteMe()));
+
+		tAction = mSysTrayMenu->addAction("Mute others");
+		tIcon = new QIcon(":/images/22_22/SpeakerMuted.png");
+		tAction->setIcon(*tIcon);
+		connect(tAction, SIGNAL(triggered()), this, SLOT(actionMuteOthers()));
+
+		mSysTrayMenu->addSeparator();
+
+		tAction = mSysTrayMenu->addAction("Online status");
+		tMenu = new QMenu(this);
+		mOnlineStatusWidget->InitializeMenuOnlineStatus(tMenu);
+		tAction->setMenu(tMenu);
+		connect(tMenu, SIGNAL(triggered(QAction *)), mOnlineStatusWidget, SLOT(Selected(QAction *)));
+
+		mSysTrayMenu->addSeparator();
+
+		tAction = mSysTrayMenu->addAction("Exit");
+		tIcon = new QIcon(":/images/22_22/Exit.png");
+		tAction->setIcon(*tIcon);
+		connect(tAction, SIGNAL(triggered()), this, SLOT(actionExit()));
     }
-	tAction->setIcon(*tIcon);
-	connect(tAction, SIGNAL(triggered()), this, SLOT(actionMuteMe()));
 
-	tAction = mSysTrayMenu->addAction("Mute others");
-	tIcon = new QIcon(":/images/22_22/SpeakerMuted.png");
-	tAction->setIcon(*tIcon);
-	connect(tAction, SIGNAL(triggered()), this, SLOT(actionMuteOthers()));
+	#ifdef APPLE
+		if (mDockMenu != NULL)
+		{
+			mDockMenu->clear();
 
-	mSysTrayMenu->addSeparator();
+			if (isMinimized())
+			{
+				tAction = mDockMenu->addAction("Show window");
+			}else
+			{
+				tAction = mDockMenu->addAction("Hide window");
+			}
+			tIcon = new QIcon(":/images/22_22/Resize.png");
+			tAction->setIcon(*tIcon);
+			connect(tAction, SIGNAL(triggered()), this, SLOT(actionToggleWindowState()));
 
-    tAction = mSysTrayMenu->addAction("Online status");
-	tMenu = new QMenu(this);
-	mOnlineStatusWidget->InitializeMenuOnlineStatus(tMenu);
-	tAction->setMenu(tMenu);
-    connect(tMenu, SIGNAL(triggered(QAction *)), mOnlineStatusWidget, SLOT(Selected(QAction *)));
+			mDockMenu->addSeparator();
 
-	mSysTrayMenu->addSeparator();
+			if (mLocalUserParticipantWidget->GetAudioWorker()->GetMuteState())
+			{
+				tAction = mDockMenu->addAction("Unmute me");
+				tIcon = new QIcon(":/images/22_22/SpeakerLoud.png");
+			}else
+			{
+				tAction = mDockMenu->addAction("Mute me");
+				tIcon = new QIcon(":/images/22_22/SpeakerMuted.png");
+			}
+			tAction->setIcon(*tIcon);
+			connect(tAction, SIGNAL(triggered()), this, SLOT(actionMuteMe()));
 
-	tAction = mSysTrayMenu->addAction("Exit");
-	tIcon = new QIcon(":/images/22_22/Exit.png");
-	tAction->setIcon(*tIcon);
-	connect(tAction, SIGNAL(triggered()), this, SLOT(actionExit()));
+			tAction = mDockMenu->addAction("Mute others");
+			tIcon = new QIcon(":/images/22_22/SpeakerMuted.png");
+			tAction->setIcon(*tIcon);
+			connect(tAction, SIGNAL(triggered()), this, SLOT(actionMuteOthers()));
+
+			mDockMenu->addSeparator();
+
+			tAction = mDockMenu->addAction("Online status");
+			tMenu = new QMenu(this);
+			mOnlineStatusWidget->InitializeMenuOnlineStatus(tMenu);
+			tAction->setMenu(tMenu);
+			connect(tMenu, SIGNAL(triggered(QAction *)), mOnlineStatusWidget, SLOT(Selected(QAction *)));
+		}
+	#endif
 }
 
 void MainWindow::activatedSysTray(QSystemTrayIcon::ActivationReason pReason)
