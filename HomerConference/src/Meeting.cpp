@@ -276,7 +276,7 @@ void Meeting::SetLocalUserName(string pName)
     LOG(LOG_VERBOSE, "Called to set local name to %s", pName.c_str());
     for (int i = 0; i < (int)pName.length(); i++)
     {
-        switch(pName[i])
+        switch((unsigned char)pName[i])
         {
             case 'A'...'Z':
             case 'a'...'z':
