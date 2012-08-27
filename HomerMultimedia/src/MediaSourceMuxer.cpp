@@ -462,6 +462,10 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
             		mCurrentStreamingResY = mSourceResY;
                     break;
         }
+    }else
+    {
+		mCurrentStreamingResX = mRequestedStreamingResX;
+		mCurrentStreamingResY = mRequestedStreamingResY;
     }
     mCodecContext->width = mCurrentStreamingResX;
     mCodecContext->height = mCurrentStreamingResY;
