@@ -85,7 +85,7 @@ Q_OBJECT
     ;
 public:
     /// The default constructor
-    MainWindow(const std::string& pAbsBinPath);
+    MainWindow(QString pAbsBinPath);
 
     /// The destructor
     virtual ~MainWindow();
@@ -158,7 +158,7 @@ private:
     virtual void handleMeetingEvent(GeneralEvent *pEvent);
 
     QHttp           		    *mHttpGetVersionServer;
-    std::string 			    mAbsBinPath;
+    QString		 			    mAbsBinPath;
     AvailabilityWidget 		    *mOnlineStatusWidget;
     StreamingControlWidget 	    *mMediaSourcesControlWidget;
     LocalAddressesList 		    mLocalAddresses;

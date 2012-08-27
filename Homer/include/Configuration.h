@@ -33,6 +33,7 @@
 #include "config.h"
 
 #include <QSettings>
+#include <QString>
 
 namespace Homer { namespace Gui {
 
@@ -83,7 +84,7 @@ public:
 
     static Configuration& GetInstance();
 
-    void Init(std::string pAbsBinPath);
+    void Init(QString pAbsBinPath);
     void SetDefaults();
 
     /* general settings */
@@ -368,7 +369,7 @@ public:
     void Sync();
 
 
-    std::string             mAbsBinPath;
+    QString		            mAbsBinPath;
     QSettings               *mQSettings;
     bool                    mDebuggingEnabled;
     bool                    mAudioOutputEnabled;

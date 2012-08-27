@@ -25,16 +25,8 @@
  * Since:   2008-11-25
 */
 
-#include <QDate>
-#include <QWidget>
-#include <QPixmap>
-#include <QThread>
-#include <QSplashScreen>
-#include <QResource>
-
 #include <HBTime.h>
 #include <HomerApplication.h>
-#include <MainWindow.h>
 #include <Logger.h>
 #include <Configuration.h>
 
@@ -264,85 +256,13 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
 
 	HomerApplication *tApp = new HomerApplication(pArgc, pArgv);
 
-	QStringList tArguments = QCoreApplication::arguments();
-
-	if (tArguments.contains("-DebugLevel=Error"))
-	{
-		LOGGER.Init(LOG_ERROR);
-	}else
-	{
-		if (tArguments.contains("-DebugLevel=Info"))
-		{
-			LOGGER.Init(LOG_INFO);
-		}else
-		{
-			if (tArguments.contains("-DebugLevel=Verbose"))
-			{
-				LOGGER.Init(LOG_VERBOSE);
-			}else
-			{
-				#ifdef RELEASE_VERSION
-					LOGGER.Init(LOG_ERROR);
-				#else
-					LOGGER.Init(LOG_VERBOSE);
-				#endif
-			}
-		}
-	}
-
-	LOGEX(MainWindow, LOG_VERBOSE, "Setting Qt message handler");
+	LOGEX(HomerApplication, LOG_VERBOSE, "Setting Qt message handler");
 	qInstallMsgHandler(sQtDebugMessageOutput);
+	showMood();
 
-    // make sure every icon is visible within menus: otherwise the Ubuntu-packages will have no icons visible
-    tApp->setAttribute(Qt::AA_DontShowIconsInMenus, false);
+    tApp->showGUI();
 
-    // get the absolute path to our binary
-    string tAbsBinPath;
-    if (pArgc > 0)
-    {
-    	string tArgv0 = "";
-		tArgv0 = pArgv[0];
-
-		size_t tSize;
-		tSize = tArgv0.rfind('/');
-
-		// Windows path?
-		if (tSize == string::npos)
-			tSize = tArgv0.rfind('\\');
-
-		// nothing found?
-		if (tSize != string::npos)
-			tSize++;
-		else
-			tSize = 0;
-		tAbsBinPath = tArgv0.substr(0, tSize);
-    }
-
-    // load the icon resources
-    LOGEX(MainWindow, LOG_VERBOSE, "Loading Icons.rcc from %s", (tAbsBinPath + "Icons.rcc").c_str());
-    QResource::registerResource(QString((tAbsBinPath + "Icons.rcc").c_str()));
-
-    #ifdef RELEASE_VERSION
-        QPixmap tLogo(":/images/Splash.png");
-        QSplashScreen tSplashScreen(tLogo);
-        tSplashScreen.show();
-        Thread::Suspend(2 * 1000 * 1000);
-    #endif
-
-    showMood();
-
-    LOGEX(MainWindow, LOG_VERBOSE, "Creating Qt main window");
-    MainWindow *tMainWindow = new MainWindow(tAbsBinPath);
-
-    LOGEX(MainWindow, LOG_VERBOSE, "Showing Qt main window");
-    tMainWindow->show();
-
-    #ifdef RELEASE_VERSION
-        LOGEX(MainWindow, LOG_VERBOSE, "Showing splash screen");
-        tSplashScreen.finish(tMainWindow);
-    #endif
-
-    LOGEX(MainWindow, LOG_VERBOSE, "Executing Qt main window");
+    LOGEX(HomerApplication, LOG_VERBOSE, "Executing Qt main window");
     tApp->exec();
 
     return 0;

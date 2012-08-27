@@ -28,7 +28,12 @@
 #ifndef HOMER_APPLICATION_H
 #define HOMER_APPLICATION_H
 
+#include <MainWindow.h>
+
+#include <string>
+
 #include <QApplication>
+#include <QString>
 
 namespace Homer { namespace Gui {
 
@@ -42,9 +47,18 @@ public:
 
     virtual ~HomerApplication();
 
+    void showGUI();
+    std::string GetBinaryPath();
+
 protected:
     virtual bool event(QEvent *pEvent);
 
+    void initializeLogging();
+
+    bool				mMainWindowIsAlreadyVisible;
+    QString				mFileToOpen;
+    QString				mBinaryPath;
+    MainWindow			*mMainWindow;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

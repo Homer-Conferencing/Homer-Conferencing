@@ -71,7 +71,7 @@ Configuration& Configuration::GetInstance()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void Configuration::Init(string pAbsBinPath)
+void Configuration::Init(QString pAbsBinPath)
 {
     mAbsBinPath = pAbsBinPath;
 	#ifdef APPLE
@@ -83,7 +83,7 @@ void Configuration::Init(string pAbsBinPath)
 		CFRelease(tMacPath);
 		if (tPath != NULL)
 		{
-			mAbsBinPath = string(tPath) + "/Contents/Resources/";
+			mAbsBinPath = QString(tPath) + "/Contents/Resources/";
 		}
 	#endif
 }
@@ -761,7 +761,7 @@ enum TransportType Configuration::GetSipListenerTransport()
 
 QString Configuration::GetBinaryPath()
 {
-	return QString(mAbsBinPath.c_str());
+	return mAbsBinPath;
 }
 
 QString Configuration::GetConferenceAvailability()
@@ -771,7 +771,7 @@ QString Configuration::GetConferenceAvailability()
 
 QString Configuration::GetContactFile()
 {
-    return mQSettings->value("Global/ContactFile", QString((mAbsBinPath + "Homer-Contacts.xml").c_str())).toString();
+    return mQSettings->value("Global/ContactFile", mAbsBinPath + "Homer-Contacts.xml").toString();
 }
 
 QString Configuration::GetDataDirectory()
@@ -1094,7 +1094,7 @@ QString Configuration::GetStunServer()
 
 QString Configuration::GetStartSoundFile()
 {
-    return mQSettings->value("Notification/StartSoundFile", QString((mAbsBinPath + "sounds/Start.wav").c_str())).toString();
+    return mQSettings->value("Notification/StartSoundFile", mAbsBinPath + "sounds/Start.wav").toString();
 }
 
 bool Configuration::GetStartSound()
@@ -1109,7 +1109,7 @@ bool Configuration::GetStartSystray()
 
 QString Configuration::GetStopSoundFile()
 {
-    return mQSettings->value("Notification/StopSoundFile", QString((mAbsBinPath + "sounds/Stop.wav").c_str())).toString();
+    return mQSettings->value("Notification/StopSoundFile", mAbsBinPath + "sounds/Stop.wav").toString();
 }
 
 bool Configuration::GetStopSound()
@@ -1124,7 +1124,7 @@ bool Configuration::GetStopSystray()
 
 QString Configuration::GetImSoundFile()
 {
-    return mQSettings->value("Notification/ImSoundFile", QString((mAbsBinPath + "sounds/Message.wav").c_str())).toString();
+    return mQSettings->value("Notification/ImSoundFile", mAbsBinPath + "sounds/Message.wav").toString();
 }
 
 bool Configuration::GetImSound()
@@ -1139,7 +1139,7 @@ bool Configuration::GetImSystray()
 
 QString Configuration::GetCallSoundFile()
 {
-    return mQSettings->value("Notification/CallSoundFile", QString((mAbsBinPath + "sounds/Call.wav").c_str())).toString();
+    return mQSettings->value("Notification/CallSoundFile", mAbsBinPath + "sounds/Call.wav").toString();
 }
 
 bool Configuration::GetCallSound()
@@ -1154,7 +1154,7 @@ bool Configuration::GetCallSystray()
 
 QString Configuration::GetCallAcknowledgeSoundFile()
 {
-    return mQSettings->value("Notification/CallAcknowledgeSoundFile", QString((mAbsBinPath + "sounds/Call_Acknowledge.wav").c_str())).toString();
+    return mQSettings->value("Notification/CallAcknowledgeSoundFile", mAbsBinPath + "sounds/Call_Acknowledge.wav").toString();
 }
 
 bool Configuration::GetCallAcknowledgeSound()
@@ -1169,7 +1169,7 @@ bool Configuration::GetCallAcknowledgeSystray()
 
 QString Configuration::GetCallDenySoundFile()
 {
-    return mQSettings->value("Notification/CallDenySoundFile", QString((mAbsBinPath + "sounds/Call_Deny.wav").c_str())).toString();
+    return mQSettings->value("Notification/CallDenySoundFile", mAbsBinPath + "sounds/Call_Deny.wav").toString();
 }
 
 bool Configuration::GetCallDenySound()
@@ -1184,7 +1184,7 @@ bool Configuration::GetCallDenySystray()
 
 QString Configuration::GetCallHangupSoundFile()
 {
-    return mQSettings->value("Notification/CallHangupSoundFile", QString((mAbsBinPath + "sounds/Call_Hangup.wav").c_str())).toString();
+    return mQSettings->value("Notification/CallHangupSoundFile", mAbsBinPath + "sounds/Call_Hangup.wav").toString();
 }
 
 bool Configuration::GetCallHangupSound()
@@ -1199,7 +1199,7 @@ bool Configuration::GetCallHangupSystray()
 
 QString Configuration::GetErrorSoundFile()
 {
-    return mQSettings->value("Notification/ErrorSoundFile", QString((mAbsBinPath + "sounds/Error.wav").c_str())).toString();
+    return mQSettings->value("Notification/ErrorSoundFile", mAbsBinPath + "sounds/Error.wav").toString();
 }
 
 bool Configuration::GetErrorSound()
@@ -1214,7 +1214,7 @@ bool Configuration::GetErrorSystray()
 
 QString Configuration::GetRegistrationFailedSoundFile()
 {
-    return mQSettings->value("Notification/RegistrationFailedSoundFile", QString((mAbsBinPath + "sounds/Registration_Failed.wav").c_str())).toString();
+    return mQSettings->value("Notification/RegistrationFailedSoundFile", mAbsBinPath + "sounds/Registration_Failed.wav").toString();
 }
 
 bool Configuration::GetRegistrationFailedSound()
@@ -1229,7 +1229,7 @@ bool Configuration::GetRegistrationFailedSystray()
 
 QString Configuration::GetRegistrationSuccessfulSoundFile()
 {
-    return mQSettings->value("Notification/RegistrationSuccessfulSoundFile", QString((mAbsBinPath + "sounds/Registration_Successful.wav").c_str())).toString();
+    return mQSettings->value("Notification/RegistrationSuccessfulSoundFile", mAbsBinPath + "sounds/Registration_Successful.wav").toString();
 }
 
 bool Configuration::GetRegistrationSuccessfulSound()

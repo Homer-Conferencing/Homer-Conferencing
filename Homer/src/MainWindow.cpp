@@ -91,7 +91,7 @@ bool MainWindow::mShuttingDown = false;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-MainWindow::MainWindow(const std::string& pAbsBinPath) :
+MainWindow::MainWindow(QString pAbsBinPath) :
     QMainWindow(),
     Ui_MainWindow(),
     MeetingObserver()
@@ -123,7 +123,6 @@ MainWindow::MainWindow(const std::string& pAbsBinPath) :
     }
     //remove the self pointer
     tArguments.erase(tArguments.begin());
-
     // init program configuration
     initializeConfiguration(tArguments);
     // disabling of features
@@ -210,7 +209,7 @@ void MainWindow::ProcessRemainingArguments(QStringList &pArguments)
 	QString tArgument;
 	foreach(tArgument, pArguments)
 	{
-		if (tFirst)
+		if ((tFirst) && (tArgument != ""))
 		{
 			tFirst = false;
 			PLAYLISTWIDGET.AddEntry(tArgument, true);
