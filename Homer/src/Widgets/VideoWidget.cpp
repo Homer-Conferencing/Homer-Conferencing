@@ -1665,7 +1665,7 @@ void VideoWidget::wheelEvent(QWheelEvent *pEvent)
 void VideoWidget::mouseMoveEvent(QMouseEvent *pEvent)
 {
 	//LOG(LOG_VERBOSE, "Got video window mouse move event with mouse buttons %d and position: (%d,%d)", (int)pEvent->buttons(), pEvent->pos().x(), pEvent->pos().y());
-	if (pEvent->buttons() & Qt::LeftButton)
+	if ((pEvent->buttons() & Qt::LeftButton) && (!(windowState() & Qt::WindowFullScreen)))
 	{
 		QPoint tPoint;
 		tPoint = pEvent->globalPos() - mMovingMainWindowReferencePos;
