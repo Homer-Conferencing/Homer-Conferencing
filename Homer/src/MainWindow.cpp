@@ -1799,7 +1799,9 @@ void MainWindow::UpdateSysTrayContextMenu()
 
     if (mSysTrayMenu != NULL)
     {
-		mSysTrayMenu->clear();
+        LOG(LOG_VERBOSE, "Systray menu - current window state: %d", (int)windowState());
+
+        mSysTrayMenu->clear();
 
 		if (isMinimized())
 		{
@@ -1850,6 +1852,8 @@ void MainWindow::UpdateSysTrayContextMenu()
 	#ifdef APPLE
 		if (mDockMenu != NULL)
 		{
+		    LOG(LOG_VERBOSE, "Dock menu - current window state: %d", (int)windowState());
+
 			mDockMenu->clear();
 
 			if (isMinimized())
@@ -1889,7 +1893,8 @@ void MainWindow::UpdateSysTrayContextMenu()
 			mOnlineStatusWidget->InitializeMenuOnlineStatus(tMenu);
 			tAction->setMenu(tMenu);
 			connect(tMenu, SIGNAL(triggered(QAction *)), mOnlineStatusWidget, SLOT(Selected(QAction *)));
-		}
+		}else
+			LOG(LOG_VERBOSE, "Invalid dock menu object");
 	#endif
 }
 
@@ -1907,6 +1912,7 @@ void MainWindow::activatedSysTray(QSystemTrayIcon::ActivationReason pReason)
 			break;
 		case QSystemTrayIcon::Trigger:	//The system tray entry was clicked
 			LOG(LOG_VERBOSE, "SysTrayIcon activated for trigger");
+			UpdateSysTrayContextMenu();
 			break;
 		case QSystemTrayIcon::MiddleClick:
 			LOG(LOG_VERBOSE, "SysTrayIcon activated for middle click");
