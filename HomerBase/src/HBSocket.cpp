@@ -70,6 +70,7 @@ void Socket::SetDefaults(enum TransportType pTransportType)
     mIsConnected = false;
 	mIsListening = false;
 	mIsClientSocket = false;
+	mWasClosed = false;
 	mSocketNetworkType = SOCKET_NETWORK_TYPE_INVALID;
 	mSocketTransportType = SOCKET_TRANSPORT_TYPE_INVALID;
     mLocalPort = 0;
@@ -146,6 +147,7 @@ Socket* Socket::CreateClientSocket(enum NetworkType pIpVersion, enum TransportTy
 
 void Socket::Close()
 {
+	mWasClosed = true;
 	CloseSocket(mSocketHandle);
 }
 
@@ -750,7 +752,7 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
     	else
     		pSourceHost = "0.0.0.0";
     	pSourcePort = 0;
-    	if (errno != 0)
+    	if ((errno != 0) && (!mWasClosed))
     		LOG(LOG_ERROR, "Error when receiving data via socket %d at port %u because of \"%s\"(%d)", mSocketHandle, mLocalPort, strerror(errno), errno);
     }
 

@@ -173,6 +173,7 @@ private:
     std::string         mLocalHost;
     bool                mIsClientSocket;
     bool 				mNonBlockingMode;
+    bool				mWasClosed;
 
     /* peer data */
     std::string         mPeerHost;
