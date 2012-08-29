@@ -120,6 +120,7 @@ private slots:
     void CreateScreenShot();
 
     void registerAtStunSipServer();
+    void UpdateSysTrayContextMenu();
 
 private:
     void removeArguments(QStringList &pArguments, QString pFilter);
@@ -141,13 +142,13 @@ private:
     virtual void keyPressEvent(QKeyEvent *pEvent);
     virtual void dragEnterEvent(QDragEnterEvent *pEvent);
     virtual void dropEvent(QDropEvent *pEvent);
+    virtual void changeEvent (QEvent *pEvent);
     virtual void customEvent(QEvent* pEvent);
 
     void triggerUpdateCheck();
 
     void CreateSysTray();
     void loadSettings();
-    void UpdateSysTrayContextMenu();
     bool GetNetworkInfo(LocalAddressesList &pLocalAddressesList, QString &pLocalSourceIp, QString &pLocalLoopIp);
     QString CompleteIpAddress(QString pAddr);
     ParticipantWidget* AddParticipantSession(QString pUser, QString pHost, QString pPort, QString pIp, int pInitState);

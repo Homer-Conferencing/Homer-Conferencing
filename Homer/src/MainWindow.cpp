@@ -956,6 +956,15 @@ void MainWindow::dropEvent(QDropEvent *pEvent)
     }
 }
 
+void MainWindow::changeEvent (QEvent *pEvent)
+{
+	if (pEvent->type() == QEvent::WindowStateChange)
+	{
+		UpdateSysTrayContextMenu();
+	}
+	QMainWindow::changeEvent(pEvent);
+}
+
 void MainWindow::customEvent(QEvent* pEvent)
 {
     // make sure we have our user defined QEvent
@@ -1708,10 +1717,13 @@ void MainWindow::CreateSysTray()
 
     connect(mSysTrayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(activatedSysTray(QSystemTrayIcon::ActivationReason)));
 
+	connect(mSysTrayMenu, SIGNAL(aboutToShow()), this, SLOT(UpdateSysTrayContextMenu()));
+
 	#ifdef APPLE
 		mDockMenu = new QMenu(this);
 
 		qt_mac_set_dock_menu(mDockMenu);
+		connect(mDockMenu, SIGNAL(aboutToShow()), this, SLOT(UpdateSysTrayContextMenu()));
 	#endif
 
 	UpdateSysTrayContextMenu();
@@ -1721,33 +1733,50 @@ void MainWindow::actionToggleWindowState()
 {
     static bool sWasFullScreen = false;
     static bool sWasMaximized = false;
+
+    LOG(LOG_VERBOSE, "Toggling window state");
     if (isMinimized())
     {
+    	LOG(LOG_VERBOSE, "Found window minized");
         activateWindow();
         if (sWasFullScreen)
         {
+        	LOG(LOG_VERBOSE, "Showing the main window in full screen mode");
             showFullScreen();
         }else
         {
             if (sWasMaximized)
+            {
+            	LOG(LOG_VERBOSE, "Mayiming the main window");
                 showMaximized();
-            else
+            }else
+            {
+            	LOG(LOG_VERBOSE, "Showing the main window in a normal view");
                 showNormal();
+            }
         }
+    	LOG(LOG_VERBOSE, "Bring the main window in focus and to the foreground");
         setFocus();
         show();
     }else
     {
-        if (!hasFocus())
-        {
-            activateWindow();
-            setFocus();
-            show();
-        }else
-        {
-            showMinimized();
-        }
-        sWasFullScreen = isFullScreen();
+    	LOG(LOG_VERBOSE, "Found window non-minized");
+		#ifndef APPLE
+			if (!hasFocus())
+			{
+				LOG(LOG_VERBOSE, "Bring the main window in focus and to the foreground");
+				activateWindow();
+				setFocus();
+				show();
+			}else
+			{
+		#endif
+				LOG(LOG_VERBOSE, "Minimizing the main window");
+				showMinimized();
+		#ifndef APPLE
+            }
+		#endif
+		sWasFullScreen = isFullScreen();
         sWasMaximized = isMaximized();
     }
 }
@@ -1755,6 +1784,7 @@ void MainWindow::actionToggleWindowState()
 void MainWindow::actionMuteMe()
 {
 	mLocalUserParticipantWidget->GetAudioWorker()->SetMuteState(!mLocalUserParticipantWidget->GetAudioWorker()->GetMuteState());
+	UpdateSysTrayContextMenu();
 }
 
 void MainWindow::actionMuteOthers()
@@ -1797,10 +1827,10 @@ void MainWindow::UpdateSysTrayContextMenu()
     QIcon *tIcon;
     QMenu *tMenu;
 
+    LOG(LOG_VERBOSE, "Updating sys tray (and dock) menu");
+
     if (mSysTrayMenu != NULL)
     {
-        LOG(LOG_VERBOSE, "Systray menu - current window state: %d", (int)windowState());
-
         mSysTrayMenu->clear();
 
 		if (isMinimized())
@@ -1852,8 +1882,6 @@ void MainWindow::UpdateSysTrayContextMenu()
 	#ifdef APPLE
 		if (mDockMenu != NULL)
 		{
-		    LOG(LOG_VERBOSE, "Dock menu - current window state: %d", (int)windowState());
-
 			mDockMenu->clear();
 
 			if (isMinimized())
@@ -1904,7 +1932,6 @@ void MainWindow::activatedSysTray(QSystemTrayIcon::ActivationReason pReason)
 	{
 		case QSystemTrayIcon::Context:	//The context menu for the system tray entry was requested
 			LOG(LOG_VERBOSE, "SysTrayIcon activated for context menu");
-			UpdateSysTrayContextMenu();
 			break;
 		case QSystemTrayIcon::DoubleClick: //The system tray entry was double clicked
 			LOG(LOG_VERBOSE, "SysTrayIcon activated for double click");
@@ -1912,7 +1939,6 @@ void MainWindow::activatedSysTray(QSystemTrayIcon::ActivationReason pReason)
 			break;
 		case QSystemTrayIcon::Trigger:	//The system tray entry was clicked
 			LOG(LOG_VERBOSE, "SysTrayIcon activated for trigger");
-			UpdateSysTrayContextMenu();
 			break;
 		case QSystemTrayIcon::MiddleClick:
 			LOG(LOG_VERBOSE, "SysTrayIcon activated for middle click");
