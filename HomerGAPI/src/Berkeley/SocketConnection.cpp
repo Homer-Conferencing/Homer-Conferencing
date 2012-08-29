@@ -219,33 +219,7 @@ void SocketConnection::cancel()
     if ((mSocket != NULL) && (!isClosed()))
     {
         LOG(LOG_VERBOSE, "Connection for local %s will be canceled now", getName()->toString().c_str());
-        if (mBlockingMode) //TODO: do this only if a call to read() is blocked
-        {
-            LOG(LOG_VERBOSE, "Try to do loopback signaling to local IPv%d listener at port %u, transport %d", mSocket->GetNetworkType(), 0xFFFF & mSocket->GetLocalPort(), mSocket->GetTransportType());
-            Socket  *tSocket = Socket::CreateClientSocket(mSocket->GetNetworkType(), mSocket->GetTransportType());
-            if (tSocket != NULL)
-            {
-				char    tData[8];
-				switch(tSocket->GetNetworkType())
-				{
-					case SOCKET_IPv4:
-						LOG(LOG_VERBOSE, "Doing loopback signaling to IPv4 listener at port %u", mSocket->GetLocalPort());
-						if (!tSocket->Send("127.0.0.1", mSocket->GetLocalPort(), tData, 0))
-							LOG(LOG_ERROR, "Error when sending data through loopback IPv4-UDP socket");
-						break;
-					case SOCKET_IPv6:
-						LOG(LOG_VERBOSE, "Doing loopback signaling to IPv6 listener at port %u", mSocket->GetLocalPort());
-						if (!tSocket->Send("::1", mSocket->GetLocalPort(), tData, 0))
-							LOG(LOG_ERROR, "Error when sending data through loopback IPv6-UDP socket");
-						break;
-					default:
-						LOG(LOG_ERROR, "Unknown network type");
-						break;
-				}
-				delete tSocket;
-            }else
-            	LOG(LOG_WARN, "Got invalid socket for loopback signaling");
-        }
+		mSocket->Close();
     }
     LOG(LOG_VERBOSE, "Canceled");
     mIsClosed = true;
