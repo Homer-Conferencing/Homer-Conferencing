@@ -180,9 +180,12 @@ void SocketConnection::read(char* pBuffer, int &pBufferSize)
         string tSourceHost;
         unsigned int tSourcePort;
         ssize_t tBufferSize = pBufferSize;
-        mIsClosed = !mSocket->Receive(tSourceHost, tSourcePort, (void*)pBuffer, tBufferSize);
-        if (mIsClosed)
+        bool tRes = mSocket->Receive(tSourceHost, tSourcePort, (void*)pBuffer, tBufferSize);
+        if ((!tRes) && (!mIsClosed))
+        {
         	LOG(LOG_ERROR, "GAPI connection marked as closed");
+        	mIsClosed = true;
+        }
         mPeerHost = tSourceHost;
         mPeerPort = tSourcePort;
         pBufferSize = (int)tBufferSize;
@@ -219,10 +222,10 @@ void SocketConnection::cancel()
     if ((mSocket != NULL) && (!isClosed()))
     {
         LOG(LOG_VERBOSE, "Connection for local %s will be canceled now", getName()->toString().c_str());
-		mSocket->Close();
+        mIsClosed = true;
+        mSocket->Close();
     }
     LOG(LOG_VERBOSE, "Canceled");
-    mIsClosed = true;
 }
 
 Name* SocketConnection::getName()
