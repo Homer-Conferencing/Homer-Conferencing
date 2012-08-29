@@ -661,7 +661,9 @@ void* MediaSourceFile::Run(void* pArgs)
 
 			if (!tInputIsPicture)
 			{
-        	    tChunkBufferSize = avpicture_get_size(mCodecContext->pix_fmt, mSourceResX, mSourceResY);
+				LOG(LOG_VERBOSE, "Allocating all objects for a video input");
+
+        	    tChunkBufferSize = avpicture_get_size(mCodecContext->pix_fmt, mSourceResX, mSourceResY) + FF_INPUT_BUFFER_PADDING_SIZE;
 
     	        // allocate chunk buffer
 	            tChunkBuffer = (uint8_t*)malloc(tChunkBufferSize);
@@ -677,7 +679,9 @@ void* MediaSourceFile::Run(void* pArgs)
     	        mDecoderFifo = tVideoScaler;
 			}else
 			{// we have single frame (a picture) as input
-        	    tChunkBufferSize = avpicture_get_size(PIX_FMT_RGB32, mDecoderTargetResX, mDecoderTargetResY);
+				LOG(LOG_VERBOSE, "Allocating all objects for a picture input");
+
+				tChunkBufferSize = avpicture_get_size(PIX_FMT_RGB32, mDecoderTargetResX, mDecoderTargetResY) + FF_INPUT_BUFFER_PADDING_SIZE;
 
     	        // allocate chunk buffer
 	            tChunkBuffer = (uint8_t*)malloc(tChunkBufferSize);
@@ -999,6 +1003,9 @@ void* MediaSourceFile::Run(void* pArgs)
                             }else
                             {// reuse the stored picture
 								// restoring for ffmpeg the data planes and line sizes from the stored values
+								#ifdef MSF_DEBUG_PACKETS
+                            		LOG(LOG_VERBOSE, "Restoring the source frame's data planes and line sizes from the stored values");
+								#endif
 								for (int i = 0; i < AV_NUM_DATA_POINTERS; i++)
 								{
 									tSourceFrame->data[i] = mPictureData[i];
@@ -1071,7 +1078,7 @@ void* MediaSourceFile::Run(void* pArgs)
 
                                         if ((tRes = avpicture_layout((AVPicture*)tSourceFrame, mCodecContext->pix_fmt, mSourceResX, mSourceResY, tChunkBuffer, tChunkBufferSize)) < 0)
                                         {
-                                            LOG(LOG_WARN, "Couldn't cop AVPicture/AVFrame pixel data into chunk buffer because \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
+                                            LOG(LOG_WARN, "Couldn't copy AVPicture/AVFrame pixel data into chunk buffer because \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
                                         }else
                                         {// everything is okay, we have the current frame in tChunkBuffer and can send the frame to the video scaler
                                             tCurrentChunkSize = avpicture_get_size(mCodecContext->pix_fmt, mSourceResX, mSourceResY);

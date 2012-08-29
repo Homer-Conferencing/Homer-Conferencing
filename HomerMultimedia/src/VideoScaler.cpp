@@ -49,6 +49,7 @@ VideoScaler::VideoScaler(string pName):
     mScalerNeeded = false;
     mInputFifo = NULL;
     mOutputFifo = NULL;
+    mScalerContext = NULL;
 }
 
 VideoScaler::~VideoScaler()
@@ -69,7 +70,7 @@ void VideoScaler::StartScaler(int pInputQueueSize, int pSourceResX, int pSourceR
 
     LOG(LOG_VERBOSE, "Starting %s video scaler, converting resolution %d*%d (fmt: %d) to %d*%d (fmt: %d), queue size: %d", mName.c_str(), pSourceResX, pSourceResY, mSourcePixelFormat, pTargetResX, pTargetResY, mTargetPixelFormat, mQueueSize);
 
-    int tInputBufferSize = avpicture_get_size(mSourcePixelFormat, mSourceResX, mSourceResY);
+    int tInputBufferSize = avpicture_get_size(mSourcePixelFormat, mSourceResX, mSourceResY) + FF_INPUT_BUFFER_PADDING_SIZE;
     //HINT: we have to allocate input FIFO here to make sure we can force a return from a read request inside StopScaler(), StartScaler() and StopScaler() should be called from the same thread/context!
     mInputFifo = new MediaFifo(mQueueSize, tInputBufferSize, "VIDEO-ScalerInput/" + mName);
 
@@ -78,7 +79,7 @@ void VideoScaler::StartScaler(int pInputQueueSize, int pSourceResX, int pSourceR
 
     while(!mScalerNeeded)
     {
-        LOG(LOG_VERBOSE, "Waiting for the start of VIDEO scaling thread");
+        LOG(LOG_VERBOSE, "Waiting for the start of %s VIDEO scaling thread", mName.c_str());
         Thread::Suspend(100 * 1000);
     }
 
@@ -147,6 +148,7 @@ int VideoScaler::ReadFifoExclusive(char **pBuffer, int &pBufferSize)
         return mOutputFifo->ReadFifoExclusive(pBuffer, pBufferSize);
     else
     {
+    	LOG(LOG_WARN, "Video scaler not ready yet");
         pBufferSize = 0;
         return -1;
     }
@@ -200,7 +202,7 @@ void* VideoScaler::Run(void* pArgs)
     LOG(LOG_VERBOSE, "%s video scaling thread started", mName.c_str());
 
     SVC_PROCESS_STATISTIC.AssignThreadName("Video-Scaler(" + toString(mSourceResX) + "*" + toString(mSourceResY) + ")");
-    int tOutputBufferSize = avpicture_get_size(mTargetPixelFormat, mTargetResX, mTargetResY);
+    int tOutputBufferSize = avpicture_get_size(mTargetPixelFormat, mTargetResX, mTargetResY) + FF_INPUT_BUFFER_PADDING_SIZE;
 
     // allocate chunk buffer
     tOutputBuffer = (uint8_t*)malloc(tOutputBufferSize);
@@ -213,8 +215,11 @@ void* VideoScaler::Run(void* pArgs)
         LOG(LOG_ERROR, "Out of video memory in avcodec_alloc_frame()");
     }
 
+    // Assign appropriate parts of buffer to image planes in frame
+    avpicture_fill((AVPicture *)tOutputFrame, (uint8_t *)tOutputBuffer, mTargetPixelFormat, mTargetResX, mTargetResY);
+
     // Allocate video frame for format
-    LOG(LOG_VERBOSE, "..allocating memory for input frame");
+    LOG(LOG_VERBOSE, "..allocating memory for %s input frame", mName.c_str());
     if ((tInputFrame = avcodec_alloc_frame()) == NULL)
     {
         // acknowledge failed"
@@ -222,15 +227,14 @@ void* VideoScaler::Run(void* pArgs)
     }
 
     // allocate software scaler context, input/output FIFO
-    LOG(LOG_VERBOSE, "..allocating video scaler context");
-    mScalerContext = NULL;
+    LOG(LOG_VERBOSE, "..allocating %s video scaler context", mName.c_str());
     mScalerContext = sws_getCachedContext(mScalerContext, mSourceResX, mSourceResY, mSourcePixelFormat, mTargetResX, mTargetResY, mTargetPixelFormat, SWS_BICUBIC, NULL, NULL, NULL);
     if (mScalerContext == NULL)
     {
     	LOG(LOG_ERROR, "Got invalid video scaler context");
     }
 
-    LOG(LOG_VERBOSE, "..creating video scaler output FIFO");
+    LOG(LOG_VERBOSE, "..creating %s video scaler output FIFO", mName.c_str());
     mOutputFifo = new MediaFifo(mQueueSize, tOutputBufferSize, "VIDEO-ScalerOutput/" + mName);
 
     mChunkNumber = 0;
@@ -261,9 +265,6 @@ void* VideoScaler::Run(void* pArgs)
                 // ###################################################################
                 // Assign appropriate parts of buffer to image planes in tInputFrame
                 avpicture_fill((AVPicture *)tInputFrame, (uint8_t *)tBuffer, mSourcePixelFormat, mSourceResX, mSourceResY);
-
-                // Assign appropriate parts of buffer to image planes in frame
-                avpicture_fill((AVPicture *)tOutputFrame, (uint8_t *)tOutputBuffer, mTargetPixelFormat, mTargetResX, mTargetResY);
 
                 // set frame number in corresponding entries within AVFrame structure
                 tInputFrame->pts = mChunkNumber;
@@ -298,16 +299,18 @@ void* VideoScaler::Run(void* pArgs)
                 // ###################################################################
                 int64_t tTime = Time::GetTimeStamp();
                 // convert
-//                LOG(LOG_ERROR, "%s-scaling frame %d, source res: %d*%d to %d*%d, scaler context at %p", mName.c_str(), mChunkNumber, mSourceResX, mSourceResY, mTargetResX, mTargetResY, mScalerContext);
-//
-//                LOG(LOG_VERBOSE, "Video input frame data: %p, %p, %p, %p", tInputFrame->data[0], tInputFrame->data[1], tInputFrame->data[2], tInputFrame->data[3]);
-//                LOG(LOG_VERBOSE, "Video input frame line size: %d, %d, %d, %d", tInputFrame->linesize[0], tInputFrame->linesize[1], tInputFrame->linesize[2], tInputFrame->linesize[3]);
-//
-//                LOG(LOG_VERBOSE, "Video output frame data: %p, %p, %p, %p", tOutputFrame->data[0], tOutputFrame->data[1], tOutputFrame->data[2], tOutputFrame->data[3]);
-//                LOG(LOG_VERBOSE, "Video output frame line size: %d, %d, %d, %d", tOutputFrame->linesize[0], tOutputFrame->linesize[1], tOutputFrame->linesize[2], tOutputFrame->linesize[3]);
 
+				#ifdef VS_DEBUG_PACKETS
+					LOG(LOG_VERBOSE, "%s-scaling frame %d, source res: %d*%d (fmt: %d) to %d*%d, scaler context at %p", mName.c_str(), mChunkNumber, mSourceResX, mSourceResY, (int)mSourcePixelFormat, mTargetResX, mTargetResY, mScalerContext);
+					LOG(LOG_VERBOSE, "Video input frame data: %p, %p, %p, %p", tInputFrame->data[0], tInputFrame->data[1], tInputFrame->data[2], tInputFrame->data[3]);
+					LOG(LOG_VERBOSE, "Video input frame line size: %d, %d, %d, %d", tInputFrame->linesize[0], tInputFrame->linesize[1], tInputFrame->linesize[2], tInputFrame->linesize[3]);
+					LOG(LOG_VERBOSE, "Video output frame data: %p, %p, %p, %p", tOutputFrame->data[0], tOutputFrame->data[1], tOutputFrame->data[2], tOutputFrame->data[3]);
+					LOG(LOG_VERBOSE, "Video output frame line size: %d, %d, %d, %d", tOutputFrame->linesize[0], tOutputFrame->linesize[1], tOutputFrame->linesize[2], tOutputFrame->linesize[3]);
+				#endif
                 HM_sws_scale(mScalerContext, tInputFrame->data, tInputFrame->linesize, 0, mSourceResY, tOutputFrame->data, tOutputFrame->linesize);
-//                LOG(LOG_ERROR, "%s-scaling finished", mName.c_str());
+				#ifdef VS_DEBUG_PACKETS
+                	LOG(LOG_VERBOSE, "..video scaling for %s finished", mName.c_str());
+				#endif
                 #ifdef MSM_DEBUG_TIMING
                     int64_t tTime2 = Time::GetTimeStamp();
                     LOG(LOG_VERBOSE, "SCALER-scaling video frame took %ld us", tTime2 - tTime);
