@@ -325,7 +325,6 @@ void MediaSourceNet::StartListener()
 void MediaSourceNet::StopListener()
 {
     int tSignalingRound = 0;
-    char tTmp[4];
 
     LOG(LOG_VERBOSE, "Stopping network listener");
 
@@ -334,43 +333,17 @@ void MediaSourceNet::StopListener()
         // tell transcoder thread it isn't needed anymore
         mListenerNeeded = false;
 
-        LOG(LOG_VERBOSE, "..wait for end of listener thread");
-        do
-        {
-            if(tSignalingRound > 0)
-                LOG(LOG_WARN, "Signaling round %d to stop network listener", tSignalingRound);
-            tSignalingRound++;
+		if (mGAPIUsed)
+		{
+			mGAPIDataSocket->cancel();
+		}else
+		{
+			if (mDataSocket != NULL)
+				mDataSocket->Close();
+		}
 
-            if (mGAPIUsed)
-            {
-                mGAPIDataSocket->cancel();
-            }else
-            {
-                if (mDataSocket != NULL)
-                {
-                    LOG(LOG_VERBOSE, "Try to do loopback signaling to local IPv%d listener at port %u, transport %d", mDataSocket->GetNetworkType(), 0xFFFF & mDataSocket->GetLocalPort(), mDataSocket->GetTransportType());
-                    Socket  *tSocket = Socket::CreateClientSocket(mDataSocket->GetNetworkType(), mDataSocket->GetTransportType());
-                    char    tData[8];
-                    switch(tSocket->GetNetworkType())
-                    {
-                        case SOCKET_IPv4:
-                            LOG(LOG_VERBOSE, "Doing loopback signaling to IPv4 listener to port %u", GetListenerPort());
-                            if (!tSocket->Send("127.0.0.1", mDataSocket->GetLocalPort(), tData, 0))
-                                LOG(LOG_ERROR, "Error when sending data through loopback IPv4-UDP socket");
-                            break;
-                        case SOCKET_IPv6:
-                            LOG(LOG_VERBOSE, "Doing loopback signaling to IPv6 listener to port %u", GetListenerPort());
-                            if (!tSocket->Send("::1", mDataSocket->GetLocalPort(), tData, 0))
-                                LOG(LOG_ERROR, "Error when sending data through loopback IPv6-UDP socket");
-                            break;
-                        default:
-                            LOG(LOG_ERROR, "Unknown network type");
-                            break;
-                    }
-                    delete tSocket;
-                }
-            }
-        }while(!StopThread(500));
+		if (!StopThread(3000))
+			LOG(LOG_ERROR, "Failed to stop %s network listener", GetMediaTypeStr().c_str());
     }
 
     LOG(LOG_VERBOSE, "Network listener stopped");
