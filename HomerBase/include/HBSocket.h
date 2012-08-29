@@ -98,6 +98,7 @@ class Socket
 public:
     static Socket* CreateServerSocket(enum NetworkType pIpVersion = SOCKET_IPv6, enum TransportType pTransportType = SOCKET_UDP, unsigned int pListenerPort = 0, bool pReusable = false, unsigned int pProbeStepping = 0, unsigned int pHighestPossibleListenerPort = 0);
     static Socket* CreateClientSocket(enum NetworkType pIpVersion, enum TransportType pTransportType = SOCKET_UDP, unsigned int pSenderPort = 0, bool pReusable = false, unsigned int pProbeStepping = 0, unsigned int pHighestPossibleSenderPort = 0);
+    void Close();
 
     virtual ~Socket( );
 
@@ -159,7 +160,7 @@ private:
 
     bool CreateSocket(enum NetworkType pIpVersion = SOCKET_IPv6);
     bool BindSocket(unsigned int pPort = 0, unsigned int pProbeStepping = 1, unsigned int pHighesPossiblePort = 0);
-    static void DestroySocket(int pHandle);
+    static void CloseSocket(int pHandle);
 
     QoSSettings			mQoSSettings;
     int 			    mUdpLiteChecksumCoverage;
