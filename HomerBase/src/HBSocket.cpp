@@ -144,6 +144,11 @@ Socket* Socket::CreateClientSocket(enum NetworkType pIpVersion, enum TransportTy
     return tResult;
 }
 
+void Socket::Close()
+{
+	CloseSocket(mSocketHandle);
+}
+
 Socket::Socket(enum NetworkType pIpVersion, enum TransportType pTransportType, unsigned int pPort, bool pReusable, unsigned int pProbeStepping, unsigned int pHighestPossiblePort)
 {
     if ((pIpVersion == SOCKET_IPv6) && (!IsIPv6Supported()))
@@ -191,7 +196,7 @@ Socket::~Socket()
     if (mIsClientSocket)
         SVC_SOCKET_CONTROL.UnregisterClientSocket(this);
 
-    DestroySocket(mSocketHandle);
+    CloseSocket(mSocketHandle);
     LOG(LOG_VERBOSE, "Destroyed %d", mSocketHandle);
 }
 
@@ -561,7 +566,7 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
             if (tTcpNeedsReconnect)
             {
 				tLocalPort = mLocalPort;
-				DestroySocket(mSocketHandle);
+				CloseSocket(mSocketHandle);
 				if (CreateSocket())
 					mLocalPort = BindSocket(mLocalPort, 0);
 				if (mLocalPort != tLocalPort)
@@ -715,7 +720,7 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
             #endif
             if (tReceivedBytes < 0)
             {
-                DestroySocket(mTcpClientSockeHandle);
+                CloseSocket(mTcpClientSockeHandle);
                 LOG(LOG_VERBOSE, "Client TCP socket %d was closed", mTcpClientSockeHandle);
                 mIsConnected = false;
             }
@@ -745,7 +750,8 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
     	else
     		pSourceHost = "0.0.0.0";
     	pSourcePort = 0;
-    	LOG(LOG_ERROR, "Error when receiving data via socket %d at port %u because of \"%s\" (code: %d)", mSocketHandle, mLocalPort, strerror(errno), tReceivedBytes);
+    	if (errno != 0)
+    		LOG(LOG_ERROR, "Error when receiving data via socket %d at port %u because of \"%s\"(%d)", mSocketHandle, mLocalPort, strerror(errno), errno);
     }
 
     pBufferSize = tReceivedBytes;
@@ -1238,7 +1244,7 @@ bool Socket::CreateSocket(enum NetworkType pIpVersion)
     return tResult;
 }
 
-void Socket::DestroySocket(int pHandle)
+void Socket::CloseSocket(int pHandle)
 {
 	LOGEX(Socket, LOG_VERBOSE, "Destroying socket %d", pHandle);
 
