@@ -1649,17 +1649,20 @@ void VideoWidget::mouseDoubleClickEvent(QMouseEvent *pEvent)
 void VideoWidget::wheelEvent(QWheelEvent *pEvent)
 {
     int tOffset = pEvent->delta() * 25 / 120;
-    LOG(LOG_VERBOSE, "Got new wheel event with delta %d, derived volume offset: %d", pEvent->delta(), tOffset);
-    if (mParticipantWidget->GetAudioWorker() != NULL)
-    {
-        int tNewVolumeValue = mParticipantWidget->GetAudioWorker()->GetVolume() + tOffset;
-        if ((tNewVolumeValue >= 0) && (tNewVolumeValue <= 300))
-        {
-            ShowOsdMessage("Volume: " + QString("%1 %").arg(tNewVolumeValue));
-            mParticipantWidget->GetAudioWorker()->SetVolume(tNewVolumeValue);
-        }
-    }else
-        LOG(LOG_VERBOSE, "Cannot adjust audio volume because determined audio worker is invalid");
+    LOG(LOG_VERBOSE, "Got new wheel event with orientation %d and delta %d, derived volume offset: %d", (int)pEvent->orientation(), pEvent->delta(), tOffset);
+	if (pEvent->orientation() == Qt::Vertical)
+	{
+		if (mParticipantWidget->GetAudioWorker() != NULL)
+		{
+            int tNewVolumeValue = mParticipantWidget->GetAudioWorker()->GetVolume() + tOffset;
+            if ((tNewVolumeValue >= 0) && (tNewVolumeValue <= 300))
+            {
+                ShowOsdMessage("Volume: " + QString("%1 %").arg(tNewVolumeValue));
+                mParticipantWidget->GetAudioWorker()->SetVolume(tNewVolumeValue);
+            }
+		}else
+			LOG(LOG_VERBOSE, "Cannot adjust audio volume because determined audio worker is invalid");
+	}
 }
 
 void VideoWidget::mouseMoveEvent(QMouseEvent *pEvent)
