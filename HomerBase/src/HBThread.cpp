@@ -863,11 +863,16 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
             pTimeoutInMSecs = INFINITE;
         }
 
-        switch(WaitForSingleObject(mThreadHandle, (DWORD)pTimeoutInMSecs))
+        switch(WaitForSingleObject(mThreadHandle, (pTimeoutInMSecs == 0) ? INFINITE : pTimeoutInMSecs))
 		{
 			case WAIT_ABANDONED:
+				LOG(LOG_VERBOSE, "Mutex object wasn't released by owner yet");
+				break;
 			case WAIT_TIMEOUT:
+				LOG(LOG_VERBOSE, "Timeout of %d ms occurred", pTimeoutInMSecs);
+				break;
 			case WAIT_FAILED:
+				LOG(LOG_ERROR, "WaitForSingleObject failed with error code: \"%d\"", GetLastError());
 				break;
 			case WAIT_OBJECT_0:
 				tResult = true;
