@@ -1710,8 +1710,12 @@ float MediaSourceFile::GetSeekPos()
 {
     float tSeekEnd = GetSeekEnd();
 	if (mNumberOfFrames > 0)
-        return (tSeekEnd * mCurrentFrameIndex / mNumberOfFrames);
-    else
+	{
+        if (mCurrentFrameIndex / mNumberOfFrames <= 1.0)
+        	return (tSeekEnd * mCurrentFrameIndex / mNumberOfFrames);
+        else
+        	return tSeekEnd;
+	}else
         return 0;
 }
 
