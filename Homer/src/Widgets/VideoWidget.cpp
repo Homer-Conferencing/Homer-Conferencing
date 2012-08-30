@@ -1944,10 +1944,12 @@ void VideoWorkerThread::InitFrameBuffers()
         QImage tFrameImage = QImage((unsigned char*)mFrame[i], mResX, mResY, QImage::Format_RGB32);
         QPainter *tPainter = new QPainter(&tFrameImage);
         tPainter->setRenderHint(QPainter::TextAntialiasing, true);
+
         tPainter->fillRect(0, 0, mResX, mResY, QColor(Qt::darkGray));
         tPainter->setFont(QFont("Tahoma", 16));
         tPainter->setPen(QColor(Qt::black));
-        tPainter->drawText(5, 70, "..no data");
+        tPainter->drawText(5, 70, "Waiting for data..");
+
         delete tPainter;
     }
 }
@@ -2332,7 +2334,7 @@ void VideoWorkerThread::run()
 			if (mEofReached)
 			{
 			    mSourceAvailable = false;
-                LOG(LOG_WARN, "Got EOF signal from video source, marking audio source as unavailable");
+                LOG(LOG_WARN, "Got EOF signal from video source, marking VIDEO source as unavailable");
 			}
 
 			#ifdef VIDEO_WIDGET_DEBUG_FRAMES

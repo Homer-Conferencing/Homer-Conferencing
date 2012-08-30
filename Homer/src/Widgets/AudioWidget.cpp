@@ -998,6 +998,8 @@ void AudioWorkerThread::DoSyncClock()
         mDeliverMutex.unlock();
     }else
         LOG(LOG_WARN, "Source of reference clock is invalid");
+
+    LOG(LOG_VERBOSE, "DoSyncClock finished");
 }
 
 void AudioWorkerThread::DoResetMediaSource()
@@ -1251,7 +1253,7 @@ void AudioWorkerThread::run()
             if (mEofReached)
             {// EOF
                 mSourceAvailable = false;
-                LOG(LOG_WARN, "Got EOF signal from audio source, marking audio source as unavailable");
+                LOG(LOG_WARN, "Got EOF signal from audio source, marking AUDIO source as unavailable");
             }
 
             #ifdef AUDIO_WIDGET_DEBUG_FRAMES
