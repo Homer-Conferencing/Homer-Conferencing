@@ -381,14 +381,11 @@ bool MediaSourceFile::CloseGrabDevice()
 int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk)
 {
     #if defined(MSF_DEBUG_PACKETS) || defined(MSF_DEBUG_DECODER_STATE)
-        LOG(LOG_VERBOSE, "Going to grab new chunk from FIFO");
+        LOG(LOG_VERBOSE, "Going to grab new chunk");
     #endif
 
     if (pChunkBuffer == NULL)
     {
-        // unlock grabbing
-        mGrabMutex.unlock();
-
         // acknowledge failed"
         MarkGrabChunkFailed(GetMediaTypeStr() + " grab buffer is NULL");
 
@@ -508,7 +505,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
         struct ChunkDescriptor tChunkDesc;
         int tChunkDescSize = sizeof(tChunkDesc);
         mDecoderMetaDataFifo->ReadFifo((char*)&tChunkDesc, tChunkDescSize);
-        #if defined(MSF_DEBUG_PACKETS)
+        #ifdef MSF_DEBUG_PACKETS
             LOG(LOG_VERBOSE, "Grabbed meta data of size %d for chunk with pts %ld", tChunkDescSize, tChunkDesc.Pts);
         #endif
         if (tChunkDescSize != sizeof(tChunkDesc))
@@ -523,11 +520,14 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
         // update current PTS value if the read frame is okay
         if (!tShouldGrabNext)
         {
-            mCurrentFrameIndex = tChunkDesc.Pts;
+			#ifdef MSF_DEBUG_PACKETS
+        		LOG(LOG_VERBOSE, "Setting current frame index to %ld", tChunkDesc.Pts);
+			#endif
+			mCurrentFrameIndex = tChunkDesc.Pts;
         }
 
         // EOF
-        if ((tChunkDesc.Pts == mNumberOfFrames) && (mNumberOfFrames != 0))
+        if ((tChunkDesc.Pts >= mNumberOfFrames) && (mNumberOfFrames != 0))
         {
             mEOFReached = true;
             tShouldGrabNext = false;
@@ -742,7 +742,7 @@ void* MediaSourceFile::Run(void* pArgs)
         {
 
             if (mEOFReached)
-                LOG(LOG_WARN, "Error in state machine, we started when EOF was already reached");
+                LOG(LOG_WARN, "We started when EOF was already reached");
 
             tWaitLoop = 0;
 
@@ -991,13 +991,17 @@ void* MediaSourceFile::Run(void* pArgs)
 								if ((tSourceFrame->pkt_dts != (int64_t)AV_NOPTS_VALUE) && (!MSF_USE_REORDERED_PTS))
 								{// use DTS value from decoder
 									tCurFramePts = tSourceFrame->pkt_dts;
+	                                //LOG(LOG_VERBOSE, "Setting current frame PTS to %ld", tCurFramePts);
 								}else if (tSourceFrame->pkt_pts != (int64_t)AV_NOPTS_VALUE)
 								{// fall back to reordered PTS value
 									tCurFramePts = tSourceFrame->pkt_pts;
+	                                //LOG(LOG_VERBOSE, "Setting current frame PTS to %ld", tCurFramePts);
 								}else
 								{// fall back to packet's PTS value
 									tCurFramePts = tCurPacketPts;
+	                                //LOG(LOG_VERBOSE, "Setting current frame PTS to %ld", tCurFramePts);
 								}
+
                                 if ((tSourceFrame->pkt_pts != tSourceFrame->pkt_dts) && (tSourceFrame->pkt_pts != (int64_t)AV_NOPTS_VALUE) && (tSourceFrame->pkt_dts != (int64_t)AV_NOPTS_VALUE))
                                     LOG(LOG_VERBOSE, "PTS(%ld) and DTS(%ld) differ after decoding step", tSourceFrame->pkt_pts, tSourceFrame->pkt_dts);
                             }else
@@ -1255,6 +1259,7 @@ void* MediaSourceFile::Run(void* pArgs)
                                 av_fifo_generic_write(tSampleFifo, tChunkBuffer, tCurrentChunkSize, NULL);
 
                                 // save PTS value to deliver it later to the frame grabbing thread
+                                //LOG(LOG_VERBOSE, "Setting current frame PTS to %ld", tCurPacketPts);
                                 tCurFramePts = tCurPacketPts;
 //-
                                 int tLoops = 0;
@@ -1283,11 +1288,11 @@ void* MediaSourceFile::Run(void* pArgs)
                                     // ### WRITE FRAME TO OUTPUT FIFO
                                     // ############################
                                     // add new chunk to FIFO
-                                    #ifdef MSF_DEBUG_PACKETS
-                                        LOG(LOG_VERBOSE, "Writing %d %s bytes at %p to FIFO", tCurrentChunkSize, GetMediaTypeStr().c_str(), tChunkBuffer);
-                                    #endif
                                     if (tCurrentChunkSize <= mDecoderFifo->GetEntrySize())
                                     {
+										#ifdef MSF_DEBUG_PACKETS
+											LOG(LOG_VERBOSE, "Writing %d %s bytes at %p to FIFO with PTS %ld", tCurrentChunkSize, GetMediaTypeStr().c_str(), tChunkBuffer, tCurFramePts);
+										#endif
                                         mDecoderFifo->WriteFifo((char*)tChunkBuffer, tCurrentChunkSize);
                                         // add meta description about current chunk to different FIFO
                                         struct ChunkDescriptor tChunkDesc;
@@ -1329,11 +1334,11 @@ void* MediaSourceFile::Run(void* pArgs)
                 }
 
                 // do we have a prepared data chunk which can be delivered towards grabbing application?
-                if (tCurrentChunkSize > 0)
+                if ((tCurrentChunkSize > 0) && (!mEOFReached))
                 {// no error
                     // add new chunk to FIFO
                     #ifdef MSF_DEBUG_PACKETS
-                        LOG(LOG_VERBOSE, "Writing %d %s bytes at %p to FIFO", tCurrentChunkSize, GetMediaTypeStr().c_str(), tChunkBuffer);
+                        LOG(LOG_VERBOSE, "Writing %d %s bytes at %p to FIFO with PTS %ld", tCurrentChunkSize, GetMediaTypeStr().c_str(), tChunkBuffer, tCurFramePts);
                     #endif
                     if (tCurrentChunkSize <= mDecoderFifo->GetEntrySize())
                     {
@@ -1359,7 +1364,7 @@ void* MediaSourceFile::Run(void* pArgs)
             {// EOF, wait until restart
                 // add empty chunk to FIFO
                 #ifdef MSF_DEBUG_PACKETS
-                    LOG(LOG_VERBOSE, "Writing empty chunk to FIFO");
+                    LOG(LOG_VERBOSE, "EOF reached, writing empty chunk to %s file decoder FIFO", GetMediaTypeStr().c_str());
                 #endif
                 char tData[4];
                 mDecoderFifo->WriteFifo(tData, 0);
@@ -1822,12 +1827,15 @@ void MediaSourceFile::WaitForRTGrabbing()
         LOG(LOG_VERBOSE, "%s-current relative frame index: %ld, relative time: %8lld us (Fps: %3.2f), stream start time: %6lld us, packet's relative play out time: %8lld us, time difference: %8lld us", GetMediaTypeStr().c_str(), tRelativeFrameIndex, tRelativeRealTimeUSecs, mFrameRate, mSourceStartPts, tRelativePacketTimeUSecs, tDiffPtsUSecs);
     #endif
     // adapt timing to real-time, ignore timings between -5 ms and +5 ms
-    if (tDiffPtsUSecs > 0)
+    if (tDiffPtsUSecs > 1.0)
     {
         #ifdef MSF_DEBUG_TIMING
-            LOG(LOG_WARN, "%s-sleeping for %d ms for frame %.2f", GetMediaTypeStr().c_str(), (int)tDiffPtsUSecs / 1000, (float)mCurrentFrameIndex);
+            LOG(LOG_WARN, "%s-sleeping for %.2f ms for frame %.2f", GetMediaTypeStr().c_str(), tDiffPtsUSecs / 1000, (float)mCurrentFrameIndex);
         #endif
-        Thread::Suspend(tDiffPtsUSecs);
+		if (tDiffPtsUSecs < 3000000)
+			Thread::Suspend(tDiffPtsUSecs);
+		else
+			LOG(LOG_ERROR, "Found unplausible time value of %.2f ms", tDiffPtsUSecs);
     }else
     {
         #ifdef MSF_DEBUG_TIMING
