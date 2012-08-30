@@ -60,6 +60,12 @@ using namespace std;
 using namespace Homer::Conference;
 using namespace Homer::Monitor;
 
+// support video files
+#define MEDIA_SOURCE_GRABBER_VIDEO_FILE
+
+// support audio files
+#define MEDIA_SOURCE_GRABBER_AUDIO_FILE
+
 ///////////////////////////////////////////////////////////////////////////////
 
 MediaSourceGrabberThread::MediaSourceGrabberThread(MediaSource *pMediaSource):
@@ -163,6 +169,15 @@ QString MediaSourceGrabberThread::GetDeviceDescription(QString pName)
 
 void MediaSourceGrabberThread::PlayFile(QString pName)
 {
+	#ifndef MEDIA_SOURCE_GRABBER_VIDEO_FILE
+		if (mMediaSource->GetMediaType() == MEDIA_VIDEO)
+			return;
+	#endif
+	#ifndef MEDIA_SOURCE_GRABBER_AUDIO_FILE
+		if (mMediaSource->GetMediaType() == MEDIA_AUDIO)
+			return;
+	#endif
+
     if (pName == "")
         pName = mCurrentFile;
 
