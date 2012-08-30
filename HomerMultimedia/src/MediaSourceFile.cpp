@@ -1441,7 +1441,7 @@ void MediaSourceFile::DoSetVideoGrabResolution(int pResX, int pResY)
 {
     LOG(LOG_VERBOSE, "Going to execute DoSetVideoGrabResolution()");
 
-    if ((mMediaSourceOpened) /*&& (mScalerContext != NULL)*/)
+    if (mMediaSourceOpened)
     {
         if (mMediaType == MEDIA_UNKNOWN)
         {
@@ -1450,13 +1450,6 @@ void MediaSourceFile::DoSetVideoGrabResolution(int pResX, int pResY)
         }
 
         StopDecoder();
-
-//        // free the software scaler context
-//        sws_freeContext(mScalerContext);
-//
-//        // allocate software scaler context
-//        mScalerContext = sws_getContext(mCodecContext->width, mCodecContext->height, mCodecContext->pix_fmt, pResX, pResY, PIX_FMT_RGB32, SWS_BICUBIC, NULL, NULL, NULL);
-
         StartDecoder();
     }
 }
@@ -1466,7 +1459,7 @@ bool MediaSourceFile::InputIsPicture()
     bool tResult = false;
 
     // do we have a picture?
-    if ((mMediaSourceOpened) && (mFormatContext != NULL) && (mFormatContext->streams[mMediaStreamIndex]) && (mFormatContext->streams[mMediaStreamIndex]->duration == 1))
+    if ((mMediaSourceOpened) && (mFormatContext != NULL) && (mFormatContext->streams[mMediaStreamIndex]) && (mFormatContext->streams[mMediaStreamIndex]->codec->codec_type == AVMEDIA_TYPE_AUDIO) && (mFormatContext->streams[mMediaStreamIndex]->duration == 1))
         tResult = true;
 
     return tResult;
@@ -1554,7 +1547,7 @@ bool MediaSourceFile::SupportsRecording()
 
 bool MediaSourceFile::SupportsSeeking()
 {
-    return !InputIsPicture();
+    return ((!InputIsPicture()) && (GetSeekEnd() > 0));
 }
 
 float MediaSourceFile::GetSeekEnd()
