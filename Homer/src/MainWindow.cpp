@@ -87,6 +87,10 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define IPV6_LINK_LOCAL_PREFIX							"FE80"
+
+///////////////////////////////////////////////////////////////////////////////
+
 bool MainWindow::mShuttingDown = false;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -560,10 +564,11 @@ bool MainWindow::GetNetworkInfo(LocalAddressesList &pLocalAddressesList, QString
     //### determine all local IP addresses
     QList<QHostAddress> tQtLocalAddresses = QNetworkInterface::allAddresses();
 
-    LOG(LOG_INFO, "Local IPv4 addresses are:");
+    LOG(LOG_INFO, "Last listener address: %s", tLastSipListenerAddress.toStdString().c_str());
+    LOG(LOG_INFO, "Local usable IPv4/6 addresses are:");
     for (int i = 0; i < tQtLocalAddresses.size(); i++)
     {
-        if ((tQtLocalAddresses[i].protocol() == QAbstractSocket::IPv4Protocol) || (tQtLocalAddresses[i].protocol() == QAbstractSocket::IPv6Protocol))
+    	if ((tQtLocalAddresses[i].protocol() == QAbstractSocket::IPv4Protocol) || ((tQtLocalAddresses[i].protocol() == QAbstractSocket::IPv6Protocol) && (!tQtLocalAddresses[i].toString().startsWith(IPV6_LINK_LOCAL_PREFIX))))
         {
             LOG(LOG_INFO, "...%s", tQtLocalAddresses[i].toString().toStdString().c_str());
 
@@ -588,18 +593,15 @@ bool MainWindow::GetNetworkInfo(LocalAddressesList &pLocalAddressesList, QString
     {
         tAddresses = tHostInterfaces[i].addressEntries();
 
+        bool tInterfaceUsable = false;
+
         if ((tAddresses.size()) &&
-           ((tAddresses[0].ip().protocol() == QAbstractSocket::IPv4Protocol) || (tAddresses[0].ip().protocol() == QAbstractSocket::IPv6Protocol)) &&
            (!tHostInterfaces[i].flags().testFlag(QNetworkInterface::IsLoopBack)) &&
            (tHostInterfaces[i].flags().testFlag(QNetworkInterface::IsRunning)) &&
            (tHostInterfaces[i].flags().testFlag(QNetworkInterface::CanBroadcast)))
         {
+        	tInterfaceUsable = true;
             LOG(LOG_INFO, "Found possible listener network interface: \"%s\"", tHostInterfaces[i].humanReadableName().toStdString().c_str());
-            if (pLocalSourceIp == "")
-            {
-                LOG(LOG_INFO, ">>> used as local meeting listener interface");
-                pLocalSourceIp = tAddresses[0].ip().toString();
-            }
         } else
         {
             if ((tHostInterfaces[i].flags().testFlag(QNetworkInterface::IsLoopBack)) &&
@@ -661,11 +663,22 @@ bool MainWindow::GetNetworkInfo(LocalAddressesList &pLocalAddressesList, QString
                                                 tAddresses[j].broadcast().toString().toStdString().c_str());
                                         break;
             }
+            if ((pLocalSourceIp == "") && (tInterfaceUsable))
+            {
+            	if ((tAddresses[j].ip().protocol() == QAbstractSocket::IPv4Protocol) || ((tAddresses[j].ip().protocol() == QAbstractSocket::IPv6Protocol) && (!tAddresses[j].ip().toString().startsWith(IPV6_LINK_LOCAL_PREFIX))))
+            	{
+            		LOG(LOG_INFO, ">>> used as local meeting listener interface");
+            		pLocalSourceIp = tAddresses[j].ip().toString();
+            	}
+            }
         }
     }
 
     if ((pLocalSourceIp == "") && (pLocalLoopIp != ""))
-        pLocalSourceIp = pLocalLoopIp;
+    {
+		LOG(LOG_INFO, ">>> using loopback address %s as local meeting listener interface", pLocalLoopIp.toStdString().c_str());
+    	pLocalSourceIp = pLocalLoopIp;
+    }
 
     return (pLocalSourceIp != "");
 }
