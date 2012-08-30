@@ -93,9 +93,7 @@ void MessageWidget::Init(QMenu *pMenu, QString pParticipant, bool pVisible)
     if (mAssignedAction != NULL)
         connect(mAssignedAction, SIGNAL(triggered()), this, SLOT(ToggleVisibility()));
     connect(mTeMessage, SIGNAL(SendTrigger()), this, SLOT(SendText()));
-    connect(mPbMessage, SIGNAL(released()), this, SLOT(SendText()));
     connect(mPbFile, SIGNAL(released()), this, SLOT(SendFile()));
-    connect(mPbWeb, SIGNAL(released()), this, SLOT(SendLink()));
     connect(mTbAdd, SIGNAL(released()), this, SLOT(AddPArticipantToContacts()));
     if(IsKnownContact())
     {
@@ -357,6 +355,7 @@ void MessageWidget::SendFile(QList<QUrl> *tFileUrls)
         printf("TODO: send file %s\n", tFile.toStdString().c_str());
 }
 
+//TODO: use better widget which automatically interprets links
 void MessageWidget::SendLink()
 {
     bool tAck = false;
