@@ -176,6 +176,8 @@ void MainWindow::removeArguments(QStringList &pArguments, QString pFilter)
 		tArgument = *tIt;
 		if (tArgument.contains(pFilter))
 			tIt = pArguments.erase(tIt);
+		if (tIt == pArguments.end())
+			break;
 	}
 }
 
