@@ -619,23 +619,31 @@ void OverviewPlaylistWidget::PlayLast()
 void OverviewPlaylistWidget::timerEvent(QTimerEvent *pEvent)
 {
     #ifdef DEBUG_TIMING
-        LOG(LOG_VERBOSE, "New timer event");
+		static int tCounter = 0;
+        LOG(LOG_VERBOSE, "New timer event %d", ++tCounter);
     #endif
     if (pEvent->timerId() == mTimerId)
     {
     	// play next if EOF is reached
         // stop if current file wasn't yet switched to the desired one;
-        if ((mVideoWorker->CurrentFile() != mCurrentFile) || (mAudioWorker->CurrentFile() != mCurrentFile))
-            return;
+        if (((mVideoWorker->CurrentFile() != "") && (mVideoWorker->CurrentFile() != mCurrentFile)) || ((mAudioWorker->CurrentFile() != "") && (mAudioWorker->CurrentFile() != mCurrentFile)))
+        {
+        	LOG(LOG_VERBOSE, "Desired file wasn't started yet both in video and audio widget");
+        	return;
+        }
+
+        //LOG(LOG_VERBOSE, "Video EOF: %d, audio EOF: %d", mVideoWorker->EofReached(), mAudioWorker->EofReached());
 
         // do we already play the desired file and are we at EOF?
         if ((mCurrentFileId != -1) &&
-            (mVideoWorker->GetCurrentDevice().contains(GetListEntry(mCurrentFileId))) && (mVideoWorker->EofReached()) &&
-            (mAudioWorker->GetCurrentDevice().contains(GetListEntry(mCurrentFileId))) && (mAudioWorker->EofReached()))
+            ((mVideoWorker->CurrentFile() == "") || (mVideoWorker->EofReached())) &&
+			((mAudioWorker->CurrentFile() == "") || (mAudioWorker->EofReached())))
         {
+        	LOG(LOG_VERBOSE, "Playing next entry in playlist..");
             PlayNext();
         }
-    }
+    }else
+    	LOG(LOG_VERBOSE, "Got wrong timer ID: %d, waiting for %d", pEvent->timerId(), mTimerId);
 }
 
 void OverviewPlaylistWidget::dragEnterEvent(QDragEnterEvent *pEvent)
