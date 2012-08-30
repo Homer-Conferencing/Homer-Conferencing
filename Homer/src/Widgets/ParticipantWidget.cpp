@@ -229,31 +229,33 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
                     setFeatures(QDockWidget::NoDockWidgetFeatures);
                     break;
         case PARTICIPANT:
-                    LOG(LOG_VERBOSE, "Creating participant widget for PARTICIPANT");
-                    mMovieControlsFrame->hide();
-                    mSessionName = pParticipant;
-                    FindSipInterface(pParticipant);
-                    mMessageWidget->Init(pMessageMenu, mSessionName);
-                    mVideoSendSocket = MEETING.GetVideoSendSocket(mSessionName.toStdString());
-                    mAudioSendSocket = MEETING.GetAudioSendSocket(mSessionName.toStdString());
-                    mVideoReceiveSocket = MEETING.GetVideoReceiveSocket(mSessionName.toStdString());
-                    mAudioReceiveSocket = MEETING.GetAudioReceiveSocket(mSessionName.toStdString());
-                    if (mVideoReceiveSocket != NULL)
-                    {
-                        mVideoSource = new MediaSourceNet(mVideoReceiveSocket, CONF.GetVideoRtp());
-                        mVideoSource->SetInputStreamPreferences(CONF.GetVideoCodec().toStdString());
-                        mVideoWidgetFrame->hide();
-                        mVideoWidget->Init(mMainWindow, this, mVideoSource, pVideoMenu, mSessionName);
-                    }else
-                        LOG(LOG_ERROR, "Determined video socket is NULL");
-                    if (mAudioReceiveSocket != NULL)
-                    {
-                        mAudioSource = new MediaSourceNet(mAudioReceiveSocket, CONF.GetAudioRtp());
-                        mAudioSource->SetInputStreamPreferences(CONF.GetAudioCodec().toStdString());
-                        mAudioWidget->Init(mAudioSource, pAudioMenu, mSessionName);
-                    }else
-                        LOG(LOG_ERROR, "Determined audio socket is NULL");
-                    break;
+        			{
+						LOG(LOG_VERBOSE, "Creating participant widget for PARTICIPANT");
+						mMovieControlsFrame->hide();
+						mSessionName = pParticipant;
+						FindSipInterface(pParticipant);
+						mMessageWidget->Init(pMessageMenu, mSessionName);
+						mVideoSendSocket = MEETING.GetVideoSendSocket(mSessionName.toStdString());
+						mAudioSendSocket = MEETING.GetAudioSendSocket(mSessionName.toStdString());
+						mVideoReceiveSocket = MEETING.GetVideoReceiveSocket(mSessionName.toStdString());
+						mAudioReceiveSocket = MEETING.GetAudioReceiveSocket(mSessionName.toStdString());
+						if (mVideoReceiveSocket != NULL)
+						{
+							mVideoSource = new MediaSourceNet(mVideoReceiveSocket, CONF.GetVideoRtp());
+							mVideoSource->SetInputStreamPreferences(CONF.GetVideoCodec().toStdString());
+							mVideoWidgetFrame->hide();
+							mVideoWidget->Init(mMainWindow, this, mVideoSource, pVideoMenu, mSessionName);
+						}else
+							LOG(LOG_ERROR, "Determined video socket is NULL");
+						if (mAudioReceiveSocket != NULL)
+						{
+							mAudioSource = new MediaSourceNet(mAudioReceiveSocket, CONF.GetAudioRtp());
+							mAudioSource->SetInputStreamPreferences(CONF.GetAudioCodec().toStdString());
+							mAudioWidget->Init(mAudioSource, pAudioMenu, mSessionName);
+						}else
+							LOG(LOG_ERROR, "Determined audio socket is NULL");
+        			}
+					break;
         case PREVIEW:
                     LOG(LOG_VERBOSE, "Creating participant widget for PREVIEW");
                     mSessionName = "PREVIEW";
@@ -299,6 +301,8 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
     }
 
     mSessionInfoWidget->Init(mSessionName, false);
+    mSplitter->setStretchFactor(0, 1);
+    mSplitter->setStretchFactor(1, 0);
 
     //####################################################################
     //### update GUI
@@ -311,10 +315,35 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
 
     if (mSessionType == BROADCAST)
         setVisible(CONF.GetVisibilityBroadcastWidget());
-
+    if (mSessionType == PARTICIPANT)
+    	ResizeAVView(0);
     UpdateMovieControls();
 
     mTimerId = startTimer(STREAM_POS_UPDATE_DELAY);
+}
+
+void ParticipantWidget::ResizeAVView(int pSize)
+{
+	QList<int>tSizes  = mSplitter->sizes();
+	LOG(LOG_ERROR, "Splitter with %d widgets", tSizes.size());
+	for (int i = 0; i < tSizes.size(); i++)
+	{
+		LOG(LOG_ERROR, "Entry: %d", tSizes[i]);
+	}
+
+	if (pSize == 0)
+	{
+		tSizes[1] += tSizes[0];
+		tSizes[0] = 0;
+	}else
+	{
+		if (pSize > tSizes[0] + tSizes[1])
+			pSize = tSizes[0] + tSizes[1];
+		int tAVOverSize = tSizes[0] - pSize;
+		tSizes[1] += tAVOverSize;
+		tSizes[0] = pSize;
+	}
+	mSplitter->setSizes(tSizes);
 }
 
 void ParticipantWidget::closeEvent(QCloseEvent* pEvent)
@@ -805,6 +834,7 @@ void ParticipantWidget::CallStopped(bool pIncoming)
     }
     if (mAudioWidget != NULL)
         mAudioWidget->SetVisible(false);
+    ResizeAVView(0);
     mIncomingCall = false;
 
     if (mWaveOut != NULL)
@@ -893,6 +923,7 @@ void ParticipantWidget::HandleCallAccept(bool pIncoming)
     }
     if (mAudioWidget != NULL)
         mAudioWidget->SetVisible(true);
+    ResizeAVView(288);
     mIncomingCall = false;
 
     if (mWaveOut != NULL)

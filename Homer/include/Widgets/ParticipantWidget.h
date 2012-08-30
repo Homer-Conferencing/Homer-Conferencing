@@ -152,6 +152,7 @@ private slots:
 	friend class PlaybackSlider;
 
 private:
+	void ResizeAVView(int pSize);
 	void Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, QString pParticipant);
     void FindSipInterface(QString pSessionName);
     void UpdateMovieControls();
