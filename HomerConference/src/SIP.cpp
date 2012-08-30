@@ -298,7 +298,7 @@ void* SIP::Run(void*)
 
             // add brackets for IPv6 address
             if (mSipHostAdr.find(":") != string::npos)
-	            tOwnAddress = "sip:[::]"/* don't limit to mSipHostAdr*/ + toString(mSipHostPort) + ";" + tTransportAttribute;
+	            tOwnAddress = "sip:[::]:"/* don't limit to mSipHostAdr*/ + toString(mSipHostPort) + ";" + tTransportAttribute;
 			else
 	            tOwnAddress = "sip:0.0.0.0:" /* don't limit to mSipHostAdr*/ + toString(mSipHostPort) + ";" + tTransportAttribute;
 
