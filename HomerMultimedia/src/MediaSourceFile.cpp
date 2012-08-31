@@ -1019,11 +1019,6 @@ void* MediaSourceFile::Run(void* pArgs)
 								// simulate a monotonous increasing PTS value
 								tCurPacketPts++;
 
-								// store the derived PTS value in the fields of the source frame
-								tSourceFrame->pts = tCurPacketPts;
-								tSourceFrame->coded_picture_number = tCurPacketPts;
-								tSourceFrame->display_picture_number = tCurPacketPts;
-
 								// prepare the PTS value which is later delivered to the grabbing thread
 								tCurFramePts = tCurPacketPts;
 
@@ -1033,7 +1028,12 @@ void* MediaSourceFile::Run(void* pArgs)
 								tBytesDecoded = INT_MAX;
                             }
 
-                            // wait for next key frame packets (either i-frame or p-frame
+							// store the derived PTS value in the fields of the source frame
+							tSourceFrame->pts = tCurFramePts;
+							tSourceFrame->coded_picture_number = tCurFramePts;
+							tSourceFrame->display_picture_number = tCurFramePts;
+
+							// wait for next key frame packets (either i-frame or p-frame
                             if (mSeekingWaitForNextKeyFrame)
                             {// we are still waiting for the next key frame after seeking in the file
                                 if (tSourceFrame->pict_type == AV_PICTURE_TYPE_I)
