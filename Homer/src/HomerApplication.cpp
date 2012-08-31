@@ -143,7 +143,7 @@ void HomerApplication::showGUI()
     QResource::registerResource(mBinaryPath + "Icons.rcc");
 
     #ifdef RELEASE_VERSION
-    	LOG(LOG_ERROR, "Showing splash screen");
+    	LOG(LOG_VERBOSE, "Showing splash screen");
 		QPixmap tLogo(":/images/SplashScreen.png");
 		QSplashScreen tSplashScreen(tLogo);
 		tSplashScreen.show();
@@ -157,7 +157,7 @@ void HomerApplication::showGUI()
     mMainWindow->show();
 
 	#ifdef RELEASE_VERSION
-		LOG(LOG_ERROR, "End of showing splash screen");
+		LOG(LOG_VERBOSE, "End of showing splash screen");
 		tSplashScreen.finish(mMainWindow);
 	#endif
 

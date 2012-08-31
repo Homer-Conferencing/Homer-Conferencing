@@ -1,5 +1,6 @@
 <RCC>
   <qresource>
+    <file>images/SplashScreen.png</file>
     <file>images/VersionLogoCiwiLounge.png</file>
     <file>images/VersionLogoComnart.png</file>
     <file>images/VersionLogoFacebook.png</file>
