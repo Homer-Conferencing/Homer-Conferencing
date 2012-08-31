@@ -501,9 +501,6 @@ void MainWindow::initializeWidgetsAndMenus()
 {
     LOG(LOG_VERBOSE, "Initialization of widgets and menus..");
 
-    // set fixed style "plastic"
-    QApplication::setStyle(new QPlastiqueStyle());
-
     LOG(LOG_VERBOSE, "..contacts widget");
     mOverviewContactsWidget = new OverviewContactsWidget(mActionOverviewContactsWidget, this);
     LOG(LOG_VERBOSE, "..errors widget");
