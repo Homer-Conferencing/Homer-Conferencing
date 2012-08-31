@@ -182,8 +182,7 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
         mTbRecord->hide();
     #endif
 
-    connect(mTbPlay, SIGNAL(clicked()), this, SLOT(ActionPlayMovieFile()));
-    connect(mTbPause, SIGNAL(clicked()), this, SLOT(ActionPauseMovieFile()));
+    connect(mTbPlayPause, SIGNAL(clicked()), this, SLOT(ActionPlayPauseMovieFile()));
     connect(mTbRecord, SIGNAL(clicked()), this, SLOT(ActionRecordMovieFile()));
     connect(mSlMovie, SIGNAL(sliderMoved(int)), this, SLOT(ActionSeekMovieFile(int)));
     connect(mSlMovie, SIGNAL(valueChanged(int)), this, SLOT(ActionSeekMovieFileToPos(int)));
@@ -1275,18 +1274,22 @@ QString ParticipantWidget::GetSipInterface()
 	return mSipInterface;
 }
 
-void ParticipantWidget::ActionPlayMovieFile(QString pFileName)
+void ParticipantWidget::ActionPlayPauseMovieFile(QString pFileName)
 {
-    LOG(LOG_VERBOSE, "User triggered play");
-    mVideoWidget->GetWorker()->PlayFile(pFileName);
-    mAudioWidget->GetWorker()->PlayFile(pFileName);
-}
-
-void ParticipantWidget::ActionPauseMovieFile()
-{
-    LOG(LOG_VERBOSE, "User triggered pause");
-    mVideoWidget->GetWorker()->PauseFile();
-    mAudioWidget->GetWorker()->PauseFile();
+    LOG(LOG_VERBOSE, "User triggered play/pause");
+    if (mVideoWidget->GetWorker()->IsPaused() || mAudioWidget->GetWorker()->IsPaused())
+    {
+        LOG(LOG_VERBOSE, "User triggered play");
+        mVideoWidget->GetWorker()->PlayFile(pFileName);
+        mAudioWidget->GetWorker()->PlayFile(pFileName);
+        mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Pause.png"));
+    }else
+    {
+        LOG(LOG_VERBOSE, "User triggered pause");
+        mVideoWidget->GetWorker()->PauseFile();
+        mAudioWidget->GetWorker()->PauseFile();
+        mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Play.png"));
+    }
 }
 
 void ParticipantWidget::ActionRecordMovieFile()

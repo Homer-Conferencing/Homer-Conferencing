@@ -141,8 +141,7 @@ public:
     void SeekMovieFileRelative(float pSeconds);
 
 private slots:
-    void ActionPlayMovieFile(QString pFileName = "");
-    void ActionPauseMovieFile();
+    void ActionPlayPauseMovieFile(QString pFileName = "");
     void ActionRecordMovieFile();
 	void LookedUpParticipantHost(const QHostInfo &pHost);
 	void ActionSeekMovieFile(int pPos);

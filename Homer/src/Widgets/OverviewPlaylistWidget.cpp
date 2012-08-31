@@ -100,9 +100,6 @@ OverviewPlaylistWidget::OverviewPlaylistWidget(QAction *pAssignedAction, QMainWi
     connect(mShortcutDel, SIGNAL(activatedAmbiguously()), this, SLOT(DelEntryDialogSc()));
     connect(mShortcutIns, SIGNAL(activated()), this, SLOT(AddEntryDialogSc()));
     connect(mShortcutIns, SIGNAL(activatedAmbiguously()), this, SLOT(AddEntryDialogSc()));
-    connect(mTbPlay, SIGNAL(clicked()), this, SLOT(ActionPlay()));
-    connect(mTbPause, SIGNAL(clicked()), this, SLOT(ActionPause()));
-    connect(mTbStop, SIGNAL(clicked()), this, SLOT(ActionStop()));
     connect(mTbNext, SIGNAL(clicked()), this, SLOT(ActionNext()));
     connect(mTbLast, SIGNAL(clicked()), this, SLOT(ActionLast()));
     mTimerId = startTimer(PLAYLIST_UPDATE_DELAY);

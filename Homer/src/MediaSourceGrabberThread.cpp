@@ -71,7 +71,7 @@ using namespace Homer::Monitor;
 MediaSourceGrabberThread::MediaSourceGrabberThread(MediaSource *pMediaSource):
     QThread()
 {
-    mSyncClockMasterSource = NULL;
+	mSyncClockMasterSource = NULL;
     mSyncClockAsap = false;
     mSetGrabResolutionAsap = false;
     mStartRecorderAsap = false;
@@ -89,10 +89,14 @@ MediaSourceGrabberThread::MediaSourceGrabberThread(MediaSource *pMediaSource):
     mTryingToOpenAFile = false;
     mPaused = false;
     mPausedPos = 0;
-    mDesiredFile = "";
     if (pMediaSource == NULL)
         LOG(LOG_ERROR, "media source is NULL");
     mMediaSource = pMediaSource;
+	if (pMediaSource->GetSourceType() == SOURCE_FILE)
+		mDesiredFile = GetCurrentDevice();
+	else
+		mDesiredFile = "";
+	mCurrentFile = mDesiredFile;
     blockSignals(true);
 }
 
@@ -179,7 +183,10 @@ void MediaSourceGrabberThread::PlayFile(QString pName)
 	#endif
 
     if (pName == "")
-        pName = mCurrentFile;
+    {
+    	LOG(LOG_VERBOSE, "Given file name was empty, setting old name: %s", mCurrentFile.toStdString().c_str());
+    	pName = mCurrentFile;
+    }
 
     // remove "file:///" and "file://" from the beginning if existing
     #ifdef WIN32

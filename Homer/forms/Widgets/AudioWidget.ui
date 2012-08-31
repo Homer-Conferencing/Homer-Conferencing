@@ -218,13 +218,13 @@ border-radius: 6px;
          <property name="minimumSize">
           <size>
            <width>0</width>
-           <height>26</height>
+           <height>15</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>26</height>
+           <height>15</height>
           </size>
          </property>
          <property name="frameShape">
@@ -248,7 +248,7 @@ border-radius: 6px;
             <property name="minimumSize">
              <size>
               <width>0</width>
-              <height>26</height>
+              <height>15</height>
              </size>
             </property>
             <property name="layoutDirection">
@@ -298,13 +298,13 @@ QProgressBar::chunk {
          <property name="minimumSize">
           <size>
            <width>0</width>
-           <height>26</height>
+           <height>15</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>26</height>
+           <height>15</height>
           </size>
          </property>
          <property name="frameShape">
@@ -328,7 +328,7 @@ QProgressBar::chunk {
             <property name="minimumSize">
              <size>
               <width>0</width>
-              <height>26</height>
+              <height>15</height>
              </size>
             </property>
             <property name="layoutDirection">

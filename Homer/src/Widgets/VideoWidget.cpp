@@ -1576,13 +1576,13 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
         if ((mVideoWorker->IsPaused()) || ((mParticipantWidget->GetAudioWorker() != NULL) && (mParticipantWidget->GetAudioWorker()->IsPaused())))
         {
         	ShowOsdMessage("Playing..");
-            mParticipantWidget->ActionPlayMovieFile();
+            mParticipantWidget->ActionPlayPauseMovieFile();
             pEvent->accept();
             return;
         }else
         {
         	ShowOsdMessage("Pausing..");
-            mParticipantWidget->ActionPauseMovieFile();
+            mParticipantWidget->ActionPlayPauseMovieFile();
 			pEvent->accept();
             return;
         }
