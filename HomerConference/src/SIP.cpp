@@ -2423,7 +2423,7 @@ void SIP::SipReceivedCallResponse(const sip_to_t *pSipRemote, const sip_to_t *pS
             #endif
             break;
         default:
-            LOG(LOG_ERROR, "Unsupported status code");
+            LOG(LOG_ERROR, "Unsupported status code %d(%s)", pStatus, pPhrase);
             break;
     }
 }
