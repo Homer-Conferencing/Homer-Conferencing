@@ -324,10 +324,10 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
 void ParticipantWidget::ResizeAVView(int pSize)
 {
 	QList<int>tSizes  = mSplitter->sizes();
-	LOG(LOG_ERROR, "Splitter with %d widgets", tSizes.size());
+	LOG(LOG_VERBOSE, "Splitter with %d widgets", tSizes.size());
 	for (int i = 0; i < tSizes.size(); i++)
 	{
-		LOG(LOG_ERROR, "Entry: %d", tSizes[i]);
+		LOG(LOG_VERBOSE, "Entry: %d", tSizes[i]);
 	}
 
 	if (pSize == 0)
