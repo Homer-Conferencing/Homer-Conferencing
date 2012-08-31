@@ -2391,8 +2391,10 @@ void SIP::SipReceivedCallResponse(const sip_to_t *pSipRemote, const sip_to_t *pS
             }
 
             break;
+        case 400 ... 406: // user/service unavailable
+        	//    404 = Not found, user not found in remote database
         case 408 ... 599: // user/service unavailable
-            //    408 = Timeout
+        	//    408 = Timeout
             //    415 = Unsupported media type (linphone)
             //    503 = Service unavailable
             SipReceivedCallUnavailable(pSipRemote, pSipLocal, pNuaHandle, pStatus, pPhrase, pSip, pSourceIp, pSourcePort);
