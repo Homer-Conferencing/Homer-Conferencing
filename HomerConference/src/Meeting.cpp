@@ -41,7 +41,7 @@ namespace Homer { namespace Conference {
 using namespace std;
 using namespace Homer::Base;
 
-Meeting sMeeting;
+Meeting *sMeeting = NULL;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -87,7 +87,9 @@ Meeting::~Meeting()
 
 Meeting& Meeting::GetInstance()
 {
-    return sMeeting;
+	if (sMeeting == NULL)
+		sMeeting = new Meeting();
+    return *sMeeting;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -157,7 +159,6 @@ void Meeting::Stop()
 
 void Meeting::Deinit()
 {
-    CloseAllSessions();
     SIP_stun::Deinit();
     SIP::Deinit();
 }
@@ -464,10 +465,10 @@ bool Meeting::CloseParticipantSession(string pParticipant)
             // hint: the media sources are deleted within video/audio-widget
 
             // delete video/audio sockets
-            delete (*tIt).VideoReceiveSocket;
-            delete (*tIt).AudioReceiveSocket;
 			delete (*tIt).VideoSendSocket;
 			delete (*tIt).AudioSendSocket;
+            delete (*tIt).VideoReceiveSocket;
+            delete (*tIt).AudioReceiveSocket;
 
             // remove element from participants list
             tIt = mParticipants.erase(tIt);
@@ -505,39 +506,6 @@ int Meeting::CountParticipantSessions()
     mParticipantsMutex.unlock();
 
     return tResult;
-}
-
-void Meeting::CloseAllSessions()
-{
-    ParticipantList::iterator tIt;
-
-    // lock
-    mParticipantsMutex.lock();
-
-    for (tIt = ++mParticipants.begin(); tIt != mParticipants.end(); tIt++)
-    {
-        // there were no audio/video-sources for the local user allocated
-        if ((tIt->Host != GetHostAdr()) || (tIt->Port != toString(GetHostPort())))
-        {
-            LOG(LOG_VERBOSE, "Close session with: %s", SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str());
-
-            // hint: the media sources are deleted within video/audio-widget
-        }else
-            LOG(LOG_VERBOSE, "Close loopback session with: %s", SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str());
-
-        // delete video/audio sockets
-        delete (*tIt).VideoReceiveSocket;
-        delete (*tIt).AudioReceiveSocket;
-		delete (*tIt).VideoSendSocket;
-		delete (*tIt).AudioSendSocket;
-
-        // remove element from participants list
-        tIt = mParticipants.erase(tIt);
-        LOG(LOG_VERBOSE, "...closed");
-    }
-
-    // unlock
-    mParticipantsMutex.unlock();
 }
 
 bool Meeting::SendBroadcastMessage(string pMessage)
