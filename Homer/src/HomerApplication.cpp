@@ -138,27 +138,28 @@ void HomerApplication::showGUI()
     // make sure every icon is visible within menus: otherwise the Ubuntu-packages will have no icons visible
     setAttribute(Qt::AA_DontShowIconsInMenus, false);
 
-	#ifdef RELEASE_VERSION
-		QPixmap tLogo(":/images/Splash.png");
-		QSplashScreen tSplashScreen(tLogo);
-		tSplashScreen.show();
-		Thread::Suspend(2 * 1000 * 1000);
-	#endif
-
     // load the icon resources
     LOG(LOG_VERBOSE, "Loading Icons.rcc from %s", (mBinaryPath.toStdString() + "Icons.rcc").c_str());
     QResource::registerResource(mBinaryPath + "Icons.rcc");
 
+    #ifdef RELEASE_VERSION
+    	LOG(LOG_ERROR, "Showing splash screen");
+		QPixmap tLogo(":/images/SplashScreen.png");
+		QSplashScreen tSplashScreen(tLogo);
+		tSplashScreen.show();
+		Thread::Suspend(1 * 1000 * 1000);
+	#endif
+
     LOG(LOG_VERBOSE, "Creating Qt main window");
     MainWindow *mMainWindow = new MainWindow(mBinaryPath);
 
-	#ifdef RELEASE_VERSION
-		LOG(LOG_VERBOSE, "Showing splash screen");
-		tSplashScreen.finish(mMainWindow);
-	#endif
-
 	LOG(LOG_VERBOSE, "Showing Qt main window");
     mMainWindow->show();
+
+	#ifdef RELEASE_VERSION
+		LOG(LOG_ERROR, "End of showing splash screen");
+		tSplashScreen.finish(mMainWindow);
+	#endif
 
 	mMainWindowIsAlreadyVisible = true;
 
