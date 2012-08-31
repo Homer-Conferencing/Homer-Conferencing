@@ -280,7 +280,6 @@ void CALLBACK WaveOutMMSys::EventHandler(HWAVEOUT pPlaybackDevice, UINT pMessage
 
 bool WaveOutMMSys::WriteChunk(void* pChunkBuffer, int pChunkSize)
 {
-    //TODO
 	return false;
 }
 

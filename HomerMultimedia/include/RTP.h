@@ -75,7 +75,7 @@ union RtcpHeader{
 
         unsigned int Ssrc;                  /* synchronization source */
 
-        unsigned int dummy[5];                 /* TODO */
+        unsigned int dummy[5];              /*  */
     } __attribute__((__packed__))RtpBased;
     struct{ // send within media stream as intermediate packets
         unsigned short int Length;          /* length of report */
