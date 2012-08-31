@@ -1248,10 +1248,13 @@ bool Socket::CreateSocket(enum NetworkType pIpVersion)
 
 void Socket::CloseSocket(int pHandle)
 {
-	LOGEX(Socket, LOG_VERBOSE, "Destroying socket %d", pHandle);
+	LOGEX(Socket, LOG_VERBOSE, "Closing socket %d", pHandle);
 
     if (pHandle > 0)
     {
+        // force a immediate return from any blocked "recv()" call
+        shutdown(pHandle, SHUT_RDWR);
+
         #if defined(LINUX) || defined(APPLE) || defined(BSD)
             close(pHandle);
         #endif
@@ -1260,6 +1263,7 @@ void Socket::CloseSocket(int pHandle)
             WSACleanup();
         #endif
     }
+    LOGEX(Socket, LOG_VERBOSE, "Socket %d closed", pHandle);
 }
 
 bool Socket::BindSocket(unsigned int pPort, unsigned int pProbeStepping, unsigned int pHighesPossiblePort)
