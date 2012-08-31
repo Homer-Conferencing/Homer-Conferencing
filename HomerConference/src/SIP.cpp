@@ -297,10 +297,20 @@ void* SIP::Run(void*)
             LOG(LOG_VERBOSE, "..NUA create");
 
             // add brackets for IPv6 address
-            if (mSipHostAdr.find(":") != string::npos)
-	            tOwnAddress = "sip:[::]:"/* don't limit to mSipHostAdr*/ + toString(mSipHostPort) + ";" + tTransportAttribute;
-			else
+            tOwnAddress = "";
+            if (IS_IPV6_ADDRESS(mSipHostAdr))
+            {
+            	if (Socket::IsIPv6Supported())
+            	{// use IPv6 socket
+            		tOwnAddress = "sip:[::]:"/* don't limit to mSipHostAdr*/ + toString(mSipHostPort) + ";" + tTransportAttribute;
+            	}else
+            		LOG(LOG_ERROR, "Cannot use IPv6 address %s because IPv6 sockets are not supported", mSipHostAdr.c_str());
+            }
+
+            if (tOwnAddress == "")
+            {// use IPv4 socket
 	            tOwnAddress = "sip:0.0.0.0:" /* don't limit to mSipHostAdr*/ + toString(mSipHostPort) + ";" + tTransportAttribute;
+            }
 
             // NAT traversal: use keepalive packets with interval of 10 seconds
             //                otherwise a NAT box won't maintain the state about the NAT forwarding
