@@ -383,29 +383,55 @@ bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort)
 		{
             LOG(LOG_VERBOSE, "Using bidirectional media sockets to support NAT traversal");
 
-			// create video sender port
-			tParticipantDescriptor.VideoReceiveSocket = Socket::CreateServerSocket(IS_IPV6_ADDRESS(pHost) ? SOCKET_IPv6 : SOCKET_IPv4, GetSocketTypeFromMediaTransportType(GetVideoTransportType()), mVideoAudioStartPort, true, 2);
-			if (tParticipantDescriptor.VideoReceiveSocket == NULL)
-				LOG(LOG_ERROR, "Invalid video receive socket");
-			else
-				mVideoAudioStartPort = tParticipantDescriptor.VideoReceiveSocket->GetLocalPort() + 2;
+            #ifdef WIN32
+                // create video sender port
+                tParticipantDescriptor.VideoReceiveSocket = Socket::CreateServerSocket(IS_IPV6_ADDRESS(pHost) ? SOCKET_IPv6 : SOCKET_IPv4, GetSocketTypeFromMediaTransportType(GetVideoTransportType()), mVideoAudioStartPort, true, 2);
+                if (tParticipantDescriptor.VideoReceiveSocket == NULL)
+                    LOG(LOG_ERROR, "Invalid video receive socket");
+                else
+                    mVideoAudioStartPort = tParticipantDescriptor.VideoReceiveSocket->GetLocalPort() + 2;
 
-			// create audio sender port
-			tParticipantDescriptor.AudioReceiveSocket = Socket::CreateServerSocket(IS_IPV6_ADDRESS(pHost) ? SOCKET_IPv6 : SOCKET_IPv4, GetSocketTypeFromMediaTransportType(GetAudioTransportType()), mVideoAudioStartPort, true, 2);
-			if (tParticipantDescriptor.AudioReceiveSocket == NULL)
-				LOG(LOG_ERROR, "Invalid audio receive socket");
-			else
-				mVideoAudioStartPort = tParticipantDescriptor.AudioReceiveSocket->GetLocalPort() + 2;
+                // create audio sender port
+                tParticipantDescriptor.AudioReceiveSocket = Socket::CreateServerSocket(IS_IPV6_ADDRESS(pHost) ? SOCKET_IPv6 : SOCKET_IPv4, GetSocketTypeFromMediaTransportType(GetAudioTransportType()), mVideoAudioStartPort, true, 2);
+                if (tParticipantDescriptor.AudioReceiveSocket == NULL)
+                    LOG(LOG_ERROR, "Invalid audio receive socket");
+                else
+                    mVideoAudioStartPort = tParticipantDescriptor.AudioReceiveSocket->GetLocalPort() + 2;
 
-			// create video listener port
-        	//HINT: for Windows/BSD/OSX the client socket has to be created before the server socket when using both assigned to the same port, Linux doesn't care about the order
-        	tParticipantDescriptor.VideoSendSocket = Socket::CreateClientSocket(tParticipantDescriptor.VideoReceiveSocket->GetNetworkType(), tParticipantDescriptor.VideoReceiveSocket->GetTransportType(), tParticipantDescriptor.VideoReceiveSocket->GetLocalPort(), true, 0);
-			if (tParticipantDescriptor.VideoSendSocket == NULL)
-				LOG(LOG_ERROR, "Invalid video send socket");
-			// create audio listener port
-        	tParticipantDescriptor.AudioSendSocket = Socket::CreateClientSocket(tParticipantDescriptor.AudioReceiveSocket->GetNetworkType(), tParticipantDescriptor.AudioReceiveSocket->GetTransportType(), tParticipantDescriptor.AudioReceiveSocket->GetLocalPort(), true, 0);
-			if (tParticipantDescriptor.AudioSendSocket == NULL)
-				LOG(LOG_ERROR, "Invalid audio send socket");
+                // create video listener port
+                //HINT: for Windows/BSD/OSX the client socket has to be created before the server socket when using both assigned to the same port, Linux doesn't care about the order
+                tParticipantDescriptor.VideoSendSocket = Socket::CreateClientSocket(tParticipantDescriptor.VideoReceiveSocket->GetNetworkType(), tParticipantDescriptor.VideoReceiveSocket->GetTransportType(), tParticipantDescriptor.VideoReceiveSocket->GetLocalPort(), true, 0);
+                if (tParticipantDescriptor.VideoSendSocket == NULL)
+                    LOG(LOG_ERROR, "Invalid video send socket");
+                // create audio listener port
+                tParticipantDescriptor.AudioSendSocket = Socket::CreateClientSocket(tParticipantDescriptor.AudioReceiveSocket->GetNetworkType(), tParticipantDescriptor.AudioReceiveSocket->GetTransportType(), tParticipantDescriptor.AudioReceiveSocket->GetLocalPort(), true, 0);
+                if (tParticipantDescriptor.AudioSendSocket == NULL)
+                    LOG(LOG_ERROR, "Invalid audio send socket");
+            #else
+                // create video sender port
+                tParticipantDescriptor.VideoSendSocket = Socket::CreateClientSocket(IS_IPV6_ADDRESS(pHost) ? SOCKET_IPv6 : SOCKET_IPv4, GetSocketTypeFromMediaTransportType(GetVideoTransportType()), mVideoAudioStartPort, true, 2);
+                if (tParticipantDescriptor.VideoSendSocket == NULL)
+                    LOG(LOG_ERROR, "Invalid video send socket");
+                else
+                    mVideoAudioStartPort = tParticipantDescriptor.VideoSendSocket->GetLocalPort() + 2;
+
+                // create audio sender port
+                tParticipantDescriptor.AudioSendSocket = Socket::CreateClientSocket(IS_IPV6_ADDRESS(pHost) ? SOCKET_IPv6 : SOCKET_IPv4, GetSocketTypeFromMediaTransportType(GetAudioTransportType()), mVideoAudioStartPort, true, 2);
+                if (tParticipantDescriptor.AudioSendSocket == NULL)
+                    LOG(LOG_ERROR, "Invalid audio send socket");
+                else
+                    mVideoAudioStartPort = tParticipantDescriptor.AudioSendSocket->GetLocalPort() + 2;
+
+                // create video listener port
+                //HINT: for Windows/BSD/OSX the client socket has to be created before the server socket when using both assigned to the same port, Linux doesn't care about the order
+                tParticipantDescriptor.VideoReceiveSocket = Socket::CreateServerSocket(tParticipantDescriptor.VideoSendSocket->GetNetworkType(), tParticipantDescriptor.VideoSendSocket->GetTransportType(), tParticipantDescriptor.VideoSendSocket->GetLocalPort(), true, 0);
+                if (tParticipantDescriptor.VideoReceiveSocket == NULL)
+                    LOG(LOG_ERROR, "Invalid video receive socket");
+                // create audio listener port
+                tParticipantDescriptor.AudioReceiveSocket = Socket::CreateServerSocket(tParticipantDescriptor.AudioSendSocket->GetNetworkType(), tParticipantDescriptor.AudioSendSocket->GetTransportType(), tParticipantDescriptor.AudioSendSocket->GetLocalPort(), true, 0);
+                if (tParticipantDescriptor.AudioReceiveSocket == NULL)
+                    LOG(LOG_ERROR, "Invalid audio receive socket");
+            #endif
 		}else
 		{
             LOG(LOG_VERBOSE, "Using only unidirectional media sockets without NAT traversal support");
@@ -464,11 +490,19 @@ bool Meeting::CloseParticipantSession(string pParticipant)
         {
             // hint: the media sources are deleted within video/audio-widget
 
-            // delete video/audio sockets
-			delete (*tIt).VideoSendSocket;
-			delete (*tIt).AudioSendSocket;
-            delete (*tIt).VideoReceiveSocket;
-            delete (*tIt).AudioReceiveSocket;
+            #ifdef WIN32
+                // delete video/audio sockets
+                delete (*tIt).VideoSendSocket;
+                delete (*tIt).AudioSendSocket;
+                delete (*tIt).VideoReceiveSocket;
+                delete (*tIt).AudioReceiveSocket;
+            #else
+                // delete video/audio sockets
+                delete (*tIt).VideoReceiveSocket;
+                delete (*tIt).AudioReceiveSocket;
+                delete (*tIt).VideoSendSocket;
+                delete (*tIt).AudioSendSocket;
+            #endif
 
             // remove element from participants list
             tIt = mParticipants.erase(tIt);
