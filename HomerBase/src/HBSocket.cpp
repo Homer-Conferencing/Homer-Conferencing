@@ -1252,13 +1252,16 @@ void Socket::CloseSocket(int pHandle)
 
     if (pHandle > 0)
     {
-        // force a immediate return from any blocked "recv()" call
-        shutdown(pHandle, SHUT_RDWR);
-
         #if defined(LINUX) || defined(APPLE) || defined(BSD)
+            // force a immediate return from any blocked "recv()" call
+            shutdown(pHandle, SHUT_RDWR);
+
             close(pHandle);
         #endif
         #if defined(WIN32) ||defined(WIN64)
+            // force a immediate return from any blocked "recv()" call
+            shutdown(pHandle, SD_BOTH);
+
             closesocket(pHandle);
             WSACleanup();
         #endif
