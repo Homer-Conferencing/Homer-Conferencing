@@ -467,6 +467,19 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
 		mCurrentStreamingResX = mRequestedStreamingResX;
 		mCurrentStreamingResY = mRequestedStreamingResY;
     }
+
+    // for H.263+ both width and height must be multiples of 4
+    if (mStreamCodecId == CODEC_ID_H263P)
+    {
+    	mCurrentStreamingResX += 3;
+    	mCurrentStreamingResX /= 4;
+    	mCurrentStreamingResX *= 4;
+
+    	mCurrentStreamingResY += 3;
+    	mCurrentStreamingResY /= 4;
+    	mCurrentStreamingResY *= 4;
+    }
+
     mCodecContext->width = mCurrentStreamingResX;
     mCodecContext->height = mCurrentStreamingResY;
 
