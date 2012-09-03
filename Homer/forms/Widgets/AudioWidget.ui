@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>441</width>
-    <height>52</height>
+    <width>414</width>
+    <height>42</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -169,18 +169,6 @@ border-radius: 6px;
    </item>
    <item>
     <widget class="QLabel" name="mLbStreamInfo">
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>38</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>38</height>
-      </size>
-     </property>
      <property name="font">
       <font>
        <pointsize>10</pointsize>
@@ -407,6 +395,7 @@ QProgressBar::chunk {
   </layout>
  </widget>
  <resources>
+  <include location="../../resources/Icons.qrc"/>
   <include location="../../resources/Icons.qrc"/>
   <include location="../../resources/Icons.qrc"/>
   <include location="../../resources/Icons.qrc"/>

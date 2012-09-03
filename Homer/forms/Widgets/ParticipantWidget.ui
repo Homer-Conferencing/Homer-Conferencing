@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>556</width>
-    <height>116</height>
+    <width>435</width>
+    <height>102</height>
    </rect>
   </property>
   <property name="font">
@@ -119,6 +119,12 @@
             <height>42</height>
            </size>
           </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>42</height>
+           </size>
+          </property>
           <property name="font">
            <font>
             <family>Arial</family>
@@ -148,12 +154,6 @@
            </property>
            <item>
             <widget class="QFrame" name="mMovieControlsFrame">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>40</height>
-              </size>
-             </property>
              <property name="frameShape">
               <enum>QFrame::NoFrame</enum>
              </property>
@@ -231,13 +231,13 @@ background-color: rgb(150, 150, 150);
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
-                  <height>36</height>
+                  <height>32</height>
                  </size>
                 </property>
                 <property name="maximumSize">
                  <size>
                   <width>16777215</width>
-                  <height>36</height>
+                  <height>32</height>
                  </size>
                 </property>
                 <property name="palette">
