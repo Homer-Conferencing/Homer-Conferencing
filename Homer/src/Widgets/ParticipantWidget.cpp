@@ -832,8 +832,11 @@ void ParticipantWidget::CallStopped(bool pIncoming)
         mVideoWidget->SetVisible(false);
     }
     if (mAudioWidget != NULL)
+    {
         mAudioWidget->SetVisible(false);
-    ResizeAVView(0);
+        mAudioWidget->ToggleMuteState(false);
+    }
+	ResizeAVView(0);
     mIncomingCall = false;
 
     if (mWaveOut != NULL)
@@ -921,7 +924,10 @@ void ParticipantWidget::HandleCallAccept(bool pIncoming)
         mVideoWidget->SetVisible(true);
     }
     if (mAudioWidget != NULL)
+    {
         mAudioWidget->SetVisible(true);
+        mAudioWidget->ToggleMuteState(true);
+    }
     ResizeAVView(288);
     mIncomingCall = false;
 

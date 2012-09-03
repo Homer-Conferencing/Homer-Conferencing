@@ -94,8 +94,6 @@ public:
 
 public slots:
     void ToggleVisibility();
-
-private slots:
     void ToggleMuteState(bool pState = true);
 
 private:
