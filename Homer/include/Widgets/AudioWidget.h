@@ -156,7 +156,6 @@ public:
     bool IsPlaybackAvailable();
 
 public slots:
-    void ToggleMuteState(bool pState = true);
     void SetVolume(int pValue);
 
 private:

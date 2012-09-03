@@ -659,7 +659,7 @@ void AudioWidget::ToggleVisibility()
 
 void AudioWidget::ToggleMuteState(bool pState)
 {
-    mAudioWorker->ToggleMuteState(pState);
+    mAudioWorker->SetMuteState(!pState);
 }
 
 void AudioWidget::InformAboutNewSamples()
@@ -810,24 +810,6 @@ void AudioWorkerThread::ClosePlaybackDevice()
         mMediaSource->FreeChunkBuffer(mSamples[i]);
 }
 
-void AudioWorkerThread::ToggleMuteState(bool pState)
-{
-	if (!mPlaybackAvailable)
-	{
-		LOG(LOG_VERBOSE, "Playback device isn't available");
-		return;
-	}
-
-    LOG(LOG_VERBOSE, "Setting mute state to %d", !pState);
-    mAudioOutMuted = !pState;
-    mAudioWidget->InformAboutNewMuteState();
-    if (pState)
-    	mStartPlaybackAsap = true;
-    else
-    	mStopPlaybackAsap = true;
-    mGrabbingCondition.wakeAll();
-}
-
 void AudioWorkerThread::SetVolume(int pValue)
 {
 	if (mAudioWidget->GetVolume() != pValue)
@@ -863,9 +845,9 @@ void AudioWorkerThread::SetMuteState(bool pMuted)
     mAudioOutMuted = pMuted;
     mAudioWidget->InformAboutNewMuteState();
     if(pMuted)
-        mStopPlaybackAsap = true;
+    	DoStopPlayback();
     else
-    	mStartPlaybackAsap = true;
+    	DoStartPlayback();
     mGrabbingCondition.wakeAll();
 }
 
