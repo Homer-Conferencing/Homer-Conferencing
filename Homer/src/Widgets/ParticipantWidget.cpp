@@ -240,7 +240,7 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
 						mAudioReceiveSocket = MEETING.GetAudioReceiveSocket(mSessionName.toStdString());
 						if (mVideoReceiveSocket != NULL)
 						{
-							mVideoSource = new MediaSourceNet(mVideoReceiveSocket, CONF.GetVideoRtp());
+							mVideoSource = new MediaSourceNet(mVideoReceiveSocket, true);
 							mVideoSource->SetInputStreamPreferences(CONF.GetVideoCodec().toStdString());
 							mVideoWidgetFrame->hide();
 							mVideoWidget->Init(mMainWindow, this, mVideoSource, pVideoMenu, mSessionName);
@@ -248,7 +248,7 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
 							LOG(LOG_ERROR, "Determined video socket is NULL");
 						if (mAudioReceiveSocket != NULL)
 						{
-							mAudioSource = new MediaSourceNet(mAudioReceiveSocket, CONF.GetAudioRtp());
+							mAudioSource = new MediaSourceNet(mAudioReceiveSocket, true);
 							mAudioSource->SetInputStreamPreferences(CONF.GetAudioCodec().toStdString());
 							mAudioWidget->Init(mAudioSource, pAudioMenu, mSessionName);
 						}else
