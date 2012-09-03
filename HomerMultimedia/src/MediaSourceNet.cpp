@@ -339,7 +339,7 @@ void MediaSourceNet::StopListener()
 		}else
 		{
 			if (mDataSocket != NULL)
-				mDataSocket->Close();
+				mDataSocket->StopReceiving();
 		}
 
 		if (!StopThread(3000))

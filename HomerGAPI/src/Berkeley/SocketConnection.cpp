@@ -223,7 +223,7 @@ void SocketConnection::cancel()
     {
         LOG(LOG_VERBOSE, "Connection for local %s will be canceled now", getName()->toString().c_str());
         mIsClosed = true;
-        mSocket->Close();
+        mSocket->StopReceiving();
     }
     LOG(LOG_VERBOSE, "Canceled");
 }

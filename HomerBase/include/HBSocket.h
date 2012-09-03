@@ -128,6 +128,7 @@ public:
     bool EnableReuse(bool pActive = true);
 
     /* transmission */
+    void StopReceiving();
     bool Send(std::string pTargetHost, unsigned int pTargetPort, void *pBuffer, ssize_t pBufferSize);
     bool Receive(std::string &pSourceHost, unsigned int &pSourcePort, void *pBuffer, ssize_t &pBufferSize);
     int GetSendBufferSize();
