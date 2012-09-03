@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>646</width>
+    <width>533</width>
     <height>42</height>
    </rect>
   </property>
@@ -72,18 +72,17 @@
      </property>
      <property name="font">
       <font>
-       <pointsize>10</pointsize>
        <weight>75</weight>
        <bold>true</bold>
       </font>
      </property>
      <property name="text">
-      <string>Video</string>
+      <string>Desktop</string>
      </property>
     </widget>
    </item>
    <item>
-    <spacer name="horizontalSpacer_3">
+    <spacer name="horizontalSpacer_6">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
@@ -148,7 +147,27 @@ background-color: rgb(150, 150, 150);
     </widget>
    </item>
    <item>
-    <spacer name="horizontalSpacer_9">
+    <widget class="Line" name="line_3">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_2">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Camera</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="horizontalSpacer_3">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
@@ -259,22 +278,6 @@ background-color: rgb(150, 150, 150);
     </widget>
    </item>
    <item>
-    <spacer name="horizontalSpacer_4">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="sizeType">
-      <enum>QSizePolicy::Fixed</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>5</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item>
     <widget class="QLabel" name="label">
      <property name="minimumSize">
       <size>
@@ -290,18 +293,17 @@ background-color: rgb(150, 150, 150);
      </property>
      <property name="font">
       <font>
-       <pointsize>10</pointsize>
        <weight>75</weight>
        <bold>true</bold>
       </font>
      </property>
      <property name="text">
-      <string>Audio</string>
+      <string>Microphone</string>
      </property>
     </widget>
    </item>
    <item>
-    <spacer name="horizontalSpacer_5">
+    <spacer name="horizontalSpacer_4">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
@@ -370,22 +372,6 @@ background-color: rgb(150, 150, 150);
     </widget>
    </item>
    <item>
-    <spacer name="horizontalSpacer_7">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="sizeType">
-      <enum>QSizePolicy::Fixed</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>5</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item>
     <widget class="QLabel" name="label_3">
      <property name="minimumSize">
       <size>
@@ -401,18 +387,17 @@ background-color: rgb(150, 150, 150);
      </property>
      <property name="font">
       <font>
-       <pointsize>10</pointsize>
        <weight>75</weight>
        <bold>true</bold>
       </font>
      </property>
      <property name="text">
-      <string>Video/Audio</string>
+      <string>File</string>
      </property>
     </widget>
    </item>
    <item>
-    <spacer name="horizontalSpacer_6">
+    <spacer name="horizontalSpacer_5">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
