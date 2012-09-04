@@ -94,8 +94,12 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
     if (mWaitUntillFirstKeyFrame)
     {
         if (!pIsKeyFrame)
+        {
+            #ifdef MSIM_DEBUG_PACKETS
+                LOG(LOG_VERBOSE, "Still waiting for first key frame")
+            #endif
             return;
-        else
+        }else
         {
             LOG(LOG_VERBOSE, "Sending frame as first key frame to network sink");
             mWaitUntillFirstKeyFrame = false;
