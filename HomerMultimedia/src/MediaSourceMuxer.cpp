@@ -366,7 +366,12 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     mFormatContext->oformat = tFormat;
     // set correct IO-context
     mFormatContext->pb = tIoContext;
-    // verbose timestamp debugging    mFormatContext->debug = FF_FDEBUG_TS;
+    // verbose timestamp debugging
+    if (LOGGER.GetLogLevel() == LOG_VERBOSE)
+    {
+    	LOG(LOG_WARN, "Enabling ffmpeg timestamp debugging");
+    	mFormatContext->debug = FF_FDEBUG_TS;
+    }
 
     // allocate new stream structure
     LOG(LOG_VERBOSE, "..allocating new stream");
@@ -701,7 +706,12 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     mFormatContext->oformat = tFormat;
     // set correct IO-context
     mFormatContext->pb = tIoContext;
-    // verbose timestamp debugging    mFormatContext->debug = FF_FDEBUG_TS;
+    // verbose timestamp debugging
+    if (LOGGER.GetLogLevel() == LOG_VERBOSE)
+    {
+    	LOG(LOG_WARN, "Enabling ffmpeg timestamp debugging");
+    	mFormatContext->debug = FF_FDEBUG_TS;
+    }
 
     // allocate new stream structure
     tStream = av_new_stream(mFormatContext, 0);
