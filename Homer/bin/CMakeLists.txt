@@ -319,6 +319,7 @@ IF (NOT (${BUILD} MATCHES "Default"))
 		libQtDBus.so.4 
 		libQtNetwork.so.4
 		libQtXml.so.4  
+		libQtXmlPatterns.so.4  
 		libgstapp-0.10.so.0.24.0  
 		libgstinterfaces-0.10.so    
 		libgstpbutils-0.10.so.0          
@@ -327,6 +328,7 @@ IF (NOT (${BUILD} MATCHES "Default"))
 		libQtDBus.so.4.8.1
 		libQtNetwork.so.4.8.1
 		libQtXml.so.4.8.1     
+		libQtXmlPatterns.so.4.8.1     
 		libgstbase-0.10.so
 		libgstinterfaces-0.10.so.0  
 		libgstpbutils-0.10.so.0.24.0     
