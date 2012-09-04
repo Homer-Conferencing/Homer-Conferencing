@@ -82,6 +82,7 @@ SET (SOURCES
 	../src/MediaSourceMuxer
 	../src/MediaSourceNet
 	../src/MediaSourcePortAudio
+	../src/RTCP
 	../src/RTP
 	../src/VideoScaler
 	../src/WaveOut
