@@ -759,6 +759,9 @@ int RTP::StoreRtpPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize)
 {
     RTP* tRTPInstance = (RTP*)pOpaque;
 
+    #ifdef RTP_DEBUG_PACKETS
+        LOGEX(RTP, LOG_VERBOSE, "Storing RTP packet of %d bytes", pBufferSize);
+    #endif
     if (!tRTPInstance->mEncoderOpened)
         LOGEX(RTP, LOG_ERROR, "RTP instance wasn't opened yet, RTP packetizing not available");
 
