@@ -315,13 +315,16 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
 
     mMediaType = MEDIA_VIDEO;
 
+    // for better debbuging
+    mGrabMutex.AssignName(GetMediaTypeStr() + "MuxerGrab");
+    mEncoderFifoMutex.AssignName(GetMediaTypeStr() + "MuxerEncoderFifo");
+    mMediaSourcesMutex.AssignName(GetMediaTypeStr() + "MuxerMediaSources");
+    mMediaSinksMutex.AssignName(GetMediaTypeStr() + "MuxerMediaSinks");
+
     LOG(LOG_VERBOSE, "Going to open %s muxer with resolution %d * %d", GetMediaTypeStr().c_str(), pResX, pResY);
 
     if (mMediaSourceOpened)
         return false;
-
-    // lock
-    mMediaSinksMutex.lock();
 
     // set category for packet statistics
     ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
@@ -349,9 +352,6 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
 
         // Close the format context
         av_free(mFormatContext);
-
-        // unlock
-        mMediaSinksMutex.unlock();
 
         return false;
     }
@@ -556,9 +556,6 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
         // Close the format context
         av_free(mFormatContext);
 
-        // unlock
-        mMediaSinksMutex.unlock();
-
         return false;
     }
 
@@ -583,9 +580,6 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
 
         // Close the format context
         av_free(mFormatContext);
-
-        // unlock
-        mMediaSinksMutex.unlock();
 
         return false;
     }
@@ -612,8 +606,6 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     else
         LOG(LOG_INFO, "    ..rtp encapsulation: no");
     LOG(LOG_INFO, "    ..max. packet size: %d bytes", mStreamMaxPacketSize);
-    // unlock
-    mMediaSinksMutex.unlock();
 
     return true;
 }
@@ -665,13 +657,16 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
 
     mMediaType = MEDIA_AUDIO;
 
+    // for better debbuging
+    mGrabMutex.AssignName(GetMediaTypeStr() + "MuxerGrab");
+    mEncoderFifoMutex.AssignName(GetMediaTypeStr() + "MuxerEncoderFifo");
+    mMediaSourcesMutex.AssignName(GetMediaTypeStr() + "MuxerMediaSources");
+    mMediaSinksMutex.AssignName(GetMediaTypeStr() + "MuxerMediaSinks");
+
     LOG(LOG_VERBOSE, "Going to open %s-muxer", GetMediaTypeStr().c_str());
 
     if (mMediaSourceOpened)
         return false;
-
-    // lock
-    mMediaSinksMutex.lock();
 
     // set category for packet statistics
     ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
@@ -695,9 +690,6 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
 
         // Close the format context
         av_free(mFormatContext);
-
-        // unlock
-        mMediaSinksMutex.unlock();
 
         return false;
     }
@@ -757,9 +749,6 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
         // Close the format context
         av_free(mFormatContext);
 
-        // unlock
-        mMediaSinksMutex.unlock();
-
         return false;
     }
 
@@ -778,9 +767,6 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
 
         // Close the format context
         av_free(mFormatContext);
-
-        // unlock
-        mMediaSinksMutex.unlock();
 
         return false;
     }
@@ -811,9 +797,6 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     LOG(LOG_INFO, "    ..max. packet size: %d bytes", mStreamMaxPacketSize);
     LOG(LOG_INFO, "Fifo opened...");
     LOG(LOG_INFO, "    ..fill size: %d bytes", av_fifo_size(mSampleFifo));
-
-    // unlock
-    mMediaSinksMutex.unlock();
 
     return true;
 }
@@ -1260,12 +1243,6 @@ void* MediaSourceMuxer::Run(void* pArgs)
     VideoScaler         *tVideoScaler = NULL;
 
     LOG(LOG_VERBOSE, "%s-Encoding thread started", GetMediaTypeStr().c_str());
-
-    // for better debbuging
-    mGrabMutex.AssignName(GetMediaTypeStr() + "MuxerGrab");
-    mEncoderFifoMutex.AssignName(GetMediaTypeStr() + "MuxerEncoderFifo");
-    mMediaSourcesMutex.AssignName(GetMediaTypeStr() + "MuxerMediaSources");
-    mMediaSinksMutex.AssignName(GetMediaTypeStr() + "MuxerMediaSinks");
 
     switch(mMediaType)
     {
