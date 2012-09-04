@@ -90,7 +90,7 @@ public slots:
     void StopPlaylist();
 
 private slots:
-    void AddEntryDialog();
+    bool AddEntryDialog();
     void AddEntryDialogSc();
     void DelEntryDialog();
     void DelEntryDialogSc();

@@ -357,11 +357,13 @@ void OverviewPlaylistWidget::StartPlaylist()
     else
         LOG(LOG_VERBOSE, "Playlist start triggered and we already have entries in the list");
 
-    AddEntryDialog();
-    Play(GetListSize() - 1);
+    if (AddEntryDialog())
+    {
+        Play(GetListSize() - 1);
 
-    if (!isVisible())
-    	SetVisible(true);
+        if (!isVisible())
+        	SetVisible(true);
+    }
 }
 
 void OverviewPlaylistWidget::StopPlaylist()
@@ -467,7 +469,7 @@ void OverviewPlaylistWidget::DelEntryDialog()
     }
 }
 
-void OverviewPlaylistWidget::AddEntryDialog()
+bool OverviewPlaylistWidget::AddEntryDialog()
 {
     LOG(LOG_VERBOSE, "User wants to add a new entry to playlist");
 
@@ -478,7 +480,7 @@ void OverviewPlaylistWidget::AddEntryDialog()
     tFileNames = LetUserSelectMediaFile(this, "Add media files to playlist");
 
     if (tFileNames.isEmpty())
-        return;
+        return false;
 
     QString tFile;
     foreach(tFile, tFileNames)
@@ -494,6 +496,8 @@ void OverviewPlaylistWidget::AddEntryDialog()
         if (!isVisible())
         	SetVisible(true);
     }
+
+    return true;
 }
 
 void OverviewPlaylistWidget::AddEntryDialogSc()
