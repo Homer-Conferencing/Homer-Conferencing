@@ -174,6 +174,7 @@ SET (LIBS_APPLE_STATIC
 	theoradec
 	ogg
 	x264
+	vpx
 	bz2
 	z
 	portaudio
