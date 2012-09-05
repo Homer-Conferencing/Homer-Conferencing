@@ -130,6 +130,7 @@ SET (LIBS_WINDOWS_INSTALL
     libgcc_s_dw2-1
     libstdc++-6
     portaudio
+	postproc-52
     swresample-0
     swscale-2
     SDL    
