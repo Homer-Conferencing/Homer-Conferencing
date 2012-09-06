@@ -573,7 +573,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     LOG(LOG_VERBOSE, "..opening video codec");
     if ((tResult = HM_avcodec_open(mCodecContext, tCodec, &tOptions)) < 0)
     {
-        LOG(LOG_ERROR, "Couldn't open video codec because of \"%s\".", strerror(AVUNERROR(tResult)));
+        LOG(LOG_ERROR, "Couldn't open video codec because \"%s\".", strerror(AVUNERROR(tResult)));
         // free codec and stream 0
         av_freep(&mFormatContext->streams[0]->codec);
         av_freep(&mFormatContext->streams[0]);
@@ -588,7 +588,18 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     StartEncoder();
 
     // allocate streams private data buffer and write the streams header, if any
-    avformat_write_header(mFormatContext, NULL);
+    if ((tResult = avformat_write_header(mFormatContext, NULL)) < 0)
+    {
+        LOG(LOG_ERROR, "Couldn't write %s codec header because \"%s\".", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
+        // free codec and stream 0
+        av_freep(&mFormatContext->streams[0]->codec);
+        av_freep(&mFormatContext->streams[0]);
+
+        // Close the format context
+        av_free(mFormatContext);
+
+        return false;
+    }
 
     //######################################################
     //### give some verbose output
@@ -760,7 +771,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     // Open codec
     if ((tResult = HM_avcodec_open(mCodecContext, tCodec, NULL)) < 0)
     {
-        LOG(LOG_ERROR, "Couldn't open audio codec because of \"%s\".", strerror(AVUNERROR(tResult)));
+        LOG(LOG_ERROR, "Couldn't open audio codec because \"%s\".", strerror(AVUNERROR(tResult)));
         // free codec and stream 0
         av_freep(&mFormatContext->streams[0]->codec);
         av_freep(&mFormatContext->streams[0]);
@@ -782,7 +793,18 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     StartEncoder();
 
     // allocate streams private data buffer and write the streams header, if any
-    avformat_write_header(mFormatContext, NULL);
+    if ((tResult = avformat_write_header(mFormatContext, NULL)) < 0)
+    {
+        LOG(LOG_ERROR, "Couldn't write %s codec header because \"%s\".", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
+        // free codec and stream 0
+        av_freep(&mFormatContext->streams[0]->codec);
+        av_freep(&mFormatContext->streams[0]);
+
+        // Close the format context
+        av_free(mFormatContext);
+
+        return false;
+    }
 
     // init fifo buffer
     mSampleFifo = HM_av_fifo_alloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE * 2);
