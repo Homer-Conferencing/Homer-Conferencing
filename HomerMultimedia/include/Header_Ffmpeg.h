@@ -48,6 +48,10 @@ extern "C" {
 #include <libavdevice/avdevice.h>
 }
 
+#ifndef CODEC_FLAG2_SHOW_ALL
+#define CODEC_FLAG2_SHOW_ALL      0x00400000 ///< Show all frames before the first keyframe
+#endif
+
 #if LIBAVFORMAT_VERSION_MAJOR < 50
     #define AV_NEW_FORMAT_CONTEXT av_alloc_format_context
 #else
