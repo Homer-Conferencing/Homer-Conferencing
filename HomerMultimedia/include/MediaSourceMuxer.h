@@ -187,7 +187,7 @@ private:
     bool                mEncoderNeeded;
     MediaFifo           *mEncoderFifo;
     bool				mEncoderHasKeyFrame;
-    Mutex               mEncoderFifoMutex;
+    Mutex               mEncoderFifoAvailableMutex;
     /* device control */
     MediaSources        mMediaSources;
     Mutex               mMediaSourcesMutex;
