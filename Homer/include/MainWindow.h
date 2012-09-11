@@ -85,13 +85,15 @@ Q_OBJECT
     ;
 public:
     /// The default constructor
-    MainWindow(QString pAbsBinPath);
+    MainWindow(QStringList pArguments, QString pAbsBinPath);
 
     /// The destructor
     virtual ~MainWindow();
 
     MediaSourceMuxer* GetVideoMuxer();
     MediaSourceMuxer* GetAudioMuxer();
+
+    static void removeArguments(QStringList &pArguments, QString pFilter);
 
 public slots:
     void actionOpenVideoAudioPreview();
@@ -123,11 +125,10 @@ private slots:
     void UpdateSysTrayContextMenu();
 
 private:
-    void removeArguments(QStringList &pArguments, QString pFilter);
     void initializeConfiguration(QStringList &pArguments);
     void initializeGUI();
     void initializeFeatureDisablers(QStringList &pArguments);
-    void initializeLogging(QStringList &pArguments);
+    void initializeDebugging(QStringList &pArguments);
     void ShowFfmpegCaps(QStringList &pArguments);
     void initializeConferenceManagement();
     void initializeVideoAudioIO();
