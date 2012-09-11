@@ -260,7 +260,10 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
 	qInstallMsgHandler(sQtDebugMessageOutput);
 	showMood();
 
-    tApp->showGUI();
+    if (tApp != NULL)
+    	tApp->showGUI();
+    else
+    	LOGEX(HomerApplication, LOG_ERROR, "Invalid HomerApplication object");
 
     LOGEX(HomerApplication, LOG_VERBOSE, "Executing Qt main window");
     tApp->exec();
