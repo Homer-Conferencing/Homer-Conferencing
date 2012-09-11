@@ -66,6 +66,7 @@ private slots:
     void AddPArticipantToContacts();
 
 private:
+    QString ReplaceSmiles(QString pMessage);
     virtual void closeEvent(QCloseEvent* pEvent);
     virtual void contextMenuEvent(QContextMenuEvent *pContextMenuEvent);
     virtual void dragEnterEvent(QDragEnterEvent *pEvent);

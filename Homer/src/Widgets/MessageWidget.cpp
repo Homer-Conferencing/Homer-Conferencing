@@ -283,11 +283,54 @@ void MessageWidget::initializeGUI()
     mTbMessageHistory->setFont(tFont);
 }
 
+QString MessageWidget::ReplaceSmiles(QString pMessage)
+{
+    QString tResult = "";
+
+    // filter and replace URLs
+    QString tOutputMessage = "";
+    int tStartPos = 0;
+    int tEndPos = -1;
+
+    while (tStartPos < pMessage.size())
+    {
+        tEndPos = pMessage.indexOf(' ', tStartPos);
+        if (tEndPos == -1)
+        {
+            if (tEndPos < pMessage.size() -1)
+                tEndPos = pMessage.size();
+            else
+                break;
+        }
+
+        QString tWord = pMessage.mid(tStartPos, tEndPos - tStartPos);
+        LOG(LOG_VERBOSE, "Message token: \"%s\"", tWord.toStdString().c_str());
+        if ((tWord == ":)") || (tWord == ":-)"))
+        {// laughing smile
+            LOG(LOG_VERBOSE, "Found smile");
+            tOutputMessage.append("<img src=\":/images/30_30/Smile.gif\">");
+        }else
+            tOutputMessage.append(tWord);
+
+        if (tEndPos < pMessage.size() -1)
+            tOutputMessage.append(' ');
+        tStartPos = tEndPos + 1;
+    }
+
+    // set the new history
+    if (tOutputMessage.size() > 0)
+        tResult = tOutputMessage;
+
+    return tResult;
+}
+
 void MessageWidget::AddMessage(QString pSender, QString pMessage, bool pLocalMessage)
 {
     // replace ENTER with corresponding html tag
     // hint: necessary because this QTextEdit is in html-mode and caused by this it ignores "\n"
     pMessage.replace(QString("\n"), QString("<br>"));
+
+    pMessage = ReplaceSmiles(pMessage);
 
     if (pSender != "")
     {

@@ -126,13 +126,14 @@ void MessageInput::Send()
         tEndPos = tInputMessage.indexOf(' ', tStartPos);
         if (tEndPos == -1)
         {
-            if (tStartPos == 0)
-                tEndPos = tInputMessage.size() -1;
+            if (tEndPos < tInputMessage.size() -1)
+                tEndPos = tInputMessage.size();
             else
                 break;
         }
 
-        QString tWord = tInputMessage.mid(tStartPos, tEndPos - tStartPos + 1);
+        QString tWord = tInputMessage.mid(tStartPos, tEndPos - tStartPos);
+        LOG(LOG_VERBOSE, "Message token: \"%s\"", tWord.toStdString().c_str());
         if ((tWord.startsWith("http://")) && (tWord.size() > 7))
         {
             LOG(LOG_VERBOSE, "Found http reference: %s", tWord.toStdString().c_str());
