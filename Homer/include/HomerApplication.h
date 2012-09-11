@@ -55,6 +55,7 @@ protected:
 
     void initializeLogging();
 
+    QStringList 		mArguments;
     bool				mMainWindowIsAlreadyVisible;
     QString				mFileToOpen;
     QString				mBinaryPath;

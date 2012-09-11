@@ -44,8 +44,6 @@
 #include <Widgets/OverviewPlaylistWidget.h>
 #include <Widgets/OverviewThreadsWidget.h>
 #include <Logger.h>
-#include <LogSinkFile.h>
-#include <LogSinkNet.h>
 #include <Meeting.h>
 #include <MediaSourcePortAudio.h>
 #include <MediaSourceV4L2.h>
@@ -62,7 +60,6 @@
 #include <QPlastiqueStyle>
 #include <QApplication>
 #include <QTime>
-#include <QDir>
 #include <QFile>
 #include <QTimer>
 #include <QTextEdit>
@@ -95,7 +92,7 @@ bool MainWindow::mShuttingDown = false;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-MainWindow::MainWindow(QString pAbsBinPath) :
+MainWindow::MainWindow(QStringList pArguments, QString pAbsBinPath) :
     QMainWindow(),
     Ui_MainWindow(),
     MeetingObserver()
@@ -113,26 +110,24 @@ MainWindow::MainWindow(QString pAbsBinPath) :
     QCoreApplication::setApplicationName("Homer");
     QCoreApplication::setApplicationVersion(HOMER_VERSION);
 
-    // get the program arguments
-    QStringList tArguments = QCoreApplication::arguments();
     // init log sinks
-    initializeLogging(tArguments);
+    initializeDebugging(pArguments);
 
     // verbose output of arguments
     QString tArg;
     int i = 0;
-    foreach(tArg, tArguments)
+    foreach(tArg, pArguments)
     {
         LOG(LOG_VERBOSE, "Argument[%d]: \"%s\"", i++, tArg.toStdString().c_str());
     }
     //remove the self pointer
-    tArguments.erase(tArguments.begin());
+    pArguments.erase(pArguments.begin());
     // init program configuration
-    initializeConfiguration(tArguments);
+    initializeConfiguration(pArguments);
     // disabling of features
-    initializeFeatureDisablers(tArguments);
+    initializeFeatureDisablers(pArguments);
     // show ffmpeg data
-    ShowFfmpegCaps(tArguments);
+    ShowFfmpegCaps(pArguments);
     // create basic GUI objects
     initializeGUI();
     // retrieve info about network devices and init Meeting
@@ -154,7 +149,7 @@ MainWindow::MainWindow(QString pAbsBinPath) :
     // init screen capturing
     initializeScreenCapturing();
     // init network simulator
-    initializeNetworkSimulator(tArguments);
+    initializeNetworkSimulator(pArguments);
     // delayed call to register at Stun and Sip server
     QTimer::singleShot(2000, this, SLOT(registerAtStunSipServer()));
 
@@ -164,7 +159,7 @@ MainWindow::MainWindow(QString pAbsBinPath) :
         if (CONF.GetStartSound())
             StartAudioPlayback(CONF.GetStartSoundFile());
     #endif
-	ProcessRemainingArguments(tArguments);
+	ProcessRemainingArguments(pArguments);
 }
 
 MainWindow::~MainWindow()
@@ -340,19 +335,21 @@ void MainWindow::ShowFfmpegCaps(QStringList &pArguments)
     removeArguments(pArguments, "-List");
 }
 
-void MainWindow::initializeLogging(QStringList &pArguments)
+void MainWindow::initializeDebugging(QStringList &pArguments)
 {
-    LOG(LOG_VERBOSE, "Initialization of logging..");
+    LOG(LOG_VERBOSE, "Initialization of debugging..");
 
     // console based log sink
     if (pArguments.contains("-DebugLevel=Error"))
     {
         CONF.SetDebugging(false);
     }else
+    {
         if (pArguments.contains("-DebugLevel=Info"))
         {
             CONF.SetDebugging(true);
         }else
+        {
             if (pArguments.contains("-DebugLevel=Verbose"))
             {
                 CONF.SetDebugging(true);
@@ -364,55 +361,8 @@ void MainWindow::initializeLogging(QStringList &pArguments)
                     CONF.SetDebugging(true);
                 #endif
             }
-
-    // file based log sinks
-    QStringList tFiles = pArguments.filter("-DebugOutputFile=");
-    if (tFiles.size())
-    {
-        QString tFileName;
-        foreach(tFileName, tFiles)
-        {
-            tFileName = tFileName.remove("-DebugOutputFile=");
-            LOGGER.RegisterLogSink(new LogSinkFile(tFileName.toStdString()));
         }
     }
-
-    // delete old default log file
-    if (QFile::exists(PATH_DEFAULT_LOGFILE))
-    {
-    	QFile tFile(PATH_DEFAULT_LOGFILE);
-    	tFile.remove();
-    }
-
-    // log to default log file
-    LOGGER.RegisterLogSink(new LogSinkFile(PATH_DEFAULT_LOGFILE.toStdString()));
-
-	// network based log sinks
-    QStringList tPorts = pArguments.filter("-DebugOutputNetwork=");
-    if (tPorts.size())
-    {
-        QString tNetwork;
-        foreach(tNetwork, tPorts)
-        {
-        	tNetwork = tNetwork.remove("-DebugOutputNetwork=");
-        	int tPos = tNetwork.lastIndexOf(':');
-        	if (tPos != -1)
-        	{
-        		QString tPortStr = tNetwork.right(tNetwork.size() - tPos -1);
-        		tNetwork = tNetwork.left(tPos);
-				bool tPortParsingWasOkay = false;
-        		int tPort = tPortStr.toInt(&tPortParsingWasOkay);
-        		if (tPortParsingWasOkay)
-        		{
-        			LOG(LOG_VERBOSE, "New network based log sink at %s:%d", tNetwork.toStdString().c_str(), tPort);
-					LOGGER.RegisterLogSink(new LogSinkNet(tNetwork.toStdString(), tPort));
-        		}else
-        			LOG(LOG_ERROR, "Couldn't parse %s as network port", tPortStr.toStdString().c_str());
-        	}
-        }
-    }
-
-    removeArguments(pArguments, "-Debug");
 }
 
 void MainWindow::initializeConferenceManagement()

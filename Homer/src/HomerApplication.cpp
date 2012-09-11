@@ -25,14 +25,18 @@
  * Since:   2012-08-24
  */
 
+#include <Widgets/OverviewPlaylistWidget.h>
+#include <HomerApplication.h>
+#include <Logger.h>
+#include <LogSinkFile.h>
+#include <LogSinkNet.h>
+#include <Configuration.h>
+
 #include <QFileOpenEvent>
 #include <QApplication>
 #include <QSplashScreen>
 #include <QResource>
-
-#include <Widgets/OverviewPlaylistWidget.h>
-#include <HomerApplication.h>
-#include <Logger.h>
+#include <QDir>
 
 namespace Homer { namespace Gui {
 
@@ -45,6 +49,8 @@ HomerApplication::HomerApplication(int &pArgc, char **pArgv):
 		QApplication(pArgc, pArgv)
 {
 	LOG(LOG_VERBOSE, "Created");
+
+	mArguments = QCoreApplication::arguments();
 
 	mMainWindowIsAlreadyVisible = false;
 	mFileToOpen = "";
@@ -83,19 +89,17 @@ HomerApplication::~HomerApplication()
 
 void HomerApplication::initializeLogging()
 {
-	QStringList tArguments = QCoreApplication::arguments();
-
-	if (tArguments.contains("-DebugLevel=Error"))
+	if (mArguments.contains("-DebugLevel=Error"))
 	{
 		LOGGER.Init(LOG_ERROR);
 	}else
 	{
-		if (tArguments.contains("-DebugLevel=Info"))
+		if (mArguments.contains("-DebugLevel=Info"))
 		{
 			LOGGER.Init(LOG_INFO);
 		}else
 		{
-			if (tArguments.contains("-DebugLevel=Verbose"))
+			if (mArguments.contains("-DebugLevel=Verbose"))
 			{
 				LOGGER.Init(LOG_VERBOSE);
 			}else
@@ -108,6 +112,55 @@ void HomerApplication::initializeLogging()
 			}
 		}
 	}
+
+    // file based log sinks
+    QStringList tFiles = mArguments.filter("-DebugOutputFile=");
+    if (tFiles.size())
+    {
+        QString tFileName;
+        foreach(tFileName, tFiles)
+        {
+            tFileName = tFileName.remove("-DebugOutputFile=");
+            LOGGER.RegisterLogSink(new LogSinkFile(tFileName.toStdString()));
+        }
+    }
+
+    // delete old default log file
+    if (QFile::exists(PATH_DEFAULT_LOGFILE))
+    {
+    	QFile tFile(PATH_DEFAULT_LOGFILE);
+    	tFile.remove();
+    }
+
+    // log to default log file
+    LOGGER.RegisterLogSink(new LogSinkFile(PATH_DEFAULT_LOGFILE.toStdString()));
+
+	// network based log sinks
+    QStringList tPorts = mArguments.filter("-DebugOutputNetwork=");
+    if (tPorts.size())
+    {
+        QString tNetwork;
+        foreach(tNetwork, tPorts)
+        {
+        	tNetwork = tNetwork.remove("-DebugOutputNetwork=");
+        	int tPos = tNetwork.lastIndexOf(':');
+        	if (tPos != -1)
+        	{
+        		QString tPortStr = tNetwork.right(tNetwork.size() - tPos -1);
+        		tNetwork = tNetwork.left(tPos);
+				bool tPortParsingWasOkay = false;
+        		int tPort = tPortStr.toInt(&tPortParsingWasOkay);
+        		if (tPortParsingWasOkay)
+        		{
+        			LOG(LOG_VERBOSE, "New network based log sink at %s:%d", tNetwork.toStdString().c_str(), tPort);
+					LOGGER.RegisterLogSink(new LogSinkNet(tNetwork.toStdString(), tPort));
+        		}else
+        			LOG(LOG_ERROR, "Couldn't parse %s as network port", tPortStr.toStdString().c_str());
+        	}
+        }
+    }
+
+    MainWindow::removeArguments(mArguments, "-Debug");
 }
 
 bool HomerApplication::event(QEvent *pEvent)
@@ -147,11 +200,10 @@ void HomerApplication::showGUI()
 		QPixmap tLogo(":/images/SplashScreen.png");
 		QSplashScreen tSplashScreen(tLogo);
 		tSplashScreen.show();
-		Thread::Suspend(1 * 1000 * 1000);
 	#endif
 
     LOG(LOG_VERBOSE, "Creating Qt main window");
-    MainWindow *mMainWindow = new MainWindow(mBinaryPath);
+    MainWindow *mMainWindow = new MainWindow(mArguments, mBinaryPath);
 
 	LOG(LOG_VERBOSE, "Showing Qt main window");
     mMainWindow->show();
