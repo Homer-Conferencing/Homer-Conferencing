@@ -92,7 +92,7 @@ void MessageWidget::Init(QMenu *pMenu, QString pParticipant, bool pVisible)
     setWindowTitle(mParticipant);
     if (mAssignedAction != NULL)
         connect(mAssignedAction, SIGNAL(triggered()), this, SLOT(ToggleVisibility()));
-    connect(mTeMessage, SIGNAL(SendTrigger()), this, SLOT(SendText()));
+    connect(mTeMessage, SIGNAL(SendTrigger()), this, SLOT(SendMessage()));
     connect(mPbFile, SIGNAL(released()), this, SLOT(SendFile()));
     connect(mTbAdd, SIGNAL(released()), this, SLOT(AddPArticipantToContacts()));
     if(IsKnownContact())
@@ -307,7 +307,7 @@ void MessageWidget::AddMessage(QString pSender, QString pMessage, bool pLocalMes
     mTbMessageHistory->Update(mMessageHistory);
 }
 
-void MessageWidget::SendText()
+void MessageWidget::SendMessage()
 {
 	// is message size > 0 ?
     if (mTeMessage->toPlainText().size() == 0)
@@ -316,8 +316,7 @@ void MessageWidget::SendText()
     if (MEETING.SendMessage(QString(mParticipant.toLocal8Bit()).toStdString(), mTeMessage->toPlainText().toStdString()))
     {
         AddMessage(QString(MEETING.GetLocalUserName().c_str()), mTeMessage->toPlainText(), true);
-        mTeMessage->setPlainText("");
-        mTeMessage->setFocus(Qt::TabFocusReason);
+        mTeMessage->Clear();
     }else
         ShowError("Error occurred", "Message could not be sent!");
 }

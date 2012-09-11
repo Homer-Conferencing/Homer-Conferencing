@@ -57,7 +57,7 @@ public:
     void UpdateParticipantState(int pState);
 
 public slots:
-	void SendText();
+	void SendMessage();
     void SendFile(QList<QUrl> *tFileUrls = NULL);
     void SendLink();
     void ToggleVisibility();
