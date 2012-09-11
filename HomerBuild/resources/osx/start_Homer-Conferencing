@@ -36,4 +36,4 @@ ABS_LIB_PATH=${ABS_BUNDLE_PATH}/Contents/Resources/lib
 export "DYLD_LIBRARY_PATH=${ABS_LIB_PATH}"
 
 # start Homer Conferencing main binary
-exec "${ABS_BIN_PATH}/Homer"
+exec ${ABS_BIN_PATH}/Homer $*
