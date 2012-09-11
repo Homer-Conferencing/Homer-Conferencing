@@ -122,11 +122,11 @@ bool HomerApplication::event(QEvent *pEvent)
     		LOG(LOG_ERROR, "Received FileOpen event to open file: %s\n", tFileOpenEvent->file().toStdString().c_str());
     		printf("Received FileOpen event to open file: %s\n", tFileOpenEvent->file().toStdString().c_str());
 
-    		// is playlist widget already created?
+			mFileToOpen = tFileOpenEvent->file();
+
+			// is playlist widget already created?
     		if (mMainWindowIsAlreadyVisible)
     			PLAYLISTWIDGET.AddEntry(mFileToOpen, true);
-    		else
-    			mFileToOpen = tFileOpenEvent->file();
     		return true;
     	default:
     		return QApplication::event(pEvent);

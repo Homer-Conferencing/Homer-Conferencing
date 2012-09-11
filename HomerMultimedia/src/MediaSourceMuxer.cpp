@@ -152,12 +152,12 @@ void MediaSourceMuxer::GetMuxingResolution(int &pResX, int &pResY)
 int MediaSourceMuxer::GetMuxingBufferCounter()
 {
     int tResult = 0;
-    mEncoderFifoMutex.lock();
+    mEncoderFifoAvailableMutex.lock();
 
     if (mEncoderFifo != NULL)
         tResult = mEncoderFifo->GetUsage();
 
-    mEncoderFifoMutex.unlock();
+    mEncoderFifoAvailableMutex.unlock();
 
     return tResult;
 }
@@ -317,7 +317,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
 
     // for better debbuging
     mGrabMutex.AssignName(GetMediaTypeStr() + "MuxerGrab");
-    mEncoderFifoMutex.AssignName(GetMediaTypeStr() + "MuxerEncoderFifo");
+    mEncoderFifoAvailableMutex.AssignName(GetMediaTypeStr() + "MuxerEncoderFifo");
     mMediaSourcesMutex.AssignName(GetMediaTypeStr() + "MuxerMediaSources");
     mMediaSinksMutex.AssignName(GetMediaTypeStr() + "MuxerMediaSinks");
 
@@ -670,7 +670,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
 
     // for better debbuging
     mGrabMutex.AssignName(GetMediaTypeStr() + "MuxerGrab");
-    mEncoderFifoMutex.AssignName(GetMediaTypeStr() + "MuxerEncoderFifo");
+    mEncoderFifoAvailableMutex.AssignName(GetMediaTypeStr() + "MuxerEncoderFifo");
     mMediaSourcesMutex.AssignName(GetMediaTypeStr() + "MuxerMediaSources");
     mMediaSinksMutex.AssignName(GetMediaTypeStr() + "MuxerMediaSinks");
 
@@ -1153,7 +1153,7 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
     // reencode frame and send it to the registered media sinks
     // limit the outgoing stream FPS to the defined maximum FPS value
     // ###################################################################
-    mEncoderFifoMutex.lock();
+    mEncoderFifoAvailableMutex.lock();
 
     if ((BelowMaxFps(tResult) /* we have to call this function continuously */) && (mStreamActivated) && (!pDropChunk) && (tResult >= 0) && (pChunkSize > 0) && (tMediaSinks) && (mEncoderFifo != NULL))
     {
@@ -1165,7 +1165,7 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
         #endif
     }
 
-    mEncoderFifoMutex.unlock();
+    mEncoderFifoAvailableMutex.unlock();
 
     // unlock grabbing
     mGrabMutex.unlock();
@@ -1288,12 +1288,12 @@ void* MediaSourceMuxer::Run(void* pArgs)
             tVideoScaler->StartScaler(MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT, mSourceResX, mSourceResY, PIX_FMT_RGB32, mCurrentStreamingResX, mCurrentStreamingResY, mCodecContext->pix_fmt);
             LOG(LOG_VERBOSE, "..video scaler thread started..");
 
-            mEncoderFifoMutex.lock();
+            mEncoderFifoAvailableMutex.lock();
 
             // set the video scaler as FIFO for the encoder
             mEncoderFifo = tVideoScaler;
 
-            mEncoderFifoMutex.unlock();
+            mEncoderFifoAvailableMutex.unlock();
 
             break;
         case MEDIA_AUDIO:
@@ -1307,13 +1307,13 @@ void* MediaSourceMuxer::Run(void* pArgs)
             if (mEncoderChunkBuffer == NULL)
                 LOG(LOG_ERROR, "Out of memory for encoder chunk buffer");
 
-            mEncoderFifoMutex.lock();
+            mEncoderFifoAvailableMutex.lock();
 
             mEncoderFifo = new MediaFifo(MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT, MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE * 2, "AUDIO-Encoder");
             if (mEncoderFifo == NULL)
                 LOG(LOG_ERROR, "Out of memory for encoder FIFO");
 
-            mEncoderFifoMutex.unlock();
+            mEncoderFifoAvailableMutex.unlock();
 
             break;
         default:
@@ -1582,6 +1582,8 @@ void* MediaSourceMuxer::Run(void* pArgs)
 
     LOG(LOG_VERBOSE, "%s encoder left thread main loop", GetMediaTypeStr().c_str());
 
+    mEncoderFifoAvailableMutex.lock();
+
     switch(mMediaType)
     {
         case MEDIA_VIDEO:
@@ -1604,12 +1606,10 @@ void* MediaSourceMuxer::Run(void* pArgs)
 
     free(mEncoderChunkBuffer);
 
-    mEncoderFifoMutex.lock();
-
     delete mEncoderFifo;
     mEncoderFifo = NULL;
 
-    mEncoderFifoMutex.unlock();
+    mEncoderFifoAvailableMutex.unlock();
 
     LOG(LOG_WARN, "%s encoder thread finished", GetMediaTypeStr().c_str());
 
