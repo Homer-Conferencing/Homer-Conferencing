@@ -13,7 +13,13 @@ Homer supports for the transmission of A/V stream basically both IPv4 and IPv6. 
 For a delayed insertion of contents or for repeated playback, it is necessary to be able to record A/V streams locally on a hard disc or similar. For this purpose, each single incoming audio and video stream (from a file, from the network, from a device) can be recorded locally to the disc and therefore made available for a delayed post processing. For example, it is possible to capture the video from a webcam in real-time and record it directly to disc or similar. Alternatively, one can use this function to record a per network received A/V stream directly. For video recording known file formats (avi, m4v, mov, mp4, 3gp,..) are supported. Additionally, for audio recording also known file formats (mp3, wav,..) are supported.
 
 ## Screencasting
-For demonstration of processes on the desktop it would be interesting to be able to either record or to stream via network a live video of the activities on the desktop. For both applications, the needed functions are provided by the software. For example, Homer can be used for recording a screencast or for presenting software processes via a live broadcast of the desktop picture. Like other video sources, the desktop picture can also be used during a video conference and therefore being showed to all participants for discussing in real-time. However, a non wished observation or control of the local desktop by a remote station are not possible.
+For the demonstration of processes on the desktop it would be interesting to be able to either record or to stream via network a live video of the activities on the desktop. For both applications, the needed functions are provided by the software. For example, Homer can be used for recording a screencast or for presenting software processes via a live broadcast of the desktop picture. Like other video sources, the desktop picture can also be used during a video conference and therefore being showed to all participants for discussing in real-time. However, a non wished observation or control of the local desktop by a remote station are not possible.
+
+## Minimum system requirements
+* An SSE3 capable CPU (4 cpu cores recommended for high quality streaming)
+* Windows users: Windows XP SP3 (Windows 7 recommended)
+* Linux users: Linux (kernel >= 3.1 recommended)
+* Mac users: OSX Snow Leopard (OSX Lion recommended)
 
 # The project
 
