@@ -1106,37 +1106,27 @@
                    </property>
                    <item>
                     <property name="text">
-                     <string>MP3 (MPA)</string>
+                     <string>MP3</string>
                     </property>
                    </item>
                    <item>
                     <property name="text">
-                     <string>G711 A-law (PCMA)</string>
+                     <string>G711 A-law</string>
                     </property>
                    </item>
                    <item>
                     <property name="text">
-                     <string>G711 µ-law (PCMU)</string>
+                     <string>G711 µ-law</string>
                     </property>
                    </item>
                    <item>
                     <property name="text">
-                     <string>AAC</string>
+                     <string>PCM16</string>
                     </property>
                    </item>
                    <item>
                     <property name="text">
-                     <string>PCM_S16_LE</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>GSM</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>AMR</string>
+                     <string>G722 adpcm</string>
                     </property>
                    </item>
                   </widget>

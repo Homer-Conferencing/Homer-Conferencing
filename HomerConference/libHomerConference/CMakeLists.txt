@@ -27,6 +27,7 @@ SET (INCLUDE_DIRS
 	../../HomerBase/include/Logging
 	../../HomerBase/include
 	../../HomerMonitor/include
+	../../HomerMultimedia/include
 	/usr/include/sofia-sip
 	/usr/include/sofia-sip-1.12
 	/usr/local/include/sofia-sip
@@ -79,6 +80,7 @@ SET (LIBS_WINDOWS_INSTALL
 SET (LIBS_WINDOWS
 	HomerBase
 	HomerMonitor
+	HomerMultimedia
 	ws2_32
     libsofia_sip_ua
 )
@@ -87,6 +89,7 @@ SET (LIBS_WINDOWS
 SET (LIBS_APPLE
 	HomerBase
 	HomerMonitor
+	HomerMultimedia
 )
 
 # USED static LIBRARIES for apple environment
@@ -106,6 +109,7 @@ IF (${BUILD} MATCHES "Default")
 	SET (LIBS_LINUX
 		HomerBase
 		HomerMonitor
+		HomerMultimedia
 		sofia-sip-ua
 		${OPENSSL_LIBRARIES}
 	)
@@ -114,6 +118,7 @@ ELSE ()
 	SET (LIBS_LINUX
 		HomerBase
 		HomerMonitor
+		HomerMultimedia
 	)
 	SET (LIBS_LINUX_STATIC
 		sofia-sip-ua
@@ -126,6 +131,7 @@ ENDIF ()
 SET (LIBS_BSD
 	HomerBase
 	HomerMonitor
+	HomerMultimedia
 )
 SET (LIBS_BSD_STATIC
 	sofia-sip-ua

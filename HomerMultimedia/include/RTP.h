@@ -90,8 +90,8 @@ public:
 
     virtual ~RTP( );
 
-    static int FfmpegNameToPayloadId(std::string pName);
-    static std::string PayloadIdToFfmpegName(int pId);
+    static int CodecToPayloadId(std::string pName);
+    static std::string PayloadIdToCodec(int pId);
     static bool IsPayloadSupported(enum CodecID pId);
     static int GetPayloadHeaderSizeMax(enum CodecID pCodec);// calculate the maximum header size of the RTP payload (not the RTP header!)
     static int GetHeaderSizeMax(enum CodecID pCodec);

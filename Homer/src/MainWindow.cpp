@@ -701,20 +701,20 @@ void MainWindow::loadSettings()
     // init audio codec for network streaming, but only support ONE codec and not multiple
     QString tAudioStreamCodec = CONF.GetAudioCodec();
     // set settings within meeting management
-    if (tAudioStreamCodec == "MP3 (MPA)")
+    if (tAudioStreamCodec == "MP3")
         MEETING.SetAudioCodecsSupport(CODEC_MP3);
-    if (tAudioStreamCodec == "G711 A-law (PCMA)")
-        MEETING.SetAudioCodecsSupport(CODEC_G711A);
-    if (tAudioStreamCodec == "G711 ï¿½-law (PCMU)")
-        MEETING.SetAudioCodecsSupport(CODEC_G711U);
+    if (tAudioStreamCodec == "G711 A-law")
+        MEETING.SetAudioCodecsSupport(CODEC_G711ALAW);
+    if (tAudioStreamCodec == "G711 µ-law")
+        MEETING.SetAudioCodecsSupport(CODEC_G711ULAW);
     if (tAudioStreamCodec == "AAC")
         MEETING.SetAudioCodecsSupport(CODEC_AAC);
-    if (tAudioStreamCodec == "PCM_S16_LE")
-        MEETING.SetAudioCodecsSupport(CODEC_PCMS16LE);
+    if (tAudioStreamCodec == "PCM16")
+        MEETING.SetAudioCodecsSupport(CODEC_PCMS16);
     if (tAudioStreamCodec == "GSM")
         MEETING.SetAudioCodecsSupport(CODEC_GSM);
-    if (tAudioStreamCodec == "AMR")
-        MEETING.SetAudioCodecsSupport(CODEC_AMR);
+    if (tAudioStreamCodec == "G722 adpcm")
+        MEETING.SetAudioCodecsSupport(CODEC_G722ADPCM);
     MEETING.SetAudioTransportType(MEDIA_TRANSPORT_RTP_UDP); // always use RTP/AVP as profile (RTP/UDP)
 
     LOG(LOG_VERBOSE, "..video/audio settings");

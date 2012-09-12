@@ -204,9 +204,8 @@ public:
     virtual MediaSource* GetMediaSource();
 
     /* codec identifier translation */
-    static std::string CodecName2FfmpegName(std::string pName);
-    static enum CodecID GetCodecID(std::string pName);
-    static std::string GetCodecName(std::string pName); // input is format name
+    static enum CodecID GetCodecIDFromGuiName(std::string pName);
+    static std::string GetGuiNameFromCodecID(enum CodecID pCodecId);
     static std::string GetFormatName(enum CodecID pCodecId);
 
     /* audio */

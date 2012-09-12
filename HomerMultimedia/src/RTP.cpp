@@ -26,24 +26,25 @@
  */
 
 /*
-     Result of functional validation:
-             Sending                        Receiving
-    --------------------------------------------------------------------
-     h261:   ok (HC)                        ok (HC)
-     h263:   not avail., h263+ instead      ok (linphone, ekiga, HC)
-    h263+:   ok (linphone, HC)              ok (linphone, HC)
-     h264:   ok (linphone, HC)              ok (HC)
-    Mpeg1:   ok (HC)                        ok (HC)
-    Mpeg2:   ok (HC)                        ok (HC)
-    Mpeg4:   ok (linphone, ekiga, HC)       ok (linphone, ekiga, HC)
+		 Result of functional validation:
+				 Sending                        Receiving
+		--------------------------------------------------------------------
+		 h261:   ok (HC)                        ok (HC)
+		 h263:   not avail., h263+ instead      ok (linphone, ekiga, HC)
+		h263+:   ok (linphone, HC)              ok (linphone, HC)
+		 h264:   ok (linphone, HC)              ok (HC)
+		Mpeg1:   ok (HC)                        ok (HC)
+		Mpeg2:   ok (HC)                        ok (HC)
+		Mpeg4:   ok (linphone, ekiga, HC)       ok (linphone, ekiga, HC)
 
-     pcma:   ok (HC)                        ok (HC)
-     pcmu:   ok (HC)                        ok (HC)
-      mp3:   ok (HC)                        ok (HC)
-  pcm16le:   ok (HC)                        ok (HC)
-      aac:   ?                              ?
-      gsm:
-      amr:
+		 pcma:   ok (HC)                        ok (HC)
+		 pcmu:   ok (HC)                        ok (HC)
+		  mp3:   ok (HC)                        ok (HC)
+	  pcm16le:   ok (HC)                        ok (HC)
+  adpcm(G722):   ?								?
+		  aac:   ?                              ?
+		  gsm:
+		  amr:
 
      unsupported:
        mjpeg
@@ -478,7 +479,7 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
         LOG(LOG_VERBOSE, "Created RTP packet buffer memory of %d bytes at %p", MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE, mRtpPacketBuffer);
 
     const char *tCodecName = pInnerStream->codec->codec->name;
-    mPayloadId = FfmpegNameToPayloadId(tCodecName);
+    mPayloadId = CodecToPayloadId(tCodecName);
     LOG(LOG_VERBOSE, "New payload id: %4d, Codec: %s", mPayloadId, tCodecName);
 
     mTargetHost = pTargetHost;
@@ -656,7 +657,7 @@ bool RTP::IsPayloadSupported(enum CodecID pId)
 //            case CODEC_ID_VORBIS:
             case CODEC_ID_THEORA:
             case CODEC_ID_VP8:
-//            case CODEC_ID_ADPCM_G722:
+            case CODEC_ID_ADPCM_G722:
 //            case CODEC_ID_ADPCM_G726:
                             tResult = true;
                             break;
@@ -729,7 +730,9 @@ int RTP::GetPayloadHeaderSizeMax(enum CodecID pCodec)
             case CODEC_ID_VP8:
                 tResult = sizeof(VP8Header); // we neglect the extended header and the 3 other optional header bytes
                 break;
-//            case CODEC_ID_ADPCM_G722:
+            case CODEC_ID_ADPCM_G722:
+            	tResult = 0; //TODO
+            	break;
 //            case CODEC_ID_ADPCM_G726:
             default:
                 tResult = 0;
@@ -914,6 +917,12 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
                                             break;
                             case CODEC_ID_PCM_ALAW:
                                             tHeader->PayloadType = 8;
+                                            break;
+                            case CODEC_ID_ADPCM_G722:
+                                            tHeader->PayloadType = 9;
+                                            break;
+                            case CODEC_ID_PCM_S16LE:
+                                            tHeader->PayloadType = 10;
                                             break;
                             case CODEC_ID_MP3:
                                             // HACK: some modification of the standard MPA payload header: use MBZ to signalize the size of the original audio packet
@@ -1148,7 +1157,7 @@ void RTP::LogRtpHeader(RtpHeader *pRtpHeader)
                 LOGEX(RTP, LOG_VERBOSE, "Marked: yes");
                 break;
     }
-    LOGEX(RTP, LOG_VERBOSE, "Payload type: %s(%d)", PayloadIdToFfmpegName(pRtpHeader->PayloadType).c_str(), pRtpHeader->PayloadType);
+    LOGEX(RTP, LOG_VERBOSE, "Payload type: %s(%d)", PayloadIdToCodec(pRtpHeader->PayloadType).c_str(), pRtpHeader->PayloadType);
     LOGEX(RTP, LOG_VERBOSE, "SequenceNumber: %u", pRtpHeader->SequenceNumber);
     LOGEX(RTP, LOG_VERBOSE, "Time stamp: %10u", pRtpHeader->Timestamp);
 
@@ -1180,6 +1189,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
             case CODEC_ID_MP3:
             case CODEC_ID_AMR_NB:
             case CODEC_ID_AAC:
+            case CODEC_ID_ADPCM_G722:
             //supported video codecs
             case CODEC_ID_H261:
             case CODEC_ID_H263:
@@ -1344,6 +1354,9 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                             // no fragmentation because our encoder sends raw data
                             mIntermediateFragment = false;
                             break;
+            case CODEC_ID_ADPCM_G722:
+            				//TODO
+            				break;
             case CODEC_ID_AMR_NB:
                             LOG(LOG_VERBOSE, "#################### AMR-NB header #######################");
                             LOG(LOG_VERBOSE, "TODO: AMR header parsing");//TODO: implement
@@ -1813,49 +1826,78 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
     return true;
 }
 
-// for simple usage in SDP.C in Conference-Lib
-int RTP::FfmpegNameToPayloadId(std::string pName)
+/*************************************************
+ *  Video codec name to RTP id mapping:
+ *  ===================================
+ *        h261						31
+ *        h263						34
+ *        mpeg1video				32
+ *        mpeg2video				32
+ *        h263+ 					119 (HC internal standard)
+ *        h264						120 (HC internal standard)
+ *        mpeg4						121 (HC internal standard)
+ *        theora					122 (HC internal standard)
+ *        vp8						123 (HC internal standard)
+ *
+ *
+ *  Audio codec name to RTP id mapping:
+ *  ===================================
+ *        ulaw						0
+ *        gsm						3
+ *        alaw						8
+ *        g722						9
+ *        pcms16					10
+ *        mp3						14
+ *        aac						100 (HC internal standard)
+ *        amr						101 (HC internal standard)
+ *
+ ****************************************************/
+int RTP::CodecToPayloadId(std::string pName)
 {
-    int tResult = 31;
+    int tResult = -1;
 
     //video
     if (pName == "h261")
         tResult = 31;
-    if ((pName == "mpeg2video") || (pName == "mpegvideo") || (pName == "mpeg1video"))
+    if ((pName == "mpeg2video") || (pName == "mpeg1video"))
         tResult = 32;
     if (pName == "h263")
         tResult = 34;
-    if ((pName == "h263+") || (pName == "h263p"))
+    if (pName == "h263+")
         tResult = 119;
-    if ((pName == "h264") || (pName == "libx264"))
+    if (pName == "h264")
         tResult = 120;
-    if ((pName == "m4v") || (pName == "mpeg4"))
+    if (pName == "mpeg4")
         tResult = 121;
-    if ((pName == "theora") || (pName == "THEORA"))
+    if (pName == "theora")
         tResult = 122;
-    if ((pName == "vp8") || (pName == "VP8"))
+    if (pName == "vp8")
         tResult = 123;
 
     //audio
-    if ((pName == "mulaw") || (pName == "pcm_mulaw"))
+    if (pName == "ulaw")
         tResult = 0;
-    if ((pName == "gsm") || (pName == "libgsm"))
+    if (pName == "gsm")
         tResult = 3;
-    if ((pName == "alaw") || (pName == "pcm_alaw"))
+    if (pName == "alaw")
         tResult = 8;
-    if ((pName == "mp3") || (pName == "libmp3lame"))
+    if (pName == "g722")
+        tResult = 9;
+    if (pName == "pcms16")
+        tResult = 10;
+    if (pName == "mp3")
         tResult = 14;
     if (pName == "aac")
         tResult = 100;
     if (pName == "amr")
         tResult = 101;
 
-    LOGEX(RTP, LOG_VERBOSE, ("Translated " + pName + " to %d").c_str(), tResult);
+    //LOGEX(RTP, LOG_VERBOSE, ("Translated " + pName + " to %d").c_str(), tResult);
 
     return tResult;
 }
 
-string RTP::PayloadIdToFfmpegName(int pId)
+string RTP::PayloadIdToCodec(int pId)
 {
     string tResult = "unknown";
 
@@ -1866,7 +1908,7 @@ string RTP::PayloadIdToFfmpegName(int pId)
                 tResult = "h261";
                 break;
         case 32:
-                tResult = "mpv (mpeg video)";
+                tResult = "mpeg1/2";
                 break;
         case 34:
         case 118:
@@ -1879,7 +1921,7 @@ string RTP::PayloadIdToFfmpegName(int pId)
                 tResult = "h264";
                 break;
         case 121:
-                tResult = "m4v (mpeg4)";
+                tResult = "mpeg4";
                 break;
         case 122:
                 tResult = "theora";
@@ -1890,16 +1932,25 @@ string RTP::PayloadIdToFfmpegName(int pId)
 
         //audio
         case 0:
-                tResult = "PCMU (mulaw)";
+                tResult = "G711 u-law)";
                 break;
         case 3:
                 tResult = "gsm";
                 break;
         case 8:
-                tResult = "PCMA (alaw)";
+                tResult = "G711 a-law)";
+                break;
+        case 9:
+                tResult = "G722 adpcm";
+                break;
+        case 10:
+                tResult = "pcm16";
+                break;
+        case 11:
+                tResult = "pcm16 mono";
                 break;
         case 14:
-                tResult = "mpa (mp2,mp3)";
+                tResult = "mp3";
                 break;
         case 100:
                 tResult = "aac";

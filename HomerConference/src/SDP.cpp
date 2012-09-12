@@ -30,12 +30,14 @@
 
 #include <HBSocket.h>
 #include <SDP.h>
+#include <RTP.h>
 #include <Logger.h>
 
 namespace Homer { namespace Conference {
 
 using namespace std;
 using namespace Homer::Base;
+using namespace Homer::Multimedia;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -167,47 +169,32 @@ string SDP::GetMediaTransportStr(enum MediaTransportType pType)
     return tResult;
 }
 
-int SDP::CodecNameToPayloadId(std::string pName)
-{
-    int tResult = 31;
-
-    //video
-    if (pName == "h261")
-        tResult = 31;
-    if ((pName == "mpeg2video") || (pName == "mpeg1video") || (pName == "mpeg2"))
-        tResult = 32;
-    if (pName == "h263")
-        tResult = 34;
-    if ((pName == "h263+") || (pName == "h263p"))
-        tResult = 119;
-    if ((pName == "h264") || (pName == "libx264"))
-        tResult = 120;
-    if ((pName == "m4v") || (pName == "mpeg4"))
-        tResult = 121;
-    if ((pName == "theora") || (pName == "THEORA"))
-        tResult = 122;
-    if ((pName == "vp8") || (pName == "VP8"))
-        tResult = 123;
-
-    //audio
-    if ((pName == "mulaw") || (pName == "pcm_mulaw"))
-        tResult = 0;
-    if ((pName == "gsm") || (pName == "libgsm"))
-        tResult = 3;
-    if ((pName == "alaw") || (pName == "pcm_alaw"))
-        tResult = 8;
-    if ((pName == "mp3") || (pName == "libmp3lame"))
-        tResult = 14;
-    if (pName == "aac")
-        tResult = 100;
-    if (pName == "amr")
-        tResult = 101;
-
-    LOGEX(SDP, LOG_VERBOSE, ("Translated " + pName + " to %d").c_str(), tResult);
-
-    return tResult;
-}
-
+/*************************************************
+ *  Video codec to name mapping:
+ *  ============================
+ *        CODEC_H261					h261
+ *        CODEC_H263					h263
+ *        CODEC_MPEG1VIDEO				mpeg1video
+ *        CODEC_MPEG2VIDEO				mpeg2video
+ *        CODEC_H263P					h263+
+ *        CODEC_H264					h264
+ *        CODEC_MPEG4					mpeg4
+ *        CODEC_THEORA					theora
+ *        CODEC_VP8						vp8
+ *
+ *
+ *  Audio codec to name mapping:
+ *  ============================
+ *        CODEC_G711ULAW				ulaw
+ *        CODEC_GSM						gsm
+ *        CODEC_G711ALAW				alaw
+ *        CODEC_G722ADPCM				g722
+ *        CODEC_PCMS16					pcms16
+ *        CODEC_MP3						mp3
+ *        CODEC_AAC						aac
+ *        CODEC_AMR						amr
+ *
+ ****************************************************/
 string SDP::CreateSdpData(int pAudioPort, int pVideoPort)
 {
     string tResult = "";
@@ -223,37 +210,41 @@ string SDP::CreateSdpData(int pAudioPort, int pVideoPort)
         // rest is filled by SIP library
         tResult += "m=audio " + toString(pAudioPort) + " " + GetMediaTransportStr(mAudioTransportType);
 
-        if (tSupportedAudioCodecs & CODEC_MP3)
-            tResult += " " + toString(CodecNameToPayloadId("mp3"));
-        if (tSupportedAudioCodecs & CODEC_G711A)
-            tResult += " " + toString(CodecNameToPayloadId("alaw"));
-        if (tSupportedAudioCodecs & CODEC_G711U)
-            tResult += " " + toString(CodecNameToPayloadId("mulaw"));
-        if (tSupportedAudioCodecs & CODEC_AAC)
-            tResult += " " + toString(CodecNameToPayloadId("aac"));
-        if (tSupportedAudioCodecs & CODEC_PCMS16LE)
-            tResult += " " + toString(CodecNameToPayloadId("pcms16le"));
+        if (tSupportedAudioCodecs & CODEC_G711ULAW)
+            tResult += " " + toString(RTP::CodecToPayloadId("ulaw"));
         if (tSupportedAudioCodecs & CODEC_GSM)
-            tResult += " " + toString(CodecNameToPayloadId("gsm"));
+            tResult += " " + toString(RTP::CodecToPayloadId("gsm"));
+        if (tSupportedAudioCodecs & CODEC_G711ALAW)
+            tResult += " " + toString(RTP::CodecToPayloadId("alaw"));
+        if (tSupportedAudioCodecs & CODEC_G722ADPCM)
+            tResult += " " + toString(RTP::CodecToPayloadId("g722"));
+        if (tSupportedAudioCodecs & CODEC_PCMS16)
+            tResult += " " + toString(RTP::CodecToPayloadId("pcms16"));
+        if (tSupportedAudioCodecs & CODEC_MP3)
+            tResult += " " + toString(RTP::CodecToPayloadId("mp3"));
+        if (tSupportedAudioCodecs & CODEC_AAC)
+            tResult += " " + toString(RTP::CodecToPayloadId("aac"));
         if (tSupportedAudioCodecs & CODEC_AMR)
-            tResult += " " + toString(CodecNameToPayloadId("amr"));
+            tResult += " " + toString(RTP::CodecToPayloadId("amr"));
 
         tResult += "\r\n";
 
-        if (tSupportedAudioCodecs & CODEC_G711U)
-            tResult += "a=rtpmap:" + toString(CodecNameToPayloadId("mulaw")) + " PCMU/8000/1\r\n";
-        if (tSupportedAudioCodecs & CODEC_G711A)
-            tResult += "a=rtpmap:" + toString(CodecNameToPayloadId("alaw")) + " PCMA/8000/1\r\n";
-        if (tSupportedAudioCodecs & CODEC_MP3)
-            tResult += "a=rtpmap:" + toString(CodecNameToPayloadId("mp3")) + " MPA/8000/1\r\n";
-        if (tSupportedAudioCodecs & CODEC_AAC)
-            tResult += "a=rtpmap:" + toString(CodecNameToPayloadId("aac")) + " AAC/8000/1\r\n";
-        if (tSupportedAudioCodecs & CODEC_PCMS16LE)
-            tResult += "a=rtpmap:" + toString(CodecNameToPayloadId("pcms16le")) + " PCMS16/8000/1\r\n";
+        if (tSupportedAudioCodecs & CODEC_G711ULAW)
+            tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("ulaw")) + " PCMU/8000/1\r\n";
         if (tSupportedAudioCodecs & CODEC_GSM)
-            tResult += "a=rtpmap:" + toString(CodecNameToPayloadId("gsm")) + " GSM/8000/1\r\n";
+            tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("gsm")) + " GSM/8000/1\r\n";
+        if (tSupportedAudioCodecs & CODEC_G711ALAW)
+            tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("alaw")) + " PCMA/8000/1\r\n";
+        if (tSupportedAudioCodecs & CODEC_G722ADPCM)
+            tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("g722")) + " G722/8000/1\r\n";
+        if (tSupportedAudioCodecs & CODEC_PCMS16)
+            tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("pcms16le")) + " PCMS16/8000/1\r\n";
+        if (tSupportedAudioCodecs & CODEC_MP3)
+            tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("mp3")) + " MPA/8000/1\r\n";
+        if (tSupportedAudioCodecs & CODEC_AAC)
+            tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("aac")) + " AAC/8000/1\r\n";
         if (tSupportedAudioCodecs & CODEC_AMR)
-            tResult += "a=rtpmap:" + toString(CodecNameToPayloadId("amr")) + " AMR/8000/1\r\n";
+            tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("amr")) + " AMR/8000/1\r\n";
     }
 
     // calculate the new video sdp string
@@ -262,48 +253,48 @@ string SDP::CreateSdpData(int pAudioPort, int pVideoPort)
         // rest is filled by SIP library
         tResult += "m=video " + toString(pVideoPort) + " "  + GetMediaTransportStr(mVideoTransportType);
 
-        if (tSupportedVideoCodecs & CODEC_VP8)
-            tResult += " " + toString(CodecNameToPayloadId("vp8"));
-        if (tSupportedVideoCodecs & CODEC_THEORA)
-            tResult += " " + toString(CodecNameToPayloadId("theora"));
-        if (tSupportedVideoCodecs & CODEC_MPEG4)
-            tResult += " " + toString(CodecNameToPayloadId("m4v"));
-        if (tSupportedVideoCodecs & CODEC_MPEG1VIDEO)
-            tResult += " " + toString(CodecNameToPayloadId("mpeg1video"));
-        if (tSupportedVideoCodecs & CODEC_MPEG2VIDEO)
-            tResult += " " + toString(CodecNameToPayloadId("mpeg2video"));
-        if (tSupportedVideoCodecs & CODEC_H264)
-            tResult += " " + toString(CodecNameToPayloadId("h264"));
-        if (tSupportedVideoCodecs & CODEC_H263P)
-            tResult += " " + toString(CodecNameToPayloadId("h263+"));
-        if (tSupportedVideoCodecs & CODEC_H263)
-            tResult += " " + toString(CodecNameToPayloadId("h263"));
         if (tSupportedVideoCodecs & CODEC_H261)
-            tResult += " " + toString(CodecNameToPayloadId("h261"));
+            tResult += " " + toString(RTP::CodecToPayloadId("h261"));
+        if (tSupportedVideoCodecs & CODEC_H263)
+            tResult += " " + toString(RTP::CodecToPayloadId("h263"));
+        if (tSupportedVideoCodecs & CODEC_MPEG1VIDEO)
+            tResult += " " + toString(RTP::CodecToPayloadId("mpeg1video"));
+        if (tSupportedVideoCodecs & CODEC_MPEG2VIDEO)
+            tResult += " " + toString(RTP::CodecToPayloadId("mpeg2video"));
+        if (tSupportedVideoCodecs & CODEC_H263P)
+            tResult += " " + toString(RTP::CodecToPayloadId("h263+"));
+        if (tSupportedVideoCodecs & CODEC_H264)
+            tResult += " " + toString(RTP::CodecToPayloadId("h264"));
+        if (tSupportedVideoCodecs & CODEC_MPEG4)
+            tResult += " " + toString(RTP::CodecToPayloadId("mpeg4"));
+        if (tSupportedVideoCodecs & CODEC_THEORA)
+            tResult += " " + toString(RTP::CodecToPayloadId("theora"));
+        if (tSupportedVideoCodecs & CODEC_VP8)
+            tResult += " " + toString(RTP::CodecToPayloadId("vp8"));
 
         tResult += "\r\n";
 
-        if (tSupportedVideoCodecs & CODEC_VP8)
-            tResult += "a=rtpmap:" + toString(CodecNameToPayloadId("vp8")) + " vp8/90000\r\n";
-        if (tSupportedVideoCodecs & CODEC_THEORA)
-            tResult += "a=rtpmap:" + toString(CodecNameToPayloadId("theora")) + " theora/90000\r\n";
-        if (tSupportedVideoCodecs & CODEC_MPEG4)
-            tResult += "a=rtpmap:" + toString(CodecNameToPayloadId("m4v")) + " MP4V-ES/90000\r\n";
-        if (tSupportedVideoCodecs & CODEC_MPEG1VIDEO)
-            tResult += "a=rtpmap:" + toString(CodecNameToPayloadId("mpeg1video")) + " MPV/90000\r\n";
-        if (tSupportedVideoCodecs & CODEC_MPEG2VIDEO)
-            tResult += "a=rtpmap:" + toString(CodecNameToPayloadId("mpeg2video")) + " MPV/90000\r\n";
-        if (tSupportedVideoCodecs & CODEC_H264)
-            tResult += "a=rtpmap:" + toString(CodecNameToPayloadId("h264")) + " h264/90000\r\n";
-        if (tSupportedVideoCodecs & CODEC_H263P)
-            tResult += "a=rtpmap:" + toString(CodecNameToPayloadId("h263+")) + " h263-1998/90000\r\n";
-        if (tSupportedVideoCodecs & CODEC_H263)
-            tResult += "a=rtpmap:" + toString(CodecNameToPayloadId("h263")) + " h263/90000\r\n";
         if (tSupportedVideoCodecs & CODEC_H261)
-            tResult += "a=rtpmap:" + toString(CodecNameToPayloadId("h261")) + " h261/90000\r\n";
+            tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("h261")) + " h261/90000\r\n";
+        if (tSupportedVideoCodecs & CODEC_H263)
+            tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("h263")) + " h263/90000\r\n";
+        if (tSupportedVideoCodecs & CODEC_MPEG1VIDEO)
+            tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("mpeg1video")) + " MPV/90000\r\n";
+        if (tSupportedVideoCodecs & CODEC_MPEG2VIDEO)
+            tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("mpeg2video")) + " MPV/90000\r\n";
+        if (tSupportedVideoCodecs & CODEC_H263P)
+            tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("h263+")) + " h263-1998/90000\r\n";
+        if (tSupportedVideoCodecs & CODEC_H264)
+            tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("h264")) + " h264/90000\r\n";
+        if (tSupportedVideoCodecs & CODEC_MPEG4)
+            tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("mpeg4")) + " MP4V-ES/90000\r\n";
+        if (tSupportedVideoCodecs & CODEC_THEORA)
+            tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("theora")) + " theora/90000\r\n";
+        if (tSupportedVideoCodecs & CODEC_VP8)
+            tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("vp8")) + " vp8/90000\r\n";
     }
 
-    LOG(LOG_VERBOSE, "..result: %s", tResult.c_str());
+    //LOG(LOG_VERBOSE, "..result: %s", tResult.c_str());
 
     return tResult;
 }

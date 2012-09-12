@@ -34,4 +34,3 @@ For the demonstration of processes on the desktop it would be interesting to be 
 
 * Report a bug: https://github.com/Homer-Conferencing/Homer-Conferencing/issues
 * Source code: https://github.com/Homer-Conferencing/Homer-Conferencing
-

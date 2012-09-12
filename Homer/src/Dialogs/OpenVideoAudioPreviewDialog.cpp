@@ -348,40 +348,24 @@ void OpenVideoAudioPreviewDialog::LoadConfiguration()
     //### stream codec
     //########################
     QString tVideoStreamCodec = CONF.GetVideoCodec();
-    if (tVideoStreamCodec == "H.261")
-        mCbCodecVideo->setCurrentIndex(0);
-    if (tVideoStreamCodec == "H.263")
-        mCbCodecVideo->setCurrentIndex(1);
-    if (tVideoStreamCodec == "H.263+")
-        mCbCodecVideo->setCurrentIndex(2);
-    if (tVideoStreamCodec == "H.264")
-        mCbCodecVideo->setCurrentIndex(3);
-    if (tVideoStreamCodec == "MPEG1")
-        mCbCodecVideo->setCurrentIndex(4);
-    if (tVideoStreamCodec == "MPEG2")
-        mCbCodecVideo->setCurrentIndex(5);
-    if (tVideoStreamCodec == "MPEG4")
-        mCbCodecVideo->setCurrentIndex(6);
-    if (tVideoStreamCodec == "THEORA")
-        mCbCodecVideo->setCurrentIndex(7);
-    if (tVideoStreamCodec == "VP8")
-        mCbCodecVideo->setCurrentIndex(8);
+    for (int i = 0; i < mCbCodecVideo->count(); i++)
+    {
+        if (tVideoStreamCodec == mCbCodecVideo->itemText(i))
+        {
+        	mCbCodecVideo->setCurrentIndex(i);
+            break;
+        }
+    }
 
     QString tAudioStreamCodec = CONF.GetAudioCodec();
-    if (tAudioStreamCodec == "MP3 (MPA)")
-        mCbCodecAudio->setCurrentIndex(0);
-    if (tAudioStreamCodec == "G711 A-law (PCMA)")
-        mCbCodecAudio->setCurrentIndex(1);
-    if (tAudioStreamCodec == "G711 µ-law (PCMU)")
-        mCbCodecAudio->setCurrentIndex(2);
-    if (tAudioStreamCodec == "AAC")
-        mCbCodecAudio->setCurrentIndex(3);
-    if (tAudioStreamCodec == "PCM_S16_LE")
-        mCbCodecAudio->setCurrentIndex(4);
-    if (tAudioStreamCodec == "GSM")
-        mCbCodecAudio->setCurrentIndex(5);
-    if (tAudioStreamCodec == "AMR")
-        mCbCodecAudio->setCurrentIndex(6);
+    for (int i = 0; i < mCbCodecAudio->count(); i++)
+    {
+        if (tAudioStreamCodec == mCbCodecAudio->itemText(i))
+        {
+        	mCbCodecAudio->setCurrentIndex(i);
+            break;
+        }
+    }
 
 
     //########################

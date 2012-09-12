@@ -447,206 +447,258 @@ int MediaSource::FfmpegLockManager(void **pMutex, enum AVLockOp pMutexOperation)
     return 1;
 }
 
-std::string MediaSource::CodecName2FfmpegName(std::string pStdName)
-{
-    string tResult = "h261";
-
-    /* video */
-    // translate from standardized names to FFMPEG internal names
-    if (pStdName == "H.261")
-        tResult = "h261";
-    if (pStdName == "H.263")
-        tResult = "h263";
-    if (pStdName == "H.263+")
-        tResult = "h263+";
-    if (pStdName == "H.264")
-        tResult = "h264";
-    if (pStdName == "MPEG1")
-        tResult = "mpeg1video";
-    if (pStdName == "MPEG2")
-        tResult = "mpeg2video";
-    if (pStdName == "MPEG4")
-        tResult = "m4v";
-    if (pStdName == "MJPEG")
-        tResult = "mjpeg";
-    if (pStdName == "THEORA")
-        tResult = "theora";
-    if (pStdName == "VP8")
-        tResult = "vp8";
-
-    /* audio */
-    // translate from standardized names to FFMPEG internal names
-    if (pStdName == "AC3")
-        tResult = "ac3";
-    if (pStdName == "AAC")
-        tResult = "aac";
-    if (pStdName == "MP3 (MPA)")
-        tResult = "mp3";
-    if (pStdName == "GSM")
-        tResult = "gsm";
-    if (pStdName == "G711 A-law (PCMA)")
-        tResult = "alaw";
-    if (pStdName == "G711 µ-law (PCMU)")
-        tResult = "mulaw";
-    if (pStdName == "PCM_S16_LE")
-        tResult = "pcms16le";
-    if (pStdName == "AMR")
-        tResult = "amr";
-
-    //LOG(LOG_VERBOSE, "Translated %s to %s", pStdName.c_str(), tResult.c_str());
-
-    return tResult;
-}
-
-enum CodecID MediaSource::GetCodecID(std::string pName)
+/*************************************************
+ *  GUI name to video codec ID mapping:
+ *  ================================
+ *        H.261							CODEC_ID_H261
+ *        H.263							CODEC_ID_H263
+ *        MPEG1							CODEC_ID_MPEG1VIDEO
+ *        MPEG2							CODEC_ID_MPEG2VIDEO
+ *        H.263+						CODEC_ID_H263P+
+ *        H.264							CODEC_ID_H264
+ *        MPEG4							CODEC_ID_MPEG4
+ *        THEORA						CODEC_ID_THEORA
+ *        VP8							CODEC_ID_VP8
+ *
+ *
+ *  GUI name to audio codec ID mapping:
+ *  ================================
+ *        G711 A-law					CODEC_ID_PCM_MULAW
+ *        GSM							CODEC_ID_GSM
+ *        G711 µ-law					CODEC_ID_PCM_ALAW
+ *        G722 adpcm					CODEC_ID_ADPCM_G722
+ *        PCM16							CODEC_ID_PCM_S16LE
+ *        MP3							CODEC_ID_MP3
+ *        AAC							CODEC_ID_AAC
+ *        AMR							CODEC_ID_AMR_NB
+ *
+ ****************************************************/
+enum CodecID MediaSource::GetCodecIDFromGuiName(std::string pName)
 {
     enum CodecID tResult = CODEC_ID_NONE;
 
     /* video */
-    // translate from standardized names to FFMPEG internal names
-    if (pName == "h261")
+    if (pName == "H.261")
         tResult = CODEC_ID_H261;
-    if (pName == "h263")
+    if (pName == "H.263")
         tResult = CODEC_ID_H263;
-    if ((pName == "h263+") || (pName == "h263p"))
-        tResult = CODEC_ID_H263P;
-    if ((pName == "h264") || (pName == "libx264"))
-        tResult = CODEC_ID_H264;
-    if ((pName == "mpeg1") || (pName == "mpeg1video"))
+    if (pName == "MPEG1")
         tResult = CODEC_ID_MPEG1VIDEO;
-    if ((pName == "mpeg2") || (pName == "mpeg2video"))
+    if (pName == "MPEG2")
         tResult = CODEC_ID_MPEG2VIDEO;
-    if ((pName == "m4v") || (pName == "mpeg4"))
+    if (pName == "H.263+")
+        tResult = CODEC_ID_H263P;
+    if (pName == "H.264")
+        tResult = CODEC_ID_H264;
+    if (pName == "MPEG4")
         tResult = CODEC_ID_MPEG4;
-    if (pName == "mjpeg")
+    if (pName == "MJPEG")
         tResult = CODEC_ID_MJPEG;
-    if ((pName == "vp8") || (pName == "VP8") || (pName == "libvpx") || (pName == "webm"))
-        tResult = CODEC_ID_VP8;
-    if ((pName == "theora") || (pName == "THEORA") || (pName == "libtheora") || (pName == "ogg"))
+    if (pName == "THEORA")
         tResult = CODEC_ID_THEORA;
+    if (pName == "VP8")
+        tResult = CODEC_ID_VP8;
 
     /* audio */
-    // translate from standardized names to FFMPEG internal names
-    if (pName == "ac3")
-        tResult = CODEC_ID_AC3;
-    if ((pName == "aac") || (pName == "libfaac"))
-        tResult = CODEC_ID_AAC;
-    if ((pName == "mp3") || (pName == "libmp3lame"))
-        tResult = CODEC_ID_MP3;
-    if (pName == "gsm")
-        tResult = CODEC_ID_GSM;
-    if ((pName == "alaw") || (pName == "pcm_alaw"))
-        tResult = CODEC_ID_PCM_ALAW;
-    if ((pName == "mulaw") || (pName == "pcm_mulaw"))
+    if (pName == "G711 µ-law")
         tResult = CODEC_ID_PCM_MULAW;
-    if (pName == "pcms16le")
+    if (pName == "GSM")
+        tResult = CODEC_ID_GSM;
+    if (pName == "G711 A-law")
+        tResult = CODEC_ID_PCM_ALAW;
+    if (pName == "G722 adpcm")
+        tResult = CODEC_ID_ADPCM_G722;
+    if (pName == "PCM16")
         tResult = CODEC_ID_PCM_S16LE;
-    if (pName == "amr")
+    if (pName == "MP3")
+        tResult = CODEC_ID_MP3;
+    if (pName == "AAC")
+        tResult = CODEC_ID_AAC;
+    if (pName == "AMR")
         tResult = CODEC_ID_AMR_NB;
+    if (pName == "AC3")
+        tResult = CODEC_ID_AC3;
 
     //LOG(LOG_VERBOSE, "Translated %s to %d", pName.c_str(), tResult);
 
     return tResult;
 }
 
-string MediaSource::GetCodecName(std::string pName)
+string MediaSource::GetGuiNameFromCodecID(enum CodecID pCodecId)
 {
     string tResult = "";
 
-    /* video */
-    // translate from standardized names to FFMPEG internal names
-    if (pName == "rawvideo")
-        tResult = "raw";
-    if (pName == "h261")
-        tResult = "h261";
-    if (pName == "h263")
-        tResult = "h263";
-    if ((pName == "h263+") || (pName == "h263p"))
-        tResult = "h263"; // HINT: ffmpeg has no separate h263+ format
-    if ((pName == "h264") || (pName == "libx264")) //GPL-2
-        tResult = "h264";
-    if ((pName == "mpeg1") || (pName == "mpeg1video"))
-        tResult = "mpeg1video";
-    if ((pName == "mpeg2") || (pName == "mpeg2video"))
-        tResult = "mpeg2video";
-    if ((pName == "m4v") || (pName == "mpeg4"))
-        tResult = "mpeg4";
-    if (pName == "mjpeg")
-        tResult = "mjpeg";
-    if ((pName == "vp8") || (pName == "VP8") || (pName == "libvpx") || (pName == "webm"))
-        tResult = "vp8";
-    if ((pName == "theora") || (pName == "THEORA") || (pName == "libtheora")|| (pName == "ogg"))
-        tResult = "theora";
+    switch(pCodecId)
+    {
+    	/* video */
+    	case CODEC_ID_H261:
+    			tResult = "H.261";
+    			break;
+    	case CODEC_ID_H263:
+    			tResult = "H.263";
+    			break;
+    	case CODEC_ID_MPEG1VIDEO:
+    			tResult = "MPEG1";
+    			break;
+        case CODEC_ID_MPEG2VIDEO:
+    			tResult = "MPEG2";
+    			break;
+        case CODEC_ID_H263P:
+    			tResult = "H.263+";
+    			break;
+        case CODEC_ID_H264:
+    			tResult = "H.264";
+    			break;
+        case CODEC_ID_MPEG4:
+    			tResult = "MPEG4";
+    			break;
+        case CODEC_ID_MJPEG:
+    			tResult = "MJPEG";
+    			break;
+        case CODEC_ID_THEORA:
+    			tResult = "THEORA";
+    			break;
+        case CODEC_ID_VP8:
+    			tResult = "VP8";
+    			break;
 
-    /* audio */
-    // translate from standardized names to FFMPEG internal names
-    if (pName == "ac3")
-        tResult = "ac3";
-    if ((pName == "aac") || (pName == "libfaac"))
-        tResult = "aac";
-    if ((pName == "mp3") || (pName == "libmp3lame"))
-        tResult = "mp3";
-    if ((pName == "gsm") || (pName == "libgsm"))
-        tResult = "gsm";
-    if ((pName == "alaw") || (pName == "pcm_alaw"))
-        tResult = "alaw";
-    if ((pName == "mulaw") || (pName == "pcm_mulaw"))
-        tResult = "mulaw";
-    if (pName == "pcms16le")
-        tResult = "pcm_s16le";
-    if (pName == "amr")
-        tResult = "amr";
+		/* audio */
+        case CODEC_ID_PCM_MULAW:
+    			tResult = "G711 µ-law";
+    			break;
+        case CODEC_ID_GSM:
+    			tResult = "GSM";
+    			break;
+        case CODEC_ID_PCM_ALAW:
+    			tResult = "G711 A-law";
+    			break;
+        case CODEC_ID_ADPCM_G722:
+    			tResult = "G722 adpcm";
+    			break;
+        case CODEC_ID_PCM_S16LE:
+    			tResult = "PCM16";
+    			break;
+        case CODEC_ID_MP3:
+    			tResult = "MP3";
+    			break;
+        case CODEC_ID_AAC:
+    			tResult = "AAC";
+    			break;
+        case CODEC_ID_AMR_NB:
+    			tResult = "AMR";
+    			break;
+        case CODEC_ID_AC3:
+    			tResult = "AC3";
+    			break;
 
-    //LOG(LOG_VERBOSE, "Translated %s to format %s", pName.c_str(), tResult.c_str());
+        default:
+        	LOGEX(MediaSource, LOG_WARN, "Detected unsupported codec %d", pCodecId);
+        	break;
+    }
+
+    //LOGEX(MediaSource, LOG_VERBOSE, "Translated %s to format %s", pName.c_str(), tResult.c_str());
 
     return tResult;
 }
 
+/*************************************************
+ *  video codec ID to format mapping:
+ *  ================================
+ *        CODEC_ID_H261					h261
+ *        CODEC_ID_H263					h263
+ *        CODEC_ID_MPEG1VIDEO			mpeg1video
+ *        CODEC_ID_MPEG2VIDEO			mpeg2video
+ *        CODEC_ID_H263P+				h263 // same like H263
+ *        CODEC_ID_H264					h264
+ *        CODEC_ID_MPEG4				m4v
+ *        CODEC_ID_MJPEG				mjpeg
+ *        CODEC_ID_THEORA				ogg
+ *        CODEC_ID_VP8					webm
+ *
+ *
+ *  audio codec ID to format mapping:
+ *  ================================
+ *        CODEC_ID_PCM_MULAW			mulaw
+ *        CODEC_ID_GSM					libgsm
+ *        CODEC_ID_PCM_ALAW				alaw
+ *        CODEC_ID_ADPCM_G722			g722
+ *        CODEC_ID_PCM_S16LE			s16le
+ *        CODEC_ID_MP3					mp3
+ *        CODEC_ID_AAC					aac
+ *        CODEC_ID_AMR_NB				amr
+ *
+ ****************************************************/
 string MediaSource::GetFormatName(enum CodecID pCodecId)
 {
     string tResult = "";
 
-    /* video */
-    // translate from standardized names to FFMPEG internal names
-    if (pCodecId == CODEC_ID_H261)
-        tResult = "h261";
-    if (pCodecId == CODEC_ID_H263)
-        tResult = "h263";
-    if (pCodecId == CODEC_ID_H263P)
-        tResult = "h263"; // HINT: ffmpeg has no separate h263+ format
-    if (pCodecId == CODEC_ID_H264)
-        tResult = "h264";
-    if (pCodecId == CODEC_ID_MPEG1VIDEO)
-        tResult = "mpeg1video";
-    if (pCodecId == CODEC_ID_MPEG2VIDEO)
-        tResult = "mpeg2video";
-    if (pCodecId == CODEC_ID_MPEG4)
-        tResult = "m4v";
-    if (pCodecId == CODEC_ID_MJPEG)
-        tResult = "mjpeg";
-    if (pCodecId == CODEC_ID_VP8)
-        tResult = "webm";
-    if (pCodecId == CODEC_ID_THEORA)
-        tResult = "ogg";
+    switch(pCodecId)
+    {
+    	/* video */
+    	case CODEC_ID_H261:
+    			tResult = "h261";
+    			break;
+    	case CODEC_ID_H263:
+    			tResult = "h263";
+    			break;
+    	case CODEC_ID_MPEG1VIDEO:
+    			tResult = "mpeg1video";
+    			break;
+        case CODEC_ID_MPEG2VIDEO:
+    			tResult = "mpeg2video";
+    			break;
+        case CODEC_ID_H263P:
+    			tResult = "h263"; // ffmpeg has no separate h263+ format
+    			break;
+        case CODEC_ID_H264:
+    			tResult = "h264";
+    			break;
+        case CODEC_ID_MPEG4:
+    			tResult = "m4v";
+    			break;
+        case CODEC_ID_MJPEG:
+    			tResult = "mjpeg";
+    			break;
+        case CODEC_ID_THEORA:
+    			tResult = "ogg";
+    			break;
+        case CODEC_ID_VP8:
+    			tResult = "webm";
+    			break;
 
-    /* audio */
-    // translate from standardized names to FFMPEG internal names
-    if (pCodecId == CODEC_ID_AC3)
-        tResult = "ac3";
-    if (pCodecId == CODEC_ID_AAC)
-        tResult = "aac";
-    if (pCodecId == CODEC_ID_MP3)
-        tResult = "mp3";
-    if (pCodecId == CODEC_ID_GSM)
-        tResult = "libgsm";
-    if (pCodecId == CODEC_ID_PCM_ALAW)
-        tResult = "alaw";
-    if (pCodecId == CODEC_ID_PCM_MULAW)
-        tResult = "mulaw";
-    if (pCodecId == CODEC_ID_PCM_S16LE)
-        tResult = "s16le";
-    if (pCodecId == CODEC_ID_AMR_NB)
-        tResult = "amr";
+		/* audio */
+        case CODEC_ID_PCM_MULAW:
+    			tResult = "mulaw";
+    			break;
+        case CODEC_ID_GSM:
+    			tResult = "libgsm";
+    			break;
+        case CODEC_ID_PCM_ALAW:
+    			tResult = "alaw";
+    			break;
+        case CODEC_ID_ADPCM_G722:
+    			tResult = "g722";
+    			break;
+        case CODEC_ID_PCM_S16LE:
+    			tResult = "s16le";
+    			break;
+        case CODEC_ID_MP3:
+    			tResult = "mp3";
+    			break;
+        case CODEC_ID_AAC:
+    			tResult = "aac";
+    			break;
+        case CODEC_ID_AMR_NB:
+    			tResult = "amr";
+    			break;
+        case CODEC_ID_AC3:
+    			tResult = "ac3";
+    			break;
+
+        default:
+        	LOGEX(MediaSource, LOG_WARN, "Detected unsupported codec %d", pCodecId);
+        	break;
+    }
 
     //LOGEX(MediaSource, LOG_VERBOSE, "Translated codec id %d to format %s", pCodecId, tResult.c_str());
 
@@ -951,7 +1003,7 @@ string MediaSource::GetCodecName()
             if (mCodecContext->codec != NULL)
                 if (mCodecContext->codec->name != NULL)
                 {
-                	string tName = GetCodecName(string(mCodecContext->codec->name));
+                	string tName = GetGuiNameFromCodecID(mCodecContext->codec->id);
                 	if (tName != "")
                 		tResult = tName;
                 	else

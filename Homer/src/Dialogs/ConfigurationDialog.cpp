@@ -463,13 +463,16 @@ void ConfigurationDialog::SaveConfiguration()
                 MEETING.SetAudioCodecsSupport(CODEC_MP3);
                 break;
         case 1:
-                MEETING.SetAudioCodecsSupport(CODEC_G711A);
+                MEETING.SetAudioCodecsSupport(CODEC_G711ALAW);
                 break;
         case 2:
-                MEETING.SetAudioCodecsSupport(CODEC_G711U);
+                MEETING.SetAudioCodecsSupport(CODEC_G711ULAW);
                 break;
         case 3:
-                MEETING.SetAudioCodecsSupport(CODEC_PCMS16LE);
+                MEETING.SetAudioCodecsSupport(CODEC_PCMS16);
+                break;
+        case 4:
+                MEETING.SetAudioCodecsSupport(CODEC_G722ADPCM);
                 break;
         default:
                 break;

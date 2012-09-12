@@ -136,11 +136,7 @@ bool MediaSourceMuxer::SupportsMuxing()
 
 string MediaSourceMuxer::GetMuxingCodec()
 {
-    // ffmpeg doesn't distinguish between h263 and h263+ but we do
-    if (mStreamCodecId == CODEC_ID_H263P)
-        return "h263+";
-    else
-        return MediaSource::GetCodecName(GetFormatName(mStreamCodecId));
+	return MediaSource::GetGuiNameFromCodecID(mStreamCodecId);
 }
 
 void MediaSourceMuxer::GetMuxingResolution(int &pResX, int &pResY)
@@ -182,7 +178,7 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
 {
     // HINT: returns if something has changed
     bool tResult = false;
-    enum CodecID tStreamCodecId = MediaSource::GetCodecID(MediaSource::CodecName2FfmpegName(pStreamCodec));
+    enum CodecID tStreamCodecId = MediaSource::GetCodecIDFromGuiName(pStreamCodec);
 
     pMaxPacketSize -= IP6_HEADER_SIZE; // IPv6 overhead is bigger than IPv4
     pMaxPacketSize -= IP_OPTIONS_SIZE; // IP options size: used for QoS signaling
