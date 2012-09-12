@@ -109,6 +109,8 @@ ConfigurationDialog::ConfigurationDialog(QWidget* pParent, list<string>  pLocalA
     ShowVideoSourceInfo(mCbVideoSource->currentText());
     ShowAudioSourceInfo(mCbAudioSource->currentText());
     ShowAudioSinkInfo(mCbAudioSink->currentText());
+    if (!CONF.ConferencingEnabled())
+        mNetwork->setEnabled(false);
 }
 
 ConfigurationDialog::~ConfigurationDialog()
@@ -523,17 +525,22 @@ void ConfigurationDialog::SaveConfiguration()
         tOnlyFutureChanged = true;
     CONF.SetVideoAudioStartPort(mSbVideoAudioStartPort->value());
 
-    // is centralized mode selected activated?
-    if (CONF.GetSipInfrastructureMode() == 1)
-        MEETING.RegisterAtServer(CONF.GetSipUserName().toStdString(), CONF.GetSipPassword().toStdString(), CONF.GetSipServer().toStdString());
-
+    if (CONF.ConferencingEnabled())
+    {
+        // is centralized mode selected activated?
+        if (CONF.GetSipInfrastructureMode() == 1)
+            MEETING.RegisterAtServer(CONF.GetSipUserName().toStdString(), CONF.GetSipPassword().toStdString(), CONF.GetSipServer().toStdString());
+    }
 
     //### NAT support
     CONF.SetNatSupportActivation(mGrpNatSupport->isChecked());
     CONF.SetStunServer(mLeStunServer->text());
 
-    if (CONF.GetNatSupportActivation())
-        MEETING.SetStunServer(CONF.GetStunServer().toStdString());
+    if (CONF.ConferencingEnabled())
+    {
+        if (CONF.GetNatSupportActivation())
+            MEETING.SetStunServer(CONF.GetStunServer().toStdString());
+    }
 
     //### Contacting
     CONF.SetSipContactsProbing(mCbContactsProbing->isChecked());

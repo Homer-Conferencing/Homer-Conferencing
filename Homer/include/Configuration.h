@@ -230,6 +230,9 @@ public:
     /* audio capture */
     bool AudioCaptureEnabled();
 
+    /* conferencing */
+    bool ConferencingEnabled();
+
 
     /* global settings */
     void SetConferenceAvailability(QString pState);
@@ -365,6 +368,9 @@ public:
     /* audio capture */
     void DisableAudioCapture();
 
+    /* conferencing */
+    void DisableConferencing();
+
     // important because some write operations might be delayed
     void Sync();
 
@@ -374,6 +380,7 @@ public:
     bool                    mDebuggingEnabled;
     bool                    mAudioOutputEnabled;
     bool                    mAudioCaptureEnabled;
+    bool                    mConferencingEnabled;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

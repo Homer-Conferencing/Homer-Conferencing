@@ -52,6 +52,7 @@ Configuration::Configuration()
 {
     mAudioOutputEnabled = true;
     mAudioCaptureEnabled = true;
+    mConferencingEnabled = true;
     mDebuggingEnabled = false;
     mQSettings = new QSettings("Homer Software", "Homer");
     LOG(LOG_VERBOSE, "Created");
@@ -1279,6 +1280,17 @@ void Configuration::DisableAudioCapture()
 {
     printf("Audio capture disabled\n");
     mAudioCaptureEnabled = false;
+}
+
+bool Configuration::ConferencingEnabled()
+{
+    return mConferencingEnabled;
+}
+
+void Configuration::DisableConferencing()
+{
+    printf("Conference functions disabled\n");
+    mConferencingEnabled = false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

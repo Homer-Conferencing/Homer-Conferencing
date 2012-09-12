@@ -229,6 +229,7 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
         printf("Options for feature selection:\n");
         printf("   -Disable=AudioCapture               disable audio capture from devices\n");
         printf("   -Disable=AudioOutput                disable audio playback support\n");
+        printf("   -Disable=Conferencing               disable conference functions (disables ports for SIP/STUN management and file transfers)\n");
         printf("   -Disable=IPv6                       disable IPv6 support\n");
         printf("   -Disable=QoS                        disable QoS support\n");
         printf("   -Enable=NetSim                      enables network simulator\n");

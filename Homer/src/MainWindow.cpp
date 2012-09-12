@@ -106,6 +106,9 @@ MainWindow::MainWindow(QStringList pArguments, QString pAbsBinPath) :
     mAbsBinPath = pAbsBinPath;
     mSourceDesktop = NULL;
     mNetworkSimulator = NULL;
+    mOverviewContactsWidget = NULL;
+    mOverviewFileTransfersWidget = NULL;
+    mOnlineStatusWidget = NULL;
 
     QCoreApplication::setApplicationName("Homer");
     QCoreApplication::setApplicationVersion(HOMER_VERSION);
@@ -239,8 +242,6 @@ void MainWindow::connectSignalsSlots()
     connect(mShortcutActivateNetworkSimulationWidgets, SIGNAL(activated()), this, SLOT(actionActivateNetworkSimulationWidgets()));
     connect(mShortcutActivateDebuggingGlobally, SIGNAL(activated()), this, SLOT(actionActivateDebuggingGlobally()));
 
-    connect(mActionToolBarOnlineStatus, SIGNAL(toggled(bool)), mToolBarOnlineStatus, SLOT(setVisible(bool)));
-    connect(mToolBarOnlineStatus->toggleViewAction(), SIGNAL(toggled(bool)), mActionToolBarOnlineStatus, SLOT(setChecked(bool)));
     connect(mActionToolBarMediaSources, SIGNAL(toggled(bool)), mToolBarMediaSources, SLOT(setVisible(bool)));
     connect(mToolBarMediaSources->toggleViewAction(), SIGNAL(toggled(bool)), mActionToolBarMediaSources, SLOT(setChecked(bool)));
     connect(mActionMonitorBroadcastWidget, SIGNAL(toggled(bool)), mLocalUserParticipantWidget, SLOT(setVisible(bool)));
@@ -251,9 +252,14 @@ void MainWindow::connectSignalsSlots()
     mToolBarMediaSources->toggleViewAction()->setChecked(CONF.GetVisibilityToolBarMediaSources());
     mActionToolBarMediaSources->setChecked(CONF.GetVisibilityToolBarMediaSources());
 
-    mToolBarOnlineStatus->setVisible(CONF.GetVisibilityToolBarOnlineStatus());
-    mToolBarOnlineStatus->toggleViewAction()->setChecked(CONF.GetVisibilityToolBarOnlineStatus());
-    mActionToolBarOnlineStatus->setChecked(CONF.GetVisibilityToolBarOnlineStatus());
+    if (mToolBarOnlineStatus != NULL)
+    {
+        connect(mActionToolBarOnlineStatus, SIGNAL(toggled(bool)), mToolBarOnlineStatus, SLOT(setVisible(bool)));
+        connect(mToolBarOnlineStatus->toggleViewAction(), SIGNAL(toggled(bool)), mActionToolBarOnlineStatus, SLOT(setChecked(bool)));
+        mToolBarOnlineStatus->setVisible(CONF.GetVisibilityToolBarOnlineStatus());
+        mToolBarOnlineStatus->toggleViewAction()->setChecked(CONF.GetVisibilityToolBarOnlineStatus());
+        mActionToolBarOnlineStatus->setChecked(CONF.GetVisibilityToolBarOnlineStatus());
+    }
 }
 
 void MainWindow::triggerUpdateCheck()
@@ -315,6 +321,8 @@ void MainWindow::initializeFeatureDisablers(QStringList &pArguments)
                 CONF.DisableAudioOutput();
             if(tFeatureName == "AudioCapture")
                 CONF.DisableAudioCapture();
+            if(tFeatureName == "Conferencing")
+                CONF.DisableConferencing();
         }
     }
 
@@ -367,33 +375,34 @@ void MainWindow::initializeDebugging(QStringList &pArguments)
 
 void MainWindow::initializeConferenceManagement()
 {
-    LOG(LOG_VERBOSE, "Initialization of conference management..");
-
     QString tLocalSourceIp = "";
     QString tLocalLoopIp = "";
     bool tInterfaceFound = GetNetworkInfo(mLocalAddresses, tLocalSourceIp, tLocalLoopIp);
 
-    if (tInterfaceFound)
-    {
-        LOG(LOG_INFO, "Using IP address: %s", tLocalSourceIp.toStdString().c_str());
-        CONF.SetSipListenerAddress(tLocalSourceIp);
-        MEETING.Init(tLocalSourceIp.toStdString(), mLocalAddresses, CONF.GetNatSupportActivation(), "BROADCAST", CONF.GetSipStartPort(), CONF.GetSipListenerTransport(), CONF.GetSipStartPort() + 10, CONF.GetVideoAudioStartPort());
-        MEETING.AddObserver(this);
-    } else
+    LOG(LOG_VERBOSE, "Initialization of conference management..");
+    if (!tInterfaceFound)
     {
         if (tLocalLoopIp != "")
         {
             LOG(LOG_INFO, "No fitting network interface towards outside found");
             LOG(LOG_INFO, "Using loopback interface with IP address: %s", tLocalLoopIp.toStdString().c_str());
             LOG(LOG_INFO, "==>>>>> NETWORK TIMEOUTS ARE POSSIBLE! APPLICATION MAY HANG FOR MOMENTS! <<<<<==");
-            MEETING.Init(tLocalLoopIp.toStdString(), mLocalAddresses, CONF.GetNatSupportActivation(), "BROADCAST", CONF.GetSipStartPort(), CONF.GetSipListenerTransport(), CONF.GetSipStartPort() + 10, CONF.GetVideoAudioStartPort());
-            MEETING.AddObserver(this);
-        } else
+            tLocalSourceIp = tLocalLoopIp;
+        }else
         {
             LOG(LOG_ERROR, "No fitting network interface present");
             exit(-1);
         }
     }
+
+    CONF.SetSipListenerAddress(tLocalSourceIp);
+
+    if (CONF.ConferencingEnabled())
+    {
+        LOG(LOG_INFO, "Using conference management IP address: %s", tLocalSourceIp.toStdString().c_str());
+        MEETING.Init(tLocalSourceIp.toStdString(), mLocalAddresses, CONF.GetNatSupportActivation(), "BROADCAST", CONF.GetSipStartPort(), CONF.GetSipListenerTransport(), CONF.GetSipStartPort() + 10, CONF.GetVideoAudioStartPort());
+    }
+    MEETING.AddObserver(this);
 }
 
 void MainWindow::registerAtStunSipServer()
@@ -443,7 +452,8 @@ void MainWindow::initializeColoring()
     LOG(LOG_VERBOSE, "Initialization of coloring..");
 
     // tool bars
-	mToolBarOnlineStatus->setStyleSheet("QToolBar#mToolBarOnlineStatus{ background-color: qlineargradient(x1:0, y1:1, x2:0, y2:0, stop:0 rgba(176, 176, 176, 255), stop:1 rgba(255, 255, 255, 255)); border: 0px solid black }");
+	if (mToolBarOnlineStatus != NULL)
+	    mToolBarOnlineStatus->setStyleSheet("QToolBar#mToolBarOnlineStatus{ background-color: qlineargradient(x1:0, y1:1, x2:0, y2:0, stop:0 rgba(176, 176, 176, 255), stop:1 rgba(255, 255, 255, 255)); border: 0px solid black }");
 	mToolBarMediaSources->setStyleSheet("QToolBar#mToolBarMediaSources{ background-color: qlineargradient(x1:0, y1:1, x2:0, y2:0, stop:0 rgba(176, 176, 176, 255), stop:1 rgba(255, 255, 255, 255)); border: 0px solid black }");
 }
 
@@ -456,13 +466,34 @@ void MainWindow::initializeWidgetsAndMenus()
     	QApplication::setStyle(new QPlastiqueStyle());
 	#endif
 
-    LOG(LOG_VERBOSE, "..contacts widget");
-    mOverviewContactsWidget = new OverviewContactsWidget(mActionOverviewContactsWidget, this);
+    if (CONF.ConferencingEnabled())
+    {
+        LOG(LOG_VERBOSE, "..contacts widget");
+        mOverviewContactsWidget = new OverviewContactsWidget(mActionOverviewContactsWidget, this);
+
+        LOG(LOG_VERBOSE, "..file transfers widget");
+        mOverviewFileTransfersWidget = new OverviewFileTransfersWidget(mActionOverviewFileTransfersWidget, this);
+        tabifyDockWidget(mOverviewContactsWidget, mOverviewFileTransfersWidget);
+
+        LOG(LOG_VERBOSE, "..availability widget");
+        mOnlineStatusWidget = new AvailabilityWidget(this);
+        mToolBarOnlineStatus->addWidget(mOnlineStatusWidget);
+    }else
+    {
+        mActionOverviewContactsWidget->setVisible(false);
+        mActionOverviewFileTransfersWidget->setVisible(false);
+        mActionIdentity->setVisible(false);
+        mActionToolBarOnlineStatus->setVisible(false);
+        mMenuParticipantMessageWidgets->setVisible(false);
+        delete mMenuParticipantMessageWidgets;
+        mMenuParticipantMessageWidgets = NULL;
+        removeToolBar(mToolBarOnlineStatus);
+        delete mToolBarOnlineStatus;
+        mToolBarOnlineStatus = NULL;
+    }
+
     LOG(LOG_VERBOSE, "..errors widget");
     mOverviewErrorsWidget = new OverviewErrorsWidget(mActionOverviewErrorsWidget, this);
-    LOG(LOG_VERBOSE, "..file transfers widget");
-    mOverviewFileTransfersWidget = new OverviewFileTransfersWidget(mActionOverviewFileTransfersWidget, this);
-    tabifyDockWidget(mOverviewContactsWidget, mOverviewFileTransfersWidget);
 
     //TODO: remove the following if the feature is complete
     #ifdef RELEASE_VERSION
@@ -472,10 +503,6 @@ void MainWindow::initializeWidgetsAndMenus()
     LOG(LOG_VERBOSE, "..local broadcast widget");
     mLocalUserParticipantWidget = new ParticipantWidget(BROADCAST, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer);
     setCentralWidget(mLocalUserParticipantWidget);
-
-    LOG(LOG_VERBOSE, "..availability widget");
-    mOnlineStatusWidget = new AvailabilityWidget(this);
-    mToolBarOnlineStatus->addWidget(mOnlineStatusWidget);
 
     CreateSysTray();
 
@@ -791,7 +818,8 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
     CONF.SetMainWindowPosition(pos());
     CONF.SetMainWindowSize(size());
     CONF.SetVisibilityToolBarMediaSources(mToolBarMediaSources->isVisible());
-    CONF.SetVisibilityToolBarOnlineStatus(mToolBarOnlineStatus->isVisible());
+    if (mToolBarOnlineStatus != NULL)
+        CONF.SetVisibilityToolBarOnlineStatus(mToolBarOnlineStatus->isVisible());
 
     // update IP entries within usage statistic
     //setIpStatistic(MEETING.GetHostAdr(), MEETING.getStunNatIp());
@@ -1832,11 +1860,14 @@ void MainWindow::UpdateSysTrayContextMenu()
 
 		mSysTrayMenu->addSeparator();
 
-		tAction = mSysTrayMenu->addAction("Online status");
-		tMenu = new QMenu(this);
-		mOnlineStatusWidget->InitializeMenuOnlineStatus(tMenu);
-		tAction->setMenu(tMenu);
-		connect(tMenu, SIGNAL(triggered(QAction *)), mOnlineStatusWidget, SLOT(Selected(QAction *)));
+		if (CONF.ConferencingEnabled())
+		{
+            tAction = mSysTrayMenu->addAction("Online status");
+            tMenu = new QMenu(this);
+            mOnlineStatusWidget->InitializeMenuOnlineStatus(tMenu);
+            tAction->setMenu(tMenu);
+            connect(tMenu, SIGNAL(triggered(QAction *)), mOnlineStatusWidget, SLOT(Selected(QAction *)));
+		}
 
 		mSysTrayMenu->addSeparator();
 
@@ -1883,11 +1914,14 @@ void MainWindow::UpdateSysTrayContextMenu()
 
 			mDockMenu->addSeparator();
 
-			tAction = mDockMenu->addAction("Online status");
-			tMenu = new QMenu(this);
-			mOnlineStatusWidget->InitializeMenuOnlineStatus(tMenu);
-			tAction->setMenu(tMenu);
-			connect(tMenu, SIGNAL(triggered(QAction *)), mOnlineStatusWidget, SLOT(Selected(QAction *)));
+	        if (CONF.ConferencingEnabled())
+	        {
+                tAction = mDockMenu->addAction("Online status");
+                tMenu = new QMenu(this);
+                mOnlineStatusWidget->InitializeMenuOnlineStatus(tMenu);
+                tAction->setMenu(tMenu);
+                connect(tMenu, SIGNAL(triggered(QAction *)), mOnlineStatusWidget, SLOT(Selected(QAction *)));
+	        }
 		}else
 			LOG(LOG_VERBOSE, "Invalid dock menu object");
 	#endif
