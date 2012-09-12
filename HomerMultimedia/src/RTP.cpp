@@ -1869,7 +1869,7 @@ int RTP::CodecToPayloadId(std::string pName)
         tResult = 120;
     if (pName == "mpeg4")
         tResult = 121;
-    if (pName == "theora")
+    if ((pName == "theora") || (pName == "libtheora") /* delivered from AVCodec->name */)
         tResult = 122;
     if (pName == "vp8")
         tResult = 123;
