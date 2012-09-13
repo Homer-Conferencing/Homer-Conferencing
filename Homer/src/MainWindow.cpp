@@ -331,6 +331,9 @@ void MainWindow::initializeFeatureDisablers(QStringList &pArguments)
     if (!CONF.GetFeatureConferencing())
         CONF.DisableConferencing();
 
+    if (!CONF.GetFeatureConferencing())
+        CONF.DisableConferencing();
+
     removeArguments(pArguments, "-Disable");
 }
 
