@@ -321,6 +321,38 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
     mTimerId = startTimer(STREAM_POS_UPDATE_DELAY);
 }
 
+void ParticipantWidget::HideAudioVideoWidget()
+{
+    switch(mSessionType)
+    {
+        case BROADCAST:
+            mVideoAudioWidget->hide();
+            break;
+        case PARTICIPANT:
+            mVideoAudioWidget->hide();
+            break;
+        case PREVIEW:
+            hide();
+            break;
+    }
+}
+
+void ParticipantWidget::ShowAudioVideoWidget()
+{
+    switch(mSessionType)
+    {
+        case BROADCAST:
+            mVideoAudioWidget->show();
+            break;
+        case PARTICIPANT:
+            mVideoAudioWidget->show();
+            break;
+        case PREVIEW:
+            show();
+            break;
+    }
+}
+
 void ParticipantWidget::ResizeAVView(int pSize)
 {
 	QList<int>tSizes  = mSplitter->sizes();

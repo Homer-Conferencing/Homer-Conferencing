@@ -151,6 +151,12 @@ private slots:
 	friend class PlaybackSlider;
 
 private:
+	friend class VideoWidget;
+
+	/* visibility of A/V widget */
+    void HideAudioVideoWidget();
+    void ShowAudioVideoWidget();
+
 	void ResizeAVView(int pSize);
 	void Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, QString pParticipant);
     void FindSipInterface(QString pSessionName);
@@ -172,7 +178,6 @@ private:
     void SetUserAVDrift(float pDrift);
     void ReportVideoDelay(float pDelay); // adds an additional delay to audio if video presentation is delayed
     void InformAboutVideoSeekingComplete();
-    friend class VideoWidget;
 
     void ShowNewState();
     void ShowStreamPosition(int64_t tCurPos, int64_t tEndPos);

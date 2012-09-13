@@ -1284,6 +1284,7 @@ void VideoWidget::ToggleFullScreenMode()
     {
         setWindowFlags(windowFlags() ^ Qt::Window);
         showNormal();
+        mParticipantWidget->ShowAudioVideoWidget();
         if (cursor().shape() == Qt::BlankCursor)
         {
             unsetCursor();
@@ -1294,6 +1295,7 @@ void VideoWidget::ToggleFullScreenMode()
         setWindowFlags(windowFlags() | Qt::Window);
         mTimeOfLastMouseMove = QTime::currentTime();
         ShowFullScreen();
+        mParticipantWidget->HideAudioVideoWidget();
     }
     setUpdatesEnabled(true);
 	mNeedBackgroundUpdatesUntillNextFrame = true;
