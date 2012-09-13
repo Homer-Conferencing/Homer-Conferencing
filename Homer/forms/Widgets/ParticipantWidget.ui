@@ -41,7 +41,7 @@
     <item>
      <widget class="QFrame" name="mLogoFrame">
       <property name="styleSheet">
-       <string notr="true">background-color: rgb(0, 0, 0);</string>
+       <string notr="true">QFrame#mLogoFrame{ background-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 rgba(8, 94, 129, 255), stop:0.5 rgba(118, 201, 225, 255), stop:1 rgba(255, 255, 255, 255));}</string>
       </property>
       <property name="frameShape">
        <enum>QFrame::Panel</enum>
