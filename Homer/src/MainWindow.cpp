@@ -105,7 +105,9 @@ MainWindow::MainWindow(QStringList pArguments, QString pAbsBinPath) :
     mSysTrayMenu = NULL;
     mAbsBinPath = pAbsBinPath;
     mSourceDesktop = NULL;
-    mNetworkSimulator = NULL;
+    #if HOMER_NETWORK_SIMULATOR
+        mNetworkSimulator = NULL;
+    #endif
     mOverviewContactsWidget = NULL;
     mOverviewFileTransfersWidget = NULL;
     mOnlineStatusWidget = NULL;
@@ -875,8 +877,10 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
     MEETING.Deinit();
 
     LOG(LOG_VERBOSE, "..destroying simulator widget");
-//    if (mNetworkSimulator != NULL)
-//        delete mNetworkSimulator;
+    #if HOMER_NETWORK_SIMULATOR
+        if (mNetworkSimulator != NULL)
+            delete mNetworkSimulator;
+    #endif
 
     LOG(LOG_VERBOSE, "..destroying shortcuts");
     delete mShortcutActivateDebugWidgets;
