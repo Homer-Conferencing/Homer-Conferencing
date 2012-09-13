@@ -42,6 +42,8 @@ namespace Homer { namespace Multimedia {
 ///////////////////////////////////////////////////////////////////////////////
 
 // the following de/activates debugging of received packets
+//#define MSF_DEBUG_SEEKING
+//#define MSF_DEBUG_CALIBRATION
 //#define MSF_DEBUG_PACKETS
 //#define MSF_DEBUG_TIMING
 //#define MSF_DEBUG_DECODER_STATE
@@ -55,6 +57,9 @@ public:
     MediaSourceFile(std::string pSourceFile, bool pGrabInRealTime = true /* 1 = frame rate emulation, 0 = grab as fast as possible */);
 
     virtual ~MediaSourceFile();
+
+    /* frame stats */
+    virtual bool SupportsDecoderFrameStatistics();
 
     /* video grabbing control */
     virtual GrabResolutions GetSupportedVideoGrabResolutions();
@@ -73,7 +78,6 @@ public:
     virtual bool SupportsSeeking();
     virtual float GetSeekEnd(); // get maximum seek time in seconds
     virtual bool Seek(float pSeconds, bool pOnlyKeyFrames = true); // seek to absolute position which is given in seconds
-    //TODO: following function!
     virtual bool SeekRelative(float pSeconds, bool pOnlyKeyFrames = true); // seeks relative to the current position, distance is given in seconds
     virtual float GetSeekPos(); // in seconds
 
@@ -98,7 +102,7 @@ protected:
 private:
     /* decoder */
     virtual void* Run(void* pArgs = NULL); // transcoder main loop
-    void StartDecoder(int pFifoEntrySize);
+    void StartDecoder();
     void StopDecoder();
 
     /* real-time playback */
@@ -125,6 +129,8 @@ private:
     bool                mRecalibrateRealTimeGrabbingAfterSeeking;
     bool                mFlushBuffersAfterSeeking;
     double              mSeekingTargetFrameIndex;
+    bool                mSeekingWaitForNextKeyFrame; // after seeking we wait for next i -frames
+    bool                mSeekingWaitForNextKeyFramePackets; // after seeking we wait for next key frame packets -> either i-frames or p-frames
     /* picture grabbing */
     bool                mPictureGrabbed;
     uint8_t 			*mPictureData[AV_NUM_DATA_POINTERS];

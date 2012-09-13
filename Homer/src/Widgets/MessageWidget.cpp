@@ -26,6 +26,7 @@
  */
 
 #include <Widgets/MessageWidget.h>
+#include <Widgets/OverviewContactsWidget.h>
 #include <Dialogs/FileTransferAckDialog.h>
 #include <Configuration.h>
 #include <Meeting.h>
@@ -56,10 +57,9 @@ MessageWidget::MessageWidget(QWidget* pParent):
     hide();
 }
 
-void MessageWidget::Init(QMenu *pMenu, QString pParticipant, OverviewContactsWidget *pContactsWidget, bool pVisible)
+void MessageWidget::Init(QMenu *pMenu, QString pParticipant, bool pVisible)
 {
     mParticipant = pParticipant;
-    mContactsWidget = pContactsWidget;
 
     initializeGUI();
 
@@ -84,13 +84,16 @@ void MessageWidget::Init(QMenu *pMenu, QString pParticipant, OverviewContactsWid
     //### update GUI
     //####################################################################
 
+    //TODO: remove the following if the feature is complete
+    #ifdef RELEASE_VERSION
+        mPbFile->setEnabled(false);
+    #endif
+
     setWindowTitle(mParticipant);
     if (mAssignedAction != NULL)
         connect(mAssignedAction, SIGNAL(triggered()), this, SLOT(ToggleVisibility()));
-    connect(mTeMessage, SIGNAL(SendTrigger()), this, SLOT(SendText()));
-    connect(mPbMessage, SIGNAL(released()), this, SLOT(SendText()));
+    connect(mTeMessage, SIGNAL(SendTrigger()), this, SLOT(SendMessage()));
     connect(mPbFile, SIGNAL(released()), this, SLOT(SendFile()));
-    connect(mPbWeb, SIGNAL(released()), this, SLOT(SendLink()));
     connect(mTbAdd, SIGNAL(released()), this, SLOT(AddPArticipantToContacts()));
     if(IsKnownContact())
     {
@@ -112,7 +115,7 @@ void MessageWidget::Init(QMenu *pMenu, QString pParticipant, OverviewContactsWid
     mTeMessage->setFocus(Qt::TabFocusReason);
 
     // are we part of broadcast window?
-    if (mContactsWidget == NULL)
+    if (mParticipant == BROACAST_IDENTIFIER)
     {
         mTbAdd->hide();
         mPbCall->setEnabled(false);
@@ -122,7 +125,7 @@ void MessageWidget::Init(QMenu *pMenu, QString pParticipant, OverviewContactsWid
 MessageWidget::~MessageWidget()
 {
     // are we part of broadcast window?
-    if (mContactsWidget == NULL)
+    if (mParticipant == BROACAST_IDENTIFIER)
     {
         CONF.SetVisibilityBroadcastMessageWidget(isVisible());
     }
@@ -158,7 +161,7 @@ void MessageWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEvent)
 
     tMenu.addSeparator();
 
-    if ((!IsKnownContact()) && (mContactsWidget != NULL))
+    if ((!IsKnownContact()) && (mParticipant != BROACAST_IDENTIFIER))
     {
         tAction = tMenu.addAction("Add to contacts");
         QIcon tIcon3;
@@ -190,8 +193,9 @@ void MessageWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEvent)
 
 void MessageWidget::AddPArticipantToContacts()
 {
-    if (mContactsWidget != NULL)
-        if (mContactsWidget->InsertNew(mParticipant))
+	LOG(LOG_VERBOSE, "User wants to add user %s to his contact list", mParticipant.toStdString().c_str());
+    if (mParticipant != BROACAST_IDENTIFIER)
+        if (CONTACTSWIDGET.InsertNew(mParticipant))
             mTbAdd->hide();
 }
 
@@ -279,11 +283,54 @@ void MessageWidget::initializeGUI()
     mTbMessageHistory->setFont(tFont);
 }
 
+QString MessageWidget::ReplaceSmiles(QString pMessage)
+{
+    QString tResult = "";
+
+    // filter and replace URLs
+    QString tOutputMessage = "";
+    int tStartPos = 0;
+    int tEndPos = -1;
+
+    while (tStartPos < pMessage.size())
+    {
+        tEndPos = pMessage.indexOf(' ', tStartPos);
+        if (tEndPos == -1)
+        {
+            if (tEndPos < pMessage.size() -1)
+                tEndPos = pMessage.size();
+            else
+                break;
+        }
+
+        QString tWord = pMessage.mid(tStartPos, tEndPos - tStartPos);
+        LOG(LOG_VERBOSE, "Message token: \"%s\"", tWord.toStdString().c_str());
+        if ((tWord == ":)") || (tWord == ":-)"))
+        {// laughing smile
+            LOG(LOG_VERBOSE, "Found smile");
+            tOutputMessage.append("<img src=\":/images/30_30/Smile.gif\">");
+        }else
+            tOutputMessage.append(tWord);
+
+        if (tEndPos < pMessage.size() -1)
+            tOutputMessage.append(' ');
+        tStartPos = tEndPos + 1;
+    }
+
+    // set the new history
+    if (tOutputMessage.size() > 0)
+        tResult = tOutputMessage;
+
+    return tResult;
+}
+
 void MessageWidget::AddMessage(QString pSender, QString pMessage, bool pLocalMessage)
 {
     // replace ENTER with corresponding html tag
     // hint: necessary because this QTextEdit is in html-mode and caused by this it ignores "\n"
     pMessage.replace(QString("\n"), QString("<br>"));
+
+    pMessage = ReplaceSmiles(pMessage);
 
     if (pSender != "")
     {
@@ -303,7 +350,7 @@ void MessageWidget::AddMessage(QString pSender, QString pMessage, bool pLocalMes
     mTbMessageHistory->Update(mMessageHistory);
 }
 
-void MessageWidget::SendText()
+void MessageWidget::SendMessage()
 {
 	// is message size > 0 ?
     if (mTeMessage->toPlainText().size() == 0)
@@ -312,8 +359,7 @@ void MessageWidget::SendText()
     if (MEETING.SendMessage(QString(mParticipant.toLocal8Bit()).toStdString(), mTeMessage->toPlainText().toStdString()))
     {
         AddMessage(QString(MEETING.GetLocalUserName().c_str()), mTeMessage->toPlainText(), true);
-        mTeMessage->setPlainText("");
-        mTeMessage->setFocus(Qt::TabFocusReason);
+        mTeMessage->Clear();
     }else
         ShowError("Error occurred", "Message could not be sent!");
 }
@@ -351,6 +397,7 @@ void MessageWidget::SendFile(QList<QUrl> *tFileUrls)
         printf("TODO: send file %s\n", tFile.toStdString().c_str());
 }
 
+//TODO: use better widget which automatically interprets links
 void MessageWidget::SendLink()
 {
     bool tAck = false;

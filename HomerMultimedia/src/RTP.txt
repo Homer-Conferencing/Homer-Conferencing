@@ -1662,6 +1662,202 @@ block  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      make up the current frame.  NF MUST be identical for packets
      containing fragments of the same frame.
 
+
+######################################################################################
+################################ DRAFT(THEORA) #######################################
+######################################################################################
+(see http://svn.xiph.org/trunk/theora/doc/draft-ietf-avt-rtp-theora-00.txt)
+2.2.  Payload Header
+
+   The 4 octets following the RTP Header section represent the Payload
+   Header.  This header is split into a number of bitfields detailing
+   the format of the following Payload Datagrams.
+
+       0                   1                   2                   3
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |               Configuration Ident             | F |TDT|# pkts.|
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+      +-+-+-+-+-+-+-+-+
+
+   Figure 2: Payload Header
+
+   Configuration Ident: 24 bits
+
+   This 24 bit field is used to associate the Theora data to a decoding
+   Packed Configuration.
+
+   Fragment type (F): 2 bit
+
+   This field is set according to the following list
+
+      0 = Not Fragmented
+      1 = Start Fragment
+      2 = Continuation Fragment
+      3 = End Fragment
+
+   This field must be zero if the number of packets field is non-zero.
+
+   Theora Data Type (TDT): 2 bits
+
+   This field sets the packet payload type for the Theora data.  There
+   are currently three Theora payload types currently used and one
+   reserved for future use.
+
+      0 = Raw Theora payload
+      1 = Theora Packed Configuration payload
+      2 = Legacy Theora Comment payload
+      3 = Reserved
+
+   The packets with a TDT of value 3 MUST be ignored
+
+   The last 4 bits represent the number of complete packets in this
+   payload.  This provides a maximum number of 15 Theora packets in the
+   payload.  If the packet contains fragmented data the number of
+   packets MUST be set to 0.
+   
+   2.3.  Payload Data
+
+   Each Theora payload section starts with a two octets length header
+   that is used to represent the size of the following data payload,
+   followed by the raw Theora packet data.
+
+       0                   1                   2                   3
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |        Payload Length         |          Theora Data         ..
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   Figure 3: Payload Data
+
+   The Theora codec uses relatively unstructured raw packets containing
+   binary integer fields of arbitrary width that often do not fall on an
+   octet boundary.  When a Theora encoder produces packets, unused space
+   in the last byte of a packet is always zeroed during the encoding
+   process.  Thus, should this unused space be read, it will return
+   binary zeros.
+
+   For payloads which consist of multiple Theora packets the payload
+   data consists of the payload length field followed by the first
+   Theora packet's data, then the payload length followed by the second
+   Theora packet, and so on for each of the Theora packets in the
+   payload.
+   
+######################################################################################
+################################## DRAFT(VP8) ########################################
+######################################################################################
+(see http://tools.ietf.org/html/draft-ietf-payload-vp8-01)
+
+4.1. VP8 Payload Descriptor
+
+
+   The first octets after the RTP header are the VP8 payload descriptor,
+   with the following structure.
+
+       0 1 2 3 4 5 6 7
+      +-+-+-+-+-+-+-+-+
+      |X|R|N|S|PartID | (REQUIRED)
+      +-+-+-+-+-+-+-+-+
+   X: |I|L|T|  RSV-A  | (OPTIONAL)
+      +-+-+-+-+-+-+-+-+
+   I: |   PictureID   | (OPTIONAL)
+      +-+-+-+-+-+-+-+-+
+   L: |   TL0PICIDX   | (OPTIONAL)
+      +-+-+-+-+-+-+-+-+
+   T: | TID |  RSV-B  | (OPTIONAL)
+      +-+-+-+-+-+-+-+-+
+
+                                 Figure 2
+
+   X: Extended control bits present.  When set to one, the extension
+      octet MUST be provided immediately after the mandatory first
+      octet.  If the bit is zero, all optional fields MUST be omitted.
+
+   R: Bit reserved for future use.  MUST be set to zero and MUST be
+      ignored by the receiver.
+
+   N: Non-reference frame.  When set to one, the frame can be discarded
+      without affecting any other future or past frames.  If the
+      reference status of the frame is unknown, this bit SHOULD be set
+      to zero to avoid discarding frames needed for reference.
+
+         Informative note: This document does not describe how to
+         determine if an encoded frame is non-reference.  The reference
+         status of an encoded frame is preferably provided from the
+         encoder implementation.
+
+   S: Start of VP8 partition.  SHOULD be set to 1 when the first payload
+      octet of the RTP packet is the beginning of a new VP8 partition,
+      and MUST NOT be 1 otherwise.  The S bit MUST be set to 1 for the
+      first packet of each encoded frame.
+
+   PartID:  Partition index.  Denotes which VP8 partition the first
+      payload octet of the packet belongs to.  The first VP8 partition
+      (containing modes and motion vectors) MUST be labeled with PartID
+      = 0.  PartID SHOULD be incremented for each subsequent partition,
+      but MAY be kept at 0 for all packets.  PartID MUST NOT be larger
+      than 8.  If more than one packet in an encoded frame contains the
+      same PartID, the S bit MUST NOT be set for any other packet than
+      the first packet with that PartID.
+
+   When the X bit is set to 1 in the first octet, the OPTIONAL extension
+   bit field MUST be present in the second octet.  If the X bit is 0,
+   the extension bit field MUST NOT be present, and all bits below MUST
+   be implicitly interpreted as 0.
+
+   I: PictureID present.  When set to one, the OPTIONAL PictureID MUST
+      be present after the extension bit field and specified as below.
+      Otherwise, PictureID MUST NOT be present.
+
+   L: TL0PICIDX present.  When set to one, the OPTIONAL TL0PICIDX MUST
+      be present and specified as below, and the T bit MUST be set to 1.
+      Otherwise, TL0PICIDX MUST NOT be present.
+
+   T: TID present.  When set to one, the OPTIONAL TID field MUST be
+      present and specified as below, and the RSV-B field MUST be
+      present and set to zero.  Otherwise, TID and RSV-B MUST NOT be
+      present.
+
+   RSV-A:  Bits reserved for future use.  MUST be set to zero and MUST
+      be ignored by the receiver.
+
+   After the extension bit field follow the extension data fields that
+   are enabled.
+
+   PictureID:  8 or 16 bits.  This is a running index of the frames.
+      The field MUST be present if the I bit is equal to one.  The most
+      significant bit of the first octet is an extension flag.  The 7
+      following bits carry (parts of) the PictureID.  If the extension
+      flag is one, the PictureID continues in the next octet forming a
+      15 bit index, where the 8 bits in the second octet are the least
+      significant bits of the PictureID.  If the extension flag is zero,
+      there is no extension, and the PictureID is the 7 remaining bits
+      of the first (and only) octet.  The sender may choose 7 or 15 bits
+      index.  The PictureID SHOULD start on a random number, and MUST
+      wrap after reaching the maximum ID.
+
+   TL0PICIDX:  8 bits temporal level zero index.  The field MUST be
+      present if the L bit is equal to 1, and MUST NOT be present
+      otherwise.  TL0PICIDX is a running index for the temporal base
+      layer frames, i.e., the frames with TID set to 0.  If TID is
+      larger than 0, TL0PICIDX indicates which base layer frame the
+      current image depends on.  TL0PICIDX MUST be incremented when TID
+      is 0.  The index SHOULD start on a random number, and MUST restart
+      at 0 after reaching the maximum number 255.
+
+   TID:  3 bits temporal layer index.  The field MUST be present when
+      the T bit is equal to 1, and MUST NOT be present otherwise.  The
+      TID field indicates which temporal layer the packet represents.
+      The lowest layer, i.e., the base layer, MUST have TID set to 0.
+      Higher layers SHOULD increment the TID according to their position
+      in the layer hierarchy.
+
+   RSV-B:  Bits reserved for future use.  MUST be present when the T bit
+      is equal to 1, MUST be set to zero and MUST be ignored by the
+      receiver.  If the T bit is equal to 0, the field MUST NOT be
+      present.
+
 ######################################################################################
 ########################## RFC4585 (RTCP feedback messages) ##########################
 ######################################################################################

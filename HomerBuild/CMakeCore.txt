@@ -122,9 +122,8 @@ SET (INCLUDE_DIRS
 )
 IF ((NOT ${BUILD} MATCHES "Default") OR (WIN32))
 SET (INCLUDE_DIRS
-	${INCLUDE_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerIncludes
-	${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerIncludes/SDL
+	${INCLUDE_DIRS}
 )
 ENDIF()
 MESSAGE("### Header search path: ${INCLUDE_DIRS}")
@@ -144,7 +143,6 @@ SET (FLAGS
 	-Wno-format
 	-Wno-uninitialized
 	-Wno-unused-parameter
-	-Wno-invalid-source-encoding
 )
 IF (NOT (${BUILD} MATCHES "Default"))
 	SET (FLAGS
@@ -161,18 +159,21 @@ IF (${BUILD} MATCHES "Debug")
 ELSE ()
 	SET (FLAGS "${FLAGS} -DRELEASE_VERSION")
 ENDIF ()
+
+# define minimum OSX version as 10.6 - Homer is compatible to this version
+IF (APPLE)
+	SET(FLAGS
+		${FLAGS}
+		-mmacosx-version-min=${MIN_SUPPORTED_OSX_VERSION}
+	)
+ENDIF()
+
 # stripping for all platforms excluding APPLE
 IF (NOT APPLE)
 	IF (${BUILD} MATCHES "Release")
 		SET (LFLAGS "${LFLAGS} -s")
 	ENDIF()
 ENDIF()
-IF (NOT BSD)
-    SET (FLAGS
-		${FLAGS}
-		-Wno-invalid-source-encoding
-	)
-ENDIF(NOT BSD)
 
 ##############################################################
 # explicit shared object name with @rpath prefix for APPLE

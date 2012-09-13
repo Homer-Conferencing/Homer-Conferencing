@@ -174,6 +174,7 @@ bool AudioOutSdl::OpenPlaybackDevice(int pSampleRate, bool pStereo, string pDriv
         tChannelEntry->LastChunk = NULL;
         tChannelEntry->Assigned = false;
         tChannelEntry->IsPlaying = false;
+        tChannelEntry->CallbackRecursionCounter = 0;
 
         // add this channel descriptor to the channel map (without mutex locking! -> run before anything else)
         mChannelMap[i] = tChannelEntry;
@@ -210,11 +211,10 @@ void AudioOutSdl::ClosePlaybackDevice()
 
         mAudioOutOpened = false;
 
-        // clear the channel map TODO
         //HINT: Ignore this request in Windows because it uses different heaps to allocate
         //		when we deallocate perhaps Windows mixes the heaps and our app. crashes to hell -> it's better to lose some memory than go to binary hell
         //see http://mail-archives.apache.org/mod_mbox/xerces-c-dev/200004.mbox/%3C1DBD6F6FF0F9D311BD4000A0C9979E3201A4C7@cvo1.cvo.roguewave.com%3E
-		#ifdef LINUX
+		#ifndef WIN32
 			for (int i = mChannels; i != 0; --i)
 				delete mChannelMap[i];
 		#endif
@@ -245,7 +245,7 @@ int AudioOutSdl::AllocateChannel()
         // lock
         tChannelDesc->mMutex.lock();
 
-        if (tChannelDesc->Assigned == false)
+        if (!tChannelDesc->Assigned)
         {
             tChannelDesc->Assigned = true;
             tChannelDesc->Chunks.clear();
@@ -325,6 +325,10 @@ void AudioOutSdl::ClearChunkListInternal(int pChannel)
 {
     ChannelEntry* tChannelDesc = mChannelMap[pChannel];
 
+	#ifdef DEBUG_AUDIO_OUT_SDL
+		LOG(LOG_VERBOSE, "Clearing chunk list internally");
+	#endif
+
     // free chunk list
     std::list<void*>::iterator tItEnd = tChannelDesc->Chunks.end();
     for (std::list<void*>::iterator tIt = tChannelDesc->Chunks.begin(); tIt != tItEnd; tIt++)
@@ -335,6 +339,10 @@ void AudioOutSdl::ClearChunkListInternal(int pChannel)
         Mix_FreeChunk(tChunk);
     }
     tChannelDesc->Chunks.clear();
+
+	#ifdef DEBUG_AUDIO_OUT_SDL
+		LOG(LOG_VERBOSE, "Clearing of chunk list finished");
+	#endif
 }
 
 bool AudioOutSdl::Play(int pChannel)
@@ -361,13 +369,20 @@ bool AudioOutSdl::Play(int pChannel)
     {
         ChannelEntry* tChannelDesc = mChannelMap[pChannel];
 
+		#ifdef DEBUG_AUDIO_OUT_SDL
+			LOG(LOG_VERBOSE, "Locking channel descriptor");
+		#endif
         // lock
         tChannelDesc->mMutex.lock();
 
-        if (tChannelDesc->IsPlaying == false)
+		#ifdef DEBUG_AUDIO_OUT_SDL
+			LOG(LOG_VERBOSE, "Channel descriptor locked");
+		#endif
+
+        if (!tChannelDesc->IsPlaying)
         {
             // play new chunk
-            if ((tChannelDesc->Chunks.size() > 0) && (tChannelDesc->Assigned == true))
+            if ((tChannelDesc->Chunks.size() > 0) && (tChannelDesc->Assigned))
             {
                 // get new chunk for playing
                 tChunk = (Mix_Chunk*)tChannelDesc->Chunks.front();
@@ -380,9 +395,14 @@ bool AudioOutSdl::Play(int pChannel)
 				#ifdef DEBUG_AUDIO_OUT_SDL
                 	LOG(LOG_VERBOSE, "Starting playback on SDL channel %d", pChannel);
 				#endif
+
                 int tGotChannel = Mix_PlayChannel(pChannel, tChunk, 0);
 
-                // lock
+				#ifdef DEBUG_AUDIO_OUT_SDL
+					LOG(LOG_VERBOSE, "Playback on SDL channel %d started", pChannel);
+				#endif
+
+				// lock
                 tChannelDesc->mMutex.lock();
 
                 if (tGotChannel != pChannel)
@@ -418,9 +438,7 @@ bool AudioOutSdl::Play(int pChannel)
         tChannelDesc->mMutex.unlock();
     }else
     {
-		#ifdef DEBUG_AUDIO_OUT_SDL
-    		LOG(LOG_WARN, "Channel %d is unknown", pChannel);
-		#endif
+		LOG(LOG_WARN, "Channel %d is unknown", pChannel);
     }
 
     return tResult;
@@ -438,7 +456,10 @@ bool AudioOutSdl::Stop(int pChannel)
 		LOG(LOG_VERBOSE, "Stopping playback on SDL channel %d", pChannel);
 	#endif
 
-    Mix_HaltChannel(pChannel);
+    //Mix_HaltChannel(pChannel);
+	#ifdef DEBUG_AUDIO_OUT_SDL
+		LOG(LOG_VERBOSE, "..ClearChunkListInternal() on channel %d", pChannel);
+	#endif
     ClearChunkListInternal(pChannel);
 
     ChannelEntry* tChannelDesc = mChannelMap[pChannel];
@@ -450,6 +471,10 @@ bool AudioOutSdl::Stop(int pChannel)
 
     // unlock
     tChannelDesc->mMutex.unlock();
+
+	#ifdef DEBUG_AUDIO_OUT_SDL
+    	LOG(LOG_VERBOSE, "Stopping of playback on SDL channel %d finished", pChannel);
+	#endif
 
     return true;
 }
@@ -524,44 +549,6 @@ bool AudioOutSdl::Enqueue(int pChannel, void *pBuffer, int pBufferSize, bool pLi
     return true;
 }
 
-bool AudioOutSdl::Enqueue(int pChannel, std::string pFile, bool pLimitBucket)
-{
-    if (pChannel == -1)
-            return false;
-
-    if (!mAudioOutOpened)
-        return false;
-
-    // init decoding of audio file
-    Sound_Sample* tDecodeDescriptor = Sound_NewSampleFromFile(pFile.c_str(), NULL, 1024*64);
-
-    if (!tDecodeDescriptor)
-    {
-        LOG(LOG_ERROR, "Error when opening file \"%s\" because of \"%s\"\n", pFile.c_str(), Sound_GetError());
-        return false;
-    }
-
-    do
-    {
-        // decode step by step the audio file into raw pcm data
-        Uint32 tBytesDecoded = Sound_Decode(tDecodeDescriptor);
-
-        if (tDecodeDescriptor->flags & SOUND_SAMPLEFLAG_ERROR)
-        {
-            LOG(LOG_ERROR, "Error decoding file \"%s\" because of \"%s\"\n", pFile.c_str(), Sound_GetError());
-            break;
-        }
-
-        if ((tBytesDecoded == tDecodeDescriptor->buffer_size) || ((tDecodeDescriptor->buffer_size > 0) && (tDecodeDescriptor->flags & SOUND_SAMPLEFLAG_EOF)))
-            Enqueue(pChannel, tDecodeDescriptor->buffer, tBytesDecoded, pLimitBucket);
-
-    } while ((tDecodeDescriptor->flags & SOUND_SAMPLEFLAG_EOF) == 0);
-
-    Sound_FreeSample(tDecodeDescriptor);
-
-    return true;
-}
-
 AudioOutInfo AudioOutSdl::QueryAudioOutDevices()
 {
     AudioOutInfo tAudioOutInfo;
@@ -628,47 +615,52 @@ void AudioOutSdl::PlayerCallBack(int pChannel)
     if (AUDIOOUTSDL.mChannelMap.find(pChannel) != AUDIOOUTSDL.mChannelMap.end())
     {
         ChannelEntry* tChannelDesc = AUDIOOUTSDL.mChannelMap[pChannel];
-
-        tChannelDesc->IsPlaying = false;
-
-        // lock
-        if (!tChannelDesc->mMutex.tryLock(10000))
+        if (tChannelDesc->CallbackRecursionCounter == 0)
         {
-            LOGEX(AudioOutSdl, LOG_WARN, "System is so terribly slow?, PlayerCallBack couldn't lock the mutex for channel %d", pChannel);
-            return;
-        }
+			// lock
+			if (!tChannelDesc->mMutex.tryLock(5000))
+			{
+				LOGEX(AudioOutSdl, LOG_WARN, "System is so terribly slow?, PlayerCallBack couldn't lock the mutex for channel %d", pChannel);
+				return;
+			}
 
-        // play new chunk
-        if ((tChannelDesc->Chunks.size() > 0) && (tChannelDesc->Assigned == true))
-        {
-            // get new chunk for playing
-            tChunk = (Mix_Chunk*)tChannelDesc->Chunks.front();
-            if (tChunk != NULL)
-            {
-                tChannelDesc->Chunks.pop_front();
+			tChannelDesc->CallbackRecursionCounter++;
+			tChannelDesc->IsPlaying = false;
 
-                // play the new chunk (0 loops)
-                int tGotChannel = Mix_PlayChannel(pChannel, tChunk, 0);
+			// play new chunk
+			if ((tChannelDesc->Chunks.size() > 0) && (tChannelDesc->Assigned))
+			{
+				// get new chunk for playing
+				tChunk = (Mix_Chunk*)tChannelDesc->Chunks.front();
+				if (tChunk != NULL)
+				{
+					tChannelDesc->Chunks.pop_front();
 
-                if (tGotChannel == -1)
-                {
-                    LOGEX(AudioOutSdl, LOG_ERROR, "Callback failed, unable to play chunk because of: %s", Mix_GetError());
-                    AUDIOOUTSDL.ClearChunkListInternal(pChannel);
-                }else
-                    tChannelDesc->IsPlaying = true;
-            }
-        }
+					// play the new chunk (0 loops)
+					int tGotChannel = Mix_PlayChannel(pChannel, tChunk, 0);
 
-        Mix_Chunk* tLastChunk = (Mix_Chunk*)tChannelDesc->LastChunk;
+					if (tGotChannel == -1)
+					{
+						LOGEX(AudioOutSdl, LOG_ERROR, "Callback failed, unable to play chunk because of: %s", Mix_GetError());
+						AUDIOOUTSDL.ClearChunkListInternal(pChannel);
+					}else
+						tChannelDesc->IsPlaying = true;
+				}
+			}
 
-        // update the current chunk pointer
-        tChannelDesc->LastChunk = (void*)tChunk;
+			Mix_Chunk* tLastChunk = (Mix_Chunk*)tChannelDesc->LastChunk;
 
-        // unlock
-        tChannelDesc->mMutex.unlock();
+			// update the current chunk pointer
+			tChannelDesc->LastChunk = (void*)tChunk;
 
-        Mix_FreeChunk(tLastChunk);
-    }
+			// unlock
+			tChannelDesc->mMutex.unlock();
+
+			Mix_FreeChunk(tLastChunk);
+			tChannelDesc->CallbackRecursionCounter--;
+        }else
+        	LOGEX(AudioOutSdl, LOG_WARN, "Callback recursion detected, will break recursion here at depth of 1");
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////

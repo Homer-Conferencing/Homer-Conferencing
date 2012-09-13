@@ -64,8 +64,8 @@ using namespace Homer::Monitor;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// how many audio buffers do we await before we start audio playback?
-#define AUDIO_INITIAL_MINIMUM_PLAYBACK_QUEUE        2
+// how many audio buffers do we allow for audio playback?
+#define AUDIO_MAX_PLAYBACK_QUEUE                            3
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -184,7 +184,7 @@ AudioWidget::~AudioWidget()
     {
         mAudioWorker->StopGrabber();
         LOG(LOG_VERBOSE, "..waiting for end of audio worker thread");
-        if (!mAudioWorker->wait(2000))
+        if (!mAudioWorker->wait(3000))
         {
             LOG(LOG_WARN, "..going to force termination of worker thread");
             mAudioWorker->terminate();
@@ -197,7 +197,9 @@ AudioWidget::~AudioWidget()
         }
     	LOG(LOG_VERBOSE, "Going to delete audio worker..");
         delete mAudioWorker;
-    }
+    }else
+    	LOG(LOG_VERBOSE, "Audio worker soesn't exist");
+
     if (mAssignedAction != NULL)
         delete mAssignedAction;
 
@@ -657,7 +659,7 @@ void AudioWidget::ToggleVisibility()
 
 void AudioWidget::ToggleMuteState(bool pState)
 {
-    mAudioWorker->ToggleMuteState(pState);
+    mAudioWorker->SetMuteState(!pState);
 }
 
 void AudioWidget::InformAboutNewSamples()
@@ -691,7 +693,6 @@ void AudioWidget::SetVisible(bool pVisible)
         show();
         if (mAssignedAction != NULL)
             mAssignedAction->setChecked(true);
-        mAudioWorker->SetVolume(mAudioVolume);
         if (parentWidget()->isHidden())
             parentWidget()->show();
     }else
@@ -703,7 +704,6 @@ void AudioWidget::SetVisible(bool pVisible)
         hide();
         if (mAssignedAction != NULL)
             mAssignedAction->setChecked(false);
-        mAudioWorker->SetVolume(0);
     }
 }
 
@@ -763,19 +763,16 @@ void AudioWidget::customEvent(QEvent* pEvent)
 //###################### WORKER ######################################
 //####################################################################
 AudioWorkerThread::AudioWorkerThread(MediaSource *pAudioSource, AudioWidget *pAudioWidget):
-    MediaSourceGrabberThread(pAudioSource)
+    MediaSourceGrabberThread(pAudioSource), AudioPlayback()
 {
     LOG(LOG_VERBOSE, "..Creating audio worker");
     mStartPlaybackAsap = false;
     mStopPlaybackAsap = false;
     mAudioOutMuted = false;
     mPlaybackAvailable = false;
-    mPaused = false;
     mSourceAvailable = false;
     mUserAVDrift = 0;
     mVideoDelayAVDrift = 0;
-    mAudioPlaybackDelayCount = 0;
-    mWaveOut = NULL;
     if (pAudioSource == NULL)
         LOG(LOG_ERROR, "Audio source is NULL");
     mAudioWidget = pAudioWidget;
@@ -799,59 +796,18 @@ void AudioWorkerThread::OpenPlaybackDevice()
         mSampleNumber[i] = 0;
     }
 
-    LOG(LOG_VERBOSE, "Going to open playback device");
+    AudioPlayback::OpenPlaybackDevice();
 
-    if (CONF.AudioOutputEnabled())
-    {
-        #ifndef APPLE
-            mWaveOut = new WaveOutPortAudio(CONF.GetLocalAudioSink().toStdString());
-        #else
-            mWaveOut = new WaveOutSdl(CONF.GetLocalAudioSink().toStdString());
-        #endif
-        if (mWaveOut != NULL)
-            mWaveOut->OpenWaveOutDevice();
-        else
-            LOG(LOG_ERROR, "Error when allocatin wave out instance");
-    }
     mPlaybackAvailable = true;
-    LOG(LOG_VERBOSE, "Finished to open playback device");
 }
 
 void AudioWorkerThread::ClosePlaybackDevice()
 {
-    LOG(LOG_VERBOSE, "Going to close playback device");
-
-    mPlaybackAvailable = false;
-
-    if (mWaveOut != NULL)
-    {
-        // close the audio output
-        delete mWaveOut;
-    }
+    AudioPlayback::ClosePlaybackDevice();
 
     LOG(LOG_VERBOSE, "Releasing audio buffers");
     for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
         mMediaSource->FreeChunkBuffer(mSamples[i]);
-
-    LOG(LOG_VERBOSE, "Finished to close playback device");
-}
-
-void AudioWorkerThread::ToggleMuteState(bool pState)
-{
-	if (!mPlaybackAvailable)
-	{
-		LOG(LOG_VERBOSE, "Playback device isn't available");
-		return;
-	}
-
-    LOG(LOG_VERBOSE, "Setting mute state to %d", !pState);
-    mAudioOutMuted = !pState;
-    mAudioWidget->InformAboutNewMuteState();
-    if (pState)
-    	mStartPlaybackAsap = true;
-    else
-    	mStopPlaybackAsap = true;
-    mGrabbingCondition.wakeAll();
 }
 
 void AudioWorkerThread::SetVolume(int pValue)
@@ -889,9 +845,9 @@ void AudioWorkerThread::SetMuteState(bool pMuted)
     mAudioOutMuted = pMuted;
     mAudioWidget->InformAboutNewMuteState();
     if(pMuted)
-        mStopPlaybackAsap = true;
+    	DoStopPlayback();
     else
-    	mStartPlaybackAsap = true;
+    	DoStartPlayback();
     mGrabbingCondition.wakeAll();
 }
 
@@ -993,27 +949,39 @@ void AudioWorkerThread::DoPlayNewFile()
     mPaused = false;
 }
 
+void AudioWorkerThread::DoSeek()
+{
+    MediaSourceGrabberThread::DoSeek();
+    ResetPlayback();
+}
+
 void AudioWorkerThread::DoSyncClock()
 {
     LOG(LOG_VERBOSE, "DoSyncClock now...");
 
-    // lock
-    mDeliverMutex.lock();
-
-    float tSyncPos = mSyncClockMasterSource->GetSeekPos() - mUserAVDrift - mVideoDelayAVDrift;
-    LOG(LOG_VERBOSE, "Synchronizing with media source %s (pos.: %.2f)", mSyncClockMasterSource->GetStreamName().c_str(), tSyncPos);
-    mSourceAvailable = mMediaSource->Seek(tSyncPos, false);
-    if(!mSourceAvailable)
+    if (mSyncClockMasterSource != NULL)
     {
-        LOG(LOG_WARN, "Source isn't available anymore after synch. with %s", mSyncClockMasterSource->GetStreamName().c_str());
-    }
-    mEofReached = false;
-    mSyncClockAsap = false;
-    //ResetPlayback();
-    mSeekAsap = false;
+        // lock
+        mDeliverMutex.lock();
 
-    // unlock
-    mDeliverMutex.unlock();
+        float tSyncPos = mSyncClockMasterSource->GetSeekPos() - mUserAVDrift - mVideoDelayAVDrift;
+        LOG(LOG_VERBOSE, "Synchronizing with media source %s (pos.: %.2f)", mSyncClockMasterSource->GetStreamName().c_str(), tSyncPos);
+        mSourceAvailable = mMediaSource->Seek(tSyncPos, false);
+        if(!mSourceAvailable)
+        {
+            LOG(LOG_WARN, "Source isn't available anymore after synch. with %s", mSyncClockMasterSource->GetStreamName().c_str());
+        }
+        mEofReached = false;
+        mSyncClockAsap = false;
+        ResetPlayback();
+        mSeekAsap = false;
+
+        // unlock
+        mDeliverMutex.unlock();
+    }else
+        LOG(LOG_WARN, "Source of reference clock is invalid");
+
+    LOG(LOG_VERBOSE, "DoSyncClock finished");
 }
 
 void AudioWorkerThread::DoResetMediaSource()
@@ -1032,6 +1000,8 @@ void AudioWorkerThread::DoSetCurrentDevice()
 
     if ((mSourceAvailable = mMediaSource->SelectDevice(mDeviceName.toStdString(), MEDIA_AUDIO, tNewSourceSelected)))
     {
+        LOG(LOG_VERBOSE, "We opened a new source: %d", tNewSourceSelected);
+
         bool tHadAlreadyInputData = false;
         for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
         {
@@ -1044,7 +1014,12 @@ void AudioWorkerThread::DoSetCurrentDevice()
         if (!tHadAlreadyInputData)
         {
             LOG(LOG_VERBOSE, "Haven't found any input data, will force a reset of audio source");
-            mSourceAvailable = mMediaSource->Reset(MEDIA_AUDIO);
+            mMediaSource->CloseGrabDevice();
+            mSourceAvailable = mMediaSource->OpenAudioGrabDevice();
+            if (!mSourceAvailable)
+            {
+                LOG(LOG_WARN, "Audio source is (temporary) not available after hard reset of media source in DoSetCurrentDevice()");
+            }
         }else
         {
             // seek to the beginning if we have reselected the source file
@@ -1063,6 +1038,10 @@ void AudioWorkerThread::DoSetCurrentDevice()
                     {
                         LOG(LOG_VERBOSE, "Haven't selected new audio source, reset of current source forced");
                         mSourceAvailable = mMediaSource->Reset(MEDIA_AUDIO);
+                        if (!mSourceAvailable)
+                        {
+                            LOG(LOG_WARN, "Video source is (temporary) not available after Reset() in DoSetCurrentDevice()");
+                        }
                     }
                 }else
                     mAudioWidget->InformAboutOpenError(mDeviceName);
@@ -1073,7 +1052,14 @@ void AudioWorkerThread::DoSetCurrentDevice()
         mPaused = false;
         //mAudioWidget->InformAboutNewSource();
     }else
-        mAudioWidget->InformAboutOpenError(mDeviceName);
+    {
+        if (!mSourceAvailable)
+            LOG(LOG_WARN, "Audio source is (temporary) not available after SelectDevice() in DoSetCurrentDevice()");
+        if (!mTryingToOpenAFile)
+            mAudioWidget->InformAboutOpenError(mDeviceName);
+        else
+            LOG(LOG_VERBOSE, "Couldn't open audio file source %s", mDeviceName.toStdString().c_str());
+    }
 
     // reset audio output
     ResetPlayback();
@@ -1089,39 +1075,23 @@ void AudioWorkerThread::ResetPlayback()
 {
     bool tAudioWasMuted = mAudioOutMuted;
 
-    DoStopPlayback();
     if (!tAudioWasMuted)
+    {
+        DoStopPlayback();
         DoStartPlayback();
+    }
 }
 
 void AudioWorkerThread::DoStartPlayback()
 {
-    // are we already waiting for some initial audio buffers?
-    if (mAudioPlaybackDelayCount > 1)
-    {
-        LOG(LOG_VERBOSE, "Waiting for %d initial audio buffers", mAudioPlaybackDelayCount);
-        mStartPlaybackAsap = true;
-        return;
-    }
-
-    // if audio was muted we have to wait for an initial time
-    if ((mWaveOut != NULL) && (!mWaveOut->IsPlaying()) && (mAudioPlaybackDelayCount == 0))
-    {
-    	LOG(LOG_VERBOSE, "Wait for %d audio buffers before audio playback will start", AUDIO_INITIAL_MINIMUM_PLAYBACK_QUEUE);
-        mAudioPlaybackDelayCount = AUDIO_INITIAL_MINIMUM_PLAYBACK_QUEUE;
-        mStartPlaybackAsap = true;
-        return;
-    }
-
     // okay don't have to wait, time to start playback
-    LOG(LOG_VERBOSE, "DoStartPlayback now...(playing: %d, delay count: %d)", (mWaveOut != NULL) ? mWaveOut->IsPlaying() : false, mAudioPlaybackDelayCount);
+    LOG(LOG_VERBOSE, "DoStartPlayback now...(playing: %d)", (mWaveOut != NULL) ? mWaveOut->IsPlaying() : false);
     mStartPlaybackAsap = false;
     if (mPlaybackAvailable)
     {
         if (mWaveOut != NULL)
             mWaveOut->Play();
     }
-    mAudioPlaybackDelayCount = 0;
     mAudioOutMuted = false;
 }
 
@@ -1262,15 +1232,15 @@ void AudioWorkerThread::run()
 			tSampleNumber = mMediaSource->GrabChunk(mSamples[mSampleGrabIndex], tSamplesSize, mDropSamples);
             mSamplesSize[mSampleGrabIndex] = tSamplesSize;
 			mEofReached = (tSampleNumber == GRAB_RES_EOF);
-            if (!mEofReached)
-            {
-                if ((mAudioPlaybackDelayCount) && (tSampleNumber >= 0))
-                    mAudioPlaybackDelayCount--;
-            }else
-            {
+            if (mEofReached)
+            {// EOF
                 mSourceAvailable = false;
-                LOG(LOG_WARN, "Got EOF signal from audio source, marking audio source as unavailable");
+                LOG(LOG_WARN, "Got EOF signal from audio source, marking AUDIO source as unavailable");
             }
+
+            #ifdef AUDIO_WIDGET_DEBUG_FRAMES
+                LOG(LOG_WARN, "Got from media source the sample block %d with size of %d bytes and stored it as index %d", tSampleNumber, tSamplesSize, mSampleGrabIndex);
+            #endif
 
 			//printf("SampleSize: %d Sample: %d\n", mSamplesSize[mSampleGrabIndex], tSampleNumber);
 
@@ -1278,7 +1248,14 @@ void AudioWorkerThread::run()
 			if ((!mAudioOutMuted) && (tSampleNumber >= 0) && (tSamplesSize > 0) && (!mDropSamples) && (mPlaybackAvailable))
 			{
 			    if (mWaveOut != NULL)
+			    {
+                    #ifdef DEBUG_AUDIOWIDGET_PLAYBACK
+			            LOG(LOG_VERBOSE, "Writing buffer at index %d and size of %d bytes to audio output FIFO", mSampleGrabIndex, tSamplesSize);
+			            LOG(LOG_VERBOSE, "Writing buffer at %p with size of %d bytes to audio output FIFO", mSamples[mSampleGrabIndex], tSamplesSize);
+			        #endif
 			        mWaveOut->WriteChunk(mSamples[mSampleGrabIndex], tSamplesSize);
+			        mWaveOut->LimitQueue(AUDIO_MAX_PLAYBACK_QUEUE);
+			    }
 			}else
 			{
 				#ifdef DEBUG_AUDIOWIDGET_PERFORMANCE
@@ -1309,7 +1286,13 @@ void AudioWorkerThread::run()
                 }else
                 {
                     LOG(LOG_VERBOSE, "Invalid grabbing result: %d, current sample size: %d", tSampleNumber, mSamplesSize[mSampleGrabIndex]);
-                    usleep(100 * 1000); // check for new frames every 1/10 seconds
+    				if (mMediaSource->GetSourceType() != SOURCE_NETWORK)
+    				{// file/mem/dev based source
+    					usleep(100 * 1000); // check for new frames every 1/10 seconds
+    				}else
+    				{// network based source
+
+    				}
                 }
             }
         }else

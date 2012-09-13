@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>280</width>
-    <height>286</height>
+    <width>412</width>
+    <height>212</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -127,7 +127,7 @@
        </layout>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,1,0,0">
+       <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,1,0,0,0,0,0">
         <item>
          <spacer name="horizontalSpacer_3">
           <property name="orientation">
@@ -244,13 +244,102 @@
            <string/>
           </property>
           <property name="icon">
-           <iconset>
-            <normaloff>:/images/Plus.png</normaloff>:/images/Plus.png</iconset>
+           <iconset resource="../../resources/Icons.qrc">
+            <normaloff>:/images/22_22/Plus.png</normaloff>:/images/22_22/Plus.png</iconset>
           </property>
           <property name="iconSize">
            <size>
             <width>18</width>
             <height>18</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="mPbFile">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>130</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>130</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>send local files(s) to communication partner</string>
+          </property>
+          <property name="text">
+           <string>Send file(s)</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../../resources/Icons.qrc">
+            <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>22</width>
+            <height>22</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_6">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::MinimumExpanding</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>1</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="Homer::Gui::CallButton" name="mPbCall">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>130</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>130</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>manage call</string>
+          </property>
+          <property name="text">
+           <string>Conference</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../../resources/Icons.qrc">
+            <normaloff>:/images/22_22/Phone.png</normaloff>:/images/22_22/Phone.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>22</width>
+            <height>22</height>
            </size>
           </property>
          </widget>
@@ -323,235 +412,6 @@
         </item>
        </layout>
       </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <item>
-         <spacer name="horizontalSpacer">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>2</width>
-            <height>18</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QPushButton" name="mPbWeb">
-          <property name="minimumSize">
-           <size>
-            <width>120</width>
-            <height>30</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>120</width>
-            <height>30</height>
-           </size>
-          </property>
-          <property name="toolTip">
-           <string>send link</string>
-          </property>
-          <property name="text">
-           <string>Send link</string>
-          </property>
-          <property name="icon">
-           <iconset resource="../../resources/Icons.qrc">
-            <normaloff>:/images/32_32/ArrowRight.png</normaloff>:/images/32_32/ArrowRight.png</iconset>
-          </property>
-          <property name="iconSize">
-           <size>
-            <width>22</width>
-            <height>22</height>
-           </size>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer_5">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>2</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QPushButton" name="mPbMessage">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>120</width>
-            <height>30</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>120</width>
-            <height>30</height>
-           </size>
-          </property>
-          <property name="toolTip">
-           <string>send instant message from above (Alt+S, Enter)</string>
-          </property>
-          <property name="text">
-           <string>Send message</string>
-          </property>
-          <property name="icon">
-           <iconset resource="../../resources/Icons.qrc">
-            <normaloff>:/images/22_22/Message.png</normaloff>:/images/22_22/Message.png</iconset>
-          </property>
-          <property name="iconSize">
-           <size>
-            <width>22</width>
-            <height>22</height>
-           </size>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>2</width>
-            <height>18</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_3">
-        <item>
-         <spacer name="horizontalSpacer_7">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>2</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QPushButton" name="mPbFile">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>120</width>
-            <height>30</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>120</width>
-            <height>30</height>
-           </size>
-          </property>
-          <property name="toolTip">
-           <string>send local files(s) to communication partner</string>
-          </property>
-          <property name="text">
-           <string>Send file(s)</string>
-          </property>
-          <property name="icon">
-           <iconset resource="../../resources/Icons.qrc">
-            <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
-          </property>
-          <property name="iconSize">
-           <size>
-            <width>22</width>
-            <height>22</height>
-           </size>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer_6">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>2</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="Homer::Gui::CallButton" name="mPbCall">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>120</width>
-            <height>30</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>120</width>
-            <height>30</height>
-           </size>
-          </property>
-          <property name="toolTip">
-           <string>manage call</string>
-          </property>
-          <property name="text">
-           <string>Conference</string>
-          </property>
-          <property name="icon">
-           <iconset resource="../../resources/Icons.qrc">
-            <normaloff>:/images/22_22/Phone.png</normaloff>:/images/22_22/Phone.png</iconset>
-          </property>
-          <property name="iconSize">
-           <size>
-            <width>22</width>
-            <height>22</height>
-           </size>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer_8">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>2</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-       </layout>
-      </item>
      </layout>
     </widget>
    </item>
@@ -574,12 +434,6 @@
    <header location="global">Widgets/MessageInput.h</header>
   </customwidget>
  </customwidgets>
- <tabstops>
-  <tabstop>mPbMessage</tabstop>
-  <tabstop>mPbCall</tabstop>
-  <tabstop>mPbFile</tabstop>
-  <tabstop>mPbWeb</tabstop>
- </tabstops>
  <resources>
   <include location="../../resources/Icons.qrc"/>
   <include location="../../resources/Icons.qrc"/>

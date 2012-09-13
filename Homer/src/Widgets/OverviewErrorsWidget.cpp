@@ -70,8 +70,6 @@ OverviewErrorsWidget::OverviewErrorsWidget(QAction *pAssignedAction, QMainWindow
     connect(mTeErrorLog, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(ErrorLogCustomContextMenuEvent(const QPoint&)));
     SetVisible(CONF.GetVisibilityErrorsWidget());
     mAssignedAction->setChecked(CONF.GetVisibilityErrorsWidget());
-
-    LOGGER.RegisterLogSink(this);
 }
 
 OverviewErrorsWidget::~OverviewErrorsWidget()
@@ -100,6 +98,7 @@ void OverviewErrorsWidget::SetVisible(bool pVisible)
     {
         move(mWinPos);
         show();
+        LOGGER.RegisterLogSink(this);
         mTimerId = startTimer(VIEW_ERROR_LOG_UPDATE_PERIOD);
     }else
     {
@@ -107,6 +106,7 @@ void OverviewErrorsWidget::SetVisible(bool pVisible)
             killTimer(mTimerId);
         mWinPos = pos();
         hide();
+        LOGGER.UnregisterLogSink(this);
     }
 }
 

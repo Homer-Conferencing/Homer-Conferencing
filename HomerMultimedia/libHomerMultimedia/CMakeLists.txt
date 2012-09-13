@@ -82,6 +82,7 @@ SET (SOURCES
 	../src/MediaSourceMuxer
 	../src/MediaSourceNet
 	../src/MediaSourcePortAudio
+	../src/RTCP
 	../src/RTP
 	../src/VideoScaler
 	../src/WaveOut
@@ -91,7 +92,8 @@ SET (SOURCES
 IF (WIN32)
 SET (SOURCES
 	${SOURCES}
-	#TODO: ../src/MediaSourceDShow
+	../src/MediaSourceMMSys
+	../src/MediaSourceDShow
 	../src/MediaSourceVFW
 )
 ENDIF (WIN32)
@@ -121,22 +123,24 @@ ENDIF (LINUX)
 # USED LIBRARIES for win32 environment
 SET (LIBS_WINDOWS_INSTALL
     avutil-51
-    avcodec-53
-    avdevice-53
-    avfilter-2
-    avformat-53
+    avcodec-54
+    avdevice-54
+    avfilter-3
+    avformat-54
     libgcc_s_dw2-1
     libstdc++-6
     portaudio
+	postproc-52
     swresample-0
     swscale-2
     SDL    
 )
 SET (LIBS_WINDOWS
     avutil-51
-    avcodec-53
-    avformat-53
-    avdevice-53
+    avcodec-54
+    avfilter-3
+    avformat-54
+    avdevice-54
 	HomerBase
 	HomerGAPI
 	HomerMonitor
@@ -144,6 +148,7 @@ SET (LIBS_WINDOWS
     swscale-2
 	ws2_32
 	Avicap32
+	Winmm
 	SDL
 )
 
@@ -162,10 +167,15 @@ SET (LIBS_APPLE_STATIC
 	swresample
 	swscale
 	avutil
+	postproc
 	mp3lame
 	opencore-amrnb
 	opencore-amrwb
+	theoraenc
+	theoradec
+	ogg
 	x264
+	vpx
 	bz2
 	z
 	portaudio
@@ -218,6 +228,7 @@ ELSE ()
 		swresample
 		swscale
 		avutil
+		postproc
 		mp3lame
 		faac
 		opencore-amrnb

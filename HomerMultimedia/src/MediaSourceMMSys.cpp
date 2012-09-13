@@ -25,10 +25,6 @@
  * Since:   2010-10-29
  */
 
-//##############################################################################################################
-// DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED
-//##############################################################################################################
-
 // HINT: documentation: http://msdn.microsoft.com/en-us/library/aa909811.aspx
 
 #include <MediaSourceMMSys.h>

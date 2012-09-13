@@ -32,6 +32,7 @@
 #include <assert.h>
 
 #include <HBSocket.h>
+#include <HBTime.h>
 #include <Header_SofiaSip.h>
 #include <Meeting.h>
 #include <ProcessStatisticService.h>
@@ -45,6 +46,17 @@ namespace Homer { namespace Conference {
 using namespace std;
 using namespace Homer::Base;
 using namespace Homer::Monitor;
+
+///////////////////////////////////////////////////////////////////////////////
+
+#define CALL_REQUEST_RETRIES                            1
+#define MESSAGE_REQUEST_RETRIES                         1
+#define OPTIONS_REQUEST_RETRIES                         0
+
+#define CALL_REQUEST_TIMEOUT                            3 // seconds
+#define SHUTDOWN_REQUEST_TIMEOUT						3 // seconds
+
+///////////////////////////////////////////////////////////////////////////////
 
 #define                 SIP_STATE_OKAY                      200
 #define                 SIP_STATE_OKAY_DELAYED_DELIVERY     202
@@ -285,10 +297,20 @@ void* SIP::Run(void*)
             LOG(LOG_VERBOSE, "..NUA create");
 
             // add brackets for IPv6 address
-            if (mSipHostAdr.find(":") != string::npos)
-	            tOwnAddress = "sip:[::]"/* don't limit to mSipHostAdr*/ + toString(mSipHostPort) + ";" + tTransportAttribute;
-			else
+            tOwnAddress = "";
+            if (IS_IPV6_ADDRESS(mSipHostAdr))
+            {
+            	if (Socket::IsIPv6Supported())
+            	{// use IPv6 socket
+            		tOwnAddress = "sip:[::]:"/* don't limit to mSipHostAdr*/ + toString(mSipHostPort) + ";" + tTransportAttribute;
+            	}else
+            		LOG(LOG_ERROR, "Cannot use IPv6 address %s because IPv6 sockets are not supported", mSipHostAdr.c_str());
+            }
+
+            if (tOwnAddress == "")
+            {// use IPv4 socket
 	            tOwnAddress = "sip:0.0.0.0:" /* don't limit to mSipHostAdr*/ + toString(mSipHostPort) + ";" + tTransportAttribute;
+            }
 
             // NAT traversal: use keepalive packets with interval of 10 seconds
             //                otherwise a NAT box won't maintain the state about the NAT forwarding
@@ -353,9 +375,15 @@ void* SIP::Run(void*)
             LOG(LOG_VERBOSE, "..shutdown NUA stack");
             nua_shutdown(mSipContext->Nua);
 
+            int64_t tTime = Time::GetTimeStamp();
             // wait for shutdown of NUA stack
             while (mSipStackOnline)
             {
+            	if (Time::GetTimeStamp() - tTime > SHUTDOWN_REQUEST_TIMEOUT * 1000 * 1000)
+            	{
+            		LOG(LOG_ERROR, "Timeout of %d seconds occurred during SIP stack shutdown", SHUTDOWN_REQUEST_TIMEOUT);
+            		break;
+            	}
                 LOG(LOG_VERBOSE, "Wait for Shutdown-Step");
 
                 // one step of main loop for processing of messages, timeout is set to 100 ms
@@ -2363,8 +2391,10 @@ void SIP::SipReceivedCallResponse(const sip_to_t *pSipRemote, const sip_to_t *pS
             }
 
             break;
+        case 400 ... 406: // user/service unavailable
+        	//    404 = Not found, user not found in remote database
         case 408 ... 599: // user/service unavailable
-            //    408 = Timeout
+        	//    408 = Timeout
             //    415 = Unsupported media type (linphone)
             //    503 = Service unavailable
             SipReceivedCallUnavailable(pSipRemote, pSipLocal, pNuaHandle, pStatus, pPhrase, pSip, pSourceIp, pSourcePort);
@@ -2393,7 +2423,7 @@ void SIP::SipReceivedCallResponse(const sip_to_t *pSipRemote, const sip_to_t *pS
             #endif
             break;
         default:
-            LOG(LOG_ERROR, "Unsupported status code");
+            LOG(LOG_ERROR, "Unsupported status code %d(%s)", pStatus, pPhrase);
             break;
     }
 }

@@ -187,6 +187,34 @@ string WaveOut::CurrentFile()
 	return mFilePlaybackFileName;
 }
 
+int WaveOut::GetQueueUsage()
+{
+    if (mPlaybackFifo != NULL)
+        return mPlaybackFifo->GetUsage();
+    else
+        return 0;
+}
+
+void WaveOut::ClearQueue()
+{
+    if (mPlaybackFifo != NULL)
+        mPlaybackFifo->ClearFifo();
+}
+
+void WaveOut::LimitQueue(int pNewSize)
+{
+    if (mPlaybackFifo != NULL)
+    {
+        while (mPlaybackFifo->GetUsage() > pNewSize)
+        {
+            char *tBuffer;
+            int tBufferSize;
+            int tEntryId = mPlaybackFifo->ReadFifoExclusive(&tBuffer, tBufferSize);
+            mPlaybackFifo->ReadFifoExclusiveFinished(tEntryId);
+        }
+    }
+}
+
 void WaveOut::AssignThreadName()
 {
     if (mHaveToAssignThreadName)
@@ -226,7 +254,7 @@ bool WaveOut::DoOpenNewFile()
         tResult = false;
     }else
     {
-        SVC_PROCESS_STATISTIC.AssignThreadName("Playback-File");
+        SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Grabber(WAVEOUT)");
 
         Play();
     }

@@ -26,6 +26,7 @@
  */
 
 #include <Dialogs/ConfigurationDialog.h>
+#include <Widgets/OverviewPlaylistWidget.h>
 
 #include <Configuration.h>
 #include <Meeting.h>
@@ -64,21 +65,21 @@ QStringList      ConfigurationDialog::mSipServerList;
 ///////////////////////////////////////////////////////////////////////////////
 
 ConfigurationDialog::ConfigurationDialog(QWidget* pParent, list<string>  pLocalAdresses, VideoWorkerThread* pVideoWorker, AudioWorkerThread* pAudioWorker):
-    QDialog(pParent)
+    QDialog(pParent), AudioPlayback()
 {
-    OpenPlaybackDevice();
-
     mHttpGetStunServerList = NULL;
     mHttpGetSipServerList = NULL;
-    mWaveOut = NULL;
     mVideoWorker = pVideoWorker;
     mAudioWorker = pAudioWorker;
     mLocalAdresses = pLocalAdresses;
+    OpenPlaybackDevice();
     initializeGUI();
     LoadConfiguration();
     connect(mCbVideoSource, SIGNAL(currentIndexChanged(QString)), this, SLOT(ShowVideoSourceInfo(QString)));
     connect(mCbAudioSource, SIGNAL(currentIndexChanged(QString)), this, SLOT(ShowAudioSourceInfo(QString)));
     connect(mCbAudioSink, SIGNAL(currentIndexChanged(QString)), this, SLOT(ShowAudioSinkInfo(QString)));
+    connect(mPbNotifySoundStartFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForStart()));
+    connect(mPbNotifySoundStopFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForStop()));
     connect(mPbNotifySoundImFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForIm()));
     connect(mPbNotifySoundCallFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForCall()));
     connect(mPbNotifySoundCallAcknowledgeFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForCallAcknowledge()));
@@ -87,6 +88,8 @@ ConfigurationDialog::ConfigurationDialog(QWidget* pParent, list<string>  pLocalA
     connect(mPbNotifySoundErrorFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForError()));
     connect(mPbNotifySoundRegistrationFailedFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForRegistrationFailed()));
     connect(mPbNotifySoundRegistrationSuccessfulFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForRegistrationSuccessful()));
+    connect(mTbPlaySoundStartFile, SIGNAL(clicked()), this, SLOT(PlayNotifySoundFileForStart()));
+    connect(mTbPlaySoundStopFile, SIGNAL(clicked()), this, SLOT(PlayNotifySoundFileForStop()));
     connect(mTbPlaySoundImFile, SIGNAL(clicked()), this, SLOT(PlayNotifySoundFileForIm()));
     connect(mTbPlaySoundCallFile, SIGNAL(clicked()), this, SLOT(PlayNotifySoundFileForCall()));
     connect(mTbPlaySoundCallAcknowledgeFile, SIGNAL(clicked()), this, SLOT(PlayNotifySoundFileForCallAcknowledge()));
@@ -106,6 +109,8 @@ ConfigurationDialog::ConfigurationDialog(QWidget* pParent, list<string>  pLocalA
     ShowVideoSourceInfo(mCbVideoSource->currentText());
     ShowAudioSourceInfo(mCbAudioSource->currentText());
     ShowAudioSinkInfo(mCbAudioSink->currentText());
+    if (!CONF.ConferencingEnabled())
+        mNetwork->setEnabled(false);
 }
 
 ConfigurationDialog::~ConfigurationDialog()
@@ -335,10 +340,19 @@ void ConfigurationDialog::LoadConfiguration()
     mCbAutoUpdateCheck->setChecked(CONF.GetAutoUpdateCheck());
     mCbSeparatedParticipantWidgets->setChecked(CONF.GetParticipantWidgetsSeparation());
     mCbCloseParticipantWidgetsImmediately->setChecked(CONF.GetParticipantWidgetsCloseImmediately());
+    mCbFeatureConferencing->setChecked(CONF.GetFeatureConferencing());
 
     //######################################################################
     //### NOTIFICATION configuration
     //######################################################################
+    mCbNotifySoundStart->setChecked(CONF.GetStartSound());
+    mCbNotifySystrayStart->setChecked(CONF.GetStartSystray());
+    mLbNotifySoundStartFile->setText(CONF.GetStartSoundFile());
+
+    mCbNotifySoundStop->setChecked(CONF.GetStopSound());
+    mCbNotifySystrayStop->setChecked(CONF.GetStopSystray());
+    mLbNotifySoundStopFile->setText(CONF.GetStopSoundFile());
+
     mCbNotifySoundIm->setChecked(CONF.GetImSound());
     mCbNotifySystrayIm->setChecked(CONF.GetImSystray());
     mLbNotifySoundImFile->setText(CONF.GetImSoundFile());
@@ -452,13 +466,16 @@ void ConfigurationDialog::SaveConfiguration()
                 MEETING.SetAudioCodecsSupport(CODEC_MP3);
                 break;
         case 1:
-                MEETING.SetAudioCodecsSupport(CODEC_G711A);
+                MEETING.SetAudioCodecsSupport(CODEC_G711ALAW);
                 break;
         case 2:
-                MEETING.SetAudioCodecsSupport(CODEC_G711U);
+                MEETING.SetAudioCodecsSupport(CODEC_G711ULAW);
                 break;
         case 3:
-                MEETING.SetAudioCodecsSupport(CODEC_PCMS16LE);
+                MEETING.SetAudioCodecsSupport(CODEC_PCMS16);
+                break;
+        case 4:
+                MEETING.SetAudioCodecsSupport(CODEC_G722ADPCM);
                 break;
         default:
                 break;
@@ -468,9 +485,12 @@ void ConfigurationDialog::SaveConfiguration()
     CONF.SetLocalAudioSource(mCbAudioSource->currentText());
 
     //### playback device
-    if (mCbAudioSink->currentText() != CONF.GetLocalAudioSink())
-        tOnlyFutureChanged = true;
-    CONF.SetLocalAudioSink(mCbAudioSink->currentText());
+    if (mCbAudioSink->currentText() != "")
+    {
+        if (mCbAudioSink->currentText() != CONF.GetLocalAudioSink())
+            tOnlyFutureChanged = true;
+        CONF.SetLocalAudioSink(mCbAudioSink->currentText());
+    }
 
     //### stream codec
     CONF.SetAudioCodec(mCbAudioCodec->currentText());
@@ -491,8 +511,8 @@ void ConfigurationDialog::SaveConfiguration()
     CONF.SetSipServer(mLeSipServer->text());
     CONF.SetSipInfrastructureMode(mGrpServerRegistration->isChecked() ? 1 : 0);
 
-    if (mGrpNatSupport->isChecked() != CONF.GetNatSupportActivation())
-        tHaveToRestart = true;
+//    if (mGrpNatSupport->isChecked() != CONF.GetNatSupportActivation())
+//        tHaveToRestart = true;
     if (mCbLocalAdr->currentText() != CONF.GetSipListenerAddress())
         tHaveToRestart = true;
     CONF.SetSipListenerAddress(mCbLocalAdr->currentText());
@@ -506,17 +526,22 @@ void ConfigurationDialog::SaveConfiguration()
         tOnlyFutureChanged = true;
     CONF.SetVideoAudioStartPort(mSbVideoAudioStartPort->value());
 
-    // is centralized mode selected activated?
-    if (CONF.GetSipInfrastructureMode() == 1)
-        MEETING.RegisterAtServer(CONF.GetSipUserName().toStdString(), CONF.GetSipPassword().toStdString(), CONF.GetSipServer().toStdString());
-
+    if (CONF.ConferencingEnabled())
+    {
+        // is centralized mode selected activated?
+        if (CONF.GetSipInfrastructureMode() == 1)
+            MEETING.RegisterAtServer(CONF.GetSipUserName().toStdString(), CONF.GetSipPassword().toStdString(), CONF.GetSipServer().toStdString());
+    }
 
     //### NAT support
     CONF.SetNatSupportActivation(mGrpNatSupport->isChecked());
     CONF.SetStunServer(mLeStunServer->text());
 
-    if (CONF.GetNatSupportActivation())
-        MEETING.SetStunServer(CONF.GetStunServer().toStdString());
+    if (CONF.ConferencingEnabled())
+    {
+        if (CONF.GetNatSupportActivation())
+            MEETING.SetStunServer(CONF.GetStunServer().toStdString());
+    }
 
     //### Contacting
     CONF.SetSipContactsProbing(mCbContactsProbing->isChecked());
@@ -527,10 +552,21 @@ void ConfigurationDialog::SaveConfiguration()
     CONF.SetAutoUpdateCheck(mCbAutoUpdateCheck->isChecked());
     CONF.SetParticipantWidgetsSeparation(mCbSeparatedParticipantWidgets->isChecked());
     CONF.SetParticipantWidgetsCloseImmediately(mCbCloseParticipantWidgetsImmediately->isChecked());
+    if (mCbFeatureConferencing->isChecked() != CONF.GetFeatureConferencing())
+        tHaveToRestart = true;
+    CONF.SetFeatureConferencing(mCbFeatureConferencing->isChecked());
 
     //######################################################################
     //### NOTIFICATION configuration
     //######################################################################
+    CONF.SetStartSound(mCbNotifySoundStart->isChecked());
+    CONF.SetStartSystray(mCbNotifySystrayStart->isChecked());
+    CONF.SetStartSoundFile(mLbNotifySoundStartFile->text());
+
+    CONF.SetStopSound(mCbNotifySoundStop->isChecked());
+    CONF.SetStopSystray(mCbNotifySystrayStop->isChecked());
+    CONF.SetStopSoundFile(mLbNotifySoundStopFile->text());
+
     CONF.SetImSound(mCbNotifySoundIm->isChecked());
     CONF.SetImSystray(mCbNotifySystrayIm->isChecked());
     CONF.SetImSoundFile(mLbNotifySoundImFile->text());
@@ -569,11 +605,11 @@ void ConfigurationDialog::SaveConfiguration()
     CONF.Sync();
 
     if (tHaveToRestart)
-        ShowInfo("Restart necessary", "You have to <font color='red'><b>restart</b></font> Homer to apply the new settings!");
+        ShowInfo("Restart necessary", "You have to <font color='red'><b>restart</b></font> Homer Conferencing to apply the new settings!");
     else
     {
         if (tOnlyFutureChanged)
-            ShowInfo("Settings applied for future sessions", "Your new settings are <font color='red'><b>not applied for already established sessions</b></font>. They will only be used for new sessions! Otherwise you have to <font color='red'><b>restart</b></font> Homer to apply the new settings!");
+            ShowInfo("Settings applied for future sessions", "Your new settings are <font color='red'><b>not applied for already established sessions</b></font>. They will only be used for new sessions! Otherwise you have to <font color='red'><b>restart</b></font> Homer Conferencing to apply the new settings!");
     }
 }
 
@@ -729,57 +765,43 @@ void ConfigurationDialog::ToggleSipServerPasswordVisibility()
         mLeSipPassword->setEchoMode(QLineEdit::Normal);
 }
 
-void ConfigurationDialog::OpenPlaybackDevice()
-{
-    LOG(LOG_VERBOSE, "Going to open playback device");
-
-    if (CONF.AudioOutputEnabled())
-    {
-        #ifndef APPLE
-            mWaveOut = new WaveOutPortAudio(CONF.GetLocalAudioSink().toStdString());
-        #else
-            mWaveOut = new WaveOutSdl(CONF.GetLocalAudioSink().toStdString());
-        #endif
-        if (mWaveOut != NULL)
-            mWaveOut->OpenWaveOutDevice();
-        else
-            LOG(LOG_ERROR, "Error when allocating wave out instance");
-    }
-    LOG(LOG_VERBOSE, "Finished to open playback device");
-}
-
-void ConfigurationDialog::ClosePlaybackDevice()
-{
-    LOG(LOG_VERBOSE, "Going to close playback device");
-
-    // close the audio out
-    if (mWaveOut != NULL)
-    {
-        mWaveOut->CloseWaveOutDevice();
-        delete mWaveOut;
-    }
-
-    LOG(LOG_VERBOSE, "Finished to close playback device");
-}
-
 QString ConfigurationDialog::SelectSoundFile(QString pEventName, QString pSuggestion)
 {
     if (!QFile::exists(pSuggestion))
         pSuggestion = CONF.GetDataDirectory();
 
-    QString tSoundFile = QFileDialog::getOpenFileName(this, "Select sound file for acoustic notification for event \"" + pEventName + "\".", pSuggestion, "Sound file (*.wav)", NULL, CONF_NATIVE_DIALOGS);
+    QString tSoundFile = OverviewPlaylistWidget::LetUserSelectAudioFile(this, "Select sound file for acoustic notification for event \"" + pEventName + "\".", false).first();
 
     if (tSoundFile.isEmpty())
         return "";
 
     CONF.SetDataDirectory(tSoundFile.left(tSoundFile.lastIndexOf('/')));
 
-    if (!tSoundFile.endsWith(".wav"))
-        tSoundFile += ".wav";
-
     LOG(LOG_VERBOSE, "Selected sound file: %s", tSoundFile.toStdString().c_str());
 
     return tSoundFile;
+}
+
+void ConfigurationDialog::SelectNotifySoundFileForStart()
+{
+    QString tSoundFile = SelectSoundFile("program start", CONF.GetStartSoundFile());
+
+    if (tSoundFile.isEmpty())
+        return;
+
+    CONF.SetStartSoundFile(tSoundFile);
+    mLbNotifySoundStartFile->setText(tSoundFile);
+}
+
+void ConfigurationDialog::SelectNotifySoundFileForStop()
+{
+    QString tSoundFile = SelectSoundFile("program stop", CONF.GetStopSoundFile());
+
+    if (tSoundFile.isEmpty())
+        return;
+
+    CONF.SetStopSoundFile(tSoundFile);
+    mLbNotifySoundStopFile->setText(tSoundFile);
 }
 
 void ConfigurationDialog::SelectNotifySoundFileForIm()
@@ -872,15 +894,19 @@ void ConfigurationDialog::SelectNotifySoundFileForRegistrationSuccessful()
 
 void ConfigurationDialog::PlayNotifySoundFile(QString pFile)
 {
-    if (mWaveOut != NULL)
-    {
-        if (pFile != "")
-        {
-            LOG(LOG_VERBOSE, "Playing sound file: %s", pFile.toStdString().c_str());
-            if (!mWaveOut->PlayFile(pFile.toStdString()))
-                ShowError("Failed to play file", "Was unable to play the file \"" + pFile + "\".");
-        }
-    }
+    LOG(LOG_VERBOSE, "Playing sound file: %s", pFile.toStdString().c_str());
+    if (!StartAudioPlayback(pFile))
+        ShowError("Failed to play file", "Was unable to play the file \"" + pFile + "\".");
+}
+
+void ConfigurationDialog::PlayNotifySoundFileForStart()
+{
+	PlayNotifySoundFile(CONF.GetStartSoundFile());
+}
+
+void ConfigurationDialog::PlayNotifySoundFileForStop()
+{
+	PlayNotifySoundFile(CONF.GetStopSoundFile());
 }
 
 void ConfigurationDialog::PlayNotifySoundFileForIm()
@@ -938,7 +964,7 @@ void ConfigurationDialog::ClickedButton(QAbstractButton *pButton)
                 mSbVideoFps->setValue(0);
                 mCbVideoCodec->setCurrentIndex(0);//H.261
                 mCbVideoQuality->setCurrentIndex(0);//10 %
-                mCbVideoResolution->setCurrentIndex(3);//CIF
+                mCbVideoResolution->setCurrentIndex(0);//auto
                 mCbVideoMaxPacketSize->setCurrentIndex(2);//1280
                 mCbSmoothVideoPresentation->setChecked(false);
                 break;
@@ -983,6 +1009,9 @@ void ConfigurationDialog::ClickedButton(QAbstractButton *pButton)
 
 void ConfigurationDialog::SelectAllSound()
 {
+    mCbNotifySoundStart->setChecked(true);
+    mCbNotifySoundStop->setChecked(true);
+
     mCbNotifySoundIm->setChecked(true);
 
     mCbNotifySoundCall->setChecked(true);
@@ -996,6 +1025,9 @@ void ConfigurationDialog::SelectAllSound()
 
 void ConfigurationDialog::DeselectAllSound()
 {
+    mCbNotifySoundStart->setChecked(false);
+    mCbNotifySoundStop->setChecked(false);
+
     mCbNotifySoundIm->setChecked(false);
 
     mCbNotifySoundCall->setChecked(false);
@@ -1011,6 +1043,9 @@ void ConfigurationDialog::DeselectAllSound()
 
 void ConfigurationDialog::SelectAllSystray()
 {
+    mCbNotifySystrayStart->setChecked(true);
+    mCbNotifySystrayStop->setChecked(true);
+
     mCbNotifySystrayIm->setChecked(true);
 
     mCbNotifySystrayCall->setChecked(true);
@@ -1027,6 +1062,9 @@ void ConfigurationDialog::SelectAllSystray()
 
 void ConfigurationDialog::DeselectAllSystray()
 {
+    mCbNotifySystrayStart->setChecked(false);
+    mCbNotifySystrayStop->setChecked(false);
+
     mCbNotifySystrayIm->setChecked(false);
 
     mCbNotifySystrayCall->setChecked(false);

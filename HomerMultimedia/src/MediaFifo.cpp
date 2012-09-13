@@ -91,7 +91,7 @@ void MediaFifo::ReadFifo(char *pBuffer, int &pBufferSize)
     int tCurrentFifoReadPtr;
 
     #ifdef MF_DEBUG
-		LOG(LOG_VERBOSE, "%s-FIFO: going to read data chunk", mName.c_str());
+		LOG(LOG_VERBOSE, "%s-FIFO: ReadFifo() START", mName.c_str());
 	#endif
 
     // make sure there is some pending data in the input Fifo
@@ -135,10 +135,16 @@ void MediaFifo::ReadFifo(char *pBuffer, int &pBufferSize)
     mFifo[tCurrentFifoReadPtr].EntryMutex.lock();
     mFifoMutex.unlock();
 
-    // get captured data from Fifo
-	pBufferSize = mFifo[tCurrentFifoReadPtr].Size;
-    memcpy((void*)pBuffer, mFifo[tCurrentFifoReadPtr].Data, (size_t)pBufferSize);
-
+    if (pBufferSize >= mFifo[tCurrentFifoReadPtr].Size)
+    {// input buffer is okay
+        // get captured data from Fifo
+        pBufferSize = mFifo[tCurrentFifoReadPtr].Size;
+        memcpy((void*)pBuffer, mFifo[tCurrentFifoReadPtr].Data, (size_t)pBufferSize);
+    }else
+    {// input buffer is too small
+        LOG(LOG_ERROR, "Given read buffer is too small (%d bytes) for the current chunk of %d bytes from FIFO %s, dropping data", pBufferSize, mFifo[tCurrentFifoReadPtr].Size, mName.c_str());
+        pBufferSize = 0;
+    }
     // unlock fine grained mutex again
     mFifo[tCurrentFifoReadPtr].EntryMutex.unlock();
 
@@ -205,7 +211,7 @@ int MediaFifo::ReadFifoExclusive(char **pBuffer, int &pBufferSize)
     int tCurrentFifoReadPtr;
 
     #ifdef MF_DEBUG
-        LOG(LOG_VERBOSE, "%s-FIFO: going to read data chunk", mName.c_str());
+        LOG(LOG_VERBOSE, "%s-FIFO: ReadFifoExclusive() START", mName.c_str());
     #endif
 
     // make sure there is some pending data in the input Fifo
@@ -229,7 +235,7 @@ int MediaFifo::ReadFifoExclusive(char **pBuffer, int &pBufferSize)
     tCurrentFifoReadPtr = mFifoReadPtr;
 
     #ifdef MF_DEBUG
-        LOG(LOG_VERBOSE, "%s-FIFO: reading exclusively entry %d", mName.c_str(), tCurrentFifoReadPtr);
+        LOG(LOG_VERBOSE, "%s-FIFO: reading exclusively entry %d with %d bytes", mName.c_str(), tCurrentFifoReadPtr, mFifo[tCurrentFifoReadPtr].Size);
     #endif
 
     // update FIFO read pointer
@@ -275,12 +281,12 @@ void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize)
     int tCurrentFifoWritePtr;
 
     #ifdef MF_DEBUG
-		LOG(LOG_VERBOSE, "%s-FIFO: going to write data chunk", mName.c_str());
+		LOG(LOG_VERBOSE, "%s-FIFO: WriteFifo() START", mName.c_str());
 	#endif
 
 	if (pBufferSize > mFifoEntrySize)
 	{
-		LOG(LOG_ERROR, "%-FIFO: entries are limited to %d bytes, current write request of %s bytes will be ignored", mName.c_str(), mFifoEntrySize, pBufferSize);
+		LOG(LOG_ERROR, "%-FIFO: entries are limited to %d bytes, current write request of %d bytes will be ignored", mName.c_str(), mFifoEntrySize, pBufferSize);
 		return;
 	}
 

@@ -33,6 +33,7 @@
 #include "config.h"
 
 #include <QSettings>
+#include <QString>
 
 namespace Homer { namespace Gui {
 
@@ -56,6 +57,8 @@ namespace Homer { namespace Gui {
 #define PATH_STUN_SERVER_TXT            "/live/stun_server.txt"
 #define PATH_SIP_SERVER_TXT             "/live/sip_server.txt"
 #define PATH_HOMER_RELEASES				"http://"RELEASE_SERVER"/releases/"
+
+#define PATH_DEFAULT_LOGFILE			(QDir::homePath() + "/Homer.log")
 
 #define CONF Configuration::GetInstance()
 
@@ -81,7 +84,8 @@ public:
 
     static Configuration& GetInstance();
 
-    void Init(std::string pAbsBinPath);
+    void Init(QString pAbsBinPath);
+    void SetDefaults();
 
     /* general settings */
     QString GetBinaryPath();
@@ -121,6 +125,7 @@ public:
 
     bool GetSmoothVideoPresentation();
     bool GetAutoUpdateCheck();
+    bool GetFeatureConferencing();
 
     /* user settings */
     QString GetUserName();
@@ -172,6 +177,14 @@ public:
     int GetSipStartPort();
 
     /* notification settings */
+    // program start
+    QString GetStartSoundFile();
+    bool GetStartSound();
+    bool GetStartSystray();
+    // program stop
+    QString GetStopSoundFile();
+    bool GetStopSound();
+    bool GetStopSystray();
     // instant message
     QString GetImSoundFile();
     bool GetImSound();
@@ -218,6 +231,9 @@ public:
     /* audio capture */
     bool AudioCaptureEnabled();
 
+    /* conferencing */
+    bool ConferencingEnabled();
+
 
     /* global settings */
     void SetConferenceAvailability(QString pState);
@@ -253,6 +269,8 @@ public:
 
     void SetSmoothVideoPresentation(bool pActive);
     void SetAutoUpdateCheck(bool pActive);
+    void SetFeatureConferencing(bool pActive);
+
 
     /* user settings */
     void SetUserName(QString pUserName);
@@ -303,6 +321,14 @@ public:
     void SetSipStartPort(int pPort);
 
     /* notification settings */
+    // program start
+    void SetStartSoundFile(QString pSoundFile);
+    void SetStartSound(bool pActivation);
+    void SetStartSystray(bool pActivation);
+    // program stop
+    void SetStopSoundFile(QString pSoundFile);
+    void SetStopSound(bool pActivation);
+    void SetStopSystray(bool pActivation);
     // instant message
     void SetImSoundFile(QString pSoundFile);
     void SetImSound(bool pActivation);
@@ -345,15 +371,19 @@ public:
     /* audio capture */
     void DisableAudioCapture();
 
+    /* conferencing */
+    void DisableConferencing();
+
     // important because some write operations might be delayed
     void Sync();
 
 
-    std::string             mAbsBinPath;
+    QString		            mAbsBinPath;
     QSettings               *mQSettings;
     bool                    mDebuggingEnabled;
     bool                    mAudioOutputEnabled;
     bool                    mAudioCaptureEnabled;
+    bool                    mConferencingEnabled;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

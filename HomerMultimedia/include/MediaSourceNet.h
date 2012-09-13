@@ -86,9 +86,10 @@ protected:
     void StopListener();
 
     void Init(Socket *pDataSocket, unsigned int pLocalPort, bool pRtpActivated = true);
-    bool DoReceiveFragment(std::string &pSourceHost, unsigned int &pSourcePort, char* pData, int &pSize);
+    bool ReceivePacket(std::string &pSourceHost, unsigned int &pSourcePort, char* pData, int &pSize);
 
     /* general transport */
+    int                 mPacketNumber;
     bool                mListenerNeeded;
     char                *mPacketBuffer;
     bool                mListenerSocketCreatedOutside;

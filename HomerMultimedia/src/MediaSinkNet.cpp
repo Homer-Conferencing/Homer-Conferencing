@@ -220,6 +220,8 @@ void MediaSinkNet::StartSender()
 
 	// start sender main loop
 	StartThread();
+
+    LOG(LOG_VERBOSE, "Sender for target %s:%u started", mTargetHost.c_str(), mTargetPort);
 }
 
 void MediaSinkNet::StopSender()
@@ -350,7 +352,7 @@ void MediaSinkNet::SendPacket(char* pData, unsigned int pSize)
             unsigned int tPacketSize = pSize;
             bool tIsLastFragment = false;
             bool tIsSenderReport = false;
-            RtpParse(tFragmentData, tPacketSize, tIsLastFragment, tIsSenderReport, mCurrentStream->codec->codec_id, true);
+            RtpParse(tFragmentData, tPacketSize, tIsLastFragment, tIsSenderReport, mIncomingAVStream->codec->codec_id, true);
         }
     #endif
 

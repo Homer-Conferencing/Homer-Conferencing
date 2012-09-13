@@ -27,6 +27,7 @@
 
 #include <Dialogs/OpenVideoAudioPreviewDialog.h>
 #include <Widgets/StreamingControlWidget.h>
+#include <Widgets/OverviewPlaylistWidget.h>
 #include <Widgets/ParticipantWidget.h>
 #include <Widgets/VideoWidget.h>
 #include <Widgets/OverviewPlaylistWidget.h>
@@ -45,6 +46,7 @@
 #include <Logger.h>
 #include <Snippets.h>
 
+#include <QInputDialog>
 #include <QMenu>
 #include <QEvent>
 #include <QAction>
@@ -81,8 +83,8 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow, OverviewContactsWidget *pContactsWidget, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer, MediaSourceMuxer *pAudioSourceMuxer, QString pParticipant):
-    QDockWidget(pMainWindow)
+ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer, MediaSourceMuxer *pAudioSourceMuxer, QString pParticipant):
+    QDockWidget(pMainWindow), AudioPlayback()
 {
     LOG(LOG_VERBOSE, "Creating new participant widget..");
     OpenPlaybackDevice();
@@ -97,7 +99,6 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
     mRemoteVideoPort = 0;
     mRemoteAudioPort = 0;
     mTimeOfLastAVSynch = Time::GetTimeStamp();
-    mWaveOut = NULL;
     mCallBox = NULL;
     mVideoSourceMuxer = pVideoSourceMuxer;
     mAudioSourceMuxer = pAudioSourceMuxer;
@@ -110,7 +111,7 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
     //### create the remaining necessary widgets, menu and layouts
     //####################################################################
     LOG(LOG_VERBOSE, "..init participant widget");
-    Init(pContactsWidget, pVideoMenu, pAudioMenu, pMessageMenu, pParticipant);
+    Init(pVideoMenu, pAudioMenu, pMessageMenu, pParticipant);
 }
 
 ParticipantWidget::~ParticipantWidget()
@@ -163,7 +164,7 @@ ParticipantWidget::~ParticipantWidget()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, QString pParticipant)
+void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, QString pParticipant)
 {
     setupUi(this);
 
@@ -176,8 +177,12 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
     mSlMovie->Init(this);
     mAVDriftFrame->hide();
 
-    connect(mTbPlay, SIGNAL(clicked()), this, SLOT(ActionPlayMovieFile()));
-    connect(mTbPause, SIGNAL(clicked()), this, SLOT(ActionPauseMovieFile()));
+    //TODO: remove the following if the feature is complete
+    #ifdef RELEASE_VERSION
+        mTbRecord->hide();
+    #endif
+
+    connect(mTbPlayPause, SIGNAL(clicked()), this, SLOT(ActionPlayPauseMovieFile()));
     connect(mTbRecord, SIGNAL(clicked()), this, SLOT(ActionRecordMovieFile()));
     connect(mSlMovie, SIGNAL(sliderMoved(int)), this, SLOT(ActionSeekMovieFile(int)));
     connect(mSlMovie, SIGNAL(valueChanged(int)), this, SLOT(ActionSeekMovieFileToPos(int)));
@@ -205,10 +210,10 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
     switch(mSessionType)
     {
         case BROADCAST:
-                    LOG(LOG_VERBOSE, "Creating participant widget for BROADCAST");
-                    mSessionName = "BROADCAST";
+                    LOG(LOG_VERBOSE, "Creating participant widget for "BROACAST_IDENTIFIER);
+                    mSessionName = BROACAST_IDENTIFIER;
                     LOG(LOG_VERBOSE, "..init broadcast message widget");
-                    mMessageWidget->Init(pMessageMenu, mSessionName, NULL, CONF.GetVisibilityBroadcastMessageWidget());
+                    mMessageWidget->Init(pMessageMenu, mSessionName, CONF.GetVisibilityBroadcastMessageWidget());
                     LOG(LOG_VERBOSE, "..init broadcast video widget");
                     mVideoSource = mVideoSourceMuxer;
                     mAudioSource = mAudioSourceMuxer;
@@ -221,33 +226,42 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
                     if (mAudioSourceMuxer != NULL)
                         mAudioWidget->Init(mAudioSourceMuxer, pAudioMenu, mSessionName, mSessionName, CONF.GetVisibilityBroadcastAudio(), true);
                     setFeatures(QDockWidget::NoDockWidgetFeatures);
+
+                    // hide Homer logo
+                    mLogoFrame->hide();
+
                     break;
         case PARTICIPANT:
-                    LOG(LOG_VERBOSE, "Creating participant widget for PARTICIPANT");
-                    mMovieControlsFrame->hide();
-                    mSessionName = pParticipant;
-                    FindSipInterface(pParticipant);
-                    mMessageWidget->Init(pMessageMenu, mSessionName, pContactsWidget);
-                    mVideoSendSocket = MEETING.GetVideoSendSocket(mSessionName.toStdString());
-                    mAudioSendSocket = MEETING.GetAudioSendSocket(mSessionName.toStdString());
-                    mVideoReceiveSocket = MEETING.GetVideoReceiveSocket(mSessionName.toStdString());
-                    mAudioReceiveSocket = MEETING.GetAudioReceiveSocket(mSessionName.toStdString());
-                    if (mVideoReceiveSocket != NULL)
-                    {
-                        mVideoSource = new MediaSourceNet(mVideoReceiveSocket, CONF.GetVideoRtp());
-                        mVideoSource->SetInputStreamPreferences(CONF.GetVideoCodec().toStdString());
-                        mVideoWidgetFrame->hide();
-                        mVideoWidget->Init(mMainWindow, this, mVideoSource, pVideoMenu, mSessionName);
-                    }else
-                        LOG(LOG_ERROR, "Determined video socket is NULL");
-                    if (mAudioReceiveSocket != NULL)
-                    {
-                        mAudioSource = new MediaSourceNet(mAudioReceiveSocket, CONF.GetAudioRtp());
-                        mAudioSource->SetInputStreamPreferences(CONF.GetAudioCodec().toStdString());
-                        mAudioWidget->Init(mAudioSource, pAudioMenu, mSessionName);
-                    }else
-                        LOG(LOG_ERROR, "Determined audio socket is NULL");
-                    break;
+        			{
+						LOG(LOG_VERBOSE, "Creating participant widget for PARTICIPANT");
+						mMovieControlsFrame->hide();
+						mSessionName = pParticipant;
+						FindSipInterface(pParticipant);
+						mMessageWidget->Init(pMessageMenu, mSessionName);
+						mVideoSendSocket = MEETING.GetVideoSendSocket(mSessionName.toStdString());
+						mAudioSendSocket = MEETING.GetAudioSendSocket(mSessionName.toStdString());
+						mVideoReceiveSocket = MEETING.GetVideoReceiveSocket(mSessionName.toStdString());
+						mAudioReceiveSocket = MEETING.GetAudioReceiveSocket(mSessionName.toStdString());
+						if (mVideoReceiveSocket != NULL)
+						{
+							mVideoSource = new MediaSourceNet(mVideoReceiveSocket, true);
+							mVideoSource->SetInputStreamPreferences(CONF.GetVideoCodec().toStdString());
+							mVideoWidgetFrame->hide();
+							mVideoWidget->Init(mMainWindow, this, mVideoSource, pVideoMenu, mSessionName);
+						}else
+							LOG(LOG_ERROR, "Determined video socket is NULL");
+						if (mAudioReceiveSocket != NULL)
+						{
+							mAudioSource = new MediaSourceNet(mAudioReceiveSocket, true);
+							mAudioSource->SetInputStreamPreferences(CONF.GetAudioCodec().toStdString());
+							mAudioWidget->Init(mAudioSource, pAudioMenu, mSessionName);
+						}else
+							LOG(LOG_ERROR, "Determined audio socket is NULL");
+
+						// hide Homer logo
+						mLogoFrame->hide();
+        			}
+					break;
         case PREVIEW:
                     LOG(LOG_VERBOSE, "Creating participant widget for PREVIEW");
                     mSessionName = "PREVIEW";
@@ -282,7 +296,13 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
                                 mMovieControlsFrame->hide();
                         }
                         if(tFoundPreviewSource)
+                        {
+                            // hide Homer logo
+                            mLogoFrame->hide();
+
                             break;
+                        }
+
                     }
 
                     // delete this participant widget again if no preview could be opened
@@ -293,6 +313,8 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
     }
 
     mSessionInfoWidget->Init(mSessionName, false);
+    mSplitter->setStretchFactor(0, 1);
+    mSplitter->setStretchFactor(1, 0);
 
     //####################################################################
     //### update GUI
@@ -305,40 +327,75 @@ void ParticipantWidget::Init(OverviewContactsWidget *pContactsWidget, QMenu *pVi
 
     if (mSessionType == BROADCAST)
         setVisible(CONF.GetVisibilityBroadcastWidget());
+    if (mSessionType == PARTICIPANT)
+    	ResizeAVView(0);
+    UpdateMovieControls();
 
     mTimerId = startTimer(STREAM_POS_UPDATE_DELAY);
 }
 
-void ParticipantWidget::OpenPlaybackDevice()
+void ParticipantWidget::HideAudioVideoWidget()
 {
-    LOG(LOG_VERBOSE, "Going to open playback device");
-
-    if (CONF.AudioOutputEnabled())
+    switch(mSessionType)
     {
-        #ifndef APPLE
-            mWaveOut = new WaveOutPortAudio(CONF.GetLocalAudioSink().toStdString());
-        #else
-            mWaveOut = new WaveOutSdl(CONF.GetLocalAudioSink().toStdString());
-        #endif
-        if (mWaveOut == NULL)
-            LOG(LOG_ERROR, "Error when creating wave out object");
-        else
-            mWaveOut->OpenWaveOutDevice();
+        case BROADCAST:
+            mVideoAudioWidget->hide();
+
+            // show Homer logo
+            mLogoFrame->show();
+
+            break;
+        case PARTICIPANT:
+            mVideoAudioWidget->hide();
+            break;
+        case PREVIEW:
+            hide();
+            break;
     }
-    LOG(LOG_VERBOSE, "Finished to open playback device");
 }
 
-void ParticipantWidget::ClosePlaybackDevice()
+void ParticipantWidget::ShowAudioVideoWidget()
 {
-    LOG(LOG_VERBOSE, "Going to close playback device at %p", mWaveOut);
-
-    if (mWaveOut != NULL)
+    switch(mSessionType)
     {
-        // close the audio out
-        delete mWaveOut;
-    }
+        case BROADCAST:
+            mVideoAudioWidget->show();
 
-    LOG(LOG_VERBOSE, "Finished to close playback device");
+            // hide Homer logo
+            mLogoFrame->hide();
+
+            break;
+        case PARTICIPANT:
+            mVideoAudioWidget->show();
+            break;
+        case PREVIEW:
+            show();
+            break;
+    }
+}
+
+void ParticipantWidget::ResizeAVView(int pSize)
+{
+	QList<int>tSizes  = mSplitter->sizes();
+	LOG(LOG_VERBOSE, "Splitter with %d widgets", tSizes.size());
+	for (int i = 0; i < tSizes.size(); i++)
+	{
+		LOG(LOG_VERBOSE, "Entry: %d", tSizes[i]);
+	}
+
+	if (pSize == 0)
+	{
+		tSizes[1] += tSizes[0];
+		tSizes[0] = 0;
+	}else
+	{
+		if (pSize > tSizes[0] + tSizes[1])
+			pSize = tSizes[0] + tSizes[1];
+		int tAVOverSize = tSizes[0] - pSize;
+		tSizes[1] += tAVOverSize;
+		tSizes[0] = pSize;
+	}
+	mSplitter->setSizes(tSizes);
 }
 
 void ParticipantWidget::closeEvent(QCloseEvent* pEvent)
@@ -437,7 +494,7 @@ void ParticipantWidget::dragEnterEvent(QDragEnterEvent *pEvent)
         switch(mSessionType)
         {
             case BROADCAST:
-                        if (tList.size() == 1)
+                        if (tList.size() > 0)
                         {
                             QString tFileName = tList.begin()->toString();
                             if ((OverviewPlaylistWidget::IsVideoFile(tFileName)) || (OverviewPlaylistWidget::IsAudioFile(tFileName)))
@@ -470,10 +527,17 @@ void ParticipantWidget::dropEvent(QDropEvent *pEvent)
             switch(mSessionType)
             {
                 case BROADCAST:
-                            if (tList.size() == 1)
+                            if (tList.size() > 0)
                             {
-                                QString tFileName = tList.begin()->toString();
-                                ActionPlayMovieFile(tFileName);
+                            	bool tFirstEntry = true;
+                            	QUrl tEntry;
+                            	foreach(tEntry, tList)
+                            	{
+                                    QString tFileName = tEntry.toString();
+                                    PLAYLISTWIDGET.AddEntry(tFileName, tFirstEntry);
+									if (tFirstEntry)
+										tFirstEntry = false;
+                            	}
                                 pEvent->acceptProposedAction();
                             }
                             break;
@@ -492,11 +556,22 @@ void ParticipantWidget::dropEvent(QDropEvent *pEvent)
     }
 }
 
+void ParticipantWidget::keyPressEvent(QKeyEvent *pEvent)
+{
+	//LOG(LOG_VERBOSE, "Got participant window key press event with key %s(%d, mod: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
+
+	// forward the event to the video widget
+	QCoreApplication::postEvent(mVideoWidget, new QKeyEvent(QEvent::KeyPress, pEvent->key(), pEvent->modifiers()));
+}
+
 void ParticipantWidget::wheelEvent(QWheelEvent *pEvent)
 {
     int tOffset = pEvent->delta() * 25 / 120;
-    LOG(LOG_VERBOSE, "Got new wheel event with delta %d, derived volume offset: %d", pEvent->delta(), tOffset);
-    mAudioWidget->SetVolume(mAudioWidget->GetVolume() + tOffset);
+    LOG(LOG_VERBOSE, "Got new wheel event with orientation %d and delta %d, derived volume offset: %d", (int)pEvent->orientation(), pEvent->delta(), tOffset);
+	if (pEvent->orientation() == Qt::Vertical)
+	{
+		mAudioWidget->SetVolume(mAudioWidget->GetVolume() + tOffset);
+	}
 }
 
 void ParticipantWidget::LookedUpParticipantHost(const QHostInfo &pHost)
@@ -593,15 +668,11 @@ void ParticipantWidget::HandleMessage(bool pIncoming, QString pSender, QString p
     if (mMessageWidget != NULL)
     {
         mMessageWidget->AddMessage(pSender, pMessage);
-        if (mWaveOut != NULL)
+        if (pIncoming)
         {
-            if (pIncoming)
+            if (CONF.GetImSound())
             {
-                if (CONF.GetImSound())
-                {
-                    if (!mWaveOut->PlayFile(CONF.GetImSoundFile().toStdString()))
-                        LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetImSoundFile().toStdString().c_str());
-                }
+                StartAudioPlayback(CONF.GetImSoundFile());
             }
         }
     }
@@ -676,16 +747,12 @@ void ParticipantWidget::HandleCallRinging(bool pIncoming)
 
     ShowNewState();
 
-    if (mWaveOut != NULL)
+    if (pIncoming)
     {
-        if (pIncoming)
-		{
-            if (CONF.GetCallAcknowledgeSound())
-            {
-                if (!mWaveOut->PlayFile(CONF.GetCallAcknowledgeSoundFile().toStdString()))
-                    LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetCallAcknowledgeSoundFile().toStdString().c_str());
-            }
-		}
+        if (CONF.GetCallAcknowledgeSound())
+        {
+            StartAudioPlayback(CONF.GetCallAcknowledgeSoundFile());
+        }
     }
 }
 
@@ -710,16 +777,12 @@ void ParticipantWidget::HandleCall(bool pIncoming, QString pRemoteApplication)
         mCallBox = new QMessageBox(QMessageBox::Question, "Incoming call from application " + pRemoteApplication, "Do you want to accept the incoming call from " + mSessionName + "?", QMessageBox::Yes | QMessageBox::Cancel, this);
 
         // start sound output
-        if (mWaveOut != NULL)
+        if (pIncoming)
         {
-            if (pIncoming)
+            if (CONF.GetCallSound())
             {
-                if (CONF.GetCallSound())
-                {
-                    if (!mWaveOut->PlayFile(CONF.GetCallSoundFile().toStdString(), SOUND_LOOPS_FOR_CALL))
-                        LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetCallSoundFile().toStdString().c_str());
-                }
-			}
+                StartAudioPlayback(CONF.GetCallSoundFile(), SOUND_LOOPS_FOR_CALL);
+            }
         }
 
         if (mCallBox->exec() == QMessageBox::Yes)
@@ -746,16 +809,12 @@ void ParticipantWidget::HandleCallCancel(bool pIncoming)
 
     CallStopped(pIncoming);
 
-    if (mWaveOut != NULL)
+    if (pIncoming)
     {
-        if (pIncoming)
+        if (CONF.GetCallHangupSound())
         {
-            if (CONF.GetCallHangupSound())
-            {
-                if (!mWaveOut->PlayFile(CONF.GetCallHangupSoundFile().toStdString()))
-                    LOG(LOG_ERROR, "Was unable to play the file \"%s\".",  CONF.GetCallHangupSoundFile().toStdString().c_str());
-            }
-		}
+            StartAudioPlayback(CONF.GetCallHangupSoundFile());
+        }
     }
 }
 
@@ -770,16 +829,12 @@ void ParticipantWidget::HandleCallHangup(bool pIncoming)
 
     CallStopped(pIncoming);
 
-    if (mWaveOut != NULL)
+    if (pIncoming)
     {
-        if (pIncoming)
+        if (CONF.GetCallHangupSound())
         {
-            if (CONF.GetCallHangupSound())
-            {
-                if (!mWaveOut->PlayFile(CONF.GetCallHangupSoundFile().toStdString()))
-                    LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetCallHangupSoundFile().toStdString().c_str());
-            }
-		}
+            StartAudioPlayback(CONF.GetCallHangupSoundFile());
+        }
     }
 }
 
@@ -794,16 +849,12 @@ void ParticipantWidget::HandleCallTermination(bool pIncoming)
 
     CallStopped(pIncoming);
 
-    if (mWaveOut != NULL)
+    if (pIncoming)
     {
-        if (pIncoming)
+        if (CONF.GetErrorSound())
         {
-            if (CONF.GetErrorSound())
-            {
-                if (!mWaveOut->PlayFile(CONF.GetErrorSoundFile().toStdString()))
-                    LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetErrorSoundFile().toStdString().c_str());
-            }
-		}
+            StartAudioPlayback(CONF.GetErrorSoundFile());
+        }
     }
 }
 
@@ -834,7 +885,11 @@ void ParticipantWidget::CallStopped(bool pIncoming)
         mVideoWidget->SetVisible(false);
     }
     if (mAudioWidget != NULL)
+    {
         mAudioWidget->SetVisible(false);
+        mAudioWidget->ToggleMuteState(false);
+    }
+	ResizeAVView(0);
     mIncomingCall = false;
 
     if (mWaveOut != NULL)
@@ -868,16 +923,12 @@ void ParticipantWidget::HandleCallUnavailable(bool pIncoming, int pStatusCode, Q
     }else
     	CallStopped(pIncoming);
 
-    if (mWaveOut != NULL)
+    if (pIncoming)
     {
-        if (pIncoming)
+        if (CONF.GetErrorSound())
         {
-            if (CONF.GetErrorSound())
-            {
-                if (!mWaveOut->PlayFile(CONF.GetErrorSoundFile().toStdString()))
-                    LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetErrorSoundFile().toStdString().c_str());
-            }
-		}
+            StartAudioPlayback(CONF.GetErrorSoundFile());
+        }
     }
 }
 
@@ -897,13 +948,9 @@ void ParticipantWidget::HandleCallDenied(bool pIncoming)
 
     if (pIncoming)
     {
-        if (mWaveOut != NULL)
+        if (CONF.GetCallDenySound())
         {
-            if (CONF.GetCallDenySound())
-            {
-                if (!mWaveOut->PlayFile(CONF.GetCallDenySoundFile().toStdString()))
-                    LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetCallDenySoundFile().toStdString().c_str());
-            }
+            StartAudioPlayback(CONF.GetCallDenySoundFile());
         }
     }
 }
@@ -930,7 +977,11 @@ void ParticipantWidget::HandleCallAccept(bool pIncoming)
         mVideoWidget->SetVisible(true);
     }
     if (mAudioWidget != NULL)
+    {
         mAudioWidget->SetVisible(true);
+        mAudioWidget->ToggleMuteState(true);
+    }
+    ResizeAVView(288);
     mIncomingCall = false;
 
     if (mWaveOut != NULL)
@@ -946,8 +997,7 @@ void ParticipantWidget::HandleCallAccept(bool pIncoming)
         {
             if (CONF.GetCallAcknowledgeSound())
             {
-                if (!mWaveOut->PlayFile(CONF.GetCallAcknowledgeSoundFile().toStdString()))
-                    LOG(LOG_ERROR, "Was unable to play the file \"%s\".", CONF.GetCallAcknowledgeSoundFile().toStdString().c_str());
+                StartAudioPlayback(CONF.GetCallAcknowledgeSoundFile());
             }
         }
     }
@@ -1071,7 +1121,7 @@ void ParticipantWidget::AVSync()
                     // are audio and video playback out of synch.?
                     if (((tTimeDiff < -AV_SYNC_MAX_DRIFT) || (tTimeDiff > AV_SYNC_MAX_DRIFT)))
                     {
-                        if ((!mVideoWidget->GetWorker()->EofReached()) && (mVideoWidget->GetWorker()->GetCurrentDevice() == mAudioWidget->GetWorker()->GetCurrentDevice()))
+                        if ((!mVideoWidget->GetWorker()->EofReached()) && (!mAudioWidget->GetWorker()->IsPaused()) && (mVideoWidget->GetWorker()->GetCurrentDevice() == mAudioWidget->GetWorker()->GetCurrentDevice()))
                         {
                             if (mContinuousAVAsync >= AV_SYNC_CONTINUOUS_ASYNC_THRESHOLD)
                             {
@@ -1283,23 +1333,88 @@ QString ParticipantWidget::GetSipInterface()
 	return mSipInterface;
 }
 
-void ParticipantWidget::ActionPlayMovieFile(QString pFileName)
+void ParticipantWidget::ActionPlayPauseMovieFile(QString pFileName)
 {
-    LOG(LOG_VERBOSE, "User triggered play");
-    mVideoWidget->GetWorker()->PlayFile(pFileName);
-    mAudioWidget->GetWorker()->PlayFile(pFileName);
-}
-
-void ParticipantWidget::ActionPauseMovieFile()
-{
-    LOG(LOG_VERBOSE, "User triggered pause");
-    mVideoWidget->GetWorker()->PauseFile();
-    mAudioWidget->GetWorker()->PauseFile();
+    LOG(LOG_VERBOSE, "User triggered play/pause");
+    if (mVideoWidget->GetWorker()->IsPaused() || mAudioWidget->GetWorker()->IsPaused())
+    {
+        LOG(LOG_VERBOSE, "User triggered play");
+        mVideoWidget->GetWorker()->PlayFile(pFileName);
+        mAudioWidget->GetWorker()->PlayFile(pFileName);
+        mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Pause.png"));
+    }else
+    {
+        LOG(LOG_VERBOSE, "User triggered pause");
+        mVideoWidget->GetWorker()->PauseFile();
+        mAudioWidget->GetWorker()->PauseFile();
+        mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Play.png"));
+    }
 }
 
 void ParticipantWidget::ActionRecordMovieFile()
 {
+    QString tFileName = OverviewPlaylistWidget::LetUserSelectVideoSaveFile(this, "Set file name for video/audio recording");
+
+    if (tFileName.isEmpty())
+        return;
+
+    // get the quality value from the user
+    bool tAck = false;
+    QStringList tPosQuals;
+    for (int i = 1; i < 11; i++)
+        tPosQuals.append(QString("%1").arg(i * 10));
+
+    // ################
+    // video quality
+    // ################
+    QString tVideoQualityStr = QInputDialog::getItem(this, "Select video recording quality", "Record video with quality:                                 ", tPosQuals, 0, false, &tAck);
+
+    if(tVideoQualityStr.isEmpty())
+        return;
+
+    if (!tAck)
+        return;
+
+    // convert QString to int
+    bool tConvOkay = false;
+    int tVideoQuality = tVideoQualityStr.toInt(&tConvOkay, 10);
+    if (!tConvOkay)
+    {
+        LOG(LOG_ERROR, "Error while converting QString to int for video quality");
+        return;
+    }
+
+    // ################
+    // audio quality
+    // ################
+    QString tAudioQualityStr = QInputDialog::getItem(this, "Select audio recording quality", "Record audio with quality:                                 ", tPosQuals, 0, false, &tAck);
+
+    if(tAudioQualityStr.isEmpty())
+        return;
+
+    if (!tAck)
+        return;
+
+    // convert QString to int
+    tConvOkay = false;
+    int tAudioQuality = tAudioQualityStr.toInt(&tConvOkay, 10);
+    if (!tConvOkay)
+    {
+        LOG(LOG_ERROR, "Error while converting QString to int for audio quality");
+        return;
+    }
+
+    // finally start the recording
+//TODO    mVideoWorker->StartRecorder(tFileName.toStdString(), tQuality);
     LOG(LOG_ERROR, "Implement ActionRecordMovieFile()");
+}
+
+void ParticipantWidget::SeekMovieFileRelative(float pSeconds)
+{
+    float tCurPos = mVideoWidget->GetWorker()->GetSeekPos();
+    float tTargetPos = tCurPos + pSeconds;
+    LOG(LOG_VERBOSE, "Seeking relative %.2f seconds to position %.2f", pSeconds, tTargetPos);
+    mVideoWidget->GetWorker()->Seek(tTargetPos);
 }
 
 void ParticipantWidget::ActionSeekMovieFile(int pPos)
@@ -1384,22 +1499,11 @@ void ParticipantWidget::ShowStreamPosition(int64_t tCurPos, int64_t tEndPos)
                        QString("%1:%2:%3").arg(tEndHour, 2, 10, (QLatin1Char)'0').arg(tEndMin, 2, 10, (QLatin1Char)'0').arg(tEndSec, 2, 10, (QLatin1Char)'0') );
 }
 
-void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
+void ParticipantWidget::UpdateMovieControls()
 {
-    #ifdef DEBUG_TIMING
-        LOG(LOG_VERBOSE, "New timer event");
-    #endif
     int tTmp = 0;
-    int tHour, tMin, tSec;
 
-    if (pEvent->timerId() != mTimerId)
-    {
-    	LOG(LOG_WARN, "Qt event timer ID %d doesn't match the expected one %d", pEvent->timerId(), mTimerId);
-        pEvent->ignore();
-    	return;
-    }
-
-    // do play a file?
+    // do we play a file?
     int tShowMovieControls = 0;
 
     if ((mVideoSource) && (mVideoWidget->GetWorker()->SupportsSeeking()))
@@ -1462,6 +1566,22 @@ void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
             mMovieAudioControlsFrame->hide();
         }
     }
+}
+
+void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
+{
+    #ifdef DEBUG_TIMING
+        LOG(LOG_VERBOSE, "New timer event");
+    #endif
+
+	if (pEvent->timerId() != mTimerId)
+    {
+    	LOG(LOG_WARN, "Qt event timer ID %d doesn't match the expected one %d", pEvent->timerId(), mTimerId);
+        pEvent->ignore();
+    	return;
+    }
+
+    UpdateMovieControls();
 
     pEvent->accept();
 }

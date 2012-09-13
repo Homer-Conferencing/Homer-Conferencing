@@ -76,10 +76,7 @@ void OpenVideoAudioPreviewDialog::initializeGUI()
         resize(0, 0);
     }
 
-    connect(mPbFile, SIGNAL(clicked()), this, SLOT(actionGetFile()));
-
-    connect(mCbVideoEnabled, SIGNAL(clicked(bool)), this, SLOT(actionVideoEnabled(bool)));
-    connect(mCbAudioEnabled, SIGNAL(clicked(bool)), this, SLOT(actionAudioEnabled(bool)));
+    connect(mPbFile, SIGNAL(clicked()), this, SLOT(ActionGetFile()));
 
     connect(mCbGAPIImplVideo, SIGNAL(currentIndexChanged(QString)), this, SLOT(GAPIVideoSelectionChanged(QString)));
     connect(mCbGAPIImplAudio, SIGNAL(currentIndexChanged(QString)), this, SLOT(GAPIAudioSelectionChanged(QString)));
@@ -351,38 +348,24 @@ void OpenVideoAudioPreviewDialog::LoadConfiguration()
     //### stream codec
     //########################
     QString tVideoStreamCodec = CONF.GetVideoCodec();
-    if (tVideoStreamCodec == "H.261")
-        mCbCodecVideo->setCurrentIndex(0);
-    if (tVideoStreamCodec == "H.263")
-        mCbCodecVideo->setCurrentIndex(1);
-    if (tVideoStreamCodec == "H.263+")
-        mCbCodecVideo->setCurrentIndex(2);
-    if (tVideoStreamCodec == "H.264")
-        mCbCodecVideo->setCurrentIndex(3);
-    if (tVideoStreamCodec == "MPEG1")
-        mCbCodecVideo->setCurrentIndex(4);
-    if (tVideoStreamCodec == "MPEG2")
-        mCbCodecVideo->setCurrentIndex(5);
-    if (tVideoStreamCodec == "MPEG4")
-        mCbCodecVideo->setCurrentIndex(6);
-    if (tVideoStreamCodec == "THEORA")
-        mCbCodecVideo->setCurrentIndex(7);
+    for (int i = 0; i < mCbCodecVideo->count(); i++)
+    {
+        if (tVideoStreamCodec == mCbCodecVideo->itemText(i))
+        {
+        	mCbCodecVideo->setCurrentIndex(i);
+            break;
+        }
+    }
 
     QString tAudioStreamCodec = CONF.GetAudioCodec();
-    if (tAudioStreamCodec == "MP3 (MPA)")
-        mCbCodecAudio->setCurrentIndex(0);
-    if (tAudioStreamCodec == "G711 A-law (PCMA)")
-        mCbCodecAudio->setCurrentIndex(1);
-    if (tAudioStreamCodec == "G711 µ-law (PCMU)")
-        mCbCodecAudio->setCurrentIndex(2);
-    if (tAudioStreamCodec == "AAC")
-        mCbCodecAudio->setCurrentIndex(3);
-    if (tAudioStreamCodec == "PCM_S16_LE")
-        mCbCodecAudio->setCurrentIndex(4);
-    if (tAudioStreamCodec == "GSM")
-        mCbCodecAudio->setCurrentIndex(5);
-    if (tAudioStreamCodec == "AMR")
-        mCbCodecAudio->setCurrentIndex(6);
+    for (int i = 0; i < mCbCodecAudio->count(); i++)
+    {
+        if (tAudioStreamCodec == mCbCodecAudio->itemText(i))
+        {
+        	mCbCodecAudio->setCurrentIndex(i);
+            break;
+        }
+    }
 
 
     //########################
@@ -474,50 +457,16 @@ void OpenVideoAudioPreviewDialog::LoadConfiguration()
     mCbVideoEnabled->setChecked(CONF.GetPreviewSelectionVideo());
 }
 
-void OpenVideoAudioPreviewDialog::actionGetFile()
+void OpenVideoAudioPreviewDialog::ActionGetFile()
 {
     QString tFileName;
 
-    if((mCbVideoEnabled->isChecked()) && (mCbAudioEnabled->isChecked()))
-    {
-        tFileName = OverviewPlaylistWidget::LetUserSelectMovieFile(this, "Select movie file for preview", false).first();
-    }else
-    {
-        if(mCbVideoEnabled->isChecked())
-            tFileName = OverviewPlaylistWidget::LetUserSelectVideoFile(this, "Select video file for preview", false).first();
-        if(mCbAudioEnabled->isChecked())
-            tFileName = OverviewPlaylistWidget::LetUserSelectAudioFile(this, "Select audio file for preview", false).first();
-    }
+	tFileName = OverviewPlaylistWidget::LetUserSelectMediaFile(this, "Select file for preview", false).first();
 
     if (tFileName.isEmpty())
         return;
 
     mLbFile->setText(tFileName);
-}
-
-void OpenVideoAudioPreviewDialog::actionVideoEnabled(bool pState)
-{
-
-    if(pState)
-    {
-
-    }else
-    {
-
-    }
-    mLbFile->setText("");
-}
-
-void OpenVideoAudioPreviewDialog::actionAudioEnabled(bool pState)
-{
-    if(pState)
-    {
-
-    }else
-    {
-
-    }
-    mLbFile->setText("");
 }
 
 }} //namespace

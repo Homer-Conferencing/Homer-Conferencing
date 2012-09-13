@@ -58,6 +58,11 @@ public:
     virtual bool PlayFile(std::string pFileName, int pLoops = 1);
     virtual std::string CurrentFile();
 
+    /* playback queue */
+    virtual int GetQueueUsage();
+    virtual void ClearQueue();
+    virtual void LimitQueue(int pNewSize);
+
     /* volume control */
     virtual int GetVolume(); // range: 0-200 %
     virtual void SetVolume(int pValue);

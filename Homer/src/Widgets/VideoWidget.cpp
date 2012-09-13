@@ -81,15 +81,21 @@ using namespace Homer::Monitor;
 ///////////////////////////////////////////////////////////////////////////////
 
 // at what time period is timerEvent() called?
-#define VIDEO_WIDGET_TIMER_PERIOD               250 //ms
+#define VIDEO_WIDGET_TIMER_PERIOD               	  250 //ms
 
-#define VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME       3 // seconds
+#define VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME       		3 // seconds
 
 // how long should a OSD status message stay on the screen?
-#define VIDEO_WIDGET_OSD_PERIOD                   3 // seconds
+#define VIDEO_WIDGET_OSD_PERIOD                   		3 // seconds
 
 // how many measurement steps do we use?
-#define FPS_MEASUREMENT_STEPS                    60
+#define FPS_MEASUREMENT_STEPS                    		60
+
+#define SEEK_SMALL_STEP                         		10 // seconds
+#define SEEK_MEDIUM_STEP                        	    60 // seconds
+#define SEEK_BIG_STEP                          	       300 // seconds
+// additional seeking drift when seeking backwards
+#define SEEK_BACKWARD_DRIFT                      		 5 // seconds
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -223,7 +229,7 @@ VideoWidget::~VideoWidget()
 	if (mVideoWorker != NULL)
     {
     	mVideoWorker->StopGrabber();
-    	if (!mVideoWorker->wait(250))
+    	if (!mVideoWorker->wait(3000))
         {
             LOG(LOG_WARN, "Going to force termination of worker thread");
             mVideoWorker->terminate();
@@ -895,7 +901,10 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
 
         // OSD about current video frame
         QString tLine_Frame;
-        tLine_Frame = " Frame: " + QString("%1").arg(pFrameNumber) + (mVideoSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropCounter()) + " lost packets)") : "") + (mVideoSource->GetFragmentBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetFragmentBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetFragmentBufferSize()) + " buffered packets)") : "");
+        tLine_Frame = " Frame: " + QString("%1").arg(pFrameNumber);
+        if (mVideoSource->SupportsDecoderFrameStatistics())
+            tLine_Frame += " (" + QString("%1*i,").arg(mVideoSource->DecodedIFrames()) + QString("%1*p,").arg(mVideoSource->DecodedPFrames()) + QString("%1*b").arg(mVideoSource->DecodedBFrames()) + ")";
+        tLine_Frame += (mVideoSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropCounter()) + " lost packets)") : "") + (mVideoSource->GetFragmentBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetFragmentBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetFragmentBufferSize()) + " buffered packets)") : "");
 
         // OSD about current video codec
         QString tLine_Codec;
@@ -911,7 +920,7 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
         if (mVideoSource->SupportsSeeking())
         {
             tLine_Time = " Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0');
-            if (tAVDrift > 0.0)
+            if (tAVDrift >= 0.0)
                 tLine_Time += (tAVDrift != 0.0f ? QString(" (A/V drift: +%1 s)").arg(tAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
             else if (tAVDrift < 0.0)
                 tLine_Time += (tAVDrift != 0.0f ? QString(" (A/V drift: %1 s)").arg(tAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
@@ -934,6 +943,18 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
             }
         }
 
+        // OSD about current recorder position
+        QString tLine_RecorderTime = "";
+        if (mVideoSource->SupportsRecording())
+        {
+            int tHour = 0, tMin = 0, tSec = 0, tTime = mVideoSource->RecordingTime();
+            tSec = tTime % 60;
+            tTime /= 60;
+            tMin = tTime % 60;
+            tHour = tTime / 60;
+
+            tLine_RecorderTime = " Recorded: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0');
+        }
 
         // OSD about video muxer
         QString tLine_Muxer = "";
@@ -951,6 +972,7 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
         tPainter->drawText(5, 121, tLine_Output);
         int tMuxOutputOffs = 0;
         int tPeerOutputOffs = 0;
+        int tRecorderOutputOffs = 0;
         if (mVideoSource->SupportsSeeking())
         {
             tMuxOutputOffs = 20;
@@ -962,7 +984,13 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
             tPainter->drawText(5, 141 + tMuxOutputOffs, tLine_Muxer);
         }
         if (tPeerName != "")
-        	tPainter->drawText(5, 141 + tMuxOutputOffs + tPeerOutputOffs, " Peer: " + tPeerName);
+        {
+            tRecorderOutputOffs = 20;
+            tPainter->drawText(5, 141 + tMuxOutputOffs + tPeerOutputOffs, " Peer: " + tPeerName);
+        }
+        if (mVideoSource->IsRecording())
+            tPainter->drawText(5, 141 + tMuxOutputOffs + tPeerOutputOffs + tRecorderOutputOffs, tLine_RecorderTime);
+
 
         // #######################
         // ### foreground text
@@ -978,7 +1006,9 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
         if (mVideoSource->SupportsMuxing())
             tPainter->drawText(4, 140 + tMuxOutputOffs, tLine_Muxer);
         if (tPeerName != "")
-        	tPainter->drawText(5, 140 + tMuxOutputOffs + tPeerOutputOffs, " Peer: " + tPeerName);
+        	tPainter->drawText(4, 140 + tMuxOutputOffs + tPeerOutputOffs, " Peer: " + tPeerName);
+        if (mVideoSource->IsRecording())
+            tPainter->drawText(4, 140 + tMuxOutputOffs + tPeerOutputOffs + tRecorderOutputOffs, tLine_RecorderTime);
     }
 
     //#############################################################
@@ -1254,6 +1284,7 @@ void VideoWidget::ToggleFullScreenMode()
     {
         setWindowFlags(windowFlags() ^ Qt::Window);
         showNormal();
+        mParticipantWidget->ShowAudioVideoWidget();
         if (cursor().shape() == Qt::BlankCursor)
         {
             unsetCursor();
@@ -1264,6 +1295,7 @@ void VideoWidget::ToggleFullScreenMode()
         setWindowFlags(windowFlags() | Qt::Window);
         mTimeOfLastMouseMove = QTime::currentTime();
         ShowFullScreen();
+        mParticipantWidget->HideAudioVideoWidget();
     }
     setUpdatesEnabled(true);
 	mNeedBackgroundUpdatesUntillNextFrame = true;
@@ -1482,6 +1514,8 @@ void VideoWidget::resizeEvent(QResizeEvent *pEvent)
 
 void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
 {
+	//LOG(LOG_VERBOSE, "Got video window key press event with key %s(%d, mod: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
+
 	if ((pEvent->key() == Qt::Key_Escape) && (windowState() & Qt::WindowFullScreen))
 	{
         setWindowFlags(windowFlags() ^ Qt::Window);
@@ -1491,9 +1525,10 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
             unsetCursor();
             LOG(LOG_VERBOSE, "Showing the mouse cursor again, current timeout is %d seconds", VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME);
         }
+        pEvent->accept();
         return;
 	}
-    if (pEvent->key() == Qt::Key_K)
+    if ((pEvent->key() == Qt::Key_K) && (mVideoSource->SupportsMarking()))
     {
         mLiveMarkerActive = !mVideoSource->MarkerActive();
         if (mLiveMarkerActive)
@@ -1501,16 +1536,19 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
         else
             setCursor(Qt::ArrowCursor);
         mVideoSource->SetMarker(mLiveMarkerActive);
+        pEvent->accept();
         return;
     }
     if (pEvent->key() == Qt::Key_F)
     {
         ToggleFullScreenMode();
+        pEvent->accept();
         return;
     }
     if (pEvent->key() == Qt::Key_S)
     {
         ToggleSmoothPresentationMode();
+        pEvent->accept();
         return;
     }
     if (pEvent->key() == Qt::Key_I)
@@ -1519,6 +1557,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
         	mShowLiveStats = false;
         else
         	mShowLiveStats = true;
+        pEvent->accept();
         return;
     }
     if (pEvent->key() == Qt::Key_M)
@@ -1531,6 +1570,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
             else
                 ShowOsdMessage("Audio output active");
 		}
+		pEvent->accept();
 		return;
     }
     if ((pEvent->key() == Qt::Key_Space) || (pEvent->key() == Qt::Key_MediaTogglePlayPause) || (pEvent->key() == Qt::Key_MediaPlay) || (pEvent->key() == Qt::Key_Play))
@@ -1538,14 +1578,38 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
         if ((mVideoWorker->IsPaused()) || ((mParticipantWidget->GetAudioWorker() != NULL) && (mParticipantWidget->GetAudioWorker()->IsPaused())))
         {
         	ShowOsdMessage("Playing..");
-            mParticipantWidget->ActionPlayMovieFile();
+            mParticipantWidget->ActionPlayPauseMovieFile();
+            pEvent->accept();
             return;
         }else
         {
         	ShowOsdMessage("Pausing..");
-            mParticipantWidget->ActionPauseMovieFile();
+            mParticipantWidget->ActionPlayPauseMovieFile();
+			pEvent->accept();
             return;
         }
+    }
+    if ((pEvent->key() == Qt::Key_Right) && (windowState() & Qt::WindowFullScreen))
+    {
+        if (pEvent->modifiers() & Qt::ControlModifier)
+            mParticipantWidget->SeekMovieFileRelative(SEEK_BIG_STEP);
+        else if (pEvent->modifiers() & Qt::AltModifier)
+            mParticipantWidget->SeekMovieFileRelative(SEEK_MEDIUM_STEP);
+        else
+            mParticipantWidget->SeekMovieFileRelative(SEEK_SMALL_STEP);
+        pEvent->accept();
+        return;
+    }
+    if ((pEvent->key() == Qt::Key_Left) && (windowState() & Qt::WindowFullScreen))
+    {
+        if (pEvent->modifiers() & Qt::ControlModifier)
+            mParticipantWidget->SeekMovieFileRelative(-SEEK_BIG_STEP -SEEK_BACKWARD_DRIFT);
+        else if (pEvent->modifiers() & Qt::AltModifier)
+            mParticipantWidget->SeekMovieFileRelative(-SEEK_MEDIUM_STEP -SEEK_BACKWARD_DRIFT);
+        else
+            mParticipantWidget->SeekMovieFileRelative(-SEEK_SMALL_STEP - SEEK_BACKWARD_DRIFT);
+        pEvent->accept();
+        return;
     }
     if (pEvent->key() == Qt::Key_A)
     {
@@ -1553,6 +1617,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
     	if(mAspectRatio > ASPECT_RATIO_16x10)
     		mAspectRatio = ASPECT_RATIO_ORIGINAL;
     	mNeedBackgroundUpdatesUntillNextFrame = true;
+    	pEvent->accept();
     	return;
     }
     if ((pEvent->key() == Qt::Key_Plus) || (pEvent->key() == Qt::Key_Up))
@@ -1575,6 +1640,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
 			mParticipantWidget->GetAudioWorker()->SetVolume(tNewVolumeValue);
 		}
 	}
+    QWidget::keyPressEvent(pEvent);
 }
 void VideoWidget::mouseDoubleClickEvent(QMouseEvent *pEvent)
 {
@@ -1585,21 +1651,34 @@ void VideoWidget::mouseDoubleClickEvent(QMouseEvent *pEvent)
 void VideoWidget::wheelEvent(QWheelEvent *pEvent)
 {
     int tOffset = pEvent->delta() * 25 / 120;
-    LOG(LOG_VERBOSE, "Got new wheel event with delta %d, derived volume offset: %d", pEvent->delta(), tOffset);
-    if (mParticipantWidget->GetAudioWorker() != NULL)
-    {
-        int tNewVolumeValue = mParticipantWidget->GetAudioWorker()->GetVolume() + tOffset;
-        if ((tNewVolumeValue >= 0) && (tNewVolumeValue <= 300))
-        {
-            ShowOsdMessage("Volume: " + QString("%1 %").arg(tNewVolumeValue));
-            mParticipantWidget->GetAudioWorker()->SetVolume(tNewVolumeValue);
-        }
-    }else
-        LOG(LOG_VERBOSE, "Cannot adjust audio volume because determined audio worker is invalid");
+    LOG(LOG_VERBOSE, "Got new wheel event with orientation %d and delta %d, derived volume offset: %d", (int)pEvent->orientation(), pEvent->delta(), tOffset);
+	if (pEvent->orientation() == Qt::Vertical)
+	{
+		if (mParticipantWidget->GetAudioWorker() != NULL)
+		{
+            int tNewVolumeValue = mParticipantWidget->GetAudioWorker()->GetVolume() + tOffset;
+            if ((tNewVolumeValue >= 0) && (tNewVolumeValue <= 300))
+            {
+                ShowOsdMessage("Volume: " + QString("%1 %").arg(tNewVolumeValue));
+                mParticipantWidget->GetAudioWorker()->SetVolume(tNewVolumeValue);
+            }
+		}else
+			LOG(LOG_VERBOSE, "Cannot adjust audio volume because determined audio worker is invalid");
+	}
 }
 
 void VideoWidget::mouseMoveEvent(QMouseEvent *pEvent)
 {
+	//LOG(LOG_VERBOSE, "Got video window mouse move event with mouse buttons %d and position: (%d,%d)", (int)pEvent->buttons(), pEvent->pos().x(), pEvent->pos().y());
+	if ((pEvent->buttons() & Qt::LeftButton) && (!(windowState() & Qt::WindowFullScreen)))
+	{
+		QPoint tPoint;
+		tPoint = pEvent->globalPos() - mMovingMainWindowReferencePos;
+		mMovingMainWindowReferencePos = pEvent->globalPos();
+		//LOG(LOG_VERBOSE, "Moving main window to relative position: (%d,%d)", tPoint.x(), tPoint.y());
+		if (mMainWindow->pos() + tPoint != mMainWindow->pos())
+			mMainWindow->move(mMainWindow->pos() + tPoint);
+	}
     mTimeOfLastMouseMove = QTime::currentTime();
     if (cursor().shape() == Qt::BlankCursor)
     {
@@ -1622,6 +1701,29 @@ void VideoWidget::mouseMoveEvent(QMouseEvent *pEvent)
     }
 
     QWidget::mouseMoveEvent(pEvent);
+}
+
+void VideoWidget::mousePressEvent(QMouseEvent *pEvent)
+{
+	if (pEvent->button() == Qt::LeftButton)
+	{
+		mIsMovingMainWindow = true;
+		mMovingMainWindowReferencePos = pEvent->globalPos();
+	}
+	QWidget::mousePressEvent(pEvent);
+}
+
+void VideoWidget::mouseReleaseEvent(QMouseEvent *pEvent)
+{
+	if (pEvent->button() == Qt::LeftButton)
+		mIsMovingMainWindow = false;
+	QWidget::mouseReleaseEvent(pEvent);
+}
+
+void VideoWidget::focusOutEvent(QFocusEvent *pEvent)
+{
+	mIsMovingMainWindow = false;
+	QWidget::focusOutEvent(pEvent);
 }
 
 void VideoWidget::timerEvent(QTimerEvent *pEvent)
@@ -1699,8 +1801,10 @@ void VideoWidget::customEvent(QEvent *pEvent)
 				while (mPendingNewFrameSignals)
 				{
 					tLoopCount++;
-					if (tLoopCount > 1)
-						LOG(LOG_VERBOSE, "Called GetCurrentFrame() %d times", tLoopCount);
+					#ifdef DEBUG_VIDEOWIDGET_FRAME_DELIVERY
+						if (tLoopCount > 1)
+							LOG(LOG_VERBOSE, "Called GetCurrentFrame() %d times", tLoopCount);
+					#endif
 					mPendingNewFrameSignals--;
 					mCurrentFrameNumber = mVideoWorker->GetCurrentFrame(&tFrame, &tFps);
 
@@ -1715,7 +1819,7 @@ void VideoWidget::customEvent(QEvent *pEvent)
 					    mParticipantWidget->ReportVideoDelay(tVideoDelay);
 					}else
                         mParticipantWidget->ReportVideoDelay(0);
-                    #ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
+                    #ifdef DEBUG_VIDEOWIDGET_FRAME_DELIVERY
                         LOG(LOG_VERBOSE, "We show frame %d while we already grabbed frame %d", mCurrentFrameNumber, tWorkerLastFrame);
                     #endif
 				}
@@ -1751,7 +1855,9 @@ void VideoWidget::customEvent(QEvent *pEvent)
 						// do we have a gap?
 						if (mLastFrameNumber < mCurrentFrameNumber - 1)
 						{
-							LOG(LOG_WARN, "Gap between frames, [%d->%d]", mLastFrameNumber, mCurrentFrameNumber);
+							#ifdef DEBUG_VIDEOWIDGET_FRAME_DELIVERY
+								LOG(LOG_WARN, "Gap between frames, [%d->%d]", mLastFrameNumber, mCurrentFrameNumber);
+							#endif
 						}
 
 						// do we have a frame order problem?
@@ -1768,7 +1874,11 @@ void VideoWidget::customEvent(QEvent *pEvent)
 						LOG(LOG_WARN, "Current frame number is invalid (%d)", mCurrentFrameNumber);
 				}
         	}else
-        		LOG(LOG_VERBOSE, "Got signal about new frame but frame queue is already empty");
+        	{
+				#ifdef DEBUG_VIDEOWIDGET_FRAME_DELIVERY
+        			LOG(LOG_VERBOSE, "Got signal about new frame but frame queue is already empty");
+				#endif
+        	}
 			break;
         case VIDEO_OPEN_ERROR:
             tVideoEvent->accept();
@@ -1836,10 +1946,12 @@ void VideoWorkerThread::InitFrameBuffers()
         QImage tFrameImage = QImage((unsigned char*)mFrame[i], mResX, mResY, QImage::Format_RGB32);
         QPainter *tPainter = new QPainter(&tFrameImage);
         tPainter->setRenderHint(QPainter::TextAntialiasing, true);
+
         tPainter->fillRect(0, 0, mResX, mResY, QColor(Qt::darkGray));
         tPainter->setFont(QFont("Tahoma", 16));
         tPainter->setPen(QColor(Qt::black));
-        tPainter->drawText(5, 70, "..no data");
+        tPainter->drawText(5, 70, "Waiting for data..");
+
         delete tPainter;
     }
 }
@@ -1981,6 +2093,8 @@ void VideoWorkerThread::DoSetCurrentDevice()
 
     if ((mSourceAvailable = mMediaSource->SelectDevice(mDeviceName.toStdString(), MEDIA_VIDEO, tNewSourceSelected)))
     {
+        LOG(LOG_VERBOSE, "We opened a new source: %d", tNewSourceSelected);
+
         bool tHadAlreadyInputData = false;
         for (int i = 0; i < FRAME_BUFFER_SIZE; i++)
         {
@@ -1992,8 +2106,13 @@ void VideoWorkerThread::DoSetCurrentDevice()
         }
         if (!tHadAlreadyInputData)
         {
-            LOG(LOG_VERBOSE, "Haven't found any input data, will force a reset of video source");
-            mSourceAvailable = mMediaSource->Reset(MEDIA_VIDEO);
+            LOG(LOG_VERBOSE, "Haven't found any input data, will force a hard reset of video source");
+            mMediaSource->CloseGrabDevice();
+            mSourceAvailable = mMediaSource->OpenVideoGrabDevice(mResX, mResY);
+            if (!mSourceAvailable)
+            {
+                LOG(LOG_WARN, "Video source is (temporary) not available after hard reset of media source in DoSetCurrentDevice()");
+            }
         }else
         {
             if (!tNewSourceSelected)
@@ -2011,6 +2130,10 @@ void VideoWorkerThread::DoSetCurrentDevice()
                     {
                         LOG(LOG_VERBOSE, "Haven't selected new video source, reset of current source forced");
                         mSourceAvailable = mMediaSource->Reset(MEDIA_VIDEO);
+                        if (!mSourceAvailable)
+                        {
+                            LOG(LOG_WARN, "Video source is (temporary) not available after Reset() in DoSetCurrentDevice()");
+                        }
                     }
                 }else
                 {
@@ -2028,7 +2151,7 @@ void VideoWorkerThread::DoSetCurrentDevice()
     }else
     {
         if (!mSourceAvailable)
-            LOG(LOG_VERBOSE, "Video source is (temporary) not available after SelectDevice() in DoSetCurrentDevice()");
+            LOG(LOG_WARN, "Video source is (temporary) not available after SelectDevice() in DoSetCurrentDevice()");
         if (!mTryingToOpenAFile)
             mVideoWidget->InformAboutOpenError(mDeviceName);
         else
@@ -2071,7 +2194,9 @@ int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFps)
 
             if (mFrameCurrentIndex == mFrameGrabIndex)
 			{
-				LOG(LOG_WARN, "Current index %d is the current grab index, delivering old frame instead", mFrameCurrentIndex);
+				#ifdef DEBUG_VIDEOWIDGET_FRAME_DELIVERY
+            		LOG(LOG_WARN, "Current index %d is the current grab index, delivering old frame instead", mFrameCurrentIndex);
+				#endif
 	            mFrameCurrentIndex--;
 	            if (mFrameCurrentIndex < 0)
 	                mFrameCurrentIndex = FRAME_BUFFER_SIZE - 1;
@@ -2080,7 +2205,9 @@ int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFps)
         }else
         {
             mMissingFrames++;
-            LOG(LOG_VERBOSE, "Missing new frame (%d overall missed frames), delivering old frame instead", mMissingFrames);
+			#ifdef DEBUG_VIDEOWIDGET_FRAME_DELIVERY
+            	LOG(LOG_VERBOSE, "Missing new frame (%d overall missed frames), delivering old frame instead", mMissingFrames);
+			#endif
         }
 
         // calculate FPS
@@ -2209,7 +2336,7 @@ void VideoWorkerThread::run()
 			if (mEofReached)
 			{
 			    mSourceAvailable = false;
-                LOG(LOG_WARN, "Got EOF signal from video source, marking audio source as unavailable");
+                LOG(LOG_WARN, "Got EOF signal from video source, marking VIDEO source as unavailable");
 			}
 
 			#ifdef VIDEO_WIDGET_DEBUG_FRAMES
@@ -2281,7 +2408,13 @@ void VideoWorkerThread::run()
 			}else
 			{
 				LOG(LOG_VERBOSE, "Invalid grabbing result: %d, frame size: %d", tFrameNumber, tFrameSize);
-				usleep(100 * 1000); // check for new frames every 1/10 seconds
+				if (mMediaSource->GetSourceType() != SOURCE_NETWORK)
+				{// file/mem/dev based source
+					usleep(100 * 1000); // check for new frames every 1/10 seconds
+				}else
+				{// network based source
+
+				}
 			}
         }else
         {

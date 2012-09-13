@@ -7,14 +7,8 @@
     <x>0</x>
     <y>0</y>
     <width>801</width>
-    <height>755</height>
+    <height>832</height>
    </rect>
-  </property>
-  <property name="sizePolicy">
-   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-    <horstretch>0</horstretch>
-    <verstretch>0</verstretch>
-   </sizepolicy>
   </property>
   <property name="font">
    <font>
@@ -153,7 +147,7 @@
        <property name="currentIndex">
         <number>2</number>
        </property>
-       <widget class="QWidget" name="Devices">
+       <widget class="QWidget" name="mPageDevices">
         <layout class="QVBoxLayout" name="verticalLayout_10">
          <item>
           <widget class="QGroupBox" name="groupBox">
@@ -381,7 +375,7 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="File">
+       <widget class="QWidget" name="mPageFile">
         <layout class="QVBoxLayout" name="verticalLayout_11">
          <item>
           <widget class="QGroupBox" name="groupBox_2">
@@ -503,7 +497,7 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="page">
+       <widget class="QWidget" name="mPageNetwork">
         <layout class="QVBoxLayout" name="verticalLayout_7">
          <item>
           <widget class="QGroupBox" name="mGrpStreamParamsVideo">
@@ -634,6 +628,11 @@
                    <item>
                     <property name="text">
                      <string>MPEG4</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>THEORA</string>
                     </property>
                    </item>
                   </widget>
@@ -1107,37 +1106,27 @@
                    </property>
                    <item>
                     <property name="text">
-                     <string>MP3 (MPA)</string>
+                     <string>MP3</string>
                     </property>
                    </item>
                    <item>
                     <property name="text">
-                     <string>G711 A-law (PCMA)</string>
+                     <string>G711 A-law</string>
                     </property>
                    </item>
                    <item>
                     <property name="text">
-                     <string>G711 µ-law (PCMU)</string>
+                     <string>G711 µ-law</string>
                     </property>
                    </item>
                    <item>
                     <property name="text">
-                     <string>AAC</string>
+                     <string>PCM16</string>
                     </property>
                    </item>
                    <item>
                     <property name="text">
-                     <string>PCM_S16_LE</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>GSM</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>AMR</string>
+                     <string>G722 adpcm</string>
                     </property>
                    </item>
                   </widget>

@@ -51,7 +51,7 @@ namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// video processing
+// video/audio processing
 #define MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE                         16 * 1000 * 1000 // HDTV RGB32 picture: 1920*1080*4 = ca. 7,9 MB
 
 // audio processing
@@ -154,9 +154,18 @@ struct ChunkDescriptor
 ///////////////////////////////////////////////////////////////////////////////
 
 // event handling
-#define         MarkOpenGrabDeviceSuccessful()              EventOpenGrabDeviceSuccessful(GetObjectNameStr(this).c_str(), __LINE__)
-#define         MarkGrabChunkSuccessful(ChunkNumber)        EventGrabChunkSuccessful(GetObjectNameStr(this).c_str(), __LINE__, ChunkNumber)
-#define         MarkGrabChunkFailed(Reason)                 EventGrabChunkFailed(GetObjectNameStr(this).c_str(), __LINE__, Reason)
+#define MarkOpenGrabDeviceSuccessful()              		EventOpenGrabDeviceSuccessful(GetObjectNameStr(this).c_str(), __LINE__)
+#define MarkGrabChunkSuccessful(ChunkNumber)        		EventGrabChunkSuccessful(GetObjectNameStr(this).c_str(), __LINE__, ChunkNumber)
+#define MarkGrabChunkFailed(Reason)                 		EventGrabChunkFailed(GetObjectNameStr(this).c_str(), __LINE__, Reason)
+
+// ffmpeg helpers
+#define DescribeInput(CodecId, Format)						FfmpegDescribeInput(GetObjectNameStr(this).c_str(), __LINE__, CodecId, Format)
+#define CreateIOContext(PacketBuffer, PacketBufferSize, ReadFunction, WriteFunction, Opaque, IoContext) \
+															FfmpegCreateIOContext(GetObjectNameStr(this).c_str(), __LINE__, PacketBuffer, PacketBufferSize, ReadFunction, WriteFunction, Opaque, IoContext)
+#define OpenInput(InputName, InputFormat, IoContext)       	FfmpegOpenInput(GetObjectNameStr(this).c_str(), __LINE__, InputName, InputFormat, IoContext)
+#define DetectAllStreams()            						FfmpegDetectAllStreams(GetObjectNameStr(this).c_str(), __LINE__)
+#define SelectStream()              						FfmpegSelectStream(GetObjectNameStr(this).c_str(), __LINE__)
+#define OpenDecoder()										FfmpegOpenDecoder(GetObjectNameStr(this).c_str(), __LINE__)
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -164,6 +173,7 @@ struct ChunkDescriptor
 class MediaSource;
 typedef std::vector<MediaSink*>        MediaSinks;
 typedef std::vector<MediaSource*>      MediaSources;
+typedef int (*IOFunction)(void *pOpaque, uint8_t *pBuffer, int pBufferSize);
 
 class MediaSource :
     public Homer::Monitor::PacketStatistic
@@ -173,6 +183,13 @@ public:
     MediaSource(std::string pName = "");
 
     virtual ~MediaSource();
+
+    static void FfmpegInit();
+
+    static void LogSupportedVideoCodecs(bool pSendToLoggerOnly = false);
+    static void LogSupportedAudioCodecs(bool pSendToLoggerOnly = false);
+    static void LogSupportedInputFormats(bool pSendToLoggerOnly = false);
+    static void LogSupportedOutputFormats(bool pSendToLoggerOnly = false);
 
     virtual void ResetPacketStatistic();
 
@@ -187,11 +204,9 @@ public:
     virtual MediaSource* GetMediaSource();
 
     /* codec identifier translation */
-    static std::string CodecName2FfmpegName(std::string pName);
-    static enum CodecID FfmpegName2FfmpegId(std::string pName);
-    static std::string FfmpegName2FfmpegFormat(std::string pName);
-    static std::string FfmpegId2FfmpegFormat(enum CodecID pCodecId);
-    static enum MediaType FfmpegName2MediaType(std::string pName);
+    static enum CodecID GetCodecIDFromGuiName(std::string pName);
+    static std::string GetGuiNameFromCodecID(enum CodecID pCodecId);
+    static std::string GetFormatName(enum CodecID pCodecId);
 
     /* audio */
     static int AudioQuality2BitRate(int pQuality);
@@ -201,6 +216,12 @@ public:
     static int FillFrame(AVFrame *pFrame, void *pData, enum PixelFormat pPixFormat, int pWidth, int pHeight);
     static void VideoFormat2Resolution(VideoFormat pFormat, int& pX, int& pY);
     static void VideoString2Resolution(std::string pString, int& pX, int& pY);
+
+    /* frame stats */
+    virtual bool SupportsDecoderFrameStatistics();
+    virtual int64_t DecodedIFrames();
+    virtual int64_t DecodedPFrames();
+    virtual int64_t DecodedBFrames();
 
     /* video grabbing control */
     virtual void SetVideoGrabResolution(int pResX = 352, int pResY = 288);
@@ -244,6 +265,7 @@ public:
     virtual void StopRecording();
     virtual bool SupportsRecording();
     virtual bool IsRecording();
+    virtual int64_t RecordingTime(); // in seconds
 
     /* device control */
     virtual std::string GetSourceTypeStr();
@@ -312,6 +334,9 @@ protected:
     void RecordFrame(AVFrame *pSourceFrame);
     void RecordSamples(int16_t *pSourceSamples, int pSourceSamplesSize);
 
+    /* frame stats */
+    void AnnounceFrame(AVFrame *pFrame);
+
     /* video fps emulation */
     void FpsEmulationInit(); // auto. called by MarkOpenGrabDeviceSuccessful
     int64_t FpsEmulationGetPts(); //needs correct mFrameRate value
@@ -320,6 +345,16 @@ protected:
     void EventOpenGrabDeviceSuccessful(std::string pSource, int pLine);
     void EventGrabChunkSuccessful(std::string pSource, int pLine, int pChunkNumber);
     void EventGrabChunkFailed(std::string pSource, int pLine, std::string pReason);
+
+    /* FFMPEG helpers */
+    bool FfmpegDescribeInput(string pSource/* caller source */, int pLine /* caller line */, CodecID pCodecId, AVInputFormat **pFormat);
+public:
+    static bool FfmpegCreateIOContext(string pSource/* caller source */, int pLine /* caller line */, char *pPacketBuffer, int pPacketBufferSize, IOFunction pReadFunction, IOFunction pWriteFunction, void *pOpaque, AVIOContext **pIoContext);
+protected:
+    bool FfmpegOpenInput(string pSource /* caller source */, int pLine /* caller line */, const char *pInputName, AVInputFormat *pInputFormat = NULL, AVIOContext *pIOContext = NULL);
+    bool FfmpegDetectAllStreams(string pSource /* caller source */, int pLine /* caller line */); //avformat_open_input must be called before, returns true on success
+    bool FfmpegSelectStream(string pSource /* caller source */, int pLine /* caller line */); //avformat_open_input & avformat_find_stream_info must be called before, returns true on success
+    bool FfmpegOpenDecoder(string pSource /* caller source */, int pLine /* caller line */); //avformat_open_input & avformat_find_stream_info must be called before, returns true on success
 
     bool                mMediaSourceOpened;
     bool                mGrabbingStopped;
@@ -348,6 +383,10 @@ protected:
     int                 mTargetResY;
     float               mFrameRate;
     SwsContext          *mScalerContext;
+    /* frame stats */
+    int64_t             mDecodedIFrames;
+    int64_t             mDecodedPFrames;
+    int64_t             mDecodedBFrames;
     /* live OSD marking */
     float               mMarkerRelX;
     float               mMarkerRelY;
@@ -364,6 +403,8 @@ protected:
     int                 mRecorderChunkNumber;
     int64_t             mRecorderStartPts; // for synchronized playback we calculate the position within a media stream and write the value into PTS entry of an encoded packet
     bool                mRecorderRealTime;
+    AVFrame             *mRecorderFinalFrame;
+    int64_t             mRecorderStart;
     /* device handling */
     std::string         mDesiredDevice;
     std::string         mCurrentDevice;

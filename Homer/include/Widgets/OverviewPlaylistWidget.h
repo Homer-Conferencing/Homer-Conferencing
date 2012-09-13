@@ -56,6 +56,10 @@ typedef QList<PlaylistEntry>    Playlist;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define PLAYLISTWIDGET OverviewPlaylistWidget::GetInstance()
+
+///////////////////////////////////////////////////////////////////////////////
+
 class OverviewPlaylistWidget :
     public QDockWidget,
     public Ui_OverviewPlaylistWidget
@@ -68,14 +72,17 @@ public:
     /// The destructor.
     virtual ~OverviewPlaylistWidget();
 
-    static QStringList LetUserSelectVideoFile(QWidget *pParent, QString pDescription, bool pMultipleFiles = true);
+    static OverviewPlaylistWidget& GetInstance();
+
     static QString LetUserSelectVideoSaveFile(QWidget *pParent, QString pDescription);
     static bool IsVideoFile(QString pFileName);
     static QStringList LetUserSelectAudioFile(QWidget *pParent, QString pDescription, bool pMultipleFiles = true);
     static QString LetUserSelectAudioSaveFile(QWidget *pParent, QString pDescription);
     static bool IsAudioFile(QString pFileName);
-    static QStringList LetUserSelectMovieFile(QWidget *pParent, QString pDescription, bool pMultipleFiles = true);
     static QStringList LetUserSelectMediaFile(QWidget *pParent, QString pDescription, bool pMultipleFiles = true);
+
+    /* add playlist entries */
+    void AddEntry(QString pLocation, bool pStartPlayback = false);
 
 public slots:
     void SetVisible(bool pVisible);
@@ -83,7 +90,7 @@ public slots:
     void StopPlaylist();
 
 private slots:
-    void AddEntryDialog();
+    bool AddEntryDialog();
     void AddEntryDialogSc();
     void DelEntryDialog();
     void DelEntryDialogSc();
@@ -110,9 +117,13 @@ private:
     void UpdateView();
 
     int GetListSize();
-    void AddEntry(QString pLocation, QString pName = "");
-    void AddM3UToList(QString pFilePlaylist);
-    void AddPLSToList(QString pFilePlaylist);
+
+    /* parse playlist entries */
+    static Playlist Parse(QString pLocation, QString pName = "", bool pAcceptVideo = true, bool pAcceptAudio = true);
+    static Playlist ParseM3U(QString pFilePlaylist, bool pAcceptVideo, bool pAcceptAudio);
+    static Playlist ParsePLS(QString pFilePlaylist, bool pAcceptVideo, bool pAcceptAudio);
+    static Playlist ParseDIR(QString pDirLocation, bool pAcceptVideo, bool pAcceptAudio);
+
     QString GetListEntry(int pIndex);
     QString GetListEntryName(int pIndex);
     void DeleteListEntry(int pIndex);
@@ -133,6 +144,7 @@ private:
     QString 			mCurrentFile;
     Playlist            mPlaylist;
     QMutex              mPlaylistMutex;
+    static int			sParseRecursionCount;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

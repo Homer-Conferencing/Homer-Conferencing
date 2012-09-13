@@ -28,6 +28,7 @@
 #ifndef _PREFERENCES_DIALOG_
 #define _PREFERENCES_DIALOG_
 
+#include <AudioPlayback.h>
 #include <ui_ConfigurationDialog.h>
 
 #include <Widgets/VideoWidget.h>
@@ -46,6 +47,7 @@ using namespace Homer::Multimedia;
 
 class ConfigurationDialog :
     public QDialog,
+    AudioPlayback,
     public Ui_ConfigurationDialog
 {
     Q_OBJECT;
@@ -72,6 +74,8 @@ private slots:
 
     void CreateAccountAtSipServer();
 
+    void SelectNotifySoundFileForStart();
+    void SelectNotifySoundFileForStop();
     void SelectNotifySoundFileForIm();
     void SelectNotifySoundFileForCall();
     void SelectNotifySoundFileForCallAcknowledge();
@@ -86,6 +90,8 @@ private slots:
     void SelectAllSystray();
     void DeselectAllSystray();
 
+    void PlayNotifySoundFileForStart();
+    void PlayNotifySoundFileForStop();
     void PlayNotifySoundFileForIm();
     void PlayNotifySoundFileForCall();
     void PlayNotifySoundFileForCallAcknowledge();
@@ -99,8 +105,6 @@ private slots:
     void ToggleSipServerPasswordVisibility();
 
 private:
-    void OpenPlaybackDevice();
-    void ClosePlaybackDevice();
     QString SelectSoundFile(QString pEventName, QString pSuggestion);
     void PlayNotifySoundFile(QString pFile);
 
@@ -127,8 +131,6 @@ private:
     VideoDevices        mVideoCaptureDevices;
     AudioDevices        mAudioCaptureDevices;
     Homer::Multimedia::AudioDevices mAudioPlaybackDevices;
-    /* playback */
-    Homer::Multimedia::WaveOut *mWaveOut;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

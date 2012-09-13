@@ -119,9 +119,11 @@ ENDIF (WIN32)
 ##############################################################
 # SOURCES 
 SET (SOURCES
+	../src/AudioPlayback
 	../src/Configuration
 	../src/ContactsManager
 	../src/FileTransfersManager
+	../src/HomerApplication
 	../src/MainWindow
 	../src/MediaSourceDesktop
 	../src/MediaSourceGrabberThread
@@ -139,6 +141,7 @@ SET (SOURCES
 	../src/Widgets/AudioWidget
 	../src/Widgets/AvailabilityWidget
 	../src/Widgets/CallButton
+	../src/Widgets/LinkedPixmapLabel
 	../src/Widgets/MessageHistory
 	../src/Widgets/MessageInput
 	../src/Widgets/MessageWidget
@@ -171,6 +174,7 @@ SET (QT_MOC_SOURCES
 	../include/Widgets/AudioWidget.h
 	../include/Widgets/AvailabilityWidget.h
 	../include/Widgets/CallButton.h
+	../include/Widgets/LinkedPixmapLabel.h
 	../include/Widgets/MessageHistory.h
 	../include/Widgets/MessageInput.h
 	../include/Widgets/MessageWidget.h
@@ -315,6 +319,7 @@ IF (NOT (${BUILD} MATCHES "Default"))
 		libQtDBus.so.4 
 		libQtNetwork.so.4
 		libQtXml.so.4  
+		libQtXmlPatterns.so.4  
 		libgstapp-0.10.so.0.24.0  
 		libgstinterfaces-0.10.so    
 		libgstpbutils-0.10.so.0          
@@ -323,6 +328,7 @@ IF (NOT (${BUILD} MATCHES "Default"))
 		libQtDBus.so.4.8.1
 		libQtNetwork.so.4.8.1
 		libQtXml.so.4.8.1     
+		libQtXmlPatterns.so.4.8.1     
 		libgstbase-0.10.so
 		libgstinterfaces-0.10.so.0  
 		libgstpbutils-0.10.so.0.24.0     
@@ -389,7 +395,7 @@ QT4_ADD_RESOURCES(SOURCES ${QT_QRC_SOURCES})
 
 ##############################################################
 # extend install target by "Homer.png" for non Windows systems
-IF(NOT WIN32)
+IF (LINUX) 
 	IF (DEFINED INSTALL_LIBDIR)
         	INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../Homer.png DESTINATION ${INSTALL_DATADIR})
 	ELSE()
@@ -399,7 +405,7 @@ ENDIF()
 
 ##############################################################
 # Qt needs qt_menu.nib/keyedobjects.nib in the binary directory
-# we copied this file from Qt-Source 4.8.0
+# file from Qt-Source 4.8.2
 if (APPLE)
         INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerLibs/apple${ARCH_BITS}/qt_menu.nib/keyedobjects.nib DESTINATION lib/qt_menu.nib COMPONENT libraries)
 endif()

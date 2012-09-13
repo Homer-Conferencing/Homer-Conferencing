@@ -182,7 +182,7 @@ bool MediaSourceDesktop::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     //######################################################
     FpsEmulationInit();
     mLastTimeGrabbed == QTime(0, 0, 0, 0);
-    mSourceStartPts = -1;
+    mSourceStartPts = 0;
     mChunkNumber = 0;
     mMediaType = MEDIA_VIDEO;
     mMediaSourceOpened = true;

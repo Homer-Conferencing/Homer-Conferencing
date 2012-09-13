@@ -64,6 +64,10 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define CONTACTSWIDGET OverviewContactsWidget::GetInstance()
+
+///////////////////////////////////////////////////////////////////////////////
+
 class OverviewContactsWidget :
     public QDockWidget,
     public Ui_OverviewContactsWidget
@@ -75,6 +79,8 @@ public:
 
     /// The destructor.
     virtual ~OverviewContactsWidget();
+
+    static OverviewContactsWidget& GetInstance();
 
     bool InsertNew(QString pParticipant);
 

@@ -41,6 +41,8 @@
 #define OS_DEP_MUTEX HANDLE
 #endif
 
+#include <string>
+
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -60,13 +62,16 @@ public:
     /* every function returns TRUE if successful */
     bool lock();
     bool unlock();
-    bool tryLock();
-    bool tryLock(int pMSecs);
+    bool tryLock(int pMSecs = 0);
+
+    /* for debbuging */
+    void AssignName(std::string pName);
 
 private:
 friend class Condition;
-    OS_DEP_MUTEX mMutex;
-    int     mOwnerThreadId;
+    OS_DEP_MUTEX    mMutex;
+    int             mOwnerThreadId;
+    std::string     mName;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

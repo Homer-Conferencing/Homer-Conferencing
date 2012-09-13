@@ -44,6 +44,9 @@ namespace Homer { namespace Multimedia {
 // the following de/activates debugging of received packets
 //#define MSMEM_DEBUG_PACKETS
 
+// de/activate output of RTCP sender reports
+//#define MSMEM_DEBUG_SENDER_REPORTS
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // size of one single fragment of a frame packet
@@ -76,6 +79,9 @@ public:
     virtual int GetFragmentBufferCounter();
     virtual int GetFragmentBufferSize();
 
+    /* frame stats */
+    virtual bool SupportsDecoderFrameStatistics();
+
     /* video grabbing control */
     virtual GrabResolutions GetSupportedVideoGrabResolutions();
 
@@ -99,7 +105,7 @@ protected:
     static int GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize);
     virtual void ReadFragment(char *pData, ssize_t &pDataSize);
 
-    unsigned long       mPacketNumber;
+    unsigned long       mFragmentNumber;
     enum CodecID        mStreamCodecId;
     char                *mStreamPacketBuffer;
     char                *mFragmentBuffer;
@@ -109,6 +115,9 @@ protected:
     int                 mWrappingHeaderSize;
     MediaFifo           *mDecoderFifo;
     int                 mPacketStatAdditionalFragmentSize; // used to adapt packet statistic to additional fragment header, which is used for TCP transmission
+    /* video decoding */
+    AVFrame             *mSourceFrame;
+    AVFrame             *mRGBFrame;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

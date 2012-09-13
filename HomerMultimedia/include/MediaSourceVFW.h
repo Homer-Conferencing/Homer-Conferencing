@@ -48,6 +48,9 @@ public:
 
     virtual ~MediaSourceVFW();
 
+    /* frame stats */
+    virtual bool SupportsDecoderFrameStatistics();
+
     /* device control */
     virtual void getVideoDevices(VideoDevices &pVList);
 
@@ -65,13 +68,13 @@ public:
     virtual int GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk = false);
 
 private:
-    bool				mFramesAreUpsideDown[10];
     bool				mDeviceAvailable[10];
-    int                 mCurrentInputChannel, mDesiredInputChannel;
-	bool				mFirstPixelformatError;
 	//HINT: We use an internal cache, which describes available VFW devices. The cache is used for every second and further device query.
 	//		Without this cache every direct device query would lead to repeating VFW dialogues, which have to be acknowledged by the user.
-	VideoDevices	mFoundVFWDevices;
+	VideoDevices		mFoundVFWDevices;
+    /* video decoding */
+    AVFrame             *mSourceFrame;
+    AVFrame             *mRGBFrame;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

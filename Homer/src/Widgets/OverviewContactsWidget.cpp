@@ -41,9 +41,20 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+OverviewContactsWidget *sOverviewContactsWidget = NULL;
+
+OverviewContactsWidget& OverviewContactsWidget::GetInstance()
+{
+	if (sOverviewContactsWidget == NULL)
+		LOGEX(OverviewContactsWidget, LOG_WARN, "OverviewContactsWidget is still invalid");
+
+    return *sOverviewContactsWidget;
+}
+
 OverviewContactsWidget::OverviewContactsWidget(QAction *pAssignedAction, QMainWindow* pMainWindow):
     QDockWidget(pMainWindow)
 {
+	sOverviewContactsWidget = this;
     mAssignedAction = pAssignedAction;
     mMainWindow = pMainWindow;
 
@@ -372,7 +383,10 @@ bool OverviewContactsWidget::InsertNew(QString pParticipant)
     QString tHost;
 
     CONTACTS.SplitAddress(pParticipant, tUser, tHost, tPort);
+    LOG(LOG_VERBOSE, "Going to add contact: %s (%s, %s, %s) to the contact list", pParticipant.toStdString().c_str(), tUser.toStdString().c_str(), tHost.toStdString().c_str(), tPort.toStdString().c_str());
 
+    if(tPort == "")
+    	tPort = "5060";
     tCED.mLeAddress->setText(tUser + "@" + tHost);
     int tPortScal;
     bool tOk = false;

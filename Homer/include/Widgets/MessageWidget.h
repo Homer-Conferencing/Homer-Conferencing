@@ -46,7 +46,7 @@ class MessageWidget :
 public:
     /// The default constructor
     MessageWidget(QWidget* pParent = NULL);
-    void Init(QMenu *pMenu, QString pPartner = "unknown", OverviewContactsWidget *pContactsWidget = NULL, bool pVisible = true);
+    void Init(QMenu *pMenu, QString pPartner = "unknown", bool pVisible = true);
 
     /// The destructor.
     virtual ~MessageWidget();
@@ -57,7 +57,7 @@ public:
     void UpdateParticipantState(int pState);
 
 public slots:
-	void SendText();
+	void SendMessage();
     void SendFile(QList<QUrl> *tFileUrls = NULL);
     void SendLink();
     void ToggleVisibility();
@@ -66,6 +66,7 @@ private slots:
     void AddPArticipantToContacts();
 
 private:
+    QString ReplaceSmiles(QString pMessage);
     virtual void closeEvent(QCloseEvent* pEvent);
     virtual void contextMenuEvent(QContextMenuEvent *pContextMenuEvent);
     virtual void dragEnterEvent(QDragEnterEvent *pEvent);
@@ -78,7 +79,6 @@ private:
     QAction             *mAssignedAction;
     QString             mMessageHistory;
     QString             mParticipant;
-    OverviewContactsWidget *mContactsWidget;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

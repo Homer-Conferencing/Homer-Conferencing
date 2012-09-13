@@ -25,14 +25,11 @@
  * Since:   2010-10-19
  */
 
-//##############################################################################################################
-// DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED
-//##############################################################################################################
-
 #include <MediaSourceVFW.h>
 #include <MediaSource.h>
 #include <ProcessStatisticService.h>
 #include <Logger.h>
+#include <Header_Ffmpeg.h>
 
 #include <cstdio>
 #include <string.h>
@@ -60,9 +57,6 @@ MediaSourceVFW::MediaSourceVFW(string pDesiredDevice):
     // set category for packet statistics
     ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 
-    mCurrentInputChannel = 0;
-    mDesiredInputChannel = 0;
-
     bool tNewDeviceSelected = false;
     SelectDevice(pDesiredDevice, MEDIA_VIDEO, tNewDeviceSelected);
     if (!tNewDeviceSelected)
@@ -75,6 +69,11 @@ MediaSourceVFW::~MediaSourceVFW()
 {
     if (mMediaSourceOpened)
         CloseGrabDevice();
+}
+
+bool MediaSourceVFW::SupportsDecoderFrameStatistics()
+{
+    return (mMediaType == MEDIA_VIDEO);
 }
 
 void MediaSourceVFW::getVideoDevices(VideoDevices &pVList)
@@ -145,9 +144,6 @@ void MediaSourceVFW::getVideoDevices(VideoDevices &pVList)
 				DestroyWindow(tWinHandle);
 				continue;
 			}
-			// see http://msdn.microsoft.com/de-de/library/dd183376.aspx
-			mFramesAreUpsideDown[i] = (tInfo.bmiHeader.biHeight > 0);
-			LOG(LOG_INFO, "  ..pictures are upside down: %d", mFramesAreUpsideDown[i]);
 
 			DestroyWindow(tWinHandle);
 
@@ -174,33 +170,27 @@ void MediaSourceVFW::getVideoDevices(VideoDevices &pVList)
 bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 {
     int                 tResult;
-    AVFormatParameters  tFormatParams;
+    AVDictionary        *tOptions = NULL;
     AVInputFormat       *tFormat;
     AVCodec             *tCodec;
 
-    LOG(LOG_VERBOSE, "Trying to open the video source");
+    mMediaType = MEDIA_VIDEO;
 
-    if (mMediaType == MEDIA_AUDIO)
-    {
-        LOG(LOG_ERROR, "Wrong media type detected");
-        return false;
-    }
+    if (pFps > 29.97)
+        pFps = 29.97;
+    if (pFps < 5)
+        pFps = 5;
+
+    LOG(LOG_VERBOSE, "Trying to open the video source");
 
     SVC_PROCESS_STATISTIC.AssignThreadName("Video-Grabber(VFW)");
 
-    if (mMediaSourceOpened)
-        return false;
+    // set category for packet statistics
+    ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 
-    memset((void*)&tFormatParams, 0, sizeof(tFormatParams));
-    tFormatParams.channel = 0;
-    tFormatParams.standard = NULL;
-    tFormatParams.time_base.num = 100;
-    tFormatParams.time_base.den = (int)pFps * 100;
-    LOG(LOG_VERBOSE, "Desired time_base: %d/%d (%3.2f)", tFormatParams.time_base.den, tFormatParams.time_base.num, pFps);
-    tFormatParams.width = pResX;
-    tFormatParams.height = pResY;
-    tFormatParams.initial_pause = 0;
-    tFormatParams.prealloced_context = 0;
+    av_dict_set(&tOptions, "video_size", (toString(pResX) + "x" + toString(pResY)).c_str(), 0);
+    av_dict_set(&tOptions, "framerate", toString((int)pFps).c_str(), 0);
+
     tFormat = av_find_input_format("vfwcap");
     if (tFormat == NULL)
     {
@@ -211,14 +201,16 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if ((mDesiredDevice == "") || (mDesiredDevice == "auto") || (mDesiredDevice == "automatic"))
         mDesiredDevice = "";
 
+    // alocate new format context
+    mFormatContext = AV_NEW_FORMAT_CONTEXT();
+
     LOG(LOG_VERBOSE, "Going to open input device..");
     if (mDesiredDevice != "")
     {
         //########################################
         //### probing given device file
         //########################################
-        tResult = 0;
-        if ((tResult = av_open_input_file(&mFormatContext, (const char *)mDesiredDevice.c_str(), tFormat, 0, &tFormatParams)) != 0)
+        if ((tResult = avformat_open_input(&mFormatContext, (const char *)mDesiredDevice.c_str(), tFormat, &tOptions)) != 0)
         {
             LOG(LOG_ERROR, "Couldn't open device \"%s\" because of \"%s\".", mDesiredDevice.c_str(), strerror(AVUNERROR(tResult)));
             return false;
@@ -236,8 +228,7 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         	{
         		LOG(LOG_VERBOSE, "Probing VFW device number: %d", i);
 				mDesiredDevice = (char)i + 48;
-				tResult = 0;
-				if ((tResult = av_open_input_file(&mFormatContext, (const char *)mDesiredDevice.c_str(), tFormat, 0, &tFormatParams)) == 0)
+				if ((tResult = avformat_open_input(&mFormatContext, (const char *)mDesiredDevice.c_str(), tFormat, &tOptions)) == 0)
 				{
 					LOG(LOG_VERBOSE, " ..available device connected");
 					tFound = true;
@@ -253,80 +244,17 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     }
     mCurrentDevice = mDesiredDevice;
 
-    // Retrieve stream information
-    LOG(LOG_VERBOSE, "Going to find stream information..");
-    if ((tResult = av_find_stream_info(mFormatContext)) < 0)
-    {
-        LOG(LOG_ERROR, "Couldn't find stream information because of \"%s\".", strerror(tResult));
-        // Close the VFW video file
-        HM_close_input(mFormatContext);
-        return false;
-    }
+    if (!DetectAllStreams())
+    	return false;
 
-    // Find the first video stream
-    mMediaStreamIndex = -1;
-    for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
-    {
-        if(mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO)
-        {
-            mMediaStreamIndex = i;
-            break;
-        }
-    }
-    if (mMediaStreamIndex == -1)
-    {
-        LOG(LOG_ERROR, "Couldn't find a video stream");
-        // Close the VFW video file
-        HM_close_input(mFormatContext);
-        return false;
-    }
+    if (!SelectStream())
+    	return false;
 
-    //######################################################
-    //### dump ffmpeg information about format
-    //######################################################
     mFormatContext->streams[mMediaStreamIndex]->time_base.num = 100;
     mFormatContext->streams[mMediaStreamIndex]->time_base.den = (int)pFps * 100;
 
-    // Dump information about device file
-    av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceVFW (video)", false);
-
-    // Get a pointer to the codec context for the video stream
-    mCodecContext = mFormatContext->streams[mMediaStreamIndex]->codec;
-
-    // set grabbing resolution and frame-rate to the resulting ones delivered by opened video codec
-    mSourceResX = mCodecContext->width;
-    mSourceResY = mCodecContext->height;
-    mFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->time_base.den / mFormatContext->streams[mMediaStreamIndex]->time_base.num;
-
-    //######################################################
-    //### search for correct decoder for the video stream
-    //######################################################
-    LOG(LOG_VERBOSE, "Going to find decoder..");
-    if((tCodec = avcodec_find_decoder(mCodecContext->codec_id)) == NULL)
-    {
-        LOG(LOG_ERROR, "Couldn't find a fitting codec");
-        // Close the VFW video file
-        HM_close_input(mFormatContext);
-        return false;
-    }
-
-    //######################################################
-    //### open the selected codec
-    //######################################################
-    // Inform the codec that we can handle truncated bitstreams -- i.e.,
-    // bitstreams where frame boundaries can fall in the middle of packets
-//    if(tCodec->capabilities & CODEC_CAP_TRUNCATED)
-//        mCodecContext->flags |= CODEC_FLAG_TRUNCATED;
-
-    // Open codec
-    LOG(LOG_VERBOSE, "Going to open codec..");
-    if ((tResult = avcodec_open2(mCodecContext, tCodec, NULL)) < 0)
-    {
-        LOG(LOG_ERROR, "Couldn't open codec because of \"%s\".", strerror(AVUNERROR(tResult)));
-        // Close the VFW video file
-        HM_close_input(mFormatContext);
-        return false;
-    }
+    if (!OpenDecoder())
+    	return false;
 
     //######################################################
     //### create context for picture scaler
@@ -338,9 +266,17 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     //##########################################################################################
     //av_seek_frame(mFormatContext, mMediaStreamIndex, mFormatContext->streams[mMediaStreamIndex]->cur_dts, AVSEEK_FLAG_ANY);
 
-    mFirstPixelformatError = true;
-    mMediaType = MEDIA_VIDEO;
+    // Allocate video frame for source and RGB format
+    if ((mSourceFrame = avcodec_alloc_frame()) == NULL)
+        return false;
+    if ((mRGBFrame = avcodec_alloc_frame()) == NULL)
+        return false;
+
     MarkOpenGrabDeviceSuccessful();
+
+    mDecodedIFrames = 0;
+    mDecodedPFrames = 0;
+    mDecodedBFrames = 0;
 
     return true;
 }
@@ -378,6 +314,10 @@ bool MediaSourceVFW::CloseGrabDevice()
 		// Close the VFW video file
         HM_close_input(mFormatContext);
 
+        // Free the frames
+        av_free(mRGBFrame);
+        av_free(mSourceFrame);
+
         LOG(LOG_INFO, "...closed");
 
         tResult = true;
@@ -394,7 +334,6 @@ bool MediaSourceVFW::CloseGrabDevice()
 
 int MediaSourceVFW::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk)
 {
-	AVFrame             *tSourceFrame, *tRGBFrame;
     AVPacket            tPacket;
     int                 tFrameFinished = 0;
     int                 tBytesDecoded = 0;
@@ -410,7 +349,7 @@ int MediaSourceVFW::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
         // acknowledge failed
         MarkGrabChunkFailed("grab buffer is NULL");
 
-        return -1;
+        return GRAB_RES_INVALID;
     }
 
     if (!mMediaSourceOpened)
@@ -421,7 +360,7 @@ int MediaSourceVFW::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
         // acknowledge failed
         MarkGrabChunkFailed("video source is closed");
 
-        return -1;
+        return GRAB_RES_INVALID;
     }
 
     if (mGrabbingStopped)
@@ -432,23 +371,11 @@ int MediaSourceVFW::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
         // acknowledge failed
         MarkGrabChunkFailed("video source is paused");
 
-        return -1;
-    }
-
-    // Allocate video frame structure for source and RGB format
-    if (((tSourceFrame = avcodec_alloc_frame()) == NULL) || ((tRGBFrame = avcodec_alloc_frame()) == NULL))
-    {
-        // unlock grabbing
-        mGrabMutex.unlock();
-
-        // acknowledge failed
-        MarkGrabChunkFailed("out of memory");
-
-        return -1;
+        return GRAB_RES_INVALID;
     }
 
     // Assign appropriate parts of buffer to image planes in pFrameRGB
-    avpicture_fill((AVPicture *)tRGBFrame, (uint8_t *)pChunkBuffer, PIX_FMT_RGB32, mTargetResX, mTargetResY);
+    avpicture_fill((AVPicture *)mRGBFrame, (uint8_t *)pChunkBuffer, PIX_FMT_RGB32, mTargetResX, mTargetResY);
 
     // Read new packet
     // return 0 if OK, < 0 if error or end of file.
@@ -463,7 +390,7 @@ int MediaSourceVFW::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
             // acknowledge failed
             MarkGrabChunkFailed("could'nt read next video frame");
 
-            return -1;
+            return GRAB_RES_INVALID;
         }
     }while (tPacket.stream_index != mMediaStreamIndex);
 
@@ -485,46 +412,56 @@ int MediaSourceVFW::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
         if ((!pDropChunk) || (mRecording))
         {
             // Decode the next chunk of data
-            tBytesDecoded = HM_avcodec_decode_video(mCodecContext, tSourceFrame, &tFrameFinished, &tPacket);
+            tBytesDecoded = HM_avcodec_decode_video(mCodecContext, mSourceFrame, &tFrameFinished, &tPacket);
 
             // emulate set FPS
-            tSourceFrame->pts = FpsEmulationGetPts();
+            mSourceFrame->pts = FpsEmulationGetPts();
+
 //        // transfer the presentation time value
-//        tSourceFrame->pts = tPacket.pts;
+//        mSourceFrame->pts = tPacket.pts;
 
             #ifdef MSVFW_DEBUG_PACKETS
                 LOG(LOG_VERBOSE, "Source video frame..");
-                LOG(LOG_VERBOSE, "      ..key frame: %d", tSourceFrame->key_frame);
-                switch(tSourceFrame->pict_type)
+                LOG(LOG_VERBOSE, "      ..key frame: %d", mSourceFrame->key_frame);
+                switch(mSourceFrame->pict_type)
                 {
-                        case FF_I_TYPE:
+                        case AV_PICTURE_TYPE_I:
                             LOG(LOG_VERBOSE, "      ..picture type: i-frame");
                             break;
-                        case FF_P_TYPE:
+                        case AV_PICTURE_TYPE_P:
                             LOG(LOG_VERBOSE, "      ..picture type: p-frame");
                             break;
-                        case FF_B_TYPE:
+                        case AV_PICTURE_TYPE_B:
                             LOG(LOG_VERBOSE, "      ..picture type: b-frame");
                             break;
                         default:
-                            LOG(LOG_VERBOSE, "      ..picture type: %d", tSourceFrame->pict_type);
+                            LOG(LOG_VERBOSE, "      ..picture type: %d", mSourceFrame->pict_type);
                             break;
                 }
-                LOG(LOG_VERBOSE, "      ..pts: %ld", tSourceFrame->pts);
-                LOG(LOG_VERBOSE, "      ..coded pic number: %d", tSourceFrame->coded_picture_number);
-                LOG(LOG_VERBOSE, "      ..display pic number: %d", tSourceFrame->display_picture_number);
+                LOG(LOG_VERBOSE, "      ..pts: %ld", mSourceFrame->pts);
+                LOG(LOG_VERBOSE, "      ..coded pic number: %d", mSourceFrame->coded_picture_number);
+                LOG(LOG_VERBOSE, "      ..display pic number: %d", mSourceFrame->display_picture_number);
             #endif
 
 			if ((tFrameFinished) && (tBytesDecoded > 0))
 			{
-				// re-encode the frame and write it to file
-				if (mRecording)
-					RecordFrame(tSourceFrame);
+                // ############################
+                // ### ANNOUNCE FRAME (statistics)
+                // ############################
+                AnnounceFrame(mSourceFrame);
 
-				// convert frame to RGB format
+                // ############################
+                // ### RECORD FRAME
+                // ############################
+                if (mRecording)
+                    RecordFrame(mSourceFrame);
+
+                // ############################
+                // ### SCALE FRAME (CONVERT)
+                // ############################
 				if (!pDropChunk)
 				{
-					HM_sws_scale(mScalerContext, tSourceFrame->data, tSourceFrame->linesize, 0, mCodecContext->height, tRGBFrame->data, tRGBFrame->linesize);
+					HM_sws_scale(mScalerContext, mSourceFrame->data, mSourceFrame->linesize, 0, mCodecContext->height, mRGBFrame->data, mRGBFrame->linesize);
 				}
 			}else
 			{
@@ -534,7 +471,7 @@ int MediaSourceVFW::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
 				// acknowledge failed
 				MarkGrabChunkFailed("couldn't decode video frame");
 
-				return -1;
+				return GRAB_RES_INVALID;
 			}
         }
         av_free_packet(&tPacket);
@@ -542,12 +479,6 @@ int MediaSourceVFW::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
 
     // return size of decoded frame
     pChunkSize = avpicture_get_size(PIX_FMT_RGB32, mTargetResX, mTargetResY) * sizeof(uint8_t);
-
-    // Free the RGB frame
-    av_free(tRGBFrame);
-
-    // Free the YUV frame
-    av_free(tSourceFrame);
 
     // unlock grabbing
     mGrabMutex.unlock();

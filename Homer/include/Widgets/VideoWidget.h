@@ -44,6 +44,7 @@
 #include <QContextMenuEvent>
 #include <QKeyEvent>
 #include <QMainWindow>
+#include <QFocusEvent>
 
 #include <MediaSource.h>
 #include <MeetingEvents.h>
@@ -60,6 +61,8 @@ class ParticipantWidget;
 
 // debug performance of video widget: background repainting
 //#define DEBUG_VIDEOWIDGET_PERFORMANCE
+
+//#define DEBUG_VIDEOWIDGET_FRAME_DELIVERY
 
 // de/activate automatic frame dropping in case the video widget is invisible (default is off)
 //#define VIDEO_WIDGET_DROP_WHEN_INVISIBLE
@@ -145,6 +148,9 @@ private:
     virtual void customEvent (QEvent* pEvent);
     virtual void wheelEvent(QWheelEvent *pEvent);
     virtual void mouseMoveEvent (QMouseEvent *pEvent);
+    virtual void mousePressEvent(QMouseEvent *pEvent);
+    virtual void mouseReleaseEvent(QMouseEvent *pEvent);
+    virtual void focusOutEvent(QFocusEvent *pEvent);
     virtual void timerEvent(QTimerEvent *pEvent);
 
     QWidget             *mCurrentApplicationFocusedWidget;
@@ -186,6 +192,9 @@ private:
     QTime               mTimeOfLastMouseMove;
     /* periodic tasks */
     int                 mTimerId;
+    /* moving main window per mouse move */
+    QPoint				mMovingMainWindowReferencePos;
+    bool				mIsMovingMainWindow;
 };
 
 

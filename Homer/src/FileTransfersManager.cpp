@@ -1067,7 +1067,7 @@ FileTransfersManager::FileTransfersManager()
     mFileListenerRunning = false;
     mReceiveErrors = 0;
     mLocalPort = 0;
-    sLocalSourceId = av_get_random_seed();
+    sLocalSourceId = av_get_random_seed(); // TODO: replace by rand()
     mSourceId = sLocalSourceId;
     mPacketReceiveBuffer = NULL;
 }

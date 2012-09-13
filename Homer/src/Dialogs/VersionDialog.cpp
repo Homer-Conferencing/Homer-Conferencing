@@ -49,6 +49,15 @@ VersionDialog::~VersionDialog()
 void VersionDialog::initializeGUI()
 {
     setupUi(this);
+    mLbFfmpeg->Init("http://ffmpeg.org");
+    mLbSofiaSip->Init("http://sofia-sip.sourceforge.net/");
+    mLbIcs->Init("http://www.tu-ilmenau.de/ics");
+    mLbCiwiLounge->Init("http://www.werbeagentur-ciwilounge.de/");
+    mLbMetraLabs->Init("http://www.metralabs.com/");
+    mLbComnart->Init("http://www.comnart.de/");
+    mLbFem->Init("http://fem.tu-ilmenau.de/");
+    mLbOnlineforge->Init("http://www.onlineforge.de/");
+    mLbFacebook->Init("http://www.facebook.com/homerconferencing");
 }
 
 ///////////////////////////////////////////////////////////////////////////////

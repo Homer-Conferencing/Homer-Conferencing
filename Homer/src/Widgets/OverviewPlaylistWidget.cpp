@@ -43,14 +43,32 @@
 
 namespace Homer { namespace Gui {
 
-#define PLAYLIST_UPDATE_DELAY         250 //ms
-#define ALLOWED_AV_TIME_DIFF			2 //s
+///////////////////////////////////////////////////////////////////////////////
+
+#define PLAYLIST_UPDATE_DELAY         			 	  250  //ms
+
+#define ALLOWED_AV_TIME_DIFF							2  //s
+
+// maximum recursive calls
+#define MAX_PARSER_RECURSIONS						   32
 
 ///////////////////////////////////////////////////////////////////////////////
+
+int OverviewPlaylistWidget::sParseRecursionCount = 0;
+OverviewPlaylistWidget *sOverviewPlaylistWidget = NULL;
+
+OverviewPlaylistWidget& OverviewPlaylistWidget::GetInstance()
+{
+	if (sOverviewPlaylistWidget == NULL)
+		LOGEX(OverviewPlaylistWidget, LOG_WARN, "OverviewPlaylistWidget is still invalid");
+
+    return *sOverviewPlaylistWidget;
+}
 
 OverviewPlaylistWidget::OverviewPlaylistWidget(QAction *pAssignedAction, QMainWindow* pMainWindow, VideoWorkerThread *pVideoWorker, AudioWorkerThread *pAudioWorker):
     QDockWidget(pMainWindow)
 {
+	sOverviewPlaylistWidget = this;
     mAssignedAction = pAssignedAction;
     mVideoWorker = pVideoWorker;
     mAudioWorker = pAudioWorker;
@@ -82,9 +100,6 @@ OverviewPlaylistWidget::OverviewPlaylistWidget(QAction *pAssignedAction, QMainWi
     connect(mShortcutDel, SIGNAL(activatedAmbiguously()), this, SLOT(DelEntryDialogSc()));
     connect(mShortcutIns, SIGNAL(activated()), this, SLOT(AddEntryDialogSc()));
     connect(mShortcutIns, SIGNAL(activatedAmbiguously()), this, SLOT(AddEntryDialogSc()));
-    connect(mTbPlay, SIGNAL(clicked()), this, SLOT(ActionPlay()));
-    connect(mTbPause, SIGNAL(clicked()), this, SLOT(ActionPause()));
-    connect(mTbStop, SIGNAL(clicked()), this, SLOT(ActionStop()));
     connect(mTbNext, SIGNAL(clicked()), this, SLOT(ActionNext()));
     connect(mTbLast, SIGNAL(clicked()), this, SLOT(ActionLast()));
     mTimerId = startTimer(PLAYLIST_UPDATE_DELAY);
@@ -104,7 +119,7 @@ OverviewPlaylistWidget::~OverviewPlaylistWidget()
 /// some static helpers
 ///////////////////////////////////////////////////////////////////////////////
 
-static QString sAllLoadVideoFilter = "All supported formats (*.asf *.avi *.bmp *.dv *.jpg *.jpeg *.m4v *.mkv *.mov *.mpg *.mpeg *.mp4 *.mp4a *.m3u *.pls *.png *.swf *.vob *.wmv *.3gp)";
+static QString sAllLoadVideoFilter = "All supported formats (*.asf *.avi *.bmp *.dv *.jpg *.jpeg *.m4v *.mkv *.mov *.mpg *.mpeg *.mp4 *.mp4a *.m2ts *.m3u *.pls *.png *.swf *.vob *.wmv *.3gp)";
 static QString sLoadVideoFilters = sAllLoadVideoFilter + ";;"\
                     "Advanced Systems Format (*.asf);;"\
                     "Audio Video Interleave Format (*.avi);;"\
@@ -112,37 +127,15 @@ static QString sLoadVideoFilters = sAllLoadVideoFilter + ";;"\
                     "Joint Photographic Experts Group (*.jpg *.jpeg);;"\
                     "Matroska Format (*.mkv);;"\
                     "MPEG-Program Stream Format (*.mpg *.mpeg);;"\
-                    "M3U Playlist file (*.m3u);;"\
-                    "PLS Playlist file (*.pls);;"\
+                    "MPEG-2 Transport Stream (*.m2ts);;"\
+                    "M3U Playlist File (*.m3u);;"\
+                    "PLS Playlist File (*.pls);;"\
                     "Portable Network Graphics (*.png);;"\
                     "Quicktime/MPEG4 Format (*.m4v *.mov *.mp4 *.mp4a *.3gp);;"\
                     "Small Web Format (*.swf);;"\
                     "Video Object Format (*.vob);;" \
                     "Windows Bitmap (*.bmp);;"\
                     "Windows Media Video Format (*.wmv)";
-
-QStringList OverviewPlaylistWidget::LetUserSelectVideoFile(QWidget *pParent, QString pDescription, bool pMultipleFiles)
-{
-    QStringList tResult;
-
-    if (pMultipleFiles)
-        tResult = QFileDialog::getOpenFileNames(pParent, pDescription,
-                                                                CONF.GetDataDirectory(),
-                                                                sLoadVideoFilters,
-                                                                &sAllLoadVideoFilter,
-                                                                CONF_NATIVE_DIALOGS);
-    else
-        tResult = QStringList(QFileDialog::getOpenFileName(pParent,  pDescription,
-                                                                CONF.GetDataDirectory(),
-                                                                sLoadVideoFilters,
-                                                                &sAllLoadVideoFilter,
-                                                                CONF_NATIVE_DIALOGS));
-
-    if (!tResult.isEmpty())
-        CONF.SetDataDirectory(tResult.first().left(tResult.first().lastIndexOf('/')));
-
-    return tResult;
-}
 
 static QString sAllSaveVideoFilter = "All supported formats (*.avi *.m4v *.mov *.mp4 *.mp4a *.3gp)";
 static QString sSaveVideoFilters = sAllSaveVideoFilter + ";;"\
@@ -170,7 +163,7 @@ bool OverviewPlaylistWidget::IsVideoFile(QString pFileName)
     int tPos = pFileName.lastIndexOf('.', -1);
     if (tPos == -1)
     {
-        LOGEX(OverviewPlaylistWidget, LOG_ERROR, "Video file name lacks a correct format selecting end");
+        LOGEX(OverviewPlaylistWidget, LOG_ERROR, "Video file %s name lacks a correct format selecting end", pFileName.toStdString().c_str());
         return false;
     }
 
@@ -183,19 +176,21 @@ bool OverviewPlaylistWidget::IsVideoFile(QString pFileName)
         return false;
 }
 
-static QString sAllLoadAudioFilter =  "All supported formats (*.3gp *.asf *.avi *.m3u *.m4v *.mka *.mkv *.mov *.mp3 *.mp4 *.mp4a *.mpg *.mpeg *.pls *.vob *.wav *.wmv)";
+static QString sAllLoadAudioFilter =  "All supported formats (*.3gp *.asf *.avi *.m2ts *.m3u *.m4v *.mka *.mkv *.mov *.mp3 *.mp4 *.mp4a *.mpg *.mpeg *.pls *.vob *.wav *.wmv)";
 static QString sLoadAudioFilters =  sAllLoadAudioFilter + ";;"\
                     "Advanced Systems Format (*.asf);;"\
                     "Audio Video Interleave Format (*.avi);;"\
-                    "M3U Playlist file (*.m3u);;"\
+                    "MPEG-2 Transport Stream (*.m2ts);;"\
+                    "M3U Playlist File (*.m3u);;"\
                     "Matroska Format (*.mka *.mkv);;"\
                     "MPEG Audio Layer 2/3 Format (*.mp3);;"\
                     "MPEG-Program Stream Format (*.mpg *.mpeg);;"\
-                    "PLS Playlist file (*.pls);;"\
+                    "PLS Playlist File (*.pls);;"\
                     "Quicktime/MPEG4 Format (*.m4v *.mov *.mp4 *.mp4a *.3gp);;"\
                     "Video Object Format (*.vob);;" \
                     "Waveform Audio File Format (*.wav);;" \
                     "Windows Media Video Format (*.wmv)";
+
 QStringList OverviewPlaylistWidget::LetUserSelectAudioFile(QWidget *pParent, QString pDescription, bool pMultipleFiles)
 {
     QStringList tResult;
@@ -207,12 +202,20 @@ QStringList OverviewPlaylistWidget::LetUserSelectAudioFile(QWidget *pParent, QSt
                                                                 &sAllLoadAudioFilter,
                                                                 CONF_NATIVE_DIALOGS);
     else
+    {
         tResult = QStringList(QFileDialog::getOpenFileName(pParent,  pDescription,
                                                                 CONF.GetDataDirectory(),
                                                                 sLoadAudioFilters,
                                                                 &sAllLoadAudioFilter,
                                                                 CONF_NATIVE_DIALOGS));
 
+        // use the file parser to avoid playlists and resolve them to one single entry
+        Playlist tPlaylist = Parse(tResult.first(), "", false);
+        if (tPlaylist.size() > 0)
+        	tResult = QStringList(tPlaylist.first().Location);
+		else
+			tResult.clear();
+    }
     if (!tResult.isEmpty())
         CONF.SetDataDirectory(tResult.first().left(tResult.first().lastIndexOf('/')));
 
@@ -249,7 +252,7 @@ bool OverviewPlaylistWidget::IsAudioFile(QString pFileName)
     int tPos = pFileName.lastIndexOf('.', -1);
     if (tPos == -1)
     {
-        LOGEX(OverviewPlaylistWidget, LOG_ERROR, "Audio file name lacks a correct format selecting end");
+        LOGEX(OverviewPlaylistWidget, LOG_ERROR, "Audio file %s name lacks a correct format selecting end", pFileName.toStdString().c_str());
         return false;
     }
 
@@ -262,52 +265,19 @@ bool OverviewPlaylistWidget::IsAudioFile(QString pFileName)
         return false;
 }
 
-QString sAllLoadMovieFilter = "All supported formats (*.avi *.m4v *.mkv *.mov *.mpeg *.mp4 *.mp4a *.m3u *.swf *.vob *.wmv *.3gp)";
-QString sLoadMovieFilters =  sAllLoadMovieFilter + ";;"\
-                    "Audio Video Interleave Format (*.avi);;"\
-                    "Matroska Format (*.mkv);;"\
-                    "MPEG-Program Stream Format (*.mpeg);;"\
-                    "Playlist file (*.m3u);;"\
-                    "Quicktime/MPEG4 Format (*.m4v *.mov *.mp4 *.mp4a *.3gp);;"\
-                    "Small Web Format (*.swf);;"\
-                    "Video Object Format (*.vob);;" \
-                    "Windows Media Video Format (*.wmv)";
-
-QStringList OverviewPlaylistWidget::LetUserSelectMovieFile(QWidget *pParent, QString pDescription, bool pMultipleFiles)
-{
-    QStringList tResult;
-
-    if (pMultipleFiles)
-        tResult = QFileDialog::getOpenFileNames(pParent,  pDescription,
-                                                                CONF.GetDataDirectory(),
-                                                                sLoadMovieFilters,
-                                                                &sAllLoadMovieFilter,
-                                                                CONF_NATIVE_DIALOGS);
-    else
-        tResult = QStringList(QFileDialog::getOpenFileName(pParent,  pDescription,
-                                                                CONF.GetDataDirectory(),
-                                                                sLoadMovieFilters,
-                                                                &sAllLoadMovieFilter,
-                                                                CONF_NATIVE_DIALOGS));
-
-    if (!tResult.isEmpty())
-        CONF.SetDataDirectory(tResult.first().left(tResult.first().lastIndexOf('/')));
-
-    return tResult;
-}
-
-static QString sAllLoadMediaFilter = "All supported formats (*.asf *.avi *.bmp *.dv *.jpg *.jpeg *.m4v *.mka *.mkv *.mov *.mpg *.mpeg *.mp3 *.mp4 *.mp4a *.m3u *.pls *.png *.swf *.vob *.wav *.wmv *.3gp)";
+static QString sAllLoadMediaFilter = "All supported formats (*.asf *.avi *.bmp *.dv *.jpg *.jpeg *.m4v *.mka *.mkv *.mov *.mpg *.mpeg *.mp3 *.mp4 *.mp4a *.m2ts *.m3u *.pls *.png *.swf *.vob *.wav *.wmv *.3gp)";
 static QString sLoadMediaFilters = sAllLoadMediaFilter + ";;"\
                     "Advanced Systems Format (*.asf);;"\
                     "Audio Video Interleave Format (*.avi);;"\
                     "Digital Video Format (*.dv);;"\
-                    "Joint Photographic Experts Group (*.jpg *.jpeg);;"\
+                    "Joint Photographic Experts Group Format (*.jpg *.jpeg);;"\
                     "Matroska Format (*.mka *.mkv);;"\
                     "MPEG Audio Layer 2/3 Format (*.mp3);;"\
                     "MPEG-Program Stream Format (*.mpg *.mpeg);;"\
-                    "M3U Playlist file (*.m3u);;"\
-                    "Portable Network Graphics (*.png);;"\
-                    "PLS Playlist file (*.pls);;"\
+                    "MPEG-2 Transport Stream (*.m2ts);;"\
+                    "M3U Playlist File (*.m3u);;"\
+                    "Portable Network Graphics Format (*.png);;"\
+                    "PLS Playlist File (*.pls);;"\
                     "Quicktime/MPEG4 Format (*.m4v *.mov *.mp4 *.mp4a *.3gp);;"\
                     "Small Web Format (*.swf);;"\
                     "Video Object Format (*.vob);;" \
@@ -326,12 +296,20 @@ QStringList OverviewPlaylistWidget::LetUserSelectMediaFile(QWidget *pParent, QSt
                                                                 &sAllLoadMediaFilter,
                                                                 CONF_NATIVE_DIALOGS);
     else
+    {
         tResult = QStringList(QFileDialog::getOpenFileName(pParent,  pDescription,
                                                                 CONF.GetDataDirectory(),
                                                                 sLoadMediaFilters,
                                                                 &sAllLoadMediaFilter,
                                                                 CONF_NATIVE_DIALOGS));
 
+        // use the file parser to avoid playlists and resolve them to one single entry
+        Playlist tPlaylist = Parse(tResult.first(), "");
+        if (tPlaylist.size() > 0)
+        	tResult = QStringList(tPlaylist.first().Location);
+		else
+			tResult.clear();
+    }
     if (!tResult.isEmpty())
         CONF.SetDataDirectory(tResult.first().left(tResult.first().lastIndexOf('/')));
 
@@ -359,20 +337,16 @@ void OverviewPlaylistWidget::closeEvent(QCloseEvent* pEvent)
 
 void OverviewPlaylistWidget::SetVisible(bool pVisible)
 {
+	LOG(LOG_VERBOSE, "Setting playlist widget visibility to %d", pVisible);
+
     if (pVisible)
     {
-        if (!isVisible())
-        {
-            move(mWinPos);
-            show();
-        }
+		move(mWinPos);
+		show();
     }else
     {
-        if (isVisible())
-        {
-            mWinPos = pos();
-            hide();
-        }
+		mWinPos = pos();
+		hide();
     }
 }
 
@@ -383,10 +357,13 @@ void OverviewPlaylistWidget::StartPlaylist()
     else
         LOG(LOG_VERBOSE, "Playlist start triggered and we already have entries in the list");
 
-    AddEntryDialog();
-    Play(GetListSize() - 1);
+    if (AddEntryDialog())
+    {
+        Play(GetListSize() - 1);
 
-    SetVisible(true);
+        if (!isVisible())
+        	SetVisible(true);
+    }
 }
 
 void OverviewPlaylistWidget::StopPlaylist()
@@ -492,7 +469,7 @@ void OverviewPlaylistWidget::DelEntryDialog()
     }
 }
 
-void OverviewPlaylistWidget::AddEntryDialog()
+bool OverviewPlaylistWidget::AddEntryDialog()
 {
     LOG(LOG_VERBOSE, "User wants to add a new entry to playlist");
 
@@ -503,7 +480,7 @@ void OverviewPlaylistWidget::AddEntryDialog()
     tFileNames = LetUserSelectMediaFile(this, "Add media files to playlist");
 
     if (tFileNames.isEmpty())
-        return;
+        return false;
 
     QString tFile;
     foreach(tFile, tFileNames)
@@ -519,6 +496,8 @@ void OverviewPlaylistWidget::AddEntryDialog()
         if (!isVisible())
         	SetVisible(true);
     }
+
+    return true;
 }
 
 void OverviewPlaylistWidget::AddEntryDialogSc()
@@ -541,8 +520,8 @@ void OverviewPlaylistWidget::SaveListDialog()
     QString tFileName;
     tFileName = QFileDialog::getSaveFileName(this,  "Save playlist to..",
                                                                 CONF.GetDataDirectory() + "/Homer.m3u",
-                                                                "Playlist file (*.m3u)",
-                                                                &*(new QString("Playlist file (*.m3u)")),
+                                                                "Playlist File (*.m3u)",
+                                                                &*(new QString("Playlist File (*.m3u)")),
                                                                 CONF_NATIVE_DIALOGS);
 
     if (tFileName.isEmpty())
@@ -603,7 +582,7 @@ void OverviewPlaylistWidget::Play(int pIndex)
 
     mCurrentFileId = pIndex;
     LOG(LOG_VERBOSE, "Setting current row to %d in playlist", mCurrentFileId);
-    mLwFiles->setCurrentRow(mCurrentFileId, QItemSelectionModel::Clear | QItemSelectionModel::Select);
+    mLwFiles->setCurrentRow(mCurrentFileId);
 }
 
 void OverviewPlaylistWidget::PlayNext()
@@ -641,23 +620,31 @@ void OverviewPlaylistWidget::PlayLast()
 void OverviewPlaylistWidget::timerEvent(QTimerEvent *pEvent)
 {
     #ifdef DEBUG_TIMING
-        LOG(LOG_VERBOSE, "New timer event");
+		static int tCounter = 0;
+        LOG(LOG_VERBOSE, "New timer event %d", ++tCounter);
     #endif
     if (pEvent->timerId() == mTimerId)
     {
     	// play next if EOF is reached
         // stop if current file wasn't yet switched to the desired one;
-        if ((mVideoWorker->CurrentFile() != mCurrentFile) || (mAudioWorker->CurrentFile() != mCurrentFile))
-            return;
+        if (((mVideoWorker->CurrentFile() != "") && (mVideoWorker->CurrentFile() != mCurrentFile)) || ((mAudioWorker->CurrentFile() != "") && (mAudioWorker->CurrentFile() != mCurrentFile)))
+        {
+        	LOG(LOG_VERBOSE, "Desired file wasn't started yet both in video and audio widget");
+        	return;
+        }
+
+        //LOG(LOG_VERBOSE, "Video EOF: %d, audio EOF: %d", mVideoWorker->EofReached(), mAudioWorker->EofReached());
 
         // do we already play the desired file and are we at EOF?
         if ((mCurrentFileId != -1) &&
-            (mVideoWorker->GetCurrentDevice().contains(GetListEntry(mCurrentFileId))) && (mVideoWorker->EofReached()) &&
-            (mAudioWorker->GetCurrentDevice().contains(GetListEntry(mCurrentFileId))) && (mAudioWorker->EofReached()))
+            ((mVideoWorker->CurrentFile() == "") || (mVideoWorker->EofReached())) &&
+			((mAudioWorker->CurrentFile() == "") || (mAudioWorker->EofReached())))
         {
+        	LOG(LOG_VERBOSE, "Playing next entry in playlist..");
             PlayNext();
         }
-    }
+    }else
+    	LOG(LOG_VERBOSE, "Got wrong timer ID: %d, waiting for %d", pEvent->timerId(), mTimerId);
 }
 
 void OverviewPlaylistWidget::dragEnterEvent(QDragEnterEvent *pEvent)
@@ -707,64 +694,146 @@ int OverviewPlaylistWidget::GetListSize()
     return tResult;
 }
 
-void OverviewPlaylistWidget::AddEntry(QString pLocation, QString pName)
+void OverviewPlaylistWidget::AddEntry(QString pLocation, bool pStartPlayback)
 {
-    if (pLocation.endsWith(".m3u"))
-    {
-        AddM3UToList(pLocation);
-    }else if (pLocation.endsWith(".pls"))
-    {
-        AddPLSToList(pLocation);
-    }else
-    {
-        if (pName == "")
-        {
-            if (!pLocation.startsWith("http://"))
-            {
-                int tPos = pLocation.lastIndexOf('\\');
-                if (tPos == -1)
-                    tPos = pLocation.lastIndexOf('/');
-                if (tPos != -1)
-                {
-                    tPos += 1;
-                    pName = pLocation.mid(tPos, pLocation.size() - tPos);
-                }else
-                    pName = pLocation;
-            }else
-                pName = pLocation;
-        }
+    // remove "file:///" and "file://" from the beginning if existing
+    #ifdef WIN32
+        if (pLocation.startsWith("file:///"))
+        	pLocation = pLocation.right(pLocation.size() - 8);
 
-        LOG(LOG_VERBOSE, "Adding to playlist: %s at location %s", pName.toStdString().c_str(), pLocation.toStdString().c_str());
+        if (pLocation.startsWith("file://"))
+        	pLocation = pLocation.right(pLocation.size() - 7);
+    #else
+        if (pLocation.startsWith("file:///"))
+        	pLocation = pLocation.right(pLocation.size() - 7);
 
-        // create playlist entry
-        PlaylistEntry tEntry;
-        tEntry.Name = pName;
-        tEntry.Location = pLocation;
-        if (pLocation.startsWith("http://"))
-            tEntry.Icon = QIcon(":/images/22_22/NetworkConnection.png");
-        else
-            tEntry.Icon = QIcon(":/images/22_22/ArrowRight.png");
+        if (pLocation.startsWith("file://"))
+        	pLocation = pLocation.right(pLocation.size() - 6);
+    #endif
 
-        // save playlist entry
-        mPlaylistMutex.lock();
-        mPlaylist.push_back(tEntry);
-        mPlaylistMutex.unlock();
+	Playlist tPlaylist = Parse(pLocation);
+	LOG(LOG_VERBOSE, "Parsed %d new playlist entries", tPlaylist.size());
 
-        // trigger GUI update
-        QApplication::postEvent(this, new QEvent(QEvent::User));
-    }
+	mPlaylistMutex.lock();
+
+	int tInsertionPosition = mPlaylist.size();
+
+	PlaylistEntry tPlaylistEntry;
+	foreach(tPlaylistEntry, tPlaylist)
+	{
+		LOG(LOG_VERBOSE, "Adding to playist: %s(%s)", tPlaylistEntry.Name.toStdString().c_str(), tPlaylistEntry.Location.toStdString().c_str());
+		mPlaylist.push_back(tPlaylistEntry);
+	}
+
+	mPlaylistMutex.unlock();
+
+    // trigger GUI update
+    QApplication::postEvent(this, new QEvent(QEvent::User));
+
+    if (pStartPlayback)
+    	Play(tInsertionPosition);
 }
 
-void OverviewPlaylistWidget::AddM3UToList(QString pFilePlaylist)
+Playlist OverviewPlaylistWidget::Parse(QString pLocation, QString pName, bool pAcceptVideo, bool pAcceptAudio)
 {
+	Playlist tResult;
+	PlaylistEntry tPlaylistEntry;
+
+	sParseRecursionCount ++;
+	if (sParseRecursionCount < MAX_PARSER_RECURSIONS)
+	{
+		bool tIsWebUrl = pLocation.startsWith("http://");
+
+		LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Parsing %s", pLocation.toStdString().c_str());
+
+		if (pLocation.endsWith(".m3u"))
+		{// an M3U playlist file
+			tResult += ParseM3U(pLocation, pAcceptVideo, pAcceptAudio);
+		}else if (pLocation.endsWith(".pls"))
+		{// a PLS playlist file
+			tResult += ParsePLS(pLocation, pAcceptVideo, pAcceptAudio);
+		}else if ((!tIsWebUrl) && (QDir(pLocation).exists()))
+		{// a directory
+			tResult += ParseDIR(pLocation, pAcceptVideo, pAcceptAudio);
+		}else
+		{// an url or a local file
+			// set the location
+			tPlaylistEntry.Location = pLocation;
+
+			if (pName == "")
+			{
+				// set the name
+				if (!tIsWebUrl)
+				{// derive a descriptive name from the location
+					int tPos = tPlaylistEntry.Location.lastIndexOf('\\');
+					if (tPos == -1)
+						tPos = tPlaylistEntry.Location.lastIndexOf('/');
+					if (tPos != -1)
+					{
+						tPos += 1;
+						tPlaylistEntry.Name = tPlaylistEntry.Location.mid(tPos, pLocation.size() - tPos);
+					}else
+					{
+						tPlaylistEntry.Name = tPlaylistEntry.Location;
+					}
+				}else
+				{// we have a web url
+					tPlaylistEntry.Name = tPlaylistEntry.Location;
+				}
+			}else
+				tPlaylistEntry.Name = pName;
+
+			bool tIsAudioFile = IsAudioFile(tPlaylistEntry.Location);
+			bool tIsVideoFile = IsVideoFile(tPlaylistEntry.Location);
+
+			// check file for A/V content
+			if ((pAcceptVideo && tIsVideoFile) || (pAcceptAudio && (tIsAudioFile || tIsWebUrl)))
+			{
+				LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Adding to parsed playlist: %s at location %s", tPlaylistEntry.Name.toStdString().c_str(), tPlaylistEntry.Location.toStdString().c_str());
+
+				// create playlist entry
+				if (tIsWebUrl)
+					tPlaylistEntry.Icon = QIcon(":/images/22_22/NetworkConnection.png");
+				else
+				{
+					if (tIsVideoFile && !tIsAudioFile) // video file
+						tPlaylistEntry.Icon = QIcon(":/images/46_46/VideoReel.png");
+					else if (!tIsVideoFile && tIsAudioFile) // audio file
+						tPlaylistEntry.Icon = QIcon(":/images/46_46/Speaker.png");
+					else // audio/video file
+						tPlaylistEntry.Icon = QIcon(":/images/22_22/Audio_Play.png");
+				}
+
+				// save playlist entry
+				tResult.push_back(tPlaylistEntry);
+			}else
+				LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Ignoring entry: %s at location %s", tPlaylistEntry.Name.toStdString().c_str(), tPlaylistEntry.Location.toStdString().c_str());
+		}
+	}else
+	{
+		LOGEX(OverviewPlaylistWidget, LOG_ERROR, "Maximum of %d parser recursions reached, terminating here", MAX_PARSER_RECURSIONS);
+	}
+
+    sParseRecursionCount--;
+
+    return tResult;
+}
+
+Playlist OverviewPlaylistWidget::ParseM3U(QString pFilePlaylist, bool pAcceptVideo, bool pAcceptAudio)
+{
+	Playlist tResult;
+	PlaylistEntry tPlaylistEntry;
+	tPlaylistEntry.Location = "";
+	tPlaylistEntry.Name = "";
+
     QString tDir = pFilePlaylist.left(pFilePlaylist.lastIndexOf('/'));
-    LOG(LOG_VERBOSE, "Opening M3U playlist file %s", pFilePlaylist.toStdString().c_str());
-    LOG(LOG_VERBOSE, "..in directory: %s", tDir.toStdString().c_str());
+    LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Parsing M3U playlist %s", pFilePlaylist.toStdString().c_str());
+    LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "..in directory: %s", tDir.toStdString().c_str());
 
     QFile tPlaylistFile(pFilePlaylist);
     if (!tPlaylistFile.open(QIODevice::ReadOnly))
     {
-        LOG(LOG_ERROR, "Couldn't read M3U playlist from %s", pFilePlaylist.toStdString().c_str());
+    	LOGEX(OverviewPlaylistWidget, LOG_ERROR, "Couldn't read M3U playlist from %s", pFilePlaylist.toStdString().c_str());
     }else
     {
         QByteArray tLine;
@@ -773,36 +842,60 @@ void OverviewPlaylistWidget::AddM3UToList(QString pFilePlaylist)
         {
             QString tLineString = QString(tLine);
 
-            // remove line delimiters
+            //remove any "new line" char from the end
             while((tLineString.endsWith(QChar(0x0A))) || (tLineString.endsWith(QChar(0x0D))))
-                tLineString = tLineString.left(tLineString.length() - 1); //remove any "new line" char from the end
+                tLineString = tLineString.left(tLineString.length() - 1);
 
             // parse the playlist line
-            if (!tLineString.startsWith("#EXT"))
-            {
-                LOG(LOG_VERBOSE, "Found playlist entry: %s", tLineString.toStdString().c_str());
-                if (tLineString.startsWith("http://"))
-                    AddEntry(tLineString);
-                else
-                    AddEntry(tDir + "/" + tLineString);
-            }else
-                LOG(LOG_VERBOSE, "Found playlist extended entry: %s", tLineString.toStdString().c_str());
+        	if (tLineString != "")
+        	{
+				if (!tLineString.startsWith("#EXT"))
+				{// we have a location and the entry is complete
+						LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Found playlist entry location: %s", tLineString.toStdString().c_str());
+						if (tLineString.startsWith("http://"))
+							tPlaylistEntry.Location = tLineString;
+						else
+							tPlaylistEntry.Location = tDir + "/" + tLineString;
+						if (tPlaylistEntry.Name == "")
+							tPlaylistEntry.Name = tPlaylistEntry.Location;
+						tResult += Parse(tPlaylistEntry.Location, tPlaylistEntry.Name, pAcceptVideo, pAcceptAudio);
+						tPlaylistEntry.Location = "";
+						tPlaylistEntry.Name = "";
+				}else
+				{
+					if (!tLineString.startsWith("#EXTINF"))
+					{// we have extended information including a name
+						if (tLineString.indexOf(',') != -1)
+						{
+							tLineString = tLineString.right(tLineString.size() - tLineString.indexOf(',') - 1);
+							LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Found playlist entry name: %s", tLineString.toStdString().c_str());
+							tPlaylistEntry.Name = tLineString;
+						}else
+							LOGEX(OverviewPlaylistWidget, LOG_WARN, "Invalid format of line: %s", tLineString.toStdString().c_str());
+					}else
+						LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Found playlist extended entry: %s", tLineString.toStdString().c_str());
+				}
+        	}
 
             tLine = tPlaylistFile.readLine();
         }
     }
+
+    return tResult;
 }
 
-void OverviewPlaylistWidget::AddPLSToList(QString pFilePlaylist)
+Playlist OverviewPlaylistWidget::ParsePLS(QString pFilePlaylist, bool pAcceptVideo, bool pAcceptAudio)
 {
+	Playlist tResult;
+
     QString tDir = pFilePlaylist.left(pFilePlaylist.lastIndexOf('/'));
-    LOG(LOG_VERBOSE, "Opening PLS playlist file %s", pFilePlaylist.toStdString().c_str());
-    LOG(LOG_VERBOSE, "..in directory: %s", tDir.toStdString().c_str());
+    LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Parsing PLS playlist file %s", pFilePlaylist.toStdString().c_str());
+    LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "..in directory: %s", tDir.toStdString().c_str());
 
     QFile tPlaylistFile(pFilePlaylist);
     if (!tPlaylistFile.open(QIODevice::ReadOnly))
     {
-        LOG(LOG_ERROR, "Couldn't read PLS playlist from %s", pFilePlaylist.toStdString().c_str());
+    	LOGEX(OverviewPlaylistWidget, LOG_ERROR, "Couldn't read PLS playlist from %s", pFilePlaylist.toStdString().c_str());
     }else
     {
         QByteArray tLine;
@@ -811,6 +904,9 @@ void OverviewPlaylistWidget::AddPLSToList(QString pFilePlaylist)
         int tFoundPlaylisEntries = -1;
         bool tPlaylistEntryParsed = false;
         PlaylistEntry tPlaylistEntry;
+        tPlaylistEntry.Location = "";
+        tPlaylistEntry.Name = "";
+
         while ((tFoundPlaylisEntries < tPlaylistEntries) && (!tLine.isEmpty()))
         {
             QString tLineString = QString(tLine);
@@ -824,7 +920,7 @@ void OverviewPlaylistWidget::AddPLSToList(QString pFilePlaylist)
             {
                 QString tKey = tLineSplit[0];
                 QString tValue = tLineSplit[1];
-                LOG(LOG_VERBOSE, "Found key \"%s\" with value \"%s\"", tKey.toStdString().c_str(), tValue.toStdString().c_str());
+                LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Found key \"%s\" with value \"%s\"", tKey.toStdString().c_str(), tValue.toStdString().c_str());
                 // parse the playlist line
                 if (tKey.startsWith("NumberOfEntries"))
                 {// "NumberOfEntries"
@@ -832,23 +928,20 @@ void OverviewPlaylistWidget::AddPLSToList(QString pFilePlaylist)
                     tPlaylistEntries = tValue.toInt(&tConversionWasOkay);
                     if (!tConversionWasOkay)
                     {
-                        LOG(LOG_ERROR, "Unable to convert \"%s\" into an integer value", tValue.toStdString().c_str());
-                        return;
+                    	LOGEX(OverviewPlaylistWidget, LOG_ERROR, "Unable to convert \"%s\" into an integer value", tValue.toStdString().c_str());
+                        return tResult;
                     }
                 }else if (tKey.startsWith("File"))
                 {// "File"
                     tPlaylistEntry.Location = tValue;
                 }else if (tKey.startsWith("Title"))
-                {// "File"
+                {// "Title"
                     tFoundPlaylisEntries++;
-                    tPlaylistEntryParsed = true;
                     tPlaylistEntry.Name = tValue;
-                }
-                if (tPlaylistEntryParsed)
-                {
-                    tPlaylistEntryParsed = false;
-                    LOG(LOG_VERBOSE, "Found playlist entry: \"%s\" at location \"%s\"", tPlaylistEntry.Name.toStdString().c_str(), tPlaylistEntry.Location.toStdString().c_str());
-                    AddEntry(tPlaylistEntry.Location, tPlaylistEntry.Name);
+                    LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Found playlist entry: \"%s\" at location \"%s\"", tPlaylistEntry.Name.toStdString().c_str(), tPlaylistEntry.Location.toStdString().c_str());
+					tResult += Parse(tPlaylistEntry.Location, tPlaylistEntry.Name, pAcceptVideo, pAcceptAudio);
+                    tPlaylistEntry.Location = "";
+                    tPlaylistEntry.Name = "";
                 }
             }else
             {
@@ -857,13 +950,35 @@ void OverviewPlaylistWidget::AddPLSToList(QString pFilePlaylist)
                     // nothing to do
                 }else
                 {
-                    LOG(LOG_VERBOSE, "Unexpected token in PLS playlist: \"%s\"", tLineString.toStdString().c_str());
+                    LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Unexpected token in PLS playlist: \"%s\"", tLineString.toStdString().c_str());
                 }
             }
 
             tLine = tPlaylistFile.readLine();
         }
     }
+
+    return tResult;
+}
+
+Playlist OverviewPlaylistWidget::ParseDIR(QString pDirLocation, bool pAcceptVideo, bool pAcceptAudio)
+{
+	Playlist tResult;
+
+	// ignore "." and ".."
+	if ((pDirLocation.endsWith(".")) || (pDirLocation.endsWith("..")))
+		return tResult;
+
+    LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Parsing directory %s", pDirLocation.toStdString().c_str());
+    QDir tDirectory(pDirLocation);
+    QStringList tDirEntries = tDirectory.entryList();
+    QString tDirEntry;
+    foreach(tDirEntry, tDirEntries)
+    {
+    	tResult += Parse(pDirLocation + '/' + tDirEntry, "", pAcceptVideo, pAcceptAudio);
+    }
+
+    return tResult;
 }
 
 QString OverviewPlaylistWidget::GetListEntry(int pIndex)
@@ -1064,8 +1179,7 @@ void OverviewPlaylistWidget::UpdateView()
 
     //LOG(LOG_VERBOSE, "Updating view");
 
-    if (mLwFiles->selectionModel()->currentIndex().isValid())
-        tSelectedRow = mLwFiles->currentRow();
+    LOG(LOG_VERBOSE, "Found row selection: %d", mCurrentFileId);
 
     if (GetListSize() != mLwFiles->count())
     {
@@ -1085,8 +1199,8 @@ void OverviewPlaylistWidget::UpdateView()
 
     mPlaylistMutex.unlock();
 
-    if (tSelectedRow != -1)
-        mLwFiles->setCurrentRow (tSelectedRow);
+    if (mCurrentFileId != -1)
+        mLwFiles->setCurrentRow (mCurrentFileId);
 }
 
 void OverviewPlaylistWidget::customEvent(QEvent* pEvent)

@@ -32,6 +32,7 @@
 #include <VideoScaler.h>
 #include <ProcessStatisticService.h>
 #include <HBSocket.h>
+#include <HBSystem.h>
 #include <RTP.h>
 #include <Logger.h>
 
@@ -47,6 +48,9 @@ namespace Homer { namespace Multimedia {
 
 // maximum packet size of a reeencoded frame, must not be more than 64 kB - otherwise it can't be used via networks!
 #define MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE               MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE
+
+// de/activate MT support during video encoding: ffmpeg supports MT only for encoding
+#define MEDIA_SOURCE_MUX_MULTI_THREADED_VIDEO_ENCODING
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -77,12 +81,12 @@ MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
 
 MediaSourceMuxer::~MediaSourceMuxer()
 {
-	LOG(LOG_VERBOSE, "Going to destroy muxer");
+	LOG(LOG_VERBOSE, "Going to destroy %s muxer", GetMediaTypeStr().c_str());
 
 	if (mMediaSourceOpened)
         mMediaSource->CloseGrabDevice();
 
-	LOG(LOG_VERBOSE, "..stopping encoder");
+	LOG(LOG_VERBOSE, "..stopping %s encoder", GetMediaTypeStr().c_str());
     StopEncoder();
 
 	LOG(LOG_VERBOSE, "..freeing stream packet buffer");
@@ -96,6 +100,10 @@ int MediaSourceMuxer::DistributePacket(void *pOpaque, uint8_t *pBuffer, int pBuf
 {
     MediaSourceMuxer *tMuxer = (MediaSourceMuxer*)pOpaque;
     char *tBuffer = (char*)pBuffer;
+
+    // drop write_header packets here
+    if (!tMuxer->mEncoderNeeded)
+        return pBufferSize;
 
     // log statistics
     tMuxer->AnnouncePacket(pBufferSize);
@@ -128,11 +136,7 @@ bool MediaSourceMuxer::SupportsMuxing()
 
 string MediaSourceMuxer::GetMuxingCodec()
 {
-    // ffmpeg doesn't distinguish between h263 and h263+ but we do
-    if (mStreamCodecId == CODEC_ID_H263P)
-        return "h263+";
-    else
-        return FfmpegId2FfmpegFormat(mStreamCodecId);
+	return MediaSource::GetGuiNameFromCodecID(mStreamCodecId);
 }
 
 void MediaSourceMuxer::GetMuxingResolution(int &pResX, int &pResY)
@@ -144,12 +148,12 @@ void MediaSourceMuxer::GetMuxingResolution(int &pResX, int &pResY)
 int MediaSourceMuxer::GetMuxingBufferCounter()
 {
     int tResult = 0;
-    mEncoderFifoMutex.lock();
+    mEncoderFifoAvailableMutex.lock();
 
     if (mEncoderFifo != NULL)
         tResult = mEncoderFifo->GetUsage();
 
-    mEncoderFifoMutex.unlock();
+    mEncoderFifoAvailableMutex.unlock();
 
     return tResult;
 }
@@ -174,7 +178,7 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
 {
     // HINT: returns if something has changed
     bool tResult = false;
-    enum CodecID tStreamCodecId = MediaSource::FfmpegName2FfmpegId(MediaSource::CodecName2FfmpegName(pStreamCodec));
+    enum CodecID tStreamCodecId = MediaSource::GetCodecIDFromGuiName(pStreamCodec);
 
     pMaxPacketSize -= IP6_HEADER_SIZE; // IPv6 overhead is bigger than IPv4
     pMaxPacketSize -= IP_OPTIONS_SIZE; // IP options size: used for QoS signaling
@@ -220,6 +224,10 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
                         tResY = 288;
                         break;
                     }
+                    break;
+            case CODEC_ID_THEORA:
+                    tResX = 352;
+                    tResY = 288;
                     break;
             case CODEC_ID_H263P:
             default:
@@ -290,10 +298,11 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
 bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
 {
     int                 tResult;
-    ByteIOContext       *tByteIoContext;
+    AVIOContext       	*tIoContext;
     AVOutputFormat      *tFormat;
     AVCodec             *tCodec;
     AVStream            *tStream;
+    AVDictionary        *tOptions = NULL;
 
     if (pFps > 29,97)
         pFps = 29,97;
@@ -302,23 +311,26 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
 
     mMediaType = MEDIA_VIDEO;
 
+    // for better debbuging
+    mGrabMutex.AssignName(GetMediaTypeStr() + "MuxerGrab");
+    mEncoderFifoAvailableMutex.AssignName(GetMediaTypeStr() + "MuxerEncoderFifo");
+    mMediaSourcesMutex.AssignName(GetMediaTypeStr() + "MuxerMediaSources");
+    mMediaSinksMutex.AssignName(GetMediaTypeStr() + "MuxerMediaSinks");
+
     LOG(LOG_VERBOSE, "Going to open %s muxer with resolution %d * %d", GetMediaTypeStr().c_str(), pResX, pResY);
 
     if (mMediaSourceOpened)
         return false;
 
-    // lock
-    mMediaSinksMutex.lock();
-
     // set category for packet statistics
     ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 
     // build correct IO-context
-    tByteIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE /*HINT: don't use mStreamMaxPacketSize here */, 1, this, NULL, DistributePacket, NULL);
+    tIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE /*HINT: don't use mStreamMaxPacketSize here */, 1, this, NULL, DistributePacket, NULL);
 
-    tByteIoContext->seekable = 0;
+    tIoContext->seekable = 0;
     // limit packet size
-    tByteIoContext->max_packet_size = mStreamMaxPacketSize;
+    tIoContext->max_packet_size = mStreamMaxPacketSize;
 
     mSourceResX = pResX;
     mSourceResY = pResY;
@@ -328,17 +340,14 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     mFormatContext = AV_NEW_FORMAT_CONTEXT();
 
     // find format
-    LOG(LOG_VERBOSE, "Guessing format for codec \"%s\"", FfmpegId2FfmpegFormat(mStreamCodecId).c_str());
-    tFormat = AV_GUESS_FORMAT(FfmpegId2FfmpegFormat(mStreamCodecId).c_str(), NULL, NULL);
+    LOG(LOG_VERBOSE, "Guessing format for codec \"%s\"", GetFormatName(mStreamCodecId).c_str());
+    tFormat = AV_GUESS_FORMAT(GetFormatName(mStreamCodecId).c_str(), NULL, NULL);
     if (tFormat == NULL)
     {
         LOG(LOG_ERROR, "Invalid suggested video format");
 
         // Close the format context
         av_free(mFormatContext);
-
-        // unlock
-        mMediaSinksMutex.unlock();
 
         return false;
     }
@@ -352,17 +361,50 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     // set correct output format
     mFormatContext->oformat = tFormat;
     // set correct IO-context
-    mFormatContext->pb = tByteIoContext;
-    // verbose timestamp debugging    mFormatContext->debug = FF_FDEBUG_TS;
+    mFormatContext->pb = tIoContext;
+    // verbose timestamp debugging
+    if (LOGGER.GetLogLevel() == LOG_VERBOSE)
+    {
+    	LOG(LOG_WARN, "Enabling ffmpeg timestamp debugging");
+    	mFormatContext->debug = FF_FDEBUG_TS;
+    }
 
     // allocate new stream structure
+    LOG(LOG_VERBOSE, "..allocating new stream");
     tStream = av_new_stream(mFormatContext, 0);
     mCodecContext = tStream->codec;
     mCodecContext->codec_id = tFormat->video_codec;
     mCodecContext->codec_type = AVMEDIA_TYPE_VIDEO;
-    // do some extra modifications for H263
+
+    //data_partitioning
+    // do some extra modifications for H263 to make it easier for streaming
+    if (tFormat->video_codec == CODEC_ID_MPEG4)
+    {
+        mCodecContext->flags |= CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED;
+    }
+
+    // do some extra modifications for H263 to make it easier for streaming
+    if (tFormat->video_codec == CODEC_ID_H263)
+    {
+        mCodecContext->flags |= CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED;
+
+        // old codec codext flag CODEC_FLAG_H263P_SLICE_STRUCT
+        av_dict_set(&tOptions, "structured_slices", "1", 0);
+    }
+
+    // do some extra modifications for H263+ to make it easier for streaming
     if (tFormat->video_codec == CODEC_ID_H263P)
-        mCodecContext->flags |= CODEC_FLAG_H263P_SLICE_STRUCT | CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED | CODEC_FLAG_H263P_UMV | CODEC_FLAG_H263P_AIV;
+    {
+        mCodecContext->flags |= CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED;
+
+        // old codec codext flag CODEC_FLAG_H263P_SLICE_STRUCT
+        av_dict_set(&tOptions, "structured_slices", "1", 0);
+        // old codec codext flag CODEC_FLAG_H263P_UMV
+        av_dict_set(&tOptions, "umv", "1", 0);
+        // old codec codext flag CODEC_FLAG_H263P_AIV
+        av_dict_set(&tOptions, "aiv", "1", 0);
+    }
+
     // put sample parameters
     mCodecContext->bit_rate = 90000;
 
@@ -378,50 +420,69 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
             case CODEC_ID_H261: // supports QCIF, CIF
                     if (mSourceResX > 176)
                     {// CIF
-                        mRequestedStreamingResX = 352;
-                        mRequestedStreamingResY = 288;
+                    	mCurrentStreamingResX = 352;
+                    	mCurrentStreamingResY = 288;
                     }else
                     {// QCIF
-                        mRequestedStreamingResX = 176;
-                        mRequestedStreamingResY = 144;
+                    	mCurrentStreamingResX = 176;
+                    	mCurrentStreamingResY = 144;
                     }
-                    LOG(LOG_VERBOSE, "Resolution %d*%d for codec H.261 automatically selected", mRequestedStreamingResX, mRequestedStreamingResY);
+                    LOG(LOG_VERBOSE, "Resolution %d*%d for codec H.261 automatically selected", mCurrentStreamingResX, mCurrentStreamingResY);
                     break;
             case CODEC_ID_H263:  // supports SQCIF, QCIF, CIF, CIF4,CIF16
                     if(mSourceResX > 704)
                     {// CIF16
-                        mRequestedStreamingResX = 1408;
-                        mRequestedStreamingResY = 1152;
+                    	mCurrentStreamingResX = 1408;
+                    	mCurrentStreamingResY = 1152;
                     }else if (mSourceResX > 352)
                     {// CIF 4
-                        mRequestedStreamingResX = 704;
-                        mRequestedStreamingResY = 576;
+                    	mCurrentStreamingResX = 704;
+                    	mCurrentStreamingResY = 576;
                     }else if (mSourceResX > 176)
                     {// CIF
-                        mRequestedStreamingResX = 352;
-                        mRequestedStreamingResY = 288;
+                    	mCurrentStreamingResX = 352;
+                    	mCurrentStreamingResY = 288;
                     }else if (mSourceResX > 128)
                     {// QCIF
-                        mRequestedStreamingResX = 176;
-                        mRequestedStreamingResY = 144;
+                    	mCurrentStreamingResX = 176;
+                    	mCurrentStreamingResY = 144;
                     }else
                     {// SQCIF
-                        mRequestedStreamingResX = 128;
-                        mRequestedStreamingResY = 96;
+                    	mCurrentStreamingResX = 128;
+                    	mCurrentStreamingResY = 96;
                     }
-                    LOG(LOG_VERBOSE, "Resolution %d*%d for codec H.263 automatically selected", mRequestedStreamingResX, mRequestedStreamingResY);
+                    LOG(LOG_VERBOSE, "Resolution %d*%d for codec H.263 automatically selected", mCurrentStreamingResX, mCurrentStreamingResY);
+                    break;
+            case CODEC_ID_THEORA:
+            		mCurrentStreamingResX = 352;
+            		mCurrentStreamingResY = 288;
                     break;
             case CODEC_ID_H263P:
             default:
-                    mRequestedStreamingResX = mSourceResX;
-                    mRequestedStreamingResY = mSourceResY;
+            		mCurrentStreamingResX = mSourceResX;
+            		mCurrentStreamingResY = mSourceResY;
                     break;
         }
+    }else
+    {
+		mCurrentStreamingResX = mRequestedStreamingResX;
+		mCurrentStreamingResY = mRequestedStreamingResY;
     }
-    mCurrentStreamingResX = mRequestedStreamingResX;
-    mCodecContext->width = mRequestedStreamingResX;
-    mCurrentStreamingResY = mRequestedStreamingResY;
-    mCodecContext->height = mRequestedStreamingResY;
+
+    // for H.263+ both width and height must be multiples of 4
+    if (mStreamCodecId == CODEC_ID_H263P)
+    {
+    	mCurrentStreamingResX += 3;
+    	mCurrentStreamingResX /= 4;
+    	mCurrentStreamingResX *= 4;
+
+    	mCurrentStreamingResY += 3;
+    	mCurrentStreamingResY /= 4;
+    	mCurrentStreamingResY *= 4;
+    }
+
+    mCodecContext->width = mCurrentStreamingResX;
+    mCodecContext->height = mCurrentStreamingResY;
 
     /*
      * time base: this is the fundamental unit of time (in seconds) in terms
@@ -432,7 +493,10 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     mCodecContext->time_base = (AVRational){1, (int)mFrameRate};
     tStream->time_base = (AVRational){100, (int)mFrameRate * 100};
     // set i frame distance: GOP = group of pictures
-    mCodecContext->gop_size = (100 - mStreamQuality) / 5; // default is 12
+    if (mStreamCodecId != CODEC_ID_THEORA)
+        mCodecContext->gop_size = (100 - mStreamQuality) / 5; // default is 12
+    else
+        mCodecContext->gop_size = 0; // force GOP size of 0 for THEORA
     mCodecContext->qmin = 1; // default is 2
     mCodecContext->qmax = 2 +(100 - mStreamQuality) / 4; // default is 31
     // set max. packet size for RTP based packets
@@ -467,9 +531,9 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     // activate ffmpeg internal fps emulation
     //mCodecContext->rate_emu = 1;
 
-    // some formats want stream headers to be separate
-//    if(mFormatContext->oformat->flags & AVFMT_GLOBALHEADER)
-//        mCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
+    // some formats want stream headers to be separate, but this produces some very small packets!
+    if(mFormatContext->oformat->flags & AVFMT_GLOBALHEADER)
+        mCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
 
     mMediaStreamIndex = 0;
 
@@ -477,6 +541,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceMuxer (video)", true);
 
     // Find the encoder for the video stream
+    LOG(LOG_VERBOSE, "..finding video encoder");
     if ((tCodec = avcodec_find_encoder(tFormat->video_codec)) == NULL)
     {
         LOG(LOG_ERROR, "Couldn't find a fitting video codec");
@@ -487,25 +552,30 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
         // Close the format context
         av_free(mFormatContext);
 
-        // unlock
-        mMediaSinksMutex.unlock();
-
         return false;
     }
 
+    #ifdef MEDIA_SOURCE_MUX_MULTI_THREADED_VIDEO_ENCODING
+        // active multi-threading per default for the video encoding: leave two cpus for concurrent tasks (video grabbing/decoding, audio tasks)
+        av_dict_set(&tOptions, "threads", "auto", 0);
+
+        // trigger MT usage during video encoding
+        int tThreadCount = System::GetMachineCores() - 2;
+        if (tThreadCount > 1)
+            mCodecContext->thread_count = tThreadCount;
+    #endif
+
     // Open codec
-    if ((tResult = HM_avcodec_open(mCodecContext, tCodec)) < 0)
+    LOG(LOG_VERBOSE, "..opening video codec");
+    if ((tResult = HM_avcodec_open(mCodecContext, tCodec, &tOptions)) < 0)
     {
-        LOG(LOG_ERROR, "Couldn't open video codec because of \"%s\".", strerror(AVUNERROR(tResult)));
+        LOG(LOG_ERROR, "Couldn't open video codec because \"%s\".", strerror(AVUNERROR(tResult)));
         // free codec and stream 0
         av_freep(&mFormatContext->streams[0]->codec);
         av_freep(&mFormatContext->streams[0]);
 
         // Close the format context
         av_free(mFormatContext);
-
-        // unlock
-        mMediaSinksMutex.unlock();
 
         return false;
     }
@@ -514,7 +584,18 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     StartEncoder();
 
     // allocate streams private data buffer and write the streams header, if any
-    avformat_write_header(mFormatContext, NULL);
+    if ((tResult = avformat_write_header(mFormatContext, NULL)) < 0)
+    {
+        LOG(LOG_ERROR, "Couldn't write %s codec header because \"%s\".", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
+        // free codec and stream 0
+        av_freep(&mFormatContext->streams[0]->codec);
+        av_freep(&mFormatContext->streams[0]);
+
+        // Close the format context
+        av_free(mFormatContext);
+
+        return false;
+    }
 
     //######################################################
     //### give some verbose output
@@ -532,8 +613,6 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     else
         LOG(LOG_INFO, "    ..rtp encapsulation: no");
     LOG(LOG_INFO, "    ..max. packet size: %d bytes", mStreamMaxPacketSize);
-    // unlock
-    mMediaSinksMutex.unlock();
 
     return true;
 }
@@ -578,37 +657,40 @@ bool MediaSourceMuxer::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
 {
     int                 tResult;
-    ByteIOContext       *tByteIoContext;
+    AVIOContext       	*tIoContext;
     AVOutputFormat      *tFormat;
     AVCodec             *tCodec;
     AVStream            *tStream;
 
     mMediaType = MEDIA_AUDIO;
 
+    // for better debbuging
+    mGrabMutex.AssignName(GetMediaTypeStr() + "MuxerGrab");
+    mEncoderFifoAvailableMutex.AssignName(GetMediaTypeStr() + "MuxerEncoderFifo");
+    mMediaSourcesMutex.AssignName(GetMediaTypeStr() + "MuxerMediaSources");
+    mMediaSinksMutex.AssignName(GetMediaTypeStr() + "MuxerMediaSinks");
+
     LOG(LOG_VERBOSE, "Going to open %s-muxer", GetMediaTypeStr().c_str());
 
     if (mMediaSourceOpened)
         return false;
 
-    // lock
-    mMediaSinksMutex.lock();
-
     // set category for packet statistics
     ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
 
     // build correct IO-context
-    tByteIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE /*HINT: don't use mStreamMaxPacketSize here */, 1, this, NULL, DistributePacket, NULL);
+    tIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE /*HINT: don't use mStreamMaxPacketSize here */, 1, this, NULL, DistributePacket, NULL);
 
-    tByteIoContext->seekable = 0;
+    tIoContext->seekable = 0;
     // limit packet size
-    tByteIoContext->max_packet_size = mStreamMaxPacketSize;
+    tIoContext->max_packet_size = mStreamMaxPacketSize;
 
     // allocate new format context
     mFormatContext = AV_NEW_FORMAT_CONTEXT();
 
     // find format
-    LOG(LOG_VERBOSE, "Guessing format for codec \"%s\"", FfmpegId2FfmpegFormat(mStreamCodecId).c_str());
-    tFormat = AV_GUESS_FORMAT(FfmpegId2FfmpegFormat(mStreamCodecId).c_str(), NULL, NULL);
+    LOG(LOG_VERBOSE, "Guessing format for codec \"%s\"", GetFormatName(mStreamCodecId).c_str());
+    tFormat = AV_GUESS_FORMAT(GetFormatName(mStreamCodecId).c_str(), NULL, NULL);
     if (tFormat == NULL)
     {
         LOG(LOG_ERROR, "Invalid suggested audio format for codec %d", mStreamCodecId);
@@ -616,17 +698,19 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
         // Close the format context
         av_free(mFormatContext);
 
-        // unlock
-        mMediaSinksMutex.unlock();
-
         return false;
     }
 
     // set correct output format
     mFormatContext->oformat = tFormat;
     // set correct IO-context
-    mFormatContext->pb = tByteIoContext;
-    // verbose timestamp debugging    mFormatContext->debug = FF_FDEBUG_TS;
+    mFormatContext->pb = tIoContext;
+    // verbose timestamp debugging
+    if (LOGGER.GetLogLevel() == LOG_VERBOSE)
+    {
+    	LOG(LOG_WARN, "Enabling ffmpeg timestamp debugging");
+    	mFormatContext->debug = FF_FDEBUG_TS;
+    }
 
     // allocate new stream structure
     tStream = av_new_stream(mFormatContext, 0);
@@ -648,7 +732,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     mCodecContext->sample_rate = mSampleRate; // sampling rate: 22050, 44100
     mCodecContext->qmin = 2; // 2
     mCodecContext->qmax = 9;/*2 +(100 - mAudioStreamQuality) / 4; // 31*/
-    mCodecContext->sample_fmt = SAMPLE_FMT_S16;
+    mCodecContext->sample_fmt = AV_SAMPLE_FMT_S16;
     // set max. packet size for RTP based packets
     mCodecContext->rtp_payload_size = mStreamMaxPacketSize;
 
@@ -672,9 +756,6 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
         // Close the format context
         av_free(mFormatContext);
 
-        // unlock
-        mMediaSinksMutex.unlock();
-
         return false;
     }
 
@@ -684,18 +765,15 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
 //        mCodecContext->flags |= CODEC_FLAG_TRUNCATED;
 
     // Open codec
-    if ((tResult = HM_avcodec_open(mCodecContext, tCodec)) < 0)
+    if ((tResult = HM_avcodec_open(mCodecContext, tCodec, NULL)) < 0)
     {
-        LOG(LOG_ERROR, "Couldn't open audio codec because of \"%s\".", strerror(AVUNERROR(tResult)));
+        LOG(LOG_ERROR, "Couldn't open audio codec because \"%s\".", strerror(AVUNERROR(tResult)));
         // free codec and stream 0
         av_freep(&mFormatContext->streams[0]->codec);
         av_freep(&mFormatContext->streams[0]);
 
         // Close the format context
         av_free(mFormatContext);
-
-        // unlock
-        mMediaSinksMutex.unlock();
 
         return false;
     }
@@ -711,7 +789,18 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     StartEncoder();
 
     // allocate streams private data buffer and write the streams header, if any
-    avformat_write_header(mFormatContext, NULL);
+    if ((tResult = avformat_write_header(mFormatContext, NULL)) < 0)
+    {
+        LOG(LOG_ERROR, "Couldn't write %s codec header because \"%s\".", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
+        // free codec and stream 0
+        av_freep(&mFormatContext->streams[0]->codec);
+        av_freep(&mFormatContext->streams[0]);
+
+        // Close the format context
+        av_free(mFormatContext);
+
+        return false;
+    }
 
     // init fifo buffer
     mSampleFifo = HM_av_fifo_alloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE * 2);
@@ -726,9 +815,6 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     LOG(LOG_INFO, "    ..max. packet size: %d bytes", mStreamMaxPacketSize);
     LOG(LOG_INFO, "Fifo opened...");
     LOG(LOG_INFO, "    ..fill size: %d bytes", av_fifo_size(mSampleFifo));
-
-    // unlock
-    mMediaSinksMutex.unlock();
 
     return true;
 }
@@ -811,8 +897,6 @@ bool MediaSourceMuxer::CloseMuxer()
     }else
         LOG(LOG_INFO, "...%s-muxer wasn't opened", GetMediaTypeStr().c_str());
 
-    mMediaType = MEDIA_UNKNOWN;
-
     ResetPacketStatistic();
 
     return tResult;
@@ -863,7 +947,7 @@ static char sArrow [8 * 16] = { 1,0,0,0,0,0,0,0,
 
 void SetPixel(char *pBuffer, int pWidth, int pHeight, int pX, int pY, char pRed, char pGreen, char pBlue)
 {
-    if ((pX >= 0) && (pX <= pWidth) && (pY >= 0) && (pY <= pHeight))
+    if ((pX >= 0) && (pX < pWidth) && (pY >= 0) && (pY < pHeight))
     {
         unsigned long tOffset = (pWidth * pY + pX) * 4;
         char *tPixel = pBuffer + tOffset;
@@ -918,6 +1002,10 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
     AVFrame                     *tYUVFrame;
     AVPacket                    tPacket;
     int                         tFrameSize;
+
+    #ifdef MSM_DEBUG_PACKETS
+        LOG(LOG_VERBOSE, "Trying to grab a new %s chunk", GetMediaTypeStr().c_str());
+    #endif
 
     // lock grabbing
     mGrabMutex.lock();
@@ -1061,7 +1149,7 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
     // reencode frame and send it to the registered media sinks
     // limit the outgoing stream FPS to the defined maximum FPS value
     // ###################################################################
-    mEncoderFifoMutex.lock();
+    mEncoderFifoAvailableMutex.lock();
 
     if ((BelowMaxFps(tResult) /* we have to call this function continuously */) && (mStreamActivated) && (!pDropChunk) && (tResult >= 0) && (pChunkSize > 0) && (tMediaSinks) && (mEncoderFifo != NULL))
     {
@@ -1073,7 +1161,7 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
         #endif
     }
 
-    mEncoderFifoMutex.unlock();
+    mEncoderFifoAvailableMutex.unlock();
 
     // unlock grabbing
     mGrabMutex.unlock();
@@ -1173,74 +1261,59 @@ void* MediaSourceMuxer::Run(void* pArgs)
     VideoScaler         *tVideoScaler = NULL;
 
     LOG(LOG_VERBOSE, "%s-Encoding thread started", GetMediaTypeStr().c_str());
+
     switch(mMediaType)
     {
         case MEDIA_VIDEO:
-            SVC_PROCESS_STATISTIC.AssignThreadName("Video-Encoder(" + FfmpegId2FfmpegFormat(mStreamCodecId) + ")");
+            SVC_PROCESS_STATISTIC.AssignThreadName("Video-Encoder(" + GetFormatName(mStreamCodecId) + ")");
 
             // Allocate video frame for YUV format
             if ((tYUVFrame = avcodec_alloc_frame()) == NULL)
-            {
-                // acknowledge failed"
                 LOG(LOG_ERROR, "Out of video memory in avcodec_alloc_frame()");
-            }
 
             mEncoderChunkBuffer = (char*)malloc(MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE);
             if (mEncoderChunkBuffer == NULL)
-            {
-                // acknowledge failed"
                 LOG(LOG_ERROR, "Out of video memory for encoder chunk buffer");
-            }
-
 
             // create video scaler
-            LOG(LOG_VERBOSE, "Encoder thread starts scaler thread..");
-            tVideoScaler = new VideoScaler();
+            LOG(LOG_VERBOSE, "..encoder thread starts scaler thread..");
+            tVideoScaler = new VideoScaler("Video-Encoder(" + GetFormatName(mStreamCodecId) + ")");
             if(tVideoScaler == NULL)
-            {
                 LOG(LOG_ERROR, "Invalid video scaler instance, possible out of memory");
-            }
-            tVideoScaler->StartScaler(mStreamCodecId, mSourceResX, mSourceResY, mCurrentStreamingResX, mCurrentStreamingResY);
 
-            mEncoderFifoMutex.lock();
+            tVideoScaler->StartScaler(MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT, mSourceResX, mSourceResY, PIX_FMT_RGB32, mCurrentStreamingResX, mCurrentStreamingResY, mCodecContext->pix_fmt);
+            LOG(LOG_VERBOSE, "..video scaler thread started..");
+
+            mEncoderFifoAvailableMutex.lock();
 
             // set the video scaler as FIFO for the encoder
             mEncoderFifo = tVideoScaler;
 
-            mEncoderFifoMutex.unlock();
+            mEncoderFifoAvailableMutex.unlock();
 
             break;
         case MEDIA_AUDIO:
-            SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Encoder(" + FfmpegId2FfmpegFormat(mStreamCodecId) + ")");
+            SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Encoder(" + GetFormatName(mStreamCodecId) + ")");
 
             mSamplesTempBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE);
             if (mSamplesTempBuffer == NULL)
-            {
-                // acknowledge failed"
                 LOG(LOG_ERROR, "Out of memory for sample buffer");
-            }
 
             mEncoderChunkBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE);
             if (mEncoderChunkBuffer == NULL)
-            {
-                // acknowledge failed"
                 LOG(LOG_ERROR, "Out of memory for encoder chunk buffer");
-            }
 
-            mEncoderFifoMutex.lock();
+            mEncoderFifoAvailableMutex.lock();
 
             mEncoderFifo = new MediaFifo(MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT, MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE * 2, "AUDIO-Encoder");
             if (mEncoderFifo == NULL)
-            {
-                // acknowledge failed"
                 LOG(LOG_ERROR, "Out of memory for encoder FIFO");
-            }
 
-            mEncoderFifoMutex.unlock();
+            mEncoderFifoAvailableMutex.unlock();
 
             break;
         default:
-            SVC_PROCESS_STATISTIC.AssignThreadName("Encoder(" + FfmpegId2FfmpegFormat(mStreamCodecId) + ")");
+            SVC_PROCESS_STATISTIC.AssignThreadName("Encoder(" + GetFormatName(mStreamCodecId) + ")");
             break;
     }
 
@@ -1249,6 +1322,9 @@ void* MediaSourceMuxer::Run(void* pArgs)
 
     while(mEncoderNeeded)
     {
+		#ifdef MSM_DEBUG_TIMING
+			LOG(LOG_VERBOSE, "%s-encoder loop", GetMediaTypeStr().c_str());
+		#endif
         if (mEncoderFifo != NULL)
         {
             tFifoEntry = mEncoderFifo->ReadFifoExclusive(&tBuffer, tBufferSize);
@@ -1272,12 +1348,13 @@ void* MediaSourceMuxer::Run(void* pArgs)
                     {
                         case MEDIA_VIDEO:
                             {
+                                mChunkNumber++;
                                 int64_t tTime3 = Time::GetTimeStamp();
                                 // ####################################################################
                                 // ### PREPARE YUV FRAME from SCALER
                                 // ###################################################################
                                 // Assign appropriate parts of buffer to image planes in tRGBFrame
-                                avpicture_fill((AVPicture *)tYUVFrame, (uint8_t *)tBuffer, mCodecContext->pix_fmt, mTargetResX, mTargetResY);
+                                avpicture_fill((AVPicture *)tYUVFrame, (uint8_t *)tBuffer, mCodecContext->pix_fmt, mCurrentStreamingResX, mCurrentStreamingResY);
 
                                 #ifdef MSM_DEBUG_TIMING
                                     int64_t tTime5 = Time::GetTimeStamp();
@@ -1285,22 +1362,22 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 #endif
 
                                 // set frame number in corresponding entries within AVFrame structure
-                                tYUVFrame->pts = mChunkNumber + 1;
-                                tYUVFrame->coded_picture_number = mChunkNumber + 1;
-                                tYUVFrame->display_picture_number = mChunkNumber + 1;
+                                tYUVFrame->pts = mChunkNumber;
+                                tYUVFrame->coded_picture_number = mChunkNumber;
+                                tYUVFrame->display_picture_number = mChunkNumber;
 
                                 #ifdef MSM_DEBUG_PACKETS
                                     LOG(LOG_VERBOSE, "Scaler returned video frame..");
                                     LOG(LOG_VERBOSE, "      ..key frame: %d", tYUVFrame->key_frame);
                                     switch(tYUVFrame->pict_type)
                                     {
-                                            case FF_I_TYPE:
+                                            case AV_PICTURE_TYPE_I:
                                                 LOG(LOG_VERBOSE, "      ..picture type: i-frame");
                                                 break;
-                                            case FF_P_TYPE:
+                                            case AV_PICTURE_TYPE_P:
                                                 LOG(LOG_VERBOSE, "      ..picture type: p-frame");
                                                 break;
-                                            case FF_B_TYPE:
+                                            case AV_PICTURE_TYPE_B:
                                                 LOG(LOG_VERBOSE, "      ..picture type: b-frame");
                                                 break;
                                             default:
@@ -1318,7 +1395,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 int64_t tTime = Time::GetTimeStamp();
                                 tSizeEncodedFrame = avcodec_encode_video(mCodecContext, (uint8_t *)mEncoderChunkBuffer, MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE, tYUVFrame);
                                 #ifdef MSM_DEBUG_TIMING
-                                    tTime2 = Time::GetTimeStamp();
+                                    int64_t tTime2 = Time::GetTimeStamp();
                                     LOG(LOG_VERBOSE, "     encoding video frame took %ld us", tTime2 - tTime);
                                 #endif
 
@@ -1328,7 +1405,6 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 if (tSizeEncodedFrame > 0)
                                 {
                                     av_init_packet(tPacket);
-                                    mChunkNumber++;
 
                                     // adapt pts value
                                     if ((mCodecContext->coded_frame) && (mCodecContext->coded_frame->pts != 0))
@@ -1376,7 +1452,13 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                     // free packet buffer
                                     av_free_packet(tPacket);
                                 }else
-                                    LOG(LOG_WARN, "Couldn't re-encode current video frame");
+                                {
+                                    if (tSizeEncodedFrame != 0)
+                                        LOG(LOG_WARN, "Couldn't re-encode current video frame %ld because %s(%d)", tYUVFrame->pts, strerror(AVUNERROR(tSizeEncodedFrame)), tSizeEncodedFrame);
+                                    else
+                                        LOG(LOG_VERBOSE, "Video encoder delivered no frame");
+
+                                }
                                 #ifdef MSM_DEBUG_TIMING
                                     int64_t tTime4 = Time::GetTimeStamp();
                                     LOG(LOG_VERBOSE, "Entire transcoding step took %ld us", tTime4 - tTime3);
@@ -1387,14 +1469,12 @@ void* MediaSourceMuxer::Run(void* pArgs)
                         case MEDIA_AUDIO:
                                 // increase fifo buffer size by size of input buffer size
                                 #ifdef MSM_DEBUG_PACKETS
-                                    LOG(LOG_VERBOSE, "Adding %d bytes to fifo buffer with size of %d bytes", tBufferSize, av_fifo_size(mSampleFifo));
+                                    LOG(LOG_VERBOSE, "Adding %d bytes to AUDIO FIFO with size of %d bytes", tBufferSize, av_fifo_size(mSampleFifo));
                                 #endif
                                 if (av_fifo_realloc2(mSampleFifo, av_fifo_size(mSampleFifo) + tBufferSize) < 0)
                                 {
                                     // acknowledge failed
-                                    MarkGrabChunkFailed("reallocation of FIFO audio buffer failed");
-
-                                    break;
+                                    LOG(LOG_ERROR, "Reallocation of FIFO audio buffer failed");
                                 }
 
                                 //LOG(LOG_VERBOSE, "ChunkSize: %d", pChunkSize);
@@ -1415,7 +1495,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                     // ###################################################################
                                     // re-encode the sample
                                     #ifdef MSM_DEBUG_PACKETS
-                                        LOG(LOG_VERBOSE, "Reencoding audio frame..");
+                                        LOG(LOG_VERBOSE, "Encoding audio frame.. (frame size: %d, channels: %d, enc. buffeR: %p, samples buffer: %p)", mCodecContext->frame_size, mCodecContext->channels, mEncoderChunkBuffer, mSamplesTempBuffer);
                                     #endif
                                     //printf("Gonna encode with frame_size %d and channels %d\n", mCodecContext->frame_size, mCodecContext->channels);
                                     int tEncodingResult = avcodec_encode_audio(mCodecContext, (uint8_t *)mEncoderChunkBuffer, /* assume signed 16 bit */ 2 * mCodecContext->frame_size * mCodecContext->channels, (const short *)mSamplesTempBuffer);
@@ -1498,6 +1578,8 @@ void* MediaSourceMuxer::Run(void* pArgs)
 
     LOG(LOG_VERBOSE, "%s encoder left thread main loop", GetMediaTypeStr().c_str());
 
+    mEncoderFifoAvailableMutex.lock();
+
     switch(mMediaType)
     {
         case MEDIA_VIDEO:
@@ -1520,16 +1602,47 @@ void* MediaSourceMuxer::Run(void* pArgs)
 
     free(mEncoderChunkBuffer);
 
-    mEncoderFifoMutex.lock();
-
     delete mEncoderFifo;
     mEncoderFifo = NULL;
 
-    mEncoderFifoMutex.unlock();
+    mEncoderFifoAvailableMutex.unlock();
 
     LOG(LOG_WARN, "%s encoder thread finished", GetMediaTypeStr().c_str());
 
     return NULL;
+}
+
+bool MediaSourceMuxer::SupportsDecoderFrameStatistics()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->SupportsDecoderFrameStatistics();
+    else
+        return false;
+}
+
+int64_t MediaSourceMuxer::DecodedIFrames()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->DecodedIFrames();
+    else
+        return mDecodedIFrames;
+}
+
+int64_t MediaSourceMuxer::DecodedPFrames()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->DecodedPFrames();
+    else
+        return mDecodedPFrames;
+
+}
+
+int64_t MediaSourceMuxer::DecodedBFrames()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->DecodedBFrames();
+    else
+        return mDecodedBFrames;
 }
 
 void MediaSourceMuxer::SetVideoGrabResolution(int pResX, int pResY)
@@ -1597,15 +1710,10 @@ void MediaSourceMuxer::SetVideoGrabResolution(int pResX, int pResY)
 
         if ((tResX != pResX) || (tResY != pResY))
         {
-            LOG(LOG_WARN, "Codec %s doesn't support video resolution, changed resolution from %d*%d to %d*%d", FfmpegId2FfmpegFormat(mStreamCodecId).c_str(), pResY, tResX, tResY);
+            LOG(LOG_WARN, "Codec %s doesn't support video resolution, changed resolution from %d*%d to %d*%d", GetFormatName(mStreamCodecId).c_str(), pResX, pResY, tResX, tResY);
             pResX = tResX;
             pResY = tResY;
         }
-
-        mRequestedStreamingResX = pResX;
-        mRequestedStreamingResY = pResY;
-        mTargetResX = pResX;
-        mTargetResY = pResY;
 
         if (mMediaSourceOpened)
         {
@@ -1627,6 +1735,18 @@ void MediaSourceMuxer::SetVideoGrabResolution(int pResX, int pResY)
             	mMediaSource->SetVideoGrabResolution(mSourceResX, mSourceResY);
         }
     }
+}
+
+void MediaSourceMuxer::GetVideoGrabResolution(int &pResX, int &pResY)
+{
+    if (mMediaType == MEDIA_AUDIO)
+    {
+        LOG(LOG_ERROR, "Wrong media type detected");
+        return;
+    }
+
+    if (mMediaSource != NULL)
+        mMediaSource->GetVideoGrabResolution(pResX, pResY);
 }
 
 void MediaSourceMuxer::GetVideoSourceResolution(int &pResX, int &pResY)
@@ -1782,6 +1902,14 @@ bool MediaSourceMuxer::IsRecording()
     	return false;
 }
 
+int64_t MediaSourceMuxer::RecordingTime()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->RecordingTime();
+    else
+        return 0;
+}
+
 void MediaSourceMuxer::SetActivation(bool pState)
 {
     mStreamActivated = pState;
@@ -1881,6 +2009,8 @@ bool MediaSourceMuxer::SelectDevice(std::string pDesiredDevice, enum MediaType p
 			    break;
 		}
 
+		LOG(LOG_VERBOSE, "Probing of all registered media source resulted in a new input source: %d", pIsNewDevice);
+
 		// if we haven't found the right media source yet we check if the selected device is a file
 		if ((!tResult) && (pDesiredDevice.size() > 6) && (pDesiredDevice.substr(0, 6) == "FILE: "))
 		{
@@ -1918,8 +2048,12 @@ bool MediaSourceMuxer::SelectDevice(std::string pDesiredDevice, enum MediaType p
                     mGrabMutex.lock();
 
                     CloseGrabDevice();
-                }
+                }else
+                    LOG(LOG_VERBOSE, "Old input source wasn't opened before");
+
+                // switch to new input source
                 mMediaSource = *tIt;
+
                 if (tOldMediaSourceOpened)
                 {
                     LOG(LOG_VERBOSE, "Going to open after new device selection");
@@ -1976,7 +2110,7 @@ bool MediaSourceMuxer::SelectDevice(std::string pDesiredDevice, enum MediaType p
     // unlock
     mMediaSourcesMutex.unlock();
 
-    // return true if a reset of the new selected device is needed
+    // return true if the process was successful
     return tResult;
 }
 

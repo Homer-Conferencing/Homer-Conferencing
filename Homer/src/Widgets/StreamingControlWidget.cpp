@@ -26,6 +26,7 @@
  */
 
 #include <Widgets/StreamingControlWidget.h>
+#include <Widgets/OverviewPlaylistWidget.h>
 #include <MediaSourceMuxer.h>
 #include <MediaSourceFile.h>
 #include <MediaSourceDesktop.h>
@@ -48,14 +49,13 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-StreamingControlWidget::StreamingControlWidget(ParticipantWidget* pBroadcastParticipantWidget, MediaSourceDesktop *pMediaSourceDesktop, OverviewPlaylistWidget *pOverviewPlaylistWidget):
+StreamingControlWidget::StreamingControlWidget(ParticipantWidget* pBroadcastParticipantWidget, MediaSourceDesktop *pMediaSourceDesktop):
     QWidget()
 {
     mVideoWorker = pBroadcastParticipantWidget->GetVideoWorker();
     mAudioWorker = pBroadcastParticipantWidget->GetAudioWorker();
     mBroadcastParticipantWidget = pBroadcastParticipantWidget;
     mMediaSourceDesktop = pMediaSourceDesktop;
-    mOverviewPlaylistWidget = pOverviewPlaylistWidget;
 
     initializeGUI();
     connect(mPbBroadcastScreenSegment, SIGNAL(clicked()), this, SLOT(StartScreenSegmentStreaming()));
@@ -168,7 +168,8 @@ void StreamingControlWidget::StartVoiceStreaming()
 
 void StreamingControlWidget::StartFileStreaming()
 {
-    mOverviewPlaylistWidget->StartPlaylist();
+	LOG(LOG_VERBOSE, "Trigger start of file based A/V grabbing");
+	PLAYLISTWIDGET.StartPlaylist();
 }
 
 void StreamingControlWidget::SetVideoInputSelectionVisible(bool pVisible)

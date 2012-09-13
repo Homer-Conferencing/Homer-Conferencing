@@ -153,7 +153,6 @@ private:
     bool SearchParticipantByNuaHandleOrName(string &pUser, string &pHost, string &pPort, nua_handle_t *pNuaHandle);
 
     const char* GetSdpData(std::string pParticipant);
-    void CloseAllSessions();
     std::string CallStateAsString(int pCallState);
 
     Mutex               mParticipantsMutex;

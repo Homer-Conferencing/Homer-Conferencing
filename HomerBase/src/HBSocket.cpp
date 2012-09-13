@@ -48,6 +48,11 @@ using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// avoid returning addresses like "::ffff:0.0.0.0"
+//#define SOCKET_AVOID_IPv4_IN_IPv6
+
+///////////////////////////////////////////////////////////////////////////////
+
 #ifdef QOS_SETTINGS
     int sQoSSupported = true;
 #else
@@ -65,6 +70,7 @@ void Socket::SetDefaults(enum TransportType pTransportType)
     mIsConnected = false;
 	mIsListening = false;
 	mIsClientSocket = false;
+	mWasClosed = false;
 	mSocketNetworkType = SOCKET_NETWORK_TYPE_INVALID;
 	mSocketTransportType = SOCKET_TRANSPORT_TYPE_INVALID;
     mLocalPort = 0;
@@ -139,6 +145,12 @@ Socket* Socket::CreateClientSocket(enum NetworkType pIpVersion, enum TransportTy
     return tResult;
 }
 
+void Socket::Close()
+{
+	mWasClosed = true;
+	CloseSocket(mSocketHandle);
+}
+
 Socket::Socket(enum NetworkType pIpVersion, enum TransportType pTransportType, unsigned int pPort, bool pReusable, unsigned int pProbeStepping, unsigned int pHighestPossiblePort)
 {
     if ((pIpVersion == SOCKET_IPv6) && (!IsIPv6Supported()))
@@ -175,7 +187,7 @@ Socket::Socket(enum NetworkType pIpVersion, enum TransportType pTransportType, u
         if (BindSocket(pPort, pProbeStepping, pHighestPossiblePort))
         {
             if ((mLocalPort != pPort) && (pPort != 0))
-                LOG(LOG_ERROR, "Bound socket %d to another port than requested", mSocketHandle);
+                LOG(LOG_WARN, "Bound socket %d to another port than requested", mSocketHandle);
         }else
             mSocketHandle = -1;
     }
@@ -186,7 +198,7 @@ Socket::~Socket()
     if (mIsClientSocket)
         SVC_SOCKET_CONTROL.UnregisterClientSocket(this);
 
-    DestroySocket(mSocketHandle);
+    CloseSocket(mSocketHandle);
     LOG(LOG_VERBOSE, "Destroyed %d", mSocketHandle);
 }
 
@@ -491,6 +503,29 @@ void Socket::TCPDisableNagle()
         LOG(LOG_ERROR, "Failed to disable Nagle's algorithm for TCP on socket %d", mSocketHandle);
 }
 
+void Socket::StopReceiving()
+{
+    LOG(LOG_VERBOSE, "Try to do loopback signaling to local IPv%d listener at port %u, transport %d", GetNetworkType(), 0xFFFF & GetLocalPort(), GetTransportType());
+    Socket  *tSocket = CreateClientSocket(GetNetworkType(), GetTransportType());
+    char    tData[8];
+    switch(tSocket->GetNetworkType())
+    {
+        case SOCKET_IPv4:
+            LOG(LOG_VERBOSE, "Doing loopback signaling to IPv4 listener to port %u", GetLocalPort());
+            if (!tSocket->Send("127.0.0.1", GetLocalPort(), tData, 0))
+                LOG(LOG_ERROR, "Error when sending data through loopback IPv4-UDP socket");
+            break;
+        case SOCKET_IPv6:
+            LOG(LOG_VERBOSE, "Doing loopback signaling to IPv6 listener to port %u", GetLocalPort());
+            if (!tSocket->Send("::1", GetLocalPort(), tData, 0))
+                LOG(LOG_ERROR, "Error when sending data through loopback IPv6-UDP socket");
+            break;
+        default:
+            LOG(LOG_ERROR, "Unknown network type");
+            break;
+    }
+    delete tSocket;
+}
 
 bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, ssize_t pBufferSize)
 {
@@ -556,7 +591,7 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
             if (tTcpNeedsReconnect)
             {
 				tLocalPort = mLocalPort;
-				DestroySocket(mSocketHandle);
+				CloseSocket(mSocketHandle);
 				if (CreateSocket())
 					mLocalPort = BindSocket(mLocalPort, 0);
 				if (mLocalPort != tLocalPort)
@@ -710,7 +745,7 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
             #endif
             if (tReceivedBytes < 0)
             {
-                DestroySocket(mTcpClientSockeHandle);
+                CloseSocket(mTcpClientSockeHandle);
                 LOG(LOG_VERBOSE, "Client TCP socket %d was closed", mTcpClientSockeHandle);
                 mIsConnected = false;
             }
@@ -735,9 +770,13 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
         }
     }else
     {
-    	pSourceHost = "0.0.0.0";
+    	if (mSocketNetworkType == SOCKET_IPv6)
+    		pSourceHost = "::";
+    	else
+    		pSourceHost = "0.0.0.0";
     	pSourcePort = 0;
-    	LOG(LOG_ERROR, "Error when receiving data via socket %d at port %u because of \"%s\" (code: %d)", mSocketHandle, mLocalPort, strerror(errno), tReceivedBytes);
+    	if ((errno != 0) && (!mWasClosed))
+    		LOG(LOG_ERROR, "Error when receiving data via socket %d at port %u because of \"%s\"(%d)", mSocketHandle, mLocalPort, strerror(errno), errno);
     }
 
     pBufferSize = tReceivedBytes;
@@ -1091,9 +1130,16 @@ string Socket::GetAddrFromDescriptor(SocketAddressDescriptor *tAddressDescriptor
     if (tSourceHostStr != NULL)
     {
         tResult = string(tSourceHostStr);
-        // IPv4 in IPv6 address?
-        if ((tResult.find(':') != string::npos) && (tResult.find('.') != string::npos))
-        	tResult.erase(0, tResult.rfind(':') + 1);
+
+		#ifdef SOCKET_AVOID_IPv4_IN_IPv6
+			// IPv4 in IPv6 address?
+			if ((tResult.find(':') != string::npos) && (tResult.find('.') != string::npos))
+				tResult.erase(0, tResult.rfind(':') + 1);
+
+			// transform an address of "::ffff:0.0.0.0" to a "::"
+			if ((tResult == "0.0.0.0") && (tAddressDescriptor->sa_stor.ss_family == AF_INET6))
+				tResult = "::";
+		#endif
     }else
     	tResult = "";
 
@@ -1223,20 +1269,27 @@ bool Socket::CreateSocket(enum NetworkType pIpVersion)
     return tResult;
 }
 
-void Socket::DestroySocket(int pHandle)
+void Socket::CloseSocket(int pHandle)
 {
-	LOGEX(Socket, LOG_VERBOSE, "Destroying socket %d", pHandle);
+	LOGEX(Socket, LOG_VERBOSE, "Closing socket %d", pHandle);
 
     if (pHandle > 0)
     {
         #if defined(LINUX) || defined(APPLE) || defined(BSD)
+            // force a immediate return from any blocked "recv()" call
+            shutdown(pHandle, SHUT_RDWR);
+
             close(pHandle);
         #endif
         #if defined(WIN32) ||defined(WIN64)
+            // force a immediate return from any blocked "recv()" call
+            shutdown(pHandle, SD_BOTH);
+
             closesocket(pHandle);
             WSACleanup();
         #endif
     }
+    LOGEX(Socket, LOG_VERBOSE, "Socket %d closed", pHandle);
 }
 
 bool Socket::BindSocket(unsigned int pPort, unsigned int pProbeStepping, unsigned int pHighesPossiblePort)
@@ -1253,7 +1306,8 @@ bool Socket::BindSocket(unsigned int pPort, unsigned int pProbeStepping, unsigne
 
     LOG(LOG_VERBOSE, "Trying to bind IPv%d-%s socket %d to local port %d", (mSocketNetworkType == SOCKET_IPv6) ? 6 : 4, TransportType2String(mSocketTransportType).c_str(), mSocketHandle, pPort);
 
-    if (!FillAddrDescriptor((mSocketNetworkType == SOCKET_IPv6) ? "::" : "*", pPort, &tAddressDescriptor, tAddressDescriptorSize))
+    mLocalHost = (mSocketNetworkType == SOCKET_IPv6) ? "::" : "*";
+    if (!FillAddrDescriptor(mLocalHost, pPort, &tAddressDescriptor, tAddressDescriptorSize))
     {
         LOG(LOG_ERROR ,"Could not process the bind address of socket %d", mSocketHandle);
         return false;

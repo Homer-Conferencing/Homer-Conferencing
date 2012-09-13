@@ -45,6 +45,8 @@ public:
     /// The destructor.
     virtual ~MessageInput();
 
+    void Clear();
+
 protected:
     virtual void keyPressEvent(QKeyEvent *pKeyEvent);
     virtual void keyReleaseEvent(QKeyEvent *pKeyEvent);
@@ -53,7 +55,11 @@ signals:
     void SendTrigger();
 
 private:
-    bool mLastKeyWasEnter;
+    void Send();
+
+    bool            mLastKeyWasEnter;
+    QStringList     mMessageHistory;
+    int             mMessageHistoryPos;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -30,6 +30,7 @@
 
 #include <Header_Ffmpeg.h>
 #include <PacketStatistic.h>
+#include <RTCP.h>
 
 #include <sys/types.h>
 #include <string>
@@ -43,6 +44,7 @@ namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// ########################## RTP ############################################
 union RtpHeader{
     struct{
         unsigned short int SequenceNumber; /* sequence number */
@@ -63,6 +65,7 @@ union RtpHeader{
     uint32_t Data[3];
 };
 
+
 // calculate the size of an RTP header: "size of structure"
 #define RTP_HEADER_SIZE                      sizeof(RtpHeader)
 
@@ -79,22 +82,26 @@ union RtpHeader{
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class RTP
+class RTP:
+	public RTCP
 {
 public:
     RTP();
 
     virtual ~RTP( );
 
-    static int FfmpegNameToPayloadId(std::string pName);
-    static std::string PayloadIdToFfmpegName(int pId);
+    static int CodecToPayloadId(std::string pName);
+    static std::string PayloadIdToCodec(int pId);
     static bool IsPayloadSupported(enum CodecID pId);
     static int GetPayloadHeaderSizeMax(enum CodecID pCodec);// calculate the maximum header size of the RTP payload (not the RTP header!)
     static int GetHeaderSizeMax(enum CodecID pCodec);
     static void SetH261PayloadSizeMax(unsigned int pMaxSize);
     static unsigned int GetH261PayloadSizeMax();
+
+    /* RTP packetizing */
     bool RtpCreate(char *&pData, unsigned int &pDataSize);
     unsigned int GetLostPacketsFromRTP();
+    static void LogRtpHeader(RtpHeader *pRtpHeader);
     bool RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment, bool &pIsSenderReport, enum CodecID pCodecId, bool pReadOnly);
     bool OpenRtpEncoder(std::string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream);
     bool CloseRtpEncoder();

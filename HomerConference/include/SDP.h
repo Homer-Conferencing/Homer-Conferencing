@@ -37,13 +37,14 @@ namespace Homer { namespace Conference {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define CODEC_G711A                             1
-#define CODEC_G711U                             2
+#define CODEC_G711ALAW                          1
+#define CODEC_G711ULAW                          2
 #define CODEC_MP3                               4
 #define CODEC_AAC                               8
-#define CODEC_PCMS16LE                          16
+#define CODEC_PCMS16                            16
 #define CODEC_GSM                               32
 #define CODEC_AMR                               64
+#define CODEC_G722ADPCM                         128
 
 #define CODEC_H261                              1
 #define CODEC_H263                              2
@@ -54,7 +55,7 @@ namespace Homer { namespace Conference {
 #define CODEC_MPEG4                             64
 #define CODEC_THEORA                            128
 #define CODEC_VP8                               256
-#define CODEC_ALL                               0xFF
+#define CODEC_ALL                               0x1FF
 
 enum MediaTransportType{
 	MEDIA_TRANSPORT_UDP = 1,
@@ -86,7 +87,6 @@ public:
     enum MediaTransportType GetAudioTransportType();
 
 private:
-    static int CodecNameToPayloadId(std::string pName);
     std::string GetMediaTransportStr(enum MediaTransportType pType);
 
 protected:

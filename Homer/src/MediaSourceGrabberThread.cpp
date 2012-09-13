@@ -60,12 +60,18 @@ using namespace std;
 using namespace Homer::Conference;
 using namespace Homer::Monitor;
 
+// support video files
+#define MEDIA_SOURCE_GRABBER_VIDEO_FILE
+
+// support audio files
+#define MEDIA_SOURCE_GRABBER_AUDIO_FILE
+
 ///////////////////////////////////////////////////////////////////////////////
 
 MediaSourceGrabberThread::MediaSourceGrabberThread(MediaSource *pMediaSource):
     QThread()
 {
-    mSyncClockMasterSource = NULL;
+	mSyncClockMasterSource = NULL;
     mSyncClockAsap = false;
     mSetGrabResolutionAsap = false;
     mStartRecorderAsap = false;
@@ -83,10 +89,14 @@ MediaSourceGrabberThread::MediaSourceGrabberThread(MediaSource *pMediaSource):
     mTryingToOpenAFile = false;
     mPaused = false;
     mPausedPos = 0;
-    mDesiredFile = "";
     if (pMediaSource == NULL)
         LOG(LOG_ERROR, "media source is NULL");
     mMediaSource = pMediaSource;
+	if (pMediaSource->GetSourceType() == SOURCE_FILE)
+		mDesiredFile = GetCurrentDevice();
+	else
+		mDesiredFile = "";
+	mCurrentFile = mDesiredFile;
     blockSignals(true);
 }
 
@@ -163,8 +173,20 @@ QString MediaSourceGrabberThread::GetDeviceDescription(QString pName)
 
 void MediaSourceGrabberThread::PlayFile(QString pName)
 {
+	#ifndef MEDIA_SOURCE_GRABBER_VIDEO_FILE
+		if (mMediaSource->GetMediaType() == MEDIA_VIDEO)
+			return;
+	#endif
+	#ifndef MEDIA_SOURCE_GRABBER_AUDIO_FILE
+		if (mMediaSource->GetMediaType() == MEDIA_AUDIO)
+			return;
+	#endif
+
     if (pName == "")
-        pName = mCurrentFile;
+    {
+    	LOG(LOG_VERBOSE, "Given file name was empty, setting old name: %s", mCurrentFile.toStdString().c_str());
+    	pName = mCurrentFile;
+    }
 
     // remove "file:///" and "file://" from the beginning if existing
     #ifdef WIN32
@@ -225,11 +247,11 @@ void MediaSourceGrabberThread::PauseFile()
 {
     if (mMediaSource->SupportsSeeking())
     {
+        LOG(LOG_VERBOSE, "Triggered %s pause state at position: %.2f", mMediaSource->GetMediaTypeStr().c_str(), mPausedPos);
         mPausedPos = mMediaSource->GetSeekPos();
         mGrabbingStateMutex.lock();
         mPaused = true;
         mGrabbingStateMutex.unlock();
-        LOG(LOG_VERBOSE, "Triggered pause state at position: %.2f", mPausedPos);
     }else
         LOG(LOG_VERBOSE, "Seeking not supported, PauseFile() aborted");
 }
@@ -402,7 +424,7 @@ void MediaSourceGrabberThread::DoResetMediaSource()
     // restart frame grabbing device
     mSourceAvailable = mMediaSource->Reset();
     if (!mSourceAvailable)
-        LOG(LOG_VERBOSE, "%s source is (temporary) not available after Reset() in DoResetMediaSource()", mMediaSource->GetMediaTypeStr().c_str());
+        LOG(LOG_WARN, "%s source is (temporary) not available after Reset() in DoResetMediaSource()", mMediaSource->GetMediaTypeStr().c_str());
     mResetMediaSourceAsap = false;
     mPaused = false;
     mFrameTimestamps.clear();
@@ -422,7 +444,7 @@ void MediaSourceGrabberThread::DoSetInputStreamPreferences()
     {
     	mSourceAvailable = mMediaSource->Reset();
         if (!mSourceAvailable)
-            LOG(LOG_VERBOSE, "%s source is (temporary) not available after Reset() in DoSetInputStreamPreferences()", mMediaSource->GetMediaTypeStr().c_str());
+            LOG(LOG_WARN, "%s source is (temporary) not available after Reset() in DoSetInputStreamPreferences()", mMediaSource->GetMediaTypeStr().c_str());
         mResetMediaSourceAsap = false;
     }
 
@@ -441,10 +463,13 @@ void MediaSourceGrabberThread::DoSeek()
     mDeliverMutex.lock();
 
     LOG(LOG_VERBOSE, "Seeking now to position %5.2f", mSeekPos);
-    mSourceAvailable = mMediaSource->Seek(mSeekPos);
-    if(!mSourceAvailable)
+    if (mMediaSource->SupportsSeeking())
     {
-        LOG(LOG_WARN, "Source isn't available anymore after seeking");
+        mSourceAvailable = mMediaSource->Seek(mSeekPos);
+        if(!mSourceAvailable)
+        {
+            LOG(LOG_WARN, "Source isn't available anymore after seeking");
+        }
     }
     mEofReached = false;
     mSeekAsap = false;

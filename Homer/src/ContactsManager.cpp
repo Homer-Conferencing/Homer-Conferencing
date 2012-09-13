@@ -270,11 +270,23 @@ bool ContactsManager::IsKnownContact(QString pUser, QString pHost, QString pPort
     mContactsMutex.lock();
     ContactsVector::iterator tIt, tItEnd = mContacts.end();
 
+    if (pHost != CONF.GetSipServer())
+    	pUser = "";
+
     LOG(LOG_VERBOSE, "Searching in contact pool the contact: %s@%s<%s>", pUser.toStdString().c_str(), pHost.toStdString().c_str(), pPort.toStdString().c_str());
+
+    bool tContactHasDefaultPort = false;
+    if ((pPort == "5060") || (pPort == ""))
+    	tContactHasDefaultPort = true;
+
     for (tIt = mContacts.begin(); tIt != tItEnd; tIt++)
     {
         LOG(LOG_VERBOSE, "Comparing %s==%s, %s==%s, %s==%s", tIt->User.toStdString().c_str(), pUser.toStdString().c_str(), tIt->Host.toStdString().c_str(), pHost.toStdString().c_str(), tIt->Port.toStdString().c_str(), pPort.toStdString().c_str());
-        if (((tIt->User == pUser)  || (pUser == "")) && ((tIt->Host == pHost)  || (pHost == "")) && ((tIt->Port == pPort) || (pPort == "")))
+        bool tEntryHasDefaultPort = false;
+        if ((tIt->Port == "5060") || (tIt->Port == ""))
+        	tEntryHasDefaultPort = true;
+
+        if (((tIt->User == pUser)  || (pUser == "")) && ((tIt->Host == pHost)  || (pHost == "")) && ((tIt->Port == pPort) || ((tContactHasDefaultPort) && (tEntryHasDefaultPort))))
         {
             LOG(LOG_VERBOSE, "..found");
             tFound =true;
@@ -552,7 +564,7 @@ void ContactsManager::SortByName(bool pDescending)
             }
         }
 
-        LOG(LOG_VERBOSE, "Picking entry %s, state %d", tItBestMatch->User.toStdString().c_str(), tItBestMatch->State);
+        //LOG(LOG_VERBOSE, "Picking entry %s, state %d", tItBestMatch->User.toStdString().c_str(), tItBestMatch->State);
         tNewDataBase.push_back((*tItBestMatch));
         mContacts.erase(tItBestMatch);
     }

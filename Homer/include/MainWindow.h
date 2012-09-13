@@ -44,6 +44,7 @@
 #include <Widgets/OverviewPlaylistWidget.h>
 #include <Widgets/ParticipantWidget.h>
 #include <Widgets/VideoWidget.h>
+#include <AudioPlayback.h>
 #include <Meeting.h>
 #include <MeetingEvents.h>
 
@@ -71,10 +72,12 @@ using namespace Homer::Conference;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define SCREEN_CAPTURE_FPS					15
+#define SCREEN_CAPTURE_FPS					(29.97)
 
 ///////////////////////////////////////////////////////////////////////////////
-class MainWindow: public QMainWindow,
+class MainWindow:
+        public QMainWindow,
+        AudioPlayback,
         public Ui_MainWindow,
         public MeetingObserver
 {
@@ -82,13 +85,15 @@ Q_OBJECT
     ;
 public:
     /// The default constructor
-    MainWindow(const std::string& pAbsBinPath);
+    MainWindow(QStringList pArguments, QString pAbsBinPath);
 
     /// The destructor
     virtual ~MainWindow();
 
     MediaSourceMuxer* GetVideoMuxer();
     MediaSourceMuxer* GetAudioMuxer();
+
+    static void removeArguments(QStringList &pArguments, QString pFilter);
 
 public slots:
     void actionOpenVideoAudioPreview();
@@ -117,29 +122,34 @@ private slots:
     void CreateScreenShot();
 
     void registerAtStunSipServer();
+    void UpdateSysTrayContextMenu();
 
 private:
-    friend class GeneralControlWidget;
-
+    void initializeConfiguration(QStringList &pArguments);
     void initializeGUI();
-    void initializeFeatureDisablers(QStringList pArguments);
-    void initializeLogging(QStringList pArguments);
+    void initializeFeatureDisablers(QStringList &pArguments);
+    void initializeDebugging(QStringList &pArguments);
+    void ShowFfmpegCaps(QStringList &pArguments);
     void initializeConferenceManagement();
     void initializeVideoAudioIO();
     void initializeColoring();
     void initializeWidgetsAndMenus();
     void initializeScreenCapturing();
-    void initializeNetworkSimulator(QStringList pArguments, bool pForce = false);
+    void initializeNetworkSimulator(QStringList &pArguments, bool pForce = false);
+    void ProcessRemainingArguments(QStringList &pArguments);
     void connectSignalsSlots();
 
     virtual void closeEvent(QCloseEvent* pEvent);
+    virtual void keyPressEvent(QKeyEvent *pEvent);
+    virtual void dragEnterEvent(QDragEnterEvent *pEvent);
+    virtual void dropEvent(QDropEvent *pEvent);
+    virtual void changeEvent (QEvent *pEvent);
     virtual void customEvent(QEvent* pEvent);
 
     void triggerUpdateCheck();
 
     void CreateSysTray();
     void loadSettings();
-    void UpdateSysTrayContextMenu();
     bool GetNetworkInfo(LocalAddressesList &pLocalAddressesList, QString &pLocalSourceIp, QString &pLocalLoopIp);
     QString CompleteIpAddress(QString pAddr);
     ParticipantWidget* AddParticipantSession(QString pUser, QString pHost, QString pPort, QString pIp, int pInitState);
@@ -150,7 +160,7 @@ private:
     virtual void handleMeetingEvent(GeneralEvent *pEvent);
 
     QHttp           		    *mHttpGetVersionServer;
-    std::string 			    mAbsBinPath;
+    QString		 			    mAbsBinPath;
     AvailabilityWidget 		    *mOnlineStatusWidget;
     StreamingControlWidget 	    *mMediaSourcesControlWidget;
     LocalAddressesList 		    mLocalAddresses;
@@ -167,7 +177,7 @@ private:
     MediaSourceMuxer 		    *mOwnAudioMuxer;
     QTimer 					    *mScreenShotTimer;
     QSystemTrayIcon			    *mSysTrayIcon;
-    QMenu					    *mSysTrayMenu;
+    QMenu					    *mSysTrayMenu, *mDockMenu /* OSX dock menu */;
     MediaSourceDesktop 		    *mSourceDesktop;
     QShortcut                   *mShortcutActivateDebugWidgets, *mShortcutActivateDebuggingGlobally, *mShortcutActivateNetworkSimulationWidgets;
     /* SIP server registration */

@@ -29,10 +29,11 @@
 #define _PARTICIPANT_WIDGET_
 
 #include <Widgets/MessageWidget.h>
-#include <Widgets/OverviewContactsWidget.h>
 #include <Widgets/PlaybackSlider.h>
 #include <Widgets/SessionInfoWidget.h>
 #include <Widgets/VideoWidget.h>
+#include <AudioPlayback.h>
+
 #include <MediaSourceMuxer.h>
 #include <Widgets/AudioWidget.h>
 #include <MediaSourceMuxer.h>
@@ -101,12 +102,13 @@ public:
 class MainWindow;
 class ParticipantWidget:
     public QDockWidget,
+    AudioPlayback,
     public Ui_ParticipantWidget
 {
     Q_OBJECT;
 
 public:
-    ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow, OverviewContactsWidget *pContactsWidget, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer = NULL, MediaSourceMuxer *pAudioSourceMuxer = NULL, QString pParticipant = "unknown");
+    ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer = NULL, MediaSourceMuxer *pAudioSourceMuxer = NULL, QString pParticipant = "unknown");
 
     virtual ~ParticipantWidget();
 
@@ -136,9 +138,10 @@ public:
     VideoWorkerThread* GetVideoWorker();
     AudioWorkerThread* GetAudioWorker();
 
+    void SeekMovieFileRelative(float pSeconds);
+
 private slots:
-    void ActionPlayMovieFile(QString pFileName = "");
-    void ActionPauseMovieFile();
+    void ActionPlayPauseMovieFile(QString pFileName = "");
     void ActionRecordMovieFile();
 	void LookedUpParticipantHost(const QHostInfo &pHost);
 	void ActionSeekMovieFile(int pPos);
@@ -148,14 +151,21 @@ private slots:
 	friend class PlaybackSlider;
 
 private:
-    void OpenPlaybackDevice();
-    void ClosePlaybackDevice();
-	void Init(OverviewContactsWidget *pContactsWidget, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, QString pParticipant);
+	friend class VideoWidget;
+
+	/* visibility of A/V widget */
+    void HideAudioVideoWidget();
+    void ShowAudioVideoWidget();
+
+	void ResizeAVView(int pSize);
+	void Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, QString pParticipant);
     void FindSipInterface(QString pSessionName);
+    void UpdateMovieControls();
     virtual void contextMenuEvent(QContextMenuEvent *event);
     virtual void closeEvent(QCloseEvent* pEvent = NULL);
     virtual void dragEnterEvent(QDragEnterEvent *pEvent);
     virtual void dropEvent(QDropEvent *pEvent);
+    virtual void keyPressEvent(QKeyEvent *pEvent);
     virtual void wheelEvent(QWheelEvent *pEvent);
     virtual void timerEvent(QTimerEvent *pEvent);
 
@@ -168,38 +178,35 @@ private:
     void SetUserAVDrift(float pDrift);
     void ReportVideoDelay(float pDelay); // adds an additional delay to audio if video presentation is delayed
     void InformAboutVideoSeekingComplete();
-    friend class VideoWidget;
 
     void ShowNewState();
     void ShowStreamPosition(int64_t tCurPos, int64_t tEndPos);
     void CallStopped(bool pIncoming);
 
-    MainWindow          *mMainWindow;
-    QMessageBox         *mCallBox;
-    QString             mSessionName;
-    QString				mSipInterface; // service access point name in form "IP:PORT" or "[IPv6]:PORT"
-    QString             mWidgetTitle;
-    bool                mQuitForced;
-    bool                mIncomingCall;
-    enum SessionType    mSessionType;
-    MediaSourceMuxer    *mAudioSourceMuxer;
-    MediaSourceMuxer    *mVideoSourceMuxer;
-    QString             mRemoteAudioAdr;
-    unsigned int        mRemoteAudioPort;
-    QString             mRemoteAudioCodec;
-    QString             mRemoteVideoAdr;
-    unsigned int        mRemoteVideoPort;
-    QString             mRemoteVideoCodec;
-    MediaSource         *mVideoSource, *mAudioSource;
-    Socket				*mVideoSendSocket, *mAudioSendSocket, *mVideoReceiveSocket, *mAudioReceiveSocket;
-    int                 mTimerId;
-    int					mMovieSliderPosition;
-    /* playback */
-    Homer::Multimedia::WaveOut *mWaveOut;
+    MainWindow          	*mMainWindow;
+    QMessageBox         	*mCallBox;
+    QString            	 	mSessionName;
+    QString					mSipInterface; // service access point name in form "IP:PORT" or "[IPv6]:PORT"
+    QString            		mWidgetTitle;
+    bool                	mQuitForced;
+    bool                	mIncomingCall;
+    enum SessionType    	mSessionType;
+    MediaSourceMuxer    	*mAudioSourceMuxer;
+    MediaSourceMuxer    	*mVideoSourceMuxer;
+    QString             	mRemoteAudioAdr;
+    unsigned int        	mRemoteAudioPort;
+    QString            		mRemoteAudioCodec;
+    QString             	mRemoteVideoAdr;
+    unsigned int        	mRemoteVideoPort;
+    QString             	mRemoteVideoCodec;
+    MediaSource         	*mVideoSource, *mAudioSource;
+    Socket					*mVideoSendSocket, *mAudioSendSocket, *mVideoReceiveSocket, *mAudioReceiveSocket;
+    int                 	mTimerId;
+    int						mMovieSliderPosition;
     /* A/V synch. */
-    int64_t				mTimeOfLastAVSynch;
-    int 				mContinuousAVAsync;
-    QString             mCurrentMovieFile;
+    int64_t					mTimeOfLastAVSynch;
+    int 					mContinuousAVAsync;
+    QString             	mCurrentMovieFile;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

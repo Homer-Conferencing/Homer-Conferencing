@@ -40,6 +40,7 @@
 #include <QQueue>
 #include <QList>
 
+#include <AudioPlayback.h>
 #include <MediaSourceGrabberThread.h>
 #include <MediaSource.h>
 #include <WaveOut.h>
@@ -55,6 +56,9 @@ using namespace Homer::Multimedia;
 //#define DEBUG_AUDIOWIDGET_PERFORMANCE
 
 #define SAMPLE_BUFFER_SIZE               16
+
+// de/activate frame handling
+//#define AUDIO_WIDGET_DEBUG_FRAMES
 
 // de/activate automatic sample dropping in case the audo widget is invisible (default is off)
 //#define AUDIO_WIDGET_DROP_WHEN_INVISIBLE
@@ -90,8 +94,6 @@ public:
 
 public slots:
     void ToggleVisibility();
-
-private slots:
     void ToggleMuteState(bool pState = true);
 
 private:
@@ -124,7 +126,7 @@ private:
 };
 
 class AudioWorkerThread:
-    public MediaSourceGrabberThread
+    public MediaSourceGrabberThread, AudioPlayback
 {
     Q_OBJECT;
 public:
@@ -154,18 +156,18 @@ public:
     bool IsPlaybackAvailable();
 
 public slots:
-    void ToggleMuteState(bool pState = true);
     void SetVolume(int pValue);
 
 private:
     /* audio playback */
     void ResetPlayback();
-    void OpenPlaybackDevice();
-    void ClosePlaybackDevice();
+    virtual void OpenPlaybackDevice();
+    virtual void ClosePlaybackDevice();
 
     virtual void DoPlayNewFile();
     virtual void DoSetCurrentDevice();
     virtual void DoResetMediaSource();
+    virtual void DoSeek();
     virtual void DoSyncClock();
 
     /* audio playback */
@@ -182,19 +184,12 @@ private:
     bool                mDropSamples;
     int                 mResultingSps;
     bool                mAudioOutMuted;
-    int                 mAudioPlaybackDelayCount;
-    bool				mEofReached;
-    bool				mPaused;
-    bool				mSourceAvailable;
     bool				mPlaybackAvailable;
-    float				mPausedPos;
 
     /* for forwarded interface to media source */
     int                 mDesiredInputChannel;
     bool				mStartPlaybackAsap;
     bool				mStopPlaybackAsap;
-    /* playback */
-    Homer::Multimedia::WaveOut *mWaveOut;
     /* A/V synch. */
     float               mUserAVDrift;
     float               mVideoDelayAVDrift;

@@ -57,20 +57,26 @@ using namespace std;
 
 Thread::Thread()
 {
-    Init();
+	mRunning = false;
+    mThreadHandle = 0;
+    LOG(LOG_VERBOSE, "Created thread object");
 }
 
 Thread::~Thread()
 {
-}
-
-void Thread::Init()
-{
-    LOG(LOG_VERBOSE, "Initialize thread object");
-    mThreadHandle = 0;
+    LOG(LOG_VERBOSE, "Destroying thread object");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+void Thread::CloseThread()
+{
+	#ifdef WIN32
+		if (mThreadHandle != NULL)
+			CloseHandle(mThreadHandle);
+	#endif
+	mThreadHandle = 0;
+}
 
 void Thread::Suspend(unsigned int pUSecs)
 {
@@ -656,8 +662,8 @@ void* Thread::StartThreadStaticWrapperUniversal(void* pThread)
     tThreadObject->mRunning = true;
     void* tResult = tThreadObject->mThreadMain(tThreadObject->mThreadArguments);
     tThreadObject->mRunning = false;
+    tThreadObject->CloseThread();
     LOGEX(Thread, LOG_VERBOSE, "Thread finished");
-    tThreadObject->Init();
     return tResult;
 }
 
@@ -669,8 +675,8 @@ void* Thread::StartThreadStaticWrapperRun(void* pThread)
     tThreadObject->mRunning = true;
     void* tResult = tThreadObject->Run(tThreadObject->mThreadArguments);
     tThreadObject->mRunning = false;
+    tThreadObject->CloseThread();
     LOGEX(Thread, LOG_VERBOSE, "Thread finished (Run method)");
-    tThreadObject->Init();
     return tResult;
 }
 
@@ -679,7 +685,16 @@ bool Thread::StartThread(void* pArgs)
     bool tResult = false;
 
     if (mThreadHandle != 0)
-        return false;
+    {
+    	LOG(LOG_VERBOSE, "Thread handle already initialized");
+    	return false;
+    }
+    	
+    if (IsRunning())
+    {
+    	LOG(LOG_VERBOSE, "Thread already running, start skipped");
+    	return false;
+    }
 
     mThreadMain = 0;
     mThreadArguments = pArgs;
@@ -726,7 +741,16 @@ bool Thread::StartThread(THREAD_MAIN pMain, void* pArgs)
 	bool tResult = false;
 
     if (mThreadHandle != 0)
-        return false;
+    {
+    	LOG(LOG_VERBOSE, "Thread handle already initialized");
+    	return false;
+    }
+
+    if (IsRunning())
+    {
+    	LOG(LOG_VERBOSE, "Thread already running, start skipped");
+    	return false;
+    }
 
     if (pMain == NULL)
         return false;
@@ -828,7 +852,7 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
                 LOG(LOG_INFO, "Waiting for end of thread failed because \"%s\"", strerror(tRes));
             else
             {
-                LOG(LOG_VERBOSE, "Got end signal and thread results at %p", tThreadResult);
+                LOG(LOG_VERBOSE, "Received thread end signal and got thread results at %p", tThreadResult);
                 tResult = true;
             }
         #endif
@@ -839,11 +863,16 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
             pTimeoutInMSecs = INFINITE;
         }
 
-        switch(WaitForSingleObject(mThreadHandle, (DWORD)pTimeoutInMSecs))
+        switch(WaitForSingleObject(mThreadHandle, (pTimeoutInMSecs == 0) ? INFINITE : pTimeoutInMSecs))
 		{
 			case WAIT_ABANDONED:
+				LOG(LOG_VERBOSE, "Mutex object wasn't released by owner yet");
+				break;
 			case WAIT_TIMEOUT:
+				LOG(LOG_VERBOSE, "Timeout of %d ms occurred", pTimeoutInMSecs);
+				break;
 			case WAIT_FAILED:
+				LOG(LOG_ERROR, "WaitForSingleObject failed with error code: \"%d\"", GetLastError());
 				break;
 			case WAIT_OBJECT_0:
 				tResult = true;

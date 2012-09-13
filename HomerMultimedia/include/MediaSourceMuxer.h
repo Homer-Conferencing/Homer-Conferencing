@@ -85,11 +85,18 @@ public:
     bool SetOutputStreamPreferences(std::string pStreamCodec, int pMediaStreamQuality, int pMaxPacketSize = 1300 /* works only with RTP packetizing */, bool pDoReset = false, int pResX = 352, int pResY = 288, bool pRtpActivated = true, int pMaxFps = 0);
     enum CodecID GetStreamCodecId() { return mStreamCodecId; } // used in RTSPListenerMediaSession
 
+    /* frame stats */
+    virtual bool SupportsDecoderFrameStatistics();
+    virtual int64_t DecodedIFrames();
+    virtual int64_t DecodedPFrames();
+    virtual int64_t DecodedBFrames();
+
     /* video grabbing control */
     virtual void SetVideoGrabResolution(int pTargetResX, int pTargetResY);
+    virtual void GetVideoGrabResolution(int &pResX, int &pResY);
     virtual GrabResolutions GetSupportedVideoGrabResolutions();
-    virtual void SetVideoFlipping(bool pHFlip, bool pVFlip);
     virtual void GetVideoSourceResolution(int &pResX, int &pResY);
+    virtual void SetVideoFlipping(bool pHFlip, bool pVFlip);
 
     /* grabbing control */
     virtual void StopGrabbing();
@@ -105,6 +112,7 @@ public:
     virtual void StopRecording();
     virtual bool SupportsRecording();
     virtual bool IsRecording();
+    virtual int64_t RecordingTime(); // in seconds
 
     /* activation control */
     void SetActivation(bool pState);
@@ -179,7 +187,7 @@ private:
     bool                mEncoderNeeded;
     MediaFifo           *mEncoderFifo;
     bool				mEncoderHasKeyFrame;
-    Mutex               mEncoderFifoMutex;
+    Mutex               mEncoderFifoAvailableMutex;
     /* device control */
     MediaSources        mMediaSources;
     Mutex               mMediaSourcesMutex;

@@ -309,7 +309,7 @@ void PacketStatistic::ClassifyStream(enum DataType pDataType, enum TransportType
         mStreamDataType = pDataType;
         mStreamTransportType = pTransportType;
         mStreamNetworkType = pNetworkType;
-        LOG(LOG_VERBOSE, "Classified stream as of data type %d, transport type is \"%s\", network type is \"%s\"", (int)pDataType, GetTransportTypeStr().c_str(), GetNetworkTypeStr().c_str());
+        LOG(LOG_VERBOSE, "Classified stream %s as of data type %d, transport type is \"%s\", network type is \"%s\"", mName.c_str() ,(int)pDataType, GetTransportTypeStr().c_str(), GetNetworkTypeStr().c_str());
     }
 }
 

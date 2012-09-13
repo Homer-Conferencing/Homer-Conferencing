@@ -34,6 +34,7 @@
 
 extern "C" {
 #include <libavcodec/avcodec.h>
+#include <libavfilter/avfilter.h>
 #include <libavformat/avformat.h>
 #include <libavformat/avio.h>
 #include <libavutil/avstring.h>
@@ -46,6 +47,10 @@ extern "C" {
 #include <libswscale/swscale.h>
 #include <libavdevice/avdevice.h>
 }
+
+#ifndef CODEC_FLAG2_SHOW_ALL
+#define CODEC_FLAG2_SHOW_ALL      0x00400000 ///< Show all frames before the first keyframe
+#endif
 
 #if LIBAVFORMAT_VERSION_MAJOR < 50
     #define AV_NEW_FORMAT_CONTEXT av_alloc_format_context
@@ -102,12 +107,12 @@ inline AVDictionaryEntry* HM_av_metadata_get(AVDictionary *pm, const char *key, 
     #endif
 }
 
-inline int HM_avcodec_open(AVCodecContext *avctx, AVCodec *codec)
+inline int HM_avcodec_open(AVCodecContext *avctx, AVCodec *codec, AVDictionary **options)
 {
     #if (LIBAVCODEC_VERSION_MAJOR < 54)
         return avcodec_open(avctx, codec);
     #else
-        return avcodec_open2(avctx, codec, NULL);
+        return avcodec_open2(avctx, codec, options);
     #endif
 }
 

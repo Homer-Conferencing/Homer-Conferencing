@@ -57,6 +57,9 @@ public:
     /* recording */
     virtual bool SupportsRecording();
 
+    /* video grabbing control */
+    //virtual GrabResolutions GetSupportedVideoGrabResolutions();
+
     /* grabbing control */
     virtual std::string GetCodecName();
     virtual std::string GetCodecLongName();

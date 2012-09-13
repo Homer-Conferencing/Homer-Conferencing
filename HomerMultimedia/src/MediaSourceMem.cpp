@@ -49,10 +49,15 @@ using namespace Homer::Base;
 MediaSourceMem::MediaSourceMem(bool pRtpActivated):
     MediaSource("MEM-IN:"), RTP()
 {
+	mResXLastGrabbedFrame = 0;
+	mResYLastGrabbedFrame = 0;
+	mWrappingHeaderSize= 0;
+	mSourceFrame = NULL;
+	mRGBFrame = NULL;
     mSourceType = SOURCE_MEMORY;
     mStreamPacketBuffer = (char*)malloc(MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE);
     mFragmentBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
-    mPacketNumber = 0;
+    mFragmentNumber = 0;
     mPacketStatAdditionalFragmentSize = 0;
     mOpenInputStream = false;
     mRtpActivated = pRtpActivated;
@@ -86,6 +91,9 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
     char *tBuffer = (char*)pBuffer;
     ssize_t tBufferSize = (ssize_t) pBufferSize;
 
+    #ifdef MSMEM_DEBUG_PACKETS
+        LOGEX(MediaSourceMem, LOG_VERBOSE, "Got a call for GetNextPacket() with a packet buffer at %p and size of %d bytes", pBuffer, pBufferSize);
+    #endif
     if (tMediaSourceMemInstance->mRtpActivated)
     {// rtp is active, fragmentation possible!
      // we have to parse every incoming network packet and create a frame packet from the network packets (fragments)
@@ -156,7 +164,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
                     tLastFragment = false;
                     tBuffer = (char*)pBuffer;
                     tBufferSize = (ssize_t) pBufferSize;
-                    LOGEX(MediaSourceMem, LOG_ERROR, "Stream buffer too small for input, dropping received stream");
+                    LOGEX(MediaSourceMem, LOG_ERROR, "Stream buffer of %d bytes too small for input, dropping received stream", pBufferSize);
                 }
             }else
             {
@@ -164,14 +172,21 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
                     LOGEX(MediaSourceMem, LOG_WARN, "Current RTP packet was reported as invalid by RTP parser, ignoring this data");
                 else
                 {
-                    #ifdef MSMEM_DEBUG_PACKETS
-                        LOGEX(MediaSourceMem, LOG_VERBOSE, "Sender report found in data stream");
-                    #endif
+                    int tPackets = 0;
+                    int tOctets = 0;
+                    if (tMediaSourceMemInstance->RtcpParse(tFragmentData, tFragmentDataSize, tPackets, tOctets))
+                    {
+						#ifdef MSMEM_DEBUG_SENDER_REPORTS
+                    		RTP::LogRtcpHeader((RtcpHeader*)tFragmentData);
+                    		LOGEX(MediaSourceMem, LOG_VERBOSE, "Sender reports: %d packets and %d bytes transmitted", tPackets, tOctets);
+						#endif
+                    }else
+                        LOGEX(MediaSourceMem, LOG_ERROR, "Unable to parse sender report in received RTCP packet");
                 }
             }
         }while(!tLastFragment);
     }else
-    {// rtp is inactive, no fragmentation!
+    {// rtp is inactive
         tMediaSourceMemInstance->ReadFragment(tBuffer, tBufferSize);
         if (tMediaSourceMemInstance->mGrabbingStopped)
         {
@@ -205,6 +220,14 @@ void MediaSourceMem::WriteFragment(char *pBuffer, int pBufferSize)
         AnnouncePacket((int)pBufferSize + mPacketStatAdditionalFragmentSize);
 	}
 	
+    if (mDecoderFifo->GetUsage() >= MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT - 4)
+    {
+        LOG(LOG_WARN, "Decoder FIFO is near overload situation in WriteFragmet(), deleting all stored frames");
+
+        // delete all stored frames: it is a better for the decoding!
+        mDecoderFifo->ClearFifo();
+    }
+
     mDecoderFifo->WriteFifo(pBuffer, pBufferSize);
 }
 
@@ -217,18 +240,23 @@ void MediaSourceMem::ReadFragment(char *pData, ssize_t &pDataSize)
     if (pDataSize > 0)
     {
         #ifdef MSMEM_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "Delivered packet with number %5u at %p with size: %5d", (unsigned int)++mPacketNumber, pData, (int)pDataSize);
+            LOG(LOG_VERBOSE, "Delivered fragment with number %5u at %p with size %5d towards decoder", (unsigned int)++mFragmentNumber, pData, (int)pDataSize);
         #endif
     }
 
     // is FIFO near overload situation?
     if (mDecoderFifo->GetUsage() >= MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT - 4)
     {
-        LOG(LOG_WARN, "Decoder FIFO is near overload situation, deleting all stored frames");
+        LOG(LOG_WARN, "Decoder FIFO is near overload situation in ReadFragment(), deleting all stored frames");
 
         // delete all stored frames: it is a better for the decoding!
         mDecoderFifo->ClearFifo();
     }
+}
+
+bool MediaSourceMem::SupportsDecoderFrameStatistics()
+{
+    return (mMediaType == MEDIA_VIDEO);
 }
 
 GrabResolutions MediaSourceMem::GetSupportedVideoGrabResolutions()
@@ -368,7 +396,7 @@ int MediaSourceMem::GetFragmentBufferSize()
 bool MediaSourceMem::SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset, bool pRtpActivated)
 {
     bool tResult = false;
-    enum CodecID tStreamCodecId = MediaSource::FfmpegName2FfmpegId(MediaSource::CodecName2FfmpegName(pStreamCodec));
+    enum CodecID tStreamCodecId = MediaSource::GetCodecIDFromGuiName(pStreamCodec);
 
     if ((mStreamCodecId != tStreamCodecId) ||
         (mRtpActivated != pRtpActivated))
@@ -397,10 +425,10 @@ bool MediaSourceMem::SetInputStreamPreferences(std::string pStreamCodec, bool pD
 
 bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 {
-    int                 tResult;
-    ByteIOContext       *tByteIoContext;
+    AVIOContext         *tIoContext;
     AVInputFormat       *tFormat;
-    AVCodec             *tCodec;
+
+    mMediaType = MEDIA_VIDEO;
 
     if (pFps > 29.97)
         pFps = 29.97;
@@ -409,300 +437,113 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 
     LOG(LOG_VERBOSE, "Trying to open the video source");
 
-    if (mMediaType == MEDIA_AUDIO)
-    {
-        LOG(LOG_ERROR, "Wrong media type detected");
-        return false;
-    }
-
     SVC_PROCESS_STATISTIC.AssignThreadName("Video-Grabber(MEM)");
 
     // set category for packet statistics
     ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 
-    if (mMediaSourceOpened)
-    {
-        LOG(LOG_ERROR, "Source already open");
-        return false;
-    }
-
-	// build corresponding "ByteIOContext"
-    tByteIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, /* read-only */0, this, GetNextPacket, NULL, NULL);
-
-    tByteIoContext->seekable = 0;
-    // limit packet size, otherwise ffmpeg will deliver unpredictable results ;)
-    tByteIoContext->max_packet_size = MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE;
-
     // there is no differentiation between H.263+ and H.263 when decoding an incoming video stream
     if (mStreamCodecId == CODEC_ID_H263P)
         mStreamCodecId = CODEC_ID_H263;
 
-    // find format
-    string tCodecName = FfmpegId2FfmpegFormat(mStreamCodecId);
-    // ffmpeg knows only the mpegvideo demuxer which is responsible for both MPEG1 and MPEG2 streams
-    if ((tCodecName == "mpeg1video") || (tCodecName == "mpeg2video"))
-        tCodecName = "mpegvideo";
-    LOG(LOG_VERBOSE, "Going to find input format for codec \"%s\"..", tCodecName.c_str());
-    tFormat = av_find_input_format(tCodecName.c_str());
+    // get a format description
+    if (!DescribeInput(mStreamCodecId, &tFormat))
+    	return false;
 
-    if (tFormat == NULL)
-    {
-        if (!mGrabbingStopped)
-            LOG(LOG_ERROR, "Couldn't find video input format for codec %d", mStreamCodecId);
-        return false;
-    }
-    LOG(LOG_VERBOSE, "Successfully found input format");
+	// build corresponding "AVIOContext"
+    CreateIOContext(mStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, GetNextPacket, NULL, this, &tIoContext);
 
-    // Open video stream
-    LOG(LOG_VERBOSE, "Going to open input stream..");
+    // open the input for the described format and via the provided I/O control
     mOpenInputStream = true;
-    if((tResult = av_open_input_stream(&mFormatContext, tByteIoContext, "", tFormat, NULL)) != 0)
-    {
-        if (!mGrabbingStopped)
-            LOG(LOG_ERROR, "Couldn't open video input stream because of \"%s\".", strerror(AVUNERROR(tResult)));
-        else
-            LOG(LOG_VERBOSE, "Grabbing was stopped meanwhile");
-        mOpenInputStream = false;
-        return false;
-    }
+    bool tRes = OpenInput("", tFormat, tIoContext);
     mOpenInputStream = false;
-    if (mGrabbingStopped)
-    {
-        LOG(LOG_VERBOSE, "Grabbing already stopped, will return immediately");
-        return false;
-    }
-    LOG(LOG_VERBOSE, "Successfully opened input stream");
+    if (!tRes)
+    	return false;
 
-    // limit frame analyzing time for ffmpeg internal codec auto detection
-    mFormatContext->max_analyze_duration = AV_TIME_BASE / 4; //  1/4 recorded seconds
-    // verbose timestamp debugging    mFormatContext->debug = FF_FDEBUG_TS;
+    // detect all available video/audio streams in the input
+    if (!DetectAllStreams())
+    	return false;
 
-    // Retrieve stream information
-    LOG(LOG_VERBOSE, "Going to find stream info..");
-    if ((tResult = av_find_stream_info(mFormatContext)) < 0)
-    {
-        if (!mGrabbingStopped)
-            LOG(LOG_ERROR, "Couldn't find video stream information because of \"%s\".", strerror(AVUNERROR(tResult)));
-        else
-            LOG(LOG_VERBOSE, "Grabbing was stopped meanwhile");
-        // Close the video stream
-        av_close_input_stream(mFormatContext);
-        return false;
-    }
-    LOG(LOG_VERBOSE, "Successfully found stream info");
+    // select the first matching stream according to mMediaType
+    if (!SelectStream())
+    	return false;
 
-    // Find the first video stream
-    mMediaStreamIndex = -1;
-    LOG(LOG_VERBOSE, "Going to find fitting stream..");
-    for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
-    {
-        if(mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO)
-        {
-            mMediaStreamIndex = i;
-            break;
-        }
-    }
-    if (mMediaStreamIndex == -1)
-    {
-        LOG(LOG_ERROR, "Couldn't find a video stream");
-        // Close the video stream
-        av_close_input_stream(mFormatContext);
-        return false;
-    }
+    // finds and opens the correct decoder
+    if (!OpenDecoder())
+    	return false;
 
-    // Dump information about device file
-    av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceMem (video)", false);
-    //LOG(LOG_VERBOSE, "    ..video stream found with ID: %d, number of available streams: %d", mMediaStreamIndex, mFormatContext->nb_streams);
-
-    // Get a pointer to the codec context for the video stream
-    mCodecContext = mFormatContext->streams[mMediaStreamIndex]->codec;
-
-    // set quant. parameters
-    mCodecContext->qmin = 1; // default is 2
-
-    // set grabbing resolution and frame-rate to the resulting ones delivered by opened video codec
-    mSourceResX = mCodecContext->width;
-    mSourceResY = mCodecContext->height;
-    mFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num / mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den;
-    LOG(LOG_INFO, "Detected frame rate: %f", mFrameRate);
-
-    // Find the decoder for the video stream
-    LOG(LOG_VERBOSE, "Going to find decoder..");
-    if((tCodec = avcodec_find_decoder(mCodecContext->codec_id)) == NULL)
-    {
-        LOG(LOG_ERROR, "Couldn't find a fitting video codec");
-        // Close the video stream
-        av_close_input_stream(mFormatContext);
-        return false;
-    }
-    LOG(LOG_VERBOSE, "Successfully found decoder");
-
-    LOG(LOG_VERBOSE, "Going to open video codec..");
-
-    // Open codec
-    if ((tResult = HM_avcodec_open(mCodecContext, tCodec)) < 0)
-    {
-        LOG(LOG_ERROR, "Couldn't open video codec because of \"%s\".", strerror(AVUNERROR(tResult)));
-        return false;
-    }
-    LOG(LOG_VERBOSE, "Successfully opened codec");
-
-    //HINT: we need to allow that input bit stream might be truncated at packet boundaries instead of frame boundaries, otherwise an UDP/TCP based transmission will fail because the decoder expects only complete packets as input
-    mCodecContext->flags2 |= CODEC_FLAG2_CHUNKS;
+    // overwrite FPS by the timebase of the selected codec
+    mFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->codec->time_base.den / mFormatContext->streams[mMediaStreamIndex]->codec->time_base.num;
 
     // allocate software scaler context
-    LOG(LOG_VERBOSE, "Going to create scaler context..");
+    LOG(LOG_VERBOSE, "Going to create video scaler context..");
     mScalerContext = sws_getContext(mCodecContext->width, mCodecContext->height, mCodecContext->pix_fmt, mTargetResX, mTargetResY, PIX_FMT_RGB32, SWS_BICUBIC, NULL, NULL, NULL);
 
     // seek to the current position and drop data received during codec auto detect phase
     av_seek_frame(mFormatContext, mMediaStreamIndex, mFormatContext->streams[mMediaStreamIndex]->cur_dts, AVSEEK_FLAG_ANY);
 
-    mMediaType = MEDIA_VIDEO;
+    // Allocate video frame for source and RGB format
+    if ((mSourceFrame = avcodec_alloc_frame()) == NULL)
+        return false;
+    if ((mRGBFrame = avcodec_alloc_frame()) == NULL)
+        return false;
+
     MarkOpenGrabDeviceSuccessful();
+
     mResXLastGrabbedFrame = 0;
     mResYLastGrabbedFrame = 0;
+    mDecodedIFrames = 0;
+    mDecodedPFrames = 0;
+    mDecodedBFrames = 0;
 
     return true;
 }
 
 bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
 {
-    int                 tResult;
-    ByteIOContext       *tByteIoContext;
+    AVIOContext       	*tIoContext;
     AVInputFormat       *tFormat;
-    AVCodec             *tCodec;
+
+    mMediaType = MEDIA_AUDIO;
 
     LOG(LOG_VERBOSE, "Trying to open the audio source");
-
-    if (mMediaType == MEDIA_VIDEO)
-    {
-        LOG(LOG_ERROR, "Wrong media type detected");
-        return false;
-    }
 
     SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Grabber(MEM)");
 
     // set category for packet statistics
     ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
 
-    if (mMediaSourceOpened)
-        return false;
+    // get a format description
+    if (!DescribeInput(mStreamCodecId, &tFormat))
+    	return false;
 
-	// build corresponding "ByteIOContex
-    tByteIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, /* read-only */0, this, GetNextPacket, NULL, NULL);
+	// build corresponding "AVIOContext"
+    CreateIOContext(mStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, GetNextPacket, NULL, this, &tIoContext);
 
-    tByteIoContext->seekable = 0;
-    // limit packet size
-    tByteIoContext->max_packet_size = MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE;
-
-    // find format
-    tFormat = av_find_input_format(FfmpegId2FfmpegFormat(mStreamCodecId).c_str());
-
-    if (tFormat == NULL)
-    {
-        if (!mGrabbingStopped)
-            LOG(LOG_ERROR, "Couldn't find audio input format for codec %d", mStreamCodecId);
-        return false;
-    }
-    LOG(LOG_VERBOSE, "Successfully found input format");
-
-    // Open audio stream
+    // open the input for the described format and via the provided I/O control
     mOpenInputStream = true;
-    if((tResult = av_open_input_stream(&mFormatContext, tByteIoContext, "", tFormat, NULL)) != 0)
-    {
-        if (!mGrabbingStopped)
-            LOG(LOG_ERROR, "Couldn't open audio input stream because of \"%s\".", strerror(AVUNERROR(tResult)));
-        else
-            LOG(LOG_VERBOSE, "Grabbing was stopped meanwhile");
-        mOpenInputStream = false;
-        return false;
-    }
+    bool tRes = OpenInput("", tFormat, tIoContext);
     mOpenInputStream = false;
-    if (mGrabbingStopped)
-    {
-        LOG(LOG_VERBOSE, "Grabbing already stopped, will return immediately");
-        return false;
-    }
-    LOG(LOG_VERBOSE, "Successfully opened input stream");
+    if (!tRes)
+    	return false;
 
-    // limit frame analyzing time for ffmpeg internal codec auto detection
-    mFormatContext->max_analyze_duration = AV_TIME_BASE / 4; //  1/4 recorded seconds
-    // verbose timestamp debugging    mFormatContext->debug = FF_FDEBUG_TS;
+    // detect all available video/audio streams in the input
+    if (!DetectAllStreams())
+    	return false;
 
-    // Retrieve stream information
-    if ((tResult = av_find_stream_info(mFormatContext)) < 0)
-    {
-        if (!mGrabbingStopped)
-            LOG(LOG_ERROR, "Couldn't find audio stream information because of \"%s\".", strerror(AVUNERROR(tResult)));
-        else
-            LOG(LOG_VERBOSE, "Grabbing was stopped meanwhile");
-        // Close the audio stream
-        av_close_input_stream(mFormatContext);
-        return false;
-    }
-    LOG(LOG_VERBOSE, "Successfully found stream info");
+    // select the first matching stream according to mMediaType
+    if (!SelectStream())
+    	return false;
 
-    // Find the first audio stream
-    mMediaStreamIndex = -1;
-    for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
-    {
-        if(mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
-        {
-            mMediaStreamIndex = i;
-            break;
-        }
-    }
-    if (mMediaStreamIndex == -1)
-    {
-        LOG(LOG_ERROR, "Couldn't find an audio stream");
-        // Close the audio stream
-        av_close_input_stream(mFormatContext);
-        return false;
-    }
-
-    // Dump information about device file
-    av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceMem (audio)", false);
-    //printf("    ..audio stream found with ID: %d, number of available streams: %d\n", mMediaStreamIndex, mFormatContext->nb_streams);
-
-    // Get a pointer to the codec context for the audio stream
-    mCodecContext = mFormatContext->streams[mMediaStreamIndex]->codec;
-
-    // force signed 16 bit sample format
-    //mCodecContext->sample_fmt = SAMPLE_FMT_S16;
-
-    // set sample rate and bit rate to the resulting ones delivered by opened audio codec
-    mSampleRate = mCodecContext->sample_rate;
     mStereo = pStereo;
 
-    // Find the decoder for the audio stream
-    if((tCodec = avcodec_find_decoder(mCodecContext->codec_id)) == NULL)
-    {
-        LOG(LOG_ERROR, "Couldn't find a fitting codec");
-        // Close the audio stream
-        av_close_input_stream(mFormatContext);
-        return false;
-    }
-
-    // Inform the codec that we can handle truncated bitstreams -- i.e.,
-    // bitstreams where frame boundaries can fall in the middle of packets
-//    if(tCodec->capabilities & CODEC_CAP_TRUNCATED)
-//        mCodecContext->flags |= CODEC_FLAG_TRUNCATED;
-
-    LOG(LOG_VERBOSE, "Going to open audio codec..");
-
-    // Open codec
-    if ((tResult = HM_avcodec_open(mCodecContext, tCodec)) < 0)
-    {
-        LOG(LOG_ERROR, "Couldn't open audio codec because of \"%s\".", strerror(AVUNERROR(tResult)));
-        // Close the audio stream
-        av_close_input_stream(mFormatContext);
-        return false;
-    }
+    // finds and opens the correct decoder
+    if (!OpenDecoder())
+    	return false;
 
     // seek to the current position and drop data received during codec auto detect phase
     av_seek_frame(mFormatContext, mMediaStreamIndex, mFormatContext->streams[mMediaStreamIndex]->cur_dts, AVSEEK_FLAG_ANY);
 
-    mMediaType = MEDIA_AUDIO;
     MarkOpenGrabDeviceSuccessful();
 
     return true;
@@ -728,7 +569,11 @@ bool MediaSourceMem::CloseGrabDevice()
         avcodec_close(mCodecContext);
 
         // Close the video stream
-        av_close_input_stream(mFormatContext);
+        HM_close_input(mFormatContext);
+
+        // Free the frames
+        av_free(mRGBFrame);
+        av_free(mSourceFrame);
 
         LOG(LOG_INFO, "...closed");
 
@@ -739,6 +584,9 @@ bool MediaSourceMem::CloseGrabDevice()
     mGrabbingStopped = false;
     mMediaType = MEDIA_UNKNOWN;
 
+    // reset the FIFO to have a clean FIFO next time we open the media source again
+    mDecoderFifo->ClearFifo();
+
     ResetPacketStatistic();
 
     return tResult;
@@ -746,12 +594,13 @@ bool MediaSourceMem::CloseGrabDevice()
 
 int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk)
 {
-    AVFrame             *tSourceFrame = NULL, *tRGBFrame = NULL;
     AVPacket            tPacket;
     int                 tFrameFinished = 0;
     int                 tBytesDecoded = 0;
 
-    //LOG(LOG_VERBOSE, "Trying to grab frame");
+    #ifdef MSMEM_DEBUG_PACKETS
+        LOG(LOG_VERBOSE, "Trying to grab frame");
+    #endif
 
     // lock grabbing
     mGrabMutex.lock();
@@ -765,7 +614,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
         // acknowledge failed
         MarkGrabChunkFailed(GetMediaTypeStr() + " grab buffer is NULL");
 
-        return -1;
+        return GRAB_RES_INVALID;
     }
 
     if (!mMediaSourceOpened)
@@ -776,7 +625,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
         // acknowledge failed
         MarkGrabChunkFailed(GetMediaTypeStr() + " source is closed");
 
-        return -1;
+        return GRAB_RES_EOF;
     }
 
     if (mGrabbingStopped)
@@ -787,7 +636,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
         // acknowledge failed
         MarkGrabChunkFailed(GetMediaTypeStr() + " source is paused");
 
-        return -1;
+        return GRAB_RES_INVALID;
     }
 
     // read next frame from video source - blocking
@@ -802,7 +651,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
             MarkGrabChunkFailed("couldn't read next " + GetMediaTypeStr() + " frame");
         }
 
-        return -1;
+        return GRAB_RES_INVALID;
     }
 
     #ifdef MSMEM_DEBUG_PACKETS
@@ -825,46 +674,36 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
             case MEDIA_VIDEO:
                     if ((!pDropChunk) || (mRecording))
                     {
-//                        #ifdef MSMEM_DEBUG_PACKETS
-//                            LOG(LOG_VERBOSE, "Decode video frame..");
-//                        #endif
+                        #ifdef MSMEM_DEBUG_PACKETS
+                            LOG(LOG_VERBOSE, "Decode video frame..");
+                        #endif
 
-                        // Allocate video frame for source and RGB format
-                        if ((tSourceFrame = avcodec_alloc_frame()) == NULL)
-                        {
-                            // unlock grabbing
-                            mGrabMutex.unlock();
-
-                            // acknowledge failed"
-                            MarkGrabChunkFailed("out of video memory");
-
-                            return -1;
-                        }
-
-                        // Decode the next chunk of data
-                        tBytesDecoded = HM_avcodec_decode_video(mCodecContext, tSourceFrame, &tFrameFinished, &tPacket);
+                        // ############################
+                        // ### DECODE FRAME
+                        // ############################
+                        tBytesDecoded = HM_avcodec_decode_video(mCodecContext, mSourceFrame, &tFrameFinished, &tPacket);
 
                         // emulate set FPS
-                        tSourceFrame->pts = FpsEmulationGetPts();
+                        mSourceFrame->pts = FpsEmulationGetPts();
 
-//                        #ifdef MSMEM_DEBUG_PACKETS
-//                            LOG(LOG_VERBOSE, "    ..with result(!= 0 => OK): %d bytes: %i\n", tFrameFinished, tBytesDecoded);
-//                        #endif
+                        #ifdef MSMEM_DEBUG_PACKETS
+                            LOG(LOG_VERBOSE, "    ..with result(!= 0 => OK): %d bytes: %i\n", tFrameFinished, tBytesDecoded);
+                        #endif
 
                         // log lost packets: difference between currently received frame number and the number of locally processed frames
                         //HINT: if RTP is active we rely on RTP parser, which automatically calls SetLostPacketCount()
                         if (!mRtpActivated)
-                            SetLostPacketCount(tSourceFrame->coded_picture_number - mChunkNumber);
+                            SetLostPacketCount(mSourceFrame->coded_picture_number - mChunkNumber);
 
-//                        #ifdef MSMEM_DEBUG_PACKETS
-//                            LOG(LOG_VERBOSE, "Video frame coded: %d internal frame number: %d", tSourceFrame->coded_picture_number, mChunkNumber);
-//                        #endif
+                        #ifdef MSMEM_DEBUG_PACKETS
+                           LOG(LOG_VERBOSE, "Video frame coded: %d internal frame number: %d", mSourceFrame->coded_picture_number, mChunkNumber);
+                        #endif
 
 
                         // do we have a video codec change at sender side?
                         if (mStreamCodecId != mCodecContext->codec_id)
                         {
-                            LOG(LOG_INFO, "Incoming video stream changed codec from %s(%d) to %s(%d)", FfmpegId2FfmpegFormat(mStreamCodecId).c_str(), mStreamCodecId, FfmpegId2FfmpegFormat(mCodecContext->codec_id).c_str(), mCodecContext->codec_id);
+                            LOG(LOG_INFO, "Incoming video stream changed codec from %s(%d) to %s(%d)", GetFormatName(mStreamCodecId).c_str(), mStreamCodecId, GetFormatName(mCodecContext->codec_id).c_str(), mCodecContext->codec_id);
 
                             LOG(LOG_ERROR, "Unsupported video codec change");
 
@@ -897,102 +736,90 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                         }
                     }
 
-                    // re-encode the frame and write it to file
-                    if (mRecording)
-                        RecordFrame(tSourceFrame);
-
-                    if (!pDropChunk)
+                    // do we have valid data from video decoder?
+                    if ((tFrameFinished != 0) && (tBytesDecoded >= 0))
                     {
-//                        #ifdef MSMEM_DEBUG_PACKETS
-//                            LOG(LOG_VERBOSE, "Convert video frame..");
-//                        #endif
+                        // ############################
+                        // ### ANNOUNCE FRAME (statistics)
+                        // ############################
+                        AnnounceFrame(mSourceFrame);
 
-                        // Allocate video frame for RGB format
-                        if ((tRGBFrame = avcodec_alloc_frame()) == NULL)
+                        // ############################
+                        // ### RECORD FRAME
+                        // ############################
+                        if (mRecording)
+                            RecordFrame(mSourceFrame);
+
+                        // ############################
+                        // ### SCALE FRAME (CONVERT)
+                        // ############################
+                        if (!pDropChunk)
                         {
-                            // Free the YUV frame
-                            if (tSourceFrame != NULL)
-                                av_free(tSourceFrame);
+                            #ifdef MSMEM_DEBUG_PACKETS
+                                LOG(LOG_VERBOSE, "Convert video frame..");
+                            #endif
 
-                            // free packet buffer
-                            av_free_packet(&tPacket);
+                            // Assign appropriate parts of buffer to image planes in mRGBFrame
+                            avpicture_fill((AVPicture *)mRGBFrame, (uint8_t *)pChunkBuffer, PIX_FMT_RGB32, mTargetResX, mTargetResY);
 
-                            // unlock grabbing
-                            mGrabMutex.unlock();
+                            HM_sws_scale(mScalerContext, mSourceFrame->data, mSourceFrame->linesize, 0, mCodecContext->height, mRGBFrame->data, mRGBFrame->linesize);
 
-                            // acknowledge failed"
-                            MarkGrabChunkFailed("out of video memory");
+                            #ifdef MSMEM_DEBUG_PACKETS
+                                LOG(LOG_VERBOSE, "New video frame..");
+                                LOG(LOG_VERBOSE, "      ..key frame: %d", mSourceFrame->key_frame);
+                                switch(mSourceFrame->pict_type)
+                                {
+                                        case AV_PICTURE_TYPE_I:
+                                            LOG(LOG_VERBOSE, "      ..picture type: i-frame");
+                                            break;
+                                        case AV_PICTURE_TYPE_P:
+                                            LOG(LOG_VERBOSE, "      ..picture type: p-frame");
+                                            break;
+                                        case AV_PICTURE_TYPE_B:
+                                            LOG(LOG_VERBOSE, "      ..picture type: b-frame");
+                                            break;
+                                        default:
+                                            LOG(LOG_VERBOSE, "      ..picture type: %d", mSourceFrame->pict_type);
+                                            break;
+                                }
+                                LOG(LOG_VERBOSE, "      ..pts: %ld", mSourceFrame->pts);
+                                LOG(LOG_VERBOSE, "      ..coded pic number: %d", mSourceFrame->coded_picture_number);
+                                LOG(LOG_VERBOSE, "      ..display pic number: %d", mSourceFrame->display_picture_number);
+                            #endif
 
-                            return -1;
+                            // return size of decoded frame
+                            pChunkSize = avpicture_get_size(PIX_FMT_RGB32, mTargetResX, mTargetResY) * sizeof(uint8_t);
                         }
+                    }else
+                    {// decoder delivered no valid data
 
-                        // Assign appropriate parts of buffer to image planes in tRGBFrame
-                        avpicture_fill((AVPicture *)tRGBFrame, (uint8_t *)pChunkBuffer, PIX_FMT_RGB32, mTargetResX, mTargetResY);
+                        // unlock grabbing
+                        mGrabMutex.unlock();
 
-                        // convert frame from YUV to RGB format
-                        if ((tFrameFinished != 0) && (tBytesDecoded >= 0))
+                        // only print debug output if it is not "operation not permitted"
+                        //if ((tBytesDecoded < 0) && (AVUNERROR(tBytesDecoded) != EPERM))
+
+                        if (tBytesDecoded != 0)
                         {
-                            HM_sws_scale(mScalerContext, tSourceFrame->data, tSourceFrame->linesize, 0, mCodecContext->height, tRGBFrame->data, tRGBFrame->linesize);
-                        }else
-                        {
-                            // unlock grabbing
-                            mGrabMutex.unlock();
-
-                            // only print debug output if it is not "operation not permitted"
-                            //if ((tBytesDecoded < 0) && (AVUNERROR(tBytesDecoded) != EPERM))
-
                             // acknowledge failed"
                             if (tPacket.size != tBytesDecoded)
                                 MarkGrabChunkFailed("couldn't decode video frame-" + toString(strerror(AVUNERROR(tBytesDecoded))) + "(" + toString(AVUNERROR(tBytesDecoded)) + ")");
                             else
                                 MarkGrabChunkFailed("couldn't decode video frame");
+                        }else
+                        {
+                            LOG(LOG_VERBOSE, "Video decoder delivered no frame");
 
-                            // Free the RGB frame
-                            av_free(tRGBFrame);
-
-                            // Free the YUV frame
-                            if (tSourceFrame != NULL)
-                                av_free(tSourceFrame);
-
-                            // free packet buffer
-                            av_free_packet(&tPacket);
-
-                            return -1;
+                            MarkGrabChunkSuccessful(mChunkNumber);
                         }
-                        #ifdef MSMEM_DEBUG_PACKETS
-                            LOG(LOG_VERBOSE, "New video frame..");
-                            LOG(LOG_VERBOSE, "      ..key frame: %d", tSourceFrame->key_frame);
-                            switch(tSourceFrame->pict_type)
-                            {
-                                    case FF_I_TYPE:
-                                        LOG(LOG_VERBOSE, "      ..picture type: i-frame");
-                                        break;
-                                    case FF_P_TYPE:
-                                        LOG(LOG_VERBOSE, "      ..picture type: p-frame");
-                                        break;
-                                    case FF_B_TYPE:
-                                        LOG(LOG_VERBOSE, "      ..picture type: b-frame");
-                                        break;
-                                    default:
-                                        LOG(LOG_VERBOSE, "      ..picture type: %d", tSourceFrame->pict_type);
-                                        break;
-                            }
-                            LOG(LOG_VERBOSE, "      ..pts: %ld", tSourceFrame->pts);
-                            LOG(LOG_VERBOSE, "      ..coded pic number: %d", tSourceFrame->coded_picture_number);
-                            LOG(LOG_VERBOSE, "      ..display pic number: %d", tSourceFrame->display_picture_number);
-                        #endif
 
-                        // return size of decoded frame
-                        pChunkSize = avpicture_get_size(PIX_FMT_RGB32, mTargetResX, mTargetResY) * sizeof(uint8_t);
+                        // free packet buffer
+                        av_free_packet(&tPacket);
 
-                        // Free the RGB frame
-                        av_free(tRGBFrame);
+                        pChunkSize = 0;
+
+                        return GRAB_RES_INVALID;
                     }
-
-                    // Free the YUV frame
-                    if (tSourceFrame != NULL)
-                        av_free(tSourceFrame);
-
                     break;
 
             case MEDIA_AUDIO:
@@ -1023,7 +850,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                             // acknowledge failed"
                             MarkGrabChunkFailed("couldn't decode audio frame because - \"" + toString(strerror(AVUNERROR(tBytesDecoded))) + "(" + toString(AVUNERROR(tBytesDecoded)) + ")\"");
 
-                            return -1;
+                            return GRAB_RES_INVALID;
                         }
                     }
                     break;

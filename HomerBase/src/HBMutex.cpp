@@ -29,6 +29,12 @@
 #include <HBMutex.h>
 #include <HBThread.h>
 
+#ifdef APPLE
+// to get current time stamp
+#include <mach/clock.h>
+#include <mach/mach.h>
+#endif
+
 namespace Homer { namespace Base {
 
 using namespace std;
@@ -37,6 +43,7 @@ using namespace std;
 
 Mutex::Mutex()
 {
+    mName = "";
     mOwnerThreadId = -1;
     bool tResult = false;
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
@@ -70,7 +77,12 @@ bool Mutex::lock()
     int tThreadId = Thread::GetTId();
 
     if ((mOwnerThreadId != -1) && (mOwnerThreadId == tThreadId))
-        LOG(LOG_ERROR, "Recursive locking in thread %d detected", tThreadId);
+    {
+        if (mName != "")
+            LOG(LOG_ERROR, "Recursive locking of mutex \"%s\" in thread %d detected", mName.c_str(), tThreadId);
+        else
+            LOG(LOG_ERROR, "Recursive locking in thread %d detected", tThreadId);
+    }
 
     mOwnerThreadId = tThreadId;
 
@@ -94,33 +106,107 @@ bool Mutex::unlock()
 	#endif
 }
 
-bool Mutex::tryLock()
+// OSX/BSD don't support pthread_mutex_timedlock() and clock_gettime(), fall back to simple pthread_mutex_lock()
+#if (defined(APPLE) || defined(BSD)) && (!defined(pthread_mutex_timedlock))
+	#define pthread_mutex_timedlock(mutex, time)	pthread_mutex_lock(mutex)
+#endif
+
+bool Mutex::tryLock(int pMSecs)
 {
 	bool tResult = false;
-    #if defined(LINUX) || defined(APPLE) || defined(BSD)
-		switch(int tRes = pthread_mutex_trylock(&mMutex))
-		{
-			case EDEADLK:
-				LOG(LOG_ERROR, "Lock already held by calling thread");
-				break;
-			case EBUSY: // lock can't be obtained because it is busy
-				break;
-			case EINVAL:
-				LOG(LOG_ERROR, "Lock was found in uninitialized state");
-				break;
-			case EFAULT:
-				LOG(LOG_ERROR, "Invalid lock pointer was given");
-				break;
-			case 0: // lock was free and is obtained now
-				tResult = true;
-				break;
-			default:
-				LOG(LOG_ERROR, "Error occurred while trying to get lock: code %d", tRes);
-				break;
-		}
+	#if defined(LINUX) || defined(APPLE) || defined(BSD)
+        if (pMSecs > 0)
+        {
+			struct timespec tTimeout;
+
+			#if defined(LINUX) || defined(BSD)
+				if (clock_gettime(CLOCK_REALTIME, &tTimeout) == -1)
+					LOG(LOG_ERROR, "Failed to get time from clock");
+			#endif
+			#if defined(APPLE)
+				// apple specific implementation for clock_gettime()
+				clock_serv_t tCalenderClock;
+				mach_timespec_t tMachTimeSpec;
+				host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &tCalenderClock);
+				clock_get_time(tCalenderClock, &tMachTimeSpec);
+				mach_port_deallocate(mach_task_self(), tCalenderClock);
+				tTimeout.tv_sec = tMachTimeSpec.tv_sec;
+				tTimeout.tv_nsec = tMachTimeSpec.tv_nsec;
+			#endif
+			int tTime = pMSecs;
+
+			// add complete seconds if pTime is bigger than 1 sec
+			if (tTime >= 1000)
+			{
+				tTimeout.tv_sec += tTime / 1000;
+				tTime %= 1000;
+			}
+			tTimeout.tv_nsec += tTime * 1000 * 1000;
+			if (tTimeout.tv_nsec > (int64_t) 1000 * 1000 * 1000)
+			{
+				int64_t tAddSecs = tTimeout.tv_nsec / 1000 / 1000 / 1000;
+				int64_t tNanoDiff = tAddSecs * 1000 * 1000 * 1000;
+				int64_t tNanoSecs = tTimeout.tv_nsec - tNanoDiff;
+				tTimeout.tv_nsec = tNanoSecs;
+				tTimeout.tv_sec += tAddSecs;
+				#ifdef HBC_DEBUG_TIMED
+					LOG(LOG_WARN, "Mutex ns part of timeout exceeds by %ld seconds", tAddSecs);
+				#endif
+			}
+
+			switch(pthread_mutex_timedlock(&mMutex, &tTimeout))
+			{
+				case EDEADLK:
+					#ifdef HB_DEBUG_MUTEX
+						printf("Lock already held by calling thread.\n");
+					#endif
+					break;
+				case EBUSY: // lock can't be obtained because it is busy
+					break;
+				case EINVAL:
+					LOG(LOG_ERROR, "Lock was found in uninitialized state or timeout is invalid");
+					break;
+				case EFAULT:
+					LOG(LOG_ERROR, "Invalid lock pointer was given");
+					break;
+				case ETIMEDOUT:
+					#ifdef HB_DEBUG_MUTEX
+						printf("Lock couldn't be obtained in given time.\n");
+					#endif
+					break;
+				case 0: // lock was free and is obtained now
+					tResult = true;
+					break;
+				default:
+					LOG(LOG_ERROR, "Error occurred while trying to get lock: code %d", tResult);
+					break;
+			}
+        }else
+        {
+    		switch(int tRes = pthread_mutex_trylock(&mMutex))
+    		{
+    			case EDEADLK:
+    				LOG(LOG_ERROR, "Lock already held by calling thread");
+    				break;
+    			case EBUSY: // lock can't be obtained because it is busy
+    				break;
+    			case EINVAL:
+    				LOG(LOG_ERROR, "Lock was found in uninitialized state");
+    				break;
+    			case EFAULT:
+    				LOG(LOG_ERROR, "Invalid lock pointer was given");
+    				break;
+    			case 0: // lock was free and is obtained now
+    				tResult = true;
+    				break;
+    			default:
+    				LOG(LOG_ERROR, "Error occurred while trying to get lock: code %d", tRes);
+    				break;
+    		}
+        }
 	#endif
 	#if defined(WIN32) ||defined(WIN64)
-		switch(WaitForSingleObject(mMutex, (DWORD)0))
+		switch(WaitForSingleObject(mMutex, (pMSecs == 0) ? INFINITE : pMSecs))
 		{
 			case WAIT_ABANDONED:
 			case WAIT_TIMEOUT:
@@ -134,91 +220,9 @@ bool Mutex::tryLock()
 	return tResult;
 }
 
-
-bool Mutex::tryLock(int pMSecs)
+void Mutex::AssignName(string pName)
 {
-	bool tResult = false;
-    #if defined(APPLE) || defined(BSD)
-	    // OSX/BSD don't support pthread_mutex_timedlock() and clock_gettime(), fall back to simple pthread_mutex_trylock()
-        switch(pthread_mutex_trylock(&mMutex))
-        {
-            case EDEADLK:
-                LOG(LOG_ERROR, "Lock already held by calling thread");
-                break;
-            case EBUSY: // lock can't be obtained because it is busy
-                break;
-            case EINVAL:
-                LOG(LOG_ERROR, "Lock was found in uninitialized state");
-                break;
-            case EFAULT:
-                LOG(LOG_ERROR, "Invalid lock pointer was given");
-                break;
-            case 0: // lock was free and is obtained now
-                tResult = true;
-                break;
-            default:
-                LOG(LOG_ERROR, "Error occurred while trying to get lock: code %d", tResult);
-                break;
-        }
-    #endif
-	#ifdef LINUX
-		struct timespec tTimeout;
-
-		if (clock_gettime(CLOCK_REALTIME, &tTimeout) == -1)
-			LOG(LOG_ERROR, "Failed to get time from clock");
-
-		// add msecs to current time stamp
-		tTimeout.tv_nsec += pMSecs * 1000 * 1000;
-		long int tSecAdd = (tTimeout.tv_nsec / (1000 * 1000 * 1000));
-		tTimeout.tv_sec += tSecAdd;
-		tTimeout.tv_nsec %= 1000 * 1000 * 1000;
-        #ifdef HB_DEBUG_MUTEX
-            LOG(LOG_VERBOSE, "Current    time: %8ld:%09ld", tTimeout.tv_sec, tTimeout.tv_nsec);
-            LOG(LOG_VERBOSE, "      wait time: %14d", pMSecs);
-            LOG(LOG_VERBOSE, "       add sec.: %10d", tSecAdd);
-            LOG(LOG_VERBOSE, "Locks stop time: %8ld:%09ld", tTimeout.tv_sec, tTimeout.tv_nsec);
-        #endif
-		switch(pthread_mutex_timedlock(&mMutex, &tTimeout))
-		{
-			case EDEADLK:
-                #ifdef HB_DEBUG_MUTEX
-                    printf("Lock already held by calling thread.\n");
-                #endif
-				break;
-			case EBUSY: // lock can't be obtained because it is busy
-				break;
-			case EINVAL:
-				LOG(LOG_ERROR, "Lock was found in uninitialized state or timeout is invalid");
-				break;
-			case EFAULT:
-				LOG(LOG_ERROR, "Invalid lock pointer was given");
-				break;
-			case ETIMEDOUT:
-                #ifdef HB_DEBUG_MUTEX
-				    printf("Lock couldn't be obtained in given time.\n");
-                #endif
-				break;
-			case 0: // lock was free and is obtained now
-				tResult = true;
-				break;
-			default:
-				LOG(LOG_ERROR, "Error occurred while trying to get lock: code %d", tResult);
-				break;
-		}
-	#endif
-	#if defined(WIN32) ||defined(WIN64)
-		switch(WaitForSingleObject(mMutex, (DWORD)pMSecs))
-		{
-			case WAIT_ABANDONED:
-			case WAIT_TIMEOUT:
-			case WAIT_FAILED:
-				break;
-			case WAIT_OBJECT_0:
-				tResult = true;
-				break;
-		}
-	#endif
-	return tResult;
+    mName = pName;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

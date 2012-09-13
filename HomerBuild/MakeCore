@@ -42,9 +42,9 @@ endif
 
 # Options for cmake: set relocation directory, deactivate special warnings, for MSys32/MinGW32 environment Unix makefiles are created by default
 ifeq ($(BUILD_OS),msys)
-	CMAKE_OPTIONS= -DCMAKE_SKIP_RPATH:BOOL=ON -DRELOCATION_DIR=../../../../bin/ -Wno-dev -G "MSYS Makefiles" $(OPTION_INSTALL_PREFIX) ${OPTION_INSTALL_LIBDIR} ${OPTION_INSTALL_DATADIR} ${OPTION_VERBOSE}
+	CMAKE_OPTIONS= -DRELOCATION_DIR=../../../../bin/ -Wno-dev -G "MSYS Makefiles" $(OPTION_INSTALL_PREFIX) ${OPTION_INSTALL_LIBDIR} ${OPTION_INSTALL_DATADIR} ${OPTION_VERBOSE}
 else
-	CMAKE_OPTIONS= -DCMAKE_SKIP_RPATH:BOOL=ON -DRELOCATION_DIR=../../../../bin/ -Wno-dev $(OPTION_INSTALL_PREFIX) ${OPTION_INSTALL_LIBDIR} ${OPTION_INSTALL_DATADIR} ${OPTION_VERBOSE}
+	CMAKE_OPTIONS= -DRELOCATION_DIR=../../../../bin/ -Wno-dev $(OPTION_INSTALL_PREFIX) ${OPTION_INSTALL_LIBDIR} ${OPTION_INSTALL_DATADIR} ${OPTION_VERBOSE}
 endif
 	
 ##############################################################
@@ -72,28 +72,28 @@ $(TOP_DIR)/$(BUILD_DIR_RELEASE32)/Makefile:
 	@rm -rf CMakeFiles
 	@rm -f CMakeCache.txt
 	@mkdir -p $(TOP_DIR)/$(BUILD_DIR_RELEASE32)
-	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE32) && $(LCMAKE) $(CMAKE_OPTIONS) -DBUILD=Release ../.. -DARCH_BITS="32"
+	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE32) && cmake -DCMAKE_SKIP_RPATH:BOOL=ON $(CMAKE_OPTIONS) -DBUILD=Release ../.. -DARCH_BITS="32"
 
 $(TOP_DIR)/$(BUILD_DIR_RELEASE)/Makefile:
 	@echo "##### Creating RELEASE build system in $(TOP_DIR) #####"
 	@rm -rf CMakeFiles
 	@rm -f CMakeCache.txt
 	@mkdir -p $(TOP_DIR)/$(BUILD_DIR_RELEASE)
-	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE) && cmake $(CMAKE_OPTIONS) -DBUILD=Release ../..
+	@cd $(TOP_DIR)/$(BUILD_DIR_RELEASE) && cmake -DCMAKE_SKIP_RPATH:BOOL=ON $(CMAKE_OPTIONS) -DBUILD=Release ../..
 
 $(TOP_DIR)/$(BUILD_DIR_DEFAULT)/Makefile:
 	@echo "##### Creating DEFAULT build system in $(TOP_DIR) #####"
 	@rm -rf CMakeFiles
 	@rm -f CMakeCache.txt
 	@mkdir -p $(TOP_DIR)/$(BUILD_DIR_DEFAULT)
-	@cd $(TOP_DIR)/$(BUILD_DIR_DEFAULT) && $(LCMAKE) $(CMAKE_OPTIONS) -DBUILD=Default ../..
+	@cd $(TOP_DIR)/$(BUILD_DIR_DEFAULT) && cmake -DCMAKE_SKIP_RPATH:BOOL=OFF $(CMAKE_OPTIONS) -DBUILD=Default ../..
 
 $(TOP_DIR)/$(BUILD_DIR_DEBUG)/Makefile:
 	@echo "##### Creating DEBUG build system in $(TOP_DIR) #####"
 	@rm -rf CMakeFiles
 	@rm -f CMakeCache.txt
 	@mkdir -p $(TOP_DIR)/$(BUILD_DIR_DEBUG)
-	@cd $(TOP_DIR)/$(BUILD_DIR_DEBUG) && $(LCMAKE) $(CMAKE_OPTIONS) -DBUILD=Debug ../..
+	@cd $(TOP_DIR)/$(BUILD_DIR_DEBUG) && cmake -DCMAKE_SKIP_RPATH:BOOL=ON $(CMAKE_OPTIONS) -DBUILD=Debug ../..
 
 ##############################################################
 # Makefile targets 

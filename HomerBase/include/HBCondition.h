@@ -56,7 +56,7 @@ public:
 
     virtual ~Condition( );
 
-    bool Wait(Mutex *pMutex = NULL, int pTime = 0); //in ms
+    bool Wait(Mutex *pMutex = NULL, int pMSecs = 0); //in ms
     bool SignalOne();
     bool SignalAll();
     bool Reset();

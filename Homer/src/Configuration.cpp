@@ -35,6 +35,9 @@
 #include <QDir>
 #include <QDesktopWidget>
 #include <QApplication>
+#ifdef APPLE
+	#include <CoreFoundation/CoreFoundation.h>
+#endif
 
 namespace Homer { namespace Gui {
 
@@ -49,9 +52,11 @@ Configuration::Configuration()
 {
     mAudioOutputEnabled = true;
     mAudioCaptureEnabled = true;
+    mConferencingEnabled = true;
     mDebuggingEnabled = false;
     mQSettings = new QSettings("Homer Software", "Homer");
     LOG(LOG_VERBOSE, "Created");
+    LOG(LOG_VERBOSE, "Program settings are stored in: %s", mQSettings->fileName().toStdString().c_str());
 }
 
 Configuration::~Configuration()
@@ -67,9 +72,29 @@ Configuration& Configuration::GetInstance()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void Configuration::Init(string pAbsBinPath)
+void Configuration::Init(QString pAbsBinPath)
 {
     mAbsBinPath = pAbsBinPath;
+	#ifdef APPLE
+		CFURLRef tAppUrlRef = CFBundleCopyBundleURL(CFBundleGetMainBundle());
+		CFStringRef tMacPath = CFURLCopyFileSystemPath(tAppUrlRef, kCFURLPOSIXPathStyle);
+		const char *tPath = CFStringGetCStringPtr(tMacPath, CFStringGetSystemEncoding());
+		LOG(LOG_VERBOSE, "Path to OSX bundle: %s", tPath);
+		CFRelease(tAppUrlRef);
+		CFRelease(tMacPath);
+		if (tPath != NULL)
+		{
+			mAbsBinPath = QString(tPath) + "/Contents/Resources/";
+		}
+	#endif
+}
+
+void Configuration::SetDefaults()
+{
+	LOG(LOG_VERBOSE, "Setting program defaults");
+	printf("Setting program defaults\n");
+	mQSettings->clear();
+	Sync();
 }
 
 void Configuration::SetConferenceAvailability(QString pState)
@@ -260,6 +285,13 @@ void Configuration::SetAutoUpdateCheck(bool pActive)
 {
     mQSettings->beginGroup("Global");
     mQSettings->setValue("AutomaticUpdateCheck", pActive);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetFeatureConferencing(bool pActive)
+{
+    mQSettings->beginGroup("Global");
+    mQSettings->setValue("FeatureConferencing", pActive);
     mQSettings->endGroup();
 }
 
@@ -515,6 +547,48 @@ void Configuration::SetNatSupportActivation(bool pActivation)
     mQSettings->endGroup();
 }
 
+void Configuration::SetStartSoundFile(QString pSoundFile)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("StartSoundFile", pSoundFile);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetStartSound(bool pActivation)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("StartSound", pActivation);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetStartSystray(bool pActivation)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("StartSystray", pActivation);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetStopSoundFile(QString pSoundFile)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("StopSoundFile", pSoundFile);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetStopSound(bool pActivation)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("StopSound", pActivation);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetStopSystray(bool pActivation)
+{
+    mQSettings->beginGroup("Notification");
+    mQSettings->setValue("StopSystray", pActivation);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetImSoundFile(QString pSoundFile)
 {
     mQSettings->beginGroup("Notification");
@@ -695,7 +769,7 @@ enum TransportType Configuration::GetSipListenerTransport()
 
 QString Configuration::GetBinaryPath()
 {
-	return QString(mAbsBinPath.c_str());
+	return mAbsBinPath;
 }
 
 QString Configuration::GetConferenceAvailability()
@@ -705,7 +779,7 @@ QString Configuration::GetConferenceAvailability()
 
 QString Configuration::GetContactFile()
 {
-    return mQSettings->value("Global/ContactFile", QString((mAbsBinPath + "Homer-Contacts.xml").c_str())).toString();
+    return mQSettings->value("Global/ContactFile", mAbsBinPath + "Homer-Contacts.xml").toString();
 }
 
 QString Configuration::GetDataDirectory()
@@ -850,6 +924,11 @@ bool Configuration::GetAutoUpdateCheck()
     return mQSettings->value("Global/AutomaticUpdateCheck", false).toBool();
 }
 
+bool Configuration::GetFeatureConferencing()
+{
+    return mQSettings->value("Global/FeatureConferencing", true).toBool();
+}
+
 QString Configuration::GetUserName()
 {
     return mQSettings->value("User/UserName", QString::fromAscii(MEETING.getUser().c_str())).toString();
@@ -897,7 +976,7 @@ QString Configuration::GetVideoStreamingGAPIImpl()
 
 QString Configuration::GetVideoResolution()
 {
-    return mQSettings->value("Streaming/VideoStreamResolution", QString("352*288")).toString();
+    return mQSettings->value("Streaming/VideoStreamResolution", QString("auto")).toString();
 }
 
 bool Configuration::GetLocalVideoSourceHFlip()
@@ -1010,9 +1089,15 @@ int Configuration::GetSipInfrastructureMode()
     return mQSettings->value("Network/SipInfrastructureMode", 0).toInt();
 }
 
+// set default value for OSX to false: TODO: fix STUN support for OSX and remove this
+#ifdef APPLE
+	static bool sNatDefault = false;
+#else
+	static bool sNatDefault = true;
+#endif
 bool Configuration::GetNatSupportActivation()
 {
-    return mQSettings->value("Network/NatSupportActivation", true).toBool();
+    return mQSettings->value("Network/NatSupportActivation", sNatDefault).toBool();
 }
 
 QString Configuration::GetStunServer()
@@ -1020,9 +1105,39 @@ QString Configuration::GetStunServer()
     return mQSettings->value("Network/StunServer", QString("stun.voipbuster.com")).toString();
 }
 
+QString Configuration::GetStartSoundFile()
+{
+    return mQSettings->value("Notification/StartSoundFile", mAbsBinPath + "sounds/Start.wav").toString();
+}
+
+bool Configuration::GetStartSound()
+{
+    return mQSettings->value("Notification/StartSound", false).toBool();
+}
+
+bool Configuration::GetStartSystray()
+{
+    return mQSettings->value("Notification/StartSystray", true).toBool();
+}
+
+QString Configuration::GetStopSoundFile()
+{
+    return mQSettings->value("Notification/StopSoundFile", mAbsBinPath + "sounds/Stop.wav").toString();
+}
+
+bool Configuration::GetStopSound()
+{
+    return mQSettings->value("Notification/StopSound", false).toBool();
+}
+
+bool Configuration::GetStopSystray()
+{
+    return mQSettings->value("Notification/StopSystray", true).toBool();
+}
+
 QString Configuration::GetImSoundFile()
 {
-    return mQSettings->value("Notification/ImSoundFile", QString((mAbsBinPath + "sounds/Message.wav").c_str())).toString();
+    return mQSettings->value("Notification/ImSoundFile", mAbsBinPath + "sounds/Message.wav").toString();
 }
 
 bool Configuration::GetImSound()
@@ -1037,7 +1152,7 @@ bool Configuration::GetImSystray()
 
 QString Configuration::GetCallSoundFile()
 {
-    return mQSettings->value("Notification/CallSoundFile", QString((mAbsBinPath + "sounds/Call.wav").c_str())).toString();
+    return mQSettings->value("Notification/CallSoundFile", mAbsBinPath + "sounds/Call.wav").toString();
 }
 
 bool Configuration::GetCallSound()
@@ -1052,7 +1167,7 @@ bool Configuration::GetCallSystray()
 
 QString Configuration::GetCallAcknowledgeSoundFile()
 {
-    return mQSettings->value("Notification/CallAcknowledgeSoundFile", QString((mAbsBinPath + "sounds/Call_Acknowledge.wav").c_str())).toString();
+    return mQSettings->value("Notification/CallAcknowledgeSoundFile", mAbsBinPath + "sounds/Call_Acknowledge.wav").toString();
 }
 
 bool Configuration::GetCallAcknowledgeSound()
@@ -1067,7 +1182,7 @@ bool Configuration::GetCallAcknowledgeSystray()
 
 QString Configuration::GetCallDenySoundFile()
 {
-    return mQSettings->value("Notification/CallDenySoundFile", QString((mAbsBinPath + "sounds/Call_Deny.wav").c_str())).toString();
+    return mQSettings->value("Notification/CallDenySoundFile", mAbsBinPath + "sounds/Call_Deny.wav").toString();
 }
 
 bool Configuration::GetCallDenySound()
@@ -1082,7 +1197,7 @@ bool Configuration::GetCallDenySystray()
 
 QString Configuration::GetCallHangupSoundFile()
 {
-    return mQSettings->value("Notification/CallHangupSoundFile", QString((mAbsBinPath + "sounds/Call_Hangup.wav").c_str())).toString();
+    return mQSettings->value("Notification/CallHangupSoundFile", mAbsBinPath + "sounds/Call_Hangup.wav").toString();
 }
 
 bool Configuration::GetCallHangupSound()
@@ -1097,7 +1212,7 @@ bool Configuration::GetCallHangupSystray()
 
 QString Configuration::GetErrorSoundFile()
 {
-    return mQSettings->value("Notification/ErrorSoundFile", QString((mAbsBinPath + "sounds/Error.wav").c_str())).toString();
+    return mQSettings->value("Notification/ErrorSoundFile", mAbsBinPath + "sounds/Error.wav").toString();
 }
 
 bool Configuration::GetErrorSound()
@@ -1112,7 +1227,7 @@ bool Configuration::GetErrorSystray()
 
 QString Configuration::GetRegistrationFailedSoundFile()
 {
-    return mQSettings->value("Notification/RegistrationFailedSoundFile", QString((mAbsBinPath + "sounds/Registration_Failed.wav").c_str())).toString();
+    return mQSettings->value("Notification/RegistrationFailedSoundFile", mAbsBinPath + "sounds/Registration_Failed.wav").toString();
 }
 
 bool Configuration::GetRegistrationFailedSound()
@@ -1127,7 +1242,7 @@ bool Configuration::GetRegistrationFailedSystray()
 
 QString Configuration::GetRegistrationSuccessfulSoundFile()
 {
-    return mQSettings->value("Notification/RegistrationSuccessfulSoundFile", QString((mAbsBinPath + "sounds/Registration_Successful.wav").c_str())).toString();
+    return mQSettings->value("Notification/RegistrationSuccessfulSoundFile", mAbsBinPath + "sounds/Registration_Successful.wav").toString();
 }
 
 bool Configuration::GetRegistrationSuccessfulSound()
@@ -1142,7 +1257,8 @@ bool Configuration::GetRegistrationSuccessfulSystray()
 
 void Configuration::Sync()
 {
-    LOG(LOG_VERBOSE, "Sync");
+    LOG(LOG_VERBOSE, "Synch. program settings with: %s", mQSettings->fileName().toStdString().c_str());
+    printf("Synch. program settings with: %s\n", mQSettings->fileName().toStdString().c_str());
     mQSettings->sync();
 }
 
@@ -1176,6 +1292,17 @@ void Configuration::DisableAudioCapture()
 {
     printf("Audio capture disabled\n");
     mAudioCaptureEnabled = false;
+}
+
+bool Configuration::ConferencingEnabled()
+{
+    return mConferencingEnabled;
+}
+
+void Configuration::DisableConferencing()
+{
+    printf("Conference functions disabled\n");
+    mConferencingEnabled = false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

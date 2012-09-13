@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>429</width>
-    <height>44</height>
+    <width>414</width>
+    <height>42</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -41,7 +41,7 @@
      </property>
      <property name="sizeHint" stdset="0">
       <size>
-       <width>10</width>
+       <width>5</width>
        <height>20</height>
       </size>
      </property>
@@ -169,18 +169,6 @@ border-radius: 6px;
    </item>
    <item>
     <widget class="QLabel" name="mLbStreamInfo">
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>38</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>38</height>
-      </size>
-     </property>
      <property name="font">
       <font>
        <pointsize>10</pointsize>
@@ -218,13 +206,13 @@ border-radius: 6px;
          <property name="minimumSize">
           <size>
            <width>0</width>
-           <height>26</height>
+           <height>15</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>26</height>
+           <height>15</height>
           </size>
          </property>
          <property name="frameShape">
@@ -248,7 +236,7 @@ border-radius: 6px;
             <property name="minimumSize">
              <size>
               <width>0</width>
-              <height>26</height>
+              <height>15</height>
              </size>
             </property>
             <property name="layoutDirection">
@@ -298,13 +286,13 @@ QProgressBar::chunk {
          <property name="minimumSize">
           <size>
            <width>0</width>
-           <height>26</height>
+           <height>15</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>26</height>
+           <height>15</height>
           </size>
          </property>
          <property name="frameShape">
@@ -328,7 +316,7 @@ QProgressBar::chunk {
             <property name="minimumSize">
              <size>
               <width>0</width>
-              <height>26</height>
+              <height>15</height>
              </size>
             </property>
             <property name="layoutDirection">
@@ -407,6 +395,7 @@ QProgressBar::chunk {
   </layout>
  </widget>
  <resources>
+  <include location="../../resources/Icons.qrc"/>
   <include location="../../resources/Icons.qrc"/>
   <include location="../../resources/Icons.qrc"/>
   <include location="../../resources/Icons.qrc"/>

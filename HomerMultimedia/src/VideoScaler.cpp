@@ -42,12 +42,14 @@ namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-VideoScaler::VideoScaler():
+VideoScaler::VideoScaler(string pName):
     MediaFifo("VideoScaler")
 {
+	mName = pName;
     mScalerNeeded = false;
     mInputFifo = NULL;
     mOutputFifo = NULL;
+    mScalerContext = NULL;
 }
 
 VideoScaler::~VideoScaler()
@@ -55,30 +57,29 @@ VideoScaler::~VideoScaler()
 
 }
 
-void VideoScaler::StartScaler(enum CodecID pTargetCodecId, int pSourceResX, int pSourceResY, int pTargetResX, int pTargetResY)
+void VideoScaler::StartScaler(int pInputQueueSize, int pSourceResX, int pSourceResY, enum PixelFormat pSourcePixelFormat, int pTargetResX, int pTargetResY, enum PixelFormat pTargetPixelFormat)
 {
-    LOG(LOG_VERBOSE, "Starting scaler, converting from resolution %d*%d to %d*%d", pSourceResX, pSourceResY, pTargetResX, pTargetResY);
 
-    mTargetCodecId = pTargetCodecId;
+    mQueueSize = pInputQueueSize;
+    mSourcePixelFormat = pSourcePixelFormat;
+    mTargetPixelFormat = pTargetPixelFormat;
     mSourceResX = pSourceResX;
     mSourceResY = pSourceResY;
     mTargetResX = pTargetResX;
     mTargetResY = pTargetResY;
-    if (mTargetCodecId == CODEC_ID_MJPEG)
-        mTargetPixelFormat = PIX_FMT_YUVJ420P;
-    else
-        mTargetPixelFormat = PIX_FMT_YUV420P;
 
-    int tInputBufferSize = avpicture_get_size(PIX_FMT_RGB32, mSourceResX, mSourceResY);
+    LOG(LOG_VERBOSE, "Starting %s video scaler, converting resolution %d*%d (fmt: %d) to %d*%d (fmt: %d), queue size: %d", mName.c_str(), pSourceResX, pSourceResY, mSourcePixelFormat, pTargetResX, pTargetResY, mTargetPixelFormat, mQueueSize);
+
+    int tInputBufferSize = avpicture_get_size(mSourcePixelFormat, mSourceResX, mSourceResY) + FF_INPUT_BUFFER_PADDING_SIZE;
     //HINT: we have to allocate input FIFO here to make sure we can force a return from a read request inside StopScaler(), StartScaler() and StopScaler() should be called from the same thread/context!
-    mInputFifo = new MediaFifo(MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT, tInputBufferSize, "VIDEO-ScalerInput");
+    mInputFifo = new MediaFifo(mQueueSize, tInputBufferSize, "VIDEO-ScalerInput/" + mName);
 
     // start scaler main loop
     StartThread();
 
     while(!mScalerNeeded)
     {
-        LOG(LOG_VERBOSE, "Waiting for the start of VIDEO scaling thread");
+        LOG(LOG_VERBOSE, "Waiting for the start of %s VIDEO scaling thread", mName.c_str());
         Thread::Suspend(100 * 1000);
     }
 
@@ -117,19 +118,28 @@ void VideoScaler::StopScaler()
 void VideoScaler::WriteFifo(char* pBuffer, int pBufferSize)
 {
     if (mInputFifo != NULL)
-        mInputFifo->WriteFifo(pBuffer, pBufferSize);
+    {
+    	if (pBufferSize <= mInputFifo->GetEntrySize())
+    		mInputFifo->WriteFifo(pBuffer, pBufferSize);
+    	else
+    		LOG(LOG_ERROR, "Input buffer of %d bytes is too big for input FIFO", pBufferSize);
+    }
 }
 
 void VideoScaler::ReadFifo(char *pBuffer, int &pBufferSize)
 {
     if (mOutputFifo != NULL)
         mOutputFifo->ReadFifo(pBuffer, pBufferSize);
+    else
+        pBufferSize = 0;
 }
 
 void VideoScaler::ClearFifo()
 {
     if (mInputFifo != NULL)
         mInputFifo->ClearFifo();
+    if (mOutputFifo != NULL)
+        mOutputFifo->ClearFifo();
 }
 
 int VideoScaler::ReadFifoExclusive(char **pBuffer, int &pBufferSize)
@@ -138,6 +148,7 @@ int VideoScaler::ReadFifoExclusive(char **pBuffer, int &pBufferSize)
         return mOutputFifo->ReadFifoExclusive(pBuffer, pBufferSize);
     else
     {
+    	LOG(LOG_WARN, "Video scaler not ready yet");
         pBufferSize = 0;
         return -1;
     }
@@ -159,10 +170,14 @@ int VideoScaler::GetEntrySize()
 
 int VideoScaler::GetUsage()
 {
+    int tResult = 0;
+
+    if (mOutputFifo != NULL)
+        tResult += mOutputFifo->GetUsage();
     if (mInputFifo != NULL)
-        return mInputFifo->GetUsage();
-    else
-        return 0;
+        tResult += mInputFifo->GetUsage();
+
+    return tResult;
 }
 
 int VideoScaler::GetSize()
@@ -178,129 +193,153 @@ void* VideoScaler::Run(void* pArgs)
     char                *tBuffer;
     int                 tBufferSize;
     int                 tFifoEntry = 0;
-    AVFrame             *tRGBFrame;
-    AVFrame             *tYUVFrame;
+    AVFrame             *tInputFrame;
+    AVFrame             *tOutputFrame;
     uint8_t             *tOutputBuffer;
     /* current chunk */
     int                 tCurrentChunkSize = 0;
 
-    LOG(LOG_VERBOSE, "Video scaling thread started");
+    LOG(LOG_VERBOSE, "%s video scaling thread started", mName.c_str());
 
-    SVC_PROCESS_STATISTIC.AssignThreadName("Video-Scaler(" + MediaSource::FfmpegId2FfmpegFormat(mTargetCodecId) + ")");
-    int tOutputBufferSize = avpicture_get_size(mTargetPixelFormat, mTargetResX, mTargetResY);
+    SVC_PROCESS_STATISTIC.AssignThreadName("Video-Scaler(" + toString(mSourceResX) + "*" + toString(mSourceResY) + ")");
+    int tOutputBufferSize = avpicture_get_size(mTargetPixelFormat, mTargetResX, mTargetResY) + FF_INPUT_BUFFER_PADDING_SIZE;
 
     // allocate chunk buffer
     tOutputBuffer = (uint8_t*)malloc(tOutputBufferSize);
 
-    // Allocate video frame for YUV format
-    if ((tYUVFrame = avcodec_alloc_frame()) == NULL)
+    // Allocate video frame
+    LOG(LOG_VERBOSE, "..allocating memory for output frame");
+    if ((tOutputFrame = avcodec_alloc_frame()) == NULL)
     {
         // acknowledge failed"
         LOG(LOG_ERROR, "Out of video memory in avcodec_alloc_frame()");
     }
 
-    // Assign appropriate parts of buffer to image planes in tYUVFrame
-    avpicture_fill((AVPicture *)tYUVFrame, (uint8_t *)tOutputBuffer, mTargetPixelFormat, mTargetResX, mTargetResY);
+    // Assign appropriate parts of buffer to image planes in frame
+    avpicture_fill((AVPicture *)tOutputFrame, (uint8_t *)tOutputBuffer, mTargetPixelFormat, mTargetResX, mTargetResY);
 
-    // Allocate video frame for RGB format
-    if ((tRGBFrame = avcodec_alloc_frame()) == NULL)
+    // Allocate video frame for format
+    LOG(LOG_VERBOSE, "..allocating memory for %s input frame", mName.c_str());
+    if ((tInputFrame = avcodec_alloc_frame()) == NULL)
     {
         // acknowledge failed"
         LOG(LOG_ERROR, "Out of video memory in avcodec_alloc_frame()");
     }
 
     // allocate software scaler context, input/output FIFO
-    mScalerContext = sws_getContext(mSourceResX, mSourceResY, PIX_FMT_RGB32, mTargetResX, mTargetResY, mTargetPixelFormat, SWS_BICUBIC, NULL, NULL, NULL);
-    mOutputFifo = new MediaFifo(MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT, tOutputBufferSize, "VIDEO-ScalerOutput");
+    LOG(LOG_VERBOSE, "..allocating %s video scaler context", mName.c_str());
+    mScalerContext = sws_getCachedContext(mScalerContext, mSourceResX, mSourceResY, mSourcePixelFormat, mTargetResX, mTargetResY, mTargetPixelFormat, SWS_BICUBIC, NULL, NULL, NULL);
+    if (mScalerContext == NULL)
+    {
+    	LOG(LOG_ERROR, "Got invalid video scaler context");
+    }
+
+    LOG(LOG_VERBOSE, "..creating %s video scaler output FIFO", mName.c_str());
+    mOutputFifo = new MediaFifo(mQueueSize, tOutputBufferSize, "VIDEO-ScalerOutput/" + mName);
 
     mChunkNumber = 0;
     mScalerNeeded = true;
 
+    LOG(LOG_VERBOSE, "..entering %s video scaler main loop", mName.c_str());
     while(mScalerNeeded)
     {
         if (mInputFifo != NULL)
         {
+			#ifdef VS_DEBUG_PACKETS
+        		LOG(LOG_VERBOSE, "Waiting for new input for scaling");
+			#endif
             tFifoEntry = mInputFifo->ReadFifoExclusive(&tBuffer, tBufferSize);
-
+			#ifdef VS_DEBUG_PACKETS
+	            LOG(LOG_VERBOSE, "Got new input of %d bytes for scaling", tBufferSize);
+			#endif
             if ((tBufferSize > 0) && (mScalerNeeded))
             {
+            	mChunkNumber++;
                 //HINT: we only get input if mStreamActivated is set and we have some registered media sinks
 
                 tCurrentChunkSize = 0;
                 //HINT: media type is always MEDIA_VIDEO here
 
                 // ####################################################################
-                // ### PREPARE RGB FRAME
+                // ### PREPARE INPUT FRAME
                 // ###################################################################
-                // Assign appropriate parts of buffer to image planes in tRGBFrame
-                avpicture_fill((AVPicture *)tRGBFrame, (uint8_t *)tBuffer, PIX_FMT_RGB32, mSourceResX, mSourceResY);
+                // Assign appropriate parts of buffer to image planes in tInputFrame
+                avpicture_fill((AVPicture *)tInputFrame, (uint8_t *)tBuffer, mSourcePixelFormat, mSourceResX, mSourceResY);
 
                 // set frame number in corresponding entries within AVFrame structure
-                tRGBFrame->pts = mChunkNumber + 1;
-                tRGBFrame->coded_picture_number = mChunkNumber + 1;
-                tRGBFrame->display_picture_number = mChunkNumber + 1;
+                tInputFrame->pts = mChunkNumber;
+                tInputFrame->coded_picture_number = mChunkNumber;
+                tInputFrame->display_picture_number = mChunkNumber;
 
                 #ifdef VS_DEBUG_PACKETS
                     LOG(LOG_VERBOSE, "SCALER-new input video frame..");
-                    LOG(LOG_VERBOSE, "      ..key frame: %d", tRGBFrame->key_frame);
-                    switch(tRGBFrame->pict_type)
+                    LOG(LOG_VERBOSE, "      ..key frame: %d", tInputFrame->key_frame);
+                    switch(tInputFrame->pict_type)
                     {
-                            case FF_I_TYPE:
+                            case AV_PICTURE_TYPE_I:
                                 LOG(LOG_VERBOSE, "      ..picture type: i-frame");
                                 break;
-                            case FF_P_TYPE:
+                            case AV_PICTURE_TYPE_P:
                                 LOG(LOG_VERBOSE, "      ..picture type: p-frame");
                                 break;
-                            case FF_B_TYPE:
+                            case AV_PICTURE_TYPE_B:
                                 LOG(LOG_VERBOSE, "      ..picture type: b-frame");
                                 break;
                             default:
-                                LOG(LOG_VERBOSE, "      ..picture type: %d", tRGBFrame->pict_type);
+                                LOG(LOG_VERBOSE, "      ..picture type: %d", tInputFrame->pict_type);
                                 break;
                     }
-                    LOG(LOG_VERBOSE, "      ..pts: %ld", tRGBFrame->pts);
-                    LOG(LOG_VERBOSE, "      ..coded pic number: %d", tRGBFrame->coded_picture_number);
-                    LOG(LOG_VERBOSE, "      ..display pic number: %d", tRGBFrame->display_picture_number);
+                    LOG(LOG_VERBOSE, "      ..pts: %ld", tInputFrame->pts);
+                    LOG(LOG_VERBOSE, "      ..coded pic number: %d", tInputFrame->coded_picture_number);
+                    LOG(LOG_VERBOSE, "      ..display pic number: %d", tInputFrame->display_picture_number);
                 #endif
 
                 // ####################################################################
-                // ### SCALE RGB FRAME (CONVERT)
+                // ### SCALE FRAME (CONVERT)
                 // ###################################################################
                 int64_t tTime = Time::GetTimeStamp();
-                // convert fromn RGB to YUV420
-                HM_sws_scale(mScalerContext, tRGBFrame->data, tRGBFrame->linesize, 0, mSourceResY, tYUVFrame->data, tYUVFrame->linesize);
+                // convert
+
+				#ifdef VS_DEBUG_PACKETS
+					LOG(LOG_VERBOSE, "%s-scaling frame %d, source res: %d*%d (fmt: %d) to %d*%d, scaler context at %p", mName.c_str(), mChunkNumber, mSourceResX, mSourceResY, (int)mSourcePixelFormat, mTargetResX, mTargetResY, mScalerContext);
+					LOG(LOG_VERBOSE, "Video input frame data: %p, %p, %p, %p", tInputFrame->data[0], tInputFrame->data[1], tInputFrame->data[2], tInputFrame->data[3]);
+					LOG(LOG_VERBOSE, "Video input frame line size: %d, %d, %d, %d", tInputFrame->linesize[0], tInputFrame->linesize[1], tInputFrame->linesize[2], tInputFrame->linesize[3]);
+					LOG(LOG_VERBOSE, "Video output frame data: %p, %p, %p, %p", tOutputFrame->data[0], tOutputFrame->data[1], tOutputFrame->data[2], tOutputFrame->data[3]);
+					LOG(LOG_VERBOSE, "Video output frame line size: %d, %d, %d, %d", tOutputFrame->linesize[0], tOutputFrame->linesize[1], tOutputFrame->linesize[2], tOutputFrame->linesize[3]);
+				#endif
+                HM_sws_scale(mScalerContext, tInputFrame->data, tInputFrame->linesize, 0, mSourceResY, tOutputFrame->data, tOutputFrame->linesize);
+				#ifdef VS_DEBUG_PACKETS
+                	LOG(LOG_VERBOSE, "..video scaling for %s finished", mName.c_str());
+				#endif
                 #ifdef MSM_DEBUG_TIMING
                     int64_t tTime2 = Time::GetTimeStamp();
                     LOG(LOG_VERBOSE, "SCALER-scaling video frame took %ld us", tTime2 - tTime);
                 #endif
 
-                //LOG(LOG_VERBOSE, "Video frame data: %p, %p, %p, %p", tYUVFrame->data[0], tYUVFrame->data[1], tYUVFrame->data[2], tYUVFrame->data[3]);
-                //LOG(LOG_VERBOSE, "Video frame line size: %d, %d, %d, %d", tYUVFrame->linesize[0], tYUVFrame->linesize[1], tYUVFrame->linesize[2], tYUVFrame->linesize[3]);
-
-                // size of scaled YUV frame
+                // size of scaled output frame
                 tCurrentChunkSize = avpicture_get_size(mTargetPixelFormat, mTargetResX, mTargetResY);
 
                 #ifdef VS_DEBUG_PACKETS
                     LOG(LOG_VERBOSE, "SCALER-new output video frame..");
-                    LOG(LOG_VERBOSE, "      ..key frame: %d", tYUVFrame->key_frame);
-                    switch(tYUVFrame->pict_type)
+                    LOG(LOG_VERBOSE, "      ..key frame: %d", tOutputFrame->key_frame);
+                    switch(tOutputFrame->pict_type)
                     {
-                            case FF_I_TYPE:
+                            case AV_PICTURE_TYPE_I:
                                 LOG(LOG_VERBOSE, "      ..picture type: i-frame");
                                 break;
-                            case FF_P_TYPE:
+                            case AV_PICTURE_TYPE_P:
                                 LOG(LOG_VERBOSE, "      ..picture type: p-frame");
                                 break;
-                            case FF_B_TYPE:
+                            case AV_PICTURE_TYPE_B:
                                 LOG(LOG_VERBOSE, "      ..picture type: b-frame");
                                 break;
                             default:
-                                LOG(LOG_VERBOSE, "      ..picture type: %d", tYUVFrame->pict_type);
+                                LOG(LOG_VERBOSE, "      ..picture type: %d", tOutputFrame->pict_type);
                                 break;
                     }
-                    LOG(LOG_VERBOSE, "      ..pts: %ld", tYUVFrame->pts);
-                    LOG(LOG_VERBOSE, "      ..coded pic number: %d", tYUVFrame->coded_picture_number);
-                    LOG(LOG_VERBOSE, "      ..display pic number: %d", tYUVFrame->display_picture_number);
+                    LOG(LOG_VERBOSE, "      ..pts: %ld", tOutputFrame->pts);
+                    LOG(LOG_VERBOSE, "      ..coded pic number: %d", tOutputFrame->coded_picture_number);
+                    LOG(LOG_VERBOSE, "      ..display pic number: %d", tOutputFrame->display_picture_number);
                 #endif
 
                 // was there an error during decoding process?
@@ -363,12 +402,13 @@ void* VideoScaler::Run(void* pArgs)
 
     // free the software scaler context
     sws_freeContext(mScalerContext);
+    mScalerContext = NULL;
 
-    // Free the RGB frame
-    av_free(tRGBFrame);
+    // Free the frame
+    av_free(tInputFrame);
 
-    // Free the YUV frame
-    av_free(tYUVFrame);
+    // Free the frame
+    av_free(tOutputFrame);
 
     // free the output buffer
     free(tOutputBuffer);

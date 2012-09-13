@@ -46,11 +46,11 @@ namespace Homer { namespace SoundOutput {
 
 //#define DEBUG_AUDIO_OUT_SDL
 
-#define AUDIO_BUFFER_QUEUE_LIMIT                2
+#define AUDIO_BUFFER_QUEUE_LIMIT                32
 
 #define AUDIOOUTSDL AudioOutSdl::getInstance()
 // amount of mixing channels (independent from stereo/mono)
-#define DEFAULT_CHANNEL_COUNT                   16
+#define DEFAULT_CHANNEL_COUNT                   32
 
 ///////////////////////////////////////////////////////////////////////////////
 struct AudioOutInfo
@@ -118,15 +118,6 @@ public:
     bool Enqueue(int pChannel, void *pBuffer, int pBufferSize = 4096, bool pLimitBucket = true);
 
     /**
-     * @brief add file to channels output queue
-     * @param pChannel - channel id
-     * @param File - location of audio file
-     * @param pLimitBucket - limits the amount of elements within the chunk queue per channel, exat limit is hard coded
-     * @return false if decoding of audio samples failed, audio output is closed or memory allocation failed
-     */
-    bool Enqueue(int pChannel, std::string File, bool pLimitBucket = true);
-
-    /**
      * @brief Query Audio Device Information
      * @return deviceInfo List
      */
@@ -150,6 +141,7 @@ private:
         Mutex   mMutex;
         bool    Assigned;
         bool    IsPlaying;
+        int 	CallbackRecursionCounter;
     };
     std::map<int, ChannelEntry*> mChannelMap;
 };
