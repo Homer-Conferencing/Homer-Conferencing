@@ -34,6 +34,11 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define URL_SMILE                   "Smile.gif"
+#define PATH_SMILE                   ":/images/30_30/Smile.gif"
+
+///////////////////////////////////////////////////////////////////////////////
+
 class MessageHistory :
     public QTextBrowser
 {
@@ -50,11 +55,15 @@ public:
 public slots:
     void textSelected(bool pAvail);
 
+private slots:
+    void Animate();
+
 private:
+    void AddAnimation(const QUrl &pUrl, const QString &pFile);
     void contextMenuEvent(QContextMenuEvent *event);
 
     bool                    mSomeTextSelected;
-
+    QMap<QMovie*, QUrl>     mUrls;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

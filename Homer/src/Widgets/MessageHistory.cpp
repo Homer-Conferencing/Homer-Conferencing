@@ -38,6 +38,7 @@
 #include <QScrollBar>
 #include <QCoreApplication>
 #include <QContextMenuEvent>
+#include <QMovie>
 
 namespace Homer { namespace Gui {
 
@@ -48,6 +49,7 @@ MessageHistory::MessageHistory(QWidget* pParent) :
 {
     mSomeTextSelected = false;
     connect(this, SIGNAL(copyAvailable(bool)), this, SLOT(textSelected(bool)));
+    AddAnimation(QUrl(URL_SMILE), PATH_SMILE);
 }
 
 MessageHistory::~MessageHistory()
@@ -55,6 +57,27 @@ MessageHistory::~MessageHistory()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+void MessageHistory::AddAnimation(const QUrl &pUrl, const QString &pFile)
+{
+    QMovie *tMovie = new QMovie(this);
+    tMovie->setFileName(pFile);
+    mUrls.insert(tMovie, pUrl);
+    connect(tMovie, SIGNAL(frameChanged(int)), this, SLOT(Animate()));
+    tMovie->start();
+}
+
+void MessageHistory::Animate()
+{
+    if (QMovie *tMovie = qobject_cast<QMovie*>(sender()))
+    {
+        // update picture
+        document()->addResource(QTextDocument::ImageResource, mUrls.value(tMovie), tMovie->currentPixmap());
+
+        // force reload
+        setLineWrapColumnOrWidth(lineWrapColumnOrWidth());
+    }
+}
 
 void MessageHistory::contextMenuEvent(QContextMenuEvent *pEvent)
 {

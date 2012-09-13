@@ -26,6 +26,7 @@
  */
 
 #include <Widgets/MessageWidget.h>
+#include <Widgets/MessageHistory.h>
 #include <Widgets/OverviewContactsWidget.h>
 #include <Dialogs/FileTransferAckDialog.h>
 #include <Configuration.h>
@@ -308,7 +309,7 @@ QString MessageWidget::ReplaceSmiles(QString pMessage)
         if ((tWord == ":)") || (tWord == ":-)"))
         {// laughing smile
             LOG(LOG_VERBOSE, "Found smile");
-            tOutputMessage.append("<img src=\":/images/30_30/Smile.gif\">");
+            tOutputMessage.append("<img src=\"" URL_SMILE "\">");
         }else
             tOutputMessage.append(tWord);
 
