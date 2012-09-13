@@ -340,6 +340,7 @@ void ConfigurationDialog::LoadConfiguration()
     mCbAutoUpdateCheck->setChecked(CONF.GetAutoUpdateCheck());
     mCbSeparatedParticipantWidgets->setChecked(CONF.GetParticipantWidgetsSeparation());
     mCbCloseParticipantWidgetsImmediately->setChecked(CONF.GetParticipantWidgetsCloseImmediately());
+    mCbFeatureConferencing->setChecked(CONF.GetFeatureConferencing());
 
     //######################################################################
     //### NOTIFICATION configuration
@@ -551,6 +552,9 @@ void ConfigurationDialog::SaveConfiguration()
     CONF.SetAutoUpdateCheck(mCbAutoUpdateCheck->isChecked());
     CONF.SetParticipantWidgetsSeparation(mCbSeparatedParticipantWidgets->isChecked());
     CONF.SetParticipantWidgetsCloseImmediately(mCbCloseParticipantWidgetsImmediately->isChecked());
+    if (mCbFeatureConferencing->isChecked() != CONF.GetFeatureConferencing())
+        tHaveToRestart = true;
+    CONF.SetFeatureConferencing(mCbFeatureConferencing->isChecked());
 
     //######################################################################
     //### NOTIFICATION configuration
@@ -601,11 +605,11 @@ void ConfigurationDialog::SaveConfiguration()
     CONF.Sync();
 
     if (tHaveToRestart)
-        ShowInfo("Restart necessary", "You have to <font color='red'><b>restart</b></font> Homer to apply the new settings!");
+        ShowInfo("Restart necessary", "You have to <font color='red'><b>restart</b></font> Homer Conferencing to apply the new settings!");
     else
     {
         if (tOnlyFutureChanged)
-            ShowInfo("Settings applied for future sessions", "Your new settings are <font color='red'><b>not applied for already established sessions</b></font>. They will only be used for new sessions! Otherwise you have to <font color='red'><b>restart</b></font> Homer to apply the new settings!");
+            ShowInfo("Settings applied for future sessions", "Your new settings are <font color='red'><b>not applied for already established sessions</b></font>. They will only be used for new sessions! Otherwise you have to <font color='red'><b>restart</b></font> Homer Conferencing to apply the new settings!");
     }
 }
 

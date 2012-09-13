@@ -188,7 +188,9 @@ private:
     /* program timing */
     QTime                       mStartTime;
     /* network simulator */
-    NetworkSimulator            *mNetworkSimulator;
+    #if HOMER_NETWORK_SIMULATOR
+        NetworkSimulator            *mNetworkSimulator;
+    #endif
 };
 
 ///////////////////////////////////////////////////////////////////////////////

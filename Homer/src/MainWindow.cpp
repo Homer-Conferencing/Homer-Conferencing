@@ -76,15 +76,15 @@ using namespace Homer::Multimedia;
 using namespace Homer::Conference;
 
 #ifdef APPLE
-	// manually declare qt_mac_set_dock_menu(QMenu*) to set a custom dock menu
-	extern void qt_mac_set_dock_menu(QMenu *); // http://doc.trolltech.com/qq/qq18-macfeatures.html
+    // manually declare qt_mac_set_dock_menu(QMenu*) to set a custom dock menu
+    extern void qt_mac_set_dock_menu(QMenu *); // http://doc.trolltech.com/qq/qq18-macfeatures.html
 #endif
 
 namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define IPV6_LINK_LOCAL_PREFIX							"FE80"
+#define IPV6_LINK_LOCAL_PREFIX                          "FE80"
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -105,7 +105,9 @@ MainWindow::MainWindow(QStringList pArguments, QString pAbsBinPath) :
     mSysTrayMenu = NULL;
     mAbsBinPath = pAbsBinPath;
     mSourceDesktop = NULL;
-    mNetworkSimulator = NULL;
+    #if HOMER_NETWORK_SIMULATOR
+        mNetworkSimulator = NULL;
+    #endif
     mOverviewContactsWidget = NULL;
     mOverviewFileTransfersWidget = NULL;
     mOnlineStatusWidget = NULL;
@@ -162,7 +164,7 @@ MainWindow::MainWindow(QStringList pArguments, QString pAbsBinPath) :
         if (CONF.GetStartSound())
             StartAudioPlayback(CONF.GetStartSoundFile());
     #endif
-	ProcessRemainingArguments(pArguments);
+    ProcessRemainingArguments(pArguments);
 }
 
 MainWindow::~MainWindow()
@@ -171,29 +173,29 @@ MainWindow::~MainWindow()
 
 void MainWindow::removeArguments(QStringList &pArguments, QString pFilter)
 {
-	QString tArgument;
-	QStringList::iterator tIt;
-	for (tIt = pArguments.begin(); tIt != pArguments.end(); tIt++)
-	{
-		tArgument = *tIt;
-		if (tArgument.contains(pFilter))
-			tIt = pArguments.erase(tIt);
-		if (tIt == pArguments.end())
-			break;
-	}
+    QString tArgument;
+    QStringList::iterator tIt;
+    for (tIt = pArguments.begin(); tIt != pArguments.end(); tIt++)
+    {
+        tArgument = *tIt;
+        if (tArgument.contains(pFilter))
+            tIt = pArguments.erase(tIt);
+        if (tIt == pArguments.end())
+            break;
+    }
 }
 
 void MainWindow::initializeConfiguration(QStringList &pArguments)
 {
-	#ifdef RELEASE_VERSION
-		LOG(LOG_VERBOSE, "This is the RELEASE version");
-	#endif
-	#ifdef DEBUG_VERSION
-		LOG(LOG_VERBOSE, "This is the DEBUG version");
-	#endif
-	CONF.Init(mAbsBinPath);
+    #ifdef RELEASE_VERSION
+        LOG(LOG_VERBOSE, "This is the RELEASE version");
+    #endif
+    #ifdef DEBUG_VERSION
+        LOG(LOG_VERBOSE, "This is the DEBUG version");
+    #endif
+    CONF.Init(mAbsBinPath);
     if (pArguments.contains("-SetDefaults"))
-    	CONF.SetDefaults();
+        CONF.SetDefaults();
 
     removeArguments(pArguments, "-SetDefaults");
 }
@@ -209,20 +211,20 @@ void MainWindow::initializeGUI()
 
 void MainWindow::ProcessRemainingArguments(QStringList &pArguments)
 {
-	bool tFirst = true;
-	QString tArgument;
-	foreach(tArgument, pArguments)
-	{
-		if ((tFirst) && (tArgument != ""))
-		{
-			tFirst = false;
-			PLAYLISTWIDGET.AddEntry(tArgument, true);
-		}else
-		{
-			LOG(LOG_VERBOSE, "Found unknown command line argument: %s", tArgument.toStdString().c_str());
-			printf("Found unknown command line argument: %s\n", tArgument.toStdString().c_str());
-		}
-	}
+    bool tFirst = true;
+    QString tArgument;
+    foreach(tArgument, pArguments)
+    {
+        if ((tFirst) && (tArgument != ""))
+        {
+            tFirst = false;
+            PLAYLISTWIDGET.AddEntry(tArgument, true);
+        }else
+        {
+            LOG(LOG_VERBOSE, "Found unknown command line argument: %s", tArgument.toStdString().c_str());
+            printf("Found unknown command line argument: %s\n", tArgument.toStdString().c_str());
+        }
+    }
 }
 
 void MainWindow::connectSignalsSlots()
@@ -264,13 +266,13 @@ void MainWindow::connectSignalsSlots()
 
 void MainWindow::triggerUpdateCheck()
 {
-	#ifdef RELEASE_VERSION
-		if (CONF.GetAutoUpdateCheck())
-		{
-				mHttpGetVersionServer = new QHttp(this);
-				TriggerVersionCheck(mHttpGetVersionServer, GotAnswerForVersionRequest);
-		}
-	#endif
+    #ifdef RELEASE_VERSION
+        if (CONF.GetAutoUpdateCheck())
+        {
+                mHttpGetVersionServer = new QHttp(this);
+                TriggerVersionCheck(mHttpGetVersionServer, GotAnswerForVersionRequest);
+        }
+    #endif
 }
 
 void MainWindow::initializeScreenCapturing()
@@ -321,10 +323,13 @@ void MainWindow::initializeFeatureDisablers(QStringList &pArguments)
                 CONF.DisableAudioOutput();
             if(tFeatureName == "AudioCapture")
                 CONF.DisableAudioCapture();
-            if(tFeatureName == "Conferencing")
+            if (tFeatureName == "Conferencing")
                 CONF.DisableConferencing();
         }
     }
+
+    if (!CONF.GetFeatureConferencing())
+        CONF.DisableConferencing();
 
     removeArguments(pArguments, "-Disable");
 }
@@ -426,15 +431,15 @@ void MainWindow::initializeVideoAudioIO()
     // ############################
     LOG(LOG_VERBOSE, "Creating video media objects..");
     mOwnVideoMuxer = new MediaSourceMuxer();
-	#ifdef LINUX
-		mOwnVideoMuxer->RegisterMediaSource(new MediaSourceV4L2(tVSourceSelection));
-	#endif
-	#ifdef WIN32
-		mOwnVideoMuxer->RegisterMediaSource(new MediaSourceDShow(tVSourceSelection));
-	#endif
-	#ifdef APPLE
-		mOwnVideoMuxer->RegisterMediaSource(new MediaSourceCoreVideo(tVSourceSelection));
-	#endif
+    #ifdef LINUX
+        mOwnVideoMuxer->RegisterMediaSource(new MediaSourceV4L2(tVSourceSelection));
+    #endif
+    #ifdef WIN32
+        mOwnVideoMuxer->RegisterMediaSource(new MediaSourceDShow(tVSourceSelection));
+    #endif
+    #ifdef APPLE
+        mOwnVideoMuxer->RegisterMediaSource(new MediaSourceCoreVideo(tVSourceSelection));
+    #endif
     mOwnVideoMuxer->RegisterMediaSource(mSourceDesktop = new MediaSourceDesktop());
     // ############################
     // ### AUDIO
@@ -443,7 +448,7 @@ void MainWindow::initializeVideoAudioIO()
     mOwnAudioMuxer = new MediaSourceMuxer();
     if (CONF.AudioCaptureEnabled())
     {
-		mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio(tASourceSelection));
+        mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio(tASourceSelection));
     }
 }
 
@@ -452,19 +457,19 @@ void MainWindow::initializeColoring()
     LOG(LOG_VERBOSE, "Initialization of coloring..");
 
     // tool bars
-	if (mToolBarOnlineStatus != NULL)
-	    mToolBarOnlineStatus->setStyleSheet("QToolBar#mToolBarOnlineStatus{ background-color: qlineargradient(x1:0, y1:1, x2:0, y2:0, stop:0 rgba(176, 176, 176, 255), stop:1 rgba(255, 255, 255, 255)); border: 0px solid black }");
-	mToolBarMediaSources->setStyleSheet("QToolBar#mToolBarMediaSources{ background-color: qlineargradient(x1:0, y1:1, x2:0, y2:0, stop:0 rgba(176, 176, 176, 255), stop:1 rgba(255, 255, 255, 255)); border: 0px solid black }");
+    if (mToolBarOnlineStatus != NULL)
+        mToolBarOnlineStatus->setStyleSheet("QToolBar#mToolBarOnlineStatus{ background-color: qlineargradient(x1:0, y1:1, x2:0, y2:0, stop:0 rgba(176, 176, 176, 255), stop:1 rgba(255, 255, 255, 255)); border: 0px solid black }");
+    mToolBarMediaSources->setStyleSheet("QToolBar#mToolBarMediaSources{ background-color: qlineargradient(x1:0, y1:1, x2:0, y2:0, stop:0 rgba(176, 176, 176, 255), stop:1 rgba(255, 255, 255, 255)); border: 0px solid black }");
 }
 
 void MainWindow::initializeWidgetsAndMenus()
 {
     LOG(LOG_VERBOSE, "Initialization of widgets and menus..");
 
-	#ifndef APPLE
-	    // set fixed style "plastic"
-    	QApplication::setStyle(new QPlastiqueStyle());
-	#endif
+    #ifndef APPLE
+        // set fixed style "plastic"
+        QApplication::setStyle(new QPlastiqueStyle());
+    #endif
 
     if (CONF.ConferencingEnabled())
     {
@@ -547,7 +552,7 @@ bool MainWindow::GetNetworkInfo(LocalAddressesList &pLocalAddressesList, QString
     LOG(LOG_INFO, "Local usable IPv4/6 addresses are:");
     for (int i = 0; i < tQtLocalAddresses.size(); i++)
     {
-    	if ((tQtLocalAddresses[i].protocol() == QAbstractSocket::IPv4Protocol) || ((tQtLocalAddresses[i].protocol() == QAbstractSocket::IPv6Protocol) && (!tQtLocalAddresses[i].toString().startsWith(IPV6_LINK_LOCAL_PREFIX))))
+        if ((tQtLocalAddresses[i].protocol() == QAbstractSocket::IPv4Protocol) || ((tQtLocalAddresses[i].protocol() == QAbstractSocket::IPv6Protocol) && (!tQtLocalAddresses[i].toString().startsWith(IPV6_LINK_LOCAL_PREFIX))))
         {
             LOG(LOG_INFO, "...%s", tQtLocalAddresses[i].toString().toStdString().c_str());
 
@@ -579,7 +584,7 @@ bool MainWindow::GetNetworkInfo(LocalAddressesList &pLocalAddressesList, QString
            (tHostInterfaces[i].flags().testFlag(QNetworkInterface::IsRunning)) &&
            (tHostInterfaces[i].flags().testFlag(QNetworkInterface::CanBroadcast)))
         {
-        	tInterfaceUsable = true;
+            tInterfaceUsable = true;
             LOG(LOG_INFO, "Found possible listener network interface: \"%s\"", tHostInterfaces[i].humanReadableName().toStdString().c_str());
         } else
         {
@@ -596,9 +601,9 @@ bool MainWindow::GetNetworkInfo(LocalAddressesList &pLocalAddressesList, QString
         LOG(LOG_INFO, "  ..hardware address: %s", tHostInterfaces[i].hardwareAddress().toStdString().c_str());
 
         if (tHostInterfaces[i].isValid())
-        	LOG(LOG_INFO, "  ..is valid");
+            LOG(LOG_INFO, "  ..is valid");
         else
-        	LOG(LOG_INFO, "  ..is invalid");
+            LOG(LOG_INFO, "  ..is invalid");
 
         if (tHostInterfaces[i].flags().testFlag(QNetworkInterface::IsPointToPoint))
             LOG(LOG_INFO, "  ..is P2P enabled");
@@ -644,19 +649,19 @@ bool MainWindow::GetNetworkInfo(LocalAddressesList &pLocalAddressesList, QString
             }
             if ((pLocalSourceIp == "") && (tInterfaceUsable))
             {
-            	if ((tAddresses[j].ip().protocol() == QAbstractSocket::IPv4Protocol) || ((tAddresses[j].ip().protocol() == QAbstractSocket::IPv6Protocol) && (!tAddresses[j].ip().toString().startsWith(IPV6_LINK_LOCAL_PREFIX))))
-            	{
-            		LOG(LOG_INFO, ">>> used as local meeting listener interface");
-            		pLocalSourceIp = tAddresses[j].ip().toString();
-            	}
+                if ((tAddresses[j].ip().protocol() == QAbstractSocket::IPv4Protocol) || ((tAddresses[j].ip().protocol() == QAbstractSocket::IPv6Protocol) && (!tAddresses[j].ip().toString().startsWith(IPV6_LINK_LOCAL_PREFIX))))
+                {
+                    LOG(LOG_INFO, ">>> used as local meeting listener interface");
+                    pLocalSourceIp = tAddresses[j].ip().toString();
+                }
             }
         }
     }
 
     if ((pLocalSourceIp == "") && (pLocalLoopIp != ""))
     {
-		LOG(LOG_INFO, ">>> using loopback address %s as local meeting listener interface", pLocalLoopIp.toStdString().c_str());
-    	pLocalSourceIp = pLocalLoopIp;
+        LOG(LOG_INFO, ">>> using loopback address %s as local meeting listener interface", pLocalLoopIp.toStdString().c_str());
+        pLocalSourceIp = pLocalLoopIp;
     }
 
     return (pLocalSourceIp != "");
@@ -687,10 +692,10 @@ void MainWindow::CreateScreenShot()
         else
             sShiftingString[31 - sShiftIndex] = '#';
     #endif
-	mStatusBar->showMessage("Program Start  " + mStartTime.toString("hh:mm") + "       Time  " + QTime::currentTime().toString("hh:mm") + "    " + sShiftingString);
+    mStatusBar->showMessage("Program Start  " + mStartTime.toString("hh:mm") + "       Time  " + QTime::currentTime().toString("hh:mm") + "    " + sShiftingString);
     sShiftingString[sShiftIndex] = ' ';
     if(mSourceDesktop != NULL)
-	    mSourceDesktop->CreateScreenshot();
+        mSourceDesktop->CreateScreenshot();
     mScreenShotTimer->start(1000 / SCREEN_CAPTURE_FPS);
 }
 
@@ -796,7 +801,7 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
 
     // audio playback - stop sound
     #ifndef DEBUG_VERSION
-    	bool tStartedPlayback = false;
+        bool tStartedPlayback = false;
         if (CONF.GetStopSound())
             tStartedPlayback = StartAudioPlayback(CONF.GetStopSoundFile());
         if ((mWaveOut != NULL) && (tStartedPlayback))
@@ -808,7 +813,7 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
                 Thread::Suspend(250 * 1000);
             }
         }
-	#endif
+    #endif
     ClosePlaybackDevice();
 
     // remove ourself as observer for new Meeting events
@@ -856,7 +861,7 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
     LOG(LOG_VERBOSE, "..destroying broadcast audio muxer");
     delete mOwnAudioMuxer;
 
-	// destroy all participant widgets
+    // destroy all participant widgets
     LOG(LOG_VERBOSE, "..destroying all participant widgets");
     ParticipantWidgetList::iterator tIt;
     if (mParticipantWidgets.size())
@@ -872,8 +877,10 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
     MEETING.Deinit();
 
     LOG(LOG_VERBOSE, "..destroying simulator widget");
-    if (mNetworkSimulator != NULL)
-        delete mNetworkSimulator;
+    #if HOMER_NETWORK_SIMULATOR
+        if (mNetworkSimulator != NULL)
+            delete mNetworkSimulator;
+    #endif
 
     LOG(LOG_VERBOSE, "..destroying shortcuts");
     delete mShortcutActivateDebugWidgets;
@@ -909,15 +916,15 @@ void MainWindow::GetEventSource(GeneralEvent *pEvent, QString &pSender, QString 
     pSender = (pEvent->SenderName != "") ? QString(pEvent->SenderName.c_str()) : QString(pEvent->Sender.c_str());
     pSenderApp = (pEvent->SenderApplication != "") ? QString(pEvent->SenderApplication.c_str()) : "";
     if (pSenderApp == USER_AGENT_SIGNATURE)
-    	pSenderApp = "Homer-Conferencing";
+        pSenderApp = "Homer-Conferencing";
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *pEvent)
 {
-	LOG(LOG_VERBOSE, "Got main window key press event with key %s(%d, mod: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
+    LOG(LOG_VERBOSE, "Got main window key press event with key %s(%d, mod: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
 
-	// forward the event to the local participant widget
-	QCoreApplication::postEvent(mLocalUserParticipantWidget, new QKeyEvent(QEvent::KeyPress, pEvent->key(), pEvent->modifiers()));
+    // forward the event to the local participant widget
+    QCoreApplication::postEvent(mLocalUserParticipantWidget, new QKeyEvent(QEvent::KeyPress, pEvent->key(), pEvent->modifiers()));
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *pEvent)
@@ -953,11 +960,11 @@ void MainWindow::dropEvent(QDropEvent *pEvent)
 
 void MainWindow::changeEvent (QEvent *pEvent)
 {
-	if (pEvent->type() == QEvent::WindowStateChange)
-	{
-		UpdateSysTrayContextMenu();
-	}
-	QMainWindow::changeEvent(pEvent);
+    if (pEvent->type() == QEvent::WindowStateChange)
+    {
+        UpdateSysTrayContextMenu();
+    }
+    QMainWindow::changeEvent(pEvent);
 }
 
 void MainWindow::customEvent(QEvent* pEvent)
@@ -1085,9 +1092,9 @@ void MainWindow::customEvent(QEvent* pEvent)
                     // inform contacts pool about online state
                     CONTACTS.UpdateContactState(QString::fromLocal8Bit(tOUAEvent->Sender.c_str()), CONTACT_UNAVAILABLE);
 
-                	LOG(LOG_WARN, "Contact unavailable, reason is \"%s\"(%d).", tOUAEvent->Description.c_str(), tOUAEvent->StatusCode);
+                    LOG(LOG_WARN, "Contact unavailable, reason is \"%s\"(%d).", tOUAEvent->Description.c_str(), tOUAEvent->StatusCode);
 
-                	// inform participant widget about new state
+                    // inform participant widget about new state
                     if (mParticipantWidgets.size())
                     {
                         // search for corresponding participant widget
@@ -1712,16 +1719,16 @@ void MainWindow::CreateSysTray()
 
     connect(mSysTrayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(activatedSysTray(QSystemTrayIcon::ActivationReason)));
 
-	connect(mSysTrayMenu, SIGNAL(aboutToShow()), this, SLOT(UpdateSysTrayContextMenu()));
+    connect(mSysTrayMenu, SIGNAL(aboutToShow()), this, SLOT(UpdateSysTrayContextMenu()));
 
-	#ifdef APPLE
-		mDockMenu = new QMenu(this);
+    #ifdef APPLE
+        mDockMenu = new QMenu(this);
 
-		qt_mac_set_dock_menu(mDockMenu);
-		connect(mDockMenu, SIGNAL(aboutToShow()), this, SLOT(UpdateSysTrayContextMenu()));
-	#endif
+        qt_mac_set_dock_menu(mDockMenu);
+        connect(mDockMenu, SIGNAL(aboutToShow()), this, SLOT(UpdateSysTrayContextMenu()));
+    #endif
 
-	UpdateSysTrayContextMenu();
+    UpdateSysTrayContextMenu();
 }
 
 void MainWindow::actionToggleWindowState()
@@ -1732,54 +1739,54 @@ void MainWindow::actionToggleWindowState()
     LOG(LOG_VERBOSE, "Toggling window state");
     if (isMinimized())
     {
-    	LOG(LOG_VERBOSE, "Found window minized");
+        LOG(LOG_VERBOSE, "Found window minized");
         activateWindow();
         if (sWasFullScreen)
         {
-        	LOG(LOG_VERBOSE, "Showing the main window in full screen mode");
+            LOG(LOG_VERBOSE, "Showing the main window in full screen mode");
             showFullScreen();
         }else
         {
             if (sWasMaximized)
             {
-            	LOG(LOG_VERBOSE, "Mayiming the main window");
+                LOG(LOG_VERBOSE, "Mayiming the main window");
                 showMaximized();
             }else
             {
-            	LOG(LOG_VERBOSE, "Showing the main window in a normal view");
+                LOG(LOG_VERBOSE, "Showing the main window in a normal view");
                 showNormal();
             }
         }
-    	LOG(LOG_VERBOSE, "Bring the main window in focus and to the foreground");
+        LOG(LOG_VERBOSE, "Bring the main window in focus and to the foreground");
         setFocus();
         show();
     }else
     {
-    	LOG(LOG_VERBOSE, "Found window non-minized");
-		#ifndef APPLE
-			if (!hasFocus())
-			{
-				LOG(LOG_VERBOSE, "Bring the main window in focus and to the foreground");
-				activateWindow();
-				setFocus();
-				show();
-			}else
-			{
-		#endif
-				LOG(LOG_VERBOSE, "Minimizing the main window");
-				showMinimized();
-		#ifndef APPLE
+        LOG(LOG_VERBOSE, "Found window non-minized");
+        #ifndef APPLE
+            if (!hasFocus())
+            {
+                LOG(LOG_VERBOSE, "Bring the main window in focus and to the foreground");
+                activateWindow();
+                setFocus();
+                show();
+            }else
+            {
+        #endif
+                LOG(LOG_VERBOSE, "Minimizing the main window");
+                showMinimized();
+        #ifndef APPLE
             }
-		#endif
-		sWasFullScreen = isFullScreen();
+        #endif
+        sWasFullScreen = isFullScreen();
         sWasMaximized = isMaximized();
     }
 }
 
 void MainWindow::actionMuteMe()
 {
-	mLocalUserParticipantWidget->GetAudioWorker()->SetMuteState(!mLocalUserParticipantWidget->GetAudioWorker()->GetMuteState());
-	UpdateSysTrayContextMenu();
+    mLocalUserParticipantWidget->GetAudioWorker()->SetMuteState(!mLocalUserParticipantWidget->GetAudioWorker()->GetMuteState());
+    UpdateSysTrayContextMenu();
 }
 
 void MainWindow::actionMuteOthers()
@@ -1795,7 +1802,7 @@ void MainWindow::actionMuteOthers()
 
 void MainWindow::actionActivateNetworkSimulationWidgets()
 {
-	QStringList tArguments;
+    QStringList tArguments;
     initializeNetworkSimulator(tArguments, true);
 }
 
@@ -1828,127 +1835,127 @@ void MainWindow::UpdateSysTrayContextMenu()
     {
         mSysTrayMenu->clear();
 
-		if (isMinimized())
-		{
-			tAction = mSysTrayMenu->addAction("Show window");
-		}else
-		{
-			tAction = mSysTrayMenu->addAction("Hide window");
-		}
-		tIcon = new QIcon(":/images/22_22/Resize.png");
-		tAction->setIcon(*tIcon);
-		connect(tAction, SIGNAL(triggered()), this, SLOT(actionToggleWindowState()));
+        if (isMinimized())
+        {
+            tAction = mSysTrayMenu->addAction("Show window");
+        }else
+        {
+            tAction = mSysTrayMenu->addAction("Hide window");
+        }
+        tIcon = new QIcon(":/images/22_22/Resize.png");
+        tAction->setIcon(*tIcon);
+        connect(tAction, SIGNAL(triggered()), this, SLOT(actionToggleWindowState()));
 
-		mSysTrayMenu->addSeparator();
+        mSysTrayMenu->addSeparator();
 
-		if (mLocalUserParticipantWidget->GetAudioWorker()->GetMuteState())
-		{
-			tAction = mSysTrayMenu->addAction("Unmute me");
-			tIcon = new QIcon(":/images/22_22/SpeakerLoud.png");
-		}else
-		{
-			tAction = mSysTrayMenu->addAction("Mute me");
-			tIcon = new QIcon(":/images/22_22/SpeakerMuted.png");
-		}
-		tAction->setIcon(*tIcon);
-		connect(tAction, SIGNAL(triggered()), this, SLOT(actionMuteMe()));
+        if (mLocalUserParticipantWidget->GetAudioWorker()->GetMuteState())
+        {
+            tAction = mSysTrayMenu->addAction("Unmute me");
+            tIcon = new QIcon(":/images/22_22/SpeakerLoud.png");
+        }else
+        {
+            tAction = mSysTrayMenu->addAction("Mute me");
+            tIcon = new QIcon(":/images/22_22/SpeakerMuted.png");
+        }
+        tAction->setIcon(*tIcon);
+        connect(tAction, SIGNAL(triggered()), this, SLOT(actionMuteMe()));
 
-		tAction = mSysTrayMenu->addAction("Mute others");
-		tIcon = new QIcon(":/images/22_22/SpeakerMuted.png");
-		tAction->setIcon(*tIcon);
-		connect(tAction, SIGNAL(triggered()), this, SLOT(actionMuteOthers()));
+        tAction = mSysTrayMenu->addAction("Mute others");
+        tIcon = new QIcon(":/images/22_22/SpeakerMuted.png");
+        tAction->setIcon(*tIcon);
+        connect(tAction, SIGNAL(triggered()), this, SLOT(actionMuteOthers()));
 
-		mSysTrayMenu->addSeparator();
+        mSysTrayMenu->addSeparator();
 
-		if (CONF.ConferencingEnabled())
-		{
+        if (CONF.ConferencingEnabled())
+        {
             tAction = mSysTrayMenu->addAction("Online status");
             tMenu = new QMenu(this);
             mOnlineStatusWidget->InitializeMenuOnlineStatus(tMenu);
             tAction->setMenu(tMenu);
             connect(tMenu, SIGNAL(triggered(QAction *)), mOnlineStatusWidget, SLOT(Selected(QAction *)));
-		}
+        }
 
-		mSysTrayMenu->addSeparator();
+        mSysTrayMenu->addSeparator();
 
-		tAction = mSysTrayMenu->addAction("Exit");
-		tIcon = new QIcon(":/images/22_22/Exit.png");
-		tAction->setIcon(*tIcon);
-		connect(tAction, SIGNAL(triggered()), this, SLOT(actionExit()));
+        tAction = mSysTrayMenu->addAction("Exit");
+        tIcon = new QIcon(":/images/22_22/Exit.png");
+        tAction->setIcon(*tIcon);
+        connect(tAction, SIGNAL(triggered()), this, SLOT(actionExit()));
     }
 
-	#ifdef APPLE
-		if (mDockMenu != NULL)
-		{
-			mDockMenu->clear();
+    #ifdef APPLE
+        if (mDockMenu != NULL)
+        {
+            mDockMenu->clear();
 
-			if (isMinimized())
-			{
-				tAction = mDockMenu->addAction("Show window");
-			}else
-			{
-				tAction = mDockMenu->addAction("Hide window");
-			}
-			tIcon = new QIcon(":/images/22_22/Resize.png");
-			tAction->setIcon(*tIcon);
-			connect(tAction, SIGNAL(triggered()), this, SLOT(actionToggleWindowState()));
+            if (isMinimized())
+            {
+                tAction = mDockMenu->addAction("Show window");
+            }else
+            {
+                tAction = mDockMenu->addAction("Hide window");
+            }
+            tIcon = new QIcon(":/images/22_22/Resize.png");
+            tAction->setIcon(*tIcon);
+            connect(tAction, SIGNAL(triggered()), this, SLOT(actionToggleWindowState()));
 
-			mDockMenu->addSeparator();
+            mDockMenu->addSeparator();
 
-			if (mLocalUserParticipantWidget->GetAudioWorker()->GetMuteState())
-			{
-				tAction = mDockMenu->addAction("Unmute me");
-				tIcon = new QIcon(":/images/22_22/SpeakerLoud.png");
-			}else
-			{
-				tAction = mDockMenu->addAction("Mute me");
-				tIcon = new QIcon(":/images/22_22/SpeakerMuted.png");
-			}
-			tAction->setIcon(*tIcon);
-			connect(tAction, SIGNAL(triggered()), this, SLOT(actionMuteMe()));
+            if (mLocalUserParticipantWidget->GetAudioWorker()->GetMuteState())
+            {
+                tAction = mDockMenu->addAction("Unmute me");
+                tIcon = new QIcon(":/images/22_22/SpeakerLoud.png");
+            }else
+            {
+                tAction = mDockMenu->addAction("Mute me");
+                tIcon = new QIcon(":/images/22_22/SpeakerMuted.png");
+            }
+            tAction->setIcon(*tIcon);
+            connect(tAction, SIGNAL(triggered()), this, SLOT(actionMuteMe()));
 
-			tAction = mDockMenu->addAction("Mute others");
-			tIcon = new QIcon(":/images/22_22/SpeakerMuted.png");
-			tAction->setIcon(*tIcon);
-			connect(tAction, SIGNAL(triggered()), this, SLOT(actionMuteOthers()));
+            tAction = mDockMenu->addAction("Mute others");
+            tIcon = new QIcon(":/images/22_22/SpeakerMuted.png");
+            tAction->setIcon(*tIcon);
+            connect(tAction, SIGNAL(triggered()), this, SLOT(actionMuteOthers()));
 
-			mDockMenu->addSeparator();
+            mDockMenu->addSeparator();
 
-	        if (CONF.ConferencingEnabled())
-	        {
+            if (CONF.ConferencingEnabled())
+            {
                 tAction = mDockMenu->addAction("Online status");
                 tMenu = new QMenu(this);
                 mOnlineStatusWidget->InitializeMenuOnlineStatus(tMenu);
                 tAction->setMenu(tMenu);
                 connect(tMenu, SIGNAL(triggered(QAction *)), mOnlineStatusWidget, SLOT(Selected(QAction *)));
-	        }
-		}else
-			LOG(LOG_VERBOSE, "Invalid dock menu object");
-	#endif
+            }
+        }else
+            LOG(LOG_VERBOSE, "Invalid dock menu object");
+    #endif
 }
 
 void MainWindow::activatedSysTray(QSystemTrayIcon::ActivationReason pReason)
 {
-	switch(pReason)
-	{
-		case QSystemTrayIcon::Context:	//The context menu for the system tray entry was requested
-			LOG(LOG_VERBOSE, "SysTrayIcon activated for context menu");
-			break;
-		case QSystemTrayIcon::DoubleClick: //The system tray entry was double clicked
-			LOG(LOG_VERBOSE, "SysTrayIcon activated for double click");
-			actionToggleWindowState();
-			break;
-		case QSystemTrayIcon::Trigger:	//The system tray entry was clicked
-			LOG(LOG_VERBOSE, "SysTrayIcon activated for trigger");
-			break;
-		case QSystemTrayIcon::MiddleClick:
-			LOG(LOG_VERBOSE, "SysTrayIcon activated for middle click");
-			break;
-		default:
-		case QSystemTrayIcon::Unknown:	//Unknown reason
-			LOG(LOG_VERBOSE, "SysTrayIcon activated for unknown reason");
-			break;
-	}
+    switch(pReason)
+    {
+        case QSystemTrayIcon::Context:  //The context menu for the system tray entry was requested
+            LOG(LOG_VERBOSE, "SysTrayIcon activated for context menu");
+            break;
+        case QSystemTrayIcon::DoubleClick: //The system tray entry was double clicked
+            LOG(LOG_VERBOSE, "SysTrayIcon activated for double click");
+            actionToggleWindowState();
+            break;
+        case QSystemTrayIcon::Trigger:  //The system tray entry was clicked
+            LOG(LOG_VERBOSE, "SysTrayIcon activated for trigger");
+            break;
+        case QSystemTrayIcon::MiddleClick:
+            LOG(LOG_VERBOSE, "SysTrayIcon activated for middle click");
+            break;
+        default:
+        case QSystemTrayIcon::Unknown:  //Unknown reason
+            LOG(LOG_VERBOSE, "SysTrayIcon activated for unknown reason");
+            break;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

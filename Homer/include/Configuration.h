@@ -125,6 +125,7 @@ public:
 
     bool GetSmoothVideoPresentation();
     bool GetAutoUpdateCheck();
+    bool GetFeatureConferencing();
 
     /* user settings */
     QString GetUserName();
@@ -268,6 +269,8 @@ public:
 
     void SetSmoothVideoPresentation(bool pActive);
     void SetAutoUpdateCheck(bool pActive);
+    void SetFeatureConferencing(bool pActive);
+
 
     /* user settings */
     void SetUserName(QString pUserName);

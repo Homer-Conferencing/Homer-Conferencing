@@ -288,6 +288,13 @@ void Configuration::SetAutoUpdateCheck(bool pActive)
     mQSettings->endGroup();
 }
 
+void Configuration::SetFeatureConferencing(bool pActive)
+{
+    mQSettings->beginGroup("Global");
+    mQSettings->setValue("FeatureConferencing", pActive);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetUserName(QString pUserName)
 {
     mQSettings->beginGroup("User");
@@ -915,6 +922,11 @@ bool Configuration::GetVisibilityBroadcastVideo()
 bool Configuration::GetAutoUpdateCheck()
 {
     return mQSettings->value("Global/AutomaticUpdateCheck", false).toBool();
+}
+
+bool Configuration::GetFeatureConferencing()
+{
+    return mQSettings->value("Global/FeatureConferencing", true).toBool();
 }
 
 QString Configuration::GetUserName()
