@@ -147,7 +147,10 @@ void Meeting::Init(string pSipHostAdr, LocalAddressesList pLocalAddresses, bool 
 void Meeting::Stop()
 {
     if (!mMeetingInitiated)
-        LOG(LOG_ERROR, "Session manager wasn't initiated yet");
+    {
+        LOG(LOG_WARN, "Session manager wasn't initiated yet");
+        return;
+    }
 
     //trigger ending of SIP main loop
     StopSipMainLoop();
