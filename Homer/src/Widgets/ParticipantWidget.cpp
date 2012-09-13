@@ -226,6 +226,10 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
                     if (mAudioSourceMuxer != NULL)
                         mAudioWidget->Init(mAudioSourceMuxer, pAudioMenu, mSessionName, mSessionName, CONF.GetVisibilityBroadcastAudio(), true);
                     setFeatures(QDockWidget::NoDockWidgetFeatures);
+
+                    // hide Homer logo
+                    mLogoFrame->hide();
+
                     break;
         case PARTICIPANT:
         			{
@@ -253,6 +257,9 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
 							mAudioWidget->Init(mAudioSource, pAudioMenu, mSessionName);
 						}else
 							LOG(LOG_ERROR, "Determined audio socket is NULL");
+
+						// hide Homer logo
+						mLogoFrame->hide();
         			}
 					break;
         case PREVIEW:
@@ -289,7 +296,13 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
                                 mMovieControlsFrame->hide();
                         }
                         if(tFoundPreviewSource)
+                        {
+                            // hide Homer logo
+                            mLogoFrame->hide();
+
                             break;
+                        }
+
                     }
 
                     // delete this participant widget again if no preview could be opened
@@ -327,6 +340,10 @@ void ParticipantWidget::HideAudioVideoWidget()
     {
         case BROADCAST:
             mVideoAudioWidget->hide();
+
+            // show Homer logo
+            mLogoFrame->show();
+
             break;
         case PARTICIPANT:
             mVideoAudioWidget->hide();
@@ -343,6 +360,10 @@ void ParticipantWidget::ShowAudioVideoWidget()
     {
         case BROADCAST:
             mVideoAudioWidget->show();
+
+            // hide Homer logo
+            mLogoFrame->hide();
+
             break;
         case PARTICIPANT:
             mVideoAudioWidget->show();

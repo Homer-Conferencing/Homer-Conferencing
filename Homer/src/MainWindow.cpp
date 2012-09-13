@@ -321,10 +321,13 @@ void MainWindow::initializeFeatureDisablers(QStringList &pArguments)
                 CONF.DisableAudioOutput();
             if(tFeatureName == "AudioCapture")
                 CONF.DisableAudioCapture();
-            if(tFeatureName == "Conferencing")
+            if (tFeatureName == "Conferencing")
                 CONF.DisableConferencing();
         }
     }
+
+    if (!CONF.GetFeatureConferencing())
+        CONF.DisableConferencing();
 
     removeArguments(pArguments, "-Disable");
 }
