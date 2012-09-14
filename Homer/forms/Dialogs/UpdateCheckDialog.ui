@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1024</width>
-    <height>551</height>
+    <width>1124</width>
+    <height>827</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -440,7 +440,7 @@ p, li { white-space: pre-wrap; }
           <property name="title">
            <string> Changelog view</string>
           </property>
-          <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,0">
+          <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,1">
            <property name="margin">
             <number>3</number>
            </property>

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1161</width>
-    <height>739</height>
+    <width>1154</width>
+    <height>729</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -431,11 +431,11 @@ p, li { white-space: pre-wrap; }
           <property name="title">
            <string> Help view </string>
           </property>
-          <layout class="QGridLayout" name="gridLayout" rowstretch="1,0">
+          <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,1">
            <property name="margin">
             <number>3</number>
            </property>
-           <item row="0" column="0">
+           <item>
             <widget class="QLabel" name="mLbWaiting">
              <property name="font">
               <font>
@@ -447,7 +447,7 @@ p, li { white-space: pre-wrap; }
              </property>
             </widget>
            </item>
-           <item row="1" column="0">
+           <item>
             <widget class="QWebView" name="mWvHelp">
              <property name="enabled">
               <bool>true</bool>
