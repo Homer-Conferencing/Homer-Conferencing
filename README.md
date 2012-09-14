@@ -18,7 +18,7 @@ For the demonstration of processes on the desktop it would be interesting to be 
 ## Minimum system requirements
 * An SSE3 capable CPU (4 cpu cores recommended for high quality streaming)
 * Windows users: Windows XP SP3 (Windows 7 recommended)
-* Linux users: Linux (kernel >= 3.1 recommended)
+* Linux users: Linux with kernel 2.6 (kernel >= 3.1 recommended)
 * Mac users: OSX Snow Leopard (OSX Lion recommended)
 
 # The project
