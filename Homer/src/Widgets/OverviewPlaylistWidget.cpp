@@ -702,7 +702,7 @@ void OverviewPlaylistWidget::AddEntry(QString pLocation, bool pStartPlayback)
         	pLocation = pLocation.right(pLocation.size() - 8);
 
         if (pLocation.startsWith("file://"))
-        	pLocation = pLocation.right(pLocation.size() - 7);
+        	pLocation = pLocation.right(pLocation.size() - 5);
     #else
         if (pLocation.startsWith("file:///"))
         	pLocation = pLocation.right(pLocation.size() - 7);
