@@ -74,6 +74,11 @@ struct SipContext
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// (de-)activate debugging of authentication data: only activate this if logs are kept private!
+//#define DEBUG_AUTH_DATA
+
+///////////////////////////////////////////////////////////////////////////////
+
 SIP::SIP():
     SIP_stun(), PIDF()
 {
@@ -517,7 +522,10 @@ bool SIP::RegisterAtServer(string pUsername, string pPassword, string pServer)
 
     if ((mSipRegisterServer != pServer) || (mSipRegisterUsername != pUsername) || (mSipRegisterPassword != pPassword))
     {
-        LOG(LOG_VERBOSE, "Register at SIP server %s with login %s:%s", pServer.c_str(), pUsername.c_str(), pPassword.c_str());
+        LOG(LOG_VERBOSE, "Register at SIP server %s", pServer.c_str());
+		#ifdef DEBUG_AUTH_DATA
+        	LOG(LOG_VERBOSE, "SIP server login %s:%s", pUsername.c_str(), pPassword.c_str());
+		#endif
 
         mSipRegisterServer = pServer;
         mSipRegisterUsername = pUsername;
@@ -604,7 +612,9 @@ void SIP::SipReceivedRegisterResponse(const sip_to_t *pSipRemote, const sip_to_t
             {
                 string tAuthInfo = "Digest:\"" + mSipRegisterServer + "\":" + mSipRegisterUsername + ":" + mSipRegisterPassword;
 
-                LOG(LOG_VERBOSE, "Authentication information for registration: %s", tAuthInfo.c_str());
+				#ifdef DEBUG_AUTH_DATA
+                	LOG(LOG_VERBOSE, "Authentication information for registration: %s", tAuthInfo.c_str());
+				#endif
 
                 // set auth. information
                 nua_authenticate(mSipRegisterHandle, NUTAG_AUTH(tAuthInfo.c_str()), TAG_END());
