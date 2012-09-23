@@ -390,13 +390,13 @@ void OverviewFileTransfersWidget::AddEntryDialog()
 
     Requirements *tRequs = tANSDialog.GetRequirements();
     QString tTarget = tANSDialog.GetTarget();
-    QString tGAPIImpl = tANSDialog.GetGAPIImplementation();
+    QString tNAPIImpl = tANSDialog.GetNAPIImplementation();
 
-    // get old GAPI implementation
-    string tOldGAPIImpl = GAPI.getCurrentImplName();
+    // get old NAPI implementation
+    string tOldNAPIImpl = NAPI.getCurrentImplName();
 
-    // set selected GAPI implementation
-    GAPI.selectImpl(tGAPIImpl.toStdString());
+    // set selected NAPI implementation
+    NAPI.selectImpl(tNAPIImpl.toStdString());
 
     QString tFile;
     foreach (tFile, tFileNames)
@@ -404,8 +404,8 @@ void OverviewFileTransfersWidget::AddEntryDialog()
         FTMAN.SendFile(tTarget.toStdString(), tRequs, tFile.toStdString());
     }
 
-    // set old GAPI implementation again
-    GAPI.selectImpl(tOldGAPIImpl);
+    // set old NAPI implementation again
+    NAPI.selectImpl(tOldNAPIImpl);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

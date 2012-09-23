@@ -25,8 +25,8 @@
  * Since:   2011-12-08
  */
 
-#ifndef _GAPI_ISETUP_
-#define _GAPI_ISETUP_
+#ifndef _NAPI_ISETUP_
+#define _NAPI_ISETUP_
 
 #include <Name.h>
 #include <IConnection.h>

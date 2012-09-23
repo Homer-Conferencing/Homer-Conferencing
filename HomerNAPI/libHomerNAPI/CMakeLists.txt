@@ -39,7 +39,7 @@ SET (FLAGS
 # SOURCES
 SET (SOURCES
 	../src/Events
-	../src/GAPI
+	../src/NAPI
 	../src/Requirements
 	../src/Berkeley/SocketName
 	../src/Berkeley/SocketSetup

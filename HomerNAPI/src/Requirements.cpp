@@ -25,7 +25,7 @@
  * Since:   2011-12-08
  */
 
-#include <GAPI.h>
+#include <NAPI.h>
 #include <Requirements.h>
 #include <IRequirement.h>
 

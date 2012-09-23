@@ -1066,7 +1066,7 @@ MediaSinkNet* MediaSource::RegisterMediaSink(string pTarget, Requirements *pTran
         return NULL;
     }
 
-    LOG(LOG_VERBOSE, "Registering GAPI based media sink: %s (Requirements: %s)", pTarget.c_str(), pTransportRequirements->getDescription().c_str());
+    LOG(LOG_VERBOSE, "Registering NAPI based media sink: %s (Requirements: %s)", pTarget.c_str(), pTransportRequirements->getDescription().c_str());
 
     // lock
     mMediaSinksMutex.lock();
@@ -1104,7 +1104,7 @@ bool MediaSource::UnregisterMediaSink(string pTarget, Requirements *pTransportRe
     if (pTarget == "")
         return false;
 
-    LOG(LOG_VERBOSE, "Unregistering GAPI based media sink: %s (Requirements: %s)", pTarget.c_str(), pTransportRequirements->getDescription().c_str());
+    LOG(LOG_VERBOSE, "Unregistering NAPI based media sink: %s (Requirements: %s)", pTarget.c_str(), pTransportRequirements->getDescription().c_str());
 
     // lock
     mMediaSinksMutex.lock();

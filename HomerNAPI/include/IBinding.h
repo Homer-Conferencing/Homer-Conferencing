@@ -25,8 +25,8 @@
  * Since:   2011-12-08
  */
 
-#ifndef _GAPI_IREGISTRATION_
-#define _GAPI_IREGISTRATION_
+#ifndef _NAPI_IREGISTRATION_
+#define _NAPI_IREGISTRATION_
 
 #include <IConnection.h>
 

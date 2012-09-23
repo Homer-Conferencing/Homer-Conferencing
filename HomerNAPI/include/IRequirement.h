@@ -25,8 +25,8 @@
  * Since:   2011-12-08
  */
 
-#ifndef _GAPI_IREQUIREMENT_
-#define _GAPI_IREQUIREMENT_
+#ifndef _NAPI_IREQUIREMENT_
+#define _NAPI_IREQUIREMENT_
 
 #include <Logger.h>
 

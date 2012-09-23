@@ -82,17 +82,17 @@ void MediaSourceNet::Init(Socket *pDataSocket, unsigned int pLocalPort, bool pRt
         mCurrentDeviceName = "NET-IN: " + MediaSinkNet::CreateId(mDataSocket->GetLocalHost(), toString(mDataSocket->GetLocalPort()), mDataSocket->GetTransportType(), mRtpActivated);
 
         mListenerPort = mDataSocket->GetLocalPort();
-    }else if (mGAPIDataSocket != NULL)
+    }else if (mNAPIDataSocket != NULL)
     {
-        if (mGAPIDataSocket->isClosed())
+        if (mNAPIDataSocket->isClosed())
         {
-            LOG(LOG_WARN, "GAPI association is closed, reseting local port to 0");
+            LOG(LOG_WARN, "NAPI association is closed, reseting local port to 0");
             mListenerPort = 0;
         }
 
-        LOG(LOG_VERBOSE, "Listen for media packets at GAPI interface: %s, local port specified as: %d, TCP-like transport: %d", mGAPIDataSocket->getName()->toString().c_str(), GetListenerPort(), mStreamedTransport);
-        // assume Berkeley-Socket implementation behind GAPI interface => therefore we can easily conclude on "UDP/TCP/UDPlite"
-        mCurrentDeviceName = "NET-IN: " + mGAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mGAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? "UDPlite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
+        LOG(LOG_VERBOSE, "Listen for media packets at NAPI interface: %s, local port specified as: %d, TCP-like transport: %d", mNAPIDataSocket->getName()->toString().c_str(), GetListenerPort(), mStreamedTransport);
+        // assume Berkeley-Socket implementation behind NAPI interface => therefore we can easily conclude on "UDP/TCP/UDPlite"
+        mCurrentDeviceName = "NET-IN: " + mNAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mNAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? "UDPlite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
     }else
     {
         mListenerPort = 0;
@@ -110,7 +110,7 @@ MediaSourceNet::MediaSourceNet(Socket *pDataSocket, bool pRtpActivated):
 
     Init(pDataSocket, 0, pRtpActivated);
 
-    mGAPIUsed = false;
+    mNAPIUsed = false;
 }
 
 MediaSourceNet::MediaSourceNet(unsigned int pPortNumber, enum TransportType pTransportType,  bool pRtpActivated):
@@ -124,7 +124,7 @@ MediaSourceNet::MediaSourceNet(unsigned int pPortNumber, enum TransportType pTra
 
     Init(Socket::CreateServerSocket(SOCKET_IPv6, pTransportType, pPortNumber), 0, pRtpActivated);
 
-    mGAPIUsed = false;
+    mNAPIUsed = false;
 
     LOG(LOG_VERBOSE, "Local media listener at: <%d>%s", pPortNumber, mRtpActivated ? "(RTP)" : "");
 }
@@ -133,7 +133,7 @@ MediaSourceNet::MediaSourceNet(string pLocalName, Requirements *pTransportRequir
     MediaSourceMem(pRtpActivated)
 {
     mListenerSocketCreatedOutside = false;
-    mGAPIBinding = NULL;
+    mNAPIBinding = NULL;
 
     unsigned int tLocalPort = 0;
     RequirementTargetPort *tRequPort = (RequirementTargetPort*)pTransportRequirements->get(RequirementTargetPort::type());
@@ -148,22 +148,22 @@ MediaSourceNet::MediaSourceNet(string pLocalName, Requirements *pTransportRequir
         LOG(LOG_WARN, "No local port given within requirement set, falling back to port 0");
         tLocalPort = 0;
     }
-    LOG(LOG_VERBOSE, "Local GAPI port determined as %u", tLocalPort);
+    LOG(LOG_VERBOSE, "Local NAPI port determined as %u", tLocalPort);
 
     // finally offer server
     Name tName(pLocalName);
-    mGAPIBinding = GAPI.bind(&tName, pTransportRequirements); //new Socket(IS_IPV6_ADDRESS(pTargetHost) ? SOCKET_IPv6 : SOCKET_IPv4, pSocketType);
-    if (mGAPIBinding == NULL)
-        LOG(LOG_ERROR, "Invalid GAPI setup interface");
-    mGAPIDataSocket = mGAPIBinding->readConnection();
-    if (mGAPIDataSocket == NULL)
-        LOG(LOG_ERROR, "Invalid GAPI association");
+    mNAPIBinding = NAPI.bind(&tName, pTransportRequirements); //new Socket(IS_IPV6_ADDRESS(pTargetHost) ? SOCKET_IPv6 : SOCKET_IPv4, pSocketType);
+    if (mNAPIBinding == NULL)
+        LOG(LOG_ERROR, "Invalid NAPI setup interface");
+    mNAPIDataSocket = mNAPIBinding->readConnection();
+    if (mNAPIDataSocket == NULL)
+        LOG(LOG_ERROR, "Invalid NAPI association");
 
     mStreamedTransport = pTransportRequirements->contains(pTransportRequirements->contains(RequirementTransmitStream::type()));
 
     Init(NULL, tLocalPort, pRtpActivated);
 
-    mGAPIUsed = true;
+    mNAPIUsed = true;
 }
 
 MediaSourceNet::~MediaSourceNet()
@@ -180,12 +180,12 @@ MediaSourceNet::~MediaSourceNet()
     if (mMediaSourceOpened)
         CloseGrabDevice();
 
-    if(mGAPIUsed)
+    if(mNAPIUsed)
     {
-        if (mGAPIBinding != NULL)
+        if (mNAPIBinding != NULL)
         {
-        	LOG(LOG_VERBOSE, "..destroying GAPI bind object");
-        	delete mGAPIBinding; //HINT: this stops all listeners automatically
+        	LOG(LOG_VERBOSE, "..destroying NAPI bind object");
+        	delete mNAPIBinding; //HINT: this stops all listeners automatically
         }
     }else
     {
@@ -218,13 +218,13 @@ bool MediaSourceNet::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         enum NetworkType tNetworkType;
 
 		// set category for packet statistics
-        if (mGAPIUsed)
+        if (mNAPIUsed)
         {
-            // assume Berkeley-Socket implementation behind GAPI interface => therefore we can easily conclude on "UDP/TCP/UDPlite"
-            mCurrentDeviceName = "NET-IN: " + mGAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mGAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? "UDPlite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
+            // assume Berkeley-Socket implementation behind NAPI interface => therefore we can easily conclude on "UDP/TCP/UDPlite"
+            mCurrentDeviceName = "NET-IN: " + mNAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mNAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? "UDPlite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
 
-            tTransportType = (mStreamedTransport ? SOCKET_TCP : (mGAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
-            tNetworkType = (IS_IPV6_ADDRESS(mGAPIDataSocket->getName()->toString()) ? SOCKET_IPv6 : SOCKET_IPv4); //TODO: this is not correct for unknown GAPI implementations which use some different type of network
+            tTransportType = (mStreamedTransport ? SOCKET_TCP : (mNAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
+            tNetworkType = (IS_IPV6_ADDRESS(mNAPIDataSocket->getName()->toString()) ? SOCKET_IPv6 : SOCKET_IPv4); //TODO: this is not correct for unknown NAPI implementations which use some different type of network
         }else
         {
             mCurrentDeviceName = "NET-IN: " + MediaSinkNet::CreateId(mDataSocket->GetLocalHost(), toString(mDataSocket->GetLocalPort()), mDataSocket->GetTransportType(), mRtpActivated);
@@ -257,13 +257,13 @@ bool MediaSourceNet::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
         enum NetworkType tNetworkType;
 
 	    // set category for packet statistics
-        if (mGAPIUsed)
+        if (mNAPIUsed)
         {
-            // assume Berkeley-Socket implementation behind GAPI interface => therefore we can easily conclude on "UDP/TCP/UDPlite"
-            mCurrentDeviceName = "NET-IN: " + mGAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mGAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? "UDPlite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
+            // assume Berkeley-Socket implementation behind NAPI interface => therefore we can easily conclude on "UDP/TCP/UDPlite"
+            mCurrentDeviceName = "NET-IN: " + mNAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mNAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? "UDPlite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
 
-            tTransportType = (mStreamedTransport ? SOCKET_TCP : (mGAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
-            tNetworkType = IS_IPV6_ADDRESS(mGAPIDataSocket->getName()->toString()) ? SOCKET_IPv6 : SOCKET_IPv4; //TODO: this is not correct for unknown GAPI implementations which use some different type of network
+            tTransportType = (mStreamedTransport ? SOCKET_TCP : (mNAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
+            tNetworkType = IS_IPV6_ADDRESS(mNAPIDataSocket->getName()->toString()) ? SOCKET_IPv6 : SOCKET_IPv4; //TODO: this is not correct for unknown NAPI implementations which use some different type of network
         }else
         {
             mCurrentDeviceName = "NET-IN: " + MediaSinkNet::CreateId(mDataSocket->GetLocalHost(), toString(mDataSocket->GetLocalPort()), mDataSocket->GetTransportType(), mRtpActivated);
@@ -281,15 +281,15 @@ bool MediaSourceNet::ReceivePacket(std::string &pSourceHost, unsigned int &pSour
 {
     bool tResult = false;
 
-    if(mGAPIUsed)
+    if(mNAPIUsed)
     {
-        if (mGAPIDataSocket != NULL)
+        if (mNAPIDataSocket != NULL)
         {
-            mGAPIDataSocket->read(pData, pSize);
-            if (!mGAPIDataSocket->isClosed())
+            mNAPIDataSocket->read(pData, pSize);
+            if (!mNAPIDataSocket->isClosed())
             {// success
                 tResult = true;
-                string tRemoteName = mGAPIDataSocket->getRemoteName()->toString();
+                string tRemoteName = mNAPIDataSocket->getRemoteName()->toString();
                 int tPos = tRemoteName.find('<');
                 if (tPos != (int)string::npos)
                     tRemoteName = tRemoteName.substr(0, tPos);
@@ -297,7 +297,7 @@ bool MediaSourceNet::ReceivePacket(std::string &pSourceHost, unsigned int &pSour
                 pSourcePort = 1;
             }
         }else
-            LOG(LOG_ERROR, "Invalid GAPI association");
+            LOG(LOG_ERROR, "Invalid NAPI association");
     }else
     {
         if (mDataSocket != NULL)
@@ -333,9 +333,9 @@ void MediaSourceNet::StopListener()
         // tell transcoder thread it isn't needed anymore
         mListenerNeeded = false;
 
-		if (mGAPIUsed)
+		if (mNAPIUsed)
 		{
-			mGAPIDataSocket->cancel();
+			mNAPIDataSocket->cancel();
 		}else
 		{
 			if (mDataSocket != NULL)
@@ -356,15 +356,15 @@ void* MediaSourceNet::Run(void* pArgs)
     int tDataSize;
 
     LOG(LOG_VERBOSE, "%s Socket-Listener for port %u started", GetMediaTypeStr().c_str(), GetListenerPort());
-    if (mGAPIUsed)
+    if (mNAPIUsed)
     {
         switch(mMediaType)
         {
             case MEDIA_VIDEO:
-                SVC_PROCESS_STATISTIC.AssignThreadName("Video-InputListener(GAPI," + GetFormatName(mStreamCodecId) + ")");
+                SVC_PROCESS_STATISTIC.AssignThreadName("Video-InputListener(NAPI," + GetFormatName(mStreamCodecId) + ")");
                 break;
             case MEDIA_AUDIO:
-                SVC_PROCESS_STATISTIC.AssignThreadName("Audio-InputListener(GAPI," + GetFormatName(mStreamCodecId) + ")");
+                SVC_PROCESS_STATISTIC.AssignThreadName("Audio-InputListener(NAPI," + GetFormatName(mStreamCodecId) + ")");
                 break;
             default:
                 LOG(LOG_ERROR, "Unknown media type");
@@ -386,14 +386,14 @@ void* MediaSourceNet::Run(void* pArgs)
         }
     }
 
-    if (mGAPIUsed)
+    if (mNAPIUsed)
     {
-        // assume Berkeley-Socket implementation behind GAPI interface => therefore we can easily conclude on "UDP/TCP/UDPlite"
-        mCurrentDeviceName = "NET-IN: " + mGAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mGAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? "UDPlite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
+        // assume Berkeley-Socket implementation behind NAPI interface => therefore we can easily conclude on "UDP/TCP/UDPlite"
+        mCurrentDeviceName = "NET-IN: " + mNAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mNAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? "UDPlite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
 
-        enum TransportType tTransportType = (mStreamedTransport ? SOCKET_TCP : (mGAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
+        enum TransportType tTransportType = (mStreamedTransport ? SOCKET_TCP : (mNAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
         // update category for packet statistics
-        enum NetworkType tNetworkType = (IS_IPV6_ADDRESS(mGAPIDataSocket->getName()->toString())) ? SOCKET_IPv6 : SOCKET_IPv4;
+        enum NetworkType tNetworkType = (IS_IPV6_ADDRESS(mNAPIDataSocket->getName()->toString())) ? SOCKET_IPv6 : SOCKET_IPv4;
         ClassifyStream(GetDataType(), tTransportType, tNetworkType);
     }else
     {
@@ -431,14 +431,14 @@ void* MediaSourceNet::Run(void* pArgs)
 		    // some news about the peer?
 		    if ((mPeerHost != tSourceHost) || (mPeerPort != tSourcePort))
 		    {
-                if (mGAPIUsed)
+                if (mNAPIUsed)
                 {
-                    // assume Berkeley-Socket implementation behind GAPI interface => therefore we can easily conclude on "UDP/TCP/UDPlite"
-                    mCurrentDeviceName = "NET-IN: " + mGAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mGAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? "UDPlite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
+                    // assume Berkeley-Socket implementation behind NAPI interface => therefore we can easily conclude on "UDP/TCP/UDPlite"
+                    mCurrentDeviceName = "NET-IN: " + mNAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mNAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? "UDPlite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
 
-                    enum TransportType tTransportType = (mStreamedTransport ? SOCKET_TCP : (mGAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
+                    enum TransportType tTransportType = (mStreamedTransport ? SOCKET_TCP : (mNAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
                     // update category for packet statistics
-                    enum NetworkType tNetworkType = (IS_IPV6_ADDRESS(mGAPIDataSocket->getName()->toString())) ? SOCKET_IPv6 : SOCKET_IPv4;
+                    enum NetworkType tNetworkType = (IS_IPV6_ADDRESS(mNAPIDataSocket->getName()->toString())) ? SOCKET_IPv6 : SOCKET_IPv4;
                     ClassifyStream(GetDataType(), tTransportType, tNetworkType);
                 }else
                 {
@@ -521,10 +521,10 @@ unsigned int MediaSourceNet::GetListenerPort()
 
 string MediaSourceNet::GetCurrentDevicePeerName()
 {
-    if (mGAPIUsed)
+    if (mNAPIUsed)
     {
-        if (mGAPIDataSocket != NULL)
-            return mGAPIDataSocket->getRemoteName()->toString();
+        if (mNAPIDataSocket != NULL)
+            return mNAPIDataSocket->getRemoteName()->toString();
         else
             return NULL;
     }else

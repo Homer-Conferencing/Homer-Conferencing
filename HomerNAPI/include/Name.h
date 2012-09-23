@@ -25,8 +25,8 @@
  * Since:   2011-12-08
  */
 
-#ifndef _GAPI_NAME_
-#define _GAPI_NAME_
+#ifndef _NAPI_NAME_
+#define _NAPI_NAME_
 
 #include <string>
 

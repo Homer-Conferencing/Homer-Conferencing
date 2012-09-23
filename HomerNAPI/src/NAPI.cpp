@@ -25,7 +25,7 @@
  * Since:   2011-12-08
  */
 
-#include <GAPI.h>
+#include <NAPI.h>
 #include <Berkeley/SocketSetup.h>
 
 #include <Logger.h>
@@ -36,30 +36,30 @@ using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-GapiService sGapiService;
+NAPIService sNAPIService;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-GapiService::GapiService()
+NAPIService::NAPIService()
 {
 	mSetupInterface = NULL;
 	mSetupInterfaceName = "";
 	registerImpl(new SocketSetup(), BERKEYLEY_SOCKETS);
 }
 
-GapiService::~GapiService()
+NAPIService::~NAPIService()
 {
 
 }
 
-GapiService& GapiService::getInstance()
+NAPIService& NAPIService::getInstance()
 {
-    return sGapiService;
+    return sNAPIService;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool GapiService::registerImpl(ISetup* pSetupInterface, std::string pName)
+bool NAPIService::registerImpl(ISetup* pSetupInterface, std::string pName)
 {
 	bool tFound = false;
 	SetupInterfacesPool::iterator tIt;
@@ -97,7 +97,7 @@ bool GapiService::registerImpl(ISetup* pSetupInterface, std::string pName)
 	return !tFound;
 }
 
-bool GapiService::selectImpl(std::string pName)
+bool NAPIService::selectImpl(std::string pName)
 {
     bool tFound = false;
     SetupInterfacesPool::iterator tIt;
@@ -121,12 +121,12 @@ bool GapiService::selectImpl(std::string pName)
     return tFound;
 }
 
-string GapiService::getCurrentImplName()
+string NAPIService::getCurrentImplName()
 {
     return mSetupInterfaceName;
 }
 
-SetupInterfacesNames GapiService::getAllImplNames()
+SetupInterfacesNames NAPIService::getAllImplNames()
 {
 	SetupInterfacesNames tResult;
 	SetupInterfacesPool::iterator tIt;
@@ -143,11 +143,11 @@ SetupInterfacesNames GapiService::getAllImplNames()
 	return tResult;
 }
 
-IConnection* GapiService::connect(Name *pName, Requirements *pRequirements)
+IConnection* NAPIService::connect(Name *pName, Requirements *pRequirements)
 {
 	IConnection *tResult = NULL;
 
-	LOG(LOG_VERBOSE, "Got call to GAPI::connect() with name \"%s\" and requirements \"%s\"", pName->toString().c_str(), (pRequirements != NULL) ? pRequirements->getDescription().c_str() : "none");
+	LOG(LOG_VERBOSE, "Got call to NAPI::connect() with name \"%s\" and requirements \"%s\"", pName->toString().c_str(), (pRequirements != NULL) ? pRequirements->getDescription().c_str() : "none");
 
 	if(mSetupInterface == NULL)
 		LOG(LOG_ERROR, "No setup interface available");
@@ -157,11 +157,11 @@ IConnection* GapiService::connect(Name *pName, Requirements *pRequirements)
 	return tResult;
 }
 
-IBinding* GapiService::bind(Name *pName, Requirements *pRequirements)
+IBinding* NAPIService::bind(Name *pName, Requirements *pRequirements)
 {
 	IBinding *tResult = NULL;
 
-	LOG(LOG_VERBOSE, "Got call to GAPI::bind() with name \"%s\" and requirements \"%s\"", pName->toString().c_str(), (pRequirements != NULL) ? pRequirements->getDescription().c_str() : "none");
+	LOG(LOG_VERBOSE, "Got call to NAPI::bind() with name \"%s\" and requirements \"%s\"", pName->toString().c_str(), (pRequirements != NULL) ? pRequirements->getDescription().c_str() : "none");
 
 	if(mSetupInterface == NULL)
 		LOG(LOG_ERROR, "No setup interface available");
@@ -171,11 +171,11 @@ IBinding* GapiService::bind(Name *pName, Requirements *pRequirements)
 	return tResult;
 }
 
-Requirements GapiService::getCapabilities(Name *pName, Requirements *pImportantRequirements)
+Requirements NAPIService::getCapabilities(Name *pName, Requirements *pImportantRequirements)
 {
 	Requirements tResult;
 
-	LOG(LOG_VERBOSE, "Got call to GAPI::getCapabilities() with name \"%s\" and requirements \"%s\"", pName->toString().c_str(), (pImportantRequirements != NULL) ? pImportantRequirements->getDescription().c_str() : "none");
+	LOG(LOG_VERBOSE, "Got call to NAPI::getCapabilities() with name \"%s\" and requirements \"%s\"", pName->toString().c_str(), (pImportantRequirements != NULL) ? pImportantRequirements->getDescription().c_str() : "none");
 
 	if(mSetupInterface == NULL)
 		LOG(LOG_ERROR, "No setup interface available");

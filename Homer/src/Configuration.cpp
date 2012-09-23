@@ -351,10 +351,10 @@ void Configuration::SetVideoTransport(enum TransportType pType)
     mQSettings->endGroup();
 }
 
-void Configuration::SetVideoStreamingGAPIImpl(QString pImpl)
+void Configuration::SetVideoStreamingNAPIImpl(QString pImpl)
 {
     mQSettings->beginGroup("Streaming");
-    mQSettings->setValue("VideoStreamGAPIImpl", pImpl);
+    mQSettings->setValue("VideoStreamNAPIImpl", pImpl);
     mQSettings->endGroup();
 }
 
@@ -435,10 +435,10 @@ void Configuration::SetAudioTransport(enum TransportType pType)
     mQSettings->endGroup();
 }
 
-void Configuration::SetAudioStreamingGAPIImpl(QString pImpl)
+void Configuration::SetAudioStreamingNAPIImpl(QString pImpl)
 {
     mQSettings->beginGroup("Streaming");
-    mQSettings->setValue("AudioStreamGAPIImpl", pImpl);
+    mQSettings->setValue("AudioStreamNAPIImpl", pImpl);
     mQSettings->endGroup();
 }
 
@@ -449,10 +449,10 @@ void Configuration::SetAppDataTransport(enum TransportType pType)
     mQSettings->endGroup();
 }
 
-void Configuration::SetAppDataGAPIImpl(QString pImpl)
+void Configuration::SetAppDataNAPIImpl(QString pImpl)
 {
     mQSettings->beginGroup("Network");
-    mQSettings->setValue("AppDataGAPIImpl", pImpl);
+    mQSettings->setValue("AppDataNAPIImpl", pImpl);
     mQSettings->endGroup();
 }
 
@@ -969,9 +969,9 @@ enum TransportType Configuration::GetVideoTransportType()
     return Socket::String2TransportType(mQSettings->value("Streaming/VideoStreamTransportType", QString("UDP")).toString().toStdString());
 }
 
-QString Configuration::GetVideoStreamingGAPIImpl()
+QString Configuration::GetVideoStreamingNAPIImpl()
 {
-    return mQSettings->value("Streaming/VideoStreamGAPIImpl", QString(BERKEYLEY_SOCKETS)).toString();
+    return mQSettings->value("Streaming/VideoStreamNAPIImpl", QString(BERKEYLEY_SOCKETS)).toString();
 }
 
 QString Configuration::GetVideoResolution()
@@ -1029,9 +1029,9 @@ enum TransportType Configuration::GetAudioTransportType()
     return Socket::String2TransportType(mQSettings->value("Streaming/AudioStreamTransportType", QString("UDP")).toString().toStdString());
 }
 
-QString Configuration::GetAudioStreamingGAPIImpl()
+QString Configuration::GetAudioStreamingNAPIImpl()
 {
-    return mQSettings->value("Streaming/AudioStreamGAPIImpl", QString(BERKEYLEY_SOCKETS)).toString();
+    return mQSettings->value("Streaming/AudioStreamNAPIImpl", QString(BERKEYLEY_SOCKETS)).toString();
 }
 
 enum TransportType Configuration::GetAppDataTransportType()
@@ -1039,9 +1039,9 @@ enum TransportType Configuration::GetAppDataTransportType()
     return Socket::String2TransportType(mQSettings->value("Network/AppDataTransportType", QString("UDP")).toString().toStdString());
 }
 
-QString Configuration::GetAppDataGAPIImpl()
+QString Configuration::GetAppDataNAPIImpl()
 {
-    return mQSettings->value("Network/AppDataGAPIImpl", QString(BERKEYLEY_SOCKETS)).toString();
+    return mQSettings->value("Network/AppDataNAPIImpl", QString(BERKEYLEY_SOCKETS)).toString();
 }
 
 int Configuration::GetVideoAudioStartPort()

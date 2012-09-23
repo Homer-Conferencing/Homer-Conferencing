@@ -25,7 +25,7 @@
  * Since:   2011-12-08
  */
 
-#include <GAPI.h>
+#include <NAPI.h>
 #include <Berkeley/SocketName.h>
 #include <Berkeley/SocketConnection.h>
 #include <Berkeley/SocketBinding.h>
@@ -138,7 +138,7 @@ SocketBinding::SocketBinding(std::string pLocalName, Requirements *pRequirements
 
 SocketBinding::~SocketBinding()
 {
-	LOG(LOG_VERBOSE, "Destroying GAPI bind object..");
+	LOG(LOG_VERBOSE, "Destroying NAPI bind object..");
     if (!isClosed())
     {
     	cancel();

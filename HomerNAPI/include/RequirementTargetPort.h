@@ -25,8 +25,8 @@
  * Since:   2011-12-10
  */
 
-#ifndef _GAPI_REQUIREMENT_TARGET_PORT_
-#define _GAPI_REQUIREMENT_TARGET_PORT_
+#ifndef _NAPI_REQUIREMENT_TARGET_PORT_
+#define _NAPI_REQUIREMENT_TARGET_PORT_
 
 #include <IRequirement.h>
 

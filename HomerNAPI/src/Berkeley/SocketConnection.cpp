@@ -25,7 +25,7 @@
  * Since:   2011-12-08
  */
 
-#include <GAPI.h>
+#include <NAPI.h>
 #include <Berkeley/SocketName.h>
 #include <Berkeley/SocketConnection.h>
 #include <RequirementTransmitLossless.h>
@@ -183,7 +183,7 @@ void SocketConnection::read(char* pBuffer, int &pBufferSize)
         bool tRes = mSocket->Receive(tSourceHost, tSourcePort, (void*)pBuffer, tBufferSize);
         if ((!tRes) && (!mIsClosed))
         {
-        	LOG(LOG_ERROR, "GAPI connection marked as closed");
+        	LOG(LOG_ERROR, "NAPI connection marked as closed");
         	mIsClosed = true;
         }
         mPeerHost = tSourceHost;
@@ -201,7 +201,7 @@ void SocketConnection::write(char* pBuffer, int pBufferSize)
         if ((mPeerHost != "") && (mPeerPort != 0))
         mIsClosed = !mSocket->Send(mPeerHost, mPeerPort, (void*)pBuffer, (ssize_t) pBufferSize);
         if (mIsClosed)
-        	LOG(LOG_ERROR, "GAPI connection marked as closed");
+        	LOG(LOG_ERROR, "NAPI connection marked as closed");
         //TODO: extended error signaling
     }else
         LOG(LOG_ERROR, "Invalid socket");

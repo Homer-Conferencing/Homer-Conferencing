@@ -25,7 +25,7 @@
  * Since:   2012-04-18
  */
 
-#include <GAPI.h>
+#include <NAPI.h>
 #include <Events.h>
 #include <IEvent.h>
 

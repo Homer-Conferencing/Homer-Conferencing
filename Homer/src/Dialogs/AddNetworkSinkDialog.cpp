@@ -34,7 +34,7 @@
 #include <Meeting.h>
 #include <Dialogs/AddNetworkSinkDialog.h>
 
-#include <GAPI.h>
+#include <NAPI.h>
 #include <Berkeley/SocketSetup.h>
 
 #include <string>
@@ -70,7 +70,7 @@ AddNetworkSinkDialog::~AddNetworkSinkDialog()
 void AddNetworkSinkDialog::initializeGUI()
 {
     setupUi(this);
-    connect(mCbGAPIImpl, SIGNAL(currentIndexChanged(QString)), this, SLOT(GAPISelectionChanged(QString)));
+    connect(mCbNAPIImpl, SIGNAL(currentIndexChanged(QString)), this, SLOT(NAPISelectionChanged(QString)));
 
     if (!CONF.DebuggingEnabled())
     {
@@ -148,11 +148,11 @@ void AddNetworkSinkDialog::CreateNewMediaSink()
     if (mCbLossless->isChecked())
         tRequs->add(tReqLossless);
 
-    string tOldGAPIImpl = GAPI.getCurrentImplName();
-    GAPI.selectImpl(mCbGAPIImpl->currentText().toStdString());
+    string tOldNAPIImpl = NAPI.getCurrentImplName();
+    NAPI.selectImpl(mCbNAPIImpl->currentText().toStdString());
     if (mMediaSource != NULL)
         mMediaSource->RegisterMediaSink(tHost.toStdString(), tRequs, mCbRtp->isChecked());
-    GAPI.selectImpl(tOldGAPIImpl);
+    NAPI.selectImpl(tOldNAPIImpl);
 }
 
 Requirements* AddNetworkSinkDialog::GetRequirements()
@@ -206,9 +206,9 @@ QString AddNetworkSinkDialog::GetTarget()
     return mLeHost->text();
 }
 
-QString AddNetworkSinkDialog::GetGAPIImplementation()
+QString AddNetworkSinkDialog::GetNAPIImplementation()
 {
-    return mCbGAPIImpl->currentText();
+    return mCbNAPIImpl->currentText();
 }
 
 void AddNetworkSinkDialog::SaveConfiguration()
@@ -218,23 +218,23 @@ void AddNetworkSinkDialog::SaveConfiguration()
         case DATA_TYPE_VIDEO:
             CONF.SetVideoRtp(mCbRtp->isChecked());
             CONF.SetVideoTransport(Socket::String2TransportType(mCbTransport->currentText().toStdString()));
-            CONF.SetVideoStreamingGAPIImpl(mCbGAPIImpl->currentText());
+            CONF.SetVideoStreamingNAPIImpl(mCbNAPIImpl->currentText());
             break;
         case DATA_TYPE_AUDIO:
             CONF.SetAudioRtp(mCbRtp->isChecked());
             CONF.SetAudioTransport(Socket::String2TransportType(mCbTransport->currentText().toStdString()));
-            CONF.SetAudioStreamingGAPIImpl(mCbGAPIImpl->currentText());
+            CONF.SetAudioStreamingNAPIImpl(mCbNAPIImpl->currentText());
             break;
         case DATA_TYPE_FILE:
             CONF.SetAppDataTransport(Socket::String2TransportType(mCbTransport->currentText().toStdString()));
-            CONF.SetAppDataGAPIImpl(mCbGAPIImpl->currentText());
+            CONF.SetAppDataNAPIImpl(mCbNAPIImpl->currentText());
             break;
         default:
             LOG(LOG_WARN, "Unknown data type");
     }
 }
 
-void AddNetworkSinkDialog::GAPISelectionChanged(QString pSelection)
+void AddNetworkSinkDialog::NAPISelectionChanged(QString pSelection)
 {
     if (pSelection == BERKEYLEY_SOCKETS)
     {
@@ -248,7 +248,7 @@ void AddNetworkSinkDialog::GAPISelectionChanged(QString pSelection)
 void AddNetworkSinkDialog::LoadConfiguration()
 {
     QString tTransport;
-    QString tGAPIImpl;
+    QString tNAPIImpl;
 
     // remove SCTP from comboBox if is not supported
     if(!Socket::IsTransportSupported(SOCKET_SCTP))
@@ -261,12 +261,12 @@ void AddNetworkSinkDialog::LoadConfiguration()
         mCbTransport->removeItem(2);
     }
 
-    list<string> tGAPIImpls = GAPI.getAllImplNames();
-    list<string>::iterator tGAPIImplsIt;
-    mCbGAPIImpl->clear();
-    for (tGAPIImplsIt = tGAPIImpls.begin(); tGAPIImplsIt != tGAPIImpls.end(); tGAPIImplsIt++)
+    list<string> tNAPIImpls = NAPI.getAllImplNames();
+    list<string>::iterator tNAPIImplsIt;
+    mCbNAPIImpl->clear();
+    for (tNAPIImplsIt = tNAPIImpls.begin(); tNAPIImplsIt != tNAPIImpls.end(); tNAPIImplsIt++)
     {
-        mCbGAPIImpl->addItem(QString(tGAPIImplsIt->c_str()));
+        mCbNAPIImpl->addItem(QString(tNAPIImplsIt->c_str()));
     }
 
     switch(mDataType)
@@ -275,7 +275,7 @@ void AddNetworkSinkDialog::LoadConfiguration()
             mGrpTarget->setTitle(" Send video to ");
             mCbRtp->setChecked(CONF.GetVideoRtp());
             tTransport = QString(Socket::TransportType2String(CONF.GetVideoTransportType()).c_str());
-            tGAPIImpl = CONF.GetVideoStreamingGAPIImpl();
+            tNAPIImpl = CONF.GetVideoStreamingNAPIImpl();
 
             mSbPort->setValue(5000);
             mSbDelay->setValue(250);
@@ -285,7 +285,7 @@ void AddNetworkSinkDialog::LoadConfiguration()
             mGrpTarget->setTitle(" Send audio to ");
             mCbRtp->setChecked(CONF.GetAudioRtp());
             tTransport = QString(Socket::TransportType2String(CONF.GetAudioTransportType()).c_str());
-            tGAPIImpl = CONF.GetAudioStreamingGAPIImpl();
+            tNAPIImpl = CONF.GetAudioStreamingNAPIImpl();
 
             mSbPort->setValue(5002);
             mSbDelay->setValue(100);
@@ -294,7 +294,7 @@ void AddNetworkSinkDialog::LoadConfiguration()
         case DATA_TYPE_FILE:
             mGrpTarget->setTitle(" Send file to ");
             tTransport = QString(Socket::TransportType2String(CONF.GetAppDataTransportType()).c_str());
-            tGAPIImpl = CONF.GetAppDataGAPIImpl();
+            tNAPIImpl = CONF.GetAppDataNAPIImpl();
 
             mSbPort->setValue(6000);
             mSbDelay->setValue(500);
@@ -305,12 +305,12 @@ void AddNetworkSinkDialog::LoadConfiguration()
     }
 
 
-    for (int i = 0; i < mCbGAPIImpl->count(); i++)
+    for (int i = 0; i < mCbNAPIImpl->count(); i++)
     {
-        QString tCurGAPIImpl = mCbGAPIImpl->itemText(i);
-        if (tGAPIImpl == tCurGAPIImpl)
+        QString tCurNAPIImpl = mCbNAPIImpl->itemText(i);
+        if (tNAPIImpl == tCurNAPIImpl)
         {
-            mCbGAPIImpl->setCurrentIndex(i);
+            mCbNAPIImpl->setCurrentIndex(i);
             break;
         }
     }

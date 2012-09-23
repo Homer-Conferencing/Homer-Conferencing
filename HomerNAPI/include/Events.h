@@ -25,8 +25,8 @@
  * Since:   2012-04-18
  */
 
-#ifndef _GAPI_EVENTS_
-#define _GAPI_EVENTS_
+#ifndef _NAPI_EVENTS_
+#define _NAPI_EVENTS_
 
 // to simplify including of all requirements
 //#include <RequirementTransmitLossless.h>

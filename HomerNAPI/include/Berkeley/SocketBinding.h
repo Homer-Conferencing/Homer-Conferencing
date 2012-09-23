@@ -25,8 +25,8 @@
  * Since:   2012-05-19
  */
 
-#ifndef _GAPI_SOCKET_BINDING_
-#define _GAPI_SOCKET_BINDING_
+#ifndef _NAPI_SOCKET_BINDING_
+#define _NAPI_SOCKET_BINDING_
 
 #include <HBSocket.h>
 #include <HBMutex.h>

@@ -25,8 +25,8 @@
  * Since:   2011-12-08
  */
 
-#ifndef _GAPI_REQUIREMENTS_
-#define _GAPI_REQUIREMENTS_
+#ifndef _NAPI_REQUIREMENTS_
+#define _NAPI_REQUIREMENTS_
 
 // to simplify including of all requirements
 #include <RequirementTransmitLossless.h>

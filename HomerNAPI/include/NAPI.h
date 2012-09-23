@@ -20,13 +20,13 @@
  *****************************************************************************/
 
 /*
- * Purpose: G-Lab API: proof-of-concept of the definition from the current official paper
+ * Purpose: NAPI
  * Author:  Thomas Volkert
  * Since:   2011-12-08
  */
 
-#ifndef _GAPI_
-#define _GAPI_
+#ifndef _NAPI_
+#define _NAPI_
 
 #include <HBMutex.h>
 
@@ -41,7 +41,7 @@ namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define GAPI GapiService::getInstance()
+#define NAPI NAPIService::getInstance()
 
 struct SetupInterfaceDescription{
 	ISetup			*Interface;
@@ -52,18 +52,18 @@ typedef std::list<SetupInterfaceDescription> SetupInterfacesPool;
 typedef std::list<std::string> SetupInterfacesNames;
 
 // the following de/activates debugging of received packets
-//#define GAPI_DEBUG_PACKETS
+//#define NAPI_DEBUG_PACKETS
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class GapiService:
+class NAPIService:
 	public ISetup
 {
 public:
-	GapiService();
-    virtual ~GapiService( );
+	NAPIService();
+    virtual ~NAPIService( );
 
-    static GapiService& getInstance();
+    static NAPIService& getInstance();
 
     /* plugin system for different ISetup implementations */
     bool registerImpl(ISetup* pSetupInterface, std::string pName);

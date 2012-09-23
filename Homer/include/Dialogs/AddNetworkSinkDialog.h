@@ -50,12 +50,12 @@ public:
 
     Requirements* GetRequirements();
     QString GetTarget();
-    QString GetGAPIImplementation();
+    QString GetNAPIImplementation();
 
     int exec();
 
 private slots:
-    void GAPISelectionChanged(QString pSelection);
+    void NAPISelectionChanged(QString pSelection);
 
 private:
     void initializeGUI();

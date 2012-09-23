@@ -25,8 +25,8 @@
  * Since:   2011-12-08
  */
 
-#ifndef _GAPI_SOCKET_SETUP_
-#define _GAPI_SOCKET_SETUP_
+#ifndef _NAPI_SOCKET_SETUP_
+#define _NAPI_SOCKET_SETUP_
 
 #include <Name.h>
 #include <ISetup.h>

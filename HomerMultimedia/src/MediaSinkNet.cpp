@@ -53,7 +53,7 @@ using namespace Homer::Base;
 void MediaSinkNet::BasicInit(string pTargetHost, unsigned int pTargetPort)
 {
 	mStreamFragmentCopyBuffer = NULL;
-    mGAPIDataSocket = NULL;
+    mNAPIDataSocket = NULL;
     mDataSocket = NULL;
     mBrokenPipe = false;
     mMaxNetworkPacketSize = 1280;
@@ -65,7 +65,7 @@ MediaSinkNet::MediaSinkNet(string pTarget, Requirements *pTransportRequirements,
     MediaSinkMem("memory", pType, pRtpActivated)
 {
     BasicInit(pTarget, 0);
-    mGAPIUsed = true;
+    mNAPIUsed = true;
 
     // get target port
     unsigned int tTargetPort = 0;
@@ -91,14 +91,14 @@ MediaSinkNet::MediaSinkNet(string pTarget, Requirements *pTransportRequirements,
     if (mStreamedTransport)
     	mStreamFragmentCopyBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
 
-    // call GAPI
+    // call NAPI
     if (mTargetHost != "")
     {
         LOG(LOG_VERBOSE, "Remote media sink at: %s<%d>%s", mTargetHost.c_str(), tTargetPort, mRtpActivated ? "(RTP)" : "");
 
         // finally associate to the target server/service
         Name tName(pTarget);
-        mGAPIDataSocket = GAPI.connect(&tName, pTransportRequirements); //new Socket(IS_IPV6_ADDRESS(pTargetHost) ? SOCKET_IPv6 : SOCKET_IPv4, pSocketType);
+        mNAPIDataSocket = NAPI.connect(&tName, pTransportRequirements); //new Socket(IS_IPV6_ADDRESS(pTargetHost) ? SOCKET_IPv6 : SOCKET_IPv4, pSocketType);
     }
 
     switch(pType)
@@ -125,7 +125,7 @@ MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, Socket*
 {
     BasicInit(pTargetHost, pTargetPort);
     mDataSocket = pLocalSocket;
-    mGAPIUsed = false;
+    mNAPIUsed = false;
     enum TransportType tTransportType = SOCKET_RAW;
     enum NetworkType tNetworkType = SOCKET_RAWNET;
 
@@ -174,10 +174,10 @@ MediaSinkNet::~MediaSinkNet()
 {
 	StopSender();
 
-	if(mGAPIUsed)
+	if(mNAPIUsed)
     {
-		if (mGAPIDataSocket != NULL)
-			delete mGAPIDataSocket;
+		if (mNAPIDataSocket != NULL)
+			delete mNAPIDataSocket;
     }else
     {
     	//HINT: socket object has to be deleted outside
@@ -258,15 +258,15 @@ void* MediaSinkNet::Run(void* pArgs)
     int tBufferSize;
 
     LOG(LOG_VERBOSE, "%s Stream relay for target %s:%u started", GetDataTypeStr().c_str(), mTargetHost.c_str(), mTargetPort);
-    if (mGAPIUsed)
+    if (mNAPIUsed)
     {
         switch(GetDataType())
         {
             case DATA_TYPE_VIDEO:
-                SVC_PROCESS_STATISTIC.AssignThreadName("Video-Relay(GAPI," + mCodec + ")");
+                SVC_PROCESS_STATISTIC.AssignThreadName("Video-Relay(NAPI," + mCodec + ")");
                 break;
             case DATA_TYPE_AUDIO:
-                SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Relay(GAPI," + mCodec + ")");
+                SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Relay(NAPI," + mCodec + ")");
                 break;
             default:
                 LOG(LOG_ERROR, "Unknown media type");
@@ -416,14 +416,14 @@ void MediaSinkNet::SendPacket(char* pData, unsigned int pSize)
 void MediaSinkNet::DoSendPacket(char* pData, unsigned int pSize)
 {
     int64_t tTime = Time::GetTimeStamp();
-	if(mGAPIUsed)
+	if(mNAPIUsed)
 	{
-		if (mGAPIDataSocket != NULL)
+		if (mNAPIDataSocket != NULL)
 		{
-			mGAPIDataSocket->write(pData, (int)pSize);
-			if (mGAPIDataSocket->isClosed())
+			mNAPIDataSocket->write(pData, (int)pSize);
+			if (mNAPIDataSocket->isClosed())
 			{
-				LOG(LOG_ERROR, "Error when sending data through GAPI connection to %s:%u, will skip further transmissions", mTargetHost.c_str(), mTargetPort);
+				LOG(LOG_ERROR, "Error when sending data through NAPI connection to %s:%u, will skip further transmissions", mTargetHost.c_str(), mTargetPort);
 				mBrokenPipe = true;
 			}
 		}

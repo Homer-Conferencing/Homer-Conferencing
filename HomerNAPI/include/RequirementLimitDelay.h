@@ -25,8 +25,8 @@
  * Since:   2011-12-10
  */
 
-#ifndef _GAPI_REQUIREMENT_LIMIT_DELAY_
-#define _GAPI_REQUIREMENT_LIMIT_DELAY_
+#ifndef _NAPI_REQUIREMENT_LIMIT_DELAY_
+#define _NAPI_REQUIREMENT_LIMIT_DELAY_
 
 #include <IRequirement.h>
 

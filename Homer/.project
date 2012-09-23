@@ -7,7 +7,7 @@
 		<project>HomerConference</project>
 		<project>HomerMonitor</project>
 		<project>HomerMultimedia</project>
-		<project>HomerGAPI</project>
+		<project>HomerNAPI</project>
 		<project>HomerSoundOutput</project>
 	</projects>
 	<buildSpec>

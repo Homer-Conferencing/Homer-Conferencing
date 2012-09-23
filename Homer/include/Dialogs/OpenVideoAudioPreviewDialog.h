@@ -35,7 +35,7 @@ namespace Homer { namespace Gui {
 
 using namespace Homer::Multimedia;
 
-#define                             USE_GAPI
+#define                             USE_NAPI
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -61,8 +61,8 @@ public:
 private slots:
     void ActionGetFile();
 
-    void GAPIVideoSelectionChanged(QString pSelection);
-    void GAPIAudioSelectionChanged(QString pSelection);
+    void NAPIVideoSelectionChanged(QString pSelection);
+    void NAPIAudioSelectionChanged(QString pSelection);
 
 private:
     void initializeGUI();

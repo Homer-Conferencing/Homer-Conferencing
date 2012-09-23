@@ -25,8 +25,8 @@
  * Since:   2012-04-18
  */
 
-#ifndef _GAPI_IEVENT_
-#define _GAPI_IEVENT_
+#ifndef _NAPI_IEVENT_
+#define _NAPI_IEVENT_
 
 #include <Logger.h>
 #include <Events.h>

@@ -29,7 +29,7 @@
 #define _MULTIMEDIA_MEDIA_SINK_NET_
 
 #include <Header_Ffmpeg.h>
-#include <GAPI.h>
+#include <NAPI.h>
 #include <HBSocket.h>
 #include <HBThread.h>
 #include <MediaSinkMem.h>
@@ -54,7 +54,7 @@ class MediaSinkNet:
 {
 
 public:
-	// general purpose constructor which uses GAPI library
+	// general purpose constructor which uses NAPI library
 	MediaSinkNet(string pTarget, Requirements *pTransportRequirements, enum MediaSinkType pType, bool pRtpActivated);
 	// constructor to send media data via the same port of an existing already allocated socket object (can be used in conferences to support NAT traversal)
 	MediaSinkNet(std::string pTargetHost, unsigned int pTargetPort, Socket* pLocalSocket, enum MediaSinkType pType, bool pRtpActivated);
@@ -88,9 +88,9 @@ private:
     char                *mStreamFragmentCopyBuffer;
     /* Berkeley sockets based transport */
     Socket				*mDataSocket;
-    /* GAPI based transport */
-    IConnection         *mGAPIDataSocket;
-    bool 				mGAPIUsed;
+    /* NAPI based transport */
+    IConnection         *mNAPIDataSocket;
+    bool 				mNAPIUsed;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

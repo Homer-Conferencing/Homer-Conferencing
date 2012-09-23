@@ -25,8 +25,8 @@
  * Since:   2011-12-08
  */
 
-#ifndef _GAPI_SOCKET_CONNECTION_
-#define _GAPI_SOCKET_CONNECTION_
+#ifndef _NAPI_SOCKET_CONNECTION_
+#define _NAPI_SOCKET_CONNECTION_
 
 #include <HBSocket.h>
 

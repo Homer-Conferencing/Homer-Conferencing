@@ -28,7 +28,7 @@
 #ifndef _FILE_TRANSFER_MANAGER_
 #define _FILE_TRANSFER_MANAGER_
 
-#include <GAPI.h>
+#include <NAPI.h>
 #include <Requirements.h>
 #include <string.h>
 #include <HBMutex.h>
@@ -154,9 +154,9 @@ private:
     /* global sender values */
     unsigned int        mSourceId;
 
-    /* GAPI based transport */
+    /* NAPI based transport */
     IConnection         *mReceiverSocket;
-    IBinding            *mGAPIBinding;
+    IBinding            *mNAPIBinding;
     std::string         mLocalName;
     Requirements        *mTransportRequirements;
 };
