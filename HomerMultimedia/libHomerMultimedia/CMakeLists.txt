@@ -39,7 +39,7 @@ SET (INCLUDE_DIRS
 	../include
 	../../HomerBase/include/Logging
 	../../HomerBase/include
-	../../HomerGAPI/include
+	../../HomerNAPI/include
 	../../HomerMonitor/include
 	../../HomerSoundOutput/include
 	/usr/include/ffmpeg
@@ -142,7 +142,7 @@ SET (LIBS_WINDOWS
     avformat-54
     avdevice-54
 	HomerBase
-	HomerGAPI
+	HomerNAPI
 	HomerMonitor
 	portaudio
     swscale-2
@@ -155,7 +155,7 @@ SET (LIBS_WINDOWS
 # USED LIBRARIES for apple environment
 SET (LIBS_APPLE
 	HomerBase
-	HomerGAPI
+	HomerNAPI
 	HomerMonitor
 	HomerSoundOutput
 )
@@ -198,7 +198,7 @@ SET (FRAMEWORKS_APPLE
 IF (${BUILD} MATCHES "Default")
 	SET (LIBS_LINUX
 		HomerBase
-		HomerGAPI
+		HomerNAPI
 		HomerMonitor
 		${ALSA_LIBRARIES}
 		avdevice
@@ -215,7 +215,7 @@ ELSE ()
 	# USED LIBRARIES for linux environment
 	SET (LIBS_LINUX
 		HomerBase
-		HomerGAPI
+		HomerNAPI
 		HomerMonitor
 		asound
 	)
@@ -249,7 +249,7 @@ ENDIF ()
 # USED LIBRARIES for BSD environment
 SET (LIBS_BSD
 	HomerBase
-	HomerGAPI
+	HomerNAPI
 	HomerMonitor
 )
 

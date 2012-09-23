@@ -47,12 +47,12 @@ System dependencies:
  and operating system are listed in brackets.
 
     - Library "HomerBase": no additional dependencies
+    - Library "HomerConference": sofia-sip (1.12), openssl (1.0)
     - Library "HomerMonitor": no additional dependencies
-    - Library "HomerGAPI": no additional dependencies
     - Library "HomerMultimedia": ffmpeg(**), x264
 	                            only for Linux: ALSA,
 	                            only for Windows: Winmm, avicap32, ws2_32
-    - Library "HomerConference": sofia-sip (1.12), openssl (1.0)
+    - Library "HomerNAPI": no additional dependencies
     - Library "HomerSoundOutput": SDL (1.2), SDL_sound (1.0, SDL_mixer (1.2),
 	                            only for Linux: ALSA,
 	                            only for Windows: Winmm,

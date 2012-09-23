@@ -4,6 +4,6 @@
 ###############################################################################
 
 cmake_minimum_required (VERSION 2.6)
-PROJECT(HomerGAPI)
-ADD_SUBDIRECTORY(libHomerGAPI)
+PROJECT(HomerNAPI)
+ADD_SUBDIRECTORY(libHomerNAPI)
 

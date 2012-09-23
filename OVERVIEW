@@ -17,13 +17,13 @@ Package structure:
 
 COPYING                 - Copy of GPL-2 license
 INSTALL                 - Installation instructions
-OVERVIEW                - Here you are
+OVERVIEW                - Recursion!
 Homer/                  - GUI: Qt based user interface
-HomerBase               - OS abstraction: support threads/mutexes/conditions/time for multiple systems and architectures, logging system (log output to console/file/network)
+HomerBase               - OS abstraction: threads/mutexes/conditions/time for multiple systems and architectures, logging system (log output to console/file/network)
 HomerBuild              - Build environment: GNU Make and CMake based build environment, overall build control, support files to build a library or executable binary
 HomerConference         - Session management: SIP based call/IM management, STUN server support
-HomerGAPI               - G-Lab interface: extended communication interface to support requirements to data transmissions
 HomerMonitor            - Monitoring: to observe Homer's data stream and threads
 HomerMultimedia         - Video/audio processing: application drivers for file/V4L2/VFW/ALSA/OSS/CoreAudio/CoreVideo based media sources, video/audio transcoding
                           Streaming: stream management, RTP parsing, RTP packetizing for H.261
-HomerSoundOutput        - Sound playback abstraction: support sound playback for multiple systems and architectures
+HomerNAPI               - Network communication: extended network API to support transmission requirements per data stream
+HomerSoundOutput        - Sound playback: sound hw access for multiple systems and architectures

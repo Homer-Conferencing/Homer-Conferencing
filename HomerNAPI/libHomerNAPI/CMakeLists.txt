@@ -74,7 +74,7 @@ SET (LIBS_APPLE
 
 ##############################################################
 SET (TARGET_LIB_NAME
-	HomerGAPI
+	HomerNAPI
 )
 
 INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakeCore.txt)

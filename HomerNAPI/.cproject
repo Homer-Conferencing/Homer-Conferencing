@@ -28,7 +28,7 @@
 									<listOptionValue builtIn="false" value="&quot;C:\MinGW\include\&quot;"/>
 									<listOptionValue builtIn="false" value="../../HomerBase/include/Logging"/>
 									<listOptionValue builtIn="false" value="../../HomerBase/include"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/HomerGAPI/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/HomerNAPI/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1997926061" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -53,7 +53,7 @@
 		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-		<project id="HomerGAPI.null.446109306" name="HomerGAPI"/>
+		<project id="HomerNAPI.null.446109306" name="HomerNAPI"/>
 	</storageModule>
 	<storageModule moduleId="refreshScope"/>
 	<storageModule moduleId="scannerConfiguration">
