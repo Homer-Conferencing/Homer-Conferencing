@@ -387,9 +387,6 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     if (tFormat->video_codec == CODEC_ID_H263)
     {
         mCodecContext->flags |= CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED;
-
-        // old codec codext flag CODEC_FLAG_H263P_SLICE_STRUCT
-        av_dict_set(&tOptions, "structured_slices", "1", 0);
     }
 
     // do some extra modifications for H263+ to make it easier for streaming
