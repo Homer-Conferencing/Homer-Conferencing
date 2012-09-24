@@ -1623,6 +1623,9 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                                                 // start fragment?
                                                 if (tH264HeaderFragmentStart)
                                                 {
+													#ifdef RTP_DEBUG_PACKETS
+                                                		LOG(LOG_VERBOSE, "..H264 start fragment");
+													#endif
                                                     // use FU header as NAL header, reconstruct the original NAL header
                                                     if (!pReadOnly)
                                                     {
@@ -1637,6 +1640,12 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                                                     pData += 1;
                                                 }else
                                                 {
+													#ifdef RTP_DEBUG_PACKETS
+														if (tH264Header->FuA.E)
+															LOG(LOG_VERBOSE, "..H264 end fragment");
+														else
+															LOG(LOG_VERBOSE, "..H264 intermediate fragment");
+													#endif
                                                     pData += 2;
                                                 }
                                                 break;
