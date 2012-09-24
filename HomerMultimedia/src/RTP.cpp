@@ -1626,7 +1626,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                                                     // use FU header as NAL header, reconstruct the original NAL header
                                                     if (!pReadOnly)
                                                     {
-                                                        #ifdef RTP_DEBUG_PACKETSdif
+                                                        #ifdef RTP_DEBUG_PACKETS
                                                             LOG(LOG_VERBOSE, "S bit is set: reconstruct NAL header");
                                                             LOG(LOG_VERBOSE, "..part F+NRI: %d", pData[0] & 0xE0);
                                                             LOG(LOG_VERBOSE, "..part TYPE: %d", pData[1] & 0x1F);
