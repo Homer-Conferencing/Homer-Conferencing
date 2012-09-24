@@ -174,7 +174,7 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceVideo()
                 delete tNetSource;
                 return NULL;
             }
-            tNetSource->SetInputStreamPreferences(mCbCodecVideo->currentText().toStdString(), false, mCbRtpVideo->isChecked());
+            tNetSource->SetInputStreamPreferences(mCbCodecVideo->currentText().toStdString(), false);
             return tNetSource;
             break;
         default:
@@ -251,7 +251,7 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceAudio()
                 delete tNetSource;
                 return NULL;
             }
-            tNetSource->SetInputStreamPreferences(mCbCodecAudio->currentText().toStdString(), false, mCbRtpAudio->isChecked());
+            tNetSource->SetInputStreamPreferences(mCbCodecAudio->currentText().toStdString(), false);
             return tNetSource;
             break;
         default:
