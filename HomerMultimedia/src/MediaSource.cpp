@@ -592,7 +592,7 @@ string MediaSource::GetGuiNameFromCodecID(enum CodecID pCodecId)
     			break;
 
         default:
-        	LOGEX(MediaSource, LOG_WARN, "Detected unsupported codec %d", pCodecId);
+        	//LOGEX(MediaSource, LOG_WARN, "Detected unsupported codec %d", pCodecId);
         	break;
     }
 
