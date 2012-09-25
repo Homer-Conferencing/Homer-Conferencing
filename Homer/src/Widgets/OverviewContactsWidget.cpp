@@ -245,6 +245,18 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
 
     tMenu.addSeparator();
 
+    if (CONTACTS.ContactCount() > 0)
+    {
+        tAction = tMenu.addAction("Reset contact list");
+        QIcon tIcon3;
+        tIcon3.addPixmap(QPixmap(":/images/22_22/Reload.png"), QIcon::Normal, QIcon::Off);
+        tAction->setIcon(tIcon3);
+
+        tMenu.addSeparator();
+    }
+
+    tMenu.addSeparator();
+
     tAction = tMenu.addAction("Check availability of contacts");
     tAction->setCheckable(true);
     tAction->setChecked(CONF.GetSipContactsProbing());
@@ -280,6 +292,12 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
         if (tPopupRes->text().contains("Delete contact"))
         {
             DeleteSelected();
+            return;
+        }
+
+        if (tPopupRes->text().compare("Reset contact list") == 0)
+        {
+            ResetList();
             return;
         }
 
@@ -478,6 +496,11 @@ void OverviewContactsWidget::DeleteSelected()
     {
         CONTACTS.RemoveContact(tContact->Id);
     }
+}
+
+void OverviewContactsWidget::ResetList()
+{
+    CONTACTS.ResetPool();
 }
 
 void OverviewContactsWidget::ContactSelected(bool pCall)

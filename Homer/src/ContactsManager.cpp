@@ -154,9 +154,7 @@ void ContactsManager::LoadPool(string pContactsFile)
 	QDomDocument tXml(DATABASE_IDENTIFIER);
 	QFile tFile(QString(pContactsFile.c_str()));
 
-    mContactsMutex.lock();
-	mContacts.clear();
-    mContactsMutex.unlock();
+	ResetPool();
 
 	//###################################################
 	//### open XML file
@@ -222,6 +220,16 @@ void ContactsManager::LoadPool(string pContactsFile)
 	if (mContactsModel != NULL)
         mContactsModel->UpdateView();
     CONF.SetContactFile(tFile.fileName());
+}
+
+void ContactsManager::ResetPool()
+{
+    mContactsMutex.lock();
+    mContacts.clear();
+    mContactsMutex.unlock();
+
+    if (mContactsModel != NULL)
+        mContactsModel->UpdateView();
 }
 
 void ContactsManager::AddContact(ContactDescriptor &pContact)

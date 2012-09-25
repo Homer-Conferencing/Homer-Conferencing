@@ -96,6 +96,7 @@ private slots:
     void InsertNew();
     void EditSelected();
     void DeleteSelected();
+    void ResetList();
     void ContactSelected(bool pCall = false);
 
 private:
