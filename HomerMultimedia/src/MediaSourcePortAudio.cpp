@@ -240,7 +240,7 @@ int MediaSourcePortAudio::RecordedAudioHandler(const void *pInputBuffer, void *p
         LOGEX(MediaSourcePortAudio, LOG_VERBOSE, "Captured %d audio samples, time stamp of first sample: %f, current time stamp: %f", pInputSize, pTimeInfo->inputBufferAdcTime, pTimeInfo->currentTime);
     #endif
 
-	if (tMediaSourcePortAudio->mMediaSourceOpened)
+	if ((tMediaSourcePortAudio->mMediaSourceOpened) && (pInputSize > 0))
 		tMediaSourcePortAudio->mCaptureFifo->WriteFifo((char*)pInputBuffer, (int)pInputSize * 2 /* 16 bit LittleEndian */ * (tMediaSourcePortAudio->mStereo ? 2 : 1));
 
     return paContinue;
