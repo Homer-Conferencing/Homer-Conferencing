@@ -396,7 +396,7 @@ int MediaSourceMem::GetFragmentBufferSize()
 bool MediaSourceMem::SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset)
 {
     bool tResult = false;
-    enum CodecID tStreamCodecId = MediaSource::GetCodecIDFromGuiName(pStreamCodec);
+    enum CodecID tStreamCodecId = GetCodecIDFromGuiName(pStreamCodec);
 
     if (mStreamCodecId != tStreamCodecId)
     {

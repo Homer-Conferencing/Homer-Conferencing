@@ -475,7 +475,7 @@ int MediaSource::FfmpegLockManager(void **pMutex, enum AVLockOp pMutexOperation)
  ****************************************************/
 enum CodecID MediaSource::GetCodecIDFromGuiName(std::string pName)
 {
-    enum CodecID tResult = CODEC_ID_NONE;
+    enum CodecID tResult = (GetMediaType() == MEDIA_AUDIO) ? CODEC_ID_MP3 : CODEC_ID_H261;
 
     /* video */
     if (pName == "H.261")
@@ -696,7 +696,7 @@ string MediaSource::GetFormatName(enum CodecID pCodecId)
     			break;
 
         default:
-        	LOGEX(MediaSource, LOG_WARN, "Detected unsupported codec %d", pCodecId);
+        	LOGEX(MediaSource, LOG_WARN, "Detected unsupported %s codec %d", GetMediaTypeStr().c_str(), pCodecId);
         	break;
     }
 

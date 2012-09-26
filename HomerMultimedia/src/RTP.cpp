@@ -839,7 +839,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
     // create memory stream and init ffmpeg internal structures
     //####################################################################
     #ifdef RTP_DEBUG_PACKETS
-        LOG(LOG_VERBOSE, "Encapsulate frame with format %s of size: %u while maximum resulting RTP packet size is: %d", MediaSource::GetFormatName(mRtpFormatContext->streams[0]->codec->codec_id).c_str(), pDataSize, mAVIOContext->max_packet_size);
+        LOG(LOG_VERBOSE, "Encapsulate frame of codec %s and size: %u while maximum resulting RTP packet size is: %d", mRtpFormatContext->streams[0]->codec->codec_name, pDataSize, mAVIOContext->max_packet_size);
     #endif
 
     // open RTP stream for av_Write_frame()
