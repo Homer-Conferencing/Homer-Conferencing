@@ -2725,13 +2725,21 @@ bool MediaSource::FfmpegSelectStream(string pSource, int pLine)
     mMediaStreamIndex = -1;
 
 	enum AVMediaType tTargetMediaType;
+	string tMediaSource = "";
+	string tTargetMediaDescription = "unknown";
+	int tPos = pSource.rfind(':');
+	if (tPos != (int)string::npos)
+		tMediaSource = pSource.substr(tPos + 1, pSource.length() - tPos- 1);
+
 	switch(mMediaType)
 	{
 		case MEDIA_VIDEO:
 			tTargetMediaType = AVMEDIA_TYPE_VIDEO;
+			tTargetMediaDescription = tMediaSource + "(video)";
 			break;
 		case MEDIA_AUDIO:
 			tTargetMediaType = AVMEDIA_TYPE_AUDIO;
+			tTargetMediaDescription = tMediaSource + "(audio)";
 			break;
 		default:
 			break;
@@ -2747,7 +2755,7 @@ bool MediaSource::FfmpegSelectStream(string pSource, int pLine)
 	    //######################################################
 	    if(mFormatContext->streams[i]->codec->codec_type == tTargetMediaType)
 	    {
-	        av_dump_format(mFormatContext, i, "MediaSourceFile(video)", false);
+	        av_dump_format(mFormatContext, i, tTargetMediaDescription.c_str(), false);
 	        mMediaStreamIndex = i;
 	        break;
 	    }
