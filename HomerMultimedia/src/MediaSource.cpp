@@ -2332,7 +2332,7 @@ bool MediaSource::SelectDevice(std::string pDeviceName, enum MediaType pMediaTyp
         mCurrentDeviceName = "auto selection";
     }
 
-    LOG(LOG_VERBOSE, "%s-Source should be reseted: %d", GetStreamName().c_str(), pIsNewDevice);
+    LOG(LOG_VERBOSE, "%s-Source should be reset: %d", GetStreamName().c_str(), pIsNewDevice);
     if (!tResult)
         LOG(LOG_INFO, "%s-Selected device %s is not available", GetStreamName().c_str(), pDeviceName.c_str());
 
