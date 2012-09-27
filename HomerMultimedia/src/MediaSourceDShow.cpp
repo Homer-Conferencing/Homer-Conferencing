@@ -662,12 +662,13 @@ bool MediaSourceDShow::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         {
             if (tResult != 0)
             {
-				if ((pResX != 352) && (pResY != 288))
-				{
-					LOG(LOG_VERBOSE, "Device open failed - switching back to default video resolution of 352*288");
-					av_dict_set(&tOptions, "video_size", "352x288", 0);
-					tResult = avformat_open_input(&mFormatContext, (const char *)mDesiredDevice.c_str(), tFormat, &tOptions);
-				}
+				LOG(LOG_WARN, "Device open failed - switching back to default values");
+
+				av_dict_free(&tOptions);
+				tOptions = NULL;
+
+				//av_dict_set(&tOptions, "video_size", "352x288", 0);
+				tResult = avformat_open_input(&mFormatContext, (const char *)mDesiredDevice.c_str(), tFormat, &tOptions);
             }
             if (tResult != 0)
             {
@@ -982,7 +983,7 @@ GrabResolutions MediaSourceDShow::GetSupportedVideoGrabResolutions()
 		return mSupportedVideoFormats;
     }
 
-    if (mCurrentDevice == "")
+    if (mCurrentDeviceName == "")
     {
     	LOG(LOG_ERROR, "Current device name is empty");
 		return mSupportedVideoFormats;
