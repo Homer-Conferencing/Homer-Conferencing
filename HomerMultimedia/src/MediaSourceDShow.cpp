@@ -421,6 +421,10 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
     bool					tDeviceIsVFW;
     IBaseFilter				*tSource;
 	IPropertyBag 			*tPropertyBag;
+	IAMStreamConfig 		*tStreamConfig = NULL;
+	IEnumPins  				*tPinsEnum = NULL;
+	IPin					*tPin = NULL;
+	PIN_DIRECTION			tPinDir;
 
 	#ifdef MSDS_DEBUG_PACKETS
 		tFirstCall = true;
@@ -499,6 +503,8 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
 
 
 		// bint to object
+		string tDeviceNameStr = string(tDeviceName);
+		LOG(LOG_VERBOSE, "Will try to detect supported video resolutions for device %s", tDeviceNameStr.c_str());
 		tMoniker->BindToObject( 0, 0, IID_IBaseFilter, (void **)&tSource);
 
 	    tRes = tSource->GetClassID(&tClassId);
@@ -524,7 +530,77 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
 			LOG(LOG_INFO, "  ..type: %s", tDeviceIsVFW ? "VFW device" : "DirectShow device");
         }
 
-		//###############################################
+        // enumerate all supported video resolutions
+        if (tFirstCall)
+        {
+			tRes = tSource->EnumPins(&tPinsEnum);
+			if (FAILED(tRes))
+			{
+				LOG(LOG_ERROR, "Could not enumerate pins");
+				tPropertyBag->Release();
+				break;
+			}
+
+			while (tPinsEnum->Next(1, &tPin, 0) == S_OK)
+			{
+				tRes = tPin->QueryDirection(&tPinDir);
+				if (FAILED(tRes))
+				{
+					LOG(LOG_ERROR, "Could not query pin direction");
+					break;
+				}
+
+				if (tPinDir == PINDIR_OUTPUT)
+				{
+					tRes = tPin->QueryInterface(IID_IAMStreamConfig, (void **)&tStreamConfig);
+					if (FAILED(tRes))
+					{
+						LOG(LOG_ERROR, "Could not query pin interface");
+						tPin->Release();
+						break;
+					}
+
+					int tCount, tSize;
+					tRes = tStreamConfig->GetNumberOfCapabilities( &tCount, &tSize);
+					LOG(LOG_VERBOSE, "Found %d capability entries", tCount);
+					if (FAILED(tRes))
+					{
+						LOG(LOG_ERROR, "Could not get number of caps");
+						tPin->Release();
+						break;
+					}
+
+			    	AM_MEDIA_TYPE *tMT;
+			    	BYTE *tCaps = new BYTE[tSize]; // VIDEO_STREAM_CONFIG_CAPS
+
+			    	for ( int i = 0; i < tCount; i++)
+				    {
+			    		tRes = tStreamConfig->GetStreamCaps(i, &tMT, tCaps);
+						if (FAILED(tRes))
+						{
+							#ifdef MSDS_DEBUG_RESOLUTIONS
+								LOG(LOG_ERROR, "Could not get stream cap %d", i);
+							#endif
+							break;
+						}
+
+					    if ((tMT->majortype == MEDIATYPE_Video) && (tMT->pbFormat !=0))
+					    {
+							VIDEOINFOHEADER *tVInfoHeader = (VIDEOINFOHEADER*)tMT->pbFormat;
+							int tWidth = tVInfoHeader->bmiHeader.biWidth;
+							int tHeight = tVInfoHeader->bmiHeader.biHeight;
+
+							LOG(LOG_VERBOSE, "  ..supported video resolution: %d*%d (sub type: %d)", tWidth, tHeight, tMT->subtype);
+						}
+				    }
+			    	delete [] tCaps;
+				}
+				tPin->Release();
+			}
+			tPinsEnum->Release();
+        }
+
+        //###############################################
 		//### finally add this device to the result list
 		//###############################################
 		pVList.push_back(tDevice);
