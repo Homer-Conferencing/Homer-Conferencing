@@ -136,6 +136,7 @@ SET (FLAGS
 	-m${ARCH_BITS}
 	-W
 	-Wall
+	-Wno-overloaded-virtual
 	-Wno-switch
 	-Wno-unused
 	-Wno-long-long
