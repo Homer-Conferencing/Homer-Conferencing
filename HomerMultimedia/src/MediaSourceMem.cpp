@@ -393,13 +393,12 @@ int MediaSourceMem::GetFragmentBufferSize()
     return MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT;
 }
 
-bool MediaSourceMem::SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset, bool pRtpActivated)
+bool MediaSourceMem::SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset)
 {
     bool tResult = false;
-    enum CodecID tStreamCodecId = MediaSource::GetCodecIDFromGuiName(pStreamCodec);
+    enum CodecID tStreamCodecId = GetCodecIDFromGuiName(pStreamCodec);
 
-    if ((mStreamCodecId != tStreamCodecId) ||
-        (mRtpActivated != pRtpActivated))
+    if (mStreamCodecId != tStreamCodecId)
     {
         LOG(LOG_VERBOSE, "Setting new input streaming preferences");
 
@@ -408,10 +407,6 @@ bool MediaSourceMem::SetInputStreamPreferences(std::string pStreamCodec, bool pD
         // set new codec
         LOG(LOG_VERBOSE, "    ..stream codec: %d => %d (%s)", mStreamCodecId, tStreamCodecId, pStreamCodec.c_str());
         mStreamCodecId = tStreamCodecId;
-
-        // set RTP encapsulation state
-        LOG(LOG_VERBOSE, "    ..stream rtp encapsulation: %d => %d", GetRtpActivation(), pRtpActivated);
-        SetRtpActivation(pRtpActivated);
 
         if ((pDoReset) && (mMediaSourceOpened))
         {

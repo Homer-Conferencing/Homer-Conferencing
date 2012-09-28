@@ -340,10 +340,12 @@ bool WaveOutPortAudio::CloseWaveOutDevice()
  */
 int WaveOutPortAudio::PlayAudioHandler(const void *pInputBuffer, void *pOutputBuffer, unsigned long pOutputSize, const PaStreamCallbackTimeInfo* pTimeInfo, unsigned long pStatus, void *pUserData)
 {
-	#ifdef WOPA_DEBUG_HANDLER
+    WaveOutPortAudio *tWaveOutPortAudio = (WaveOutPortAudio*)pUserData;
+    int tOutputBufferMaxSize = (int)pOutputSize * 2 /* 16 bit LittleEndian */ * (tWaveOutPortAudio->mStereo ? 2 : 1);
+
+    #ifdef WOPA_DEBUG_HANDLER
 		LOGEX(WaveOutPortAudio, LOG_WARN, "PlayAudioHandler CALLED");
 	#endif
-    WaveOutPortAudio *tWaveOutPortAudio = (WaveOutPortAudio*)pUserData;
 
     tWaveOutPortAudio->AssignThreadName();
 
@@ -372,6 +374,8 @@ int WaveOutPortAudio::PlayAudioHandler(const void *pInputBuffer, void *pOutputBu
     if ((tUsedFifo == 0) && (!tWaveOutPortAudio->mWaitingForFirstBuffer))
     {
         LOGEX(WaveOutPortAudio, LOG_WARN, "Audio FIFO empty, playback might be non continuous, found gaps %d", ++tWaveOutPortAudio->mPossiblePlaybackGaps);
+        memset(pOutputBuffer, 0, (size_t)tOutputBufferMaxSize);
+        return paContinue;
     }else
     {
         #ifdef WOPA_DEBUG_HANDLER
@@ -379,10 +383,8 @@ int WaveOutPortAudio::PlayAudioHandler(const void *pInputBuffer, void *pOutputBu
         #endif
     }
 
-    int tOutputBufferMaxSize;
     int tBufferSize;
     do {
-        tOutputBufferMaxSize = (int)pOutputSize * 2 /* 16 bit LittleEndian */ * (tWaveOutPortAudio->mStereo ? 2 : 1);
         tBufferSize = tOutputBufferMaxSize;
 		#ifdef WOPA_DEBUG_HANDLER
 			LOGEX(WaveOutPortAudio, LOG_WARN, "PlayAudioHandler: reading the FIFO");

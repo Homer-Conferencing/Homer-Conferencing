@@ -36,7 +36,7 @@ SET (INCLUDE_DIRS
 	../include/Widgets
 	../../HomerBase/include/Logging
 	../../HomerBase/include
-	../../HomerGAPI/include
+	../../HomerNAPI/include
 	../../HomerMonitor/include
 	../../HomerMultimedia/include
 	../../HomerNetworkSimulator/include
@@ -245,7 +245,7 @@ ENDIF()
 SET (LIBS_WINDOWS	
 	stdc++
 	HomerBase
-	HomerGAPI
+	HomerNAPI
 	HomerMonitor
 	HomerMultimedia
 	${NETWORK_SIMULATOR}
@@ -262,7 +262,7 @@ SET (LIBS_WINDOWS
 # USED LIBRARIES for BSD environment
 SET (LIBS_BSD
         HomerBase
-        HomerGAPI
+        HomerNAPI
         HomerMonitor
         HomerMultimedia
 	${NETWORK_SIMULATOR}
@@ -273,7 +273,7 @@ SET (LIBS_BSD
 # USED LIBRARIES for linux environment
 SET (LIBS_LINUX
 	HomerBase
-	HomerGAPI
+	HomerNAPI
 	HomerMonitor
 	HomerMultimedia
 	${NETWORK_SIMULATOR}
@@ -339,7 +339,7 @@ ENDIF()
 SET (LIBS_APPLE
 	stdc++
 	HomerBase
-	HomerGAPI
+	HomerNAPI
 	HomerMonitor
 	HomerMultimedia
 	${NETWORK_SIMULATOR}

@@ -8,7 +8,7 @@ TOP_DIR=$(CURDIR)
 
 HOMER_BASE=HomerBase
 HOMER_CONFERENCE=HomerConference
-HOMER_GAPI=HomerGAPI
+HOMER_NAPI=HomerNAPI
 HOMER_GUI=Homer
 HOMER_MONITOR=HomerMonitor
 HOMER_MULTIMEDIA=HomerMultimedia
@@ -23,8 +23,8 @@ endif
 ifneq ($(wildcard $(CURDIR)/../$(HOMER_MONITOR)),)
 	@cd $(CURDIR)/../$(HOMER_MONITOR) && $(MAKE) -s cleaner
 endif
-ifneq ($(wildcard $(CURDIR)/../$(HOMER_GAPI)),)
-	@cd $(CURDIR)/../$(HOMER_GAPI) && $(MAKE) -s cleaner
+ifneq ($(wildcard $(CURDIR)/../$(HOMER_NAPI)),)
+	@cd $(CURDIR)/../$(HOMER_NAPI) && $(MAKE) -s cleaner
 endif
 ifneq ($(wildcard $(CURDIR)/../$(HOMER_MULTIMEDIA)),)
 	@cd $(CURDIR)/../$(HOMER_MULTIMEDIA) && $(MAKE) -s cleaner

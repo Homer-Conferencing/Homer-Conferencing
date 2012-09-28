@@ -44,7 +44,7 @@
 									<listOptionValue builtIn="false" value="/usr/lib64/gcc/x86_64-pc-linux-gnu/4.4.5/include/g++-v4"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Homer/include}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/include/qt4/"/>
-									<listOptionValue builtIn="false" value="../../HomerGAPI/include"/>
+									<listOptionValue builtIn="false" value="../../HomerNAPI/include"/>
 									<listOptionValue builtIn="false" value="../../HomerNetworkSimulator/include"/>
 									<listOptionValue builtIn="false" value="/Users/Chaos/QtSDK/Desktop/Qt/4.8.1/gcc/include/QtGui"/>
 									<listOptionValue builtIn="false" value="/Users/Chaos/QtSDK/Desktop/Qt/4.8.1/gcc/include/QtCore"/>
@@ -88,7 +88,7 @@
 				<externalSettings containerId="HomerConference;" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier"/>
 				<externalSettings containerId="HomerMultimedia;" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier"/>
 				<externalSettings containerId="HomerBase;" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier"/>
-				<externalSettings containerId="HomerGAPI;" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier"/>
+				<externalSettings containerId="HomerNAPI;" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier"/>
 				<externalSettings containerId="HomerMonitor;" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier"/>
 				<externalSettings containerId="HomerSoundOutput;" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier"/>
 			</storageModule>

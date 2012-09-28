@@ -552,7 +552,7 @@ bool MainWindow::GetNetworkInfo(LocalAddressesList &pLocalAddressesList, QString
     QList<QHostAddress> tQtLocalAddresses = QNetworkInterface::allAddresses();
 
     LOG(LOG_INFO, "Last listener address: %s", tLastSipListenerAddress.toStdString().c_str());
-    LOG(LOG_INFO, "Local usable IPv4/6 addresses are:");
+    LOG(LOG_INFO, "Locally usable IPv4/6 addresses are:");
     for (int i = 0; i < tQtLocalAddresses.size(); i++)
     {
         if ((tQtLocalAddresses[i].protocol() == QAbstractSocket::IPv4Protocol) || ((tQtLocalAddresses[i].protocol() == QAbstractSocket::IPv6Protocol) && (!tQtLocalAddresses[i].toString().startsWith(IPV6_LINK_LOCAL_PREFIX))))

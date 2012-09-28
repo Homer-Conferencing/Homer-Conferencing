@@ -945,7 +945,7 @@ void* MediaSourceFile::Run(void* pArgs)
 								// log statistics
 								AnnouncePacket(tPacket->size);
 								#ifdef MSF_DEBUG_PACKETS
-									LOG(LOG_VERBOSE, "Decode video frame..");
+									LOG(LOG_VERBOSE, "Decode video frame (input is picture: %d)..", tInputIsPicture);
 								#endif
 
 								// did we read the single frame of a picture?
@@ -1014,6 +1014,7 @@ void* MediaSourceFile::Run(void* pArgs)
 								{
 									tSourceFrame->data[i] = mPictureData[i];
 									tSourceFrame->linesize[i] = mPictureLineSize[i];
+									tSourceFrame->pict_type = AV_PICTURE_TYPE_I;
 								}
 
 								// simulate a monotonous increasing PTS value
@@ -1463,8 +1464,15 @@ bool MediaSourceFile::InputIsPicture()
 {
     bool tResult = false;
 
+//    LOG(LOG_VERBOSE, "Source opened: %d", mMediaSourceOpened);
+//    if ((mFormatContext != NULL) && (mFormatContext->streams[mMediaStreamIndex]))
+//        LOG(LOG_VERBOSE, "Media type: %d", mFormatContext->streams[mMediaStreamIndex]->codec->codec_type);
+
     // do we have a picture?
-    if ((mMediaSourceOpened) && (mFormatContext != NULL) && (mFormatContext->streams[mMediaStreamIndex]) && (mFormatContext->streams[mMediaStreamIndex]->codec->codec_type == AVMEDIA_TYPE_AUDIO) && (mFormatContext->streams[mMediaStreamIndex]->duration == 1))
+    if ((mMediaSourceOpened) &&
+        (mFormatContext != NULL) && (mFormatContext->streams[mMediaStreamIndex]) &&
+        (mFormatContext->streams[mMediaStreamIndex]->codec->codec_type == AVMEDIA_TYPE_VIDEO) &&
+        (mFormatContext->streams[mMediaStreamIndex]->duration == 1))
         tResult = true;
 
     return tResult;

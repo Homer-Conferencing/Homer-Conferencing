@@ -626,7 +626,7 @@
             </spacer>
            </item>
            <item>
-            <widget class="QComboBox" name="mCbGAPIImpl">
+            <widget class="QComboBox" name="mCbNAPIImpl">
              <property name="minimumSize">
               <size>
                <width>0</width>

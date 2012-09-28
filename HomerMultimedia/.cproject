@@ -39,7 +39,7 @@
 									<listOptionValue builtIn="false" value="../../HomerMonitor/include"/>
 									<listOptionValue builtIn="false" value="../../HomerBase/include/Logging"/>
 									<listOptionValue builtIn="false" value="/usr/lib64/gcc/x86_64-pc-linux-gnu/4.4.5/include/g++-v4"/>
-									<listOptionValue builtIn="false" value="../../HomerGAPI/include"/>
+									<listOptionValue builtIn="false" value="../../HomerNAPI/include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/HomerMultimedia/include}&quot;"/>
 									<listOptionValue builtIn="false" value="../../HomerSoundOutput/include"/>
 									<listOptionValue builtIn="false" value="../../../Homer-Release/HomerIncludes"/>

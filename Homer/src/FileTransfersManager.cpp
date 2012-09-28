@@ -254,7 +254,7 @@ private:
     std::string         mPeerName;
     unsigned int        mPeerPort;
     Requirements        *mTransportRequirements;
-    /* GAPI based transport */
+    /* NAPI based transport */
     IConnection         *mSocketToPeer;
 };
 
@@ -290,7 +290,7 @@ FileTransfer::FileTransfer()
     mSenderActive = false;
     mUsesDataAcks = false;
     #ifdef FTM_ACK_DATA_PACKETS
-        mUsesDataAcks = true; //TODO: check if GAPI socket provides lossless and activate ACKs here automatically
+        mUsesDataAcks = true; //TODO: check if NAPI socket provides lossless and activate ACKs here automatically
     #endif
 }
 
@@ -353,9 +353,9 @@ FileTransfer* FileTransfer::CreateFileSender(std::string pTargetName, Requiremen
         tTransfer->mSessionId = ++sLocalSessionId;
         tTransfer->mId = CreateId(tTransfer->mSourceId, tTransfer->mSessionId);
         tTransfer->mTransportRequirements = pTransportRequirements;
-        tTransfer->mSocketToPeer = GAPI.connect(new Name(pTargetName), pTransportRequirements);
+        tTransfer->mSocketToPeer = NAPI.connect(new Name(pTargetName), pTransportRequirements);
         if (tTransfer->mSocketToPeer == NULL)
-            LOGEX(FileTransfer, LOG_ERROR, "Invalid GAPI socket");
+            LOGEX(FileTransfer, LOG_ERROR, "Invalid NAPI socket");
         tTransfer->mPacketSendBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
 
         LOGEX(FileTransfer, LOG_VERBOSE, "Started file sender for file %s towards %s:%u", tTransfer->mFileName.c_str(), tTransfer->mPeerName.c_str(), tTransfer->mPeerPort);
@@ -455,7 +455,7 @@ bool FileTransfer::SendPacket(char* pData, unsigned int pSize)
         mSocketToPeer->write(pData, (int)pSize);
         if (mSocketToPeer->isClosed())
         {
-            LOG(LOG_ERROR, "Error when sending data through GAPI connection to %s:%u, will skip further transmissions", mPeerName.c_str(), mPeerPort);
+            LOG(LOG_ERROR, "Error when sending data through NAPI connection to %s:%u, will skip further transmissions", mPeerName.c_str(), mPeerPort);
         }else
             tResult = true;
     }else
@@ -1077,10 +1077,10 @@ FileTransfersManager::~FileTransfersManager()
         free(mPacketReceiveBuffer);
     }
 
-    if (mGAPIBinding != NULL)
+    if (mNAPIBinding != NULL)
     {
-        LOG(LOG_VERBOSE, "..destroying GAPI bind object");
-        delete mGAPIBinding; //HINT: this stops all listeners automatically
+        LOG(LOG_VERBOSE, "..destroying NAPI bind object");
+        delete mNAPIBinding; //HINT: this stops all listeners automatically
     }
 
     LOG(LOG_VERBOSE, "Destroyed");
@@ -1110,22 +1110,22 @@ void FileTransfersManager::Init(string pLocalName, Requirements *pTransportRequi
     }
 
     Name tName(pLocalName);
-    mGAPIBinding = GAPI.bind(&tName, pTransportRequirements);
+    mNAPIBinding = NAPI.bind(&tName, pTransportRequirements);
 
     // auto probe for alternative ports if needed
-    while (mGAPIBinding->isClosed())
+    while (mNAPIBinding->isClosed())
     {
         LOG(LOG_VERBOSE, "Binding to port %u did not work, trying port %u now", tReqPort->getPort(), tReqPort->getPort() + 1);
         tReqPort->setPort(tReqPort->getPort() + 1);
-        delete mGAPIBinding;
-        mGAPIBinding = GAPI.bind(&tName, pTransportRequirements);
+        delete mNAPIBinding;
+        mNAPIBinding = NAPI.bind(&tName, pTransportRequirements);
     }
 
-    if (mGAPIBinding == NULL)
-        LOG(LOG_ERROR, "Invalid GAPI setup interface, name is %s, requirements are %s", pLocalName.c_str(), pTransportRequirements->getDescription().c_str());
-    mReceiverSocket = mGAPIBinding->readConnection();
+    if (mNAPIBinding == NULL)
+        LOG(LOG_ERROR, "Invalid NAPI setup interface, name is %s, requirements are %s", pLocalName.c_str(), pTransportRequirements->getDescription().c_str());
+    mReceiverSocket = mNAPIBinding->readConnection();
     if (mReceiverSocket == NULL)
-        LOG(LOG_ERROR, "Invalid GAPI association, name is %s, requirements are %s", pLocalName.c_str(), pTransportRequirements->getDescription().c_str());
+        LOG(LOG_ERROR, "Invalid NAPI association, name is %s, requirements are %s", pLocalName.c_str(), pTransportRequirements->getDescription().c_str());
 
     mLocalPort = tReqPort->getPort();
     mPacketReceiveBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
@@ -1264,7 +1264,7 @@ bool FileTransfersManager::ReceivePacket(std::string &pSourceHost, unsigned int 
             pSourcePort = 1;
         }
     }else
-        LOG(LOG_ERROR, "Invalid GAPI association, name is %s, requirements are %s", mLocalName.c_str(), mTransportRequirements->getDescription().c_str());
+        LOG(LOG_ERROR, "Invalid NAPI association, name is %s, requirements are %s", mLocalName.c_str(), mTransportRequirements->getDescription().c_str());
     return tResult;
 }
 
@@ -1333,7 +1333,7 @@ void* FileTransfersManager::Run(void* pArgs)
                     tRequs->add(tReqPort);
 
                     // create response socket
-                    IConnection *tSocket = GAPI.connect(new Name(tSourceHost), tRequs);
+                    IConnection *tSocket = NAPI.connect(new Name(tSourceHost), tRequs);
 
                     // create transfer object
                     tFileTransfer = FileTransfer::CreateFileReceiver(tSocket, tHeader, tBeginHeader);

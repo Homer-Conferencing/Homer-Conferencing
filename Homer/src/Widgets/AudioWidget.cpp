@@ -1302,10 +1302,18 @@ void AudioWorkerThread::run()
         	else
         		LOG(LOG_VERBOSE, "AudioWorkerThread waits for available grabbing device");
 
+        	// mute playback
+        	bool tWasMuted = mAudioOutMuted;
+        	DoStopPlayback();
+
             mGrabbingCondition.wait(&mGrabbingStateMutex);
             mGrabbingStateMutex.unlock();
 
             LOG(LOG_VERBOSE, "Continuing processing");
+
+            // restart playback
+            if (!tWasMuted)
+                DoStartPlayback();
         }
 
     }

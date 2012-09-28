@@ -475,7 +475,7 @@ int MediaSource::FfmpegLockManager(void **pMutex, enum AVLockOp pMutexOperation)
  ****************************************************/
 enum CodecID MediaSource::GetCodecIDFromGuiName(std::string pName)
 {
-    enum CodecID tResult = CODEC_ID_NONE;
+    enum CodecID tResult = (GetMediaType() == MEDIA_AUDIO) ? CODEC_ID_MP3 : CODEC_ID_H261;
 
     /* video */
     if (pName == "H.261")
@@ -592,7 +592,7 @@ string MediaSource::GetGuiNameFromCodecID(enum CodecID pCodecId)
     			break;
 
         default:
-        	LOGEX(MediaSource, LOG_WARN, "Detected unsupported codec %d", pCodecId);
+        	//LOGEX(MediaSource, LOG_WARN, "Detected unsupported codec %d", pCodecId);
         	break;
     }
 
@@ -696,7 +696,7 @@ string MediaSource::GetFormatName(enum CodecID pCodecId)
     			break;
 
         default:
-        	LOGEX(MediaSource, LOG_WARN, "Detected unsupported codec %d", pCodecId);
+        	LOGEX(MediaSource, LOG_WARN, "Detected unsupported %s codec %d", GetMediaTypeStr().c_str(), pCodecId);
         	break;
     }
 
@@ -1066,7 +1066,7 @@ MediaSinkNet* MediaSource::RegisterMediaSink(string pTarget, Requirements *pTran
         return NULL;
     }
 
-    LOG(LOG_VERBOSE, "Registering GAPI based media sink: %s (Requirements: %s)", pTarget.c_str(), pTransportRequirements->getDescription().c_str());
+    LOG(LOG_VERBOSE, "Registering NAPI based media sink: %s (Requirements: %s)", pTarget.c_str(), pTransportRequirements->getDescription().c_str());
 
     // lock
     mMediaSinksMutex.lock();
@@ -1104,7 +1104,7 @@ bool MediaSource::UnregisterMediaSink(string pTarget, Requirements *pTransportRe
     if (pTarget == "")
         return false;
 
-    LOG(LOG_VERBOSE, "Unregistering GAPI based media sink: %s (Requirements: %s)", pTarget.c_str(), pTransportRequirements->getDescription().c_str());
+    LOG(LOG_VERBOSE, "Unregistering NAPI based media sink: %s (Requirements: %s)", pTarget.c_str(), pTransportRequirements->getDescription().c_str());
 
     // lock
     mMediaSinksMutex.lock();
@@ -2332,7 +2332,7 @@ bool MediaSource::SelectDevice(std::string pDeviceName, enum MediaType pMediaTyp
         mCurrentDeviceName = "auto selection";
     }
 
-    LOG(LOG_VERBOSE, "%s-Source should be reseted: %d", GetStreamName().c_str(), pIsNewDevice);
+    LOG(LOG_VERBOSE, "%s-Source should be reset: %d", GetStreamName().c_str(), pIsNewDevice);
     if (!tResult)
         LOG(LOG_INFO, "%s-Selected device %s is not available", GetStreamName().c_str(), pDeviceName.c_str());
 
@@ -2725,13 +2725,21 @@ bool MediaSource::FfmpegSelectStream(string pSource, int pLine)
     mMediaStreamIndex = -1;
 
 	enum AVMediaType tTargetMediaType;
+	string tMediaSource = "";
+	string tTargetMediaDescription = "unknown";
+	int tPos = pSource.rfind(':');
+	if (tPos != (int)string::npos)
+		tMediaSource = pSource.substr(tPos + 1, pSource.length() - tPos- 1);
+
 	switch(mMediaType)
 	{
 		case MEDIA_VIDEO:
 			tTargetMediaType = AVMEDIA_TYPE_VIDEO;
+			tTargetMediaDescription = tMediaSource + "(video)";
 			break;
 		case MEDIA_AUDIO:
 			tTargetMediaType = AVMEDIA_TYPE_AUDIO;
+			tTargetMediaDescription = tMediaSource + "(audio)";
 			break;
 		default:
 			break;
@@ -2747,7 +2755,7 @@ bool MediaSource::FfmpegSelectStream(string pSource, int pLine)
 	    //######################################################
 	    if(mFormatContext->streams[i]->codec->codec_type == tTargetMediaType)
 	    {
-	        av_dump_format(mFormatContext, i, "MediaSourceFile(video)", false);
+	        av_dump_format(mFormatContext, i, tTargetMediaDescription.c_str(), false);
 	        mMediaStreamIndex = i;
 	        break;
 	    }

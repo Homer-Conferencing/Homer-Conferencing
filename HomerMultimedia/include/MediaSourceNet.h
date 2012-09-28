@@ -100,10 +100,10 @@ protected:
     unsigned int        mListenerPort;
     std::string         mPeerHost;
     unsigned int        mPeerPort;
-    /* GAPI based transport */
-    IConnection         *mGAPIDataSocket;
-    IBinding            *mGAPIBinding;
-    bool                mGAPIUsed;
+    /* NAPI based transport */
+    IConnection         *mNAPIDataSocket;
+    IBinding            *mNAPIBinding;
+    bool                mNAPIUsed;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -88,6 +88,7 @@ public:
 
     void SavePool(std::string pContactsFile = "");
     void LoadPool(std::string pContactsFile = "");
+    void ResetPool();
 
     int GetNextFreeId();
     bool FavorizedContact(QString pUser, QString pHost, QString pPort);

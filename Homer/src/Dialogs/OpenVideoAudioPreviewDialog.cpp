@@ -37,7 +37,7 @@
 #include <MediaSourceFile.h>
 #include <Snippets.h>
 #include <HBSocket.h>
-#include <GAPI.h>
+#include <NAPI.h>
 #include <Meeting.h>
 #include <Berkeley/SocketSetup.h>
 #include <Meeting.h>
@@ -78,8 +78,8 @@ void OpenVideoAudioPreviewDialog::initializeGUI()
 
     connect(mPbFile, SIGNAL(clicked()), this, SLOT(ActionGetFile()));
 
-    connect(mCbGAPIImplVideo, SIGNAL(currentIndexChanged(QString)), this, SLOT(GAPIVideoSelectionChanged(QString)));
-    connect(mCbGAPIImplAudio, SIGNAL(currentIndexChanged(QString)), this, SLOT(GAPIAudioSelectionChanged(QString)));
+    connect(mCbNAPIImplVideo, SIGNAL(currentIndexChanged(QString)), this, SLOT(NAPIVideoSelectionChanged(QString)));
+    connect(mCbNAPIImplAudio, SIGNAL(currentIndexChanged(QString)), this, SLOT(NAPIAudioSelectionChanged(QString)));
 
     LoadConfiguration();
 }
@@ -104,7 +104,7 @@ int OpenVideoAudioPreviewDialog::exec()
 MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceVideo()
 {
     MediaSourceNet *tNetSource = NULL;
-    string tOldGAPIImpl;
+    string tOldNAPIImpl;
     QString tHost = mLeHostVideo->text();
     QString tPort = QString("%1").arg(mSbPortVideo->value());
     enum TransportType tTransport = (enum TransportType)mCbTransportVideo->currentIndex();
@@ -141,7 +141,7 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceVideo()
                 return NULL;
             break;
         case 2: // network streaming
-            #ifdef USE_GAPI
+            #ifdef USE_NAPI
                 // add transport details depending on transport protocol selection
                 switch(tTransport)
                 {
@@ -161,10 +161,10 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceVideo()
                 // add local port
                 tRequs->add(tReqPort);
 
-                tOldGAPIImpl = GAPI.getCurrentImplName();
-                GAPI.selectImpl(mCbGAPIImplVideo->currentText().toStdString());
+                tOldNAPIImpl = NAPI.getCurrentImplName();
+                NAPI.selectImpl(mCbNAPIImplVideo->currentText().toStdString());
                 tNetSource = new MediaSourceNet(tHost.toStdString(), tRequs, mCbRtpVideo->isChecked());
-                GAPI.selectImpl(tOldGAPIImpl);
+                NAPI.selectImpl(tOldNAPIImpl);
             #else
                 MediaSourceNet *tNetSource = new MediaSourceNet(mSbPortVideo->value(), (enum TransportType)mCbTransportVideo->currentIndex(), mCbRtpVideo->isChecked());
             #endif
@@ -174,7 +174,7 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceVideo()
                 delete tNetSource;
                 return NULL;
             }
-            tNetSource->SetInputStreamPreferences(mCbCodecVideo->currentText().toStdString(), false, mCbRtpVideo->isChecked());
+            tNetSource->SetInputStreamPreferences(mCbCodecVideo->currentText().toStdString(), false);
             return tNetSource;
             break;
         default:
@@ -192,7 +192,7 @@ bool OpenVideoAudioPreviewDialog::FileSourceSelected()
 MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceAudio()
 {
     MediaSourceNet *tNetSource = NULL;
-    string tOldGAPIImpl;
+    string tOldNAPIImpl;
     QString tHost = mLeHostAudio->text();
     QString tPort = QString("%1").arg(mSbPortAudio->value());
     enum TransportType tTransport = (enum TransportType)mCbTransportAudio->currentIndex();
@@ -218,7 +218,7 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceAudio()
                 return NULL;
             break;
         case 2: // network streaming
-            #ifdef USE_GAPI
+            #ifdef USE_NAPI
                 // add transport details depending on transport protocol selection
                 switch(tTransport)
                 {
@@ -238,10 +238,10 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceAudio()
                 // add local port
                 tRequs->add(tReqPort);
 
-                tOldGAPIImpl = GAPI.getCurrentImplName();
-                GAPI.selectImpl(mCbGAPIImplAudio->currentText().toStdString());
+                tOldNAPIImpl = NAPI.getCurrentImplName();
+                NAPI.selectImpl(mCbNAPIImplAudio->currentText().toStdString());
                 tNetSource = new MediaSourceNet(tHost.toStdString(), tRequs, mCbRtpAudio->isChecked());
-                GAPI.selectImpl(tOldGAPIImpl);
+                NAPI.selectImpl(tOldNAPIImpl);
             #else
                 MediaSourceNet *tNetSource = new MediaSourceNet(mSbPortAudio->value(), (enum TransportType)mCbTransportAudio->currentIndex(), mCbRtpAudio->isChecked());
             #endif
@@ -251,7 +251,7 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceAudio()
                 delete tNetSource;
                 return NULL;
             }
-            tNetSource->SetInputStreamPreferences(mCbCodecAudio->currentText().toStdString(), false, mCbRtpAudio->isChecked());
+            tNetSource->SetInputStreamPreferences(mCbCodecAudio->currentText().toStdString(), false);
             return tNetSource;
             break;
         default:
@@ -268,14 +268,14 @@ void OpenVideoAudioPreviewDialog::SaveConfiguration()
     CONF.SetAudioRtp(mCbRtpAudio->isChecked());
     CONF.SetAudioTransport(Socket::String2TransportType(mCbTransportAudio->currentText().toStdString()));
 
-    CONF.SetVideoStreamingGAPIImpl(mCbGAPIImplVideo->currentText());
-    CONF.SetAudioStreamingGAPIImpl(mCbGAPIImplAudio->currentText());
+    CONF.SetVideoStreamingNAPIImpl(mCbNAPIImplVideo->currentText());
+    CONF.SetAudioStreamingNAPIImpl(mCbNAPIImplAudio->currentText());
 
     CONF.SetPreviewSelectionAudio(mCbAudioEnabled->isChecked());
     CONF.SetPreviewSelectionVideo(mCbVideoEnabled->isChecked());
 }
 
-void OpenVideoAudioPreviewDialog::GAPIVideoSelectionChanged(QString pSelection)
+void OpenVideoAudioPreviewDialog::NAPIVideoSelectionChanged(QString pSelection)
 {
     if (pSelection == BERKEYLEY_SOCKETS)
     {
@@ -286,7 +286,7 @@ void OpenVideoAudioPreviewDialog::GAPIVideoSelectionChanged(QString pSelection)
     }
 }
 
-void OpenVideoAudioPreviewDialog::GAPIAudioSelectionChanged(QString pSelection)
+void OpenVideoAudioPreviewDialog::NAPIAudioSelectionChanged(QString pSelection)
 {
     if (pSelection == BERKEYLEY_SOCKETS)
     {
@@ -413,24 +413,24 @@ void OpenVideoAudioPreviewDialog::LoadConfiguration()
     //########################
     //### network interface
     //########################
-    list<string> tGAPIImpls = GAPI.getAllImplNames();
-    list<string>::iterator tGAPIImplsIt;
-    mCbGAPIImplVideo->clear();
-    mCbGAPIImplAudio->clear();
-    for (tGAPIImplsIt = tGAPIImpls.begin(); tGAPIImplsIt != tGAPIImpls.end(); tGAPIImplsIt++)
+    list<string> tNAPIImpls = NAPI.getAllImplNames();
+    list<string>::iterator tNAPIImplsIt;
+    mCbNAPIImplVideo->clear();
+    mCbNAPIImplAudio->clear();
+    for (tNAPIImplsIt = tNAPIImpls.begin(); tNAPIImplsIt != tNAPIImpls.end(); tNAPIImplsIt++)
     {
-        mCbGAPIImplVideo->addItem(QString(tGAPIImplsIt->c_str()));
-        mCbGAPIImplAudio->addItem(QString(tGAPIImplsIt->c_str()));
+        mCbNAPIImplVideo->addItem(QString(tNAPIImplsIt->c_str()));
+        mCbNAPIImplAudio->addItem(QString(tNAPIImplsIt->c_str()));
     }
-    QString tGAPIImplVideo = CONF.GetVideoStreamingGAPIImpl();
-    QString tGAPIImplAudio = CONF.GetAudioStreamingGAPIImpl();
-    for (int i = 0; i < mCbGAPIImplVideo->count(); i++)
+    QString tNAPIImplVideo = CONF.GetVideoStreamingNAPIImpl();
+    QString tNAPIImplAudio = CONF.GetAudioStreamingNAPIImpl();
+    for (int i = 0; i < mCbNAPIImplVideo->count(); i++)
     {
-        QString tCurGAPIImpl = mCbGAPIImplVideo->itemText(i);
-        if (tGAPIImplVideo == tCurGAPIImpl)
-            mCbGAPIImplVideo->setCurrentIndex(i);
-        if (tGAPIImplAudio == tCurGAPIImpl)
-            mCbGAPIImplAudio->setCurrentIndex(i);
+        QString tCurNAPIImpl = mCbNAPIImplVideo->itemText(i);
+        if (tNAPIImplVideo == tCurNAPIImpl)
+            mCbNAPIImplVideo->setCurrentIndex(i);
+        if (tNAPIImplAudio == tCurNAPIImpl)
+            mCbNAPIImplAudio->setCurrentIndex(i);
     }
 
     //########################

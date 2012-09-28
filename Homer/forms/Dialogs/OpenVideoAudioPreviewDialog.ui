@@ -961,7 +961,7 @@
                   </spacer>
                  </item>
                  <item>
-                  <widget class="QComboBox" name="mCbGAPIImplVideo">
+                  <widget class="QComboBox" name="mCbNAPIImplVideo">
                    <property name="minimumSize">
                     <size>
                      <width>0</width>
@@ -1451,7 +1451,7 @@
                   </spacer>
                  </item>
                  <item>
-                  <widget class="QComboBox" name="mCbGAPIImplAudio">
+                  <widget class="QComboBox" name="mCbNAPIImplAudio">
                    <property name="minimumSize">
                     <size>
                      <width>0</width>

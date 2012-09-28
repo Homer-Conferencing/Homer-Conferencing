@@ -178,7 +178,7 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
 {
     // HINT: returns if something has changed
     bool tResult = false;
-    enum CodecID tStreamCodecId = MediaSource::GetCodecIDFromGuiName(pStreamCodec);
+    enum CodecID tStreamCodecId = GetCodecIDFromGuiName(pStreamCodec);
 
     pMaxPacketSize -= IP6_HEADER_SIZE; // IPv6 overhead is bigger than IPv4
     pMaxPacketSize -= IP_OPTIONS_SIZE; // IP options size: used for QoS signaling
@@ -340,7 +340,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     mFormatContext = AV_NEW_FORMAT_CONTEXT();
 
     // find format
-    LOG(LOG_VERBOSE, "Guessing format for codec \"%s\"", GetFormatName(mStreamCodecId).c_str());
+    LOG(LOG_VERBOSE, "Guessing video format for codec \"%s\"", GetFormatName(mStreamCodecId).c_str());
     tFormat = AV_GUESS_FORMAT(GetFormatName(mStreamCodecId).c_str(), NULL, NULL);
     if (tFormat == NULL)
     {
@@ -387,9 +387,6 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     if (tFormat->video_codec == CODEC_ID_H263)
     {
         mCodecContext->flags |= CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED;
-
-        // old codec codext flag CODEC_FLAG_H263P_SLICE_STRUCT
-        av_dict_set(&tOptions, "structured_slices", "1", 0);
     }
 
     // do some extra modifications for H263+ to make it easier for streaming
@@ -689,7 +686,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     mFormatContext = AV_NEW_FORMAT_CONTEXT();
 
     // find format
-    LOG(LOG_VERBOSE, "Guessing format for codec \"%s\"", GetFormatName(mStreamCodecId).c_str());
+    LOG(LOG_VERBOSE, "Guessing audio format for codec \"%s\"", GetFormatName(mStreamCodecId).c_str());
     tFormat = AV_GUESS_FORMAT(GetFormatName(mStreamCodecId).c_str(), NULL, NULL);
     if (tFormat == NULL)
     {

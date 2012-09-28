@@ -839,7 +839,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
     // create memory stream and init ffmpeg internal structures
     //####################################################################
     #ifdef RTP_DEBUG_PACKETS
-        LOG(LOG_VERBOSE, "Encapsulate frame with format %s of size: %u while maximum resulting RTP packet size is: %d", MediaSource::GetFormatName(mRtpFormatContext->streams[0]->codec->codec_id).c_str(), pDataSize, mAVIOContext->max_packet_size);
+        LOG(LOG_VERBOSE, "Encapsulate frame of codec %s and size: %u while maximum resulting RTP packet size is: %d", mRtpFormatContext->streams[0]->codec->codec_name, pDataSize, mAVIOContext->max_packet_size);
     #endif
 
     // open RTP stream for av_Write_frame()
@@ -1623,10 +1623,13 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                                                 // start fragment?
                                                 if (tH264HeaderFragmentStart)
                                                 {
+													#ifdef RTP_DEBUG_PACKETS
+                                                		LOG(LOG_VERBOSE, "..H264 start fragment");
+													#endif
                                                     // use FU header as NAL header, reconstruct the original NAL header
                                                     if (!pReadOnly)
                                                     {
-                                                        #ifdef RTP_DEBUG_PACKETSdif
+                                                        #ifdef RTP_DEBUG_PACKETS
                                                             LOG(LOG_VERBOSE, "S bit is set: reconstruct NAL header");
                                                             LOG(LOG_VERBOSE, "..part F+NRI: %d", pData[0] & 0xE0);
                                                             LOG(LOG_VERBOSE, "..part TYPE: %d", pData[1] & 0x1F);
@@ -1637,6 +1640,12 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                                                     pData += 1;
                                                 }else
                                                 {
+													#ifdef RTP_DEBUG_PACKETS
+														if (tH264Header->FuA.E)
+															LOG(LOG_VERBOSE, "..H264 end fragment");
+														else
+															LOG(LOG_VERBOSE, "..H264 intermediate fragment");
+													#endif
                                                     pData += 2;
                                                 }
                                                 break;
