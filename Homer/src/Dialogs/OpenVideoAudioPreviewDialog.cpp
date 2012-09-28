@@ -73,7 +73,7 @@ void OpenVideoAudioPreviewDialog::initializeGUI()
         mLbHostAudio->hide();
         mLeHostAudio->hide();
         // minimize layout
-        resize(0, 0);
+        ShrinkWidgetToMinimumSize();
     }
 
     connect(mPbFile, SIGNAL(clicked()), this, SLOT(ActionGetFile()));
@@ -82,6 +82,16 @@ void OpenVideoAudioPreviewDialog::initializeGUI()
     connect(mCbNAPIImplAudio, SIGNAL(currentIndexChanged(QString)), this, SLOT(NAPIAudioSelectionChanged(QString)));
 
     LoadConfiguration();
+}
+
+void OpenVideoAudioPreviewDialog::ShrinkWidgetToMinimumSize()
+{
+    QTimer::singleShot(0, this, SLOT(DoWidgetShrinking()));
+}
+
+void OpenVideoAudioPreviewDialog::DoWidgetShrinking()
+{
+    resize(minimumSizeHint());
 }
 
 int OpenVideoAudioPreviewDialog::exec()
