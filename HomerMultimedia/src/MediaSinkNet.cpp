@@ -191,10 +191,12 @@ MediaSinkNet::~MediaSinkNet()
 void MediaSinkNet::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AVStream *pStream, bool pIsKeyFrame)
 {
     // save maximum network packet size to use it later within SendPacket() function
-    mMaxNetworkPacketSize = pStream->codec->rtp_payload_size;
     if ((mMaxNetworkPacketSize == 0) && (pStream->codec->codec_id == CODEC_ID_H261))
         mMaxNetworkPacketSize = RTP::GetH261PayloadSizeMax() + RTP_HEADER_SIZE + 4 /* H.261 rtp payload header */;
+    else
+        mMaxNetworkPacketSize = pStream->codec->rtp_payload_size;
 
+    // call ProcessPacket from mem based media sink
     MediaSinkMem::ProcessPacket(pPacketData, pPacketSize, pStream, pIsKeyFrame);
 }
 
