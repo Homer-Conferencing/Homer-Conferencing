@@ -116,7 +116,7 @@ void HelpDialog::initializeGUI()
             case QSysInfo::MV_LION:
                         tOs = "OS X Lion";
                         break;
-            case 0x000A:
+            case QSysInfo::MV_MOUNTAINLION:
                         tOs = "OS X Mountain Lion";
                         break;
             default:
