@@ -61,10 +61,13 @@ public:
 private slots:
     void ActionGetFile();
 
+    void DoWidgetShrinking();
+
     void NAPIVideoSelectionChanged(QString pSelection);
     void NAPIAudioSelectionChanged(QString pSelection);
 
 private:
+    void ShrinkWidgetToMinimumSize();
     void initializeGUI();
     void SaveConfiguration();
     void LoadConfiguration();

@@ -55,9 +55,12 @@ public:
     int exec();
 
 private slots:
+    void DoWidgetShrinking();
+
     void NAPISelectionChanged(QString pSelection);
 
 private:
+    void ShrinkWidgetToMinimumSize();
     void initializeGUI();
     void SaveConfiguration();
     void LoadConfiguration();

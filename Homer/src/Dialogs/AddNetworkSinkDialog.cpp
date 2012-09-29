@@ -41,6 +41,9 @@
 #include <list>
 #include <limits.h>
 
+#include <QTimer>
+#include <QDialog>
+
 using namespace Homer::Base;
 using namespace Homer::Monitor;
 using namespace Homer::Multimedia;
@@ -77,12 +80,22 @@ void AddNetworkSinkDialog::initializeGUI()
         mGbRequirements->hide();
         mGbInterface->hide();
         // minimize layout
-        resize(0, 0);
+        ShrinkWidgetToMinimumSize();
     }
     if ((mDataType != DATA_TYPE_VIDEO) && (mDataType != DATA_TYPE_AUDIO))
     {
         mCbRtp->hide();
     }
+}
+
+void AddNetworkSinkDialog::ShrinkWidgetToMinimumSize()
+{
+    QTimer::singleShot(0, this, SLOT(DoWidgetShrinking()));
+}
+
+void AddNetworkSinkDialog::DoWidgetShrinking()
+{
+    resize(minimumSizeHint());
 }
 
 int AddNetworkSinkDialog::exec()
