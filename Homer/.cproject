@@ -46,9 +46,6 @@
 									<listOptionValue builtIn="false" value="/usr/include/qt4/"/>
 									<listOptionValue builtIn="false" value="../../HomerNAPI/include"/>
 									<listOptionValue builtIn="false" value="../../HomerNetworkSimulator/include"/>
-									<listOptionValue builtIn="false" value="/Users/Chaos/QtSDK/Desktop/Qt/4.8.1/gcc/include/QtGui"/>
-									<listOptionValue builtIn="false" value="/Users/Chaos/QtSDK/Desktop/Qt/4.8.1/gcc/include/QtCore"/>
-									<listOptionValue builtIn="false" value="/Users/Chaos/QtSDK/Desktop/Qt/4.8.1/gcc/include/QtNetwork"/>
 									<listOptionValue builtIn="false" value="../../../Homer-Release/HomerIncludes/qt4/QtGui"/>
 									<listOptionValue builtIn="false" value="../../../Homer-Release/HomerIncludes/qt4/QtCore"/>
 									<listOptionValue builtIn="false" value="../../../Homer-Release/HomerIncludes/qt4/QtNetwork"/>
