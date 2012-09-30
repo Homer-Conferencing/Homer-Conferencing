@@ -762,7 +762,7 @@ int RTP::StoreRtpPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize)
 {
     RTP* tRTPInstance = (RTP*)pOpaque;
 
-    #ifdef RTP_DEBUG_PACKETS
+    #ifdef RTP_DEBUG_PACKET_ENCODER
         LOGEX(RTP, LOG_VERBOSE, "Storing RTP packet of %d bytes", pBufferSize);
     #endif
     if (!tRTPInstance->mEncoderOpened)
@@ -827,7 +827,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
     tPacket.stream_index = 0;
     tPacket.data = (uint8_t *)pData;
     tPacket.size = pDataSize; //TODO: pts from stream contextfor packet.pts? -> used in ffmpeg to create rtp packets
-    #ifdef RTP_DEBUG_PACKETS
+    #ifdef RTP_DEBUG_PACKET_ENCODER
         LOG(LOG_VERBOSE, "Encapsulating codec packet:");
         LOG(LOG_VERBOSE, "      ..pts: %ld", tPacket.pts);
         LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket.dts);
@@ -838,7 +838,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
     //####################################################################
     // create memory stream and init ffmpeg internal structures
     //####################################################################
-    #ifdef RTP_DEBUG_PACKETS
+    #ifdef RTP_DEBUG_PACKET_ENCODER
         LOG(LOG_VERBOSE, "Encapsulate frame of codec %s and size: %u while maximum resulting RTP packet size is: %d", mRtpFormatContext->streams[0]->codec->codec_name, pDataSize, mAVIOContext->max_packet_size);
     #endif
 
@@ -859,7 +859,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
     char *tData = NULL;
     pDataSize = CloseRtpPacketStream(&tData);
     pData = (char*)tData;
-    #ifdef RTP_DEBUG_PACKETS
+    #ifdef RTP_DEBUG_PACKET_ENCODER
         if (pDataSize == 0)
             LOG(LOG_WARN, "Resulting RTP stream is empty");
         else
@@ -882,7 +882,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
         do{
             tRtpPacketSize = ntohl(*(uint32_t*)(tRtpPacket - 4));
 
-            #ifdef RTP_DEBUG_PACKETS
+            #ifdef RTP_DEBUG_PACKET_ENCODER
                 LOG(LOG_VERBOSE, "Found RTP packet at %p with size of %u bytes", tRtpPacket, tRtpPacketSize);
             #endif
 
@@ -896,7 +896,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
             for (int i = 0; i < 3; i++)
                 tHeader->Data[i] = ntohl(tHeader->Data[i]);
 
-            #ifdef RTP_DEBUG_PACKETS
+            #ifdef RTP_DEBUG_PACKET_ENCODER
                 LOG(LOG_VERBOSE, "RTP packet has payload type: %d", tHeader->PayloadType);
             #endif
 
@@ -931,7 +931,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
                                             // convert from network to host byte order
                                             tMPAHeader->Data[0] = ntohl(tMPAHeader->Data[0]);
 
-                                            #ifdef RTP_DEBUG_PACKETS
+                                            #ifdef RTP_DEBUG_PACKET_ENCODER
                                                 LOG(LOG_VERBOSE, "Set MBZ bytes to message size of %u", tMp3Hack_EntireBufferSize);
                                             #endif
                                             tMPAHeader->Mbz = (unsigned short int)tMp3Hack_EntireBufferSize;
@@ -992,7 +992,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
             LOG(LOG_ERROR, "Still %u bytes left when paload patches were already finished", tRemainingRtpDataSize);
     }else
     {
-        #ifdef RTP_DEBUG_PACKETS
+        #ifdef RTP_DEBUG_PACKET_ENCODER
             LOG(LOG_VERBOSE, "Resulting RTP stream is invalid (maybe ffmpeg buffers packets until max. packet size is reached)");
         #endif
         return false;
@@ -1007,14 +1007,14 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize)
     if (!mEncoderOpened)
         return false;
 
-    #ifdef RTP_DEBUG_PACKETS
+    #ifdef RTP_DEBUG_PACKET_ENCODER
         LOG(LOG_VERBOSE, "Encapsulate frame with format h261 of size: %u while maximum resulting RTP packet size is: %d", pDataSize, mH261PayloadSizeMax);
     #endif
 
     // calculate the amount of needed RTP packets to encapsulate the whole frame
     unsigned int tPacketCount = (pDataSize + (unsigned int)RTP_MAX_H261_PAYLOAD_SIZE - 1);
     tPacketCount /= (unsigned short int)(RTP_MAX_H261_PAYLOAD_SIZE);
-    #ifdef RTP_DEBUG_PACKETS
+    #ifdef RTP_DEBUG_PACKET_ENCODER
         LOG(LOG_VERBOSE, "Calculated h261 packets: %u", tPacketCount);
     #endif
     // allocate memory for the RTP packet stream
@@ -1027,7 +1027,7 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize)
 
     // get pointer to the current working address inside rtp packet stream
     char *tCurrentRtpStreamData = mRtpPacketStream;
-    #ifdef RTP_DEBUG_PACKETS
+    #ifdef RTP_DEBUG_PACKET_ENCODER
         LOG(LOG_VERBOSE, "Packet stream at %p", mRtpPacketStream);
     #endif
     for (unsigned int tPacketIndex = 0; tPacketIndex < tPacketCount; tPacketIndex++)
@@ -1213,7 +1213,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
     // #############################################################
     RtpHeader* tRtpHeader = (RtpHeader*)pData;
 
-    #ifdef RTP_DEBUG_PACKETS
+    #ifdef RTP_DEBUG_PACKET_DECODER
         // print some verbose outputs
         LogRtpHeader(tRtpHeader);
     #endif
@@ -1259,7 +1259,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
         for (int i = 0; i < 3; i++)
             tRtpHeader->Data[i] = htonl(tRtpHeader->Data[i]);
 
-        #ifdef RTP_DEBUG_PACKETS
+        #ifdef RTP_DEBUG_PACKET_DECODER
             LogRtpHeader(tRtpHeader);
             LogRtcpHeader(tRtcpHeader);
         #endif
@@ -1331,7 +1331,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
     {
             // audio
             case CODEC_ID_PCM_ALAW:
-                            #ifdef RTP_DEBUG_PACKETS
+                            #ifdef RTP_DEBUG_PACKET_DECODER
                                 LOG(LOG_VERBOSE, "#################### PCMA header #######################");
                                 LOG(LOG_VERBOSE, "No additional information");
                             #endif
@@ -1339,7 +1339,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                             mIntermediateFragment = false;
                             break;
             case CODEC_ID_PCM_MULAW:
-                            #ifdef RTP_DEBUG_PACKETS
+                            #ifdef RTP_DEBUG_PACKET_DECODER
                                 LOG(LOG_VERBOSE, "#################### PCMU header #######################");
                                 LOG(LOG_VERBOSE, "No additional information");
                             #endif
@@ -1347,7 +1347,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                             mIntermediateFragment = false;
                             break;
             case CODEC_ID_PCM_S16LE:
-                            #ifdef RTP_DEBUG_PACKETS
+                            #ifdef RTP_DEBUG_PACKET_DECODER
                                 LOG(LOG_VERBOSE, "#################### PCM_S16LE header #######################");
                                 LOG(LOG_VERBOSE, "No additional information");
                             #endif
@@ -1371,7 +1371,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
 
                             pData += 4;
 
-                            #ifdef RTP_DEBUG_PACKETS
+                            #ifdef RTP_DEBUG_PACKET_DECODER
 
                                 LOG(LOG_VERBOSE, "#################### MPA header #######################");
                                 LOG(LOG_VERBOSE, "Mbz bytes: %hu", tMPAHeader->Mbz);
@@ -1400,7 +1400,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
 
 
 // MP3 ADU:
-//                                #ifdef RTP_DEBUG_PACKETS
+//                                #ifdef RTP_DEBUG_PACKET_DECODER
 //
 //                                    LOG(LOG_VERBOSE, "################# MP3 ADU header #####################");
 //                                    if (tMP3Header->C)
@@ -1427,7 +1427,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                             break;
             // video
             case CODEC_ID_H261:
-                            #ifdef RTP_DEBUG_PACKETS
+                            #ifdef RTP_DEBUG_PACKET_DECODER
                                 // convert from network to host byte order
                                 tH261Header->Data[0] = ntohl(tH261Header->Data[0]);
 
@@ -1465,7 +1465,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                                 // convert from network to host byte order
                                 tH263Header->Data[0] = ntohl(tH263Header->Data[0]);
 
-                                #ifdef RTP_DEBUG_PACKETS
+                                #ifdef RTP_DEBUG_PACKET_DECODER
                                     LOG(LOG_VERBOSE, "################## H263 header ######################");
                                     if (!tH263Header->F)
                                         LOG(LOG_VERBOSE, "Header mode: A");
@@ -1516,7 +1516,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                             // convert from network to host byte order
                             tH263PHeader->Data[0] = ntohl(tH263PHeader->Data[0]);
 
-                            #ifdef RTP_DEBUG_PACKETS
+                            #ifdef RTP_DEBUG_PACKET_DECODER
                                 LOG(LOG_VERBOSE, "################## H263+ header ######################");
                                 LOG(LOG_VERBOSE, "Reserved bits: %d", tH263PHeader->Reserved);
                                 LOG(LOG_VERBOSE, "P bit: %d", tH263PHeader->P);
@@ -1558,7 +1558,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                             // if P bit was set clear the first 2 bytes of the frame data
                             if (tH263PPictureStart)
                             {
-                                #ifdef RTP_DEBUG_PACKETS
+                                #ifdef RTP_DEBUG_PACKET_DECODER
                                     LOG(LOG_VERBOSE, "P bit is set: clear first 2 byte of frame data");
                                 #endif
                                 pData -= 2; // 2 bytes backward
@@ -1575,7 +1575,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                             tH264Header->Data[0] = ntohl(tH264Header->Data[0]);
 
                             // HINT: convert from network to host byte order not necessary because we have only one byte
-                            #ifdef RTP_DEBUG_PACKETS
+                            #ifdef RTP_DEBUG_PACKET_DECODER
                                 LOG(LOG_VERBOSE, "################## H264 header ########################");
                                 LOG(LOG_VERBOSE, "F bit: %d", tH264Header->F);
                                 LOG(LOG_VERBOSE, "NAL ref. ind.: %d", tH264Header->Nri);
@@ -1623,13 +1623,13 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                                                 // start fragment?
                                                 if (tH264HeaderFragmentStart)
                                                 {
-													#ifdef RTP_DEBUG_PACKETS
+													#ifdef RTP_DEBUG_PACKET_DECODER
                                                 		LOG(LOG_VERBOSE, "..H264 start fragment");
 													#endif
                                                     // use FU header as NAL header, reconstruct the original NAL header
                                                     if (!pReadOnly)
                                                     {
-                                                        #ifdef RTP_DEBUG_PACKETS
+                                                        #ifdef RTP_DEBUG_PACKET_DECODER
                                                             LOG(LOG_VERBOSE, "S bit is set: reconstruct NAL header");
                                                             LOG(LOG_VERBOSE, "..part F+NRI: %d", pData[0] & 0xE0);
                                                             LOG(LOG_VERBOSE, "..part TYPE: %d", pData[1] & 0x1F);
@@ -1640,7 +1640,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                                                     pData += 1;
                                                 }else
                                                 {
-													#ifdef RTP_DEBUG_PACKETS
+													#ifdef RTP_DEBUG_PACKET_DECODER
 														if (tH264Header->FuA.E)
 															LOG(LOG_VERBOSE, "..H264 end fragment");
 														else
@@ -1660,7 +1660,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                             // HINT: inspired by "h264_handle_packet" from rtp_h264.c from ffmpeg package
                             if (((tH264HeaderType != 28) && (tH264HeaderType != 29)) || (tH264HeaderFragmentStart))
                             {
-                            	#ifdef RTP_DEBUG_PACKETS
+                            	#ifdef RTP_DEBUG_PACKET_DECODER
 								#endif
                             	if (!pReadOnly)
                             	{
@@ -1681,7 +1681,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
 
                             pData += 4;
 
-                            #ifdef RTP_DEBUG_PACKETS
+                            #ifdef RTP_DEBUG_PACKET_DECODER
 
                                 LOG(LOG_VERBOSE, "################# MPV (mpeg1/2) header ####################");
                                 switch(tMPVHeader->PType)
@@ -1718,7 +1718,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                             tMPVHeader->Data[0] = htonl(tMPVHeader->Data[0]);
                             break;
             case CODEC_ID_MPEG4:
-                            #ifdef RTP_DEBUG_PACKETS
+                            #ifdef RTP_DEBUG_PACKET_DECODER
                                 LOG(LOG_VERBOSE, "#################### MPEG4 header #######################");
                                 LOG(LOG_VERBOSE, "No additional information");
                             #endif
@@ -1745,7 +1745,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                             if (tTHEORAHeader->F == 3)
                                 mIntermediateFragment = false;
 
-                            #ifdef RTP_DEBUG_PACKETS
+                            #ifdef RTP_DEBUG_PACKET_DECODER
                                 LOG(LOG_VERBOSE, "################### THEORA header #######################");
                                 LOG(LOG_VERBOSE, "Configuration ID: %d", tTHEORAHeader->ConfigId);
                                 LOG(LOG_VERBOSE, "Fragment type: %d", tTHEORAHeader->F);
@@ -1777,7 +1777,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                                     pData++;
                             }
 
-                            #ifdef RTP_DEBUG_PACKETS
+                            #ifdef RTP_DEBUG_PACKET_DECODER
                                 LOG(LOG_VERBOSE, "##################### VP8 header ########################");
                                 LOG(LOG_VERBOSE, "Extended bits: %d", tVP8Header->X);
                                 LOG(LOG_VERBOSE, "Non-reference frame: %d", tVP8Header->N);
@@ -1789,7 +1789,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                             break;
     }
 
-	#ifdef RTP_DEBUG_PACKETS
+	#ifdef RTP_DEBUG_PACKET_DECODER
 		if (mIntermediateFragment)
 			LOG(LOG_VERBOSE, "FRAGMENT");
 		else
