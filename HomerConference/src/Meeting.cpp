@@ -705,7 +705,10 @@ bool Meeting::SendCallAcknowledge(string pParticipant)
         if (tFound)
         {
             CallRingingEvent *tCREvent = new CallRingingEvent();
-            tCREvent->Sender = "sip:" + GetLocalConferenceId();
+            if ((pParticipant.find(mSipRegisterServer) != string::npos) && (GetServerRegistrationState()))
+                tCREvent->Sender = "sip:" + GetServerConferenceId();
+            else
+                tCREvent->Sender = "sip:" + GetLocalConferenceId();
             tCREvent->SenderName = GetLocalUserName();
             tCREvent->SenderComment = "";
             tCREvent->Receiver = "sip:" + pParticipant;
@@ -745,7 +748,10 @@ bool Meeting::SendCallAccept(string pParticipant)
         if (tFound)
         {
             CallAcceptEvent *tCAEvent = new CallAcceptEvent();
-            tCAEvent->Sender = "sip:" + GetLocalConferenceId();
+            if ((pParticipant.find(mSipRegisterServer) != string::npos) && (GetServerRegistrationState()))
+                tCAEvent->Sender = "sip:" + GetServerConferenceId();
+            else
+                tCAEvent->Sender = "sip:" + GetLocalConferenceId();
             tCAEvent->SenderName = GetLocalUserName();
             tCAEvent->SenderComment = "";
             tCAEvent->Receiver = "sip:" + pParticipant;
@@ -785,7 +791,10 @@ bool Meeting::SendCallCancel(string pParticipant)
         if (tFound)
         {
             CallCancelEvent *tCCEvent = new CallCancelEvent();
-            tCCEvent->Sender = "sip:" + GetLocalConferenceId();
+            if ((pParticipant.find(mSipRegisterServer) != string::npos) && (GetServerRegistrationState()))
+                tCCEvent->Sender = "sip:" + GetServerConferenceId();
+            else
+                tCCEvent->Sender = "sip:" + GetLocalConferenceId();
             tCCEvent->SenderName = GetLocalUserName();
             tCCEvent->SenderComment = "";
             tCCEvent->Receiver = "sip:" + pParticipant;
@@ -825,7 +834,10 @@ bool Meeting::SendCallDeny(string pParticipant)
         if (tFound)
         {
             CallDenyEvent *tCDEvent = new CallDenyEvent();
-            tCDEvent->Sender = "sip:" + GetLocalConferenceId();
+            if ((pParticipant.find(mSipRegisterServer) != string::npos) && (GetServerRegistrationState()))
+                tCDEvent->Sender = "sip:" + GetServerConferenceId();
+            else
+                tCDEvent->Sender = "sip:" + GetLocalConferenceId();
             tCDEvent->SenderName = GetLocalUserName();
             tCDEvent->SenderComment = "";
             tCDEvent->Receiver = "sip:" + pParticipant;
@@ -868,7 +880,10 @@ bool Meeting::SendHangUp(string pParticipant)
         if (tFound)
         {
             CallHangUpEvent *tCHUEvent = new CallHangUpEvent();
-            tCHUEvent->Sender = "sip:" + GetLocalConferenceId();
+            if ((pParticipant.find(mSipRegisterServer) != string::npos) && (GetServerRegistrationState()))
+                tCHUEvent->Sender = "sip:" + GetServerConferenceId();
+            else
+                tCHUEvent->Sender = "sip:" + GetLocalConferenceId();
             tCHUEvent->SenderName = GetLocalUserName();
             tCHUEvent->SenderComment = "";
             tCHUEvent->Receiver = "sip:" + pParticipant;
