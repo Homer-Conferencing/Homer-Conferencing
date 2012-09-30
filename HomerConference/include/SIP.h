@@ -87,7 +87,7 @@ public:
     std::string getAvailabilityStateStr();
     /* server based user registration */
     bool RegisterAtServer();
-    bool RegisterAtServer(std::string pUsername, std::string pPassword, std::string pServer = "sip2sip.info");
+    bool RegisterAtServer(std::string pUsername, std::string pPassword, std::string pServer, unsigned int pServerPort);
     void UnregisterAtServer();
     bool GetServerRegistrationState();
     std::string GetServerSoftwareId();
@@ -173,6 +173,7 @@ protected:
     std::string         mSipHostAdr;
     nua_handle_t        *mSipRegisterHandle, *mSipPublishHandle;
     std::string         mSipRegisterServer;
+    std::string         mSipRegisterServerPort;
     std::string         mSipRegisterServerSoftwareId;
     std::string         mSipRegisterUsername;
     std::string         mSipRegisterPassword;

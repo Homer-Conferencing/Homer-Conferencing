@@ -325,7 +325,7 @@ string Meeting::GetLocalConferenceId()
 
     tResult = SipCreateId(getUser(), GetHostAdr(), toString(GetHostPort()));
 
-    LOG(LOG_VERBOSE, "Determined local conference ID with \"%s\"", tResult.c_str());
+    //LOG(LOG_VERBOSE, "Determined local conference ID with \"%s\"", tResult.c_str());
 
     return tResult;
 }
@@ -334,9 +334,9 @@ string Meeting::GetServerConferenceId()
 {
     string tResult = "";
 
-    tResult = SipCreateId(mSipRegisterUsername, mSipRegisterServer, "");
+    tResult = SipCreateId(mSipRegisterUsername, mSipRegisterServer, mSipRegisterServerPort);
 
-    LOG(LOG_VERBOSE, "Determined server conference ID with \"%s\"", tResult.c_str());
+    //LOG(LOG_VERBOSE, "Determined server conference ID with \"%s\"", tResult.c_str());
 
     return tResult;
 }
@@ -614,7 +614,7 @@ bool Meeting::SendMessage(string pParticipant, string pMessage)
             MessageEvent *tMEvent = new MessageEvent();
             // is participant user of the registered SIP server then replace sender by our official server login
             if ((pParticipant.find(mSipRegisterServer) != string::npos) && (GetServerRegistrationState()))
-                tMEvent->Sender = "sip:" + mSipRegisterUsername + "@" + mSipRegisterServer;
+                tMEvent->Sender = "sip:" + GetServerConferenceId();
             else
                 tMEvent->Sender = "sip:" + GetLocalConferenceId();
             tMEvent->SenderName = GetLocalUserName();
@@ -661,7 +661,7 @@ bool Meeting::SendCall(string pParticipant)
             CallEvent *tCEvent = new CallEvent();
             // is participant user of the registered SIP server then replace sender by our official server login
             if ((pParticipant.find(mSipRegisterServer) != string::npos) && (GetServerRegistrationState()))
-                tCEvent->Sender = "sip:" + mSipRegisterUsername + "@" + mSipRegisterServer;
+                tCEvent->Sender = "sip:" + GetServerConferenceId();
             else
                 tCEvent->Sender = "sip:" + GetLocalConferenceId();
             tCEvent->SenderName = GetLocalUserName();

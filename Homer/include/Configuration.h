@@ -167,6 +167,7 @@ public:
     QString GetSipUserName();
     QString GetSipPassword();
     QString GetSipServer();
+    int GetSipServerPort();
     bool GetSipContactsProbing();
     int GetSipInfrastructureMode();
     bool GetNatSupportActivation();
@@ -312,6 +313,7 @@ public:
     void SetSipUserName(QString pUserName);
     void SetSipPassword(QString pPassword);
     void SetSipServer(QString pServer);
+    void SetSipServerPort(int pPort);
     void SetSipInfrastructureMode(int pMode);
     void SetSipContactsProbing(bool pActivation);
     void SetStunServer(QString pServer);

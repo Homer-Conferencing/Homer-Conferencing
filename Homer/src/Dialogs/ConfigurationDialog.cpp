@@ -326,6 +326,7 @@ void ConfigurationDialog::LoadConfiguration()
     mLeSipUserName->setText(CONF.GetSipUserName());
     mLeSipPassword->setText(CONF.GetSipPassword());
     mLeSipServer->setText(CONF.GetSipServer());
+    mSbSipServerPort->setValue(CONF.GetSipServerPort());
 
     //### Contacting
     mCbContactsProbing->setChecked(CONF.GetSipContactsProbing());
@@ -509,6 +510,7 @@ void ConfigurationDialog::SaveConfiguration()
     CONF.SetSipUserName(mLeSipUserName->text());
     CONF.SetSipPassword(mLeSipPassword->text());
     CONF.SetSipServer(mLeSipServer->text());
+    CONF.SetSipServerPort(mSbSipServerPort->value());
     CONF.SetSipInfrastructureMode(mGrpServerRegistration->isChecked() ? 1 : 0);
 
 //    if (mGrpNatSupport->isChecked() != CONF.GetNatSupportActivation())
@@ -530,7 +532,7 @@ void ConfigurationDialog::SaveConfiguration()
     {
         // is centralized mode selected activated?
         if (CONF.GetSipInfrastructureMode() == 1)
-            MEETING.RegisterAtServer(CONF.GetSipUserName().toStdString(), CONF.GetSipPassword().toStdString(), CONF.GetSipServer().toStdString());
+            MEETING.RegisterAtServer(CONF.GetSipUserName().toStdString(), CONF.GetSipPassword().toStdString(), CONF.GetSipServer().toStdString(), CONF.GetSipServerPort());
     }
 
     //### NAT support

@@ -182,6 +182,7 @@ private:
     QShortcut                   *mShortcutActivateDebugWidgets, *mShortcutActivateDebuggingGlobally, *mShortcutActivateNetworkSimulationWidgets;
     /* SIP server registration */
     QString                     mSipServerRegistrationHost;
+    QString                     mSipServerRegistrationPort;
     QString                     mSipServerRegistrationUser;
     /* event handling */
     static bool                 mShuttingDown;

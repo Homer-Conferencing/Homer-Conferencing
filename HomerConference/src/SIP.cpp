@@ -454,19 +454,19 @@ bool SIP::SipLoginAtServer()
         return false;
     }
 
-    LOG(LOG_VERBOSE, "..FROM header: sip:%s", SipCreateId(mSipRegisterUsername, mSipRegisterServer).c_str());
-    tFrom = sip_to_make(&mSipContext->Home, ("sip:" + SipCreateId(mSipRegisterUsername, mSipRegisterServer)).c_str());
+    LOG(LOG_VERBOSE, "..FROM header: sip:%s", SipCreateId(mSipRegisterUsername, mSipRegisterServer, mSipRegisterServerPort).c_str());
+    tFrom = sip_to_make(&mSipContext->Home, ("sip:" + SipCreateId(mSipRegisterUsername, mSipRegisterServer, mSipRegisterServerPort)).c_str());
     if (tFrom == NULL)
     {
-        LOG(LOG_ERROR, "Can not create \"from\" handle for function \"SipLoginAtServer\" and user id \"%s\"", ("sip:" + SipCreateId(mSipRegisterUsername, mSipRegisterServer)).c_str());
+        LOG(LOG_ERROR, "Can not create \"from\" handle for function \"SipLoginAtServer\" and user id \"%s\"", ("sip:" + SipCreateId(mSipRegisterUsername, mSipRegisterServer, mSipRegisterServerPort)).c_str());
         return false;
     }
 
-    LOG(LOG_VERBOSE, "..TO header: sip:%s", SipCreateId(mSipRegisterUsername, mSipRegisterServer).c_str());
-    tTo = sip_to_make(&mSipContext->Home, ("sip:" + SipCreateId(mSipRegisterUsername, mSipRegisterServer)).c_str());
+    LOG(LOG_VERBOSE, "..TO header: sip:%s", SipCreateId(mSipRegisterUsername, mSipRegisterServer, mSipRegisterServerPort).c_str());
+    tTo = sip_to_make(&mSipContext->Home, ("sip:" + SipCreateId(mSipRegisterUsername, mSipRegisterServer, mSipRegisterServerPort)).c_str());
     if (tTo == NULL)
     {
-        LOG(LOG_ERROR, "Can not create \"to\" handle for function \"SipLoginAtServer\" and user id \"%s\"", ("sip:" + SipCreateId(mSipRegisterUsername, mSipRegisterServer)).c_str());
+        LOG(LOG_ERROR, "Can not create \"to\" handle for function \"SipLoginAtServer\" and user id \"%s\"", ("sip:" + SipCreateId(mSipRegisterUsername, mSipRegisterServer, mSipRegisterServerPort)).c_str());
         return false;
     }
 
@@ -510,7 +510,7 @@ void SIP::SipLogoutAtServer()
     mSipRegisteredAtServer = false;
 }
 
-bool SIP::RegisterAtServer(string pUsername, string pPassword, string pServer)
+bool SIP::RegisterAtServer(string pUsername, string pPassword, string pServer, unsigned int pPort)
 {
     bool tResult = false;
 
@@ -520,14 +520,15 @@ bool SIP::RegisterAtServer(string pUsername, string pPassword, string pServer)
         return false;
     }
 
-    if ((mSipRegisterServer != pServer) || (mSipRegisterUsername != pUsername) || (mSipRegisterPassword != pPassword))
+    if ((mSipRegisterServer != pServer) || (mSipRegisterUsername != pUsername) || (mSipRegisterPassword != pPassword) || (mSipRegisterServerPort != toString(pPort)))
     {
-        LOG(LOG_VERBOSE, "Register at SIP server %s", pServer.c_str());
+        LOG(LOG_VERBOSE, "Register at SIP server %s:%u", pServer.c_str(), pPort);
 		#ifdef DEBUG_AUTH_DATA
         	LOG(LOG_VERBOSE, "SIP server login %s:%s", pUsername.c_str(), pPassword.c_str());
 		#endif
 
         mSipRegisterServer = pServer;
+        mSipRegisterServerPort = toString(pPort);
         mSipRegisterUsername = pUsername;
         mSipRegisterPassword = pPassword;
 

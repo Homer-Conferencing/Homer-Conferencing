@@ -505,6 +505,13 @@ void Configuration::SetSipServer(QString pServer)
     mQSettings->endGroup();
 }
 
+void Configuration::SetSipServerPort(int pPort)
+{
+    mQSettings->beginGroup("Network");
+    mQSettings->setValue("SipServerPort", pPort);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetSipInfrastructureMode(int pMode)
 {
     mQSettings->beginGroup("Network");
@@ -1077,6 +1084,11 @@ QString Configuration::GetSipPassword()
 QString Configuration::GetSipServer()
 {
     return mQSettings->value("Network/SipServer", QString("sip2sip.info")).toString();
+}
+
+int Configuration::GetSipServerPort()
+{
+    return mQSettings->value("Network/SipServerPort", 5060).toInt();
 }
 
 bool Configuration::GetSipContactsProbing()

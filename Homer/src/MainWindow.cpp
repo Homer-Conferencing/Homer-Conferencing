@@ -419,7 +419,7 @@ void MainWindow::registerAtStunSipServer()
         MEETING.SetStunServer(CONF.GetStunServer().toStdString());
     // is centralized mode selected activated?
     if (CONF.GetSipInfrastructureMode() == 1)
-        MEETING.RegisterAtServer(CONF.GetSipUserName().toStdString(), CONF.GetSipPassword().toStdString(), CONF.GetSipServer().toStdString());
+        MEETING.RegisterAtServer(CONF.GetSipUserName().toStdString(), CONF.GetSipPassword().toStdString(), CONF.GetSipServer().toStdString(), CONF.GetSipServerPort());
 }
 
 void MainWindow::initializeVideoAudioIO()
@@ -1428,22 +1428,24 @@ void MainWindow::customEvent(QEvent* pEvent)
         case REGISTRATION:
                     //####################### REGISTRATION SUCCEEDED #############################
                     tREvent = (RegistrationEvent*) tEvent;
-                    if ((mSipServerRegistrationUser != CONF.GetSipUserName()) || (mSipServerRegistrationHost != CONF.GetSipServer()))
+                    if ((mSipServerRegistrationUser != CONF.GetSipUserName()) || (mSipServerRegistrationHost != CONF.GetSipServer()) || (mSipServerRegistrationPort != QString("%1").arg(CONF.GetSipServerPort())))
                     {
-                        mSysTrayIcon->showMessage("Registration successful", "Registered  \"" + CONF.GetSipUserName() + "\" at SIP server \"" + CONF.GetSipServer() + "\"!\n" \
+                        mSysTrayIcon->showMessage("Registration successful", "Registered  \"" + CONF.GetSipUserName() + "\" at SIP server \"" + CONF.GetSipServer() + ":<" + QString("%1").arg(CONF.GetSipServerPort()) + ">\"!\n" \
                                                   "SIP server runs software \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".", QSystemTrayIcon::Information, CONF.GetSystrayTimeout());
                     }
                     mSipServerRegistrationUser = CONF.GetSipUserName();
                     mSipServerRegistrationHost = CONF.GetSipServer();
+                    mSipServerRegistrationPort = QString("%1").arg(CONF.GetSipServerPort());
                     break;
         case REGISTRATION_FAILED:
                     //####################### REGISTRATION FAILED #############################
                     tRFEvent = (RegistrationFailedEvent*) tEvent;
-                    ShowError("Registration failed", "Could not register \"" + CONF.GetSipUserName() + "\" at the SIP server \"" + CONF.GetSipServer() + "\"! The reason is \"" + QString(tRFEvent->Description.c_str()) + "\"(" + QString("%1").arg(tRFEvent->StatusCode) + ")\n" \
+                    ShowError("Registration failed", "Could not register \"" + CONF.GetSipUserName() + "\" at the SIP server \"" + CONF.GetSipServer() + ":<" + QString("%1").arg(CONF.GetSipServerPort()) + ">\"! The reason is \"" + QString(tRFEvent->Description.c_str()) + "\"(" + QString("%1").arg(tRFEvent->StatusCode) + ")\n" \
                                                      "SIP server runs software \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
                     // reset stored SIP server data
                     mSipServerRegistrationUser = "";
                     mSipServerRegistrationHost = "";
+                    mSipServerRegistrationPort = "";
                     break;
         case PUBLICATION:
                     //####################### PUBLICATION SUCCEEDED #############################
@@ -1453,7 +1455,7 @@ void MainWindow::customEvent(QEvent* pEvent)
         case PUBLICATION_FAILED:
                     //####################### PUBLICATION FAILED #############################
                     tPFEvent = (PublicationFailedEvent*) tEvent;
-                    ShowError("Presence publication failed", "Could not publish your new presence state at the SIP server \"" + CONF.GetSipServer() + "\"! The reason is \"" + QString(tPFEvent->Description.c_str()) + "\"(" + QString("%1").arg(tPFEvent->StatusCode) + ")\n" \
+                    ShowError("Presence publication failed", "Could not publish your new presence state at the SIP server \"" + CONF.GetSipServer() + ":<" + QString("%1").arg(CONF.GetSipServerPort()) + ">\"! The reason is \"" + QString(tPFEvent->Description.c_str()) + "\"(" + QString("%1").arg(tPFEvent->StatusCode) + ")\n" \
                                                              "SIP server runs software \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
                     break;
         default:

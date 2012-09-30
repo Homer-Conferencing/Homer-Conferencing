@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>745</width>
+    <width>729</width>
     <height>701</height>
    </rect>
   </property>
@@ -173,7 +173,7 @@
         <number>1</number>
        </property>
        <property name="currentIndex">
-        <number>3</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="mVideo">
         <layout class="QVBoxLayout" name="verticalLayout_19">
@@ -1687,18 +1687,18 @@
              <number>3</number>
             </property>
             <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_12">
+             <layout class="QHBoxLayout" name="horizontalLayout_12" stretch="0,1,0,2">
               <item>
                <widget class="QLabel" name="mLbSipServer">
                 <property name="minimumSize">
                  <size>
-                  <width>70</width>
+                  <width>90</width>
                   <height>30</height>
                  </size>
                 </property>
                 <property name="maximumSize">
                  <size>
-                  <width>70</width>
+                  <width>90</width>
                   <height>16777215</height>
                  </size>
                 </property>
@@ -1709,7 +1709,7 @@
                  </font>
                 </property>
                 <property name="text">
-                 <string>SIP server:</string>
+                 <string>Server address: </string>
                 </property>
                </widget>
               </item>
@@ -1718,9 +1718,12 @@
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
+                <property name="sizeType">
+                 <enum>QSizePolicy::MinimumExpanding</enum>
+                </property>
                 <property name="sizeHint" stdset="0">
                  <size>
-                  <width>2</width>
+                  <width>20</width>
                   <height>20</height>
                  </size>
                 </property>
@@ -1800,9 +1803,53 @@ background-color: rgb(150, 150, 150);
              </layout>
             </item>
             <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_13">
+             <layout class="QHBoxLayout" name="_3">
               <item>
-               <widget class="QLabel" name="mLbSipUserName">
+               <widget class="QLabel" name="mLbPort">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>80</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>80</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Port: </string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer>
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>2</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="mSbSipServerPort">
                 <property name="minimumSize">
                  <size>
                   <width>70</width>
@@ -1812,6 +1859,50 @@ background-color: rgb(150, 150, 150);
                 <property name="maximumSize">
                  <size>
                   <width>70</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
+                <property name="specialValueText">
+                 <string>auto</string>
+                </property>
+                <property name="suffix">
+                 <string/>
+                </property>
+                <property name="prefix">
+                 <string/>
+                </property>
+                <property name="minimum">
+                 <number>5060</number>
+                </property>
+                <property name="maximum">
+                 <number>65535</number>
+                </property>
+                <property name="value">
+                 <number>5060</number>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_13" stretch="0,1,0,2">
+              <item>
+               <widget class="QLabel" name="mLbSipUserName">
+                <property name="minimumSize">
+                 <size>
+                  <width>90</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>90</width>
                   <height>16777215</height>
                  </size>
                 </property>
@@ -1822,7 +1913,7 @@ background-color: rgb(150, 150, 150);
                  </font>
                 </property>
                 <property name="text">
-                 <string>User name: </string>
+                 <string>Login: </string>
                 </property>
                </widget>
               </item>
@@ -1831,9 +1922,12 @@ background-color: rgb(150, 150, 150);
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
+                <property name="sizeType">
+                 <enum>QSizePolicy::MinimumExpanding</enum>
+                </property>
                 <property name="sizeHint" stdset="0">
                  <size>
-                  <width>2</width>
+                  <width>20</width>
                   <height>20</height>
                  </size>
                 </property>
@@ -1912,18 +2006,18 @@ background-color: rgb(150, 150, 150);
              </layout>
             </item>
             <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_18" stretch="0,0,0,0">
+             <layout class="QHBoxLayout" name="horizontalLayout_18" stretch="0,1,0,2">
               <item>
                <widget class="QLabel" name="mLbSipPassword">
                 <property name="minimumSize">
                  <size>
-                  <width>70</width>
+                  <width>90</width>
                   <height>30</height>
                  </size>
                 </property>
                 <property name="maximumSize">
                  <size>
-                  <width>70</width>
+                  <width>90</width>
                   <height>16777215</height>
                  </size>
                 </property>
@@ -1943,9 +2037,12 @@ background-color: rgb(150, 150, 150);
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
+                <property name="sizeType">
+                 <enum>QSizePolicy::MinimumExpanding</enum>
+                </property>
                 <property name="sizeHint" stdset="0">
                  <size>
-                  <width>2</width>
+                  <width>20</width>
                   <height>20</height>
                  </size>
                 </property>
@@ -2131,13 +2228,19 @@ background-color: rgb(150, 150, 150);
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_9">
             <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_29">
+             <layout class="QHBoxLayout" name="horizontalLayout_29" stretch="0,1,0,2">
               <item>
                <widget class="QLabel" name="mLbStunServer">
                 <property name="minimumSize">
                  <size>
-                  <width>0</width>
+                  <width>90</width>
                   <height>30</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>90</width>
+                  <height>16777215</height>
                  </size>
                 </property>
                 <property name="font">
@@ -2156,9 +2259,12 @@ background-color: rgb(150, 150, 150);
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
+                <property name="sizeType">
+                 <enum>QSizePolicy::MinimumExpanding</enum>
+                </property>
                 <property name="sizeHint" stdset="0">
                  <size>
-                  <width>2</width>
+                  <width>20</width>
                   <height>20</height>
                  </size>
                 </property>
