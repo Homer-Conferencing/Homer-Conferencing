@@ -52,6 +52,7 @@ struct StunContext
 // wrapper to avoid dependency of the header from the sofia-sip headers
 void GlobalStunCallBack(stun_discovery_magic_t *pStunDiscoveryMagic, stun_handle_t *pStunHandle, stun_discovery_t *pStunDiscoveryHandle, stun_action_t pStunAction, stun_state_t pStunState)
 {
+	LOGEX(SIP_stun, LOG_VERBOSE, "Called GlobalStunCallBack()");
     SIP_stun *tSIP_stun = (SIP_stun*)pStunDiscoveryMagic;
 
     tSIP_stun->StunCallBack(pStunDiscoveryHandle, pStunAction, pStunState);
@@ -70,7 +71,7 @@ SIP_stun::SIP_stun()
     mStunNatDetectionFinished = false;
     mStunContext->Handle = NULL;
     mStunContext->SipRoot = NULL;
-    mStunContext->Socket = (su_socket_t)-1;
+    mStunContext->Socket = -1;
 }
 
 SIP_stun::~SIP_stun()
@@ -84,27 +85,24 @@ SIP_stun::~SIP_stun()
 
 void SIP_stun::Init(su_root_t* pSipRoot)
 {
+	LOG(LOG_VERBOSE, "Initializing STUN support");
+
     mStunContext->SipRoot = pSipRoot;
 
     // create STUN socket
-    mStunContext->Socket = su_socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if ((int)mStunContext->Socket == -1)
+    LOG(LOG_VERBOSE, "  ..creating STUN socket");
+    Socket *tSocket = Socket::CreateClientSocket(SOCKET_IPv4, SOCKET_UDP, mStunHostPort, false, 1, mStunHostPort + 10);
+    if (tSocket != NULL)
     {
-        LOG(LOG_ERROR, "Error during su_socket() because of \"%s\"", strerror(errno));
-        return;
-    }
+    	// get port number after auto-probing available ports
+    	mStunHostPort = tSocket->GetLocalPort();
 
-    su_sockaddr_t tSocketAddrDesc;
-    socklen_t tSocketAddrDescLen = sizeof(tSocketAddrDesc);
-
-    memset(&tSocketAddrDesc, 0, sizeof(su_sockaddr_t));
-    tSocketAddrDesc.su_port = htons((uint16_t)mStunHostPort);
-    tSocketAddrDesc.su_family = AF_INET;
-
-    while (bind(mStunContext->Socket, (struct sockaddr *) &tSocketAddrDesc, tSocketAddrDescLen) < 0)
+    	// store the handle for the created socket
+    	mStunContext->Socket = tSocket->GetHandle();
+    }else
     {
-        mStunHostPort++;
-        tSocketAddrDesc.su_port = htons((uint16_t)mStunHostPort);
+    	LOG(LOG_ERROR, "Invalid STUN client socket");
+    	mStunContext->Socket = -1;
     }
 
     LOG(LOG_INFO, "STUN-Client assigned to 0.0.0.0:%d", mStunHostPort);
@@ -180,15 +178,23 @@ string SIP_stun::GetStunNatType()
 
 bool SIP_stun::DetectNatViaStun(string &pFailureReason)
 {
+	LOG(LOG_VERBOSE, "Trying to detect NAT via STUN now..");
+
     if (mStunServer == "")
-        return false;
+    {
+    	LOG(LOG_WARN, "No STUN server defined");
+    	return false;
+    }
 
     // destroy STUN handle
     if (mStunContext->Handle != NULL)
-        stun_handle_destroy(mStunContext->Handle);
+    {
+    	LOG(LOG_WARN, "Reseting STUN handle");
+    	stun_handle_destroy(mStunContext->Handle);
+    }
 
     // init STUN handle
-    mStunContext->Handle = stun_handle_init(mStunContext->SipRoot, STUNTAG_SERVER(mStunServer.c_str()), TAG_NULL());
+    mStunContext->Handle = stun_handle_init(mStunContext->SipRoot, STUNTAG_SERVER(mStunServer.c_str()), TAG_END());
     if (mStunContext->Handle == NULL)
     {
         LOG(LOG_ERROR, "Error during first contact with STUN server because of \"%s\"", strerror(errno));
@@ -197,27 +203,26 @@ bool SIP_stun::DetectNatViaStun(string &pFailureReason)
     }
 
     // perform shared secret request/response processing
-    /*
-    if (stun_obtain_shared_secret(mStunContext->Handle, StunCallBack, NULL, STUNTAG_SOCKET(mStunContext->Socket), STUNTAG_REGISTER_EVENTS(1), TAG_NULL()) < 0)
+/*    if (stun_obtain_shared_secret(mStunContext->Handle, GlobalStunCallBack, (stun_discovery_magic_t*)this, STUNTAG_SOCKET(mStunContext->Socket), STUNTAG_REGISTER_EVENTS(1), TAG_END()) < 0)
     {
         LOG(LOG_ERROR, "Error during STUN shared secret request/response because of \"%s\"", strerror(errno));
         stun_handle_destroy(mStunContext->Handle);
         su_close(mStunContext->Socket);
         return false;
     }
-
+*/
     // perform a STUN binding discovery (rfc 3489/3489bis) process
-    if (stun_bind(mStunContext->Handle, StunCallBack, (stun_discovery_magic_t*)this, STUNTAG_SOCKET(mStunContext->Socket), STUNTAG_REGISTER_EVENTS(1), TAG_NULL()) < 0)
+    if (stun_bind(mStunContext->Handle, GlobalStunCallBack, (stun_discovery_magic_t*)this, STUNTAG_SOCKET(mStunContext->Socket), STUNTAG_REGISTER_EVENTS(1), TAG_END()) < 0)
     {
-        //LOG(LOG_ERROR, "Error during STUN binding discovery because of \"%s\"", strerror(errno));
+        LOG(LOG_ERROR, "Error during STUN binding discovery because of \"%s\"", strerror(errno));
+        pFailureReason = string(strerror(errno));
         stun_handle_destroy(mStunContext->Handle);
-        su_close(mStunContext->Socket);
+        mStunContext->Handle = NULL;
         return false;
     }
-    */
 
     // initiates STUN discovery process to find out NAT characteristics
-    if (stun_test_nattype(mStunContext->Handle, GlobalStunCallBack, (stun_discovery_magic_t*)this, STUNTAG_SOCKET(mStunContext->Socket), STUNTAG_REGISTER_EVENTS(1), TAG_NULL()) < 0)
+    if (stun_test_nattype(mStunContext->Handle, GlobalStunCallBack, (stun_discovery_magic_t*)this, STUNTAG_SOCKET(mStunContext->Socket), STUNTAG_REGISTER_EVENTS(1), TAG_END()) < 0)
     {
         LOG(LOG_ERROR, "Error during STUN nat discovery because of \"%s\"", strerror(errno));
         pFailureReason = string(strerror(errno));
@@ -242,7 +247,7 @@ void SIP_stun::StunCallBack(stun_discovery_t *pStunDiscoveryHandle, int pStunAct
     LOGEX(SIP_stun, LOG_INFO, "############# STUN-new state <%d> for action <%d> occurred ###########", pStunState, pStunAction);
 
     // nat detection finished?
-    if ((pStunAction == stun_action_test_nattype) && (pStunState == stun_discovery_done))
+    if (pStunState == stun_discovery_done)
     {
         mStunNatType = string(stun_nattype_str(pStunDiscoveryHandle));
         stun_discovery_get_address(pStunDiscoveryHandle, (struct sockaddr *) &tSocketAddrDesc, &tSocketAddrDescLen);

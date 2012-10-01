@@ -44,9 +44,7 @@ namespace Homer { namespace Conference {
 ///////////////////////////////////////////////////////////////////////////////
 
 // de/activate STUN
-#if !defined(BSD) // no STUN for BSD environment: TODO: fix the occurring hangs and reactivate STUN support for APPLE / BSD
 #define SIP_SUPORTING_STUN
-#endif
 
 #define SIP_OUTBOUND_OPTIONS        "outbound natify use-stun use-rport"
 

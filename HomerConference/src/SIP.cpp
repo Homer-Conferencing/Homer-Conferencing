@@ -354,7 +354,7 @@ void* SIP::Run(void*)
 
                 // open NAT support via STUN
                 LOG(LOG_VERBOSE, "..STUN based NAT detection");
-            #endif
+           #endif
 
             LOG(LOG_VERBOSE, "..main loop");
             mSipListenerNeeded = true;
