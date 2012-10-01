@@ -1063,7 +1063,12 @@ void MainWindow::customEvent(QEvent* pEvent)
                     //####################### NAT DETECTION ANSWER ###########################
                     tINDEvent = (InternalNatDetectionEvent*) tEvent;
                     if (tINDEvent->Failed)
+                    {
                         ShowError("NAT detection failed", "Could not detect NAT address and type via STUN server. The failure reason is \"" + QString(tINDEvent->FailureReason.c_str()) + "\".");
+                    }else
+                    {
+                    	LOG(LOG_VERBOSE, "NAT detection was successful");
+                    }
                     break;
         case OPTIONS_ACCEPT:
                     //######################## OPTIONS ACCEPT ##########################
