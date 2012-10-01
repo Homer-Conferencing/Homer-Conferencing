@@ -99,6 +99,7 @@ public:
     static Socket* CreateServerSocket(enum NetworkType pIpVersion = SOCKET_IPv6, enum TransportType pTransportType = SOCKET_UDP, unsigned int pListenerPort = 0, bool pReusable = false, unsigned int pProbeStepping = 0, unsigned int pHighestPossibleListenerPort = 0);
     static Socket* CreateClientSocket(enum NetworkType pIpVersion, enum TransportType pTransportType = SOCKET_UDP, unsigned int pSenderPort = 0, bool pReusable = false, unsigned int pProbeStepping = 0, unsigned int pHighestPossibleSenderPort = 0);
     void Close();
+    int GetHandle();
 
     virtual ~Socket( );
 

@@ -151,6 +151,11 @@ void Socket::Close()
 	CloseSocket(mSocketHandle);
 }
 
+int Socket::GetHandle()
+{
+	return mSocketHandle;
+}
+
 Socket::Socket(enum NetworkType pIpVersion, enum TransportType pTransportType, unsigned int pPort, bool pReusable, unsigned int pProbeStepping, unsigned int pHighestPossiblePort)
 {
     if ((pIpVersion == SOCKET_IPv6) && (!IsIPv6Supported()))
