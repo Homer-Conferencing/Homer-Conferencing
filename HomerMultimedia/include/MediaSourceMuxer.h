@@ -186,6 +186,7 @@ private:
     char                *mEncoderChunkBuffer;
     bool                mEncoderNeeded;
     MediaFifo           *mEncoderFifo;
+    Mutex				mEncoderFifoState;
     bool				mEncoderHasKeyFrame;
     Mutex               mEncoderFifoAvailableMutex;
     /* device control */

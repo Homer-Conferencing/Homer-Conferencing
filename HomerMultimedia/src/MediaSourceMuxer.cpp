@@ -1237,7 +1237,11 @@ void MediaSourceMuxer::StopEncoder()
             tSignalingRound++;
 
             // write fake data to awake transcoder thread as long as it still runs
-            mEncoderFifo->WriteFifo(tTmp, 0);
+            mEncoderFifoState.lock();
+            if (mEncoderFifo != NULL)
+            	mEncoderFifo->WriteFifo(tTmp, 0);
+            mEncoderFifoState.unlock();
+
         }while(!StopThread(1000));
     }
 
@@ -1599,8 +1603,10 @@ void* MediaSourceMuxer::Run(void* pArgs)
 
     free(mEncoderChunkBuffer);
 
+    mEncoderFifoState.lock();
     delete mEncoderFifo;
     mEncoderFifo = NULL;
+    mEncoderFifoState.unlock();
 
     mEncoderFifoAvailableMutex.unlock();
 
