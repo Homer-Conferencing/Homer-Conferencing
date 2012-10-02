@@ -100,16 +100,46 @@ DEFINE_GUID( MEDIASUBTYPE_I420, 0x30323449, 0x0000, 0x0010,
              0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
 DEFINE_GUID( MEDIASUBTYPE_YV12, 0x32315659, 0x0000, 0x0010,
              0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 );
+DEFINE_GUID( MEDIASUBTYPE_NV12, 0x3231564E, 0x0000, 0x0010,
+		 	 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
+DEFINE_GUID( MEDIASUBTYPE_IF09, 0x39304649, 0x0000, 0x0010,
+			 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
 DEFINE_GUID( MEDIASUBTYPE_IYUV, 0x56555949, 0x0000, 0x0010,
              0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 );
 DEFINE_GUID( MEDIASUBTYPE_YUYV, 0x56595559, 0x0000, 0x0010,
              0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 );
+DEFINE_GUID( MEDIASUBTYPE_AYUV, 0x56555941, 0x0000, 0x0010,
+			 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
 DEFINE_GUID( MEDIASUBTYPE_YUY2, 0x32595559, 0x0000, 0x0010,
              0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 );
 DEFINE_GUID( MEDIASUBTYPE_UYVY, 0x59565955, 0x0000, 0x0010,
              0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 );
 DEFINE_GUID( MEDIASUBTYPE_RGB24, 0xe436eb7d, 0x524f, 0x11ce,
              0x9f, 0x53, 0x00, 0x20, 0xaf, 0x0b, 0xa7, 0x70 );
+DEFINE_GUID( MEDIASUBTYPE_Y211, 0x31313259, 0x0000, 0x0010,
+			 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
+DEFINE_GUID( MEDIASUBTYPE_Y411, 0x31313459, 0x0000, 0x0010,
+			 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
+DEFINE_GUID( MEDIASUBTYPE_Y41P, 0x50313459, 0x0000, 0x0010,
+			 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
+DEFINE_GUID( MEDIASUBTYPE_YVU9, 0x39555659, 0x0000, 0x0010,
+			 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
+DEFINE_GUID( MEDIASUBTYPE_YVYU, 0x55595659, 0x0000, 0x0010,
+			 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
+DEFINE_GUID( MEDIASUBTYPE_GREY, 0x59455247, 0x0000, 0x0010,
+			 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
+DEFINE_GUID( MEDIASUBTYPE_Y8, 0x20203859, 0x0000, 0x0010,
+		 	 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
+DEFINE_GUID( MEDIASUBTYPE_Y800, 0x30303859, 0x0000, 0x0010,
+			 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
+DEFINE_GUID( MEDIASUBTYPE_IMC1, 0x31434d49, 0x0000, 0x0010,
+			 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
+DEFINE_GUID( MEDIATYPE_Interleaved, 0x73766169, 0x0000, 0x0010,
+			 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
+DEFINE_GUID( MEDIATYPE_Audio, 0x73647561, 0x0000, 0x0010,
+			 0x80, 0x00, 0x00, 0xAA, 0x00, 0x38, 0x9B, 0x71);
+DEFINE_GUID( MEDIATYPE_VBI, 0xf72a76e1, 0xeb0a, 0x11d0,
+			 0xac, 0xe4, 0x00, 0x00, 0xc0, 0xcc, 0x16, 0xba);
 
 typedef LONGLONG REFERENCE_TIME;
 
@@ -405,6 +435,119 @@ bool MediaSourceDShow::SupportsDecoderFrameStatistics()
     return (mMediaType == MEDIA_VIDEO);
 }
 
+string GUID2String(GUID pGUID)
+{
+	string tResult = "";
+
+	char tBuffer[512];
+	snprintf(tBuffer, 512, "{%08x-%04x-%04x-%02x%02x-%02x-%02x-%02x-%02x-%02x-%02x}",
+			pGUID.Data1, pGUID.Data2, pGUID.Data3,
+			pGUID.Data4[0], pGUID.Data4[1], pGUID.Data4[2], pGUID.Data4[3],
+			pGUID.Data4[4], pGUID.Data4[5], pGUID.Data4[6], pGUID.Data4[7]);
+
+	tResult = string(tBuffer);
+
+	return tResult;
+}
+
+string GetMediaTypeName(GUID pType)
+{
+	string tResult = "";
+
+	if (pType == MEDIATYPE_Video)
+	{
+		tResult = "Video";
+	}else if (pType == MEDIATYPE_Audio)
+	{
+		tResult = "Audio";
+	}else if (pType == MEDIATYPE_VBI)
+	{
+		tResult = "Video vertical blinking interval";
+	}else if (pType == MEDIATYPE_Interleaved)
+	{
+		tResult = "Interleaved";
+	}else
+	{
+		tResult = GUID2String(pType);
+	}
+
+	return tResult;
+}
+
+string GetSubTypeName(GUID pType)
+{
+	string tResult = "";
+
+	if (pType == MEDIASUBTYPE_AYUV)
+	{
+		tResult = "AYUV 4:4:4 Packed 8";
+	}else if (pType == MEDIASUBTYPE_YUY2)
+	{
+		tResult = "YUY2 4:2:2 Packed 8";
+	}else if (pType == MEDIASUBTYPE_UYVY)
+	{
+		tResult = "UYVY 4:2:2 Packed 8";
+	}else if (pType == MEDIASUBTYPE_YV12)
+	{
+		tResult = "YV12 4:2:0 Planar 8";
+	}else if (pType == MEDIASUBTYPE_NV12)
+	{
+		tResult = "NV12 4:2:0 Planar 8";
+	}else if (pType == MEDIASUBTYPE_I420)
+	{
+		tResult = "I420 4:2:0 Planar 8";
+	}else if (pType == MEDIASUBTYPE_IF09)
+	{
+		tResult = "Indeo YVU9 Planar 8";
+	}else if (pType == MEDIASUBTYPE_IYUV)
+	{
+		tResult = "IYUV 4:2:0 Planar 8";
+	}else if (pType == MEDIASUBTYPE_Y211)
+	{
+		tResult = "Y211 Packed 8";
+	}else if (pType == MEDIASUBTYPE_Y411)
+	{
+		tResult = "Y411 4:1:1 Packed 8";
+	}else if (pType == MEDIASUBTYPE_Y41P)
+	{
+		tResult = "Y41P 4:1:1 Packed 8";
+	}else if (pType == MEDIASUBTYPE_YVU9)
+	{
+		tResult = "YVU9	Planar 8";
+	}else if (pType == MEDIASUBTYPE_YVYU)
+	{
+		tResult = "YVYU 4:2:2 Packed 8";
+	}else if (pType == MEDIASUBTYPE_RGB24)
+	{
+		tResult = "RGB 24 bpp";
+	}else if (pType == MEDIASUBTYPE_Y8)
+	{
+		tResult = "Y8 monochrome";
+	}else if (pType == MEDIASUBTYPE_Y800)
+	{
+		tResult = "Y800 monochrome";
+	}else if (pType == MEDIASUBTYPE_GREY)
+	{
+		tResult = "GREY monochrome";
+	}else if (pType == MEDIASUBTYPE_IMC1)
+	{
+		tResult = "IMC1 4:2:0 Planar 8";
+	}else
+	{
+		tResult = GUID2String(pType);
+	}
+
+/*
+//		case MEDIASUBTYPE_IMC3:
+//			tResult = "IMC2 4:2:0 Planar 8";
+//		case MEDIASUBTYPE_IMC2:
+//			tResult = "IMC3 4:2:0 Planar 8";
+//		case MEDIASUBTYPE_IMC4:
+//			tResult = "IMC4 4:2:0 Planar 8";
+*/
+	return tResult;
+}
+
 void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
 {
     static bool 			tFirstCall = true;
@@ -590,7 +733,10 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
 							int tWidth = tVInfoHeader->bmiHeader.biWidth;
 							int tHeight = tVInfoHeader->bmiHeader.biHeight;
 
-							LOG(LOG_VERBOSE, "  ..supported video resolution: %d*%d (sub type: %d)", tWidth, tHeight, tMT->subtype);
+							LOG(LOG_VERBOSE, "  ..supported media tyoe: Video, video resolution: %d*%d (sub type: %s)", tWidth, tHeight, GetSubTypeName(tMT->subtype).c_str());
+						}else
+						{
+							LOG(LOG_VERBOSE, "  ..additional media type: %s", GetMediaTypeName(tMT->majortype).c_str());
 						}
 				    }
 			    	delete [] tCaps;
@@ -1110,7 +1256,7 @@ GrabResolutions MediaSourceDShow::GetSupportedVideoGrabResolutions()
 							int tHeight = tVInfoHeader->bmiHeader.biHeight;
 
 							#ifdef MSDS_DEBUG_RESOLUTIONS
-								LOG(LOG_VERBOSE, "Detected source video resolution %d*%d and sub type: %d", tWidth, tHeight, tMT->subtype);
+								LOG(LOG_VERBOSE, "Detected source video resolution %d*%d and sub type: %s", tWidth, tHeight, GetSubTypeName(tMT->subtype).c_str());
 							#endif
 							if ((tWidth <= 1920) && (tHeight <= 1080))
 							{
