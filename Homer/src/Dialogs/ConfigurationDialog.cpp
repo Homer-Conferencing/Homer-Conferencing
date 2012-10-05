@@ -772,10 +772,12 @@ QString ConfigurationDialog::SelectSoundFile(QString pEventName, QString pSugges
     if (!QFile::exists(pSuggestion))
         pSuggestion = CONF.GetDataDirectory();
 
-    QString tSoundFile = OverviewPlaylistWidget::LetUserSelectAudioFile(this, "Select sound file for acoustic notification for event \"" + pEventName + "\".", false).first();
+    QStringList tSoundFiles = OverviewPlaylistWidget::LetUserSelectAudioFile(this, "Select sound file for acoustic notification for event \"" + pEventName + "\".", false);
 
-    if (tSoundFile.isEmpty())
+    if (tSoundFiles.isEmpty())
         return "";
+
+    QString tSoundFile = tSoundFiles.first();
 
     CONF.SetDataDirectory(tSoundFile.left(tSoundFile.lastIndexOf('/')));
 

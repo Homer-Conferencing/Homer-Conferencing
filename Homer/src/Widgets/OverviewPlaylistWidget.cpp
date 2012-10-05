@@ -210,15 +210,21 @@ QStringList OverviewPlaylistWidget::LetUserSelectAudioFile(QWidget *pParent, QSt
                                                                 CONF_NATIVE_DIALOGS));
 
         // use the file parser to avoid playlists and resolve them to one single entry
-        Playlist tPlaylist = Parse(tResult.first(), "", false);
-        if (tPlaylist.size() > 0)
-        	tResult = QStringList(tPlaylist.first().Location);
-		else
-			tResult.clear();
+        if (!tResult.isEmpty())
+        {
+			Playlist tPlaylist = Parse(tResult.first(), "", false);
+			if (tPlaylist.size() > 0)
+				tResult = QStringList(tPlaylist.first().Location);
+			else
+			{
+				tResult.clear();
+			}
+		}
+	}
+    if ((!tResult.isEmpty()) && (tResult.first() != ""))
+    {
+    	CONF.SetDataDirectory(tResult.first().left(tResult.first().lastIndexOf('/')));
     }
-    if (!tResult.isEmpty())
-        CONF.SetDataDirectory(tResult.first().left(tResult.first().lastIndexOf('/')));
-
     return tResult;
 }
 
@@ -304,12 +310,15 @@ QStringList OverviewPlaylistWidget::LetUserSelectMediaFile(QWidget *pParent, QSt
                                                                 CONF_NATIVE_DIALOGS));
 
         // use the file parser to avoid playlists and resolve them to one single entry
-        Playlist tPlaylist = Parse(tResult.first(), "");
-        if (tPlaylist.size() > 0)
-        	tResult = QStringList(tPlaylist.first().Location);
-		else
-			tResult.clear();
-    }
+        if (!tResult.isEmpty())
+        {
+			Playlist tPlaylist = Parse(tResult.first(), "");
+			if (tPlaylist.size() > 0)
+				tResult = QStringList(tPlaylist.first().Location);
+			else
+				tResult.clear();
+        }
+	}
     if (!tResult.isEmpty())
         CONF.SetDataDirectory(tResult.first().left(tResult.first().lastIndexOf('/')));
 
@@ -738,6 +747,9 @@ Playlist OverviewPlaylistWidget::Parse(QString pLocation, QString pName, bool pA
 {
 	Playlist tResult;
 	PlaylistEntry tPlaylistEntry;
+
+	if (pLocation == "")
+		return tResult;
 
 	sParseRecursionCount ++;
 	if (sParseRecursionCount < MAX_PARSER_RECURSIONS)
