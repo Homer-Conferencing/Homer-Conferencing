@@ -41,6 +41,7 @@ SET (INCLUDE_DIRS
 	../../HomerMultimedia/include
 	../../HomerNetworkSimulator/include
 	../../HomerConference/include
+	../../../HomerNetworkSimulator/HomerNetworkSimulator/include/
 	/usr/include/ffmpeg
 	${QT_INCLUDE_DIR}
 	${CMAKE_BINARY_DIR}/Homer/bin

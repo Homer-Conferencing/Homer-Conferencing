@@ -10,18 +10,18 @@ MESSAGE("####################################")
 ##############################################################
 # Homer version: every version information in the rest of the build system is generated from teh following entries
 IF (DEFINED INSIDE_HOMER_BUILD)
-	INCLUDE (${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/config/HomerVersion.txt)
+	INCLUDE (${CMAKE_CURRENT_SOURCE_DIR}/../../${RELOCATION_INCLUDES}HomerBuild/config/HomerVersion.txt)
 ELSE()
-	INCLUDE (${CMAKE_CURRENT_SOURCE_DIR}/../HomerBuild/config/HomerVersion.txt)
+	INCLUDE (${CMAKE_CURRENT_SOURCE_DIR}/../${RELOCATION_INCLUDES}HomerBuild/config/HomerVersion.txt)
 ENDIF()
 set(HOMER_VERSION "${HOMER_VERSION_MAJOR}.${HOMER_VERSION_MINOR}.${HOMER_VERSION_PATCH}")
 
 ##############################################################
 # Include feature selection from HomerFeatures.txt
 IF (DEFINED INSIDE_HOMER_BUILD)
-	INCLUDE (${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/config/HomerFeatures.txt)
+	INCLUDE (${CMAKE_CURRENT_SOURCE_DIR}/../../${RELOCATION_INCLUDES}HomerBuild/config/HomerFeatures.txt)
 ELSE()
-	INCLUDE (${CMAKE_CURRENT_SOURCE_DIR}/../HomerBuild/config/HomerFeatures.txt)
+	INCLUDE (${CMAKE_CURRENT_SOURCE_DIR}/../${RELOCATION_INCLUDES}HomerBuild/config/HomerFeatures.txt)
 ENDIF()
 
 ##############################################################
@@ -88,7 +88,7 @@ SET (PRE_DEFINITIONS_EXECUTED "true")
 IF (DEFINED INSIDE_HOMER_BUILD)
 	INCLUDE (CheckIncludeFiles)
 	CONFIGURE_FILE(
-		${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/resources/config.h.in 
+		${CMAKE_CURRENT_SOURCE_DIR}/../../${RELOCATION_INCLUDES}HomerBuild/resources/config.h.in 
 		${CMAKE_CURRENT_BINARY_DIR}/config.h
 	)
 ENDIF()
@@ -98,8 +98,8 @@ IF (DEFINED INSIDE_HOMER_BUILD)
 	INCLUDE (CheckIncludeFiles)
 	IF(APPLE)
 		CONFIGURE_FILE(
-			${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/resources/osx/Info.plist.in 
-			${CMAKE_CURRENT_BINARY_DIR}/../../Info.plist
+			${CMAKE_CURRENT_SOURCE_DIR}/../../${RELOCATION_INCLUDES}HomerBuild/resources/osx/Info.plist.in 
+			${CMAKE_CURRENT_BINARY_DIR}/../../${RELOCATION_INCLUDES}Info.plist
 		)
 	ENDIF()
 ENDIF()

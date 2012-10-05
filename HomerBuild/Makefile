@@ -12,7 +12,7 @@ HOMER_NAPI=HomerNAPI
 HOMER_GUI=Homer
 HOMER_MONITOR=HomerMonitor
 HOMER_MULTIMEDIA=HomerMultimedia
-HOMER_NETWORK_SIMULATOR=HomerNetworkSimulator
+HOMER_NETWORK_SIMULATOR=../HomerNetworkSimulator/HomerNetworkSimulator
 HOMER_SOUNDOUTPUT=HomerSoundOutput
 
 ###############################################################################

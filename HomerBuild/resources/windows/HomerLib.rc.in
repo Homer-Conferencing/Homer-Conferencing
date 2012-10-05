@@ -1,4 +1,4 @@
-IDI_ICON1               ICON    DISCARDABLE     "@CMAKE_CURRENT_SOURCE_DIR@/../../HomerBuild/resources/windows/Homer.ico"
+IDI_ICON1               ICON    DISCARDABLE     "@CMAKE_CURRENT_SOURCE_DIR@/../../@RELOCATION_INCLUDES@HomerBuild/resources/windows/Homer.ico"
 
 1 VERSIONINFO
 FILEVERSION     @HOMER_VERSION_MAJOR@,@HOMER_VERSION_MINOR@,@HOMER_VERSION_PATCH@,0

@@ -8,7 +8,7 @@ MESSAGE("### Supporting NSIS installer creation")
 ###############################################################################
 set(CPACK_GENERATOR "NSIS")
 set(CPACK_SOURCE_GENERATOR "ZIP")
-set(CPACK_PACKAGE_ICON ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/windows/\\\\Homer-Banner.bmp)
+set(CPACK_PACKAGE_ICON ${PACKAGE_TOP_SRC_DIR}/${RELOCATION_INCLUDES}HomerBuild/resources/windows/\\\\Homer-Banner.bmp)
 
 ###############################################################################
 set(CPACK_NSIS_PACKAGE_NAME "Homer Conferencing")
@@ -18,8 +18,8 @@ set(CPACK_NSIS_CONTACT "homer@homer-conferencing.com")
 set(CPACK_NSIS_MODIFY_PATH "ON")
 
 set(WIN32_ICON ${PACKAGE_TOP_SRC_DIR}/Homer/winres/Homer.ico)
-set(CPACK_NSIS_MUI_ICON ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/windows\\\\Homer-Install.ico) 
-set(CPACK_NSIS_MUI_UNIICON ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/windows\\\\Homer-Uninstall.ico) 
+set(CPACK_NSIS_MUI_ICON ${PACKAGE_TOP_SRC_DIR}/${RELOCATION_INCLUDES}HomerBuild/resources/windows\\\\Homer-Install.ico) 
+set(CPACK_NSIS_MUI_UNIICON ${PACKAGE_TOP_SRC_DIR}/${RELOCATION_INCLUDES}HomerBuild/resources/windows\\\\Homer-Uninstall.ico) 
 set(CPACK_NSIS_INSTALLED_ICON_NAME ${CMAKE_BINARY_DIR}/Homer/Homer.exe)
 
 set(CPACK_NSIS_EXECUTABLES_DIRECTORY ".")

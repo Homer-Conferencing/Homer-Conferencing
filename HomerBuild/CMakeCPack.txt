@@ -9,12 +9,12 @@ MESSAGE("### Supporting installer creation")
 # generate Welcome.txt
 IF (WIN32)
 	configure_file(
-		${CMAKE_CURRENT_SOURCE_DIR}/../HomerBuild/resources/texts/Homer-Welcome.txt.in
+		${CMAKE_CURRENT_SOURCE_DIR}/../${RELOCATION_INCLUDES}HomerBuild/resources/texts/Homer-Welcome.txt.in
 	  	${CMAKE_CURRENT_BINARY_DIR}\\\\Homer-Welcome.txt
 	@ONLY)
 ELSE()
 	configure_file(
-		${CMAKE_CURRENT_SOURCE_DIR}/../HomerBuild/resources/texts/Homer-Welcome.txt.in
+		${CMAKE_CURRENT_SOURCE_DIR}/../${RELOCATION_INCLUDES}HomerBuild/resources/texts/Homer-Welcome.txt.in
 	  	${CMAKE_CURRENT_BINARY_DIR}/Homer-Welcome.txt
 	@ONLY)
 ENDIF()
@@ -41,8 +41,8 @@ set(CPACK_PACKAGE_CONTACT "Thomas Volkert <thomas@homer-conferencing.com>")
 
 ###############################################################################
 
-set(CPACK_RESOURCE_FILE_LICENSE ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/texts/License.txt)
-set(CPACK_RESOURCE_FILE_README ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/texts/Readme.txt)
+set(CPACK_RESOURCE_FILE_LICENSE ${PACKAGE_TOP_SRC_DIR}/${RELOCATION_INCLUDES}HomerBuild/resources/texts/License.txt)
+set(CPACK_RESOURCE_FILE_README ${PACKAGE_TOP_SRC_DIR}/${RELOCATION_INCLUDES}HomerBuild/resources/texts/Readme.txt)
 
 ###############################################################################
 # HINT: workaround for NSIS installer bug is to use "\\\\" construction at least once per variable
@@ -79,17 +79,17 @@ set(CPACK_COMPONENT_SOUNDS_GROUP "Usability add-ons")
 ###############################################################################
 # NSIS specific configuration for Windows
 IF (WIN32)
-        INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../HomerBuild/CMakeCPackWin.txt)
+        INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../${RELOCATION_INCLUDES}HomerBuild/CMakeCPackWin.txt)
 ENDIF(WIN32)
 
 # STGZ/RPM/DEB specific configuration for Windows
 IF (LINUX)
-        INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../HomerBuild/CMakeCPackLinux.txt)
+        INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../${RELOCATION_INCLUDES}HomerBuild/CMakeCPackLinux.txt)
 ENDIF(LINUX)
 
 # Bundle specific configuration for OSX
 IF (APPLE)
-        INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../HomerBuild/CMakeCPackOSX.txt)
+        INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../${RELOCATION_INCLUDES}HomerBuild/CMakeCPackOSX.txt)
 ENDIF(APPLE)
 
 ###############################################################################

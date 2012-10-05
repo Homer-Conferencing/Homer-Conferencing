@@ -16,15 +16,15 @@ set(CPACK_COMPONENTS_ALL )
 set(CPACK_PACKAGE_DEFAULT_LOCATION "/Applications")
 set(CPACK_PACKAGING_INSTALL_PREFIX "/Homer-Conferencing" CACHE PATH "Package install path prefix" FORCE)
  
-set(CPACK_PACKAGE_ICON ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/osx/Homer-Conferencing.icns)
+set(CPACK_PACKAGE_ICON ${PACKAGE_TOP_SRC_DIR}/${RELOCATION_INCLUDES}HomerBuild/resources/osx/Homer-Conferencing.icns)
  
 ###############################################################################
 set(CPACK_BUNDLE_NAME "Homer-Conferencing")
-set(CPACK_BUNDLE_ICON ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/osx/Homer-Conferencing.icns) 
-set(CPACK_BUNDLE_STARTUP_COMMAND ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/osx/start_Homer-Conferencing)
+set(CPACK_BUNDLE_ICON ${PACKAGE_TOP_SRC_DIR}/${RELOCATION_INCLUDES}HomerBuild/resources/osx/Homer-Conferencing.icns) 
+set(CPACK_BUNDLE_STARTUP_COMMAND ${PACKAGE_TOP_SRC_DIR}/${RELOCATION_INCLUDES}HomerBuild/resources/osx/start_Homer-Conferencing)
 set(CPACK_BUNDLE_PLIST ${CMAKE_BINARY_DIR}/Info.plist)
 
-set(CPACK_DMG_BACKGROUND_IMAGE ${PACKAGE_TOP_SRC_DIR}/HomerBuild/resources/osx/Homer_512x512.png) 
+set(CPACK_DMG_BACKGROUND_IMAGE ${PACKAGE_TOP_SRC_DIR}/${RELOCATION_INCLUDES}HomerBuild/resources/osx/Homer_512x512.png) 
 
 set(CPACK_OSX_PACKAGE_VERSION "${MIN_SUPPORTED_OSX_VERSION}")
 set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "Build architectures for OSX" FORCE)
