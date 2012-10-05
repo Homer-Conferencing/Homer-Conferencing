@@ -137,10 +137,10 @@ static QString sLoadVideoFilters = sAllLoadVideoFilter + ";;"\
                     "Windows Bitmap (*.bmp);;"\
                     "Windows Media Video Format (*.wmv)";
 
-static QString sAllSaveVideoFilter = "All supported formats (*.avi *.m4v *.mov *.mp4 *.mp4a *.3gp)";
+static QString sAllSaveVideoFilter = "All supported formats (*.avi *.m4v *.mov *.mp4 *.3gp)";
 static QString sSaveVideoFilters = sAllSaveVideoFilter + ";;"\
                     "Audio Video Interleave Format (*.avi);;"\
-                    "Quicktime/MPEG4 Format (*.m4v *.mov *.mp4 *.mp4a *.3gp)";
+                    "Quicktime/MPEG4 Format (*.m4v *.mov *.mp4 *.3gp)";
 
 QString OverviewPlaylistWidget::LetUserSelectVideoSaveFile(QWidget *pParent, QString pDescription)
 {
