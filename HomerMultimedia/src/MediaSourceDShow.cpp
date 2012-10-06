@@ -140,6 +140,10 @@ DEFINE_GUID( MEDIATYPE_Audio, 0x73647561, 0x0000, 0x0010,
 			 0x80, 0x00, 0x00, 0xAA, 0x00, 0x38, 0x9B, 0x71);
 DEFINE_GUID( MEDIATYPE_VBI, 0xf72a76e1, 0xeb0a, 0x11d0,
 			 0xac, 0xe4, 0x00, 0x00, 0xc0, 0xcc, 0x16, 0xba);
+DEFINE_GUID( FORMAT_VideoInfo, 0x05589f80, 0xc356, 0x11ce,
+			 0xbf, 0x01, 0x00, 0xaa, 0x00, 0x55, 0x59, 0x5a);
+DEFINE_GUID( FORMAT_VideoInfo2, 0xf72a76a0, 0xeb0a, 0x11d0,
+			 0xac, 0xe4, 0x00, 0x00, 0xc0, 0xcc, 0x16, 0xba);
 
 typedef LONGLONG REFERENCE_TIME;
 
@@ -151,6 +155,21 @@ typedef struct tagVIDEOINFOHEADER {
         REFERENCE_TIME AvgTimePerFrame;
         BITMAPINFOHEADER bmiHeader;
 } VIDEOINFOHEADER;
+
+typedef struct tagVIDEOINFOHEADER2 {
+		RECT rcSource;
+		RECT rcTarget;
+		DWORD dwBitRate;
+		DWORD dwBitErrorRate;
+		REFERENCE_TIME AvgTimePerFrame;
+		DWORD dwInterlaceFlags;
+		DWORD dwCopyProtectFlags;
+		DWORD dwPictAspectRatioX;
+		DWORD dwPictAspectRatioY;
+		DWORD dwReserved1;
+		DWORD dwReserved2;
+		BITMAPINFOHEADER bmiHeader;
+} VIDEOINFOHEADER2;
 
 typedef struct _AMMediaType {
         GUID majortype;
@@ -729,12 +748,27 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
 
 					    if ((tMT->majortype == MEDIATYPE_Video) && (tMT->pbFormat !=0))
 					    {
-							VIDEOINFOHEADER *tVInfoHeader = (VIDEOINFOHEADER*)tMT->pbFormat;
-							int tWidth = tVInfoHeader->bmiHeader.biWidth;
-							int tHeight = tVInfoHeader->bmiHeader.biHeight;
+					    	int tFormatType = -1;
+							int tWidth = -1;
+							int tHeight = -1;
+					    	if (tMT->formattype == FORMAT_VideoInfo)
+					    	{// VideoInfo
+					    		VIDEOINFOHEADER *tVInfoHeader = (VIDEOINFOHEADER*)tMT->pbFormat;
+								tWidth = tVInfoHeader->bmiHeader.biWidth;
+								tHeight = tVInfoHeader->bmiHeader.biHeight;
+								tFormatType = 1;
+					    	}else if (tMT->formattype == FORMAT_VideoInfo2)
+					    	{// VideoInfo2
+					    		VIDEOINFOHEADER2 *tVInfoHeader2 = (VIDEOINFOHEADER2*)tMT->pbFormat;
+								tWidth = tVInfoHeader2->bmiHeader.biWidth;
+								tHeight = tVInfoHeader2->bmiHeader.biHeight;
+								tFormatType = 2;
+					    	}else
+					    	{
+					    		LOG(LOG_WARN, "Unsupported format type detected: %s", GUID2String(tMT->formattype).c_str());
+					    	}
 
-							if ((tHeight > 0) && (tWidth > 0))
-                                LOG(LOG_VERBOSE, "  ..supported media tyoe: Video, video resolution: %d*%d (sub type: %s)", tWidth, tHeight, GetSubTypeName(tMT->subtype).c_str());
+							LOG(LOG_VERBOSE, "  ..supported media tyoe: Video, video info format: %d, video resolution: %d*%d (sub type: %s)", tFormatType, tWidth, tHeight, GetSubTypeName(tMT->subtype).c_str());
 						}else
 						{
 							LOG(LOG_VERBOSE, "  ..additional media type: %s", GetMediaTypeName(tMT->majortype).c_str());
@@ -1252,9 +1286,22 @@ GrabResolutions MediaSourceDShow::GetSupportedVideoGrabResolutions()
 
 					    if ((tMT->majortype == MEDIATYPE_Video) && (tMT->pbFormat !=0))
 					    {
-							VIDEOINFOHEADER *tVInfoHeader = (VIDEOINFOHEADER*)tMT->pbFormat;
-							int tWidth = tVInfoHeader->bmiHeader.biWidth;
-							int tHeight = tVInfoHeader->bmiHeader.biHeight;
+							int tWidth = -1;
+							int tHeight = -1;
+					    	if (tMT->formattype == FORMAT_VideoInfo)
+					    	{// VideoInfo
+					    		VIDEOINFOHEADER *tVInfoHeader = (VIDEOINFOHEADER*)tMT->pbFormat;
+								tWidth = tVInfoHeader->bmiHeader.biWidth;
+								tHeight = tVInfoHeader->bmiHeader.biHeight;
+					    	}else if (tMT->formattype == FORMAT_VideoInfo2)
+					    	{// VideoInfo2
+					    		VIDEOINFOHEADER2 *tVInfoHeader2 = (VIDEOINFOHEADER2*)tMT->pbFormat;
+								tWidth = tVInfoHeader2->bmiHeader.biWidth;
+								tHeight = tVInfoHeader2->bmiHeader.biHeight;
+					    	}else
+					    	{
+					    		LOG(LOG_WARN, "Unsupported format type detected: %s", GUID2String(tMT->formattype).c_str());
+					    	}
 
 							#ifdef MSDS_DEBUG_RESOLUTIONS
 								LOG(LOG_VERBOSE, "Detected source video resolution %d*%d and sub type: %s", tWidth, tHeight, GetSubTypeName(tMT->subtype).c_str());
