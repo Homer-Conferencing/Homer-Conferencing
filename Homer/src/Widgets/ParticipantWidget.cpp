@@ -83,7 +83,7 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer, MediaSourceMuxer *pAudioSourceMuxer, QString pParticipant):
+ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer, MediaSourceMuxer *pAudioSourceMuxer, QString pParticipant, QString pTransport):
     QDockWidget(pMainWindow), AudioPlayback()
 {
     LOG(LOG_VERBOSE, "Creating new participant widget..");
@@ -103,6 +103,8 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
     mVideoSourceMuxer = pVideoSourceMuxer;
     mAudioSourceMuxer = pAudioSourceMuxer;
     mSessionType = pSessionType;
+    mSessionName = "";
+    mSessionTransport = "";
     mIncomingCall = false;
     mQuitForced = false;
     LOG(LOG_VERBOSE, "..init sound object for acoustic notifications");
@@ -111,7 +113,7 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
     //### create the remaining necessary widgets, menu and layouts
     //####################################################################
     LOG(LOG_VERBOSE, "..init participant widget");
-    Init(pVideoMenu, pAudioMenu, pMessageMenu, pParticipant);
+    Init(pVideoMenu, pAudioMenu, pMessageMenu, pParticipant, pTransport);
 }
 
 ParticipantWidget::~ParticipantWidget()
@@ -164,7 +166,7 @@ ParticipantWidget::~ParticipantWidget()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, QString pParticipant)
+void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, QString pParticipant, QString pTransport)
 {
     setupUi(this);
 
@@ -236,6 +238,7 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
 						LOG(LOG_VERBOSE, "Creating participant widget for PARTICIPANT");
 						mMovieControlsFrame->hide();
 						mSessionName = pParticipant;
+						mSessionTransport = pTransport;
 						FindSipInterface(pParticipant);
 						mMessageWidget->Init(pMessageMenu, mSessionName);
 						mVideoSendSocket = MEETING.GetVideoSendSocket(mSessionName.toStdString());

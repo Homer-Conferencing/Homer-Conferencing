@@ -50,6 +50,7 @@ struct ParticipantDescriptor
     std::string    User;
     std::string    Host;
     std::string    Port;
+    std::string	   Transport;
     std::string    Sdp;
     std::string    OwnIp; //necessary for NAT traversal: store the outmost NAT's IP, directed towards this participant
     unsigned int   OwnPort; //necessary for NAT traversal: store the outmost NAT's PORT, directed towards this participant
@@ -341,7 +342,7 @@ string Meeting::GetServerConferenceId()
     return tResult;
 }
 
-bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort)
+bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort, string pTransport)
 {
     bool        tFound = false;
     ParticipantDescriptor tParticipantDescriptor;
@@ -368,6 +369,7 @@ bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort)
         tParticipantDescriptor.User = pUser;
         tParticipantDescriptor.Host = pHost;
         tParticipantDescriptor.Port = pPort;
+        tParticipantDescriptor.Transport = pTransport;
         tParticipantDescriptor.OwnIp = GetOwnRoutingAddressForPeer(pHost);
         tParticipantDescriptor.OwnPort = (unsigned int)GetHostPort();
         tParticipantDescriptor.RemoteVideoHost = "0.0.0.0";
@@ -1431,6 +1433,7 @@ bool Meeting::GetSessionInfo(string pParticipant, struct SessionInfo *pInfo)
         pInfo->User = "Broadcast";
         pInfo->Host = "multiple";
         pInfo->Port = "5060";
+        pInfo->Transport = "*";
         pInfo->OwnIp = "multiple";
         pInfo->OwnPort = "5060";
         pInfo->RemoteVideoHost = "multiple";
@@ -1456,6 +1459,7 @@ bool Meeting::GetSessionInfo(string pParticipant, struct SessionInfo *pInfo)
                     pInfo->User = tIt->User;
                     pInfo->Host = tIt->Host;
                     pInfo->Port = tIt->Port;
+                    pInfo->Transport = tIt->Transport;
                     pInfo->OwnIp = tIt->OwnIp;
                     pInfo->OwnPort = toString(tIt->OwnPort);
                     pInfo->RemoteVideoHost = tIt->RemoteVideoHost;

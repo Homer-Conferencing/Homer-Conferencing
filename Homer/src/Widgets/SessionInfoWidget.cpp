@@ -96,7 +96,7 @@ void SessionInfoWidget::UpdateView()
     if (MEETING.GetSessionInfo(QString(mParticipant.toLocal8Bit()).toStdString(), &tInfo))
     {
         if (!mLeParticipant->hasSelectedText())
-            mLeParticipant->setText(QString(MEETING.SipCreateId(tInfo.User, tInfo.Host, tInfo.Port).c_str()));
+            mLeParticipant->setText(QString(MEETING.SipCreateId(tInfo.User, tInfo.Host, tInfo.Port).c_str()) + "[" + QString(tInfo.Transport.c_str()) + "]");
         if (!mLeSipInterface->hasSelectedText())
         	mLeSipInterface->setText(mSipInterface);
         if (!mLeCallState->hasSelectedText())

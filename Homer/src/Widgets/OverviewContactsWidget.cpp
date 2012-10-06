@@ -327,7 +327,9 @@ void OverviewContactsWidget::Dialog2Contact(ContactEditDialog *pCED, ContactDesc
         pContact->User      = pContact->Name;
         pContact->Host      = pCED->mLeAddress->text();
     }
+	pContact->Host = pContact->Host.toLower();
     pContact->Port      = (QString("%1").arg(pCED->mSbPort->value()));
+    pContact->Transport = pCED->mCbTransport->currentText();
     if (pNewContact)
     {
         pContact->Id    = CONTACTS.GetNextFreeId();
@@ -337,17 +339,25 @@ void OverviewContactsWidget::Dialog2Contact(ContactEditDialog *pCED, ContactDesc
 void OverviewContactsWidget::Contact2Dialog(ContactDescriptor *pContact, ContactEditDialog *pCED)
 {
     pCED->mLeName->setText(pContact->Name);
-    pCED->mLeAddress->setText(pContact->User + "@" + pContact->Host);
+    pCED->mLeAddress->setText(pContact->User + "@" + pContact->Host.toLower());
     pCED->mSbPort->setValue((pContact->Port.toInt()));
+    for (int i = 0; i < pCED->mCbTransport->count(); i++)
+    {
+        if (pContact->Transport == pCED->mCbTransport->itemText(i))
+        {
+        	pCED->mCbTransport->setCurrentIndex(i);
+            break;
+        }
+    }
 }
 
 void OverviewContactsWidget::ContactParticipantDelegateToMainWindow(ContactDescriptor *pContact, QString pIp, bool pCallAfterwards)
 {
     //CONTACTS.FavorizedContact(pContact->User, pContact->Host, pContact->Port);
     if (pCallAfterwards)
-        QCoreApplication::postEvent(mMainWindow, (QEvent*) new QMeetingEvent(new AddParticipantEvent(pContact->User, pContact->Host, pContact->Port, pIp, CALLSTATE_RINGING)));
+        QCoreApplication::postEvent(mMainWindow, (QEvent*) new QMeetingEvent(new AddParticipantEvent(pContact->User, pContact->Host, pContact->Port, pContact->Transport, pIp, CALLSTATE_RINGING)));
     else
-        QCoreApplication::postEvent(mMainWindow, (QEvent*) new QMeetingEvent(new AddParticipantEvent(pContact->User, pContact->Host, pContact->Port, pIp, CALLSTATE_STANDBY)));
+        QCoreApplication::postEvent(mMainWindow, (QEvent*) new QMeetingEvent(new AddParticipantEvent(pContact->User, pContact->Host, pContact->Port, pContact->Transport, pIp, CALLSTATE_STANDBY)));
 
 }
 

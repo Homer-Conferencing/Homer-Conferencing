@@ -1042,7 +1042,7 @@ void MainWindow::customEvent(QEvent* pEvent)
         case ADD_PARTICIPANT:
                     //####################### PARTICIPANT ADD #############################
                     tAPEvent = (AddParticipantEvent*) tEvent;
-                    AddParticipantSession(tAPEvent->User, tAPEvent->Host, tAPEvent->Port, tAPEvent->Ip, tAPEvent->InitState);
+                    AddParticipantSession(tAPEvent->User, tAPEvent->Host, tAPEvent->Port, tAPEvent->Transport, tAPEvent->Ip, tAPEvent->InitState);
                     break;
         case DELETE_SESSION:
                     //####################### PARTICIPANT DELETE #############################
@@ -1514,7 +1514,7 @@ QString MainWindow::CompleteIpAddress(QString pAddr)
     return tResult;
 }
 
-ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHost, QString pPort, QString pIp, int pInitState)
+ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHost, QString pPort, QString pTransport, QString pIp, int pInitState)
 {
     ParticipantWidget *tParticipantWidget = NULL;
 
@@ -1543,11 +1543,11 @@ ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHos
         }
 
         pHost = CompleteIpAddress(pHost);
-        if (MEETING.OpenParticipantSession(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString()))
+        if (MEETING.OpenParticipantSession(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString(), pTransport.toStdString()))
         {
             QString tParticipant = QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str());
 
-            tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, tParticipant);
+            tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, tParticipant, pTransport);
 
             mParticipantWidgets.push_back(tParticipantWidget);
 

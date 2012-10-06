@@ -65,6 +65,7 @@ struct SessionInfo
     std::string    User;
     std::string    Host;
     std::string    Port;
+    std::string	   Transport;
     std::string    OwnIp; //necessary for NAT traversal: store the outmost NAT's IP, directed towards this participant
     std::string    OwnPort; //necessary for NAT traversal: store the outmost NAT's PORT, directed towards this participant
     std::string    RemoteVideoHost;
@@ -123,7 +124,7 @@ public:
     void GetOwnContactAddress(std::string pParticipant, std::string &pIp, unsigned int &pPort);
 
     /* session management */
-    bool OpenParticipantSession(std::string pUser, std::string pHost, std::string pPort);
+    bool OpenParticipantSession(std::string pUser, std::string pHost, std::string pPort, std::string pTransport = "UDP");
     bool CloseParticipantSession(std::string pParticipant);
     int CountParticipantSessions();
 

@@ -108,7 +108,7 @@ class ParticipantWidget:
     Q_OBJECT;
 
 public:
-    ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer = NULL, MediaSourceMuxer *pAudioSourceMuxer = NULL, QString pParticipant = "unknown");
+    ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer = NULL, MediaSourceMuxer *pAudioSourceMuxer = NULL, QString pParticipant = "unknown", QString pTransport = "UDP");
 
     virtual ~ParticipantWidget();
 
@@ -158,7 +158,7 @@ private:
     void ShowAudioVideoWidget();
 
 	void ResizeAVView(int pSize);
-	void Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, QString pParticipant);
+	void Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, QString pParticipant, QString pTransport);
     void FindSipInterface(QString pSessionName);
     void UpdateMovieControls();
     virtual void contextMenuEvent(QContextMenuEvent *event);
@@ -186,6 +186,7 @@ private:
     MainWindow          	*mMainWindow;
     QMessageBox         	*mCallBox;
     QString            	 	mSessionName;
+    QString					mSessionTransport;
     QString					mSipInterface; // service access point name in form "IP:PORT" or "[IPv6]:PORT"
     QString            		mWidgetTitle;
     bool                	mQuitForced;

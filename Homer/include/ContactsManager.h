@@ -51,6 +51,7 @@ struct ContactDescriptor
     QString        User;
     QString        Host;
     QString        Port;
+    QString		   Transport;
     int            State; // 0-offline, 1-online/available
     unsigned int   Id;
 
