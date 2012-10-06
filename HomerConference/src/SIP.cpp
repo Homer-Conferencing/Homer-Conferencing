@@ -175,16 +175,16 @@ bool SIP::SplitParticipantName(string pParticipant, string &pUser, string &pHost
     // IPv6?
     tPos = pParticipant.find('[');
     if (tPos != string::npos)
-    {
+    {// ipv6
         size_t tPos_HostEnd = pParticipant.find(']');
         // separate host part
         pHost = pParticipant.substr(tPos + 1, tPos_HostEnd - tPos -1);
         // separate port part
-        pPort = pParticipant.substr(tPos_HostEnd + 1, pParticipant.size() - tPos_HostEnd);
+        pPort = pParticipant.substr(tPos_HostEnd + 2, pParticipant.size() - tPos_HostEnd - 1);
         if (pPort == "")
             pPort = "5060";
     }else
-    {
+    {// ipv4
         tPos = pParticipant.find(':');
         if (tPos != string::npos)
         {
@@ -226,7 +226,7 @@ bool SIP::IsThisParticipant(string pParticipantUser, string pParticipantHost, st
 
     tResult = (((pParticipantUser == pUser) || (pParticipantHost != mSipRegisterServer)) && (pParticipantHost == pHost) && (pParticipantPort == pPort));
 
-    //LOGEX(SIP, LOG_VERBOSE, "Comparing: %s - %s, %s - %s, %s - %s  ==> %s", pParticipantUser.c_str(), pUser.c_str(), pParticipantHost.c_str(), pHost.c_str(), pParticipantPort.c_str(), pPort.c_str(), tResult ? "MATCH" : "different");
+    LOGEX(SIP, LOG_VERBOSE, "Comparing: %s - %s, %s - %s, %s - %s  ==> %s", pParticipantUser.c_str(), pUser.c_str(), pParticipantHost.c_str(), pHost.c_str(), pParticipantPort.c_str(), pPort.c_str(), tResult ? "MATCH" : "different");
 
     return tResult;
 }
