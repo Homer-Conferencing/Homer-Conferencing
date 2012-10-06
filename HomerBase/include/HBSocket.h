@@ -71,7 +71,8 @@ enum TransportType{
     SOCKET_TCP, //RFC 793
     SOCKET_UDP_LITE, //RFC 3828, only for Linux, in Windows environments we fall back to UDP
     SOCKET_DCCP, // RFC 4340, only for Linux, in Windows environments we fall back to UDP
-    SOCKET_SCTP // RFC 4960, only for Linux, in Windows environments we fall back to UDP
+    SOCKET_SCTP, // RFC 4960, only for Linux, in Windows environments we fall back to UDP
+    SOCKET_TRANSPORT_AUTO = 0x8000
 };
 
 union SocketAddressDescriptor

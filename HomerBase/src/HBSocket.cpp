@@ -213,6 +213,8 @@ string Socket::TransportType2String(enum TransportType pSocketType)
 {
     switch(pSocketType)
     {
+    	case SOCKET_TRANSPORT_AUTO:
+    		return "auto";
         case SOCKET_UDP:
             return "UDP";
         case SOCKET_TCP:
@@ -230,6 +232,8 @@ string Socket::TransportType2String(enum TransportType pSocketType)
 
 enum TransportType Socket::String2TransportType(string pTypeStr)
 {
+    if ((pTypeStr == "AUTO") || (pTypeStr == "auto"))
+        return SOCKET_TRANSPORT_AUTO;
     if ((pTypeStr == "UDP") || (pTypeStr == "udp"))
         return SOCKET_UDP;
     if ((pTypeStr == "TCP") || (pTypeStr == "tcp"))
