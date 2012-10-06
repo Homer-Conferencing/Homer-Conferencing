@@ -331,6 +331,8 @@ bool MediaSourcePortAudio::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     	}else
     	{
     		LOG(LOG_ERROR, "Couldn't open stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
+            const PaHostErrorInfo *tErrInfo = Pa_GetLastHostErrorInfo();
+            LOG(LOG_ERROR, "Host error is: %s(%d)", tErrInfo->errorText, (int)tErrInfo->errorCode);
     		PortAudioUnlockStreamInterface();
     		return false;
     	}
@@ -341,6 +343,8 @@ bool MediaSourcePortAudio::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     if((tErr = Pa_StartStream(mStream)) != paNoError)
     {
         LOG(LOG_ERROR, "Couldn't start stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
+        const PaHostErrorInfo *tErrInfo = Pa_GetLastHostErrorInfo();
+        LOG(LOG_ERROR, "Host error is: %s(%d)", tErrInfo->errorText, (int)tErrInfo->errorCode);
         PortAudioUnlockStreamInterface();
         return false;
     }
