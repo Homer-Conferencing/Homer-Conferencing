@@ -78,7 +78,7 @@ void MediaSourceNet::Init(Socket *pDataSocket, unsigned int pLocalPort, bool pRt
             mStreamedTransport = true;
             mPacketStatAdditionalFragmentSize = TCP_FRAGMENT_HEADER_SIZE;
         }
-        LOG(LOG_VERBOSE, "Listen for media packets at port %u, transport %d, IP version %d", mDataSocket->GetLocalPort(), mDataSocket->GetTransportType(), mDataSocket->GetNetworkType());
+        LOG(LOG_VERBOSE, "Listen for media packets at port %u, transport %s, IP version %d", mDataSocket->GetLocalPort(), Socket::TransportType2String(mDataSocket->GetTransportType()).c_str(), mDataSocket->GetNetworkType());
         mCurrentDeviceName = "NET-IN: " + MediaSinkNet::CreateId(mDataSocket->GetLocalHost(), toString(mDataSocket->GetLocalPort()), mDataSocket->GetTransportType(), mRtpActivated);
 
         mListenerPort = mDataSocket->GetLocalPort();
@@ -105,6 +105,7 @@ void MediaSourceNet::Init(Socket *pDataSocket, unsigned int pLocalPort, bool pRt
 MediaSourceNet::MediaSourceNet(Socket *pDataSocket, bool pRtpActivated):
     MediaSourceMem(pRtpActivated)
 {
+	LOG(LOG_VERBOSE, "Created with pre-defined socket object");
     mListenerSocketCreatedOutside = true;
     mStreamedTransport = (pDataSocket->GetTransportType() == SOCKET_TCP);
 
@@ -116,6 +117,7 @@ MediaSourceNet::MediaSourceNet(Socket *pDataSocket, bool pRtpActivated):
 MediaSourceNet::MediaSourceNet(unsigned int pPortNumber, enum TransportType pTransportType,  bool pRtpActivated):
     MediaSourceMem(pRtpActivated)
 {
+	LOG(LOG_VERBOSE, "Created, have to create socket");
     if ((pPortNumber == 0) || (pPortNumber > 65535))
         LOG(LOG_ERROR, "Given port number is invalid");
 
@@ -132,6 +134,7 @@ MediaSourceNet::MediaSourceNet(unsigned int pPortNumber, enum TransportType pTra
 MediaSourceNet::MediaSourceNet(string pLocalName, Requirements *pTransportRequirements, bool pRtpActivated):
     MediaSourceMem(pRtpActivated)
 {
+	LOG(LOG_VERBOSE, "Created, using NAPI");
     mListenerSocketCreatedOutside = false;
     mNAPIBinding = NULL;
 
