@@ -1026,7 +1026,7 @@ string MediaSource::GetCodecLongName()
     return tResult;
 }
 
-bool MediaSource::SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset, bool pRtpActivated)
+bool MediaSource::SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset)
 {
     LOG(LOG_VERBOSE, "SetInputStreamPreferences is only a dummy function in MediaSource");
     return false;

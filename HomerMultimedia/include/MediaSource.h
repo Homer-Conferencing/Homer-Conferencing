@@ -234,7 +234,7 @@ public:
     virtual bool Reset(enum MediaType = MEDIA_UNKNOWN);
     virtual std::string GetCodecName();
     virtual std::string GetCodecLongName();
-    virtual bool SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset = false, bool pRtpActivated = true);
+    virtual bool SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset = false);
     virtual int GetChunkDropCounter(); // how many chunks were dropped?
     virtual int GetFragmentBufferCounter(); // how many fragments are currently buffered?
     virtual int GetFragmentBufferSize(); // how many fragments can be buffered?
