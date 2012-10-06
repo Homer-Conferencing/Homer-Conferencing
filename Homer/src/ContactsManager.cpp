@@ -201,8 +201,10 @@ void ContactsManager::LoadPool(string pContactsFile)
 				tContact.User = QString::fromAscii(tEntry.attribute("User", "User").toStdString().c_str());
                 tContact.Name = QString::fromAscii(tEntry.attribute("Name", tContact.User).toStdString().c_str()); // per default use the user name as contact name
 				tContact.Host = QString::fromAscii(tEntry.attribute("Host", "Host").toStdString().c_str());
+				tContact.Host = tContact.Host.toLower();
 				tContact.Port = QString::fromAscii(tEntry.attribute("Port", "5060").toStdString().c_str());
-				LOG(LOG_VERBOSE, "Loaded contact: name=%s, address=%s, port=%s", QString(tContact.Name.toAscii()).toStdString().c_str(), QString(tContact.User.toAscii() + "@" + tContact.Host.toAscii()).toStdString().c_str(), tContact.Port.toStdString().c_str());
+				tContact.Transport = QString::fromAscii(tEntry.attribute("Transport", "UDP").toStdString().c_str());
+				LOG(LOG_VERBOSE, "Loaded contact: name=%s, address=%s, port=%s, transport=%s", QString(tContact.Name.toAscii()).toStdString().c_str(), QString(tContact.User.toAscii() + "@" + tContact.Host.toAscii()).toStdString().c_str(), tContact.Port.toStdString().c_str(), tContact.Transport.toStdString().c_str());
 				tContact.Id = tEntry.attribute("Index", "0").toUInt();
 				tContact.State = CONTACT_UNAVAILABLE;
 
