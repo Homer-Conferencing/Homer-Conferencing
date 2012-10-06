@@ -1445,8 +1445,15 @@ void MainWindow::customEvent(QEvent* pEvent)
         case REGISTRATION_FAILED:
                     //####################### REGISTRATION FAILED #############################
                     tRFEvent = (RegistrationFailedEvent*) tEvent;
-                    ShowError("Registration failed", "Could not register \"" + CONF.GetSipUserName() + "\" at the SIP server \"" + CONF.GetSipServer() + ":<" + QString("%1").arg(CONF.GetSipServerPort()) + ">\"! The reason is \"" + QString(tRFEvent->Description.c_str()) + "\"(" + QString("%1").arg(tRFEvent->StatusCode) + ")\n" \
-                                                     "SIP server runs software \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
+                    if (tRFEvent->StatusCode != 904)
+                    {
+                    	ShowError("Registration failed", "Could not register \"" + CONF.GetSipUserName() + "\" at the SIP server \"" + CONF.GetSipServer() + ":<" + QString("%1").arg(CONF.GetSipServerPort()) + ">\"! The reason is \"" + QString(tRFEvent->Description.c_str()) + "\"(" + QString("%1").arg(tRFEvent->StatusCode) + ")\n" \
+                    									 "SIP server runs software \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
+                    }else
+                    {
+                    	ShowError("Registration failed", "Could not register \"" + CONF.GetSipUserName() + "\" at the SIP server \"" + CONF.GetSipServer() + ":<" + QString("%1").arg(CONF.GetSipServerPort()) + ">\"! The login name or password is wrong. Check configuration!\n" \
+                    									 "SIP server runs software \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
+                    }
                     // reset stored SIP server data
                     mSipServerRegistrationUser = "";
                     mSipServerRegistrationHost = "";
