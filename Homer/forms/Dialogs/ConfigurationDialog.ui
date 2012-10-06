@@ -2555,6 +2555,11 @@ background-color: rgb(150, 150, 150);
                 </property>
                 <item>
                  <property name="text">
+                  <string>auto</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
                   <string>UDP</string>
                  </property>
                 </item>
@@ -5502,6 +5507,7 @@ background-color: rgb(150, 150, 150);
   </layout>
  </widget>
  <resources>
+  <include location="../../resources/Icons.qrc"/>
   <include location="../../resources/Icons.qrc"/>
  </resources>
  <connections>

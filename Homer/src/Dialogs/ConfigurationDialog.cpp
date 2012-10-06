@@ -987,6 +987,7 @@ void ConfigurationDialog::ClickedButton(QAbstractButton *pButton)
                 mSbSipStartPort->setValue(5060);
                 mSbVideoAudioStartPort->setValue(5000);
                 mGrpServerRegistration->setChecked(false);
+                mCbSipTransport->setCurrentIndex(0);
                 //mLeSipUserName->setText(CONF.GetSipUserName());
                 //mLeSipPassword->setText(CONF.GetSipPassword());
                 //mLeSipServer->setText(CONF.GetSipServer());

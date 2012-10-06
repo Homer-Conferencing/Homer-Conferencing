@@ -288,6 +288,9 @@ void* SIP::Run(void*)
         switch(mSipHostPortTransport)
         {
             default:
+            case SOCKET_TRANSPORT_AUTO:
+                tTransportAttribute = "transport=*";
+                break;
             case SOCKET_UDP:
                 tTransportAttribute = "transport=udp";
                 break;

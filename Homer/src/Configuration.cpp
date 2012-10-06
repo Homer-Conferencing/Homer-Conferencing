@@ -771,7 +771,7 @@ QString Configuration::GetSipListenerAddress()
 
 enum TransportType Configuration::GetSipListenerTransport()
 {
-    return Socket::String2TransportType(mQSettings->value("Network/SipListenerTransportType", QString("UDP")).toString().toStdString());
+    return Socket::String2TransportType(mQSettings->value("Network/SipListenerTransportType", QString("auto")).toString().toStdString());
 }
 
 QString Configuration::GetBinaryPath()
