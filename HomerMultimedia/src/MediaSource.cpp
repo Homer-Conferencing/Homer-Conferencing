@@ -2494,6 +2494,14 @@ int64_t MediaSource::FpsEmulationGetPts()
     return (int64_t)tRelativeFrameNumber;
 }
 
+int64_t FilterPts(int64_t pValue)
+{
+    if (pValue != (int64_t)AV_NOPTS_VALUE)
+        return pValue;
+    else
+        return 0;
+}
+
 void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
 {
     //######################################################
@@ -2520,8 +2528,11 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start PTS: %.2f frames", mSourceStartPts);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS: %ld frames", mFormatContext->start_time);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS (RT): %ld frames", mFormatContext->start_time_realtime);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..format context start PTS: %ld", mFormatContext->start_time);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context duration: %ld frames (%.0f seconds), format context duration: %ld seconds, nr. of frames: %ld", mFormatContext->streams[mMediaStreamIndex]->duration, (float)mFormatContext->streams[mMediaStreamIndex]->duration / mFrameRate, mFormatContext->duration / AV_TIME_BASE, mFormatContext->streams[mMediaStreamIndex]->nb_frames);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..format context duration: %ld seconds", FilterPts(mFormatContext->duration) / AV_TIME_BASE);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame rate: %.2f fps", mFrameRate);
+    int64_t tStreamDuration = FilterPts(mFormatContext->streams[mMediaStreamIndex]->duration);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context duration: %ld frames (%.0f seconds), nr. of frames: %ld", tStreamDuration, (float)tStreamDuration / mFrameRate);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context frames: %ld", mFormatContext->streams[mMediaStreamIndex]->nb_frames);
     switch(mMediaType)
     {
         case MEDIA_VIDEO:

@@ -621,7 +621,7 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
 		tRes = tPropertyBag->Read(L"FriendlyName", &tVariant, 0);
 		if (FAILED(tRes))
 		{
-			LOG(LOG_ERROR, "Could not get property \"FriendlyName\" for device %d", tCount);
+			LOG(LOG_ERROR, "Could not get property \"FriendlyName\" for device \"%d\"", tCount);
 			tPropertyBag->Release();
 			continue;
 		}
@@ -633,7 +633,7 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
 		if (SUCCEEDED(tRes))
 			WideCharToMultiByte(CP_ACP, 0, tVariant.bstrVal, -1, tDeviceDescription, sizeof(tDeviceDescription), 0, 0);
 		else
-			LOG(LOG_WARN, "Could not get property \"Description\" for device %d", tCount);
+			LOG(LOG_WARN, "Could not get property \"Description\" for device \"%d\"", tCount);
 		VariantClear(&tVariant);
 
 		// retrieve the device's description
@@ -641,13 +641,13 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
 		if (SUCCEEDED(tRes))
 			WideCharToMultiByte(CP_ACP, 0, tVariant.bstrVal, -1, tDevicePath, sizeof(tDevicePath), 0, 0);
 		else
-			LOG(LOG_WARN, "Could not get property \"DevicePath\" for device %d", tCount);
+			LOG(LOG_WARN, "Could not get property \"DevicePath\" for device \"%d\"", tCount);
 		VariantClear(&tVariant);
 
 
 		// bint to object
 		string tDeviceNameStr = string(tDeviceName);
-		LOG(LOG_VERBOSE, "Will try to detect supported video resolutions for device %s", tDeviceNameStr.c_str());
+		LOG(LOG_VERBOSE, "Will try to detect supported video resolutions for device \"%s\"", tDeviceNameStr.c_str());
 		tMoniker->BindToObject( 0, 0, IID_IBaseFilter, (void **)&tSource);
 
 	    tRes = tSource->GetClassID(&tClassId);
