@@ -307,7 +307,7 @@ void* SIP::Run(void*)
             {
             	if (Socket::IsIPv6Supported())
             	{// use IPv6 socket
-            		tOwnAddress = "sip:[::]:"/* don't limit to mSipHostAdr*/ + toString(mSipHostPort) + ";" + tTransportAttribute;
+            		tOwnAddress = "sip:[" + mSipHostAdr + "]:" + toString(mSipHostPort) + ";" + tTransportAttribute;
             	}else
             		LOG(LOG_ERROR, "Cannot use IPv6 address %s because IPv6 sockets are not supported", mSipHostAdr.c_str());
             }
@@ -319,6 +319,7 @@ void* SIP::Run(void*)
 
             // NAT traversal: use keepalive packets with interval of 10 seconds
             //                otherwise a NAT box won't maintain the state about the NAT forwarding
+            LOG(LOG_VERBOSE, "Probing conference address: %s", tOwnAddress.c_str());
             mSipContext->Nua = nua_create(mSipContext->Root, GlobalSipCallBack, this, NUTAG_URL(URL_STRING_MAKE(tOwnAddress.c_str())), TPTAG_KEEPALIVE(10000), NUTAG_OUTBOUND(SIP_OUTBOUND_OPTIONS), TPTAG_REUSE(true), TAG_NULL());
             if (mSipContext->Nua != NULL)
                 break;
