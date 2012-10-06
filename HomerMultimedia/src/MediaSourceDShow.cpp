@@ -733,7 +733,8 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
 							int tWidth = tVInfoHeader->bmiHeader.biWidth;
 							int tHeight = tVInfoHeader->bmiHeader.biHeight;
 
-							LOG(LOG_VERBOSE, "  ..supported media tyoe: Video, video resolution: %d*%d (sub type: %s)", tWidth, tHeight, GetSubTypeName(tMT->subtype).c_str());
+							if ((tHeight > 0) && (tWidth > 0))
+                                LOG(LOG_VERBOSE, "  ..supported media tyoe: Video, video resolution: %d*%d (sub type: %s)", tWidth, tHeight, GetSubTypeName(tMT->subtype).c_str());
 						}else
 						{
 							LOG(LOG_VERBOSE, "  ..additional media type: %s", GetMediaTypeName(tMT->majortype).c_str());
@@ -1274,8 +1275,11 @@ GrabResolutions MediaSourceDShow::GetSupportedVideoGrabResolutions()
 								}
 								if (!tAlreadyKnownResolution)
 								{
-									LOG(LOG_VERBOSE, "Adding resolution %d*%d to the supported ones", tWidth, tHeight);
-									mSupportedVideoFormats.push_back(tFormat);
+		                            if ((tHeight > 0) && (tWidth > 0))
+		                            {
+		                                LOG(LOG_VERBOSE, "Adding resolution %d*%d to the supported ones", tWidth, tHeight);
+		                                mSupportedVideoFormats.push_back(tFormat);
+		                            }
 								}
 							}
 						}
