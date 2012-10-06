@@ -160,6 +160,9 @@ bool SIP::SplitParticipantName(string pParticipant, string &pUser, string &pHost
     size_t tPos;
 
 //    LOGEX(SIP, LOG_VERBOSE, "Participant: %s", pParticipant.c_str());
+    pUser = "";
+    pHost = "";
+    pPort = "";
 
     // separate user part
     tPos = pParticipant.find('@');
@@ -180,7 +183,8 @@ bool SIP::SplitParticipantName(string pParticipant, string &pUser, string &pHost
         // separate host part
         pHost = pParticipant.substr(tPos + 1, tPos_HostEnd - tPos -1);
         // separate port part
-        pPort = pParticipant.substr(tPos_HostEnd + 2, pParticipant.size() - tPos_HostEnd - 1);
+        if (tPos_HostEnd < pParticipant.size() -1)
+        	pPort = pParticipant.substr(tPos_HostEnd + 2, pParticipant.size() - tPos_HostEnd - 1);
         if (pPort == "")
             pPort = "5060";
     }else
