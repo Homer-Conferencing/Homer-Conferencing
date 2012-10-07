@@ -187,6 +187,7 @@ void MainWindow::removeArguments(QStringList &pArguments, QString pFilter)
 
 void MainWindow::initializeConfiguration(QStringList &pArguments)
 {
+	LOG(LOG_INFO, "Homer Conferencing, version "RELEASE_VERSION_STRING", compiled on "__DATE__" at "__TIME__);
     #ifdef RELEASE_VERSION
         LOG(LOG_VERBOSE, "This is the RELEASE version");
     #endif
