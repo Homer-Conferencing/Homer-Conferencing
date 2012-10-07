@@ -84,7 +84,7 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define IPV6_LINK_LOCAL_PREFIX                          "FE80"
+#define IPV6_LINK_LOCAL_PREFIX                          "fe80"
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -555,20 +555,21 @@ bool MainWindow::GetNetworkInfo(LocalAddressesList &pLocalAddressesList, QString
     LOG(LOG_INFO, "Locally usable IPv4/6 addresses are:");
     for (int i = 0; i < tQtLocalAddresses.size(); i++)
     {
-        if ((tQtLocalAddresses[i].protocol() == QAbstractSocket::IPv4Protocol) || ((tQtLocalAddresses[i].protocol() == QAbstractSocket::IPv6Protocol) && (!tQtLocalAddresses[i].toString().startsWith(IPV6_LINK_LOCAL_PREFIX))))
+    	QString tAddress = tQtLocalAddresses[i].toString().toLower();
+        if ((tQtLocalAddresses[i].protocol() == QAbstractSocket::IPv4Protocol) || ((tQtLocalAddresses[i].protocol() == QAbstractSocket::IPv6Protocol) && (!tAddress.startsWith(IPV6_LINK_LOCAL_PREFIX))))
         {
-            LOG(LOG_INFO, "...%s", tQtLocalAddresses[i].toString().toStdString().c_str());
+            LOG(LOG_INFO, "...%s", tAddress.toStdString().c_str());
 
-            if (tQtLocalAddresses[i].toString() == tLastSipListenerAddress)
+            if (tAddress == tLastSipListenerAddress)
             {
                 pLocalSourceIp = tLastSipListenerAddress;
-                LOG(LOG_INFO, ">>> used as local meeting listener address");
+                LOG(LOG_INFO, ">>> last time used as conference address");
             }
 
             if (tQtLocalAddresses[i].protocol() == QAbstractSocket::IPv4Protocol)
-                pLocalAddressesList.push_front(tQtLocalAddresses[i].toString().toStdString());
+                pLocalAddressesList.push_front(tAddress.toStdString());
             else
-                pLocalAddressesList.push_back(tQtLocalAddresses[i].toString().toStdString());
+                pLocalAddressesList.push_back(tAddress.toStdString());
         }
     }
 
@@ -630,32 +631,33 @@ bool MainWindow::GetNetworkInfo(LocalAddressesList &pLocalAddressesList, QString
 
         for (int j = 0; j < tAddresses.size(); j++)
         {
+        	QString tAddress = tAddresses[j].ip().toString().toLower();
             switch (tAddresses[j].ip().protocol())
             {
                 case QAbstractSocket::IPv4Protocol:
                                         LOG(LOG_INFO, "  ..associated IPv4: %s NETMASK: %s BROADCAST: %s",
-                                                tAddresses[j].ip().toString().toStdString().c_str(),
+                                                tAddress.toStdString().c_str(),
                                                 tAddresses[j].netmask().toString().toStdString().c_str(),
                                                 tAddresses[j].broadcast().toString().toStdString().c_str());
                                         break;
                 case QAbstractSocket::IPv6Protocol:
                                         LOG(LOG_INFO, "  ..associated IPv6: %s NETMASK: %s",
-                                                tAddresses[j].ip().toString().toStdString().c_str(),
-                                                tAddresses[j].netmask().toString().toStdString().c_str());
+                                                tAddress.toStdString().c_str(),
+                                                tAddresses[j].netmask().toString().toLower().toStdString().c_str());
                                         break;
                 case QAbstractSocket::UnknownNetworkLayerProtocol:
                                         LOG(LOG_INFO, "  ..associated unknown address type: %s NETMASK: %s BROADCAST: %s",
-                                                tAddresses[j].ip().toString().toStdString().c_str(),
+                                                tAddress.toStdString().c_str(),
                                                 tAddresses[j].netmask().toString().toStdString().c_str(),
                                                 tAddresses[j].broadcast().toString().toStdString().c_str());
                                         break;
             }
             if ((pLocalSourceIp == "") && (tInterfaceUsable))
             {
-                if ((tAddresses[j].ip().protocol() == QAbstractSocket::IPv4Protocol) || ((tAddresses[j].ip().protocol() == QAbstractSocket::IPv6Protocol) && (!tAddresses[j].ip().toString().startsWith(IPV6_LINK_LOCAL_PREFIX))))
+                if ((tAddresses[j].ip().protocol() == QAbstractSocket::IPv4Protocol) || ((tAddresses[j].ip().protocol() == QAbstractSocket::IPv6Protocol) && (!tAddress.startsWith(IPV6_LINK_LOCAL_PREFIX))))
                 {
-                    LOG(LOG_INFO, ">>> used as local meeting listener interface");
-                    pLocalSourceIp = tAddresses[j].ip().toString();
+                    LOG(LOG_INFO, ">>> selected as conference address");
+                    pLocalSourceIp = tAddress;
                 }
             }
         }
@@ -663,7 +665,7 @@ bool MainWindow::GetNetworkInfo(LocalAddressesList &pLocalAddressesList, QString
 
     if ((pLocalSourceIp == "") && (pLocalLoopIp != ""))
     {
-        LOG(LOG_INFO, ">>> using loopback address %s as local meeting listener interface", pLocalLoopIp.toStdString().c_str());
+        LOG(LOG_INFO, ">>> using loopback address %s as conference address", pLocalLoopIp.toStdString().c_str());
         pLocalSourceIp = pLocalLoopIp;
     }
 

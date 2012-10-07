@@ -305,7 +305,11 @@ void ConfigurationDialog::LoadConfiguration()
     mCbLocalAdr->clear();
     for (tItAdr = mLocalAdresses.begin(); tItAdr != mLocalAdresses.end(); tItAdr++)
     {
-        mCbLocalAdr->addItem(QString((*tItAdr).c_str()));
+    	QString tAddress = QString((*tItAdr).c_str());
+    	if (IS_IPV6_ADDRESS(tAddress.toStdString()))
+    		mCbLocalAdr->addItem("IPv6:  " + tAddress);
+    	else
+    		mCbLocalAdr->addItem("IPv4:  " + tAddress);
         if ((*tItAdr) == CONF.GetSipListenerAddress().toStdString())
             mCbLocalAdr->setCurrentIndex(mCbLocalAdr->count() - 1);
     }
@@ -517,7 +521,12 @@ void ConfigurationDialog::SaveConfiguration()
 //        tHaveToRestart = true;
     if (mCbLocalAdr->currentText() != CONF.GetSipListenerAddress())
         tHaveToRestart = true;
-    CONF.SetSipListenerAddress(mCbLocalAdr->currentText());
+
+    QString tAddress = mCbLocalAdr->currentText();
+    // remove the "IPv6:  " part
+    tAddress = tAddress.right(tAddress.size() - 7);
+    CONF.SetSipListenerAddress(tAddress);
+
     if (mCbSipTransport->currentText() != QString(Socket::TransportType2String(CONF.GetSipListenerTransport()).c_str()))
         tHaveToRestart = true;
     CONF.SetSipListenerTransport(Socket::String2TransportType(mCbSipTransport->currentText().toStdString()));
