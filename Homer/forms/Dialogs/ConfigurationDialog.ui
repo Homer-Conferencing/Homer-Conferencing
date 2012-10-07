@@ -2826,7 +2826,7 @@ background-color: rgb(150, 150, 150);
             </font>
            </property>
            <property name="title">
-            <string> Software components </string>
+            <string> Software components activation </string>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_15">
             <property name="margin">
@@ -2849,7 +2849,7 @@ background-color: rgb(150, 150, 150);
                  </font>
                 </property>
                 <property name="text">
-                 <string>Conferencing functions </string>
+                 <string>Conferencing functions enabled: </string>
                 </property>
                </widget>
               </item>
@@ -5507,6 +5507,7 @@ background-color: rgb(150, 150, 150);
   </layout>
  </widget>
  <resources>
+  <include location="../../resources/Icons.qrc"/>
   <include location="../../resources/Icons.qrc"/>
   <include location="../../resources/Icons.qrc"/>
  </resources>
