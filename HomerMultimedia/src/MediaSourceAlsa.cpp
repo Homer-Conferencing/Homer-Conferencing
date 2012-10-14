@@ -165,7 +165,7 @@ bool MediaSourceAlsa::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
         return false;
 
     mSampleRate = pSampleRate;
-    mStereo = pStereo;
+    mStereoInput = pStereo;
 
     if ((mDesiredDevice == "") || (mDesiredDevice == "auto") || (mDesiredDevice == "automatic"))
         mDesiredDevice = "default";

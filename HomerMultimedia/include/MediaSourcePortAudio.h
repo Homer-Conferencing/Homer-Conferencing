@@ -84,7 +84,6 @@ private:
     /* capturing */
     void                *mStream;
     MediaFifo           *mCaptureFifo;
-    bool				mCaptureDuplicateMonoStream;
     /* portaudio init. */
     static Mutex        sPaInitMutex;
     static bool         sPaInitiated;

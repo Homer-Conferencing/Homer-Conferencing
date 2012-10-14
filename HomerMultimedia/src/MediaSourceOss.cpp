@@ -236,7 +236,7 @@ bool MediaSourceOss::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
 
     // set sample rate and bit rate to the resulting ones delivered by opened audio codec
     mSampleRate = mCodecContext->sample_rate;
-    mStereo = pStereo;
+    mStereoInput = pStereo;
 
     //######################################################
     //### search for correct decoder for the video stream

@@ -374,7 +374,8 @@ protected:
     AVFifoBuffer        *mRecorderSampleFifo;
     char                *mRecorderSamplesTempBuffer;
     int                 mSampleRate;
-    bool                mStereo;
+    bool                mStereoInput;
+    bool				mStereoInputEmulation;
     /* video */
     GrabResolutions     mSupportedVideoFormats;
     int                 mSourceResX;

@@ -99,7 +99,7 @@ MediaSource::MediaSource(string pName):
     mChunkNumber = 0;
     mChunkDropCounter = 0;
     mSampleRate = 44100;
-    mStereo = true;
+    mStereoInput = true;
     mSourceResX = 352;
     mSourceResY = 288;
     mTargetResX = 352;
@@ -979,7 +979,7 @@ bool MediaSource::Reset(enum MediaType pMediaType)
             tResult = OpenVideoGrabDevice(mSourceResX, mSourceResY, mFrameRate);
             break;
         case MEDIA_AUDIO:
-            tResult = OpenAudioGrabDevice(mSampleRate, mStereo);
+            tResult = OpenAudioGrabDevice(mSampleRate, mStereoInput);
             break;
         case MEDIA_UNKNOWN:
             //LOG(LOG_ERROR, "Media type unknown");
@@ -1666,7 +1666,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
                 mRecorderCodecContext->codec_id = tFormat->audio_codec;
                 mRecorderCodecContext->codec_type = AVMEDIA_TYPE_AUDIO;
 
-                mRecorderCodecContext->channels = mStereo?2:1; // stereo?
+                mRecorderCodecContext->channels = mStereoInput?2:1; // stereo?
                 mRecorderCodecContext->bit_rate = MediaSource::AudioQuality2BitRate(pSaveFileQuality); // streaming rate
                 mRecorderCodecContext->sample_rate = mSampleRate; // sampling rate: 22050, 44100
 

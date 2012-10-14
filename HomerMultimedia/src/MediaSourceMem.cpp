@@ -530,7 +530,7 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     if (!SelectStream())
     	return false;
 
-    mStereo = pStereo;
+    mStereoInput = pStereo;
 
     // finds and opens the correct decoder
     if (!OpenDecoder())

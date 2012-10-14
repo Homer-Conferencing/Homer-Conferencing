@@ -729,7 +729,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
         mCodecContext->bit_rate = MediaSource::AudioQuality2BitRate(mStreamQuality); // streaming rate
         mSampleRate = pSampleRate;
     }
-    mStereo = pStereo;
+    mStereoInput = pStereo;
     mCodecContext->sample_rate = mSampleRate; // sampling rate: 22050, 44100
     mCodecContext->qmin = 2; // 2
     mCodecContext->qmax = 9;/*2 +(100 - mAudioStreamQuality) / 4; // 31*/
@@ -1823,7 +1823,7 @@ bool MediaSourceMuxer::Reset(enum MediaType pMediaType)
             tResult = OpenVideoMuxer(mSourceResX, mSourceResY, mFrameRate);
             break;
         case MEDIA_AUDIO:
-            tResult = OpenAudioMuxer(mSampleRate, mStereo);
+            tResult = OpenAudioMuxer(mSampleRate, mStereoInput);
             break;
         case MEDIA_UNKNOWN:
             LOG(LOG_ERROR, "Media type unknown");
@@ -2083,12 +2083,12 @@ bool MediaSourceMuxer::SelectDevice(std::string pDesiredDevice, enum MediaType p
                             }
                             break;
                         case MEDIA_AUDIO:
-                            if (!OpenAudioGrabDevice(mSampleRate, mStereo))
+                            if (!OpenAudioGrabDevice(mSampleRate, mStereoInput))
                             {
                                 LOG(LOG_WARN, "Failed to open new audio media source, selecting old one");
                                 mMediaSource = tOldMediaSource;
                                 pIsNewDevice = false;
-                                while((!(tResult = OpenAudioGrabDevice(mSampleRate, mStereo))) && (tIt != mMediaSources.end()))
+                                while((!(tResult = OpenAudioGrabDevice(mSampleRate, mStereoInput))) && (tIt != mMediaSources.end()))
                                 {
                                     LOG(LOG_VERBOSE, "Couldn't open basic audio device, will probe next possible basic device");
                                     tIt++;

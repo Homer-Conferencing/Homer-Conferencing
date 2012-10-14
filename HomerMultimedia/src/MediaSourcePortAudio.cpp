@@ -241,7 +241,7 @@ int MediaSourcePortAudio::RecordedAudioHandler(const void *pInputBuffer, void *p
     #endif
 
 	if ((tMediaSourcePortAudio->mMediaSourceOpened) && (pInputSize > 0))
-		tMediaSourcePortAudio->mCaptureFifo->WriteFifo((char*)pInputBuffer, (int)pInputSize * 2 /* 16 bit LittleEndian */ * (tMediaSourcePortAudio->mStereo ? 2 : 1));
+		tMediaSourcePortAudio->mCaptureFifo->WriteFifo((char*)pInputBuffer, (int)pInputSize * 2 /* 16 bit LittleEndian */ * (tMediaSourcePortAudio->mStereoInput ? 2 : 1));
 
     return paContinue;
 }
@@ -281,7 +281,7 @@ bool MediaSourcePortAudio::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
         return false;
 
     mSampleRate = pSampleRate;
-    mStereo = pStereo;
+    mStereoInput = pStereo;
 
     if ((mDesiredDevice == "") || (mDesiredDevice == "auto") || (mDesiredDevice == "automatic"))
     {
@@ -309,7 +309,7 @@ bool MediaSourcePortAudio::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
 
     LOG(LOG_VERBOSE, "Going to open stream..");
     LOG(LOG_VERBOSE, "..selected sample rate: %d", mSampleRate);
-    mCaptureDuplicateMonoStream = false;
+    mStereoInputEmulation = false;
     PortAudioLockStreamInterface();
     if((tErr = Pa_OpenStream(&mStream, &tInputParameters, NULL /* output parameters */, mSampleRate, MEDIA_SOURCE_SAMPLES_PER_BUFFER, paClipOff | paDitherOff, RecordedAudioHandler, this)) != paNoError)
     {
@@ -325,8 +325,8 @@ bool MediaSourcePortAudio::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
         		return false;
     	    }else
     	    {
-    	    	mCaptureDuplicateMonoStream = true;
-    	    	mStereo = false;
+    	    	mStereoInputEmulation = true;
+    	    	mStereoInput = false;
     	    }
     	}else
     	{
@@ -459,7 +459,7 @@ int MediaSourcePortAudio::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pD
 
     mCaptureFifo->ReadFifo((char*)pChunkBuffer, pChunkSize);
 
-    if (mCaptureDuplicateMonoStream)
+    if (mStereoInputEmulation)
     {
     	// assume buffer of 16 bit signed integer samples
 		short int *tBuffer = (short int*)pChunkBuffer;

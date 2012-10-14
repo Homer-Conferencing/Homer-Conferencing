@@ -286,7 +286,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     }
 
     mCurrentInputChannel = mDesiredInputChannel;
-    mStereo = pStereo;
+    mStereoInput = pStereo;
 
     if (!OpenDecoder())
     	return false;
