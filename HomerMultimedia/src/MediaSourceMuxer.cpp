@@ -340,7 +340,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     mFormatContext = AV_NEW_FORMAT_CONTEXT();
 
     // find format
-    LOG(LOG_VERBOSE, "Guessing video format for codec \"%s\"", GetFormatName(mStreamCodecId).c_str());
+    LOG(LOG_VERBOSE, "Guessing VIDEO format for codec \"%s\"", GetFormatName(mStreamCodecId).c_str());
     tFormat = AV_GUESS_FORMAT(GetFormatName(mStreamCodecId).c_str(), NULL, NULL);
     if (tFormat == NULL)
     {
@@ -351,6 +351,8 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
 
         return false;
     }
+
+    LOG(LOG_VERBOSE, "Using format \"%s\" for VIDEO codec %d", tFormat->name, mStreamCodecId);
 
     // explicit codec selection for H263, otherwise ffmpeg would use the last H263-selection
     if (mStreamCodecId == CODEC_ID_H263P)
@@ -686,7 +688,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     mFormatContext = AV_NEW_FORMAT_CONTEXT();
 
     // find format
-    LOG(LOG_VERBOSE, "Guessing audio format for codec \"%s\"", GetFormatName(mStreamCodecId).c_str());
+    LOG(LOG_VERBOSE, "Guessing AUDIO format for codec \"%s\"", GetFormatName(mStreamCodecId).c_str());
     tFormat = AV_GUESS_FORMAT(GetFormatName(mStreamCodecId).c_str(), NULL, NULL);
     if (tFormat == NULL)
     {
@@ -697,6 +699,8 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
 
         return false;
     }
+
+    LOG(LOG_VERBOSE, "Using format \"%s\" for AUDIO codec %d", tFormat->name, mStreamCodecId);
 
     // set correct output format
     mFormatContext->oformat = tFormat;
