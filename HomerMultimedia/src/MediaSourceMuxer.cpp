@@ -646,7 +646,7 @@ bool MediaSourceMuxer::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 
     // afterwards open the muxer, independent from the open state of the local video
     if (mMediaSource != NULL)
-    	tResult = tResult && OpenVideoMuxer(pResX, pResY, pFps);
+    	OpenVideoMuxer(pResX, pResY, pFps);
     else
     	tResult = OpenVideoMuxer(pResX, pResY, pFps);
 
@@ -843,7 +843,7 @@ bool MediaSourceMuxer::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
 
     // afterwards open the muxer, independent from the open state of the local video
     if (mMediaSource != NULL)
-    	tResult = tResult && OpenAudioMuxer(pSampleRate, pStereo);
+    	OpenAudioMuxer(pSampleRate, pStereo);
     else
     	tResult = OpenAudioMuxer(pSampleRate, pStereo);
 
