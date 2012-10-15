@@ -312,7 +312,6 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     else
         mNumberOfFrames = 0;
 
-    mResampleBuffer = (char*)malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
     mCurrentFrameIndex = 0;
     mEOFReached = false;
     mRecalibrateRealTimeGrabbingAfterSeeking = true;
@@ -341,9 +340,6 @@ bool MediaSourceFile::CloseGrabDevice()
         CloseAll();
 
         mInputChannels.clear();
-
-        if (mMediaType == MEDIA_AUDIO)
-            free(mResampleBuffer);
 
         tResult = true;
     }else
@@ -1186,12 +1182,12 @@ void* MediaSourceFile::Run(void* pArgs)
 
                             int tBytesDecoded;
 
-                            if ((mCodecContext->sample_rate == 44100) && (mCodecContext->channels == 2))
+                            if (mAudioResampleContext == NULL)
                             {
                                 tBytesDecoded = HM_avcodec_decode_audio(mCodecContext, (int16_t *)tChunkBuffer, &tOutputBufferSize, tPacket);
                                 tCurrentChunkSize = tOutputBufferSize;
                             }else
-                            {// have to insert an intermediate step, which resamples the audio chunk to 44.1 kHz
+                            {// have to insert an intermediate step, which resamples the audio chunk
                                 tBytesDecoded = HM_avcodec_decode_audio(mCodecContext, (int16_t *)mResampleBuffer, &tOutputBufferSize, tPacket);
 
                                 if(tOutputBufferSize > 0)
@@ -1395,6 +1391,7 @@ void* MediaSourceFile::Run(void* pArgs)
                     av_free(tRGBFrame);
 
                     sws_freeContext(mScalerContext);
+                    mScalerContext = NULL;
                 }
         
                 // Free the YUV frame

@@ -376,6 +376,7 @@ protected:
     double              mNumberOfFrames;
     /* audio */
     ReSampleContext     *mAudioResampleContext;
+    char                *mResampleBuffer;
     AVFifoBuffer        *mRecorderSampleFifo;
     char                *mRecorderSamplesTempBuffer;
     int                 mOutputAudioSampleRate;

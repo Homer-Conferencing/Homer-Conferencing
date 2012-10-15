@@ -85,6 +85,7 @@ MediaSource::MediaSource(string pName):
     mRecording = false;
     SetRtpActivation(true);
     mCodecContext = NULL;
+    mResampleBuffer = NULL;
     mRecorderCodecContext = NULL;
     mRecorderFormatContext = NULL;
     mRecorderScalerContext = NULL;
@@ -2965,6 +2966,7 @@ bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
 
 				LOG_REMOTE(LOG_WARN, pSource, pLine, "Audio samples with rate of %d Hz and %d channels have to be resampled to %d Hz and %d channels", mInputAudioSampleRate, mInputAudioChannels, mOutputAudioSampleRate, mOutputAudioChannels);
 				mAudioResampleContext = av_audio_resample_init(mOutputAudioChannels, mInputAudioChannels, mOutputAudioSampleRate, mInputAudioSampleRate, AV_SAMPLE_FMT_S16, mCodecContext->sample_fmt, 16, 10, 0, 0.8);
+			    mResampleBuffer = (char*)malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
 			}
 			break;
 		default:
@@ -2994,6 +2996,11 @@ bool MediaSource::FfmpegCloseAll(string pSource, int pLine)
 				{
 					audio_resample_close(mAudioResampleContext);
 					mAudioResampleContext = NULL;
+				}
+				if (mResampleBuffer != NULL)
+				{
+		            free(mResampleBuffer);
+		            mResampleBuffer = NULL;
 				}
 				break;
 			case MEDIA_VIDEO:

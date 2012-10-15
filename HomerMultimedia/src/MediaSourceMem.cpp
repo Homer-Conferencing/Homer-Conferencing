@@ -532,6 +532,9 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     if (!OpenDecoder())
     	return false;
 
+	if (!OpenFormatConverter())
+		return false;
+
     MarkOpenGrabDeviceSuccessful();
 
     return true;
@@ -568,7 +571,7 @@ bool MediaSourceMem::CloseGrabDevice()
 
 int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk)
 {
-    AVPacket            tPacket;
+    AVPacket            tPacketStruc, *tPacket = &tPacketStruc;
     int                 tFrameFinished = 0;
     int                 tBytesDecoded = 0;
 
@@ -614,7 +617,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
     }
 
     // read next frame from video source - blocking
-    if (av_read_frame(mFormatContext, &tPacket) != 0)
+    if (av_read_frame(mFormatContext, tPacket) != 0)
     {
         // unlock grabbing
         mGrabMutex.unlock();
@@ -629,18 +632,18 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
     }
 
     #ifdef MSMEM_DEBUG_PACKETS
-        LOG(LOG_VERBOSE, "New read chunk %5d with size: %d and stream index: %d", mChunkNumber + 1, tPacket.size, tPacket.stream_index);
+        LOG(LOG_VERBOSE, "New read chunk %5d with size: %d and stream index: %d", mChunkNumber + 1, tPacket->size, tPacket->stream_index);
     #endif
 
-    if ((tPacket.data != NULL) && (tPacket.size > 0))
+    if ((tPacket->data != NULL) && (tPacket->size > 0))
     {
         #ifdef MSMEM_DEBUG_PACKETS
             LOG(LOG_VERBOSE, "New packet..");
-            LOG(LOG_VERBOSE, "      ..duration: %d", tPacket.duration);
-            LOG(LOG_VERBOSE, "      ..pts: %ld", tPacket.pts);
-            LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket.dts);
-            LOG(LOG_VERBOSE, "      ..size: %d", tPacket.size);
-            LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket.pos);
+            LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
+            LOG(LOG_VERBOSE, "      ..pts: %ld", tPacket->pts);
+            LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket->dts);
+            LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
+            LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket->pos);
         #endif
 
         switch(mMediaType)
@@ -655,7 +658,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                         // ############################
                         // ### DECODE FRAME
                         // ############################
-                        tBytesDecoded = HM_avcodec_decode_video(mCodecContext, mSourceFrame, &tFrameFinished, &tPacket);
+                        tBytesDecoded = HM_avcodec_decode_video(mCodecContext, mSourceFrame, &tFrameFinished, tPacket);
 
                         // emulate set FPS
                         mSourceFrame->pts = FpsEmulationGetPts();
@@ -776,7 +779,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                         if (tBytesDecoded != 0)
                         {
                             // acknowledge failed"
-                            if (tPacket.size != tBytesDecoded)
+                            if (tPacket->size != tBytesDecoded)
                                 MarkGrabChunkFailed("couldn't decode video frame-" + toString(strerror(AVUNERROR(tBytesDecoded))) + "(" + toString(AVUNERROR(tBytesDecoded)) + ")");
                             else
                                 MarkGrabChunkFailed("couldn't decode video frame");
@@ -788,7 +791,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                         }
 
                         // free packet buffer
-                        av_free_packet(&tPacket);
+                        av_free_packet(tPacket);
 
                         pChunkSize = 0;
 
@@ -802,8 +805,41 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                         //printf("DecodeFrame..\n");
                         // Decode the next chunk of data
                         int tOutputBufferSize = MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE;
-                        int tBytesDecoded = HM_avcodec_decode_audio(mCodecContext, (int16_t *)pChunkBuffer, &tOutputBufferSize, &tPacket);
-                        pChunkSize = tOutputBufferSize;
+
+                        int tBytesDecoded;
+
+                        if (mAudioResampleContext == NULL)
+                        {
+                            tBytesDecoded = HM_avcodec_decode_audio(mCodecContext, (int16_t *)pChunkBuffer, &tOutputBufferSize, tPacket);
+                            pChunkSize = tOutputBufferSize;
+                        }else
+                        {// have to insert an intermediate step, which resamples the audio chunk
+                            tBytesDecoded = HM_avcodec_decode_audio(mCodecContext, (int16_t *)mResampleBuffer, &tOutputBufferSize, tPacket);
+
+                            if(tOutputBufferSize > 0)
+                            {
+                                // ############################
+                                // ### RESAMPLE FRAME (CONVERT)
+                                // ############################
+                                //HINT: we always assume 16 bit samples
+                                int tResampledBytes = (2 /*16 signed char*/ * mOutputAudioChannels) * audio_resample(mAudioResampleContext, (short*)pChunkBuffer, (short*)mResampleBuffer, tOutputBufferSize / (2 * mInputAudioChannels));
+                                #ifdef MSF_DEBUG_PACKETS
+                                    LOG(LOG_VERBOSE, "Have resampled %d bytes of sample rate %dHz and %d channels to %d bytes of sample rate 44100Hz and 2 channels", tOutputBufferSize, mCodecContext->sample_rate, mCodecContext->channels, tResampledBytes);
+                                #endif
+                                if(tResampledBytes > 0)
+                                {
+                                	pChunkSize = tResampledBytes;
+                                }else
+                                {
+                                    LOG(LOG_ERROR, "Amount of resampled bytes (%d) is invalid", tResampledBytes);
+                                    pChunkSize = 0;
+                                }
+                            }else
+                            {
+                                LOG(LOG_ERROR, "Output buffer size %d from audio decoder is invalid", tOutputBufferSize);
+                                pChunkSize = 0;
+                            }
+                        }
 
                         // re-encode the frame and write it to file
                         if (mRecording)
@@ -814,7 +850,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                         if ((tBytesDecoded < 0) || (tOutputBufferSize == 0))
                         {
                             // free packet buffer
-                            av_free_packet(&tPacket);
+                            av_free_packet(tPacket);
 
                             // unlock grabbing
                             mGrabMutex.unlock();
@@ -838,7 +874,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
         LOG(LOG_ERROR, "Empty packet received");
 
     // free packet buffer
-    av_free_packet(&tPacket);
+    av_free_packet(tPacket);
 
     // unlock grabbing
     mGrabMutex.unlock();
