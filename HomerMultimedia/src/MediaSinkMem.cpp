@@ -96,7 +96,7 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
         if (!pIsKeyFrame)
         {
             #ifdef MSIM_DEBUG_PACKETS
-                LOG(LOG_VERBOSE, "Still waiting for first key frame")
+                LOG(LOG_VERBOSE, "Still waiting for first key frame");
             #endif
             return;
         }else
@@ -283,7 +283,7 @@ void MediaSinkMem::StopProcessing()
 void MediaSinkMem::WriteFragment(char* pData, unsigned int pSize)
 {
     #ifdef MSIM_DEBUG_PACKETS
-        LOG(LOG_VERBOSE, "Storing packet number %6ld at %p with size %4u(%3u header) in memory \"%s\"", ++mPacketNumber, pData, pSize, RTP_HEADER_SIZE, mMemoryId.c_str());
+        LOG(LOG_VERBOSE, "Storing packet number %6ld at %p with size %4u(%3u header) in memory \"%s\"", ++mPacketNumber, pData, pSize, RTP_HEADER_SIZE, mMediaId.c_str());
 
         // if RTP activated then reparse the current packet and print the content
         if (mRtpActivated)
@@ -292,7 +292,7 @@ void MediaSinkMem::WriteFragment(char* pData, unsigned int pSize)
             unsigned int tPacketSize = pSize;
             bool tLastFragment;
             bool tFragmentIsSenderReport;
-            RtpParse(tPacketData, tPacketSize, tLastFragment, tFragmentIsSenderReport, mCurrentStream->codec->codec_id, true);
+            RtpParse(tPacketData, tPacketSize, tLastFragment, tFragmentIsSenderReport, mIncomingAVStream->codec->codec_id, true);
         }
     #endif
     AnnouncePacket(pSize);

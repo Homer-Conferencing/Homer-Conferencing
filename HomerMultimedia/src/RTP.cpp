@@ -1355,15 +1355,24 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                             mIntermediateFragment = false;
                             break;
             case CODEC_ID_ADPCM_G722:
-            				//TODO
+							#ifdef RTP_DEBUG_PACKET_DECODER
+								LOG(LOG_VERBOSE, "#################### G.722 header #######################");
+								LOG(LOG_VERBOSE, "No additional information");
+							#endif
+							// no fragmentation because our encoder sends raw data
+							mIntermediateFragment = false;
             				break;
             case CODEC_ID_AMR_NB:
-                            LOG(LOG_VERBOSE, "#################### AMR-NB header #######################");
-                            LOG(LOG_VERBOSE, "TODO: AMR header parsing");//TODO: implement
+							#ifdef RTP_DEBUG_PACKET_DECODER
+                            	LOG(LOG_VERBOSE, "#################### AMR-NB header #######################");
+                            	LOG(LOG_VERBOSE, "TODO: AMR header parsing");//TODO: implement
+							#endif
                             break;
             case CODEC_ID_AAC:
-                            LOG(LOG_VERBOSE, "#################### AAC header #######################");
-                            LOG(LOG_VERBOSE, "TODO: AAC header parsing");//TODO: implement
+							#ifdef RTP_DEBUG_PACKET_DECODER
+                            	LOG(LOG_VERBOSE, "#################### AAC header #######################");
+                            	LOG(LOG_VERBOSE, "TODO: AAC header parsing");//TODO: implement
+							#endif
                             break;
             case CODEC_ID_MP3:
                             // convert from network to host byte order
