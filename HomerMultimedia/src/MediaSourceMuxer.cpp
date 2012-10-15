@@ -724,12 +724,13 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     switch(mCodecContext->codec_id)
     {
 		case CODEC_ID_AMR_NB:
-			mCodecContext->channels = 1; // force mono for AMR-NB, TODO: what about input buffer - maybe this is captured in stereo mode?
+			mCodecContext->channels = 1;
 			mCodecContext->bit_rate = 7950; // force to 7.95kHz , limit is given by libopencore_amrnb
 			mOutputAudioSampleRate = 8000; //force 8 kHz for AMR-NB
 			break;
 		case CODEC_ID_ADPCM_G722:
 			mCodecContext->channels = 1;
+			mOutputAudioSampleRate = 8000;
 			break;
 		default:
 	        mCodecContext->channels = mOutputAudioChannels;
@@ -1579,7 +1580,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
             // is FIFO near overload situation?
             if (mEncoderFifo->GetUsage() >= MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT - 4)
             {
-                LOG(LOG_WARN, "Encoder FIFO is near overload situation, deleting all stored frames");
+                LOG(LOG_WARN, "%s encoder FIFO with %d entries is near overload situation, deleting all stored frames", GetMediaTypeStr().c_str(), mEncoderFifo->GetSize());
 
                 // delete all stored frames: it is a better for the encoding to have a gap instead of frames which have high picture differences
                 mEncoderFifo->ClearFifo();
