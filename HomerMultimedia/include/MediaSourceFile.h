@@ -122,7 +122,6 @@ private:
     bool                mEOFReached;
     double              mCurrentFrameIndex; // we have to determine this manually during grabbing because cur_dts and everything else in AVStream is buggy for some video/audio files
     char                *mResampleBuffer;
-    ReSampleContext     *mResampleContext;
     std::vector<string> mInputChannels;
     /* real-time playback */
     bool                mGrabInRealTime;

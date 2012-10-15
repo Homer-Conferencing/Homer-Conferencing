@@ -286,6 +286,8 @@ public:
 
     /* sample rate */
     virtual int GetSampleRate();
+    /* stereo input */
+    virtual bool StereoInput();
 
     /* seek interface */
     virtual bool SupportsSeeking();
@@ -371,6 +373,7 @@ protected:
     double              mStartPtsUSecs /* only used in MediasourceNet and MediaSourceFile */, mSourceStartPts; // for synchronized playback we calculate the position within a media stream and write the value into PTS entry of an encoded packet
     double              mNumberOfFrames;
     /* audio */
+    ReSampleContext     *mAudioResampleContext;
     AVFifoBuffer        *mRecorderSampleFifo;
     char                *mRecorderSamplesTempBuffer;
     int                 mSampleRate;

@@ -134,6 +134,8 @@ public:
 
     /* sample rate */
     virtual int GetSampleRate();
+    /* stereo input */
+    virtual bool StereoInput();
 
     /* seek interface */
     virtual bool SupportsSeeking();

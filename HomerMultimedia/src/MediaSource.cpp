@@ -751,6 +751,11 @@ int MediaSource::GetSampleRate()
     return mSampleRate;
 }
 
+bool MediaSource::StereoInput()
+{
+	return mStereoInput;
+}
+
 AVFrame *MediaSource::AllocFrame()
 {
 	return avcodec_alloc_frame();

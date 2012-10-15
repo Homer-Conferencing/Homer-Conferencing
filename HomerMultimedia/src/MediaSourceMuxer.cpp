@@ -2233,6 +2233,14 @@ int MediaSourceMuxer::GetSampleRate()
         return 0;
 }
 
+bool MediaSourceMuxer::StereoInput()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->StereoInput();
+    else
+        return 0;
+}
+
 void* MediaSourceMuxer::AllocChunkBuffer(int& pChunkBufferSize, enum MediaType pMediaType)
 {
     void *tResult = NULL;
