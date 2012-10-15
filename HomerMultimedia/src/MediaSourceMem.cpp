@@ -473,9 +473,6 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     // overwrite FPS by the timebase of the selected codec
     mFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->codec->time_base.den / mFormatContext->streams[mMediaStreamIndex]->codec->time_base.num;
 
-    // seek to the current position and drop data received during codec auto detect phase
-    av_seek_frame(mFormatContext, mMediaStreamIndex, mFormatContext->streams[mMediaStreamIndex]->cur_dts, AVSEEK_FLAG_ANY);
-
     // Allocate video frame for source and RGB format
     if ((mSourceFrame = avcodec_alloc_frame()) == NULL)
         return false;
@@ -534,9 +531,6 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     // finds and opens the correct decoder
     if (!OpenDecoder())
     	return false;
-
-    // seek to the current position and drop data received during codec auto detect phase
-    av_seek_frame(mFormatContext, mMediaStreamIndex, mFormatContext->streams[mMediaStreamIndex]->cur_dts, AVSEEK_FLAG_ANY);
 
     MarkOpenGrabDeviceSuccessful();
 
