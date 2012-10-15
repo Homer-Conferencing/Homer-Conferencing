@@ -423,7 +423,7 @@ void MessageWidget::ShowNewState()
 void MessageWidget::UpdateParticipantName(QString pParticipantName)
 {
     LOG(LOG_VERBOSE, "New participant name is %s", pParticipantName.toStdString().c_str());
-    mLbParticipant->setText("  \"" + pParticipantName + "\"  ");
+    mLbParticipant->setText("   " + pParticipantName + "   ");
     ShowNewState();
 }
 
