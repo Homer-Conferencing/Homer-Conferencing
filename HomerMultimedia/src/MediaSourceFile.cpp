@@ -80,7 +80,6 @@ MediaSourceFile::MediaSourceFile(string pSourceFile, bool pGrabInRealTime):
     mSourceType = SOURCE_FILE;
     mDesiredDevice = pSourceFile;
     mGrabInRealTime = pGrabInRealTime;
-    mResampleContext = NULL;
     mDecoderFifo = NULL;
     mDecoderMetaDataFifo = NULL;
     mNumberOfFrames = 0;
@@ -188,11 +187,13 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     return true;
 }
 
-bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
+bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 {
 	int tRes = 0;
 
 	mMediaType = MEDIA_AUDIO;
+    mOutputAudioChannels = pChannels;
+    mOutputAudioSampleRate = pSampleRate;
 
     LOG(LOG_VERBOSE, "Try to open audio stream from file \"%s\"..", mDesiredDevice.c_str());
 
@@ -286,11 +287,13 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     }
 
     mCurrentInputChannel = mDesiredInputChannel;
-    mStereoInput = pStereo;
 
     if (!OpenDecoder())
     	return false;
 
+	if (!OpenFormatConverter())
+		return false;
+		
     // fix frame size of 0 for some audio codecs and use default caudio capture frame size instead to allow 1:1 transformation
     // old PCM implementation delivered often a frame size of 1
     // some audio codecs (excl. MP3) deliver a frame size of 0
@@ -301,13 +304,6 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     if((tRes = avformat_seek_file(mFormatContext, mMediaStreamIndex, 0, 0, 0, AVSEEK_FLAG_ANY)) < 0)
     {
         LOG(LOG_WARN, "Couldn't seek to the start of audio stream because \"%s\".", strerror(AVUNERROR(tRes)));
-    }
-
-    // create resample context
-    if ((mCodecContext->sample_rate != 44100) || (mCodecContext->channels != 2))
-    {
-        LOG(LOG_WARN, "Audio samples with rate of %d Hz have to be resampled to 44100 Hz", mCodecContext->sample_rate);
-        mResampleContext = av_audio_resample_init(2, mCodecContext->channels, 44100, mCodecContext->sample_rate, AV_SAMPLE_FMT_S16, mCodecContext->sample_fmt, 16, 10, 0, 0.8);
     }
 
     //set duration
@@ -339,32 +335,15 @@ bool MediaSourceFile::CloseGrabDevice()
 
     if (mMediaSourceOpened)
     {
-        StopRecording();
-
-        mMediaSourceOpened = false;
-
         // make sure we can free the memory structures
         StopDecoder();
 
-        // free resample context
-        if ((mMediaType == MEDIA_AUDIO) && (mResampleContext != NULL))
-        {
-            audio_resample_close(mResampleContext);
-            mResampleContext = NULL;
-        }
-
-        // Close the codec
-        avcodec_close(mCodecContext);
-
-        // Close the file
-        HM_close_input(mFormatContext);
+        CloseAll();
 
         mInputChannels.clear();
 
         if (mMediaType == MEDIA_AUDIO)
             free(mResampleBuffer);
-
-        LOG(LOG_INFO, "...%s file closed", GetMediaTypeStr().c_str());
 
         tResult = true;
     }else
@@ -1220,8 +1199,8 @@ void* MediaSourceFile::Run(void* pArgs)
                                     // ############################
                                     // ### RESAMPLE FRAME (CONVERT)
                                     // ############################
-                                    //HINT: we always assume 16 bit samples and a stereo signal, so we have to divide/multiply by 4
-                                    int tResampledBytes = (2 /*16 signed char*/ * 2 /*channels*/) * audio_resample(mResampleContext, (short*)tChunkBuffer, (short*)mResampleBuffer, tOutputBufferSize / (2 * mCodecContext->channels));
+                                    //HINT: we always assume 16 bit samples
+                                    int tResampledBytes = (2 /*16 signed char*/ * mOutputAudioChannels) * audio_resample(mAudioResampleContext, (short*)tChunkBuffer, (short*)mResampleBuffer, tOutputBufferSize / (2 * mInputAudioChannels));
                                     #ifdef MSF_DEBUG_PACKETS
                                         LOG(LOG_VERBOSE, "Have resampled %d bytes of sample rate %dHz and %d channels to %d bytes of sample rate 44100Hz and 2 channels", tOutputBufferSize, mCodecContext->sample_rate, mCodecContext->channels, tResampledBytes);
                                     #endif
@@ -1732,7 +1711,7 @@ float MediaSourceFile::GetSeekPos()
         return 0;
 }
 
-bool MediaSourceFile::SupportsMultipleInputChannels()
+bool MediaSourceFile::SupportsMultipleInputStreams()
 {
     if ((mMediaType == MEDIA_AUDIO) && (mInputChannels.size() > 1))
         return true;
@@ -1740,7 +1719,7 @@ bool MediaSourceFile::SupportsMultipleInputChannels()
         return false;
 }
 
-bool MediaSourceFile::SelectInputChannel(int pIndex)
+bool MediaSourceFile::SelectInputStream(int pIndex)
 {
     bool tResult = false;
 
@@ -1761,7 +1740,7 @@ bool MediaSourceFile::SelectInputChannel(int pIndex)
     return tResult;
 }
 
-vector<string> MediaSourceFile::GetInputChannels()
+vector<string> MediaSourceFile::GetInputStreams()
 {
     vector<string> tResult;
 
@@ -1779,7 +1758,7 @@ vector<string> MediaSourceFile::GetInputChannels()
     return tResult;
 }
 
-string MediaSourceFile::CurrentInputChannel()
+string MediaSourceFile::CurrentInputStream()
 {
     AVCodec *tCodec;
     string tResult = "";

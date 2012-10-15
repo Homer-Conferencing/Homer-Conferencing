@@ -75,6 +75,16 @@ public:
     virtual int GetMuxingBufferCounter();
     virtual int GetMuxingBufferSize();
 
+    /* audio */
+    virtual int GetOutputSampleRate();
+    virtual bool GetOutputChannels();
+    virtual int GetInputSampleRate();
+    virtual bool GetInputChannels();
+
+    /* video */
+    virtual float GetFrameRate();
+    virtual void SetFrameRate(float pFps);
+
     /* relaying */
     virtual bool SupportsRelaying();
 
@@ -128,15 +138,6 @@ public:
     virtual bool RegisterMediaSource(MediaSource *pMediaSource);
     virtual bool UnregisterMediaSource(MediaSource *pMediaSource, bool pAutoDelete = true);
 
-    /* fps */
-    virtual float GetFrameRate();
-    virtual void SetFrameRate(float pFps);
-
-    /* sample rate */
-    virtual int GetSampleRate();
-    /* stereo input */
-    virtual bool StereoInput();
-
     /* seek interface */
     virtual bool SupportsSeeking();
     virtual float GetSeekEnd(); // get maximum seek time in seconds
@@ -145,17 +146,17 @@ public:
     virtual float GetSeekPos(); // in seconds
 
     /* multi input interface */
-    virtual bool SupportsMultipleInputChannels();
-    virtual bool SelectInputChannel(int pIndex);
-    virtual std::string CurrentInputChannel();
-    virtual std::vector<std::string> GetInputChannels();
+    virtual bool SupportsMultipleInputStreams();
+    virtual bool SelectInputStream(int pIndex);
+    virtual std::string CurrentInputStream();
+    virtual std::vector<std::string> GetInputStreams();
 
     /* live OSD marking */
     virtual bool SupportsMarking();
 
 public:
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97);
-    virtual bool OpenAudioGrabDevice(int pSampleRate = 44100, bool pStereo = true);
+    virtual bool OpenAudioGrabDevice(int pSampleRate = 44100, int pOutputChannels = 2);
     virtual bool CloseGrabDevice();
     virtual int GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk = false);
     virtual void* AllocChunkBuffer(int& pChunkBufferSize, enum MediaType pMediaType = MEDIA_UNKNOWN);
@@ -163,7 +164,7 @@ public:
 
 private:
     bool OpenVideoMuxer(int pResX = 352, int pResY = 288, float pFps = 29.97);
-    bool OpenAudioMuxer(int pSampleRate = 44100, bool pStereo = true);
+    bool OpenAudioMuxer(int pSampleRate = 44100, int pChannels = 2);
     bool CloseMuxer();
 
     /* FPS limitation */
@@ -199,6 +200,7 @@ private:
     int                 mCurrentStreamingResY, mRequestedStreamingResY;
     bool                mVideoHFlip, mVideoVFlip;
     /* audio */
+    ReSampleContext     *mAudioOutputResampleContext;
     AVFifoBuffer        *mSampleFifo;
     char                *mSamplesTempBuffer;
 

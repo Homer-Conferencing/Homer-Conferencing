@@ -45,7 +45,7 @@ MediaSourceAlsa::MediaSourceAlsa(string pDesiredDevice):
 {
     mSourceType = SOURCE_DEVICE;
     ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
-    mSampleBufferSize = MEDIA_SOURCE_SAMPLES_PER_BUFFER * 2 /* SND_PCM_FORMAT_S16_LE */ * 2 /* stereo */;
+    mSampleBufferSize = MEDIA_SOURCE_SAMPLES_PER_BUFFER * 2 /* SND_PCM_FORMAT_S16_LE */ * mOutputAudioChannels;
     mCaptureHandle = NULL;
 
     bool tNewDeviceSelected = false;
@@ -150,12 +150,13 @@ bool MediaSourceAlsa::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     return false;
 }
 
-bool MediaSourceAlsa::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
+bool MediaSourceAlsa::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 {
-    unsigned int tChannels = pStereo?2:1;
     int tErr;
 
     mMediaType = MEDIA_AUDIO;
+    mOutputAudioChannels = pChannels;
+    mOutputAudioSampleRate = pSampleRate;
 
     LOG(LOG_VERBOSE, "Trying to open the audio source");
 
@@ -163,9 +164,6 @@ bool MediaSourceAlsa::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
 
     if (mMediaSourceOpened)
         return false;
-
-    mSampleRate = pSampleRate;
-    mStereoInput = pStereo;
 
     if ((mDesiredDevice == "") || (mDesiredDevice == "auto") || (mDesiredDevice == "automatic"))
         mDesiredDevice = "default";
@@ -192,7 +190,7 @@ bool MediaSourceAlsa::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
         soft_resample   0 = disallow alsa-lib resample stream, 1 = allow resampling
         latency         required overall latency in us
     */
-    if ((tErr = snd_pcm_set_params(mCaptureHandle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, tChannels, (uint)pSampleRate, 1, 500000)) < 0)
+    if ((tErr = snd_pcm_set_params(mCaptureHandle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, mOutputAudioChannels, (uint)mOutputAudioSampleRate, 1, 500000)) < 0)
     {
         LOG(LOG_ERROR, "Cannot set parameters because of \"%s\"", snd_strerror (tErr));
         return false;
@@ -207,14 +205,14 @@ bool MediaSourceAlsa::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
         return false;
     }
 
-    mSampleBufferSize = MEDIA_SOURCE_SAMPLES_PER_BUFFER * 2 /* SND_PCM_FORMAT_S16_LE */ * tChannels;
+    mSampleBufferSize = MEDIA_SOURCE_SAMPLES_PER_BUFFER * 2 /* SND_PCM_FORMAT_S16_LE */ * mOutputAudioChannels;
 
     //######################################################
     //### give some verbose output
     //######################################################
     LOG(LOG_INFO, "%s-audio source opened...", "MediaSourceALSA");
-    LOG(LOG_INFO,"    ..sample rate: %d", pSampleRate);
-    LOG(LOG_INFO,"    ..channels: %d", tChannels);
+    LOG(LOG_INFO,"    ..sample rate: %d", mOutputAudioSampleRate);
+    LOG(LOG_INFO,"    ..channels: %d", mOutputAudioChannels);
     LOG(LOG_INFO,"    ..desired device: %s", mDesiredDevice.c_str());
     LOG(LOG_INFO,"    ..selected device: %s", mCurrentDevice.c_str());
     LOG(LOG_INFO,"    ..access: %d", SND_PCM_ACCESS_RW_INTERLEAVED);

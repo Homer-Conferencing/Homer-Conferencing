@@ -359,10 +359,8 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if (!OpenDecoder())
         return false;
 
-    //######################################################
-    //### create context for picture scaler
-    //######################################################
-    mScalerContext = sws_getContext(mCodecContext->width, mCodecContext->height, mCodecContext->pix_fmt, mTargetResX, mTargetResY, PIX_FMT_RGB32, SWS_BICUBIC, NULL, NULL, NULL);
+	if (!OpenFormatConverter())
+		return false;
 
     //###########################################################################################
     //### seek to the current position and drop data received during codec auto detection phase
@@ -387,7 +385,7 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     return true;
 }
 
-bool MediaSourceV4L2::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
+bool MediaSourceV4L2::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 {
     LOG(LOG_ERROR, "Wrong media type");
     return false;
@@ -407,24 +405,11 @@ bool MediaSourceV4L2::CloseGrabDevice()
 
     if (mMediaSourceOpened)
     {
-        StopRecording();
-
-        mMediaSourceOpened = false;
-
-        // free the software scaler context
-        sws_freeContext(mScalerContext);
-
-        // Close the V4L2 codec
-        avcodec_close(mCodecContext);
-
-        // Close the V4L2 video file
-        HM_close_input(mFormatContext);
+        CloseAll();
 
         // Free the frames
         av_free(mRGBFrame);
         av_free(mSourceFrame);
-
-        LOG(LOG_INFO, "...closed");
 
         tResult = true;
     }else
@@ -687,7 +672,7 @@ bool MediaSourceV4L2::SupportsRecording()
 	return true;
 }
 
-bool MediaSourceV4L2::SupportsMultipleInputChannels()
+bool MediaSourceV4L2::SupportsMultipleInputStreams()
 {
     return mSupportsMultipleInputChannels;
 }
@@ -729,7 +714,7 @@ bool MediaSourceV4L2::SelectDevice(std::string pDeviceName, enum MediaType pMedi
     return tResult;
 }
 
-bool MediaSourceV4L2::SelectInputChannel(int pIndex)
+bool MediaSourceV4L2::SelectInputStream(int pIndex)
 {
     bool tResult = false;
 
@@ -789,9 +774,9 @@ vector<string> MediaSourceV4L2::GetInputChannels()
     return tResult;
 }
 
-string MediaSourceV4L2::CurrentInputChannel()
+string MediaSourceV4L2::CurrentInputStream()
 {
-    if (SupportsMultipleInputChannels())
+    if (SupportsMultipleInputStreams())
         return mCurrentInputChannelName;
     else
         return mCurrentDevice;

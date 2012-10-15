@@ -520,12 +520,12 @@ void MainWindow::initializeWidgetsAndMenus()
 
     mMediaSourcesControlWidget = new StreamingControlWidget(mLocalUserParticipantWidget, mSourceDesktop);
     mToolBarMediaSources->addWidget(mMediaSourcesControlWidget);
-    if (mOwnVideoMuxer->SupportsMultipleInputChannels())
+    if (mOwnVideoMuxer->SupportsMultipleInputStreams())
         mMediaSourcesControlWidget->SetVideoInputSelectionVisible();
     else
         mMediaSourcesControlWidget->SetVideoInputSelectionVisible(false);
 
-    if (mOwnVideoMuxer->SupportsMultipleInputChannels())
+    if (mOwnVideoMuxer->SupportsMultipleInputStreams())
         mMediaSourcesControlWidget->SetVideoInputSelectionVisible();
     else
         mMediaSourcesControlWidget->SetVideoInputSelectionVisible(false);
@@ -1682,7 +1682,7 @@ void MainWindow::actionConfiguration()
         }
 
         // show QSliders for video and audio if we have seekable media sources selected
-        if (mOwnVideoMuxer->SupportsMultipleInputChannels())
+        if (mOwnVideoMuxer->SupportsMultipleInputStreams())
             mMediaSourcesControlWidget->SetVideoInputSelectionVisible();
         else
             mMediaSourcesControlWidget->SetVideoInputSelectionVisible(false);

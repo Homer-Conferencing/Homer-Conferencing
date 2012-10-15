@@ -2298,8 +2298,8 @@ void VideoWorkerThread::run()
             DoSetInputStreamPreferences();
 
         // input channel
-        if(mSelectInputChannelAsap)
-            DoSelectInputChannel();
+        if(mSelectInputStreamAsap)
+        	DoSelectInputStream();
 
         // reset video source
         if (mResetMediaSourceAsap)

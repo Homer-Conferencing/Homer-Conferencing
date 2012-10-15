@@ -157,7 +157,7 @@ bool MediaSourceCoreVideo::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     return true;
 }
 
-bool MediaSourceCoreVideo::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
+bool MediaSourceCoreVideo::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 {
     LOG(LOG_ERROR, "Wrong media type");
     return false;

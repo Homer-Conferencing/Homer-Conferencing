@@ -71,7 +71,7 @@ public:
     /* abstract interface which has to be implemented by derived classes */
 
     /* open/close */
-    virtual bool OpenWaveOutDevice(int pSampleRate = 44100, bool pStereo = true) = 0;
+    virtual bool OpenWaveOutDevice(int pSampleRate = 44100, int pOutputChannels = 2) = 0;
     virtual bool CloseWaveOutDevice() = 0;
     /* device interface */
     virtual void getAudioDevices(AudioDevices &pAList) = 0;
@@ -94,7 +94,7 @@ protected:
     Mutex				mPlayMutex;
     /* device parameters */
     int                 mSampleRate;
-    bool                mStereo;
+    int                 mAudioChannels;
     int                 mVolume;
     /* device handling */
     std::string         mDesiredDevice;

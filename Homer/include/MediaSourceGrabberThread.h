@@ -100,17 +100,17 @@ public:
     void SyncClock(MediaSource* pSource);
 
     /* multiple channels control */
-    bool SupportsMultipleChannels();
-    QString GetCurrentChannel();
-    void SelectInputChannel(int pIndex);
-    QStringList GetPossibleChannels();
+    bool SupportsMultipleInputStreams();
+    QString GetCurrentInputStream();
+    void SelectInputStream(int pIndex);
+    QStringList GetPossibleInputStreams();
 
 protected:
     /* recording */
     virtual void DoStartRecorder();
     virtual void DoStopRecorder();
     /* multi-input */
-    virtual void DoSelectInputChannel();
+    virtual void DoSelectInputStream();
     /* general purpose */
     virtual void DoPlayNewFile() = 0;
     virtual void DoSetCurrentDevice() = 0;
@@ -140,7 +140,7 @@ protected:
     bool                mTryingToOpenAFile;
 
     /* for forwarded interface to media source */
-    int                 mDesiredInputChannel;
+    int                 mDesiredInputStream;
 
     /* delegated tasks */
     bool                mSetInputStreamPreferencesAsap;
@@ -150,7 +150,7 @@ protected:
     bool                mStartRecorderAsap;
     bool                mStopRecorderAsap;
     bool				mPlayNewFileAsap;
-    bool                mSelectInputChannelAsap;
+    bool                mSelectInputStreamAsap;
 
     /* seeking */
     bool                mSeekAsap;

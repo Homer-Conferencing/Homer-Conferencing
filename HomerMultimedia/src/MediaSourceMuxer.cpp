@@ -77,6 +77,7 @@ MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
     mEncoderNeeded = true;
     mEncoderHasKeyFrame = false;
     mEncoderFifo = NULL;
+    mAudioResampleContext = NULL;
 }
 
 MediaSourceMuxer::~MediaSourceMuxer()
@@ -653,7 +654,7 @@ bool MediaSourceMuxer::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     return tResult;
 }
 
-bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
+bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
 {
     int                 tResult;
     AVIOContext       	*tIoContext;
@@ -662,6 +663,8 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     AVStream            *tStream;
 
     mMediaType = MEDIA_AUDIO;
+    mOutputAudioChannels = pChannels;
+    mOutputAudioSampleRate = pSampleRate;
 
     // for better debbuging
     mGrabMutex.AssignName(GetMediaTypeStr() + "MuxerGrab");
@@ -718,19 +721,24 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
     mCodecContext = tStream->codec;
     mCodecContext->codec_id = tFormat->audio_codec;
     mCodecContext->codec_type = AVMEDIA_TYPE_AUDIO;
-    if (mCodecContext->codec_id == CODEC_ID_AMR_NB)
+    switch(mCodecContext->codec_id)
     {
-        mCodecContext->channels = 1; // force mono for AMR-NB, TODO: what about input buffer - maybe this is captured in stereo mode?
-        mCodecContext->bit_rate = 7950; // force to 7.95kHz , limit is given by libopencore_amrnb
-        mSampleRate = 8000; //force 8 kHz for AMR-NB
-    }else
-    {
-        mCodecContext->channels = pStereo?2:1; // stereo?
-        mCodecContext->bit_rate = MediaSource::AudioQuality2BitRate(mStreamQuality); // streaming rate
-        mSampleRate = pSampleRate;
+		case CODEC_ID_AMR_NB:
+			mCodecContext->channels = 1; // force mono for AMR-NB, TODO: what about input buffer - maybe this is captured in stereo mode?
+			mCodecContext->bit_rate = 7950; // force to 7.95kHz , limit is given by libopencore_amrnb
+			mOutputAudioSampleRate = 8000; //force 8 kHz for AMR-NB
+			break;
+		case CODEC_ID_ADPCM_G722:
+			mCodecContext->channels = 1;
+			break;
+		default:
+	        mCodecContext->channels = mOutputAudioChannels;
+	        mCodecContext->bit_rate = MediaSource::AudioQuality2BitRate(mStreamQuality); // streaming rate
+	        mOutputAudioSampleRate = pSampleRate;
+			break;
+
     }
-    mStereoInput = pStereo;
-    mCodecContext->sample_rate = mSampleRate; // sampling rate: 22050, 44100
+    mCodecContext->sample_rate = mOutputAudioSampleRate; // sampling rate: 22050, 44100
     mCodecContext->qmin = 2; // 2
     mCodecContext->qmax = 9;/*2 +(100 - mAudioStreamQuality) / 4; // 31*/
     mCodecContext->sample_fmt = AV_SAMPLE_FMT_S16;
@@ -821,19 +829,21 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, bool pStereo)
 }
 
 
-bool MediaSourceMuxer::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
+bool MediaSourceMuxer::OpenAudioGrabDevice(int pSampleRate, int pInputChannels)
 {
     bool tResult = false;
 
     // set media type early to have verbose debug outputs in case of failures
     mMediaType = MEDIA_AUDIO;
+    mOutputAudioChannels = pInputChannels;
+    mOutputAudioSampleRate = pSampleRate;
 
     LOG(LOG_VERBOSE, "Going to open %s grab device", GetMediaTypeStr().c_str());
 
     // first open hardware video source
     if (mMediaSource != NULL)
     {
-		tResult = mMediaSource->OpenAudioGrabDevice(pSampleRate, pStereo);
+		tResult = mMediaSource->OpenAudioGrabDevice(mOutputAudioSampleRate, mOutputAudioChannels);
 		if (!tResult)
 			return false;
     }
@@ -843,9 +853,9 @@ bool MediaSourceMuxer::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
 
     // afterwards open the muxer, independent from the open state of the local video
     if (mMediaSource != NULL)
-    	OpenAudioMuxer(pSampleRate, pStereo);
+    	OpenAudioMuxer(mOutputAudioSampleRate, mOutputAudioChannels);
     else
-    	tResult = OpenAudioMuxer(pSampleRate, pStereo);
+    	tResult = OpenAudioMuxer(mOutputAudioSampleRate, mOutputAudioChannels);
 
     return tResult;
 }
@@ -1823,7 +1833,7 @@ bool MediaSourceMuxer::Reset(enum MediaType pMediaType)
             tResult = OpenVideoMuxer(mSourceResX, mSourceResY, mFrameRate);
             break;
         case MEDIA_AUDIO:
-            tResult = OpenAudioMuxer(mSampleRate, mStereoInput);
+            tResult = OpenAudioMuxer(mOutputAudioSampleRate, mOutputAudioChannels);
             break;
         case MEDIA_UNKNOWN:
             LOG(LOG_ERROR, "Media type unknown");
@@ -2083,12 +2093,12 @@ bool MediaSourceMuxer::SelectDevice(std::string pDesiredDevice, enum MediaType p
                             }
                             break;
                         case MEDIA_AUDIO:
-                            if (!OpenAudioGrabDevice(mSampleRate, mStereoInput))
+                            if (!OpenAudioGrabDevice(mOutputAudioSampleRate, mOutputAudioChannels))
                             {
                                 LOG(LOG_WARN, "Failed to open new audio media source, selecting old one");
                                 mMediaSource = tOldMediaSource;
                                 pIsNewDevice = false;
-                                while((!(tResult = OpenAudioGrabDevice(mSampleRate, mStereoInput))) && (tIt != mMediaSources.end()))
+                                while((!(tResult = OpenAudioGrabDevice(mOutputAudioSampleRate, mOutputAudioChannels))) && (tIt != mMediaSources.end()))
                                 {
                                     LOG(LOG_VERBOSE, "Couldn't open basic audio device, will probe next possible basic device");
                                     tIt++;
@@ -2225,18 +2235,34 @@ void MediaSourceMuxer::SetFrameRate(float pFps)
         mMediaSource->SetFrameRate(pFps);
 }
 
-int MediaSourceMuxer::GetSampleRate()
+int MediaSourceMuxer::GetOutputSampleRate()
 {
     if (mMediaSource != NULL)
-        return mMediaSource->GetSampleRate();
+        return mMediaSource->GetOutputSampleRate();
     else
         return 0;
 }
 
-bool MediaSourceMuxer::StereoInput()
+bool MediaSourceMuxer::GetOutputChannels()
 {
     if (mMediaSource != NULL)
-        return mMediaSource->StereoInput();
+        return mMediaSource->GetOutputChannels();
+    else
+        return 0;
+}
+
+int MediaSourceMuxer::GetInputSampleRate()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->GetInputSampleRate();
+    else
+        return 0;
+}
+
+bool MediaSourceMuxer::GetInputChannels()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->GetInputChannels();
     else
         return 0;
 }
@@ -2314,36 +2340,36 @@ float MediaSourceMuxer::GetSeekPos()
         return 0;
 }
 
-bool MediaSourceMuxer::SupportsMultipleInputChannels()
+bool MediaSourceMuxer::SupportsMultipleInputStreams()
 {
     if (mMediaSource != NULL)
-        return mMediaSource->SupportsMultipleInputChannels();
+        return mMediaSource->SupportsMultipleInputStreams();
     else
         return false;
 }
 
-bool MediaSourceMuxer::SelectInputChannel(int pIndex)
+bool MediaSourceMuxer::SelectInputStream(int pIndex)
 {
     if (mMediaSource != NULL)
-        return mMediaSource->SelectInputChannel(pIndex);
+        return mMediaSource->SelectInputStream(pIndex);
     else
         return false;
 }
 
-string MediaSourceMuxer::CurrentInputChannel()
+string MediaSourceMuxer::CurrentInputStream()
 {
     if (mMediaSource != NULL)
-        return mMediaSource->CurrentInputChannel();
+        return mMediaSource->CurrentInputStream();
     else
         return "";
 }
 
-vector<string> MediaSourceMuxer::GetInputChannels()
+vector<string> MediaSourceMuxer::GetInputStreams()
 {
     vector<string> tNone;
 
     if (mMediaSource != NULL)
-        return mMediaSource->GetInputChannels();
+        return mMediaSource->GetInputStreams();
     else
         return tNone;
 }

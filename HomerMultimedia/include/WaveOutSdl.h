@@ -57,7 +57,7 @@ public:
 
 public:
     /* open/close */
-    virtual bool OpenWaveOutDevice(int pSampleRate = 44100, bool pStereo = true);
+    virtual bool OpenWaveOutDevice(int pSampleRate = 44100, int pOutputChannels = 2);
     virtual bool CloseWaveOutDevice();
     /* device interface */
     virtual void getAudioDevices(AudioDevices &pAList);

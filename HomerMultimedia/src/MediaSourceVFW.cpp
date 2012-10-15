@@ -256,10 +256,8 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if (!OpenDecoder())
     	return false;
 
-    //######################################################
-    //### create context for picture scaler
-    //######################################################
-    mScalerContext = sws_getContext(mCodecContext->width, mCodecContext->height, mCodecContext->pix_fmt, mTargetResX, mTargetResY, PIX_FMT_RGB32, SWS_BICUBIC, NULL, NULL, NULL);
+	if (!OpenFormatConverter())
+		return false;
 
     //###########################################################################################
     //### seek to the current position and drop data received during codec auto detection phase
@@ -281,7 +279,7 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     return true;
 }
 
-bool MediaSourceVFW::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
+bool MediaSourceVFW::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 {
     LOG(LOG_ERROR, "Wrong media type");
     return false;
@@ -301,24 +299,11 @@ bool MediaSourceVFW::CloseGrabDevice()
 
     if (mMediaSourceOpened)
     {
-        StopRecording();
-
-        mMediaSourceOpened = false;
-
-        // free the software scaler context
-        sws_freeContext(mScalerContext);
-
-        // Close the VFW codec
-        avcodec_close(mCodecContext);
-
-		// Close the VFW video file
-        HM_close_input(mFormatContext);
+        CloseAll();
 
         // Free the frames
         av_free(mRGBFrame);
         av_free(mSourceFrame);
-
-        LOG(LOG_INFO, "...closed");
 
         tResult = true;
     }else

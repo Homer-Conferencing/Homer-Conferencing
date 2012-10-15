@@ -174,7 +174,7 @@ void WaveOutSdl::getAudioDevices(AudioDevices &pAList) // use PortAudio to enume
     tFirstCall = false;
 }
 
-bool WaveOutSdl::OpenWaveOutDevice(int pSampleRate, bool pStereo)
+bool WaveOutSdl::OpenWaveOutDevice(int pSampleRate, int pOutputChannels)
 {
     mAudioChannel = AUDIOOUTSDL.AllocateChannel();
 
@@ -183,7 +183,7 @@ bool WaveOutSdl::OpenWaveOutDevice(int pSampleRate, bool pStereo)
     //######################################################
     LOG(LOG_INFO, "SDL wave out opened...");
     LOG(LOG_INFO,"    ..sample rate: 44100 Hz", mSampleRate);
-    LOG(LOG_INFO,"    ..channels: 2");
+    LOG(LOG_INFO,"    ..channels: %d", pOutputChannels);
     LOG(LOG_INFO,"    ..desired device: %s", mDesiredDevice.c_str());
     LOG(LOG_INFO,"    ..selected device: %s", mCurrentDevice.c_str());
 

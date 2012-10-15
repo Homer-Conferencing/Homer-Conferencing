@@ -175,10 +175,9 @@ void WaveOutPortAudio::getAudioDevices(AudioDevices &pAList)
     tFirstCall = false;
 }
 
-bool WaveOutPortAudio::OpenWaveOutDevice(int pSampleRate, bool pStereo)
+bool WaveOutPortAudio::OpenWaveOutDevice(int pSampleRate, int pOutputChannels)
 {
-    unsigned int tChannels = pStereo?2:1;
-    PaError           tErr = paNoError;
+    PaError           		tErr = paNoError;
     PaStreamParameters      tOutputParameters;
 
     LOG(LOG_VERBOSE, "Trying to open the wave out device");
@@ -187,7 +186,7 @@ bool WaveOutPortAudio::OpenWaveOutDevice(int pSampleRate, bool pStereo)
         return false;
 
     mSampleRate = pSampleRate;
-    mStereo = pStereo;
+    mAudioChannels = pOutputChannels;
 
     LOG(LOG_VERBOSE, "Desired device is %s", mDesiredDevice.c_str());
 
@@ -201,7 +200,7 @@ bool WaveOutPortAudio::OpenWaveOutDevice(int pSampleRate, bool pStereo)
     LOG(LOG_VERBOSE, "Will open port audio device %d", tDeviceId);
 
     tOutputParameters.device = tDeviceId;
-    tOutputParameters.channelCount = tChannels;
+    tOutputParameters.channelCount = pOutputChannels;
     tOutputParameters.sampleFormat = paInt16;
     tOutputParameters.suggestedLatency = Pa_GetDeviceInfo(tOutputParameters.device)->defaultLowOutputLatency;
     tOutputParameters.hostApiSpecificStreamInfo = NULL;
@@ -238,7 +237,7 @@ bool WaveOutPortAudio::OpenWaveOutDevice(int pSampleRate, bool pStereo)
     //######################################################
     LOG(LOG_INFO, "PortAudio wave out opened...");
     LOG(LOG_INFO,"    ..sample rate: %d", mSampleRate);
-    LOG(LOG_INFO,"    ..channels: %d", tChannels);
+    LOG(LOG_INFO,"    ..channels: %d", pOutputChannels);
     LOG(LOG_INFO,"    ..desired device: %s", mDesiredDevice.c_str());
     LOG(LOG_INFO,"    ..selected device: %s", mCurrentDevice.c_str());
     LOG(LOG_INFO,"    ..suggested latency: %f seconds", tOutputParameters.suggestedLatency);
@@ -341,7 +340,7 @@ bool WaveOutPortAudio::CloseWaveOutDevice()
 int WaveOutPortAudio::PlayAudioHandler(const void *pInputBuffer, void *pOutputBuffer, unsigned long pOutputSize, const PaStreamCallbackTimeInfo* pTimeInfo, unsigned long pStatus, void *pUserData)
 {
     WaveOutPortAudio *tWaveOutPortAudio = (WaveOutPortAudio*)pUserData;
-    int tOutputBufferMaxSize = (int)pOutputSize * 2 /* 16 bit LittleEndian */ * (tWaveOutPortAudio->mStereo ? 2 : 1);
+    int tOutputBufferMaxSize = (int)pOutputSize * 2 /* 16 bit LittleEndian */ * (tWaveOutPortAudio->mAudioChannels);
 
     #ifdef WOPA_DEBUG_HANDLER
 		LOGEX(WaveOutPortAudio, LOG_WARN, "PlayAudioHandler CALLED");

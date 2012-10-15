@@ -42,6 +42,7 @@ WaveOut::WaveOut(string pName):
     mWaveOutOpened = false;
     mDesiredDevice = "";
     mCurrentDevice = "";
+    mAudioChannels = 2;
     mVolume = 100;
     mFilePlaybackSource = NULL;
     mSampleFifo = NULL;

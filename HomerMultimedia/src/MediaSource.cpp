@@ -88,6 +88,8 @@ MediaSource::MediaSource(string pName):
     mRecorderCodecContext = NULL;
     mRecorderFormatContext = NULL;
     mRecorderScalerContext = NULL;
+    mAudioResampleContext = NULL;
+    mScalerContext = NULL;
     mFormatContext = NULL;
     mRecordingSaveFileName = "";
     mDesiredDevice = "";
@@ -98,8 +100,8 @@ MediaSource::MediaSource(string pName):
     mNumberOfFrames = 0;
     mChunkNumber = 0;
     mChunkDropCounter = 0;
-    mSampleRate = 44100;
-    mStereoInput = true;
+    mOutputAudioSampleRate = 44100;
+    mOutputAudioChannels = 2;
     mSourceResX = 352;
     mSourceResY = 288;
     mTargetResX = 352;
@@ -746,14 +748,24 @@ int MediaSource::AudioQuality2BitRate(int pQuality)
     return tResult;
 }
 
-int MediaSource::GetSampleRate()
+int MediaSource::GetOutputSampleRate()
 {
-    return mSampleRate;
+    return mOutputAudioSampleRate;
 }
 
-bool MediaSource::StereoInput()
+bool MediaSource::GetOutputChannels()
 {
-	return mStereoInput;
+	return mOutputAudioChannels;
+}
+
+int MediaSource::GetInputSampleRate()
+{
+    return mInputAudioSampleRate;
+}
+
+bool MediaSource::GetInputChannels()
+{
+	return mInputAudioChannels;
 }
 
 AVFrame *MediaSource::AllocFrame()
@@ -984,7 +996,7 @@ bool MediaSource::Reset(enum MediaType pMediaType)
             tResult = OpenVideoGrabDevice(mSourceResX, mSourceResY, mFrameRate);
             break;
         case MEDIA_AUDIO:
-            tResult = OpenAudioGrabDevice(mSampleRate, mStereoInput);
+            tResult = OpenAudioGrabDevice(mOutputAudioSampleRate, mOutputAudioChannels);
             break;
         case MEDIA_UNKNOWN:
             //LOG(LOG_ERROR, "Media type unknown");
@@ -1671,9 +1683,9 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
                 mRecorderCodecContext->codec_id = tFormat->audio_codec;
                 mRecorderCodecContext->codec_type = AVMEDIA_TYPE_AUDIO;
 
-                mRecorderCodecContext->channels = mStereoInput?2:1; // stereo?
+                mRecorderCodecContext->channels = mOutputAudioChannels;
                 mRecorderCodecContext->bit_rate = MediaSource::AudioQuality2BitRate(pSaveFileQuality); // streaming rate
-                mRecorderCodecContext->sample_rate = mSampleRate; // sampling rate: 22050, 44100
+                mRecorderCodecContext->sample_rate = mOutputAudioSampleRate; // sampling rate: 22050, 44100
 
                 mRecorderCodecContext->qmin = 2; // 2
                 mRecorderCodecContext->qmax = 9;/*2 +(100 - mAudioStreamQuality) / 4; // 31*/
@@ -2439,24 +2451,24 @@ float MediaSource::GetSeekPos()
     return 0;
 }
 
-bool MediaSource::SupportsMultipleInputChannels()
+bool MediaSource::SupportsMultipleInputStreams()
 {
     return false;
 }
 
-bool MediaSource::SelectInputChannel(int pIndex)
+bool MediaSource::SelectInputStream(int pIndex)
 {
     return false;
 }
 
-vector<string> MediaSource::GetInputChannels()
+vector<string> MediaSource::GetInputStreams()
 {
     vector<string> tResult;
 
     return tResult;
 }
 
-string MediaSource::CurrentInputChannel()
+string MediaSource::CurrentInputStream()
 {
     return mCurrentDevice;
 }
@@ -2818,7 +2830,8 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 			break;
 		case MEDIA_AUDIO:
 			// set sample rate and bit rate to the resulting ones delivered by opened audio codec
-			mSampleRate = mCodecContext->sample_rate;
+			mInputAudioSampleRate = mCodecContext->sample_rate;
+			mInputAudioChannels = mCodecContext->channels;
 			break;
 		default:
 			break;
@@ -2928,6 +2941,97 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
         mNumberOfFrames = 0;
 
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..successfully opened %s decoder", GetMediaTypeStr().c_str());
+
+    return true;
+}
+
+
+bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
+{
+    switch (mMediaType)
+	{
+		case MEDIA_VIDEO:
+		    // create context for picture scaler
+		    mScalerContext = sws_getContext(mCodecContext->width, mCodecContext->height, mCodecContext->pix_fmt, mTargetResX, mTargetResY, PIX_FMT_RGB32, SWS_BICUBIC, NULL, NULL, NULL);
+			break;
+		case MEDIA_AUDIO:
+			// create resample context
+			if ((mInputAudioSampleRate != mOutputAudioSampleRate) || (mInputAudioChannels != mOutputAudioChannels))
+			{
+				if (mAudioResampleContext != NULL)
+				{
+					LOG(LOG_ERROR, "State of audio resample context inconsistent");
+				}
+
+				LOG_REMOTE(LOG_WARN, pSource, pLine, "Audio samples with rate of %d Hz and %d channels have to be resampled to %d Hz and %d channels", mInputAudioSampleRate, mInputAudioChannels, mOutputAudioSampleRate, mOutputAudioChannels);
+				mAudioResampleContext = av_audio_resample_init(mOutputAudioChannels, mInputAudioChannels, mOutputAudioSampleRate, mInputAudioSampleRate, AV_SAMPLE_FMT_S16, mCodecContext->sample_fmt, 16, 10, 0, 0.8);
+			}
+			break;
+		default:
+			break;
+
+	}
+
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..successfully opened %s format converter", GetMediaTypeStr().c_str());
+
+	return true;
+}
+
+bool MediaSource::FfmpegCloseAll(string pSource, int pLine)
+{
+	if (mMediaSourceOpened)
+	{
+		mMediaSourceOpened = false;
+
+		// stop A/V recorder
+        StopRecording();
+
+		// free resample context
+		switch(mMediaType)
+		{
+			case MEDIA_AUDIO:
+				if (mAudioResampleContext != NULL)
+				{
+					audio_resample_close(mAudioResampleContext);
+					mAudioResampleContext = NULL;
+				}
+				break;
+			case MEDIA_VIDEO:
+				if (mScalerContext != NULL)
+				{
+					// free the software scaler context
+					sws_freeContext(mScalerContext);
+					mScalerContext = NULL;
+				}
+				break;
+			default:
+				break;
+		}
+
+		// Close the codec
+		if (mCodecContext != NULL)
+		{
+			avcodec_close(mCodecContext);
+			mCodecContext = NULL;
+		}else
+		{
+			LOG_REMOTE(LOG_WARN, pSource, pLine, "Format context found in invalid state");
+			return false;
+		}
+
+		// Close the file
+		if (mFormatContext != NULL)
+		{
+			HM_close_input(mFormatContext);
+			mFormatContext = NULL;
+		}else
+		{
+			LOG_REMOTE(LOG_WARN, pSource, pLine, "Format context found in invalid state");
+			return false;
+		}
+
+		LOG(LOG_INFO, "...%s source closed", GetMediaTypeStr().c_str());
+	}
 
     return true;
 }

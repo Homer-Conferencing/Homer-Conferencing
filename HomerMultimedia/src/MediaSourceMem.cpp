@@ -467,12 +467,11 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if (!OpenDecoder())
     	return false;
 
+	if (!OpenFormatConverter())
+		return false;
+
     // overwrite FPS by the timebase of the selected codec
     mFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->codec->time_base.den / mFormatContext->streams[mMediaStreamIndex]->codec->time_base.num;
-
-    // allocate software scaler context
-    LOG(LOG_VERBOSE, "Going to create video scaler context..");
-    mScalerContext = sws_getContext(mCodecContext->width, mCodecContext->height, mCodecContext->pix_fmt, mTargetResX, mTargetResY, PIX_FMT_RGB32, SWS_BICUBIC, NULL, NULL, NULL);
 
     // seek to the current position and drop data received during codec auto detect phase
     av_seek_frame(mFormatContext, mMediaStreamIndex, mFormatContext->streams[mMediaStreamIndex]->cur_dts, AVSEEK_FLAG_ANY);
@@ -494,12 +493,14 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     return true;
 }
 
-bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
+bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 {
     AVIOContext       	*tIoContext;
     AVInputFormat       *tFormat;
 
     mMediaType = MEDIA_AUDIO;
+    mOutputAudioChannels = pChannels;
+    mOutputAudioSampleRate = pSampleRate;
 
     LOG(LOG_VERBOSE, "Trying to open the audio source");
 
@@ -530,8 +531,6 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     if (!SelectStream())
     	return false;
 
-    mStereoInput = pStereo;
-
     // finds and opens the correct decoder
     if (!OpenDecoder())
     	return false;
@@ -552,25 +551,11 @@ bool MediaSourceMem::CloseGrabDevice()
 
     if (mMediaSourceOpened)
     {
-        StopRecording();
-
-        mMediaSourceOpened = false;
-
-        // free the software scaler context
-        if (mMediaType == MEDIA_VIDEO)
-            sws_freeContext(mScalerContext);
-
-        // Close the stream codec
-        avcodec_close(mCodecContext);
-
-        // Close the video stream
-        HM_close_input(mFormatContext);
+        CloseAll();
 
         // Free the frames
         av_free(mRGBFrame);
         av_free(mSourceFrame);
-
-        LOG(LOG_INFO, "...closed");
 
         tResult = true;
     }else

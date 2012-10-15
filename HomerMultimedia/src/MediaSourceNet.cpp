@@ -241,7 +241,7 @@ bool MediaSourceNet::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     return tResult;
 }
 
-bool MediaSourceNet::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
+bool MediaSourceNet::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 {
     LOG(LOG_VERBOSE, "Trying to open the audio source");
 
@@ -251,7 +251,7 @@ bool MediaSourceNet::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
 	// start socket listener
     StartListener();
 
-    bool tResult = MediaSourceMem::OpenAudioGrabDevice(pSampleRate, pStereo);
+    bool tResult = MediaSourceMem::OpenAudioGrabDevice(pSampleRate, pChannels);
 
 	if (tResult)
 	{

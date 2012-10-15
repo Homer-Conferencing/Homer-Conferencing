@@ -78,12 +78,12 @@ MediaSourceGrabberThread::MediaSourceGrabberThread(MediaSource *pMediaSource):
     mStopRecorderAsap = false;
     mSetCurrentDeviceAsap = false;
     mSetInputStreamPreferencesAsap = false;
-    mDesiredInputChannel = 0;
+    mDesiredInputStream = 0;
     mPlayNewFileAsap = false;
     mResetMediaSourceAsap = false;
     mSeekAsap = false;
     mSeekPos = 0;
-    mSelectInputChannelAsap = false;
+    mSelectInputStreamAsap = false;
     mSourceAvailable = false;
     mEofReached = false;
     mTryingToOpenAFile = false;
@@ -328,26 +328,26 @@ void MediaSourceGrabberThread::SyncClock(MediaSource* pSource)
     mGrabbingCondition.wakeAll();
 }
 
-bool MediaSourceGrabberThread::SupportsMultipleChannels()
+bool MediaSourceGrabberThread::SupportsMultipleInputStreams()
 {
     if (mMediaSource != NULL)
-        return mMediaSource->SupportsMultipleInputChannels();
+        return mMediaSource->SupportsMultipleInputStreams();
     else
         return false;
 }
 
-QString MediaSourceGrabberThread::GetCurrentChannel()
+QString MediaSourceGrabberThread::GetCurrentInputStream()
 {
-    return QString(mMediaSource->CurrentInputChannel().c_str());
+    return QString(mMediaSource->CurrentInputStream().c_str());
 }
 
-void MediaSourceGrabberThread::SelectInputChannel(int pIndex)
+void MediaSourceGrabberThread::SelectInputStream(int pIndex)
 {
     if (pIndex != -1)
     {
         LOG(LOG_VERBOSE, "Will select new input channel %d after some short time", pIndex);
-        mDesiredInputChannel = pIndex;
-        mSelectInputChannelAsap = true;
+        mDesiredInputStream = pIndex;
+        mSelectInputStreamAsap = true;
         mGrabbingCondition.wakeAll();
     }else
     {
@@ -355,13 +355,13 @@ void MediaSourceGrabberThread::SelectInputChannel(int pIndex)
     }
 }
 
-QStringList MediaSourceGrabberThread::GetPossibleChannels()
+QStringList MediaSourceGrabberThread::GetPossibleInputStreams()
 {
     QStringList tResult;
 
-    vector<string> tList = mMediaSource->GetInputChannels();
+    vector<string> tStreamList = mMediaSource->GetInputStreams();
     vector<string>::iterator tIt;
-    for (tIt = tList.begin(); tIt != tList.end(); tIt++)
+    for (tIt = tStreamList.begin(); tIt != tStreamList.end(); tIt++)
         tResult.push_back(QString((*tIt).c_str()));
 
     return tResult;
@@ -393,21 +393,21 @@ void MediaSourceGrabberThread::DoStopRecorder()
     mStopRecorderAsap = false;
 }
 
-void MediaSourceGrabberThread::DoSelectInputChannel()
+void MediaSourceGrabberThread::DoSelectInputStream()
 {
-    LOG(LOG_VERBOSE, "DoSelectInputChannel now...");
+    LOG(LOG_VERBOSE, "DoSelectInputStream now...");
 
-    if(mDesiredInputChannel == -1)
+    if(mDesiredInputStream == -1)
         return;
 
     // lock
     mDeliverMutex.lock();
 
     // restart frame grabbing device
-    mSourceAvailable = mMediaSource->SelectInputChannel(mDesiredInputChannel);
+    mSourceAvailable = mMediaSource->SelectInputStream(mDesiredInputStream);
 
     mResetMediaSourceAsap = false;
-    mSelectInputChannelAsap = false;
+    mSelectInputStreamAsap = false;
     mPaused = false;
     mFrameTimestamps.clear();
 

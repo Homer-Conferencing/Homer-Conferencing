@@ -62,7 +62,7 @@ StreamingControlWidget::StreamingControlWidget(ParticipantWidget* pBroadcastPart
     connect(mPbBroadcastCamera, SIGNAL(clicked()), this, SLOT(StartCameraStreaming()));
     connect(mPbBroadcastVoice, SIGNAL(clicked()), this, SLOT(StartVoiceStreaming()));
     connect(mPbBroadcastFile, SIGNAL(clicked()), this, SLOT(StartFileStreaming()));
-    connect(mCbVideoInput, SIGNAL(currentIndexChanged(int)), this, SLOT(SelectedNewVideoInputChannel(int)));
+    connect(mCbVideoInput, SIGNAL(currentIndexChanged(int)), this, SLOT(SelectedNewVideoInputStream(int)));
 
     mTimerId = startTimer(1000);
 }
@@ -78,15 +78,15 @@ StreamingControlWidget::~StreamingControlWidget()
 void StreamingControlWidget::initializeGUI()
 {
     setupUi(this);
-    if (mVideoWorker->SupportsMultipleChannels())
+    if (mVideoWorker->SupportsMultipleInputStreams())
     {
         mCbVideoInput->clear();
-        QStringList tList = mVideoWorker->GetPossibleChannels();
+        QStringList tList = mVideoWorker->GetPossibleInputStreams();
         int i = 0;
         for (i = 0; i < tList.size(); i++)
         {
             mCbVideoInput->addItem(tList[i]);
-            if (tList[i] == mVideoWorker->GetCurrentChannel())
+            if (tList[i] == mVideoWorker->GetCurrentInputStream())
                 mCbVideoInput->setCurrentIndex(mCbVideoInput->count() - 1);
         }
         mCbVideoInput->setVisible(true);
@@ -100,7 +100,7 @@ void StreamingControlWidget::StartScreenSegmentStreaming()
 {
     mVideoWorker->SetCurrentDevice(MSD_DESKTOP_SEGMENT); // used fixed name
 
-    if (mVideoWorker->SupportsMultipleChannels())
+    if (mVideoWorker->SupportsMultipleInputStreams())
         SetVideoInputSelectionVisible();
     else
         SetVideoInputSelectionVisible(false);
@@ -133,7 +133,7 @@ void StreamingControlWidget::StartCameraStreaming()
     LOG(LOG_VERBOSE, "Selecting %s", tSelectedDevice.toStdString().c_str());
 
     mVideoWorker->SetCurrentDevice(tSelectedDevice);
-    if (mVideoWorker->SupportsMultipleChannels())
+    if (mVideoWorker->SupportsMultipleInputStreams())
         SetVideoInputSelectionVisible();
     else
         SetVideoInputSelectionVisible(false);
@@ -178,14 +178,14 @@ void StreamingControlWidget::SetVideoInputSelectionVisible(bool pVisible)
     {
         LOG(LOG_VERBOSE, "Setting new visibility state for video input selection");
         mCbVideoInput->clear();
-        if ((pVisible) && (mVideoWorker->SupportsMultipleChannels()))
+        if ((pVisible) && (mVideoWorker->SupportsMultipleInputStreams()))
         {
-            QStringList tList = mVideoWorker->GetPossibleChannels();
+            QStringList tList = mVideoWorker->GetPossibleInputStreams();
             int i = 0;
             for (i = 0; i < tList.size(); i++)
             {
                 mCbVideoInput->addItem(tList[i]);
-                if (tList[i] == mVideoWorker->GetCurrentChannel())
+                if (tList[i] == mVideoWorker->GetCurrentInputStream())
                     mCbVideoInput->setCurrentIndex(mCbVideoInput->count() - 1);
             }
         }
@@ -193,11 +193,11 @@ void StreamingControlWidget::SetVideoInputSelectionVisible(bool pVisible)
     }
 }
 
-void StreamingControlWidget::SelectedNewVideoInputChannel(int pIndex)
+void StreamingControlWidget::SelectedNewVideoInputStream(int pIndex)
 {
-    LOG(LOG_VERBOSE, "User selected new video input channel: %d", pIndex);
+    LOG(LOG_VERBOSE, "User selected new video input stream: %d", pIndex);
     if (pIndex >= 0)
-        mVideoWorker->SelectInputChannel(pIndex);
+        mVideoWorker->SelectInputStream(pIndex);
 }
 
 void StreamingControlWidget::timerEvent(QTimerEvent *pEvent)
@@ -210,7 +210,7 @@ void StreamingControlWidget::timerEvent(QTimerEvent *pEvent)
 
     if (pEvent->timerId() == mTimerId)
     {
-        if (mVideoWorker->SupportsMultipleChannels())
+        if (mVideoWorker->SupportsMultipleInputStreams())
             SetVideoInputSelectionVisible();
         else
             SetVideoInputSelectionVisible(false);

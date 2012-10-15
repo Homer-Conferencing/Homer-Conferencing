@@ -263,17 +263,17 @@ void AudioWidget::contextMenuEvent(QContextMenuEvent *pEvent)
     //###############################################################################
     //### TRACKS
     //###############################################################################
-    vector<string> tInputChannels = mAudioSource->GetInputChannels();
-    if (mAudioSource->SupportsMultipleInputChannels())
+    vector<string> tInputStreams = mAudioSource->GetInputStreams();
+    if (mAudioSource->SupportsMultipleInputStreams())
     {
         QMenu *tStreamMenu = tMenu.addMenu("Audio streams");
 
         QIcon tIcon14;
         tIcon14.addPixmap(QPixmap(":/images/22_22/Audio_Play.png"), QIcon::Normal, QIcon::Off);
 
-        string tCurrentStream = mAudioSource->CurrentInputChannel();
+        string tCurrentStream = mAudioSource->CurrentInputStream();
         QAction *tStreamAction;
-        for (tIt = tInputChannels.begin(); tIt != tInputChannels.end(); tIt++)
+        for (tIt = tInputStreams.begin(); tIt != tInputStreams.end(); tIt++)
         {
             tStreamAction = tStreamMenu->addAction(QString(tIt->c_str()));
             tStreamAction->setIcon(tIcon14);
@@ -449,11 +449,11 @@ void AudioWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             }
         }
         int tSelectedAudioTrack = 0;
-        for (tIt = tInputChannels.begin(); tIt != tInputChannels.end(); tIt++)
+        for (tIt = tInputStreams.begin(); tIt != tInputStreams.end(); tIt++)
         {
             if ((*tIt) == tPopupRes->text().toStdString())
             {
-                mAudioWorker->SelectInputChannel(tSelectedAudioTrack);
+                mAudioWorker->SelectInputStream(tSelectedAudioTrack);
             }
             tSelectedAudioTrack++;
         }
@@ -582,10 +582,10 @@ void AudioWidget::ShowSample(void* pBuffer, int pSampleSize, int pSampleNumber)
         tFont.setFixedPitch(true);
         mLbStreamInfo->setFont(tFont);
         QString tMuxCodecName = QString(mAudioSource->GetMuxingCodec().c_str());
-        QString tText = "<font color=red><b>"                                                                                                \
+        QString tText = "<font color=red><b>"                                                                                       \
                 "Source: " + mAudioWorker->GetCurrentDevice() + "<br>" +                                                            \
 /*                "Buffer: " + QString("%1").arg(pSampleNumber) + (mAudioSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mAudioSource->GetChunkDropCounter()) + " dropped)") : "") + ", "\*/
-                "Codec: " + QString((mAudioSource->GetCodecName() != "") ? mAudioSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(mAudioSource->GetSampleRate()) + "Hz)" + \
+                "Codec: " + QString((mAudioSource->GetCodecName() != "") ? mAudioSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(mAudioSource->GetOutputSampleRate()) + "Hz)" + \
 /*                                   "Output: " + QString("%1").arg(AUDIO_OUTPUT_SAMPLE_RATE) + " Hz" + "<br>" + \*/
                 "";
         if (mAudioSource->SupportsSeeking())
@@ -1196,8 +1196,8 @@ void AudioWorkerThread::run()
             DoSetInputStreamPreferences();
 
         // input channel
-        if(mSelectInputChannelAsap)
-            DoSelectInputChannel();
+        if(mSelectInputStreamAsap)
+            DoSelectInputStream();
 
         // reset audio source
         if (mResetMediaSourceAsap)

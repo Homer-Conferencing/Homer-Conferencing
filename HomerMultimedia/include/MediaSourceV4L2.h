@@ -66,14 +66,14 @@ public:
     virtual bool SupportsRecording();
 
     /* multi input interface */
-    virtual bool SupportsMultipleInputChannels();
-    virtual bool SelectInputChannel(int pIndex);
-    virtual std::string CurrentInputChannel();
-    virtual std::vector<std::string> GetInputChannels();
+    virtual bool SupportsMultipleInputStreams();
+    virtual bool SelectInputStream(int pIndex);
+    virtual std::string CurrentInputStream();
+    virtual std::vector<std::string> GetInputStreams();
 
 public:
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 30);
-    virtual bool OpenAudioGrabDevice(int pSampleRate = 44100, bool pStereo = true);
+    virtual bool OpenAudioGrabDevice(int pSampleRate = 44100, int pChannels = 2);
     virtual bool CloseGrabDevice();
     virtual int GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk = false);
 

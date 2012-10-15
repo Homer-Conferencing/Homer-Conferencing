@@ -241,7 +241,7 @@ int MediaSourcePortAudio::RecordedAudioHandler(const void *pInputBuffer, void *p
     #endif
 
 	if ((tMediaSourcePortAudio->mMediaSourceOpened) && (pInputSize > 0))
-		tMediaSourcePortAudio->mCaptureFifo->WriteFifo((char*)pInputBuffer, (int)pInputSize * 2 /* 16 bit LittleEndian */ * (tMediaSourcePortAudio->mStereoInput ? 2 : 1));
+		tMediaSourcePortAudio->mCaptureFifo->WriteFifo((char*)pInputBuffer, (int)pInputSize * 2 /* 16 bit LittleEndian */ * (tMediaSourcePortAudio->mOutputAudioChannels ? 2 : 1));
 
     return paContinue;
 }
@@ -261,27 +261,21 @@ bool MediaSourcePortAudio::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     return false;
 }
 
-bool MediaSourcePortAudio::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
+bool MediaSourcePortAudio::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 {
-    unsigned int tChannels = pStereo?2:1;
     PaError           tErr = paNoError;
     PaStreamParameters      tInputParameters;
 
-    LOG(LOG_VERBOSE, "Trying to open the audio source");
+    mMediaType = MEDIA_AUDIO;
+    mOutputAudioChannels = pChannels;
+    mOutputAudioSampleRate = pSampleRate;
 
-    if (mMediaType == MEDIA_VIDEO)
-    {
-        LOG(LOG_ERROR, "Wrong media type detected");
-        return false;
-    }
+    LOG(LOG_VERBOSE, "Trying to open the audio source");
 
     SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Grabber(PortAudio)");
 
     if (mMediaSourceOpened)
         return false;
-
-    mSampleRate = pSampleRate;
-    mStereoInput = pStereo;
 
     if ((mDesiredDevice == "") || (mDesiredDevice == "auto") || (mDesiredDevice == "automatic"))
     {
@@ -298,7 +292,7 @@ bool MediaSourcePortAudio::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     	return false;
     }
     tInputParameters.device = tDeviceId;
-    tInputParameters.channelCount = tChannels;
+    tInputParameters.channelCount = mOutputAudioChannels;
     tInputParameters.sampleFormat = paInt16;
     const PaDeviceInfo *tDevInfo = Pa_GetDeviceInfo(tInputParameters.device);
     if (tDevInfo != NULL)
@@ -308,26 +302,22 @@ bool MediaSourcePortAudio::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     tInputParameters.hostApiSpecificStreamInfo = NULL;
 
     LOG(LOG_VERBOSE, "Going to open stream..");
-    LOG(LOG_VERBOSE, "..selected sample rate: %d", mSampleRate);
-    mStereoInputEmulation = false;
+    LOG(LOG_VERBOSE, "..selected sample rate: %d", mOutputAudioSampleRate);
+    mInputAudioChannels = mOutputAudioChannels;
     PortAudioLockStreamInterface();
-    if((tErr = Pa_OpenStream(&mStream, &tInputParameters, NULL /* output parameters */, mSampleRate, MEDIA_SOURCE_SAMPLES_PER_BUFFER, paClipOff | paDitherOff, RecordedAudioHandler, this)) != paNoError)
+    if((tErr = Pa_OpenStream(&mStream, &tInputParameters, NULL /* output parameters */, mOutputAudioSampleRate, MEDIA_SOURCE_SAMPLES_PER_BUFFER, paClipOff | paDitherOff, RecordedAudioHandler, this)) != paNoError)
     {
-    	if ((pStereo) && (tErr == paInvalidChannelCount))
+    	if (tErr == paInvalidChannelCount)
     	{
     		LOG(LOG_WARN, "Got channel count problem when stereo mode is selected, will try mono mode instead");
     	    tInputParameters.channelCount = 1;
-    	    tChannels = 1;
-    	    if((tErr = Pa_OpenStream(&mStream, &tInputParameters, NULL /* output parameters */, mSampleRate, MEDIA_SOURCE_SAMPLES_PER_BUFFER, paClipOff | paDitherOff, RecordedAudioHandler, this)) != paNoError)
+    	    if((tErr = Pa_OpenStream(&mStream, &tInputParameters, NULL /* output parameters */, mOutputAudioSampleRate, MEDIA_SOURCE_SAMPLES_PER_BUFFER, paClipOff | paDitherOff, RecordedAudioHandler, this)) != paNoError)
     	    {
         		LOG(LOG_ERROR, "Couldn't open stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
         		PortAudioUnlockStreamInterface();
         		return false;
-    	    }else
-    	    {
-    	    	mStereoInputEmulation = true;
-    	    	mStereoInput = false;
     	    }
+			mInputAudioChannels = 1;
     	}else
     	{
     		LOG(LOG_ERROR, "Couldn't open stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
@@ -356,8 +346,8 @@ bool MediaSourcePortAudio::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     //### give some verbose output
     //######################################################
     LOG(LOG_INFO, "%s-audio source opened...", "MediaSourcePortAudio");
-    LOG(LOG_INFO,"    ..sample rate: %d", mSampleRate);
-    LOG(LOG_INFO,"    ..channels: %d", tChannels);
+    LOG(LOG_INFO,"    ..sample rate: %d", mOutputAudioSampleRate);
+    LOG(LOG_INFO,"    ..channels: %d", mOutputAudioChannels);
     LOG(LOG_INFO,"    ..desired device: %s", mDesiredDevice.c_str());
     LOG(LOG_INFO,"    ..selected device: %s", mCurrentDevice.c_str());
     LOG(LOG_INFO,"    ..suggested latency: %f seconds", tInputParameters.suggestedLatency);
@@ -459,7 +449,8 @@ int MediaSourcePortAudio::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pD
 
     mCaptureFifo->ReadFifo((char*)pChunkBuffer, pChunkSize);
 
-    if (mStereoInputEmulation)
+    //TODO: use ffmpeg and support more audio channel layouts
+    if ((mInputAudioChannels == 1) && (mOutputAudioChannels == 2))
     {
     	// assume buffer of 16 bit signed integer samples
 		short int *tBuffer = (short int*)pChunkBuffer;

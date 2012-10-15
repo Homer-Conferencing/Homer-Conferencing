@@ -169,38 +169,32 @@ bool MediaSourceMMSys::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     return false;
 }
 
-bool MediaSourceMMSys::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
+bool MediaSourceMMSys::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 {
-    unsigned int tChannels = pStereo?2:1;
     int tErr;
     MMRESULT tResult;
 	WAVEFORMATEX tFormat;
 	char tErrorBuffer[256];
 
-    LOG(LOG_VERBOSE, "Trying to open the audio source");
+    mMediaType = MEDIA_AUDIO;
+    mOutputAudioChannels = pChannels;
+    mOutputAudioSampleRate = pSampleRate;
 
-    if (mMediaType == MEDIA_VIDEO)
-    {
-        LOG(LOG_ERROR, "Wrong media type detected");
-        return false;
-    }
+    LOG(LOG_VERBOSE, "Trying to open the audio source");
 
     SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Grabber(MMSYS)");
 
     if (mMediaSourceOpened)
         return false;
 
-    mSampleRate = pSampleRate;
-    mStereoInput = pStereo;
-
     if ((mDesiredDevice == "") || (mDesiredDevice == "auto") || (mDesiredDevice == "automatic"))
         mDesiredDevice = toString((int)WAVE_MAPPER);
 
 	 // Specify recording parameters
     tFormat.wFormatTag = WAVE_FORMAT_PCM;   // simple, uncompressed format
-    tFormat.nChannels = tChannels;          //  1 = mono, 2 = stereo
-    tFormat.nSamplesPerSec = pSampleRate;   // default: 44100
-    tFormat.nAvgBytesPerSec = pSampleRate * 2 * 2; // SamplesPerSec * Channels * BitsPerSample / 8
+    tFormat.nChannels = mOutputAudioChannels;
+    tFormat.nSamplesPerSec = mOutputAudioSampleRate;   // default: 44100
+    tFormat.nAvgBytesPerSec = mOutputAudioSampleRate * 2 * 2; // SamplesPerSec * Channels * BitsPerSample / 8
     tFormat.nBlockAlign = 2 * 2;            // Channels * BitsPerSample / 8
     tFormat.wBitsPerSample = 16;            //  16 for high quality, 8 for telephone quality
     tFormat.cbSize = 0;						// no additional information appended
@@ -282,8 +276,8 @@ bool MediaSourceMMSys::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     //### give some verbose output
     //######################################################
     LOG(LOG_INFO, "%s-audio source opened...", "MediaSourceMMSys");
-    LOG(LOG_INFO,"    ..sample rate: %d", pSampleRate);
-    LOG(LOG_INFO,"    ..channels: %d", tChannels);
+    LOG(LOG_INFO,"    ..sample rate: %d", mOutputAudioSampleRate);
+    LOG(LOG_INFO,"    ..channels: %d", mOutputAudioChannels);
     LOG(LOG_INFO,"    ..desired device: %s", mDesiredDevice.c_str());
     LOG(LOG_INFO,"    ..selected device: %s", mCurrentDevice.c_str());
     LOG(LOG_INFO,"    ..sample format: 16 bit little endian");

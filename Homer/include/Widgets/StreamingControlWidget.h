@@ -58,7 +58,7 @@ private slots:
     void StartVoiceStreaming();
     void StartCameraStreaming();
     void StartFileStreaming();
-	void SelectedNewVideoInputChannel(int pIndex);
+	void SelectedNewVideoInputStream(int pIndex);
 
 private:
     void timerEvent(QTimerEvent *pEvent);

@@ -68,7 +68,7 @@ public:
 
 public:
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97);
-    virtual bool OpenAudioGrabDevice(int pSampleRate = 44100, bool pStereo = true);
+    virtual bool OpenAudioGrabDevice(int pSampleRate = 44100, int pChannels = 2);
     virtual bool CloseGrabDevice();
     virtual int GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk = false);
 

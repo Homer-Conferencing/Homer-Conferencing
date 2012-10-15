@@ -115,13 +115,17 @@ bool MediaSourceOss::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     return false;
 }
 
-bool MediaSourceOss::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
+bool MediaSourceOss::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 {
     FILE                *tFile;
     int                 tResult;
     AVFormatParameters  tFormatParams;
     AVInputFormat       *tFormat;
     AVCodec             *tCodec;
+
+    mMediaType = MEDIA_AUDIO;
+    mOutputAudioChannels = pChannels;
+    mOutputAudioSampleRate = pSampleRate;
 
     LOG(LOG_VERBOSE, "Trying to open the audio source");
 
@@ -141,8 +145,8 @@ bool MediaSourceOss::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     if ((mDesiredDevice == "") || (mDesiredDevice == "auto") || (mDesiredDevice == "automatic"))
         mDesiredDevice = "";
 
-    tFormatParams.sample_rate = pSampleRate; // sampling rate
-    tFormatParams.channels = pStereo?2:1; // stereo?
+    tFormatParams.sample_rate = mOutputAudioSampleRate; // sampling rate
+    tFormatParams.channels = mOutputAudioChannels;
     tFormatParams.initial_pause = 0;
     tFormatParams.prealloced_context = 0;
     //deprecated: tFormatParams.audio_codec_id = CODEC_ID_PCM_S16LE;
@@ -234,10 +238,6 @@ bool MediaSourceOss::OpenAudioGrabDevice(int pSampleRate, bool pStereo)
     // Get a pointer to the codec context for the audio stream
     mCodecContext = mFormatContext->streams[mMediaStreamIndex]->codec;
 
-    // set sample rate and bit rate to the resulting ones delivered by opened audio codec
-    mSampleRate = mCodecContext->sample_rate;
-    mStereoInput = pStereo;
-
     //######################################################
     //### search for correct decoder for the video stream
     //######################################################
@@ -291,17 +291,7 @@ bool MediaSourceOss::CloseGrabDevice()
 
     if (mMediaSourceOpened)
     {
-        StopRecording();
-
-        mMediaSourceOpened = false;
-
-        // Close the OSS codec
-        avcodec_close(mCodecContext);
-
-        // Close the OSS audio file
-        HM_close_input(mFormatContext);
-
-        LOG(LOG_INFO, "...closed");
+        CloseAll();
 
         tResult = true;
     }else

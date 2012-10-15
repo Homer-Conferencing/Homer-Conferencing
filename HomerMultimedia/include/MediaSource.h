@@ -166,6 +166,8 @@ struct ChunkDescriptor
 #define DetectAllStreams()            						FfmpegDetectAllStreams(GetObjectNameStr(this).c_str(), __LINE__)
 #define SelectStream()              						FfmpegSelectStream(GetObjectNameStr(this).c_str(), __LINE__)
 #define OpenDecoder()										FfmpegOpenDecoder(GetObjectNameStr(this).c_str(), __LINE__)
+#define OpenFormatConverter()								FfmpegOpenFormatConverter(GetObjectNameStr(this).c_str(), __LINE__)
+#define CloseAll()											FfmpegCloseAll(GetObjectNameStr(this).c_str(), __LINE__)
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -210,12 +212,18 @@ public:
 
     /* audio */
     static int AudioQuality2BitRate(int pQuality);
+    virtual int GetOutputSampleRate();
+    virtual bool GetOutputChannels();
+    virtual int GetInputSampleRate();
+    virtual bool GetInputChannels();
 
     /* video */
     static AVFrame *AllocFrame();
     static int FillFrame(AVFrame *pFrame, void *pData, enum PixelFormat pPixFormat, int pWidth, int pHeight);
     static void VideoFormat2Resolution(VideoFormat pFormat, int& pX, int& pY);
     static void VideoString2Resolution(std::string pString, int& pX, int& pY);
+    virtual float GetFrameRate();
+    virtual void SetFrameRate(float pFps);
 
     /* frame stats */
     virtual bool SupportsDecoderFrameStatistics();
@@ -280,15 +288,6 @@ public:
     virtual bool RegisterMediaSource(MediaSource *pMediaSource);
     virtual bool UnregisterMediaSource(MediaSource *pMediaSource, bool pAutoDelete = true);
 
-    /* fps */
-    virtual float GetFrameRate();
-    virtual void SetFrameRate(float pFps);
-
-    /* sample rate */
-    virtual int GetSampleRate();
-    /* stereo input */
-    virtual bool StereoInput();
-
     /* seek interface */
     virtual bool SupportsSeeking();
     virtual float GetSeekEnd(); // get maximum seek time in seconds
@@ -296,11 +295,11 @@ public:
     virtual bool SeekRelative(float pSeconds, bool pOnlyKeyFrames = true);
     virtual float GetSeekPos(); // in seconds
 
-    /* multi channel input interface */
-    virtual bool SupportsMultipleInputChannels();
-    virtual bool SelectInputChannel(int pIndex);
-    virtual std::string CurrentInputChannel();
-    virtual std::vector<std::string> GetInputChannels();
+    /* multi stream input interface */
+    virtual bool SupportsMultipleInputStreams();
+    virtual bool SelectInputStream(int pIndex);
+    virtual std::string CurrentInputStream();
+    virtual std::vector<std::string> GetInputStreams();
 
     /* live OSD marking */
     virtual bool SupportsMarking();
@@ -311,10 +310,11 @@ public:
 public:
     /* abstract interface which has to be implemented by derived classes */
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97) = 0;
-    virtual bool OpenAudioGrabDevice(int pSampleRate = 44100, bool pStereo = true) = 0;
+    virtual bool OpenAudioGrabDevice(int pSampleRate = 44100, int pChannels = 2) = 0;
     virtual bool CloseGrabDevice() = 0;
-    // for video: grabs RGB32 image with correct resolution, for audio: grabs 16 LE samples of 4KB size
+    // for video: grabs RGB32 image with correct resolution, for audio: grabs 16 bit little endian samples of 4KB size
     // see GRAB_RES_* for possible function results
+    // HINT: function assumes that given buffer has size of 4kB for audio samples
     virtual int GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk = false) = 0;
 
     /* default memory management based on ffmpeg */
@@ -357,6 +357,8 @@ protected:
     bool FfmpegDetectAllStreams(string pSource /* caller source */, int pLine /* caller line */); //avformat_open_input must be called before, returns true on success
     bool FfmpegSelectStream(string pSource /* caller source */, int pLine /* caller line */); //avformat_open_input & avformat_find_stream_info must be called before, returns true on success
     bool FfmpegOpenDecoder(string pSource /* caller source */, int pLine /* caller line */); //avformat_open_input & avformat_find_stream_info must be called before, returns true on success
+    bool FfmpegOpenFormatConverter(string pSource /* caller source */, int pLine /* caller line */);
+    bool FfmpegCloseAll(string pSource /* caller source */, int pLine /* caller line */);
 
     bool                mMediaSourceOpened;
     bool                mGrabbingStopped;
@@ -376,9 +378,10 @@ protected:
     ReSampleContext     *mAudioResampleContext;
     AVFifoBuffer        *mRecorderSampleFifo;
     char                *mRecorderSamplesTempBuffer;
-    int                 mSampleRate;
-    bool                mStereoInput;
-    bool				mStereoInputEmulation;
+    int                 mOutputAudioSampleRate;
+    int                 mOutputAudioChannels; // 1 - mono, 2 - stereo, ..
+    int					mInputAudioSampleRate;
+    int  				mInputAudioChannels;
     /* video */
     GrabResolutions     mSupportedVideoFormats;
     int                 mSourceResX;
