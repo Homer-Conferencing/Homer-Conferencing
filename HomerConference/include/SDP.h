@@ -43,7 +43,7 @@ namespace Homer { namespace Conference {
 #define CODEC_AAC                               8
 #define CODEC_PCMS16                            16
 #define CODEC_GSM                               32
-#define CODEC_AMR                               64
+#define CODEC_AMR_NB                            64
 #define CODEC_G722ADPCM                         128
 
 #define CODEC_H261                              1

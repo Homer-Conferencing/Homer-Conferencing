@@ -192,7 +192,7 @@ string SDP::GetMediaTransportStr(enum MediaTransportType pType)
  *        CODEC_PCMS16					pcms16
  *        CODEC_MP3						mp3
  *        CODEC_AAC						aac
- *        CODEC_AMR						amr
+ *        CODEC_AMR_NB					amr
  *
  ****************************************************/
 string SDP::CreateSdpData(int pAudioPort, int pVideoPort)
@@ -224,7 +224,7 @@ string SDP::CreateSdpData(int pAudioPort, int pVideoPort)
             tResult += " " + toString(RTP::CodecToPayloadId("mp3"));
         if (tSupportedAudioCodecs & CODEC_AAC)
             tResult += " " + toString(RTP::CodecToPayloadId("aac"));
-        if (tSupportedAudioCodecs & CODEC_AMR)
+        if (tSupportedAudioCodecs & CODEC_AMR_NB)
             tResult += " " + toString(RTP::CodecToPayloadId("amr"));
 
         tResult += "\r\n";
@@ -238,12 +238,12 @@ string SDP::CreateSdpData(int pAudioPort, int pVideoPort)
         if (tSupportedAudioCodecs & CODEC_G722ADPCM)
             tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("g722")) + " G722/8000/1\r\n";
         if (tSupportedAudioCodecs & CODEC_PCMS16)
-            tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("pcms16le")) + " PCMS16/8000/1\r\n";
+            tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("pcms16le")) + " L16/8000/1\r\n";
         if (tSupportedAudioCodecs & CODEC_MP3)
             tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("mp3")) + " MPA/8000/1\r\n";
         if (tSupportedAudioCodecs & CODEC_AAC)
             tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("aac")) + " AAC/8000/1\r\n";
-        if (tSupportedAudioCodecs & CODEC_AMR)
+        if (tSupportedAudioCodecs & CODEC_AMR_NB)
             tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("amr")) + " AMR/8000/1\r\n";
     }
 
@@ -291,7 +291,7 @@ string SDP::CreateSdpData(int pAudioPort, int pVideoPort)
         if (tSupportedVideoCodecs & CODEC_THEORA)
             tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("theora")) + " theora/90000\r\n";
         if (tSupportedVideoCodecs & CODEC_VP8)
-            tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("vp8")) + " vp8/90000\r\n";
+            tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("vp8")) + " VP8/90000\r\n";
     }
 
     //LOG(LOG_VERBOSE, "..result: %s", tResult.c_str());
