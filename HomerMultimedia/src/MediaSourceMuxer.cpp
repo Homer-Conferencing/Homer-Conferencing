@@ -327,9 +327,12 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 
     // build correct IO-context
-    tIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE /*HINT: don't use mStreamMaxPacketSize here */, 1, this, NULL, DistributePacket, NULL);
+    if (!CreateIOContext(mStreamPacketBuffer, MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE, NULL, DistributePacket, this, &tIoContext))
+    {
+    	LOG(LOG_ERROR, "Error during I/O context creation");
+    	return false;
+    }
 
-    tIoContext->seekable = 0;
     // limit packet size
     tIoContext->max_packet_size = mStreamMaxPacketSize;
 
@@ -583,20 +586,6 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     // init transcoder FIFO based for RGB32 pictures
     StartEncoder();
 
-    // allocate streams private data buffer and write the streams header, if any
-    if ((tResult = avformat_write_header(mFormatContext, NULL)) < 0)
-    {
-        LOG(LOG_ERROR, "Couldn't write %s codec header because \"%s\".", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
-        // free codec and stream 0
-        av_freep(&mFormatContext->streams[0]->codec);
-        av_freep(&mFormatContext->streams[0]);
-
-        // Close the format context
-        av_free(mFormatContext);
-
-        return false;
-    }
-
     //######################################################
     //### give some verbose output
     //######################################################
@@ -663,8 +652,9 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     AVStream            *tStream;
 
     mMediaType = MEDIA_AUDIO;
-    mOutputAudioChannels = pChannels;
-    mOutputAudioSampleRate = pSampleRate;
+    // invert meaning of I/O state
+    mInputAudioChannels = pChannels;
+    mInputAudioSampleRate = pSampleRate;
 
     // for better debbuging
     mGrabMutex.AssignName(GetMediaTypeStr() + "MuxerGrab");
@@ -681,9 +671,12 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
 
     // build correct IO-context
-    tIoContext = avio_alloc_context((uint8_t*) mStreamPacketBuffer, MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE /*HINT: don't use mStreamMaxPacketSize here */, 1, this, NULL, DistributePacket, NULL);
+    if (!CreateIOContext(mStreamPacketBuffer, MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE, NULL, DistributePacket, this, &tIoContext))
+    {
+    	LOG(LOG_ERROR, "Error during I/O context creation");
+    	return false;
+    }
 
-    tIoContext->seekable = 0;
     // limit packet size
     tIoContext->max_packet_size = mStreamMaxPacketSize;
 
@@ -723,23 +716,34 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     mCodecContext->codec_type = AVMEDIA_TYPE_AUDIO;
     switch(mCodecContext->codec_id)
     {
+		case CODEC_ID_ADPCM_G722:
+			mOutputAudioChannels = 1;
+			mOutputAudioSampleRate = 16000;
+			break;
 		case CODEC_ID_AMR_NB:
-			mCodecContext->channels = 1;
 			mCodecContext->bit_rate = 7950; // force to 7.95kHz , limit is given by libopencore_amrnb
+			mOutputAudioChannels = 1;
 			mOutputAudioSampleRate = 8000; //force 8 kHz for AMR-NB
 			break;
-		case CODEC_ID_ADPCM_G722:
-			mCodecContext->channels = 1;
+		case CODEC_ID_GSM:
+		case CODEC_ID_PCM_ALAW:
+		case CODEC_ID_PCM_MULAW:
+			mOutputAudioChannels = 1;
 			mOutputAudioSampleRate = 8000;
 			break;
+    	case CODEC_ID_PCM_S16BE:
+			mOutputAudioChannels = 2;
+			mOutputAudioSampleRate = 44100;
+			break;
 		default:
-	        mCodecContext->channels = mOutputAudioChannels;
 	        mCodecContext->bit_rate = MediaSource::AudioQuality2BitRate(mStreamQuality); // streaming rate
+			mOutputAudioChannels = pChannels;
 	        mOutputAudioSampleRate = pSampleRate;
 			break;
 
     }
-    mCodecContext->sample_rate = mOutputAudioSampleRate; // sampling rate: 22050, 44100
+	mCodecContext->channels = mOutputAudioChannels;
+    mCodecContext->sample_rate = mOutputAudioSampleRate;
     mCodecContext->qmin = 2; // 2
     mCodecContext->qmax = 9;/*2 +(100 - mAudioStreamQuality) / 4; // 31*/
     mCodecContext->sample_fmt = AV_SAMPLE_FMT_S16;
@@ -795,22 +799,13 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     if (mCodecContext->frame_size < 32)
     	mCodecContext->frame_size = 1024;
 
+    mOutputAudioFormat = mCodecContext->sample_fmt;
+
+    if (!OpenFormatConverter())
+    	return false;
+
     // init transcoder FIFO based for 2048 samples with 16 bit and 2 channels, more samples are never produced by a media source per grabbing cycle
     StartEncoder();
-
-    // allocate streams private data buffer and write the streams header, if any
-    if ((tResult = avformat_write_header(mFormatContext, NULL)) < 0)
-    {
-        LOG(LOG_ERROR, "Couldn't write %s codec header because \"%s\".", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
-        // free codec and stream 0
-        av_freep(&mFormatContext->streams[0]->codec);
-        av_freep(&mFormatContext->streams[0]);
-
-        // Close the format context
-        av_free(mFormatContext);
-
-        return false;
-    }
 
     // init fifo buffer
     mSampleFifo = HM_av_fifo_alloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE * 2);
@@ -830,13 +825,13 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
 }
 
 
-bool MediaSourceMuxer::OpenAudioGrabDevice(int pSampleRate, int pInputChannels)
+bool MediaSourceMuxer::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 {
     bool tResult = false;
 
     // set media type early to have verbose debug outputs in case of failures
     mMediaType = MEDIA_AUDIO;
-    mOutputAudioChannels = pInputChannels;
+    mOutputAudioChannels = pChannels;
     mOutputAudioSampleRate = pSampleRate;
 
     LOG(LOG_VERBOSE, "Going to open %s grab device", GetMediaTypeStr().c_str());
@@ -871,13 +866,8 @@ bool MediaSourceMuxer::CloseMuxer()
 
     if (mMediaSourceOpened)
     {
-        mMediaSourceOpened = false;
-
         // make sure we can free the memory structures
         StopEncoder();
-
-        // write the trailer, if any
-        av_write_trailer(mFormatContext);
 
         switch(mMediaType)
         {
@@ -1333,6 +1323,12 @@ void* MediaSourceMuxer::Run(void* pArgs)
             break;
     }
 
+    // allocate streams private data buffer and write the streams header, if any
+    if ((tResult = avformat_write_header(mFormatContext, NULL)) < 0)
+    {
+        LOG(LOG_ERROR, "Couldn't write %s codec header because \"%s\".", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
+    }
+
     // set marker to "active"
     mEncoderNeeded = true;
 
@@ -1483,84 +1479,103 @@ void* MediaSourceMuxer::Run(void* pArgs)
                             break;
 
                         case MEDIA_AUDIO:
-                                // increase fifo buffer size by size of input buffer size
-                                #ifdef MSM_DEBUG_PACKETS
-                                    LOG(LOG_VERBOSE, "Adding %d bytes to AUDIO FIFO with size of %d bytes", tBufferSize, av_fifo_size(mSampleFifo));
-                                #endif
-                                if (av_fifo_realloc2(mSampleFifo, av_fifo_size(mSampleFifo) + tBufferSize) < 0)
-                                {
-                                    // acknowledge failed
-                                    LOG(LOG_ERROR, "Reallocation of FIFO audio buffer failed");
-                                }
+								// do we need audio resampling?
+								if (mAudioResampleContext != NULL)
+								{
+									//HINT: we always assume 16 bit samples
+									int tResampledBytes = (2 /*16 signed char*/ * mOutputAudioChannels) * audio_resample(mAudioResampleContext, (short*)mResampleBuffer, (short*)tBuffer, tBufferSize / (2 * mInputAudioChannels));
+									if(tResampledBytes > 0)
+									{
+										tBuffer = mResampleBuffer;
+										tBufferSize = tResampledBytes;
+									}else
+									{
+										LOG(LOG_ERROR, "Audio resampling finished with faulty result %d", tResampledBytes);
+										tBufferSize = 0;
+									}
+								}
 
-                                //LOG(LOG_VERBOSE, "ChunkSize: %d", pChunkSize);
-                                // write new samples into fifo buffer
-                                av_fifo_generic_write(mSampleFifo, tBuffer, tBufferSize, NULL);
-                                //LOG(LOG_VERBOSE, "ChunkSize: %d", pChunkSize);
+								if (tBufferSize > 0)
+								{
+									// increase fifo buffer size by size of input buffer size
+									#ifdef MSM_DEBUG_PACKETS
+										LOG(LOG_VERBOSE, "Adding %d bytes to AUDIO FIFO with size of %d bytes", tBufferSize, av_fifo_size(mSampleFifo));
+									#endif
+									if (av_fifo_realloc2(mSampleFifo, av_fifo_size(mSampleFifo) + tBufferSize) < 0)
+									{
+										// acknowledge failed
+										LOG(LOG_ERROR, "Reallocation of FIFO audio buffer failed");
+									}
 
-                                while (av_fifo_size(mSampleFifo) >= 2 * mCodecContext->frame_size * mCodecContext->channels)
-                                {
-                                    #ifdef MSM_DEBUG_PACKETS
-                                        LOG(LOG_VERBOSE, "Reading %d bytes from %d bytes of fifo", 2 * mCodecContext->frame_size * mCodecContext->channels, av_fifo_size(mSampleFifo));
-                                    #endif
-                                    // read sample data from the fifo buffer
-                                    HM_av_fifo_generic_read(mSampleFifo, (void*)mSamplesTempBuffer, /* assume signed 16 bit */ 2 * mCodecContext->frame_size * mCodecContext->channels);
+									//LOG(LOG_VERBOSE, "ChunkSize: %d", pChunkSize);
+									// write new samples into fifo buffer
+									av_fifo_generic_write(mSampleFifo, tBuffer, tBufferSize, NULL);
+									//LOG(LOG_VERBOSE, "ChunkSize: %d", pChunkSize);
 
-                                    //####################################################################
-                                    // re-encode the sample
-                                    // ###################################################################
-                                    // re-encode the sample
-                                    #ifdef MSM_DEBUG_PACKETS
-                                        LOG(LOG_VERBOSE, "Encoding audio frame.. (frame size: %d, channels: %d, enc. buffeR: %p, samples buffer: %p)", mCodecContext->frame_size, mCodecContext->channels, mEncoderChunkBuffer, mSamplesTempBuffer);
-                                    #endif
-                                    //printf("Gonna encode with frame_size %d and channels %d\n", mCodecContext->frame_size, mCodecContext->channels);
-                                    int tEncodingResult = avcodec_encode_audio(mCodecContext, (uint8_t *)mEncoderChunkBuffer, /* assume signed 16 bit */ 2 * mCodecContext->frame_size * mCodecContext->channels, (const short *)mSamplesTempBuffer);
-                                    mEncoderHasKeyFrame = true;
+									while (av_fifo_size(mSampleFifo) >= 2 * mCodecContext->frame_size * mCodecContext->channels)
+									{
+										#ifdef MSM_DEBUG_PACKETS
+											LOG(LOG_VERBOSE, "Reading %d bytes from %d bytes of fifo", 2 * mCodecContext->frame_size * mCodecContext->channels, av_fifo_size(mSampleFifo));
+										#endif
+										// read sample data from the fifo buffer
+										HM_av_fifo_generic_read(mSampleFifo, (void*)mSamplesTempBuffer, /* assume signed 16 bit */ 2 * mCodecContext->frame_size * mCodecContext->channels);
 
-                                    //printf("encoded to mp3: %d\n\n", tSampleSize);
-                                    if (tEncodingResult > 0)
-                                    {
-                                        av_init_packet(tPacket);
-                                        mChunkNumber++;
+										//####################################################################
+										// re-encode the sample
+										// ###################################################################
+										// re-encode the sample
+										#ifdef MSM_DEBUG_PACKETS
+											LOG(LOG_VERBOSE, "Encoding audio frame.. (frame size: %d, channels: %d, enc. buffeR: %p, samples buffer: %p)", mCodecContext->frame_size, mCodecContext->channels, mEncoderChunkBuffer, mSamplesTempBuffer);
+										#endif
+										//printf("Gonna encode with frame_size %d and channels %d\n", mCodecContext->frame_size, mCodecContext->channels);
+										int tEncodingResult = avcodec_encode_audio(mCodecContext, (uint8_t *)mEncoderChunkBuffer, /* assume signed 16 bit */ 2 * mCodecContext->frame_size * mCodecContext->channels, (const short *)mSamplesTempBuffer);
+										mEncoderHasKeyFrame = true;
 
-                                        // adapt pts value
-                                        if ((mCodecContext->coded_frame) && (mCodecContext->coded_frame->pts != 0))
-                                            tPacket->pts = av_rescale_q(mCodecContext->coded_frame->pts, mCodecContext->time_base, mFormatContext->streams[mMediaStreamIndex]->time_base);
-                                        tPacket->flags |= AV_PKT_FLAG_KEY;
+										//printf("encoded to mp3: %d\n\n", tSampleSize);
+										if (tEncodingResult > 0)
+										{
+											av_init_packet(tPacket);
+											mChunkNumber++;
 
-                                        // we only have one stream per audio stream
-                                        tPacket->stream_index = 0;
-                                        tPacket->data = (uint8_t *)mEncoderChunkBuffer;
-                                        tPacket->size = tEncodingResult;
-                                        tPacket->pts = mChunkNumber;
-                                        tPacket->dts = mChunkNumber;
-            //                            tPacket->pos = av_gettime() - mStartPts;
+											// adapt pts value
+											if ((mCodecContext->coded_frame) && (mCodecContext->coded_frame->pts != 0))
+												tPacket->pts = av_rescale_q(mCodecContext->coded_frame->pts, mCodecContext->time_base, mFormatContext->streams[mMediaStreamIndex]->time_base);
+											tPacket->flags |= AV_PKT_FLAG_KEY;
 
-                                        #ifdef MSM_DEBUG_PACKETS
-                                            LOG(LOG_VERBOSE, "Sending audio packet: %5d to %2d sink(s):", mChunkNumber, mMediaSinks.size());
-                                            LOG(LOG_VERBOSE, "      ..pts: %ld", tPacket->pts);
-                                            LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket->dts);
-                                            LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
-                                            LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket->pos);
-                                        #endif
+											// we only have one stream per audio stream
+											tPacket->stream_index = 0;
+											tPacket->data = (uint8_t *)mEncoderChunkBuffer;
+											tPacket->size = tEncodingResult;
+											tPacket->pts = mChunkNumber;
+											tPacket->dts = mChunkNumber;
+				//                            tPacket->pos = av_gettime() - mStartPts;
 
-                                        //####################################################################
-                                        // distribute the encoded frame
-                                        // ###################################################################
-                                        int64_t tTime = Time::GetTimeStamp();
-                                        if (av_write_frame(mFormatContext, tPacket) != 0)
-                                        {
-                                            LOG(LOG_ERROR, "Couldn't distribute audio sample among registered audio sinks");
-                                        }
-                                        #ifdef MSM_DEBUG_TIMING
-                                            int64_t tTime2 = Time::GetTimeStamp();
-                                            LOG(LOG_VERBOSE, "         writing audio frame to sinks took %ld us", tTime2 - tTime);
-                                        #endif
+											#ifdef MSM_DEBUG_PACKETS
+												LOG(LOG_VERBOSE, "Sending audio packet: %5d to %2d sink(s):", mChunkNumber, mMediaSinks.size());
+												LOG(LOG_VERBOSE, "      ..pts: %ld", tPacket->pts);
+												LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket->dts);
+												LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
+												LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket->pos);
+											#endif
 
-                                        // free packet buffer
-                                        av_free_packet(tPacket);
-                                    }else
-                                        LOG(LOG_WARN, "Couldn't re-encode current audio sample");
+											//####################################################################
+											// distribute the encoded frame
+											// ###################################################################
+											int64_t tTime = Time::GetTimeStamp();
+											if (av_write_frame(mFormatContext, tPacket) != 0)
+											{
+												LOG(LOG_ERROR, "Couldn't distribute audio sample among registered audio sinks");
+											}
+											#ifdef MSM_DEBUG_TIMING
+												int64_t tTime2 = Time::GetTimeStamp();
+												LOG(LOG_VERBOSE, "         writing audio frame to sinks took %ld us", tTime2 - tTime);
+											#endif
+
+											// free packet buffer
+											av_free_packet(tPacket);
+										}else
+											LOG(LOG_WARN, "Couldn't re-encode current audio sample");
+									}
                                 }
                                 break;
 
@@ -1595,6 +1610,9 @@ void* MediaSourceMuxer::Run(void* pArgs)
     LOG(LOG_VERBOSE, "%s encoder left thread main loop", GetMediaTypeStr().c_str());
 
     mEncoderFifoAvailableMutex.lock();
+
+    // write the trailer, if any
+    av_write_trailer(mFormatContext);
 
     switch(mMediaType)
     {

@@ -381,8 +381,10 @@ protected:
     char                *mRecorderSamplesTempBuffer;
     int                 mOutputAudioSampleRate;
     int                 mOutputAudioChannels; // 1 - mono, 2 - stereo, ..
+    enum AVSampleFormat mOutputAudioFormat;
     int					mInputAudioSampleRate;
     int  				mInputAudioChannels;
+    enum AVSampleFormat mInputAudioFormat;
     /* video */
     GrabResolutions     mSupportedVideoFormats;
     int                 mSourceResX;
