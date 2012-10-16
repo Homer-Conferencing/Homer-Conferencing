@@ -78,6 +78,7 @@ MediaSource::MediaSource(string pName):
     mDecodedIFrames = 0;
     mDecodedPFrames = 0;
     mDecodedBFrames = 0;
+    mSourceStartPts = 0;
     mSourceType = SOURCE_ABSTRACT;
     mMarkerActivated = false;
     mMediaSourceOpened = false;
@@ -678,7 +679,7 @@ string MediaSource::GetFormatName(enum CodecID pCodecId)
     			tResult = "mulaw";
     			break;
         case CODEC_ID_GSM:
-    			tResult = "libgsm";
+    			tResult = "gsm";
     			break;
         case CODEC_ID_PCM_ALAW:
     			tResult = "alaw";
