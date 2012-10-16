@@ -238,7 +238,7 @@ string SDP::CreateSdpData(int pAudioPort, int pVideoPort)
         if (tSupportedAudioCodecs & CODEC_G722ADPCM)
             tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("g722")) + " G722/8000/1\r\n";
         if (tSupportedAudioCodecs & CODEC_PCMS16)
-            tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("pcms16le")) + " L16/8000/1\r\n";
+            tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("pcms16le")) + " L16/44100/2\r\n";
         if (tSupportedAudioCodecs & CODEC_MP3)
             tResult += "a=rtpmap:" + toString(RTP::CodecToPayloadId("mp3")) + " MPA/8000/1\r\n";
         if (tSupportedAudioCodecs & CODEC_AAC)
