@@ -45,7 +45,7 @@
     GSM FREE, http://kbs.cs.tu-berlin.de/~jutta/toast.html
     A-LAW: built-in ffmpeg: LGPL
     MU_LAW built-in ffmpeg: LGPL
-    PCM_S16LE: built-in ffmpeg: LGPL
+    PCM_S16BE: built-in ffmpeg: LGPL
     AMR_NB: apache-2.0 license
  */
 
@@ -90,6 +90,8 @@ MediaSource::MediaSource(string pName):
     mRecorderFormatContext = NULL;
     mRecorderScalerContext = NULL;
     mAudioResampleContext = NULL;
+    mInputAudioFormat = AV_SAMPLE_FMT_S16;
+    mOutputAudioFormat = AV_SAMPLE_FMT_S16;
     mScalerContext = NULL;
     mFormatContext = NULL;
     mRecordingSaveFileName = "";
@@ -101,8 +103,10 @@ MediaSource::MediaSource(string pName):
     mNumberOfFrames = 0;
     mChunkNumber = 0;
     mChunkDropCounter = 0;
-    mOutputAudioSampleRate = 44100;
-    mOutputAudioChannels = 2;
+    mInputAudioChannels = -1;
+    mInputAudioSampleRate = -1;
+    mOutputAudioSampleRate = -1;
+    mOutputAudioChannels = -1;
     mSourceResX = 352;
     mSourceResY = 288;
     mTargetResX = 352;
@@ -470,7 +474,7 @@ int MediaSource::FfmpegLockManager(void **pMutex, enum AVLockOp pMutexOperation)
  *        GSM							CODEC_ID_GSM
  *        G711 µ-law					CODEC_ID_PCM_ALAW
  *        G722 adpcm					CODEC_ID_ADPCM_G722
- *        PCM16							CODEC_ID_PCM_S16LE
+ *        PCM16							CODEC_ID_PCM_S16BE
  *        MP3							CODEC_ID_MP3
  *        AAC							CODEC_ID_AAC
  *        AMR							CODEC_ID_AMR_NB
@@ -512,7 +516,7 @@ enum CodecID MediaSource::GetCodecIDFromGuiName(std::string pName)
     if (pName == "G722 adpcm")
         tResult = CODEC_ID_ADPCM_G722;
     if (pName == "PCM16")
-        tResult = CODEC_ID_PCM_S16LE;
+        tResult = CODEC_ID_PCM_S16BE;
     if (pName == "MP3")
         tResult = CODEC_ID_MP3;
     if (pName == "AAC")
@@ -578,7 +582,7 @@ string MediaSource::GetGuiNameFromCodecID(enum CodecID pCodecId)
         case CODEC_ID_ADPCM_G722:
     			tResult = "G722 adpcm";
     			break;
-        case CODEC_ID_PCM_S16LE:
+        case CODEC_ID_PCM_S16BE:
     			tResult = "PCM16";
     			break;
         case CODEC_ID_MP3:
@@ -625,7 +629,7 @@ string MediaSource::GetGuiNameFromCodecID(enum CodecID pCodecId)
  *        CODEC_ID_GSM					libgsm
  *        CODEC_ID_PCM_ALAW				alaw
  *        CODEC_ID_ADPCM_G722			g722
- *        CODEC_ID_PCM_S16LE			s16le
+ *        CODEC_ID_PCM_S16BE			s16be
  *        CODEC_ID_MP3					mp3
  *        CODEC_ID_AAC					aac
  *        CODEC_ID_AMR_NB				amr
@@ -682,8 +686,8 @@ string MediaSource::GetFormatName(enum CodecID pCodecId)
         case CODEC_ID_ADPCM_G722:
     			tResult = "g722";
     			break;
-        case CODEC_ID_PCM_S16LE:
-    			tResult = "s16le";
+        case CODEC_ID_PCM_S16BE:
+    			tResult = "s16be";
     			break;
         case CODEC_ID_MP3:
     			tResult = "mp3";
@@ -2833,6 +2837,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 			// set sample rate and bit rate to the resulting ones delivered by opened audio codec
 			mInputAudioSampleRate = mCodecContext->sample_rate;
 			mInputAudioChannels = mCodecContext->channels;
+			mInputAudioFormat = mCodecContext->sample_fmt;
 			break;
 		default:
 			break;
@@ -2965,7 +2970,7 @@ bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
 				}
 
 				LOG_REMOTE(LOG_WARN, pSource, pLine, "Audio samples with rate of %d Hz and %d channels have to be resampled to %d Hz and %d channels", mInputAudioSampleRate, mInputAudioChannels, mOutputAudioSampleRate, mOutputAudioChannels);
-				mAudioResampleContext = av_audio_resample_init(mOutputAudioChannels, mInputAudioChannels, mOutputAudioSampleRate, mInputAudioSampleRate, AV_SAMPLE_FMT_S16, mCodecContext->sample_fmt, 16, 10, 0, 0.8);
+				mAudioResampleContext = av_audio_resample_init(mOutputAudioChannels, mInputAudioChannels, mOutputAudioSampleRate, mInputAudioSampleRate, mOutputAudioFormat, mInputAudioFormat, 16, 10, 0, 0.8);
 			    mResampleBuffer = (char*)malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
 			}
 			break;
