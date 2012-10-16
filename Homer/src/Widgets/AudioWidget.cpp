@@ -585,7 +585,7 @@ void AudioWidget::ShowSample(void* pBuffer, int pSampleSize, int pSampleNumber)
         QString tText = "<font color=red><b>"                                                                                       \
                 "Source: " + mAudioWorker->GetCurrentDevice() + "<br>" +                                                            \
 /*                "Buffer: " + QString("%1").arg(pSampleNumber) + (mAudioSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mAudioSource->GetChunkDropCounter()) + " dropped)") : "") + ", "\*/
-                "Codec: " + QString((mAudioSource->GetCodecName() != "") ? mAudioSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(mAudioSource->GetOutputSampleRate()) + "Hz)" + \
+                "Codec: " + QString((mAudioSource->GetCodecName() != "") ? mAudioSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(mAudioSource->GetInputSampleRate()) + "Hz)" + \
 /*                                   "Output: " + QString("%1").arg(AUDIO_OUTPUT_SAMPLE_RATE) + " Hz" + "<br>" + \*/
                 "";
         if (mAudioSource->SupportsSeeking())
