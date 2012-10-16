@@ -37,14 +37,11 @@
 		Mpeg2:   ok (HC)                        ok (HC)
 		Mpeg4:   ok (linphone, ekiga, HC)       ok (linphone, ekiga, HC)
 
-		 pcma:   ok (HC)                        ok (HC)
-		 pcmu:   ok (HC)                        ok (HC)
+		 pcma:   ok (HC, Ekiga)                 ok (HC, Ekiga)  [short clicks or audio gaps are possible]
+		 pcmu:   ok (HC, Ekiga)                 ok (HC, Ekiga)  [short clicks or audio gaps are possible]
 		  mp3:   ok (HC)                        ok (HC)
-	  pcm16le:   ok (HC)                        ok (HC)
-  adpcm(G722):   ?								?
-		  aac:   ?                              ?
-		  gsm:
-		  amr:
+	  pcm16be:   ok (HC)                        ok (HC)
+  adpcm(G722):   ok (HC, Ekiga)					ok (HC, Ekiga)
 
      unsupported:
        mjpeg
@@ -646,8 +643,8 @@ bool RTP::IsPayloadSupported(enum CodecID pId)
             case CODEC_ID_PCM_ALAW:
             case CODEC_ID_PCM_MULAW:
 //            case CODEC_ID_PCM_S8:
-//            case CODEC_ID_PCM_S16BE:
-            case CODEC_ID_PCM_S16LE:
+            case CODEC_ID_PCM_S16BE:
+//            case CODEC_ID_PCM_S16LE:
 //            case CODEC_ID_PCM_U16BE:
 //            case CODEC_ID_PCM_U16LE:
 //            case CODEC_ID_PCM_U8:
@@ -711,8 +708,8 @@ int RTP::GetPayloadHeaderSizeMax(enum CodecID pCodec)
                 tResult = 0;
                 break;
 //            case CODEC_ID_PCM_S8:
-//            case CODEC_ID_PCM_S16BE:
-            case CODEC_ID_PCM_S16LE:
+            case CODEC_ID_PCM_S16BE:
+//            case CODEC_ID_PCM_S16LE:
                 tResult = 0;
                 break;
 //            case CODEC_ID_PCM_U16BE:
@@ -921,7 +918,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
                             case CODEC_ID_ADPCM_G722:
                                             tHeader->PayloadType = 9;
                                             break;
-                            case CODEC_ID_PCM_S16LE:
+                            case CODEC_ID_PCM_S16BE:
                                             tHeader->PayloadType = 10;
                                             break;
                             case CODEC_ID_MP3:
@@ -1185,7 +1182,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
             //supported audio codecs
             case CODEC_ID_PCM_MULAW:
             case CODEC_ID_PCM_ALAW:
-            case CODEC_ID_PCM_S16LE:
+            case CODEC_ID_PCM_S16BE:
             case CODEC_ID_MP3:
             case CODEC_ID_AMR_NB:
             case CODEC_ID_AAC:
@@ -1346,9 +1343,9 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                             // no fragmentation because our encoder sends raw data
                             mIntermediateFragment = false;
                             break;
-            case CODEC_ID_PCM_S16LE:
+            case CODEC_ID_PCM_S16BE:
                             #ifdef RTP_DEBUG_PACKET_DECODER
-                                LOG(LOG_VERBOSE, "#################### PCM_S16LE header #######################");
+                                LOG(LOG_VERBOSE, "#################### PCM_S16BE header #######################");
                                 LOG(LOG_VERBOSE, "No additional information");
                             #endif
                             // no fragmentation because our encoder sends raw data
