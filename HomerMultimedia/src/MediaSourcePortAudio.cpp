@@ -269,6 +269,8 @@ bool MediaSourcePortAudio::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     mMediaType = MEDIA_AUDIO;
     mOutputAudioChannels = pChannels;
     mOutputAudioSampleRate = pSampleRate;
+    mInputAudioChannels = pChannels;
+    mInputAudioSampleRate = pSampleRate;
 
     LOG(LOG_VERBOSE, "Trying to open the audio source");
 
