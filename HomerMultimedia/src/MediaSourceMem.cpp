@@ -528,11 +528,33 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     if (!SelectStream())
     	return false;
 
+    // ffmpeg might have difficulties detecting the correct input format, enforce correct audio parameters
+    AVCodecContext *tCodec = mFormatContext->streams[mMediaStreamIndex]->codec;
+    switch(tCodec->codec_id)
+    {
+    	case CODEC_ID_ADPCM_G722:
+    		tCodec->channels = 1;
+    		tCodec->sample_rate = 16000;
+			break;
+    	case CODEC_ID_GSM:
+    	case CODEC_ID_PCM_ALAW:
+		case CODEC_ID_PCM_MULAW:
+			tCodec->channels = 1;
+			tCodec->sample_rate = 8000;
+			break;
+    	case CODEC_ID_PCM_S16BE:
+    		tCodec->channels = 2;
+    		tCodec->sample_rate = 44100;
+			break;
+		default:
+			break;
+    }
+
     // finds and opens the correct decoder
     if (!OpenDecoder())
     	return false;
 
-	if (!OpenFormatConverter())
+    if (!OpenFormatConverter())
 		return false;
 
     MarkOpenGrabDeviceSuccessful();
