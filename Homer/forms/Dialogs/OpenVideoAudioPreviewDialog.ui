@@ -991,16 +991,11 @@
                     <enum>Qt::LeftToRight</enum>
                    </property>
                    <property name="currentIndex">
-                    <number>0</number>
+                    <number>4</number>
                    </property>
                    <property name="maxVisibleItems">
                     <number>9</number>
                    </property>
-                   <item>
-                    <property name="text">
-                     <string>MP3</string>
-                    </property>
-                   </item>
                    <item>
                     <property name="text">
                      <string>G711 A-law</string>
@@ -1013,12 +1008,22 @@
                    </item>
                    <item>
                     <property name="text">
-                     <string>PCM16</string>
+                     <string>G722 adpcm</string>
                     </property>
                    </item>
                    <item>
                     <property name="text">
-                     <string>G722 adpcm</string>
+                     <string>GSM</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>MP3</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>PCM16</string>
                     </property>
                    </item>
                   </widget>
