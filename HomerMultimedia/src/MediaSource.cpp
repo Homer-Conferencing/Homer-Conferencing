@@ -286,12 +286,16 @@ void MediaSource::LogSupportedAudioCodecs(bool pSendToLoggerOnly)
     {
         if (tCodec->type == AVMEDIA_TYPE_AUDIO)
         {
-            printf("Found audio codec: %s %s  %-15s %s\n",
-               tCodec->decode ? "D" : " ",
-               tCodec->encode ? "E" : " ",
-               tCodec->name,
-               tCodec->long_name ? tCodec->long_name : "");
-
+//            printf("Found audio codec: %s %s  %-15s %s\n",
+//               tCodec->decode ? "D" : " ",
+//               tCodec->encode ? "E" : " ",
+//               tCodec->name,
+//               tCodec->long_name ? tCodec->long_name : "");
+//            printf("Found audio next codec: %s %s  %-15s %s\n",
+//				tNextCodec->decode ? "D" : " ",
+//				tNextCodec->encode ? "E" : " ",
+//				tNextCodec->name,
+//				tNextCodec->long_name ? tCodec->long_name : "");
             bool tEncode = (tCodec->encode != NULL);
             bool tDecode = (tCodec->decode != NULL);
             if ((tNextCodec != NULL) && (strcmp(tCodec->name, tNextCodec->name) == 0))
