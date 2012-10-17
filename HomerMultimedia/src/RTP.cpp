@@ -659,6 +659,10 @@ bool RTP::IsPayloadSupported(enum CodecID pId)
             case CODEC_ID_VP8:
             case CODEC_ID_ADPCM_G722:
 //            case CODEC_ID_ADPCM_G726:
+//            case CODEC_ID_ILBC:
+//            case CODEC_ID_MJPEG:
+//            case CODEC_ID_SPEEX:
+//            case CODEC_ID_OPUS:
                             tResult = true;
                             break;
             default:
@@ -734,6 +738,10 @@ int RTP::GetPayloadHeaderSizeMax(enum CodecID pCodec)
             	tResult = 0; //TODO
             	break;
 //            case CODEC_ID_ADPCM_G726:
+//            case CODEC_ID_ILBC:
+//            case CODEC_ID_MJPEG:
+//            case CODEC_ID_SPEEX:
+//            case CODEC_ID_OPUS:
             default:
                 tResult = 0;
                 break;
