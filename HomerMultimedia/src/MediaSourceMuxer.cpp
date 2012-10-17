@@ -871,9 +871,6 @@ bool MediaSourceMuxer::CloseMuxer()
         // make sure we can free the memory structures
         StopEncoder();
 
-        // write the trailer, if any
-        av_write_trailer(mFormatContext);
-
         switch(mMediaType)
         {
             case MEDIA_VIDEO:
@@ -887,6 +884,8 @@ bool MediaSourceMuxer::CloseMuxer()
                     LOG(LOG_ERROR, "Media type unknown");
                     break;
         }
+
+        LOG(LOG_VERBOSE, "..closing %s codec", GetMediaTypeStr().c_str());
 
         // Close the codec
         avcodec_close(mCodecContext);
@@ -1615,6 +1614,8 @@ void* MediaSourceMuxer::Run(void* pArgs)
     LOG(LOG_VERBOSE, "%s encoder left thread main loop", GetMediaTypeStr().c_str());
 
     mEncoderFifoAvailableMutex.lock();
+
+    LOG(LOG_VERBOSE, "..writing %s codec trailer", GetMediaTypeStr().c_str());
 
     // write the trailer, if any
     av_write_trailer(mFormatContext);
