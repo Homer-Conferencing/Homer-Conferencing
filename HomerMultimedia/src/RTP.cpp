@@ -30,18 +30,18 @@
 				 Sending                        Receiving
 		--------------------------------------------------------------------
 		 h261:   ok (HC)                        ok (HC)
-		 h263:   not avail., h263+ instead      ok (linphone, ekiga, HC)
+		 h263:   ok (HC)				        ok (linphone, ekiga, HC)
 		h263+:   ok (linphone, HC)              ok (linphone, HC)
 		 h264:   ok (linphone, HC)              ok (HC)
 		Mpeg1:   ok (HC)                        ok (HC)
 		Mpeg2:   ok (HC)                        ok (HC)
 		Mpeg4:   ok (linphone, ekiga, HC)       ok (linphone, ekiga, HC)
 
-		 pcma:   ok (HC, Ekiga)                 ok (HC, Ekiga)  [short clicks or audio gaps are possible]
-		 pcmu:   ok (HC, Ekiga)                 ok (HC, Ekiga)  [short clicks or audio gaps are possible]
+  pcma (G711):   ok (HC, Ekiga)                 ok (HC, Ekiga)  [short clicks or audio gaps are possible]
+  pcmu (G711):   ok (HC, Ekiga)                 ok (HC, Ekiga)  [short clicks or audio gaps are possible]
+  adpcm(G722):   ok (HC, Ekiga)					ok (HC, Ekiga)
 		  mp3:   ok (HC)                        ok (HC)
 	  pcm16be:   ok (HC)                        ok (HC)
-  adpcm(G722):   ok (HC, Ekiga)					ok (HC, Ekiga)
 
      unsupported:
        mjpeg
@@ -461,6 +461,8 @@ bool RTP::OpenRtpEncoderH261(string pTargetHost, unsigned int pTargetPort, AVStr
 
 bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream)
 {
+    AVDictionary        *tOptions = NULL;
+
     if (mEncoderOpened)
         return false;
 
@@ -548,6 +550,16 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     // close memory stream
     char *tBuffer = NULL;
     CloseRtpPacketStream(&tBuffer);
+
+    switch(tOuterStream->codec->codec_id)
+    {
+    	case CODEC_ID_H263:
+    			// use older rfc2190 for RTP packetizing
+    			av_opt_set(mRtpFormatContext->priv_data, "rtpflags", "rfc2190", 0);
+    			break;
+    	default:
+    			break;
+    }
 
     LOG(LOG_INFO, "Opened...");
     LOG(LOG_INFO, "    ..rtp target: %s:%u", pTargetHost.c_str(), pTargetPort);
@@ -953,15 +965,14 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
                             case CODEC_ID_MPEG2VIDEO:
                                             tHeader->PayloadType = 32;
                                             break;
+                            case CODEC_ID_H263:
+                                            tHeader->PayloadType = 34;
+                                            break;
                             case CODEC_ID_AAC:
                                             tHeader->PayloadType = 100;
                                             break;
                             case CODEC_ID_AMR_NB:
                                             tHeader->PayloadType = 101;
-                                            break;
-                            case CODEC_ID_H263:
-                                            // HINT: don't use the old id 34, otherwise the auto detection of the h263 packetizing scheme wouldn't work
-                                            tHeader->PayloadType = 118;
                                             break;
                             case CODEC_ID_H263P:
                                             tHeader->PayloadType = 119; // our own standard, possible because this range is user defined
@@ -1470,12 +1481,12 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
                             pData += H261_HEADER_SIZE;
                             break;
             case CODEC_ID_H263:
+            case CODEC_ID_H263P:
                             // HINT: do we have RTP packets with payload id 34?
                             //       => yes: parse rtp packet according to RFC2190
                             //       => no: parse rtp packet according to RFC4629
-                            // HINT: ffmpeg uses for h263 wrongly the rtp packetizing scheme for h263+
                             if (tOldH263PayloadDetected)
-                            {
+                            {// H263 rtp scheme
                                 // convert from network to host byte order
                                 tH263Header->Data[0] = ntohl(tH263Header->Data[0]);
 
@@ -1523,65 +1534,64 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
 
                                 // convert from host to network byte order again
                                 tH263Header->Data[0] = htonl(tH263Header->Data[0]);
+                            }else
+                            {// H263+ rtp scheme
+								// convert from network to host byte order
+								tH263PHeader->Data[0] = ntohl(tH263PHeader->Data[0]);
 
-                                break;
-                            }
-            case CODEC_ID_H263P:
-                            // convert from network to host byte order
-                            tH263PHeader->Data[0] = ntohl(tH263PHeader->Data[0]);
+								#ifdef RTP_DEBUG_PACKET_DECODER
+									LOG(LOG_VERBOSE, "################## H263+ header ######################");
+									LOG(LOG_VERBOSE, "Reserved bits: %d", tH263PHeader->Reserved);
+									LOG(LOG_VERBOSE, "P bit: %d", tH263PHeader->P);
+									LOG(LOG_VERBOSE, "V bit: %d", tH263PHeader->V);
+									LOG(LOG_VERBOSE, "Extra picture header length: %d", tH263PHeader->Plen);
+									LOG(LOG_VERBOSE, "Amount of ignored bits: %d", tH263PHeader->Pebit);
+									if (tH263PHeader->V)
+									{
+										LOG(LOG_VERBOSE, "################## H263+ VRC header ##################");
+										LOG(LOG_VERBOSE, "Thread ID: %d", tH263PHeader->Vrc.Tid);
+										LOG(LOG_VERBOSE, "Thread fragment number: %d", tH263PHeader->Vrc.Trunc);
+										if (tH263PHeader->Vrc.S)
+											LOG(LOG_VERBOSE, "Synch. frame: yes");
+										else
+											LOG(LOG_VERBOSE, "Synch. frame: no");
+									}
+								#endif
 
-                            #ifdef RTP_DEBUG_PACKET_DECODER
-                                LOG(LOG_VERBOSE, "################## H263+ header ######################");
-                                LOG(LOG_VERBOSE, "Reserved bits: %d", tH263PHeader->Reserved);
-                                LOG(LOG_VERBOSE, "P bit: %d", tH263PHeader->P);
-                                LOG(LOG_VERBOSE, "V bit: %d", tH263PHeader->V);
-                                LOG(LOG_VERBOSE, "Extra picture header length: %d", tH263PHeader->Plen);
-                                LOG(LOG_VERBOSE, "Amount of ignored bits: %d", tH263PHeader->Pebit);
-                                if (tH263PHeader->V)
-                                {
-                                    LOG(LOG_VERBOSE, "################## H263+ VRC header ##################");
-                                    LOG(LOG_VERBOSE, "Thread ID: %d", tH263PHeader->Vrc.Tid);
-                                    LOG(LOG_VERBOSE, "Thread fragment number: %d", tH263PHeader->Vrc.Trunc);
-                                    if (tH263PHeader->Vrc.S)
-                                        LOG(LOG_VERBOSE, "Synch. frame: yes");
-                                    else
-                                        LOG(LOG_VERBOSE, "Synch. frame: no");
-                                }
-                            #endif
+								// 2 bytes for standard h263+ header
+								pData += 2;
 
-                            // 2 bytes for standard h263+ header
-                            pData += 2;
+								// do we have separate VRC byte?
+								if (tH263PHeader->V)
+									pData += 1;
 
-                            // do we have separate VRC byte?
-                            if (tH263PHeader->V)
-                                pData += 1;
+								// do we have extra picture header?
+								if (tH263PHeader->Plen > 0)
+									pData += tH263PHeader->Plen;
 
-                            // do we have extra picture header?
-                            if (tH263PHeader->Plen > 0)
-                                pData += tH263PHeader->Plen;
+								// do we have a picture start?
+								if (tH263PHeader->P)
+									tH263PPictureStart = true;
+								else
+									tH263PPictureStart = false;
 
-                            // do we have a picture start?
-                            if (tH263PHeader->P)
-                                tH263PPictureStart = true;
-                            else
-                                tH263PPictureStart = false;
+								// convert from host to network byte order
+								tH263PHeader->Data[0] = htonl(tH263PHeader->Data[0]);
 
-                            // convert from host to network byte order
-                            tH263PHeader->Data[0] = htonl(tH263PHeader->Data[0]);
-
-                            // if P bit was set clear the first 2 bytes of the frame data
-                            if (tH263PPictureStart)
-                            {
-                                #ifdef RTP_DEBUG_PACKET_DECODER
-                                    LOG(LOG_VERBOSE, "P bit is set: clear first 2 byte of frame data");
-                                #endif
-                                pData -= 2; // 2 bytes backward
-                                //HINT: see section 6.1.1 in RFC 4629
-                                if (!pReadOnly)
-                                {
-                                    pData[0] = 0;
-                                    pData[1] = 0;
-                                }
+								// if P bit was set clear the first 2 bytes of the frame data
+								if (tH263PPictureStart)
+								{
+									#ifdef RTP_DEBUG_PACKET_DECODER
+										LOG(LOG_VERBOSE, "P bit is set: clear first 2 byte of frame data");
+									#endif
+									pData -= 2; // 2 bytes backward
+									//HINT: see section 6.1.1 in RFC 4629
+									if (!pReadOnly)
+									{
+										pData[0] = 0;
+										pData[1] = 0;
+									}
+								}
                             }
                             break;
             case CODEC_ID_H264:

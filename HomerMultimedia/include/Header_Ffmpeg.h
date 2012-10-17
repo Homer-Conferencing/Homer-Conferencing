@@ -42,6 +42,7 @@ extern "C" {
 #include <libavutil/dict.h>
 #include <libavutil/log.h>
 #include <libavutil/fifo.h>
+#include <libavutil/opt.h>
 #include <libavutil/mathematics.h>
 #include <libavutil/random_seed.h>
 #include <libswscale/swscale.h>
