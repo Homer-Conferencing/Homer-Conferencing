@@ -866,8 +866,13 @@ bool MediaSourceMuxer::CloseMuxer()
 
     if (mMediaSourceOpened)
     {
+        mMediaSourceOpened = false;
+
         // make sure we can free the memory structures
         StopEncoder();
+
+        // write the trailer, if any
+        av_write_trailer(mFormatContext);
 
         switch(mMediaType)
         {
