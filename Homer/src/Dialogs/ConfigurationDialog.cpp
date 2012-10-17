@@ -477,12 +477,9 @@ void ConfigurationDialog::SaveConfiguration()
                 MEETING.SetAudioCodecsSupport(CODEC_G722ADPCM);
                 break;
         case 3:
-                MEETING.SetAudioCodecsSupport(CODEC_GSM);
-                break;
-        case 4:
                 MEETING.SetAudioCodecsSupport(CODEC_MP3);
                 break;
-        case 5:
+        case 4:
                 MEETING.SetAudioCodecsSupport(CODEC_PCMS16);
                 break;
         default:
@@ -989,7 +986,7 @@ void ConfigurationDialog::ClickedButton(QAbstractButton *pButton)
                 mGrpAudio->setChecked(true);
                 mCbAudioSource->setCurrentIndex(0);
                 mCbAudioSink->setCurrentIndex(0);
-                mCbAudioCodec->setCurrentIndex(4);//MP3
+                mCbAudioCodec->setCurrentIndex(3);//MP3
                 mCbAudioQuality->setCurrentIndex(9);//100 %
                 mCbAudioMaxPacketSize->setCurrentIndex(2);//1280
                 break;
