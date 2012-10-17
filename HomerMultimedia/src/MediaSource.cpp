@@ -263,6 +263,7 @@ void MediaSource::LogSupportedVideoCodecs(bool pSendToLoggerOnly)
         if (tCodec != NULL)
             tNextCodec = av_codec_next(tCodec);
     }
+    Thread::Suspend(1 * 1000 * 1000);
 }
 
 void MediaSource::LogSupportedAudioCodecs(bool pSendToLoggerOnly)
@@ -285,6 +286,12 @@ void MediaSource::LogSupportedAudioCodecs(bool pSendToLoggerOnly)
     {
         if (tCodec->type == AVMEDIA_TYPE_AUDIO)
         {
+            printf("Found audio codec: %s %s  %-15s %s\n",
+               tCodec->decode ? "D" : " ",
+               tCodec->encode ? "E" : " ",
+               tCodec->name,
+               tCodec->long_name ? tCodec->long_name : "");
+
             bool tEncode = (tCodec->encode != NULL);
             bool tDecode = (tCodec->decode != NULL);
             if ((tNextCodec != NULL) && (strcmp(tCodec->name, tNextCodec->name) == 0))
@@ -312,6 +319,7 @@ void MediaSource::LogSupportedAudioCodecs(bool pSendToLoggerOnly)
         if (tCodec != NULL)
             tNextCodec = av_codec_next(tCodec);
     }
+    Thread::Suspend(1 * 1000 * 1000);
 }
 
 void MediaSource::LogSupportedInputFormats(bool pSendToLoggerOnly)
@@ -341,7 +349,7 @@ void MediaSource::LogSupportedInputFormats(bool pSendToLoggerOnly)
         // go to next
         tFormat = av_iformat_next(tFormat);
     }
-
+    Thread::Suspend(1 * 1000 * 1000);
 }
 
 void MediaSource::LogSupportedOutputFormats(bool pSendToLoggerOnly)
@@ -371,7 +379,7 @@ void MediaSource::LogSupportedOutputFormats(bool pSendToLoggerOnly)
         // go to next
         tFormat = av_oformat_next(tFormat);
     }
-
+    Thread::Suspend(1 * 1000 * 1000);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
