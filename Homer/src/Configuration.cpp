@@ -781,7 +781,7 @@ QString Configuration::GetBinaryPath()
 
 QString Configuration::GetConferenceAvailability()
 {
-    return mQSettings->value("Global/Availability", QString(MEETING.getAvailabilityStateStr().c_str())).toString();
+    return mQSettings->value("Global/Availability", QString(MEETING.GetAvailabilityStateStr().c_str())).toString();
 }
 
 QString Configuration::GetContactFile()

@@ -666,7 +666,7 @@ void SIP::SipReceivedRegisterResponse(const sip_to_t *pSipRemote, const sip_to_t
 //////////////////////// PRESENCE MANAGEMENT //////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-void SIP::setAvailabilityState(enum AvailabilityState pState, string pStateText)
+void SIP::SetAvailabilityState(enum AvailabilityState pState, string pStateText)
 {
     int tResult = false;
 
@@ -738,31 +738,31 @@ void SIP::setAvailabilityState(enum AvailabilityState pState, string pStateText)
     nua_publish(mSipPublishHandle, SIPTAG_PAYLOAD(mPresenceDesription), TAG_IF(mPresenceDesription, SIPTAG_CONTENT_TYPE_STR(GetMimeFormatPidf().c_str())), TAG_END());
 }
 
-int SIP::getAvailabilityState()
+int SIP::GetAvailabilityState()
 {
     return mAvailabilityState;
 }
 
-void SIP::setAvailabilityState(string pState)
+void SIP::SetAvailabilityState(string pState)
 {
     LOG(LOG_VERBOSE, "Setting new availability-state \"%s\"", pState.c_str());
 
     if (pState == "Offline")
-        setAvailabilityState(AVAILABILITY_STATE_OFFLINE);
+        SetAvailabilityState(AVAILABILITY_STATE_OFFLINE);
     else
     if (pState == "Online")
-        setAvailabilityState(AVAILABILITY_STATE_ONLINE);
+        SetAvailabilityState(AVAILABILITY_STATE_ONLINE);
     else
     if (pState == "Online (auto)")
-        setAvailabilityState(AVAILABILITY_STATE_ONLINE_AUTO);
+        SetAvailabilityState(AVAILABILITY_STATE_ONLINE_AUTO);
     else
     {
     	LOG(LOG_WARN, "Availability state \"%s\" unknown, falling back to \"online\"", pState.c_str());
-    	setAvailabilityState(AVAILABILITY_STATE_ONLINE);
+    	SetAvailabilityState(AVAILABILITY_STATE_ONLINE);
     }
 }
 
-string SIP::getAvailabilityStateStr()
+string SIP::GetAvailabilityStateStr()
 {
 	string tResult = "";
 

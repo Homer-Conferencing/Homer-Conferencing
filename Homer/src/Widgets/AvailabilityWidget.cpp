@@ -60,16 +60,16 @@ void AvailabilityWidget::initializeGUI()
     mMenu = new QMenu(this);
     InitializeMenuOnlineStatus(mMenu);
     mTbAvailability->setMenu(mMenu);
-    mTbAvailability->setText(QString(MEETING.getAvailabilityStateStr().c_str()) + "  ");
-    if (MEETING.getAvailabilityStateStr() == "Online (auto)")
+    mTbAvailability->setText(QString(MEETING.GetAvailabilityStateStr().c_str()) + "  ");
+    if (MEETING.GetAvailabilityStateStr() == "Online (auto)")
     {
         mTbAvailability->setIcon(QPixmap(":/images/32_32/UserAvailable.png"));
     }
-    if (MEETING.getAvailabilityStateStr() == "Online")
+    if (MEETING.GetAvailabilityStateStr() == "Online")
     {
         mTbAvailability->setIcon(QPixmap(":/images/32_32/UserAvailable.png"));
     }
-    if (MEETING.getAvailabilityStateStr() == "Offline")
+    if (MEETING.GetAvailabilityStateStr() == "Offline")
     {
         mTbAvailability->setIcon(QPixmap(":/images/32_32/UserUnavailable.png"));
     }
@@ -102,7 +102,7 @@ void AvailabilityWidget::Selected(QAction *pAction)
         MEETING.RegisterAtServer();
     }
 
-    MEETING.setAvailabilityState(tNewState.toStdString());
+    MEETING.SetAvailabilityState(tNewState.toStdString());
 }
 
 }} //namespace

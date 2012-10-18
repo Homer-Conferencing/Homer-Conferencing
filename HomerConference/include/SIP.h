@@ -79,10 +79,10 @@ public:
     static std::string GetSofiaSipVersion();
 
     /* presence management */
-    void setAvailabilityState(enum AvailabilityState pState, std::string pStateText = "");
-    void setAvailabilityState(std::string pState);
-    int getAvailabilityState();
-    std::string getAvailabilityStateStr();
+    void SetAvailabilityState(enum AvailabilityState pState, std::string pStateText = "");
+    void SetAvailabilityState(std::string pState);
+    int GetAvailabilityState();
+    std::string GetAvailabilityStateStr();
     /* server based user registration */
     bool RegisterAtServer();
     bool RegisterAtServer(std::string pUsername, std::string pPassword, std::string pServer, unsigned int pServerPort);
@@ -116,8 +116,8 @@ protected:
     void initParticipantTriplet(const sip_to_t *pRemote, sip_t const *pSip, std::string &pSourceIp, unsigned int pSourcePort, std::string &pUser, std::string &pHost, std::string &pPort);
 
     /* identify participant session */
-    bool IsThisParticipant(string pParticipant, string pUser, string pHost, string pPort);
-    bool IsThisParticipant(string pParticipantUser, string pParticipantHost, string pParticipantPort, string pUser, string pHost, string pPort);
+    static bool IsThisParticipant(string pParticipant, string pUser, string pHost, string pPort);
+    static bool IsThisParticipant(string pParticipantUser, string pParticipantHost, string pParticipantPort, string pUser, string pHost, string pPort);
 
     void SipReceivedError(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, const char* pPhrase, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort);
 

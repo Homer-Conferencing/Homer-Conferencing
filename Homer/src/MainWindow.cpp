@@ -715,7 +715,7 @@ void MainWindow::loadSettings()
 
     MEETING.SetLocalUserName(QString(CONF.GetUserName().toLocal8Bit()).toStdString());
     MEETING.SetLocalUserMailAdr(QString(CONF.GetUserMail().toLocal8Bit()).toStdString());
-    MEETING.setAvailabilityState(CONF.GetConferenceAvailability().toStdString());
+    MEETING.SetAvailabilityState(CONF.GetConferenceAvailability().toStdString());
 
     // init video codec for network streaming, but only support ONE codec and not multiple
     QString tVideoStreamCodec = CONF.GetVideoCodec();
@@ -837,7 +837,7 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
 
     // save the availability state within settings
     LOG(LOG_VERBOSE, "..saving conference availability");
-    CONF.SetConferenceAvailability(QString(MEETING.getAvailabilityStateStr().c_str()));
+    CONF.SetConferenceAvailability(QString(MEETING.GetAvailabilityStateStr().c_str()));
 
     // ###### begin shutdown ################
     // stop the screenshot creating timer function
