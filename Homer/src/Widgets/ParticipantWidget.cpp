@@ -641,13 +641,15 @@ bool ParticipantWidget::IsThisParticipant(QString pParticipant)
             pParticipant += ':' + tPort;
     }
 
-    // we only check the user name and the host address
-    // this is a result of some experiments with ekiga/linphone
-    //LOG(LOG_VERBOSE, "IsThisParticipant-Compare: %s with %s", pParticipant.toStdString().c_str(), mSessionName.section(":", 0, 0).section("@", 1, 1).toStdString().c_str());
-    //return pParticipant.contains(mSessionName.section(":", 0, 0).section("@", 1, 1));
+    if ((mSessionName.section("@", 1).contains(CONF.GetSipServer())) || (mSipInterface.contains(CONF.GetSipServer())))
+    {// this participant belongs to SIP server (pbx box) -> we also have to check the user name
+        tResult = ((pParticipant.contains(mSessionName.section("@", 1)) || pParticipant.contains(mSipInterface))) && (mSessionName.section("@", 0, 0) == pParticipant.section("@", 0, 0));
 
-    tResult = (pParticipant.contains(mSessionName.section("@", 1)) || pParticipant.contains(mSipInterface));
-    LOG(LOG_VERBOSE, "CompareIsThisParticipant: %s with %s and %s ==> %s", pParticipant.toStdString().c_str(), mSessionName.section("@", 1).toStdString().c_str(), mSipInterface.toStdString().c_str(), tResult ? "MATCH" : "no match");
+    }else
+    {// this participant is located on some foreign host and uses peer-to-peer communication
+        tResult = (pParticipant.contains(mSessionName.section("@", 1)) || pParticipant.contains(mSipInterface));
+    }
+    LOG(LOG_VERBOSE, "@\"%s\" - IsThisParticipant \"%s\"? ==> %s", mSessionName.toStdString().c_str(), pParticipant.toStdString().c_str(), tResult ? "MATCH" : "no match");
 
     return tResult;
 }
@@ -657,16 +659,18 @@ void ParticipantWidget::HandleMessage(bool pIncoming, QString pSender, QString p
     // return immediately if we are a preview only
     if (mSessionType == PREVIEW)
     {
-        LOG(LOG_ERROR, "This function is not support vor preview widgets");
+        LOG(LOG_ERROR, "This function is not support for preview widgets");
         return;
     }
 
-    if (!pIncoming)
+    if (pIncoming)
     {
-    	LOG(LOG_ERROR, "Loopback message %s received from %s", pMessage.toStdString().c_str(), pSender.toStdString().c_str());
-    	return;
+        LOG(LOG_VERBOSE, "Message \"%s\" received from \"%s\"", pMessage.toStdString().c_str(), pSender.toStdString().c_str());
     }else
-        LOG(LOG_VERBOSE, "Message %s received from %s", pMessage.toStdString().c_str(), pSender.toStdString().c_str());
+    {
+        LOG(LOG_ERROR, "Loopback message \"%s\" received from \"%s\"", pMessage.toStdString().c_str(), pSender.toStdString().c_str());
+        return;
+    }
 
     if (mMessageWidget != NULL)
     {
