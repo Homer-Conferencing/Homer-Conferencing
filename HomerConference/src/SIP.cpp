@@ -230,7 +230,7 @@ bool SIP::IsThisParticipant(string pParticipantUser, string pParticipantHost, st
 
     tResult = (((pParticipantUser == pUser) || (pParticipantHost != mSipRegisterServer)) && (pParticipantHost == pHost) && (pParticipantPort == pPort));
 
-    LOGEX(SIP, LOG_VERBOSE, "Comparing: %s - %s, %s - %s, %s - %s  ==> %s", pParticipantUser.c_str(), pUser.c_str(), pParticipantHost.c_str(), pHost.c_str(), pParticipantPort.c_str(), pPort.c_str(), tResult ? "MATCH" : "different");
+    //LOGEX(SIP, LOG_VERBOSE, "Comparing: %s - %s, %s - %s, %s - %s  ==> %s", pParticipantUser.c_str(), pUser.c_str(), pParticipantHost.c_str(), pHost.c_str(), pParticipantPort.c_str(), pPort.c_str(), tResult ? "MATCH" : "different");
 
     return tResult;
 }
