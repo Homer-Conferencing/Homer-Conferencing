@@ -896,7 +896,8 @@ void ParticipantWidget::CallStopped(bool pIncoming)
         mAudioWidget->SetVisible(false);
         mAudioWidget->ToggleMuteState(false);
     }
-	ResizeAVView(0);
+	if (!mSessionInfoWidget->isVisible())
+		ResizeAVView(0);
     mIncomingCall = false;
 
     if (mWaveOut != NULL)
