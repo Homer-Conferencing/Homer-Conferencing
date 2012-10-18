@@ -132,7 +132,7 @@ public:
     void UpdateParticipantName(QString pParticipantName);
     void UpdateParticipantState(int pState);
     bool IsThisParticipant(QString pParticipant);
-    QString getParticipantName();
+    QString GetParticipantName();
     enum SessionType GetSessionType();
     QString GetSipInterface();
     VideoWorkerThread* GetVideoWorker();

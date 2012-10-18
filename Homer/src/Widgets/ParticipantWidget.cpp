@@ -1318,7 +1318,7 @@ void ParticipantWidget::UpdateParticipantState(int pState)
     }
 }
 
-QString ParticipantWidget::getParticipantName()
+QString ParticipantWidget::GetParticipantName()
 {
     if (mSessionType == PARTICIPANT)
         return mSessionName;

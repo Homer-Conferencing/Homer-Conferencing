@@ -1538,13 +1538,13 @@ ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHos
             {
                 if (pInitState == CALLSTATE_RINGING)
                 {
-                    if (MEETING.GetCallState(QString((*tIt)->getParticipantName().toLocal8Bit()).toStdString()) == CALLSTATE_STANDBY)
+                    if (MEETING.GetCallState(QString((*tIt)->GetParticipantName().toLocal8Bit()).toStdString()) == CALLSTATE_STANDBY)
                     {
                         MEETING.SendCall(MEETING.SipCreateId(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString()));
                         return NULL;
                     }else
                     {
-                        ShowInfo("Participant already called", "The participant \"" + QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str()) + "\" is already called!\nThe participant is known as \"" + (*tIt)->getParticipantName() + "\".");
+                        ShowInfo("Participant already called", "The participant \"" + QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str()) + "\" is already called!\nThe participant is known as \"" + (*tIt)->GetParticipantName() + "\".");
                         return NULL;
                     }
                  }else
@@ -1575,7 +1575,7 @@ void MainWindow::DeleteParticipantSession(ParticipantWidget *pParticipantWidget)
     QString tParticipantName;
 
     // store the participant name for later processing
-    tParticipantName = pParticipantWidget->getParticipantName();
+    tParticipantName = pParticipantWidget->GetParticipantName();
 
     enum SessionType tSessionType = pParticipantWidget->GetSessionType();
 
