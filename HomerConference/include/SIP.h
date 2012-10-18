@@ -83,20 +83,25 @@ public:
     void SetAvailabilityState(std::string pState);
     int GetAvailabilityState();
     std::string GetAvailabilityStateStr();
+
     /* server based user registration */
     bool RegisterAtServer();
     bool RegisterAtServer(std::string pUsername, std::string pPassword, std::string pServer, unsigned int pServerPort);
     void UnregisterAtServer();
     bool GetServerRegistrationState();
     std::string GetServerSoftwareId();
+
     /* NAT detection */
     virtual void SetStunServer(std::string pServer);
-    /* general */
+
+    /* identify participant session */
     static std::string SipCreateId(std::string pUser, std::string pHost, std::string pPort = "");
     static bool SplitParticipantName(string pParticipant, string &pUser, string &Host, string &pPort);
+    bool IsThisParticipant(string pParticipant, string pUser, string pHost, string pPort);
 
     /* SIP call back */
     void SipCallBack(int pEvent, int pStatus, char const *pPhrase, nua_t *pNua, nua_magic_t *pMagic, nua_handle_t *pNuaHandle, nua_hmagic_t *pHMagic, sip_t const *pSip, void* pTags);
+
 private:
     /* main SIP event loop handling */
     virtual void* Run(void*);
@@ -116,8 +121,7 @@ protected:
     void initParticipantTriplet(const sip_to_t *pRemote, sip_t const *pSip, std::string &pSourceIp, unsigned int pSourcePort, std::string &pUser, std::string &pHost, std::string &pPort);
 
     /* identify participant session */
-    static bool IsThisParticipant(string pParticipant, string pUser, string pHost, string pPort);
-    static bool IsThisParticipant(string pParticipantUser, string pParticipantHost, string pParticipantPort, string pUser, string pHost, string pPort);
+    bool IsThisParticipant(string pParticipantUser, string pParticipantHost, string pParticipantPort, string pUser, string pHost, string pPort);
 
     void SipReceivedError(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, const char* pPhrase, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort);
 
