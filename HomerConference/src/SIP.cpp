@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <sstream>
 #include <assert.h>
+#include <stdio.h>
 
 #include <HBSocket.h>
 #include <HBTime.h>
@@ -60,6 +61,7 @@ using namespace Homer::Monitor;
 
 #define                 SIP_STATE_OKAY                      200
 #define                 SIP_STATE_OKAY_DELAYED_DELIVERY     202
+#define					SIP_STATE_AUTH_REQUIRED				401
 #define                 SIP_STATE_METHODE_NOT_ALLOWED       405
 #define                 SIP_STATE_PROXY_AUTH_REQUIRED       407
 #define                 SIP_STATE_REQUEST_TIMEOUT           408
@@ -75,7 +77,7 @@ struct SipContext
 ///////////////////////////////////////////////////////////////////////////////
 
 // (de-)activate debugging of authentication data: only activate this if logs are kept private!
-//#define DEBUG_AUTH_DATA
+#define DEBUG_AUTH_DATA
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -532,7 +534,8 @@ bool SIP::RegisterAtServer(string pUsername, string pPassword, string pServer, u
     {
         LOG(LOG_VERBOSE, "Register at SIP server %s:%u", pServer.c_str(), pPort);
 		#ifdef DEBUG_AUTH_DATA
-        	LOG(LOG_VERBOSE, "SIP server login %s:%s", pUsername.c_str(), pPassword.c_str());
+			if (LOGGER.GetLogLevel() == LOG_VERBOSE)
+				LOG(LOG_VERBOSE, "SIP server login %s:%s", pUsername.c_str(), pPassword.c_str());
 		#endif
 
         mSipRegisterServer = pServer;
@@ -603,6 +606,30 @@ string SIP::GetServerSoftwareId()
     return tResult;
 }
 
+string SIP::CreateAuthInfo(sip_t const *pSip)
+{
+	string tResult = "";
+
+	LOG(LOG_VERBOSE, "Generating auth. info..");
+
+	const char* tRealm = msg_params_find(pSip->sip_www_authenticate->au_params, "realm=");
+	const char* tScheme = pSip->sip_www_authenticate->au_scheme;
+	char tAuthInfo[512];
+
+	LOG(LOG_VERBOSE, "Found realm: \"%s\" in auth. information from SIP server", tRealm);
+	LOG(LOG_VERBOSE, "Found scheme: \"%s\" in auth. information from SIP server", tScheme);
+	sprintf(tAuthInfo, "%s:%s:%s:%s", tScheme, tRealm, mSipRegisterUsername.c_str(), mSipRegisterPassword.c_str());
+	#ifdef DEBUG_AUTH_DATA
+		if (LOGGER.GetLogLevel() == LOG_VERBOSE)
+			LOG(LOG_VERBOSE, "Generated auth. info:", tAuthInfo);
+	#endif
+
+	if (tAuthInfo != NULL)
+		tResult = string(tAuthInfo);
+
+	return tResult;
+}
+
 void SIP::SipReceivedRegisterResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, const char* pPhrase, sip_t const *pSip, string pSourceIp, unsigned int pSourcePort)
 {
     RegistrationEvent *tREvent;
@@ -616,14 +643,13 @@ void SIP::SipReceivedRegisterResponse(const sip_to_t *pSipRemote, const sip_to_t
     */
     switch(pStatus)
     {
-        case 401: // needs auth.
+    	case SIP_STATE_AUTH_REQUIRED: // needs auth.
+        case SIP_STATE_PROXY_AUTH_REQUIRED:
+        	LOG(LOG_VERBOSE, "Got SIP message %d, have to register with authentication information included", pStatus);
+
             if (mSipRegisterHandle != NULL)
             {
-                string tAuthInfo = "Digest:\"" + mSipRegisterServer + "\":" + mSipRegisterUsername + ":" + mSipRegisterPassword;
-
-				#ifdef DEBUG_AUTH_DATA
-                	LOG(LOG_VERBOSE, "Authentication information for registration: %s", tAuthInfo.c_str());
-				#endif
+            	string tAuthInfo = CreateAuthInfo(pSip);
 
                 // set auth. information
                 nua_authenticate(mSipRegisterHandle, NUTAG_AUTH(tAuthInfo.c_str()), TAG_END());
@@ -798,13 +824,11 @@ void SIP::SipReceivedPublishResponse(const sip_to_t *pSipRemote, const sip_to_t 
     */
     switch(pStatus)
     {
-        case 401: // needs auth.
+        case SIP_STATE_AUTH_REQUIRED: // needs auth.
         case SIP_STATE_PROXY_AUTH_REQUIRED:
             if (mSipPublishHandle != NULL)
             {
-                string tAuthInfo = "Digest:\"" + mSipRegisterServer + "\":" + mSipRegisterUsername + ":" + mSipRegisterPassword;
-
-                LOG(LOG_VERBOSE, "Authentication information for publication: %s", tAuthInfo.c_str());
+                string tAuthInfo = CreateAuthInfo(pSip);
 
                 // set auth. information
                 nua_authenticate(mSipPublishHandle, NUTAG_AUTH(tAuthInfo.c_str()), TAG_END());
@@ -1984,22 +2008,26 @@ void SIP::PrintSipHeaderInfo(const sip_to_t *pRemote, const sip_to_t *pLocal, si
         if (pSip->sip_subscription_state)
         {
             LOG(LOG_INFO, "SuscriptionState: %s", pSip->sip_subscription_state->ss_substate);
-            LOG(LOG_INFO, "SuscriptionParams: %s", pSip->sip_subscription_state->ss_params);
+            LOG(LOG_INFO, "SuscriptionParams: %s", *pSip->sip_subscription_state->ss_params);
             LOG(LOG_INFO, "SuscriptionTermReason: %s", pSip->sip_subscription_state->ss_reason);
             LOG(LOG_INFO, "SuscriptionLifetime: %s", pSip->sip_subscription_state->ss_expires);
         }
         if (pSip->sip_www_authenticate)
         {
             LOG(LOG_INFO, "ServerAuthScheme: %s", pSip->sip_www_authenticate->au_scheme);
-            LOG(LOG_INFO, "ServerAuthParams: %s", pSip->sip_www_authenticate->au_params);
+            LOG(LOG_INFO, "ServerAuthParams: %s", *pSip->sip_www_authenticate->au_params);
         }
         if (pSip->sip_proxy_authenticate)
         {
             LOG(LOG_INFO, "ProxyAuthScheme: %s", pSip->sip_proxy_authenticate->au_scheme);
-            LOG(LOG_INFO, "ProxyAuthParams: %s", pSip->sip_proxy_authenticate->au_params);
+            LOG(LOG_INFO, "ProxyAuthParams: %s", *pSip->sip_proxy_authenticate->au_params);
+        }
+        if (pSip->sip_proxy_authentication_info)
+        {
+            LOG(LOG_INFO, "ProxyAuthInfoParams: %s", *pSip->sip_proxy_authentication_info->ai_params);
         }
         if(pSip->sip_authentication_info)
-            LOG(LOG_INFO, "AuthInfo: %s", pSip->sip_authentication_info->ai_params);
+            LOG(LOG_INFO, "AuthInfo: %s", *pSip->sip_authentication_info->ai_params);
     }
 }
 
@@ -2232,6 +2260,10 @@ void SIP::SipReceivedMessageResponse(const sip_to_t *pSipRemote, const sip_to_t 
             }else
                 SipReceivedMessageUnavailable(pSipRemote, pSipLocal, pNuaHandle, pStatus, pPhrase, pSip, pSourceIp, pSourcePort);
             break;
+        case 405: // method not allowed
+            LOG(LOG_ERROR, "Peer does not support instant messages, peer runs software: %s", GetServerSoftwareId().c_str());
+        	SipReceivedMessageUnavailable(pSipRemote, pSipLocal, pNuaHandle, pStatus, pPhrase, pSip, pSourceIp, pSourcePort);
+            break;
         case 408 ... 599: // user/service unavailable
             //    408 = Timeout
             //    415 = Unsupported media type (linphone)
@@ -2394,12 +2426,13 @@ void SIP::SipReceivedCallResponse(const sip_to_t *pSipRemote, const sip_to_t *pS
         case 180: // ringing on the other side
             SipReceivedCallRinging(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort);
             break;
+        case SIP_STATE_AUTH_REQUIRED: // needs auth.
         case SIP_STATE_PROXY_AUTH_REQUIRED:
+        	LOG(LOG_VERBOSE, "Got SIP message %d, have to call with authentication information included", pStatus);
+
             if ((pNuaHandle != NULL) && (GetServerRegistrationState()))
             {
-                string tAuthInfo = "Digest:\"" + mSipRegisterServer + "\":" + mSipRegisterUsername + ":" + mSipRegisterPassword;
-
-                LOG(LOG_VERBOSE, "Authentication information for message: %s", tAuthInfo.c_str());
+            	string tAuthInfo = CreateAuthInfo(pSip);
 
                 // set auth. information
                 nua_authenticate(pNuaHandle, NUTAG_AUTH(tAuthInfo.c_str()), TAG_END());
@@ -2408,12 +2441,14 @@ void SIP::SipReceivedCallResponse(const sip_to_t *pSipRemote, const sip_to_t *pS
             	LOG(LOG_ERROR, "Communication partner requests authentication data but this is not support in peer-to-peer mode");
             	SipReceivedCallUnavailable(pSipRemote, pSipLocal, pNuaHandle, pStatus, pPhrase, pSip, pSourceIp, pSourcePort);
             }
-
             break;
-        case 400 ... 406: // user/service unavailable
+        case 400:
+        case 402 ... 406: // user/service unavailable
         	//    404 = Not found, user not found in remote database
         case 408 ... 599: // user/service unavailable
+			//    404 = Not found
         	//    408 = Timeout
+        	//    488 = Not acceptable here (A/V codec problem)
             //    415 = Unsupported media type (linphone)
             //    503 = Service unavailable
             SipReceivedCallUnavailable(pSipRemote, pSipLocal, pNuaHandle, pStatus, pPhrase, pSip, pSourceIp, pSourcePort);

@@ -165,6 +165,9 @@ protected:
     void SipSendOptionsRequest(OptionsEvent *pOEvent);
     void SipProcessOutgoingEvents();
 
+    /* auth support */
+    string CreateAuthInfo(sip_t const *pSip);
+
     /* sip registrar support */
     bool SipLoginAtServer();
     void SipLogoutAtServer();
