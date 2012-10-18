@@ -744,7 +744,7 @@ bool MediaSourceV4L2::SelectInputStream(int pIndex)
     return tResult;
 }
 
-vector<string> MediaSourceV4L2::GetInputChannels()
+vector<string> MediaSourceV4L2::GetInputStreams()
 {
     vector<string> tResult;
 
