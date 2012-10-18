@@ -927,7 +927,10 @@ void ParticipantWidget::HandleCallUnavailable(bool pIncoming, int pStatusCode, Q
         UpdateParticipantState(CONTACT_UNAVAILABLE);
         CONTACTS.UpdateContactState(mSessionName, CONTACT_UNAVAILABLE);
 
-        ShowError("Participant unavailable", "The participant " + mSessionName + " is currently unavailable for a call! The reason is \"" + pDescription + "\"(" + QString("%1").arg(pStatusCode) + ").");
+        if (pStatusCode == 488)
+        	ShowError("Participant unavailable", "The participant " + mSessionName + " does not accept your video/audio codecs. Please, check the configuration and use different settings.");
+		else
+        	ShowError("Participant unavailable", "The participant " + mSessionName + " is currently unavailable for a call! The reason is \"" + pDescription + "\"(" + QString("%1").arg(pStatusCode) + ").");
     }else
     	CallStopped(pIncoming);
 
