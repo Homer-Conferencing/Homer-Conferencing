@@ -704,9 +704,6 @@ border-right: 0px solid rgb(0,0,0);</string>
             <property name="text">
              <string/>
             </property>
-            <property name="pixmap">
-             <pixmap resource="../../resources/Icons.qrc">:/images/VersionLogoOnlineforge.png</pixmap>
-            </property>
            </widget>
           </item>
          </layout>
