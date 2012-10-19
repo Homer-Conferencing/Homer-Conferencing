@@ -16,10 +16,11 @@ For a delayed insertion of contents or for repeated playback, it is necessary to
 For the demonstration of processes on the desktop it would be interesting to be able to either record or to stream via network a live video of the activities on the desktop. For both applications, the needed functions are provided by the software. For example, Homer can be used for recording a screencast or for presenting software processes via a live broadcast of the desktop picture. Like other video sources, the desktop picture can also be used during a video conference and therefore being showed to all participants for discussing in real-time. However, a non wished observation or control of the local desktop by a remote station are not possible.
 
 ## Minimum system requirements
-* An SSE3 capable CPU (4 cpu cores recommended for high quality streaming)
-* Windows users: Windows XP SP3 (Windows 7 recommended)
-* Linux users: Linux with kernel 2.6 (kernel >= 3.1 recommended)
-* Mac users: OS X Snow Leopard (OS X Lion recommended)
+* 32/64 bit processor with 2 Ghz (4 cores with 3 Ghz are recommended for high qualitative video streaming), the OS X version can only be used on 64 bit prozessors
+* for Windows: Windows XP SP3 (Windows 7 recommended)
+* for Linux: Linux kernel 2.6 (Linuxkernel >= 3.1 recommended)
+* for Mac Hardware: OS X Snow Leopard (OS X Lion recommended)
+
 
 # The project
 
