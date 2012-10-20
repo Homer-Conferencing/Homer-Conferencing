@@ -325,7 +325,7 @@ void UpdateCheckDialog::GotAnswerForVersionRequest(bool pError)
             if (mServerVersion != RELEASE_VERSION_STRING)
             {
                 mLbVersionServer->setText("<font color='red'><b>" + mServerVersion + "</b></font>");
-				#if defined(WIN32) | defined(LINUX)
+				#if defined(WIN32) || defined(LINUX)
                 	mTbDownloadUpdate->show();
 				#endif
 				mTbDownloadUpdateInstaller->show();
