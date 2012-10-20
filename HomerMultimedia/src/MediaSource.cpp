@@ -520,17 +520,17 @@ enum CodecID MediaSource::GetCodecIDFromGuiName(std::string pName)
         tResult = CODEC_ID_VP8;
 
     /* audio */
-    if (pName == "G711 µ-law")
+    if ((pName == "G711 µ-law") || (pName == "G711 µ-law (PCMU)" /*historic*/))
         tResult = CODEC_ID_PCM_MULAW;
     if (pName == "GSM")
         tResult = CODEC_ID_GSM;
-    if (pName == "G711 A-law")
+    if ((pName == "G711 A-law") || (pName == "G711 A-law (PCMA)" /*historic*/))
         tResult = CODEC_ID_PCM_ALAW;
     if (pName == "G722 adpcm")
         tResult = CODEC_ID_ADPCM_G722;
-    if (pName == "PCM16")
+    if ((pName == "PCM16") || (pName == "PCM_S16_LE" /*historic*/))
         tResult = CODEC_ID_PCM_S16BE;
-    if (pName == "MP3")
+    if ((pName == "MP3") || (pName == "MP3 (MPA)" /*historic*/))
         tResult = CODEC_ID_MP3;
     if (pName == "AAC")
         tResult = CODEC_ID_AAC;
