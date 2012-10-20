@@ -556,7 +556,7 @@ bool SIP::RegisterAtServer()
 
     if ((mSipRegisterUsername == "") || (mSipRegisterPassword == "") || (mSipRegisterServer == ""))
     {
-        LOG(LOG_ERROR, "Too few parameters to register at SIP server, check given user name and password");
+        LOG(LOG_WARN, "Too few parameters to register at SIP server, check given user name and password");
         return false;
     }
 
