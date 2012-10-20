@@ -370,6 +370,9 @@
    <property name="text">
     <string>Data streams</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+D</string>
+   </property>
    <property name="iconVisibleInMenu">
     <bool>true</bool>
    </property>
@@ -388,6 +391,9 @@
    </property>
    <property name="text">
     <string>System threads</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
    </property>
    <property name="iconVisibleInMenu">
     <bool>true</bool>
@@ -623,6 +629,9 @@
    <property name="text">
     <string>Errors</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
+   </property>
    <property name="iconVisibleInMenu">
     <bool>true</bool>
    </property>
@@ -666,6 +675,9 @@
    </property>
    <property name="text">
     <string>Network streams</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
    </property>
   </action>
   <action name="mActionOpenVideoAudioPreview">
