@@ -308,8 +308,8 @@ IF (NOT (${BUILD} MATCHES "Default"))
 		libgstreamer-0.10.so         
 		libgstvideo-0.10.so.0
 		libstdc++.so.6.0.14
-		libQtCore.so.4.8.1
-		libQtGui.so.4.8.1
+		libQtCore.so.4.8.3
+		libQtGui.so.4.8.3
 		libQtWebKit.so.4.9.0
 		libgstapp-0.10.so.0
 		libgstbase-0.10.so.0.29.0
@@ -325,10 +325,10 @@ IF (NOT (${BUILD} MATCHES "Default"))
 		libgstpbutils-0.10.so.0          
 		libgstreamer-0.10.so.0.29.0  
 		libstdc++.so
-		libQtDBus.so.4.8.1
-		libQtNetwork.so.4.8.1
-		libQtXml.so.4.8.1     
-		libQtXmlPatterns.so.4.8.1     
+		libQtDBus.so.4.8.3
+		libQtNetwork.so.4.8.3
+		libQtXml.so.4.8.3     
+		libQtXmlPatterns.so.4.8.3     
 		libgstbase-0.10.so
 		libgstinterfaces-0.10.so.0  
 		libgstpbutils-0.10.so.0.24.0     
@@ -354,6 +354,18 @@ IF (NOT(${BUILD} MATCHES "Default"))
 		QtXml
 		QtXmlPatterns
 		QtWebKit
+		QtCore.4
+		QtGui.4
+		QtNetwork.4
+		QtXml.4
+		QtXmlPatterns.4
+		QtWebKit.4
+		QtCore.4.8.3
+		QtGui.4.8.3
+		QtNetwork.4.8.3
+		QtXml.4.8.3
+		QtXmlPatterns.4.8.3
+		QtWebKit.4.9.3
 	)
 	SET (LIBS_APPLE
 		${LIBS_APPLE}
