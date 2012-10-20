@@ -506,6 +506,9 @@
    <property name="text">
     <string>Contact list</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+L</string>
+   </property>
    <property name="iconVisibleInMenu">
     <bool>true</bool>
    </property>
@@ -525,6 +528,9 @@
    <property name="text">
     <string>File transfer list</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
+   </property>
   </action>
   <action name="mActionMonitorBroadcastWidget">
    <property name="checkable">
@@ -540,6 +546,9 @@
    </property>
    <property name="text">
     <string>Broadcast data</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+B</string>
    </property>
   </action>
   <action name="mActionOverviewVideoPlaylistWidget">
@@ -706,6 +715,9 @@
    </property>
    <property name="text">
     <string>Playlist</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
    </property>
   </action>
  </widget>

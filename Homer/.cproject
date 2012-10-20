@@ -46,9 +46,9 @@
 									<listOptionValue builtIn="false" value="/usr/include/qt4/"/>
 									<listOptionValue builtIn="false" value="../../HomerNAPI/include"/>
 									<listOptionValue builtIn="false" value="../../HomerNetworkSimulator/include"/>
-									<listOptionValue builtIn="false" value="../../../Homer-Release/HomerIncludes/qt4/QtGui"/>
 									<listOptionValue builtIn="false" value="../../../Homer-Release/HomerIncludes/qt4/QtCore"/>
 									<listOptionValue builtIn="false" value="../../../Homer-Release/HomerIncludes/qt4/QtNetwork"/>
+									<listOptionValue builtIn="false" value="../../../Homer-Release/HomerIncludes/qt4/QtGui"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1209009665" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="M_LINUX=1"/>
