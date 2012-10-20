@@ -536,9 +536,9 @@ void MainWindow::initializeWidgetsAndMenus()
     tabifyDockWidget(mOverviewThreadsWidget, mOverviewDataStreamsWidget);
     tabifyDockWidget(mOverviewDataStreamsWidget, mOverviewNetworkStreamsWidget);
 
-    mShortcutActivateDebugWidgets = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_A), this);
-    mShortcutActivateDebuggingGlobally = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_D), this);
-    mShortcutActivateNetworkSimulationWidgets = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_S), this);
+    mShortcutActivateDebugWidgets = new QShortcut(QKeySequence(Qt::ALT + Qt::Key_A), this);
+    mShortcutActivateDebuggingGlobally = new QShortcut(QKeySequence(Qt::ALT + Qt::Key_D), this);
+    mShortcutActivateNetworkSimulationWidgets = new QShortcut(QKeySequence(Qt::ALT + Qt::Key_S), this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
