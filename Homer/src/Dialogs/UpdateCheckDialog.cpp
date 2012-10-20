@@ -50,6 +50,7 @@ UpdateCheckDialog::UpdateCheckDialog(QWidget* pParent) :
 	mDownloadProgressDialog = NULL;
     initializeGUI();
     mTbDownloadUpdate->hide();
+    mTbDownloadUpdateInstaller->hide();
     mLbVersion->setText(RELEASE_VERSION_STRING);
     mCbAutoUpdateCheck->setChecked(CONF.GetAutoUpdateCheck());
     mNetworkAccessManager = new QNetworkAccessManager(this);
@@ -98,6 +99,9 @@ void UpdateCheckDialog::DownloadStart()
 		ShowInfo("Download of Homer update running", "A download of a Homer update is already started!");
 		return;
 	}
+
+	LOG(LOG_VERBOSE, "Starting download of update archive");
+
 	// find correct release name for this target system
 	QString tReleaseFileName;
 	QString tReleaseFileType;
@@ -159,6 +163,9 @@ void UpdateCheckDialog::DownloadInstallerStart()
 		ShowInfo("Download of Homer update running", "A download of a Homer update is already started!");
 		return;
 	}
+
+	LOG(LOG_VERBOSE, "Starting download of update installer");
+
 	// find correct release name for this target system
 	QString tReleaseFileName;
 	QString tReleaseFileType;
@@ -171,7 +178,7 @@ void UpdateCheckDialog::DownloadInstallerStart()
 		tReleaseFileName = "Homer-Conferencing.sh";
 		tReleaseFileType = "Linux shell script (*.sh)";
 	#endif
-	#ifdef BSD
+	#if defined(BSD) && !defined(APPLE)
 		return;
 	#endif
 	#ifdef APPLE
@@ -318,9 +325,9 @@ void UpdateCheckDialog::GotAnswerForVersionRequest(bool pError)
             if (mServerVersion != RELEASE_VERSION_STRING)
             {
                 mLbVersionServer->setText("<font color='red'><b>" + mServerVersion + "</b></font>");
-                mTbDownloadUpdate->show();
-
-                // show download button for installer
+				#if defined(WIN32) | defined(LINUX)
+                	mTbDownloadUpdate->show();
+				#endif
 				mTbDownloadUpdateInstaller->show();
             }else
                 mLbVersionServer->setText("<font color='green'><b>" + mServerVersion + "</b></font>");

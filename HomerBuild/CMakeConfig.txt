@@ -31,7 +31,6 @@ IF (${CMAKE_SYSTEM} MATCHES "FreeBSD.*")
 	SET (BSD "true")
 	MESSAGE("Detected system is FreeBSD")
 ELSE()
-	SET (BSD "false")
 	MESSAGE("Detected system is ${CMAKE_SYSTEM}") 
 ENDIF()
 ENDIF()
@@ -40,8 +39,6 @@ ENDIF()
 # detect Linux
 IF (UNIX AND NOT WIN32 AND NOT APPLE AND NOT BSD)
 	SET (LINUX "true")
-ELSE()
-	SET (LINUX "false")
 ENDIF()
 
 ##############################################################
