@@ -310,7 +310,7 @@ IF (NOT (${BUILD} MATCHES "Default"))
 		libstdc++.so.6.0.14
 		libQtCore.so.4.8.3
 		libQtGui.so.4.8.3
-		libQtWebKit.so.4.9.0
+		libQtWebKit.so.4.9.3
 		libgstapp-0.10.so.0
 		libgstbase-0.10.so.0.29.0
 		libgstpbutils-0.10.so
