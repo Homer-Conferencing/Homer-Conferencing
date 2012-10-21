@@ -325,6 +325,7 @@ IF (NOT (${BUILD} MATCHES "Default"))
 		libgstpbutils-0.10.so.0          
 		libgstreamer-0.10.so.0.29.0  
 		libstdc++.so
+		libgcc_s.so.1
 		libQtDBus.so.4.8.3
 		libQtNetwork.so.4.8.3
 		libQtXml.so.4.8.3     
