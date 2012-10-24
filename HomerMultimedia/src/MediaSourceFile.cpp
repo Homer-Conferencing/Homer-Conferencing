@@ -1718,21 +1718,19 @@ bool MediaSourceFile::SupportsMultipleInputStreams()
 
 bool MediaSourceFile::SelectInputStream(int pIndex)
 {
-    bool tResult = false;
+    bool tResult = true;
 
     LOG(LOG_WARN, "Selecting input channel: %d of %d max. channels, current is %d", pIndex, (int)mInputChannels.size(), mCurrentInputChannel);
 
     if (mCurrentInputChannel != pIndex)
-        tResult = true;
-
-    mDesiredInputChannel = pIndex;
-
-    if (tResult)
     {
+        mDesiredInputChannel = pIndex;
+
         float tCurPos = GetSeekPos();
-        tResult &= Reset();
-        Seek(tCurPos, false);
-    }
+        tResult = Reset();
+        tResult &= Seek(tCurPos, false);
+    }else
+        LOG(LOG_VERBOSE, "Desired input channel %d is already selected, skipping %s source reset", pIndex, GetMediaTypeStr().c_str());
 
     return tResult;
 }
