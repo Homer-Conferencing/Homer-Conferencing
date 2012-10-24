@@ -152,6 +152,7 @@ SET (LIBS_WINDOWS
 	SDL
 )
 
+#################
 # USED LIBRARIES for apple environment
 SET (LIBS_APPLE
 	HomerBase
@@ -194,6 +195,7 @@ SET (FRAMEWORKS_APPLE
 	VideoDecodeAcceleration
 )
 
+#################
 # used libraries for LINUX environment
 IF (${BUILD} MATCHES "Default")
 	SET (LIBS_LINUX
@@ -246,6 +248,7 @@ ELSE ()
 	)
 ENDIF ()
 
+#################
 # USED LIBRARIES for BSD environment
 SET (LIBS_BSD
 	HomerBase
