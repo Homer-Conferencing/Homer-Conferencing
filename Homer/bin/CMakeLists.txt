@@ -260,6 +260,7 @@ SET (LIBS_WINDOWS
 	${QT_QTWEBKIT_LIBRARIES}
 )
 
+#################
 # USED LIBRARIES for BSD environment
 SET (LIBS_BSD
         HomerBase
@@ -271,6 +272,7 @@ SET (LIBS_BSD
         ${QT_LIBRARIES}
 )
 
+#################
 # USED LIBRARIES for linux environment
 SET (LIBS_LINUX
 	HomerBase
@@ -336,7 +338,12 @@ IF (NOT (${BUILD} MATCHES "Default"))
 		libgstvideo-0.10.so          
 		libstdc++.so.6
 	)
+	SET (LIBS_LINUX_STATIC
+		glib-2.0  # avoid link problems in QtWebKit
+	)
 ENDIF()
+
+#################
 # USED LIBRARIES for apple environment
 SET (LIBS_APPLE
 	stdc++
