@@ -82,8 +82,9 @@ public:
 
     void SetVisible(bool pVisible);
 
-    void InformAboutOpenError(QString pSourceName);
     void InformAboutNewSamples();
+    void InformAboutOpenError(QString pSourceName);
+    void InformAboutNewSource();
     void InformAboutNewMuteState();
 
     AudioWorkerThread* GetWorker();
@@ -169,6 +170,8 @@ private:
     virtual void DoResetMediaSource();
     virtual void DoSeek();
     virtual void DoSyncClock();
+    virtual void HandlePlayFileError();
+    virtual void HandlePlayFileSuccess();
 
     /* audio playback */
     void DoStartPlayback();

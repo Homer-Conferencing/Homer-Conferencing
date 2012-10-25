@@ -44,6 +44,7 @@
 #include <ProcessStatisticService.h>
 #include <MediaSource.h>
 #include <MediaSourceFile.h>
+#include <MediaSourceLogo.h>
 #include <PacketStatistic.h>
 #include <Logger.h>
 #include <PacketStatistic.h>
@@ -99,11 +100,11 @@ using namespace Homer::Monitor;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define VIDEO_OPEN_ERROR                (QEvent::User + 1001)
-#define VIDEO_NEW_FRAME                 (QEvent::User + 1002)
-#define VIDEO_NEW_SOURCE                (QEvent::User + 1003)
-#define VIDEO_NEW_SOURCE_RESOLUTION     (QEvent::User + 1004)
-#define VIDEO_NEW_SEEKING               (QEvent::User + 1005)
+#define VIDEO_EVENT_NEW_FRAME                   (QEvent::User + 1001)
+#define VIDEO_EVENT_SOURCE_OPEN_ERROR           (QEvent::User + 1002)
+#define VIDEO_EVENT_NEW_SOURCE                  (QEvent::User + 1003)
+#define VIDEO_EVENT_NEW_SOURCE_RESOLUTION       (QEvent::User + 1004)
+#define VIDEO_EVENT_NEW_SEEKING                 (QEvent::User + 1005)
 
 class VideoEvent:
     public QEvent
@@ -1140,28 +1141,28 @@ void VideoWidget::ShowHourGlass()
 
 void VideoWidget::InformAboutSeekingComplete()
 {
-    QApplication::postEvent(this, new VideoEvent(VIDEO_NEW_SEEKING, ""));
+    QApplication::postEvent(this, new VideoEvent(VIDEO_EVENT_NEW_SEEKING, ""));
 }
 
 void VideoWidget::InformAboutNewFrame()
 {
     mPendingNewFrameSignals++;
-    QApplication::postEvent(this, new VideoEvent(VIDEO_NEW_FRAME, ""));
+    QApplication::postEvent(this, new VideoEvent(VIDEO_EVENT_NEW_FRAME, ""));
 }
 
 void VideoWidget::InformAboutOpenError(QString pSourceName)
 {
-    QApplication::postEvent(this, new VideoEvent(VIDEO_OPEN_ERROR, pSourceName));
+    QApplication::postEvent(this, new VideoEvent(VIDEO_EVENT_SOURCE_OPEN_ERROR, pSourceName));
 }
 
 void VideoWidget::InformAboutNewSource()
 {
-    QApplication::postEvent(this, new VideoEvent(VIDEO_NEW_SOURCE, ""));
+    QApplication::postEvent(this, new VideoEvent(VIDEO_EVENT_NEW_SOURCE, ""));
 }
 
 void VideoWidget::InformAboutNewSourceResolution()
 {
-    QApplication::postEvent(this, new VideoEvent(VIDEO_NEW_SOURCE_RESOLUTION, ""));
+    QApplication::postEvent(this, new VideoEvent(VIDEO_EVENT_NEW_SOURCE_RESOLUTION, ""));
 }
 
 bool VideoWidget::SetOriginalResolution()
@@ -1322,25 +1323,30 @@ void VideoWidget::SetVisible(bool pVisible)
 {
     if (pVisible)
     {
-        #ifdef VIDEO_WIDGET_DROP_WHEN_INVISIBLE
-            mVideoWorker->SetFrameDropping(false);
-        #endif
-        move(mWinPos);
-        parentWidget()->show();
-        show();
-        if (mAssignedAction != NULL)
-            mAssignedAction->setChecked(true);
-
+        if (!isVisible())
+        {
+            #ifdef VIDEO_WIDGET_DROP_WHEN_INVISIBLE
+                mVideoWorker->SetFrameDropping(false);
+            #endif
+            move(mWinPos);
+            parentWidget()->show();
+            show();
+            if (mAssignedAction != NULL)
+                mAssignedAction->setChecked(true);
+        }
     }else
     {
-        #ifdef VIDEO_WIDGET_DROP_WHEN_INVISIBLE
-            mVideoWorker->SetFrameDropping(true);
-        #endif
-        mWinPos = pos();
-        parentWidget()->hide();
-        hide();
-        if (mAssignedAction != NULL)
-            mAssignedAction->setChecked(false);
+        if (isVisible())
+        {
+            #ifdef VIDEO_WIDGET_DROP_WHEN_INVISIBLE
+                mVideoWorker->SetFrameDropping(true);
+            #endif
+            mWinPos = pos();
+            parentWidget()->hide();
+            hide();
+            if (mAssignedAction != NULL)
+                mAssignedAction->setChecked(false);
+        }
     }
 }
 
@@ -1783,7 +1789,7 @@ void VideoWidget::customEvent(QEvent *pEvent)
 
     switch(tVideoEvent->GetReason())
     {
-        case VIDEO_NEW_FRAME:
+        case VIDEO_EVENT_NEW_FRAME:
         	if (mPendingNewFrameSignals)
         	{
 				#ifdef VIDEO_WIDGET_DEBUG_FRAMES
@@ -1880,14 +1886,14 @@ void VideoWidget::customEvent(QEvent *pEvent)
 				#endif
         	}
 			break;
-        case VIDEO_OPEN_ERROR:
+        case VIDEO_EVENT_SOURCE_OPEN_ERROR:
             tVideoEvent->accept();
             if (tVideoEvent->GetDescription() != "")
                 ShowWarning("Video source not available", "The selected video source \"" + tVideoEvent->GetDescription() + "\" is not available. Please, select another one!");
             else
             	ShowWarning("Video source not available", "The selected video source auto detection was not successful. Please, connect an additional video device to your hardware!");
             break;
-        case VIDEO_NEW_SOURCE:
+        case VIDEO_EVENT_NEW_SOURCE:
             tVideoEvent->accept();
             if (SetOriginalResolution())
             {
@@ -1897,11 +1903,12 @@ void VideoWidget::customEvent(QEvent *pEvent)
 					mHourGlassTimer->start(250);
 				}
             }
+            SetVisible(true);
             break;
-        case VIDEO_NEW_SOURCE_RESOLUTION:
+        case VIDEO_EVENT_NEW_SOURCE_RESOLUTION:
         	mNeedBackgroundUpdatesUntillNextFrame = true;
             break;
-        case VIDEO_NEW_SEEKING:
+        case VIDEO_EVENT_NEW_SEEKING:
             mParticipantWidget->InformAboutVideoSeekingComplete();
             break;
         default:
@@ -2148,6 +2155,7 @@ void VideoWorkerThread::DoSetCurrentDevice()
         mResetMediaSourceAsap = false;
         mPaused = false;
         mVideoWidget->InformAboutNewSource();
+        mMediaSource->FreeUnusedRegisteredFileSources();
     }else
     {
         if (!mSourceAvailable)
@@ -2165,6 +2173,17 @@ void VideoWorkerThread::DoSetCurrentDevice()
 
     // unlock
     mDeliverMutex.unlock();
+}
+
+void VideoWorkerThread::HandlePlayFileError()
+{
+    StopFile();
+    SetCurrentDevice(MEDIA_SOURCE_HOMER_LOGO);
+}
+
+void VideoWorkerThread::HandlePlayFileSuccess()
+{
+    mVideoWidget->SetVisible(true);
 }
 
 int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFps)
@@ -2274,6 +2293,7 @@ void VideoWorkerThread::run()
 
     mLastFrameNumber = 0;
 
+    LOG(LOG_VERBOSE, "..start main loop");
     while(mWorkerNeeded)
     {
     	// store last frame number

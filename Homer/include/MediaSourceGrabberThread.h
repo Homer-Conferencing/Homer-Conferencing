@@ -85,9 +85,10 @@ public:
     QString GetDeviceDescription(QString pName);
 
     /* file based video playback */
-    void PlayFile(QString pName = "");
+    bool PlayFile(QString pName = "");
     void PauseFile();
     bool IsPaused();
+    bool PlayingFile();
     void StopFile();
     bool EofReached();
     QString CurrentFile();
@@ -118,6 +119,9 @@ protected:
     virtual void DoSetInputStreamPreferences();
     virtual void DoSeek();
     virtual void DoSyncClock() = 0;
+    /* error report */
+    virtual void HandlePlayFileSuccess() = 0;
+    virtual void HandlePlayFileError() = 0;
 
     MediaSource         *mMediaSource;
     QMutex              mDeliverMutex;

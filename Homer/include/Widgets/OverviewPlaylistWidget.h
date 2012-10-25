@@ -142,6 +142,8 @@ private:
     VideoWorkerThread   *mVideoWorker;
     AudioWorkerThread   *mAudioWorker;
     QString 			mCurrentFile;
+    bool                mCurrentFileAudioPlaying;
+    bool                mCurrentFileVideoPlaying;
     Playlist            mPlaylist;
     QMutex              mPlaylistMutex;
     static int			sParseRecursionCount;

@@ -69,9 +69,10 @@ using namespace Homer::Monitor;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define AUDIO_EVENT_NEW_SAMPLES               (QEvent::User + 1001)
-#define AUDIO_EVENT_OPEN_ERROR                (QEvent::User + 1002)
-#define AUDIO_EVENT_NEW_MUTE_STATE            (QEvent::User + 1003)
+#define AUDIO_EVENT_NEW_SAMPLES                     (QEvent::User + 1001)
+#define AUDIO_EVENT_SOURCE_OPEN_ERROR               (QEvent::User + 1002)
+#define AUDIO_EVENT_NEW_SOURCE                      (QEvent::User + 1003)
+#define AUDIO_EVENT_NEW_MUTE_STATE                  (QEvent::User + 1004)
 
 class AudioEvent:
     public QEvent
@@ -669,7 +670,12 @@ void AudioWidget::InformAboutNewSamples()
 
 void AudioWidget::InformAboutOpenError(QString pSourceName)
 {
-    QApplication::postEvent(this, new AudioEvent(AUDIO_EVENT_OPEN_ERROR, pSourceName));
+    QApplication::postEvent(this, new AudioEvent(AUDIO_EVENT_SOURCE_OPEN_ERROR, pSourceName));
+}
+
+void AudioWidget::InformAboutNewSource()
+{
+    QApplication::postEvent(this, new AudioEvent(AUDIO_EVENT_NEW_SOURCE, ""));
 }
 
 void AudioWidget::InformAboutNewMuteState()
@@ -686,24 +692,30 @@ void AudioWidget::SetVisible(bool pVisible)
 {
     if (pVisible)
     {
-        #ifdef AUDIO_WIDGET_DROP_WHEN_INVISIBLE
-            mAudioWorker->SetSampleDropping(false);
-        #endif
-        move(mWinPos);
-        show();
-        if (mAssignedAction != NULL)
-            mAssignedAction->setChecked(true);
-        if (parentWidget()->isHidden())
-            parentWidget()->show();
+        if (!isVisible())
+        {
+            #ifdef AUDIO_WIDGET_DROP_WHEN_INVISIBLE
+                mAudioWorker->SetSampleDropping(false);
+            #endif
+            move(mWinPos);
+            show();
+            if (mAssignedAction != NULL)
+                mAssignedAction->setChecked(true);
+            if (parentWidget()->isHidden())
+                parentWidget()->show();
+        }
     }else
     {
-        #ifdef AUDIO_WIDGET_DROP_WHEN_INVISIBLE
-            mAudioWorker->SetSampleDropping(true);
-        #endif
-        mWinPos = pos();
-        hide();
-        if (mAssignedAction != NULL)
-            mAssignedAction->setChecked(false);
+        if (isVisible())
+        {
+            #ifdef AUDIO_WIDGET_DROP_WHEN_INVISIBLE
+                mAudioWorker->SetSampleDropping(true);
+            #endif
+            mWinPos = pos();
+            hide();
+            if (mAssignedAction != NULL)
+                mAssignedAction->setChecked(false);
+        }
     }
 }
 
@@ -724,7 +736,7 @@ void AudioWidget::customEvent(QEvent* pEvent)
     switch(tAudioEvent->GetReason())
     {
         case AUDIO_EVENT_NEW_SAMPLES:
-            pEvent->accept();
+            tAudioEvent->accept();
             if (isVisible())
             {
 
@@ -741,15 +753,19 @@ void AudioWidget::customEvent(QEvent* pEvent)
                 }
             }
             break;
-        case AUDIO_EVENT_OPEN_ERROR:
-            pEvent->accept();
+        case AUDIO_EVENT_SOURCE_OPEN_ERROR:
+            tAudioEvent->accept();
             if (tAudioEvent->GetDescription() != "")
                 ShowWarning("Audio source not available", "The selected audio source \"" + tAudioEvent->GetDescription() + "\" is not available. Please, select another one!");
             else
             	ShowWarning("Audio source not available", "The selected audio source auto detection was not successful. Please, connect an additional audio device to your hardware!");
             break;
+        case AUDIO_EVENT_NEW_SOURCE:
+            tAudioEvent->accept();
+            SetVisible(true);
+            break;
         case AUDIO_EVENT_NEW_MUTE_STATE:
-            pEvent->accept();
+            tAudioEvent->accept();
             if (mPbMute->isChecked() == mAudioWorker->GetMuteState())
             	mPbMute->click();
             break;
@@ -1050,7 +1066,8 @@ void AudioWorkerThread::DoSetCurrentDevice()
         // we had an source reset in every case because "SelectDevice" does this if old source was already opened
         mResetMediaSourceAsap = false;
         mPaused = false;
-        //mAudioWidget->InformAboutNewSource();
+        mAudioWidget->InformAboutNewSource();
+        mMediaSource->FreeUnusedRegisteredFileSources();
     }else
     {
         if (!mSourceAvailable)
@@ -1114,6 +1131,17 @@ void AudioWorkerThread::DoStopPlayback()
 	LOG(LOG_VERBOSE, "Playback is stopped");
 }
 
+void AudioWorkerThread::HandlePlayFileError()
+{
+    StopFile();
+    mAudioWidget->SetVisible(false);
+}
+
+void AudioWorkerThread::HandlePlayFileSuccess()
+{
+    mAudioWidget->SetVisible(true);
+}
+
 int AudioWorkerThread::GetCurrentSample(void **pSample, int& pSampleSize, int *pSps)
 {
     int tResult = -1;
@@ -1169,6 +1197,9 @@ void AudioWorkerThread::run()
     {
     	LOG(LOG_WARN, "Couldn't open audio grabbing device \"%s\"", mMediaSource->GetCurrentDeviceName().c_str());
     	mAudioWidget->InformAboutOpenError(QString(mMediaSource->GetCurrentDeviceName().c_str()));
+    }else
+    {
+        mAudioWidget->InformAboutNewSource();
     }
 
     LOG(LOG_VERBOSE, "..start main loop");

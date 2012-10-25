@@ -1121,7 +1121,7 @@ void ParticipantWidget::AVSync()
         if ((tCurTime - mTimeOfLastAVSynch  >= AV_SYNC_MIN_PERIOD * 1000))
         {
             // do we play video and audio from the same file?
-            if (mVideoWidget->GetWorker()->CurrentFile() == mAudioWidget->GetWorker()->CurrentFile())
+            if (PlayingMovie())
             {
                 // do we play audio and video from a file we already know?
                 if (mVideoWidget->GetWorker()->CurrentFile() == mCurrentMovieFile)
@@ -1179,7 +1179,7 @@ float ParticipantWidget::GetAVDrift()
         return 0;
 
     // do we play video and audio from the same file?
-    if (mVideoWidget->GetWorker()->CurrentFile() == mAudioWidget->GetWorker()->CurrentFile())
+    if (PlayingMovie())
     {
         tResult = mVideoWidget->GetWorker()->GetSeekPos() - mAudioWidget->GetWorker()->GetSeekPos() - mAudioWidget->GetWorker()->GetUserAVDrift() - mAudioWidget->GetWorker()->GetVideoDelayAVDrift();
     }
@@ -1198,7 +1198,7 @@ float ParticipantWidget::GetUserAVDrift()
         return 0;
 
     // do we play video and audio from the same file?
-    if (mVideoWidget->GetWorker()->CurrentFile() == mAudioWidget->GetWorker()->CurrentFile())
+    if (PlayingMovie())
     {
         tResult = mAudioWidget->GetWorker()->GetUserAVDrift();
     }
@@ -1217,7 +1217,7 @@ float ParticipantWidget::GetVideoDelayAVDrift()
         return 0;
 
     // do we play video and audio from the same file?
-    if (mVideoWidget->GetWorker()->CurrentFile() == mAudioWidget->GetWorker()->CurrentFile())
+    if (PlayingMovie())
     {
         tResult = mAudioWidget->GetWorker()->GetVideoDelayAVDrift();
     }
@@ -1234,7 +1234,7 @@ void ParticipantWidget::SetUserAVDrift(float pDrift)
         return;
 
     // do we play video and audio from the same file?
-    if (mVideoWidget->GetWorker()->CurrentFile() == mAudioWidget->GetWorker()->CurrentFile())
+    if (PlayingMovie())
     {
         mAudioWidget->GetWorker()->SetUserAVDrift(pDrift);
     }
@@ -1249,7 +1249,7 @@ void ParticipantWidget::ReportVideoDelay(float pDelay)
         return;
 
     // do we play video and audio from the same file?
-    if (mVideoWidget->GetWorker()->CurrentFile() == mAudioWidget->GetWorker()->CurrentFile())
+    if (PlayingMovie())
     {
         mAudioWidget->GetWorker()->SetVideoDelayAVDrift(pDelay);
     }
@@ -1298,6 +1298,14 @@ void ParticipantWidget::ShowNewState()
                     setWindowTitle(mWidgetTitle);
                     break;
     }
+}
+
+bool ParticipantWidget::PlayingMovie()
+{
+    if ((mVideoWidget != NULL) && (mAudioWidget != NULL))
+        return mVideoWidget->GetWorker()->CurrentFile() == mAudioWidget->GetWorker()->CurrentFile();
+    else
+        return false;
 }
 
 void ParticipantWidget::UpdateParticipantName(QString pParticipantName)
@@ -1422,24 +1430,33 @@ void ParticipantWidget::ActionRecordMovieFile()
 
 void ParticipantWidget::SeekMovieFileRelative(float pSeconds)
 {
-    float tCurPos = mVideoWidget->GetWorker()->GetSeekPos();
+    float tCurPos = 0;
+    if ((mVideoWidget != NULL) && (mVideoWidget->GetWorker()->SupportsSeeking()))
+        tCurPos = mVideoWidget->GetWorker()->GetSeekPos();
+    if ((mAudioWidget != NULL) && (mAudioWidget->GetWorker()->SupportsSeeking()))
+        tCurPos = mAudioWidget->GetWorker()->GetSeekPos();
     float tTargetPos = tCurPos + pSeconds;
     LOG(LOG_VERBOSE, "Seeking relative %.2f seconds to position %.2f", pSeconds, tTargetPos);
+
     mVideoWidget->GetWorker()->Seek(tTargetPos);
+    #ifdef PARTICIPANT_WIDGET_AV_SYNC
+        if (PlayingMovie())
+        {// synch. audio to video
+            // force an AV sync
+            mTimeOfLastAVSynch = 0;
+        }else
+        {// explicit seeking in audio file
+            mAudioWidget->GetWorker()->Seek(tTargetPos);
+        }
+    #else
+        mAudioWidget->GetWorker()->Seek(tTargetPos);
+    #endif
 }
 
 void ParticipantWidget::ActionSeekMovieFile(int pPos)
 {
 	LOG(LOG_VERBOSE, "User moved playback slider to position %d", pPos);
-    ResetAVSync();
-    double tPos = (double)mVideoWidget->GetWorker()->GetSeekEnd() * pPos / 1000;
-    mVideoWidget->GetWorker()->Seek(tPos);
-    #ifdef PARTICIPANT_WIDGET_AV_SYNC
-        // force an AV sync
-        mTimeOfLastAVSynch = 0;
-    #else
-        mAudioWidget->GetWorker()->Seek(tPos);
-    #endif
+    AVSeek(pPos);
 }
 
 void ParticipantWidget::ActionSeekMovieFileToPos(int pPos)
@@ -1448,16 +1465,33 @@ void ParticipantWidget::ActionSeekMovieFileToPos(int pPos)
 	if (mMovieSliderPosition != pPos)
 	{
 		LOG(LOG_VERBOSE, "User clicked playback slider at position %d", pPos);
-        ResetAVSync();
-        double tPos = (double)mVideoWidget->GetWorker()->GetSeekEnd() * pPos / 1000;
-	    mVideoWidget->GetWorker()->Seek(tPos);
-        #ifdef PARTICIPANT_WIDGET_AV_SYNC
+		AVSeek(pPos);
+	}
+}
+
+void ParticipantWidget::AVSeek(int pPos)
+{
+    double tPos = 0;
+
+    //mVideoWidget->GetWorker()->PlayingFile()) && (!mVideoWidget->GetWorker()->IsPaused()
+    if ((mVideoWidget != NULL) && (mVideoWidget->GetWorker()->PlayingFile()))
+        tPos = (double)mVideoWidget->GetWorker()->GetSeekEnd() * pPos / 1000;
+    if ((mAudioWidget != NULL) && (mAudioWidget->GetWorker()->PlayingFile()))
+        tPos = (double)mAudioWidget->GetWorker()->GetSeekEnd() * pPos / 1000;
+
+    mVideoWidget->GetWorker()->Seek(tPos);
+    #ifdef PARTICIPANT_WIDGET_AV_SYNC
+        if (PlayingMovie())
+        {// synch. audio to video
             // force an AV sync
             mTimeOfLastAVSynch = 0;
-        #else
+        }else
+        {// explicit seeking in audio file
             mAudioWidget->GetWorker()->Seek(tPos);
-        #endif
-	}
+        }
+    #else
+        mAudioWidget->GetWorker()->Seek(tPos);
+    #endif
 }
 
 void ParticipantWidget::ActionToggleUserAVDriftWidget()
@@ -1522,6 +1556,8 @@ void ParticipantWidget::UpdateMovieControls()
     if ((mAudioSource) && (mAudioWidget->GetWorker()->SupportsSeeking()))
         tShowMovieControls++;
 
+    //LOG(LOG_VERBOSE, "Updating movie controls");
+
     // do we play a file?
     if (tShowMovieControls > 0)
     {
@@ -1536,13 +1572,16 @@ void ParticipantWidget::UpdateMovieControls()
         //#################
 		int64_t tCurPos = 0;
 		int64_t tEndPos = 0;
-		if(mVideoWidget->GetWorker()->SupportsSeeking())
+		if ((mVideoWidget->GetWorker()->PlayingFile()) && (!mVideoWidget->GetWorker()->IsPaused()))
 		{
+		    //LOG(LOG_VERBOSE, "Valid video position");
 			// get current stream position from video source and use it as movie position
 			tCurPos = mVideoWidget->GetWorker()->GetSeekPos();
 			tEndPos = mVideoWidget->GetWorker()->GetSeekEnd();
-		}else
+		}
+        if ((mAudioWidget->GetWorker()->PlayingFile()) && (!mAudioWidget->GetWorker()->IsPaused()) && ((tCurPos == 0) || (tCurPos == tEndPos)))
 		{
+            //LOG(LOG_VERBOSE, "Valid audio position");
 			// get current stream position from audio source and use it as movie position
 			tCurPos = mAudioWidget->GetWorker()->GetSeekPos();
 			tEndPos = mAudioWidget->GetWorker()->GetSeekEnd();

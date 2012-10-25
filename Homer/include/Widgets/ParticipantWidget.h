@@ -178,6 +178,8 @@ private:
     void SetUserAVDrift(float pDrift);
     void ReportVideoDelay(float pDelay); // adds an additional delay to audio if video presentation is delayed
     void InformAboutVideoSeekingComplete();
+    bool PlayingMovie();
+    void AVSeek(int pPos); // position given in x/1000
 
     void ShowNewState();
     void ShowStreamPosition(int64_t tCurPos, int64_t tEndPos);

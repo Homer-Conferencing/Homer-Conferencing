@@ -72,6 +72,8 @@ OverviewPlaylistWidget::OverviewPlaylistWidget(QAction *pAssignedAction, QMainWi
     mAssignedAction = pAssignedAction;
     mVideoWorker = pVideoWorker;
     mAudioWorker = pAudioWorker;
+    mCurrentFileAudioPlaying = false;
+    mCurrentFileVideoPlaying = false;
     mCurrentFileId = -1;
     mTimerId = -1;
     mIsPlayed = false;
@@ -583,20 +585,21 @@ void OverviewPlaylistWidget::Play(int pIndex)
 	mIsPlayed = true;
 	mCurrentFile = GetListEntry(pIndex);
 
-	// VIDEO: we don't support video streaming yet, otherwise we play the file
-	if (!mCurrentFile.startsWith("http://"))
-        mVideoWorker->PlayFile(mCurrentFile);
-	// AUDIO: play the file
-	mAudioWorker->PlayFile(mCurrentFile);
+	mCurrentFileVideoPlaying = mVideoWorker->PlayFile(mCurrentFile);
+	mCurrentFileAudioPlaying = mAudioWorker->PlayFile(mCurrentFile);
 
     mCurrentFileId = pIndex;
     LOG(LOG_VERBOSE, "Setting current row to %d in playlist", mCurrentFileId);
+    mLwFiles->selectionModel()->clearSelection();
     mLwFiles->setCurrentRow(mCurrentFileId);
 }
 
 void OverviewPlaylistWidget::PlayNext()
 {
     int tNewFileId = -1;
+
+    if (GetListSize() < 1)
+        return;
 
     // derive file id of next file which should be played
 	if (mCurrentFileId < GetListSize() -1)
@@ -636,21 +639,23 @@ void OverviewPlaylistWidget::timerEvent(QTimerEvent *pEvent)
     {
     	// play next if EOF is reached
         // stop if current file wasn't yet switched to the desired one;
-        if (((mVideoWorker->CurrentFile() != "") && (mVideoWorker->CurrentFile() != mCurrentFile)) || ((mAudioWorker->CurrentFile() != "") && (mAudioWorker->CurrentFile() != mCurrentFile)))
+        if (((mCurrentFileVideoPlaying) && (mVideoWorker->CurrentFile() != "") && (mVideoWorker->CurrentFile() != mCurrentFile)) ||
+            ((mCurrentFileAudioPlaying) && (mAudioWorker->CurrentFile() != "") && (mAudioWorker->CurrentFile() != mCurrentFile)))
         {
-        	LOG(LOG_VERBOSE, "Desired file wasn't started yet both in video and audio widget");
+        	LOG(LOG_VERBOSE, "Desired file wasn't started yet both in video and audio widget: audio = %s, video = %s", mAudioWorker->CurrentFile().toStdString().c_str(), mVideoWorker->CurrentFile().toStdString().c_str());
         	return;
         }
 
         //LOG(LOG_VERBOSE, "Video EOF: %d, audio EOF: %d", mVideoWorker->EofReached(), mAudioWorker->EofReached());
 
         // do we already play the desired file and are we at EOF?
-        if ((mCurrentFileId != -1) &&
-            ((mVideoWorker->CurrentFile() == "") || (mVideoWorker->EofReached())) &&
-			((mAudioWorker->CurrentFile() == "") || (mAudioWorker->EofReached())))
+        if (((!mCurrentFileVideoPlaying) || (mVideoWorker->EofReached())) &&
+            ((!mCurrentFileAudioPlaying) || (mAudioWorker->EofReached())))
         {
-        	LOG(LOG_VERBOSE, "Playing next entry in playlist..");
             PlayNext();
+        }else
+        {
+            //LOG(LOG_VERBOSE, "Continueing playback: audio = %s(EOF=%d), video = %s(EOF=%d)", mAudioWorker->CurrentFile().toStdString().c_str(), mAudioWorker->EofReached(), mVideoWorker->CurrentFile().toStdString().c_str(), mVideoWorker->EofReached());
         }
     }else
     	LOG(LOG_VERBOSE, "Got wrong timer ID: %d, waiting for %d", pEvent->timerId(), mTimerId);

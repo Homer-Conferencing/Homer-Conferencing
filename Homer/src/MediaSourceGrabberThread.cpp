@@ -171,15 +171,15 @@ QString MediaSourceGrabberThread::GetDeviceDescription(QString pName)
     return "";
 }
 
-void MediaSourceGrabberThread::PlayFile(QString pName)
+bool MediaSourceGrabberThread::PlayFile(QString pName)
 {
 	#ifndef MEDIA_SOURCE_GRABBER_VIDEO_FILE
 		if (mMediaSource->GetMediaType() == MEDIA_VIDEO)
-			return;
+			return false;
 	#endif
 	#ifndef MEDIA_SOURCE_GRABBER_AUDIO_FILE
 		if (mMediaSource->GetMediaType() == MEDIA_AUDIO)
-			return;
+			return false;
 	#endif
 
     if (pName == "")
@@ -210,18 +210,20 @@ void MediaSourceGrabberThread::PlayFile(QString pName)
         if (!OverviewPlaylistWidget::IsVideoFile(pName))
         {
             LOG(LOG_VERBOSE, "File %s is no %s file, skipping play", pName.toStdString().c_str(), mMediaSource->GetMediaTypeStr().c_str());
-            return;
+            HandlePlayFileError();
+            return false;
         }
     }else if (mMediaSource->GetMediaType() == MEDIA_AUDIO)
     {// audio
         if (!OverviewPlaylistWidget::IsAudioFile(pName))
         {
             LOG(LOG_VERBOSE, "File %s is no %s file, skipping play", pName.toStdString().c_str(), mMediaSource->GetMediaTypeStr().c_str());
-            return;
+            HandlePlayFileError();
+            return false;
         }
     }else
     {// unknown media type
-        return;
+        return false;
     }
 
 	if ((mPaused) && (pName == mDesiredFile))
@@ -233,6 +235,7 @@ void MediaSourceGrabberThread::PlayFile(QString pName)
         mGrabbingStateMutex.unlock();
 		mGrabbingCondition.wakeAll();
         mFrameTimestamps.clear();
+        HandlePlayFileSuccess();
 	}else
 	{
 		LOG(LOG_VERBOSE, "Trigger playback of file: %s", pName.toStdString().c_str());
@@ -240,7 +243,9 @@ void MediaSourceGrabberThread::PlayFile(QString pName)
 		mPlayNewFileAsap = true;
 		mTryingToOpenAFile = true;
         mGrabbingCondition.wakeAll();
+        HandlePlayFileSuccess();
 	}
+	return true;
 }
 
 void MediaSourceGrabberThread::PauseFile()
@@ -260,6 +265,14 @@ bool MediaSourceGrabberThread::IsPaused()
 {
     if ((mMediaSource != NULL) && (mMediaSource->SupportsSeeking()))
         return mPaused;
+    else
+        return false;
+}
+
+bool MediaSourceGrabberThread::PlayingFile()
+{
+    if ((mMediaSource != NULL) && (mMediaSource->SupportsSeeking()) && (mMediaSource->GetSourceType() == SOURCE_FILE))
+        return true;
     else
         return false;
 }
@@ -284,7 +297,7 @@ bool MediaSourceGrabberThread::EofReached()
 
 QString MediaSourceGrabberThread::CurrentFile()
 {
-    if ((mMediaSource != NULL) && (mMediaSource->SupportsSeeking()))
+    if (PlayingFile())
     	return mCurrentFile;
     else
         return "";

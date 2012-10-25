@@ -105,11 +105,11 @@ public:
 
     void SetVisible(bool pVisible);
 
-    void InformAboutOpenError(QString pSourceName);
-    void InformAboutSeekingComplete();
     void InformAboutNewFrame();
-    void InformAboutNewSourceResolution();
+    void InformAboutOpenError(QString pSourceName);
     void InformAboutNewSource();
+    void InformAboutNewSourceResolution();
+    void InformAboutSeekingComplete();
 
     VideoWorkerThread* GetWorker();
 
@@ -229,6 +229,8 @@ private:
     virtual void DoPlayNewFile();
     virtual void DoSeek();
     virtual void DoSyncClock();
+    virtual void HandlePlayFileError();
+    virtual void HandlePlayFileSuccess();
 
     VideoWidget         *mVideoWidget;
 
