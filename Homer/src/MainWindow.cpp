@@ -53,6 +53,7 @@
 #include <MediaSourceFile.h>
 #include <MediaSourceMMSys.h>
 #include <MediaSourceDesktop.h>
+#include <MediaSourceLogo.h>
 #include <Header_NetworkSimulator.h>
 #include <ProcessStatisticService.h>
 #include <Snippets.h>
@@ -104,7 +105,8 @@ MainWindow::MainWindow(QStringList pArguments, QString pAbsBinPath) :
     mDockMenu= NULL;
     mSysTrayMenu = NULL;
     mAbsBinPath = pAbsBinPath;
-    mSourceDesktop = NULL;
+    mMediaSourceDesktop = NULL;
+    mMediaSourceLogo = NULL;
     #if HOMER_NETWORK_SIMULATOR
         mNetworkSimulator = NULL;
     #endif
@@ -444,7 +446,8 @@ void MainWindow::initializeVideoAudioIO()
     #ifdef APPLE
         mOwnVideoMuxer->RegisterMediaSource(new MediaSourceCoreVideo(tVSourceSelection));
     #endif
-    mOwnVideoMuxer->RegisterMediaSource(mSourceDesktop = new MediaSourceDesktop());
+    mOwnVideoMuxer->RegisterMediaSource(mMediaSourceLogo = new MediaSourceLogo());
+	mOwnVideoMuxer->RegisterMediaSource(mMediaSourceDesktop = new MediaSourceDesktop());
     // ############################
     // ### AUDIO
     // ############################
@@ -518,7 +521,7 @@ void MainWindow::initializeWidgetsAndMenus()
     LOG(LOG_VERBOSE, "Creating playlist control widgets..");
     mOverviewPlaylistWidget = new OverviewPlaylistWidget(mActionOverviewPlaylistWidget, this, mLocalUserParticipantWidget->GetVideoWorker(), mLocalUserParticipantWidget->GetAudioWorker());
 
-    mMediaSourcesControlWidget = new StreamingControlWidget(mLocalUserParticipantWidget, mSourceDesktop);
+    mMediaSourcesControlWidget = new StreamingControlWidget(mLocalUserParticipantWidget, mMediaSourceDesktop);
     mToolBarMediaSources->addWidget(mMediaSourcesControlWidget);
     if (mOwnVideoMuxer->SupportsMultipleInputStreams())
         mMediaSourcesControlWidget->SetVideoInputSelectionVisible();
@@ -700,8 +703,8 @@ void MainWindow::CreateScreenShot()
     #endif
     mStatusBar->showMessage("Program Start  " + mStartTime.toString("hh:mm") + "       Time  " + QTime::currentTime().toString("hh:mm") + "    " + sShiftingString);
     sShiftingString[sShiftIndex] = ' ';
-    if(mSourceDesktop != NULL)
-        mSourceDesktop->CreateScreenshot();
+    if(mMediaSourceDesktop != NULL)
+        mMediaSourceDesktop->CreateScreenshot();
     mScreenShotTimer->start(1000 / SCREEN_CAPTURE_FPS);
 }
 

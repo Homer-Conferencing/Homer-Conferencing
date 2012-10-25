@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 2010 Thomas Volkert <thomas@homer-conferencing.com>
+ * Copyright (C) 2012 Thomas Volkert <thomas@homer-conferencing.com>
  *
  * This software is free software.
  * Your are allowed to redistribute it and/or modify it under the terms of
@@ -20,13 +20,13 @@
  *****************************************************************************/
 
 /*
- * Purpose: desktop video source
+ * Purpose: logo video source
  * Author:  Thomas Volkert
- * Since:   2010-02-15
+ * Since:   2012-10-25
  */
 
-#ifndef _MEDIA_SOURCE_DESKTOP_
-#define _MEDIA_SOURCE_DESKTOP_
+#ifndef _MEDIA_SOURCE_LOGO_
+#define _MEDIA_SOURCE_LOGO_
 
 #include <MediaSource.h>
 
@@ -41,7 +41,7 @@ using namespace Homer::Multimedia;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define MEDIA_SOURCE_DESKTOP                        "Desktop screen segment"
+#define MEDIA_SOURCE_HOMER_LOGO		               "Homer-Conferencing logo"
 
 // the following de/activates debugging of packets
 //#define MSD_DEBUG_PACKETS
@@ -51,30 +51,24 @@ using namespace Homer::Multimedia;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class MediaSourceDesktop:
+class MediaSourceLogo:
     public MediaSource
 {
 public:
-    MediaSourceDesktop(std::string pDesiredDevice = "");
+	MediaSourceLogo(std::string pDesiredDevice = "");
 
-    virtual ~MediaSourceDesktop();
+    virtual ~MediaSourceLogo();
 
     /* video grabbing control */
     virtual GrabResolutions GetSupportedVideoGrabResolutions();
-    virtual void StopGrabbing();
     virtual std::string GetCodecName();
     virtual std::string GetCodecLongName();
-    void SelectSegment(QWidget *pParent = NULL);
 
     /* recording */
     virtual bool SupportsRecording();
 
     /* device control */
     virtual void getVideoDevices(VideoDevices &pVList);
-
-    /* create screenshot and updates internal buffer */
-    void CreateScreenshot();
-    void SetScreenshotSize(int pWidth, int pHeight);
 
     /* recording */
     virtual void StopRecording();
@@ -85,22 +79,10 @@ public:
     virtual bool CloseGrabDevice();
     virtual int GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk = false);
 
-protected:
-    /* internal video resolution switch */
-    virtual void DoSetVideoGrabResolution(int pResX = 352, int pResY = 288);
-
 private:
-    friend class SegmentSelectionDialog;
 
-    QPainter            *mTargetPainter;
-    QWidget             *mWidget;
-    int                 mGrabOffsetX, mGrabOffsetY;
-    void                *mOutputScreenshot;
-    void                *mOriginalScreenshot;
-    bool                mScreenshotUpdated;
+    void                *mLogoRawPicture;
     QTime               mLastTimeGrabbed;
-    QMutex				mMutexScreenshot, mMutexGrabberActive;
-    QWaitCondition      mWaitConditionScreenshotUpdated;
     /* recording */
     int                 mRecorderChunkNumber; // we need another chunk counter because recording is done asynchronously to capturing
 };

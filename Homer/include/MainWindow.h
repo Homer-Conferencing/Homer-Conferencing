@@ -30,6 +30,7 @@
 
 #include <MediaSourceMuxer.h>
 #include <MediaSourceDesktop.h>
+#include <MediaSourceLogo.h>
 #include <Header_NetworkSimulator.h>
 #include <Widgets/AudioWidget.h>
 #include <Widgets/AvailabilityWidget.h>
@@ -178,7 +179,8 @@ private:
     QTimer 					    *mScreenShotTimer;
     QSystemTrayIcon			    *mSysTrayIcon;
     QMenu					    *mSysTrayMenu, *mDockMenu /* OSX dock menu */;
-    MediaSourceDesktop 		    *mSourceDesktop;
+    MediaSourceDesktop 		    *mMediaSourceDesktop;
+    MediaSourceLogo				*mMediaSourceLogo;
     QShortcut                   *mShortcutActivateDebugWidgets, *mShortcutActivateDebuggingGlobally, *mShortcutActivateNetworkSimulationWidgets;
     /* SIP server registration */
     QString                     mSipServerRegistrationHost;

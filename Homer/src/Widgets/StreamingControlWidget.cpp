@@ -98,7 +98,7 @@ void StreamingControlWidget::initializeGUI()
 
 void StreamingControlWidget::StartScreenSegmentStreaming()
 {
-    mVideoWorker->SetCurrentDevice(MSD_DESKTOP_SEGMENT); // used fixed name
+    mVideoWorker->SetCurrentDevice(MEDIA_SOURCE_DESKTOP); // used fixed name
 
     if (mVideoWorker->SupportsMultipleInputStreams())
         SetVideoInputSelectionVisible();

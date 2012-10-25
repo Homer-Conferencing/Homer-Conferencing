@@ -126,6 +126,7 @@ SET (SOURCES
 	../src/HomerApplication
 	../src/MainWindow
 	../src/MediaSourceDesktop
+	../src/MediaSourceLogo
 	../src/MediaSourceGrabberThread
 	../src/main
 	../src/Dialogs/AddNetworkSinkDialog
