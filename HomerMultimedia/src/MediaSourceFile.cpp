@@ -90,6 +90,7 @@ MediaSourceFile::MediaSourceFile(string pSourceFile, bool pGrabInRealTime):
 
 MediaSourceFile::~MediaSourceFile()
 {
+    LOG(LOG_VERBOSE, "Destroying %s media source file for %s", GetMediaTypeStr().c_str(), mDesiredDevice.c_str());
     if (mMediaSourceOpened)
         CloseGrabDevice();
 }
@@ -346,7 +347,6 @@ bool MediaSourceFile::CloseGrabDevice()
         LOG(LOG_INFO, "...%s file is already closed", GetMediaTypeStr().c_str());
 
     mGrabbingStopped = false;
-    mMediaType = MEDIA_UNKNOWN;
 
     ResetPacketStatistic();
 
