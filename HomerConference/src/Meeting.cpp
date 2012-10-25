@@ -232,6 +232,11 @@ int Meeting::GetHostPort()
     return mSipHostPort;
 }
 
+TransportType Meeting::GetHostPortTransport()
+{
+    return mSipHostPortTransport;
+}
+
 string Meeting::GetOwnRoutingAddressForPeer(std::string pForeignHost)
 {
     if(!mSipNatTraversalSupport)

@@ -69,7 +69,19 @@ void IdentityDialog::LoadConfiguration()
 		mLbServerAddress->setText(QString(MEETING.GetServerConferenceId().c_str()));
 	else
 		mLbServerAddress->setText("Server based contacting is disabled. Check configuration!");
-	mLbDirectAddress->setText(QString(MEETING.GetLocalConferenceId().c_str()));
+	QString tLocalContactAddr = QString(MEETING.GetLocalConferenceId().c_str());
+	switch(MEETING.GetHostPortTransport())
+    {
+        default:
+        case SOCKET_TRANSPORT_AUTO:
+        case SOCKET_UDP:
+            break;
+        case SOCKET_TCP:
+            tLocalContactAddr += "[TCP]";
+            break;
+    }
+
+    mLbDirectAddress->setText(tLocalContactAddr);
 
 	if(MEETING.GetServerRegistrationState())
 	{
