@@ -460,6 +460,8 @@ void OpenVideoAudioPreviewDialog::LoadConfiguration()
     //### PORTS
     //########################
     int tParticipantSessions = MEETING.CountParticipantSessions() -1;
+    if (tParticipantSessions < 0)
+        tParticipantSessions = 0;
     mSbPortVideo->setValue(5000 + tParticipantSessions * 4);
     mSbPortAudio->setValue(5002 + tParticipantSessions * 4);
 
