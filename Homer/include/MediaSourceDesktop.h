@@ -102,7 +102,7 @@ private:
     QMutex				mMutexScreenshot, mMutexGrabberActive;
     QWaitCondition      mWaitConditionScreenshotUpdated;
     /* recording */
-    int                 mRecorderChunkNumber; // we need anoher chunk counter because recording is done asynchronously to capturing
+    int                 mRecorderChunkNumber; // we need another chunk counter because recording is done asynchronously to capturing
 };
 
 ///////////////////////////////////////////////////////////////////////////////
