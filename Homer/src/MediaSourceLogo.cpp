@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 2010 Thomas Volkert <thomas@homer-conferencing.com>
+ * Copyright (C) 2012 Thomas Volkert <thomas@homer-conferencing.com>
  *
  * This software is free software.
  * Your are allowed to redistribute it and/or modify it under the terms of
@@ -32,18 +32,11 @@
 #include <Logger.h>
 #include <HBThread.h>
 
-#include <QApplication>
-#include <QDesktopWidget>
 #include <QPainter>
-#include <QPaintDevice>
 #include <QLinearGradient>
 #include <QTime>
-#include <QWaitCondition>
 #include <string.h>
 #include <Snippets.h>
-#ifdef APPLE
-#include <ApplicationServices/ApplicationServices.h>
-#endif
 
 namespace Homer { namespace Gui {
 
@@ -135,7 +128,7 @@ bool MediaSourceLogo::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         return false;
     }
 
-    SVC_PROCESS_STATISTIC.AssignThreadName("Video-Grabber(Desktop)");
+    SVC_PROCESS_STATISTIC.AssignThreadName("Video-Grabber(Logo)");
 
     if (mMediaSourceOpened)
         return false;
