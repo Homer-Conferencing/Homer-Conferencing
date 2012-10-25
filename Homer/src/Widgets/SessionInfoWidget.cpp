@@ -37,6 +37,7 @@
 namespace Homer { namespace Gui {
 
 using namespace Homer::Conference;
+using namespace Homer::Base;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -47,9 +48,11 @@ SessionInfoWidget::SessionInfoWidget(QWidget* pParent):
     hide();
 }
 
-void SessionInfoWidget::Init(QString pParticipant, bool pVisible)
+void SessionInfoWidget::Init(QString pParticipant, enum TransportType pParticipantTransport, bool pVisible)
 {
     mParticipant = pParticipant;
+    mParticipantTransport = pParticipantTransport;
+
     mTimerId = -1;
 
     initializeGUI();
@@ -93,7 +96,7 @@ void SessionInfoWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEvent)
 void SessionInfoWidget::UpdateView()
 {
     struct SessionInfo tInfo;
-    if (MEETING.GetSessionInfo(QString(mParticipant.toLocal8Bit()).toStdString(), &tInfo))
+    if (MEETING.GetSessionInfo(QString(mParticipant.toLocal8Bit()).toStdString(), mParticipantTransport, &tInfo))
     {
         if (!mLeParticipant->hasSelectedText())
             mLeParticipant->setText(QString(MEETING.SipCreateId(tInfo.User, tInfo.Host, tInfo.Port).c_str()) + "[" + QString(tInfo.Transport.c_str()) + "]");

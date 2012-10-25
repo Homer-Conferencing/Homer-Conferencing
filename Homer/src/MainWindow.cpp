@@ -1081,7 +1081,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     tOAEvent = (OptionsAcceptEvent*) tEvent;
 
                     // inform contacts pool about online state
-                    CONTACTS.UpdateContactState(QString::fromLocal8Bit(tOAEvent->Sender.c_str()), CONTACT_AVAILABLE);
+                    CONTACTS.UpdateContactState(QString::fromLocal8Bit(tOAEvent->Sender.c_str()), tOAEvent->Transport, CONTACT_AVAILABLE);
 
                     // inform participant widget about new state
                     if (mParticipantWidgets.size())
@@ -1104,7 +1104,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     tOUAEvent = (OptionsUnavailableEvent*) tEvent;
 
                     // inform contacts pool about online state
-                    CONTACTS.UpdateContactState(QString::fromLocal8Bit(tOUAEvent->Sender.c_str()), CONTACT_UNAVAILABLE);
+                    CONTACTS.UpdateContactState(QString::fromLocal8Bit(tOUAEvent->Sender.c_str()), tOUAEvent->Transport, CONTACT_UNAVAILABLE);
 
                     LOG(LOG_WARN, "Contact unavailable, reason is \"%s\"(%d).", tOUAEvent->Description.c_str(), tOUAEvent->StatusCode);
 
@@ -1176,7 +1176,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                         if (!tKnownParticipant)
                         {
                             // add without any OpenSession-check, the session is always added automatically by the meeting-layer
-                            tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, QString(tMEvent->Sender.c_str()));
+                            tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, QString(tMEvent->Sender.c_str()), tMEvent->Transport);
 
                             if (tParticipantWidget != NULL)
                             {
@@ -1527,7 +1527,7 @@ QString MainWindow::CompleteIpAddress(QString pAddr)
     return tResult;
 }
 
-ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHost, QString pPort, QString pTransport, QString pIp, int pInitState)
+ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHost, QString pPort, enum TransportType pTransport, QString pIp, int pInitState)
 {
     ParticipantWidget *tParticipantWidget = NULL;
 
@@ -1541,9 +1541,9 @@ ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHos
             {
                 if (pInitState == CALLSTATE_RINGING)
                 {
-                    if (MEETING.GetCallState(QString((*tIt)->GetParticipantName().toLocal8Bit()).toStdString()) == CALLSTATE_STANDBY)
+                    if (MEETING.GetCallState(QString((*tIt)->GetParticipantName().toLocal8Bit()).toStdString(), pTransport) == CALLSTATE_STANDBY)
                     {
-                        MEETING.SendCall(MEETING.SipCreateId(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString()));
+                        MEETING.SendCall(MEETING.SipCreateId(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString()), pTransport);
                         return NULL;
                     }else
                     {
@@ -1556,7 +1556,7 @@ ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHos
         }
 
         pHost = CompleteIpAddress(pHost);
-        if (MEETING.OpenParticipantSession(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString(), pTransport.toStdString()))
+        if (MEETING.OpenParticipantSession(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString(), pTransport))
         {
             QString tParticipant = QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str());
 
@@ -1565,7 +1565,7 @@ ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHos
             mParticipantWidgets.push_back(tParticipantWidget);
 
             if (pInitState == CALLSTATE_RINGING)
-                MEETING.SendCall(MEETING.SipCreateId(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString()));
+                MEETING.SendCall(MEETING.SipCreateId(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString()), pTransport);
         } else
             ShowInfo("Participant is already contacted", "The contact with the address \"" + QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str()) + "\" is already contacted and a participant widget is currently open!");
     }
@@ -1575,11 +1575,10 @@ ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHos
 void MainWindow::DeleteParticipantSession(ParticipantWidget *pParticipantWidget)
 {
     ParticipantWidgetList::iterator tIt;
-    QString tParticipantName;
 
-    // store the participant name for later processing
-    tParticipantName = pParticipantWidget->GetParticipantName();
-
+    // store the participant widget ID for later processing
+    QString tParticipantName = pParticipantWidget->GetParticipantName();
+    enum TransportType tParticipantTransport = pParticipantWidget->GetParticipantTransport();
     enum SessionType tSessionType = pParticipantWidget->GetSessionType();
 
     // search for corresponding participant widget
@@ -1595,7 +1594,7 @@ void MainWindow::DeleteParticipantSession(ParticipantWidget *pParticipantWidget)
 
     if (tSessionType == PARTICIPANT)
     {
-        if (!MEETING.CloseParticipantSession(QString(tParticipantName.toLocal8Bit()).toStdString()))
+        if (!MEETING.CloseParticipantSession(QString(tParticipantName.toLocal8Bit()).toStdString(), tParticipantTransport))
         {
             LOG(LOG_ERROR, "Could not close the session with participant");
         }

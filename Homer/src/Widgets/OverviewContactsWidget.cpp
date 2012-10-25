@@ -329,7 +329,7 @@ void OverviewContactsWidget::Dialog2Contact(ContactEditDialog *pCED, ContactDesc
     }
 	pContact->Host = pContact->Host.toLower();
     pContact->Port      = (QString("%1").arg(pCED->mSbPort->value()));
-    pContact->Transport = pCED->mCbTransport->currentText();
+    pContact->Transport = Socket::String2TransportType(pCED->mCbTransport->currentText().toStdString());
     if (pNewContact)
     {
         pContact->Id    = CONTACTS.GetNextFreeId();
@@ -343,7 +343,7 @@ void OverviewContactsWidget::Contact2Dialog(ContactDescriptor *pContact, Contact
     pCED->mSbPort->setValue((pContact->Port.toInt()));
     for (int i = 0; i < pCED->mCbTransport->count(); i++)
     {
-        if (pContact->Transport == pCED->mCbTransport->itemText(i))
+        if (QString(Socket::TransportType2String(pContact->Transport).c_str()) == pCED->mCbTransport->itemText(i))
         {
         	pCED->mCbTransport->setCurrentIndex(i);
             break;

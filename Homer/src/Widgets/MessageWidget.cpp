@@ -45,6 +45,7 @@
 #include <QContextMenuEvent>
 
 using namespace Homer::Conference;
+using namespace Homer::Base;
 
 namespace Homer { namespace Gui {
 
@@ -58,13 +59,14 @@ MessageWidget::MessageWidget(QWidget* pParent):
     hide();
 }
 
-void MessageWidget::Init(QMenu *pMenu, QString pParticipant, bool pVisible)
+void MessageWidget::Init(QMenu *pMenu, QString pParticipant, enum TransportType pParticipantTransport, bool pVisible)
 {
     mParticipant = pParticipant;
+    mParticipantTransport = pParticipantTransport;
 
     initializeGUI();
 
-    mPbCall->SetPartner(mParticipant);
+    mPbCall->SetPartner(mParticipant, mParticipantTransport);
 
     //####################################################################
     //### create the remaining necessary menu item and short cuts
@@ -357,7 +359,7 @@ void MessageWidget::SendMessage()
     if (mTeMessage->toPlainText().size() == 0)
         return;
 
-    if (MEETING.SendMessage(QString(mParticipant.toLocal8Bit()).toStdString(), mTeMessage->toPlainText().toStdString()))
+    if (MEETING.SendMessage(QString(mParticipant.toLocal8Bit()).toStdString(), mParticipantTransport, mTeMessage->toPlainText().toStdString()))
     {
         AddMessage(QString(MEETING.GetLocalUserName().c_str()), mTeMessage->toPlainText(), true);
         mTeMessage->Clear();
@@ -409,7 +411,7 @@ void MessageWidget::SendLink()
 
     tLink = "<a href=" + tLink + ">" + tLink + "</a>";
 
-    if (MEETING.SendMessage(QString(mParticipant.toLocal8Bit()).toStdString(), tLink.toStdString()))
+    if (MEETING.SendMessage(QString(mParticipant.toLocal8Bit()).toStdString(), mParticipantTransport, tLink.toStdString()))
         AddMessage(QString(MEETING.GetLocalUserName().c_str()), tLink, true);
     else
         ShowError("Error occurred", "Message could not be sent!");

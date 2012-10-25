@@ -41,6 +41,8 @@
 #include <MediaSource.h>
 #include <WaveOut.h>
 
+#include <HBSocket.h>
+
 #include <list>
 
 #include <QMenu>
@@ -108,7 +110,7 @@ class ParticipantWidget:
     Q_OBJECT;
 
 public:
-    ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer = NULL, MediaSourceMuxer *pAudioSourceMuxer = NULL, QString pParticipant = "unknown", QString pTransport = "UDP");
+    ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer = NULL, MediaSourceMuxer *pAudioSourceMuxer = NULL, QString pParticipant = "unknown", enum TransportType pTransport = SOCKET_UDP);
 
     virtual ~ParticipantWidget();
 
@@ -133,6 +135,7 @@ public:
     void UpdateParticipantState(int pState);
     bool IsThisParticipant(QString pParticipant);
     QString GetParticipantName();
+    enum TransportType GetParticipantTransport();
     enum SessionType GetSessionType();
     QString GetSipInterface();
     VideoWorkerThread* GetVideoWorker();
@@ -158,7 +161,7 @@ private:
     void ShowAudioVideoWidget();
 
 	void ResizeAVView(int pSize);
-	void Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, QString pParticipant, QString pTransport);
+	void Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, QString pParticipant, enum TransportType pTransport);
     void FindSipInterface(QString pSessionName);
     void UpdateMovieControls();
     virtual void contextMenuEvent(QContextMenuEvent *event);
@@ -188,7 +191,7 @@ private:
     MainWindow          	*mMainWindow;
     QMessageBox         	*mCallBox;
     QString            	 	mSessionName;
-    QString					mSessionTransport;
+    enum TransportType  	mSessionTransport;
     QString					mSipInterface; // service access point name in form "IP:PORT" or "[IPv6]:PORT"
     QString            		mWidgetTitle;
     bool                	mQuitForced;

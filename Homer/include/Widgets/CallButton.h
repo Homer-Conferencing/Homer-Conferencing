@@ -28,6 +28,8 @@
 #ifndef _CALL_BUTTON_
 #define _CALL_BUTTON_
 
+#include <HBSocket.h>
+
 #include <QPushButton>
 #include <QString>
 
@@ -54,13 +56,14 @@ public:
     /// The destructor.
     virtual ~CallButton();
     void ShowNewState();
-    void SetPartner(QString pPartner);
+    void SetPartner(QString pParticipant, enum Homer::Base::TransportType pTransport);
 
 public slots:
     void HandleClick();
 
 private:
-    QString     mPartner;
+    QString                             mParticipant;
+    enum Homer::Base::TransportType     mParticipantTransport;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

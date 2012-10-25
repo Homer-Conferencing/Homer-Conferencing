@@ -83,7 +83,7 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer, MediaSourceMuxer *pAudioSourceMuxer, QString pParticipant, QString pTransport):
+ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer, MediaSourceMuxer *pAudioSourceMuxer, QString pParticipant, enum TransportType pTransport):
     QDockWidget(pMainWindow), AudioPlayback()
 {
     LOG(LOG_VERBOSE, "Creating new participant widget..");
@@ -98,13 +98,14 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
     mContinuousAVAsync = 0;
     mRemoteVideoPort = 0;
     mRemoteAudioPort = 0;
+    mSessionTransport = CONF.GetSipListenerTransport();
     mTimeOfLastAVSynch = Time::GetTimeStamp();
     mCallBox = NULL;
     mVideoSourceMuxer = pVideoSourceMuxer;
     mAudioSourceMuxer = pAudioSourceMuxer;
     mSessionType = pSessionType;
     mSessionName = "";
-    mSessionTransport = "";
+    mSessionTransport = SOCKET_TRANSPORT_AUTO;
     mIncomingCall = false;
     mQuitForced = false;
     LOG(LOG_VERBOSE, "..init sound object for acoustic notifications");
@@ -123,23 +124,34 @@ ParticipantWidget::~ParticipantWidget()
     if (mTimerId != -1)
         killTimer(mTimerId);
 
-    if (mSessionType == BROADCAST)
+    switch(mSessionType)
     {
-        CONF.SetVisibilityBroadcastWidget(isVisible());
-        CONF.SetVisibilityBroadcastAudio(mAudioWidget->isVisible());
-        CONF.SetVisibilityBroadcastVideo(mVideoWidget->isVisible());
+        case BROADCAST:
+            CONF.SetVisibilityBroadcastWidget(isVisible());
+            CONF.SetVisibilityBroadcastAudio(mAudioWidget->isVisible());
+            CONF.SetVisibilityBroadcastVideo(mVideoWidget->isVisible());
+            break;
+        case PARTICIPANT:
+            {
+                // inform the call partner
+                switch (MEETING.GetCallState(QString(mSessionName.toLocal8Bit()).toStdString(), mSessionTransport))
+                {
+                    case CALLSTATE_RUNNING:
+                        MEETING.SendHangUp(QString(mSessionName.toLocal8Bit()).toStdString(), mSessionTransport);
+                        break;
+                    case CALLSTATE_RINGING:
+                        MEETING.SendCallCancel(QString(mSessionName.toLocal8Bit()).toStdString(), mSessionTransport);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            break;
+        case PREVIEW:
+        default:
+            break;
     }
 
-    // inform the call partner
-    switch (MEETING.GetCallState(QString(mSessionName.toLocal8Bit()).toStdString()))
-    {
-        case CALLSTATE_RUNNING:
-                    MEETING.SendHangUp(QString(mSessionName.toLocal8Bit()).toStdString());
-                    break;
-        case CALLSTATE_RINGING:
-                    MEETING.SendCallCancel(QString(mSessionName.toLocal8Bit()).toStdString());
-                    break;
-    }
     LOG(LOG_VERBOSE, "..destroying all widgets");
     delete mVideoWidget;
     delete mAudioWidget;
@@ -166,7 +178,7 @@ ParticipantWidget::~ParticipantWidget()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, QString pParticipant, QString pTransport)
+void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, QString pParticipant, enum TransportType pTransport)
 {
     setupUi(this);
 
@@ -215,7 +227,7 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
                     LOG(LOG_VERBOSE, "Creating participant widget for "BROACAST_IDENTIFIER);
                     mSessionName = BROACAST_IDENTIFIER;
                     LOG(LOG_VERBOSE, "..init broadcast message widget");
-                    mMessageWidget->Init(pMessageMenu, mSessionName, CONF.GetVisibilityBroadcastMessageWidget());
+                    mMessageWidget->Init(pMessageMenu, mSessionName, CONF.GetSipListenerTransport(), CONF.GetVisibilityBroadcastMessageWidget());
                     LOG(LOG_VERBOSE, "..init broadcast video widget");
                     mVideoSource = mVideoSourceMuxer;
                     mAudioSource = mAudioSourceMuxer;
@@ -240,11 +252,11 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
 						mSessionName = pParticipant;
 						mSessionTransport = pTransport;
 						FindSipInterface(pParticipant);
-						mMessageWidget->Init(pMessageMenu, mSessionName);
-						mVideoSendSocket = MEETING.GetVideoSendSocket(mSessionName.toStdString());
-						mAudioSendSocket = MEETING.GetAudioSendSocket(mSessionName.toStdString());
-						mVideoReceiveSocket = MEETING.GetVideoReceiveSocket(mSessionName.toStdString());
-						mAudioReceiveSocket = MEETING.GetAudioReceiveSocket(mSessionName.toStdString());
+						mMessageWidget->Init(pMessageMenu, mSessionName, mSessionTransport);
+						mVideoSendSocket = MEETING.GetVideoSendSocket(mSessionName.toStdString(), mSessionTransport);
+						mAudioSendSocket = MEETING.GetAudioSendSocket(mSessionName.toStdString(), mSessionTransport);
+						mVideoReceiveSocket = MEETING.GetVideoReceiveSocket(mSessionName.toStdString(), mSessionTransport);
+						mAudioReceiveSocket = MEETING.GetAudioReceiveSocket(mSessionName.toStdString(), mSessionTransport);
 						if (mVideoReceiveSocket != NULL)
 						{
 							mVideoSource = new MediaSourceNet(mVideoReceiveSocket, true);
@@ -315,7 +327,7 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
                     break;
     }
 
-    mSessionInfoWidget->Init(mSessionName, false);
+    mSessionInfoWidget->Init(mSessionName, mSessionTransport, false);
     mSplitter->setStretchFactor(0, 1);
     mSplitter->setStretchFactor(1, 0);
 
@@ -695,7 +707,7 @@ void ParticipantWidget::HandleGeneralError(bool pIncoming, int pCode, QString pD
     }
 
     UpdateParticipantState(CONTACT_UNDEFINED_STATE);
-    CONTACTS.UpdateContactState(mSessionName, CONTACT_UNDEFINED_STATE);
+    CONTACTS.UpdateContactState(mSessionName, mSessionTransport, CONTACT_UNDEFINED_STATE);
 
     ShowError("General error occurred", "General error of code " + QString("%1").arg(pCode) + " occurred. The error is described with \"" + pDescription + "\"");
 }
@@ -710,7 +722,7 @@ void ParticipantWidget::HandleMessageAccept(bool pIncoming)
     }
 
     UpdateParticipantState(CONTACT_AVAILABLE);
-    CONTACTS.UpdateContactState(mSessionName, CONTACT_AVAILABLE);
+    CONTACTS.UpdateContactState(mSessionName, mSessionTransport, CONTACT_AVAILABLE);
 }
 
 void ParticipantWidget::HandleMessageAcceptDelayed(bool pIncoming)
@@ -726,7 +738,7 @@ void ParticipantWidget::HandleMessageAcceptDelayed(bool pIncoming)
         mMessageWidget->AddMessage("", "server delays message(s)", true);
 
     UpdateParticipantState(CONTACT_UNDEFINED_STATE);
-    CONTACTS.UpdateContactState(mSessionName, CONTACT_UNDEFINED_STATE);
+    CONTACTS.UpdateContactState(mSessionName, mSessionTransport, CONTACT_UNDEFINED_STATE);
 }
 
 void ParticipantWidget::HandleMessageUnavailable(bool pIncoming, int pStatusCode, QString pDescription)
@@ -739,7 +751,7 @@ void ParticipantWidget::HandleMessageUnavailable(bool pIncoming, int pStatusCode
     }
 
     UpdateParticipantState(CONTACT_UNAVAILABLE);
-    CONTACTS.UpdateContactState(mSessionName, CONTACT_UNAVAILABLE);
+    CONTACTS.UpdateContactState(mSessionName, mSessionTransport, CONTACT_UNAVAILABLE);
     ShowError("Participant unavailable", "The participant " + mSessionName + " is currently unavailable for an instant message! The reason is \"" + pDescription + "\"(" + QString("%1").arg(pStatusCode) + ").");
 }
 
@@ -779,7 +791,7 @@ void ParticipantWidget::HandleCall(bool pIncoming, QString pRemoteApplication)
     {
         mIncomingCall = true;
 
-        MEETING.SendCallAcknowledge(QString(mSessionName.toLocal8Bit()).toStdString());
+        MEETING.SendCallAcknowledge(QString(mSessionName.toLocal8Bit()).toStdString(), mSessionTransport);
 
         mCallBox = new QMessageBox(QMessageBox::Question, "Incoming call from application " + pRemoteApplication, "Do you want to accept the incoming call from " + mSessionName + "?", QMessageBox::Yes | QMessageBox::Cancel, this);
 
@@ -796,11 +808,11 @@ void ParticipantWidget::HandleCall(bool pIncoming, QString pRemoteApplication)
         {
             if (mIncomingCall)
             {
-                MEETING.SendCallAccept(QString(mSessionName.toLocal8Bit()).toStdString());
+                MEETING.SendCallAccept(QString(mSessionName.toLocal8Bit()).toStdString(), mSessionTransport);
             }
         }else
         {
-            MEETING.SendCallDeny(QString(mSessionName.toLocal8Bit()).toStdString());
+            MEETING.SendCallDeny(QString(mSessionName.toLocal8Bit()).toStdString(), mSessionTransport);
         }
     }
 }
@@ -925,7 +937,7 @@ void ParticipantWidget::HandleCallUnavailable(bool pIncoming, int pStatusCode, Q
     {
     	CallStopped(pIncoming);
         UpdateParticipantState(CONTACT_UNAVAILABLE);
-        CONTACTS.UpdateContactState(mSessionName, CONTACT_UNAVAILABLE);
+        CONTACTS.UpdateContactState(mSessionName, mSessionTransport, CONTACT_UNAVAILABLE);
 
         if (pStatusCode == 488)
         	ShowError("Participant unavailable", "The participant " + mSessionName + " does not accept your video/audio codecs. Please, check the configuration and use different settings.");
@@ -976,7 +988,7 @@ void ParticipantWidget::HandleCallAccept(bool pIncoming)
     }
 
     UpdateParticipantState(CONTACT_AVAILABLE);
-    CONTACTS.UpdateContactState(mSessionName, CONTACT_AVAILABLE);
+    CONTACTS.UpdateContactState(mSessionName, mSessionTransport, CONTACT_AVAILABLE);
 
     if (mMessageWidget != NULL)
         mMessageWidget->AddMessage("", "session established", true);
@@ -1263,7 +1275,7 @@ void ParticipantWidget::InformAboutVideoSeekingComplete()
 
 void ParticipantWidget::ShowNewState()
 {
-    switch (MEETING.GetCallState(QString(mSessionName.toLocal8Bit()).toStdString()))
+    switch (MEETING.GetCallState(QString(mSessionName.toLocal8Bit()).toStdString(), mSessionTransport))
     {
         case CALLSTATE_STANDBY:
                     if ((mMessageWidget != NULL) && (mSessionType != PREVIEW))
@@ -1310,7 +1322,10 @@ bool ParticipantWidget::PlayingMovie()
 
 void ParticipantWidget::UpdateParticipantName(QString pParticipantName)
 {
-    mWidgetTitle = pParticipantName;
+    if (mSessionType == PARTICIPANT)
+        mWidgetTitle = pParticipantName + " [" + QString(Socket::TransportType2String(mSessionTransport).c_str()) + "] ";
+    else
+        mWidgetTitle = pParticipantName;
     ShowNewState();
 }
 
@@ -1340,6 +1355,14 @@ QString ParticipantWidget::GetParticipantName()
         return mSessionName;
     else
         return "";
+}
+
+enum TransportType ParticipantWidget::GetParticipantTransport()
+{
+    if (mSessionType == PARTICIPANT)
+        return mSessionTransport;
+    else
+        return SOCKET_TRANSPORT_TYPE_INVALID;
 }
 
 enum SessionType ParticipantWidget::GetSessionType()

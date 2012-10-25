@@ -28,6 +28,8 @@
 #ifndef _MESSAGE_WIDGET_
 #define _MESSAGE_WIDGET_
 
+#include <HBSocket.h>
+
 #include <QWidget>
 #include <QEvent>
 
@@ -46,7 +48,7 @@ class MessageWidget :
 public:
     /// The default constructor
     MessageWidget(QWidget* pParent = NULL);
-    void Init(QMenu *pMenu, QString pPartner = "unknown", bool pVisible = true);
+    void Init(QMenu *pMenu, QString pParticipant, enum TransportType pParticipantTransport, bool pVisible = true);
 
     /// The destructor.
     virtual ~MessageWidget();
@@ -79,6 +81,7 @@ private:
     QAction             *mAssignedAction;
     QString             mMessageHistory;
     QString             mParticipant;
+    enum TransportType  mParticipantTransport;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

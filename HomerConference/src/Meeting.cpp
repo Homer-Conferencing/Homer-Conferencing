@@ -50,7 +50,7 @@ struct ParticipantDescriptor
     std::string    User;
     std::string    Host;
     std::string    Port;
-    std::string	   Transport;
+    enum TransportType Transport;
     std::string    Sdp;
     std::string    OwnIp; //necessary for NAT traversal: store the outmost NAT's IP, directed towards this participant
     unsigned int   OwnPort; //necessary for NAT traversal: store the outmost NAT's PORT, directed towards this participant
@@ -347,7 +347,7 @@ string Meeting::GetServerConferenceId()
     return tResult;
 }
 
-bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort, string pTransport)
+bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort, enum TransportType pTransport)
 {
     bool        tFound = false;
     ParticipantDescriptor tParticipantDescriptor;
@@ -360,7 +360,7 @@ bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort, s
     for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
     {
         LOG(LOG_VERBOSE, "CompareForOpen: \"%s\" with \"%s\" and state: %d", (pUser + "@" + pHost + ":" + pPort).c_str(), (tIt->User + "@" + tIt->Host + ":" + tIt->Port).c_str(), tIt->CallState);
-        if (IsThisParticipant(pUser, pHost, pPort, tIt->User, tIt->Host, tIt->Port))
+        if (IsThisParticipant(pUser, pHost, pPort, pTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
         {
             LOG(LOG_VERBOSE, "...found");
             tFound = true;
@@ -486,7 +486,7 @@ bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort, s
     return !tFound;
 }
 
-bool Meeting::CloseParticipantSession(string pParticipant)
+bool Meeting::CloseParticipantSession(string pParticipant, enum TransportType pParticipantTransport)
 {
     bool        tFound = false;
     ParticipantList::iterator tIt;
@@ -496,7 +496,7 @@ bool Meeting::CloseParticipantSession(string pParticipant)
 
     for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
     {
-        if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
+        if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
         {
             // hint: the media sources are deleted within video/audio-widget
 
@@ -586,7 +586,7 @@ bool Meeting::SendBroadcastMessage(string pMessage)
     return tResult;
 }
 
-bool Meeting::SendMessage(string pParticipant, string pMessage)
+bool Meeting::SendMessage(string pParticipant, enum TransportType pParticipantTransport, string pMessage)
 {
     bool        tFound = false;
     nua_handle_t **tHandlePtr = NULL;
@@ -607,7 +607,7 @@ bool Meeting::SendMessage(string pParticipant, string pMessage)
         LOG(LOG_VERBOSE, "Search matching database entry for SendMessage()");
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
+            if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
             {
                 LOG(LOG_VERBOSE, "...found");
                 tFound = true;
@@ -639,7 +639,7 @@ bool Meeting::SendMessage(string pParticipant, string pMessage)
     return tFound;
 }
 
-bool Meeting::SendCall(string pParticipant)
+bool Meeting::SendCall(string pParticipant, enum TransportType pParticipantTransport)
 {
     bool        tFound = false;
     nua_handle_t **tHandlePtr = NULL;
@@ -654,7 +654,7 @@ bool Meeting::SendCall(string pParticipant)
         LOG(LOG_VERBOSE, "Search matching database entry for SendCall()");
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            if ((IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port)) && (tIt->CallState == CALLSTATE_STANDBY))
+            if ((IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport)) && (tIt->CallState == CALLSTATE_STANDBY))
             {
                 LOG(LOG_VERBOSE, "...found");
                 tFound = true;
@@ -685,7 +685,7 @@ bool Meeting::SendCall(string pParticipant)
     return tFound;
 }
 
-bool Meeting::SendCallAcknowledge(string pParticipant)
+bool Meeting::SendCallAcknowledge(string pParticipant, enum TransportType pParticipantTransport)
 {
     bool        tFound = false;
     nua_handle_t **tHandlePtr = NULL;
@@ -700,7 +700,7 @@ bool Meeting::SendCallAcknowledge(string pParticipant)
         LOG(LOG_VERBOSE, "Search matching database entry for SendCallAcknowledge()");
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            if ((IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port)) && (tIt->CallState == CALLSTATE_RINGING))
+            if ((IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport)) && (tIt->CallState == CALLSTATE_RINGING))
             {
                 tFound = true;
                 tHandlePtr = &tIt->SipNuaHandleForCalls;
@@ -730,7 +730,7 @@ bool Meeting::SendCallAcknowledge(string pParticipant)
     return tFound;
 }
 
-bool Meeting::SendCallAccept(string pParticipant)
+bool Meeting::SendCallAccept(string pParticipant, enum TransportType pParticipantTransport)
 {
     bool        tFound = false;
     nua_handle_t **tHandlePtr = NULL;
@@ -744,7 +744,7 @@ bool Meeting::SendCallAccept(string pParticipant)
     {
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            if ((IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port)) && (tIt->CallState == CALLSTATE_RINGING))
+            if ((IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport)) && (tIt->CallState == CALLSTATE_RINGING))
             {
                 tFound = true;
                 tHandlePtr = &tIt->SipNuaHandleForCalls;
@@ -773,7 +773,7 @@ bool Meeting::SendCallAccept(string pParticipant)
     return tFound;
 }
 
-bool Meeting::SendCallCancel(string pParticipant)
+bool Meeting::SendCallCancel(string pParticipant, enum TransportType pParticipantTransport)
 {
     bool        tFound = false;
     nua_handle_t **tHandlePtr = NULL;
@@ -787,7 +787,7 @@ bool Meeting::SendCallCancel(string pParticipant)
     {
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            if ((IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port)) && (tIt->CallState == CALLSTATE_RINGING))
+            if ((IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport)) && (tIt->CallState == CALLSTATE_RINGING))
             {
                 tFound = true;
                 tHandlePtr = &tIt->SipNuaHandleForCalls;
@@ -816,7 +816,7 @@ bool Meeting::SendCallCancel(string pParticipant)
     return tFound;
 }
 
-bool Meeting::SendCallDeny(string pParticipant)
+bool Meeting::SendCallDeny(string pParticipant, enum TransportType pParticipantTransport)
 {
     bool        tFound = false;
     nua_handle_t **tHandlePtr = NULL;
@@ -830,7 +830,7 @@ bool Meeting::SendCallDeny(string pParticipant)
     {
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            if ((IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port)) && (tIt->CallState == CALLSTATE_RINGING))
+            if ((IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport)) && (tIt->CallState == CALLSTATE_RINGING))
             {
                 tFound = true;
                 tHandlePtr = &tIt->SipNuaHandleForCalls;
@@ -859,7 +859,7 @@ bool Meeting::SendCallDeny(string pParticipant)
     return tFound;
 }
 
-bool Meeting::SendHangUp(string pParticipant)
+bool Meeting::SendHangUp(string pParticipant, enum TransportType pParticipantTransport)
 {
     bool        tFound = false;
     nua_handle_t **tHandlePtr = NULL;
@@ -874,7 +874,7 @@ bool Meeting::SendHangUp(string pParticipant)
         LOG(LOG_VERBOSE, "Search matching database entry for SendHangUp()");
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            if ((IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port)) && (tIt->CallState == CALLSTATE_RUNNING))
+            if ((IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport)) && (tIt->CallState == CALLSTATE_RUNNING))
             {
                 tFound = true;
                 tIt->CallState = CALLSTATE_STANDBY;
@@ -905,7 +905,7 @@ bool Meeting::SendHangUp(string pParticipant)
     return tFound;
 }
 
-bool Meeting::SendProbe(std::string pParticipant)
+bool Meeting::SendProbe(std::string pParticipant, enum TransportType pParticipantTransport)
 {
     //LOG(LOG_VERBOSE, "Probing: %s", pParticipant.c_str());
 
@@ -943,7 +943,7 @@ bool Meeting::SendProbe(std::string pParticipant)
     return true;
 }
 
-const char* Meeting::GetSdpData(std::string pParticipant)
+const char* Meeting::GetSdpData(std::string pParticipant, enum TransportType pParticipantTransport)
 {
     const char *tResult = "";
     ParticipantList::iterator tIt;
@@ -962,7 +962,7 @@ const char* Meeting::GetSdpData(std::string pParticipant)
         LOG(LOG_VERBOSE, "Search matching database entry for GetSdpData()");
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
+            if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
             {
                 LOG(LOG_VERBOSE, "...found");
                 if (tIt->VideoReceiveSocket == NULL)
@@ -995,7 +995,7 @@ const char* Meeting::GetSdpData(std::string pParticipant)
     return tResult;
 }
 
-bool Meeting::SearchParticipantAndSetState(string pParticipant, int pState)
+bool Meeting::SearchParticipantAndSetState(string pParticipant, enum TransportType pParticipantTransport, int pState)
 {
     bool tFound = false;
     ParticipantList::iterator tIt;
@@ -1009,7 +1009,7 @@ bool Meeting::SearchParticipantAndSetState(string pParticipant, int pState)
         LOG(LOG_VERBOSE, "Search matching database entry for SearchParticipantAndSetState()");
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
+            if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
             {
                 tIt->CallState = pState;
                 tFound = true;
@@ -1026,7 +1026,7 @@ bool Meeting::SearchParticipantAndSetState(string pParticipant, int pState)
 }
 
 //HINT: following function is used in case a call was received and the SIP destination address differs from the IP address of the network layer
-bool Meeting::SearchParticipantAndSetOwnContactAddress(string pParticipant, string pOwnNatIp, unsigned int pOwnNatPort)
+bool Meeting::SearchParticipantAndSetOwnContactAddress(string pParticipant, enum TransportType pParticipantTransport, string pOwnNatIp, unsigned int pOwnNatPort)
 {
     bool tFound = false;
     ParticipantList::iterator tIt;
@@ -1040,7 +1040,7 @@ bool Meeting::SearchParticipantAndSetOwnContactAddress(string pParticipant, stri
         LOG(LOG_VERBOSE, "Search matching database entry for SearchParticipantAndSetOwnContactAddress()");
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
+            if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
             {
                 tIt->OwnIp = pOwnNatIp;
                 tIt->OwnPort = pOwnNatPort;
@@ -1058,7 +1058,7 @@ bool Meeting::SearchParticipantAndSetOwnContactAddress(string pParticipant, stri
     return tFound;
 }
 
-bool Meeting::SearchParticipantAndSetNuaHandleForMsgs(string pParticipant, nua_handle_t *pNuaHandle)
+bool Meeting::SearchParticipantAndSetNuaHandleForMsgs(string pParticipant, enum TransportType pParticipantTransport, nua_handle_t *pNuaHandle)
 {
     bool tFound = false;
     ParticipantList::iterator tIt;
@@ -1072,7 +1072,7 @@ bool Meeting::SearchParticipantAndSetNuaHandleForMsgs(string pParticipant, nua_h
         LOG(LOG_VERBOSE, "Search matching database entry for SearchParticipantAndSetNuaHandleForMsgs()");
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
+            if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
             {
                 tIt->SipNuaHandleForMsgs = pNuaHandle;
                 tFound = true;
@@ -1088,7 +1088,7 @@ bool Meeting::SearchParticipantAndSetNuaHandleForMsgs(string pParticipant, nua_h
     return tFound;
 }
 
-bool Meeting::SearchParticipantAndSetNuaHandleForCalls(string pParticipant, nua_handle_t *pNuaHandle)
+bool Meeting::SearchParticipantAndSetNuaHandleForCalls(string pParticipant, enum TransportType pParticipantTransport, nua_handle_t *pNuaHandle)
 {
     bool tFound = false;
     ParticipantList::iterator tIt;
@@ -1102,7 +1102,7 @@ bool Meeting::SearchParticipantAndSetNuaHandleForCalls(string pParticipant, nua_
         LOG(LOG_VERBOSE, "Search matching database entry for SearchParticipantAndSetNuaHandleForCalls()");
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
+            if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
             {
                 tIt->SipNuaHandleForCalls = pNuaHandle;
                 tFound = true;
@@ -1118,7 +1118,7 @@ bool Meeting::SearchParticipantAndSetNuaHandleForCalls(string pParticipant, nua_
     return tFound;
 }
 
-nua_handle_t** Meeting::SearchParticipantAndGetNuaHandleForCalls(string pParticipant)
+nua_handle_t** Meeting::SearchParticipantAndGetNuaHandleForCalls(string pParticipant, enum TransportType pParticipantTransport)
 {
     nua_handle_t** tResult = NULL;
     ParticipantList::iterator tIt;
@@ -1132,7 +1132,7 @@ nua_handle_t** Meeting::SearchParticipantAndGetNuaHandleForCalls(string pPartici
         LOG(LOG_VERBOSE, "Search matching database entry for SearchParticipantAndGetNuaHandleForCalls()");
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
+            if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
             {
                 tResult = &tIt->SipNuaHandleForCalls;
                 LOG(LOG_VERBOSE, "...found");
@@ -1179,7 +1179,7 @@ bool Meeting::SearchParticipantByNuaHandleOrName(string &pUser, string &pHost, s
     return tFound;
 }
 
-bool Meeting::SearchParticipantAndSetRemoteMediaInformation(std::string pParticipant, std::string pVideoHost, unsigned int pVideoPort, std::string pVideoCodec, std::string pAudioHost, unsigned int pAudioPort, std::string pAudioCodec)
+bool Meeting::SearchParticipantAndSetRemoteMediaInformation(std::string pParticipant, enum TransportType pParticipantTransport, std::string pVideoHost, unsigned int pVideoPort, std::string pVideoCodec, std::string pAudioHost, unsigned int pAudioPort, std::string pAudioCodec)
 {
     bool tFound = false;
     ParticipantList::iterator tIt;
@@ -1193,7 +1193,7 @@ bool Meeting::SearchParticipantAndSetRemoteMediaInformation(std::string pPartici
         LOG(LOG_VERBOSE, "Search matching database entry for SearchParticipantAndSetRemoteMediaInformation()");
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
+            if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
             {
                 tIt->RemoteVideoHost = pVideoHost;
                 tIt->RemoteVideoPort = pVideoPort;
@@ -1235,7 +1235,7 @@ bool Meeting::IsLocalAddress(string pHost, string pPort)
     return tFound;
 }
 
-Socket* Meeting::GetAudioReceiveSocket(string pParticipant)
+Socket* Meeting::GetAudioReceiveSocket(string pParticipant, enum TransportType pParticipantTransport)
 {
     Socket *tResult = NULL;
     ParticipantList::iterator tIt;
@@ -1255,7 +1255,7 @@ Socket* Meeting::GetAudioReceiveSocket(string pParticipant)
             LOG(LOG_VERBOSE, "Search matching database entry for GetAudioReceiveSocket()");
             for (tIt = mParticipants.begin()++; tIt != mParticipants.end(); tIt++)
             {
-                if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
+                if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
                 {
                     tResult = tIt->AudioReceiveSocket;
                     LOG(LOG_VERBOSE, "...found");
@@ -1273,7 +1273,7 @@ Socket* Meeting::GetAudioReceiveSocket(string pParticipant)
     return tResult;
 }
 
-Socket* Meeting::GetVideoReceiveSocket(string pParticipant)
+Socket* Meeting::GetVideoReceiveSocket(string pParticipant, enum TransportType pParticipantTransport)
 {
     Socket *tResult = NULL;
     ParticipantList::iterator tIt;
@@ -1293,7 +1293,7 @@ Socket* Meeting::GetVideoReceiveSocket(string pParticipant)
             LOG(LOG_VERBOSE, "Search matching database entry for GetVideoReceiveSocket()");
             for (tIt = mParticipants.begin()++; tIt != mParticipants.end(); tIt++)
             {
-                if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
+                if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
                 {
                     tResult = tIt->VideoReceiveSocket;
                     LOG(LOG_VERBOSE, "...found");
@@ -1311,7 +1311,7 @@ Socket* Meeting::GetVideoReceiveSocket(string pParticipant)
     return tResult;
 }
 
-Socket* Meeting::GetAudioSendSocket(string pParticipant)
+Socket* Meeting::GetAudioSendSocket(string pParticipant, enum TransportType pParticipantTransport)
 {
     Socket *tResult = NULL;
     ParticipantList::iterator tIt;
@@ -1331,7 +1331,7 @@ Socket* Meeting::GetAudioSendSocket(string pParticipant)
             LOG(LOG_VERBOSE, "Search matching database entry for GetAudioSendSocket()");
             for (tIt = mParticipants.begin()++; tIt != mParticipants.end(); tIt++)
             {
-                if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
+                if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
                 {
                     tResult = tIt->AudioSendSocket;
                     LOG(LOG_VERBOSE, "...found");
@@ -1349,7 +1349,7 @@ Socket* Meeting::GetAudioSendSocket(string pParticipant)
     return tResult;
 }
 
-Socket* Meeting::GetVideoSendSocket(string pParticipant)
+Socket* Meeting::GetVideoSendSocket(string pParticipant, enum TransportType pParticipantTransport)
 {
     Socket *tResult = NULL;
     ParticipantList::iterator tIt;
@@ -1369,7 +1369,7 @@ Socket* Meeting::GetVideoSendSocket(string pParticipant)
             LOG(LOG_VERBOSE, "Search matching database entry for GetVideoSendSocket()");
             for (tIt = mParticipants.begin()++; tIt != mParticipants.end(); tIt++)
             {
-                if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
+                if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
                 {
                     tResult = tIt->VideoSendSocket;
                     LOG(LOG_VERBOSE, "...found");
@@ -1387,7 +1387,7 @@ Socket* Meeting::GetVideoSendSocket(string pParticipant)
     return tResult;
 }
 
-int Meeting::GetCallState(string pParticipant)
+int Meeting::GetCallState(string pParticipant, enum TransportType pParticipantTransport)
 {
     int tResult = CALLSTATE_INVALID;
     ParticipantList::iterator tIt;
@@ -1407,7 +1407,7 @@ int Meeting::GetCallState(string pParticipant)
             LOG(LOG_VERBOSE, "Search matching database entry for GetCallState()");
             for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
             {
-                if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
+                if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
                 {
                     tResult = tIt->CallState;
                     LOG(LOG_VERBOSE, "...found");
@@ -1422,7 +1422,7 @@ int Meeting::GetCallState(string pParticipant)
     return tResult;
 }
 
-bool Meeting::GetSessionInfo(string pParticipant, struct SessionInfo *pInfo)
+bool Meeting::GetSessionInfo(string pParticipant, enum TransportType pParticipantTransport, struct SessionInfo *pInfo)
 {
     bool tResult = false;
     ParticipantList::iterator tIt;
@@ -1458,7 +1458,7 @@ bool Meeting::GetSessionInfo(string pParticipant, struct SessionInfo *pInfo)
             //LOG(LOG_VERBOSE, "Search matching database entry for GetSessionInfo()");
             for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
             {
-                if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
+                if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
                 {
                     tResult = true;
                     pInfo->User = tIt->User;
@@ -1488,7 +1488,7 @@ bool Meeting::GetSessionInfo(string pParticipant, struct SessionInfo *pInfo)
     return tResult;
 }
 
-void Meeting::GetOwnContactAddress(std::string pParticipant, std::string &pIp, unsigned int &pPort)
+void Meeting::GetOwnContactAddress(std::string pParticipant, enum TransportType pParticipantTransport, std::string &pIp, unsigned int &pPort)
 {
     ParticipantList::iterator tIt;
 
@@ -1503,7 +1503,7 @@ void Meeting::GetOwnContactAddress(std::string pParticipant, std::string &pIp, u
         LOG(LOG_VERBOSE, "Search matching database entry for GetOwnContactAddress()");
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            if (IsThisParticipant(pParticipant, tIt->User, tIt->Host, tIt->Port))
+            if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
             {
                 pIp = tIt->OwnIp;
                 pPort = tIt->OwnPort;

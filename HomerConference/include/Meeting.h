@@ -116,29 +116,29 @@ public:
 
     /* local I/O interfaces and state */
     bool IsLocalAddress(std::string pHost, std::string pPort);
-    Socket* GetAudioReceiveSocket(std::string pParticipant);
-    Socket* GetVideoReceiveSocket(std::string pParticipant);
-    Socket* GetAudioSendSocket(std::string pParticipant);
-    Socket* GetVideoSendSocket(std::string pParticipant);
-    int GetCallState(std::string pParticipant);
-    bool GetSessionInfo(std::string pParticipant, struct SessionInfo *pInfo);
-    void GetOwnContactAddress(std::string pParticipant, std::string &pIp, unsigned int &pPort);
+    Socket* GetAudioReceiveSocket(std::string pParticipant, enum TransportType pParticipantTransport);
+    Socket* GetVideoReceiveSocket(std::string pParticipant, enum TransportType pParticipantTransport);
+    Socket* GetAudioSendSocket(std::string pParticipant, enum TransportType pParticipantTransport);
+    Socket* GetVideoSendSocket(std::string pParticipant, enum TransportType pParticipantTransport);
+    int GetCallState(std::string pParticipant, enum TransportType pParticipantTransport);
+    bool GetSessionInfo(std::string pParticipant, enum TransportType pParticipantTransport, struct SessionInfo *pInfo);
+    void GetOwnContactAddress(std::string pParticipant, enum TransportType pParticipantTransport, std::string &pIp, unsigned int &pPort);
 
     /* session management */
-    bool OpenParticipantSession(std::string pUser, std::string pHost, std::string pPort, std::string pTransport = "UDP");
-    bool CloseParticipantSession(std::string pParticipant);
+    bool OpenParticipantSession(std::string pUser, std::string pHost, std::string pPort, enum TransportType pTransport = SOCKET_UDP);
+    bool CloseParticipantSession(std::string pParticipant, enum TransportType pParticipantTransport);
     int CountParticipantSessions();
 
     /* outgoing events */
-    bool SendMessage(std::string pParticipant, std::string pMessage);
+    bool SendMessage(std::string pParticipant, enum TransportType pParticipantTransport, std::string pMessage);
     bool SendBroadcastMessage(std::string pMessage);
-    bool SendCall(std::string pParticipant);
-    bool SendCallAcknowledge(std::string pParticipant);
-    bool SendCallCancel(std::string pParticipant);
-    bool SendCallAccept(std::string pParticipant);
-    bool SendCallDeny(std::string pParticipant);
-    bool SendHangUp(std::string pParticipant);
-    bool SendProbe(std::string pParticipant);
+    bool SendCall(std::string pParticipant, enum TransportType pParticipantTransport);
+    bool SendCallAcknowledge(std::string pParticipant, enum TransportType pParticipantTransport);
+    bool SendCallCancel(std::string pParticipant, enum TransportType pParticipantTransport);
+    bool SendCallAccept(std::string pParticipant, enum TransportType pParticipantTransport);
+    bool SendCallDeny(std::string pParticipant, enum TransportType pParticipantTransport);
+    bool SendHangUp(std::string pParticipant, enum TransportType pParticipantTransport);
+    bool SendProbe(std::string pParticipant, enum TransportType pParticipantTransport);
 
 private:
     friend class SIP;
@@ -146,15 +146,15 @@ private:
     void SetHostAdr(std::string pHost); // no one should be allowed to change the local address from the outside
     std::string GetOwnRoutingAddressForPeer(std::string pForeignHost);
 
-    bool SearchParticipantAndSetState(std::string pParticipant, int pState);
-    bool SearchParticipantAndSetOwnContactAddress(std::string pParticipant, std::string pOwnNatIp, unsigned int pOwnNatPort);
-    bool SearchParticipantAndSetNuaHandleForMsgs(std::string pParticipant, nua_handle_t *pNuaHandle);
-    bool SearchParticipantAndSetNuaHandleForCalls(std::string pParticipant, nua_handle_t *pNuaHandle);
-    bool SearchParticipantAndSetRemoteMediaInformation(std::string pParticipant, std::string pVideoHost, unsigned int pVideoPort, std::string pVideoCodec, std::string pAudioHost, unsigned int pAudioPort, std::string pAudioCodec);
-    nua_handle_t ** SearchParticipantAndGetNuaHandleForCalls(string pParticipant);
+    bool SearchParticipantAndSetState(std::string pParticipant, enum TransportType pParticipantTransport, int pState);
+    bool SearchParticipantAndSetOwnContactAddress(std::string pParticipant, enum TransportType pParticipantTransport, std::string pOwnNatIp, unsigned int pOwnNatPort);
+    bool SearchParticipantAndSetNuaHandleForMsgs(std::string pParticipant, enum TransportType pParticipantTransport, nua_handle_t *pNuaHandle);
+    bool SearchParticipantAndSetNuaHandleForCalls(std::string pParticipant, enum TransportType pParticipantTransport, nua_handle_t *pNuaHandle);
+    bool SearchParticipantAndSetRemoteMediaInformation(std::string pParticipant, enum TransportType pParticipantTransport, std::string pVideoHost, unsigned int pVideoPort, std::string pVideoCodec, std::string pAudioHost, unsigned int pAudioPort, std::string pAudioCodec);
+    nua_handle_t ** SearchParticipantAndGetNuaHandleForCalls(string pParticipant, enum TransportType pParticipantTransport);
     bool SearchParticipantByNuaHandleOrName(string &pUser, string &pHost, string &pPort, nua_handle_t *pNuaHandle);
 
-    const char* GetSdpData(std::string pParticipant);
+    const char* GetSdpData(std::string pParticipant, enum TransportType pParticipantTransport);
     std::string CallStateAsString(int pCallState);
 
     Mutex               mParticipantsMutex;

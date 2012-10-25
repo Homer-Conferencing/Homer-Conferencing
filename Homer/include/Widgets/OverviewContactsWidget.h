@@ -54,10 +54,11 @@ class AddParticipantEvent:
     public Homer::Conference::TEvent<AddParticipantEvent, ADD_PARTICIPANT>
 {
 public:
-    AddParticipantEvent(QString pUser, QString pHost, QString pPort, QString pTransport, QString pIp, int pInitState):User(pUser), Host(pHost), Port(pPort), Transport(pTransport), Ip(pIp), InitState(pInitState)
+    AddParticipantEvent(QString pUser, QString pHost, QString pPort, enum TransportType pTransport, QString pIp, int pInitState):User(pUser), Host(pHost), Port(pPort), Transport(pTransport), Ip(pIp), InitState(pInitState)
         { }
 
-    QString User, Host, Port, Transport;
+    QString User, Host, Port;
+    enum TransportType Transport;
     QString Ip;
     int InitState;
 };

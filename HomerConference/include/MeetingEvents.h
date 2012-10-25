@@ -29,6 +29,7 @@
 #define _CONFERENCE_MEETING_EVENTS_
 
 #include <Header_SofiaSipForwDecl.h>
+#include <HBSocket.h>
 #include <HBMutex.h>
 
 #include <list>
@@ -143,6 +144,7 @@ public:
     string SenderName;
     string SenderComment;
     string SenderApplication;
+    enum TransportType Transport;
     bool   IsIncomingEvent; // incoming in meanings of "received from outside"
 
 private:

@@ -34,6 +34,7 @@
 namespace Homer { namespace Gui {
 
 using namespace Homer::Conference;
+using namespace Homer::Base;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -51,27 +52,27 @@ CallButton::~CallButton()
 
 void CallButton::HandleClick()
 {
-    switch (MEETING.GetCallState(QString(mPartner.toLocal8Bit()).toStdString()))
+    switch (MEETING.GetCallState(QString(mParticipant.toLocal8Bit()).toStdString(), mParticipantTransport))
     {
         case CALLSTATE_STANDBY:
-                MEETING.SendCall(QString(mPartner.toLocal8Bit()).toStdString());
+                MEETING.SendCall(QString(mParticipant.toLocal8Bit()).toStdString(), mParticipantTransport);
                 // fake call state "ringing", otherwise the user is maybe confused when the "ringing" state takes too long and the button still displays "Call"
                 setText("Cancel call");
                 break;
 
         case CALLSTATE_RINGING:
-                MEETING.SendCallCancel(QString(mPartner.toLocal8Bit()).toStdString());
+                MEETING.SendCallCancel(QString(mParticipant.toLocal8Bit()).toStdString(), mParticipantTransport);
                 break;
 
         case CALLSTATE_RUNNING:
-                MEETING.SendHangUp(QString(mPartner.toLocal8Bit()).toStdString());
+                MEETING.SendHangUp(QString(mParticipant.toLocal8Bit()).toStdString(), mParticipantTransport);
                 break;
     }
 }
 
 void CallButton::ShowNewState()
 {
-    switch(MEETING.GetCallState(QString(mPartner.toLocal8Bit()).toStdString()))
+    switch(MEETING.GetCallState(QString(mParticipant.toLocal8Bit()).toStdString(), mParticipantTransport))
     {
         case CALLSTATE_STANDBY:
                 setText("Conference");
@@ -85,9 +86,10 @@ void CallButton::ShowNewState()
     }
 }
 
-void CallButton::SetPartner(QString pPartner)
+void CallButton::SetPartner(QString pParticipant, enum TransportType pTransport)
 {
-    mPartner = pPartner;
+    mParticipant = pParticipant;
+    mParticipantTransport = pTransport;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

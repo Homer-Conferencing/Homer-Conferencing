@@ -51,7 +51,7 @@ struct ContactDescriptor
     QString        User;
     QString        Host;
     QString        Port;
-    QString		   Transport;
+    enum TransportType Transport;
     int            State; // 0-offline, 1-online/available
     unsigned int   Id;
 
@@ -111,7 +111,7 @@ public:
 
     /* contact availability management */
     void ProbeAvailabilityForAll();
-    void UpdateContactState(QString pContact, bool pState);
+    void UpdateContactState(QString pContact, enum TransportType pContactTransport, bool pState);
 
     /* sorting */
     void SortByState(bool pDescending);

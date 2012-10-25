@@ -28,6 +28,8 @@
 #ifndef _SESSION_INFO_WIDGET_
 #define _SESSION_INFO_WIDGET_
 
+#include <HBSocket.h>
+
 #include <QWidget>
 #include <QPoint>
 
@@ -45,7 +47,7 @@ class SessionInfoWidget :
 public:
     /// The default constructor
     SessionInfoWidget(QWidget* pParent = NULL);
-    void Init(QString pPartner = "unknown", bool pVisible = true);
+    void Init(QString pParticipant, enum Homer::Base::TransportType pParticipantTransport, bool pVisible = true);
 
     /// The destructor.
     virtual ~SessionInfoWidget();
@@ -66,6 +68,7 @@ private:
     QPoint              mWinPos;
     QString             mMessageHistory;
     QString             mParticipant, mSipInterface;
+    enum Homer::Base::TransportType  mParticipantTransport;
     int                 mTimerId;
 };
 

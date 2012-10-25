@@ -113,6 +113,7 @@ void ContactsManager::SavePool(string pContactsFile)
         tEntry.setAttribute("User", QString(tIt->User.toAscii()));
         tEntry.setAttribute("Host", QString(tIt->Host.toAscii()));
         tEntry.setAttribute("Port", QString(tIt->Port.toAscii()));
+        tEntry.setAttribute("Transport", QString(QString(Socket::TransportType2String(tIt->Transport).c_str()).toAscii()));
         tEntry.setAttribute("Index", QString("%1").arg(tIt->Id));
 
         tRoot.appendChild(tEntry);
@@ -203,8 +204,8 @@ void ContactsManager::LoadPool(string pContactsFile)
 				tContact.Host = QString::fromAscii(tEntry.attribute("Host", "Host").toStdString().c_str());
 				tContact.Host = tContact.Host.toLower();
 				tContact.Port = QString::fromAscii(tEntry.attribute("Port", "5060").toStdString().c_str());
-				tContact.Transport = QString::fromAscii(tEntry.attribute("Transport", "UDP").toStdString().c_str());
-				LOG(LOG_VERBOSE, "Loaded contact: name=%s, address=%s, port=%s, transport=%s", QString(tContact.Name.toAscii()).toStdString().c_str(), QString(tContact.User.toAscii() + "@" + tContact.Host.toAscii()).toStdString().c_str(), tContact.Port.toStdString().c_str(), tContact.Transport.toStdString().c_str());
+				tContact.Transport = Socket::String2TransportType(QString::fromAscii(tEntry.attribute("Transport", "UDP").toStdString().c_str()).toStdString());
+				LOG(LOG_VERBOSE, "Loaded contact: name=%s, address=%s, port=%s, transport=%s", QString(tContact.Name.toAscii()).toStdString().c_str(), QString(tContact.User.toAscii() + "@" + tContact.Host.toAscii()).toStdString().c_str(), tContact.Port.toStdString().c_str(), Socket::TransportType2String(tContact.Transport).c_str());
 				tContact.Id = tEntry.attribute("Index", "0").toUInt();
 				tContact.State = CONTACT_UNAVAILABLE;
 
@@ -241,7 +242,7 @@ void ContactsManager::AddContact(ContactDescriptor &pContact)
     mContactsMutex.lock();
     mContacts.push_back(pContact);
     if (CONF.GetSipContactsProbing())
-        MEETING.SendProbe(MEETING.SipCreateId(pContact.getUserStdStr(), pContact.getHostStdStr(), pContact.getPortStdStr()));
+        MEETING.SendProbe(MEETING.SipCreateId(pContact.getUserStdStr(), pContact.getHostStdStr(), pContact.getPortStdStr()), pContact.Transport);
     mContactsMutex.unlock();
     if (mContactsModel != NULL)
         mContactsModel->UpdateView();
@@ -458,13 +459,13 @@ void ContactsManager::ProbeAvailabilityForAll()
 
     for (tIt = mContacts.begin(); tIt != tItEnd; tIt++)
     {
-        MEETING.SendProbe(MEETING.SipCreateId(tIt->getUserStdStr(), tIt->getHostStdStr(), tIt->getPortStdStr()));
+        MEETING.SendProbe(MEETING.SipCreateId(tIt->getUserStdStr(), tIt->getHostStdStr(), tIt->getPortStdStr()), tIt->Transport);
     }
 
     mContactsMutex.unlock();
 }
 
-void ContactsManager::UpdateContactState(QString pContact, bool pState)
+void ContactsManager::UpdateContactState(QString pContact, enum TransportType pContactTransport, bool pState)
 {
     mContactsMutex.lock();
 
@@ -475,8 +476,14 @@ void ContactsManager::UpdateContactState(QString pContact, bool pState)
 
     for (tIt = mContacts.begin(); tIt != tItEnd; tIt++)
     {
-        LOG(LOG_VERBOSE, "Comparing %s==%s", MEETING.SipCreateId(tIt->getUserStdStr(), tIt->getHostStdStr(), tIt->getPortStdStr()).c_str(), pContact.toStdString().c_str());
-        if (MEETING.SipCreateId(tIt->getUserStdStr(), tIt->getHostStdStr(), tIt->getPortStdStr()) == pContact.toStdString())
+        QString tItTransport = QString(Socket::TransportType2String(tIt->Transport).c_str());
+        if (tItTransport == "auto")
+            tItTransport = "UDP";
+        QString tContactTransport = QString(Socket::TransportType2String(pContactTransport).c_str());
+        if (tContactTransport == "auto")
+            tContactTransport = "UDP";
+        LOG(LOG_VERBOSE, "Comparing %s==%s, %s==%s", MEETING.SipCreateId(tIt->getUserStdStr(), tIt->getHostStdStr(), tIt->getPortStdStr()).c_str(), pContact.toStdString().c_str(), tItTransport.toStdString().c_str(), tContactTransport.toStdString().c_str());
+        if ((MEETING.SipCreateId(tIt->getUserStdStr(), tIt->getHostStdStr(), tIt->getPortStdStr()) == pContact.toStdString()) && (tItTransport == tContactTransport))
         {
             tIt->State = pState;
             LOG(LOG_VERBOSE, " ..found and set state");
