@@ -260,8 +260,13 @@ void AddNetworkSinkDialog::NAPISelectionChanged(QString pSelection)
 
 void AddNetworkSinkDialog::LoadConfiguration()
 {
+    int tParticipantSessions = 0;
     QString tTransport;
     QString tNAPIImpl;
+
+    tParticipantSessions = MEETING.CountParticipantSessions() -1;
+    if (tParticipantSessions < 0)
+        tParticipantSessions = 0;
 
     // remove SCTP from comboBox if is not supported
     if(!Socket::IsTransportSupported(SOCKET_SCTP))
@@ -290,7 +295,7 @@ void AddNetworkSinkDialog::LoadConfiguration()
             tTransport = QString(Socket::TransportType2String(CONF.GetVideoTransportType()).c_str());
             tNAPIImpl = CONF.GetVideoStreamingNAPIImpl();
 
-            mSbPort->setValue(5000);
+            mSbPort->setValue(5000 + tParticipantSessions * 4);
             mSbDelay->setValue(250);
             mSbDataRate->setValue(20);
             break;
@@ -300,7 +305,7 @@ void AddNetworkSinkDialog::LoadConfiguration()
             tTransport = QString(Socket::TransportType2String(CONF.GetAudioTransportType()).c_str());
             tNAPIImpl = CONF.GetAudioStreamingNAPIImpl();
 
-            mSbPort->setValue(5002);
+            mSbPort->setValue(5002 + tParticipantSessions * 4);
             mSbDelay->setValue(100);
             mSbDataRate->setValue(8);
             break;
