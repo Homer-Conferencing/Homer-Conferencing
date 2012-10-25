@@ -305,8 +305,8 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     AVStream            *tStream;
     AVDictionary        *tOptions = NULL;
 
-    if (pFps > 29,97)
-        pFps = 29,97;
+    if (pFps > 29.97)
+        pFps = 29.97;
     if (pFps < 5)
         pFps = 5;
 
@@ -318,7 +318,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     mMediaSourcesMutex.AssignName(GetMediaTypeStr() + "MuxerMediaSources");
     mMediaSinksMutex.AssignName(GetMediaTypeStr() + "MuxerMediaSinks");
 
-    LOG(LOG_VERBOSE, "Going to open %s muxer with resolution %d * %d", GetMediaTypeStr().c_str(), pResX, pResY);
+    LOG(LOG_VERBOSE, "Going to open %s muxer with resolution %d * %d and %3.2f fps", GetMediaTypeStr().c_str(), pResX, pResY, pFps);
 
     if (mMediaSourceOpened)
         return false;
@@ -493,8 +493,8 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
      * timebase should be 1/framerate and timestamp increments should be
      * identically to 1.
      */
-    mCodecContext->time_base = (AVRational){1, (int)mFrameRate};
-    tStream->time_base = (AVRational){100, (int)mFrameRate * 100};
+    mCodecContext->time_base = (AVRational){100, (int)(mFrameRate * 100)};
+    tStream->time_base = (AVRational){100, (int)(mFrameRate * 100)};
     // set i frame distance: GOP = group of pictures
     if (mStreamCodecId != CODEC_ID_THEORA)
         mCodecContext->gop_size = (100 - mStreamQuality) / 5; // default is 12
@@ -621,7 +621,7 @@ bool MediaSourceMuxer::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     // set media type early to have verbose debug outputs in case of failures
     mMediaType = MEDIA_VIDEO;
 
-    LOG(LOG_VERBOSE, "Going to open %s grab device", GetMediaTypeStr().c_str());
+    LOG(LOG_VERBOSE, "Going to open %s grab device with %3.2f fps", GetMediaTypeStr().c_str(), pFps);
 
     // first open hardware video source
     if (mMediaSource != NULL)
@@ -629,6 +629,7 @@ bool MediaSourceMuxer::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     	tResult = mMediaSource->OpenVideoGrabDevice(pResX, pResY, pFps);
 		if (!tResult)
 			return false;
+		mFrameRate = mMediaSource->GetFrameRate();
     }
 
     if (mMediaSourceOpened)
@@ -2222,7 +2223,10 @@ bool MediaSourceMuxer::UnregisterMediaSource(MediaSource* pMediaSource, bool pAu
             tFound = true;
             // free memory of media sink object
             if (pAutoDelete)
+            {
+                LOG(LOG_VERBOSE, "Deleting this media source..");
                 delete (*tIt);
+            }
             // remove registration of media sink object
             mMediaSources.erase(tIt);
             break;
@@ -2323,6 +2327,31 @@ void MediaSourceMuxer::FreeChunkBuffer(void *pChunk)
 	}
     // unlock grabbing
     mGrabMutex.unlock();
+}
+
+void MediaSourceMuxer::FreeUnusedRegisteredFileSources()
+{
+    MediaSources::iterator tIt;
+
+    // lock
+    mMediaSourcesMutex.lock();
+
+    if (mMediaSources.size() > 0)
+    {
+        for (tIt = mMediaSources.begin(); tIt != mMediaSources.end(); tIt++)
+        {
+            if ((*tIt != mMediaSource) && ((*tIt)->GetSourceType() == SOURCE_FILE))
+            {
+                mMediaSourcesMutex.unlock();
+                UnregisterMediaSource(*tIt, true);
+                mMediaSourcesMutex.lock();
+                tIt = mMediaSources.begin();
+            }
+        }
+    }
+
+    // unlock
+    mMediaSourcesMutex.unlock();
 }
 
 bool MediaSourceMuxer::SupportsSeeking()
