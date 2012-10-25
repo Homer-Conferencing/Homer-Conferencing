@@ -2685,7 +2685,7 @@ void SIP::SipReceivedCallDenyNat(const sip_to_t *pSipRemote, const sip_to_t *pSi
     //#################################################################################
     CallEvent *tCEvent = new CallEvent();
 
-    tCEvent->Sender = "sip:" + SipCreateId(MEETING.getUser(), pOwnNatIp, toString(MEETING.GetHostPort()));
+    tCEvent->Sender = "sip:" + SipCreateId(MEETING.GetUserName(), pOwnNatIp, toString(MEETING.GetHostPort()));
     tCEvent->SenderName = MEETING.GetLocalUserName();
     tCEvent->SenderComment = "";
     tCEvent->Receiver = "sip:" + tCDEvent->Sender;

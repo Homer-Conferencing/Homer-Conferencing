@@ -103,7 +103,7 @@ public:
     /* local interface/contact data */
     std::string GetHostAdr();
     int GetHostPort();
-    std::string getUser();
+    std::string GetUserName();
     void SetLocalUserName(std::string pName);
     std::string GetLocalUserName();
     void SetLocalUserMailAdr(std::string pMailAdr);

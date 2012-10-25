@@ -938,12 +938,12 @@ bool Configuration::GetFeatureConferencing()
 
 QString Configuration::GetUserName()
 {
-    return mQSettings->value("User/UserName", QString::fromAscii(MEETING.getUser().c_str())).toString();
+    return mQSettings->value("User/UserName", QString::fromAscii(MEETING.GetUserName().c_str())).toString();
 }
 
 QString Configuration::GetUserMail()
 {
-    return mQSettings->value("User/UserMail", QString(MEETING.SipCreateId(MEETING.getUser(), QHostInfo::localHostName().toStdString()).c_str())).toString();
+    return mQSettings->value("User/UserMail", QString(MEETING.SipCreateId(MEETING.GetUserName(), QHostInfo::localHostName().toStdString()).c_str())).toString();
 }
 
 bool Configuration::GetVideoActivation()
@@ -1073,7 +1073,7 @@ int Configuration::GetSipStartPort()
 
 QString Configuration::GetSipUserName()
 {
-    return mQSettings->value("Network/SipUserName", QString::fromAscii(MEETING.getUser().c_str())).toString();
+    return mQSettings->value("Network/SipUserName", QString::fromAscii(MEETING.GetUserName().c_str())).toString();
 }
 
 QString Configuration::GetSipPassword()

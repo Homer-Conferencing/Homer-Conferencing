@@ -130,7 +130,7 @@ void Meeting::Init(string pSipHostAdr, LocalAddressesList pLocalAddresses, bool 
     mOwnName = "user";
     mOwnMail = "user@host.com";
 
-    tParticipantDescriptor.User = getUser();
+    tParticipantDescriptor.User = GetUserName();
     tParticipantDescriptor.Host = pSipHostAdr;
     tParticipantDescriptor.Port = toString(mSipHostPort);
     tParticipantDescriptor.SipNuaHandleForCalls = NULL;
@@ -198,7 +198,7 @@ string Meeting::CallStateAsString(int pCallState)
     return tResult;
 }
 
-string Meeting::getUser()
+string Meeting::GetUserName()
 {
     string tResult = "user";
     char *tUser;
@@ -324,7 +324,7 @@ string Meeting::GetLocalConferenceId()
 {
     string tResult = "";
 
-    tResult = SipCreateId(getUser(), GetHostAdr(), toString(GetHostPort()));
+    tResult = SipCreateId(GetUserName(), GetHostAdr(), toString(GetHostPort()));
 
     //LOG(LOG_VERBOSE, "Determined local conference ID with \"%s\"", tResult.c_str());
 
