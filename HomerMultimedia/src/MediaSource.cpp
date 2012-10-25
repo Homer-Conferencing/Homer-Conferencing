@@ -2444,6 +2444,10 @@ void MediaSource::FreeChunkBuffer(void *pChunk)
     av_free(pChunk);
 }
 
+void MediaSource::FreeUnusedRegisteredFileSources()
+{
+}
+
 bool MediaSource::SupportsSeeking()
 {
     return false;

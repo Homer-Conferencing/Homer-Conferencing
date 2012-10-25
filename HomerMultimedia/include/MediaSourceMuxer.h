@@ -161,6 +161,7 @@ public:
     virtual int GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk = false);
     virtual void* AllocChunkBuffer(int& pChunkBufferSize, enum MediaType pMediaType = MEDIA_UNKNOWN);
     virtual void FreeChunkBuffer(void *pChunk);
+    virtual void FreeUnusedRegisteredFileSources();
 
 private:
     bool OpenVideoMuxer(int pResX = 352, int pResY = 288, float pFps = 29.97);
