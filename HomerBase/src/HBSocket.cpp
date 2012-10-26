@@ -213,6 +213,8 @@ string Socket::TransportType2String(enum TransportType pSocketType)
 {
     switch(pSocketType)
     {
+        case SOCKET_TRANSPORT_TYPE_INVALID:
+            return "invalid";
     	case SOCKET_TRANSPORT_AUTO:
     		return "auto";
         case SOCKET_UDP:
