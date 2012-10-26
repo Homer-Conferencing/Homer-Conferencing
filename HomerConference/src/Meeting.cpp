@@ -907,7 +907,7 @@ bool Meeting::SendHangUp(string pParticipant, enum TransportType pParticipantTra
 
 bool Meeting::SendProbe(std::string pParticipant, enum TransportType pParticipantTransport)
 {
-    //LOG(LOG_VERBOSE, "Probing: %s", pParticipant.c_str());
+    LOG(LOG_VERBOSE, "Probing: %s[%s]", pParticipant.c_str(), Socket::TransportType2String(pParticipantTransport).c_str());
 
     // lock
     mParticipantsMutex.lock();
@@ -934,6 +934,7 @@ bool Meeting::SendProbe(std::string pParticipant, enum TransportType pParticipan
 		tOEvent->SenderComment = "";
 		tOEvent->Receiver = "sip:" + pParticipant;
 		tOEvent->HandlePtr = NULL; // done within SIP class
+		tOEvent->Transport = pParticipantTransport;
 		mOutgoingEvents.Fire((GeneralEvent*) tOEvent);
 
 		// unlock
@@ -1464,7 +1465,7 @@ bool Meeting::GetSessionInfo(string pParticipant, enum TransportType pParticipan
                     pInfo->User = tIt->User;
                     pInfo->Host = tIt->Host;
                     pInfo->Port = tIt->Port;
-                    pInfo->Transport = tIt->Transport;
+                    pInfo->Transport = Socket::TransportType2String(tIt->Transport);
                     pInfo->OwnIp = tIt->OwnIp;
                     pInfo->OwnPort = toString(tIt->OwnPort);
                     pInfo->RemoteVideoHost = tIt->RemoteVideoHost;

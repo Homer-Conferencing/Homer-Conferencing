@@ -65,6 +65,7 @@
 #include <stdlib.h>
 
 using namespace Homer::Conference;
+using namespace Homer::Base;
 
 namespace Homer { namespace Gui {
 
@@ -631,7 +632,7 @@ void ParticipantWidget::FindSipInterface(QString pSessionName)
 	LOG(LOG_VERBOSE, "FindSipInterface resulted in %s", mSipInterface.toStdString().c_str());
 }
 
-bool ParticipantWidget::IsThisParticipant(QString pParticipant)
+bool ParticipantWidget::IsThisParticipant(QString pParticipant, enum TransportType pParticipantTransport)
 {
     bool tResult = false;
 
@@ -655,11 +656,11 @@ bool ParticipantWidget::IsThisParticipant(QString pParticipant)
 
     if ((mSessionName.section("@", 1).contains(CONF.GetSipServer())) || (mSipInterface.contains(CONF.GetSipServer())))
     {// this participant belongs to SIP server (pbx box) -> we also have to check the user name
-        tResult = ((pParticipant.contains(mSessionName.section("@", 1)) || pParticipant.contains(mSipInterface))) && (mSessionName.section("@", 0, 0) == pParticipant.section("@", 0, 0));
+        tResult = ((pParticipant.contains(mSessionName.section("@", 1)) || pParticipant.contains(mSipInterface))) && (mSessionName.section("@", 0, 0) == pParticipant.section("@", 0, 0)) && (mSessionTransport == pParticipantTransport);
 
     }else
     {// this participant is located on some foreign host and uses peer-to-peer communication
-        tResult = (pParticipant.contains(mSessionName.section("@", 1)) || pParticipant.contains(mSipInterface));
+        tResult = (pParticipant.contains(mSessionName.section("@", 1)) || pParticipant.contains(mSipInterface)) && (mSessionTransport == pParticipantTransport);
     }
     LOG(LOG_VERBOSE, "@\"%s\" - IsThisParticipant \"%s\"? ==> %s", mSessionName.toStdString().c_str(), pParticipant.toStdString().c_str(), tResult ? "MATCH" : "no match");
 

@@ -1014,9 +1014,9 @@ void MainWindow::customEvent(QEvent* pEvent)
     QString tEventSender, tEventSenderApp;
 
     if(tEvent->getType() != ADD_PARTICIPANT)
-        LOG(LOG_INFO, "Event of type \"%s\"", GeneralEvent::getNameFromType(tEvent->getType()).c_str());
+        LOG(LOG_INFO, ">>>>>> Event of type \"%s\"", GeneralEvent::getNameFromType(tEvent->getType()).c_str());
     else
-        LOG(LOG_INFO, "Event of type \"Add participant\"");
+        LOG(LOG_INFO, ">>>>>> Event of type \"Add participant\"");
 
     // stop processing if there is no possible recipient widget and it is no incoming new call/message/contact event
     if ((mParticipantWidgets.size() == 0) &&
@@ -1089,7 +1089,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                         // search for corresponding participant widget
                         for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
                         {
-                            if ((*tIt)->IsThisParticipant(QString(tOAEvent->Sender.c_str())))
+                            if ((*tIt)->IsThisParticipant(QString(tOAEvent->Sender.c_str()), tOAEvent->Transport))
                             {
                                 tKnownParticipant = true;
                                 (*tIt)->UpdateParticipantState(CONTACT_AVAILABLE);
@@ -1114,7 +1114,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                         // search for corresponding participant widget
                         for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
                         {
-                            if ((*tIt)->IsThisParticipant(QString(tOUAEvent->Sender.c_str())))
+                            if ((*tIt)->IsThisParticipant(QString(tOUAEvent->Sender.c_str()), tOUAEvent->Transport))
                             {
                                 tKnownParticipant = true;
                                 (*tIt)->UpdateParticipantState(CONTACT_UNAVAILABLE);
@@ -1531,13 +1531,15 @@ ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHos
 {
     ParticipantWidget *tParticipantWidget = NULL;
 
+    LOG(LOG_VERBOSE, "Going to add participant session for %s [%s]", MEETING.SipCreateId(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString()).c_str(), Socket::TransportType2String(pTransport).c_str());
+
     if (pHost.size())
     {
         // search for a participant widget with the same sip interface
         ParticipantWidgetList::iterator tIt;
         for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
         {
-            if ((*tIt)->GetSipInterface() == pIp + ":" + pPort)
+            if (((*tIt)->GetSipInterface() == pIp + ":" + pPort) && ((*tIt)->GetParticipantTransport() == pTransport))
             {
                 if (pInitState == CALLSTATE_RINGING)
                 {
@@ -1551,7 +1553,10 @@ ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHos
                         return NULL;
                     }
                  }else
+                 {
+                     LOG(LOG_VERBOSE, "Returning without result");
                      return NULL;
+                 }
             }
         }
 

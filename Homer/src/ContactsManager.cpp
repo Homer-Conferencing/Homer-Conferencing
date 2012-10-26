@@ -467,21 +467,20 @@ void ContactsManager::ProbeAvailabilityForAll()
 
 void ContactsManager::UpdateContactState(QString pContact, enum TransportType pContactTransport, bool pState)
 {
-    mContactsMutex.lock();
+    ContactsVector::iterator tIt, tItEnd = mContacts.end();
+    QString tContactTransport = QString(Socket::TransportType2String(pContactTransport).c_str());
+    if (tContactTransport == "auto")
+        tContactTransport = "UDP";
 
     pContact = QString(pContact.toLocal8Bit());
-    LOG(LOG_VERBOSE, "Updating availability state for %s to %d", pContact.toStdString().c_str(), pState);
+    LOG(LOG_VERBOSE, "Updating availability state for %s[%s] to %d", pContact.toStdString().c_str(), tContactTransport.toStdString().c_str(), pState);
 
-    ContactsVector::iterator tIt, tItEnd = mContacts.end();
-
+    mContactsMutex.lock();
     for (tIt = mContacts.begin(); tIt != tItEnd; tIt++)
     {
         QString tItTransport = QString(Socket::TransportType2String(tIt->Transport).c_str());
         if (tItTransport == "auto")
             tItTransport = "UDP";
-        QString tContactTransport = QString(Socket::TransportType2String(pContactTransport).c_str());
-        if (tContactTransport == "auto")
-            tContactTransport = "UDP";
         LOG(LOG_VERBOSE, "Comparing %s==%s, %s==%s", MEETING.SipCreateId(tIt->getUserStdStr(), tIt->getHostStdStr(), tIt->getPortStdStr()).c_str(), pContact.toStdString().c_str(), tItTransport.toStdString().c_str(), tContactTransport.toStdString().c_str());
         if ((MEETING.SipCreateId(tIt->getUserStdStr(), tIt->getHostStdStr(), tIt->getPortStdStr()) == pContact.toStdString()) && (tItTransport == tContactTransport))
         {
@@ -489,7 +488,6 @@ void ContactsManager::UpdateContactState(QString pContact, enum TransportType pC
             LOG(LOG_VERBOSE, " ..found and set state");
         }
     }
-
     mContactsMutex.unlock();
 
     if (mContactsModel != NULL)
