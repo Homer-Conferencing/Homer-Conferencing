@@ -286,21 +286,25 @@ int MediaSourceLogo::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
 		return -1;
 	}
 
-	QTime tCurrentTime = QTime::currentTime();
-    int tTimeDiff = mLastTimeGrabbed.msecsTo(tCurrentTime);
+	// get the time since last successful grabbing
+    QTime tCurrentTime = QTime::currentTime();
+	int tTimeDiff = mLastTimeGrabbed.msecsTo(tCurrentTime);
 
-    //### skip capturing when we are too slow
-    int tNeededTimeDiff = 1000 / (mFrameRate + 0.5 /* some tolerance! */);
+	// calculate the time which corresponds to the request FPS
+	int tNeededTimeDiff = 1000 / mFrameRate;
+
     if (tTimeDiff < tNeededTimeDiff)
-    {
-        //#ifdef MSL_DEBUG_PACKETS
+    {// skip capturing when we are too fast
+        #ifdef MSL_DEBUG_PACKETS
             LOG(LOG_VERBOSE, "Logo capturing delayed because system is too fast, time diff: %d, needed time diff: %d", tTimeDiff, tNeededTimeDiff);
-        //#endif
+        #endif
 		Thread::Suspend((tNeededTimeDiff - tTimeDiff) * 1000);
     }
-	mLastTimeGrabbed = tCurrentTime;
 
+    // copy the logo to the destination buffer
     memcpy(pChunkBuffer, mLogoRawPicture, mTargetResX * mTargetResY * MSD_BYTES_PER_PIXEL);
+
+    mLastTimeGrabbed = QTime::currentTime();
 
     // unlock grabbing
     mGrabMutex.unlock();
