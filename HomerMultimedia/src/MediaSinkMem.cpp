@@ -90,6 +90,10 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
 {
 	bool tResetNeeded = false;
 
+	// return immediately if the sink is stopped
+	if (!mRunning)
+	    return;
+
 	// check for key frame if we wait for the first key frame
     if (mWaitUntillFirstKeyFrame)
     {

@@ -44,6 +44,7 @@ MediaSink::MediaSink(enum MediaSinkType pType):
     mMediaId = "";
     mMaxFps = 0;
     mCodec = "";
+    mRunning = true;
     mMaxFpsTimestampLastFragment = 0;
     mMaxFpsFrameNumberLastFragment = 0;
     switch(pType)
@@ -64,6 +65,16 @@ MediaSink::~MediaSink()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+void MediaSink::Start()
+{
+    mRunning = true;
+}
+
+void MediaSink::Stop()
+{
+    mRunning = false;
+}
 
 string MediaSink::GetId()
 {

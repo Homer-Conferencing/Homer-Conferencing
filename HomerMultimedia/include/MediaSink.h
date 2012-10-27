@@ -54,6 +54,8 @@ public:
     virtual ~MediaSink();
 
     virtual void ProcessPacket(char* pPacketData, unsigned int pPacketSize, AVStream *pStream, bool pIsKeyFrame) = 0;
+    virtual void Start();
+    virtual void Stop();
 
     std::string GetId();
 
@@ -64,6 +66,7 @@ public:
 protected:
     bool BelowMaxFps(int pFrameNumber);
 
+    bool                mRunning;
     std::string         mCodec;
     unsigned long       mPacketNumber;
     std::string         mMediaId;
