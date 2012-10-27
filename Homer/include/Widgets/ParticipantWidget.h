@@ -156,6 +156,9 @@ private slots:
 
 	void ActionToggleAudioSenderActivation(bool pActivation);
     void ActionToggleVideoSenderActivation(bool pActivation);
+    void ActionPlaylistPrevious();
+    void ActionPlaylistNext();
+    void ActionPlaylistSetVisible(bool pVisible);
 private:
 	friend class VideoWidget;
 
