@@ -429,25 +429,22 @@ void MainWindow::initializeVideoAudioIO()
 {
     LOG(LOG_VERBOSE, "Initialization of video/audio I/O..");
 
-    string tVSourceSelection = CONF.GetLocalVideoSource().toStdString();
-    string tASourceSelection = CONF.GetLocalAudioSource().toStdString();
-
     // ############################
     // ### VIDEO
     // ############################
     LOG(LOG_VERBOSE, "Creating video media objects..");
     mOwnVideoMuxer = new MediaSourceMuxer();
     #ifdef LINUX
-        mOwnVideoMuxer->RegisterMediaSource(new MediaSourceV4L2(tVSourceSelection));
+        mOwnVideoMuxer->RegisterMediaSource(new MediaSourceV4L2());
     #endif
     #ifdef WIN32
-        mOwnVideoMuxer->RegisterMediaSource(new MediaSourceDShow(tVSourceSelection));
+        mOwnVideoMuxer->RegisterMediaSource(new MediaSourceDShow());
     #endif
     #ifdef APPLE
         mOwnVideoMuxer->RegisterMediaSource(new MediaSourceCoreVideo(tVSourceSelection));
     #endif
-    mOwnVideoMuxer->RegisterMediaSource(mMediaSourceLogo = new MediaSourceLogo());
 	mOwnVideoMuxer->RegisterMediaSource(mMediaSourceDesktop = new MediaSourceDesktop());
+    mOwnVideoMuxer->RegisterMediaSource(mMediaSourceLogo = new MediaSourceLogo());
     // ############################
     // ### AUDIO
     // ############################
@@ -455,7 +452,7 @@ void MainWindow::initializeVideoAudioIO()
     mOwnAudioMuxer = new MediaSourceMuxer();
     if (CONF.AudioCaptureEnabled())
     {
-        mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio(tASourceSelection));
+        mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio());
     }
 }
 
@@ -768,11 +765,14 @@ void MainWindow::loadSettings()
     mOwnVideoMuxer->SetOutputStreamPreferences(tVideoStreamCodec.toStdString(), CONF.GetVideoQuality(), CONF.GetVideoMaxPacketSize(), false, tX, tY, CONF.GetVideoRtp(), CONF.GetVideoFps());
     mOwnVideoMuxer->SetActivation(CONF.GetVideoActivation());
     bool tNewDeviceSelected = false;
-    mOwnVideoMuxer->SelectDevice(CONF.GetLocalVideoSource().toStdString(), MEDIA_VIDEO, tNewDeviceSelected);
+    QString tLastVideoSource = CONF.GetLocalVideoSource();
+    if (tLastVideoSource == "auto")
+        tLastVideoSource = MEDIA_SOURCE_HOMER_LOGO;
+    mOwnVideoMuxer->SelectDevice(tLastVideoSource.toStdString(), MEDIA_VIDEO, tNewDeviceSelected);
     // if former selected device isn't available we use one of the available instead
     if (!tNewDeviceSelected)
     {
-        ShowWarning("Video device not availabe", "Can't use formerly selected video device: \"" + CONF.GetLocalVideoSource() + "\", will use one of the available devices instead!");
+        ShowWarning("Video device not available", "Can't use formerly selected video device: \"" + CONF.GetLocalVideoSource() + "\", will use one of the available devices instead!");
         CONF.SetLocalVideoSource("auto");
         mOwnVideoMuxer->SelectDevice("auto", MEDIA_VIDEO, tNewDeviceSelected);
     }
