@@ -39,6 +39,7 @@
 #include <MediaSourceMuxer.h>
 #include <MeetingEvents.h>
 #include <MediaSource.h>
+#include <MediaSinkNet.h>
 #include <WaveOut.h>
 
 #include <HBSocket.h>
@@ -153,8 +154,13 @@ private slots:
 	void ActionToggleUserAVDriftWidget();
 	friend class PlaybackSlider;
 
+	void ActionToggleAudioSenderActivation(bool pActivation);
+    void ActionToggleVideoSenderActivation(bool pActivation);
 private:
 	friend class VideoWidget;
+
+	/* media sink helper */
+	void ResetMediaSinks();
 
 	/* visibility of A/V widget */
     void HideAudioVideoWidget();
@@ -199,6 +205,8 @@ private:
     enum SessionType    	mSessionType;
     MediaSourceMuxer    	*mAudioSourceMuxer;
     MediaSourceMuxer    	*mVideoSourceMuxer;
+    MediaSinkNet            *mParticipantVideoSink;
+    MediaSinkNet            *mParticipantAudioSink;
     QString             	mRemoteAudioAdr;
     unsigned int        	mRemoteAudioPort;
     QString            		mRemoteAudioCodec;

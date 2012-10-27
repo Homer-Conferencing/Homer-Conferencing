@@ -99,6 +99,8 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
     mContinuousAVAsync = 0;
     mRemoteVideoPort = 0;
     mRemoteAudioPort = 0;
+    mParticipantVideoSink = NULL;
+    mParticipantAudioSink = NULL;
     mSessionTransport = CONF.GetSipListenerTransport();
     mTimeOfLastAVSynch = Time::GetTimeStamp();
     mCallBox = NULL;
@@ -159,10 +161,7 @@ ParticipantWidget::~ParticipantWidget()
     delete mMessageWidget;
     delete mSessionInfoWidget;
 
-    if (mVideoSourceMuxer != NULL)
-        mVideoSourceMuxer->UnregisterMediaSink(mRemoteVideoAdr.toStdString(), mRemoteVideoPort);
-    if (mAudioSourceMuxer != NULL)
-        mAudioSourceMuxer->UnregisterMediaSink(mRemoteAudioAdr.toStdString(), mRemoteAudioPort);
+    ResetMediaSinks();
 
     if (mSessionType != BROADCAST)
     {
@@ -197,6 +196,8 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
         mTbRecord->hide();
     #endif
 
+    connect(mTbSendAudio, SIGNAL(clicked(bool)), this, SLOT(ActionToggleAudioSenderActivation(bool)));
+    connect(mTbSendVideo, SIGNAL(clicked(bool)), this, SLOT(ActionToggleVideoSenderActivation(bool)));
     connect(mTbPlayPause, SIGNAL(clicked()), this, SLOT(ActionPlayPauseMovieFile()));
     connect(mTbRecord, SIGNAL(clicked()), this, SLOT(ActionRecordMovieFile()));
     connect(mSlMovie, SIGNAL(sliderMoved(int)), this, SLOT(ActionSeekMovieFile(int)));
@@ -244,7 +245,8 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
 
                     // hide Homer logo
                     mLogoFrame->hide();
-
+                    mTbSendAudio->hide();
+                    mTbSendVideo->hide();
                     break;
         case PARTICIPANT:
         			{
@@ -318,8 +320,10 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
 
                             break;
                         }
-
                     }
+
+                    mTbSendAudio->hide();
+                    mTbSendVideo->hide();
 
                     // delete this participant widget again if no preview could be opened
                     QCoreApplication::postEvent(mMainWindow, (QEvent*) new QMeetingEvent(new DeleteSessionEvent(this)));
@@ -890,8 +894,7 @@ void ParticipantWidget::CallStopped(bool pIncoming)
     if (mMessageWidget != NULL)
         mMessageWidget->AddMessage("", "call stopped", true);
 
-    mVideoSourceMuxer->UnregisterMediaSink(mRemoteVideoAdr.toStdString(), mRemoteVideoPort);
-    mAudioSourceMuxer->UnregisterMediaSink(mRemoteAudioAdr.toStdString(), mRemoteAudioPort);
+    ResetMediaSinks();
 
     if ((mIncomingCall) && (mCallBox))
     {
@@ -1045,25 +1048,22 @@ void ParticipantWidget::HandleMediaUpdate(bool pIncoming, QString pRemoteAudioAd
 
     if ((pRemoteVideoPort != 0) || (pRemoteAudioPort != 0))
     {
-        mVideoSourceMuxer->UnregisterMediaSink(mRemoteVideoAdr.toStdString(), mRemoteVideoPort);
-        mAudioSourceMuxer->UnregisterMediaSink(mRemoteAudioAdr.toStdString(), mRemoteAudioPort);
+        ResetMediaSinks();
 
         LOG(LOG_VERBOSE, "Video sink set to %s:%u", pRemoteVideoAdr.toStdString().c_str(), pRemoteVideoPort);
         LOG(LOG_VERBOSE, "Video sink uses codec: \"%s\"", pRemoteVideoCodec.toStdString().c_str());
         LOG(LOG_VERBOSE, "Audio sink set to %s:%u", pRemoteAudioAdr.toStdString().c_str(), pRemoteAudioPort);
         LOG(LOG_VERBOSE, "Audio sink uses codec: \"%s\"", pRemoteAudioCodec.toStdString().c_str());
 
-        MediaSinkNet* tVideoSink = NULL;
-        MediaSinkNet* tAudioSink = NULL;
         if (pRemoteVideoPort != 0)
-            tVideoSink = mVideoSourceMuxer->RegisterMediaSink(mRemoteVideoAdr.toStdString(), mRemoteVideoPort, mVideoSendSocket, true); // always use RTP/AVP profile (RTP/UDP)
+            mParticipantVideoSink = mVideoSourceMuxer->RegisterMediaSink(mRemoteVideoAdr.toStdString(), mRemoteVideoPort, mVideoSendSocket, true); // always use RTP/AVP profile (RTP/UDP)
         if (pRemoteAudioPort != 0)
-            tAudioSink = mAudioSourceMuxer->RegisterMediaSink(mRemoteAudioAdr.toStdString(), mRemoteAudioPort, mAudioSendSocket, true); // always use RTP/AVP profile (RTP/UDP)
+            mParticipantAudioSink = mAudioSourceMuxer->RegisterMediaSink(mRemoteAudioAdr.toStdString(), mRemoteAudioPort, mAudioSendSocket, true); // always use RTP/AVP profile (RTP/UDP)
 
-        if (tVideoSink != NULL)
-            tVideoSink->AssignStreamName("CONF-OUT: " + mSessionName.toStdString());
-        if (tAudioSink != NULL)
-            tAudioSink->AssignStreamName("CONF-OUT: " + mSessionName.toStdString());
+        if (mParticipantVideoSink != NULL)
+            mParticipantVideoSink->AssignStreamName("CONF-OUT: " + mSessionName.toStdString());
+        if (mParticipantAudioSink != NULL)
+            mParticipantAudioSink->AssignStreamName("CONF-OUT: " + mSessionName.toStdString());
 
         if (mVideoWidget != NULL)
             mVideoWidget->GetWorker()->SetStreamName("CONF-IN: " + mSessionName);
@@ -1658,6 +1658,38 @@ void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
     UpdateMovieControls();
 
     pEvent->accept();
+}
+
+void ParticipantWidget::ResetMediaSinks()
+{
+    if (mVideoSourceMuxer != NULL)
+        mVideoSourceMuxer->UnregisterMediaSink(mRemoteVideoAdr.toStdString(), mRemoteVideoPort);
+    if (mAudioSourceMuxer != NULL)
+        mAudioSourceMuxer->UnregisterMediaSink(mRemoteAudioAdr.toStdString(), mRemoteAudioPort);
+    mParticipantVideoSink = NULL;
+    mParticipantAudioSink = NULL;
+}
+
+void ParticipantWidget::ActionToggleAudioSenderActivation(bool pActivation)
+{
+    if (mParticipantAudioSink != NULL)
+    {
+        if (pActivation)
+            mParticipantAudioSink->Start();
+        else
+            mParticipantAudioSink->Stop();
+    }
+}
+
+void ParticipantWidget::ActionToggleVideoSenderActivation(bool pActivation)
+{
+    if (mParticipantVideoSink != NULL)
+    {
+        if (pActivation)
+            mParticipantVideoSink->Start();
+        else
+            mParticipantVideoSink->Stop();
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
