@@ -203,6 +203,10 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
     connect(mSlMovie, SIGNAL(sliderMoved(int)), this, SLOT(ActionSeekMovieFile(int)));
     connect(mSlMovie, SIGNAL(valueChanged(int)), this, SLOT(ActionSeekMovieFileToPos(int)));
     connect(mSbAVDrift, SIGNAL(valueChanged(double)), this, SLOT(ActionUserAVDriftChanged(double)));
+    connect(mTbNext, SIGNAL(clicked()), this, SLOT(ActionPlaylistNext()));
+    connect(mTbPrevious, SIGNAL(clicked()), this, SLOT(ActionPlaylistPrevious()));
+    connect(mTbPlaylist, SIGNAL(clicked(bool)), this, SLOT(ActionPlaylistSetVisible(bool)));
+    mTbPlaylist->setChecked(CONF.GetVisibilityPlaylistWidgetMovie());
 
     //####################################################################
     //### create additional widget and allocate resources
@@ -222,7 +226,6 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
     mVideoSource = NULL;
     mAudioSource = NULL;
     OpenVideoAudioPreviewDialog *tOpenVideoAudioPreviewDialog = NULL;
-    bool tFoundPreviewSource = false;
     switch(mSessionType)
     {
         case BROADCAST:
@@ -249,42 +252,45 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
                     mTbSendVideo->hide();
                     break;
         case PARTICIPANT:
-        			{
-						LOG(LOG_VERBOSE, "Creating participant widget for PARTICIPANT");
-						mMovieControlsFrame->hide();
-						mSessionName = pParticipant;
-						mSessionTransport = pTransport;
-						FindSipInterface(pParticipant);
-						mMessageWidget->Init(pMessageMenu, mSessionName, mSessionTransport);
-						mVideoSendSocket = MEETING.GetVideoSendSocket(mSessionName.toStdString(), mSessionTransport);
-						mAudioSendSocket = MEETING.GetAudioSendSocket(mSessionName.toStdString(), mSessionTransport);
-						mVideoReceiveSocket = MEETING.GetVideoReceiveSocket(mSessionName.toStdString(), mSessionTransport);
-						mAudioReceiveSocket = MEETING.GetAudioReceiveSocket(mSessionName.toStdString(), mSessionTransport);
-						if (mVideoReceiveSocket != NULL)
-						{
-							mVideoSource = new MediaSourceNet(mVideoReceiveSocket, true);
-							mVideoSource->SetInputStreamPreferences(CONF.GetVideoCodec().toStdString());
-							mVideoWidgetFrame->hide();
-							mVideoWidget->Init(mMainWindow, this, mVideoSource, pVideoMenu, mSessionName);
-						}else
-							LOG(LOG_ERROR, "Determined video socket is NULL");
-						if (mAudioReceiveSocket != NULL)
-						{
-							mAudioSource = new MediaSourceNet(mAudioReceiveSocket, true);
-							mAudioSource->SetInputStreamPreferences(CONF.GetAudioCodec().toStdString());
-							mAudioWidget->Init(mAudioSource, pAudioMenu, mSessionName);
-						}else
-							LOG(LOG_ERROR, "Determined audio socket is NULL");
+					LOG(LOG_VERBOSE, "Creating participant widget for PARTICIPANT");
+					mMovieControlsFrame->hide();
+					mSessionName = pParticipant;
+					mSessionTransport = pTransport;
+					FindSipInterface(pParticipant);
+					mMessageWidget->Init(pMessageMenu, mSessionName, mSessionTransport);
+					mVideoSendSocket = MEETING.GetVideoSendSocket(mSessionName.toStdString(), mSessionTransport);
+					mAudioSendSocket = MEETING.GetAudioSendSocket(mSessionName.toStdString(), mSessionTransport);
+					mVideoReceiveSocket = MEETING.GetVideoReceiveSocket(mSessionName.toStdString(), mSessionTransport);
+					mAudioReceiveSocket = MEETING.GetAudioReceiveSocket(mSessionName.toStdString(), mSessionTransport);
+					if (mVideoReceiveSocket != NULL)
+					{
+						mVideoSource = new MediaSourceNet(mVideoReceiveSocket, true);
+						mVideoSource->SetInputStreamPreferences(CONF.GetVideoCodec().toStdString());
+						mVideoWidgetFrame->hide();
+						mVideoWidget->Init(mMainWindow, this, mVideoSource, pVideoMenu, mSessionName);
+					}else
+						LOG(LOG_ERROR, "Determined video socket is NULL");
+					if (mAudioReceiveSocket != NULL)
+					{
+						mAudioSource = new MediaSourceNet(mAudioReceiveSocket, true);
+						mAudioSource->SetInputStreamPreferences(CONF.GetAudioCodec().toStdString());
+						mAudioWidget->Init(mAudioSource, pAudioMenu, mSessionName);
+					}else
+						LOG(LOG_ERROR, "Determined audio socket is NULL");
 
-						// hide Homer logo
-						mLogoFrame->hide();
-        			}
+					// hide Homer logo
+					mLogoFrame->hide();
+
+					mTbPrevious->hide();
+					mTbNext->hide();
+					mTbPlaylist->hide();
 					break;
         case PREVIEW:
                     LOG(LOG_VERBOSE, "Creating participant widget for PREVIEW");
                     mSessionName = "PREVIEW";
                     if ((pVideoMenu != NULL) || (pAudioMenu != NULL))
                     {
+                    	bool tFoundPreviewSource = false;
                         tOpenVideoAudioPreviewDialog = new OpenVideoAudioPreviewDialog(this);
                         if (tOpenVideoAudioPreviewDialog->exec() == QDialog::Accepted)
                         {
@@ -313,21 +319,24 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
                             if (!tOpenVideoAudioPreviewDialog->FileSourceSelected())
                                 mMovieControlsFrame->hide();
                         }
-                        if(tFoundPreviewSource)
+                        if(!tFoundPreviewSource)
                         {
-                            // hide Homer logo
-                            mLogoFrame->hide();
-
-                            break;
+                            // delete this participant widget again if no preview could be opened
+                            QCoreApplication::postEvent(mMainWindow, (QEvent*) new QMeetingEvent(new DeleteSessionEvent(this)));
+                            return;
                         }
                     }
 
+                    // hide Homer logo
+                    mLogoFrame->hide();
+
                     mTbSendAudio->hide();
                     mTbSendVideo->hide();
+					mTbPrevious->hide();
+					mTbNext->hide();
+					mTbPlaylist->hide();
 
-                    // delete this participant widget again if no preview could be opened
-                    QCoreApplication::postEvent(mMainWindow, (QEvent*) new QMeetingEvent(new DeleteSessionEvent(this)));
-                    return;
+					break;
         default:
                     break;
     }
@@ -1692,6 +1701,24 @@ void ParticipantWidget::ActionToggleVideoSenderActivation(bool pActivation)
         else
             mParticipantVideoSink->Stop();
     }
+}
+
+void ParticipantWidget::ActionPlaylistPrevious()
+{
+	LOG(LOG_VERBOSE, "Triggered playback of previous entry in playlist");
+	PLAYLISTWIDGET.PlayPrevious();
+}
+
+void ParticipantWidget::ActionPlaylistNext()
+{
+	LOG(LOG_VERBOSE, "Triggered playback of next entry in playlist");
+	PLAYLISTWIDGET.PlayNext();
+}
+
+void ParticipantWidget::ActionPlaylistSetVisible(bool pVisible)
+{
+	LOG(LOG_VERBOSE, "Triggered toggling of visibility of playlist");
+	PLAYLISTWIDGET.SetVisible(pVisible);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

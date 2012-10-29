@@ -115,7 +115,7 @@
       </size>
      </property>
      <property name="toolTip">
-      <string>broadcast screen segment</string>
+      <string>Broadcast local desktop screen</string>
      </property>
      <property name="styleSheet">
       <string notr="true">QToolButton{
@@ -206,7 +206,7 @@ background-color: rgb(150, 150, 150);
       </size>
      </property>
      <property name="toolTip">
-      <string>broadcast camera picture</string>
+      <string>Broadcast local camera picture</string>
      </property>
      <property name="styleSheet">
       <string notr="true">QToolButton{
@@ -333,7 +333,7 @@ background-color: rgb(150, 150, 150);
       </size>
      </property>
      <property name="toolTip">
-      <string>broadcast voice</string>
+      <string>Broadcast local audio input</string>
      </property>
      <property name="styleSheet">
       <string notr="true">QToolButton{
@@ -430,7 +430,7 @@ background-color: rgb(150, 150, 150);
       </size>
      </property>
      <property name="toolTip">
-      <string>broadcast movie</string>
+      <string>Broadcast local file</string>
      </property>
      <property name="styleSheet">
       <string notr="true">QToolButton{

@@ -102,8 +102,6 @@ OverviewPlaylistWidget::OverviewPlaylistWidget(QAction *pAssignedAction, QMainWi
     connect(mShortcutDel, SIGNAL(activatedAmbiguously()), this, SLOT(DelEntryDialogSc()));
     connect(mShortcutIns, SIGNAL(activated()), this, SLOT(AddEntryDialogSc()));
     connect(mShortcutIns, SIGNAL(activatedAmbiguously()), this, SLOT(AddEntryDialogSc()));
-    connect(mTbNext, SIGNAL(clicked()), this, SLOT(ActionNext()));
-    connect(mTbLast, SIGNAL(clicked()), this, SLOT(ActionLast()));
     mTimerId = startTimer(PLAYLIST_UPDATE_DELAY);
     SetVisible(CONF.GetVisibilityPlaylistWidgetMovie());
     mAssignedAction->setChecked(CONF.GetVisibilityPlaylistWidgetMovie());
@@ -598,6 +596,9 @@ void OverviewPlaylistWidget::PlayNext()
 {
     int tNewFileId = -1;
 
+	if (!mIsPlayed)
+		return;
+
     if (GetListSize() < 1)
         return;
 
@@ -623,8 +624,11 @@ void OverviewPlaylistWidget::PlayNext()
     Play(tNewFileId);
 }
 
-void OverviewPlaylistWidget::PlayLast()
+void OverviewPlaylistWidget::PlayPrevious()
 {
+	if (!mIsPlayed)
+		return;
+
     if (mCurrentFileId > 0)
         Play(mCurrentFileId - 1);
 }
@@ -1156,24 +1160,6 @@ void OverviewPlaylistWidget::ActionStop()
 	LOG(LOG_VERBOSE, "Triggered stop");
     mVideoWorker->StopFile();
     mAudioWorker->StopFile();
-}
-
-void OverviewPlaylistWidget::ActionLast()
-{
-	if (!mIsPlayed)
-		return;
-
-	LOG(LOG_VERBOSE, "Triggered last");
-	PlayLast();
-}
-
-void OverviewPlaylistWidget::ActionNext()
-{
-	if (!mIsPlayed)
-		return;
-
-	LOG(LOG_VERBOSE, "Triggered next");
-	PlayNext();
 }
 
 void OverviewPlaylistWidget::FillRow(int pRow, const PlaylistEntry &pEntry)

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>539</width>
-    <height>252</height>
+    <width>621</width>
+    <height>246</height>
    </rect>
   </property>
   <property name="font">
@@ -247,7 +247,7 @@
           <property name="frameShadow">
            <enum>QFrame::Raised</enum>
           </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="10,0,0,1,0,0,0">
+          <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0,10,0,0,1,0,0,0">
            <property name="leftMargin">
             <number>9</number>
            </property>
@@ -261,6 +261,58 @@
             <number>0</number>
            </property>
            <item>
+            <widget class="QToolButton" name="mTbPlaylist">
+             <property name="minimumSize">
+              <size>
+               <width>30</width>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>30</width>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="toolTip">
+              <string>Toggle visibility of playlist</string>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">QToolButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QToolButton:pressed{
+background-color: rgb(150, 150, 150);
+} 
+</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../../resources/Icons.qrc">
+               <normaloff>:/images/22_22/Playlist.png</normaloff>:/images/22_22/Playlist.png</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>18</width>
+               <height>18</height>
+              </size>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QFrame" name="mMovieControlsFrame">
              <property name="frameShape">
               <enum>QFrame::NoFrame</enum>
@@ -268,7 +320,7 @@
              <property name="frameShadow">
               <enum>QFrame::Raised</enum>
              </property>
-             <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0,0,1,0">
+             <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0,0,0,0,1,0,0">
               <property name="margin">
                <number>0</number>
               </property>
@@ -287,7 +339,7 @@
                  </size>
                 </property>
                 <property name="toolTip">
-                 <string>Play</string>
+                 <string>Play / Pause</string>
                 </property>
                 <property name="styleSheet">
                  <string notr="true">QToolButton{
@@ -309,6 +361,98 @@ background-color: rgb(150, 150, 150);
                 <property name="icon">
                  <iconset resource="../../resources/Icons.qrc">
                   <normaloff>:/images/22_22/Audio_Pause.png</normaloff>:/images/22_22/Audio_Pause.png</iconset>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>22</width>
+                  <height>22</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="mTbPrevious">
+                <property name="minimumSize">
+                 <size>
+                  <width>30</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>30</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="toolTip">
+                 <string>Play previous entry in playlist</string>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">QToolButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QToolButton:pressed{
+background-color: rgb(150, 150, 150);
+} 
+</string>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="../../resources/Icons.qrc">
+                  <normaloff>:/images/22_22/Audio_Back.png</normaloff>:/images/22_22/Audio_Back.png</iconset>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>22</width>
+                  <height>22</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="mTbNext">
+                <property name="minimumSize">
+                 <size>
+                  <width>30</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>30</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="toolTip">
+                 <string>Play next entry in playlist</string>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">QToolButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QToolButton:pressed{
+background-color: rgb(150, 150, 150);
+} 
+</string>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="../../resources/Icons.qrc">
+                  <normaloff>:/images/22_22/Audio_Forward.png</normaloff>:/images/22_22/Audio_Forward.png</iconset>
                 </property>
                 <property name="iconSize">
                  <size>
@@ -614,7 +758,7 @@ p, li { white-space: pre-wrap; }
                  <cursorShape>PointingHandCursor</cursorShape>
                 </property>
                 <property name="toolTip">
-                 <string>jump to desired file position</string>
+                 <string>Jump to desired file position</string>
                 </property>
                 <property name="styleSheet">
                  <string notr="true">     QSlider::handle:horizontal {
@@ -643,6 +787,22 @@ p, li { white-space: pre-wrap; }
                </widget>
               </item>
               <item>
+               <spacer name="horizontalSpacer_8">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeType">
+                 <enum>QSizePolicy::MinimumExpanding</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>5</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
                <widget class="QFrame" name="mAVDriftFrame">
                 <property name="frameShape">
                  <enum>QFrame::NoFrame</enum>
@@ -654,22 +814,6 @@ p, li { white-space: pre-wrap; }
                  <property name="margin">
                   <number>0</number>
                  </property>
-                 <item>
-                  <spacer name="horizontalSpacer_8">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeType">
-                    <enum>QSizePolicy::MinimumExpanding</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>5</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
                  <item>
                   <widget class="QLabel" name="label">
                    <property name="font">
@@ -714,7 +858,7 @@ p, li { white-space: pre-wrap; }
               </size>
              </property>
              <property name="toolTip">
-              <string>Play</string>
+              <string>Record video and audio stream to a movie file</string>
              </property>
              <property name="styleSheet">
               <string notr="true">QToolButton{
@@ -777,7 +921,7 @@ background-color: rgb(150, 150, 150);
               </size>
              </property>
              <property name="toolTip">
-              <string>activation of the audio transmission towards this participant</string>
+              <string>Activation of audio stream to this participant</string>
              </property>
              <property name="styleSheet">
               <string notr="true">QToolButton{
@@ -839,7 +983,7 @@ background-color: rgb(150, 150, 150);
               </size>
              </property>
              <property name="toolTip">
-              <string>activation of the video transmission towards this participant</string>
+              <string>Activation of video stream to this participant</string>
              </property>
              <property name="styleSheet">
               <string notr="true">QToolButton{
@@ -920,6 +1064,9 @@ background-color: rgb(150, 150, 150);
   </customwidget>
  </customwidgets>
  <resources>
+  <include location="../../resources/Icons.qrc"/>
+  <include location="../../resources/Icons.qrc"/>
+  <include location="../../resources/Icons.qrc"/>
   <include location="../../resources/Icons.qrc"/>
  </resources>
  <connections/>

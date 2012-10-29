@@ -84,10 +84,13 @@ public:
     /* add playlist entries */
     void AddEntry(QString pLocation, bool pStartPlayback = false);
 
-public slots:
-    void SetVisible(bool pVisible);
     void StartPlaylist();
     void StopPlaylist();
+    void PlayNext();
+    void PlayPrevious();
+
+public slots:
+    void SetVisible(bool pVisible);
 
 private slots:
     bool AddEntryDialog();
@@ -96,13 +99,9 @@ private slots:
     void DelEntryDialogSc();
     void SaveListDialog();
     void Play(int pIndex = -1);
-    void PlayNext();
-    void PlayLast();
     void ActionPlay();
     void ActionPause();
     void ActionStop();
-    void ActionNext();
-    void ActionLast();
 
 private:
     virtual void customEvent(QEvent* pEvent);
