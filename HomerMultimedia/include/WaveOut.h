@@ -39,6 +39,10 @@ namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+//#define WO_DEBUG_FILE
+
+///////////////////////////////////////////////////////////////////////////////
+
 class WaveOut:
     public Homer::Monitor::PacketStatistic, public Thread
 {
@@ -76,7 +80,7 @@ public:
     /* device interface */
     virtual void getAudioDevices(AudioDevices &pAList) = 0;
     /* playback control */
-    virtual bool WriteChunk(void* pChunkBuffer, int pChunkSize = 4096) = 0;
+    virtual bool WriteChunk(void* pChunkBuffer, int pChunkSize = 4096);
 
 private:
     /* playback of file */
@@ -84,6 +88,11 @@ private:
     bool DoOpenNewFile();
 
 protected:
+    virtual void DoWriteChunk(char *ChunkBuffer, int pChunkSize);
+
+    /* helper functions */
+    virtual void AdjustVolume(void *pBuffer, int pBufferSize);
+    virtual void StopFilePlayback();
     virtual void AssignThreadName();
 
     /* file based playback - thread naming */

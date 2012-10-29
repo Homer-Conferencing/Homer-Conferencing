@@ -262,16 +262,7 @@ bool WaveOutPortAudio::CloseWaveOutDevice()
 
     if (mWaveOutOpened)
     {
-        // terminate possibly running main loop for file based playback
-    	if (mFilePlaybackNeeded)
-    	{
-			mFilePlaybackNeeded = false;
-			mFilePlaybackCondition.SignalAll();
-			LOG(LOG_VERBOSE, "..loopback wake-up signal sent");
-			StopThread(3000);
-			LOG(LOG_VERBOSE, "..playback thread stopped");
-    	}
-
+        StopFilePlayback();
         Stop();
 
         PaError tErr = paNoError;
@@ -441,103 +432,6 @@ void WaveOutPortAudio::AssignThreadName()
             SVC_PROCESS_STATISTIC.AssignThreadName("WaveOutPortAudio-Mem");
         mHaveToAssignThreadName = false;
     }
-}
-
-bool WaveOutPortAudio::WriteChunk(void* pChunkBuffer, int pChunkSize)
-{
-    PaError           tErr = paNoError;
-
-    mPlayMutex.lock();
-
-    if (!mWaveOutOpened)
-    {
-        // unlock grabbing
-        mPlayMutex.unlock();
-
-        LOG(LOG_ERROR, "Tried to play while WaveOut device is closed");
-
-        return false;
-    }
-
-    #ifdef WOPA_AUTO_START_PLAYBACK
-        if (mPlaybackStopped)
-        {
-            // unlock grabbing
-            mPlayMutex.unlock();
-
-            LOG(LOG_VERBOSE, "Will automatically start the audio stream");
-
-            Play();
-
-            mPlayMutex.lock();
-        }
-    #endif
-
-    if (mVolume != 100)
-    {
-        //LOG(LOG_WARN, "Got %d bytes and will adapt volume", pChunkSize);
-        short int *tSamples = (short int*)pChunkBuffer;
-        for (int i = 0; i < pChunkSize / 2; i++)
-        {
-            int tNewSample = (int)tSamples[i] * mVolume / 100;
-            if (tNewSample < -32767)
-                tNewSample = -32767;
-            if (tNewSample >  32767)
-                tNewSample =  32767;
-            //LOG(LOG_WARN, "Entry %d from %d to %d", i, (int)tSamples[i], (int)tNewSample);
-            tSamples[i] = (short int)tNewSample;
-        }
-    }
-    #ifdef WOPA_DEBUG_PACKETS
-        LOG(LOG_VERBOSE, "Got %d samples for audio output stream", pChunkSize / 4);
-    #endif
-
-    if (pChunkSize / 4 != MEDIA_SOURCE_SAMPLES_PER_BUFFER)
-    {
-        #ifdef WOPA_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "Will use FIFO because input chunk has wrong size, need %d samples per chunk buffer", MEDIA_SOURCE_SAMPLES_PER_BUFFER);
-        #endif
-        if (av_fifo_realloc2(mSampleFifo, av_fifo_size(mSampleFifo) + pChunkSize) < 0)
-        {
-            LOG(LOG_ERROR, "Reallocation of FIFO audio buffer failed");
-            return false;
-        }
-
-        // write new samples into fifo buffer
-        av_fifo_generic_write(mSampleFifo, pChunkBuffer, pChunkSize, NULL);
-
-        char tAudioBuffer[MEDIA_SOURCE_SAMPLES_BUFFER_SIZE];
-        int tAudioBufferSize;
-        while (av_fifo_size(mSampleFifo) >=MEDIA_SOURCE_SAMPLES_BUFFER_SIZE)
-        {
-            tAudioBufferSize = MEDIA_SOURCE_SAMPLES_BUFFER_SIZE;
-
-            // read sample data from the fifo buffer
-            HM_av_fifo_generic_read(mSampleFifo, (void*)tAudioBuffer, tAudioBufferSize);
-
-            #ifdef WOPA_DEBUG_PACKETS
-                LOG(LOG_VERBOSE, "Writing %d samples to audio output stream", tAudioBufferSize / 4);
-            #endif
-
-            mPlaybackFifo->WriteFifo((char*)tAudioBuffer, tAudioBufferSize);
-
-            // log statistics about raw PCM audio data stream
-            AnnouncePacket(tAudioBufferSize);
-        }
-    }else
-    {
-        #ifdef WOPA_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "Writing %d samples to audio output stream", pChunkSize / 4);
-        #endif
-
-        mPlaybackFifo->WriteFifo((char*)pChunkBuffer, pChunkSize);
-
-        // log statistics about raw PCM audio data stream
-        AnnouncePacket(pChunkSize);
-    }
-
-	mPlayMutex.unlock();
-    return true;
 }
 
 bool WaveOutPortAudio::Play()

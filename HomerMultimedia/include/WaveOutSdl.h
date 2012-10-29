@@ -61,12 +61,12 @@ public:
     virtual bool CloseWaveOutDevice();
     /* device interface */
     virtual void getAudioDevices(AudioDevices &pAList);
-    /* playback control */
-    virtual bool WriteChunk(void* pChunkBuffer, int pChunkSize = 4096);
 
 private:
-    static void SdlAudioInit(std::string pDeviceName);
     virtual void AssignThreadName();
+    virtual void DoWriteChunk(char *ChunkBuffer, int pChunkSize);
+
+    static void SdlAudioInit(std::string pDeviceName);
 
     /* SDL init. */
     static Mutex        mSdlInitMutex;

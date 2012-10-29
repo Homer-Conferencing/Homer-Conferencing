@@ -38,7 +38,6 @@ namespace Homer { namespace Multimedia {
 // de/activate debugging of grabbed packets
 //#define WOPA_DEBUG_PACKETS
 //#define WOPA_DEBUG_HANDLER
-//#define WOPA_DEBUG_FILE
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -61,12 +60,11 @@ public:
     virtual bool CloseWaveOutDevice();
     /* device interface */
     virtual void getAudioDevices(AudioDevices &pAList);
-    /* playback control */
-    virtual bool WriteChunk(void* pChunkBuffer, int pChunkSize = 4096);
 
 private:
-    static int PlayAudioHandler(const void *pInputBuffer, void *pOutputBuffer, unsigned long pInputSize, const PaStreamCallbackTimeInfo* pTimeInfo, unsigned long pStatus, void *pUserData);
     virtual void AssignThreadName();
+
+    static int PlayAudioHandler(const void *pInputBuffer, void *pOutputBuffer, unsigned long pInputSize, const PaStreamCallbackTimeInfo* pTimeInfo, unsigned long pStatus, void *pUserData);
 
     /* playback */
     bool                mWaitingForFirstBuffer;
