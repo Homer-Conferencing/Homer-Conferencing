@@ -90,6 +90,7 @@ namespace Homer { namespace Gui {
 ///////////////////////////////////////////////////////////////////////////////
 
 bool MainWindow::mShuttingDown = false;
+bool MainWindow::mStarting = true;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -135,6 +136,15 @@ MainWindow::MainWindow(QStringList pArguments, QString pAbsBinPath) :
     initializeFeatureDisablers(pArguments);
     // show ffmpeg data
     ShowFfmpegCaps(pArguments);
+
+    // audio playback - start sound
+    #ifndef DEBUG_VERSION
+        LOG(LOG_VERBOSE, "Playing start sound..");
+        OpenPlaybackDevice();
+        if (CONF.GetStartSound())
+            StartAudioPlayback(CONF.GetStartSoundFile());
+    #endif
+
     // create basic GUI objects
     initializeGUI();
     // retrieve info about network devices and init Meeting
@@ -159,18 +169,16 @@ MainWindow::MainWindow(QStringList pArguments, QString pAbsBinPath) :
     initializeNetworkSimulator(pArguments);
     // delayed call to register at Stun and Sip server
     QTimer::singleShot(2000, this, SLOT(registerAtStunSipServer()));
-
-    // audio playback - start sound
-    #ifndef DEBUG_VERSION
-        OpenPlaybackDevice();
-        if (CONF.GetStartSound())
-            StartAudioPlayback(CONF.GetStartSoundFile());
-    #endif
     ProcessRemainingArguments(pArguments);
+    mStarting = false;
 }
 
 MainWindow::~MainWindow()
 {
+    LOG(LOG_VERBOSE, "Destroyed");
+
+    // sometimes the Qt event loops blocks, we force an exit here
+    exit(0);
 }
 
 void MainWindow::removeArguments(QStringList &pArguments, QString pFilter)
@@ -802,28 +810,31 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
         return;
     }
 
+    CONF.Sync();
+
     mShuttingDown = true;
+
+    if (mStarting)
+    {
+        LOG(LOG_WARN, "Fast shutdown triggered");
+        printf("Fast shutdown\n");
+        exit(0);
+    }
 
     LOG(LOG_VERBOSE, "Got signal for closing main window");
 
-    CONF.Sync();
-
     // audio playback - stop sound
     #ifndef DEBUG_VERSION
-        bool tStartedPlayback = false;
         if (CONF.GetStopSound())
-            tStartedPlayback = StartAudioPlayback(CONF.GetStopSoundFile());
-        if ((mWaveOut != NULL) && (tStartedPlayback))
         {
-            // wait for the end of playback
-            while(mWaveOut->IsPlaying())
+            if (!mWaveOut->IsPlaying())
             {
-                LOG(LOG_VERBOSE, "Waiting for the end of acoustic notification");
-                Thread::Suspend(250 * 1000);
-            }
+                LOG(LOG_VERBOSE, "Playing stop sound..");
+                StartAudioPlayback(CONF.GetStopSoundFile());
+            }else
+                LOG(LOG_WARN, "We are still playing the start sound, skipping stop sound");
         }
     #endif
-    ClosePlaybackDevice();
 
     // remove ourself as observer for new Meeting events
     MEETING.DeleteObserver(this);
@@ -910,6 +921,24 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
     delete mSysTrayIcon;
 
     //HINT: mSourceDesktop will be deleted by VideoWidget which grabbed from there
+
+    // make sure the user doesn't see anything anymore
+    hide();
+
+    #ifndef DEBUG_VERSION
+
+        if (mWaveOut != NULL)
+        {
+            // wait for the end of playback
+            while(mWaveOut->IsPlaying())
+            {
+                LOG(LOG_VERBOSE, "Waiting for the end of acoustic notification");
+                Thread::Suspend(250 * 1000);
+            }
+        }
+        LOG(LOG_VERBOSE, "Playback finished");
+        ClosePlaybackDevice();
+    #endif
 
     // make sure this main window will be deleted when control returns to Qt event loop (needed especially in case of closeEvent comes from fullscreen video widget)
     deleteLater();
