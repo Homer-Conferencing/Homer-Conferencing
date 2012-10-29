@@ -582,6 +582,8 @@ void ParticipantWidget::keyPressEvent(QKeyEvent *pEvent)
 
 	// forward the event to the video widget
 	QCoreApplication::postEvent(mVideoWidget, new QKeyEvent(QEvent::KeyPress, pEvent->key(), pEvent->modifiers()));
+
+	pEvent->accept();
 }
 
 void ParticipantWidget::wheelEvent(QWheelEvent *pEvent)

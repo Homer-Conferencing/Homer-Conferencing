@@ -1646,7 +1646,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
 			mParticipantWidget->GetAudioWorker()->SetVolume(tNewVolumeValue);
 		}
 	}
-    QWidget::keyPressEvent(pEvent);
+    pEvent->accept(); // otherwise we have endless loop because Qt would redirect the event back to the participant widget (its the parent widget!) andso on
 }
 void VideoWidget::mouseDoubleClickEvent(QMouseEvent *pEvent)
 {
