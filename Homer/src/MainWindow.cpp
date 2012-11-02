@@ -108,6 +108,8 @@ MainWindow::MainWindow(QStringList pArguments, QString pAbsBinPath) :
     mAbsBinPath = pAbsBinPath;
     mMediaSourceDesktop = NULL;
     mMediaSourceLogo = NULL;
+    mCurrentLanguage = "";
+    mTranslator = NULL;
     #if HOMER_NETWORK_SIMULATOR
         mNetworkSimulator = NULL;
     #endif
@@ -147,6 +149,8 @@ MainWindow::MainWindow(QStringList pArguments, QString pAbsBinPath) :
 
     // create basic GUI objects
     initializeGUI();
+    // set language
+    initializeLanguage();
     // retrieve info about network devices and init Meeting
     initializeConferenceManagement();
     // init audio/video muxers
@@ -218,6 +222,46 @@ void MainWindow::initializeGUI()
     setWindowTitle("Homer Conferencing "HOMER_VERSION);
     move(CONF.GetMainWindowPosition());
     resize(CONF.GetMainWindowSize());
+}
+
+void MainWindow::initializeLanguage()
+{
+	LOG(LOG_VERBOSE, "Initialization of Language..");
+	mTranslator = new QTranslator(this);
+	SetLanguage(CONF.GetLanguage());
+}
+
+void MainWindow::SetLanguage(QString pLanguage)
+{
+	if (mCurrentLanguage != pLanguage)
+	{
+		LOG(LOG_VERBOSE, "Setting language: %s", pLanguage.toStdString().c_str());
+
+		// remove old translator
+		if ((mCurrentLanguage != "") && (mTranslator != NULL))
+		{
+			LOG(LOG_VERBOSE, "Destroying old translator..");
+			QCoreApplication::removeTranslator(mTranslator);
+		}
+
+		if (pLanguage != "en")
+		{// we need translation file
+			// create new translator
+			QString tNewLangFile = mAbsBinPath + "lang/" + pLanguage + ".qm";
+			LOG(LOG_VERBOSE, "Loading new translation from file: %s", tNewLangFile.toStdString().c_str());
+			if(mTranslator->load(tNewLangFile))
+			{
+				QCoreApplication::installTranslator(mTranslator);
+			}else
+			{
+				LOG(LOG_ERROR, "Error when loading new translation from file: %s", tNewLangFile.toStdString().c_str());
+				pLanguage = "";
+			}
+		}else
+		{// we use default language (English)
+		}
+		mCurrentLanguage = pLanguage;
+	}
 }
 
 void MainWindow::ProcessRemainingArguments(QStringList &pArguments)
@@ -998,9 +1042,17 @@ void MainWindow::dropEvent(QDropEvent *pEvent)
 
 void MainWindow::changeEvent (QEvent *pEvent)
 {
-    if (pEvent->type() == QEvent::WindowStateChange)
+    switch(pEvent->type())
     {
-        UpdateSysTrayContextMenu();
+		case QEvent::LanguageChange:
+			LOG(LOG_WARN, "Application changed the language setting");
+			retranslateUi(this);
+			break;
+    	case QEvent::WindowStateChange:
+    		UpdateSysTrayContextMenu();
+    		break;
+    	default:
+    		break;
     }
     QMainWindow::changeEvent(pEvent);
 }
@@ -1730,6 +1782,9 @@ void MainWindow::actionConfiguration()
             CONTACTS.ProbeAvailabilityForAll();
         }
         MEETING.SetVideoAudioStartPort(CONF.GetVideoAudioStartPort());
+
+        /* language */
+    	SetLanguage(CONF.GetLanguage());
     }
 }
 

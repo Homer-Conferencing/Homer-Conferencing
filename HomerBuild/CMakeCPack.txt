@@ -52,12 +52,13 @@ set(CPACK_RESOURCE_FILE_WELCOME ${CMAKE_CURRENT_BINARY_DIR}/Homer-Welcome.txt)
 
 ###############################################################################
 
-set(CPACK_COMPONENTS_ALL application libraries extlibraries sounds)
+set(CPACK_COMPONENTS_ALL application libraries extlibraries sounds lang)
 
 set(CPACK_COMPONENT_APPLICATION_DISPLAY_NAME "Homer user interface")
 set(CPACK_COMPONENT_LIBRARIES_DISPLAY_NAME "Homer libraries")
 set(CPACK_COMPONENT_EXTLIBRARIES_DISPLAY_NAME "External libraries")
 set(CPACK_COMPONENT_SOUNDS_DISPLAY_NAME "Sound files")
+set(CPACK_COMPONENT_LANG_DISPLAY_NAME "Language packs")
 
 set(CPACK_COMPONENT_APPLICATION_REQUIRED ON) 
 set(CPACK_COMPONENT_LIBRARIES_REQUIRED ON) 
@@ -67,6 +68,7 @@ set(CPACK_COMPONENT_APPLICATION_DESCRIPTION "Homer-Conferencing is a free cross-
 set(CPACK_COMPONENT_LIBRARIES_DESCRIPTION "Homer-Conferencing is a free cross-platform SIP softphone with video support.") 
 set(CPACK_COMPONENT_EXTLIBRARIES_DESCRIPTION "Several libraries from external projects are needed for Homer-Conferencing.") 
 set(CPACK_COMPONENT_SOUNDS_DESCRIPTION "Sound files to notify for new events like messages or calls.") 
+set(CPACK_COMPONENT_LANG_DESCRIPTION "Language packages.") 
   
 set(CPACK_COMPONENT_APPLICATION_DEPENDS libraries extlibraries)
 set(CPACK_COMPONENT_LIBRARIES_DEPENDS extlibraries)
@@ -75,6 +77,7 @@ set(CPACK_COMPONENT_APPLICATION_GROUP "Runtime components")
 set(CPACK_COMPONENT_LIBRARIES_GROUP "Runtime components")
 set(CPACK_COMPONENT_EXTLIBRARIES_GROUP "Runtime components")
 set(CPACK_COMPONENT_SOUNDS_GROUP "Usability add-ons")
+set(CPACK_COMPONENT_LANG_GROUP "Usability add-ons")
 
 ###############################################################################
 # NSIS specific configuration for Windows

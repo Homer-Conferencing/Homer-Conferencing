@@ -295,6 +295,13 @@ void Configuration::SetFeatureConferencing(bool pActive)
     mQSettings->endGroup();
 }
 
+void Configuration::SetLanguage(QString pLanguage)
+{
+    mQSettings->beginGroup("Global");
+    mQSettings->setValue("Language", pLanguage);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetUserName(QString pUserName)
 {
     mQSettings->beginGroup("User");
@@ -934,6 +941,20 @@ bool Configuration::GetAutoUpdateCheck()
 bool Configuration::GetFeatureConferencing()
 {
     return mQSettings->value("Global/FeatureConferencing", true).toBool();
+}
+
+QString Configuration::GetLanguage()
+{
+	return mQSettings->value("Global/Language", GetSystemLanguage()).toString();
+}
+
+QString Configuration::GetSystemLanguage()
+{
+    QString tSystemDefaultLang = QLocale::system().name();
+    tSystemDefaultLang.truncate(tSystemDefaultLang.lastIndexOf('_'));
+    LOG(LOG_VERBOSE, "Current system language is: %s", tSystemDefaultLang.toStdString().c_str());
+
+    return tSystemDefaultLang;
 }
 
 QString Configuration::GetUserName()

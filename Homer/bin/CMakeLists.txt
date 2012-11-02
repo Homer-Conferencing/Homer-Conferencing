@@ -224,6 +224,54 @@ SET (QT_QRC_SOURCES
 )
 
 ##############################################################
+# multi-language support
+SET(QT_LANG_FILES
+    ../lang/de.ts
+)
+
+file (GLOB HEADER_FILES 
+		../include/*.h
+		../include/Dialogs/*.h
+		../include/Widgets/*.h
+)
+
+file (GLOB CPP_FILES 
+		../src/*.cpp
+		../src/Dialogs/*.cpp
+		../src/Widgets/*.cpp
+)
+
+file (GLOB UI_FILES 
+		../forms/*.ui
+		../forms/Dialogs/*.ui
+		../forms/Widgets/*.ui
+)
+SET(QT_TRANS_SOURCES
+		${CPP_FILES} 
+		${UI_FILES} 
+		${HEADER_FILES}
+)
+
+# integrate Qt translations
+QT4_CREATE_TRANSLATION(QT_LANG_BINS ${QT_TRANS_SOURCES} ${QT_LANG_FILES})
+
+# copy translator binaries to destination folder
+#FOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
+#	file(COPY ${QT_LANG_BINS_ENTRY} DESTINATION lang/${QT_LANG_BINS_ENTRY})
+#ENDFOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
+
+# mark translator binaries for installation process
+FOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
+	INSTALL(FILES ${QT_LANG_BINS_ENTRY} DESTINATION lang COMPONENT lang)
+ENDFOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
+
+# add translator binaries to the linked sources
+SET(SOURCES 
+		${SOURCES}
+		${QT_LANG_BINS}
+)
+
+##############################################################
 #IF(EXISTS "../../HomerNetworkSimulator" AND IS_DIRECTORY "../../HomerNetworkSimulator")
 IF (HOMER_NETWORK_SIMULATOR)
 	SET(NETWORK_SIMULATOR "HomerNetworkSimulator")

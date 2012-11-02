@@ -60,6 +60,7 @@
 #include <QHttp>
 #include <QSystemTrayIcon>
 #include <QShortcut>
+#include <QTranslator>
 
 #include <list>
 
@@ -128,6 +129,7 @@ private slots:
 private:
     void initializeConfiguration(QStringList &pArguments);
     void initializeGUI();
+    void initializeLanguage();
     void initializeFeatureDisablers(QStringList &pArguments);
     void initializeDebugging(QStringList &pArguments);
     void ShowFfmpegCaps(QStringList &pArguments);
@@ -149,6 +151,7 @@ private:
 
     void triggerUpdateCheck();
 
+    void SetLanguage(QString pLanguage);
     void CreateSysTray();
     void loadSettings();
     bool GetNetworkInfo(LocalAddressesList &pLocalAddressesList, QString &pLocalSourceIp, QString &pLocalLoopIp);
@@ -195,6 +198,9 @@ private:
     #if HOMER_NETWORK_SIMULATOR
         NetworkSimulator            *mNetworkSimulator;
     #endif
+	/* multi language support */
+	QString						mCurrentLanguage;
+	QTranslator					*mTranslator;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

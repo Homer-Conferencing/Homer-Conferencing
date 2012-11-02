@@ -163,6 +163,15 @@ int ConfigurationDialog::VideoString2ResolutionIndex(string pString)
     return tResult;
 }
 
+QString Language2ISO639(QString pLanguage)
+{
+	// convert to two-letter ISO 639
+	if (pLanguage == "Deutsch")
+		return "de";
+	else
+		return "en";
+}
+
 void ConfigurationDialog::LoadConfiguration()
 {
     AudioDevices::iterator tAudioDevicesIt;
@@ -346,6 +355,15 @@ void ConfigurationDialog::LoadConfiguration()
     mCbSeparatedParticipantWidgets->setChecked(CONF.GetParticipantWidgetsSeparation());
     mCbCloseParticipantWidgetsImmediately->setChecked(CONF.GetParticipantWidgetsCloseImmediately());
     mCbFeatureConferencing->setChecked(CONF.GetFeatureConferencing());
+    QString tCurLang = CONF.GetLanguage();
+    for (int i = 0; i < mCbLanguage->count(); i++)
+    {
+    	if (tCurLang == Language2ISO639(mCbLanguage->itemText(i)))
+    	{
+    		mCbLanguage->setCurrentIndex(i);
+    		break;
+    	}
+    }
 
     //######################################################################
     //### NOTIFICATION configuration
@@ -566,6 +584,7 @@ void ConfigurationDialog::SaveConfiguration()
     if (mCbFeatureConferencing->isChecked() != CONF.GetFeatureConferencing())
         tHaveToRestart = true;
     CONF.SetFeatureConferencing(mCbFeatureConferencing->isChecked());
+    CONF.SetLanguage(Language2ISO639(mCbLanguage->currentText()));
 
     //######################################################################
     //### NOTIFICATION configuration
@@ -1006,6 +1025,7 @@ void ConfigurationDialog::ClickedButton(QAbstractButton *pButton)
                 break;
             //### GENERAL configuration
             case 3:
+            	mCbLanguage->setCurrentIndex(0); // English
                 mCbAutoUpdateCheck->setChecked(false);
                 mCbSeparatedParticipantWidgets->setChecked(false);
                 mCbCloseParticipantWidgetsImmediately->setChecked(true);
