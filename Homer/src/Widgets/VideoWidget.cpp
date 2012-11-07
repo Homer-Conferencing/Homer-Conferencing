@@ -1683,13 +1683,13 @@ void VideoWidget::mouseMoveEvent(QMouseEvent *pEvent)
 		mMovingMainWindowReferencePos = pEvent->globalPos();
 		if (mParticipantWidget->isFloating())
 		{// move floating video widget
-		    LOG(LOG_VERBOSE, "Moving video window to relative position: (%d,%d)", tPoint.x(), tPoint.y());
+		    //LOG(LOG_VERBOSE, "Moving video window to relative position: (%d,%d)", tPoint.x(), tPoint.y());
 
 		    if (mParticipantWidget->pos() + tPoint != mParticipantWidget->pos())
 		        mParticipantWidget->move(mParticipantWidget->pos() + tPoint);
 		}else
 		{// move main window
-		    LOG(LOG_VERBOSE, "Moving main window to relative position: (%d,%d)", tPoint.x(), tPoint.y());
+		    //LOG(LOG_VERBOSE, "Moving main window to relative position: (%d,%d)", tPoint.x(), tPoint.y());
 
             if (mMainWindow->pos() + tPoint != mMainWindow->pos())
                 mMainWindow->move(mMainWindow->pos() + tPoint);
