@@ -97,13 +97,13 @@ void MessageWidget::Init(QMenu *pMenu, QString pParticipant, enum TransportType 
         connect(mAssignedAction, SIGNAL(triggered()), this, SLOT(ToggleVisibility()));
     connect(mTeMessage, SIGNAL(SendTrigger()), this, SLOT(SendMessage()));
     connect(mPbFile, SIGNAL(released()), this, SLOT(SendFile()));
-    connect(mTbAdd, SIGNAL(released()), this, SLOT(AddPArticipantToContacts()));
+    connect(mPbAdd, SIGNAL(released()), this, SLOT(AddPArticipantToContacts()));
     if(IsKnownContact())
     {
-        mTbAdd->hide();
+        mPbAdd->hide();
     }else
     {
-        mTbAdd->show();
+        mPbAdd->show();
     }
     if (pVisible)
     {
@@ -120,7 +120,7 @@ void MessageWidget::Init(QMenu *pMenu, QString pParticipant, enum TransportType 
     // are we part of broadcast window?
     if (mParticipant == BROACAST_IDENTIFIER)
     {
-        mTbAdd->hide();
+        mPbAdd->hide();
         mPbCall->setEnabled(false);
     }
 }
@@ -199,7 +199,7 @@ void MessageWidget::AddPArticipantToContacts()
 	LOG(LOG_VERBOSE, "User wants to add user %s to his contact list", mParticipant.toStdString().c_str());
     if (mParticipant != BROACAST_IDENTIFIER)
         if (CONTACTSWIDGET.InsertNew(mParticipant))
-            mTbAdd->hide();
+            mPbAdd->hide();
 }
 
 void MessageWidget::closeEvent(QCloseEvent *pEvent)
