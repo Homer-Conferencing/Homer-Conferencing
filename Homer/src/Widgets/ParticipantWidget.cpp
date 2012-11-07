@@ -293,29 +293,42 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
                         tOpenVideoAudioPreviewDialog = new OpenVideoAudioPreviewDialog(this);
                         if (tOpenVideoAudioPreviewDialog->exec() == QDialog::Accepted)
                         {
-                            QString tVDesc, tADesc;
-                            mVideoSource = tOpenVideoAudioPreviewDialog->GetMediaSourceVideo();
-                            if (mVideoSource != NULL)
-                            {
-                                tVDesc = QString(mVideoSource->GetCurrentDeviceName().c_str());
-                                mVideoWidgetFrame->show();
-                                mVideoWidget->Init(mMainWindow, this, mVideoSource, pVideoMenu, mSessionName, true);
-                                tFoundPreviewSource = true;
-                            }
+                        	bool tFilePreview = tOpenVideoAudioPreviewDialog->FileSourceSelected();
 
+                            QString tVDesc, tADesc;
+
+                            // create A/V source
+                            mVideoSource = tOpenVideoAudioPreviewDialog->GetMediaSourceVideo();
                             mAudioSource = tOpenVideoAudioPreviewDialog->GetMediaSourceAudio();
+
+                            // derive A/V media source description
+                            if (mVideoSource != NULL)
+                            	tVDesc = QString(mVideoSource->GetCurrentDeviceName().c_str());
                             if (mAudioSource != NULL)
-                            {
-                                tADesc += QString(mAudioSource->GetCurrentDeviceName().c_str());
-                                mAudioWidget->Init(mAudioSource, pAudioMenu, mSessionName, true, false);
-                                tFoundPreviewSource = true;
-                            }
+                            	tADesc = QString(mAudioSource->GetCurrentDeviceName().c_str());
+
+                            // update session name
                             if(tVDesc != tADesc)
                                 mSessionName = "PREVIEW " + tVDesc + " / " + tADesc;
                             else
                                 mSessionName = "PREVIEW " + tVDesc;
 
-                            if (!tOpenVideoAudioPreviewDialog->FileSourceSelected())
+                            // create VIDEO widget
+                            if (mVideoSource != NULL)
+                            {
+                                mVideoWidgetFrame->show();
+                                mVideoWidget->Init(mMainWindow, this, mVideoSource, pVideoMenu, mSessionName, true);
+                                tFoundPreviewSource = true;
+                            }
+
+                            // create AUDIO widget
+                            if (mAudioSource != NULL)
+                            {
+                                mAudioWidget->Init(mAudioSource, pAudioMenu, mSessionName, true, false);
+                                tFoundPreviewSource = true;
+                            }
+
+                            if (!tFilePreview)
                                 mMovieControlsFrame->hide();
                         }
                         if(!tFoundPreviewSource)
@@ -361,7 +374,7 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
 
     mTimerId = startTimer(STREAM_POS_UPDATE_DELAY);
 
-    OpenPlaybackDevice(mSessionName + "Events");
+    OpenPlaybackDevice(mSessionName + "-Events");
 }
 
 void ParticipantWidget::HideAudioVideoWidget()

@@ -812,7 +812,7 @@ void AudioWorkerThread::OpenPlaybackDevice()
         mSampleNumber[i] = 0;
     }
 
-    AudioPlayback::OpenPlaybackDevice(mName + "Stream");
+    AudioPlayback::OpenPlaybackDevice(mName + "-Data");
 
     mPlaybackAvailable = true;
 }
