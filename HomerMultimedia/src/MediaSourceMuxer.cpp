@@ -836,11 +836,13 @@ bool MediaSourceMuxer::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     mOutputAudioSampleRate = pSampleRate;
 
     LOG(LOG_VERBOSE, "Going to open %s grab device", GetMediaTypeStr().c_str());
+    LOG(LOG_VERBOSE, "..output sample rate: %d", mOutputAudioSampleRate);
+    LOG(LOG_VERBOSE, "..output channels: %d", mOutputAudioChannels);
 
     // first open hardware video source
     if (mMediaSource != NULL)
     {
-		tResult = mMediaSource->OpenAudioGrabDevice(mOutputAudioSampleRate, mOutputAudioChannels);
+		tResult = mMediaSource->OpenAudioGrabDevice(pSampleRate, pChannels);
 		if (!tResult)
 			return false;
     }
@@ -850,9 +852,9 @@ bool MediaSourceMuxer::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 
     // afterwards open the muxer, independent from the open state of the local video
     if (mMediaSource != NULL)
-    	OpenAudioMuxer(mOutputAudioSampleRate, mOutputAudioChannels);
+    	OpenAudioMuxer(pSampleRate, pChannels);
     else
-    	tResult = OpenAudioMuxer(mOutputAudioSampleRate, mOutputAudioChannels);
+    	tResult = OpenAudioMuxer(pSampleRate, pChannels);
 
     return tResult;
 }
@@ -897,6 +899,12 @@ bool MediaSourceMuxer::CloseMuxer()
 
         // Close the format context
         av_free(mFormatContext);
+
+        if (mAudioResampleContext != NULL)
+        {
+            audio_resample_close(mAudioResampleContext);
+            mAudioResampleContext = NULL;
+        }
 
         LOG(LOG_INFO, "...%s-muxer closed", GetMediaTypeStr().c_str());
 
@@ -1859,7 +1867,7 @@ bool MediaSourceMuxer::Reset(enum MediaType pMediaType)
             tResult = OpenVideoMuxer(mSourceResX, mSourceResY, mFrameRate);
             break;
         case MEDIA_AUDIO:
-            tResult = OpenAudioMuxer(mOutputAudioSampleRate, mOutputAudioChannels);
+            tResult = OpenAudioMuxer(mInputAudioSampleRate, mInputAudioChannels);
             break;
         case MEDIA_UNKNOWN:
             LOG(LOG_ERROR, "Media type unknown");
@@ -2119,12 +2127,12 @@ bool MediaSourceMuxer::SelectDevice(std::string pDesiredDevice, enum MediaType p
                             }
                             break;
                         case MEDIA_AUDIO:
-                            if (!OpenAudioGrabDevice(mOutputAudioSampleRate, mOutputAudioChannels))
+                            if (!OpenAudioGrabDevice(mInputAudioSampleRate, mInputAudioChannels))
                             {
                                 LOG(LOG_WARN, "Failed to open new audio media source, selecting old one");
                                 mMediaSource = tOldMediaSource;
                                 pIsNewDevice = false;
-                                while((!(tResult = OpenAudioGrabDevice(mOutputAudioSampleRate, mOutputAudioChannels))) && (tIt != mMediaSources.end()))
+                                while((!(tResult = OpenAudioGrabDevice(mInputAudioSampleRate, mInputAudioChannels))) && (tIt != mMediaSources.end()))
                                 {
                                     LOG(LOG_VERBOSE, "Couldn't open basic audio device, will probe next possible basic device");
                                     tIt++;
