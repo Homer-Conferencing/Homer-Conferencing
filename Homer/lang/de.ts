@@ -2175,7 +2175,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../forms/Widgets/StreamingControlWidget.ui" line="80"/>
-        <source>Desktop</source>
+        <source> Source </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2184,38 +2184,43 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/StreamingControlWidget.ui" line="165"/>
-        <source>Camera</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../forms/Widgets/StreamingControlWidget.ui" line="209"/>
+        <location filename="../forms/Widgets/StreamingControlWidget.ui" line="189"/>
         <source>Broadcast local camera picture</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/StreamingControlWidget.ui" line="268"/>
+        <location filename="../forms/Widgets/StreamingControlWidget.ui" line="248"/>
         <source>Composite 11</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/StreamingControlWidget.ui" line="301"/>
-        <source>Microphone</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../forms/Widgets/StreamingControlWidget.ui" line="336"/>
+        <location filename="../forms/Widgets/StreamingControlWidget.ui" line="284"/>
         <source>Broadcast local audio input</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/StreamingControlWidget.ui" line="395"/>
-        <source>File</source>
+        <location filename="../forms/Widgets/StreamingControlWidget.ui" line="349"/>
+        <source>Broadcast local file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/StreamingControlWidget.ui" line="433"/>
-        <source>Broadcast local file</source>
+        <location filename="../forms/Widgets/StreamingControlWidget.ui" line="412"/>
+        <source> Streaming </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../forms/Widgets/StreamingControlWidget.ui" line="431"/>
+        <source>Push-To-Talk mode, activation via key &quot;t&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../forms/Widgets/StreamingControlWidget.ui" line="449"/>
+        <source>PTT</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../forms/Widgets/StreamingControlWidget.ui" line="462"/>
+        <source>P</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
