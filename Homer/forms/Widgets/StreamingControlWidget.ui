@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>533</width>
+    <width>510</width>
     <height>42</height>
    </rect>
   </property>
@@ -77,7 +77,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Desktop</string>
+      <string> Source </string>
      </property>
     </widget>
    </item>
@@ -143,26 +143,6 @@ background-color: rgb(150, 150, 150);
        <width>22</width>
        <height>22</height>
       </size>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="Line" name="line_3">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="label_2">
-     <property name="font">
-      <font>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Camera</string>
      </property>
     </widget>
    </item>
@@ -271,38 +251,6 @@ background-color: rgb(150, 150, 150);
     </widget>
    </item>
    <item>
-    <widget class="Line" name="line">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="label">
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>40</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>40</height>
-      </size>
-     </property>
-     <property name="font">
-      <font>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Microphone</string>
-     </property>
-    </widget>
-   </item>
-   <item>
     <spacer name="horizontalSpacer_4">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -361,38 +309,6 @@ background-color: rgb(150, 150, 150);
        <width>22</width>
        <height>22</height>
       </size>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="Line" name="line_2">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="label_3">
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>40</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>40</height>
-      </size>
-     </property>
-     <property name="font">
-      <font>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>File</string>
      </property>
     </widget>
    </item>
@@ -458,6 +374,101 @@ background-color: rgb(150, 150, 150);
        <width>22</width>
        <height>22</height>
       </size>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="horizontalSpacer_7">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>5</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QLabel" name="label">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string> Streaming </string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QToolButton" name="mTbPtt">
+     <property name="minimumSize">
+      <size>
+       <width>30</width>
+       <height>30</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>30</height>
+      </size>
+     </property>
+     <property name="toolTip">
+      <string>Push-To-Talk mode, activation via key &quot;t&quot;</string>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QToolButton{
+border-style: outset;
+border-width: 2px;
+border-radius: 6px;
+border-color:  rgb(200, 200, 200);
+}
+QToolButton:checked{
+background-color: rgb(150, 150, 150);
+} 
+QToolButton:pressed{
+background-color: rgb(150, 150, 150);
+} 
+</string>
+     </property>
+     <property name="text">
+      <string>PTT</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../../resources/Icons.qrc">
+       <normaloff>:/images/22_22/Microphone.png</normaloff>:/images/22_22/Microphone.png</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>22</width>
+       <height>22</height>
+      </size>
+     </property>
+     <property name="shortcut">
+      <string>P</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+     <property name="toolButtonStyle">
+      <enum>Qt::ToolButtonTextBesideIcon</enum>
      </property>
     </widget>
    </item>
