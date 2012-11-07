@@ -58,7 +58,7 @@ using namespace Homer::Monitor;
 ///////////////////////////////////////////////////////////////////////////////
 
 MediaSourceDesktop::MediaSourceDesktop(string pDesiredDevice):
-    MediaSource("QT: local capture")
+    MediaSource("Desktop: local capture")
 {
     // set category for packet statistics
     ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);

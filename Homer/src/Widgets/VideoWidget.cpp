@@ -162,10 +162,10 @@ VideoWidget::VideoWidget(QWidget* pParent):
     hide();
 }
 
-void VideoWidget::Init(QMainWindow* pMainWindow, ParticipantWidget *pParticipantWidget, MediaSource *pVideoSource, QMenu *pMenu, QString pActionTitle, QString pWidgetTitle, bool pVisible)
+void VideoWidget::Init(QMainWindow* pMainWindow, ParticipantWidget *pParticipantWidget, MediaSource *pVideoSource, QMenu *pMenu, QString pName, bool pVisible)
 {
     mVideoSource = pVideoSource;
-    mVideoTitle = pActionTitle;
+    mVideoTitle = pName;
     mMainWindow = pMainWindow;
     mParticipantWidget = pParticipantWidget;
 
@@ -175,7 +175,7 @@ void VideoWidget::Init(QMainWindow* pMainWindow, ParticipantWidget *pParticipant
 
     if (pMenu != NULL)
     {
-        mAssignedAction = pMenu->addAction(pActionTitle);
+        mAssignedAction = pMenu->addAction(pName);
         mAssignedAction->setCheckable(true);
         mAssignedAction->setChecked(pVisible);
         QIcon tIcon;
@@ -187,13 +187,13 @@ void VideoWidget::Init(QMainWindow* pMainWindow, ParticipantWidget *pParticipant
     //####################################################################
     //### update GUI
     //####################################################################
-    setWindowTitle(pWidgetTitle);
+    setWindowTitle(pName);
     if (mAssignedAction != NULL)
         connect(mAssignedAction, SIGNAL(triggered()), this, SLOT(ToggleVisibility()));
     SetResolutionFormat(CIF);
     if (mVideoSource != NULL)
     {
-        mVideoWorker = new VideoWorkerThread(mVideoSource, this);
+        mVideoWorker = new VideoWorkerThread(pName, mVideoSource, this);
         mVideoWorker->start(QThread::TimeCriticalPriority);
     }
 
@@ -1927,8 +1927,8 @@ void VideoWidget::customEvent(QEvent *pEvent)
     mCustomEventReason = 0;
 }
 
-VideoWorkerThread::VideoWorkerThread(MediaSource *pVideoSource, VideoWidget *pVideoWidget):
-    MediaSourceGrabberThread(pVideoSource)
+VideoWorkerThread::VideoWorkerThread(QString pName, MediaSource *pVideoSource, VideoWidget *pVideoWidget):
+    MediaSourceGrabberThread(pName, pVideoSource)
 {
     mLastFrameNumber = 0;
     mSetGrabResolutionAsap = false;

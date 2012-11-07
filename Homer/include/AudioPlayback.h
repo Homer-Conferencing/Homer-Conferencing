@@ -43,7 +43,7 @@ public:
     virtual ~AudioPlayback();
 
 protected:
-    virtual void OpenPlaybackDevice();
+    virtual void OpenPlaybackDevice(QString pOutputName);
     virtual void ClosePlaybackDevice();
 
     bool StartAudioPlayback(QString pFileName, int pLoops = 1);

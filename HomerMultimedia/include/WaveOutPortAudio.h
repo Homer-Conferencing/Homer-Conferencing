@@ -45,7 +45,7 @@ class WaveOutPortAudio:
     public WaveOut
 {
 public:
-    WaveOutPortAudio(std::string pDesiredDevice = "");
+    WaveOutPortAudio(std::string pOutputName, std::string pDesiredDevice = "");
 
     /// The destructor
     virtual ~WaveOutPortAudio();

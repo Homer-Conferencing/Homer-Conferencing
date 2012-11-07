@@ -101,7 +101,7 @@ public:
 
     virtual ~VideoWidget();
 
-    void Init(QMainWindow* pMainWindow, ParticipantWidget* pParticipantWidget,  MediaSource *pVideoSource, QMenu *pVideoMenu, QString pActionTitle = "Video", QString pWidgetTitle = "Video", bool pVisible = false);
+    void Init(QMainWindow* pMainWindow, ParticipantWidget* pParticipantWidget,  MediaSource *pVideoSource, QMenu *pVideoMenu, QString pName = "Video", bool pVisible = false);
 
     void SetVisible(bool pVisible);
 
@@ -203,7 +203,7 @@ class VideoWorkerThread:
 {
     Q_OBJECT;
 public:
-    VideoWorkerThread(MediaSource *pVideoSource, VideoWidget *pVideoWidget);
+    VideoWorkerThread(QString pName, MediaSource *pVideoSource, VideoWidget *pVideoWidget);
 
     virtual ~VideoWorkerThread();
 

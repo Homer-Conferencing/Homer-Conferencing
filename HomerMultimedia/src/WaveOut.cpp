@@ -38,6 +38,7 @@ WaveOut::WaveOut(string pName):
     PacketStatistic(pName), Thread()
 {
     ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
+    SetOutgoingStream();
     mPlaybackStopped = true;
     mWaveOutOpened = false;
     mDesiredDevice = "";

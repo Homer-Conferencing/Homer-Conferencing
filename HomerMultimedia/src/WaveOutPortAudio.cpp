@@ -48,11 +48,11 @@ int WaveOutPortAudio::mOpenStreams = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-WaveOutPortAudio::WaveOutPortAudio(string pDesiredDevice):
-    WaveOut("PortAudio-Playback")
+WaveOutPortAudio::WaveOutPortAudio(string pOutputName, string pDesiredDevice):
+    WaveOut(pOutputName)
 {
     MediaSourcePortAudio::PortAudioInit();
-    LOG(LOG_VERBOSE, "Creating wave out for device %s", pDesiredDevice.c_str());
+    LOG(LOG_VERBOSE, "Creating wave out for %s on device %s", pOutputName.c_str(), pDesiredDevice.c_str());
 
     if ((pDesiredDevice != "") && (pDesiredDevice != "auto"))
     {
@@ -363,7 +363,7 @@ int WaveOutPortAudio::PlayAudioHandler(const void *pInputBuffer, void *pOutputBu
     // should be complain about buffer underrun?
     if ((tUsedFifo == 0) && (!tWaveOutPortAudio->mWaitingForFirstBuffer))
     {
-        LOGEX(WaveOutPortAudio, LOG_WARN, "Audio FIFO empty, playback might be non continuous, found gaps %d", ++tWaveOutPortAudio->mPossiblePlaybackGaps);
+        LOGEX(WaveOutPortAudio, LOG_WARN, "Audio FIFO empty, playback for %s might be non continuous, found gaps %d", tWaveOutPortAudio->GetStreamName().c_str(), ++tWaveOutPortAudio->mPossiblePlaybackGaps);
         memset(pOutputBuffer, 0, (size_t)tOutputBufferMaxSize);
         return paContinue;
     }else

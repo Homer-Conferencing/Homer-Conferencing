@@ -58,8 +58,8 @@ void WaveOutSdl::SdlAudioInit(string pDeviceName)
     mSdlInitMutex.unlock();
 }
 
-WaveOutSdl::WaveOutSdl(string pDesiredDevice):
-    WaveOut("SDL-Playback")
+WaveOutSdl::WaveOutSdl(string pOutputName, string pDesiredDevice):
+    WaveOut(pOutputName)
 {
     if ((pDesiredDevice != "") && (pDesiredDevice != "auto"))
     {

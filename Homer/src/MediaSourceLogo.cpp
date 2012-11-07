@@ -50,7 +50,7 @@ using namespace Homer::Monitor;
 ///////////////////////////////////////////////////////////////////////////////
 
 MediaSourceLogo::MediaSourceLogo(string pDesiredDevice):
-    MediaSource("QT: local capture")
+    MediaSource("Logo: local capture")
 {
     // set category for packet statistics
     ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);

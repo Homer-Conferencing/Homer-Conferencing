@@ -60,7 +60,7 @@ class MediaSourceGrabberThread:
 {
     Q_OBJECT;
 public:
-    MediaSourceGrabberThread(MediaSource *pMediaSource);
+    MediaSourceGrabberThread(QString pName, MediaSource *pMediaSource);
 
     virtual ~MediaSourceGrabberThread();
 
@@ -124,6 +124,7 @@ protected:
     virtual void HandlePlayFileError() = 0;
 
     MediaSource         *mMediaSource;
+    QString				mName;
     QMutex              mDeliverMutex;
     QMutex              mGrabbingStateMutex; // secures mPaused, mSourceAvailable in public functions
     QWaitCondition      mGrabbingCondition;

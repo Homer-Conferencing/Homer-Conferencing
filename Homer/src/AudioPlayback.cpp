@@ -53,7 +53,7 @@ AudioPlayback::~AudioPlayback()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void AudioPlayback::OpenPlaybackDevice()
+void AudioPlayback::OpenPlaybackDevice(QString pOutputName)
 {
     LOG(LOG_VERBOSE, "Going to open playback device");
 
@@ -61,10 +61,10 @@ void AudioPlayback::OpenPlaybackDevice()
     {
         #ifndef APPLE
             LOG(LOG_VERBOSE, "Opening PortAudio based playback");
-            mWaveOut = new WaveOutPortAudio(CONF.GetLocalAudioSink().toStdString());
+            mWaveOut = new WaveOutPortAudio("WaveOut-" + pOutputName.toStdString(), CONF.GetLocalAudioSink().toStdString());
         #else
             LOG(LOG_VERBOSE, "Opening SDL based playback");
-           mWaveOut = new WaveOutSdl(CONF.GetLocalAudioSink().toStdString());
+           mWaveOut = new WaveOutSdl("WaveOut: " + pOutputName.toStdString(), CONF.GetLocalAudioSink().toStdString());
         #endif
         if (mWaveOut != NULL)
             mWaveOut->OpenWaveOutDevice();

@@ -43,7 +43,7 @@ class WaveOutSdl:
     public WaveOut
 {
 public:
-	WaveOutSdl(std::string pDesiredDevice = "");
+	WaveOutSdl(std::string pOutputName, std::string pDesiredDevice = "");
 
     /// The destructor
     virtual ~WaveOutSdl();

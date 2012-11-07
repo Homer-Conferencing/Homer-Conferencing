@@ -213,8 +213,9 @@ void Logger::AddMessage(int pLevel, const char *pSource, int pLine, const char* 
     	return;
     }
 
-    if ((pLevel > mLogLevel /* we won't produce an output to console */) && (mRegisteredSinks == 0 /* only the console would get the message */))
-    {
+    if ((pLevel > mLogLevel /* we won't produce an output in the console */) && (mRegisteredSinks == 0 /* only the console would get the message */))
+    {// nothing to do
+
         // return immediately
         return;
     }

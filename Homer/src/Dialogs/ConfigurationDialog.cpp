@@ -72,7 +72,7 @@ ConfigurationDialog::ConfigurationDialog(QWidget* pParent, list<string>  pLocalA
     mVideoWorker = pVideoWorker;
     mAudioWorker = pAudioWorker;
     mLocalAdresses = pLocalAdresses;
-    OpenPlaybackDevice();
+    OpenPlaybackDevice("ConfigDialog");
     initializeGUI();
     LoadConfiguration();
     connect(mCbVideoSource, SIGNAL(currentIndexChanged(QString)), this, SLOT(ShowVideoSourceInfo(QString)));

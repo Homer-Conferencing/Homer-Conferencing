@@ -68,7 +68,7 @@ using namespace Homer::Monitor;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-MediaSourceGrabberThread::MediaSourceGrabberThread(MediaSource *pMediaSource):
+MediaSourceGrabberThread::MediaSourceGrabberThread(QString pName, MediaSource *pMediaSource):
     QThread()
 {
 	mSyncClockMasterSource = NULL;
@@ -92,6 +92,7 @@ MediaSourceGrabberThread::MediaSourceGrabberThread(MediaSource *pMediaSource):
     if (pMediaSource == NULL)
         LOG(LOG_ERROR, "media source is NULL");
     mMediaSource = pMediaSource;
+    mName = pName;
 	if (pMediaSource->GetSourceType() == SOURCE_FILE)
 		mDesiredFile = GetCurrentDevice();
 	else

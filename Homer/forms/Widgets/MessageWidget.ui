@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>412</width>
-    <height>212</height>
+    <width>499</width>
+    <height>197</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -224,33 +224,33 @@
          </widget>
         </item>
         <item>
-         <widget class="QToolButton" name="mTbAdd">
+         <widget class="QPushButton" name="mPbAdd">
           <property name="minimumSize">
            <size>
-            <width>27</width>
-            <height>27</height>
+            <width>130</width>
+            <height>30</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>27</width>
-            <height>27</height>
+            <width>130</width>
+            <height>30</height>
            </size>
           </property>
           <property name="toolTip">
-           <string>Add this new user to your contact list</string>
+           <string>Add this new contact to your list</string>
           </property>
           <property name="text">
-           <string/>
+           <string>Add contact</string>
           </property>
           <property name="icon">
            <iconset resource="../../resources/Icons.qrc">
-            <normaloff>:/images/22_22/Plus.png</normaloff>:/images/22_22/Plus.png</iconset>
+            <normaloff>:/images/22_22/User.png</normaloff>:/images/22_22/User.png</iconset>
           </property>
           <property name="iconSize">
            <size>
-            <width>18</width>
-            <height>18</height>
+            <width>22</width>
+            <height>22</height>
            </size>
           </property>
          </widget>
