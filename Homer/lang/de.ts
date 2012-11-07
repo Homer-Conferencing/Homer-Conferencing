@@ -1386,7 +1386,12 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../forms/Widgets/MessageWidget.ui" line="241"/>
-        <source>Add this new user to your contact list</source>
+        <source>Add this new contact to your list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../forms/Widgets/MessageWidget.ui" line="244"/>
+        <source>Add contact</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

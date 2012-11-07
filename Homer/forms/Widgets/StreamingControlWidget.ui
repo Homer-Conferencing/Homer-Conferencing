@@ -432,6 +432,7 @@ background-color: rgb(150, 150, 150);
      </property>
      <property name="styleSheet">
       <string notr="true">QToolButton{
+background-color: rgb(239, 239, 239);
 border-style: outset;
 border-width: 2px;
 border-radius: 6px;
@@ -441,7 +442,7 @@ QToolButton:checked{
 background-color: rgb(150, 150, 150);
 } 
 QToolButton:pressed{
-background-color: rgb(150, 150, 150);
+background-color: rgb(200, 200, 200);
 } 
 </string>
      </property>
