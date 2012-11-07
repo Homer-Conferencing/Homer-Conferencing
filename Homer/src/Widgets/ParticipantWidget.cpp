@@ -87,8 +87,7 @@ namespace Homer { namespace Gui {
 ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer, MediaSourceMuxer *pAudioSourceMuxer, QString pParticipant, enum TransportType pTransport):
     QDockWidget(pMainWindow), AudioPlayback()
 {
-    LOG(LOG_VERBOSE, "Creating new participant widget..");
-    OpenPlaybackDevice();
+    LOG(LOG_VERBOSE, "Creating new participant widget for %s..", pParticipant.toStdString().c_str());
 
     hide();
     mCurrentMovieFile = "";
@@ -239,11 +238,11 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
                     if (mVideoSourceMuxer != NULL)
                     {
                         mVideoWidgetFrame->show();
-                        mVideoWidget->Init(mMainWindow, this, mVideoSourceMuxer, pVideoMenu, mSessionName, mSessionName, CONF.GetVisibilityBroadcastVideo());
+                        mVideoWidget->Init(mMainWindow, this, mVideoSourceMuxer, pVideoMenu, mSessionName, CONF.GetVisibilityBroadcastVideo());
                     }
                     LOG(LOG_VERBOSE, "..init broadcast audio widget");
                     if (mAudioSourceMuxer != NULL)
-                        mAudioWidget->Init(mAudioSourceMuxer, pAudioMenu, mSessionName, mSessionName, CONF.GetVisibilityBroadcastAudio(), true);
+                        mAudioWidget->Init(mAudioSourceMuxer, pAudioMenu, mSessionName, CONF.GetVisibilityBroadcastAudio(), true);
                     setFeatures(QDockWidget::NoDockWidgetFeatures);
 
                     // hide Homer logo
@@ -300,7 +299,7 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
                             {
                                 tVDesc = QString(mVideoSource->GetCurrentDeviceName().c_str());
                                 mVideoWidgetFrame->show();
-                                mVideoWidget->Init(mMainWindow, this, mVideoSource, pVideoMenu, mSessionName, mSessionName, true);
+                                mVideoWidget->Init(mMainWindow, this, mVideoSource, pVideoMenu, mSessionName, true);
                                 tFoundPreviewSource = true;
                             }
 
@@ -308,7 +307,7 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
                             if (mAudioSource != NULL)
                             {
                                 tADesc += QString(mAudioSource->GetCurrentDeviceName().c_str());
-                                mAudioWidget->Init(mAudioSource, pAudioMenu, mSessionName, mSessionName, true, false);
+                                mAudioWidget->Init(mAudioSource, pAudioMenu, mSessionName, true, false);
                                 tFoundPreviewSource = true;
                             }
                             if(tVDesc != tADesc)
@@ -361,6 +360,8 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
     UpdateMovieControls();
 
     mTimerId = startTimer(STREAM_POS_UPDATE_DELAY);
+
+    OpenPlaybackDevice(mSessionName + "Events");
 }
 
 void ParticipantWidget::HideAudioVideoWidget()

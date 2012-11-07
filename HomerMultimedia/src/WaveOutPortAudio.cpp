@@ -48,11 +48,11 @@ int WaveOutPortAudio::mOpenStreams = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-WaveOutPortAudio::WaveOutPortAudio(string pDesiredDevice):
-    WaveOut("PortAudio-Playback")
+WaveOutPortAudio::WaveOutPortAudio(string pOutputName, string pDesiredDevice):
+    WaveOut(pOutputName)
 {
     MediaSourcePortAudio::PortAudioInit();
-    LOG(LOG_VERBOSE, "Creating wave out for device %s", pDesiredDevice.c_str());
+    LOG(LOG_VERBOSE, "Creating wave out for %s on device %s", pOutputName.c_str(), pDesiredDevice.c_str());
 
     if ((pDesiredDevice != "") && (pDesiredDevice != "auto"))
     {

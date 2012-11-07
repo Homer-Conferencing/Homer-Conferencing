@@ -119,10 +119,10 @@ AudioWidget::AudioWidget(QWidget* pParent):
     hide();
 }
 
-void AudioWidget::Init(MediaSource *pAudioSource, QMenu *pMenu, QString pActionTitle, QString pWidgetTitle, bool pVisible, bool pMuted)
+void AudioWidget::Init(MediaSource *pAudioSource, QMenu *pMenu, QString pName, bool pVisible, bool pMuted)
 {
     mAudioSource = pAudioSource;
-    mAudioTitle = pActionTitle;
+    mAudioTitle = pName;
     LOG(LOG_VERBOSE, "Creating audio widget");
 
     //####################################################################
@@ -131,7 +131,7 @@ void AudioWidget::Init(MediaSource *pAudioSource, QMenu *pMenu, QString pActionT
 
     if (pMenu != NULL)
     {
-        mAssignedAction = pMenu->addAction(pActionTitle);
+        mAssignedAction = pMenu->addAction(pName);
         mAssignedAction->setCheckable(true);
         mAssignedAction->setChecked(pVisible);
         QIcon tIcon;
@@ -145,14 +145,14 @@ void AudioWidget::Init(MediaSource *pAudioSource, QMenu *pMenu, QString pActionT
     //####################################################################
     LOG(LOG_VERBOSE, "..init GUI elements");
     initializeGUI();
-    setWindowTitle(pWidgetTitle);
+    setWindowTitle(pName);
     //setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     if (mAssignedAction != NULL)
         connect(mAssignedAction, SIGNAL(triggered()), this, SLOT(ToggleVisibility()));
     if (mAudioSource != NULL)
     {
         LOG(LOG_VERBOSE, "..create audio worker");
-        mAudioWorker = new AudioWorkerThread(mAudioSource, this);
+        mAudioWorker = new AudioWorkerThread(mAudioTitle, mAudioSource, this);
         LOG(LOG_VERBOSE, "..start audio worker");
         mAudioWorker->start(QThread::TimeCriticalPriority);
         int tLoop = 0;
@@ -778,8 +778,8 @@ void AudioWidget::customEvent(QEvent* pEvent)
 //####################################################################
 //###################### WORKER ######################################
 //####################################################################
-AudioWorkerThread::AudioWorkerThread(MediaSource *pAudioSource, AudioWidget *pAudioWidget):
-    MediaSourceGrabberThread(pAudioSource), AudioPlayback()
+AudioWorkerThread::AudioWorkerThread(QString pName, MediaSource *pAudioSource, AudioWidget *pAudioWidget):
+    MediaSourceGrabberThread(pName, pAudioSource), AudioPlayback()
 {
     LOG(LOG_VERBOSE, "..Creating audio worker");
     mStartPlaybackAsap = false;
@@ -812,7 +812,7 @@ void AudioWorkerThread::OpenPlaybackDevice()
         mSampleNumber[i] = 0;
     }
 
-    AudioPlayback::OpenPlaybackDevice();
+    AudioPlayback::OpenPlaybackDevice(mName + "Stream");
 
     mPlaybackAvailable = true;
 }

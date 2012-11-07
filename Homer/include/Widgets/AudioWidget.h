@@ -78,7 +78,7 @@ public:
 
     virtual ~AudioWidget();
 
-    void Init(MediaSource *pAudioSource, QMenu *pAudioMenu, QString pActionTitle = "Audio", QString pWidgetTitle = "Audio", bool pVisible = false, bool pMuted = false);
+    void Init(MediaSource *pAudioSource, QMenu *pAudioMenu, QString pName = "Audio", bool pVisible = false, bool pMuted = false);
 
     void SetVisible(bool pVisible);
 
@@ -131,7 +131,7 @@ class AudioWorkerThread:
 {
     Q_OBJECT;
 public:
-    AudioWorkerThread(MediaSource *pAudioSource, AudioWidget *pAudioWidget);
+    AudioWorkerThread(QString pName, MediaSource *pAudioSource, AudioWidget *pAudioWidget);
 
     virtual ~AudioWorkerThread();
 
