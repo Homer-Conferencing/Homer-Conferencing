@@ -44,7 +44,7 @@
      <x>0</x>
      <y>0</y>
      <width>385</width>
-     <height>22</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="mMenuSettings">
@@ -66,7 +66,7 @@
    </widget>
    <widget class="QMenu" name="mMenuWindows">
     <property name="title">
-     <string>Views</string>
+     <string>View</string>
     </property>
     <widget class="QMenu" name="mMenuToolBars">
      <property name="title">
@@ -111,6 +111,7 @@
     <addaction name="mMenuParticipantAudioWidgets"/>
     <addaction name="mMenuParticipantMessageWidgets"/>
     <addaction name="mMenuToolBars"/>
+    <addaction name="mActionMainMenu"/>
     <addaction name="separator"/>
     <addaction name="mActionOpenVideoAudioPreview"/>
     <addaction name="separator"/>
@@ -253,6 +254,9 @@
    <property name="shortcut">
     <string>Alt+Q</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
+   </property>
    <property name="iconVisibleInMenu">
     <bool>true</bool>
    </property>
@@ -268,6 +272,12 @@
    <property name="shortcut">
     <string>Alt+C</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::PreferencesRole</enum>
+   </property>
    <property name="iconVisibleInMenu">
     <bool>true</bool>
    </property>
@@ -282,6 +292,9 @@
    </property>
    <property name="shortcut">
     <string>F12</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::AboutRole</enum>
    </property>
    <property name="iconVisibleInMenu">
     <bool>true</bool>
@@ -313,6 +326,12 @@
    </property>
    <property name="shortcut">
     <string>Alt+X</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::QuitRole</enum>
    </property>
    <property name="iconVisibleInMenu">
     <bool>true</bool>
@@ -370,6 +389,9 @@
    <property name="text">
     <string>Data streams</string>
    </property>
+   <property name="toolTip">
+    <string>Show/hide data streams</string>
+   </property>
    <property name="shortcut">
     <string>Ctrl+D</string>
    </property>
@@ -391,6 +413,9 @@
    </property>
    <property name="text">
     <string>System threads</string>
+   </property>
+   <property name="toolTip">
+    <string>Show/hide system threads</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+T</string>
@@ -510,7 +535,10 @@
      <normalon>:/images/22_22/Checked.png</normalon>:/images/22_22/User_Multiple.png</iconset>
    </property>
    <property name="text">
-    <string>Contact list</string>
+    <string>Contacts</string>
+   </property>
+   <property name="toolTip">
+    <string>Show/hide contacts</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+L</string>
@@ -532,7 +560,10 @@
      <normalon>:/images/22_22/Checked.png</normalon>:/images/22_22/NetworkConnection.png</iconset>
    </property>
    <property name="text">
-    <string>File transfer list</string>
+    <string>File transfers</string>
+   </property>
+   <property name="toolTip">
+    <string>Show/hide file transfers</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
@@ -552,6 +583,9 @@
    </property>
    <property name="text">
     <string>Broadcast data</string>
+   </property>
+   <property name="toolTip">
+    <string>Show/hide broadcast data</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+B</string>
@@ -629,6 +663,9 @@
    <property name="text">
     <string>Errors</string>
    </property>
+   <property name="toolTip">
+    <string>Show/hide errors</string>
+   </property>
    <property name="shortcut">
     <string>Ctrl+E</string>
    </property>
@@ -676,6 +713,9 @@
    <property name="text">
     <string>Network streams</string>
    </property>
+   <property name="toolTip">
+    <string>Show/hide network streams</string>
+   </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
    </property>
@@ -688,8 +728,14 @@
    <property name="text">
     <string>Open video/audio preview</string>
    </property>
+   <property name="toolTip">
+    <string>Open a video/audio preview</string>
+   </property>
    <property name="shortcut">
     <string>Alt+W</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
    </property>
   </action>
   <action name="mActionOverviewNetworkSimulatorWidget">
@@ -728,8 +774,36 @@
    <property name="text">
     <string>Playlist</string>
    </property>
+   <property name="toolTip">
+    <string>Show/hide playlist</string>
+   </property>
    <property name="shortcut">
     <string>Ctrl+P</string>
+   </property>
+  </action>
+  <action name="mActionMainMenu">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/LogoHomer3.png</normaloff>
+     <normalon>:/images/22_22/Checked.png</normalon>:/images/LogoHomer3.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show/hide main menu</string>
+   </property>
+   <property name="toolTip">
+    <string>Show/hide main menu</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+M</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
    </property>
   </action>
  </widget>

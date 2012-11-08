@@ -246,6 +246,13 @@ void Configuration::SetVisibilityToolBarOnlineStatus(bool pActive)
     mQSettings->endGroup();
 }
 
+void Configuration::SetVisibilityMenuBar(bool pActive)
+{
+    mQSettings->beginGroup("Global");
+    mQSettings->setValue("VisibilityMenuBar", pActive);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetVisibilityBroadcastAudio(bool pActive)
 {
     mQSettings->beginGroup("Global");
@@ -906,6 +913,11 @@ bool Configuration::GetVisibilityToolBarMediaSources()
 bool Configuration::GetVisibilityToolBarOnlineStatus()
 {
     return mQSettings->value("Global/VisibilityToolBarOnlineStatus", true).toBool();
+}
+
+bool Configuration::GetVisibilityMenuBar()
+{
+    return mQSettings->value("Global/VisibilityMenuBar", true).toBool();
 }
 
 bool Configuration::GetPreviewSelectionVideo()

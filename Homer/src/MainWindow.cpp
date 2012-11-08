@@ -529,6 +529,8 @@ void MainWindow::initializeWidgetsAndMenus()
 {
     LOG(LOG_VERBOSE, "Initialization of widgets and menus..");
 
+    mMenuBar->setVisible(CONF.GetVisibilityMenuBar());
+
     #ifndef APPLE
         // set fixed style "plastic"
         QApplication::setStyle(new QPlastiqueStyle());
@@ -891,6 +893,7 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
     MEETING.DeleteObserver(this);
 
     LOG(LOG_VERBOSE, "..saving main window layout");
+    CONF.SetVisibilityMenuBar(mMenuBar->isVisible());
     CONF.SetMainWindowPosition(pos());
     CONF.SetMainWindowSize(size());
     CONF.SetVisibilityToolBarMediaSources(mToolBarMediaSources->isVisible());

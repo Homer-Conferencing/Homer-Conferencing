@@ -114,6 +114,8 @@ public:
     bool GetVisibilityToolBarMediaSources();
     bool GetVisibilityToolBarOnlineStatus();
 
+    bool GetVisibilityMenuBar();
+
     bool GetVisibilityBroadcastAudio();
     bool GetVisibilityBroadcastVideo();
 
@@ -263,6 +265,8 @@ public:
 
     void SetVisibilityToolBarMediaSources(bool pActive);
     void SetVisibilityToolBarOnlineStatus(bool pActive);
+
+    void SetVisibilityMenuBar(bool pActive);
 
     void SetVisibilityBroadcastAudio(bool pActive);
     void SetVisibilityBroadcastVideo(bool pActive);
