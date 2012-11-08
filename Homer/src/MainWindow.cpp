@@ -285,11 +285,15 @@ void MainWindow::ProcessRemainingArguments(QStringList &pArguments)
 void MainWindow::connectSignalsSlots()
 {
     LOG(LOG_VERBOSE, "Connecting signals and slots of GUI..");
+    addAction(mActionExit); // so, this actio will also be available even if the main menu is hidden
     connect(mActionExit, SIGNAL(triggered()), this, SLOT(actionExit()));
 
+    addAction(mActionIdentity); // so, this actio will also be available even if the main menu is hidden
     connect(mActionIdentity, SIGNAL(triggered()), this, SLOT(actionIdentity()));
+    addAction(mActionConfiguration); // so, this actio will also be available even if the main menu is hidden
     connect(mActionConfiguration, SIGNAL(triggered()), this, SLOT(actionConfiguration()));
 
+    addAction(mActionOpenVideoAudioPreview); // so, this actio will also be available even if the main menu is hidden
     connect(mActionOpenVideoAudioPreview, SIGNAL(triggered()), this, SLOT(actionOpenVideoAudioPreview()));
     connect(mActionHelp, SIGNAL(triggered()), this, SLOT(actionHelp()));
     connect(mActionUpdateCheck, SIGNAL(triggered()), this, SLOT(actionUpdateCheck()));
@@ -301,6 +305,9 @@ void MainWindow::connectSignalsSlots()
 
     connect(mActionToolBarMediaSources, SIGNAL(toggled(bool)), mToolBarMediaSources, SLOT(setVisible(bool)));
     connect(mToolBarMediaSources->toggleViewAction(), SIGNAL(toggled(bool)), mActionToolBarMediaSources, SLOT(setChecked(bool)));
+    addAction(mActionMainMenu); // so, this actio will also be available even if the main menu is hidden
+    connect(mActionMainMenu, SIGNAL(toggled(bool)), mMenuBar, SLOT(setVisible(bool)));
+    addAction(mActionMonitorBroadcastWidget); // so, this actio will also be available even if the main menu is hidden
     connect(mActionMonitorBroadcastWidget, SIGNAL(toggled(bool)), mLocalUserParticipantWidget, SLOT(setVisible(bool)));
 
     mActionMonitorBroadcastWidget->setChecked(CONF.GetVisibilityBroadcastWidget());
