@@ -197,6 +197,9 @@ bool WaveOutPortAudio::OpenWaveOutDevice(int pSampleRate, int pOutputChannels)
     }
 
     int tDeviceId= mDesiredDevice[0] - 48;
+    if (tDeviceId < 0)
+    	return false;
+
     LOG(LOG_VERBOSE, "Will open port audio device %d", tDeviceId);
 
     tOutputParameters.device = tDeviceId;
