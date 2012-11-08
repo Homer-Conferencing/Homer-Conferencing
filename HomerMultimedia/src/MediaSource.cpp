@@ -2533,6 +2533,27 @@ int64_t MediaSource::FpsEmulationGetPts()
     return (int64_t)tRelativeFrameNumber;
 }
 
+// define the threshold for silence detection
+#define SILENCE_THRESHOLD					128
+bool MediaSource::ContainsOnlySilence(void* pChunkBuffer, int pChunkSize)
+{
+	bool tResult = true;
+	short int tSample;
+
+	// scan all samples
+	for (int i = 0; i < pChunkSize / 2; i++)
+	{
+		tSample = *(short int*)((long)pChunkBuffer + i * 2);
+		if ((tSample > SILENCE_THRESHOLD) || (tSample < -SILENCE_THRESHOLD))
+		{// we detected some interesting samples
+			tResult = false;
+			break;
+		}
+	}
+
+	return tResult;
+}
+
 int64_t FilterPts(int64_t pValue)
 {
     if (pValue != (int64_t)AV_NOPTS_VALUE)

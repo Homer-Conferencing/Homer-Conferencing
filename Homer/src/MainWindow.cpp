@@ -842,6 +842,7 @@ void MainWindow::loadSettings()
     // init audio muxer
     mOwnAudioMuxer->SetOutputStreamPreferences(tAudioStreamCodec.toStdString(), CONF.GetAudioQuality(), CONF.GetAudioMaxPacketSize(), false, 0, 0, CONF.GetAudioRtp());
     mOwnAudioMuxer->SetRelayActivation(CONF.GetAudioActivation() && !CONF.GetAudioActivationPushToTalk());
+    mOwnAudioMuxer->SetRelaySkipSilence(CONF.GetAudioSkipSilence());
     mOwnAudioMuxer->SelectDevice(CONF.GetLocalAudioSource().toStdString(), MEDIA_AUDIO, tNewDeviceSelected);
     // if former selected device isn't available we use one of the available instead
     if (!tNewDeviceSelected)
@@ -1787,6 +1788,7 @@ void MainWindow::actionConfiguration()
         /* audio */
         tNeedUpdate = mOwnAudioMuxer->SetOutputStreamPreferences(tAudioCodec, CONF.GetAudioQuality(), CONF.GetAudioMaxPacketSize(), false, 0, 0, CONF.GetAudioRtp());
         mOwnAudioMuxer->SetRelayActivation(CONF.GetAudioActivation() && !CONF.GetAudioActivationPushToTalk());
+        mOwnAudioMuxer->SetRelaySkipSilence(CONF.GetAudioSkipSilence());
         if (tNeedUpdate)
             mLocalUserParticipantWidget->GetAudioWorker()->ResetSource();
         mLocalUserParticipantWidget->GetAudioWorker()->SetCurrentDevice(CONF.GetLocalAudioSource());

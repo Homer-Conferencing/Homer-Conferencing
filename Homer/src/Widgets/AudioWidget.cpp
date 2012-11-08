@@ -537,6 +537,7 @@ void AudioWidget::ShowSample(void* pBuffer, int pSampleSize, int pSampleNumber)
         //if (i < 20)
             //printf("%4hd ", tData);
     }
+    //LOG(LOG_WARN, "Audio samples have a range of %d / %d", tMin, tMax);
 
     //#############################################################
     //### scale the values to 100 %

@@ -74,6 +74,8 @@ MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
     mRequestedStreamingResX = 352;
     mRequestedStreamingResY = 288;
     mStreamActivated = true;
+    mStreamSkipSilence = false;
+    mSkippedSilenceChunks = 0;
     mEncoderNeeded = true;
     mEncoderHasKeyFrame = false;
     mEncoderFifo = NULL;
@@ -1155,7 +1157,7 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
     //####################################################################
     // live marker - OSD
     //####################################################################
-    if (mMarkerActivated)
+    if ((mMediaType == MEDIA_VIDEO) && (mMarkerActivated))
     {
         DrawArrow((char*)pChunkBuffer, mSourceResX, mSourceResY, mMarkerRelX * mSourceResX / 100, mMarkerRelY * mSourceResY / 100);
     }
@@ -1168,12 +1170,27 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
 
     if ((BelowMaxFps(tResult) /* we have to call this function continuously */) && (mStreamActivated) && (!pDropChunk) && (tResult >= 0) && (pChunkSize > 0) && (tMediaSinks) && (mEncoderFifo != NULL))
     {
-        int64_t tTime = Time::GetTimeStamp();
-        mEncoderFifo->WriteFifo((char*)pChunkBuffer, pChunkSize);
-        #ifdef MSM_DEBUG_TIMING
-            int64_t tTime2 = Time::GetTimeStamp();
-            //LOG(LOG_VERBOSE, "Writing %d bytes to Encoder-FIFO took %ld us", pChunkSize, tTime2 - tTime);
-        #endif
+    	bool tRelayThisChunk = true;
+
+    	if ((mMediaType == MEDIA_AUDIO) && (mStreamSkipSilence))
+    	{// we have to check of the current chunk contains only silence
+    		if (ContainsOnlySilence(pChunkBuffer, pChunkSize))
+				tRelayThisChunk = false;
+    	}
+
+		if (tRelayThisChunk)
+		{// we relay this chunk to all registered media sinks based on the dedicated relay thread
+			int64_t tTime = Time::GetTimeStamp();
+			mEncoderFifo->WriteFifo((char*)pChunkBuffer, pChunkSize);
+			#ifdef MSM_DEBUG_TIMING
+				int64_t tTime2 = Time::GetTimeStamp();
+				//LOG(LOG_VERBOSE, "Writing %d bytes to Encoder-FIFO took %ld us", pChunkSize, tTime2 - tTime);
+			#endif
+		}else
+		{
+			mSkippedSilenceChunks++;
+			LOG(LOG_VERBOSE, "Skipping %s data, overall skipped chunks: %ld", GetMediaTypeStr().c_str(), mSkippedSilenceChunks);
+		}
     }
 
     mEncoderFifoAvailableMutex.unlock();
@@ -1967,6 +1984,15 @@ void MediaSourceMuxer::SetRelayActivation(bool pState)
     {
         LOG(LOG_VERBOSE, "Setting relay activation to: %d", pState);
         mStreamActivated = pState;
+    }
+}
+
+void MediaSourceMuxer::SetRelaySkipSilence(bool pState)
+{
+    if (mStreamSkipSilence != pState)
+    {
+        LOG(LOG_VERBOSE, "Setting \"relay skip silence\" activation to: %d", pState);
+        mStreamSkipSilence = pState;
     }
 }
 

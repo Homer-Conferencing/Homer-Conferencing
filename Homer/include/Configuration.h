@@ -152,6 +152,7 @@ public:
     /* audio settings */
     bool GetAudioActivation();
     bool GetAudioActivationPushToTalk();
+    bool GetAudioSkipSilence();
     bool GetAudioRtp();
     QString GetAudioCodec();
     int GetAudioQuality();
@@ -301,6 +302,7 @@ public:
     /* audio settings */
     void SetAudioActivation(bool pActivation);
     void SetAudioActivationPushToTalk(bool pActivation);
+    void SetAudioSkipSilence(bool pActivation);
     void SetAudioRtp(bool pActivation);
     void SetAudioCodec(QString pCodec);
     void SetAudioQuality(int pQuality);

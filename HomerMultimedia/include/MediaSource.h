@@ -344,6 +344,9 @@ protected:
     void FpsEmulationInit(); // auto. called by MarkOpenGrabDeviceSuccessful
     int64_t FpsEmulationGetPts(); //needs correct mFrameRate value
 
+    /* audio silence */
+    bool ContainsOnlySilence(void* pChunkBuffer, int pChunkSize);// assumes signed 16 bit integers per sample
+
     /* event handling */
     void EventOpenGrabDeviceSuccessful(std::string pSource, int pLine);
     void EventGrabChunkSuccessful(std::string pSource, int pLine, int pChunkNumber);

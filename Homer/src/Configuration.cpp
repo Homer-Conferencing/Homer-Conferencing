@@ -421,6 +421,13 @@ void Configuration::SetAudioActivationPushToTalk(bool pActivation)
     mQSettings->endGroup();
 }
 
+void Configuration::SetAudioSkipSilence(bool pActivation)
+{
+    mQSettings->beginGroup("Streaming");
+    mQSettings->setValue("AudioStreamSkipSilence", pActivation);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetAudioRtp(bool pActivation)
 {
     mQSettings->beginGroup("Streaming");
@@ -1054,6 +1061,11 @@ bool Configuration::GetAudioActivation()
 bool Configuration::GetAudioActivationPushToTalk()
 {
     return mQSettings->value("Streaming/AudioStreamActivationPushToTalk", false).toBool();
+}
+
+bool Configuration::GetAudioSkipSilence()
+{
+    return mQSettings->value("Streaming/AudioStreamSkipSilence", false).toBool();
 }
 
 bool Configuration::GetAudioRtp()

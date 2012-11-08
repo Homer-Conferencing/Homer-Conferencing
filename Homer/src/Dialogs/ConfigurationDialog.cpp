@@ -277,6 +277,9 @@ void ConfigurationDialog::LoadConfiguration()
             mCbAudioSink->setCurrentIndex(mCbAudioSink->count() - 1);
     }
 
+    //### stream - skip silence
+    mCbSkipSilence->setChecked(CONF.GetAudioSkipSilence());
+
     //### stream codec
     QString tAudioStreamCodec = CONF.GetAudioCodec();
     for (int i = 0; i < mCbAudioCodec->count(); i++)
@@ -514,6 +517,9 @@ void ConfigurationDialog::SaveConfiguration()
             tOnlyFutureChanged = true;
         CONF.SetLocalAudioSink(mCbAudioSink->currentText());
     }
+
+    //### stream - skip silence
+    CONF.SetAudioSkipSilence(mCbSkipSilence->isChecked());
 
     //### stream codec
     CONF.SetAudioCodec(mCbAudioCodec->currentText());

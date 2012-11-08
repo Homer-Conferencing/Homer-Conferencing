@@ -87,6 +87,8 @@ public:
 
     /* relaying */
     virtual bool SupportsRelaying();
+    void SetRelayActivation(bool pState);
+    void SetRelaySkipSilence(bool pState);
 
     /* get access to current basic media source */
     virtual MediaSource* GetMediaSource();
@@ -123,9 +125,6 @@ public:
     virtual bool SupportsRecording();
     virtual bool IsRecording();
     virtual int64_t RecordingTime(); // in seconds
-
-    /* relay control */
-    void SetRelayActivation(bool pState);
 
     /* device control */
     virtual std::string GetSourceTypeStr();
@@ -185,6 +184,8 @@ private:
     int 				mStreamMaxFps;
     int64_t				mStreamMaxFps_LastFrame_Timestamp;
     bool                mStreamActivated;
+    bool				mStreamSkipSilence;
+    int64_t				mSkippedSilenceChunks;
     char                *mStreamPacketBuffer;
     /* encoding */
     char                *mEncoderChunkBuffer;
