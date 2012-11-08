@@ -2736,11 +2736,14 @@ bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
 
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Going to detect all existing streams in input for selecting a %s stream later..", GetMediaTypeStr().c_str());
 
-    // limit frame analyzing time for ffmpeg internal codec auto detection
-    if (mMediaType == MEDIA_AUDIO)
-    	mFormatContext->max_analyze_duration = AV_TIME_BASE / 4;
-	else
-		mFormatContext->max_analyze_duration = AV_TIME_BASE / 2;
+    // limit frame analyzing time for ffmpeg internal codec auto detection for non file based media sources
+    if (GetSourceType() != SOURCE_FILE)
+    {
+        if (mMediaType == MEDIA_AUDIO)
+            mFormatContext->max_analyze_duration = AV_TIME_BASE / 4;
+        else
+            mFormatContext->max_analyze_duration = AV_TIME_BASE / 2;
+    }
 
     // verbose timestamp debugging
     //mFormatContext->debug = FF_FDEBUG_TS;
@@ -2849,13 +2852,25 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 			// set grabbing resolution and frame-rate to the resulting ones delivered by opened video codec
 			mSourceResX = mCodecContext->width;
 			mSourceResY = mCodecContext->height;
-			break;
+
+			// fall back method for resolution detection
+		    if ((mSourceResX == 0) && (mSourceResY == 0))
+		    {
+		        mSourceResX = mCodecContext->coded_width;
+		        mSourceResY = mCodecContext->coded_height;
+		    }
+
+		    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected video resolution: %d*%d", mSourceResX, mSourceResY);
+		    break;
+
 		case MEDIA_AUDIO:
+
 			// set sample rate and bit rate to the resulting ones delivered by opened audio codec
 			mInputAudioSampleRate = mCodecContext->sample_rate;
 			mInputAudioChannels = mCodecContext->channels;
 			mInputAudioFormat = mCodecContext->sample_fmt;
 			break;
+
 		default:
 			break;
     }
