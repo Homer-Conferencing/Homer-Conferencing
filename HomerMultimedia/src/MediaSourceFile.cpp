@@ -178,7 +178,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     mDecodedIFrames = 0;
     mDecodedPFrames = 0;
     mDecodedBFrames = 0;
-    mSourceStartPts =  mFormatContext->start_time;
+    mSourceStartPts =  mFrameRate * mFormatContext->start_time / AV_TIME_BASE;
 
     MarkOpenGrabDeviceSuccessful();
 
@@ -503,8 +503,9 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
         }
 
         // EOF
-        if ((tChunkDesc.Pts >= mNumberOfFrames) && (mNumberOfFrames != 0))
+        if ((tChunkDesc.Pts - mSourceStartPts >= mNumberOfFrames) && (mNumberOfFrames != 0))
         {
+            LOG(LOG_VERBOSE, "Returning EOF in %s file because PTS value %ld is bigger than or equal to maximum %.2f", GetMediaTypeStr().c_str(), tChunkDesc.Pts - mSourceStartPts, (float)mNumberOfFrames);
             mEOFReached = true;
             tShouldGrabNext = false;
         }
@@ -718,7 +719,7 @@ void* MediaSourceFile::Run(void* pArgs)
         {
 
             if (mEOFReached)
-                LOG(LOG_WARN, "We started when EOF was already reached");
+                LOG(LOG_WARN, "We started %s file grabbing when EOF was already reached", GetMediaTypeStr().c_str());
 
             tWaitLoop = 0;
 
@@ -770,6 +771,7 @@ void* MediaSourceFile::Run(void* pArgs)
                             MarkGrabChunkFailed(GetMediaTypeStr() + " source has I/O error");
 
                             // signal EOF instead of I/O error
+                            LOG(LOG_VERBOSE, "Returning EOF in %s file because of I/O error", GetMediaTypeStr().c_str());
                             mEOFReached = true;
                         }
                     }else
@@ -1542,10 +1544,12 @@ bool MediaSourceFile::SupportsSeeking()
 
 float MediaSourceFile::GetSeekEnd()
 {
+    float tResult = 0;
     if ((mFormatContext != NULL) && (mFormatContext->duration != (int64_t)AV_NOPTS_VALUE))
-        return ((float)mFormatContext->duration / AV_TIME_BASE);
-    else
-        return 0;
+        tResult = ((float)mFormatContext->duration / AV_TIME_BASE);
+
+    // result is in seconds
+    return tResult;
 }
 
 bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
@@ -1554,6 +1558,15 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
     int tRes = 0;
 
     float tSeekEnd = GetSeekEnd();
+    float tNumberOfFrames = mNumberOfFrames;
+
+    //HINT: we need the original PTS values from the file
+    // correcting PTS value by a possible start PTS value (offset)
+    if (mSourceStartPts > 0)
+    {
+        //LOG(LOG_VERBOSE, "Correcting PTS value by offset: %.2f", (float)mSourceStartPts);
+        tNumberOfFrames += mSourceStartPts;
+    }
 
     if (pSeconds <= 0)
         pSeconds = 0;
@@ -1588,7 +1601,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
 
     //LOG(LOG_VERBOSE, "Rel: %ld Abs: %ld", tRelativeTimestamp, tAbsoluteTimestamp);
 
-    if ((tFrameIndex >= 0) && (tFrameIndex < mNumberOfFrames))
+    if ((tFrameIndex >= 0) && (tFrameIndex < tNumberOfFrames))
     {
         // seek only if it is necessary
         if (pSeconds != GetSeekPos())
@@ -1604,7 +1617,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
                     tTargetTimestamp += mFormatContext->start_time;
                 }
 
-                LOG(LOG_VERBOSE, "%s-SEEKING from %5.2f sec. (pts %.2f) to %5.2f sec. (pts %.2f, ts: %.2f), max. sec.: %.2f (pts %.2f), source start pts: %.2f", GetMediaTypeStr().c_str(), GetSeekPos(), mCurrentFrameIndex, pSeconds, tFrameIndex, tTargetTimestamp, tSeekEnd, mNumberOfFrames, mSourceStartPts);
+                LOG(LOG_VERBOSE, "%s-SEEKING from %5.2f sec. (pts %.2f) to %5.2f sec. (pts %.2f, ts: %.2f), max. sec.: %.2f (pts %.2f), source start pts: %.2f", GetMediaTypeStr().c_str(), GetSeekPos(), mCurrentFrameIndex, pSeconds, tFrameIndex, tTargetTimestamp, tSeekEnd, tNumberOfFrames, mSourceStartPts);
 
                 int tSeekFlags = (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) | AVSEEK_FLAG_FRAME | (tFrameIndex < mCurrentFrameIndex ? AVSEEK_FLAG_BACKWARD : 0);
                 mSeekingTargetFrameIndex = (int64_t)tFrameIndex;
@@ -1671,7 +1684,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
             mRecalibrateRealTimeGrabbingAfterSeeking = true;
         }
     }else
-        LOG(LOG_ERROR, "Seek position PTS=%.2f(%.2f) is out of range (0 - %.2f) for %s file, fps: %.2f, start offset: %.2f", (float)tFrameIndex, pSeconds, (float)mNumberOfFrames, GetMediaTypeStr().c_str(), mFrameRate, (float)mSourceStartPts);
+        LOG(LOG_ERROR, "Seek position PTS=%.2f(%.2f) is out of range (0 - %.2f) for %s file, fps: %.2f, start offset: %.2f", (float)tFrameIndex, pSeconds, tNumberOfFrames, GetMediaTypeStr().c_str(), mFrameRate, (float)mSourceStartPts);
 
     // unlock grabbing
     mGrabMutex.unlock();
@@ -1698,15 +1711,32 @@ bool MediaSourceFile::SeekRelative(float pSeconds, bool pOnlyKeyFrames)
 
 float MediaSourceFile::GetSeekPos()
 {
+    float tResult = 0;
     float tSeekEnd = GetSeekEnd();
-	if (mNumberOfFrames > 0)
+	double tCurrentFrameIndex = mCurrentFrameIndex;
+
+	if (tCurrentFrameIndex > 0)
 	{
-        if (mCurrentFrameIndex / mNumberOfFrames <= 1.0)
-        	return (tSeekEnd * mCurrentFrameIndex / mNumberOfFrames);
-        else
-        	return tSeekEnd;
-	}else
-        return 0;
+        //HINT: we need the corrected PTS values and the one from the file
+        // correcting PTS value by a possible start PTS value (offset)
+        if (mSourceStartPts > 0)
+        {
+            //LOG(LOG_VERBOSE, "Correcting PTS value by offset: %.2f", (float)mSourceStartPts);
+            tCurrentFrameIndex -= mSourceStartPts;
+        }
+
+        if (mNumberOfFrames > 0)
+        {
+            //LOG(LOG_VERBOSE, "Rel. progress: %.2f %.2f", tCurrentFrameIndex, mNumberOfFrames);
+            float tRelProgress = tCurrentFrameIndex / mNumberOfFrames;
+            if (tRelProgress <= 1.0)
+                tResult = (tSeekEnd * tRelProgress);
+            else
+                tResult = tSeekEnd;
+        }
+	}
+
+    return tResult;
 }
 
 bool MediaSourceFile::SupportsMultipleInputStreams()
