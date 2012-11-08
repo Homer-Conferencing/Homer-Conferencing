@@ -483,43 +483,51 @@ void ParticipantWidget::closeEvent(QCloseEvent* pEvent)
 
 void ParticipantWidget::contextMenuEvent(QContextMenuEvent *pEvent)
 {
-    if (mSessionType != PARTICIPANT)
-        return;
-
     QAction *tAction;
     QMenu tMenu(this);
 
-    if (CONF.DebuggingEnabled())
+    switch(mSessionType)
     {
-        if (mSessionInfoWidget->isVisible())
-        {
-            tAction = tMenu.addAction("Hide session info");
-            tAction->setCheckable(true);
-            tAction->setChecked(true);
-        }else
-        {
-            tAction = tMenu.addAction("Show session info");
-            tAction->setCheckable(true);
-            tAction->setChecked(false);
-        }
-        QIcon tIcon2;
-        tIcon2.addPixmap(QPixmap(":/images/22_22/Info.png"), QIcon::Normal, QIcon::Off);
-        tAction->setIcon(tIcon2);
+        case PARTICIPANT:
+            if (CONF.DebuggingEnabled())
+            {
+                if (mSessionInfoWidget->isVisible())
+                {
+                    tAction = tMenu.addAction("Hide session info");
+                    tAction->setCheckable(true);
+                    tAction->setChecked(true);
+                }else
+                {
+                    tAction = tMenu.addAction("Show session info");
+                    tAction->setCheckable(true);
+                    tAction->setChecked(false);
+                }
+                QIcon tIcon2;
+                tIcon2.addPixmap(QPixmap(":/images/22_22/Info.png"), QIcon::Normal, QIcon::Off);
+                tAction->setIcon(tIcon2);
 
-        QAction* tPopupRes = tMenu.exec(pEvent->globalPos());
-        if (tPopupRes != NULL)
-        {
-            if (tPopupRes->text().compare("Show session info") == 0)
-            {
-                mSessionInfoWidget->SetVisible(true);
-                return;
+                QAction* tPopupRes = tMenu.exec(pEvent->globalPos());
+                if (tPopupRes != NULL)
+                {
+                    if (tPopupRes->text().compare("Show session info") == 0)
+                    {
+                        mSessionInfoWidget->SetVisible(true);
+                        return;
+                    }
+                    if (tPopupRes->text().compare("Hide session info") == 0)
+                    {
+                        mSessionInfoWidget->SetVisible(false);
+                        return;
+                    }
+                }
             }
-            if (tPopupRes->text().compare("Hide session info") == 0)
-            {
-                mSessionInfoWidget->SetVisible(false);
-                return;
-            }
-        }
+            break;
+        case BROADCAST:
+            break;
+        case PREVIEW:
+            break;
+        default:
+            break;
     }
 }
 
