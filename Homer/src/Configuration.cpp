@@ -1053,7 +1053,7 @@ bool Configuration::GetAudioActivation()
 
 bool Configuration::GetAudioActivationPushToTalk()
 {
-    return mQSettings->value("Streaming/AudioStreamActivationPushToTalk", true).toBool();
+    return mQSettings->value("Streaming/AudioStreamActivationPushToTalk", false).toBool();
 }
 
 bool Configuration::GetAudioRtp()
