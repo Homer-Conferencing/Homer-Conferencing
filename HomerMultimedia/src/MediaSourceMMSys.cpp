@@ -179,6 +179,7 @@ bool MediaSourceMMSys::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     mMediaType = MEDIA_AUDIO;
     mOutputAudioChannels = pChannels;
     mOutputAudioSampleRate = pSampleRate;
+    mOutputAudioFormat = AV_SAMPLE_FMT_S16; // assume we always want signed 16 bit
 
     LOG(LOG_VERBOSE, "Trying to open the audio source");
 

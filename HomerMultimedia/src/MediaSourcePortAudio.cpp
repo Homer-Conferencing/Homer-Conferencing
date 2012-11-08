@@ -269,8 +269,10 @@ bool MediaSourcePortAudio::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     mMediaType = MEDIA_AUDIO;
     mOutputAudioChannels = pChannels;
     mOutputAudioSampleRate = pSampleRate;
+    mOutputAudioFormat = AV_SAMPLE_FMT_S16; // assume we always want signed 16 bit
     mInputAudioChannels = pChannels;
     mInputAudioSampleRate = pSampleRate;
+    mInputAudioFormat = AV_SAMPLE_FMT_S16; // we use signed 16 bit when opening the grabber device
 
     LOG(LOG_VERBOSE, "Trying to open the audio source");
 

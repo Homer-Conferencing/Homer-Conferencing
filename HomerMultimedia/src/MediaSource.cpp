@@ -1818,7 +1818,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
         case MEDIA_AUDIO:
             LOG(LOG_INFO, "    ..sample rate: %d", mRecorderCodecContext->sample_rate);
             LOG(LOG_INFO, "    ..channels: %d", mRecorderCodecContext->channels);
-            LOG(LOG_INFO, "    ..sample format: %d", (int)mRecorderCodecContext->sample_fmt);
+            LOG(LOG_INFO, "    ..sample format: %s", av_get_sample_fmt_name(mRecorderCodecContext->sample_fmt));
             LOG(LOG_INFO, "Fifo opened...");
             LOG(LOG_INFO, "    ..fill size: %d bytes", av_fifo_size(mRecorderSampleFifo));
             break;
@@ -2979,14 +2979,14 @@ bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
 			break;
 		case MEDIA_AUDIO:
 			// create resample context
-			if ((mInputAudioSampleRate != mOutputAudioSampleRate) || (mInputAudioChannels != mOutputAudioChannels))
+			if ((mInputAudioSampleRate != mOutputAudioSampleRate) || (mInputAudioChannels != mOutputAudioChannels) || (mInputAudioFormat != mOutputAudioFormat))
 			{
 				if (mAudioResampleContext != NULL)
 				{
 					LOG(LOG_ERROR, "State of audio resample context inconsistent");
 				}
 
-				LOG_REMOTE(LOG_WARN, pSource, pLine, "Audio samples with rate of %d Hz and %d channels have to be resampled to %d Hz and %d channels", mInputAudioSampleRate, mInputAudioChannels, mOutputAudioSampleRate, mOutputAudioChannels);
+				LOG_REMOTE(LOG_WARN, pSource, pLine, "Audio samples with rate of %d Hz and %d channels (format: %s) have to be resampled to %d Hz and %d channels (format: %s)", mInputAudioSampleRate, mInputAudioChannels, av_get_sample_fmt_name(mInputAudioFormat), mOutputAudioSampleRate, mOutputAudioChannels, av_get_sample_fmt_name(mOutputAudioFormat));
 				mAudioResampleContext = av_audio_resample_init(mOutputAudioChannels, mInputAudioChannels, mOutputAudioSampleRate, mInputAudioSampleRate, mOutputAudioFormat, mInputAudioFormat, 16, 10, 0, 0.8);
 			    mResampleBuffer = (char*)malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
 			}
