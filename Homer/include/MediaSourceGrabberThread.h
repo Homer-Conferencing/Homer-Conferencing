@@ -106,6 +106,9 @@ public:
     void SelectInputStream(int pIndex);
     QStringList GetPossibleInputStreams();
 
+    /* relay control */
+    void SetRelayActivation(bool pActive);
+
 protected:
     /* recording */
     virtual void DoStartRecorder();

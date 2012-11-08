@@ -143,6 +143,7 @@ private:
     virtual void paintEvent(QPaintEvent *pEvent);
     virtual void resizeEvent(QResizeEvent *pEvent);
     virtual void keyPressEvent(QKeyEvent *pEvent);
+    virtual void keyReleaseEvent(QKeyEvent *pEvent);
     virtual void mouseDoubleClickEvent(QMouseEvent *pEvent);
     virtual void closeEvent(QCloseEvent* pEvent);
     virtual void customEvent (QEvent* pEvent);

@@ -1961,9 +1961,13 @@ int64_t MediaSourceMuxer::RecordingTime()
         return 0;
 }
 
-void MediaSourceMuxer::SetActivation(bool pState)
+void MediaSourceMuxer::SetRelayActivation(bool pState)
 {
-    mStreamActivated = pState;
+    if (mStreamActivated != pState)
+    {
+        LOG(LOG_VERBOSE, "Setting relay activation to: %d", pState);
+        mStreamActivated = pState;
+    }
 }
 
 string MediaSourceMuxer::GetSourceTypeStr()

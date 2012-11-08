@@ -824,7 +824,7 @@ void MainWindow::loadSettings()
 
     // init video muxer
     mOwnVideoMuxer->SetOutputStreamPreferences(tVideoStreamCodec.toStdString(), CONF.GetVideoQuality(), CONF.GetVideoMaxPacketSize(), false, tX, tY, CONF.GetVideoRtp(), CONF.GetVideoFps());
-    mOwnVideoMuxer->SetActivation(CONF.GetVideoActivation());
+    mOwnVideoMuxer->SetRelayActivation(CONF.GetVideoActivation());
     bool tNewDeviceSelected = false;
     QString tLastVideoSource = CONF.GetLocalVideoSource();
     if (tLastVideoSource == "auto")
@@ -841,7 +841,7 @@ void MainWindow::loadSettings()
 
     // init audio muxer
     mOwnAudioMuxer->SetOutputStreamPreferences(tAudioStreamCodec.toStdString(), CONF.GetAudioQuality(), CONF.GetAudioMaxPacketSize(), false, 0, 0, CONF.GetAudioRtp());
-    mOwnAudioMuxer->SetActivation(CONF.GetAudioActivation());
+    mOwnAudioMuxer->SetRelayActivation(CONF.GetAudioActivation() && !CONF.GetAudioActivationPushToTalk());
     mOwnAudioMuxer->SelectDevice(CONF.GetLocalAudioSource().toStdString(), MEDIA_AUDIO, tNewDeviceSelected);
     // if former selected device isn't available we use one of the available instead
     if (!tNewDeviceSelected)
@@ -1013,10 +1013,39 @@ void MainWindow::GetEventSource(GeneralEvent *pEvent, QString &pSender, QString 
 
 void MainWindow::keyPressEvent(QKeyEvent *pEvent)
 {
-    LOG(LOG_VERBOSE, "Got main window key press event with key %s(%d, mod: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
+    LOG(LOG_VERBOSE, "Got main window key press event with key %s(%d, mod: %d, auto-repeat: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers(), pEvent->isAutoRepeat());
 
-    // forward the event to the local participant widget
-    QCoreApplication::postEvent(mLocalUserParticipantWidget, new QKeyEvent(QEvent::KeyPress, pEvent->key(), pEvent->modifiers()));
+    if ((pEvent->key() == Qt::Key_T) && (!pEvent->isAutoRepeat()))
+    {
+        LOG(LOG_VERBOSE, "Audio activation: %d, PTT mode: %d", CONF.GetAudioActivation(), CONF.GetAudioActivationPushToTalk());
+        if ((CONF.GetAudioActivation()) && (CONF.GetAudioActivationPushToTalk()))
+        {
+                mOwnAudioMuxer->SetRelayActivation(true);
+        }
+        pEvent->accept();
+    }else
+    {
+        // forward the event to the local participant widget
+        QCoreApplication::postEvent(mLocalUserParticipantWidget, new QKeyEvent(QEvent::KeyPress, pEvent->key(), pEvent->modifiers(), pEvent->text()));
+    }
+}
+
+void MainWindow::keyReleaseEvent(QKeyEvent *pEvent)
+{
+    LOG(LOG_VERBOSE, "Got main window key release event with key %s(%d, mod: %d, auto-repeat: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers(), pEvent->isAutoRepeat());
+
+    if (pEvent->key() == Qt::Key_T)
+    {
+        if ((CONF.GetAudioActivation()) && (CONF.GetAudioActivationPushToTalk()))
+        {
+            if (!pEvent->isAutoRepeat())
+                mOwnAudioMuxer->SetRelayActivation(false);
+        }
+        pEvent->accept();
+    }else
+    {
+        QMainWindow::keyReleaseEvent(pEvent);
+    }
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *pEvent)
@@ -1742,7 +1771,7 @@ void MainWindow::actionConfiguration()
 
         /* video */
         tNeedUpdate = mOwnVideoMuxer->SetOutputStreamPreferences(tVideoCodec, CONF.GetVideoQuality(), CONF.GetVideoMaxPacketSize(), false, tX, tY, CONF.GetVideoRtp(), CONF.GetVideoFps());
-        mOwnVideoMuxer->SetActivation(CONF.GetVideoActivation());
+        mOwnVideoMuxer->SetRelayActivation(CONF.GetVideoActivation());
         if (tNeedUpdate)
             mLocalUserParticipantWidget->GetVideoWorker()->ResetSource();
         mLocalUserParticipantWidget->GetVideoWorker()->SetCurrentDevice(CONF.GetLocalVideoSource());
@@ -1757,7 +1786,7 @@ void MainWindow::actionConfiguration()
 
         /* audio */
         tNeedUpdate = mOwnAudioMuxer->SetOutputStreamPreferences(tAudioCodec, CONF.GetAudioQuality(), CONF.GetAudioMaxPacketSize(), false, 0, 0, CONF.GetAudioRtp());
-        mOwnAudioMuxer->SetActivation(CONF.GetAudioActivation());
+        mOwnAudioMuxer->SetRelayActivation(CONF.GetAudioActivation() && !CONF.GetAudioActivationPushToTalk());
         if (tNeedUpdate)
             mLocalUserParticipantWidget->GetAudioWorker()->ResetSource();
         mLocalUserParticipantWidget->GetAudioWorker()->SetCurrentDevice(CONF.GetLocalAudioSource());

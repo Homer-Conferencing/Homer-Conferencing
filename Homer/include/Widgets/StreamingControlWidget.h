@@ -59,6 +59,7 @@ private slots:
     void StartCameraStreaming();
     void StartFileStreaming();
 	void SelectedNewVideoInputStream(int pIndex);
+	void SelectPushToTalkMode(bool pActive);
 
 private:
     void timerEvent(QTimerEvent *pEvent);

@@ -144,6 +144,7 @@ private:
 
     virtual void closeEvent(QCloseEvent* pEvent);
     virtual void keyPressEvent(QKeyEvent *pEvent);
+    virtual void keyReleaseEvent(QKeyEvent *pEvent);
     virtual void dragEnterEvent(QDragEnterEvent *pEvent);
     virtual void dropEvent(QDropEvent *pEvent);
     virtual void changeEvent (QEvent *pEvent);

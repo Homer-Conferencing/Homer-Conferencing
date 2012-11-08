@@ -124,8 +124,8 @@ public:
     virtual bool IsRecording();
     virtual int64_t RecordingTime(); // in seconds
 
-    /* activation control */
-    void SetActivation(bool pState);
+    /* relay control */
+    void SetRelayActivation(bool pState);
 
     /* device control */
     virtual std::string GetSourceTypeStr();

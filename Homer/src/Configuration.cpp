@@ -414,6 +414,13 @@ void Configuration::SetAudioActivation(bool pActivation)
     mQSettings->endGroup();
 }
 
+void Configuration::SetAudioActivationPushToTalk(bool pActivation)
+{
+    mQSettings->beginGroup("Streaming");
+    mQSettings->setValue("AudioStreamActivationPushToTalk", pActivation);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetAudioRtp(bool pActivation)
 {
     mQSettings->beginGroup("Streaming");
@@ -1042,6 +1049,11 @@ int Configuration::GetVideoFps()
 bool Configuration::GetAudioActivation()
 {
     return mQSettings->value("Streaming/AudioStreamActivation", true).toBool();
+}
+
+bool Configuration::GetAudioActivationPushToTalk()
+{
+    return mQSettings->value("Streaming/AudioStreamActivationPushToTalk", true).toBool();
 }
 
 bool Configuration::GetAudioRtp()

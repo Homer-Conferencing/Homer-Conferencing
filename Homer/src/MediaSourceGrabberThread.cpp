@@ -29,6 +29,7 @@
 #include <MediaSourceGrabberThread.h>
 #include <MediaSource.h>
 #include <MediaSourceFile.h>
+#include <MediaSourceMuxer.h>
 #include <Logger.h>
 #include <PacketStatistic.h>
 #include <Configuration.h>
@@ -379,6 +380,16 @@ QStringList MediaSourceGrabberThread::GetPossibleInputStreams()
         tResult.push_back(QString((*tIt).c_str()));
 
     return tResult;
+}
+
+void MediaSourceGrabberThread::SetRelayActivation(bool pActive)
+{
+    if (mMediaSource->SupportsMuxing())
+    { // source is a muxer
+        MediaSourceMuxer *tMuxer = (MediaSourceMuxer*)mMediaSource;
+        tMuxer->SetRelayActivation(pActive);
+    }else
+        LOG(LOG_VERBOSE, "Cannot set %s relay activation of a media source which is not a muxer", mMediaSource->GetMediaTypeStr().c_str());
 }
 
 void MediaSourceGrabberThread::StartRecorder(std::string pSaveFileName, int pQuality)

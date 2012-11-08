@@ -1291,6 +1291,7 @@ void VideoWidget::ToggleFullScreenMode()
             unsetCursor();
             LOG(LOG_VERBOSE, "Showing the mouse cursor again, current timeout is %d seconds", VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME);
         }
+        mMainWindow->setFocus(Qt::TabFocusReason);
     }else
     {
         setWindowFlags(windowFlags() | Qt::Window);
@@ -1520,9 +1521,17 @@ void VideoWidget::resizeEvent(QResizeEvent *pEvent)
 
 void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
 {
-	//LOG(LOG_VERBOSE, "Got video window key press event with key %s(%d, mod: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
+	LOG(LOG_VERBOSE, "Got video window key press event with key %s(%d, mod: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
 
-	if ((pEvent->key() == Qt::Key_Escape) && (windowState() & Qt::WindowFullScreen))
+    if ((pEvent->key() == Qt::Key_T) && (!pEvent->isAutoRepeat()))
+    {
+        // forward the event to the main widget
+        QCoreApplication::postEvent(mMainWindow, new QKeyEvent(QEvent::KeyPress, pEvent->key(), pEvent->modifiers(), pEvent->text()));
+
+        return;
+    }
+
+    if ((pEvent->key() == Qt::Key_Escape) && (windowState() & Qt::WindowFullScreen))
 	{
         setWindowFlags(windowFlags() ^ Qt::Window);
         showNormal();
@@ -1648,6 +1657,22 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
 	}
     pEvent->accept(); // otherwise we have endless loop because Qt would redirect the event back to the participant widget (its the parent widget!) andso on
 }
+
+void VideoWidget::keyReleaseEvent(QKeyEvent *pEvent)
+{
+    LOG(LOG_VERBOSE, "Got video window key release event with key %s(%d, mod: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
+
+    if ((pEvent->key() == Qt::Key_T) && (!pEvent->isAutoRepeat()))
+    {
+        // forward the event to the main widget
+        QCoreApplication::postEvent(mMainWindow, new QKeyEvent(QEvent::KeyRelease, pEvent->key(), pEvent->modifiers(), pEvent->text()));
+
+        return;
+    }
+
+    QWidget::keyReleaseEvent(pEvent);
+}
+
 void VideoWidget::mouseDoubleClickEvent(QMouseEvent *pEvent)
 {
     ToggleFullScreenMode();

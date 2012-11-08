@@ -63,6 +63,8 @@ StreamingControlWidget::StreamingControlWidget(ParticipantWidget* pBroadcastPart
     connect(mPbBroadcastVoice, SIGNAL(clicked()), this, SLOT(StartVoiceStreaming()));
     connect(mPbBroadcastFile, SIGNAL(clicked()), this, SLOT(StartFileStreaming()));
     connect(mCbVideoInput, SIGNAL(currentIndexChanged(int)), this, SLOT(SelectedNewVideoInputStream(int)));
+    connect(mCbVideoInput, SIGNAL(currentIndexChanged(int)), this, SLOT(SelectedNewVideoInputStream(int)));
+    connect(mTbPtt, SIGNAL(clicked(bool)), this, SLOT(SelectPushToTalkMode(bool)));
 
     mTimerId = startTimer(1000);
 }
@@ -94,6 +96,7 @@ void StreamingControlWidget::initializeGUI()
     {
         mCbVideoInput->setVisible(false);
     }
+    mTbPtt->setChecked(CONF.GetAudioActivationPushToTalk());
 }
 
 void StreamingControlWidget::StartScreenSegmentStreaming()
@@ -198,6 +201,15 @@ void StreamingControlWidget::SelectedNewVideoInputStream(int pIndex)
     LOG(LOG_VERBOSE, "User selected new video input stream: %d", pIndex);
     if (pIndex >= 0)
         mVideoWorker->SelectInputStream(pIndex);
+}
+
+void StreamingControlWidget::SelectPushToTalkMode(bool pActive)
+{
+    CONF.SetAudioActivationPushToTalk(pActive);
+    if (pActive)
+        mAudioWorker->SetRelayActivation(false);
+    else
+        mAudioWorker->SetRelayActivation(CONF.GetAudioActivation());
 }
 
 void StreamingControlWidget::timerEvent(QTimerEvent *pEvent)
