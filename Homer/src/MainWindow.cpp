@@ -142,7 +142,7 @@ MainWindow::MainWindow(QStringList pArguments, QString pAbsBinPath) :
     // audio playback - start sound
     #ifndef DEBUG_VERSION
         LOG(LOG_VERBOSE, "Playing start sound..");
-        OpenPlaybackDevice();
+        OpenPlaybackDevice("Start/stop");
         if (CONF.GetStartSound())
             StartAudioPlayback(CONF.GetStartSoundFile());
     #endif
