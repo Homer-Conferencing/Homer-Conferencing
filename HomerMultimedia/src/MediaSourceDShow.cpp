@@ -96,6 +96,7 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
     IEnumMoniker 			*tClassEnumerator = NULL;
     CLSID 					tClassId;
     bool					tDeviceIsVFW;
+    bool					tDeviceIsUsable;
     IBaseFilter				*tSource;
 	IPropertyBag 			*tPropertyBag;
 	IAMStreamConfig 		*tStreamConfig = NULL;
@@ -138,6 +139,7 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
 	// access video input device
 	while(tClassEnumerator->Next (1, &tMoniker, NULL) == S_OK)
 	{
+		tDeviceIsUsable = false;
 		memset(tDeviceName, 0, sizeof(tDeviceName));
 		memset(tDeviceDescription, 0, sizeof(tDeviceDescription));
 		memset(tDevicePath, 0, sizeof(tDevicePath));
@@ -208,98 +210,102 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
         }
 
         // enumerate all supported video resolutions
-        if (tFirstCall)
-        {
-			tRes = tSource->EnumPins(&tPinsEnum);
+		tRes = tSource->EnumPins(&tPinsEnum);
+		if (FAILED(tRes))
+		{
+			LOG(LOG_ERROR, "Could not enumerate pins");
+			tPropertyBag->Release();
+			break;
+		}
+
+		while (tPinsEnum->Next(1, &tPin, 0) == S_OK)
+		{
+			tRes = tPin->QueryDirection(&tPinDir);
 			if (FAILED(tRes))
 			{
-				LOG(LOG_ERROR, "Could not enumerate pins");
-				tPropertyBag->Release();
+				LOG(LOG_ERROR, "Could not query pin direction");
 				break;
 			}
 
-			while (tPinsEnum->Next(1, &tPin, 0) == S_OK)
+			if (tPinDir == PINDIR_OUTPUT)
 			{
-				tRes = tPin->QueryDirection(&tPinDir);
+				tRes = tPin->QueryInterface(IID_IAMStreamConfig, (void **)&tStreamConfig);
 				if (FAILED(tRes))
 				{
-					LOG(LOG_ERROR, "Could not query pin direction");
+					LOG(LOG_ERROR, "Could not query pin interface");
+					tPin->Release();
 					break;
 				}
 
-				if (tPinDir == PINDIR_OUTPUT)
+				int tCount, tSize;
+				tRes = tStreamConfig->GetNumberOfCapabilities( &tCount, &tSize);
+				LOG(LOG_VERBOSE, "Found %d capability entries", tCount);
+				if (FAILED(tRes))
 				{
-					tRes = tPin->QueryInterface(IID_IAMStreamConfig, (void **)&tStreamConfig);
+					LOG(LOG_ERROR, "Could not get number of caps");
+					tPin->Release();
+					break;
+				}
+
+				AM_MEDIA_TYPE *tMT;
+				BYTE *tCaps = new BYTE[tSize]; // VIDEO_STREAM_CONFIG_CAPS
+
+				for ( int i = 0; i < tCount; i++)
+				{
+					tRes = tStreamConfig->GetStreamCaps(i, &tMT, tCaps);
 					if (FAILED(tRes))
 					{
-						LOG(LOG_ERROR, "Could not query pin interface");
-						tPin->Release();
+						#ifdef MSDS_DEBUG_RESOLUTIONS
+							LOG(LOG_ERROR, "Could not get stream cap %d", i);
+						#endif
 						break;
 					}
 
-					int tCount, tSize;
-					tRes = tStreamConfig->GetNumberOfCapabilities( &tCount, &tSize);
-					LOG(LOG_VERBOSE, "Found %d capability entries", tCount);
-					if (FAILED(tRes))
+					if ((tMT->majortype == MEDIATYPE_Video) && (tMT->pbFormat !=0))
 					{
-						LOG(LOG_ERROR, "Could not get number of caps");
-						tPin->Release();
-						break;
-					}
-
-			    	AM_MEDIA_TYPE *tMT;
-			    	BYTE *tCaps = new BYTE[tSize]; // VIDEO_STREAM_CONFIG_CAPS
-
-			    	for ( int i = 0; i < tCount; i++)
-				    {
-			    		tRes = tStreamConfig->GetStreamCaps(i, &tMT, tCaps);
-						if (FAILED(tRes))
-						{
-							#ifdef MSDS_DEBUG_RESOLUTIONS
-								LOG(LOG_ERROR, "Could not get stream cap %d", i);
-							#endif
-							break;
-						}
-
-					    if ((tMT->majortype == MEDIATYPE_Video) && (tMT->pbFormat !=0))
-					    {
-					    	int tFormatType = -1;
-							int tWidth = -1;
-							int tHeight = -1;
-					    	if (tMT->formattype == FORMAT_VideoInfo)
-					    	{// VideoInfo
-					    		VIDEOINFOHEADER *tVInfoHeader = (VIDEOINFOHEADER*)tMT->pbFormat;
-								tWidth = tVInfoHeader->bmiHeader.biWidth;
-								tHeight = tVInfoHeader->bmiHeader.biHeight;
-								tFormatType = 1;
-					    	}else if (tMT->formattype == FORMAT_VideoInfo2)
-					    	{// VideoInfo2
-					    		VIDEOINFOHEADER2 *tVInfoHeader2 = (VIDEOINFOHEADER2*)tMT->pbFormat;
-								tWidth = tVInfoHeader2->bmiHeader.biWidth;
-								tHeight = tVInfoHeader2->bmiHeader.biHeight;
-								tFormatType = 2;
-					    	}else
-					    	{
-					    		LOG(LOG_WARN, "Unsupported format type detected: %s", GUID2String(tMT->formattype).c_str());
-					    	}
-
-							LOG(LOG_VERBOSE, "  ..supported media tyoe: Video, video info format: %d, video resolution: %d*%d (sub type: %s)", tFormatType, tWidth, tHeight, GetSubTypeName(tMT->subtype).c_str());
+						int tFormatType = -1;
+						int tWidth = -1;
+						int tHeight = -1;
+						if (tMT->formattype == FORMAT_VideoInfo)
+						{// VideoInfo
+							VIDEOINFOHEADER *tVInfoHeader = (VIDEOINFOHEADER*)tMT->pbFormat;
+							tWidth = tVInfoHeader->bmiHeader.biWidth;
+							tHeight = tVInfoHeader->bmiHeader.biHeight;
+							tFormatType = 1;
+						}else if (tMT->formattype == FORMAT_VideoInfo2)
+						{// VideoInfo2
+							VIDEOINFOHEADER2 *tVInfoHeader2 = (VIDEOINFOHEADER2*)tMT->pbFormat;
+							tWidth = tVInfoHeader2->bmiHeader.biWidth;
+							tHeight = tVInfoHeader2->bmiHeader.biHeight;
+							tFormatType = 2;
 						}else
 						{
-							LOG(LOG_VERBOSE, "  ..additional media type: %s", GetMediaTypeName(tMT->majortype).c_str());
+							if (tFirstCall)
+								LOG(LOG_WARN, "Unsupported format type detected: %s", GUID2String(tMT->formattype).c_str());
 						}
-				    }
-			    	delete [] tCaps;
+						tDeviceIsUsable = true;
+
+						if (tFirstCall)
+							LOG(LOG_VERBOSE, "  ..supported media tyoe: Video, video info format: %d, video resolution: %d*%d (sub type: %s)", tFormatType, tWidth, tHeight, GetSubTypeName(tMT->subtype).c_str());
+					}else
+					{
+						if (tFirstCall)
+							LOG(LOG_VERBOSE, "  ..additional media type: %s", GetMediaTypeName(tMT->majortype).c_str());
+					}
 				}
-				tPin->Release();
+				delete [] tCaps;
 			}
-			tPinsEnum->Release();
-        }
+			tPin->Release();
+		}
+		tPinsEnum->Release();
 
         //###############################################
 		//### finally add this device to the result list
 		//###############################################
-		pVList.push_back(tDevice);
+		if (tDeviceIsUsable)
+			pVList.push_back(tDevice);
+		else
+			LOG(LOG_WARN, "Ignoring device %s", tDevice.Name.c_str());
 
 		tPropertyBag->Release();
 		tMoniker->Release();
