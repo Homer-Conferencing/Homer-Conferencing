@@ -74,7 +74,7 @@ MediaSourceDShow::MediaSourceDShow(string pDesiredDevice):
     SelectDevice(pDesiredDevice, MEDIA_VIDEO, tNewDeviceSelected);
     if (!tNewDeviceSelected)
     {
-        LOG(LOG_INFO, "Haven't selected new vfw device when creating source object");
+        LOG(LOG_INFO, "Haven't selected new DirectShow device when creating source object");
     }
     LOG(LOG_VERBOSE, "Created");
 }
