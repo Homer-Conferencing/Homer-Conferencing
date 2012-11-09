@@ -742,7 +742,7 @@ void MainWindow::GotAnswerForVersionRequest(bool pError)
     {
         QString tServerVersion = QString(mHttpGetVersionServer->readAll().constData());
         if (tServerVersion != RELEASE_VERSION_STRING)
-            ShowInfo("Update available", "An updated version of Homer-Conferencing is available. Current version on server is <font color='green'><b>" + tServerVersion +"</b></font>. Have a look in the \"update check\" dialogue in the application menu.");
+            ShowInfo("Update available", "An updated version of Homer-Conferencing is available. Current version on server is <font color='green'><b>" + tServerVersion +"</b></font>. Have a look in the \"update check\" dialog in the application menu.");
     }
 }
 
@@ -1816,10 +1816,10 @@ void MainWindow::actionConfiguration()
         else
             mMediaSourcesControlWidget->SetVideoInputSelectionVisible(false);
 
-        // do an explicit auto probing of known contacts in case the user has activated this feature in the configuration dialogue
+        // do an explicit auto probing of known contacts in case the user has activated this feature in the configuration dialog
         if ((!tFormerStateMeetingProbeContacts) && (CONF.GetSipContactsProbing()))
         {
-            LOG(LOG_VERBOSE, "Do an explicit auto probing of known contacts because user has activated the auto-probing feature via confiuration dialogue");
+            LOG(LOG_VERBOSE, "Do an explicit auto probing of known contacts because user has activated the auto-probing feature via configuration dialog");
             CONTACTS.ProbeAvailabilityForAll();
         }
         MEETING.SetVideoAudioStartPort(CONF.GetVideoAudioStartPort());

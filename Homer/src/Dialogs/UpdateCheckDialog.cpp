@@ -144,7 +144,7 @@ void UpdateCheckDialog::DownloadStart()
 		return;
 	}
 
-	// create progress dialogue
+	// create progress dialog
 	mDownloadProgressDialog = new QProgressDialog(this);
 	mDownloadProgressDialog->setWindowTitle("Download progress");
 	mDownloadProgressDialog->setLabelText("<b>Downloading Homer archive</b>");
@@ -207,7 +207,7 @@ void UpdateCheckDialog::DownloadInstallerStart()
 		return;
 	}
 
-	// create progress dialogue
+	// create progress dialog
 	mDownloadProgressDialog = new QProgressDialog(this);
 	mDownloadProgressDialog->setWindowTitle("Download progress");
 	mDownloadProgressDialog->setLabelText("<b>Downloading Homer installer</b>");
