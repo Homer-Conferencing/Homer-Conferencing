@@ -29,7 +29,7 @@
 #define _MULTIMEDIA_HEADER_DIRECTSHOW_
 
 #if defined(WIN32)
-#pragma GCC system_header //suppress warnings from alsa
+#pragma GCC system_header
 
 ///////////////////////////////////////////////////////////////////////////////
 
