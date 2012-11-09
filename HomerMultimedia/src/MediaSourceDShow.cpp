@@ -42,15 +42,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <windows.h>
-#include <initguid.h>
-#include <objbase.h>
-#include <objidl.h>
-
-#define COM_NO_WINDOWS_H
-#include <oaidl.h>
-#include <ocidl.h>
-#include <winnls.h>
 #include <Header_DirectShow.h>
 
 namespace Homer { namespace Multimedia {

@@ -33,6 +33,18 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <windows.h>
+#include <initguid.h>
+#include <objbase.h>
+#include <objidl.h>
+
+#define COM_NO_WINDOWS_H
+#include <oaidl.h>
+#include <ocidl.h>
+#include <winnls.h>
+
+///////////////////////////////////////////////////////////////////////////////
+
 DEFINE_GUID( CLSID_VideoInputDeviceCategory, 0x860BB310, 0x5D01,
              0x11d0, 0xBD, 0x3B, 0x00, 0xA0, 0xC9, 0x11, 0xCE, 0x86);
 DEFINE_GUID( CLSID_SystemDeviceEnum, 0x62BE5D10, 0x60EB, 0x11d0,
