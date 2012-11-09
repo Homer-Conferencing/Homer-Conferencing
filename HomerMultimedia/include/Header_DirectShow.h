@@ -22,7 +22,7 @@
 /*
  * Purpose: header includes for alsa library
  * Author:  Thomas Volkert
- * Since:   2009-06-05
+ * Since:   2012-11-09
  */
 
 #ifndef _MULTIMEDIA_HEADER_DIRECTSHOW_
