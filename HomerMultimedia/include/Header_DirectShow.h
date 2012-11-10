@@ -75,6 +75,8 @@ DEFINE_GUID( CLSID_DVBCNetworkProvider, 0xdc0c0fe7, 0x485, 0x4266, 0xb9, 0x3f, 0
 DEFINE_GUID( IID_IBDA_Topology, 0x79B56888, 0x7FEA, 0x4690, 0xB4, 0x5D, 0x38, 0xFD, 0x3C, 0x78, 0x49, 0xBE);
 DEFINE_GUID( IID_IBDA_NetworkProvider, 0xfd501041, 0x8ebe, 0x11ce, 0x81, 0x83, 0x00, 0xaa, 0x00, 0x57, 0x7d, 0xa2);
 DEFINE_GUID( IID_IBDA_DeviceControl, 0xFD0A5AF3, 0xB41D, 0x11d2, 0x9C, 0x95, 0x00, 0xC0, 0x4F, 0x79, 0x71, 0xE0);
+DEFINE_GUID( IID_IBDA_DigitalDemodulator, 0xef30f379, 0x985b, 0x4d10, 0xb6, 0x40, 0xa7, 0x9d, 0x5e, 0x04, 0xe1, 0xe0);
+DEFINE_GUID( IID_IBDA_DigitalDemodulator2, 0x525ed3ee, 0x5cf3, 0x4e1e, 0x9a, 0x06, 0x53, 0x68, 0xa8, 0x4f, 0x9a, 0x6e);
 
 // BDA node categories
 DEFINE_GUID( KSNODE_BDA_RF_TUNER, 0x71985f4c, 0x1ca1, 0x11d3, 0x9c, 0xc8, 0x0, 0xc0, 0x4f, 0x79, 0x71, 0xe0);
@@ -86,6 +88,13 @@ DEFINE_GUID( KSNODE_BDA_OPENCABLE_POD, 0xd83ef8fc, 0xf3b8, 0x45ab, 0x8b, 0x71, 0
 DEFINE_GUID( KSNODE_BDA_COMMON_CA_POD, 0xd83ef8fc, 0xf3b8, 0x45ab, 0x8b, 0x71, 0xec, 0xf7, 0xc3, 0x39, 0xde, 0xb4);
 DEFINE_GUID( KSNODE_BDA_PID_FILTER, 0xf5412789, 0xb0a0, 0x44e1, 0xae, 0x4f, 0xee, 0x99, 0x9b, 0x1b, 0x7f, 0xbe);
 DEFINE_GUID( KSNODE_IP_SINK, 0x71985f4e, 0x1ca1, 0x11d3, 0x9c, 0xc8, 0x0, 0xc0, 0x4f, 0x79, 0x71, 0xe0);
+
+// BDA property sets
+DEFINE_GUID( KSPROPSETID_BdaFrequencyFilter, 0x71985f47, 0x1ca1, 0x11d3, 0x9c, 0xc8, 0x0, 0xc0, 0x4f, 0x79, 0x71, 0xe0);
+DEFINE_GUID( KSPROPSETID_BdaDigitalDemodulator, 0xef30f379, 0x985b, 0x4d10, 0xb6, 0x40, 0xa7, 0x9d, 0x5e, 0x4, 0xe1, 0xe0);
+
+// property interface
+DEFINE_GUID( IID_IKsPropertySet, 0x31efac30, 0x515c, 0x11d0, 0xa9, 0xaa, 0x00, 0xaa, 0x00, 0x61, 0xbe, 0x93);
 
 //  Uuids.h filter categories
 DEFINE_GUID( CLSID_VideoInputDeviceCategory, 0x860BB310, 0x5D01, 0x11d0, 0xBD, 0x3B, 0x00, 0xA0, 0xC9, 0x11, 0xCE, 0x86);
@@ -106,6 +115,8 @@ DEFINE_GUID( IID_IMediaEvent, 0x56a868b6, 0x0ad4, 0x11ce, 0xb0, 0x3a, 0x00, 0x20
 DEFINE_GUID( IID_IMediaControl, 0x56a868b1, 0x0ad4, 0x11ce, 0xb0, 0x3a, 0x00, 0x20, 0xaf, 0x0b, 0xa7, 0x70);
 DEFINE_GUID( IID_IAMStreamConfig, 0xc6e13340, 0x30ac, 0x11d0, 0xa1, 0x8c, 0x00, 0xa0, 0xc9, 0x11, 0x89, 0x56);
 DEFINE_GUID( IID_IVideoProcAmp, 0x4050560e, 0x42a7, 0x413a, 0x85, 0xc2, 0x09, 0x26, 0x9a, 0x2d, 0x0f, 0x44);
+DEFINE_GUID( IID_IFilterGraph, 0x56a8689f, 0x0ad4, 0x11ce, 0xb0, 0x3a, 0x00, 0x20, 0xaf, 0x0b, 0xa7, 0x70);
+DEFINE_GUID( IID_IFilterGraph2, 0x36b73882, 0xc2c8, 0x11cf, 0x8b, 0x46, 0x00, 0x80, 0x5f, 0x6c, 0xef, 0x60);
 
 // media types
 DEFINE_GUID( MEDIATYPE_Video, 0x73646976, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
@@ -424,7 +435,7 @@ DECLARE_INTERFACE_(ISampleGrabber,IUnknown)
 ////////////////////////////////////////////////////////////////////
 // definitions for BDA support
 
-// DirectX SDK: bdatypes.h
+// bdatypes.h
 typedef struct _BDANODE_DESCRIPTOR
 {
     ULONG ulBdaNodeType;
@@ -432,7 +443,7 @@ typedef struct _BDANODE_DESCRIPTOR
     GUID guidName;
 } BDANODE_DESCRIPTOR, *PBDANODE_DESCRIPTOR;
 
-// DirectX SDK: bdatypes.h
+// bdatypes.h
 typedef struct _BDA_TEMPLATE_CONNECTION
 {
     ULONG FromNodeType;
@@ -441,14 +452,14 @@ typedef struct _BDA_TEMPLATE_CONNECTION
     ULONG ToNodePinType;
 }BDA_TEMPLATE_CONNECTION, *PBDA_TEMPLATE_CONNECTION;
 
-// Windows SDK: strmif.h
+// strmif.h
 typedef struct {
 	CLSID clsMedium;
 	DWORD dw1;
 	DWORD dw2;
 } REGPINMEDIUM;
 
-// DirectX SDK: bdaiface.h
+// bdaiface.h
 MIDL_INTERFACE("79B56888-7FEA-4690-B45D-38FD3C7849BE")
 IBDA_Topology : public IUnknown
 {
@@ -505,6 +516,337 @@ public:
 		/* [out][in] */ IUnknown **ppControlNode) = 0;
 
 };
+
+// bdatypes.h
+typedef enum Polarisation {
+    BDA_POLARISATION_NOT_SET = -1,
+    BDA_POLARISATION_NOT_DEFINED = 0,
+    BDA_POLARISATION_LINEAR_H = 1, // Linear horizontal polarisation
+    BDA_POLARISATION_LINEAR_V, // Linear vertical polarisation
+    BDA_POLARISATION_CIRCULAR_L, // Circular left polarisation
+    BDA_POLARISATION_CIRCULAR_R, // Circular right polarisation
+    BDA_POLARISATION_MAX,
+} Polarisation;
+
+// bdaiface.h
+MIDL_INTERFACE("71985F47-1CA1-11d3-9CC8-00C04F7971E0")
+IBDA_FrequencyFilter : public IUnknown
+{
+public:
+    virtual HRESULT STDMETHODCALLTYPE put_Autotune(
+        /* [in] */ ULONG ulTransponder) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE get_Autotune(
+        /* [out][in] */ ULONG *pulTransponder) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE put_Frequency(
+        /* [in] */ ULONG ulFrequency) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE get_Frequency(
+        /* [out][in] */ ULONG *pulFrequency) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE put_Polarity(
+        /* [in] */ Polarisation Polarity) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE get_Polarity(
+        /* [out][in] */ Polarisation *pPolarity) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE put_Range(
+        /* [in] */ ULONG ulRange) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE get_Range(
+        /* [out][in] */ ULONG *pulRange) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE put_Bandwidth(
+        /* [in] */ ULONG ulBandwidth) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE get_Bandwidth(
+        /* [out][in] */ ULONG *pulBandwidth) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE put_FrequencyMultiplier(
+        /* [in] */ ULONG ulMultiplier) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE get_FrequencyMultiplier(
+        /* [out][in] */ ULONG *pulMultiplier) = 0;
+
+};
+
+// bdemedia.h
+typedef enum {
+    KSPROPERTY_BDA_MODULATION_TYPE = 0,
+    KSPROPERTY_BDA_INNER_FEC_TYPE,
+    KSPROPERTY_BDA_INNER_FEC_RATE,
+    KSPROPERTY_BDA_OUTER_FEC_TYPE,
+    KSPROPERTY_BDA_OUTER_FEC_RATE,
+    KSPROPERTY_BDA_SYMBOL_RATE,
+    KSPROPERTY_BDA_SPECTRAL_INVERSION,
+    KSPROPERTY_BDA_GUARD_INTERVAL,
+    KSPROPERTY_BDA_TRANSMISSION_MODE,
+    KSPROPERTY_BDA_ROLL_OFF,
+    KSPROPERTY_BDA_PILOT,
+    KSPROPERTY_BDA_SIGNALTIMEOUTS,
+    KSPROPERTY_BDA_PLP_NUMBER
+} KSPROPERTY_BDA_DIGITAL_DEMODULATOR;
+
+// bdatypes.h
+typedef enum ModulationType {
+    BDA_MOD_NOT_SET = -1,
+    BDA_MOD_NOT_DEFINED = 0,
+    BDA_MOD_16QAM = 1,
+    BDA_MOD_32QAM,
+    BDA_MOD_64QAM,
+    BDA_MOD_80QAM,
+    BDA_MOD_96QAM,
+    BDA_MOD_112QAM,
+    BDA_MOD_128QAM,
+    BDA_MOD_160QAM,
+    BDA_MOD_192QAM,
+    BDA_MOD_224QAM,
+    BDA_MOD_256QAM,
+    BDA_MOD_320QAM,
+    BDA_MOD_384QAM,
+    BDA_MOD_448QAM,
+    BDA_MOD_512QAM,
+    BDA_MOD_640QAM,
+    BDA_MOD_768QAM,
+    BDA_MOD_896QAM,
+    BDA_MOD_1024QAM,
+    BDA_MOD_QPSK,             // Quadrature Phase Shift Keying (including backwards compatible mode)
+    BDA_MOD_BPSK,             // Binary Phase Shift Keying
+    BDA_MOD_OQPSK,            // Offset QPSK
+    BDA_MOD_8VSB,             // 8-Level Vestigial Sideband
+    BDA_MOD_16VSB,            // 16-Level Vestigial Sideband
+    BDA_MOD_ANALOG_AMPLITUDE, // std am
+    BDA_MOD_ANALOG_FREQUENCY, // std fm
+    BDA_MOD_8PSK,             // 8 Phase Shift Keying (including backwards compatible mode)
+    BDA_MOD_RF, // analog TV (Video standards such as NTSC/PAL/SECAM specified in IAnalogLocator VideoStandard property)
+    BDA_MOD_16APSK,           // DVB-S2 modulation 16-Level APSK
+    BDA_MOD_32APSK,           // DVB-S2 modulation 32-Level APSK
+    BDA_MOD_NBC_QPSK,         // Non-Backwards Compatible Quadrature Phase Shift Keying
+    BDA_MOD_NBC_8PSK,         // Non-Backwards Compatible 8 Phase Shift Keying
+    BDA_MOD_DIRECTV,          // DIRECTV DSS
+    BDA_MOD_ISDB_T_TMCC,      // Automatic demodulation by Transmission and Multiplexing Configuration Control signal for ISDB-T
+    BDA_MOD_ISDB_S_TMCC,      // Automatic demodulation by Transmission and Multiplexing Configuration Control signal for ISDB-S
+    BDA_MOD_MAX,
+} ModulationType;
+
+// bdatypes.h
+typedef enum FECMethod {
+    BDA_FEC_METHOD_NOT_SET = -1,
+    BDA_FEC_METHOD_NOT_DEFINED = 0,
+    BDA_FEC_VITERBI = 1,    // FEC is a Viterbi Binary Convolution.
+    BDA_FEC_RS_204_188,     // The FEC is Reed-Solomon 204/188 (outer FEC)
+    BDA_FEC_LDPC,           // Low Density Parity Check error correction code
+    BDA_FEC_BCH,            // Bose-Chaudhuri-Hocquenghem multiple error correction binary block code
+    BDA_FEC_RS_147_130,     // The FEC is Reed-Solomon 147/130 (outer FEC) DirecTV-DSS
+    BDA_FEC_MAX,
+} FECMethod;
+
+// bdatypes.h
+typedef enum BinaryConvolutionCodeRate {
+    BDA_BCC_RATE_NOT_SET = -1,
+    BDA_BCC_RATE_NOT_DEFINED = 0,
+    BDA_BCC_RATE_1_2 = 1,   // 1/2
+    BDA_BCC_RATE_2_3,       // 2/3
+    BDA_BCC_RATE_3_4,       // 3/4
+    BDA_BCC_RATE_3_5,       // 3/5
+    BDA_BCC_RATE_4_5,       // 4/5
+    BDA_BCC_RATE_5_6,       // 5/6
+    BDA_BCC_RATE_5_11,      // 5/11
+    BDA_BCC_RATE_7_8,       // 7/8
+    BDA_BCC_RATE_1_4,       // 1/4
+    BDA_BCC_RATE_1_3,       // 1/3
+    BDA_BCC_RATE_2_5,       // 2/5
+    BDA_BCC_RATE_6_7,       // 6/7
+    BDA_BCC_RATE_8_9,       // 8/9
+    BDA_BCC_RATE_9_10,      // 9/10
+    BDA_BCC_RATE_MAX,
+} BinaryConvolutionCodeRate;
+
+// bdatypes.h
+typedef enum SpectralInversion {
+    BDA_SPECTRAL_INVERSION_NOT_SET = -1,
+    BDA_SPECTRAL_INVERSION_NOT_DEFINED = 0,
+    BDA_SPECTRAL_INVERSION_AUTOMATIC = 1,
+    BDA_SPECTRAL_INVERSION_NORMAL,
+    BDA_SPECTRAL_INVERSION_INVERTED,
+    BDA_SPECTRAL_INVERSION_MAX
+} SpectralInversion;
+
+// bdaiface.h
+MIDL_INTERFACE("EF30F379-985B-4d10-B640-A79D5E04E1E0")
+IBDA_DigitalDemodulator : public IUnknown
+{
+public:
+    virtual HRESULT STDMETHODCALLTYPE put_ModulationType(
+        /* [in] */ ModulationType *pModulationType) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE get_ModulationType(
+        /* [out][in] */ ModulationType *pModulationType) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE put_InnerFECMethod(
+        /* [in] */ FECMethod *pFECMethod) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE get_InnerFECMethod(
+        /* [out][in] */ FECMethod *pFECMethod) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE put_InnerFECRate(
+        /* [in] */ BinaryConvolutionCodeRate *pFECRate) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE get_InnerFECRate(
+        /* [out][in] */ BinaryConvolutionCodeRate *pFECRate) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE put_OuterFECMethod(
+        /* [in] */ FECMethod *pFECMethod) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE get_OuterFECMethod(
+        /* [out][in] */ FECMethod *pFECMethod) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE put_OuterFECRate(
+        /* [in] */ BinaryConvolutionCodeRate *pFECRate) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE get_OuterFECRate(
+        /* [out][in] */ BinaryConvolutionCodeRate *pFECRate) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE put_SymbolRate(
+        /* [in] */ ULONG *pSymbolRate) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE get_SymbolRate(
+        /* [out][in] */ ULONG *pSymbolRate) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE put_SpectralInversion(
+        /* [in] */ SpectralInversion *pSpectralInversion) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE get_SpectralInversion(
+        /* [out][in] */ SpectralInversion *pSpectralInversion) = 0;
+
+};
+
+// bdatypes.h
+typedef enum GuardInterval {
+    BDA_GUARD_NOT_SET = -1,
+    BDA_GUARD_NOT_DEFINED = 0,
+    BDA_GUARD_1_32 = 1, // Guard interval is 1/32
+    BDA_GUARD_1_16, // Guard interval is 1/16
+    BDA_GUARD_1_8, // Guard interval is 1/8
+    BDA_GUARD_1_4, // Guard interval is 1/4
+    BDA_GUARD_1_128, // Guard interval is 1/128 (DVB-T2)
+    BDA_GUARD_19_128, // Guard interval is 19/128 (DVB-T2)
+    BDA_GUARD_19_256, // Guard interval is 19/256 (DVB-T2)
+    BDA_GUARD_MAX,
+} GuardInterval;
+
+// bdatypes.h
+typedef enum HierarchyAlpha {
+    BDA_HALPHA_NOT_SET = -1,
+    BDA_HALPHA_NOT_DEFINED = 0,
+    BDA_HALPHA_1 = 1, // Hierarchy alpha is 1.
+    BDA_HALPHA_2, // Hierarchy alpha is 2.
+    BDA_HALPHA_4, // Hierarchy alpha is 4.
+    BDA_HALPHA_MAX,
+} HierarchyAlpha;
+
+// bdatypes.h
+typedef enum TransmissionMode {
+    BDA_XMIT_MODE_NOT_SET = -1,
+    BDA_XMIT_MODE_NOT_DEFINED = 0,
+    BDA_XMIT_MODE_2K = 1, // Transmission uses 1705 carriers (use a 2K FFT)
+    BDA_XMIT_MODE_8K,     // Transmission uses 6817 carriers (use an 8K FFT)
+    BDA_XMIT_MODE_4K,
+    BDA_XMIT_MODE_2K_INTERLEAVED,
+    BDA_XMIT_MODE_4K_INTERLEAVED,
+    BDA_XMIT_MODE_1K,    //DVB-T2 (use 1K FFT)
+    BDA_XMIT_MODE_16K,   //DVB-T2 (use 16K FFT)
+    BDA_XMIT_MODE_32K,   //DVB-T2 (use 32K FFT)
+    BDA_XMIT_MODE_MAX,
+} TransmissionMode;
+
+// bdatypes.h
+typedef enum RollOff {
+    BDA_ROLL_OFF_NOT_SET = -1,
+    BDA_ROLL_OFF_NOT_DEFINED = 0,
+    BDA_ROLL_OFF_20 = 1,         // .20 Roll Off (DVB-S2 Only)
+    BDA_ROLL_OFF_25,             // .25 Roll Off (DVB-S2 Only)
+    BDA_ROLL_OFF_35,             // .35 Roll Off (DVB-S2 Only)
+    BDA_ROLL_OFF_MAX,
+} RollOff;
+
+// bdatypes.h
+typedef enum Pilot {
+    BDA_PILOT_NOT_SET = -1,
+    BDA_PILOT_NOT_DEFINED = 0,
+    BDA_PILOT_OFF = 1,           // Pilot Off (DVB-S2 Only)
+    BDA_PILOT_ON,                // Pilot On  (DVB-S2 Only)
+    BDA_PILOT_MAX,
+} Pilot;
+
+// bdaiface.h
+MIDL_INTERFACE("525ED3EE-5CF3-4e1e-9A06-5368A84F9A6E")
+IBDA_DigitalDemodulator2 : public IBDA_DigitalDemodulator
+{
+public:
+    virtual HRESULT STDMETHODCALLTYPE put_GuardInterval(
+        /* [in] */ GuardInterval *pGuardInterval) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE get_GuardInterval(
+        /* [out][in] */ GuardInterval *pGuardInterval) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE put_TransmissionMode(
+        /* [in] */ TransmissionMode *pTransmissionMode) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE get_TransmissionMode(
+        /* [out][in] */ TransmissionMode *pTransmissionMode) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE put_RollOff(
+        /* [in] */ RollOff *pRollOff) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE get_RollOff(
+        /* [out][in] */ RollOff *pRollOff) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE put_Pilot(
+        /* [in] */ Pilot *pPilot) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE get_Pilot(
+        /* [out][in] */ Pilot *pPilot) = 0;
+
+};
+
+// Ks.h
+struct KSPROPERTY {
+  GUID  Set;
+  ULONG Id;
+  ULONG Flags;
+};
+
+// strmif.h
+MIDL_INTERFACE("31EFAC30-515C-11d0-A9AA-00AA0061BE93")
+IKsPropertySet : public IUnknown
+{
+public:
+    virtual /* [local] */ HRESULT STDMETHODCALLTYPE Set(
+        /* [in] */ REFGUID guidPropSet,
+        /* [in] */ DWORD dwPropID,
+        /* [size_is][in] */ LPVOID pInstanceData,
+        /* [in] */ DWORD cbInstanceData,
+        /* [size_is][in] */ LPVOID pPropData,
+        /* [in] */ DWORD cbPropData) = 0;
+
+    virtual /* [local] */ HRESULT STDMETHODCALLTYPE Get(
+        /* [in] */ REFGUID guidPropSet,
+        /* [in] */ DWORD dwPropID,
+        /* [size_is][in] */ LPVOID pInstanceData,
+        /* [in] */ DWORD cbInstanceData,
+        /* [size_is][out] */ LPVOID pPropData,
+        /* [in] */ DWORD cbPropData,
+        /* [out] */ DWORD *pcbReturned) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE QuerySupported(
+        /* [in] */ REFGUID guidPropSet,
+        /* [in] */ DWORD dwPropID,
+        /* [out] */ DWORD *pTypeSupport) = 0;
+
+};
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
