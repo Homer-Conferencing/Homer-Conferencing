@@ -49,6 +49,10 @@ extern "C" {
 #include <libavdevice/avdevice.h>
 }
 
+#ifndef AV_NUM_DATA_POINTERS
+#define AV_NUM_DATA_POINTERS 			4 // old value was 4, later "AV_NUM_DATA_POINTERS" was introduced
+#endif
+
 #ifndef CODEC_FLAG2_SHOW_ALL
 #define CODEC_FLAG2_SHOW_ALL      0x00400000 ///< Show all frames before the first keyframe
 #endif
