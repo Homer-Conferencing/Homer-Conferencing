@@ -547,12 +547,12 @@ QStringList AudioWidget::GetAudioStatistic()
     //############################################
 	//### Line 3: audio codec and sample rate
     QString tLine_Codec = "";
-    tLine_Codec = "Source codec: " + QString((mAudioSource->GetCodecName() != "") ? mAudioSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(mAudioSource->GetInputSampleRate()) + " Hz)";
+    tLine_Codec = "Source codec: " + QString((mAudioSource->GetCodecName() != "") ? mAudioSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(mAudioSource->GetInputSampleRate()) + " Hz, " + QString("%1").arg(mAudioSource->GetInputChannels())+ " channels)";
 
     //############################################
 	//### Line 4: audio output
     QString tLine_Output = "";
-    tLine_Output = "Playback: " + QString("%1").arg(AUDIO_OUTPUT_SAMPLE_RATE) + " Hz";
+    tLine_Output = "Playback: " + QString("%1").arg(AUDIO_OUTPUT_SAMPLE_RATE) + " Hz, 2 channels";
 
     //############################################
     //### Line 5: current position within file
@@ -569,7 +569,7 @@ QStringList AudioWidget::GetAudioStatistic()
     int tMuxResX = 0, tMuxResY = 0;
     mAudioSource->GetMuxingResolution(tMuxResX, tMuxResY);
     if (mAudioSource->SupportsMuxing())
-        tLine_Muxer = "Streaming codec: " + ((tMuxCodecName != "") ? tMuxCodecName : "unknown") + (mAudioSource->GetMuxingBufferCounter() ? (" (" + QString("%1").arg(mAudioSource->GetMuxingBufferCounter()) + "/" + QString("%1").arg(mAudioSource->GetMuxingBufferSize()) + " buffered frames)") : "") + " (" + QString("%1").arg(mAudioSource->GetOutputSampleRate()) + " Hz)";;
+        tLine_Muxer = "Streaming codec: " + ((tMuxCodecName != "") ? tMuxCodecName : "unknown") + (mAudioSource->GetMuxingBufferCounter() ? (" (" + QString("%1").arg(mAudioSource->GetMuxingBufferCounter()) + "/" + QString("%1").arg(mAudioSource->GetMuxingBufferSize()) + " buffered frames)") : "") + " (" + QString("%1").arg(mAudioSource->GetOutputSampleRate()) + " Hz, " + QString("%1").arg(mAudioSource->GetOutputChannels())+ " channels)";
 
     //############################################
     //### Line 7: network peer
