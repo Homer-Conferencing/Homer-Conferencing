@@ -60,7 +60,7 @@ using namespace Homer::Monitor;
 #define MSF_USE_REORDERED_PTS                              0 // on/off
 
 // how many bytes should be delivered towards grabbing application per request?
-#define MSF_DESIRED_AUDIO_INPUT_SIZE                    2 /* 16 signed int */ * 1024 /* samples */ * 2 /* channels */
+#define MSF_DESIRED_AUDIO_INPUT_SIZE                    2 /* 16 signed int */ * MEDIA_SOURCE_SAMPLES_PER_BUFFER /* samples */ * 2 /* channels */
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1863,6 +1863,9 @@ void MediaSourceFile::WaitForRTGrabbing()
 
 void MediaSourceFile::WriteOutputBuffer(char* pBuffer, int pBufferSize, int64_t pPts)
 {
+	if (mDecoderFifo == NULL)
+		LOG(LOG_ERROR, "Invalid decoder FIFO");
+
 	// write A/V data to output FIFO
 	mDecoderFifo->WriteFifo(pBuffer, pBufferSize);
 
@@ -1872,25 +1875,14 @@ void MediaSourceFile::WriteOutputBuffer(char* pBuffer, int pBufferSize, int64_t 
     mDecoderMetaDataFifo->WriteFifo((char*) &tChunkDesc, sizeof(tChunkDesc));
 
     // update pre-buffer time value
-	#ifdef MSF_DEBUG_TIMING
-		LOG(LOG_VERBOSE, "Updating pre-buffer time value");
-	#endif
-	float tBufferSize = mDecoderFifo->GetUsage();
-	switch(mMediaType)
-	{
-		case MEDIA_VIDEO:
-			//LOG(LOG_VERBOSE, "Buffer usage after reading: %f", tBufferSize);
-			mDecoderBufferTime = tBufferSize / mRealFrameRate;
-			break;
-		case MEDIA_AUDIO:
-			break;
-		default:
-			break;
-	}
+    UpdatePreBufferTime();
 }
 
 void MediaSourceFile::ReadOutputBuffer(char *pBuffer, int &pBufferSize, int64_t &pPts)
 {
+	if (mDecoderFifo == NULL)
+		LOG(LOG_ERROR, "Invalid decoder FIFO");
+
 	// read A/V data from output FIFO
 	mDecoderFifo->ReadFifo(pBuffer, pBufferSize);
 
@@ -1903,10 +1895,17 @@ void MediaSourceFile::ReadOutputBuffer(char *pBuffer, int &pBufferSize, int64_t 
         LOG(LOG_ERROR, "Read from FIFO a chunk with wrong size of %d bytes, expected size is %d bytes", tChunkDescSize, sizeof(tChunkDesc));
 
     // update pre-buffer time value
+    UpdatePreBufferTime();
+}
+
+void MediaSourceFile::UpdatePreBufferTime()
+{
 	#ifdef MSF_DEBUG_TIMING
 		LOG(LOG_VERBOSE, "Updating pre-buffer time value");
 	#endif
+
 	float tBufferSize = mDecoderFifo->GetUsage();
+
 	switch(mMediaType)
 	{
 		case MEDIA_VIDEO:
@@ -1914,6 +1913,7 @@ void MediaSourceFile::ReadOutputBuffer(char *pBuffer, int &pBufferSize, int64_t 
 			mDecoderBufferTime = tBufferSize / mRealFrameRate;
 			break;
 		case MEDIA_AUDIO:
+			mDecoderBufferTime = tBufferSize * MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 */ / mOutputAudioSampleRate;
 			break;
 		default:
 			break;

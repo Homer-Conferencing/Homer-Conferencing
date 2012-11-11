@@ -102,6 +102,10 @@ protected:
 
     virtual bool InputIsPicture();
 
+    /* FIFO helpers */
+    void WriteOutputBuffer(char* pBuffer, int pBufferSize, int64_t pPts);
+    void ReadOutputBuffer(char *pBuffer, int &pBufferSize, int64_t &pPts);
+
 private:
     /* decoder */
     virtual void* Run(void* pArgs = NULL); // transcoder main loop
@@ -114,10 +118,6 @@ private:
 
     /* pre-buffering */
     void UpdatePreBufferTime();
-
-    /* FIFO helpers */
-    void WriteOutputBuffer(char* pBuffer, int pBufferSize, int64_t pPts);
-    void ReadOutputBuffer(char *pBuffer, int &pBufferSize, int64_t &pPts);
 
     /* decoding */
     bool                mUseFilePTS;
