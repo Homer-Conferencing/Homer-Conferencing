@@ -771,7 +771,7 @@ int MediaSource::GetOutputSampleRate()
     return mOutputAudioSampleRate;
 }
 
-bool MediaSource::GetOutputChannels()
+int MediaSource::GetOutputChannels()
 {
 	return mOutputAudioChannels;
 }
@@ -781,7 +781,7 @@ int MediaSource::GetInputSampleRate()
     return mInputAudioSampleRate;
 }
 
-bool MediaSource::GetInputChannels()
+int MediaSource::GetInputChannels()
 {
 	return mInputAudioChannels;
 }

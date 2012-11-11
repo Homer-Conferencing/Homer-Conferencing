@@ -77,9 +77,9 @@ public:
 
     /* audio */
     virtual int GetOutputSampleRate();
-    virtual bool GetOutputChannels();
+    virtual int GetOutputChannels();
     virtual int GetInputSampleRate();
-    virtual bool GetInputChannels();
+    virtual int GetInputChannels();
 
     /* video */
     virtual float GetFrameRate();

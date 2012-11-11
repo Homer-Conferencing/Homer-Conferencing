@@ -213,9 +213,9 @@ public:
     /* audio */
     static int AudioQuality2BitRate(int pQuality);
     virtual int GetOutputSampleRate();
-    virtual bool GetOutputChannels();
+    virtual int GetOutputChannels();
     virtual int GetInputSampleRate();
-    virtual bool GetInputChannels();
+    virtual int GetInputChannels();
 
     /* video */
     static AVFrame *AllocFrame();

@@ -2331,7 +2331,7 @@ int MediaSourceMuxer::GetOutputSampleRate()
     return mOutputAudioSampleRate;
 }
 
-bool MediaSourceMuxer::GetOutputChannels()
+int MediaSourceMuxer::GetOutputChannels()
 {
     return mOutputAudioChannels;
 }
@@ -2344,10 +2344,10 @@ int MediaSourceMuxer::GetInputSampleRate()
         return 0;
 }
 
-bool MediaSourceMuxer::GetInputChannels()
+int MediaSourceMuxer::GetInputChannels()
 {
     if (mMediaSource != NULL)
-        return mMediaSource->GetInputChannels();
+    	return mMediaSource->GetInputChannels();
     else
         return 0;
 }
