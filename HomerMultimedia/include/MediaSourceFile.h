@@ -87,6 +87,9 @@ public:
     virtual std::string CurrentInputStream();
     virtual std::vector<std::string> GetInputStreams();
 
+    virtual int GetFrameBufferCounter();
+    virtual int GetFrameBufferSize();
+
 public:
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97);
     virtual bool OpenAudioGrabDevice(int pSampleRate = 44100, int pChannels = 2);
@@ -108,6 +111,13 @@ private:
     /* real-time playback */
     void CalibrateRTGrabbing();
     void WaitForRTGrabbing();
+
+    /* pre-buffering */
+    void UpdatePreBufferTime();
+
+    /* FIFO helpers */
+    void WriteOutputBuffer(char* pBuffer, int pBufferSize, int64_t pPts);
+    void ReadOutputBuffer(char *pBuffer, int &pBufferSize, int64_t &pPts);
 
     /* decoding */
     bool                mUseFilePTS;

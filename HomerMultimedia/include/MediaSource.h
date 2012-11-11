@@ -246,6 +246,10 @@ public:
     virtual int GetChunkDropCounter(); // how many chunks were dropped?
     virtual int GetFragmentBufferCounter(); // how many fragments are currently buffered?
     virtual int GetFragmentBufferSize(); // how many fragments can be buffered?
+    /* frame pre-buffering */
+    virtual float GetFrameBufferTime();
+    virtual int GetFrameBufferCounter();
+    virtual int GetFrameBufferSize();
 
     /* simple relaying WITHOUT any reencoding functionality but WITH rtp support*/
 	// register/unregister: Berkeley sockets based media sinks
@@ -395,12 +399,15 @@ protected:
     int                 mSourceResY;
     int                 mTargetResX;
     int                 mTargetResY;
-    float               mFrameRate;
+    float               mFrameRate; // ffmpeg internal referen frame rate
+    float 				mRealFrameRate; // presentation frame rate
     SwsContext          *mScalerContext;
     /* frame stats */
     int64_t             mDecodedIFrames;
     int64_t             mDecodedPFrames;
     int64_t             mDecodedBFrames;
+    /* frame pre-buffering */
+    float				mDecoderBufferTime; // current pre-buffer length
     /* live OSD marking */
     float               mMarkerRelX;
     float               mMarkerRelY;

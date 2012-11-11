@@ -118,6 +118,10 @@ public:
     virtual bool SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset = false);
     virtual int GetChunkDropCounter();
     virtual int GetChunkBufferCounter();
+    /* frame pre-buffering */
+    virtual float GetFrameBufferTime();
+    virtual int GetFrameBufferCounter();
+    virtual int GetFrameBufferSize();
 
     /* recording control */
     virtual bool StartRecording(std::string pSaveFileName, int pSaveFileQuality = 10, bool pRealTime = true /* 1 = frame rate emulation, 0 = no pts adaption */);

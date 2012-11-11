@@ -44,8 +44,8 @@ using namespace Homer::Monitor;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define MEDIA_SOURCE_FILE_QUEUE_FOR_VIDEO                  8 // in frames (each max. 16 MB for HDTV, one entry is reserved for 0-byte signaling)
-#define MEDIA_SOURCE_FILE_QUEUE_FOR_AUDIO                 32 // in audio sample blocks (each about 192 kB)
+#define MEDIA_SOURCE_FILE_QUEUE_FOR_VIDEO                 30 // in frames (each max. 16 MB for HDTV, one entry is reserved for 0-byte signaling)
+#define MEDIA_SOURCE_FILE_QUEUE_FOR_AUDIO                 128 // in audio sample blocks (each about 192 kB)
 
 // 33 ms delay for 30 fps -> rounded to 35 ms
 #define MSF_FRAME_DROP_THRESHOLD                           0 //in us, 0 deactivates frame dropping
@@ -356,7 +356,9 @@ bool MediaSourceFile::CloseGrabDevice()
 
 int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk)
 {
-    #if defined(MSF_DEBUG_PACKETS) || defined(MSF_DEBUG_DECODER_STATE)
+	int64_t tCurrentFramePts;
+
+	#if defined(MSF_DEBUG_PACKETS) || defined(MSF_DEBUG_DECODER_STATE)
         LOG(LOG_VERBOSE, "Going to grab new chunk");
     #endif
 
@@ -446,8 +448,12 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
 
         // read chunk data from FIFO
         if (mDecoderFifo != NULL)
-            mDecoderFifo->ReadFifo((char*)pChunkBuffer, pChunkSize);
-        else
+        {
+        	ReadOutputBuffer((char*)pChunkBuffer, pChunkSize, tCurrentFramePts);
+			#ifdef MSF_DEBUG_TIMING
+        		LOG(LOG_VERBOSE, "REmaining buffered frames: %d", tAvailableFrames);
+			#endif
+        }else
         {// decoder thread not started
             // unlock grabbing
             mGrabMutex.unlock();
@@ -477,16 +483,6 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
             LOG(LOG_VERBOSE, "Grabbed chunk %d of size %d from decoder FIFO", mChunkNumber, pChunkSize);
         #endif
 
-        // read meta description about current chunk from different FIFO
-        struct ChunkDescriptor tChunkDesc;
-        int tChunkDescSize = sizeof(tChunkDesc);
-        mDecoderMetaDataFifo->ReadFifo((char*)&tChunkDesc, tChunkDescSize);
-        #ifdef MSF_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "Grabbed meta data of size %d for chunk with pts %ld", tChunkDescSize, tChunkDesc.Pts);
-        #endif
-        if (tChunkDescSize != sizeof(tChunkDesc))
-            LOG(LOG_ERROR, "Read from FIFO a chunk with wrong size of %d bytes, expected size is %d bytes", tChunkDescSize, sizeof(tChunkDesc));
-
         if ((mSeekingTargetFrameIndex != 0) && (mCurrentFrameIndex < mSeekingTargetFrameIndex))
         {
             LOG(LOG_VERBOSE, "Dropping grabbed %s frame %.2f because we are still waiting for frame %.2f", GetMediaTypeStr().c_str(), (float)mCurrentFrameIndex, mSeekingTargetFrameIndex);
@@ -499,13 +495,13 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
 			#ifdef MSF_DEBUG_PACKETS
         		LOG(LOG_VERBOSE, "Setting current frame index to %ld", tChunkDesc.Pts);
 			#endif
-			mCurrentFrameIndex = tChunkDesc.Pts;
+			mCurrentFrameIndex = tCurrentFramePts;
         }
 
         // EOF
-        if ((tChunkDesc.Pts - mSourceStartPts >= mNumberOfFrames) && (mNumberOfFrames != 0))
+        if ((tCurrentFramePts - mSourceStartPts >= mNumberOfFrames) && (mNumberOfFrames != 0))
         {
-            LOG(LOG_VERBOSE, "Returning EOF in %s file because PTS value %ld is bigger than or equal to maximum %.2f", GetMediaTypeStr().c_str(), tChunkDesc.Pts - mSourceStartPts, (float)mNumberOfFrames);
+            LOG(LOG_VERBOSE, "Returning EOF in %s file because PTS value %ld is bigger than or equal to maximum %.2f", GetMediaTypeStr().c_str(), tCurrentFramePts - mSourceStartPts, (float)mNumberOfFrames);
             mEOFReached = true;
             tShouldGrabNext = false;
         }
@@ -1272,12 +1268,8 @@ void* MediaSourceFile::Run(void* pArgs)
 										#ifdef MSF_DEBUG_PACKETS
 											LOG(LOG_VERBOSE, "Writing %d %s bytes at %p to FIFO with PTS %ld", tCurrentChunkSize, GetMediaTypeStr().c_str(), tChunkBuffer, tCurFramePts);
 										#endif
-                                        mDecoderFifo->WriteFifo((char*)tChunkBuffer, tCurrentChunkSize);
-                                        // add meta description about current chunk to different FIFO
-                                        struct ChunkDescriptor tChunkDesc;
-                                        tChunkDesc.Pts = tCurFramePts;
+										WriteOutputBuffer((char*)tChunkBuffer, tCurrentChunkSize, tCurFramePts);
                                         tCurFramePts++;
-                                        mDecoderMetaDataFifo->WriteFifo((char*) &tChunkDesc, sizeof(tChunkDesc));
                                         #ifdef MSF_DEBUG_PACKETS
                                             LOG(LOG_VERBOSE, "Successful audio buffer loop");
                                         #endif
@@ -1286,6 +1278,8 @@ void* MediaSourceFile::Run(void* pArgs)
                                         LOG(LOG_ERROR, "Cannot write a %s chunk of %d bytes to the FIFO with %d bytes slots", GetMediaTypeStr().c_str(),  tCurrentChunkSize, mDecoderFifo->GetEntrySize());
                                     }
                                 }
+
+                                // reset chunk size to avoid additional writes to output FIFO because we already stored all valid audio buffers in output FIFO
                                 tCurrentChunkSize = 0;
                                 #ifdef MSF_DEBUG_PACKETS
                                     if (tLoops > 1)
@@ -1312,7 +1306,8 @@ void* MediaSourceFile::Run(void* pArgs)
 
                 }
 
-                // do we have a prepared data chunk which can be delivered towards grabbing application?
+                //HINT: usually audio buffers were already written to output FIFO within the audio switch-case-branch
+                // do we still have a prepared data chunk which can be delivered towards grabbing application?
                 if ((tCurrentChunkSize > 0) && (!mEOFReached))
                 {// no error
                     // add new chunk to FIFO
@@ -1321,11 +1316,7 @@ void* MediaSourceFile::Run(void* pArgs)
                     #endif
                     if (tCurrentChunkSize <= mDecoderFifo->GetEntrySize())
                     {
-                        mDecoderFifo->WriteFifo((char*)tChunkBuffer, tCurrentChunkSize);
-                        // add meta description about current chunk to different FIFO
-                        struct ChunkDescriptor tChunkDesc;
-                        tChunkDesc.Pts = tCurFramePts;
-                        mDecoderMetaDataFifo->WriteFifo((char*) &tChunkDesc, sizeof(tChunkDesc));
+                    	WriteOutputBuffer((char*)tChunkBuffer, tCurrentChunkSize, tCurFramePts);
                         #ifdef MSF_DEBUG_PACKETS
                             LOG(LOG_VERBOSE, "Successful decoder loop");
                         #endif
@@ -1345,13 +1336,9 @@ void* MediaSourceFile::Run(void* pArgs)
                 #ifdef MSF_DEBUG_PACKETS
                     LOG(LOG_VERBOSE, "EOF reached, writing empty chunk to %s file decoder FIFO", GetMediaTypeStr().c_str());
                 #endif
-                char tData[4];
-                mDecoderFifo->WriteFifo(tData, 0);
 
-                // add meta description about current chunk to different FIFO
-                struct ChunkDescriptor tChunkDesc;
-                tChunkDesc.Pts = 0;
-                mDecoderMetaDataFifo->WriteFifo((char*) &tChunkDesc, sizeof(tChunkDesc));
+				char tData[4];
+                WriteOutputBuffer(tData, 0, 0);
 
                 // time to sleep
                 #ifdef MSF_DEBUG_DECODER_STATE
@@ -1828,6 +1815,16 @@ void MediaSourceFile::CalibrateRTGrabbing()
     #endif
 }
 
+int MediaSourceFile::GetFrameBufferCounter()
+{
+	return mDecoderFifo->GetUsage();
+}
+
+int MediaSourceFile::GetFrameBufferSize()
+{
+	return mDecoderFifo->GetSize();
+}
+
 void MediaSourceFile::WaitForRTGrabbing()
 {
     float tRelativePacketTimeUSecs, tRelativeRealTimeUSecs, tDiffPtsUSecs;
@@ -1856,6 +1853,65 @@ void MediaSourceFile::WaitForRTGrabbing()
                 LOG(LOG_VERBOSE, "System too slow?, %s-grabbing is %.2f ms too late", GetMediaTypeStr().c_str(), tDiffPtsUSecs / (-1000));
         #endif
     }
+}
+
+void MediaSourceFile::WriteOutputBuffer(char* pBuffer, int pBufferSize, int64_t pPts)
+{
+	// write A/V data to output FIFO
+	mDecoderFifo->WriteFifo(pBuffer, pBufferSize);
+
+	// add meta description about current chunk to different FIFO
+    struct ChunkDescriptor tChunkDesc;
+    tChunkDesc.Pts = pPts;
+    mDecoderMetaDataFifo->WriteFifo((char*) &tChunkDesc, sizeof(tChunkDesc));
+
+    // update pre-buffer time value
+	#ifdef MSF_DEBUG_TIMING
+		LOG(LOG_VERBOSE, "Updating pre-buffer time value");
+	#endif
+	float tBufferSize = mDecoderFifo->GetUsage();
+	switch(mMediaType)
+	{
+		case MEDIA_VIDEO:
+			//LOG(LOG_VERBOSE, "Buffer usage after reading: %f", tBufferSize);
+			mDecoderBufferTime = tBufferSize / mRealFrameRate;
+			break;
+		case MEDIA_AUDIO:
+			break;
+		default:
+			break;
+	}
+}
+
+void MediaSourceFile::ReadOutputBuffer(char *pBuffer, int &pBufferSize, int64_t &pPts)
+{
+	// read A/V data from output FIFO
+	mDecoderFifo->ReadFifo(pBuffer, pBufferSize);
+
+    // read meta description about current chunk from different FIFO
+    struct ChunkDescriptor tChunkDesc;
+    int tChunkDescSize = sizeof(tChunkDesc);
+    mDecoderMetaDataFifo->ReadFifo((char*)&tChunkDesc, tChunkDescSize);
+    pPts = tChunkDesc.Pts;
+    if (tChunkDescSize != sizeof(tChunkDesc))
+        LOG(LOG_ERROR, "Read from FIFO a chunk with wrong size of %d bytes, expected size is %d bytes", tChunkDescSize, sizeof(tChunkDesc));
+
+    // update pre-buffer time value
+	#ifdef MSF_DEBUG_TIMING
+		LOG(LOG_VERBOSE, "Updating pre-buffer time value");
+	#endif
+	float tBufferSize = mDecoderFifo->GetUsage();
+	switch(mMediaType)
+	{
+		case MEDIA_VIDEO:
+			//LOG(LOG_VERBOSE, "Buffer usage after reading: %f", tBufferSize);
+			mDecoderBufferTime = tBufferSize / mRealFrameRate;
+			break;
+		case MEDIA_AUDIO:
+			break;
+		default:
+			break;
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////

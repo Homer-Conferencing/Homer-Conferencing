@@ -1713,6 +1713,30 @@ int64_t MediaSourceMuxer::DecodedBFrames()
         return mDecodedBFrames;
 }
 
+float MediaSourceMuxer::GetFrameBufferTime()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->GetFrameBufferTime();
+    else
+        return mDecoderBufferTime;
+}
+
+int MediaSourceMuxer::GetFrameBufferCounter()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->GetFrameBufferCounter();
+    else
+        return mDecoderBufferTime;
+}
+
+int MediaSourceMuxer::GetFrameBufferSize()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->GetFrameBufferSize();
+    else
+        return mDecoderBufferTime;
+}
+
 void MediaSourceMuxer::SetVideoGrabResolution(int pResX, int pResY)
 {
     if (mMediaType == MEDIA_AUDIO)

@@ -918,6 +918,21 @@ int64_t MediaSource::DecodedBFrames()
     return mDecodedBFrames;
 }
 
+float MediaSource::GetFrameBufferTime()
+{
+	return mDecoderBufferTime;
+}
+
+int MediaSource::GetFrameBufferCounter()
+{
+	return 0;
+}
+
+ int MediaSource::GetFrameBufferSize()
+ {
+	 return 0 ;
+ }
+
 void MediaSource::DoSetVideoGrabResolution(int pResX, int pResY)
 {
     CloseGrabDevice();
@@ -2617,6 +2632,7 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     //######################################################
     FpsEmulationInit();
     mChunkNumber = 0;
+    mDecoderBufferTime = 0;
     mChunkDropCounter = 0;
     mLastGrabFailureReason = "";
     mLastGrabResultWasError = false;
@@ -2898,6 +2914,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 
     // derive the FPS from the timebase of the selected input stream
     mFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->time_base.den / mFormatContext->streams[mMediaStreamIndex]->time_base.num;
+    mRealFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num / mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den;
 
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected frame rate: %f", mFrameRate);
 

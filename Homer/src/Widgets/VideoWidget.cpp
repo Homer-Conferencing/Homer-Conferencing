@@ -907,6 +907,13 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
             tLine_Frame += " (" + QString("%1*i,").arg(mVideoSource->DecodedIFrames()) + QString("%1*p,").arg(mVideoSource->DecodedPFrames()) + QString("%1*b").arg(mVideoSource->DecodedBFrames()) + ")";
         tLine_Frame += (mVideoSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropCounter()) + " lost packets)") : "") + (mVideoSource->GetFragmentBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetFragmentBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetFragmentBufferSize()) + " buffered packets)") : "");
 
+        // FPS and pre-buffer time
+        float tBufferTime = mVideoSource->GetFrameBufferTime();
+        QString tLine_Fps = "";
+        tLine_Fps = " Fps: " + QString("%1").arg(pFps, 4, 'f', 2, ' ');
+        if (tBufferTime >= 0.01)
+        	tLine_Fps += " (" + QString("%1").arg(mVideoSource->GetFrameBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetFrameBufferSize()) + ", " + QString("%1").arg(tBufferTime, 2, 'f', 2, (QLatin1Char)' ') + "s buffered)";
+
         // OSD about current video codec
         QString tLine_Codec;
         tLine_Codec = " Codec: " + ((tCodecName != "") ? tCodecName : "unknown") + " (" + QString("%1").arg(tSourceResX) + "*" + QString("%1").arg(tSourceResY) + ")";
@@ -968,7 +975,7 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
         tPainter->setPen(QColor(Qt::darkRed));
         tPainter->drawText(5, 41, " Source: " + mVideoWorker->GetCurrentDevice());
         tPainter->drawText(5, 61, tLine_Frame);
-        tPainter->drawText(5, 81, " Fps: " + QString("%1").arg(pFps, 4, 'f', 2, ' '));
+        tPainter->drawText(5, 81, tLine_Fps);
         tPainter->drawText(5, 101, tLine_Codec);
         tPainter->drawText(5, 121, tLine_Output);
         int tMuxOutputOffs = 0;
@@ -999,7 +1006,7 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
         tPainter->setPen(QColor(Qt::red));
         tPainter->drawText(4, 40, " Source: " + mVideoWorker->GetCurrentDevice());
         tPainter->drawText(4, 60, tLine_Frame);
-        tPainter->drawText(4, 80, " Fps: " + QString("%1").arg(pFps, 4, 'f', 2, ' '));
+        tPainter->drawText(4, 80, tLine_Fps);
         tPainter->drawText(4, 100, tLine_Codec);
         tPainter->drawText(4, 120, tLine_Output);
         if (mVideoSource->SupportsSeeking())
