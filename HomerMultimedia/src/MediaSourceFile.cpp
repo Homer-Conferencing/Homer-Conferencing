@@ -1817,12 +1817,18 @@ void MediaSourceFile::CalibrateRTGrabbing()
 
 int MediaSourceFile::GetFrameBufferCounter()
 {
-	return mDecoderFifo->GetUsage();
+	if (mDecoderFifo != NULL)
+		return mDecoderFifo->GetUsage();
+	else
+		return 0;
 }
 
 int MediaSourceFile::GetFrameBufferSize()
 {
-	return mDecoderFifo->GetSize();
+	if (mDecoderFifo != NULL)
+		return mDecoderFifo->GetSize();
+	else
+		return 0;
 }
 
 void MediaSourceFile::WaitForRTGrabbing()
