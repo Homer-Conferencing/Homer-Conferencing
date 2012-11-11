@@ -45,6 +45,7 @@
 #include <QKeyEvent>
 #include <QMainWindow>
 #include <QFocusEvent>
+#include <QStringList>
 
 #include <MediaSource.h>
 #include <MeetingEvents.h>
@@ -113,6 +114,8 @@ public:
 
     VideoWorkerThread* GetWorker();
 
+    QStringList GetVideoStatistic();
+
 public slots:
     void ToggleVisibility();
 
@@ -121,7 +124,7 @@ private slots:
 
 private:
     void DialogAddNetworkSink();
-    void ShowFrame(void* pBuffer, float pFps = 15, int pFrameNumber = 0);
+    void ShowFrame(void* pBuffer);
     void SetResolution(int mX, int mY);
     void SetScaling(float pVideoScaleFactor);
     bool IsCurrentScaleFactor(float pScaleFactor);
@@ -156,6 +159,8 @@ private:
 
     QWidget             *mCurrentApplicationFocusedWidget;
     QImage              mCurrentFrame;
+    int 				mCurrentFrameOutputWidth;
+    int 				mCurrentFrameOutputHeight;
     QPoint              mWinPos;
     QAction             *mAssignedAction;
     QMainWindow			*mMainWindow;
@@ -177,13 +182,15 @@ private:
     bool                mNeedBackgroundUpdate, mNeedBackgroundUpdatesUntillNextFrame;
     bool				mVideoMirroredHorizontal;
     bool				mVideoMirroredVertical;
-    int                 mCurrentFrameNumber;
     int                 mLastFrameNumber;
     VideoWorkerThread   *mVideoWorker;
     MediaSource         *mVideoSource;
     int                 mPendingNewFrameSignals;
     ParticipantWidget   *mParticipantWidget;
     int64_t 			mPaintEventCounter;
+    /* statistics */
+    int                 mCurrentFrameNumber;
+    float				mCurrentFrameRate;
     /* live marker - OSD */
     bool                mLiveMarkerActive;
     /* status messages per OSD text */

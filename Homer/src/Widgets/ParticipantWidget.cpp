@@ -189,6 +189,7 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
 
     mSlMovie->Init(this);
     mAVDriftFrame->hide();
+    mLbAVStatistics->hide();
 
     //TODO: remove the following if the feature is complete
     #ifdef RELEASE_VERSION
@@ -491,6 +492,8 @@ void ParticipantWidget::contextMenuEvent(QContextMenuEvent *pEvent)
         case PARTICIPANT:
             if (CONF.DebuggingEnabled())
             {
+                QIcon tIcon2;
+                tIcon2.addPixmap(QPixmap(":/images/22_22/Info.png"), QIcon::Normal, QIcon::Off);
                 if (mSessionInfoWidget->isVisible())
                 {
                     tAction = tMenu.addAction("Hide session info");
@@ -502,8 +505,19 @@ void ParticipantWidget::contextMenuEvent(QContextMenuEvent *pEvent)
                     tAction->setCheckable(true);
                     tAction->setChecked(false);
                 }
-                QIcon tIcon2;
-                tIcon2.addPixmap(QPixmap(":/images/22_22/Info.png"), QIcon::Normal, QIcon::Off);
+                tAction->setIcon(tIcon2);
+                if (mLbAVStatistics->isVisible())
+                {
+                    tAction = tMenu.addAction("Hide A/V statistics");
+                    tAction->setCheckable(true);
+                    tAction->setChecked(true);
+
+                }else
+                {
+                    tAction = tMenu.addAction("Show A/V statistics");
+                    tAction->setCheckable(true);
+                    tAction->setChecked(false);
+                }
                 tAction->setIcon(tIcon2);
 
                 QAction* tPopupRes = tMenu.exec(pEvent->globalPos());
@@ -519,12 +533,53 @@ void ParticipantWidget::contextMenuEvent(QContextMenuEvent *pEvent)
                         mSessionInfoWidget->SetVisible(false);
                         return;
                     }
+                    if (tPopupRes->text().compare("Show A/V statistics") == 0)
+                    {
+                    	mLbAVStatistics->setVisible(true);
+                        return;
+                    }
+                    if (tPopupRes->text().compare("Hide A/V statistics") == 0)
+                    {
+                    	mLbAVStatistics->setVisible(false);
+                        return;
+                    }
                 }
             }
             break;
         case BROADCAST:
-            break;
         case PREVIEW:
+            if (CONF.DebuggingEnabled())
+            {
+                QIcon tIcon2;
+                tIcon2.addPixmap(QPixmap(":/images/22_22/Info.png"), QIcon::Normal, QIcon::Off);
+                if (mLbAVStatistics->isVisible())
+                {
+                    tAction = tMenu.addAction("Hide A/V statistics");
+                    tAction->setCheckable(true);
+                    tAction->setChecked(true);
+                }else
+                {
+                    tAction = tMenu.addAction("Show A/V statistics");
+                    tAction->setCheckable(true);
+                    tAction->setChecked(false);
+                }
+                tAction->setIcon(tIcon2);
+
+                QAction* tPopupRes = tMenu.exec(pEvent->globalPos());
+                if (tPopupRes != NULL)
+                {
+                    if (tPopupRes->text().compare("Show A/V statistics") == 0)
+                    {
+                    	mLbAVStatistics->setVisible(true);
+                        return;
+                    }
+                    if (tPopupRes->text().compare("Hide A/V statistics") == 0)
+                    {
+                    	mLbAVStatistics->setVisible(false);
+                        return;
+                    }
+                }
+            }
             break;
         default:
             break;
@@ -1696,6 +1751,32 @@ void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
     }
 
     UpdateMovieControls();
+
+    // should we update the A/V statistic widget?
+    if (mLbAVStatistics->isVisible())
+    {// time for an update
+    	QString tAVStats = "";
+    	QStringList tStats;
+    	int tStatLines;
+
+    	// VIDEO
+    	tAVStats += "Video statistics:";
+    	tStats = mVideoWidget->GetVideoStatistic();
+    	tStatLines = tStats.size();
+    	for (int i = 0; i < tStatLines; i++)
+    		tAVStats += "\n     " + tStats[i];
+
+    	tAVStats += "\n\n";
+
+    	// AUDIO
+    	tAVStats += "Audio statistics:";
+    	tStats = mAudioWidget->GetAudioStatistic();
+    	tStatLines = tStats.size();
+    	for (int i = 0; i < tStatLines; i++)
+    		tAVStats += "\n     " + tStats[i];
+
+    	mLbAVStatistics->setText(tAVStats);
+    }
 
     pEvent->accept();
 }

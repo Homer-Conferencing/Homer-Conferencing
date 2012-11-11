@@ -511,7 +511,102 @@ void AudioWidget::DialogAddNetworkSink()
     tANSDialog.exec();
 }
 
-void AudioWidget::ShowSample(void* pBuffer, int pSampleSize, int pSampleNumber)
+QStringList AudioWidget::GetAudioStatistic()
+{
+	QStringList tAudioStatistic;
+
+	int tHour = 0, tMin = 0, tSec = 0, tTime = mAudioSource->GetSeekPos();
+    tSec = tTime % 60;
+    tTime /= 60;
+    tMin = tTime % 60;
+    tHour = tTime / 60;
+
+    int tMaxHour = 0, tMaxMin = 0, tMaxSec = 0, tMaxTime = mAudioSource->GetSeekEnd();
+    tMaxSec = tMaxTime % 60;
+    tMaxTime /= 60;
+    tMaxMin = tMaxTime % 60;
+    tMaxHour = tMaxTime / 60;
+
+    //############################################
+	//### Line 1: audio source
+    QString tLine_Source = "";
+    tLine_Source = "Source: " + mAudioWorker->GetCurrentDevice();
+
+    //############################################
+	//### Line 2: current audio buffer, dropped chunks, buffered packets
+    QString tLine_Sample = "";
+    tLine_Sample = "Frame: " + QString("%1").arg(mCurrentSampleNumber) + (mAudioSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mAudioSource->GetChunkDropCounter()) + " lost packets)") : "")  + (mAudioSource->GetFragmentBufferCounter() ? (" (" + QString("%1").arg(mAudioSource->GetFragmentBufferCounter()) + "/" + QString("%1").arg(mAudioSource->GetFragmentBufferSize()) + " buffered packets)") : "");
+
+    //############################################
+	//### Line 3: audio codec and sample rate
+    QString tLine_Codec = "";
+    tLine_Codec = "Source codec: " + QString((mAudioSource->GetCodecName() != "") ? mAudioSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(mAudioSource->GetInputSampleRate()) + " Hz)";
+
+    //############################################
+	//### Line 4: audio output
+    QString tLine_Output = "";
+    tLine_Output = "Playback: " + QString("%1").arg(AUDIO_OUTPUT_SAMPLE_RATE) + " Hz";
+
+    //############################################
+    //### Line 5: current position within file
+    QString tLine_Time = "";
+    if (mAudioSource->SupportsSeeking())
+    {
+        tLine_Time = "Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0');
+    }
+
+    //############################################
+    //### Line 6: audio muxer
+    QString tLine_Muxer = "";
+    QString tMuxCodecName = QString(mAudioSource->GetMuxingCodec().c_str());
+    int tMuxResX = 0, tMuxResY = 0;
+    mAudioSource->GetMuxingResolution(tMuxResX, tMuxResY);
+    if (mAudioSource->SupportsMuxing())
+        tLine_Muxer = "Streaming codec: " + ((tMuxCodecName != "") ? tMuxCodecName : "unknown") + (mAudioSource->GetMuxingBufferCounter() ? (" (" + QString("%1").arg(mAudioSource->GetMuxingBufferCounter()) + "/" + QString("%1").arg(mAudioSource->GetMuxingBufferSize()) + " buffered frames)") : "") + " (" + QString("%1").arg(mAudioSource->GetOutputSampleRate()) + " Hz)";;
+
+    //############################################
+    //### Line 7: network peer
+    QString tLine_Peer = "";
+    QString tPeerName = QString(mAudioSource->GetCurrentDevicePeerName().c_str());
+    if (tPeerName != "")
+    	tLine_Peer = "Peer: " + tPeerName;
+
+    //############################################
+    //### Line 8: current recorder position
+    QString tLine_RecorderTime = "";
+    if ((mAudioSource->SupportsRecording()) && (mAudioSource->IsRecording()))
+    {
+        int tHour = 0, tMin = 0, tSec = 0, tTime = mAudioSource->RecordingTime();
+        tSec = tTime % 60;
+        tTime /= 60;
+        tMin = tTime % 60;
+        tHour = tTime / 60;
+
+        tLine_RecorderTime = "Recorded: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0');
+    }
+
+    //derive resulting Audio statistic
+    if (tLine_Source != "")
+    	tAudioStatistic += tLine_Source;
+    if (tLine_Sample != "")
+    	tAudioStatistic += tLine_Sample;
+    if (tLine_Codec != "")
+    	tAudioStatistic += tLine_Codec;
+    if (tLine_Output != "")
+    	tAudioStatistic += tLine_Output;
+    if (tLine_Time != "")
+    	tAudioStatistic += tLine_Time;
+    if (tLine_Muxer != "")
+    	tAudioStatistic += tLine_Muxer;
+    if (tLine_Peer != "")
+    	tAudioStatistic += tLine_Peer;
+    if (tLine_RecorderTime != "")
+    	tAudioStatistic += tLine_RecorderTime;
+
+	return tAudioStatistic;
+}
+
+void AudioWidget::ShowSample(void* pBuffer, int pSampleSize)
 {
     int tMSecs = QTime::currentTime().msec();
     short int tData = 0;
@@ -568,35 +663,18 @@ void AudioWidget::ShowSample(void* pBuffer, int pSampleSize, int pSampleNumber)
     //#############################################################
     if (mShowLiveStats)
     {
-        int tHour = 0, tMin = 0, tSec = 0, tTime = mAudioSource->GetSeekPos();
-        tSec = tTime % 60;
-        tTime /= 60;
-        tMin = tTime % 60;
-        tHour = tTime / 60;
-
-        int tMaxHour = 0, tMaxMin = 0, tMaxSec = 0, tMaxTime = mAudioSource->GetSeekEnd();
-        tMaxSec = tMaxTime % 60;
-        tMaxTime /= 60;
-        tMaxMin = tMaxTime % 60;
-        tMaxHour = tMaxTime / 60;
-
         QFont tFont = QFont("Tahoma", 10, QFont::Bold);
         tFont.setFixedPitch(true);
         mLbStreamInfo->setFont(tFont);
-        QString tMuxCodecName = QString(mAudioSource->GetMuxingCodec().c_str());
-        QString tText = "<font color=red><b>"                                                                                       \
-                "Source: " + mAudioWorker->GetCurrentDevice() + "<br>" +                                                            \
-/*                "Buffer: " + QString("%1").arg(pSampleNumber) + (mAudioSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mAudioSource->GetChunkDropCounter()) + " dropped)") : "") + ", "\*/
-                "Codec: " + QString((mAudioSource->GetCodecName() != "") ? mAudioSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(mAudioSource->GetInputSampleRate()) + "Hz)" + \
-/*                                   "Output: " + QString("%1").arg(AUDIO_OUTPUT_SAMPLE_RATE) + " Hz" + "<br>" + \*/
-                "";
-        if (mAudioSource->SupportsSeeking())
-            tText +=    ", Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0');
 
-//        if (mAudioSource->SupportsMuxing())
-//            tText +=     "<br>Mux codec: " + ((tMuxCodecName != "") ? tMuxCodecName : "unknown") + (mAudioSource->GetMuxingBufferCounter() ? (" (" + QString("%1").arg(mAudioSource->GetMuxingBufferCounter()) + "/" + QString("%1").arg(mAudioSource->GetMuxingBufferSize()) + " buffered frames)") : "");
-
-        tText +=        "</b></font>";
+        QStringList tAudioStatistic = GetAudioStatistic();
+        int tStatLines = tAudioStatistic.size();
+        if (tStatLines > 2)
+        	tStatLines = 2;
+        QString tText = "<font color=red><b>";
+        for (int i = 0; i < tStatLines; i++)
+    		tText += tAudioStatistic[i] + "<br>";
+        tText += "</b></font>";
         mLbStreamInfo->setText(tText);
     }
     if ((mShowLiveStats) && (!mLbStreamInfo->isVisible()))
@@ -745,7 +823,7 @@ void AudioWidget::customEvent(QEvent* pEvent)
                 mCurrentSampleNumber = mAudioWorker->GetCurrentSample(&tSample, tSampleSize);
                 if (mCurrentSampleNumber != -1)
                 {
-                    ShowSample(tSample, tSampleSize, mCurrentSampleNumber);
+                    ShowSample(tSample, tSampleSize);
                     //printf("VideoWidget-Sample number: %d\n", mCurrentSampleNumber);
                     if ((mLastSampleNumber > mCurrentSampleNumber) && (mCurrentSampleNumber > 32 /* -1 means error, 1 is received after every reset, use "32" because of possible latencies */))
                         LOG(LOG_WARN, "Samples received in wrong order, [%d->%d]", mLastSampleNumber, mCurrentSampleNumber);

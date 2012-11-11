@@ -744,11 +744,169 @@ void VideoWidget::DialogAddNetworkSink()
     tANSDialog.exec();
 }
 
-void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
+QStringList VideoWidget::GetVideoStatistic()
+{
+	QStringList tVideoStatistic;
+
+	QString tAspectRatio = "";
+	switch(mAspectRatio)
+	{
+		case ASPECT_RATIO_ORIGINAL:
+			tAspectRatio = "Original";
+			break;
+		case ASPECT_RATIO_WINDOW:
+			tAspectRatio = "Window";
+			break;
+		case ASPECT_RATIO_1x1:
+			tAspectRatio = "1 : 1";
+			break;
+		case ASPECT_RATIO_4x3:
+			tAspectRatio = "4 : 3";
+			break;
+		case ASPECT_RATIO_5x4:
+			tAspectRatio = "5 : 4";
+			break;
+		case ASPECT_RATIO_16x9:
+			tAspectRatio = "16 : 9";
+			break;
+		case ASPECT_RATIO_16x10:
+			tAspectRatio = "16 : 10";
+			break;
+	}
+
+	int tHour = 0, tMin = 0, tSec = 0, tTime = mVideoSource->GetSeekPos();
+    tSec = tTime % 60;
+    tTime /= 60;
+    tMin = tTime % 60;
+    tHour = tTime / 60;
+
+    int tMaxHour = 0, tMaxMin = 0, tMaxSec = 0, tMaxTime = mVideoSource->GetSeekEnd();
+    tMaxSec = tMaxTime % 60;
+    tMaxTime /= 60;
+    tMaxMin = tMaxTime % 60;
+    tMaxHour = tMaxTime / 60;
+
+    //############################################
+    //### Line 1: video source
+    QString tLine_Source = "";
+    tLine_Source = "Source: " + mVideoWorker->GetCurrentDevice();
+
+	//############################################
+    //### Line 2: current video frame, dropped chunks, buffered packets
+    QString tLine_Frame = "";
+    tLine_Frame = "Frame: " + QString("%1").arg(mCurrentFrameNumber);
+    if (mVideoSource->SupportsDecoderFrameStatistics())
+        tLine_Frame += " (" + QString("%1*i,").arg(mVideoSource->DecodedIFrames()) + QString("%1*p,").arg(mVideoSource->DecodedPFrames()) + QString("%1*b").arg(mVideoSource->DecodedBFrames()) + ")";
+    tLine_Frame += (mVideoSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropCounter()) + " lost packets)") : "") + (mVideoSource->GetFragmentBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetFragmentBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetFragmentBufferSize()) + " buffered packets)") : "");
+
+    //############################################
+    //### Line 3: FPS and pre-buffer time
+    QString tLine_Fps = "";
+    float tBufferTime = mVideoSource->GetFrameBufferTime();
+    tLine_Fps = "Fps: " + QString("%1").arg(mCurrentFrameRate, 4, 'f', 2, ' ');
+    if (tBufferTime >= 0.01)
+    	tLine_Fps += " (" + QString("%1").arg(mVideoSource->GetFrameBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetFrameBufferSize()) + ", " + QString("%1").arg(tBufferTime, 2, 'f', 2, (QLatin1Char)' ') + "s buffered)";
+
+    //############################################
+    //### Line 4: video codec and resolution
+    QString tLine_Codec = "";
+    QString tCodecName = QString(mVideoSource->GetCodecName().c_str());
+    int tSourceResX = 0, tSourceResY = 0;
+    mVideoSource->GetVideoSourceResolution(tSourceResX, tSourceResY);
+    tLine_Codec = "Source codec: " + ((tCodecName != "") ? tCodecName : "unknown") + " (" + QString("%1").arg(tSourceResX) + "*" + QString("%1").arg(tSourceResY) + ")";
+
+    //############################################
+    //### Line 5: video output
+    QString tLine_Output = "";
+    tLine_Output = "Display: " + QString("%1").arg(mCurrentFrameOutputWidth) + "*" + QString("%1").arg(mCurrentFrameOutputHeight) + " (" + tAspectRatio + ")" + (mSmoothPresentation ? "[smoothed]" : "");
+
+    //############################################
+    //### Line 6: current position within file
+    QString tLine_Time = "";
+    float tAVDrift = mParticipantWidget->GetAVDrift();
+    if (mVideoSource->SupportsSeeking())
+    {
+        tLine_Time = "Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0');
+        if (tAVDrift >= 0.0)
+            tLine_Time += (tAVDrift != 0.0f ? QString(" (A/V drift: +%1 s)").arg(tAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
+        else if (tAVDrift < 0.0)
+            tLine_Time += (tAVDrift != 0.0f ? QString(" (A/V drift: %1 s)").arg(tAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
+
+        float tUserAVDrift = mParticipantWidget->GetUserAVDrift();
+        if (tUserAVDrift != 0)
+        {
+            if (tUserAVDrift > 0.0)
+                tLine_Time += (tUserAVDrift != 0.0f ? QString(" [user A/V drift: +%1 s]").arg(tUserAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
+            else if (tAVDrift < 0.0)
+                tLine_Time += (tUserAVDrift != 0.0f ? QString(" [user A/V drift: %1 s]").arg(tUserAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
+        }
+        float tVideoDelayAVDrift = mParticipantWidget->GetVideoDelayAVDrift();
+        if (tVideoDelayAVDrift != 0)
+        {
+            if (tVideoDelayAVDrift > 0.0)
+                tLine_Time += (tVideoDelayAVDrift != 0.0f ? QString(" [A/V adjust: +%1 s]").arg(tVideoDelayAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
+            else if (tAVDrift < 0.0)
+                tLine_Time += (tVideoDelayAVDrift != 0.0f ? QString(" [A/V adjust: %1 s]").arg(tVideoDelayAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
+        }
+    }
+
+    //############################################
+    //### Line 7: video muxer
+    QString tLine_Muxer = "";
+    QString tMuxCodecName = QString(mVideoSource->GetMuxingCodec().c_str());
+    int tMuxResX = 0, tMuxResY = 0;
+    mVideoSource->GetMuxingResolution(tMuxResX, tMuxResY);
+    if (mVideoSource->SupportsMuxing())
+        tLine_Muxer = "Streaming codec: " + ((tMuxCodecName != "") ? tMuxCodecName : "unknown") + " (" + QString("%1").arg(tMuxResX) + "*" + QString("%1").arg(tMuxResY) + ")" + (mVideoSource->GetMuxingBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetMuxingBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetMuxingBufferSize()) + " buffered frames)") : "");
+
+    //############################################
+    //### Line 8: network peer
+    QString tLine_Peer = "";
+    QString tPeerName = QString(mVideoSource->GetCurrentDevicePeerName().c_str());
+    if (tPeerName != "")
+    	tLine_Peer = "Peer: " + tPeerName;
+
+    //############################################
+    //### Line 9: current recorder position
+    QString tLine_RecorderTime = "";
+    if ((mVideoSource->SupportsRecording()) && (mVideoSource->IsRecording()))
+    {
+        int tHour = 0, tMin = 0, tSec = 0, tTime = mVideoSource->RecordingTime();
+        tSec = tTime % 60;
+        tTime /= 60;
+        tMin = tTime % 60;
+        tHour = tTime / 60;
+
+        tLine_RecorderTime = "Recorded: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0');
+    }
+
+
+    //derive resulting video statistic
+    if (tLine_Source != "")
+    	tVideoStatistic += tLine_Source;
+    if (tLine_Frame != "")
+    	tVideoStatistic += tLine_Frame;
+    if (tLine_Fps != "")
+    	tVideoStatistic += tLine_Fps;
+    if (tLine_Codec != "")
+    	tVideoStatistic += tLine_Codec;
+    if (tLine_Output != "")
+    	tVideoStatistic += tLine_Output;
+    if (tLine_Time != "")
+    	tVideoStatistic += tLine_Time;
+    if (tLine_Muxer != "")
+    	tVideoStatistic += tLine_Muxer;
+    if (tLine_Peer != "")
+    	tVideoStatistic += tLine_Peer;
+    if (tLine_RecorderTime != "")
+    	tVideoStatistic += tLine_RecorderTime;
+
+    return tVideoStatistic;
+}
+
+void VideoWidget::ShowFrame(void* pBuffer)
 {
     int tMSecs = QTime::currentTime().msec();
-	int tFrameOutputWidth = 0;
-	int tFrameOutputHeight = 0;
 
 	if (!isVisible())
         return;
@@ -778,61 +936,61 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
 	switch(mAspectRatio)
 	{
 		case ASPECT_RATIO_WINDOW:
-			tFrameOutputWidth = width();
-			tFrameOutputHeight = height();
+			mCurrentFrameOutputWidth = width();
+			mCurrentFrameOutputHeight = height();
 			break;
 		case ASPECT_RATIO_ORIGINAL:
-			tFrameOutputWidth = width();
-			tFrameOutputHeight = height();
+			mCurrentFrameOutputWidth = width();
+			mCurrentFrameOutputHeight = height();
 			tAspectMode = Qt::KeepAspectRatio;
 			break;
 		case ASPECT_RATIO_1x1:
-			tFrameOutputWidth = mCurrentFrame.width();
-			tFrameOutputHeight = tFrameOutputWidth; // adapt aspect ratio
+			mCurrentFrameOutputWidth = mCurrentFrame.width();
+			mCurrentFrameOutputHeight = mCurrentFrameOutputWidth; // adapt aspect ratio
 			break;
 		case ASPECT_RATIO_4x3:
-			tFrameOutputWidth = mCurrentFrame.width();
-			tFrameOutputHeight = (int)(tFrameOutputWidth / 1.33); // adapt aspect ratio
+			mCurrentFrameOutputWidth = mCurrentFrame.width();
+			mCurrentFrameOutputHeight = (int)(mCurrentFrameOutputWidth / 1.33); // adapt aspect ratio
 			break;
 		case ASPECT_RATIO_5x4:
-			tFrameOutputWidth = mCurrentFrame.width();
-			tFrameOutputHeight = (int)(tFrameOutputWidth / 1.25); // adapt aspect ratio
+			mCurrentFrameOutputWidth = mCurrentFrame.width();
+			mCurrentFrameOutputHeight = (int)(mCurrentFrameOutputWidth / 1.25); // adapt aspect ratio
 			break;
 		case ASPECT_RATIO_16x9:
-			tFrameOutputWidth = mCurrentFrame.width();
-			tFrameOutputHeight = (int)(tFrameOutputWidth / 1.77); // adapt aspect ratio
+			mCurrentFrameOutputWidth = mCurrentFrame.width();
+			mCurrentFrameOutputHeight = (int)(mCurrentFrameOutputWidth / 1.77); // adapt aspect ratio
 			break;
 		case ASPECT_RATIO_16x10:
-			tFrameOutputWidth = mCurrentFrame.width();
-			tFrameOutputHeight = (int)(tFrameOutputWidth / 1.6); // adapt aspect ratio
+			mCurrentFrameOutputWidth = mCurrentFrame.width();
+			mCurrentFrameOutputHeight = (int)(mCurrentFrameOutputWidth / 1.6); // adapt aspect ratio
 			break;
 	}
 
 	// resize frame to best fitting size, related to video widget
 	if ((mAspectRatio != ASPECT_RATIO_WINDOW) && (mAspectRatio != ASPECT_RATIO_ORIGINAL))
 	{
-		float tRatio = (float)width() / tFrameOutputWidth;
+		float tRatio = (float)width() / mCurrentFrameOutputWidth;
 		int tNewFrameOutputWidth = width();
-		int tNewFrameOutputHeight = (int)(tRatio * tFrameOutputHeight);
+		int tNewFrameOutputHeight = (int)(tRatio * mCurrentFrameOutputHeight);
 		if(tNewFrameOutputHeight > height())
 		{
-			tRatio = (float)height() / tFrameOutputHeight;
-			tFrameOutputHeight = height();
-			tFrameOutputWidth = (int)(tRatio * tFrameOutputWidth);
+			tRatio = (float)height() / mCurrentFrameOutputHeight;
+			mCurrentFrameOutputHeight = height();
+			mCurrentFrameOutputWidth = (int)(tRatio * mCurrentFrameOutputWidth);
 		}else
 		{
-			tFrameOutputHeight = tNewFrameOutputHeight;
-			tFrameOutputWidth = tNewFrameOutputWidth;
+			mCurrentFrameOutputHeight = tNewFrameOutputHeight;
+			mCurrentFrameOutputWidth = tNewFrameOutputWidth;
 		}
 	}
 
-	mCurrentFrame = mCurrentFrame.scaled(tFrameOutputWidth, tFrameOutputHeight, tAspectMode, mSmoothPresentation ? Qt::SmoothTransformation : Qt::FastTransformation);
-	tFrameOutputWidth = mCurrentFrame.width();
-	tFrameOutputHeight = mCurrentFrame.height();
+	mCurrentFrame = mCurrentFrame.scaled(mCurrentFrameOutputWidth, mCurrentFrameOutputHeight, tAspectMode, mSmoothPresentation ? Qt::SmoothTransformation : Qt::FastTransformation);
+	mCurrentFrameOutputWidth = mCurrentFrame.width();
+	mCurrentFrameOutputHeight = mCurrentFrame.height();
 
     int tTimeDiff = QTime::currentTime().msecsTo(tTime);
     // did we spend too much time with transforming the image?
-    if ((mSmoothPresentation) && (tTimeDiff > 1000 / 3)) // at least we assume 3 FPS!
+    if ((mSmoothPresentation) && (tTimeDiff > 1000 / 3)) // we assume min. of 3 FPS!
     {
         mSmoothPresentation = false;
         CONF.SetSmoothVideoPresentation(false);
@@ -847,176 +1005,27 @@ void VideoWidget::ShowFrame(void* pBuffer, float pFps, int pFrameNumber)
     //#############################################################
     if (mShowLiveStats)
     {
-		QString tAspectRatio = "";
-    	switch(mAspectRatio)
-		{
-			case ASPECT_RATIO_ORIGINAL:
-				tAspectRatio = "Original";
-				break;
-			case ASPECT_RATIO_WINDOW:
-				tAspectRatio = "Window";
-				break;
-			case ASPECT_RATIO_1x1:
-				tAspectRatio = "1 : 1";
-				break;
-			case ASPECT_RATIO_4x3:
-				tAspectRatio = "4 : 3";
-				break;
-			case ASPECT_RATIO_5x4:
-				tAspectRatio = "5 : 4";
-				break;
-			case ASPECT_RATIO_16x9:
-				tAspectRatio = "16 : 9";
-				break;
-			case ASPECT_RATIO_16x10:
-				tAspectRatio = "16 : 10";
-				break;
-		}
-
-		int tHour = 0, tMin = 0, tSec = 0, tTime = mVideoSource->GetSeekPos();
-        tSec = tTime % 60;
-        tTime /= 60;
-        tMin = tTime % 60;
-        tHour = tTime / 60;
-
-        int tMaxHour = 0, tMaxMin = 0, tMaxSec = 0, tMaxTime = mVideoSource->GetSeekEnd();
-        tMaxSec = tMaxTime % 60;
-        tMaxTime /= 60;
-        tMaxMin = tMaxTime % 60;
-        tMaxHour = tMaxTime / 60;
-
         QFont tFont = QFont("Tahoma", 12, QFont::Bold);
         tFont.setFixedPitch(true);
         tPainter->setRenderHint(QPainter::TextAntialiasing, true);
         tPainter->setFont(tFont);
 
-        int tSourceResX = 0, tSourceResY = 0;
-        mVideoSource->GetVideoSourceResolution(tSourceResX, tSourceResY);
-
-        int tMuxResX = 0, tMuxResY = 0;
-        mVideoSource->GetMuxingResolution(tMuxResX, tMuxResY);
-
-        QString tCodecName = QString(mVideoSource->GetCodecName().c_str());
-        QString tMuxCodecName = QString(mVideoSource->GetMuxingCodec().c_str());
-        QString tPeerName = QString(mVideoSource->GetCurrentDevicePeerName().c_str());
-
-        // OSD about current video frame
-        QString tLine_Frame;
-        tLine_Frame = " Frame: " + QString("%1").arg(pFrameNumber);
-        if (mVideoSource->SupportsDecoderFrameStatistics())
-            tLine_Frame += " (" + QString("%1*i,").arg(mVideoSource->DecodedIFrames()) + QString("%1*p,").arg(mVideoSource->DecodedPFrames()) + QString("%1*b").arg(mVideoSource->DecodedBFrames()) + ")";
-        tLine_Frame += (mVideoSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropCounter()) + " lost packets)") : "") + (mVideoSource->GetFragmentBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetFragmentBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetFragmentBufferSize()) + " buffered packets)") : "");
-
-        // FPS and pre-buffer time
-        float tBufferTime = mVideoSource->GetFrameBufferTime();
-        QString tLine_Fps = "";
-        tLine_Fps = " Fps: " + QString("%1").arg(pFps, 4, 'f', 2, ' ');
-        if (tBufferTime >= 0.01)
-        	tLine_Fps += " (" + QString("%1").arg(mVideoSource->GetFrameBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetFrameBufferSize()) + ", " + QString("%1").arg(tBufferTime, 2, 'f', 2, (QLatin1Char)' ') + "s buffered)";
-
-        // OSD about current video codec
-        QString tLine_Codec;
-        tLine_Codec = " Codec: " + ((tCodecName != "") ? tCodecName : "unknown") + " (" + QString("%1").arg(tSourceResX) + "*" + QString("%1").arg(tSourceResY) + ")";
-
-        // OSD about video output
-        QString tLine_Output = "";
-        tLine_Output = " Output: " + QString("%1").arg(tFrameOutputWidth) + "*" + QString("%1").arg(tFrameOutputHeight) + " (" + tAspectRatio + ")" + (mSmoothPresentation ? "[smoothed]" : "");
-
-        // OSD about current position within file
-        QString tLine_Time = "";
-        float tAVDrift = mParticipantWidget->GetAVDrift();
-        if (mVideoSource->SupportsSeeking())
-        {
-            tLine_Time = " Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0');
-            if (tAVDrift >= 0.0)
-                tLine_Time += (tAVDrift != 0.0f ? QString(" (A/V drift: +%1 s)").arg(tAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
-            else if (tAVDrift < 0.0)
-                tLine_Time += (tAVDrift != 0.0f ? QString(" (A/V drift: %1 s)").arg(tAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
-
-            float tUserAVDrift = mParticipantWidget->GetUserAVDrift();
-            if (tUserAVDrift != 0)
-            {
-                if (tUserAVDrift > 0.0)
-                    tLine_Time += (tUserAVDrift != 0.0f ? QString(" [user A/V drift: +%1 s]").arg(tUserAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
-                else if (tAVDrift < 0.0)
-                    tLine_Time += (tUserAVDrift != 0.0f ? QString(" [user A/V drift: %1 s]").arg(tUserAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
-            }
-            float tVideoDelayAVDrift = mParticipantWidget->GetVideoDelayAVDrift();
-            if (tVideoDelayAVDrift != 0)
-            {
-                if (tVideoDelayAVDrift > 0.0)
-                    tLine_Time += (tVideoDelayAVDrift != 0.0f ? QString(" [A/V adjust: +%1 s]").arg(tVideoDelayAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
-                else if (tAVDrift < 0.0)
-                    tLine_Time += (tVideoDelayAVDrift != 0.0f ? QString(" [A/V adjust: %1 s]").arg(tVideoDelayAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
-            }
-        }
-
-        // OSD about current recorder position
-        QString tLine_RecorderTime = "";
-        if (mVideoSource->SupportsRecording())
-        {
-            int tHour = 0, tMin = 0, tSec = 0, tTime = mVideoSource->RecordingTime();
-            tSec = tTime % 60;
-            tTime /= 60;
-            tMin = tTime % 60;
-            tHour = tTime / 60;
-
-            tLine_RecorderTime = " Recorded: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0');
-        }
-
-        // OSD about video muxer
-        QString tLine_Muxer = "";
-        if (mVideoSource->SupportsMuxing())
-            tLine_Muxer = " Mux codec: " + ((tMuxCodecName != "") ? tMuxCodecName : "unknown") + " (" + QString("%1").arg(tMuxResX) + "*" + QString("%1").arg(tMuxResY) + ")" + (mVideoSource->GetMuxingBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetMuxingBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetMuxingBufferSize()) + " buffered frames)") : "");
+        QStringList tVideoStatistic = GetVideoStatistic();
+        int tStatLines = tVideoStatistic.size();
 
         // #######################
-        // ### shadow text
+        // ### black shadow text
         // #######################
         tPainter->setPen(QColor(Qt::darkRed));
-        tPainter->drawText(5, 41, " Source: " + mVideoWorker->GetCurrentDevice());
-        tPainter->drawText(5, 61, tLine_Frame);
-        tPainter->drawText(5, 81, tLine_Fps);
-        tPainter->drawText(5, 101, tLine_Codec);
-        tPainter->drawText(5, 121, tLine_Output);
-        int tMuxOutputOffs = 0;
-        int tPeerOutputOffs = 0;
-        int tRecorderOutputOffs = 0;
-        if (mVideoSource->SupportsSeeking())
-        {
-            tMuxOutputOffs = 20;
-            tPainter->drawText(5, 141, tLine_Time);
-        }
-        if (mVideoSource->SupportsMuxing())
-        {
-        	tPeerOutputOffs = 20;
-            tPainter->drawText(5, 141 + tMuxOutputOffs, tLine_Muxer);
-        }
-        if (tPeerName != "")
-        {
-            tRecorderOutputOffs = 20;
-            tPainter->drawText(5, 141 + tMuxOutputOffs + tPeerOutputOffs, " Peer: " + tPeerName);
-        }
-        if (mVideoSource->IsRecording())
-            tPainter->drawText(5, 141 + tMuxOutputOffs + tPeerOutputOffs + tRecorderOutputOffs, tLine_RecorderTime);
-
+        for (int i = 0; i < tStatLines; i++)
+    		tPainter->drawText(10, 41 + i * 20, tVideoStatistic[i]);
 
         // #######################
-        // ### foreground text
+        // ### red foreground text
         // #######################
         tPainter->setPen(QColor(Qt::red));
-        tPainter->drawText(4, 40, " Source: " + mVideoWorker->GetCurrentDevice());
-        tPainter->drawText(4, 60, tLine_Frame);
-        tPainter->drawText(4, 80, tLine_Fps);
-        tPainter->drawText(4, 100, tLine_Codec);
-        tPainter->drawText(4, 120, tLine_Output);
-        if (mVideoSource->SupportsSeeking())
-			tPainter->drawText(4, 140, tLine_Time);
-        if (mVideoSource->SupportsMuxing())
-            tPainter->drawText(4, 140 + tMuxOutputOffs, tLine_Muxer);
-        if (tPeerName != "")
-        	tPainter->drawText(4, 140 + tMuxOutputOffs + tPeerOutputOffs, " Peer: " + tPeerName);
-        if (mVideoSource->IsRecording())
-            tPainter->drawText(4, 140 + tMuxOutputOffs + tPeerOutputOffs + tRecorderOutputOffs, tLine_RecorderTime);
+        for (int i = 0; i < tStatLines; i++)
+    		tPainter->drawText(9, 40 + i * 20, tVideoStatistic[i]);
     }
 
     //#############################################################
@@ -1818,7 +1827,6 @@ void VideoWidget::timerEvent(QTimerEvent *pEvent)
 void VideoWidget::customEvent(QEvent *pEvent)
 {
     void* tFrame;
-    float tFps;
 
     // make sure we have a user event here
     if (pEvent->type() != QEvent::User)
@@ -1854,7 +1862,7 @@ void VideoWidget::customEvent(QEvent *pEvent)
 							LOG(LOG_VERBOSE, "Called GetCurrentFrame() %d times", tLoopCount);
 					#endif
 					mPendingNewFrameSignals--;
-					mCurrentFrameNumber = mVideoWorker->GetCurrentFrame(&tFrame, &tFps);
+					mCurrentFrameNumber = mVideoWorker->GetCurrentFrame(&tFrame, &mCurrentFrameRate);
 
 					// video delay
 					int tWorkerLastFrame = mVideoWorker->GetLastFrameNumber();
@@ -1862,7 +1870,7 @@ void VideoWidget::customEvent(QEvent *pEvent)
 					{
 					    // video play out drift
 					    int tFrameDiff = tWorkerLastFrame - mCurrentFrameNumber;
-					    float tVideoDelay = tFrameDiff / tFps;
+					    float tVideoDelay = tFrameDiff / mCurrentFrameRate;
 					    //LOG(LOG_WARN, "We show frame %d while we already grabbed frame %d, video delay is %.2f", mCurrentFrameNumber, tWorkerLastFrame, tVideoDelay);
 					    mParticipantWidget->ReportVideoDelay(tVideoDelay);
 					}else
@@ -1895,7 +1903,7 @@ void VideoWidget::customEvent(QEvent *pEvent)
 						}
 
 						// display the current video frame
-						ShowFrame(tFrame, tFps, mCurrentFrameNumber);
+						ShowFrame(tFrame);
 						#ifdef VIDEO_WIDGET_DEBUG_FRAMES
 							LOG(LOG_WARN, "Showing frame: %d, pending signals about new frames %d", mCurrentFrameNumber, mPendingNewFrameSignals);
 						#endif

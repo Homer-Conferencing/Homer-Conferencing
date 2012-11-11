@@ -89,6 +89,8 @@ public:
 
     AudioWorkerThread* GetWorker();
 
+    QStringList GetAudioStatistic();
+
     /* volume control */
     void SetVolume(int pValue); // 0-300 %
     int GetVolume();
@@ -99,7 +101,7 @@ public slots:
 
 private:
     void initializeGUI();
-    void ShowSample(void* pBuffer, int pSampleSize, int pSampleNumber = 0);
+    void ShowSample(void* pBuffer, int pSampleSize);
     void showAudioLevel(int pLevel);
     virtual void closeEvent(QCloseEvent* pEvent);
     virtual void customEvent (QEvent* pEvent);
