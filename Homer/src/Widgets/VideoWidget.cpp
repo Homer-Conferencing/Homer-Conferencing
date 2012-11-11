@@ -1297,7 +1297,7 @@ void VideoWidget::ToggleFullScreenMode()
     setUpdatesEnabled(false);
     LOG(LOG_VERBOSE, "Found window state: %d", (int)windowState());
     if (windowState() & Qt::WindowFullScreen)
-    {
+    {// show the window normal
         setWindowFlags(windowFlags() ^ Qt::Window);
         showNormal();
         mParticipantWidget->ShowAudioVideoWidget();
@@ -1308,7 +1308,7 @@ void VideoWidget::ToggleFullScreenMode()
         }
         mMainWindow->setFocus(Qt::TabFocusReason);
     }else
-    {
+    {// show the window as fullscreen picture
         setWindowFlags(windowFlags() | Qt::Window);
         mTimeOfLastMouseMove = QTime::currentTime();
         ShowFullScreen();
