@@ -2328,18 +2328,12 @@ void MediaSourceMuxer::SetFrameRate(float pFps)
 
 int MediaSourceMuxer::GetOutputSampleRate()
 {
-    if (mMediaSource != NULL)
-        return mMediaSource->GetOutputSampleRate();
-    else
-        return 0;
+    return mOutputAudioSampleRate;
 }
 
 bool MediaSourceMuxer::GetOutputChannels()
 {
-    if (mMediaSource != NULL)
-        return mMediaSource->GetOutputChannels();
-    else
-        return 0;
+    return mOutputAudioChannels;
 }
 
 int MediaSourceMuxer::GetInputSampleRate()
