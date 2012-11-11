@@ -802,10 +802,9 @@ QStringList VideoWidget::GetVideoStatistic()
     //############################################
     //### Line 3: FPS and pre-buffer time
     QString tLine_Fps = "";
-    float tBufferTime = mVideoSource->GetFrameBufferTime();
     tLine_Fps = "Fps: " + QString("%1").arg(mCurrentFrameRate, 4, 'f', 2, ' ');
-    if (tBufferTime >= 0.01)
-    	tLine_Fps += " (" + QString("%1").arg(mVideoSource->GetFrameBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetFrameBufferSize()) + ", " + QString("%1").arg(tBufferTime, 2, 'f', 2, (QLatin1Char)' ') + "s buffered)";
+    if (mVideoSource->GetFrameBufferSize() > 0)
+    	tLine_Fps += " (" + QString("%1").arg(mVideoSource->GetFrameBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetFrameBufferSize()) + ", " + QString("%1").arg(mVideoSource->GetFrameBufferTime(), 2, 'f', 2, (QLatin1Char)' ') + "s buffered)";
 
     //############################################
     //### Line 4: video codec and resolution

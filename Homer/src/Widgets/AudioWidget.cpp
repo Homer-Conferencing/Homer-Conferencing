@@ -538,6 +538,13 @@ QStringList AudioWidget::GetAudioStatistic()
     tLine_Sample = "Frame: " + QString("%1").arg(mCurrentSampleNumber) + (mAudioSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mAudioSource->GetChunkDropCounter()) + " lost packets)") : "")  + (mAudioSource->GetFragmentBufferCounter() ? (" (" + QString("%1").arg(mAudioSource->GetFragmentBufferCounter()) + "/" + QString("%1").arg(mAudioSource->GetFragmentBufferSize()) + " buffered packets)") : "");
 
     //############################################
+    //### Line 3: FPS and pre-buffer time
+    QString tLine_Fps = "";
+    tLine_Fps = "Fps: " + QString("%1").arg(-1 /* TODO */, 4, 'f', 2, ' ');
+    if (mAudioSource->GetFrameBufferSize() > 0)
+    	tLine_Fps += " (" + QString("%1").arg(mAudioSource->GetFrameBufferCounter()) + "/" + QString("%1").arg(mAudioSource->GetFrameBufferSize()) + ", " + QString("%1").arg(mAudioSource->GetFrameBufferTime(), 2, 'f', 2, (QLatin1Char)' ') + "s buffered)";
+
+    //############################################
 	//### Line 3: audio codec and sample rate
     QString tLine_Codec = "";
     tLine_Codec = "Source codec: " + QString((mAudioSource->GetCodecName() != "") ? mAudioSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(mAudioSource->GetInputSampleRate()) + " Hz)";
@@ -590,6 +597,8 @@ QStringList AudioWidget::GetAudioStatistic()
     	tAudioStatistic += tLine_Source;
     if (tLine_Sample != "")
     	tAudioStatistic += tLine_Sample;
+    if (tLine_Fps != "")
+    	tAudioStatistic += tLine_Fps;
     if (tLine_Codec != "")
     	tAudioStatistic += tLine_Codec;
     if (tLine_Output != "")
