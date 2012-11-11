@@ -1875,7 +1875,7 @@ void MediaSourceFile::WriteOutputBuffer(char* pBuffer, int pBufferSize, int64_t 
     mDecoderMetaDataFifo->WriteFifo((char*) &tChunkDesc, sizeof(tChunkDesc));
 
     // update pre-buffer time value
-    UpdatePreBufferTime();
+    UpdateBufferTime();
 }
 
 void MediaSourceFile::ReadOutputBuffer(char *pBuffer, int &pBufferSize, int64_t &pPts)
@@ -1895,10 +1895,10 @@ void MediaSourceFile::ReadOutputBuffer(char *pBuffer, int &pBufferSize, int64_t 
         LOG(LOG_ERROR, "Read from FIFO a chunk with wrong size of %d bytes, expected size is %d bytes", tChunkDescSize, sizeof(tChunkDesc));
 
     // update pre-buffer time value
-    UpdatePreBufferTime();
+    UpdateBufferTime();
 }
 
-void MediaSourceFile::UpdatePreBufferTime()
+void MediaSourceFile::UpdateBufferTime()
 {
 	#ifdef MSF_DEBUG_TIMING
 		LOG(LOG_VERBOSE, "Updating pre-buffer time value");

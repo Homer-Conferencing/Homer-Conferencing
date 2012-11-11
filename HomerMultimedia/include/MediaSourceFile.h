@@ -116,8 +116,8 @@ private:
     void CalibrateRTGrabbing();
     void WaitForRTGrabbing();
 
-    /* pre-buffering */
-    void UpdatePreBufferTime();
+    /* buffering */
+    void UpdateBufferTime();
 
     /* decoding */
     bool                mUseFilePTS;
