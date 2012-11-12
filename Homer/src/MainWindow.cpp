@@ -85,7 +85,7 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define IPV6_LINK_LOCAL_PREFIX                          "fe80"
+#define IPV6_LINK_LOCAL_PREFIX                          "fe80" //TODO: check the range FE80-FFFF (link local, site local, multicast)
 
 ///////////////////////////////////////////////////////////////////////////////
 
