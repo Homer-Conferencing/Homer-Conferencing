@@ -225,7 +225,7 @@ public:
     virtual float GetFrameRate();
     virtual void SetFrameRate(float pFps);
 
-    /* frame stats */
+    /* frame statistics */
     virtual bool SupportsDecoderFrameStatistics();
     virtual int64_t DecodedIFrames();
     virtual int64_t DecodedPFrames();
@@ -246,7 +246,8 @@ public:
     virtual int GetChunkDropCounter(); // how many chunks were dropped?
     virtual int GetFragmentBufferCounter(); // how many fragments are currently buffered?
     virtual int GetFragmentBufferSize(); // how many fragments can be buffered?
-    /* frame pre-buffering */
+
+    /* frame buffering to compensate reception jitter and short congestion periods */
     virtual float GetFrameBufferTime();
     virtual int GetFrameBufferCounter();
     virtual int GetFrameBufferSize();
