@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>621</width>
-    <height>246</height>
+    <width>653</width>
+    <height>252</height>
    </rect>
   </property>
   <property name="font">
@@ -157,7 +157,7 @@
          <number>0</number>
         </property>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,1,0,1">
+         <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1,0,1">
           <item>
            <widget class="QLabel" name="mLbAVStatistics">
             <property name="frameShape">
