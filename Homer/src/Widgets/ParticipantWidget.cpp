@@ -753,15 +753,16 @@ bool ParticipantWidget::IsThisParticipant(QString pParticipant, enum TransportTy
             pParticipant += ':' + tPort;
     }
 
+    bool tSearchedParticipantIsServercontact = false;
     if ((mSessionName.section("@", 1).contains(CONF.GetSipServer())) || (mSipInterface.contains(CONF.GetSipServer())))
     {// this participant belongs to SIP server (pbx box) -> we also have to check the user name
         tResult = ((pParticipant.contains(mSessionName.section("@", 1)) || pParticipant.contains(mSipInterface))) && (mSessionName.section("@", 0, 0) == pParticipant.section("@", 0, 0)) && (mSessionTransport == pParticipantTransport);
-
+        tSearchedParticipantIsServercontact = true;
     }else
     {// this participant is located on some foreign host and uses peer-to-peer communication
         tResult = (pParticipant.contains(mSessionName.section("@", 1)) || pParticipant.contains(mSipInterface)) && (mSessionTransport == pParticipantTransport);
     }
-    LOG(LOG_VERBOSE, "@\"%s\" - IsThisParticipant \"%s\"? ==> %s", mSessionName.toStdString().c_str(), pParticipant.toStdString().c_str(), tResult ? "MATCH" : "no match");
+    LOG(LOG_VERBOSE, "@\"%s\"[%s] - IsThisParticipant \"%s\"[%s](server contact: %d) ? ==> %s", mSessionName.toStdString().c_str(), Socket::TransportType2String(mSessionTransport).c_str(), pParticipant.toStdString().c_str(), Socket::TransportType2String(pParticipantTransport).c_str(), tSearchedParticipantIsServercontact, tResult ? "MATCH" : "no match");
 
     return tResult;
 }

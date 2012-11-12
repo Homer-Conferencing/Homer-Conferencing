@@ -596,7 +596,7 @@ bool Meeting::SendMessage(string pParticipant, enum TransportType pParticipantTr
     if (pParticipant == mBroadcastAdr)
         return SendBroadcastMessage(pMessage);
 
-    LOG(LOG_VERBOSE, "Sending message to: %s", pParticipant.c_str());
+    LOG(LOG_VERBOSE, "Sending message to: %s[%s]", pParticipant.c_str(), Socket::TransportType2String(pParticipantTransport).c_str());
 
     // lock
     mParticipantsMutex.lock();
@@ -627,6 +627,7 @@ bool Meeting::SendMessage(string pParticipant, enum TransportType pParticipantTr
             tMEvent->SenderName = GetLocalUserName();
             tMEvent->SenderComment = "";
             tMEvent->Receiver = "sip:" + pParticipant;
+            tMEvent->Transport = pParticipantTransport;
             tMEvent->HandlePtr = tHandlePtr;
             tMEvent->Text = pMessage;
             mOutgoingEvents.Fire((GeneralEvent*) tMEvent);
@@ -674,6 +675,7 @@ bool Meeting::SendCall(string pParticipant, enum TransportType pParticipantTrans
             tCEvent->SenderName = GetLocalUserName();
             tCEvent->SenderComment = "";
             tCEvent->Receiver = "sip:" + pParticipant;
+            tCEvent->Transport = pParticipantTransport;
             tCEvent->HandlePtr = tHandlePtr;
             mOutgoingEvents.Fire((GeneralEvent*) tCEvent);
         }

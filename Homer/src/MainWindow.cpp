@@ -1252,7 +1252,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     // search for corresponding participant widget
                     for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
                     {
-                        if ((*tIt)->IsThisParticipant(QString(tEEvent->Sender.c_str())))
+                        if ((*tIt)->IsThisParticipant(QString(tEEvent->Sender.c_str()), tEEvent->Transport))
                         {
                             tKnownParticipant = true;
                             (*tIt)->HandleGeneralError(tEEvent->IsIncomingEvent, tEEvent->StatusCode, QString(tEEvent->Description.c_str()));
@@ -1283,7 +1283,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                             // search for corresponding participant widget
                             for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
                             {
-                                if ((*tIt)->IsThisParticipant(QString(tMEvent->Sender.c_str())))
+                                if ((*tIt)->IsThisParticipant(QString(tMEvent->Sender.c_str()), tMEvent->Transport))
                                 {
                                     tKnownParticipant = true;
                                     if (tMEvent->SenderName.size())
@@ -1324,7 +1324,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     // search for corresponding participant widget
                     for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
                     {
-                        if ((*tIt)->IsThisParticipant(QString(tMAEvent->Sender.c_str())))
+                        if ((*tIt)->IsThisParticipant(QString(tMAEvent->Sender.c_str()), tMAEvent->Transport))
                         {
                             tKnownParticipant = true;
                             (*tIt)->HandleMessageAccept(tMAEvent->IsIncomingEvent);
@@ -1339,7 +1339,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     // search for corresponding participant widget
                     for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
                     {
-                        if ((*tIt)->IsThisParticipant(QString(tMADEvent->Sender.c_str())))
+                        if ((*tIt)->IsThisParticipant(QString(tMADEvent->Sender.c_str()), tMADEvent->Transport))
                         {
                             tKnownParticipant = true;
                             (*tIt)->HandleMessageAcceptDelayed(tMADEvent->IsIncomingEvent);
@@ -1354,7 +1354,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     // search for corresponding participant widget
                     for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
                     {
-                        if ((*tIt)->IsThisParticipant(QString(tMUEvent->Sender.c_str())))
+                        if ((*tIt)->IsThisParticipant(QString(tMUEvent->Sender.c_str()), tMUEvent->Transport))
                         {
                             tKnownParticipant = true;
                             (*tIt)->HandleMessageUnavailable(tMUEvent->IsIncomingEvent, tMUEvent->StatusCode, QString(tMUEvent->Description.c_str()));
@@ -1381,7 +1381,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                         // search for corresponding participant widget
                         for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
                         {
-                            if ((*tIt)->IsThisParticipant(QString(tCEvent->Sender.c_str())))
+                            if ((*tIt)->IsThisParticipant(QString(tCEvent->Sender.c_str()), tCEvent->Transport))
                             {
                                 tKnownParticipant = true;
                                 if (tCEvent->SenderName.size())
@@ -1416,7 +1416,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     // search for corresponding participant widget
                     for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
                     {
-                        if ((*tIt)->IsThisParticipant(QString(tCREvent->Sender.c_str())))
+                        if ((*tIt)->IsThisParticipant(QString(tCREvent->Sender.c_str()), tCREvent->Transport))
                         {
                             tKnownParticipant = true;
                             if (tCREvent->SenderName.size())
@@ -1432,7 +1432,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     // search for corresponding participant widget
                     for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
                     {
-                        if ((*tIt)->IsThisParticipant(QString(tCAEvent->Sender.c_str())))
+                        if ((*tIt)->IsThisParticipant(QString(tCAEvent->Sender.c_str()), tCAEvent->Transport))
                         {
                             tKnownParticipant = true;
                             if (tCAEvent->SenderName.size())
@@ -1459,7 +1459,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     // search for corresponding participant widget
                     for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
                     {
-                        if ((*tIt)->IsThisParticipant(QString(tCCEvent->Sender.c_str())))
+                        if ((*tIt)->IsThisParticipant(QString(tCCEvent->Sender.c_str()), tCCEvent->Transport))
                         {
                             tKnownParticipant = true;
                             if (tCCEvent->SenderName.size())
@@ -1475,7 +1475,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     // search for corresponding participant widget
                     for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
                     {
-                        if ((*tIt)->IsThisParticipant(QString(tCDEvent->Sender.c_str())))
+                        if ((*tIt)->IsThisParticipant(QString(tCDEvent->Sender.c_str()), tCDEvent->Transport))
                         {
                             tKnownParticipant = true;
                             if (tCDEvent->SenderName.size())
@@ -1491,7 +1491,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     // search for corresponding participant widget
                     for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
                     {
-                        if ((*tIt)->IsThisParticipant(QString(tCUEvent->Sender.c_str())))
+                        if ((*tIt)->IsThisParticipant(QString(tCUEvent->Sender.c_str()), tCUEvent->Transport))
                         {
                             tKnownParticipant = true;
                             (*tIt)->HandleCallUnavailable(tCUEvent->IsIncomingEvent, tCUEvent->StatusCode, QString(tCUEvent->Description.c_str()));
@@ -1515,7 +1515,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     // search for corresponding participant widget
                     for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
                     {
-                        if ((*tIt)->IsThisParticipant(QString(tCHUEvent->Sender.c_str())))
+                        if ((*tIt)->IsThisParticipant(QString(tCHUEvent->Sender.c_str()), tCHUEvent->Transport))
                         {
                             tKnownParticipant = true;
                             if (tCHUEvent->SenderName.size())
@@ -1531,7 +1531,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     // search for corresponding participant widget
                     for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
                     {
-                        if ((*tIt)->IsThisParticipant(QString(tCTEvent->Sender.c_str())))
+                        if ((*tIt)->IsThisParticipant(QString(tCTEvent->Sender.c_str()), tCTEvent->Transport))
                         {
                             tKnownParticipant = true;
                             if (tCTEvent->SenderName.size())
@@ -1547,7 +1547,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     // search for corresponding participant widget
                     for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
                     {
-                        if ((*tIt)->IsThisParticipant(QString(tCMUEvent->Sender.c_str())))
+                        if ((*tIt)->IsThisParticipant(QString(tCMUEvent->Sender.c_str()), tCMUEvent->Transport))
                         {
                             tKnownParticipant = true;
                             if (tCMUEvent->SenderName.size())

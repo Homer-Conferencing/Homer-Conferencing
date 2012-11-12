@@ -134,7 +134,7 @@ public:
     void SetAudioStreamPreferences(QString pCodec, bool pJustReset = false);
     void UpdateParticipantName(QString pParticipantName);
     void UpdateParticipantState(int pState);
-    bool IsThisParticipant(QString pParticipant, enum Homer::Base::TransportType pParticipantTransport = SOCKET_UDP);
+    bool IsThisParticipant(QString pParticipant, enum Homer::Base::TransportType pParticipantTransport);
     QString GetParticipantName();
     enum TransportType GetParticipantTransport();
     enum SessionType GetSessionType();
