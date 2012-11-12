@@ -182,7 +182,6 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 
     MarkOpenGrabDeviceSuccessful();
 
-    // init transcoder FIFO based for RGB32 pictures
     StartDecoder();
 
     return true;
@@ -577,7 +576,7 @@ void MediaSourceFile::StopDecoder()
 
     if (mDecoderFifo != NULL)
     {
-        // tell transcoder thread it isn't needed anymore
+        // tell decoder thread it isn't needed anymore
         mDecoderNeeded = false;
 
         // wait for termination of decoder thread
