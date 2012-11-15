@@ -286,7 +286,7 @@ void MessageWidget::initializeGUI()
     mTbMessageHistory->setFont(tFont);
 }
 
-QString MessageWidget::ReplaceSmiles(QString pMessage)
+QString MessageWidget::ReplaceSmilesAndUrls(QString pMessage)
 {
     QString tResult = "";
 
@@ -308,11 +308,35 @@ QString MessageWidget::ReplaceSmiles(QString pMessage)
 
         QString tWord = pMessage.mid(tStartPos, tEndPos - tStartPos);
         LOG(LOG_VERBOSE, "Message token: \"%s\"", tWord.toStdString().c_str());
+
+        //#########################
+        //### Filter SMILES
         if ((tWord == ":)") || (tWord == ":-)"))
         {// laughing smile
             LOG(LOG_VERBOSE, "Found smile");
             tOutputMessage.append("<img src=\"" URL_SMILE "\">");
         }else
+		//#########################
+		//### Filter HTTP URLS
+        if ((tWord.startsWith("http://")) && (tWord.size() > 7))
+        {
+            LOG(LOG_VERBOSE, "Found http reference: %s", tWord.toStdString().c_str());
+            tOutputMessage.append("<a href=\"" + tWord + "\" title=\"go to the web site " + tWord + " \">" + tWord + "</a>");
+        }else
+		//#########################
+		//### Filter FTP URLS
+		if ((tWord.startsWith("ftp://")) && (tWord.size() > 6))
+		{
+            LOG(LOG_VERBOSE, "Found ftp reference: %s", tWord.toStdString().c_str());
+            tOutputMessage.append("<a href=\"" + tWord + "\" title=\"go to the ftp server " + tWord + " \">" + tWord + "</a>");
+		}else
+		//#########################
+		//### Filter MAILTO URLS
+		if ((tWord.startsWith("mailto://")) && (tWord.size() > 9))
+		{
+            LOG(LOG_VERBOSE, "Found mailto reference: %s", tWord.toStdString().c_str());
+            tOutputMessage.append("<a href=\"" + tWord + "\" title=\"write a mail to " + tWord.right(tWord.length() - 9) + " \">" + tWord + "</a>");
+		}else
             tOutputMessage.append(tWord);
 
         if (tEndPos < pMessage.size() -1)
@@ -333,7 +357,7 @@ void MessageWidget::AddMessage(QString pSender, QString pMessage, bool pLocalMes
     // hint: necessary because this QTextEdit is in html-mode and caused by this it ignores "\n"
     pMessage.replace(QString("\n"), QString("<br>"));
 
-    pMessage = ReplaceSmiles(pMessage);
+    pMessage = ReplaceSmilesAndUrls(pMessage);
 
     if (pSender != "")
     {
@@ -398,23 +422,6 @@ void MessageWidget::SendFile(QList<QUrl> *tFileUrls)
     QString tFile;
     foreach (tFile, tSelectedFiles)
         printf("TODO: send file %s\n", tFile.toStdString().c_str());
-}
-
-//TODO: use better widget which automatically interprets links
-void MessageWidget::SendLink()
-{
-    bool tAck = false;
-    QString tLink = QInputDialog::getText(this, "Send web link to " + mParticipant, "Web address:                                                                             ", QLineEdit::Normal, "http://", &tAck);
-
-    if ((!tAck) || (tLink == ""))
-        return;
-
-    tLink = "<a href=" + tLink + ">" + tLink + "</a>";
-
-    if (MEETING.SendMessage(QString(mParticipant.toLocal8Bit()).toStdString(), mParticipantTransport, tLink.toStdString()))
-        AddMessage(QString(MEETING.GetLocalUserName().c_str()), tLink, true);
-    else
-        ShowError("Error occurred", "Message could not be sent!");
 }
 
 void MessageWidget::ShowNewState()

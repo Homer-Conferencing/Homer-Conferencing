@@ -61,14 +61,13 @@ public:
 public slots:
 	void SendMessage();
     void SendFile(QList<QUrl> *tFileUrls = NULL);
-    void SendLink();
     void ToggleVisibility();
 
 private slots:
     void AddPArticipantToContacts();
 
 private:
-    QString ReplaceSmiles(QString pMessage);
+    QString ReplaceSmilesAndUrls(QString pMessage);
     virtual void closeEvent(QCloseEvent* pEvent);
     virtual void contextMenuEvent(QContextMenuEvent *pContextMenuEvent);
     virtual void dragEnterEvent(QDragEnterEvent *pEvent);

@@ -115,47 +115,6 @@ void MessageInput::Send()
     mMessageHistory.push_back(toPlainText());
     mMessageHistoryPos = -1;
 
-    // filter and replace URLs
-    QString tInputMessage = toPlainText();
-    QString tOutputMessage = "";
-    int tStartPos = 0;
-    int tEndPos = -1;
-
-    while (tStartPos < tInputMessage.size())
-    {
-        tEndPos = tInputMessage.indexOf(' ', tStartPos);
-        if (tEndPos == -1)
-        {
-            if (tEndPos < tInputMessage.size() -1)
-                tEndPos = tInputMessage.size();
-            else
-                break;
-        }
-
-        QString tWord = tInputMessage.mid(tStartPos, tEndPos - tStartPos);
-        LOG(LOG_VERBOSE, "Message token: \"%s\"", tWord.toStdString().c_str());
-        if ((tWord.startsWith("http://")) && (tWord.size() > 7))
-        {
-            LOG(LOG_VERBOSE, "Found http reference: %s", tWord.toStdString().c_str());
-            tOutputMessage.append("<a href=\"" + tWord + "\">" + tWord + "</a>");
-        }else if ((tWord.startsWith("ftp://")) && (tWord.size() > 6))
-        {
-            LOG(LOG_VERBOSE, "Found ftp reference: %s", tWord.toStdString().c_str());
-            tOutputMessage.append("<a href=\"" + tWord + "\">" + tWord + "</a>");
-        }else if ((tWord.startsWith("mailto://")) && (tWord.size() > 9))
-        {
-            LOG(LOG_VERBOSE, "Found mailto reference: %s", tWord.toStdString().c_str());
-            tOutputMessage.append("<a href=\"" + tWord + "\">" + tWord + "</a>");
-        }else
-            tOutputMessage.append(tWord);
-
-        if (tEndPos < tInputMessage.size() -1)
-            tOutputMessage.append(' ');
-        tStartPos = tEndPos + 1;
-    }
-    if (tOutputMessage.size() > 0)
-        setPlainText(tOutputMessage);
-
     emit SendTrigger();
 }
 
