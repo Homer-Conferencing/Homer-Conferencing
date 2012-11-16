@@ -2571,7 +2571,7 @@ bool MediaSource::ContainsOnlySilence(void* pChunkBuffer, int pChunkSize)
 
 int64_t FilterPts(int64_t pValue)
 {
-    if (pValue != (int64_t)AV_NOPTS_VALUE)
+    if (pValue > 0)
         return pValue;
     else
         return 0;
@@ -2600,7 +2600,7 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..MT method: %d", mCodecContext->thread_type);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame size: %d", mCodecContext->frame_size);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..duration: %.2f frames", mNumberOfFrames);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start PTS: %.2f frames", mSourceStartPts);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start PTS: %.2f frames", FilterPts(mSourceStartPts));
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS: %ld frames", mFormatContext->start_time);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS (RT): %ld frames", mFormatContext->start_time_realtime);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..format context duration: %ld seconds", FilterPts(mFormatContext->duration) / AV_TIME_BASE);
@@ -3011,10 +3011,22 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     mCodecContext->flags2 |= CODEC_FLAG2_CHUNKS | CODEC_FLAG2_SHOW_ALL;
 
     //set duration
-    if (mFormatContext->duration != (int64_t)AV_NOPTS_VALUE)
-        mNumberOfFrames = mFormatContext->duration / AV_TIME_BASE * mFrameRate;
+    if (mFormatContext->duration > 0)
+        mNumberOfFrames = mFrameRate * mFormatContext->duration / AV_TIME_BASE;
     else
-        mNumberOfFrames = 0;
+    {
+    	LOG(LOG_WARN, "Found duration of %s stream is invalid, will use a value of 0 instead", GetMediaTypeStr().c_str());
+    	mNumberOfFrames = 0;
+    }
+
+    // set PTS offset
+    if (mFormatContext->start_time > 0)
+    	mSourceStartPts =  mFrameRate * mFormatContext->start_time / AV_TIME_BASE;
+    else
+    {
+    	LOG(LOG_WARN, "Found start time of %s stream is invalid, will use a value of 0 instead", GetMediaTypeStr().c_str());
+    	mSourceStartPts = 0;
+    }
 
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..successfully opened %s decoder", GetMediaTypeStr().c_str());
 
