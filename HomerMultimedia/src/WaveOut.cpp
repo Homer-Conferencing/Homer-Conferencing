@@ -424,7 +424,8 @@ void* WaveOut::Run(void* pArgs)
 				#endif
 
                 // wait
-                while ((GetQueueUsage() > MEDIA_SOURCE_SAMPLES_PLAYBACK_FIFO_SIZE - 8) && (MEDIA_SOURCE_SAMPLES_PLAYBACK_FIFO_SIZE > 8))
+				// HINT: we use 2 additional zero buffers after EOF was detected!
+                while ((GetQueueUsage() > MEDIA_SOURCE_SAMPLES_PLAYBACK_FIFO_SIZE - 4) && (MEDIA_SOURCE_SAMPLES_PLAYBACK_FIFO_SIZE > 4))
                 {
                     #ifdef WO_DEBUG_FILE
                         LOG(LOG_VERBOSE, "Playback FIFO is filled, waiting some time");
@@ -438,6 +439,12 @@ void* WaveOut::Run(void* pArgs)
 			// if we have reached EOF then we wait until next file is scheduled for playback
 			if (tSampleNumber == GRAB_RES_EOF)
 			{
+				// add 2 more zero buffers to audio output queue
+				char *tZeroBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLES_BUFFER_SIZE);
+				memset(tZeroBuffer, 0, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE);
+				WriteChunk(tZeroBuffer, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE);
+				free(tZeroBuffer);
+
 				mFilePlaybackLoops--;
 
 				// should we loop the file?
