@@ -110,7 +110,6 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
     mSessionTransport = SOCKET_TRANSPORT_AUTO;
     mIncomingCall = false;
     mQuitForced = false;
-    LOG(LOG_VERBOSE, "..init sound object for acoustic notifications");
 
     //####################################################################
     //### create the remaining necessary widgets, menu and layouts
@@ -375,6 +374,7 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
 
     mTimerId = startTimer(STREAM_POS_UPDATE_DELAY);
 
+    LOG(LOG_VERBOSE, "Initiating sound object for acoustic notifications..");
     OpenPlaybackDevice(mSessionName + "-Events");
 }
 
