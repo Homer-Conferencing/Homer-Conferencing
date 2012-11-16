@@ -178,7 +178,6 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     mDecodedIFrames = 0;
     mDecodedPFrames = 0;
     mDecodedBFrames = 0;
-    mSourceStartPts =  mFrameRate * mFormatContext->start_time / AV_TIME_BASE;
 
     MarkOpenGrabDeviceSuccessful();
 
@@ -307,17 +306,10 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
         LOG(LOG_WARN, "Couldn't seek to the start of audio stream because \"%s\".", strerror(AVUNERROR(tRes)));
     }
 
-    //set duration
-    if (mFormatContext->duration != (int64_t)AV_NOPTS_VALUE)
-        mNumberOfFrames = mFormatContext->duration / AV_TIME_BASE * mFrameRate;
-    else
-        mNumberOfFrames = 0;
-
     mCurrentFrameIndex = 0;
     mEOFReached = false;
     mRecalibrateRealTimeGrabbingAfterSeeking = true;
     mFlushBuffersAfterSeeking = false;
-    mSourceStartPts =  mFormatContext->start_time;
 
     MarkOpenGrabDeviceSuccessful();
 
@@ -432,7 +424,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
         }
 
         // need more input from file but EOF is not reached?
-        if (tAvailableFrames < MEDIA_SOURCE_FILE_QUEUE)
+        if ((tAvailableFrames < MEDIA_SOURCE_FILE_QUEUE) && (!mEOFReached))
         {
             #ifdef MSF_DEBUG_DECODER_STATE
                 LOG(LOG_VERBOSE, "Signal to decoder that new data is needed");
@@ -497,10 +489,11 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
 			mCurrentFrameIndex = tCurrentFramePts;
         }
 
+        int64_t tCurrentRelativeFramePts = tCurrentFramePts - mSourceStartPts;
         // EOF
-        if ((tCurrentFramePts - mSourceStartPts >= mNumberOfFrames) && (mNumberOfFrames != 0))
+        if ((tCurrentRelativeFramePts >= mNumberOfFrames) && (mNumberOfFrames != 0))
         {
-            LOG(LOG_VERBOSE, "Returning EOF in %s file because PTS value %ld is bigger than or equal to maximum %.2f", GetMediaTypeStr().c_str(), tCurrentFramePts - mSourceStartPts, (float)mNumberOfFrames);
+            LOG(LOG_VERBOSE, "Returning EOF in %s file because PTS value %ld is bigger than or equal to maximum %.2f", GetMediaTypeStr().c_str(), tCurrentRelativeFramePts, (float)mNumberOfFrames);
             mEOFReached = true;
             tShouldGrabNext = false;
         }
@@ -748,6 +741,7 @@ void* MediaSourceFile::Run(void* pArgs)
                                 LOG(LOG_VERBOSE, "Read bad picture %d with %d bytes from stream %d and result %s(%d)", tPacket->pts, tPacket->size, tPacket->stream_index, strerror(AVUNERROR(tRes)), tRes);
                         #endif
 
+						// error reporting
                         if ((!mGrabbingStopped) && (tRes != (int)AVERROR_EOF) && (tRes != (int)AVERROR(EIO)))
                             LOG(LOG_ERROR, "Couldn't grab a %s frame because \"%s\"(%d)", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)), tRes);
 
