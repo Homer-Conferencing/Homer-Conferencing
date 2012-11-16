@@ -1419,10 +1419,7 @@ bool ParticipantWidget::PlayingMovie()
 
 void ParticipantWidget::UpdateParticipantName(QString pParticipantName)
 {
-    if (mSessionType == PARTICIPANT)
-        mWidgetTitle = pParticipantName + " [" + QString(Socket::TransportType2String(mSessionTransport).c_str()) + "] ";
-    else
-        mWidgetTitle = pParticipantName;
+	mWidgetTitle = pParticipantName;
     ShowNewState();
 }
 
