@@ -146,6 +146,7 @@ SET (SOURCES
 	../src/Widgets/MessageHistory
 	../src/Widgets/MessageInput
 	../src/Widgets/MessageWidget
+	../src/Widgets/MovieControlWidget
 	../src/Widgets/OverviewContactsWidget
 	../src/Widgets/OverviewDataStreamsWidget
 	../src/Widgets/OverviewErrorsWidget
@@ -179,6 +180,7 @@ SET (QT_MOC_SOURCES
 	../include/Widgets/MessageHistory.h
 	../include/Widgets/MessageInput.h
 	../include/Widgets/MessageWidget.h
+	../include/Widgets/MovieControlWidget.h
 	../include/Widgets/OverviewContactsWidget.h
 	../include/Widgets/OverviewDataStreamsWidget.h
 	../include/Widgets/OverviewErrorsWidget.h
@@ -207,6 +209,7 @@ SET (QT_UI_SOURCES
 	../forms/Widgets/AudioWidget.ui
 	../forms/Widgets/AvailabilityWidget.ui
 	../forms/Widgets/MessageWidget.ui
+	../forms/Widgets/MovieControlWidget.ui
 	../forms/Widgets/OverviewContactsWidget.ui
 	../forms/Widgets/OverviewDataStreamsWidget.ui
 	../forms/Widgets/OverviewErrorsWidget.ui

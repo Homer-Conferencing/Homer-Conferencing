@@ -29,6 +29,7 @@
 #define _PARTICIPANT_WIDGET_
 
 #include <Widgets/MessageWidget.h>
+#include <Widgets/MovieControlWidget.h>
 #include <Widgets/PlaybackSlider.h>
 #include <Widgets/SessionInfoWidget.h>
 #include <Widgets/VideoWidget.h>
@@ -193,8 +194,16 @@ private:
     bool PlayingMovie();
     void AVSeek(int pPos); // position given in x/1000
 
+    /* fullscreen movie controls */
+    void CreateFullscreenControls();
+    void DestroyFullscreenControls();
+
+    /* user activity handling */
+    void ShowFullscreenMovieControls();
+    void HideFullscreenMovieControls();
+
     void ShowNewState();
-    void ShowStreamPosition(int64_t tCurPos, int64_t tEndPos);
+    void ShowStreamPosition(int64_t pCurPos, int64_t pEndPos);
     void CallStopped(bool pIncoming);
 
     MainWindow          	*mMainWindow;
@@ -224,6 +233,7 @@ private:
     int64_t					mTimeOfLastAVSynch;
     int 					mContinuousAVAsync;
     QString             	mCurrentMovieFile;
+    MovieControlWidget      *mFullscreeMovieControlWidget;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

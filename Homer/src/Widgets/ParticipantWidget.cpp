@@ -100,6 +100,7 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
     mRemoteAudioPort = 0;
     mParticipantVideoSink = NULL;
     mParticipantAudioSink = NULL;
+    mFullscreeMovieControlWidget = NULL;
     mSessionTransport = CONF.GetSipListenerTransport();
     mTimeOfLastAVSynch = Time::GetTimeStamp();
     mCallBox = NULL;
@@ -396,10 +397,12 @@ void ParticipantWidget::HideAudioVideoWidget()
             hide();
             break;
     }
+    CreateFullscreenControls();
 }
 
 void ParticipantWidget::ShowAudioVideoWidget()
 {
+    DestroyFullscreenControls();
     switch(mSessionType)
     {
         case BROADCAST:
@@ -1611,6 +1614,51 @@ void ParticipantWidget::AVSeek(int pPos)
     #endif
 }
 
+void ParticipantWidget::CreateFullscreenControls()
+{
+    if ((mVideoSource) && (mVideoWidget->GetWorker()->SupportsSeeking()))
+    {
+        if (mFullscreeMovieControlWidget == NULL)
+        {
+            mFullscreeMovieControlWidget = new MovieControlWidget(mVideoWidget);
+            mFullscreeMovieControlWidget->resize(mVideoWidget->width(), 58);
+            mFullscreeMovieControlWidget->move(0, mVideoWidget->height() - 58);
+            connect(mFullscreeMovieControlWidget->mTbPlayPause, SIGNAL(clicked()), this, SLOT(ActionPlayPauseMovieFile()));
+            connect(mFullscreeMovieControlWidget->mSlMovie, SIGNAL(sliderMoved(int)), this, SLOT(ActionSeekMovieFile(int)));
+            connect(mFullscreeMovieControlWidget->mSlMovie, SIGNAL(valueChanged(int)), this, SLOT(ActionSeekMovieFileToPos(int)));
+            connect(mFullscreeMovieControlWidget->mTbNext, SIGNAL(clicked()), this, SLOT(ActionPlaylistNext()));
+            connect(mFullscreeMovieControlWidget->mTbPrevious, SIGNAL(clicked()), this, SLOT(ActionPlaylistPrevious()));
+
+        }else
+            LOG(LOG_WARN, "Error in state machine");
+    }
+}
+
+void ParticipantWidget::DestroyFullscreenControls()
+{
+    if ((mVideoSource) && (mVideoWidget->GetWorker()->SupportsSeeking()))
+    {
+        if (mFullscreeMovieControlWidget != NULL)
+        {
+            delete mFullscreeMovieControlWidget;
+            mFullscreeMovieControlWidget = NULL;
+        }else
+            LOG(LOG_WARN, "Error in state machine");
+    }
+}
+
+void ParticipantWidget::ShowFullscreenMovieControls()
+{
+    if (mFullscreeMovieControlWidget != NULL)
+        mFullscreeMovieControlWidget->show();
+}
+
+void ParticipantWidget::HideFullscreenMovieControls()
+{
+    if (mFullscreeMovieControlWidget != NULL)
+        mFullscreeMovieControlWidget->hide();
+}
+
 void ParticipantWidget::ActionToggleUserAVDriftWidget()
 {
     if (mAVDriftFrame->isVisible())
@@ -1641,30 +1689,56 @@ AudioWorkerThread* ParticipantWidget::GetAudioWorker()
         return NULL;
 }
 
-void ParticipantWidget::ShowStreamPosition(int64_t tCurPos, int64_t tEndPos)
+void ParticipantWidget::ShowStreamPosition(int64_t pCurPos, int64_t pEndPos)
 {
     int tHour, tMin, tSec, tEndHour, tEndMin, tEndSec;
+    int tSliderPos;
 
-    tHour = tCurPos / 3600;
-    tCurPos %= 3600;
-    tMin = tCurPos / 60;
-    tCurPos %= 60;
-    tSec = tCurPos;
+    if(pEndPos)
+        tSliderPos = 1000 * pCurPos / pEndPos;
+    else
+        tSliderPos = 0;
 
-    tEndHour = tEndPos / 3600;
-    tEndPos %= 3600;
-    tEndMin = tEndPos / 60;
-    tEndPos %= 60;
-    tEndSec = tEndPos;
+    tHour = pCurPos / 3600;
+    pCurPos %= 3600;
+    tMin = pCurPos / 60;
+    pCurPos %= 60;
+    tSec = pCurPos;
 
-    mLbCurPos->setText(QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "\n" + \
-                       QString("%1:%2:%3").arg(tEndHour, 2, 10, (QLatin1Char)'0').arg(tEndMin, 2, 10, (QLatin1Char)'0').arg(tEndSec, 2, 10, (QLatin1Char)'0') );
+    tEndHour = pEndPos / 3600;
+    pEndPos %= 3600;
+    tEndMin = pEndPos / 60;
+    pEndPos %= 60;
+    tEndSec = pEndPos;
+
+    QString tPosText =  QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "\n" + \
+                        QString("%1:%2:%3").arg(tEndHour, 2, 10, (QLatin1Char)'0').arg(tEndMin, 2, 10, (QLatin1Char)'0').arg(tEndSec, 2, 10, (QLatin1Char)'0');
+
+    mLbCurPos->setText(tPosText);
+
+    //LOG(LOG_VERBOSE, "Updating slider position, slider is down: %d", mSlMovie->isSliderDown());
+    // update movie slider only if user doesn't currently adjust the playback position
+    if (!mSlMovie->isSliderDown())
+    {
+        mMovieSliderPosition = tSliderPos;
+        mSlMovie->setValue(tSliderPos);
+    }
+
+    if (mFullscreeMovieControlWidget != NULL)
+    {
+        mFullscreeMovieControlWidget->mLbCurPos->setText(tPosText);
+
+        //LOG(LOG_VERBOSE, "Updating slider position, slider is down: %d", mSlMovie->isSliderDown());
+        // update movie slider only if user doesn't currently adjust the playback position
+        if (!mFullscreeMovieControlWidget->mSlMovie->isSliderDown())
+        {
+            mFullscreeMovieControlWidget->mSlMovie->setValue(tSliderPos);
+        }
+    }
 }
 
 void ParticipantWidget::UpdateMovieControls()
 {
-    int tTmp = 0;
-
     // do we play a file?
     int tShowMovieControls = 0;
 
@@ -1703,19 +1777,8 @@ void ParticipantWidget::UpdateMovieControls()
 			tCurPos = mAudioWidget->GetWorker()->GetSeekPos();
 			tEndPos = mAudioWidget->GetWorker()->GetSeekEnd();
 		}
-		if(tEndPos)
-			tTmp = 1000 * tCurPos / tEndPos;
-		else
-			tTmp = 0;
 
-		//LOG(LOG_VERBOSE, "Updating slider position, slider is down: %d", mSlMovie->isSliderDown());
-		// update movie slider only if user doesn't currently adjust the playback position
-		if (!mSlMovie->isSliderDown())
-		{
-			mMovieSliderPosition = tTmp;
-			mSlMovie->setValue(tTmp);
-		}
-		ShowStreamPosition(tCurPos, tEndPos);
+        ShowStreamPosition(tCurPos, tEndPos);
 
     	//#################
     	// make sure the movie slider is displayed

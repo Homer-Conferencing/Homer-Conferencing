@@ -1303,7 +1303,7 @@ void VideoWidget::ToggleFullScreenMode()
         mParticipantWidget->ShowAudioVideoWidget();
         if (cursor().shape() == Qt::BlankCursor)
         {
-            unsetCursor();
+            mParticipantWidget->ShowFullscreenMovieControls();
             LOG(LOG_VERBOSE, "Showing the mouse cursor again, current timeout is %d seconds", VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME);
         }
         mMainWindow->setFocus(Qt::TabFocusReason);
@@ -1552,7 +1552,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
         showNormal();
         if (cursor().shape() == Qt::BlankCursor)
         {
-            unsetCursor();
+            FullscreenMarkUserActive();
             LOG(LOG_VERBOSE, "Showing the mouse cursor again, current timeout is %d seconds", VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME);
         }
         pEvent->accept();
@@ -1738,7 +1738,7 @@ void VideoWidget::mouseMoveEvent(QMouseEvent *pEvent)
     mTimeOfLastMouseMove = QTime::currentTime();
     if (cursor().shape() == Qt::BlankCursor)
     {
-        unsetCursor();
+        FullscreenMarkUserActive();
         LOG(LOG_VERBOSE, "Showing the mouse cursor again, current timeout is %d seconds", VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME);
     }
 
@@ -1802,14 +1802,14 @@ void VideoWidget::timerEvent(QTimerEvent *pEvent)
         {// mouse should be hidden
             if (cursor().shape() != Qt::BlankCursor)
             {
-                setCursor(Qt::BlankCursor);
+                FullscreenMarkUserIdle();
                 LOG(LOG_VERBOSE, "Hiding the mouse cursor after timeout of %d seconds", VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME);
             }
         }else
         {// mouse should be vissible
             if (cursor().shape() == Qt::BlankCursor)
             {
-                unsetCursor();
+                FullscreenMarkUserActive();
                 LOG(LOG_VERBOSE, "Showing the mouse cursor again, current timeout is %d seconds", VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME);
             }
         }
@@ -1817,7 +1817,7 @@ void VideoWidget::timerEvent(QTimerEvent *pEvent)
     {
         if (cursor().shape() == Qt::BlankCursor)
         {
-            unsetCursor();
+            FullscreenMarkUserActive();
             LOG(LOG_VERBOSE, "Showing the mouse cursor again, current timeout is %d seconds", VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME);
         }
     }
@@ -1964,6 +1964,18 @@ void VideoWidget::customEvent(QEvent *pEvent)
             break;
     }
     mCustomEventReason = 0;
+}
+
+void VideoWidget::FullscreenMarkUserActive()
+{
+    unsetCursor();
+    mParticipantWidget->ShowFullscreenMovieControls();
+}
+
+void VideoWidget::FullscreenMarkUserIdle()
+{
+    setCursor(Qt::BlankCursor);
+    mParticipantWidget->HideFullscreenMovieControls();
 }
 
 VideoWorkerThread::VideoWorkerThread(QString pName, MediaSource *pVideoSource, VideoWidget *pVideoWidget):

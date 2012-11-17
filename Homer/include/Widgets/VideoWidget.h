@@ -157,6 +157,10 @@ private:
     virtual void focusOutEvent(QFocusEvent *pEvent);
     virtual void timerEvent(QTimerEvent *pEvent);
 
+    /* user activity handling */
+    void FullscreenMarkUserActive();
+    void FullscreenMarkUserIdle();
+
     QWidget             *mCurrentApplicationFocusedWidget;
     QImage              mCurrentFrame;
     int 				mCurrentFrameOutputWidth;
