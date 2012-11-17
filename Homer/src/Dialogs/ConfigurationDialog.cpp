@@ -166,8 +166,10 @@ int ConfigurationDialog::VideoString2ResolutionIndex(string pString)
 QString Language2ISO639(QString pLanguage)
 {
 	// convert to two-letter ISO 639
-	if (pLanguage == "Deutsch")
+	if (pLanguage == "German")
 		return "de";
+	else if (pLanguage == "Russian")
+		return "ru";
 	else
 		return "en";
 }

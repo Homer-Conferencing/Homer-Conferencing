@@ -173,7 +173,7 @@
         <number>1</number>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>3</number>
        </property>
        <widget class="QWidget" name="mVideo">
         <layout class="QVBoxLayout" name="verticalLayout_19">
@@ -2774,7 +2774,12 @@ background-color: rgb(150, 150, 150);
                 </item>
                 <item>
                  <property name="text">
-                  <string>Deutsch</string>
+                  <string>German</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Russian</string>
                  </property>
                 </item>
                </widget>
