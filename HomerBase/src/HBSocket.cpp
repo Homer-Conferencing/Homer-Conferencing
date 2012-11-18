@@ -492,12 +492,26 @@ void Socket::UDPLiteSetCheckLength(int pBytes)
                  If a packet's value is below the packet is silently discarded by the Linux kernel.
                  Moreover, packets with a checksum coverage of zero will be discarded in every case!
      */
+
     if (mSocketTransportType != SOCKET_UDP_LITE)
     {
         LOG(LOG_WARN, "Socket is not an UDP-Lite socket, will ignore the new value for the check length");
         return;
     }
+
+    // store the value
     mUdpLiteChecksumCoverage = pBytes;
+
+    // update the parameter in the socket
+    #if defined(LINUX) || defined(APPLE) || defined(BSD)
+        LOG(LOG_WARN, "Setting UDP-Lite checksum coverage to %d", mUdpLiteChecksumCoverage);
+        if (setsockopt(mSocketHandle, IPPROTO_UDPLITE, UDPLITE_SEND_CSCOV, (char*)&mUdpLiteChecksumCoverage, sizeof(mUdpLiteChecksumCoverage)) < 0)
+            LOG(LOG_ERROR, "Failed to set senders checksum coverage for UDP-Lite on socket %d", mSocketHandle);
+        if (setsockopt(mSocketHandle, IPPROTO_UDPLITE, UDPLITE_RECV_CSCOV, (char*)&mUdpLiteChecksumCoverage, sizeof(mUdpLiteChecksumCoverage)) < 0)
+            LOG(LOG_ERROR, "Failed to set receivers checksum coverage for UDP-Lite on socket %d", mSocketHandle);
+    #else
+        LOG(LOG_ERROR, "Cannot adjust the CRC size for this UDP-Lite socket on this operating system");
+    #endif
 }
 
 void Socket::TCPDisableNagle()
@@ -564,11 +578,7 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
     switch(mSocketTransportType)
     {
 		case SOCKET_UDP_LITE:
-            #if defined(LINUX) || defined(APPLE) || defined(BSD)
-		        LOG(LOG_VERBOSE, "Setting UDP-Lite checksum coverage to %d", tUdpLiteChecksumCoverage);
-				if (setsockopt(mSocketHandle, IPPROTO_UDPLITE, UDPLITE_SEND_CSCOV, (char*)&tUdpLiteChecksumCoverage, sizeof(tUdpLiteChecksumCoverage)) < 0)
-					LOG(LOG_ERROR, "Failed to set senders checksum coverage for UDP-Lite on socket %d", mSocketHandle);
-			#endif
+            // continue as it was UDP sending
 		case SOCKET_UDP:
 		    mPeerDataMutex.lock();
 		    mPeerHost = pTargetHost;
@@ -680,10 +690,6 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
     switch(mSocketTransportType)
     {
 		case SOCKET_UDP_LITE:
-            #if defined(LINUX) || defined(APPLE) || defined(BSD)
-				if (setsockopt(mSocketHandle, IPPROTO_UDPLITE, UDPLITE_RECV_CSCOV, (char*)&tUdpLiteChecksumCoverage, sizeof(tUdpLiteChecksumCoverage)) != 0)
-					LOG(LOG_ERROR, "Failed to set receivers checksum coverage for UDP-Lite on socket %d", mSocketHandle);
-			#endif
             // continue as it was UDP receiving
 		case SOCKET_UDP:
             /*
