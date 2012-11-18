@@ -259,6 +259,7 @@ bool SocketConnection::changeRequirements(Requirements *pRequirements)
     {
         RequirementTransmitBitErrors* tReqBitErr = (RequirementTransmitBitErrors*)pRequirements->get(RequirementTransmitBitErrors::type());
         int tSecuredFrontDataSize = tReqBitErr->getSecuredFrontDataSize();
+        LOG(LOG_WARN, "Setting UDP-Lite socket CRC size to %d", tSecuredFrontDataSize);
         mSocket->UDPLiteSetCheckLength(tSecuredFrontDataSize);
     }
 
