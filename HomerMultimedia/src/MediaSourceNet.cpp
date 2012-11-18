@@ -90,7 +90,7 @@ void MediaSourceNet::Init(Socket *pDataSocket, unsigned int pLocalPort, bool pRt
             mListenerPort = 0;
         }
 
-        LOG(LOG_VERBOSE, "Listen for media packets at NAPI interface: %s, local port specified as: %d, TCP-like transport: %d", mNAPIDataSocket->getName()->toString().c_str(), GetListenerPort(), mStreamedTransport);
+        LOG(LOG_VERBOSE, "Listen for media packets at NAPI interface: %s, local port specified as: %d, TCP-like transport: %d, requirements: %s", mNAPIDataSocket->getName()->toString().c_str(), GetListenerPort(), mStreamedTransport, (mNAPIDataSocket->getRequirements() != NULL) ? mNAPIDataSocket->getRequirements()->getDescription().c_str() : "");
         // assume Berkeley-Socket implementation behind NAPI interface => therefore we can easily conclude on "UDP/TCP/UDP-Lite"
         mCurrentDeviceName = "NET-IN: " + mNAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mNAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? "UDP-Lite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
     }else
@@ -158,6 +158,7 @@ MediaSourceNet::MediaSourceNet(string pLocalName, Requirements *pTransportRequir
     mNAPIBinding = NAPI.bind(&tName, pTransportRequirements); //new Socket(IS_IPV6_ADDRESS(pTargetHost) ? SOCKET_IPv6 : SOCKET_IPv4, pSocketType);
     if (mNAPIBinding == NULL)
         LOG(LOG_ERROR, "Invalid NAPI setup interface");
+    LOG(LOG_VERBOSE, "NAP binding created with requirements: %s", (mNAPIBinding->getRequirements() != NULL) ? mNAPIBinding->getRequirements()->getDescription().c_str() : "");
     mNAPIDataSocket = mNAPIBinding->readConnection();
     if (mNAPIDataSocket == NULL)
         LOG(LOG_ERROR, "Invalid NAPI association");
