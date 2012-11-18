@@ -29,33 +29,6 @@
 #define _MOVIE_CONTROL_WIDGET_
 
 #include <Widgets/PlaybackSlider.h>
-
-//#include <MediaSourceMuxer.h>
-//#include <Widgets/AudioWidget.h>
-//#include <MediaSourceMuxer.h>
-//#include <MeetingEvents.h>
-//#include <MediaSource.h>
-//#include <MediaSinkNet.h>
-//#include <WaveOut.h>
-//
-//#include <HBSocket.h>
-//
-//#include <list>
-
-//#include <QMenu>
-//#include <QEvent>
-//#include <QAction>
-//#include <QString>
-//#include <QFrame>
-//#include <QDockWidget>
-//#include <QSplitter>
-//#include <QMainWindow>
-//#include <QMessageBox>
-//#include <QCloseEvent>
-//#include <QGridLayout>
-//#include <QHBoxLayout>
-//#include <QHostInfo>
-
 #include <QWidget>
 
 #include <ui_MovieControlWidget.h>
