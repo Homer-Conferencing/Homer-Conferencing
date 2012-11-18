@@ -181,9 +181,6 @@
                <bold>false</bold>
               </font>
              </property>
-             <property name="frame">
-              <bool>false</bool>
-             </property>
              <item>
               <property name="text">
                <string>UDP</string>

@@ -711,13 +711,13 @@
                     <widget class="QComboBox" name="mCbTransportVideo">
                      <property name="minimumSize">
                       <size>
-                       <width>65</width>
+                       <width>0</width>
                        <height>24</height>
                       </size>
                      </property>
                      <property name="maximumSize">
                       <size>
-                       <width>65</width>
+                       <width>16777215</width>
                        <height>24</height>
                       </size>
                      </property>
@@ -1203,13 +1203,13 @@
                   <widget class="QComboBox" name="mCbTransportAudio">
                    <property name="minimumSize">
                     <size>
-                     <width>65</width>
+                     <width>0</width>
                      <height>24</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>65</width>
+                     <width>16777215</width>
                      <height>24</height>
                     </size>
                    </property>
