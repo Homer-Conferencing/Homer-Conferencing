@@ -177,11 +177,10 @@ inline void HM_close_input(AVFormatContext *s)
 	#endif
 }
 
-#ifndef av_opt_set
+#if LIBAVUTIL_VERSION_INT < AV_VERSION_INT(51, 35, 0)
 inline int av_opt_set(void *obj, const char *name, const char *val, int search_flags)
 {
     return 0;
 }
 #endif
-
 #endif
