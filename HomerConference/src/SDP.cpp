@@ -148,7 +148,7 @@ string SDP::GetMediaTransportStr(enum MediaTransportType pType)
             tResult = "tcp"; //ignore and fallback to tcp, correct value would be "RTP/AVP-TCP"
             break;
         case MEDIA_TRANSPORT_RTP_UDP_LITE:
-            LOG(LOG_ERROR, "UDPlite not supported by sofia-sip, falling back to udp");
+            LOG(LOG_ERROR, "UDP-Lite not supported by sofia-sip, falling back to udp");
             tResult = "udp"; //ignore because this is not supported by sofia-sip, correct value would be "RTP/AVP-FAST"
             break;
         case MEDIA_TRANSPORT_UDP:
@@ -158,7 +158,7 @@ string SDP::GetMediaTransportStr(enum MediaTransportType pType)
             tResult = "tcp";
             break;
         case MEDIA_TRANSPORT_UDP_LITE:
-            LOG(LOG_ERROR, "UDPlite not supported by sofia-sip, falling back to udp");
+            LOG(LOG_ERROR, "UDP-Lite not supported by sofia-sip, falling back to udp");
             tResult = "udp"; //ignore because this is not supported by sofia-sip, correct value would be "udp-lite"
             break;
         default:

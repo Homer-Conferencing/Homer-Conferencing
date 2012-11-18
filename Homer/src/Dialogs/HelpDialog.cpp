@@ -172,7 +172,7 @@ void HelpDialog::initializeGUI()
 								"" + tAdditionalLines + "\n"\
 								"QoS supported: " + (Socket::IsQoSSupported() ? "yes" : "no") + "\n"\
 								"IPv6 supported: " + (Socket::IsIPv6Supported() ? "yes" : "no") + "\n"\
-								"UDPlite supported: " + (Socket::IsTransportSupported(SOCKET_UDP_LITE) ? "yes" : "no") + "\n"\
+								"UDP-Lite supported: " + (Socket::IsTransportSupported(SOCKET_UDP_LITE) ? "yes" : "no") + "\n"\
 								"DCCP supported: " + (Socket::IsTransportSupported(SOCKET_DCCP) ? "yes" : "no") + "\n"\
 								"SCTP supported: " + (Socket::IsTransportSupported(SOCKET_SCTP) ? "yes" : "no") + "\n"\
 								);

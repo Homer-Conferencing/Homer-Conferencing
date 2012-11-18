@@ -69,7 +69,7 @@ void MediaSourceNet::Init(Socket *pDataSocket, unsigned int pLocalPort, bool pRt
         // set receive buffer size
         mDataSocket->SetReceiveBufferSize(SOCKET_RECEIVE_BUFFER_SIZE);
 
-        // check the UDPLite and the RTP header
+        // check the UDP-Lite and the RTP header
         if (mDataSocket->GetTransportType() == SOCKET_UDP_LITE)
             mDataSocket->UDPLiteSetCheckLength(UDP_LITE_HEADER_SIZE + RTP_HEADER_SIZE);
 
@@ -91,8 +91,8 @@ void MediaSourceNet::Init(Socket *pDataSocket, unsigned int pLocalPort, bool pRt
         }
 
         LOG(LOG_VERBOSE, "Listen for media packets at NAPI interface: %s, local port specified as: %d, TCP-like transport: %d", mNAPIDataSocket->getName()->toString().c_str(), GetListenerPort(), mStreamedTransport);
-        // assume Berkeley-Socket implementation behind NAPI interface => therefore we can easily conclude on "UDP/TCP/UDPlite"
-        mCurrentDeviceName = "NET-IN: " + mNAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mNAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? "UDPlite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
+        // assume Berkeley-Socket implementation behind NAPI interface => therefore we can easily conclude on "UDP/TCP/UDP-Lite"
+        mCurrentDeviceName = "NET-IN: " + mNAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mNAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? "UDP-Lite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
     }else
     {
         mListenerPort = 0;
@@ -223,8 +223,8 @@ bool MediaSourceNet::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 		// set category for packet statistics
         if (mNAPIUsed)
         {
-            // assume Berkeley-Socket implementation behind NAPI interface => therefore we can easily conclude on "UDP/TCP/UDPlite"
-            mCurrentDeviceName = "NET-IN: " + mNAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mNAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? "UDPlite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
+            // assume Berkeley-Socket implementation behind NAPI interface => therefore we can easily conclude on "UDP/TCP/UDP-Lite"
+            mCurrentDeviceName = "NET-IN: " + mNAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mNAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? "UDP-Lite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
 
             tTransportType = (mStreamedTransport ? SOCKET_TCP : (mNAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
             tNetworkType = (IS_IPV6_ADDRESS(mNAPIDataSocket->getName()->toString()) ? SOCKET_IPv6 : SOCKET_IPv4); //TODO: this is not correct for unknown NAPI implementations which use some different type of network
@@ -262,8 +262,8 @@ bool MediaSourceNet::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 	    // set category for packet statistics
         if (mNAPIUsed)
         {
-            // assume Berkeley-Socket implementation behind NAPI interface => therefore we can easily conclude on "UDP/TCP/UDPlite"
-            mCurrentDeviceName = "NET-IN: " + mNAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mNAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? "UDPlite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
+            // assume Berkeley-Socket implementation behind NAPI interface => therefore we can easily conclude on "UDP/TCP/UDP-Lite"
+            mCurrentDeviceName = "NET-IN: " + mNAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mNAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? "UDP-Lite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
 
             tTransportType = (mStreamedTransport ? SOCKET_TCP : (mNAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
             tNetworkType = IS_IPV6_ADDRESS(mNAPIDataSocket->getName()->toString()) ? SOCKET_IPv6 : SOCKET_IPv4; //TODO: this is not correct for unknown NAPI implementations which use some different type of network
@@ -391,8 +391,8 @@ void* MediaSourceNet::Run(void* pArgs)
 
     if (mNAPIUsed)
     {
-        // assume Berkeley-Socket implementation behind NAPI interface => therefore we can easily conclude on "UDP/TCP/UDPlite"
-        mCurrentDeviceName = "NET-IN: " + mNAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mNAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? "UDPlite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
+        // assume Berkeley-Socket implementation behind NAPI interface => therefore we can easily conclude on "UDP/TCP/UDP-Lite"
+        mCurrentDeviceName = "NET-IN: " + mNAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mNAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? "UDP-Lite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
 
         enum TransportType tTransportType = (mStreamedTransport ? SOCKET_TCP : (mNAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
         // update category for packet statistics
@@ -436,8 +436,8 @@ void* MediaSourceNet::Run(void* pArgs)
 		    {
                 if (mNAPIUsed)
                 {
-                    // assume Berkeley-Socket implementation behind NAPI interface => therefore we can easily conclude on "UDP/TCP/UDPlite"
-                    mCurrentDeviceName = "NET-IN: " + mNAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mNAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? "UDPlite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
+                    // assume Berkeley-Socket implementation behind NAPI interface => therefore we can easily conclude on "UDP/TCP/UDP-Lite"
+                    mCurrentDeviceName = "NET-IN: " + mNAPIDataSocket->getName()->toString() + "(" + (mStreamedTransport ? "TCP" : (mNAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? "UDP-Lite" : "UDP")) + (mRtpActivated ? "/RTP" : "") + ")";
 
                     enum TransportType tTransportType = (mStreamedTransport ? SOCKET_TCP : (mNAPIDataSocket->getRequirements()->contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
                     // update category for packet statistics

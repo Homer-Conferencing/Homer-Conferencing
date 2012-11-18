@@ -739,7 +739,7 @@
                      </item>
                      <item>
                       <property name="text">
-                       <string>UDPlite</string>
+                       <string>UDP-Lite</string>
                       </property>
                      </item>
                      <item>
@@ -1231,7 +1231,7 @@
                    </item>
                    <item>
                     <property name="text">
-                     <string>UDPlite</string>
+                     <string>UDP-Lite</string>
                     </property>
                    </item>
                    <item>

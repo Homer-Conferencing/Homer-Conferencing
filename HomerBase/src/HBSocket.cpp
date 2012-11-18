@@ -84,7 +84,7 @@ void Socket::SetDefaults(enum TransportType pTransportType)
     #if defined(WIN32) ||defined(WIN64) || defined(APPLE) || defined(BSD)
 		if (pTransportType == SOCKET_UDP_LITE)
 		{
-			LOG(LOG_ERROR, "UDPlite is not supported by Windows API, a common UDP socket will be used instead");
+			LOG(LOG_ERROR, "UDP-Lite is not supported by Windows API, a common UDP socket will be used instead");
 			pTransportType = SOCKET_UDP;
 		}
         if (pTransportType == SOCKET_DCCP)
@@ -166,7 +166,7 @@ Socket::Socket(enum NetworkType pIpVersion, enum TransportType pTransportType, u
 
     if ((pTransportType == SOCKET_UDP_LITE) && (!IsTransportSupported(SOCKET_UDP_LITE)))
     {
-        LOG(LOG_ERROR, "UDPlite not supported by system, falling back to UDP");
+        LOG(LOG_ERROR, "UDP-Lite not supported by system, falling back to UDP");
         pTransportType = SOCKET_UDP;
     }
 
@@ -222,7 +222,7 @@ string Socket::TransportType2String(enum TransportType pSocketType)
         case SOCKET_TCP:
             return "TCP";
         case SOCKET_UDP_LITE:
-            return "UDPlite";
+            return "UDP-Lite";
         case SOCKET_DCCP:
             return "DCCP";
         case SOCKET_SCTP:
@@ -240,7 +240,7 @@ enum TransportType Socket::String2TransportType(string pTypeStr)
         return SOCKET_UDP;
     if ((pTypeStr == "TCP") || (pTypeStr == "tcp"))
         return SOCKET_TCP;
-    if ((pTypeStr == "UDPLITE") || (pTypeStr == "UDPlite") || (pTypeStr == "udplite"))
+    if ((pTypeStr == "UDPLITE") || (pTypeStr == "UDP-Lite") || (pTypeStr == "UDPlite")|| (pTypeStr == "udplite"))
         return SOCKET_UDP_LITE;
     if ((pTypeStr == "DCCP") || (pTypeStr == "dccp"))
         return SOCKET_DCCP;
@@ -494,7 +494,7 @@ void Socket::UDPLiteSetCheckLength(int pBytes)
      */
     if (mSocketTransportType != SOCKET_UDP_LITE)
     {
-        LOG(LOG_WARN, "Socket is not an UDPLite socket, will ignore the new value for the check length");
+        LOG(LOG_WARN, "Socket is not an UDP-Lite socket, will ignore the new value for the check length");
         return;
     }
     mUdpLiteChecksumCoverage = pBytes;
@@ -565,9 +565,9 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
     {
 		case SOCKET_UDP_LITE:
             #if defined(LINUX) || defined(APPLE) || defined(BSD)
-		        LOG(LOG_VERBOSE, "Setting UDPlite checksum coverage to %d", tUdpLiteChecksumCoverage);
+		        LOG(LOG_VERBOSE, "Setting UDP-Lite checksum coverage to %d", tUdpLiteChecksumCoverage);
 				if (setsockopt(mSocketHandle, IPPROTO_UDPLITE, UDPLITE_SEND_CSCOV, (char*)&tUdpLiteChecksumCoverage, sizeof(tUdpLiteChecksumCoverage)) < 0)
-					LOG(LOG_ERROR, "Failed to set senders checksum coverage for UDPlite on socket %d", mSocketHandle);
+					LOG(LOG_ERROR, "Failed to set senders checksum coverage for UDP-Lite on socket %d", mSocketHandle);
 			#endif
 		case SOCKET_UDP:
 		    mPeerDataMutex.lock();
@@ -682,7 +682,7 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
 		case SOCKET_UDP_LITE:
             #if defined(LINUX) || defined(APPLE) || defined(BSD)
 				if (setsockopt(mSocketHandle, IPPROTO_UDPLITE, UDPLITE_RECV_CSCOV, (char*)&tUdpLiteChecksumCoverage, sizeof(tUdpLiteChecksumCoverage)) != 0)
-					LOG(LOG_ERROR, "Failed to set receivers checksum coverage for UDPlite on socket %d", mSocketHandle);
+					LOG(LOG_ERROR, "Failed to set receivers checksum coverage for UDP-Lite on socket %d", mSocketHandle);
 			#endif
             // continue as it was UDP receiving
 		case SOCKET_UDP:
@@ -703,7 +703,7 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
 		        mPeerDataMutex.lock();
 		    	mPeerHost = GetAddrFromDescriptor(&tAddressDescriptor, &mPeerPort);
 		    	if (mPeerHost == "")
-		            LOG(LOG_ERROR ,"Could not determine the UDP/UDPLite source address for socket %d", mSocketHandle);
+		            LOG(LOG_ERROR ,"Could not determine the UDP/UDP-Lite source address for socket %d", mSocketHandle);
 		    	mPeerDataMutex.unlock();
 		    }
             break;
@@ -949,12 +949,12 @@ bool Socket::IsTransportSupported(enum TransportType pType)
 
                     if ((tHandle = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDPLITE)) > 0)
                     {
-                        LOGEX(Socket, LOG_INFO, ">>> UDPlite sockets available <<<");
+                        LOGEX(Socket, LOG_INFO, ">>> UDP-Lite sockets available <<<");
                         close(tHandle);
                         sUDPliteSupported = true;
                     }else
                     {
-                        LOGEX(Socket, LOG_INFO, ">>> UDPlite not supported, falling back to UDP <<<");
+                        LOGEX(Socket, LOG_INFO, ">>> UDP-Lite not supported, falling back to UDP <<<");
                         sUDPliteSupported = false;
                     }
                 #endif
@@ -1208,13 +1208,13 @@ bool Socket::CreateSocket(enum NetworkType pIpVersion)
                 if (IsTransportSupported(SOCKET_UDP_LITE))
                 {
                     if ((mSocketHandle = socket(tSelectedIPDomain, SOCK_DGRAM, IPPROTO_UDPLITE)) < 0)
-                        LOG(LOG_ERROR, "Could not create UDPlite socket");
+                        LOG(LOG_ERROR, "Could not create UDP-Lite socket");
                     else
                         tResult = true;
                     break;
                 }
             #else
-                LOG(LOG_ERROR, "UDPlite is not supported by Windows API, a common UDP socket will be used instead");
+                LOG(LOG_ERROR, "UDP-Lite is not supported by Windows API, a common UDP socket will be used instead");
             #endif
         case SOCKET_UDP:
             if ((mSocketHandle = (int)socket(tSelectedIPDomain, SOCK_DGRAM, IPPROTO_UDP)) < 0)
