@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="de_DE" sourcelanguage="en_US">
+<TS version="2.0" language="ru_RU" sourcelanguage="en_US">
 <context>
     <name>AddNetworkSinkDialog</name>
     <message>
@@ -122,7 +122,7 @@
     <message>
         <location filename="../forms/Widgets/AvailabilityWidget.ui" line="32"/>
         <source>Online status</source>
-        <translation type="unfinished">Onlinestatus</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../forms/Widgets/AvailabilityWidget.ui" line="61"/>
@@ -654,23 +654,13 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2772"/>
-        <source>English</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2951"/>
-        <source> Software components</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2806"/>
-        <source>Independent participant windows:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2733"/>
         <source>Program language: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2772"/>
+        <source>English</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -681,6 +671,11 @@
     <message>
         <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2782"/>
         <source>Russian</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2806"/>
+        <source>Independent participant windows:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -696,6 +691,11 @@
     <message>
         <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2910"/>
         <source>Check for software updates during start:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2951"/>
+        <source> Software components</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1056,21 +1056,17 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../forms/MainWindow.ui" line="26"/>
         <source>Homer Conferencing</source>
-        <translation>Homer Conferencing</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../forms/MainWindow.ui" line="52"/>
         <source>Settings</source>
-        <translation>Einstellungen</translation>
+        <translation>настройки</translation>
     </message>
     <message>
         <location filename="../forms/MainWindow.ui" line="59"/>
         <source>Homer</source>
-        <translation>Homer</translation>
-    </message>
-    <message>
-        <source>Views</source>
-        <translation type="obsolete">Ansicht</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../forms/MainWindow.ui" line="69"/>
@@ -1080,22 +1076,22 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../forms/MainWindow.ui" line="73"/>
         <source>Tool bars</source>
-        <translation>Werkzeugleisten</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../forms/MainWindow.ui" line="84"/>
         <source>Video windows</source>
-        <translation>Videofenster</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../forms/MainWindow.ui" line="94"/>
         <source>Audio windows</source>
-        <translation>Audiofenster</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../forms/MainWindow.ui" line="103"/>
         <source>Message windows</source>
-        <translation>Nachrichtenfenster</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../forms/MainWindow.ui" line="130"/>
@@ -1106,7 +1102,7 @@ p, li { white-space: pre-wrap; }
         <location filename="../forms/MainWindow.ui" line="155"/>
         <location filename="../forms/MainWindow.ui" line="470"/>
         <source>Online status</source>
-        <translation>Onlinestatus</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../forms/MainWindow.ui" line="194"/>
@@ -1121,23 +1117,23 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../forms/MainWindow.ui" line="224"/>
         <source>Close sessions</source>
-        <translation>Sitzungen schließen</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../forms/MainWindow.ui" line="233"/>
         <source>Remove participant</source>
-        <translation>Teilnehmer entfernen</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../forms/MainWindow.ui" line="238"/>
         <source>Exit Homer</source>
-        <translation>Homer beenden</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../forms/MainWindow.ui" line="243"/>
         <location filename="../forms/MainWindow.ui" line="252"/>
         <source>Identity</source>
-        <translation>Identität</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../forms/MainWindow.ui" line="255"/>
@@ -1147,7 +1143,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../forms/MainWindow.ui" line="270"/>
         <source>Configuration</source>
-        <translation>Konfiguration</translation>
+        <translation>конфигурация</translation>
     </message>
     <message>
         <location filename="../forms/MainWindow.ui" line="273"/>
@@ -1305,17 +1301,6 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="797"/>
-        <location filename="../forms/MainWindow.ui" line="800"/>
-        <source>Show/hide main menu</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../forms/MainWindow.ui" line="803"/>
-        <source>Alt+M</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../forms/MainWindow.ui" line="569"/>
         <source>Ctrl+F</source>
         <translation type="unfinished"></translation>
@@ -1433,6 +1418,17 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../forms/MainWindow.ui" line="781"/>
         <source>Ctrl+P</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../forms/MainWindow.ui" line="797"/>
+        <location filename="../forms/MainWindow.ui" line="800"/>
+        <source>Show/hide main menu</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../forms/MainWindow.ui" line="803"/>
+        <source>Alt+M</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1770,8 +1766,8 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="280"/>
-        <source> Audio streams </source>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="52"/>
+        <source> Video streams </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1865,8 +1861,8 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="52"/>
-        <source> Video streams </source>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="280"/>
+        <source> Audio streams </source>
         <translation type="unfinished"></translation>
     </message>
 </context>

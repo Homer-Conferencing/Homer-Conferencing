@@ -229,6 +229,7 @@ SET (QT_QRC_SOURCES
 ##############################################################
 # multi-language support
 SET(QT_LANG_FILES
+    ../lang/ru.ts
     ../lang/de.ts
 )
 
