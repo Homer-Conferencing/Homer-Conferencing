@@ -167,6 +167,7 @@ IConnection* SocketBinding::readConnection()
             case SOCKET_UDP_LITE:
             case SOCKET_TCP:
                 mConnection = new SocketConnection(mSocket);
+                mConnection->changeRequirements(mRequirements);
                 break;
             default:
                 LOG(LOG_ERROR, "Unsupported transport type");
