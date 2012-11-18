@@ -177,4 +177,11 @@ inline void HM_close_input(AVFormatContext *s)
 	#endif
 }
 
+#ifndef av_opt_set
+inline int av_opt_set(void *obj, const char *name, const char *val, int search_flags)
+{
+    return 0;
+}
+#endif
+
 #endif
