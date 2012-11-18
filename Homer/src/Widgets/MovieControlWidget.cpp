@@ -25,44 +25,8 @@
  * Since:   2012-11-16
  */
 
-//#include <Dialogs/OpenVideoAudioPreviewDialog.h>
-//#include <Widgets/StreamingControlWidget.h>
-//#include <Widgets/OverviewPlaylistWidget.h>
 #include <Widgets/MovieControlWidget.h>
-//#include <Widgets/VideoWidget.h>
-//#include <Widgets/OverviewPlaylistWidget.h>
-//#include <MediaSourceNet.h>
-//#include <WaveOutPortAudio.h>
-//#include <WaveOutSdl.h>
-//#include <Widgets/AudioWidget.h>
-//#include <MediaSourceFile.h>
-//#include <MediaSourceNet.h>
-//#include <Widgets/MessageWidget.h>
-//#include <Widgets/SessionInfoWidget.h>
-//#include <MainWindow.h>
-//#include <Configuration.h>
-//#include <Meeting.h>
-//#include <MeetingEvents.h>
 #include <Logger.h>
-//#include <Snippets.h>
-
-//#include <QInputDialog>
-//#include <QMenu>
-//#include <QEvent>
-//#include <QAction>
-//#include <QString>
-//#include <QWidget>
-//#include <QFrame>
-//#include <QDockWidget>
-//#include <QLabel>
-//#include <QMessageBox>
-//#include <QMainWindow>
-//#include <QSettings>
-//#include <QSplitter>
-//#include <QCoreApplication>
-//#include <QHostInfo>
-//
-//#include <stdlib.h>
 
 using namespace Homer::Base;
 
@@ -76,7 +40,7 @@ MovieControlWidget::MovieControlWidget(QWidget *pParent):
     LOG(LOG_VERBOSE, "Created");
 
     //setParent(NULL);
-    setWindowFlags(Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint);
+    setWindowFlags(Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint | Qt::FramelessWindowHint );
 
     setupUi(this);
     show();
