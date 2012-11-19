@@ -193,6 +193,44 @@ string System::GetMachineType()
     return tResult;
 }
 
+int64_t System::GetMachineMemoryPhysical()
+{
+    int64_t tResult = 0;
+    #if defined(LINUX) || defined(APPLE) || defined(BSD)
+        long tPages = sysconf(_SC_PHYS_PAGES);
+        long tPageSize = sysconf(_SC_PAGE_SIZE);
+        tResult = (int64_t)tPages * tPageSize;
+    #endif
+    #ifdef WIN32
+        MEMORYSTATUSEX tMemStatus;
+        tMemStatus.dwLength = sizeof(tMemStatus);
+        GlobalMemoryStatusEx(&tMemStatus);
+        tReult = (int64_t)tMemStatus.ullTotalPhys;
+    #endif
+
+    LOGEX(System, LOG_VERBOSE, "Found machine memory (phys.): %ld MB", tResult / 1024 / 1024);
+    return tResult;
+}
+
+int64_t System::GetMachineMemoryVirtual()
+{
+    int64_t tResult = 0;
+    #if defined(LINUX) || defined(APPLE) || defined(BSD)
+        long tPages = sysconf(_SC_PHYS_PAGES);//TODO
+        long tPageSize = sysconf(_SC_PAGE_SIZE);//TODO
+        tResult = (int64_t)tPages * tPageSize;
+    #endif
+    #ifdef WIN32
+        MEMORYSTATUSEX tMemStatus;
+        tMemStatus.dwLength = sizeof(tMemStatus);
+        GlobalMemoryStatusEx(&tMemStatus);
+        tResult = (int64_t)tMemStatus.ullTotalPageFile;
+    #endif
+
+    LOGEX(System, LOG_VERBOSE, "Found machine memory (virt.): %ld MB", tResult / 1024 / 1024);
+    return tResult;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 }} //namespace

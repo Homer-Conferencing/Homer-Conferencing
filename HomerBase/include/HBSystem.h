@@ -28,6 +28,7 @@
 #ifndef _BASE_SYSTEM_
 #define _BASE_SYSTEM_
 
+#include <stdint.h>
 #include <string>
 
 namespace Homer { namespace Base {
@@ -45,6 +46,9 @@ public:
     static std::string GetKernelVersion();
     static int GetMachineCores();
     static std::string GetMachineType();
+    static int64_t GetMachineMemoryPhysical();
+    static int64_t GetMachineMemoryVirtual();
+
 private:
 };
 
