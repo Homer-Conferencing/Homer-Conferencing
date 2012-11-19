@@ -109,8 +109,6 @@ ConfigurationDialog::ConfigurationDialog(QWidget* pParent, list<string>  pLocalA
     ShowVideoSourceInfo(mCbVideoSource->currentText());
     ShowAudioSourceInfo(mCbAudioSource->currentText());
     ShowAudioSinkInfo(mCbAudioSink->currentText());
-    if (!CONF.ConferencingEnabled())
-        mNetwork->setEnabled(false);
 }
 
 ConfigurationDialog::~ConfigurationDialog()
@@ -370,6 +368,9 @@ void ConfigurationDialog::LoadConfiguration()
     	}
     }
 
+    if (!CONF.ConferencingEnabled())
+        mNetwork->setEnabled(false);
+
     //######################################################################
     //### NOTIFICATION configuration
     //######################################################################
@@ -545,22 +546,37 @@ void ConfigurationDialog::SaveConfiguration()
 
 //    if (mGrpNatSupport->isChecked() != CONF.GetNatSupportActivation())
 //        tHaveToRestart = true;
-    if (mCbLocalAdr->currentText() != CONF.GetSipListenerAddress())
-        tHaveToRestart = true;
 
-    QString tAddress = mCbLocalAdr->currentText();
+    QString tSIPAddress = mCbLocalAdr->currentText();
     // remove the "IPv6:  " part
-    tAddress = tAddress.right(tAddress.size() - 7);
-    CONF.SetSipListenerAddress(tAddress);
+    tSIPAddress = tSIPAddress.right(tSIPAddress.size() - 7);
+    if (tSIPAddress != CONF.GetSipListenerAddress())
+    {
+    	LOG(LOG_WARN, "Restart needed! SIP listener address: \"%s\" => \"%s\"", CONF.GetSipListenerAddress().toStdString().c_str(), tSIPAddress.toStdString().c_str());
+    	tHaveToRestart = true;
+    }
+    CONF.SetSipListenerAddress(tSIPAddress);
 
     if (mCbSipTransport->currentText() != QString(Socket::TransportType2String(CONF.GetSipListenerTransport()).c_str()))
-        tHaveToRestart = true;
+    {
+    	LOG(LOG_WARN, "Restart needed!");
+    	tHaveToRestart = true;
+    }
+
     CONF.SetSipListenerTransport(Socket::String2TransportType(mCbSipTransport->currentText().toStdString()));
     if (mSbSipStartPort->value() != CONF.GetSipStartPort())
-        tHaveToRestart = true;
+    {
+    	LOG(LOG_WARN, "Restart needed!");
+    	tHaveToRestart = true;
+    }
+
     CONF.SetSipStartPort(mSbSipStartPort->value());
     if (mSbVideoAudioStartPort->value() != CONF.GetVideoAudioStartPort())
-        tOnlyFutureChanged = true;
+    {
+    	LOG(LOG_WARN, "Restart needed!");
+    	tHaveToRestart = true;
+    }
+
     CONF.SetVideoAudioStartPort(mSbVideoAudioStartPort->value());
 
     if (CONF.ConferencingEnabled())
@@ -590,7 +606,11 @@ void ConfigurationDialog::SaveConfiguration()
     CONF.SetParticipantWidgetsSeparation(mCbSeparatedParticipantWidgets->isChecked());
     CONF.SetParticipantWidgetsCloseImmediately(mCbCloseParticipantWidgetsImmediately->isChecked());
     if (mCbFeatureConferencing->isChecked() != CONF.GetFeatureConferencing())
-        tHaveToRestart = true;
+    {
+    	LOG(LOG_WARN, "Restart needed!");
+    	tHaveToRestart = true;
+    }
+
     CONF.SetFeatureConferencing(mCbFeatureConferencing->isChecked());
     CONF.SetLanguage(Language2ISO639(mCbLanguage->currentText()));
 
