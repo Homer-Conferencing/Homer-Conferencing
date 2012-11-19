@@ -66,6 +66,7 @@ public:
     virtual int GetQueueUsage();
     virtual void ClearQueue();
     virtual void LimitQueue(int pNewSize);
+    virtual int64_t GetPlaybackGapsCounter();
 
     /* volume control */
     virtual int GetVolume(); // range: 0-200 %
@@ -111,6 +112,7 @@ protected:
     /* playback */
     AVFifoBuffer        *mSampleFifo; // needed to create audio buffers of fixed size (4096 bytes)
     MediaFifo           *mPlaybackFifo; // needed as FIFO buffer with prepared audio buffers for playback, avoid expensive operations like malloc/free (used when using AVFifoBuffer)
+    int64_t             mPlaybackGaps;
     /* playback of file */
     std::string         mFilePlaybackFileName;
     bool                mOpenNewFileAsap;

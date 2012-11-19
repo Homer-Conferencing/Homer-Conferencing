@@ -47,6 +47,7 @@ WaveOut::WaveOut(string pName):
     mVolume = 100;
     mFilePlaybackSource = NULL;
     mSampleFifo = NULL;
+    mPlaybackGaps = 0;
     mFilePlaybackNeeded = false;
 
     LOG(LOG_VERBOSE, "Going to allocate playback FIFO");
@@ -227,6 +228,11 @@ void WaveOut::LimitQueue(int pNewSize)
             mPlaybackFifo->ReadFifoExclusiveFinished(tEntryId);
         }
     }
+}
+
+int64_t WaveOut::GetPlaybackGapsCounter()
+{
+    return mPlaybackGaps;
 }
 
 void WaveOut::AdjustVolume(void *pBuffer, int pBufferSize)

@@ -553,6 +553,9 @@ QStringList AudioWidget::GetAudioStatistic()
 	//### Line 4: audio output
     QString tLine_Output = "";
     tLine_Output = "Playback: " + QString("%1").arg(AUDIO_OUTPUT_SAMPLE_RATE) + " Hz, 2 channels";
+    int64_t tGaps = mAudioWorker->GetPlaybackGapsCounter();
+    if (tGaps > 0)
+        tLine_Output += " (" + QString("%1").arg(tGaps) + " gaps found)";
 
     //############################################
     //### Line 5: current position within file
@@ -963,6 +966,14 @@ bool AudioWorkerThread::GetMuteState()
 bool AudioWorkerThread::IsPlaybackAvailable()
 {
     return mPlaybackAvailable;
+}
+
+int64_t AudioWorkerThread::GetPlaybackGapsCounter()
+{
+    if (mWaveOut != NULL)
+        return mWaveOut->GetPlaybackGapsCounter();
+    else
+        return 0;
 }
 
 void AudioWorkerThread::SetSampleDropping(bool pDrop)

@@ -69,7 +69,6 @@ private:
     /* playback */
     bool                mWaitingForFirstBuffer;
     void                *mStream;
-    int                 mPossiblePlaybackGaps;
     /* recursion logger */
     static int			mOpenStreams;
 };

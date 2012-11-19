@@ -157,6 +157,7 @@ public:
     bool GetMuteState();
     int GetVolume();
     bool IsPlaybackAvailable();
+    int64_t GetPlaybackGapsCounter();
 
 public slots:
     void SetVolume(int pValue);
