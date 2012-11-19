@@ -160,6 +160,8 @@ void HelpDialog::initializeGUI()
 								"Library Qt:  " + QString(qVersion()) + "\n"\
 								"\n"\
 								"Number of cpu cores: " + QString("%1").arg(System::GetMachineCores()) + "\n"\
+								"Memory (phys.): " + QString("%1").arg((qlonglong)System::GetMachineMemoryPhysical() / 1024 / 1024) + " MB\n"\
+								"Memory (virt.): " + QString("%1").arg((qlonglong)System::GetMachineMemoryVirtual() / 1024 / 1024) + " MB\n"\
 								"Current architecture: " + tCurArch + "\n"\
 								"Target architecture: " + tTargetArch + "\n"\
 								"\n"\
