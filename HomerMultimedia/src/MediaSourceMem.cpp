@@ -222,7 +222,7 @@ void MediaSourceMem::WriteFragment(char *pBuffer, int pBufferSize)
 	
     if (mDecoderFifo->GetUsage() >= MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT - 4)
     {
-        LOG(LOG_WARN, "Decoder FIFO is near overload situation in WriteFragmet(), deleting all stored frames");
+        LOG(LOG_WARN, "Decoder packet FIFO is near overload situation in WriteFragmet(), deleting all stored frames");
 
         // delete all stored frames: it is a better for the decoding!
         mDecoderFifo->ClearFifo();
@@ -247,7 +247,7 @@ void MediaSourceMem::ReadFragment(char *pData, ssize_t &pDataSize)
     // is FIFO near overload situation?
     if (mDecoderFifo->GetUsage() >= MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT - 4)
     {
-        LOG(LOG_WARN, "Decoder FIFO is near overload situation in ReadFragment(), deleting all stored frames");
+        LOG(LOG_WARN, "Decoder packet FIFO is near overload situation in ReadFragment(), deleting all stored frames");
 
         // delete all stored frames: it is a better for the decoding!
         mDecoderFifo->ClearFifo();
