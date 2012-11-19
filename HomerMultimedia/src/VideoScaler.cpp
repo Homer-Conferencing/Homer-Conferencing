@@ -122,7 +122,7 @@ void VideoScaler::WriteFifo(char* pBuffer, int pBufferSize)
     	if (pBufferSize <= mInputFifo->GetEntrySize())
     		mInputFifo->WriteFifo(pBuffer, pBufferSize);
     	else
-    		LOG(LOG_ERROR, "Input buffer of %d bytes is too big for input FIFO", pBufferSize);
+    		LOG(LOG_ERROR, "Input buffer of %d bytes is too big for input FIFO with %d bytes per entry", pBufferSize, mInputFifo->GetEntrySize());
     }
 }
 
