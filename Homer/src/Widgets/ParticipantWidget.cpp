@@ -1622,7 +1622,7 @@ void ParticipantWidget::CreateFullscreenControls()
         {
             mFullscreeMovieControlWidget = new MovieControlWidget(mVideoWidget);
             mFullscreeMovieControlWidget->resize(mVideoWidget->width(), 58);
-            mFullscreeMovieControlWidget->move(0, mVideoWidget->height() - 58);
+            mFullscreeMovieControlWidget->move(mVideoWidget->pos().x(), mVideoWidget->height() - 58);
             connect(mFullscreeMovieControlWidget->mTbPlayPause, SIGNAL(clicked()), this, SLOT(ActionPlayPauseMovieFile()));
             connect(mFullscreeMovieControlWidget->mSlMovie, SIGNAL(sliderMoved(int)), this, SLOT(ActionSeekMovieFile(int)));
             connect(mFullscreeMovieControlWidget->mSlMovie, SIGNAL(valueChanged(int)), this, SLOT(ActionSeekMovieFileToPos(int)));
