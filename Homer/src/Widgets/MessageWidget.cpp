@@ -323,6 +323,13 @@ QString MessageWidget::ReplaceSmilesAndUrls(QString pMessage)
             LOG(LOG_VERBOSE, "Found http reference: %s", tWord.toStdString().c_str());
             tOutputMessage.append("<a href=\"" + tWord + "\" title=\"go to the web site " + tWord + " \">" + tWord + "</a>");
         }else
+        //#########################
+        //### Filter HTTPS URLS
+        if ((tWord.startsWith("https://")) && (tWord.size() > 8))
+        {
+            LOG(LOG_VERBOSE, "Found https reference: %s", tWord.toStdString().c_str());
+            tOutputMessage.append("<a href=\"" + tWord + "\" title=\"go to the web site " + tWord + " \">" + tWord + "</a>");
+        }else
 		//#########################
 		//### Filter FTP URLS
 		if ((tWord.startsWith("ftp://")) && (tWord.size() > 6))
