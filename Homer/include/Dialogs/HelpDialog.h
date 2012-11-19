@@ -48,6 +48,8 @@ public:
     /// The destructor.
     virtual ~HelpDialog();
 
+    static QString GetSystemInfo();
+
 private slots:
     void GotAnswerForHelpRequest(bool pError);
 

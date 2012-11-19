@@ -441,6 +441,9 @@ void MainWindow::initializeDebugging(QStringList &pArguments)
             }
         }
     }
+    LOG(LOG_VERBOSE, "################ SYSTEM INFO ################");
+    LOG(LOG_VERBOSE, "Found system info:\n%s", HelpDialog::GetSystemInfo().toStdString().c_str());
+    LOG(LOG_VERBOSE, "#############################################");
 }
 
 void MainWindow::initializeConferenceManagement()
