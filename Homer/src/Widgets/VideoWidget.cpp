@@ -253,7 +253,7 @@ VideoWidget::~VideoWidget()
 void VideoWidget::closeEvent(QCloseEvent* pEvent)
 {
 	// are we a fullscreen widget?
-	if (windowState() & Qt::WindowFullScreen)
+	if (IsFullScreen())
     {
         LOG(LOG_VERBOSE, "Got closeEvent in VideoWidget while it is in fullscreen mode, will forward this to main window");
         pEvent->ignore();
@@ -333,7 +333,7 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             //###############################################################################
             //### "Full screen"
             //###############################################################################
-            if (windowState() & Qt::WindowFullScreen)
+            if (IsFullScreen())
             {
                 tAction = tVideoMenu->addAction("Window mode");
             }else
@@ -1067,7 +1067,7 @@ void VideoWidget::ShowFrame(void* pBuffer)
     //### draw status text per OSD
     //#############################################################
     // are we a fullscreen widget?
-    if ((windowState() & Qt::WindowFullScreen) && (mOsdStatusMessage != "") && (Time::GetTimeStamp() < mOsdStatusMessageTimeout))
+    if ((IsFullScreen()) && (mOsdStatusMessage != "") && (Time::GetTimeStamp() < mOsdStatusMessageTimeout))
     {
         // define font for OSD text
         QFont tFont1 = QFont("Arial", 26, QFont::Light);
@@ -1229,7 +1229,7 @@ void VideoWidget::SetResolution(int mX, int mY)
 			if(mVideoWorker != NULL)
 				mVideoWorker->SetGrabResolution(mResX, mResY);
 
-			if ((windowState() & Qt::WindowFullScreen) == 0)
+			if (!IsFullScreen())
 			{
 				setMinimumSize(0, 0);//mResX, mResY);
 				//resize(0, 0);
@@ -1247,7 +1247,7 @@ void VideoWidget::SetScaling(float pVideoScaleFactor)
 {
 	LOG(LOG_VERBOSE, "Setting video scaling to %f", pVideoScaleFactor);
 
-	if ((windowState() & Qt::WindowFullScreen) == 0)
+	if (!IsFullScreen())
 	{
 		int tX = mResX * pVideoScaleFactor;
 		int tY = mResY * pVideoScaleFactor;
@@ -1296,14 +1296,14 @@ void VideoWidget::ToggleFullScreenMode()
 {
     setUpdatesEnabled(false);
     LOG(LOG_VERBOSE, "Found window state: %d", (int)windowState());
-    if (windowState() & Qt::WindowFullScreen)
+    if (IsFullScreen())
     {// show the window normal
         setWindowFlags(windowFlags() ^ Qt::Window);
         showNormal();
         mParticipantWidget->ShowAudioVideoWidget();
         if (cursor().shape() == Qt::BlankCursor)
         {
-            mParticipantWidget->ShowFullscreenMovieControls();
+            FullscreenMarkUserActive();
             LOG(LOG_VERBOSE, "Showing the mouse cursor again, current timeout is %d seconds", VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME);
         }
         mMainWindow->setFocus(Qt::TabFocusReason);
@@ -1458,7 +1458,7 @@ void VideoWidget::paintEvent(QPaintEvent *pEvent)
     QColor tBackgroundColor;
 
     // selected background color depends on the window state
-    if (windowState() & Qt::WindowFullScreen)
+    if (IsFullScreen())
         tBackgroundColor = QColor(Qt::black);
     else
         tBackgroundColor = QApplication::palette().brush(backgroundRole()).color();
@@ -1476,7 +1476,7 @@ void VideoWidget::paintEvent(QPaintEvent *pEvent)
     // force background update as long as we don't have the focus -> we are maybe covered by other applications GUI
     // force background update if focus has changed
     QWidget *tWidget = QApplication::focusWidget();
-    if (((tWidget == NULL) || (tWidget != mCurrentApplicationFocusedWidget)) && ((windowState() & Qt::WindowFullScreen) == 0))
+    if (((tWidget == NULL) || (tWidget != mCurrentApplicationFocusedWidget)) && (!IsFullScreen()))
     {
         #ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
             LOG(LOG_VERBOSE, "Focused widget has changed, background-update enforced, focused widget: %p", tWidget);
@@ -1534,6 +1534,11 @@ void VideoWidget::resizeEvent(QResizeEvent *pEvent)
     setUpdatesEnabled(true);
 }
 
+bool VideoWidget::IsFullScreen()
+{
+	return ((windowState() & Qt::WindowFullScreen) != 0);
+}
+
 void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
 {
 	LOG(LOG_VERBOSE, "Got video window key press event with key %s(%d, mod: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
@@ -1546,15 +1551,16 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
         return;
     }
 
-    if ((pEvent->key() == Qt::Key_Escape) && (windowState() & Qt::WindowFullScreen))
+    if ((pEvent->key() == Qt::Key_Escape) && (IsFullScreen()))
 	{
-        setWindowFlags(windowFlags() ^ Qt::Window);
-        showNormal();
-        if (cursor().shape() == Qt::BlankCursor)
-        {
-            FullscreenMarkUserActive();
-            LOG(LOG_VERBOSE, "Showing the mouse cursor again, current timeout is %d seconds", VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME);
-        }
+        ToggleFullScreenMode();
+//        setWindowFlags(windowFlags() ^ Qt::Window);
+//        showNormal();
+//        if (cursor().shape() == Qt::BlankCursor)
+//        {
+//            FullscreenMarkUserActive();
+//            LOG(LOG_VERBOSE, "Showing the mouse cursor again, current timeout is %d seconds", VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME);
+//        }
         pEvent->accept();
         return;
 	}
@@ -1619,7 +1625,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
             return;
         }
     }
-    if ((pEvent->key() == Qt::Key_Right) && (windowState() & Qt::WindowFullScreen))
+    if ((pEvent->key() == Qt::Key_Right) && (IsFullScreen()))
     {
         if (pEvent->modifiers() & Qt::ControlModifier)
             mParticipantWidget->SeekMovieFileRelative(SEEK_BIG_STEP);
@@ -1630,7 +1636,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
         pEvent->accept();
         return;
     }
-    if ((pEvent->key() == Qt::Key_Left) && (windowState() & Qt::WindowFullScreen))
+    if ((pEvent->key() == Qt::Key_Left) && (IsFullScreen()))
     {
         if (pEvent->modifiers() & Qt::ControlModifier)
             mParticipantWidget->SeekMovieFileRelative(-SEEK_BIG_STEP -SEEK_BACKWARD_DRIFT);
@@ -1716,7 +1722,7 @@ void VideoWidget::wheelEvent(QWheelEvent *pEvent)
 void VideoWidget::mouseMoveEvent(QMouseEvent *pEvent)
 {
 	//LOG(LOG_VERBOSE, "Got video window mouse move event with mouse buttons %d and position: (%d,%d)", (int)pEvent->buttons(), pEvent->pos().x(), pEvent->pos().y());
-	if ((pEvent->buttons() & Qt::LeftButton) && (!(windowState() & Qt::WindowFullScreen)))
+	if ((pEvent->buttons() & Qt::LeftButton) && (!IsFullScreen()))
 	{
 		QPoint tPoint;
 		tPoint = pEvent->globalPos() - mMovingMainWindowReferencePos;
@@ -1795,7 +1801,7 @@ void VideoWidget::timerEvent(QTimerEvent *pEvent)
         return;
     }
 
-    if (windowState() & Qt::WindowFullScreen)
+    if (IsFullScreen())
     {
         int tTimeSinceLastMouseMove = mTimeOfLastMouseMove.msecsTo(QTime::currentTime());
         if (tTimeSinceLastMouseMove > VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME * 1000)

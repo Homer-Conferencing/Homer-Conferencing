@@ -123,6 +123,7 @@ private slots:
     void ShowHourGlass();
 
 private:
+    bool IsFullScreen();
     void DialogAddNetworkSink();
     void ShowFrame(void* pBuffer);
     void SetResolution(int mX, int mY);
