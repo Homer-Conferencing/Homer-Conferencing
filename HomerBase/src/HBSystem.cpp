@@ -205,7 +205,7 @@ int64_t System::GetMachineMemoryPhysical()
         MEMORYSTATUSEX tMemStatus;
         tMemStatus.dwLength = sizeof(tMemStatus);
         GlobalMemoryStatusEx(&tMemStatus);
-        tReult = (int64_t)tMemStatus.ullTotalPhys;
+        tResult = (int64_t)tMemStatus.ullTotalPhys;
     #endif
 
     LOGEX(System, LOG_VERBOSE, "Found machine memory (phys.): %ld MB", tResult / 1024 / 1024);
