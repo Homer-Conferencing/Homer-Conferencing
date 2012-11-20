@@ -113,6 +113,7 @@ public:
     /* grabbing control */
     virtual void StopGrabbing();
     virtual bool Reset(enum MediaType = MEDIA_UNKNOWN);
+    virtual enum CodecID GetCodecID();
     virtual std::string GetCodecName();
     virtual std::string GetCodecLongName();
     virtual bool SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset = false);

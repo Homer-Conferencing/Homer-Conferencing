@@ -1044,6 +1044,11 @@ bool MediaSource::Reset(enum MediaType pMediaType)
     return tResult;
 }
 
+enum CodecID MediaSource::GetCodecID()
+{
+    return mSourceCodecId;
+}
+
 string MediaSource::GetCodecName()
 {
 	string tResult = "unknown";
@@ -2601,8 +2606,8 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame size: %d", mCodecContext->frame_size);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..duration: %.2f frames", mNumberOfFrames);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start PTS: %.2f frames", FilterPts(mSourceStartPts));
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS: %ld frames", mFormatContext->start_time);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS (RT): %ld frames", mFormatContext->start_time_realtime);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS: %ld frames", FilterPts(mFormatContext->start_time));
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS (RT): %ld frames", FilterPts(mFormatContext->start_time_realtime));
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..format context duration: %ld seconds", FilterPts(mFormatContext->duration) / AV_TIME_BASE);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame rate: %.2f fps", mFrameRate);
     int64_t tStreamDuration = FilterPts(mFormatContext->streams[mMediaStreamIndex]->duration);

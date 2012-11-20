@@ -1923,6 +1923,14 @@ bool MediaSourceMuxer::Reset(enum MediaType pMediaType)
     return tResult;
 }
 
+enum CodecID MediaSourceMuxer::GetCodecID()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->GetCodecID();
+    else
+        return CODEC_ID_NONE;
+}
+
 string MediaSourceMuxer::GetCodecName()
 {
     if (mMediaSource != NULL)
