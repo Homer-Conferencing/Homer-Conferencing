@@ -52,7 +52,7 @@ namespace Homer { namespace Multimedia {
 // size of one single fragment of a frame packet
 #define MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE                8*1024 // 8 kB (for jumbo packets!)
 
-#define MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT 	            512 // 512 entries á 8 kB
+#define MEDIA_SOURCE_MEM_FRAGMENT_INPUT_QUEUE_SIZE_LIMIT 	    512 // 512 entries á 8 kB
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -108,8 +108,14 @@ protected:
     static int GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize);
     virtual void ReadFragment(char *pData, ssize_t &pDataSize);
 
+    /* buffering */
+    void UpdateBufferTime();
+
+    /* FIFO helpers */
+    void WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int64_t pPts);
+    void ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int64_t &pPts);
+
     unsigned long       mFragmentNumber;
-    enum CodecID        mStreamCodecId;
     char                *mStreamPacketBuffer;
     char                *mFragmentBuffer;
     int					mResXLastGrabbedFrame, mResYLastGrabbedFrame;
@@ -117,7 +123,10 @@ protected:
     bool                mOpenInputStream;
     int                 mWrappingHeaderSize;
     int                 mPacketStatAdditionalFragmentSize; // used to adapt packet statistic to additional fragment header, which is used for TCP transmission
-    MediaFifo           *mDecoderFifo;
+    /* input stream FIFO */
+    MediaFifo           *mDecoderFragmentFifo;
+    MediaFifo           *mDecoderFifo; // for frames
+    MediaFifo           *mDecoderMetaDataFifo; // for meta data about frames
     /* video decoding */
     AVFrame             *mSourceFrame;
     AVFrame             *mRGBFrame;

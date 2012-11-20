@@ -99,10 +99,6 @@ protected:
 
     virtual bool InputIsPicture();
 
-    /* FIFO helpers */
-    void WriteOutputBuffer(char* pBuffer, int pBufferSize, int64_t pPts);
-    void ReadOutputBuffer(char *pBuffer, int &pBufferSize, int64_t &pPts);
-
 private:
     /* decoder */
     virtual void* Run(void* pArgs = NULL); // transcoder main loop
@@ -113,19 +109,14 @@ private:
     void CalibrateRTGrabbing();
     void WaitForRTGrabbing();
 
-    /* buffering */
-    void UpdateBufferTime();
-
     /* decoding */
     bool                mUseFilePTS;
     int                 mDecoderTargetResX;
     int                 mDecoderTargetResY;
     Mutex               mDecoderMutex;
     bool                mDecoderNeeded;
-    MediaFifo           *mDecoderMetaDataFifo;
     int64_t             mDecoderLastReadPts;
     Condition           mDecoderNeedWorkCondition;
-    bool                mEOFReached;
     double              mCurrentFrameIndex; // we have to determine this manually during grabbing because cur_dts and everything else in AVStream is buggy for some video/audio files
     std::vector<string> mInputChannels;
     /* real-time playback */

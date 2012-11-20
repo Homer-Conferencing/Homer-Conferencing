@@ -50,6 +50,7 @@ MediaSourceMem::MediaSourceMem(string pName, bool pRtpActivated):
     MediaSource(pName), RTP()
 {
     mDecoderFifo = NULL;
+    mDecoderFragmentFifo = NULL;
 	mResXLastGrabbedFrame = 0;
 	mResYLastGrabbedFrame = 0;
 	mWrappingHeaderSize= 0;
@@ -63,11 +64,11 @@ MediaSourceMem::MediaSourceMem(string pName, bool pRtpActivated):
     mOpenInputStream = false;
     mRtpActivated = pRtpActivated;
     RTPRegisterPacketStatistic(this);
-    mDecoderFifo = new MediaFifo(MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT, MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE, "MediaSourceMem");
+    mDecoderFragmentFifo = new MediaFifo(MEDIA_SOURCE_MEM_FRAGMENT_INPUT_QUEUE_SIZE_LIMIT, MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE, "MediaSourceMem");
 
-    mStreamCodecId = CODEC_ID_NONE;
+    mSourceCodecId = CODEC_ID_NONE;
 
-	LOG(LOG_VERBOSE, "Listen for video/audio frames from memory with queue of %d bytes", MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT * MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
+	LOG(LOG_VERBOSE, "Listen for video/audio frames from memory with queue of %d bytes", MEDIA_SOURCE_MEM_FRAGMENT_INPUT_QUEUE_SIZE_LIMIT * MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
 }
 
 MediaSourceMem::~MediaSourceMem()
@@ -77,7 +78,7 @@ MediaSourceMem::~MediaSourceMem()
     if (mMediaSourceOpened)
         CloseGrabDevice();
 
-    delete mDecoderFifo;
+    delete mDecoderFragmentFifo;
     free(mStreamPacketBuffer);
     free(mFragmentBuffer);
 }
@@ -137,7 +138,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
             }
             tFragmentDataSize = (unsigned int)tFragmentBufferSize;
             // parse and remove the RTP header, extract the encapsulated frame fragment
-            tFragmentIsOkay = tMediaSourceMemInstance->RtpParse(tFragmentData, tFragmentDataSize, tLastFragment, tFragmentIsSenderReport, tMediaSourceMemInstance->mStreamCodecId, false);
+            tFragmentIsOkay = tMediaSourceMemInstance->RtpParse(tFragmentData, tFragmentDataSize, tLastFragment, tFragmentIsSenderReport, tMediaSourceMemInstance->mSourceCodecId, false);
 
             // relay new data to registered sinks
             if(tFragmentIsOkay)
@@ -221,21 +222,21 @@ void MediaSourceMem::WriteFragment(char *pBuffer, int pBufferSize)
         AnnouncePacket((int)pBufferSize + mPacketStatAdditionalFragmentSize);
 	}
 	
-    if (mDecoderFifo->GetUsage() >= MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT - 4)
+    if (mDecoderFragmentFifo->GetUsage() >= MEDIA_SOURCE_MEM_FRAGMENT_INPUT_QUEUE_SIZE_LIMIT - 4)
     {
         LOG(LOG_WARN, "Decoder packet FIFO is near overload situation in WriteFragmet(), deleting all stored frames");
 
         // delete all stored frames: it is a better for the decoding!
-        mDecoderFifo->ClearFifo();
+        mDecoderFragmentFifo->ClearFifo();
     }
 
-    mDecoderFifo->WriteFifo(pBuffer, pBufferSize);
+    mDecoderFragmentFifo->WriteFifo(pBuffer, pBufferSize);
 }
 
 void MediaSourceMem::ReadFragment(char *pData, ssize_t &pDataSize)
 {
     int tDataSize = pDataSize;
-    mDecoderFifo->ReadFifo(&pData[0], tDataSize);
+    mDecoderFragmentFifo->ReadFifo(&pData[0], tDataSize);
     pDataSize = tDataSize;
 
     if (pDataSize > 0)
@@ -246,12 +247,12 @@ void MediaSourceMem::ReadFragment(char *pData, ssize_t &pDataSize)
     }
 
     // is FIFO near overload situation?
-    if (mDecoderFifo->GetUsage() >= MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT - 4)
+    if (mDecoderFragmentFifo->GetUsage() >= MEDIA_SOURCE_MEM_FRAGMENT_INPUT_QUEUE_SIZE_LIMIT - 4)
     {
         LOG(LOG_WARN, "Decoder packet FIFO is near overload situation in ReadFragment(), deleting all stored frames");
 
         // delete all stored frames: it is a better for the decoding!
-        mDecoderFifo->ClearFifo();
+        mDecoderFragmentFifo->ClearFifo();
     }
 }
 
@@ -367,8 +368,8 @@ void MediaSourceMem::StopGrabbing()
 	LOG(LOG_VERBOSE, "Going to stop memory based %s source", GetMediaTypeStr().c_str());
 
     char tData[4];
-    mDecoderFifo->WriteFifo(tData, 0);
-    mDecoderFifo->WriteFifo(tData, 0);
+    mDecoderFragmentFifo->WriteFifo(tData, 0);
+    mDecoderFragmentFifo->WriteFifo(tData, 0);
 
     LOG(LOG_VERBOSE, "Memory based %s source successfully stopped", GetMediaTypeStr().c_str());
 }
@@ -383,15 +384,15 @@ int MediaSourceMem::GetChunkDropCounter()
 
 int MediaSourceMem::GetFragmentBufferCounter()
 {
-    if (mDecoderFifo != NULL)
-        return mDecoderFifo->GetUsage();
+    if (mDecoderFragmentFifo != NULL)
+        return mDecoderFragmentFifo->GetUsage();
     else
         return 0;
 }
 
 int MediaSourceMem::GetFragmentBufferSize()
 {
-    return MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT;
+    return MEDIA_SOURCE_MEM_FRAGMENT_INPUT_QUEUE_SIZE_LIMIT;
 }
 
 bool MediaSourceMem::SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset)
@@ -399,15 +400,15 @@ bool MediaSourceMem::SetInputStreamPreferences(std::string pStreamCodec, bool pD
     bool tResult = false;
     enum CodecID tStreamCodecId = GetCodecIDFromGuiName(pStreamCodec);
 
-    if (mStreamCodecId != tStreamCodecId)
+    if (mSourceCodecId != tStreamCodecId)
     {
         LOG(LOG_VERBOSE, "Setting new input streaming preferences");
 
         tResult = true;
 
         // set new codec
-        LOG(LOG_VERBOSE, "    ..stream codec: %d => %d (%s)", mStreamCodecId, tStreamCodecId, pStreamCodec.c_str());
-        mStreamCodecId = tStreamCodecId;
+        LOG(LOG_VERBOSE, "    ..stream codec: %d => %d (%s)", mSourceCodecId, tStreamCodecId, pStreamCodec.c_str());
+        mSourceCodecId = tStreamCodecId;
 
         if ((pDoReset) && (mMediaSourceOpened))
         {
@@ -421,16 +422,16 @@ bool MediaSourceMem::SetInputStreamPreferences(std::string pStreamCodec, bool pD
 
 int MediaSourceMem::GetFrameBufferCounter()
 {
-    if (mDecoderFifo != NULL)
-        return mDecoderFifo->GetUsage();
+    if (mDecoderFragmentFifo != NULL)
+        return mDecoderFragmentFifo->GetUsage();
     else
         return 0;
 }
 
 int MediaSourceMem::GetFrameBufferSize()
 {
-    if (mDecoderFifo != NULL)
-        return mDecoderFifo->GetSize();
+    if (mDecoderFragmentFifo != NULL)
+        return mDecoderFragmentFifo->GetSize();
     else
         return 0;
 }
@@ -455,11 +456,11 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 
     // there is no differentiation between H.263+ and H.263 when decoding an incoming video stream
-    if (mStreamCodecId == CODEC_ID_H263P)
-        mStreamCodecId = CODEC_ID_H263;
+    if (mSourceCodecId == CODEC_ID_H263P)
+        mSourceCodecId = CODEC_ID_H263;
 
     // get a format description
-    if (!DescribeInput(mStreamCodecId, &tFormat))
+    if (!DescribeInput(mSourceCodecId, &tFormat))
     	return false;
 
 	// build corresponding "AVIOContext"
@@ -525,7 +526,7 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
 
     // get a format description
-    if (!DescribeInput(mStreamCodecId, &tFormat))
+    if (!DescribeInput(mSourceCodecId, &tFormat))
     	return false;
 
 	// build corresponding "AVIOContext"
@@ -602,7 +603,7 @@ bool MediaSourceMem::CloseGrabDevice()
     mMediaType = MEDIA_UNKNOWN;
 
     // reset the FIFO to have a clean FIFO next time we open the media source again
-    mDecoderFifo->ClearFifo();
+    mDecoderFragmentFifo->ClearFifo();
 
     ResetPacketStatistic();
 
@@ -718,13 +719,13 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
 
 
                         // do we have a video codec change at sender side?
-                        if (mStreamCodecId != mCodecContext->codec_id)
+                        if (mSourceCodecId != mCodecContext->codec_id)
                         {
-                            LOG(LOG_INFO, "Incoming video stream changed codec from %s(%d) to %s(%d)", GetFormatName(mStreamCodecId).c_str(), mStreamCodecId, GetFormatName(mCodecContext->codec_id).c_str(), mCodecContext->codec_id);
+                            LOG(LOG_INFO, "Incoming video stream changed codec from %s(%d) to %s(%d)", GetFormatName(mSourceCodecId).c_str(), mSourceCodecId, GetFormatName(mCodecContext->codec_id).c_str(), mCodecContext->codec_id);
 
                             LOG(LOG_ERROR, "Unsupported video codec change");
 
-                            mStreamCodecId = mCodecContext->codec_id;
+                            mSourceCodecId = mCodecContext->codec_id;
                         }
 
                         // do we have a video resolution change at sender side?
@@ -925,6 +926,67 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
     MarkGrabChunkSuccessful(mChunkNumber);
 
     return mChunkNumber;
+}
+
+void MediaSourceMem::WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int64_t pPts)
+{
+    if (mDecoderFifo == NULL)
+        LOG(LOG_ERROR, "Invalid decoder FIFO");
+
+    // write A/V data to output FIFO
+    mDecoderFifo->WriteFifo(pBuffer, pBufferSize);
+
+    // add meta description about current chunk to different FIFO
+    struct ChunkDescriptor tChunkDesc;
+    tChunkDesc.Pts = pPts;
+    mDecoderMetaDataFifo->WriteFifo((char*) &tChunkDesc, sizeof(tChunkDesc));
+
+    // update pre-buffer time value
+    UpdateBufferTime();
+}
+
+void MediaSourceMem::ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int64_t &pPts)
+{
+    if (mDecoderFifo == NULL)
+        LOG(LOG_ERROR, "Invalid decoder FIFO");
+
+    // read A/V data from output FIFO
+    mDecoderFifo->ReadFifo(pBuffer, pBufferSize);
+
+    // read meta description about current chunk from different FIFO
+    struct ChunkDescriptor tChunkDesc;
+    int tChunkDescSize = sizeof(tChunkDesc);
+    mDecoderMetaDataFifo->ReadFifo((char*)&tChunkDesc, tChunkDescSize);
+    pPts = tChunkDesc.Pts;
+    if (tChunkDescSize != sizeof(tChunkDesc))
+        LOG(LOG_ERROR, "Read from FIFO a chunk with wrong size of %d bytes, expected size is %d bytes", tChunkDescSize, sizeof(tChunkDesc));
+
+    //LOG(LOG_VERBOSE, "Returning from decoder FIFO the %s frame (PTS = %ld)", GetMediaTypeStr().c_str(), pPts);
+
+    // update pre-buffer time value
+    UpdateBufferTime();
+}
+
+void MediaSourceMem::UpdateBufferTime()
+{
+    #ifdef MSF_DEBUG_TIMING
+        LOG(LOG_VERBOSE, "Updating pre-buffer time value");
+    #endif
+
+    float tBufferSize = mDecoderFifo->GetUsage();
+
+    switch(mMediaType)
+    {
+        case MEDIA_VIDEO:
+            //LOG(LOG_VERBOSE, "Buffer usage after reading: %f", tBufferSize);
+            mDecoderBufferTime = tBufferSize / mRealFrameRate;
+            break;
+        case MEDIA_AUDIO:
+            mDecoderBufferTime = tBufferSize * MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 */ / mOutputAudioSampleRate;
+            break;
+        default:
+            break;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
