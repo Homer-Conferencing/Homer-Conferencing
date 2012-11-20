@@ -61,7 +61,7 @@ MediaSinkMem::MediaSinkMem(string pMediaId, enum MediaSinkType pType, bool pRtpA
     mRtpActivated = pRtpActivated;
     mWaitUntillFirstKeyFrame = (pType == MEDIA_SINK_VIDEO) ? true : false;
     if (mRtpActivated)
-        mSinkFifo = new MediaFifo(MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT, MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE, GetDataTypeStr() + "-MediaSinkMem");
+        mSinkFifo = new MediaFifo(MEDIA_SOURCE_MEM_FRAGMENT_INPUT_QUEUE_SIZE_LIMIT, MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE, GetDataTypeStr() + "-MediaSinkMem");
     else
         mSinkFifo = new MediaFifo(MEDIA_SOURCE_MUX_INPUT_QUEUE_SIZE_LIMIT, MEDIA_SINK_MEM_PLAIN_FRAGMENT_BUFFER_SIZE, GetDataTypeStr() + "-MediaSinkMem");
     AssignStreamName("MEM-OUT: " + mMediaId);
@@ -252,7 +252,10 @@ int MediaSinkMem::GetFragmentBufferCounter()
 
 int MediaSinkMem::GetFragmentBufferSize()
 {
-    return MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT;
+    if (mSinkFifo != NULL)
+        return mSinkFifo->GetSize();
+    else
+        return 0;
 }
 
 void MediaSinkMem::ReadFragment(char *pData, int &pDataSize)
@@ -266,7 +269,7 @@ void MediaSinkMem::ReadFragment(char *pData, int &pDataSize)
     }
 
     // is FIFO near overload situation?
-    if (mSinkFifo->GetUsage() >= MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT - 4)
+    if (mSinkFifo->GetUsage() >= mSinkFifo->GetSize() - 4)
     {
         LOG(LOG_WARN, "Decoder FIFO is near overload situation, deleting all stored frames");
 

@@ -370,7 +370,7 @@ void* MediaSinkNet::Run(void* pArgs)
 			}
 
 			// is FIFO near overload situation?
-            if (mSinkFifo->GetUsage() >= MEDIA_SOURCE_MEM_INPUT_QUEUE_SIZE_LIMIT - 4)
+            if (mSinkFifo->GetUsage() >= mSinkFifo->GetSize() - 4)
             {
                 LOG(LOG_WARN, "Relay FIFO is near overload situation, deleting all stored frames");
 
