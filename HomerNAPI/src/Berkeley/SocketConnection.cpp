@@ -108,10 +108,6 @@ SocketConnection::SocketConnection(std::string pTarget, Requirements *pRequireme
     {
         if (mSocket != NULL)
         {
-            // per default we set receive/send buffer of 2 MB
-            mSocket->SetReceiveBufferSize(2 * 1024 * 1024);
-            mSocket->SetSendBufferSize(2 * 1024 * 1024);
-
             mSocket->SetPeerHost(mPeerHost);
             mSocket->SetPeerPort(mPeerPort);
             mIsClosed = false;
@@ -135,9 +131,6 @@ SocketConnection::SocketConnection(Socket *pSocket)
     mBlockingMode = true;
     mPeerHost = "";
     mPeerPort = 0;
-
-    // per default we set receive buffer of 2 MB
-    mSocket->SetSendBufferSize(2 * 1024 * 1024);
 
     mRequirements = new Requirements();
 

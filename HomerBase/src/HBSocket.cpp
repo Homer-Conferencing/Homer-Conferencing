@@ -196,6 +196,10 @@ Socket::Socket(enum NetworkType pIpVersion, enum TransportType pTransportType, u
         }else
             mSocketHandle = -1;
     }
+
+    // per default we set receive/send buffer of SOCKET_IO_BUFFER_SIZE bytes
+    SetReceiveBufferSize(SOCKET_IO_BUFFER_SIZE);
+    SetSendBufferSize(SOCKET_IO_BUFFER_SIZE);
 }
 
 Socket::~Socket()
