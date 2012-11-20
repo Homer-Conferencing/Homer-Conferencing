@@ -281,6 +281,19 @@ bool MediaSourceNet::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     return tResult;
 }
 
+bool MediaSourceNet::CloseGrabDevice()
+{
+    bool tResult = false;
+
+    LOG(LOG_VERBOSE, "Going to close");
+
+    tResult = MediaSourceMem::CloseGrabDevice();
+
+    LOG(LOG_VERBOSE, "...closed");
+
+    return tResult;
+}
+
 bool MediaSourceNet::ReceivePacket(std::string &pSourceHost, unsigned int &pSourcePort, char* pData, int &pSize)
 {
     bool tResult = false;
