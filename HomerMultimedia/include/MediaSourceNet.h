@@ -60,8 +60,10 @@ struct TCPFragmentHeader{
 
 ///////////////////////////////////////////////////////////////////////////////
 
+class NetworkListener;
+
 class MediaSourceNet :
-    public MediaSourceMem, public Thread
+    public MediaSourceMem
 {
 public:
     /// The constructor
@@ -78,33 +80,12 @@ public:
     virtual bool OpenAudioGrabDevice(int pSampleRate = 44100, int pChannels = 2);
     virtual bool CloseGrabDevice();
 
-    virtual std::string GetCurrentDevicePeerName();
-
 protected:
-    /* network listener */
-    virtual void* Run(void* pArgs = NULL);
-    void StartListener();
-    void StopListener();
+    friend class NetworkListener;
 
-    void Init(Socket *pDataSocket, unsigned int pLocalPort, bool pRtpActivated = true);
-    bool ReceivePacket(std::string &pSourceHost, unsigned int &pSourcePort, char* pData, int &pSize);
+    void Init(bool pRtpActivated = true);
 
-    /* general transport */
-    int                 mPacketNumber;
-    bool                mListenerNeeded;
-    char                *mPacketBuffer;
-    bool                mListenerSocketCreatedOutside;
-    int                 mReceiveErrors;
-    bool                mStreamedTransport;
-    /* Berkeley sockets based transport */
-    Socket              *mDataSocket;
-    unsigned int        mListenerPort;
-    std::string         mPeerHost;
-    unsigned int        mPeerPort;
-    /* NAPI based transport */
-    IConnection         *mNAPIDataSocket;
-    IBinding            *mNAPIBinding;
-    bool                mNAPIUsed;
+    NetworkListener     *mNetworkListener;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
