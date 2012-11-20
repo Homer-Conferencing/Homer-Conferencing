@@ -46,9 +46,10 @@ using namespace Homer::Base;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-MediaSourceMem::MediaSourceMem(bool pRtpActivated):
-    MediaSource("MEM-IN:"), RTP()
+MediaSourceMem::MediaSourceMem(string pName, bool pRtpActivated):
+    MediaSource(pName), RTP()
 {
+    mDecoderFifo = NULL;
 	mResXLastGrabbedFrame = 0;
 	mResYLastGrabbedFrame = 0;
 	mWrappingHeaderSize= 0;
@@ -416,6 +417,22 @@ bool MediaSourceMem::SetInputStreamPreferences(std::string pStreamCodec, bool pD
     }
 
     return tResult;
+}
+
+int MediaSourceMem::GetFrameBufferCounter()
+{
+    if (mDecoderFifo != NULL)
+        return mDecoderFifo->GetUsage();
+    else
+        return 0;
+}
+
+int MediaSourceMem::GetFrameBufferSize()
+{
+    if (mDecoderFifo != NULL)
+        return mDecoderFifo->GetSize();
+    else
+        return 0;
 }
 
 bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)

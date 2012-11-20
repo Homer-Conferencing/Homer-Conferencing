@@ -29,7 +29,7 @@
 #define _MULTIMEDIA_MEDIA_SOURCE_FILE_
 
 #include <Header_Ffmpeg.h>
-#include <MediaSource.h>
+#include <MediaSourceMem.h>
 #include <MediaFifo.h>
 #include <HBThread.h>
 #include <HBCondition.h>
@@ -51,7 +51,7 @@ namespace Homer { namespace Multimedia {
 ///////////////////////////////////////////////////////////////////////////////
 
 class MediaSourceFile:
-    public MediaSource, public Thread
+    public MediaSourceMem, public Thread
 {
 public:
     MediaSourceFile(std::string pSourceFile, bool pGrabInRealTime = true /* 1 = frame rate emulation, 0 = grab as fast as possible */);
@@ -86,9 +86,6 @@ public:
     virtual bool SelectInputStream(int pIndex);
     virtual std::string CurrentInputStream();
     virtual std::vector<std::string> GetInputStreams();
-
-    virtual int GetFrameBufferCounter();
-    virtual int GetFrameBufferSize();
 
 public:
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97);
@@ -125,7 +122,6 @@ private:
     int                 mDecoderTargetResY;
     Mutex               mDecoderMutex;
     bool                mDecoderNeeded;
-    MediaFifo           *mDecoderFifo;
     MediaFifo           *mDecoderMetaDataFifo;
     int64_t             mDecoderLastReadPts;
     Condition           mDecoderNeedWorkCondition;

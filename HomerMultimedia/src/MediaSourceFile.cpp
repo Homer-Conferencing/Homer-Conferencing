@@ -69,7 +69,7 @@ using namespace Homer::Monitor;
 ///////////////////////////////////////////////////////////////////////////////
 
 MediaSourceFile::MediaSourceFile(string pSourceFile, bool pGrabInRealTime):
-    MediaSource("FILE: " + pSourceFile)
+    MediaSourceMem("FILE: " + pSourceFile)
 {
     mFinalPictureResX = 0;
     mFinalPictureResY = 0;
@@ -80,7 +80,6 @@ MediaSourceFile::MediaSourceFile(string pSourceFile, bool pGrabInRealTime):
     mSourceType = SOURCE_FILE;
     mDesiredDevice = pSourceFile;
     mGrabInRealTime = pGrabInRealTime;
-    mDecoderFifo = NULL;
     mDecoderMetaDataFifo = NULL;
     mNumberOfFrames = 0;
     mCurrentFrameIndex = 0;
@@ -1806,22 +1805,6 @@ void MediaSourceFile::CalibrateRTGrabbing()
     #ifdef MSF_DEBUG_CALIBRATION
         LOG(LOG_VERBOSE, "Calibrating %s RT playback: new PTS start: %.2f, rel. frame index: %.2f, rel. time: %.2f ms", GetMediaTypeStr().c_str(), mStartPtsUSecs, tRelativeFrameIndex, (float)(tRelativeTime / 1000));
     #endif
-}
-
-int MediaSourceFile::GetFrameBufferCounter()
-{
-	if (mDecoderFifo != NULL)
-		return mDecoderFifo->GetUsage();
-	else
-		return 0;
-}
-
-int MediaSourceFile::GetFrameBufferSize()
-{
-	if (mDecoderFifo != NULL)
-		return mDecoderFifo->GetSize();
-	else
-		return 0;
 }
 
 void MediaSourceFile::WaitForRTGrabbing()

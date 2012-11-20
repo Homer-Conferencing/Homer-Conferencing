@@ -69,7 +69,7 @@ class MediaSourceMem :
 {
 public:
     /// The default constructor
-    MediaSourceMem(bool pRtpActivated = true);
+    MediaSourceMem(string pName = "SOURCE:", bool pRtpActivated = true);
     /// The destructor.
     virtual ~MediaSourceMem();
 
@@ -93,6 +93,9 @@ public:
 
     virtual bool SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset = false);
 
+    virtual int GetFrameBufferCounter();
+    virtual int GetFrameBufferSize();
+
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97);
     virtual bool OpenAudioGrabDevice(int pSampleRate = 44100, int pChannels = 2);
     virtual bool CloseGrabDevice();
@@ -113,8 +116,8 @@ protected:
     bool                mRtpActivated;
     bool                mOpenInputStream;
     int                 mWrappingHeaderSize;
-    MediaFifo           *mDecoderFifo;
     int                 mPacketStatAdditionalFragmentSize; // used to adapt packet statistic to additional fragment header, which is used for TCP transmission
+    MediaFifo           *mDecoderFifo;
     /* video decoding */
     AVFrame             *mSourceFrame;
     AVFrame             *mRGBFrame;

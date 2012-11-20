@@ -103,7 +103,7 @@ void MediaSourceNet::Init(Socket *pDataSocket, unsigned int pLocalPort, bool pRt
 }
 
 MediaSourceNet::MediaSourceNet(Socket *pDataSocket, bool pRtpActivated):
-    MediaSourceMem(pRtpActivated)
+    MediaSourceMem("NET-IN:", pRtpActivated)
 {
 	LOG(LOG_VERBOSE, "Created with pre-defined socket object");
     mListenerSocketCreatedOutside = true;
@@ -115,7 +115,7 @@ MediaSourceNet::MediaSourceNet(Socket *pDataSocket, bool pRtpActivated):
 }
 
 MediaSourceNet::MediaSourceNet(unsigned int pPortNumber, enum TransportType pTransportType,  bool pRtpActivated):
-    MediaSourceMem(pRtpActivated)
+    MediaSourceMem("NET-IN:", pRtpActivated)
 {
 	LOG(LOG_VERBOSE, "Created, have to create socket");
     if ((pPortNumber == 0) || (pPortNumber > 65535))
@@ -132,7 +132,7 @@ MediaSourceNet::MediaSourceNet(unsigned int pPortNumber, enum TransportType pTra
 }
 
 MediaSourceNet::MediaSourceNet(string pLocalName, Requirements *pTransportRequirements, bool pRtpActivated):
-    MediaSourceMem(pRtpActivated)
+    MediaSourceMem("NET-IN:", pRtpActivated)
 {
 	LOG(LOG_VERBOSE, "Created, using NAPI");
     mListenerSocketCreatedOutside = false;
