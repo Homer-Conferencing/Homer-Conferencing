@@ -33,6 +33,7 @@ SET (INCLUDE_DIRS
 	/usr/local/include/sofia-sip
 	/usr/local/include/sofia-sip-1.12
     ../../../Homer-Release/HomerIncludes/sofia-sip/
+	/usr/include/ffmpeg
 	${OPENSSL_INCLUDE_DIR}
 )
 
