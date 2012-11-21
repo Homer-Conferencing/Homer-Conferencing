@@ -54,6 +54,7 @@ MediaSinkMem::MediaSinkMem(string pMediaId, enum MediaSinkType pType, bool pRtpA
 {
     mMediaId = pMediaId;
 	mIncomingAVStream = NULL;
+	mIncomingAVStreamCodecID = CODEC_ID_NONE;
 	mTargetHost = "";
 	mTargetPort = 0;
     mRtpStreamOpened = false;
@@ -117,15 +118,16 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
         //####################################################################
         if ((mIncomingAVStream != NULL) && (mIncomingAVStream != pStream))
         {
-            LOG(LOG_VERBOSE, "Incoming AV stream changed from %p to %p (codec %s), resetting RTP streamer..", mIncomingAVStream, pStream, pStream->codec->codec->name);
+            LOG(LOG_WARN, "Incoming AV stream changed from %p to %p (codec %s), resetting RTP streamer..", mIncomingAVStream, pStream, pStream->codec->codec->name);
             tResetNeeded = true;
-        }else
+        }else if (mIncomingAVStreamCodecContext != pStream->codec)
         {
-            if (mIncomingAVStreamCodecContext != pStream->codec)
-            {
-                LOG(LOG_WARN, "Incoming AV stream unchanged but stream codec context changed from %p to %p (codec %s), resetting RTP streamer..", mIncomingAVStreamCodecContext, pStream->codec, pStream->codec->codec->name);
-                tResetNeeded = true;
-            }
+            LOG(LOG_WARN, "Incoming AV stream unchanged but stream codec context changed from %p to %p (codec %s), resetting RTP streamer..", mIncomingAVStreamCodecContext, pStream->codec, pStream->codec->codec->name);
+            tResetNeeded = true;
+        }else if (mIncomingAVStreamCodecID != pStream->codec->codec_id)
+        {
+            LOG(LOG_WARN, "Incoming AV stream and stream codec context unchanged but stream codec ID changed from %d to %d(%s), resetting RTP streamer..", mIncomingAVStreamCodecID, pStream->codec->codec_id, pStream->codec->codec->name);
+            tResetNeeded = true;
         }
 
         //####################################################################
@@ -324,6 +326,7 @@ bool MediaSinkMem::OpenStreamer(AVStream *pStream)
 
     mRtpStreamOpened = true;
 
+    mIncomingAVStreamCodecID = pStream->codec->codec_id;
     mIncomingAVStream = pStream;
 	mIncomingAVStreamCodecContext = pStream->codec;
 
