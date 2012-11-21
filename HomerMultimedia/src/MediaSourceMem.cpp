@@ -392,7 +392,10 @@ int MediaSourceMem::GetFragmentBufferCounter()
 
 int MediaSourceMem::GetFragmentBufferSize()
 {
-    return MEDIA_SOURCE_MEM_FRAGMENT_INPUT_QUEUE_SIZE_LIMIT;
+    if (mDecoderFragmentFifo != NULL)
+        return mDecoderFragmentFifo->GetSize();
+    else
+        return 0;
 }
 
 bool MediaSourceMem::SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset)
@@ -422,16 +425,16 @@ bool MediaSourceMem::SetInputStreamPreferences(std::string pStreamCodec, bool pD
 
 int MediaSourceMem::GetFrameBufferCounter()
 {
-    if (mDecoderFragmentFifo != NULL)
-        return mDecoderFragmentFifo->GetUsage();
+    if (mDecoderFifo != NULL)
+        return mDecoderFifo->GetUsage();
     else
         return 0;
 }
 
 int MediaSourceMem::GetFrameBufferSize()
 {
-    if (mDecoderFragmentFifo != NULL)
-        return mDecoderFragmentFifo->GetSize();
+    if (mDecoderFifo != NULL)
+        return mDecoderFifo->GetSize();
     else
         return 0;
 }
