@@ -395,10 +395,7 @@ union VP8ExtendedHeader{
 RTP::RTP()
 {
     LOG(LOG_VERBOSE, "Created");
-    mRemoteSequenceNumberLastPacket = 0;
     mH261LocalSequenceNumber = 0;
-    mRemoteTimestampLastPacket = 0;
-    mRemoteTimestampLastCompleteFrame = 0;
     mLostPackets = 0;
     mIntermediateFragment = 0;
     mPacketStatistic = NULL;
@@ -409,10 +406,12 @@ RTP::RTP()
     mRtpPacketBuffer = NULL;
     mTargetHost = "";
     mTargetPort = 0;
+    mRemoteSequenceNumberLastPacket = 0;
+    mRemoteTimestampLastPacket = 0;
+    mRemoteTimestampLastCompleteFrame = 0;
     mRemoteSourceIdentifier = 0;
     mRemoteStartTimestamp = 0;
-    // set SRC ID
-    mLocalSourceIdentifier = av_get_random_seed();
+    mLocalSourceIdentifier = 0;
 }
 
 RTP::~RTP()
@@ -495,6 +494,15 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
 
     mTargetHost = pTargetHost;
     mTargetPort = pTargetPort;
+
+    // reset variables
+    mRemoteSequenceNumberLastPacket = 0;
+    mRemoteTimestampLastPacket = 0;
+    mRemoteTimestampLastCompleteFrame = 0;
+    mRemoteSourceIdentifier = 0;
+    mRemoteStartTimestamp = 0;
+    // set SRC ID
+    mLocalSourceIdentifier = av_get_random_seed();
 
     if (pInnerStream->codec->codec->id == CODEC_ID_H261)
     	return OpenRtpEncoderH261(pTargetHost, pTargetPort, pInnerStream);
@@ -1199,6 +1207,19 @@ void RTP::LogRtpHeader(RtpHeader *pRtpHeader)
     // convert from host to network byte order
     for (int i = 0; i < 3; i++)
         pRtpHeader->Data[i] = htonl(pRtpHeader->Data[i]);
+}
+
+int64_t RTP::GetPtsFromRTP()
+{
+    int64_t tResult = 0;
+
+    // assume Mpeg specific 90 kHz clock rate, the normal clock rate is 1 kHz (time base is 1 ms !)
+    if (mRemoteTimestamp > 0)
+        tResult = mRemoteTimestamp / 90;
+
+    //TODO: check if a different clock rate should be use as base for other codecs
+
+    return tResult;
 }
 
 // assumption: we are getting one single RTP encapsulated packet, not auto detection of following additional packets included
