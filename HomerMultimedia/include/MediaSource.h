@@ -223,6 +223,7 @@ public:
     static void VideoFormat2Resolution(VideoFormat pFormat, int& pX, int& pY);
     static void VideoString2Resolution(std::string pString, int& pX, int& pY);
     virtual float GetFrameRate();
+    virtual float GetFrameRatePlayout();
     virtual void SetFrameRate(float pFps);
 
     /* frame statistics */

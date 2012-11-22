@@ -113,6 +113,7 @@ MediaSource::MediaSource(string pName):
     mTargetResX = 352;
     mTargetResY = 288;
     mFrameRate = 29.97;
+    mRealFrameRate = 29.97;
     mCurrentInputChannel = 0;
     mDesiredInputChannel = 0;
     mMediaType = MEDIA_UNKNOWN;
@@ -2423,6 +2424,11 @@ float MediaSource::GetFrameRate()
     return mFrameRate;
 }
 
+float MediaSource::GetFrameRatePlayout()
+{
+    return mRealFrameRate;
+}
+
 void MediaSource::SetFrameRate(float pFps)
 {
     if (pFps > 29.97)
@@ -2610,6 +2616,7 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS (RT): %ld frames", FilterPts(mFormatContext->start_time_realtime));
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..format context duration: %ld seconds", FilterPts(mFormatContext->duration) / AV_TIME_BASE);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame rate: %.2f fps", mFrameRate);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame rate (playout): %.2f fps", mRealFrameRate);
     int64_t tStreamDuration = FilterPts(mFormatContext->streams[mMediaStreamIndex]->duration);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context duration: %ld frames (%.0f seconds), nr. of frames: %ld", tStreamDuration, (float)tStreamDuration / mFrameRate);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context frames: %ld", mFormatContext->streams[mMediaStreamIndex]->nb_frames);
