@@ -307,6 +307,17 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     AVStream            *tStream;
     AVDictionary        *tOptions = NULL;
 
+    // use the frame rate from the base source in order to make the encoder produce the correct PTS values
+    if (mMediaSource != NULL)
+    {
+        float tFps = mMediaSource->GetFrameRatePlayout();
+        if (tFps != pFps)
+        {
+            LOG(LOG_WARN, "Setting the %s muxer frame rate from %.2f to %.2f (from base source)", GetMediaTypeStr().c_str(), pFps, tFps);
+            pFps = tFps;
+        }
+    }
+
     if (pFps > 29.97)
         pFps = 29.97;
     if (pFps < 5)
@@ -341,6 +352,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     mSourceResX = pResX;
     mSourceResY = pResY;
     mFrameRate = pFps;
+    mRealFrameRate = pFps;
 
     // allocate new format context
     mFormatContext = AV_NEW_FORMAT_CONTEXT();
