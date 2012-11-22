@@ -135,10 +135,11 @@ private:
     std::string         mTargetHost;
     unsigned int        mTargetPort;
     unsigned int        mLostPackets;
+    static unsigned int mSourceIdentifier;
     /* H261 RTP packetizing */
-    unsigned int        mSsrc;
     static unsigned int mH261PayloadSizeMax;
     unsigned int 		mCurrentTimestamp;
+    unsigned int        mH261SourceIdentifier;
     /* MP3 RTP hack */
     unsigned int        mMp3Hack_EntireBufferSize;
     /* RTP packet stream */

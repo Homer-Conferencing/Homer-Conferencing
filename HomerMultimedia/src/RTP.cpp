@@ -71,6 +71,12 @@ using namespace Homer::Monitor;
 
 namespace Homer { namespace Multimedia {
 
+
+///////////////////////////////////////////////////////////////////////////////
+
+unsigned int RTP::mH261PayloadSizeMax = 0;
+unsigned int RTP::mSourceIdentifier = 0;
+
 ///////////////////////////////////////////////////////////////////////////////
 /* ##################################################################################
 // ########################## Resulting packet structure ############################
@@ -198,15 +204,7 @@ union H261Header{
 // HINT: workaround, but static value: RTP_MAX_PAYLOAD_SIZE - H261_HEADER_SIZE,
 //       at the moment the packet size limitation works via the limitation of codec packets
 #define RTP_MAX_H261_PAYLOAD_SIZE           (mH261PayloadSizeMax)
-unsigned int RTP::mH261PayloadSizeMax;
-void RTP::SetH261PayloadSizeMax(unsigned int pMaxSize)
-{//workaround for separation of RTP packetizer and the payload limit problem which is caused by the missing RTP support for H261 within ffmpeg
-    mH261PayloadSizeMax = pMaxSize - RTP_HEADER_SIZE - H261_HEADER_SIZE;
-}
-unsigned int RTP::GetH261PayloadSizeMax()
-{
-    return mH261PayloadSizeMax;
-}
+
 // *******************************************************************************
 
 // ########################## H 263 ############################################
@@ -412,8 +410,10 @@ RTP::RTP()
     mRtpPacketBuffer = NULL;
     mTargetHost = "";
     mTargetPort = 0;
-    // set SRC to 0 as ffmpeg does
-    mSsrc = 0;
+    mH261SourceIdentifier = 0;
+    // set SRC ID
+    if (mSourceIdentifier == 0)
+        mSourceIdentifier = av_get_random_seed();
 }
 
 RTP::~RTP()
@@ -423,9 +423,20 @@ RTP::~RTP()
 
 ///////////////////////////////////////////////////////////////////////////////
 
+void RTP::SetH261PayloadSizeMax(unsigned int pMaxSize)
+{//workaround for separation of RTP packetizer and the payload limit problem which is caused by the missing RTP support for H261 within ffmpeg
+    mH261PayloadSizeMax = pMaxSize - RTP_HEADER_SIZE - H261_HEADER_SIZE;
+}
+
+unsigned int RTP::GetH261PayloadSizeMax()
+{
+    return mH261PayloadSizeMax;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 bool RTP::OpenRtpEncoderH261(string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream)
 {
-	mSsrc = av_get_random_seed();
 	mCurrentTimestamp = av_get_random_seed();
 
     LOG(LOG_VERBOSE, "Using lib internal rtp packetizer for H261 codec");
@@ -433,7 +444,7 @@ bool RTP::OpenRtpEncoderH261(string pTargetHost, unsigned int pTargetPort, AVStr
     LOG(LOG_INFO, "    ..rtp target: %s:%u", pTargetHost.c_str(), pTargetPort);
     LOG(LOG_INFO, "    ..rtp header size: %d", RTP_HEADER_SIZE);
     LOG(LOG_INFO, "    ..rtp TIMESTAMP: %u", mCurrentTimestamp);
-    LOG(LOG_INFO, "    ..rtp SRC: %u", mSsrc);
+    LOG(LOG_INFO, "    ..rtp SRC: %u", mSourceIdentifier);
     LOG(LOG_INFO, "  Wrapping following codec...");
     LOG(LOG_INFO, "    ..codec name: %s", pInnerStream->codec->codec->name);
     LOG(LOG_INFO, "    ..codec long name: %s", pInnerStream->codec->codec->long_name);
@@ -992,7 +1003,14 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
                 }
             }
 
-            // convert from host to network byte order
+            //#################################################################################
+            //### patch source identifier to the generated one
+            //#################################################################################
+            tHeader->Ssrc = mSourceIdentifier;
+
+            //#################################################################################
+            //### convert from host to network byte order
+            //#################################################################################
             for (int i = 0; i < 3; i++)
                 tHeader->Data[i] = htonl(tHeader->Data[i]);
 
@@ -1085,7 +1103,7 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize)
         tRtpHeader->PayloadType = 31; // 31 = h261
         tRtpHeader->SequenceNumber = ++mLastSequenceNumber; // monotonous growing
         tRtpHeader->Timestamp = tTimestamp; // use linux timestamp
-        tRtpHeader->Ssrc = mSsrc; // use the initially computed unique ID
+        tRtpHeader->Ssrc = mSourceIdentifier; // use the initially computed unique ID
 
         // convert from host to network byte order
         for (int i = 0; i < 3; i++)
@@ -1239,6 +1257,9 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
         tRtpHeader->Data[i] = ntohl(tRtpHeader->Data[i]);
 
     unsigned int tCsrcCount = tRtpHeader->CsrcCount;
+    if (tCsrcCount > 0)
+        LOG(LOG_WARN, "Found unsupported usage of multimedia stream mixing at remote side");
+
     if (tCsrcCount > 4)
     {
         LOG(LOG_ERROR, "Found unplausible CSRC value in RTP header");
@@ -1321,7 +1342,7 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
         mPayloadId = tRtpHeader->PayloadType;
         
         // store the assigned SSRC identifier
-        mSsrc = tRtpHeader->Ssrc;
+        mH261SourceIdentifier = tRtpHeader->Ssrc;
     }
 
     // #############################################################
