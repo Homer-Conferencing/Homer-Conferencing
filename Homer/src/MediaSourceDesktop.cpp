@@ -163,6 +163,7 @@ bool MediaSourceDesktop::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     	pFps = MIN_GRABBING_FPS;
 
 	mFrameRate = pFps;
+    mRealFrameRate = pFps;
     mOutputScreenshot = malloc(mTargetResX * mTargetResY * MSD_BYTES_PER_PIXEL * sizeof(char));
     if (mOutputScreenshot == NULL)
     {

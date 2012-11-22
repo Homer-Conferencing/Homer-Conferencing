@@ -146,6 +146,7 @@ bool MediaSourceLogo::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     mSourceResX = pResX;
     mSourceResY = pResY;
 	mFrameRate = pFps;
+    mRealFrameRate = pFps;
     mLogoRawPicture = malloc(mTargetResX * mTargetResY * MSD_BYTES_PER_PIXEL * sizeof(char));
     if (mLogoRawPicture == NULL)
     {
