@@ -704,8 +704,11 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                         // ############################
                         tBytesDecoded = HM_avcodec_decode_video(mCodecContext, mSourceFrame, &tFrameFinished, tPacket);
 
-                        // emulate set FPS
-                        mSourceFrame->pts = FpsEmulationGetPts();
+                        // derive the correct PTS value either from RTP data or from FPS emulation
+                        if (mRtpActivated)
+                            mSourceFrame->pts = GetPtsFromRTP();
+                        else
+                            mSourceFrame->pts = FpsEmulationGetPts();
 
                         #ifdef MSMEM_DEBUG_PACKETS
                             LOG(LOG_VERBOSE, "    ..with result(!= 0 => OK): %d bytes: %i\n", tFrameFinished, tBytesDecoded);
@@ -982,7 +985,7 @@ void MediaSourceMem::UpdateBufferTime()
     {
         case MEDIA_VIDEO:
             //LOG(LOG_VERBOSE, "Buffer usage after reading: %f", tBufferSize);
-            mDecoderBufferTime = tBufferSize / mRealFrameRate;
+            mDecoderBufferTime = tBufferSize / GetFrameRatePlayout();
             break;
         case MEDIA_AUDIO:
             mDecoderBufferTime = tBufferSize * MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 */ / mOutputAudioSampleRate;
