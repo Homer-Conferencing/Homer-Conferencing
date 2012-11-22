@@ -1213,7 +1213,9 @@ int64_t RTP::GetPtsFromRTP()
 {
     int64_t tResult = 0;
 
-    // assume Mpeg specific 90 kHz clock rate, the normal clock rate is 1 kHz (time base is 1 ms !)
+    // assume mpeg specific 90 kHz clock rate, the normal clock rate is 1 kHz (time base is 1 ms !)
+    // e.g.: 29.97 fps means 1/29.97 = 33.367 ms time difference between frames, 33.367 ms * 90 = 3003 timestamp difference (PTS) between frames for playout
+    // e.g.: 23.97 fps -> 1/23.97 = 41.719 ms, 41.719 ms * 90 = 3755 PTS difference between frames
     if (mRemoteTimestamp > 0)
         tResult = mRemoteTimestamp / 90;
 
