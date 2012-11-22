@@ -75,7 +75,6 @@ namespace Homer { namespace Multimedia {
 ///////////////////////////////////////////////////////////////////////////////
 
 unsigned int RTP::mH261PayloadSizeMax = 0;
-unsigned int RTP::mSourceIdentifier = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 /* ##################################################################################
@@ -410,10 +409,9 @@ RTP::RTP()
     mRtpPacketBuffer = NULL;
     mTargetHost = "";
     mTargetPort = 0;
-    mH261SourceIdentifier = 0;
+    mRemoteSourceIdentifier = 0;
     // set SRC ID
-    if (mSourceIdentifier == 0)
-        mSourceIdentifier = av_get_random_seed();
+    mLocalSourceIdentifier = av_get_random_seed();
 }
 
 RTP::~RTP()
@@ -444,7 +442,7 @@ bool RTP::OpenRtpEncoderH261(string pTargetHost, unsigned int pTargetPort, AVStr
     LOG(LOG_INFO, "    ..rtp target: %s:%u", pTargetHost.c_str(), pTargetPort);
     LOG(LOG_INFO, "    ..rtp header size: %d", RTP_HEADER_SIZE);
     LOG(LOG_INFO, "    ..rtp TIMESTAMP: %u", mCurrentTimestamp);
-    LOG(LOG_INFO, "    ..rtp SRC: %u", mSourceIdentifier);
+    LOG(LOG_INFO, "    ..rtp SRC: %u", mLocalSourceIdentifier);
     LOG(LOG_INFO, "  Wrapping following codec...");
     LOG(LOG_INFO, "    ..codec name: %s", pInnerStream->codec->codec->name);
     LOG(LOG_INFO, "    ..codec long name: %s", pInnerStream->codec->codec->long_name);
@@ -1006,7 +1004,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
             //#################################################################################
             //### patch source identifier to the generated one
             //#################################################################################
-            tHeader->Ssrc = mSourceIdentifier;
+            tHeader->Ssrc = mLocalSourceIdentifier;
 
             //#################################################################################
             //### convert from host to network byte order
@@ -1103,7 +1101,7 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize)
         tRtpHeader->PayloadType = 31; // 31 = h261
         tRtpHeader->SequenceNumber = ++mLastSequenceNumber; // monotonous growing
         tRtpHeader->Timestamp = tTimestamp; // use linux timestamp
-        tRtpHeader->Ssrc = mSourceIdentifier; // use the initially computed unique ID
+        tRtpHeader->Ssrc = mLocalSourceIdentifier; // use the initially computed unique ID
 
         // convert from host to network byte order
         for (int i = 0; i < 3; i++)
@@ -1342,7 +1340,12 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
         mPayloadId = tRtpHeader->PayloadType;
         
         // store the assigned SSRC identifier
-        mH261SourceIdentifier = tRtpHeader->Ssrc;
+        if (mRemoteSourceIdentifier != tRtpHeader->Ssrc)
+        {
+            if (mRemoteSourceIdentifier != 0)
+                LOG(LOG_WARN, "Remote source changed");
+            mRemoteSourceIdentifier = tRtpHeader->Ssrc;
+        }
     }
 
     // #############################################################
