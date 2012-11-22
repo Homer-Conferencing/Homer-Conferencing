@@ -125,22 +125,19 @@ private:
 
     Homer::Monitor::PacketStatistic *mPacketStatistic;
     AVFormatContext     *mRtpFormatContext;
-    unsigned short int  mLastSequenceNumber;
-    unsigned int        mLastTimestamp;
-    unsigned int        mLastCompleteFrameTimestamp;
     int                 mPayloadId;
     bool                mIntermediateFragment;
     bool                mEncoderOpened;
-    bool                mUseInternalEncoder;
     std::string         mTargetHost;
     unsigned int        mTargetPort;
     unsigned int        mLostPackets;
     unsigned int        mLocalSourceIdentifier;
+    unsigned short int  mRemoteSequenceNumberLastPacket;
+    unsigned int        mRemoteTimestampLastPacket;
+    unsigned int        mRemoteTimestampLastCompleteFrame;
     unsigned int        mRemoteSourceIdentifier;
     unsigned int        mRemoteStartTimestamp;
-    /* H261 RTP packetizing */
-    static unsigned int mH261PayloadSizeMax;
-    unsigned int 		mCurrentTimestamp;
+    unsigned int        mRemoteTimestamp;
     /* MP3 RTP hack */
     unsigned int        mMp3Hack_EntireBufferSize;
     /* RTP packet stream */
@@ -148,6 +145,10 @@ private:
     char                *mRtpPacketBuffer;
     char                *mRtpPacketStream;
     char                *mRtpPacketStreamPos;
+    /* H261 RTP encoder */
+    static unsigned int mH261PayloadSizeMax;
+    bool                mH261UseInternalEncoder;
+    unsigned short int  mH261LocalSequenceNumber;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

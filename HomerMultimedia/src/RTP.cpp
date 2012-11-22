@@ -71,7 +71,6 @@ using namespace Homer::Monitor;
 
 namespace Homer { namespace Multimedia {
 
-
 ///////////////////////////////////////////////////////////////////////////////
 
 unsigned int RTP::mH261PayloadSizeMax = 0;
@@ -396,20 +395,22 @@ union VP8ExtendedHeader{
 RTP::RTP()
 {
     LOG(LOG_VERBOSE, "Created");
-    mLastSequenceNumber = 0;
-    mLastTimestamp = 0;
-    mLastCompleteFrameTimestamp = 0;
+    mRemoteSequenceNumberLastPacket = 0;
+    mH261LocalSequenceNumber = 0;
+    mRemoteTimestampLastPacket = 0;
+    mRemoteTimestampLastCompleteFrame = 0;
     mLostPackets = 0;
     mIntermediateFragment = 0;
     mPacketStatistic = NULL;
     mPayloadId = 0;
     mEncoderOpened = false;
-    mUseInternalEncoder = false;
+    mH261UseInternalEncoder = false;
     mRtpPacketStream = NULL;
     mRtpPacketBuffer = NULL;
     mTargetHost = "";
     mTargetPort = 0;
     mRemoteSourceIdentifier = 0;
+    mRemoteStartTimestamp = 0;
     // set SRC ID
     mLocalSourceIdentifier = av_get_random_seed();
 }
@@ -435,13 +436,15 @@ unsigned int RTP::GetH261PayloadSizeMax()
 
 bool RTP::OpenRtpEncoderH261(string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream)
 {
-	mCurrentTimestamp = av_get_random_seed();
+    // get a timestamp
+    time_t tTimestamp;
+    time(&tTimestamp);
 
     LOG(LOG_VERBOSE, "Using lib internal rtp packetizer for H261 codec");
     LOG(LOG_INFO, "Opened...");
     LOG(LOG_INFO, "    ..rtp target: %s:%u", pTargetHost.c_str(), pTargetPort);
     LOG(LOG_INFO, "    ..rtp header size: %d", RTP_HEADER_SIZE);
-    LOG(LOG_INFO, "    ..rtp TIMESTAMP: %u", mCurrentTimestamp);
+    LOG(LOG_INFO, "    ..rtp TIMESTAMP: %d", (int)tTimestamp);
     LOG(LOG_INFO, "    ..rtp SRC: %u", mLocalSourceIdentifier);
     LOG(LOG_INFO, "  Wrapping following codec...");
     LOG(LOG_INFO, "    ..codec name: %s", pInnerStream->codec->codec->name);
@@ -464,7 +467,7 @@ bool RTP::OpenRtpEncoderH261(string pTargetHost, unsigned int pTargetPort, AVStr
     //LOG(LOG_INFO, "    ..max packet size: %d bytes", mRtpFormatContext->pb->max_packet_size);
     LOG(LOG_INFO, "    ..rtp payload size: %d bytes", pInnerStream->codec->rtp_payload_size);
     mEncoderOpened = true;
-    mUseInternalEncoder = true;
+    mH261UseInternalEncoder = true;
     return true;
 }
 
@@ -531,7 +534,7 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     // copy stream description from original stream description
     memcpy(tOuterStream, pInnerStream, sizeof(AVStream));
     tOuterStream->priv_data = NULL;
-    // create monotone time stamps
+    // create monotone timestamps
     tOuterStream->cur_dts = 0;
     tOuterStream->reference_dts = 0;
 
@@ -633,7 +636,7 @@ bool RTP::CloseRtpEncoder()
         LOG(LOG_INFO, "...wasn't open");
 
     mEncoderOpened = false;
-    mUseInternalEncoder = false;
+    mH261UseInternalEncoder = false;
 
     return true;
 }
@@ -831,7 +834,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
     //####################################################################
     // for H261 use the internal RTP implementation
     //####################################################################
-    if (mUseInternalEncoder)
+    if (mH261UseInternalEncoder)
         return RtpCreateH261(pData, pDataSize);
 
     // check for supported codecs
@@ -1099,7 +1102,7 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize)
         tRtpHeader->CsrcCount = 0; // no usage of CSRCs
         tRtpHeader->Marked = (tPacketIndex == tPacketCount - 1)?1:0; // 1 = last fragment, 0 = intermediate fragment
         tRtpHeader->PayloadType = 31; // 31 = h261
-        tRtpHeader->SequenceNumber = ++mLastSequenceNumber; // monotonous growing
+        tRtpHeader->SequenceNumber = ++mH261LocalSequenceNumber; // monotonous growing
         tRtpHeader->Timestamp = tTimestamp; // use linux timestamp
         tRtpHeader->Ssrc = mLocalSourceIdentifier; // use the initially computed unique ID
 
@@ -1191,7 +1194,7 @@ void RTP::LogRtpHeader(RtpHeader *pRtpHeader)
     }
     LOGEX(RTP, LOG_VERBOSE, "Payload type: %s(%d)", PayloadIdToCodec(pRtpHeader->PayloadType).c_str(), pRtpHeader->PayloadType);
     LOGEX(RTP, LOG_VERBOSE, "SequenceNumber: %u", pRtpHeader->SequenceNumber);
-    LOGEX(RTP, LOG_VERBOSE, "Time stamp: %10u", pRtpHeader->Timestamp);
+    LOGEX(RTP, LOG_VERBOSE, "Timestamp (abs.): %10u", pRtpHeader->Timestamp);
 
     // convert from host to network byte order
     for (int i = 0; i < 3; i++)
@@ -1313,25 +1316,25 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
     if (!pReadOnly)
     {
         // check if there was a packet order problem
-        if ((tRtpHeader->SequenceNumber != 0 /* ignore stream resets */) && (mLastSequenceNumber != 65535) && (mLastTimestamp > 0) && (tRtpHeader->SequenceNumber < mLastSequenceNumber))
+        if ((tRtpHeader->SequenceNumber != 0 /* ignore stream resets */) && (mRemoteSequenceNumberLastPacket != 65535) && (mRemoteTimestampLastPacket > 0) && (tRtpHeader->SequenceNumber < mRemoteSequenceNumberLastPacket))
         {
-            LOG(LOG_ERROR, "Packets in wrong order received (last SN: %d; current SN: %d)", mLastSequenceNumber, tRtpHeader->SequenceNumber);
+            LOG(LOG_ERROR, "Packets in wrong order received (last SN: %d; current SN: %d)", mRemoteSequenceNumberLastPacket, tRtpHeader->SequenceNumber);
         }
 
         // check if there was packet loss
-        if ((mLastTimestamp > 0) && (((mLastSequenceNumber != 65535) && (tRtpHeader->SequenceNumber > mLastSequenceNumber + 1)) || ((mLastSequenceNumber == 65535) && (tRtpHeader->SequenceNumber != 0))))
+        if ((mRemoteTimestampLastPacket > 0) && (((mRemoteSequenceNumberLastPacket != 65535) && (tRtpHeader->SequenceNumber > mRemoteSequenceNumberLastPacket + 1)) || ((mRemoteSequenceNumberLastPacket == 65535) && (tRtpHeader->SequenceNumber != 0))))
         {
             unsigned int tLostPackets = 0;
-            if(mLastTimestamp != 65535)
+            if(mRemoteTimestampLastPacket != 65535)
             {
-                tLostPackets = tRtpHeader->SequenceNumber - mLastSequenceNumber - 1;
+                tLostPackets = tRtpHeader->SequenceNumber - mRemoteSequenceNumberLastPacket - 1;
             }else
             {
                 tLostPackets = tRtpHeader->SequenceNumber;
             }
 
             AnnounceLostPackets(tLostPackets);
-            LOG(LOG_ERROR, "Packet loss detected (last SN: %d; current SN: %d), lost %u packets, overall packet loss is now %u", mLastSequenceNumber, tRtpHeader->SequenceNumber, tLostPackets, mLostPackets);
+            LOG(LOG_ERROR, "Packet loss detected (last SN: %d; current SN: %d), lost %u packets, overall packet loss is now %u", mRemoteSequenceNumberLastPacket, tRtpHeader->SequenceNumber, tLostPackets, mLostPackets);
         }
 
         // use stanard RTP definition to detect fragments, some codecs have a different understanding about this - this is included below
@@ -1342,10 +1345,28 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
         // store the assigned SSRC identifier
         if (mRemoteSourceIdentifier != tRtpHeader->Ssrc)
         {
+            // did the source ID from remote side changed more than one time?
             if (mRemoteSourceIdentifier != 0)
-                LOG(LOG_WARN, "Remote source changed");
+                LOG(LOG_WARN, "Alternating source at remote side detected");
+
+            // store the source ID to be able to detect repeating changes
             mRemoteSourceIdentifier = tRtpHeader->Ssrc;
+
+            // we have to reset the timestamp calculation
+            mRemoteStartTimestamp = tRtpHeader->Timestamp;
         }
+
+        // update the relative timstamp value - from remote side
+        int64_t tRemoteTimestamp = (int64_t)tRtpHeader->Timestamp - mRemoteStartTimestamp;
+        if (tRemoteTimestamp < 0)
+        {
+            LOG(LOG_WARN, "Invalid timestamp %ld from remote side detected, will use 0 instead", tRemoteTimestamp);
+            tRemoteTimestamp = 0;
+        }
+        mRemoteTimestamp = tRemoteTimestamp;
+        #ifdef RTP_DEBUG_PACKET_DECODER
+            LOGEX(RTP, LOG_VERBOSE, "Timestamp (rel.): %10u", mRemoteTimestamp);
+        #endif
     }
 
     // #############################################################
@@ -1847,17 +1868,17 @@ bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment,
 	if (!pReadOnly)
 	{// update the status variables
 		// check if there was a new frame begun before the last was finished
-		if ((mLastCompleteFrameTimestamp != mLastTimestamp) && (mLastTimestamp != tRtpHeader->Timestamp))
+		if ((mRemoteTimestampLastCompleteFrame != mRemoteTimestampLastPacket) && (mRemoteTimestampLastPacket != tRtpHeader->Timestamp))
 		{
 			AnnounceLostPackets(1);
-			LOG(LOG_ERROR, "Packet belongs to new frame while last frame is incomplete, overall packet loss is now %u, last complete time stamp: %u, last time stamp: %u", mLostPackets, mLastCompleteFrameTimestamp, mLastTimestamp);
+			LOG(LOG_ERROR, "Packet belongs to new frame while last frame is incomplete, overall packet loss is now %u, last complete timestamp: %u, last timestamp: %u", mLostPackets, mRemoteTimestampLastCompleteFrame, mRemoteTimestampLastPacket);
 		}
-		// store the time stamp of the last complete frame
+		// store the timestamp of the last complete frame
 		if (!mIntermediateFragment)
-			mLastCompleteFrameTimestamp = tRtpHeader->Timestamp;
+			mRemoteTimestampLastCompleteFrame = tRtpHeader->Timestamp;
 
-		mLastSequenceNumber = tRtpHeader->SequenceNumber;
-		mLastTimestamp = tRtpHeader->Timestamp;
+		mRemoteSequenceNumberLastPacket = tRtpHeader->SequenceNumber;
+		mRemoteTimestampLastPacket = tRtpHeader->Timestamp;
 	}else
 	{// restore the original unchanged packet memory here
 
