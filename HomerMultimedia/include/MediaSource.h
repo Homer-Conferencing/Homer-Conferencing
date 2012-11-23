@@ -251,6 +251,7 @@ public:
 
     /* frame buffering to compensate reception jitter and short congestion periods */
     virtual float GetFrameBufferTime();
+    virtual float GetFrameBufferTimeMax();
     virtual int GetFrameBufferCounter();
     virtual int GetFrameBufferSize();
 
@@ -413,6 +414,7 @@ protected:
     int64_t             mDecodedBFrames;
     /* frame pre-buffering */
     float				mDecoderBufferTime; // current pre-buffer length
+    float               mDecoderBufferTimeMax; // max. pre-buffer length
     /* live OSD marking */
     float               mMarkerRelX;
     float               mMarkerRelY;

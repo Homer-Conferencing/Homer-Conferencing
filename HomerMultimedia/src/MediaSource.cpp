@@ -79,6 +79,7 @@ MediaSource::MediaSource(string pName):
     mDecodedPFrames = 0;
     mDecodedBFrames = 0;
     mSourceStartPts = 0;
+    mDecoderBufferTimeMax = 0;
     mSourceType = SOURCE_ABSTRACT;
     mMarkerActivated = false;
     mMediaSourceOpened = false;
@@ -922,6 +923,11 @@ int64_t MediaSource::DecodedBFrames()
 float MediaSource::GetFrameBufferTime()
 {
 	return mDecoderBufferTime;
+}
+
+float MediaSource::GetFrameBufferTimeMax()
+{
+    return mDecoderBufferTimeMax;
 }
 
 int MediaSource::GetFrameBufferCounter()
