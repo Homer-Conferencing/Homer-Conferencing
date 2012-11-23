@@ -48,7 +48,7 @@ public:
     static std::string GetMachineType();
     static std::string GetTargetMachineType();
     static int64_t GetMachineMemoryPhysical();
-    static int64_t GetMachineMemoryVirtual();
+    static int64_t GetMachineMemorySwap();
 
 private:
 };

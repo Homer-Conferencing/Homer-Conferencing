@@ -32,6 +32,7 @@
 #include <stdlib.h>
 
 #if defined(LINUX) || defined(APPLE) || defined(BSD)
+#include <sys/sysinfo.h>
 #include <sys/utsname.h>
 #include <unistd.h>
 #endif
@@ -239,10 +240,20 @@ int64_t System::GetMachineMemoryPhysical()
     return tResult;
 }
 
-int64_t System::GetMachineMemoryVirtual()
+int64_t System::GetMachineMemorySwap()
 {
     int64_t tResult = 0;
-    #if defined(LINUX) || defined(APPLE) || defined(BSD)
+
+    #if defined(LINUX)
+        struct sysinfo tSysInfo;
+        if (sysinfo(&tSysInfo) < 0)
+        {
+            LOGEX(System, LOG_ERROR, "Error in sysinfo()");
+            return 0;
+        }
+        tResult = tSysInfo.totalswap;
+    #endif
+    #if defined(APPLE) || defined(BSD)
         long tPages = sysconf(_SC_PHYS_PAGES);//TODO
         long tPageSize = sysconf(_SC_PAGE_SIZE);//TODO
         tResult = (int64_t)tPages * tPageSize;
@@ -254,7 +265,7 @@ int64_t System::GetMachineMemoryVirtual()
         tResult = (int64_t)tMemStatus.ullTotalPageFile;
     #endif
 
-    LOGEX(System, LOG_VERBOSE, "Found machine memory (virt.): %ld MB", tResult / 1024 / 1024);
+    LOGEX(System, LOG_VERBOSE, "Found machine memory (swap.): %ld MB", tResult / 1024 / 1024);
     return tResult;
 }
 

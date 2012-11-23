@@ -154,8 +154,8 @@ QString HelpDialog::GetSystemInfo()
                 "Library Qt:  " + QString(qVersion()) + "\n"\
                 "\n"\
                 "CPU cores: " + QString("%1").arg(System::GetMachineCores()) + "\n"\
-                "Memory (phys.): " + QString("%1").arg((qlonglong)System::GetMachineMemoryPhysical() / 1024 / 1024) + " MB\n"\
-                "Memory (virt.): " + QString("%1").arg((qlonglong)System::GetMachineMemoryVirtual() / 1024 / 1024) + " MB\n"\
+                "Memory (hardware): " + Int2ByteExpression(rint((float)System::GetMachineMemoryPhysical() / 1024 / 1024)) + " MB\n"\
+                "Memory (swap space): " + Int2ByteExpression(rint((float)System::GetMachineMemorySwap() / 1024 / 1024)) + " MB\n"\
                 "Current architecture: " + tCurArch + "\n"\
                 "Target architecture: " + tTargetArch + "\n"\
                 "\n"\
