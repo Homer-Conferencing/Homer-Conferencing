@@ -2553,14 +2553,14 @@ void MediaSource::MoveMarker(float pRelX, float pRelY)
     }
 }
 
-void MediaSource::FpsEmulationInit()
+void MediaSource::InitFpsEmulator()
 {
-    mStartPtsUSecs = av_gettime();
+    mSourceStartTimeForRTGrabbing = av_gettime();
 }
 
-int64_t MediaSource::FpsEmulationGetPts()
+int64_t MediaSource::GetPtsFromFpsEmulator()
 {
-    int64_t tRelativeRealTimeUSecs = av_gettime() - mStartPtsUSecs; // relative playback time in usecs
+    int64_t tRelativeRealTimeUSecs = av_gettime() - mSourceStartTimeForRTGrabbing; // relative playback time in usecs
     float tRelativeFrameNumber = mFrameRate * tRelativeRealTimeUSecs / 1000000;
     return (int64_t)tRelativeFrameNumber;
 }
@@ -2617,9 +2617,9 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..MT method: %d", mCodecContext->thread_type);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame size: %d", mCodecContext->frame_size);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..duration: %.2f frames", mNumberOfFrames);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start PTS: %.2f", FilterPts(mSourceStartPts));
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS: %ld", FilterPts(mFormatContext->start_time));
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS (RT): %ld", FilterPts(mFormatContext->start_time_realtime));
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start PTS: %.2f frames", FilterPts(mSourceStartPts));
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS: %ld frames", FilterPts(mFormatContext->start_time));
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS (RT): %ld frames", FilterPts(mFormatContext->start_time_realtime));
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..format context duration: %ld seconds", FilterPts(mFormatContext->duration) / AV_TIME_BASE);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame rate: %.2f fps", mFrameRate);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame rate (playout): %.2f fps", mRealFrameRate);
@@ -2648,7 +2648,7 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     //######################################################
     //### initiate local variables
     //######################################################
-    FpsEmulationInit();
+    InitFpsEmulator();
     mChunkNumber = 0;
     mDecoderBufferTime = 0;
     mChunkDropCounter = 0;

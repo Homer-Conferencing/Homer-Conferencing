@@ -1639,7 +1639,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
                 mCurrentFrameIndex = tFrameIndex;
 
                 // seek by adjusting the start time of RT grabbing
-                mStartPtsUSecs = mStartPtsUSecs - tTimeDiff/* in us */ * 1000 * 1000;
+                mSourceStartTimeForRTGrabbing = mSourceStartTimeForRTGrabbing - tTimeDiff/* in us */ * 1000 * 1000;
 
                 // everything is fine
                 tResult = true;
@@ -1798,11 +1798,11 @@ void MediaSourceFile::CalibrateRTGrabbing()
     float  tRelativeFrameIndex = mCurrentFrameIndex - mSourceStartPts;
     double tRelativeTime = (int64_t)((double)1000000 * tRelativeFrameIndex / mFrameRate);
     #ifdef MSF_DEBUG_CALIBRATION
-        LOG(LOG_VERBOSE, "Calibrating %s RT playback, old PTS start: %.2f", GetMediaTypeStr().c_str(), mStartPtsUSecs);
+        LOG(LOG_VERBOSE, "Calibrating %s RT playback, old PTS start: %.2f", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing);
     #endif
-    mStartPtsUSecs = av_gettime() - tRelativeTime;
+    mSourceStartTimeForRTGrabbing = av_gettime() - tRelativeTime;
     #ifdef MSF_DEBUG_CALIBRATION
-        LOG(LOG_VERBOSE, "Calibrating %s RT playback: new PTS start: %.2f, rel. frame index: %.2f, rel. time: %.2f ms", GetMediaTypeStr().c_str(), mStartPtsUSecs, tRelativeFrameIndex, (float)(tRelativeTime / 1000));
+        LOG(LOG_VERBOSE, "Calibrating %s RT playback: new PTS start: %.2f, rel. frame index: %.2f, rel. time: %.2f ms", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing, tRelativeFrameIndex, (float)(tRelativeTime / 1000));
     #endif
 }
 
@@ -1812,7 +1812,7 @@ void MediaSourceFile::WaitForRTGrabbing()
     float tRelativeFrameIndex = mCurrentFrameIndex - mSourceStartPts;
     double tPacketRealPtsTmp = 1000000 * (tRelativeFrameIndex) / mFrameRate; // current presentation time in us of the current packet from the file source
     tRelativePacketTimeUSecs = (int64_t)tPacketRealPtsTmp;
-    tRelativeRealTimeUSecs = av_gettime() - mStartPtsUSecs;
+    tRelativeRealTimeUSecs = av_gettime() - mSourceStartTimeForRTGrabbing;
     tDiffPtsUSecs = tRelativePacketTimeUSecs - tRelativeRealTimeUSecs;
     #ifdef MSF_DEBUG_TIMING
         LOG(LOG_VERBOSE, "%s-current relative frame index: %ld, relative time: %8lld us (Fps: %3.2f), stream start time: %6lld us, packet's relative play out time: %8lld us, time difference: %8lld us", GetMediaTypeStr().c_str(), tRelativeFrameIndex, tRelativeRealTimeUSecs, mFrameRate, mSourceStartPts, tRelativePacketTimeUSecs, tDiffPtsUSecs);
