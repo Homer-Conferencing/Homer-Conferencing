@@ -50,6 +50,11 @@ using namespace Homer::Monitor;
 using namespace Homer::Base;
 
 ///////////////////////////////////////////////////////////////////////////////
+
+#define MSIN_SIMULATED_PACKET_LOSS                              0 // in percent
+
+///////////////////////////////////////////////////////////////////////////////
+
 void MediaSinkNet::BasicInit(string pTargetHost, unsigned int pTargetPort)
 {
 	mStreamFragmentCopyBuffer = NULL;
@@ -423,6 +428,21 @@ void MediaSinkNet::SendPacket(char* pData, unsigned int pSize)
 
 void MediaSinkNet::DoSendPacket(char* pData, unsigned int pSize)
 {
+    #if MSIN_SIMULATED_PACKET_LOSS > 0
+        int64_t tVal = mIncomingAVStream->pts.val + mIncomingAVStream->pts.num / mIncomingAVStream->pts.den;
+        int tRand = rand();
+        if (tRand < (int64_t)MSIN_SIMULATED_PACKET_LOSS * RAND_MAX / 100)
+        {
+            LOG(LOG_ERROR, "Dropped packet with pts: %ld", tVal);
+            return;
+        }else
+        {
+            #ifdef MSIN_DEBUG_PACKETS
+                LOG(LOG_WARN, "Sending packet with pts: %ld", tVal);
+            #endif
+        }
+    #endif
+
     int64_t tTime = Time::GetTimeStamp();
 	if(mNAPIUsed)
 	{
