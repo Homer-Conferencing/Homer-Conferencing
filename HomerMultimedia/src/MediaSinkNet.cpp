@@ -423,11 +423,7 @@ void MediaSinkNet::SendPacket(char* pData, unsigned int pSize)
         }
     #endif
 
-    DoSendPacket(pData, pSize);
-}
 
-void MediaSinkNet::DoSendPacket(char* pData, unsigned int pSize)
-{
     #if MSIN_SIMULATED_PACKET_LOSS > 0
         int64_t tVal = mIncomingAVStream->pts.val + mIncomingAVStream->pts.num / mIncomingAVStream->pts.den;
         int tRand = rand();
@@ -444,28 +440,28 @@ void MediaSinkNet::DoSendPacket(char* pData, unsigned int pSize)
     #endif
 
     int64_t tTime = Time::GetTimeStamp();
-	if(mNAPIUsed)
-	{
-		if (mNAPIDataSocket != NULL)
-		{
-			mNAPIDataSocket->write(pData, (int)pSize);
-			if (mNAPIDataSocket->isClosed())
-			{
-				LOG(LOG_ERROR, "Error when sending data through NAPI connection to %s:%u, will skip further transmissions", mTargetHost.c_str(), mTargetPort);
-				mBrokenPipe = true;
-			}
-		}
-	}else
-	{
-		if (mDataSocket != NULL)
-		{
-			if (!mDataSocket->Send(mTargetHost, mTargetPort, pData, (ssize_t)pSize))
-			{
-				LOG(LOG_ERROR, "Error when sending data through %s socket to %s:%u, will skip further transmissions", GetTransportTypeStr().c_str(), mTargetHost.c_str(), mTargetPort);
-				mBrokenPipe = true;
-			}
-		}
-	}
+    if(mNAPIUsed)
+    {
+        if (mNAPIDataSocket != NULL)
+        {
+            mNAPIDataSocket->write(pData, (int)pSize);
+            if (mNAPIDataSocket->isClosed())
+            {
+                LOG(LOG_ERROR, "Error when sending data through NAPI connection to %s:%u, will skip further transmissions", mTargetHost.c_str(), mTargetPort);
+                mBrokenPipe = true;
+            }
+        }
+    }else
+    {
+        if (mDataSocket != NULL)
+        {
+            if (!mDataSocket->Send(mTargetHost, mTargetPort, pData, (ssize_t)pSize))
+            {
+                LOG(LOG_ERROR, "Error when sending data through %s socket to %s:%u, will skip further transmissions", GetTransportTypeStr().c_str(), mTargetHost.c_str(), mTargetPort);
+                mBrokenPipe = true;
+            }
+        }
+    }
     #ifdef MSIN_DEBUG_TIMING
         int64_t tTime2 = Time::GetTimeStamp();
         LOG(LOG_VERBOSE, "       sending a packet of %u bytes took %ld us", pSize, tTime2 - tTime);

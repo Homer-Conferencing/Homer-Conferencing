@@ -79,7 +79,6 @@ private:
 
     /* sending one single fragment of an (rtp) packet stream */
     virtual void SendPacket(char* pData, unsigned int pSize);
-    virtual void DoSendPacket(char* pData, unsigned int pSize);
 
     void BasicInit(string pTargetHost, unsigned int pTargetPort);
 
