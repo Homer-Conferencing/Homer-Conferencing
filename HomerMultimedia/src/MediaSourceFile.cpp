@@ -61,14 +61,7 @@ using namespace Homer::Monitor;
 #define MSF_DESIRED_AUDIO_INPUT_SIZE                       2 /* 16 signed int */ * MEDIA_SOURCE_SAMPLES_PER_BUFFER /* samples */ * 2 /* channels */
 
 // how much time do we want to buffer at maximum?
-#define MSF_FRAME_INPUT_QUEUE_MAX_TIME                     ((System::GetMachineType() != "x86") ? 2.0 : 0.5) // 0.5 seconds for 32 bit machines with limit of 4 GB ram, 2.0 seconds for 64 bit machines
-
-///////////////////////////////////////////////////////////////////////////////
-
-// how many frame input buffers do we want to store, depending on mDecoderBufferTimeMax
-//HINT: assume 44.1 kHz playback sample rate, 1024 samples per audio buffer
-//HINT: reserve one buffer for internal signaling
-#define MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE                 (1 + rint( (mMediaType == MEDIA_AUDIO) ? (mDecoderBufferTimeMax * (44100 / 1024)) : (mDecoderBufferTimeMax * mRealFrameRate) ))
+#define MSF_FRAME_INPUT_QUEUE_MAX_TIME                     ((System::GetTargetMachineType() != "x86") ? 2.0 : 0.5) // 0.5 seconds for 32 bit targets with limit of 4 GB ram, 2.0 seconds for 64 bit targets
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -428,7 +421,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
         }
 
         // need more input from file but EOF is not reached?
-        if ((tAvailableFrames < MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE) && (!mEOFReached))
+        if ((tAvailableFrames < mDecoderFifo->GetSize()) && (!mEOFReached))
         {
             #ifdef MSF_DEBUG_DECODER_STATE
                 LOG(LOG_VERBOSE, "Signal to decoder that new data is needed");
@@ -642,7 +635,7 @@ void* MediaSourceFile::Run(void* pArgs)
         	    tVideoScaler = new VideoScaler("Video-Decoder(FILE)");
             	if(tVideoScaler == NULL)
                 	LOG(LOG_ERROR, "Invalid video scaler instance, possible out of memory");
-	            tVideoScaler->StartScaler(MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE, mSourceResX, mSourceResY, mCodecContext->pix_fmt, mDecoderTargetResX, mDecoderTargetResY, PIX_FMT_RGB32);
+	            tVideoScaler->StartScaler(CalculateFrameBufferSize(), mSourceResX, mSourceResY, mCodecContext->pix_fmt, mDecoderTargetResX, mDecoderTargetResY, PIX_FMT_RGB32);
 
 	            // set the video scaler as FIFO for the decoder
     	        mDecoderFifo = tVideoScaler;
@@ -667,7 +660,6 @@ void* MediaSourceFile::Run(void* pArgs)
 	            LOG(LOG_VERBOSE, "Going to create in-thread scaler context..");
 	            mScalerContext = sws_getContext(mCodecContext->width, mCodecContext->height, mCodecContext->pix_fmt, mDecoderTargetResX, mDecoderTargetResY, PIX_FMT_RGB32, SWS_BICUBIC, NULL, NULL, NULL);
 
-	            mDecoderFifo = new MediaFifo(MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE, tChunkBufferSize, GetMediaTypeStr() + "-MediaSourceFile(Data)");
 			}
 			
 
@@ -680,7 +672,7 @@ void* MediaSourceFile::Run(void* pArgs)
             // allocate chunk buffer
             tChunkBuffer = (uint8_t*)malloc(tChunkBufferSize);
 
-            mDecoderFifo = new MediaFifo(MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE, tChunkBufferSize, GetMediaTypeStr() + "-MediaSourceFile(Data)");
+            mDecoderFifo = new MediaFifo(CalculateFrameBufferSize(), tChunkBufferSize, GetMediaTypeStr() + "-MediaSourceFile(Data)");
 
             // init fifo buffer
             tSampleFifo = HM_av_fifo_alloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE * 2);
@@ -693,7 +685,7 @@ void* MediaSourceFile::Run(void* pArgs)
             break;
     }
 
-    mDecoderMetaDataFifo = new MediaFifo(MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE, sizeof(ChunkDescriptor), GetMediaTypeStr() + "-MediaSourceFile(MetaData)");
+    mDecoderMetaDataFifo = new MediaFifo(CalculateFrameBufferSize(), sizeof(ChunkDescriptor), GetMediaTypeStr() + "-MediaSourceFile(MetaData)");
 
     // reset last PTS
     mDecoderLastReadPts = 0;
@@ -707,7 +699,7 @@ void* MediaSourceFile::Run(void* pArgs)
         #endif
 
         mDecoderNeedWorkConditionMutex.lock();
-        if ((mDecoderFifo != NULL) && (mDecoderFifo->GetUsage() < MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE - 1 /* one slot for a 0 byte signaling chunk*/) /* meta data FIFO has always the same size => hence, we don't have to check its size */)
+        if ((mDecoderFifo != NULL) && (mDecoderFifo->GetUsage() < mDecoderFifo->GetSize() - 1 /* one slot for a 0 byte signaling chunk*/) /* meta data FIFO has always the same size => hence, we don't have to check its size */)
         {
             mDecoderNeedWorkConditionMutex.unlock();
 

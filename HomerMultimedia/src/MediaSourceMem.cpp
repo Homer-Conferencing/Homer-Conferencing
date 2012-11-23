@@ -995,6 +995,30 @@ void MediaSourceMem::UpdateBufferTime()
     }
 }
 
+int MediaSourceMem::CalculateFrameBufferSize()
+{
+	int tResult = 0;
+
+	// how many frame input buffers do we want to store, depending on mDecoderBufferTimeMax
+	//HINT: assume 44.1 kHz playback sample rate, 1024 samples per audio buffer
+	//HINT: reserve one buffer for internal signaling
+	switch(GetMediaType())
+	{
+		case MEDIA_AUDIO:
+			tResult = rint(mDecoderBufferTimeMax * (44100 / 1024));
+			break;
+		case MEDIA_VIDEO:
+			tResult = rint(mDecoderBufferTimeMax * mRealFrameRate);
+			break;
+		default:
+			LOG(LOG_ERROR, "Unsupported media type");
+			break;
+	}
+
+	// add one entry for internal signaling purposes
+	tResult++;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 }} //namespace

@@ -112,6 +112,7 @@ protected:
 
     /* buffering */
     void UpdateBufferTime();
+    int CalculateFrameBufferSize();
 
     /* FIFO helpers */
     void WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int64_t pPts);
