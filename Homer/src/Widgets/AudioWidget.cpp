@@ -998,8 +998,6 @@ float AudioWorkerThread::GetUserAVDrift()
 
 void AudioWorkerThread::SetUserAVDrift(float pDrift)
 {
-    int tDrift = 1000 * pDrift;
-    pDrift = tDrift / 1000;
     if (mUserAVDrift != pDrift)
     {
         LOG(LOG_VERBOSE, "Setting user defined A/V drift from %f to %f", mUserAVDrift, pDrift);
