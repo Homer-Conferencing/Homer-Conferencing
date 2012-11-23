@@ -565,7 +565,7 @@ int MediaSourceDShow::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
             tBytesDecoded = HM_avcodec_decode_video(mCodecContext, mSourceFrame, &tFrameFinished, &tPacket);
 
             // emulate set FPS
-            mSourceFrame->pts = FpsEmulationGetPts();
+            mSourceFrame->pts = GetPtsFromFpsEmulator();
 
 //        // transfer the presentation time value
 //        mSourceFrame->pts = tPacket.pts;

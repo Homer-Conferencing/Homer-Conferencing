@@ -708,7 +708,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                         if (mRtpActivated)
                             mSourceFrame->pts = GetPtsFromRTP();
                         else
-                            mSourceFrame->pts = FpsEmulationGetPts();
+                            mSourceFrame->pts = GetPtsFromFpsEmulator();
 
                         #ifdef MSMEM_DEBUG_PACKETS
                             LOG(LOG_VERBOSE, "    ..with result(!= 0 => OK): %d bytes: %i\n", tFrameFinished, tBytesDecoded);

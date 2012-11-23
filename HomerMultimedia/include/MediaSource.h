@@ -349,8 +349,8 @@ protected:
     void AnnounceFrame(AVFrame *pFrame);
 
     /* video fps emulation */
-    void FpsEmulationInit(); // auto. called by MarkOpenGrabDeviceSuccessful
-    int64_t FpsEmulationGetPts(); //needs correct mFrameRate value
+    void InitFpsEmulator(); // auto. called by MarkOpenGrabDeviceSuccessful
+    int64_t GetPtsFromFpsEmulator(); //needs correct mFrameRate value
 
     /* audio silence */
     bool ContainsOnlySilence(void* pChunkBuffer, int pChunkSize);// assumes signed 16 bit integers per sample

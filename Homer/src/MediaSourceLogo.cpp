@@ -175,7 +175,7 @@ bool MediaSourceLogo::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     //######################################################
     //### initiate local variables
     //######################################################
-    FpsEmulationInit();
+    InitFpsEmulator();
     mSourceStartPts = 0;
     mChunkNumber = 0;
     mMediaType = MEDIA_VIDEO;

@@ -181,7 +181,7 @@ bool MediaSourceDesktop::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     //######################################################
     //### initiate local variables
     //######################################################
-    FpsEmulationInit();
+    InitFpsEmulator();
     mLastTimeGrabbed == QTime(0, 0, 0, 0);
     mSourceStartPts = 0;
     mChunkNumber = 0;
@@ -364,7 +364,7 @@ void MediaSourceDesktop::CreateScreenshot()
                 mRecorderChunkNumber++;
 
 				// emulate set FPS
-				tRGBFrame->pts = FpsEmulationGetPts();
+				tRGBFrame->pts = GetPtsFromFpsEmulator();
 
 				// re-encode the frame and write it to file
 				RecordFrame(tRGBFrame);
