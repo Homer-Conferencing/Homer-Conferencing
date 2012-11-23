@@ -81,6 +81,7 @@ public:
     virtual bool CloseGrabDevice();
 
 protected:
+    /* network socket listener thread */
     friend class NetworkListener;
 
     void Init(bool pRtpActivated = true);
