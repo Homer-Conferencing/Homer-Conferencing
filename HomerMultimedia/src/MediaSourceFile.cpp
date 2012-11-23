@@ -51,7 +51,7 @@ using namespace Homer::Monitor;
 #define MSF_SEEK_MAX_EXPECTED_GOP_SIZE                    30 // every x frames a key frame
 
 // above which threshold value should we execute a hard file seeking? (below this threshold we do soft seeking by adjusting RT grabbing)
-#define MSF_SEEK_WAIT_THRESHOLD                          1.5 // seconds
+#define MSF_SEEK_WAIT_THRESHOLD                            1.5 // seconds
 
 // should we use reordered PTS values from ffmpeg video decoder?
 #define MSF_USE_REORDERED_PTS                              0 // on/off
@@ -59,12 +59,15 @@ using namespace Homer::Monitor;
 // how many bytes should be delivered towards grabbing application per request?
 #define MSF_DESIRED_AUDIO_INPUT_SIZE                       2 /* 16 signed int */ * MEDIA_SOURCE_SAMPLES_PER_BUFFER /* samples */ * 2 /* channels */
 
+// how much time do we want to buffer at maximum?
+#define MSF_FRAME_INPUT_QUEUE_MAX_TIME                     1.5 // seconds
+
 ///////////////////////////////////////////////////////////////////////////////
 
-// for 44,1 kHz and 1 sec. of audio buffering we need 44100 samples = 43,1 audio buffers with 1024 per buffer
-#define MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_VIDEO           1 /* sec. */ * 30 // in frames (each max. 16 MB for HDTV, one entry is reserved for 0-byte signaling) ==> max. 480 MB
-#define MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_AUDIO           5 /* sec. */ * 44 // in audio sample blocks (each about 192 kB)
-#define MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE                 ((mMediaType == MEDIA_AUDIO) ? MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_AUDIO : MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_VIDEO)
+// how many frame input buffers do we want to store, depending on mDecoderBufferTimeMax
+//HINT: assume 44.1 kHz playback sample rate, 1024 samples per audio buffer
+//HINT: reserve one buffer for internal signaling
+#define MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE                 (1 + rint( (mMediaType == MEDIA_AUDIO) ? (mDecoderBufferTimeMax * (44100 / 1024)) : (mDecoderBufferTimeMax * mRealFrameRate) ))
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -73,6 +76,7 @@ MediaSourceFile::MediaSourceFile(string pSourceFile, bool pGrabInRealTime):
 {
     mFinalPictureResX = 0;
     mFinalPictureResY = 0;
+    mDecoderBufferTimeMax = MSF_FRAME_INPUT_QUEUE_MAX_TIME;
     mUseFilePTS = false;
     mSeekingTargetFrameIndex = 0;
     mRecalibrateRealTimeGrabbingAfterSeeking = false;
@@ -428,9 +432,9 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
             #ifdef MSF_DEBUG_DECODER_STATE
                 LOG(LOG_VERBOSE, "Signal to decoder that new data is needed");
             #endif
-            mDecoderMutex.lock();
+            mDecoderNeedWorkConditionMutex.lock();
             mDecoderNeedWorkCondition.SignalAll();
-            mDecoderMutex.unlock();
+            mDecoderNeedWorkConditionMutex.unlock();
             #ifdef MSF_DEBUG_DECODER_STATE
                 LOG(LOG_VERBOSE, "Signaling to decoder done");
             #endif
@@ -700,10 +704,11 @@ void* MediaSourceFile::Run(void* pArgs)
         #ifdef MSF_DEBUG_TIMING
             LOG(LOG_VERBOSE, "%s-decoder loop", GetMediaTypeStr().c_str());
         #endif
-        mDecoderMutex.lock();
 
+        mDecoderNeedWorkConditionMutex.lock();
         if ((mDecoderFifo != NULL) && (mDecoderFifo->GetUsage() < MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE - 1 /* one slot for a 0 byte signaling chunk*/) /* meta data FIFO has always the same size => hence, we don't have to check its size */)
         {
+            mDecoderNeedWorkConditionMutex.unlock();
 
             if (mEOFReached)
                 LOG(LOG_WARN, "We started %s file grabbing when EOF was already reached", GetMediaTypeStr().c_str());
@@ -1322,6 +1327,7 @@ void* MediaSourceFile::Run(void* pArgs)
             // free packet buffer
             av_free_packet(tPacket);
 
+            mDecoderNeedWorkConditionMutex.lock();
             if (mEOFReached)
             {// EOF, wait until restart
                 // add empty chunk to FIFO
@@ -1337,26 +1343,26 @@ void* MediaSourceFile::Run(void* pArgs)
                     LOG(LOG_VERBOSE, "EOF for %s source reached, wait some time and check again, loop %d", GetMediaTypeStr().c_str(), ++tWaitLoop);
                 #endif
                 mDecoderNeedWorkCondition.Reset();
-                mDecoderNeedWorkCondition.Wait(&mDecoderMutex);
+                mDecoderNeedWorkCondition.Wait(&mDecoderNeedWorkConditionMutex);
                 mDecoderLastReadPts = 0;
                 mEOFReached = false;
                 #ifdef MSF_DEBUG_DECODER_STATE
                     LOG(LOG_VERBOSE, "Continuing after file decoding was restarted");
                 #endif
             }
+            mDecoderNeedWorkConditionMutex.unlock();
         }else
         {// decoder FIFO is full, nothing to be done
             #ifdef MSF_DEBUG_DECODER_STATE
                 LOG(LOG_VERBOSE, "Nothing to do for %s decoder, FIFO has %d of %d entries, wait some time and check again, loop %d", GetMediaTypeStr().c_str(), mDecoderFifo->GetUsage(), mDecoderFifo->GetSize(), ++tWaitLoop);
             #endif
             mDecoderNeedWorkCondition.Reset();
-            mDecoderNeedWorkCondition.Wait(&mDecoderMutex);
+            mDecoderNeedWorkCondition.Wait(&mDecoderNeedWorkConditionMutex);
             #ifdef MSF_DEBUG_DECODER_STATE
                 LOG(LOG_VERBOSE, "Continuing after new data is needed, current FIFO size is: %d of %d", mDecoderFifo->GetUsage(), mDecoderFifo->GetSize());
             #endif
+            mDecoderNeedWorkConditionMutex.unlock();
         }
-
-        mDecoderMutex.unlock();
     }
 
 	switch(mMediaType)
@@ -1585,7 +1591,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
         // seek only if it is necessary
         if (pSeconds != GetSeekPos())
         {
-            mDecoderMutex.lock();
+            mDecoderNeedWorkConditionMutex.lock();
 
             if ((!mGrabInRealTime) || ((tTimeDiff > MSF_SEEK_WAIT_THRESHOLD) || (tTimeDiff < -MSF_SEEK_WAIT_THRESHOLD)))
             {
@@ -1653,7 +1659,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
                 mEOFReached = false;
             }
 
-            mDecoderMutex.unlock();
+            mDecoderNeedWorkConditionMutex.unlock();
         }else
         {
             LOG(LOG_VERBOSE, "%s-seeking in file skipped because position is already the desired one", GetMediaTypeStr().c_str());
