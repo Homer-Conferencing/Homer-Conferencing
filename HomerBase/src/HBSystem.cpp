@@ -193,6 +193,33 @@ string System::GetMachineType()
     return tResult;
 }
 
+/*
+ * possible machine types:
+ *          x86      => Intel x86 (32 bit)
+ *          amd64    => AMD 64 - compatible to Intel x86 (64 bit)
+ *          ia-64    => Itanium - not compatible to Intel x86 (64 bit)
+ *          unknown  => misc. cases
+ *
+ */
+string System::GetTargetMachineType()
+{
+    string tResult = "unknown";
+
+	#if ARCH_BITS == 32
+    	tResult = "x86";
+	#endif
+	#if ARCH_BITS == 64
+    	if (GetMachineType() == "amd64")
+    		tResult = "amd64";
+    	else
+			tResult = "ia-64";
+	#endif
+
+	LOGEX(System, LOG_VERBOSE, "Target machine type \"%s\"", tResult.c_str());
+
+	return tResult;
+}
+
 int64_t System::GetMachineMemoryPhysical()
 {
     int64_t tResult = 0;

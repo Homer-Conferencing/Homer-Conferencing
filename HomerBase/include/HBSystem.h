@@ -46,6 +46,7 @@ public:
     static std::string GetKernelVersion();
     static int GetMachineCores();
     static std::string GetMachineType();
+    static std::string GetTargetMachineType();
     static int64_t GetMachineMemoryPhysical();
     static int64_t GetMachineMemoryVirtual();
 
