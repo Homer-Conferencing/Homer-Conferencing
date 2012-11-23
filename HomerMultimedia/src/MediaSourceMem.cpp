@@ -1017,6 +1017,8 @@ int MediaSourceMem::CalculateFrameBufferSize()
 
 	// add one entry for internal signaling purposes
 	tResult++;
+
+	return tResult;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
