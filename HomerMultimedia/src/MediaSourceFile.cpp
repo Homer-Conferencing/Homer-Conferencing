@@ -31,6 +31,7 @@
 #include <Logger.h>
 #include <HBThread.h>
 #include <HBCondition.h>
+#include <HBSystem.h>
 
 #include <algorithm>
 #include <string>
@@ -60,7 +61,7 @@ using namespace Homer::Monitor;
 #define MSF_DESIRED_AUDIO_INPUT_SIZE                       2 /* 16 signed int */ * MEDIA_SOURCE_SAMPLES_PER_BUFFER /* samples */ * 2 /* channels */
 
 // how much time do we want to buffer at maximum?
-#define MSF_FRAME_INPUT_QUEUE_MAX_TIME                     1.5 // seconds
+#define MSF_FRAME_INPUT_QUEUE_MAX_TIME                     ((System::GetMachineType() != "x86") ? 2.0 : 0.5) // 0.5 seconds for 32 bit machines with limit of 4 GB ram, 2.0 seconds for 64 bit machines
 
 ///////////////////////////////////////////////////////////////////////////////
 
