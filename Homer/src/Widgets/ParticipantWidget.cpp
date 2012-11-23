@@ -1661,10 +1661,13 @@ void ParticipantWidget::HideFullscreenMovieControls()
 
 void ParticipantWidget::ActionToggleUserAVDriftWidget()
 {
-    if (mAVDriftFrame->isVisible())
-        mAVDriftFrame->hide();
-    else
-        mAVDriftFrame->show();
+    if (mAVDriftFrame != NULL)
+    {
+        if (mAVDriftFrame->isVisible())
+            mAVDriftFrame->hide();
+        else
+            mAVDriftFrame->show();
+    }
 }
 
 void ParticipantWidget::ActionUserAVDriftChanged(double pDrift)

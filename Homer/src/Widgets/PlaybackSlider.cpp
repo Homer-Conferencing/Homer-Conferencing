@@ -76,6 +76,10 @@ void PlaybackSlider::contextMenuEvent(QContextMenuEvent *pContextMenuEvent)
 {
     QAction *tAction;
 
+    // return if participant widget is not valid, in this case we cannot change the A/V drift anyway
+    if (mParticipantWidget == NULL)
+        return;
+
     QMenu tMenu(this);
 
     tAction = tMenu.addAction("Adjust A/V drift");
@@ -83,7 +87,8 @@ void PlaybackSlider::contextMenuEvent(QContextMenuEvent *pContextMenuEvent)
     tIcon2.addPixmap(QPixmap(":/images/22_22/Configuration_Video.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon2);
     tAction->setCheckable(true);
-    tAction->setChecked(mParticipantWidget->mAVDriftFrame->isVisible());
+    if (mParticipantWidget-> mAVDriftFrame != NULL)
+        tAction->setChecked(mParticipantWidget->mAVDriftFrame->isVisible());
 
     QAction* tPopupRes = tMenu.exec(pContextMenuEvent->globalPos());
     if (tPopupRes != NULL)
