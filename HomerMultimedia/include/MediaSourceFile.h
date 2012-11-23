@@ -32,7 +32,6 @@
 #include <MediaSourceMem.h>
 #include <MediaFifo.h>
 #include <HBThread.h>
-#include <HBCondition.h>
 
 #include <vector>
 #include <string.h>
@@ -113,10 +112,8 @@ private:
     bool                mUseFilePTS;
     int                 mDecoderTargetResX;
     int                 mDecoderTargetResY;
-    Mutex               mDecoderMutex;
     bool                mDecoderNeeded;
     int64_t             mDecoderLastReadPts;
-    Condition           mDecoderNeedWorkCondition;
     double              mCurrentFrameIndex; // we have to determine this manually during grabbing because cur_dts and everything else in AVStream is buggy for some video/audio files
     std::vector<string> mInputChannels;
     /* real-time playback */

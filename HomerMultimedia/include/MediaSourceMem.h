@@ -33,6 +33,8 @@
 #include <MediaSource.h>
 #include <RTP.h>
 
+#include <HBCondition.h>
+
 #include <string>
 
 using namespace Homer::Base;
@@ -124,6 +126,8 @@ protected:
     int                 mWrappingHeaderSize;
     int                 mPacketStatAdditionalFragmentSize; // used to adapt packet statistic to additional fragment header, which is used for TCP transmission
     /* input stream FIFO */
+    Condition           mDecoderNeedWorkCondition;
+    Mutex               mDecoderNeedWorkConditionMutex;
     MediaFifo           *mDecoderFragmentFifo;
     MediaFifo           *mDecoderFifo; // for frames
     MediaFifo           *mDecoderMetaDataFifo; // for meta data about frames
