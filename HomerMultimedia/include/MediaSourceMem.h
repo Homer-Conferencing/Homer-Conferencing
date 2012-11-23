@@ -34,6 +34,7 @@
 #include <RTP.h>
 
 #include <HBCondition.h>
+#include <HBSystem.h>
 
 #include <string>
 
@@ -52,9 +53,9 @@ namespace Homer { namespace Multimedia {
 ///////////////////////////////////////////////////////////////////////////////
 
 // size of one single fragment of a frame packet
-#define MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE                8*1024 // 8 kB (for jumbo packets!)
+#define MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE                8*1024 // 8 KB (for jumbo packets!)
 
-#define MEDIA_SOURCE_MEM_FRAGMENT_INPUT_QUEUE_SIZE_LIMIT 	   4096 // 4096 entries á 8 kB
+#define MEDIA_SOURCE_MEM_FRAGMENT_INPUT_QUEUE_SIZE_LIMIT 	 ((System::GetTargetMachineType() != "x86") ? 2048 : 256) // á 8 KB: 256 buffers for 32 bit targets with limit of 4 GB ram, 2*1024 buffers for 64 bit targets
 
 ///////////////////////////////////////////////////////////////////////////////
 
