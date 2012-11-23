@@ -472,7 +472,7 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
         #endif
 
         if ((mSeekingTargetFrameIndex != 0) && (mCurrentFrameIndex < mSeekingTargetFrameIndex))
-        {
+        {// we are waiting for some special frame number
             LOG(LOG_VERBOSE, "Dropping grabbed %s frame %.2f because we are still waiting for frame %.2f", GetMediaTypeStr().c_str(), (float)mCurrentFrameIndex, mSeekingTargetFrameIndex);
             tShouldGrabNext = true;
         }
@@ -486,10 +486,10 @@ int MediaSourceFile::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
 			mCurrentFrameIndex = tCurrentFramePts;
         }
 
+        // check for EOF
         int64_t tCurrentRelativeFramePts = tCurrentFramePts - mSourceStartPts;
-        // EOF
         if ((tCurrentRelativeFramePts >= mNumberOfFrames) && (mNumberOfFrames != 0))
-        {
+        {// PTS value is bigger than possible max. value, EOF reached
             LOG(LOG_VERBOSE, "Returning EOF in %s file because PTS value %ld is bigger than or equal to maximum %.2f", GetMediaTypeStr().c_str(), tCurrentRelativeFramePts, (float)mNumberOfFrames);
             mEOFReached = true;
             tShouldGrabNext = false;
