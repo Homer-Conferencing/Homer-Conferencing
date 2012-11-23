@@ -111,6 +111,9 @@ public:
 
     void RTPRegisterPacketStatistic(Homer::Monitor::PacketStatistic *pStatistic);
 
+protected:
+    int64_t GetPtsFromRTP(); // uses the timestamps from the RTP header to derive a valid PTS value
+
 private:
     void AnnounceLostPackets(unsigned int pCount);
 
