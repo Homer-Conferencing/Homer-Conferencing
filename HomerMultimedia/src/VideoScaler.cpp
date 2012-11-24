@@ -61,14 +61,14 @@ void VideoScaler::StartScaler(int pInputQueueSize, int pSourceResX, int pSourceR
 {
 
     mQueueSize = pInputQueueSize;
-    mSourcePixelFormat = pSourcePixelFormat;
-    mTargetPixelFormat = pTargetPixelFormat;
     mSourceResX = pSourceResX;
     mSourceResY = pSourceResY;
+    mSourcePixelFormat = pSourcePixelFormat;
     mTargetResX = pTargetResX;
     mTargetResY = pTargetResY;
+    mTargetPixelFormat = pTargetPixelFormat;
 
-    LOG(LOG_VERBOSE, "Starting %s video scaler, converting resolution %d*%d (fmt: %d) to %d*%d (fmt: %d), queue size: %d", mName.c_str(), pSourceResX, pSourceResY, mSourcePixelFormat, pTargetResX, pTargetResY, mTargetPixelFormat, mQueueSize);
+    LOG(LOG_WARN, "Starting %s video scaler, converting resolution %d*%d (fmt: %d) to %d*%d (fmt: %d), queue size: %d", mName.c_str(), pSourceResX, pSourceResY, mSourcePixelFormat, pTargetResX, pTargetResY, mTargetPixelFormat, mQueueSize);
 
     int tInputBufferSize = avpicture_get_size(mSourcePixelFormat, mSourceResX, mSourceResY) + FF_INPUT_BUFFER_PADDING_SIZE;
     //HINT: we have to allocate input FIFO here to make sure we can force a return from a read request inside StopScaler(), StartScaler() and StopScaler() should be called from the same thread/context!
@@ -122,7 +122,7 @@ void VideoScaler::WriteFifo(char* pBuffer, int pBufferSize)
     	if (pBufferSize <= mInputFifo->GetEntrySize())
     		mInputFifo->WriteFifo(pBuffer, pBufferSize);
     	else
-    		LOG(LOG_ERROR, "Input buffer of %d bytes is too big for input FIFO with %d bytes per entry", pBufferSize, mInputFifo->GetEntrySize());
+    		LOG(LOG_ERROR, "Input buffer of %d bytes is too big for input FIFO of video scaler %s with %d bytes per entry", pBufferSize, mName.c_str(), mInputFifo->GetEntrySize());
     }
 }
 
@@ -188,6 +188,22 @@ int VideoScaler::GetSize()
         return 0;
 }
 
+void VideoScaler::ChangeInputResolution(int pResX, int pResY)
+{
+    LOG(LOG_VERBOSE, "Changing input resolution to %d*%d..", pResX, pResY);
+
+    StopScaler();
+
+    // set grabbing resolution to the resolution from the codec, which has automatically detected the new resolution
+    mSourceResX = pResX;
+    mSourceResY = pResY;
+
+    // restart video scaler with new settings
+    StartScaler(mQueueSize, mSourceResX, mSourceResY, mSourcePixelFormat, mTargetResX, mTargetResY, mTargetPixelFormat);
+
+    LOG(LOG_VERBOSE, "Input resolution changed");
+}
+
 void* VideoScaler::Run(void* pArgs)
 {
     char                *tBuffer;
@@ -243,6 +259,7 @@ void* VideoScaler::Run(void* pArgs)
     LOG(LOG_VERBOSE, "..entering %s video scaler main loop", mName.c_str());
     while(mScalerNeeded)
     {
+        mScalingThreadMutex.lock();
         if (mInputFifo != NULL)
         {
 			#ifdef VS_DEBUG_PACKETS
@@ -388,8 +405,10 @@ void* VideoScaler::Run(void* pArgs)
                 // delete all stored frames: it is a better for the encoding to have a gap instead of frames which have high picture differences
                 mInputFifo->ClearFifo();
             }
+            mScalingThreadMutex.unlock();
         }else
         {
+            mScalingThreadMutex.unlock();
             LOG(LOG_VERBOSE, "Suspending the scaler thread for 10 ms");
             Suspend(10 * 1000); // check every 1/100 seconds the state of the FIFO
         }

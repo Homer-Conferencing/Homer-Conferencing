@@ -71,11 +71,14 @@ public:
     virtual int GetUsage();
     virtual int GetSize();
 
+    virtual void ChangeInputResolution(int pResX, int pResY);
+
 private:
     virtual void* Run(void* pArgs = NULL); // video scaler main loop
 
     std::string			mName;
     MediaFifo           *mInputFifo;
+    Mutex               mScalingThreadMutex; // we use this to avoid concurrent access to input FIFO/scaler context by ChangeInputResolution() and scaler-thread
     MediaFifo           *mOutputFifo;
     bool                mScalerNeeded;
     int                 mSourceResX;
