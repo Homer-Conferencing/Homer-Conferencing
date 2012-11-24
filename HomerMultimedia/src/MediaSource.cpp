@@ -80,6 +80,7 @@ MediaSource::MediaSource(string pName):
     mDecodedBFrames = 0;
     mSourceStartPts = 0;
     mDecoderBufferTimeMax = 0;
+    mDecoderPreBufferTime = 0;
     mSourceType = SOURCE_ABSTRACT;
     mMarkerActivated = false;
     mMediaSourceOpened = false;

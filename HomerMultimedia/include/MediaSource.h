@@ -417,6 +417,7 @@ protected:
     /* frame pre-buffering */
     float				mDecoderBufferTime; // current pre-buffer length
     float               mDecoderBufferTimeMax; // max. pre-buffer length
+    float               mDecoderPreBufferTime;
     /* live OSD marking */
     float               mMarkerRelX;
     float               mMarkerRelY;
