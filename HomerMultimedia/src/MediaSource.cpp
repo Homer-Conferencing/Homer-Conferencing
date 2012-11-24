@@ -2231,20 +2231,26 @@ void MediaSource::RecordSamples(int16_t *pSourceSamples, int pSourceSamplesSize)
 
 void MediaSource::AnnounceFrame(AVFrame *pFrame)
 {
-    switch(pFrame->pict_type)
-    {
-            case AV_PICTURE_TYPE_I:
-                mDecodedIFrames++;
-                break;
-            case AV_PICTURE_TYPE_P:
-                mDecodedPFrames++;
-                break;
-            case AV_PICTURE_TYPE_B:
-                mDecodedBFrames++;
-                break;
-            default:
-                LOG(LOG_WARN, "Unknown picture type: %d", pFrame->pict_type);
-                break;
+    if (mMediaType == MEDIA_VIDEO)
+    {// video
+        switch(pFrame->pict_type)
+        {
+                case AV_PICTURE_TYPE_I:
+                    mDecodedIFrames++;
+                    break;
+                case AV_PICTURE_TYPE_P:
+                    mDecodedPFrames++;
+                    break;
+                case AV_PICTURE_TYPE_B:
+                    mDecodedBFrames++;
+                    break;
+                default:
+                    LOG(LOG_WARN, "Unknown picture type: %d", pFrame->pict_type);
+                    break;
+        }
+    }else if (mMediaType == MEDIA_AUDIO)
+    {// audio
+        mDecodedIFrames++;
     }
 }
 
@@ -2655,6 +2661,10 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     mLastGrabFailureReason = "";
     mLastGrabResultWasError = false;
     mMediaSourceOpened = true;
+    mEOFReached = false;
+    mDecodedIFrames = 0;
+    mDecodedPFrames = 0;
+    mDecodedBFrames = 0;
 }
 
 void MediaSource::EventGrabChunkSuccessful(string pSource, int pLine, int pChunkNumber)
