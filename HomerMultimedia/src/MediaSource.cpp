@@ -2229,6 +2229,28 @@ void MediaSource::RecordSamples(int16_t *pSourceSamples, int pSourceSamplesSize)
     mRecorderChunkNumber++;
 }
 
+string MediaSource::GetFrameType(AVFrame *pFrame)
+{
+    string tResult = "unknown";
+
+    switch(pFrame->pict_type)
+    {
+            case AV_PICTURE_TYPE_I:
+                tResult = "i";
+                break;
+            case AV_PICTURE_TYPE_P:
+                tResult = "p";
+                break;
+            case AV_PICTURE_TYPE_B:
+                tResult = "b";
+                break;
+            default:
+                tResult = "type " +toString(pFrame->pict_type);
+                break;
+    }
+    return tResult;
+}
+
 void MediaSource::AnnounceFrame(AVFrame *pFrame)
 {
     if (mMediaType == MEDIA_VIDEO)

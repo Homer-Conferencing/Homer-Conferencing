@@ -58,7 +58,7 @@ namespace Homer { namespace Multimedia {
 #define MEDIA_SOURCE_SAMPLES_CAPTURE_FIFO_SIZE                    64 // amount of capture buffers within the FIFO
 #define MEDIA_SOURCE_SAMPLES_PLAYBACK_FIFO_SIZE                   64 // amount of playback buffers within the FIFO
 #define MEDIA_SOURCE_SAMPLES_PER_BUFFER                           1024
-#define MEDIA_SOURCE_SAMPLES_BUFFER_SIZE                          (MEDIA_SOURCE_SAMPLES_PER_BUFFER * 2 /* 16 bit LittleEndian */ * 2 /* stereo */)
+#define MEDIA_SOURCE_SAMPLES_BUFFER_SIZE                          (MEDIA_SOURCE_SAMPLES_PER_BUFFER * 2 /* 16 bit signed int LittleEndian */ * 2 /* stereo */)
 #define MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE                    (4 * MEDIA_SOURCE_SAMPLES_BUFFER_SIZE)
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -346,6 +346,7 @@ protected:
     void RecordSamples(int16_t *pSourceSamples, int pSourceSamplesSize);
 
     /* frame stats */
+    std::string GetFrameType(AVFrame *pFrame);
     void AnnounceFrame(AVFrame *pFrame);
 
     /* video fps emulation */
