@@ -106,7 +106,7 @@ string System::GetKernelVersion()
 			tResult = string(tVersionStr);
 		#endif
 
-		LOGEX(System, LOG_VERBOSE, "Found kernel \"%s\"", tResult.c_str());
+		//LOGEX(System, LOG_VERBOSE, "Found kernel \"%s\"", tResult.c_str());
     }
 
     return tResult;
@@ -129,7 +129,7 @@ int System::GetMachineCores()
 			tResult = tSysInfo.dwNumberOfProcessors;
 		#endif
 
-		LOGEX(System, LOG_VERBOSE, "Found machine cores: %d", tResult);
+		//LOGEX(System, LOG_VERBOSE, "Found machine cores: %d", tResult);
     }
 
     return tResult;
@@ -188,7 +188,7 @@ string System::GetMachineType()
 			}
 		#endif
 
-		LOGEX(System, LOG_VERBOSE, "Found machine type \"%s\"", tResult.c_str());
+		//LOGEX(System, LOG_VERBOSE, "Found machine type \"%s\"", tResult.c_str());
     }
 
     return tResult;
@@ -236,7 +236,7 @@ int64_t System::GetMachineMemoryPhysical()
         tResult = (int64_t)tMemStatus.ullTotalPhys;
     #endif
 
-    LOGEX(System, LOG_VERBOSE, "Found machine memory (phys.): %ld MB", tResult / 1024 / 1024);
+    //LOGEX(System, LOG_VERBOSE, "Found machine memory (phys.): %ld MB", tResult / 1024 / 1024);
     return tResult;
 }
 
@@ -265,7 +265,7 @@ int64_t System::GetMachineMemorySwap()
         tResult = (int64_t)tMemStatus.ullTotalPageFile;
     #endif
 
-    LOGEX(System, LOG_VERBOSE, "Found machine memory (swap.): %ld MB", tResult / 1024 / 1024);
+    //LOGEX(System, LOG_VERBOSE, "Found machine memory (swap.): %ld MB", tResult / 1024 / 1024);
     return tResult;
 }
 
