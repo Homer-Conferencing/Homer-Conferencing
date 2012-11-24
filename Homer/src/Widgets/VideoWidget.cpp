@@ -2449,7 +2449,13 @@ void VideoWorkerThread::run()
 			    {
 					if ((tSourceResX != mResX) || (tSourceResY != mResY))
 					{
-						LOG(LOG_INFO, "New source detect because source video resolution differs: width %d => %d, height %d => %d", mResX, tSourceResX, mResY, tSourceResY);
+						LOG(LOG_WARN, "Remote source changed, video resolution changed: %d*d => %d*%d", mResX, mResY, tSourceResX, tSourceResY);
+
+						// reset the local media source
+						LOG(LOG_WARN, "Will reset local media source because input stream changed..");
+						ResetSource();
+
+						// let the GUI react on this event
 						mVideoWidget->InformAboutNewSource();
 					}
 			    }
