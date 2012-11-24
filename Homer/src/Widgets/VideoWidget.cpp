@@ -90,7 +90,7 @@ using namespace Homer::Monitor;
 #define VIDEO_WIDGET_OSD_PERIOD                   		3 // seconds
 
 // how many measurement steps do we use?
-#define FPS_MEASUREMENT_STEPS                    		60
+#define FPS_MEASUREMENT_STEPS                    		2 * 30
 
 #define SEEK_SMALL_STEP                         		10 // seconds
 #define SEEK_MEDIUM_STEP                        	    60 // seconds
@@ -804,7 +804,15 @@ QStringList VideoWidget::GetVideoStatistic()
     QString tLine_Fps = "";
     tLine_Fps = "Fps: " + QString("%1").arg(mCurrentFrameRate, 4, 'f', 2, ' ');
     if (mVideoSource->GetFrameBufferSize() > 0)
-    	tLine_Fps += " (" + QString("%1").arg(mVideoSource->GetFrameBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetFrameBufferSize()) + ", " + QString("%1").arg(mVideoSource->GetFrameBufferTime(), 2, 'f', 2, (QLatin1Char)' ') + "s buffered)";
+    {
+    	tLine_Fps += " (" + QString("%1").arg(mVideoSource->GetFrameBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetFrameBufferSize()) + ", " + QString("%1").arg(mVideoSource->GetFrameBufferTime(), 2, 'f', 2, (QLatin1Char)' ') + "s buffered";
+    	float tPreBufferTime = mVideoSource->GetFrameBufferPreBufferingTime();
+    	if (tPreBufferTime > 0)
+    	    tLine_Fps += "[" + QString("%1").arg(tPreBufferTime, 2, 'f', 2, (QLatin1Char)' ') + "s pre-buffer])";
+    	else
+    	    tLine_Fps += ")";
+    }
+
 
     //############################################
     //### Line 4: video codec and resolution
@@ -1987,7 +1995,6 @@ void VideoWidget::FullscreenMarkUserIdle()
 VideoWorkerThread::VideoWorkerThread(QString pName, MediaSource *pVideoSource, VideoWidget *pVideoWidget):
     MediaSourceGrabberThread(pName, pVideoSource)
 {
-    mLastFrameNumber = 0;
     mSetGrabResolutionAsap = false;
     mWaitForFirstFrameAfterSeeking = false;
     mMissingFrames = 0;
@@ -2253,7 +2260,7 @@ void VideoWorkerThread::HandlePlayFileSuccess()
     mVideoWidget->SetVisible(true);
 }
 
-int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFps)
+int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFrameRate)
 {
     int tResult = -1;
 
@@ -2296,20 +2303,7 @@ int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFps)
 			#endif
         }
 
-        // calculate FPS
-        if ((pFps != NULL) && (mFrameTimestamps.size() > 1))
-        {
-            int64_t tCurrentTime = Time::GetTimeStamp();
-            int64_t tMeasurementStartTime = mFrameTimestamps.first();
-            int tMeasuredValues = mFrameTimestamps.size() - 1;
-            double tMeasuredTimeDifference = ((double)tCurrentTime - tMeasurementStartTime) / 1000000;
-
-            // now finally calculate the FPS as follows: "count of measured values / measured time difference"
-            *pFps = ((float)tMeasuredValues) / tMeasuredTimeDifference;
-			#ifdef VIDEO_WIDGET_DEBUG_FRAMES
-            	LOG(LOG_VERBOSE, "FPS: %f, interval %d, oldest %ld", *pFps, tMeasuredValues, tMeasurementStartTime);
-			#endif
-        }
+        CalculateFrameRate(pFrameRate);
 
         *pFrame = mFrame[mFrameCurrentIndex];
         tResult = mFrameNumber[mFrameCurrentIndex];
@@ -2334,7 +2328,6 @@ int VideoWorkerThread::GetLastFrameNumber()
 void VideoWorkerThread::run()
 {
     int tFrameSize;
-    const size_t tFpsMeasurementSteps = 10;
     bool  tGrabSuccess;
     int tFrameNumber = -1;
 
@@ -2470,7 +2463,7 @@ void VideoWorkerThread::run()
                 {
                     mPendingNewFrames++;
                     mVideoWidget->InformAboutNewFrame();
-               }else
+                }else
                 {
                     LOG(LOG_WARN, "System too slow?, frame buffer of %d entries is full, will drop all frames, grab index: %d, current read index: %d", FRAME_BUFFER_SIZE, mFrameGrabIndex, mFrameCurrentIndex);
                     mPendingNewFrames = 1;

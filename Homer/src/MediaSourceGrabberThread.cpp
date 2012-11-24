@@ -84,6 +84,7 @@ MediaSourceGrabberThread::MediaSourceGrabberThread(QString pName, MediaSource *p
     mResetMediaSourceAsap = false;
     mSeekAsap = false;
     mSeekPos = 0;
+    mLastFrameNumber = 0;
     mSelectInputStreamAsap = false;
     mSourceAvailable = false;
     mEofReached = false;
@@ -511,6 +512,23 @@ void MediaSourceGrabberThread::StopGrabber()
     mMediaSource->StopGrabbing();
 }
 
+void MediaSourceGrabberThread::CalculateFrameRate(float *pFrameRate)
+{
+    // calculate FPS
+    if ((pFrameRate != NULL) && (mFrameTimestamps.size() > 1))
+    {
+        int64_t tCurrentTime = Time::GetTimeStamp();
+        int64_t tMeasurementStartTime = mFrameTimestamps.first();
+        int tMeasuredValues = mFrameTimestamps.size() - 1;
+        double tMeasuredTimeDifference = ((double)tCurrentTime - tMeasurementStartTime) / 1000000;
+
+        // now finally calculate the FPS as follows: "count of measured values / measured time difference"
+        *pFrameRate = ((float)tMeasuredValues) / tMeasuredTimeDifference;
+        #ifdef GRABBER_THREAD_DEBUG_FRAMES
+            LOG(LOG_VERBOSE, "FPS: %f, interval %d, oldest %ld", *pFps, tMeasuredValues, tMeasurementStartTime);
+        #endif
+    }
+}
 ///////////////////////////////////////////////////////////////////////////////
 
 }} //namespace

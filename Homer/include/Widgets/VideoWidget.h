@@ -230,7 +230,7 @@ public:
 
     /* frame grabbing */
     void SetFrameDropping(bool pDrop);
-    int GetCurrentFrame(void **pFrame, float *pFps = NULL);
+    int GetCurrentFrame(void **pFrame, float *pFrameRate = NULL);
     int GetLastFrameNumber();
 
 private:
@@ -262,7 +262,6 @@ private:
 
     /* frame statistics */
     int                 mMissingFrames;
-    int                 mLastFrameNumber;
 
     /* A/V synch. */
     bool                mWaitForFirstFrameAfterSeeking;

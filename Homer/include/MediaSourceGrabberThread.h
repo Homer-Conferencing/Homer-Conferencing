@@ -55,6 +55,11 @@ using namespace Homer::Multimedia;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// de/activate frame handling
+//#define GRABBER_THREAD_DEBUG_FRAMES
+
+///////////////////////////////////////////////////////////////////////////////
+
 class MediaSourceGrabberThread:
     public QThread
 {
@@ -125,6 +130,8 @@ protected:
     /* error report */
     virtual void HandlePlayFileSuccess() = 0;
     virtual void HandlePlayFileError() = 0;
+    /* frame rate reporting */
+    virtual void CalculateFrameRate(float *pFrameRate);
 
     MediaSource         *mMediaSource;
     QString				mName;
@@ -163,6 +170,9 @@ protected:
     /* seeking */
     bool                mSeekAsap;
     float               mSeekPos;
+
+    /* frame statistics */
+    int                 mLastFrameNumber;
 
     /* A/V synch. */
     bool                mSyncClockAsap;

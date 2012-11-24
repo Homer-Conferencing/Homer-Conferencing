@@ -122,10 +122,12 @@ private:
     bool                mAudioOutAvailable;
     bool                mAudioPaused;
     int					mAudioVolume;
-    int                 mCurrentSampleNumber;
-    int                 mLastSampleNumber;
+    int                 mLastFrameNumber;
     AudioWorkerThread   *mAudioWorker;
     MediaSource         *mAudioSource;
+    /* statistics */
+    int                 mCurrentFrameNumber;
+    float               mCurrentFrameRate;
 };
 
 class AudioWorkerThread:
@@ -150,7 +152,7 @@ public:
 
     /* frame grabbing */
     void SetSampleDropping(bool pDrop);
-    int GetCurrentSample(void **pSample, int& pSampleSize, int *pFps = NULL);
+    int GetCurrentFrame(void **pSample, int& pSampleSize, float *pFrameRate = NULL);
 
     /* audio playback control */
     void SetMuteState(bool pMuted);

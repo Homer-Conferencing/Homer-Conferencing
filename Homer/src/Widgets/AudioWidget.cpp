@@ -67,6 +67,9 @@ using namespace Homer::Monitor;
 // how many audio buffers do we allow for audio playback?
 #define AUDIO_MAX_PLAYBACK_QUEUE                            3
 
+// how many measurement steps do we use?
+#define SPS_MEASUREMENT_STEPS                           2 * 44
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #define AUDIO_EVENT_NEW_SAMPLES                     (QEvent::User + 1001)
@@ -107,8 +110,9 @@ AudioWidget::AudioWidget(QWidget* pParent):
     mResX = 640;
     mResY = 480;
     mAudioVolume = 100;
-    mCurrentSampleNumber = 0;
-    mLastSampleNumber = 0;
+    mCurrentFrameNumber = 0;
+    mCurrentFrameRate = 0;
+    mLastFrameNumber = 0;
     mCustomEventReason = 0;
     mAudioWorker = NULL;
     mAssignedAction = NULL;
@@ -535,12 +539,12 @@ QStringList AudioWidget::GetAudioStatistic()
     //############################################
 	//### Line 2: current audio buffer, dropped chunks, buffered packets
     QString tLine_Sample = "";
-    tLine_Sample = "Frame: " + QString("%1").arg(mCurrentSampleNumber) + (mAudioSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mAudioSource->GetChunkDropCounter()) + " lost packets)") : "")  + (mAudioSource->GetFragmentBufferCounter() ? (" (" + QString("%1").arg(mAudioSource->GetFragmentBufferCounter()) + "/" + QString("%1").arg(mAudioSource->GetFragmentBufferSize()) + " buffered packets)") : "");
+    tLine_Sample = "Frame: " + QString("%1").arg(mCurrentFrameNumber) + (mAudioSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mAudioSource->GetChunkDropCounter()) + " lost packets)") : "")  + (mAudioSource->GetFragmentBufferCounter() ? (" (" + QString("%1").arg(mAudioSource->GetFragmentBufferCounter()) + "/" + QString("%1").arg(mAudioSource->GetFragmentBufferSize()) + " buffered packets)") : "");
 
     //############################################
     //### Line 3: FPS and pre-buffer time
     QString tLine_Fps = "";
-    tLine_Fps = "Fps: " + QString("%1").arg(-1 /* TODO */, 4, 'f', 2, ' ');
+    tLine_Fps = "Fps: " + QString("%1").arg(mCurrentFrameRate, 4, 'f', 2, ' ');
     if (mAudioSource->GetFrameBufferSize() > 0)
     	tLine_Fps += " (" + QString("%1").arg(mAudioSource->GetFrameBufferCounter()) + "/" + QString("%1").arg(mAudioSource->GetFrameBufferSize()) + ", " + QString("%1").arg(mAudioSource->GetFrameBufferTime(), 2, 'f', 2, (QLatin1Char)' ') + "s buffered)";
 
@@ -827,18 +831,21 @@ void AudioWidget::customEvent(QEvent* pEvent)
     switch(tAudioEvent->GetReason())
     {
         case AUDIO_EVENT_NEW_SAMPLES:
+
+            // acknowledge the event to Qt
             tAudioEvent->accept();
+
             if (isVisible())
             {
 
-                mLastSampleNumber = mCurrentSampleNumber;
-                mCurrentSampleNumber = mAudioWorker->GetCurrentSample(&tSample, tSampleSize);
-                if (mCurrentSampleNumber != -1)
+                mLastFrameNumber = mCurrentFrameNumber;
+                mCurrentFrameNumber = mAudioWorker->GetCurrentFrame(&tSample, tSampleSize, &mCurrentFrameRate);
+                if (mCurrentFrameNumber != -1)
                 {
                     ShowSample(tSample, tSampleSize);
                     //printf("VideoWidget-Sample number: %d\n", mCurrentSampleNumber);
-                    if ((mLastSampleNumber > mCurrentSampleNumber) && (mCurrentSampleNumber > 32 /* -1 means error, 1 is received after every reset, use "32" because of possible latencies */))
-                        LOG(LOG_WARN, "Samples received in wrong order, [%d->%d]", mLastSampleNumber, mCurrentSampleNumber);
+                    if ((mLastFrameNumber > mCurrentFrameNumber) && (mCurrentFrameNumber > 32 /* -1 means error, 1 is received after every reset, use "32" because of possible latencies */))
+                        LOG(LOG_WARN, "Samples received in wrong order, [%d->%d]", mLastFrameNumber, mCurrentFrameNumber);
                     //if (tlSampleNumber == tSampleNumber)
                         //LOG(LOG_ERROR, "Unnecessary frame grabbing detected");
                 }
@@ -1060,6 +1067,7 @@ void AudioWorkerThread::DoPlayNewFile()
     mEofReached = false;
     mPlayNewFileAsap = false;
     mPaused = false;
+    mFrameTimestamps.clear();
 }
 
 void AudioWorkerThread::DoSeek()
@@ -1180,6 +1188,7 @@ void AudioWorkerThread::DoSetCurrentDevice()
 
     mSetCurrentDeviceAsap = false;
     mCurrentFile = mDesiredFile;
+    mFrameTimestamps.clear();
 
     // unlock
     mDeliverMutex.unlock();
@@ -1239,7 +1248,7 @@ void AudioWorkerThread::HandlePlayFileSuccess()
     mAudioWidget->SetVisible(true);
 }
 
-int AudioWorkerThread::GetCurrentSample(void **pSample, int& pSampleSize, int *pSps)
+int AudioWorkerThread::GetCurrentFrame(void **pSample, int& pSampleSize, float *pFrameRate)
 {
     int tResult = -1;
 
@@ -1251,8 +1260,9 @@ int AudioWorkerThread::GetCurrentSample(void **pSample, int& pSampleSize, int *p
     {
         mSampleCurrentIndex = SAMPLE_BUFFER_SIZE - mSampleCurrentIndex - mSampleGrabIndex;
         mWorkerWithNewData = false;
-        if (pSps != NULL)
-            *pSps = mResultingSps;
+
+        CalculateFrameRate(pFrameRate);
+
         *pSample = mSamples[mSampleCurrentIndex];
         pSampleSize = mSamplesSize[mSampleCurrentIndex];
         tResult = mSampleNumber[mSampleCurrentIndex];
@@ -1268,12 +1278,15 @@ int AudioWorkerThread::GetCurrentSample(void **pSample, int& pSampleSize, int *p
 
 void AudioWorkerThread::run()
 {
-    bool  tGrabSuccess;
-    int tSamplesSize;
-    int tSampleNumber = -1, tLastSampleNumber = -1;
+    int tFrameSize;
+    bool tGrabSuccess;
+    int tFrameNumber = -1;
 
     // if grabber was stopped before source has been opened this BOOL is reset
     mWorkerNeeded = true;
+
+    // reset timestamp list
+    mFrameTimestamps.clear();
 
     // open audio playback
     LOG(LOG_VERBOSE, "..open playback device");
@@ -1299,11 +1312,13 @@ void AudioWorkerThread::run()
         mAudioWidget->InformAboutNewSource();
     }
 
+    mLastFrameNumber = 0;
+
     LOG(LOG_VERBOSE, "..start main loop");
     while(mWorkerNeeded)
     {
         // get the next frame from audio source
-        tLastSampleNumber = tSampleNumber;
+        mLastFrameNumber = tFrameNumber;
 
         if (mSyncClockAsap)
             DoSyncClock();
@@ -1354,12 +1369,12 @@ void AudioWorkerThread::run()
             mGrabbingStateMutex.unlock();
 
             // set input samples size
-			tSamplesSize = mSamplesBufferSize[mSampleGrabIndex];
+			tFrameSize = mSamplesBufferSize[mSampleGrabIndex];
 
 			// get new samples from audio grabber
-			tSampleNumber = mMediaSource->GrabChunk(mSamples[mSampleGrabIndex], tSamplesSize, mDropSamples);
-            mSamplesSize[mSampleGrabIndex] = tSamplesSize;
-			mEofReached = (tSampleNumber == GRAB_RES_EOF);
+			tFrameNumber = mMediaSource->GrabChunk(mSamples[mSampleGrabIndex], tFrameSize, mDropSamples);
+            mSamplesSize[mSampleGrabIndex] = tFrameSize;
+			mEofReached = (tFrameNumber == GRAB_RES_EOF);
             if (mEofReached)
             {// EOF
                 mSourceAvailable = false;
@@ -1367,53 +1382,63 @@ void AudioWorkerThread::run()
             }
 
             #ifdef AUDIO_WIDGET_DEBUG_FRAMES
-                LOG(LOG_WARN, "Got from media source the sample block %d with size of %d bytes and stored it as index %d", tSampleNumber, tSamplesSize, mSampleGrabIndex);
+                LOG(LOG_WARN, "Got from media source the sample block %d with size of %d bytes and stored it as index %d", tFrameNumber, tFrameSize, mSampleGrabIndex);
             #endif
 
 			//printf("SampleSize: %d Sample: %d\n", mSamplesSize[mSampleGrabIndex], tSampleNumber);
 
 			// play the sample block if audio out isn't currently muted
-			if ((!mAudioOutMuted) && (tSampleNumber >= 0) && (tSamplesSize > 0) && (!mDropSamples) && (mPlaybackAvailable))
+			if ((!mAudioOutMuted) && (tFrameNumber >= 0) && (tFrameSize > 0) && (!mDropSamples) && (mPlaybackAvailable))
 			{
 			    if (mWaveOut != NULL)
 			    {
                     #ifdef DEBUG_AUDIOWIDGET_PLAYBACK
-			            LOG(LOG_VERBOSE, "Writing buffer at index %d and size of %d bytes to audio output FIFO", mSampleGrabIndex, tSamplesSize);
-			            LOG(LOG_VERBOSE, "Writing buffer at %p with size of %d bytes to audio output FIFO", mSamples[mSampleGrabIndex], tSamplesSize);
+			            LOG(LOG_VERBOSE, "Writing buffer at index %d and size of %d bytes to audio output FIFO", mSampleGrabIndex, tFrameSize);
+			            LOG(LOG_VERBOSE, "Writing buffer at %p with size of %d bytes to audio output FIFO", mSamples[mSampleGrabIndex], tFrameSize);
 			        #endif
-			        mWaveOut->WriteChunk(mSamples[mSampleGrabIndex], tSamplesSize);
+			        mWaveOut->WriteChunk(mSamples[mSampleGrabIndex], tFrameSize);
 			        mWaveOut->LimitQueue(AUDIO_MAX_PLAYBACK_QUEUE);
 			    }
 			}else
 			{
 				#ifdef DEBUG_AUDIOWIDGET_PERFORMANCE
-				    LOG(LOG_VERBOSE, "Ignoring audio buffer, mute state: %d, drop state: %d, device available: %d, sample nr.: %d, sample size: %d", mAudioOutMuted, mDropSamples, mPlaybackAvailable, tSampleNumber, tSamplesSize);
+				    LOG(LOG_VERBOSE, "Ignoring audio buffer, mute state: %d, drop state: %d, device available: %d, sample nr.: %d, sample size: %d", mAudioOutMuted, mDropSamples, mPlaybackAvailable, tFrameNumber, tFrameSize);
 			    #endif
 			}
 
 			if(!mDropSamples)
 			{
-                if ((tSampleNumber >= 0) && (mSamplesSize[mSampleGrabIndex] > 0))
+                if ((tFrameNumber >= 0) && (mSamplesSize[mSampleGrabIndex] > 0))
                 {
                     // lock
                     mDeliverMutex.lock();
 
-                    mSampleNumber[mSampleGrabIndex] = tSampleNumber;
+                    mSampleNumber[mSampleGrabIndex] = tFrameNumber;
 
                     mWorkerWithNewData = true;
 
                     mSampleGrabIndex = SAMPLE_BUFFER_SIZE - mSampleCurrentIndex - mSampleGrabIndex;
 
+                    mAudioWidget->InformAboutNewSamples();
+
+                    // store timestamp starting from frame number 3 to avoid peaks
+                    if(tFrameNumber > 3)
+                    {
+                        //HINT: locking is done via mDeliverMutex!
+                        mFrameTimestamps.push_back(Time::GetTimeStamp());
+                        //LOG(LOG_WARN, "Time %ld", Time::GetTimeStamp());
+                        while (mFrameTimestamps.size() > SPS_MEASUREMENT_STEPS)
+                            mFrameTimestamps.removeFirst();
+                    }
+
                     // unlock
                     mDeliverMutex.unlock();
 
-                    mAudioWidget->InformAboutNewSamples();
-
-                    if ((tLastSampleNumber > tSampleNumber) && (tSampleNumber > 9 /* -1 means error, 1 is received after every reset, use "9" because of possible latencies */))
+                    if ((mLastFrameNumber > tFrameNumber) && (tFrameNumber > 9 /* -1 means error, 1 is received after every reset, use "9" because of possible latencies */))
                         LOG(LOG_ERROR, "Sample ordering problem detected");
                 }else
                 {
-                    LOG(LOG_VERBOSE, "Invalid grabbing result: %d, current sample size: %d", tSampleNumber, mSamplesSize[mSampleGrabIndex]);
+                    LOG(LOG_VERBOSE, "Invalid grabbing result: %d, current sample size: %d", tFrameNumber, mSamplesSize[mSampleGrabIndex]);
     				if (mMediaSource->GetSourceType() != SOURCE_NETWORK)
     				{// file/mem/dev based source
     					usleep(100 * 1000); // check for new frames every 1/10 seconds
