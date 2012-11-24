@@ -316,7 +316,7 @@ void MainWindow::connectSignalsSlots()
     mToolBarMediaSources->toggleViewAction()->setChecked(CONF.GetVisibilityToolBarMediaSources());
     mActionToolBarMediaSources->setChecked(CONF.GetVisibilityToolBarMediaSources());
 
-    if (mToolBarOnlineStatus != NULL)
+    if ((CONF.ConferencingEnabled()) && (mToolBarOnlineStatus != NULL))
     {
         connect(mActionToolBarOnlineStatus, SIGNAL(toggled(bool)), mToolBarOnlineStatus, SLOT(setVisible(bool)));
         connect(mToolBarOnlineStatus->toggleViewAction(), SIGNAL(toggled(bool)), mActionToolBarOnlineStatus, SLOT(setChecked(bool)));
@@ -558,11 +558,8 @@ void MainWindow::initializeWidgetsAndMenus()
         mActionIdentity->setVisible(false);
         mActionToolBarOnlineStatus->setVisible(false);
         mMenuParticipantMessageWidgets->setVisible(false);
-        delete mMenuParticipantMessageWidgets;
-        mMenuParticipantMessageWidgets = NULL;
+        mToolBarOnlineStatus->setVisible(false);
         removeToolBar(mToolBarOnlineStatus);
-        delete mToolBarOnlineStatus;
-        mToolBarOnlineStatus = NULL;
     }
 
     LOG(LOG_VERBOSE, "..errors widget");
