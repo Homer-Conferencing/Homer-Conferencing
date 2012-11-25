@@ -458,7 +458,11 @@ int64_t MediaSourceMem::CalculateFrameNumberFromRTP()
     // the following sequence delivers the frame number independent from packet loss because
     // it calculates the frame number based on the current timestamp from the RTP header
     float tTimeBetweenFrames = 1000 / tFrameRate;
-    tResult = rint((float)GetPtsFromRTP() / tTimeBetweenFrames);
+    tResult = rint((float)GetTimestampFromRTP() / tTimeBetweenFrames);
+
+    #ifdef MSMEM_DEBUG_PRE_BUFFERING
+        LOG(LOG_VERBOSE, "Calculated a frame number: %ld (RTP timestamp: %ld), fps: %.2f", tResult, GetTimestampFromRTP(), tFrameRate);
+    #endif
 
     return tResult;
 }
@@ -1399,19 +1403,32 @@ void* MediaSourceMem::Run(void* pArgs)
                                     // save PTS value to deliver it later to the frame grabbing thread
                                     if ((tSourceFrame->pkt_dts != (int64_t)AV_NOPTS_VALUE) && (!MEDIA_SOURCE_MEM_USE_REORDERED_PTS))
                                     {// use DTS value from decoder
+                                        #ifdef MSMEM_DEBUG_TIMING
+                                            LOG(LOG_VERBOSE, "Setting current frame PTS to frame packet DTS %ld", tSourceFrame->pkt_dts);
+                                        #endif
                                         tCurFramePts = tSourceFrame->pkt_dts;
-                                        //LOG(LOG_VERBOSE, "Setting current frame PTS to %ld", tCurFramePts);
                                     }else if (tSourceFrame->pkt_pts != (int64_t)AV_NOPTS_VALUE)
                                     {// fall back to reordered PTS value
+                                        #ifdef MSMEM_DEBUG_TIMING
+                                            LOG(LOG_VERBOSE, "Setting current frame PTS to frame packet PTS %ld", tSourceFrame->pkt_pts);
+                                        #endif
                                         tCurFramePts = tSourceFrame->pkt_pts;
-                                        //LOG(LOG_VERBOSE, "Setting current frame PTS to %ld", tCurFramePts);
                                     }else
                                     {// fall back to packet's PTS value
+                                        #ifdef MSMEM_DEBUG_TIMING
+                                            LOG(LOG_VERBOSE, "Setting current frame PTS to packet PTS %ld", tCurPacketPts);
+                                        #endif
                                         tCurFramePts = tCurPacketPts;
-                                        //LOG(LOG_VERBOSE, "Setting current frame PTS to %ld", tCurFramePts);
                                     }
                                 }else
-                                    tCurFramePts = tSourceFrame->pts;
+                                {// RTP active
+                                    #ifdef MSMEM_DEBUG_PRE_BUFFERING
+                                        LOG(LOG_VERBOSE, "Setting current frame PTS to packet PTS (derived from RTP timestamp)%ld", tCurPacketPts);
+                                    #endif
+
+                                    // use the frame numbers which were derived from RTP timestamps
+                                    tCurFramePts = tCurPacketPts;
+                                }
 
                                 if ((tSourceFrame->pkt_pts != tSourceFrame->pkt_dts) && (tSourceFrame->pkt_pts != (int64_t)AV_NOPTS_VALUE) && (tSourceFrame->pkt_dts != (int64_t)AV_NOPTS_VALUE))
                                     LOG(LOG_VERBOSE, "PTS(%ld) and DTS(%ld) differ after %s decoding step", tSourceFrame->pkt_pts, tSourceFrame->pkt_dts, GetMediaTypeStr().c_str());
