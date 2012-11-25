@@ -94,7 +94,7 @@ public:
     virtual MediaSource* GetMediaSource();
 
     /* streaming control */
-    bool SetOutputStreamPreferences(std::string pStreamCodec, int pMediaStreamQuality, int pMaxPacketSize = 1300 /* works only with RTP packetizing */, bool pDoReset = false, int pResX = 352, int pResY = 288, bool pRtpActivated = true, int pMaxFps = 0);
+    bool SetOutputStreamPreferences(std::string pStreamCodec, int pMediaStreamQuality, int pBitRate, int pMaxPacketSize = 1300 /* works only with RTP packetizing */, bool pDoReset = false, int pResX = 352, int pResY = 288, bool pRtpActivated = true, int pMaxFps = 0);
     enum CodecID GetStreamCodecId() { return mStreamCodecId; } // used in RTSPListenerMediaSession
 
     /* frame stats */
@@ -187,6 +187,8 @@ private:
     enum CodecID        mStreamCodecId;
     int                 mStreamMaxPacketSize;
     int                 mStreamQuality;
+    int                 mDesiredStreamBitRate;
+    int                 mStreamBitRate;
     int 				mStreamMaxFps;
     int64_t				mStreamMaxFps_LastFrame_Timestamp;
     bool                mStreamActivated;

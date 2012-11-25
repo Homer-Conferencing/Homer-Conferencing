@@ -140,6 +140,7 @@ public:
     bool GetVideoRtp();
     QString GetVideoCodec();
     int GetVideoQuality();
+    int GetVideoBitRate();
     int GetVideoMaxPacketSize();
     enum Homer::Base::TransportType GetVideoTransportType();
     QString GetVideoStreamingNAPIImpl();
@@ -156,6 +157,7 @@ public:
     bool GetAudioRtp();
     QString GetAudioCodec();
     int GetAudioQuality();
+    int GetAudioBitRate();
     int GetAudioMaxPacketSize();
     enum Homer::Base::TransportType GetAudioTransportType();
     QString GetAudioStreamingNAPIImpl();
@@ -290,6 +292,7 @@ public:
     void SetVideoRtp(bool pActivation);
     void SetVideoCodec(QString pCodec);
     void SetVideoQuality(int pQuality);
+    void SetVideoBitRate(int pBitRate);
     void SetVideoMaxPacketSize(int pSize);
     void SetVideoTransport(enum Homer::Base::TransportType pType);
     void SetVideoStreamingNAPIImpl(QString pImpl);
@@ -306,6 +309,7 @@ public:
     void SetAudioRtp(bool pActivation);
     void SetAudioCodec(QString pCodec);
     void SetAudioQuality(int pQuality);
+    void SetAudioBitRate(int pBitRate);
     void SetAudioMaxPacketSize(int pSize);
     void SetAudioTransport(enum Homer::Base::TransportType pType);
     void SetAudioStreamingNAPIImpl(QString pImpl);

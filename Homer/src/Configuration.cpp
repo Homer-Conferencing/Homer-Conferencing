@@ -351,6 +351,13 @@ void Configuration::SetVideoQuality(int pQuality)
     mQSettings->endGroup();
 }
 
+void Configuration::SetVideoBitRate(int pBitRate)
+{
+    mQSettings->beginGroup("Streaming");
+    mQSettings->setValue("VideoStreamBitRate", pBitRate);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetVideoMaxPacketSize(int pSize)
 {
     mQSettings->beginGroup("Streaming");
@@ -446,6 +453,13 @@ void Configuration::SetAudioQuality(int pQuality)
 {
     mQSettings->beginGroup("Streaming");
     mQSettings->setValue("AudioStreamQuality", pQuality);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetAudioBitRate(int pBitRate)
+{
+    mQSettings->beginGroup("Streaming");
+    mQSettings->setValue("AudioStreamBitRate", pBitRate);
     mQSettings->endGroup();
 }
 
@@ -1013,6 +1027,11 @@ int Configuration::GetVideoQuality()
     return mQSettings->value("Streaming/VideoStreamQuality", 10).toInt();
 }
 
+int Configuration::GetVideoBitRate()
+{
+    return mQSettings->value("Streaming/VideoStreamBitRate", 90 * 1024).toInt();
+}
+
 int Configuration::GetVideoMaxPacketSize()
 {
     return mQSettings->value("Streaming/VideoStreamMaxPacketSize", 1280).toInt();
@@ -1081,6 +1100,11 @@ QString Configuration::GetAudioCodec()
 int Configuration::GetAudioQuality()
 {
     return mQSettings->value("Streaming/AudioStreamQuality", 100).toInt();
+}
+
+int Configuration::GetAudioBitRate()
+{
+    return mQSettings->value("Streaming/AudioStreamBitRate", 256 * 1024).toInt();
 }
 
 int Configuration::GetAudioMaxPacketSize()

@@ -52,6 +52,12 @@ namespace Homer { namespace Multimedia {
 // de/activate MT support during video encoding: ffmpeg supports MT only for encoding
 #define MEDIA_SOURCE_MUX_MULTI_THREADED_VIDEO_ENCODING
 
+// video bit rate which is used during streaming as default setting
+#define MEDIA_SOURCE_MUX_DEFAULT_VIDEO_BIT_RATE                 (90 * 1024)
+
+// audio bit rate which is used during streaming as default setting
+#define MEDIA_SOURCE_MUX_DEFAULT_AUDIO_BIT_RATE                 (256 * 1024)
+
 ///////////////////////////////////////////////////////////////////////////////
 
 MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
@@ -63,6 +69,7 @@ MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
     mStreamCodecId = CODEC_ID_NONE;
     mStreamMaxPacketSize = 500;
     mStreamQuality = 20;
+    mStreamBitRate = -1;
     mStreamMaxFps = 0;
     mVideoHFlip = false;
     mVideoVFlip = false;
@@ -177,7 +184,7 @@ MediaSource* MediaSourceMuxer::GetMediaSource()
 }
 
 // return if something has changed
-bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int pMediaStreamQuality, int pMaxPacketSize, bool pDoReset, int pResX, int pResY, bool pRtpActivated, int pMaxFps)
+bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int pMediaStreamQuality, int pBitRate, int pMaxPacketSize, bool pDoReset, int pResX, int pResY, bool pRtpActivated, int pMaxFps)
 {
     // HINT: returns if something has changed
     bool tResult = false;
@@ -257,6 +264,7 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
     if ((mStreamCodecId != tStreamCodecId) ||
         (GetRtpActivation() != pRtpActivated) ||
         (mStreamQuality != pMediaStreamQuality) ||
+        (mStreamBitRate != pBitRate) ||
         (mStreamMaxPacketSize != pMaxPacketSize) ||
         (mCurrentStreamingResX != pResX) || (mCurrentStreamingResY != pResY))
     {
@@ -275,6 +283,10 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
         // set new quality
         LOG(LOG_VERBOSE, "    ..stream quality: %d => %d", mStreamQuality, pMediaStreamQuality);
         mStreamQuality = pMediaStreamQuality;
+
+        // set new bit rate
+        LOG(LOG_VERBOSE, "    ..stream bit rate: %d => %d", mStreamBitRate, pBitRate);
+        mStreamBitRate = pBitRate;
 
         // set RTP encapsulation state
         LOG(LOG_VERBOSE, "    ..stream rtp encapsulation: %d => %d", GetRtpActivation(), pRtpActivated);
@@ -324,6 +336,9 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
         pFps = 5;
 
     mMediaType = MEDIA_VIDEO;
+
+    if (mStreamBitRate == -1)
+        mStreamBitRate = MEDIA_SOURCE_MUX_DEFAULT_VIDEO_BIT_RATE;
 
     // for better debbuging
     mGrabMutex.AssignName(GetMediaTypeStr() + "MuxerGrab");
@@ -423,7 +438,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     }
 
     // put sample parameters
-    mCodecContext->bit_rate = 90000;
+    mCodecContext->bit_rate = mStreamBitRate;
 
 	// mpeg1/2 codecs support only non-rational frame rates
     if (((tFormat->video_codec == CODEC_ID_MPEG1VIDEO) || (tFormat->video_codec == CODEC_ID_MPEG2VIDEO)) && (mFrameRate = 29.97))
@@ -677,6 +692,10 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     AVStream            *tStream;
 
     mMediaType = MEDIA_AUDIO;
+
+    if (mStreamBitRate == -1)
+        mStreamBitRate = MEDIA_SOURCE_MUX_DEFAULT_AUDIO_BIT_RATE;
+
     // invert meaning of I/O state
     mInputAudioChannels = pChannels;
     mInputAudioSampleRate = pSampleRate;
@@ -761,7 +780,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
 			mOutputAudioSampleRate = 44100;
 			break;
 		default:
-	        mCodecContext->bit_rate = MediaSource::AudioQuality2BitRate(mStreamQuality); // streaming rate
+	        mCodecContext->bit_rate = mStreamBitRate; // streaming rate
 			mOutputAudioChannels = pChannels;
 	        mOutputAudioSampleRate = pSampleRate;
 			break;

@@ -177,6 +177,7 @@ void ConfigurationDialog::LoadConfiguration()
     AudioDevices::iterator tAudioDevicesIt;
     VideoDevices::iterator tVideoDevicesIt;
     QString tCurMaxPackSize;
+    QString tCurBitRate;
 
     mAudioCaptureDevices = mAudioWorker->GetPossibleDevices();
     mVideoCaptureDevices = mVideoWorker->GetPossibleDevices();
@@ -227,6 +228,17 @@ void ConfigurationDialog::LoadConfiguration()
     if (tVideoStreamQuality > 100)
         tVideoStreamQuality = 100;
     mCbVideoQuality->setCurrentIndex((tVideoStreamQuality / 10) - 1);
+
+    //### stream bit rate
+    for (int i = 0; i < mCbVideoBitRate->count(); i++)
+    {
+        tCurBitRate = mCbVideoBitRate->itemText(i);
+        if (CONF.GetVideoBitRate() == tCurBitRate.toInt() * 1024)
+        {
+            mCbVideoBitRate->setCurrentIndex(i);
+            break;
+        }
+    }
 
     //### stream resolution
     QString tVideoStreamResolution = CONF.GetVideoResolution();
@@ -298,6 +310,17 @@ void ConfigurationDialog::LoadConfiguration()
     if (tAudioStreamQuality > 100)
         tAudioStreamQuality = 100;
     mCbAudioQuality->setCurrentIndex((tAudioStreamQuality / 10) - 1);
+
+    //### stream bit rate
+    for (int i = 0; i < mCbAudioBitRate->count(); i++)
+    {
+        tCurBitRate = mCbAudioBitRate->itemText(i);
+        if (CONF.GetAudioBitRate() == tCurBitRate.toInt() * 1024)
+        {
+            mCbAudioBitRate->setCurrentIndex(i);
+            break;
+        }
+    }
 
     //### maximum packet size
     for (int i = 0; i < mCbAudioMaxPacketSize->count(); i++)
@@ -421,6 +444,7 @@ void ConfigurationDialog::SaveConfiguration()
     bool tOnlyFutureChanged = false;
 
     QString tCurMaxPackSize;
+    QString tCurBitRate;
 
     //######################################################################
     //### VIDEO configuration
@@ -476,6 +500,10 @@ void ConfigurationDialog::SaveConfiguration()
     int tVideoQuality = (mCbVideoQuality->currentIndex() + 1) * 10;
     CONF.SetVideoQuality(tVideoQuality);
 
+    //### stream bit rate
+    tCurBitRate = mCbVideoBitRate->currentText();
+    CONF.SetVideoBitRate(tCurBitRate.toInt() * 1024);
+
     //### stream resolution
     CONF.SetVideoResolution(mCbVideoResolution->currentText());
 
@@ -530,6 +558,10 @@ void ConfigurationDialog::SaveConfiguration()
     //### stream quality
     int tAudioQuality = (mCbAudioQuality->currentIndex() + 1) * 10;
     CONF.SetAudioQuality(tAudioQuality);
+
+    //### stream bit rate
+    tCurBitRate = mCbAudioBitRate->currentText();
+    CONF.SetAudioBitRate(tCurBitRate.toInt() * 1024);
 
     //### maximum packet size
     tCurMaxPackSize = mCbAudioMaxPacketSize->currentText();
@@ -1024,6 +1056,7 @@ void ConfigurationDialog::ClickedButton(QAbstractButton *pButton)
                 mSbVideoFps->setValue(0);
                 mCbVideoCodec->setCurrentIndex(0);//H.261
                 mCbVideoQuality->setCurrentIndex(0);//10 %
+                mCbVideoBitRate->setCurrentIndex(3); // 90 KBit/s
                 mCbVideoResolution->setCurrentIndex(0);//auto
                 mCbVideoMaxPacketSize->setCurrentIndex(2);//1280
                 mCbSmoothVideoPresentation->setChecked(false);
@@ -1035,6 +1068,7 @@ void ConfigurationDialog::ClickedButton(QAbstractButton *pButton)
                 mCbAudioSink->setCurrentIndex(0);
                 mCbAudioCodec->setCurrentIndex(3);//MP3
                 mCbAudioQuality->setCurrentIndex(9);//100 %
+                mCbAudioBitRate->setCurrentIndex(2); // 256 KBit/s
                 mCbAudioMaxPacketSize->setCurrentIndex(2);//1280
                 break;
             //### NETWORK configuration
