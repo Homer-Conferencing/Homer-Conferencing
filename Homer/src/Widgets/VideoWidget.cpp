@@ -2452,7 +2452,7 @@ void VideoWorkerThread::run()
 
 						// reset the local media source
 						LOG(LOG_WARN, "Will reset local media source because input stream changed..");
-						ResetSource();
+						DoResetMediaSource();
 
 						// let the GUI react on this event
 						mVideoWidget->InformAboutNewSource();
