@@ -55,7 +55,7 @@ using namespace Homer::Base;
 #define MEDIA_SOURCE_MEM_USE_REORDERED_PTS                                  0 // on/off
 
 // how much time do we want to buffer at maximum?
-#define MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME                         ((System::GetTargetMachineType() != "x86") ? 4.0 : 1.0) // 1.0 seconds for 32 bit targets with limit of 4 GB ram, 2.0 seconds for 64 bit targets
+#define MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME                         ((System::GetTargetMachineType() != "x86") ? 6.0 : 2.0) // use less memory for 32 bit targets
 
 #define MEDIA_SOURCE_MEM_PRE_BUFFER_TIME                                    (MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME / 2) // leave some seconds for high system load situations so that this part of the input queue can be used for compensating it
 
@@ -560,13 +560,19 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 	if (!OpenFormatConverter())
 		return false;
 
-    // overwrite FPS by the timebase of the selected codec
-    mFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->codec->time_base.den / mFormatContext->streams[mMediaStreamIndex]->codec->time_base.num;
+    // overwrite FPS by the playout FPS value
+    mFrameRate = mRealFrameRate;
 
-    mResXLastGrabbedFrame = 0;
-    mResYLastGrabbedFrame = 0;
+    mGrabberCurrentFrameIndex = 0;
+    mDecoderSinglePictureGrabbed = false;
+    mEOFReached = false;
     mDecoderRecalibrateRTGrabbingAfterSeeking = true;
     mDecoderFlushBuffersAfterSeeking = false;
+    mDecodedIFrames = 0;
+    mDecodedPFrames = 0;
+    mDecodedBFrames = 0;
+    mResXLastGrabbedFrame = 0;
+    mResYLastGrabbedFrame = 0;
 
     MarkOpenGrabDeviceSuccessful();
 
@@ -644,9 +650,17 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     if (!OpenFormatConverter())
 		return false;
 
+    // overwrite FPS by the playout FPS value
+    mFrameRate = mRealFrameRate;
+
     mGrabberCurrentFrameIndex = 0;
+    mDecoderSinglePictureGrabbed = false;
+    mEOFReached = false;
     mDecoderRecalibrateRTGrabbingAfterSeeking = true;
     mDecoderFlushBuffersAfterSeeking = false;
+    mDecodedIFrames = 0;
+    mDecodedPFrames = 0;
+    mDecodedBFrames = 0;
 
     MarkOpenGrabDeviceSuccessful();
 
@@ -1423,7 +1437,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                 }else
                                 {// RTP active
                                     #ifdef MSMEM_DEBUG_PRE_BUFFERING
-                                        LOG(LOG_VERBOSE, "Setting current frame PTS to packet PTS (derived from RTP timestamp)%ld", tCurPacketPts);
+                                        LOG(LOG_VERBOSE, "Setting current frame PTS to packet PTS (derived from RTP timestamp): %ld", tCurPacketPts);
                                     #endif
 
                                     // use the frame numbers which were derived from RTP timestamps
@@ -1929,13 +1943,13 @@ void MediaSourceMem::WaitForRTGrabbing()
 {
     float tRelativeTimeIndexInUSecs, tCurrentRelativeTimeIndexInUSecs, tWaitingTimeInUSecs;
     float tRelativeFrameIndex = mGrabberCurrentFrameIndex - mSourceStartPts; // the normalized frame index
-    float tRelativeTimeIndex = tRelativeFrameIndex / mFrameRate; // the normalized time index
+    float tRelativeTimeIndex = tRelativeFrameIndex / GetFrameRate(); // the normalized time index
     double tRelativePTS = AV_TIME_BASE * (tRelativeTimeIndex); // transform normalized time index to a PTS value
     tRelativeTimeIndexInUSecs = (int64_t)tRelativePTS;
     tCurrentRelativeTimeIndexInUSecs = av_gettime() - mSourceStartTimeForRTGrabbing;
     tWaitingTimeInUSecs = tRelativeTimeIndexInUSecs - tCurrentRelativeTimeIndexInUSecs;
     #ifdef MSMEM_DEBUG_TIMING
-        LOG(LOG_VERBOSE, "%s-current relative frame index: %f, relative time: %f us (Fps: %3.2f), stream start time: %f us, packet's relative play out time: %f us, time difference: %f us", GetMediaTypeStr().c_str(), tRelativeFrameIndex, tCurrentRelativeTimeIndexInUSecs, mFrameRate, (float)mSourceStartPts, tRelativeTimeIndexInUSecs, tWaitingTimeInUSecs);
+        LOG(LOG_VERBOSE, "%s-current relative frame index: %f, relative time: %f us (Fps: %3.2f), stream start time: %f us, packet's relative play out time: %f us, time difference: %f us", GetMediaTypeStr().c_str(), tRelativeFrameIndex, tCurrentRelativeTimeIndexInUSecs, GetFrameRate(), (float)mSourceStartPts, tRelativeTimeIndexInUSecs, tWaitingTimeInUSecs);
     #endif
     // adapt timing to real-time
     if (tWaitingTimeInUSecs > 1.0)
