@@ -939,9 +939,6 @@ void MediaSourceMem::StopDecoder()
                 LOG(LOG_WARN, "Signaling round %d to stop %s decoder, system has high load", tSignalingRound, GetMediaTypeStr().c_str());
             tSignalingRound++;
 
-            if ((mDecoderFragmentFifo != NULL) && ((GetSourceType() == SOURCE_MEMORY) || (GetSourceType() == SOURCE_NETWORK)))
-                WriteFragment(tTmp, 0);
-
             // force a wake up of decoder thread
             mDecoderNeedWorkCondition.SignalAll();
 
