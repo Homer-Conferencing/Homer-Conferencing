@@ -1357,7 +1357,9 @@ void ParticipantWidget::ReportVideoDelay(float pDelay)
 {
     if (pDelay != mVideoDelayAVDrift)
     {
-        LOG(LOG_VERBOSE, "Reporting for %s a video delay of: %.2f", mSessionName.toStdString().c_str(), pDelay);
+        #ifdef PARTICIPANT_WIDGET_DEBUG_AV_SYNC
+            LOG(LOG_VERBOSE, "Reporting for %s a video delay of: %.2f", mSessionName.toStdString().c_str(), pDelay);
+        #endif
         mVideoDelayAVDrift = pDelay;
 
         if (mVideoWidget->GetWorker() == NULL)
