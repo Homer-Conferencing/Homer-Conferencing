@@ -135,6 +135,7 @@ private:
 VideoWidget::VideoWidget(QWidget* pParent):
     QWidget(pParent)
 {
+    mCurrentFrameRate = 0;
     mLiveMarkerActive = false;
 	mPaintEventCounter = 0;
     mResX = 640;
@@ -1881,11 +1882,16 @@ void VideoWidget::customEvent(QEvent *pEvent)
 					int tWorkerLastFrame = mVideoWorker->GetLastFrameNumber();
 					if ((mCurrentFrameNumber != tWorkerLastFrame) && (mCurrentFrameNumber > 0) && (tWorkerLastFrame > 0))
 					{
-					    // video play out drift
-					    int tFrameDiff = tWorkerLastFrame - mCurrentFrameNumber;
-					    float tVideoDelay = tFrameDiff / mCurrentFrameRate;
-					    //LOG(LOG_WARN, "We show frame %d while we already grabbed frame %d, video delay is %.2f", mCurrentFrameNumber, tWorkerLastFrame, tVideoDelay);
-					    mParticipantWidget->ReportVideoDelay(tVideoDelay);
+					    if (mCurrentFrameRate != 0)
+					    {
+	                        // video play out drift
+	                        int tFrameDiff = tWorkerLastFrame - mCurrentFrameNumber;
+	                        float tVideoDelay = tFrameDiff / mCurrentFrameRate;
+                            #ifdef DEBUG_VIDEOWIDGET_FRAME_DELIVERY
+	                            LOG(LOG_WARN, "We show frame %d while we already grabbed frame %d, video delay is %.2f", mCurrentFrameNumber, tWorkerLastFrame, tVideoDelay);
+                            #endif
+	                        mParticipantWidget->ReportVideoDelay(tVideoDelay);
+					    }
 					}else
                         mParticipantWidget->ReportVideoDelay(0);
                     #ifdef DEBUG_VIDEOWIDGET_FRAME_DELIVERY
@@ -2023,7 +2029,7 @@ void VideoWorkerThread::InitFrameBuffers()
 
         mFrameNumber[i] = 0;
 
-        LOG(LOG_VERBOSE, "Initiating frame buffer %d with resolution %d*%d", i, mResX, mResY);
+        //LOG(LOG_VERBOSE, "Initiating frame buffer %d with resolution %d*%d", i, mResX, mResY);
         QImage tFrameImage = QImage((unsigned char*)mFrame[i], mResX, mResY, QImage::Format_RGB32);
         QPainter *tPainter = new QPainter(&tFrameImage);
         tPainter->setRenderHint(QPainter::TextAntialiasing, true);
@@ -2442,7 +2448,7 @@ void VideoWorkerThread::run()
 			    {
 					if ((tSourceResX != mResX) || (tSourceResY != mResY))
 					{
-						LOG(LOG_WARN, "Remote source changed, video resolution changed: %d*d => %d*%d", mResX, mResY, tSourceResX, tSourceResY);
+						LOG(LOG_WARN, "Remote source changed, video resolution changed: %d*%d => %d*%d", mResX, mResY, tSourceResX, tSourceResY);
 
 						// reset the local media source
 						LOG(LOG_WARN, "Will reset local media source because input stream changed..");
