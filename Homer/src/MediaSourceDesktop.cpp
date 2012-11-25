@@ -173,6 +173,7 @@ bool MediaSourceDesktop::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 
     LOG(LOG_INFO, "Opened...");
     LOG(LOG_INFO, "    ..fps: %3.2f", mFrameRate);
+    LOG(LOG_INFO, "    ..fps (playout): %3.2f", mRealFrameRate);
     LOG(LOG_INFO, "    ..device: %s", mCurrentDevice.c_str());
     LOG(LOG_INFO, "    ..resolution: %d * %d", mSourceResX, mSourceResY);
     LOG(LOG_INFO, "    ..source frame size: %d", mSourceResX * mSourceResY * MSD_BYTES_PER_PIXEL);
