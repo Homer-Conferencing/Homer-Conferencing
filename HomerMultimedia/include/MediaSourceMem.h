@@ -32,7 +32,9 @@
 #include <MediaFifo.h>
 #include <MediaSource.h>
 #include <RTP.h>
+#include <VideoScaler.h>
 
+#include <HBThread.h>
 #include <HBCondition.h>
 #include <HBSystem.h>
 
@@ -49,6 +51,12 @@ namespace Homer { namespace Multimedia {
 
 // de/activate output of RTCP sender reports
 //#define MSMEM_DEBUG_SENDER_REPORTS
+
+//#define MSMEM_DEBUG_SEEKING
+
+//#define MSMEM_DEBUG_CALIBRATION
+//#define MSMEM_DEBUG_TIMING
+//#define MSMEM_DEBUG_DECODER_STATE
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -68,7 +76,7 @@ struct MediaInputQueueEntry
 ///////////////////////////////////////////////////////////////////////////////
 
 class MediaSourceMem :
-    public MediaSource, public RTP
+    public MediaSource, public RTP, public Thread
 {
 public:
     /// The default constructor
@@ -82,11 +90,17 @@ public:
     virtual int GetFragmentBufferCounter();
     virtual int GetFragmentBufferSize();
 
+    /* RTP based frame numbering */
+    virtual int64_t CalculateFrameNumberFromRTP();
+
     /* frame stats */
     virtual bool SupportsDecoderFrameStatistics();
 
     /* video grabbing control */
     virtual GrabResolutions GetSupportedVideoGrabResolutions();
+
+    /* fps */
+    virtual void SetFrameRate(float pFps);
 
     /* recording */
     virtual bool SupportsRecording();
@@ -96,8 +110,9 @@ public:
 
     virtual bool SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset = false);
 
-    virtual int GetFrameBufferCounter();
-    virtual int GetFrameBufferSize();
+    virtual int CalculateFrameBufferSize(); // calculates a good value for frame queue
+    virtual int GetFrameBufferCounter(); // returns the currently used number of entries in the frame queue
+    virtual int GetFrameBufferSize(); // returns current frame queue size
 
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97);
     virtual bool OpenAudioGrabDevice(int pSampleRate = 44100, int pChannels = 2);
@@ -108,16 +123,31 @@ public:
     virtual void WriteFragment(char *pBuffer, int pBufferSize);
 
 protected:
+    /* internal video resolution switch */
+    virtual void DoSetVideoGrabResolution(int pResX = 352, int pResY = 288);
+
     static int GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize);
     virtual void ReadFragment(char *pData, ssize_t &pDataSize);
 
+    virtual bool InputIsPicture();
+
+    /* decoder thread */
+    void StartDecoder();
+    void StopDecoder();
+    virtual void* Run(void* pArgs = NULL); // decoder main loop
+    VideoScaler *CreateVideoScaler();
+    void DestroyVideoScaler(VideoScaler *pScaler);
+
     /* buffering */
     void UpdateBufferTime();
-    int CalculateFrameBufferSize();
 
     /* FIFO helpers */
     void WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int64_t pPts);
     void ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int64_t &pPts);
+
+    /* real-time playback */
+    void CalibrateRTGrabbing();
+    void WaitForRTGrabbing();
 
     unsigned long       mFragmentNumber;
     char                *mStreamPacketBuffer;
@@ -127,15 +157,34 @@ protected:
     bool                mOpenInputStream;
     int                 mWrappingHeaderSize;
     int                 mPacketStatAdditionalFragmentSize; // used to adapt packet statistic to additional fragment header, which is used for TCP transmission
-    /* input stream FIFO */
+    /* grabber */
+    double              mGrabberCurrentFrameIndex; // we have to determine this manually during grabbing because cur_dts and everything else in AVStream is buggy for some video/audio files
+    bool                mGrabberProvidesRTGrabbing;
+    /* decoder thread */
+    bool                mDecoderUsesPTSFromInputPackets;
+    int                 mDecoderTargetResX;
+    int                 mDecoderTargetResY;
+    bool                mDecoderNeeded;
+    int64_t             mDecoderLastReadPts;
     Condition           mDecoderNeedWorkCondition;
     Mutex               mDecoderNeedWorkConditionMutex;
     MediaFifo           *mDecoderFragmentFifo;
     MediaFifo           *mDecoderFifo; // for frames
     MediaFifo           *mDecoderMetaDataFifo; // for meta data about frames
-    /* video decoding */
-    AVFrame             *mSourceFrame;
-    AVFrame             *mRGBFrame;
+//    AVFrame             *mDecoderSourceFrame;
+//    AVFrame             *mDecoderOutputRGBFrame;
+    /* decoder thread seeking */
+    double              mDecoderTargetFrameIndex;
+    bool                mDecoderWaitForNextKeyFramePackets; // after seeking we wait for next key frame packets -> either i-frames or p-frames
+    bool                mDecoderRecalibrateRTGrabbingAfterSeeking;
+    bool                mDecoderFlushBuffersAfterSeeking;
+    bool                mDecoderWaitForNextKeyFrame; // after seeking we wait for next i -frames
+    /* picture grabbing */
+    bool                mDecoderSinglePictureGrabbed;
+    int                 mDecoderSinglePictureResX;
+    int                 mDecoderSinglePictureResY;
+    uint8_t             *mDecoderSinglePictureData[AV_NUM_DATA_POINTERS];
+    int                 mDecoderSinglePictureLineSize[AV_NUM_DATA_POINTERS];
 };
 
 ///////////////////////////////////////////////////////////////////////////////

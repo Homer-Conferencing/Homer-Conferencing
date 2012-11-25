@@ -31,7 +31,6 @@
 #include <Header_Ffmpeg.h>
 #include <MediaSourceMem.h>
 #include <MediaFifo.h>
-#include <HBThread.h>
 
 #include <vector>
 #include <string.h>
@@ -40,35 +39,17 @@ namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// the following de/activates debugging of received packets
-//#define MSF_DEBUG_SEEKING
-//#define MSF_DEBUG_CALIBRATION
-//#define MSF_DEBUG_PACKETS
-//#define MSF_DEBUG_TIMING
-//#define MSF_DEBUG_DECODER_STATE
-
-///////////////////////////////////////////////////////////////////////////////
-
 class MediaSourceFile:
-    public MediaSourceMem, public Thread
+    public MediaSourceMem
 {
 public:
     MediaSourceFile(std::string pSourceFile, bool pGrabInRealTime = true /* 1 = frame rate emulation, 0 = grab as fast as possible */);
 
     virtual ~MediaSourceFile();
 
-    /* frame stats */
-    virtual bool SupportsDecoderFrameStatistics();
-
-    /* video grabbing control */
-    virtual GrabResolutions GetSupportedVideoGrabResolutions();
-
     /* pseudo device control */
     virtual void getVideoDevices(VideoDevices &pVList);
     virtual void getAudioDevices(AudioDevices &pAList);
-
-    /* fps */
-    virtual void SetFrameRate(float pFps);
 
     /* recording */
     virtual bool SupportsRecording();
@@ -90,45 +71,10 @@ public:
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97);
     virtual bool OpenAudioGrabDevice(int pSampleRate = 44100, int pChannels = 2);
     virtual bool CloseGrabDevice();
-    virtual int GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk = false);
-
-protected:
-    /* internal video resolution switch */
-    virtual void DoSetVideoGrabResolution(int pResX = 352, int pResY = 288);
-
-    virtual bool InputIsPicture();
 
 private:
-    /* decoder */
-    virtual void* Run(void* pArgs = NULL); // transcoder main loop
-    void StartDecoder();
-    void StopDecoder();
 
-    /* real-time playback */
-    void CalibrateRTGrabbing();
-    void WaitForRTGrabbing();
-
-    /* decoding */
-    bool                mUseFilePTS;
-    int                 mDecoderTargetResX;
-    int                 mDecoderTargetResY;
-    bool                mDecoderNeeded;
-    int64_t             mDecoderLastReadPts;
-    double              mCurrentFrameIndex; // we have to determine this manually during grabbing because cur_dts and everything else in AVStream is buggy for some video/audio files
     std::vector<string> mInputChannels;
-    /* real-time playback */
-    bool                mGrabInRealTime;
-    bool                mRecalibrateRealTimeGrabbingAfterSeeking;
-    bool                mFlushBuffersAfterSeeking;
-    double              mSeekingTargetFrameIndex;
-    bool                mSeekingWaitForNextKeyFrame; // after seeking we wait for next i -frames
-    bool                mSeekingWaitForNextKeyFramePackets; // after seeking we wait for next key frame packets -> either i-frames or p-frames
-    /* picture grabbing */
-    bool                mPictureGrabbed;
-    uint8_t 			*mPictureData[AV_NUM_DATA_POINTERS];
-    int					mPictureLineSize[AV_NUM_DATA_POINTERS];
-    int                 mFinalPictureResX;
-    int                 mFinalPictureResY;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
