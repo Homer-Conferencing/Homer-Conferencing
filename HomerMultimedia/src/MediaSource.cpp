@@ -2969,7 +2969,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 			mInputAudioChannels = mCodecContext->channels;
 			mInputAudioFormat = mCodecContext->sample_fmt;
 
-			mRealFrameRate = (float)mOutputAudioSampleRate /* samples per second */ / MEDIA_SOURCE_SAMPLES_PER_BUFFER /* samples per frame */;
+			mRealFrameRate = (float)mOutputAudioSampleRate /* 44100 samples per second */ / MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 samples per frame */;
 
 			break;
 
