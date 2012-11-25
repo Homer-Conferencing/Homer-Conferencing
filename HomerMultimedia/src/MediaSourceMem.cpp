@@ -1392,7 +1392,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                     mResYLastGrabbedFrame = mCodecContext->height;
                                 }
 
-                                if (tSourceFrame->pts == (int64_t)AV_NOPTS_VALUE)
+                                if (!mRtpActivated)
                                 {
                                     // save PTS value to deliver it later to the frame grabbing thread
                                     if ((tSourceFrame->pkt_dts != (int64_t)AV_NOPTS_VALUE) && (!MEDIA_SOURCE_MEM_USE_REORDERED_PTS))
