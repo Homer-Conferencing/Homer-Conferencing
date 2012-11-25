@@ -313,7 +313,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
         float tFps = mMediaSource->GetFrameRatePlayout();
         if (tFps != pFps)
         {
-            LOG(LOG_WARN, "Setting the %s muxer frame rate from %.2f to %.2f (from base source)", GetMediaTypeStr().c_str(), pFps, tFps);
+            LOG(LOG_VERBOSE, "Setting the %s muxer frame rate from %.2f to %.2f (from base source)", GetMediaTypeStr().c_str(), pFps, tFps);
             pFps = tFps;
         }
     }
@@ -470,11 +470,21 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
                     }
                     LOG(LOG_VERBOSE, "Resolution %d*%d for codec H.263 automatically selected", mCurrentStreamingResX, mCurrentStreamingResY);
                     break;
+            case CODEC_ID_H263P:
+                    if ((mSourceResX > 2048) || (mSourceResY > 1152))
+                    {// max. video resolution is 2048x1152
+                        mCurrentStreamingResX = 2048;
+                        mCurrentStreamingResY = 1152;
+                    }else
+                    {// everythin is fine, use the source resolution
+                        mCurrentStreamingResX = mSourceResX;
+                        mCurrentStreamingResY = mSourceResY;
+                    }
+                    break;
             case CODEC_ID_THEORA:
             		mCurrentStreamingResX = 352;
             		mCurrentStreamingResY = 288;
                     break;
-            case CODEC_ID_H263P:
             default:
             		mCurrentStreamingResX = mSourceResX;
             		mCurrentStreamingResY = mSourceResY;
@@ -1723,6 +1733,14 @@ int64_t MediaSourceMuxer::DecodedBFrames()
         return mMediaSource->DecodedBFrames();
     else
         return mDecodedBFrames;
+}
+
+float MediaSourceMuxer::GetFrameBufferPreBufferingTime()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->GetFrameBufferPreBufferingTime();
+    else
+        return mDecoderPreBufferTime;
 }
 
 float MediaSourceMuxer::GetFrameBufferTime()

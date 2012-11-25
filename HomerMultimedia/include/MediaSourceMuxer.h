@@ -119,7 +119,8 @@ public:
     virtual bool SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset = false);
     virtual int GetChunkDropCounter();
     virtual int GetChunkBufferCounter();
-    /* frame pre-buffering */
+    /* frame (pre)buffering */
+    virtual float GetFrameBufferPreBufferingTime();
     virtual float GetFrameBufferTime();
     virtual int GetFrameBufferCounter();
     virtual int GetFrameBufferSize();

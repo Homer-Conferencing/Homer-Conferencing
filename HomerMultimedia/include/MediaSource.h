@@ -250,6 +250,7 @@ public:
     virtual int GetFragmentBufferSize(); // how many fragments can be buffered?
 
     /* frame buffering to compensate reception jitter and short congestion periods */
+    virtual float GetFrameBufferPreBufferingTime();
     virtual float GetFrameBufferTime();
     virtual float GetFrameBufferTimeMax();
     virtual int GetFrameBufferCounter();

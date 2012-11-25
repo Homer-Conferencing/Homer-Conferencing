@@ -921,6 +921,11 @@ int64_t MediaSource::DecodedBFrames()
     return mDecodedBFrames;
 }
 
+float MediaSource::GetFrameBufferPreBufferingTime()
+{
+    return mDecoderPreBufferTime;
+}
+
 float MediaSource::GetFrameBufferTime()
 {
 	return mDecoderBufferTime;
@@ -1831,7 +1836,8 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     LOG(LOG_INFO, "    ..current device: %s", mCurrentDevice.c_str());
     LOG(LOG_INFO, "    ..qmin: %d", mRecorderCodecContext->qmin);
     LOG(LOG_INFO, "    ..qmax: %d", mRecorderCodecContext->qmax);
-    LOG(LOG_INFO, "    ..frame size: %d", mRecorderCodecContext->frame_size);
+    LOG(LOG_INFO, "    ..source frame size: %d", mRecorderCodecContext->frame_size);
+    LOG(LOG_INFO, "    ..output frame size: %d", MEDIA_SOURCE_SAMPLES_PER_BUFFER);
     LOG(LOG_INFO, "    ..duration: %.2f frames", mNumberOfFrames);
     LOG(LOG_INFO, "    ..stream context duration: %ld frames, %.0f seconds, format context duration: %ld, nr. of frames: %ld", mRecorderFormatContext->streams[tMediaStreamIndex]->duration, (float)mRecorderFormatContext->streams[tMediaStreamIndex]->duration / mFrameRate, mRecorderFormatContext->duration, mRecorderFormatContext->streams[tMediaStreamIndex]->nb_frames);
     switch(mMediaType)
@@ -2948,6 +2954,8 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 		        mSourceResY = mCodecContext->coded_height;
 		    }
 
+		    mRealFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num / mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den;
+
 		    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected video resolution: %d*%d", mSourceResX, mSourceResY);
 		    break;
 
@@ -2957,6 +2965,9 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 			mInputAudioSampleRate = mCodecContext->sample_rate;
 			mInputAudioChannels = mCodecContext->channels;
 			mInputAudioFormat = mCodecContext->sample_fmt;
+
+			mRealFrameRate = (float)44100 /* samples per second */ / 1024 /* samples per frame */;
+
 			break;
 
 		default:
@@ -2965,7 +2976,6 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 
     // derive the FPS from the timebase of the selected input stream
     mFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->time_base.den / mFormatContext->streams[mMediaStreamIndex]->time_base.num;
-    mRealFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num / mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den;
 
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected frame rate: %f", mFrameRate);
 
@@ -3104,7 +3114,9 @@ bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
 
 				LOG_REMOTE(LOG_WARN, pSource, pLine, "Audio samples with rate of %d Hz and %d channels (format: %s) have to be resampled to %d Hz and %d channels (format: %s)", mInputAudioSampleRate, mInputAudioChannels, av_get_sample_fmt_name(mInputAudioFormat), mOutputAudioSampleRate, mOutputAudioChannels, av_get_sample_fmt_name(mOutputAudioFormat));
 				mAudioResampleContext = av_audio_resample_init(mOutputAudioChannels, mInputAudioChannels, mOutputAudioSampleRate, mInputAudioSampleRate, mOutputAudioFormat, mInputAudioFormat, 16, 10, 0, 0.8);
-			    mResampleBuffer = (char*)malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
+			    if (mResampleBuffer != NULL)
+			        LOG(LOG_ERROR, "Resample buffer was already allocated");
+                mResampleBuffer = (char*)malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
 			}
 			break;
 		default:
