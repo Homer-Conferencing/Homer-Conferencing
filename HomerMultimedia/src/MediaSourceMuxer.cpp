@@ -955,6 +955,12 @@ bool MediaSourceMuxer::CloseMuxer()
             mAudioResampleContext = NULL;
         }
 
+        if (mResampleBuffer != NULL)
+        {
+            free(mResampleBuffer);
+            mResampleBuffer = NULL;
+        }
+
         LOG(LOG_INFO, "...%s-muxer closed", GetMediaTypeStr().c_str());
 
         tResult = true;
@@ -1408,6 +1414,10 @@ void* MediaSourceMuxer::Run(void* pArgs)
             SVC_PROCESS_STATISTIC.AssignThreadName("Encoder(" + GetFormatName(mStreamCodecId) + ")");
             break;
     }
+
+    // check the actually used bit rate, does it matches the desired one?
+    if (mStreamBitRate != mCodecContext->bit_rate)
+        LOG(LOG_WARN, "%s codec adapted encoder bit rate from %d to %d", GetMediaTypeStr().c_str(), mStreamBitRate, mCodecContext->bit_rate);
 
     // allocate streams private data buffer and write the streams header, if any
     if ((tResult = avformat_write_header(mFormatContext, NULL)) < 0)
