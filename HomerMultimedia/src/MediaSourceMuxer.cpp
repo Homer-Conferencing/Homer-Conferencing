@@ -892,6 +892,8 @@ bool MediaSourceMuxer::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 		tResult = mMediaSource->OpenAudioGrabDevice(pSampleRate, pChannels);
 		if (!tResult)
 			return false;
+        mFrameRate = mMediaSource->GetFrameRate();
+        mRealFrameRate = mMediaSource->GetFrameRatePlayout();
     }
 
     if (mMediaSourceOpened)
