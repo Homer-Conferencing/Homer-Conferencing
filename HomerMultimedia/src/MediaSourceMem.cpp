@@ -70,7 +70,13 @@ MediaSourceMem::MediaSourceMem(string pName, bool pRtpActivated):
     MediaSource(pName), RTP()
 {
     mDecoderFrameBufferTimeMax = MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME;
-    mDecoderFramePreBufferTime = MEDIA_SOURCE_MEM_PRE_BUFFER_TIME;
+    if (pRtpActivated)
+    {// we have RTP timestamps, use pre-buffering
+        mDecoderFramePreBufferTime = MEDIA_SOURCE_MEM_PRE_BUFFER_TIME;
+    }else
+    {// without RTP timestamps pre-buffering is not possible in a stable way
+        mDecoderFramePreBufferTime = 0;
+    }
     mDecoderTargetFrameIndex = 0;
     mDecoderRecalibrateRTGrabbingAfterSeeking = false;
     mDecoderFlushBuffersAfterSeeking = false;
@@ -1623,6 +1629,7 @@ void* MediaSourceMem::Run(void* pArgs)
                             #ifdef MSMEM_DEBUG_PACKETS
                                 LOG(LOG_VERBOSE, "New audio frame..");
                                 LOG(LOG_VERBOSE, "      ..samples: %d", tOutputBufferSize);
+                                LOG(LOG_VERBOSE, "      ..size: %d bytes", tOutputBufferSize * 2 /* 16 bit per sample */);
                             #endif
 
                             if (mAudioResampleContext != NULL)
@@ -1635,7 +1642,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                     //HINT: we always assume 16 bit samples
                                     int tResampledBytes = (2 /*16 signed char*/ * mOutputAudioChannels) * audio_resample(mAudioResampleContext, (short*)tChunkBuffer, (short*)mResampleBuffer, tOutputBufferSize / (2 * mInputAudioChannels));
                                     #ifdef MSMEM_DEBUG_PACKETS
-                                        LOG(LOG_VERBOSE, "Have resampled %d bytes of sample rate %dHz and %d channels to %d bytes of sample rate 44100Hz and 2 channels", tOutputBufferSize, mCodecContext->sample_rate, mCodecContext->channels, tResampledBytes);
+                                        LOG(LOG_VERBOSE, "Have resampled %d bytes of sample rate %dHz and %d channels to %d bytes of %d Hz sample rate and %d channels", tOutputBufferSize, mCodecContext->sample_rate, mCodecContext->channels, tResampledBytes, mOutputAudioSampleRate, mOutputAudioChannels);
                                     #endif
                                     if(tResampledBytes > 0)
                                     {
@@ -1662,7 +1669,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                 // ### WRITE FRAME TO FIFO
                                 // ############################
                                 // increase fifo buffer size by size of input buffer size
-                                #ifdef MSM_DEBUG_PACKETS
+                                #ifdef MSMEM_DEBUG_PACKETS
                                     LOG(LOG_VERBOSE, "Adding %d bytes to AUDIO FIFO with size of %d bytes", tCurrentChunkSize, av_fifo_size(tSampleFifo));
                                 #endif
                                 if (av_fifo_realloc2(tSampleFifo, av_fifo_size(tSampleFifo) + tCurrentChunkSize) < 0)
@@ -1708,7 +1715,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                     if (tCurrentChunkSize <= mDecoderFifo->GetEntrySize())
                                     {
                                         #ifdef MSMEM_DEBUG_PACKETS
-                                            LOG(LOG_VERBOSE, "Writing %d %s bytes at %p to FIFO with PTS %ld", tCurrentChunkSize, GetMediaTypeStr().c_str(), tChunkBuffer, tCurFramePts);
+                                            LOG(LOG_VERBOSE, "Writing %d %s bytes at %p to output FIFO with PTS %ld, remaining audio data: %d bytes", tCurrentChunkSize, GetMediaTypeStr().c_str(), tChunkBuffer, tCurFramePts,av_fifo_size(tSampleFifo));
                                         #endif
                                         tCurFramePts++;
                                         WriteFrameOutputBuffer((char*)tChunkBuffer, tCurrentChunkSize, tCurFramePts);
