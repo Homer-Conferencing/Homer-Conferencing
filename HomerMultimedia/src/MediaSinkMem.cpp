@@ -89,9 +89,9 @@ MediaSinkMem::~MediaSinkMem()
 
 void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AVStream *pStream, bool pIsKeyFrame)
 {
-	bool tResetNeeded = false;
+    bool tResetNeeded = false;
 
-	// return immediately if the sink is stopped
+    // return immediately if the sink is stopped
 	if (!mRunning)
 	    return;
 
@@ -113,6 +113,12 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
 
     if (mRtpActivated)
     {
+        //###################################
+        //### calculate the import PTS value
+        //###################################
+        // the PTS value is used within the RTP packetizer to calculate the resulting timestamp value for the RTP header
+        float tPacketPts = (float)pStream->pts.val + pStream->pts.num / pStream->pts.den; // result = val + num / den
+
         //####################################################################
         // check if RTP encoder is valid for the current stream
         //####################################################################
@@ -179,10 +185,10 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
 //                LOG(LOG_VERBOSE, "FRAME data (%2u): %02hx(%3d)", i, pPacketData[i] & 0xFF, pPacketData[i] & 0xFF);
 
         #ifdef MSIM_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "Encapsulating codec packet of size %d at memory position %p", pPacketSize, pPacketData);
+            LOG(LOG_VERBOSE, "Encapsulating codec packet of size %d at memory position %p with pts: %.2f", pPacketSize, pPacketData, tPacketPts);
         #endif
         int64_t tTime = Time::GetTimeStamp();
-        bool tRtpCreationSucceed = RtpCreate(pPacketData, pPacketSize);
+        bool tRtpCreationSucceed = RtpCreate(pPacketData, pPacketSize, (int64_t)tPacketPts);
         #ifdef MSIM_DEBUG_TIMING
             int64_t tTime2 = Time::GetTimeStamp();
             LOG(LOG_VERBOSE, "               generating RTP envelope took %ld us", tTime2 - tTime);
