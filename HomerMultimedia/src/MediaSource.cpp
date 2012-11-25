@@ -2242,6 +2242,9 @@ string MediaSource::GetFrameType(AVFrame *pFrame)
 
     switch(pFrame->pict_type)
     {
+            case AV_PICTURE_TYPE_NONE:
+                tResult = "undef.";
+                break;
             case AV_PICTURE_TYPE_I:
                 tResult = "i";
                 break;
