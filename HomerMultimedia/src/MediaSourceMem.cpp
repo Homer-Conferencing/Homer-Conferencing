@@ -937,9 +937,14 @@ void MediaSourceMem::StopDecoder()
                 LOG(LOG_WARN, "Signaling round %d to stop %s decoder, system has high load", tSignalingRound, GetMediaTypeStr().c_str());
             tSignalingRound++;
 
+            if ((mDecoderFragmentFifo != NULL) && ((GetSourceType() == SOURCE_MEMORY) || (GetSourceType() == SOURCE_NETWORK)))
+                WriteFragment(tTmp, 0);
+
             // force a wake up of decoder thread
             mDecoderNeedWorkCondition.SignalAll();
-        }while(!StopThread(250));
+
+            Suspend(250);
+        }while(IsRunning());
     }
 
     LOG(LOG_VERBOSE, "Decoder stopped");
@@ -993,7 +998,7 @@ void* MediaSourceMem::Run(void* pArgs)
 
     tInputIsPicture = InputIsPicture();
 
-    LOG(LOG_WARN, ">>>>>>>>>>>>>>>> %s-Decoding thread started", GetMediaTypeStr().c_str());
+    LOG(LOG_WARN, ">>>>>>>>>>>>>>>> %s-Decoding thread for %s media source started", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
     switch(mMediaType)
     {
         case MEDIA_VIDEO:
@@ -1070,7 +1075,7 @@ void* MediaSourceMem::Run(void* pArgs)
 
     mDecoderNeeded = true;
 
-    LOG(LOG_WARN, "================ Entering main decoding loop for %s media source", GetSourceTypeStr().c_str());
+    LOG(LOG_WARN, "================ Entering main %s decoding loop for %s media source", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
 
     while(mDecoderNeeded)
     {
@@ -1822,7 +1827,7 @@ void* MediaSourceMem::Run(void* pArgs)
 
     mDecoderFifo = NULL;
 
-    LOG(LOG_WARN, "Decoder main loop finished for %s media source <<<<<<<<<<<<<<<<", GetSourceTypeStr().c_str());
+    LOG(LOG_WARN, "%s decoder main loop finished for %s media source <<<<<<<<<<<<<<<<", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
 
     return NULL;
 }
