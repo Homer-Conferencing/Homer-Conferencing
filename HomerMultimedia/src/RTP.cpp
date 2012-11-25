@@ -406,6 +406,7 @@ RTP::RTP()
     mRtpPacketBuffer = NULL;
     mTargetHost = "";
     mTargetPort = 0;
+    mRemoteCodecID = CODEC_ID_NONE;
     mRemoteSequenceNumberLastPacket = 0;
     mRemoteTimestampLastPacket = 0;
     mRemoteTimestampLastCompleteFrame = 0;
@@ -825,7 +826,7 @@ int RTP::StoreRtpPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize)
     return pBufferSize;
 }
 
-bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
+bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
 {
     AVPacket                    tPacket;
     int                         tResult;
@@ -863,13 +864,16 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize)
     // we only have one stream per media stream
     tPacket.stream_index = 0;
     tPacket.data = (uint8_t *)pData;
-    tPacket.size = pDataSize; //TODO: pts from stream contextfor packet.pts? -> used in ffmpeg to create rtp packets
+    tPacket.size = pDataSize;
+    tPacket.pts = pPacketPts;
+
     #ifdef RTP_DEBUG_PACKET_ENCODER
         LOG(LOG_VERBOSE, "Encapsulating codec packet:");
         LOG(LOG_VERBOSE, "      ..pts: %ld", tPacket.pts);
         LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket.dts);
         LOG(LOG_VERBOSE, "      ..size: %d", tPacket.size);
         LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket.pos);
+        LOG(LOG_VERBOSE, "      ..packet pts: ", pPacketPts);
     #endif
 
     //####################################################################
@@ -1209,11 +1213,43 @@ void RTP::LogRtpHeader(RtpHeader *pRtpHeader)
         pRtpHeader->Data[i] = htonl(pRtpHeader->Data[i]);
 }
 
-int64_t RTP::GetPtsFromRTP()
+int64_t RTP::GetTimestampFromRTP()
 {
     int64_t tResult = 0;
 
-    // assume mpeg specific 90 kHz clock rate, the normal clock rate is 1 kHz (time base is 1 ms !)
+    switch(mRemoteCodecID)
+    {
+        case CODEC_ID_PCM_MULAW:
+        case CODEC_ID_PCM_ALAW:
+        case CODEC_ID_PCM_S16BE:
+        case CODEC_ID_MP3:
+        case CODEC_ID_AMR_NB:
+        case CODEC_ID_AAC:
+        case CODEC_ID_ADPCM_G722:
+        //supported video codecs
+                break; //TODO
+        case CODEC_ID_H261:
+                break; //TODO
+        case CODEC_ID_MPEG1VIDEO:
+                break; //TODO
+        case CODEC_ID_MPEG2VIDEO:
+                break; //TODO
+        case CODEC_ID_H263:
+        case CODEC_ID_H263P:
+        case CODEC_ID_MPEG4:
+                // 90 kHz clock
+                break;
+        case CODEC_ID_H264:
+                break; //TODO
+        case CODEC_ID_THEORA:
+                break; //TODO
+        case CODEC_ID_VP8:
+                break; //TODO
+        default:
+                break;
+
+    }
+    // mpeg specific 90 kHz clock rate, the normal clock rate is 1 kHz (time base is 1 ms !)
     // e.g.: 29.97 fps means 1/29.97 = 33.367 ms time difference between frames, 33.367 ms * 90 = 3003 timestamp difference (PTS) between frames for playout
     // e.g.: 23.97 fps -> 1/23.97 = 41.719 ms, 41.719 ms * 90 = 3755 PTS difference between frames
     if (mRemoteTimestamp > 0)
@@ -1237,8 +1273,13 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
     bool tOldH263PayloadDetected = false;
     char *tDataOriginal = pData;
 
+    if ((mRemoteCodecID != CODEC_ID_NONE) && (mRemoteCodecID != pCodecId))
+        LOG(LOG_ERROR, "Unsupported codec change detected");
+
+    mRemoteCodecID = pCodecId;
+
     // check for supported codecs
-    switch(pCodecId)
+    switch(mRemoteCodecID)
     {
             //supported audio codecs
             case CODEC_ID_PCM_MULAW:
@@ -1260,7 +1301,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
             case CODEC_ID_VP8:
                     break;
             default:
-                    LOG(LOG_ERROR, "Codec %d is unsupported by internal RTP parser", pCodecId);
+                    LOG(LOG_ERROR, "Codec %d is unsupported by internal RTP parser", mRemoteCodecID);
                     pDataSize = 0;
                     pIsLastFragment = true;
                     return false;
@@ -1411,7 +1452,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
     bool tH264HeaderFragmentStart = false;
     char tH264HeaderReconstructed = 0;
 
-    switch(pCodecId)
+    switch(mRemoteCodecID)
     {
             // audio
             case CODEC_ID_PCM_ALAW:
@@ -1877,7 +1918,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
                             #endif
                             break;
             default:
-                            LOG(LOG_ERROR, "Unsupported codec %d dropped by internal RTP parser", pCodecId);
+                            LOG(LOG_ERROR, "Unsupported codec %d dropped by internal RTP parser", mRemoteCodecID);
                             break;
     }
 

@@ -40,7 +40,7 @@ namespace Homer { namespace Multimedia {
 ///////////////////////////////////////////////////////////////////////////////
 
 // the following de/activates debugging of send RTP packets
-//#define RTP_DEBUG_PACKET_ENCODER
+#define RTP_DEBUG_PACKET_ENCODER
 
 // the following de/activates debugging of received RTP packets
 //#define RTP_DEBUG_PACKET_DECODER
@@ -102,7 +102,7 @@ public:
     static unsigned int GetH261PayloadSizeMax();
 
     /* RTP packetizing */
-    bool RtpCreate(char *&pData, unsigned int &pDataSize);
+    bool RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts);
     unsigned int GetLostPacketsFromRTP();
     static void LogRtpHeader(RtpHeader *pRtpHeader);
     bool RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pIsSenderReport, enum CodecID pCodecId, bool pReadOnly);
@@ -112,7 +112,7 @@ public:
     void RTPRegisterPacketStatistic(Homer::Monitor::PacketStatistic *pStatistic);
 
 protected:
-    int64_t GetPtsFromRTP(); // uses the timestamps from the RTP header to derive a valid PTS value
+    int64_t GetTimestampFromRTP(); // uses the timestamps from the RTP header to derive a valid PTS value
 
 private:
     void AnnounceLostPackets(unsigned int pCount);
@@ -135,6 +135,7 @@ private:
     unsigned int        mTargetPort;
     unsigned int        mLostPackets;
     unsigned int        mLocalSourceIdentifier;
+    enum CodecID        mRemoteCodecID;
     unsigned short int  mRemoteSequenceNumberLastPacket;
     unsigned int        mRemoteTimestampLastPacket;
     unsigned int        mRemoteTimestampLastCompleteFrame;
