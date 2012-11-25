@@ -3118,7 +3118,7 @@ bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
 				LOG_REMOTE(LOG_WARN, pSource, pLine, "Audio samples with rate of %d Hz and %d channels (format: %s) have to be resampled to %d Hz and %d channels (format: %s)", mInputAudioSampleRate, mInputAudioChannels, av_get_sample_fmt_name(mInputAudioFormat), mOutputAudioSampleRate, mOutputAudioChannels, av_get_sample_fmt_name(mOutputAudioFormat));
 				mAudioResampleContext = av_audio_resample_init(mOutputAudioChannels, mInputAudioChannels, mOutputAudioSampleRate, mInputAudioSampleRate, mOutputAudioFormat, mInputAudioFormat, 16, 10, 0, 0.8);
 			    if (mResampleBuffer != NULL)
-			        LOG(LOG_ERROR, "Resample buffer was already allocated");
+			        LOG(LOG_ERROR, "Resample buffer of %s source was already allocated", GetSourceTypeStr().c_str());
                 mResampleBuffer = (char*)malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
 			}
 			break;
