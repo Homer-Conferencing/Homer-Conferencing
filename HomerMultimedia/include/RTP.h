@@ -114,6 +114,9 @@ public:
 protected:
     int64_t GetTimestampFromRTP(); // uses the timestamps from the RTP header to derive a valid PTS value
 
+    /* for clock rate adaption, e.g., 90 kHz */
+    int64_t CalculateClockRateFactor();
+
 private:
     void AnnounceLostPackets(unsigned int pCount);
 
@@ -135,7 +138,7 @@ private:
     unsigned int        mTargetPort;
     unsigned int        mLostPackets;
     unsigned int        mLocalSourceIdentifier;
-    enum CodecID        mRemoteCodecID;
+    enum CodecID        mStreamCodecID;
     unsigned short int  mRemoteSequenceNumberLastPacket;
     unsigned int        mRemoteTimestampLastPacket;
     unsigned int        mRemoteTimestampLastCompleteFrame;
