@@ -579,6 +579,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
         mCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
 
     mMediaStreamIndex = 0;
+    mEncoderStream = mFormatContext->streams[0];
 
     // Dump information about device file
     av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceMuxer (video)", true);
@@ -589,8 +590,8 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     {
         LOG(LOG_ERROR, "Couldn't find a fitting video codec");
         // free codec and stream 0
-        av_freep(&mFormatContext->streams[0]->codec);
-        av_freep(&mFormatContext->streams[0]);
+        av_freep(&mEncoderStream->codec);
+        av_freep(&mEncoderStream);
 
         // Close the format context
         av_free(mFormatContext);
@@ -614,8 +615,8 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     {
         LOG(LOG_ERROR, "Couldn't open video codec because \"%s\".", strerror(AVUNERROR(tResult)));
         // free codec and stream 0
-        av_freep(&mFormatContext->streams[0]->codec);
-        av_freep(&mFormatContext->streams[0]);
+        av_freep(&mEncoderStream->codec);
+        av_freep(&mEncoderStream);
 
         // Close the format context
         av_free(mFormatContext);
@@ -633,10 +634,10 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     MarkOpenGrabDeviceSuccessful();
     LOG(LOG_INFO, "    ..max packet size: %d bytes", mFormatContext->pb->max_packet_size);
     LOG(LOG_INFO, "  stream...");
-    LOG(LOG_INFO, "    ..AV stream context at: %p", mFormatContext->streams[0]);
-    LOG(LOG_INFO, "    ..AV stream codec is: %s(%d)", mFormatContext->streams[0]->codec->codec->name, mFormatContext->streams[0]->codec->codec_id);
-    LOG(LOG_INFO, "    ..AV stream codec context at: 0x%p", mFormatContext->streams[0]->codec);
-    LOG(LOG_INFO, "    ..AV stream codec codec context at: 0x%p", mFormatContext->streams[0]->codec->codec);
+    LOG(LOG_INFO, "    ..AV stream context at: %p", mEncoderStream);
+    LOG(LOG_INFO, "    ..AV stream codec is: %s(%d)", mEncoderStream->codec->codec->name, mEncoderStream->codec->codec_id);
+    LOG(LOG_INFO, "    ..AV stream codec context at: 0x%p", mEncoderStream->codec);
+    LOG(LOG_INFO, "    ..AV stream codec codec context at: 0x%p", mEncoderStream->codec->codec);
     if (mRtpActivated)
         LOG(LOG_INFO, "    ..rtp encapsulation: yes");
     else
@@ -670,6 +671,7 @@ bool MediaSourceMuxer::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 		if (!tResult)
 			return false;
 		mFrameRate = mMediaSource->GetFrameRate();
+		mRealFrameRate = mMediaSource->GetFrameRatePlayout();
     }
 
     if (mMediaSourceOpened)
@@ -800,6 +802,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
 //        mCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
 
     mMediaStreamIndex = 0;
+    mEncoderStream = mFormatContext->streams[0];
 
     // Dump information about device file
     av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceMuxer (audio)", true);
@@ -809,8 +812,8 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     {
         LOG(LOG_ERROR, "Couldn't find a fitting audio codec");
         // free codec and stream 0
-        av_freep(&mFormatContext->streams[0]->codec);
-        av_freep(&mFormatContext->streams[0]);
+        av_freep(&mEncoderStream->codec);
+        av_freep(&mEncoderStream);
 
         // Close the format context
         av_free(mFormatContext);
@@ -828,8 +831,8 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     {
         LOG(LOG_ERROR, "Couldn't open audio codec because \"%s\".", strerror(AVUNERROR(tResult)));
         // free codec and stream 0
-        av_freep(&mFormatContext->streams[0]->codec);
-        av_freep(&mFormatContext->streams[0]);
+        av_freep(&mEncoderStream->codec);
+        av_freep(&mEncoderStream);
 
         // Close the format context
         av_free(mFormatContext);
@@ -938,8 +941,8 @@ bool MediaSourceMuxer::CloseMuxer()
         avcodec_close(mCodecContext);
 
         // free codec and stream 0
-        av_freep(&mFormatContext->streams[0]->codec);
-        av_freep(&mFormatContext->streams[0]);
+        av_freep(&mEncoderStream->codec);
+        av_freep(&mEncoderStream);
 
         // Close the format context
         av_free(mFormatContext);
@@ -1280,6 +1283,15 @@ bool MediaSourceMuxer::BelowMaxFps(int pFrameNumber)
     return false;
 }
 
+int64_t MediaSourceMuxer::CalculatePts(int pFrameNumber)
+{
+    int64_t tResult = 0;
+
+    tResult = mChunkNumber * 1000 / GetFrameRatePlayout(); // frame number * time between frames
+
+    return tResult;
+}
+
 void MediaSourceMuxer::StartEncoder()
 {
     LOG(LOG_VERBOSE, "Starting %s transcoder", GetMediaTypeStr().c_str());
@@ -1445,29 +1457,17 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                     LOG(LOG_VERBOSE, "     preparing data structures took %ld us", tTime5 - tTime3);
                                 #endif
 
-                                // set frame number in corresponding entries within AVFrame structure
-                                tYUVFrame->pts = mChunkNumber;
+                                // calculate the packet's PTS value
+                                int64_t tPacketPts = CalculatePts(mChunkNumber);
+
                                 tYUVFrame->coded_picture_number = mChunkNumber;
                                 tYUVFrame->display_picture_number = mChunkNumber;
+                                tYUVFrame->pts = tPacketPts;
 
                                 #ifdef MSM_DEBUG_PACKETS
                                     LOG(LOG_VERBOSE, "Scaler returned video frame..");
                                     LOG(LOG_VERBOSE, "      ..key frame: %d", tYUVFrame->key_frame);
-                                    switch(tYUVFrame->pict_type)
-                                    {
-                                            case AV_PICTURE_TYPE_I:
-                                                LOG(LOG_VERBOSE, "      ..picture type: i-frame");
-                                                break;
-                                            case AV_PICTURE_TYPE_P:
-                                                LOG(LOG_VERBOSE, "      ..picture type: p-frame");
-                                                break;
-                                            case AV_PICTURE_TYPE_B:
-                                                LOG(LOG_VERBOSE, "      ..picture type: b-frame");
-                                                break;
-                                            default:
-                                                LOG(LOG_VERBOSE, "      ..picture type: %d", tYUVFrame->pict_type);
-                                                break;
-                                    }
+                                    LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(tYUVFrame).c_str());
                                     LOG(LOG_VERBOSE, "      ..pts: %ld", tYUVFrame->pts);
                                     LOG(LOG_VERBOSE, "      ..coded pic number: %d", tYUVFrame->coded_picture_number);
                                     LOG(LOG_VERBOSE, "      ..display pic number: %d", tYUVFrame->display_picture_number);
@@ -1490,12 +1490,6 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 {
                                     av_init_packet(tPacket);
 
-                                    // adapt pts value
-                                    if ((mCodecContext->coded_frame) && (mCodecContext->coded_frame->pts != 0))
-                                    {
-                                        tPacket->pts = av_rescale_q(mCodecContext->coded_frame->pts, mCodecContext->time_base, mFormatContext->streams[mMediaStreamIndex]->time_base);
-                                        tPacket->dts = tPacket->pts;
-                                    }
                                     // mark i-frame
                                     if (mCodecContext->coded_frame->key_frame)
                                     {
@@ -1503,19 +1497,18 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                         tPacket->flags |= AV_PKT_FLAG_KEY;
                                     }
 
-                                    // we only have one stream per video stream
+                                    // we only have one stream per audio stream
                                     tPacket->stream_index = 0;
                                     tPacket->data = (uint8_t *)mEncoderChunkBuffer;
                                     tPacket->size = tSizeEncodedFrame;
-                                    tPacket->pts = mChunkNumber;
-                                    tPacket->dts = mChunkNumber;
-                                    //tPacket->pos = av_gettime() - mStartPts;
+                                    tPacket->pts = tPacketPts;
+                                    tPacket->dts = tPacketPts;
 
                                     #ifdef MSM_DEBUG_PACKETS
                                         LOG(LOG_VERBOSE, "Sending video packet: %5d to %2d sink(s):", mChunkNumber, mMediaSinks.size());
                                         LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
                                         LOG(LOG_VERBOSE, "      ..flags: %d", tPacket->flags);
-                                        LOG(LOG_VERBOSE, "      ..pts: %ld stream [%d] pts: %ld", tPacket->pts, mMediaStreamIndex, mFormatContext->streams[mMediaStreamIndex]->pts);
+                                        LOG(LOG_VERBOSE, "      ..pts: %ld stream pts: %ld", tPacket->pts, mEncoderStream->pts);
                                         LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket->dts);
                                         LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
                                         LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket->pos);
@@ -1611,15 +1604,18 @@ void* MediaSourceMuxer::Run(void* pArgs)
 
 											// adapt pts value
 											if ((mCodecContext->coded_frame) && (mCodecContext->coded_frame->pts != 0))
-												tPacket->pts = av_rescale_q(mCodecContext->coded_frame->pts, mCodecContext->time_base, mFormatContext->streams[mMediaStreamIndex]->time_base);
+												tPacket->pts = av_rescale_q(mCodecContext->coded_frame->pts, mCodecContext->time_base, mEncoderStream->time_base);
 											tPacket->flags |= AV_PKT_FLAG_KEY;
+
+			                                // calculate the packet's PTS value
+											int64_t tPacketPts = CalculatePts(mChunkNumber);
 
 											// we only have one stream per audio stream
 											tPacket->stream_index = 0;
 											tPacket->data = (uint8_t *)mEncoderChunkBuffer;
 											tPacket->size = tEncodingResult;
-											tPacket->pts = mChunkNumber;
-											tPacket->dts = mChunkNumber;
+											tPacket->pts = tPacketPts;
+											tPacket->dts = tPacketPts;
 				//                            tPacket->pos = av_gettime() - mStartPts;
 
 											#ifdef MSM_DEBUG_PACKETS

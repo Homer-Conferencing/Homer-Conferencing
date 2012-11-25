@@ -175,6 +175,7 @@ private:
 
     /* FPS limitation */
     bool BelowMaxFps(int pFrameNumber);
+    int64_t CalculatePts(int pFrameNumber);
 
     /* transcoder */
     virtual void* Run(void* pArgs = NULL); // transcoder main loop
@@ -201,6 +202,7 @@ private:
     Mutex				mEncoderFifoState;
     bool				mEncoderHasKeyFrame;
     Mutex               mEncoderFifoAvailableMutex;
+    AVStream            *mEncoderStream;
     /* device control */
     MediaSources        mMediaSources;
     Mutex               mMediaSourcesMutex;
