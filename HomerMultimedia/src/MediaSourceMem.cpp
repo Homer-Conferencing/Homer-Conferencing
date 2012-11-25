@@ -568,7 +568,8 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 
     MarkOpenGrabDeviceSuccessful();
 
-    StartDecoder();
+    if (!mGrabbingStopped)
+        StartDecoder();
 
     return true;
 }
@@ -647,7 +648,8 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 
     MarkOpenGrabDeviceSuccessful();
 
-    StartDecoder();
+    if (!mGrabbingStopped)
+        StartDecoder();
 
     return true;
 }
