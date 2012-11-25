@@ -90,7 +90,7 @@ void RTCP::LogRtcpHeader(RtcpHeader *pRtcpHeader)
         pRtcpHeader->Data[i] = htonl(pRtcpHeader->Data[i]);
 }
 
-bool RTCP::RtcpParse(char *&pData, unsigned int &pDataSize, int &pPackets, int &pOctets)
+bool RTCP::RtcpParse(char *&pData, int &pDataSize, int &pPackets, int &pOctets)
 {
     bool tResult = false;
     RtcpHeader* tRtcpHeader = (RtcpHeader*)pData;

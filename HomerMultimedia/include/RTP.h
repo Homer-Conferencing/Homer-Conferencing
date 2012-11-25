@@ -105,7 +105,7 @@ public:
     bool RtpCreate(char *&pData, unsigned int &pDataSize);
     unsigned int GetLostPacketsFromRTP();
     static void LogRtpHeader(RtpHeader *pRtpHeader);
-    bool RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment, bool &pIsSenderReport, enum CodecID pCodecId, bool pReadOnly);
+    bool RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pIsSenderReport, enum CodecID pCodecId, bool pReadOnly);
     bool OpenRtpEncoder(std::string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream);
     bool CloseRtpEncoder();
 

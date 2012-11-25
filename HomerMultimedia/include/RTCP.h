@@ -86,7 +86,7 @@ public:
 
     /* RTCP packetizing */
     static void LogRtcpHeader(RtcpHeader *pRtcpHeader);
-    bool RtcpParse(char *&pData, unsigned int &pDataSize, int &pPackets, int &pOctets);
+    bool RtcpParse(char *&pData, int &pDataSize, int &pPackets, int &pOctets);
 private:
 };
 

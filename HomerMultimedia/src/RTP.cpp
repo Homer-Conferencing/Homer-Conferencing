@@ -1225,7 +1225,7 @@ int64_t RTP::GetPtsFromRTP()
 }
 
 // assumption: we are getting one single RTP encapsulated packet, not auto detection of following additional packets included
-bool RTP::RtpParse(char *&pData, unsigned int &pDataSize, bool &pIsLastFragment, bool &pIsSenderReport, enum CodecID pCodecId, bool pReadOnly)
+bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pIsSenderReport, enum CodecID pCodecId, bool pReadOnly)
 {
     pIsLastFragment = false;
     pIsSenderReport= false;

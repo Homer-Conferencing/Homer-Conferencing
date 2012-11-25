@@ -120,14 +120,14 @@ public:
     virtual int GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk = false);
 
     // send input to the media source
-    virtual void WriteFragment(char *pBuffer, int pBufferSize);
+    void WriteFragment(char *pBuffer, int pBufferSize);
 
 protected:
     /* internal video resolution switch */
     virtual void DoSetVideoGrabResolution(int pResX = 352, int pResY = 288);
 
     static int GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize);
-    virtual void ReadFragment(char *pData, ssize_t &pDataSize);
+    void ReadFragment(char *pData, int &pDataSize);
 
     virtual bool InputIsPicture();
 

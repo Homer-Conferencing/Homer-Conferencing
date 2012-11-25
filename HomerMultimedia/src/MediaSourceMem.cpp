@@ -122,7 +122,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
 {
 	MediaSourceMem *tMediaSourceMemInstance = (MediaSourceMem*)pOpaque;
     char *tBuffer = (char*)pBuffer;
-    ssize_t tBufferSize = (ssize_t) pBufferSize;
+    int tBufferSize = pBufferSize;
 
     #ifdef MSMEM_DEBUG_PACKETS
         LOGEX(MediaSourceMem, LOG_VERBOSE, "Got a call for GetNextPacket() with a packet buffer at %p and size of %d bytes", pBuffer, pBufferSize);
@@ -131,8 +131,8 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
     {// rtp is active, fragmentation possible!
      // we have to parse every incoming network packet and create a frame packet from the network packets (fragments)
         char *tFragmentData;
-        ssize_t tFragmentBufferSize;
-        unsigned int tFragmentDataSize;
+        int tFragmentBufferSize;
+        int tFragmentDataSize;
         bool tLastFragment;
         bool tFragmentIsOkay;
         bool tFragmentIsSenderReport;
@@ -167,7 +167,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
                 LOGEX(MediaSourceMem, LOG_VERBOSE, "Received invalid fragment");
                 return 0;
             }
-            tFragmentDataSize = (unsigned int)tFragmentBufferSize;
+            tFragmentDataSize = tFragmentBufferSize;
             // parse and remove the RTP header, extract the encapsulated frame fragment
             tFragmentIsOkay = tMediaSourceMemInstance->RtpParse(tFragmentData, tFragmentDataSize, tLastFragment, tFragmentIsSenderReport, tMediaSourceMemInstance->mSourceCodecId, false);
 
@@ -180,14 +180,14 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
 
             if ((tFragmentIsOkay) && (!tFragmentIsSenderReport))
             {
-                if (tBufferSize + (ssize_t)tFragmentDataSize < pBufferSize)
+                if (tBufferSize + tFragmentDataSize < pBufferSize)
                 {
                     if (tFragmentDataSize > 0)
                     {
                         // copy the fragment to the final buffer
                         memcpy(tBuffer, tFragmentData, tFragmentDataSize);
                         tBuffer += tFragmentDataSize;
-                        tBufferSize += (ssize_t)tFragmentDataSize;
+                        tBufferSize += tFragmentDataSize;
                     }
                     #ifdef MSMEM_DEBUG_PACKETS
                         LOGEX(MediaSourceMem, LOG_VERBOSE, "Resulting temporary buffer size: %d", tBufferSize);
@@ -196,7 +196,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
                 {
                     tLastFragment = false;
                     tBuffer = (char*)pBuffer;
-                    tBufferSize = (ssize_t) pBufferSize;
+                    tBufferSize = pBufferSize;
                     LOGEX(MediaSourceMem, LOG_ERROR, "Stream buffer of %d bytes too small for input, dropping received stream", pBufferSize);
                 }
             }else
@@ -270,7 +270,7 @@ void MediaSourceMem::WriteFragment(char *pBuffer, int pBufferSize)
     mDecoderFragmentFifo->WriteFifo(pBuffer, pBufferSize);
 }
 
-void MediaSourceMem::ReadFragment(char *pData, ssize_t &pDataSize)
+void MediaSourceMem::ReadFragment(char *pData, int &pDataSize)
 {
     if (mDecoderFragmentFifo == NULL)
     {
@@ -278,14 +278,12 @@ void MediaSourceMem::ReadFragment(char *pData, ssize_t &pDataSize)
         return;
     }
 
-    int tDataSize = pDataSize;
-    mDecoderFragmentFifo->ReadFifo(&pData[0], tDataSize);
-    pDataSize = tDataSize;
+    mDecoderFragmentFifo->ReadFifo(&pData[0], pDataSize);
 
     if (pDataSize > 0)
     {
         #ifdef MSMEM_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "Delivered fragment with number %5u at %p with size %5d towards decoder", (unsigned int)++mFragmentNumber, pData, (int)pDataSize);
+            LOG(LOG_VERBOSE, "Delivered fragment with number %5u at %p with size %5d towards decoder", (unsigned int)++mFragmentNumber, pData, pDataSize);
         #endif
     }
 
