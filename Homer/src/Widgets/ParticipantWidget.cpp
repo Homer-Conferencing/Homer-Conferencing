@@ -96,6 +96,7 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
     mRemoteVideoAdr = "";
     mRemoteAudioAdr = "";
     mContinuousAVAsync = 0;
+    mVideoDelayAVDrift = 0;
     mRemoteVideoPort = 0;
     mRemoteAudioPort = 0;
     mParticipantVideoSink = NULL;
@@ -1354,16 +1355,22 @@ void ParticipantWidget::SetUserAVDrift(float pDrift)
 
 void ParticipantWidget::ReportVideoDelay(float pDelay)
 {
-    if (mVideoWidget->GetWorker() == NULL)
-        return;
-
-    if (mAudioWidget->GetWorker() == NULL)
-        return;
-
-    // do we play video and audio from the same file?
-    if (PlayingMovie())
+    if (pDelay != mVideoDelayAVDrift)
     {
-        mAudioWidget->GetWorker()->SetVideoDelayAVDrift(pDelay);
+        LOG(LOG_VERBOSE, "Reporting for %s a video delay of: %.2f", mSessionName.toStdString().c_str(), pDelay);
+        mVideoDelayAVDrift = pDelay;
+
+        if (mVideoWidget->GetWorker() == NULL)
+            return;
+
+        if (mAudioWidget->GetWorker() == NULL)
+            return;
+
+        // do we play video and audio from the same file?
+        if (PlayingMovie())
+        {
+            mAudioWidget->GetWorker()->SetVideoDelayAVDrift(pDelay);
+        }
     }
 }
 

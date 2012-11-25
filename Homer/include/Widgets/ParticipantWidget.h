@@ -230,6 +230,7 @@ private:
     int                 	mTimerId;
     int						mMovieSliderPosition;
     /* A/V synch. */
+    float                   mVideoDelayAVDrift;
     int64_t					mTimeOfLastAVSynch;
     int 					mContinuousAVAsync;
     QString             	mCurrentMovieFile;
