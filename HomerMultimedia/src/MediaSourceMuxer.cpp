@@ -122,7 +122,7 @@ int MediaSourceMuxer::DistributePacket(void *pOpaque, uint8_t *pBuffer, int pBuf
     // distribute frame among the registered media sinks
     // ###################################################################
     #ifdef MSM_DEBUG_PACKETS
-        LOGEX(MediaSourceMuxer, LOG_VERBOSE, "Distribute %s packet of size: %d, chunk number: %d", tMuxer->GetMediaTypeStr().c_str(), pBufferSize, tMuxer->mChunkNumber);
+        LOGEX(MediaSourceMuxer, LOG_VERBOSE, "Distribute %s packet of size: %d, chunk number: %d", tMuxer->GetMediaTypeStr().c_str(), pBufferSize, tMuxer->mFrameNumber);
         if (pBufferSize > MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE)
         {
             LOGEX(MediaSourceMuxer, LOG_WARN, "Encoded %s data of %d bytes is too big for network streaming", tMuxer->GetMediaTypeStr().c_str(), pBufferSize);
@@ -1287,7 +1287,7 @@ int64_t MediaSourceMuxer::CalculatePts(int pFrameNumber)
 {
     int64_t tResult = 0;
 
-    tResult = mChunkNumber * 1000 / GetFrameRatePlayout(); // frame number * time between frames
+    tResult = mFrameNumber * 1000 / GetFrameRatePlayout(); // frame number * time between frames
 
     return tResult;
 }
@@ -1444,7 +1444,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                     {
                         case MEDIA_VIDEO:
                             {
-                                mChunkNumber++;
+                                mFrameNumber++;
                                 int64_t tTime3 = Time::GetTimeStamp();
                                 // ####################################################################
                                 // ### PREPARE YUV FRAME from SCALER
@@ -1458,10 +1458,10 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 #endif
 
                                 // calculate the packet's PTS value
-                                int64_t tPacketPts = CalculatePts(mChunkNumber);
+                                int64_t tPacketPts = CalculatePts(mFrameNumber);
 
-                                tYUVFrame->coded_picture_number = mChunkNumber;
-                                tYUVFrame->display_picture_number = mChunkNumber;
+                                tYUVFrame->coded_picture_number = mFrameNumber;
+                                tYUVFrame->display_picture_number = mFrameNumber;
                                 tYUVFrame->pts = tPacketPts;
 
                                 #ifdef MSM_DEBUG_PACKETS
@@ -1505,7 +1505,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                     tPacket->dts = tPacketPts;
 
                                     #ifdef MSM_DEBUG_PACKETS
-                                        LOG(LOG_VERBOSE, "Sending video packet: %5d to %2d sink(s):", mChunkNumber, mMediaSinks.size());
+                                        LOG(LOG_VERBOSE, "Sending video packet: %5d to %2d sink(s):", mFrameNumber, mMediaSinks.size());
                                         LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
                                         LOG(LOG_VERBOSE, "      ..flags: %d", tPacket->flags);
                                         LOG(LOG_VERBOSE, "      ..pts: %ld stream pts: %ld", tPacket->pts, mEncoderStream->pts);
@@ -1600,7 +1600,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
 										if (tEncodingResult > 0)
 										{
 											av_init_packet(tPacket);
-											mChunkNumber++;
+											mFrameNumber++;
 
 											// adapt pts value
 											if ((mCodecContext->coded_frame) && (mCodecContext->coded_frame->pts != 0))
@@ -1608,7 +1608,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
 											tPacket->flags |= AV_PKT_FLAG_KEY;
 
 			                                // calculate the packet's PTS value
-											int64_t tPacketPts = CalculatePts(mChunkNumber);
+											int64_t tPacketPts = CalculatePts(mFrameNumber);
 
 											// we only have one stream per audio stream
 											tPacket->stream_index = 0;
@@ -1616,10 +1616,9 @@ void* MediaSourceMuxer::Run(void* pArgs)
 											tPacket->size = tEncodingResult;
 											tPacket->pts = tPacketPts;
 											tPacket->dts = tPacketPts;
-				//                            tPacket->pos = av_gettime() - mStartPts;
 
 											#ifdef MSM_DEBUG_PACKETS
-												LOG(LOG_VERBOSE, "Sending audio packet: %5d to %2d sink(s):", mChunkNumber, mMediaSinks.size());
+												LOG(LOG_VERBOSE, "Sending audio packet: %5d to %2d sink(s):", mFrameNumber, mMediaSinks.size());
 												LOG(LOG_VERBOSE, "      ..pts: %ld", tPacket->pts);
 												LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket->dts);
 												LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
@@ -1756,7 +1755,7 @@ float MediaSourceMuxer::GetFrameBufferPreBufferingTime()
     if (mMediaSource != NULL)
         return mMediaSource->GetFrameBufferPreBufferingTime();
     else
-        return mDecoderPreBufferTime;
+        return mDecoderFramePreBufferTime;
 }
 
 float MediaSourceMuxer::GetFrameBufferTime()
@@ -1764,7 +1763,7 @@ float MediaSourceMuxer::GetFrameBufferTime()
     if (mMediaSource != NULL)
         return mMediaSource->GetFrameBufferTime();
     else
-        return mDecoderBufferTime;
+        return mDecoderFrameBufferTime;
 }
 
 int MediaSourceMuxer::GetFrameBufferCounter()
@@ -1772,7 +1771,7 @@ int MediaSourceMuxer::GetFrameBufferCounter()
     if (mMediaSource != NULL)
         return mMediaSource->GetFrameBufferCounter();
     else
-        return mDecoderBufferTime;
+        return mDecoderFrameBufferTime;
 }
 
 int MediaSourceMuxer::GetFrameBufferSize()
@@ -1780,7 +1779,7 @@ int MediaSourceMuxer::GetFrameBufferSize()
     if (mMediaSource != NULL)
         return mMediaSource->GetFrameBufferSize();
     else
-        return mDecoderBufferTime;
+        return mDecoderFrameBufferTime;
 }
 
 void MediaSourceMuxer::SetVideoGrabResolution(int pResX, int pResY)
@@ -1964,7 +1963,7 @@ bool MediaSourceMuxer::Reset(enum MediaType pMediaType)
     // unlock grabbing
     mGrabMutex.unlock();
 
-    mChunkNumber = 0;
+    mFrameNumber = 0;
 
     return tResult;
 }

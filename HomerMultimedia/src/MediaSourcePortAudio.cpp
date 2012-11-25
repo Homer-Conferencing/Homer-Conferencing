@@ -358,7 +358,7 @@ bool MediaSourcePortAudio::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     LOG(LOG_INFO,"    ..sample format: %d", paInt16);
     //LOG(LOG_INFO,"    ..sample buffer size: %d", mSampleBufferSize);
 
-    mChunkNumber = 0;
+    mFrameNumber = 0;
     mMediaType = MEDIA_AUDIO;
     mMediaSourceOpened = true;
     mHaveToAssignThreadName = true;
@@ -485,12 +485,12 @@ int MediaSourcePortAudio::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pD
     // log statistics about raw PCM audio data stream
     AnnouncePacket(pChunkSize);
 
-    mChunkNumber++;
+    mFrameNumber++;
 
     // acknowledge success
-    MarkGrabChunkSuccessful(mChunkNumber);
+    MarkGrabChunkSuccessful(mFrameNumber);
 
-    return mChunkNumber;
+    return mFrameNumber;
 }
 
 bool MediaSourcePortAudio::SupportsRecording()

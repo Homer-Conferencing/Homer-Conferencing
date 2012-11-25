@@ -378,7 +378,7 @@ protected:
     bool                mGrabbingStopped;
     bool                mRecording;
     std::string         mRecordingSaveFileName;
-    int                 mChunkNumber;
+    int                 mFrameNumber;
     int                 mChunkDropCounter;
     Mutex               mGrabMutex;
     enum MediaType      mMediaType;
@@ -416,9 +416,9 @@ protected:
     int64_t             mDecodedPFrames;
     int64_t             mDecodedBFrames;
     /* frame pre-buffering */
-    float				mDecoderBufferTime; // current pre-buffer length
-    float               mDecoderBufferTimeMax; // max. pre-buffer length
-    float               mDecoderPreBufferTime;
+    float				mDecoderFrameBufferTime; // current pre-buffer length
+    float               mDecoderFrameBufferTimeMax; // max. pre-buffer length
+    float               mDecoderFramePreBufferTime;
     /* live OSD marking */
     float               mMarkerRelX;
     float               mMarkerRelY;

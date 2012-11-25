@@ -327,8 +327,6 @@ void* VideoScaler::Run(void* pArgs)
                 HM_sws_scale(mScalerContext, tInputFrame->data, tInputFrame->linesize, 0, mSourceResY, tOutputFrame->data, tOutputFrame->linesize);
 				#ifdef VS_DEBUG_PACKETS
                 	LOG(LOG_VERBOSE, "..video scaling for %s finished", mName.c_str());
-				#endif
-                #ifdef MSM_DEBUG_TIMING
                     int64_t tTime2 = Time::GetTimeStamp();
                     LOG(LOG_VERBOSE, "SCALER-scaling video frame took %ld us", tTime2 - tTime);
                 #endif

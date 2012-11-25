@@ -56,8 +56,8 @@ using namespace Homer::Monitor;
 MediaSourceFile::MediaSourceFile(string pSourceFile, bool pGrabInRealTime):
     MediaSourceMem("FILE: " + pSourceFile, false)
 {
-    mDecoderBufferTimeMax = MSF_FRAME_INPUT_QUEUE_MAX_TIME;
-    mDecoderPreBufferTime = 0;
+    mDecoderFrameBufferTimeMax = MSF_FRAME_INPUT_QUEUE_MAX_TIME;
+    mDecoderFramePreBufferTime = 0;
     mSourceType = SOURCE_FILE;
     mDesiredDevice = pSourceFile;
     mGrabberProvidesRTGrabbing = pGrabInRealTime;

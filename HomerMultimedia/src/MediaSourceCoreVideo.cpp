@@ -249,12 +249,12 @@ int MediaSourceCoreVideo::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pD
     // log statistics about raw PCM audio data stream
 //    AnnouncePacket(pChunkSize);
 
-    mChunkNumber++;
+    mFrameNumber++;
 
     // acknowledge success
-    MarkGrabChunkSuccessful(mChunkNumber);
+    MarkGrabChunkSuccessful(mFrameNumber);
 
-    return mChunkNumber;
+    return mFrameNumber;
 }
 
 bool MediaSourceCoreVideo::SupportsRecording()

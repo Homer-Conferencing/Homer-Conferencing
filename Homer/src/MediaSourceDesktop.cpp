@@ -185,7 +185,7 @@ bool MediaSourceDesktop::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     InitFpsEmulator();
     mLastTimeGrabbed == QTime(0, 0, 0, 0);
     mSourceStartPts = 0;
-    mChunkNumber = 0;
+    mFrameNumber = 0;
     mMediaType = MEDIA_VIDEO;
     mMediaSourceOpened = true;
 
@@ -464,7 +464,7 @@ int MediaSourceDesktop::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDro
 
     AnnouncePacket(pChunkSize);
 
-    return ++mChunkNumber;
+    return ++mFrameNumber;
 }
 
 GrabResolutions MediaSourceDesktop::GetSupportedVideoGrabResolutions()

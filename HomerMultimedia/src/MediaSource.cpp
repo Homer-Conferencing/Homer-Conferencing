@@ -79,8 +79,8 @@ MediaSource::MediaSource(string pName):
     mDecodedPFrames = 0;
     mDecodedBFrames = 0;
     mSourceStartPts = 0;
-    mDecoderBufferTimeMax = 0;
-    mDecoderPreBufferTime = 0;
+    mDecoderFrameBufferTimeMax = 0;
+    mDecoderFramePreBufferTime = 0;
     mSourceType = SOURCE_ABSTRACT;
     mMarkerActivated = false;
     mMediaSourceOpened = false;
@@ -104,7 +104,7 @@ MediaSource::MediaSource(string pName):
     mRecorderRealTime = true;
     mLastGrabResultWasError = false;
     mNumberOfFrames = 0;
-    mChunkNumber = 0;
+    mFrameNumber = 0;
     mChunkDropCounter = 0;
     mInputAudioChannels = -1;
     mInputAudioSampleRate = -1;
@@ -923,17 +923,17 @@ int64_t MediaSource::DecodedBFrames()
 
 float MediaSource::GetFrameBufferPreBufferingTime()
 {
-    return mDecoderPreBufferTime;
+    return mDecoderFramePreBufferTime;
 }
 
 float MediaSource::GetFrameBufferTime()
 {
-	return mDecoderBufferTime;
+	return mDecoderFrameBufferTime;
 }
 
 float MediaSource::GetFrameBufferTimeMax()
 {
-    return mDecoderBufferTimeMax;
+    return mDecoderFrameBufferTimeMax;
 }
 
 int MediaSource::GetFrameBufferCounter()
@@ -1052,7 +1052,7 @@ bool MediaSource::Reset(enum MediaType pMediaType)
     // unlock grabbing
     mGrabMutex.unlock();
 
-    mChunkNumber = 0;
+    mFrameNumber = 0;
 
     return tResult;
 }
@@ -2197,7 +2197,7 @@ void MediaSource::RecordSamples(int16_t *pSourceSamples, int pSourceSamplesSize)
         if (tEncodingResult > 0)
         {
             av_init_packet(tPacket);
-            mChunkNumber++;
+            mFrameNumber++;
 
             // adapt pts value
             if ((mRecorderCodecContext->coded_frame) && (mRecorderCodecContext->coded_frame->pts != 0))
@@ -2687,8 +2687,8 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     //### initiate local variables
     //######################################################
     InitFpsEmulator();
-    mChunkNumber = 0;
-    mDecoderBufferTime = 0;
+    mFrameNumber = 0;
+    mDecoderFrameBufferTime = 0;
     mChunkDropCounter = 0;
     mLastGrabFailureReason = "";
     mLastGrabResultWasError = false;
@@ -2969,7 +2969,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 			mInputAudioChannels = mCodecContext->channels;
 			mInputAudioFormat = mCodecContext->sample_fmt;
 
-			mRealFrameRate = (float)44100 /* samples per second */ / 1024 /* samples per frame */;
+			mRealFrameRate = (float)mOutputAudioSampleRate /* samples per second */ / MEDIA_SOURCE_SAMPLES_PER_BUFFER /* samples per frame */;
 
 			break;
 

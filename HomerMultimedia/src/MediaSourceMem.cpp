@@ -69,8 +69,8 @@ using namespace Homer::Base;
 MediaSourceMem::MediaSourceMem(string pName, bool pRtpActivated):
     MediaSource(pName), RTP()
 {
-    mDecoderBufferTimeMax = MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME;
-    mDecoderPreBufferTime = MEDIA_SOURCE_MEM_PRE_BUFFER_TIME;
+    mDecoderFrameBufferTimeMax = MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME;
+    mDecoderFramePreBufferTime = MEDIA_SOURCE_MEM_PRE_BUFFER_TIME;
     mDecoderTargetFrameIndex = 0;
     mDecoderRecalibrateRTGrabbingAfterSeeking = false;
     mDecoderFlushBuffersAfterSeeking = false;
@@ -753,7 +753,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
             // EOF reached?
             if (mEOFReached)
             {
-                mChunkNumber++;
+                mFrameNumber++;
 
                 // unlock grabbing
                 mGrabMutex.unlock();
@@ -761,7 +761,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                 LOG(LOG_VERBOSE, "No %s frame in FIFO available and EOF marker is active", GetMediaTypeStr().c_str());
 
                 // acknowledge "success"
-                MarkGrabChunkSuccessful(mChunkNumber); // don't panic, it is only EOF
+                MarkGrabChunkSuccessful(mFrameNumber); // don't panic, it is only EOF
 
                 LOG(LOG_WARN, "Signaling EOF");
                 return GRAB_RES_EOF;
@@ -795,19 +795,17 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
             }
 
             ReadFrameOutputBuffer((char*)pChunkBuffer, pChunkSize, tCurrentFramePts);
-            #ifdef MSMEM_DEBUG_TIMING
+            #ifdef MSMEM_DEBUG_PACKETS
                 LOG(LOG_VERBOSE, "Remaining buffered frames: %d", tAvailableFrames);
             #endif
         }else
         {// decoder thread not started yet
-            #ifdef MSMEM_DEBUG_TIMING
-                LOG(LOG_WARN, "Decoder main loop not ready yet");
-            #endif
+            LOG(LOG_WARN, "Decoder main loop not ready yet");
             tShouldGrabNext = true;
         }
 
         // increase chunk number which will be the result of the grabbing call
-        mChunkNumber++;
+        mFrameNumber++;
 
         // did we read an empty frame?
         if (pChunkSize == 0)
@@ -816,14 +814,14 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
             mGrabMutex.unlock();
 
             // acknowledge "success"
-            MarkGrabChunkSuccessful(mChunkNumber); // don't panic, it is only EOF
+            MarkGrabChunkSuccessful(mFrameNumber); // don't panic, it is only EOF
 
             LOG(LOG_WARN, "Signaling invalid result");
             return GRAB_RES_INVALID;
         }
 
         #ifdef MSMEM_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "Grabbed chunk %d of size %d with pts %ldfrom decoder FIFO", mChunkNumber, pChunkSize, tCurrentFramePts);
+            LOG(LOG_VERBOSE, "Grabbed chunk %d of size %d with pts %ldfrom decoder FIFO", mFrameNumber, pChunkSize, tCurrentFramePts);
         #endif
 
         if ((mDecoderTargetFrameIndex != 0) && (mGrabberCurrentFrameIndex < mDecoderTargetFrameIndex))
@@ -890,9 +888,9 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
     }
 
     // acknowledge success
-    MarkGrabChunkSuccessful(mChunkNumber);
+    MarkGrabChunkSuccessful(mFrameNumber);
 
-    return mChunkNumber;
+    return mFrameNumber;
 }
 
 bool MediaSourceMem::InputIsPicture()
@@ -1094,7 +1092,7 @@ void* MediaSourceMem::Run(void* pArgs)
 
     while(mDecoderNeeded)
     {
-        #ifdef MSMEM_DEBUG_TIMING
+        #ifdef MSMEM_DEBUG_DECODER_STATE
             LOG(LOG_VERBOSE, "%s-decoder loop", GetMediaTypeStr().c_str());
         #endif
 
@@ -1368,7 +1366,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                 #endif
 
                                 // log lost packets: difference between currently received frame number and the number of locally processed frames
-                                SetLostPacketCount(tSourceFrame->coded_picture_number - mChunkNumber);
+                                SetLostPacketCount(tSourceFrame->coded_picture_number - mFrameNumber);
 
                                 #ifdef MSMEM_DEBUG_PACKETS
                                     LOG(LOG_VERBOSE, "Video frame %d decoded", tSourceFrame->coded_picture_number);
@@ -1905,24 +1903,13 @@ void MediaSourceMem::ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int6
 
 void MediaSourceMem::UpdateBufferTime()
 {
-    #ifdef MSMEM_DEBUG_TIMING
-        LOG(LOG_VERBOSE, "Updating pre-buffer time value");
-    #endif
+    //LOG(LOG_VERBOSE, "Updating pre-buffer time value");
 
-    float tBufferSize = mDecoderFifo->GetUsage();
+    float tBufferSize = 0;
+    if (mDecoderFifo != NULL)
+        tBufferSize = mDecoderFifo->GetUsage();
 
-    switch(mMediaType)
-    {
-        case MEDIA_VIDEO:
-            //LOG(LOG_VERBOSE, "Buffer usage after reading: %f", tBufferSize);
-            mDecoderBufferTime = tBufferSize / GetFrameRatePlayout();
-            break;
-        case MEDIA_AUDIO:
-            mDecoderBufferTime = tBufferSize * MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 */ / mOutputAudioSampleRate;
-            break;
-        default:
-            break;
-    }
+    mDecoderFrameBufferTime = tBufferSize / GetFrameRatePlayout();
 }
 
 void MediaSourceMem::CalibrateRTGrabbing()
@@ -1933,7 +1920,7 @@ void MediaSourceMem::CalibrateRTGrabbing()
     #ifdef MSMEM_DEBUG_CALIBRATION
         LOG(LOG_WARN, "Calibrating %s RT playback, old PTS start: %.2f", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing);
     #endif
-    mSourceStartTimeForRTGrabbing = av_gettime() - tRelativeTime  + mDecoderPreBufferTime * AV_TIME_BASE;
+    mSourceStartTimeForRTGrabbing = av_gettime() - tRelativeTime  + mDecoderFramePreBufferTime * AV_TIME_BASE;
     #ifdef MSMEM_DEBUG_CALIBRATION
         LOG(LOG_WARN, "Calibrating %s RT playback: new PTS start: %.2f, rel. frame index: %.2f, rel. time: %.2f ms", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing, tRelativeFrameIndex, (float)(tRelativeTime / 1000));
     #endif
@@ -1960,7 +1947,7 @@ void MediaSourceMem::WaitForRTGrabbing()
         if (tWaitingTimeInUSecs < 3000000)
             Thread::Suspend(tWaitingTimeInUSecs);
         else
-            LOG(LOG_ERROR, "Found unplausible time value of %.2f s (%.0f, %.0f), pre-buffer time: %.2f", tWaitingTimeInUSecs / 1000, tRelativeTimeIndexInUSecs, tCurrentRelativeTimeIndexInUSecs, mDecoderPreBufferTime);
+            LOG(LOG_ERROR, "Found in %s %s source an unplausible delay time of %.2f s (%.0f, %.0f), pre-buffer time: %.2f", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tWaitingTimeInUSecs / 1000, tRelativeTimeIndexInUSecs, tCurrentRelativeTimeIndexInUSecs, mDecoderFramePreBufferTime);
     }else
     {
         #ifdef MSMEM_DEBUG_TIMING
@@ -1980,10 +1967,10 @@ int MediaSourceMem::CalculateFrameBufferSize()
 	switch(GetMediaType())
 	{
 		case MEDIA_AUDIO:
-			tResult = rint(mDecoderBufferTimeMax * mRealFrameRate /* 44100 samples per second / 1024 samples per frame */);
+			tResult = rint(mDecoderFrameBufferTimeMax * mRealFrameRate /* 44100 samples per second / 1024 samples per frame */);
 			break;
 		case MEDIA_VIDEO:
-			tResult = rint(mDecoderBufferTimeMax * mRealFrameRate /* r_frame_rate.num / r_frame_rate.den from the AVStream */);
+			tResult = rint(mDecoderFrameBufferTimeMax * mRealFrameRate /* r_frame_rate.num / r_frame_rate.den from the AVStream */);
 			break;
 		default:
 			LOG(LOG_ERROR, "Unsupported media type");

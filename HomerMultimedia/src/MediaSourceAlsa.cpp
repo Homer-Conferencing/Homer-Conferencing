@@ -220,7 +220,7 @@ bool MediaSourceAlsa::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     LOG(LOG_INFO,"    ..sample format: %d", SND_PCM_FORMAT_S16_LE);
     LOG(LOG_INFO,"    ..sample buffer size: %d", mSampleBufferSize);
 
-    mChunkNumber = 0;
+    mFrameNumber = 0;
     mMediaSourceOpened = true;
 
     return true;
@@ -319,12 +319,12 @@ int MediaSourceAlsa::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
     // log statistics about raw PCM audio data stream
     AnnouncePacket(pChunkSize);
 
-    mChunkNumber++;
+    mFrameNumber++;
 
     // acknowledge success
-    MarkGrabChunkSuccessful(mChunkNumber);
+    MarkGrabChunkSuccessful(mFrameNumber);
 
-    return mChunkNumber;
+    return mFrameNumber;
 }
 
 bool MediaSourceAlsa::SupportsRecording()
