@@ -187,7 +187,6 @@ private:
     enum CodecID        mStreamCodecId;
     int                 mStreamMaxPacketSize;
     int                 mStreamQuality;
-    int                 mDesiredStreamBitRate;
     int                 mStreamBitRate;
     int 				mStreamMaxFps;
     int64_t				mStreamMaxFps_LastFrame_Timestamp;

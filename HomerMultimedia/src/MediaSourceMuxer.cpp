@@ -132,6 +132,7 @@ int MediaSourceMuxer::DistributePacket(void *pOpaque, uint8_t *pBuffer, int pBuf
     	    LOGEX(MediaSourceMuxer, LOG_WARN, "Ffmpeg %s packet of %d bytes is bigger than maximum payload size of %d bytes, RTP packetizer will fragment to solve this", tMuxer->GetMediaTypeStr().c_str(), pBufferSize, tMuxer->mStreamMaxPacketSize);
 	    }
     #endif
+
     tMuxer->RelayPacketToMediaSinks(tBuffer, (unsigned int)pBufferSize, tMuxer->mEncoderHasKeyFrame);
 
     return pBufferSize;
