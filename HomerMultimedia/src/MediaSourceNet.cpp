@@ -665,11 +665,11 @@ bool MediaSourceNet::CloseGrabDevice()
 {
     bool tResult = false;
 
-    LOG(LOG_VERBOSE, "Going to close");
+    LOG(LOG_VERBOSE, "Going to close %s stream from network", GetMediaTypeStr().c_str());
 
     tResult = MediaSourceMem::CloseGrabDevice();
 
-    LOG(LOG_VERBOSE, "...closed");
+    LOG(LOG_VERBOSE, "...%s stream from network closed", GetMediaTypeStr().c_str());
 
     return tResult;
 }
