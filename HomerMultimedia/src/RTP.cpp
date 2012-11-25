@@ -844,7 +844,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
     // for H261 use the internal RTP implementation
     //####################################################################
     if (mH261UseInternalEncoder)
-        return RtpCreateH261(pData, pDataSize);
+        return RtpCreateH261(pData, pDataSize, pPacketPts);
 
     // check for supported codecs
     if(!IsPayloadSupported(mRtpFormatContext->streams[0]->codec->codec_id))
@@ -1049,8 +1049,9 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
 }
 
 // HINT: ffmpeg lacks support for rtp encapsulation for h261  codec
-bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize)
+bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
 {
+    //TODO: use the packet pts and calculate timestamp based on 90 kHz clock
     if (!mEncoderOpened)
         return false;
 

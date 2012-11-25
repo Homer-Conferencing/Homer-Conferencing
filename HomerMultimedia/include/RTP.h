@@ -40,7 +40,7 @@ namespace Homer { namespace Multimedia {
 ///////////////////////////////////////////////////////////////////////////////
 
 // the following de/activates debugging of send RTP packets
-#define RTP_DEBUG_PACKET_ENCODER
+//#define RTP_DEBUG_PACKET_ENCODER
 
 // the following de/activates debugging of received RTP packets
 //#define RTP_DEBUG_PACKET_DECODER
@@ -119,7 +119,7 @@ private:
 
     /* internal RTP packetizer for h.261 */
     bool OpenRtpEncoderH261(std::string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream);
-    bool RtpCreateH261(char *&pData, unsigned int &pDataSize);
+    bool RtpCreateH261(char *&pData, unsigned int &pDataSize, int64_t pPacketPts);
 
     /* RTP packet stream */
     static int StoreRtpPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize);
