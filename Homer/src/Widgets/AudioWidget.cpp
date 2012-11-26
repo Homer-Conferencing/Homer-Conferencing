@@ -65,7 +65,7 @@ using namespace Homer::Monitor;
 ///////////////////////////////////////////////////////////////////////////////
 
 // how many audio buffers do we allow for audio playback?
-#define AUDIO_MAX_PLAYBACK_QUEUE                            3
+#define AUDIO_MAX_PLAYBACK_QUEUE                            0 // 0 means unlimited by audio widget but still limited by waveout
 
 // how many measurement steps do we use?
 #define SPS_MEASUREMENT_STEPS                           2 * 44
@@ -558,6 +558,9 @@ QStringList AudioWidget::GetAudioStatistic()
     QString tLine_Output = "";
     tLine_Output = "Playback: " + QString("%1").arg(AUDIO_OUTPUT_SAMPLE_RATE) + " Hz, 2 channels";
     int64_t tGaps = mAudioWorker->GetPlaybackGapsCounter();
+    int tPlaybackBuffers = mAudioWorker->GetPlaybackQueueUsage();
+    if (tPlaybackBuffers > 0)
+        tLine_Output += ", " + QString("%1").arg(tPlaybackBuffers) + "/" + QString("%1").arg(mAudioWorker->GetPlaybackQueueSize()) + " frames buffered";
     if (tGaps > 0)
         tLine_Output += " (" + QString("%1").arg(tGaps) + " gaps found)";
 
@@ -882,7 +885,7 @@ AudioWorkerThread::AudioWorkerThread(QString pName, MediaSource *pAudioSource, A
     LOG(LOG_VERBOSE, "..Creating audio worker");
     mStartPlaybackAsap = false;
     mStopPlaybackAsap = false;
-    mAudioOutMuted = false;
+    mAudioOutMuted = true;
     mPlaybackAvailable = false;
     mSourceAvailable = false;
     mUserAVDrift = 0;
@@ -979,6 +982,22 @@ int64_t AudioWorkerThread::GetPlaybackGapsCounter()
 {
     if (mWaveOut != NULL)
         return mWaveOut->GetPlaybackGapsCounter();
+    else
+        return 0;
+}
+
+int AudioWorkerThread::GetPlaybackQueueUsage()
+{
+    if (mWaveOut != NULL)
+        return mWaveOut->GetQueueUsage();
+    else
+        return 0;
+}
+
+int AudioWorkerThread::GetPlaybackQueueSize()
+{
+    if (mWaveOut != NULL)
+        return mWaveOut->GetQueueSize();
     else
         return 0;
 }
@@ -1397,7 +1416,8 @@ void AudioWorkerThread::run()
 			            LOG(LOG_VERBOSE, "Writing buffer at %p with size of %d bytes to audio output FIFO", mSamples[mSampleGrabIndex], tFrameSize);
 			        #endif
 			        mWaveOut->WriteChunk(mSamples[mSampleGrabIndex], tFrameSize);
-			        mWaveOut->LimitQueue(AUDIO_MAX_PLAYBACK_QUEUE);
+			        if (AUDIO_MAX_PLAYBACK_QUEUE > 0)
+			            mWaveOut->LimitQueue(AUDIO_MAX_PLAYBACK_QUEUE);
 			    }
 			}else
 			{
