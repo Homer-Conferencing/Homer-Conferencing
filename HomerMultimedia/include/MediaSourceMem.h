@@ -47,6 +47,9 @@ namespace Homer { namespace Multimedia {
 ///////////////////////////////////////////////////////////////////////////////
 
 // the following de/activates debugging of received packets
+//#define MSMEM_DEBUG_PACKET_RECEIVER
+//#define MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
+//#define MSMEM_DEBUG_VIDEO_FRAME_RECEIVER
 //#define MSMEM_DEBUG_PACKETS
 
 // de/activate output of RTCP sender reports
