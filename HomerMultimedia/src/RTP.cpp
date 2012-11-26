@@ -1192,9 +1192,7 @@ void RTP::AnnounceLostPackets(unsigned int pCount)
 
 void RTP::LogRtpHeader(RtpHeader *pRtpHeader)
 {
-    // convert from network to host byte order
-    for (int i = 0; i < 3; i++)
-        pRtpHeader->Data[i] = ntohl(pRtpHeader->Data[i]);
+    //HINT: assumes host byte order!
 
     LOGEX(RTP, LOG_VERBOSE, "################## RTP header ########################");
     LOGEX(RTP, LOG_VERBOSE, "Version: %d", pRtpHeader->Version);
@@ -1221,10 +1219,6 @@ void RTP::LogRtpHeader(RtpHeader *pRtpHeader)
     LOGEX(RTP, LOG_VERBOSE, "Payload type: %s(%d)", PayloadIdToCodec(pRtpHeader->PayloadType).c_str(), pRtpHeader->PayloadType);
     LOGEX(RTP, LOG_VERBOSE, "SequenceNumber: %u", pRtpHeader->SequenceNumber);
     LOGEX(RTP, LOG_VERBOSE, "Timestamp (abs.): %10u", pRtpHeader->Timestamp);
-
-    // convert from host to network byte order
-    for (int i = 0; i < 3; i++)
-        pRtpHeader->Data[i] = htonl(pRtpHeader->Data[i]);
 }
 
 int64_t RTP::GetTimestampFromRTP()
@@ -1256,7 +1250,8 @@ int64_t RTP::CalculateClockRateFactor()
         case CODEC_ID_AMR_NB:
         case CODEC_ID_AAC:
         case CODEC_ID_ADPCM_G722:
-                break; //TODO
+                tResult = 1;
+                break;
         case CODEC_ID_H261:
         case CODEC_ID_H263:
         case CODEC_ID_H263P:
@@ -1329,11 +1324,6 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
     // #############################################################
     RtpHeader* tRtpHeader = (RtpHeader*)pData;
 
-    #ifdef RTP_DEBUG_PACKET_DECODER
-        // print some verbose outputs
-        LogRtpHeader(tRtpHeader);
-    #endif
-
     // convert from network to host byte order
     for (int i = 0; i < 3; i++)
         tRtpHeader->Data[i] = ntohl(tRtpHeader->Data[i]);
@@ -1370,7 +1360,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
     // RTCP feedback packet within data stream: RFC4585
     // #############################################################
     if ((tRtpHeader->PayloadType >= 72) && (tRtpHeader->PayloadType <= 76))
-    {// rtcp intermediate packet for streaming feedback received
+    {// RTCP intermediate packet for streaming feedback received
         // RTCP in-stream feedback starts at the beginning of RTP header
         RtcpHeader* tRtcpHeader = (RtcpHeader*)tDataOriginal;
 
@@ -1379,7 +1369,6 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
             tRtpHeader->Data[i] = htonl(tRtpHeader->Data[i]);
 
         #ifdef RTP_DEBUG_PACKET_DECODER
-            LogRtpHeader(tRtpHeader);
             LogRtcpHeader(tRtcpHeader);
         #endif
 
@@ -1390,7 +1379,14 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
 
         // inform that is not a fragment which includes data for an audio/video decoder, this RTCP packet belongs to the RTP abstraction level
         return false;
+    }else
+    {// usual RTP packet
+        #ifdef RTP_DEBUG_PACKET_DECODER
+            // print some verbose outputs
+            LogRtpHeader(tRtpHeader);
+        #endif
     }
+
     // #############################################################
     // HEADER: rtp => parse and update internal state information
     // #############################################################

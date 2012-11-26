@@ -92,6 +92,8 @@ void RTCP::LogRtcpHeader(RtcpHeader *pRtcpHeader)
 
 bool RTCP::RtcpParse(char *&pData, int &pDataSize, int &pPackets, int &pOctets)
 {
+    //HINT: assumes network byte order!
+
     bool tResult = false;
     RtcpHeader* tRtcpHeader = (RtcpHeader*)pData;
 
