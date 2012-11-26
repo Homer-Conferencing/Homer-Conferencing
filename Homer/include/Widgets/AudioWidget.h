@@ -160,6 +160,8 @@ public:
     int GetVolume();
     bool IsPlaybackAvailable();
     int64_t GetPlaybackGapsCounter();
+    int GetPlaybackQueueUsage();
+    int GetPlaybackQueueSize();
 
 public slots:
     void SetVolume(int pValue);

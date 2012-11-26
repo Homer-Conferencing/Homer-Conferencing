@@ -247,6 +247,12 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
                         mAudioWidget->Init(mAudioSourceMuxer, pAudioMenu, mSessionName, CONF.GetVisibilityBroadcastAudio(), true);
                     setFeatures(QDockWidget::NoDockWidgetFeatures);
 
+                    // push-to-talk mode
+                    if (CONF.GetAudioActivationPushToTalk())
+                    {//PTT is active in config.
+                        mAudioWidget->GetWorker()->SetRelayActivation(false);
+                    }
+
                     // hide Homer logo
                     mLogoFrame->hide();
                     mTbSendAudio->hide();
@@ -266,6 +272,7 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
 					if (mVideoReceiveSocket != NULL)
 					{
 						mVideoSource = new MediaSourceNet(mVideoReceiveSocket, true);
+						mVideoSource->SetPreBufferingActivation(false);
 						mVideoSource->SetInputStreamPreferences(CONF.GetVideoCodec().toStdString());
 						mVideoWidgetFrame->hide();
 						mVideoWidget->Init(mMainWindow, this, mVideoSource, pVideoMenu, mSessionName);
@@ -274,6 +281,7 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
 					if (mAudioReceiveSocket != NULL)
 					{
 						mAudioSource = new MediaSourceNet(mAudioReceiveSocket, true);
+						mAudioSource->SetPreBufferingActivation(false);
 						mAudioSource->SetInputStreamPreferences(CONF.GetAudioCodec().toStdString());
 						mAudioWidget->Init(mAudioSource, pAudioMenu, mSessionName);
 					}else

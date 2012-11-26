@@ -184,6 +184,8 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceVideo()
                 delete tNetSource;
                 return NULL;
             }
+            tNetSource->SetPreBufferingActivation(mGrpPreBuffering->isChecked());
+            tNetSource->SetPreBufferingAutoRestartActivation(mCbRestartPreBuffering->isChecked());
             tNetSource->SetInputStreamPreferences(mCbCodecVideo->currentText().toStdString(), false);
             return tNetSource;
             break;
@@ -261,6 +263,8 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceAudio()
                 delete tNetSource;
                 return NULL;
             }
+            tNetSource->SetPreBufferingActivation(mGrpPreBuffering->isChecked());
+            tNetSource->SetPreBufferingAutoRestartActivation(mCbRestartPreBuffering->isChecked());
             tNetSource->SetInputStreamPreferences(mCbCodecAudio->currentText().toStdString(), false);
             return tNetSource;
             break;
