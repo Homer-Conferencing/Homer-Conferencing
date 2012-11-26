@@ -70,13 +70,7 @@ MediaSourceMem::MediaSourceMem(string pName, bool pRtpActivated):
     MediaSource(pName), RTP()
 {
     mDecoderFrameBufferTimeMax = MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME;
-    if (pRtpActivated)
-    {// we have RTP timestamps, use pre-buffering
-        mDecoderFramePreBufferTime = MEDIA_SOURCE_MEM_PRE_BUFFER_TIME;
-    }else
-    {// without RTP timestamps pre-buffering is not possible in a stable way
-        mDecoderFramePreBufferTime = 0;
-    }
+    mDecoderFramePreBufferTime = MEDIA_SOURCE_MEM_PRE_BUFFER_TIME;
     mDecoderTargetFrameIndex = 0;
     mDecoderRecalibrateRTGrabbingAfterSeeking = false;
     mDecoderFlushBuffersAfterSeeking = false;
@@ -152,7 +146,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
             tFragmentBufferSize = MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE; // maximum size of one single fragment of a frame packet
             // receive a fragment
             tMediaSourceMemInstance->ReadFragment(tFragmentData, tFragmentBufferSize);
-            #ifdef MSMEM_DEBUG_PACKETS
+            #ifdef MSMEM_DEBUG_PACKET_RECEIVER
                 LOGEX(MediaSourceMem, LOG_VERBOSE, "Got packet fragment of size %d at address %p", tFragmentBufferSize, tFragmentData);
             #endif
 //            for (unsigned int i = 0; i < 64; i++)
@@ -289,7 +283,7 @@ void MediaSourceMem::ReadFragment(char *pData, int &pDataSize)
     if (pDataSize > 0)
     {
         #ifdef MSMEM_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "Delivered fragment with number %5u at %p with size %5d towards decoder", (unsigned int)++mFragmentNumber, pData, pDataSize);
+            LOG(LOG_VERBOSE, "Read fragment with number %5u at %p with size %5d towards decoder", (unsigned int)++mFragmentNumber, pData, pDataSize);
         #endif
     }
 
@@ -775,7 +769,16 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
             {
                 if ((!mDecoderWaitForNextKeyFrame) && (!mDecoderWaitForNextKeyFramePackets))
                 {// okay, we want more output from the decoder thread
-                    LOG(LOG_WARN, "System too slow?, %s grabber detected a buffer underrun", GetMediaTypeStr().c_str());
+                    if (GetSourceType() == SOURCE_FILE)
+                    {// source is a file
+                        LOG(LOG_WARN, "System too slow?, %s grabber detected a buffer underrun", GetMediaTypeStr().c_str());
+                    }else
+                    {// source is memory/network
+                        if ((mDecoderFramePreBufferingAutoRestart) && (mDecoderFramePreBufferTime > 0))
+                        {// time to restart pre-buffering
+                            CalibrateRTGrabbing();
+                        }
+                    }
                 }else
                 {// we have to wait until the decoder thread has new data after we triggered a seeking process
                     // nothing to complain about
@@ -802,7 +805,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
 
             ReadFrameOutputBuffer((char*)pChunkBuffer, pChunkSize, tCurrentFramePts);
             #ifdef MSMEM_DEBUG_PACKETS
-                LOG(LOG_VERBOSE, "Remaining buffered frames: %d", tAvailableFrames);
+                LOG(LOG_VERBOSE, "Remaining buffered frames in decoder FIFO: %d", tAvailableFrames);
             #endif
         }else
         {// decoder thread not started yet
@@ -1206,6 +1209,9 @@ void* MediaSourceMem::Run(void* pArgs)
                             }else
                             {// derive the frame number from the RTP timestamp, which works independent from packet loss
                                 tCurPacketPts = CalculateFrameNumberFromRTP();
+                                #ifdef MSMEM_DEBUG_PRE_BUFFERING
+                                    LOG(LOG_VERBOSE, "Got from RTP data the frame number: %d", tCurPacketPts);
+                                #endif
                             }
 
                             // for seeking: is the currently read frame close to target frame index?
@@ -1247,6 +1253,11 @@ void* MediaSourceMem::Run(void* pArgs)
                                     #endif
                                 }
                             }
+                            // check if PTS value is continuous
+                            if (tCurPacketPts < mDecoderLastReadPts)
+                            {// current packet is older than the last packet
+                                LOG(LOG_WARN, "Found interleaved %s packets in %s source, non continuous PTS: %ld => %d", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), mDecoderLastReadPts, tCurPacketPts);
+                            }
                             mDecoderLastReadPts = tCurPacketPts;
                         }else
                         {
@@ -1274,7 +1285,7 @@ void* MediaSourceMem::Run(void* pArgs)
             // #########################################
             if (((tPacket->data != NULL) && (tPacket->size > 0)) || ((mDecoderSinglePictureGrabbed /* we already grabbed the single frame from the picture input */) && (mMediaType == MEDIA_VIDEO)))
             {
-                #ifdef MSMEM_DEBUG_PACKETS
+                #ifdef MSMEM_DEBUG_PACKET_RECEIVER
                     if ((tPacket->data != NULL) && (tPacket->size > 0))
                     {
                         LOG(LOG_VERBOSE, "New %s packet..", GetMediaTypeStr().c_str());
@@ -1339,7 +1350,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                 tFrameFinished = 0;
                                 tBytesDecoded = HM_avcodec_decode_video(mCodecContext, tSourceFrame, &tFrameFinished, tPacket);
 
-                                #ifdef MSMEM_DEBUG_PACKETS
+                                #ifdef MSMEM_DEBUG_VIDEO_FRAME_RECEIVER
                                     LOG(LOG_VERBOSE, "New video frame before PTS adaption..");
                                     LOG(LOG_VERBOSE, "      ..key frame: %d", tSourceFrame->key_frame);
                                     LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(tSourceFrame).c_str());
@@ -1480,7 +1491,7 @@ void* MediaSourceMem::Run(void* pArgs)
                             tSourceFrame->coded_picture_number = tCurFramePts;
                             tSourceFrame->display_picture_number = tCurFramePts;
 
-                            #ifdef MSMEM_DEBUG_PACKETS
+                            #ifdef MSMEM_DEBUG_VIDEO_FRAME_RECEIVER
                                 LOG(LOG_VERBOSE, "New video frame..");
                                 LOG(LOG_VERBOSE, "      ..key frame: %d", tSourceFrame->key_frame);
                                 LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(tSourceFrame).c_str());
@@ -1606,13 +1617,12 @@ void* MediaSourceMem::Run(void* pArgs)
                             // log statistics
                             AnnouncePacket(tPacket->size);
 
+                            int tOutoutAudioBytesPrSample = av_get_bytes_per_sample(mOutputAudioFormat);
+                            int tInputAudioBytesPrSample = av_get_bytes_per_sample(mInputAudioFormat);
+
                             //printf("DecodeFrame..\n");
                             // Decode the next chunk of data
                             int tOutputBufferSize = tChunkBufferSize;
-                            #ifdef MSMEM_DEBUG_PACKETS
-                                LOG(LOG_VERBOSE, "Decoding audio samples into buffer of size: %d", tOutputBufferSize);
-                            #endif
-
                             int tBytesDecoded = 0;
 
                             if (mAudioResampleContext != NULL)
@@ -1626,22 +1636,23 @@ void* MediaSourceMem::Run(void* pArgs)
                             }
 
 
-                            #ifdef MSMEM_DEBUG_PACKETS
+                            #ifdef MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
                                 LOG(LOG_VERBOSE, "New audio frame..");
                                 LOG(LOG_VERBOSE, "      ..samples: %d", tOutputBufferSize);
-                                LOG(LOG_VERBOSE, "      ..size: %d bytes", tOutputBufferSize * 2 /* 16 bit per sample */);
+                                LOG(LOG_VERBOSE, "      ..size: %d bytes", tOutputBufferSize * tOutoutAudioBytesPrSample);
                             #endif
 
                             if (mAudioResampleContext != NULL)
                             {// audio resampling needed: we have to insert an intermediate step, which resamples the audio chunk
+
                                 if(tOutputBufferSize > 0)
                                 {
                                     // ############################
                                     // ### RESAMPLE FRAME (CONVERT)
                                     // ############################
                                     //HINT: we always assume 16 bit samples
-                                    int tResampledBytes = (2 /*16 signed char*/ * mOutputAudioChannels) * audio_resample(mAudioResampleContext, (short*)tChunkBuffer, (short*)mResampleBuffer, tOutputBufferSize / (2 * mInputAudioChannels));
-                                    #ifdef MSMEM_DEBUG_PACKETS
+                                    int tResampledBytes = (tOutoutAudioBytesPrSample * mOutputAudioChannels) * audio_resample(mAudioResampleContext, (short*)tChunkBuffer, (short*)mResampleBuffer, tOutputBufferSize / (tInputAudioBytesPrSample * mInputAudioChannels));
+                                    #ifdef MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
                                         LOG(LOG_VERBOSE, "Have resampled %d bytes of sample rate %dHz and %d channels to %d bytes of %d Hz sample rate and %d channels", tOutputBufferSize, mCodecContext->sample_rate, mCodecContext->channels, tResampledBytes, mOutputAudioSampleRate, mOutputAudioChannels);
                                     #endif
                                     if(tResampledBytes > 0)
@@ -1714,12 +1725,11 @@ void* MediaSourceMem::Run(void* pArgs)
                                     // add new chunk to FIFO
                                     if (tCurrentChunkSize <= mDecoderFifo->GetEntrySize())
                                     {
-                                        #ifdef MSMEM_DEBUG_PACKETS
-                                            LOG(LOG_VERBOSE, "Writing %d %s bytes at %p to output FIFO with PTS %ld, remaining audio data: %d bytes", tCurrentChunkSize, GetMediaTypeStr().c_str(), tChunkBuffer, tCurFramePts,av_fifo_size(tSampleFifo));
+                                        #ifdef MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
+                                            LOG(LOG_VERBOSE, "Writing %d %s bytes at %p to output FIFO with PTS %ld, remaining audio data: %d bytes", tCurrentChunkSize, GetMediaTypeStr().c_str(), tChunkBuffer, tCurFramePts, av_fifo_size(tSampleFifo));
                                         #endif
-                                        tCurFramePts++;
                                         WriteFrameOutputBuffer((char*)tChunkBuffer, tCurrentChunkSize, tCurFramePts);
-                                        #ifdef MSMEM_DEBUG_PACKETS
+                                        #ifdef MSMEM_DEBUG_DECODER_STATE
                                             LOG(LOG_VERBOSE, "Successful audio buffer loop");
                                         #endif
                                     }else
