@@ -61,10 +61,10 @@ using namespace std;
 using namespace Homer::Conference;
 using namespace Homer::Monitor;
 
-// support video files
+// for debugging purposes: support video files
 #define MEDIA_SOURCE_GRABBER_VIDEO_FILE
 
-// support audio files
+// for debugging purposes: support audio files
 #define MEDIA_SOURCE_GRABBER_AUDIO_FILE
 
 ///////////////////////////////////////////////////////////////////////////////
