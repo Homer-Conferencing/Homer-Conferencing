@@ -37,6 +37,7 @@ extern "C" {
 #include <libavfilter/avfilter.h>
 #include <libavformat/avformat.h>
 #include <libavformat/avio.h>
+#include <libavutil/audioconvert.h>
 #include <libavutil/avstring.h>
 #include <libavutil/avutil.h>
 #include <libavutil/dict.h>

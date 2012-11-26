@@ -2046,21 +2046,7 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
     #ifdef MS_DEBUG_PACKETS
         LOG(LOG_VERBOSE, "Recorder source frame..");
         LOG(LOG_VERBOSE, "      ..key frame: %d", pSourceFrame->key_frame);
-        switch(pSourceFrame->pict_type)
-        {
-                case AV_PICTURE_TYPE_I:
-                    LOG(LOG_VERBOSE, "      ..picture type: i-frame");
-                    break;
-                case AV_PICTURE_TYPE_P:
-                    LOG(LOG_VERBOSE, "      ..picture type: p-frame");
-                    break;
-                case AV_PICTURE_TYPE_B:
-                    LOG(LOG_VERBOSE, "      ..picture type: b-frame");
-                    break;
-                default:
-                    LOG(LOG_VERBOSE, "      ..picture type: %d", pSourceFrame->pict_type);
-                    break;
-        }
+        LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(pSourceFrame).c_str());
         LOG(LOG_VERBOSE, "      ..pts: %ld", pSourceFrame->pts);
         LOG(LOG_VERBOSE, "      ..coded pic number: %d", pSourceFrame->coded_picture_number);
         LOG(LOG_VERBOSE, "      ..display pic number: %d", pSourceFrame->display_picture_number);
@@ -2074,21 +2060,7 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
     #ifdef MS_DEBUG_PACKETS
         LOG(LOG_VERBOSE, "Recording video frame..");
         LOG(LOG_VERBOSE, "      ..key frame: %d", mRecorderFinalFrame->key_frame);
-        switch(mRecorderFinalFrame->pict_type)
-        {
-                case AV_PICTURE_TYPE_I:
-                    LOG(LOG_VERBOSE, "      ..picture type: i-frame");
-                    break;
-                case AV_PICTURE_TYPE_P:
-                    LOG(LOG_VERBOSE, "      ..picture type: p-frame");
-                    break;
-                case AV_PICTURE_TYPE_B:
-                    LOG(LOG_VERBOSE, "      ..picture type: b-frame");
-                    break;
-                default:
-                    LOG(LOG_VERBOSE, "      ..picture type: %d", mRecorderFinalFrame->pict_type);
-                    break;
-        }
+        LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(mRecorderFinalFrame).c_str());
         LOG(LOG_VERBOSE, "      ..pts: %ld", mRecorderFinalFrame->pts);
         LOG(LOG_VERBOSE, "      ..coded pic number: %d", mRecorderFinalFrame->coded_picture_number);
         LOG(LOG_VERBOSE, "      ..display pic number: %d", mRecorderFinalFrame->display_picture_number);
@@ -2648,6 +2620,8 @@ int64_t FilterPts(int64_t pValue)
 
 void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
 {
+    char tChannelLayoutStr[512];
+
     //######################################################
     //### give some verbose output
     //######################################################
@@ -2688,8 +2662,9 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
             LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..pixel format: %d", (int)mCodecContext->pix_fmt);
             break;
         case MEDIA_AUDIO:
+            av_get_channel_layout_string(tChannelLayoutStr, 512, mCodecContext->channels, mCodecContext->channel_layout);
             LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..sample rate: %d", mCodecContext->sample_rate);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..channels: %d", mCodecContext->channels);
+            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..channels: %d [layout: %s]", mCodecContext->channels, tChannelLayoutStr);
             LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..sample format: %s", av_get_sample_fmt_name(mCodecContext->sample_fmt));
             break;
         default:
