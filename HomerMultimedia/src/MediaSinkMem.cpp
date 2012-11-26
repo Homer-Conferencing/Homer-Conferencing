@@ -52,6 +52,7 @@ using namespace Homer::Monitor;
 MediaSinkMem::MediaSinkMem(string pMediaId, enum MediaSinkType pType, bool pRtpActivated):
     MediaSink(pType), RTP()
 {
+    mLastPacketPts = 0;
     mMediaId = pMediaId;
 	mIncomingAVStream = NULL;
 	mIncomingAVStreamCodecID = CODEC_ID_NONE;
@@ -117,7 +118,9 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
         //### calculate the import PTS value
         //###################################
         // the PTS value is used within the RTP packetizer to calculate the resulting timestamp value for the RTP header
-        float tPacketPts = (float)pStream->pts.val + pStream->pts.num / pStream->pts.den; // result = val + num / den
+        int64_t tPacketPts = (float)pStream->pts.val + pStream->pts.num / pStream->pts.den; // result = val + num / den
+        if (tPacketPts < mLastPacketPts)
+            LOG(LOG_ERROR, "Current packet pts (%d) from A/V encoder is lower than last one (%ld)", tPacketPts, mLastPacketPts);
 
         //####################################################################
         // check if RTP encoder is valid for the current stream
@@ -184,8 +187,8 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
 //            if (pPacketSize >= i)
 //                LOG(LOG_VERBOSE, "FRAME data (%2u): %02hx(%3d)", i, pPacketData[i] & 0xFF, pPacketData[i] & 0xFF);
 
-        #ifdef MSIM_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "Encapsulating codec packet of size %d at memory position %p with pts: %.2f", pPacketSize, pPacketData, tPacketPts);
+        #ifdef MSM_DEBUG_PACKET_DISTRIBUTION
+            LOG(LOG_VERBOSE, "Encapsulating codec packet of size %d at memory position %p with pts: %ld", pPacketSize, pPacketData, tPacketPts);
         #endif
         int64_t tTime = Time::GetTimeStamp();
         bool tRtpCreationSucceed = RtpCreate(pPacketData, pPacketSize, (int64_t)tPacketPts);
