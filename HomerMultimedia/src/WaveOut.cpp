@@ -210,6 +210,14 @@ int WaveOut::GetQueueUsage()
         return 0;
 }
 
+int WaveOut::GetQueueSize()
+{
+    if (mPlaybackFifo != NULL)
+        return mPlaybackFifo->GetSize();
+    else
+        return 0;
+}
+
 void WaveOut::ClearQueue()
 {
     if (mPlaybackFifo != NULL)
@@ -351,7 +359,7 @@ bool WaveOut::WriteChunk(void* pChunkBuffer, int pChunkSize)
         LOG(LOG_VERBOSE, "Got %d samples for audio output stream", pChunkSize / 4);
     #endif
 
-    if (pChunkSize / 4 != MEDIA_SOURCE_SAMPLES_PER_BUFFER)
+    if (pChunkSize / (2 /* 16 bits per sample */ * mAudioChannels) != MEDIA_SOURCE_SAMPLES_PER_BUFFER)
     {
         #ifdef WOPA_DEBUG_PACKETS
             LOG(LOG_VERBOSE, "Will use FIFO because input chunk has wrong size, need %d samples per chunk buffer", MEDIA_SOURCE_SAMPLES_PER_BUFFER);
@@ -375,7 +383,7 @@ bool WaveOut::WriteChunk(void* pChunkBuffer, int pChunkSize)
             HM_av_fifo_generic_read(mSampleFifo, (void*)tAudioBuffer, tAudioBufferSize);
 
             #ifdef WOPA_DEBUG_PACKETS
-                LOG(LOG_VERBOSE, "Writing %d samples to audio output stream", tAudioBufferSize / 4);
+                LOG(LOG_VERBOSE, "Writing %d samples to audio output stream", tAudioBufferSize / (2 /* 16 bits per sample */ * mAudioChannels));
             #endif
 
             DoWriteChunk((char*)tAudioBuffer, tAudioBufferSize);
@@ -386,7 +394,7 @@ bool WaveOut::WriteChunk(void* pChunkBuffer, int pChunkSize)
     }else
     {
         #ifdef WOPA_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "Writing %d samples to audio output stream", pChunkSize / 4);
+            LOG(LOG_VERBOSE, "Writing %d samples to audio output stream", pChunkSize / (2 /* 16 bits per sample */ * mAudioChannels));
         #endif
 
             DoWriteChunk((char*)pChunkBuffer, pChunkSize);

@@ -64,6 +64,7 @@ public:
 
     /* playback queue */
     virtual int GetQueueUsage();
+    virtual int GetQueueSize();
     virtual void ClearQueue();
     virtual void LimitQueue(int pNewSize);
     virtual int64_t GetPlaybackGapsCounter();
