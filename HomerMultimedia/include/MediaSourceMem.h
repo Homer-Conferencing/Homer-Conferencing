@@ -167,7 +167,7 @@ protected:
     bool                mDecoderUsesPTSFromInputPackets;
     int                 mDecoderTargetResX;
     int                 mDecoderTargetResY;
-    bool                mDecoderNeeded;
+    bool                mDecoderNeeded; // also used to signal that the decoder thread has finished the init. process
     int64_t             mDecoderLastReadPts;
     Condition           mDecoderNeedWorkCondition;
     Mutex               mDecoderNeedWorkConditionMutex;

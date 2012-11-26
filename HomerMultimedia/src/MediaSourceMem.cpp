@@ -929,17 +929,20 @@ void MediaSourceMem::StartDecoder()
 
     mDecoderNeeded = false;
 
-    // start decoder main loop
-    StartThread();
-
-    int tLoops = 0;
-
-    // wait until thread is running
-    while (!IsRunning())
+    if (!IsRunning())
     {
-        if (tLoops % 10 == 0)
-            LOG(LOG_VERBOSE, "Waiting for start of %s decoding thread, loop count: %d", GetMediaTypeStr().c_str(), ++tLoops);
-        Thread::Suspend(100);
+        // start decoder main loop
+        StartThread();
+
+        int tLoops = 0;
+
+        // wait until thread is running
+        while ((!IsRunning() /* wait until thread is started */) || (!mDecoderNeeded /* wait until thread has finished the init. process */))
+        {
+            if (tLoops % 10 == 0)
+                LOG(LOG_VERBOSE, "Waiting for start of %s decoding thread, loop count: %d", GetMediaTypeStr().c_str(), ++tLoops);
+            Thread::Suspend(100);
+        }
     }
 }
 
@@ -1095,6 +1098,7 @@ void* MediaSourceMem::Run(void* pArgs)
     // reset last PTS
     mDecoderLastReadPts = 0;
 
+    // signal that decoder thread has finished init.
     mDecoderNeeded = true;
 
     LOG(LOG_WARN, "================ Entering main %s decoding loop for %s media source", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
