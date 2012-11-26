@@ -195,11 +195,20 @@ MediaSinkNet::~MediaSinkNet()
 
 void MediaSinkNet::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AVStream *pStream, bool pIsKeyFrame)
 {
+    int tNewMaxNetworkPacketSize = -1;
+
     // save maximum network packet size to use it later within SendPacket() function
-    if ((mMaxNetworkPacketSize == 0) && (pStream->codec->codec_id == CODEC_ID_H261))
-        mMaxNetworkPacketSize = RTP::GetH261PayloadSizeMax() + RTP_HEADER_SIZE + 4 /* H.261 rtp payload header */;
+    if (pStream->codec->codec_id == CODEC_ID_H261)
+        tNewMaxNetworkPacketSize = RTP::GetH261PayloadSizeMax() + RTP_HEADER_SIZE + 4 /* H.261 rtp payload header */;
     else
-        mMaxNetworkPacketSize = pStream->codec->rtp_payload_size;
+        tNewMaxNetworkPacketSize = pStream->codec->rtp_payload_size;
+
+    // update max. network packet size
+    if (mMaxNetworkPacketSize != tNewMaxNetworkPacketSize)
+    {
+        LOG(LOG_WARN, "Setting max. network packet size to: %d for codec: %s", tNewMaxNetworkPacketSize, avcodec_get_name(pStream->codec->codec_id));
+        mMaxNetworkPacketSize = tNewMaxNetworkPacketSize;
+    }
 
     // call ProcessPacket from mem based media sink
     MediaSinkMem::ProcessPacket(pPacketData, pPacketSize, pStream, pIsKeyFrame);
@@ -226,6 +235,9 @@ void MediaSinkNet::WriteFragment(char* pData, unsigned int pSize)
         MediaSinkMem::WriteFragment(pData, pSize);
     }else
     {// RTP inactive
+        //#ifdef MSIN_DEBUG_PACKETS
+            LOG(LOG_VERBOSE, "Sending a fragment with max. network packet size: %d", mMaxNetworkPacketSize);
+        //#endif
         // HINT: we limit packet size to mMaxNetworkPacketSize if RTP is inactive
         int tFragmentCount = 1;
         tFragmentCount = (pSize + mMaxNetworkPacketSize -1) / mMaxNetworkPacketSize;
