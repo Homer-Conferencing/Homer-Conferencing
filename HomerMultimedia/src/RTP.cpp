@@ -400,6 +400,7 @@ RTP::RTP()
     mIntermediateFragment = 0;
     mPacketStatistic = NULL;
     mPayloadId = 0;
+    mRtpFormatContext = NULL;
     mEncoderOpened = false;
     mH261UseInternalEncoder = false;
     mRtpPacketStream = NULL;
@@ -444,7 +445,6 @@ bool RTP::OpenRtpEncoderH261(string pTargetHost, unsigned int pTargetPort, AVStr
     LOG(LOG_INFO, "Opened...");
     LOG(LOG_INFO, "    ..rtp target: %s:%u", pTargetHost.c_str(), pTargetPort);
     LOG(LOG_INFO, "    ..rtp header size: %d", RTP_HEADER_SIZE);
-    LOG(LOG_INFO, "    ..rtp TIMESTAMP: %d", (int)tTimestamp);
     LOG(LOG_INFO, "    ..rtp SRC: %u", mLocalSourceIdentifier);
     LOG(LOG_INFO, "  Wrapping following codec...");
     LOG(LOG_INFO, "    ..codec name: %s", pInnerStream->codec->codec->name);
@@ -841,6 +841,15 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
     if (pDataSize <= 0)
         return false;
 
+    //####################################################################
+    // for H261 use the internal RTP implementation
+    //####################################################################
+    if (mH261UseInternalEncoder)
+        return RtpCreateH261(pData, pDataSize, pPacketPts);
+
+    //####################################################################
+    // for all non H261 codec use the ffmpeg RTP implementation
+    //####################################################################
     if (mRtpFormatContext)
     {
         if (mRtpFormatContext->streams[0])
@@ -852,12 +861,6 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
             }
         }
     }
-
-    //####################################################################
-    // for H261 use the internal RTP implementation
-    //####################################################################
-    if (mH261UseInternalEncoder)
-        return RtpCreateH261(pData, pDataSize, pPacketPts);
 
     // check for supported codecs
     if(!IsPayloadSupported(mStreamCodecID))
@@ -1129,7 +1132,7 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize, int64_t pPacketPt
         tRtpHeader->Marked = (tPacketIndex == tPacketCount - 1)?1:0; // 1 = last fragment, 0 = intermediate fragment
         tRtpHeader->PayloadType = 31; // 31 = h261
         tRtpHeader->SequenceNumber = ++mH261LocalSequenceNumber; // monotonous growing
-        tRtpHeader->Timestamp = tTimestamp; // use linux timestamp
+        tRtpHeader->Timestamp = pPacketPts;
         tRtpHeader->Ssrc = mLocalSourceIdentifier; // use the initially computed unique ID
 
         // convert from host to network byte order
@@ -1250,19 +1253,18 @@ int64_t RTP::CalculateClockRateFactor()
         case CODEC_ID_AMR_NB:
         case CODEC_ID_AAC:
         case CODEC_ID_ADPCM_G722:
+        case CODEC_ID_H261:
+        case CODEC_ID_THEORA:
                 tResult = 1;
                 break;
-        case CODEC_ID_H261:
         case CODEC_ID_H263:
         case CODEC_ID_H263P:
         case CODEC_ID_H264:
         case CODEC_ID_MPEG1VIDEO:
         case CODEC_ID_MPEG2VIDEO:
-        case CODEC_ID_MPEG4:
+        case CODEC_ID_MPEG4: //TODO: mpeg 4 is buggy?
                 tResult = 90 /* use 90 kHz time base instead of 1 kHz like defined by RTP rfc */;
                 break;
-        case CODEC_ID_THEORA:
-                break; //TODO: mpeg?
         case CODEC_ID_VP8:
                 break; //TODO: mpeg?
         default:
