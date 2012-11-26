@@ -1207,20 +1207,15 @@ void RTP::LogRtpHeader(RtpHeader *pRtpHeader)
         LOGEX(RTP, LOG_VERBOSE, "Extension: true");
     else
         LOGEX(RTP, LOG_VERBOSE, "Extension: false");
-    LOGEX(RTP, LOG_VERBOSE, "SSRC: %u", pRtpHeader->Ssrc);
-    LOGEX(RTP, LOG_VERBOSE, "CSRC count: %u", pRtpHeader->CsrcCount);
+    LOGEX(RTP, LOG_VERBOSE, "SSRC            : %u", pRtpHeader->Ssrc);
+    LOGEX(RTP, LOG_VERBOSE, "CSRC count      : %u", pRtpHeader->CsrcCount);
     // HINT: after converting from host to network byte order the original value within the RTP header can't be read anymore
-    switch(pRtpHeader->Marked)
-    {
-        case 0:
-                LOGEX(RTP, LOG_VERBOSE, "Marked: no");
-                break;
-        case 1:
-                LOGEX(RTP, LOG_VERBOSE, "Marked: yes");
-                break;
-    }
-    LOGEX(RTP, LOG_VERBOSE, "Payload type: %s(%d)", PayloadIdToCodec(pRtpHeader->PayloadType).c_str(), pRtpHeader->PayloadType);
-    LOGEX(RTP, LOG_VERBOSE, "SequenceNumber: %u", pRtpHeader->SequenceNumber);
+    if (pRtpHeader->Marked)
+        LOGEX(RTP, LOG_VERBOSE, "Marked: yes");
+    else
+        LOGEX(RTP, LOG_VERBOSE, "Marked: no");
+    LOGEX(RTP, LOG_VERBOSE, "Payload type    : %s(%d)", PayloadIdToCodec(pRtpHeader->PayloadType).c_str(), pRtpHeader->PayloadType);
+    LOGEX(RTP, LOG_VERBOSE, "SequenceNumber  : %u", pRtpHeader->SequenceNumber);
     LOGEX(RTP, LOG_VERBOSE, "Timestamp (abs.): %10u", pRtpHeader->Timestamp);
 }
 
@@ -1370,7 +1365,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
         for (int i = 0; i < 3; i++)
             tRtpHeader->Data[i] = htonl(tRtpHeader->Data[i]);
 
-        #ifdef RTP_DEBUG_PACKET_DECODER
+        #ifdef RTCP_DEBUG_PACKETS
             LogRtcpHeader(tRtcpHeader);
         #endif
 

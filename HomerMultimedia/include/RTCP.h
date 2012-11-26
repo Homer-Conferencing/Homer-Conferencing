@@ -47,27 +47,25 @@ namespace Homer { namespace Multimedia {
 union RtcpHeader{
     struct{ // send via separate port
         unsigned short int Length;          /* length of report */
-        unsigned int ReportType:8;          /* report type */
+        unsigned int Type:8;                /* report type */
         unsigned int RC:5;                  /* report counter */
         unsigned int Padding:1;             /* padding flag */
         unsigned int Version:2;             /* protocol version */
-
         unsigned int Ssrc;                  /* synchronization source */
-
-        unsigned int dummy[5];              /*  */
-    } __attribute__((__packed__))RtpBased;
+        unsigned int Data[5];              /*  */
+    } __attribute__((__packed__))General;
     struct{ // send within media stream as intermediate packets
         unsigned short int Length;          /* length of report */
-        unsigned int PlType:8;              /* Payload type (PT) */
+        unsigned int Type:8;                /* Payload type (PT) */
         unsigned int Fmt:5;                 /* Feedback message type (FMT) */
         unsigned int Padding:1;             /* padding flag */
         unsigned int Version:2;             /* protocol version */
-
-        unsigned int Timestamp;             /* timestamp */
-
+        unsigned int TimestampHigh;         /* high part of timestamp */
         unsigned int Ssrc;                  /* synchronization source */
-
-        unsigned int Data[4];
+        unsigned int TimestampLow;          /* low part of timestamp */
+        unsigned int RtpTimestamp;          /* RTP timestamp */
+        unsigned int Packets;               /* packet count */
+        unsigned int Octets;                /* byte count */
     } __attribute__((__packed__))Feedback;
     uint32_t Data[7];
 };
