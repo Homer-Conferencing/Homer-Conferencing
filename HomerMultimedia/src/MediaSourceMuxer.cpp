@@ -790,6 +790,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
 
     }
 	mCodecContext->channels = mOutputAudioChannels;
+	mCodecContext->channel_layout = av_get_default_channel_layout(mOutputAudioChannels);
     mCodecContext->sample_rate = mOutputAudioSampleRate;
     mCodecContext->qmin = 2; // 2
     mCodecContext->qmax = 9;/*2 +(100 - mAudioStreamQuality) / 4; // 31*/
