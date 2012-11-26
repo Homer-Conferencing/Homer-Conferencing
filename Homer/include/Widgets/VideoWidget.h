@@ -78,18 +78,6 @@ class ParticipantWidget;
 
 #define FRAME_BUFFER_SIZE              4
 
-enum AspectRatio{
-	ASPECT_RATIO_ORIGINAL = 0,
-	ASPECT_RATIO_WINDOW,
-	ASPECT_RATIO_1x1, //1
-	ASPECT_RATIO_4x3, //1.33
-	ASPECT_RATIO_5x4, //1.25
-	ASPECT_RATIO_16x9, //1.77
-	ASPECT_RATIO_16x10 //1.6
-};
-
-///////////////////////////////////////////////////////////////////////////////
-
 class VideoWorkerThread;
 
 class VideoWidget:

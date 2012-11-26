@@ -100,11 +100,36 @@ using namespace Homer::Monitor;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+struct AspectRatioEntry{
+    float ratio;
+    string name;
+};
+
+#define VIDEO_WIDGET_SUPPORTED_ASPECT_RATIOS            10
+#define ASPECT_RATIO_INDEX_ORIGINAL                     0
+#define ASPECT_RATIO_INDEX_WINDOW                       (VIDEO_WIDGET_SUPPORTED_ASPECT_RATIOS -1)
+AspectRatioEntry SupportedAspectRatios[VIDEO_WIDGET_SUPPORTED_ASPECT_RATIOS] = {
+        {    0, "Original" },
+        {    1, "   1 : 1" },
+        { 1.33, "   4 : 3" },
+        { 1.25, "   5 : 4" },
+        { 1.77, "  16 : 9" },
+        {  1.6, "  16 : 10"},
+        { 2.21, "2.21 : 1" },
+        { 2.35, "2.35 : 1" },
+        { 2.39, "2.39 : 1" },
+        {   -1, "Window"   }
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
 #define VIDEO_EVENT_NEW_FRAME                   (QEvent::User + 1001)
 #define VIDEO_EVENT_SOURCE_OPEN_ERROR           (QEvent::User + 1002)
 #define VIDEO_EVENT_NEW_SOURCE                  (QEvent::User + 1003)
 #define VIDEO_EVENT_NEW_SOURCE_RESOLUTION       (QEvent::User + 1004)
 #define VIDEO_EVENT_NEW_SEEKING                 (QEvent::User + 1005)
+
+///////////////////////////////////////////////////////////////////////////////
 
 class VideoEvent:
     public QEvent
@@ -150,7 +175,7 @@ VideoWidget::VideoWidget(QWidget* pParent):
     mShowLiveStats = false;
     mRecorderStarted = false;
     mVideoPaused = false;
-    mAspectRatio = ASPECT_RATIO_ORIGINAL;
+    mAspectRatio = ASPECT_RATIO_INDEX_ORIGINAL;
     mVideoMirroredHorizontal = false;
     mVideoMirroredVertical = false;
     mCurrentApplicationFocusedWidget = NULL;
@@ -371,55 +396,15 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             //### "Keep aspect ratio"
             //###############################################################################
 
-            tAction = tAspectRatioMenu->addAction("Original");
-            tAction->setCheckable(true);
-            if (mAspectRatio == ASPECT_RATIO_ORIGINAL)
-                tAction->setChecked(true);
-            else
-                tAction->setChecked(false);
-
-            tAction = tAspectRatioMenu->addAction(" 1 : 1 ");
-            tAction->setCheckable(true);
-            if (mAspectRatio == ASPECT_RATIO_1x1)
-                tAction->setChecked(true);
-            else
-                tAction->setChecked(false);
-
-            tAction = tAspectRatioMenu->addAction(" 4 : 3 ");
-            tAction->setCheckable(true);
-            if (mAspectRatio == ASPECT_RATIO_4x3)
-                tAction->setChecked(true);
-            else
-                tAction->setChecked(false);
-
-            tAction = tAspectRatioMenu->addAction(" 5 : 4 ");
-            tAction->setCheckable(true);
-            if (mAspectRatio == ASPECT_RATIO_5x4)
-                tAction->setChecked(true);
-            else
-                tAction->setChecked(false);
-
-            tAction = tAspectRatioMenu->addAction("16 : 9 ");
-            tAction->setCheckable(true);
-            if (mAspectRatio == ASPECT_RATIO_16x9)
-                tAction->setChecked(true);
-            else
-                tAction->setChecked(false);
-
-            tAction = tAspectRatioMenu->addAction("16 : 10");
-            tAction->setCheckable(true);
-            if (mAspectRatio == ASPECT_RATIO_16x10)
-                tAction->setChecked(true);
-            else
-                tAction->setChecked(false);
-
-            tAction = tAspectRatioMenu->addAction("Full window");
-            tAction->setCheckable(true);
-            if (mAspectRatio == ASPECT_RATIO_WINDOW)
-                tAction->setChecked(true);
-            else
-                tAction->setChecked(false);
-
+            for (int i = 0; i < VIDEO_WIDGET_SUPPORTED_ASPECT_RATIOS; i++)
+            {
+                tAction = tAspectRatioMenu->addAction(QString(SupportedAspectRatios[i].name.c_str()));
+                tAction->setCheckable(true);
+                if (mAspectRatio == i)
+                    tAction->setChecked(true);
+                else
+                    tAction->setChecked(false);
+            }
 
             //###############################################################################
             //### RESOLUTIONS
@@ -662,48 +647,19 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             ToggleFullScreenMode();
             return;
         }
-        if (tPopupRes->text().compare("Full window") == 0)
+
+        //### CHANGE ASPECT RATO
+        for (int i = 0; i < VIDEO_WIDGET_SUPPORTED_ASPECT_RATIOS; i++)
         {
-        	mAspectRatio = ASPECT_RATIO_WINDOW;
-        	mNeedBackgroundUpdatesUntillNextFrame = true;
-            return;
+            if (tPopupRes->text().compare(QString(SupportedAspectRatios[i].name.c_str())) == 0)
+            {
+                mAspectRatio = i;
+                mNeedBackgroundUpdatesUntillNextFrame = true;
+                return;
+            }
         }
-        if (tPopupRes->text().compare("Original") == 0)
-        {
-        	mAspectRatio = ASPECT_RATIO_ORIGINAL;
-        	mNeedBackgroundUpdatesUntillNextFrame = true;
-            return;
-        }
-        if (tPopupRes->text().compare(" 1 : 1 ") == 0)
-        {
-        	mAspectRatio = ASPECT_RATIO_1x1;
-        	mNeedBackgroundUpdatesUntillNextFrame = true;
-            return;
-        }
-        if (tPopupRes->text().compare(" 4 : 3 ") == 0)
-        {
-        	mAspectRatio = ASPECT_RATIO_4x3;
-        	mNeedBackgroundUpdatesUntillNextFrame = true;
-            return;
-        }
-        if (tPopupRes->text().compare(" 5 : 4 ") == 0)
-        {
-        	mAspectRatio = ASPECT_RATIO_5x4;
-        	mNeedBackgroundUpdatesUntillNextFrame = true;
-            return;
-        }
-        if (tPopupRes->text().compare("16 : 9 ") == 0)
-        {
-        	mAspectRatio = ASPECT_RATIO_16x9;
-        	mNeedBackgroundUpdatesUntillNextFrame = true;
-            return;
-        }
-        if (tPopupRes->text().compare("16 : 10") == 0)
-        {
-        	mAspectRatio = ASPECT_RATIO_16x10;
-        	mNeedBackgroundUpdatesUntillNextFrame = true;
-            return;
-        }
+
+        //### UNREGISTER SINK
         for (tRegisteredVideoSinksIt = tRegisteredVideoSinks.begin(); tRegisteredVideoSinksIt != tRegisteredVideoSinks.end(); tRegisteredVideoSinksIt++)
         {
             if (tPopupRes->text().compare(QString(tRegisteredVideoSinksIt->c_str())) == 0)
@@ -749,31 +705,7 @@ QStringList VideoWidget::GetVideoStatistic()
 {
 	QStringList tVideoStatistic;
 
-	QString tAspectRatio = "";
-	switch(mAspectRatio)
-	{
-		case ASPECT_RATIO_ORIGINAL:
-			tAspectRatio = "Original";
-			break;
-		case ASPECT_RATIO_WINDOW:
-			tAspectRatio = "Window";
-			break;
-		case ASPECT_RATIO_1x1:
-			tAspectRatio = "1 : 1";
-			break;
-		case ASPECT_RATIO_4x3:
-			tAspectRatio = "4 : 3";
-			break;
-		case ASPECT_RATIO_5x4:
-			tAspectRatio = "5 : 4";
-			break;
-		case ASPECT_RATIO_16x9:
-			tAspectRatio = "16 : 9";
-			break;
-		case ASPECT_RATIO_16x10:
-			tAspectRatio = "16 : 10";
-			break;
-	}
+	QString tAspectRatio = QString(SupportedAspectRatios[mAspectRatio].name.c_str());
 
 	int tHour = 0, tMin = 0, tSec = 0, tTime = mVideoSource->GetSeekPos();
     tSec = tTime % 60;
@@ -941,41 +873,25 @@ void VideoWidget::ShowFrame(void* pBuffer)
     // keep aspect ratio if requested
 	QTime tTime = QTime::currentTime();
 	Qt::AspectRatioMode tAspectMode = Qt::IgnoreAspectRatio;
-	switch(mAspectRatio)
+	float tSelectedAspectMode = SupportedAspectRatios[mAspectRatio].ratio;
+
+	if (tSelectedAspectMode == -1 /* window */)
 	{
-		case ASPECT_RATIO_WINDOW:
-			mCurrentFrameOutputWidth = width();
-			mCurrentFrameOutputHeight = height();
-			break;
-		case ASPECT_RATIO_ORIGINAL:
-			mCurrentFrameOutputWidth = width();
-			mCurrentFrameOutputHeight = height();
-			tAspectMode = Qt::KeepAspectRatio;
-			break;
-		case ASPECT_RATIO_1x1:
-			mCurrentFrameOutputWidth = mCurrentFrame.width();
-			mCurrentFrameOutputHeight = mCurrentFrameOutputWidth; // adapt aspect ratio
-			break;
-		case ASPECT_RATIO_4x3:
-			mCurrentFrameOutputWidth = mCurrentFrame.width();
-			mCurrentFrameOutputHeight = (int)(mCurrentFrameOutputWidth / 1.33); // adapt aspect ratio
-			break;
-		case ASPECT_RATIO_5x4:
-			mCurrentFrameOutputWidth = mCurrentFrame.width();
-			mCurrentFrameOutputHeight = (int)(mCurrentFrameOutputWidth / 1.25); // adapt aspect ratio
-			break;
-		case ASPECT_RATIO_16x9:
-			mCurrentFrameOutputWidth = mCurrentFrame.width();
-			mCurrentFrameOutputHeight = (int)(mCurrentFrameOutputWidth / 1.77); // adapt aspect ratio
-			break;
-		case ASPECT_RATIO_16x10:
-			mCurrentFrameOutputWidth = mCurrentFrame.width();
-			mCurrentFrameOutputHeight = (int)(mCurrentFrameOutputWidth / 1.6); // adapt aspect ratio
-			break;
+        mCurrentFrameOutputWidth = width();
+        mCurrentFrameOutputHeight = height();
+	}else if (tSelectedAspectMode == 0 /* original */)
+	{
+        mCurrentFrameOutputWidth = width();
+        mCurrentFrameOutputHeight = height();
+        tAspectMode = Qt::KeepAspectRatio;
+	}else
+	{
+        mCurrentFrameOutputWidth = mCurrentFrame.width();
+        mCurrentFrameOutputHeight = (int)mCurrentFrameOutputWidth / SupportedAspectRatios[mAspectRatio].ratio; // adapt aspect ratio
 	}
 
 	// resize frame to best fitting size, related to video widget
-	if ((mAspectRatio != ASPECT_RATIO_WINDOW) && (mAspectRatio != ASPECT_RATIO_ORIGINAL))
+	if ((mAspectRatio != ASPECT_RATIO_INDEX_WINDOW) && (mAspectRatio != ASPECT_RATIO_INDEX_ORIGINAL))
 	{
 		float tRatio = (float)width() / mCurrentFrameOutputWidth;
 		int tNewFrameOutputWidth = width();
@@ -1659,8 +1575,8 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
     if (pEvent->key() == Qt::Key_A)
     {
     	mAspectRatio++;
-    	if(mAspectRatio > ASPECT_RATIO_16x10)
-    		mAspectRatio = ASPECT_RATIO_ORIGINAL;
+    	if(mAspectRatio >= VIDEO_WIDGET_SUPPORTED_ASPECT_RATIOS)
+    		mAspectRatio = 0;
     	mNeedBackgroundUpdatesUntillNextFrame = true;
     	pEvent->accept();
     	return;
