@@ -1182,15 +1182,9 @@ int Configuration::GetSipInfrastructureMode()
     return mQSettings->value("Network/SipInfrastructureMode", 0).toInt();
 }
 
-// set default value for OSX to false: TODO: fix STUN support for OSX and remove this
-#ifdef APPLE
-	static bool sNatDefault = false;
-#else
-	static bool sNatDefault = true;
-#endif
 bool Configuration::GetNatSupportActivation()
 {
-    return mQSettings->value("Network/NatSupportActivation", sNatDefault).toBool();
+    return mQSettings->value("Network/NatSupportActivation", true).toBool();
 }
 
 QString Configuration::GetStunServer()
