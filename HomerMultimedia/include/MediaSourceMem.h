@@ -93,9 +93,6 @@ public:
     virtual int GetFragmentBufferCounter();
     virtual int GetFragmentBufferSize();
 
-    /* RTP based frame numbering */
-    virtual int64_t CalculateFrameNumberFromRTP();
-
     /* frame stats */
     virtual bool SupportsDecoderFrameStatistics();
 
@@ -147,6 +144,9 @@ protected:
     /* FIFO helpers */
     void WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int64_t pPts);
     void ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int64_t &pPts);
+
+    /* RTP based frame numbering */
+    virtual int64_t CalculateFrameNumberFromRTP();
 
     /* real-time playback */
     void CalibrateRTGrabbing();
