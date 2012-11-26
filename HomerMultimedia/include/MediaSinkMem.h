@@ -70,6 +70,8 @@ protected:
     virtual bool CloseStreamer();
 
 protected:
+    /* timstampes from higher layer */
+    int64_t             mLastPacketPts;
     /* target */
     std::string         mTargetHost;
     unsigned int        mTargetPort;

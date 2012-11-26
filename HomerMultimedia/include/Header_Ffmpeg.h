@@ -45,6 +45,7 @@ extern "C" {
 #include <libavutil/opt.h>
 #include <libavutil/mathematics.h>
 #include <libavutil/random_seed.h>
+#include <libavutil/samplefmt.h>
 #include <libswscale/swscale.h>
 #include <libavdevice/avdevice.h>
 }
