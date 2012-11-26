@@ -255,6 +255,8 @@ public:
     virtual float GetFrameBufferTimeMax();
     virtual int GetFrameBufferCounter();
     virtual int GetFrameBufferSize();
+    virtual void SetPreBufferingActivation(bool pActive);
+    virtual void SetPreBufferingAutoRestartActivation(bool pActive);
 
     /* simple relaying WITHOUT any reencoding functionality but WITH rtp support*/
 	// register/unregister: Berkeley sockets based media sinks
@@ -419,6 +421,7 @@ protected:
     float				mDecoderFrameBufferTime; // current pre-buffer length
     float               mDecoderFrameBufferTimeMax; // max. pre-buffer length
     float               mDecoderFramePreBufferTime;
+    bool                mDecoderFramePreBufferingAutoRestart;
     /* live OSD marking */
     float               mMarkerRelX;
     float               mMarkerRelY;

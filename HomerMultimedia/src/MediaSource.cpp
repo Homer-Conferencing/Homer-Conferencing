@@ -84,6 +84,7 @@ MediaSource::MediaSource(string pName):
     mSourceType = SOURCE_ABSTRACT;
     mMarkerActivated = false;
     mMediaSourceOpened = false;
+    mDecoderFramePreBufferingAutoRestart = false;
     mGrabbingStopped = false;
     mRecording = false;
     SetRtpActivation(true);
@@ -941,10 +942,23 @@ int MediaSource::GetFrameBufferCounter()
 	return 0;
 }
 
- int MediaSource::GetFrameBufferSize()
- {
-	 return 0 ;
- }
+int MediaSource::GetFrameBufferSize()
+{
+    return 0;
+}
+
+void MediaSource::SetPreBufferingActivation(bool pActive)
+{
+    LOG(LOG_VERBOSE, "Setting pre-buffering for %s source to: %d", GetMediaTypeStr().c_str(), pActive);
+    if (!pActive)
+        mDecoderFramePreBufferTime = 0;
+}
+
+void MediaSource::SetPreBufferingAutoRestartActivation(bool pActive)
+{
+    LOG(LOG_VERBOSE, "Setting pre-buffering auto. restart for %s source to: %d", GetMediaTypeStr().c_str(), pActive);
+    mDecoderFramePreBufferingAutoRestart = pActive;
+}
 
 void MediaSource::DoSetVideoGrabResolution(int pResX, int pResY)
 {

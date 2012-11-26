@@ -1073,7 +1073,7 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
     AVPacket                    tPacket;
     int                         tFrameSize;
 
-    #ifdef MSM_DEBUG_PACKETS
+    #ifdef MSM_DEBUG_GRABBING
         LOG(LOG_VERBOSE, "Trying to grab a new %s chunk", GetMediaTypeStr().c_str());
     #endif
 
@@ -1118,7 +1118,7 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
     // get frame from the original media source
     // ###################################################################
     tResult = mMediaSource->GrabChunk(pChunkBuffer, pChunkSize, pDropChunk);
-    #ifdef MSM_DEBUG_PACKETS
+    #ifdef MSM_DEBUG_GRABBING
         if (!pDropChunk)
         {
             switch(mMediaType)
@@ -1516,7 +1516,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                     tPacket->pts = tPacketPts;
                                     tPacket->dts = tPacketPts;
 
-                                    #ifdef MSM_DEBUG_PACKETS
+                                    #ifdef MSM_DEBUG_PACKET_DISTRIBUTION
                                         LOG(LOG_VERBOSE, "Sending video packet: %5d to %2d sink(s):", mFrameNumber, mMediaSinks.size());
                                         LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
                                         LOG(LOG_VERBOSE, "      ..flags: %d", tPacket->flags);
@@ -1556,11 +1556,15 @@ void* MediaSourceMuxer::Run(void* pArgs)
                             break;
 
                         case MEDIA_AUDIO:
-								// do we need audio resampling?
+                            {
+                                int tOutoutAudioBytesPrSample = av_get_bytes_per_sample(mOutputAudioFormat);
+                                int tInputAudioBytesPrSample = av_get_bytes_per_sample(mInputAudioFormat);
+
+                                // do we need audio resampling?
 								if (mAudioResampleContext != NULL)
 								{
 									//HINT: we always assume 16 bit samples
-									int tResampledBytes = (2 /*16 signed char*/ * mOutputAudioChannels) * audio_resample(mAudioResampleContext, (short*)mResampleBuffer, (short*)tBuffer, tBufferSize / (2 * mInputAudioChannels));
+									int tResampledBytes = (tOutoutAudioBytesPrSample * mOutputAudioChannels) * audio_resample(mAudioResampleContext, (short*)mResampleBuffer, (short*)tBuffer, tBufferSize / (tInputAudioBytesPrSample * mInputAudioChannels));
 									if(tResampledBytes > 0)
 									{
 										tBuffer = mResampleBuffer;
@@ -1589,13 +1593,13 @@ void* MediaSourceMuxer::Run(void* pArgs)
 									av_fifo_generic_write(mSampleFifo, tBuffer, tBufferSize, NULL);
 									//LOG(LOG_VERBOSE, "ChunkSize: %d", pChunkSize);
 
-									while (av_fifo_size(mSampleFifo) >= 2 * mCodecContext->frame_size * mCodecContext->channels)
+									while (av_fifo_size(mSampleFifo) >= tOutoutAudioBytesPrSample * mCodecContext->frame_size * mOutputAudioChannels)
 									{
 										#ifdef MSM_DEBUG_PACKETS
-											LOG(LOG_VERBOSE, "Reading %d bytes from %d bytes of fifo", 2 * mCodecContext->frame_size * mCodecContext->channels, av_fifo_size(mSampleFifo));
+											LOG(LOG_VERBOSE, "Reading %d bytes from %d bytes of fifo", tOutoutAudioBytesPrSample * mCodecContext->frame_size * mCodecContext->channels, av_fifo_size(mSampleFifo));
 										#endif
 										// read sample data from the fifo buffer
-										HM_av_fifo_generic_read(mSampleFifo, (void*)mSamplesTempBuffer, /* assume signed 16 bit */ 2 * mCodecContext->frame_size * mCodecContext->channels);
+										HM_av_fifo_generic_read(mSampleFifo, (void*)mSamplesTempBuffer, tOutoutAudioBytesPrSample * mCodecContext->frame_size * mCodecContext->channels);
 
 										//####################################################################
 										// re-encode the sample
@@ -1605,7 +1609,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
 											LOG(LOG_VERBOSE, "Encoding audio frame.. (frame size: %d, channels: %d, enc. buffeR: %p, samples buffer: %p)", mCodecContext->frame_size, mCodecContext->channels, mEncoderChunkBuffer, mSamplesTempBuffer);
 										#endif
 										//printf("Gonna encode with frame_size %d and channels %d\n", mCodecContext->frame_size, mCodecContext->channels);
-										int tEncodingResult = avcodec_encode_audio(mCodecContext, (uint8_t *)mEncoderChunkBuffer, /* assume signed 16 bit */ 2 * mCodecContext->frame_size * mCodecContext->channels, (const short *)mSamplesTempBuffer);
+										int tEncodingResult = avcodec_encode_audio(mCodecContext, (uint8_t *)mEncoderChunkBuffer, /* assume signed 16 bit */ tOutoutAudioBytesPrSample * mCodecContext->frame_size * mCodecContext->channels, (const short *)mSamplesTempBuffer);
 										mEncoderHasKeyFrame = true;
 
 										//printf("encoded to mp3: %d\n\n", tSampleSize);
@@ -1629,7 +1633,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
 											tPacket->pts = tPacketPts;
 											tPacket->dts = tPacketPts;
 
-											#ifdef MSM_DEBUG_PACKETS
+											#ifdef MSM_DEBUG_PACKET_DISTRIBUTION
 												LOG(LOG_VERBOSE, "Sending audio packet: %5d to %2d sink(s):", mFrameNumber, mMediaSinks.size());
 												LOG(LOG_VERBOSE, "      ..pts: %ld", tPacket->pts);
 												LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket->dts);
@@ -1657,7 +1661,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
 									}
                                 }
                                 break;
-
+                            }
                         default:
                                 LOG(LOG_ERROR, "Media type unknown");
                                 break;
@@ -1792,6 +1796,18 @@ int MediaSourceMuxer::GetFrameBufferSize()
         return mMediaSource->GetFrameBufferSize();
     else
         return mDecoderFrameBufferTime;
+}
+
+void MediaSourceMuxer::SetPreBufferingActivation(bool pActive)
+{
+    if (mMediaSource != NULL)
+        mMediaSource->SetPreBufferingActivation(pActive);
+}
+
+void MediaSourceMuxer::SetPreBufferingAutoRestartActivation(bool pActive)
+{
+    if (mMediaSource != NULL)
+        mMediaSource->SetPreBufferingAutoRestartActivation(pActive);
 }
 
 void MediaSourceMuxer::SetVideoGrabResolution(int pResX, int pResY)

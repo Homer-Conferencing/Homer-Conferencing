@@ -47,6 +47,8 @@ namespace Homer { namespace Multimedia {
 
 // the following de/activates debugging of sent packets
 //#define MSM_DEBUG_PACKETS
+//#define MSM_DEBUG_PACKET_DISTRIBUTION
+//#define MSM_DEBUG_GRABBING
 
 // the following de/activates debugging of the time behavior of the transcoding
 //#define MSM_DEBUG_TIMING
@@ -119,11 +121,14 @@ public:
     virtual bool SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset = false);
     virtual int GetChunkDropCounter();
     virtual int GetChunkBufferCounter();
+
     /* frame (pre)buffering */
     virtual float GetFrameBufferPreBufferingTime();
     virtual float GetFrameBufferTime();
     virtual int GetFrameBufferCounter();
     virtual int GetFrameBufferSize();
+    virtual void SetPreBufferingActivation(bool pActive);
+    virtual void SetPreBufferingAutoRestartActivation(bool pActive);
 
     /* recording control */
     virtual bool StartRecording(std::string pSaveFileName, int pSaveFileQuality = 10, bool pRealTime = true /* 1 = frame rate emulation, 0 = no pts adaption */);
