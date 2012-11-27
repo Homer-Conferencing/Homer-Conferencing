@@ -207,7 +207,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
                 {
                     int tPacketCountReportedBySender = 0;
                     int tOctetCountReportedBySender = 0;
-                    if (tMediaSourceMemInstance->RtcpParse(tFragmentData, tFragmentDataSize, tPacketCountReportedBySender, tOctetCountReportedBySender))
+                    if (tMediaSourceMemInstance->RtcpParse(tFragmentData, tFragmentDataSize, tMediaSourceMemInstance->mEndToEndDelay, tPacketCountReportedBySender, tOctetCountReportedBySender))
                     {
 						#ifdef MSMEM_DEBUG_SENDER_REPORTS
                     		LOGEX(MediaSourceMem, LOG_VERBOSE, "Sender reports: %d packets and %d bytes transmitted", tPacketCountReportedBySender, tOctetCountReportedBySender);

@@ -1767,6 +1767,14 @@ int64_t MediaSourceMuxer::DecodedBFrames()
         return mDecodedBFrames;
 }
 
+int64_t MediaSourceMuxer::GetEndToEndDelay()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->GetEndToEndDelay();
+    else
+        return mEndToEndDelay;
+}
+
 float MediaSourceMuxer::GetFrameBufferPreBufferingTime()
 {
     if (mMediaSource != NULL)

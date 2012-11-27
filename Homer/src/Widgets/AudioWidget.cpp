@@ -587,6 +587,9 @@ QStringList AudioWidget::GetAudioStatistic()
     QString tPeerName = QString(mAudioSource->GetCurrentDevicePeerName().c_str());
     if (tPeerName != "")
     	tLine_Peer = "Peer: " + tPeerName;
+    float tDelay = (float)mAudioSource->GetEndToEndDelay() / 1000;
+    if (tDelay > 0)
+        tLine_Peer += " (delay from sender: " + QString("%1").arg(tDelay, 2, 'f', 2, (QLatin1Char)' ') + " ms)";
 
     //############################################
     //### Line 8: current recorder position

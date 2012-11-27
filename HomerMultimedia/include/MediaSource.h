@@ -232,6 +232,9 @@ public:
     virtual int64_t DecodedPFrames();
     virtual int64_t DecodedBFrames();
 
+    /* end-to-end delay */
+    virtual int64_t GetEndToEndDelay(); // in us
+
     /* video grabbing control */
     virtual void SetVideoGrabResolution(int pResX = 352, int pResY = 288);
     virtual void GetVideoGrabResolution(int &pResX, int &pResY);
@@ -417,6 +420,8 @@ protected:
     int64_t             mDecodedIFrames;
     int64_t             mDecodedPFrames;
     int64_t             mDecodedBFrames;
+    /* delay stats */
+    int64_t             mEndToEndDelay;
     /* frame pre-buffering */
     float				mDecoderFrameBufferTime; // current pre-buffer length
     float               mDecoderFrameBufferTimeMax; // max. pre-buffer length

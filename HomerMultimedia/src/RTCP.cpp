@@ -130,7 +130,7 @@ void RTCP::LogRtcpHeader(RtcpHeader *pRtcpHeader)
         pRtcpHeader->Data[i] = htonl(pRtcpHeader->Data[i]);
 }
 
-bool RTCP::RtcpParse(char *&pData, int &pDataSize, int &pPackets, int &pOctets)
+bool RTCP::RtcpParse(char *&pData, int &pDataSize, int64_t &pEndToEndDelay, int &pPackets, int &pOctets)
 {
     //HINT: assumes network byte order!
 
@@ -149,6 +149,13 @@ bool RTCP::RtcpParse(char *&pData, int &pDataSize, int &pPackets, int &pOctets)
 
     if (tRtcpHeaderLength == 7 /* need 28 byte sender report */)
     {// update values
+        int64_t tRemoteTimestamHigh = (int64_t)tRtcpHeader->Feedback.TimestampHigh * 1000 * 1000;
+        int64_t tRemoteTimestamLow = ((int64_t)tRtcpHeader->Feedback.TimestampLow * 1000 * 1000) >> 32;
+        int64_t tRemoteUsTimestamp = tRemoteTimestamHigh + tRemoteTimestamLow;
+        int64_t tRemoteTimestamp = tRemoteUsTimestamp - NTP_OFFSET_US;
+        int64_t tLocalTimestamp = av_gettime();
+
+        pEndToEndDelay = tLocalTimestamp - tRemoteTimestamp;
         pPackets = tRtcpHeader->Feedback.Packets;
         pOctets = tRtcpHeader->Feedback.Octets;
         tResult = true;

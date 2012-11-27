@@ -105,6 +105,9 @@ public:
     virtual int64_t DecodedPFrames();
     virtual int64_t DecodedBFrames();
 
+    /* end-to-end delay */
+    virtual int64_t GetEndToEndDelay();
+
     /* video grabbing control */
     virtual void SetVideoGrabResolution(int pTargetResX, int pTargetResY);
     virtual void GetVideoGrabResolution(int &pResX, int &pResY);

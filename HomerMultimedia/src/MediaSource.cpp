@@ -75,6 +75,7 @@ bool MediaSource::mFfmpegInitiated = false;
 MediaSource::MediaSource(string pName):
     PacketStatistic(pName)
 {
+    mEndToEndDelay = 0;
     mDecodedIFrames = 0;
     mDecodedPFrames = 0;
     mDecodedBFrames = 0;
@@ -920,6 +921,11 @@ int64_t MediaSource::DecodedPFrames()
 int64_t MediaSource::DecodedBFrames()
 {
     return mDecodedBFrames;
+}
+
+int64_t MediaSource::GetEndToEndDelay()
+{
+    return mEndToEndDelay;
 }
 
 float MediaSource::GetFrameBufferPreBufferingTime()
