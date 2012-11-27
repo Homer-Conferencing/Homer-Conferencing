@@ -82,6 +82,11 @@ string GetPayloadType(int pType)
     return tResult;
 }
 
+uint64_t GetNtpTime()
+{
+    return (av_gettime() / 1000 ) * 1000 + NTP_OFFSET_US;
+}
+
 void RTCP::LogRtcpHeader(RtcpHeader *pRtcpHeader)
 {
     // convert from network to host byte order, HACK: exceed array boundaries
@@ -113,16 +118,14 @@ void RTCP::LogRtcpHeader(RtcpHeader *pRtcpHeader)
         LOGEX(RTCP, LOG_VERBOSE, "Packets         : %10u", pRtcpHeader->Feedback.Packets);
         LOGEX(RTCP, LOG_VERBOSE, "Octets          : %10u", pRtcpHeader->Feedback.Octets);
 
-//        struct timeval tv;
-//        gettimeofday(&tv, NULL);
-//        int64_t tTime = tv.tv_sec * 1000000 + tv.tv_usec;
-//        LOGEX(RTCP, LOG_WARN, "time of day: %ld", tTime);
-//        tTime = (tTime / 1000) * 1000 + NTP_OFFSET_US;
-//        LOGEX(RTCP, LOG_WARN, "time of day2: %ld", tTime);
-//        int64_t tTimeHigh = tTime / 1000000;
-//        int64_t tTimeLow = ((tTime % 1000000) << 32) / 1000000;
-//        LOGEX(RTCP, LOG_VERBOSE, "LocalTime(high) : %10u", tTimeHigh);
-//        LOGEX(RTCP, LOG_VERBOSE, "LocalTime(low)  : %10u", tTimeLow);
+        int64_t tTime2 = GetNtpTime();
+        LOGEX(RTCP, LOG_WARN, "time of day2: %ld", tTime2);
+
+        unsigned int tTimeHigh = tTime2 / 1000000;
+        unsigned int tTimeLow = ((tTime2 % 1000000) << 32) / 1000000;
+
+        LOGEX(RTCP, LOG_VERBOSE, "LocalTime(high) : %u, %u", tTimeHigh, ntohl(tTimeHigh));
+        LOGEX(RTCP, LOG_VERBOSE, "LocalTime(low)  : %u, %u", tTimeLow, ntohl(tTimeLow));
     }
 
     // convert from host to network byte order, HACK: exceed array boundaries

@@ -962,8 +962,9 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
             //### do this only if we don't have a RTCP packet from the ffmpeg lib
             //### HINT: ffmpeg uses payload type 14 and several others like dyn. range 96-127
             //#################################################################################
+            bool tRtcpPacket = false;
             if (tHeader->PayloadType != 72)
-            {
+            {// usual RTP packet
                 // patch ffmpeg payload values between 96 and 99
                 // HINT: ffmpeg uses some strange intermediate packets with payload id 72
                 //       -> don't know for what reason, but they should be kept as they are
@@ -1030,6 +1031,9 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
                                             tHeader->PayloadType = 123;
                                             break;
                 }
+            }else
+            {// RTCP packet
+                tRtcpPacket = true;
             }
 
             //#################################################################################
@@ -1042,6 +1046,17 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
             //#################################################################################
             for (int i = 0; i < 3; i++)
                 tHeader->Data[i] = htonl(tHeader->Data[i]);
+
+            //#################################################################################
+            //### log RTCP packets if desired
+            //#################################################################################
+            #ifdef RTCP_DEBUG_PACKETS_ENCODER
+                if (tRtcpPacket)
+                {
+                    RtcpHeader *tRtcpHeader = (RtcpHeader*)tHeader;
+                    LogRtcpHeader(tRtcpHeader);
+                }
+            #endif
 
             // go to the next RTP packet
             tRtpPacket = tRtpPacket + (tRtpPacketSize + 4);
@@ -1365,7 +1380,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
         for (int i = 0; i < 3; i++)
             tRtpHeader->Data[i] = htonl(tRtpHeader->Data[i]);
 
-        #ifdef RTCP_DEBUG_PACKETS
+        #ifdef RTCP_DEBUG_PACKETS_DECODER
             LogRtcpHeader(tRtcpHeader);
         #endif
 
