@@ -216,7 +216,7 @@ string System::GetTargetMachineType()
 			tResult = "ia-64";
 	#endif
 
-	LOGEX(System, LOG_VERBOSE, "Target machine type \"%s\"", tResult.c_str());
+	//LOGEX(System, LOG_VERBOSE, "Target machine type \"%s\"", tResult.c_str());
 
 	return tResult;
 }
