@@ -801,8 +801,29 @@ int RTP::StoreRtpPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize)
 {
     RTP* tRTPInstance = (RTP*)pOpaque;
 
-    #ifdef RTP_DEBUG_PACKET_ENCODER
+    #if defined(RTP_DEBUG_PACKET_ENCODER_FFMPEG) || defined(RTCP_DEBUG_PACKET_ENCODER_FFMPEG)
         LOGEX(RTP, LOG_VERBOSE, "Storing RTP packet of %d bytes", pBufferSize);
+        RtpHeader *tRtpHeader = (RtpHeader*)pBuffer;
+
+
+        for (int i = 0; i < 3; i++)
+            tRtpHeader->Data[i] = ntohl(tRtpHeader->Data[i]);
+        int tPayloadType = tRtpHeader->PayloadType;
+        for (int i = 0; i < 3; i++)
+            tRtpHeader->Data[i] = htonl(tRtpHeader->Data[i]);
+
+        RtcpHeader *tRtcpHeader = (RtcpHeader*)pBuffer;
+        if ((tPayloadType < 72) || (tPayloadType > 76))
+        {
+            #ifdef RTP_DEBUG_PACKET_ENCODER_FFMPEG
+                LogRtpHeader(tRtpHeader);
+            #endif
+        }else
+        {
+            #ifdef RTCP_DEBUG_PACKET_ENCODER_FFMPEG
+                LogRtcpHeader(tRtcpHeader);
+            #endif
+        }
     #endif
     if (!tRTPInstance->mEncoderOpened)
         LOGEX(RTP, LOG_ERROR, "RTP instance wasn't opened yet, RTP packetizing not available");
@@ -947,14 +968,14 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
             if (tRtpPacketSize == 0)
                 break;
 
-            RtpHeader* tHeader = (RtpHeader*)tRtpPacket;
+            RtpHeader* tRtpHeader = (RtpHeader*)tRtpPacket;
 
             // convert from network to host byte order
             for (int i = 0; i < 3; i++)
-                tHeader->Data[i] = ntohl(tHeader->Data[i]);
+                tRtpHeader->Data[i] = ntohl(tRtpHeader->Data[i]);
 
             #ifdef RTP_DEBUG_PACKET_ENCODER
-                LOG(LOG_VERBOSE, "RTP packet has payload type: %d", tHeader->PayloadType);
+                LOG(LOG_VERBOSE, "RTP packet has payload type: %d", tRtpHeader->PayloadType);
             #endif
 
             //#################################################################################
@@ -963,24 +984,25 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
             //### HINT: ffmpeg uses payload type 14 and several others like dyn. range 96-127
             //#################################################################################
             bool tRtcpPacket = false;
-            if (tHeader->PayloadType != 72)
+            if ((tRtpHeader->PayloadType < 72) || (tRtpHeader->PayloadType > 76))
             {// usual RTP packet
+                tRtcpPacket = false;
                 // patch ffmpeg payload values between 96 and 99
                 // HINT: ffmpeg uses some strange intermediate packets with payload id 72
                 //       -> don't know for what reason, but they should be kept as they are
                 switch(mStreamCodecID)
                 {
                             case CODEC_ID_PCM_MULAW:
-                                            tHeader->PayloadType = 0;
+                                            tRtpHeader->PayloadType = 0;
                                             break;
                             case CODEC_ID_PCM_ALAW:
-                                            tHeader->PayloadType = 8;
+                                            tRtpHeader->PayloadType = 8;
                                             break;
                             case CODEC_ID_ADPCM_G722:
-                                            tHeader->PayloadType = 9;
+                                            tRtpHeader->PayloadType = 9;
                                             break;
                             case CODEC_ID_PCM_S16BE:
-                                            tHeader->PayloadType = 10;
+                                            tRtpHeader->PayloadType = 10;
                                             break;
                             case CODEC_ID_MP3:
                                             // HACK: some modification of the standard MPA payload header: use MBZ to signalize the size of the original audio packet
@@ -997,55 +1019,63 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
                                             // convert from host to network byte order
                                             tMPAHeader->Data[0] = htonl(tMPAHeader->Data[0]);
 
-                                            tHeader->PayloadType = 14;
+                                            tRtpHeader->PayloadType = 14;
                                             break;
                             case CODEC_ID_H261:
-                                            tHeader->PayloadType = 31;
+                                            tRtpHeader->PayloadType = 31;
                                             break;
                             case CODEC_ID_MPEG1VIDEO:
                             case CODEC_ID_MPEG2VIDEO:
-                                            tHeader->PayloadType = 32;
+                                            tRtpHeader->PayloadType = 32;
                                             break;
                             case CODEC_ID_H263:
-                                            tHeader->PayloadType = 34;
+                                            tRtpHeader->PayloadType = 34;
                                             break;
                             case CODEC_ID_AAC:
-                                            tHeader->PayloadType = 100;
+                                            tRtpHeader->PayloadType = 100;
                                             break;
                             case CODEC_ID_AMR_NB:
-                                            tHeader->PayloadType = 101;
+                                            tRtpHeader->PayloadType = 101;
                                             break;
                             case CODEC_ID_H263P:
-                                            tHeader->PayloadType = 119; // our own standard, possible because this range is user defined
+                                            tRtpHeader->PayloadType = 119; // our own standard, possible because this range is user defined
                                             break;
                             case CODEC_ID_H264:
-                                            tHeader->PayloadType = 120; // defacto standard
+                                            tRtpHeader->PayloadType = 120; // defacto standard
                                             break;
                             case CODEC_ID_MPEG4:
-                                            tHeader->PayloadType = 121; // defacto standard
+                                            tRtpHeader->PayloadType = 121; // defacto standard
                                             break;
                             case CODEC_ID_THEORA:
-                                            tHeader->PayloadType = 122;
+                                            tRtpHeader->PayloadType = 122;
                                             break;
                             case CODEC_ID_VP8:
-                                            tHeader->PayloadType = 123;
+                                            tRtpHeader->PayloadType = 123;
                                             break;
                 }
+
+                //#################################################################################
+                //### patch source identifier to the generated one
+                //#################################################################################
+                tRtpHeader->Ssrc = mLocalSourceIdentifier;
             }else
             {// RTCP packet
                 tRtcpPacket = true;
+
+                RtcpHeader* tRtcpHeader = (RtcpHeader*)tRtpPacket;
+
+                //#################################################################################
+                //### patch source identifier to the generated one
+                //#################################################################################
+                tRtcpHeader->Feedback.Ssrc = mLocalSourceIdentifier;
             }
 
-            //#################################################################################
-            //### patch source identifier to the generated one
-            //#################################################################################
-            tHeader->Ssrc = mLocalSourceIdentifier;
 
             //#################################################################################
             //### convert from host to network byte order
             //#################################################################################
             for (int i = 0; i < 3; i++)
-                tHeader->Data[i] = htonl(tHeader->Data[i]);
+                tRtpHeader->Data[i] = htonl(tRtpHeader->Data[i]);
 
             //#################################################################################
             //### log RTCP packets if desired
@@ -1053,8 +1083,15 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
             #ifdef RTCP_DEBUG_PACKETS_ENCODER
                 if (tRtcpPacket)
                 {
-                    RtcpHeader *tRtcpHeader = (RtcpHeader*)tHeader;
+                    RtcpHeader *tRtcpHeader = (RtcpHeader*)tRtpHeader;
                     LogRtcpHeader(tRtcpHeader);
+                }
+            #endif
+            #ifdef RTP_DEBUG_PACKET_ENCODER
+                if (!tRtcpPacket)
+                {
+                    // print some verbose outputs
+                    LogRtpHeader(tRtpHeader);
                 }
             #endif
 
@@ -1212,6 +1249,9 @@ void RTP::LogRtpHeader(RtpHeader *pRtpHeader)
 {
     //HINT: assumes host byte order!
 
+    for (int i = 0; i < 3; i++)
+        pRtpHeader->Data[i] = ntohl(pRtpHeader->Data[i]);
+
     LOGEX(RTP, LOG_VERBOSE, "################## RTP header ########################");
     LOGEX(RTP, LOG_VERBOSE, "Version: %d", pRtpHeader->Version);
     if (pRtpHeader->Padding)
@@ -1232,6 +1272,9 @@ void RTP::LogRtpHeader(RtpHeader *pRtpHeader)
     LOGEX(RTP, LOG_VERBOSE, "Payload type    : %s(%d)", PayloadIdToCodec(pRtpHeader->PayloadType).c_str(), pRtpHeader->PayloadType);
     LOGEX(RTP, LOG_VERBOSE, "SequenceNumber  : %u", pRtpHeader->SequenceNumber);
     LOGEX(RTP, LOG_VERBOSE, "Timestamp (abs.): %10u", pRtpHeader->Timestamp);
+
+    for (int i = 0; i < 3; i++)
+        pRtpHeader->Data[i] = htonl(pRtpHeader->Data[i]);
 }
 
 int64_t RTP::GetTimestampFromRTP()
