@@ -609,6 +609,14 @@ MediaSourceNet::~MediaSourceNet()
     LOG(LOG_VERBOSE, "Destroyed");
 }
 
+string MediaSourceNet::GetCurrentDevicePeerName()
+{
+    if (mNetworkListener != NULL)
+        return mNetworkListener->GetCurrentDevicePeerName();
+    else
+        return "";
+}
+
 unsigned int MediaSourceNet::GetListenerPort()
 {
     if (mNetworkListener != NULL)

@@ -74,6 +74,9 @@ public:
     /// The destructor
     virtual ~MediaSourceNet();
 
+    /* device control */
+    virtual std::string GetCurrentDevicePeerName();
+
     unsigned int GetListenerPort();
 
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97);
