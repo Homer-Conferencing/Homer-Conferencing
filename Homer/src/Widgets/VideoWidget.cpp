@@ -2068,22 +2068,28 @@ void VideoWorkerThread::DoSyncClock()
 {
     LOG(LOG_VERBOSE, "DoSyncClock now...");
 
-    // lock
-    mDeliverMutex.lock();
-
-    LOG(LOG_VERBOSE, "Synchronizing with media source %s", mSyncClockMasterSource->GetStreamName().c_str());
-    mSourceAvailable = mMediaSource->Seek(mSyncClockMasterSource->GetSeekPos());
-    if(!mSourceAvailable)
+    if (mSyncClockMasterSource != NULL)
     {
-        LOG(LOG_WARN, "Source isn't available anymore after synch. with %s", mSyncClockMasterSource->GetStreamName().c_str());
-    }
-    mEofReached = false;
-    mSyncClockAsap = false;
-    mSeekAsap = false;
-    mWaitForFirstFrameAfterSeeking = true;
+        // lock
+        mDeliverMutex.lock();
 
-    // unlock
-    mDeliverMutex.unlock();
+        LOG(LOG_VERBOSE, "Synchronizing with media source %s", mSyncClockMasterSource->GetStreamName().c_str());
+        mSourceAvailable = mMediaSource->Seek(mSyncClockMasterSource->GetSeekPos());
+        if(!mSourceAvailable)
+        {
+            LOG(LOG_WARN, "Source isn't available anymore after synch. with %s", mSyncClockMasterSource->GetStreamName().c_str());
+        }
+        mEofReached = false;
+        mSyncClockAsap = false;
+        mSeekAsap = false;
+        mWaitForFirstFrameAfterSeeking = true;
+
+        // unlock
+        mDeliverMutex.unlock();
+    }else
+        LOG(LOG_WARN, "Source of reference clock is invalid");
+
+    LOG(LOG_VERBOSE, "DoSyncClock finished");
 }
 
 void VideoWorkerThread::DoSetCurrentDevice()
