@@ -1965,7 +1965,7 @@ void MediaSourceMem::WaitForRTGrabbing()
         #ifdef MSMEM_DEBUG_TIMING
             LOG(LOG_WARN, "%s-sleeping for %.2f ms (%.0f, %.0f) for frame %.2f", GetMediaTypeStr().c_str(), tWaitingTimeInUSecs / 1000, tRelativeTimeIndexInUSecs, tCurrentRelativeTimeIndexInUSecs, (float)mGrabberCurrentFrameIndex);
         #endif
-        if (tWaitingTimeInUSecs < 3000000)
+        if (tWaitingTimeInUSecs <= MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME * 1000000)
             Thread::Suspend(tWaitingTimeInUSecs);
         else
             LOG(LOG_ERROR, "Found in %s %s source an unplausible delay time of %.2f s (%.0f, %.0f), pre-buffer time: %.2f", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tWaitingTimeInUSecs / 1000, tRelativeTimeIndexInUSecs, tCurrentRelativeTimeIndexInUSecs, mDecoderFramePreBufferTime);
