@@ -38,10 +38,6 @@ namespace Homer { namespace Multimedia {
 
 #define RTCP_SENDER_REPORT                  200
 
-// from libavformat/internal.h
-#define NTP_OFFSET                          2208988800ULL
-#define NTP_OFFSET_US                       (NTP_OFFSET * 1000000ULL)
-
 ///////////////////////////////////////////////////////////////////////////////
 
 RTCP::RTCP()
@@ -82,10 +78,9 @@ string GetPayloadType(int pType)
     return tResult;
 }
 
-uint64_t GetNtpTime()
-{
-    return (av_gettime() / 1000 ) * 1000 + NTP_OFFSET_US;
-}
+// from libavformat/internal.h
+#define NTP_OFFSET                          2208988800ULL
+#define NTP_OFFSET_US                       (NTP_OFFSET * 1000000ULL)
 
 void RTCP::LogRtcpHeader(RtcpHeader *pRtcpHeader)
 {
@@ -118,14 +113,16 @@ void RTCP::LogRtcpHeader(RtcpHeader *pRtcpHeader)
         LOGEX(RTCP, LOG_VERBOSE, "Packets         : %10u", pRtcpHeader->Feedback.Packets);
         LOGEX(RTCP, LOG_VERBOSE, "Octets          : %10u", pRtcpHeader->Feedback.Octets);
 
-        int64_t tTime2 = GetNtpTime();
-        LOGEX(RTCP, LOG_WARN, "time of day2: %ld", tTime2);
+        int64_t tRemoteTimestamHigh = (int64_t)pRtcpHeader->Feedback.TimestampHigh * 1000 * 1000;
+        int64_t tRemoteTimestamLow = ((int64_t)pRtcpHeader->Feedback.TimestampLow * 1000 * 1000) >> 32;
+        int64_t tRemoteUsTimestamp = tRemoteTimestamHigh + tRemoteTimestamLow;
+        int64_t tRemoteTimestamp = tRemoteUsTimestamp - NTP_OFFSET_US;
+        int64_t tLocalTimestamp = av_gettime();
 
-        unsigned int tTimeHigh = tTime2 / 1000000;
-        unsigned int tTimeLow = ((tTime2 % 1000000) << 32) / 1000000;
-
-        LOGEX(RTCP, LOG_VERBOSE, "LocalTime(high) : %u, %u", tTimeHigh, ntohl(tTimeHigh));
-        LOGEX(RTCP, LOG_VERBOSE, "LocalTime(low)  : %u, %u", tTimeLow, ntohl(tTimeLow));
+        LOGEX(RTCP, LOG_VERBOSE, "Local     time: %ld", tLocalTimestamp);
+        LOGEX(RTCP, LOG_VERBOSE, "Remote    time: %ld", tRemoteTimestamp);
+        LOGEX(RTCP, LOG_VERBOSE, "Remote US time: %ld", tRemoteUsTimestamp);
+        LOGEX(RTCP, LOG_VERBOSE, "Remote to local time difference: %ld µs", tLocalTimestamp - tRemoteTimestamp);
     }
 
     // convert from host to network byte order, HACK: exceed array boundaries
@@ -146,7 +143,7 @@ bool RTCP::RtcpParse(char *&pData, int &pDataSize, int &pPackets, int &pOctets)
     int tRtcpHeaderLength = tRtcpHeader->Feedback.Length + 1;
 
     // conver the rest
-    for (int i = 2; i < tRtcpHeaderLength; i++)
+    for (int i = 3; i < tRtcpHeaderLength; i++)
         tRtcpHeader->Data[i] = ntohl(tRtcpHeader->Data[i]);
 
 
