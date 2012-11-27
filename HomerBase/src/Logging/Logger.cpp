@@ -38,10 +38,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#if defined(LINUX) || defined(APPLE) || defined(BSD)
-#include <sys/time.h>
-#endif
-
 #include <Header_Windows.h>
 
 namespace Homer { namespace Base {
