@@ -67,13 +67,13 @@ string GetPayloadType(int pType)
                 tResult = "receiver report";
                 break;
         case 202:
-                tResult = "SDES";
+                tResult = "source description";
                 break;
         case 203:
-                tResult = "BYE";
+                tResult = "goodbye signal";
                 break;
         case 204:
-                tResult = "APP";
+                tResult = "application defined";
                 break;
         default:
                 tResult = "type " + toString(pType);
