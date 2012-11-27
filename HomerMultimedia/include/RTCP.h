@@ -40,7 +40,9 @@ namespace Homer { namespace Multimedia {
 
 // the following de/activates debugging of RTP packets
 //#define RTCP_DEBUG_PACKETS_DECODER
+
 //#define RTCP_DEBUG_PACKETS_ENCODER
+//#define RTCP_DEBUG_PACKET_ENCODER_FFMPEG
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -61,8 +63,8 @@ union RtcpHeader{
         unsigned int Fmt:5;                 /* Feedback message type (FMT) */
         unsigned int Padding:1;             /* padding flag */
         unsigned int Version:2;             /* protocol version */
-        unsigned int TimestampHigh;         /* high part of timestamp */
         unsigned int Ssrc;                  /* synchronization source */
+        unsigned int TimestampHigh;         /* high part of timestamp */
         unsigned int TimestampLow;          /* low part of timestamp */
         unsigned int RtpTimestamp;          /* RTP timestamp */
         unsigned int Packets;               /* packet count */

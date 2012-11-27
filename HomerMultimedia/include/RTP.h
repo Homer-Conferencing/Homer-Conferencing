@@ -40,6 +40,7 @@ namespace Homer { namespace Multimedia {
 ///////////////////////////////////////////////////////////////////////////////
 
 // the following de/activates debugging of send RTP packets
+//#define RTP_DEBUG_PACKET_ENCODER_FFMPEG
 //#define RTP_DEBUG_PACKET_ENCODER
 
 // the following de/activates debugging of received RTP packets
