@@ -71,11 +71,6 @@ using namespace Homer::Monitor;
 
 namespace Homer { namespace Multimedia {
 
-///////////////////////////////////////////////////////////////////////////////
-
-unsigned int RTP::mH261PayloadSizeMax = 0;
-
-///////////////////////////////////////////////////////////////////////////////
 /* ##################################################################################
 // ########################## Resulting packet structure ############################
 // ##################################################################################
@@ -88,6 +83,9 @@ unsigned int RTP::mH261PayloadSizeMax = 0;
 
     Ethernet/WLan frame(1500) - IP(20)-UDP(8)-RTP(12) = 1460 bytes RTP payload limit
  */
+unsigned int RTP::mH261PayloadSizeMax = 0;
+
+///////////////////////////////////////////////////////////////////////////////
 
 // ########################## AMR-NB (RFC 3267) ###########################################
 union AMRNBHeader{ //TODO
@@ -414,6 +412,8 @@ RTP::RTP()
     mRemoteSourceIdentifier = 0;
     mRemoteStartTimestamp = 0;
     mLocalSourceIdentifier = 0;
+    mRtcpLastRemoteTimestamp = 0;
+    mRtcpLastRemoteNtpTime = 0;
 }
 
 RTP::~RTP()
@@ -503,6 +503,8 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     mRemoteTimestampLastCompleteFrame = 0;
     mRemoteSourceIdentifier = 0;
     mRemoteStartTimestamp = 0;
+    mRtcpLastRemoteTimestamp = 0;
+    mRtcpLastRemoteNtpTime = 0;
     // set SRC ID
     mLocalSourceIdentifier = av_get_random_seed();
 
@@ -534,7 +536,7 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     // verbose timestamp debugging    mRtpFormatContext->debug = FF_FDEBUG_TS;
 
     // allocate new stream structure
-	tOuterStream = av_new_stream(mRtpFormatContext, 0);//(AVStream*)av_mallocz(sizeof(AVStream));
+	tOuterStream = av_new_stream(mRtpFormatContext, 0);
     if (tOuterStream == NULL)
     {
         LOG(LOG_ERROR, "Memory allocation failed");
@@ -554,17 +556,19 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     // create I/O context which splits RTP stream into packets
     MediaSource::CreateIOContext(mRtpPacketBuffer, tOuterStream->codec->rtp_payload_size, NULL, StoreRtpPacket, this, &mAVIOContext);
 
-    // open RTP stream for avformat_Write_header()
-    OpenRtpPacketStream();
-
     // set new I/O context
     mRtpFormatContext->pb = mAVIOContext;
 
     // limit packet size, otherwise ffmpeg will deliver unpredictable results ;)
     mRtpFormatContext->pb->max_packet_size = mAVIOContext->max_packet_size;
 
+    mRtpFormatContext->start_time_realtime = av_gettime();
+
     // Dump information about device file
     av_dump_format(mRtpFormatContext, 0, "RTP Encoder", true);
+
+    // open RTP stream for avformat_Write_header()
+    OpenRtpPacketStream();
 
     // allocate streams private data buffer and write the streams header, if any
     avformat_write_header(mRtpFormatContext, NULL);
@@ -583,6 +587,10 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     			break;
     }
 
+    tOuterStream->time_base.den = CalculateClockRateFactor() * 1000;
+    tOuterStream->time_base.num = 1;
+    int64_t tAVPacketPts = (float)tOuterStream->pts.val + tOuterStream->pts.num / tOuterStream->pts.den;
+
     LOG(LOG_INFO, "Opened...");
     LOG(LOG_INFO, "    ..rtp target: %s:%u", pTargetHost.c_str(), pTargetPort);
     LOG(LOG_INFO, "    ..rtp header size: %d", RTP_HEADER_SIZE);
@@ -591,6 +599,11 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     LOG(LOG_INFO, "    ..codec long name: %s", tOuterStream->codec->codec->long_name);
     LOG(LOG_INFO, "    ..resolution: %d * %d pixels", tOuterStream->codec->width, tOuterStream->codec->height);
 //    LOG(LOG_INFO, "    ..codec time_base: %d/%d", mCodecContext->time_base.den, mCodecContext->time_base.num); // inverse
+    LOG(LOG_INFO, "    ..stream start real-time: %ld", mRtpFormatContext->start_time_realtime);
+    LOG(LOG_INFO, "    ..stream start time: %ld", tOuterStream->start_time);
+    LOG(LOG_INFO, "    ..max. delay: %d", mRtpFormatContext->max_delay);
+    LOG(LOG_INFO, "    ..audio preload: %d", mRtpFormatContext->audio_preload);
+    LOG(LOG_INFO, "    ..start A/V PTS: %ld", tAVPacketPts);
     LOG(LOG_INFO, "    ..stream rfps: %d/%d", tOuterStream->r_frame_rate.num, tOuterStream->r_frame_rate.den);
     LOG(LOG_INFO, "    ..stream time_base: %d/%d", tOuterStream->time_base.den, tOuterStream->time_base.num); // inverse
     LOG(LOG_INFO, "    ..stream codec time_base: %d/%d", tOuterStream->codec->time_base.den, tOuterStream->codec->time_base.num); // inverse
@@ -1184,7 +1197,7 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize, int64_t pPacketPt
         tRtpHeader->Marked = (tPacketIndex == tPacketCount - 1)?1:0; // 1 = last fragment, 0 = intermediate fragment
         tRtpHeader->PayloadType = 31; // 31 = h261
         tRtpHeader->SequenceNumber = ++mH261LocalSequenceNumber; // monotonous growing
-        tRtpHeader->Timestamp = pPacketPts;
+        tRtpHeader->Timestamp = pPacketPts * 90 /* 90 kHz clock rate */;
         tRtpHeader->Ssrc = mLocalSourceIdentifier; // use the initially computed unique ID
 
         // convert from host to network byte order
@@ -1277,51 +1290,75 @@ void RTP::LogRtpHeader(RtpHeader *pRtpHeader)
         pRtpHeader->Data[i] = htonl(pRtpHeader->Data[i]);
 }
 
-int64_t RTP::GetTimestampFromRTP()
+int64_t RTP::GetCurrentPtsFromRTP()
 {
     int64_t tResult = 0;
 
-    //#######################
-    //### clock rate adaption
-    //#######################
-    //HINT: mpeg uses its specific clock rate of 90 kHz, the normal clock rate is 1 kHz (time base is 1 ms !)
-    //      e.g.: 29.97 fps means 1/29.97 = 33.367 ms time difference between frames, 33.367 ms * 90 = 3003 timestamp difference (PTS) between frames for playout
-    //      e.g.: 23.97 fps -> 1/23.97 = 41.719 ms, 41.719 ms * 90 = 3755 PTS difference between frames
-    if (mRemoteTimestamp > 0)
-        tResult = mRemoteTimestamp / CalculateClockRateFactor();
+    // clock rate adaption
+    tResult = mRemoteTimestamp / CalculateClockRateFactor();
 
     return tResult;
 }
 
-int64_t RTP::CalculateClockRateFactor()
+void RTP::GetSynchronizationReferenceFromRTP(uint64_t &pReferenceNtpTime, unsigned int &pReferencePts)
 {
-    int64_t tResult = 1;
+    mSynchDataMutex.lock();
+
+    pReferenceNtpTime = mRtcpLastRemoteNtpTime;
+
+    // clock rate adaption
+    pReferencePts = mRtcpLastRemoteTimestamp / CalculateClockRateFactor();
+
+    mSynchDataMutex.unlock();
+}
+
+float RTP::CalculateClockRateFactor()
+{
+    float tResult = 1;
+
+    //HINT: mpeg uses its specific clock rate of 90 kHz, the normal clock rate is 1 kHz (time base is 1 ms !)
+    //      e.g.: 29.97 video fps means 1/29.97 = 33.367 ms time difference between frames, 33.367 ms * 90 = 3003 timestamp difference (PTS) between frames for play out
+    //      e.g.: 23.97 video fps -> 1/23.97 = 41.719 ms, 41.719 ms * 90 = 3755 PTS difference between frames
+    //      e.g.  44100 samples per second, 44100/1024 audio frames per second = 43,07 fps -> 1/43,07 = 23,22 ms
 
     switch(mStreamCodecID)
     {
         case CODEC_ID_PCM_MULAW:
         case CODEC_ID_PCM_ALAW:
+            tResult = 90;
+            break;
         case CODEC_ID_PCM_S16BE:
+            tResult = 90;
+            break;
         case CODEC_ID_MP3:
+            tResult = 44.1; //TODO: auto-detect?
+            break;
         case CODEC_ID_AMR_NB:
+            tResult = 1; //TODO
+            break;
         case CODEC_ID_AAC:
+            tResult = 1; //TODO
+            break;
         case CODEC_ID_ADPCM_G722:
-        case CODEC_ID_H261:
+            tResult = 8;
+            break;
         case CODEC_ID_THEORA:
-                tResult = 1;
-                break;
+            tResult = 1; //TODO
+            break;
+        case CODEC_ID_H261:
         case CODEC_ID_H263:
         case CODEC_ID_H263P:
         case CODEC_ID_H264:
         case CODEC_ID_MPEG1VIDEO:
         case CODEC_ID_MPEG2VIDEO:
         case CODEC_ID_MPEG4: //TODO: mpeg 4 is buggy?
-                tResult = 90 /* use 90 kHz time base instead of 1 kHz like defined by RTP rfc */;
-                break;
+            tResult = 90 /* use 90 kHz time base instead of 1 kHz like defined by RTP rfc */;
+            break;
         case CODEC_ID_VP8:
-                break; //TODO: mpeg?
+            tResult = 1; //TODO
+            break;
         default:
-                break;
+            break;
     }
 
     return tResult;
@@ -1413,6 +1450,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
     // #############################################################
     // HEADER: rtcp => parse and return immediately
     // RTCP feedback packet within data stream: RFC4585
+    // transmitted every 5 seconds
     // #############################################################
     if ((tRtpHeader->PayloadType >= 72) && (tRtpHeader->PayloadType <= 76))
     {// RTCP intermediate packet for streaming feedback received
@@ -1437,8 +1475,14 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
     }else
     {// usual RTP packet
         #ifdef RTP_DEBUG_PACKET_DECODER
+            for (int i = 0; i < 3; i++)
+                tRtpHeader->Data[i] = htonl(tRtpHeader->Data[i]);
+
             // print some verbose outputs
             LogRtpHeader(tRtpHeader);
+
+            for (int i = 0; i < 3; i++)
+                tRtpHeader->Data[i] = ntohl(tRtpHeader->Data[i]);
         #endif
     }
 
@@ -1479,11 +1523,17 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
         {
             // did the source ID from remote side changed more than one time?
             if (mRemoteSourceIdentifier != 0)
-                LOG(LOG_WARN, "Alternating source at remote side detected");
+                LOG(LOG_WARN, "Alternating source at remote side detected, will reset start timestamp");
 
             // store the source ID to be able to detect repeating changes
             mRemoteSourceIdentifier = tRtpHeader->Ssrc;
 
+            // force a reset of the start timestamp and trigger a re-initialization
+            mRemoteStartTimestamp = 0;
+        }
+
+        if (mRemoteStartTimestamp == 0)
+        {
             // we have to reset the timestamp calculation
             mRemoteStartTimestamp = tRtpHeader->Timestamp;
         }
@@ -1492,8 +1542,8 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
         int64_t tRemoteTimestamp = (int64_t)tRtpHeader->Timestamp - mRemoteStartTimestamp;
         if (tRemoteTimestamp < 0)
         {
-            LOG(LOG_WARN, "Invalid timestamp %ld from remote side detected, will use 0 instead", tRemoteTimestamp);
-            tRemoteTimestamp = 0;
+            LOG(LOG_WARN, "Invalid timestamp %ld (current abs. timestamp: %u, start timestamp: %u)  from remote side detected, will use 0 instead", tRemoteTimestamp, tRtpHeader->Timestamp, mRemoteStartTimestamp);
+            tRemoteTimestamp += UINT_MAX;
         }
         mRemoteTimestamp = tRemoteTimestamp;
         #ifdef RTP_DEBUG_PACKET_DECODER
@@ -2181,6 +2231,140 @@ string RTP::PayloadIdToCodec(int pId)
     }
 
     //LOGEX(RTP, LOG_VERBOSE, ("Translated %d to " + tResult).c_str(), pId);
+
+    return tResult;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+#define RTCP_SENDER_REPORT                  200
+
+string GetRtcpPayloadTypeStr(int pType)
+{
+    string tResult = "unknown";
+    switch(pType)
+    {
+        case RTCP_SENDER_REPORT:
+                tResult = "sender report";
+                break;
+        case 201:
+                tResult = "receiver report";
+                break;
+        case 202:
+                tResult = "source description";
+                break;
+        case 203:
+                tResult = "goodbye signal";
+                break;
+        case 204:
+                tResult = "application defined";
+                break;
+        default:
+                tResult = "type " + toString(pType);
+                break;
+    }
+    return tResult;
+}
+
+void RTP::LogRtcpHeader(RtcpHeader *pRtcpHeader)
+{
+    // convert from network to host byte order, HACK: exceed array boundaries
+    for (int i = 0; i < 3; i++)
+        pRtcpHeader->Data[i] = ntohl(pRtcpHeader->Data[i]);
+    int tRtcpHeaderLength = pRtcpHeader->Feedback.Length + 1;
+
+    // conver the rest
+    for (int i = 3; i < tRtcpHeaderLength; i++)
+        pRtcpHeader->Data[i] = ntohl(pRtcpHeader->Data[i]);
+
+    LOGEX(RTP, LOG_VERBOSE, "################## RTCP header ########################");
+    LOGEX(RTP, LOG_VERBOSE, "Version: %d", pRtcpHeader->General.Version);
+    if (pRtcpHeader->General.Padding)
+        LOGEX(RTP, LOG_VERBOSE, "Padding: true");
+    else
+        LOGEX(RTP, LOG_VERBOSE, "Padding: false");
+    LOGEX(RTP, LOG_VERBOSE, "Type: %s", GetRtcpPayloadTypeStr(pRtcpHeader->General.Type).c_str());
+    LOGEX(RTP, LOG_VERBOSE, "Counter/format: %d", pRtcpHeader->General.RC);
+    LOGEX(RTP, LOG_VERBOSE, "Length: %d (entire packet size: %d)", pRtcpHeader->General.Length, (pRtcpHeader->General.Length + 1 /* length is reported minus one */) * 4 /* 32 bit words */);
+    LOGEX(RTP, LOG_VERBOSE, "SSRC            : %u", pRtcpHeader->Feedback.Ssrc);
+
+    // sender report
+    if (pRtcpHeader->General.Type == RTCP_SENDER_REPORT)
+    {
+        LOGEX(RTP, LOG_VERBOSE, "Timestamp(high) : %10u", pRtcpHeader->Feedback.TimestampHigh);
+        LOGEX(RTP, LOG_VERBOSE, "Timestamp(low)  : %10u", pRtcpHeader->Feedback.TimestampLow);
+        LOGEX(RTP, LOG_VERBOSE, "RTP Timestamp (abs.) : %10u", pRtcpHeader->Feedback.RtpTimestamp);
+        LOGEX(RTP, LOG_VERBOSE, "Packets         : %10u", pRtcpHeader->Feedback.Packets);
+        LOGEX(RTP, LOG_VERBOSE, "Octets          : %10u", pRtcpHeader->Feedback.Octets);
+
+        int64_t tRemoteTimestamHigh = (int64_t)pRtcpHeader->Feedback.TimestampHigh * 1000 * 1000;
+        int64_t tRemoteTimestamLow = ((int64_t)pRtcpHeader->Feedback.TimestampLow * 1000 * 1000) >> 32;
+        int64_t tRemoteUsTimestamp = tRemoteTimestamHigh + tRemoteTimestamLow;
+        int64_t tRemoteTimestamp = tRemoteUsTimestamp - NTP_OFFSET_US;
+        int64_t tLocalTimestamp = av_gettime();
+
+        LOGEX(RTP, LOG_VERBOSE, "Local     time: %ld", tLocalTimestamp);
+        LOGEX(RTP, LOG_VERBOSE, "Remote    time: %ld", tRemoteTimestamp);
+        LOGEX(RTP, LOG_VERBOSE, "Remote US time: %ld", tRemoteUsTimestamp);
+        LOGEX(RTP, LOG_VERBOSE, "Remote to local time difference: %ld us", tLocalTimestamp - tRemoteTimestamp);
+    }
+
+    // convert from host to network byte order, HACK: exceed array boundaries
+    for (int i = 0; i < tRtcpHeaderLength; i++)
+        pRtcpHeader->Data[i] = htonl(pRtcpHeader->Data[i]);
+}
+
+bool RTP::RtcpParseSenderReport(char *&pData, int &pDataSize, int64_t &pEndToEndDelay, int &pPackets, int &pOctets)
+{
+    //HINT: assumes network byte order!
+
+    bool tResult = false;
+    RtcpHeader* tRtcpHeader = (RtcpHeader*)pData;
+
+    // convert from network to host byte order, HACK: exceed array boundaries
+    for (int i = 0; i < 3; i++)
+        tRtcpHeader->Data[i] = ntohl(tRtcpHeader->Data[i]);
+    int tRtcpHeaderLength = tRtcpHeader->Feedback.Length + 1;
+
+    // conver the rest
+    for (int i = 3; i < tRtcpHeaderLength; i++)
+        tRtcpHeader->Data[i] = ntohl(tRtcpHeader->Data[i]);
+
+
+    if (tRtcpHeaderLength == 7 /* need 28 byte sender report */)
+    {// update values
+        uint64_t tRemoteNtpTimestamHigh = (uint64_t)tRtcpHeader->Feedback.TimestampHigh * 1000 * 1000;
+        uint64_t tRemoteNtpTimestamLow = ((uint64_t)tRtcpHeader->Feedback.TimestampLow * 1000 * 1000) >> 32;
+        uint64_t tRemoteNtpUsTimestamp = tRemoteNtpTimestamHigh + tRemoteNtpTimestamLow;
+        uint64_t tRemoteNtpTimestamp = tRemoteNtpUsTimestamp - NTP_OFFSET_US;
+        uint64_t tLocalNtpTimestamp = av_gettime();
+
+
+        mSynchDataMutex.lock();
+
+        mRtcpLastRemoteNtpTime = tRemoteNtpTimestamp;
+
+        // have we already found the timestamp offset (start time), otherwise we found it now
+        if (mRemoteStartTimestamp == 0)
+            mRemoteStartTimestamp = tRtcpHeader->Feedback.RtpTimestamp;
+        mRtcpLastRemoteTimestamp = tRtcpHeader->Feedback.RtpTimestamp - mRemoteStartTimestamp;
+
+        mSynchDataMutex.unlock();
+
+
+        pEndToEndDelay = tLocalNtpTimestamp - tRemoteNtpTimestamp;
+        pPackets = tRtcpHeader->Feedback.Packets;
+        pOctets = tRtcpHeader->Feedback.Octets;
+        tResult = true;
+    }else
+    {// set fall back values
+        pPackets = 0;
+        pOctets = 0;
+        tResult = false;
+    }
+    // convert from host to network byte order, HACK: exceed array boundaries
+    for (int i = 0; i < tRtcpHeaderLength; i++)
+        tRtcpHeader->Data[i] = htonl(tRtcpHeader->Data[i]);
 
     return tResult;
 }

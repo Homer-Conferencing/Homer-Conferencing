@@ -30,7 +30,6 @@
 
 #include <Header_Ffmpeg.h>
 #include <PacketStatistic.h>
-#include <RTCP.h>
 
 #include <sys/types.h>
 #include <string>
@@ -45,6 +44,52 @@ namespace Homer { namespace Multimedia {
 
 // the following de/activates debugging of received RTP packets
 //#define RTP_DEBUG_PACKET_DECODER
+
+
+
+// the following de/activates debugging of RTCP packets
+//#define RTCP_DEBUG_PACKETS_DECODER
+
+//#define RTCP_DEBUG_PACKETS_ENCODER
+//#define RTCP_DEBUG_PACKET_ENCODER_FFMPEG
+
+///////////////////////////////////////////////////////////////////////////////
+
+// from libavformat/internal.h
+#define NTP_OFFSET                          2208988800ULL
+#define NTP_OFFSET_US                       (NTP_OFFSET * 1000000ULL)
+
+///////////////////////////////////////////////////////////////////////////////
+
+// ########################## RTCP ###########################################
+union RtcpHeader{
+    struct{ // send via separate port
+        unsigned short int Length;          /* length of report */
+        unsigned int Type:8;                /* report type */
+        unsigned int RC:5;                  /* report counter */
+        unsigned int Padding:1;             /* padding flag */
+        unsigned int Version:2;             /* protocol version */
+        unsigned int Ssrc;                  /* synchronization source */
+        unsigned int Data[5];              /*  */
+    } __attribute__((__packed__))General;
+    struct{ // send within media stream as intermediate packets
+        unsigned short int Length;          /* length of report */
+        unsigned int Type:8;                /* Payload type (PT) */
+        unsigned int Fmt:5;                 /* Feedback message type (FMT) */
+        unsigned int Padding:1;             /* padding flag */
+        unsigned int Version:2;             /* protocol version */
+        unsigned int Ssrc;                  /* synchronization source */
+        unsigned int TimestampHigh;         /* high part of reference timestamp */
+        unsigned int TimestampLow;          /* low part of reference timestamp */
+        unsigned int RtpTimestamp;          /* reference RTP timestamp */
+        unsigned int Packets;               /* packet count */
+        unsigned int Octets;                /* byte count */
+    } __attribute__((__packed__))Feedback;
+    uint32_t Data[7];
+};
+
+// calculate the size of an RTCP header: "size of structure"
+#define RTCP_HEADER_SIZE                      sizeof(RtcpHeader)
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -69,25 +114,14 @@ union RtpHeader{
     uint32_t Data[3];
 };
 
+///////////////////////////////////////////////////////////////////////////////
 
 // calculate the size of an RTP header: "size of structure"
 #define RTP_HEADER_SIZE                      sizeof(RtpHeader)
 
-// maximum packet size, including encoded data/TS and RTP header
-// HINT: values above 1k would lead to unacceptable picture quality in wireless LAN
-// HINT: 576 bytes should every host be able to process, 20 bytes for IP header
-// HINT: 1448 byte should be the maximum packet size (1500 - IP - UDP - UMTP)
-//       UMTP = "UDP Multicast Tunneling Protocol"
-// HINT: 1472 bytes are the value from the ffmpeg library
-// HINT: this value is only used within h261 packetizer, in remaining cases the value
-//       from the MediaSourceMuxer is used
-//#define RTP_MAX_PACKET_SIZE                     1472 //576
-//#define RTP_MAX_PAYLOAD_SIZE                    RTP_MAX_PACKET_SIZE - RTP_HEADER_SIZE
-
 ///////////////////////////////////////////////////////////////////////////////
 
-class RTP:
-	public RTCP
+class RTP
 {
 public:
     RTP();
@@ -102,7 +136,7 @@ public:
     static void SetH261PayloadSizeMax(unsigned int pMaxSize);
     static unsigned int GetH261PayloadSizeMax();
 
-    /* RTP packetizing */
+    /* RTP packetizing/parsing */
     bool RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts);
     unsigned int GetLostPacketsFromRTP();
     static void LogRtpHeader(RtpHeader *pRtpHeader);
@@ -112,11 +146,16 @@ public:
 
     void RTPRegisterPacketStatistic(Homer::Monitor::PacketStatistic *pStatistic);
 
-protected:
-    int64_t GetTimestampFromRTP(); // uses the timestamps from the RTP header to derive a valid PTS value
+    /* RTCP packetizing/parsing */
+    static void LogRtcpHeader(RtcpHeader *pRtcpHeader);
+    bool RtcpParseSenderReport(char *&pData, int &pDataSize, int64_t &pEndToEndDelay /* in micro seconds */, int &pPackets, int &pOctets);
 
-    /* for clock rate adaption, e.g., 90 kHz */
-    int64_t CalculateClockRateFactor();
+protected:
+    int64_t GetCurrentPtsFromRTP(); // uses the timestamps from the RTP header to derive a valid PTS value
+    void GetSynchronizationReferenceFromRTP(uint64_t &pReferenceNtpTime, unsigned int &pReferencePts);
+
+    /* for clock rate adaption, e.g., 8, 44.1, 90 kHz */
+    float CalculateClockRateFactor();
 
 private:
     void AnnounceLostPackets(unsigned int pCount);
@@ -145,7 +184,7 @@ private:
     unsigned int        mRemoteTimestampLastCompleteFrame;
     unsigned int        mRemoteSourceIdentifier;
     unsigned int        mRemoteStartTimestamp;
-    unsigned int        mRemoteTimestamp;
+    uint64_t            mRemoteTimestamp;
     /* MP3 RTP hack */
     unsigned int        mMp3Hack_EntireBufferSize;
     /* RTP packet stream */
@@ -157,6 +196,10 @@ private:
     static unsigned int mH261PayloadSizeMax;
     bool                mH261UseInternalEncoder;
     unsigned short int  mH261LocalSequenceNumber;
+    /* RTCP */
+    Mutex               mSynchDataMutex;
+    uint64_t            mRtcpLastRemoteNtpTime; // (NTP timestamp)
+    unsigned int        mRtcpLastRemoteTimestamp; // PTS value (without clock rata adaption!)
 };
 
 ///////////////////////////////////////////////////////////////////////////////
