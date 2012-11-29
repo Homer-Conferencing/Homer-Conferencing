@@ -538,8 +538,9 @@ QStringList AudioWidget::GetAudioStatistic()
 
     //############################################
 	//### Line 2: current audio buffer, dropped chunks, buffered packets
-    QString tLine_Sample = "";
-    tLine_Sample = "Frame: " + QString("%1").arg(mCurrentFrameNumber) + (mAudioSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mAudioSource->GetChunkDropCounter()) + " lost packets)") : "")  + (mAudioSource->GetFragmentBufferCounter() ? (" (" + QString("%1").arg(mAudioSource->GetFragmentBufferCounter()) + "/" + QString("%1").arg(mAudioSource->GetFragmentBufferSize()) + " buffered packets)") : "");
+    QString tLine_Frame = "";
+    tLine_Frame = "Frame: " + QString("%1").arg(mCurrentFrameNumber);
+    tLine_Frame += (mAudioSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mAudioSource->GetChunkDropCounter()) + " lost packets)") : "") + (mAudioSource->GetFragmentBufferCounter() ? (" (" + QString("%1").arg(mAudioSource->GetFragmentBufferCounter()) + "/" + QString("%1").arg(mAudioSource->GetFragmentBufferSize()) + " buffered packets)") : "");
 
     //############################################
     //### Line 3: FPS and pre-buffer time
@@ -608,8 +609,8 @@ QStringList AudioWidget::GetAudioStatistic()
     //derive resulting Audio statistic
     if (tLine_Source != "")
     	tAudioStatistic += tLine_Source;
-    if (tLine_Sample != "")
-    	tAudioStatistic += tLine_Sample;
+    if (tLine_Frame != "")
+    	tAudioStatistic += tLine_Frame;
     if (tLine_Fps != "")
     	tAudioStatistic += tLine_Fps;
     if (tLine_Codec != "")
