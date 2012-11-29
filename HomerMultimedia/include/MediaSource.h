@@ -226,6 +226,9 @@ public:
     virtual float GetFrameRatePlayout();
     virtual void SetFrameRate(float pFps);
 
+    /* A/V sync. */
+    virtual int64_t GetSynchronizationTimestamp(); // in us
+
     /* frame statistics */
     virtual bool SupportsDecoderFrameStatistics();
     virtual int64_t DecodedIFrames();

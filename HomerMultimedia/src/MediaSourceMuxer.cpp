@@ -841,6 +841,16 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
         return false;
     }
 
+    if (mCodecContext->codec_id == CODEC_ID_ADPCM_G722)
+    {
+        if (mCodecContext->sample_rate == 16000)
+        {
+            LOG(LOG_WARN, "Patching the stream clock rate according to RFC3551 from %.2f to 8000", mEncoderStream->time_base.num / mEncoderStream->time_base.den);
+            mEncoderStream->time_base.den = 8000;
+            mEncoderStream->time_base.num = 1;
+        }
+    }
+
     // fix frame size of 0 for some audio codecs and use default caudio capture frame size instead to allow 1:1 transformation
     // old PCM implementation delivered often a frame size of 1
     // some audio codecs (excl. MP3) deliver a frame size of 0
@@ -1619,9 +1629,6 @@ void* MediaSourceMuxer::Run(void* pArgs)
 											av_init_packet(tPacket);
 											mFrameNumber++;
 
-											// adapt pts value
-											if ((mCodecContext->coded_frame) && (mCodecContext->coded_frame->pts != 0))
-												tPacket->pts = av_rescale_q(mCodecContext->coded_frame->pts, mCodecContext->time_base, mEncoderStream->time_base);
 											tPacket->flags |= AV_PKT_FLAG_KEY;
 
 			                                // calculate the packet's PTS value
@@ -2414,6 +2421,14 @@ void MediaSourceMuxer::SetFrameRate(float pFps)
     mFrameRate = pFps;
     if (mMediaSource != NULL)
         mMediaSource->SetFrameRate(pFps);
+}
+
+int64_t MediaSourceMuxer::GetSynchronizationTimestamp()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->GetSynchronizationTimestamp();
+    else
+        return 0;
 }
 
 int MediaSourceMuxer::GetOutputSampleRate()

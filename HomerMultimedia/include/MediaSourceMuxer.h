@@ -87,6 +87,9 @@ public:
     virtual float GetFrameRate();
     virtual void SetFrameRate(float pFps);
 
+    /* A/V sync. */
+    virtual int64_t GetSynchronizationTimestamp();
+
     /* relaying */
     virtual bool SupportsRelaying();
     void SetRelayActivation(bool pState);

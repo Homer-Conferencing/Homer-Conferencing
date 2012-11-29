@@ -2474,6 +2474,11 @@ void MediaSource::SetFrameRate(float pFps)
     mFrameRate = pFps;
 }
 
+int64_t MediaSource::GetSynchronizationTimestamp()
+{
+    return 0;
+}
+
 void* MediaSource::AllocChunkBuffer(int& pChunkBufferSize, enum MediaType pMediaType)
 {
     enum MediaType tMediaType = mMediaType;
@@ -2637,6 +2642,8 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec flags: 0x%x", mCodecContext->flags);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec time_base: %d/%d", mCodecContext->time_base.den, mCodecContext->time_base.num); // inverse
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream ID: %d", mMediaStreamIndex);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream start real-time: %ld", mFormatContext->start_time_realtime);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream start time: %ld", mFormatContext->streams[mMediaStreamIndex]->start_time);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream rfps: %d/%d", mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num, mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->time_base.den, mFormatContext->streams[mMediaStreamIndex]->time_base.num); // inverse
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream codec time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->codec->time_base.den, mFormatContext->streams[mMediaStreamIndex]->codec->time_base.num); // inverse
@@ -2658,6 +2665,7 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     int64_t tStreamDuration = FilterPts(mFormatContext->streams[mMediaStreamIndex]->duration);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context duration: %ld frames (%.0f seconds), nr. of frames: %ld", tStreamDuration, (float)tStreamDuration / mFrameRate);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context frames: %ld", mFormatContext->streams[mMediaStreamIndex]->nb_frames);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..max. delay: %d", mFormatContext->max_delay);
     switch(mMediaType)
     {
         case MEDIA_VIDEO:
@@ -2672,6 +2680,7 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
             LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..sample rate: %d", mCodecContext->sample_rate);
             LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..channels: %d [layout: %s]", mCodecContext->channels, tChannelLayoutStr);
             LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..sample format: %s", av_get_sample_fmt_name(mCodecContext->sample_fmt));
+            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..audio preload: %d", mFormatContext->audio_preload);
             break;
         default:
             LOG(LOG_ERROR, "Media type unknown");

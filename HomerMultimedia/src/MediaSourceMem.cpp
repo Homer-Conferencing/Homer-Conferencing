@@ -207,7 +207,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
                 {
                     int tPacketCountReportedBySender = 0;
                     int tOctetCountReportedBySender = 0;
-                    if (tMediaSourceMemInstance->RtcpParse(tFragmentData, tFragmentDataSize, tMediaSourceMemInstance->mEndToEndDelay, tPacketCountReportedBySender, tOctetCountReportedBySender))
+                    if (tMediaSourceMemInstance->RtcpParseSenderReport(tFragmentData, tFragmentDataSize, tMediaSourceMemInstance->mEndToEndDelay, tPacketCountReportedBySender, tOctetCountReportedBySender))
                     {
 						#ifdef MSMEM_DEBUG_SENDER_REPORTS
                     		LOGEX(MediaSourceMem, LOG_VERBOSE, "Sender reports: %d packets and %d bytes transmitted", tPacketCountReportedBySender, tOctetCountReportedBySender);
@@ -447,23 +447,47 @@ int MediaSourceMem::GetFragmentBufferSize()
         return 0;
 }
 
-int64_t MediaSourceMem::CalculateFrameNumberFromRTP()
+int MediaSourceMem::CalculateFrameBufferSize()
 {
-    int64_t tResult = 0;
-    float tFrameRate = GetFrameRatePlayout();
-    if (tFrameRate < 1.0)
-        return 0;
+    int tResult = 0;
 
-    // the following sequence delivers the frame number independent from packet loss because
-    // it calculates the frame number based on the current timestamp from the RTP header
-    float tTimeBetweenFrames = 1000 / tFrameRate;
-    tResult = rint((float)GetTimestampFromRTP() / tTimeBetweenFrames);
+    // how many frame input buffers do we want to store, depending on mDecoderBufferTimeMax
+    //HINT: assume 44.1 kHz playback sample rate, 1024 samples per audio buffer
+    //HINT: reserve one buffer for internal signaling
+    switch(GetMediaType())
+    {
+        case MEDIA_AUDIO:
+            tResult = rint(mDecoderFrameBufferTimeMax * mRealFrameRate /* 44100 samples per second / 1024 samples per frame */);
+            break;
+        case MEDIA_VIDEO:
+            tResult = rint(mDecoderFrameBufferTimeMax * mRealFrameRate /* r_frame_rate.num / r_frame_rate.den from the AVStream */);
+            break;
+        default:
+            LOG(LOG_ERROR, "Unsupported media type");
+            break;
+    }
 
-    #ifdef MSMEM_DEBUG_PRE_BUFFERING
-        LOG(LOG_VERBOSE, "Calculated a frame number: %ld (RTP timestamp: %ld), fps: %.2f", tResult, GetTimestampFromRTP(), tFrameRate);
-    #endif
+    // add one entry for internal signaling purposes
+    tResult++;
 
     return tResult;
+}
+
+void MediaSourceMem::DoSetVideoGrabResolution(int pResX, int pResY)
+{
+    LOG(LOG_VERBOSE, "Going to execute DoSetVideoGrabResolution()");
+
+    if (mMediaSourceOpened)
+    {
+        if (mMediaType == MEDIA_UNKNOWN)
+        {
+            LOG(LOG_WARN, "Media type is still unknown when DoSetVideoGrabResolution is called, setting type to VIDEO ");
+            mMediaType = MEDIA_VIDEO;
+        }
+
+        StopDecoder();
+        StartDecoder();
+    }
 }
 
 bool MediaSourceMem::SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset)
@@ -627,6 +651,9 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     	case CODEC_ID_ADPCM_G722:
     		tCodec->channels = 1;
     		tCodec->sample_rate = 16000;
+            LOG(LOG_WARN, "Patching the stream clock rate according to RFC3551 from %.2f to 8000", mFormatContext->streams[mMediaStreamIndex]->time_base.num / mFormatContext->streams[mMediaStreamIndex]->time_base.den);
+            mFormatContext->streams[mMediaStreamIndex]->time_base.den = 8000;
+            mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
 			break;
     	case CODEC_ID_GSM:
     	case CODEC_ID_PCM_ALAW:
@@ -1697,7 +1724,9 @@ void* MediaSourceMem::Run(void* pArgs)
                                 av_fifo_generic_write(tSampleFifo, tChunkBuffer, tCurrentChunkSize, NULL);
 
                                 // save PTS value to deliver it later to the frame grabbing thread
-                                //LOG(LOG_VERBOSE, "Setting current frame PTS to %ld", tCurPacketPts);
+                                #ifdef MSMEM_DEBUG_PRE_BUFFERING
+                                    LOG(LOG_VERBOSE, "Setting current frame PTS to packet PTS: %ld", tCurPacketPts);
+                                #endif
                                 tCurFramePts = tCurPacketPts;
 //-
                                 int tLoops = 0;
@@ -1967,7 +1996,7 @@ void MediaSourceMem::WaitForRTGrabbing()
         if (tWaitingTimeInUSecs <= MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME * 1000000)
             Thread::Suspend(tWaitingTimeInUSecs);
         else
-            LOG(LOG_ERROR, "Found in %s %s source an unplausible delay time of %.2f s (%.0f, %.0f), pre-buffer time: %.2f", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tWaitingTimeInUSecs / 1000, tRelativeTimeIndexInUSecs, tCurrentRelativeTimeIndexInUSecs, mDecoderFramePreBufferTime);
+            LOG(LOG_ERROR, "Found in %s %s source an invalid delay time of %.2f s (%.0f, %.0f), pre-buffer time: %.2f", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tWaitingTimeInUSecs / 1000, tRelativeTimeIndexInUSecs, tCurrentRelativeTimeIndexInUSecs, mDecoderFramePreBufferTime);
     }else
     {
         #ifdef MSMEM_DEBUG_TIMING
@@ -1977,47 +2006,70 @@ void MediaSourceMem::WaitForRTGrabbing()
     }
 }
 
-int MediaSourceMem::CalculateFrameBufferSize()
+int64_t MediaSourceMem::GetSynchronizationTimestamp()
 {
-	int tResult = 0;
+    int64_t tResult = 0;
 
-	// how many frame input buffers do we want to store, depending on mDecoderBufferTimeMax
-	//HINT: assume 44.1 kHz playback sample rate, 1024 samples per audio buffer
-	//HINT: reserve one buffer for internal signaling
-	switch(GetMediaType())
-	{
-		case MEDIA_AUDIO:
-			tResult = rint(mDecoderFrameBufferTimeMax * mRealFrameRate /* 44100 samples per second / 1024 samples per frame */);
-			break;
-		case MEDIA_VIDEO:
-			tResult = rint(mDecoderFrameBufferTimeMax * mRealFrameRate /* r_frame_rate.num / r_frame_rate.den from the AVStream */);
-			break;
-		default:
-			LOG(LOG_ERROR, "Unsupported media type");
-			break;
-	}
+    if ((mRtpActivated) && (mGrabberCurrentFrameIndex != 0) && (!mDecoderRecalibrateRTGrabbingAfterSeeking))
+    {
+        // get the reference from RTCP
+        uint64_t tReferenceNtpTime;
+        unsigned int tReferencePts;
+        GetSynchronizationReferenceFromRTP(tReferenceNtpTime, tReferencePts);
 
-	// add one entry for internal signaling purposes
-	tResult++;
+        // the PTS value of the last output frame
+        uint64_t tCurrentPtsFromGrabber = (uint64_t)(1000 * mGrabberCurrentFrameIndex / GetFrameRatePlayout()); // in ms
 
-	return tResult;
+        // the PTS value of the last (received) input frame
+        uint64_t tCurrentPtsFromRTP = GetCurrentPtsFromRTP(); // in ms
+
+        // calculate the play time of the RTP source [in us]
+        uint64_t tCurrentPlayTimeofRTPSource = ((uint64_t) tReferencePts /* playout time in ms */) * 1000; // in us
+
+        // calculate the PTS offset between the RTCP PTS reference and the last grabbed frame
+        int64_t tReferencePtsOffset = (int64_t)tCurrentPtsFromGrabber - tReferencePts; // in ms
+
+        if (tReferenceNtpTime != 0)
+        {
+            // calculate the NTP time (we refere to the NTP time of the RTP source) of the currently grabbed frame
+            tResult = (int64_t)tReferenceNtpTime + (tReferencePtsOffset * 1000);
+            int64_t tLocalNtpTime = av_gettime();
+
+            #ifdef MSMEM_DEBUG_AV_SYNC
+                LOG(LOG_VERBOSE, "%s reference PTS from RTP: %u, PTS from grabber: %lu(frame: %lu, play-out fps: %.2f), PTS from RTP: %lu(frame: %lu), play time from RTP source: %.2f s", GetMediaTypeStr().c_str(), tReferencePts, tCurrentPtsFromGrabber, (uint64_t)mGrabberCurrentFrameIndex, GetFrameRatePlayout(), tCurrentPtsFromRTP, CalculateFrameNumberFromRTP(), (float)tCurrentPlayTimeofRTPSource / 1000000);
+                LOG(LOG_VERBOSE, "%s reference NTP time: %10lu, offset: %10ld (reference PTS: %10u, grabber PTS: %10lu), resulting synch. timestamp: %10ld", GetMediaTypeStr().c_str(), tReferenceNtpTime, tReferencePtsOffset * 1000, tReferencePts, tCurrentPtsFromGrabber, tResult);
+                //HINT: "diff" value should correlate with the frame buffer time! otherwise something went wrong in the processing chain
+                LOG(LOG_VERBOSE, "         local timestamp: %10ld                                                                         local timestamp: %10ld, diff: %ld ms", tLocalNtpTime, tLocalNtpTime, (tLocalNtpTime - tResult) / 1000);
+                LOG(LOG_VERBOSE, "%s source start PTS: %.2f", GetMediaTypeStr().c_str(), (float)mSourceStartPts);
+            #endif
+            //if (tCurrentPtsFromRTP < tReferencePts)
+            //    LOG(LOG_WARN, "Received %s reference (from RTP) PTS value: %u is in the future, last received (RTP) PTS value: %lu)", GetMediaTypeStr().c_str(), tReferencePts, tCurrentPtsFromRTP);
+        }else
+        {// reference values from RTP are still invalid, RTCP packet is needed (expected in some seconds)
+            //nothing to complain about, we return 0 to signal we have no valid synchronization timestamp yet
+        }
+    }
+
+    return tResult;
 }
 
-void MediaSourceMem::DoSetVideoGrabResolution(int pResX, int pResY)
+uint64_t MediaSourceMem::CalculateFrameNumberFromRTP()
 {
-    LOG(LOG_VERBOSE, "Going to execute DoSetVideoGrabResolution()");
+    uint64_t tResult = 0;
+    float tFrameRate = GetFrameRatePlayout();
+    if (tFrameRate < 1.0)
+        return 0;
 
-    if (mMediaSourceOpened)
-    {
-        if (mMediaType == MEDIA_UNKNOWN)
-        {
-            LOG(LOG_WARN, "Media type is still unknown when DoSetVideoGrabResolution is called, setting type to VIDEO ");
-            mMediaType = MEDIA_VIDEO;
-        }
+    // the following sequence delivers the frame number independent from packet loss because
+    // it calculates the frame number based on the current timestamp from the RTP header
+    float tTimeBetweenFrames = 1000 / tFrameRate;
+    tResult = rint((float) GetCurrentPtsFromRTP()/ tTimeBetweenFrames);
 
-        StopDecoder();
-        StartDecoder();
-    }
+    #ifdef MSMEM_DEBUG_PRE_BUFFERING
+        LOG(LOG_VERBOSE, "Calculated a frame number: %ld (RTP timestamp: %ld), fps: %.2f", tResult, GetCurrentPtsFromRTP(), tFrameRate);
+    #endif
+
+    return tResult;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

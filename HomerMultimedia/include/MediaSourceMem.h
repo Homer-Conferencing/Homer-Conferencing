@@ -61,6 +61,9 @@ namespace Homer { namespace Multimedia {
 //#define MSMEM_DEBUG_DECODER_STATE
 //#define MSMEM_DEBUG_PRE_BUFFERING
 
+
+#define MSMEM_DEBUG_AV_SYNC
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // size of one single fragment of a frame packet
@@ -93,8 +96,15 @@ public:
     virtual int GetFragmentBufferCounter();
     virtual int GetFragmentBufferSize();
 
+    virtual int CalculateFrameBufferSize(); // calculates a good value for frame queue
+    virtual int GetFrameBufferCounter(); // returns the currently used number of entries in the frame queue
+    virtual int GetFrameBufferSize(); // returns current frame queue size
+
     /* frame stats */
     virtual bool SupportsDecoderFrameStatistics();
+
+    /* A/V sync. */
+    virtual int64_t GetSynchronizationTimestamp(); // in us
 
     /* video grabbing control */
     virtual GrabResolutions GetSupportedVideoGrabResolutions();
@@ -109,10 +119,6 @@ public:
     virtual bool SupportsRelaying();
 
     virtual bool SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset = false);
-
-    virtual int CalculateFrameBufferSize(); // calculates a good value for frame queue
-    virtual int GetFrameBufferCounter(); // returns the currently used number of entries in the frame queue
-    virtual int GetFrameBufferSize(); // returns current frame queue size
 
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97);
     virtual bool OpenAudioGrabDevice(int pSampleRate = 44100, int pChannels = 2);
@@ -146,7 +152,7 @@ protected:
     void ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int64_t &pPts);
 
     /* RTP based frame numbering */
-    virtual int64_t CalculateFrameNumberFromRTP();
+    virtual uint64_t CalculateFrameNumberFromRTP();
 
     /* real-time playback */
     void CalibrateRTGrabbing();
@@ -174,8 +180,6 @@ protected:
     MediaFifo           *mDecoderFragmentFifo;
     MediaFifo           *mDecoderFifo; // for frames
     MediaFifo           *mDecoderMetaDataFifo; // for meta data about frames
-//    AVFrame             *mDecoderSourceFrame;
-//    AVFrame             *mDecoderOutputRGBFrame;
     /* decoder thread seeking */
     double              mDecoderTargetFrameIndex;
     bool                mDecoderWaitForNextKeyFramePackets; // after seeking we wait for next key frame packets -> either i-frames or p-frames
