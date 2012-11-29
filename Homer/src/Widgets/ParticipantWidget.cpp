@@ -1236,6 +1236,21 @@ void ParticipantWidget::ResetAVSync()
 
 void ParticipantWidget::AVSync()
 {
+    int64_t tVideoSyncTime = 0;
+    if (mVideoSource != NULL)
+        tVideoSyncTime = mVideoSource->GetSynchronizationTimestamp();
+
+    int64_t tAudioSyncTime = 0;
+    if (mAudioSource != NULL)
+        tAudioSyncTime = mAudioSource->GetSynchronizationTimestamp();
+
+    // do we have valid synchronization timestamps from video and audio source?
+//    if ((tAudioSyncTime != 0) && (tVideoSyncTime != 0))
+//    {// we are able to synch. audio and video
+//        int64_t tAVPlaybackDrift = tVideoSyncTime - tAudioSyncTime;
+//        LOG(LOG_VERBOSE, "Detected A/V drift of %ld ms", tAVPlaybackDrift / 1000);
+//    }
+
     #ifdef PARTICIPANT_WIDGET_AV_SYNC
         // A/V synch. if both video and audio source allow seeking (are files)
         int64_t tCurTime = Time::GetTimeStamp();
@@ -1772,12 +1787,6 @@ void ParticipantWidget::UpdateMovieControls()
     // do we play a file?
     if (tShowMovieControls > 0)
     {
-        //#################
-        // A/V synch.
-        //#################
-        if (tShowMovieControls >= 2)
-            AVSync();
-
     	//#################
         // update movie slider and position display
         //#################
@@ -1832,6 +1841,8 @@ void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
     }
 
     UpdateMovieControls();
+
+    AVSync();
 
     // should we update the A/V statistic widget?
     if (mLbAVStatistics->isVisible())
