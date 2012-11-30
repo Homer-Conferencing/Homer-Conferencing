@@ -805,9 +805,16 @@ QStringList VideoWidget::GetVideoStatistic()
     QString tPeerName = QString(mVideoSource->GetCurrentDevicePeerName().c_str());
     if (tPeerName != "")
     	tLine_Peer = "Sender: " + tPeerName;
-    float tDelay = (float)mVideoSource->GetEndToEndDelay() / 1000;
-    if (tDelay > 0)
-        tLine_Peer += " (delay from sender: " + QString("%1").arg(tDelay, 2, 'f', 2, (QLatin1Char)' ') + " ms)";
+    int tSynchPackets = mVideoSource->GetSynchronizationPoints();
+    if (tSynchPackets > 0)
+    {
+        tLine_Peer += " (" + QString("%1").arg(tSynchPackets) + " synch. packets";
+        float tDelay = (float)mVideoSource->GetEndToEndDelay() / 1000;
+        if (tDelay > 0)
+            tLine_Peer += ", " + QString("%1").arg(tDelay, 2, 'f', 2, (QLatin1Char)' ') + " ms delay)";
+        else
+            tLine_Peer += ")";
+    }
 
     //############################################
     //### Line 9: current recorder position
