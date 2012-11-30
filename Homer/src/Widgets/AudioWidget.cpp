@@ -1115,9 +1115,10 @@ void AudioWorkerThread::DoSyncClock()
         // lock
         mDeliverMutex.lock();
 
-        float tSyncPos = mSyncClockMasterSource->GetSeekPos() - mUserAVDrift - mVideoDelayAVDrift;
-        LOG(LOG_VERBOSE, "Synchronizing with media source %s (pos.: %.2f)", mSyncClockMasterSource->GetStreamName().c_str(), tSyncPos);
-        mSourceAvailable = mMediaSource->Seek(tSyncPos, false);
+        int64_t tShiftOffset = mSyncClockMasterSource->GetSynchronizationTimestamp() - mMediaSource->GetSynchronizationTimestamp() - (mUserAVDrift - mVideoDelayAVDrift) * 1000000;
+        LOG(LOG_VERBOSE, "Shifting tim of source %s by %ld", mSyncClockMasterSource->GetStreamName().c_str(), tShiftOffset);
+
+        mSourceAvailable = mMediaSource->TimeShift(tShiftOffset);
         if(!mSourceAvailable)
         {
             LOG(LOG_WARN, "Source isn't available anymore after synch. with %s", mSyncClockMasterSource->GetStreamName().c_str());

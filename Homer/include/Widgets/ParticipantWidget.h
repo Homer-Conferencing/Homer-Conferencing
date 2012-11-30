@@ -174,6 +174,7 @@ private:
 	void Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, QString pParticipant, enum TransportType pTransport);
     void FindSipInterface(QString pSessionName);
     void UpdateMovieControls();
+    void UpdateAVStatistics();
     virtual void contextMenuEvent(QContextMenuEvent *event);
     virtual void closeEvent(QCloseEvent* pEvent = NULL);
     virtual void dragEnterEvent(QDragEnterEvent *pEvent);

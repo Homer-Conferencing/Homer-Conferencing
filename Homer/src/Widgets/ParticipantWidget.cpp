@@ -74,9 +74,9 @@ namespace Homer { namespace Gui {
 // how often should we play the "call" event sound?
 #define SOUND_LOOPS_FOR_CALL                                        10
 // at what time period is timerEvent() called?
-#define STREAM_POS_UPDATE_DELAY                                    250 //ms
+#define STREAM_POS_UPDATE_DELAY                                    250 // ms
 // max. allowed drift between audio and video playback
-#define AV_SYNC_MAX_DRIFT                                          0.1 //seconds
+#define AV_SYNC_MAX_DRIFT                                          0.1 // seconds
 // min. time difference between two synch. processes
 #define AV_SYNC_MIN_PERIOD                                         500 // ms
 // how many times do we have to detect continuous asynch. A/V playback before we synch. audio and video? (to avoid false-positives)
@@ -1262,9 +1262,72 @@ void ParticipantWidget::ResetAVSync()
 
 void ParticipantWidget::AVSync()
 {
-    // only try to synch. if it is desired
+    #ifdef PARTICIPANT_WIDGET_AV_SYNC
+
+        // only try to synch. if it is desired
+        if (!mAVSynchActive)
+            return;
+
+        int64_t tCurTime = Time::GetTimeStamp();
+        if ((tCurTime - mTimeOfLastAVSynch  >= AV_SYNC_MIN_PERIOD * 1000))
+        {
+            if (mAVSynchActive)
+            {
+                if ((mSessionType == BROADCAST) && (mVideoWidget->GetWorker()->CurrentFile() != mCurrentMovieFile))
+                {// file has changed and we have to reset A/V sync. to wait for some time until we synch. for the first time
+                    mCurrentMovieFile = mVideoWidget->GetWorker()->CurrentFile();
+                    LOG(LOG_VERBOSE, "Setting current movie file to %s and reseting A/V sync.", mCurrentMovieFile.toStdString().c_str());
+                    ResetAVSync();
+                    return;
+                }
+
+                // synch. video and audio by seeking in video stream based to the position of the audio stream, the other way around it would be more obvious to the user because he would hear audio gaps
+                float tTimeDiff = GetAVDrift();
+
+                // are audio and video playback out of synch.?
+                if (((tTimeDiff < -AV_SYNC_MAX_DRIFT) || (tTimeDiff > AV_SYNC_MAX_DRIFT)))
+                {
+                    if ((mSessionType != BROADCAST) || ((!mVideoWidget->GetWorker()->EofReached()) && (!mAudioWidget->GetWorker()->IsPaused()) && (mVideoWidget->GetWorker()->GetCurrentDevice() == mAudioWidget->GetWorker()->GetCurrentDevice())))
+                    {
+                        if (mContinuousAVAsync >= AV_SYNC_CONTINUOUS_ASYNC_THRESHOLD)
+                        {
+                            if (tTimeDiff > 0)
+                                LOG(LOG_WARN, "Detected asynchronous A/V playback, drift is %3.2f seconds (video before audio), max. allowed drift is %3.2f seconds, last synch. was at %lld, synchronizing now..", tTimeDiff, AV_SYNC_MAX_DRIFT, mTimeOfLastAVSynch);
+                            else
+                                LOG(LOG_WARN, "Detected asynchronous A/V playback, drift is %3.2f seconds (audio before video), max. allowed drift is %3.2f seconds, last synch. was at %lld, synchronizing now..", tTimeDiff, AV_SYNC_MAX_DRIFT, mTimeOfLastAVSynch);
+
+                            mAudioWidget->GetWorker()->SyncClock(mVideoSource);
+                            ResetAVSync();
+                        }else
+                        {
+                            mContinuousAVAsync ++;
+//                            #ifdef PARTICIPANT_WIDGET_DEBUG_AV_SYNC
+                                if (tTimeDiff > 0)
+                                    LOG(LOG_WARN, "Detected asynchronous A/V playback %d times, drift is %3.2f seconds (video before audio), max. allowed drift is %3.2f seconds, last synch. was at %lld, synchronizing now..", mContinuousAVAsync, tTimeDiff, AV_SYNC_MAX_DRIFT, mTimeOfLastAVSynch);
+                                else
+                                    LOG(LOG_WARN, "Detected asynchronous A/V playback %d times, drift is %3.2f seconds (audio before video), max. allowed drift is %3.2f seconds, last synch. was at %lld, synchronizing now..", mContinuousAVAsync, tTimeDiff, AV_SYNC_MAX_DRIFT, mTimeOfLastAVSynch);
+//                            #endif
+                        }
+                    }
+                }else
+                    mContinuousAVAsync = 0;
+            }
+
+        }
+
+    #endif
+}
+
+float ParticipantWidget::GetAVDrift()
+{
     if (!mAVSynchActive)
-        return;
+        return 0;
+
+    if (mVideoWidget->GetWorker() == NULL)
+        return 0;
+
+    if (mAudioWidget->GetWorker() == NULL)
+        return 0;
 
     int64_t tVideoSyncTime = 0;
     if (mVideoSource != NULL)
@@ -1274,80 +1337,15 @@ void ParticipantWidget::AVSync()
     if (mAudioSource != NULL)
         tAudioSyncTime = mAudioSource->GetSynchronizationTimestamp();
 
+    float tResult = 0;
+
     // do we have valid synchronization timestamps from video and audio source?
     if ((tAudioSyncTime != 0) && (tVideoSyncTime != 0))
     {// we are able to synch. audio and video
         int64_t tAVPlaybackDrift = tVideoSyncTime - tAudioSyncTime;
-        LOG(LOG_VERBOSE, "Detected A/V drift of %ld ms", tAVPlaybackDrift / 1000);
-    }
+        //LOG(LOG_VERBOSE, "Detected A/V drift of %ld ms", tAVPlaybackDrift / 1000);
 
-    #ifdef PARTICIPANT_WIDGET_AV_SYNC
-        // A/V synch. if both video and audio source allow seeking (are files)
-        int64_t tCurTime = Time::GetTimeStamp();
-        if ((tCurTime - mTimeOfLastAVSynch  >= AV_SYNC_MIN_PERIOD * 1000))
-        {
-            // do we play video and audio from the same file?
-            if (PlayingMovieFile())
-            {
-                // do we play audio and video from a file we already know?
-                if (mVideoWidget->GetWorker()->CurrentFile() == mCurrentMovieFile)
-                {// we know the file and have to do A/V sync.
-                    // synch. video and audio by seeking in video stream based to the position of the audio stream, the other way around it would be more obvious to the user because he would hear audio gaps
-                    float tTimeDiff = GetAVDrift();
-
-                    // are audio and video playback out of synch.?
-                    if (((tTimeDiff < -AV_SYNC_MAX_DRIFT) || (tTimeDiff > AV_SYNC_MAX_DRIFT)))
-                    {
-                        if ((!mVideoWidget->GetWorker()->EofReached()) && (!mAudioWidget->GetWorker()->IsPaused()) && (mVideoWidget->GetWorker()->GetCurrentDevice() == mAudioWidget->GetWorker()->GetCurrentDevice()))
-                        {
-                            if (mContinuousAVAsync >= AV_SYNC_CONTINUOUS_ASYNC_THRESHOLD)
-                            {
-                                if (tTimeDiff > 0)
-                                    LOG(LOG_WARN, "Detected asynchronous A/V playback, drift is %3.2f seconds (video before audio), max. allowed drift is %3.2f seconds, last synch. was at %lld, synchronizing now..", tTimeDiff, AV_SYNC_MAX_DRIFT, mTimeOfLastAVSynch);
-                                else
-                                    LOG(LOG_WARN, "Detected asynchronous A/V playback, drift is %3.2f seconds (audio before video), max. allowed drift is %3.2f seconds, last synch. was at %lld, synchronizing now..", tTimeDiff, AV_SYNC_MAX_DRIFT, mTimeOfLastAVSynch);
-
-                                mAudioWidget->GetWorker()->SyncClock(mVideoSource);
-
-                                ResetAVSync();
-                            }else
-                            {
-                                mContinuousAVAsync ++;
-                                #ifdef PARTICIPANT_WIDGET_DEBUG_AV_SYNC
-                                    if (tTimeDiff > 0)
-                                        LOG(LOG_WARN, "Detected asynchronous A/V playback %d times, drift is %3.2f seconds (video before audio), max. allowed drift is %3.2f seconds, last synch. was at %lld, synchronizing now..", mContinuousAVAsync, tTimeDiff, AV_SYNC_MAX_DRIFT, mTimeOfLastAVSynch);
-                                    else
-                                        LOG(LOG_WARN, "Detected asynchronous A/V playback %d times, drift is %3.2f seconds (audio before video), max. allowed drift is %3.2f seconds, last synch. was at %lld, synchronizing now..", mContinuousAVAsync, tTimeDiff, AV_SYNC_MAX_DRIFT, mTimeOfLastAVSynch);
-                                #endif
-                            }
-                        }
-                    }else
-                        mContinuousAVAsync = 0;
-                }else
-                {// file has changed and we have to reset A/V sync.
-                    mCurrentMovieFile = mVideoWidget->GetWorker()->CurrentFile();
-                    LOG(LOG_VERBOSE, "Setting current movie file to %s and reseting A/V sync.", mCurrentMovieFile.toStdString().c_str());
-                    ResetAVSync();
-                }
-            }
-        }
-    #endif
-}
-
-float ParticipantWidget::GetAVDrift()
-{
-    float tResult = 0;
-
-    if (mVideoWidget->GetWorker() == NULL)
-        return 0;
-
-    if (mAudioWidget->GetWorker() == NULL)
-        return 0;
-
-    // do we play video and audio from the same file?
-    if (PlayingMovieFile())
-    {
-        tResult = mVideoWidget->GetWorker()->GetSeekPos() - mAudioWidget->GetWorker()->GetSeekPos() - mAudioWidget->GetWorker()->GetUserAVDrift() - mAudioWidget->GetWorker()->GetVideoDelayAVDrift();
+        tResult = ((float)tAVPlaybackDrift) / 1000000 - mAudioWidget->GetWorker()->GetUserAVDrift() - mAudioWidget->GetWorker()->GetVideoDelayAVDrift();
     }
 
     return tResult;
@@ -1862,47 +1860,23 @@ void ParticipantWidget::UpdateMovieControls()
     }
 }
 
-void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
+void ParticipantWidget::UpdateAVStatistics()
 {
-    #ifdef DEBUG_TIMING
-        LOG(LOG_VERBOSE, "New timer event");
-    #endif
-
-	if (pEvent->timerId() != mTimerId)
-    {
-    	LOG(LOG_WARN, "Qt event timer ID %d doesn't match the expected one %d", pEvent->timerId(), mTimerId);
-        pEvent->ignore();
-    	return;
-    }
-
-	// make sure that for BROADCAST widget we only synchronize in case of movie input data
-	if (mSessionType == BROADCAST)
-	{
-        // update the A/V synch. state
-        mAVSynchActive = PlayingMovieFile();
-        mAVPreBuffering = PlayingMovieFile();
-        mAvPreBufferingAutoRestart = PlayingMovieFile();
-	}
-
-    UpdateMovieControls();
-
-    AVSync();
-
     // should we update the A/V statistic widget?
     if (mLbAVStatistics->isVisible())
     {// time for an update
-    	QString tAVStats = "";
-    	QStringList tStats;
-    	int tStatLines;
+        QString tAVStats = "";
+        QStringList tStats;
+        int tStatLines;
 
-    	// VIDEO
-    	tAVStats += "Video statistics:";
-    	tStats = mVideoWidget->GetVideoStatistic();
-    	tStatLines = tStats.size();
-    	for (int i = 0; i < tStatLines; i++)
-    		tAVStats += "\n     " + tStats[i];
+        // VIDEO
+        tAVStats += "Video statistics:";
+        tStats = mVideoWidget->GetVideoStatistic();
+        tStatLines = tStats.size();
+        for (int i = 0; i < tStatLines; i++)
+            tAVStats += "\n     " + tStats[i];
 
-    	tAVStats += "\n\n";
+        tAVStats += "\n\n";
 
         tAVStats += "Video/audio:";
 
@@ -1924,14 +1898,45 @@ void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
         tAVStats += "\n\n";
 
         // AUDIO
-    	tAVStats += "Audio statistics:";
-    	tStats = mAudioWidget->GetAudioStatistic();
-    	tStatLines = tStats.size();
-    	for (int i = 0; i < tStatLines; i++)
-    		tAVStats += "\n     " + tStats[i];
+        tAVStats += "Audio statistics:";
+        tStats = mAudioWidget->GetAudioStatistic();
+        tStatLines = tStats.size();
+        for (int i = 0; i < tStatLines; i++)
+            tAVStats += "\n     " + tStats[i];
 
-    	mLbAVStatistics->setText(tAVStats);
+        mLbAVStatistics->setText(tAVStats);
     }
+}
+
+void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
+{
+    #ifdef DEBUG_TIMING
+        LOG(LOG_VERBOSE, "New timer event");
+    #endif
+
+	if (pEvent->timerId() != mTimerId)
+    {
+    	LOG(LOG_WARN, "Qt event timer ID %d doesn't match the expected one %d", pEvent->timerId(), mTimerId);
+        pEvent->ignore();
+    	return;
+    }
+
+	// make sure that for BROADCAST widget we only synchronize in case of movie input data
+	if (mSessionType == BROADCAST)
+	{
+	    bool tActive = PlayingMovieFile();
+
+        // update the A/V synch. state
+        mAVSynchActive = tActive;
+        mAVPreBuffering = tActive;
+        mAvPreBufferingAutoRestart = tActive;
+	}
+
+    UpdateMovieControls();
+
+    AVSync();
+
+    UpdateAVStatistics();
 
     pEvent->accept();
 }

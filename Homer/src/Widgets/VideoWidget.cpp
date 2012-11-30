@@ -757,37 +757,37 @@ QStringList VideoWidget::GetVideoStatistic()
 
     //############################################
     //### Line 5: video output
+    float tAVDrift = mParticipantWidget->GetAVDrift();
     QString tLine_Output = "";
     tLine_Output = "Display: " + QString("%1").arg(mCurrentFrameOutputWidth) + "*" + QString("%1").arg(mCurrentFrameOutputHeight) + " (" + tAspectRatio + ")" + (mSmoothPresentation ? "[smoothed]" : "");
+    if (tAVDrift >= 0.0)
+        tLine_Output += (tAVDrift != 0.0f ? QString(" (A/V drift: +%1 s)").arg(tAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
+    else if (tAVDrift < 0.0)
+        tLine_Output += (tAVDrift != 0.0f ? QString(" (A/V drift: %1 s)").arg(tAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
+
+    float tUserAVDrift = mParticipantWidget->GetUserAVDrift();
+    if (tUserAVDrift != 0)
+    {
+        if (tUserAVDrift > 0.0)
+            tLine_Output += (tUserAVDrift != 0.0f ? QString(" [user A/V drift: +%1 s]").arg(tUserAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
+        else if (tAVDrift < 0.0)
+            tLine_Output += (tUserAVDrift != 0.0f ? QString(" [user A/V drift: %1 s]").arg(tUserAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
+    }
+    float tVideoDelayAVDrift = mParticipantWidget->GetVideoDelayAVDrift();
+    if (tVideoDelayAVDrift != 0)
+    {
+        if (tVideoDelayAVDrift > 0.0)
+            tLine_Output += (tVideoDelayAVDrift != 0.0f ? QString(" [A/V adjust: +%1 s]").arg(tVideoDelayAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
+        else if (tAVDrift < 0.0)
+            tLine_Output += (tVideoDelayAVDrift != 0.0f ? QString(" [A/V adjust: %1 s]").arg(tVideoDelayAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
+    }
 
     //############################################
     //### Line 6: current position within file
     QString tLine_Time = "";
-    float tAVDrift = mParticipantWidget->GetAVDrift();
     if (mVideoSource->SupportsSeeking())
     {
         tLine_Time = "Time: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "/" + QString("%1:%2:%3").arg(tMaxHour, 2, 10, (QLatin1Char)'0').arg(tMaxMin, 2, 10, (QLatin1Char)'0').arg(tMaxSec, 2, 10, (QLatin1Char)'0');
-        if (tAVDrift >= 0.0)
-            tLine_Time += (tAVDrift != 0.0f ? QString(" (A/V drift: +%1 s)").arg(tAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
-        else if (tAVDrift < 0.0)
-            tLine_Time += (tAVDrift != 0.0f ? QString(" (A/V drift: %1 s)").arg(tAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
-
-        float tUserAVDrift = mParticipantWidget->GetUserAVDrift();
-        if (tUserAVDrift != 0)
-        {
-            if (tUserAVDrift > 0.0)
-                tLine_Time += (tUserAVDrift != 0.0f ? QString(" [user A/V drift: +%1 s]").arg(tUserAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
-            else if (tAVDrift < 0.0)
-                tLine_Time += (tUserAVDrift != 0.0f ? QString(" [user A/V drift: %1 s]").arg(tUserAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
-        }
-        float tVideoDelayAVDrift = mParticipantWidget->GetVideoDelayAVDrift();
-        if (tVideoDelayAVDrift != 0)
-        {
-            if (tVideoDelayAVDrift > 0.0)
-                tLine_Time += (tVideoDelayAVDrift != 0.0f ? QString(" [A/V adjust: +%1 s]").arg(tVideoDelayAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
-            else if (tAVDrift < 0.0)
-                tLine_Time += (tVideoDelayAVDrift != 0.0f ? QString(" [A/V adjust: %1 s]").arg(tVideoDelayAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
-        }
     }
 
     //############################################
@@ -2084,7 +2084,7 @@ void VideoWorkerThread::DoSyncClock()
         mDeliverMutex.lock();
 
         LOG(LOG_VERBOSE, "Synchronizing with media source %s", mSyncClockMasterSource->GetStreamName().c_str());
-        mSourceAvailable = mMediaSource->Seek(mSyncClockMasterSource->GetSeekPos());
+        mSourceAvailable = mMediaSource->TimeShift(mSyncClockMasterSource->GetSynchronizationTimestamp() - mMediaSource->GetSynchronizationTimestamp());
         if(!mSourceAvailable)
         {
             LOG(LOG_WARN, "Source isn't available anymore after synch. with %s", mSyncClockMasterSource->GetStreamName().c_str());
