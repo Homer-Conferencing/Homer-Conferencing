@@ -1245,11 +1245,11 @@ void ParticipantWidget::AVSync()
         tAudioSyncTime = mAudioSource->GetSynchronizationTimestamp();
 
     // do we have valid synchronization timestamps from video and audio source?
-//    if ((tAudioSyncTime != 0) && (tVideoSyncTime != 0))
-//    {// we are able to synch. audio and video
-//        int64_t tAVPlaybackDrift = tVideoSyncTime - tAudioSyncTime;
-//        LOG(LOG_VERBOSE, "Detected A/V drift of %ld ms", tAVPlaybackDrift / 1000);
-//    }
+    if ((tAudioSyncTime != 0) && (tVideoSyncTime != 0))
+    {// we are able to synch. audio and video
+        int64_t tAVPlaybackDrift = tVideoSyncTime - tAudioSyncTime;
+        LOG(LOG_VERBOSE, "Detected A/V drift of %ld ms", tAVPlaybackDrift / 1000);
+    }
 
     #ifdef PARTICIPANT_WIDGET_AV_SYNC
         // A/V synch. if both video and audio source allow seeking (are files)
