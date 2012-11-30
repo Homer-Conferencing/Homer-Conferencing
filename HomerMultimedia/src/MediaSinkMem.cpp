@@ -187,13 +187,22 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
 //            if (pPacketSize >= i)
 //                LOG(LOG_VERBOSE, "FRAME data (%2u): %02hx(%3d)", i, pPacketData[i] & 0xFF, pPacketData[i] & 0xFF);
 
+        if (mIncomingFirstPacket)
+        {
+            mIncomingFirstPacket = false;
+            mIncomingAVStreamStartPts = tAVPacketPts;
+        }
+
+        // normalize the PTS values for the RTP packetizer of ffmpeg, otherwise we have synchronization problems at receiver side because of PTS offsets
+        int64_t tRtpPacketPts = tAVPacketPts - mIncomingAVStreamStartPts;
+
         #ifdef MSM_DEBUG_PACKET_DISTRIBUTION
-            LOG(LOG_VERBOSE, "Encapsulating codec packet of size %d at memory position %p with A/V pts: %ld", pPacketSize, pPacketData, tAVPacketPts);
+            LOG(LOG_VERBOSE, "Encapsulating codec packet of size %d at memory position %p with A/V pts: %ld, RTP pts: %ld", pPacketSize, pPacketData, tAVPacketPts, tRtpPacketPts);
         #endif
 
 
         int64_t tTime = Time::GetTimeStamp();
-        bool tRtpCreationSucceed = RtpCreate(pPacketData, pPacketSize, tAVPacketPts);
+        bool tRtpCreationSucceed = RtpCreate(pPacketData, pPacketSize, tRtpPacketPts);
         #ifdef MSIM_DEBUG_TIMING
             int64_t tTime2 = Time::GetTimeStamp();
             LOG(LOG_VERBOSE, "               generating RTP envelope took %ld us", tTime2 - tTime);
@@ -337,6 +346,8 @@ bool MediaSinkMem::OpenStreamer(AVStream *pStream)
 
     mRtpStreamOpened = true;
 
+    mIncomingFirstPacket = true;
+    mIncomingAVStreamStartPts = 0;
     mIncomingAVStreamCodecID = pStream->codec->codec_id;
     mIncomingAVStream = pStream;
 	mIncomingAVStreamCodecContext = pStream->codec;

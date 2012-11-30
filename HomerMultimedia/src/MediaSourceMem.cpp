@@ -2039,8 +2039,7 @@ int64_t MediaSourceMem::GetSynchronizationTimestamp()
                 LOG(LOG_VERBOSE, "%s reference PTS from RTP: %u, PTS from grabber: %lu(frame: %lu, play-out fps: %.2f), PTS from RTP: %lu(frame: %lu), play time from RTP source: %.2f s", GetMediaTypeStr().c_str(), tReferencePts, tCurrentPtsFromGrabber, (uint64_t)mGrabberCurrentFrameIndex, GetFrameRatePlayout(), tCurrentPtsFromRTP, CalculateFrameNumberFromRTP(), (float)tCurrentPlayTimeofRTPSource / 1000000);
                 LOG(LOG_VERBOSE, "%s reference NTP time: %10lu, offset: %10ld (reference PTS: %10u, grabber PTS: %10lu), resulting synch. timestamp: %10ld", GetMediaTypeStr().c_str(), tReferenceNtpTime, tReferencePtsOffset * 1000, tReferencePts, tCurrentPtsFromGrabber, tResult);
                 //HINT: "diff" value should correlate with the frame buffer time! otherwise something went wrong in the processing chain
-                LOG(LOG_VERBOSE, "         local timestamp: %10ld                                                                         local timestamp: %10ld, diff: %ld ms", tLocalNtpTime, tLocalNtpTime, (tLocalNtpTime - tResult) / 1000);
-                LOG(LOG_VERBOSE, "%s source start PTS: %.2f", GetMediaTypeStr().c_str(), (float)mSourceStartPts);
+                LOG(LOG_VERBOSE, "         local timestamp: %10ld                                                                                      local timestamp: %10ld, diff: %ld ms", tLocalNtpTime, tLocalNtpTime, (tLocalNtpTime - tResult) / 1000);
             #endif
             //if (tCurrentPtsFromRTP < tReferencePts)
             //    LOG(LOG_WARN, "Received %s reference (from RTP) PTS value: %u is in the future, last received (RTP) PTS value: %lu)", GetMediaTypeStr().c_str(), tReferencePts, tCurrentPtsFromRTP);

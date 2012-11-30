@@ -78,6 +78,8 @@ protected:
     /* RTP stream handling */
     bool                mRtpActivated;
     bool                mRtpStreamOpened;
+    int64_t             mIncomingAVStreamStartPts;
+    bool                mIncomingFirstPacket;
     enum CodecID        mIncomingAVStreamCodecID;
     AVStream*			mIncomingAVStream;
     AVCodecContext*	 	mIncomingAVStreamCodecContext;
