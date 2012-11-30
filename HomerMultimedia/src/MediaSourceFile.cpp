@@ -472,6 +472,34 @@ bool MediaSourceFile::SeekRelative(float pSeconds, bool pOnlyKeyFrames)
     return tResult;
 }
 
+int64_t MediaSourceFile::GetSynchronizationTimestamp()
+{
+    int64_t tResult = 0;
+
+    /******************************************
+     * The following lines do the following:
+     *   - use the current play-out position (given in seconds!) and transform it into micro seconds
+     *   - return the calculated play-out time as synchronization timestamp in micro seconds
+     *
+     *   - when this approach is applied for both the video and audio stream (which is grabbed from the same local/remote file!),
+     *     a time difference can be derived which corresponds to the A/V drift in micro seconds of the video and audio playback on the local(!) machine
+     ******************************************/
+    // we return the file position in us to allow A/V synchronization based on a file index
+    tResult = GetSeekPos() /* in seconds */ * AV_TIME_BASE;
+
+    return tResult;
+}
+
+bool MediaSourceFile::TimeShift(int64_t pOffset)
+{
+    LOG(LOG_VERBOSE, "Shifting %s time by: %ld", GetMediaTypeStr().c_str(), pOffset);
+    float tCurPos = GetSeekPos();
+    float tOffsetSeconds = (float)pOffset / AV_TIME_BASE;
+    float tTargetPos = tCurPos + tOffsetSeconds;
+    LOG(LOG_VERBOSE, "Seeking in %s file from %.2fs to %.2fs, offset: %.2fs", GetMediaTypeStr().c_str(), tCurPos, tTargetPos, tOffsetSeconds);
+    return Seek(tTargetPos, false);
+}
+
 float MediaSourceFile::GetSeekPos()
 {
     float tResult = 0;

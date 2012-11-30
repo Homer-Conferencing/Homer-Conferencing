@@ -229,6 +229,7 @@ public:
     /* A/V sync. */
     virtual int64_t GetSynchronizationTimestamp(); // in us
     virtual int GetSynchronizationPoints(); // how many synchronization points for deriving synchronization timestamp were included in the input stream till now?
+    virtual bool TimeShift(int64_t pOffset); // in us
 
     /* frame statistics */
     virtual bool SupportsDecoderFrameStatistics();

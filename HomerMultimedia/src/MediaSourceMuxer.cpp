@@ -2448,6 +2448,14 @@ int MediaSourceMuxer::GetSynchronizationPoints()
         return 0;
 }
 
+bool MediaSourceMuxer::TimeShift(int64_t pOffset)
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->TimeShift(pOffset);
+    else
+        return false;
+}
+
 int MediaSourceMuxer::GetOutputSampleRate()
 {
     return mOutputAudioSampleRate;

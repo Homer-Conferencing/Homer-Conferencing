@@ -51,6 +51,10 @@ public:
     virtual void getVideoDevices(VideoDevices &pVList);
     virtual void getAudioDevices(AudioDevices &pAList);
 
+    /* A/V sync. */
+    virtual int64_t GetSynchronizationTimestamp(); // in us
+    virtual bool TimeShift(int64_t pOffset); // in us
+
     /* recording */
     virtual bool SupportsRecording();
 

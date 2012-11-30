@@ -422,7 +422,7 @@ int MediaSource::GetMuxingBufferSize()
 
 MediaSource* MediaSource::GetMediaSource()
 {
-    LOG(LOG_VERBOSE, "This is only the dummy function");
+    LOG(LOG_VERBOSE, "This is only the dummy GetMediaSource() function");
     return this;
 }
 
@@ -1126,7 +1126,7 @@ string MediaSource::GetCodecLongName()
 
 bool MediaSource::SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset)
 {
-    LOG(LOG_VERBOSE, "SetInputStreamPreferences is only a dummy function in MediaSource");
+    LOG(LOG_VERBOSE, "This is only the dummy SetInputPreferences() function");
     return false;
 }
 
@@ -2454,14 +2454,14 @@ std::string MediaSource::GetCurrentDeviceName()
 bool MediaSource::RegisterMediaSource(MediaSource* pMediaSource)
 {
     LOG(LOG_VERBOSE, "Registering media source: 0x%x", pMediaSource);
-    LOG(LOG_VERBOSE, "This is only the dummy function");
+    LOG(LOG_VERBOSE, "This is only the dummy RegisterMediaSource() function");
     return true;
 }
 
 bool MediaSource::UnregisterMediaSource(MediaSource* pMediaSource, bool pAutoDelete)
 {
     LOG(LOG_VERBOSE, "Unregistering media source: 0x%x", pMediaSource);
-    LOG(LOG_VERBOSE, "This is only the dummy function");
+    LOG(LOG_VERBOSE, "This is only the dummy UnregisterMediaSource() function");
     return true;
 }
 
@@ -2492,6 +2492,12 @@ int64_t MediaSource::GetSynchronizationTimestamp()
 int MediaSource::GetSynchronizationPoints()
 {
     return mDecoderSynchPoints;
+}
+
+bool MediaSource::TimeShift(int64_t pOffset)
+{
+    LOG(LOG_VERBOSE, "This is only the dummy TimeShift() function");
+    return false;
 }
 
 void* MediaSource::AllocChunkBuffer(int& pChunkBufferSize, enum MediaType pMediaType)

@@ -62,7 +62,7 @@ namespace Homer { namespace Multimedia {
 //#define MSMEM_DEBUG_PRE_BUFFERING
 
 
-#define MSMEM_DEBUG_AV_SYNC
+//#define MSMEM_DEBUG_AV_SYNC
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -105,6 +105,7 @@ public:
 
     /* A/V sync. */
     virtual int64_t GetSynchronizationTimestamp(); // in us
+    virtual bool TimeShift(int64_t pOffset); // in us
 
     /* video grabbing control */
     virtual GrabResolutions GetSupportedVideoGrabResolutions();

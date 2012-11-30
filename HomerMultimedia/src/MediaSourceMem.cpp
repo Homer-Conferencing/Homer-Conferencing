@@ -1958,7 +1958,7 @@ void MediaSourceMem::CalibrateRTGrabbing()
 {
     // adopt the stored pts value which represent the start of the media presentation in real-time useconds
     float  tRelativeFrameIndex = mGrabberCurrentFrameIndex - mSourceStartPts;
-    double tRelativeTime = (int64_t)((double)1000000 * tRelativeFrameIndex / mFrameRate);
+    double tRelativeTime = (int64_t)((double)AV_TIME_BASE * tRelativeFrameIndex / mFrameRate);
     #ifdef MSMEM_DEBUG_CALIBRATION
         LOG(LOG_WARN, "Calibrating %s RT playback, old PTS start: %.2f", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing);
     #endif
@@ -1986,7 +1986,7 @@ void MediaSourceMem::WaitForRTGrabbing()
         #ifdef MSMEM_DEBUG_TIMING
             LOG(LOG_WARN, "%s-sleeping for %.2f ms (%.0f, %.0f) for frame %.2f", GetMediaTypeStr().c_str(), tWaitingTimeInUSecs / 1000, tRelativeTimeIndexInUSecs, tCurrentRelativeTimeIndexInUSecs, (float)mGrabberCurrentFrameIndex);
         #endif
-        if (tWaitingTimeInUSecs <= MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME * 1000000)
+        if (tWaitingTimeInUSecs <= MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME * AV_TIME_BASE)
             Thread::Suspend(tWaitingTimeInUSecs);
         else
             LOG(LOG_ERROR, "Found in %s %s source an invalid delay time of %.2f s (%.0f, %.0f), pre-buffer time: %.2f", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tWaitingTimeInUSecs / 1000, tRelativeTimeIndexInUSecs, tCurrentRelativeTimeIndexInUSecs, mDecoderFramePreBufferTime);
@@ -2003,46 +2003,70 @@ int64_t MediaSourceMem::GetSynchronizationTimestamp()
 {
     int64_t tResult = 0;
 
-    if ((mRtpActivated) && (mGrabberCurrentFrameIndex != 0) && (!mDecoderRecalibrateRTGrabbingAfterSeeking))
-    {
-        // get the reference from RTCP
-        uint64_t tReferenceNtpTime;
-        unsigned int tReferencePts;
-        GetSynchronizationReferenceFromRTP(tReferenceNtpTime, tReferencePts);
+    if ((mGrabberCurrentFrameIndex != 0) && (!mDecoderRecalibrateRTGrabbingAfterSeeking))
+    {// we have some first passed A/V frames, the decoder does not need to re-calibrate the RT grabber
+        /******************************************
+         * The following lines do the following:
+         *   - use the RTCP sender reports and extract the reference RTP timestamps and NTP time
+         *     =>> we know when exactly (NTP time!) a given RTP play-out time index passed the processing chain at sender side
+         *   - interpolate the given NTP time from sender side to conclude the NTP time (at sender side!) for the currently grabbed frame
+         *     =>> we know (this is the hope!) exactly when the current frame passed the processing chain at sender side
+         *   - return the calculated NTP time as synchronization timestamp in micro seconds
+         *
+         *   - when this approach is applied for both the video and audio stream (which is received from the same physical host with the same real-time clock inside!),
+         *     a time difference can be derived which corresponds to the A/V drift in micro seconds of the video and audio playback on the local(!) machine
+         ******************************************/
+        if (mRtpActivated)
+        {// RTP active
+            // get the reference from RTCP
+            uint64_t tReferenceNtpTime;
+            unsigned int tReferencePts;
+            GetSynchronizationReferenceFromRTP(tReferenceNtpTime, tReferencePts);
 
-        // the PTS value of the last output frame
-        uint64_t tCurrentPtsFromGrabber = (uint64_t)(1000 * mGrabberCurrentFrameIndex / GetFrameRatePlayout()); // in ms
+            // the PTS value of the last output frame
+            uint64_t tCurrentPtsFromGrabber = (uint64_t)(1000 * mGrabberCurrentFrameIndex / GetFrameRatePlayout()); // in ms
 
-        // the PTS value of the last (received) input frame
-        uint64_t tCurrentPtsFromRTP = GetCurrentPtsFromRTP(); // in ms
+            // the PTS value of the last (received) input frame
+            uint64_t tCurrentPtsFromRTP = GetCurrentPtsFromRTP(); // in ms
 
-        // calculate the play time of the RTP source [in us]
-        uint64_t tCurrentPlayTimeofRTPSource = ((uint64_t) tReferencePts /* playout time in ms */) * 1000; // in us
+            // calculate the play time of the RTP source [in us]
+            uint64_t tCurrentPlayTimeofRTPSource = ((uint64_t) tReferencePts /* playout time in ms */) * 1000; // in us
 
-        // calculate the PTS offset between the RTCP PTS reference and the last grabbed frame
-        int64_t tReferencePtsOffset = (int64_t)tCurrentPtsFromGrabber - tReferencePts; // in ms
+            // calculate the PTS offset between the RTCP PTS reference and the last grabbed frame
+            int64_t tReferencePtsOffset = (int64_t)tCurrentPtsFromGrabber - tReferencePts; // in ms
 
-        if (tReferenceNtpTime != 0)
-        {
-            // calculate the NTP time (we refere to the NTP time of the RTP source) of the currently grabbed frame
-            tResult = (int64_t)tReferenceNtpTime + (tReferencePtsOffset * 1000);
-            int64_t tLocalNtpTime = av_gettime();
+            if (tReferenceNtpTime != 0)
+            {
+                // calculate the NTP time (we refere to the NTP time of the RTP source) of the currently grabbed frame
+                tResult = (int64_t)tReferenceNtpTime + (tReferencePtsOffset * 1000);
+                int64_t tLocalNtpTime = av_gettime();
 
-            #ifdef MSMEM_DEBUG_AV_SYNC
-                LOG(LOG_VERBOSE, "%s reference PTS from RTP: %u, PTS from grabber: %lu(frame: %lu, play-out fps: %.2f), PTS from RTP: %lu(frame: %lu), play time from RTP source: %.2f s", GetMediaTypeStr().c_str(), tReferencePts, tCurrentPtsFromGrabber, (uint64_t)mGrabberCurrentFrameIndex, GetFrameRatePlayout(), tCurrentPtsFromRTP, CalculateFrameNumberFromRTP(), (float)tCurrentPlayTimeofRTPSource / 1000000);
-                LOG(LOG_VERBOSE, "%s reference NTP time: %10lu, offset: %10ld (reference PTS: %10u, grabber PTS: %10lu), resulting synch. timestamp: %10ld", GetMediaTypeStr().c_str(), tReferenceNtpTime, tReferencePtsOffset * 1000, tReferencePts, tCurrentPtsFromGrabber, tResult);
-                //HINT: "diff" value should correlate with the frame buffer time! otherwise something went wrong in the processing chain
-                LOG(LOG_VERBOSE, "         local timestamp: %10ld                                                                                      local timestamp: %10ld, diff: %ld ms", tLocalNtpTime, tLocalNtpTime, (tLocalNtpTime - tResult) / 1000);
-            #endif
-            //if (tCurrentPtsFromRTP < tReferencePts)
-            //    LOG(LOG_WARN, "Received %s reference (from RTP) PTS value: %u is in the future, last received (RTP) PTS value: %lu)", GetMediaTypeStr().c_str(), tReferencePts, tCurrentPtsFromRTP);
+                #ifdef MSMEM_DEBUG_AV_SYNC
+                    LOG(LOG_VERBOSE, "%s reference PTS from RTP: %u, PTS from grabber: %lu(frame: %lu, play-out fps: %.2f), PTS from RTP: %lu(frame: %lu), play time from RTP source: %.2f s", GetMediaTypeStr().c_str(), tReferencePts, tCurrentPtsFromGrabber, (uint64_t)mGrabberCurrentFrameIndex, GetFrameRatePlayout(), tCurrentPtsFromRTP, CalculateFrameNumberFromRTP(), (float)tCurrentPlayTimeofRTPSource / AV_TIME_BASE);
+                    LOG(LOG_VERBOSE, "%s reference NTP time: %10lu, offset: %10ld (reference PTS: %10u, grabber PTS: %10lu), resulting synch. timestamp: %10ld", GetMediaTypeStr().c_str(), tReferenceNtpTime, tReferencePtsOffset * 1000, tReferencePts, tCurrentPtsFromGrabber, tResult);
+                    //HINT: "diff" value should correlate with the frame buffer time! otherwise something went wrong in the processing chain
+                    LOG(LOG_VERBOSE, "         local timestamp: %10ld                                                                                      local timestamp: %10ld, diff: %ld ms", tLocalNtpTime, tLocalNtpTime, (tLocalNtpTime - tResult) / 1000);
+                #endif
+                //if (tCurrentPtsFromRTP < tReferencePts)
+                //    LOG(LOG_WARN, "Received %s reference (from RTP) PTS value: %u is in the future, last received (RTP) PTS value: %lu)", GetMediaTypeStr().c_str(), tReferencePts, tCurrentPtsFromRTP);
+            }else
+            {// reference values from RTP are still invalid, RTCP packet is needed (expected in some seconds)
+                // nothing to complain about, we return 0 to signal we have no valid synchronization timestamp yet
+            }
         }else
-        {// reference values from RTP are still invalid, RTCP packet is needed (expected in some seconds)
-            //nothing to complain about, we return 0 to signal we have no valid synchronization timestamp yet
+        {// no RTP available, we have plain network transport of a file based A/V media source
+            // ..
         }
     }
 
     return tResult;
+}
+
+bool MediaSourceMem::TimeShift(int64_t pOffset)
+{
+    LOG(LOG_VERBOSE, "Shifting %s time by: %ld", GetMediaTypeStr().c_str(), pOffset);
+    mSourceStartTimeForRTGrabbing -= pOffset;
+    return true;
 }
 
 uint64_t MediaSourceMem::CalculateFrameNumberFromRTP()
