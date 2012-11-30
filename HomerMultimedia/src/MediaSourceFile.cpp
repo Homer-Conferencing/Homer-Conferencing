@@ -140,15 +140,6 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     // allocate software scaler context
     LOG(LOG_VERBOSE, "Going to create scaler context..");
 
-    mGrabberCurrentFrameIndex = 0;
-    mDecoderSinglePictureGrabbed = false;
-    mEOFReached = false;
-    mDecoderRecalibrateRTGrabbingAfterSeeking = true;
-    mDecoderFlushBuffersAfterSeeking = false;
-    mDecodedIFrames = 0;
-    mDecodedPFrames = 0;
-    mDecodedBFrames = 0;
-
     MarkOpenGrabDeviceSuccessful();
 
     StartDecoder();
@@ -279,11 +270,6 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     {
         LOG(LOG_WARN, "Couldn't seek to the start of audio stream because \"%s\".", strerror(AVUNERROR(tRes)));
     }
-
-    mGrabberCurrentFrameIndex = 0;
-    mEOFReached = false;
-    mDecoderRecalibrateRTGrabbingAfterSeeking = true;
-    mDecoderFlushBuffersAfterSeeking = false;
 
     MarkOpenGrabDeviceSuccessful();
 

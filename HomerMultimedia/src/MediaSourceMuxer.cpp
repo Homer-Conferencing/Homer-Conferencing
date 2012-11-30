@@ -2431,6 +2431,14 @@ int64_t MediaSourceMuxer::GetSynchronizationTimestamp()
         return 0;
 }
 
+int MediaSourceMuxer::GetSynchronizationPoints()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->GetSynchronizationPoints();
+    else
+        return 0;
+}
+
 int MediaSourceMuxer::GetOutputSampleRate()
 {
     return mOutputAudioSampleRate;

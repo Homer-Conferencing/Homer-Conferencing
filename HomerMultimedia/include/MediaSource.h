@@ -228,6 +228,7 @@ public:
 
     /* A/V sync. */
     virtual int64_t GetSynchronizationTimestamp(); // in us
+    virtual int GetSynchronizationPoints(); // how many synchronization points for deriving synchronization timestamp were included in the input stream till now?
 
     /* frame statistics */
     virtual bool SupportsDecoderFrameStatistics();
@@ -430,6 +431,8 @@ protected:
     float               mDecoderFrameBufferTimeMax; // max. pre-buffer length
     float               mDecoderFramePreBufferTime;
     bool                mDecoderFramePreBufferingAutoRestart;
+    /* A/V synch. */
+    int                 mDecoderSynchPoints; // mostly derived from RTCP(RTP) data
     /* live OSD marking */
     float               mMarkerRelX;
     float               mMarkerRelY;

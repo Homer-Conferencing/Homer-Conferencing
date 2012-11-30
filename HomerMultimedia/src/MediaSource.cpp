@@ -75,6 +75,7 @@ bool MediaSource::mFfmpegInitiated = false;
 MediaSource::MediaSource(string pName):
     PacketStatistic(pName)
 {
+    mDecoderSynchPoints = 0;
     mEndToEndDelay = 0;
     mDecodedIFrames = 0;
     mDecodedPFrames = 0;
@@ -2477,6 +2478,11 @@ void MediaSource::SetFrameRate(float pFps)
 int64_t MediaSource::GetSynchronizationTimestamp()
 {
     return 0;
+}
+
+int MediaSource::GetSynchronizationPoints()
+{
+    return mDecoderSynchPoints;
 }
 
 void* MediaSource::AllocChunkBuffer(int& pChunkBufferSize, enum MediaType pMediaType)

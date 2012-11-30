@@ -209,6 +209,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
                     int tOctetCountReportedBySender = 0;
                     if (tMediaSourceMemInstance->RtcpParseSenderReport(tFragmentData, tFragmentDataSize, tMediaSourceMemInstance->mEndToEndDelay, tPacketCountReportedBySender, tOctetCountReportedBySender))
                     {
+                        tMediaSourceMemInstance->mDecoderSynchPoints++;
 						#ifdef MSMEM_DEBUG_SENDER_REPORTS
                     		LOGEX(MediaSourceMem, LOG_VERBOSE, "Sender reports: %d packets and %d bytes transmitted", tPacketCountReportedBySender, tOctetCountReportedBySender);
 						#endif
@@ -586,17 +587,6 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     // overwrite FPS by the playout FPS value
     mFrameRate = mRealFrameRate;
 
-    mGrabberCurrentFrameIndex = 0;
-    mDecoderSinglePictureGrabbed = false;
-    mEOFReached = false;
-    mDecoderRecalibrateRTGrabbingAfterSeeking = true;
-    mDecoderFlushBuffersAfterSeeking = false;
-    mDecodedIFrames = 0;
-    mDecodedPFrames = 0;
-    mDecodedBFrames = 0;
-    mResXLastGrabbedFrame = 0;
-    mResYLastGrabbedFrame = 0;
-
     MarkOpenGrabDeviceSuccessful();
 
     if (!mGrabbingStopped)
@@ -679,15 +669,6 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     // overwrite FPS by the playout FPS value
     mFrameRate = mRealFrameRate;
 
-    mGrabberCurrentFrameIndex = 0;
-    mDecoderSinglePictureGrabbed = false;
-    mEOFReached = false;
-    mDecoderRecalibrateRTGrabbingAfterSeeking = true;
-    mDecoderFlushBuffersAfterSeeking = false;
-    mDecodedIFrames = 0;
-    mDecodedPFrames = 0;
-    mDecodedBFrames = 0;
-
     MarkOpenGrabDeviceSuccessful();
 
     if (!mGrabbingStopped)
@@ -720,6 +701,18 @@ bool MediaSourceMem::CloseGrabDevice()
         mDecoderFragmentFifo->ClearFifo();
 
     ResetPacketStatistic();
+
+    mGrabberCurrentFrameIndex = 0;
+    mDecoderSinglePictureGrabbed = false;
+    mEOFReached = false;
+    mDecoderRecalibrateRTGrabbingAfterSeeking = true;
+    mDecoderFlushBuffersAfterSeeking = false;
+    mDecodedIFrames = 0;
+    mDecodedPFrames = 0;
+    mDecodedBFrames = 0;
+    mResXLastGrabbedFrame = 0;
+    mResYLastGrabbedFrame = 0;
+    mDecoderSynchPoints = 0;
 
     return tResult;
 }
