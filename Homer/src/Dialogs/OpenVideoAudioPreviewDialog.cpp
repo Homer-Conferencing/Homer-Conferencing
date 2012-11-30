@@ -207,14 +207,12 @@ bool OpenVideoAudioPreviewDialog::AVPreBuffering()
     {
         case 0: // devices
             return false; // devices are not buffered by us, but maybe they are buffered by the hardware abstraction libraries which we use
-            break;
         case 1: // file
             return true; // files are always pre-buffered with auto-restart;
-            break;
         case 2: // network streaming
             return mGrpPreBuffering->isChecked();
-            break;
     }
+    return false;
 }
 
 bool OpenVideoAudioPreviewDialog::AVPreBufferingAutoRestart()
@@ -223,14 +221,12 @@ bool OpenVideoAudioPreviewDialog::AVPreBufferingAutoRestart()
     {
         case 0: // devices
             return false; // devices are not buffered by us, but maybe they are buffered by the hardware abstraction libraries which we use
-            break;
         case 1: // file
             return true; // files are always pre-buffered with auto-restart;
-            break;
         case 2: // network streaming
             return mCbRestartPreBuffering->isChecked();
-            break;
     }
+    return false;
 }
 
 bool OpenVideoAudioPreviewDialog::AVSynchronization()
@@ -239,14 +235,12 @@ bool OpenVideoAudioPreviewDialog::AVSynchronization()
     {
         case 0: // devices
             return false; // devices are not synchronized by us, but maybe they are buffered by the hardware abstraction libraries which we use
-            break;
         case 1: // file
             return true; // files are always presented with A/V synch.
-            break;
         case 2: // network streaming
             return mCbAVSynch->isChecked();
-            break;
     }
+    return false;
 }
 
 MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceAudio()
