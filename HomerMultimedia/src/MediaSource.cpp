@@ -934,6 +934,15 @@ float MediaSource::GetFrameBufferPreBufferingTime()
     return mDecoderFramePreBufferTime;
 }
 
+void MediaSource::SetFrameBufferPreBufferingTime(float pTime)
+{
+    if (mDecoderFramePreBufferTime != pTime)
+    {
+        LOG(LOG_VERBOSE, "Setting frame pre-buffer time to %.2f", pTime);
+        mDecoderFramePreBufferTime = pTime;
+    }
+}
+
 float MediaSource::GetFrameBufferTime()
 {
 	return mDecoderFrameBufferTime;

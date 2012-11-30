@@ -258,6 +258,7 @@ public:
 
     /* frame buffering to compensate reception jitter and short congestion periods */
     virtual float GetFrameBufferPreBufferingTime();
+    virtual void SetFrameBufferPreBufferingTime(float pTime);
     virtual float GetFrameBufferTime();
     virtual float GetFrameBufferTimeMax();
     virtual int GetFrameBufferCounter();

@@ -1790,6 +1790,12 @@ float MediaSourceMuxer::GetFrameBufferPreBufferingTime()
         return mDecoderFramePreBufferTime;
 }
 
+void MediaSourceMuxer::SetFrameBufferPreBufferingTime(float pTime)
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->SetFrameBufferPreBufferingTime(pTime);
+}
+
 float MediaSourceMuxer::GetFrameBufferTime()
 {
     if (mMediaSource != NULL)

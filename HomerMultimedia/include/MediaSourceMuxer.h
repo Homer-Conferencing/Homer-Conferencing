@@ -131,6 +131,7 @@ public:
 
     /* frame (pre)buffering */
     virtual float GetFrameBufferPreBufferingTime();
+    virtual void SetFrameBufferPreBufferingTime(float pTime);
     virtual float GetFrameBufferTime();
     virtual int GetFrameBufferCounter();
     virtual int GetFrameBufferSize();
