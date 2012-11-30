@@ -90,6 +90,9 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
     LOG(LOG_VERBOSE, "Creating new participant widget for %s..", pParticipant.toStdString().c_str());
 
     hide();
+    mAVSynchActive = false;
+    mAVPreBuffering = false;
+    mAvPreBufferingAutoRestart = false;
     mCurrentMovieFile = "";
     mMainWindow = pMainWindow;
     mMovieSliderPosition = 0;
@@ -257,6 +260,11 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
                     mLogoFrame->hide();
                     mTbSendAudio->hide();
                     mTbSendVideo->hide();
+
+                    mAVSynchActive = true;
+                    mAVPreBuffering = true;
+                    mAvPreBufferingAutoRestart = true;
+
                     break;
         case PARTICIPANT:
 					LOG(LOG_VERBOSE, "Creating participant widget for PARTICIPANT");
@@ -272,7 +280,9 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
 					if (mVideoReceiveSocket != NULL)
 					{
 						mVideoSource = new MediaSourceNet(mVideoReceiveSocket, true);
-						mVideoSource->SetPreBufferingActivation(false);
+						mVideoSource->SetPreBufferingActivation(true);
+						mVideoSource->SetPreBufferingAutoRestartActivation(true);
+						mVideoSource->SetFrameBufferPreBufferingTime(AV_SYNC_MAX_DRIFT * 2);
 						mVideoSource->SetInputStreamPreferences(CONF.GetVideoCodec().toStdString());
 						mVideoWidgetFrame->hide();
 						mVideoWidget->Init(mMainWindow, this, mVideoSource, pVideoMenu, mSessionName);
@@ -281,7 +291,9 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
 					if (mAudioReceiveSocket != NULL)
 					{
 						mAudioSource = new MediaSourceNet(mAudioReceiveSocket, true);
-						mAudioSource->SetPreBufferingActivation(false);
+						mAudioSource->SetPreBufferingActivation(true);
+						mAudioSource->SetPreBufferingAutoRestartActivation(true);
+						mAudioSource->SetFrameBufferPreBufferingTime(AV_SYNC_MAX_DRIFT * 2);
 						mAudioSource->SetInputStreamPreferences(CONF.GetAudioCodec().toStdString());
 						mAudioWidget->Init(mAudioSource, pAudioMenu, mSessionName);
 					}else
@@ -293,6 +305,11 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
 					mTbPrevious->hide();
 					mTbNext->hide();
 					mTbPlaylist->hide();
+
+                    mAVSynchActive = true;
+                    mAVPreBuffering = true;
+                    mAvPreBufferingAutoRestart = true;
+
 					break;
         case PREVIEW:
                     LOG(LOG_VERBOSE, "Creating participant widget for PREVIEW");
@@ -345,6 +362,9 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
                         {
                             // delete this participant widget again if no preview could be opened
                             QCoreApplication::postEvent(mMainWindow, (QEvent*) new QMeetingEvent(new DeleteSessionEvent(this)));
+
+                            delete tOpenVideoAudioPreviewDialog;
+
                             return;
                         }
                     }
@@ -357,6 +377,12 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
 					mTbPrevious->hide();
 					mTbNext->hide();
 					mTbPlaylist->hide();
+
+                    mAVSynchActive = tOpenVideoAudioPreviewDialog->AVSynchronization();
+                    mAVPreBuffering = tOpenVideoAudioPreviewDialog->AVPreBuffering();
+                    mAvPreBufferingAutoRestart = tOpenVideoAudioPreviewDialog->AVPreBufferingAutoRestart();
+
+                    delete tOpenVideoAudioPreviewDialog;
 
 					break;
         default:
@@ -1236,6 +1262,10 @@ void ParticipantWidget::ResetAVSync()
 
 void ParticipantWidget::AVSync()
 {
+    // only try to synch. if it is desired
+    if (!mAVSynchActive)
+        return;
+
     int64_t tVideoSyncTime = 0;
     if (mVideoSource != NULL)
         tVideoSyncTime = mVideoSource->GetSynchronizationTimestamp();
@@ -1257,7 +1287,7 @@ void ParticipantWidget::AVSync()
         if ((tCurTime - mTimeOfLastAVSynch  >= AV_SYNC_MIN_PERIOD * 1000))
         {
             // do we play video and audio from the same file?
-            if (PlayingMovie())
+            if (PlayingMovieFile())
             {
                 // do we play audio and video from a file we already know?
                 if (mVideoWidget->GetWorker()->CurrentFile() == mCurrentMovieFile)
@@ -1315,7 +1345,7 @@ float ParticipantWidget::GetAVDrift()
         return 0;
 
     // do we play video and audio from the same file?
-    if (PlayingMovie())
+    if (PlayingMovieFile())
     {
         tResult = mVideoWidget->GetWorker()->GetSeekPos() - mAudioWidget->GetWorker()->GetSeekPos() - mAudioWidget->GetWorker()->GetUserAVDrift() - mAudioWidget->GetWorker()->GetVideoDelayAVDrift();
     }
@@ -1334,7 +1364,7 @@ float ParticipantWidget::GetUserAVDrift()
         return 0;
 
     // do we play video and audio from the same file?
-    if (PlayingMovie())
+    if (PlayingMovieFile())
     {
         tResult = mAudioWidget->GetWorker()->GetUserAVDrift();
     }
@@ -1353,7 +1383,7 @@ float ParticipantWidget::GetVideoDelayAVDrift()
         return 0;
 
     // do we play video and audio from the same file?
-    if (PlayingMovie())
+    if (PlayingMovieFile())
     {
         tResult = mAudioWidget->GetWorker()->GetVideoDelayAVDrift();
     }
@@ -1370,7 +1400,7 @@ void ParticipantWidget::SetUserAVDrift(float pDrift)
         return;
 
     // do we play video and audio from the same file?
-    if (PlayingMovie())
+    if (PlayingMovieFile())
     {
         mAudioWidget->GetWorker()->SetUserAVDrift(pDrift);
     }
@@ -1392,7 +1422,7 @@ void ParticipantWidget::ReportVideoDelay(float pDelay)
             return;
 
         // do we play video and audio from the same file?
-        if (PlayingMovie())
+        if (PlayingMovieFile())
         {
             mAudioWidget->GetWorker()->SetVideoDelayAVDrift(pDelay);
         }
@@ -1444,11 +1474,16 @@ void ParticipantWidget::ShowNewState()
     }
 }
 
-bool ParticipantWidget::PlayingMovie()
+bool ParticipantWidget::PlayingMovieFile()
 {
     if ((mVideoWidget != NULL) && (mAudioWidget != NULL))
-        return mVideoWidget->GetWorker()->CurrentFile() == mAudioWidget->GetWorker()->CurrentFile();
-    else
+    {
+        VideoWorkerThread *tVWorker = mVideoWidget->GetWorker();
+        AudioWorkerThread *tAWorker = mAudioWidget->GetWorker();
+
+        bool tPlayingSameFile = (tVWorker->CurrentFile() == tAWorker->CurrentFile());
+        return ((tVWorker->PlayingFile()) && (tAWorker->PlayingFile()) && tPlayingSameFile);
+    }else
         return false;
 }
 
@@ -1592,7 +1627,7 @@ void ParticipantWidget::SeekMovieFileRelative(float pSeconds)
 
     mVideoWidget->GetWorker()->Seek(tTargetPos);
     #ifdef PARTICIPANT_WIDGET_AV_SYNC
-        if (PlayingMovie())
+        if (PlayingMovieFile())
         {// synch. audio to video
             // force an AV sync
             mTimeOfLastAVSynch = 0;
@@ -1633,7 +1668,7 @@ void ParticipantWidget::AVSeek(int pPos)
 
     mVideoWidget->GetWorker()->Seek(tPos);
     #ifdef PARTICIPANT_WIDGET_AV_SYNC
-        if (PlayingMovie())
+        if (PlayingMovieFile())
         {// synch. audio to video
             // force an AV sync
             mTimeOfLastAVSynch = 0;
@@ -1840,6 +1875,15 @@ void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
     	return;
     }
 
+	// make sure that for BROADCAST widget we only synchronize in case of movie input data
+	if (mSessionType == BROADCAST)
+	{
+        // update the A/V synch. state
+        mAVSynchActive = PlayingMovieFile();
+        mAVPreBuffering = PlayingMovieFile();
+        mAvPreBufferingAutoRestart = PlayingMovieFile();
+	}
+
     UpdateMovieControls();
 
     AVSync();
@@ -1860,7 +1904,26 @@ void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
 
     	tAVStats += "\n\n";
 
-    	// AUDIO
+        tAVStats += "Video/audio:";
+
+        tAVStats += "\n     A/V pre-buffering: ";
+        if (mAVPreBuffering)
+            tAVStats += "active";
+        else
+            tAVStats += "inactive";
+        tAVStats += " ";
+        if (mAvPreBufferingAutoRestart)
+            tAVStats += "(auto restart)";
+
+        tAVStats += "\n     A/V synchronization: ";
+        if (mAVSynchActive)
+            tAVStats += "active";
+        else
+            tAVStats += "inactive";
+
+        tAVStats += "\n\n";
+
+        // AUDIO
     	tAVStats += "Audio statistics:";
     	tStats = mAudioWidget->GetAudioStatistic();
     	tStatLines = tStats.size();

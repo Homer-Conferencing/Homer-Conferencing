@@ -57,6 +57,9 @@ public:
     int exec();
 
     bool FileSourceSelected();
+    bool AVPreBuffering();
+    bool AVPreBufferingAutoRestart();
+    bool AVSynchronization();
 
 private slots:
     void ActionGetFile();

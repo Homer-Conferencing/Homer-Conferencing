@@ -185,13 +185,13 @@ private:
     /* AV sync */
     void ResetAVSync();
     void AVSync();
-    float GetAVDrift(); // pos. value means "video before audio, audio is too late"
+    float GetAVDrift(); // positive values mean "video before audio, audio is too late"
     float GetUserAVDrift();
     float GetVideoDelayAVDrift();
     void SetUserAVDrift(float pDrift);
     void ReportVideoDelay(float pDelay); // adds an additional delay to audio if video presentation is delayed
     void InformAboutVideoSeekingComplete();
-    bool PlayingMovie();
+    bool PlayingMovieFile();
     void AVSeek(int pPos); // position given in x/1000
 
     /* fullscreen movie controls */
@@ -235,6 +235,9 @@ private:
     int 					mContinuousAVAsync;
     QString             	mCurrentMovieFile;
     MovieControlWidget      *mFullscreeMovieControlWidget;
+    bool                    mAVSynchActive;
+    bool                    mAVPreBuffering;
+    bool                    mAvPreBufferingAutoRestart;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
