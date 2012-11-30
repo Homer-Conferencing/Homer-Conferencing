@@ -65,7 +65,7 @@ using namespace Homer::Monitor;
 ///////////////////////////////////////////////////////////////////////////////
 
 // how many audio buffers do we allow for audio playback?
-#define AUDIO_MAX_PLAYBACK_QUEUE                            0 // 0 means unlimited by audio widget but still limited by waveout
+#define AUDIO_MAX_PLAYBACK_QUEUE                            3 // 0 means unlimited by audio widget but still limited by waveout
 
 // how many measurement steps do we use?
 #define SPS_MEASUREMENT_STEPS                           2 * 44
