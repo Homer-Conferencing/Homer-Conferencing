@@ -25,6 +25,8 @@
  * Since:   2011-02-25
  */
 
+//HINT: http://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
+
 #include <Logger.h>
 #include <HBSystem.h>
 
@@ -234,15 +236,15 @@ int64_t System::GetMachineMemoryPhysical()
 
 	#if defined(APPLE) || defined(BSD)
 		int tMib[2];
-		uint64_t tRamSize;
-		size_t tLength;
+		uint64_t tPhysRamSize;
+		size_t tSize;
 		tMib[0] = CTL_HW;
 		tMib[1] = HW_MEMSIZE; /* uint64_t: physical ram size */
-		tLength = sizeof(tRamSize);
-		if (sysctl(tMib, 2, &tRamSize, &tLength, NULL, 0) != 0)
+		tSize = sizeof(tPhysRamSize);
+		if (sysctl(tMib, 2, &tPhysRamSize, &tSize, NULL, 0) != 0)
 			LOGEX(System, LOG_ERROR, "Failed to determine the amount of physical memory");
 		else
-			tResult = tRamSize;
+			tResult = (int64_t)tPhysRamSize;
 	#endif
     #if defined(LINUX)
         long tPages = sysconf(_SC_PHYS_PAGES);
@@ -274,10 +276,13 @@ int64_t System::GetMachineMemorySwap()
         tResult = tSysInfo.totalswap;
     #endif
     #if defined(APPLE) || defined(BSD)
-/*        long tPages = sysconf(_SC_PHYS_PAGES);//TODO
-        long tPageSize = sysconf(_SC_PAGE_SIZE);//TODO
-        tResult = (int64_t)tPages * tPageSize;
-*/    #endif
+        xsw_usage tVmUsage = {0};
+        size_t tSize = sizeof(tVmUsage);
+        if (sysctlbyname("vm.swapusage", &tVmUsage, &tSize, NULL, 0) != 0)
+        	LOGEX(System, LOG_ERROR, "Failed to determine the amount of swap space" );
+        else
+        	tResult = (int64_t)tVmUsage.xsu_total;
+    #endif
     #ifdef WIN32
         MEMORYSTATUSEX tMemStatus;
         tMemStatus.dwLength = sizeof(tMemStatus);
