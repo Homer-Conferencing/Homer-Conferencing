@@ -31,8 +31,15 @@
 #include <string.h>
 #include <stdlib.h>
 
-#if defined(LINUX) || defined(APPLE) || defined(BSD)
+#if defined(LINUX)
 #include <sys/sysinfo.h>
+#endif
+
+#if defined(APPLE) || defined(BSD)
+#include <sys/sysctl.h>
+#endif
+
+#if defined(LINUX) || defined(APPLE) || defined(BSD)
 #include <sys/utsname.h>
 #include <unistd.h>
 #endif
@@ -224,7 +231,20 @@ string System::GetTargetMachineType()
 int64_t System::GetMachineMemoryPhysical()
 {
     int64_t tResult = 0;
-    #if defined(LINUX) || defined(APPLE) || defined(BSD)
+
+	#if defined(APPLE) || defined(BSD)
+		int tMib[2];
+		uint64_t tRamSize;
+		size_t tLength;
+		tMib[0] = CTL_HW;
+		tMib[1] = HW_MEMSIZE; /* uint64_t: physical ram size */
+		tLength = sizeof(tRamSize);
+		if (sysctl(tMib, 2, &tRamSize, &tLength, NULL, 0) != 0)
+			LOGEX(System, LOG_ERROR, "Failed to determine the amount of physical memory");
+		else
+			tResult = tRamSize;
+	#endif
+    #if defined(LINUX)
         long tPages = sysconf(_SC_PHYS_PAGES);
         long tPageSize = sysconf(_SC_PAGE_SIZE);
         tResult = (int64_t)tPages * tPageSize;
@@ -254,10 +274,10 @@ int64_t System::GetMachineMemorySwap()
         tResult = tSysInfo.totalswap;
     #endif
     #if defined(APPLE) || defined(BSD)
-        long tPages = sysconf(_SC_PHYS_PAGES);//TODO
+/*        long tPages = sysconf(_SC_PHYS_PAGES);//TODO
         long tPageSize = sysconf(_SC_PAGE_SIZE);//TODO
         tResult = (int64_t)tPages * tPageSize;
-    #endif
+*/    #endif
     #ifdef WIN32
         MEMORYSTATUSEX tMemStatus;
         tMemStatus.dwLength = sizeof(tMemStatus);
