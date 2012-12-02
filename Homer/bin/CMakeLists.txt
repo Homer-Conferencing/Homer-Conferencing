@@ -9,15 +9,15 @@ INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakeConfig.txt)
 ##############################################################
 
 ##############################################################
-# find package "QT" and include some macros
-MESSAGE("##### Searching for library QT4")
+# find package "Qt4" and include some macros
+MESSAGE("##### Searching for library Qt4")
 SET (QT_QMAKE_EXECUTABLE $ENV{QT_QMAKE_EXECUTABLE} )
-Find_Package(Qt4 4.6 REQUIRED)
+Find_Package(Qt4 4.7 REQUIRED)
 IF (NOT QT4_FOUND)
 	IF ($ENV{QT_QMAKE_EXECUTABLE} MATCHES "")
-		MESSAGE(FATAL_ERROR "Library QT4 not found, try to define path to Qt4 qmake in environment variable QT_QMAKE_EXECUTABLE")
+		MESSAGE(FATAL_ERROR "Library QT4 not found, try to define the absolute path to Qt4 qmake executable in the environment variable QT_QMAKE_EXECUTABLE")
 	ELSE()
-		MESSAGE(FATAL_ERROR "You need library QT4")
+		MESSAGE(FATAL_ERROR "You need library Qt4")
 	ENDIF()
 ENDIF ()
 SET(QT_USE_QTCOREL 1)
@@ -256,24 +256,26 @@ SET(QT_TRANS_SOURCES
 		${HEADER_FILES}
 )
 
-# integrate Qt translations
-QT4_CREATE_TRANSLATION(QT_LANG_BINS ${QT_TRANS_SOURCES} ${QT_LANG_FILES})
-
-# copy translator binaries to destination folder
-#FOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
-#	file(COPY ${QT_LANG_BINS_ENTRY} DESTINATION lang/${QT_LANG_BINS_ENTRY})
-#ENDFOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
-
-# mark translator binaries for installation process
-FOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
-	INSTALL(FILES ${QT_LANG_BINS_ENTRY} DESTINATION lang COMPONENT lang)
-ENDFOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
-
-# add translator binaries to the linked sources
-SET(SOURCES 
-		${SOURCES}
-		${QT_LANG_BINS}
-)
+IF (NOT APPLE) #TODO: fix the lupdate problems for APPLE
+	# integrate Qt translations
+	QT4_CREATE_TRANSLATION(QT_LANG_BINS ${QT_TRANS_SOURCES} ${QT_LANG_FILES})
+	
+	# copy translator binaries to destination folder
+	#FOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
+	#	file(COPY ${QT_LANG_BINS_ENTRY} DESTINATION lang/${QT_LANG_BINS_ENTRY})
+	#ENDFOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
+	
+	# mark translator binaries for installation process
+	FOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
+		INSTALL(FILES ${QT_LANG_BINS_ENTRY} DESTINATION lang COMPONENT lang)
+	ENDFOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
+	
+	# add translator binaries to the linked sources
+	SET(SOURCES 
+			${SOURCES}
+			${QT_LANG_BINS}
+	)
+ENDIF()
 
 ##############################################################
 #IF(EXISTS "../../HomerNetworkSimulator" AND IS_DIRECTORY "../../HomerNetworkSimulator")
