@@ -729,7 +729,19 @@ QStringList VideoWidget::GetVideoStatistic()
     QString tLine_Frame = "";
     tLine_Frame = "Frame: " + QString("%1").arg(mCurrentFrameNumber);
     if (mVideoSource->SupportsDecoderFrameStatistics())
-        tLine_Frame += " (" + QString("%1*i,").arg(mVideoSource->DecodedIFrames()) + QString("%1*p,").arg(mVideoSource->DecodedPFrames()) + QString("%1*b").arg(mVideoSource->DecodedBFrames()) + ")";
+    {
+        tLine_Frame += " (";
+        tLine_Frame += QString("%1*i, ").arg(mVideoSource->DecodedIFrames()) + QString("%1*p, ").arg(mVideoSource->DecodedPFrames()) + QString("%1*b").arg(mVideoSource->DecodedBFrames());
+        if (mVideoSource->DecodedSFrames() > 0)
+        	tLine_Frame += QString(",%1*s").arg(mVideoSource->DecodedSFrames());
+        if (mVideoSource->DecodedSIFrames() > 0)
+        	tLine_Frame += QString(",%1*si").arg(mVideoSource->DecodedSIFrames());
+        if (mVideoSource->DecodedSPFrames() > 0)
+        	tLine_Frame += QString(",%1*sp").arg(mVideoSource->DecodedSPFrames());
+        if (mVideoSource->DecodedBIFrames() > 0)
+        	tLine_Frame += QString(",%1*bi").arg(mVideoSource->DecodedBIFrames());
+        tLine_Frame += ")";
+    }
     tLine_Frame += (mVideoSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropCounter()) + " lost packets)") : "") + (mVideoSource->GetFragmentBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetFragmentBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetFragmentBufferSize()) + " buffered packets)") : "");
 
     //############################################

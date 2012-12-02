@@ -236,6 +236,10 @@ public:
     virtual int64_t DecodedIFrames();
     virtual int64_t DecodedPFrames();
     virtual int64_t DecodedBFrames();
+    virtual int64_t DecodedSFrames();
+    virtual int64_t DecodedSIFrames();
+    virtual int64_t DecodedSPFrames();
+    virtual int64_t DecodedBIFrames();
 
     /* end-to-end delay */
     virtual int64_t GetEndToEndDelay(); // in us
@@ -426,6 +430,10 @@ protected:
     int64_t             mDecodedIFrames;
     int64_t             mDecodedPFrames;
     int64_t             mDecodedBFrames;
+    int64_t             mDecodedSFrames;
+    int64_t             mDecodedSIFrames;
+    int64_t             mDecodedSPFrames;
+    int64_t             mDecodedBIFrames;
     /* delay stats */
     int64_t             mEndToEndDelay;
     /* frame pre-buffering */

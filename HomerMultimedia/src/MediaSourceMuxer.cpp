@@ -1777,6 +1777,38 @@ int64_t MediaSourceMuxer::DecodedBFrames()
         return mDecodedBFrames;
 }
 
+int64_t MediaSourceMuxer::DecodedSFrames()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->DecodedSFrames();
+    else
+        return mDecodedSFrames;
+}
+
+int64_t MediaSourceMuxer::DecodedSIFrames()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->DecodedSIFrames();
+    else
+        return mDecodedSIFrames;
+}
+
+int64_t MediaSourceMuxer::DecodedSPFrames()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->DecodedSPFrames();
+    else
+        return mDecodedSPFrames;
+}
+#
+int64_t MediaSourceMuxer::DecodedBIFrames()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->DecodedBIFrames();
+    else
+        return mDecodedBIFrames;
+}
+
 int64_t MediaSourceMuxer::GetEndToEndDelay()
 {
     if (mMediaSource != NULL)

@@ -272,10 +272,6 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 
     MarkOpenGrabDeviceSuccessful();
 
-    mDecodedIFrames = 0;
-    mDecodedPFrames = 0;
-    mDecodedBFrames = 0;
-
     return true;
 }
 

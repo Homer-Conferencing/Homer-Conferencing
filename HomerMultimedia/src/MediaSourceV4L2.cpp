@@ -378,9 +378,6 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     LOG(LOG_INFO, "    ..input: %s", mCurrentInputChannelName.c_str());
 
     mSupportsMultipleInputChannels = DoSupportsMultipleInputChannels();
-    mDecodedIFrames = 0;
-    mDecodedPFrames = 0;
-    mDecodedBFrames = 0;
 
     return true;
 }

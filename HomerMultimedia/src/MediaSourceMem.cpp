@@ -710,9 +710,6 @@ bool MediaSourceMem::CloseGrabDevice()
     mEOFReached = false;
     mDecoderRecalibrateRTGrabbingAfterSeeking = true;
     mDecoderFlushBuffersAfterSeeking = false;
-    mDecodedIFrames = 0;
-    mDecodedPFrames = 0;
-    mDecodedBFrames = 0;
     mResXLastGrabbedFrame = 0;
     mResYLastGrabbedFrame = 0;
     mDecoderSynchPoints = 0;

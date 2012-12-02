@@ -109,6 +109,10 @@ public:
     virtual int64_t DecodedIFrames();
     virtual int64_t DecodedPFrames();
     virtual int64_t DecodedBFrames();
+    virtual int64_t DecodedSFrames();
+    virtual int64_t DecodedSIFrames();
+    virtual int64_t DecodedSPFrames();
+    virtual int64_t DecodedBIFrames();
 
     /* end-to-end delay */
     virtual int64_t GetEndToEndDelay();

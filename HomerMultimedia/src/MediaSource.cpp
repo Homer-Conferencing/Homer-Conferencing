@@ -81,6 +81,10 @@ MediaSource::MediaSource(string pName):
     mDecodedPFrames = 0;
     mDecodedBFrames = 0;
     mSourceStartPts = 0;
+	mDecodedSFrames = 0;
+	mDecodedSIFrames = 0;
+	mDecodedSPFrames = 0;
+	mDecodedBIFrames = 0;
     mDecoderFrameBufferTimeMax = 0;
     mDecoderFramePreBufferTime = 0;
     mSourceType = SOURCE_ABSTRACT;
@@ -922,6 +926,26 @@ int64_t MediaSource::DecodedPFrames()
 int64_t MediaSource::DecodedBFrames()
 {
     return mDecodedBFrames;
+}
+
+int64_t MediaSource::DecodedSFrames()
+{
+    return mDecodedSFrames;
+}
+
+int64_t MediaSource::DecodedSIFrames()
+{
+    return mDecodedSIFrames;
+}
+
+int64_t MediaSource::DecodedSPFrames()
+{
+    return mDecodedSPFrames;
+}
+
+int64_t MediaSource::DecodedBIFrames()
+{
+    return mDecodedBIFrames;
 }
 
 int64_t MediaSource::GetEndToEndDelay()
@@ -2278,6 +2302,18 @@ void MediaSource::AnnounceFrame(AVFrame *pFrame)
                 case AV_PICTURE_TYPE_B:
                     mDecodedBFrames++;
                     break;
+                case AV_PICTURE_TYPE_S: // S(GMC)-VOP MPEG4
+                	mDecodedSFrames++;
+                	break;
+                case AV_PICTURE_TYPE_SI: // Switching Intra
+                	mDecodedSIFrames++;
+                	break;
+                case AV_PICTURE_TYPE_SP: // Switching Predicted
+                	mDecodedSPFrames++;
+                	break;
+                case AV_PICTURE_TYPE_BI: // BI type
+                	mDecodedBIFrames++;
+                	break;
                 default:
                     LOG(LOG_WARN, "Unknown picture type: %d", pFrame->pict_type);
                     break;
@@ -2722,6 +2758,10 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     mDecodedIFrames = 0;
     mDecodedPFrames = 0;
     mDecodedBFrames = 0;
+	mDecodedSFrames = 0;
+	mDecodedSIFrames = 0;
+	mDecodedSPFrames = 0;
+	mDecodedBIFrames = 0;
 }
 
 void MediaSource::EventGrabChunkSuccessful(string pSource, int pLine, int pChunkNumber)
