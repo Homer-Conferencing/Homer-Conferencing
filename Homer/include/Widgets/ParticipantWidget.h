@@ -186,7 +186,7 @@ private:
     /* AV sync */
     void ResetAVSync();
     void AVSync();
-    float GetAVDrift(); // positive values mean "video before audio, audio is too late"
+    float GetAVDrift(int64_t *pVideoSyncTime = NULL, int64_t *pAudioSyncTime = NULL); // positive values mean "video before audio, audio is too late"
     float GetUserAVDrift();
     float GetVideoDelayAVDrift();
     void SetUserAVDrift(float pDrift);
@@ -231,6 +231,8 @@ private:
     int                 	mTimerId;
     int						mMovieSliderPosition;
     /* A/V synch. */
+    int64_t					mLastAudioSynchronizationTimestamp;
+    int64_t					mLastVideoSynchronizationTimestamp;
     float                   mVideoDelayAVDrift;
     int64_t					mTimeOfLastAVSynch;
     int 					mContinuousAVAsync;
