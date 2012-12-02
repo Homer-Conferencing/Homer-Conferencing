@@ -1501,13 +1501,6 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
     if ((pEvent->key() == Qt::Key_Escape) && (IsFullScreen()))
 	{
         ToggleFullScreenMode();
-//        setWindowFlags(windowFlags() ^ Qt::Window);
-//        showNormal();
-//        if (cursor().shape() == Qt::BlankCursor)
-//        {
-//            FullscreenMarkUserActive();
-//            LOG(LOG_VERBOSE, "Showing the mouse cursor again, current timeout is %d seconds", VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME);
-//        }
         pEvent->accept();
         return;
 	}
