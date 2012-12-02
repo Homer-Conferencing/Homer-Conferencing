@@ -983,6 +983,8 @@ bool MediaSourceMuxer::CloseMuxer()
 
     ResetPacketStatistic();
 
+    mFrameNumber = 0;
+
     return tResult;
 }
 
@@ -2047,8 +2049,6 @@ bool MediaSourceMuxer::Reset(enum MediaType pMediaType)
 
     // unlock grabbing
     mGrabMutex.unlock();
-
-    mFrameNumber = 0;
 
     return tResult;
 }
