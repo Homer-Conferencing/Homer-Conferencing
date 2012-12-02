@@ -151,13 +151,14 @@ protected:
     /* FIFO helpers */
     void WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int64_t pPts);
     void ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int64_t &pPts);
+    bool DecoderFifoFull();
 
     /* RTP based frame numbering */
     virtual uint64_t CalculateFrameNumberFromRTP();
 
     /* real-time playback */
-    void CalibrateRTGrabbing();
-    void WaitForRTGrabbing();
+    virtual void CalibrateRTGrabbing();
+    virtual void WaitForRTGrabbing();
 
     unsigned long       mFragmentNumber;
     char                *mStreamPacketBuffer;

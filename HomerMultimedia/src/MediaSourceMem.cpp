@@ -75,7 +75,7 @@ MediaSourceMem::MediaSourceMem(string pName, bool pRtpActivated):
     mDecoderFrameBufferTimeMax = MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME;
     mDecoderFramePreBufferTime = MEDIA_SOURCE_MEM_PRE_BUFFER_TIME;
     mDecoderTargetFrameIndex = 0;
-    mDecoderRecalibrateRTGrabbingAfterSeeking = false;
+    mDecoderRecalibrateRTGrabbingAfterSeeking = true;
     mDecoderFlushBuffersAfterSeeking = false;
     mDecoderSinglePictureGrabbed = false;
     mDecoderFifo = NULL;
@@ -595,6 +595,9 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if (!mGrabbingStopped)
         StartDecoder();
 
+    // enforce pre-buffering for the first frame
+    mDecoderRecalibrateRTGrabbingAfterSeeking = (mDecoderFramePreBufferTime > 0);
+
     return true;
 }
 
@@ -676,6 +679,9 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 
     if (!mGrabbingStopped)
         StartDecoder();
+
+    // enforce pre-buffering for the first frame
+    mDecoderRecalibrateRTGrabbingAfterSeeking = (mDecoderFramePreBufferTime > 0);
 
     return true;
 }
@@ -1129,7 +1135,7 @@ void* MediaSourceMem::Run(void* pArgs)
         #endif
 
         mDecoderNeedWorkConditionMutex.lock();
-        if ((mDecoderFifo != NULL) && (mDecoderFifo->GetUsage() < mDecoderFifo->GetSize() - 1 /* one slot for a 0 byte signaling chunk*/) /* meta data FIFO has always the same size => hence, we don't have to check its size */)
+        if (!DecoderFifoFull())
         {
             mDecoderNeedWorkConditionMutex.unlock();
 
@@ -1943,6 +1949,11 @@ void MediaSourceMem::ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int6
     UpdateBufferTime();
 }
 
+bool MediaSourceMem::DecoderFifoFull()
+{
+	return (mDecoderFifo == NULL) || (mDecoderFifo->GetUsage() >= mDecoderFifo->GetSize() - 1 /* one slot for a 0 byte signaling chunk*/) /* meta data FIFO has always the same size => hence, we don't have to check its size */;
+}
+
 void MediaSourceMem::UpdateBufferTime()
 {
     //LOG(LOG_VERBOSE, "Updating pre-buffer time value");
@@ -1958,7 +1969,7 @@ void MediaSourceMem::CalibrateRTGrabbing()
 {
     // adopt the stored pts value which represent the start of the media presentation in real-time useconds
     float  tRelativeFrameIndex = mGrabberCurrentFrameIndex - mSourceStartPts;
-    double tRelativeTime = (int64_t)((double)AV_TIME_BASE * tRelativeFrameIndex / mFrameRate);
+    double tRelativeTime = (int64_t)((double)AV_TIME_BASE * tRelativeFrameIndex / GetFrameRate());
     #ifdef MSMEM_DEBUG_CALIBRATION
         LOG(LOG_WARN, "Calibrating %s RT playback, old PTS start: %.2f", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing);
     #endif
@@ -1970,27 +1981,31 @@ void MediaSourceMem::CalibrateRTGrabbing()
 
 void MediaSourceMem::WaitForRTGrabbing()
 {
-    float tRelativeTimeIndexInUSecs, tCurrentRelativeTimeIndexInUSecs, tWaitingTimeInUSecs;
+    float tRelativePlayOutTimeInUSecs, tCurrentRelativeTimeIndexInUSecs, tWaitingTimeInUSecs;
     float tRelativeFrameIndex = mGrabberCurrentFrameIndex - mSourceStartPts; // the normalized frame index
-    float tRelativeTimeIndex = tRelativeFrameIndex / GetFrameRate(); // the normalized time index
-    double tRelativePTS = AV_TIME_BASE * (tRelativeTimeIndex); // transform normalized time index to a PTS value
-    tRelativeTimeIndexInUSecs = (int64_t)tRelativePTS;
+    float tRelativePlayoutTimeInSeconds = tRelativeFrameIndex / GetFrameRate(); // the normalized time index
+    double tRelativePTS = AV_TIME_BASE * (tRelativePlayoutTimeInSeconds); // transform normalized time index to a PTS value
+    tRelativePlayOutTimeInUSecs = (int64_t)tRelativePTS;
     tCurrentRelativeTimeIndexInUSecs = av_gettime() - mSourceStartTimeForRTGrabbing;
-    tWaitingTimeInUSecs = tRelativeTimeIndexInUSecs - tCurrentRelativeTimeIndexInUSecs;
+    tWaitingTimeInUSecs = tRelativePlayOutTimeInUSecs - tCurrentRelativeTimeIndexInUSecs;
     #ifdef MSMEM_DEBUG_TIMING
-        LOG(LOG_VERBOSE, "%s-current relative frame index: %f, relative time: %f us (Fps: %3.2f), stream start time: %f us, packet's relative play out time: %f us, time difference: %f us", GetMediaTypeStr().c_str(), tRelativeFrameIndex, tCurrentRelativeTimeIndexInUSecs, GetFrameRate(), (float)mSourceStartPts, tRelativeTimeIndexInUSecs, tWaitingTimeInUSecs);
+        LOG(LOG_VERBOSE, "%s-current relative frame index: %f, relative time: %f us (Fps: %3.2f), stream start time: %f us, packet's relative play out time: %f us, time difference: %f us", GetMediaTypeStr().c_str(), tRelativeFrameIndex, tCurrentRelativeTimeIndexInUSecs, GetFrameRate(), (float)mSourceStartPts, tRelativePlayOutTimeInUSecs, tWaitingTimeInUSecs);
     #endif
     // adapt timing to real-time
     if (tWaitingTimeInUSecs > 1.0)
     {
         #ifdef MSMEM_DEBUG_TIMING
-            LOG(LOG_WARN, "%s-sleeping for %.2f ms (%.0f, %.0f) for frame %.2f", GetMediaTypeStr().c_str(), tWaitingTimeInUSecs / 1000, tRelativeTimeIndexInUSecs, tCurrentRelativeTimeIndexInUSecs, (float)mGrabberCurrentFrameIndex);
+            LOG(LOG_ERROR, "%s-sleeping for %.2f ms (%.0f, %.0f) for frame %.2f", GetMediaTypeStr().c_str(), tWaitingTimeInUSecs / 1000, tRelativePlayOutTimeInUSecs, tCurrentRelativeTimeIndexInUSecs, (float)mGrabberCurrentFrameIndex);
         #endif
         if (tWaitingTimeInUSecs <= MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME * AV_TIME_BASE)
             Thread::Suspend(tWaitingTimeInUSecs);
         else
-            LOG(LOG_ERROR, "Found in %s %s source an invalid delay time of %.2f s (%.0f, %.0f), pre-buffer time: %.2f", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tWaitingTimeInUSecs / 1000, tRelativeTimeIndexInUSecs, tCurrentRelativeTimeIndexInUSecs, mDecoderFramePreBufferTime);
-    }else
+        {
+            LOG(LOG_WARN, "Found in %s %s source an invalid delay time of %.2f s (%.0f, %.0f), pre-buffer time: %.2f", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tWaitingTimeInUSecs / 1000, tRelativePlayOutTimeInUSecs, tCurrentRelativeTimeIndexInUSecs, mDecoderFramePreBufferTime);
+            LOG(LOG_WARN, "Re-calibrating RT grabbing");
+            CalibrateRTGrabbing();
+        }
+	}else
     {
         #ifdef MSMEM_DEBUG_TIMING
             if (tWaitingTimeInUSecs < -MEDIA_SOURCE_MEM_VIDEO_FRAME_DROP_THRESHOLD)
