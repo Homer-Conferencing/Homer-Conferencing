@@ -379,8 +379,10 @@ protected:
 
     /* FFMPEG helpers */
     bool FfmpegDescribeInput(string pSource/* caller source */, int pLine /* caller line */, CodecID pCodecId, AVInputFormat **pFormat);
+
 public:
     static bool FfmpegCreateIOContext(string pSource/* caller source */, int pLine /* caller line */, char *pPacketBuffer, int pPacketBufferSize, IOFunction pReadFunction, IOFunction pWriteFunction, void *pOpaque, AVIOContext **pIoContext);
+
 protected:
     bool FfmpegOpenInput(string pSource /* caller source */, int pLine /* caller line */, const char *pInputName, AVInputFormat *pInputFormat = NULL, AVIOContext *pIOContext = NULL);
     bool FfmpegDetectAllStreams(string pSource /* caller source */, int pLine /* caller line */); //avformat_open_input must be called before, returns true on success
