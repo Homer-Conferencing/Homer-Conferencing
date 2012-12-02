@@ -29,6 +29,7 @@
 #define _MOVIE_CONTROL_WIDGET_
 
 #include <Widgets/PlaybackSlider.h>
+#include <Widgets/VideoWidget.h>
 #include <QWidget>
 
 #include <ui_MovieControlWidget.h>
@@ -43,11 +44,15 @@ class MovieControlWidget:
     Q_OBJECT;
 
 public:
-    MovieControlWidget(QWidget *pParent);
+    MovieControlWidget(VideoWidget *pVideoWidget);
 
     virtual ~MovieControlWidget();
 
 private:
+    virtual void keyPressEvent(QKeyEvent *pEvent);
+    virtual void keyReleaseEvent(QKeyEvent *pEvent);
+
+    VideoWidget 			*mVideoWidget;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

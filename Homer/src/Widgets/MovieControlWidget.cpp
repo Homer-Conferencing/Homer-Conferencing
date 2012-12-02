@@ -34,10 +34,12 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-MovieControlWidget::MovieControlWidget(QWidget *pParent):
+MovieControlWidget::MovieControlWidget(VideoWidget *pVideoWidget):
     QWidget(NULL)
 {
     LOG(LOG_VERBOSE, "Created");
+
+    mVideoWidget = pVideoWidget;
 
     //setParent(NULL);
     setWindowFlags(Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint | Qt::FramelessWindowHint );
@@ -52,7 +54,23 @@ MovieControlWidget::~MovieControlWidget()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+void MovieControlWidget::keyPressEvent(QKeyEvent *pEvent)
+{
+	LOG(LOG_VERBOSE, "Got movie control window key press event with key %s(%d, mod: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
 
+	// forward the event to the parent widget
+	QCoreApplication::postEvent(mVideoWidget, new QKeyEvent(QEvent::KeyPress, pEvent->key(), pEvent->modifiers(), pEvent->text()));
+
+	pEvent->accept();
+}
+
+void MovieControlWidget::keyReleaseEvent(QKeyEvent *pEvent)
+{
+	// forward the event to the parent widget
+	QCoreApplication::postEvent(mVideoWidget, new QKeyEvent(QEvent::KeyRelease, pEvent->key(), pEvent->modifiers(), pEvent->text()));
+
+	pEvent->accept();
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
