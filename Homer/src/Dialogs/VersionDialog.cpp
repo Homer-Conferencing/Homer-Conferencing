@@ -56,7 +56,7 @@ void VersionDialog::initializeGUI()
     mLbMetraLabs->Init("http://www.metralabs.com/");
     mLbComnart->Init("http://www.comnart.de/");
     mLbFem->Init("http://fem.tu-ilmenau.de/");
-    mLbOnlineforge->Init("http://www.onlineforge.de/");
+    mLbQt->Init("http://www.qt-project.org/");
     mLbFacebook->Init("http://www.facebook.com/homerconferencing");
 }
 
