@@ -122,6 +122,14 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
         if (tAVPacketPts < mLastPacketPts)
             LOG(LOG_ERROR, "Current packet pts (%d) from A/V encoder is lower than last one (%ld)", tAVPacketPts, mLastPacketPts);
 
+        // do we have monotonously increasing PTS values
+        if (mIncomingAVStreamLastPts > tAVPacketPts)
+        {
+        	LOG(LOG_WARN, "Incoming AV stream PTS values are not monotonous, resetting the streamer now..");
+        	tResetNeeded = true;
+        }
+    	mIncomingAVStreamLastPts = tAVPacketPts;
+
         //####################################################################
         // check if RTP encoder is valid for the current stream
         //####################################################################

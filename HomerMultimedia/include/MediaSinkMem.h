@@ -79,6 +79,7 @@ protected:
     bool                mRtpActivated;
     bool                mRtpStreamOpened;
     int64_t             mIncomingAVStreamStartPts;
+    int64_t				mIncomingAVStreamLastPts;
     bool                mIncomingFirstPacket;
     enum CodecID        mIncomingAVStreamCodecID;
     AVStream*			mIncomingAVStream;
