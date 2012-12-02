@@ -276,7 +276,7 @@ int64_t System::GetMachineMemorySwap()
         tResult = tSysInfo.totalswap;
     #endif
     #if defined(APPLE) || defined(BSD)
-        xsw_usage tVmUsage = {0};
+        xsw_usage tVmUsage;
         size_t tSize = sizeof(tVmUsage);
         if (sysctlbyname("vm.swapusage", &tVmUsage, &tSize, NULL, 0) != 0)
         	LOGEX(System, LOG_ERROR, "Failed to determine the amount of swap space" );
