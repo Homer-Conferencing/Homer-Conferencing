@@ -1123,7 +1123,7 @@ void AudioWorkerThread::DoSyncClock()
         mDeliverMutex.lock();
 
         int64_t tShiftOffset = mSyncClockMasterSource->GetSynchronizationTimestamp() - mMediaSource->GetSynchronizationTimestamp() - (mUserAVDrift - mVideoDelayAVDrift) * 1000000;
-        LOG(LOG_VERBOSE, "Shifting tim of source %s by %ld", mSyncClockMasterSource->GetStreamName().c_str(), tShiftOffset);
+        LOG(LOG_VERBOSE, "Shifting time of source %s by %ld", mSyncClockMasterSource->GetStreamName().c_str(), tShiftOffset);
 
         mSourceAvailable = mMediaSource->TimeShift(tShiftOffset);
         if(!mSourceAvailable)
