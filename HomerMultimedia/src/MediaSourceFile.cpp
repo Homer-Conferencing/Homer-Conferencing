@@ -25,6 +25,8 @@
  * Since:   2009-02-24
  */
 
+//HINT: This file based media source uses the entire frame buffer during grabbing.
+
 #include <MediaSourceFile.h>
 #include <ProcessStatisticService.h>
 #include <Logger.h>
@@ -57,7 +59,7 @@ MediaSourceFile::MediaSourceFile(string pSourceFile, bool pGrabInRealTime):
     MediaSourceMem("FILE: " + pSourceFile, false)
 {
     mDecoderFrameBufferTimeMax = MSF_FRAME_INPUT_QUEUE_MAX_TIME;
-    mDecoderFramePreBufferTime = 0;
+    mDecoderFramePreBufferTime = mDecoderFrameBufferTimeMax; // for file based media sources we use the entire frame buffer
     mSourceType = SOURCE_FILE;
     mDesiredDevice = pSourceFile;
     mGrabberProvidesRTGrabbing = pGrabInRealTime;
