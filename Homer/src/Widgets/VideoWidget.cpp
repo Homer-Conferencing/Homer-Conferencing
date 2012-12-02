@@ -738,10 +738,10 @@ QStringList VideoWidget::GetVideoStatistic()
     tLine_Fps = "Fps: " + QString("%1").arg(mCurrentFrameRate, 4, 'f', 2, ' ');
     if (mVideoSource->GetFrameBufferSize() > 0)
     {
-    	tLine_Fps += " (" + QString("%1").arg(mVideoSource->GetFrameBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetFrameBufferSize()) + ", " + QString("%1").arg(mVideoSource->GetFrameBufferTime(), 2, 'f', 2, (QLatin1Char)' ') + "s buffered";
+    	tLine_Fps += " (" + QString("%1").arg(mVideoSource->GetFrameBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetFrameBufferSize()) + ", " + QString("%1").arg(mVideoSource->GetFrameBufferTime(), 2, 'f', 2, (QLatin1Char)' ') + " s buffered";
     	float tPreBufferTime = mVideoSource->GetFrameBufferPreBufferingTime();
     	if (tPreBufferTime > 0)
-    	    tLine_Fps += "[" + QString("%1").arg(tPreBufferTime, 2, 'f', 2, (QLatin1Char)' ') + "s pre-buffer])";
+    	    tLine_Fps += " [" + QString("%1").arg(tPreBufferTime, 2, 'f', 2, (QLatin1Char)' ') + " s pre-buffer])";
     	else
     	    tLine_Fps += ")";
     }
