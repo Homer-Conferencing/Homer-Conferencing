@@ -2591,7 +2591,7 @@ float MediaSourceMuxer::GetSeekEnd()
 bool MediaSourceMuxer::Seek(float pSeconds, bool pOnlyKeyFrames)
 {
     if (mMediaSource != NULL)
-        return mMediaSource->Seek(pSeconds, pOnlyKeyFrames);
+    	return mMediaSource->Seek(pSeconds, pOnlyKeyFrames);
     else
         return false;
 }
@@ -2599,8 +2599,8 @@ bool MediaSourceMuxer::Seek(float pSeconds, bool pOnlyKeyFrames)
 bool MediaSourceMuxer::SeekRelative(float pSeconds, bool pOnlyKeyFrames)
 {
     if (mMediaSource != NULL)
-        return mMediaSource->SeekRelative(pSeconds, pOnlyKeyFrames);
-    else
+    	return mMediaSource->SeekRelative(pSeconds, pOnlyKeyFrames);
+	else
         return false;
 }
 
