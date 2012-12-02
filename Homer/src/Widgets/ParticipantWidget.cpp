@@ -1546,12 +1546,16 @@ void ParticipantWidget::ActionPlayPauseMovieFile(QString pFileName)
         mVideoWidget->GetWorker()->PlayFile(pFileName);
         mAudioWidget->GetWorker()->PlayFile(pFileName);
         mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Pause.png"));
+        if (mFullscreeMovieControlWidget != NULL)
+        	mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Pause.png"));
     }else
     {
         LOG(LOG_VERBOSE, "User triggered pause");
         mVideoWidget->GetWorker()->PauseFile();
         mAudioWidget->GetWorker()->PauseFile();
         mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Play.png"));
+        if (mFullscreeMovieControlWidget != NULL)
+        	mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Play.png"));
     }
 }
 
