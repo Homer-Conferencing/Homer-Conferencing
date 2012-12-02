@@ -25,6 +25,9 @@
  * Since:   2011-05-05
  */
 
+//HINT: This memory/network based media source tries to use the half of the entire frame buffer during grabbing.
+//HINT: The remaining parts of the frame buffer are used to compensate situations with a high system load.
+
 #include <MediaSourceMem.h>
 #include <MediaSource.h>
 #include <ProcessStatisticService.h>
