@@ -217,6 +217,9 @@ bool OpenVideoAudioPreviewDialog::AVPreBuffering()
 
 bool OpenVideoAudioPreviewDialog::AVPreBufferingAutoRestart()
 {
+	if (!AVPreBuffering())
+		return false;
+
     switch(mSwPreviewPages->currentIndex())
     {
         case 0: // devices
@@ -231,6 +234,9 @@ bool OpenVideoAudioPreviewDialog::AVPreBufferingAutoRestart()
 
 bool OpenVideoAudioPreviewDialog::AVSynchronization()
 {
+	if (!AVPreBuffering())
+		return false;
+
     switch(mSwPreviewPages->currentIndex())
     {
         case 0: // devices
