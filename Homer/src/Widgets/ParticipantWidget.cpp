@@ -1850,14 +1850,14 @@ void ParticipantWidget::UpdateMovieControls()
         //#################
 		int64_t tCurPos = 0;
 		int64_t tEndPos = 0;
-		if ((mVideoWidget->GetWorker()->PlayingFile()) && (!mVideoWidget->GetWorker()->IsPaused()))
+		if (mVideoWidget->GetWorker()->PlayingFile())
 		{
 		    //LOG(LOG_VERBOSE, "Valid video position");
 			// get current stream position from video source and use it as movie position
 			tCurPos = mVideoWidget->GetWorker()->GetSeekPos();
 			tEndPos = mVideoWidget->GetWorker()->GetSeekEnd();
 		}
-        if ((mAudioWidget->GetWorker()->PlayingFile()) && (!mAudioWidget->GetWorker()->IsPaused()) && ((tCurPos == 0) || (tCurPos == tEndPos)))
+        if ((mAudioWidget->GetWorker()->PlayingFile()) && ((tCurPos == 0) || (tCurPos == tEndPos)))
 		{
             //LOG(LOG_VERBOSE, "Valid audio position");
 			// get current stream position from audio source and use it as movie position
