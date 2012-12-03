@@ -186,7 +186,7 @@ ENDIF()
 
 ##############################################################
 # definitions
-# "-D" options for compilation in win32 environment
+# "-D" options for compilation in WIN32 environment
 SET (DEFINITIONS_WINDOWS
 	${DEFINITIONS_WINDOWS}
 	-D__STDC_CONSTANT_MACROS
@@ -198,7 +198,7 @@ SET (DEFINITIONS_WINDOWS
 	-DARCH_BITS=${ARCH_BITS}
 )
 
-# "-D" options for compilation in linux environment
+# "-D" options for compilation in LINUX environment
 SET (DEFINITIONS_LINUX
 	${DEFINITIONS_LINUX}
 	-D__STDC_CONSTANT_MACROS
@@ -209,7 +209,7 @@ SET (DEFINITIONS_LINUX
 	-DARCH_BITS=${ARCH_BITS}
 )
 
-# "-D" options for compilation in linux environment
+# "-D" options for compilation in BSD environment
 SET (DEFINITIONS_BSD
 	${DEFINITIONS_BSD}
 	-D__STDC_CONSTANT_MACROS
@@ -220,7 +220,7 @@ SET (DEFINITIONS_BSD
 	-DARCH_BITS=${ARCH_BITS}
 )
 
-# "-D" options for compilation in linux environment
+# "-D" options for compilation in APPLE environment
 SET (DEFINITIONS_APPLE
 	${DEFINITIONS_APPLE}
 	-D__STDC_CONSTANT_MACROS
