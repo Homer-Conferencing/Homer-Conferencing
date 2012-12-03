@@ -98,6 +98,9 @@ using namespace Homer::Monitor;
 // additional seeking drift when seeking backwards
 #define SEEK_BACKWARD_DRIFT                      		 5 // seconds
 
+// de/activate periodic widget updates even if no new input data is received
+#define VIDEO_WIDGET_FORCE_PERIODIC_UPDATE_TIME	       250 // ms, 0 means "deactivated"
+
 ///////////////////////////////////////////////////////////////////////////////
 
 struct AspectRatioEntry{
@@ -160,6 +163,7 @@ private:
 VideoWidget::VideoWidget(QWidget* pParent):
     QWidget(pParent)
 {
+	mTimeLastWidgetUpdate = QTime::currentTime();
     mCurrentFrameRate = 0;
     mLiveMarkerActive = false;
 	mPaintEventCounter = 0;
@@ -1108,6 +1112,7 @@ void VideoWidget::InformAboutSeekingComplete()
 
 void VideoWidget::InformAboutNewFrame()
 {
+	mTimeLastWidgetUpdate = QTime::currentTime();
     mPendingNewFrameSignals++;
     QApplication::postEvent(this, new VideoEvent(VIDEO_EVENT_NEW_FRAME, ""));
 }
@@ -1734,7 +1739,15 @@ void VideoWidget::timerEvent(QTimerEvent *pEvent)
         LOG(LOG_VERBOSE, "New timer event");
     #endif
 
-        if (pEvent->timerId() != mTimerId)
+	#if VIDEO_WIDGET_FORCE_PERIODIC_UPDATE_TIME > 0
+        if (mTimeLastWidgetUpdate.msecsTo(QTime::currentTime()) > VIDEO_WIDGET_FORCE_PERIODIC_UPDATE_TIME)
+        {
+        	mTimeLastWidgetUpdate = QTime::currentTime();
+        	InformAboutNewFrame();
+        }
+	#endif
+
+	if (pEvent->timerId() != mTimerId)
     {
         LOG(LOG_WARN, "Qt event timer ID %d doesn't match the expected one %d", pEvent->timerId(), mTimerId);
         pEvent->ignore();

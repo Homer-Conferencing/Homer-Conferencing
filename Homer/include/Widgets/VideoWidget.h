@@ -196,6 +196,8 @@ private:
     /* moving main window per mouse move */
     QPoint				mMovingMainWindowReferencePos;
     bool				mIsMovingMainWindow;
+    /* periodic widget updates */
+    QTime				mTimeLastWidgetUpdate;
 };
 
 
@@ -247,10 +249,8 @@ private:
     int					mFrameHeightLastGrabbedFrame;
     int                 mPendingNewFrames;
     bool                mDropFrames;
-
     /* frame statistics */
     int                 mMissingFrames;
-
     /* A/V synch. */
     bool                mWaitForFirstFrameAfterSeeking;
 };
