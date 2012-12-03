@@ -530,6 +530,8 @@ float MediaSourceFile::GetSeekPos()
         }
 	}
 
+	//LOG(LOG_VERBOSE, "Resulting %s file position: %.2f", GetMediaTypeStr().c_str(), tResult);
+
     return tResult;
 }
 
