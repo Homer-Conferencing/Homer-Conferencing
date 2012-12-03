@@ -39,6 +39,10 @@ namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+//#define MSF_DEBUG_CALIBRATION
+
+///////////////////////////////////////////////////////////////////////////////
+
 class MediaSourceFile:
     public MediaSourceMem
 {
@@ -76,9 +80,18 @@ public:
     virtual bool OpenAudioGrabDevice(int pSampleRate = 44100, int pChannels = 2);
     virtual bool CloseGrabDevice();
 
+protected:
+    /* decoder thread */
+    virtual void StartDecoder();
+    virtual void StopDecoder();
+
+    /* real-time playback */
+    virtual void CalibrateRTGrabbing();
+
 private:
 
     std::vector<string> mInputChannels;
+    float				mLastDecoderFilePosition;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

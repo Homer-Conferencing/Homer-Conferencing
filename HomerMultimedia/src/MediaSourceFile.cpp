@@ -58,6 +58,7 @@ using namespace Homer::Monitor;
 MediaSourceFile::MediaSourceFile(string pSourceFile, bool pGrabInRealTime):
     MediaSourceMem("FILE: " + pSourceFile, false)
 {
+	mLastDecoderFilePosition = 0;
     mDecoderFrameBufferTimeMax = MSF_FRAME_INPUT_QUEUE_MAX_TIME;
     mDecoderFramePreBufferTime = mDecoderFrameBufferTimeMax; // for file based media sources we use the entire frame buffer
     mSourceType = SOURCE_FILE;
@@ -130,7 +131,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if (mFormatContext->streams[mMediaStreamIndex]->duration > 1)
     {// video stream
     	int tResult = 0;
-        if((tResult = avformat_seek_file(mFormatContext, mMediaStreamIndex, 0, 0, 0, AVSEEK_FLAG_ANY)) < 0)
+        if((tResult = avformat_seek_file(mFormatContext, -1, INT64_MIN, 0, INT64_MAX, AVSEEK_FLAG_ANY)) < 0)
         {
             LOG(LOG_WARN, "Couldn't seek to the start of video stream because \"%s\".", strerror(AVUNERROR(tResult)));
         }
@@ -155,7 +156,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 
 bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 {
-	int tRes = 0;
+	int tResult = 0;
 
 	mMediaType = MEDIA_AUDIO;
     mOutputAudioChannels = pChannels;
@@ -268,9 +269,9 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 //    if (mCodecContext->frame_size < 32)
 //        mCodecContext->frame_size = 1024;
 
-    if((tRes = avformat_seek_file(mFormatContext, mMediaStreamIndex, 0, 0, 0, AVSEEK_FLAG_ANY)) < 0)
+    if((tResult = avformat_seek_file(mFormatContext, -1, INT64_MIN, 0, INT64_MAX, AVSEEK_FLAG_ANY)) < 0)
     {
-        LOG(LOG_WARN, "Couldn't seek to the start of audio stream because \"%s\".", strerror(AVUNERROR(tRes)));
+        LOG(LOG_WARN, "Couldn't seek to the start of audio stream because \"%s\".", strerror(AVUNERROR(tResult)));
     }
 
     MarkOpenGrabDeviceSuccessful();
@@ -559,24 +560,6 @@ bool MediaSourceFile::SelectInputStream(int pIndex)
     return tResult;
 }
 
-vector<string> MediaSourceFile::GetInputStreams()
-{
-    vector<string> tResult;
-
-    // lock grabbing
-    mGrabMutex.lock();
-
-    if(mMediaSourceOpened)
-    {
-        tResult = mInputChannels;
-    }
-
-    // unlock grabbing
-    mGrabMutex.unlock();
-
-    return tResult;
-}
-
 string MediaSourceFile::CurrentInputStream()
 {
     AVCodec *tCodec;
@@ -605,6 +588,58 @@ string MediaSourceFile::CurrentInputStream()
     mGrabMutex.unlock();
 
     return tResult;
+}
+
+vector<string> MediaSourceFile::GetInputStreams()
+{
+    vector<string> tResult;
+
+    // lock grabbing
+    mGrabMutex.lock();
+
+    if(mMediaSourceOpened)
+    {
+        tResult = mInputChannels;
+    }
+
+    // unlock grabbing
+    mGrabMutex.unlock();
+
+    return tResult;
+}
+
+void MediaSourceFile::StartDecoder()
+{
+	// setting last decoder file position
+	//HINT: we can not use Seek() because this would lead to recursion
+	int tRes = (avformat_seek_file(mFormatContext, -1, INT64_MIN, mFormatContext->start_time + mLastDecoderFilePosition * AV_TIME_BASE, INT64_MAX, 0) >= 0);
+    if (tRes < 0)
+        LOG(LOG_ERROR, "Error during absolute seeking in %s source file because \"%s\"", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)));
+
+	MediaSourceMem::StartDecoder();
+}
+
+void MediaSourceFile::StopDecoder()
+{
+	// storing current decoder file position
+	mLastDecoderFilePosition = GetSeekPos();
+
+	MediaSourceMem::StopDecoder();
+}
+
+void MediaSourceFile::CalibrateRTGrabbing()
+{
+	// adopt the stored pts value which represent the start of the media presentation in real-time useconds
+    float  tRelativeFrameIndex = mGrabberCurrentFrameIndex - mSourceStartPts;
+    double tRelativeTime = (int64_t)((double)AV_TIME_BASE * tRelativeFrameIndex / mFrameRate);
+    #ifdef MSF_DEBUG_CALIBRATION
+        LOG(LOG_WARN, "Calibrating %s RT playback, old PTS start: %.2f", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing);
+    #endif
+    mSourceStartTimeForRTGrabbing = av_gettime() - tRelativeTime; // we don't use "+ mDecoderFramePreBufferTime * AV_TIME_BASE" here because we fill the pre-buffer by reading the file as fast as possible
+    #ifdef MSF_DEBUG_CALIBRATION
+        LOG(LOG_ERROR, "Calibrating %s RT playback: new PTS start: %.2f, rel. frame index: %.2f, rel. time: %.2f ms", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing, tRelativeFrameIndex, (float)(tRelativeTime / 1000));
+    	LOG(LOG_WARN, "Finished calibration of %s RT grabbing", GetMediaTypeStr().c_str());
+    #endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

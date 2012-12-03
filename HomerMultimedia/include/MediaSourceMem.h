@@ -139,8 +139,8 @@ protected:
     virtual bool InputIsPicture();
 
     /* decoder thread */
-    void StartDecoder();
-    void StopDecoder();
+    virtual void StartDecoder();
+    virtual void StopDecoder();
     virtual void* Run(void* pArgs = NULL); // decoder main loop
     VideoScaler *CreateVideoScaler();
     void DestroyVideoScaler(VideoScaler *pScaler);
