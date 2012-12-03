@@ -8,7 +8,7 @@ MESSAGE("##### Preparing configuration")
 MESSAGE("####################################")
 
 ##############################################################
-# Homer version: every version information in the rest of the build system is generated from teh following entries
+# Homer version: every version information in the rest of the build system is generated from the following entries
 IF (DEFINED INSIDE_HOMER_BUILD)
 	INCLUDE (${CMAKE_CURRENT_SOURCE_DIR}/../../${RELOCATION_INCLUDES}HomerBuild/config/HomerVersion.txt)
 ELSE()
