@@ -106,8 +106,8 @@ Additional information to build Homer-Conferencing on Windows systems:
 Additional information to build Homer-Conferencing on OS X systems:
 ===================================================================
 
- Current OS X releases of Homer are built with cmake 2.8 for OS X and Apple's 
- Xcode 3.2.6, which includes both gcc and binutils in current versions.
+ Current OS X releases of Homer are built with cmake 2.8.* for OS X and Apple's 
+ Xcode 4.5.*, which includes both gcc and binutils in current versions.
 
 
 DEVELOPER: build Homer-Conferencing with debug symbols:
@@ -119,9 +119,9 @@ DEVELOPER: build Homer-Conferencing with debug symbols:
     > "make" (alternatively "make debug")
 
     This will create all needed libraries and binaries based on the pre-compiled 
-    files from the Homer-Release packages. All binary files are build with debug 
+    files from the Homer-Release package. All binary files are built with debug 
     symbols and the output isn't stripped. If you need the Homer-Release package 
-    see https://github.com/Homer-Conferencing/Homer-Release.
+    mail to info@homer-conferencing.com.
 
 
 DEVELOPER: debug the build process:
