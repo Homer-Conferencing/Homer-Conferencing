@@ -106,7 +106,7 @@ Additional information to build Homer-Conferencing on Windows systems:
 Additional information to build Homer-Conferencing on OS X systems:
 ===================================================================
 
- Current OS X releases of Homer are built with cmake 2.6 for OS X and Apple's 
+ Current OS X releases of Homer are built with cmake 2.8 for OS X and Apple's 
  Xcode 3.2.6, which includes both gcc and binutils in current versions.
 
 
