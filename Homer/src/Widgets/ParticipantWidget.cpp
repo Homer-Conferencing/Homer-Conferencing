@@ -1709,6 +1709,10 @@ void ParticipantWidget::CreateFullscreenControls()
             mFullscreeMovieControlWidget = new MovieControlWidget(mVideoWidget);
             mFullscreeMovieControlWidget->resize(mVideoWidget->width(), 58);
             mFullscreeMovieControlWidget->move(mVideoWidget->pos().x(), mVideoWidget->height() - 58);
+            if (mVideoWidget->GetWorker()->IsPaused() || mAudioWidget->GetWorker()->IsPaused())
+				mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Play.png"));
+            else
+				mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Pause.png"));
             connect(mFullscreeMovieControlWidget->mTbPlayPause, SIGNAL(clicked()), this, SLOT(ActionPlayPauseMovieFile()));
             connect(mFullscreeMovieControlWidget->mSlMovie, SIGNAL(sliderMoved(int)), this, SLOT(ActionSeekMovieFile(int)));
             connect(mFullscreeMovieControlWidget->mSlMovie, SIGNAL(valueChanged(int)), this, SLOT(ActionSeekMovieFileToPos(int)));
