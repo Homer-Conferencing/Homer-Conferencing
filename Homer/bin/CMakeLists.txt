@@ -283,6 +283,7 @@ IF (HOMER_NETWORK_SIMULATOR)
 	SET(NETWORK_SIMULATOR "HomerNetworkSimulator")
 ENDIF()
 
+##############################################################
 # USED LIBRARIES for win32 environment
 IF (NOT (${BUILD} MATCHES "Default"))
 	SET (LIBS_WINDOWS_INSTALL   
@@ -315,7 +316,7 @@ SET (LIBS_WINDOWS
 	${QT_QTWEBKIT_LIBRARIES}
 )
 
-#################
+##############################################################
 # USED LIBRARIES for BSD environment
 SET (LIBS_BSD
         HomerBase
@@ -327,8 +328,8 @@ SET (LIBS_BSD
         ${QT_LIBRARIES}
 )
 
-#################
-# USED LIBRARIES for linux environment
+##############################################################
+# USED LIBRARIES for LINUX environment
 SET (LIBS_LINUX
 	HomerBase
 	HomerNAPI
@@ -398,8 +399,8 @@ IF (NOT (${BUILD} MATCHES "Default"))
 	)
 ENDIF()
 
-#################
-# USED LIBRARIES for apple environment
+##############################################################
+# USED LIBRARIES for APPLE environment
 SET (LIBS_APPLE
 	stdc++
 	HomerBase
