@@ -489,9 +489,12 @@ void MediaSourceMem::DoSetVideoGrabResolution(int pResX, int pResY)
             mMediaType = MEDIA_VIDEO;
         }
 
+        LOG(LOG_VERBOSE, "Stopping decoder from DoSetVideoGrabResolution()");
         StopDecoder();
+        LOG(LOG_VERBOSE, "Starting decoder from DoSetVideoGrabResolution()");
         StartDecoder();
     }
+    LOG(LOG_VERBOSE, "DoSetVideoGrabResolution() finished");
 }
 
 bool MediaSourceMem::SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset)
@@ -1951,7 +1954,8 @@ void MediaSourceMem::ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int6
 
 bool MediaSourceMem::DecoderFifoFull()
 {
-	return (mDecoderFifo == NULL) || (mDecoderFifo->GetUsage() >= mDecoderFifo->GetSize() - 1 /* one slot for a 0 byte signaling chunk*/) /* meta data FIFO has always the same size => hence, we don't have to check its size */;
+	return ((mDecoderFifo == NULL) || (mDecoderFifo->GetUsage() >= mDecoderFifo->GetSize() - 1 /* one slot for a 0 byte signaling chunk*/) /* meta data FIFO has always the same size => hence, we don't have to check its size */ ||
+			(mDecoderMetaDataFifo == NULL) || (mDecoderMetaDataFifo->GetUsage() >= mDecoderMetaDataFifo->GetSize() - 1));
 }
 
 void MediaSourceMem::UpdateBufferTime()
@@ -1981,35 +1985,43 @@ void MediaSourceMem::CalibrateRTGrabbing()
 
 void MediaSourceMem::WaitForRTGrabbing()
 {
-    float tRelativePlayOutTimeInUSecs, tCurrentRelativeTimeIndexInUSecs, tWaitingTimeInUSecs;
-    float tRelativeFrameIndex = mGrabberCurrentFrameIndex - mSourceStartPts; // the normalized frame index
-    float tRelativePlayoutTimeInSeconds = tRelativeFrameIndex / GetFrameRate(); // the normalized time index
-    double tRelativePTS = AV_TIME_BASE * (tRelativePlayoutTimeInSeconds); // transform normalized time index to a PTS value
-    tRelativePlayOutTimeInUSecs = (int64_t)tRelativePTS;
-    tCurrentRelativeTimeIndexInUSecs = av_gettime() - mSourceStartTimeForRTGrabbing;
-    tWaitingTimeInUSecs = tRelativePlayOutTimeInUSecs - tCurrentRelativeTimeIndexInUSecs;
+    // calculate the current (normalized) frame index of the grabber
+    float tNormalizedFrameIndexFromGrabber = mGrabberCurrentFrameIndex - mSourceStartPts; // the normalized frame index
+
+    // the PTS value of the last output frame
+    uint64_t tCurrentPtsFromGrabber = (uint64_t)(1000 * tNormalizedFrameIndexFromGrabber / GetFrameRate()); // in ms
+
+    // calculate the PTS offset between the RTCP PTS reference and the last grabbed frame
+    int64_t tDesiredPlayOutTime = 1000 * ((int64_t)tCurrentPtsFromGrabber); // in us
+
+    // calculate the current (normalized) play-out time of the current A/V stream
+    int64_t tCurrentPlayOutTime = av_gettime() - (int64_t)mSourceStartTimeForRTGrabbing; // in us
+
+    // calculate the time offset between the desired and current play-out time, which can be used for a wait cycle (Thread::Suspend)
+    int64_t tResultingTimeOffset = tDesiredPlayOutTime - tCurrentPlayOutTime; // in us
+
     #ifdef MSMEM_DEBUG_TIMING
-        LOG(LOG_VERBOSE, "%s-current relative frame index: %f, relative time: %f us (Fps: %3.2f), stream start time: %f us, packet's relative play out time: %f us, time difference: %f us", GetMediaTypeStr().c_str(), tRelativeFrameIndex, tCurrentRelativeTimeIndexInUSecs, GetFrameRate(), (float)mSourceStartPts, tRelativePlayOutTimeInUSecs, tWaitingTimeInUSecs);
+        LOG(LOG_VERBOSE, "%s-current relative frame index: %f, relative time: %f us (Fps: %3.2f), stream start time: %f us, packet's relative play out time: %f us, time difference: %f us", GetMediaTypeStr().c_str(), tNormalizedFrameIndexFromGrabber, tCurrentRelativeTimeIndexInUSecs, GetFrameRate(), (float)mSourceStartPts, tDesiredPlayOutTime, tResultingTimeOffset);
     #endif
     // adapt timing to real-time
-    if (tWaitingTimeInUSecs > 1.0)
+    if (tResultingTimeOffset > 0)
     {
         #ifdef MSMEM_DEBUG_TIMING
-            LOG(LOG_ERROR, "%s-sleeping for %.2f ms (%.0f, %.0f) for frame %.2f", GetMediaTypeStr().c_str(), tWaitingTimeInUSecs / 1000, tRelativePlayOutTimeInUSecs, tCurrentRelativeTimeIndexInUSecs, (float)mGrabberCurrentFrameIndex);
+            LOG(LOG_WARN, "%s-sleeping for %ld ms for frame %.2f", GetMediaTypeStr().c_str(), tResultingTimeOffset / 1000, (float)mGrabberCurrentFrameIndex);
         #endif
-        if (tWaitingTimeInUSecs <= MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME * AV_TIME_BASE)
-            Thread::Suspend(tWaitingTimeInUSecs);
-        else
-        {
-            LOG(LOG_WARN, "Found in %s %s source an invalid delay time of %.2f s (%.0f, %.0f), pre-buffer time: %.2f", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tWaitingTimeInUSecs / 1000, tRelativePlayOutTimeInUSecs, tCurrentRelativeTimeIndexInUSecs, mDecoderFramePreBufferTime);
-            LOG(LOG_WARN, "Re-calibrating RT grabbing");
-            CalibrateRTGrabbing();
-        }
+		if (tResultingTimeOffset <= MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME * AV_TIME_BASE)
+			Thread::Suspend(tResultingTimeOffset);
+		else
+		{
+			LOG(LOG_WARN, "Found in %s %s source an invalid delay time of %ld s, pre-buffer time: %.2f", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tResultingTimeOffset / 1000, mDecoderFramePreBufferTime);
+			LOG(LOG_WARN, "Re-calibrating RT grabbing");
+			CalibrateRTGrabbing();
+		}
 	}else
     {
         #ifdef MSMEM_DEBUG_TIMING
-            if (tWaitingTimeInUSecs < -MEDIA_SOURCE_MEM_VIDEO_FRAME_DROP_THRESHOLD)
-                LOG(LOG_VERBOSE, "System too slow?, %s-grabbing is %.2f ms too late", GetMediaTypeStr().c_str(), tWaitingTimeInUSecs / (-1000));
+            if (tResultingTimeOffset < -MEDIA_SOURCE_MEM_VIDEO_FRAME_DROP_THRESHOLD)
+                LOG(LOG_VERBOSE, "System too slow?, %s-grabbing is %ld ms too late", GetMediaTypeStr().c_str(), tResultingTimeOffset / (-1000));
         #endif
     }
 }
@@ -2038,27 +2050,30 @@ int64_t MediaSourceMem::GetSynchronizationTimestamp()
             unsigned int tReferencePts;
             GetSynchronizationReferenceFromRTP(tReferenceNtpTime, tReferencePts);
 
+            // calculate the current (normalized) frame index of the grabber
+            float tNormalizedFrameIndexFromGrabber = mGrabberCurrentFrameIndex - mSourceStartPts; // the normalized frame index
+
             // the PTS value of the last output frame
-            uint64_t tCurrentPtsFromGrabber = (uint64_t)(1000 * mGrabberCurrentFrameIndex / GetFrameRatePlayout()); // in ms
-
-            // the PTS value of the last (received) input frame
-            uint64_t tCurrentPtsFromRTP = GetCurrentPtsFromRTP(); // in ms
-
-            // calculate the play time of the RTP source [in us]
-            uint64_t tCurrentPlayTimeofRTPSource = ((uint64_t) tReferencePts /* playout time in ms */) * 1000; // in us
+            uint64_t tCurrentPtsFromGrabber = (uint64_t)(1000 * tNormalizedFrameIndexFromGrabber / GetFrameRatePlayout()); // in ms
 
             // calculate the PTS offset between the RTCP PTS reference and the last grabbed frame
-            int64_t tReferencePtsOffset = (int64_t)tCurrentPtsFromGrabber - tReferencePts; // in ms
+            int64_t tTimeOffsetFromReference = 1000 * ((int64_t)tCurrentPtsFromGrabber - tReferencePts); // in us
 
             if (tReferenceNtpTime != 0)
             {
-                // calculate the NTP time (we refere to the NTP time of the RTP source) of the currently grabbed frame
-                tResult = (int64_t)tReferenceNtpTime + (tReferencePtsOffset * 1000);
+                // calculate the NTP time (we refer to the NTP time of the RTP source) of the currently grabbed frame
+                tResult = (int64_t)tReferenceNtpTime + tTimeOffsetFromReference;
                 int64_t tLocalNtpTime = av_gettime();
 
                 #ifdef MSMEM_DEBUG_AV_SYNC
-                    LOG(LOG_VERBOSE, "%s reference PTS from RTP: %u, PTS from grabber: %lu(frame: %lu, play-out fps: %.2f), PTS from RTP: %lu(frame: %lu), play time from RTP source: %.2f s", GetMediaTypeStr().c_str(), tReferencePts, tCurrentPtsFromGrabber, (uint64_t)mGrabberCurrentFrameIndex, GetFrameRatePlayout(), tCurrentPtsFromRTP, CalculateFrameNumberFromRTP(), (float)tCurrentPlayTimeofRTPSource / AV_TIME_BASE);
-                    LOG(LOG_VERBOSE, "%s reference NTP time: %10lu, offset: %10ld (reference PTS: %10u, grabber PTS: %10lu), resulting synch. timestamp: %10ld", GetMediaTypeStr().c_str(), tReferenceNtpTime, tReferencePtsOffset * 1000, tReferencePts, tCurrentPtsFromGrabber, tResult);
+					// the PTS value of the last (received) input frame
+					uint64_t tCurrentPtsFromRTP = GetCurrentPtsFromRTP(); // in ms
+
+                	// calculate the play time of the RTP source [in us]
+					uint64_t tCurrentPlayTimeofRTPSource = ((uint64_t) tReferencePts /* playout time in ms */) * 1000; // in us
+
+                	LOG(LOG_VERBOSE, "%s reference PTS from RTP: %u, PTS from grabber: %lu(frame: %lu, play-out fps: %.2f), PTS from RTP: %lu(frame: %lu), play time from RTP source: %.2f s", GetMediaTypeStr().c_str(), tReferencePts, tCurrentPtsFromGrabber, (uint64_t)mGrabberCurrentFrameIndex, GetFrameRatePlayout(), tCurrentPtsFromRTP, CalculateFrameNumberFromRTP(), (float)tCurrentPlayTimeofRTPSource / AV_TIME_BASE);
+                    LOG(LOG_VERBOSE, "%s reference NTP time: %10lu, offset: %10ld (reference PTS: %10u, grabber PTS: %10lu), resulting synch. timestamp: %10ld", GetMediaTypeStr().c_str(), tReferenceNtpTime, tTimeOffsetFromReference * 1000, tReferencePts, tCurrentPtsFromGrabber, tResult);
                     //HINT: "diff" value should correlate with the frame buffer time! otherwise something went wrong in the processing chain
                     LOG(LOG_VERBOSE, "         local timestamp: %10ld                                                                                      local timestamp: %10ld, diff: %ld ms", tLocalNtpTime, tLocalNtpTime, (tLocalNtpTime - tResult) / 1000);
                 #endif
