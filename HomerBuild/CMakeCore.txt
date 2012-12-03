@@ -16,7 +16,7 @@ ENDIF ()
 ##############################################################
 # check if CMakePreDefs.txt was parsed before
 IF (NOT PRE_DEFINITIONS_EXECUTED)
-	MESSAGE(FATAL_ERROR "You forgot to include the pre-definitions called CMakePreDefs.txt!")
+	MESSAGE(FATAL_ERROR "You forgot to include the pre-definitions called CMakeConfig.txt!")
 ENDIF ()
 
 ##############################################################
