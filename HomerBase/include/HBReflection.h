@@ -20,7 +20,7 @@
  *****************************************************************************/
 
 /*
- * Purpose: header for Java-Reflection for C++
+ * Purpose: header for class reflection
  * Author:  Thomas Volkert
  * Since:   2011-03-10
  */
@@ -69,12 +69,6 @@ inline std::string ParseRawObjectName(std::string pRawName)
 
 #define GetObjectNameRawStr(x)  (toString(typeid(x).name()))
 #define GetObjectNameStr(x) (ParseRawObjectName(GetObjectNameRawStr(x)))
-
-#ifdef LINUX
-#endif
-
-#ifdef WIN32
-#endif
 
 namespace Homer { namespace Base {
 
