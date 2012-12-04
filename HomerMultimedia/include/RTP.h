@@ -153,6 +153,8 @@ public:
 protected:
     int64_t GetCurrentPtsFromRTP(); // uses the timestamps from the RTP header to derive a valid PTS value
     void GetSynchronizationReferenceFromRTP(uint64_t &pReferenceNtpTime, unsigned int &pReferencePts);
+    unsigned int GetSourceIdentifierFromRTP(); // returns the RTP source identifier
+    bool HasSourceChangedFromRTP(); // return if RTP source identifier has changed and resets the flag
 
     /* for clock rate adaption, e.g., 8, 44.1, 90 kHz */
     float CalculateClockRateFactor();
@@ -182,6 +184,7 @@ private:
     unsigned short int  mRemoteSequenceNumberLastPacket;
     unsigned int        mRemoteTimestampLastPacket;
     unsigned int        mRemoteTimestampLastCompleteFrame;
+    bool				mRemoteSourceChanged;
     unsigned int        mRemoteSourceIdentifier;
     unsigned int        mRemoteStartTimestamp;
     uint64_t            mRemoteTimestamp;

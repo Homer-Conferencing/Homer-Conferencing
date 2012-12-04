@@ -2614,6 +2614,11 @@ vector<string> MediaSource::GetInputStreams()
     return tResult;
 }
 
+bool MediaSource::HasInputStreamChanged()
+{
+	return false;
+}
+
 string MediaSource::CurrentInputStream()
 {
     return mCurrentDevice;

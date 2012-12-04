@@ -324,6 +324,7 @@ public:
     virtual bool SelectInputStream(int pIndex);
     virtual std::string CurrentInputStream();
     virtual std::vector<std::string> GetInputStreams();
+    virtual bool HasInputStreamChanged();
 
     /* live OSD marking */
     virtual bool SupportsMarking();

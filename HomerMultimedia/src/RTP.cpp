@@ -1312,6 +1312,21 @@ void RTP::GetSynchronizationReferenceFromRTP(uint64_t &pReferenceNtpTime, unsign
     mSynchDataMutex.unlock();
 }
 
+unsigned int RTP::GetSourceIdentifierFromRTP()
+{
+	return mRemoteSourceIdentifier;
+}
+
+bool RTP::HasSourceChangedFromRTP()
+{
+	bool tResult = mRemoteSourceChanged;
+
+	// we avoid a mutex (protect against modifications by the RTP parser) here because the probability of such race conditions is too low to become real
+	mRemoteSourceChanged = false;
+
+	return tResult;
+}
+
 float RTP::CalculateClockRateFactor()
 {
     float tResult = 1;
@@ -1331,16 +1346,16 @@ float RTP::CalculateClockRateFactor()
             tResult = 90;
             break;
         case CODEC_ID_MP3:
-            tResult = 44.1; //TODO: auto-detect?
+            tResult = 90;
             break;
         case CODEC_ID_AMR_NB:
-            tResult = 1; //TODO
+            tResult = 8; //TODO
             break;
         case CODEC_ID_AAC:
             tResult = 1; //TODO
             break;
         case CODEC_ID_ADPCM_G722:
-            tResult = 8;
+            tResult = 16;
             break;
         case CODEC_ID_THEORA:
             tResult = 1; //TODO
@@ -1523,7 +1538,10 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
         {
             // did the source ID from remote side changed more than one time?
             if (mRemoteSourceIdentifier != 0)
+            {
                 LOG(LOG_WARN, "Alternating source at remote side detected, will reset start timestamp");
+                mRemoteSourceChanged = true;
+            }
 
             // store the source ID to be able to detect repeating changes
             mRemoteSourceIdentifier = tRtpHeader->Ssrc;

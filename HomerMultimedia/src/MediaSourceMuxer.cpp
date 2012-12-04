@@ -2648,6 +2648,14 @@ vector<string> MediaSourceMuxer::GetInputStreams()
         return tNone;
 }
 
+bool MediaSourceMuxer::HasInputStreamChanged()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->HasInputStreamChanged();
+    else
+        return false;
+}
+
 bool MediaSourceMuxer::SupportsMarking()
 {
     return true;

@@ -411,6 +411,11 @@ bool MediaSourceMem::SupportsRelaying()
     return true;
 }
 
+bool MediaSourceMem::HasInputStreamChanged()
+{
+	return HasSourceChangedFromRTP();
+}
+
 void MediaSourceMem::StopGrabbing()
 {
 	MediaSource::StopGrabbing();
@@ -650,9 +655,6 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     	case CODEC_ID_ADPCM_G722:
     		tCodec->channels = 1;
     		tCodec->sample_rate = 16000;
-            LOG(LOG_WARN, "Patching the stream clock rate according to RFC3551 from %.2f to 8000", mFormatContext->streams[mMediaStreamIndex]->time_base.num / mFormatContext->streams[mMediaStreamIndex]->time_base.den);
-            mFormatContext->streams[mMediaStreamIndex]->time_base.den = 8000;
-            mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
 			break;
     	case CODEC_ID_GSM:
     	case CODEC_ID_PCM_ALAW:
@@ -1148,8 +1150,9 @@ void* MediaSourceMem::Run(void* pArgs)
 
             if ((!tInputIsPicture) || (!mDecoderSinglePictureGrabbed))
             {// we try to read packet(s) from input stream -> either the desired picture or a single frame
-                // Read new packet
-                // return 0 if OK, < 0 if error or EOF.
+                // #########################################
+                // read new packet
+                // #########################################
                 bool tShouldReadNext;
                 int tReadIteration = 0;
                 do
@@ -1423,9 +1426,15 @@ void* MediaSourceMem::Run(void* pArgs)
                                 // do we have a video codec change at sender side?
                                 if ((mSourceCodecId != 0) && (mSourceCodecId != mCodecContext->codec_id))
                                 {
-                                    LOG(LOG_WARN, "Incoming video stream in %s source changed codec from %s(%d) to %s(%d)", GetSourceTypeStr().c_str(), GetFormatName(mSourceCodecId).c_str(), mSourceCodecId, GetFormatName(mCodecContext->codec_id).c_str(), mCodecContext->codec_id);
-                                    LOG(LOG_ERROR, "Unsupported video codec change");
-                                    mSourceCodecId = mCodecContext->codec_id;
+                                	if ((mCodecContext->codec_id == 5 /* h263 */) && (mSourceCodecId == 20 /* h263+ */))
+                                	{// changed from h263+ to h263
+                                		// no difference during decoding
+                                	}else
+                                	{// unsupported code change
+										LOG(LOG_WARN, "Incoming video stream in %s source changed codec from %s(%d) to %s(%d)", GetSourceTypeStr().c_str(), GetFormatName(mSourceCodecId).c_str(), mSourceCodecId, GetFormatName(mCodecContext->codec_id).c_str(), mCodecContext->codec_id);
+										LOG(LOG_ERROR, "Unsupported video codec change");
+                                	}
+									mSourceCodecId = mCodecContext->codec_id;
                                 }
 
                                 // check if video resolution has changed within input stream (at remode side for network streams!)
