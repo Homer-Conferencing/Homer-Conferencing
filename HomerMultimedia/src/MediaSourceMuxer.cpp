@@ -271,8 +271,13 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
         LOG(LOG_VERBOSE, "    ..stream FPS: %d => %d", mStreamMaxFps, pMaxFps);
         mStreamMaxFps = pMaxFps;
 
+        AVCodec *tCodec = avcodec_find_encoder(mStreamCodecId);
+        string tCurrentCodecName = "unknown";
+        if (tCodec != NULL)
+        	tCurrentCodecName = string(tCodec->name);
+
         // set new codec
-        LOG(LOG_VERBOSE, "    ..stream codec: %d => %d(%s)", mStreamCodecId, tStreamCodecId, pStreamCodec.c_str());
+        LOG(LOG_VERBOSE, "    ..stream codec: %d(%s) => %d(%s)", mStreamCodecId, tCurrentCodecName.c_str(), tStreamCodecId, pStreamCodec.c_str());
         mStreamCodecId = tStreamCodecId;
 
         // set the stream's maximum packet size
@@ -795,14 +800,9 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
 
     }
 
-    // update the real frame rate depending on the actual encoder sample rate
-    mRealFrameRate = (float)mOutputAudioSampleRate /* 44100 samples per second */ / MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 samples per frame */;
-
 	mCodecContext->channels = mOutputAudioChannels;
 	mCodecContext->channel_layout = av_get_default_channel_layout(mOutputAudioChannels);
     mCodecContext->sample_rate = mOutputAudioSampleRate;
-    mCodecContext->qmin = 2; // 2
-    mCodecContext->qmax = 9;/*2 +(100 - mAudioStreamQuality) / 4; // 31*/
     mCodecContext->sample_fmt = AV_SAMPLE_FMT_S16;
     // set max. packet size for RTP based packets
     mCodecContext->rtp_payload_size = mStreamMaxPacketSize;
@@ -851,14 +851,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     }
 
     if (mCodecContext->codec_id == CODEC_ID_ADPCM_G722)
-    {
-        if (mCodecContext->sample_rate == 16000)
-        {
-            LOG(LOG_WARN, "Patching the stream clock rate according to RFC3551 from %.2f to 8000", mEncoderStream->time_base.num / mEncoderStream->time_base.den);
-            mEncoderStream->time_base.den = 8000;
-            mEncoderStream->time_base.num = 1;
-        }
-    }
+    	mRealFrameRate = (float)16000 /* actually 16000 samples per second but because of RFC 3551 we have to enforce 8 kHz clock rate */ / MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 samples per frame */;
 
     // fix frame size of 0 for some audio codecs and use default caudio capture frame size instead to allow 1:1 transformation
     // old PCM implementation delivered often a frame size of 1
@@ -871,6 +864,9 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
 
     if (!OpenFormatConverter())
     	return false;
+
+    // update the real frame rate depending on the actual encoder sample rate and the encoder frame size
+    mRealFrameRate = (float)mOutputAudioSampleRate /* usually 44100 samples per second */ / mCodecContext->frame_size /* usually 1024 samples per frame */;
 
     // init transcoder FIFO based for 2048 samples with 16 bit and 2 channels, more samples are never produced by a media source per grabbing cycle
     StartEncoder();
