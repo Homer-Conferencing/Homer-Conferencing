@@ -1360,7 +1360,10 @@ void AudioWorkerThread::run()
 
         // has input stream changed?
         if (mMediaSource->HasInputStreamChanged())
+        {
+        	mAudioWidget->InformAboutNewSource();
         	mResetMediaSourceAsap = true;
+        }
 
         if (mSyncClockAsap)
             DoSyncClock();

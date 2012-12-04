@@ -2317,7 +2317,10 @@ void VideoWorkerThread::run()
 
         // has input stream changed?
         if (mMediaSource->HasInputStreamChanged())
+        {
+        	mVideoWidget->InformAboutNewSource();
         	mResetMediaSourceAsap = true;
+        }
 
         if (mSyncClockAsap)
             DoSyncClock();
