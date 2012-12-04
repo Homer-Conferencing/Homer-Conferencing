@@ -303,14 +303,6 @@ void ConfigurationDialog::LoadConfiguration()
         }
     }
 
-    //### stream quality
-    int tAudioStreamQuality = CONF.GetAudioQuality();
-    if (tAudioStreamQuality < 10)
-        tAudioStreamQuality = 10;
-    if (tAudioStreamQuality > 100)
-        tAudioStreamQuality = 100;
-    mCbAudioQuality->setCurrentIndex((tAudioStreamQuality / 10) - 1);
-
     //### stream bit rate
     for (int i = 0; i < mCbAudioBitRate->count(); i++)
     {
@@ -557,10 +549,6 @@ void ConfigurationDialog::SaveConfiguration()
 
     //### stream codec
     CONF.SetAudioCodec(mCbAudioCodec->currentText());
-
-    //### stream quality
-    int tAudioQuality = (mCbAudioQuality->currentIndex() + 1) * 10;
-    CONF.SetAudioQuality(tAudioQuality);
 
     //### stream bit rate
     tCurBitRate = mCbAudioBitRate->currentText();
@@ -1070,7 +1058,6 @@ void ConfigurationDialog::ClickedButton(QAbstractButton *pButton)
                 mCbAudioSource->setCurrentIndex(0);
                 mCbAudioSink->setCurrentIndex(0);
                 mCbAudioCodec->setCurrentIndex(3);//MP3
-                mCbAudioQuality->setCurrentIndex(9);//100 %
                 mCbAudioBitRate->setCurrentIndex(2); // 256 KBit/s
                 mCbAudioMaxPacketSize->setCurrentIndex(2);//1280
                 break;

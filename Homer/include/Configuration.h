@@ -156,7 +156,6 @@ public:
     bool GetAudioSkipSilence();
     bool GetAudioRtp();
     QString GetAudioCodec();
-    int GetAudioQuality();
     int GetAudioBitRate();
     int GetAudioMaxPacketSize();
     enum Homer::Base::TransportType GetAudioTransportType();
@@ -308,7 +307,6 @@ public:
     void SetAudioSkipSilence(bool pActivation);
     void SetAudioRtp(bool pActivation);
     void SetAudioCodec(QString pCodec);
-    void SetAudioQuality(int pQuality);
     void SetAudioBitRate(int pBitRate);
     void SetAudioMaxPacketSize(int pSize);
     void SetAudioTransport(enum Homer::Base::TransportType pType);

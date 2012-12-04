@@ -449,13 +449,6 @@ void Configuration::SetAudioCodec(QString pCodec)
     mQSettings->endGroup();
 }
 
-void Configuration::SetAudioQuality(int pQuality)
-{
-    mQSettings->beginGroup("Streaming");
-    mQSettings->setValue("AudioStreamQuality", pQuality);
-    mQSettings->endGroup();
-}
-
 void Configuration::SetAudioBitRate(int pBitRate)
 {
     mQSettings->beginGroup("Streaming");
@@ -1095,11 +1088,6 @@ bool Configuration::GetAudioRtp()
 QString Configuration::GetAudioCodec()
 {
     return mQSettings->value("Streaming/AudioStreamCodec", QString("MP3 (MPA)")).toString();
-}
-
-int Configuration::GetAudioQuality()
-{
-    return mQSettings->value("Streaming/AudioStreamQuality", 100).toInt();
 }
 
 int Configuration::GetAudioBitRate()
