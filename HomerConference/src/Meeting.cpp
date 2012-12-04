@@ -393,27 +393,27 @@ bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort, e
 		{
             LOG(LOG_VERBOSE, "Using bidirectional media sockets to support NAT traversal");
 
-            #ifdef WIN32
-                // create video sender port
+			#if defined(WIN32) || defined(APPLE) || defined(BSD)
+                // create video receiver port
                 tParticipantDescriptor.VideoReceiveSocket = Socket::CreateServerSocket(IS_IPV6_ADDRESS(pHost) ? SOCKET_IPv6 : SOCKET_IPv4, GetSocketTypeFromMediaTransportType(GetVideoTransportType()), mVideoAudioStartPort, true, 2);
                 if (tParticipantDescriptor.VideoReceiveSocket == NULL)
                     LOG(LOG_ERROR, "Invalid video receive socket");
                 else
                     mVideoAudioStartPort = tParticipantDescriptor.VideoReceiveSocket->GetLocalPort() + 2;
 
-                // create audio sender port
+                // create audio receiver port
                 tParticipantDescriptor.AudioReceiveSocket = Socket::CreateServerSocket(IS_IPV6_ADDRESS(pHost) ? SOCKET_IPv6 : SOCKET_IPv4, GetSocketTypeFromMediaTransportType(GetAudioTransportType()), mVideoAudioStartPort, true, 2);
                 if (tParticipantDescriptor.AudioReceiveSocket == NULL)
                     LOG(LOG_ERROR, "Invalid audio receive socket");
                 else
                     mVideoAudioStartPort = tParticipantDescriptor.AudioReceiveSocket->GetLocalPort() + 2;
 
-                // create video listener port
+                // create video sender port
                 //HINT: for Windows/BSD/OSX the client socket has to be created before the server socket when using both assigned to the same port, Linux doesn't care about the order
                 tParticipantDescriptor.VideoSendSocket = Socket::CreateClientSocket(tParticipantDescriptor.VideoReceiveSocket->GetNetworkType(), tParticipantDescriptor.VideoReceiveSocket->GetTransportType(), tParticipantDescriptor.VideoReceiveSocket->GetLocalPort(), true, 0);
                 if (tParticipantDescriptor.VideoSendSocket == NULL)
                     LOG(LOG_ERROR, "Invalid video send socket");
-                // create audio listener port
+                // create audio sender port
                 tParticipantDescriptor.AudioSendSocket = Socket::CreateClientSocket(tParticipantDescriptor.AudioReceiveSocket->GetNetworkType(), tParticipantDescriptor.AudioReceiveSocket->GetTransportType(), tParticipantDescriptor.AudioReceiveSocket->GetLocalPort(), true, 0);
                 if (tParticipantDescriptor.AudioSendSocket == NULL)
                     LOG(LOG_ERROR, "Invalid audio send socket");
@@ -500,7 +500,7 @@ bool Meeting::CloseParticipantSession(string pParticipant, enum TransportType pP
         {
             // hint: the media sources are deleted within video/audio-widget
 
-            #ifdef WIN32
+            #if defined(WIN32) || defined(APPLE) || defined(BSD)
                 // delete video/audio sockets
                 delete (*tIt).VideoSendSocket;
                 delete (*tIt).AudioSendSocket;
