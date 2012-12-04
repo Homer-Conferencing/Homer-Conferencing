@@ -2279,7 +2279,7 @@ bool MediaSourceMuxer::SelectDevice(std::string pDesiredDevice, enum MediaType p
 	        }
 		}
 
-		// do we have a new device selected and does it come from another MediaSource, then we close the old media source and open the new media source
+		// do we have a new device selected and does it belong to another MediaSource, then we close the old media source and open the new media source
 		if (tResult)
 		{
 		    if ((mMediaSource != *tIt) || (mCurrentDevice != mDesiredDevice))
