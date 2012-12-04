@@ -977,7 +977,6 @@ void MediaSourceMem::StartDecoder()
 void MediaSourceMem::StopDecoder()
 {
     int tSignalingRound = 0;
-    char tTmp[4];
 
     LOG(LOG_VERBOSE, "Stopping decoder");
 
