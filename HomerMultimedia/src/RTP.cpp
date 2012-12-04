@@ -1132,7 +1132,6 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
 // HINT: ffmpeg lacks support for rtp encapsulation for h261  codec
 bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
 {
-    //TODO: use the packet pts and calculate timestamp based on 90 kHz clock
     if (!mEncoderOpened)
         return false;
 
@@ -1197,7 +1196,7 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize, int64_t pPacketPt
         tRtpHeader->Marked = (tPacketIndex == tPacketCount - 1)?1:0; // 1 = last fragment, 0 = intermediate fragment
         tRtpHeader->PayloadType = 31; // 31 = h261
         tRtpHeader->SequenceNumber = ++mH261LocalSequenceNumber; // monotonous growing
-        tRtpHeader->Timestamp = pPacketPts * 90 /* 90 kHz clock rate */;
+        tRtpHeader->Timestamp = pPacketPts * CalculateClockRateFactor() /* 90 kHz clock rate */;
         tRtpHeader->Ssrc = mLocalSourceIdentifier; // use the initially computed unique ID
 
         // convert from host to network byte order

@@ -156,7 +156,7 @@ protected:
     unsigned int GetSourceIdentifierFromRTP(); // returns the RTP source identifier
     bool HasSourceChangedFromRTP(); // return if RTP source identifier has changed and resets the flag
 
-    /* for clock rate adaption, e.g., 8, 44.1, 90 kHz */
+    /* for clock rate adaption, e.g., 8, 16, 90 kHz */
     float CalculateClockRateFactor();
 
 private:
