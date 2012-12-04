@@ -37,8 +37,8 @@
 		Mpeg2:   ok (HC)                        ok (HC)
 		Mpeg4:   ok (linphone, ekiga, HC)       ok (linphone, ekiga, HC)
 
-  pcma (G711):   ok (HC, Ekiga)                 ok (HC, Ekiga)  [short clicks or audio gaps are possible]
-  pcmu (G711):   ok (HC, Ekiga)                 ok (HC, Ekiga)  [short clicks or audio gaps are possible]
+  pcma (G711):   ok (HC, Ekiga)                 ok (HC, Ekiga)
+  pcmu (G711):   ok (HC, Ekiga)                 ok (HC, Ekiga)
   adpcm(G722):   ok (HC, Ekiga)					ok (HC, Ekiga)
 		  mp3:   ok (HC)                        ok (HC)
 	  pcm16be:   ok (HC)                        ok (HC)
