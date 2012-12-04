@@ -235,7 +235,8 @@ private:
     int64_t					mLastVideoSynchronizationTimestamp;
     float                   mVideoDelayAVDrift;
     int64_t					mTimeOfLastAVSynch;
-    int 					mContinuousAVAsync;
+    int 					mAVAsyncCounterSinceLastSynchronization;
+    int						mAVASyncCounter;
     QString             	mCurrentMovieFile;
     MovieControlWidget      *mFullscreeMovieControlWidget;
     bool                    mAVSynchActive;
