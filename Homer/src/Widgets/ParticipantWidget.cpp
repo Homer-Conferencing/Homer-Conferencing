@@ -81,6 +81,8 @@ namespace Homer { namespace Gui {
 #define AV_SYNC_MIN_PERIOD                                         500 // ms
 // how many times do we have to detect continuous asynch. A/V playback before we synch. audio and video? (to avoid false-positives)
 #define AV_SYNC_CONTINUOUS_ASYNC_THRESHOLD                           2 // checked every STREAM_POS_UPDATE_DELAY ms
+// size of the pre-buffer during a live conference
+#define AV_CONFERENCE_BUFFER									   0.2 // seconds
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -284,7 +286,7 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
 						mVideoSource = new MediaSourceNet(mVideoReceiveSocket, true);
 						mVideoSource->SetPreBufferingActivation(true);
 						mVideoSource->SetPreBufferingAutoRestartActivation(true);
-						mVideoSource->SetFrameBufferPreBufferingTime(AV_SYNC_MAX_DRIFT * 2);
+						mVideoSource->SetFrameBufferPreBufferingTime(AV_CONFERENCE_BUFFER);
 						mVideoSource->SetInputStreamPreferences(CONF.GetVideoCodec().toStdString());
 						mVideoWidgetFrame->hide();
 						mVideoWidget->Init(mMainWindow, this, mVideoSource, pVideoMenu, mSessionName);
@@ -295,7 +297,7 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
 						mAudioSource = new MediaSourceNet(mAudioReceiveSocket, true);
 						mAudioSource->SetPreBufferingActivation(true);
 						mAudioSource->SetPreBufferingAutoRestartActivation(true);
-						mAudioSource->SetFrameBufferPreBufferingTime(AV_SYNC_MAX_DRIFT * 2);
+						mAudioSource->SetFrameBufferPreBufferingTime(AV_CONFERENCE_BUFFER);
 						mAudioSource->SetInputStreamPreferences(CONF.GetAudioCodec().toStdString());
 						mAudioWidget->Init(mAudioSource, pAudioMenu, mSessionName);
 					}else
