@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>715</width>
-    <height>701</height>
+    <height>848</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -936,7 +936,7 @@
                  </font>
                 </property>
                 <property name="text">
-                 <string>Output bit rate [KBit/s]: </string>
+                 <string>Output bit rate [kbit/s]: </string>
                 </property>
                </widget>
               </item>
@@ -1581,111 +1581,6 @@
              </layout>
             </item>
             <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_10">
-              <item>
-               <widget class="QLabel" name="mLbAudioQuality">
-                <property name="minimumSize">
-                 <size>
-                  <width>210</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="font">
-                 <font>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Output quality:</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_7">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>2</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QComboBox" name="mCbAudioQuality">
-                <property name="minimumSize">
-                 <size>
-                  <width>0</width>
-                  <height>24</height>
-                 </size>
-                </property>
-                <property name="font">
-                 <font>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="currentIndex">
-                 <number>9</number>
-                </property>
-                <item>
-                 <property name="text">
-                  <string>10 %</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>20 %</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>30 %</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>40 %</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>50 %</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>60 %</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>70 %</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>80 %</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>90 %</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>100 %</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
              <layout class="QHBoxLayout" name="horizontalLayout_27">
               <item>
                <widget class="QLabel" name="label_14">
@@ -1702,7 +1597,7 @@
                  </font>
                 </property>
                 <property name="text">
-                 <string>Output bit rate [KBit/s]: </string>
+                 <string>Output bit rate [kbit/s]: </string>
                 </property>
                </widget>
               </item>
