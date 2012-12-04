@@ -1358,6 +1358,10 @@ void AudioWorkerThread::run()
         // get the next frame from audio source
         mLastFrameNumber = tFrameNumber;
 
+        // has input stream changed?
+        if (mMediaSource->HasInputStreamChanged())
+        	mResetMediaSourceAsap = true;
+
         if (mSyncClockAsap)
             DoSyncClock();
 

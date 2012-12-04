@@ -2315,6 +2315,10 @@ void VideoWorkerThread::run()
     	// store last frame number
         mLastFrameNumber = tFrameNumber;
 
+        // has input stream changed?
+        if (mMediaSource->HasInputStreamChanged())
+        	mResetMediaSourceAsap = true;
+
         if (mSyncClockAsap)
             DoSyncClock();
 
