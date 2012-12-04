@@ -255,14 +255,8 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
         }
     }
 
-    if (mStreamMaxFps != pMaxFps)
-    {
-        // set new quality
-        LOG(LOG_VERBOSE, "    ..stream FPS: %d => %d", mStreamMaxFps, pMaxFps);
-        mStreamMaxFps = pMaxFps;
-    }
-
     if ((mStreamCodecId != tStreamCodecId) ||
+   		(mStreamMaxFps != pMaxFps) ||
         (GetRtpActivation() != pRtpActivated) ||
         (mStreamQuality != pMediaStreamQuality) ||
         (mStreamBitRate != pBitRate) ||
@@ -272,6 +266,10 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
         LOG(LOG_VERBOSE, "Setting new %s streaming preferences", GetMediaTypeStr().c_str());
 
         tResult = true;
+
+        // set new quality
+        LOG(LOG_VERBOSE, "    ..stream FPS: %d => %d", mStreamMaxFps, pMaxFps);
+        mStreamMaxFps = pMaxFps;
 
         // set new codec
         LOG(LOG_VERBOSE, "    ..stream codec: %d => %d(%s)", mStreamCodecId, tStreamCodecId, pStreamCodec.c_str());
@@ -329,6 +327,13 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
             LOG(LOG_VERBOSE, "Setting the %s muxer frame rate from %.2f to %.2f (from base source)", GetMediaTypeStr().c_str(), pFps, tFps);
             pFps = tFps;
         }
+    }
+
+    // update the frame rate again if the application wants to limit the output frame rate
+    if (mStreamMaxFps != 0)
+    {
+        LOG(LOG_VERBOSE, "Setting the %s muxer frame rate from %.2f to %d (from base source)", GetMediaTypeStr().c_str(), pFps, mStreamMaxFps);
+        pFps = mStreamMaxFps;
     }
 
     if (pFps > 29.97)
@@ -659,9 +664,6 @@ bool MediaSourceMuxer::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if (pFps < 5)
         pFps = 5;
 
-    // save new fps for later internal calls to OpenVideoGrabDevice of underlaying media source
-    mFrameRate = pFps;
-
     // set media type early to have verbose debug outputs in case of failures
     mMediaType = MEDIA_VIDEO;
 
@@ -792,6 +794,10 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
 			break;
 
     }
+
+    // update the real frame rate depending on the actual encoder sample rate
+    mRealFrameRate = (float)mOutputAudioSampleRate /* 44100 samples per second */ / MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 samples per frame */;
+
 	mCodecContext->channels = mOutputAudioChannels;
 	mCodecContext->channel_layout = av_get_default_channel_layout(mOutputAudioChannels);
     mCodecContext->sample_rate = mOutputAudioSampleRate;
