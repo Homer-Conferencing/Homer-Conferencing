@@ -1325,7 +1325,7 @@ float RTP::CalculateClockRateFactor()
     {
         case CODEC_ID_PCM_MULAW:
         case CODEC_ID_PCM_ALAW:
-            tResult = 90;
+            tResult = 8;
             break;
         case CODEC_ID_PCM_S16BE:
             tResult = 90;
