@@ -81,6 +81,7 @@ private:
     int                 mReceiveErrors;
     int                 mPacketNumber;
     bool                mListenerNeeded;
+    bool				mListenerStopped;
     bool                mListenerSocketCreatedOutside;
     bool                mStreamedTransport;
     /* Berkeley sockets based transport */
@@ -239,37 +240,52 @@ void NetworkListener::StartListener()
 {
     LOG(LOG_VERBOSE, "Starting network listener for local port %u", GetListenerPort());
 
-    mListenerNeeded = true;
+    if (!IsRunning())
+    {
+        // start decoder main loop
+        StartThread();
 
-    // start socket listener
-    StartThread();
+        int tLoops = 0;
+
+        // wait until thread is running
+        while ((!IsRunning() /* wait until thread is started */) || (!mListenerNeeded /* wait until thread has finished the init. process */))
+        {
+            if (tLoops % 10 == 0)
+                LOG(LOG_VERBOSE, "Waiting for start of %s network listener thread, loop count: %d", mMediaSourceNet->GetMediaTypeStr().c_str(), ++tLoops);
+            Thread::Suspend(100);
+        }
+    }
 }
 
 void NetworkListener::StopListener()
 {
     int tSignalingRound = 0;
 
-    LOG(LOG_VERBOSE, "Stopping network listener");
+    LOG(LOG_VERBOSE, "Stopping %s network listener", mMediaSourceNet->GetMediaTypeStr().c_str());
 
-    if (mMediaSourceNet->mDecoderFifo != NULL)
-    {
-        // tell transcoder thread it isn't needed anymore
-        mListenerNeeded = false;
+	// tell network listener thread: it isn't needed anymore
+	mListenerNeeded = false;
 
-        if (mNAPIUsed)
-        {
-            mNAPIDataSocket->cancel();
-        }else
-        {
-            if (mDataSocket != NULL)
-                mDataSocket->StopReceiving();
-        }
+	if (mNAPIUsed)
+	{
+		mNAPIDataSocket->cancel();
+	}else
+	{
+		if (mDataSocket != NULL)
+			mDataSocket->StopReceiving();
+	}
 
-        if (!StopThread(3000))
-            LOG(LOG_ERROR, "Failed to stop %s network listener", mMediaSourceNet->GetMediaTypeStr().c_str());
-    }
+	// wait for termination of decoder thread
+	do
+	{
+		if(tSignalingRound > 0)
+			LOG(LOG_WARN, "Signaling round %d to stop %s network listener, system has high load", tSignalingRound, mMediaSourceNet->GetMediaTypeStr().c_str());
+		tSignalingRound++;
 
-    LOG(LOG_VERBOSE, "Network listener stopped");
+		Suspend(250);
+	}while(IsRunning());
+    
+    LOG(LOG_VERBOSE, "%s network listener stopped", mMediaSourceNet->GetMediaTypeStr().c_str());
 }
 
 enum TransportType NetworkListener::GetTransportType()
@@ -380,6 +396,7 @@ void* NetworkListener::Run(void* pArgs)
     int                 tDataSize;
 
     LOG(LOG_VERBOSE, "%s Socket-Listener for port %u started", mMediaSourceNet->GetMediaTypeStr().c_str(), GetListenerPort());
+    mListenerStopped = false;
 
     tPacketBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
 
@@ -430,6 +447,9 @@ void* NetworkListener::Run(void* pArgs)
     }
     mMediaSourceNet->AssignStreamName(mMediaSourceNet->mCurrentDeviceName);
 
+    // set marker to "active"
+    mListenerNeeded = true;
+
     while ((mListenerNeeded) && (!mMediaSourceNet->mGrabbingStopped))
     {
         //####################################################################
@@ -449,6 +469,12 @@ void* NetworkListener::Run(void* pArgs)
         }else
             mReceiveErrors = 0;
 
+        // stop loop if listener isn't needed anymore
+        if (!mListenerNeeded)
+        {
+        	LOG(LOG_WARN, "Leaving %s network listener immediately", mMediaSourceNet->GetMediaTypeStr().c_str());
+        	break;
+        }
 //      LOG(LOG_ERROR, "Data Size: %d", (int)tDataSize);
 //      LOG(LOG_ERROR, "Port: %u", tSourcePort);
 //      LOG(LOG_ERROR, "Host: %s", tSourceHost.c_str());
@@ -494,7 +520,7 @@ void* NetworkListener::Run(void* pArgs)
                 {
                     if (tData > tDataEnd)
                     {
-                        LOG(LOG_ERROR, "Have found an unplausible data position at %p while the data ends at %p", tData, tDataEnd);
+                        LOG(LOG_ERROR, "Have found an invalid data position at %p while the data ends at %p", tData, tDataEnd);
                         break;
                     }
                     #ifdef MSN_DEBUG_PACKETS
@@ -505,7 +531,7 @@ void* NetworkListener::Run(void* pArgs)
 
                     if (tData + tHeader->FragmentSize > tDataEnd)
                     {
-                        LOG(LOG_ERROR, "Have found an unplausible fragment size of %u bytes which is beyond the reported packet reception size", tHeader->FragmentSize);
+                        LOG(LOG_ERROR, "Have found an invalid fragment size of %u bytes which is beyond the reported packet reception size", tHeader->FragmentSize);
                         break;
                     }
                     //TODO: detect packet boundaries: maybe we get the last part of a former packet and the first part of the next packet -> this results in an error message at the moment, however, we could compensate this by a fragment buffer
@@ -539,6 +565,7 @@ void* NetworkListener::Run(void* pArgs)
     LOG(LOG_VERBOSE, "%s Socket-Listener for port %u finished", mMediaSourceNet->GetMediaTypeStr().c_str(), GetListenerPort());
 
     free(tPacketBuffer);
+    mListenerStopped = true;
 
     return NULL;
 }
