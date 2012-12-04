@@ -1149,9 +1149,6 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize, int64_t pPacketPt
     // HINT: the size of memory for storing the stream of RTP packets is rounded to multiples of (RTP_MAX_PACKET_SIZE + 4)
     unsigned int tRtpStreamDataMaxSize = tPacketCount * (RTP_MAX_H261_PAYLOAD_SIZE + H261_HEADER_SIZE + RTP_HEADER_SIZE + 4 /* overhead for packet length field */);
     unsigned int tRtpStreamDataSize = 0;
-    // get a timestamp
-    time_t tTimestamp;
-    time(&tTimestamp);
 
     // get pointer to the current working address inside rtp packet stream
     char *tCurrentRtpStreamData = mRtpPacketStream;
@@ -1193,7 +1190,7 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize, int64_t pPacketPt
         tRtpHeader->Padding = 0; // no padding octets
         tRtpHeader->Extension = 0; // no extension header used
         tRtpHeader->CsrcCount = 0; // no usage of CSRCs
-        tRtpHeader->Marked = (tPacketIndex == tPacketCount - 1)?1:0; // 1 = last fragment, 0 = intermediate fragment
+        tRtpHeader->Marked = (tPacketIndex == tPacketCount - 1)? 1 : 0; // 1 = last fragment, 0 = intermediate fragment
         tRtpHeader->PayloadType = 31; // 31 = h261
         tRtpHeader->SequenceNumber = ++mH261LocalSequenceNumber; // monotonous growing
         tRtpHeader->Timestamp = pPacketPts * CalculateClockRateFactor() /* 90 kHz clock rate */;
@@ -1354,7 +1351,7 @@ float RTP::CalculateClockRateFactor()
             tResult = 1; //TODO
             break;
         case CODEC_ID_ADPCM_G722:
-            tResult = 16;
+            tResult = 8;
             break;
         case CODEC_ID_THEORA:
             tResult = 1; //TODO
