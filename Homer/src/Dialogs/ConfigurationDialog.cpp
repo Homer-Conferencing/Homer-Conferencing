@@ -545,8 +545,11 @@ void ConfigurationDialog::SaveConfiguration()
     if (mCbAudioSink->currentText() != "")
     {
         if (mCbAudioSink->currentText() != CONF.GetLocalAudioSink())
-            tOnlyFutureChanged = true;
-        CONF.SetLocalAudioSink(mCbAudioSink->currentText());
+        {
+        	LOG(LOG_WARN, "Settings only for future sessions");
+        	tOnlyFutureChanged = true;
+        }
+		CONF.SetLocalAudioSink(mCbAudioSink->currentText());
     }
 
     //### stream - skip silence
@@ -605,8 +608,8 @@ void ConfigurationDialog::SaveConfiguration()
     CONF.SetSipStartPort(mSbSipStartPort->value());
     if (mSbVideoAudioStartPort->value() != CONF.GetVideoAudioStartPort())
     {
-    	LOG(LOG_WARN, "Restart needed!");
-    	tHaveToRestart = true;
+    	LOG(LOG_WARN, "Settings only for future sessions");
+    	tOnlyFutureChanged = true;
     }
 
     CONF.SetVideoAudioStartPort(mSbVideoAudioStartPort->value());
