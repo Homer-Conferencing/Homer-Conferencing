@@ -194,7 +194,7 @@ void PacketStatistic::ResetPacketStatistic()
     mStatisticsMutex.unlock();
 }
 
-void PacketStatistic::SetLostPacketCount(int pPacketCount)
+void PacketStatistic::SetLostPacketCount(uint64_t pPacketCount)
 {
     mLostPacketCount = pPacketCount;
 }
@@ -292,7 +292,7 @@ int PacketStatistic::GetMaxPacketSize()
     return mMaxPacketSize;
 }
 
-int PacketStatistic::GetLostPacketCount()
+uint64_t PacketStatistic::GetLostPacketCount()
 {
     return mLostPacketCount;
 }

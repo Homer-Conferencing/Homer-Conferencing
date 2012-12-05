@@ -64,7 +64,7 @@ struct PacketStatisticDescriptor{
     int  MaxPacketSize;
     int  PacketCount;
     int64_t ByteCount;
-    int  LostPacketCount;
+    uint64_t LostPacketCount;
     int  AvgPacketSize;
     int  AvgDataRate;
     int  MomentAvgDataRate;
@@ -97,7 +97,7 @@ public:
     int64_t GetByteCount();
     int GetMinPacketSize();
     int GetMaxPacketSize();
-    int GetLostPacketCount();
+    uint64_t GetLostPacketCount();
 
     /* get statistic values */
     PacketStatisticDescriptor GetPacketStatistic();
@@ -119,7 +119,7 @@ public:
     /* reset internal states */
     virtual void ResetPacketStatistic();
 
-    void SetLostPacketCount(int pPacketCount);
+    void SetLostPacketCount(uint64_t pPacketCount);
 
 protected:
     /* update internal states */
@@ -144,7 +144,7 @@ private:
     int64_t       mByteCount;
     int64_t       mStartTimeStamp;
     int64_t       mEndTimeStamp;
-    int           mLostPacketCount;
+    uint64_t      mLostPacketCount;
     Time          mLastTime;
     Statistics mStatistics;
     Mutex         mStatisticsMutex;
