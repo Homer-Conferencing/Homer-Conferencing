@@ -2714,6 +2714,7 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..current device: %s", mCurrentDevice.c_str());
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..qmin: %d", mCodecContext->qmin);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..qmax: %d", mCodecContext->qmax);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec caps: 0x%x", mCodecContext->codec->capabilities);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..MT count: %d", mCodecContext->thread_count);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..MT method: %d", mCodecContext->thread_type);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame size: %d", mCodecContext->frame_size);
@@ -3017,10 +3018,17 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     mCodecContext = mFormatContext->streams[mMediaStreamIndex]->codec;
 
     // check for VDPAU support
-    if ((mCodecContext->codec) && (mCodecContext->codec->capabilities & CODEC_CAP_HWACCEL_VDPAU))
-    {
-    	LOG_REMOTE(LOG_WARN, pSource, pLine, "%s codec %s already supports VDPAU!", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
-    }
+    if (mCodecContext->codec)
+	{
+    	if (mCodecContext->codec->capabilities & CODEC_CAP_HWACCEL_VDPAU)
+        	LOG_REMOTE(LOG_WARN, pSource, pLine, "%s codec %s supports HW decoding (VDPAU)!", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
+
+    	if (mCodecContext->codec->capabilities & CODEC_CAP_HWACCEL)
+        	LOG_REMOTE(LOG_WARN, pSource, pLine, "%s codec %s supports HW decoding (XvMC)!", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
+
+    	if (mCodecContext->codec->capabilities & CODEC_CAP_SUBFRAMES)
+        	LOG_REMOTE(LOG_WARN, pSource, pLine, "%s codec %s supports SUB FRAMES!", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
+	}
 
     switch(mMediaType)
     {
