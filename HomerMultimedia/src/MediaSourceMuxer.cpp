@@ -423,7 +423,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     mCodecContext->codec_type = AVMEDIA_TYPE_VIDEO;
 
     //data_partitioning
-    // do some extra modifications for H263 to make it easier for streaming
+    // do some extra modifications for MPEG4 to make it easier for streaming
     if (tFormat->video_codec == CODEC_ID_MPEG4)
     {
         mCodecContext->flags |= CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED;
