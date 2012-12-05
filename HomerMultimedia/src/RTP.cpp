@@ -36,6 +36,7 @@
 		Mpeg1:   ok (HC)                        ok (HC)
 		Mpeg2:   ok (HC)                        ok (HC)
 		Mpeg4:   ok (linphone, ekiga, HC)       ok (linphone, ekiga, HC)
+	   theora:   ?								?
 
   pcma (G711):   ok (HC, Ekiga)                 ok (HC, Ekiga)
   pcmu (G711):   ok (HC, Ekiga)                 ok (HC, Ekiga)
@@ -684,29 +685,16 @@ bool RTP::IsPayloadSupported(enum CodecID pId)
             case CODEC_ID_MPEG1VIDEO:
             case CODEC_ID_MPEG2VIDEO:
             case CODEC_ID_MPEG4:
-            case CODEC_ID_AAC:
-//            case CODEC_ID_MP2:
             case CODEC_ID_MP3:
             case CODEC_ID_PCM_ALAW:
             case CODEC_ID_PCM_MULAW:
-//            case CODEC_ID_PCM_S8:
             case CODEC_ID_PCM_S16BE:
-//            case CODEC_ID_PCM_S16LE:
-//            case CODEC_ID_PCM_U16BE:
-//            case CODEC_ID_PCM_U16LE:
-//            case CODEC_ID_PCM_U8:
 //            case CODEC_ID_MPEG2TS:
-            case CODEC_ID_AMR_NB:
-//            case CODEC_ID_AMR_WB:
 //            case CODEC_ID_VORBIS:
             case CODEC_ID_THEORA:
             case CODEC_ID_VP8:
             case CODEC_ID_ADPCM_G722:
 //            case CODEC_ID_ADPCM_G726:
-//            case CODEC_ID_ILBC:
-//            case CODEC_ID_MJPEG:
-//            case CODEC_ID_SPEEX:
-//            case CODEC_ID_OPUS:
                             tResult = true;
                             break;
             default:
@@ -745,10 +733,6 @@ int RTP::GetPayloadHeaderSizeMax(enum CodecID pCodec)
             case CODEC_ID_MPEG4:
                 tResult = 0;
                 break;
-            case CODEC_ID_AAC:
-                tResult = 0;//todo
-                break;
-//            case CODEC_ID_MP2:
             case CODEC_ID_MP3:
                 tResult = sizeof(MPAHeader);
                 break;
@@ -758,19 +742,10 @@ int RTP::GetPayloadHeaderSizeMax(enum CodecID pCodec)
             case CODEC_ID_PCM_MULAW:
                 tResult = 0;
                 break;
-//            case CODEC_ID_PCM_S8:
             case CODEC_ID_PCM_S16BE:
-//            case CODEC_ID_PCM_S16LE:
                 tResult = 0;
                 break;
-//            case CODEC_ID_PCM_U16BE:
-//            case CODEC_ID_PCM_U16LE:
-//            case CODEC_ID_PCM_U8:
 //            case CODEC_ID_MPEG2TS:
-            case CODEC_ID_AMR_NB:
-                tResult = 0;//todo
-                break;
-//            case CODEC_ID_AMR_WB:
 //            case CODEC_ID_VORBIS:
             case CODEC_ID_THEORA:
                 tResult = sizeof(THEORAHeader);
@@ -779,13 +754,9 @@ int RTP::GetPayloadHeaderSizeMax(enum CodecID pCodec)
                 tResult = sizeof(VP8Header); // we neglect the extended header and the 3 other optional header bytes
                 break;
             case CODEC_ID_ADPCM_G722:
-            	tResult = 0; //TODO
+            	tResult = 0;
             	break;
 //            case CODEC_ID_ADPCM_G726:
-//            case CODEC_ID_ILBC:
-//            case CODEC_ID_MJPEG:
-//            case CODEC_ID_SPEEX:
-//            case CODEC_ID_OPUS:
             default:
                 tResult = 0;
                 break;
@@ -1014,6 +985,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
                             case CODEC_ID_ADPCM_G722:
                                             tRtpHeader->PayloadType = 9;
                                             break;
+				//            case CODEC_ID_ADPCM_G726:
                             case CODEC_ID_PCM_S16BE:
                                             tRtpHeader->PayloadType = 10;
                                             break;
@@ -1051,13 +1023,13 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
                                             tRtpHeader->PayloadType = 101;
                                             break;
                             case CODEC_ID_H263P:
-                                            tRtpHeader->PayloadType = 119; // our own standard, possible because this range is user defined
+                                            tRtpHeader->PayloadType = 119;
                                             break;
                             case CODEC_ID_H264:
-                                            tRtpHeader->PayloadType = 120; // defacto standard
+                                            tRtpHeader->PayloadType = 120;
                                             break;
                             case CODEC_ID_MPEG4:
-                                            tRtpHeader->PayloadType = 121; // defacto standard
+                                            tRtpHeader->PayloadType = 121;
                                             break;
                             case CODEC_ID_THEORA:
                                             tRtpHeader->PayloadType = 122;
@@ -1065,6 +1037,8 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
                             case CODEC_ID_VP8:
                                             tRtpHeader->PayloadType = 123;
                                             break;
+				//            case CODEC_ID_MPEG2TS:
+				//            case CODEC_ID_VORBIS:
                 }
 
                 //#################################################################################
@@ -1339,20 +1313,15 @@ float RTP::CalculateClockRateFactor()
             tResult = 8;
             break;
         case CODEC_ID_PCM_S16BE:
-            tResult = 90;
+            tResult = 44.1;
             break;
         case CODEC_ID_MP3:
             tResult = 90;
             break;
-        case CODEC_ID_AMR_NB:
-            tResult = 8; //TODO
-            break;
-        case CODEC_ID_AAC:
-            tResult = 1; //TODO
-            break;
         case CODEC_ID_ADPCM_G722:
             tResult = 8;
             break;
+//            case CODEC_ID_ADPCM_G726:
         case CODEC_ID_THEORA:
             tResult = 1; //TODO
             break;
@@ -1363,11 +1332,13 @@ float RTP::CalculateClockRateFactor()
         case CODEC_ID_MPEG1VIDEO:
         case CODEC_ID_MPEG2VIDEO:
         case CODEC_ID_MPEG4: //TODO: mpeg 4 is buggy?
-            tResult = 90 /* use 90 kHz time base instead of 1 kHz like defined by RTP rfc */;
+            tResult = 90;
             break;
         case CODEC_ID_VP8:
             tResult = 1; //TODO
             break;
+//            case CODEC_ID_MPEG2TS:
+//            case CODEC_ID_VORBIS:
         default:
             break;
     }
@@ -1401,9 +1372,8 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
             case CODEC_ID_PCM_ALAW:
             case CODEC_ID_PCM_S16BE:
             case CODEC_ID_MP3:
-            case CODEC_ID_AMR_NB:
-            case CODEC_ID_AAC:
             case CODEC_ID_ADPCM_G722:
+//            case CODEC_ID_ADPCM_G726:
             //supported video codecs
             case CODEC_ID_H261:
             case CODEC_ID_H263:
@@ -1414,6 +1384,8 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
             case CODEC_ID_MPEG4:
             case CODEC_ID_THEORA:
             case CODEC_ID_VP8:
+//            case CODEC_ID_MPEG2TS:
+//            case CODEC_ID_VORBIS:
                     break;
             default:
                     LOG(LOG_ERROR, "Codec %d is unsupported by internal RTP parser", mStreamCodecID);
@@ -1619,18 +1591,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
 							// no fragmentation because our encoder sends raw data
 							mIntermediateFragment = false;
             				break;
-            case CODEC_ID_AMR_NB:
-							#ifdef RTP_DEBUG_PACKET_DECODER
-                            	LOG(LOG_VERBOSE, "#################### AMR-NB header #######################");
-                            	LOG(LOG_VERBOSE, "TODO: AMR header parsing");//TODO: implement
-							#endif
-                            break;
-            case CODEC_ID_AAC:
-							#ifdef RTP_DEBUG_PACKET_DECODER
-                            	LOG(LOG_VERBOSE, "#################### AAC header #######################");
-                            	LOG(LOG_VERBOSE, "TODO: AAC header parsing");//TODO: implement
-							#endif
-                            break;
+//            case CODEC_ID_ADPCM_G726:
             case CODEC_ID_MP3:
                             // convert from network to host byte order
                             tMPAHeader->Data[0] = ntohl(tMPAHeader->Data[0]);
@@ -2049,6 +2010,8 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
                                 LOG(LOG_VERBOSE, "Start of partition: %d", tVP8Header->S);
                             #endif
                             break;
+//            case CODEC_ID_MPEG2TS:
+//            case CODEC_ID_VORBIS:
             default:
                             LOG(LOG_ERROR, "Unsupported codec %d dropped by internal RTP parser", mStreamCodecID);
                             break;
@@ -2249,6 +2212,8 @@ string RTP::PayloadIdToCodec(int pId)
     return tResult;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+///////////////////// RTCP handling ///////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
 #define RTCP_SENDER_REPORT                  200
