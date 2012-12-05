@@ -2907,9 +2907,18 @@ bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
     if (GetSourceType() != SOURCE_FILE)
     {
         if (mMediaType == MEDIA_AUDIO)
+        {// we limit the analyzing time to a quarter
             mFormatContext->max_analyze_duration = AV_TIME_BASE / 4;
-        else
-            mFormatContext->max_analyze_duration = AV_TIME_BASE / 2;
+        }else{
+        	if (mSourceCodecId != CODEC_ID_MPEG4)
+        	{// we may limit the analyzing time to the half
+        		mFormatContext->max_analyze_duration = AV_TIME_BASE / 2;
+        	}else
+        	{// MPEG4
+        		// we shouldn't limit the analyzing time because the analyzer needs the entire time period to deliver a reliable result
+        	}
+
+        }
     }
 
     // verbose timestamp debugging
