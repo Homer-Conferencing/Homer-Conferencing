@@ -67,10 +67,20 @@
 #include <MediaSourceNet.h>
 #include <Logger.h>
 
+namespace Homer { namespace Multimedia {
+
 using namespace std;
 using namespace Homer::Monitor;
 
-namespace Homer { namespace Multimedia {
+///////////////////////////////////////////////////////////////////////////////
+
+// how many consecutive timestamp overflows do we want to accept before we assume that the remote source has changed?
+#define RTP_MAX_CONSECUTIVE_TIMESTAMP_OVERFLOWS								1
+
+// how many consecutive sequence number overflows do we want to accept before we assume that the remote source has changed?
+#define RTP_MAX_CONSECUTIVE_SEQUENCE_NUMBER_OVERFLOWS						1
+
+///////////////////////////////////////////////////////////////////////////////
 
 /* ##################################################################################
 // ########################## Resulting packet structure ############################
@@ -407,14 +417,8 @@ RTP::RTP()
     mTargetHost = "";
     mTargetPort = 0;
     mStreamCodecID = CODEC_ID_NONE;
-    mRemoteSequenceNumberLastPacket = 0;
-    mRemoteTimestampLastPacket = 0;
-    mRemoteTimestampLastCompleteFrame = 0;
-    mRemoteSourceIdentifier = 0;
-    mRemoteStartTimestamp = 0;
     mLocalSourceIdentifier = 0;
-    mRtcpLastRemoteTimestamp = 0;
-    mRtcpLastRemoteNtpTime = 0;
+    Init();
 }
 
 RTP::~RTP()
@@ -435,6 +439,26 @@ unsigned int RTP::GetH261PayloadSizeMax()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+void RTP::Init()
+{
+    // reset variables
+    mRemoteSequenceNumberLastPacket = 0;
+    mRemoteTimestampLastPacket = 0;
+    mRemoteTimestampLastCompleteFrame = 0;
+    mRemoteSourceIdentifier = 0;
+    mRemoteStartTimestamp = 0;
+    mRemoteStartSequenceNumber = 0;
+    mRtcpLastRemoteTimestamp = 0;
+    mRtcpLastRemoteNtpTime = 0;
+    mRemoteTimestampOverflowShift = 0;
+    mRemoteTimestampConsecutiveOverflows = 0;
+    mRemoteTimestamp = 0;
+    mLastTimestampFromRTPHeader = 0;
+    mLastSequenceNumberFromRTPHeader = 0;
+    mLostPackets = 0;
+    mRemoteSequenceNumberOverflowShift = 0;
+}
 
 bool RTP::OpenRtpEncoderH261(string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream)
 {
@@ -498,14 +522,8 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     mTargetPort = pTargetPort;
     mStreamCodecID = pInnerStream->codec->codec_id;
 
-    // reset variables
-    mRemoteSequenceNumberLastPacket = 0;
-    mRemoteTimestampLastPacket = 0;
-    mRemoteTimestampLastCompleteFrame = 0;
-    mRemoteSourceIdentifier = 0;
-    mRemoteStartTimestamp = 0;
-    mRtcpLastRemoteTimestamp = 0;
-    mRtcpLastRemoteNtpTime = 0;
+    Init();
+
     // set SRC ID
     mLocalSourceIdentifier = av_get_random_seed();
 
@@ -1221,7 +1239,7 @@ unsigned int RTP::GetLostPacketsFromRTP()
     return mLostPackets;
 }
 
-void RTP::AnnounceLostPackets(unsigned int pCount)
+void RTP::AnnounceLostPackets(uint64_t pCount)
 {
     mLostPackets += pCount;
     if (mPacketStatistic != NULL)
@@ -1260,7 +1278,7 @@ void RTP::LogRtpHeader(RtpHeader *pRtpHeader)
         pRtpHeader->Data[i] = htonl(pRtpHeader->Data[i]);
 }
 
-int64_t RTP::GetCurrentPtsFromRTP()
+uint64_t RTP::GetCurrentPtsFromRTP()
 {
     int64_t tResult = 0;
 
@@ -1474,33 +1492,86 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
     // #############################################################
     if (!pReadOnly)
     {
-        // check if there was a packet order problem
-        if ((tRtpHeader->SequenceNumber != 0 /* ignore stream resets */) && (mRemoteSequenceNumberLastPacket != 65535) && (mRemoteTimestampLastPacket > 0) && (tRtpHeader->SequenceNumber < mRemoteSequenceNumberLastPacket))
+        // #############################################################
+        // START SEQUENCE NUMBER: update the remote start sequence number
+        // #############################################################
+        if (mRemoteStartSequenceNumber == 0)
         {
-            LOG(LOG_ERROR, "Packets in wrong order received (last SN: %d; current SN: %d)", mRemoteSequenceNumberLastPacket, tRtpHeader->SequenceNumber);
+        	LOG(LOG_WARN, "Setting remote start sequence number to: %hu", tRtpHeader->SequenceNumber);
+
+            // we have to reset the timestamp calculation
+        	mRemoteStartSequenceNumber = tRtpHeader->SequenceNumber;
         }
 
-        // check if there was packet loss
-        if ((mRemoteTimestampLastPacket > 0) && (((mRemoteSequenceNumberLastPacket != 65535) && (tRtpHeader->SequenceNumber > mRemoteSequenceNumberLastPacket + 1)) || ((mRemoteSequenceNumberLastPacket == 65535) && (tRtpHeader->SequenceNumber != 0))))
-        {
-            unsigned int tLostPackets = 0;
-            if(mRemoteTimestampLastPacket != 65535)
-            {
-                tLostPackets = tRtpHeader->SequenceNumber - mRemoteSequenceNumberLastPacket - 1;
-            }else
-            {
-                tLostPackets = tRtpHeader->SequenceNumber;
-            }
+        // ##########################################################################
+        // SEQUENCE NUMBER: update the remote sequence number and react on overflows
+        // ##########################################################################
+        // do we have a sequence number overflow?
+        if ((mLastSequenceNumberFromRTPHeader > tRtpHeader->SequenceNumber) && (mLastSequenceNumberFromRTPHeader - tRtpHeader->SequenceNumber > UINT16_MAX / 2 /* avoid false-positive overflow detection in case of out-of-order packets */))
+        {// we have detected an value overflow
+        	// shift the SequenceNumber value
+        	mRemoteSequenceNumberOverflowShift += UINT16_MAX + 1;
 
+            // update the remote SequenceNumber depending on the overflow shift value
+            mRemoteSequenceNumber = mRemoteSequenceNumberOverflowShift + (uint64_t)tRtpHeader->SequenceNumber - mRemoteStartSequenceNumber;
+
+            LOG(LOG_WARN, "Overflow detected and compensated, new remote sequence number: abs=%hu(max: %hu), start=%hu, normalized=%lu", tRtpHeader->SequenceNumber, (unsigned short int)UINT16_MAX, mRemoteStartSequenceNumber, mRemoteSequenceNumber);
+
+        	// increase the "overflow" counter
+        	mRemoteSequenceNumberConsecutiveOverflows++;
+
+        	// did we reach the limit of allowed consecutive SequenceNumber overflows?
+        	if (mRemoteSequenceNumberConsecutiveOverflows > RTP_MAX_CONSECUTIVE_SEQUENCE_NUMBER_OVERFLOWS)
+        	{// yes -> mark source as changed
+        		LOG(LOG_WARN, "Detected %d(max. allowed: %d) consecutive sequence number overflows, mark remote source as changed", mRemoteSequenceNumberConsecutiveOverflows, RTP_MAX_CONSECUTIVE_SEQUENCE_NUMBER_OVERFLOWS);
+        		mRemoteSourceChanged = true;
+        	}
+        }else
+        {// we don't have an value overflow
+            // update the remote SequenceNumber depending on the overflow shift value
+            mRemoteSequenceNumber = mRemoteSequenceNumberOverflowShift + (uint64_t)tRtpHeader->SequenceNumber - (uint64_t)mRemoteStartSequenceNumber;
+
+            // reset the "overflow" counter
+            mRemoteSequenceNumberConsecutiveOverflows = 0;
+
+            LOG(LOG_VERBOSE, "New remote SequenceNumber: abs=%hu(max: %hu), start=%hu, normalized=%lu", tRtpHeader->SequenceNumber, (unsigned short int)UINT16_MAX, mRemoteStartSequenceNumber, mRemoteSequenceNumber);
+        }
+        mLastSequenceNumberFromRTPHeader = tRtpHeader->SequenceNumber;
+
+        // ###########################################################
+        // PACKET ORDERING: check if there was a packet order problem
+        // ###########################################################
+        bool tPacketOutOfOrder = false;
+        if ((mRemoteSequenceNumber > 0 /* ignore stream resets */) && (mRemoteSequenceNumberLastPacket > 0) && (mRemoteSequenceNumber < mRemoteSequenceNumberLastPacket))
+        {
+            LOG(LOG_ERROR, "Packets in wrong order received (%lu->%lu)", mRemoteSequenceNumberLastPacket, mRemoteSequenceNumber);
+            tPacketOutOfOrder = true;
+        }
+
+        // ############################################
+        // PACKET LOSS: check if there was packet loss
+        // ############################################
+        if ((mRemoteSequenceNumber > 0) && (mRemoteSequenceNumberLastPacket > 0) && (mRemoteSequenceNumber > mRemoteSequenceNumberLastPacket + 1))
+        {
+            uint64_t tLostPackets = mRemoteSequenceNumber - mRemoteSequenceNumberLastPacket - 1;
             AnnounceLostPackets(tLostPackets);
-            LOG(LOG_ERROR, "Packet loss detected (last SN: %d; current SN: %d), lost %u packets, overall packet loss is now %u", mRemoteSequenceNumberLastPacket, tRtpHeader->SequenceNumber, tLostPackets, mLostPackets);
+            LOG(LOG_ERROR, "Packet loss detected (sequ. nr.: %lu->%lu), lost %lu packets, overall packet loss is now %lu", mRemoteSequenceNumberLastPacket, mRemoteSequenceNumber, tLostPackets, mLostPackets);
         }
 
-        // use stanard RTP definition to detect fragments, some codecs have a different understanding about this - this is included below
+        // ############################################################
+        // FRAGMENTATION: use RTP header to set the fragmentation flag
+        // ############################################################
+        // use standard RTP definition to detect fragments, some A/V codecs have extended fragmentation detection mechanism (will be executed in the end of this procedure)
         mIntermediateFragment = !tRtpHeader->Marked;
 
+        // ###################################################
+        // PAYLOAD ID: use RTP header to set the payload type
+        // ###################################################
         mPayloadId = tRtpHeader->PayloadType;
         
+        // #######################################################################################
+        // SOURCE IDENTIFIER: update the remote source identifier and re-init the start timestamp
+        // #######################################################################################
         // store the assigned SSRC identifier
         if (mRemoteSourceIdentifier != tRtpHeader->Ssrc)
         {
@@ -1509,29 +1580,60 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
             {
                 LOG(LOG_WARN, "Alternating source at remote side detected, will reset start timestamp");
                 mRemoteSourceChanged = true;
-            }
+
+                // force a reset of the start timestamp and trigger a re-initialization
+                mRemoteStartTimestamp = 0;
+                mRemoteStartSequenceNumber = 0;
+			}
 
             // store the source ID to be able to detect repeating changes
             mRemoteSourceIdentifier = tRtpHeader->Ssrc;
-
-            // force a reset of the start timestamp and trigger a re-initialization
-            mRemoteStartTimestamp = 0;
         }
 
+        // #############################################################
+        // START TIMESTAMP: update the remote start timestamp
+        // #############################################################
         if (mRemoteStartTimestamp == 0)
         {
             // we have to reset the timestamp calculation
             mRemoteStartTimestamp = tRtpHeader->Timestamp;
         }
 
-        // update the relative timstamp value - from remote side
-        int64_t tRemoteTimestamp = (int64_t)tRtpHeader->Timestamp - mRemoteStartTimestamp;
-        if (tRemoteTimestamp < 0)
-        {
-            LOG(LOG_WARN, "Invalid timestamp %ld (current abs. timestamp: %u, start timestamp: %u)  from remote side detected, will use 0 instead", tRemoteTimestamp, tRtpHeader->Timestamp, mRemoteStartTimestamp);
-            tRemoteTimestamp += UINT_MAX;
+        // #############################################################
+        // TIMESTAMP: update the remote timestamp and react on overflows
+        // #############################################################
+        // do we have a timestamp overflow?
+        if ((mLastTimestampFromRTPHeader > tRtpHeader->Timestamp) && (mLastTimestampFromRTPHeader - tRtpHeader->Timestamp > UINT32_MAX / 2 /* avoid false-positive overflow detection in case of out-of-order timestamps */) &&  (!tPacketOutOfOrder))
+        {// we have detected an value overflow
+        	// shift the timestamp value
+        	mRemoteTimestampOverflowShift += UINT32_MAX + 1;
+
+            // update the remote timestamp depending on the overflow shift value
+            mRemoteTimestamp = mRemoteTimestampOverflowShift + (uint64_t)tRtpHeader->Timestamp - mRemoteStartTimestamp;
+
+            LOG(LOG_WARN, "Overflow detected and compensated, new remote timestamp: last=%u, abs=%u(max: %u), start=%u, normalized=%lu", mLastTimestampFromRTPHeader, tRtpHeader->Timestamp, UINT32_MAX, mRemoteStartTimestamp, mRemoteTimestamp);
+
+        	// increase the "overflow" counter
+        	mRemoteTimestampConsecutiveOverflows++;
+
+        	// did we reach the limit of allowed consecutive timestamp overflows?
+        	if (mRemoteTimestampConsecutiveOverflows > RTP_MAX_CONSECUTIVE_TIMESTAMP_OVERFLOWS)
+        	{// yes -> mark source as changed
+        		LOG(LOG_WARN, "Detected %d(max. allowed: %d) consecutive timestamp overflows, mark remote source as changed", mRemoteTimestampConsecutiveOverflows, RTP_MAX_CONSECUTIVE_TIMESTAMP_OVERFLOWS);
+        		mRemoteSourceChanged = true;
+        	}
+        }else
+        {// we don't have an value overflow
+            // update the remote timestamp depending on the overflow shift value
+            mRemoteTimestamp = mRemoteTimestampOverflowShift + (uint64_t)tRtpHeader->Timestamp - mRemoteStartTimestamp;
+
+            // reset the "overflow" counter
+            mRemoteTimestampConsecutiveOverflows = 0;
+
+            LOG(LOG_VERBOSE, "New remote timestamp: abs=%u(max: %u), start=%u, normalized=%lu", tRtpHeader->Timestamp, UINT32_MAX, mRemoteStartTimestamp, mRemoteTimestamp);
         }
-        mRemoteTimestamp = tRemoteTimestamp;
+        mLastTimestampFromRTPHeader = tRtpHeader->Timestamp;
+
         #ifdef RTP_DEBUG_PACKET_DECODER
             LOGEX(RTP, LOG_VERBOSE, "Timestamp (rel.): %10u", mRemoteTimestamp);
         #endif
@@ -2027,17 +2129,17 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
 	if (!pReadOnly)
 	{// update the status variables
 		// check if there was a new frame begun before the last was finished
-		if ((mRemoteTimestampLastCompleteFrame != mRemoteTimestampLastPacket) && (mRemoteTimestampLastPacket != tRtpHeader->Timestamp))
+		if ((mRemoteTimestampLastCompleteFrame != mRemoteTimestampLastPacket) && (mRemoteTimestampLastPacket != mRemoteTimestamp))
 		{
 			AnnounceLostPackets(1);
-			LOG(LOG_ERROR, "Packet belongs to new frame while last frame is incomplete, overall packet loss is now %u, last complete timestamp: %u, last timestamp: %u", mLostPackets, mRemoteTimestampLastCompleteFrame, mRemoteTimestampLastPacket);
+			LOG(LOG_ERROR, "Packet belongs to new frame while last frame is incomplete, overall packet loss is now %lu, last complete timestamp: %lu, last timestamp: %lu", mLostPackets, mRemoteTimestampLastCompleteFrame, mRemoteTimestampLastPacket);
 		}
 		// store the timestamp of the last complete frame
 		if (!mIntermediateFragment)
-			mRemoteTimestampLastCompleteFrame = tRtpHeader->Timestamp;
+			mRemoteTimestampLastCompleteFrame = mRemoteTimestamp;
 
-		mRemoteSequenceNumberLastPacket = tRtpHeader->SequenceNumber;
-		mRemoteTimestampLastPacket = tRtpHeader->Timestamp;
+		mRemoteSequenceNumberLastPacket = mRemoteSequenceNumber;
+		mRemoteTimestampLastPacket = mRemoteTimestamp;
 	}else
 	{// restore the original unchanged packet memory here
 
@@ -2319,15 +2421,20 @@ bool RTP::RtcpParseSenderReport(char *&pData, int &pDataSize, int64_t &pEndToEnd
         uint64_t tLocalNtpTimestamp = av_gettime();
 
 
-        mSynchDataMutex.lock();
-
-        mRtcpLastRemoteNtpTime = tRemoteNtpTimestamp;
-
-        // have we already found the timestamp offset (start time), otherwise we found it now
+        // #############################################################
+        // START TIMESTAMP: update the remote start timestamp
+        // #############################################################
         if (mRemoteStartTimestamp == 0)
+        {
+            // we have to reset the timestamp calculation
             mRemoteStartTimestamp = tRtcpHeader->Feedback.RtpTimestamp;
-        mRtcpLastRemoteTimestamp = tRtcpHeader->Feedback.RtpTimestamp - mRemoteStartTimestamp;
+        }
 
+        //HINT: the START SEQUENCE NUMBER: cannot be updated because this data is nopt included in the RTCP header
+
+        mSynchDataMutex.lock();
+        mRtcpLastRemoteNtpTime = tRemoteNtpTimestamp;
+        mRtcpLastRemoteTimestamp = tRtcpHeader->Feedback.RtpTimestamp - mRemoteStartTimestamp;
         mSynchDataMutex.unlock();
 
 

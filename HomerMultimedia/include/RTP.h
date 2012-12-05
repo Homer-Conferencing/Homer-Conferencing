@@ -151,7 +151,7 @@ public:
     bool RtcpParseSenderReport(char *&pData, int &pDataSize, int64_t &pEndToEndDelay /* in micro seconds */, int &pPackets, int &pOctets);
 
 protected:
-    int64_t GetCurrentPtsFromRTP(); // uses the timestamps from the RTP header to derive a valid PTS value
+    uint64_t GetCurrentPtsFromRTP(); // uses the timestamps from the RTP header to derive a valid PTS value
     void GetSynchronizationReferenceFromRTP(uint64_t &pReferenceNtpTime, unsigned int &pReferencePts);
     unsigned int GetSourceIdentifierFromRTP(); // returns the RTP source identifier
     bool HasSourceChangedFromRTP(); // return if RTP source identifier has changed and resets the flag
@@ -160,7 +160,8 @@ protected:
     float CalculateClockRateFactor();
 
 private:
-    void AnnounceLostPackets(unsigned int pCount);
+    void Init();
+    void AnnounceLostPackets(uint64_t pCount);
 
     /* internal RTP packetizer for h.261 */
     bool OpenRtpEncoderH261(std::string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream);
@@ -178,16 +179,24 @@ private:
     bool                mEncoderOpened;
     std::string         mTargetHost;
     unsigned int        mTargetPort;
-    unsigned int        mLostPackets;
+    uint64_t	        mLostPackets;
     unsigned int        mLocalSourceIdentifier;
     enum CodecID        mStreamCodecID;
-    unsigned short int  mRemoteSequenceNumberLastPacket;
-    unsigned int        mRemoteTimestampLastPacket;
-    unsigned int        mRemoteTimestampLastCompleteFrame;
+    uint64_t			mRemoteSequenceNumber; // without overflows
+    unsigned short int	mLastSequenceNumberFromRTPHeader; // for overflow check
+    uint64_t			mRemoteSequenceNumberOverflowShift; // offset for shifting the value range
+    uint64_t			mRemoteSequenceNumberLastPacket;
+    int					mRemoteSequenceNumberConsecutiveOverflows;
+    unsigned short int  mRemoteStartSequenceNumber;
+    uint64_t            mRemoteTimestamp; // without overflows
+    unsigned int		mLastTimestampFromRTPHeader; // for overflow check
+    uint64_t			mRemoteTimestampOverflowShift; // offset for shifting the value range
+    uint64_t            mRemoteTimestampLastPacket;
+    int 				mRemoteTimestampConsecutiveOverflows;
+    uint64_t            mRemoteTimestampLastCompleteFrame;
+    unsigned int        mRemoteStartTimestamp;
     bool				mRemoteSourceChanged;
     unsigned int        mRemoteSourceIdentifier;
-    unsigned int        mRemoteStartTimestamp;
-    uint64_t            mRemoteTimestamp;
     /* MP3 RTP hack */
     unsigned int        mMp3Hack_EntireBufferSize;
     /* RTP packet stream */
