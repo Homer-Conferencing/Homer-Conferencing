@@ -31,6 +31,7 @@
 #include <ProcessStatisticService.h>
 #include <Logger.h>
 #include <HBThread.h>
+#include <HBTime.h>
 
 #include <QPainter>
 #include <QLinearGradient>
@@ -47,6 +48,8 @@ using namespace Homer::Multimedia;
 using namespace Homer::Base;
 using namespace Homer::Monitor;
 
+#define MSL_TIMESTAMP_HISTORY_SIZE										60 // approx. 2 seconds
+
 ///////////////////////////////////////////////////////////////////////////////
 
 MediaSourceLogo::MediaSourceLogo(string pDesiredDevice):
@@ -61,7 +64,6 @@ MediaSourceLogo::MediaSourceLogo(string pDesiredDevice):
     mSourceResX = 352;
     mSourceResY = 288;
     mRecorderChunkNumber = 0;
-    mLastTimeGrabbed = QTime(0, 0, 0, 0);
 
     bool tNewDeviceSelected = false;
     SelectDevice(pDesiredDevice, MEDIA_VIDEO, tNewDeviceSelected);
@@ -181,6 +183,7 @@ bool MediaSourceLogo::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     mFrameNumber = 0;
     mMediaType = MEDIA_VIDEO;
     mMediaSourceOpened = true;
+    mFrameTimestamps.clear();
 
     return true;
 }
@@ -288,35 +291,57 @@ int MediaSourceLogo::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
 		return -1;
 	}
 
-	// get the time since last successful grabbing
-    QTime tCurrentTime = QTime::currentTime();
-	int tTimeDiff = mLastTimeGrabbed.msecsTo(tCurrentTime);
-
-	// calculate the time which corresponds to the request FPS
-	int tNeededTimeDiff = 1000 / mFrameRate;
-
-    if (tTimeDiff < tNeededTimeDiff)
-    {// skip capturing when we are too fast
-        #ifdef MSL_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "Logo capturing delayed because system is too fast, time diff: %d, needed time diff: %d", tTimeDiff, tNeededTimeDiff);
-        #endif
-		Thread::Suspend((tNeededTimeDiff - tTimeDiff) * 1000);
-    }
-
     // copy the logo to the destination buffer
     memcpy(pChunkBuffer, mLogoRawPicture, mTargetResX * mTargetResY * MSD_BYTES_PER_PIXEL);
-
-    mLastTimeGrabbed = QTime::currentTime();
-
-    // unlock grabbing
-    mGrabMutex.unlock();
 
     // return size of decoded frame
     pChunkSize = mTargetResX * mTargetResY * MSD_BYTES_PER_PIXEL;
 
     AnnouncePacket(pChunkSize);
 
-    return ++mFrameNumber;
+    mFrameNumber++;
+
+    // unlock grabbing
+    mGrabMutex.unlock();
+
+    // ##################################################################
+    // ### RT grabbing to match set fps rate
+    // ### we use a timestamp history to provide a more stable fps rate
+    // ##################################################################
+    if (mFrameTimestamps.size() > 0)
+    {
+		// calculate the time which corresponds to the request FPS
+		int64_t tTimePerFrame = 1000000 / mFrameRate; // in us
+
+		// calculate the time difference for the current frame in relation to the first timestamp in the history
+		int64_t tTimeDiffForHistory = tTimePerFrame * mFrameTimestamps.size();
+
+		// calculate the desired play-out time for the current frame by using the first timestamp in the history as time reference
+		int64_t tDesiredPlayOutTime = mFrameTimestamps.front() + tTimeDiffForHistory;
+
+		// get the time since last successful grabbing
+		int64_t tWaitingTine = tDesiredPlayOutTime - Time::GetTimeStamp(); // in us
+
+		if (tWaitingTine > 0)
+		{// skip capturing when we are too fast
+	        #ifdef MSL_DEBUG_PACKETS
+				LOG(LOG_VERBOSE, "Logo capturing delayed by %ld ms for frame %d", tWaitingTine / 1000, mFrameNumber);
+	        #endif
+			Thread::Suspend(tWaitingTine);
+		}else
+		{// no waiting
+			//LOG(LOG_VERBOSE, "No waiting for frame %d (time=%ld)", mFrameNumber, tWaitingTine);
+		}
+
+		// limit history of timestamps
+		while (mFrameTimestamps.size() > MSL_TIMESTAMP_HISTORY_SIZE)
+			mFrameTimestamps.pop_front();
+    }
+
+    // store current timestamp
+    mFrameTimestamps.push_back(Time::GetTimeStamp());
+
+    return mFrameNumber;
 }
 
 GrabResolutions MediaSourceLogo::GetSupportedVideoGrabResolutions()

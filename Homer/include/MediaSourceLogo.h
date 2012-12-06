@@ -83,6 +83,7 @@ private:
 
     void                *mLogoRawPicture;
     QTime               mLastTimeGrabbed;
+    QList<int64_t>		mFrameTimestamps;
     /* recording */
     int                 mRecorderChunkNumber; // we need another chunk counter because recording is done asynchronously to capturing
 };
