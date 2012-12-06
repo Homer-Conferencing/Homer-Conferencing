@@ -64,14 +64,8 @@ public:
     virtual std::string GetCodecName();
     virtual std::string GetCodecLongName();
 
-    /* recording */
-    virtual bool SupportsRecording();
-
     /* device control */
     virtual void getVideoDevices(VideoDevices &pVList);
-
-    /* recording */
-    virtual void StopRecording();
 
 public:
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97);
@@ -84,8 +78,6 @@ private:
     void                *mLogoRawPicture;
     QTime               mLastTimeGrabbed;
     QList<int64_t>		mFrameTimestamps;
-    /* recording */
-    int                 mRecorderChunkNumber; // we need another chunk counter because recording is done asynchronously to capturing
 };
 
 ///////////////////////////////////////////////////////////////////////////////

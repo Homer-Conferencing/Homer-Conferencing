@@ -228,20 +228,6 @@ bool MediaSourceLogo::CloseGrabDevice()
     return tResult;
 }
 
-bool MediaSourceLogo::SupportsRecording()
-{
-	return true;
-}
-
-void MediaSourceLogo::StopRecording()
-{
-    if (mRecording)
-    {
-        MediaSource::StopRecording();
-        mRecorderChunkNumber = 0;
-    }
-}
-
 int MediaSourceLogo::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk)
 {
     // lock grabbing
