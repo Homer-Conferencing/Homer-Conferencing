@@ -1211,27 +1211,13 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
 
     if ((BelowMaxFps(tResult) /* we have to call this function continuously */) && (mStreamActivated) && (!pDropChunk) && (tResult >= 0) && (pChunkSize > 0) && (tMediaSinks) && (mEncoderFifo != NULL))
     {
-    	bool tRelayThisChunk = true;
-
-    	if ((mMediaType == MEDIA_AUDIO) && (mStreamSkipSilence))
-    	{// we have to check of the current chunk contains only silence
-    		if (ContainsOnlySilence(pChunkBuffer, pChunkSize))
-				tRelayThisChunk = false;
-    	}
-
-		if (tRelayThisChunk)
-		{// we relay this chunk to all registered media sinks based on the dedicated relay thread
-			int64_t tTime = Time::GetTimeStamp();
-			mEncoderFifo->WriteFifo((char*)pChunkBuffer, pChunkSize);
-			#ifdef MSM_DEBUG_TIMING
-				int64_t tTime2 = Time::GetTimeStamp();
-				//LOG(LOG_VERBOSE, "Writing %d bytes to Encoder-FIFO took %ld us", pChunkSize, tTime2 - tTime);
-			#endif
-		}else
-		{
-			mSkippedSilenceChunks++;
-			LOG(LOG_VERBOSE, "Skipping %s data, overall skipped chunks: %ld", GetMediaTypeStr().c_str(), mSkippedSilenceChunks);
-		}
+		// we relay this chunk to all registered media sinks based on the dedicated relay thread
+		int64_t tTime = Time::GetTimeStamp();
+		mEncoderFifo->WriteFifo((char*)pChunkBuffer, pChunkSize);
+		#ifdef MSM_DEBUG_TIMING
+			int64_t tTime2 = Time::GetTimeStamp();
+			//LOG(LOG_VERBOSE, "Writing %d bytes to Encoder-FIFO took %ld us", pChunkSize, tTime2 - tTime);
+		#endif
     }
 
     mEncoderFifoAvailableMutex.unlock();
@@ -1603,44 +1589,53 @@ void* MediaSourceMuxer::Run(void* pArgs)
 										//printf("encoded to mp3: %d\n\n", tSampleSize);
 										if (tEncodingResult > 0)
 										{
-											av_init_packet(tPacket);
+											// we need to increase the frame number in every possible case, otherwise the time synchronization at receiver side is not possible anymore
 											mFrameNumber++;
 
-											tPacket->flags |= AV_PKT_FLAG_KEY;
+											if ((!mStreamSkipSilence) || (!ContainsOnlySilence((void*)mEncoderChunkBuffer, tEncodingResult) /* we have to check of the current chunk contains only silence */))
+											{// okay, we should process this audio frame
+												av_init_packet(tPacket);
 
-			                                // calculate the packet's PTS value
-											int64_t tPacketPts = CalculatePts(mFrameNumber);
+												tPacket->flags |= AV_PKT_FLAG_KEY;
 
-											// we only have one stream per audio stream
-											tPacket->stream_index = 0;
-											tPacket->data = (uint8_t *)mEncoderChunkBuffer;
-											tPacket->size = tEncodingResult;
-											tPacket->pts = tPacketPts;
-											tPacket->dts = tPacketPts;
+												// calculate the packet's PTS value
+												int64_t tPacketPts = CalculatePts(mFrameNumber);
 
-											#ifdef MSM_DEBUG_PACKET_DISTRIBUTION
-												LOG(LOG_VERBOSE, "Sending audio packet: %5d to %2d sink(s):", mFrameNumber, mMediaSinks.size());
-												LOG(LOG_VERBOSE, "      ..pts: %ld", tPacket->pts);
-												LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket->dts);
-												LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
-												LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket->pos);
-											#endif
+												// we only have one stream per audio stream
+												tPacket->stream_index = 0;
+												tPacket->data = (uint8_t *)mEncoderChunkBuffer;
+												tPacket->size = tEncodingResult;
+												tPacket->pts = tPacketPts;
+												tPacket->dts = tPacketPts;
 
-											//####################################################################
-											// distribute the encoded frame
-											// ###################################################################
-											int64_t tTime = Time::GetTimeStamp();
-											if (av_write_frame(mFormatContext, tPacket) != 0)
-											{
-												LOG(LOG_ERROR, "Couldn't distribute audio sample among registered audio sinks");
+												#ifdef MSM_DEBUG_PACKET_DISTRIBUTION
+													LOG(LOG_VERBOSE, "Sending audio packet: %5d to %2d sink(s):", mFrameNumber, mMediaSinks.size());
+													LOG(LOG_VERBOSE, "      ..pts: %ld", tPacket->pts);
+													LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket->dts);
+													LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
+													LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket->pos);
+												#endif
+
+												//####################################################################
+												// distribute the encoded frame
+												// ###################################################################
+												int64_t tTime = Time::GetTimeStamp();
+												if (av_write_frame(mFormatContext, tPacket) != 0)
+												{
+													LOG(LOG_ERROR, "Couldn't distribute audio sample among registered audio sinks");
+												}
+												#ifdef MSM_DEBUG_TIMING
+													int64_t tTime2 = Time::GetTimeStamp();
+													LOG(LOG_VERBOSE, "         writing audio frame to sinks took %ld us", tTime2 - tTime);
+												#endif
+
+												// free packet buffer
+												av_free_packet(tPacket);
+											}else
+											{// we should skip this audio frame because it includes only silence
+												mSkippedSilenceChunks++;
+												LOG(LOG_VERBOSE, "Skipping %s data, overall skipped chunks: %ld", GetMediaTypeStr().c_str(), mSkippedSilenceChunks);
 											}
-											#ifdef MSM_DEBUG_TIMING
-												int64_t tTime2 = Time::GetTimeStamp();
-												LOG(LOG_VERBOSE, "         writing audio frame to sinks took %ld us", tTime2 - tTime);
-											#endif
-
-											// free packet buffer
-											av_free_packet(tPacket);
 										}else
 											LOG(LOG_WARN, "Couldn't re-encode current audio sample");
 									}
