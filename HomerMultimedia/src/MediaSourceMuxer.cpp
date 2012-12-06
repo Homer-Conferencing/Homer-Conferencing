@@ -208,42 +208,8 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
         int tResY = pResY;
 
         // limit resolution settings according to the features of video codecs
-        switch(tStreamCodecId)
-        {
-            case CODEC_ID_H261: // supports QCIF, CIF
-                    if (((pResX == 176) && (pResY == 144)) || ((pResX == 352) && (pResY == 288)))
-                    {
-                        LOG(LOG_VERBOSE, "Resolution %d*%d supported by H.261", pResX, pResY);
-                    }else
-                    {
-                        if ((pResX != -1) && (pResY != -1))
-                        	LOG(LOG_WARN, "Resolution %d*%d unsupported by H.261, will switch to default resolution of 352*288", pResX, pResY);
-                        tResX = 352;
-                        tResY = 288;
-                        break;
-                    }
-                    break;
-            case CODEC_ID_H263:  // supports SQCIF, QCIF, CIF, CIF4,CIF16
-                    if (((pResX == 128) && (pResY == 96)) || ((pResX == 176) && (pResY == 144)) || ((pResX == 352) && (pResY == 288)) || ((pResX == 704) && (pResY == 576)) || ((pResX == 1408) && (pResY == 1152)))
-                    {
-                        LOG(LOG_VERBOSE, "Resolution %d*%d supported by H.263", pResX, pResY);
-                    }else
-                    {
-                        if ((pResX != -1) && (pResY != -1))
-                        	LOG(LOG_WARN, "Resolution %d*%d unsupported by H.263, will switch to default resolution of 352*288", pResX, pResY);
-                        tResX = 352;
-                        tResY = 288;
-                        break;
-                    }
-                    break;
-            case CODEC_ID_THEORA:
-                    tResX = 352;
-                    tResY = 288;
-                    break;
-            case CODEC_ID_H263P:
-            default:
-                    break;
-        }
+    	ApplyVideoResolutionToEncoderCodec(tResX, tResX, tStreamCodecId);
+
         if ((tResX != pResX) || (tResY != pResY))
         {
             if ((pResX != -1) && (pResY != -1))
@@ -311,6 +277,65 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
         LOG(LOG_VERBOSE, "No settings were changed - ignoring");
 
     return tResult;
+}
+
+void MediaSourceMuxer::ApplyVideoResolutionToEncoderCodec(int &pResX, int &pResY, enum CodecID pCodec)
+{
+    switch(pCodec)
+    {
+        case CODEC_ID_H261: // supports QCIF, CIF
+                if (pResX > 176)
+                {// CIF
+                	pResX = 352;
+                	pResY = 288;
+                }else
+                {// QCIF
+                	pResX = 176;
+                	pResY = 144;
+                }
+                LOG(LOG_VERBOSE, "Resolution %d*%d for codec H.261 automatically selected", pResX, pResY);
+                break;
+        case CODEC_ID_H263:  // supports SQCIF, QCIF, CIF, CIF4,CIF16
+                if(pResX > 704)
+                {// CIF16
+                	pResX = 1408;
+                	pResY = 1152;
+                }else if (pResX > 352)
+                {// CIF 4
+                	pResX = 704;
+                	pResY = 576;
+                }else if (pResX > 176)
+                {// CIF
+                	pResX = 352;
+                	pResY = 288;
+                }else if (pResX > 128)
+                {// QCIF
+                	pResX = 176;
+                	pResY = 144;
+                }else
+                {// SQCIF
+                	pResX = 128;
+                	pResY = 96;
+                }
+                LOG(LOG_VERBOSE, "Resolution %d*%d for codec H.263 automatically selected", pResX, pResY);
+                break;
+        case CODEC_ID_H263P:
+                if ((pResX > 2048) || (pResY > 1152))
+                {// max. video resolution is 2048x1152
+                    pResX = 2048;
+                    pResY = 1152;
+                }else
+                {// everythin is fine, use the source resolution
+                }
+                break;
+        case CODEC_ID_THEORA:
+        		pResX = 352;
+        		pResY = 288;
+                break;
+        default:
+        		// we use the original resolution
+        		break;
+    }
 }
 
 
@@ -461,64 +486,9 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     // resolution
     if (((mRequestedStreamingResX == -1) || (mRequestedStreamingResY == -1)) && (mMediaSource != NULL))
     {
-        switch(mStreamCodecId)
-        {
-            case CODEC_ID_H261: // supports QCIF, CIF
-                    if (mSourceResX > 176)
-                    {// CIF
-                    	mCurrentStreamingResX = 352;
-                    	mCurrentStreamingResY = 288;
-                    }else
-                    {// QCIF
-                    	mCurrentStreamingResX = 176;
-                    	mCurrentStreamingResY = 144;
-                    }
-                    LOG(LOG_VERBOSE, "Resolution %d*%d for codec H.261 automatically selected", mCurrentStreamingResX, mCurrentStreamingResY);
-                    break;
-            case CODEC_ID_H263:  // supports SQCIF, QCIF, CIF, CIF4,CIF16
-                    if(mSourceResX > 704)
-                    {// CIF16
-                    	mCurrentStreamingResX = 1408;
-                    	mCurrentStreamingResY = 1152;
-                    }else if (mSourceResX > 352)
-                    {// CIF 4
-                    	mCurrentStreamingResX = 704;
-                    	mCurrentStreamingResY = 576;
-                    }else if (mSourceResX > 176)
-                    {// CIF
-                    	mCurrentStreamingResX = 352;
-                    	mCurrentStreamingResY = 288;
-                    }else if (mSourceResX > 128)
-                    {// QCIF
-                    	mCurrentStreamingResX = 176;
-                    	mCurrentStreamingResY = 144;
-                    }else
-                    {// SQCIF
-                    	mCurrentStreamingResX = 128;
-                    	mCurrentStreamingResY = 96;
-                    }
-                    LOG(LOG_VERBOSE, "Resolution %d*%d for codec H.263 automatically selected", mCurrentStreamingResX, mCurrentStreamingResY);
-                    break;
-            case CODEC_ID_H263P:
-                    if ((mSourceResX > 2048) || (mSourceResY > 1152))
-                    {// max. video resolution is 2048x1152
-                        mCurrentStreamingResX = 2048;
-                        mCurrentStreamingResY = 1152;
-                    }else
-                    {// everythin is fine, use the source resolution
-                        mCurrentStreamingResX = mSourceResX;
-                        mCurrentStreamingResY = mSourceResY;
-                    }
-                    break;
-            case CODEC_ID_THEORA:
-            		mCurrentStreamingResX = 352;
-            		mCurrentStreamingResY = 288;
-                    break;
-            default:
-            		mCurrentStreamingResX = mSourceResX;
-            		mCurrentStreamingResY = mSourceResY;
-                    break;
-        }
+    	mCurrentStreamingResX = mSourceResX;
+    	mCurrentStreamingResY = mSourceResY;
+    	ApplyVideoResolutionToEncoderCodec(mCurrentStreamingResX, mCurrentStreamingResY, mStreamCodecId);
     }else
     {
 		mCurrentStreamingResX = mRequestedStreamingResX;
