@@ -128,7 +128,7 @@ public:
 
     virtual ~RTP( );
 
-    static int CodecToPayloadId(std::string pName);
+    static unsigned int CodecToPayloadId(std::string pName);
     static std::string PayloadIdToCodec(int pId);
     static bool IsPayloadSupported(enum CodecID pId);
     static int GetPayloadHeaderSizeMax(enum CodecID pCodec);// calculate the maximum header size of the RTP payload (not the RTP header!)
@@ -140,6 +140,7 @@ public:
     bool RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts);
     unsigned int GetLostPacketsFromRTP();
     static void LogRtpHeader(RtpHeader *pRtpHeader);
+    bool ReceivedCorrectPayload(unsigned int pType);
     bool RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pIsSenderReport, enum CodecID pCodecId, bool pReadOnly);
     bool OpenRtpEncoder(std::string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream);
     bool CloseRtpEncoder();
@@ -174,7 +175,7 @@ private:
 
     Homer::Monitor::PacketStatistic *mPacketStatistic;
     AVFormatContext     *mRtpFormatContext;
-    int                 mPayloadId;
+    unsigned int        mPayloadId;
     bool                mIntermediateFragment;
     bool                mEncoderOpened;
     std::string         mTargetHost;

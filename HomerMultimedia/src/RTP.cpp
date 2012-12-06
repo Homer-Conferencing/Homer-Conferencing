@@ -82,6 +82,14 @@ using namespace Homer::Monitor;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define IS_RTCP_TYPE(x) 				((x >= 72) && (x <= 76))
+
+///////////////////////////////////////////////////////////////////////////////
+
+#define RTP_PAYLOAD_TYPE_NONE											0x7F
+
+///////////////////////////////////////////////////////////////////////////////
+
 /* ##################################################################################
 // ########################## Resulting packet structure ############################
 // ##################################################################################
@@ -408,7 +416,6 @@ RTP::RTP()
     mLostPackets = 0;
     mIntermediateFragment = 0;
     mPacketStatistic = NULL;
-    mPayloadId = 0;
     mRtpFormatContext = NULL;
     mEncoderOpened = false;
     mH261UseInternalEncoder = false;
@@ -457,6 +464,7 @@ void RTP::Init()
     mLastTimestampFromRTPHeader = 0;
     mLastSequenceNumberFromRTPHeader = 0;
     mLostPackets = 0;
+    mPayloadId = RTP_PAYLOAD_TYPE_NONE;
     mRemoteSequenceNumberOverflowShift = 0;
 }
 
@@ -516,7 +524,7 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
 
     const char *tCodecName = pInnerStream->codec->codec->name;
     mPayloadId = CodecToPayloadId(tCodecName);
-    LOG(LOG_VERBOSE, "New payload id: %4d, Codec: %s", mPayloadId, tCodecName);
+    LOG(LOG_VERBOSE, "New payload id: %4u, Codec: %s", mPayloadId, tCodecName);
 
     mTargetHost = pTargetHost;
     mTargetPort = pTargetPort;
@@ -651,7 +659,7 @@ bool RTP::CloseRtpEncoder()
 
     if (mEncoderOpened)
     {
-        if (mPayloadId != 31 /* h261 */)
+        if (!mH261UseInternalEncoder /* h261 */)
         {
             // write the trailer, if any
             av_write_trailer(mRtpFormatContext);
@@ -986,7 +994,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
             //### HINT: ffmpeg uses payload type 14 and several others like dyn. range 96-127
             //#################################################################################
             bool tRtcpPacket = false;
-            if ((tRtpHeader->PayloadType < 72) || (tRtpHeader->PayloadType > 76))
+            if (!IS_RTCP_TYPE(tRtpHeader->PayloadType))
             {// usual RTP packet
                 tRtcpPacket = false;
                 // patch ffmpeg payload values between 96 and 99
@@ -1364,6 +1372,65 @@ float RTP::CalculateClockRateFactor()
     return tResult;
 }
 
+bool RTP::ReceivedCorrectPayload(unsigned int pType)
+{
+	bool tResult = false;
+
+    switch(mStreamCodecID)
+    {
+                case CODEC_ID_PCM_MULAW:
+                                if (pType == 0)
+                                	tResult = true;
+                                break;
+                case CODEC_ID_PCM_ALAW:
+								if (pType == 8)
+									tResult = true;
+                                break;
+                case CODEC_ID_ADPCM_G722:
+								if (pType == 9)
+									tResult = true;
+                                break;
+	//            case CODEC_ID_ADPCM_G726:
+                case CODEC_ID_PCM_S16BE:
+								if (pType == 10)
+									tResult = true;
+                                break;
+                case CODEC_ID_MP3:
+								if (pType == 14)
+									tResult = true;
+                                break;
+                case CODEC_ID_H261:
+								if (pType == 31)
+									tResult = true;
+                                break;
+                case CODEC_ID_MPEG1VIDEO:
+                case CODEC_ID_MPEG2VIDEO:
+								if (pType == 32)
+									tResult = true;
+                                break;
+                case CODEC_ID_H263:
+								if (pType == 34)
+									tResult = true;
+                                break;
+                case CODEC_ID_AAC:
+                case CODEC_ID_AMR_NB:
+                case CODEC_ID_H263P:
+                case CODEC_ID_H264:
+                case CODEC_ID_MPEG4:
+                case CODEC_ID_THEORA:
+                case CODEC_ID_VP8:
+	//            case CODEC_ID_MPEG2TS:
+	//            case CODEC_ID_VORBIS:
+								if (pType >= 96)
+									tResult = true;
+								break;
+                default:
+								break;
+    }
+
+    return tResult;
+}
+
 // assumption: we are getting one single RTP encapsulated packet, not auto detection of following additional packets included
 bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pIsSenderReport, enum CodecID pCodecId, bool pReadOnly)
 {
@@ -1423,11 +1490,11 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
 
     unsigned int tCsrcCount = tRtpHeader->CsrcCount;
     if (tCsrcCount > 0)
-        LOG(LOG_WARN, "Found unsupported usage of multimedia stream mixing at remote side");
+        LOG(LOG_ERROR, "Found unsupported usage of multimedia stream mixing at remote side");
 
     if (tCsrcCount > 4)
     {
-        LOG(LOG_ERROR, "Found unplausible CSRC value in RTP header");
+        LOG(LOG_ERROR, "Found invalid CSRC value in RTP header");
 
         pIsLastFragment = false;
 
@@ -1492,6 +1559,42 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
     // #############################################################
     if (!pReadOnly)
     {
+        // ###################################################
+        // PAYLOAD ID: use RTP header to set the payload type
+        // ###################################################
+        if (!IS_RTCP_TYPE(tRtpHeader->PayloadType))
+        {// we should have received a valid A/V RTP packet
+			if (mPayloadId != tRtpHeader->PayloadType)
+			{// payload changed
+				if (ReceivedCorrectPayload(tRtpHeader->PayloadType))
+				{// the payload type is okay for this codec ID
+					if (mPayloadId != RTP_PAYLOAD_TYPE_NONE)
+					{// we already know a payload type but the current packet does not belong to this type
+
+						LOG(LOG_ERROR, "Unsupported payload change detected (do we receive more than one RTP stream?), ignoring this packet with payload %u(%s)", tRtpHeader->PayloadType, PayloadIdToCodec(tRtpHeader->PayloadType).c_str());
+
+						pIsLastFragment = false;
+						pIsSenderReport = false;
+
+						// inform that this is not a usable packet
+						return false;
+					}
+
+					// store the payload ID to be able to detect repeating changes
+					mPayloadId = tRtpHeader->PayloadType;
+				}else
+				{
+					LOG(LOG_ERROR, "Payload type %u doesn't seem to be the correct one for codec %d(%s), ignoring this packet", tRtpHeader->PayloadType, mStreamCodecID, MediaSource::GetGuiNameFromCodecID(mStreamCodecID).c_str());
+
+					pIsLastFragment = false;
+					pIsSenderReport = false;
+
+					// inform that this is not a usable packet
+					return false;
+				}
+			}
+        }
+
         // #############################################################
         // START SEQUENCE NUMBER: update the remote start sequence number
         // #############################################################
@@ -1565,11 +1668,6 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
         // use standard RTP definition to detect fragments, some A/V codecs have extended fragmentation detection mechanism (will be executed in the end of this procedure)
         mIntermediateFragment = !tRtpHeader->Marked;
 
-        // ###################################################
-        // PAYLOAD ID: use RTP header to set the payload type
-        // ###################################################
-        mPayloadId = tRtpHeader->PayloadType;
-        
         // #######################################################################################
         // SOURCE IDENTIFIER: update the remote source identifier and re-init the start timestamp
         // #######################################################################################
@@ -2194,9 +2292,9 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
  *        amr						101 (HC internal standard)
  *
  ****************************************************/
-int RTP::CodecToPayloadId(std::string pName)
+unsigned int RTP::CodecToPayloadId(std::string pName)
 {
-    int tResult = -1;
+    unsigned int tResult = -1;
 
     //video
     if (pName == "h261")
