@@ -38,6 +38,7 @@
 #include <QPainter>
 #include <QPaintDevice>
 #include <QWidget>
+#include <QCursor>
 #include <QTime>
 #include <QWaitCondition>
 #include <string.h>
@@ -64,6 +65,7 @@ MediaSourceDesktop::MediaSourceDesktop(string pDesiredDevice):
     ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 
     mAutoDesktop = false;
+    mMouseVisualization = false;
     mWidget = NULL;
     mOutputScreenshot = NULL;
     mOriginalScreenshot = NULL;
@@ -294,6 +296,16 @@ bool MediaSourceDesktop::GetAutoDesktop()
 	return mAutoDesktop;
 }
 
+void MediaSourceDesktop::SetMouseVisualization(bool pActive)
+{
+	mMouseVisualization = pActive;
+}
+
+bool MediaSourceDesktop::GetMouseVisualization()
+{
+	return mMouseVisualization;
+}
+
 void MediaSourceDesktop::CreateScreenshot()
 {
     AVFrame             *tRGBFrame;
@@ -359,7 +371,7 @@ void MediaSourceDesktop::CreateScreenshot()
     }
 
     //####################################################################
-    //### do the grabbing and scaling stuff
+    //### GRABBING
     //####################################################################
     QPixmap tSourcePixmap;
     // screen capturing
@@ -371,10 +383,32 @@ void MediaSourceDesktop::CreateScreenshot()
 		tSourcePixmap = QPixmap::grabWindow(mWidget->winId(), mGrabOffsetX, mGrabOffsetY, tCaptureResX, tCaptureResY);
 	#endif
 
+	//####################################################################
+	//### SCALING to source resolution
+	//####################################################################
 	if ((tSourcePixmap.width() != mSourceResX) || (tSourcePixmap.height() != mSourceResY))
 	{// we have to adapt the assumed source resolution
 		//LOG(LOG_VERBOSE, "Have to rescale from %d*%d to %d*%d", tSourcePixmap.width(), tSourcePixmap.height(), mSourceResX, mSourceResY);
 		tSourcePixmap = tSourcePixmap.scaled(mSourceResX, mSourceResY);
+	}
+
+	//####################################################################
+	//### MOUSE VISUALIZATION
+	//####################################################################
+	if (mMouseVisualization)
+	{
+		QPoint tMousePos = QCursor::pos();
+		if ((tMousePos.x() < tSourcePixmap.width()) && (tMousePos.y() < tSourcePixmap.height()))
+		{// mouse is in visible area
+			int tMousePosInSourcePixmapX = mSourceResX * tMousePos.x() / tCaptureResX;
+			int tMousePosInSourcePixmapY = mSourceResY * tMousePos.y() / tCaptureResY;
+
+			//LOG(LOG_VERBOSE, "Mouse position: %d*%d", tMousePosInSourcePixmapX, tMousePosInSourcePixmapY);
+			QPainter *tPainter = new QPainter(&tSourcePixmap);
+			//TODO: add support for click visualization
+			tPainter->drawPixmap(tMousePosInSourcePixmapX, tMousePosInSourcePixmapY, QPixmap(":/images/MouseBlack.png").scaled(16, 32));
+			delete tPainter;
+		}
 	}
 
 	if(!tSourcePixmap.isNull())

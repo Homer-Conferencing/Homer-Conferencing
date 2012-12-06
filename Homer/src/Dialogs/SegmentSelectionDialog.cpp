@@ -74,12 +74,28 @@ void SegmentSelectionDialog::initializeGUI()
     connect(mTbDesktopAuto, SIGNAL(clicked(bool)), this, SLOT(ResetToDesktopAuto(bool)));
 
     mTbDesktopAuto->setChecked(mMediaSourceDesktop->GetAutoDesktop());
+    mGrpMouse->setChecked(mMediaSourceDesktop->GetMouseVisualization());
 
     //setSizeGripEnabled(false);
     resize(mMediaSourceDesktop->mSourceResX - (frameGeometry().width() - width()),
            mMediaSourceDesktop->mSourceResY - (frameGeometry().height() - height()) - (frameGeometry().width() - width()) / 2);
     //setSizeGripEnabled(true);
     move(mMediaSourceDesktop->mGrabOffsetX, mMediaSourceDesktop->mGrabOffsetY);
+}
+
+int SegmentSelectionDialog::exec()
+{
+	int tResult;
+
+	tResult = QDialog::exec();
+
+	if (tResult == QDialog::Accepted)
+	{
+		mMediaSourceDesktop->SetAutoDesktop(mTbDesktopAuto->isChecked());
+		mMediaSourceDesktop->SetMouseVisualization(mGrpMouse->isChecked());
+	}
+
+	return tResult;
 }
 
 void SegmentSelectionDialog::ConfigureDesktopCapturing(int pOffsetX, int pOffsetY, int pWidth, int pHeight)
@@ -108,15 +124,13 @@ void SegmentSelectionDialog::ResetToDesktop()
 
 void SegmentSelectionDialog::ResetToDesktopAuto(bool pActive)
 {
-	ResetToDesktop();
-
-	mMediaSourceDesktop->SetAutoDesktop(pActive);
+	if (pActive)
+		ResetToDesktop();
 }
 
 void SegmentSelectionDialog::ResetToDefaults()
 {
     LOG(LOG_VERBOSE, "Resetting to defaults");
-    mMediaSourceDesktop->SetAutoDesktop(false);
     mTbDesktopAuto->setChecked(false);
     ConfigureDesktopCapturing(0, 0, MIN_WIDTH, MIN_HEIGHT);
 }

@@ -83,6 +83,10 @@ public:
     void SetAutoDesktop(bool pActive);
     bool GetAutoDesktop();
 
+    /* visualization of mouse */
+    void SetMouseVisualization(bool pActive);
+    bool GetMouseVisualization();
+
 public:
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97);
     virtual bool OpenAudioGrabDevice(int pSampleRate = 44100, int pChannels = 2);
@@ -96,6 +100,7 @@ protected:
 private:
     friend class SegmentSelectionDialog;
 
+    bool				mMouseVisualization;
     bool				mAutoDesktop;
     QPainter            *mTargetPainter;
     QWidget             *mWidget;

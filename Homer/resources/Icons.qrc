@@ -1,5 +1,7 @@
 <RCC>
   <qresource>
+  	<file>images/MouseBlack.png</file>
+  	<file>images/MouseBlue.png</file>
     <file>images/SplashScreen.png</file>
     <file>images/VersionLogoCiwiLounge.png</file>
     <file>images/VersionLogoComnart.png</file>

@@ -52,6 +52,8 @@ public:
     /// The destructor.
     virtual ~SegmentSelectionDialog();
 
+    int exec();
+
 private slots:
     void ClickedButton(QAbstractButton *pButton);
     void ResetToDefaults();
