@@ -163,6 +163,8 @@ public:
     int GetPlaybackQueueUsage();
     int GetPlaybackQueueSize();
 
+    AudioWidget *GetAudioWidget();
+
 public slots:
     void SetVolume(int pValue);
 

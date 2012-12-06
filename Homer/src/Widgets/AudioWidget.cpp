@@ -1314,6 +1314,11 @@ int AudioWorkerThread::GetCurrentFrame(void **pSample, int& pSampleSize, float *
     return tResult;
 }
 
+AudioWidget *AudioWorkerThread::GetAudioWidget()
+{
+	return mAudioWidget;
+}
+
 void AudioWorkerThread::run()
 {
     int tFrameSize;
