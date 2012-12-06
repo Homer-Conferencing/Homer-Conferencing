@@ -44,8 +44,8 @@ namespace Homer { namespace Multimedia {
 
 // the following de/activates debugging of received RTP packets
 //#define RTP_DEBUG_PACKET_DECODER
-
-
+//#define RTP_DEBUG_PACKET_DECODER_SEQUENCE_NUMBERS
+//#define RTP_DEBUG_PACKET_DECODER_TIMESTAMPS
 
 // the following de/activates debugging of RTCP packets
 //#define RTCP_DEBUG_PACKETS_DECODER

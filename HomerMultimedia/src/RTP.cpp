@@ -1533,8 +1533,9 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
 
             // reset the "overflow" counter
             mRemoteSequenceNumberConsecutiveOverflows = 0;
-
-            LOG(LOG_VERBOSE, "New remote SequenceNumber: abs=%hu(max: %hu), start=%hu, normalized=%lu", tRtpHeader->SequenceNumber, (unsigned short int)UINT16_MAX, mRemoteStartSequenceNumber, mRemoteSequenceNumber);
+			#ifdef RTP_DEBUG_PACKET_DECODER_SEQUENCE_NUMBERS
+            	LOG(LOG_VERBOSE, "New remote SequenceNumber: abs=%hu(max: %hu), start=%hu, normalized=%lu", tRtpHeader->SequenceNumber, (unsigned short int)UINT16_MAX, mRemoteStartSequenceNumber, mRemoteSequenceNumber);
+			#endif
         }
         mLastSequenceNumberFromRTPHeader = tRtpHeader->SequenceNumber;
 
@@ -1630,7 +1631,9 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
             // reset the "overflow" counter
             mRemoteTimestampConsecutiveOverflows = 0;
 
-            LOG(LOG_VERBOSE, "New remote timestamp: abs=%u(max: %u), start=%u, normalized=%lu", tRtpHeader->Timestamp, UINT32_MAX, mRemoteStartTimestamp, mRemoteTimestamp);
+			#ifdef RTP_DEBUG_PACKET_DECODER_TIMESTAMPS
+            	LOG(LOG_VERBOSE, "New remote timestamp: abs=%u(max: %u), start=%u, normalized=%lu", tRtpHeader->Timestamp, UINT32_MAX, mRemoteStartTimestamp, mRemoteTimestamp);
+			#endif
         }
         mLastTimestampFromRTPHeader = tRtpHeader->Timestamp;
 
