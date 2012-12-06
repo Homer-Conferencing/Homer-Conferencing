@@ -769,7 +769,7 @@ background-color: rgb(200, 200, 200);
       <item>
        <widget class="QGroupBox" name="mGrpMouse">
         <property name="title">
-         <string> Track an  visualize mouse </string>
+         <string> Track and  visualize mouse </string>
         </property>
         <property name="checkable">
          <bool>true</bool>
