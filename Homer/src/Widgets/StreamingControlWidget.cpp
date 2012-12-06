@@ -108,7 +108,15 @@ void StreamingControlWidget::StartScreenSegmentStreaming()
     else
         SetVideoInputSelectionVisible(false);
 
-    mMediaSourceDesktop->SelectSegment(this);
+    if (mMediaSourceDesktop->SelectSegment(this) == QDialog::Accepted)
+    {// user has acknowledged the dialog and wants to apply the current settings to the desktop capturing
+    	int tResX, tResY;
+    	// get the source resolution which was configured by the SelectSegment dialog
+    	mMediaSourceDesktop->GetVideoSourceResolution(tResX, tResY);
+
+    	// apply the new source resolution as target grab resolution
+    	mVideoWorker->GetVideoWidget()->SetResolution(tResX, tResY);
+    }
 }
 
 void StreamingControlWidget::StartCameraStreaming()
