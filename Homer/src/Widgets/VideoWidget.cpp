@@ -2000,12 +2000,13 @@ void VideoWorkerThread::SetFrameDropping(bool pDrop)
     mDropFrames = pDrop;
 }
 
-void VideoWorkerThread::SetGrabResolution(int mX, int mY)
+void VideoWorkerThread::SetGrabResolution(int pX, int pY)
 {
-    if ((mResX != mX) || (mResY != mY))
+    if ((mResX != pX) || (mResY != pY))
     {
-        mResX = mX;
-        mResY = mY;
+    	LOG(LOG_VERBOSE, "Setting grab resolution to %d*%d", pX, pY);
+        mResX = pX;
+        mResY = pY;
         mSetGrabResolutionAsap = true;
         mGrabbingCondition.wakeAll();
 
@@ -2279,6 +2280,11 @@ int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFrameRate)
 int VideoWorkerThread::GetLastFrameNumber()
 {
     return mLastFrameNumber;
+}
+
+VideoWidget *VideoWorkerThread::GetVideoWidget()
+{
+	return mVideoWidget;
 }
 
 void VideoWorkerThread::run()

@@ -93,6 +93,7 @@ public:
     void Init(QMainWindow* pMainWindow, ParticipantWidget* pParticipantWidget,  MediaSource *pVideoSource, QMenu *pVideoMenu, QString pName = "Video", bool pVisible = false);
 
     void SetVisible(bool pVisible);
+    void SetResolution(int mX, int mY);
 
     void InformAboutNewFrame();
     void InformAboutOpenError(QString pSourceName);
@@ -114,7 +115,6 @@ private:
     bool IsFullScreen();
     void DialogAddNetworkSink();
     void ShowFrame(void* pBuffer);
-    void SetResolution(int mX, int mY);
     void SetScaling(float pVideoScaleFactor);
     bool IsCurrentScaleFactor(float pScaleFactor);
     void SetResolutionFormat(VideoFormat pFormat);
@@ -213,7 +213,7 @@ public:
     virtual void run();
 
     /* forwarded interface to media source */
-    void SetGrabResolution(int mX, int mY);
+    void SetGrabResolution(int pX, int pY);
 
     /* device control */
     VideoDevices GetPossibleDevices();
@@ -222,6 +222,8 @@ public:
     void SetFrameDropping(bool pDrop);
     int GetCurrentFrame(void **pFrame, float *pFrameRate = NULL);
     int GetLastFrameNumber();
+
+    VideoWidget *GetVideoWidget();
 
 private:
     void InitFrameBuffers();
