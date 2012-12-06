@@ -64,7 +64,7 @@ public:
     virtual void StopGrabbing();
     virtual std::string GetCodecName();
     virtual std::string GetCodecLongName();
-    void SelectSegment(QWidget *pParent = NULL);
+    int SelectSegment(QWidget *pParent = NULL);
 
     /* recording */
     virtual bool SupportsRecording();
@@ -79,6 +79,10 @@ public:
     /* recording */
     virtual void StopRecording();
 
+    /* automatic desktop capturing with dimension adaption */
+    void SetAutoDesktop(bool pActive);
+    bool GetAutoDesktop();
+
 public:
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97);
     virtual bool OpenAudioGrabDevice(int pSampleRate = 44100, int pChannels = 2);
@@ -92,6 +96,7 @@ protected:
 private:
     friend class SegmentSelectionDialog;
 
+    bool				mAutoDesktop;
     QPainter            *mTargetPainter;
     QWidget             *mWidget;
     int                 mGrabOffsetX, mGrabOffsetY;

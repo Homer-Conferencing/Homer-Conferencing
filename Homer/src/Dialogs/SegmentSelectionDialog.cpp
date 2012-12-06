@@ -69,6 +69,12 @@ void SegmentSelectionDialog::initializeGUI()
     mLbResX->setText(QString("%1").arg(mMediaSourceDesktop->mSourceResX));
     mLbResY->setText(QString("%1").arg(mMediaSourceDesktop->mSourceResY));
 
+    connect(mTbDefaults, SIGNAL(clicked(bool)), this, SLOT(ResetToDefaults()));
+    connect(mTbDesktop, SIGNAL(clicked(bool)), this, SLOT(ResetToDesktop()));
+    connect(mTbDesktopAuto, SIGNAL(clicked(bool)), this, SLOT(ResetToDesktopAuto(bool)));
+
+    mTbDesktopAuto->setChecked(mMediaSourceDesktop->GetAutoDesktop());
+
     //setSizeGripEnabled(false);
     resize(mMediaSourceDesktop->mSourceResX - (frameGeometry().width() - width()),
            mMediaSourceDesktop->mSourceResY - (frameGeometry().height() - height()) - (frameGeometry().width() - width()) / 2);
@@ -76,21 +82,43 @@ void SegmentSelectionDialog::initializeGUI()
     move(mMediaSourceDesktop->mGrabOffsetX, mMediaSourceDesktop->mGrabOffsetY);
 }
 
+void SegmentSelectionDialog::ConfigureDesktopCapturing(int pOffsetX, int pOffsetY, int pWidth, int pHeight)
+{
+    LOG(LOG_VERBOSE, "Configuring desktop capturing to offset=(%d, %d), dimension=%d * %d", pOffsetX, pOffsetY, pWidth, pHeight);
+
+    mMediaSourceDesktop->SetScreenshotSize(pWidth, pHeight);
+    mMediaSourceDesktop->mGrabOffsetX = pOffsetX;
+    mMediaSourceDesktop->mGrabOffsetY = pOffsetY;
+
+    mLbOffsetX->setText(QString("%1").arg(pOffsetX));
+    mLbOffsetY->setText(QString("%1").arg(pOffsetY));
+    mLbResX->setText(QString("%1").arg(pWidth));
+    mLbResY->setText(QString("%1").arg(pHeight));
+
+    resize(pWidth, pHeight);
+    move(pOffsetX, pOffsetY);
+}
+
+void SegmentSelectionDialog::ResetToDesktop()
+{
+    LOG(LOG_VERBOSE, "Resetting to desktop size");
+
+    ConfigureDesktopCapturing(0, 0, QApplication::desktop()->width(), QApplication::desktop()->height());
+}
+
+void SegmentSelectionDialog::ResetToDesktopAuto(bool pActive)
+{
+	ResetToDesktop();
+
+	mMediaSourceDesktop->SetAutoDesktop(pActive);
+}
+
 void SegmentSelectionDialog::ResetToDefaults()
 {
-    LOG(LOG_VERBOSE, "Resetting to %d*%d", MIN_WIDTH, MIN_HEIGHT);
-
-    mMediaSourceDesktop->SetScreenshotSize(MIN_WIDTH, MIN_HEIGHT);
-    mMediaSourceDesktop->mGrabOffsetX = 0;
-    mMediaSourceDesktop->mGrabOffsetY = 0;
-
-    mLbOffsetX->setText("0");
-    mLbOffsetY->setText("0");
-    mLbResX->setText("352");
-    mLbResY->setText("288");
-
-    resize(MIN_WIDTH, MIN_HEIGHT);
-    move(0, 0);
+    LOG(LOG_VERBOSE, "Resetting to defaults");
+    mMediaSourceDesktop->SetAutoDesktop(false);
+    mTbDesktopAuto->setChecked(false);
+    ConfigureDesktopCapturing(0, 0, MIN_WIDTH, MIN_HEIGHT);
 }
 
 void SegmentSelectionDialog::ClickedButton(QAbstractButton *pButton)

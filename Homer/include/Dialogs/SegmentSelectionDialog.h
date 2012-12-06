@@ -54,6 +54,9 @@ public:
 
 private slots:
     void ClickedButton(QAbstractButton *pButton);
+    void ResetToDefaults();
+	void ResetToDesktop();
+	void ResetToDesktopAuto(bool pActive);
 
 private:
     virtual void contextMenuEvent(QContextMenuEvent *event);
@@ -62,7 +65,7 @@ private:
     virtual void moveEvent(QMoveEvent *pEvent);
     virtual void resizeEvent(QResizeEvent *pEvent);
     void initializeGUI();
-    void ResetToDefaults();
+    void ConfigureDesktopCapturing(int pOffsetX, int pOffsetY, int pWidth, int pHeight);
 
     MediaSourceDesktop *mMediaSourceDesktop;
     QPoint  mDrapPosition;

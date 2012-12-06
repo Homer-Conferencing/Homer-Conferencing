@@ -63,6 +63,7 @@ MediaSourceDesktop::MediaSourceDesktop(string pDesiredDevice):
     // set category for packet statistics
     ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 
+    mAutoDesktop = false;
     mWidget = NULL;
     mOutputScreenshot = NULL;
     mOriginalScreenshot = NULL;
@@ -279,9 +280,25 @@ void MediaSourceDesktop::StopRecording()
     }
 }
 
+void MediaSourceDesktop::SetAutoDesktop(bool pActive)
+{
+	if (mAutoDesktop != pActive)
+	{
+		LOG(LOG_VERBOSE, "Setting auto-desktop to: %d", pActive);
+		mAutoDesktop = pActive;
+	}
+}
+
+bool MediaSourceDesktop::GetAutoDesktop()
+{
+	return mAutoDesktop;
+}
+
 void MediaSourceDesktop::CreateScreenshot()
 {
     AVFrame             *tRGBFrame;
+    int 				tCaptureResX = mSourceResX;
+    int					tCaptureResY = mSourceResY;
 
     mMutexGrabberActive.lock();
 
@@ -328,19 +345,39 @@ void MediaSourceDesktop::CreateScreenshot()
     }
 
     //####################################################################
+    //### AUTO DESKTOP
+    //####################################################################
+    if (mAutoDesktop)
+    {
+		#ifdef APPLE
+    		tCaptureResX = CGDisplayPixelsWide(CGMainDisplayID());
+    		tCaptureResY = CGDisplayPixelsHigh(CGMainDisplayID());
+    	#else
+			tCaptureResX = QApplication::desktop()->screenGeometry()->width();
+			tCaptureResY = QApplication::desktop()->screenGeometry()->height();
+		#endif
+    }
+
+    //####################################################################
     //### do the grabbing and scaling stuff
     //####################################################################
     QPixmap tSourcePixmap;
     // screen capturing
 	#ifdef APPLE
 		CGImageRef tOSXWindowImage = CGWindowListCreateImage(CGRectInfinite, kCGWindowListOptionOnScreenOnly, mWidget->winId(), kCGWindowImageDefault);
-		tSourcePixmap = QPixmap::fromMacCGImageRef(tOSXWindowImage).copy(mGrabOffsetX, mGrabOffsetY, mSourceResX, mSourceResY);
+		tSourcePixmap = QPixmap::fromMacCGImageRef(tOSXWindowImage).copy(mGrabOffsetX, mGrabOffsetY, tCaptureResX, tCaptureResY);
 		CGImageRelease(tOSXWindowImage);
 	#else
-		tSourcePixmap = QPixmap::grabWindow(mWidget->winId(), mGrabOffsetX, mGrabOffsetY, mSourceResX, mSourceResY);
+		tSourcePixmap = QPixmap::grabWindow(mWidget->winId(), mGrabOffsetX, mGrabOffsetY, tCaptureResX, tCaptureResY);
 	#endif
 
-    if(!tSourcePixmap.isNull())
+	if ((tSourcePixmap.width() != mSourceResX) || (tSourcePixmap.height() != mSourceResY))
+	{// we have to adapt the assumed source resolution
+		//LOG(LOG_VERBOSE, "Have to rescale from %d*%d to %d*%d", tSourcePixmap.width(), tSourcePixmap.height(), mSourceResX, mSourceResY);
+		tSourcePixmap = tSourcePixmap.scaled(mSourceResX, mSourceResY);
+	}
+
+	if(!tSourcePixmap.isNull())
     {
 		// record screenshot via ffmpeg
 		if (mRecording)
@@ -528,12 +565,14 @@ GrabResolutions MediaSourceDesktop::GetSupportedVideoGrabResolutions()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void MediaSourceDesktop::SelectSegment(QWidget *pParent)
+int MediaSourceDesktop::SelectSegment(QWidget *pParent)
 {
+	int tResult = QDialog::Rejected;
+
 	if (mRecording)
 	{
 		DoShowInfo(GetObjectNameStr(this).c_str(), __LINE__, pParent, "Recording active", "Desktop capture settings cannot be changed if recording is active");
-		return;
+		return tResult;
 	}
     int tOldGrabOffsetX = mGrabOffsetX;
     int tOldGrabOffsetY = mGrabOffsetY;
@@ -541,7 +580,8 @@ void MediaSourceDesktop::SelectSegment(QWidget *pParent)
     int tOldSourceResY = mSourceResY;
 
     SegmentSelectionDialog *tSelectDialog = new SegmentSelectionDialog(pParent, this);
-    if (tSelectDialog->exec() != QDialog::Accepted)
+    tResult = tSelectDialog->exec();
+    if (tResult == QDialog::Rejected)
     {
         LOG(LOG_VERBOSE, "Resetting to original segment capture configuration");
         mGrabOffsetX = tOldGrabOffsetX;
@@ -550,6 +590,8 @@ void MediaSourceDesktop::SelectSegment(QWidget *pParent)
         mSourceResY = tOldSourceResY;
     }
     delete tSelectDialog;
+
+    return tResult;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
