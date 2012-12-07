@@ -183,6 +183,7 @@ protected:
     Condition           mDecoderNeedWorkCondition;
     Mutex               mDecoderNeedWorkConditionMutex;
     MediaFifo           *mDecoderFragmentFifo;
+    Mutex				mDecoderFragmentFifoDestructionMutex;
     MediaFifo           *mDecoderFifo; // for frames
     MediaFifo           *mDecoderMetaDataFifo; // for meta data about frames
     /* decoder thread seeking */

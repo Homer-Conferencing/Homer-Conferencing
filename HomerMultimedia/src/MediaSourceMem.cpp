@@ -111,9 +111,14 @@ MediaSourceMem::~MediaSourceMem()
     if (mMediaSourceOpened)
         CloseGrabDevice();
 
+    mDecoderFragmentFifoDestructionMutex.lock();
     if (mDecoderFragmentFifo != NULL)
+    {
         delete mDecoderFragmentFifo;
-    free(mStreamPacketBuffer);
+        mDecoderFragmentFifo = NULL;
+    }
+    mDecoderFragmentFifoDestructionMutex.unlock();
+	free(mStreamPacketBuffer);
     free(mFragmentBuffer);
 }
 
@@ -162,8 +167,8 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
             }
             if (tFragmentBufferSize == 0)
             {
-            	LOGEX(MediaSourceMem, LOG_VERBOSE, "Received empty fragment");
-                return 0;
+            	LOGEX(MediaSourceMem, LOG_VERBOSE, "Detected empty signaling fragment, returning zero data");
+                return -1;
             }
             if (tFragmentBufferSize < 0)
             {
@@ -442,18 +447,26 @@ int MediaSourceMem::GetChunkDropCounter()
 
 int MediaSourceMem::GetFragmentBufferCounter()
 {
+	int tResult = 0;
+
+	mDecoderFragmentFifoDestructionMutex.lock();
     if (mDecoderFragmentFifo != NULL)
-        return mDecoderFragmentFifo->GetUsage();
-    else
-        return 0;
+        tResult =  mDecoderFragmentFifo->GetUsage();
+	mDecoderFragmentFifoDestructionMutex.unlock();
+
+	return tResult;
 }
 
 int MediaSourceMem::GetFragmentBufferSize()
 {
+	int tResult = 0;
+
+	mDecoderFragmentFifoDestructionMutex.lock();
     if (mDecoderFragmentFifo != NULL)
-        return mDecoderFragmentFifo->GetSize();
-    else
-        return 0;
+        tResult = mDecoderFragmentFifo->GetSize();
+    mDecoderFragmentFifoDestructionMutex.unlock();
+
+	return tResult;
 }
 
 int MediaSourceMem::CalculateFrameBufferSize()
@@ -971,17 +984,19 @@ void MediaSourceMem::StartDecoder()
         {
             if (tLoops % 10 == 0)
                 LOG(LOG_VERBOSE, "Waiting for start of %s decoding thread, loop count: %d", GetMediaTypeStr().c_str(), ++tLoops);
-            Thread::Suspend(100);
+            Thread::Suspend(100 * 1000);
         }
     }
 }
 
 void MediaSourceMem::StopDecoder()
 {
+	char tmp[4];
     int tSignalingRound = 0;
 
     LOG(LOG_VERBOSE, "Stopping decoder");
 
+    mDecoderFragmentFifoDestructionMutex.lock();
     if (mDecoderFifo != NULL)
     {
         // tell decoder thread it isn't needed anymore
@@ -994,12 +1009,15 @@ void MediaSourceMem::StopDecoder()
                 LOG(LOG_WARN, "Signaling round %d to stop %s decoder, system has high load", tSignalingRound, GetMediaTypeStr().c_str());
             tSignalingRound++;
 
+            WriteFragment(tmp, 0);
+
             // force a wake up of decoder thread
             mDecoderNeedWorkCondition.SignalAll();
 
-            Suspend(250);
+            Suspend(100 * 1000);
         }while(IsRunning());
     }
+    mDecoderFragmentFifoDestructionMutex.unlock();
 
     LOG(LOG_VERBOSE, "Decoder stopped");
 }
