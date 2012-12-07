@@ -54,6 +54,8 @@ protected:
     virtual bool event(QEvent *pEvent);
 
     void initializeLogging();
+    void RegisterPluginPaths();
+    void RegisterPluginPath(QString pPath);
 
     QStringList 		mArguments;
     bool				mMainWindowIsAlreadyVisible;

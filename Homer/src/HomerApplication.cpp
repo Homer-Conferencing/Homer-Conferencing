@@ -76,8 +76,8 @@ HomerApplication::HomerApplication(int &pArgc, char **pArgv):
 		mBinaryPath = QString(tArgv0.substr(0, tSize).c_str());
     }else
     	mBinaryPath = "";
-
     initializeLogging();
+    RegisterPluginPaths();
 }
 
 HomerApplication::~HomerApplication()
@@ -161,6 +161,18 @@ void HomerApplication::initializeLogging()
     }
 
     MainWindow::removeArguments(mArguments, "-Debug");
+}
+
+void HomerApplication::RegisterPluginPath(QString pPath)
+{
+	LOG(LOG_WARN, "Adding to library path: %s", pPath.toStdString().c_str());
+	addLibraryPath(pPath);
+}
+
+void HomerApplication::RegisterPluginPaths()
+{
+	RegisterPluginPath(mBinaryPath + "plugins");
+	RegisterPluginPath(mBinaryPath + "lib/plugins");
 }
 
 bool HomerApplication::event(QEvent *pEvent)
