@@ -168,7 +168,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
             if (tFragmentBufferSize == 0)
             {
             	LOGEX(MediaSourceMem, LOG_VERBOSE, "Detected empty signaling fragment, returning zero data");
-                return -1;
+                return 0;
             }
             if (tFragmentBufferSize < 0)
             {
@@ -256,7 +256,6 @@ void MediaSourceMem::WriteFragment(char *pBuffer, int pBufferSize)
 {
     if (mDecoderFragmentFifo == NULL)
     {
-        LOG(LOG_ERROR, "Invalid fragment queue");
         return;
     }
 
@@ -282,7 +281,6 @@ void MediaSourceMem::ReadFragment(char *pData, int &pDataSize)
 {
     if (mDecoderFragmentFifo == NULL)
     {
-        LOG(LOG_ERROR, "Invalid fragment queue");
         return;
     }
 
