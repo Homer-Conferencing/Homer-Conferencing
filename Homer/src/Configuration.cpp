@@ -35,6 +35,7 @@
 #include <QDir>
 #include <QDesktopWidget>
 #include <QApplication>
+#include <QImageReader>
 #ifdef APPLE
 	#include <CoreFoundation/CoreFoundation.h>
 #endif
@@ -95,6 +96,27 @@ void Configuration::SetDefaults()
 	printf("Setting program defaults\n");
 	mQSettings->clear();
 	Sync();
+}
+
+static int sGifIsSupported = -1;
+bool Configuration::IsGifReadingSupported()
+{
+	if (sGifIsSupported == -1)
+	{
+		sGifIsSupported = 0;
+		QList<QByteArray> tFormats = QImageReader::supportedImageFormats();
+		QByteArray tEntry;
+		foreach(tEntry, tFormats)
+		{
+			LOG(LOG_VERBOSE, "Supported image reader format: %s", tEntry.data());
+			if (QString(tEntry.data()) == "gif")
+			{
+				LOG(LOG_WARN, "GIF reader available");
+				sGifIsSupported = 1;
+			}
+		}
+	}
+	return (sGifIsSupported == 1);
 }
 
 void Configuration::SetConferenceAvailability(QString pState)

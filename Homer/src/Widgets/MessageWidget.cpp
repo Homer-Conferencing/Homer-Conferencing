@@ -321,7 +321,7 @@ QString MessageWidget::ReplaceSmilesAndUrls(QString pMessage)
         if ((tWord.startsWith("http://")) && (tWord.size() > 7))
         {
             LOG(LOG_VERBOSE, "Found http reference: %s", tWord.toStdString().c_str());
-            tOutputMessage.append("<a href=\"" + tWord + "\" title=\"go to the web site " + tWord + " \">" + tWord + "</a>");
+            tOutputMessage.append("<a href=\"" + tWord + "\" title=\"go to the web site " + tWord + " \"><img src=\"" URL_WEB_LINK "\" title=\"go to the web site " + tWord + " \">" + tWord + "</a>");
         }else
         //#########################
         //### Filter HTTPS URLS

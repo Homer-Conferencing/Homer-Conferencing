@@ -87,6 +87,9 @@ public:
     void Init(QString pAbsBinPath);
     void SetDefaults();
 
+    /* GIF support of Qt*/
+    bool IsGifReadingSupported();
+
     /* general settings */
     QString GetBinaryPath();
     QString GetConferenceAvailability();

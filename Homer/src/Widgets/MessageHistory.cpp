@@ -44,7 +44,9 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define PATH_DEFAULT				 ":/images/22_22/Info.png"
 #define PATH_SMILE                   ":/images/30_30/Smile.gif"
+#define PATH_WEB_LINK				 ":/images/22_22/NetworkConnection.png"
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -53,7 +55,14 @@ MessageHistory::MessageHistory(QWidget* pParent) :
 {
     mSomeTextSelected = false;
     connect(this, SIGNAL(copyAvailable(bool)), this, SLOT(textSelected(bool)));
-    AddAnimation(QUrl(URL_SMILE), PATH_SMILE);
+    if (CONF.IsGifReadingSupported())
+    {
+    	AddAnimation(QUrl(URL_SMILE), PATH_SMILE);
+    }else
+    {
+    	AddAnimation(QUrl(URL_SMILE), PATH_DEFAULT);
+    }
+	AddAnimation(QUrl(URL_WEB_LINK), PATH_WEB_LINK);
 }
 
 MessageHistory::~MessageHistory()
