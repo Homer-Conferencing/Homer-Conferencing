@@ -314,7 +314,7 @@ QString MessageWidget::ReplaceSmilesAndUrls(QString pMessage)
         if ((tWord == ":)") || (tWord == ":-)"))
         {// laughing smile
             LOG(LOG_VERBOSE, "Found smile");
-            tOutputMessage.append("<img src=\"" URL_SMILE "\">");
+            tOutputMessage.append("<img src=\"" URL_SMILE "\" title=\":-)\">");
         }else
 		//#########################
 		//### Filter HTTP URLS
