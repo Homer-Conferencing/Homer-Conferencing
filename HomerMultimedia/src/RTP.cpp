@@ -1408,7 +1408,7 @@ bool RTP::ReceivedCorrectPayload(unsigned int pType)
 									tResult = true;
                                 break;
                 case CODEC_ID_H263:
-								if (pType == 34)
+								if ((pType == 34) || (pType >= 96))
 									tResult = true;
                                 break;
                 case CODEC_ID_AAC:
