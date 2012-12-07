@@ -115,7 +115,7 @@ public:
     std::string GetServerConferenceId();
 
     /* local I/O interfaces and state */
-    bool IsLocalAddress(std::string pHost, std::string pPort);
+    bool IsLocalAddress(std::string pHost, std::string pPort, enum TransportType pTransport);
     Socket* GetAudioReceiveSocket(std::string pParticipant, enum TransportType pParticipantTransport);
     Socket* GetVideoReceiveSocket(std::string pParticipant, enum TransportType pParticipantTransport);
     Socket* GetAudioSendSocket(std::string pParticipant, enum TransportType pParticipantTransport);
