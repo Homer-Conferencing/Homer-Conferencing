@@ -413,7 +413,6 @@ RTP::RTP()
 {
     LOG(LOG_VERBOSE, "Created");
     mH261LocalSequenceNumber = 0;
-    mLostPackets = 0;
     mIntermediateFragment = 0;
     mPacketStatistic = NULL;
     mRtpFormatContext = NULL;
