@@ -1014,11 +1014,11 @@ void MainWindow::GetEventSource(GeneralEvent *pEvent, QString &pSender, QString 
 
 void MainWindow::keyPressEvent(QKeyEvent *pEvent)
 {
-    LOG(LOG_VERBOSE, "Got main window key press event with key %s(%d, mod: %d, auto-repeat: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers(), pEvent->isAutoRepeat());
+    //LOG(LOG_VERBOSE, "Got main window key press event with key %s(%d, mod: %d, auto-repeat: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers(), pEvent->isAutoRepeat());
 
     if ((pEvent->key() == Qt::Key_T) && (!pEvent->isAutoRepeat()))
     {
-        LOG(LOG_VERBOSE, "Audio activation: %d, PTT mode: %d", CONF.GetAudioActivation(), CONF.GetAudioActivationPushToTalk());
+        //LOG(LOG_VERBOSE, "Audio activation: %d, PTT mode: %d", CONF.GetAudioActivation(), CONF.GetAudioActivationPushToTalk());
         if ((CONF.GetAudioActivation()) && (CONF.GetAudioActivationPushToTalk()))
         {
                 mOwnAudioMuxer->SetRelayActivation(true);
@@ -1033,7 +1033,7 @@ void MainWindow::keyPressEvent(QKeyEvent *pEvent)
 
 void MainWindow::keyReleaseEvent(QKeyEvent *pEvent)
 {
-    LOG(LOG_VERBOSE, "Got main window key release event with key %s(%d, mod: %d, auto-repeat: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers(), pEvent->isAutoRepeat());
+    //LOG(LOG_VERBOSE, "Got main window key release event with key %s(%d, mod: %d, auto-repeat: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers(), pEvent->isAutoRepeat());
 
     if (pEvent->key() == Qt::Key_T)
     {

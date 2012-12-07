@@ -709,7 +709,7 @@ void ParticipantWidget::dropEvent(QDropEvent *pEvent)
 
 void ParticipantWidget::keyPressEvent(QKeyEvent *pEvent)
 {
-	LOG(LOG_VERBOSE, "Got participant window key press event with key %s(%d, mod: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
+	//LOG(LOG_VERBOSE, "Got participant window key press event with key %s(%d, mod: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
 
     if ((pEvent->key() == Qt::Key_T) && (!pEvent->isAutoRepeat()))
     {
@@ -727,7 +727,7 @@ void ParticipantWidget::keyPressEvent(QKeyEvent *pEvent)
 void ParticipantWidget::wheelEvent(QWheelEvent *pEvent)
 {
     int tOffset = pEvent->delta() * 25 / 120;
-    LOG(LOG_VERBOSE, "Got new wheel event with orientation %d and delta %d, derived volume offset: %d", (int)pEvent->orientation(), pEvent->delta(), tOffset);
+    //LOG(LOG_VERBOSE, "Got new wheel event with orientation %d and delta %d, derived volume offset: %d", (int)pEvent->orientation(), pEvent->delta(), tOffset);
 	if (pEvent->orientation() == Qt::Vertical)
 	{
 		mAudioWidget->SetVolume(mAudioWidget->GetVolume() + tOffset);

@@ -760,10 +760,13 @@ void AudioWidget::SetVolume(int pValue)
         pValue = 0;
     if (pValue > 300)
         pValue = 300;
-    LOG(LOG_VERBOSE, "Setting audio volume to %d \%", pValue);
-    mLbVolume->setText(QString("%1").arg(pValue, 3) + " %");
-	mAudioVolume = pValue;
-	mAudioWorker->SetVolume(pValue);
+    if(pValue != mAudioVolume)
+    {
+        LOG(LOG_VERBOSE, "Setting audio volume to %d \%", pValue);
+        mLbVolume->setText(QString("%1").arg(pValue, 3) + " %");
+    	mAudioVolume = pValue;
+    	mAudioWorker->SetVolume(pValue);
+    }
 }
 
 void AudioWidget::ToggleVisibility()

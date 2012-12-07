@@ -1493,7 +1493,7 @@ bool VideoWidget::IsFullScreen()
 
 void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
 {
-	LOG(LOG_VERBOSE, "Got video window key press event with key %s(%d, mod: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
+	//LOG(LOG_VERBOSE, "Got video window key press event with key %s(%d, mod: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
 
     if ((pEvent->key() == Qt::Key_T) && (!pEvent->isAutoRepeat()))
     {
@@ -1626,7 +1626,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
 
 void VideoWidget::keyReleaseEvent(QKeyEvent *pEvent)
 {
-    LOG(LOG_VERBOSE, "Got video window key release event with key %s(%d, mod: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
+    //LOG(LOG_VERBOSE, "Got video window key release event with key %s(%d, mod: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
 
     if ((pEvent->key() == Qt::Key_T) && (!pEvent->isAutoRepeat()))
     {
@@ -1648,7 +1648,7 @@ void VideoWidget::mouseDoubleClickEvent(QMouseEvent *pEvent)
 void VideoWidget::wheelEvent(QWheelEvent *pEvent)
 {
     int tOffset = pEvent->delta() * 25 / 120;
-    LOG(LOG_VERBOSE, "Got new wheel event with orientation %d and delta %d, derived volume offset: %d", (int)pEvent->orientation(), pEvent->delta(), tOffset);
+    //LOG(LOG_VERBOSE, "Got new wheel event with orientation %d and delta %d, derived volume offset: %d", (int)pEvent->orientation(), pEvent->delta(), tOffset);
 	if (pEvent->orientation() == Qt::Vertical)
 	{
 		if (mParticipantWidget->GetAudioWorker() != NULL)

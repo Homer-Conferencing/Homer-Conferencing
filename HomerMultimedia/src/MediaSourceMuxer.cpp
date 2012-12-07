@@ -1634,7 +1634,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
 											}else
 											{// we should skip this audio frame because it includes only silence
 												mSkippedSilenceChunks++;
-												LOG(LOG_VERBOSE, "Skipping %s data, overall skipped chunks: %ld", GetMediaTypeStr().c_str(), mSkippedSilenceChunks);
+												//LOG(LOG_VERBOSE, "Skipping %s data, overall skipped chunks: %ld", GetMediaTypeStr().c_str(), mSkippedSilenceChunks);
 											}
 										}else
 											LOG(LOG_WARN, "Couldn't re-encode current audio sample");
