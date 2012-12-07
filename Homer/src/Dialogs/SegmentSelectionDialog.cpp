@@ -74,7 +74,7 @@ void SegmentSelectionDialog::initializeGUI()
     connect(mTbDesktopAuto, SIGNAL(clicked(bool)), this, SLOT(ResetToDesktopAuto(bool)));
 
     mTbDesktopAuto->setChecked(mMediaSourceDesktop->GetAutoDesktop());
-    mGrpMouse->setChecked(mMediaSourceDesktop->GetMouseVisualization());
+    mCbMouse->setChecked(mMediaSourceDesktop->GetMouseVisualization());
 
     //setSizeGripEnabled(false);
     resize(mMediaSourceDesktop->mSourceResX - (frameGeometry().width() - width()),
@@ -92,7 +92,7 @@ int SegmentSelectionDialog::exec()
 	if (tResult == QDialog::Accepted)
 	{
 		mMediaSourceDesktop->SetAutoDesktop(mTbDesktopAuto->isChecked());
-		mMediaSourceDesktop->SetMouseVisualization(mGrpMouse->isChecked());
+		mMediaSourceDesktop->SetMouseVisualization(mCbMouse->isChecked());
 	}
 
 	return tResult;
