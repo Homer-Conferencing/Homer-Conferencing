@@ -1656,45 +1656,51 @@ ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHos
 
     if (pHost.size())
     {
-        // search for a participant widget with the same sip interface
-        ParticipantWidgetList::iterator tIt;
-        for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
-        {
-            if (((*tIt)->GetSipInterface() == pIp + ":" + pPort) && ((*tIt)->GetParticipantTransport() == pTransport))
-            {
-                if (pInitState == CALLSTATE_RINGING)
-                {
-                    if (MEETING.GetCallState(QString((*tIt)->GetParticipantName().toLocal8Bit()).toStdString(), pTransport) == CALLSTATE_STANDBY)
-                    {
-                        MEETING.SendCall(MEETING.SipCreateId(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString()), pTransport);
-                        return NULL;
-                    }else
-                    {
-                        ShowInfo("Participant already called", "The participant \"" + QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str()) + "\" is already called!\nThe participant is known as \"" + (*tIt)->GetParticipantName() + "\".");
-                        return NULL;
-                    }
-                 }else
-                 {
-                     LOG(LOG_VERBOSE, "Returning without result");
-                     return NULL;
-                 }
-            }
-        }
+    	if (!MEETING.IsLocalAddress(pIp.toStdString(), pPort.toStdString(), pTransport))
+    	{
+			// search for a participant widget with the same sip interface
+			ParticipantWidgetList::iterator tIt;
+			for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
+			{
+				if (((*tIt)->GetSipInterface() == pIp + ":" + pPort) && ((*tIt)->GetParticipantTransport() == pTransport))
+				{
+					if (pInitState == CALLSTATE_RINGING)
+					{
+						if (MEETING.GetCallState(QString((*tIt)->GetParticipantName().toLocal8Bit()).toStdString(), pTransport) == CALLSTATE_STANDBY)
+						{
+							MEETING.SendCall(MEETING.SipCreateId(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString()), pTransport);
+							return NULL;
+						}else
+						{
+							ShowInfo("Participant already called", "The participant \"" + QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str()) + "\" is already called!\nThe participant is known as \"" + (*tIt)->GetParticipantName() + "\".");
+							return NULL;
+						}
+					 }else
+					 {
+						 LOG(LOG_VERBOSE, "Returning without result");
+						 return NULL;
+					 }
+				}
+			}
 
-        pHost = CompleteIpAddress(pHost);
-        if (MEETING.OpenParticipantSession(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString(), pTransport))
-        {
-            QString tParticipant = QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str());
+			pHost = CompleteIpAddress(pHost);
+			if (MEETING.OpenParticipantSession(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString(), pTransport))
+			{
+				QString tParticipant = QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str());
 
-            tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, tParticipant, pTransport);
+				tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, tParticipant, pTransport);
 
-            mParticipantWidgets.push_back(tParticipantWidget);
+				mParticipantWidgets.push_back(tParticipantWidget);
 
-            if (pInitState == CALLSTATE_RINGING)
-                MEETING.SendCall(MEETING.SipCreateId(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString()), pTransport);
-        } else
-            ShowInfo("Participant is already contacted", "The contact with the address \"" + QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str()) + "\" is already contacted and a participant widget is currently open!");
-    }
+				if (pInitState == CALLSTATE_RINGING)
+					MEETING.SendCall(MEETING.SipCreateId(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString()), pTransport);
+			} else
+				ShowInfo("Participant is already contacted", "The contact with the address \"" + QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str()) + "\" is already contacted and a participant widget is currently open!");
+    	}else
+    	{
+			ShowInfo("Loop detected", "Loop detected: you tried to contact yoursel!");
+    	}
+	}
     return tParticipantWidget;
 }
 
