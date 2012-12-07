@@ -314,14 +314,14 @@ QString MessageWidget::ReplaceSmilesAndUrls(QString pMessage)
         if ((tWord == ":)") || (tWord == ":-)"))
         {// laughing smile
             LOG(LOG_VERBOSE, "Found smile");
-            tOutputMessage.append("<img src=\"" URL_SMILE "\" title=\":-)\">");
+            tOutputMessage.append("<img src=\"" URL_SMILE "\" width=\"22\" height=\"22\" title=\":-)\">");
         }else
 		//#########################
 		//### Filter HTTP URLS
         if ((tWord.startsWith("http://")) && (tWord.size() > 7))
         {
             LOG(LOG_VERBOSE, "Found http reference: %s", tWord.toStdString().c_str());
-            tOutputMessage.append("<a href=\"" + tWord + "\" title=\"go to the web site " + tWord + " \"><img src=\"" URL_WEB_LINK "\" title=\"go to the web site " + tWord + " \">" + tWord + "</a>");
+            tOutputMessage.append("<a href=\"" + tWord + "\" title=\"go to the web site " + tWord + " \"><img src=\"" URL_WEB_LINK "\" width=\"22\" height=\"22\" title=\"go to the web site " + tWord + " \">" + tWord + "</a>");
         }else
         //#########################
         //### Filter HTTPS URLS
