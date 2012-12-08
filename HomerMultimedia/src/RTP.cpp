@@ -1617,9 +1617,11 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
             // update the remote SequenceNumber depending on the overflow shift value
             mRemoteSequenceNumber = mRemoteSequenceNumberOverflowShift + (uint64_t)tRtpHeader->SequenceNumber - mRemoteStartSequenceNumber;
 
-            LOG(LOG_WARN, "Overflow detected and compensated, new remote sequence number: abs=%hu(max: %hu), start=%hu, normalized=%lu", tRtpHeader->SequenceNumber, (unsigned short int)UINT16_MAX, mRemoteStartSequenceNumber, mRemoteSequenceNumber);
+			#ifdef RTP_DEBUG_PACKET_DECODER_SEQUENCE_NUMBERS
+            	LOG(LOG_WARN, "Overflow detected and compensated, new remote sequence number: abs=%hu(max: %hu), start=%hu, normalized=%lu", tRtpHeader->SequenceNumber, (unsigned short int)UINT16_MAX, mRemoteStartSequenceNumber, mRemoteSequenceNumber);
+			#endif
 
-        	// increase the "overflow" counter
+			// increase the "overflow" counter
         	mRemoteSequenceNumberConsecutiveOverflows++;
 
         	// did we reach the limit of allowed consecutive SequenceNumber overflows?
@@ -1709,9 +1711,11 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
             // update the remote timestamp depending on the overflow shift value
             mRemoteTimestamp = mRemoteTimestampOverflowShift + (uint64_t)tRtpHeader->Timestamp - mRemoteStartTimestamp;
 
-            LOG(LOG_WARN, "Overflow detected and compensated, new remote timestamp: last=%u, abs=%u(max: %u), start=%u, normalized=%lu", mLastTimestampFromRTPHeader, tRtpHeader->Timestamp, UINT32_MAX, mRemoteStartTimestamp, mRemoteTimestamp);
+			#ifdef RTP_DEBUG_PACKET_DECODER_TIMESTAMPS
+            	LOG(LOG_WARN, "Overflow detected and compensated, new remote timestamp: last=%u, abs=%u(max: %u), start=%u, normalized=%lu", mLastTimestampFromRTPHeader, tRtpHeader->Timestamp, UINT32_MAX, mRemoteStartTimestamp, mRemoteTimestamp);
+			#endif
 
-        	// increase the "overflow" counter
+			// increase the "overflow" counter
         	mRemoteTimestampConsecutiveOverflows++;
 
         	// did we reach the limit of allowed consecutive timestamp overflows?
