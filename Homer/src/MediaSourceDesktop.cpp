@@ -118,6 +118,28 @@ void MediaSourceDesktop::getVideoDevices(VideoDevices &pVList)
         LOG(LOG_VERBOSE, "Found video device: %s (card: %s)", tDevice.Name.c_str(), tDevice.Card.c_str());
     pVList.push_back(tDevice);
 
+
+    QDesktopWidget *tDesktop = QApplication::desktop();
+    if (tDesktop != NULL)
+    {
+        if (tFirstCall)
+        {
+            LOG(LOG_VERBOSE, "Desktop found..");
+            LOG(LOG_VERBOSE, "  ..resolution: %d * %d", tDesktop->width(), tDesktop->height());
+            LOG(LOG_VERBOSE, "  ..screens: %d", tDesktop->numScreens());
+            LOG(LOG_VERBOSE, "  ..virtualized: %d", tDesktop->isVirtualDesktop());
+        }
+
+        for (int i = 0; i < tDesktop->numScreens(); i++)
+        {
+            QWidget *tScreen = tDesktop->screen(i);
+            if (tFirstCall)
+            {
+                LOG(LOG_VERBOSE, "  ..screen %d: resolution=%d*%d, available resolution=%d*%d, position=(%d, %d)", i, tDesktop->screenGeometry(i).width(), tDesktop->screenGeometry(i).height(), tDesktop->availableGeometry(i).width(), tDesktop->availableGeometry(i).height(), tDesktop->screenGeometry(i).x(), tDesktop->screenGeometry(i).y());
+            }
+        }
+    }
+
     tFirstCall = false;
 }
 
@@ -364,9 +386,11 @@ void MediaSourceDesktop::CreateScreenshot()
 		#ifdef APPLE
     		tCaptureResX = CGDisplayPixelsWide(CGMainDisplayID());
     		tCaptureResY = CGDisplayPixelsHigh(CGMainDisplayID());
-    	#else
-			tCaptureResX = QApplication::desktop()->screenGeometry()->width();
-			tCaptureResY = QApplication::desktop()->screenGeometry()->height();
+        #else
+    		QDesktopWidget *tDesktop = QApplication::desktop();
+			tCaptureResX = tDesktop->screenGeometry(tDesktop->primaryScreen()).width();
+			tCaptureResY = tDesktop->screenGeometry(tDesktop->primaryScreen()).height();
+			//LOG(LOG_VERBOSE, "Screen resolution: %d * %d", tCaptureResX, tCaptureResY);
 		#endif
     }
 
@@ -584,9 +608,10 @@ GrabResolutions MediaSourceDesktop::GetSupportedVideoGrabResolutions()
     tFormat.ResY = 1200;
     mSupportedVideoFormats.push_back(tFormat);
 
+    QDesktopWidget *tDesktop = QApplication::desktop();
     tFormat.Name="Desktop";
-    tFormat.ResX = QApplication::desktop()->width();
-    tFormat.ResY = QApplication::desktop()->height();
+    tFormat.ResX = tDesktop->screenGeometry(tDesktop->primaryScreen()).width();
+    tFormat.ResY = tDesktop->screenGeometry(tDesktop->primaryScreen()).height();
     mSupportedVideoFormats.push_back(tFormat);
 
     tFormat.Name="Segment";
