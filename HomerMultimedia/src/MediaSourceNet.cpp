@@ -282,7 +282,7 @@ void NetworkListener::StopListener()
 			LOG(LOG_WARN, "Signaling round %d to stop %s network listener, system has high load", tSignalingRound, mMediaSourceNet->GetMediaTypeStr().c_str());
 		tSignalingRound++;
 
-		Suspend(250 * 1000);
+		Suspend(100 * 1000);
 	}while(IsRunning());
     
     LOG(LOG_VERBOSE, "%s network listener stopped", mMediaSourceNet->GetMediaTypeStr().c_str());
