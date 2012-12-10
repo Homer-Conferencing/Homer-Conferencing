@@ -287,7 +287,7 @@ int64_t System::GetMachineMemorySwap()
         MEMORYSTATUSEX tMemStatus;
         tMemStatus.dwLength = sizeof(tMemStatus);
         GlobalMemoryStatusEx(&tMemStatus);
-        tResult = (int64_t)tMemStatus.ullTotalPageFile;
+        tResult = (int64_t)tMemStatus.ullTotalPageFile /* overall virt. memory */ - (int64_t)tMemStatus.ullTotalPhys /* phys. installed memory */;
     #endif
 
     //LOGEX(System, LOG_VERBOSE, "Found machine memory (swap.): %ld MB", tResult / 1024 / 1024);
