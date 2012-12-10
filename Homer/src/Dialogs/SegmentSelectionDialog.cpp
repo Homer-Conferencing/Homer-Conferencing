@@ -119,7 +119,11 @@ void SegmentSelectionDialog::ResetToDesktop()
 {
     LOG(LOG_VERBOSE, "Resetting to desktop size");
 
-    ConfigureDesktopCapturing(0, 0, QApplication::desktop()->width(), QApplication::desktop()->height());
+    QDesktopWidget *tDesktop = QApplication::desktop();
+    int tResX = tDesktop->screenGeometry(tDesktop->primaryScreen()).width();
+    int tResY = tDesktop->screenGeometry(tDesktop->primaryScreen()).height();
+
+    ConfigureDesktopCapturing(0, 0, tResX, tResY);
 }
 
 void SegmentSelectionDialog::ResetToDesktopAuto(bool pActive)
