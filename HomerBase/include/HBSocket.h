@@ -37,6 +37,13 @@
 #include <netinet/tcp.h>
 #endif
 
+// define SHUT_RDWR also for Windows environments
+#if defined(WIN32)
+#ifndef SHUT_RDWR
+#define SHUT_RDWR SD_BOTH
+#endif
+#endif
+
 #include <Header_Windows.h>
 
 #include <string>
