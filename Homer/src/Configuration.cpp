@@ -108,8 +108,9 @@ bool Configuration::IsGifReadingSupported()
 		QByteArray tEntry;
 		foreach(tEntry, tFormats)
 		{
-			LOG(LOG_VERBOSE, "Supported image reader format: %s", tEntry.data());
-			if (QString(tEntry.data()) == "gif")
+		    QString tFormat = QString(tEntry.data()).toUpper();
+			LOG(LOG_VERBOSE, "Supported image reader format: %s", tFormat.toStdString().c_str());
+			if (tFormat == "GIF")
 			{
 				LOG(LOG_WARN, "GIF reader available");
 				sGifIsSupported = 1;
