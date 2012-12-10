@@ -1230,17 +1230,54 @@ void VideoWidget::SetResolutionFormat(VideoFormat pFormat)
 
 void VideoWidget::ShowFullScreen()
 {
-	// get screen that contains the largest part of he VideoWidget
+    // get the global position of this video widget
+    QPoint tWidgetMiddleAsGlobalPos = mMainWindow->pos() + mapTo(mMainWindow, pos()) + QPoint(width() / 2, height() / 2);
+
+    // get screen that contains the largest part of he VideoWidget
 	QDesktopWidget *tDesktop = new QDesktopWidget();
-	int tScreenNumber = tDesktop->screenNumber(this);
 
-	// get screen geometry
-	QRect tScreenRes = QApplication::desktop()->screenGeometry(tScreenNumber);
+	// get the number of available screens
+	int tAvailScreens = tDesktop->numScreens();
 
-	// prepare and set fullscreen on the corresponding screen
-	move(QPoint(tScreenRes.x(), tScreenRes.y()));
-	resize(tScreenRes.width(), tScreenRes.height());
+	int tUsedScreen = -1;
+	QRect tScreenRes;
+	QRect tUsedScreenRes;
+	int tXDiff = INT_MAX / 2;
+	int tYDiff = INT_MAX / 2;
+	for (int i = 0; i < tAvailScreens; i++)
+	{
+	    // get screen geometry
+	    tScreenRes = QApplication::desktop()->screenGeometry(i);
+
+	    // check if the widget is actually part of the screen
+	    //HINT: we can not use "tDesktop->screenNumber(this)" here because in Linux this fails to return the correct screen number
+	    int tScreenMiddleX = tScreenRes.x() + tScreenRes.width() / 2;
+	    int tScreenMiddleY = tScreenRes.y() + tScreenRes.height() / 2;
+
+	    int tCurXDiff = fabs(tWidgetMiddleAsGlobalPos.x() - tScreenMiddleX);
+        int tCurYDiff = fabs(tWidgetMiddleAsGlobalPos.y() - tScreenMiddleY);
+        if (tCurXDiff + tCurYDiff < tXDiff + tYDiff)
+        {
+            LOG(LOG_VERBOSE, "Screen %d with diff: x=%d, y=%d", i, tCurXDiff, tCurYDiff);
+            tXDiff = tCurXDiff;
+            tYDiff = tCurYDiff;
+            tUsedScreen = i;
+            tUsedScreenRes = tScreenRes;
+        }else
+            LOG(LOG_VERBOSE, "Ignoring screen %d with diff: x=%d, y=%d", i, tCurXDiff, tCurYDiff);
+	}
+
+	if (tUsedScreen != -1)
+	{
+        // prepare and set fullscreen on the corresponding screen
+        move(QPoint(tUsedScreenRes.x(), tUsedScreenRes.y()));
+        resize(tUsedScreenRes.width(), tUsedScreenRes.height());
+        LOG(LOG_VERBOSE, "Showing video widget (%d,%d) on screen %d in fullscreen at pos=(%d,%d) and resolution (%d*%d)", tWidgetMiddleAsGlobalPos.x(), tWidgetMiddleAsGlobalPos.y(), tUsedScreen, tUsedScreenRes.x(), tUsedScreenRes.y(), tUsedScreenRes.width(), tUsedScreenRes.height());
+    }
+
+	// trigger fullscreen mode (anyhow)
 	showFullScreen();
+
 	delete tDesktop;
 }
 
