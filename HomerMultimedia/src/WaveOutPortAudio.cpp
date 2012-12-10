@@ -46,6 +46,9 @@ int WaveOutPortAudio::mOpenStreams = 0;
 // deactivate OSS playback: leads to program stops
 //#define WOPA_AVOID_OSS_PLAY
 
+// return silence in service handler when no valid audio data is available
+//#define WOPA_FILL_MISSING_BUFFERS_WITH_SILENCE
+
 ///////////////////////////////////////////////////////////////////////////////
 
 WaveOutPortAudio::WaveOutPortAudio(string pOutputName, string pDesiredDevice):
@@ -362,21 +365,23 @@ int WaveOutPortAudio::PlayAudioHandler(const void *pInputBuffer, void *pOutputBu
         tWaveOutPortAudio->mPlaybackFifo->ClearFifo();
     }
 
-    // should be complain about buffer underrun?
-    if ((tUsedFifo == 0) && (!tWaveOutPortAudio->mWaitingForFirstBuffer))
-    {
-        tWaveOutPortAudio->mPlaybackGaps++;
-        #ifdef WOPA_DEBUG_GAPS
-            LOGEX(WaveOutPortAudio, LOG_WARN, "Audio FIFO empty, playback for %s is non continuous, found gaps: %ld", tWaveOutPortAudio->GetStreamName().c_str(), tWaveOutPortAudio->mPlaybackGaps);
-        #endif
-        memset(pOutputBuffer, 0, (size_t)tOutputBufferMaxSize);
-        return paContinue;
-    }else
-    {
-        #ifdef WOPA_DEBUG_HANDLER
-            LOGEX(WaveOutPortAudio, LOG_VERBOSE, "Audio buffers in playback FIFO: %d", tUsedFifo);
-        #endif
-    }
+	#ifdef WOPA_FILL_MISSING_BUFFERS_WITH_SILENCE
+		// should be complain about buffer underrun?
+		if ((tUsedFifo == 0) && (!tWaveOutPortAudio->mWaitingForFirstBuffer))
+		{
+			tWaveOutPortAudio->mPlaybackGaps++;
+			#ifdef WOPA_DEBUG_GAPS
+				LOGEX(WaveOutPortAudio, LOG_WARN, "Audio FIFO empty, playback for %s is non continuous, found gaps: %ld", tWaveOutPortAudio->GetStreamName().c_str(), tWaveOutPortAudio->mPlaybackGaps);
+			#endif
+			memset(pOutputBuffer, 0, (size_t)tOutputBufferMaxSize);
+			return paContinue;
+		}else
+		{
+			#ifdef WOPA_DEBUG_HANDLER
+				LOGEX(WaveOutPortAudio, LOG_VERBOSE, "Audio buffers in playback FIFO: %d", tUsedFifo);
+			#endif
+		}
+	#endif
 
     int tBufferSize;
     do {
