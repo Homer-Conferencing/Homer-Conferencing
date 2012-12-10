@@ -51,7 +51,7 @@ using namespace Homer::Monitor;
 #define MSF_SEEK_WAIT_THRESHOLD                            1.5 // seconds
 
 // how much time do we want to buffer at maximum?
-#define MSF_FRAME_INPUT_QUEUE_MAX_TIME                     ((System::GetTargetMachineType() != "x86") ? 2.0 : 0.5) // 0.5 seconds for 32 bit targets with limit of 4 GB ram, 2.0 seconds for 64 bit targets
+#define MSF_FRAME_INPUT_QUEUE_MAX_TIME                     ((System::GetTargetMachineType() != "x86") ? 3.0 : 2.0) // 0.5 seconds for 32 bit targets with limit of 4 GB ram, 2.0 seconds for 64 bit targets
 
 ///////////////////////////////////////////////////////////////////////////////
 
