@@ -465,6 +465,7 @@ void RTP::Init()
     mLostPackets = 0;
     mPayloadId = RTP_PAYLOAD_TYPE_NONE;
     mRemoteSequenceNumberOverflowShift = 0;
+    mRemoteSequenceNumber = 0;
 }
 
 bool RTP::OpenRtpEncoderH261(string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream)
@@ -1248,6 +1249,7 @@ unsigned int RTP::GetLostPacketsFromRTP()
 
 void RTP::AnnounceLostPackets(uint64_t pCount)
 {
+    LOG(LOG_VERBOSE, "Got %lu lost packets", pCount);
     mLostPackets += pCount;
     if (mPacketStatistic != NULL)
         mPacketStatistic->SetLostPacketCount(mLostPackets);
