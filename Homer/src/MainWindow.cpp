@@ -1312,9 +1312,9 @@ void MainWindow::customEvent(QEvent* pEvent)
                     } else
                     {//broadcast message
                         if (tMEvent->SenderName.size())
-                            mLocalUserParticipantWidget->HandleMessage(tMEvent->IsIncomingEvent, QString(("\"" + tMEvent->SenderName + "\"(" + tMEvent->Sender + ")\"").c_str()), QString(tMEvent->Text.c_str()));
+                            mLocalUserParticipantWidget->HandleMessage(tMEvent->IsIncomingEvent, QString(("\"" + tMEvent->SenderName + "\"(" + tMEvent->Sender + ")[" + Socket::TransportType2String(tMEvent->Transport) + "]").c_str()), QString(tMEvent->Text.c_str()));
                         else
-                            mLocalUserParticipantWidget->HandleMessage(tMEvent->IsIncomingEvent, QString(tMEvent->SenderName.c_str()), QString(tMEvent->Text.c_str()));
+                            mLocalUserParticipantWidget->HandleMessage(tMEvent->IsIncomingEvent, QString((tMEvent->Sender + "[" + Socket::TransportType2String(tMEvent->Transport) + "]").c_str()), QString(tMEvent->Text.c_str()));
                     }
                     break;
         case MESSAGE_ACCEPT:
