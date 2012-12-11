@@ -25,6 +25,7 @@
  * Since:   2011-10-20
  */
 
+#include <Header_Windows.h>
 #include <sys/param.h>
 
 namespace Homer { namespace Base {
