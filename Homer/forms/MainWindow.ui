@@ -56,7 +56,7 @@
    </widget>
    <widget class="QMenu" name="mMenuHomer">
     <property name="title">
-     <string>Homer</string>
+     <string>Help</string>
     </property>
     <addaction name="separator"/>
     <addaction name="mActionHelp"/>
@@ -288,7 +288,7 @@
      <normaloff>:/images/LogoHomer3.png</normaloff>:/images/LogoHomer3.png</iconset>
    </property>
    <property name="text">
-    <string>Version info</string>
+    <string>Version</string>
    </property>
    <property name="shortcut">
     <string>F12</string>
@@ -513,7 +513,7 @@
      <normaloff>:/images/22_22/Help.png</normaloff>:/images/22_22/Help.png</iconset>
    </property>
    <property name="text">
-    <string>Online help</string>
+    <string>User guides / FAQ</string>
    </property>
    <property name="shortcut">
     <string>F1</string>
