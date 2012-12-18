@@ -160,6 +160,9 @@ private slots:
     void ActionPlaylistPrevious();
     void ActionPlaylistNext();
     void ActionPlaylistSetVisible(bool pVisible);
+
+    void UpdateMenuSettings();
+
 private:
 	friend class VideoWidget;
 
@@ -230,6 +233,10 @@ private:
     Socket					*mVideoSendSocket, *mAudioSendSocket, *mVideoReceiveSocket, *mAudioReceiveSocket;
     int                 	mTimerId;
     int						mMovieSliderPosition;
+    /* settings menus */
+    QMenu                   *mMenuSettings;
+    QMenu                   *mMenuSettingsVideo;
+    QMenu                   *mMenuSettingsAudio;
     /* A/V synch. */
     int64_t					mLastAudioSynchronizationTimestamp;
     int64_t					mLastVideoSynchronizationTimestamp;

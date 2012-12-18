@@ -401,6 +401,24 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
     mSplitter->setStretchFactor(1, 0);
 
     //####################################################################
+    //### create additional user menus
+    //####################################################################
+    mMenuSettings = new QMenu(this);
+    connect(mMenuSettings, SIGNAL(aboutToShow()), this, SLOT(UpdateMenuSettings()));
+    if (mVideoSource != NULL)
+    {
+        mMenuSettingsVideo = mMenuSettings->addMenu(QPixmap(":/images/46_46/VideoReel.png"), "Video");
+        connect(mMenuSettingsVideo, SIGNAL(triggered(QAction *)), mVideoWidget, SLOT(SelectedMenuVideoSettings(QAction *)));
+    }
+    if (mAudioSource)
+    {
+        mMenuSettingsAudio = mMenuSettings->addMenu(QPixmap(":/images/46_46/Speaker.png"), "Audio");
+        connect(mMenuSettingsAudio, SIGNAL(triggered(QAction *)), mAudioWidget, SLOT(SelectedMenuAudioSettings(QAction *)));
+    }
+    mTbSettings->setMenu(mMenuSettings);
+    mTbSettings->setText("  ");
+
+    //####################################################################
     //### update GUI
     //####################################################################
 
@@ -419,6 +437,14 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
 
     LOG(LOG_VERBOSE, "Initiating sound object for acoustic notifications..");
     OpenPlaybackDevice(mSessionName + "-Events");
+}
+
+void ParticipantWidget::UpdateMenuSettings()
+{
+    if (mVideoSource != NULL)
+        mVideoWidget->InitializeMenuVideoSettings(mMenuSettingsVideo);
+    if (mAudioSource != NULL)
+        smAudioWidget->InitializeMenuAudioSettings(mMenuSettingsAudio);
 }
 
 void ParticipantWidget::HideAudioVideoWidget()

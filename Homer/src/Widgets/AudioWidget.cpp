@@ -223,45 +223,37 @@ void AudioWidget::closeEvent(QCloseEvent* pEvent)
     ToggleVisibility();
 }
 
-void AudioWidget::contextMenuEvent(QContextMenuEvent *pEvent)
+void AudioWidget::InitializeMenuAudioSettings(QMenu *pMenu)
 {
-    vector<string>::iterator tIt;
     QAction *tAction;
+
+    vector<string>::iterator tIt;
     vector<string> tRegisteredAudioSinks = mAudioSource->ListRegisteredMediaSinks();
     vector<string>::iterator tRegisteredAudioSinksIt;
 
-    QMenu tMenu(this);
+    pMenu->clear();
 
     //###############################################################################
     //### RECORD
     //###############################################################################
     if (mAudioSource->SupportsRecording())
     {
-		QIcon tIcon5;
-		if (mRecorderStarted)
-		{
-			tAction = tMenu.addAction("Stop recording");
-			tIcon5.addPixmap(QPixmap(":/images/22_22/Audio_Stop.png"), QIcon::Normal, QIcon::Off);
-		}else
-		{
-			tAction = tMenu.addAction("Record audio");
-			tIcon5.addPixmap(QPixmap(":/images/22_22/Audio_Record.png"), QIcon::Normal, QIcon::Off);
-		}
-		tAction->setIcon(tIcon5);
+        QIcon tIcon5;
+        if (mRecorderStarted)
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/Audio_Stop.png"), "Stop recording");
+        else
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/Audio_Record.png"), "Record audio");
     }
 
-    tMenu.addSeparator();
+    pMenu->addSeparator();
 
     //###############################################################################
     //### STREAM INFO
     //###############################################################################
     if (mShowLiveStats)
-        tAction = tMenu.addAction("Hide stream info");
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Info.png"), "Hide stream info");
     else
-        tAction = tMenu.addAction("Show stream info");
-    QIcon tIcon4;
-    tIcon4.addPixmap(QPixmap(":/images/22_22/Info.png"), QIcon::Normal, QIcon::Off);
-    tAction->setIcon(tIcon4);
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Info.png"), "Show stream info");
     tAction->setCheckable(true);
     tAction->setChecked(mShowLiveStats);
 
@@ -271,35 +263,25 @@ void AudioWidget::contextMenuEvent(QContextMenuEvent *pEvent)
     vector<string> tInputStreams = mAudioSource->GetInputStreams();
     if (mAudioSource->SupportsMultipleInputStreams())
     {
-        QMenu *tStreamMenu = tMenu.addMenu("Audio streams");
-
-        QIcon tIcon14;
-        tIcon14.addPixmap(QPixmap(":/images/22_22/Audio_Play.png"), QIcon::Normal, QIcon::Off);
+        QMenu *tStreamMenu = pMenu->addMenu(QPixmap(":/images/22_22/SpeakerLoud.png"), "Audio streams");
 
         string tCurrentStream = mAudioSource->CurrentInputStream();
         QAction *tStreamAction;
         for (tIt = tInputStreams.begin(); tIt != tInputStreams.end(); tIt++)
         {
-            tStreamAction = tStreamMenu->addAction(QString(tIt->c_str()));
-            tStreamAction->setIcon(tIcon14);
+            tStreamAction = tStreamMenu->addAction(QPixmap(":/images/22_22/Audio_Play.png"), QString(tIt->c_str()));
             tStreamAction->setCheckable(true);
             if ((*tIt) == tCurrentStream)
                 tStreamAction->setChecked(true);
             else
                 tStreamAction->setChecked(false);
         }
-
-        QIcon tIcon13;
-        tIcon13.addPixmap(QPixmap(":/images/22_22/SpeakerLoud.png"), QIcon::Normal, QIcon::Off);
-        tStreamMenu->setIcon(tIcon13);
     }
 
     //###############################################################################
     //### AUDIO SETTINGS
     //###############################################################################
-    QIcon tIcon3;
-    tIcon3.addPixmap(QPixmap(":/images/22_22/SpeakerLoud.png"), QIcon::Normal, QIcon::Off);
-    QMenu *tAudioMenu = tMenu.addMenu("Audio settings");
+    QMenu *tAudioMenu = pMenu->addMenu(QPixmap(":/images/22_22/SpeakerLoud.png"), "Audio settings");
             //###############################################################################
             //### VOLUMES
             //###############################################################################
@@ -315,27 +297,14 @@ void AudioWidget::contextMenuEvent(QContextMenuEvent *pEvent)
                     tVolAction->setChecked(false);
             }
 
-    tAudioMenu->setIcon(tIcon3);
-
     //###############################################################################
     //### STREAM RELAY
     //###############################################################################
     if(mAudioSource->SupportsRelaying())
     {
-        QMenu *tVideoSinksMenu = tMenu.addMenu("Relay stream");
-        QIcon tIcon7;
-        tIcon7.addPixmap(QPixmap(":/images/22_22/ArrowRight.png"), QIcon::Normal, QIcon::Off);
-        tVideoSinksMenu->setIcon(tIcon7);
-
-        tAction =  tVideoSinksMenu->addAction("Add network sink");
-        QIcon tIcon8;
-        tIcon8.addPixmap(QPixmap(":/images/22_22/Plus.png"), QIcon::Normal, QIcon::Off);
-        tAction->setIcon(tIcon8);
-
-        QMenu *tRegisteredVideoSinksMenu = tVideoSinksMenu->addMenu("Registered sinks");
-        QIcon tIcon9;
-        tIcon9.addPixmap(QPixmap(":/images/22_22/ArrowRight.png"), QIcon::Normal, QIcon::Off);
-        tRegisteredVideoSinksMenu->setIcon(tIcon9);
+        QMenu *tVideoSinksMenu = pMenu->addMenu(QPixmap(":/images/22_22/ArrowRight.png"), "Relay stream");
+        tAction =  tVideoSinksMenu->addAction(QPixmap(":/images/22_22/Plus.png"), "Add network sink");
+        QMenu *tRegisteredVideoSinksMenu = tVideoSinksMenu->addMenu(QPixmap(":/images/22_22/ArrowRight.png"), "Registered sinks");
 
         if (tRegisteredAudioSinks.size())
         {
@@ -355,83 +324,78 @@ void AudioWidget::contextMenuEvent(QContextMenuEvent *pEvent)
         //###############################################################################
         QIcon tIcon10;
         if (mAudioPaused)
-        {
-            tAction = tMenu.addAction("Continue stream");
-            tIcon10.addPixmap(QPixmap(":/images/22_22/Audio_Play.png"), QIcon::Normal, QIcon::Off);
-        }else
-        {
-            tAction = tMenu.addAction("Drop stream");
-            tIcon10.addPixmap(QPixmap(":/images/22_22/Exit.png"), QIcon::Normal, QIcon::Off);
-        }
-        tAction->setIcon(tIcon10);
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/Audio_Play.png"), "Continue stream");
+        else
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/Exit.png"), "Drop stream");
     }
 
-    tMenu.addSeparator();
+    pMenu->addSeparator();
 
     //###############################################################################
     //### RESET SOURCE
     //###############################################################################
-    tAction = tMenu.addAction("Reset source");
-    QIcon tIcon2;
-    tIcon2.addPixmap(QPixmap(":/images/22_22/Reload.png"), QIcon::Normal, QIcon::Off);
-    tAction->setIcon(tIcon2);
+    tAction = pMenu->addAction(QPixmap(":/images/22_22/Reload.png"), "Reset source");
 
     //###############################################################################
     //### CLOSE SOURCE
     //###############################################################################
-    tAction = tMenu.addAction("Close audio");
-    QIcon tIcon1;
-    tIcon1.addPixmap(QPixmap(":/images/22_22/Close.png"), QIcon::Normal, QIcon::Off);
-    tAction->setIcon(tIcon1);
+    if (isVisible())
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Close.png"), "Close audio");
+    else
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Speaker.png"), "Show audio");
+}
 
-    //###############################################################################
-    //### RESULTING REACTION
-    //###############################################################################
-    QAction* tPopupRes = tMenu.exec(pEvent->globalPos());
-    if (tPopupRes != NULL)
+void AudioWidget::SelectedMenuAudioSettings(QAction *pAction)
+{
+    if (pAction != NULL)
     {
-        if (tPopupRes->text().compare("Close audio") == 0)
+        vector<string>::iterator tIt;
+        QAction *tAction;
+        vector<string> tRegisteredAudioSinks = mAudioSource->ListRegisteredMediaSinks();
+        vector<string>::iterator tRegisteredAudioSinksIt;
+
+        if (pAction->text().compare("Close audio") == 0)
         {
             ToggleVisibility();
             return;
         }
-        if (tPopupRes->text().compare("Reset source") == 0)
+        if (pAction->text().compare("Reset source") == 0)
         {
             mAudioWorker->ResetSource();
             return;
         }
-        if (tPopupRes->text().compare("Stop recording") == 0)
+        if (pAction->text().compare("Stop recording") == 0)
         {
             StopRecorder();
             return;
         }
-        if (tPopupRes->text().compare("Record audio") == 0)
+        if (pAction->text().compare("Record audio") == 0)
         {
             StartRecorder();
             return;
         }
-        if (tPopupRes->text().compare("Add network sink") == 0)
+        if (pAction->text().compare("Add network sink") == 0)
         {
             DialogAddNetworkSink();
             return;
         }
-        if (tPopupRes->text().compare("Show stream info") == 0)
+        if (pAction->text().compare("Show stream info") == 0)
         {
             mShowLiveStats = true;
             return;
         }
-        if (tPopupRes->text().compare("Hide stream info") == 0)
+        if (pAction->text().compare("Hide stream info") == 0)
         {
             mShowLiveStats = false;
             return;
         }
-        if (tPopupRes->text().compare("Drop stream") == 0)
+        if (pAction->text().compare("Drop stream") == 0)
         {
             mAudioPaused = true;
             mAudioWorker->SetSampleDropping(true);
             return;
         }
-        if (tPopupRes->text().compare("Continue stream") == 0)
+        if (pAction->text().compare("Continue stream") == 0)
         {
             mAudioPaused = false;
             mAudioWorker->SetSampleDropping(false);
@@ -439,7 +403,7 @@ void AudioWidget::contextMenuEvent(QContextMenuEvent *pEvent)
         }
         for (tRegisteredAudioSinksIt = tRegisteredAudioSinks.begin(); tRegisteredAudioSinksIt != tRegisteredAudioSinks.end(); tRegisteredAudioSinksIt++)
         {
-            if (tPopupRes->text().compare(QString(tRegisteredAudioSinksIt->c_str())) == 0)
+            if (pAction->text().compare(QString(tRegisteredAudioSinksIt->c_str())) == 0)
             {
                 mAudioSource->UnregisterGeneralMediaSink((*tRegisteredAudioSinksIt));
                 return;
@@ -447,22 +411,35 @@ void AudioWidget::contextMenuEvent(QContextMenuEvent *pEvent)
         }
         for (int i = 0; i < 13; i++)
         {
-            if(tPopupRes->text() == QString("%1 %").arg(i * 25))
+            if(pAction->text() == QString("%1 %").arg(i * 25))
             {
                 SetVolume(i * 25);
                 return;
             }
         }
         int tSelectedAudioTrack = 0;
+        vector<string> tInputStreams = mAudioSource->GetInputStreams();
         for (tIt = tInputStreams.begin(); tIt != tInputStreams.end(); tIt++)
         {
-            if ((*tIt) == tPopupRes->text().toStdString())
+            if ((*tIt) == pAction->text().toStdString())
             {
                 mAudioWorker->SelectInputStream(tSelectedAudioTrack);
             }
             tSelectedAudioTrack++;
         }
     }
+}
+void AudioWidget::contextMenuEvent(QContextMenuEvent *pEvent)
+{
+    QMenu tMenu(this);
+    InitializeMenuAudioSettings(&tMenu);
+
+    //###############################################################################
+    //### RESULTING REACTION
+    //###############################################################################
+    QAction* tPopupRes = tMenu.exec(pEvent->globalPos());
+    if (tPopupRes != NULL)
+        SelectedMenuAudioSettings(tPopupRes);
 }
 
 void AudioWidget::StartRecorder()

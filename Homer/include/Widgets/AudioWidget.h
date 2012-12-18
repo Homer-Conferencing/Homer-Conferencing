@@ -95,9 +95,12 @@ public:
     void SetVolume(int pValue); // 0-300 %
     int GetVolume();
 
+    void InitializeMenuAudioSettings(QMenu *pMenu);
+
 public slots:
     void ToggleVisibility();
     void ToggleMuteState(bool pState = true);
+    void SelectedMenuAudioSettings(QAction *pAction);
 
 private:
     void initializeGUI();

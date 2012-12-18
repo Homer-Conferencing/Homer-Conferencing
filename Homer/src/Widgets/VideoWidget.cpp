@@ -294,7 +294,7 @@ void VideoWidget::closeEvent(QCloseEvent* pEvent)
     }
 }
 
-void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
+void VideoWidget::InitializeMenuVideoSettings(QMenu *pMenu)
 {
     QAction *tAction;
 
@@ -306,46 +306,34 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
 
     mVideoSource->GetVideoGrabResolution(tCurResX, tCurResY);
 
-    QMenu tMenu(this);
+    pMenu->clear();
 
     //###############################################################################
     //### SCREENSHOT
     //###############################################################################
-    tAction = tMenu.addAction("Save picture");
-    QIcon tIcon6;
-    tIcon6.addPixmap(QPixmap(":/images/22_22/Save_Picture.png"), QIcon::Normal, QIcon::Off);
-    tAction->setIcon(tIcon6);
+    tAction = pMenu->addAction(QPixmap(":/images/22_22/Save_Picture.png"), "Save picture");
 
     //###############################################################################
     //### RECORD
     //###############################################################################
     if (mVideoSource->SupportsRecording())
     {
-		QIcon tIcon5;
-		if (mVideoSource->IsRecording())
-		{
-			tAction = tMenu.addAction("Stop recording");
-			tIcon5.addPixmap(QPixmap(":/images/22_22/Audio_Stop.png"), QIcon::Normal, QIcon::Off);
-		}else
-		{
-			tAction = tMenu.addAction("Record video");
-			tIcon5.addPixmap(QPixmap(":/images/22_22/Audio_Record.png"), QIcon::Normal, QIcon::Off);
-		}
-		tAction->setIcon(tIcon5);
+        QIcon tIcon5;
+        if (mVideoSource->IsRecording())
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/Audio_Stop.png"), "Stop recording");
+        else
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/Audio_Record.png"), "Record video");
     }
 
-    tMenu.addSeparator();
+    pMenu->addSeparator();
 
     //###############################################################################
     //### STREAM INFO
     //###############################################################################
     if (mShowLiveStats)
-        tAction = tMenu.addAction("Hide stream info");
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Info.png"), "Hide stream info");
     else
-        tAction = tMenu.addAction("Show stream info");
-    QIcon tIcon4;
-    tIcon4.addPixmap(QPixmap(":/images/22_22/Info.png"), QIcon::Normal, QIcon::Off);
-    tAction->setIcon(tIcon4);
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Info.png"), "Show stream info");
     tAction->setCheckable(true);
     tAction->setChecked(mShowLiveStats);
 
@@ -356,9 +344,7 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
     //###############################################################################
     //### Video settings
     //###############################################################################
-    QIcon tIcon3;
-    tIcon3.addPixmap(QPixmap(":/images/22_22/Configuration_Video.png"), QIcon::Normal, QIcon::Off);
-    QMenu *tVideoMenu = tMenu.addMenu("Video settings");
+    QMenu *tVideoMenu = pMenu->addMenu(QPixmap(":/images/22_22/Configuration_Video.png"), "Video settings");
 
             //###############################################################################
             //### "Full screen"
@@ -472,27 +458,15 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
                 tAction->setCheckable(true);
                 tAction->setChecked(false);
             }
-    tVideoMenu->setIcon(tIcon3);
 
     //###############################################################################
     //### STREAM RELAY
     //###############################################################################
     if(mVideoSource->SupportsRelaying())
     {
-        QMenu *tVideoSinksMenu = tMenu.addMenu("Relay stream");
-        QIcon tIcon7;
-        tIcon7.addPixmap(QPixmap(":/images/22_22/ArrowRight.png"), QIcon::Normal, QIcon::Off);
-        tVideoSinksMenu->setIcon(tIcon7);
-
-        tAction =  tVideoSinksMenu->addAction("Add network sink");
-        QIcon tIcon8;
-        tIcon8.addPixmap(QPixmap(":/images/22_22/Plus.png"), QIcon::Normal, QIcon::Off);
-        tAction->setIcon(tIcon8);
-
-        QMenu *tRegisteredVideoSinksMenu = tVideoSinksMenu->addMenu("Registered sinks");
-        QIcon tIcon9;
-        tIcon9.addPixmap(QPixmap(":/images/22_22/ArrowRight.png"), QIcon::Normal, QIcon::Off);
-        tRegisteredVideoSinksMenu->setIcon(tIcon9);
+        QMenu *tVideoSinksMenu = pMenu->addMenu(QPixmap(":/images/22_22/ArrowRight.png"), "Relay stream");
+        tAction =  tVideoSinksMenu->addAction(QPixmap(":/images/22_22/Plus.png"), "Add network sink");
+        QMenu *tRegisteredVideoSinksMenu = tVideoSinksMenu->addMenu(QPixmap(":/images/22_22/ArrowRight.png"), "Registered sinks");
 
         if (tRegisteredVideoSinks.size())
         {
@@ -524,114 +498,114 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
         //###############################################################################
         QIcon tIcon10;
         if (mVideoPaused)
-        {
-            tAction = tMenu.addAction("Continue stream");
-            tIcon10.addPixmap(QPixmap(":/images/22_22/Audio_Play.png"), QIcon::Normal, QIcon::Off);
-        }else
-        {
-            tAction = tMenu.addAction("Drop stream");
-            tIcon10.addPixmap(QPixmap(":/images/22_22/Exit.png"), QIcon::Normal, QIcon::Off);
-        }
-        tAction->setIcon(tIcon10);
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/Audio_Play.png"), "Continue stream");
+        else
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/Exit.png"), "Drop stream");
     }
 
-    tMenu.addSeparator();
+    pMenu->addSeparator();
 
     //###############################################################################
     //### RESET SOURCE
     //###############################################################################
-    tAction = tMenu.addAction("Reset source");
-    QIcon tIcon2;
-    tIcon2.addPixmap(QPixmap(":/images/22_22/Reload.png"), QIcon::Normal, QIcon::Off);
-    tAction->setIcon(tIcon2);
+    tAction = pMenu->addAction(QPixmap(":/images/22_22/Reload.png"), "Reset source");
 
     //###############################################################################
-    //### CLOSE SOURCE
+    //### Show/CLOSE SOURCE
     //###############################################################################
-    tAction = tMenu.addAction("Close video");
-    QIcon tIcon1;
-    tIcon1.addPixmap(QPixmap(":/images/22_22/Close.png"), QIcon::Normal, QIcon::Off);
-    tAction->setIcon(tIcon1);
+    if (isVisible())
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Close.png"), "Close video");
+    else
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Screencasting.png"), "Show video");
+}
 
-    //###############################################################################
-    //### RESULTING REACTION
-    //###############################################################################
-    QAction* tPopupRes = tMenu.exec(pEvent->globalPos());
-    if (tPopupRes != NULL)
+void VideoWidget::SelectedMenuVideoSettings(QAction *pAction)
+{
+    if (pAction != NULL)
     {
-        if (tPopupRes->text().compare("Close video") == 0)
+        GrabResolutions tGrabResolutions = mVideoSource->GetSupportedVideoGrabResolutions();
+        GrabResolutions::iterator tIt;
+        vector<string> tRegisteredVideoSinks = mVideoSource->ListRegisteredMediaSinks();
+        vector<string>::iterator tRegisteredVideoSinksIt;
+
+        if (pAction->text().compare("Show video") == 0)
         {
             ToggleVisibility();
             return;
         }
-        if (tPopupRes->text().compare("Reset source") == 0)
+        if (pAction->text().compare("Close video") == 0)
+        {
+            ToggleVisibility();
+            return;
+        }
+        if (pAction->text().compare("Reset source") == 0)
         {
             mVideoWorker->ResetSource();
             return;
         }
-        if (tPopupRes->text().compare("Save picture") == 0)
+        if (pAction->text().compare("Save picture") == 0)
         {
             SavePicture();
             return;
         }
-        if (tPopupRes->text().compare("Stop recording") == 0)
+        if (pAction->text().compare("Stop recording") == 0)
         {
             StopRecorder();
             return;
         }
-        if (tPopupRes->text().compare("Record video") == 0)
+        if (pAction->text().compare("Record video") == 0)
         {
             StartRecorder();
             return;
         }
-        if (tPopupRes->text().compare("Mirror horizontally") == 0)
+        if (pAction->text().compare("Mirror horizontally") == 0)
         {
             mVideoMirroredHorizontal = true;
             return;
         }
-        if (tPopupRes->text().compare("Unmirror horizontally") == 0)
+        if (pAction->text().compare("Unmirror horizontally") == 0)
         {
             mVideoMirroredHorizontal = false;
             return;
         }
-        if (tPopupRes->text().compare("Mirror vertically") == 0)
+        if (pAction->text().compare("Mirror vertically") == 0)
         {
             mVideoMirroredVertical = true;
             return;
         }
-        if (tPopupRes->text().compare("Unmirror vertically") == 0)
+        if (pAction->text().compare("Unmirror vertically") == 0)
         {
             mVideoMirroredVertical = false;
             return;
         }
-        if (tPopupRes->text().compare("Show stream info") == 0)
+        if (pAction->text().compare("Show stream info") == 0)
         {
             mShowLiveStats = true;
             return;
         }
-        if (tPopupRes->text().compare("Hide stream info") == 0)
+        if (pAction->text().compare("Hide stream info") == 0)
         {
             mShowLiveStats = false;
             return;
         }
-        if (tPopupRes->text().compare("Drop stream") == 0)
+        if (pAction->text().compare("Drop stream") == 0)
         {
             mVideoPaused = true;
             mVideoWorker->SetFrameDropping(true);
             return;
         }
-        if (tPopupRes->text().compare("Continue stream") == 0)
+        if (pAction->text().compare("Continue stream") == 0)
         {
             mVideoPaused = false;
             mVideoWorker->SetFrameDropping(false);
             return;
         }
-        if (tPopupRes->text().compare("Add network sink") == 0)
+        if (pAction->text().compare("Add network sink") == 0)
         {
             DialogAddNetworkSink();
             return;
         }
-        if (tPopupRes->text().compare("Live marker") == 0)
+        if (pAction->text().compare("Live marker") == 0)
         {
             mLiveMarkerActive = !mVideoSource->MarkerActive();
             if (mLiveMarkerActive)
@@ -641,12 +615,12 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             mVideoSource->SetMarker(mLiveMarkerActive);
             return;
         }
-        if ((tPopupRes->text().compare("Show smooth video") == 0) || (tPopupRes->text().compare("Show fast video") == 0))
+        if ((pAction->text().compare("Show smooth video") == 0) || (pAction->text().compare("Show fast video") == 0))
         {
             ToggleSmoothPresentationMode();
             return;
         }
-        if ((tPopupRes->text().compare("Full screen") == 0) || (tPopupRes->text().compare("Window mode") == 0))
+        if ((pAction->text().compare("Full screen") == 0) || (pAction->text().compare("Window mode") == 0))
         {
             ToggleFullScreenMode();
             return;
@@ -655,7 +629,7 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
         //### CHANGE ASPECT RATO
         for (int i = 0; i < VIDEO_WIDGET_SUPPORTED_ASPECT_RATIOS; i++)
         {
-            if (tPopupRes->text().compare(QString(SupportedAspectRatios[i].name.c_str())) == 0)
+            if (pAction->text().compare(QString(SupportedAspectRatios[i].name.c_str())) == 0)
             {
                 mAspectRatio = i;
                 mNeedBackgroundUpdatesUntillNextFrame = true;
@@ -666,7 +640,7 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
         //### UNREGISTER SINK
         for (tRegisteredVideoSinksIt = tRegisteredVideoSinks.begin(); tRegisteredVideoSinksIt != tRegisteredVideoSinks.end(); tRegisteredVideoSinksIt++)
         {
-            if (tPopupRes->text().compare(QString(tRegisteredVideoSinksIt->c_str())) == 0)
+            if (pAction->text().compare(QString(tRegisteredVideoSinksIt->c_str())) == 0)
             {
                 mVideoSource->UnregisterGeneralMediaSink((*tRegisteredVideoSinksIt));
                 return;
@@ -676,11 +650,11 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
         //### RESOLUTION
         if (tGrabResolutions.size())
         {
-            //printf("%s\n", tPopupRes->text().toStdString().c_str());
+            //printf("%s\n", pAction->text().toStdString().c_str());
             for (tIt = tGrabResolutions.begin(); tIt != tGrabResolutions.end(); tIt++)
             {
-                //printf("to compare: |%s| |%s|\n", (QString(tIt->Name.c_str()) + QString("  (%1 x %2)").arg(tIt->ResX).arg(tIt->ResY)).toStdString().c_str(), tPopupRes->text().toStdString().c_str());
-                if (tPopupRes->text().compare(QString(tIt->Name.c_str()) + QString("  (%1 x %2)").arg(tIt->ResX, 4, 10, (const QChar)' ').arg(tIt->ResY, 4, 10, (const QChar)' ')) == 0)
+                //printf("to compare: |%s| |%s|\n", (QString(tIt->Name.c_str()) + QString("  (%1 x %2)").arg(tIt->ResX).arg(tIt->ResY)).toStdString().c_str(), pAction->text().toStdString().c_str());
+                if (pAction->text().compare(QString(tIt->Name.c_str()) + QString("  (%1 x %2)").arg(tIt->ResX, 4, 10, (const QChar)' ').arg(tIt->ResY, 4, 10, (const QChar)' ')) == 0)
                 {
                     SetResolution(tIt->ResX, tIt->ResY);
                     return;
@@ -690,12 +664,25 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
         //### SCALING
         for (int i = 1; i < 5; i++)
         {
-        	if (tPopupRes->text() == QString(" %1%").arg((int)(i * 50), 3, 10, (const QChar)' '))
-        	{
-        		SetScaling((float)i/2);
-        	}
+            if (pAction->text() == QString(" %1%").arg((int)(i * 50), 3, 10, (const QChar)' '))
+            {
+                SetScaling((float)i/2);
+            }
         }
     }
+}
+
+void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
+{
+    QMenu tMenu(this);
+    InitializeMenuVideoSettings(&tMenu);
+
+    //###############################################################################
+    //### RESULTING REACTION
+    //###############################################################################
+    QAction* tPopupRes = tMenu.exec(pEvent->globalPos());
+    if (tPopupRes != NULL)
+        SelectedMenuVideoSettings(tPopupRes);
 }
 
 void VideoWidget::DialogAddNetworkSink()

@@ -105,8 +105,11 @@ public:
 
     QStringList GetVideoStatistic();
 
+    void InitializeMenuVideoSettings(QMenu *pMenu);
+
 public slots:
     void ToggleVisibility();
+    void SelectedMenuVideoSettings(QAction *pAction);
 
 private slots:
     void ShowHourGlass();
