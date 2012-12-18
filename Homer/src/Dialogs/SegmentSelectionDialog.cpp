@@ -38,11 +38,6 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define MIN_WIDTH       352
-#define MIN_HEIGHT      288
-
-///////////////////////////////////////////////////////////////////////////////
-
 SegmentSelectionDialog::SegmentSelectionDialog(QWidget* pParent, MediaSourceDesktop *pMediaSourceDesktop):
     QDialog(pParent)
 {
@@ -136,7 +131,7 @@ void SegmentSelectionDialog::ResetToDefaults()
 {
     LOG(LOG_VERBOSE, "Resetting to defaults");
     mTbDesktopAuto->setChecked(false);
-    ConfigureDesktopCapturing(0, 0, MIN_WIDTH, MIN_HEIGHT);
+    ConfigureDesktopCapturing(0, 0, DESKTOP_SEGMENT_MIN_WIDTH, DESKTOP_SEGMENT_MIN_HEIGHT);
 }
 
 void SegmentSelectionDialog::ClickedButton(QAbstractButton *pButton)
@@ -233,14 +228,14 @@ void SegmentSelectionDialog::moveEvent(QMoveEvent *pEvent)
 void SegmentSelectionDialog::resizeEvent(QResizeEvent *pEvent)
 {
     int tNewWidth = pEvent->size().width() + (frameGeometry().width() - width());
-    if (tNewWidth < MIN_WIDTH)
-        tNewWidth = MIN_WIDTH;
+    if (tNewWidth < DESKTOP_SEGMENT_MIN_WIDTH)
+        tNewWidth = DESKTOP_SEGMENT_MIN_WIDTH;
     mLbResX->setText(QString("%1").arg(tNewWidth));
 
 
     int tNewHeight = pEvent->size().height() + (frameGeometry().height() - height()) + (frameGeometry().width() - width()) / 2;
-    if (tNewHeight < MIN_HEIGHT)
-        tNewHeight = MIN_HEIGHT;
+    if (tNewHeight < DESKTOP_SEGMENT_MIN_HEIGHT)
+        tNewHeight = DESKTOP_SEGMENT_MIN_HEIGHT;
     mLbResY->setText(QString("%1").arg(tNewHeight));
 
     mMediaSourceDesktop->SetScreenshotSize(tNewWidth, tNewHeight);

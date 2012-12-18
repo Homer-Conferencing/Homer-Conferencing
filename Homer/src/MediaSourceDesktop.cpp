@@ -73,8 +73,8 @@ MediaSourceDesktop::MediaSourceDesktop(string pDesiredDevice):
     // reset grabbing offset values
     mGrabOffsetX = 0;
     mGrabOffsetY = 0;
-    mSourceResX = 352;
-    mSourceResY = 288;
+    mSourceResX = DESKTOP_SEGMENT_MIN_WIDTH;
+    mSourceResY = DESKTOP_SEGMENT_MIN_HEIGHT;
     mRecorderChunkNumber = 0;
     mLastTimeGrabbed = QTime(0, 0, 0, 0);
 

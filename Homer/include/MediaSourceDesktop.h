@@ -49,6 +49,9 @@ using namespace Homer::Multimedia;
 #define MSD_BYTES_PER_PIXEL                         4 //RGBX
 #define MIN_GRABBING_FPS							5
 
+#define DESKTOP_SEGMENT_MIN_WIDTH                   352
+#define DESKTOP_SEGMENT_MIN_HEIGHT                  288
+
 ///////////////////////////////////////////////////////////////////////////////
 
 class MediaSourceDesktop:
