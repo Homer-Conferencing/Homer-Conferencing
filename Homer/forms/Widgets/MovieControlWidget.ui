@@ -88,7 +88,7 @@
             </size>
            </property>
            <property name="toolTip">
-            <string>Play / Pause</string>
+            <string>play / pause</string>
            </property>
            <property name="styleSheet">
             <string notr="true">QToolButton{
@@ -134,7 +134,7 @@ background-color: rgb(150, 150, 150);
             </size>
            </property>
            <property name="toolTip">
-            <string>Play previous entry in playlist</string>
+            <string>play previous entry in playlist</string>
            </property>
            <property name="styleSheet">
             <string notr="true">QToolButton{
@@ -180,7 +180,7 @@ background-color: rgb(150, 150, 150);
             </size>
            </property>
            <property name="toolTip">
-            <string>Play next entry in playlist</string>
+            <string>play next entry in playlist</string>
            </property>
            <property name="styleSheet">
             <string notr="true">QToolButton{

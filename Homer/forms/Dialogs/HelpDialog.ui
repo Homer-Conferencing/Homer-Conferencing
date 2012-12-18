@@ -35,7 +35,7 @@
         </size>
        </property>
        <property name="frameShape">
-        <enum>QFrame::Panel</enum>
+        <enum>QFrame::WinPanel</enum>
        </property>
        <property name="frameShadow">
         <enum>QFrame::Raised</enum>
@@ -356,7 +356,7 @@
      <item>
       <widget class="QFrame" name="frame_2">
        <property name="frameShape">
-        <enum>QFrame::Panel</enum>
+        <enum>QFrame::WinPanel</enum>
        </property>
        <property name="frameShadow">
         <enum>QFrame::Sunken</enum>

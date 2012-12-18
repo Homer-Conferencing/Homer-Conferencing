@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>899</width>
+    <width>817</width>
     <height>886</height>
    </rect>
   </property>
@@ -31,7 +31,7 @@
      <item row="0" column="1">
       <widget class="QStackedWidget" name="mSwPreviewPages">
        <property name="frameShape">
-        <enum>QFrame::StyledPanel</enum>
+        <enum>QFrame::WinPanel</enum>
        </property>
        <property name="frameShadow">
         <enum>QFrame::Raised</enum>
@@ -1555,7 +1555,7 @@
         </font>
        </property>
        <property name="frameShape">
-        <enum>QFrame::StyledPanel</enum>
+        <enum>QFrame::WinPanel</enum>
        </property>
        <property name="frameShadow">
         <enum>QFrame::Sunken</enum>

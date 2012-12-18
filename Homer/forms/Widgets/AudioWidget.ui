@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>414</width>
+    <width>416</width>
     <height>42</height>
    </rect>
   </property>
@@ -60,6 +60,9 @@
        <width>30</width>
        <height>30</height>
       </size>
+     </property>
+     <property name="toolTip">
+      <string>toggle mute state</string>
      </property>
      <property name="styleSheet">
       <string notr="true">QToolButton{

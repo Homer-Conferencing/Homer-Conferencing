@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>715</width>
-    <height>848</height>
+    <width>824</width>
+    <height>606</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -41,7 +41,7 @@
         </font>
        </property>
        <property name="frameShape">
-        <enum>QFrame::StyledPanel</enum>
+        <enum>QFrame::WinPanel</enum>
        </property>
        <property name="frameShadow">
         <enum>QFrame::Sunken</enum>
@@ -164,7 +164,7 @@
         </font>
        </property>
        <property name="frameShape">
-        <enum>QFrame::StyledPanel</enum>
+        <enum>QFrame::WinPanel</enum>
        </property>
        <property name="frameShadow">
         <enum>QFrame::Raised</enum>
@@ -3099,33 +3099,2295 @@ background-color: rgb(150, 150, 150);
        <widget class="QWidget" name="mNotifications">
         <layout class="QVBoxLayout" name="verticalLayout_21">
          <item>
-          <widget class="QGroupBox" name="mGrpStyle_7">
-           <property name="font">
-            <font>
-             <weight>75</weight>
-             <bold>true</bold>
-            </font>
+          <widget class="QScrollArea" name="scrollArea">
+           <property name="frameShape">
+            <enum>QFrame::WinPanel</enum>
            </property>
-           <property name="title">
-            <string> Notifications for program start/stop </string>
+           <property name="frameShadow">
+            <enum>QFrame::Sunken</enum>
            </property>
-           <layout class="QVBoxLayout" name="verticalLayout_22">
-            <property name="leftMargin">
-             <number>7</number>
+           <property name="lineWidth">
+            <number>0</number>
+           </property>
+           <property name="widgetResizable">
+            <bool>true</bool>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+           <widget class="QWidget" name="scrollAreaWidgetContents">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>646</width>
+              <height>542</height>
+             </rect>
             </property>
-            <property name="topMargin">
-             <number>3</number>
-            </property>
-            <property name="rightMargin">
-             <number>7</number>
-            </property>
-            <property name="bottomMargin">
-             <number>7</number>
-            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_24">
+             <item>
+              <widget class="QGroupBox" name="mGrpStyle_7">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="title">
+                <string> Notifications for program start/stop </string>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_22">
+                <property name="leftMargin">
+                 <number>7</number>
+                </property>
+                <property name="topMargin">
+                 <number>3</number>
+                </property>
+                <property name="rightMargin">
+                 <number>7</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>7</number>
+                </property>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_42">
+                  <item>
+                   <widget class="QLabel" name="label_4">
+                    <property name="minimumSize">
+                     <size>
+                      <width>170</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>170</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <family>MS Shell Dlg 2</family>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>Program start</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="mCbNotifySystrayStart">
+                    <property name="font">
+                     <font>
+                      <pointsize>9</pointsize>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string>show message in systray</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/Message.png</normaloff>:/images/22_22/Message.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="mCbNotifySoundStart">
+                    <property name="font">
+                     <font>
+                      <pointsize>9</pointsize>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string>play sound</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/SpeakerLoud.png</normaloff>:/images/22_22/SpeakerLoud.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="horizontalSpacer_46">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::MinimumExpanding</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>2</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="mLbNotifySoundStartFile">
+                    <property name="font">
+                     <font>
+                      <family>MS Shell Dlg 2</family>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>file</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="mPbNotifySoundStartFile">
+                    <property name="minimumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>select sound file to play</string>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QPushButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QPushButton:pressed{
+background-color: rgb(150, 150, 150);
+} </string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                    <property name="checked">
+                     <bool>false</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QToolButton" name="mTbPlaySoundStartFile">
+                    <property name="minimumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>play selected sound file</string>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QToolButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QToolButton:pressed{
+background-color: rgb(150, 150, 150);
+} 
+</string>
+                    </property>
+                    <property name="text">
+                     <string>...</string>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_43">
+                  <item>
+                   <widget class="QLabel" name="label_6">
+                    <property name="minimumSize">
+                     <size>
+                      <width>170</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>170</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <family>MS Shell Dlg 2</family>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>Program stop</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="mCbNotifySystrayStop">
+                    <property name="font">
+                     <font>
+                      <pointsize>9</pointsize>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string>show message in systray</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/Message.png</normaloff>:/images/22_22/Message.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="mCbNotifySoundStop">
+                    <property name="font">
+                     <font>
+                      <pointsize>9</pointsize>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string>play sound</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/SpeakerLoud.png</normaloff>:/images/22_22/SpeakerLoud.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="horizontalSpacer_47">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::MinimumExpanding</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>2</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="mLbNotifySoundStopFile">
+                    <property name="font">
+                     <font>
+                      <family>MS Shell Dlg 2</family>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>file</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="mPbNotifySoundStopFile">
+                    <property name="minimumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>select sound file to play</string>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QPushButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QPushButton:pressed{
+background-color: rgb(150, 150, 150);
+} </string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                    <property name="checked">
+                     <bool>false</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QToolButton" name="mTbPlaySoundStopFile">
+                    <property name="minimumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>play selected sound file</string>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QToolButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QToolButton:pressed{
+background-color: rgb(150, 150, 150);
+} 
+</string>
+                    </property>
+                    <property name="text">
+                     <string>...</string>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="mGrpStyle_3">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="title">
+                <string> Notifications for instant messages </string>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_16">
+                <property name="leftMargin">
+                 <number>7</number>
+                </property>
+                <property name="topMargin">
+                 <number>3</number>
+                </property>
+                <property name="rightMargin">
+                 <number>7</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>7</number>
+                </property>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_30">
+                  <item>
+                   <widget class="QLabel" name="label_2">
+                    <property name="minimumSize">
+                     <size>
+                      <width>170</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>170</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <family>MS Shell Dlg 2</family>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>New message</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="mCbNotifySystrayIm">
+                    <property name="font">
+                     <font>
+                      <pointsize>9</pointsize>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string>show message in systray</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/Message.png</normaloff>:/images/22_22/Message.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="mCbNotifySoundIm">
+                    <property name="font">
+                     <font>
+                      <pointsize>9</pointsize>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string>play sound</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/SpeakerLoud.png</normaloff>:/images/22_22/SpeakerLoud.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="horizontalSpacer_31">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::MinimumExpanding</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>2</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="mLbNotifySoundImFile">
+                    <property name="font">
+                     <font>
+                      <family>MS Shell Dlg 2</family>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>file</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="mPbNotifySoundImFile">
+                    <property name="minimumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>select sound file to play</string>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QPushButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QPushButton:pressed{
+background-color: rgb(150, 150, 150);
+} </string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                    <property name="checked">
+                     <bool>false</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QToolButton" name="mTbPlaySoundImFile">
+                    <property name="minimumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>play selected sound file</string>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QToolButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QToolButton:pressed{
+background-color: rgb(150, 150, 150);
+} 
+</string>
+                    </property>
+                    <property name="text">
+                     <string>...</string>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="mGrpStyle_4">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="title">
+                <string> Notifications for conference calls </string>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_18">
+                <property name="leftMargin">
+                 <number>7</number>
+                </property>
+                <property name="topMargin">
+                 <number>3</number>
+                </property>
+                <property name="rightMargin">
+                 <number>7</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>7</number>
+                </property>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_31">
+                  <item>
+                   <widget class="QLabel" name="label_8">
+                    <property name="minimumSize">
+                     <size>
+                      <width>170</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>170</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <family>MS Shell Dlg 2</family>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>New call</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="mCbNotifySystrayCall">
+                    <property name="font">
+                     <font>
+                      <pointsize>9</pointsize>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string>show message in systray</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/Message.png</normaloff>:/images/22_22/Message.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="mCbNotifySoundCall">
+                    <property name="font">
+                     <font>
+                      <pointsize>9</pointsize>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string>play sound</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/SpeakerLoud.png</normaloff>:/images/22_22/SpeakerLoud.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="horizontalSpacer_32">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::MinimumExpanding</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>2</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="mLbNotifySoundCallFile">
+                    <property name="font">
+                     <font>
+                      <family>MS Shell Dlg 2</family>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>file</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="mPbNotifySoundCallFile">
+                    <property name="minimumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>select sound file to play</string>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QPushButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QPushButton:pressed{
+background-color: rgb(150, 150, 150);
+} </string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QToolButton" name="mTbPlaySoundCallFile">
+                    <property name="minimumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>play selected sound file</string>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QToolButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QToolButton:pressed{
+background-color: rgb(150, 150, 150);
+} 
+</string>
+                    </property>
+                    <property name="text">
+                     <string>...</string>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_34">
+                  <item>
+                   <widget class="QLabel" name="label_13">
+                    <property name="minimumSize">
+                     <size>
+                      <width>170</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>170</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <family>MS Shell Dlg 2</family>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>Call acknowledge</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="mCbNotifySystrayCallAcknowledge">
+                    <property name="font">
+                     <font>
+                      <pointsize>9</pointsize>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string>show message in systray</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/Message.png</normaloff>:/images/22_22/Message.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="mCbNotifySoundCallAcknowledge">
+                    <property name="font">
+                     <font>
+                      <pointsize>9</pointsize>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string>play sound</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/SpeakerLoud.png</normaloff>:/images/22_22/SpeakerLoud.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="horizontalSpacer_38">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::MinimumExpanding</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>2</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="mLbNotifySoundCallAcknowledgeFile">
+                    <property name="font">
+                     <font>
+                      <family>MS Shell Dlg 2</family>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>file</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="mPbNotifySoundCallAcknowledgeFile">
+                    <property name="minimumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>select sound file to play</string>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QPushButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QPushButton:pressed{
+background-color: rgb(150, 150, 150);
+} </string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QToolButton" name="mTbPlaySoundCallAcknowledgeFile">
+                    <property name="minimumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>play selected sound file</string>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QToolButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QToolButton:pressed{
+background-color: rgb(150, 150, 150);
+} 
+</string>
+                    </property>
+                    <property name="text">
+                     <string>...</string>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_32">
+                  <item>
+                   <widget class="QLabel" name="label_9">
+                    <property name="minimumSize">
+                     <size>
+                      <width>170</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>170</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <family>MS Shell Dlg 2</family>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>Call deny</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="mCbNotifySystrayCallDeny">
+                    <property name="font">
+                     <font>
+                      <pointsize>9</pointsize>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string>show message in systray</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/Message.png</normaloff>:/images/22_22/Message.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="mCbNotifySoundCallDeny">
+                    <property name="font">
+                     <font>
+                      <pointsize>9</pointsize>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string>play sound</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/SpeakerLoud.png</normaloff>:/images/22_22/SpeakerLoud.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="horizontalSpacer_33">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::MinimumExpanding</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>2</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="mLbNotifySoundCallDenyFile">
+                    <property name="font">
+                     <font>
+                      <family>MS Shell Dlg 2</family>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>file</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="mPbNotifySoundCallDenyFile">
+                    <property name="minimumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>select sound file to play</string>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QPushButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QPushButton:pressed{
+background-color: rgb(150, 150, 150);
+} </string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QToolButton" name="mTbPlaySoundCallDenyFile">
+                    <property name="minimumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>play selected sound file</string>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QToolButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QToolButton:pressed{
+background-color: rgb(150, 150, 150);
+} 
+</string>
+                    </property>
+                    <property name="text">
+                     <string>...</string>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_33">
+                  <item>
+                   <widget class="QLabel" name="label_11">
+                    <property name="minimumSize">
+                     <size>
+                      <width>170</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>170</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <family>MS Shell Dlg 2</family>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>Call hangup</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="mCbNotifySystrayCallHangup">
+                    <property name="font">
+                     <font>
+                      <pointsize>9</pointsize>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string>show message in systray</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/Message.png</normaloff>:/images/22_22/Message.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="mCbNotifySoundCallHangup">
+                    <property name="font">
+                     <font>
+                      <pointsize>9</pointsize>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string>play sound</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/SpeakerLoud.png</normaloff>:/images/22_22/SpeakerLoud.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="horizontalSpacer_34">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::MinimumExpanding</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>2</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="mLbNotifySoundCallHangupFile">
+                    <property name="font">
+                     <font>
+                      <family>MS Shell Dlg 2</family>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>file</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="mPbNotifySoundCallHangupFile">
+                    <property name="minimumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>select sound file to play</string>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QPushButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QPushButton:pressed{
+background-color: rgb(150, 150, 150);
+} </string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QToolButton" name="mTbPlaySoundCallHangupFile">
+                    <property name="minimumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>play selected sound file</string>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QToolButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QToolButton:pressed{
+background-color: rgb(150, 150, 150);
+} 
+</string>
+                    </property>
+                    <property name="text">
+                     <string>...</string>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="mGrpStyle_6">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="title">
+                <string> Notifications for server registration</string>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_20">
+                <property name="leftMargin">
+                 <number>7</number>
+                </property>
+                <property name="topMargin">
+                 <number>3</number>
+                </property>
+                <property name="rightMargin">
+                 <number>7</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>7</number>
+                </property>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_38">
+                  <item>
+                   <widget class="QLabel" name="label_17">
+                    <property name="minimumSize">
+                     <size>
+                      <width>170</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>170</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <family>MS Shell Dlg 2</family>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>Registration successful</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="mCbNotifySystrayRegistrationSuccessful">
+                    <property name="font">
+                     <font>
+                      <pointsize>9</pointsize>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string>show message in systray</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/Message.png</normaloff>:/images/22_22/Message.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="mCbNotifySoundRegistrationSuccessful">
+                    <property name="font">
+                     <font>
+                      <pointsize>9</pointsize>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string>play sound</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/SpeakerLoud.png</normaloff>:/images/22_22/SpeakerLoud.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="horizontalSpacer_40">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::MinimumExpanding</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>2</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="mLbNotifySoundRegistrationSuccessfulFile">
+                    <property name="font">
+                     <font>
+                      <family>MS Shell Dlg 2</family>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>file</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="mPbNotifySoundRegistrationSuccessfulFile">
+                    <property name="minimumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>select sound file to play</string>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QPushButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QPushButton:pressed{
+background-color: rgb(150, 150, 150);
+} </string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QToolButton" name="mTbPlaySoundRegistrationSuccessfulFile">
+                    <property name="minimumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>play selected sound file</string>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QToolButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QToolButton:pressed{
+background-color: rgb(150, 150, 150);
+} 
+</string>
+                    </property>
+                    <property name="text">
+                     <string>...</string>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_39">
+                  <item>
+                   <widget class="QLabel" name="label_19">
+                    <property name="minimumSize">
+                     <size>
+                      <width>170</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>170</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <family>MS Shell Dlg 2</family>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>Registration failed</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="mCbNotifySystrayRegistrationFailed">
+                    <property name="font">
+                     <font>
+                      <pointsize>9</pointsize>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string>show message in systray</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/Message.png</normaloff>:/images/22_22/Message.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="mCbNotifySoundRegistrationFailed">
+                    <property name="font">
+                     <font>
+                      <pointsize>9</pointsize>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string>play sound</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/SpeakerLoud.png</normaloff>:/images/22_22/SpeakerLoud.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="horizontalSpacer_41">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::MinimumExpanding</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>2</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="mLbNotifySoundRegistrationFailedFile">
+                    <property name="font">
+                     <font>
+                      <family>MS Shell Dlg 2</family>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>file</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="mPbNotifySoundRegistrationFailedFile">
+                    <property name="minimumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>select sound file to play</string>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QPushButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QPushButton:pressed{
+background-color: rgb(150, 150, 150);
+} </string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QToolButton" name="mTbPlaySoundRegistrationFailedFile">
+                    <property name="minimumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>play selected sound file</string>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QToolButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QToolButton:pressed{
+background-color: rgb(150, 150, 150);
+} 
+</string>
+                    </property>
+                    <property name="text">
+                     <string>...</string>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="mGrpStyle_5">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="title">
+                <string> Notifications for errors</string>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_17">
+                <property name="leftMargin">
+                 <number>7</number>
+                </property>
+                <property name="topMargin">
+                 <number>3</number>
+                </property>
+                <property name="rightMargin">
+                 <number>7</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>7</number>
+                </property>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_37">
+                  <item>
+                   <widget class="QLabel" name="label_15">
+                    <property name="minimumSize">
+                     <size>
+                      <width>170</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>170</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <family>MS Shell Dlg 2</family>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>General error</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="mCbNotifySystrayError">
+                    <property name="font">
+                     <font>
+                      <pointsize>9</pointsize>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string>show message in systray</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/Message.png</normaloff>:/images/22_22/Message.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="mCbNotifySoundError">
+                    <property name="font">
+                     <font>
+                      <pointsize>9</pointsize>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string>play sound</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/SpeakerLoud.png</normaloff>:/images/22_22/SpeakerLoud.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="horizontalSpacer_39">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::MinimumExpanding</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>2</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="mLbNotifySoundErrorFile">
+                    <property name="font">
+                     <font>
+                      <family>MS Shell Dlg 2</family>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>file</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="mPbNotifySoundErrorFile">
+                    <property name="minimumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>select sound file to play</string>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QPushButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QPushButton:pressed{
+background-color: rgb(150, 150, 150);
+} </string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QToolButton" name="mTbPlaySoundErrorFile">
+                    <property name="minimumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>30</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>play selected sound file</string>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QToolButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QToolButton:pressed{
+background-color: rgb(150, 150, 150);
+} 
+</string>
+                    </property>
+                    <property name="text">
+                     <string>...</string>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resources/Icons.qrc">
+                      <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>22</width>
+                      <height>22</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+            <zorder>mGrpStyle_7</zorder>
+            <zorder>mGrpStyle_7</zorder>
+            <zorder>mGrpStyle_3</zorder>
+            <zorder>mGrpStyle_4</zorder>
+            <zorder>mGrpStyle_6</zorder>
+            <zorder>mGrpStyle_5</zorder>
+           </widget>
+          </widget>
+         </item>
+         <item>
+          <widget class="QFrame" name="frame">
+           <property name="frameShape">
+            <enum>QFrame::NoFrame</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Raised</enum>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_25">
             <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_42">
+             <layout class="QHBoxLayout" name="horizontalLayout_40">
               <item>
-               <widget class="QLabel" name="label_4">
+               <spacer name="horizontalSpacer_44">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeType">
+                 <enum>QSizePolicy::Fixed</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>7</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_21">
                 <property name="minimumSize">
                  <size>
                   <width>170</width>
@@ -3146,7 +5408,7 @@ background-color: rgb(150, 150, 150);
                  </font>
                 </property>
                 <property name="text">
-                 <string>Program start</string>
+                 <string>Select all</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -3154,91 +5416,7 @@ background-color: rgb(150, 150, 150);
                </widget>
               </item>
               <item>
-               <widget class="QCheckBox" name="mCbNotifySystrayStart">
-                <property name="font">
-                 <font>
-                  <pointsize>9</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="toolTip">
-                 <string>show message in systray</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/Message.png</normaloff>:/images/22_22/Message.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="mCbNotifySoundStart">
-                <property name="font">
-                 <font>
-                  <pointsize>9</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="toolTip">
-                 <string>play sound</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/SpeakerLoud.png</normaloff>:/images/22_22/SpeakerLoud.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_46">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeType">
-                 <enum>QSizePolicy::MinimumExpanding</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>2</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QLabel" name="mLbNotifySoundStartFile">
-                <property name="font">
-                 <font>
-                  <family>MS Shell Dlg 2</family>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>file</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="mPbNotifySoundStartFile">
+               <widget class="QToolButton" name="mTbSelectAllSystray">
                 <property name="minimumSize">
                  <size>
                   <width>30</width>
@@ -3250,57 +5428,6 @@ background-color: rgb(150, 150, 150);
                   <width>30</width>
                   <height>30</height>
                  </size>
-                </property>
-                <property name="toolTip">
-                 <string>select sound file to play</string>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">QPushButton{
-background-color: rgb(239, 239, 239);
-color: rgb(239, 239, 239);
-border-style: outset;
-border-width: 2px;
-border-color:  rgb(200, 200, 200);
-border-radius: 6px;
-}
-QPushButton:pressed{
-background-color: rgb(150, 150, 150);
-} </string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-                <property name="checked">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QToolButton" name="mTbPlaySoundStartFile">
-                <property name="minimumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>play selected sound file</string>
                 </property>
                 <property name="styleSheet">
                  <string notr="true">QToolButton{
@@ -3321,22 +5448,113 @@ background-color: rgb(150, 150, 150);
                 </property>
                 <property name="icon">
                  <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
+                  <normaloff>:/images/22_22/Checked.png</normaloff>:/images/22_22/Checked.png</iconset>
                 </property>
                 <property name="iconSize">
                  <size>
-                  <width>22</width>
-                  <height>22</height>
+                  <width>20</width>
+                  <height>20</height>
                  </size>
                 </property>
                </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_10">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeType">
+                 <enum>QSizePolicy::Fixed</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>17</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QToolButton" name="mTbSelectAllSound">
+                <property name="minimumSize">
+                 <size>
+                  <width>30</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>30</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">QToolButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QToolButton:pressed{
+background-color: rgb(150, 150, 150);
+} 
+</string>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="../../resources/Icons.qrc">
+                  <normaloff>:/images/22_22/Checked.png</normaloff>:/images/22_22/Checked.png</iconset>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>20</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_42">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeType">
+                 <enum>QSizePolicy::MinimumExpanding</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>2</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
               </item>
              </layout>
             </item>
             <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_43">
+             <layout class="QHBoxLayout" name="horizontalLayout_41">
               <item>
-               <widget class="QLabel" name="label_6">
+               <spacer name="horizontalSpacer_45">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeType">
+                 <enum>QSizePolicy::Fixed</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>7</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_23">
                 <property name="minimumSize">
                  <size>
                   <width>170</width>
@@ -3357,7 +5575,7 @@ background-color: rgb(150, 150, 150);
                  </font>
                 </property>
                 <property name="text">
-                 <string>Program stop</string>
+                 <string>Deselect all</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -3365,91 +5583,7 @@ background-color: rgb(150, 150, 150);
                </widget>
               </item>
               <item>
-               <widget class="QCheckBox" name="mCbNotifySystrayStop">
-                <property name="font">
-                 <font>
-                  <pointsize>9</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="toolTip">
-                 <string>show message in systray</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/Message.png</normaloff>:/images/22_22/Message.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="mCbNotifySoundStop">
-                <property name="font">
-                 <font>
-                  <pointsize>9</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="toolTip">
-                 <string>play sound</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/SpeakerLoud.png</normaloff>:/images/22_22/SpeakerLoud.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_47">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeType">
-                 <enum>QSizePolicy::MinimumExpanding</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>2</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QLabel" name="mLbNotifySoundStopFile">
-                <property name="font">
-                 <font>
-                  <family>MS Shell Dlg 2</family>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>file</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="mPbNotifySoundStopFile">
+               <widget class="QToolButton" name="mTbDeselectAllSystray">
                 <property name="minimumSize">
                  <size>
                   <width>30</width>
@@ -3461,57 +5595,6 @@ background-color: rgb(150, 150, 150);
                   <width>30</width>
                   <height>30</height>
                  </size>
-                </property>
-                <property name="toolTip">
-                 <string>select sound file to play</string>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">QPushButton{
-background-color: rgb(239, 239, 239);
-color: rgb(239, 239, 239);
-border-style: outset;
-border-width: 2px;
-border-color:  rgb(200, 200, 200);
-border-radius: 6px;
-}
-QPushButton:pressed{
-background-color: rgb(150, 150, 150);
-} </string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-                <property name="checked">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QToolButton" name="mTbPlaySoundStopFile">
-                <property name="minimumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>play selected sound file</string>
                 </property>
                 <property name="styleSheet">
                  <string notr="true">QToolButton{
@@ -3532,2145 +5615,95 @@ background-color: rgb(150, 150, 150);
                 </property>
                 <property name="icon">
                  <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
+                  <normaloff>:/images/22_22/Close.png</normaloff>:/images/22_22/Close.png</iconset>
                 </property>
                 <property name="iconSize">
                  <size>
-                  <width>22</width>
-                  <height>22</height>
+                  <width>20</width>
+                  <height>20</height>
                  </size>
                 </property>
                </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_23">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeType">
+                 <enum>QSizePolicy::Fixed</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>17</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QToolButton" name="mTbDeselectAllSound">
+                <property name="minimumSize">
+                 <size>
+                  <width>30</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>30</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">QToolButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QToolButton:pressed{
+background-color: rgb(150, 150, 150);
+} 
+</string>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="../../resources/Icons.qrc">
+                  <normaloff>:/images/22_22/Close.png</normaloff>:/images/22_22/Close.png</iconset>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>20</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_43">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeType">
+                 <enum>QSizePolicy::MinimumExpanding</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>2</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
               </item>
              </layout>
             </item>
            </layout>
           </widget>
-         </item>
-         <item>
-          <widget class="QGroupBox" name="mGrpStyle_3">
-           <property name="font">
-            <font>
-             <weight>75</weight>
-             <bold>true</bold>
-            </font>
-           </property>
-           <property name="title">
-            <string> Notifications for instant messages </string>
-           </property>
-           <layout class="QVBoxLayout" name="verticalLayout_16">
-            <property name="leftMargin">
-             <number>7</number>
-            </property>
-            <property name="topMargin">
-             <number>3</number>
-            </property>
-            <property name="rightMargin">
-             <number>7</number>
-            </property>
-            <property name="bottomMargin">
-             <number>7</number>
-            </property>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_30">
-              <item>
-               <widget class="QLabel" name="label_2">
-                <property name="minimumSize">
-                 <size>
-                  <width>170</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>170</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
-                <property name="font">
-                 <font>
-                  <family>MS Shell Dlg 2</family>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>New message</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="mCbNotifySystrayIm">
-                <property name="font">
-                 <font>
-                  <pointsize>9</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="toolTip">
-                 <string>show message in systray</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/Message.png</normaloff>:/images/22_22/Message.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="mCbNotifySoundIm">
-                <property name="font">
-                 <font>
-                  <pointsize>9</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="toolTip">
-                 <string>play sound</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/SpeakerLoud.png</normaloff>:/images/22_22/SpeakerLoud.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_31">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeType">
-                 <enum>QSizePolicy::MinimumExpanding</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>2</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QLabel" name="mLbNotifySoundImFile">
-                <property name="font">
-                 <font>
-                  <family>MS Shell Dlg 2</family>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>file</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="mPbNotifySoundImFile">
-                <property name="minimumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>select sound file to play</string>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">QPushButton{
-background-color: rgb(239, 239, 239);
-color: rgb(239, 239, 239);
-border-style: outset;
-border-width: 2px;
-border-color:  rgb(200, 200, 200);
-border-radius: 6px;
-}
-QPushButton:pressed{
-background-color: rgb(150, 150, 150);
-} </string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-                <property name="checked">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QToolButton" name="mTbPlaySoundImFile">
-                <property name="minimumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>play selected sound file</string>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">QToolButton{
-background-color: rgb(239, 239, 239);
-color: rgb(239, 239, 239);
-border-style: outset;
-border-width: 2px;
-border-color:  rgb(200, 200, 200);
-border-radius: 6px;
-}
-QToolButton:pressed{
-background-color: rgb(150, 150, 150);
-} 
-</string>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item>
-          <widget class="QGroupBox" name="mGrpStyle_4">
-           <property name="font">
-            <font>
-             <weight>75</weight>
-             <bold>true</bold>
-            </font>
-           </property>
-           <property name="title">
-            <string> Notifications for conference calls </string>
-           </property>
-           <layout class="QVBoxLayout" name="verticalLayout_18">
-            <property name="leftMargin">
-             <number>7</number>
-            </property>
-            <property name="topMargin">
-             <number>3</number>
-            </property>
-            <property name="rightMargin">
-             <number>7</number>
-            </property>
-            <property name="bottomMargin">
-             <number>7</number>
-            </property>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_31">
-              <item>
-               <widget class="QLabel" name="label_8">
-                <property name="minimumSize">
-                 <size>
-                  <width>170</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>170</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
-                <property name="font">
-                 <font>
-                  <family>MS Shell Dlg 2</family>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>New call</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="mCbNotifySystrayCall">
-                <property name="font">
-                 <font>
-                  <pointsize>9</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="toolTip">
-                 <string>show message in systray</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/Message.png</normaloff>:/images/22_22/Message.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="mCbNotifySoundCall">
-                <property name="font">
-                 <font>
-                  <pointsize>9</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="toolTip">
-                 <string>play sound</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/SpeakerLoud.png</normaloff>:/images/22_22/SpeakerLoud.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_32">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeType">
-                 <enum>QSizePolicy::MinimumExpanding</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>2</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QLabel" name="mLbNotifySoundCallFile">
-                <property name="font">
-                 <font>
-                  <family>MS Shell Dlg 2</family>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>file</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="mPbNotifySoundCallFile">
-                <property name="minimumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>select sound file to play</string>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">QPushButton{
-background-color: rgb(239, 239, 239);
-color: rgb(239, 239, 239);
-border-style: outset;
-border-width: 2px;
-border-color:  rgb(200, 200, 200);
-border-radius: 6px;
-}
-QPushButton:pressed{
-background-color: rgb(150, 150, 150);
-} </string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QToolButton" name="mTbPlaySoundCallFile">
-                <property name="minimumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>play selected sound file</string>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">QToolButton{
-background-color: rgb(239, 239, 239);
-color: rgb(239, 239, 239);
-border-style: outset;
-border-width: 2px;
-border-color:  rgb(200, 200, 200);
-border-radius: 6px;
-}
-QToolButton:pressed{
-background-color: rgb(150, 150, 150);
-} 
-</string>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_34">
-              <item>
-               <widget class="QLabel" name="label_13">
-                <property name="minimumSize">
-                 <size>
-                  <width>170</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>170</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
-                <property name="font">
-                 <font>
-                  <family>MS Shell Dlg 2</family>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Call acknowledge</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="mCbNotifySystrayCallAcknowledge">
-                <property name="font">
-                 <font>
-                  <pointsize>9</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="toolTip">
-                 <string>show message in systray</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/Message.png</normaloff>:/images/22_22/Message.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="mCbNotifySoundCallAcknowledge">
-                <property name="font">
-                 <font>
-                  <pointsize>9</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="toolTip">
-                 <string>play sound</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/SpeakerLoud.png</normaloff>:/images/22_22/SpeakerLoud.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_38">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeType">
-                 <enum>QSizePolicy::MinimumExpanding</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>2</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QLabel" name="mLbNotifySoundCallAcknowledgeFile">
-                <property name="font">
-                 <font>
-                  <family>MS Shell Dlg 2</family>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>file</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="mPbNotifySoundCallAcknowledgeFile">
-                <property name="minimumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>select sound file to play</string>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">QPushButton{
-background-color: rgb(239, 239, 239);
-color: rgb(239, 239, 239);
-border-style: outset;
-border-width: 2px;
-border-color:  rgb(200, 200, 200);
-border-radius: 6px;
-}
-QPushButton:pressed{
-background-color: rgb(150, 150, 150);
-} </string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QToolButton" name="mTbPlaySoundCallAcknowledgeFile">
-                <property name="minimumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>play selected sound file</string>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">QToolButton{
-background-color: rgb(239, 239, 239);
-color: rgb(239, 239, 239);
-border-style: outset;
-border-width: 2px;
-border-color:  rgb(200, 200, 200);
-border-radius: 6px;
-}
-QToolButton:pressed{
-background-color: rgb(150, 150, 150);
-} 
-</string>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_32">
-              <item>
-               <widget class="QLabel" name="label_9">
-                <property name="minimumSize">
-                 <size>
-                  <width>170</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>170</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
-                <property name="font">
-                 <font>
-                  <family>MS Shell Dlg 2</family>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Call deny</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="mCbNotifySystrayCallDeny">
-                <property name="font">
-                 <font>
-                  <pointsize>9</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="toolTip">
-                 <string>show message in systray</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/Message.png</normaloff>:/images/22_22/Message.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="mCbNotifySoundCallDeny">
-                <property name="font">
-                 <font>
-                  <pointsize>9</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="toolTip">
-                 <string>play sound</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/SpeakerLoud.png</normaloff>:/images/22_22/SpeakerLoud.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_33">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeType">
-                 <enum>QSizePolicy::MinimumExpanding</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>2</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QLabel" name="mLbNotifySoundCallDenyFile">
-                <property name="font">
-                 <font>
-                  <family>MS Shell Dlg 2</family>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>file</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="mPbNotifySoundCallDenyFile">
-                <property name="minimumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>select sound file to play</string>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">QPushButton{
-background-color: rgb(239, 239, 239);
-color: rgb(239, 239, 239);
-border-style: outset;
-border-width: 2px;
-border-color:  rgb(200, 200, 200);
-border-radius: 6px;
-}
-QPushButton:pressed{
-background-color: rgb(150, 150, 150);
-} </string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QToolButton" name="mTbPlaySoundCallDenyFile">
-                <property name="minimumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>play selected sound file</string>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">QToolButton{
-background-color: rgb(239, 239, 239);
-color: rgb(239, 239, 239);
-border-style: outset;
-border-width: 2px;
-border-color:  rgb(200, 200, 200);
-border-radius: 6px;
-}
-QToolButton:pressed{
-background-color: rgb(150, 150, 150);
-} 
-</string>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_33">
-              <item>
-               <widget class="QLabel" name="label_11">
-                <property name="minimumSize">
-                 <size>
-                  <width>170</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>170</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
-                <property name="font">
-                 <font>
-                  <family>MS Shell Dlg 2</family>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Call hangup</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="mCbNotifySystrayCallHangup">
-                <property name="font">
-                 <font>
-                  <pointsize>9</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="toolTip">
-                 <string>show message in systray</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/Message.png</normaloff>:/images/22_22/Message.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="mCbNotifySoundCallHangup">
-                <property name="font">
-                 <font>
-                  <pointsize>9</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="toolTip">
-                 <string>play sound</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/SpeakerLoud.png</normaloff>:/images/22_22/SpeakerLoud.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_34">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeType">
-                 <enum>QSizePolicy::MinimumExpanding</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>2</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QLabel" name="mLbNotifySoundCallHangupFile">
-                <property name="font">
-                 <font>
-                  <family>MS Shell Dlg 2</family>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>file</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="mPbNotifySoundCallHangupFile">
-                <property name="minimumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>select sound file to play</string>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">QPushButton{
-background-color: rgb(239, 239, 239);
-color: rgb(239, 239, 239);
-border-style: outset;
-border-width: 2px;
-border-color:  rgb(200, 200, 200);
-border-radius: 6px;
-}
-QPushButton:pressed{
-background-color: rgb(150, 150, 150);
-} </string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QToolButton" name="mTbPlaySoundCallHangupFile">
-                <property name="minimumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>play selected sound file</string>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">QToolButton{
-background-color: rgb(239, 239, 239);
-color: rgb(239, 239, 239);
-border-style: outset;
-border-width: 2px;
-border-color:  rgb(200, 200, 200);
-border-radius: 6px;
-}
-QToolButton:pressed{
-background-color: rgb(150, 150, 150);
-} 
-</string>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item>
-          <widget class="QGroupBox" name="mGrpStyle_6">
-           <property name="font">
-            <font>
-             <weight>75</weight>
-             <bold>true</bold>
-            </font>
-           </property>
-           <property name="title">
-            <string> Notifications for server registration</string>
-           </property>
-           <layout class="QVBoxLayout" name="verticalLayout_20">
-            <property name="leftMargin">
-             <number>7</number>
-            </property>
-            <property name="topMargin">
-             <number>3</number>
-            </property>
-            <property name="rightMargin">
-             <number>7</number>
-            </property>
-            <property name="bottomMargin">
-             <number>7</number>
-            </property>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_38">
-              <item>
-               <widget class="QLabel" name="label_17">
-                <property name="minimumSize">
-                 <size>
-                  <width>170</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>170</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
-                <property name="font">
-                 <font>
-                  <family>MS Shell Dlg 2</family>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Registration successful</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="mCbNotifySystrayRegistrationSuccessful">
-                <property name="font">
-                 <font>
-                  <pointsize>9</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="toolTip">
-                 <string>show message in systray</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/Message.png</normaloff>:/images/22_22/Message.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="mCbNotifySoundRegistrationSuccessful">
-                <property name="font">
-                 <font>
-                  <pointsize>9</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="toolTip">
-                 <string>play sound</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/SpeakerLoud.png</normaloff>:/images/22_22/SpeakerLoud.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_40">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeType">
-                 <enum>QSizePolicy::MinimumExpanding</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>2</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QLabel" name="mLbNotifySoundRegistrationSuccessfulFile">
-                <property name="font">
-                 <font>
-                  <family>MS Shell Dlg 2</family>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>file</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="mPbNotifySoundRegistrationSuccessfulFile">
-                <property name="minimumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>select sound file to play</string>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">QPushButton{
-background-color: rgb(239, 239, 239);
-color: rgb(239, 239, 239);
-border-style: outset;
-border-width: 2px;
-border-color:  rgb(200, 200, 200);
-border-radius: 6px;
-}
-QPushButton:pressed{
-background-color: rgb(150, 150, 150);
-} </string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QToolButton" name="mTbPlaySoundRegistrationSuccessfulFile">
-                <property name="minimumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>play selected sound file</string>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">QToolButton{
-background-color: rgb(239, 239, 239);
-color: rgb(239, 239, 239);
-border-style: outset;
-border-width: 2px;
-border-color:  rgb(200, 200, 200);
-border-radius: 6px;
-}
-QToolButton:pressed{
-background-color: rgb(150, 150, 150);
-} 
-</string>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_39">
-              <item>
-               <widget class="QLabel" name="label_19">
-                <property name="minimumSize">
-                 <size>
-                  <width>170</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>170</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
-                <property name="font">
-                 <font>
-                  <family>MS Shell Dlg 2</family>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Registration failed</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="mCbNotifySystrayRegistrationFailed">
-                <property name="font">
-                 <font>
-                  <pointsize>9</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="toolTip">
-                 <string>show message in systray</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/Message.png</normaloff>:/images/22_22/Message.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="mCbNotifySoundRegistrationFailed">
-                <property name="font">
-                 <font>
-                  <pointsize>9</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="toolTip">
-                 <string>play sound</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/SpeakerLoud.png</normaloff>:/images/22_22/SpeakerLoud.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_41">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeType">
-                 <enum>QSizePolicy::MinimumExpanding</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>2</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QLabel" name="mLbNotifySoundRegistrationFailedFile">
-                <property name="font">
-                 <font>
-                  <family>MS Shell Dlg 2</family>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>file</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="mPbNotifySoundRegistrationFailedFile">
-                <property name="minimumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>select sound file to play</string>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">QPushButton{
-background-color: rgb(239, 239, 239);
-color: rgb(239, 239, 239);
-border-style: outset;
-border-width: 2px;
-border-color:  rgb(200, 200, 200);
-border-radius: 6px;
-}
-QPushButton:pressed{
-background-color: rgb(150, 150, 150);
-} </string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QToolButton" name="mTbPlaySoundRegistrationFailedFile">
-                <property name="minimumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>play selected sound file</string>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">QToolButton{
-background-color: rgb(239, 239, 239);
-color: rgb(239, 239, 239);
-border-style: outset;
-border-width: 2px;
-border-color:  rgb(200, 200, 200);
-border-radius: 6px;
-}
-QToolButton:pressed{
-background-color: rgb(150, 150, 150);
-} 
-</string>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item>
-          <widget class="QGroupBox" name="mGrpStyle_5">
-           <property name="font">
-            <font>
-             <weight>75</weight>
-             <bold>true</bold>
-            </font>
-           </property>
-           <property name="title">
-            <string> Notifications for errors</string>
-           </property>
-           <layout class="QVBoxLayout" name="verticalLayout_17">
-            <property name="leftMargin">
-             <number>7</number>
-            </property>
-            <property name="topMargin">
-             <number>3</number>
-            </property>
-            <property name="rightMargin">
-             <number>7</number>
-            </property>
-            <property name="bottomMargin">
-             <number>7</number>
-            </property>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_37">
-              <item>
-               <widget class="QLabel" name="label_15">
-                <property name="minimumSize">
-                 <size>
-                  <width>170</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>170</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
-                <property name="font">
-                 <font>
-                  <family>MS Shell Dlg 2</family>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>General error</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="mCbNotifySystrayError">
-                <property name="font">
-                 <font>
-                  <pointsize>9</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="toolTip">
-                 <string>show message in systray</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/Message.png</normaloff>:/images/22_22/Message.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="mCbNotifySoundError">
-                <property name="font">
-                 <font>
-                  <pointsize>9</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="toolTip">
-                 <string>play sound</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/SpeakerLoud.png</normaloff>:/images/22_22/SpeakerLoud.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_39">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeType">
-                 <enum>QSizePolicy::MinimumExpanding</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>2</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QLabel" name="mLbNotifySoundErrorFile">
-                <property name="font">
-                 <font>
-                  <family>MS Shell Dlg 2</family>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>file</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="mPbNotifySoundErrorFile">
-                <property name="minimumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>select sound file to play</string>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">QPushButton{
-background-color: rgb(239, 239, 239);
-color: rgb(239, 239, 239);
-border-style: outset;
-border-width: 2px;
-border-color:  rgb(200, 200, 200);
-border-radius: 6px;
-}
-QPushButton:pressed{
-background-color: rgb(150, 150, 150);
-} </string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QToolButton" name="mTbPlaySoundErrorFile">
-                <property name="minimumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>play selected sound file</string>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">QToolButton{
-background-color: rgb(239, 239, 239);
-color: rgb(239, 239, 239);
-border-style: outset;
-border-width: 2px;
-border-color:  rgb(200, 200, 200);
-border-radius: 6px;
-}
-QToolButton:pressed{
-background-color: rgb(150, 150, 150);
-} 
-</string>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>22</width>
-                  <height>22</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item>
-          <spacer name="verticalSpacer_6">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeType">
-            <enum>QSizePolicy::MinimumExpanding</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>1</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_40">
-           <item>
-            <spacer name="horizontalSpacer_44">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>7</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_21">
-             <property name="minimumSize">
-              <size>
-               <width>170</width>
-               <height>30</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>170</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="font">
-              <font>
-               <family>MS Shell Dlg 2</family>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Select all</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QToolButton" name="mTbSelectAllSystray">
-             <property name="minimumSize">
-              <size>
-               <width>30</width>
-               <height>30</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>30</width>
-               <height>30</height>
-              </size>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">QToolButton{
-background-color: rgb(239, 239, 239);
-color: rgb(239, 239, 239);
-border-style: outset;
-border-width: 2px;
-border-color:  rgb(200, 200, 200);
-border-radius: 6px;
-}
-QToolButton:pressed{
-background-color: rgb(150, 150, 150);
-} 
-</string>
-             </property>
-             <property name="text">
-              <string>...</string>
-             </property>
-             <property name="icon">
-              <iconset resource="../../resources/Icons.qrc">
-               <normaloff>:/images/22_22/Checked.png</normaloff>:/images/22_22/Checked.png</iconset>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>20</width>
-               <height>20</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="horizontalSpacer_10">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>17</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="QToolButton" name="mTbSelectAllSound">
-             <property name="minimumSize">
-              <size>
-               <width>30</width>
-               <height>30</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>30</width>
-               <height>30</height>
-              </size>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">QToolButton{
-background-color: rgb(239, 239, 239);
-color: rgb(239, 239, 239);
-border-style: outset;
-border-width: 2px;
-border-color:  rgb(200, 200, 200);
-border-radius: 6px;
-}
-QToolButton:pressed{
-background-color: rgb(150, 150, 150);
-} 
-</string>
-             </property>
-             <property name="text">
-              <string>...</string>
-             </property>
-             <property name="icon">
-              <iconset resource="../../resources/Icons.qrc">
-               <normaloff>:/images/22_22/Checked.png</normaloff>:/images/22_22/Checked.png</iconset>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>20</width>
-               <height>20</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="horizontalSpacer_42">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::MinimumExpanding</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>2</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_41">
-           <item>
-            <spacer name="horizontalSpacer_45">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>7</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_23">
-             <property name="minimumSize">
-              <size>
-               <width>170</width>
-               <height>30</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>170</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="font">
-              <font>
-               <family>MS Shell Dlg 2</family>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Deselect all</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QToolButton" name="mTbDeselectAllSystray">
-             <property name="minimumSize">
-              <size>
-               <width>30</width>
-               <height>30</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>30</width>
-               <height>30</height>
-              </size>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">QToolButton{
-background-color: rgb(239, 239, 239);
-color: rgb(239, 239, 239);
-border-style: outset;
-border-width: 2px;
-border-color:  rgb(200, 200, 200);
-border-radius: 6px;
-}
-QToolButton:pressed{
-background-color: rgb(150, 150, 150);
-} 
-</string>
-             </property>
-             <property name="text">
-              <string>...</string>
-             </property>
-             <property name="icon">
-              <iconset resource="../../resources/Icons.qrc">
-               <normaloff>:/images/22_22/Close.png</normaloff>:/images/22_22/Close.png</iconset>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>20</width>
-               <height>20</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="horizontalSpacer_23">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>17</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="QToolButton" name="mTbDeselectAllSound">
-             <property name="minimumSize">
-              <size>
-               <width>30</width>
-               <height>30</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>30</width>
-               <height>30</height>
-              </size>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">QToolButton{
-background-color: rgb(239, 239, 239);
-color: rgb(239, 239, 239);
-border-style: outset;
-border-width: 2px;
-border-color:  rgb(200, 200, 200);
-border-radius: 6px;
-}
-QToolButton:pressed{
-background-color: rgb(150, 150, 150);
-} 
-</string>
-             </property>
-             <property name="text">
-              <string>...</string>
-             </property>
-             <property name="icon">
-              <iconset resource="../../resources/Icons.qrc">
-               <normaloff>:/images/22_22/Close.png</normaloff>:/images/22_22/Close.png</iconset>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>20</width>
-               <height>20</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="horizontalSpacer_43">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::MinimumExpanding</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>2</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
          </item>
         </layout>
        </widget>

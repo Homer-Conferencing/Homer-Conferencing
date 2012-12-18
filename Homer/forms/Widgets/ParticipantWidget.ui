@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>653</width>
+    <width>700</width>
     <height>252</height>
    </rect>
   </property>
@@ -260,7 +260,7 @@
           <property name="frameShadow">
            <enum>QFrame::Raised</enum>
           </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0,10,0,0,1,0,0,0">
+          <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0,10,0,0,0,1,0,0,0">
            <property name="leftMargin">
             <number>9</number>
            </property>
@@ -288,7 +288,7 @@
               </size>
              </property>
              <property name="toolTip">
-              <string>Toggle visibility of playlist</string>
+              <string>toggle visibility of playlist</string>
              </property>
              <property name="styleSheet">
               <string notr="true">QToolButton{
@@ -352,7 +352,7 @@ background-color: rgb(150, 150, 150);
                  </size>
                 </property>
                 <property name="toolTip">
-                 <string>Play / Pause</string>
+                 <string>play / pause</string>
                 </property>
                 <property name="styleSheet">
                  <string notr="true">QToolButton{
@@ -398,7 +398,7 @@ background-color: rgb(150, 150, 150);
                  </size>
                 </property>
                 <property name="toolTip">
-                 <string>Play previous entry in playlist</string>
+                 <string>play previous entry in playlist</string>
                 </property>
                 <property name="styleSheet">
                  <string notr="true">QToolButton{
@@ -444,7 +444,7 @@ background-color: rgb(150, 150, 150);
                  </size>
                 </property>
                 <property name="toolTip">
-                 <string>Play next entry in playlist</string>
+                 <string>play next entry in playlist</string>
                 </property>
                 <property name="styleSheet">
                  <string notr="true">QToolButton{
@@ -871,7 +871,7 @@ p, li { white-space: pre-wrap; }
               </size>
              </property>
              <property name="toolTip">
-              <string>Record video and audio stream to a movie file</string>
+              <string>record video and audio stream to a movie file</string>
              </property>
              <property name="styleSheet">
               <string notr="true">QToolButton{
@@ -899,6 +899,52 @@ background-color: rgb(150, 150, 150);
                <width>22</width>
                <height>22</height>
               </size>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="mTbSettings">
+             <property name="minimumSize">
+              <size>
+               <width>30</width>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="toolTip">
+              <string>adjust video/audio settings</string>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">QToolButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+</string>
+             </property>
+             <property name="text">
+              <string>  </string>
+             </property>
+             <property name="icon">
+              <iconset resource="../../resources/Icons.qrc">
+               <normaloff>:/images/22_22/Configuration.png</normaloff>:/images/22_22/Configuration.png</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>22</width>
+               <height>22</height>
+              </size>
+             </property>
+             <property name="popupMode">
+              <enum>QToolButton::InstantPopup</enum>
+             </property>
+             <property name="toolButtonStyle">
+              <enum>Qt::ToolButtonTextBesideIcon</enum>
+             </property>
+             <property name="autoRaise">
+              <bool>true</bool>
              </property>
             </widget>
            </item>
@@ -934,7 +980,7 @@ background-color: rgb(150, 150, 150);
               </size>
              </property>
              <property name="toolTip">
-              <string>Activation of audio stream to this participant</string>
+              <string>activation of audio stream to this participant</string>
              </property>
              <property name="styleSheet">
               <string notr="true">QToolButton{
@@ -996,7 +1042,7 @@ background-color: rgb(150, 150, 150);
               </size>
              </property>
              <property name="toolTip">
-              <string>Activation of video stream to this participant</string>
+              <string>activation of video stream to this participant</string>
              </property>
              <property name="styleSheet">
               <string notr="true">QToolButton{

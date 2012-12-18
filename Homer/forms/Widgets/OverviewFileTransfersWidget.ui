@@ -204,7 +204,7 @@
              </size>
             </property>
             <property name="toolTip">
-             <string>Add file(s) to playlist</string>
+             <string>add file(s) to playlist</string>
             </property>
             <property name="styleSheet">
              <string notr="true">QToolButton{
@@ -250,7 +250,7 @@ background-color: rgb(150, 150, 150);
              </size>
             </property>
             <property name="toolTip">
-             <string>Remove file(s) from playlist</string>
+             <string>remove file(s) from playlist</string>
             </property>
             <property name="styleSheet">
              <string notr="true">QToolButton{

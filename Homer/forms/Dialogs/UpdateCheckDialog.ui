@@ -34,7 +34,7 @@
      <item>
       <widget class="QFrame" name="frame">
        <property name="frameShape">
-        <enum>QFrame::StyledPanel</enum>
+        <enum>QFrame::WinPanel</enum>
        </property>
        <property name="frameShadow">
         <enum>QFrame::Raised</enum>
@@ -332,7 +332,7 @@ p, li { white-space: pre-wrap; }
      <item>
       <widget class="QFrame" name="frame_2">
        <property name="frameShape">
-        <enum>QFrame::StyledPanel</enum>
+        <enum>QFrame::WinPanel</enum>
        </property>
        <property name="frameShadow">
         <enum>QFrame::Sunken</enum>
