@@ -71,26 +71,44 @@ SessionInfoWidget::~SessionInfoWidget()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void SessionInfoWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEvent)
+void SessionInfoWidget::InitializeMenuSessionInfoSettings(QMenu *pMenu)
 {
     QAction *tAction;
 
-    QMenu tMenu(this);
+    pMenu->clear();
 
-    tAction = tMenu.addAction("Close session info");
-    QIcon tIcon1;
-    tIcon1.addPixmap(QPixmap(":/images/22_22/Close.png"), QIcon::Normal, QIcon::Off);
-    tAction->setIcon(tIcon1);
+    if (isVisible())
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Close.png"), "Close session info");
+    else
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Messages.png"), "Show session info");
+}
 
-    QAction* tPopupRes = tMenu.exec(pContextMenuEvent->globalPos());
-    if (tPopupRes != NULL)
+void SessionInfoWidget::SelectedMenuSessionInfoSettings(QAction *pAction)
+{
+    if (pAction != NULL)
     {
-        if (tPopupRes->text().compare("Close session info") == 0)
+        if (pAction->text().compare("Show session info") == 0)
+        {
+            ToggleVisibility();
+            return;
+        }
+        if (pAction->text().compare("Close session info") == 0)
         {
             ToggleVisibility();
             return;
         }
     }
+}
+
+void SessionInfoWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEvent)
+{
+    QMenu tMenu(this);
+
+    InitializeMenuSessionInfoSettings(&tMenu);
+
+    QAction* tPopupRes = tMenu.exec(pContextMenuEvent->globalPos());
+    if (tPopupRes != NULL)
+        SelectedMenuSessionInfoSettings(tPopupRes);
 }
 
 void SessionInfoWidget::UpdateView()

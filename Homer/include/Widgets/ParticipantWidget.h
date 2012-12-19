@@ -238,6 +238,7 @@ private:
     QMenu                   *mMenuSettingsVideo;
     QMenu                   *mMenuSettingsAudio;
     QMenu                   *mMenuSettingsMessages;
+    QMenu                   *mMenuSettingsSessionInfo;
     /* A/V synch. */
     int64_t					mLastAudioSynchronizationTimestamp;
     int64_t					mLastVideoSynchronizationTimestamp;

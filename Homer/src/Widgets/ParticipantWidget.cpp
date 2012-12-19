@@ -420,7 +420,14 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
         mMenuSettingsMessages = mMenuSettings->addMenu(QPixmap(":/images/22_22/Message.png"), "Messages");
         connect(mMenuSettingsMessages, SIGNAL(triggered(QAction *)), mMessageWidget, SLOT(SelectedMenuMessagesSettings(QAction*)));
     }
-
+    if (CONF.DebuggingEnabled())
+    {
+        if (mSessionType == PARTICIPANT)
+        {
+            mMenuSettingsSessionInfo = mMenuSettings->addMenu(QPixmap(":/images/22_22/Info.png"), "Session info");
+            connect(mMenuSettingsSessionInfo, SIGNAL(triggered(QAction *)), mSessionInfoWidget, SLOT(SelectedMenuSessionInfoSettings(QAction*)));
+        }
+    }
     mTbSettings->setMenu(mMenuSettings);
     mTbSettings->setText("  ");
 
@@ -453,6 +460,11 @@ void ParticipantWidget::UpdateMenuSettings()
         mAudioWidget->InitializeMenuAudioSettings(mMenuSettingsAudio);
     if (mSessionType != PREVIEW)
         mMessageWidget->InitializeMenuMessagesSettings(mMenuSettingsMessages);
+    if (CONF.DebuggingEnabled())
+    {
+        if (mSessionType == PARTICIPANT)
+            mSessionInfoWidget->InitializeMenuSessionInfoSettings(mMenuSettingsSessionInfo);
+    }
 }
 
 void ParticipantWidget::HideAudioVideoWidget()

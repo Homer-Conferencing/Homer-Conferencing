@@ -54,8 +54,11 @@ public:
     void SetVisible(bool pVisible);
     void SetSipInterface(QString pSipInterface = "unknown");
 
+    void InitializeMenuSessionInfoSettings(QMenu *pMenu);
+
 public slots:
     void ToggleVisibility();
+    void SelectedMenuSessionInfoSettings(QAction *pAction);
 
 private:
     virtual void closeEvent(QCloseEvent* pEvent);
