@@ -911,7 +911,7 @@ background-color: rgb(150, 150, 150);
               </size>
              </property>
              <property name="toolTip">
-              <string>adjust video/audio settings</string>
+              <string>video/audio actions</string>
              </property>
              <property name="styleSheet">
               <string notr="true">QToolButton{
@@ -925,7 +925,7 @@ border-radius: 6px;
 </string>
              </property>
              <property name="text">
-              <string>  </string>
+              <string/>
              </property>
              <property name="icon">
               <iconset resource="../../resources/Icons.qrc">
@@ -945,6 +945,9 @@ border-radius: 6px;
              </property>
              <property name="autoRaise">
               <bool>true</bool>
+             </property>
+             <property name="arrowType">
+              <enum>Qt::NoArrow</enum>
              </property>
             </widget>
            </item>
