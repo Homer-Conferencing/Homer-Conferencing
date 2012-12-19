@@ -58,10 +58,13 @@ public:
     void UpdateParticipantName(QString pParticipantName);
     void UpdateParticipantState(int pState);
 
+    void InitializeMenuMessagesSettings(QMenu *pMenu);
+
 public slots:
 	void SendMessage();
     void SendFile(QList<QUrl> *tFileUrls = NULL);
     void ToggleVisibility();
+    void SelectedMenuMessagesSettings(QAction *pAction);
 
 private slots:
     void AddPArticipantToContacts();

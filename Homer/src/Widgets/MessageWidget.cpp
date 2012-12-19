@@ -146,52 +146,60 @@ bool MessageWidget::IsKnownContact()
     return CONTACTS.IsKnownContact(tUser, tHost, tPort);
 }
 
-void MessageWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEvent)
+void MessageWidget::InitializeMenuMessagesSettings(QMenu *pMenu)
 {
     QAction *tAction;
 
-    QMenu tMenu(this);
+    pMenu->clear();
 
-    tAction = tMenu.addAction("Save history");
-    QIcon tIcon2;
-    tIcon2.addPixmap(QPixmap(":/images/22_22/Save.png"), QIcon::Normal, QIcon::Off);
-    tAction->setIcon(tIcon2);
-
-    tAction = tMenu.addAction("Close messages");
-    QIcon tIcon1;
-    tIcon1.addPixmap(QPixmap(":/images/22_22/Close.png"), QIcon::Normal, QIcon::Off);
-    tAction->setIcon(tIcon1);
-
-    tMenu.addSeparator();
+    tAction = pMenu->addAction(QPixmap(":/images/22_22/Save.png"), "Save history");
+    if (isVisible())
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Close.png"), "Close messages");
+    else
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Messages.png"), "Show messages");
+    pMenu->addSeparator();
 
     if ((!IsKnownContact()) && (mParticipant != BROACAST_IDENTIFIER))
-    {
-        tAction = tMenu.addAction("Add to contacts");
-        QIcon tIcon3;
-        tIcon3.addPixmap(QPixmap(":/images/22_22/Plus.png"), QIcon::Normal, QIcon::Off);
-        tAction->setIcon(tIcon3);
-    }
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Plus.png"), "Add to contacts");
+}
 
-    QAction* tPopupRes = tMenu.exec(pContextMenuEvent->globalPos());
-    if (tPopupRes != NULL)
+void MessageWidget::SelectedMenuMessagesSettings(QAction *pAction)
+{
+    if (pAction != NULL)
     {
-        if (tPopupRes->text().compare("Close messages") == 0)
+        if (pAction->text().compare("Show messages") == 0)
         {
             ToggleVisibility();
             return;
         }
-        if (tPopupRes->text().compare("Save history") == 0)
+        if (pAction->text().compare("Close messages") == 0)
+        {
+            ToggleVisibility();
+            return;
+        }
+        if (pAction->text().compare("Save history") == 0)
         {
             mTbMessageHistory->Save();
             return;
         }
-        if (tPopupRes->text().compare("Add to contacts") == 0)
+        if (pAction->text().compare("Add to contacts") == 0)
         {
-        	LOG(LOG_VERBOSE, "Adding this participant to contacts");
-        	AddPArticipantToContacts();
+            LOG(LOG_VERBOSE, "Adding this participant to contacts");
+            AddPArticipantToContacts();
             return;
         }
     }
+}
+
+void MessageWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEvent)
+{
+    QMenu tMenu(this);
+
+    InitializeMenuMessagesSettings(&tMenu);
+
+    QAction* tPopupRes = tMenu.exec(pContextMenuEvent->globalPos());
+    if (tPopupRes != NULL)
+        SelectedMenuMessagesSettings(tPopupRes);
 }
 
 void MessageWidget::AddPArticipantToContacts()

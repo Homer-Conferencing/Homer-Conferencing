@@ -408,13 +408,19 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
     if (mVideoSource != NULL)
     {
         mMenuSettingsVideo = mMenuSettings->addMenu(QPixmap(":/images/46_46/VideoReel.png"), "Video");
-        connect(mMenuSettingsVideo, SIGNAL(triggered(QAction *)), mVideoWidget, SLOT(SelectedMenuVideoSettings(QAction *)));
+        connect(mMenuSettingsVideo, SIGNAL(triggered(QAction *)), mVideoWidget, SLOT(SelectedMenuVideoSettings(QAction*)));
     }
     if (mAudioSource)
     {
         mMenuSettingsAudio = mMenuSettings->addMenu(QPixmap(":/images/46_46/Speaker.png"), "Audio");
-        connect(mMenuSettingsAudio, SIGNAL(triggered(QAction *)), mAudioWidget, SLOT(SelectedMenuAudioSettings(QAction *)));
+        connect(mMenuSettingsAudio, SIGNAL(triggered(QAction *)), mAudioWidget, SLOT(SelectedMenuAudioSettings(QAction*)));
     }
+    if (mSessionType != PREVIEW)
+    {
+        mMenuSettingsMessages = mMenuSettings->addMenu(QPixmap(":/images/22_22/Message.png"), "Messages");
+        connect(mMenuSettingsMessages, SIGNAL(triggered(QAction *)), mMessageWidget, SLOT(SelectedMenuMessagesSettings(QAction*)));
+    }
+
     mTbSettings->setMenu(mMenuSettings);
     mTbSettings->setText("  ");
 
@@ -445,6 +451,8 @@ void ParticipantWidget::UpdateMenuSettings()
         mVideoWidget->InitializeMenuVideoSettings(mMenuSettingsVideo);
     if (mAudioSource != NULL)
         mAudioWidget->InitializeMenuAudioSettings(mMenuSettingsAudio);
+    if (mSessionType != PREVIEW)
+        mMessageWidget->InitializeMenuMessagesSettings(mMenuSettingsMessages);
 }
 
 void ParticipantWidget::HideAudioVideoWidget()
