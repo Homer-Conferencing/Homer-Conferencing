@@ -1915,17 +1915,9 @@ void ParticipantWidget::UpdateMovieControls()
     	// make sure the movie slider is displayed
     	//#################
     	mMovieControlsFrame->show();
-        if (mMovieAudioControlsFrame->isHidden())
-        {
-            mMovieAudioControlsFrame->show();
-        }
     }else
     {
         mMovieControlsFrame->hide();
-        if (mAudioWidget->isHidden())
-        {
-            mMovieAudioControlsFrame->hide();
-        }
     }
 }
 
