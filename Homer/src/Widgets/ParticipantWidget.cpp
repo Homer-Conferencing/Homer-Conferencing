@@ -444,7 +444,7 @@ void ParticipantWidget::UpdateMenuSettings()
     if (mVideoSource != NULL)
         mVideoWidget->InitializeMenuVideoSettings(mMenuSettingsVideo);
     if (mAudioSource != NULL)
-        smAudioWidget->InitializeMenuAudioSettings(mMenuSettingsAudio);
+        mAudioWidget->InitializeMenuAudioSettings(mMenuSettingsAudio);
 }
 
 void ParticipantWidget::HideAudioVideoWidget()
