@@ -342,7 +342,7 @@ void AudioWidget::InitializeMenuAudioSettings(QMenu *pMenu)
     if (isVisible())
         tAction = pMenu->addAction(QPixmap(":/images/22_22/Close.png"), "Close audio");
     else
-        tAction = pMenu->addAction(QPixmap(":/images/22_22/Speaker.png"), "Show audio");
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/SpeakerLoud.png"), "Show audio");
 }
 
 void AudioWidget::SelectedMenuAudioSettings(QAction *pAction)
@@ -354,6 +354,11 @@ void AudioWidget::SelectedMenuAudioSettings(QAction *pAction)
         vector<string> tRegisteredAudioSinks = mAudioSource->ListRegisteredMediaSinks();
         vector<string>::iterator tRegisteredAudioSinksIt;
 
+        if (pAction->text().compare("Show audio") == 0)
+        {
+            ToggleVisibility();
+            return;
+        }
         if (pAction->text().compare("Close audio") == 0)
         {
             ToggleVisibility();
