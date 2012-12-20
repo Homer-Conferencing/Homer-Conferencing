@@ -156,7 +156,7 @@ void MessageWidget::InitializeMenuMessagesSettings(QMenu *pMenu)
     if (isVisible())
         tAction = pMenu->addAction(QPixmap(":/images/22_22/Close.png"), "Close messages");
     else
-        tAction = pMenu->addAction(QPixmap(":/images/22_22/Messages.png"), "Show messages");
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Message.png"), "Show messages");
     pMenu->addSeparator();
 
     if ((!IsKnownContact()) && (mParticipant != BROACAST_IDENTIFIER))
