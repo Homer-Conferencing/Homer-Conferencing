@@ -219,7 +219,7 @@ Sende Video/Audio an </translation>
     <message>
         <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="480"/>
         <source>Smooth video presentation:</source>
-        <translation>Geklättete Videodarstellung: </translation>
+        <translation>Geglättete Videodarstellung: </translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="534"/>
