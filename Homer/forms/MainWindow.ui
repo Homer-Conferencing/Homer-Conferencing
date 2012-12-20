@@ -44,7 +44,7 @@
      <x>0</x>
      <y>0</y>
      <width>385</width>
-     <height>21</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="mMenuSettings">
@@ -608,7 +608,7 @@
      <normalon>:/images/22_22/Checked.png</normalon>:/images/22_22/Error.png</iconset>
    </property>
    <property name="text">
-    <string>Errors</string>
+    <string>Error messages</string>
    </property>
    <property name="toolTip">
     <string>Show/hide errors overview</string>

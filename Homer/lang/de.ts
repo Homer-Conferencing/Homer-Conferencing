@@ -1344,6 +1344,11 @@ Sende Video/Audio an </translation>
         <translation>Zeige/verstecke Dateiübertragungen</translation>
     </message>
     <message>
+        <location filename="../forms/MainWindow.ui" line="611"/>
+        <source>Error messages</source>
+        <translation>Fehlermeldungen</translation>
+    </message>
+    <message>
         <location filename="../forms/MainWindow.ui" line="614"/>
         <source>Show/hide errors overview</source>
         <translation>Zeige/verstecke Fehlerübersicht</translation>
@@ -1420,9 +1425,8 @@ Sende Video/Audio an </translation>
         <translation>Starte Videovorschau</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="611"/>
         <source>Errors</source>
-        <translation>Fehler</translation>
+        <translation type="obsolete">Fehler</translation>
     </message>
     <message>
         <location filename="../forms/MainWindow.ui" line="617"/>
