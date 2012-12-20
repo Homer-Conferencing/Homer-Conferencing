@@ -31,7 +31,7 @@
    <enum>Qt::ClickFocus</enum>
   </property>
   <property name="windowTitle">
-   <string>Select screen segment</string>
+   <string>Select desktop part</string>
   </property>
   <property name="windowIcon">
    <iconset resource="../../resources/Icons.qrc">

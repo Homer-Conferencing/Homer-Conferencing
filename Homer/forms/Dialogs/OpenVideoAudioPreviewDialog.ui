@@ -400,7 +400,7 @@
             </font>
            </property>
            <property name="title">
-            <string> Video streaming parameters </string>
+            <string> Video parameters </string>
            </property>
            <property name="flat">
             <bool>true</bool>
@@ -537,7 +537,7 @@
             <item>
              <widget class="QGroupBox" name="groupBox_4">
               <property name="title">
-               <string> Video receiver </string>
+               <string> Video receiving </string>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_12">
                <item>
@@ -903,7 +903,7 @@
             </font>
            </property>
            <property name="title">
-            <string> Audio streaming parameters </string>
+            <string> Audio parameters </string>
            </property>
            <property name="flat">
             <bool>true</bool>
@@ -1031,7 +1031,7 @@
             <item>
              <widget class="QGroupBox" name="groupBox_9">
               <property name="title">
-               <string> Receive audio at </string>
+               <string> Audio receiving </string>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_17">
                <item>

@@ -771,7 +771,7 @@ p, li { white-space: pre-wrap; }
                  <cursorShape>PointingHandCursor</cursorShape>
                 </property>
                 <property name="toolTip">
-                 <string>Jump to desired file position</string>
+                 <string>jump to desired file position</string>
                 </property>
                 <property name="styleSheet">
                  <string notr="true">     QSlider::handle:horizontal {
@@ -1114,6 +1114,11 @@ background-color: rgb(150, 150, 150);
  </widget>
  <customwidgets>
   <customwidget>
+   <class>Homer::Gui::PlaybackSlider</class>
+   <extends>QSlider</extends>
+   <header location="global">Widgets/PlaybackSlider.h</header>
+  </customwidget>
+  <customwidget>
    <class>Homer::Gui::MessageWidget</class>
    <extends>QWidget</extends>
    <header location="global">Widgets/MessageWidget.h</header>
@@ -1136,11 +1141,6 @@ background-color: rgb(150, 150, 150);
    <extends>QWidget</extends>
    <header location="global">Widgets/AudioWidget.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>Homer::Gui::PlaybackSlider</class>
-   <extends>QSlider</extends>
-   <header location="global">Widgets/PlaybackSlider.h</header>
   </customwidget>
  </customwidgets>
  <resources>
