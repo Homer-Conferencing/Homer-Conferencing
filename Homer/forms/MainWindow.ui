@@ -44,7 +44,7 @@
      <x>0</x>
      <y>0</y>
      <width>385</width>
-     <height>23</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="mMenuSettings">
@@ -125,13 +125,13 @@
     <addaction name="mActionOverviewThreadsWidget"/>
     <addaction name="mActionMonitorBroadcastWidget"/>
    </widget>
-   <widget class="QMenu" name="mMenuMain">
+   <widget class="QMenu" name="mMenuFile">
     <property name="title">
-     <string>Main</string>
+     <string>File</string>
     </property>
     <addaction name="mActionExit"/>
    </widget>
-   <addaction name="mMenuMain"/>
+   <addaction name="mMenuFile"/>
    <addaction name="mMenuSettings"/>
    <addaction name="mMenuWindows"/>
    <addaction name="mMenuHomer"/>
@@ -300,11 +300,6 @@
     <bool>true</bool>
    </property>
   </action>
-  <action name="actionMissed_calls">
-   <property name="text">
-    <string>Missed calls</string>
-   </property>
-  </action>
   <action name="mActionInstantMessages">
    <property name="checkable">
     <bool>true</bool>
@@ -390,7 +385,7 @@
     <string>Data streams</string>
    </property>
    <property name="toolTip">
-    <string>Show/hide data streams</string>
+    <string>Show/hide data streams overview</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+D</string>
@@ -415,7 +410,7 @@
     <string>System threads</string>
    </property>
    <property name="toolTip">
-    <string>Show/hide system threads</string>
+    <string>Show/hide system threads overview</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+T</string>
@@ -591,54 +586,6 @@
     <string>Ctrl+B</string>
    </property>
   </action>
-  <action name="mActionOverviewVideoPlaylistWidget">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset>
-     <normaloff>:/images/VideoReel.png</normaloff>
-     <normalon>:/images/22_22/Checked.png</normalon>:/images/VideoReel.png</iconset>
-   </property>
-   <property name="text">
-    <string>Video playlist</string>
-   </property>
-  </action>
-  <action name="mActionOverviewAudioPlaylistWidget">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset>
-     <normaloff>:/images/Speaker.png</normaloff>
-     <normalon>:/images/22_22/Checked.png</normalon>:/images/Speaker.png</iconset>
-   </property>
-   <property name="text">
-    <string>Audio playlist</string>
-   </property>
-  </action>
-  <action name="mActionOverviewMoviePlaylistWidget">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset>
-     <normaloff>:/images/FilmStrip1.png</normaloff>
-     <normalon>:/images/22_22/Checked.png</normalon>:/images/FilmStrip1.png</iconset>
-   </property>
-   <property name="text">
-    <string>Movie playlist</string>
-   </property>
-  </action>
   <action name="mActionOpenVideoPreview">
    <property name="icon">
     <iconset>
@@ -664,7 +611,7 @@
     <string>Errors</string>
    </property>
    <property name="toolTip">
-    <string>Show/hide errors</string>
+    <string>Show/hide errors overview</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+E</string>
@@ -714,7 +661,7 @@
     <string>Network streams</string>
    </property>
    <property name="toolTip">
-    <string>Show/hide network streams</string>
+    <string>Show/hide network streams overview</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
@@ -752,11 +699,6 @@
    </property>
    <property name="text">
     <string>Network simulator</string>
-   </property>
-  </action>
-  <action name="actionHh">
-   <property name="text">
-    <string>hh</string>
    </property>
   </action>
   <action name="mActionOverviewPlaylistWidget">

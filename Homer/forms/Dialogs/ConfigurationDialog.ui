@@ -2490,7 +2490,7 @@ background-color: rgb(150, 150, 150);
             </font>
            </property>
            <property name="title">
-            <string> Local listeners </string>
+            <string> Local network interfaces </string>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_3">
             <item>
@@ -3120,8 +3120,8 @@ background-color: rgb(150, 150, 150);
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>646</width>
-              <height>542</height>
+              <width>650</width>
+              <height>522</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_24">
@@ -5350,12 +5350,6 @@ background-color: rgb(150, 150, 150);
               </widget>
              </item>
             </layout>
-            <zorder>mGrpStyle_7</zorder>
-            <zorder>mGrpStyle_7</zorder>
-            <zorder>mGrpStyle_3</zorder>
-            <zorder>mGrpStyle_4</zorder>
-            <zorder>mGrpStyle_6</zorder>
-            <zorder>mGrpStyle_5</zorder>
            </widget>
           </widget>
          </item>
