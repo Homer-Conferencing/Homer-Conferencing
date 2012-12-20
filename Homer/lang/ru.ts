@@ -1326,17 +1326,17 @@
     <message>
         <location filename="../forms/MainWindow.ui" line="59"/>
         <source>Help</source>
-        <translation type="unfinished"></translation>
+        <translation>Помогите</translation>
     </message>
     <message>
         <location filename="../forms/MainWindow.ui" line="291"/>
         <source>Version</source>
-        <translation type="unfinished"></translation>
+        <translation>версия</translation>
     </message>
     <message>
         <location filename="../forms/MainWindow.ui" line="516"/>
         <source>User guides / FAQ</source>
-        <translation type="unfinished"></translation>
+        <translation>руководства пользователя / ЧАВО </translation>
     </message>
     <message>
         <location filename="../forms/MainWindow.ui" line="519"/>
@@ -1401,7 +1401,7 @@
     <message>
         <location filename="../forms/MainWindow.ui" line="639"/>
         <source>Movie playlist</source>
-        <translation type="unfinished">Фильм плейлист</translation>
+        <translation>Фильм плейлист</translation>
     </message>
     <message>
         <location filename="../forms/MainWindow.ui" line="648"/>
@@ -1426,7 +1426,7 @@
     <message>
         <location filename="../forms/MainWindow.ui" line="682"/>
         <source>Start audio preview</source>
-        <translation type="unfinished">Запустить аудио предпрослушивание</translation>
+        <translation>Запустить аудио предпрослушивание</translation>
     </message>
     <message>
         <location filename="../forms/MainWindow.ui" line="698"/>
@@ -1471,7 +1471,7 @@
     <message>
         <location filename="../forms/MainWindow.ui" line="759"/>
         <source>hh</source>
-        <translation type="unfinished">hh</translation>
+        <translation>hh</translation>
     </message>
     <message>
         <location filename="../forms/MainWindow.ui" line="775"/>
@@ -1505,7 +1505,7 @@
     <message>
         <location filename="../forms/Widgets/MessageWidget.ui" line="34"/>
         <source>Instant messages</source>
-        <translation>Актуальные сообщения</translation>
+        <translation>Мгновенные сообщения</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/MessageWidget.ui" line="105"/>
@@ -1515,22 +1515,22 @@
     <message>
         <location filename="../forms/Widgets/MessageWidget.ui" line="204"/>
         <source>communication partner&apos;s name</source>
-        <translation type="unfinished"></translation>
+        <translation>коммуникационным партнером имя</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/MessageWidget.ui" line="241"/>
         <source>add this new contact to your list</source>
-        <translation type="unfinished"></translation>
+        <translation>добавлять этот контакт в свой список</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/MessageWidget.ui" line="276"/>
         <source>send local files(s) to communication partner</source>
-        <translation type="unfinished"></translation>
+        <translation>Отправить локальные файл(ы) собеседнику</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/MessageWidget.ui" line="330"/>
         <source>manage session</source>
-        <translation type="unfinished"></translation>
+        <translation>управлять сессии</translation>
     </message>
     <message>
         <source>Communication partner&apos;s name</source>
