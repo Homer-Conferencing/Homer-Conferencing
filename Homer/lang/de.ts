@@ -945,52 +945,52 @@ Sende Video/Audio an </translation>
     <message>
         <location filename="../forms/Dialogs/ContactEditDialog.ui" line="25"/>
         <source>Edit contact</source>
-        <translation type="unfinished"></translation>
+        <translation>Kontakt bearbeiten</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/ContactEditDialog.ui" line="56"/>
         <source> Contact information </source>
-        <translation type="unfinished"></translation>
+        <translation> Kontaktdaten </translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/ContactEditDialog.ui" line="88"/>
         <source>Name:</source>
-        <translation type="unfinished"></translation>
+        <translation>Name:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/ContactEditDialog.ui" line="164"/>
         <source>Address:</source>
-        <translation type="unfinished"></translation>
+        <translation>Adresse:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/ContactEditDialog.ui" line="206"/>
         <source>sip:</source>
-        <translation type="unfinished"></translation>
+        <translation>sip:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/ContactEditDialog.ui" line="269"/>
         <source>Port:</source>
-        <translation type="unfinished">Port:</translation>
+        <translation>Port:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/ContactEditDialog.ui" line="310"/>
         <source>auto</source>
-        <translation type="unfinished">auto</translation>
+        <translation>auto</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/ContactEditDialog.ui" line="360"/>
         <source>Transport:</source>
-        <translation type="unfinished">Transport:</translation>
+        <translation>Transport:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/ContactEditDialog.ui" line="389"/>
         <source>UDP</source>
-        <translation type="unfinished">UDP</translation>
+        <translation>UDP</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/ContactEditDialog.ui" line="394"/>
         <source>TCP</source>
-        <translation type="unfinished">TCP</translation>
+        <translation>TCP</translation>
     </message>
 </context>
 <context>
@@ -998,12 +998,12 @@ Sende Video/Audio an </translation>
     <message>
         <location filename="../forms/Dialogs/FileTransferAckDialog.ui" line="19"/>
         <source>Transfer the following files?</source>
-        <translation type="unfinished"></translation>
+        <translation>Folgende Dateien übertragen?</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/FileTransferAckDialog.ui" line="48"/>
         <source> Transfer the following files </source>
-        <translation type="unfinished"></translation>
+        <translation> Dateien für Übertragung </translation>
     </message>
 </context>
 <context>
@@ -1011,37 +1011,37 @@ Sende Video/Audio an </translation>
     <message>
         <location filename="../forms/Dialogs/HelpDialog.ui" line="14"/>
         <source>Help for using Homer Conferencing</source>
-        <translation type="unfinished"></translation>
+        <translation>Hilfe für die Benutzung von Homer-Conferencing</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/HelpDialog.ui" line="129"/>
         <source>Version</source>
-        <translation type="unfinished">Version</translation>
+        <translation>Version</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/HelpDialog.ui" line="182"/>
         <source>0.999</source>
-        <translation type="unfinished">0.999</translation>
+        <translation>0.999</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/HelpDialog.ui" line="254"/>
         <source>System information:</source>
-        <translation type="unfinished"></translation>
+        <translation>Systeminformationen:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/HelpDialog.ui" line="321"/>
         <source>System data</source>
-        <translation type="unfinished"></translation>
+        <translation>Systemdaten</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/HelpDialog.ui" line="374"/>
         <source> Help view </source>
-        <translation type="unfinished"></translation>
+        <translation> Hilfeansicht </translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/HelpDialog.ui" line="388"/>
         <source>Fetching data...</source>
-        <translation type="unfinished"></translation>
+        <translation> Warte auf Daten... </translation>
     </message>
 </context>
 <context>
@@ -1049,68 +1049,68 @@ Sende Video/Audio an </translation>
     <message>
         <location filename="../forms/Dialogs/IdentityDialog.ui" line="19"/>
         <source>Edit own identity</source>
-        <translation type="unfinished"></translation>
+        <translation>Eigene Identität bearbeiten</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/IdentityDialog.ui" line="64"/>
         <source> Personal information </source>
-        <translation type="unfinished"></translation>
+        <translation> Persönliche Informationen </translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/IdentityDialog.ui" line="84"/>
         <source>Full name:</source>
-        <translation type="unfinished"></translation>
+        <translation>Voller Name:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/IdentityDialog.ui" line="142"/>
         <source>Mail address:</source>
-        <translation type="unfinished"></translation>
+        <translation>Mailadresse:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/IdentityDialog.ui" line="195"/>
         <source> Contact addresses </source>
-        <translation type="unfinished"></translation>
+        <translation> Kontaktadressen </translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/IdentityDialog.ui" line="215"/>
         <source>Own server contact address:</source>
-        <translation type="unfinished"></translation>
+        <translation>Eigene Serverbasierte Kontaktadresse:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/IdentityDialog.ui" line="251"/>
         <location filename="../forms/Dialogs/IdentityDialog.ui" line="376"/>
         <source>ID</source>
-        <translation type="unfinished"></translation>
+        <translation>ID</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/IdentityDialog.ui" line="340"/>
         <source>Own direct contact address:</source>
-        <translation type="unfinished"></translation>
+        <translation>Eigene direkte Kontaktadresse:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/IdentityDialog.ui" line="460"/>
         <source> Network Address Translation (NAT) </source>
-        <translation type="unfinished"></translation>
+        <translation> Network Address Translation (NAT) </translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/IdentityDialog.ui" line="480"/>
         <source>Outmost address:</source>
-        <translation type="unfinished"></translation>
+        <translation>Äußerste Adresse:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/IdentityDialog.ui" line="513"/>
         <source>Uplink</source>
-        <translation type="unfinished"></translation>
+        <translation>Uplink</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/IdentityDialog.ui" line="545"/>
         <source>Translation type:</source>
-        <translation type="unfinished"></translation>
+        <translation>Übersetzungstyp:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/IdentityDialog.ui" line="578"/>
         <source>Type</source>
-        <translation type="unfinished"></translation>
+        <translation>Typ</translation>
     </message>
 </context>
 <context>
@@ -1494,52 +1494,52 @@ Sende Video/Audio an </translation>
     <message>
         <location filename="../forms/Widgets/MessageWidget.ui" line="34"/>
         <source>Instant messages</source>
-        <translation type="unfinished">Nachrichten</translation>
+        <translation>Nachrichten</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/MessageWidget.ui" line="105"/>
         <source>Homer Message History</source>
-        <translation type="unfinished"></translation>
+        <translation>Homer Nachrichtenverlauf</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/MessageWidget.ui" line="204"/>
         <source>communication partner&apos;s name</source>
-        <translation type="unfinished"></translation>
+        <translation>Name des Teilnehmers</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/MessageWidget.ui" line="241"/>
         <source>add this new contact to your list</source>
-        <translation type="unfinished"></translation>
+        <translation>füge diesen Kontakt zur Kontaktliste hinzu</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/MessageWidget.ui" line="276"/>
         <source>send local files(s) to communication partner</source>
-        <translation type="unfinished"></translation>
+        <translation>sende lokale Datei(en) an den Teilnehmer</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/MessageWidget.ui" line="330"/>
         <source>manage session</source>
-        <translation type="unfinished"></translation>
+        <translation>verwalte die Sitzung</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/MessageWidget.ui" line="219"/>
         <source>name</source>
-        <translation type="unfinished"></translation>
+        <translation>Name</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/MessageWidget.ui" line="244"/>
         <source>Add contact</source>
-        <translation type="unfinished"></translation>
+        <translation>Kontakt hinzufügen</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/MessageWidget.ui" line="279"/>
         <source>Send file(s)</source>
-        <translation type="unfinished"></translation>
+        <translation>Datei(en) senden</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/MessageWidget.ui" line="333"/>
         <source>Conference</source>
-        <translation type="unfinished"></translation>
+        <translation>Konferenz</translation>
     </message>
 </context>
 <context>
@@ -1547,29 +1547,29 @@ Sende Video/Audio an </translation>
     <message>
         <location filename="../forms/Widgets/MovieControlWidget.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished">Form</translation>
+        <translation>Form</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/MovieControlWidget.ui" line="91"/>
         <source>play / pause</source>
-        <translation type="unfinished"></translation>
+        <translation>Play / Pause</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/MovieControlWidget.ui" line="108"/>
         <location filename="../forms/Widgets/MovieControlWidget.ui" line="154"/>
         <location filename="../forms/Widgets/MovieControlWidget.ui" line="200"/>
         <source>...</source>
-        <translation type="unfinished">...</translation>
+        <translation>...</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/MovieControlWidget.ui" line="137"/>
         <source>play previous entry in playlist</source>
-        <translation type="unfinished"></translation>
+        <translation>spiele vorhergehenden Titel der Playlist ab</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/MovieControlWidget.ui" line="183"/>
         <source>play next entry in playlist</source>
-        <translation type="unfinished"></translation>
+        <translation>spiele nächsten Titel der Playlist ab</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/MovieControlWidget.ui" line="468"/>
@@ -1578,12 +1578,16 @@ Sende Video/Audio an </translation>
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;DejaVu Sans&apos;; font-size:9pt; font-weight:600; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;88:88:88&lt;br /&gt;88:88:88&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../forms/Widgets/MovieControlWidget.ui" line="510"/>
+        <source>jump to desired file position</source>
+        <translation>springe zu gewünschter Position</translation>
+    </message>
+    <message>
         <source>Jump to desired file position</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Springe</translation>
     </message>
 </context>
 <context>
@@ -1591,259 +1595,274 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="19"/>
         <source>Open video/audio preview</source>
-        <translation type="unfinished">Öffne Video-/Audiovorschau</translation>
+        <translation>Öffne Video-/Audiovorschau</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="53"/>
         <source> Video capture </source>
-        <translation type="unfinished"> Videoaufnahme </translation>
+        <translation> Videoaufnahme </translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="82"/>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="197"/>
         <source>Device selection:</source>
-        <translation type="unfinished">Geräteauswahl:</translation>
+        <translation>Geräteauswahl:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="133"/>
         <source>/dev/video0</source>
-        <translation type="unfinished">/dev/vide0</translation>
+        <translation>/dev/vide0</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="168"/>
         <source> Audio capture </source>
-        <translation type="unfinished"> Audioaufnahme </translation>
+        <translation> Audioaufnahme </translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="245"/>
         <source>/dev/dsp0</source>
-        <translation type="unfinished">/dev/dsp0</translation>
+        <translation>/dev/dsp0</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="281"/>
         <source> Video/audio capture </source>
-        <translation type="unfinished"></translation>
+        <translation>Video-/Audioaufnahme</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="310"/>
         <source>Selected file: </source>
-        <translation type="unfinished"></translation>
+        <translation>Ausgewählte Datei:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="355"/>
         <source>preview file content</source>
-        <translation type="unfinished"></translation>
+        <translation>Vorschau einer Datei</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="403"/>
         <source> Video streaming parameters </source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Video konfigurieren:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="424"/>
         <source> Video encoding </source>
-        <translation type="unfinished"></translation>
+        <translation> Videokodierung </translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="450"/>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="953"/>
         <source>Expected codec:</source>
-        <translation type="unfinished"></translation>
+        <translation>Erwarteter Codec:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="492"/>
         <source>H.261</source>
-        <translation type="unfinished">H.261</translation>
+        <translation>H.261</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="497"/>
         <source>H.263</source>
-        <translation type="unfinished">H.263</translation>
+        <translation>H.263</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="502"/>
         <source>H.263+</source>
-        <translation type="unfinished">H.263+</translation>
+        <translation>H.263+</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="507"/>
         <source>H.264</source>
-        <translation type="unfinished">H.264</translation>
+        <translation>H.264</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="512"/>
         <source>MPEG1</source>
-        <translation type="unfinished">MPEG1</translation>
+        <translation>MPEG1</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="517"/>
         <source>MPEG2</source>
-        <translation type="unfinished">MPEG2</translation>
+        <translation>MPEG2</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="522"/>
         <source>MPEG4</source>
-        <translation type="unfinished">MPEG4</translation>
+        <translation>MPEG4</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="527"/>
         <source>THEORA</source>
-        <translation type="unfinished">THEORA</translation>
+        <translation>THEORA</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="540"/>
         <source> Video receiver </source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete"> Videoempfang </translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="574"/>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1066"/>
         <source>Receiver:</source>
-        <translation type="unfinished"></translation>
+        <translation>Empfänger:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="628"/>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1120"/>
         <source>Port:</source>
-        <translation type="unfinished">Port:</translation>
+        <translation>Port:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="706"/>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1198"/>
         <source>Transport:</source>
-        <translation type="unfinished">Transport:</translation>
+        <translation>Transport:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="732"/>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1224"/>
         <source>UDP</source>
-        <translation type="unfinished">UDP</translation>
+        <translation>UDP</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="737"/>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1229"/>
         <source>TCP</source>
-        <translation type="unfinished">TCP</translation>
+        <translation>TCP</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="742"/>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1234"/>
         <source>UDP-Lite</source>
-        <translation type="unfinished">UDP-Lite</translation>
+        <translation>UDP-Lite</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="747"/>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1239"/>
         <source>SCTP</source>
-        <translation type="unfinished">SCTP</translation>
+        <translation>SCTP</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="792"/>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1284"/>
         <source>RTP</source>
-        <translation type="unfinished"></translation>
+        <translation>RTP</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="809"/>
         <source> Video transmission interface </source>
-        <translation type="unfinished"></translation>
+        <translation> Parameter der Videoübertragung </translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="835"/>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1325"/>
         <source>Network access interface:</source>
-        <translation type="unfinished">Netzwerkzugangsschnittstelle: </translation>
+        <translation>Netzwerkzugangsschnittstelle: </translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="877"/>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1367"/>
         <source>Berkeley Sockets</source>
-        <translation type="unfinished">Berkeley Sockets</translation>
+        <translation>Berkeley Sockets</translation>
+    </message>
+    <message>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1034"/>
+        <source> Audio receiving </source>
+        <translation> Audioempfang </translation>
+    </message>
+    <message>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="403"/>
+        <source> Video parameters </source>
+        <translation> Videoparamerter </translation>
+    </message>
+    <message>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="540"/>
+        <source> Video receiving </source>
+        <translation> Videoempfang </translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="906"/>
-        <source> Audio streaming parameters </source>
-        <translation type="unfinished"></translation>
+        <source> Audio parameters </source>
+        <translation> Audioparameter </translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="927"/>
         <source> Audio encoding </source>
-        <translation type="unfinished"></translation>
+        <translation> Audiokodierung </translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1001"/>
         <source>G711 A-law</source>
-        <translation type="unfinished">G711 A-law</translation>
+        <translation>G711 A-law</translation>
     </message>
     <message utf8="true">
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1006"/>
         <source>G711 µ-law</source>
-        <translation type="unfinished">G711 µ-law</translation>
+        <translation>G711 µ-law</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1011"/>
         <source>G722 adpcm</source>
-        <translation type="unfinished">G722 adpcm</translation>
+        <translation>G722 adpcm</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1016"/>
         <source>MP3</source>
-        <translation type="unfinished">MP3</translation>
+        <translation>MP3</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1021"/>
         <source>PCM16</source>
-        <translation type="unfinished">PCM16</translation>
+        <translation>PCM16</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1034"/>
         <source> Receive audio at </source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Audioempfang bei</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1299"/>
         <source> Audio transmission interface </source>
-        <translation type="unfinished"></translation>
+        <translation> Parameter der Audioübertragung </translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1396"/>
         <source> Pre-buffering of audio/video streams </source>
-        <translation type="unfinished"></translation>
+        <translation>(Pre-)Pufferung des Audio/-Videoempfangs</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1425"/>
         <source>Automatic restart of pre-buffering if stream was cut: </source>
-        <translation type="unfinished"></translation>
+        <translation>Automatischer Neustart des (pre-)Pufferns wenn der Empfang stockte:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1480"/>
         <source>Synchronization of audio and video playback:</source>
-        <translation type="unfinished"></translation>
+        <translation>Synchronisation der Audio- und Videowiedergabe:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1610"/>
         <source>Hardware devices</source>
-        <translation type="unfinished"></translation>
+        <translation>Hardware-
+geräte</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1622"/>
         <source>Media file</source>
-        <translation type="unfinished"></translation>
+        <translation>Medien-
+datei</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1634"/>
         <source>Network streaming</source>
-        <translation type="unfinished"></translation>
+        <translation>Netzwerk-
+übertragung</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1696"/>
         <source>Video playback enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Videowiedergabe aktiv</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1750"/>
         <source>Audio playback enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Audiowiedergabe aktiv</translation>
     </message>
 </context>
 <context>
@@ -1851,27 +1870,27 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="22"/>
         <source>Contact list</source>
-        <translation type="unfinished">Kontaktliste</translation>
+        <translation>Kontaktliste</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="149"/>
         <source>Save contact list</source>
-        <translation type="unfinished"></translation>
+        <translation>Speichere Kontaktliste</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="195"/>
         <source>Load contact list</source>
-        <translation type="unfinished"></translation>
+        <translation>Lade Kontaktliste</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="241"/>
         <source>Add user to contact list</source>
-        <translation type="unfinished"></translation>
+        <translation>Füge Nutzer zur Kontaktliste hinzu</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="287"/>
         <source>Remove user from contact list</source>
-        <translation type="unfinished"></translation>
+        <translation>Entferne Nutzer von der Kontaktliste</translation>
     </message>
 </context>
 <context>
@@ -1879,107 +1898,107 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="31"/>
         <source>Debug: data streams</source>
-        <translation type="unfinished"></translation>
+        <translation>Debug: Datenströme</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="280"/>
         <source> Audio streams </source>
-        <translation type="unfinished"></translation>
+        <translation>Audioströme</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="148"/>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="376"/>
         <source>Outgoing per participant</source>
-        <translation type="unfinished"></translation>
+        <translation>Ausgehend pro Teilnehmer</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="153"/>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="381"/>
         <source>Stream name</source>
-        <translation type="unfinished"></translation>
+        <translation>Stromname</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="158"/>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="386"/>
         <source>Min.size</source>
-        <translation type="unfinished"></translation>
+        <translation>Min. Größe</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="163"/>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="391"/>
         <source>Max.size</source>
-        <translation type="unfinished"></translation>
+        <translation>Max. Größe</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="168"/>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="396"/>
         <source>Avg.size</source>
-        <translation type="unfinished"></translation>
+        <translation>Mitl. Größe</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="173"/>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="401"/>
         <source>Data size</source>
-        <translation type="unfinished"></translation>
+        <translation>Datenmenge</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="178"/>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="406"/>
         <source>Packets</source>
-        <translation type="unfinished"></translation>
+        <translation>Pakete</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="183"/>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="411"/>
         <source>Lost</source>
-        <translation type="unfinished"></translation>
+        <translation>Verluste</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="188"/>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="416"/>
         <source>Direction</source>
-        <translation type="unfinished"></translation>
+        <translation>Richtung</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="193"/>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="421"/>
         <source>Transp.</source>
-        <translation type="unfinished"></translation>
+        <translation>Transp.</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="198"/>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="426"/>
         <source>Netw.</source>
-        <translation type="unfinished"></translation>
+        <translation>Netzw.</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="203"/>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="431"/>
         <source>Moment data rate</source>
-        <translation type="unfinished"></translation>
+        <translation>Mom. Datenrate</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="208"/>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="436"/>
         <source>Data rate</source>
-        <translation type="unfinished"></translation>
+        <translation>Datenrate</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="213"/>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="441"/>
         <source>ID</source>
-        <translation type="unfinished"></translation>
+        <translation>ID</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="258"/>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="486"/>
         <source>0</source>
-        <translation type="unfinished">0</translation>
+        <translation>0</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="52"/>
         <source> Video streams </source>
-        <translation type="unfinished"></translation>
+        <translation>Videoströme</translation>
     </message>
 </context>
 <context>
@@ -1987,7 +2006,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../forms/Widgets/OverviewErrorsWidget.ui" line="28"/>
         <source>Error log</source>
-        <translation type="unfinished"></translation>
+        <translation>Fehlerverlauf</translation>
     </message>
 </context>
 <context>
@@ -1995,42 +2014,50 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../forms/Widgets/OverviewFileTransfersWidget.ui" line="34"/>
         <source>File transfers</source>
-        <translation type="unfinished">Dateiübertragungen</translation>
+        <translation>Dateiübertragungen</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewFileTransfersWidget.ui" line="143"/>
         <source>In / Out</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewFileTransfersWidget.ui" line="148"/>
         <source>File</source>
-        <translation type="unfinished">Datei</translation>
+        <translation>Datei</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewFileTransfersWidget.ui" line="153"/>
         <source>Progress</source>
-        <translation type="unfinished"></translation>
+        <translation>Fortschritt</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewFileTransfersWidget.ui" line="158"/>
         <source>Size</source>
-        <translation type="unfinished"></translation>
+        <translation>Größe</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewFileTransfersWidget.ui" line="163"/>
         <source>ID</source>
-        <translation type="unfinished"></translation>
+        <translation>ID</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewFileTransfersWidget.ui" line="207"/>
-        <source>add file(s) to playlist</source>
-        <translation type="unfinished"></translation>
+        <source>add file(s) to list</source>
+        <translation>füge Datei(en) zur Liste hinzu</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewFileTransfersWidget.ui" line="253"/>
+        <source>remove file(s) from list</source>
+        <translation>entferne Datei(en) von der Liste</translation>
+    </message>
+    <message>
+        <source>add file(s) to playlist</source>
+        <translation type="obsolete">füge Datei(en) zur Playlist hinzu</translation>
+    </message>
+    <message>
         <source>remove file(s) from playlist</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">entferne Datei(en) von der Playlist</translation>
     </message>
 </context>
 <context>
@@ -2038,52 +2065,52 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="31"/>
         <source>Control: network streams</source>
-        <translation type="unfinished"></translation>
+        <translation>Control: Netzwerkströme</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="48"/>
         <source> Outgoing IPv4/IPv6 network streams </source>
-        <translation type="unfinished"></translation>
+        <translation> Ausgehende IPv4/IPv6-Netzwerkströme </translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="147"/>
         <source>Local address</source>
-        <translation type="unfinished"></translation>
+        <translation>Lokale Adresse</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="152"/>
         <source>Peer address</source>
-        <translation type="unfinished"></translation>
+        <translation>Peeradresse</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="157"/>
         <source>Network</source>
-        <translation type="unfinished">Netzwerk</translation>
+        <translation>NetzwerkNetzwerk</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="162"/>
         <source>Transport</source>
-        <translation type="unfinished"></translation>
+        <translation>Transport</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="167"/>
         <source>Req: lossless</source>
-        <translation type="unfinished"></translation>
+        <translation>Anf.: verlustlos</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="172"/>
         <source>Req: delay</source>
-        <translation type="unfinished"></translation>
+        <translation>Anf.: Verzögerung</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="177"/>
         <source>Req: data rate</source>
-        <translation type="unfinished"></translation>
+        <translation>Anf.: Datenrate</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="182"/>
         <source>ID</source>
-        <translation type="unfinished"></translation>
+        <translation>ID</translation>
     </message>
 </context>
 <context>
@@ -2091,22 +2118,22 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../forms/Widgets/OverviewPlaylistWidget.ui" line="25"/>
         <source>Playlist</source>
-        <translation type="unfinished">Playlist</translation>
+        <translation>Playlist</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewPlaylistWidget.ui" line="140"/>
         <source>save playlist</source>
-        <translation type="unfinished"></translation>
+        <translation>speicher Playlist</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewPlaylistWidget.ui" line="186"/>
         <source>add file(s) to playlist</source>
-        <translation type="unfinished"></translation>
+        <translation>füge Datei(en) zur Playlist hinzu</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewPlaylistWidget.ui" line="232"/>
         <source>remove file(s) from playlist</source>
-        <translation type="unfinished"></translation>
+        <translation>entferne Datei(en) von der Playlist</translation>
     </message>
 </context>
 <context>
@@ -2114,83 +2141,83 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="31"/>
         <source>Debug: program threads</source>
-        <translation type="unfinished"></translation>
+        <translation>Debug: Programmthreads</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="48"/>
         <source> Threads </source>
-        <translation type="unfinished"></translation>
+        <translation> Threads </translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="156"/>
         <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="216"/>
         <source>Total</source>
-        <translation type="unfinished"></translation>
+        <translation>Total</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="161"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Name</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="166"/>
         <source>Tid</source>
-        <translation type="unfinished"></translation>
+        <translation>Tid</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="171"/>
         <source>Pid</source>
-        <translation type="unfinished"></translation>
+        <translation>Pid</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="176"/>
         <source>PPid</source>
-        <translation type="unfinished"></translation>
+        <translation>PPid</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="181"/>
         <source>Threads</source>
-        <translation type="unfinished"></translation>
+        <translation>Threads</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="186"/>
         <source>PriorityBase</source>
-        <translation type="unfinished"></translation>
+        <translation>Prioritätsbasis</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="191"/>
         <source>Priority</source>
-        <translation type="unfinished"></translation>
+        <translation>Priorität</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="196"/>
         <source>Mem(virt.)</source>
-        <translation type="unfinished"></translation>
+        <translation>Speicher(virt.)</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="201"/>
         <source>Mem(phys.)</source>
-        <translation type="unfinished"></translation>
+        <translation>Speicher(phys.)</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="206"/>
         <source>User</source>
-        <translation type="unfinished"></translation>
+        <translation>Nutzer</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="211"/>
         <source>System</source>
-        <translation type="unfinished"></translation>
+        <translation>System</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="221"/>
         <source>ID</source>
-        <translation type="unfinished"></translation>
+        <translation>ID</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="290"/>
         <source>0</source>
-        <translation type="unfinished">0</translation>
+        <translation>0</translation>
     </message>
 </context>
 <context>
@@ -2198,7 +2225,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../forms/Widgets/ParticipantWidget.ui" line="25"/>
         <source>Participant widget</source>
-        <translation type="unfinished"></translation>
+        <translation> Teilnehmerfenster </translation>
     </message>
     <message>
         <location filename="../forms/Widgets/ParticipantWidget.ui" line="372"/>
@@ -2206,27 +2233,27 @@ p, li { white-space: pre-wrap; }
         <location filename="../forms/Widgets/ParticipantWidget.ui" line="464"/>
         <location filename="../forms/Widgets/ParticipantWidget.ui" line="891"/>
         <source>...</source>
-        <translation type="unfinished">...</translation>
+        <translation>...</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/ParticipantWidget.ui" line="291"/>
         <source>toggle visibility of playlist</source>
-        <translation type="unfinished"></translation>
+        <translation>wechsle Sichtbarkeit der Playlist</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/ParticipantWidget.ui" line="355"/>
         <source>play / pause</source>
-        <translation type="unfinished"></translation>
+        <translation>Play / Pause</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/ParticipantWidget.ui" line="401"/>
         <source>play previous entry in playlist</source>
-        <translation type="unfinished"></translation>
+        <translation>spiele vorhergehenden Titel der Playlist ab</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/ParticipantWidget.ui" line="447"/>
         <source>play next entry in playlist</source>
-        <translation type="unfinished"></translation>
+        <translation>spiele nächsten Titel der Playlist ab</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/ParticipantWidget.ui" line="732"/>
@@ -2235,55 +2262,63 @@ p, li { white-space: pre-wrap; }
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;DejaVu Sans&apos;; font-size:9pt; font-weight:600; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;88:88:88&lt;br /&gt;88:88:88&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../forms/Widgets/ParticipantWidget.ui" line="774"/>
+        <source>jump to desired file position</source>
+        <translation>springe zu gewünschter Position</translation>
+    </message>
+    <message>
         <source>Jump to desired file position</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">pringe</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/ParticipantWidget.ui" line="839"/>
         <source>A/V drift: </source>
-        <translation type="unfinished"></translation>
+        <translation>A/V Drift:</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/ParticipantWidget.ui" line="874"/>
         <source>record video and audio stream to a movie file</source>
-        <translation type="unfinished"></translation>
+        <translation>nehme Video-/Audiostrom in einer Filmdatei auf</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/ParticipantWidget.ui" line="914"/>
         <source>video/audio actions</source>
-        <translation type="unfinished"></translation>
+        <translation>Video-/Audioaktionen</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/ParticipantWidget.ui" line="1004"/>
         <source>activation of audio stream to this participant</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivierung des Audiostroms für diesen Teilnehmer</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/ParticipantWidget.ui" line="1066"/>
         <source>activation of video stream to this participant</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivierung des Videostroms für diesen Teilnehmer</translation>
     </message>
 </context>
 <context>
     <name>SegmentSelectionDialog</name>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="34"/>
         <source>Select screen segment</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Auswahl des Desktopausschnittes</translation>
+    </message>
+    <message>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="34"/>
+        <source>Select desktop part</source>
+        <translation>Auswahl des Desktopausschnittes</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="380"/>
         <source>Origin:</source>
-        <translation type="unfinished"></translation>
+        <translation>Ursprung:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="408"/>
         <source>x-offset:</source>
-        <translation type="unfinished"></translation>
+        <translation>x-Offset:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="418"/>
@@ -2291,62 +2326,62 @@ p, li { white-space: pre-wrap; }
         <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="508"/>
         <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="548"/>
         <source>0</source>
-        <translation type="unfinished">0</translation>
+        <translation>0</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="448"/>
         <source>y-offset:</source>
-        <translation type="unfinished"></translation>
+        <translation>y-Offset:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="470"/>
         <source>Dimension:</source>
-        <translation type="unfinished"></translation>
+        <translation>Dimension:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="498"/>
         <source>Width:</source>
-        <translation type="unfinished"></translation>
+        <translation>Breite:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="538"/>
         <source>Height:</source>
-        <translation type="unfinished"></translation>
+        <translation>Höhe:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="607"/>
         <source>click to reset settings to their default values</source>
-        <translation type="unfinished"></translation>
+        <translation>die Einstellungen zurück setzen auf Standardwerte</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="623"/>
         <source>Defaults</source>
-        <translation type="unfinished"></translation>
+        <translation>Defaults</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="658"/>
         <source>click to increase/shrink the capture segment to fit the desktop dimension and position</source>
-        <translation type="unfinished"></translation>
+        <translation>die Einstellungen der Desktopaufnahme aud den gesamten Desktop ausdehnen/schrumpfen</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="674"/>
         <source>Desktop</source>
-        <translation type="unfinished"></translation>
+        <translation>Desktop</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="709"/>
         <source>click to capture the entire desktop with automatic dimension adaption</source>
-        <translation type="unfinished"></translation>
+        <translation>die Einstellungen der Desktopaufnahme automatisch an die aktuellen Vollbildeinstellungen anpassen</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="728"/>
         <source>Auto Desktop</source>
-        <translation type="unfinished"></translation>
+        <translation>Auto Desktop</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="790"/>
         <source> Track and visualize mouse </source>
-        <translation type="unfinished"></translation>
+        <translation>Maus nachverfolgen und visualisieren</translation>
     </message>
 </context>
 <context>
@@ -2354,47 +2389,47 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../forms/Widgets/SessionInfoWidget.ui" line="32"/>
         <source>Session information</source>
-        <translation type="unfinished"></translation>
+        <translation>Sitzungsinformationen</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/SessionInfoWidget.ui" line="55"/>
         <source>Participant ID:</source>
-        <translation type="unfinished"></translation>
+        <translation>Teilnehmerkennung:</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/SessionInfoWidget.ui" line="136"/>
         <source>SIP interface:</source>
-        <translation type="unfinished"></translation>
+        <translation>SIP Schnittstelle:</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/SessionInfoWidget.ui" line="217"/>
         <source>Call state:</source>
-        <translation type="unfinished"></translation>
+        <translation>Anrufstatus:</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/SessionInfoWidget.ui" line="298"/>
         <source>Own contact addr.:</source>
-        <translation type="unfinished"></translation>
+        <translation>Eigene Kontaktadresse:</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/SessionInfoWidget.ui" line="376"/>
         <source>Send video to:</source>
-        <translation type="unfinished"></translation>
+        <translation>Sende Video an:</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/SessionInfoWidget.ui" line="454"/>
         <source>Send audio to:</source>
-        <translation type="unfinished"></translation>
+        <translation>Sende Audio an:</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/SessionInfoWidget.ui" line="532"/>
         <source>Receive video at:</source>
-        <translation type="unfinished"></translation>
+        <translation>Empfange Video an:</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/SessionInfoWidget.ui" line="610"/>
         <source>Receive audio at:</source>
-        <translation type="unfinished"></translation>
+        <translation>Empfange Audio an:</translation>
     </message>
 </context>
 <context>
@@ -2402,57 +2437,57 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../forms/Widgets/StreamingControlWidget.ui" line="37"/>
         <source>GeneralControlWidget</source>
-        <translation type="unfinished"></translation>
+        <translation>GeneralControlWidget</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/StreamingControlWidget.ui" line="80"/>
         <source> Source </source>
-        <translation type="unfinished"></translation>
+        <translation>Quelle</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/StreamingControlWidget.ui" line="118"/>
         <source>broadcast local desktop screen</source>
-        <translation type="unfinished"></translation>
+        <translation>verteile die lokalen Desktopanzeige</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/StreamingControlWidget.ui" line="189"/>
         <source>broadcast local camera picture</source>
-        <translation type="unfinished"></translation>
+        <translation>verteile das lokale Kamerabild</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/StreamingControlWidget.ui" line="284"/>
         <source>broadcast local audio input</source>
-        <translation type="unfinished"></translation>
+        <translation>verteile die lokale Audioeingabe</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/StreamingControlWidget.ui" line="349"/>
         <source>broadcast local file</source>
-        <translation type="unfinished"></translation>
+        <translation>verteile eine lokale Datei</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/StreamingControlWidget.ui" line="431"/>
         <source>push-to-talk mode, activation via key &quot;t&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>push-to-talk Modus, Aktivierung über die Taste &quot;t&quot;</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/StreamingControlWidget.ui" line="248"/>
         <source>Composite 11</source>
-        <translation type="unfinished"></translation>
+        <translation>Composite 11</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/StreamingControlWidget.ui" line="412"/>
         <source> Streaming </source>
-        <translation type="unfinished"></translation>
+        <translation>Übertragung</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/StreamingControlWidget.ui" line="450"/>
         <source>PTT</source>
-        <translation type="unfinished"></translation>
+        <translation>PTT</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/StreamingControlWidget.ui" line="463"/>
         <source>P</source>
-        <translation type="unfinished"></translation>
+        <translation>P</translation>
     </message>
 </context>
 <context>
@@ -2460,18 +2495,18 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../forms/Dialogs/UpdateCheckDialog.ui" line="25"/>
         <source>Check for software updates</source>
-        <translation type="unfinished"></translation>
+        <translation>Prüfe auf Softwareaktualisierungen</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/UpdateCheckDialog.ui" line="128"/>
         <location filename="../forms/Dialogs/UpdateCheckDialog.ui" line="398"/>
         <source>Version</source>
-        <translation type="unfinished">Version</translation>
+        <translation>Version</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/UpdateCheckDialog.ui" line="181"/>
         <source>0.999</source>
-        <translation type="unfinished">0.999</translation>
+        <translation>0.999</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/UpdateCheckDialog.ui" line="256"/>
@@ -2483,7 +2518,7 @@ p, li { white-space: pre-wrap; }
 &lt;tr&gt;
 &lt;td style=&quot;border: none;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:&apos;Arial&apos;; font-size:9pt; font-style:normal;&quot;&gt;Send feedback about Homer Conferencing to:&lt;br /&gt; &lt;/span&gt;&lt;a href=&quot;mailto:feedback@homer-conferencing.com?Subject=[Homer]&quot;&gt;&lt;span style=&quot; font-family:&apos;Arial&apos;; font-size:9pt; font-style:normal; text-decoration: underline; color:#33517e;&quot;&gt;feedback@homer-conferencing.com&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message utf8="true">
         <location filename="../forms/Dialogs/UpdateCheckDialog.ui" line="303"/>
@@ -2495,44 +2530,46 @@ p, li { white-space: pre-wrap; }
 &lt;tr&gt;
 &lt;td style=&quot;border: none;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:&apos;Arial&apos;;&quot;&gt;Find current releases and news: &lt;br /&gt;&lt;/span&gt; &lt;a href=&quot;http://www.homer-conferencing.com&quot;&gt;&lt;span style=&quot; font-family:&apos;Arial&apos;; text-decoration: underline; color:#33517e;&quot;&gt;http://www.homer-conferencing.com&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/UpdateCheckDialog.ui" line="365"/>
         <source>Latest version on server:</source>
-        <translation type="unfinished"></translation>
+        <translation>Letzte Version auf dem Server:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/UpdateCheckDialog.ui" line="416"/>
         <source>checking...</source>
-        <translation type="unfinished"></translation>
+        <translation>Prüfe...</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/UpdateCheckDialog.ui" line="435"/>
         <source> Changelog view</source>
-        <translation type="unfinished"></translation>
+        <translation> Veränderungsverlauf  </translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/UpdateCheckDialog.ui" line="452"/>
         <source>Fetching data...</source>
-        <translation type="unfinished"></translation>
+        <translation> Warte auf Daten... </translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/UpdateCheckDialog.ui" line="477"/>
         <source>Download new version
 as archive</source>
-        <translation type="unfinished"></translation>
+        <translation>Download Update
+als Archiv</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/UpdateCheckDialog.ui" line="498"/>
         <source>Download new version
 as installer</source>
-        <translation type="unfinished"></translation>
+        <translation>Download Update
+als Installer</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/UpdateCheckDialog.ui" line="538"/>
         <source>Automatic check for software updates</source>
-        <translation type="unfinished"></translation>
+        <translation>Automatische Prüfung auf Softwareaktualisierungen</translation>
     </message>
 </context>
 <context>
@@ -2540,62 +2577,62 @@ as installer</source>
     <message>
         <location filename="../forms/Dialogs/VersionDialog.ui" line="31"/>
         <source>About Homer Conferencing</source>
-        <translation type="unfinished"></translation>
+        <translation>Über Homer-Conferencing</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/VersionDialog.ui" line="184"/>
         <source>Version</source>
-        <translation type="unfinished">Version</translation>
+        <translation>Version</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/VersionDialog.ui" line="237"/>
         <source>0.999</source>
-        <translation type="unfinished">0.999</translation>
+        <translation>0.999</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/VersionDialog.ui" line="357"/>
         <source>Special thanks to:</source>
-        <translation type="unfinished"></translation>
+        <translation>Speziellen Dank an:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/VersionDialog.ui" line="815"/>
         <source>Project Founder / Programming:</source>
-        <translation type="unfinished"></translation>
+        <translation>Projektgründer / Programmierung:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/VersionDialog.ui" line="1243"/>
         <source>Thomas Volkert |</source>
-        <translation type="unfinished"></translation>
+        <translation>Thomas Volkert |</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/VersionDialog.ui" line="1296"/>
         <source>Sound:</source>
-        <translation type="unfinished"></translation>
+        <translation>Sound:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/VersionDialog.ui" line="1724"/>
         <source>Kay Wenzel |</source>
-        <translation type="unfinished"></translation>
+        <translation>Kay Wenzel |</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/VersionDialog.ui" line="1777"/>
         <source>Design:</source>
-        <translation type="unfinished"></translation>
+        <translation>Design:</translation>
     </message>
     <message utf8="true">
         <location filename="../forms/Dialogs/VersionDialog.ui" line="2205"/>
         <source>Katja Möller |</source>
-        <translation type="unfinished"></translation>
+        <translation>Katja Möller |</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/VersionDialog.ui" line="2258"/>
         <source>Additional thanks to:</source>
-        <translation type="unfinished"></translation>
+        <translation>Zusätzlichen Dank an:</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/VersionDialog.ui" line="2686"/>
         <source>Mario Santagiuliana</source>
-        <translation type="unfinished"></translation>
+        <translation>Mario Santagiuliana </translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/VersionDialog.ui" line="2816"/>
@@ -2604,12 +2641,12 @@ as installer</source>
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Tahoma&apos;; font-size:18pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;mailto:info@homer-conferencing.com&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#ffffff;&quot;&gt;info@homer-conferencing.com&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/VersionDialog.ui" line="2888"/>
         <source> |</source>
-        <translation type="unfinished"></translation>
+        <translation> |</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/VersionDialog.ui" line="2923"/>
@@ -2618,7 +2655,7 @@ p, li { white-space: pre-wrap; }
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Tahoma&apos;; font-size:18pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;http://www.homer-conferencing.com&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#ffffff;&quot;&gt;www.homer-conferencing.com&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 </TS>
