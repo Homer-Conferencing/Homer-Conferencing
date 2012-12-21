@@ -2,6 +2,13 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="de_DE" sourcelanguage="en_US">
 <context>
+    <name></name>
+    <message>
+        <source>STUN server:</source>
+        <translation type="obsolete">STUN-Server:</translation>
+    </message>
+</context>
+<context>
     <name>AddNetworkSinkDialog</name>
     <message>
         <location filename="../forms/Dialogs/AddNetworkSinkDialog.ui" line="25"/>
@@ -629,6 +636,7 @@ Sende Video/Audio an </translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2241"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="767"/>
         <source>STUN server:</source>
         <translation>STUN-Server:</translation>
     </message>
@@ -959,6 +967,125 @@ Sende Video/Audio an </translation>
         <source>Deselect all</source>
         <translation>Alle abwählen</translation>
     </message>
+    <message>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="725"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="732"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="758"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="779"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="786"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="812"/>
+        <source>Communication with server failed</source>
+        <translation>Kommunikation mit Server fehlerhaft</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="725"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="732"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="758"/>
+        <source>The list with suggested STUN servers from the project server is unavailable</source>
+        <translation>Es konnte keine Liste möglicher STUN-Server vom Projektserver geladen werden</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="767"/>
+        <source>Select a STUN server</source>
+        <translation> Auswahl des STUN-Servers </translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="779"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="786"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="812"/>
+        <source>The list with suggested SIP servers from the project server is unavailable</source>
+        <translation>Es konnte keine Liste möglicher SIP-Server vom Projektserver geladen werden </translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="833"/>
+        <source>No SIP server entered</source>
+        <translation>Kein SIP-Server eingegeben</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="833"/>
+        <source>You have to enter a SIP server address first!</source>
+        <translation>Es muss zuvor ein SIP-Server festgelegt werden!</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="838"/>
+        <source>Web browser opened</source>
+        <translation>Webbrowser geöffnet</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="838"/>
+        <source>Your web browser was opened with the url</source>
+        <translation>Der Webbrowser wurde geöffnet mit der URL</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="838"/>
+        <source>for your account creation!</source>
+        <translation>für die Accounterstellung!</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="854"/>
+        <source>Select sound file for acoustic notification for event </source>
+        <translation>Auswahl der Sounddatei für die akustische Benachrichtung für das Ereignis</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="870"/>
+        <source>program start</source>
+        <translation>Programmstart</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="881"/>
+        <source>program stop</source>
+        <translation>Programmende</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="892"/>
+        <source>new message</source>
+        <translation>Neue Nachricht</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="903"/>
+        <source>new call</source>
+        <translation>Neuer Anruf</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="914"/>
+        <source>call denied</source>
+        <translation>Anruf abgelehnt</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="925"/>
+        <source>call acknowledged</source>
+        <translation>Anruf bestätigt</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="936"/>
+        <source>call hangup</source>
+        <translation>Anruf aufgelegt</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="947"/>
+        <source>error</source>
+        <translation>Fehler</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="958"/>
+        <source>registration failed</source>
+        <translation>Registrierung fehlerhaft</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="969"/>
+        <source>registration successful</source>
+        <translation>Registrierung erfolgreich</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="982"/>
+        <source>Failed to play file</source>
+        <translation>Dateiwiedergabe fehlgeschlagen</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="982"/>
+        <source>Was unable to play the file</source>
+        <translation>Wiedergabe fehlgeschlagen für Datei</translation>
+    </message>
 </context>
 <context>
     <name>ContactEditDialog</name>
@@ -1062,6 +1189,22 @@ Sende Video/Audio an </translation>
         <location filename="../forms/Dialogs/HelpDialog.ui" line="388"/>
         <source>Fetching data...</source>
         <translation> Warte auf Daten... </translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="196"/>
+        <source>Communication with server failed</source>
+        <translation>Kommunikationmit Server fehlgeschlagen</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="196"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="205"/>
+        <source>Could not determine help file which is provided by project server</source>
+        <translation>Konnte nicht die Hilfsdatei vom Projekt beziehen </translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="205"/>
+        <source>Help data not found on server</source>
+        <translation>Hilfedaten konnte nichtgefunden werden auf dem Server</translation>
     </message>
 </context>
 <context>
@@ -1516,6 +1659,63 @@ Sende Video/Audio an </translation>
         <source>Ctrl+P</source>
         <translation>Ctrl+P</translation>
     </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1194"/>
+        <source>NAT detection failed</source>
+        <translation>NAT Erkennung fehlgeschlagen</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1194"/>
+        <source>Could not detect NAT address and type via STUN server. The failure reason is</source>
+        <translation>Konnte die NAT-Adresse und -Typ nicht via STUN-Server erkennen. Die Fehlerursache ist</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1577"/>
+        <location filename="../src/MainWindow.cpp" line="1581"/>
+        <source>Registration failed</source>
+        <translation>Registrierung fehlgeschlagen</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1577"/>
+        <location filename="../src/MainWindow.cpp" line="1581"/>
+        <source>Could not register</source>
+        <translation>Registerung fehlgeschlagen für</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1577"/>
+        <location filename="../src/MainWindow.cpp" line="1581"/>
+        <source>at the SIP server</source>
+        <translation>am SIP-Server</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1577"/>
+        <location filename="../src/MainWindow.cpp" line="1597"/>
+        <source>The reason is</source>
+        <translation>Die Ursache ist</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1578"/>
+        <location filename="../src/MainWindow.cpp" line="1582"/>
+        <location filename="../src/MainWindow.cpp" line="1598"/>
+        <source>SIP server runs software</source>
+        <translation>Der SIP-Server nutzt die Software</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1581"/>
+        <source>The login name or password is wrong. Check configuration!
+</source>
+        <translation>Der Loginname oder das Passwort sind falsch. Bitte die Konfiguration prüfen!</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1597"/>
+        <source>Presence publication failed</source>
+        <translation>Verfügbarkeitsstatus nicht aktualisiert</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1597"/>
+        <source>Could not publish your new presence state at the SIP server</source>
+        <translation>Der Verfügbarkeitsstatus konnte nicht am SIP-Server veröffentlicht werden</translation>
+    </message>
 </context>
 <context>
     <name>MessageWidget</name>
@@ -1568,6 +1768,16 @@ Sende Video/Audio an </translation>
         <location filename="../forms/Widgets/MessageWidget.ui" line="333"/>
         <source>Conference</source>
         <translation>Konferenz</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/MessageWidget.cpp" line="406"/>
+        <source>Error occurred</source>
+        <translation>Fehler aufgetreten</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/MessageWidget.cpp" line="406"/>
+        <source>Message could not be sent!</source>
+        <translation>Nachricht konnte nicht übermittelt werden!</translation>
     </message>
 </context>
 <context>
@@ -1892,6 +2102,43 @@ datei</translation>
         <source>Audio playback enabled</source>
         <translation>Audiowiedergabe aktiv</translation>
     </message>
+    <message>
+        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="183"/>
+        <source>Video preview not possible</source>
+        <translation>Videovorschau nicht möglich</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="183"/>
+        <source>The preview of the incoming video stream at local port</source>
+        <translation>Die Vorschau des empfangen Videostroms ist nicht möglich am lokalen Port</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="183"/>
+        <source>with transport</source>
+        <translation>und dem eingesetzten Transport</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="183"/>
+        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="310"/>
+        <source>and codec</source>
+        <translation>und Codec</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="183"/>
+        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="310"/>
+        <source>is not possible!</source>
+        <translation>ist nicht möglich!</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="310"/>
+        <source>Audio preview not possible</source>
+        <translation>Audiovorschau nicht möglich</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="310"/>
+        <source>The preview of the incoming audio stream at local port</source>
+        <translation>Die Vorschau des empfangen Audiostroms ist nicht möglich am lokalen Port</translation>
+    </message>
 </context>
 <context>
     <name>OverviewContactsWidget</name>
@@ -2028,6 +2275,18 @@ datei</translation>
         <source> Video streams </source>
         <translation>Videoströme</translation>
     </message>
+    <message>
+        <location filename="../src/Widgets/OverviewDataStreamsWidget.cpp" line="289"/>
+        <location filename="../src/Widgets/OverviewDataStreamsWidget.cpp" line="385"/>
+        <source>Unable to open file</source>
+        <translation>Datei öffnen nicht möglich</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewDataStreamsWidget.cpp" line="289"/>
+        <location filename="../src/Widgets/OverviewDataStreamsWidget.cpp" line="385"/>
+        <source>The selected output file can&apos;t be opened</source>
+        <translation>Die ausgewählte Ausgabedatei konnte nicht geöffnet werden</translation>
+    </message>
 </context>
 <context>
     <name>OverviewErrorsWidget</name>
@@ -2162,6 +2421,16 @@ datei</translation>
         <location filename="../forms/Widgets/OverviewPlaylistWidget.ui" line="232"/>
         <source>remove file(s) from playlist</source>
         <translation>entferne Datei(en) von der Playlist</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="557"/>
+        <source>Could not store playlist file</source>
+        <translation>Abspeichern der Playlist fehlerhaft</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="557"/>
+        <source>Couldn&apos;t write playlist in</source>
+        <translation>Abspeichern der Playlist fehlgeschlagen in </translation>
     </message>
 </context>
 <context>
@@ -2325,6 +2594,65 @@ p, li { white-space: pre-wrap; }
         <location filename="../forms/Widgets/ParticipantWidget.ui" line="1066"/>
         <source>activation of video stream to this participant</source>
         <translation>Aktivierung des Videostroms für diesen Teilnehmer</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="787"/>
+        <source>DNS lookup error</source>
+        <translation>DNS Auflösungsfehler</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="787"/>
+        <source>Unable to lookup DNS entry for</source>
+        <translation>Die DNS-Auflösung war unmöglich für</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="787"/>
+        <source>because</source>
+        <translation>, weil</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="904"/>
+        <source>General error occurred</source>
+        <translation>Allgemeiner Fehler aufgetreten</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="904"/>
+        <source>General error of code</source>
+        <translation>Allgemeiner Fehler mit Code</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="904"/>
+        <source>occurred. The error is described with</source>
+        <translation>aufgetreten. Der Fehler ist beschrieben mit </translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="947"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1134"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1136"/>
+        <source>Participant unavailable</source>
+        <translation>Teilnehmer nicht verfügbar</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="947"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1134"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1136"/>
+        <source>The participant</source>
+        <translation>Der Teilnehmer</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="947"/>
+        <source>is currently unavailable for an instant message! The reason is</source>
+        <translation>ist im Moment nicht verfügbar für eine Nachricht. Due Ursache ist</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1134"/>
+        <source>does not accept your video/audio codecs. Please, check the configuration and use different settings.</source>
+        <translation>akzeptiert den Video-/Audiocodec nicht. Bitte die Konfiguration prüfen und andere Einstellungen verwenden.</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1136"/>
+        <source>is currently unavailable for a call! The reason is</source>
+        <translation>ist im Moment nicht verfügbar für einen Anruf. Due Ursache ist</translation>
     </message>
 </context>
 <context>
@@ -2598,6 +2926,64 @@ als Installer</translation>
         <location filename="../forms/Dialogs/UpdateCheckDialog.ui" line="538"/>
         <source>Automatic check for software updates</source>
         <translation>Automatische Prüfung auf Softwareaktualisierungen</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="143"/>
+        <source>Could not store Homer archive</source>
+        <translation>Abspeichern des Homer-Archivs fehlerhaft</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="143"/>
+        <source>Unable to store the downloaded Homer archive to</source>
+        <translation>Abspeichern des Homer-Archivs war fehlerhaft für </translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="206"/>
+        <source>Could not store Homer installer</source>
+        <translation>Abspeichern des Homer-Installers fehlerhaft</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="206"/>
+        <source>Unable to store the downloaded Homer installer to</source>
+        <translation>Abspeichern des heruntergeladenen Homer-Installers war fehlerhaft für</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="265"/>
+        <source>Failed to download Homer update</source>
+        <translation>Herunterladen der Homeraktualisierung fehlerhaft</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="265"/>
+        <source>Unable to download Homer update. The reason is:</source>
+        <translation>Herunterladen der Homeraktualisierung fehlerhaft. Die Urasche ist:</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="314"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="343"/>
+        <source>Communication with server failed</source>
+        <translation>Kommunikation mit Server fehlerhaft</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="314"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="322"/>
+        <source>Could not determine software version which is provided by project server</source>
+        <translation>Konnte die Softwareversion auf dem Projektserver nicht bestimmen</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="322"/>
+        <source>Version data not found on server</source>
+        <translation>Versionsdaten wurden nicht auf dem Server gefunden</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="343"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="352"/>
+        <source>Could not determine changelog file which is provided by project server</source>
+        <translation>Konnte den Änderungsverlauf nicht vom Projektserver beziehen</translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="352"/>
+        <source>Changelog data not found on server</source>
+        <translation>Änderungsverlauf wurde auf dem Server nicht gefunden</translation>
     </message>
 </context>
 <context>
