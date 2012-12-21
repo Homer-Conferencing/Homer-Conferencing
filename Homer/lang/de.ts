@@ -171,7 +171,7 @@ Sende Video/Audio an </translation>
     <message>
         <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="147"/>
         <source>Notifications</source>
-        <translation>Benachrichtigungen</translation>
+        <translation>Hinweise</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="201"/>
