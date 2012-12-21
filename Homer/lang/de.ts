@@ -705,7 +705,7 @@ Sende Video/Audio an </translation>
     <message>
         <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2711"/>
         <source>English</source>
-        <translation>Englisch</translation>
+        <translation>English</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2890"/>
@@ -772,12 +772,12 @@ Sende Video/Audio an </translation>
     <message>
         <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2716"/>
         <source>German</source>
-        <translation>Deutsch</translation>
+        <translation>German</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2721"/>
         <source>Russian</source>
-        <translation>Russich</translation>
+        <translation>Russian</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2788"/>
