@@ -1324,9 +1324,8 @@ Sende Video/Audio an </translation>
         <translation>Video-/Audioquelle</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="496"/>
         <source>Update check</source>
-        <translation>Aktualisierung erfragen</translation>
+        <translation type="obsolete">Aktualisierung erfragen</translation>
     </message>
     <message>
         <location filename="../forms/MainWindow.ui" line="499"/>
@@ -1418,6 +1417,11 @@ Sende Video/Audio an </translation>
         <location filename="../forms/MainWindow.ui" line="413"/>
         <source>Show/hide system threads overview</source>
         <translation>Zeige/verstecke Übersicht über Systemsthreads</translation>
+    </message>
+    <message>
+        <location filename="../forms/MainWindow.ui" line="496"/>
+        <source>Software update</source>
+        <translation>Softwareaktualisierung</translation>
     </message>
     <message>
         <location filename="../forms/MainWindow.ui" line="511"/>
