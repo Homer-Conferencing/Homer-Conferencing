@@ -610,6 +610,20 @@ vector<string> MediaSourceFile::GetInputStreams()
     return tResult;
 }
 
+void MediaSourceFile::CalibrateRTGrabbing()
+{
+    // adopt the stored pts value which represent the start of the media presentation in real-time useconds
+    float  tRelativeFrameIndex = mGrabberCurrentFrameIndex - mSourceStartPts;
+    double tRelativeTime = (int64_t)((double)AV_TIME_BASE * tRelativeFrameIndex / GetFrameRate());
+    #ifdef MSMEM_DEBUG_CALIBRATION
+        LOG(LOG_WARN, "Calibrating %s RT playback, old PTS start: %.2f", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing);
+    #endif
+    mSourceStartTimeForRTGrabbing = av_gettime() - tRelativeTime; //HINT: no "+ mDecoderFramePreBufferTime * AV_TIME_BASE" here because we start playback immediately
+    #ifdef MSMEM_DEBUG_CALIBRATION
+        LOG(LOG_WARN, "Calibrating %s RT playback: new PTS start: %.2f, rel. frame index: %.2f, rel. time: %.2f ms", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing, tRelativeFrameIndex, (float)(tRelativeTime / 1000));
+    #endif
+}
+
 void MediaSourceFile::StartDecoder()
 {
 	// setting last decoder file position
@@ -627,21 +641,6 @@ void MediaSourceFile::StopDecoder()
 	mLastDecoderFilePosition = GetSeekPos();
 
 	MediaSourceMem::StopDecoder();
-}
-
-void MediaSourceFile::CalibrateRTGrabbing()
-{
-	// adopt the stored pts value which represent the start of the media presentation in real-time useconds
-    float  tRelativeFrameIndex = mGrabberCurrentFrameIndex - mSourceStartPts;
-    double tRelativeTime = (int64_t)((double)AV_TIME_BASE * tRelativeFrameIndex / mFrameRate);
-    #ifdef MSF_DEBUG_CALIBRATION
-        LOG(LOG_WARN, "Calibrating %s RT playback, old PTS start: %.2f", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing);
-    #endif
-    mSourceStartTimeForRTGrabbing = av_gettime() - tRelativeTime; // we don't use "+ mDecoderFramePreBufferTime * AV_TIME_BASE" here because we fill the pre-buffer by reading the file as fast as possible
-    #ifdef MSF_DEBUG_CALIBRATION
-        LOG(LOG_ERROR, "Calibrating %s RT playback: new PTS start: %.2f, rel. frame index: %.2f, rel. time: %.2f ms", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing, tRelativeFrameIndex, (float)(tRelativeTime / 1000));
-    	LOG(LOG_WARN, "Finished calibration of %s RT grabbing", GetMediaTypeStr().c_str());
-    #endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
