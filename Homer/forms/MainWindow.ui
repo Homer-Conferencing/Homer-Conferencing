@@ -493,7 +493,7 @@
      <normaloff>:/images/22_22/SoftwareUpdate.png</normaloff>:/images/22_22/SoftwareUpdate.png</iconset>
    </property>
    <property name="text">
-    <string>Update check</string>
+    <string>Software update</string>
    </property>
    <property name="shortcut">
     <string>F5</string>
