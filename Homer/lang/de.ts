@@ -149,493 +149,513 @@ Sende Video/Audio an </translation>
         <translation>Konfiguration bearbeiten</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="99"/>
         <source>Video</source>
-        <translation>Video</translation>
+        <translation type="obsolete">Video</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="111"/>
         <source>Audio</source>
-        <translation>Audio</translation>
+        <translation type="obsolete">Audio</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="123"/>
         <source>Network</source>
-        <translation>Netzwerk</translation>
+        <translation type="obsolete">Netzwerk</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="135"/>
         <source>General</source>
-        <translation>Allgemein</translation>
+        <translation type="obsolete">Allgemein</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="147"/>
         <source>Notifications</source>
-        <translation>Hinweise</translation>
+        <translation type="obsolete">Hinweise</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="201"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="65"/>
         <source> Video capture </source>
         <translation> Videoaufnahme </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="227"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1144"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="91"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1008"/>
         <source>Source selection:</source>
         <translation>Quelle: </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="263"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="127"/>
         <source>/dev/video0</source>
         <translation>/dev/vide0</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="337"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1245"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1393"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="201"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1109"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1257"/>
         <source>Description</source>
         <translation>Beschreibung</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="363"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="227"/>
         <source>Flip captured picture:</source>
         <translation>Das aufgenommene Bild spiegeln:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="395"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="259"/>
         <source>Horizontally</source>
         <translation>horizontal</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="430"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="294"/>
         <source>Vertically</source>
         <translation>vertikal</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="457"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="321"/>
         <source> Video playback </source>
         <translation>Videowiedergabe</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="480"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="344"/>
         <source>Smooth video presentation:</source>
         <translation>Geglättete Videodarstellung: </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="534"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="398"/>
         <source>Video stream broadcast</source>
         <translation> Videoverteilung </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="566"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="430"/>
         <source>Output resolution:</source>
         <translation>Ausgabeauflösung:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="602"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1996"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2605"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2682"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2748"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="466"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1860"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2469"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2546"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2612"/>
         <source>auto</source>
         <translation>auto</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="607"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="471"/>
         <source>128 * 96</source>
         <translation>128 * 96</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="612"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="476"/>
         <source>176 * 144</source>
         <translation>176 * 144</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="617"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="481"/>
         <source>352 * 288</source>
         <translation>352 * 288</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="622"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="486"/>
         <source>704 * 576</source>
         <translation>704 * 576</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="627"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="491"/>
         <source>720 * 576</source>
         <translation>720 * 576</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="632"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="496"/>
         <source>1056 * 864</source>
         <translation>1056 * 864</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="637"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="501"/>
         <source>1280 * 720</source>
         <translation>1280 * 720</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="642"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="506"/>
         <source>1408 * 1152</source>
         <translation>1408 * 1152</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="647"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="511"/>
         <source>1920 * 1080</source>
         <translation>1920 * 1080</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="671"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="535"/>
         <source>Output FPS:</source>
         <translation>Ausgabebildrate:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="707"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="571"/>
         <source>MAX</source>
         <translation>max</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="739"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1514"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="603"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1378"/>
         <source>Output codec:</source>
         <translation>Ausgabecodec:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="775"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="639"/>
         <source>H.261</source>
         <translation>H.261</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="780"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="644"/>
         <source>H.263</source>
         <translation>H.263</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="785"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="649"/>
         <source>H.263+</source>
         <translation>H.263+</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="790"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="654"/>
         <source>H.264</source>
         <translation>H.264</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="795"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="659"/>
         <source>MPEG1</source>
         <translation>MPEG1</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="800"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="664"/>
         <source>MPEG2</source>
         <translation>MPEG2</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="805"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="669"/>
         <source>MPEG4</source>
         <translation>MPEG4</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="810"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="674"/>
         <source>THEORA</source>
         <translation>THEORA</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="834"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="698"/>
         <source>Output quality:</source>
         <translation>Ausgabequalität:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="870"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="734"/>
         <source>10 %</source>
         <translation>10 %</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="875"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="739"/>
         <source>20 %</source>
         <translation>20 %</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="880"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="744"/>
         <source>30 %</source>
         <translation>30 %</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="885"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="749"/>
         <source>40 %</source>
         <translation>40 %</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="890"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="754"/>
         <source>50 %</source>
         <translation>50 %</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="895"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="759"/>
         <source>60 %</source>
         <translation>60 %</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="900"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="764"/>
         <source>70 %</source>
         <translation>70 %</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="905"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="769"/>
         <source>80 %</source>
         <translation>80 %</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="910"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="774"/>
         <source>90 %</source>
         <translation>90 %</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="915"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="779"/>
         <source>100 %</source>
         <translation>100 %</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1060"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1731"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="924"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1595"/>
         <source>256 (Small)</source>
         <translation>256 (klein)</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1065"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1736"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="929"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1600"/>
         <source>576 (IPv4 path)</source>
         <translation>576 (IPv4 Pfad)</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1070"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1741"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="934"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1605"/>
         <source>1280 (IPv6 path)</source>
         <translation>1280 (IPv6 Pfad)</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1075"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1746"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="939"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1610"/>
         <source>1492 (DSL)</source>
         <translation>1492 (DSL)</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1080"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1751"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="944"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1615"/>
         <source>1500 (Eth)</source>
         <translation>1500 (Eth)</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1085"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1756"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="949"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1620"/>
         <source>4464 (T-Ring)</source>
         <translation>4464 (T-Ring)</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1090"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1761"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="954"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1625"/>
         <source>4500 (FDDI)</source>
         <translation>4500 (FDDI)</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1095"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1766"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="959"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1630"/>
         <source>6000 (Jumbo)</source>
         <translation>6000 (Jumbo)</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1118"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="982"/>
         <source> Audio capture </source>
         <translation> Audioaufnahme </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1180"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1044"/>
         <source>/dev/dsp0</source>
         <translation>/dev/dsp0</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1269"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1133"/>
         <source> Audio playback </source>
         <translation> Audiowiedergabe </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1292"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1156"/>
         <source>Device selection:</source>
         <translation>Geräteauswahl:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1328"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1192"/>
         <source>SDL: default</source>
         <translation>SDL default</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1433"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1297"/>
         <source>Audio stream broadcast</source>
         <translation> Audioverteilung </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1471"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1335"/>
         <source>Skip silence:</source>
         <translation>Stilleunterdrückung:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1556"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1420"/>
         <source>G711 A-law</source>
         <translation>G711 A-law</translation>
     </message>
     <message utf8="true">
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1561"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1425"/>
         <source>G711 µ-law</source>
         <translation>G711 µ-law</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1566"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1430"/>
         <source>G722 adpcm</source>
         <translation>G722 adpcm</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1571"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1435"/>
         <source>MP3</source>
         <translation>MP3</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1576"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1440"/>
         <source>PCM16</source>
         <translation>PCM16</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1636"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1500"/>
         <source>512</source>
         <translation>512</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1641"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1505"/>
         <source>384</source>
         <translation>384</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1646"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1510"/>
         <source>256</source>
         <translation>256</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1651"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1515"/>
         <source>128</source>
         <translation>128</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1656"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1520"/>
         <source>96</source>
         <translation>96</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1661"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1525"/>
         <source>64</source>
         <translation>64</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1666"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1530"/>
         <source>48</source>
         <translation>48</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1671"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1535"/>
         <source>32</source>
         <translation>32</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1801"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1665"/>
         <source> Server based contacting </source>
         <translation> Serverbasierte Kontaktaufnahme   </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1836"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1700"/>
         <source>Server address: </source>
         <translation>Serveradresse:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1871"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2412"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1735"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2276"/>
         <source>download suggestions from web server and select from this list</source>
         <translation>lade Vorschläge vom Webserver and wähle einen aus dieser Liste</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1888"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2091"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2428"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3347"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3558"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3796"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4031"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4239"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4447"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4655"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4890"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5098"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5333"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5441"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5500"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5608"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5667"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1752"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1955"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2292"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3211"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3422"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3660"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3895"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4103"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4311"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4519"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4754"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4962"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5197"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5305"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5364"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5472"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5531"/>
         <source>...</source>
         <translation>...</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1920"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2460"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1784"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2324"/>
         <source>default</source>
         <translation>default</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1958"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1822"/>
         <source>Port: </source>
         <translation>Port:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2040"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1904"/>
         <source>Login: </source>
         <translation>Login:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2075"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1939"/>
         <source>create a SIP account at the selected SIP server</source>
         <translation>erstelle SIP-Account auf dem ausgewählten SIP-Server</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2123"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1987"/>
         <source>user</source>
         <translation>Nutzer</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2155"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2019"/>
         <source>Password: </source>
         <translation>Passwort:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2190"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2054"/>
         <source>toggle password display</source>
         <translation>wechsel die Passwortanzeige</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2265"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2129"/>
         <source> Contacting </source>
         <translation> Kontaktaufnahme  </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2288"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2152"/>
         <source>Check availability of known contacts:</source>
         <translation>Prüfe die Verfügbarkeit von bekannten Kontakten:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2348"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2212"/>
         <source> NAT traversal </source>
         <translation>NAT Durchquerung</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2377"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2241"/>
         <source>STUN server:</source>
         <translation>STUN-Server:</translation>
+    </message>
+    <message>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5713"/>
+        <source> Video </source>
+        <translation> Video </translation>
+    </message>
+    <message>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5725"/>
+        <source> Audio </source>
+        <translation> Audio </translation>
+    </message>
+    <message>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5737"/>
+        <source> Network </source>
+        <translation> Netzwerk </translation>
+    </message>
+    <message>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5749"/>
+        <source> General </source>
+        <translation> Allgemein </translation>
+    </message>
+    <message>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5761"/>
+        <source> Notifications </source>
+        <translation> Hinweise </translation>
     </message>
     <message>
         <source> Local listeners </source>
@@ -643,299 +663,299 @@ Sende Video/Audio an </translation>
  </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2513"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2377"/>
         <source>Session management address:</source>
         <translation>Sitzungsadresse:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2549"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2413"/>
         <source>123.123.123.123</source>
         <translation>123.123.123.123</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2573"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2437"/>
         <source>Session management port:</source>
         <translation>Sitzungsport:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2643"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2507"/>
         <source>Session transport protocol:</source>
         <translation>Sitzungstransportprotokoll:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2687"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2551"/>
         <source>UDP</source>
         <translation>UDP</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2692"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2556"/>
         <source>TCP</source>
         <translation>TCP</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2716"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2580"/>
         <source>Video/audio ports start at:</source>
         <translation>Video-/Audioports starten bei:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2785"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2649"/>
         <source> GUI look and feel </source>
         <translation> GUI-Aussehen und Verhalten </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2847"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2711"/>
         <source>English</source>
         <translation>Englisch</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3026"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2890"/>
         <source> Software components</source>
         <translation> Softwarekomponenten </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2881"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2745"/>
         <source>Independent participant windows:</source>
         <translation>Unabhängige Teilnehmerfenster:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="939"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1600"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="803"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1464"/>
         <source>Output bit rate [kbit/s]: </source>
         <translation>Ausgabebitrate [kbit/s]:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="975"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="839"/>
         <source>1000</source>
         <translation>1000</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="980"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="844"/>
         <source>500</source>
         <translation>500</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="985"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="849"/>
         <source>200</source>
         <translation>200</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="990"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="854"/>
         <source>90</source>
         <translation>90</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="995"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="859"/>
         <source>50</source>
         <translation>50</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1000"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="864"/>
         <source>10</source>
         <translation>10</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1024"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1695"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="888"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1559"/>
         <source>Maximum packet size [bytes]: </source>
         <translation>Maximale Paketgröße [Bytes]:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2493"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2357"/>
         <source> Local network interfaces </source>
         <translation> Lokale Netzwerkschnittstelle </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2808"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2672"/>
         <source>Program language: </source>
         <translation>Programmsprache:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2852"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2716"/>
         <source>German</source>
         <translation>Deutsch</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2857"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2721"/>
         <source>Russian</source>
         <translation>Russich</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2924"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2788"/>
         <source>Close participant windows immediately:</source>
         <translation>Schließe Teilnehmerfenster sofort: </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2962"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2826"/>
         <source> Software updates </source>
         <translation> Softwareaktualisierungen </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2985"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2849"/>
         <source>Check for software updates during start:</source>
         <translation>Prüfe auf Softwareaktualisierungen während des Starts:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3049"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2913"/>
         <source>Conferencing functions enabled: </source>
         <translation>Konferenzfunktionen unterstützt:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3072"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2936"/>
         <source>(de)activate conferencing functions and the needed network ports</source>
         <translation>(de-)aktiviere die Konferenzfunktionen und benötigten Netzwerkports</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3137"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3001"/>
         <source> Notifications for program start/stop </source>
         <translation>Benachrichtigungen für Programmstart/-stop</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3176"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3040"/>
         <source>Program start</source>
         <translation>Programmstart</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3193"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3404"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3642"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3880"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4088"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4296"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4504"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4739"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4947"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5182"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3057"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3268"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3506"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3744"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3952"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4160"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4368"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4603"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4811"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5046"/>
         <source>show message in systray</source>
         <translation>zeige Nachrichten in der Systembenachrichtigungsanzeige</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3220"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3431"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3669"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3907"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4115"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4323"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4531"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4766"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4974"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5209"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3084"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3295"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3533"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3771"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3979"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4187"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4395"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4630"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4838"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5073"/>
         <source>play sound</source>
         <translation>spiele Sound</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3263"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3474"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3712"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3950"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4158"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4366"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4574"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4809"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5017"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5252"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3127"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3338"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3576"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3814"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4022"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4230"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4438"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4673"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4881"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5116"/>
         <source>file</source>
         <translation>Datei</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3282"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3493"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3731"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3969"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4177"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4385"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4593"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4828"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5036"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5271"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3146"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3357"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3595"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3833"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4041"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4249"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4457"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4692"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4900"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5135"/>
         <source>select sound file to play</source>
         <translation>wähle Sounddatei zum Abspielen</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3330"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3541"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3779"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4014"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4222"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4430"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4638"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4873"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5081"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5316"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3194"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3405"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3643"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3878"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4086"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4294"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4502"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4737"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4945"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5180"/>
         <source>play selected sound file</source>
         <translation>spiele ausgewählte Sounddatei ab</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3387"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3251"/>
         <source>Program stop</source>
         <translation>Programmstopp</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3586"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3450"/>
         <source> Notifications for instant messages </source>
         <translation>Benachrichtigungen für Nachrichten</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3625"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3489"/>
         <source>New message</source>
         <translation>Neue Nachrichten</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3824"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3688"/>
         <source> Notifications for conference calls </source>
         <translation>Benachrichtigungen für Konferenzanrufe</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3863"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3727"/>
         <source>New call</source>
         <translation>Neue Anrufe</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4071"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3935"/>
         <source>Call acknowledge</source>
         <translation>Anrufbestätigung</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4279"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4143"/>
         <source>Call deny</source>
         <translation>Anrufverweigerung</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4487"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4351"/>
         <source>Call hangup</source>
         <translation>Anrufbeendigung</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4683"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4547"/>
         <source> Notifications for server registration</source>
         <translation>Benachrichtigungen für Serverregistrierung</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4722"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4586"/>
         <source>Registration successful</source>
         <translation>Registrierung erfolgreich</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4930"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4794"/>
         <source>Registration failed</source>
         <translation>Registrierung fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5126"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4990"/>
         <source> Notifications for errors</source>
         <translation>Benachrichtigungen für Fehler</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5165"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5029"/>
         <source>General error</source>
         <translation>Allgemeiner Fehler</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5405"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5269"/>
         <source>Select all</source>
         <translation>Alle auswählen</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5572"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5436"/>
         <source>Deselect all</source>
         <translation>Alle abwählen</translation>
     </message>
