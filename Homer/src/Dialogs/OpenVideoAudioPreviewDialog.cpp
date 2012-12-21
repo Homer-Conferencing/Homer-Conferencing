@@ -180,7 +180,7 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceVideo()
             #endif
             if (tNetSource->GetListenerPort() == 0)
             {
-                ShowError("Video preview not possible", "The preview of the incoming video stream at local port \"" + QString("%1").arg(mSbPortVideo->value()) + "\" with transport \"" + QString(Socket::TransportType2String((enum TransportType)mCbTransportVideo->currentIndex()).c_str()) + "\" and codec \"" + mCbCodecVideo->currentText() + "\" is not possible!");
+                ShowError(tr("Video preview not possible"), tr("The preview of the incoming video stream at local port") + " \"" + QString("%1").arg(mSbPortVideo->value()) + "\" " + tr("with transport") + " \"" + QString(Socket::TransportType2String((enum TransportType)mCbTransportVideo->currentIndex()).c_str()) + "\" " + tr("and codec") + "\"" + mCbCodecVideo->currentText() + "\" " + tr("is not possible!"));
                 delete tNetSource;
                 return NULL;
             }
@@ -307,7 +307,7 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceAudio()
             #endif
             if (tNetSource->GetListenerPort() == 0)
             {
-                ShowError("Audio preview not possible", "The preview of the incoming audio stream at local port \"" + QString("%1").arg(mSbPortAudio->value()) + "\" with transport \"" + QString(Socket::TransportType2String((enum TransportType)mCbTransportAudio->currentIndex()).c_str()) + "\" and codec \"" + mCbCodecAudio->currentText() + "\" is not possible!");
+                ShowError(tr("Audio preview not possible"), tr("The preview of the incoming audio stream at local port") + " \"" + QString("%1").arg(mSbPortAudio->value()) + "\" with transport \"" + QString(Socket::TransportType2String((enum TransportType)mCbTransportAudio->currentIndex()).c_str()) + "\" " + tr("and codec") + " \"" + mCbCodecAudio->currentText() + "\" " + tr("is not possible!"));
                 delete tNetSource;
                 return NULL;
             }

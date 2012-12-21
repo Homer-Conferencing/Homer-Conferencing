@@ -140,7 +140,7 @@ void UpdateCheckDialog::DownloadStart()
 	mDownloadHomerUpdateFile = new QFile(tFileName, this);
 	if(!mDownloadHomerUpdateFile->open(QIODevice::WriteOnly))
 	{
-		ShowError("Could not store Homer archive", "Unable to store the downloaded Homer archive to \"" + tFileName + "\"");
+		ShowError(tr("Could not store Homer archive"), tr("Unable to store the downloaded Homer archive to") + " \"" + tFileName + "\"");
 		return;
 	}
 
@@ -203,7 +203,7 @@ void UpdateCheckDialog::DownloadInstallerStart()
 	mDownloadHomerUpdateFile = new QFile(tFileName, this);
 	if(!mDownloadHomerUpdateFile->open(QIODevice::WriteOnly))
 	{
-		ShowError("Could not store Homer installer", "Unable to store the downloaded Homer installer to \"" + tFileName + "\"");
+		ShowError(tr("Could not store Homer installer"), tr("Unable to store the downloaded Homer installer to") + " \"" + tFileName + "\"");
 		return;
 	}
 
@@ -262,7 +262,7 @@ void UpdateCheckDialog::DownloadFinished()
 	LOG(LOG_VERBOSE, "Download finished");
 	if((!mDownloadAborted) && (mDownloadReply->error()))
 	{
-		ShowError("Failed to download Homer update", "Unable to download Homer update. The reason is: \"" + mDownloadReply->errorString() + "\"");
+		ShowError(tr("Failed to download Homer update"), tr("Unable to download Homer update. The reason is:") + " \"" + mDownloadReply->errorString() + "\"");
 		mDownloadAborted = true;
 	}
 
@@ -311,7 +311,7 @@ void UpdateCheckDialog::GotAnswerForVersionRequest(bool pError)
     if (pError)
     {
         mLbVersionServer->setText("<font bgcolor='yellow' color='red'><b>check failed</b></font>");
-        ShowError("Communication with server failed", "Could not determine software version which is provided by project server");
+        ShowError(tr("Communication with server failed"), tr("Could not determine software version which is provided by project server"));
     }else
     {
         mServerVersion = QString(mHttpGetVersionServer->readAll().constData());
@@ -319,7 +319,7 @@ void UpdateCheckDialog::GotAnswerForVersionRequest(bool pError)
         if (mServerVersion.contains("404 Not Found"))
         {
             mLbVersionServer->setText("<font bgcolor='yellow' color='red'><b>check failed</b></font>");
-            ShowError("Version data not found on server", "Could not determine software version which is provided by project server");
+            ShowError(tr("Version data not found on server"), tr("Could not determine software version which is provided by project server"));
         }else
         {
             if (mServerVersion != RELEASE_VERSION_STRING)
@@ -340,7 +340,7 @@ void UpdateCheckDialog::GotAnswerForChangelogRequest(bool pError)
     if (pError)
     {
         mLbWaiting->setText("<font bgcolor='yellow' color='red'><b>fetch failed</b></font>");
-        ShowError("Communication with server failed", "Could not determine changelog file which is provided by project server");
+        ShowError(tr("Communication with server failed"), tr("Could not determine changelog file which is provided by project server"));
     }else
     {
         QString tChangelog = QString(mHttpGetChangelogUrl->readAll().constData());
@@ -349,7 +349,7 @@ void UpdateCheckDialog::GotAnswerForChangelogRequest(bool pError)
         if (tChangelog.contains("404 Not Found"))
         {
             mLbWaiting->setText("<font bgcolor='yellow' color='red'><b>fetch failed</b></font>");
-            ShowError("Changelog data not found on server", "Could not determine changelog file which is provided by project server");
+            ShowError(tr("Changelog data not found on server"), tr("Could not determine changelog file which is provided by project server"));
         }else
         {
             mLbWaiting->setVisible(false);

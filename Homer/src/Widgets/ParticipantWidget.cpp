@@ -784,7 +784,7 @@ void ParticipantWidget::LookedUpParticipantHost(const QHostInfo &pHost)
 {
     if (pHost.error() != QHostInfo::NoError)
     {
-        ShowError("DNS lookup error", "Unable to lookup DNS entry for \"" + pHost.hostName() + "\" because \"" + pHost.errorString() + "\"");
+        ShowError(tr("DNS lookup error"), tr("Unable to lookup DNS entry for") + " \"" + pHost.hostName() + "\" " + tr("because") + " \"" + pHost.errorString() + "\"");
         return;
     }
 
@@ -901,7 +901,7 @@ void ParticipantWidget::HandleGeneralError(bool pIncoming, int pCode, QString pD
     UpdateParticipantState(CONTACT_UNDEFINED_STATE);
     CONTACTS.UpdateContactState(mSessionName, mSessionTransport, CONTACT_UNDEFINED_STATE);
 
-    ShowError("General error occurred", "General error of code " + QString("%1").arg(pCode) + " occurred. The error is described with \"" + pDescription + "\"");
+    ShowError(tr("General error occurred"), tr("General error of code") + " " + QString("%1").arg(pCode) + " " + tr("occurred. The error is described with") + " \"" + pDescription + "\"");
 }
 
 void ParticipantWidget::HandleMessageAccept(bool pIncoming)
@@ -944,7 +944,7 @@ void ParticipantWidget::HandleMessageUnavailable(bool pIncoming, int pStatusCode
 
     UpdateParticipantState(CONTACT_UNAVAILABLE);
     CONTACTS.UpdateContactState(mSessionName, mSessionTransport, CONTACT_UNAVAILABLE);
-    ShowError("Participant unavailable", "The participant " + mSessionName + " is currently unavailable for an instant message! The reason is \"" + pDescription + "\"(" + QString("%1").arg(pStatusCode) + ").");
+    ShowError(tr("Participant unavailable"), tr("The participant") + " " + mSessionName + " " + tr("is currently unavailable for an instant message! The reason is") + " \"" + pDescription + "\"(" + QString("%1").arg(pStatusCode) + ").");
 }
 
 void ParticipantWidget::HandleCallRinging(bool pIncoming)
@@ -1131,9 +1131,9 @@ void ParticipantWidget::HandleCallUnavailable(bool pIncoming, int pStatusCode, Q
         CONTACTS.UpdateContactState(mSessionName, mSessionTransport, CONTACT_UNAVAILABLE);
 
         if (pStatusCode == 488)
-        	ShowError("Participant unavailable", "The participant " + mSessionName + " does not accept your video/audio codecs. Please, check the configuration and use different settings.");
+        	ShowError(tr("Participant unavailable"), tr("The participant") + " " + mSessionName + " " + tr("does not accept your video/audio codecs. Please, check the configuration and use different settings."));
 		else
-        	ShowError("Participant unavailable", "The participant " + mSessionName + " is currently unavailable for a call! The reason is \"" + pDescription + "\"(" + QString("%1").arg(pStatusCode) + ").");
+        	ShowError(tr("Participant unavailable"), tr("The participant") + " " + mSessionName + " " + tr("is currently unavailable for a call! The reason is") + " \"" + pDescription + "\"(" + QString("%1").arg(pStatusCode) + ").");
     }else
     	CallStopped(pIncoming);
 

@@ -286,7 +286,7 @@ void OverviewDataStreamsWidget::SaveHistory(enum DataType pDataType, int pIndex)
         QFile tFile(tFileName);
         if (!tFile.open(QIODevice::ReadWrite))
         {
-            ShowError("Unable to open file", "The selected output file can't be opened");
+            ShowError(tr("Unable to open file"), tr("The selected output file can't be opened"));
             return;
         }
 
@@ -382,7 +382,7 @@ void OverviewDataStreamsWidget::SaveCompleteStatistic()
     QFile tFile(tFileName);
     if (!tFile.open(QIODevice::ReadWrite))
     {
-        ShowError("Unable to open file", "The selected output file can't be opened");
+        ShowError(tr("Unable to open file"), tr("The selected output file can't be opened"));
         return;
     }
 

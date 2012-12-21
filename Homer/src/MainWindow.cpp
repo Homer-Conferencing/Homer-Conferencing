@@ -1191,7 +1191,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     tINDEvent = (InternalNatDetectionEvent*) tEvent;
                     if (tINDEvent->Failed)
                     {
-                        ShowError("NAT detection failed", "Could not detect NAT address and type via STUN server. The failure reason is \"" + QString(tINDEvent->FailureReason.c_str()) + "\".");
+                        ShowError(tr("NAT detection failed"), tr("Could not detect NAT address and type via STUN server. The failure reason is") + " \"" + QString(tINDEvent->FailureReason.c_str()) + "\".");
                     }else
                     {
                     	LOG(LOG_VERBOSE, "NAT detection was successful");
@@ -1574,12 +1574,12 @@ void MainWindow::customEvent(QEvent* pEvent)
                     tRFEvent = (RegistrationFailedEvent*) tEvent;
                     if (tRFEvent->StatusCode != 904)
                     {
-                    	ShowError("Registration failed", "Could not register \"" + CONF.GetSipUserName() + "\" at the SIP server \"" + CONF.GetSipServer() + ":<" + QString("%1").arg(CONF.GetSipServerPort()) + ">\"! The reason is \"" + QString(tRFEvent->Description.c_str()) + "\"(" + QString("%1").arg(tRFEvent->StatusCode) + ")\n" \
-                    									 "SIP server runs software \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
+                    	ShowError(tr("Registration failed"), tr("Could not register") + " \"" + CONF.GetSipUserName() + "\" " + tr("at the SIP server") + " \"" + CONF.GetSipServer() + ":<" + QString("%1").arg(CONF.GetSipServerPort()) + ">\"! " + tr("The reason is") + " \"" + QString(tRFEvent->Description.c_str()) + "\"(" + QString("%1").arg(tRFEvent->StatusCode) + ")\n" +
+                    									 tr("SIP server runs software") + " \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
                     }else
                     {
-                    	ShowError("Registration failed", "Could not register \"" + CONF.GetSipUserName() + "\" at the SIP server \"" + CONF.GetSipServer() + ":<" + QString("%1").arg(CONF.GetSipServerPort()) + ">\"! The login name or password is wrong. Check configuration!\n" \
-                    									 "SIP server runs software \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
+                    	ShowError(tr("Registration failed"), tr("Could not register") + " \"" + CONF.GetSipUserName() + "\" " + tr("at the SIP server") + " \"" + CONF.GetSipServer() + ":<" + QString("%1").arg(CONF.GetSipServerPort()) + ">\"! " + tr("The login name or password is wrong. Check configuration!\n") +
+                    	                                 tr("SIP server runs software") + " \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
                     }
                     // reset stored SIP server data
                     mSipServerRegistrationUser = "";
@@ -1594,8 +1594,8 @@ void MainWindow::customEvent(QEvent* pEvent)
         case PUBLICATION_FAILED:
                     //####################### PUBLICATION FAILED #############################
                     tPFEvent = (PublicationFailedEvent*) tEvent;
-                    ShowError("Presence publication failed", "Could not publish your new presence state at the SIP server \"" + CONF.GetSipServer() + ":<" + QString("%1").arg(CONF.GetSipServerPort()) + ">\"! The reason is \"" + QString(tPFEvent->Description.c_str()) + "\"(" + QString("%1").arg(tPFEvent->StatusCode) + ")\n" \
-                                                             "SIP server runs software \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
+                    ShowError(tr("Presence publication failed"), tr("Could not publish your new presence state at the SIP server") + " \"" + CONF.GetSipServer() + ":<" + QString("%1").arg(CONF.GetSipServerPort()) + ">\"! " + tr("The reason is") + " \"" + QString(tPFEvent->Description.c_str()) + "\"(" + QString("%1").arg(tPFEvent->StatusCode) + ")\n" +
+                                                        tr("SIP server runs software") + " \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
                     break;
         default:
                     LOG(LOG_ERROR, "We should never reach this point! Otherwise there is an ERROR IN STATE MACHINE");

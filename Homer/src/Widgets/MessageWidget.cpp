@@ -403,7 +403,7 @@ void MessageWidget::SendMessage()
         AddMessage(QString(MEETING.GetLocalUserName().c_str()), mTeMessage->toPlainText(), true);
         mTeMessage->Clear();
     }else
-        ShowError("Error occurred", "Message could not be sent!");
+        ShowError(tr("Error occurred"), tr("Message could not be sent!"));
 }
 
 void MessageWidget::SendFile(QList<QUrl> *tFileUrls)

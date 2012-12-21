@@ -554,7 +554,7 @@ void OverviewPlaylistWidget::SaveListDialog()
     QFile tPlaylistFile(tFileName);
     if (!tPlaylistFile.open(QIODevice::WriteOnly))
     {
-    	ShowError("Could not store playlist file", "Couldn't write playlist in " + tFileName);
+    	ShowError(tr("Could not store playlist file"), tr("Couldn't write playlist in") + " " + tFileName);
         return;
     }
 
