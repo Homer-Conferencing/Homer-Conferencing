@@ -616,7 +616,7 @@ void MediaSourceFile::CalibrateRTGrabbing()
     float  tRelativeFrameIndex = mGrabberCurrentFrameIndex - mSourceStartPts;
     double tRelativeTime = (int64_t)((double)AV_TIME_BASE * tRelativeFrameIndex / GetFrameRate());
     #ifdef MSMEM_DEBUG_CALIBRATION
-        LOG(LOG_WARN, "Calibrating %s RT playback, old PTS start: %.2f", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing);
+        LOG(LOG_WARN, "Calibrating %s RT playback, current frame: %.2f, source start: %.2f, RT ref. time: %.2f->%.2f(diff: %.2f)", GetMediaTypeStr().c_str(), (float)mGrabberCurrentFrameIndex, (float)mSourceStartPts, mSourceStartTimeForRTGrabbing, (float)av_gettime() - tRelativeTime, (float)av_gettime() - tRelativeTime -mSourceStartTimeForRTGrabbing);
     #endif
     mSourceStartTimeForRTGrabbing = av_gettime() - tRelativeTime; //HINT: no "+ mDecoderFramePreBufferTime * AV_TIME_BASE" here because we start playback immediately
     #ifdef MSMEM_DEBUG_CALIBRATION
@@ -628,11 +628,12 @@ void MediaSourceFile::StartDecoder()
 {
 	// setting last decoder file position
 	//HINT: we can not use Seek() because this would lead to recursion
+    LOG(LOG_VERBOSE, "Seeking to last %s decoder position: %.2f", GetMediaTypeStr().c_str(), mLastDecoderFilePosition);
 	int tRes = (avformat_seek_file(mFormatContext, -1, INT64_MIN, mFormatContext->start_time + mLastDecoderFilePosition * AV_TIME_BASE, INT64_MAX, 0) >= 0);
     if (tRes < 0)
         LOG(LOG_ERROR, "Error during absolute seeking in %s source file because \"%s\"", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)));
 
-	MediaSourceMem::StartDecoder();
+    MediaSourceMem::StartDecoder();
 }
 
 void MediaSourceFile::StopDecoder()

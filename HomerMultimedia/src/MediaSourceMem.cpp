@@ -968,6 +968,12 @@ void MediaSourceMem::StartDecoder()
     mDecoderTargetResX = mTargetResX;
     mDecoderTargetResY = mTargetResY;
 
+    // trigger a avcodec_flush_buffers()
+    mDecoderFlushBuffersAfterSeeking = true;
+
+    // trigger a RT playback calibration
+    mDecoderRecalibrateRTGrabbingAfterSeeking = true;
+
     mDecoderNeeded = false;
 
     if (!IsRunning())
@@ -1939,7 +1945,7 @@ void MediaSourceMem::WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int6
         LOG(LOG_ERROR, "Invalid decoder FIFO");
 
     #ifdef MSMEM_DEBUG_PACKETS
-        LOG(LOG_VERBOSE, ">>> Writing frame of %d bytes and pts %ld", pBufferSize, pPts);
+        LOG(LOG_VERBOSE, ">>> Writing frame of %d bytes and pts %ld, FIFOs: %d/%d", pBufferSize, pPts, mDecoderFifo->GetUsage(), mDecoderMetaDataFifo->GetUsage());
     #endif
 
     // write A/V data to output FIFO
@@ -2031,7 +2037,7 @@ void MediaSourceMem::WaitForRTGrabbing()
     if (tResultingTimeOffset > 0)
     {
         #ifdef MSMEM_DEBUG_TIMING
-            LOG(LOG_WARN, "%s-sleeping for %ld ms for frame %.2f", GetMediaTypeStr().c_str(), tResultingTimeOffset / 1000, (float)mGrabberCurrentFrameIndex);
+            LOG(LOG_WARN, "%s-sleeping for %ld ms (%ld - %ld) for frame %.2f, RT ref. time: %.2f", GetMediaTypeStr().c_str(), tResultingTimeOffset / 1000, tDesiredPlayOutTime, tCurrentPlayOutTime, (float)mGrabberCurrentFrameIndex, (float)mSourceStartTimeForRTGrabbing);
         #endif
 		if (tResultingTimeOffset <= MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME * AV_TIME_BASE)
 			Thread::Suspend(tResultingTimeOffset);
