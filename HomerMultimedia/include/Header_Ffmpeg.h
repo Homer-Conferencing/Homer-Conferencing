@@ -179,6 +179,18 @@ inline void HM_close_input(AVFormatContext *s)
 	#endif
 }
 
+inline AVStream *HM_avformat_new_stream(AVFormatContext *s, int id)
+{
+	#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(53, 10, 0)
+		return av_new_stream(s, c);
+	#else
+		AVStream *st = avformat_new_stream(s, NULL);
+		if (st)
+			st->id = id;
+		return st;
+	#endif
+}
+
 #if LIBAVUTIL_VERSION_INT < AV_VERSION_INT(51, 35, 0)
 inline int av_opt_set(void *obj, const char *name, const char *val, int search_flags)
 {
