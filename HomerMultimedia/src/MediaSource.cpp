@@ -246,18 +246,20 @@ void MediaSource::LogSupportedVideoCodecs(bool pSendToLoggerOnly)
     {
         if (tCodec->type == AVMEDIA_TYPE_VIDEO)
         {
-            #ifndef FF_API_OLD_ENCODE_AUDIO
-            bool tEncode = (tCodec->encode != NULL);
-            #else
-            bool tEncode = (tCodec->encode2 != NULL);
-            #endif
             bool tDecode = (tCodec->decode != NULL);
+            bool tEncode = false;
+            #if (LIBAVCODEC_VERSION_MAJOR < 55)
+                tEncode = (tCodec->encode != NULL);
+            #else
+                tEncode = (tCodec->encode2 != NULL);
+            #endif
+
             if ((tNextCodec != NULL) && (strcmp(tCodec->name, tNextCodec->name) == 0))
             {
-                #ifndef FF_API_OLD_ENCODE_AUDIO
-                tEncode |= (tNextCodec->encode != NULL);
+                #if (LIBAVCODEC_VERSION_MAJOR < 55)
+                    tEncode |= (tNextCodec->encode != NULL);
                 #else
-                tEncode |= (tNextCodec->encode2 != NULL);
+                    tEncode |= (tNextCodec->encode2 != NULL);
                 #endif
                 tDecode |= (tNextCodec->decode != NULL);
                 tCodec = tNextCodec;
