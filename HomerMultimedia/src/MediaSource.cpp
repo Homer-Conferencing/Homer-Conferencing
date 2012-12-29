@@ -1718,10 +1718,10 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     mRecorderFormatContext->oformat = tFormat;
 
     // set meta data
-    HM_av_metadata_set(&mRecorderFormatContext->metadata, "author"   , tAuthor);
-    HM_av_metadata_set(&mRecorderFormatContext->metadata, "comment"  , tComment);
-    HM_av_metadata_set(&mRecorderFormatContext->metadata, "copyright", tCopyright);
-    HM_av_metadata_set(&mRecorderFormatContext->metadata, "title"    , tSimpleFileName.c_str());
+    HM_av_dict_set(&mRecorderFormatContext->metadata, "author"   , tAuthor);
+    HM_av_dict_set(&mRecorderFormatContext->metadata, "comment"  , tComment);
+    HM_av_dict_set(&mRecorderFormatContext->metadata, "copyright", tCopyright);
+    HM_av_dict_set(&mRecorderFormatContext->metadata, "title"    , tSimpleFileName.c_str());
 
     // set filename
     sprintf(mRecorderFormatContext->filename, "%s", pSaveFileName.c_str());
@@ -2955,7 +2955,7 @@ bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
             LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Grabbing was stopped meanwhile");
 
         // Close the video stream
-        HM_close_input(mFormatContext);
+        HM_avformat_close_input(mFormatContext);
 
         return false;
     }
@@ -3014,7 +3014,7 @@ bool MediaSource::FfmpegSelectStream(string pSource, int pLine)
 	    LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't find a %s stream..", GetMediaTypeStr().c_str());
 
 	    // Close the video stream
-        HM_close_input(mFormatContext);
+	    HM_avformat_close_input(mFormatContext);
 
         return false;
     }
@@ -3092,7 +3092,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't detect VIDEO resolution information within input stream");
 
         // Close the video file
-        HM_close_input(mFormatContext);
+    	HM_avformat_close_input(mFormatContext);
 
         return false;
     }
@@ -3136,7 +3136,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't find a fitting %s codec", GetMediaTypeStr().c_str());
 
         // Close the video stream
-        HM_close_input(mFormatContext);
+    	HM_avformat_close_input(mFormatContext);
 
         return false;
     }
@@ -3289,7 +3289,7 @@ bool MediaSource::FfmpegCloseAll(string pSource, int pLine)
 		// Close the file
 		if (mFormatContext != NULL)
 		{
-			HM_close_input(mFormatContext);
+		    HM_avformat_close_input(mFormatContext);
 			mFormatContext = NULL;
 		}else
 		{

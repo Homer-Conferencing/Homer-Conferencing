@@ -200,7 +200,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 				tDictEntry = NULL;
 
 				// get the language of the stream
-				tDictEntry = HM_av_metadata_get(mFormatContext->streams[i]->metadata, "language", NULL);
+				tDictEntry = HM_av_dict_get(mFormatContext->streams[i]->metadata, "language", NULL);
 				if (tDictEntry != NULL)
 				{
 					if (tDictEntry->value != NULL)
@@ -212,7 +212,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 				}
 
 				// get the title of the stream
-				tDictEntry = HM_av_metadata_get(mFormatContext->streams[i]->metadata, "title", NULL);
+				tDictEntry = HM_av_dict_get(mFormatContext->streams[i]->metadata, "title", NULL);
 				if (tDictEntry != NULL)
 				{
 					if (tDictEntry->value != NULL)
@@ -250,7 +250,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     {
         LOG(LOG_ERROR, "Couldn't find an audio stream");
         // Close the audio file
-        HM_close_input(mFormatContext);
+        HM_avformat_close_input(mFormatContext);
         return false;
     }
 

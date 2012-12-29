@@ -59,13 +59,13 @@ extern "C" {
 #define CODEC_FLAG2_SHOW_ALL      0x00400000 ///< Show all frames before the first keyframe
 #endif
 
-#if LIBAVFORMAT_VERSION_MAJOR < 50
+#if (LIBAVFORMAT_VERSION_MAJOR < 50)
     #define AV_NEW_FORMAT_CONTEXT av_alloc_format_context
 #else
     #define AV_NEW_FORMAT_CONTEXT avformat_alloc_context
 #endif
 
-#if LIBAVFORMAT_VERSION_INT <= AV_VERSION_INT(52, 64, 2)
+#if (LIBAVFORMAT_VERSION_INT <= AV_VERSION_INT(52, 64, 2))
     #define AV_GUESS_FORMAT guess_format
 #else
     #define AV_GUESS_FORMAT av_guess_format
@@ -77,7 +77,7 @@ extern "C" {
 	#endif
 #endif
 
-#if LIBAVUTIL_VERSION_MAJOR < 51
+#if (LIBAVUTIL_VERSION_MAJOR < 51)
     #define AVMEDIA_TYPE_VIDEO CODEC_TYPE_VIDEO
     #define AVMEDIA_TYPE_AUDIO CODEC_TYPE_AUDIO
     #define AVMEDIA_TYPE_UNKNOWN CODEC_TYPE_UNKNOWN
@@ -92,9 +92,9 @@ inline int HM_avformat_write_header(AVFormatContext *s)
     #endif
 }
 
-inline int HM_av_metadata_set(AVDictionary **pm, const char *key, const char *value)
+inline int HM_av_dict_set(AVDictionary **pm, const char *key, const char *value)
 {
-    #if FF_API_OLD_METADATA2
+    #if (LIBAVFORMAT_VERSION_MAJOR < 54)
         #if LIBAVFORMAT_VERSION_INT <= AV_VERSION_INT(52, 64, 2)
             return av_metadata_set(pm, key, value);
         #else
@@ -105,9 +105,9 @@ inline int HM_av_metadata_set(AVDictionary **pm, const char *key, const char *va
     #endif
 }
 
-inline AVDictionaryEntry* HM_av_metadata_get(AVDictionary *pm, const char *key, const AVDictionaryEntry *prev)
+inline AVDictionaryEntry* HM_av_dict_get(AVDictionary *pm, const char *key, const AVDictionaryEntry *prev)
 {
-    #if FF_API_OLD_METADATA2
+    #if (LIBAVFORMAT_VERSION_MAJOR < 54)
         return av_metadata_get(pm, key, prev, AV_DICT_IGNORE_SUFFIX);
     #else
         return av_dict_get(pm, key, prev, AV_DICT_IGNORE_SUFFIX);
@@ -125,7 +125,7 @@ inline int HM_avcodec_open(AVCodecContext *avctx, AVCodec *codec, AVDictionary *
 
 inline int HM_avcodec_decode_video(AVCodecContext *avctx, AVFrame *picture, int *got_picture_ptr, AVPacket *avpkt)
 {
-    #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(52, 21, 0)
+    #if (LIBAVCODEC_VERSION_INT < AV_VERSION_INT(52, 21, 0))
         return avcodec_decode_video(avctx, picture, got_picture_ptr, avpkt->data, avpkt->size);
     #else
         return avcodec_decode_video2(avctx, picture, got_picture_ptr, avpkt);
@@ -134,7 +134,7 @@ inline int HM_avcodec_decode_video(AVCodecContext *avctx, AVFrame *picture, int 
 
 inline int HM_avcodec_decode_audio(AVCodecContext *avctx, int16_t *samples, int *frame_size_ptr, AVPacket *avpkt)
 {
-    #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(52, 21, 0)
+    #if (LIBAVCODEC_VERSION_INT < AV_VERSION_INT(52, 21, 0))
         return avcodec_decode_audio2(avctx, samples, frame_size_ptr, avpkt->data, avpkt->size);
     #else
         return avcodec_decode_audio3(avctx, samples, frame_size_ptr, avpkt);
@@ -143,7 +143,7 @@ inline int HM_avcodec_decode_audio(AVCodecContext *avctx, int16_t *samples, int 
 
 inline AVFifoBuffer *HM_av_fifo_alloc(unsigned int size)
 {
-    #if LIBAVUTIL_VERSION_MAJOR < 50
+    #if (LIBAVUTIL_VERSION_MAJOR < 50)
         AVFifoBuffer *tFifo = malloc(sizeof(AVFifoBuffer));
         av_fifo_init(tFifo, size);
         return tFifo;
@@ -154,7 +154,7 @@ inline AVFifoBuffer *HM_av_fifo_alloc(unsigned int size)
 
 inline int HM_av_fifo_generic_read(AVFifoBuffer *f, void *dest, int buf_size)
 {
-    #if LIBAVUTIL_VERSION_MAJOR < 50
+    #if (LIBAVUTIL_VERSION_MAJOR < 50)
         return av_fifo_generic_read(f, buf_size, NULL, dest);
     #else
         return av_fifo_generic_read(f, dest, buf_size, NULL);
@@ -163,16 +163,16 @@ inline int HM_av_fifo_generic_read(AVFifoBuffer *f, void *dest, int buf_size)
 
 inline int HM_sws_scale(struct SwsContext *context, const uint8_t* const srcSlice[], const int srcStride[], int srcSliceY, int srcSliceH, uint8_t* const dst[], const int dstStride[])
 {
-    #if LIBSWSCALE_VERSION_MAJOR < 1
+    #if (LIBSWSCALE_VERSION_MAJOR < 1)
         return sws_scale(context, (const uint8_t**)srcSlice, (int*)&srcStride[0], srcSliceY, srcSliceH, (uint8_t**)&dst[0], (int*)dstStride[0]);
     #else
         return sws_scale(context, srcSlice, srcStride, srcSliceY, srcSliceH, dst, dstStride);
     #endif
 }
 
-inline void HM_close_input(AVFormatContext *s)
+inline void HM_avformat_close_input(AVFormatContext *s)
 {
-	#if LIBAVFORMAT_VERSION_MAJOR < 54
+	#if (LIBAVFORMAT_VERSION_MAJOR < 54)
 		av_close_input_file(s);
 	#else
 		avformat_close_input(&s);
@@ -181,7 +181,7 @@ inline void HM_close_input(AVFormatContext *s)
 
 inline AVStream *HM_avformat_new_stream(AVFormatContext *s, int id)
 {
-	#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(53, 10, 0)
+	#if (LIBAVCODEC_VERSION_INT < AV_VERSION_INT(53, 10, 0))
 		return av_new_stream(s, c);
 	#else
 		AVStream *st = avformat_new_stream(s, NULL);
@@ -191,7 +191,8 @@ inline AVStream *HM_avformat_new_stream(AVFormatContext *s, int id)
 	#endif
 }
 
-#if LIBAVUTIL_VERSION_INT < AV_VERSION_INT(51, 35, 0)
+#if (LIBAVUTIL_VERSION_INT < AV_VERSION_INT(51, 35, 0))
+// ffmpeg would say: "better than nothing"
 inline int av_opt_set(void *obj, const char *name, const char *val, int search_flags)
 {
     return 0;

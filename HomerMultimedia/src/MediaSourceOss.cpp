@@ -208,7 +208,7 @@ bool MediaSourceOss::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     {
         LOG(LOG_ERROR, "Couldn't find stream information because of \"%s\".", strerror(AVUNERROR(tResult)));
         // Close the OSS audio file
-        HM_close_input(mFormatContext);
+        HM_avformat_close_input(mFormatContext);
         return false;
     }
 
@@ -226,7 +226,7 @@ bool MediaSourceOss::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     {
         LOG(LOG_ERROR, "Couldn't find a audio stream");
         // Close the OSS audio file
-        HM_close_input(mFormatContext);
+        HM_avformat_close_input(mFormatContext);
         return false;
     }
 
@@ -246,7 +246,7 @@ bool MediaSourceOss::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     {
         LOG(LOG_ERROR, "Couldn't find a fitting codec");
         // Close the OSS audio file
-        HM_close_input(mFormatContext);
+        HM_avformat_close_input(mFormatContext);
         return false;
     }
 
@@ -263,7 +263,7 @@ bool MediaSourceOss::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     {
         LOG(LOG_ERROR, "Couldn't open codec because of \"%s\".", strerror(AVUNERROR(tResult)));
         // Close the OSS audio file
-        HM_close_input(mFormatContext);
+        HM_avformat_close_input(mFormatContext);
         return false;
     }
 
