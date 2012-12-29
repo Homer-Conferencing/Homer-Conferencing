@@ -248,7 +248,7 @@ void MediaSource::LogSupportedVideoCodecs(bool pSendToLoggerOnly)
         {
             bool tDecode = (tCodec->decode != NULL);
             bool tEncode = false;
-            #if (LIBAVCODEC_VERSION_MAJOR < 55)
+            #ifndef FF_API_OLD_ENCODE_AUDIO
                 tEncode = (tCodec->encode != NULL);
             #else
                 tEncode = (tCodec->encode2 != NULL);
@@ -256,7 +256,7 @@ void MediaSource::LogSupportedVideoCodecs(bool pSendToLoggerOnly)
 
             if ((tNextCodec != NULL) && (strcmp(tCodec->name, tNextCodec->name) == 0))
             {
-                #if (LIBAVCODEC_VERSION_MAJOR < 55)
+	            #ifndef FF_API_OLD_ENCODE_AUDIO
                     tEncode |= (tNextCodec->encode != NULL);
                 #else
                     tEncode |= (tNextCodec->encode2 != NULL);
@@ -316,18 +316,19 @@ void MediaSource::LogSupportedAudioCodecs(bool pSendToLoggerOnly)
 //				tNextCodec->encode ? "E" : " ",
 //				tNextCodec->name,
 //				tNextCodec->long_name ? tCodec->long_name : "");
-            #ifndef FF_API_OLD_ENCODE_AUDIO
-            bool tEncode = (tCodec->encode != NULL);
-            #else
-            bool tEncode = (tCodec->encode2 != NULL);
-            #endif
             bool tDecode = (tCodec->decode != NULL);
+            bool tEncode = false;
+            #ifndef FF_API_OLD_ENCODE_AUDIO
+                tEncode = (tCodec->encode != NULL);
+            #else
+                tEncode = (tCodec->encode2 != NULL);
+            #endif
             if ((tNextCodec != NULL) && (strcmp(tCodec->name, tNextCodec->name) == 0))
             {
                 #ifndef FF_API_OLD_ENCODE_AUDIO
-                tEncode |= (tNextCodec->encode != NULL);
+                    tEncode |= (tNextCodec->encode != NULL);
                 #else
-                tEncode |= (tNextCodec->encode2 != NULL);
+                    tEncode |= (tNextCodec->encode2 != NULL);
                 #endif
                 tDecode |= (tNextCodec->decode != NULL);
                 tCodec = tNextCodec;
