@@ -442,7 +442,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
 
     // allocate new stream structure
     LOG(LOG_VERBOSE, "..allocating new stream");
-    tStream = av_new_stream(mFormatContext, 0);
+    tStream = HM_avformat_new_stream(mFormatContext, 0);
     mCodecContext = tStream->codec;
     mCodecContext->codec_id = tFormat->video_codec;
     mCodecContext->codec_type = AVMEDIA_TYPE_VIDEO;
@@ -737,7 +737,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     }
 
     // allocate new stream structure
-    tStream = av_new_stream(mFormatContext, 0);
+    tStream = HM_avformat_new_stream(mFormatContext, 0);
     mCodecContext = tStream->codec;
     mCodecContext->codec_id = tFormat->audio_codec;
     mCodecContext->codec_type = AVMEDIA_TYPE_AUDIO;

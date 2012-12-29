@@ -246,11 +246,19 @@ void MediaSource::LogSupportedVideoCodecs(bool pSendToLoggerOnly)
     {
         if (tCodec->type == AVMEDIA_TYPE_VIDEO)
         {
+            #ifndef FF_API_OLD_ENCODE_AUDIO
             bool tEncode = (tCodec->encode != NULL);
+            #else
+            bool tEncode = (tCodec->encode2 != NULL);
+            #endif
             bool tDecode = (tCodec->decode != NULL);
             if ((tNextCodec != NULL) && (strcmp(tCodec->name, tNextCodec->name) == 0))
             {
+                #ifndef FF_API_OLD_ENCODE_AUDIO
                 tEncode |= (tNextCodec->encode != NULL);
+                #else
+                tEncode |= (tNextCodec->encode2 != NULL);
+                #endif
                 tDecode |= (tNextCodec->decode != NULL);
                 tCodec = tNextCodec;
             }
@@ -306,11 +314,19 @@ void MediaSource::LogSupportedAudioCodecs(bool pSendToLoggerOnly)
 //				tNextCodec->encode ? "E" : " ",
 //				tNextCodec->name,
 //				tNextCodec->long_name ? tCodec->long_name : "");
+            #ifndef FF_API_OLD_ENCODE_AUDIO
             bool tEncode = (tCodec->encode != NULL);
+            #else
+            bool tEncode = (tCodec->encode2 != NULL);
+            #endif
             bool tDecode = (tCodec->decode != NULL);
             if ((tNextCodec != NULL) && (strcmp(tCodec->name, tNextCodec->name) == 0))
             {
+                #ifndef FF_API_OLD_ENCODE_AUDIO
                 tEncode |= (tNextCodec->encode != NULL);
+                #else
+                tEncode |= (tNextCodec->encode2 != NULL);
+                #endif
                 tDecode |= (tNextCodec->decode != NULL);
                 tCodec = tNextCodec;
             }
@@ -1709,7 +1725,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     sprintf(mRecorderFormatContext->filename, "%s", pSaveFileName.c_str());
 
     // allocate new stream structure
-    tStream = av_new_stream(mRecorderFormatContext, 0);
+    tStream = HM_avformat_new_stream(mRecorderFormatContext, 0);
     mRecorderCodecContext = tStream->codec;
 
     // put sample parameters
