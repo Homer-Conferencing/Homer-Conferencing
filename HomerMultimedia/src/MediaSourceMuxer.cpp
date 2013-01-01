@@ -447,30 +447,20 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     mCodecContext->codec_id = tFormat->video_codec;
     mCodecContext->codec_type = AVMEDIA_TYPE_VIDEO;
 
-    //data_partitioning
-    // do some extra modifications for MPEG4 to make it easier for streaming
-    if (tFormat->video_codec == CODEC_ID_MPEG4)
+    // add some extra parameters depending on the selected codec
+    switch(tFormat->video_codec)
     {
-        mCodecContext->flags |= CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED;
-    }
-
-    // do some extra modifications for H263 to make it easier for streaming
-    if (tFormat->video_codec == CODEC_ID_H263)
-    {
-        mCodecContext->flags |= CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED;
-    }
-
-    // do some extra modifications for H263+ to make it easier for streaming
-    if (tFormat->video_codec == CODEC_ID_H263P)
-    {
-        mCodecContext->flags |= CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED;
-
-        // old codec codext flag CODEC_FLAG_H263P_SLICE_STRUCT
-        av_dict_set(&tOptions, "structured_slices", "1", 0);
-        // old codec codext flag CODEC_FLAG_H263P_UMV
-        av_dict_set(&tOptions, "umv", "1", 0);
-        // old codec codext flag CODEC_FLAG_H263P_AIV
-        av_dict_set(&tOptions, "aiv", "1", 0);
+        case CODEC_ID_H263P:
+                        // old codec codext flag CODEC_FLAG_H263P_SLICE_STRUCT
+                        av_dict_set(&tOptions, "structured_slices", "1", 0);
+                        // old codec codext flag CODEC_FLAG_H263P_UMV
+                        av_dict_set(&tOptions, "umv", "1", 0);
+                        // old codec codext flag CODEC_FLAG_H263P_AIV
+                        av_dict_set(&tOptions, "aiv", "1", 0);
+        case CODEC_ID_H263:
+        case CODEC_ID_MPEG4:
+                        mCodecContext->flags |= CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED;
+                        break;
     }
 
     // put sample parameters
@@ -533,15 +523,6 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     else
         RTP::SetH261PayloadSizeMax(mStreamMaxPacketSize);
 
-    // workaround for incompatibility of ffmpeg/libx264
-    // inspired by check within libx264 in "x264_validate_parameters()" of encoder.c
-    if (tFormat->video_codec == CODEC_ID_H264)
-    {
-        mCodecContext->me_range = 16;
-        mCodecContext->max_qdiff = 4;
-        mCodecContext->qcompress = 0.6;
-    }
-
     // set MPEG quantizer: for h261/h263/mjpeg use the h263 quantizer, in other cases use the MPEG2 one
 //    if ((tFormat->video_codec == CODEC_ID_H261) || (tFormat->video_codec == CODEC_ID_H263) || (tFormat->video_codec == CODEC_ID_H263P) || (tFormat->video_codec == CODEC_ID_MJPEG))
 //        mCodecContext->mpeg_quant = 0;
@@ -560,6 +541,9 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     // some formats want stream headers to be separate, but this produces some very small packets!
     if(mFormatContext->oformat->flags & AVFMT_GLOBALHEADER)
         mCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
+
+    // allow ffmpeg its speedup tricks
+    mCodecContext->flags2 |= CODEC_FLAG2_FAST;
 
     mMediaStreamIndex = 0;
     mEncoderStream = mFormatContext->streams[0];
@@ -805,6 +789,9 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     // bitstreams where sample boundaries can fall in the middle of packets
 //    if(tCodec->capabilities & CODEC_CAP_TRUNCATED)
 //        mCodecContext->flags |= CODEC_FLAG_TRUNCATED;
+
+    // allow ffmpeg its speedup tricks
+    mCodecContext->flags2 |= CODEC_FLAG2_FAST;
 
     // Open codec
     if ((tResult = HM_avcodec_open(mCodecContext, tCodec, NULL)) < 0)
