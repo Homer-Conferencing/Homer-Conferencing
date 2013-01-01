@@ -235,9 +235,9 @@ void MediaSinkNet::WriteFragment(char* pData, unsigned int pSize)
         MediaSinkMem::WriteFragment(pData, pSize);
     }else
     {// RTP inactive
-        //#ifdef MSIN_DEBUG_PACKETS
+        #ifdef MSIN_DEBUG_PACKETS
             LOG(LOG_VERBOSE, "Sending a fragment with max. network packet size: %d", mMaxNetworkPacketSize);
-        //#endif
+        #endif
         // HINT: we limit packet size to mMaxNetworkPacketSize if RTP is inactive
         int tFragmentCount = 1;
         tFragmentCount = (pSize + mMaxNetworkPacketSize -1) / mMaxNetworkPacketSize;
