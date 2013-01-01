@@ -75,13 +75,13 @@ void CallButton::ShowNewState()
     switch(MEETING.GetCallState(QString(mParticipant.toLocal8Bit()).toStdString(), mParticipantTransport))
     {
         case CALLSTATE_STANDBY:
-                setText("Conference");
+                setText(Homer::Gui::CallButton::tr("Call"));
                 break;
         case CALLSTATE_RINGING:
-                setText("Cancel call");
+                setText(Homer::Gui::CallButton::tr("Hangup"));
                 break;
         case CALLSTATE_RUNNING:
-                setText("Stop session");
+                setText(Homer::Gui::CallButton::tr("Hangup"));
                 break;
     }
 }

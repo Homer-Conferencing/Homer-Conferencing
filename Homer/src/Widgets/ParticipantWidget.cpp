@@ -407,24 +407,24 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
     connect(mMenuSettings, SIGNAL(aboutToShow()), this, SLOT(UpdateMenuSettings()));
     if (mVideoSource != NULL)
     {
-        mMenuSettingsVideo = mMenuSettings->addMenu(QPixmap(":/images/46_46/VideoReel.png"), "Video");
+        mMenuSettingsVideo = mMenuSettings->addMenu(QPixmap(":/images/46_46/VideoReel.png"), Homer::Gui::ParticipantWidget::tr("Video"));
         connect(mMenuSettingsVideo, SIGNAL(triggered(QAction *)), mVideoWidget, SLOT(SelectedMenuVideoSettings(QAction*)));
     }
     if (mAudioSource)
     {
-        mMenuSettingsAudio = mMenuSettings->addMenu(QPixmap(":/images/46_46/Speaker.png"), "Audio");
+        mMenuSettingsAudio = mMenuSettings->addMenu(QPixmap(":/images/46_46/Speaker.png"), Homer::Gui::ParticipantWidget::tr("Audio"));
         connect(mMenuSettingsAudio, SIGNAL(triggered(QAction *)), mAudioWidget, SLOT(SelectedMenuAudioSettings(QAction*)));
     }
     if (mSessionType != PREVIEW)
     {
-        mMenuSettingsMessages = mMenuSettings->addMenu(QPixmap(":/images/22_22/Message.png"), "Messages");
+        mMenuSettingsMessages = mMenuSettings->addMenu(QPixmap(":/images/22_22/Message.png"), Homer::Gui::ParticipantWidget::tr("Messages"));
         connect(mMenuSettingsMessages, SIGNAL(triggered(QAction *)), mMessageWidget, SLOT(SelectedMenuMessagesSettings(QAction*)));
     }
     if (CONF.DebuggingEnabled())
     {
         if (mSessionType == PARTICIPANT)
         {
-            mMenuSettingsSessionInfo = mMenuSettings->addMenu(QPixmap(":/images/22_22/Info.png"), "Session info");
+            mMenuSettingsSessionInfo = mMenuSettings->addMenu(QPixmap(":/images/22_22/Info.png"), Homer::Gui::ParticipantWidget::tr("Session info"));
             connect(mMenuSettingsSessionInfo, SIGNAL(triggered(QAction *)), mSessionInfoWidget, SLOT(SelectedMenuSessionInfoSettings(QAction*)));
         }
     }
@@ -587,25 +587,25 @@ void ParticipantWidget::contextMenuEvent(QContextMenuEvent *pEvent)
                 tIcon2.addPixmap(QPixmap(":/images/22_22/Info.png"), QIcon::Normal, QIcon::Off);
                 if (mSessionInfoWidget->isVisible())
                 {
-                    tAction = tMenu.addAction("Hide session info");
+                    tAction = tMenu.addAction(Homer::Gui::ParticipantWidget::tr("Hide session info"));
                     tAction->setCheckable(true);
                     tAction->setChecked(true);
                 }else
                 {
-                    tAction = tMenu.addAction("Show session info");
+                    tAction = tMenu.addAction(Homer::Gui::ParticipantWidget::tr("Show session info"));
                     tAction->setCheckable(true);
                     tAction->setChecked(false);
                 }
                 tAction->setIcon(tIcon2);
                 if (mLbAVStatistics->isVisible())
                 {
-                    tAction = tMenu.addAction("Hide A/V statistics");
+                    tAction = tMenu.addAction(Homer::Gui::ParticipantWidget::tr("Hide A/V statistics"));
                     tAction->setCheckable(true);
                     tAction->setChecked(true);
 
                 }else
                 {
-                    tAction = tMenu.addAction("Show A/V statistics");
+                    tAction = tMenu.addAction(Homer::Gui::ParticipantWidget::tr("Show A/V statistics"));
                     tAction->setCheckable(true);
                     tAction->setChecked(false);
                 }
@@ -614,22 +614,22 @@ void ParticipantWidget::contextMenuEvent(QContextMenuEvent *pEvent)
                 QAction* tPopupRes = tMenu.exec(pEvent->globalPos());
                 if (tPopupRes != NULL)
                 {
-                    if (tPopupRes->text().compare("Show session info") == 0)
+                    if (tPopupRes->text().compare(Homer::Gui::ParticipantWidget::tr("Show session info")) == 0)
                     {
                         mSessionInfoWidget->SetVisible(true);
                         return;
                     }
-                    if (tPopupRes->text().compare("Hide session info") == 0)
+                    if (tPopupRes->text().compare(Homer::Gui::ParticipantWidget::tr("Hide session info")) == 0)
                     {
                         mSessionInfoWidget->SetVisible(false);
                         return;
                     }
-                    if (tPopupRes->text().compare("Show A/V statistics") == 0)
+                    if (tPopupRes->text().compare(Homer::Gui::ParticipantWidget::tr("Show A/V statistics")) == 0)
                     {
                     	mLbAVStatistics->setVisible(true);
                         return;
                     }
-                    if (tPopupRes->text().compare("Hide A/V statistics") == 0)
+                    if (tPopupRes->text().compare(Homer::Gui::ParticipantWidget::tr("Hide A/V statistics")) == 0)
                     {
                     	mLbAVStatistics->setVisible(false);
                         return;
@@ -645,12 +645,12 @@ void ParticipantWidget::contextMenuEvent(QContextMenuEvent *pEvent)
                 tIcon2.addPixmap(QPixmap(":/images/22_22/Info.png"), QIcon::Normal, QIcon::Off);
                 if (mLbAVStatistics->isVisible())
                 {
-                    tAction = tMenu.addAction("Hide A/V statistics");
+                    tAction = tMenu.addAction(Homer::Gui::ParticipantWidget::tr("Hide A/V statistics"));
                     tAction->setCheckable(true);
                     tAction->setChecked(true);
                 }else
                 {
-                    tAction = tMenu.addAction("Show A/V statistics");
+                    tAction = tMenu.addAction(Homer::Gui::ParticipantWidget::tr("Show A/V statistics"));
                     tAction->setCheckable(true);
                     tAction->setChecked(false);
                 }
@@ -659,12 +659,12 @@ void ParticipantWidget::contextMenuEvent(QContextMenuEvent *pEvent)
                 QAction* tPopupRes = tMenu.exec(pEvent->globalPos());
                 if (tPopupRes != NULL)
                 {
-                    if (tPopupRes->text().compare("Show A/V statistics") == 0)
+                    if (tPopupRes->text().compare(Homer::Gui::ParticipantWidget::tr("Show A/V statistics")) == 0)
                     {
                     	mLbAVStatistics->setVisible(true);
                         return;
                     }
-                    if (tPopupRes->text().compare("Hide A/V statistics") == 0)
+                    if (tPopupRes->text().compare(Homer::Gui::ParticipantWidget::tr("Hide A/V statistics")) == 0)
                     {
                     	mLbAVStatistics->setVisible(false);
                         return;
@@ -784,7 +784,7 @@ void ParticipantWidget::LookedUpParticipantHost(const QHostInfo &pHost)
 {
     if (pHost.error() != QHostInfo::NoError)
     {
-        ShowError(tr("DNS lookup error"), tr("Unable to lookup DNS entry for") + " \"" + pHost.hostName() + "\" " + tr("because") + " \"" + pHost.errorString() + "\"");
+        ShowError(Homer::Gui::ParticipantWidget::tr("DNS lookup error"), Homer::Gui::ParticipantWidget::tr("Unable to lookup DNS entry for") + " \"" + pHost.hostName() + "\" " + Homer::Gui::ParticipantWidget::tr("because") + " \"" + pHost.errorString() + "\"");
         return;
     }
 
@@ -901,7 +901,7 @@ void ParticipantWidget::HandleGeneralError(bool pIncoming, int pCode, QString pD
     UpdateParticipantState(CONTACT_UNDEFINED_STATE);
     CONTACTS.UpdateContactState(mSessionName, mSessionTransport, CONTACT_UNDEFINED_STATE);
 
-    ShowError(tr("General error occurred"), tr("General error of code") + " " + QString("%1").arg(pCode) + " " + tr("occurred. The error is described with") + " \"" + pDescription + "\"");
+    ShowError(Homer::Gui::ParticipantWidget::tr("General error occurred"), Homer::Gui::ParticipantWidget::tr("General error of code") + " " + QString("%1").arg(pCode) + " " + Homer::Gui::ParticipantWidget::tr("occurred. The error is described with") + " \"" + pDescription + "\"");
 }
 
 void ParticipantWidget::HandleMessageAccept(bool pIncoming)
@@ -944,7 +944,7 @@ void ParticipantWidget::HandleMessageUnavailable(bool pIncoming, int pStatusCode
 
     UpdateParticipantState(CONTACT_UNAVAILABLE);
     CONTACTS.UpdateContactState(mSessionName, mSessionTransport, CONTACT_UNAVAILABLE);
-    ShowError(tr("Participant unavailable"), tr("The participant") + " " + mSessionName + " " + tr("is currently unavailable for an instant message! The reason is") + " \"" + pDescription + "\"(" + QString("%1").arg(pStatusCode) + ").");
+    ShowError(Homer::Gui::ParticipantWidget::tr("Participant unavailable"), Homer::Gui::ParticipantWidget::tr("The participant") + " " + mSessionName + " " + Homer::Gui::ParticipantWidget::tr("is currently unavailable for an instant message! The reason is") + " \"" + pDescription + "\"(" + QString("%1").arg(pStatusCode) + ").");
 }
 
 void ParticipantWidget::HandleCallRinging(bool pIncoming)
@@ -1131,9 +1131,9 @@ void ParticipantWidget::HandleCallUnavailable(bool pIncoming, int pStatusCode, Q
         CONTACTS.UpdateContactState(mSessionName, mSessionTransport, CONTACT_UNAVAILABLE);
 
         if (pStatusCode == 488)
-        	ShowError(tr("Participant unavailable"), tr("The participant") + " " + mSessionName + " " + tr("does not accept your video/audio codecs. Please, check the configuration and use different settings."));
+        	ShowError(Homer::Gui::ParticipantWidget::tr("Participant unavailable"), Homer::Gui::ParticipantWidget::tr("The participant") + " " + mSessionName + " " + Homer::Gui::ParticipantWidget::tr("does not accept your video/audio codecs. Please, check the configuration and use different settings."));
 		else
-        	ShowError(tr("Participant unavailable"), tr("The participant") + " " + mSessionName + " " + tr("is currently unavailable for a call! The reason is") + " \"" + pDescription + "\"(" + QString("%1").arg(pStatusCode) + ").");
+        	ShowError(Homer::Gui::ParticipantWidget::tr("Participant unavailable"), Homer::Gui::ParticipantWidget::tr("The participant") + " " + mSessionName + " " + Homer::Gui::ParticipantWidget::tr("is currently unavailable for a call! The reason is") + " \"" + pDescription + "\"(" + QString("%1").arg(pStatusCode) + ").");
     }else
     	CallStopped(pIncoming);
 
@@ -1951,7 +1951,7 @@ void ParticipantWidget::UpdateAVStatistics()
         int tStatLines;
 
         // VIDEO
-        tAVStats += "Video statistics:";
+        tAVStats += Homer::Gui::ParticipantWidget::tr("Video statistics:");
         tStats = mVideoWidget->GetVideoStatistic();
         tStatLines = tStats.size();
         for (int i = 0; i < tStatLines; i++)
@@ -1959,27 +1959,27 @@ void ParticipantWidget::UpdateAVStatistics()
 
         tAVStats += "\n\n";
 
-        tAVStats += "Video/audio:";
+        tAVStats += Homer::Gui::ParticipantWidget::tr("Video/audio:");
 
-        tAVStats += "\n     A/V pre-buffering: ";
+        tAVStats += "\n     " + Homer::Gui::ParticipantWidget::tr("A/V pre-buffering:") + " ";
         if (mAVPreBuffering)
-            tAVStats += "active";
+            tAVStats += Homer::Gui::ParticipantWidget::tr("active");
         else
-            tAVStats += "inactive";
+            tAVStats += Homer::Gui::ParticipantWidget::tr("inactive");
         tAVStats += " ";
         if (mAvPreBufferingAutoRestart)
-            tAVStats += "(auto restart)";
+            tAVStats += Homer::Gui::ParticipantWidget::tr("(auto restart)");
 
-        tAVStats += "\n     A/V synchronization: ";
+        tAVStats += "\n     " + Homer::Gui::ParticipantWidget::tr("A/V synchronization:") + " ";
         if (mAVSynchActive)
-            tAVStats += "active";
+            tAVStats += Homer::Gui::ParticipantWidget::tr("active");
         else
-            tAVStats += "inactive";
+            tAVStats += Homer::Gui::ParticipantWidget::tr("inactive");
 
         tAVStats += "\n\n";
 
         // AUDIO
-        tAVStats += "Audio statistics:";
+        tAVStats += Homer::Gui::ParticipantWidget::tr("Audio statistics:");
         tStats = mAudioWidget->GetAudioStatistic();
         tStatLines = tStats.size();
         for (int i = 0; i < tStatLines; i++)

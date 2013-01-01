@@ -114,14 +114,14 @@ void OverviewThreadsWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEven
 
     QMenu tMenu(this);
 
-    tAction = tMenu.addAction("Scale to one cpu core");
+    tAction = tMenu.addAction(Homer::Gui::OverviewThreadsWidget::tr("Scaled to one cpu core"));
     tAction->setCheckable(true);
     tAction->setChecked(mScaleToOneCpuCore);
 
     QAction* tPopupRes = tMenu.exec(pContextMenuEvent->globalPos());
     if (tPopupRes != NULL)
     {
-        if (tPopupRes->text().compare("Scale to one cpu core") == 0)
+        if (tPopupRes->text().compare(Homer::Gui::OverviewThreadsWidget::tr("Scaled to one cpu core")) == 0)
         {
             mScaleToOneCpuCore = !mScaleToOneCpuCore;
             LOG(LOG_VERBOSE, "Scale to one cpu core: %d", mScaleToOneCpuCore);

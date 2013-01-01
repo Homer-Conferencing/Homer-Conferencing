@@ -116,7 +116,7 @@ void OverviewErrorsWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEvent
 
     QMenu tMenu(this);
 
-    tAction = tMenu.addAction("Save error log");
+    tAction = tMenu.addAction(Homer::Gui::OverviewErrorsWidget::tr("Save error log"));
     QIcon tIcon1;
     tIcon1.addPixmap(QPixmap(":/images/22_22/Save.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon1);
@@ -124,7 +124,7 @@ void OverviewErrorsWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEvent
     QAction* tPopupRes = tMenu.exec(pContextMenuEvent->globalPos());
     if (tPopupRes != NULL)
     {
-        if (tPopupRes->text().compare("Save error log") == 0)
+        if (tPopupRes->text().compare(Homer::Gui::OverviewErrorsWidget::tr("Save error log")) == 0)
         {
             SaveLog();
             return;
@@ -138,7 +138,7 @@ void OverviewErrorsWidget::ErrorLogCustomContextMenuEvent(const QPoint &pPos)
 
     QMenu tMenu(this);
 
-    tAction = tMenu.addAction("Save error log");
+    tAction = tMenu.addAction(Homer::Gui::OverviewErrorsWidget::tr("Save error log"));
     QIcon tIcon1;
     tIcon1.addPixmap(QPixmap(":/images/22_22/Save.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon1);
@@ -146,7 +146,7 @@ void OverviewErrorsWidget::ErrorLogCustomContextMenuEvent(const QPoint &pPos)
     QAction* tPopupRes = tMenu.exec(QCursor::pos());
     if (tPopupRes != NULL)
     {
-        if (tPopupRes->text().compare("Save error log") == 0)
+        if (tPopupRes->text().compare(Homer::Gui::OverviewErrorsWidget::tr("Save error log")) == 0)
         {
             SaveLog();
             return;
@@ -157,9 +157,9 @@ void OverviewErrorsWidget::ErrorLogCustomContextMenuEvent(const QPoint &pPos)
 void OverviewErrorsWidget::SaveLog()
 {
     QString tFileName = QFileDialog::getSaveFileName(this,
-                                                     "Save error log",
-                                                     QDir::homePath() + "/HomerErrorLog.txt",
-                                                     "Text Document File (*.txt)",
+                                                     Homer::Gui::OverviewErrorsWidget::tr("Save error log"),
+                                                     QDir::homePath() + Homer::Gui::OverviewErrorsWidget::tr("/HomerErrorLog.txt"),
+                                                     Homer::Gui::OverviewErrorsWidget::tr("Text Document File") + " (*.txt)",
                                                      NULL,
                                                      CONF_NATIVE_DIALOGS);
 
@@ -172,7 +172,7 @@ void OverviewErrorsWidget::SaveLog()
         return;
 
     tFile.write("======================================\n");
-    tFile.write("======> Homer-Conferencing "RELEASE_VERSION_STRING" <======\n");
+    tFile.write("======> Homer Conferencing "RELEASE_VERSION_STRING" <======\n");
     tFile.write("======================================\n");
     mLogBufferMutex.lock();
     tFile.write(mTeErrorLog->toPlainText().toAscii());

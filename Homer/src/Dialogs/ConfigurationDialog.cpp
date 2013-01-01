@@ -686,11 +686,11 @@ void ConfigurationDialog::SaveConfiguration()
     CONF.Sync();
 
     if (tHaveToRestart)
-        ShowInfo("Restart necessary", "You have to <font color='red'><b>restart</b></font> Homer Conferencing to apply the new settings!");
+        ShowInfo(Homer::Gui::ConfigurationDialog::tr("Restart necessary"), Homer::Gui::ConfigurationDialog::tr("You have to") + " <font color='red'><b>" + Homer::Gui::ConfigurationDialog::tr("restart") + "</b></font> " + Homer::Gui::ConfigurationDialog::tr("Homer Conferencing to apply the new settings!"));
     else
     {
         if (tOnlyFutureChanged)
-            ShowInfo("Settings applied for future sessions", "Your new settings are <font color='red'><b>not applied for already established sessions</b></font>. They will only be used for new sessions! Otherwise you have to <font color='red'><b>restart</b></font> Homer Conferencing to apply the new settings!");
+            ShowInfo(Homer::Gui::ConfigurationDialog::tr("Settings will be applied for future sessions"), Homer::Gui::ConfigurationDialog::tr("Your new settings are") + " <font color='red'><b>" + Homer::Gui::ConfigurationDialog::tr("not applied for already established sessions") + "</b></font>. " + Homer::Gui::ConfigurationDialog::tr("They will only be used for new sessions! Otherwise you have to") + " <font color='red'><b>" + Homer::Gui::ConfigurationDialog::tr("restart") + "</b></font> " + Homer::Gui::ConfigurationDialog::tr("Homer Conferencing to apply the new settings!"));
     }
 }
 
@@ -722,14 +722,14 @@ void ConfigurationDialog::GotAnswerForStunServerListRequest(bool pError)
 {
     if (pError)
     {
-        ShowError(tr("Communication with server failed"), tr("The list with suggested STUN servers from the project server is unavailable"));
+        ShowError(Homer::Gui::ConfigurationDialog::tr("Communication with server failed"), Homer::Gui::ConfigurationDialog::tr("The list with suggested STUN servers from the project server is unavailable"));
     }else
     {
         QString tListString = QString(mHttpGetStunServerList->readAll().constData());
         LOG(LOG_VERBOSE, "Got STUN server list answer from server:\n%s", tListString.toStdString().c_str());
         if (tListString.contains("404 Not Found"))
         {
-            ShowError(tr("Communication with server failed"), tr("The list with suggested STUN servers from the project server is unavailable"));
+            ShowError(Homer::Gui::ConfigurationDialog::tr("Communication with server failed"), Homer::Gui::ConfigurationDialog::tr("The list with suggested STUN servers from the project server is unavailable"));
         }else
         {
             mStunServerList = tListString.split("\n",  QString::SkipEmptyParts);
@@ -755,7 +755,7 @@ void ConfigurationDialog::ShowSuggestionsForStunServer()
             LetUserSelectStunServerFromSuggestions();
         }else
         {
-            ShowError(tr("Communication with server failed"), tr("The list with suggested STUN servers from the project server is unavailable"));
+            ShowError(Homer::Gui::ConfigurationDialog::tr("Communication with server failed"), Homer::Gui::ConfigurationDialog::tr("The list with suggested STUN servers from the project server is unavailable"));
         }
     }
 }
@@ -764,7 +764,7 @@ void ConfigurationDialog::LetUserSelectStunServerFromSuggestions()
 {
     bool tAck = false;
 
-    QString tStunServer = QInputDialog::getItem(this, tr("Select a STUN server"), tr("STUN server:") + "                                             ", mStunServerList, 0, false, &tAck);
+    QString tStunServer = QInputDialog::getItem(this, Homer::Gui::ConfigurationDialog::tr("Select a STUN server"), Homer::Gui::ConfigurationDialog::tr("STUN server:") + "                                             ", mStunServerList, 0, false, &tAck);
 
     if (!tAck)
         return;
@@ -776,14 +776,14 @@ void ConfigurationDialog::GotAnswerForSipServerListRequest(bool pError)
 {
     if (pError)
     {
-        ShowError(tr("Communication with server failed"), tr("The list with suggested SIP servers from the project server is unavailable"));
+        ShowError(Homer::Gui::ConfigurationDialog::tr("Communication with server failed"), Homer::Gui::ConfigurationDialog::tr("The list with suggested SIP servers from the project server is unavailable"));
     }else
     {
         QString tListString = QString(mHttpGetSipServerList->readAll().constData());
         LOG(LOG_VERBOSE, "Got SIP server list answer from server:\n%s", tListString.toStdString().c_str());
         if (tListString.contains("404 Not Found"))
         {
-            ShowError(tr("Communication with server failed"), tr("The list with suggested SIP servers from the project server is unavailable"));
+            ShowError(Homer::Gui::ConfigurationDialog::tr("Communication with server failed"), Homer::Gui::ConfigurationDialog::tr("The list with suggested SIP servers from the project server is unavailable"));
         }else
         {
             mSipServerList = tListString.split("\n",  QString::SkipEmptyParts);
@@ -809,7 +809,7 @@ void ConfigurationDialog::ShowSuggestionsForSipServer()
             LetUserSelectSipServerFromSuggestions();
         }else
         {
-            ShowError(tr("Communication with server failed"), tr("The list with suggested SIP servers from the project server is unavailable"));
+            ShowError(Homer::Gui::ConfigurationDialog::tr("Communication with server failed"), Homer::Gui::ConfigurationDialog::tr("The list with suggested SIP servers from the project server is unavailable"));
         }
     }
 }
@@ -830,12 +830,12 @@ void ConfigurationDialog::CreateAccountAtSipServer()
 {
     if (mLeSipServer->text() == "")
     {
-        ShowError(tr("No SIP server entered"), tr("You have to enter a SIP server address first!"));
+        ShowError(Homer::Gui::ConfigurationDialog::tr("No SIP server entered"), Homer::Gui::ConfigurationDialog::tr("You have to enter a SIP server address first!"));
         return;
     }
 
     QDesktopServices::openUrl(QUrl("http://" + mLeSipServer->text()));
-    ShowInfo(tr("Web browser opened"), tr("Your web browser was opened with the url") + " <font color='blue'><b>http://" + mLeSipServer->text() + "</b></font> " + tr("for your account creation!"));
+    ShowInfo(Homer::Gui::ConfigurationDialog::tr("Web browser opened"), Homer::Gui::ConfigurationDialog::tr("Your web browser was opened with the url") + " <font color='blue'><b>http://" + mLeSipServer->text() + "</b></font> " + Homer::Gui::ConfigurationDialog::tr("for your account creation!"));
 }
 
 void ConfigurationDialog::ToggleSipServerPasswordVisibility()
@@ -851,7 +851,7 @@ QString ConfigurationDialog::SelectSoundFile(QString pEventName, QString pSugges
     if (!QFile::exists(pSuggestion))
         pSuggestion = CONF.GetDataDirectory();
 
-    QStringList tSoundFiles = OverviewPlaylistWidget::LetUserSelectAudioFile(this, tr("Select sound file for acoustic notification for event ") + "\"" + pEventName + "\".", false);
+    QStringList tSoundFiles = OverviewPlaylistWidget::LetUserSelectAudioFile(this, Homer::Gui::ConfigurationDialog::tr("Select sound file for acoustic notification for event ") + "\"" + pEventName + "\".", false);
 
     if (tSoundFiles.isEmpty())
         return "";
@@ -867,7 +867,7 @@ QString ConfigurationDialog::SelectSoundFile(QString pEventName, QString pSugges
 
 void ConfigurationDialog::SelectNotifySoundFileForStart()
 {
-    QString tSoundFile = SelectSoundFile(tr("program start"), CONF.GetStartSoundFile());
+    QString tSoundFile = SelectSoundFile(Homer::Gui::ConfigurationDialog::tr("program start"), CONF.GetStartSoundFile());
 
     if (tSoundFile.isEmpty())
         return;
@@ -878,7 +878,7 @@ void ConfigurationDialog::SelectNotifySoundFileForStart()
 
 void ConfigurationDialog::SelectNotifySoundFileForStop()
 {
-    QString tSoundFile = SelectSoundFile(tr("program stop"), CONF.GetStopSoundFile());
+    QString tSoundFile = SelectSoundFile(Homer::Gui::ConfigurationDialog::tr("program stop"), CONF.GetStopSoundFile());
 
     if (tSoundFile.isEmpty())
         return;
@@ -889,7 +889,7 @@ void ConfigurationDialog::SelectNotifySoundFileForStop()
 
 void ConfigurationDialog::SelectNotifySoundFileForIm()
 {
-    QString tSoundFile = SelectSoundFile(tr("new message"), CONF.GetImSoundFile());
+    QString tSoundFile = SelectSoundFile(Homer::Gui::ConfigurationDialog::tr("new message"), CONF.GetImSoundFile());
 
     if (tSoundFile.isEmpty())
         return;
@@ -900,7 +900,7 @@ void ConfigurationDialog::SelectNotifySoundFileForIm()
 
 void ConfigurationDialog::SelectNotifySoundFileForCall()
 {
-    QString tSoundFile = SelectSoundFile(tr("new call"), CONF.GetCallSoundFile());
+    QString tSoundFile = SelectSoundFile(Homer::Gui::ConfigurationDialog::tr("new call"), CONF.GetCallSoundFile());
 
     if (tSoundFile.isEmpty())
         return;
@@ -911,7 +911,7 @@ void ConfigurationDialog::SelectNotifySoundFileForCall()
 
 void ConfigurationDialog::SelectNotifySoundFileForCallDeny()
 {
-    QString tSoundFile = SelectSoundFile(tr("call denied"), CONF.GetCallDenySoundFile());
+    QString tSoundFile = SelectSoundFile(Homer::Gui::ConfigurationDialog::tr("call denied"), CONF.GetCallDenySoundFile());
 
     if (tSoundFile.isEmpty())
         return;
@@ -922,7 +922,7 @@ void ConfigurationDialog::SelectNotifySoundFileForCallDeny()
 
 void ConfigurationDialog::SelectNotifySoundFileForCallAcknowledge()
 {
-    QString tSoundFile = SelectSoundFile(tr("call acknowledged"), CONF.GetCallAcknowledgeSoundFile());
+    QString tSoundFile = SelectSoundFile(Homer::Gui::ConfigurationDialog::tr("call acknowledged"), CONF.GetCallAcknowledgeSoundFile());
 
     if (tSoundFile.isEmpty())
         return;
@@ -933,7 +933,7 @@ void ConfigurationDialog::SelectNotifySoundFileForCallAcknowledge()
 
 void ConfigurationDialog::SelectNotifySoundFileForCallHangup()
 {
-    QString tSoundFile = SelectSoundFile(tr("call hangup"), CONF.GetCallHangupSoundFile());
+    QString tSoundFile = SelectSoundFile(Homer::Gui::ConfigurationDialog::tr("call hangup"), CONF.GetCallHangupSoundFile());
 
     if (tSoundFile.isEmpty())
         return;
@@ -944,7 +944,7 @@ void ConfigurationDialog::SelectNotifySoundFileForCallHangup()
 
 void ConfigurationDialog::SelectNotifySoundFileForError()
 {
-    QString tSoundFile = SelectSoundFile(tr("error"), CONF.GetErrorSoundFile());
+    QString tSoundFile = SelectSoundFile(Homer::Gui::ConfigurationDialog::tr("error"), CONF.GetErrorSoundFile());
 
     if (tSoundFile.isEmpty())
         return;
@@ -955,7 +955,7 @@ void ConfigurationDialog::SelectNotifySoundFileForError()
 
 void ConfigurationDialog::SelectNotifySoundFileForRegistrationFailed()
 {
-    QString tSoundFile = SelectSoundFile(tr("registration failed"), CONF.GetRegistrationFailedSoundFile());
+    QString tSoundFile = SelectSoundFile(Homer::Gui::ConfigurationDialog::tr("registration failed"), CONF.GetRegistrationFailedSoundFile());
 
     if (tSoundFile.isEmpty())
         return;
@@ -966,7 +966,7 @@ void ConfigurationDialog::SelectNotifySoundFileForRegistrationFailed()
 
 void ConfigurationDialog::SelectNotifySoundFileForRegistrationSuccessful()
 {
-    QString tSoundFile = SelectSoundFile(tr("registration successful"), CONF.GetRegistrationSuccessfulSoundFile());
+    QString tSoundFile = SelectSoundFile(Homer::Gui::ConfigurationDialog::tr("registration successful"), CONF.GetRegistrationSuccessfulSoundFile());
 
     if (tSoundFile.isEmpty())
         return;
@@ -979,7 +979,7 @@ void ConfigurationDialog::PlayNotifySoundFile(QString pFile)
 {
     LOG(LOG_VERBOSE, "Playing sound file: %s", pFile.toStdString().c_str());
     if (!StartAudioPlayback(pFile))
-        ShowError(tr("Failed to play file"), tr("Was unable to play the file") +" \"" + pFile + "\".");
+        ShowError(Homer::Gui::ConfigurationDialog::tr("Failed to play file"), Homer::Gui::ConfigurationDialog::tr("Was unable to play the file") +" \"" + pFile + "\".");
 }
 
 void ConfigurationDialog::PlayNotifySoundFileForStart()

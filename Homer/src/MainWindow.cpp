@@ -1191,7 +1191,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     tINDEvent = (InternalNatDetectionEvent*) tEvent;
                     if (tINDEvent->Failed)
                     {
-                        ShowError(tr("NAT detection failed"), tr("Could not detect NAT address and type via STUN server. The failure reason is") + " \"" + QString(tINDEvent->FailureReason.c_str()) + "\".");
+                        ShowError(Homer::Gui::MainWindow::tr("NAT detection failed"), Homer::Gui::MainWindow::tr("Could not detect NAT address and type via STUN server. The failure reason is") + " \"" + QString(tINDEvent->FailureReason.c_str()) + "\".");
                     }else
                     {
                     	LOG(LOG_VERBOSE, "NAT detection was successful");
@@ -1574,12 +1574,12 @@ void MainWindow::customEvent(QEvent* pEvent)
                     tRFEvent = (RegistrationFailedEvent*) tEvent;
                     if (tRFEvent->StatusCode != 904)
                     {
-                    	ShowError(tr("Registration failed"), tr("Could not register") + " \"" + CONF.GetSipUserName() + "\" " + tr("at the SIP server") + " \"" + CONF.GetSipServer() + ":<" + QString("%1").arg(CONF.GetSipServerPort()) + ">\"! " + tr("The reason is") + " \"" + QString(tRFEvent->Description.c_str()) + "\"(" + QString("%1").arg(tRFEvent->StatusCode) + ")\n" +
-                    									 tr("SIP server runs software") + " \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
+                    	ShowError(Homer::Gui::MainWindow::tr("Registration failed"), Homer::Gui::MainWindow::tr("Could not register") + " \"" + CONF.GetSipUserName() + "\" " + Homer::Gui::MainWindow::tr("at the SIP server") + " \"" + CONF.GetSipServer() + ":<" + QString("%1").arg(CONF.GetSipServerPort()) + ">\"! " + Homer::Gui::MainWindow::tr("The reason is") + " \"" + QString(tRFEvent->Description.c_str()) + "\"(" + QString("%1").arg(tRFEvent->StatusCode) + ")\n" +
+                    									 Homer::Gui::MainWindow::tr("SIP server runs software") + " \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
                     }else
                     {
-                    	ShowError(tr("Registration failed"), tr("Could not register") + " \"" + CONF.GetSipUserName() + "\" " + tr("at the SIP server") + " \"" + CONF.GetSipServer() + ":<" + QString("%1").arg(CONF.GetSipServerPort()) + ">\"! " + tr("The login name or password is wrong. Check configuration!\n") +
-                    	                                 tr("SIP server runs software") + " \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
+                    	ShowError(Homer::Gui::MainWindow::tr("Registration failed"), Homer::Gui::MainWindow::tr("Could not register") + " \"" + CONF.GetSipUserName() + "\" " + Homer::Gui::MainWindow::tr("at the SIP server") + " \"" + CONF.GetSipServer() + ":<" + QString("%1").arg(CONF.GetSipServerPort()) + ">\"! " + Homer::Gui::MainWindow::tr("The login name or password is wrong. Check configuration!\n") +
+                    	                                 Homer::Gui::MainWindow::tr("SIP server runs software") + " \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
                     }
                     // reset stored SIP server data
                     mSipServerRegistrationUser = "";
@@ -1594,8 +1594,8 @@ void MainWindow::customEvent(QEvent* pEvent)
         case PUBLICATION_FAILED:
                     //####################### PUBLICATION FAILED #############################
                     tPFEvent = (PublicationFailedEvent*) tEvent;
-                    ShowError(tr("Presence publication failed"), tr("Could not publish your new presence state at the SIP server") + " \"" + CONF.GetSipServer() + ":<" + QString("%1").arg(CONF.GetSipServerPort()) + ">\"! " + tr("The reason is") + " \"" + QString(tPFEvent->Description.c_str()) + "\"(" + QString("%1").arg(tPFEvent->StatusCode) + ")\n" +
-                                                        tr("SIP server runs software") + " \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
+                    ShowError(Homer::Gui::MainWindow::tr("Presence publication failed"), Homer::Gui::MainWindow::tr("Could not publish your new presence state at the SIP server") + " \"" + CONF.GetSipServer() + ":<" + QString("%1").arg(CONF.GetSipServerPort()) + ">\"! " + Homer::Gui::MainWindow::tr("The reason is") + " \"" + QString(tPFEvent->Description.c_str()) + "\"(" + QString("%1").arg(tPFEvent->StatusCode) + ")\n" +
+                                                        Homer::Gui::MainWindow::tr("SIP server runs software") + " \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
                     break;
         default:
                     LOG(LOG_ERROR, "We should never reach this point! Otherwise there is an ERROR IN STATE MACHINE");
@@ -1995,10 +1995,10 @@ void MainWindow::UpdateSysTrayContextMenu()
 
         if (isMinimized())
         {
-            tAction = mSysTrayMenu->addAction("Show window");
+            tAction = mSysTrayMenu->addAction(Homer::Gui::MainWindow::tr("Show window"));
         }else
         {
-            tAction = mSysTrayMenu->addAction("Hide window");
+            tAction = mSysTrayMenu->addAction(Homer::Gui::MainWindow::tr("Hide window"));
         }
         tIcon = new QIcon(":/images/22_22/Resize.png");
         tAction->setIcon(*tIcon);
@@ -2008,17 +2008,17 @@ void MainWindow::UpdateSysTrayContextMenu()
 
         if (mLocalUserParticipantWidget->GetAudioWorker()->GetMuteState())
         {
-            tAction = mSysTrayMenu->addAction("Unmute me");
+            tAction = mSysTrayMenu->addAction(Homer::Gui::MainWindow::tr("Unmute me"));
             tIcon = new QIcon(":/images/22_22/SpeakerLoud.png");
         }else
         {
-            tAction = mSysTrayMenu->addAction("Mute me");
+            tAction = mSysTrayMenu->addAction(Homer::Gui::MainWindow::tr("Mute me"));
             tIcon = new QIcon(":/images/22_22/SpeakerMuted.png");
         }
         tAction->setIcon(*tIcon);
         connect(tAction, SIGNAL(triggered()), this, SLOT(actionMuteMe()));
 
-        tAction = mSysTrayMenu->addAction("Mute others");
+        tAction = mSysTrayMenu->addAction(Homer::Gui::MainWindow::tr("Mute others"));
         tIcon = new QIcon(":/images/22_22/SpeakerMuted.png");
         tAction->setIcon(*tIcon);
         connect(tAction, SIGNAL(triggered()), this, SLOT(actionMuteOthers()));
@@ -2027,7 +2027,7 @@ void MainWindow::UpdateSysTrayContextMenu()
 
         if (CONF.ConferencingEnabled())
         {
-            tAction = mSysTrayMenu->addAction("Online status");
+            tAction = mSysTrayMenu->addAction(Homer::Gui::MainWindow::tr("Online status"));
             tMenu = new QMenu(this);
             mOnlineStatusWidget->InitializeMenuOnlineStatus(tMenu);
             tAction->setMenu(tMenu);
@@ -2036,7 +2036,7 @@ void MainWindow::UpdateSysTrayContextMenu()
 
         mSysTrayMenu->addSeparator();
 
-        tAction = mSysTrayMenu->addAction("Exit");
+        tAction = mSysTrayMenu->addAction(Homer::Gui::MainWindow::tr("Exit"));
         tIcon = new QIcon(":/images/22_22/Exit.png");
         tAction->setIcon(*tIcon);
         connect(tAction, SIGNAL(triggered()), this, SLOT(actionExit()));
@@ -2049,10 +2049,10 @@ void MainWindow::UpdateSysTrayContextMenu()
 
             if (isMinimized())
             {
-                tAction = mDockMenu->addAction("Show window");
+                tAction = mDockMenu->addAction(Homer::Gui::MainWindow::tr("Show window"));
             }else
             {
-                tAction = mDockMenu->addAction("Hide window");
+                tAction = mDockMenu->addAction(Homer::Gui::MainWindow::tr("Hide window"));
             }
             tIcon = new QIcon(":/images/22_22/Resize.png");
             tAction->setIcon(*tIcon);
@@ -2062,17 +2062,17 @@ void MainWindow::UpdateSysTrayContextMenu()
 
             if (mLocalUserParticipantWidget->GetAudioWorker()->GetMuteState())
             {
-                tAction = mDockMenu->addAction("Unmute me");
+                tAction = mDockMenu->addAction(Homer::Gui::MainWindow::tr("Unmute me"));
                 tIcon = new QIcon(":/images/22_22/SpeakerLoud.png");
             }else
             {
-                tAction = mDockMenu->addAction("Mute me");
+                tAction = mDockMenu->addAction(Homer::Gui::MainWindow::tr("Mute me"));
                 tIcon = new QIcon(":/images/22_22/SpeakerMuted.png");
             }
             tAction->setIcon(*tIcon);
             connect(tAction, SIGNAL(triggered()), this, SLOT(actionMuteMe()));
 
-            tAction = mDockMenu->addAction("Mute others");
+            tAction = mDockMenu->addAction(Homer::Gui::MainWindow::tr("Mute others"));
             tIcon = new QIcon(":/images/22_22/SpeakerMuted.png");
             tAction->setIcon(*tIcon);
             connect(tAction, SIGNAL(triggered()), this, SLOT(actionMuteOthers()));
@@ -2081,7 +2081,7 @@ void MainWindow::UpdateSysTrayContextMenu()
 
             if (CONF.ConferencingEnabled())
             {
-                tAction = mDockMenu->addAction("Online status");
+                tAction = mDockMenu->addAction(Homer::Gui::MainWindow::tr("Online status"));
                 tMenu = new QMenu(this);
                 mOnlineStatusWidget->InitializeMenuOnlineStatus(tMenu);
                 tAction->setMenu(tMenu);

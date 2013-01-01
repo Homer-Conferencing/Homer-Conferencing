@@ -1732,7 +1732,7 @@
                  </size>
                 </property>
                 <property name="toolTip">
-                 <string>download suggestions from web server and select from this list</string>
+                 <string>download list of suggestions</string>
                 </property>
                 <property name="styleSheet">
                  <string notr="true">QToolButton{
@@ -2273,7 +2273,7 @@ background-color: rgb(150, 150, 150);
                  </size>
                 </property>
                 <property name="toolTip">
-                 <string>download suggestions from web server and select from this list</string>
+                 <string>download list of suggestions</string>
                 </property>
                 <property name="styleSheet">
                  <string notr="true">QToolButton{
@@ -2577,7 +2577,7 @@ background-color: rgb(150, 150, 150);
                  </font>
                 </property>
                 <property name="text">
-                 <string>Video/audio ports start at:</string>
+                 <string>Video/audio ports start from:</string>
                 </property>
                </widget>
               </item>
@@ -2933,7 +2933,7 @@ background-color: rgb(150, 150, 150);
               <item>
                <widget class="QCheckBox" name="mCbFeatureConferencing">
                 <property name="toolTip">
-                 <string>(de)activate conferencing functions and the needed network ports</string>
+                 <string>(de)activate conferencing functions and related network ports</string>
                 </property>
                 <property name="text">
                  <string/>
@@ -2984,7 +2984,7 @@ background-color: rgb(150, 150, 150);
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>430</width>
+              <width>680</width>
               <height>542</height>
              </rect>
             </property>
@@ -3054,7 +3054,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>show message in systray</string>
+                     <string>show message in the systray</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -3081,7 +3081,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>play sound</string>
+                     <string>play sound file</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -3265,7 +3265,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>show message in systray</string>
+                     <string>show message in the systray</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -3292,7 +3292,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>play sound</string>
+                     <string>play sound file</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -3503,7 +3503,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>show message in systray</string>
+                     <string>show message in the systray</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -3530,7 +3530,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>play sound</string>
+                     <string>play sound file</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -3741,7 +3741,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>show message in systray</string>
+                     <string>show message in the systray</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -3768,7 +3768,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>play sound</string>
+                     <string>play sound file</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -3949,7 +3949,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>show message in systray</string>
+                     <string>show message in the systray</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -3976,7 +3976,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>play sound</string>
+                     <string>play sound file</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -4157,7 +4157,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>show message in systray</string>
+                     <string>show message in the systray</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -4184,7 +4184,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>play sound</string>
+                     <string>play sound file</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -4365,7 +4365,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>show message in systray</string>
+                     <string>show message in the systray</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -4392,7 +4392,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>play sound</string>
+                     <string>play sound file</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -4600,7 +4600,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>show message in systray</string>
+                     <string>show message in the systray</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -4627,7 +4627,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>play sound</string>
+                     <string>play sound file</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -4808,7 +4808,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>show message in systray</string>
+                     <string>show message in the systray</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -4835,7 +4835,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>play sound</string>
+                     <string>play sound file</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -5043,7 +5043,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>show message in systray</string>
+                     <string>show message in the systray</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -5070,7 +5070,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>play sound</string>
+                     <string>play sound file</string>
                     </property>
                     <property name="text">
                      <string/>

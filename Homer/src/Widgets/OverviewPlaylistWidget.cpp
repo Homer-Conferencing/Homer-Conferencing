@@ -119,7 +119,7 @@ OverviewPlaylistWidget::~OverviewPlaylistWidget()
 /// some static helpers
 ///////////////////////////////////////////////////////////////////////////////
 
-static QString sAllLoadVideoFilter = "All supported formats (*.asf *.avi *.bmp *.dv *.jpg *.jpeg *.m4v *.mkv *.mov *.mpg *.mpeg *.mp4 *.mp4a *.m2ts *.m2t *.m3u *.pls *.png *.rm *.rmvb *.swf *.vob *.wmv *.3gp)";
+static QString sAllLoadVideoFilter = (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.asf *.avi *.bmp *.dv *.jpg *.jpeg *.m4v *.mkv *.mov *.mpg *.mpeg *.mp4 *.mp4a *.m2ts *.m2t *.m3u *.pls *.png *.rm *.rmvb *.swf *.vob *.wmv *.3gp)";
 static QString sLoadVideoFilters = sAllLoadVideoFilter + ";;"\
                     "Advanced Systems Format (*.asf);;"\
                     "Audio Video Interleave Format (*.avi);;"\
@@ -138,7 +138,7 @@ static QString sLoadVideoFilters = sAllLoadVideoFilter + ";;"\
                     "Windows Bitmap (*.bmp);;"\
                     "Windows Media Video Format (*.wmv)";
 
-static QString sAllSaveVideoFilter = "All supported formats (*.avi *.m4v *.mov *.mp4 *.3gp)";
+static QString sAllSaveVideoFilter = (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.avi *.m4v *.mov *.mp4 *.3gp)";
 static QString sSaveVideoFilters = sAllSaveVideoFilter + ";;"\
                     "Audio Video Interleave Format (*.avi);;"\
                     "Quicktime/MPEG4 Format (*.m4v *.mov *.mp4 *.3gp)";
@@ -146,7 +146,7 @@ static QString sSaveVideoFilters = sAllSaveVideoFilter + ";;"\
 QString OverviewPlaylistWidget::LetUserSelectVideoSaveFile(QWidget *pParent, QString pDescription)
 {
     QString tResult = QFileDialog::getSaveFileName(pParent,  pDescription,
-                                                            CONF.GetDataDirectory() + "/Homer-Video.avi",
+                                                            CONF.GetDataDirectory() + Homer::Gui::OverviewPlaylistWidget::tr("/Homer-Video.avi"),
                                                             sSaveVideoFilters,
                                                             &sAllSaveVideoFilter,
                                                             CONF_NATIVE_DIALOGS);
@@ -177,7 +177,7 @@ bool OverviewPlaylistWidget::IsVideoFile(QString pFileName)
         return false;
 }
 
-static QString sAllLoadAudioFilter =  "All supported formats (*.3gp *.asf *.avi *.m2ts *.m2t *.m3u *.m4v *.mka *.mkv *.mov *.mp3 *.mp4 *.mp4a *.mpg *.mpeg *.pls *.rm *.rmvb *.vob *.wav *.wmv)";
+static QString sAllLoadAudioFilter =  (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.3gp *.asf *.avi *.m2ts *.m2t *.m3u *.m4v *.mka *.mkv *.mov *.mp3 *.mp4 *.mp4a *.mpg *.mpeg *.pls *.rm *.rmvb *.vob *.wav *.wmv)";
 static QString sLoadAudioFilters =  sAllLoadAudioFilter + ";;"\
                     "Advanced Systems Format (*.asf);;"\
                     "Audio Video Interleave Format (*.avi);;"\
@@ -230,7 +230,7 @@ QStringList OverviewPlaylistWidget::LetUserSelectAudioFile(QWidget *pParent, QSt
     return tResult;
 }
 
-static QString sAllSaveAudioFilter =  "All supported formats (*.mp3 *.wav)";
+static QString sAllSaveAudioFilter =  (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.mp3 *.wav)";
 static QString sSaveAudioFilters =  sAllSaveAudioFilter + ";;"\
                     "MPEG Audio Layer 2/3 Format (*.mp3);;"\
                     "Waveform Audio File Format (*.wav)";
@@ -238,7 +238,7 @@ static QString sSaveAudioFilters =  sAllSaveAudioFilter + ";;"\
 QString OverviewPlaylistWidget::LetUserSelectAudioSaveFile(QWidget *pParent, QString pDescription)
 {
     QString tResult = QFileDialog::getSaveFileName(pParent,  pDescription,
-                                                            CONF.GetDataDirectory() + "/Homer-Audio.mp3",
+                                                            CONF.GetDataDirectory() + Homer::Gui::OverviewPlaylistWidget::tr("/Homer-Audio.mp3"),
                                                             sSaveAudioFilters,
                                                             &sAllSaveAudioFilter,
                                                             CONF_NATIVE_DIALOGS);
@@ -273,7 +273,7 @@ bool OverviewPlaylistWidget::IsAudioFile(QString pFileName)
         return false;
 }
 
-static QString sAllLoadMediaFilter = "All supported formats (*.asf *.avi *.bmp *.dv *.jpg *.jpeg *.m4v *.mka *.mkv *.mov *.mpg *.mpeg *.mp3 *.mp4 *.mp4a *.m2ts *.m2t *.m3u *.pls *.png *.rm *.rmvb *.swf *.vob *.wav *.wmv *.3gp)";
+static QString sAllLoadMediaFilter = (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.asf *.avi *.bmp *.dv *.jpg *.jpeg *.m4v *.mka *.mkv *.mov *.mpg *.mpeg *.mp3 *.mp4 *.mp4a *.m2ts *.m2t *.m3u *.pls *.png *.rm *.rmvb *.swf *.vob *.wav *.wmv *.3gp)";
 static QString sLoadMediaFilters = sAllLoadMediaFilter + ";;"\
                     "Advanced Systems Format (*.asf);;"\
                     "Audio Video Interleave Format (*.avi);;"\
@@ -391,7 +391,7 @@ void OverviewPlaylistWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEve
 
     if (!mLwFiles->selectedItems().isEmpty())
     {
-        tAction = tMenu.addAction("Play selected");
+        tAction = tMenu.addAction(Homer::Gui::OverviewPlaylistWidget::tr("Play selected"));
         QIcon tIcon0;
         tIcon0.addPixmap(QPixmap(":/images/22_22/Audio_Play.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon0);
@@ -399,19 +399,19 @@ void OverviewPlaylistWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEve
         tMenu.addSeparator();
     }
 
-    tAction = tMenu.addAction("Add an entry");
+    tAction = tMenu.addAction(Homer::Gui::OverviewPlaylistWidget::tr("Add entry"));
     QIcon tIcon1;
     tIcon1.addPixmap(QPixmap(":/images/22_22/Plus.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon1);
 
     if (!mLwFiles->selectedItems().isEmpty())
     {
-        tAction = tMenu.addAction("Rename selected");
+        tAction = tMenu.addAction(Homer::Gui::OverviewPlaylistWidget::tr("Rename selected"));
         QIcon tIcon15;
         tIcon15.addPixmap(QPixmap(":/images/22_22/Contact_Edit.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon15);
 
-        tAction = tMenu.addAction("Delete selected");
+        tAction = tMenu.addAction(Homer::Gui::OverviewPlaylistWidget::tr("Delete selected"));
         QIcon tIcon2;
         tIcon2.addPixmap(QPixmap(":/images/22_22/Minus.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon2);
@@ -421,7 +421,7 @@ void OverviewPlaylistWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEve
 
     if (GetListSize() > 0)
     {
-        tAction = tMenu.addAction("Reset playlist");
+        tAction = tMenu.addAction(Homer::Gui::OverviewPlaylistWidget::tr("Reset playlist"));
         QIcon tIcon3;
         tIcon3.addPixmap(QPixmap(":/images/22_22/Reload.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon3);
@@ -429,39 +429,39 @@ void OverviewPlaylistWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEve
         tMenu.addSeparator();
     }
 
-    tAction = tMenu.addAction("Endless loop");
+    tAction = tMenu.addAction(Homer::Gui::OverviewPlaylistWidget::tr("Endless loop"));
     tAction->setCheckable(true);
     tAction->setChecked(mEndlessLoop);
 
     QAction* tPopupRes = tMenu.exec(pContextMenuEvent->globalPos());
     if (tPopupRes != NULL)
     {
-        if (tPopupRes->text().compare("Play selected") == 0)
+        if (tPopupRes->text().compare(Homer::Gui::OverviewPlaylistWidget::tr("Play selected")) == 0)
         {
             ActionPlay();
             return;
         }
-        if (tPopupRes->text().compare("Add an entry") == 0)
+        if (tPopupRes->text().compare(Homer::Gui::OverviewPlaylistWidget::tr("Add entry")) == 0)
         {
             AddEntryDialog();
             return;
         }
-        if (tPopupRes->text().compare("Rename selected") == 0)
+        if (tPopupRes->text().compare(Homer::Gui::OverviewPlaylistWidget::tr("Rename selected")) == 0)
         {
             RenameDialog();
             return;
         }
-        if (tPopupRes->text().compare("Delete selected") == 0)
+        if (tPopupRes->text().compare(Homer::Gui::OverviewPlaylistWidget::tr("Delete selected")) == 0)
         {
             DelEntryDialog();
             return;
         }
-        if (tPopupRes->text().compare("Reset playlist") == 0)
+        if (tPopupRes->text().compare(Homer::Gui::OverviewPlaylistWidget::tr("Reset playlist")) == 0)
         {
             ResetList();
             return;
         }
-        if (tPopupRes->text().compare("Endless loop") == 0)
+        if (tPopupRes->text().compare(Homer::Gui::OverviewPlaylistWidget::tr("Endless loop")) == 0)
         {
             mEndlessLoop = !mEndlessLoop;
             LOG(LOG_VERBOSE, "Playlist has now endless loop activation %d", mEndlessLoop);
@@ -489,7 +489,7 @@ bool OverviewPlaylistWidget::AddEntryDialog()
 
 	QStringList tFileNames;
 
-    tFileNames = LetUserSelectMediaFile(this, "Add media files to playlist");
+    tFileNames = LetUserSelectMediaFile(this, Homer::Gui::OverviewPlaylistWidget::tr("Add file(s) to playlist"));
 
     if (tFileNames.isEmpty())
         return false;
@@ -530,11 +530,12 @@ void OverviewPlaylistWidget::SaveListDialog()
         return;
 
     QString tFileName;
-    tFileName = QFileDialog::getSaveFileName(this,  "Save playlist to..",
-                                                                CONF.GetDataDirectory() + "/Homer.m3u",
-                                                                "Playlist File (*.m3u)",
-                                                                &*(new QString("Playlist File (*.m3u)")),
-                                                                CONF_NATIVE_DIALOGS);
+    tFileName = QFileDialog::getSaveFileName(   this,
+                                                Homer::Gui::OverviewPlaylistWidget::tr("Save playlist"),
+                                                CONF.GetDataDirectory() + "/Homer.m3u",
+                                                Homer::Gui::OverviewPlaylistWidget::tr("Playlist File") + " (*.m3u)",
+                                                &*(new QString(Homer::Gui::OverviewPlaylistWidget::tr("Playlist File") + " (*.m3u)")),
+                                                CONF_NATIVE_DIALOGS);
 
     if (tFileName.isEmpty())
         return;
@@ -554,7 +555,7 @@ void OverviewPlaylistWidget::SaveListDialog()
     QFile tPlaylistFile(tFileName);
     if (!tPlaylistFile.open(QIODevice::WriteOnly))
     {
-    	ShowError(tr("Could not store playlist file"), tr("Couldn't write playlist in") + " " + tFileName);
+    	ShowError(Homer::Gui::OverviewPlaylistWidget::tr("Could not store playlist file"), Homer::Gui::OverviewPlaylistWidget::tr("Couldn't write playlist in") + " " + tFileName);
         return;
     }
 

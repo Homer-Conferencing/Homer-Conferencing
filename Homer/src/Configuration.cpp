@@ -48,6 +48,48 @@ using namespace Homer::Conference;
 Configuration sConfiguration;
 
 ///////////////////////////////////////////////////////////////////////////////
+// define some additional default translations
+
+QString tDefaultDialogTranslations[] = {
+QT_TRANSLATE_NOOP("QTextControl", "&Undo"),
+QT_TRANSLATE_NOOP("QTextControl", "&Redo"),
+QT_TRANSLATE_NOOP("QTextControl", "Cu&t"),
+QT_TRANSLATE_NOOP("QTextControl", "&Copy"),
+QT_TRANSLATE_NOOP("QTextControl", "Copy &Link Location"),
+QT_TRANSLATE_NOOP("QTextControl", "&Paste"),
+QT_TRANSLATE_NOOP("QTextControl", "Delete"),
+QT_TRANSLATE_NOOP("QTextControl", "Select All"),
+QT_TRANSLATE_NOOP("QFileSystemModel", "Name"),
+QT_TRANSLATE_NOOP("QFileSystemModel", "Size"),
+QT_TRANSLATE_NOOP("QFileSystemModel", "Kind"),
+QT_TRANSLATE_NOOP("QFileSystemModel", "Type"),
+QT_TRANSLATE_NOOP("QFileSystemModel", "Date Modified"),
+QT_TRANSLATE_NOOP("QFileSystemModel", "Show Size"),
+QT_TRANSLATE_NOOP("QFileSystemModel", "Show Type"),
+QT_TRANSLATE_NOOP("QFileSystemModel", "Show Date Modified"),
+QT_TRANSLATE_NOOP("QFileDialog", "Computer"),
+QT_TRANSLATE_NOOP("QFileDialog", "Recent Places"),
+QT_TRANSLATE_NOOP("QFileDialog", "Show "),
+QT_TRANSLATE_NOOP("QFileDialog", "Look in:"),
+QT_TRANSLATE_NOOP("QFileDialog", "File &name:"),
+QT_TRANSLATE_NOOP("QFileDialog", "Files of type:"),
+QT_TRANSLATE_NOOP("QFileDialog", "Back"),
+QT_TRANSLATE_NOOP("QFileDialog", "Forward"),
+QT_TRANSLATE_NOOP("QFileDialog", "Parent Directory"),
+QT_TRANSLATE_NOOP("QFileDialog", "Create New Folder"),
+QT_TRANSLATE_NOOP("QFileDialog", "List View"),
+QT_TRANSLATE_NOOP("QFileDialog", "Detail View"),
+QT_TRANSLATE_NOOP("QFileDialog", "&Open"),
+QT_TRANSLATE_NOOP("QFileDialog", "&Save"),
+QT_TRANSLATE_NOOP("QFileDialog", "%1 already exists.\nDo you want to replace it?"),
+QT_TRANSLATE_NOOP("QDialogButtonBox", "Okay"),
+QT_TRANSLATE_NOOP("QDialogButtonBox", "Cancel"),
+QT_TRANSLATE_NOOP("QDialogButtonBox", "Reset"),
+QT_TRANSLATE_NOOP("QDialogButtonBox", "&Yes"),
+QT_TRANSLATE_NOOP("QDialogButtonBox", "&No")
+};
+
+///////////////////////////////////////////////////////////////////////////////
 
 Configuration::Configuration()
 {

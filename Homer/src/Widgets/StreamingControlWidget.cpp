@@ -137,7 +137,7 @@ void StreamingControlWidget::StartCameraStreaming()
     // found something?
     if (tSelectedDevice == "")
     {
-        ShowWarning("Missing camera", "No camera available. Please, select another source!");
+        ShowWarning(Homer::Gui::StreamingControlWidget::tr("Missing camera"), Homer::Gui::StreamingControlWidget::tr("No camera available. Please, select another source!"));
         return;
     }
 
@@ -168,7 +168,7 @@ void StreamingControlWidget::StartVoiceStreaming()
     // found something?
     if (tSelectedDevice == "")
     {
-        ShowWarning("Missing microphone", "No microphone available. Please, select another source!");
+        ShowWarning(Homer::Gui::StreamingControlWidget::tr("Missing microphone"), Homer::Gui::StreamingControlWidget::tr("No microphone available. Please, select another source!"));
         return;
     }
 

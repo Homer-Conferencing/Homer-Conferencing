@@ -204,7 +204,7 @@
              </size>
             </property>
             <property name="toolTip">
-             <string>add file(s) to list</string>
+             <string>add transfer(s)</string>
             </property>
             <property name="styleSheet">
              <string notr="true">QToolButton{
@@ -250,7 +250,7 @@ background-color: rgb(150, 150, 150);
              </size>
             </property>
             <property name="toolTip">
-             <string>remove file(s) from list</string>
+             <string>remove transfer(s)</string>
             </property>
             <property name="styleSheet">
              <string notr="true">QToolButton{

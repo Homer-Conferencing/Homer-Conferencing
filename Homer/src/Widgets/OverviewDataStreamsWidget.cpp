@@ -163,15 +163,15 @@ void OverviewDataStreamsWidget::TwVideoCustomContextMenuEvent(const QPoint &pPos
 
     QMenu tMenu(this);
 
-    tAction = tMenu.addAction("Save all");
+    tAction = tMenu.addAction(Homer::Gui::OverviewDataStreamsWidget::tr("Save all"));
     QIcon tIcon1;
     tIcon1.addPixmap(QPixmap(":/images/22_22/Save.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon1);
 
-    tAction = tMenu.addAction("Save row history");
+    tAction = tMenu.addAction(Homer::Gui::OverviewDataStreamsWidget::tr("Save row history"));
     tAction->setIcon(tIcon1);
 
-    tAction = tMenu.addAction("Reset row");
+    tAction = tMenu.addAction(Homer::Gui::OverviewDataStreamsWidget::tr("Reset row"));
     QIcon tIcon2;
     tIcon2.addPixmap(QPixmap(":/images/22_22/Reload.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon2);
@@ -179,17 +179,17 @@ void OverviewDataStreamsWidget::TwVideoCustomContextMenuEvent(const QPoint &pPos
     QAction* tPopupRes = tMenu.exec(QCursor::pos());
     if (tPopupRes != NULL)
     {
-        if (tPopupRes->text().compare("Reset row") == 0)
+        if (tPopupRes->text().compare(Homer::Gui::OverviewDataStreamsWidget::tr("Reset row")) == 0)
         {
             ResetStatistic(DATA_TYPE_VIDEO, mTwVideo->currentRow());
             return;
         }
-        if (tPopupRes->text().compare("Save row history") == 0)
+        if (tPopupRes->text().compare(Homer::Gui::OverviewDataStreamsWidget::tr("Save row history")) == 0)
         {
             SaveHistory(DATA_TYPE_VIDEO, mTwVideo->currentRow());
             return;
         }
-        if (tPopupRes->text().compare("Save all") == 0)
+        if (tPopupRes->text().compare(Homer::Gui::OverviewDataStreamsWidget::tr("Save all")) == 0)
         {
             SaveCompleteStatistic();
             return;
@@ -203,15 +203,15 @@ void OverviewDataStreamsWidget::TwAudioCustomContextMenuEvent(const QPoint &pPos
 
     QMenu tMenu(this);
 
-    tAction = tMenu.addAction("Save all");
+    tAction = tMenu.addAction(Homer::Gui::OverviewDataStreamsWidget::tr("Save all"));
     QIcon tIcon1;
     tIcon1.addPixmap(QPixmap(":/images/22_22/Save.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon1);
 
-    tAction = tMenu.addAction("Save row history");
+    tAction = tMenu.addAction(Homer::Gui::OverviewDataStreamsWidget::tr("Save row history"));
     tAction->setIcon(tIcon1);
 
-    tAction = tMenu.addAction("Reset row");
+    tAction = tMenu.addAction(Homer::Gui::OverviewDataStreamsWidget::tr("Reset row"));
     QIcon tIcon2;
     tIcon2.addPixmap(QPixmap(":/images/22_22/Reload.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon2);
@@ -219,17 +219,17 @@ void OverviewDataStreamsWidget::TwAudioCustomContextMenuEvent(const QPoint &pPos
     QAction* tPopupRes = tMenu.exec(QCursor::pos());
     if (tPopupRes != NULL)
     {
-        if (tPopupRes->text().compare("Reset row") == 0)
+        if (tPopupRes->text().compare(Homer::Gui::OverviewDataStreamsWidget::tr("Reset row")) == 0)
         {
             ResetStatistic(DATA_TYPE_AUDIO, mTwAudio->currentRow());
             return;
         }
-        if (tPopupRes->text().compare("Save row history") == 0)
+        if (tPopupRes->text().compare(Homer::Gui::OverviewDataStreamsWidget::tr("Save row history")) == 0)
         {
             SaveHistory(DATA_TYPE_AUDIO, mTwAudio->currentRow());
             return;
         }
-        if (tPopupRes->text().compare("Save all") == 0)
+        if (tPopupRes->text().compare(Homer::Gui::OverviewDataStreamsWidget::tr("Save all")) == 0)
         {
             SaveCompleteStatistic();
             return;
@@ -273,9 +273,9 @@ void OverviewDataStreamsWidget::SaveHistory(enum DataType pDataType, int pIndex)
     if (tHistory.size() > 0)
     {
         QString tFileName = QFileDialog::getSaveFileName(this,
-                                                         "Save data rate history",
-                                                         QDir::homePath() + "/DataRateHistory.csv",
-                                                         "Comma-Separated Values File (*.csv)",
+                                                         Homer::Gui::OverviewDataStreamsWidget::tr("Save data rate history"),
+                                                         QDir::homePath() + Homer::Gui::OverviewDataStreamsWidget::tr("/DataRateHistory.csv"),
+                                                         Homer::Gui::OverviewDataStreamsWidget::tr("Comma-Separated Values File") + " (*.csv)",
                                                          NULL,
                                                          CONF_NATIVE_DIALOGS);
 
@@ -286,7 +286,7 @@ void OverviewDataStreamsWidget::SaveHistory(enum DataType pDataType, int pIndex)
         QFile tFile(tFileName);
         if (!tFile.open(QIODevice::ReadWrite))
         {
-            ShowError(tr("Unable to open file"), tr("The selected output file can't be opened"));
+            ShowError(Homer::Gui::OverviewDataStreamsWidget::tr("Unable to open file"), Homer::Gui::OverviewDataStreamsWidget::tr("The selected output file can't be opened"));
             return;
         }
 
@@ -369,9 +369,9 @@ void OverviewDataStreamsWidget::ResetStatistic(enum DataType pDataType, int pInd
 void OverviewDataStreamsWidget::SaveCompleteStatistic()
 {
     QString tFileName = QFileDialog::getSaveFileName(this,
-                                                     "Save packet statistic",
-                                                     QDir::homePath() + "/PacketStatistic.csv",
-                                                     "Comma-Separated Values File (*.csv)",
+                                                     Homer::Gui::OverviewDataStreamsWidget::tr("Save packet statistic"),
+                                                     QDir::homePath() + Homer::Gui::OverviewDataStreamsWidget::tr("/PacketStatistic.csv"),
+                                                     Homer::Gui::OverviewDataStreamsWidget::tr("Comma-Separated Values File") + " (*.csv)",
                                                      NULL,
                                                      CONF_NATIVE_DIALOGS);
 
@@ -382,7 +382,7 @@ void OverviewDataStreamsWidget::SaveCompleteStatistic()
     QFile tFile(tFileName);
     if (!tFile.open(QIODevice::ReadWrite))
     {
-        ShowError(tr("Unable to open file"), tr("The selected output file can't be opened"));
+        ShowError(Homer::Gui::OverviewDataStreamsWidget::tr("Unable to open file"), Homer::Gui::OverviewDataStreamsWidget::tr("The selected output file can't be opened"));
         return;
     }
 
