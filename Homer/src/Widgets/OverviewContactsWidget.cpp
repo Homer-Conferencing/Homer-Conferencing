@@ -491,19 +491,43 @@ void OverviewContactsWidget::EditSelected()
 
 void OverviewContactsWidget::DeleteSelected()
 {
-    QModelIndex tIndex = mTvContacts->currentIndex();
-    ContactDescriptor* tContact = (ContactDescriptor*)tIndex.internalPointer();
-    if (tContact == NULL)
-    {
-        LOG(LOG_VERBOSE, "Cannot delete non existing contact");
+    ContactDescriptor* tContact;
+
+    if (mTvContacts->selectionModel() == NULL)
         return;
+
+    QModelIndexList tSelection = mTvContacts->selectionModel()->selectedRows();
+    if (tSelection.size() == 1)
+    {// selected one entry
+        QModelIndex tIndex = mTvContacts->currentIndex();
+        tContact = (ContactDescriptor*)tIndex.internalPointer();
+        QString tContactDescription = (tContact->Name != "") ? tContact->Name : QString(MEETING.SipCreateId(tContact->User.toStdString(), tContact->Host.toStdString(), tContact->Port.toStdString()).c_str());
+
+        QMessageBox tMB(QMessageBox::Question, Homer::Gui::OverviewContactsWidget::tr("Acknowledge deletion"), Homer::Gui::OverviewContactsWidget::tr("Do you want to delete \"") + tContactDescription + Homer::Gui::OverviewContactsWidget::tr("\" from the contact list?"), QMessageBox::Yes | QMessageBox::No);
+        if (tMB.exec() != QMessageBox::Yes)
+            return;
+
+    }else if (tSelection.size() > 1)
+    {// selected multiple entries
+        QMessageBox tMB(QMessageBox::Question, Homer::Gui::OverviewContactsWidget::tr("Acknowledge deletion"), Homer::Gui::OverviewContactsWidget::tr("Do you want to delete ") + QString("%1").arg(tSelection.size()) + Homer::Gui::OverviewContactsWidget::tr(" entries from the contact list?"), QMessageBox::Yes | QMessageBox::No);
+        if (tMB.exec() != QMessageBox::Yes)
+            return;
     }
 
-    QString tContactDescription = (tContact->Name != "") ? tContact->Name : QString(MEETING.SipCreateId(tContact->User.toStdString(), tContact->Host.toStdString(), tContact->Port.toStdString()).c_str());
-    QMessageBox tMB(QMessageBox::Question, Homer::Gui::OverviewContactsWidget::tr("Acknowledge deletion"), Homer::Gui::OverviewContactsWidget::tr("Do you want to delete \"") + tContactDescription + Homer::Gui::OverviewContactsWidget::tr("\" from the contact list?"), QMessageBox::Yes | QMessageBox::No);
-
-    if (tMB.exec() == QMessageBox::Yes)
+    for (int i = tSelection.size() -1; i >= 0; i--)
     {
+        // get index
+        QModelIndex tIndex = tSelection[i];
+
+        // get direct access to contact entry
+        ContactDescriptor* tContact = (ContactDescriptor*)tIndex.internalPointer();
+        if (tContact == NULL)
+        {
+            LOG(LOG_VERBOSE, "Cannot delete non existing contact");
+            return;
+        }
+
+        // delete this contact entry
         CONTACTS.RemoveContact(tContact->Id);
     }
 }

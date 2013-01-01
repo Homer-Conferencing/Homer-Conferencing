@@ -75,6 +75,9 @@
          <property name="dragDropMode">
           <enum>QAbstractItemView::DropOnly</enum>
          </property>
+         <property name="selectionMode">
+          <enum>QAbstractItemView::ExtendedSelection</enum>
+         </property>
          <property name="textElideMode">
           <enum>Qt::ElideLeft</enum>
          </property>

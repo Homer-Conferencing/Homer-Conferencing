@@ -472,13 +472,13 @@ void OverviewPlaylistWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEve
 
 void OverviewPlaylistWidget::DelEntryDialog()
 {
-    int tSelectectRow = -1;
+    if (mLwFiles->count() < 1)
+        return;
 
-    if (mLwFiles->selectionModel()->currentIndex().isValid())
-    {
-        int tSelectedRow = mLwFiles->selectionModel()->currentIndex().row();
-        DeleteListEntry(tSelectedRow);
-    }
+    QModelIndexList tSelection = mLwFiles->selectionModel()->selectedRows();
+
+    for (int i = tSelection.size() -1; i >= 0; i--)
+        DeleteListEntry(tSelection[i].row());
 }
 
 bool OverviewPlaylistWidget::AddEntryDialog()
