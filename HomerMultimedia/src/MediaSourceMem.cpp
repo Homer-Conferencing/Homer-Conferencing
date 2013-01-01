@@ -2017,6 +2017,9 @@ void MediaSourceMem::WaitForRTGrabbing()
 {
     // calculate the current (normalized) frame index of the grabber
     float tNormalizedFrameIndexFromGrabber = mGrabberCurrentFrameIndex - mSourceStartPts; // the normalized frame index
+    // return immediately if RT-grabbing is not possible
+    if (tNormalizedFrameIndexFromGrabber < 0)
+        return;
 
     // the PTS value of the last output frame
     uint64_t tCurrentPtsFromGrabber = (uint64_t)(1000 * tNormalizedFrameIndexFromGrabber / GetFrameRate()); // in ms
@@ -2026,12 +2029,15 @@ void MediaSourceMem::WaitForRTGrabbing()
 
     // calculate the current (normalized) play-out time of the current A/V stream
     int64_t tCurrentPlayOutTime = av_gettime() - (int64_t)mSourceStartTimeForRTGrabbing; // in us
+    // return immediately if RT-grabbing is not possible
+    if (tCurrentPlayOutTime < 0)
+        return;
 
     // calculate the time offset between the desired and current play-out time, which can be used for a wait cycle (Thread::Suspend)
     int64_t tResultingTimeOffset = tDesiredPlayOutTime - tCurrentPlayOutTime; // in us
 
     #ifdef MSMEM_DEBUG_TIMING
-        LOG(LOG_VERBOSE, "%s-current relative frame index: %f, relative time: %f us (Fps: %3.2f), stream start time: %f us, packet's relative play out time: %f us, time difference: %f us", GetMediaTypeStr().c_str(), tNormalizedFrameIndexFromGrabber, tCurrentRelativeTimeIndexInUSecs, GetFrameRate(), (float)mSourceStartPts, tDesiredPlayOutTime, tResultingTimeOffset);
+        LOG(LOG_VERBOSE, "%s-current relative frame index: %f, relative time: %lu ms (Fps: %3.2f), stream start time: %f us, packet's relative play out time: %f us, time difference: %f us", GetMediaTypeStr().c_str(), tNormalizedFrameIndexFromGrabber, tCurrentPtsFromGrabber, GetFrameRate(), (float)mSourceStartPts, tDesiredPlayOutTime, tResultingTimeOffset);
     #endif
     // adapt timing to real-time
     if (tResultingTimeOffset > 0)
