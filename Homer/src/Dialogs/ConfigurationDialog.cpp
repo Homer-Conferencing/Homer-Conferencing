@@ -41,6 +41,9 @@
 #include <list>
 #include <string>
 
+#include <QDir>
+#include <QLocale>
+#include <QStringList>
 #include <QUrl>
 #include <QToolTip>
 #include <QCursor>
@@ -159,17 +162,6 @@ int ConfigurationDialog::VideoString2ResolutionIndex(string pString)
         tResult = 9;
 
     return tResult;
-}
-
-QString Language2ISO639(QString pLanguage)
-{
-	// convert to two-letter ISO 639
-	if (pLanguage == "German")
-		return "de";
-	else if (pLanguage == "Russian")
-		return "ru";
-	else
-		return "en";
 }
 
 void ConfigurationDialog::LoadConfiguration()
@@ -373,14 +365,32 @@ void ConfigurationDialog::LoadConfiguration()
     mCbSeparatedParticipantWidgets->setChecked(CONF.GetParticipantWidgetsSeparation());
     mCbCloseParticipantWidgetsImmediately->setChecked(CONF.GetParticipantWidgetsCloseImmediately());
     mCbFeatureConferencing->setChecked(CONF.GetFeatureConferencing());
+
+    /* GUI language */
     QString tCurLang = CONF.GetLanguage();
-    for (int i = 0; i < mCbLanguage->count(); i++)
+    // search for translation files
+    QDir tDir(CONF.GetBinaryPath() + "lang");
+    QStringList tFileNames = tDir.entryList(QStringList("Homer_*.qm"));
+
+    // iterate over all found translation files
+    for (int i = 0; i < tFileNames.size(); i++)
     {
-    	if (tCurLang == Language2ISO639(mCbLanguage->itemText(i)))
-    	{
-    		mCbLanguage->setCurrentIndex(i);
-    		break;
-    	}
+        // extract language ID
+        QString tLocale;
+        tLocale = tFileNames[i];                  // "Homer_de.qm"
+        tLocale.truncate(tLocale.lastIndexOf('.'));   // "Homer_de"
+        tLocale.remove(0, tLocale.indexOf('_') + 1);   // "de"
+
+        // derive language name
+        QString tLanguage = QLocale::languageToString(QLocale(tLocale).language());
+
+        // add language to combobox
+        mCbLanguage->addItem(tLanguage);
+        LOG(LOG_VERBOSE, "Adding language support for: %s", tLanguage.toStdString().c_str());
+
+        // select the entry if it is the currently selected one
+        if (tCurLang == tLocale)
+            mCbLanguage->setCurrentIndex(mCbLanguage->count() -1);
     }
 
     if (!CONF.ConferencingEnabled())
@@ -635,8 +645,35 @@ void ConfigurationDialog::SaveConfiguration()
     }
 
     CONF.SetFeatureConferencing(mCbFeatureConferencing->isChecked());
-    CONF.SetLanguage(Language2ISO639(mCbLanguage->currentText()));
 
+    /* GUI language */
+    if (mCbLanguage->currentIndex() != 0)
+    {
+        QString tCurLang = CONF.GetLanguage();
+        // search for translation files
+        QDir tDir(CONF.GetBinaryPath() + "lang");
+        QStringList tFileNames = tDir.entryList(QStringList("Homer_*.qm"));
+
+        // iterate over all found translation files
+        for (int i = 0; i < tFileNames.size(); i++)
+        {
+            // extract language ID
+            QString tLocale;
+            tLocale = tFileNames[i];                  // "Homer_de.qm"
+            tLocale.truncate(tLocale.lastIndexOf('.'));   // "Homer_de"
+            tLocale.remove(0, tLocale.indexOf('_') + 1);   // "de"
+
+            // derive language name
+            QString tLanguage = QLocale::languageToString(QLocale(tLocale).language());
+
+                // select the entry if it is the currently selected one
+            if (mCbLanguage->currentText() == tLanguage)
+                CONF.SetLanguage(tLocale);
+        }
+    }else
+    {// English
+        CONF.SetLanguage("en");
+    }
     //######################################################################
     //### NOTIFICATION configuration
     //######################################################################

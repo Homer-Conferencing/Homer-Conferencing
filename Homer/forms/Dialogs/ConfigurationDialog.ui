@@ -2711,16 +2711,6 @@ background-color: rgb(150, 150, 150);
                   <string>English</string>
                  </property>
                 </item>
-                <item>
-                 <property name="text">
-                  <string>German</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Russian</string>
-                 </property>
-                </item>
                </widget>
               </item>
              </layout>
@@ -2984,7 +2974,7 @@ background-color: rgb(150, 150, 150);
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>680</width>
+              <width>430</width>
               <height>542</height>
              </rect>
             </property>
