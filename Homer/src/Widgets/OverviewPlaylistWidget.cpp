@@ -623,7 +623,7 @@ void OverviewPlaylistWidget::PlayNext()
     	}
     }
 
-	LOG(LOG_VERBOSE, "Playing file entry %d", tNewFileId);
+	LOG(LOG_ERROR, "Playing file entry %d", tNewFileId);
 
 	// finally play the next file
     Play(tNewFileId);
@@ -651,7 +651,7 @@ void OverviewPlaylistWidget::timerEvent(QTimerEvent *pEvent)
         if (((mCurrentFileVideoPlaying) && (mVideoWorker->CurrentFile() != "") && (mVideoWorker->CurrentFile() != mCurrentFile)) ||
             ((mCurrentFileAudioPlaying) && (mAudioWorker->CurrentFile() != "") && (mAudioWorker->CurrentFile() != mCurrentFile)))
         {
-        	LOG(LOG_VERBOSE, "Desired file wasn't started yet both in video and audio widget: audio = %s, video = %s", mAudioWorker->CurrentFile().toStdString().c_str(), mVideoWorker->CurrentFile().toStdString().c_str());
+        	LOG(LOG_VERBOSE, "Desired file %s wasn't started yet both in video and audio widget\naudio = %s\nvideo = %s", mCurrentFile.toStdString().c_str(), mAudioWorker->CurrentFile().toStdString().c_str(), mVideoWorker->CurrentFile().toStdString().c_str());
         	return;
         }
 
@@ -664,7 +664,7 @@ void OverviewPlaylistWidget::timerEvent(QTimerEvent *pEvent)
             PlayNext();
         }else
         {
-            //LOG(LOG_VERBOSE, "Continueing playback: audio = %s(EOF=%d), video = %s(EOF=%d)", mAudioWorker->CurrentFile().toStdString().c_str(), mAudioWorker->EofReached(), mVideoWorker->CurrentFile().toStdString().c_str(), mVideoWorker->EofReached());
+            //LOG(LOG_VERBOSE, "Continuing playback: audio = %s(EOF=%d), video = %s(EOF=%d)", mAudioWorker->CurrentFile().toStdString().c_str(), mAudioWorker->EofReached(), mVideoWorker->CurrentFile().toStdString().c_str(), mVideoWorker->EofReached());
         }
     }else
     	LOG(LOG_VERBOSE, "Got wrong timer ID: %d, waiting for %d", pEvent->timerId(), mTimerId);
