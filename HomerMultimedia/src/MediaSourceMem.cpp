@@ -1904,7 +1904,7 @@ void* MediaSourceMem::Run(void* pArgs)
                 {
                     LOG(LOG_WARN, "VIDEO decoder thread stops scaler thread..");
                     tVideoScaler->StopScaler();
-                    LOG(LOG_VERBOSE, "VIDEO decoder thread stopped scaler thread");
+                    LOG(LOG_VERBOSE, "..VIDEO decoder thread stopped scaler thread");
                 }else
                 {
                     // Free the RGB frame
