@@ -369,9 +369,10 @@ void OverviewPlaylistWidget::StartPlaylist()
     else
         LOG(LOG_VERBOSE, "Playlist start triggered and we already have entries in the list");
 
+    int tFirstAddedPlaylistEntry = GetListSize();
     if (AddEntryDialog())
     {
-        Play(GetListSize() - 1);
+        Play(tFirstAddedPlaylistEntry);
 
         if (!isVisible())
         	SetVisible(true);
