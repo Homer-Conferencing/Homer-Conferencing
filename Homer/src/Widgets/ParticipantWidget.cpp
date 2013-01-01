@@ -2069,7 +2069,7 @@ void ParticipantWidget::ActionPlaylistNext()
 void ParticipantWidget::ActionPlaylistSetVisible(bool pVisible)
 {
 	LOG(LOG_VERBOSE, "Triggered toggling of visibility of playlist");
-	PLAYLISTWIDGET.SetVisible(pVisible);
+	PLAYLISTWIDGET.SetVisible(!PLAYLISTWIDGET.isVisible());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
