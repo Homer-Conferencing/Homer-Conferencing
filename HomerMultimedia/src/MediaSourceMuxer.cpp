@@ -1389,6 +1389,9 @@ void* MediaSourceMuxer::Run(void* pArgs)
     // set marker to "active"
     mEncoderNeeded = true;
 
+    // flush ffmpeg internal buffers
+    avcodec_flush_buffers(mCodecContext);
+
     while(mEncoderNeeded)
     {
 		#ifdef MSM_DEBUG_TIMING
