@@ -1734,32 +1734,43 @@ Bitte Konfiguration prüfen!</translation>
         <translation>Verfügbarkeit von Kontakten prüfen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="503"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="506"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="512"/>
         <source>Acknowledge deletion</source>
         <translation>Bestätigung der Löschung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="503"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="506"/>
         <source>Do you want to delete &quot;</source>
         <translation>Soll &quot;</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="503"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="506"/>
         <source>&quot; from the contact list?</source>
         <translation>&quot; aus der Kontaktliste gelöscht werden?</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="539"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="512"/>
+        <source>Do you want to delete </source>
+        <translation>Sollen </translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="512"/>
+        <source> entries from the contact list?</source>
+        <translation> Einträge aus der Kontaktliste gelöscht werden?</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="563"/>
         <source>Insert duplicated contact</source>
         <translation>Duplizierten Kontakt hinzufügen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="560"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="584"/>
         <source>Save contact list</source>
         <translation>Speichern der Kontaktliste</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="577"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="601"/>
         <source>Load contact list</source>
         <translation>Laden der Kontaktliste</translation>
     </message>
@@ -1899,70 +1910,70 @@ Bitte Konfiguration prüfen!</translation>
         <translation>/Homer-Audio.mp3</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="394"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="439"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="395"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="440"/>
         <source>Play selected</source>
         <translation>Auswahl abspielen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="402"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="444"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="403"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="445"/>
         <source>Add entry</source>
         <translation>Eintrag hinzufügen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="409"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="449"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="410"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="450"/>
         <source>Rename selected</source>
         <translation>Auswahl umbenennen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="414"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="454"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="415"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="455"/>
         <source>Delete selected</source>
         <translation>Auswahl entfernen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="424"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="459"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="425"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="460"/>
         <source>Reset playlist</source>
         <translation>Playlist zurücksetzen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="432"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="464"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="433"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="465"/>
         <source>Endless loop</source>
         <translation>Endlosschleife</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="492"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="493"/>
         <source>Add file(s) to playlist</source>
         <translation>Datei(en) zur Playlist hinzufügen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="534"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="535"/>
         <source>Save playlist</source>
         <translation>Speichern der Playlist</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="536"/>
         <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="537"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="538"/>
         <source>Playlist File</source>
         <translation>Playlist-Datei</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="558"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="559"/>
         <source>Could not store playlist file</source>
         <translation>Abspeichern der Playlist fehlerhaft</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="558"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="559"/>
         <source>Couldn&apos;t write playlist in</source>
         <translation>Abspeichern der Playlist ist fehlgeschlagen in </translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="562"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="579"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="586"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="603"/>
         <source>Contact list</source>
         <translation>Kontaktliste</translation>
     </message>
@@ -3376,22 +3387,22 @@ datei</translation>
         <translation>Kontaktliste</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="149"/>
+        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="152"/>
         <source>save contact list</source>
         <translation>Speichern der Kontaktliste</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="195"/>
+        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="198"/>
         <source>load contact list</source>
         <translation>Laden der Kontaktliste</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="241"/>
+        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="244"/>
         <source>Add contact</source>
         <translation>Kontakt hinzufügen</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="287"/>
+        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="290"/>
         <source>Remove contact(s)</source>
         <translation>Kontakt(e) entfernen</translation>
     </message>
