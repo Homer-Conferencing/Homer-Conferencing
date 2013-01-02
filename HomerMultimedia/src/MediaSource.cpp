@@ -2857,7 +2857,7 @@ bool MediaSource::FfmpegDescribeInput(string pSource, int pLine, CodecID pCodecI
 	return true;
 }
 
-bool MediaSource::FfmpegCreateIOContext(string pSource/* caller source */, int pLine /* caller line */, char *pPacketBuffer, int pPacketBufferSize, IOFunction pReadFunction, IOFunction pWriteFunction, void *pOpaque, AVIOContext **pIoContext)
+bool MediaSource::FfmpegCreateIOContext(string pSource, int pLine, char *pPacketBuffer, int pPacketBufferSize, IOFunction pReadFunction, IOFunction pWriteFunction, void *pOpaque, AVIOContext **pIoContext)
 {
 	AVIOContext *tResult = NULL;
 

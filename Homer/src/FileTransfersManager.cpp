@@ -48,6 +48,11 @@ uint32_t sLocalSessionId = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// maximum number of acceptable continuous receive errors
+#define FTM_MAX_RECEIVE_ERRORS                           3
+
+///////////////////////////////////////////////////////////////////////////////
+
 #define FTM_VERSION                         0
 
 #define FTM_PDU_TRANSFER_BEGIN              0x01
@@ -1290,9 +1295,9 @@ void* FileTransfersManager::Run(void* pArgs)
         tSourceHost = "";
         if (!ReceivePacket(tSourceHost, tSourcePort, mPacketReceiveBuffer, tDataSize))
         {
-            if (mReceiveErrors == MEDIA_SOURCE_NET_MAX_RECEIVE_ERRORS)
+            if (mReceiveErrors == FTM_MAX_RECEIVE_ERRORS)
             {
-                LOG(LOG_ERROR, "Maximum number of continuous receive errors(%d) is exceeded, will stop network listener", MEDIA_SOURCE_NET_MAX_RECEIVE_ERRORS);
+                LOG(LOG_ERROR, "Maximum number of continuous receive errors(%d) is exceeded, will stop network listener", FTM_MAX_RECEIVE_ERRORS);
                 mFileListenerRunning = false;
                 break;
             }else
