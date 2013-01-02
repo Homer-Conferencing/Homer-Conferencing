@@ -807,15 +807,9 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
         return false;
     }
 
-    if (mCodecContext->codec_id == CODEC_ID_ADPCM_G722)
-    	mRealFrameRate = (float)16000 /* actually 16000 samples per second but because of RFC 3551 we have to enforce 8 kHz clock rate */ / MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 samples per frame */;
-
-    // fix frame size of 0 for some audio codecs and use default caudio capture frame size instead to allow 1:1 transformation
-    // old PCM implementation delivered often a frame size of 1
-    // some audio codecs (excl. MP3) deliver a frame size of 0
-    // ==> we use 32 as threshold to catch most of the inefficient values for the frame size
+    // fix frame size of 0 for some audio codecs
     if (mCodecContext->frame_size < 32)
-    	mCodecContext->frame_size = 1024;
+    	mCodecContext->frame_size = 320;
 
     mOutputAudioFormat = mCodecContext->sample_fmt;
 
