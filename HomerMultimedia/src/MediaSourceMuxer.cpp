@@ -725,6 +725,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     mCodecContext = tStream->codec;
     mCodecContext->codec_id = tFormat->audio_codec;
     mCodecContext->codec_type = AVMEDIA_TYPE_AUDIO;
+    mCodecContext->sample_fmt = AV_SAMPLE_FMT_S16;
     switch(mCodecContext->codec_id)
     {
 		case CODEC_ID_ADPCM_G722:
@@ -757,7 +758,6 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
 	mCodecContext->channels = mOutputAudioChannels;
 	mCodecContext->channel_layout = av_get_default_channel_layout(mOutputAudioChannels);
     mCodecContext->sample_rate = mOutputAudioSampleRate;
-    mCodecContext->sample_fmt = AV_SAMPLE_FMT_S16;
     // set max. packet size for RTP based packets
     mCodecContext->rtp_payload_size = mStreamMaxPacketSize;
 

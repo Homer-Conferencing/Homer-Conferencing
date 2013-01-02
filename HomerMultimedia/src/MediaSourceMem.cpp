@@ -661,7 +661,7 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 
     // ffmpeg might have difficulties detecting the correct input format, enforce correct audio parameters
     AVCodecContext *tCodec = mFormatContext->streams[mMediaStreamIndex]->codec;
-    switch(tCodec->codec_id)
+    switch(mSourceCodecId)
     {
     	case CODEC_ID_ADPCM_G722:
     		tCodec->channels = 1;
@@ -1700,8 +1700,7 @@ void* MediaSourceMem::Run(void* pArgs)
 
                             #ifdef MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
                                 LOG(LOG_VERBOSE, "New audio frame..");
-                                LOG(LOG_VERBOSE, "      ..samples: %d", tOutputBufferSize);
-                                LOG(LOG_VERBOSE, "      ..size: %d bytes", tOutputBufferSize * tOutoutAudioBytesPrSample);
+                                LOG(LOG_VERBOSE, "      ..size: %d bytes (%d samples of format %s)", tOutputBufferSize * tOutoutAudioBytesPrSample, tOutputBufferSize, av_get_sample_fmt_name(mOutputAudioFormat));
                             #endif
 
                             if (mAudioResampleContext != NULL)
@@ -1715,7 +1714,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                     //HINT: we always assume 16 bit samples
                                     int tResampledBytes = (tOutoutAudioBytesPrSample * mOutputAudioChannels) * audio_resample(mAudioResampleContext, (short*)tChunkBuffer, (short*)mResampleBuffer, tOutputBufferSize / (tInputAudioBytesPrSample * mInputAudioChannels));
                                     #ifdef MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
-                                        LOG(LOG_VERBOSE, "Have resampled %d bytes of sample rate %dHz and %d channels to %d bytes of %d Hz sample rate and %d channels", tOutputBufferSize, mCodecContext->sample_rate, mCodecContext->channels, tResampledBytes, mOutputAudioSampleRate, mOutputAudioChannels);
+                                        LOG(LOG_VERBOSE, "Have resampled %d bytes of sample rate %dHz and %d channels (format: %s) to %d bytes of %d Hz sample rate and %d channels (format: %s)", tOutputBufferSize, mCodecContext->sample_rate, mCodecContext->channels, av_get_sample_fmt_name(mInputAudioFormat), tResampledBytes, mOutputAudioSampleRate, mOutputAudioChannels, av_get_sample_fmt_name(mOutputAudioFormat));
                                     #endif
                                     if(tResampledBytes > 0)
                                     {
@@ -2043,7 +2042,7 @@ void MediaSourceMem::WaitForRTGrabbing()
     if (tResultingTimeOffset > 0)
     {
         #ifdef MSMEM_DEBUG_TIMING
-            LOG(LOG_WARN, "%s-sleeping for %ld ms (%ld - %ld) for frame %.2f, RT ref. time: %.2f", GetMediaTypeStr().c_str(), tResultingTimeOffset / 1000, tDesiredPlayOutTime, tCurrentPlayOutTime, (float)mGrabberCurrentFrameIndex, (float)mSourceStartTimeForRTGrabbing);
+            LOG(LOG_WARN, "%s-%s-sleeping for %ld ms (%ld - %ld) for frame %.2f, RT ref. time: %.2f", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tResultingTimeOffset / 1000, tDesiredPlayOutTime, tCurrentPlayOutTime, (float)mGrabberCurrentFrameIndex, (float)mSourceStartTimeForRTGrabbing);
         #endif
 		if (tResultingTimeOffset <= MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME * AV_TIME_BASE)
 			Thread::Suspend(tResultingTimeOffset);
