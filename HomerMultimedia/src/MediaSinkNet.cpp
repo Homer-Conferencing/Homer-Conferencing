@@ -428,7 +428,7 @@ void MediaSinkNet::SendPacket(char* pData, unsigned int pSize)
         if (mRtpActivated)
         {
             char *tFragmentData = pData;
-            unsigned int tPacketSize = pSize;
+            int tPacketSize = pSize;
             bool tIsLastFragment = false;
             bool tIsSenderReport = false;
             RtpParse(tFragmentData, tPacketSize, tIsLastFragment, tIsSenderReport, mIncomingAVStream->codec->codec_id, true);
