@@ -239,10 +239,18 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 				tAudioStreamCount++;
 
 				if ((tLanguage != "") || (tTitle != ""))
-					tEntry = tLanguage + ": " + tTitle + " (" + toString(tCodec->name) + ", " + toString(mFormatContext->streams[i]->codec->channels) + " ch)";
+					tEntry = tLanguage + ": " + tTitle + " (" + toString(tCodec->name) + ", " + toString(mFormatContext->streams[i]->codec->channels) + " ch, " + toString(mFormatContext->streams[i]->codec->bit_rate / 1000) + " kbit/s)";
 				else
-					tEntry = "Audio " + toString(tAudioStreamCount) + " (" + toString(tCodec->name) + ", " + toString(mFormatContext->streams[i]->codec->channels) + " ch)";
+					tEntry = "Audio " + toString(tAudioStreamCount) + " (" + toString(tCodec->name) + ", " + toString(mFormatContext->streams[i]->codec->channels) + " ch, " + toString(mFormatContext->streams[i]->codec->bit_rate / 1000) + " kbit/s)";
 				LOG(LOG_VERBOSE, "Found audio stream: %s", tEntry.c_str());
+				int tDuplicates = 0;
+				for(int i = 0; i < (int)mInputChannels.size(); i++)
+				{
+					if (mInputChannels[i].compare(0, tEntry.size(), tEntry) == 0)
+						tDuplicates++;
+				}
+				if (tDuplicates > 0)
+					tEntry+= "-" + toString(tDuplicates + 1);
 				mInputChannels.push_back(tEntry);
         	}else
         	{
