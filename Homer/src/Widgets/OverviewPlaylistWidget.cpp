@@ -555,22 +555,30 @@ void OverviewPlaylistWidget::SaveListDialog()
     if (tFileName.isEmpty())
         return;
 
+    SaveM3U(tFileName);
+}
+
+void OverviewPlaylistWidget::SaveM3U(QString pFileName)
+{
     QString tPlaylistData;
     PlaylistEntry tEntry;
+
     mPlaylistMutex.lock();
+    tPlaylistData += "#EXTM3U\n";
     foreach(tEntry, mPlaylist)
     {
         QString tPlaylistEntry = tEntry.Location;
-        LOG(LOG_VERBOSE, "Writing to m3u %s the entry %s", tFileName.toStdString().c_str(), tPlaylistEntry.toStdString().c_str());
+        QString tPlaylistEntryName = tEntry.Name;
+        LOG(LOG_VERBOSE, "Writing to m3u %s the entry %s(name: %s)", pFileName.toStdString().c_str(), tPlaylistEntry.toStdString().c_str(), tPlaylistEntryName.toStdString().c_str());
+        tPlaylistData += "#EXTINF:-1," + tPlaylistEntryName + "\n";
         tPlaylistData += tPlaylistEntry + '\n';
-
     }
     mPlaylistMutex.unlock();
 
-    QFile tPlaylistFile(tFileName);
+    QFile tPlaylistFile(pFileName);
     if (!tPlaylistFile.open(QIODevice::WriteOnly))
     {
-    	ShowError(Homer::Gui::OverviewPlaylistWidget::tr("Could not store playlist file"), Homer::Gui::OverviewPlaylistWidget::tr("Couldn't write playlist in") + " " + tFileName);
+    	ShowError(Homer::Gui::OverviewPlaylistWidget::tr("Could not store playlist file"), Homer::Gui::OverviewPlaylistWidget::tr("Couldn't write playlist in") + " " + pFileName);
         return;
     }
 
@@ -906,7 +914,7 @@ Playlist OverviewPlaylistWidget::ParseM3U(QString pFilePlaylist, bool pAcceptVid
 						tPlaylistEntry.Name = "";
 				}else
 				{
-					if (!tLineString.toLower().startsWith("#extinf"))
+					if (tLineString.toLower().startsWith("#extinf"))
 					{// we have extended information including a name
 						if (tLineString.indexOf(',') != -1)
 						{
@@ -1192,13 +1200,14 @@ void OverviewPlaylistWidget::RenameDialog()
     if (mLwFiles->selectionModel()->currentIndex().isValid())
     {
         int tSelectedRow = mLwFiles->selectionModel()->currentIndex().row();
+        QString tCurrentEntry = GetListEntry(tSelectedRow);
         QString tCurrentName = GetListEntryName(tSelectedRow);
         QString tFillSpace = "";
-        for (int i = 0; i < tCurrentName.length(); i++)
+        for (int i = 0; i < tCurrentEntry.length(); i++)
             tFillSpace += "  ";
-        LOG(LOG_VERBOSE, "User wants to rename \"%s\" at index %d", tCurrentName.toStdString().c_str(), tSelectedRow);
+        LOG(LOG_VERBOSE, "User wants to rename \"%s\" at index %d", tCurrentEntry.toStdString().c_str(), tSelectedRow);
         bool tOkay = false;
-        QString tNewName = QInputDialog::getText(this, "Rename \"" + tCurrentName + "\"", "New name:           " + tFillSpace, QLineEdit::Normal, tCurrentName, &tOkay);
+        QString tNewName = QInputDialog::getText(this, "Enter name for \"" + tCurrentEntry + "\"", "New name:           " + tFillSpace, QLineEdit::Normal, tCurrentName, &tOkay);
         if ((tOkay) && (!tNewName.isEmpty()))
         {
             RenameListEntry(tSelectedRow, tNewName);
