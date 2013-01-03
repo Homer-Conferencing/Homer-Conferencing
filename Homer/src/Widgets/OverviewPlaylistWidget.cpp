@@ -54,7 +54,7 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define IS_SUPPORTED_WEB_LINK(x)						((x.startsWith("http://")) || (x.startsWith("mms://")) || (x.startsWith("mmst://")))
+#define IS_SUPPORTED_WEB_LINK(x)						((x.toLower().startsWith("http://")) || (x.toLower().startsWith("mms://")) || (x.toLower().startsWith("mmst://")))
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -733,18 +733,18 @@ int OverviewPlaylistWidget::GetListSize()
 
 void OverviewPlaylistWidget::AddEntry(QString pLocation, bool pStartPlayback)
 {
-    // remove "file:///" and "file://" from the beginning if existing
+	// remove "file:///" and "file://" from the beginning if existing
     #ifdef WIN32
-        if (pLocation.startsWith("file:///"))
+        if (pLocation.toLower().startsWith("file:///"))
         	pLocation = pLocation.right(pLocation.size() - 8);
 
-        if (pLocation.startsWith("file://"))
+        if (pLocation.toLower().startsWith("file://"))
         	pLocation = pLocation.right(pLocation.size() - 5);
     #else
-        if (pLocation.startsWith("file:///"))
+        if (pLocation.toLower().startsWith("file:///"))
         	pLocation = pLocation.right(pLocation.size() - 7);
 
-        if (pLocation.startsWith("file://"))
+        if (pLocation.toLower().startsWith("file://"))
         	pLocation = pLocation.right(pLocation.size() - 6);
     #endif
 
@@ -892,7 +892,7 @@ Playlist OverviewPlaylistWidget::ParseM3U(QString pFilePlaylist, bool pAcceptVid
             // parse the playlist line
         	if (tLineString != "")
         	{
-				if (!tLineString.startsWith("#EXT"))
+				if (!tLineString.toLower().startsWith("#ext"))
 				{// we have a location and the entry is complete
 						LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Found playlist entry location: %s", tLineString.toStdString().c_str());
 						if (IS_SUPPORTED_WEB_LINK(tLineString))
@@ -906,7 +906,7 @@ Playlist OverviewPlaylistWidget::ParseM3U(QString pFilePlaylist, bool pAcceptVid
 						tPlaylistEntry.Name = "";
 				}else
 				{
-					if (!tLineString.startsWith("#EXTINF"))
+					if (!tLineString.toLower().startsWith("#extinf"))
 					{// we have extended information including a name
 						if (tLineString.indexOf(',') != -1)
 						{
@@ -1002,11 +1002,11 @@ Playlist OverviewPlaylistWidget::ParsePLS(QString pFilePlaylist, bool pAcceptVid
             QStringList tLineSplit = tLineString.split(("="));
             if (tLineSplit.size() == 2)
             {
-                QString tKey = tLineSplit[0];
+                QString tKey = tLineSplit[0].toLower();
                 QString tValue = tLineSplit[1];
                 LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Found key \"%s\" with value \"%s\"", tKey.toStdString().c_str(), tValue.toStdString().c_str());
                 // parse the playlist line
-                if (tKey.startsWith("NumberOfEntries"))
+                if (tKey.startsWith("numberofentries"))
                 {// "NumberOfEntries"
                     bool tConversionWasOkay = false;
                     tPlaylistEntries = tValue.toInt(&tConversionWasOkay);
@@ -1015,10 +1015,10 @@ Playlist OverviewPlaylistWidget::ParsePLS(QString pFilePlaylist, bool pAcceptVid
                     	LOGEX(OverviewPlaylistWidget, LOG_ERROR, "Unable to convert \"%s\" into an integer value", tValue.toStdString().c_str());
                         return tResult;
                     }
-                }else if (tKey.startsWith("File"))
+                }else if (tKey.startsWith("file"))
                 {// "File"
                     tPlaylistEntry.Location = tValue;
-                }else if (tKey.startsWith("Title"))
+                }else if (tKey.startsWith("title"))
                 {// "Title"
                     tFoundPlaylisEntries++;
                     tPlaylistEntry.Name = tValue;
