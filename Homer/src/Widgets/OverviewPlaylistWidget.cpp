@@ -119,7 +119,7 @@ OverviewPlaylistWidget::~OverviewPlaylistWidget()
 /// some static helpers
 ///////////////////////////////////////////////////////////////////////////////
 
-static QString sAllLoadVideoFilter = (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.asf *.avi *.bmp *.dv *.jpg *.jpeg *.m4v *.mkv *.mov *.mpg *.mpeg *.mp4 *.mp4a *.m2ts *.m2t *.m3u *.pls *.png *.rm *.rmvb *.swf *.vob *.wmv *.3gp)";
+static QString sAllLoadVideoFilter = (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.asf *.avi *.bmp *.dv *.jpg *.jpeg *.m4v *.mkv *.mov *.mpg *.mpeg *.mp4 *.mp4a *.m2ts *.m2t *.m3u *.ogg *.pls *.png *.rm *.rmvb *.swf *.vob *.wmv *.3gp)";
 static QString sLoadVideoFilters = sAllLoadVideoFilter + ";;"\
                     "Advanced Systems Format (*.asf);;"\
                     "Audio Video Interleave Format (*.avi);;"\
@@ -129,6 +129,7 @@ static QString sLoadVideoFilters = sAllLoadVideoFilter + ";;"\
                     "MPEG-Program Stream Format (*.mpg *.mpeg);;"\
                     "MPEG-2 Transport Stream (*.m2ts *.m2t);;"\
                     "M3U Playlist File (*.m3u);;"\
+                    "OGG Container format (*.ogg);;"\
                     "PLS Playlist File (*.pls);;"\
                     "Portable Network Graphics (*.png);;"\
                     "Quicktime/MPEG4 Format (*.m4v *.mov *.mp4 *.mp4a *.3gp);;"\
@@ -177,7 +178,7 @@ bool OverviewPlaylistWidget::IsVideoFile(QString pFileName)
         return false;
 }
 
-static QString sAllLoadAudioFilter =  (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.3gp *.asf *.avi *.m2ts *.m2t *.m3u *.m4v *.mka *.mkv *.mov *.mp3 *.mp4 *.mp4a *.mpg *.mpeg *.pls *.rm *.rmvb *.vob *.wav *.wmv)";
+static QString sAllLoadAudioFilter =  (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.3gp *.asf *.avi *.m2ts *.m2t *.m3u *.m4v *.mka *.mkv *.mov *.mp3 *.mp4 *.mp4a *.mpg *.mpeg *.ogg *.pls *.rm *.rmvb *.vob *.wav *.wmv)";
 static QString sLoadAudioFilters =  sAllLoadAudioFilter + ";;"\
                     "Advanced Systems Format (*.asf);;"\
                     "Audio Video Interleave Format (*.avi);;"\
@@ -186,6 +187,7 @@ static QString sLoadAudioFilters =  sAllLoadAudioFilter + ";;"\
                     "Matroska Format (*.mka *.mkv);;"\
                     "MPEG Audio Layer 2/3 Format (*.mp3);;"\
                     "MPEG-Program Stream Format (*.mpg *.mpeg);;"\
+                    "OGG Container format (*.ogg);;"\
                     "PLS Playlist File (*.pls);;"\
                     "Quicktime/MPEG4 Format (*.m4v *.mov *.mp4 *.mp4a *.3gp);;"\
                     "RealMedia Format (*.rm *.rmvb);;"\
@@ -230,9 +232,10 @@ QStringList OverviewPlaylistWidget::LetUserSelectAudioFile(QWidget *pParent, QSt
     return tResult;
 }
 
-static QString sAllSaveAudioFilter =  (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.mp3 *.wav)";
+static QString sAllSaveAudioFilter =  (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.mp3 *.ogg *.wav)";
 static QString sSaveAudioFilters =  sAllSaveAudioFilter + ";;"\
                     "MPEG Audio Layer 2/3 Format (*.mp3);;"\
+                    "OGG Container format (*.ogg);;"\
                     "Waveform Audio File Format (*.wav)";
 
 QString OverviewPlaylistWidget::LetUserSelectAudioSaveFile(QWidget *pParent, QString pDescription)
@@ -273,7 +276,7 @@ bool OverviewPlaylistWidget::IsAudioFile(QString pFileName)
         return false;
 }
 
-static QString sAllLoadMediaFilter = (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.asf *.avi *.bmp *.dv *.jpg *.jpeg *.m4v *.mka *.mkv *.mov *.mpg *.mpeg *.mp3 *.mp4 *.mp4a *.m2ts *.m2t *.m3u *.pls *.png *.rm *.rmvb *.swf *.vob *.wav *.wmv *.3gp)";
+static QString sAllLoadMediaFilter = (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.asf *.avi *.bmp *.dv *.jpg *.jpeg *.m4v *.mka *.mkv *.mov *.mpg *.mpeg *.mp3 *.mp4 *.mp4a *.m2ts *.m2t *.m3u *.ogg *.pls *.png *.rm *.rmvb *.swf *.vob *.wav *.wmv *.3gp)";
 static QString sLoadMediaFilters = sAllLoadMediaFilter + ";;"\
                     "Advanced Systems Format (*.asf);;"\
                     "Audio Video Interleave Format (*.avi);;"\
@@ -284,6 +287,7 @@ static QString sLoadMediaFilters = sAllLoadMediaFilter + ";;"\
                     "MPEG-Program Stream Format (*.mpg *.mpeg);;"\
                     "MPEG-2 Transport Stream (*.m2ts *.m2t);;"\
                     "M3U Playlist File (*.m3u);;"\
+                    "OGG Container format (*.ogg);;"\
                     "Portable Network Graphics Format (*.png);;"\
                     "PLS Playlist File (*.pls);;"\
                     "Quicktime/MPEG4 Format (*.m4v *.mov *.mp4 *.mp4a *.3gp);;"\
