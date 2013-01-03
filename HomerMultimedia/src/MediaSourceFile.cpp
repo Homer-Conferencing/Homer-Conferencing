@@ -516,6 +516,9 @@ float MediaSourceFile::GetSeekPos()
     float tSeekEnd = GetSeekEnd();
 	double tCurrentFrameIndex = mGrabberCurrentFrameIndex;
 
+	if (!SupportsSeeking())
+		return 0;
+
 	if (tCurrentFrameIndex > 0)
 	{
         //HINT: we need the corrected PTS values and the one from the file
@@ -635,11 +638,13 @@ void MediaSourceFile::StartDecoder()
 {
 	// setting last decoder file position
 	//HINT: we can not use Seek() because this would lead to recursion
-    LOG(LOG_VERBOSE, "Seeking to last %s decoder position: %.2f", GetMediaTypeStr().c_str(), mLastDecoderFilePosition);
-	int tRes = (avformat_seek_file(mFormatContext, -1, INT64_MIN, mFormatContext->start_time + mLastDecoderFilePosition * AV_TIME_BASE, INT64_MAX, 0) >= 0);
-    if (tRes < 0)
-        LOG(LOG_ERROR, "Error during absolute seeking in %s source file because \"%s\"", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)));
-
+	if (SupportsSeeking())
+	{
+		LOG(LOG_VERBOSE, "Seeking to last %s decoder position: %.2f", GetMediaTypeStr().c_str(), mLastDecoderFilePosition);
+		int tRes = (avformat_seek_file(mFormatContext, -1, INT64_MIN, mFormatContext->start_time + mLastDecoderFilePosition * AV_TIME_BASE, INT64_MAX, 0) >= 0);
+		if (tRes < 0)
+			LOG(LOG_ERROR, "Error during absolute seeking in %s source file because \"%s\"", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)));
+	}
     MediaSourceMem::StartDecoder();
 }
 
