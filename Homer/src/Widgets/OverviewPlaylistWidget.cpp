@@ -54,6 +54,10 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define IS_SUPPORTED_WEB_LINK(x)						((x.startsWith("http://")) || (x.startsWith("mms://")) || (x.startsWith("mmst://")))
+
+///////////////////////////////////////////////////////////////////////////////
+
 int OverviewPlaylistWidget::sParseRecursionCount = 0;
 OverviewPlaylistWidget *sOverviewPlaylistWidget = NULL;
 
@@ -259,7 +263,7 @@ QString OverviewPlaylistWidget::LetUserSelectAudioSaveFile(QWidget *pParent, QSt
 bool OverviewPlaylistWidget::IsAudioFile(QString pFileName)
 {
     // explicitly allow audio streams
-    if (pFileName.startsWith("http://"))
+    if (IS_SUPPORTED_WEB_LINK(pFileName))
         return true;
 
     pFileName = QString(pFileName.toLocal8Bit());
@@ -778,7 +782,7 @@ Playlist OverviewPlaylistWidget::Parse(QString pLocation, QString pName, bool pA
 	sParseRecursionCount ++;
 	if (sParseRecursionCount < MAX_PARSER_RECURSIONS)
 	{
-		bool tIsWebUrl = pLocation.startsWith("http://");
+		bool tIsWebUrl = (IS_SUPPORTED_WEB_LINK(pLocation));
 
 		LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Parsing %s", pLocation.toStdString().c_str());
 
@@ -891,7 +895,7 @@ Playlist OverviewPlaylistWidget::ParseM3U(QString pFilePlaylist, bool pAcceptVid
 				if (!tLineString.startsWith("#EXT"))
 				{// we have a location and the entry is complete
 						LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Found playlist entry location: %s", tLineString.toStdString().c_str());
-						if (tLineString.startsWith("http://"))
+						if (IS_SUPPORTED_WEB_LINK(tLineString))
 							tPlaylistEntry.Location = tLineString;
 						else
 							tPlaylistEntry.Location = tDir + "/" + tLineString;
