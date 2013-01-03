@@ -127,17 +127,13 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if (!OpenDecoder())
     	return false;
 
-    // do we have a picture file?
-    if (mFormatContext->streams[mMediaStreamIndex]->duration > 1)
-    {// video stream
+	if (SupportsSeeking())
+    {
     	int tResult = 0;
         if((tResult = avformat_seek_file(mFormatContext, -1, INT64_MIN, 0, INT64_MAX, AVSEEK_FLAG_ANY)) < 0)
         {
             LOG(LOG_WARN, "Couldn't seek to the start of video stream because \"%s\".", strerror(AVUNERROR(tResult)));
         }
-    }else
-    {// one single picture
-        // nothing to do
     }
 
     // allocate software scaler context
@@ -277,10 +273,13 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 //    if (mCodecContext->frame_size < 32)
 //        mCodecContext->frame_size = 1024;
 
-    if((tResult = avformat_seek_file(mFormatContext, -1, INT64_MIN, 0, INT64_MAX, AVSEEK_FLAG_ANY)) < 0)
-    {
-        LOG(LOG_WARN, "Couldn't seek to the start of audio stream because \"%s\".", strerror(AVUNERROR(tResult)));
-    }
+	if (SupportsSeeking())
+	{
+		if((tResult = avformat_seek_file(mFormatContext, -1, INT64_MIN, 0, INT64_MAX, AVSEEK_FLAG_ANY)) < 0)
+		{
+			LOG(LOG_WARN, "Couldn't seek to the start of audio stream because \"%s\".", strerror(AVUNERROR(tResult)));
+		}
+	}
 
     MarkOpenGrabDeviceSuccessful();
 
