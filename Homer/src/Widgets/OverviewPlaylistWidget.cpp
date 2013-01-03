@@ -970,6 +970,9 @@ Playlist OverviewPlaylistWidget::ParseWMX(QString pFilePlaylist, bool pAcceptVid
 
 Playlist OverviewPlaylistWidget::ParsePLS(QString pFilePlaylist, bool pAcceptVideo, bool pAcceptAudio)
 {
+    PlaylistEntry tPlaylistEntry;
+    int tPlaylistEntries = -1;
+    int tLoadedPlaylistEntries = 0;
 	Playlist tResult;
 
     QString tDir = pFilePlaylist.left(pFilePlaylist.lastIndexOf('/'));
@@ -984,14 +987,11 @@ Playlist OverviewPlaylistWidget::ParsePLS(QString pFilePlaylist, bool pAcceptVid
     {
         QByteArray tLine;
         tLine = tPlaylistFile.readLine();
-        int tPlaylistEntries = 0;
-        int tFoundPlaylisEntries = -1;
         bool tPlaylistEntryParsed = false;
-        PlaylistEntry tPlaylistEntry;
         tPlaylistEntry.Location = "";
         tPlaylistEntry.Name = "";
 
-        while ((tFoundPlaylisEntries < tPlaylistEntries) && (!tLine.isEmpty()))
+        while (((tLoadedPlaylistEntries < tPlaylistEntries) || (tPlaylistEntries == -1)) && (!tLine.isEmpty()))
         {
             QString tLineString = QString(tLine);
 
@@ -1020,12 +1020,12 @@ Playlist OverviewPlaylistWidget::ParsePLS(QString pFilePlaylist, bool pAcceptVid
                     tPlaylistEntry.Location = tValue;
                 }else if (tKey.startsWith("title"))
                 {// "Title"
-                    tFoundPlaylisEntries++;
                     tPlaylistEntry.Name = tValue;
                     LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Found playlist entry: \"%s\" at location \"%s\"", tPlaylistEntry.Name.toStdString().c_str(), tPlaylistEntry.Location.toStdString().c_str());
 					tResult += Parse(tPlaylistEntry.Location, tPlaylistEntry.Name, pAcceptVideo, pAcceptAudio);
                     tPlaylistEntry.Location = "";
                     tPlaylistEntry.Name = "";
+                    tLoadedPlaylistEntries++;
                 }
             }else
             {
@@ -1040,6 +1040,13 @@ Playlist OverviewPlaylistWidget::ParsePLS(QString pFilePlaylist, bool pAcceptVid
 
             tLine = tPlaylistFile.readLine();
         }
+    }
+
+    if (tLoadedPlaylistEntries < tPlaylistEntries)
+    {
+    	LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Loaded %d of %d playlist entries, assuming a pending playlist entry", tLoadedPlaylistEntries, tPlaylistEntries);
+        LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Found playlist entry: \"%s\" at location \"%s\"", tPlaylistEntry.Name.toStdString().c_str(), tPlaylistEntry.Location.toStdString().c_str());
+		tResult += Parse(tPlaylistEntry.Location, tPlaylistEntry.Name, pAcceptVideo, pAcceptAudio);
     }
 
     return tResult;
