@@ -540,8 +540,9 @@ QStringList AudioWidget::GetAudioStatistic()
 
     //############################################
 	//### Line 3: audio codec and sample rate
+    int tInputBitRate = mAudioSource->GetInputBitRate();
     QString tLine_InputCodec = "";
-    tLine_InputCodec = Homer::Gui::AudioWidget::tr("Source codec:") + " " + QString((mAudioSource->GetCodecName() != "") ? mAudioSource->GetCodecName().c_str() : Homer::Gui::AudioWidget::tr("unknown")) + " (" + QString("%1").arg(mAudioSource->GetInputSampleRate()) + " Hz, " + QString("%1").arg(mAudioSource->GetInputChannels())+ " " + Homer::Gui::AudioWidget::tr("channels") + ")";
+    tLine_InputCodec = Homer::Gui::AudioWidget::tr("Source codec:") + " " + QString((mAudioSource->GetCodecName() != "") ? mAudioSource->GetCodecName().c_str() : Homer::Gui::AudioWidget::tr("unknown")) + " (" + QString("%1").arg(mAudioSource->GetInputSampleRate()) + " Hz, " + QString("%1").arg(mAudioSource->GetInputChannels())+ " " + Homer::Gui::AudioWidget::tr("channels") + (tInputBitRate > 0 ? ", " + QString("%1 kbit/s").arg(tInputBitRate / 1000): "") + ")";
 
     //############################################
 	//### Line 4: audio output
