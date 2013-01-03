@@ -637,7 +637,7 @@ void OverviewPlaylistWidget::PlayNext()
     	}
     }
 
-	LOG(LOG_ERROR, "Playing file entry %d", tNewFileId);
+	LOG(LOG_WARN, "Playing playlist entry %d", tNewFileId);
 
 	// finally play the next file
     Play(tNewFileId);
