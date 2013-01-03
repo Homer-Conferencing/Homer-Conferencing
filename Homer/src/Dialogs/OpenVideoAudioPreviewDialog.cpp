@@ -335,6 +335,8 @@ void OpenVideoAudioPreviewDialog::SaveConfiguration()
 
     CONF.SetPreviewSelectionAudio(mCbAudioEnabled->isChecked());
     CONF.SetPreviewSelectionVideo(mCbVideoEnabled->isChecked());
+
+    CONF.SetAVPreviewPreBufferingActivation(mGrpPreBuffering->isChecked());
 }
 
 void OpenVideoAudioPreviewDialog::NAPIVideoSelectionChanged(QString pSelection)
@@ -519,6 +521,11 @@ void OpenVideoAudioPreviewDialog::LoadConfiguration()
 
     mCbAudioEnabled->setChecked(CONF.GetPreviewSelectionAudio());
     mCbVideoEnabled->setChecked(CONF.GetPreviewSelectionVideo());
+
+    //########################
+    //### Pre-buffering
+    //########################
+    mGrpPreBuffering->setChecked(CONF.GetAVPreviewPreBufferingActivation());
 }
 
 void OpenVideoAudioPreviewDialog::ActionGetFile()

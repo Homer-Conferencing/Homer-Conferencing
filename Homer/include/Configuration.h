@@ -138,6 +138,9 @@ public:
     QString GetUserName();
     QString GetUserMail();
 
+    /* pre-buffering */
+    bool GetAVPreviewPreBufferingActivation();
+
     /* video settings */
     bool GetVideoActivation();
     bool GetVideoRtp();
@@ -288,6 +291,9 @@ public:
     /* user settings */
     void SetUserName(QString pUserName);
     void SetUserMail(QString pUserMail);
+
+    /* pre-buffering */
+    void SetAVPreviewPreBufferingActivation(bool pActivation);
 
     /* video settings */
     void SetVideoActivation(bool pActivation);

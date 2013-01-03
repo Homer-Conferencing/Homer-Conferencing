@@ -388,6 +388,13 @@ void Configuration::SetUserMail(QString pUserMail)
     mQSettings->endGroup();
 }
 
+void Configuration::SetAVPreviewPreBufferingActivation(bool pActivation)
+{
+    mQSettings->beginGroup("Streaming");
+    mQSettings->setValue("AVPreviewPreBufferingActivation", pActivation);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetVideoActivation(bool pActivation)
 {
     mQSettings->beginGroup("Streaming");
@@ -1063,6 +1070,11 @@ QString Configuration::GetUserName()
 QString Configuration::GetUserMail()
 {
     return mQSettings->value("User/UserMail", QString(MEETING.SipCreateId(MEETING.GetUserName(), QHostInfo::localHostName().toStdString()).c_str())).toString();
+}
+
+bool Configuration::GetAVPreviewPreBufferingActivation()
+{
+    return mQSettings->value("Streaming/AVPreviewPreBufferingActivation", true).toBool();
 }
 
 bool Configuration::GetVideoActivation()
