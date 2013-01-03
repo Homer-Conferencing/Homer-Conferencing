@@ -1811,8 +1811,6 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
                 mRecorderCodecContext->bit_rate = MediaSource::AudioQuality2BitRate(pSaveFileQuality); // streaming rate
                 mRecorderCodecContext->sample_rate = mOutputAudioSampleRate; // sampling rate: 22050, 44100
 
-                mRecorderCodecContext->qmin = 2; // 2
-                mRecorderCodecContext->qmax = 9;/*2 +(100 - mAudioStreamQuality) / 4; // 31*/
                 mRecorderCodecContext->sample_fmt = AV_SAMPLE_FMT_S16;
 
                 // init fifo buffer
