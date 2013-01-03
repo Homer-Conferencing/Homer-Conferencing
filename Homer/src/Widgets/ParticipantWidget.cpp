@@ -1944,7 +1944,7 @@ void ParticipantWidget::UpdateMovieControls()
 void ParticipantWidget::UpdateAVStatistics()
 {
     // should we update the A/V statistic widget?
-    if (mLbAVStatistics->isVisible())
+    if ((mLbAVStatistics->isVisible()) && (!mLbAVStatistics->hasSelectedText()))
     {// time for an update
         QString tAVStats = "";
         QStringList tStats;
