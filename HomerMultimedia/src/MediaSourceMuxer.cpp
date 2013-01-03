@@ -2465,6 +2465,14 @@ int MediaSourceMuxer::GetInputChannels()
         return 0;
 }
 
+int MediaSourceMuxer::GetInputBitRate()
+{
+    if (mMediaSource != NULL)
+    	return mMediaSource->GetInputBitRate();
+    else
+        return 0;
+}
+
 void* MediaSourceMuxer::AllocChunkBuffer(int& pChunkBufferSize, enum MediaType pMediaType)
 {
     void *tResult = NULL;

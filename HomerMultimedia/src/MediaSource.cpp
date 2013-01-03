@@ -115,6 +115,7 @@ MediaSource::MediaSource(string pName):
     mChunkDropCounter = 0;
     mInputAudioChannels = -1;
     mInputAudioSampleRate = -1;
+    mInputBitRate = -1;
     mOutputAudioSampleRate = -1;
     mOutputAudioChannels = -1;
     mSourceResX = 352;
@@ -813,6 +814,11 @@ int MediaSource::GetInputSampleRate()
 int MediaSource::GetInputChannels()
 {
 	return mInputAudioChannels;
+}
+
+int MediaSource::GetInputBitRate()
+{
+	return mInputBitRate;
 }
 
 AVFrame *MediaSource::AllocFrame()
@@ -3072,7 +3078,6 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 			mInputAudioSampleRate = mCodecContext->sample_rate;
 			mInputAudioChannels = mCodecContext->channels;
 			mInputAudioFormat = mCodecContext->sample_fmt;
-
 			mRealFrameRate = (float)mOutputAudioSampleRate /* 44100 samples per second */ / MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 samples per frame */;
 
 		    break;
@@ -3081,7 +3086,9 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 			break;
     }
 
-    // derive the FPS from the timebase of the selected input stream
+	mInputBitRate = mFormatContext->streams[mMediaStreamIndex]->codec->bit_rate;
+
+	// derive the FPS from the timebase of the selected input stream
     mFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->time_base.den / mFormatContext->streams[mMediaStreamIndex]->time_base.num;
 
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected frame rate: %f", mFrameRate);
