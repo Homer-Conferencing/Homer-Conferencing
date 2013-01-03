@@ -1391,7 +1391,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                 // log statistics
                                 AnnouncePacket(tPacket->size);
                                 #ifdef MSMEM_DEBUG_PACKETS
-                                    LOG(LOG_VERBOSE, "Decode video frame (input is picture: %d)..", tInputIsPicture);
+                                    LOG(LOG_VERBOSE, "Decoding video frame (input is picture: %d)..", tInputIsPicture);
                                 #endif
 
                                 // did we read the single frame of a picture?
@@ -1642,7 +1642,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                         }else
                                         {// use stored RGB frame
 
-                                            //HINT: tCurremtChnkSize will be updated later
+                                            //HINT: tCurremtChunkSize will be updated later
                                             //HINT: tChunkBuffer is still valid from first decoder loop
                                         }
                                         // return size of decoded frame
