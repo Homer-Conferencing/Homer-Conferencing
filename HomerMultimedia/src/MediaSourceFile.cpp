@@ -170,6 +170,14 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     // set category for packet statistics
     ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
 
+    // ffmpeg uses mmst:// instead of mms://
+    if (mDesiredDevice.compare(0, string("mms://").size(), "mms://") == 0)
+    {
+    	LOG(LOG_WARN, "Replacing mms:// by mmst:// in %s", mDesiredDevice.c_str());
+		string tNewDesiredDevice = "mmst://" + mDesiredDevice.substr(6, mDesiredDevice.size() - 6);
+		mDesiredDevice = tNewDesiredDevice;
+    }
+
     if (!OpenInput(mDesiredDevice.c_str(), NULL, NULL))
     	return false;
 
