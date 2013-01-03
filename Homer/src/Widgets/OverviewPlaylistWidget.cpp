@@ -119,7 +119,7 @@ OverviewPlaylistWidget::~OverviewPlaylistWidget()
 /// some static helpers
 ///////////////////////////////////////////////////////////////////////////////
 
-static QString sAllLoadVideoFilter = (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.asf *.avi *.bmp *.dv *.flv *.jpg *.jpeg *.m4v *.mkv *.mov *.mpg *.mpeg *.mp4 *.mp4a *.m2ts *.m2t *.m3u *.ogg *.ogv *.pls *.png *.rm *.rmvb *.swf *.vob *.wmv *.3gp)";
+static QString sAllLoadVideoFilter = (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.asf *.avi *.bmp *.dv *.flv *.jpg *.jpeg *.m4v *.mkv *.mov *.mpg *.mpeg *.mp4 *.mp4a *.m2ts *.m2t *.m3u *.ogg *.ogv *.pls *.png *.rm *.rmvb *.swf *.vob *.wmv *.wmx *.3gp)";
 static QString sLoadVideoFilters = sAllLoadVideoFilter + ";;"\
                     "Advanced Systems Format (*.asf);;"\
                     "Audio Video Interleave Format (*.avi);;"\
@@ -138,7 +138,8 @@ static QString sLoadVideoFilters = sAllLoadVideoFilter + ";;"\
                     "Small Web Format (*.swf);;"\
                     "Video Object Format (*.vob);;" \
                     "Windows Bitmap (*.bmp);;"\
-                    "Windows Media Video Format (*.wmv)";
+                    "Windows Media Video Format (*.wmv);;"\
+                    "Windows Media Redirector File (*.wmx)";
 
 static QString sAllSaveVideoFilter = (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.avi *.m4v *.mov *.mp4 *.3gp)";
 static QString sSaveVideoFilters = sAllSaveVideoFilter + ";;"\
@@ -179,7 +180,7 @@ bool OverviewPlaylistWidget::IsVideoFile(QString pFileName)
         return false;
 }
 
-static QString sAllLoadAudioFilter =  (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.3gp *.asf *.avi *.flv *.m2ts *.m2t *.m3u *.m4v *.mka *.mkv *.mov *.mp3 *.mp4 *.mp4a *.mpg *.mpeg *.ogg *.ogv *.pls *.rm *.rmvb *.vob *.wav *.wmv)";
+static QString sAllLoadAudioFilter =  (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.3gp *.asf *.avi *.flv *.m2ts *.m2t *.m3u *.m4v *.mka *.mkv *.mov *.mp3 *.mp4 *.mp4a *.mpg *.mpeg *.ogg *.ogv *.pls *.rm *.rmvb *.vob *.wav *.wmv *.wmx)";
 static QString sLoadAudioFilters =  sAllLoadAudioFilter + ";;"\
                     "Advanced Systems Format (*.asf);;"\
                     "Audio Video Interleave Format (*.avi);;"\
@@ -195,7 +196,8 @@ static QString sLoadAudioFilters =  sAllLoadAudioFilter + ";;"\
                     "RealMedia Format (*.rm *.rmvb);;"\
                     "Video Object Format (*.vob);;" \
                     "Waveform Audio File Format (*.wav);;" \
-                    "Windows Media Video Format (*.wmv)";
+                    "Windows Media Video Format (*.wmv);;"\
+                    "Windows Media Redirector File (*.wmx)";
 
 QStringList OverviewPlaylistWidget::LetUserSelectAudioFile(QWidget *pParent, QString pDescription, bool pMultipleFiles)
 {
@@ -278,7 +280,7 @@ bool OverviewPlaylistWidget::IsAudioFile(QString pFileName)
         return false;
 }
 
-static QString sAllLoadMediaFilter = (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.asf *.avi *.bmp *.dv *.flv *.jpg *.jpeg *.m4v *.mka *.mkv *.mov *.mpg *.mpeg *.mp3 *.mp4 *.mp4a *.m2ts *.m2t *.m3u *.ogg *.ogv *.pls *.png *.rm *.rmvb *.swf *.vob *.wav *.wmv *.3gp)";
+static QString sAllLoadMediaFilter = (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.asf *.avi *.bmp *.dv *.flv *.jpg *.jpeg *.m4v *.mka *.mkv *.mov *.mpg *.mpeg *.mp3 *.mp4 *.mp4a *.m2ts *.m2t *.m3u *.ogg *.ogv *.pls *.png *.rm *.rmvb *.swf *.vob *.wav *.wmv *.wmx *.3gp)";
 static QString sLoadMediaFilters = sAllLoadMediaFilter + ";;"\
                     "Advanced Systems Format (*.asf);;"\
                     "Audio Video Interleave Format (*.avi);;"\
@@ -299,7 +301,8 @@ static QString sLoadMediaFilters = sAllLoadMediaFilter + ";;"\
                     "Video Object Format (*.vob);;" \
                     "Waveform Audio File Format (*.wav);;" \
                     "Windows Bitmap (*.bmp);;"\
-                    "Windows Media Video Format (*.wmv)";
+                    "Windows Media Video Format (*.wmv);;"\
+                    "Windows Media Redirector File (*.wmx)";
 QStringList OverviewPlaylistWidget::LetUserSelectMediaFile(QWidget *pParent, QString pDescription, bool pMultipleFiles)
 {
     QStringList tResult;
@@ -785,6 +788,9 @@ Playlist OverviewPlaylistWidget::Parse(QString pLocation, QString pName, bool pA
 		}else if (pLocation.endsWith(".pls"))
 		{// a PLS playlist file
 			tResult += ParsePLS(pLocation, pAcceptVideo, pAcceptAudio);
+		}else if (pLocation.endsWith(".wmx"))
+		{// a WMX shortcut file
+			tResult += ParseWMX(pLocation, pAcceptVideo, pAcceptAudio);
 		}else if ((!tIsWebUrl) && (QDir(pLocation).exists()))
 		{// a directory
 			tResult += ParseDIR(pLocation, pAcceptVideo, pAcceptAudio);
@@ -908,6 +914,47 @@ Playlist OverviewPlaylistWidget::ParseM3U(QString pFilePlaylist, bool pAcceptVid
 					}else
 						LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Found playlist extended entry: %s", tLineString.toStdString().c_str());
 				}
+        	}
+
+            tLine = tPlaylistFile.readLine();
+        }
+    }
+
+    return tResult;
+}
+
+Playlist OverviewPlaylistWidget::ParseWMX(QString pFilePlaylist, bool pAcceptVideo, bool pAcceptAudio)
+{
+	Playlist tResult;
+	PlaylistEntry tPlaylistEntry;
+	tPlaylistEntry.Location = "";
+	tPlaylistEntry.Name = "";
+
+    QString tDir = pFilePlaylist.left(pFilePlaylist.lastIndexOf('/'));
+    LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Parsing WMX short cut file %s", pFilePlaylist.toStdString().c_str());
+    LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "..in directory: %s", tDir.toStdString().c_str());
+
+    QFile tPlaylistFile(pFilePlaylist);
+    if (!tPlaylistFile.open(QIODevice::ReadOnly))
+    {
+    	LOGEX(OverviewPlaylistWidget, LOG_ERROR, "Couldn't read WMX playlist from %s", pFilePlaylist.toStdString().c_str());
+    }else
+    {
+        QByteArray tLine;
+        tLine = tPlaylistFile.readLine();
+        while (!tLine.isEmpty())
+        {
+            QString tLineString = QString(tLine);
+
+            //remove any "new line" char from the end
+            while((tLineString.endsWith(QChar(0x0A))) || (tLineString.endsWith(QChar(0x0D))))
+                tLineString = tLineString.left(tLineString.length() - 1);
+
+            // parse the playlist line
+        	if (tLineString != "")
+        	{
+				LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Found playlist entry location: %s", tLineString.toStdString().c_str());
+				tResult += Parse(tLineString, tLineString, pAcceptVideo, pAcceptAudio);
         	}
 
             tLine = tPlaylistFile.readLine();
