@@ -143,6 +143,8 @@ void AudioWidget::Init(MediaSource *pAudioSource, QMenu *pMenu, QString pName, b
         tIcon.addPixmap(QPixmap(":/images/22_22/Unchecked.png"), QIcon::Normal, QIcon::Off);
         mAssignedAction->setIcon(tIcon);
     }
+    if (mAssignedAction != NULL)
+        connect(mAssignedAction, SIGNAL(triggered()), this, SLOT(ToggleVisibility()));
 
     //####################################################################
     //### update GUI
@@ -150,9 +152,6 @@ void AudioWidget::Init(MediaSource *pAudioSource, QMenu *pMenu, QString pName, b
     LOG(LOG_VERBOSE, "..init GUI elements");
     initializeGUI();
     setWindowTitle(pName);
-    //setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    if (mAssignedAction != NULL)
-        connect(mAssignedAction, SIGNAL(triggered()), this, SLOT(ToggleVisibility()));
     if (mAudioSource != NULL)
     {
         LOG(LOG_VERBOSE, "..create audio worker");
@@ -342,7 +341,7 @@ void AudioWidget::InitializeMenuAudioSettings(QMenu *pMenu)
     if (isVisible())
         tAction = pMenu->addAction(QPixmap(":/images/22_22/Close.png"), Homer::Gui::AudioWidget::tr("Close"));
     else
-        tAction = pMenu->addAction(QPixmap(":/images/22_22/SpeakerLoud.png"), Homer::Gui::AudioWidget::tr("Show"));
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Screencasting.png"), Homer::Gui::AudioWidget::tr("Show"));
 }
 
 void AudioWidget::SelectedMenuAudioSettings(QAction *pAction)

@@ -337,7 +337,7 @@ background-color: rgb(150, 150, 150);
               </size>
              </property>
              <property name="toolTip">
-              <string>video/audio actions</string>
+              <string>actions and settings</string>
              </property>
              <property name="styleSheet">
               <string notr="true">QToolButton{

@@ -318,6 +318,13 @@ void Configuration::SetVisibilityMenuBar(bool pActive)
     mQSettings->endGroup();
 }
 
+void Configuration::SetVisibilityStatusBar(bool pActive)
+{
+    mQSettings->beginGroup("Global");
+    mQSettings->setValue("VisibilityStatusBar", pActive);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetVisibilityBroadcastAudio(bool pActive)
 {
     mQSettings->beginGroup("Global");
@@ -1011,6 +1018,11 @@ bool Configuration::GetVisibilityToolBarOnlineStatus()
 bool Configuration::GetVisibilityMenuBar()
 {
     return mQSettings->value("Global/VisibilityMenuBar", true).toBool();
+}
+
+bool Configuration::GetVisibilityStatusBar()
+{
+    return mQSettings->value("Global/VisibilityStatusBar", false).toBool();
 }
 
 bool Configuration::GetPreviewSelectionVideo()

@@ -38,7 +38,6 @@ namespace Homer { namespace Gui {
 ///////////////////////////////////////////////////////////////////////////////
 
 #define ADD_VIDEO_RELAY                         300000
-#define ADD_VIDEO_PREVIEW                       300001
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -65,16 +64,6 @@ class AddVideoRelayEvent:
 {
 public:
     AddVideoRelayEvent()
-    {
-
-    }
-};
-
-class AddVideoPreviewEvent:
-    public Homer::Conference::TEvent<AddVideoPreviewEvent, ADD_VIDEO_PREVIEW>
-{
-public:
-    AddVideoPreviewEvent()
     {
 
     }

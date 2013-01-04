@@ -32,13 +32,14 @@
 #include <Widgets/VideoWidget.h>
 #include <Widgets/AudioWidget.h>
 #include <Widgets/ParticipantWidget.h>
-
+#include <MainWindow.h>
 #include <ui_StreamingControlWidget.h>
 
 namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+class MainWindow;
 class StreamingControlWidget :
     public QWidget,
     public Ui_StreamingControlWidget
@@ -46,12 +47,15 @@ class StreamingControlWidget :
     Q_OBJECT;
 public:
     /// The default constructor
-    StreamingControlWidget(ParticipantWidget* pBroadcastParticipantWidget, MediaSourceDesktop *pMediaSourceDesktop);
+    StreamingControlWidget(MainWindow *pMainWindow, QMenu *pMenu, ParticipantWidget* pBroadcastParticipantWidget, MediaSourceDesktop *pMediaSourceDesktop);
 
     /// The destructor.
     virtual ~StreamingControlWidget();
 
     void SetVideoInputSelectionVisible(bool pVisible = true);
+
+public slots:
+	void SelectPushToTalkMode(bool pActive);
 
 private slots:
     void StartScreenSegmentStreaming();
@@ -59,7 +63,6 @@ private slots:
     void StartCameraStreaming();
     void StartFileStreaming();
 	void SelectedNewVideoInputStream(int pIndex);
-	void SelectPushToTalkMode(bool pActive);
 
 private:
     void timerEvent(QTimerEvent *pEvent);
@@ -70,6 +73,9 @@ private:
     ParticipantWidget       *mBroadcastParticipantWidget;
     MediaSourceDesktop      *mMediaSourceDesktop;
     int 					mTimerId;
+    QAction					*mAssignedActionPTTMode;
+    QAction					*mAssignedActionAVPreview;
+    QMenu					*mMenuSource;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

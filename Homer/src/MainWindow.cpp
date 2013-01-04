@@ -286,16 +286,14 @@ void MainWindow::ProcessRemainingArguments(QStringList &pArguments)
 void MainWindow::connectSignalsSlots()
 {
     LOG(LOG_VERBOSE, "Connecting signals and slots of GUI..");
-    addAction(mActionExit); // so, this actio will also be available even if the main menu is hidden
+    addAction(mActionExit); // this action will also be available even if the main menu is hidden
     connect(mActionExit, SIGNAL(triggered()), this, SLOT(actionExit()));
 
-    addAction(mActionIdentity); // so, this actio will also be available even if the main menu is hidden
+    addAction(mActionIdentity); // this action will also be available even if the main menu is hidden
     connect(mActionIdentity, SIGNAL(triggered()), this, SLOT(actionIdentity()));
-    addAction(mActionConfiguration); // so, this actio will also be available even if the main menu is hidden
+    addAction(mActionConfiguration); // this action will also be available even if the main menu is hidden
     connect(mActionConfiguration, SIGNAL(triggered()), this, SLOT(actionConfiguration()));
 
-    addAction(mActionOpenVideoAudioPreview); // so, this actio will also be available even if the main menu is hidden
-    connect(mActionOpenVideoAudioPreview, SIGNAL(triggered()), this, SLOT(actionOpenVideoAudioPreview()));
     connect(mActionHelp, SIGNAL(triggered()), this, SLOT(actionHelp()));
     connect(mActionUpdateCheck, SIGNAL(triggered()), this, SLOT(actionUpdateCheck()));
     connect(mActionVersion, SIGNAL(triggered()), this, SLOT(actionVersion()));
@@ -306,6 +304,8 @@ void MainWindow::connectSignalsSlots()
 
     connect(mActionToolBarMediaSources, SIGNAL(toggled(bool)), mToolBarMediaSources, SLOT(setVisible(bool)));
     connect(mToolBarMediaSources->toggleViewAction(), SIGNAL(toggled(bool)), mActionToolBarMediaSources, SLOT(setChecked(bool)));
+
+    connect(mActionStautsBarWidget, SIGNAL(toggled(bool)), mStatusBar, SLOT(setVisible(bool)));
     addAction(mActionMainMenu); // so, this actio will also be available even if the main menu is hidden
     connect(mActionMainMenu, SIGNAL(toggled(bool)), mMenuBar, SLOT(setVisible(bool)));
     addAction(mActionMonitorBroadcastWidget); // so, this actio will also be available even if the main menu is hidden
@@ -534,6 +534,7 @@ void MainWindow::initializeWidgetsAndMenus()
     LOG(LOG_VERBOSE, "Initialization of widgets and menus..");
 
     mMenuBar->setVisible(CONF.GetVisibilityMenuBar());
+    mStatusBar->setVisible(CONF.GetVisibilityStatusBar());
 
     #ifndef APPLE
         // set fixed style "plastic"
@@ -572,15 +573,16 @@ void MainWindow::initializeWidgetsAndMenus()
     #endif
 
     LOG(LOG_VERBOSE, "..local broadcast widget");
-    mLocalUserParticipantWidget = new ParticipantWidget(BROADCAST, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer);
+    mLocalUserParticipantWidget = new ParticipantWidget(BROADCAST, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantAVControls, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer);
     setCentralWidget(mLocalUserParticipantWidget);
 
     CreateSysTray();
 
-    LOG(LOG_VERBOSE, "Creating playlist control widgets..");
+    LOG(LOG_VERBOSE, "..playlist control widgets");
     mOverviewPlaylistWidget = new OverviewPlaylistWidget(mActionOverviewPlaylistWidget, this, mLocalUserParticipantWidget->GetVideoWorker(), mLocalUserParticipantWidget->GetAudioWorker());
 
-    mMediaSourcesControlWidget = new StreamingControlWidget(mLocalUserParticipantWidget, mMediaSourceDesktop);
+    LOG(LOG_VERBOSE, "..streaming control widget");
+    mMediaSourcesControlWidget = new StreamingControlWidget(this, mMenuStreaming, mLocalUserParticipantWidget, mMediaSourceDesktop);
     mToolBarMediaSources->addWidget(mMediaSourcesControlWidget);
     if (mOwnVideoMuxer->SupportsMultipleInputStreams())
         mMediaSourcesControlWidget->SetVideoInputSelectionVisible();
@@ -592,8 +594,17 @@ void MainWindow::initializeWidgetsAndMenus()
     else
         mMediaSourcesControlWidget->SetVideoInputSelectionVisible(false);
 
+    LOG(LOG_VERBOSE, "..online status menu in the main application menu");
+    mOnlineStatusWidget->InitializeMenuOnlineStatus(mMenuOnlineStatus);
+    connect(mMenuOnlineStatus, SIGNAL(triggered(QAction *)), mOnlineStatusWidget, SLOT(Selected(QAction *)));
+
+    LOG(LOG_VERBOSE, "..data streams widget");
     mOverviewDataStreamsWidget = new OverviewDataStreamsWidget(mActionOverviewDataStreamsWidget, this);
+
+    LOG(LOG_VERBOSE, "..network streams widget");
     mOverviewNetworkStreamsWidget = new OverviewNetworkStreamsWidget(mActionOverviewNetworkStreamsWidget, this);
+
+    LOG(LOG_VERBOSE, "Creating threads overview widget..");
     mOverviewThreadsWidget = new OverviewThreadsWidget(mActionOverviewThreadsWidget, this);
     tabifyDockWidget(mOverviewThreadsWidget, mOverviewDataStreamsWidget);
     tabifyDockWidget(mOverviewDataStreamsWidget, mOverviewNetworkStreamsWidget);
@@ -896,6 +907,7 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
 
     LOG(LOG_VERBOSE, "..saving main window layout");
     CONF.SetVisibilityMenuBar(mMenuBar->isVisible());
+    CONF.SetVisibilityStatusBar(mStatusBar->isVisible());
     CONF.SetMainWindowPosition(pos());
     CONF.SetMainWindowSize(size());
     CONF.SetVisibilityToolBarMediaSources(mToolBarMediaSources->isVisible());
@@ -1183,10 +1195,6 @@ void MainWindow::customEvent(QEvent* pEvent)
                     tANSDialog->exec();
                     delete tANSDialog;
                     break;
-        case ADD_VIDEO_PREVIEW:
-                    //####################### VIDEO ADD PREVIEW #############################
-                    actionOpenVideoAudioPreview();
-                    break;
         case INT_START_NAT_DETECTION:
                     //####################### NAT DETECTION ANSWER ###########################
                     tINDEvent = (InternalNatDetectionEvent*) tEvent;
@@ -1298,7 +1306,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                         if (!tKnownParticipant)
                         {
                             // add without any OpenSession-check, the session is always added automatically by the meeting-layer
-                            tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, QString(tMEvent->Sender.c_str()), tMEvent->Transport);
+                            tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantAVControls, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, QString(tMEvent->Sender.c_str()), tMEvent->Transport);
 
                             if (tParticipantWidget != NULL)
                             {
@@ -1398,7 +1406,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     if (!tKnownParticipant)
                     {
                         // add without any OpenSession-check, the session is always added automatically by the meeting-layer
-                        tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, QString(tCEvent->Sender.c_str()));
+                        tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantAVControls, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, QString(tCEvent->Sender.c_str()));
 
                         if (tParticipantWidget != NULL)
                         {
@@ -1689,7 +1697,7 @@ ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHos
 			{
 				QString tParticipant = QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str());
 
-				tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, tParticipant, pTransport);
+				tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantAVControls, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, tParticipant, pTransport);
 
 				mParticipantWidgets.push_back(tParticipantWidget);
 
@@ -1858,7 +1866,7 @@ void MainWindow::actionOpenVideoAudioPreview()
 {
     ParticipantWidget *tParticipantWidget;
 
-    tParticipantWidget = new ParticipantWidget(PREVIEW, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, NULL);
+    tParticipantWidget = new ParticipantWidget(PREVIEW, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantAVControls, NULL);
 
     mParticipantWidgets.push_back(tParticipantWidget);
 }

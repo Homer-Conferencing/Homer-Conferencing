@@ -77,6 +77,7 @@ using namespace Homer::Conference;
 #define SCREEN_CAPTURE_FPS					(29.97)
 
 ///////////////////////////////////////////////////////////////////////////////
+class StreamingControlWidget;
 class MainWindow:
         public QMainWindow,
         AudioPlayback,

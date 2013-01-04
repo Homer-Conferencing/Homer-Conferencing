@@ -88,7 +88,7 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer, MediaSourceMuxer *pAudioSourceMuxer, QString pParticipant, enum TransportType pTransport):
+ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer, MediaSourceMuxer *pAudioSourceMuxer, QString pParticipant, enum TransportType pTransport):
     QDockWidget(pMainWindow), AudioPlayback()
 {
     LOG(LOG_VERBOSE, "Creating new participant widget for %s..", pParticipant.toStdString().c_str());
@@ -122,12 +122,13 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
     mSessionTransport = SOCKET_TRANSPORT_AUTO;
     mIncomingCall = false;
     mQuitForced = false;
+    mAssignedActionAVControls = NULL;
 
     //####################################################################
     //### create the remaining necessary widgets, menu and layouts
     //####################################################################
     LOG(LOG_VERBOSE, "..init participant widget");
-    Init(pVideoMenu, pAudioMenu, pMessageMenu, pParticipant, pTransport);
+    Init(pVideoMenu, pAudioMenu, pAVControlsMenu, pMessageMenu, pParticipant, pTransport);
 }
 
 ParticipantWidget::~ParticipantWidget()
@@ -170,6 +171,8 @@ ParticipantWidget::~ParticipantWidget()
     delete mAudioWidget;
     delete mMessageWidget;
     delete mSessionInfoWidget;
+    if (mAssignedActionAVControls != NULL)
+        delete mAssignedActionAVControls;
 
     ResetMediaSinks();
 
@@ -188,7 +191,7 @@ ParticipantWidget::~ParticipantWidget()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, QString pParticipant, enum TransportType pTransport)
+void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu, QMenu *pMessageMenu, QString pParticipant, enum TransportType pTransport)
 {
     setupUi(this);
 
@@ -415,6 +418,8 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
         mMenuSettingsAudio = mMenuSettings->addMenu(QPixmap(":/images/46_46/Speaker.png"), Homer::Gui::ParticipantWidget::tr("Audio"));
         connect(mMenuSettingsAudio, SIGNAL(triggered(QAction *)), mAudioWidget, SLOT(SelectedMenuAudioSettings(QAction*)));
     }
+    mMenuSettingsAVControls = mMenuSettings->addMenu(QPixmap(":/images/46_46/Gears.png"), Homer::Gui::ParticipantWidget::tr("A/V controls"));
+    connect(mMenuSettingsAVControls, SIGNAL(triggered(QAction *)), this, SLOT(SelectedMenuAVControls(QAction*)));
     if (mSessionType != PREVIEW)
     {
         mMenuSettingsMessages = mMenuSettings->addMenu(QPixmap(":/images/22_22/Message.png"), Homer::Gui::ParticipantWidget::tr("Messages"));
@@ -440,6 +445,20 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessa
     toggleViewAction()->setVisible(false);
     show();
 
+    /* A/V controls*/
+    if (pAVControlsMenu != NULL)
+    {
+    	mAssignedActionAVControls = pAVControlsMenu->addAction(mSessionName);
+    	mAssignedActionAVControls->setCheckable(true);
+    	mAssignedActionAVControls->setChecked(true);
+        QIcon tIcon;
+        tIcon.addPixmap(QPixmap(":/images/22_22/Checked.png"), QIcon::Normal, QIcon::On);
+        tIcon.addPixmap(QPixmap(":/images/22_22/Unchecked.png"), QIcon::Normal, QIcon::Off);
+        mAssignedActionAVControls->setIcon(tIcon);
+    }
+    if (mAssignedActionAVControls != NULL)
+        connect(mAssignedActionAVControls, SIGNAL(triggered()), this, SLOT(ToggleAVControlsVisibility()));
+
     if (mSessionType == BROADCAST)
         setVisible(CONF.GetVisibilityBroadcastWidget());
     if (mSessionType == PARTICIPANT)
@@ -458,12 +477,58 @@ void ParticipantWidget::UpdateMenuSettings()
         mVideoWidget->InitializeMenuVideoSettings(mMenuSettingsVideo);
     if (mAudioSource != NULL)
         mAudioWidget->InitializeMenuAudioSettings(mMenuSettingsAudio);
+    InitializeMenuAVControls(mMenuSettingsAVControls);
     if (mSessionType != PREVIEW)
         mMessageWidget->InitializeMenuMessagesSettings(mMenuSettingsMessages);
     if (CONF.DebuggingEnabled())
     {
         if (mSessionType == PARTICIPANT)
             mSessionInfoWidget->InitializeMenuSessionInfoSettings(mMenuSettingsSessionInfo);
+    }
+}
+
+void ParticipantWidget::InitializeMenuAVControls(QMenu *pMenu)
+{
+    QAction *tAction;
+
+    pMenu->clear();
+
+    if (mMovieAudioControlsFrame->isVisible())
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Close.png"), Homer::Gui::ParticipantWidget::tr("Close"));
+    else
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Screencasting.png"), Homer::Gui::ParticipantWidget::tr("Show"));
+}
+
+void ParticipantWidget::SelectedMenuAVControls(QAction *pAction)
+{
+    if (pAction != NULL)
+    {
+        if (pAction->text().compare(Homer::Gui::MessageWidget::tr("Show")) == 0)
+        {
+        	ToggleAVControlsVisibility();
+            return;
+        }
+        if (pAction->text().compare(Homer::Gui::MessageWidget::tr("Close")) == 0)
+        {
+        	ToggleAVControlsVisibility();
+            return;
+        }
+    }
+}
+
+void ParticipantWidget::ToggleAVControlsVisibility()
+{
+    if (!mMovieAudioControlsFrame->isVisible())
+    {
+        mMovieAudioControlsFrame->show();
+        if (mAssignedActionAVControls != NULL)
+        	mAssignedActionAVControls->setChecked(true);
+
+    }else
+    {
+        mMovieAudioControlsFrame->hide();
+        if (mAssignedActionAVControls != NULL)
+        	mAssignedActionAVControls->setChecked(false);
     }
 }
 

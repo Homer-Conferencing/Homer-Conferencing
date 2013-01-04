@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>385</width>
-    <height>127</height>
+    <width>448</width>
+    <height>112</height>
    </rect>
   </property>
   <property name="font">
@@ -43,8 +43,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>385</width>
-     <height>23</height>
+     <width>448</width>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="mMenuSettings">
@@ -107,13 +107,24 @@
        <normaloff>:/images/22_22/Message.png</normaloff>:/images/22_22/Message.png</iconset>
      </property>
     </widget>
+    <widget class="QMenu" name="mMenuParticipantAVControls">
+     <property name="title">
+      <string>A/V controls</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../resources/Icons.qrc">
+       <normaloff>:/images/46_46/Gears.png</normaloff>:/images/46_46/Gears.png</iconset>
+     </property>
+    </widget>
+    <addaction name="mActionMainMenu"/>
+    <addaction name="mMenuToolBars"/>
+    <addaction name="mActionMonitorBroadcastWidget"/>
+    <addaction name="mActionStautsBarWidget"/>
+    <addaction name="separator"/>
     <addaction name="mMenuParticipantVideoWidgets"/>
     <addaction name="mMenuParticipantAudioWidgets"/>
+    <addaction name="mMenuParticipantAVControls"/>
     <addaction name="mMenuParticipantMessageWidgets"/>
-    <addaction name="mMenuToolBars"/>
-    <addaction name="mActionMainMenu"/>
-    <addaction name="separator"/>
-    <addaction name="mActionOpenVideoAudioPreview"/>
     <addaction name="separator"/>
     <addaction name="mActionOverviewPlaylistWidget"/>
     <addaction name="mActionOverviewContactsWidget"/>
@@ -123,7 +134,6 @@
     <addaction name="mActionOverviewNetworkStreamsWidget"/>
     <addaction name="mActionOverviewDataStreamsWidget"/>
     <addaction name="mActionOverviewThreadsWidget"/>
-    <addaction name="mActionMonitorBroadcastWidget"/>
    </widget>
    <widget class="QMenu" name="mMenuFile">
     <property name="title">
@@ -131,8 +141,26 @@
     </property>
     <addaction name="mActionExit"/>
    </widget>
+   <widget class="QMenu" name="mMenuStreaming">
+    <property name="title">
+     <string>Streaming</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="mMenuConferencing">
+    <property name="title">
+     <string>Conferencing</string>
+    </property>
+    <widget class="QMenu" name="mMenuOnlineStatus">
+     <property name="title">
+      <string>Online status</string>
+     </property>
+    </widget>
+    <addaction name="mMenuOnlineStatus"/>
+   </widget>
    <addaction name="mMenuFile"/>
    <addaction name="mMenuSettings"/>
+   <addaction name="mMenuConferencing"/>
+   <addaction name="mMenuStreaming"/>
    <addaction name="mMenuWindows"/>
    <addaction name="mMenuHomer"/>
   </widget>
@@ -673,7 +701,7 @@
      <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
    </property>
    <property name="text">
-    <string>Open video/audio preview</string>
+    <string>Video/audio preview</string>
    </property>
    <property name="toolTip">
     <string>Open a video/audio preview</string>
@@ -736,7 +764,7 @@
      <normalon>:/images/22_22/Checked.png</normalon>:/images/LogoHomer3.png</iconset>
    </property>
    <property name="text">
-    <string>Show/hide main menu</string>
+    <string>Main menu</string>
    </property>
    <property name="toolTip">
     <string>Show/hide main menu</string>
@@ -746,6 +774,48 @@
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
+   </property>
+  </action>
+  <action name="mActionStautsBarWidget">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/22_22/Unchecked.png</normaloff>
+     <normalon>:/images/22_22/Checked.png</normalon>:/images/22_22/Unchecked.png</iconset>
+   </property>
+   <property name="text">
+    <string>Status bar</string>
+   </property>
+   <property name="toolTip">
+    <string>Show/hide status bar</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="mActionPTTMode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/22_22/Microphone.png</normaloff>:/images/22_22/Microphone.png</iconset>
+   </property>
+   <property name="text">
+    <string>PTT mode</string>
+   </property>
+  </action>
+  <action name="actionKk">
+   <property name="text">
+    <string>kk</string>
    </property>
   </action>
  </widget>

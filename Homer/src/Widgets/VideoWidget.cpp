@@ -214,13 +214,13 @@ void VideoWidget::Init(QMainWindow* pMainWindow, ParticipantWidget *pParticipant
         tIcon.addPixmap(QPixmap(":/images/22_22/Unchecked.png"), QIcon::Normal, QIcon::Off);
         mAssignedAction->setIcon(tIcon);
     }
+    if (mAssignedAction != NULL)
+        connect(mAssignedAction, SIGNAL(triggered()), this, SLOT(ToggleVisibility()));
 
     //####################################################################
     //### update GUI
     //####################################################################
     setWindowTitle(pName);
-    if (mAssignedAction != NULL)
-        connect(mAssignedAction, SIGNAL(triggered()), this, SLOT(ToggleVisibility()));
     SetResolutionFormat(CIF);
     if (mVideoSource != NULL)
     {

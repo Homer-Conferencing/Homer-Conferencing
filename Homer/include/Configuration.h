@@ -118,6 +118,7 @@ public:
     bool GetVisibilityToolBarOnlineStatus();
 
     bool GetVisibilityMenuBar();
+    bool GetVisibilityStatusBar();
 
     bool GetVisibilityBroadcastAudio();
     bool GetVisibilityBroadcastVideo();
@@ -276,6 +277,7 @@ public:
     void SetVisibilityToolBarOnlineStatus(bool pActive);
 
     void SetVisibilityMenuBar(bool pActive);
+    void SetVisibilityStatusBar(bool pActive);
 
     void SetVisibilityBroadcastAudio(bool pActive);
     void SetVisibilityBroadcastVideo(bool pActive);

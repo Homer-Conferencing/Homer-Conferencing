@@ -38,6 +38,7 @@
 #include <QFileDialog>
 #include <QDir>
 #include <QMessageBox>
+#include <QKeySequence>
 
 #include <list>
 #include <string>
@@ -49,22 +50,62 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-StreamingControlWidget::StreamingControlWidget(ParticipantWidget* pBroadcastParticipantWidget, MediaSourceDesktop *pMediaSourceDesktop):
+StreamingControlWidget::StreamingControlWidget(MainWindow *pMainWindow, QMenu *pMenu, ParticipantWidget* pBroadcastParticipantWidget, MediaSourceDesktop *pMediaSourceDesktop):
     QWidget()
 {
+	mAssignedActionPTTMode = NULL;
     mVideoWorker = pBroadcastParticipantWidget->GetVideoWorker();
     mAudioWorker = pBroadcastParticipantWidget->GetAudioWorker();
     mBroadcastParticipantWidget = pBroadcastParticipantWidget;
     mMediaSourceDesktop = pMediaSourceDesktop;
 
     initializeGUI();
+
+    if (pMenu != NULL)
+    {
+		QAction *tAction;
+		mMenuSource = pMenu->addMenu(Homer::Gui::StreamingControlWidget::tr("Source"));
+		tAction = mMenuSource->addAction(QPixmap(":/images/22_22/Screencasting.png"), Homer::Gui::StreamingControlWidget::tr("Desktop"));
+		connect(tAction, SIGNAL(triggered()), this, SLOT(StartScreenSegmentStreaming()));
+		tAction = mMenuSource->addAction(QPixmap(":/images/22_22/Camera.png"), Homer::Gui::StreamingControlWidget::tr("Camera"));
+		connect(tAction, SIGNAL(triggered()), this, SLOT(StartCameraStreaming()));
+		tAction = mMenuSource->addAction(QPixmap(":/images/22_22/Microphone.png"), Homer::Gui::StreamingControlWidget::tr("Audio input"));
+		connect(tAction, SIGNAL(triggered()), this, SLOT(StartVoiceStreaming()));
+		tAction = mMenuSource->addAction(QPixmap(":/images/22_22/BoxOpen.png"), Homer::Gui::StreamingControlWidget::tr("File"));
+		connect(tAction, SIGNAL(triggered()), this, SLOT(StartFileStreaming()));
+
+		pMenu->addSeparator();
+    }
+
+    /* PTT mode */
+    if (pMenu != NULL)
+    {
+    	mAssignedActionPTTMode = pMenu->addAction(QPixmap(":/images/22_22/Microphone.png"), Homer::Gui::StreamingControlWidget::tr("PTT mode"));
+    	mAssignedActionPTTMode->setCheckable(true);
+    	mAssignedActionPTTMode->setChecked(CONF.GetAudioActivationPushToTalk());
+    }
+    mTbPtt->setChecked(CONF.GetAudioActivationPushToTalk());
+    if (mAssignedActionPTTMode != NULL)
+        connect(mAssignedActionPTTMode, SIGNAL(toggled(bool)), this, SLOT(SelectPushToTalkMode(bool)));
+    connect(mTbPtt, SIGNAL(clicked(bool)), this, SLOT(SelectPushToTalkMode(bool)));
+
+    /* A/V preview */
+    if (pMenu != NULL)
+    {
+    	mAssignedActionAVPreview = pMenu->addAction(QPixmap(":/images/22_22/Audio_Play.png"), Homer::Gui::StreamingControlWidget::tr("Preview"));
+    	mAssignedActionAVPreview->setShortcut(QKeySequence("Alt+W"));
+    	mAssignedActionAVPreview->setShortcutContext(Qt::ApplicationShortcut);
+        pMainWindow->addAction(mAssignedActionAVPreview); // this action will also be available even if the main menu is hidden
+    }
+    if (mAssignedActionAVPreview != NULL)
+        connect(mAssignedActionAVPreview, SIGNAL(triggered()), pMainWindow, SLOT(actionOpenVideoAudioPreview()));
+    connect(mTbPreview, SIGNAL(clicked()), pMainWindow, SLOT(actionOpenVideoAudioPreview()));
+
     connect(mPbBroadcastScreenSegment, SIGNAL(clicked()), this, SLOT(StartScreenSegmentStreaming()));
     connect(mPbBroadcastCamera, SIGNAL(clicked()), this, SLOT(StartCameraStreaming()));
     connect(mPbBroadcastVoice, SIGNAL(clicked()), this, SLOT(StartVoiceStreaming()));
     connect(mPbBroadcastFile, SIGNAL(clicked()), this, SLOT(StartFileStreaming()));
     connect(mCbVideoInput, SIGNAL(currentIndexChanged(int)), this, SLOT(SelectedNewVideoInputStream(int)));
-    connect(mCbVideoInput, SIGNAL(currentIndexChanged(int)), this, SLOT(SelectedNewVideoInputStream(int)));
-    connect(mTbPtt, SIGNAL(clicked(bool)), this, SLOT(SelectPushToTalkMode(bool)));
 
     mTimerId = startTimer(1000);
 }
@@ -96,7 +137,6 @@ void StreamingControlWidget::initializeGUI()
     {
         mCbVideoInput->setVisible(false);
     }
-    mTbPtt->setChecked(CONF.GetAudioActivationPushToTalk());
 }
 
 void StreamingControlWidget::StartScreenSegmentStreaming()
@@ -215,9 +255,16 @@ void StreamingControlWidget::SelectPushToTalkMode(bool pActive)
 {
     CONF.SetAudioActivationPushToTalk(pActive);
     if (pActive)
+    {
         mAudioWorker->SetRelayActivation(false);
-    else
-        mAudioWorker->SetRelayActivation(CONF.GetAudioActivation());
+    }else
+    {
+    	mAudioWorker->SetRelayActivation(CONF.GetAudioActivation());
+    }
+    if (mAssignedActionPTTMode->isChecked() != CONF.GetAudioActivationPushToTalk())
+    	mAssignedActionPTTMode->setChecked(CONF.GetAudioActivationPushToTalk());
+    if (mTbPtt->isChecked() != CONF.GetAudioActivationPushToTalk())
+    	mTbPtt->setChecked(CONF.GetAudioActivationPushToTalk());
 }
 
 void StreamingControlWidget::timerEvent(QTimerEvent *pEvent)

@@ -82,6 +82,8 @@ void MessageWidget::Init(QMenu *pMenu, QString pParticipant, enum TransportType 
         tIcon.addPixmap(QPixmap(":/images/22_22/Unchecked.png"), QIcon::Normal, QIcon::Off);
         mAssignedAction->setIcon(tIcon);
     }
+    if (mAssignedAction != NULL)
+        connect(mAssignedAction, SIGNAL(triggered()), this, SLOT(ToggleVisibility()));
 
     //####################################################################
     //### update GUI
@@ -93,8 +95,6 @@ void MessageWidget::Init(QMenu *pMenu, QString pParticipant, enum TransportType 
     #endif
 
     setWindowTitle(mParticipant);
-    if (mAssignedAction != NULL)
-        connect(mAssignedAction, SIGNAL(triggered()), this, SLOT(ToggleVisibility()));
     connect(mTeMessage, SIGNAL(SendTrigger()), this, SLOT(SendMessage()));
     connect(mPbFile, SIGNAL(released()), this, SLOT(SendFile()));
     connect(mPbAdd, SIGNAL(released()), this, SLOT(AddPArticipantToContacts()));
@@ -156,7 +156,7 @@ void MessageWidget::InitializeMenuMessagesSettings(QMenu *pMenu)
     if (isVisible())
         tAction = pMenu->addAction(QPixmap(":/images/22_22/Close.png"), Homer::Gui::MessageWidget::tr("Close"));
     else
-        tAction = pMenu->addAction(QPixmap(":/images/22_22/Message.png"), Homer::Gui::MessageWidget::tr("Show"));
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Screencasting.png"), Homer::Gui::MessageWidget::tr("Show"));
     pMenu->addSeparator();
 
     if ((!IsKnownContact()) && (mParticipant != BROACAST_IDENTIFIER))
