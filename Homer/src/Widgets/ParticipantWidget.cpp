@@ -94,6 +94,9 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
     LOG(LOG_VERBOSE, "Creating new participant widget for %s..", pParticipant.toStdString().c_str());
 
     hide();
+    mMosaicMode = false;
+    mMosaicModeAVControlsWereVisible = true;
+    mMosaicModeGenericTitleWidget = NULL;
     mLastAudioSynchronizationTimestamp = 0;
     mLastVideoSynchronizationTimestamp = 0;
     mAVSynchActive = false;
@@ -173,6 +176,8 @@ ParticipantWidget::~ParticipantWidget()
     delete mSessionInfoWidget;
     if (mAssignedActionAVControls != NULL)
         delete mAssignedActionAVControls;
+	if (mMosaicModeGenericTitleWidget != NULL)
+		delete mMosaicModeGenericTitleWidget;
 
     ResetMediaSinks();
 
@@ -523,12 +528,13 @@ void ParticipantWidget::ToggleAVControlsVisibility()
         mMovieAudioControlsFrame->show();
         if (mAssignedActionAVControls != NULL)
         	mAssignedActionAVControls->setChecked(true);
-
+        mMosaicModeAVControlsWereVisible = true;
     }else
     {
         mMovieAudioControlsFrame->hide();
         if (mAssignedActionAVControls != NULL)
         	mAssignedActionAVControls->setChecked(false);
+        mMosaicModeAVControlsWereVisible = false;
     }
 }
 
@@ -1786,6 +1792,31 @@ void ParticipantWidget::SeekMovieFileRelative(float pSeconds)
     #else
         mAudioWidget->GetWorker()->Seek(tTargetPos);
     #endif
+}
+
+void ParticipantWidget::ToggleMosaicMode(bool pActive)
+{
+	if (pActive)
+	{
+		if (!mMosaicMode)
+		{
+			mMosaicMode = true;
+			if (mMosaicModeGenericTitleWidget == NULL)
+				mMosaicModeGenericTitleWidget = new QWidget(mMainWindow);
+			setTitleBarWidget(mMosaicModeGenericTitleWidget);
+			mMosaicModeAVControlsWereVisible = mMovieAudioControlsFrame->isVisible();
+			mMovieAudioControlsFrame->hide();
+		}
+	}else
+	{
+		if (mMosaicMode)
+		{
+			mMosaicMode = false;
+			mMovieAudioControlsFrame->setVisible(mMosaicModeAVControlsWereVisible);
+			setTitleBarWidget(NULL);
+		}
+	}
+	mVideoWidget->ToggleMosaicMode(pActive);
 }
 
 void ParticipantWidget::ActionSeekMovieFile(int pPos)

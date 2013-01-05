@@ -302,14 +302,15 @@ void MainWindow::connectSignalsSlots()
     connect(mShortcutActivateNetworkSimulationWidgets, SIGNAL(activated()), this, SLOT(actionActivateNetworkSimulationWidgets()));
     connect(mShortcutActivateDebuggingGlobally, SIGNAL(activated()), this, SLOT(actionActivateDebuggingGlobally()));
 
-    connect(mActionToolBarMediaSources, SIGNAL(toggled(bool)), mToolBarMediaSources, SLOT(setVisible(bool)));
+    connect(mActionToolBarMediaSources, SIGNAL(toggled(bool)), this, SLOT(actionActivateToolBarMediaSources(bool)));
     connect(mToolBarMediaSources->toggleViewAction(), SIGNAL(toggled(bool)), mActionToolBarMediaSources, SLOT(setChecked(bool)));
 
-    connect(mActionStautsBarWidget, SIGNAL(toggled(bool)), mStatusBar, SLOT(setVisible(bool)));
+    connect(mActionStautsBarWidget, SIGNAL(toggled(bool)), this, SLOT(actionActivateStatusBar(bool)));
     addAction(mActionMainMenu); // so, this actio will also be available even if the main menu is hidden
-    connect(mActionMainMenu, SIGNAL(toggled(bool)), mMenuBar, SLOT(setVisible(bool)));
+    connect(mActionMainMenu, SIGNAL(toggled(bool)), this, SLOT(actionActivateMenuBar(bool)));
     addAction(mActionMonitorBroadcastWidget); // so, this actio will also be available even if the main menu is hidden
     connect(mActionMonitorBroadcastWidget, SIGNAL(toggled(bool)), mLocalUserParticipantWidget, SLOT(setVisible(bool)));
+    connect(mActionMosaicMode, SIGNAL(toggled(bool)), this, SLOT(actionActivateMosaicMode(bool)));
 
     mActionMonitorBroadcastWidget->setChecked(CONF.GetVisibilityBroadcastWidget());
 
@@ -319,7 +320,7 @@ void MainWindow::connectSignalsSlots()
 
     if ((CONF.ConferencingEnabled()) && (mToolBarOnlineStatus != NULL))
     {
-        connect(mActionToolBarOnlineStatus, SIGNAL(toggled(bool)), mToolBarOnlineStatus, SLOT(setVisible(bool)));
+        connect(mActionToolBarOnlineStatus, SIGNAL(toggled(bool)), this, SLOT(actionActivateToolBarOnlineStatus(bool)));
         connect(mToolBarOnlineStatus->toggleViewAction(), SIGNAL(toggled(bool)), mActionToolBarOnlineStatus, SLOT(setChecked(bool)));
         mToolBarOnlineStatus->setVisible(CONF.GetVisibilityToolBarOnlineStatus());
         mToolBarOnlineStatus->toggleViewAction()->setChecked(CONF.GetVisibilityToolBarOnlineStatus());
@@ -1971,6 +1972,97 @@ void MainWindow::actionActivateNetworkSimulationWidgets()
 {
     QStringList tArguments;
     initializeNetworkSimulator(tArguments, true);
+}
+
+void MainWindow::actionActivateMosaicMode(bool pActive)
+{
+    ParticipantWidgetList::iterator tIt;
+    LOG(LOG_VERBOSE, "Setting mosaic mode to: %d", pActive);
+
+    if (pActive)
+	{
+    	mMosaicModeFormerWindowFlags = windowFlags();
+		QWidget* tTitleWidget = new QWidget(this);
+	    if (mParticipantWidgets.size())
+	    {
+	        for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
+	        {
+	    		(*tIt)->ToggleMosaicMode(pActive);
+	        }
+	    }
+		mLocalUserParticipantWidget->ToggleMosaicMode(pActive);
+		mStatusBar->hide();
+		mMenuBar->hide();
+		mMosaicModeToolBarOnlineStatusWasVisible = mToolBarOnlineStatus->isVisible();
+		mMosaicModeToolBarMediaSourcesWasVisible = mToolBarMediaSources->isVisible();
+		mToolBarMediaSources->hide();
+		mToolBarOnlineStatus->hide();
+		mOverviewContactsWidget->hide();
+		mOverviewDataStreamsWidget->hide();
+		mOverviewErrorsWidget->hide();
+		mOverviewFileTransfersWidget->hide();
+		mOverviewNetworkStreamsWidget->hide();
+		mOverviewPlaylistWidget->hide();
+		mOverviewThreadsWidget->hide();
+		showFullScreen();
+
+		mMosaicOriginalPalette = palette();
+		QPalette tPalette = palette();
+		tPalette.setColor(QPalette::Window, QColor(0, 0, 0));
+		setPalette(tPalette);
+	}else
+	{
+		setPalette(mMosaicOriginalPalette);
+		showNormal();
+		setWindowFlags(mMosaicModeFormerWindowFlags);
+	    if (mParticipantWidgets.size())
+	    {
+	        for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
+	        {
+	    		(*tIt)->ToggleMosaicMode(pActive);
+	        }
+	    }
+		mLocalUserParticipantWidget->ToggleMosaicMode(pActive);
+	    mStatusBar->setVisible(CONF.GetVisibilityStatusBar());
+	    mMenuBar->setVisible(CONF.GetVisibilityMenuBar());
+	    mToolBarMediaSources->setVisible(mMosaicModeToolBarMediaSourcesWasVisible);
+	    mToolBarOnlineStatus->setVisible(mMosaicModeToolBarOnlineStatusWasVisible);
+	    mOverviewContactsWidget->setVisible(CONF.GetVisibilityContactsWidget());
+	    mOverviewDataStreamsWidget->setVisible(CONF.GetVisibilityDataStreamsWidget());
+	    mOverviewErrorsWidget->setVisible(CONF.GetVisibilityErrorsWidget());
+	    mOverviewFileTransfersWidget->setVisible(CONF.GetVisibilityFileTransfersWidget());
+	    mOverviewNetworkStreamsWidget->setVisible(CONF.GetVisibilityNetworkStreamsWidget());
+	    mOverviewPlaylistWidget->setVisible(CONF.GetVisibilityPlaylistWidgetMovie());
+	    mOverviewThreadsWidget->setVisible(CONF.GetVisibilityThreadsWidget());
+	}
+}
+
+void MainWindow::actionActivateToolBarOnlineStatus(bool pActive)
+{
+	LOG(LOG_VERBOSE, "Setting online status tool bar visibility to: %d", pActive);
+	CONF.SetVisibilityToolBarOnlineStatus(pActive);
+	mToolBarOnlineStatus->setVisible(pActive);
+}
+
+void MainWindow::actionActivateToolBarMediaSources(bool pActive)
+{
+	LOG(LOG_VERBOSE, "Setting media sources tool bar visibility to: %d", pActive);
+	CONF.SetVisibilityToolBarMediaSources(pActive);
+	mToolBarMediaSources->setVisible(pActive);
+}
+
+void MainWindow::actionActivateStatusBar(bool pActive)
+{
+	LOG(LOG_VERBOSE, "Setting status bar visibility to: %d", pActive);
+	CONF.SetVisibilityStatusBar(pActive);
+	mStatusBar->setVisible(pActive);
+}
+
+void MainWindow::actionActivateMenuBar(bool pActive)
+{
+	LOG(LOG_VERBOSE, "Setting menu bar visibility to: %d", pActive);
+	CONF.SetVisibilityMenuBar(pActive);
+	mMenuBar->setVisible(pActive);
 }
 
 void MainWindow::actionActivateDebuggingWidgets()

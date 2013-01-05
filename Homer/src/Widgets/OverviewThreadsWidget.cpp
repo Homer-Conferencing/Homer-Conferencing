@@ -133,6 +133,7 @@ void OverviewThreadsWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEven
 
 void OverviewThreadsWidget::SetVisible(bool pVisible)
 {
+	CONF.SetVisibilityThreadsWidget(pVisible);
     if (pVisible)
     {
         move(mWinPos);

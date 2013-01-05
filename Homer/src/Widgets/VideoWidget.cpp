@@ -167,6 +167,7 @@ VideoWidget::VideoWidget(QWidget* pParent):
 	mTimeLastWidgetUpdate = QTime::currentTime();
     mCurrentFrameRate = 0;
     mLiveMarkerActive = false;
+    mMosaicMode = false;
 	mPaintEventCounter = 0;
     mResX = 640;
     mResY = 480;
@@ -1304,6 +1305,11 @@ void VideoWidget::ToggleSmoothPresentationMode()
     	ShowOsdMessage(Homer::Gui::VideoWidget::tr("Bilinear filtering deactivated"));
 }
 
+void VideoWidget::ToggleMosaicMode(bool pActive)
+{
+	mMosaicMode = pActive;
+}
+
 void VideoWidget::ToggleVisibility()
 {
     if (isVisible())
@@ -1435,7 +1441,7 @@ void VideoWidget::paintEvent(QPaintEvent *pEvent)
     QColor tBackgroundColor;
 
     // selected background color depends on the window state
-    if (IsFullScreen())
+    if ((IsFullScreen()) || (mMosaicMode))
         tBackgroundColor = QColor(Qt::black);
     else
         tBackgroundColor = QApplication::palette().brush(backgroundRole()).color();

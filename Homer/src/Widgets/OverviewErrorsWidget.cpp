@@ -94,6 +94,7 @@ void OverviewErrorsWidget::closeEvent(QCloseEvent* pEvent)
 
 void OverviewErrorsWidget::SetVisible(bool pVisible)
 {
+	CONF.SetVisibilityErrorsWidget(pVisible);
     if (pVisible)
     {
         move(mWinPos);

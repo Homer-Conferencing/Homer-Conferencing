@@ -326,6 +326,7 @@ void OverviewNetworkStreamsWidget::closeEvent(QCloseEvent* pEvent)
 
 void OverviewNetworkStreamsWidget::SetVisible(bool pVisible)
 {
+	CONF.SetVisibilityNetworkStreamsWidget(pVisible);
     if (pVisible)
     {
         move(mWinPos);

@@ -121,6 +121,7 @@ void OverviewDataStreamsWidget::closeEvent(QCloseEvent* pEvent)
 
 void OverviewDataStreamsWidget::SetVisible(bool pVisible)
 {
+	CONF.SetVisibilityDataStreamsWidget(pVisible);
     if (pVisible)
     {
         move(mWinPos);

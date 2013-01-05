@@ -145,6 +145,9 @@ public:
 
     void SeekMovieFileRelative(float pSeconds);
 
+    /* Mosaic mode */
+    void ToggleMosaicMode(bool pActive);
+
 private slots:
     void ActionPlayPauseMovieFile(QString pFileName = "");
     void ActionRecordMovieFile();
@@ -261,6 +264,10 @@ private:
     bool                    mAVSynchActive;
     bool                    mAVPreBuffering;
     bool                    mAvPreBufferingAutoRestart;
+    /* Mosaic mode */
+    bool					mMosaicMode;
+    bool					mMosaicModeAVControlsWereVisible;
+    QWidget					*mMosaicModeGenericTitleWidget;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

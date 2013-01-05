@@ -106,6 +106,7 @@ void OverviewContactsWidget::closeEvent(QCloseEvent* pEvent)
 
 void OverviewContactsWidget::SetVisible(bool pVisible)
 {
+	CONF.SetVisibilityContactsWidget(pVisible);
     if (pVisible)
     {
         move(mWinPos);

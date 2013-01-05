@@ -107,6 +107,9 @@ public:
 
     void InitializeMenuVideoSettings(QMenu *pMenu);
 
+    /* Mosaic mode */
+    void ToggleMosaicMode(bool pActive);
+
 public slots:
     void ToggleVisibility();
     void SelectedMenuVideoSettings(QAction *pAction);
@@ -201,6 +204,8 @@ private:
     bool				mIsMovingMainWindow;
     /* periodic widget updates */
     QTime				mTimeLastWidgetUpdate;
+    /* Mosaic mode */
+    bool				mMosaicMode;
 };
 
 

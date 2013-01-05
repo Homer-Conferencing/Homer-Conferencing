@@ -121,6 +121,8 @@
     <addaction name="mActionMonitorBroadcastWidget"/>
     <addaction name="mActionStautsBarWidget"/>
     <addaction name="separator"/>
+    <addaction name="mActionMosaicMode"/>
+    <addaction name="separator"/>
     <addaction name="mMenuParticipantVideoWidgets"/>
     <addaction name="mMenuParticipantAudioWidgets"/>
     <addaction name="mMenuParticipantAVControls"/>
@@ -416,7 +418,7 @@
     <string>Show/hide data streams overview</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+D</string>
+    <string>Ctrl+S</string>
    </property>
    <property name="iconVisibleInMenu">
     <bool>true</bool>
@@ -564,7 +566,7 @@
     <string>Show/hide contacts</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+L</string>
+    <string>Ctrl+A</string>
    </property>
    <property name="iconVisibleInMenu">
     <bool>true</bool>
@@ -588,9 +590,6 @@
    <property name="toolTip">
     <string>Show/hide file transfers</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+F</string>
-   </property>
   </action>
   <action name="mActionMonitorBroadcastWidget">
    <property name="checkable">
@@ -611,7 +610,7 @@
     <string>Show/hide broadcast data</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+B</string>
+    <string>Alt+B</string>
    </property>
   </action>
   <action name="mActionOpenVideoPreview">
@@ -748,7 +747,7 @@
     <string>Show/hide playlist</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+P</string>
+    <string>Ctrl+W</string>
    </property>
   </action>
   <action name="mActionMainMenu">
@@ -816,6 +815,17 @@
   <action name="actionKk">
    <property name="text">
     <string>kk</string>
+   </property>
+  </action>
+  <action name="mActionMosaicMode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Mosaik mode</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
    </property>
   </action>
  </widget>

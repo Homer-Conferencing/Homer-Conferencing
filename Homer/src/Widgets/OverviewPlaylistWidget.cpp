@@ -365,6 +365,7 @@ void OverviewPlaylistWidget::SetVisible(bool pVisible)
 {
 	LOG(LOG_VERBOSE, "Setting playlist widget visibility to %d", pVisible);
 
+	CONF.SetVisibilityPlaylistWidgetMovie(pVisible);
     if (pVisible)
     {
 		move(mWinPos);
