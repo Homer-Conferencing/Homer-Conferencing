@@ -135,7 +135,7 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceVideo()
                 return new MediaSourceVFW(mCbDeviceVideo->currentText().toStdString());
             #endif
             #ifdef APPLE
-                return new MediaSourceCoreVideo(mCbDeviceVideo->currentText().toStdString());
+//                return new MediaSourceCoreVideo(mCbDeviceVideo->currentText().toStdString());
             #endif
             #ifdef BSD
                 //TODO

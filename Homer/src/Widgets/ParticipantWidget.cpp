@@ -2046,43 +2046,49 @@ void ParticipantWidget::UpdateAVStatistics()
         QStringList tStats;
         int tStatLines;
 
-        // VIDEO
-        tAVStats += Homer::Gui::ParticipantWidget::tr("Video statistics:");
-        tStats = mVideoWidget->GetVideoStatistic();
-        tStatLines = tStats.size();
-        for (int i = 0; i < tStatLines; i++)
-            tAVStats += "\n     " + tStats[i];
+        if (mVideoWidget != NULL)
+        {
+			// VIDEO
+			tAVStats += Homer::Gui::ParticipantWidget::tr("Video statistics:");
+			tStats = mVideoWidget->GetVideoStatistic();
+			tStatLines = tStats.size();
+			for (int i = 0; i < tStatLines; i++)
+				tAVStats += "\n     " + tStats[i];
 
-        tAVStats += "\n\n";
+			tAVStats += "\n\n";
+        }
 
-        tAVStats += Homer::Gui::ParticipantWidget::tr("Video/audio:");
+		tAVStats += Homer::Gui::ParticipantWidget::tr("Video/audio:");
 
-        tAVStats += "\n     " + Homer::Gui::ParticipantWidget::tr("A/V pre-buffering:") + " ";
-        if (mAVPreBuffering)
-            tAVStats += Homer::Gui::ParticipantWidget::tr("active");
-        else
-            tAVStats += Homer::Gui::ParticipantWidget::tr("inactive");
-        tAVStats += " ";
-        if (mAvPreBufferingAutoRestart)
-            tAVStats += Homer::Gui::ParticipantWidget::tr("(auto restart)");
+		tAVStats += "\n     " + Homer::Gui::ParticipantWidget::tr("A/V pre-buffering:") + " ";
+		if (mAVPreBuffering)
+			tAVStats += Homer::Gui::ParticipantWidget::tr("active");
+		else
+			tAVStats += Homer::Gui::ParticipantWidget::tr("inactive");
+		tAVStats += " ";
+		if (mAvPreBufferingAutoRestart)
+			tAVStats += Homer::Gui::ParticipantWidget::tr("(auto restart)");
 
-        tAVStats += "\n     " + Homer::Gui::ParticipantWidget::tr("A/V synchronization:") + " ";
-        if (mAVSynchActive)
-            tAVStats += Homer::Gui::ParticipantWidget::tr("active");
-        else
-            tAVStats += Homer::Gui::ParticipantWidget::tr("inactive");
+		tAVStats += "\n     " + Homer::Gui::ParticipantWidget::tr("A/V synchronization:") + " ";
+		if (mAVSynchActive)
+			tAVStats += Homer::Gui::ParticipantWidget::tr("active");
+		else
+			tAVStats += Homer::Gui::ParticipantWidget::tr("inactive");
 
-        tAVStats += "\n\n";
+		tAVStats += "\n\n";
 
-        // AUDIO
-        tAVStats += Homer::Gui::ParticipantWidget::tr("Audio statistics:");
-        tStats = mAudioWidget->GetAudioStatistic();
-        tStatLines = tStats.size();
-        for (int i = 0; i < tStatLines; i++)
-            tAVStats += "\n     " + tStats[i];
+        if (mAudioWidget)
+        {
+			// AUDIO
+			tAVStats += Homer::Gui::ParticipantWidget::tr("Audio statistics:");
+			tStats = mAudioWidget->GetAudioStatistic();
+			tStatLines = tStats.size();
+			for (int i = 0; i < tStatLines; i++)
+				tAVStats += "\n     " + tStats[i];
 
-        mLbAVStatistics->setText(tAVStats);
-    }
+			mLbAVStatistics->setText(tAVStats);
+        }
+	}
 }
 
 void ParticipantWidget::timerEvent(QTimerEvent *pEvent)

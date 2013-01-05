@@ -505,7 +505,7 @@ void MainWindow::initializeVideoAudioIO()
         mOwnVideoMuxer->RegisterMediaSource(new MediaSourceDShow());
     #endif
     #ifdef APPLE
-        mOwnVideoMuxer->RegisterMediaSource(new MediaSourceCoreVideo());
+//        mOwnVideoMuxer->RegisterMediaSource(new MediaSourceCoreVideo());
     #endif
 	mOwnVideoMuxer->RegisterMediaSource(mMediaSourceDesktop = new MediaSourceDesktop());
     mOwnVideoMuxer->RegisterMediaSource(mMediaSourceLogo = new MediaSourceLogo());

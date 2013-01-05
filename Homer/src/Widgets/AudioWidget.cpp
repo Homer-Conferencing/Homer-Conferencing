@@ -499,6 +499,8 @@ void AudioWidget::DialogAddNetworkSink()
 QStringList AudioWidget::GetAudioStatistic()
 {
 	QStringList tAudioStatistic;
+	if (mAudioSource == NULL)
+		return tAudioStatistic;
 
 	int tHour = 0, tMin = 0, tSec = 0, tTime = mAudioSource->GetSeekPos();
     tSec = tTime % 60;

@@ -697,6 +697,8 @@ void VideoWidget::DialogAddNetworkSink()
 QStringList VideoWidget::GetVideoStatistic()
 {
 	QStringList tVideoStatistic;
+	if (mVideoSource == NULL)
+		return tVideoStatistic;
 
 	QString tAspectRatio = Homer::Gui::VideoWidget::tr(SupportedAspectRatios[mAspectRatio].name.c_str());
 
