@@ -27,5 +27,5 @@ IF (${BUILD} MATCHES "Release")
 ENDIF()
 
 ##############################################################################
-# include CPack configuration to generate installers for Win/OSX
+# include CPack configuration to generate installers for Win/OS X
 INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/CMakeCPack.txt)

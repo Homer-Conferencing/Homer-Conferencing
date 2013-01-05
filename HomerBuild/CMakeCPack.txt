@@ -90,7 +90,7 @@ IF (LINUX)
         INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../${RELOCATION_INCLUDES}HomerBuild/CMakeCPackLinux.txt)
 ENDIF(LINUX)
 
-# Bundle specific configuration for OSX
+# Bundle specific configuration for OS X
 IF (APPLE)
         INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../${RELOCATION_INCLUDES}HomerBuild/CMakeCPackOSX.txt)
 ENDIF(APPLE)

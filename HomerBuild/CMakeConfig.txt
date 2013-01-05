@@ -42,18 +42,18 @@ IF (UNIX AND NOT WIN32 AND NOT APPLE AND NOT BSD)
 ENDIF()
 
 ##############################################################
-# detect OSX
+# detect OS X
 if (APPLE)
 	exec_program(uname ARGS -v OUTPUT_VARIABLE DARWIN_VERSION)
 	string(REGEX MATCH "[0-9]+" DARWIN_VERSION ${DARWIN_VERSION})
 	if (DARWIN_VERSION LESS 10)
 		# 10.6 of Snow Leopard is minimum
-		MESSAGE(FATAL_ERROR "You need at least OSX Snow Leopard")
+		MESSAGE(FATAL_ERROR "You need at least OS X Snow Leopard")
 	endif()
 	if (DARWIN_VERSION EQUAL 10)
-		MESSAGE("Detected DARWIN version 10 from OSX Snow Leopard")
+		MESSAGE("Detected DARWIN version 10 from OS X Snow Leopard")
 	elseif (DARWIN_VERSION EQUAL 11)
-		MESSAGE("Detected DARWIN version 11 from OSX Lion")
+		MESSAGE("Detected DARWIN version 11 from OS X Lion")
 	else()
 		message("Detected DARWIN version ${DARWIN_VERSION}")
 	endif()
