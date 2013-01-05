@@ -123,8 +123,11 @@ public:
     bool GetVisibilityBroadcastAudio();
     bool GetVisibilityBroadcastVideo();
 
+    /* A/V preview */
+    int GetPreviewSelection();
     bool GetPreviewSelectionVideo();
     bool GetPreviewSelectionAudio();
+    bool GetPreviewPreBufferingActivation();
 
     bool GetParticipantWidgetsSeparation();
     bool GetParticipantWidgetsCloseImmediately();
@@ -138,9 +141,6 @@ public:
     /* user settings */
     QString GetUserName();
     QString GetUserMail();
-
-    /* pre-buffering */
-    bool GetAVPreviewPreBufferingActivation();
 
     /* video settings */
     bool GetVideoActivation();
@@ -282,8 +282,11 @@ public:
     void SetVisibilityBroadcastAudio(bool pActive);
     void SetVisibilityBroadcastVideo(bool pActive);
 
+    /* A/V preview */
+    void SetPreviewSelection(int pSelection);
     void SetPreviewSelectionVideo(bool pActive);
     void SetPreviewSelectionAudio(bool pActive);
+    void SetPreviewPreBufferingActivation(bool pActivation);
 
     void SetSmoothVideoPresentation(bool pActive);
     void SetAutoUpdateCheck(bool pActive);
@@ -293,9 +296,6 @@ public:
     /* user settings */
     void SetUserName(QString pUserName);
     void SetUserMail(QString pUserMail);
-
-    /* pre-buffering */
-    void SetAVPreviewPreBufferingActivation(bool pActivation);
 
     /* video settings */
     void SetVideoActivation(bool pActivation);

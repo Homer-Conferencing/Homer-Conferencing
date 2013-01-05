@@ -339,6 +339,13 @@ void Configuration::SetVisibilityBroadcastVideo(bool pActive)
     mQSettings->endGroup();
 }
 
+void Configuration::SetPreviewSelection(int pSelection)
+{
+    mQSettings->beginGroup("Playback");
+    mQSettings->setValue("PreviewSelection", pSelection);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetPreviewSelectionVideo(bool pActive)
 {
     mQSettings->beginGroup("Playback");
@@ -350,6 +357,13 @@ void Configuration::SetPreviewSelectionAudio(bool pActive)
 {
     mQSettings->beginGroup("Playback");
     mQSettings->setValue("PreviewSelectionAudio", pActive);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetPreviewPreBufferingActivation(bool pActivation)
+{
+    mQSettings->beginGroup("Playback");
+    mQSettings->setValue("PreviewPreBufferingActivation", pActivation);
     mQSettings->endGroup();
 }
 
@@ -392,13 +406,6 @@ void Configuration::SetUserMail(QString pUserMail)
 {
     mQSettings->beginGroup("User");
     mQSettings->setValue("UserMail", pUserMail);
-    mQSettings->endGroup();
-}
-
-void Configuration::SetAVPreviewPreBufferingActivation(bool pActivation)
-{
-    mQSettings->beginGroup("Streaming");
-    mQSettings->setValue("AVPreviewPreBufferingActivation", pActivation);
     mQSettings->endGroup();
 }
 
@@ -1025,6 +1032,11 @@ bool Configuration::GetVisibilityStatusBar()
     return mQSettings->value("Global/VisibilityStatusBar", false).toBool();
 }
 
+int Configuration::GetPreviewSelection()
+{
+    return mQSettings->value("Playback/PreviewSelection", 2).toInt();
+}
+
 bool Configuration::GetPreviewSelectionVideo()
 {
     return mQSettings->value("Playback/PreviewSelectionVideo", true).toBool();
@@ -1033,6 +1045,11 @@ bool Configuration::GetPreviewSelectionVideo()
 bool Configuration::GetPreviewSelectionAudio()
 {
     return mQSettings->value("Playback/PreviewSelectionAudio", true).toBool();
+}
+
+bool Configuration::GetPreviewPreBufferingActivation()
+{
+    return mQSettings->value("Playback/PreviewPreBufferingActivation", true).toBool();
 }
 
 bool Configuration::GetSmoothVideoPresentation()
@@ -1082,11 +1099,6 @@ QString Configuration::GetUserName()
 QString Configuration::GetUserMail()
 {
     return mQSettings->value("User/UserMail", QString(MEETING.SipCreateId(MEETING.GetUserName(), QHostInfo::localHostName().toStdString()).c_str())).toString();
-}
-
-bool Configuration::GetAVPreviewPreBufferingActivation()
-{
-    return mQSettings->value("Streaming/AVPreviewPreBufferingActivation", true).toBool();
 }
 
 bool Configuration::GetVideoActivation()
