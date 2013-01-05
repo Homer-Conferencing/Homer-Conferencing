@@ -31,6 +31,9 @@ endif
 # Option for cmake: define an explicit data (Homer.png a.s.o.) directory if the command line provides a INSTALL_DATADIR variable
 ifneq ($(INSTALL_DATADIR),)
 	OPTION_INSTALL_DATADIR = -DINSTALL_DATADIR=$(INSTALL_DATADIR)
+else
+	# Set the default data directory path
+	OPTION_INSTALL_DATADIR = -DINSTALL_DATADIR=/usr/share/Homer
 endif
 # Option for cmake: activate verbose makefiles if the command line provides a VERBOSE=1 parameter
 ifeq ($(VERBOSE),2)
