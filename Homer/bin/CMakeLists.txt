@@ -267,7 +267,7 @@ IF (NOT APPLE) #TODO: fix the lupdate problems for APPLE
 	
 	# mark translator binaries for installation process
 	FOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
-		INSTALL(FILES ${QT_LANG_BINS_ENTRY} DESTINATION lang COMPONENT lang)
+		INSTALL(FILES ${QT_LANG_BINS_ENTRY} DESTINATION ${INSTALL_DATADIR}/lang COMPONENT lang)
 	ENDFOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
 	
 	# add translator binaries to the linked sources

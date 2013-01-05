@@ -247,7 +247,7 @@ void MainWindow::SetLanguage(QString pLanguage)
 		if (pLanguage != "en")
 		{// we need translation file
 			// create new translator
-			QString tNewLangFile = mAbsBinPath + "lang/Homer_" + pLanguage + ".qm";
+			QString tNewLangFile = DATADIR "/lang/Homer_" + pLanguage + ".qm";
 			LOG(LOG_VERBOSE, "Loading new translation from file: %s", tNewLangFile.toStdString().c_str());
 			if(mTranslator->load(tNewLangFile))
 			{
