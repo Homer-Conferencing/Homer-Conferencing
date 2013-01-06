@@ -135,6 +135,7 @@ SET (SOURCES
 	../src/main
 	../src/Dialogs/AddNetworkSinkDialog
 	../src/Dialogs/ConfigurationDialog
+	../src/Dialogs/ConfigurationAudioSilenceDialog
 	../src/Dialogs/ContactEditDialog
 	../src/Dialogs/FileTransferAckDialog
 	../src/Dialogs/HelpDialog
@@ -169,6 +170,7 @@ SET (QT_MOC_SOURCES
 	../include/MediaSourceGrabberThread.h
 	../include/Dialogs/AddNetworkSinkDialog.h
 	../include/Dialogs/ConfigurationDialog.h
+	../include/Dialogs/ConfigurationAudioSilenceDialog.h
 	../include/Dialogs/ContactEditDialog.h
 	../include/Dialogs/FileTransferAckDialog.h
 	../include/Dialogs/HelpDialog.h
@@ -202,6 +204,7 @@ SET (QT_UI_SOURCES
 	../forms/MainWindow.ui
 	../forms/Dialogs/AddNetworkSinkDialog.ui
 	../forms/Dialogs/ConfigurationDialog.ui
+	../forms/Dialogs/ConfigurationAudioSilenceDialog.ui
 	../forms/Dialogs/ContactEditDialog.ui
 	../forms/Dialogs/FileTransferAckDialog.ui
 	../forms/Dialogs/HelpDialog.ui

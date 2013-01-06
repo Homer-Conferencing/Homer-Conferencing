@@ -26,6 +26,7 @@
  */
 
 #include <MediaSourceFile.h>
+#include <MediaSourceMuxer.h>
 #include <WaveOutPortAudio.h>
 #include <WaveOutSdl.h>
 #include <ProcessStatisticService.h>
@@ -630,54 +631,11 @@ QStringList AudioWidget::GetAudioStatistic()
 void AudioWidget::ShowSample(void* pBuffer, int pSampleSize)
 {
     int tMSecs = QTime::currentTime().msec();
-    short int tData = 0;
-    int tSum = 0, tMax = 1, tMin = -1;
-    int tLevel = 0;
-
-    // sample size is given in bytes but we use 16 bit values, furthermore we are using stereo -> division by 4
-    int tSampleAmount = pSampleSize / 4;
-    //if (pSampleSize != 4096)
-        //printf("AudioWidget-SampleSize: %d Sps: %d SampleNumber: %d\n", pSampleSize, pSps, pSampleNumber);
-
-    //#############################################################
-    //### find minimum and maximum values
-    //#############################################################
-    for (int i = 0; i < tSampleAmount; i++)
-    {
-        tData = *((int16_t*)pBuffer + i * 2);
-        tSum += tData;
-        if (tData < tMin)
-            tMin = tData;
-        if (tData > tMax)
-            tMax = tData;
-        //if (i < 20)
-            //printf("%4hd ", tData);
-    }
-    //LOG(LOG_WARN, "Audio samples have a range of %d / %d", tMin, tMax);
-
-    //#############################################################
-    //### scale the values to 100 %
-    //#############################################################
-    int tScaledMin = 100 * tMin / (-32768);
-    int tScaledMax = 100 * tMax / ( 32767);
-
-    // check the range
-    if (tScaledMin < 0)
-        tScaledMin = 0;
-    if (tScaledMin > 100)
-        tScaledMin = 100;
-    if (tScaledMax < 0)
-        tScaledMax = 0;
-    if (tScaledMax > 100)
-        tScaledMax = 100;
 
     //#############################################################
     //### set the level of the level bar widget
     //#############################################################
-    if (tScaledMin > tScaledMax)
-        showAudioLevel(tScaledMin);
-    else
-        showAudioLevel(tScaledMax);
+	ShowAudioLevel(mAudioWorker->GetLastAudioLevel());
 
     //#############################################################
     //### draw statistics
@@ -724,7 +682,7 @@ void AudioWidget::ShowSample(void* pBuffer, int pSampleSize)
     //printf("Sum: %d SampleSize: %d SampleAmount: %d Average: %d Min: %d Max: %d scaledMin: %d scaledMax: %d\n", tSum, pSampleSize, tSampleAmount, (int)tSum/pSampleSize, tMin, tMax, tScaledMin, tScaledMax);
 }
 
-void AudioWidget::showAudioLevel(int pLevel)
+void AudioWidget::ShowAudioLevel(int pLevel)
 {
     if (mAudioPaused)
         return;
@@ -1007,6 +965,43 @@ int AudioWorkerThread::GetPlaybackQueueSize()
         return 0;
 }
 
+int AudioWorkerThread::GetLastAudioLevel()
+{
+	return mLastAudioLevel;
+}
+
+void AudioWorkerThread::SetSkipSilenceThreshold(int pValue)
+{
+	if ((mMediaSource != NULL) && (mMediaSource->SupportsMuxing()))
+	{
+		MediaSourceMuxer *tMuxer =(MediaSourceMuxer*)mMediaSource;
+		tMuxer->SetRelaySkipSilenceThreshold(pValue);
+	}
+}
+
+int AudioWorkerThread::GetSkipSilenceThreshold()
+{
+	if ((mMediaSource != NULL) && (mMediaSource->SupportsMuxing()))
+	{
+		MediaSourceMuxer *tMuxer =(MediaSourceMuxer*)mMediaSource;
+		return tMuxer->GetRelaySkipSilenceThreshold();
+	}else
+	{
+
+	}
+	return 0;
+}
+
+int64_t AudioWorkerThread::GetSkipSilenceSkippedChunks()
+{
+	if ((mMediaSource != NULL) && (mMediaSource->SupportsMuxing()))
+	{
+		MediaSourceMuxer *tMuxer =(MediaSourceMuxer*)mMediaSource;
+		return tMuxer->GetRelaySkipSilenceSkippedChunks();
+	}
+	return 0;
+}
+
 void AudioWorkerThread::SetSampleDropping(bool pDrop)
 {
     mDropSamples = pDrop;
@@ -1275,6 +1270,9 @@ void AudioWorkerThread::HandlePlayFileSuccess()
 
 int AudioWorkerThread::GetCurrentFrame(void **pSample, int& pSampleSize, float *pFrameRate)
 {
+    short int tData = 0;
+    int tMax = 1, tMin = -1;
+    int tLevel = 0;
     int tResult = -1;
 
     // lock
@@ -1291,6 +1289,51 @@ int AudioWorkerThread::GetCurrentFrame(void **pSample, int& pSampleSize, float *
         *pSample = mSamples[mSampleCurrentIndex];
         pSampleSize = mSamplesSize[mSampleCurrentIndex];
         tResult = mSampleNumber[mSampleCurrentIndex];
+
+        // sample size is given in bytes but we use 16 bit values, furthermore we are using stereo -> division by 4
+        int tSampleAmount = pSampleSize / 4;
+        //if (pSampleSize != 4096)
+            //printf("AudioWidget-SampleSize: %d Sps: %d SampleNumber: %d\n", pSampleSize, pSps, pSampleNumber);
+
+        //#############################################################
+        //### find minimum and maximum values
+        //#############################################################
+        for (int i = 0; i < tSampleAmount; i++)
+        {
+            tData = *((int16_t*)*pSample + i * 2);
+            if (tData < tMin)
+                tMin = tData;
+            if (tData > tMax)
+                tMax = tData;
+            //if (i < 20)
+                //printf("%4hd ", tData);
+        }
+        //LOG(LOG_WARN, "Audio samples have a range of %d / %d", tMin, tMax);
+
+        //#############################################################
+        //### scale the values to 100 %
+        //#############################################################
+        int tScaledMin = 100 * tMin / (-32768);
+        int tScaledMax = 100 * tMax / ( 32767);
+
+        // check the range
+        if (tScaledMin < 0)
+            tScaledMin = 0;
+        if (tScaledMin > 100)
+            tScaledMin = 100;
+        if (tScaledMax < 0)
+            tScaledMax = 0;
+        if (tScaledMax > 100)
+            tScaledMax = 100;
+
+        //#############################################################
+        //### set the level of the level bar widget
+        //#############################################################
+        if (tScaledMin > tScaledMax)
+			mLastAudioLevel = tScaledMin;
+        else
+        	mLastAudioLevel = tScaledMax;
+        //LOG(LOG_VERBOSE, "New audio level: %d", mLastAudioLevel);
     }
 
     // unlock

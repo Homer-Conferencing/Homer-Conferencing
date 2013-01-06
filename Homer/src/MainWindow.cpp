@@ -856,6 +856,7 @@ void MainWindow::loadSettings()
     mOwnAudioMuxer->SetOutputStreamPreferences(tAudioStreamCodec.toStdString(), 100, CONF.GetAudioBitRate(), CONF.GetAudioMaxPacketSize(), false, 0, 0, CONF.GetAudioRtp());
     mOwnAudioMuxer->SetRelayActivation(CONF.GetAudioActivation() && !CONF.GetAudioActivationPushToTalk());
     mOwnAudioMuxer->SetRelaySkipSilence(CONF.GetAudioSkipSilence());
+    mOwnAudioMuxer->SetRelaySkipSilenceThreshold(CONF.GetAudioSkipSilenceThreshold());
     mOwnAudioMuxer->SelectDevice(CONF.GetLocalAudioSource().toStdString(), MEDIA_AUDIO, tNewDeviceSelected);
     // if former selected device isn't available we use one of the available instead
     if (!tNewDeviceSelected)

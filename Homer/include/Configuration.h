@@ -123,11 +123,14 @@ public:
     bool GetVisibilityBroadcastAudio();
     bool GetVisibilityBroadcastVideo();
 
-    /* A/V preview */
+    /* A/V preview dialog */
     int GetPreviewSelection();
     bool GetPreviewSelectionVideo();
     bool GetPreviewSelectionAudio();
     bool GetPreviewPreBufferingActivation();
+
+    /* configuration dialog */
+    int GetConfigurationSelection();
 
     bool GetParticipantWidgetsSeparation();
     bool GetParticipantWidgetsCloseImmediately();
@@ -161,6 +164,7 @@ public:
     bool GetAudioActivation();
     bool GetAudioActivationPushToTalk();
     bool GetAudioSkipSilence();
+    int GetAudioSkipSilenceThreshold();
     bool GetAudioRtp();
     QString GetAudioCodec();
     int GetAudioBitRate();
@@ -282,11 +286,14 @@ public:
     void SetVisibilityBroadcastAudio(bool pActive);
     void SetVisibilityBroadcastVideo(bool pActive);
 
-    /* A/V preview */
+    /* A/V preview dialog */
     void SetPreviewSelection(int pSelection);
     void SetPreviewSelectionVideo(bool pActive);
     void SetPreviewSelectionAudio(bool pActive);
     void SetPreviewPreBufferingActivation(bool pActivation);
+
+    /* configuration dialog */
+    void SetConfigurationSelection(int pSelection);
 
     void SetSmoothVideoPresentation(bool pActive);
     void SetAutoUpdateCheck(bool pActive);
@@ -316,6 +323,7 @@ public:
     void SetAudioActivation(bool pActivation);
     void SetAudioActivationPushToTalk(bool pActivation);
     void SetAudioSkipSilence(bool pActivation);
+    void SetAudioSkipSilenceThreshold(int pThreshold);
     void SetAudioRtp(bool pActivation);
     void SetAudioCodec(QString pCodec);
     void SetAudioBitRate(int pBitRate);

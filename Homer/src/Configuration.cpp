@@ -342,29 +342,36 @@ void Configuration::SetVisibilityBroadcastVideo(bool pActive)
 
 void Configuration::SetPreviewSelection(int pSelection)
 {
-    mQSettings->beginGroup("Playback");
-    mQSettings->setValue("PreviewSelection", pSelection);
+    mQSettings->beginGroup("PreviewDialog");
+    mQSettings->setValue("Selection", pSelection);
     mQSettings->endGroup();
 }
 
 void Configuration::SetPreviewSelectionVideo(bool pActive)
 {
-    mQSettings->beginGroup("Playback");
-    mQSettings->setValue("PreviewSelectionVideo", pActive);
+    mQSettings->beginGroup("PreviewDialog");
+    mQSettings->setValue("SelectionVideo", pActive);
     mQSettings->endGroup();
 }
 
 void Configuration::SetPreviewSelectionAudio(bool pActive)
 {
-    mQSettings->beginGroup("Playback");
-    mQSettings->setValue("PreviewSelectionAudio", pActive);
+    mQSettings->beginGroup("PreviewDialog");
+    mQSettings->setValue("SelectionAudio", pActive);
     mQSettings->endGroup();
 }
 
 void Configuration::SetPreviewPreBufferingActivation(bool pActivation)
 {
-    mQSettings->beginGroup("Playback");
-    mQSettings->setValue("PreviewPreBufferingActivation", pActivation);
+    mQSettings->beginGroup("PreviewDialog");
+    mQSettings->setValue("PreBufferingActivation", pActivation);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetConfigurationSelection(int pSelection)
+{
+    mQSettings->beginGroup("ConfigurationDialog");
+    mQSettings->setValue("Selection", pSelection);
     mQSettings->endGroup();
 }
 
@@ -519,6 +526,13 @@ void Configuration::SetAudioSkipSilence(bool pActivation)
 {
     mQSettings->beginGroup("Streaming");
     mQSettings->setValue("AudioStreamSkipSilence", pActivation);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetAudioSkipSilenceThreshold(int pThreshold)
+{
+    mQSettings->beginGroup("Streaming");
+    mQSettings->setValue("AudioStreamSkipSilenceThreshold", pThreshold);
     mQSettings->endGroup();
 }
 
@@ -1035,22 +1049,27 @@ bool Configuration::GetVisibilityStatusBar()
 
 int Configuration::GetPreviewSelection()
 {
-    return mQSettings->value("Playback/PreviewSelection", 2).toInt();
+    return mQSettings->value("PreviewDialog/Selection", 2).toInt();
 }
 
 bool Configuration::GetPreviewSelectionVideo()
 {
-    return mQSettings->value("Playback/PreviewSelectionVideo", true).toBool();
+    return mQSettings->value("PreviewDialog/SelectionVideo", true).toBool();
 }
 
 bool Configuration::GetPreviewSelectionAudio()
 {
-    return mQSettings->value("Playback/PreviewSelectionAudio", true).toBool();
+    return mQSettings->value("PreviewDialog/SelectionAudio", true).toBool();
 }
 
 bool Configuration::GetPreviewPreBufferingActivation()
 {
-    return mQSettings->value("Playback/PreviewPreBufferingActivation", true).toBool();
+    return mQSettings->value("PreviewDialog/PreBufferingActivation", true).toBool();
+}
+
+int Configuration::GetConfigurationSelection()
+{
+    return mQSettings->value("ConfigurationDialog/Selection", 0).toInt();
 }
 
 bool Configuration::GetSmoothVideoPresentation()
@@ -1180,6 +1199,11 @@ bool Configuration::GetAudioActivationPushToTalk()
 bool Configuration::GetAudioSkipSilence()
 {
     return mQSettings->value("Streaming/AudioStreamSkipSilence", false).toBool();
+}
+
+int Configuration::GetAudioSkipSilenceThreshold()
+{
+    return mQSettings->value("Streaming/AudioStreamSkipSilenceThreshold", 128).toInt();
 }
 
 bool Configuration::GetAudioRtp()

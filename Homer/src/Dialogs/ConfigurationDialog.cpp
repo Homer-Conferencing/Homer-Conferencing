@@ -26,12 +26,11 @@
  */
 
 #include <Dialogs/ConfigurationDialog.h>
+#include <Dialogs/ConfigurationAudioSilenceDialog.h>
 #include <Widgets/OverviewPlaylistWidget.h>
 
 #include <Configuration.h>
 #include <Meeting.h>
-#include <MediaSourceMuxer.h>
-#include <MediaSourceFile.h>
 #include <HBSocket.h>
 #include <Logger.h>
 #include <Snippets.h>
@@ -91,6 +90,7 @@ ConfigurationDialog::ConfigurationDialog(QWidget* pParent, list<string>  pLocalA
     connect(mPbNotifySoundErrorFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForError()));
     connect(mPbNotifySoundRegistrationFailedFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForRegistrationFailed()));
     connect(mPbNotifySoundRegistrationSuccessfulFile, SIGNAL(clicked()), this, SLOT(SelectNotifySoundFileForRegistrationSuccessful()));
+    connect(mTbSkipSilenceFineTuning, SIGNAL(clicked()), this, SLOT(ShowFineTuningAudioSilenceSuppresion()));
     connect(mTbPlaySoundStartFile, SIGNAL(clicked()), this, SLOT(PlayNotifySoundFileForStart()));
     connect(mTbPlaySoundStopFile, SIGNAL(clicked()), this, SLOT(PlayNotifySoundFileForStop()));
     connect(mTbPlaySoundImFile, SIGNAL(clicked()), this, SLOT(PlayNotifySoundFileForIm()));
@@ -439,6 +439,11 @@ void ConfigurationDialog::LoadConfiguration()
     mCbNotifySoundRegistrationSuccessful->setChecked(CONF.GetRegistrationSuccessfulSound());
     mCbNotifySystrayRegistrationSuccessful->setChecked(CONF.GetRegistrationSuccessfulSystray());
     mLbNotifySoundRegistrationSuccessfulFile->setText(CONF.GetRegistrationSuccessfulSoundFile());
+
+    //######################################################################
+    //### Dialog preferences
+    //######################################################################
+    mLwSelectionList->setCurrentRow(CONF.GetConfigurationSelection());
 }
 
 void ConfigurationDialog::SaveConfiguration()
@@ -730,6 +735,11 @@ void ConfigurationDialog::SaveConfiguration()
         if (tOnlyFutureChanged)
             ShowInfo(Homer::Gui::ConfigurationDialog::tr("Settings will be applied for future sessions"), Homer::Gui::ConfigurationDialog::tr("Your new settings are") + " <font color='red'><b>" + Homer::Gui::ConfigurationDialog::tr("not applied for already established sessions") + "</b></font>. " + Homer::Gui::ConfigurationDialog::tr("They will only be used for new sessions! Otherwise you have to") + " <font color='red'><b>" + Homer::Gui::ConfigurationDialog::tr("restart") + "</b></font> " + Homer::Gui::ConfigurationDialog::tr("Homer Conferencing to apply the new settings!"));
     }
+
+    //######################################################################
+    //### Dialog preferences
+    //######################################################################
+    CONF.SetConfigurationSelection(mLwSelectionList->currentRow());
 }
 
 void ConfigurationDialog::ShowVideoSourceInfo(QString pCurrentText)
@@ -1200,6 +1210,15 @@ void ConfigurationDialog::DeselectAllSystray()
 
     mCbNotifySystrayRegistrationFailed->setChecked(false);
     mCbNotifySystrayRegistrationSuccessful->setChecked(false);
+}
+
+void ConfigurationDialog::ShowFineTuningAudioSilenceSuppresion()
+{
+	ConfigurationAudioSilenceDialog *tDialog = new ConfigurationAudioSilenceDialog(this, mAudioWorker);
+	if (tDialog->exec() == QDialog::Accepted)
+	{
+		LOG(LOG_VERBOSE, "User has accepted new settings for audio silence suppression");
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
