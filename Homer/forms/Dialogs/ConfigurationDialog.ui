@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>887</width>
-    <height>606</height>
+    <height>676</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -1348,6 +1348,60 @@
                  </size>
                 </property>
                </spacer>
+              </item>
+              <item>
+               <widget class="QToolButton" name="mTbSkipSilenceFineTuning">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>16777215</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">QToolButton{
+background-color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-radius: 6px;
+border-color:  rgb(200, 200, 200);
+}
+QToolButton:checked{
+background-color: rgb(150, 150, 150);
+} 
+QToolButton:pressed{
+background-color: rgb(200, 200, 200);
+} 
+</string>
+                </property>
+                <property name="text">
+                 <string>Fine tuning</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="../../resources/Icons.qrc">
+                  <normaloff>:/images/22_22/Configuration.png</normaloff>:/images/22_22/Configuration.png</iconset>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>22</width>
+                  <height>22</height>
+                 </size>
+                </property>
+                <property name="toolButtonStyle">
+                 <enum>Qt::ToolButtonTextBesideIcon</enum>
+                </property>
+               </widget>
               </item>
               <item>
                <widget class="QCheckBox" name="mCbSkipSilence">
@@ -2974,8 +3028,8 @@ background-color: rgb(150, 150, 150);
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>430</width>
-              <height>542</height>
+              <width>431</width>
+              <height>666</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_24">
