@@ -1347,7 +1347,7 @@ void ParticipantWidget::HandleMediaUpdate(bool pIncoming, QString pRemoteAudioAd
 
 void ParticipantWidget::SetVideoStreamPreferences(QString pCodec, bool pJustReset)
 {
-    if (mVideoWidget == NULL)
+    if ((mVideoWidget == NULL) || (mVideoWidget->GetWorker() == NULL))
         return;
 
     if (pJustReset)
@@ -1362,7 +1362,7 @@ void ParticipantWidget::SetVideoStreamPreferences(QString pCodec, bool pJustRese
 
 void ParticipantWidget::SetAudioStreamPreferences(QString pCodec, bool pJustReset)
 {
-    if ((mAudioWidget == NULL) || (mSessionType == PREVIEW))
+    if ((mAudioWidget == NULL) || (mAudioWidget->GetWorker() == NULL))
         return;
 
     if (pJustReset)
