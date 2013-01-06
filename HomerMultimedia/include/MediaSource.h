@@ -424,6 +424,8 @@ protected:
     int  				mInputAudioChannels;
     enum AVSampleFormat mInputAudioFormat;
     int 				mInputBitRate;
+    /* audio silence */
+    int					mAudioSilenceThreshold;
     /* video */
     GrabResolutions     mSupportedVideoFormats;
     int                 mSourceResX;

@@ -99,6 +99,9 @@ public:
     virtual bool SupportsRelaying();
     void SetRelayActivation(bool pState);
     void SetRelaySkipSilence(bool pState);
+    void SetRelaySkipSilenceThreshold(int pValue);
+    int GetRelaySkipSilenceThreshold();
+    int GetRelaySkipSilenceSkippedChunks();
 
     /* get access to current basic media source */
     virtual MediaSource* GetMediaSource();
@@ -217,9 +220,10 @@ private:
     int 				mStreamMaxFps;
     int64_t				mStreamMaxFps_LastFrame_Timestamp;
     bool                mStreamActivated;
-    bool				mStreamSkipSilence;
-    int64_t				mSkippedSilenceChunks;
     char                *mStreamPacketBuffer;
+    /* relaying: skip audio silence */
+    bool				mRelayingSkipAudioSilence;
+    int64_t				mRelayingSkipAudioSilenceSkippedChunks;
     /* encoding */
     char                *mEncoderChunkBuffer;
     bool                mEncoderNeeded;

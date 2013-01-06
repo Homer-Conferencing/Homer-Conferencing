@@ -81,8 +81,8 @@ MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
     mRequestedStreamingResX = 352;
     mRequestedStreamingResY = 288;
     mStreamActivated = true;
-    mStreamSkipSilence = false;
-    mSkippedSilenceChunks = 0;
+    mRelayingSkipAudioSilence = false;
+    mRelayingSkipAudioSilenceSkippedChunks = 0;
     mEncoderNeeded = true;
     mEncoderHasKeyFrame = false;
     mEncoderFifo = NULL;
@@ -937,6 +937,7 @@ bool MediaSourceMuxer::CloseMuxer()
     ResetPacketStatistic();
 
     mFrameNumber = 0;
+    mRelayingSkipAudioSilenceSkippedChunks = 0;
 
     return tResult;
 }
@@ -1557,27 +1558,28 @@ void* MediaSourceMuxer::Run(void* pArgs)
 											LOG(LOG_VERBOSE, "Reading %d bytes from %d bytes of fifo", tOutoutAudioBytesPrSample * mCodecContext->frame_size * mCodecContext->channels, av_fifo_size(mSampleFifo));
 										#endif
 										// read sample data from the fifo buffer
-										HM_av_fifo_generic_read(mSampleFifo, (void*)mSamplesTempBuffer, tOutoutAudioBytesPrSample * mCodecContext->frame_size * mCodecContext->channels);
+											int tReadSamplesSize = tOutoutAudioBytesPrSample * mCodecContext->frame_size * mCodecContext->channels;
+										HM_av_fifo_generic_read(mSampleFifo, (void*)mSamplesTempBuffer, tReadSamplesSize);
 
-										//####################################################################
-										// re-encode the sample
-										// ###################################################################
-										// re-encode the sample
-										#ifdef MSM_DEBUG_PACKETS
-											LOG(LOG_VERBOSE, "Encoding audio frame.. (frame size: %d, channels: %d, enc. buffeR: %p, samples buffer: %p)", mCodecContext->frame_size, mCodecContext->channels, mEncoderChunkBuffer, mSamplesTempBuffer);
-										#endif
-										//printf("Gonna encode with frame_size %d and channels %d\n", mCodecContext->frame_size, mCodecContext->channels);
-										int tEncodingResult = avcodec_encode_audio(mCodecContext, (uint8_t *)mEncoderChunkBuffer, /* assume signed 16 bit */ tOutoutAudioBytesPrSample * mCodecContext->frame_size * mCodecContext->channels, (const short *)mSamplesTempBuffer);
-										mEncoderHasKeyFrame = true;
+										if ((!mRelayingSkipAudioSilence) || (!ContainsOnlySilence((void*)mSamplesTempBuffer, tReadSamplesSize) /* we have to check if the current chunk contains only silence */))
+										{// okay, we should process this audio frame
+											//####################################################################
+											// re-encode the sample
+											// ###################################################################
+											// re-encode the sample
+											#ifdef MSM_DEBUG_PACKETS
+												LOG(LOG_VERBOSE, "Encoding audio frame.. (frame size: %d, channels: %d, enc. buffeR: %p, samples buffer: %p)", mCodecContext->frame_size, mCodecContext->channels, mEncoderChunkBuffer, mSamplesTempBuffer);
+											#endif
+											//printf("Gonna encode with frame_size %d and channels %d\n", mCodecContext->frame_size, mCodecContext->channels);
+											int tEncodingResult = avcodec_encode_audio(mCodecContext, (uint8_t *)mEncoderChunkBuffer, /* assume signed 16 bit */ tOutoutAudioBytesPrSample * mCodecContext->frame_size * mCodecContext->channels, (const short *)mSamplesTempBuffer);
+											mEncoderHasKeyFrame = true;
 
-										//printf("encoded to mp3: %d\n\n", tSampleSize);
-										if (tEncodingResult > 0)
-										{
-											// we need to increase the frame number in every possible case, otherwise the time synchronization at receiver side is not possible anymore
-											mFrameNumber++;
+											//printf("encoded to mp3: %d\n\n", tSampleSize);
+											if (tEncodingResult > 0)
+											{
+												// we need to increase the frame number in every possible case, otherwise the time synchronization at receiver side is not possible anymore
+												mFrameNumber++;
 
-											if ((!mStreamSkipSilence) || (!ContainsOnlySilence((void*)mEncoderChunkBuffer, tEncodingResult) /* we have to check of the current chunk contains only silence */))
-											{// okay, we should process this audio frame
 												av_init_packet(tPacket);
 
 												tPacket->flags |= AV_PKT_FLAG_KEY;
@@ -1616,12 +1618,12 @@ void* MediaSourceMuxer::Run(void* pArgs)
 												// free packet buffer
 												av_free_packet(tPacket);
 											}else
-											{// we should skip this audio frame because it includes only silence
-												mSkippedSilenceChunks++;
-												//LOG(LOG_VERBOSE, "Skipping %s data, overall skipped chunks: %ld", GetMediaTypeStr().c_str(), mSkippedSilenceChunks);
-											}
+												LOG(LOG_WARN, "Couldn't re-encode current audio sample");
 										}else
-											LOG(LOG_WARN, "Couldn't re-encode current audio sample");
+										{// we should skip this audio frame because it includes only silence
+											mRelayingSkipAudioSilenceSkippedChunks++;
+											//LOG(LOG_WARN, "Skipping %s data, overall skipped chunks: %ld", GetMediaTypeStr().c_str(), mRelayingSkipAudioSilenceSkippedChunks);
+										}
 									}
                                 }
                                 break;
@@ -2102,11 +2104,30 @@ void MediaSourceMuxer::SetRelayActivation(bool pState)
 
 void MediaSourceMuxer::SetRelaySkipSilence(bool pState)
 {
-    if (mStreamSkipSilence != pState)
+    if (mRelayingSkipAudioSilence != pState)
     {
         LOG(LOG_VERBOSE, "Setting \"relay skip silence\" activation to: %d", pState);
-        mStreamSkipSilence = pState;
+        mRelayingSkipAudioSilence = pState;
     }
+}
+
+void MediaSourceMuxer::SetRelaySkipSilenceThreshold(int pValue)
+{
+	if (mAudioSilenceThreshold != pValue)
+	{
+		LOG(LOG_VERBOSE, "Setting audio silence suppression threshold to: %d", pValue);
+		mAudioSilenceThreshold = pValue;
+	}
+}
+
+int MediaSourceMuxer::GetRelaySkipSilenceThreshold()
+{
+	return mAudioSilenceThreshold;
+}
+
+int MediaSourceMuxer::GetRelaySkipSilenceSkippedChunks()
+{
+	return mRelayingSkipAudioSilenceSkippedChunks;
 }
 
 string MediaSourceMuxer::GetSourceTypeStr()

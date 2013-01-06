@@ -64,6 +64,9 @@ using namespace Homer::Monitor;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// define the threshold for silence detection
+#define MEDIA_SOURCE_DEFAULT_SILENCE_THRESHOLD					128
+
 //de/activate VDPAU support
 //#define MEDIA_SOURCE_VDPAU_SUPPORT
 
@@ -85,6 +88,7 @@ MediaSource::MediaSource(string pName):
 	mDecodedSIFrames = 0;
 	mDecodedSPFrames = 0;
 	mDecodedBIFrames = 0;
+	mAudioSilenceThreshold = MEDIA_SOURCE_DEFAULT_SILENCE_THRESHOLD;
     mDecoderFrameBufferTimeMax = 0;
     mDecoderFramePreBufferTime = 0;
     mSourceType = SOURCE_ABSTRACT;
@@ -2685,19 +2689,18 @@ int64_t MediaSource::GetPtsFromFpsEmulator()
     return (int64_t)tRelativeFrameNumber;
 }
 
-// define the threshold for silence detection
-#define SILENCE_THRESHOLD					128
 bool MediaSource::ContainsOnlySilence(void* pChunkBuffer, int pChunkSize)
 {
 	bool tResult = true;
 	short int tSample;
 
 	// scan all samples
-	for (int i = 0; i < pChunkSize / 2; i++)
+	for (int i = 0; i < pChunkSize / 4; i++)
 	{
-		tSample = *(short int*)((long)pChunkBuffer + i * 2);
-		if ((tSample > SILENCE_THRESHOLD) || (tSample < -SILENCE_THRESHOLD))
-		{// we detected some interesting samples
+		tSample = *((int16_t*)pChunkBuffer + i * 2);
+		if ((tSample > mAudioSilenceThreshold) || (tSample < -mAudioSilenceThreshold))
+		{// we detected an interesting sample
+			//LOG(LOG_VERBOSE, "%hd %d %d", i, tSample, mAudioSilenceThreshold);
 			tResult = false;
 			break;
 		}
