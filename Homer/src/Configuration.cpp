@@ -115,7 +115,7 @@ Configuration& Configuration::GetInstance()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void Configuration::Init(QString pAbsBinPath)
+void Configuration::Init(QString &pAbsBinPath)
 {
     mAbsBinPath = pAbsBinPath;
 	#ifdef APPLE
@@ -128,6 +128,7 @@ void Configuration::Init(QString pAbsBinPath)
 		if (tPath != NULL)
 		{
 			mAbsBinPath = QString(tPath) + "/Contents/Resources/";
+			pAbsBinPath = mAbsBinPath;
 		}
 	#endif
 }

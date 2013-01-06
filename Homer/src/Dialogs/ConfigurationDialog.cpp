@@ -369,6 +369,7 @@ void ConfigurationDialog::LoadConfiguration()
     /* GUI language */
     QString tCurLang = CONF.GetLanguage();
     // search for translation files
+    LOG(LOG_VERBOSE, "Search language files in: %s", (CONF.GetBinaryPath() + "lang").toStdString().c_str());
     QDir tDir(CONF.GetBinaryPath() + "lang");
     QStringList tFileNames = tDir.entryList(QStringList("Homer_*.qm"));
 

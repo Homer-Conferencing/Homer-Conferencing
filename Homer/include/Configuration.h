@@ -84,7 +84,7 @@ public:
 
     static Configuration& GetInstance();
 
-    void Init(QString pAbsBinPath);
+    void Init(QString &pAbsBinPath);
     void SetDefaults();
 
     /* GIF support of Qt*/
