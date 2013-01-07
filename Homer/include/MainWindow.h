@@ -129,7 +129,7 @@ private slots:
     void GotAnswerForVersionRequest(bool pError);
     void CreateScreenShot();
 
-    void registerAtStunSipServer();
+    void RegisterAtStunSipServer();
     void UpdateSysTrayContextMenu();
 
 private:

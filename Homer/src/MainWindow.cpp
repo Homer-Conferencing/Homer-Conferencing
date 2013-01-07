@@ -172,7 +172,7 @@ MainWindow::MainWindow(QStringList pArguments, QString pAbsBinPath) :
     // init network simulator
     initializeNetworkSimulator(pArguments);
     // delayed call to register at Stun and Sip server
-    QTimer::singleShot(2000, this, SLOT(registerAtStunSipServer()));
+    QTimer::singleShot(2000, this, SLOT(RegisterAtStunSipServer()));
     ProcessRemainingArguments(pArguments);
     mStarting = false;
 }
@@ -481,7 +481,7 @@ void MainWindow::initializeConferenceManagement()
     MEETING.AddObserver(this);
 }
 
-void MainWindow::registerAtStunSipServer()
+void MainWindow::RegisterAtStunSipServer()
 {
     if (CONF.GetNatSupportActivation())
         MEETING.SetStunServer(CONF.GetStunServer().toStdString());
