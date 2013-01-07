@@ -320,7 +320,7 @@ QStringList OverviewPlaylistWidget::LetUserSelectMediaFile(QWidget *pParent, QSt
                                                                 CONF_NATIVE_DIALOGS);
     else
     {
-        tResult = QStringList(QFileDialog::getOpenFileName(pParent,  pDescription,
+    	tResult = QStringList(QFileDialog::getOpenFileName(pParent,  pDescription,
                                                                 CONF.GetDataDirectory(),
                                                                 sLoadMediaFilters,
                                                                 &sAllLoadMediaFilter,
@@ -347,13 +347,6 @@ QStringList OverviewPlaylistWidget::LetUserSelectMediaFile(QWidget *pParent, QSt
 void OverviewPlaylistWidget::initializeGUI()
 {
     setupUi(this);
-
-    // hide id column
-//    mTwFiles->setColumnHidden(5, true);
-//    mTwFiles->sortItems(5);
-//    mTwFiles->horizontalHeader()->setResizeMode(QHeaderView::Interactive);
-//    for (int i = 0; i < 2; i++)
-//        mTwFiles->horizontalHeader()->resizeSection(i, mTwFiles->horizontalHeader()->sectionSize(i) * 2);
 }
 
 void OverviewPlaylistWidget::closeEvent(QCloseEvent* pEvent)

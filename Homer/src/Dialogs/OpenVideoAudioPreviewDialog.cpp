@@ -539,10 +539,12 @@ void OpenVideoAudioPreviewDialog::ActionGetFile()
 {
     QString tFileName;
 
-	tFileName = OverviewPlaylistWidget::LetUserSelectMediaFile(this, "Select file for preview", false).first();
+    QStringList tUserSelection = OverviewPlaylistWidget::LetUserSelectMediaFile(this, "Select file for preview", false);
 
-    if (tFileName.isEmpty())
-        return;
+    if (tUserSelection.isEmpty())
+        return ;
+
+    tFileName = tUserSelection.first();
 
     mLbFile->setText(tFileName);
 }
