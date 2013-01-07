@@ -306,10 +306,11 @@ void MainWindow::connectSignalsSlots()
     connect(mToolBarMediaSources->toggleViewAction(), SIGNAL(toggled(bool)), mActionToolBarMediaSources, SLOT(setChecked(bool)));
 
     connect(mActionStautsBarWidget, SIGNAL(toggled(bool)), this, SLOT(actionActivateStatusBar(bool)));
-    addAction(mActionMainMenu); // so, this actio will also be available even if the main menu is hidden
+    addAction(mActionMainMenu); // this action will also be available even if the main menu is hidden
     connect(mActionMainMenu, SIGNAL(toggled(bool)), this, SLOT(actionActivateMenuBar(bool)));
-    addAction(mActionMonitorBroadcastWidget); // so, this actio will also be available even if the main menu is hidden
+    addAction(mActionMonitorBroadcastWidget); // this action will also be available even if the main menu is hidden
     connect(mActionMonitorBroadcastWidget, SIGNAL(toggled(bool)), mLocalUserParticipantWidget, SLOT(setVisible(bool)));
+    addAction(mActionMosaicMode); // this action will also be available even if the main menu is hidden
     connect(mActionMosaicMode, SIGNAL(toggled(bool)), this, SLOT(actionActivateMosaicMode(bool)));
 
     mActionMonitorBroadcastWidget->setChecked(CONF.GetVisibilityBroadcastWidget());

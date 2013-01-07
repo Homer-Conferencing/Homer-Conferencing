@@ -828,7 +828,7 @@ void ParticipantWidget::keyPressEvent(QKeyEvent *pEvent)
 {
 	//LOG(LOG_VERBOSE, "Got participant window key press event with key %s(%d, mod: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
 
-    if ((pEvent->key() == Qt::Key_T) && (!pEvent->isAutoRepeat()))
+    if ((pEvent->key() == Qt::Key_T) && (!pEvent->isAutoRepeat()) && (pEvent->modifiers() == 0))
     {
         // forward the event to the main widget
         QCoreApplication::postEvent(mMainWindow, new QKeyEvent(QEvent::KeyPress, pEvent->key(), pEvent->modifiers(), pEvent->text()));

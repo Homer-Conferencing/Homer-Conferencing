@@ -1528,7 +1528,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
 {
 	//LOG(LOG_VERBOSE, "Got video window key press event with key %s(%d, mod: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
 
-    if ((pEvent->key() == Qt::Key_T) && (!pEvent->isAutoRepeat()))
+    if ((pEvent->key() == Qt::Key_T) && (pEvent->modifiers() == 0) && (!pEvent->isAutoRepeat()))
     {
         // forward the event to the main widget
         QCoreApplication::postEvent(mMainWindow, new QKeyEvent(QEvent::KeyPress, pEvent->key(), pEvent->modifiers(), pEvent->text()));
@@ -1536,13 +1536,13 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
         return;
     }
 
-    if ((pEvent->key() == Qt::Key_Escape) && (IsFullScreen()))
+    if ((pEvent->key() == Qt::Key_Escape) && (pEvent->modifiers() == 0) && (IsFullScreen()))
 	{
         ToggleFullScreenMode();
         pEvent->accept();
         return;
 	}
-    if ((pEvent->key() == Qt::Key_K) && (mVideoSource->SupportsMarking()))
+    if ((pEvent->key() == Qt::Key_K) && (pEvent->modifiers() == 0) && (mVideoSource->SupportsMarking()))
     {
         mLiveMarkerActive = !mVideoSource->MarkerActive();
         if (mLiveMarkerActive)
@@ -1553,19 +1553,19 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
         pEvent->accept();
         return;
     }
-    if (pEvent->key() == Qt::Key_F)
+    if ((pEvent->key() == Qt::Key_F)  && (pEvent->modifiers() == 0))
     {
         ToggleFullScreenMode();
         pEvent->accept();
         return;
     }
-    if (pEvent->key() == Qt::Key_S)
+    if ((pEvent->key() == Qt::Key_S) && (pEvent->modifiers() == 0))
     {
         ToggleSmoothPresentationMode();
         pEvent->accept();
         return;
     }
-    if (pEvent->key() == Qt::Key_I)
+    if ((pEvent->key() == Qt::Key_I) && (pEvent->modifiers() == 0))
     {
         if (mShowLiveStats)
         	mShowLiveStats = false;
@@ -1574,7 +1574,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
         pEvent->accept();
         return;
     }
-    if (pEvent->key() == Qt::Key_M)
+    if ((pEvent->key() == Qt::Key_M) && (pEvent->modifiers() == 0))
     {
 		if (mParticipantWidget->GetAudioWorker() != NULL)
 		{
@@ -1587,7 +1587,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
 		pEvent->accept();
 		return;
     }
-    if ((pEvent->key() == Qt::Key_Space) || (pEvent->key() == Qt::Key_MediaTogglePlayPause) || (pEvent->key() == Qt::Key_MediaPlay) || (pEvent->key() == Qt::Key_Play))
+    if (((pEvent->key() == Qt::Key_Space) || (pEvent->key() == Qt::Key_MediaTogglePlayPause) || (pEvent->key() == Qt::Key_MediaPlay) || (pEvent->key() == Qt::Key_Play))  && (pEvent->modifiers() == 0))
     {
         if ((mVideoWorker->IsPaused()) || ((mParticipantWidget->GetAudioWorker() != NULL) && (mParticipantWidget->GetAudioWorker()->IsPaused())))
         {
@@ -1625,7 +1625,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
         pEvent->accept();
         return;
     }
-    if (pEvent->key() == Qt::Key_A)
+    if ((pEvent->key() == Qt::Key_A) && (pEvent->modifiers() == 0))
     {
     	mAspectRatio++;
     	if(mAspectRatio >= VIDEO_WIDGET_SUPPORTED_ASPECT_RATIOS)
@@ -1634,7 +1634,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
     	pEvent->accept();
     	return;
     }
-    if ((pEvent->key() == Qt::Key_Plus) || (pEvent->key() == Qt::Key_Up))
+    if (((pEvent->key() == Qt::Key_Plus) || (pEvent->key() == Qt::Key_Up))  && (pEvent->modifiers() == 0))
     {
 		int tOffset = 25;
 		int tNewVolumeValue = mParticipantWidget->GetAudioWorker()->GetVolume() + tOffset;
@@ -1644,7 +1644,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
 			mParticipantWidget->GetAudioWorker()->SetVolume(tNewVolumeValue);
 		}
 	}
-    if ((pEvent->key() == Qt::Key_Minus) || (pEvent->key() == Qt::Key_Down))
+    if (((pEvent->key() == Qt::Key_Minus) || (pEvent->key() == Qt::Key_Down))  && (pEvent->modifiers() == 0))
     {
 		int tOffset = -25;
 		int tNewVolumeValue = mParticipantWidget->GetAudioWorker()->GetVolume() + tOffset;
