@@ -1197,6 +1197,10 @@ void MainWindow::customEvent(QEvent* pEvent)
                     tANSDialog->exec();
                     delete tANSDialog;
                     break;
+        case ADD_VIDEO_PREVIEW:
+                    //####################### VIDEO ADD PREVIEW #############################
+                    actionOpenVideoAudioPreview();
+                    break;
         case INT_START_NAT_DETECTION:
                     //####################### NAT DETECTION ANSWER ###########################
                     tINDEvent = (InternalNatDetectionEvent*) tEvent;
