@@ -463,6 +463,8 @@ void RTP::Init()
     mLastTimestampFromRTPHeader = 0;
     mLastSequenceNumberFromRTPHeader = 0;
     mLostPackets = 0;
+    if (mPacketStatistic != NULL)
+        mPacketStatistic->SetLostPacketCount(0);
     mPayloadId = RTP_PAYLOAD_TYPE_NONE;
     mRemoteSequenceNumberOverflowShift = 0;
     mRemoteSequenceNumber = 0;
@@ -563,7 +565,7 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     // verbose timestamp debugging    mRtpFormatContext->debug = FF_FDEBUG_TS;
 
     // allocate new stream structure
-	tOuterStream = av_new_stream(mRtpFormatContext, 0);
+	tOuterStream = HM_avformat_new_stream(mRtpFormatContext, 0);
     if (tOuterStream == NULL)
     {
         LOG(LOG_ERROR, "Memory allocation failed");
@@ -1596,6 +1598,27 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
 			}
         }
 
+        // #######################################################################################
+        // SOURCE IDENTIFIER: update the remote source identifier and re-init the start timestamp
+        // #######################################################################################
+        // store the assigned SSRC identifier
+        if (mRemoteSourceIdentifier != tRtpHeader->Ssrc)
+        {
+            // did the source ID from remote side changed more than one time?
+            if (mRemoteSourceIdentifier != 0)
+            {
+                LOG(LOG_WARN, "Alternating source at remote side detected, will reset start timestamp");
+                mRemoteSourceChanged = true;
+
+                // force a reset of the start timestamp and trigger a re-initialization
+                mRemoteStartTimestamp = 0;
+                mRemoteStartSequenceNumber = 0;
+            }
+
+            // store the source ID to be able to detect repeating changes
+            mRemoteSourceIdentifier = tRtpHeader->Ssrc;
+        }
+
         // #############################################################
         // START SEQUENCE NUMBER: update the remote start sequence number
         // #############################################################
@@ -1670,27 +1693,6 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
         // ############################################################
         // use standard RTP definition to detect fragments, some A/V codecs have extended fragmentation detection mechanism (will be executed in the end of this procedure)
         mIntermediateFragment = !tRtpHeader->Marked;
-
-        // #######################################################################################
-        // SOURCE IDENTIFIER: update the remote source identifier and re-init the start timestamp
-        // #######################################################################################
-        // store the assigned SSRC identifier
-        if (mRemoteSourceIdentifier != tRtpHeader->Ssrc)
-        {
-            // did the source ID from remote side changed more than one time?
-            if (mRemoteSourceIdentifier != 0)
-            {
-                LOG(LOG_WARN, "Alternating source at remote side detected, will reset start timestamp");
-                mRemoteSourceChanged = true;
-
-                // force a reset of the start timestamp and trigger a re-initialization
-                mRemoteStartTimestamp = 0;
-                mRemoteStartSequenceNumber = 0;
-			}
-
-            // store the source ID to be able to detect repeating changes
-            mRemoteSourceIdentifier = tRtpHeader->Ssrc;
-        }
 
         // #############################################################
         // START TIMESTAMP: update the remote start timestamp

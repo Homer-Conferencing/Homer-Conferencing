@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>510</width>
+    <width>714</width>
     <height>42</height>
    </rect>
   </property>
@@ -467,6 +467,48 @@ background-color: rgb(200, 200, 200);
      </property>
      <property name="checked">
       <bool>false</bool>
+     </property>
+     <property name="toolButtonStyle">
+      <enum>Qt::ToolButtonTextBesideIcon</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QToolButton" name="mTbPreview">
+     <property name="minimumSize">
+      <size>
+       <width>30</width>
+       <height>30</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>30</height>
+      </size>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QToolButton{
+background-color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-radius: 6px;
+border-color:  rgb(200, 200, 200);
+}
+QToolButton:checked{
+background-color: rgb(150, 150, 150);
+} 
+QToolButton:pressed{
+background-color: rgb(200, 200, 200);
+} 
+</string>
+     </property>
+     <property name="text">
+      <string>Preview</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../../resources/Icons.qrc">
+       <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
      </property>
      <property name="toolButtonStyle">
       <enum>Qt::ToolButtonTextBesideIcon</enum>

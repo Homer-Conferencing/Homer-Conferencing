@@ -661,7 +661,7 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 
     // ffmpeg might have difficulties detecting the correct input format, enforce correct audio parameters
     AVCodecContext *tCodec = mFormatContext->streams[mMediaStreamIndex]->codec;
-    switch(tCodec->codec_id)
+    switch(mSourceCodecId)
     {
     	case CODEC_ID_ADPCM_G722:
     		tCodec->channels = 1;
@@ -967,6 +967,12 @@ void MediaSourceMem::StartDecoder()
 
     mDecoderTargetResX = mTargetResX;
     mDecoderTargetResY = mTargetResY;
+
+    // trigger a avcodec_flush_buffers()
+    mDecoderFlushBuffersAfterSeeking = true;
+
+    // trigger a RT playback calibration
+    mDecoderRecalibrateRTGrabbingAfterSeeking = true;
 
     mDecoderNeeded = false;
 
@@ -1385,7 +1391,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                 // log statistics
                                 AnnouncePacket(tPacket->size);
                                 #ifdef MSMEM_DEBUG_PACKETS
-                                    LOG(LOG_VERBOSE, "Decode video frame (input is picture: %d)..", tInputIsPicture);
+                                    LOG(LOG_VERBOSE, "Decoding video frame (input is picture: %d)..", tInputIsPicture);
                                 #endif
 
                                 // did we read the single frame of a picture?
@@ -1636,7 +1642,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                         }else
                                         {// use stored RGB frame
 
-                                            //HINT: tCurremtChnkSize will be updated later
+                                            //HINT: tCurremtChunkSize will be updated later
                                             //HINT: tChunkBuffer is still valid from first decoder loop
                                         }
                                         // return size of decoded frame
@@ -1694,8 +1700,7 @@ void* MediaSourceMem::Run(void* pArgs)
 
                             #ifdef MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
                                 LOG(LOG_VERBOSE, "New audio frame..");
-                                LOG(LOG_VERBOSE, "      ..samples: %d", tOutputBufferSize);
-                                LOG(LOG_VERBOSE, "      ..size: %d bytes", tOutputBufferSize * tOutoutAudioBytesPrSample);
+                                LOG(LOG_VERBOSE, "      ..size: %d bytes (%d samples of format %s)", tOutputBufferSize * tOutoutAudioBytesPrSample, tOutputBufferSize, av_get_sample_fmt_name(mOutputAudioFormat));
                             #endif
 
                             if (mAudioResampleContext != NULL)
@@ -1709,7 +1714,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                     //HINT: we always assume 16 bit samples
                                     int tResampledBytes = (tOutoutAudioBytesPrSample * mOutputAudioChannels) * audio_resample(mAudioResampleContext, (short*)tChunkBuffer, (short*)mResampleBuffer, tOutputBufferSize / (tInputAudioBytesPrSample * mInputAudioChannels));
                                     #ifdef MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
-                                        LOG(LOG_VERBOSE, "Have resampled %d bytes of sample rate %dHz and %d channels to %d bytes of %d Hz sample rate and %d channels", tOutputBufferSize, mCodecContext->sample_rate, mCodecContext->channels, tResampledBytes, mOutputAudioSampleRate, mOutputAudioChannels);
+                                        LOG(LOG_VERBOSE, "Have resampled %d bytes of sample rate %dHz and %d channels (format: %s) to %d bytes of %d Hz sample rate and %d channels (format: %s)", tOutputBufferSize, mCodecContext->sample_rate, mCodecContext->channels, av_get_sample_fmt_name(mInputAudioFormat), tResampledBytes, mOutputAudioSampleRate, mOutputAudioChannels, av_get_sample_fmt_name(mOutputAudioFormat));
                                     #endif
                                     if(tResampledBytes > 0)
                                     {
@@ -1898,7 +1903,7 @@ void* MediaSourceMem::Run(void* pArgs)
                 {
                     LOG(LOG_WARN, "VIDEO decoder thread stops scaler thread..");
                     tVideoScaler->StopScaler();
-                    LOG(LOG_VERBOSE, "VIDEO decoder thread stopped scaler thread");
+                    LOG(LOG_VERBOSE, "..VIDEO decoder thread stopped scaler thread");
                 }else
                 {
                     // Free the RGB frame
@@ -1939,7 +1944,7 @@ void MediaSourceMem::WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int6
         LOG(LOG_ERROR, "Invalid decoder FIFO");
 
     #ifdef MSMEM_DEBUG_PACKETS
-        LOG(LOG_VERBOSE, ">>> Writing frame of %d bytes and pts %ld", pBufferSize, pPts);
+        LOG(LOG_VERBOSE, ">>> Writing frame of %d bytes and pts %ld, FIFOs: %d/%d", pBufferSize, pPts, mDecoderFifo->GetUsage(), mDecoderMetaDataFifo->GetUsage());
     #endif
 
     // write A/V data to output FIFO
@@ -2011,6 +2016,9 @@ void MediaSourceMem::WaitForRTGrabbing()
 {
     // calculate the current (normalized) frame index of the grabber
     float tNormalizedFrameIndexFromGrabber = mGrabberCurrentFrameIndex - mSourceStartPts; // the normalized frame index
+    // return immediately if RT-grabbing is not possible
+    if (tNormalizedFrameIndexFromGrabber < 0)
+        return;
 
     // the PTS value of the last output frame
     uint64_t tCurrentPtsFromGrabber = (uint64_t)(1000 * tNormalizedFrameIndexFromGrabber / GetFrameRate()); // in ms
@@ -2020,18 +2028,21 @@ void MediaSourceMem::WaitForRTGrabbing()
 
     // calculate the current (normalized) play-out time of the current A/V stream
     int64_t tCurrentPlayOutTime = av_gettime() - (int64_t)mSourceStartTimeForRTGrabbing; // in us
+    // return immediately if RT-grabbing is not possible
+    if (tCurrentPlayOutTime < 0)
+        return;
 
     // calculate the time offset between the desired and current play-out time, which can be used for a wait cycle (Thread::Suspend)
     int64_t tResultingTimeOffset = tDesiredPlayOutTime - tCurrentPlayOutTime; // in us
 
     #ifdef MSMEM_DEBUG_TIMING
-        LOG(LOG_VERBOSE, "%s-current relative frame index: %f, relative time: %f us (Fps: %3.2f), stream start time: %f us, packet's relative play out time: %f us, time difference: %f us", GetMediaTypeStr().c_str(), tNormalizedFrameIndexFromGrabber, tCurrentRelativeTimeIndexInUSecs, GetFrameRate(), (float)mSourceStartPts, tDesiredPlayOutTime, tResultingTimeOffset);
+        LOG(LOG_VERBOSE, "%s-current relative frame index: %f, relative time: %lu ms (Fps: %3.2f), stream start time: %f us, packet's relative play out time: %f us, time difference: %f us", GetMediaTypeStr().c_str(), tNormalizedFrameIndexFromGrabber, tCurrentPtsFromGrabber, GetFrameRate(), (float)mSourceStartPts, tDesiredPlayOutTime, tResultingTimeOffset);
     #endif
     // adapt timing to real-time
     if (tResultingTimeOffset > 0)
     {
         #ifdef MSMEM_DEBUG_TIMING
-            LOG(LOG_WARN, "%s-sleeping for %ld ms for frame %.2f", GetMediaTypeStr().c_str(), tResultingTimeOffset / 1000, (float)mGrabberCurrentFrameIndex);
+            LOG(LOG_WARN, "%s-%s-sleeping for %ld ms (%ld - %ld) for frame %.2f, RT ref. time: %.2f", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tResultingTimeOffset / 1000, tDesiredPlayOutTime, tCurrentPlayOutTime, (float)mGrabberCurrentFrameIndex, (float)mSourceStartTimeForRTGrabbing);
         #endif
 		if (tResultingTimeOffset <= MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME * AV_TIME_BASE)
 			Thread::Suspend(tResultingTimeOffset);

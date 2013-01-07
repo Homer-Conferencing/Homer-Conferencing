@@ -106,6 +106,7 @@ void OverviewContactsWidget::closeEvent(QCloseEvent* pEvent)
 
 void OverviewContactsWidget::SetVisible(bool pVisible)
 {
+	CONF.SetVisibilityContactsWidget(pVisible);
     if (pVisible)
     {
         move(mWinPos);
@@ -132,7 +133,7 @@ void OverviewContactsWidget::contextMenuEvent(QContextMenuEvent *pEvent)
 
     QMenu tMenu(this);
 
-    tAction = tMenu.addAction("Add contact");
+    tAction = tMenu.addAction(Homer::Gui::OverviewContactsWidget::tr("Add contact"));
     QIcon tIcon1;
     tIcon1.addPixmap(QPixmap(":/images/22_22/Plus.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon1);
@@ -140,7 +141,7 @@ void OverviewContactsWidget::contextMenuEvent(QContextMenuEvent *pEvent)
     QAction* tPopupRes = tMenu.exec(pEvent->globalPos());
     if (tPopupRes != NULL)
     {
-        if (tPopupRes->text().compare("Add contact") == 0)
+        if (tPopupRes->text().compare(Homer::Gui::OverviewContactsWidget::tr("Add contact")) == 0)
         {
             InsertNew();
             return;
@@ -195,7 +196,7 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
     if (tValidEntryBelow)
     {
         //LOG(LOG_ERROR, "%s", tParticipant.toStdString().c_str());
-        tAction = tMenu.addAction("Send message");
+        tAction = tMenu.addAction(Homer::Gui::OverviewContactsWidget::tr("Send message"));
         QIcon tIcon6;
         tIcon6.addPixmap(QPixmap(":/images/22_22/Message.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon6);
@@ -203,7 +204,7 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
         tMsgKeys.push_back(Qt::Key_Enter);
         tAction->setShortcuts(tMsgKeys);
 
-        tAction = tMenu.addAction("Conference");
+        tAction = tMenu.addAction(Homer::Gui::OverviewContactsWidget::tr("Call"));
         QIcon tIcon5;
         tIcon5.addPixmap(QPixmap(":/images/22_22/Phone.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon5);
@@ -211,7 +212,7 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
         tMenu.addSeparator();
     }
 
-    tAction = tMenu.addAction("Add contact");
+    tAction = tMenu.addAction(Homer::Gui::OverviewContactsWidget::tr("Add contact"));
     QIcon tIcon1;
     tIcon1.addPixmap(QPixmap(":/images/22_22/Plus.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon1);
@@ -221,7 +222,7 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
 
     if (tValidEntryBelow)
     {
-        tAction = tMenu.addAction("Edit contact");
+        tAction = tMenu.addAction(Homer::Gui::OverviewContactsWidget::tr("Edit contact"));
         QIcon tIcon3;
         tIcon3.addPixmap(QPixmap(":/images/22_22/Contact_Edit.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon3);
@@ -229,12 +230,12 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
         tEditKeys.push_back(Qt::Key_F2);
         tAction->setShortcuts(tEditKeys);
 
-        tAction = tMenu.addAction("Duplicate contact");
+        tAction = tMenu.addAction(Homer::Gui::OverviewContactsWidget::tr("Duplicate contact"));
         QIcon tIcon2;
         tIcon2.addPixmap(QPixmap(":/images/22_22/Contact_Duplicate.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon2);
 
-        tAction = tMenu.addAction("Delete contact");
+        tAction = tMenu.addAction(Homer::Gui::OverviewContactsWidget::tr("Delete contact"));
         QIcon tIcon4;
         tIcon4.addPixmap(QPixmap(":/images/22_22/Minus.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon4);
@@ -247,7 +248,7 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
 
     if (CONTACTS.ContactCount() > 0)
     {
-        tAction = tMenu.addAction("Reset contact list");
+        tAction = tMenu.addAction(Homer::Gui::OverviewContactsWidget::tr("Reset contact list"));
         QIcon tIcon3;
         tIcon3.addPixmap(QPixmap(":/images/22_22/Reload.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon3);
@@ -257,51 +258,51 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
 
     tMenu.addSeparator();
 
-    tAction = tMenu.addAction("Check availability of contacts");
+    tAction = tMenu.addAction(Homer::Gui::OverviewContactsWidget::tr("Check availability of contacts"));
     tAction->setCheckable(true);
     tAction->setChecked(CONF.GetSipContactsProbing());
 
     QAction* tPopupRes = tMenu.exec(QCursor::pos());
     if (tPopupRes != NULL)
     {
-        if (tPopupRes->text().contains("Send message"))
+        if (tPopupRes->text().contains(Homer::Gui::OverviewContactsWidget::tr("Send message")))
         {
             ContactSelected();
             return;
         }
-        if (tPopupRes->text().contains("Conference"))
+        if (tPopupRes->text().contains(Homer::Gui::OverviewContactsWidget::tr("Call")))
         {
             ContactSelected(true);
             return;
         }
-        if (tPopupRes->text().contains("Add contact"))
+        if (tPopupRes->text().contains(Homer::Gui::OverviewContactsWidget::tr("Add contact")))
         {
             InsertNew();
             return;
         }
-        if (tPopupRes->text().contains("Duplicate contact"))
+        if (tPopupRes->text().contains(Homer::Gui::OverviewContactsWidget::tr("Duplicate contact")))
         {
             InsertCopy((ContactDescriptor*)mTvContacts->indexAt(tRelPos).internalPointer());
             return;
         }
-        if (tPopupRes->text().contains("Edit contact"))
+        if (tPopupRes->text().contains(Homer::Gui::OverviewContactsWidget::tr("Edit contact")))
         {
             EditSelected();
             return;
         }
-        if (tPopupRes->text().contains("Delete contact"))
+        if (tPopupRes->text().contains(Homer::Gui::OverviewContactsWidget::tr("Delete contact")))
         {
             DeleteSelected();
             return;
         }
 
-        if (tPopupRes->text().compare("Reset contact list") == 0)
+        if (tPopupRes->text().compare(Homer::Gui::OverviewContactsWidget::tr("Reset contact list")) == 0)
         {
             ResetList();
             return;
         }
 
-        if (tPopupRes->text().contains("Check availability of contacts"))
+        if (tPopupRes->text().contains(Homer::Gui::OverviewContactsWidget::tr("Check availability of contacts")))
         {
             bool tOldState = CONF.GetSipContactsProbing();
             CONF.SetSipContactsProbing(!CONF.GetSipContactsProbing());
@@ -404,7 +405,7 @@ bool OverviewContactsWidget::InsertNew(QString pParticipant)
 
     ContactEditDialog tCED;
 
-    tCED.setWindowTitle("Add new contact");
+    tCED.setWindowTitle(Homer::Gui::OverviewContactsWidget::tr("Add contact"));
 
     QString tUser;
     QString tPort;
@@ -447,7 +448,7 @@ void OverviewContactsWidget::InsertNew()
 {
     ContactEditDialog tCED;
 
-    tCED.setWindowTitle("Add new contact");
+    tCED.setWindowTitle(Homer::Gui::OverviewContactsWidget::tr("Add contact"));
     tCED.mLeAddress->setText("user_account@" + QString(MEETING.GetHostAdr().c_str()));
     tCED.mLeName->setText("optional contact name");
     tCED.mLeName->setFocus(Qt::TabFocusReason);
@@ -477,7 +478,7 @@ void OverviewContactsWidget::EditSelected()
 
     ContactEditDialog tCED;
 
-    tCED.setWindowTitle("Edit contact");
+    tCED.setWindowTitle(Homer::Gui::OverviewContactsWidget::tr("Edit contact"));
     Contact2Dialog(tContact, &tCED);
     tCED.mLeName->setFocus(Qt::TabFocusReason);
 
@@ -491,19 +492,43 @@ void OverviewContactsWidget::EditSelected()
 
 void OverviewContactsWidget::DeleteSelected()
 {
-    QModelIndex tIndex = mTvContacts->currentIndex();
-    ContactDescriptor* tContact = (ContactDescriptor*)tIndex.internalPointer();
-    if (tContact == NULL)
-    {
-        LOG(LOG_VERBOSE, "Cannot delete non existing contact");
+    ContactDescriptor* tContact;
+
+    if (mTvContacts->selectionModel() == NULL)
         return;
+
+    QModelIndexList tSelection = mTvContacts->selectionModel()->selectedRows();
+    if (tSelection.size() == 1)
+    {// selected one entry
+        QModelIndex tIndex = mTvContacts->currentIndex();
+        tContact = (ContactDescriptor*)tIndex.internalPointer();
+        QString tContactDescription = (tContact->Name != "") ? tContact->Name : QString(MEETING.SipCreateId(tContact->User.toStdString(), tContact->Host.toStdString(), tContact->Port.toStdString()).c_str());
+
+        QMessageBox tMB(QMessageBox::Question, Homer::Gui::OverviewContactsWidget::tr("Acknowledge deletion"), Homer::Gui::OverviewContactsWidget::tr("Do you want to delete \"") + tContactDescription + Homer::Gui::OverviewContactsWidget::tr("\" from the contact list?"), QMessageBox::Yes | QMessageBox::No);
+        if (tMB.exec() != QMessageBox::Yes)
+            return;
+
+    }else if (tSelection.size() > 1)
+    {// selected multiple entries
+        QMessageBox tMB(QMessageBox::Question, Homer::Gui::OverviewContactsWidget::tr("Acknowledge deletion"), Homer::Gui::OverviewContactsWidget::tr("Do you want to delete ") + QString("%1").arg(tSelection.size()) + Homer::Gui::OverviewContactsWidget::tr(" entries from the contact list?"), QMessageBox::Yes | QMessageBox::No);
+        if (tMB.exec() != QMessageBox::Yes)
+            return;
     }
 
-    QString tContactDescription = (tContact->Name != "") ? tContact->Name : QString(MEETING.SipCreateId(tContact->User.toStdString(), tContact->Host.toStdString(), tContact->Port.toStdString()).c_str());
-    QMessageBox tMB(QMessageBox::Question, "Acknowledge", "Do you really want to delete \"" + tContactDescription + "\" from your contact list?", QMessageBox::Yes | QMessageBox::No);
-
-    if (tMB.exec() == QMessageBox::Yes)
+    for (int i = tSelection.size() -1; i >= 0; i--)
     {
+        // get index
+        QModelIndex tIndex = tSelection[i];
+
+        // get direct access to contact entry
+        ContactDescriptor* tContact = (ContactDescriptor*)tIndex.internalPointer();
+        if (tContact == NULL)
+        {
+            LOG(LOG_VERBOSE, "Cannot delete non existing contact");
+            return;
+        }
+
+        // delete this contact entry
         CONTACTS.RemoveContact(tContact->Id);
     }
 }
@@ -536,7 +561,7 @@ void OverviewContactsWidget::InsertCopy(ContactDescriptor *pContact)
 
     ContactEditDialog tCED;
 
-    tCED.setWindowTitle("Insert duplicated contact");
+    tCED.setWindowTitle(Homer::Gui::OverviewContactsWidget::tr("Insert duplicated contact"));
     Contact2Dialog(pContact, &tCED);
     tCED.mLeName->setFocus(Qt::TabFocusReason);
     if (tCED.exec() == QDialog::Accepted)
@@ -556,7 +581,11 @@ void OverviewContactsWidget::ContactParticipantDoubleClick(const QModelIndex &pI
 
 void OverviewContactsWidget::SaveList()
 {
-    QString tContactsFile = QFileDialog::getSaveFileName(this, "Save contact list", CONF.GetContactFile(), "Contact list (*.xml)", NULL, CONF_NATIVE_DIALOGS);
+    QString tContactsFile = QFileDialog::getSaveFileName(this,
+                                                         Homer::Gui::OverviewContactsWidget::tr("Save contact list"),
+                                                         CONF.GetContactFile(),
+                                                         Homer::Gui::OverviewPlaylistWidget::tr("Contact list") + " (*.xml)",
+                                                         NULL, CONF_NATIVE_DIALOGS);
 
     if (tContactsFile.isEmpty())
         return;
@@ -569,7 +598,11 @@ void OverviewContactsWidget::SaveList()
 
 void OverviewContactsWidget::LoadList()
 {
-    QString tContactsFile = QFileDialog::getOpenFileName(this, "Load contact list", CONF.GetContactFile(), "Contact list (*.xml)", NULL, CONF_NATIVE_DIALOGS);
+    QString tContactsFile = QFileDialog::getOpenFileName(this,
+                                                         Homer::Gui::OverviewContactsWidget::tr("Load contact list"),
+                                                         CONF.GetContactFile(),
+                                                         Homer::Gui::OverviewPlaylistWidget::tr("Contact list") + " (*.xml)",
+                                                         NULL, CONF_NATIVE_DIALOGS);
 
     if (tContactsFile.isEmpty())
         return;

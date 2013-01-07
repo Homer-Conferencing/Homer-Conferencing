@@ -295,7 +295,7 @@ void MediaSourceGrabberThread::StopFile()
 
 bool MediaSourceGrabberThread::EofReached()
 {
-	return (((mEofReached) && (!mResetMediaSourceAsap) && (!mPlayNewFileAsap) && (!mSeekAsap)) || (mPlayNewFileAsap) || (mSetCurrentDeviceAsap));
+	return ((mEofReached) && (!mResetMediaSourceAsap) && (!mPlayNewFileAsap) && (!mSeekAsap) && (!mSetCurrentDeviceAsap));
 }
 
 QString MediaSourceGrabberThread::CurrentFile()

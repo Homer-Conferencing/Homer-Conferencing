@@ -84,7 +84,7 @@ public:
 
     static Configuration& GetInstance();
 
-    void Init(QString pAbsBinPath);
+    void Init(QString &pAbsBinPath);
     void SetDefaults();
 
     /* GIF support of Qt*/
@@ -118,12 +118,19 @@ public:
     bool GetVisibilityToolBarOnlineStatus();
 
     bool GetVisibilityMenuBar();
+    bool GetVisibilityStatusBar();
 
     bool GetVisibilityBroadcastAudio();
     bool GetVisibilityBroadcastVideo();
 
+    /* A/V preview dialog */
+    int GetPreviewSelection();
     bool GetPreviewSelectionVideo();
     bool GetPreviewSelectionAudio();
+    bool GetPreviewPreBufferingActivation();
+
+    /* configuration dialog */
+    int GetConfigurationSelection();
 
     bool GetParticipantWidgetsSeparation();
     bool GetParticipantWidgetsCloseImmediately();
@@ -157,6 +164,7 @@ public:
     bool GetAudioActivation();
     bool GetAudioActivationPushToTalk();
     bool GetAudioSkipSilence();
+    int GetAudioSkipSilenceThreshold();
     bool GetAudioRtp();
     QString GetAudioCodec();
     int GetAudioBitRate();
@@ -273,12 +281,19 @@ public:
     void SetVisibilityToolBarOnlineStatus(bool pActive);
 
     void SetVisibilityMenuBar(bool pActive);
+    void SetVisibilityStatusBar(bool pActive);
 
     void SetVisibilityBroadcastAudio(bool pActive);
     void SetVisibilityBroadcastVideo(bool pActive);
 
+    /* A/V preview dialog */
+    void SetPreviewSelection(int pSelection);
     void SetPreviewSelectionVideo(bool pActive);
     void SetPreviewSelectionAudio(bool pActive);
+    void SetPreviewPreBufferingActivation(bool pActivation);
+
+    /* configuration dialog */
+    void SetConfigurationSelection(int pSelection);
 
     void SetSmoothVideoPresentation(bool pActive);
     void SetAutoUpdateCheck(bool pActive);
@@ -308,6 +323,7 @@ public:
     void SetAudioActivation(bool pActivation);
     void SetAudioActivationPushToTalk(bool pActivation);
     void SetAudioSkipSilence(bool pActivation);
+    void SetAudioSkipSilenceThreshold(int pThreshold);
     void SetAudioRtp(bool pActivation);
     void SetAudioCodec(QString pCodec);
     void SetAudioBitRate(int pBitRate);

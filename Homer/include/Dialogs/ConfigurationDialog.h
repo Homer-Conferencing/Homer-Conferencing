@@ -66,6 +66,8 @@ private slots:
     void ShowAudioSourceInfo(QString pCurrentText);
     void ShowAudioSinkInfo(QString pCurrentText);
 
+    void ShowFineTuningAudioSilenceSuppresion();
+
     void ShowSuggestionsForStunServer();
     void GotAnswerForStunServerListRequest(bool pError);
 

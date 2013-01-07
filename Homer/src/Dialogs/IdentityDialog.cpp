@@ -29,6 +29,10 @@
 #include <Configuration.h>
 #include <Meeting.h>
 
+/*
+    TRANSLATOR Homer::IdentityDialog
+*/
+
 namespace Homer { namespace Gui {
 
 using namespace Homer::Conference;
@@ -68,7 +72,7 @@ void IdentityDialog::LoadConfiguration()
 	if(CONF.GetSipInfrastructureMode() == 1)
 		mLbServerAddress->setText(QString(MEETING.GetServerConferenceId().c_str()));
 	else
-		mLbServerAddress->setText("Server based contacting is disabled. Check configuration!");
+		mLbServerAddress->setText(Homer::Gui::IdentityDialog::tr("Server based contacting is disabled.\nCheck configuration!"));
 	QString tLocalContactAddr = QString(MEETING.GetLocalConferenceId().c_str());
 	switch(MEETING.GetHostPortTransport())
     {
@@ -94,11 +98,11 @@ void IdentityDialog::LoadConfiguration()
     if (MEETING.GetStunNatIp() != "")
         mLbNatAdr->setText(QString(MEETING.GetStunNatIp().c_str()));
     else
-        mLbNatAdr->setText("Not yet detected. Check configuration!");
+        mLbNatAdr->setText(Homer::Gui::IdentityDialog::tr("Not yet detected. Check configuration!"));
     if (MEETING.GetStunNatType() != "")
         mLbNatType->setText(QString(MEETING.GetStunNatType().c_str()));
     else
-        mLbNatType->setText("Not yet detected. Check configuration!");
+        mLbNatType->setText(Homer::Gui::IdentityDialog::tr("Not yet detected. Check configuration!"));
     mLeName->setText(CONF.GetUserName());
     mLeMail->setText(CONF.GetUserMail());
 }

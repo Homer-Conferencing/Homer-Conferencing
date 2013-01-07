@@ -226,6 +226,9 @@ public:
     virtual float GetFrameRatePlayout();
     virtual void SetFrameRate(float pFps);
 
+    /* audio/video */
+    virtual int GetInputBitRate();
+
     /* A/V sync. */
     virtual int64_t GetSynchronizationTimestamp(); // in us
     virtual int GetSynchronizationPoints(); // how many synchronization points for deriving synchronization timestamp were included in the input stream till now?
@@ -420,6 +423,9 @@ protected:
     int					mInputAudioSampleRate;
     int  				mInputAudioChannels;
     enum AVSampleFormat mInputAudioFormat;
+    int 				mInputBitRate;
+    /* audio silence */
+    int					mAudioSilenceThreshold;
     /* video */
     GrabResolutions     mSupportedVideoFormats;
     int                 mSourceResX;

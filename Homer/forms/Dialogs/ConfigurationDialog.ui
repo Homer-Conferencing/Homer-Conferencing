@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>824</width>
+    <width>877</width>
     <height>606</height>
    </rect>
   </property>
@@ -20,142 +20,6 @@
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
     <layout class="QGridLayout" name="gridLayout_2">
-     <item row="0" column="0">
-      <widget class="QListWidget" name="mLwSelectionList">
-       <property name="minimumSize">
-        <size>
-         <width>105</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>105</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="font">
-        <font>
-         <family>Arial</family>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
-       <property name="frameShape">
-        <enum>QFrame::WinPanel</enum>
-       </property>
-       <property name="frameShadow">
-        <enum>QFrame::Sunken</enum>
-       </property>
-       <property name="lineWidth">
-        <number>1</number>
-       </property>
-       <property name="iconSize">
-        <size>
-         <width>45</width>
-         <height>45</height>
-        </size>
-       </property>
-       <property name="textElideMode">
-        <enum>Qt::ElideMiddle</enum>
-       </property>
-       <property name="movement">
-        <enum>QListView::Static</enum>
-       </property>
-       <property name="flow">
-        <enum>QListView::LeftToRight</enum>
-       </property>
-       <property name="resizeMode">
-        <enum>QListView::Adjust</enum>
-       </property>
-       <property name="layoutMode">
-        <enum>QListView::SinglePass</enum>
-       </property>
-       <property name="spacing">
-        <number>0</number>
-       </property>
-       <property name="gridSize">
-        <size>
-         <width>100</width>
-         <height>100</height>
-        </size>
-       </property>
-       <property name="viewMode">
-        <enum>QListView::IconMode</enum>
-       </property>
-       <property name="uniformItemSizes">
-        <bool>true</bool>
-       </property>
-       <property name="batchSize">
-        <number>100</number>
-       </property>
-       <property name="wordWrap">
-        <bool>true</bool>
-       </property>
-       <property name="currentRow">
-        <number>-1</number>
-       </property>
-       <item>
-        <property name="text">
-         <string>Video</string>
-        </property>
-        <property name="textAlignment">
-         <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-        </property>
-        <property name="icon">
-         <iconset resource="../../resources/Icons.qrc">
-          <normaloff>:/images/46_46/VideoReel.png</normaloff>:/images/46_46/VideoReel.png</iconset>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Audio</string>
-        </property>
-        <property name="textAlignment">
-         <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-        </property>
-        <property name="icon">
-         <iconset resource="../../resources/Icons.qrc">
-          <normaloff>:/images/46_46/Speaker.png</normaloff>:/images/46_46/Speaker.png</iconset>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Network</string>
-        </property>
-        <property name="textAlignment">
-         <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-        </property>
-        <property name="icon">
-         <iconset resource="../../resources/Icons.qrc">
-          <normaloff>:/images/46_46/Network.png</normaloff>:/images/46_46/Network.png</iconset>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>General</string>
-        </property>
-        <property name="textAlignment">
-         <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-        </property>
-        <property name="icon">
-         <iconset resource="../../resources/Icons.qrc">
-          <normaloff>:/images/46_46/Gears.png</normaloff>:/images/46_46/Gears.png</iconset>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Notifications</string>
-        </property>
-        <property name="textAlignment">
-         <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-        </property>
-        <property name="icon">
-         <iconset resource="../../resources/Icons.qrc">
-          <normaloff>:/images/46_46/Flag.png</normaloff>:/images/46_46/Flag.png</iconset>
-        </property>
-       </item>
-      </widget>
-     </item>
      <item row="0" column="1">
       <widget class="QStackedWidget" name="mSwConfigPages">
        <property name="font">
@@ -1486,6 +1350,60 @@
                </spacer>
               </item>
               <item>
+               <widget class="QToolButton" name="mTbSkipSilenceFineTuning">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>16777215</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">QToolButton{
+background-color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-radius: 6px;
+border-color:  rgb(200, 200, 200);
+}
+QToolButton:checked{
+background-color: rgb(150, 150, 150);
+} 
+QToolButton:pressed{
+background-color: rgb(200, 200, 200);
+} 
+</string>
+                </property>
+                <property name="text">
+                 <string>Fine tuning</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="../../resources/Icons.qrc">
+                  <normaloff>:/images/22_22/Configuration.png</normaloff>:/images/22_22/Configuration.png</iconset>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>22</width>
+                  <height>22</height>
+                 </size>
+                </property>
+                <property name="toolButtonStyle">
+                 <enum>Qt::ToolButtonTextBesideIcon</enum>
+                </property>
+               </widget>
+              </item>
+              <item>
                <widget class="QCheckBox" name="mCbSkipSilence">
                 <property name="text">
                  <string/>
@@ -1868,7 +1786,7 @@
                  </size>
                 </property>
                 <property name="toolTip">
-                 <string>download suggestions from web server and select from this list</string>
+                 <string>download list of suggestions</string>
                 </property>
                 <property name="styleSheet">
                  <string notr="true">QToolButton{
@@ -2409,7 +2327,7 @@ background-color: rgb(150, 150, 150);
                  </size>
                 </property>
                 <property name="toolTip">
-                 <string>download suggestions from web server and select from this list</string>
+                 <string>download list of suggestions</string>
                 </property>
                 <property name="styleSheet">
                  <string notr="true">QToolButton{
@@ -2713,7 +2631,7 @@ background-color: rgb(150, 150, 150);
                  </font>
                 </property>
                 <property name="text">
-                 <string>Video/audio ports start at:</string>
+                 <string>Video/audio ports start from:</string>
                 </property>
                </widget>
               </item>
@@ -2845,16 +2763,6 @@ background-color: rgb(150, 150, 150);
                 <item>
                  <property name="text">
                   <string>English</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>German</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Russian</string>
                  </property>
                 </item>
                </widget>
@@ -3069,7 +2977,7 @@ background-color: rgb(150, 150, 150);
               <item>
                <widget class="QCheckBox" name="mCbFeatureConferencing">
                 <property name="toolTip">
-                 <string>(de)activate conferencing functions and the needed network ports</string>
+                 <string>(de)activate conferencing functions and related network ports</string>
                 </property>
                 <property name="text">
                  <string/>
@@ -3120,8 +3028,8 @@ background-color: rgb(150, 150, 150);
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>650</width>
-              <height>522</height>
+              <width>430</width>
+              <height>542</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_24">
@@ -3190,7 +3098,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>show message in systray</string>
+                     <string>show message in the systray</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -3217,7 +3125,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>play sound</string>
+                     <string>play sound file</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -3401,7 +3309,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>show message in systray</string>
+                     <string>show message in the systray</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -3428,7 +3336,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>play sound</string>
+                     <string>play sound file</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -3639,7 +3547,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>show message in systray</string>
+                     <string>show message in the systray</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -3666,7 +3574,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>play sound</string>
+                     <string>play sound file</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -3877,7 +3785,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>show message in systray</string>
+                     <string>show message in the systray</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -3904,7 +3812,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>play sound</string>
+                     <string>play sound file</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -4085,7 +3993,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>show message in systray</string>
+                     <string>show message in the systray</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -4112,7 +4020,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>play sound</string>
+                     <string>play sound file</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -4293,7 +4201,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>show message in systray</string>
+                     <string>show message in the systray</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -4320,7 +4228,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>play sound</string>
+                     <string>play sound file</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -4501,7 +4409,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>show message in systray</string>
+                     <string>show message in the systray</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -4528,7 +4436,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>play sound</string>
+                     <string>play sound file</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -4736,7 +4644,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>show message in systray</string>
+                     <string>show message in the systray</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -4763,7 +4671,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>play sound</string>
+                     <string>play sound file</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -4944,7 +4852,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>show message in systray</string>
+                     <string>show message in the systray</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -4971,7 +4879,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>play sound</string>
+                     <string>play sound file</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -5179,7 +5087,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>show message in systray</string>
+                     <string>show message in the systray</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -5206,7 +5114,7 @@ background-color: rgb(150, 150, 150);
                      </font>
                     </property>
                     <property name="toolTip">
-                     <string>play sound</string>
+                     <string>play sound file</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -5701,6 +5609,209 @@ background-color: rgb(150, 150, 150);
          </item>
         </layout>
        </widget>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QListWidget" name="mLwSelectionList">
+       <property name="minimumSize">
+        <size>
+         <width>134</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>134</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="palette">
+        <palette>
+         <active>
+          <colorrole role="Base">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>250</red>
+             <green>250</green>
+             <blue>255</blue>
+            </color>
+           </brush>
+          </colorrole>
+          <colorrole role="Window">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>255</red>
+             <green>255</green>
+             <blue>255</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </active>
+         <inactive>
+          <colorrole role="Base">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>250</red>
+             <green>250</green>
+             <blue>255</blue>
+            </color>
+           </brush>
+          </colorrole>
+          <colorrole role="Window">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>255</red>
+             <green>255</green>
+             <blue>255</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </inactive>
+         <disabled>
+          <colorrole role="Base">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>255</red>
+             <green>255</green>
+             <blue>255</blue>
+            </color>
+           </brush>
+          </colorrole>
+          <colorrole role="Window">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>255</red>
+             <green>255</green>
+             <blue>255</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </disabled>
+        </palette>
+       </property>
+       <property name="font">
+        <font>
+         <family>Arial</family>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QListWidget { padding-top: 10px;}</string>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::WinPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Sunken</enum>
+       </property>
+       <property name="lineWidth">
+        <number>1</number>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>100</width>
+         <height>46</height>
+        </size>
+       </property>
+       <property name="textElideMode">
+        <enum>Qt::ElideNone</enum>
+       </property>
+       <property name="movement">
+        <enum>QListView::Static</enum>
+       </property>
+       <property name="flow">
+        <enum>QListView::LeftToRight</enum>
+       </property>
+       <property name="resizeMode">
+        <enum>QListView::Adjust</enum>
+       </property>
+       <property name="layoutMode">
+        <enum>QListView::SinglePass</enum>
+       </property>
+       <property name="gridSize">
+        <size>
+         <width>130</width>
+         <height>100</height>
+        </size>
+       </property>
+       <property name="viewMode">
+        <enum>QListView::IconMode</enum>
+       </property>
+       <property name="uniformItemSizes">
+        <bool>true</bool>
+       </property>
+       <property name="batchSize">
+        <number>130</number>
+       </property>
+       <property name="wordWrap">
+        <bool>true</bool>
+       </property>
+       <property name="selectionRectVisible">
+        <bool>false</bool>
+       </property>
+       <property name="currentRow">
+        <number>-1</number>
+       </property>
+       <item>
+        <property name="text">
+         <string> Video </string>
+        </property>
+        <property name="textAlignment">
+         <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+        </property>
+        <property name="icon">
+         <iconset resource="../../resources/Icons.qrc">
+          <normaloff>:/images/46_46/VideoReel.png</normaloff>:/images/46_46/VideoReel.png</iconset>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string> Audio </string>
+        </property>
+        <property name="textAlignment">
+         <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+        </property>
+        <property name="icon">
+         <iconset resource="../../resources/Icons.qrc">
+          <normaloff>:/images/46_46/Speaker.png</normaloff>:/images/46_46/Speaker.png</iconset>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string> Network </string>
+        </property>
+        <property name="textAlignment">
+         <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+        </property>
+        <property name="icon">
+         <iconset resource="../../resources/Icons.qrc">
+          <normaloff>:/images/46_46/Network.png</normaloff>:/images/46_46/Network.png</iconset>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string> General </string>
+        </property>
+        <property name="textAlignment">
+         <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+        </property>
+        <property name="icon">
+         <iconset resource="../../resources/Icons.qrc">
+          <normaloff>:/images/46_46/Gears.png</normaloff>:/images/46_46/Gears.png</iconset>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string> Notifications </string>
+        </property>
+        <property name="textAlignment">
+         <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+        </property>
+        <property name="icon">
+         <iconset resource="../../resources/Icons.qrc">
+          <normaloff>:/images/46_46/Flag.png</normaloff>:/images/46_46/Flag.png</iconset>
+        </property>
+       </item>
       </widget>
      </item>
     </layout>

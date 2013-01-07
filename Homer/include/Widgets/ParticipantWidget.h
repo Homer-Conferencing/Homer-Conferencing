@@ -112,7 +112,7 @@ class ParticipantWidget:
     Q_OBJECT;
 
 public:
-    ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer = NULL, MediaSourceMuxer *pAudioSourceMuxer = NULL, QString pParticipant = "unknown", enum TransportType pTransport = SOCKET_UDP);
+    ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer = NULL, MediaSourceMuxer *pAudioSourceMuxer = NULL, QString pParticipant = "unknown", enum TransportType pTransport = SOCKET_UDP);
 
     virtual ~ParticipantWidget();
 
@@ -145,6 +145,9 @@ public:
 
     void SeekMovieFileRelative(float pSeconds);
 
+    /* Mosaic mode */
+    void ToggleMosaicMode(bool pActive);
+
 private slots:
     void ActionPlayPauseMovieFile(QString pFileName = "");
     void ActionRecordMovieFile();
@@ -163,6 +166,10 @@ private slots:
 
     void UpdateMenuSettings();
 
+    /* AV controls */
+    void SelectedMenuAVControls(QAction *pAction);
+    void ToggleAVControlsVisibility();
+
 private:
 	friend class VideoWidget;
 
@@ -174,7 +181,7 @@ private:
     void ShowAudioVideoWidget();
 
 	void ResizeAVView(int pSize);
-	void Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pMessageMenu, QString pParticipant, enum TransportType pTransport);
+	void Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu, QMenu *pMessageMenu, QString pParticipant, enum TransportType pTransport);
     void FindSipInterface(QString pSessionName);
     void UpdateMovieControls();
     void UpdateAVStatistics();
@@ -205,6 +212,9 @@ private:
     /* user activity handling */
     void ShowFullscreenMovieControls();
     void HideFullscreenMovieControls();
+
+    /* AV controls */
+    void InitializeMenuAVControls(QMenu *pMenu);
 
     void ShowNewState();
     void ShowStreamPosition(int64_t pCurPos, int64_t pEndPos);
@@ -237,8 +247,11 @@ private:
     QMenu                   *mMenuSettings;
     QMenu                   *mMenuSettingsVideo;
     QMenu                   *mMenuSettingsAudio;
+    QMenu					*mMenuSettingsAVControls;
     QMenu                   *mMenuSettingsMessages;
     QMenu                   *mMenuSettingsSessionInfo;
+    /* A/V controls */
+    QAction					*mAssignedActionAVControls;
     /* A/V synch. */
     int64_t					mLastAudioSynchronizationTimestamp;
     int64_t					mLastVideoSynchronizationTimestamp;
@@ -251,6 +264,10 @@ private:
     bool                    mAVSynchActive;
     bool                    mAVPreBuffering;
     bool                    mAvPreBufferingAutoRestart;
+    /* Mosaic mode */
+    bool					mMosaicMode;
+    bool					mMosaicModeAVControlsWereVisible;
+    QWidget					*mMosaicModeGenericTitleWidget;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

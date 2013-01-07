@@ -201,7 +201,7 @@
            </font>
           </property>
           <property name="toolTip">
-           <string>communication partner's name</string>
+           <string>participants's name</string>
           </property>
           <property name="frameShape">
            <enum>QFrame::NoFrame</enum>
@@ -238,7 +238,7 @@
            </size>
           </property>
           <property name="toolTip">
-           <string>add this new contact to your list</string>
+           <string>add to contact list</string>
           </property>
           <property name="text">
            <string>Add contact</string>
@@ -273,7 +273,7 @@
            </size>
           </property>
           <property name="toolTip">
-           <string>send local files(s) to communication partner</string>
+           <string>send local files(s)</string>
           </property>
           <property name="text">
            <string>Send file(s)</string>
@@ -327,10 +327,10 @@
            </size>
           </property>
           <property name="toolTip">
-           <string>manage session</string>
+           <string>call/hangup</string>
           </property>
           <property name="text">
-           <string>Conference</string>
+           <string>Call</string>
           </property>
           <property name="icon">
            <iconset resource="../../resources/Icons.qrc">

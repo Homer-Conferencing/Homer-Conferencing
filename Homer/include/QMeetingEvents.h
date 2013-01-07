@@ -71,13 +71,13 @@ public:
 };
 
 class AddVideoPreviewEvent:
-    public Homer::Conference::TEvent<AddVideoPreviewEvent, ADD_VIDEO_PREVIEW>
+	public Homer::Conference::TEvent<AddVideoPreviewEvent, ADD_VIDEO_PREVIEW>
 {
 public:
-    AddVideoPreviewEvent()
-    {
+	AddVideoPreviewEvent()
+	{
 
-    }
+	}
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -82,7 +82,7 @@ void PlaybackSlider::contextMenuEvent(QContextMenuEvent *pContextMenuEvent)
 
     QMenu tMenu(this);
 
-    tAction = tMenu.addAction("Adjust A/V drift");
+    tAction = tMenu.addAction(Homer::Gui::PlaybackSlider::tr("Adjust A/V drift"));
     QIcon tIcon2;
     tIcon2.addPixmap(QPixmap(":/images/22_22/Configuration_Video.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon2);
@@ -93,7 +93,7 @@ void PlaybackSlider::contextMenuEvent(QContextMenuEvent *pContextMenuEvent)
     QAction* tPopupRes = tMenu.exec(pContextMenuEvent->globalPos());
     if (tPopupRes != NULL)
     {
-        if (tPopupRes->text().compare("Adjust A/V drift") == 0)
+        if (tPopupRes->text().compare(Homer::Gui::PlaybackSlider::tr("Adjust A/V drift")) == 0)
         {
             mParticipantWidget->ActionToggleUserAVDriftWidget();
             return;

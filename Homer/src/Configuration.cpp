@@ -48,6 +48,48 @@ using namespace Homer::Conference;
 Configuration sConfiguration;
 
 ///////////////////////////////////////////////////////////////////////////////
+// define some additional default translations
+
+QString tDefaultDialogTranslations[] = {
+QT_TRANSLATE_NOOP("QTextControl", "&Undo"),
+QT_TRANSLATE_NOOP("QTextControl", "&Redo"),
+QT_TRANSLATE_NOOP("QTextControl", "Cu&t"),
+QT_TRANSLATE_NOOP("QTextControl", "&Copy"),
+QT_TRANSLATE_NOOP("QTextControl", "Copy &Link Location"),
+QT_TRANSLATE_NOOP("QTextControl", "&Paste"),
+QT_TRANSLATE_NOOP("QTextControl", "Delete"),
+QT_TRANSLATE_NOOP("QTextControl", "Select All"),
+QT_TRANSLATE_NOOP("QFileSystemModel", "Name"),
+QT_TRANSLATE_NOOP("QFileSystemModel", "Size"),
+QT_TRANSLATE_NOOP("QFileSystemModel", "Kind"),
+QT_TRANSLATE_NOOP("QFileSystemModel", "Type"),
+QT_TRANSLATE_NOOP("QFileSystemModel", "Date Modified"),
+QT_TRANSLATE_NOOP("QFileSystemModel", "Show Size"),
+QT_TRANSLATE_NOOP("QFileSystemModel", "Show Type"),
+QT_TRANSLATE_NOOP("QFileSystemModel", "Show Date Modified"),
+QT_TRANSLATE_NOOP("QFileDialog", "Computer"),
+QT_TRANSLATE_NOOP("QFileDialog", "Recent Places"),
+QT_TRANSLATE_NOOP("QFileDialog", "Show "),
+QT_TRANSLATE_NOOP("QFileDialog", "Look in:"),
+QT_TRANSLATE_NOOP("QFileDialog", "File &name:"),
+QT_TRANSLATE_NOOP("QFileDialog", "Files of type:"),
+QT_TRANSLATE_NOOP("QFileDialog", "Back"),
+QT_TRANSLATE_NOOP("QFileDialog", "Forward"),
+QT_TRANSLATE_NOOP("QFileDialog", "Parent Directory"),
+QT_TRANSLATE_NOOP("QFileDialog", "Create New Folder"),
+QT_TRANSLATE_NOOP("QFileDialog", "List View"),
+QT_TRANSLATE_NOOP("QFileDialog", "Detail View"),
+QT_TRANSLATE_NOOP("QFileDialog", "&Open"),
+QT_TRANSLATE_NOOP("QFileDialog", "&Save"),
+QT_TRANSLATE_NOOP("QFileDialog", "%1 already exists.\nDo you want to replace it?"),
+QT_TRANSLATE_NOOP("QDialogButtonBox", "Okay"),
+QT_TRANSLATE_NOOP("QDialogButtonBox", "Cancel"),
+QT_TRANSLATE_NOOP("QDialogButtonBox", "Reset"),
+QT_TRANSLATE_NOOP("QDialogButtonBox", "&Yes"),
+QT_TRANSLATE_NOOP("QDialogButtonBox", "&No")
+};
+
+///////////////////////////////////////////////////////////////////////////////
 
 Configuration::Configuration()
 {
@@ -73,7 +115,7 @@ Configuration& Configuration::GetInstance()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void Configuration::Init(QString pAbsBinPath)
+void Configuration::Init(QString &pAbsBinPath)
 {
     mAbsBinPath = pAbsBinPath;
 	#ifdef APPLE
@@ -86,6 +128,7 @@ void Configuration::Init(QString pAbsBinPath)
 		if (tPath != NULL)
 		{
 			mAbsBinPath = QString(tPath) + "/Contents/Resources/";
+			pAbsBinPath = mAbsBinPath;
 		}
 	#endif
 }
@@ -276,6 +319,13 @@ void Configuration::SetVisibilityMenuBar(bool pActive)
     mQSettings->endGroup();
 }
 
+void Configuration::SetVisibilityStatusBar(bool pActive)
+{
+    mQSettings->beginGroup("Global");
+    mQSettings->setValue("VisibilityStatusBar", pActive);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetVisibilityBroadcastAudio(bool pActive)
 {
     mQSettings->beginGroup("Global");
@@ -290,17 +340,38 @@ void Configuration::SetVisibilityBroadcastVideo(bool pActive)
     mQSettings->endGroup();
 }
 
+void Configuration::SetPreviewSelection(int pSelection)
+{
+    mQSettings->beginGroup("PreviewDialog");
+    mQSettings->setValue("Selection", pSelection);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetPreviewSelectionVideo(bool pActive)
 {
-    mQSettings->beginGroup("Playback");
-    mQSettings->setValue("PreviewSelectionVideo", pActive);
+    mQSettings->beginGroup("PreviewDialog");
+    mQSettings->setValue("SelectionVideo", pActive);
     mQSettings->endGroup();
 }
 
 void Configuration::SetPreviewSelectionAudio(bool pActive)
 {
-    mQSettings->beginGroup("Playback");
-    mQSettings->setValue("PreviewSelectionAudio", pActive);
+    mQSettings->beginGroup("PreviewDialog");
+    mQSettings->setValue("SelectionAudio", pActive);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetPreviewPreBufferingActivation(bool pActivation)
+{
+    mQSettings->beginGroup("PreviewDialog");
+    mQSettings->setValue("PreBufferingActivation", pActivation);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetConfigurationSelection(int pSelection)
+{
+    mQSettings->beginGroup("ConfigurationDialog");
+    mQSettings->setValue("Selection", pSelection);
     mQSettings->endGroup();
 }
 
@@ -455,6 +526,13 @@ void Configuration::SetAudioSkipSilence(bool pActivation)
 {
     mQSettings->beginGroup("Streaming");
     mQSettings->setValue("AudioStreamSkipSilence", pActivation);
+    mQSettings->endGroup();
+}
+
+void Configuration::SetAudioSkipSilenceThreshold(int pThreshold)
+{
+    mQSettings->beginGroup("Streaming");
+    mQSettings->setValue("AudioStreamSkipSilenceThreshold", pThreshold);
     mQSettings->endGroup();
 }
 
@@ -964,14 +1042,34 @@ bool Configuration::GetVisibilityMenuBar()
     return mQSettings->value("Global/VisibilityMenuBar", true).toBool();
 }
 
+bool Configuration::GetVisibilityStatusBar()
+{
+    return mQSettings->value("Global/VisibilityStatusBar", false).toBool();
+}
+
+int Configuration::GetPreviewSelection()
+{
+    return mQSettings->value("PreviewDialog/Selection", 2).toInt();
+}
+
 bool Configuration::GetPreviewSelectionVideo()
 {
-    return mQSettings->value("Playback/PreviewSelectionVideo", true).toBool();
+    return mQSettings->value("PreviewDialog/SelectionVideo", true).toBool();
 }
 
 bool Configuration::GetPreviewSelectionAudio()
 {
-    return mQSettings->value("Playback/PreviewSelectionAudio", true).toBool();
+    return mQSettings->value("PreviewDialog/SelectionAudio", true).toBool();
+}
+
+bool Configuration::GetPreviewPreBufferingActivation()
+{
+    return mQSettings->value("PreviewDialog/PreBufferingActivation", true).toBool();
+}
+
+int Configuration::GetConfigurationSelection()
+{
+    return mQSettings->value("ConfigurationDialog/Selection", 0).toInt();
 }
 
 bool Configuration::GetSmoothVideoPresentation()
@@ -1101,6 +1199,11 @@ bool Configuration::GetAudioActivationPushToTalk()
 bool Configuration::GetAudioSkipSilence()
 {
     return mQSettings->value("Streaming/AudioStreamSkipSilence", false).toBool();
+}
+
+int Configuration::GetAudioSkipSilenceThreshold()
+{
+    return mQSettings->value("Streaming/AudioStreamSkipSilenceThreshold", 128).toInt();
 }
 
 bool Configuration::GetAudioRtp()

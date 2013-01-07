@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 2010 Thomas Volkert <thomas@homer-conferencing.com>
+ * Copyright (C) 2013 Thomas Volkert <thomas@homer-conferencing.com>
  *
  * This software is free software.
  * Your are allowed to redistribute it and/or modify it under the terms of
@@ -20,62 +20,52 @@
  *****************************************************************************/
 
 /*
- * Purpose: tool buttons for streaming control
+ * Purpose: Dialog for fine tuning of audio silence suppresion
  * Author:  Thomas Volkert
- * Since:   2010-11-17
+ * Since:   2013-01-06
  */
 
-#ifndef _STREAMING_CONTROL_WIDGET
-#define _STREAMING_CONTROL_WIDGET
+#ifndef _CONFIGURATION_AUDIO_SILENCE_DIALOG_
+#define _CONFIGURATION_AUDIO_SILENCE_DIALOG_
 
-#include <MediaSourceDesktop.h>
-#include <Widgets/VideoWidget.h>
 #include <Widgets/AudioWidget.h>
-#include <Widgets/ParticipantWidget.h>
-#include <MainWindow.h>
-#include <ui_StreamingControlWidget.h>
+
+#include <ui_ConfigurationAudioSilenceDialog.h>
 
 namespace Homer { namespace Gui {
+using namespace Homer::Multimedia;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class MainWindow;
-class StreamingControlWidget :
-    public QWidget,
-    public Ui_StreamingControlWidget
+class ConfigurationAudioSilenceDialog :
+    public QDialog,
+    public Ui_ConfigurationAudioSilenceDialog
 {
     Q_OBJECT;
 public:
     /// The default constructor
-    StreamingControlWidget(MainWindow *pMainWindow, QMenu *pMenu, ParticipantWidget* pBroadcastParticipantWidget, MediaSourceDesktop *pMediaSourceDesktop);
+    ConfigurationAudioSilenceDialog(QWidget* pParent, AudioWorkerThread *pWorker);
 
     /// The destructor.
-    virtual ~StreamingControlWidget();
+    virtual ~ConfigurationAudioSilenceDialog();
 
-    void SetVideoInputSelectionVisible(bool pVisible = true);
-
-public slots:
-	void SelectPushToTalkMode(bool pActive);
+    virtual int exec();
 
 private slots:
-    void StartScreenSegmentStreaming();
-    void StartVoiceStreaming();
-    void StartCameraStreaming();
-    void StartFileStreaming();
-	void SelectedNewVideoInputStream(int pIndex);
+	void ChangedThreshold(int pValue);
+    void ClickedButton(QAbstractButton *pButton);
 
 private:
-    void timerEvent(QTimerEvent *pEvent);
+    virtual void timerEvent(QTimerEvent *pEvent);
     void initializeGUI();
+    void LoadConfiguration();
+    void SaveConfiguration();
 
-    VideoWorkerThread       *mVideoWorker;
-    AudioWorkerThread       *mAudioWorker;
-    ParticipantWidget       *mBroadcastParticipantWidget;
-    MediaSourceDesktop      *mMediaSourceDesktop;
-    int 					mTimerId;
-    QAction					*mAssignedActionPTTMode;
-    QAction					*mAssignedActionAVPreview;
-    QMenu					*mMenuSource;
+    AudioWorkerThread 	*mWorker;
+    int					mLastAudioLevel;
+    int64_t				mLastSkippedChunks;
+    /* periodic tasks */
+    int                 mTimerId;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

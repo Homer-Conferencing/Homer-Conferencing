@@ -100,18 +100,18 @@ void MessageHistory::contextMenuEvent(QContextMenuEvent *pEvent)
 
     if (mSomeTextSelected)
     {
-        tAction = tMenu.addAction("Copy to clipboard");
+        tAction = tMenu.addAction(Homer::Gui::MessageHistory::tr("Copy to clipboard"));
         QIcon tIcon3;
         tIcon3.addPixmap(QPixmap(":/images/22_22/Save_Clipboard.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon3);
     }
 
-    tAction = tMenu.addAction("Save history");
+    tAction = tMenu.addAction(Homer::Gui::MessageHistory::tr("Save history"));
     QIcon tIcon2;
     tIcon2.addPixmap(QPixmap(":/images/22_22/Save.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon2);
 
-    tAction = tMenu.addAction("Close messages");
+    tAction = tMenu.addAction(Homer::Gui::MessageHistory::tr("Close"));
     QIcon tIcon1;
     tIcon1.addPixmap(QPixmap(":/images/22_22/Close.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon1);
@@ -119,17 +119,17 @@ void MessageHistory::contextMenuEvent(QContextMenuEvent *pEvent)
     QAction* tPopupRes = tMenu.exec(pEvent->globalPos());
     if (tPopupRes != NULL)
     {
-        if (tPopupRes->text().compare("Copy to clipboard") == 0)
+        if (tPopupRes->text().compare(Homer::Gui::MessageHistory::tr("Copy to clipboard")) == 0)
         {
             copy();
             return;
         }
-        if (tPopupRes->text().compare("Close messages") == 0)
+        if (tPopupRes->text().compare(Homer::Gui::MessageHistory::tr("Close")) == 0)
         {
         	QApplication::postEvent(parentWidget()->parentWidget(), new QCloseEvent());
             return;
         }
-        if (tPopupRes->text().compare("Save history") == 0)
+        if (tPopupRes->text().compare(Homer::Gui::MessageHistory::tr("Save history")) == 0)
         {
             Save();
             return;
@@ -163,7 +163,7 @@ void MessageHistory::textSelected(bool pAvail)
 void MessageHistory::Save()
 {
     QString tFileName = QFileDialog::getSaveFileName(this,
-                                                     "Save message history",
+                                                     Homer::Gui::MessageHistory::tr("Save message history"),
                                                      QDir::homePath() + "/MessageHistory.txt",
                                                      "Text File (*.txt)",
                                                      NULL,

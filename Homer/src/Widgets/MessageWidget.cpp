@@ -82,6 +82,8 @@ void MessageWidget::Init(QMenu *pMenu, QString pParticipant, enum TransportType 
         tIcon.addPixmap(QPixmap(":/images/22_22/Unchecked.png"), QIcon::Normal, QIcon::Off);
         mAssignedAction->setIcon(tIcon);
     }
+    if (mAssignedAction != NULL)
+        connect(mAssignedAction, SIGNAL(triggered()), this, SLOT(ToggleVisibility()));
 
     //####################################################################
     //### update GUI
@@ -93,8 +95,6 @@ void MessageWidget::Init(QMenu *pMenu, QString pParticipant, enum TransportType 
     #endif
 
     setWindowTitle(mParticipant);
-    if (mAssignedAction != NULL)
-        connect(mAssignedAction, SIGNAL(triggered()), this, SLOT(ToggleVisibility()));
     connect(mTeMessage, SIGNAL(SendTrigger()), this, SLOT(SendMessage()));
     connect(mPbFile, SIGNAL(released()), this, SLOT(SendFile()));
     connect(mPbAdd, SIGNAL(released()), this, SLOT(AddPArticipantToContacts()));
@@ -152,37 +152,37 @@ void MessageWidget::InitializeMenuMessagesSettings(QMenu *pMenu)
 
     pMenu->clear();
 
-    tAction = pMenu->addAction(QPixmap(":/images/22_22/Save.png"), "Save history");
+    tAction = pMenu->addAction(QPixmap(":/images/22_22/Save.png"), Homer::Gui::MessageWidget::tr("Save history"));
     if (isVisible())
-        tAction = pMenu->addAction(QPixmap(":/images/22_22/Close.png"), "Close messages");
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Close.png"), Homer::Gui::MessageWidget::tr("Close"));
     else
-        tAction = pMenu->addAction(QPixmap(":/images/22_22/Message.png"), "Show messages");
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Screencasting.png"), Homer::Gui::MessageWidget::tr("Show"));
     pMenu->addSeparator();
 
     if ((!IsKnownContact()) && (mParticipant != BROACAST_IDENTIFIER))
-        tAction = pMenu->addAction(QPixmap(":/images/22_22/Plus.png"), "Add to contacts");
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Plus.png"), Homer::Gui::MessageWidget::tr("Add contact"));
 }
 
 void MessageWidget::SelectedMenuMessagesSettings(QAction *pAction)
 {
     if (pAction != NULL)
     {
-        if (pAction->text().compare("Show messages") == 0)
+        if (pAction->text().compare(Homer::Gui::MessageWidget::tr("Show")) == 0)
         {
             ToggleVisibility();
             return;
         }
-        if (pAction->text().compare("Close messages") == 0)
+        if (pAction->text().compare(Homer::Gui::MessageWidget::tr("Close")) == 0)
         {
             ToggleVisibility();
             return;
         }
-        if (pAction->text().compare("Save history") == 0)
+        if (pAction->text().compare(Homer::Gui::MessageWidget::tr("Save history")) == 0)
         {
             mTbMessageHistory->Save();
             return;
         }
-        if (pAction->text().compare("Add to contacts") == 0)
+        if (pAction->text().compare(Homer::Gui::MessageWidget::tr("Add to contacts")) == 0)
         {
             LOG(LOG_VERBOSE, "Adding this participant to contacts");
             AddPArticipantToContacts();
@@ -403,7 +403,7 @@ void MessageWidget::SendMessage()
         AddMessage(QString(MEETING.GetLocalUserName().c_str()), mTeMessage->toPlainText(), true);
         mTeMessage->Clear();
     }else
-        ShowError("Error occurred", "Message could not be sent!");
+        ShowError(Homer::Gui::MessageWidget::tr("Error occurred"), Homer::Gui::MessageWidget::tr("Message could not be sent!"));
 }
 
 void MessageWidget::SendFile(QList<QUrl> *tFileUrls)
@@ -412,7 +412,7 @@ void MessageWidget::SendFile(QList<QUrl> *tFileUrls)
 
     if ((tFileUrls == NULL) || (tFileUrls->size() == 0))
     {
-        tSelectedFiles = QFileDialog::getOpenFileNames(this,       "Select files for transfer to " + mParticipant,
+        tSelectedFiles = QFileDialog::getOpenFileNames(this, Homer::Gui::MessageWidget::tr("Select files for transfer to") + " " + mParticipant,
                                                                    CONF.GetDataDirectory(),
                                                                    "All files (*)",
                                                                    NULL,
@@ -457,17 +457,17 @@ void MessageWidget::UpdateParticipantState(int pState)
     {
         case CONTACT_UNDEFINED_STATE:
             mLbPartitipantState->setEnabled(false);
-            mLbPartitipantState->setToolTip("undefined contact state");
+            mLbPartitipantState->setToolTip(Homer::Gui::MessageWidget::tr("undefined state"));
             break;
         case CONTACT_UNAVAILABLE:
             mLbPartitipantState->setEnabled(true);
             mLbPartitipantState->setPixmap(QPixmap(":/images/22_22/Error.png").scaled(24, 24, Qt::KeepAspectRatio, Qt::FastTransformation));
-            mLbPartitipantState->setToolTip("contact is unavailable");
+            mLbPartitipantState->setToolTip(Homer::Gui::MessageWidget::tr("contact unavailable"));
             break;
         case CONTACT_AVAILABLE:
             mLbPartitipantState->setEnabled(true);
             mLbPartitipantState->setPixmap(QPixmap(":/images/32_32/UserAvailable.png"));
-            mLbPartitipantState->setToolTip("contact is available");
+            mLbPartitipantState->setToolTip(Homer::Gui::MessageWidget::tr("contact available"));
             break;
         default:
             LOG(LOG_ERROR, "Unknown state given");

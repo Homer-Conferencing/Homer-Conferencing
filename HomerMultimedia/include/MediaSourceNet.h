@@ -47,11 +47,6 @@ namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// maximum number of acceptable continuous receive errors
-#define MEDIA_SOURCE_NET_MAX_RECEIVE_ERRORS                           3
-
-///////////////////////////////////////////////////////////////////////////////
-
 struct TCPFragmentHeader{
     unsigned int    FragmentSize;
 };

@@ -106,7 +106,9 @@ void VideoScaler::StopScaler()
 
             // write fake data to awake scaler thread as long as it still runs
             mInputFifo->WriteFifo(tTmp, 0);
-        }while(!StopThread(1000));
+
+            Suspend(100 * 1000);
+        }while(IsRunning());
     }
 
     delete mInputFifo;

@@ -326,6 +326,7 @@ void OverviewNetworkStreamsWidget::closeEvent(QCloseEvent* pEvent)
 
 void OverviewNetworkStreamsWidget::SetVisible(bool pVisible)
 {
+	CONF.SetVisibilityNetworkStreamsWidget(pVisible);
     if (pVisible)
     {
         move(mWinPos);
@@ -346,7 +347,7 @@ void OverviewNetworkStreamsWidget::contextMenuEvent(QContextMenuEvent *pContextM
 
     QMenu tMenu(this);
 
-    tAction = tMenu.addAction("Save values");
+    tAction = tMenu.addAction(Homer::Gui::OverviewNetworkStreamsWidget::tr("Save values"));
     QIcon tIcon1;
     tIcon1.addPixmap(QPixmap(":/images/22_22/Save.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon1);
@@ -354,7 +355,7 @@ void OverviewNetworkStreamsWidget::contextMenuEvent(QContextMenuEvent *pContextM
     QAction* tPopupRes = tMenu.exec(pContextMenuEvent->globalPos());
     if (tPopupRes != NULL)
     {
-        if (tPopupRes->text().compare("Save values") == 0)
+        if (tPopupRes->text().compare(Homer::Gui::OverviewNetworkStreamsWidget::tr("Save values")) == 0)
         {
             SaveValues();
             return;
@@ -368,7 +369,7 @@ void OverviewNetworkStreamsWidget::TwOutgoingStreamsCustomContextMenuEvent(const
 
     QMenu tMenu(this);
 
-    tAction = tMenu.addAction("Save values");
+    tAction = tMenu.addAction(Homer::Gui::OverviewNetworkStreamsWidget::tr("Save values"));
     QIcon tIcon1;
     tIcon1.addPixmap(QPixmap(":/images/22_22/Save.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon1);
@@ -376,7 +377,7 @@ void OverviewNetworkStreamsWidget::TwOutgoingStreamsCustomContextMenuEvent(const
     QAction* tPopupRes = tMenu.exec(QCursor::pos());
     if (tPopupRes != NULL)
     {
-        if (tPopupRes->text().compare("Save values") == 0)
+        if (tPopupRes->text().compare(Homer::Gui::OverviewNetworkStreamsWidget::tr("Save values")) == 0)
         {
             SaveValues();
             return;
@@ -387,9 +388,9 @@ void OverviewNetworkStreamsWidget::TwOutgoingStreamsCustomContextMenuEvent(const
 void OverviewNetworkStreamsWidget::SaveValues()
 {
     QString tFileName = QFileDialog::getSaveFileName(this,
-                                                     "Save network streams parameters",
-                                                     QDir::homePath() + "/NetworkStreamsParameters.csv",
-                                                     "Comma-Separated Values File (*.csv)",
+                                                     Homer::Gui::OverviewNetworkStreamsWidget::tr("Save network streams parameters"),
+                                                     QDir::homePath() + Homer::Gui::OverviewNetworkStreamsWidget::tr("/NetworkStreamsParameters.csv"),
+                                                     Homer::Gui::OverviewNetworkStreamsWidget::tr("Comma-Separated Values File") + " (*.csv)",
                                                      NULL,
                                                      CONF_NATIVE_DIALOGS);
 

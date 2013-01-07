@@ -193,7 +193,7 @@ void HelpDialog::GotAnswerForHelpRequest(bool pError)
     if (pError)
     {
         mLbWaiting->setText("<font bgcolor='yellow' color='red'><b>fetch failed</b></font>");
-        ShowError("Communication with server failed", "Could not determine help file which is provided by project server");
+        ShowError(Homer::Gui::HelpDialog::tr("Communication with server failed"), Homer::Gui::HelpDialog::tr("Could not determine help file which is provided by project server"));
     }else
     {
         QString tHelpFile = QString(mHttpGetHelpUrl->readAll().constData());
@@ -202,7 +202,7 @@ void HelpDialog::GotAnswerForHelpRequest(bool pError)
         if (tHelpFile.contains("404 Not Found"))
         {
             mLbWaiting->setText("<font bgcolor='yellow' color='red'><b>fetch failed</b></font>");
-            ShowError("Help data not found on server", "Could not determine help file which is provided by project server");
+            ShowError(Homer::Gui::HelpDialog::tr("Help data not found on server"), Homer::Gui::HelpDialog::tr("Could not determine help file which is provided by project server"));
         }else
         {
             mLbWaiting->setVisible(false);

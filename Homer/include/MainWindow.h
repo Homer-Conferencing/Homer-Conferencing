@@ -77,6 +77,7 @@ using namespace Homer::Conference;
 #define SCREEN_CAPTURE_FPS					(29.97)
 
 ///////////////////////////////////////////////////////////////////////////////
+class StreamingControlWidget;
 class MainWindow:
         public QMainWindow,
         AudioPlayback,
@@ -114,9 +115,14 @@ private slots:
     void actionMuteMe();
     void actionMuteOthers();
 
+    void actionActivateToolBarOnlineStatus(bool pActive);
+    void actionActivateToolBarMediaSources(bool pActive);
+    void actionActivateStatusBar(bool pActive);
+    void actionActivateMenuBar(bool pActive);
     void actionActivateDebuggingWidgets();
     void actionActivateDebuggingGlobally();
     void actionActivateNetworkSimulationWidgets();
+    void actionActivateMosaicMode(bool pActive);
 
     void activatedSysTray(QSystemTrayIcon::ActivationReason pReason);
 
@@ -202,6 +208,11 @@ private:
 	/* multi language support */
 	QString						mCurrentLanguage;
 	QTranslator					*mTranslator;
+	/* Mosaic mode */
+	QFlags<Qt::WindowType>		mMosaicModeFormerWindowFlags;
+	bool						mMosaicModeToolBarOnlineStatusWasVisible;
+	bool						mMosaicModeToolBarMediaSourcesWasVisible;
+    QPalette					mMosaicOriginalPalette;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

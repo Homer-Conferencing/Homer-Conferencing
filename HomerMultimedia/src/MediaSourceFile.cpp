@@ -127,17 +127,13 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if (!OpenDecoder())
     	return false;
 
-    // do we have a picture file?
-    if (mFormatContext->streams[mMediaStreamIndex]->duration > 1)
-    {// video stream
+	if (SupportsSeeking())
+    {
     	int tResult = 0;
         if((tResult = avformat_seek_file(mFormatContext, -1, INT64_MIN, 0, INT64_MAX, AVSEEK_FLAG_ANY)) < 0)
         {
             LOG(LOG_WARN, "Couldn't seek to the start of video stream because \"%s\".", strerror(AVUNERROR(tResult)));
         }
-    }else
-    {// one single picture
-        // nothing to do
     }
 
     // allocate software scaler context
@@ -170,6 +166,14 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     // set category for packet statistics
     ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
 
+    // ffmpeg uses mmst:// instead of mms://
+    if (mDesiredDevice.compare(0, string("mms://").size(), "mms://") == 0)
+    {
+    	LOG(LOG_WARN, "Replacing mms:// by mmst:// in %s", mDesiredDevice.c_str());
+		string tNewDesiredDevice = "mmst://" + mDesiredDevice.substr(6, mDesiredDevice.size() - 6);
+		mDesiredDevice = tNewDesiredDevice;
+    }
+
     if (!OpenInput(mDesiredDevice.c_str(), NULL, NULL))
     	return false;
 
@@ -200,7 +204,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 				tDictEntry = NULL;
 
 				// get the language of the stream
-				tDictEntry = HM_av_metadata_get(mFormatContext->streams[i]->metadata, "language", NULL);
+				tDictEntry = HM_av_dict_get(mFormatContext->streams[i]->metadata, "language", NULL);
 				if (tDictEntry != NULL)
 				{
 					if (tDictEntry->value != NULL)
@@ -212,7 +216,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 				}
 
 				// get the title of the stream
-				tDictEntry = HM_av_metadata_get(mFormatContext->streams[i]->metadata, "title", NULL);
+				tDictEntry = HM_av_dict_get(mFormatContext->streams[i]->metadata, "title", NULL);
 				if (tDictEntry != NULL)
 				{
 					if (tDictEntry->value != NULL)
@@ -235,10 +239,18 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 				tAudioStreamCount++;
 
 				if ((tLanguage != "") || (tTitle != ""))
-					tEntry = tLanguage + ": " + tTitle + " (" + toString(tCodec->name) + ", " + toString(mFormatContext->streams[i]->codec->channels) + " ch)";
+					tEntry = tLanguage + ": " + tTitle + " (" + toString(tCodec->name) + ", " + toString(mFormatContext->streams[i]->codec->channels) + " ch, " + toString(mFormatContext->streams[i]->codec->bit_rate / 1000) + " kbit/s)";
 				else
-					tEntry = "Audio " + toString(tAudioStreamCount) + " (" + toString(tCodec->name) + ", " + toString(mFormatContext->streams[i]->codec->channels) + " ch)";
+					tEntry = "Audio " + toString(tAudioStreamCount) + " (" + toString(tCodec->name) + ", " + toString(mFormatContext->streams[i]->codec->channels) + " ch, " + toString(mFormatContext->streams[i]->codec->bit_rate / 1000) + " kbit/s)";
 				LOG(LOG_VERBOSE, "Found audio stream: %s", tEntry.c_str());
+				int tDuplicates = 0;
+				for(int i = 0; i < (int)mInputChannels.size(); i++)
+				{
+					if (mInputChannels[i].compare(0, tEntry.size(), tEntry) == 0)
+						tDuplicates++;
+				}
+				if (tDuplicates > 0)
+					tEntry+= "-" + toString(tDuplicates + 1);
 				mInputChannels.push_back(tEntry);
         	}else
         	{
@@ -250,7 +262,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     {
         LOG(LOG_ERROR, "Couldn't find an audio stream");
         // Close the audio file
-        HM_close_input(mFormatContext);
+        HM_avformat_close_input(mFormatContext);
         return false;
     }
 
@@ -269,10 +281,13 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 //    if (mCodecContext->frame_size < 32)
 //        mCodecContext->frame_size = 1024;
 
-    if((tResult = avformat_seek_file(mFormatContext, -1, INT64_MIN, 0, INT64_MAX, AVSEEK_FLAG_ANY)) < 0)
-    {
-        LOG(LOG_WARN, "Couldn't seek to the start of audio stream because \"%s\".", strerror(AVUNERROR(tResult)));
-    }
+	if (SupportsSeeking())
+	{
+		if((tResult = avformat_seek_file(mFormatContext, -1, INT64_MIN, 0, INT64_MAX, AVSEEK_FLAG_ANY)) < 0)
+		{
+			LOG(LOG_WARN, "Couldn't seek to the start of audio stream because \"%s\".", strerror(AVUNERROR(tResult)));
+		}
+	}
 
     MarkOpenGrabDeviceSuccessful();
 
@@ -509,6 +524,9 @@ float MediaSourceFile::GetSeekPos()
     float tSeekEnd = GetSeekEnd();
 	double tCurrentFrameIndex = mGrabberCurrentFrameIndex;
 
+	if (!SupportsSeeking())
+		return 0;
+
 	if (tCurrentFrameIndex > 0)
 	{
         //HINT: we need the corrected PTS values and the one from the file
@@ -610,15 +628,32 @@ vector<string> MediaSourceFile::GetInputStreams()
     return tResult;
 }
 
+void MediaSourceFile::CalibrateRTGrabbing()
+{
+    // adopt the stored pts value which represent the start of the media presentation in real-time useconds
+    float  tRelativeFrameIndex = mGrabberCurrentFrameIndex - mSourceStartPts;
+    double tRelativeTime = (int64_t)((double)AV_TIME_BASE * tRelativeFrameIndex / GetFrameRate());
+    #ifdef MSMEM_DEBUG_CALIBRATION
+        LOG(LOG_WARN, "Calibrating %s RT playback, current frame: %.2f, source start: %.2f, RT ref. time: %.2f->%.2f(diff: %.2f)", GetMediaTypeStr().c_str(), (float)mGrabberCurrentFrameIndex, (float)mSourceStartPts, mSourceStartTimeForRTGrabbing, (float)av_gettime() - tRelativeTime, (float)av_gettime() - tRelativeTime -mSourceStartTimeForRTGrabbing);
+    #endif
+    mSourceStartTimeForRTGrabbing = av_gettime() - tRelativeTime; //HINT: no "+ mDecoderFramePreBufferTime * AV_TIME_BASE" here because we start playback immediately
+    #ifdef MSMEM_DEBUG_CALIBRATION
+        LOG(LOG_WARN, "Calibrating %s RT playback: new PTS start: %.2f, rel. frame index: %.2f, rel. time: %.2f ms", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing, tRelativeFrameIndex, (float)(tRelativeTime / 1000));
+    #endif
+}
+
 void MediaSourceFile::StartDecoder()
 {
 	// setting last decoder file position
 	//HINT: we can not use Seek() because this would lead to recursion
-	int tRes = (avformat_seek_file(mFormatContext, -1, INT64_MIN, mFormatContext->start_time + mLastDecoderFilePosition * AV_TIME_BASE, INT64_MAX, 0) >= 0);
-    if (tRes < 0)
-        LOG(LOG_ERROR, "Error during absolute seeking in %s source file because \"%s\"", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)));
-
-	MediaSourceMem::StartDecoder();
+	if (SupportsSeeking())
+	{
+		LOG(LOG_VERBOSE, "Seeking to last %s decoder position: %.2f", GetMediaTypeStr().c_str(), mLastDecoderFilePosition);
+		int tRes = (avformat_seek_file(mFormatContext, -1, INT64_MIN, mFormatContext->start_time + mLastDecoderFilePosition * AV_TIME_BASE, INT64_MAX, 0) >= 0);
+		if (tRes < 0)
+			LOG(LOG_ERROR, "Error during absolute seeking in %s source file because \"%s\"", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)));
+	}
+    MediaSourceMem::StartDecoder();
 }
 
 void MediaSourceFile::StopDecoder()
@@ -627,21 +662,6 @@ void MediaSourceFile::StopDecoder()
 	mLastDecoderFilePosition = GetSeekPos();
 
 	MediaSourceMem::StopDecoder();
-}
-
-void MediaSourceFile::CalibrateRTGrabbing()
-{
-	// adopt the stored pts value which represent the start of the media presentation in real-time useconds
-    float  tRelativeFrameIndex = mGrabberCurrentFrameIndex - mSourceStartPts;
-    double tRelativeTime = (int64_t)((double)AV_TIME_BASE * tRelativeFrameIndex / mFrameRate);
-    #ifdef MSF_DEBUG_CALIBRATION
-        LOG(LOG_WARN, "Calibrating %s RT playback, old PTS start: %.2f", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing);
-    #endif
-    mSourceStartTimeForRTGrabbing = av_gettime() - tRelativeTime; // we don't use "+ mDecoderFramePreBufferTime * AV_TIME_BASE" here because we fill the pre-buffer by reading the file as fast as possible
-    #ifdef MSF_DEBUG_CALIBRATION
-        LOG(LOG_ERROR, "Calibrating %s RT playback: new PTS start: %.2f, rel. frame index: %.2f, rel. time: %.2f ms", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing, tRelativeFrameIndex, (float)(tRelativeTime / 1000));
-    	LOG(LOG_WARN, "Finished calibration of %s RT grabbing", GetMediaTypeStr().c_str());
-    #endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

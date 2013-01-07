@@ -87,6 +87,9 @@ public:
     virtual float GetFrameRate();
     virtual void SetFrameRate(float pFps);
 
+    /* audio/video */
+    virtual int GetInputBitRate();
+
     /* A/V sync. */
     virtual int64_t GetSynchronizationTimestamp();
     virtual int GetSynchronizationPoints(); // how many synchronization points for deriving synchronization timestamp were included in the input stream till now?
@@ -96,6 +99,9 @@ public:
     virtual bool SupportsRelaying();
     void SetRelayActivation(bool pState);
     void SetRelaySkipSilence(bool pState);
+    void SetRelaySkipSilenceThreshold(int pValue);
+    int GetRelaySkipSilenceThreshold();
+    int GetRelaySkipSilenceSkippedChunks();
 
     /* get access to current basic media source */
     virtual MediaSource* GetMediaSource();
@@ -214,9 +220,10 @@ private:
     int 				mStreamMaxFps;
     int64_t				mStreamMaxFps_LastFrame_Timestamp;
     bool                mStreamActivated;
-    bool				mStreamSkipSilence;
-    int64_t				mSkippedSilenceChunks;
     char                *mStreamPacketBuffer;
+    /* relaying: skip audio silence */
+    bool				mRelayingSkipAudioSilence;
+    int64_t				mRelayingSkipAudioSilenceSkippedChunks;
     /* encoding */
     char                *mEncoderChunkBuffer;
     bool                mEncoderNeeded;

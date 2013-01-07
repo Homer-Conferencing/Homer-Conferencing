@@ -121,7 +121,11 @@ private:
     static Playlist Parse(QString pLocation, QString pName = "", bool pAcceptVideo = true, bool pAcceptAudio = true);
     static Playlist ParseM3U(QString pFilePlaylist, bool pAcceptVideo, bool pAcceptAudio);
     static Playlist ParsePLS(QString pFilePlaylist, bool pAcceptVideo, bool pAcceptAudio);
+    static Playlist ParseWMX(QString pFilePlaylist, bool pAcceptVideo, bool pAcceptAudio);
     static Playlist ParseDIR(QString pDirLocation, bool pAcceptVideo, bool pAcceptAudio);
+
+    /* save playlist entries */
+    void SaveM3U(QString pFileName);
 
     QString GetListEntry(int pIndex);
     QString GetListEntryName(int pIndex);

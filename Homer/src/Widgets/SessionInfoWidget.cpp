@@ -78,21 +78,21 @@ void SessionInfoWidget::InitializeMenuSessionInfoSettings(QMenu *pMenu)
     pMenu->clear();
 
     if (isVisible())
-        tAction = pMenu->addAction(QPixmap(":/images/22_22/Close.png"), "Close session info");
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Close.png"), Homer::Gui::SessionInfoWidget::tr("Close"));
     else
-        tAction = pMenu->addAction(QPixmap(":/images/22_22/Messages.png"), "Show session info");
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Messages.png"), Homer::Gui::SessionInfoWidget::tr("Show"));
 }
 
 void SessionInfoWidget::SelectedMenuSessionInfoSettings(QAction *pAction)
 {
     if (pAction != NULL)
     {
-        if (pAction->text().compare("Show session info") == 0)
+        if (pAction->text().compare(Homer::Gui::SessionInfoWidget::tr("Show")) == 0)
         {
             ToggleVisibility();
             return;
         }
-        if (pAction->text().compare("Close session info") == 0)
+        if (pAction->text().compare(Homer::Gui::SessionInfoWidget::tr("Close")) == 0)
         {
             ToggleVisibility();
             return;

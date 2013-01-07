@@ -81,8 +81,8 @@ MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
     mRequestedStreamingResX = 352;
     mRequestedStreamingResY = 288;
     mStreamActivated = true;
-    mStreamSkipSilence = false;
-    mSkippedSilenceChunks = 0;
+    mRelayingSkipAudioSilence = false;
+    mRelayingSkipAudioSilenceSkippedChunks = 0;
     mEncoderNeeded = true;
     mEncoderHasKeyFrame = false;
     mEncoderFifo = NULL;
@@ -442,35 +442,25 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
 
     // allocate new stream structure
     LOG(LOG_VERBOSE, "..allocating new stream");
-    tStream = av_new_stream(mFormatContext, 0);
+    tStream = HM_avformat_new_stream(mFormatContext, 0);
     mCodecContext = tStream->codec;
     mCodecContext->codec_id = tFormat->video_codec;
     mCodecContext->codec_type = AVMEDIA_TYPE_VIDEO;
 
-    //data_partitioning
-    // do some extra modifications for MPEG4 to make it easier for streaming
-    if (tFormat->video_codec == CODEC_ID_MPEG4)
+    // add some extra parameters depending on the selected codec
+    switch(tFormat->video_codec)
     {
-        mCodecContext->flags |= CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED;
-    }
-
-    // do some extra modifications for H263 to make it easier for streaming
-    if (tFormat->video_codec == CODEC_ID_H263)
-    {
-        mCodecContext->flags |= CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED;
-    }
-
-    // do some extra modifications for H263+ to make it easier for streaming
-    if (tFormat->video_codec == CODEC_ID_H263P)
-    {
-        mCodecContext->flags |= CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED;
-
-        // old codec codext flag CODEC_FLAG_H263P_SLICE_STRUCT
-        av_dict_set(&tOptions, "structured_slices", "1", 0);
-        // old codec codext flag CODEC_FLAG_H263P_UMV
-        av_dict_set(&tOptions, "umv", "1", 0);
-        // old codec codext flag CODEC_FLAG_H263P_AIV
-        av_dict_set(&tOptions, "aiv", "1", 0);
+        case CODEC_ID_H263P:
+                        // old codec codext flag CODEC_FLAG_H263P_SLICE_STRUCT
+                        av_dict_set(&tOptions, "structured_slices", "1", 0);
+                        // old codec codext flag CODEC_FLAG_H263P_UMV
+                        av_dict_set(&tOptions, "umv", "1", 0);
+                        // old codec codext flag CODEC_FLAG_H263P_AIV
+                        av_dict_set(&tOptions, "aiv", "1", 0);
+        case CODEC_ID_H263:
+        case CODEC_ID_MPEG4:
+                        mCodecContext->flags |= CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED;
+                        break;
     }
 
     // put sample parameters
@@ -533,15 +523,6 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     else
         RTP::SetH261PayloadSizeMax(mStreamMaxPacketSize);
 
-    // workaround for incompatibility of ffmpeg/libx264
-    // inspired by check within libx264 in "x264_validate_parameters()" of encoder.c
-    if (tFormat->video_codec == CODEC_ID_H264)
-    {
-        mCodecContext->me_range = 16;
-        mCodecContext->max_qdiff = 4;
-        mCodecContext->qcompress = 0.6;
-    }
-
     // set MPEG quantizer: for h261/h263/mjpeg use the h263 quantizer, in other cases use the MPEG2 one
 //    if ((tFormat->video_codec == CODEC_ID_H261) || (tFormat->video_codec == CODEC_ID_H263) || (tFormat->video_codec == CODEC_ID_H263P) || (tFormat->video_codec == CODEC_ID_MJPEG))
 //        mCodecContext->mpeg_quant = 0;
@@ -560,6 +541,9 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     // some formats want stream headers to be separate, but this produces some very small packets!
     if(mFormatContext->oformat->flags & AVFMT_GLOBALHEADER)
         mCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
+
+    // allow ffmpeg its speedup tricks
+    mCodecContext->flags2 |= CODEC_FLAG2_FAST;
 
     mMediaStreamIndex = 0;
     mEncoderStream = mFormatContext->streams[0];
@@ -737,10 +721,11 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     }
 
     // allocate new stream structure
-    tStream = av_new_stream(mFormatContext, 0);
+    tStream = HM_avformat_new_stream(mFormatContext, 0);
     mCodecContext = tStream->codec;
     mCodecContext->codec_id = tFormat->audio_codec;
     mCodecContext->codec_type = AVMEDIA_TYPE_AUDIO;
+    mCodecContext->sample_fmt = AV_SAMPLE_FMT_S16;
     switch(mCodecContext->codec_id)
     {
 		case CODEC_ID_ADPCM_G722:
@@ -773,7 +758,6 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
 	mCodecContext->channels = mOutputAudioChannels;
 	mCodecContext->channel_layout = av_get_default_channel_layout(mOutputAudioChannels);
     mCodecContext->sample_rate = mOutputAudioSampleRate;
-    mCodecContext->sample_fmt = AV_SAMPLE_FMT_S16;
     // set max. packet size for RTP based packets
     mCodecContext->rtp_payload_size = mStreamMaxPacketSize;
 
@@ -806,6 +790,9 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
 //    if(tCodec->capabilities & CODEC_CAP_TRUNCATED)
 //        mCodecContext->flags |= CODEC_FLAG_TRUNCATED;
 
+    // allow ffmpeg its speedup tricks
+    mCodecContext->flags2 |= CODEC_FLAG2_FAST;
+
     // Open codec
     if ((tResult = HM_avcodec_open(mCodecContext, tCodec, NULL)) < 0)
     {
@@ -820,15 +807,9 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
         return false;
     }
 
-    if (mCodecContext->codec_id == CODEC_ID_ADPCM_G722)
-    	mRealFrameRate = (float)16000 /* actually 16000 samples per second but because of RFC 3551 we have to enforce 8 kHz clock rate */ / MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 samples per frame */;
-
-    // fix frame size of 0 for some audio codecs and use default caudio capture frame size instead to allow 1:1 transformation
-    // old PCM implementation delivered often a frame size of 1
-    // some audio codecs (excl. MP3) deliver a frame size of 0
-    // ==> we use 32 as threshold to catch most of the inefficient values for the frame size
+    // fix frame size of 0 for some audio codecs
     if (mCodecContext->frame_size < 32)
-    	mCodecContext->frame_size = 1024;
+    	mCodecContext->frame_size = 320;
 
     mOutputAudioFormat = mCodecContext->sample_fmt;
 
@@ -956,6 +937,7 @@ bool MediaSourceMuxer::CloseMuxer()
     ResetPacketStatistic();
 
     mFrameNumber = 0;
+    mRelayingSkipAudioSilenceSkippedChunks = 0;
 
     return tResult;
 }
@@ -1402,6 +1384,9 @@ void* MediaSourceMuxer::Run(void* pArgs)
     // set marker to "active"
     mEncoderNeeded = true;
 
+    // flush ffmpeg internal buffers
+    avcodec_flush_buffers(mCodecContext);
+
     while(mEncoderNeeded)
     {
 		#ifdef MSM_DEBUG_TIMING
@@ -1573,27 +1558,28 @@ void* MediaSourceMuxer::Run(void* pArgs)
 											LOG(LOG_VERBOSE, "Reading %d bytes from %d bytes of fifo", tOutoutAudioBytesPrSample * mCodecContext->frame_size * mCodecContext->channels, av_fifo_size(mSampleFifo));
 										#endif
 										// read sample data from the fifo buffer
-										HM_av_fifo_generic_read(mSampleFifo, (void*)mSamplesTempBuffer, tOutoutAudioBytesPrSample * mCodecContext->frame_size * mCodecContext->channels);
+											int tReadSamplesSize = tOutoutAudioBytesPrSample * mCodecContext->frame_size * mCodecContext->channels;
+										HM_av_fifo_generic_read(mSampleFifo, (void*)mSamplesTempBuffer, tReadSamplesSize);
 
-										//####################################################################
-										// re-encode the sample
-										// ###################################################################
-										// re-encode the sample
-										#ifdef MSM_DEBUG_PACKETS
-											LOG(LOG_VERBOSE, "Encoding audio frame.. (frame size: %d, channels: %d, enc. buffeR: %p, samples buffer: %p)", mCodecContext->frame_size, mCodecContext->channels, mEncoderChunkBuffer, mSamplesTempBuffer);
-										#endif
-										//printf("Gonna encode with frame_size %d and channels %d\n", mCodecContext->frame_size, mCodecContext->channels);
-										int tEncodingResult = avcodec_encode_audio(mCodecContext, (uint8_t *)mEncoderChunkBuffer, /* assume signed 16 bit */ tOutoutAudioBytesPrSample * mCodecContext->frame_size * mCodecContext->channels, (const short *)mSamplesTempBuffer);
-										mEncoderHasKeyFrame = true;
+										if ((!mRelayingSkipAudioSilence) || (!ContainsOnlySilence((void*)mSamplesTempBuffer, tReadSamplesSize) /* we have to check if the current chunk contains only silence */))
+										{// okay, we should process this audio frame
+											//####################################################################
+											// re-encode the sample
+											// ###################################################################
+											// re-encode the sample
+											#ifdef MSM_DEBUG_PACKETS
+												LOG(LOG_VERBOSE, "Encoding audio frame.. (frame size: %d, channels: %d, enc. buffeR: %p, samples buffer: %p)", mCodecContext->frame_size, mCodecContext->channels, mEncoderChunkBuffer, mSamplesTempBuffer);
+											#endif
+											//printf("Gonna encode with frame_size %d and channels %d\n", mCodecContext->frame_size, mCodecContext->channels);
+											int tEncodingResult = avcodec_encode_audio(mCodecContext, (uint8_t *)mEncoderChunkBuffer, /* assume signed 16 bit */ tOutoutAudioBytesPrSample * mCodecContext->frame_size * mCodecContext->channels, (const short *)mSamplesTempBuffer);
+											mEncoderHasKeyFrame = true;
 
-										//printf("encoded to mp3: %d\n\n", tSampleSize);
-										if (tEncodingResult > 0)
-										{
-											// we need to increase the frame number in every possible case, otherwise the time synchronization at receiver side is not possible anymore
-											mFrameNumber++;
+											//printf("encoded to mp3: %d\n\n", tSampleSize);
+											if (tEncodingResult > 0)
+											{
+												// we need to increase the frame number in every possible case, otherwise the time synchronization at receiver side is not possible anymore
+												mFrameNumber++;
 
-											if ((!mStreamSkipSilence) || (!ContainsOnlySilence((void*)mEncoderChunkBuffer, tEncodingResult) /* we have to check of the current chunk contains only silence */))
-											{// okay, we should process this audio frame
 												av_init_packet(tPacket);
 
 												tPacket->flags |= AV_PKT_FLAG_KEY;
@@ -1632,12 +1618,12 @@ void* MediaSourceMuxer::Run(void* pArgs)
 												// free packet buffer
 												av_free_packet(tPacket);
 											}else
-											{// we should skip this audio frame because it includes only silence
-												mSkippedSilenceChunks++;
-												//LOG(LOG_VERBOSE, "Skipping %s data, overall skipped chunks: %ld", GetMediaTypeStr().c_str(), mSkippedSilenceChunks);
-											}
+												LOG(LOG_WARN, "Couldn't re-encode current audio sample");
 										}else
-											LOG(LOG_WARN, "Couldn't re-encode current audio sample");
+										{// we should skip this audio frame because it includes only silence
+											mRelayingSkipAudioSilenceSkippedChunks++;
+											//LOG(LOG_WARN, "Skipping %s data, overall skipped chunks: %ld", GetMediaTypeStr().c_str(), mRelayingSkipAudioSilenceSkippedChunks);
+										}
 									}
                                 }
                                 break;
@@ -2118,11 +2104,30 @@ void MediaSourceMuxer::SetRelayActivation(bool pState)
 
 void MediaSourceMuxer::SetRelaySkipSilence(bool pState)
 {
-    if (mStreamSkipSilence != pState)
+    if (mRelayingSkipAudioSilence != pState)
     {
         LOG(LOG_VERBOSE, "Setting \"relay skip silence\" activation to: %d", pState);
-        mStreamSkipSilence = pState;
+        mRelayingSkipAudioSilence = pState;
     }
+}
+
+void MediaSourceMuxer::SetRelaySkipSilenceThreshold(int pValue)
+{
+	if (mAudioSilenceThreshold != pValue)
+	{
+		LOG(LOG_VERBOSE, "Setting audio silence suppression threshold to: %d", pValue);
+		mAudioSilenceThreshold = pValue;
+	}
+}
+
+int MediaSourceMuxer::GetRelaySkipSilenceThreshold()
+{
+	return mAudioSilenceThreshold;
+}
+
+int MediaSourceMuxer::GetRelaySkipSilenceSkippedChunks()
+{
+	return mRelayingSkipAudioSilenceSkippedChunks;
 }
 
 string MediaSourceMuxer::GetSourceTypeStr()
@@ -2477,6 +2482,14 @@ int MediaSourceMuxer::GetInputChannels()
 {
     if (mMediaSource != NULL)
     	return mMediaSource->GetInputChannels();
+    else
+        return 0;
+}
+
+int MediaSourceMuxer::GetInputBitRate()
+{
+    if (mMediaSource != NULL)
+    	return mMediaSource->GetInputBitRate();
     else
         return 0;
 }

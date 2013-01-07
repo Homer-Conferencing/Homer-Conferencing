@@ -64,6 +64,9 @@ using namespace Homer::Monitor;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// define the threshold for silence detection
+#define MEDIA_SOURCE_DEFAULT_SILENCE_THRESHOLD					128
+
 //de/activate VDPAU support
 //#define MEDIA_SOURCE_VDPAU_SUPPORT
 
@@ -85,6 +88,7 @@ MediaSource::MediaSource(string pName):
 	mDecodedSIFrames = 0;
 	mDecodedSPFrames = 0;
 	mDecodedBIFrames = 0;
+	mAudioSilenceThreshold = MEDIA_SOURCE_DEFAULT_SILENCE_THRESHOLD;
     mDecoderFrameBufferTimeMax = 0;
     mDecoderFramePreBufferTime = 0;
     mSourceType = SOURCE_ABSTRACT;
@@ -115,6 +119,7 @@ MediaSource::MediaSource(string pName):
     mChunkDropCounter = 0;
     mInputAudioChannels = -1;
     mInputAudioSampleRate = -1;
+    mInputBitRate = -1;
     mOutputAudioSampleRate = -1;
     mOutputAudioChannels = -1;
     mSourceResX = 352;
@@ -246,11 +251,21 @@ void MediaSource::LogSupportedVideoCodecs(bool pSendToLoggerOnly)
     {
         if (tCodec->type == AVMEDIA_TYPE_VIDEO)
         {
-            bool tEncode = (tCodec->encode != NULL);
             bool tDecode = (tCodec->decode != NULL);
+            bool tEncode = false;
+            #ifndef FF_API_OLD_ENCODE_AUDIO
+                tEncode = (tCodec->encode != NULL);
+            #else
+                tEncode = (tCodec->encode2 != NULL);
+            #endif
+
             if ((tNextCodec != NULL) && (strcmp(tCodec->name, tNextCodec->name) == 0))
             {
-                tEncode |= (tNextCodec->encode != NULL);
+	            #ifndef FF_API_OLD_ENCODE_AUDIO
+                    tEncode |= (tNextCodec->encode != NULL);
+                #else
+                    tEncode |= (tNextCodec->encode2 != NULL);
+                #endif
                 tDecode |= (tNextCodec->decode != NULL);
                 tCodec = tNextCodec;
             }
@@ -306,11 +321,20 @@ void MediaSource::LogSupportedAudioCodecs(bool pSendToLoggerOnly)
 //				tNextCodec->encode ? "E" : " ",
 //				tNextCodec->name,
 //				tNextCodec->long_name ? tCodec->long_name : "");
-            bool tEncode = (tCodec->encode != NULL);
             bool tDecode = (tCodec->decode != NULL);
+            bool tEncode = false;
+            #ifndef FF_API_OLD_ENCODE_AUDIO
+                tEncode = (tCodec->encode != NULL);
+            #else
+                tEncode = (tCodec->encode2 != NULL);
+            #endif
             if ((tNextCodec != NULL) && (strcmp(tCodec->name, tNextCodec->name) == 0))
             {
-                tEncode |= (tNextCodec->encode != NULL);
+                #ifndef FF_API_OLD_ENCODE_AUDIO
+                    tEncode |= (tNextCodec->encode != NULL);
+                #else
+                    tEncode |= (tNextCodec->encode2 != NULL);
+                #endif
                 tDecode |= (tNextCodec->decode != NULL);
                 tCodec = tNextCodec;
             }
@@ -794,6 +818,11 @@ int MediaSource::GetInputSampleRate()
 int MediaSource::GetInputChannels()
 {
 	return mInputAudioChannels;
+}
+
+int MediaSource::GetInputBitRate()
+{
+	return mInputBitRate;
 }
 
 AVFrame *MediaSource::AllocFrame()
@@ -1700,16 +1729,16 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     mRecorderFormatContext->oformat = tFormat;
 
     // set meta data
-    HM_av_metadata_set(&mRecorderFormatContext->metadata, "author"   , tAuthor);
-    HM_av_metadata_set(&mRecorderFormatContext->metadata, "comment"  , tComment);
-    HM_av_metadata_set(&mRecorderFormatContext->metadata, "copyright", tCopyright);
-    HM_av_metadata_set(&mRecorderFormatContext->metadata, "title"    , tSimpleFileName.c_str());
+    HM_av_dict_set(&mRecorderFormatContext->metadata, "author"   , tAuthor);
+    HM_av_dict_set(&mRecorderFormatContext->metadata, "comment"  , tComment);
+    HM_av_dict_set(&mRecorderFormatContext->metadata, "copyright", tCopyright);
+    HM_av_dict_set(&mRecorderFormatContext->metadata, "title"    , tSimpleFileName.c_str());
 
     // set filename
     sprintf(mRecorderFormatContext->filename, "%s", pSaveFileName.c_str());
 
     // allocate new stream structure
-    tStream = av_new_stream(mRecorderFormatContext, 0);
+    tStream = HM_avformat_new_stream(mRecorderFormatContext, 0);
     mRecorderCodecContext = tStream->codec;
 
     // put sample parameters
@@ -1792,8 +1821,6 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
                 mRecorderCodecContext->bit_rate = MediaSource::AudioQuality2BitRate(pSaveFileQuality); // streaming rate
                 mRecorderCodecContext->sample_rate = mOutputAudioSampleRate; // sampling rate: 22050, 44100
 
-                mRecorderCodecContext->qmin = 2; // 2
-                mRecorderCodecContext->qmax = 9;/*2 +(100 - mAudioStreamQuality) / 4; // 31*/
                 mRecorderCodecContext->sample_fmt = AV_SAMPLE_FMT_S16;
 
                 // init fifo buffer
@@ -2662,19 +2689,18 @@ int64_t MediaSource::GetPtsFromFpsEmulator()
     return (int64_t)tRelativeFrameNumber;
 }
 
-// define the threshold for silence detection
-#define SILENCE_THRESHOLD					128
 bool MediaSource::ContainsOnlySilence(void* pChunkBuffer, int pChunkSize)
 {
 	bool tResult = true;
 	short int tSample;
 
 	// scan all samples
-	for (int i = 0; i < pChunkSize / 2; i++)
+	for (int i = 0; i < pChunkSize / 4; i++)
 	{
-		tSample = *(short int*)((long)pChunkBuffer + i * 2);
-		if ((tSample > SILENCE_THRESHOLD) || (tSample < -SILENCE_THRESHOLD))
-		{// we detected some interesting samples
+		tSample = *((int16_t*)pChunkBuffer + i * 2);
+		if ((tSample > mAudioSilenceThreshold) || (tSample < -mAudioSilenceThreshold))
+		{// we detected an interesting sample
+			//LOG(LOG_VERBOSE, "%hd %d %d", i, tSample, mAudioSilenceThreshold);
 			tResult = false;
 			break;
 		}
@@ -2683,7 +2709,7 @@ bool MediaSource::ContainsOnlySilence(void* pChunkBuffer, int pChunkSize)
 	return tResult;
 }
 
-int64_t FilterPts(int64_t pValue)
+int64_t FilterNeg(int64_t pValue)
 {
     if (pValue > 0)
         return pValue;
@@ -2705,7 +2731,7 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec time_base: %d/%d", mCodecContext->time_base.den, mCodecContext->time_base.num); // inverse
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream ID: %d", mMediaStreamIndex);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream start real-time: %ld", mFormatContext->start_time_realtime);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream start time: %ld", mFormatContext->streams[mMediaStreamIndex]->start_time);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream start time: %ld", FilterNeg(mFormatContext->streams[mMediaStreamIndex]->start_time));
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream rfps: %d/%d", mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num, mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->time_base.den, mFormatContext->streams[mMediaStreamIndex]->time_base.num); // inverse
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream codec time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->codec->time_base.den, mFormatContext->streams[mMediaStreamIndex]->codec->time_base.num); // inverse
@@ -2719,13 +2745,13 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..MT method: %d", mCodecContext->thread_type);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame size: %d", mCodecContext->frame_size);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..duration: %.2f frames", mNumberOfFrames);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start PTS: %.2f frames", FilterPts(mSourceStartPts));
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS: %ld frames", FilterPts(mFormatContext->start_time));
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS (RT): %ld frames", FilterPts(mFormatContext->start_time_realtime));
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..format context duration: %ld seconds", FilterPts(mFormatContext->duration) / AV_TIME_BASE);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start PTS: %.2f frames", FilterNeg(mSourceStartPts));
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS: %ld frames", FilterNeg(mFormatContext->start_time));
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS (RT): %ld frames", FilterNeg(mFormatContext->start_time_realtime));
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..format context duration: %ld seconds", FilterNeg(mFormatContext->duration) / AV_TIME_BASE);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame rate: %.2f fps", mFrameRate);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame rate (playout): %.2f fps", mRealFrameRate);
-    int64_t tStreamDuration = FilterPts(mFormatContext->streams[mMediaStreamIndex]->duration);
+    int64_t tStreamDuration = FilterNeg(mFormatContext->streams[mMediaStreamIndex]->duration);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context duration: %ld frames (%.0f seconds), nr. of frames: %ld", tStreamDuration, (float)tStreamDuration / mFrameRate);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context frames: %ld", mFormatContext->streams[mMediaStreamIndex]->nb_frames);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..max. delay: %d", mFormatContext->max_delay);
@@ -2838,7 +2864,7 @@ bool MediaSource::FfmpegDescribeInput(string pSource, int pLine, CodecID pCodecI
 	return true;
 }
 
-bool MediaSource::FfmpegCreateIOContext(string pSource/* caller source */, int pLine /* caller line */, char *pPacketBuffer, int pPacketBufferSize, IOFunction pReadFunction, IOFunction pWriteFunction, void *pOpaque, AVIOContext **pIoContext)
+bool MediaSource::FfmpegCreateIOContext(string pSource, int pLine, char *pPacketBuffer, int pPacketBufferSize, IOFunction pReadFunction, IOFunction pWriteFunction, void *pOpaque, AVIOContext **pIoContext)
 {
 	AVIOContext *tResult = NULL;
 
@@ -2937,7 +2963,7 @@ bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
             LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Grabbing was stopped meanwhile");
 
         // Close the video stream
-        HM_close_input(mFormatContext);
+        HM_avformat_close_input(mFormatContext);
 
         return false;
     }
@@ -2996,7 +3022,7 @@ bool MediaSource::FfmpegSelectStream(string pSource, int pLine)
 	    LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't find a %s stream..", GetMediaTypeStr().c_str());
 
 	    // Close the video stream
-        HM_close_input(mFormatContext);
+	    HM_avformat_close_input(mFormatContext);
 
         return false;
     }
@@ -3055,16 +3081,17 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 			mInputAudioSampleRate = mCodecContext->sample_rate;
 			mInputAudioChannels = mCodecContext->channels;
 			mInputAudioFormat = mCodecContext->sample_fmt;
-
 			mRealFrameRate = (float)mOutputAudioSampleRate /* 44100 samples per second */ / MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 samples per frame */;
 
-			break;
+		    break;
 
 		default:
 			break;
     }
 
-    // derive the FPS from the timebase of the selected input stream
+	mInputBitRate = mFormatContext->streams[mMediaStreamIndex]->codec->bit_rate;
+
+	// derive the FPS from the timebase of the selected input stream
     mFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->time_base.den / mFormatContext->streams[mMediaStreamIndex]->time_base.num;
 
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected frame rate: %f", mFrameRate);
@@ -3074,7 +3101,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't detect VIDEO resolution information within input stream");
 
         // Close the video file
-        HM_close_input(mFormatContext);
+    	HM_avformat_close_input(mFormatContext);
 
         return false;
     }
@@ -3118,7 +3145,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't find a fitting %s codec", GetMediaTypeStr().c_str());
 
         // Close the video stream
-        HM_close_input(mFormatContext);
+    	HM_avformat_close_input(mFormatContext);
 
         return false;
     }
@@ -3271,7 +3298,7 @@ bool MediaSource::FfmpegCloseAll(string pSource, int pLine)
 		// Close the file
 		if (mFormatContext != NULL)
 		{
-			HM_close_input(mFormatContext);
+		    HM_avformat_close_input(mFormatContext);
 			mFormatContext = NULL;
 		}else
 		{

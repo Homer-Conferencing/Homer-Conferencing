@@ -26,6 +26,7 @@
  */
 
 #include <MediaSourceFile.h>
+#include <MediaSourceMuxer.h>
 #include <WaveOutPortAudio.h>
 #include <WaveOutSdl.h>
 #include <ProcessStatisticService.h>
@@ -68,7 +69,7 @@ using namespace Homer::Monitor;
 #define AUDIO_MAX_PLAYBACK_QUEUE                            3 // 0 means unlimited by audio widget but still limited by waveout
 
 // how many measurement steps do we use?
-#define SPS_MEASUREMENT_STEPS                           2 * 44
+#define SPS_MEASUREMENT_STEPS                               2 * 44
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -143,6 +144,8 @@ void AudioWidget::Init(MediaSource *pAudioSource, QMenu *pMenu, QString pName, b
         tIcon.addPixmap(QPixmap(":/images/22_22/Unchecked.png"), QIcon::Normal, QIcon::Off);
         mAssignedAction->setIcon(tIcon);
     }
+    if (mAssignedAction != NULL)
+        connect(mAssignedAction, SIGNAL(triggered()), this, SLOT(ToggleVisibility()));
 
     //####################################################################
     //### update GUI
@@ -150,9 +153,6 @@ void AudioWidget::Init(MediaSource *pAudioSource, QMenu *pMenu, QString pName, b
     LOG(LOG_VERBOSE, "..init GUI elements");
     initializeGUI();
     setWindowTitle(pName);
-    //setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    if (mAssignedAction != NULL)
-        connect(mAssignedAction, SIGNAL(triggered()), this, SLOT(ToggleVisibility()));
     if (mAudioSource != NULL)
     {
         LOG(LOG_VERBOSE, "..create audio worker");
@@ -240,9 +240,9 @@ void AudioWidget::InitializeMenuAudioSettings(QMenu *pMenu)
     {
         QIcon tIcon5;
         if (mRecorderStarted)
-            tAction = pMenu->addAction(QPixmap(":/images/22_22/Audio_Stop.png"), "Stop recording");
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/Audio_Stop.png"), Homer::Gui::AudioWidget::tr("Stop recording"));
         else
-            tAction = pMenu->addAction(QPixmap(":/images/22_22/Audio_Record.png"), "Record audio");
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/Audio_Record.png"), Homer::Gui::AudioWidget::tr("Start recording"));
     }
 
     pMenu->addSeparator();
@@ -251,9 +251,9 @@ void AudioWidget::InitializeMenuAudioSettings(QMenu *pMenu)
     //### STREAM INFO
     //###############################################################################
     if (mShowLiveStats)
-        tAction = pMenu->addAction(QPixmap(":/images/22_22/Info.png"), "Hide stream info");
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Info.png"), Homer::Gui::AudioWidget::tr("Hide stream info"));
     else
-        tAction = pMenu->addAction(QPixmap(":/images/22_22/Info.png"), "Show stream info");
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Info.png"), Homer::Gui::AudioWidget::tr("Show stream info"));
     tAction->setCheckable(true);
     tAction->setChecked(mShowLiveStats);
 
@@ -263,7 +263,7 @@ void AudioWidget::InitializeMenuAudioSettings(QMenu *pMenu)
     vector<string> tInputStreams = mAudioSource->GetInputStreams();
     if (mAudioSource->SupportsMultipleInputStreams())
     {
-        QMenu *tStreamMenu = pMenu->addMenu(QPixmap(":/images/22_22/SpeakerLoud.png"), "Audio streams");
+        QMenu *tStreamMenu = pMenu->addMenu(QPixmap(":/images/22_22/SpeakerLoud.png"), Homer::Gui::AudioWidget::tr("Audio tracks"));
 
         string tCurrentStream = mAudioSource->CurrentInputStream();
         QAction *tStreamAction;
@@ -281,7 +281,7 @@ void AudioWidget::InitializeMenuAudioSettings(QMenu *pMenu)
     //###############################################################################
     //### AUDIO SETTINGS
     //###############################################################################
-    QMenu *tAudioMenu = pMenu->addMenu(QPixmap(":/images/22_22/SpeakerLoud.png"), "Audio settings");
+    QMenu *tAudioMenu = pMenu->addMenu(QPixmap(":/images/22_22/SpeakerLoud.png"), Homer::Gui::AudioWidget::tr("Playback"));
             //###############################################################################
             //### VOLUMES
             //###############################################################################
@@ -302,9 +302,9 @@ void AudioWidget::InitializeMenuAudioSettings(QMenu *pMenu)
     //###############################################################################
     if(mAudioSource->SupportsRelaying())
     {
-        QMenu *tVideoSinksMenu = pMenu->addMenu(QPixmap(":/images/22_22/ArrowRight.png"), "Relay stream");
-        tAction =  tVideoSinksMenu->addAction(QPixmap(":/images/22_22/Plus.png"), "Add network sink");
-        QMenu *tRegisteredVideoSinksMenu = tVideoSinksMenu->addMenu(QPixmap(":/images/22_22/ArrowRight.png"), "Registered sinks");
+        QMenu *tVideoSinksMenu = pMenu->addMenu(QPixmap(":/images/22_22/ArrowRight.png"), Homer::Gui::AudioWidget::tr("Relay stream"));
+        tAction =  tVideoSinksMenu->addAction(QPixmap(":/images/22_22/Plus.png"), Homer::Gui::AudioWidget::tr("Add network sink"));
+        QMenu *tRegisteredVideoSinksMenu = tVideoSinksMenu->addMenu(QPixmap(":/images/22_22/ArrowRight.png"), Homer::Gui::AudioWidget::tr("Registered sinks"));
 
         if (tRegisteredAudioSinks.size())
         {
@@ -324,9 +324,9 @@ void AudioWidget::InitializeMenuAudioSettings(QMenu *pMenu)
         //###############################################################################
         QIcon tIcon10;
         if (mAudioPaused)
-            tAction = pMenu->addAction(QPixmap(":/images/22_22/Audio_Play.png"), "Continue stream");
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/Audio_Play.png"), Homer::Gui::AudioWidget::tr("Continue stream"));
         else
-            tAction = pMenu->addAction(QPixmap(":/images/22_22/Exit.png"), "Drop stream");
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/Exit.png"), Homer::Gui::AudioWidget::tr("Drop stream"));
     }
 
     pMenu->addSeparator();
@@ -334,15 +334,15 @@ void AudioWidget::InitializeMenuAudioSettings(QMenu *pMenu)
     //###############################################################################
     //### RESET SOURCE
     //###############################################################################
-    tAction = pMenu->addAction(QPixmap(":/images/22_22/Reload.png"), "Reset source");
+    tAction = pMenu->addAction(QPixmap(":/images/22_22/Reload.png"), Homer::Gui::AudioWidget::tr("Reset source"));
 
     //###############################################################################
     //### CLOSE SOURCE
     //###############################################################################
     if (isVisible())
-        tAction = pMenu->addAction(QPixmap(":/images/22_22/Close.png"), "Close audio");
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Close.png"), Homer::Gui::AudioWidget::tr("Close"));
     else
-        tAction = pMenu->addAction(QPixmap(":/images/22_22/SpeakerLoud.png"), "Show audio");
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Screencasting.png"), Homer::Gui::AudioWidget::tr("Show"));
 }
 
 void AudioWidget::SelectedMenuAudioSettings(QAction *pAction)
@@ -354,53 +354,53 @@ void AudioWidget::SelectedMenuAudioSettings(QAction *pAction)
         vector<string> tRegisteredAudioSinks = mAudioSource->ListRegisteredMediaSinks();
         vector<string>::iterator tRegisteredAudioSinksIt;
 
-        if (pAction->text().compare("Show audio") == 0)
+        if (pAction->text().compare(Homer::Gui::AudioWidget::tr("Show")) == 0)
         {
             ToggleVisibility();
             return;
         }
-        if (pAction->text().compare("Close audio") == 0)
+        if (pAction->text().compare(Homer::Gui::AudioWidget::tr("Close")) == 0)
         {
             ToggleVisibility();
             return;
         }
-        if (pAction->text().compare("Reset source") == 0)
+        if (pAction->text().compare(Homer::Gui::AudioWidget::tr("Reset source")) == 0)
         {
             mAudioWorker->ResetSource();
             return;
         }
-        if (pAction->text().compare("Stop recording") == 0)
+        if (pAction->text().compare(Homer::Gui::AudioWidget::tr("Stop recording")) == 0)
         {
             StopRecorder();
             return;
         }
-        if (pAction->text().compare("Record audio") == 0)
+        if (pAction->text().compare(Homer::Gui::AudioWidget::tr("Start recording")) == 0)
         {
             StartRecorder();
             return;
         }
-        if (pAction->text().compare("Add network sink") == 0)
+        if (pAction->text().compare(Homer::Gui::AudioWidget::tr("Add network sink")) == 0)
         {
             DialogAddNetworkSink();
             return;
         }
-        if (pAction->text().compare("Show stream info") == 0)
+        if (pAction->text().compare(Homer::Gui::AudioWidget::tr("Show stream info")) == 0)
         {
             mShowLiveStats = true;
             return;
         }
-        if (pAction->text().compare("Hide stream info") == 0)
+        if (pAction->text().compare(Homer::Gui::AudioWidget::tr("Hide stream info")) == 0)
         {
             mShowLiveStats = false;
             return;
         }
-        if (pAction->text().compare("Drop stream") == 0)
+        if (pAction->text().compare(Homer::Gui::AudioWidget::tr("Drop stream")) == 0)
         {
             mAudioPaused = true;
             mAudioWorker->SetSampleDropping(true);
             return;
         }
-        if (pAction->text().compare("Continue stream") == 0)
+        if (pAction->text().compare(Homer::Gui::AudioWidget::tr("Continue stream")) == 0)
         {
             mAudioPaused = false;
             mAudioWorker->SetSampleDropping(false);
@@ -449,7 +449,7 @@ void AudioWidget::contextMenuEvent(QContextMenuEvent *pEvent)
 
 void AudioWidget::StartRecorder()
 {
-    QString tFileName = OverviewPlaylistWidget::LetUserSelectAudioSaveFile(this, "Set file name for audio recording");
+    QString tFileName = OverviewPlaylistWidget::LetUserSelectAudioSaveFile(this, Homer::Gui::AudioWidget::tr("Save recorded audio"));
 
     if (tFileName.isEmpty())
         return;
@@ -459,7 +459,7 @@ void AudioWidget::StartRecorder()
     QStringList tPosQuals;
     for (int i = 1; i < 11; i++)
         tPosQuals.append(QString("%1").arg(i * 10));
-    QString tQualityStr = QInputDialog::getItem(this, "Select recording quality", "Record with quality:                                      ", tPosQuals, 9, false, &tAck);
+    QString tQualityStr = QInputDialog::getItem(this, Homer::Gui::AudioWidget::tr("Select recording quality"), Homer::Gui::AudioWidget::tr("Record with quality:") + "                                      ", tPosQuals, 9, false, &tAck);
 
     if (!tAck)
         return;
@@ -492,7 +492,7 @@ void AudioWidget::StopRecorder()
 
 void AudioWidget::DialogAddNetworkSink()
 {
-    AddNetworkSinkDialog tANSDialog(this, "Configure audio streaming", DATA_TYPE_AUDIO, mAudioSource);
+    AddNetworkSinkDialog tANSDialog(this, Homer::Gui::AudioWidget::tr("Target for audio streaming"), DATA_TYPE_AUDIO, mAudioSource);
 
     tANSDialog.exec();
 }
@@ -500,6 +500,8 @@ void AudioWidget::DialogAddNetworkSink()
 QStringList AudioWidget::GetAudioStatistic()
 {
 	QStringList tAudioStatistic;
+	if (mAudioSource == NULL)
+		return tAudioStatistic;
 
 	int tHour = 0, tMin = 0, tSec = 0, tTime = mAudioSource->GetSeekPos();
     tSec = tTime % 60;
@@ -516,13 +518,13 @@ QStringList AudioWidget::GetAudioStatistic()
     //############################################
 	//### Line 1: audio source
     QString tLine_Source = "";
-    tLine_Source = "Source: " + mAudioWorker->GetCurrentDevice();
+    tLine_Source = Homer::Gui::VideoWidget::tr("Source:")+ " " + mAudioWorker->GetCurrentDevice();
 
     //############################################
 	//### Line 2: current audio buffer, dropped chunks, buffered packets
     QString tLine_Frame = "";
     tLine_Frame = "Frame: " + QString("%1").arg(mCurrentFrameNumber);
-    tLine_Frame += (mAudioSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mAudioSource->GetChunkDropCounter()) + " lost packets)") : "") + (mAudioSource->GetFragmentBufferCounter() ? (" (" + QString("%1").arg(mAudioSource->GetFragmentBufferCounter()) + "/" + QString("%1").arg(mAudioSource->GetFragmentBufferSize()) + " buffered packets)") : "");
+    tLine_Frame += (mAudioSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mAudioSource->GetChunkDropCounter()) + " " + Homer::Gui::AudioWidget::tr("lost packets") + ")") : "") + (mAudioSource->GetFragmentBufferCounter() ? (" (" + QString("%1").arg(mAudioSource->GetFragmentBufferCounter()) + "/" + QString("%1").arg(mAudioSource->GetFragmentBufferSize()) + " " + Homer::Gui::AudioWidget::tr("buffered packets") + ")") : "");
 
     //############################################
     //### Line 3: FPS and pre-buffer time
@@ -530,29 +532,30 @@ QStringList AudioWidget::GetAudioStatistic()
     tLine_Fps = "Fps: " + QString("%1").arg(mCurrentFrameRate, 4, 'f', 2, ' ');
     if (mAudioSource->GetFrameBufferSize() > 0)
     {
-    	tLine_Fps += " (" + QString("%1").arg(mAudioSource->GetFrameBufferCounter()) + "/" + QString("%1").arg(mAudioSource->GetFrameBufferSize()) + ", " + QString("%1").arg(mAudioSource->GetFrameBufferTime(), 2, 'f', 2, (QLatin1Char)' ') + " s buffered)";
+        tLine_Fps += " (" + QString("%1").arg(mAudioSource->GetFrameBufferCounter()) + "/" + QString("%1").arg(mAudioSource->GetFrameBufferSize()) + ", " + QString("%1").arg(mAudioSource->GetFrameBufferTime(), 2, 'f', 2, (QLatin1Char)' ') + " s " + Homer::Gui::AudioWidget::tr("buffered");
     	float tPreBufferTime = mAudioSource->GetFrameBufferPreBufferingTime();
     	if (tPreBufferTime > 0)
-    	    tLine_Fps += " [" + QString("%1").arg(tPreBufferTime, 2, 'f', 2, (QLatin1Char)' ') + " s pre-buffer])";
+            tLine_Fps += " [" + QString("%1").arg(tPreBufferTime, 2, 'f', 2, (QLatin1Char)' ') + " s " + Homer::Gui::AudioWidget::tr("pre-buffer") + "])";
     	else
     	    tLine_Fps += ")";
     }
 
     //############################################
 	//### Line 3: audio codec and sample rate
-    QString tLine_Codec = "";
-    tLine_Codec = "Source codec: " + QString((mAudioSource->GetCodecName() != "") ? mAudioSource->GetCodecName().c_str() : "unknown") + " (" + QString("%1").arg(mAudioSource->GetInputSampleRate()) + " Hz, " + QString("%1").arg(mAudioSource->GetInputChannels())+ " channels)";
+    int tInputBitRate = mAudioSource->GetInputBitRate();
+    QString tLine_InputCodec = "";
+    tLine_InputCodec = Homer::Gui::AudioWidget::tr("Source codec:") + " " + QString((mAudioSource->GetCodecName() != "") ? mAudioSource->GetCodecName().c_str() : Homer::Gui::AudioWidget::tr("unknown")) + " (" + QString("%1").arg(mAudioSource->GetInputSampleRate()) + " Hz, " + QString("%1").arg(mAudioSource->GetInputChannels())+ " " + Homer::Gui::AudioWidget::tr("channels") + (tInputBitRate > 0 ? ", " + QString("%1 kbit/s").arg(tInputBitRate / 1000): "") + ")";
 
     //############################################
 	//### Line 4: audio output
-    QString tLine_Output = "";
-    tLine_Output = "Playback: " + QString("%1").arg(AUDIO_OUTPUT_SAMPLE_RATE) + " Hz, 2 channels";
+    QString tLine_Playback = "";
+    tLine_Playback = "Playback: " + QString("%1").arg(AUDIO_OUTPUT_SAMPLE_RATE) + " " + Homer::Gui::AudioWidget::tr("Hz, 2 channels");
     int64_t tGaps = mAudioWorker->GetPlaybackGapsCounter();
     int tPlaybackBuffers = mAudioWorker->GetPlaybackQueueUsage();
     if (tPlaybackBuffers > 0)
-        tLine_Output += ", " + QString("%1").arg(tPlaybackBuffers) + "/" + QString("%1").arg(mAudioWorker->GetPlaybackQueueSize()) + " frames buffered";
+        tLine_Playback += ", " + QString("%1").arg(tPlaybackBuffers) + "/" + QString("%1").arg(mAudioWorker->GetPlaybackQueueSize()) + " " + Homer::Gui::AudioWidget::tr("frames buffered");
     if (tGaps > 0)
-        tLine_Output += " (" + QString("%1").arg(tGaps) + " gaps found)";
+        tLine_Playback += " (" + QString("%1").arg(tGaps) + " gaps found)";
 
     //############################################
     //### Line 5: current position within file
@@ -564,23 +567,23 @@ QStringList AudioWidget::GetAudioStatistic()
 
     //############################################
     //### Line 6: audio muxer
-    QString tLine_Muxer = "";
+    QString tLine_OutputCodec = "";
     QString tMuxCodecName = QString(mAudioSource->GetMuxingCodec().c_str());
     int tMuxResX = 0, tMuxResY = 0;
     mAudioSource->GetMuxingResolution(tMuxResX, tMuxResY);
     if (mAudioSource->SupportsMuxing())
-        tLine_Muxer = "Streaming codec: " + ((tMuxCodecName != "") ? tMuxCodecName : "unknown") + (mAudioSource->GetMuxingBufferCounter() ? (" (" + QString("%1").arg(mAudioSource->GetMuxingBufferCounter()) + "/" + QString("%1").arg(mAudioSource->GetMuxingBufferSize()) + " buffered frames)") : "") + " (" + QString("%1").arg(mAudioSource->GetOutputSampleRate()) + " Hz, " + QString("%1").arg(mAudioSource->GetOutputChannels())+ " channels)";
+        tLine_OutputCodec = "Streaming codec: " + ((tMuxCodecName != "") ? tMuxCodecName : Homer::Gui::AudioWidget::tr("unknown")) + (mAudioSource->GetMuxingBufferCounter() ? (" (" + QString("%1").arg(mAudioSource->GetMuxingBufferCounter()) + "/" + QString("%1").arg(mAudioSource->GetMuxingBufferSize()) + " " + Homer::Gui::AudioWidget::tr("buffered frames") + ")") : "") + " (" + QString("%1").arg(mAudioSource->GetOutputSampleRate()) + " " + Homer::Gui::AudioWidget::tr("Hz") + ", " + QString("%1").arg(mAudioSource->GetOutputChannels())+ " " + Homer::Gui::AudioWidget::tr("channels") + ")";
 
     //############################################
     //### Line 7: network peer
     QString tLine_Peer = "";
     QString tPeerName = QString(mAudioSource->GetCurrentDevicePeerName().c_str());
     if (tPeerName != "")
-    	tLine_Peer = "Sender: " + tPeerName;
+    	tLine_Peer = Homer::Gui::AudioWidget::tr("Sender:") + " " + tPeerName;
     int tSynchPackets = mAudioSource->GetSynchronizationPoints();
     if (tSynchPackets > 0)
     {
-        tLine_Peer += " (" + QString("%1").arg(tSynchPackets) + " synch. packets";
+        tLine_Peer += " (" + QString("%1").arg(tSynchPackets) + " " + Homer::Gui::AudioWidget::tr("synch. packets");
         float tDelay = (float)mAudioSource->GetEndToEndDelay() / 1000;
         if (tDelay > 0)
             tLine_Peer += ", " + QString("%1").arg(tDelay, 2, 'f', 2, (QLatin1Char)' ') + " ms delay)";
@@ -599,7 +602,7 @@ QStringList AudioWidget::GetAudioStatistic()
         tMin = tTime % 60;
         tHour = tTime / 60;
 
-        tLine_RecorderTime = "Recorded: " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0');
+        tLine_RecorderTime = Homer::Gui::AudioWidget::tr("Recorded:") + " " + QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0');
     }
 
     //derive resulting Audio statistic
@@ -609,14 +612,14 @@ QStringList AudioWidget::GetAudioStatistic()
     	tAudioStatistic += tLine_Frame;
     if (tLine_Fps != "")
     	tAudioStatistic += tLine_Fps;
-    if (tLine_Codec != "")
-    	tAudioStatistic += tLine_Codec;
-    if (tLine_Output != "")
-    	tAudioStatistic += tLine_Output;
+    if (tLine_InputCodec != "")
+    	tAudioStatistic += tLine_InputCodec;
+    if (tLine_Playback != "")
+    	tAudioStatistic += tLine_Playback;
     if (tLine_Time != "")
     	tAudioStatistic += tLine_Time;
-    if (tLine_Muxer != "")
-    	tAudioStatistic += tLine_Muxer;
+    if (tLine_OutputCodec != "")
+    	tAudioStatistic += tLine_OutputCodec;
     if (tLine_Peer != "")
     	tAudioStatistic += tLine_Peer;
     if (tLine_RecorderTime != "")
@@ -628,54 +631,11 @@ QStringList AudioWidget::GetAudioStatistic()
 void AudioWidget::ShowSample(void* pBuffer, int pSampleSize)
 {
     int tMSecs = QTime::currentTime().msec();
-    short int tData = 0;
-    int tSum = 0, tMax = 1, tMin = -1;
-    int tLevel = 0;
-
-    // sample size is given in bytes but we use 16 bit values, furthermore we are using stereo -> division by 4
-    int tSampleAmount = pSampleSize / 4;
-    //if (pSampleSize != 4096)
-        //printf("AudioWidget-SampleSize: %d Sps: %d SampleNumber: %d\n", pSampleSize, pSps, pSampleNumber);
-
-    //#############################################################
-    //### find minimum and maximum values
-    //#############################################################
-    for (int i = 0; i < tSampleAmount; i++)
-    {
-        tData = *((int16_t*)pBuffer + i * 2);
-        tSum += tData;
-        if (tData < tMin)
-            tMin = tData;
-        if (tData > tMax)
-            tMax = tData;
-        //if (i < 20)
-            //printf("%4hd ", tData);
-    }
-    //LOG(LOG_WARN, "Audio samples have a range of %d / %d", tMin, tMax);
-
-    //#############################################################
-    //### scale the values to 100 %
-    //#############################################################
-    int tScaledMin = 100 * tMin / (-32768);
-    int tScaledMax = 100 * tMax / ( 32767);
-
-    // check the range
-    if (tScaledMin < 0)
-        tScaledMin = 0;
-    if (tScaledMin > 100)
-        tScaledMin = 100;
-    if (tScaledMax < 0)
-        tScaledMax = 0;
-    if (tScaledMax > 100)
-        tScaledMax = 100;
 
     //#############################################################
     //### set the level of the level bar widget
     //#############################################################
-    if (tScaledMin > tScaledMax)
-        showAudioLevel(tScaledMin);
-    else
-        showAudioLevel(tScaledMax);
+	ShowAudioLevel(mAudioWorker->GetLastAudioLevel());
 
     //#############################################################
     //### draw statistics
@@ -722,7 +682,7 @@ void AudioWidget::ShowSample(void* pBuffer, int pSampleSize)
     //printf("Sum: %d SampleSize: %d SampleAmount: %d Average: %d Min: %d Max: %d scaledMin: %d scaledMax: %d\n", tSum, pSampleSize, tSampleAmount, (int)tSum/pSampleSize, tMin, tMax, tScaledMin, tScaledMax);
 }
 
-void AudioWidget::showAudioLevel(int pLevel)
+void AudioWidget::ShowAudioLevel(int pLevel)
 {
     if (mAudioPaused)
         return;
@@ -860,9 +820,9 @@ void AudioWidget::customEvent(QEvent* pEvent)
         case AUDIO_EVENT_SOURCE_OPEN_ERROR:
             tAudioEvent->accept();
             if (tAudioEvent->GetDescription() != "")
-                ShowWarning("Audio source not available", "The selected audio source \"" + tAudioEvent->GetDescription() + "\" is not available. Please, select another one!");
+                ShowWarning(Homer::Gui::AudioWidget::tr("Audio source not available"), Homer::Gui::AudioWidget::tr("The selected audio source \"") + tAudioEvent->GetDescription() + Homer::Gui::AudioWidget::tr("\" is not available. Please, select another one!"));
             else
-            	ShowWarning("Audio source not available", "The selected audio source auto detection was not successful. Please, connect an additional audio device to your hardware!");
+            	ShowWarning(Homer::Gui::AudioWidget::tr("Audio source not available"), Homer::Gui::AudioWidget::tr("The selected audio source auto detection was not successful. Please, connect an additional audio device to your hardware!"));
             break;
         case AUDIO_EVENT_NEW_SOURCE:
             tAudioEvent->accept();
@@ -1003,6 +963,43 @@ int AudioWorkerThread::GetPlaybackQueueSize()
         return mWaveOut->GetQueueSize();
     else
         return 0;
+}
+
+int AudioWorkerThread::GetLastAudioLevel()
+{
+	return mLastAudioLevel;
+}
+
+void AudioWorkerThread::SetSkipSilenceThreshold(int pValue)
+{
+	if ((mMediaSource != NULL) && (mMediaSource->SupportsMuxing()))
+	{
+		MediaSourceMuxer *tMuxer =(MediaSourceMuxer*)mMediaSource;
+		tMuxer->SetRelaySkipSilenceThreshold(pValue);
+	}
+}
+
+int AudioWorkerThread::GetSkipSilenceThreshold()
+{
+	if ((mMediaSource != NULL) && (mMediaSource->SupportsMuxing()))
+	{
+		MediaSourceMuxer *tMuxer =(MediaSourceMuxer*)mMediaSource;
+		return tMuxer->GetRelaySkipSilenceThreshold();
+	}else
+	{
+
+	}
+	return 0;
+}
+
+int64_t AudioWorkerThread::GetSkipSilenceSkippedChunks()
+{
+	if ((mMediaSource != NULL) && (mMediaSource->SupportsMuxing()))
+	{
+		MediaSourceMuxer *tMuxer =(MediaSourceMuxer*)mMediaSource;
+		return tMuxer->GetRelaySkipSilenceSkippedChunks();
+	}
+	return 0;
 }
 
 void AudioWorkerThread::SetSampleDropping(bool pDrop)
@@ -1273,6 +1270,9 @@ void AudioWorkerThread::HandlePlayFileSuccess()
 
 int AudioWorkerThread::GetCurrentFrame(void **pSample, int& pSampleSize, float *pFrameRate)
 {
+    short int tData = 0;
+    int tMax = 1, tMin = -1;
+    int tLevel = 0;
     int tResult = -1;
 
     // lock
@@ -1289,6 +1289,51 @@ int AudioWorkerThread::GetCurrentFrame(void **pSample, int& pSampleSize, float *
         *pSample = mSamples[mSampleCurrentIndex];
         pSampleSize = mSamplesSize[mSampleCurrentIndex];
         tResult = mSampleNumber[mSampleCurrentIndex];
+
+        // sample size is given in bytes but we use 16 bit values, furthermore we are using stereo -> division by 4
+        int tSampleAmount = pSampleSize / 4;
+        //if (pSampleSize != 4096)
+            //printf("AudioWidget-SampleSize: %d Sps: %d SampleNumber: %d\n", pSampleSize, pSps, pSampleNumber);
+
+        //#############################################################
+        //### find minimum and maximum values
+        //#############################################################
+        for (int i = 0; i < tSampleAmount; i++)
+        {
+            tData = *((int16_t*)*pSample + i * 2);
+            if (tData < tMin)
+                tMin = tData;
+            if (tData > tMax)
+                tMax = tData;
+            //if (i < 20)
+                //printf("%4hd ", tData);
+        }
+        //LOG(LOG_WARN, "Audio samples have a range of %d / %d", tMin, tMax);
+
+        //#############################################################
+        //### scale the values to 100 %
+        //#############################################################
+        int tScaledMin = 100 * tMin / (-32768);
+        int tScaledMax = 100 * tMax / ( 32767);
+
+        // check the range
+        if (tScaledMin < 0)
+            tScaledMin = 0;
+        if (tScaledMin > 100)
+            tScaledMin = 100;
+        if (tScaledMax < 0)
+            tScaledMax = 0;
+        if (tScaledMax > 100)
+            tScaledMax = 100;
+
+        //#############################################################
+        //### set the level of the level bar widget
+        //#############################################################
+        if (tScaledMin > tScaledMax)
+			mLastAudioLevel = tScaledMin;
+        else
+        	mLastAudioLevel = tScaledMax;
+        //LOG(LOG_VERBOSE, "New audio level: %d", mLastAudioLevel);
     }
 
     // unlock

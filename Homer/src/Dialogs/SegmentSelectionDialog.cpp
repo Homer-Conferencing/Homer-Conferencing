@@ -148,7 +148,7 @@ void SegmentSelectionDialog::contextMenuEvent(QContextMenuEvent *event)
 
     QMenu tMenu(this);
 
-    tAction = tMenu.addAction("Reset to defaults");
+    tAction = tMenu.addAction(Homer::Gui::SegmentSelectionDialog::tr("Default settings"));
     QIcon tIcon;
     tIcon.addPixmap(QPixmap(":/images/22_22/Reload.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon);
@@ -156,7 +156,7 @@ void SegmentSelectionDialog::contextMenuEvent(QContextMenuEvent *event)
     QAction* tPopupRes = tMenu.exec(QCursor::pos());
     if (tPopupRes != NULL)
     {
-        if (tPopupRes->text().compare("Reset to defaults") == 0)
+        if (tPopupRes->text().compare(Homer::Gui::SegmentSelectionDialog::tr("Default settings")) == 0)
         {
             ResetToDefaults();
             return;

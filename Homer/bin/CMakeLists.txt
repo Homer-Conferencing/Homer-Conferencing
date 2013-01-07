@@ -15,10 +15,14 @@ SET (QT_QMAKE_EXECUTABLE $ENV{QT_QMAKE_EXECUTABLE} )
 Find_Package(Qt4 4.7 REQUIRED)
 IF (NOT QT4_FOUND)
 	IF ($ENV{QT_QMAKE_EXECUTABLE} MATCHES "")
-		MESSAGE(FATAL_ERROR "Library QT4 not found, try to define the absolute path to Qt4 qmake executable in the environment variable QT_QMAKE_EXECUTABLE")
+		MESSAGE(FATAL_ERROR "Library Qt4 not found, try to define the absolute path to Qt4 qmake executable in the environment variable QT_QMAKE_EXECUTABLE")
 	ELSE()
 		MESSAGE(FATAL_ERROR "You need library Qt4")
 	ENDIF()
+ELSE()
+	MESSAGE("Qt4 binary path is: ${QT_BINARY_DIR}")
+	MESSAGE("Qt4 moc path is: ${QT_MOC_EXECUTABLE}")
+	MESSAGE("Qt4 uic path is: ${QT_UIC_EXECUTABLE}")
 ENDIF ()
 SET(QT_USE_QTCOREL 1)
 SET(QT_USE_QTGUI 1)
@@ -131,6 +135,7 @@ SET (SOURCES
 	../src/main
 	../src/Dialogs/AddNetworkSinkDialog
 	../src/Dialogs/ConfigurationDialog
+	../src/Dialogs/ConfigurationAudioSilenceDialog
 	../src/Dialogs/ContactEditDialog
 	../src/Dialogs/FileTransferAckDialog
 	../src/Dialogs/HelpDialog
@@ -165,6 +170,7 @@ SET (QT_MOC_SOURCES
 	../include/MediaSourceGrabberThread.h
 	../include/Dialogs/AddNetworkSinkDialog.h
 	../include/Dialogs/ConfigurationDialog.h
+	../include/Dialogs/ConfigurationAudioSilenceDialog.h
 	../include/Dialogs/ContactEditDialog.h
 	../include/Dialogs/FileTransferAckDialog.h
 	../include/Dialogs/HelpDialog.h
@@ -198,6 +204,7 @@ SET (QT_UI_SOURCES
 	../forms/MainWindow.ui
 	../forms/Dialogs/AddNetworkSinkDialog.ui
 	../forms/Dialogs/ConfigurationDialog.ui
+	../forms/Dialogs/ConfigurationAudioSilenceDialog.ui
 	../forms/Dialogs/ContactEditDialog.ui
 	../forms/Dialogs/FileTransferAckDialog.ui
 	../forms/Dialogs/HelpDialog.ui
@@ -229,8 +236,8 @@ SET (QT_QRC_SOURCES
 ##############################################################
 # multi-language support
 SET(QT_LANG_FILES
-    ../lang/ru.ts
-    ../lang/de.ts
+    ../lang/Homer_ru.ts
+    ../lang/Homer_de.ts
 )
 
 file (GLOB HEADER_FILES 
@@ -250,32 +257,31 @@ file (GLOB UI_FILES
 		../forms/Dialogs/*.ui
 		../forms/Widgets/*.ui
 )
+
 SET(QT_TRANS_SOURCES
 		${CPP_FILES} 
 		${UI_FILES} 
 		${HEADER_FILES}
 )
 
-IF (NOT APPLE) #TODO: fix the lupdate problems for APPLE
-	# integrate Qt translations
-	QT4_CREATE_TRANSLATION(QT_LANG_BINS ${QT_TRANS_SOURCES} ${QT_LANG_FILES})
-	
-	# copy translator binaries to destination folder
-	#FOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
-	#	file(COPY ${QT_LANG_BINS_ENTRY} DESTINATION lang/${QT_LANG_BINS_ENTRY})
-	#ENDFOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
-	
-	# mark translator binaries for installation process
-	FOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
-		INSTALL(FILES ${QT_LANG_BINS_ENTRY} DESTINATION lang COMPONENT lang)
-	ENDFOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
-	
-	# add translator binaries to the linked sources
-	SET(SOURCES 
-			${SOURCES}
-			${QT_LANG_BINS}
-	)
-ENDIF()
+# integrate Qt translations
+QT4_CREATE_TRANSLATION(QT_LANG_BINS ${QT_TRANS_SOURCES} ${QT_LANG_FILES} OPTIONS -no-obsolete)
+
+# copy translator binaries to destination folder
+#FOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
+#	file(COPY ${QT_LANG_BINS_ENTRY} DESTINATION lang/${QT_LANG_BINS_ENTRY})
+#ENDFOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
+
+# mark translator binaries for installation process
+FOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
+	INSTALL(FILES ${QT_LANG_BINS_ENTRY} DESTINATION lang COMPONENT lang)
+ENDFOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
+
+# add translator binaries to the linked sources
+SET(SOURCES 
+		${SOURCES}
+		${QT_LANG_BINS}
+)
 
 ##############################################################
 #IF(EXISTS "../../HomerNetworkSimulator" AND IS_DIRECTORY "../../HomerNetworkSimulator")

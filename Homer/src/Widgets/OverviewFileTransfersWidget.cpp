@@ -235,6 +235,7 @@ void OverviewFileTransfersWidget::closeEvent(QCloseEvent* pEvent)
 
 void OverviewFileTransfersWidget::SetVisible(bool pVisible)
 {
+	CONF.SetVisibilityFileTransfersWidget(pVisible);
     if (pVisible)
     {
         move(mWinPos);

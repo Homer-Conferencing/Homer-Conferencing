@@ -247,7 +247,7 @@ void MainWindow::SetLanguage(QString pLanguage)
 		if (pLanguage != "en")
 		{// we need translation file
 			// create new translator
-			QString tNewLangFile = mAbsBinPath + "lang/" + pLanguage + ".qm";
+			QString tNewLangFile = mAbsBinPath + "lang/Homer_" + pLanguage + ".qm";
 			LOG(LOG_VERBOSE, "Loading new translation from file: %s", tNewLangFile.toStdString().c_str());
 			if(mTranslator->load(tNewLangFile))
 			{
@@ -259,6 +259,7 @@ void MainWindow::SetLanguage(QString pLanguage)
 			}
 		}else
 		{// we use default language (English)
+
 		}
 		mCurrentLanguage = pLanguage;
 	}
@@ -285,16 +286,14 @@ void MainWindow::ProcessRemainingArguments(QStringList &pArguments)
 void MainWindow::connectSignalsSlots()
 {
     LOG(LOG_VERBOSE, "Connecting signals and slots of GUI..");
-    addAction(mActionExit); // so, this actio will also be available even if the main menu is hidden
+    addAction(mActionExit); // this action will also be available even if the main menu is hidden
     connect(mActionExit, SIGNAL(triggered()), this, SLOT(actionExit()));
 
-    addAction(mActionIdentity); // so, this actio will also be available even if the main menu is hidden
+    addAction(mActionIdentity); // this action will also be available even if the main menu is hidden
     connect(mActionIdentity, SIGNAL(triggered()), this, SLOT(actionIdentity()));
-    addAction(mActionConfiguration); // so, this actio will also be available even if the main menu is hidden
+    addAction(mActionConfiguration); // this action will also be available even if the main menu is hidden
     connect(mActionConfiguration, SIGNAL(triggered()), this, SLOT(actionConfiguration()));
 
-    addAction(mActionOpenVideoAudioPreview); // so, this actio will also be available even if the main menu is hidden
-    connect(mActionOpenVideoAudioPreview, SIGNAL(triggered()), this, SLOT(actionOpenVideoAudioPreview()));
     connect(mActionHelp, SIGNAL(triggered()), this, SLOT(actionHelp()));
     connect(mActionUpdateCheck, SIGNAL(triggered()), this, SLOT(actionUpdateCheck()));
     connect(mActionVersion, SIGNAL(triggered()), this, SLOT(actionVersion()));
@@ -303,12 +302,15 @@ void MainWindow::connectSignalsSlots()
     connect(mShortcutActivateNetworkSimulationWidgets, SIGNAL(activated()), this, SLOT(actionActivateNetworkSimulationWidgets()));
     connect(mShortcutActivateDebuggingGlobally, SIGNAL(activated()), this, SLOT(actionActivateDebuggingGlobally()));
 
-    connect(mActionToolBarMediaSources, SIGNAL(toggled(bool)), mToolBarMediaSources, SLOT(setVisible(bool)));
+    connect(mActionToolBarMediaSources, SIGNAL(toggled(bool)), this, SLOT(actionActivateToolBarMediaSources(bool)));
     connect(mToolBarMediaSources->toggleViewAction(), SIGNAL(toggled(bool)), mActionToolBarMediaSources, SLOT(setChecked(bool)));
+
+    connect(mActionStautsBarWidget, SIGNAL(toggled(bool)), this, SLOT(actionActivateStatusBar(bool)));
     addAction(mActionMainMenu); // so, this actio will also be available even if the main menu is hidden
-    connect(mActionMainMenu, SIGNAL(toggled(bool)), mMenuBar, SLOT(setVisible(bool)));
+    connect(mActionMainMenu, SIGNAL(toggled(bool)), this, SLOT(actionActivateMenuBar(bool)));
     addAction(mActionMonitorBroadcastWidget); // so, this actio will also be available even if the main menu is hidden
     connect(mActionMonitorBroadcastWidget, SIGNAL(toggled(bool)), mLocalUserParticipantWidget, SLOT(setVisible(bool)));
+    connect(mActionMosaicMode, SIGNAL(toggled(bool)), this, SLOT(actionActivateMosaicMode(bool)));
 
     mActionMonitorBroadcastWidget->setChecked(CONF.GetVisibilityBroadcastWidget());
 
@@ -318,7 +320,7 @@ void MainWindow::connectSignalsSlots()
 
     if ((CONF.ConferencingEnabled()) && (mToolBarOnlineStatus != NULL))
     {
-        connect(mActionToolBarOnlineStatus, SIGNAL(toggled(bool)), mToolBarOnlineStatus, SLOT(setVisible(bool)));
+        connect(mActionToolBarOnlineStatus, SIGNAL(toggled(bool)), this, SLOT(actionActivateToolBarOnlineStatus(bool)));
         connect(mToolBarOnlineStatus->toggleViewAction(), SIGNAL(toggled(bool)), mActionToolBarOnlineStatus, SLOT(setChecked(bool)));
         mToolBarOnlineStatus->setVisible(CONF.GetVisibilityToolBarOnlineStatus());
         mToolBarOnlineStatus->toggleViewAction()->setChecked(CONF.GetVisibilityToolBarOnlineStatus());
@@ -503,7 +505,7 @@ void MainWindow::initializeVideoAudioIO()
         mOwnVideoMuxer->RegisterMediaSource(new MediaSourceDShow());
     #endif
     #ifdef APPLE
-        mOwnVideoMuxer->RegisterMediaSource(new MediaSourceCoreVideo());
+//        mOwnVideoMuxer->RegisterMediaSource(new MediaSourceCoreVideo());
     #endif
 	mOwnVideoMuxer->RegisterMediaSource(mMediaSourceDesktop = new MediaSourceDesktop());
     mOwnVideoMuxer->RegisterMediaSource(mMediaSourceLogo = new MediaSourceLogo());
@@ -533,6 +535,7 @@ void MainWindow::initializeWidgetsAndMenus()
     LOG(LOG_VERBOSE, "Initialization of widgets and menus..");
 
     mMenuBar->setVisible(CONF.GetVisibilityMenuBar());
+    mStatusBar->setVisible(CONF.GetVisibilityStatusBar());
 
     #ifndef APPLE
         // set fixed style "plastic"
@@ -571,15 +574,16 @@ void MainWindow::initializeWidgetsAndMenus()
     #endif
 
     LOG(LOG_VERBOSE, "..local broadcast widget");
-    mLocalUserParticipantWidget = new ParticipantWidget(BROADCAST, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer);
+    mLocalUserParticipantWidget = new ParticipantWidget(BROADCAST, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantAVControls, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer);
     setCentralWidget(mLocalUserParticipantWidget);
 
     CreateSysTray();
 
-    LOG(LOG_VERBOSE, "Creating playlist control widgets..");
+    LOG(LOG_VERBOSE, "..playlist control widgets");
     mOverviewPlaylistWidget = new OverviewPlaylistWidget(mActionOverviewPlaylistWidget, this, mLocalUserParticipantWidget->GetVideoWorker(), mLocalUserParticipantWidget->GetAudioWorker());
 
-    mMediaSourcesControlWidget = new StreamingControlWidget(mLocalUserParticipantWidget, mMediaSourceDesktop);
+    LOG(LOG_VERBOSE, "..streaming control widget");
+    mMediaSourcesControlWidget = new StreamingControlWidget(this, mMenuStreaming, mLocalUserParticipantWidget, mMediaSourceDesktop);
     mToolBarMediaSources->addWidget(mMediaSourcesControlWidget);
     if (mOwnVideoMuxer->SupportsMultipleInputStreams())
         mMediaSourcesControlWidget->SetVideoInputSelectionVisible();
@@ -591,8 +595,17 @@ void MainWindow::initializeWidgetsAndMenus()
     else
         mMediaSourcesControlWidget->SetVideoInputSelectionVisible(false);
 
+    LOG(LOG_VERBOSE, "..online status menu in the main application menu");
+    mOnlineStatusWidget->InitializeMenuOnlineStatus(mMenuOnlineStatus);
+    connect(mMenuOnlineStatus, SIGNAL(triggered(QAction *)), mOnlineStatusWidget, SLOT(Selected(QAction *)));
+
+    LOG(LOG_VERBOSE, "..data streams widget");
     mOverviewDataStreamsWidget = new OverviewDataStreamsWidget(mActionOverviewDataStreamsWidget, this);
+
+    LOG(LOG_VERBOSE, "..network streams widget");
     mOverviewNetworkStreamsWidget = new OverviewNetworkStreamsWidget(mActionOverviewNetworkStreamsWidget, this);
+
+    LOG(LOG_VERBOSE, "Creating threads overview widget..");
     mOverviewThreadsWidget = new OverviewThreadsWidget(mActionOverviewThreadsWidget, this);
     tabifyDockWidget(mOverviewThreadsWidget, mOverviewDataStreamsWidget);
     tabifyDockWidget(mOverviewDataStreamsWidget, mOverviewNetworkStreamsWidget);
@@ -843,6 +856,7 @@ void MainWindow::loadSettings()
     mOwnAudioMuxer->SetOutputStreamPreferences(tAudioStreamCodec.toStdString(), 100, CONF.GetAudioBitRate(), CONF.GetAudioMaxPacketSize(), false, 0, 0, CONF.GetAudioRtp());
     mOwnAudioMuxer->SetRelayActivation(CONF.GetAudioActivation() && !CONF.GetAudioActivationPushToTalk());
     mOwnAudioMuxer->SetRelaySkipSilence(CONF.GetAudioSkipSilence());
+    mOwnAudioMuxer->SetRelaySkipSilenceThreshold(CONF.GetAudioSkipSilenceThreshold());
     mOwnAudioMuxer->SelectDevice(CONF.GetLocalAudioSource().toStdString(), MEDIA_AUDIO, tNewDeviceSelected);
     // if former selected device isn't available we use one of the available instead
     if (!tNewDeviceSelected)
@@ -895,6 +909,7 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
 
     LOG(LOG_VERBOSE, "..saving main window layout");
     CONF.SetVisibilityMenuBar(mMenuBar->isVisible());
+    CONF.SetVisibilityStatusBar(mStatusBar->isVisible());
     CONF.SetMainWindowPosition(pos());
     CONF.SetMainWindowSize(size());
     CONF.SetVisibilityToolBarMediaSources(mToolBarMediaSources->isVisible());
@@ -1191,7 +1206,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     tINDEvent = (InternalNatDetectionEvent*) tEvent;
                     if (tINDEvent->Failed)
                     {
-                        ShowError("NAT detection failed", "Could not detect NAT address and type via STUN server. The failure reason is \"" + QString(tINDEvent->FailureReason.c_str()) + "\".");
+                        ShowError(Homer::Gui::MainWindow::tr("NAT detection failed"), Homer::Gui::MainWindow::tr("Could not detect NAT address and type via STUN server. The failure reason is") + " \"" + QString(tINDEvent->FailureReason.c_str()) + "\".");
                     }else
                     {
                     	LOG(LOG_VERBOSE, "NAT detection was successful");
@@ -1297,7 +1312,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                         if (!tKnownParticipant)
                         {
                             // add without any OpenSession-check, the session is always added automatically by the meeting-layer
-                            tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, QString(tMEvent->Sender.c_str()), tMEvent->Transport);
+                            tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantAVControls, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, QString(tMEvent->Sender.c_str()), tMEvent->Transport);
 
                             if (tParticipantWidget != NULL)
                             {
@@ -1397,7 +1412,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     if (!tKnownParticipant)
                     {
                         // add without any OpenSession-check, the session is always added automatically by the meeting-layer
-                        tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, QString(tCEvent->Sender.c_str()));
+                        tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantAVControls, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, QString(tCEvent->Sender.c_str()));
 
                         if (tParticipantWidget != NULL)
                         {
@@ -1574,12 +1589,12 @@ void MainWindow::customEvent(QEvent* pEvent)
                     tRFEvent = (RegistrationFailedEvent*) tEvent;
                     if (tRFEvent->StatusCode != 904)
                     {
-                    	ShowError("Registration failed", "Could not register \"" + CONF.GetSipUserName() + "\" at the SIP server \"" + CONF.GetSipServer() + ":<" + QString("%1").arg(CONF.GetSipServerPort()) + ">\"! The reason is \"" + QString(tRFEvent->Description.c_str()) + "\"(" + QString("%1").arg(tRFEvent->StatusCode) + ")\n" \
-                    									 "SIP server runs software \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
+                    	ShowError(Homer::Gui::MainWindow::tr("Registration failed"), Homer::Gui::MainWindow::tr("Could not register") + " \"" + CONF.GetSipUserName() + "\" " + Homer::Gui::MainWindow::tr("at the SIP server") + " \"" + CONF.GetSipServer() + ":<" + QString("%1").arg(CONF.GetSipServerPort()) + ">\"! " + Homer::Gui::MainWindow::tr("The reason is") + " \"" + QString(tRFEvent->Description.c_str()) + "\"(" + QString("%1").arg(tRFEvent->StatusCode) + ")\n" +
+                    									 Homer::Gui::MainWindow::tr("SIP server runs software") + " \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
                     }else
                     {
-                    	ShowError("Registration failed", "Could not register \"" + CONF.GetSipUserName() + "\" at the SIP server \"" + CONF.GetSipServer() + ":<" + QString("%1").arg(CONF.GetSipServerPort()) + ">\"! The login name or password is wrong. Check configuration!\n" \
-                    									 "SIP server runs software \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
+                    	ShowError(Homer::Gui::MainWindow::tr("Registration failed"), Homer::Gui::MainWindow::tr("Could not register") + " \"" + CONF.GetSipUserName() + "\" " + Homer::Gui::MainWindow::tr("at the SIP server") + " \"" + CONF.GetSipServer() + ":<" + QString("%1").arg(CONF.GetSipServerPort()) + ">\"! " + Homer::Gui::MainWindow::tr("The login name or password is wrong. Check configuration!\n") +
+                    	                                 Homer::Gui::MainWindow::tr("SIP server runs software") + " \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
                     }
                     // reset stored SIP server data
                     mSipServerRegistrationUser = "";
@@ -1594,8 +1609,8 @@ void MainWindow::customEvent(QEvent* pEvent)
         case PUBLICATION_FAILED:
                     //####################### PUBLICATION FAILED #############################
                     tPFEvent = (PublicationFailedEvent*) tEvent;
-                    ShowError("Presence publication failed", "Could not publish your new presence state at the SIP server \"" + CONF.GetSipServer() + ":<" + QString("%1").arg(CONF.GetSipServerPort()) + ">\"! The reason is \"" + QString(tPFEvent->Description.c_str()) + "\"(" + QString("%1").arg(tPFEvent->StatusCode) + ")\n" \
-                                                             "SIP server runs software \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
+                    ShowError(Homer::Gui::MainWindow::tr("Presence publication failed"), Homer::Gui::MainWindow::tr("Could not publish your new presence state at the SIP server") + " \"" + CONF.GetSipServer() + ":<" + QString("%1").arg(CONF.GetSipServerPort()) + ">\"! " + Homer::Gui::MainWindow::tr("The reason is") + " \"" + QString(tPFEvent->Description.c_str()) + "\"(" + QString("%1").arg(tPFEvent->StatusCode) + ")\n" +
+                                                        Homer::Gui::MainWindow::tr("SIP server runs software") + " \"" + QString(MEETING.GetServerSoftwareId().c_str()) + "\".");
                     break;
         default:
                     LOG(LOG_ERROR, "We should never reach this point! Otherwise there is an ERROR IN STATE MACHINE");
@@ -1688,7 +1703,7 @@ ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHos
 			{
 				QString tParticipant = QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str());
 
-				tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, tParticipant, pTransport);
+				tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantAVControls, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, tParticipant, pTransport);
 
 				mParticipantWidgets.push_back(tParticipantWidget);
 
@@ -1857,7 +1872,7 @@ void MainWindow::actionOpenVideoAudioPreview()
 {
     ParticipantWidget *tParticipantWidget;
 
-    tParticipantWidget = new ParticipantWidget(PREVIEW, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, NULL);
+    tParticipantWidget = new ParticipantWidget(PREVIEW, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantAVControls, NULL);
 
     mParticipantWidgets.push_back(tParticipantWidget);
 }
@@ -1964,6 +1979,97 @@ void MainWindow::actionActivateNetworkSimulationWidgets()
     initializeNetworkSimulator(tArguments, true);
 }
 
+void MainWindow::actionActivateMosaicMode(bool pActive)
+{
+    ParticipantWidgetList::iterator tIt;
+    LOG(LOG_VERBOSE, "Setting mosaic mode to: %d", pActive);
+
+    if (pActive)
+	{
+    	mMosaicModeFormerWindowFlags = windowFlags();
+		QWidget* tTitleWidget = new QWidget(this);
+	    if (mParticipantWidgets.size())
+	    {
+	        for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
+	        {
+	    		(*tIt)->ToggleMosaicMode(pActive);
+	        }
+	    }
+		mLocalUserParticipantWidget->ToggleMosaicMode(pActive);
+		mStatusBar->hide();
+		mMenuBar->hide();
+		mMosaicModeToolBarOnlineStatusWasVisible = mToolBarOnlineStatus->isVisible();
+		mMosaicModeToolBarMediaSourcesWasVisible = mToolBarMediaSources->isVisible();
+		mToolBarMediaSources->hide();
+		mToolBarOnlineStatus->hide();
+		mOverviewContactsWidget->hide();
+		mOverviewDataStreamsWidget->hide();
+		mOverviewErrorsWidget->hide();
+		mOverviewFileTransfersWidget->hide();
+		mOverviewNetworkStreamsWidget->hide();
+		mOverviewPlaylistWidget->hide();
+		mOverviewThreadsWidget->hide();
+		showFullScreen();
+
+		mMosaicOriginalPalette = palette();
+		QPalette tPalette = palette();
+		tPalette.setColor(QPalette::Window, QColor(0, 0, 0));
+		setPalette(tPalette);
+	}else
+	{
+		setPalette(mMosaicOriginalPalette);
+		showNormal();
+		setWindowFlags(mMosaicModeFormerWindowFlags);
+	    if (mParticipantWidgets.size())
+	    {
+	        for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
+	        {
+	    		(*tIt)->ToggleMosaicMode(pActive);
+	        }
+	    }
+		mLocalUserParticipantWidget->ToggleMosaicMode(pActive);
+	    mStatusBar->setVisible(CONF.GetVisibilityStatusBar());
+	    mMenuBar->setVisible(CONF.GetVisibilityMenuBar());
+	    mToolBarMediaSources->setVisible(mMosaicModeToolBarMediaSourcesWasVisible);
+	    mToolBarOnlineStatus->setVisible(mMosaicModeToolBarOnlineStatusWasVisible);
+	    mOverviewContactsWidget->setVisible(CONF.GetVisibilityContactsWidget());
+	    mOverviewDataStreamsWidget->setVisible(CONF.GetVisibilityDataStreamsWidget());
+	    mOverviewErrorsWidget->setVisible(CONF.GetVisibilityErrorsWidget());
+	    mOverviewFileTransfersWidget->setVisible(CONF.GetVisibilityFileTransfersWidget());
+	    mOverviewNetworkStreamsWidget->setVisible(CONF.GetVisibilityNetworkStreamsWidget());
+	    mOverviewPlaylistWidget->setVisible(CONF.GetVisibilityPlaylistWidgetMovie());
+	    mOverviewThreadsWidget->setVisible(CONF.GetVisibilityThreadsWidget());
+	}
+}
+
+void MainWindow::actionActivateToolBarOnlineStatus(bool pActive)
+{
+	LOG(LOG_VERBOSE, "Setting online status tool bar visibility to: %d", pActive);
+	CONF.SetVisibilityToolBarOnlineStatus(pActive);
+	mToolBarOnlineStatus->setVisible(pActive);
+}
+
+void MainWindow::actionActivateToolBarMediaSources(bool pActive)
+{
+	LOG(LOG_VERBOSE, "Setting media sources tool bar visibility to: %d", pActive);
+	CONF.SetVisibilityToolBarMediaSources(pActive);
+	mToolBarMediaSources->setVisible(pActive);
+}
+
+void MainWindow::actionActivateStatusBar(bool pActive)
+{
+	LOG(LOG_VERBOSE, "Setting status bar visibility to: %d", pActive);
+	CONF.SetVisibilityStatusBar(pActive);
+	mStatusBar->setVisible(pActive);
+}
+
+void MainWindow::actionActivateMenuBar(bool pActive)
+{
+	LOG(LOG_VERBOSE, "Setting menu bar visibility to: %d", pActive);
+	CONF.SetVisibilityMenuBar(pActive);
+	mMenuBar->setVisible(pActive);
+}
+
 void MainWindow::actionActivateDebuggingWidgets()
 {
     printf("Activating verbose debug widgets\n");
@@ -1995,10 +2101,10 @@ void MainWindow::UpdateSysTrayContextMenu()
 
         if (isMinimized())
         {
-            tAction = mSysTrayMenu->addAction("Show window");
+            tAction = mSysTrayMenu->addAction(Homer::Gui::MainWindow::tr("Show window"));
         }else
         {
-            tAction = mSysTrayMenu->addAction("Hide window");
+            tAction = mSysTrayMenu->addAction(Homer::Gui::MainWindow::tr("Hide window"));
         }
         tIcon = new QIcon(":/images/22_22/Resize.png");
         tAction->setIcon(*tIcon);
@@ -2008,17 +2114,17 @@ void MainWindow::UpdateSysTrayContextMenu()
 
         if (mLocalUserParticipantWidget->GetAudioWorker()->GetMuteState())
         {
-            tAction = mSysTrayMenu->addAction("Unmute me");
+            tAction = mSysTrayMenu->addAction(Homer::Gui::MainWindow::tr("Unmute me"));
             tIcon = new QIcon(":/images/22_22/SpeakerLoud.png");
         }else
         {
-            tAction = mSysTrayMenu->addAction("Mute me");
+            tAction = mSysTrayMenu->addAction(Homer::Gui::MainWindow::tr("Mute me"));
             tIcon = new QIcon(":/images/22_22/SpeakerMuted.png");
         }
         tAction->setIcon(*tIcon);
         connect(tAction, SIGNAL(triggered()), this, SLOT(actionMuteMe()));
 
-        tAction = mSysTrayMenu->addAction("Mute others");
+        tAction = mSysTrayMenu->addAction(Homer::Gui::MainWindow::tr("Mute others"));
         tIcon = new QIcon(":/images/22_22/SpeakerMuted.png");
         tAction->setIcon(*tIcon);
         connect(tAction, SIGNAL(triggered()), this, SLOT(actionMuteOthers()));
@@ -2027,7 +2133,7 @@ void MainWindow::UpdateSysTrayContextMenu()
 
         if (CONF.ConferencingEnabled())
         {
-            tAction = mSysTrayMenu->addAction("Online status");
+            tAction = mSysTrayMenu->addAction(Homer::Gui::MainWindow::tr("Online status"));
             tMenu = new QMenu(this);
             mOnlineStatusWidget->InitializeMenuOnlineStatus(tMenu);
             tAction->setMenu(tMenu);
@@ -2036,7 +2142,7 @@ void MainWindow::UpdateSysTrayContextMenu()
 
         mSysTrayMenu->addSeparator();
 
-        tAction = mSysTrayMenu->addAction("Exit");
+        tAction = mSysTrayMenu->addAction(Homer::Gui::MainWindow::tr("Exit"));
         tIcon = new QIcon(":/images/22_22/Exit.png");
         tAction->setIcon(*tIcon);
         connect(tAction, SIGNAL(triggered()), this, SLOT(actionExit()));
@@ -2049,10 +2155,10 @@ void MainWindow::UpdateSysTrayContextMenu()
 
             if (isMinimized())
             {
-                tAction = mDockMenu->addAction("Show window");
+                tAction = mDockMenu->addAction(Homer::Gui::MainWindow::tr("Show window"));
             }else
             {
-                tAction = mDockMenu->addAction("Hide window");
+                tAction = mDockMenu->addAction(Homer::Gui::MainWindow::tr("Hide window"));
             }
             tIcon = new QIcon(":/images/22_22/Resize.png");
             tAction->setIcon(*tIcon);
@@ -2062,17 +2168,17 @@ void MainWindow::UpdateSysTrayContextMenu()
 
             if (mLocalUserParticipantWidget->GetAudioWorker()->GetMuteState())
             {
-                tAction = mDockMenu->addAction("Unmute me");
+                tAction = mDockMenu->addAction(Homer::Gui::MainWindow::tr("Unmute me"));
                 tIcon = new QIcon(":/images/22_22/SpeakerLoud.png");
             }else
             {
-                tAction = mDockMenu->addAction("Mute me");
+                tAction = mDockMenu->addAction(Homer::Gui::MainWindow::tr("Mute me"));
                 tIcon = new QIcon(":/images/22_22/SpeakerMuted.png");
             }
             tAction->setIcon(*tIcon);
             connect(tAction, SIGNAL(triggered()), this, SLOT(actionMuteMe()));
 
-            tAction = mDockMenu->addAction("Mute others");
+            tAction = mDockMenu->addAction(Homer::Gui::MainWindow::tr("Mute others"));
             tIcon = new QIcon(":/images/22_22/SpeakerMuted.png");
             tAction->setIcon(*tIcon);
             connect(tAction, SIGNAL(triggered()), this, SLOT(actionMuteOthers()));
@@ -2081,7 +2187,7 @@ void MainWindow::UpdateSysTrayContextMenu()
 
             if (CONF.ConferencingEnabled())
             {
-                tAction = mDockMenu->addAction("Online status");
+                tAction = mDockMenu->addAction(Homer::Gui::MainWindow::tr("Online status"));
                 tMenu = new QMenu(this);
                 mOnlineStatusWidget->InitializeMenuOnlineStatus(tMenu);
                 tAction->setMenu(tMenu);
