@@ -59,6 +59,7 @@ using namespace Homer::Monitor;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define					SIP_STATE_TRYING					100
 #define                 SIP_STATE_OKAY                      200
 #define                 SIP_STATE_OKAY_DELAYED_DELIVERY     202
 #define					SIP_STATE_AUTH_REQUIRED				401
@@ -976,7 +977,7 @@ void SIP::SipCallBack(int pEvent, int pStatus, char const *pPhrase, nua_t *pNua,
                 Responding to INVITE with nua_respond()
              */
             case nua_i_invite:
-                SipReceivedCall(tRemote, tLocal, pNuaHandle, pSip, pTags, tSourceIp, tSourcePort, tSourcePortTransport);
+                SipReceivedCall(tRemote, tLocal, pNuaHandle, pStatus, pSip, pTags, tSourceIp, tSourcePort, tSourcePortTransport);
                 break;
             /*################################################################
                 Incoming INVITE has been cancelled.
@@ -2240,7 +2241,7 @@ void SIP::SipReceivedAuthenticationResponse(const sip_to_t *pSipRemote, const si
             LOG(LOG_ERROR, "No matching challenge, the provided realm did not match with the received one");
             break;
         default:
-            LOG(LOG_ERROR, "Unsupported status code");
+            LOG(LOG_ERROR, "Unsupported status code: %d", pStatus);
             break;
     }
 
@@ -2304,7 +2305,7 @@ void SIP::SipReceivedMessageResponse(const sip_to_t *pSipRemote, const sip_to_t 
             SipReceivedMessageUnavailable(pSipRemote, pSipLocal, pNuaHandle, pStatus, pPhrase, pSip, pSourceIp, pSourcePort, pSourcePortTransport);
             break;
         default:
-            LOG(LOG_ERROR, "Unsupported status code");
+            LOG(LOG_ERROR, "Unsupported status code: %d", pStatus);
             break;
     }
 }
@@ -2348,7 +2349,7 @@ void SIP::SipReceivedMessageUnavailable(const sip_to_t *pSipRemote, const sip_to
 
 ///////////////// Call Handling //////////////////////////////////
 
-void SIP::SipReceivedCall(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, void* pTags, string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport)
+void SIP::SipReceivedCall(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, sip_t const *pSip, void* pTags, string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport)
 {
     int tCallState = nua_callstate_init;
     //char const *tLocalSdp = NULL;
@@ -2357,77 +2358,91 @@ void SIP::SipReceivedCall(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal,
     sip_from_t *from;
     tagi_t* tTags = (tagi_t*)pTags;
 
-    tl_gets(tTags,
-            NUTAG_CALLSTATE_REF(tCallState),
-            //SOATAG_LOCAL_SDP_STR_REF(tLocalSdp),
-            SOATAG_REMOTE_SDP_STR_REF(tRemoteSdp),
-            TAG_END());
-
-    LOG(LOG_INFO, "CallCallState: %d", tCallState);
-    //LOG(LOG_INFO, "CallLocalSdp: %s", tLocalSdp);
-    LOG(LOG_INFO, "CallRemoteSdp: %s", tRemoteSdp);
-    LOG(LOG_INFO, "CallId: %s", pSip->sip_call_id->i_id);
-
-    CallEvent *tCEvent = new CallEvent();
-
-    InitGeneralEvent_FromSipReceivedRequestEvent(pSipRemote, pSipLocal, pNuaHandle, pSip, tCEvent, "Call", pSourceIp, pSourcePort, pSourcePortTransport);
-
-    #ifdef SIP_NAT_PROPRIETARY_ADDRESS_ADAPTION
-        // only for IPv4
-        if (pSourceIp.find(":") == string::npos)
-        {
-            // NAT traversal: is network layer based IP address equal to the SIP based IP address?
-            if (pSourceIp.compare(pSipRemote->a_url->url_host) != 0)
-            {// no, NAT detected!
-                delete tCEvent;
-                LOG(LOG_INFO, "NAT at remote side detected, trying to set traversal address: %s:%d", pSourceIp.c_str(), pSourcePort, pSourcePortTransport);
-                char* tAnswer = (char*)malloc(strlen("Decline, NAT:255.255.255.255:65535") + 1);
-                sprintf(tAnswer, "Decline, NAT:%s:%u", pSourceIp.c_str(), pSourcePort, pSourcePortTransport);
-                nua_respond(pNuaHandle, 603, tAnswer, SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), TAG_END());
-                nua_handle_destroy (pNuaHandle);
-                return;
-            }
-        }
-    #endif
-
-    // NAT traversal: if we were reached via a foreign IP then we are behind a NAT box
-    //                followed by this we have to fake our own IP and PORT to the ones from the outer interface from the NAT gateway
-    //                this fake address will be used within the SIP response
-    if (pSipLocal->a_url->url_port != NULL)
-        MEETING.SearchParticipantAndSetOwnContactAddress(tCEvent->Sender, tCEvent->Transport, string(pSipLocal->a_url->url_host), (unsigned int)atoi(pSipLocal->a_url->url_port));
-    else
-        MEETING.SearchParticipantAndSetOwnContactAddress(tCEvent->Sender, tCEvent->Transport, string(pSipLocal->a_url->url_host), 5060);
-
-    switch(mAvailabilityState)
+    switch(pStatus)
     {
-        case AVAILABILITY_STATE_OFFLINE: // automatically deny this call
+    	case SIP_STATE_TRYING:
+    		{
+				tl_gets(tTags,
+						NUTAG_CALLSTATE_REF(tCallState),
+						//SOATAG_LOCAL_SDP_STR_REF(tLocalSdp),
+						SOATAG_REMOTE_SDP_STR_REF(tRemoteSdp),
+						TAG_END());
 
-                    PrintOutgoingMessageInfo(pNuaHandle, tCEvent, "CallAutoDeny");
-                    nua_respond(pNuaHandle, 603, "Decline", SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), TAG_END());
-                    nua_handle_destroy (pNuaHandle);
-                    delete tCEvent;
-                    break;
-        case AVAILABILITY_STATE_ONLINE: // ask user if we should accept this call
-                    if (MEETING.SearchParticipantAndSetState(tCEvent->Sender, tCEvent->Transport, CALLSTATE_RINGING))
-                    {
-                        tCEvent->AutoAnswering = false;
+				LOG(LOG_INFO, "CallCallState: %d", tCallState);
+				//LOG(LOG_INFO, "CallLocalSdp: %s", tLocalSdp);
+				LOG(LOG_INFO, "CallRemoteSdp: %s", tRemoteSdp);
+				LOG(LOG_INFO, "CallId: %s", pSip->sip_call_id->i_id);
 
-                        MEETING.notifyObservers(tCEvent);
-                    }
-                    break;
-        case AVAILABILITY_STATE_ONLINE_AUTO: // automatically accept this call
-                    if (MEETING.SearchParticipantAndSetState(tCEvent->Sender, tCEvent->Transport, CALLSTATE_RINGING))
-                    {
-                        tCEvent->AutoAnswering = true;
+				CallEvent *tCEvent = new CallEvent();
 
-                        MEETING.notifyObservers(tCEvent);
-                    }
-                    MEETING.SendCallAccept(tCEvent->Sender, tCEvent->Transport);
-                    break;
+				InitGeneralEvent_FromSipReceivedRequestEvent(pSipRemote, pSipLocal, pNuaHandle, pSip, tCEvent, "Call", pSourceIp, pSourcePort, pSourcePortTransport);
+
+				#ifdef SIP_NAT_PROPRIETARY_ADDRESS_ADAPTION
+					// only for IPv4
+					if (pSourceIp.find(":") == string::npos)
+					{
+						// NAT traversal: is network layer based IP address equal to the SIP based IP address?
+						if (pSourceIp.compare(pSipRemote->a_url->url_host) != 0)
+						{// no, NAT detected!
+							delete tCEvent;
+							LOG(LOG_INFO, "NAT at remote side detected, trying to set traversal address: %s:%d", pSourceIp.c_str(), pSourcePort, pSourcePortTransport);
+							char* tAnswer = (char*)malloc(strlen("Decline, NAT:255.255.255.255:65535") + 1);
+							sprintf(tAnswer, "Decline, NAT:%s:%u", pSourceIp.c_str(), pSourcePort, pSourcePortTransport);
+							nua_respond(pNuaHandle, 603, tAnswer, SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), TAG_END());
+							nua_handle_destroy (pNuaHandle);
+							return;
+						}
+					}
+				#endif
+
+				// NAT traversal: if we were reached via a foreign IP then we are behind a NAT box
+				//                followed by this we have to fake our own IP and PORT to the ones from the outer interface from the NAT gateway
+				//                this fake address will be used within the SIP response
+				if (pSipLocal->a_url->url_port != NULL)
+					MEETING.SearchParticipantAndSetOwnContactAddress(tCEvent->Sender, tCEvent->Transport, string(pSipLocal->a_url->url_host), (unsigned int)atoi(pSipLocal->a_url->url_port));
+				else
+					MEETING.SearchParticipantAndSetOwnContactAddress(tCEvent->Sender, tCEvent->Transport, string(pSipLocal->a_url->url_host), 5060);
+
+				switch(mAvailabilityState)
+				{
+					case AVAILABILITY_STATE_OFFLINE: // automatically deny this call
+
+								PrintOutgoingMessageInfo(pNuaHandle, tCEvent, "CallAutoDeny");
+								nua_respond(pNuaHandle, 603, "Decline", SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), TAG_END());
+								nua_handle_destroy (pNuaHandle);
+								delete tCEvent;
+								break;
+					case AVAILABILITY_STATE_ONLINE: // ask user if we should accept this call
+								if (MEETING.SearchParticipantAndSetState(tCEvent->Sender, tCEvent->Transport, CALLSTATE_RINGING))
+								{
+									tCEvent->AutoAnswering = false;
+
+									MEETING.notifyObservers(tCEvent);
+								}
+								break;
+					case AVAILABILITY_STATE_ONLINE_AUTO: // automatically accept this call
+								if (MEETING.SearchParticipantAndSetState(tCEvent->Sender, tCEvent->Transport, CALLSTATE_RINGING))
+								{
+									tCEvent->AutoAnswering = true;
+
+									MEETING.notifyObservers(tCEvent);
+								}
+								MEETING.SendCallAccept(tCEvent->Sender, tCEvent->Transport);
+								break;
+					default:
+								LOG(LOG_ERROR, "AvailabilityState unknown");
+								delete tCEvent;
+								break;
+				}
+    		}
+			break;
+    	case SIP_STATE_OKAY: // the other side accepted the call
+            LOG(LOG_WARN, "Call was acknowledged by OKAY");
+            // nothing to do here
+            break;
         default:
-                    LOG(LOG_ERROR, "AvailabilityState unknown");
-                    delete tCEvent;
-                    break;
+            LOG(LOG_WARN, "Unsupported status code: %d, ignoring..", pStatus);
+            break;
     }
 }
 
@@ -2653,7 +2668,8 @@ void SIP::SipReceivedCallStateChange(const sip_to_t *pSipRemote, const sip_to_t 
                 }
             }
         }
-    }
+    }else
+    	LOG(LOG_WARN, "Remote SDP string is invalid");
 }
 
 void SIP::SipReceivedCallRinging(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport)

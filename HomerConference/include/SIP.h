@@ -132,7 +132,7 @@ protected:
         void SipReceivedMessageAcceptDelayed(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport);
         void SipReceivedMessageUnavailable(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, char const *pPhrase, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport);
         /* */
-    void SipReceivedCall(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, void* pTags, std::string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport);
+    void SipReceivedCall(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, sip_t const *pSip, void* pTags, std::string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport);
     void SipReceivedCallResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, const char* pPhrase, sip_t const *pSip, void* pTags, std::string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport);
         /* helpers for "call response */
         void SipReceivedCallRinging(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport);
