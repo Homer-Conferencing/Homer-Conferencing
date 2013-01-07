@@ -287,6 +287,7 @@ void MediaSourceDesktop::SetScreenshotSize(int pWidth, int pHeight)
     mSourceResX = pWidth;
     mSourceResY = pHeight;
 
+    LOG(LOG_VERBOSE, "Setting screenshot size to %d * %d", pWidth, pHeight);
     mOriginalScreenshot = malloc(mSourceResX * mSourceResY * MSD_BYTES_PER_PIXEL * sizeof(char));
 }
 
@@ -384,15 +385,15 @@ void MediaSourceDesktop::CreateScreenshot()
     if (mAutoDesktop)
     {
 		#ifdef APPLE
-    		tCaptureResX = CGDisplayPixelsWide(CGMainDisplayID());
-    		tCaptureResY = CGDisplayPixelsHigh(CGMainDisplayID());
-        #else
-    		QDesktopWidget *tDesktop = QApplication::desktop();
+			tCaptureResX = CGDisplayPixelsWide(CGMainDisplayID());
+			tCaptureResY = CGDisplayPixelsHigh(CGMainDisplayID());
+		#else
+			QDesktopWidget *tDesktop = QApplication::desktop();
 			tCaptureResX = tDesktop->screenGeometry(tDesktop->primaryScreen()).width();
 			tCaptureResY = tDesktop->screenGeometry(tDesktop->primaryScreen()).height();
 			//LOG(LOG_VERBOSE, "Screen resolution: %d * %d", tCaptureResX, tCaptureResY);
 		#endif
-    }
+	}
 
     //####################################################################
     //### GRABBING
@@ -609,9 +610,14 @@ GrabResolutions MediaSourceDesktop::GetSupportedVideoGrabResolutions()
     mSupportedVideoFormats.push_back(tFormat);
 
     QDesktopWidget *tDesktop = QApplication::desktop();
-    tFormat.Name="Desktop";
-    tFormat.ResX = tDesktop->screenGeometry(tDesktop->primaryScreen()).width();
-    tFormat.ResY = tDesktop->screenGeometry(tDesktop->primaryScreen()).height();
+    tFormat.Name = MEDIA_SOURCE_DESKTOP_RESOLUTION_ID;
+	#if defined(APPLE) || defined(BSD)
+    	tFormat.ResX = CGDisplayPixelsWide(CGMainDisplayID());
+    	tFormat.ResY = CGDisplayPixelsHigh(CGMainDisplayID());
+	#else
+		tFormat.ResX = tDesktop->screenGeometry(tDesktop->primaryScreen()).width();
+		tFormat.ResY = tDesktop->screenGeometry(tDesktop->primaryScreen()).height();
+	#endif
     mSupportedVideoFormats.push_back(tFormat);
 
     tFormat.Name="Segment";

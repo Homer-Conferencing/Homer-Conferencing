@@ -43,6 +43,8 @@ using namespace Homer::Multimedia;
 
 #define MEDIA_SOURCE_DESKTOP                        "Desktop screen segment"
 
+#define MEDIA_SOURCE_DESKTOP_RESOLUTION_ID			"Desktop"
+
 // the following de/activates debugging of packets
 //#define MSD_DEBUG_PACKETS
 
