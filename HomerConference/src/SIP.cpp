@@ -977,7 +977,7 @@ void SIP::SipCallBack(int pEvent, int pStatus, char const *pPhrase, nua_t *pNua,
                 Responding to INVITE with nua_respond()
              */
             case nua_i_invite:
-                SipReceivedCall(tRemote, tLocal, pNuaHandle, pStatus, pSip, pTags, tSourceIp, tSourcePort, tSourcePortTransport);
+                SipReceivedCall(tRemote, tLocal, pNuaHandle, pStatus, pPhrase, pSip, pTags, tSourceIp, tSourcePort, tSourcePortTransport);
                 break;
             /*################################################################
                 Incoming INVITE has been cancelled.
@@ -1958,7 +1958,7 @@ void SIP::SipCallBack(int pEvent, int pStatus, char const *pPhrase, nua_t *pNua,
                         tags    empty
             */
             case nua_r_authenticate:
-                SipReceivedAuthenticationResponse(tRemote, tLocal, pNuaHandle, pStatus, tSourceIp, tSourcePort, tSourcePortTransport);
+                SipReceivedAuthenticationResponse(tRemote, tLocal, pNuaHandle, pStatus, pPhrase, tSourceIp, tSourcePort, tSourcePortTransport);
                 break;
 
             /*################################################################
@@ -2227,7 +2227,7 @@ void SIP::SipReceivedShutdownResponse(const sip_to_t *pSipRemote, const sip_to_t
         mSipStackOnline = false;
 }
 
-void SIP::SipReceivedAuthenticationResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, std::string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport)
+void SIP::SipReceivedAuthenticationResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, char const *pPhrase, std::string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport)
 {
     switch(pStatus)
     {
@@ -2241,7 +2241,7 @@ void SIP::SipReceivedAuthenticationResponse(const sip_to_t *pSipRemote, const si
             LOG(LOG_ERROR, "No matching challenge, the provided realm did not match with the received one");
             break;
         default:
-            LOG(LOG_ERROR, "Unsupported status code: %d", pStatus);
+            LOG(LOG_WARN, "Unsupported status code %d(%s)", pStatus, pPhrase);
             break;
     }
 
@@ -2305,7 +2305,7 @@ void SIP::SipReceivedMessageResponse(const sip_to_t *pSipRemote, const sip_to_t 
             SipReceivedMessageUnavailable(pSipRemote, pSipLocal, pNuaHandle, pStatus, pPhrase, pSip, pSourceIp, pSourcePort, pSourcePortTransport);
             break;
         default:
-            LOG(LOG_ERROR, "Unsupported status code: %d", pStatus);
+            LOG(LOG_WARN, "Unsupported status code %d(%s)", pStatus, pPhrase);
             break;
     }
 }
@@ -2349,7 +2349,7 @@ void SIP::SipReceivedMessageUnavailable(const sip_to_t *pSipRemote, const sip_to
 
 ///////////////// Call Handling //////////////////////////////////
 
-void SIP::SipReceivedCall(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, sip_t const *pSip, void* pTags, string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport)
+void SIP::SipReceivedCall(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, char const *pPhrase, sip_t const *pSip, void* pTags, string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport)
 {
     int tCallState = nua_callstate_init;
     //char const *tLocalSdp = NULL;
@@ -2441,7 +2441,7 @@ void SIP::SipReceivedCall(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal,
             // nothing to do here
             break;
         default:
-            LOG(LOG_WARN, "Unsupported status code: %d, ignoring..", pStatus);
+            LOG(LOG_WARN, "Unsupported status code %d(%s)", pStatus, pPhrase);
             break;
     }
 }
@@ -2525,7 +2525,7 @@ void SIP::SipReceivedCallResponse(const sip_to_t *pSipRemote, const sip_to_t *pS
             #endif
             break;
         default:
-            LOG(LOG_ERROR, "Unsupported status code %d(%s)", pStatus, pPhrase);
+            LOG(LOG_WARN, "Unsupported status code %d(%s)", pStatus, pPhrase);
             break;
     }
 }
@@ -2847,7 +2847,7 @@ void SIP::SipReceivedOptionsResponse(const sip_to_t *pSipRemote, const sip_to_t 
             SipReceivedOptionsResponseUnavailable(pSipRemote, pSipLocal, pNuaHandle, pStatus, pPhrase, pSip, pSourceIp, pSourcePort, pSourcePortTransport);
             break;
         default:
-            LOG(LOG_WARN, "Unsupported status code %d, will interpret it as \"service unavailable\"", pStatus);
+            LOG(LOG_WARN, "Unsupported status code %d(%s), will interpret it as \"service unavailable\"", pStatus, pPhrase);
             SipReceivedOptionsResponseUnavailable(pSipRemote, pSipLocal, pNuaHandle, pStatus, pPhrase, pSip, pSourceIp, pSourcePort, pSourcePortTransport);
             break;
     }
