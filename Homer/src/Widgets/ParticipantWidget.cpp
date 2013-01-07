@@ -1331,17 +1331,23 @@ void ParticipantWidget::HandleMediaUpdate(bool pIncoming, QString pRemoteAudioAd
 
     if (pRemoteVideoPort == 0)
     {
-        if (pRemoteVideoCodec != "")
-            ShowWarning("Video streaming problem", "Remote side has selected video codec " + pRemoteVideoCodec + ". Adapt the local video streaming preferences to correct this!");
-        else
-            ShowWarning("Video streaming problem", "Remote wasn't able to found fitting video codec for your settings. Select another codec in the video streaming preferences!");
-    }
+    	if (CONF.GetVideoActivation())
+    	{// warn because we expect an incoming video
+			if (pRemoteVideoCodec != "")
+				ShowWarning("Video streaming problem", "Remote side has selected video codec " + pRemoteVideoCodec + ". Adapt the local video streaming preferences to correct this!");
+			else
+				ShowWarning("Video streaming problem", "Remote wasn't able to found fitting video codec for your settings. Select another codec in the video streaming preferences!");
+    	}
+	}
     if (pRemoteAudioPort == 0)
     {
-        if (pRemoteAudioCodec != "")
-            ShowWarning("Audio streaming problem", "Remote side has selected audio codec " + pRemoteAudioCodec + ". Adapt the local audio streaming preferences to correct this!");
-        else
-            ShowWarning("Audio streaming problem", "Remote wasn't able to found fitting video codec for your settings. Select another codec in the audio streaming preferences!");
+    	if (CONF.GetAudioActivation())
+    	{// warn because we expect an incoming audio
+			if (pRemoteAudioCodec != "")
+				ShowWarning("Audio streaming problem", "Remote side has selected audio codec " + pRemoteAudioCodec + ". Adapt the local audio streaming preferences to correct this!");
+			else
+				ShowWarning("Audio streaming problem", "Remote wasn't able to found fitting video codec for your settings. Select another codec in the audio streaming preferences!");
+    	}
     }
 }
 
