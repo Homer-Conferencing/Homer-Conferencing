@@ -33,6 +33,7 @@
 #include <Snippets.h>
 #include <Header_Ffmpeg.h>
 
+#include <QDesktopWidget>
 #include <QHttp>
 #include <QUrl>
 #include <QSysInfo>
@@ -185,6 +186,12 @@ void HelpDialog::initializeGUI()
     mWvHelp->setVisible(false);
     mSystemData->setText(GetSystemInfo());
     mLbVersion->setText(RELEASE_VERSION_STRING);
+
+    QDesktopWidget *tDesktop = QApplication::desktop();
+    int tScreenResX = tDesktop->screenGeometry(tDesktop->primaryScreen()).width();
+    int tScreenResY = tDesktop->screenGeometry(tDesktop->primaryScreen()).height();
+    if ((tScreenResX < width()) || (tScreenResY < height()))
+        showMaximized();
 }
 
 void HelpDialog::GotAnswerForHelpRequest(bool pError)

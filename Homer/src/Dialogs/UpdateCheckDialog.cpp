@@ -32,6 +32,7 @@
 
 #include <QProcess>
 #include <QHttp>
+#include <QDesktopWidget>
 #include <QDesktopServices>
 #include <QProgressDialog>
 #include <QNetworkAccessManager>
@@ -78,6 +79,12 @@ void UpdateCheckDialog::initializeGUI()
     mTbDownloadUpdateInstaller->hide();
     mLbVersion->setText(RELEASE_VERSION_STRING);
     mCbAutoUpdateCheck->setChecked(CONF.GetAutoUpdateCheck());
+
+    QDesktopWidget *tDesktop = QApplication::desktop();
+    int tScreenResX = tDesktop->screenGeometry(tDesktop->primaryScreen()).width();
+    int tScreenResY = tDesktop->screenGeometry(tDesktop->primaryScreen()).height();
+    if ((tScreenResX < width()) || (tScreenResY < height()))
+        showMaximized();
 }
 
 QString UpdateCheckDialog::GetNumericReleaseVersion(QString pServerVersion)

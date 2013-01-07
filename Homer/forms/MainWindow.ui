@@ -543,6 +543,9 @@
    <property name="shortcut">
     <string>F1</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
+   </property>
    <property name="iconVisibleInMenu">
     <bool>true</bool>
    </property>
