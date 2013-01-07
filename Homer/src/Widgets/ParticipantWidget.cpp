@@ -1592,26 +1592,26 @@ void ParticipantWidget::ShowNewState()
         case CALLSTATE_STANDBY:
                     if ((mMessageWidget != NULL) && (mSessionType != PREVIEW))
                     {
-                        mMessageWidget->UpdateParticipantName(mWidgetTitle.section('@', 0, 0) + " (in chat)");
+                        mMessageWidget->UpdateParticipantName(mWidgetTitle.section('@', 0, 0) + " (" + Homer::Gui::ParticipantWidget::tr("in chat") + ")");
                         mMessageWidget->ShowNewState();
                     }
-                    setWindowTitle(mWidgetTitle + " (chat)");
+                    setWindowTitle(mWidgetTitle + " (" + Homer::Gui::ParticipantWidget::tr("chat") + ")");
                     break;
         case CALLSTATE_RUNNING:
                     if ((mMessageWidget != NULL) && (mSessionType != PREVIEW))
                     {
-                        mMessageWidget->UpdateParticipantName(mWidgetTitle.section('@', 0, 0) + " (in conference)");
+                        mMessageWidget->UpdateParticipantName(mWidgetTitle.section('@', 0, 0) + " (" + Homer::Gui::ParticipantWidget::tr("in conference") + ")");
                         mMessageWidget->ShowNewState();
                     }
-                    setWindowTitle(mWidgetTitle + " (conference)");
+                    setWindowTitle(mWidgetTitle + " (" + Homer::Gui::ParticipantWidget::tr("conference") + ")");
                     break;
         case CALLSTATE_RINGING:
                     if ((mMessageWidget != NULL) && (mSessionType != PREVIEW))
                     {
-                        mMessageWidget->UpdateParticipantName(mWidgetTitle.section('@', 0, 0) + " (ringing)");
+                        mMessageWidget->UpdateParticipantName(mWidgetTitle.section('@', 0, 0) + " (" + Homer::Gui::ParticipantWidget::tr("ringing") + ")");
                         mMessageWidget->ShowNewState();
                     }
-                    setWindowTitle(mWidgetTitle + " (ringing)");
+                    setWindowTitle(mWidgetTitle + " (" + Homer::Gui::ParticipantWidget::tr("ringing") + ")");
                     break;
         case CALLSTATE_INVALID:
                     if ((mMessageWidget != NULL) && (mSessionType != PREVIEW))
@@ -1713,7 +1713,7 @@ void ParticipantWidget::ActionPlayPauseMovieFile(QString pFileName)
 
 void ParticipantWidget::ActionRecordMovieFile()
 {
-    QString tFileName = OverviewPlaylistWidget::LetUserSelectVideoSaveFile(this, "Set file name for video/audio recording");
+    QString tFileName = OverviewPlaylistWidget::LetUserSelectVideoSaveFile(this, Homer::Gui::ParticipantWidget::tr("Set file name for video/audio recording"));
 
     if (tFileName.isEmpty())
         return;
@@ -1727,7 +1727,7 @@ void ParticipantWidget::ActionRecordMovieFile()
     // ################
     // video quality
     // ################
-    QString tVideoQualityStr = QInputDialog::getItem(this, "Select video recording quality", "Record video with quality:                                 ", tPosQuals, 0, false, &tAck);
+    QString tVideoQualityStr = QInputDialog::getItem(this, Homer::Gui::ParticipantWidget::tr("Select video recording quality"), Homer::Gui::ParticipantWidget::tr("Record video with quality:") + "                                 ", tPosQuals, 0, false, &tAck);
 
     if(tVideoQualityStr.isEmpty())
         return;
@@ -1747,7 +1747,7 @@ void ParticipantWidget::ActionRecordMovieFile()
     // ################
     // audio quality
     // ################
-    QString tAudioQualityStr = QInputDialog::getItem(this, "Select audio recording quality", "Record audio with quality:                                 ", tPosQuals, 0, false, &tAck);
+    QString tAudioQualityStr = QInputDialog::getItem(this, Homer::Gui::ParticipantWidget::tr("Select audio recording quality"), Homer::Gui::ParticipantWidget::tr("Record audio with quality:") + "                                 ", tPosQuals, 0, false, &tAck);
 
     if(tAudioQualityStr.isEmpty())
         return;

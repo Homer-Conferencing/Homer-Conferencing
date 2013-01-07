@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>726</width>
-    <height>552</height>
+    <width>713</width>
+    <height>526</height>
    </rect>
   </property>
   <property name="font">
@@ -574,8 +574,26 @@
         <layout class="QVBoxLayout" name="verticalLayout_20">
          <item>
           <widget class="QTabWidget" name="tabWidget">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="tabShape">
+            <enum>QTabWidget::Rounded</enum>
+           </property>
            <property name="currentIndex">
             <number>0</number>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>22</width>
+             <height>22</height>
+            </size>
+           </property>
+           <property name="documentMode">
+            <bool>true</bool>
            </property>
            <widget class="QWidget" name="mTabVideo">
             <attribute name="title">
@@ -1076,6 +1094,19 @@
                  </layout>
                 </widget>
                </item>
+               <item>
+                <spacer name="verticalSpacer_6">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
               </layout>
              </item>
             </layout>
@@ -1570,6 +1601,19 @@
                  </layout>
                 </widget>
                </item>
+               <item>
+                <spacer name="verticalSpacer_3">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
               </layout>
              </item>
             </layout>
@@ -1721,10 +1765,13 @@
                <property name="orientation">
                 <enum>Qt::Vertical</enum>
                </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::MinimumExpanding</enum>
+               </property>
                <property name="sizeHint" stdset="0">
                 <size>
                  <width>20</width>
-                 <height>40</height>
+                 <height>5</height>
                 </size>
                </property>
               </spacer>
@@ -1742,7 +1789,7 @@
    <item>
     <widget class="QFrame" name="frame_2">
      <property name="frameShape">
-      <enum>QFrame::StyledPanel</enum>
+      <enum>QFrame::WinPanel</enum>
      </property>
      <property name="frameShadow">
       <enum>QFrame::Raised</enum>
