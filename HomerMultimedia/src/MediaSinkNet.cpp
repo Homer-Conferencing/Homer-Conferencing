@@ -324,7 +324,9 @@ void MediaSinkNet::StopSender()
 
             // write fake data to awake sender thread as long as it still runs
             mSinkFifo->WriteFifo(tTmp, 0);
-        }while(!StopThread(1000));
+
+            Suspend(100 * 1000);
+        }while(IsRunning());
     }
 
     LOG(LOG_VERBOSE, "Encoder stopped");
