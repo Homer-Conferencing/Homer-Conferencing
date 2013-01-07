@@ -51,7 +51,11 @@ HelpDialog::HelpDialog(QWidget* pParent) :
     QDialog(pParent)
 {
     initializeGUI();
-    mLbVersion->setText(RELEASE_VERSION_STRING);
+
+    mHttpGetHelpUrl = new QHttp(this);
+    connect(mHttpGetHelpUrl, SIGNAL(done(bool)), this, SLOT(GotAnswerForHelpRequest(bool)));
+    mHttpGetHelpUrl->setHost(RELEASE_SERVER);
+    mHttpGetHelpUrl->get(PATH_HELP_TXT);
 }
 
 HelpDialog::~HelpDialog()
@@ -65,9 +69,9 @@ QString HelpDialog::GetSystemInfo()
     QString tResult;
 
     QString tAdditionaLiblLines = "";
-    QString tTargetArch = "unknown";
-    QString tCurArch = "unknown";
-    QString tOs = "unknown";
+    QString tTargetArch = Homer::Gui::HelpDialog::tr("unknown");
+    QString tCurArch = Homer::Gui::HelpDialog::tr("unknown");
+    QString tOs = Homer::Gui::HelpDialog::tr("unknown");
     #ifdef LINUX
         tOs = "Linux";
         tCurArch = (System::GetMachineType() == "x86") ? "linux32" : "linux64";
@@ -80,7 +84,7 @@ QString HelpDialog::GetSystemInfo()
         tTargetArch = "bsd" + QString("%1").arg(ARCH_BITS);
     #endif
     #ifdef APPLE
-        tOs = "OS X unknown version";
+        tOs = Homer::Gui::HelpDialog::tr("OS X unknown version");
         tCurArch = (System::GetMachineType() == "x86") ? "apple32" : "apple64";
         tTargetArch = "apple" + QString("%1").arg(ARCH_BITS);
 
@@ -119,7 +123,7 @@ QString HelpDialog::GetSystemInfo()
         }
     #endif
     #ifdef WIN32
-        tOs = "Windows unknown version";
+        tOs = Homer::Gui::HelpDialog::tr("Windows unknown version");
         tCurArch = (System::GetMachineType() == "x86") ? "win32" : "win64";
         tTargetArch = "win" + QString("%1").arg(ARCH_BITS);
 
@@ -144,33 +148,33 @@ QString HelpDialog::GetSystemInfo()
                         tOs = "Windows 7/Server 2008 R2";
                         break;
             default:
-                        tOs = "Windows unknown version";
+                        tOs = Homer::Gui::HelpDialog::tr("Windows unknown version");
                         break;
         }
     #endif
 
-    tResult=    "Operating System:  " + tOs + "\n"\
-                "Kernel:  " + QString(System::GetKernelVersion().c_str()) + "\n"\
-                "Library Qt:  " + QString(qVersion()) + "\n"\
-                "\n"\
-                "CPU cores: " + QString("%1").arg(System::GetMachineCores()) + "\n"\
-                "Memory (hardware): " + Int2ByteExpression(rint((float)System::GetMachineMemoryPhysical() / 1024 / 1024)) + " MB\n"\
-                "Memory (swap space): " + Int2ByteExpression(rint((float)System::GetMachineMemorySwap() / 1024 / 1024)) + " MB\n"\
-                "Current architecture: " + tCurArch + "\n"\
-                "Target architecture: " + tTargetArch + "\n"\
-                "\n"\
-                "Linked AVCodec:  " + QString("%1").arg(LIBAVCODEC_VERSION_MAJOR) + "." + QString("%1").arg(LIBAVCODEC_VERSION_MINOR) + "." + QString("%1").arg(LIBAVCODEC_VERSION_MICRO) + "\n"\
-                "Linked AVDevice:  " + QString("%1").arg(LIBAVDEVICE_VERSION_MAJOR) + "." + QString("%1").arg(LIBAVDEVICE_VERSION_MINOR) + "." + QString("%1").arg(LIBAVDEVICE_VERSION_MICRO) + "\n"\
-                "Linked AVFormat:  " + QString("%1").arg(LIBAVFORMAT_VERSION_MAJOR) + "." + QString("%1").arg(LIBAVFORMAT_VERSION_MINOR) + "." + QString("%1").arg(LIBAVFORMAT_VERSION_MICRO) + "\n"\
-                "Linked AVUtil:  " + QString("%1").arg(LIBAVUTIL_VERSION_MAJOR) + "." + QString("%1").arg(LIBAVUTIL_VERSION_MINOR) + "." + QString("%1").arg(LIBAVUTIL_VERSION_MICRO) + "\n"\
-                "Linked SWScale:  " + QString("%1").arg(LIBSWSCALE_VERSION_MAJOR) + "." + QString("%1").arg(LIBSWSCALE_VERSION_MINOR) + "." + QString("%1").arg(LIBSWSCALE_VERSION_MICRO) + "\n"\
-                "Linked sofia-sip: " + QString(MEETING.GetSofiaSipVersion().c_str()) + "\n"\
-                "" + tAdditionaLiblLines + "\n"\
-                "QoS supported: " + (Socket::IsQoSSupported() ? "yes" : "no") + "\n"\
-                "IPv6 supported: " + (Socket::IsIPv6Supported() ? "yes" : "no") + "\n"\
-                "UDP-Lite supported: " + (Socket::IsTransportSupported(SOCKET_UDP_LITE) ? "yes" : "no") + "\n"\
-                "DCCP supported: " + (Socket::IsTransportSupported(SOCKET_DCCP) ? "yes" : "no") + "\n"\
-                "SCTP supported: " + (Socket::IsTransportSupported(SOCKET_SCTP) ? "yes" : "no");
+    tResult=    Homer::Gui::HelpDialog::tr("Operating System:") + "  " + tOs + "\n" +
+                Homer::Gui::HelpDialog::tr("Kernel:") + "  " + QString(System::GetKernelVersion().c_str()) + "\n" +
+                Homer::Gui::HelpDialog::tr("Library Qt:") + "  " + QString(qVersion()) + "\n" \
+                "\n" +
+                Homer::Gui::HelpDialog::tr("CPU cores:") + " " + QString("%1").arg(System::GetMachineCores()) + "\n" +
+                Homer::Gui::HelpDialog::tr("Memory (hardware):") + " " + Int2ByteExpression(rint((float)System::GetMachineMemoryPhysical() / 1024 / 1024)) + " MB\n" +
+                Homer::Gui::HelpDialog::tr("Memory (swap space):") + " " + Int2ByteExpression(rint((float)System::GetMachineMemorySwap() / 1024 / 1024)) + " MB\n" +
+                Homer::Gui::HelpDialog::tr("Current architecture:") + " " + tCurArch + "\n" +
+                Homer::Gui::HelpDialog::tr("Target architecture:") + " " + tTargetArch + "\n" \
+                "\n" +
+                Homer::Gui::HelpDialog::tr("Linked AVCodec:") + "  " + QString("%1").arg(LIBAVCODEC_VERSION_MAJOR) + "." + QString("%1").arg(LIBAVCODEC_VERSION_MINOR) + "." + QString("%1").arg(LIBAVCODEC_VERSION_MICRO) + "\n" +
+                Homer::Gui::HelpDialog::tr("Linked AVDevice:") + "  " + QString("%1").arg(LIBAVDEVICE_VERSION_MAJOR) + "." + QString("%1").arg(LIBAVDEVICE_VERSION_MINOR) + "." + QString("%1").arg(LIBAVDEVICE_VERSION_MICRO) + "\n" +
+                Homer::Gui::HelpDialog::tr("Linked AVFormat:") + "  " + QString("%1").arg(LIBAVFORMAT_VERSION_MAJOR) + "." + QString("%1").arg(LIBAVFORMAT_VERSION_MINOR) + "." + QString("%1").arg(LIBAVFORMAT_VERSION_MICRO) + "\n" +
+                Homer::Gui::HelpDialog::tr("Linked AVUtil:") + "  " + QString("%1").arg(LIBAVUTIL_VERSION_MAJOR) + "." + QString("%1").arg(LIBAVUTIL_VERSION_MINOR) + "." + QString("%1").arg(LIBAVUTIL_VERSION_MICRO) + "\n" +
+                Homer::Gui::HelpDialog::tr("Linked SWScale:") + "  " + QString("%1").arg(LIBSWSCALE_VERSION_MAJOR) + "." + QString("%1").arg(LIBSWSCALE_VERSION_MINOR) + "." + QString("%1").arg(LIBSWSCALE_VERSION_MICRO) + "\n" +
+                Homer::Gui::HelpDialog::tr("Linked sofia-sip:") + " " + QString(MEETING.GetSofiaSipVersion().c_str()) + "\n" \
+                "" + tAdditionaLiblLines + "\n" +
+                Homer::Gui::HelpDialog::tr("QoS supported:") + " " + (Socket::IsQoSSupported() ? "yes" : "no") + "\n" +
+                Homer::Gui::HelpDialog::tr("IPv6 supported:")+ " " + (Socket::IsIPv6Supported() ? "yes" : "no") + "\n" +
+                Homer::Gui::HelpDialog::tr("UDP-Lite supported:") + " " + (Socket::IsTransportSupported(SOCKET_UDP_LITE) ? "yes" : "no") + "\n" +
+                Homer::Gui::HelpDialog::tr("DCCP supported:") + " " + (Socket::IsTransportSupported(SOCKET_DCCP) ? "yes" : "no") + "\n" +
+                Homer::Gui::HelpDialog::tr("SCTP supported:") + " " + (Socket::IsTransportSupported(SOCKET_SCTP) ? "yes" : "no");
 
     return tResult;
 }
@@ -179,13 +183,8 @@ void HelpDialog::initializeGUI()
 {
     setupUi(this);
     mWvHelp->setVisible(false);
-
-    mHttpGetHelpUrl = new QHttp(this);
-    connect(mHttpGetHelpUrl, SIGNAL(done(bool)), this, SLOT(GotAnswerForHelpRequest(bool)));
-    mHttpGetHelpUrl->setHost(RELEASE_SERVER);
-    mHttpGetHelpUrl->get(PATH_HELP_TXT);
-
     mSystemData->setText(GetSystemInfo());
+    mLbVersion->setText(RELEASE_VERSION_STRING);
 }
 
 void HelpDialog::GotAnswerForHelpRequest(bool pError)

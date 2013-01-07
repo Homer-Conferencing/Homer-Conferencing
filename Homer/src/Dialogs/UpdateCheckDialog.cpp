@@ -49,10 +49,17 @@ UpdateCheckDialog::UpdateCheckDialog(QWidget* pParent) :
 {
 	mDownloadProgressDialog = NULL;
     initializeGUI();
-    mTbDownloadUpdate->hide();
-    mTbDownloadUpdateInstaller->hide();
-    mLbVersion->setText(RELEASE_VERSION_STRING);
-    mCbAutoUpdateCheck->setChecked(CONF.GetAutoUpdateCheck());
+
+    mHttpGetVersionServer = new QHttp(this);
+    TriggerVersionCheck(mHttpGetVersionServer, GotAnswerForVersionRequest);
+
+    mHttpGetChangelogUrl = new QHttp(this);
+    connect(mHttpGetChangelogUrl, SIGNAL(done(bool)), this, SLOT(GotAnswerForChangelogRequest(bool)));
+    connect(mTbDownloadUpdate, SIGNAL(clicked()), this, SLOT(DownloadStart()));
+    connect(mTbDownloadUpdateInstaller, SIGNAL(clicked()), this, SLOT(DownloadInstallerStart()));
+    mHttpGetChangelogUrl->setHost(RELEASE_SERVER);
+    mHttpGetChangelogUrl->get(PATH_CHANGELOG_TXT);
+
     mNetworkAccessManager = new QNetworkAccessManager(this);
 }
 
@@ -67,15 +74,10 @@ void UpdateCheckDialog::initializeGUI()
 {
     setupUi(this);
 
-    mHttpGetVersionServer = new QHttp(this);
-    TriggerVersionCheck(mHttpGetVersionServer, GotAnswerForVersionRequest);
-
-    mHttpGetChangelogUrl = new QHttp(this);
-    connect(mHttpGetChangelogUrl, SIGNAL(done(bool)), this, SLOT(GotAnswerForChangelogRequest(bool)));
-    connect(mTbDownloadUpdate, SIGNAL(clicked()), this, SLOT(DownloadStart()));
-    connect(mTbDownloadUpdateInstaller, SIGNAL(clicked()), this, SLOT(DownloadInstallerStart()));
-    mHttpGetChangelogUrl->setHost(RELEASE_SERVER);
-    mHttpGetChangelogUrl->get(PATH_CHANGELOG_TXT);
+    mTbDownloadUpdate->hide();
+    mTbDownloadUpdateInstaller->hide();
+    mLbVersion->setText(RELEASE_VERSION_STRING);
+    mCbAutoUpdateCheck->setChecked(CONF.GetAutoUpdateCheck());
 }
 
 QString UpdateCheckDialog::GetNumericReleaseVersion(QString pServerVersion)
@@ -96,7 +98,7 @@ void UpdateCheckDialog::DownloadStart()
 {
 	if(mDownloadProgressDialog != NULL)
 	{
-		ShowInfo("Download of Homer update running", "A download of a Homer update is already started!");
+		ShowInfo(Homer::Gui::UpdateCheckDialog::tr("Download of Homer update running"), Homer::Gui::UpdateCheckDialog::tr("A download of a Homer update is already started!"));
 		return;
 	}
 
@@ -125,7 +127,7 @@ void UpdateCheckDialog::DownloadStart()
 
 	// ask for target location for new release archive
 	QString tFileName;
-	tFileName = QFileDialog::getSaveFileName(this,  "Save Homer archive to..",
+	tFileName = QFileDialog::getSaveFileName(this,  Homer::Gui::UpdateCheckDialog::tr("Save Homer archive to.."),
 																CONF.GetDataDirectory() + "/" + tReleaseFileName,
 																tReleaseFileType,
 																&tReleaseFileType,
@@ -160,7 +162,7 @@ void UpdateCheckDialog::DownloadInstallerStart()
 {
 	if(mDownloadProgressDialog != NULL)
 	{
-		ShowInfo("Download of Homer update running", "A download of a Homer update is already started!");
+		ShowInfo(Homer::Gui::UpdateCheckDialog::tr("Download of Homer update running"), Homer::Gui::UpdateCheckDialog::tr("A download of a Homer update is already started!"));
 		return;
 	}
 
@@ -172,23 +174,23 @@ void UpdateCheckDialog::DownloadInstallerStart()
 
 	#ifdef WIN32
 		tReleaseFileName = "Homer-Conferencing.exe";
-		tReleaseFileType = "Windows executable file (*.exe)";
+		tReleaseFileType = Homer::Gui::UpdateCheckDialog::tr("Windows executable file (*.exe)");
 	#endif
 	#ifdef LINUX
 		tReleaseFileName = "Homer-Conferencing.sh";
-		tReleaseFileType = "Linux shell script (*.sh)";
+		tReleaseFileType = Homer::Gui::UpdateCheckDialog::tr("Linux shell script (*.sh)");
 	#endif
 	#if defined(BSD) && !defined(APPLE)
 		return;
 	#endif
 	#ifdef APPLE
 		tReleaseFileName = "Homer-Conferencing.dmg";
-		tReleaseFileType = "Apple disc image file (*.dmg)";
+		tReleaseFileType = Homer::Gui::UpdateCheckDialog::tr("Apple disc image file (*.dmg)");
 	#endif
 
 	// ask for target location for new release installer
 	QString tFileName;
-	tFileName = QFileDialog::getSaveFileName(this,  "Save Homer installer to..",
+	tFileName = QFileDialog::getSaveFileName(this,  Homer::Gui::UpdateCheckDialog::tr("Save Homer installer to.."),
 																CONF.GetDataDirectory() + "/" + tReleaseFileName,
 																tReleaseFileType,
 																&tReleaseFileType,
@@ -253,7 +255,7 @@ void UpdateCheckDialog::DownloadProgress(qint64 pLoadedBytes, qint64 pTotalBytes
 {
 	mDownloadProgressDialog->setMaximum((int)pTotalBytes);
 	mDownloadProgressDialog->setValue((int)pLoadedBytes);
-	mDownloadProgressDialog->setLabelText("<b>Downloading Homer update</b><br>  from <font color=blue>" + mServerFile + "</font><br>  to <i>" + mDownloadHomerUpdateFile->fileName() + "</i><br>  <b>Loaded: " + Int2ByteExpression(pLoadedBytes) + "/" +  Int2ByteExpression(pTotalBytes) + " bytes</b>");
+	mDownloadProgressDialog->setLabelText("<b>" + Homer::Gui::UpdateCheckDialog::tr("Downloading Homer update") + "</b><br>  " + Homer::Gui::UpdateCheckDialog::tr("from") + " <font color=blue>" + mServerFile + "</font><br>  " + Homer::Gui::UpdateCheckDialog::tr("to") + " <i>" + mDownloadHomerUpdateFile->fileName() + "</i><br>  <b>"+ Homer::Gui::UpdateCheckDialog::tr("Loaded:") + " " + Int2ByteExpression(pLoadedBytes) + "/" +  Int2ByteExpression(pTotalBytes) + " " + Homer::Gui::UpdateCheckDialog::tr("bytes") + "</b>");
     mDownloadProgressDialog->show();
 }
 
@@ -310,7 +312,7 @@ void UpdateCheckDialog::GotAnswerForVersionRequest(bool pError)
 {
     if (pError)
     {
-        mLbVersionServer->setText("<font bgcolor='yellow' color='red'><b>check failed</b></font>");
+        mLbVersionServer->setText("<font bgcolor='yellow' color='red'><b>" + Homer::Gui::UpdateCheckDialog::tr("check failed") + "</b></font>");
         ShowError(Homer::Gui::UpdateCheckDialog::tr("Communication with server failed"), Homer::Gui::UpdateCheckDialog::tr("Could not determine software version which is provided by project server"));
     }else
     {
@@ -318,7 +320,7 @@ void UpdateCheckDialog::GotAnswerForVersionRequest(bool pError)
         LOG(LOG_VERBOSE, "Got version on server: %s", mServerVersion.toStdString().c_str());
         if (mServerVersion.contains("404 Not Found"))
         {
-            mLbVersionServer->setText("<font bgcolor='yellow' color='red'><b>check failed</b></font>");
+            mLbVersionServer->setText("<font bgcolor='yellow' color='red'><b>" + Homer::Gui::UpdateCheckDialog::tr("check failed") + "</b></font>");
             ShowError(Homer::Gui::UpdateCheckDialog::tr("Version data not found on server"), Homer::Gui::UpdateCheckDialog::tr("Could not determine software version which is provided by project server"));
         }else
         {
@@ -339,7 +341,7 @@ void UpdateCheckDialog::GotAnswerForChangelogRequest(bool pError)
 {
     if (pError)
     {
-        mLbWaiting->setText("<font bgcolor='yellow' color='red'><b>fetch failed</b></font>");
+        mLbWaiting->setText("<font bgcolor='yellow' color='red'><b>" + Homer::Gui::UpdateCheckDialog::tr("fetch failed") + "</b></font>");
         ShowError(Homer::Gui::UpdateCheckDialog::tr("Communication with server failed"), Homer::Gui::UpdateCheckDialog::tr("Could not determine changelog file which is provided by project server"));
     }else
     {
@@ -348,7 +350,7 @@ void UpdateCheckDialog::GotAnswerForChangelogRequest(bool pError)
 
         if (tChangelog.contains("404 Not Found"))
         {
-            mLbWaiting->setText("<font bgcolor='yellow' color='red'><b>fetch failed</b></font>");
+            mLbWaiting->setText("<font bgcolor='yellow' color='red'><b>" + Homer::Gui::UpdateCheckDialog::tr("fetch failed") + "</b></font>");
             ShowError(Homer::Gui::UpdateCheckDialog::tr("Changelog data not found on server"), Homer::Gui::UpdateCheckDialog::tr("Could not determine changelog file which is provided by project server"));
         }else
         {

@@ -1463,18 +1463,131 @@
 <context>
     <name>Homer::Gui::HelpDialog</name>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="196"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="72"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="73"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="74"/>
+        <source>unknown</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="87"/>
+        <source>OS X unknown version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="126"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="151"/>
+        <source>Windows unknown version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="156"/>
+        <source>Operating System:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="157"/>
+        <source>Kernel:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="158"/>
+        <source>Library Qt:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="160"/>
+        <source>CPU cores:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="161"/>
+        <source>Memory (hardware):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="162"/>
+        <source>Memory (swap space):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="163"/>
+        <source>Current architecture:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="164"/>
+        <source>Target architecture:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="166"/>
+        <source>Linked AVCodec:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="167"/>
+        <source>Linked AVDevice:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="168"/>
+        <source>Linked AVFormat:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="169"/>
+        <source>Linked AVUtil:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="170"/>
+        <source>Linked SWScale:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="171"/>
+        <source>Linked sofia-sip:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="173"/>
+        <source>QoS supported:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="174"/>
+        <source>IPv6 supported:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="175"/>
+        <source>UDP-Lite supported:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="176"/>
+        <source>DCCP supported:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="177"/>
+        <source>SCTP supported:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="195"/>
         <source>Communication with server failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="196"/>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="205"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="195"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="204"/>
         <source>Could not determine help file which is provided by project server</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="205"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="204"/>
         <source>Help data not found on server</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1497,100 +1610,100 @@ Check configuration!</source>
 <context>
     <name>Homer::Gui::MainWindow</name>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1205"/>
+        <location filename="../src/MainWindow.cpp" line="1210"/>
         <source>NAT detection failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1205"/>
+        <location filename="../src/MainWindow.cpp" line="1210"/>
         <source>Could not detect NAT address and type via STUN server. The failure reason is</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1588"/>
-        <location filename="../src/MainWindow.cpp" line="1592"/>
+        <location filename="../src/MainWindow.cpp" line="1593"/>
+        <location filename="../src/MainWindow.cpp" line="1597"/>
         <source>Registration failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1588"/>
-        <location filename="../src/MainWindow.cpp" line="1592"/>
+        <location filename="../src/MainWindow.cpp" line="1593"/>
+        <location filename="../src/MainWindow.cpp" line="1597"/>
         <source>Could not register</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1588"/>
-        <location filename="../src/MainWindow.cpp" line="1592"/>
+        <location filename="../src/MainWindow.cpp" line="1593"/>
+        <location filename="../src/MainWindow.cpp" line="1597"/>
         <source>at the SIP server</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1588"/>
-        <location filename="../src/MainWindow.cpp" line="1608"/>
+        <location filename="../src/MainWindow.cpp" line="1593"/>
+        <location filename="../src/MainWindow.cpp" line="1613"/>
         <source>The reason is</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1589"/>
-        <location filename="../src/MainWindow.cpp" line="1593"/>
-        <location filename="../src/MainWindow.cpp" line="1609"/>
+        <location filename="../src/MainWindow.cpp" line="1594"/>
+        <location filename="../src/MainWindow.cpp" line="1598"/>
+        <location filename="../src/MainWindow.cpp" line="1614"/>
         <source>SIP server runs software</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1592"/>
+        <location filename="../src/MainWindow.cpp" line="1597"/>
         <source>The login name or password is wrong. Check configuration!
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1608"/>
+        <location filename="../src/MainWindow.cpp" line="1613"/>
         <source>Presence publication failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1608"/>
+        <location filename="../src/MainWindow.cpp" line="1613"/>
         <source>Could not publish your new presence state at the SIP server</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2100"/>
-        <location filename="../src/MainWindow.cpp" line="2154"/>
+        <location filename="../src/MainWindow.cpp" line="2105"/>
+        <location filename="../src/MainWindow.cpp" line="2159"/>
         <source>Show window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2103"/>
-        <location filename="../src/MainWindow.cpp" line="2157"/>
+        <location filename="../src/MainWindow.cpp" line="2108"/>
+        <location filename="../src/MainWindow.cpp" line="2162"/>
         <source>Hide window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2113"/>
-        <location filename="../src/MainWindow.cpp" line="2167"/>
+        <location filename="../src/MainWindow.cpp" line="2118"/>
+        <location filename="../src/MainWindow.cpp" line="2172"/>
         <source>Unmute me</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2117"/>
-        <location filename="../src/MainWindow.cpp" line="2171"/>
+        <location filename="../src/MainWindow.cpp" line="2122"/>
+        <location filename="../src/MainWindow.cpp" line="2176"/>
         <source>Mute me</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2123"/>
-        <location filename="../src/MainWindow.cpp" line="2177"/>
+        <location filename="../src/MainWindow.cpp" line="2128"/>
+        <location filename="../src/MainWindow.cpp" line="2182"/>
         <source>Mute others</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2132"/>
-        <location filename="../src/MainWindow.cpp" line="2186"/>
+        <location filename="../src/MainWindow.cpp" line="2137"/>
+        <location filename="../src/MainWindow.cpp" line="2191"/>
         <source>Online status</source>
         <translation type="unfinished">Статус онлайн</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2141"/>
+        <location filename="../src/MainWindow.cpp" line="2146"/>
         <source>Exit</source>
         <translation type="unfinished">Выход</translation>
     </message>
@@ -1956,64 +2069,64 @@ Check configuration!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="410"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="455"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="403"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="448"/>
         <source>Play selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="418"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="460"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="411"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="453"/>
         <source>Add entry</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="425"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="465"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="418"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="458"/>
         <source>Rename selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="430"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="470"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="423"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="463"/>
         <source>Delete selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="440"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="475"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="433"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="468"/>
         <source>Reset playlist</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="448"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="480"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="441"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="473"/>
         <source>Endless loop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="508"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="501"/>
         <source>Add file(s) to playlist</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="550"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="543"/>
         <source>Save playlist</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="552"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="553"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="545"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="546"/>
         <source>Playlist File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="582"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="575"/>
         <source>Could not store playlist file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="582"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="575"/>
         <source>Couldn&apos;t write playlist in</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2158,95 +2271,95 @@ Check configuration!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1595"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1601"/>
         <source>in chat</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1598"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1604"/>
         <source>chat</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1603"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1609"/>
         <source>in conference</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1606"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1612"/>
         <source>conference</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1611"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1614"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1617"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1620"/>
         <source>ringing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1716"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1722"/>
         <source>Set file name for video/audio recording</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1730"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1736"/>
         <source>Select video recording quality</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1730"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1736"/>
         <source>Record video with quality:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1750"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1756"/>
         <source>Select audio recording quality</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1750"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1756"/>
         <source>Record audio with quality:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2052"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2058"/>
         <source>Video statistics:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2061"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2067"/>
         <source>Video/audio:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2063"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2069"/>
         <source>A/V pre-buffering:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2065"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2074"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2071"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2080"/>
         <source>active</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2067"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2076"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2073"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2082"/>
         <source>inactive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2070"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2076"/>
         <source>(auto restart)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2072"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2078"/>
         <source>A/V synchronization:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2083"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2089"/>
         <source>Audio statistics:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2345,60 +2458,134 @@ Check configuration!</source>
 <context>
     <name>Homer::Gui::UpdateCheckDialog</name>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="143"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="101"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="165"/>
+        <source>Download of Homer update running</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="101"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="165"/>
+        <source>A download of a Homer update is already started!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="130"/>
+        <source>Save Homer archive to..</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="145"/>
         <source>Could not store Homer archive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="143"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="145"/>
         <source>Unable to store the downloaded Homer archive to</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="206"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="177"/>
+        <source>Windows executable file (*.exe)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="181"/>
+        <source>Linux shell script (*.sh)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="188"/>
+        <source>Apple disc image file (*.dmg)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="193"/>
+        <source>Save Homer installer to..</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="208"/>
         <source>Could not store Homer installer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="206"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="208"/>
         <source>Unable to store the downloaded Homer installer to</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="265"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="258"/>
+        <source>Downloading Homer update</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="258"/>
+        <source>from</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="258"/>
+        <source>to</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="258"/>
+        <source>Loaded:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="258"/>
+        <source>bytes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="267"/>
         <source>Failed to download Homer update</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="265"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="267"/>
         <source>Unable to download Homer update. The reason is:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="314"/>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="343"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="315"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="323"/>
+        <source>check failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="316"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="345"/>
         <source>Communication with server failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="314"/>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="322"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="316"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="324"/>
         <source>Could not determine software version which is provided by project server</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="322"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="324"/>
         <source>Version data not found on server</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="343"/>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="352"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="344"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="353"/>
+        <source>fetch failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="345"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="354"/>
         <source>Could not determine changelog file which is provided by project server</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="352"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="354"/>
         <source>Changelog data not found on server</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4022,6 +4209,11 @@ p, li { white-space: pre-wrap; }
         <source>&amp;No</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../src/Configuration.cpp" line="90"/>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QFileDialog</name>
@@ -4196,75 +4388,75 @@ Do you want to replace it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="368"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="359"/>
         <source>Origin:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="396"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="387"/>
         <source>x-offset:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="406"/>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="446"/>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="496"/>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="536"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="397"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="437"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="487"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="527"/>
         <source>0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="436"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="427"/>
         <source>y-offset:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="458"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="449"/>
         <source>Dimension:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="486"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="477"/>
         <source>Width:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="526"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="517"/>
         <source>Height:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="595"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="586"/>
         <source>click to reset settings to their default values</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="611"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="602"/>
         <source>Defaults</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="646"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="637"/>
         <source>click to increase/shrink the capture segment to fit the desktop dimension and position</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="662"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="653"/>
         <source>Desktop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="697"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="688"/>
         <source>click to capture the entire desktop with automatic dimension adaption</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="716"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="707"/>
         <source>Auto Desktop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="778"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="769"/>
         <source> Track and visualize mouse </source>
         <translation type="unfinished"></translation>
     </message>

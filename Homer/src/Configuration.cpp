@@ -86,7 +86,8 @@ QT_TRANSLATE_NOOP("QDialogButtonBox", "Okay"),
 QT_TRANSLATE_NOOP("QDialogButtonBox", "Cancel"),
 QT_TRANSLATE_NOOP("QDialogButtonBox", "Reset"),
 QT_TRANSLATE_NOOP("QDialogButtonBox", "&Yes"),
-QT_TRANSLATE_NOOP("QDialogButtonBox", "&No")
+QT_TRANSLATE_NOOP("QDialogButtonBox", "&No"),
+QT_TRANSLATE_NOOP("QDialogButtonBox", "Close")
 };
 
 ///////////////////////////////////////////////////////////////////////////////
