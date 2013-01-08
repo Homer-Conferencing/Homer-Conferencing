@@ -137,13 +137,15 @@ bool WaveOut::IsPlaying()
     bool tResult = false;
 
     // we are still playing some sound?
-    if (!mPlaybackStopped)
+    if ((!mPlaybackStopped) && (mPlaybackFifo->GetUsage() > 0))
         tResult = true;
 
-    // we were triggered to play a new file?
     mOpenNewFile.lock();
+
+    // we were triggered to play a new file?
     if ((mOpenNewFileAsap) || (mFilePlaybackLoops > 0))
         tResult = true;
+
     mOpenNewFile.unlock();
 
 	 return tResult;
@@ -444,7 +446,7 @@ void* WaveOut::Run(void* pArgs)
                     #ifdef WO_DEBUG_FILE
                         LOG(LOG_VERBOSE, "Playback FIFO is filled, waiting some time");
                     #endif
-                    Thread::Suspend(10 * 1000);
+                    Thread::Suspend(10 * 1000); //TODO: use a condition here
                 }
 
                 WriteChunk(mFilePlaybackBuffer, tSamplesSize);
