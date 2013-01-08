@@ -2937,14 +2937,18 @@ bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
         {// we limit the analyzing time to a quarter
             mFormatContext->max_analyze_duration = AV_TIME_BASE / 4;
         }else{
-        	if (mSourceCodecId != CODEC_ID_MPEG4)
-        	{// we may limit the analyzing time to the half
-        		mFormatContext->max_analyze_duration = AV_TIME_BASE / 2;
-        	}else
-        	{// MPEG4
-        		// we shouldn't limit the analyzing time because the analyzer needs the entire time period to deliver a reliable result
+        	switch(mSourceCodecId)
+        	{
+                case CODEC_ID_MPEG1VIDEO:
+                case CODEC_ID_MPEG2VIDEO:
+                case CODEC_ID_MPEG4:
+                    // we shouldn't limit the analyzing time because the analyzer needs the entire time period to deliver a reliable result
+                    break;
+                default:
+                    // we may limit the analyzing time to the half
+                    mFormatContext->max_analyze_duration = AV_TIME_BASE / 2;
+                    break;
         	}
-
         }
     }
 
