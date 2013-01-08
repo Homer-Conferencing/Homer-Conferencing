@@ -998,14 +998,17 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
 
     #ifndef DEBUG_VERSION
 
-        if (mWaveOut != NULL)
-        {
-            // wait for the end of playback
-            while(mWaveOut->IsPlaying())
-            {
-                LOG(LOG_VERBOSE, "Waiting for the end of acoustic notification");
-                Thread::Suspend(250 * 1000);
-            }
+		if (CONF.GetStopSound())
+		{
+			if (mWaveOut != NULL)
+			{
+				// wait for the end of playback
+				while(mWaveOut->IsPlaying())
+				{
+					LOG(LOG_VERBOSE, "Waiting for the end of acoustic notification");
+					Thread::Suspend(250 * 1000);
+				}
+			}
         }
         LOG(LOG_VERBOSE, "Playback finished");
         ClosePlaybackDevice();
