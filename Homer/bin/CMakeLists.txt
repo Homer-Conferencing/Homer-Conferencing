@@ -303,6 +303,13 @@ IF (NOT (${BUILD} MATCHES "Default"))
 		QtXml4
 		QtXmlPatterns4
 		phonon4
+		plugins/imageformats/qgif4
+		plugins/imageformats/qico4
+		plugins/imageformats/qjpeg4
+		plugins/imageformats/qmng4
+		plugins/imageformats/qsvg4
+		plugins/imageformats/qtga4
+		plugins/imageformats/qtiff4
 	)
 ENDIF()
 SET (LIBS_WINDOWS	
