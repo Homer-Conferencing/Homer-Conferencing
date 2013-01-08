@@ -1051,32 +1051,32 @@
         <translation>Hilfe für die Benutzung von Homer-Conferencing</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/HelpDialog.ui" line="129"/>
+        <location filename="../forms/Dialogs/HelpDialog.ui" line="131"/>
         <source>Version</source>
         <translation>Version</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/HelpDialog.ui" line="182"/>
+        <location filename="../forms/Dialogs/HelpDialog.ui" line="184"/>
         <source>0.999</source>
         <translation>0.999</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/HelpDialog.ui" line="254"/>
+        <location filename="../forms/Dialogs/HelpDialog.ui" line="256"/>
         <source>System information:</source>
         <translation>Systeminformationen:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/HelpDialog.ui" line="321"/>
+        <location filename="../forms/Dialogs/HelpDialog.ui" line="323"/>
         <source>System data</source>
         <translation>Systemdaten</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/HelpDialog.ui" line="374"/>
+        <location filename="../forms/Dialogs/HelpDialog.ui" line="367"/>
         <source> Help view </source>
         <translation> Hilfeansicht </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/HelpDialog.ui" line="388"/>
+        <location filename="../forms/Dialogs/HelpDialog.ui" line="381"/>
         <source>Fetching data...</source>
         <translation> Warte auf Daten... </translation>
     </message>
@@ -1463,131 +1463,131 @@
 <context>
     <name>Homer::Gui::HelpDialog</name>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="72"/>
         <location filename="../src/Dialogs/HelpDialog.cpp" line="73"/>
         <location filename="../src/Dialogs/HelpDialog.cpp" line="74"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="75"/>
         <source>unknown</source>
         <translation>unbekannt</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="87"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="88"/>
         <source>OS X unknown version</source>
         <translation>OS X unbekannte Version</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="126"/>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="151"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="127"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="152"/>
         <source>Windows unknown version</source>
         <translation>Windows unbekannte Version</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="156"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="157"/>
         <source>Operating System:</source>
         <translation>Betriebssystem:</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="157"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="158"/>
         <source>Kernel:</source>
         <translation>Kern:</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="158"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="159"/>
         <source>Library Qt:</source>
         <translation>Bibliothek Qt:</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="160"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="161"/>
         <source>CPU cores:</source>
         <translation>Prozessorkerne:</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="161"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="162"/>
         <source>Memory (hardware):</source>
         <translation>Speicher (Hardware):</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="162"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="163"/>
         <source>Memory (swap space):</source>
         <translation>Speicher (Auslagerung):</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="163"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="164"/>
         <source>Current architecture:</source>
         <translation>Aktuelle Architektur:</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="164"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="165"/>
         <source>Target architecture:</source>
         <translation>Abgezielte Architektur:</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="166"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="167"/>
         <source>Linked AVCodec:</source>
         <translation>Verlinktes AVCodec:</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="167"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="168"/>
         <source>Linked AVDevice:</source>
         <translation>Gelinktes AVDevice: </translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="168"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="169"/>
         <source>Linked AVFormat:</source>
         <translation>Gelinktes AVFormat:</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="169"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="170"/>
         <source>Linked AVUtil:</source>
         <translation>Gelinktes AVUtil:</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="170"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="171"/>
         <source>Linked SWScale:</source>
         <translation>GelinktesSWScale: </translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="171"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="172"/>
         <source>Linked sofia-sip:</source>
         <translation>Gelinktes sofia-sip:</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="173"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="174"/>
         <source>QoS supported:</source>
         <translation>QoS unterstützt:</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="174"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="175"/>
         <source>IPv6 supported:</source>
         <translation>IPv6 unterstützt:</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="175"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="176"/>
         <source>UDP-Lite supported:</source>
         <translation>UDP-Lite unterstützt:</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="176"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="177"/>
         <source>DCCP supported:</source>
         <translation>DCCP unterstützt:</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="177"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="178"/>
         <source>SCTP supported:</source>
         <translation>SCTP utnerstützt:</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="195"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="202"/>
         <source>Communication with server failed</source>
         <translation>Kommunikation mit Server fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="195"/>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="204"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="202"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="211"/>
         <source>Could not determine help file which is provided by project server</source>
         <translation>Konnte nicht die Hilfsdatei vom Projekt beziehen </translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="204"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="211"/>
         <source>Help data not found on server</source>
         <translation>Hilfedaten konnte nichtgefunden werden auf dem Server</translation>
     </message>
@@ -2459,134 +2459,134 @@ Bitte Konfiguration prüfen!</translation>
 <context>
     <name>Homer::Gui::UpdateCheckDialog</name>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="101"/>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="165"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="108"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="172"/>
         <source>Download of Homer update running</source>
         <translation>Download des Homer-Updates gestartet</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="101"/>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="165"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="108"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="172"/>
         <source>A download of a Homer update is already started!</source>
         <translation>Ein Download  eines Homer-Updates ist bereits gestartet!</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="130"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="137"/>
         <source>Save Homer archive to..</source>
         <translation>Speichern des Homer-Archivs nach..</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="145"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="152"/>
         <source>Could not store Homer archive</source>
         <translation>Abspeichern des Homer-Archivs fehlerhaft</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="145"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="152"/>
         <source>Unable to store the downloaded Homer archive to</source>
         <translation>Abspeichern des Homer-Archivs war fehlerhaft für </translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="177"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="184"/>
         <source>Windows executable file (*.exe)</source>
         <translation>Windows ausführbare Datei (*.exe)</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="181"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="188"/>
         <source>Linux shell script (*.sh)</source>
         <translation>Linux Shell-Script (*.sh)</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="188"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="195"/>
         <source>Apple disc image file (*.dmg)</source>
         <translation>Apple Platten-Abbilddatei (*.dmg)</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="193"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="200"/>
         <source>Save Homer installer to..</source>
         <translation>Speichern des Homer-Installers nach.. </translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="208"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="215"/>
         <source>Could not store Homer installer</source>
         <translation>Abspeichern des Homer-Installers fehlerhaft</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="208"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="215"/>
         <source>Unable to store the downloaded Homer installer to</source>
         <translation>Abspeichern des heruntergeladenen Homer-Installers war fehlerhaft für</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="258"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="265"/>
         <source>Downloading Homer update</source>
         <translation>Download des Homer-Updates</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="258"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="265"/>
         <source>from</source>
         <translation>von</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="258"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="265"/>
         <source>to</source>
         <translation>nach</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="258"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="265"/>
         <source>Loaded:</source>
         <translation>Geladen:</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="258"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="265"/>
         <source>bytes</source>
         <translation>Bytes</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="267"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="274"/>
         <source>Failed to download Homer update</source>
         <translation>Herunterladen der Homeraktualisierung fehlerhaft</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="267"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="274"/>
         <source>Unable to download Homer update. The reason is:</source>
         <translation>Herunterladen der Homeraktualisierung fehlerhaft. Die Urasche ist:</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="315"/>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="323"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="322"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="330"/>
         <source>check failed</source>
         <translation>Prüfung fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="316"/>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="345"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="323"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="352"/>
         <source>Communication with server failed</source>
         <translation>Kommunikation mit Server fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="316"/>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="324"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="323"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="331"/>
         <source>Could not determine software version which is provided by project server</source>
         <translation>Konnte die Softwareversion auf dem Projektserver nicht bestimmen</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="324"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="331"/>
         <source>Version data not found on server</source>
         <translation>Versionsdaten wurden nicht auf dem Server gefunden</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="344"/>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="353"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="351"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="360"/>
         <source>fetch failed</source>
         <translation>Abfrage fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="345"/>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="354"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="352"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="361"/>
         <source>Could not determine changelog file which is provided by project server</source>
         <translation>Konnte den Änderungsverlauf nicht vom Projektserver beziehen</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="354"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="361"/>
         <source>Changelog data not found on server</source>
         <translation>Änderungsverlauf wurde auf dem Server nicht gefunden</translation>
     </message>
@@ -3194,97 +3194,97 @@ Bitte Konfiguration prüfen!</translation>
         <translation>F1F1</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="563"/>
+        <location filename="../forms/MainWindow.ui" line="566"/>
         <source>Contacts</source>
         <translation>Kontakte</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="566"/>
+        <location filename="../forms/MainWindow.ui" line="569"/>
         <source>Show/hide contacts</source>
         <translation>Zeige/verstecke Kontakte</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="588"/>
+        <location filename="../forms/MainWindow.ui" line="591"/>
         <source>File transfers</source>
         <translation>Dateiübertragungen</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="591"/>
+        <location filename="../forms/MainWindow.ui" line="594"/>
         <source>Show/hide file transfers</source>
         <translation>Zeige/verstecke Dateiübertragungen</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="613"/>
+        <location filename="../forms/MainWindow.ui" line="616"/>
         <source>Alt+B</source>
         <translation>Alt+B</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="638"/>
+        <location filename="../forms/MainWindow.ui" line="641"/>
         <source>Error messages</source>
         <translation>Fehlermeldungen</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="641"/>
+        <location filename="../forms/MainWindow.ui" line="644"/>
         <source>Show/hide errors overview</source>
         <translation>Zeige/verstecke Fehlerübersicht</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="691"/>
+        <location filename="../forms/MainWindow.ui" line="694"/>
         <source>Show/hide network streams overview</source>
         <translation>Zeige/verstecke Übersicht über Netzwerkströme</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="703"/>
+        <location filename="../forms/MainWindow.ui" line="706"/>
         <source>Video/audio preview</source>
         <translation>Video-/Audio-Vorschau</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="750"/>
+        <location filename="../forms/MainWindow.ui" line="753"/>
         <source>Ctrl+W</source>
         <translation>Ctrl+W</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="766"/>
+        <location filename="../forms/MainWindow.ui" line="769"/>
         <source>Main menu</source>
         <translation>Hauptmenü</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="769"/>
+        <location filename="../forms/MainWindow.ui" line="772"/>
         <source>Show/hide main menu</source>
         <translation>Zeige/verstecke Hauptmenü</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="772"/>
+        <location filename="../forms/MainWindow.ui" line="775"/>
         <source>Alt+M</source>
         <translation>Alt+M</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="791"/>
+        <location filename="../forms/MainWindow.ui" line="794"/>
         <source>Status bar</source>
         <translation>Statusanzeige</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="794"/>
+        <location filename="../forms/MainWindow.ui" line="797"/>
         <source>Show/hide status bar</source>
         <translation>Zeige/verstecke Statusanzeige</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="812"/>
+        <location filename="../forms/MainWindow.ui" line="815"/>
         <source>PTT mode</source>
         <translation>PTT-Modus</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="817"/>
+        <location filename="../forms/MainWindow.ui" line="820"/>
         <source>kk</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="825"/>
+        <location filename="../forms/MainWindow.ui" line="828"/>
         <source>Mosaik mode</source>
         <translation>Mosaik-Modus</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="828"/>
+        <location filename="../forms/MainWindow.ui" line="831"/>
         <source>Ctrl+F</source>
         <translation>Ctrl+F</translation>
     </message>
@@ -3329,72 +3329,72 @@ Bitte Konfiguration prüfen!</translation>
         <translation>Benutzeranleitungen / FAQ</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="569"/>
+        <location filename="../forms/MainWindow.ui" line="572"/>
         <source>Ctrl+A</source>
         <translation>Ctrl+A</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="607"/>
+        <location filename="../forms/MainWindow.ui" line="610"/>
         <source>Broadcast data</source>
         <translation>Audio-/Videoverteilung</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="610"/>
+        <location filename="../forms/MainWindow.ui" line="613"/>
         <source>Show/hide broadcast data</source>
         <translation>Zeige/verstecke Video-/Audioverteilung</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="622"/>
+        <location filename="../forms/MainWindow.ui" line="625"/>
         <source>Start video preview</source>
         <translation>Starte Videovorschau</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="644"/>
+        <location filename="../forms/MainWindow.ui" line="647"/>
         <source>Ctrl+E</source>
         <translation>Ctrl+E</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="656"/>
+        <location filename="../forms/MainWindow.ui" line="659"/>
         <source>Start audio preview</source>
         <translation>Starte Audiovorschau</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="672"/>
+        <location filename="../forms/MainWindow.ui" line="675"/>
         <source>Server connection</source>
         <translation>Serververbindung</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="688"/>
+        <location filename="../forms/MainWindow.ui" line="691"/>
         <source>Network streams</source>
         <translation>Netzwerkströme</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="694"/>
+        <location filename="../forms/MainWindow.ui" line="697"/>
         <source>Ctrl+N</source>
         <translation>Ctrl+N</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="706"/>
+        <location filename="../forms/MainWindow.ui" line="709"/>
         <source>Open a video/audio preview</source>
         <translation>Öffne eine Video-/Audiovorschau</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="709"/>
+        <location filename="../forms/MainWindow.ui" line="712"/>
         <source>Alt+W</source>
         <translation>Alt+W</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="728"/>
+        <location filename="../forms/MainWindow.ui" line="731"/>
         <source>Network simulator</source>
         <translation>NEtzwerksimulator</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="744"/>
+        <location filename="../forms/MainWindow.ui" line="747"/>
         <source>Playlist</source>
         <translation>Playlist</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="747"/>
+        <location filename="../forms/MainWindow.ui" line="750"/>
         <source>Show/hide playlist</source>
         <translation>Zeige/verstecke die Playlist</translation>
     </message>
@@ -4585,18 +4585,18 @@ Soll sie überschrieben werden?</translation>
         <translation>Prüfe auf Softwareaktualisierungen</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/UpdateCheckDialog.ui" line="128"/>
+        <location filename="../forms/Dialogs/UpdateCheckDialog.ui" line="130"/>
         <location filename="../forms/Dialogs/UpdateCheckDialog.ui" line="398"/>
         <source>Version</source>
         <translation>Version</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/UpdateCheckDialog.ui" line="181"/>
+        <location filename="../forms/Dialogs/UpdateCheckDialog.ui" line="183"/>
         <source>0.999</source>
         <translation>0.999</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/UpdateCheckDialog.ui" line="256"/>
+        <location filename="../forms/Dialogs/UpdateCheckDialog.ui" line="258"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
@@ -4608,7 +4608,7 @@ p, li { white-space: pre-wrap; }
         <translation></translation>
     </message>
     <message utf8="true">
-        <location filename="../forms/Dialogs/UpdateCheckDialog.ui" line="303"/>
+        <location filename="../forms/Dialogs/UpdateCheckDialog.ui" line="305"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
@@ -4682,67 +4682,46 @@ als Installer</translation>
         <translation>Speziellen Dank an:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="815"/>
-        <source>Project Founder / Programming:</source>
-        <translation>Projektgründer / Programmierung:</translation>
+        <location filename="../forms/Dialogs/VersionDialog.ui" line="399"/>
+        <location filename="../forms/Dialogs/VersionDialog.ui" line="443"/>
+        <location filename="../forms/Dialogs/VersionDialog.ui" line="493"/>
+        <location filename="../forms/Dialogs/VersionDialog.ui" line="540"/>
+        <location filename="../forms/Dialogs/VersionDialog.ui" line="591"/>
+        <location filename="../forms/Dialogs/VersionDialog.ui" line="635"/>
+        <location filename="../forms/Dialogs/VersionDialog.ui" line="679"/>
+        <location filename="../forms/Dialogs/VersionDialog.ui" line="723"/>
+        <location filename="../forms/Dialogs/VersionDialog.ui" line="992"/>
+        <location filename="../forms/Dialogs/VersionDialog.ui" line="1058"/>
+        <source>click to open the web browser with this web site</source>
+        <translation>den Webbrowser mit dieser Webseite öffnen</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="1243"/>
-        <source>Thomas Volkert |</source>
-        <translation>Thomas Volkert |</translation>
+        <location filename="../forms/Dialogs/VersionDialog.ui" line="882"/>
+        <source>click to write a mail to this address</source>
+        <translation>eine Mail an diese Adresse schreiben</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="1296"/>
-        <source>Sound:</source>
-        <translation>Sound:</translation>
-    </message>
-    <message>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="1724"/>
-        <source>Kay Wenzel |</source>
-        <translation>Kay Wenzel |</translation>
-    </message>
-    <message>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="1777"/>
-        <source>Design:</source>
-        <translation>Design:</translation>
-    </message>
-    <message utf8="true">
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="2205"/>
-        <source>Katja Möller |</source>
-        <translation>Katja Möller |</translation>
-    </message>
-    <message>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="2258"/>
-        <source>Additional thanks to:</source>
-        <translation>Zusätzlichen Dank an:</translation>
-    </message>
-    <message>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="2686"/>
-        <source>Mario Santagiuliana</source>
-        <translation>Mario Santagiuliana </translation>
-    </message>
-    <message>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="2816"/>
+        <location filename="../forms/Dialogs/VersionDialog.ui" line="885"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Tahoma&apos;; font-size:18pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;mailto:info@homer-conferencing.com&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#ffffff;&quot;&gt;info@homer-conferencing.com&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation></translation>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;mailto:info@homer-conferencing.com&quot;&gt;&lt;span style=&quot; font-size:16pt; text-decoration: underline; color:#ffffff;&quot;&gt;info@homer-conferencing.com&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="2888"/>
+        <location filename="../forms/Dialogs/VersionDialog.ui" line="995"/>
+        <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Tahoma&apos;; font-size:18pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;http://www.homer-conferencing.com&quot;&gt;&lt;span style=&quot; font-size:16pt; text-decoration: underline; color:#ffffff;&quot;&gt;www.homer-conferencing.com&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../forms/Dialogs/VersionDialog.ui" line="957"/>
         <source> |</source>
         <translation> |</translation>
-    </message>
-    <message>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="2923"/>
-        <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Tahoma&apos;; font-size:18pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;http://www.homer-conferencing.com&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#ffffff;&quot;&gt;www.homer-conferencing.com&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation></translation>
     </message>
 </context>
 </TS>
