@@ -11,8 +11,8 @@ set(CPACK_SOURCE_GENERATOR "ZIP")
 set(CPACK_PACKAGE_ICON ${PACKAGE_TOP_SRC_DIR}/${RELOCATION_INCLUDES}HomerBuild/resources/windows/\\\\Homer-Banner.bmp)
 
 ###############################################################################
-set(CPACK_NSIS_PACKAGE_NAME "Homer Conferencing")
-set(CPACK_NSIS_DISPLAY_NAME "Homer Conferencing ${CPACK_PACKAGE_VERSION}")
+set(CPACK_NSIS_PACKAGE_NAME "Homer ${HOMER_VERSION}")
+set(CPACK_NSIS_DISPLAY_NAME "Homer Conferencing ${HOMER_VERSION}")
 set(CPACK_NSIS_CONTACT "homer@homer-conferencing.com") 
 
 set(CPACK_NSIS_MODIFY_PATH "ON")

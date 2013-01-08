@@ -19,7 +19,7 @@ ELSE()
 	@ONLY)
 ENDIF()
 ###############################################################################
-#
+
 set(PACKAGE_TOP_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
 ###############################################################################
@@ -31,7 +31,7 @@ set(CPACK_PACKAGE_VERSION_PATCH ${HOMER_VERSION_PATCH})
 
 ###############################################################################
 
-set(CPACK_PACKAGE_NAME "Homer-Conferencing")
+set(CPACK_PACKAGE_NAME "Homer-Conferencing ${HOMER_VERSION}")
 set(CPACK_PACKAGE_VENDOR "Homer Conferencing project")
 set(CPACK_PACKAGE_FILE_NAME "Homer-Conferencing")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Installs Homer - live conferencing and more")
@@ -45,7 +45,6 @@ set(CPACK_RESOURCE_FILE_LICENSE ${PACKAGE_TOP_SRC_DIR}/${RELOCATION_INCLUDES}Hom
 set(CPACK_RESOURCE_FILE_README ${PACKAGE_TOP_SRC_DIR}/${RELOCATION_INCLUDES}HomerBuild/resources/texts/Readme.txt)
 
 ###############################################################################
-# HINT: workaround for NSIS installer bug is to use "\\\\" construction at least once per variable
 
 set(CPACK_PACKAGE_EXECUTABLES "Homer;Homer-Conferencing")
 set(CPACK_RESOURCE_FILE_WELCOME ${CMAKE_CURRENT_BINARY_DIR}/Homer-Welcome.txt)
