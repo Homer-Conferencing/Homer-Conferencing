@@ -3205,7 +3205,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     if (mFormatContext->start_time > 0)
     {
     	mSourceStartPts =  mFrameRate * mFormatContext->start_time / AV_TIME_BASE;
-    	LOG(LOG_VERBOSE, "Setting %s start time to %.2f", GetMediaTypeStr().c_str(), (float)mSourceStartPts);
+    	LOG(LOG_WARN, "Setting %s start time to %.2f", GetMediaTypeStr().c_str(), (float)mSourceStartPts);
     }else
     {
     	LOG(LOG_WARN, "Found start time of %s stream is invalid, will use a value of 0 instead", GetMediaTypeStr().c_str());
