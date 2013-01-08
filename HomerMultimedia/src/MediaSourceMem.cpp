@@ -599,6 +599,12 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if (!SelectStream())
     	return false;
 
+    if (mFormatContext->start_time > 0)
+    {
+        LOG(LOG_WARN, "Found a start time of: %ld, will assume 0 instead", mFormatContext->start_time);
+        mFormatContext->start_time = 0;
+    }
+
     // finds and opens the correct decoder
     if (!OpenDecoder())
     	return false;
@@ -658,6 +664,12 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     // select the first matching stream according to mMediaType
     if (!SelectStream())
     	return false;
+
+    if (mFormatContext->start_time > 0)
+    {
+        LOG(LOG_WARN, "Found a start time of: %ld, will assume 0 instead", mFormatContext->start_time);
+        mFormatContext->start_time = 0;
+    }
 
     // ffmpeg might have difficulties detecting the correct input format, enforce correct audio parameters
     AVCodecContext *tCodec = mFormatContext->streams[mMediaStreamIndex]->codec;
