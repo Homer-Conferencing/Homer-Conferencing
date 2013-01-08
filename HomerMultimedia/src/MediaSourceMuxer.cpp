@@ -466,13 +466,6 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     // put sample parameters
     mCodecContext->bit_rate = mStreamBitRate;
 
-	// mpeg1/2 codecs support only non-rational frame rates
-    if (((tFormat->video_codec == CODEC_ID_MPEG1VIDEO) || (tFormat->video_codec == CODEC_ID_MPEG2VIDEO)) && (mFrameRate = 29.97))
-    {
-        mFrameRate = 30.0;
-        mRealFrameRate = 30.0;
-    }
-
     // resolution
     if (((mRequestedStreamingResX == -1) || (mRequestedStreamingResY == -1)) && (mMediaSource != NULL))
     {
@@ -506,8 +499,17 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
      * timebase should be 1/framerate and timestamp increments should be
      * identically to 1.
      */
-    mCodecContext->time_base = (AVRational){100, (int)(mFrameRate * 100)};
-    tStream->time_base = (AVRational){100, (int)(mFrameRate * 100)};
+    // mpeg1/2 codecs support only non-rational frame rates
+    if (((tFormat->video_codec == CODEC_ID_MPEG1VIDEO) || (tFormat->video_codec == CODEC_ID_MPEG2VIDEO)) && (mFrameRate = 29.97))
+    {
+        //HACK: pretend a frame rate of 30 fps, the actual frame rate corresponds to the frame rate from the base media source
+        mCodecContext->time_base = (AVRational){100, (int)(30 * 100)};
+        tStream->time_base = (AVRational){100, (int)(30 * 100)};
+    }else
+    {
+        mCodecContext->time_base = (AVRational){100, (int)(mFrameRate * 100)};
+        tStream->time_base = (AVRational){100, (int)(mFrameRate * 100)};
+    }
     // set i frame distance: GOP = group of pictures
     if (mStreamCodecId != CODEC_ID_THEORA)
         mCodecContext->gop_size = (100 - mStreamQuality) / 5; // default is 12
