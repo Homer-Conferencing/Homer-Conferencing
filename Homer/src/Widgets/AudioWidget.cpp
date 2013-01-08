@@ -586,7 +586,7 @@ QStringList AudioWidget::GetAudioStatistic()
         tLine_Peer += " (" + QString("%1").arg(tSynchPackets) + " " + Homer::Gui::AudioWidget::tr("synch. packets");
         float tDelay = (float)mAudioSource->GetEndToEndDelay() / 1000;
         if (tDelay > 0)
-            tLine_Peer += ", " + QString("%1").arg(tDelay, 2, 'f', 2, (QLatin1Char)' ') + " ms delay)";
+            tLine_Peer += ", " + QString("%1").arg(tDelay, 2, 'f', 2, (QLatin1Char)' ') + " ms " + Homer::Gui::AudioWidget::tr("delay") + ")";
         else
             tLine_Peer += ")";
     }

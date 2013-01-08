@@ -1251,6 +1251,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../src/Widgets/AudioWidget.cpp" line="589"/>
+        <source>delay</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../src/Widgets/AudioWidget.cpp" line="605"/>
         <source>Recorded:</source>
         <translation type="unfinished"></translation>
