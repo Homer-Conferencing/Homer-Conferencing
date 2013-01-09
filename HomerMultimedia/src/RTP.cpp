@@ -26,21 +26,21 @@
  */
 
 /*
-		 Result of functional validation:
+		 Result of functional validation (09.Jan. 2013):
 				 Sending                        Receiving
 		--------------------------------------------------------------------
-		 h261:   ok (HC)                        ok (HC)
-		 h263:   ok (HC)				        ok (linphone, ekiga, HC)
-		h263+:   ok (linphone, HC)              ok (linphone, HC)
-		 h264:   ok (linphone, HC)              ok (HC)
+		 h261:   ok (HC)                        ok (HC) [A/V synch. not possible at the moment]
+		 h263:   ok (Hc, Ekiga)                 ok (HC, Ekiga)
+		h263+:   ok (Hc, Ekiga)                 ok (HC, Ekiga)
+		 h264:   ok (Hc, Ekiga)                 ok (HC, Ekiga) [time compensation needed]
 		Mpeg1:   ok (HC)                        ok (HC)
 		Mpeg2:   ok (HC)                        ok (HC)
-		Mpeg4:   ok (linphone, ekiga, HC)       ok (linphone, ekiga, HC)
+		Mpeg4:   ok (Hc, Ekiga)                 ok (HC, Ekiga)
 	   theora:   ?								?
 
-  pcma (G711):   ok (HC, Ekiga)                 ok (HC, Ekiga)
-  pcmu (G711):   ok (HC, Ekiga)                 ok (HC, Ekiga)
-  adpcm(G722):   ok (HC, Ekiga)					ok (HC, Ekiga)
+  pcma (G711):   ok (Hc, Ekiga)                 ok (HC, Ekiga) [buggy on Linux]
+  pcmu (G711):   ok (Hc, Ekiga)                 ok (HC, Ekiga) [buggy on Linux]
+adpcm(G722):     ok (Hc, Ekiga)                 ok (HC, Ekiga)
 		  mp3:   ok (HC)                        ok (HC)
 	  pcm16be:   ok (HC)                        ok (HC)
 
