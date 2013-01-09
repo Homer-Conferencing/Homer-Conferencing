@@ -3220,6 +3220,8 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 
 bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
 {
+    int tRes;
+
     switch (mMediaType)
 	{
 		case MEDIA_VIDEO:
@@ -3239,7 +3241,11 @@ bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
 				mAudioResampleContext = HM_swr_alloc_set_opts(NULL, av_get_default_channel_layout(mOutputAudioChannels), mOutputAudioFormat, mOutputAudioSampleRate, av_get_default_channel_layout(mInputAudioChannels), mInputAudioFormat, mInputAudioSampleRate, 0, NULL);
 			    if (mAudioResampleContext != NULL)
 			    {// everything okay, we have to init the context
-			    	HM_swr_init(mAudioResampleContext);
+			    	if ((tRes = HM_swr_init(mAudioResampleContext)) < 0)
+			    	{
+			    	    LOG(LOG_ERROR, "Couldn't initialize resample context because of \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
+			            return false;
+			    	}
 			    }else
 			    {
 			    	LOG(LOG_ERROR, "Failed to create audio-resample context");
