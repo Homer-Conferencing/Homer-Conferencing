@@ -551,7 +551,7 @@ int MediaSourceV4L2::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
                 // ############################
                 if (!pDropChunk)
                 {
-                    HM_sws_scale(mScalerContext, mSourceFrame->data, mSourceFrame->linesize, 0, mCodecContext->height, mRGBFrame->data, mRGBFrame->linesize);
+                    HM_sws_scale(mVideoScalerContext, mSourceFrame->data, mSourceFrame->linesize, 0, mCodecContext->height, mRGBFrame->data, mRGBFrame->linesize);
                 }
             }else
             {
