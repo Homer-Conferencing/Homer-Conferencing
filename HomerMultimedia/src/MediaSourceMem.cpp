@@ -1129,7 +1129,7 @@ void* MediaSourceMem::Run(void* pArgs)
                 avpicture_fill((AVPicture *)tRGBFrame, (uint8_t *)tChunkBuffer, PIX_FMT_RGB32, mDecoderTargetResX, mDecoderTargetResY);
 
                 LOG(LOG_VERBOSE, "Going to create in-thread scaler context..");
-                mScalerContext = sws_getContext(mCodecContext->width, mCodecContext->height, mCodecContext->pix_fmt, mDecoderTargetResX, mDecoderTargetResY, PIX_FMT_RGB32, SWS_BICUBIC, NULL, NULL, NULL);
+                mVideoScalerContext = sws_getContext(mCodecContext->width, mCodecContext->height, mCodecContext->pix_fmt, mDecoderTargetResX, mDecoderTargetResY, PIX_FMT_RGB32, SWS_BICUBIC, NULL, NULL, NULL);
 
                 mDecoderFifo = new MediaFifo(CalculateFrameBufferSize(), tChunkBufferSize, GetMediaTypeStr() + "-MediaSource" + GetSourceTypeStr() + "(Data)");
             }
@@ -1643,7 +1643,7 @@ void* MediaSourceMem::Run(void* pArgs)
 
                                             // scale the video frame
                                             LOG(LOG_VERBOSE, "Scaling video input picture..");
-                                            tRes = HM_sws_scale(mScalerContext, tSourceFrame->data, tSourceFrame->linesize, 0, mCodecContext->height, tRGBFrame->data, tRGBFrame->linesize);
+                                            tRes = HM_sws_scale(mVideoScalerContext, tSourceFrame->data, tSourceFrame->linesize, 0, mCodecContext->height, tRGBFrame->data, tRGBFrame->linesize);
                                             if (tRes == 0)
                                                 LOG(LOG_ERROR, "Failed to scale the video frame");
 
@@ -1724,7 +1724,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                     // ### RESAMPLE FRAME (CONVERT)
                                     // ############################
                                     //HINT: we always assume 16 bit samples
-                                    int tResampledBytes = (tOutoutAudioBytesPrSample * mOutputAudioChannels) * audio_resample(mAudioResampleContext, (short*)tChunkBuffer, (short*)mResampleBuffer, tOutputBufferSize / (tInputAudioBytesPrSample * mInputAudioChannels));
+                                    int tResampledBytes = (tOutoutAudioBytesPrSample * mOutputAudioChannels) * HM_swr_convert(mAudioResampleContext, (uint8_t**)&tChunkBuffer, 2048 /* amount of possible output samples */, (const uint8_t**)&mResampleBuffer, tOutputBufferSize / (tInputAudioBytesPrSample * mInputAudioChannels));
                                     #ifdef MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
                                         LOG(LOG_VERBOSE, "Have resampled %d bytes of sample rate %dHz and %d channels (format: %s) to %d bytes of %d Hz sample rate and %d channels (format: %s)", tOutputBufferSize, mCodecContext->sample_rate, mCodecContext->channels, av_get_sample_fmt_name(mInputAudioFormat), tResampledBytes, mOutputAudioSampleRate, mOutputAudioChannels, av_get_sample_fmt_name(mOutputAudioFormat));
                                     #endif
@@ -1921,8 +1921,8 @@ void* MediaSourceMem::Run(void* pArgs)
                     // Free the RGB frame
                     av_free(tRGBFrame);
 
-                    sws_freeContext(mScalerContext);
-                    mScalerContext = NULL;
+                    sws_freeContext(mVideoScalerContext);
+                    mVideoScalerContext = NULL;
                 }
 
                 // Free the YUV frame

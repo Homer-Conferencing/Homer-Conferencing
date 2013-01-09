@@ -49,7 +49,7 @@ VideoScaler::VideoScaler(string pName):
     mScalerNeeded = false;
     mInputFifo = NULL;
     mOutputFifo = NULL;
-    mScalerContext = NULL;
+    mVideoScalerContext = NULL;
 }
 
 VideoScaler::~VideoScaler()
@@ -246,8 +246,8 @@ void* VideoScaler::Run(void* pArgs)
 
     // allocate software scaler context, input/output FIFO
     LOG(LOG_VERBOSE, "..allocating %s video scaler context", mName.c_str());
-    mScalerContext = sws_getCachedContext(mScalerContext, mSourceResX, mSourceResY, mSourcePixelFormat, mTargetResX, mTargetResY, mTargetPixelFormat, SWS_BICUBIC, NULL, NULL, NULL);
-    if (mScalerContext == NULL)
+    mVideoScalerContext = sws_getCachedContext(mVideoScalerContext, mSourceResX, mSourceResY, mSourcePixelFormat, mTargetResX, mTargetResY, mTargetPixelFormat, SWS_BICUBIC, NULL, NULL, NULL);
+    if (mVideoScalerContext == NULL)
     {
     	LOG(LOG_ERROR, "Got invalid video scaler context");
     }
@@ -320,13 +320,13 @@ void* VideoScaler::Run(void* pArgs)
                 // convert
 
 				#ifdef VS_DEBUG_PACKETS
-					LOG(LOG_VERBOSE, "%s-scaling frame %d, source res: %d*%d (fmt: %d) to %d*%d, scaler context at %p", mName.c_str(), mChunkNumber, mSourceResX, mSourceResY, (int)mSourcePixelFormat, mTargetResX, mTargetResY, mScalerContext);
+					LOG(LOG_VERBOSE, "%s-scaling frame %d, source res: %d*%d (fmt: %d) to %d*%d, scaler context at %p", mName.c_str(), mChunkNumber, mSourceResX, mSourceResY, (int)mSourcePixelFormat, mTargetResX, mTargetResY, mVideoScalerContext);
 					LOG(LOG_VERBOSE, "Video input frame data: %p, %p, %p, %p", tInputFrame->data[0], tInputFrame->data[1], tInputFrame->data[2], tInputFrame->data[3]);
 					LOG(LOG_VERBOSE, "Video input frame line size: %d, %d, %d, %d", tInputFrame->linesize[0], tInputFrame->linesize[1], tInputFrame->linesize[2], tInputFrame->linesize[3]);
 					LOG(LOG_VERBOSE, "Video output frame data: %p, %p, %p, %p", tOutputFrame->data[0], tOutputFrame->data[1], tOutputFrame->data[2], tOutputFrame->data[3]);
 					LOG(LOG_VERBOSE, "Video output frame line size: %d, %d, %d, %d", tOutputFrame->linesize[0], tOutputFrame->linesize[1], tOutputFrame->linesize[2], tOutputFrame->linesize[3]);
 				#endif
-                HM_sws_scale(mScalerContext, tInputFrame->data, tInputFrame->linesize, 0, mSourceResY, tOutputFrame->data, tOutputFrame->linesize);
+                HM_sws_scale(mVideoScalerContext, tInputFrame->data, tInputFrame->linesize, 0, mSourceResY, tOutputFrame->data, tOutputFrame->linesize);
 				#ifdef VS_DEBUG_PACKETS
                 	LOG(LOG_VERBOSE, "..video scaling for %s finished", mName.c_str());
                     int64_t tTime2 = Time::GetTimeStamp();
@@ -420,8 +420,8 @@ void* VideoScaler::Run(void* pArgs)
     mOutputFifo = NULL;
 
     // free the software scaler context
-    sws_freeContext(mScalerContext);
-    mScalerContext = NULL;
+    sws_freeContext(mVideoScalerContext);
+    mVideoScalerContext = NULL;
 
     // Free the frame
     av_free(tInputFrame);

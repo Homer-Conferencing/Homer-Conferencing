@@ -49,6 +49,9 @@ extern "C" {
 #include <libavutil/samplefmt.h>
 #include <libswscale/swscale.h>
 #include <libavdevice/avdevice.h>
+#if (LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53, 61, 100))
+#include <libswresample/swresample.h>
+#endif
 }
 
 #ifndef AV_NUM_DATA_POINTERS
@@ -57,6 +60,72 @@ extern "C" {
 
 #ifndef CODEC_FLAG2_SHOW_ALL
 #define CODEC_FLAG2_SHOW_ALL      0x00400000 ///< Show all frames before the first keyframe
+#endif
+
+#if (LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53, 61, 100))
+
+#define HM_SwrContext                       SwrContext
+
+inline struct SwrContext *HM_swr_alloc_set_opts(struct SwrContext *s,
+                                      int64_t out_ch_layout, enum AVSampleFormat out_sample_fmt, int out_sample_rate,
+                                      int64_t  in_ch_layout, enum AVSampleFormat  in_sample_fmt, int  in_sample_rate,
+                                      int log_offset, void *log_ctx)
+{
+    return swr_alloc_set_opts(NULL,
+                              out_ch_layout, out_sample_fmt, out_sample_rate,
+                              in_ch_layout, in_sample_fmt, in_sample_rate,
+                              log_offset, log_ctx);
+}
+
+inline int HM_swr_init(struct SwrContext *s)
+{
+	return swr_init(s);
+}
+
+inline int HM_swr_convert(struct SwrContext *s, uint8_t **out, int out_count,
+        const uint8_t **in , int in_count)
+{
+    return swr_convert(s, out, out_count, in, in_count);
+}
+
+inline void HM_swr_free(struct SwrContext **s)
+{
+	swr_free(s);
+}
+
+#else
+
+#define HM_SwrContext                       ReSampleContext
+
+inline struct ReSampleContext *HM_swr_alloc_set_opts(struct ReSampleContext *s,
+                                      int64_t out_ch_layout, enum AVSampleFormat out_sample_fmt, int out_sample_rate,
+                                      int64_t  in_ch_layout, enum AVSampleFormat  in_sample_fmt, int  in_sample_rate,
+                                      int log_offset, void *log_ctx)
+{
+    return av_audio_resample_init(av_get_channel_layout_nb_channels(out_ch_layout), av_get_channel_layout_nb_channels(in_ch_layout),
+            out_sample_rate, in_sample_rate,
+            out_sample_fmt,
+            in_sample_fmt,
+            16, 10,
+            0, 0.8);
+}
+
+inline int HM_swr_init(struct ReSampleContext *s)
+{
+	return 0;
+}
+
+inline int HM_swr_convert(struct ReSampleContext *s, uint8_t **out, int out_count,
+        const uint8_t **in , int in_count)
+{
+    return audio_resample(s, (short*)*out, (short*)*in, in_count);
+}
+
+inline void HM_swr_free(struct ReSampleContext **s)
+{
+	audio_resample_close(*s);
+}
+
 #endif
 
 #if (LIBAVFORMAT_VERSION_MAJOR < 50)

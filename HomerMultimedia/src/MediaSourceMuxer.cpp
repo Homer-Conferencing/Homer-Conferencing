@@ -920,7 +920,7 @@ bool MediaSourceMuxer::CloseMuxer()
 
         if (mAudioResampleContext != NULL)
         {
-            audio_resample_close(mAudioResampleContext);
+        	HM_swr_free(&mAudioResampleContext);
             mAudioResampleContext = NULL;
         }
 
@@ -1525,7 +1525,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
 								if (mAudioResampleContext != NULL)
 								{
 									//HINT: we always assume 16 bit samples
-									int tResampledBytes = (tOutoutAudioBytesPrSample * mOutputAudioChannels) * audio_resample(mAudioResampleContext, (short*)mResampleBuffer, (short*)tBuffer, tBufferSize / (tInputAudioBytesPrSample * mInputAudioChannels));
+									int tResampledBytes = (tOutoutAudioBytesPrSample * mOutputAudioChannels) * HM_swr_convert(mAudioResampleContext, (uint8_t**)&mResampleBuffer, 2048 /* amount of possible output samples */, (const uint8_t**)&tBuffer, tBufferSize / (tInputAudioBytesPrSample * mInputAudioChannels));
 									if(tResampledBytes > 0)
 									{
 										tBuffer = mResampleBuffer;

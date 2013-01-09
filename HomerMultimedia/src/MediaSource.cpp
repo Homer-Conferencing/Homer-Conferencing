@@ -102,11 +102,11 @@ MediaSource::MediaSource(string pName):
     mResampleBuffer = NULL;
     mRecorderCodecContext = NULL;
     mRecorderFormatContext = NULL;
-    mRecorderScalerContext = NULL;
+    mRecorderVideoScalerContext = NULL;
     mAudioResampleContext = NULL;
     mInputAudioFormat = AV_SAMPLE_FMT_S16;
     mOutputAudioFormat = AV_SAMPLE_FMT_S16;
-    mScalerContext = NULL;
+    mVideoScalerContext = NULL;
     mFormatContext = NULL;
     mRecordingSaveFileName = "";
     mDesiredDevice = "";
@@ -1795,11 +1795,11 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
 
                 // allocate software scaler context if necessary
         		if (mCodecContext != NULL)
-                	mRecorderScalerContext = sws_getContext(mSourceResX, mSourceResY, mCodecContext->pix_fmt, mSourceResX, mSourceResY, mRecorderCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
+                	mRecorderVideoScalerContext = sws_getContext(mSourceResX, mSourceResY, mCodecContext->pix_fmt, mSourceResX, mSourceResY, mRecorderCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
         		else
         		{
         			LOG(LOG_WARN, "Codec context is invalid, pixel format cannot be determined automatically, assuming RGB32 as input");
-                	mRecorderScalerContext = sws_getContext(mSourceResX, mSourceResY, PIX_FMT_RGB32, mSourceResX, mSourceResY, mRecorderCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
+                	mRecorderVideoScalerContext = sws_getContext(mSourceResX, mSourceResY, PIX_FMT_RGB32, mSourceResX, mSourceResY, mRecorderCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
         		}
 
                 if ((mRecorderFinalFrame = avcodec_alloc_frame()) == NULL)
@@ -1979,7 +1979,7 @@ void MediaSource::StopRecording()
         {
             case MEDIA_VIDEO:
                     // free the software scaler context
-                    sws_freeContext(mRecorderScalerContext);
+                    sws_freeContext(mRecorderVideoScalerContext);
 
                     // free the file frame's data buffer
                     avpicture_free((AVPicture*)mRecorderFinalFrame);
@@ -2087,7 +2087,7 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
     if ((mSourceResX != mRecorderCodecContext->width) || (mSourceResY != mRecorderCodecContext->height))
     {
         // free the software scaler context
-        sws_freeContext(mRecorderScalerContext);
+        sws_freeContext(mRecorderVideoScalerContext);
 
         // set grabbing resolution to the resulting ones delivered by received frame
         mRecorderCodecContext->width = mSourceResY;
@@ -2095,11 +2095,11 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
 
         // allocate software scaler context
 		if (mCodecContext != NULL)
-        	mRecorderScalerContext = sws_getContext(mSourceResX, mSourceResY, mCodecContext->pix_fmt, mSourceResX, mSourceResY, mRecorderCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
+        	mRecorderVideoScalerContext = sws_getContext(mSourceResX, mSourceResY, mCodecContext->pix_fmt, mSourceResX, mSourceResY, mRecorderCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
 		else
 		{
 			LOG(LOG_WARN, "Codec context is invalid, pixel format cannot be determined automatically, assuming RGB32 as input");
-        	mRecorderScalerContext = sws_getContext(mSourceResX, mSourceResY, PIX_FMT_RGB32, mSourceResX, mSourceResY, mRecorderCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
+        	mRecorderVideoScalerContext = sws_getContext(mSourceResX, mSourceResY, PIX_FMT_RGB32, mSourceResX, mSourceResY, mRecorderCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
 		}
 
         LOG(LOG_INFO, "Resolution changed to (%d * %d)", mSourceResX, mSourceResY);
@@ -2135,7 +2135,7 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
 
     // convert pixel format in pSourceFrame and store it in mRecorderFinalFrame
     //HINT: we should execute this step in every case (incl. when pixel format is equal), otherwise data structures are wrong
-    HM_sws_scale(mRecorderScalerContext, pSourceFrame->data, pSourceFrame->linesize, 0, mSourceResY, mRecorderFinalFrame->data, mRecorderFinalFrame->linesize);
+    HM_sws_scale(mRecorderVideoScalerContext, pSourceFrame->data, pSourceFrame->linesize, 0, mSourceResY, mRecorderFinalFrame->data, mRecorderFinalFrame->linesize);
 
     // #########################################
     // re-encode the frame
@@ -3224,7 +3224,7 @@ bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
 	{
 		case MEDIA_VIDEO:
 		    // create context for picture scaler
-		    mScalerContext = sws_getContext(mCodecContext->width, mCodecContext->height, mCodecContext->pix_fmt, mTargetResX, mTargetResY, PIX_FMT_RGB32, SWS_BICUBIC, NULL, NULL, NULL);
+		    mVideoScalerContext = sws_getContext(mCodecContext->width, mCodecContext->height, mCodecContext->pix_fmt, mTargetResX, mTargetResY, PIX_FMT_RGB32, SWS_BICUBIC, NULL, NULL, NULL);
 			break;
 		case MEDIA_AUDIO:
 			// create resample context
@@ -3236,8 +3236,15 @@ bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
 				}
 
 				LOG_REMOTE(LOG_WARN, pSource, pLine, "Audio samples with rate of %d Hz and %d channels (format: %s) have to be resampled to %d Hz and %d channels (format: %s)", mInputAudioSampleRate, mInputAudioChannels, av_get_sample_fmt_name(mInputAudioFormat), mOutputAudioSampleRate, mOutputAudioChannels, av_get_sample_fmt_name(mOutputAudioFormat));
-				mAudioResampleContext = av_audio_resample_init(mOutputAudioChannels, mInputAudioChannels, mOutputAudioSampleRate, mInputAudioSampleRate, mOutputAudioFormat, mInputAudioFormat, 16, 10, 0, 0.8);
-			    if (mResampleBuffer != NULL)
+				mAudioResampleContext = HM_swr_alloc_set_opts(NULL, av_get_default_channel_layout(mOutputAudioChannels), mOutputAudioFormat, mOutputAudioSampleRate, av_get_default_channel_layout(mInputAudioChannels), mInputAudioFormat, mInputAudioSampleRate, 0, NULL);
+			    if (mAudioResampleContext != NULL)
+			    {// everything okay, we have to init the context
+			    	HM_swr_init(mAudioResampleContext);
+			    }else
+			    {
+			    	LOG(LOG_ERROR, "Failed to create audio-resample context");
+			    }
+				if (mResampleBuffer != NULL)
 			        LOG(LOG_ERROR, "Resample buffer of %s source was already allocated", GetSourceTypeStr().c_str());
                 mResampleBuffer = (char*)malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
 			}
@@ -3267,7 +3274,7 @@ bool MediaSource::FfmpegCloseAll(string pSource, int pLine)
 			case MEDIA_AUDIO:
 				if (mAudioResampleContext != NULL)
 				{
-					audio_resample_close(mAudioResampleContext);
+				    HM_swr_free(&mAudioResampleContext);
 					mAudioResampleContext = NULL;
 				}
 				if (mResampleBuffer != NULL)
@@ -3277,11 +3284,11 @@ bool MediaSource::FfmpegCloseAll(string pSource, int pLine)
 				}
 				break;
 			case MEDIA_VIDEO:
-				if (mScalerContext != NULL)
+				if (mVideoScalerContext != NULL)
 				{
 					// free the software scaler context
-					sws_freeContext(mScalerContext);
-					mScalerContext = NULL;
+					sws_freeContext(mVideoScalerContext);
+					mVideoScalerContext = NULL;
 				}
 				break;
 			default:

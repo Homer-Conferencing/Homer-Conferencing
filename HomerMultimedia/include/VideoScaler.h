@@ -89,7 +89,7 @@ private:
     enum PixelFormat    mTargetPixelFormat;
     int                 mQueueSize;
     int                 mChunkNumber;
-    SwsContext          *mScalerContext;
+    SwsContext          *mVideoScalerContext;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

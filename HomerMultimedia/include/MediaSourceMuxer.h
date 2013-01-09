@@ -232,6 +232,7 @@ private:
     bool				mEncoderHasKeyFrame;
     Mutex               mEncoderFifoAvailableMutex;
     AVStream            *mEncoderStream;
+    int                 mEncoderAudioFrameSize;
     /* device control */
     MediaSources        mMediaSources;
     Mutex               mMediaSourcesMutex;
@@ -240,7 +241,6 @@ private:
     int                 mCurrentStreamingResY, mRequestedStreamingResY;
     bool                mVideoHFlip, mVideoVFlip;
     /* audio */
-    ReSampleContext     *mAudioOutputResampleContext;
     AVFifoBuffer        *mSampleFifo;
     char                *mSamplesTempBuffer;
 

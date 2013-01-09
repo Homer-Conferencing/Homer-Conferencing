@@ -413,7 +413,7 @@ protected:
     enum CodecID        mSourceCodecId;
     bool                mEOFReached;
     /* audio */
-    ReSampleContext     *mAudioResampleContext;
+    HM_SwrContext       *mAudioResampleContext;
     char                *mResampleBuffer;
     AVFifoBuffer        *mRecorderSampleFifo;
     char                *mRecorderSamplesTempBuffer;
@@ -434,7 +434,7 @@ protected:
     int                 mTargetResY;
     float               mFrameRate; // ffmpeg internal referen frame rate
     float 				mRealFrameRate; // presentation frame rate
-    SwsContext          *mScalerContext;
+    SwsContext          *mVideoScalerContext;
     /* frame stats */
     int64_t             mDecodedIFrames;
     int64_t             mDecodedPFrames;
@@ -463,7 +463,7 @@ protected:
     /* recording */
     AVFormatContext     *mRecorderFormatContext;
     AVCodecContext      *mRecorderCodecContext;
-    SwsContext          *mRecorderScalerContext;
+    SwsContext          *mRecorderVideoScalerContext;
     char                *mRecorderEncoderChunkBuffer;
     int                 mRecorderChunkNumber;
     int64_t             mRecorderStartPts; // for synchronized playback we calculate the position within a media stream and write the value into PTS entry of an encoded packet
