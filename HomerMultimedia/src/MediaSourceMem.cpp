@@ -87,6 +87,7 @@ MediaSourceMem::MediaSourceMem(string pName, bool pRtpActivated):
     mDecoderSinglePictureResY = 0;
     mDecoderUsesPTSFromInputPackets = false;
     mGrabberCurrentFrameIndex = 0;
+    mFrameBufferLastWrittenFrameIndex = 0;
 	mWrappingHeaderSize= 0;
     mGrabberProvidesRTGrabbing = true;
     mSourceType = SOURCE_MEMORY;
@@ -740,6 +741,7 @@ bool MediaSourceMem::CloseGrabDevice()
     ResetPacketStatistic();
 
     mGrabberCurrentFrameIndex = 0;
+    mFrameBufferLastWrittenFrameIndex = 0;
     mDecoderSinglePictureGrabbed = false;
     mEOFReached = false;
     mDecoderRecalibrateRTGrabbingAfterSeeking = true;
@@ -1962,6 +1964,9 @@ void MediaSourceMem::WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int6
         LOG(LOG_VERBOSE, ">>> Writing frame of %d bytes and pts %ld, FIFOs: %d/%d", pBufferSize, pPts, mDecoderFifo->GetUsage(), mDecoderMetaDataFifo->GetUsage());
     #endif
 
+    if (pPts != 0)
+        mFrameBufferLastWrittenFrameIndex = pPts;
+
     // write A/V data to output FIFO
     mDecoderFifo->WriteFifo(pBuffer, pBufferSize);
 
@@ -2016,7 +2021,7 @@ void MediaSourceMem::UpdateBufferTime()
 void MediaSourceMem::CalibrateRTGrabbing()
 {
     // adopt the stored pts value which represent the start of the media presentation in real-time useconds
-    float  tRelativeFrameIndex = mGrabberCurrentFrameIndex - mSourceStartPts;
+    float  tRelativeFrameIndex = mFrameBufferLastWrittenFrameIndex - mSourceStartPts;
     double tRelativeTime = (int64_t)((double)AV_TIME_BASE * tRelativeFrameIndex / GetFrameRate());
     #ifdef MSMEM_DEBUG_CALIBRATION
         LOG(LOG_WARN, "Calibrating %s RT playback, old PTS start: %.2f, pre-buffer time: %.2f", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing, mDecoderFramePreBufferTime);
