@@ -3178,6 +3178,9 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 //    if ((mMediaType == MEDIA_VIDEO) && (tCodec->capabilities & CODEC_CAP_TRUNCATED))
 //        mCodecContext->flags |= CODEC_FLAG_TRUNCATED;
 
+    if (tCodec->capabilities & CODEC_CAP_DR1)
+    	mCodecContext->flags |= CODEC_FLAG_EMU_EDGE;
+
     //######################################################
     //### open the selected codec
     //######################################################
@@ -3304,18 +3307,19 @@ bool MediaSource::FfmpegCloseAll(string pSource, int pLine)
 		// Close the codec
 		if (mCodecContext != NULL)
 		{
+	    	mFormatContext->streams[mMediaStreamIndex]->discard = AVDISCARD_ALL;
 			avcodec_close(mCodecContext);
 			mCodecContext = NULL;
 		}else
 		{
-			LOG_REMOTE(LOG_WARN, pSource, pLine, "Format context found in invalid state");
+			LOG_REMOTE(LOG_WARN, pSource, pLine, "Codec context found in invalid state");
 			return false;
 		}
 
 		// Close the file
 		if (mFormatContext != NULL)
 		{
-		    HM_avformat_close_input(mFormatContext);
+			HM_avformat_close_input(mFormatContext);
 			mFormatContext = NULL;
 		}else
 		{
