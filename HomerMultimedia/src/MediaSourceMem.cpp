@@ -805,7 +805,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
         {
             // EOF reached?
             if (mEOFReached)
-            {
+            {// queue empty and EOF reached
                 mFrameNumber++;
 
                 // unlock grabbing
@@ -819,7 +819,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                 LOG(LOG_WARN, "Signaling EOF");
                 return GRAB_RES_EOF;
             }else
-            {
+            {// queue empty but EOF not reached
                 if ((!mDecoderWaitForNextKeyFrame) && (!mDecoderWaitForNextKeyFramePackets))
                 {// okay, we want more output from the decoder thread
                     if (GetSourceType() == SOURCE_FILE)
@@ -829,7 +829,10 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                     {// source is memory/network
                         if ((mDecoderFramePreBufferingAutoRestart) && (mDecoderFramePreBufferTime > 0))
                         {// time to restart pre-buffering
-                            CalibrateRTGrabbing();
+                            LOG(LOG_VERBOSE, "Buffer is empty, restarting pre-buffering now..");
+
+                            // pretend that we had a seeking step and have to recalibrate the RT grabbing
+                            mDecoderRecalibrateRTGrabbingAfterSeeking = true;
                         }
                     }
                 }else
@@ -2016,7 +2019,7 @@ void MediaSourceMem::CalibrateRTGrabbing()
     float  tRelativeFrameIndex = mGrabberCurrentFrameIndex - mSourceStartPts;
     double tRelativeTime = (int64_t)((double)AV_TIME_BASE * tRelativeFrameIndex / GetFrameRate());
     #ifdef MSMEM_DEBUG_CALIBRATION
-        LOG(LOG_WARN, "Calibrating %s RT playback, old PTS start: %.2f", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing);
+        LOG(LOG_WARN, "Calibrating %s RT playback, old PTS start: %.2f, pre-buffer time: %.2f", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing, mDecoderFramePreBufferTime);
     #endif
     mSourceStartTimeForRTGrabbing = av_gettime() - tRelativeTime  + mDecoderFramePreBufferTime * AV_TIME_BASE;
     #ifdef MSMEM_DEBUG_CALIBRATION
@@ -2061,8 +2064,8 @@ void MediaSourceMem::WaitForRTGrabbing()
 		else
 		{
 			LOG(LOG_WARN, "Found in %s %s source an invalid delay time of %ld s, pre-buffer time: %.2f", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tResultingTimeOffset / 1000, mDecoderFramePreBufferTime);
-			LOG(LOG_WARN, "Re-calibrating RT grabbing");
-			CalibrateRTGrabbing();
+			LOG(LOG_WARN, "Triggering re-calibration of RT grabbing");
+			mDecoderRecalibrateRTGrabbingAfterSeeking = true;
 		}
 	}else
     {
