@@ -1616,100 +1616,100 @@ Bitte Konfiguration prüfen!</translation>
 <context>
     <name>Homer::Gui::MainWindow</name>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1213"/>
+        <location filename="../src/MainWindow.cpp" line="1212"/>
         <source>NAT detection failed</source>
         <translation>NAT Erkennung fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1213"/>
+        <location filename="../src/MainWindow.cpp" line="1212"/>
         <source>Could not detect NAT address and type via STUN server. The failure reason is</source>
         <translation>Konnte die NAT-Adresse und -Typ nicht via STUN-Server erkennen. Die Fehlerursache ist</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1596"/>
-        <location filename="../src/MainWindow.cpp" line="1600"/>
+        <location filename="../src/MainWindow.cpp" line="1595"/>
+        <location filename="../src/MainWindow.cpp" line="1599"/>
         <source>Registration failed</source>
         <translation>Registrierung fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1596"/>
-        <location filename="../src/MainWindow.cpp" line="1600"/>
+        <location filename="../src/MainWindow.cpp" line="1595"/>
+        <location filename="../src/MainWindow.cpp" line="1599"/>
         <source>Could not register</source>
         <translation>Registerung fehlgeschlagen für</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1596"/>
-        <location filename="../src/MainWindow.cpp" line="1600"/>
+        <location filename="../src/MainWindow.cpp" line="1595"/>
+        <location filename="../src/MainWindow.cpp" line="1599"/>
         <source>at the SIP server</source>
         <translation>am SIP-Server</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1596"/>
-        <location filename="../src/MainWindow.cpp" line="1616"/>
+        <location filename="../src/MainWindow.cpp" line="1595"/>
+        <location filename="../src/MainWindow.cpp" line="1615"/>
         <source>The reason is</source>
         <translation>Die Ursache ist</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1597"/>
-        <location filename="../src/MainWindow.cpp" line="1601"/>
-        <location filename="../src/MainWindow.cpp" line="1617"/>
+        <location filename="../src/MainWindow.cpp" line="1596"/>
+        <location filename="../src/MainWindow.cpp" line="1600"/>
+        <location filename="../src/MainWindow.cpp" line="1616"/>
         <source>SIP server runs software</source>
         <translation>Der SIP-Server nutzt die Software</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1600"/>
+        <location filename="../src/MainWindow.cpp" line="1599"/>
         <source>The login name or password is wrong. Check configuration!
 </source>
         <translation>Der Loginname oder das Passwort sind falsch. Bitte die Konfiguration prüfen!</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1616"/>
+        <location filename="../src/MainWindow.cpp" line="1615"/>
         <source>Presence publication failed</source>
         <translation>Verfügbarkeitsstatus nicht aktualisiert</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1616"/>
+        <location filename="../src/MainWindow.cpp" line="1615"/>
         <source>Could not publish your new presence state at the SIP server</source>
         <translation>Der Verfügbarkeitsstatus konnte nicht am SIP-Server veröffentlicht werden</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2108"/>
-        <location filename="../src/MainWindow.cpp" line="2162"/>
+        <location filename="../src/MainWindow.cpp" line="2107"/>
+        <location filename="../src/MainWindow.cpp" line="2161"/>
         <source>Show window</source>
         <translation>Zeige Fenster</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2111"/>
-        <location filename="../src/MainWindow.cpp" line="2165"/>
+        <location filename="../src/MainWindow.cpp" line="2110"/>
+        <location filename="../src/MainWindow.cpp" line="2164"/>
         <source>Hide window</source>
         <translation>Verstecke Fenster</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2121"/>
-        <location filename="../src/MainWindow.cpp" line="2175"/>
+        <location filename="../src/MainWindow.cpp" line="2120"/>
+        <location filename="../src/MainWindow.cpp" line="2174"/>
         <source>Unmute me</source>
         <translation>Stimme aktivieren</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2125"/>
-        <location filename="../src/MainWindow.cpp" line="2179"/>
+        <location filename="../src/MainWindow.cpp" line="2124"/>
+        <location filename="../src/MainWindow.cpp" line="2178"/>
         <source>Mute me</source>
         <translation>Stumm schalten</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2131"/>
-        <location filename="../src/MainWindow.cpp" line="2185"/>
+        <location filename="../src/MainWindow.cpp" line="2130"/>
+        <location filename="../src/MainWindow.cpp" line="2184"/>
         <source>Mute others</source>
         <translation>Andere stumm schalten</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2140"/>
-        <location filename="../src/MainWindow.cpp" line="2194"/>
+        <location filename="../src/MainWindow.cpp" line="2139"/>
+        <location filename="../src/MainWindow.cpp" line="2193"/>
         <source>Online status</source>
         <translation>Onlinestatus</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2149"/>
+        <location filename="../src/MainWindow.cpp" line="2148"/>
         <source>Exit</source>
         <translation>Beenden</translation>
     </message>
@@ -1806,39 +1806,39 @@ Bitte Konfiguration prüfen!</translation>
 <context>
     <name>Homer::Gui::OpenVideoAudioPreviewDialog</name>
     <message>
-        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="183"/>
+        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="182"/>
         <source>Video preview not possible</source>
         <translation>Videovorschau nicht möglich</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="183"/>
+        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="182"/>
         <source>The preview of the incoming video stream at local port</source>
         <translation>Die Vorschau des empfangen Videostroms ist nicht möglich am lokalen Port</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="183"/>
+        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="182"/>
         <source>with transport</source>
         <translation>und dem eingesetzten Transport</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="183"/>
-        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="310"/>
+        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="182"/>
+        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="309"/>
         <source>and codec</source>
         <translation>und Codec</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="183"/>
-        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="310"/>
+        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="182"/>
+        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="309"/>
         <source>is not possible!</source>
         <translation>ist nicht möglich!</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="310"/>
+        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="309"/>
         <source>Audio preview not possible</source>
         <translation>Audiovorschau nicht möglich</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="310"/>
+        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="309"/>
         <source>The preview of the incoming audio stream at local port</source>
         <translation>Die Vorschau des empfangen Audiostroms ist nicht möglich am lokalen Port</translation>
     </message>
@@ -3555,188 +3555,188 @@ p, li { white-space: pre-wrap; }
         <translation>Video</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="632"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="648"/>
         <source> Video encoding </source>
         <translation> Videokodierung </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="658"/>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1174"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="674"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1206"/>
         <source>Expected codec:</source>
         <translation>Erwarteter Codec:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="700"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="716"/>
         <source>H.261</source>
         <translation>H.261</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="705"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="721"/>
         <source>H.263</source>
         <translation>H.263</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="710"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="726"/>
         <source>H.263+</source>
         <translation>H.263+</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="715"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="731"/>
         <source>H.264</source>
         <translation>H.264</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="720"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="736"/>
         <source>MPEG1</source>
         <translation>MPEG1</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="725"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="741"/>
         <source>MPEG2</source>
         <translation>MPEG2</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="730"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="746"/>
         <source>MPEG4</source>
         <translation>MPEG4</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="735"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="751"/>
         <source>THEORA</source>
         <translation>THEORA</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="786"/>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1293"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="802"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1325"/>
         <source>Receiver:</source>
         <translation>Empfänger:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="840"/>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1347"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="856"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1379"/>
         <source>Port:</source>
         <translation>Port:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="918"/>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1425"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="934"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1457"/>
         <source>Transport:</source>
         <translation>Transport:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="944"/>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1451"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="960"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1483"/>
         <source>UDP</source>
         <translation>UDP</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="949"/>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1456"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="965"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1488"/>
         <source>TCP</source>
         <translation>TCP</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="954"/>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1461"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="970"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1493"/>
         <source>UDP-Lite</source>
         <translation>UDP-Lite</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="959"/>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1466"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="975"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1498"/>
         <source>SCTP</source>
         <translation>SCTP</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1004"/>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1511"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1020"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1543"/>
         <source>RTP</source>
         <translation>RTP</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1025"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1041"/>
         <source> Video transmission interface </source>
         <translation> Parameter der Videoübertragung </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1051"/>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1558"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1067"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1590"/>
         <source>Network access interface:</source>
         <translation>Netzwerkzugangsschnittstelle: </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1093"/>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1600"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1109"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1632"/>
         <source>Berkeley Sockets</source>
         <translation>Berkeley Sockets</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1122"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1138"/>
         <source>Audio</source>
         <translation>Audio</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1261"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1293"/>
         <source> Audio receiving </source>
         <translation> Audioempfang </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="754"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="770"/>
         <source> Video receiving </source>
         <translation> Videoempfang </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1148"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1180"/>
         <source> Audio encoding </source>
         <translation> Audiokodierung </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1222"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1254"/>
         <source>G711 A-law</source>
         <translation>G711 A-law</translation>
     </message>
     <message utf8="true">
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1227"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1259"/>
         <source>G711 µ-law</source>
         <translation>G711 µ-law</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1232"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1264"/>
         <source>G722 adpcm</source>
         <translation>G722 adpcm</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1237"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1269"/>
         <source>MP3</source>
         <translation>MP3</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1242"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1274"/>
         <source>PCM16</source>
         <translation>PCM16</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1532"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1564"/>
         <source> Audio transmission interface </source>
         <translation> Parameter der Audioübertragung </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1629"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1661"/>
         <source>Buffering</source>
         <translation>Pufferung</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1653"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1703"/>
         <source> Pre-buffering of audio/video streams </source>
         <translation>(Vor-)Pufferung des Audio/-Videoempfangs</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1682"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1732"/>
         <source>Automatic restart of pre-buffering if stream was cut: </source>
         <translation>Automatischer Neustart des (pre-)Pufferns wenn der Empfang stockte:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1737"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1787"/>
         <source>Synchronization of audio and video playback:</source>
         <translation>Synchronisation der Audio- und Videowiedergabe:</translation>
     </message>
@@ -3759,12 +3759,12 @@ datei</translation>
 übertragung</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1843"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1895"/>
         <source>Video playback enabled</source>
         <translation>Videowiedergabe aktiv</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1897"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1949"/>
         <source>Audio playback enabled</source>
         <translation>Audiowiedergabe aktiv</translation>
     </message>
@@ -4669,7 +4669,7 @@ als Installer</translation>
     <message>
         <location filename="../forms/Dialogs/VersionDialog.ui" line="31"/>
         <source>About Homer Conferencing</source>
-        <translation>Über Homer-Conferencing</translation>
+        <translation>Über Homer Conferencing</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/VersionDialog.ui" line="184"/>
