@@ -143,6 +143,7 @@ SET (LIBS_WINDOWS
 	HomerMonitor
 	portaudio
     swscale-2
+    swresample-0
 	ws2_32
 	Avicap32
 	Winmm
