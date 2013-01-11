@@ -84,7 +84,7 @@ namespace Homer { namespace Gui {
 // how many times should we try to adapt the A/V synch bei waiting cycles? afterwards we try a reset of both the video and audio source
 #define AV_SYNC_CONSECUTIVE_ASYNC_THRESHOLD_TRY_RESET                4
 // size of the pre-buffer during a live conference
-#define AV_CONFERENCE_BUFFER									   0.2 // seconds
+#define AV_CONFERENCE_BUFFER							          0.34 // seconds  - 1/24s time per frames * 8 frames =0.33333
 
 ///////////////////////////////////////////////////////////////////////////////
 
