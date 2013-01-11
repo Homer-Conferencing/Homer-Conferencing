@@ -121,7 +121,7 @@ ENDIF (LINUX)
 ##############################################################
 # USED LIBRARIES for win32 environment
 SET (LIBS_WINDOWS_INSTALL
-    avutil-51
+    avutil-52
     avcodec-54
     avdevice-54
     avfilter-3
@@ -135,7 +135,7 @@ SET (LIBS_WINDOWS_INSTALL
     SDL    
 )
 SET (LIBS_WINDOWS
-    avutil-51
+    avutil-52
     avcodec-54
     avfilter-3
     avformat-54
