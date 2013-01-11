@@ -1941,6 +1941,8 @@ void* MediaSourceMem::Run(void* pArgs)
                 // free fifo buffer
                 av_fifo_free(tSampleFifo);
 
+                av_free(tAudioFrame);
+
                 break;
         default:
                 break;
