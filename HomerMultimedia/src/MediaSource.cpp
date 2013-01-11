@@ -2748,7 +2748,7 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start PTS: %.2f frames", FilterNeg(mSourceStartPts));
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS: %ld frames", FilterNeg(mFormatContext->start_time));
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS (RT): %ld frames", FilterNeg(mFormatContext->start_time_realtime));
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..format context duration: %ld seconds", FilterNeg(mFormatContext->duration) / AV_TIME_BASE);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..format context duration: %ld seconds (exact value: %ld)", FilterNeg(mFormatContext->duration) / AV_TIME_BASE, mFormatContext->duration);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame rate: %.2f fps", mFrameRate);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame rate (playout): %.2f fps", mRealFrameRate);
     int64_t tStreamDuration = FilterNeg(mFormatContext->streams[mMediaStreamIndex]->duration);
@@ -3197,8 +3197,10 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 
     //set duration
     if (mFormatContext->duration > 0)
+    {
         mNumberOfFrames = mFrameRate * mFormatContext->duration / AV_TIME_BASE;
-    else
+        LOG(LOG_VERBOSE, "Number of frames set to: %.2f, fps: %.2f, format context duration: %ld", (float)mNumberOfFrames, mFrameRate, mFormatContext->duration);
+    }else
     {
     	LOG(LOG_WARN, "Found duration of %s stream is invalid, will use a value of 0 instead", GetMediaTypeStr().c_str());
     	mNumberOfFrames = 0;
