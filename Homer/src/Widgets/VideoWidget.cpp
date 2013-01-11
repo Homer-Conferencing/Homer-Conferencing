@@ -338,7 +338,7 @@ void VideoWidget::InitializeMenuVideoSettings(QMenu *pMenu)
         tAction = pMenu->addAction(QPixmap(":/images/22_22/Info.png"), Homer::Gui::VideoWidget::tr("Show stream info"));
     tAction->setCheckable(true);
     tAction->setChecked(mShowLiveStats);
-    tAction->setShortcuts(Qt::Key_I);
+    tAction->setShortcut(Qt::Key_I);
 
     //###############################################################################
     //### Video settings
@@ -479,7 +479,7 @@ void VideoWidget::InitializeMenuVideoSettings(QMenu *pMenu)
             tAction =  tVideoSinksMenu->addAction(Homer::Gui::VideoWidget::tr("Live marker"));
             tAction->setCheckable(true);
             tAction->setChecked(mVideoSource->MarkerActive());
-            tAction->setShortcuts(Qt::Key_K);
+            tAction->setShortcut(Qt::Key_K);
         }
     }
 
