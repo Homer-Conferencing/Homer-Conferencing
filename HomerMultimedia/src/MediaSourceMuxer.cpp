@@ -811,7 +811,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
 
     // fix frame size of 0 for some audio codecs
     if (mCodecContext->frame_size < 32)
-    	mCodecContext->frame_size = 320;
+    	mCodecContext->frame_size = 1024;
 
     mOutputAudioFormat = mCodecContext->sample_fmt;
 
@@ -909,6 +909,7 @@ bool MediaSourceMuxer::CloseMuxer()
         LOG(LOG_VERBOSE, "..closing %s codec", GetMediaTypeStr().c_str());
 
         // Close the codec
+    	mEncoderStream->discard = AVDISCARD_ALL;
         avcodec_close(mCodecContext);
 
         // free codec and stream 0
@@ -1351,11 +1352,11 @@ void* MediaSourceMuxer::Run(void* pArgs)
         case MEDIA_AUDIO:
             SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Encoder(" + GetFormatName(mStreamCodecId) + ")");
 
-            mSamplesTempBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE);
+            mSamplesTempBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE + FF_INPUT_BUFFER_PADDING_SIZE);
             if (mSamplesTempBuffer == NULL)
                 LOG(LOG_ERROR, "Out of memory for sample buffer");
 
-            mEncoderChunkBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE);
+            mEncoderChunkBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE + FF_INPUT_BUFFER_PADDING_SIZE);
             if (mEncoderChunkBuffer == NULL)
                 LOG(LOG_ERROR, "Out of memory for encoder chunk buffer");
 
