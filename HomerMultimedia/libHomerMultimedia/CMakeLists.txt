@@ -91,9 +91,7 @@ SET (SOURCES
 IF (WIN32)
 SET (SOURCES
 	${SOURCES}
-	../src/MediaSourceMMSys
 	../src/MediaSourceDShow
-	../src/MediaSourceVFW
 )
 ENDIF (WIN32)
 

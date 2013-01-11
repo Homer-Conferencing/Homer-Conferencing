@@ -51,7 +51,6 @@
 #include <MediaSourceCoreVideo.h>
 #include <MediaSourceMuxer.h>
 #include <MediaSourceFile.h>
-#include <MediaSourceMMSys.h>
 #include <MediaSourceDesktop.h>
 #include <MediaSourceLogo.h>
 #include <Header_NetworkSimulator.h>
