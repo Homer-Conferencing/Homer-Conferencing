@@ -871,7 +871,11 @@ Playlist OverviewPlaylistWidget::ParseM3U(QString pFilePlaylist, bool pAcceptVid
 	tPlaylistEntry.Location = "";
 	tPlaylistEntry.Name = "";
 
-    QString tDir = pFilePlaylist.left(pFilePlaylist.lastIndexOf('/'));
+	#ifdef WIN32
+    	QString tDir = pFilePlaylist.left(pFilePlaylist.lastIndexOf('\\'));
+	#else
+    	QString tDir = pFilePlaylist.left(pFilePlaylist.lastIndexOf('/'));
+	#endif
     LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Parsing M3U playlist %s", pFilePlaylist.toStdString().c_str());
     LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "..in directory: %s", tDir.toStdString().c_str());
 
@@ -898,9 +902,15 @@ Playlist OverviewPlaylistWidget::ParseM3U(QString pFilePlaylist, bool pAcceptVid
 				{// we have a location and the entry is complete
 						LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Found playlist entry location: %s", tLineString.toStdString().c_str());
 						if (IS_SUPPORTED_WEB_LINK(tLineString))
+						{// web link
 							tPlaylistEntry.Location = tLineString;
-						else
-							tPlaylistEntry.Location = tDir + "/" + tLineString;
+						}else
+						{// local file
+							if ((!tLineString.startsWith("/")) && (!tLineString.startsWith("\\")) && (!tLineString.indexOf(":\\") == 1))
+								tPlaylistEntry.Location = tDir + tLineString;
+							else
+								tPlaylistEntry.Location = tLineString;
+						}
 						if (tPlaylistEntry.Name == "")
 							tPlaylistEntry.Name = tPlaylistEntry.Location;
 						tResult += Parse(tPlaylistEntry.Location, tPlaylistEntry.Name, pAcceptVideo, pAcceptAudio);
@@ -936,7 +946,11 @@ Playlist OverviewPlaylistWidget::ParseWMX(QString pFilePlaylist, bool pAcceptVid
 	tPlaylistEntry.Location = "";
 	tPlaylistEntry.Name = "";
 
-    QString tDir = pFilePlaylist.left(pFilePlaylist.lastIndexOf('/'));
+	#ifdef WIN32
+		QString tDir = pFilePlaylist.left(pFilePlaylist.lastIndexOf('\\'));
+	#else
+		QString tDir = pFilePlaylist.left(pFilePlaylist.lastIndexOf('/'));
+	#endif
     LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Parsing WMX short cut file %s", pFilePlaylist.toStdString().c_str());
     LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "..in directory: %s", tDir.toStdString().c_str());
 
@@ -977,7 +991,11 @@ Playlist OverviewPlaylistWidget::ParsePLS(QString pFilePlaylist, bool pAcceptVid
     int tLoadedPlaylistEntries = 0;
 	Playlist tResult;
 
-    QString tDir = pFilePlaylist.left(pFilePlaylist.lastIndexOf('/'));
+	#ifdef WIN32
+		QString tDir = pFilePlaylist.left(pFilePlaylist.lastIndexOf('\\'));
+	#else
+		QString tDir = pFilePlaylist.left(pFilePlaylist.lastIndexOf('/'));
+	#endif
     LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Parsing PLS playlist file %s", pFilePlaylist.toStdString().c_str());
     LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "..in directory: %s", tDir.toStdString().c_str());
 
@@ -1019,7 +1037,16 @@ Playlist OverviewPlaylistWidget::ParsePLS(QString pFilePlaylist, bool pAcceptVid
                     }
                 }else if (tKey.startsWith("file"))
                 {// "File"
-                    tPlaylistEntry.Location = tValue;
+					if (IS_SUPPORTED_WEB_LINK(tValue))
+					{// web link
+						tPlaylistEntry.Location = tValue;
+					}else
+					{// local file
+						if ((!tLineString.startsWith("/")) && (!tValue.startsWith("\\")) && (!tValue.indexOf(":\\") == 1))
+							tPlaylistEntry.Location = tDir + tValue;
+						else
+							tPlaylistEntry.Location = tValue;
+					}
                 }else if (tKey.startsWith("title"))
                 {// "Title"
                     tPlaylistEntry.Name = tValue;
