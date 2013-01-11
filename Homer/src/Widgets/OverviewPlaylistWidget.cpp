@@ -404,6 +404,7 @@ void OverviewPlaylistWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEve
         QIcon tIcon0;
         tIcon0.addPixmap(QPixmap(":/images/22_22/Audio_Play.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon0);
+        tAction->setShortcut(Qt::Key_Enter);
 
         tMenu.addSeparator();
     }
@@ -412,6 +413,7 @@ void OverviewPlaylistWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEve
     QIcon tIcon1;
     tIcon1.addPixmap(QPixmap(":/images/22_22/Plus.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon1);
+    tAction->setShortcut(Qt::Key_Insert);
 
     if (!mLwFiles->selectedItems().isEmpty())
     {
@@ -419,11 +421,13 @@ void OverviewPlaylistWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEve
         QIcon tIcon15;
         tIcon15.addPixmap(QPixmap(":/images/22_22/Contact_Edit.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon15);
+        tAction->setShortcut(Qt::Key_F2);
 
         tAction = tMenu.addAction(Homer::Gui::OverviewPlaylistWidget::tr("Delete selected"));
         QIcon tIcon2;
         tIcon2.addPixmap(QPixmap(":/images/22_22/Minus.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon2);
+        tAction->setShortcut(Qt::Key_Delete);
     }
 
     tMenu.addSeparator();
