@@ -29,10 +29,9 @@
 #include <Widgets/OverviewPlaylistWidget.h>
 #include <MediaSourceCoreVideo.h>
 #include <MediaSourceV4L2.h>
-#include <MediaSourceVFW.h>
+#include <MediaSourceDShow.h>
 #include <MediaSourcePortAudio.h>
 #include <MediaSourceAlsa.h>
-#include <MediaSourceMMSys.h>
 #include <MediaSourceNet.h>
 #include <MediaSourceFile.h>
 #include <Snippets.h>
@@ -132,7 +131,7 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceVideo()
     {
         case 0: // devices
             #ifdef WIN32
-                return new MediaSourceVFW(mCbDeviceVideo->currentText().toStdString());
+                return new MediaSourceDShow(mCbDeviceVideo->currentText().toStdString());
             #endif
             #ifdef APPLE
 //                return new MediaSourceCoreVideo(mCbDeviceVideo->currentText().toStdString());
@@ -370,7 +369,7 @@ void OpenVideoAudioPreviewDialog::LoadConfiguration()
     //### capture source
     //########################
     #ifdef WIN32
-        MediaSourceVFW *tVSource = new MediaSourceVFW("");
+		MediaSourceDShow *tVSource = new MediaSourceDShow("");
     #endif
     #ifdef APPLE
         MediaSourceCoreVideo *tVSource = new MediaSourceCoreVideo("");
