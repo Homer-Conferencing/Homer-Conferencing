@@ -200,9 +200,7 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
         QIcon tIcon6;
         tIcon6.addPixmap(QPixmap(":/images/22_22/Message.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon6);
-        QList<QKeySequence> tMsgKeys;
-        tMsgKeys.push_back(Qt::Key_Enter);
-        tAction->setShortcuts(tMsgKeys);
+        tAction->setShortcut(Qt::Key_Enter);
 
         tAction = tMenu.addAction(Homer::Gui::OverviewContactsWidget::tr("Call"));
         QIcon tIcon5;
@@ -216,9 +214,7 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
     QIcon tIcon1;
     tIcon1.addPixmap(QPixmap(":/images/22_22/Plus.png"), QIcon::Normal, QIcon::Off);
     tAction->setIcon(tIcon1);
-    QList<QKeySequence> tINSKeys;
-    tINSKeys.push_back(Qt::Key_Insert);
-    tAction->setShortcuts(tINSKeys);
+    tAction->setShortcut(Qt::Key_Insert);
 
     if (tValidEntryBelow)
     {
@@ -226,9 +222,7 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
         QIcon tIcon3;
         tIcon3.addPixmap(QPixmap(":/images/22_22/Contact_Edit.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon3);
-        QList<QKeySequence> tEditKeys;
-        tEditKeys.push_back(Qt::Key_F2);
-        tAction->setShortcuts(tEditKeys);
+        tAction->setShortcut(Qt::Key_F2);
 
         tAction = tMenu.addAction(Homer::Gui::OverviewContactsWidget::tr("Duplicate contact"));
         QIcon tIcon2;
@@ -239,9 +233,7 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
         QIcon tIcon4;
         tIcon4.addPixmap(QPixmap(":/images/22_22/Minus.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon4);
-        QList<QKeySequence> tDELKeys;
-        tDELKeys.push_back(Qt::Key_Delete);
-        tAction->setShortcuts(tDELKeys);
+        tAction->setShortcut(Qt::Key_Delete);
     }
 
     tMenu.addSeparator();

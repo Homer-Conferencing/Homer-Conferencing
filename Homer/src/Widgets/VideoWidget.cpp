@@ -338,10 +338,7 @@ void VideoWidget::InitializeMenuVideoSettings(QMenu *pMenu)
         tAction = pMenu->addAction(QPixmap(":/images/22_22/Info.png"), Homer::Gui::VideoWidget::tr("Show stream info"));
     tAction->setCheckable(true);
     tAction->setChecked(mShowLiveStats);
-
-    QList<QKeySequence> tIKeys;
-    tIKeys.push_back(Qt::Key_I);
-    tAction->setShortcuts(tIKeys);
+    tAction->setShortcuts(Qt::Key_I);
 
     //###############################################################################
     //### Video settings
@@ -373,17 +370,13 @@ void VideoWidget::InitializeMenuVideoSettings(QMenu *pMenu)
             {
                 tAction = tVideoMenu->addAction(Homer::Gui::VideoWidget::tr("Smooth display"));
             }
-            QList<QKeySequence> tSPKeys;
-            tSPKeys.push_back(Qt::Key_S);
-            tAction->setShortcuts(tSPKeys);
+            tAction->setShortcut(Qt::Key_S);
 
             //###############################################################################
             //### ASPECT RATION
             //###############################################################################
             QMenu *tAspectRatioMenu = tVideoMenu->addMenu(Homer::Gui::VideoWidget::tr("Aspect ratio"));
-            QList<QKeySequence> tARKeys;
-            tARKeys.push_back(Qt::Key_A);
-            tAspectRatioMenu->menuAction()->setShortcuts(tARKeys);
+            tAspectRatioMenu->menuAction()->setShortcut(Qt::Key_A);
             //###############################################################################
             //### "Keep aspect ratio"
             //###############################################################################
@@ -486,10 +479,7 @@ void VideoWidget::InitializeMenuVideoSettings(QMenu *pMenu)
             tAction =  tVideoSinksMenu->addAction(Homer::Gui::VideoWidget::tr("Live marker"));
             tAction->setCheckable(true);
             tAction->setChecked(mVideoSource->MarkerActive());
-
-            QList<QKeySequence> tVMKeys;
-            tVMKeys.push_back(Qt::Key_K);
-            tAction->setShortcuts(tVMKeys);
+            tAction->setShortcuts(Qt::Key_K);
         }
     }
 
