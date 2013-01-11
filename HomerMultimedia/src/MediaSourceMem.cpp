@@ -800,7 +800,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
             return GRAB_RES_INVALID;
         }
 
-        int tAvailableFrames = (mDecoderFifo != NULL) ? mDecoderFifo->GetUsage() : 0;
+        int tAvailableFrames = (mDecoderFifo != NULL) ? mDecoderFifo->GetUsage() : -1;
 
         // missing input?
         if (tAvailableFrames == 0)
@@ -1085,6 +1085,7 @@ void* MediaSourceMem::Run(void* pArgs)
     bool                tInputIsPicture = false;
     /* audio */
     AVFifoBuffer        *tSampleFifo = NULL;
+    AVFrame				*tAudioFrame = NULL;
 
     // reset EOF marker
     mEOFReached = false;
@@ -1143,7 +1144,11 @@ void* MediaSourceMem::Run(void* pArgs)
         case MEDIA_AUDIO:
             SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Decoder(" + GetSourceTypeStr() + ")");
 
-            tChunkBufferSize = AVCODEC_MAX_AUDIO_FRAME_SIZE;
+            // Allocate video frame for YUV format
+             if ((tAudioFrame = avcodec_alloc_frame()) == NULL)
+                 LOG(LOG_ERROR, "Out of audio memory");
+
+            tChunkBufferSize = AVCODEC_MAX_AUDIO_FRAME_SIZE + FF_INPUT_BUFFER_PADDING_SIZE;
 
             // allocate chunk buffer
             tChunkBuffer = (uint8_t*)malloc(tChunkBufferSize);
@@ -1165,6 +1170,8 @@ void* MediaSourceMem::Run(void* pArgs)
 
     // reset last PTS
     mDecoderLastReadPts = 0;
+    mGrabberCurrentFrameIndex = 0;
+    mFrameBufferLastWrittenFrameIndex = 0;
 
     // signal that decoder thread has finished init.
     mDecoderNeeded = true;
@@ -1483,23 +1490,23 @@ void* MediaSourceMem::Run(void* pArgs)
                                     {
                                         LOG(LOG_WARN, "Video resolution change in input stream from %s source detected", GetSourceTypeStr().c_str());
 
-                                        // set grabbing resolution to the resolution from the codec, which has automatically detected the new resolution
-                                        mSourceResX = mCodecContext->width;
-                                        mSourceResY = mCodecContext->height;
-
                                         // let the video scaler update the (ffmpeg based) scaler context
-                                        tVideoScaler->ChangeInputResolution(mSourceResX, mSourceResY);
+                                        tVideoScaler->ChangeInputResolution(mCodecContext->width, mCodecContext->height);
 
                                         // free the old chunk buffer
                                         free(tChunkBuffer);
 
                                         // calculate a new chunk buffer size for the new source video resolution
-                                        tChunkBufferSize = avpicture_get_size(mCodecContext->pix_fmt, mSourceResX, mSourceResY) + FF_INPUT_BUFFER_PADDING_SIZE;
+                                        tChunkBufferSize = avpicture_get_size(mCodecContext->pix_fmt, mCodecContext->width, mCodecContext->height) + FF_INPUT_BUFFER_PADDING_SIZE;
 
                                         // allocate the new chunk buffer
                                         tChunkBuffer = (uint8_t*)malloc(tChunkBufferSize);
 
-                                        LOG(LOG_INFO, "Video resolution changed to %d * %d", mCodecContext->width, mCodecContext->height);
+                                        LOG(LOG_INFO, "Video resolution changed from %d*%d to %d * %d", mSourceResX, mSourceResY, mCodecContext->width, mCodecContext->height);
+
+                                        // set grabbing resolution to the resolution from the codec, which has automatically detected the new resolution
+                                        mSourceResX = mCodecContext->width;
+                                        mSourceResY = mCodecContext->height;
                                     }
 
                                     mResXLastGrabbedFrame = mCodecContext->width;
@@ -1690,66 +1697,62 @@ void* MediaSourceMem::Run(void* pArgs)
 
                     case MEDIA_AUDIO:
                         {
+                        	uint8_t *tDecodedAudioSamples = tChunkBuffer;
+
                             // ############################
                             // ### DECODE FRAME
                             // ############################
                             // log statistics
                             AnnouncePacket(tPacket->size);
 
-                            int tOutoutAudioBytesPrSample = av_get_bytes_per_sample(mOutputAudioFormat);
-                            int tInputAudioBytesPrSample = av_get_bytes_per_sample(mInputAudioFormat);
+                            int tOutputAudioBytesPerSample = av_get_bytes_per_sample(mOutputAudioFormat);
+                            int tInputAudioBytesPerSample = av_get_bytes_per_sample(mInputAudioFormat);
 
                             //printf("DecodeFrame..\n");
                             // Decode the next chunk of data
-                            int tOutputBufferSize = tChunkBufferSize;
-                            int tBytesDecoded = 0;
+                            int tBytesDecoded = avcodec_decode_audio4(mCodecContext, tAudioFrame, &tFrameFinished, tPacket);
+                            if ((tFrameFinished != 0) && (tBytesDecoded >= 0))
+                            {
+                                // ############################
+                                // ### ANNOUNCE FRAME (statistics)
+                                // ############################
+                                AnnounceFrame(tAudioFrame);
 
-                            if (mAudioResampleContext != NULL)
-                            {// audio resampling needed
-                                // decode the input audio buffer to the resample buffer
-                                tBytesDecoded = HM_avcodec_decode_audio(mCodecContext, (int16_t *)mResampleBuffer, &tOutputBufferSize, tPacket);
-                            }else
-                            {// no audio resampling
-                                // decode the input audio buffer straight to the output buffer
-                                tBytesDecoded = HM_avcodec_decode_audio(mCodecContext, (int16_t *)tChunkBuffer, &tOutputBufferSize, tPacket);
+                                // ############################
+                                // ### RECORD FRAME
+                                // ############################
+                                // re-encode the frame and write it to file
+//TODO:                                if (mRecording)
+//                                    RecordFrame(tAudioFrame);
+
                             }
-
 
                             #ifdef MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
                                 LOG(LOG_VERBOSE, "New audio frame..");
-                                LOG(LOG_VERBOSE, "      ..size: %d bytes (%d samples of format %s)", tOutputBufferSize * tOutoutAudioBytesPrSample, tOutputBufferSize, av_get_sample_fmt_name(mOutputAudioFormat));
+                                LOG(LOG_VERBOSE, "      ..size: %d bytes (%d samples of format %s)", tOutputBufferSize * tOutoutAudioBytesPerSample, tOutputBufferSize, av_get_sample_fmt_name(mOutputAudioFormat));
                             #endif
 
                             if (mAudioResampleContext != NULL)
                             {// audio resampling needed: we have to insert an intermediate step, which resamples the audio chunk
 
-                                if(tOutputBufferSize > 0)
-                                {
-                                    // ############################
-                                    // ### RESAMPLE FRAME (CONVERT)
-                                    // ############################
-                                    //HINT: we always assume 16 bit samples
-                                    int tResampledBytes = (tOutoutAudioBytesPrSample * mOutputAudioChannels) * HM_swr_convert(mAudioResampleContext, (uint8_t**)&tChunkBuffer, 2048 /* amount of possible output samples */, (const uint8_t**)&mResampleBuffer, tOutputBufferSize / (tInputAudioBytesPrSample * mInputAudioChannels));
-                                    #ifdef MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
-                                        LOG(LOG_VERBOSE, "Have resampled %d bytes of sample rate %dHz and %d channels (format: %s) to %d bytes of %d Hz sample rate and %d channels (format: %s)", tOutputBufferSize, mCodecContext->sample_rate, mCodecContext->channels, av_get_sample_fmt_name(mInputAudioFormat), tResampledBytes, mOutputAudioSampleRate, mOutputAudioChannels, av_get_sample_fmt_name(mOutputAudioFormat));
-                                    #endif
-                                    if(tResampledBytes > 0)
-                                    {
-                                        tCurrentChunkSize = tResampledBytes;
-                                    }else
-                                    {
-                                        LOG(LOG_ERROR, "Amount of resampled bytes (%d) is invalid", tResampledBytes);
-                                        tCurrentChunkSize = 0;
-                                    }
-                                }else
-                                {
-                                    LOG(LOG_ERROR, "Output buffer size %d from audio decoder is invalid", tOutputBufferSize);
-                                    tCurrentChunkSize = 0;
-                                }
+								// ############################
+								// ### RESAMPLE FRAME (CONVERT)
+								// ############################
+								const uint8_t **tAudioFramePlanes = (const uint8_t **)tAudioFrame->extended_data;
+								int tResampledBytes = (tOutputAudioBytesPerSample * mOutputAudioChannels) * HM_swr_convert(mAudioResampleContext, (uint8_t**)&tDecodedAudioSamples, AVCODEC_MAX_AUDIO_FRAME_SIZE / (tOutputAudioBytesPerSample * mOutputAudioChannels) /* amount of possible output samples */, (const uint8_t**)tAudioFramePlanes, tAudioFrame->nb_samples);
+								if(tResampledBytes > 0)
+								{
+									tCurrentChunkSize = tResampledBytes;
+								}else
+								{
+									LOG(LOG_ERROR, "Amount of resampled bytes (%d) is invalid", tResampledBytes);
+									tCurrentChunkSize = 0;
+								}
                             }else
                             {// no audio resampling needed
                                 // we can use the input buffer without modifications
-                                tCurrentChunkSize = tOutputBufferSize;
+                                tCurrentChunkSize = av_samples_get_buffer_size(NULL, tAudioFrame->channels, tAudioFrame->nb_samples, (enum AVSampleFormat) tAudioFrame->format, 1);
+                                tDecodedAudioSamples = tAudioFrame->data[0];
                             }
 
                             if (tCurrentChunkSize > 0)
@@ -1769,7 +1772,7 @@ void* MediaSourceMem::Run(void* pArgs)
 
                                 //LOG(LOG_VERBOSE, "ChunkSize: %d", pChunkSize);
                                 // write new samples into fifo buffer
-                                av_fifo_generic_write(tSampleFifo, tChunkBuffer, tCurrentChunkSize, NULL);
+                                av_fifo_generic_write(tSampleFifo, tDecodedAudioSamples, tCurrentChunkSize, NULL);
 
                                 // save PTS value to deliver it later to the frame grabbing thread
                                 #ifdef MSMEM_DEBUG_PRE_BUFFERING
@@ -2026,7 +2029,12 @@ void MediaSourceMem::CalibrateRTGrabbing()
     #ifdef MSMEM_DEBUG_CALIBRATION
         LOG(LOG_WARN, "Calibrating %s RT playback, old PTS start: %.2f, pre-buffer time: %.2f", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing, mDecoderFramePreBufferTime);
     #endif
-    mSourceStartTimeForRTGrabbing = av_gettime() - tRelativeTime  + mDecoderFramePreBufferTime * AV_TIME_BASE;
+	if (tRelativeTime < 0)
+	{
+		LOG(LOG_ERROR, "Faound invalid realtive PTS value of: %.2f", (float)tRelativeTime);
+		tRelativeTime = 0;
+	}
+	mSourceStartTimeForRTGrabbing = av_gettime() - tRelativeTime  + mDecoderFramePreBufferTime * AV_TIME_BASE;
     #ifdef MSMEM_DEBUG_CALIBRATION
         LOG(LOG_WARN, "Calibrating %s RT playback: new PTS start: %.2f, rel. frame index: %.2f, rel. time: %.2f ms", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing, tRelativeFrameIndex, (float)(tRelativeTime / 1000));
     #endif
@@ -2034,6 +2042,13 @@ void MediaSourceMem::CalibrateRTGrabbing()
 
 void MediaSourceMem::WaitForRTGrabbing()
 {
+	// return immediately if PTS from grabber is invalid
+	if (mGrabberCurrentFrameIndex == 0)
+	{
+		LOG(LOG_WARN, "PTS from grabber is invalid: %.2f", (float)mGrabberCurrentFrameIndex);
+		return;
+	}
+
     // calculate the current (normalized) frame index of the grabber
     float tNormalizedFrameIndexFromGrabber = mGrabberCurrentFrameIndex - mSourceStartPts; // the normalized frame index
     // return immediately if RT-grabbing is not possible
@@ -2068,7 +2083,7 @@ void MediaSourceMem::WaitForRTGrabbing()
 			Thread::Suspend(tResultingTimeOffset);
 		else
 		{
-			LOG(LOG_WARN, "Found in %s %s source an invalid delay time of %ld s, pre-buffer time: %.2f", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tResultingTimeOffset / 1000, mDecoderFramePreBufferTime);
+			LOG(LOG_WARN, "Found in %s %s source an invalid delay time of %ld s, pre-buffer time: %.2f, PTS of last queued frame: %ld, PTS of last grabbed frame: %.2f", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tResultingTimeOffset / 1000, mDecoderFramePreBufferTime, mDecoderLastReadPts, (float)mGrabberCurrentFrameIndex);
 			LOG(LOG_WARN, "Triggering re-calibration of RT grabbing");
 			mDecoderRecalibrateRTGrabbingAfterSeeking = true;
 		}
