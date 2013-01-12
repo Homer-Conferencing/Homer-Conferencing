@@ -82,6 +82,7 @@ typedef std::list<LogSink*>        LogSinksList;
 #define         LOG_WARN                        2
 #define         LOG_INFO                        3
 #define         LOG_VERBOSE                     4
+#define         LOG_WORLD                       5
 
 #define         LOGGER                          Logger::GetInstance()
 // standard logging macro

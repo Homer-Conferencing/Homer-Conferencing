@@ -223,6 +223,7 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
         printf("\n");
         printf("Options for failure recovery:\n");
         printf("   -SetDefaults                        start the program with default settings\n");
+        printf("   -DebugLevel=<level>                 defines the level of debug outputs, possible values are: \"Error, Info, Verbose, World\"\n");
         printf("   -DebugOutputFile=<file>             write verbose debug data to the given file\n");
         printf("   -DebugOutputNetwork=<host>:<port>   send verbose debug data to the given target host and port, UDP is used for message transport\n");
         printf("\n");

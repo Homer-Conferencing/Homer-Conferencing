@@ -430,7 +430,7 @@ void MainWindow::initializeDebugging(QStringList &pArguments)
             CONF.SetDebugging(true);
         }else
         {
-            if (pArguments.contains("-DebugLevel=Verbose"))
+            if ((pArguments.contains("-DebugLevel=Verbose")) || (pArguments.contains("-DebugLevel=World")))
             {
                 CONF.SetDebugging(true);
             }else

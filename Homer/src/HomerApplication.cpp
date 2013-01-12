@@ -104,11 +104,17 @@ void HomerApplication::initializeLogging()
 				LOGGER.Init(LOG_VERBOSE);
 			}else
 			{
-				#ifdef RELEASE_VERSION
-					LOGGER.Init(LOG_ERROR);
-				#else
-					LOGGER.Init(LOG_VERBOSE);
-				#endif
+	            if (mArguments.contains("-DebugLevel=World"))
+	            {
+	                LOGGER.Init(LOG_WORLD);
+	            }else
+	            {
+                    #ifdef RELEASE_VERSION
+                        LOGGER.Init(LOG_ERROR);
+                    #else
+                        LOGGER.Init(LOG_VERBOSE);
+                    #endif
+	            }
 			}
 		}
 	}
