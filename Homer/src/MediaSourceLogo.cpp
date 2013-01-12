@@ -63,7 +63,7 @@ MediaSourceLogo::MediaSourceLogo(string pDesiredDevice):
     // reset grabbing offset values
     mSourceResX = 352;
     mSourceResY = 288;
-    mRecorderChunkNumber = 0;
+    mRecorderFrameNumber = 0;
 
     bool tNewDeviceSelected = false;
     SelectDevice(pDesiredDevice, MEDIA_VIDEO, tNewDeviceSelected);
