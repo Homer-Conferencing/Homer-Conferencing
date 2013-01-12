@@ -406,6 +406,13 @@ IF (NOT (${BUILD} MATCHES "Default"))
 		libgstpbutils-0.10.so.0.24.0     
 		libgstvideo-0.10.so          
 		libstdc++.so.6
+		plugins/imageformats/qgif4
+		plugins/imageformats/qico4
+		plugins/imageformats/qjpeg4
+		plugins/imageformats/qmng4
+		plugins/imageformats/qsvg4
+		plugins/imageformats/qtga4
+		plugins/imageformats/qtiff4
 	)
 	SET (LIBS_LINUX_STATIC
 		glib-2.0  # avoid link problems in QtWebKit
@@ -443,6 +450,13 @@ IF (NOT(${BUILD} MATCHES "Default"))
 		QtXml.4.8.4
 		QtXmlPatterns.4.8.4
 		QtWebKit.4.9.3
+		plugins/imageformats/qgif4
+		plugins/imageformats/qico4
+		plugins/imageformats/qjpeg4
+		plugins/imageformats/qmng4
+		plugins/imageformats/qsvg4
+		plugins/imageformats/qtga4
+		plugins/imageformats/qtiff4
 	)
 	SET (LIBS_APPLE
 		${LIBS_APPLE}
