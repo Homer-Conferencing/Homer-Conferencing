@@ -31,6 +31,7 @@
 #include <HBSocket.h>
 #include <RTP.h>
 #include <Logger.h>
+#include <MediaSource.h>
 
 #include <string>
 #include <stdint.h>
@@ -227,7 +228,7 @@ void* VideoScaler::Run(void* pArgs)
 
     // Allocate video frame
     LOG(LOG_VERBOSE, "..allocating memory for output frame");
-    if ((tOutputFrame = avcodec_alloc_frame()) == NULL)
+    if ((tOutputFrame = MediaSource::AllocFrame()) == NULL)
     {
         // acknowledge failed"
         LOG(LOG_ERROR, "Out of video memory in avcodec_alloc_frame()");
@@ -238,7 +239,7 @@ void* VideoScaler::Run(void* pArgs)
 
     // Allocate video frame for format
     LOG(LOG_VERBOSE, "..allocating memory for %s input frame", mName.c_str());
-    if ((tInputFrame = avcodec_alloc_frame()) == NULL)
+    if ((tInputFrame = MediaSource::AllocFrame()) == NULL)
     {
         // acknowledge failed"
         LOG(LOG_ERROR, "Out of video memory in avcodec_alloc_frame()");

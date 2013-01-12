@@ -265,9 +265,9 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     //av_seek_frame(mFormatContext, mMediaStreamIndex, mFormatContext->streams[mMediaStreamIndex]->cur_dts, AVSEEK_FLAG_ANY);
 
     // Allocate video frame for source and RGB format
-    if ((mSourceFrame = avcodec_alloc_frame()) == NULL)
+    if ((mSourceFrame = AllocFrame()) == NULL)
         return false;
-    if ((mRGBFrame = avcodec_alloc_frame()) == NULL)
+    if ((mRGBFrame = AllocFrame()) == NULL)
         return false;
 
     MarkOpenGrabDeviceSuccessful();
