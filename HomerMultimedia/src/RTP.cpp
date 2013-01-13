@@ -562,7 +562,12 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     // set correct output format
     mRtpFormatContext->oformat = tFormat;
 
-    // verbose timestamp debugging    mRtpFormatContext->debug = FF_FDEBUG_TS;
+    // verbose timestamp debugging
+    if (LOGGER.GetLogLevel() == LOG_WORLD)
+    {
+        LOG(LOG_WARN, "Enabling ffmpeg timestamp debugging for RTP packetizer");
+        mRtpFormatContext->debug = FF_FDEBUG_TS;
+    }
 
     // allocate new stream structure
 	tOuterStream = HM_avformat_new_stream(mRtpFormatContext, 0);

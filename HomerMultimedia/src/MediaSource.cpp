@@ -183,10 +183,13 @@ void MediaSource::FfmpegInit()
     if(!mFfmpegInitiated)
     {
         LOGEX(MediaSource, LOG_VERBOSE, "Initializing ffmpeg libraries..");
+        LOGEX(MediaSource, LOG_VERBOSE, "..current log level: %d", LOGGER.GetLogLevel());
 
         // console logging of FFMPG
-        if (LOGGER.GetLogLevel() == LOG_VERBOSE)
+        if (LOGGER.GetLogLevel() == LOG_WORLD)
             av_log_set_level(AV_LOG_DEBUG);
+        else if (LOGGER.GetLogLevel() == LOG_VERBOSE)
+            av_log_set_level(AV_LOG_VERBOSE);
         else
             av_log_set_level(AV_LOG_QUIET);
 

@@ -296,6 +296,10 @@ void Logger::SetLogLevel(int pLevel)
                 LOG(LOG_INFO, "Set log level to: VERBOSE");
                 mLogLevel = pLevel;
                 break;
+        case LOG_WORLD:
+                LOG(LOG_INFO, "Set log level to: WORLD");
+                mLogLevel = pLevel;
+                break;
         default:
                 mLogLevel = LOG_OFF;
                 break;
