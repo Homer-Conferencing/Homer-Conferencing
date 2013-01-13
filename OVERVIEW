@@ -1,15 +1,13 @@
-
-============================
-Overview about project Homer
-============================
+=========================================
+Overview about project Homer Conferencing
+=========================================
 
 Project resources:
 ==================
 
-Homer web site                  ==> http://www.homer-conferencing.com
+Project web site                ==> http://www.homer-conferencing.com
 Support mailing list            ==> homer-conf-users@lists.sourceforge.net
-Homer souce repository          ==> https://github.com/Homer-Conferencing/Homer-Conferencing
-Homer release repository        ==> https://github.com/Homer-Conferencing/Homer-Release
+Souce code repository           ==> https://github.com/Homer-Conferencing/Homer-Conferencing
 
 
 Package structure:

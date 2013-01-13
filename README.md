@@ -27,11 +27,12 @@ For the demonstration of processes on the desktop it would be interesting to be 
 ## Find further information
 
 * Web site: http://www.homer-conferencing.com/
-* Follow Homer on Facebook: http://www.facebook.com/homerconferencing
-* Mailing list: https://lists.sourceforge.net/lists/listinfo/homer-conf-users (You have to be subscribed to the mailing list before you are allowed to post to the list!)
+* Facebook page: http://www.facebook.com/homerconferencing
+* Mailing list: https://lists.sourceforge.net/lists/listinfo/homer-conf-users 
+  (You have to be subscribed to the mailing list before you are allowed to post to the list!)
 
 
 ## Contribute to the project
 
-* Report a bug: https://github.com/Homer-Conferencing/Homer-Conferencing/issues
+* Bug reports: https://github.com/Homer-Conferencing/Homer-Conferencing/issues
 * Source code: https://github.com/Homer-Conferencing/Homer-Conferencing
