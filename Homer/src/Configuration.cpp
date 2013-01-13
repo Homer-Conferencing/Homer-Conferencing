@@ -1214,7 +1214,7 @@ bool Configuration::GetAudioRtp()
 
 QString Configuration::GetAudioCodec()
 {
-    return mQSettings->value("Streaming/AudioStreamCodec", QString("MP3 (MPA)")).toString();
+    return mQSettings->value("Streaming/AudioStreamCodec", QString("G722 adpcm")).toString();
 }
 
 int Configuration::GetAudioBitRate()

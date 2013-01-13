@@ -1105,7 +1105,7 @@ void ConfigurationDialog::ClickedButton(QAbstractButton *pButton)
                 mGrpAudio->setChecked(true);
                 mCbAudioSource->setCurrentIndex(0);
                 mCbAudioSink->setCurrentIndex(0);
-                mCbAudioCodec->setCurrentIndex(3);//MP3
+                mCbAudioCodec->setCurrentIndex(2);//G.722
                 mCbAudioBitRate->setCurrentIndex(2); // 256 KBit/s
                 mCbAudioMaxPacketSize->setCurrentIndex(2);//1280
                 break;
