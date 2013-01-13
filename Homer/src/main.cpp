@@ -43,9 +43,9 @@ using namespace std;
 #if defined(LINUX)
 static void HandlerSigSegfault(int pSignal, siginfo_t *pSignalInfo, void *pArg)
 {
-    LOGEX(MainWindow, LOG_ERROR, "Segmentation fault detected, Homer-Conferencing will exit now. Please, report this bug to the Homer team.");
+    LOGEX(MainWindow, LOG_ERROR, "Segmentation fault detected, Homer Conferencing will exit now. Please, report this bug to the Homer team.");
     LOGEX(MainWindow, LOG_ERROR, "-");
-    LOGEX(MainWindow, LOG_ERROR, "Restart Homer-Conferencing via \"Homer -DebugOutputFile=debug.log\" to generate verbose debug data.");
+    LOGEX(MainWindow, LOG_ERROR, "Restart Homer Conferencing via \"Homer -DebugOutputFile=debug.log\" to generate verbose debug data.");
     LOGEX(MainWindow, LOG_ERROR, "Afterwards attach the file debug.log to your bug report and send both by mail to homer@homer-conferencing.com.");
     LOGEX(MainWindow, LOG_ERROR, " ");
     exit(0);
@@ -212,7 +212,7 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
 
 	if ((tFirstArg == "-help") || (tFirstArg == "-?") || (tFirstArg == "-h") || (tFirstArg == "--help"))
 	{
-	    printf("Homer-Conferencing, Version "RELEASE_VERSION_STRING"\n");
+	    printf("Homer Conferencing, version "RELEASE_VERSION_STRING"\n");
 	    printf("\n");
         printf("Usage:\n");
         printf("   Homer [Options]\n");
@@ -244,13 +244,13 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
 
 	if ((tFirstArg == "-version") || (tFirstArg == "--version"))
 	{
-        printf("Homer-Conferencing, Version "RELEASE_VERSION_STRING"\n");
+        printf("Homer Conferencing, version "RELEASE_VERSION_STRING"\n");
         exit(0);
 	}
 
     #ifdef RELEASE_VERSION
-	    printf("Homer-Conferencing, Version "RELEASE_VERSION_STRING"\n");
-	    printf("Copyright (C) 2008 Thomas Volkert <thomas@homer-conferencing.com>\n");
+	    printf("Homer Conferencing, version "RELEASE_VERSION_STRING"\n");
+	    printf("Copyright (C) 2008-2013 Thomas Volkert <thomas@homer-conferencing.com>\n");
         printf("For updates visit http://www.homer-conferencing.com\n");
     #endif
 
