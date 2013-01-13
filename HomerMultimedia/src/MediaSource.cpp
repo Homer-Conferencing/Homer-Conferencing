@@ -3072,6 +3072,19 @@ bool MediaSource::FfmpegCreateIOContext(string pSource, int pLine, char *pPacket
 
 	return true;
 }
+
+int MediaSource::FindStreamInfoCallback(void *pMediaSource)
+{
+    MediaSource* tMediaSource = (MediaSource*)pMediaSource;
+
+    LOGEX(MediaSource, LOG_WARN, "Ffmpeg calls us to ask for interrupt for %s %s source", tMediaSource->GetMediaTypeStr().c_str(), tMediaSource->GetSourceTypeStr().c_str());
+
+    bool tResult = tMediaSource->mGrabbingStopped;
+    LOGEX(MediaSource, LOG_WARN, "Interrupt the running process: %d", tResult);
+
+    return (int)tResult;
+}
+
 bool MediaSource::FfmpegOpenInput(string pSource, int pLine, const char *pInputName, AVInputFormat *pInputFormat, AVIOContext *pIOContext)
 {
 	int 				tRes = 0;
@@ -3087,11 +3100,16 @@ bool MediaSource::FfmpegOpenInput(string pSource, int pLine, const char *pInputN
 
     // alocate new format context
     mFormatContext = AV_NEW_FORMAT_CONTEXT(); // make sure we have default values in format context, otherwise avformat_open_input() will crash
+    if (mFormatContext == NULL)
+        LOG(LOG_ERROR, "Couldn't allocate and initialize format context");
 
     // define IO context if there is a customized one
     mFormatContext->pb = pIOContext;
 
     // open input: automatic content detection is done inside ffmpeg
+    LOG(LOG_VERBOSE, "    ..calling avformat_open_input()");
+    mFormatContext->interrupt_callback.callback = FindStreamInfoCallback;
+    mFormatContext->interrupt_callback.opaque = this;
 	if ((tRes = avformat_open_input(&mFormatContext, pInputName, pInputFormat, NULL)) != 0)
 	{
     	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't open %s input because of \"%s\"(%d)", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)), tRes);
@@ -3147,6 +3165,7 @@ bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
     //mFormatContext->flags |= AVFMT_FLAG_DISCARD_CORRUPT;
 
     //LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Current format context flags: %d, packet buffer: %p, raw packet buffer: %p, nb streams: %d", mFormatContext->flags, mFormatContext->packet_buffer, mFormatContext->raw_packet_buffer, mFormatContext->nb_streams);
+    LOG(LOG_VERBOSE, "    ..calling avformat_find_stream_info()");
     if ((tRes = avformat_find_stream_info(mFormatContext, NULL)) < 0)
     {
         if (!mGrabbingStopped)
@@ -3513,8 +3532,6 @@ bool MediaSource::FfmpegCloseAll(string pSource, int pLine)
             LOG(LOG_VERBOSE, "    ..closing %s codec", GetMediaTypeStr().c_str());
 	    	mFormatContext->streams[mMediaStreamIndex]->discard = AVDISCARD_ALL;
 			avcodec_close(mCodecContext);
-            LOG(LOG_VERBOSE, "    ..releasing %s codec context", GetMediaTypeStr().c_str());
-			av_free(mCodecContext);
 			mCodecContext = NULL;
 		}else
 		{
@@ -3525,7 +3542,7 @@ bool MediaSource::FfmpegCloseAll(string pSource, int pLine)
 		// Close the file
 		if (mFormatContext != NULL)
 		{
-            LOG(LOG_VERBOSE, "    ..closing %s format context", GetMediaTypeStr().c_str());
+            LOG(LOG_VERBOSE, "    ..closing %s format context and releasing codec context", GetMediaTypeStr().c_str());
 			HM_avformat_close_input(mFormatContext);
 			mFormatContext = NULL;
 		}else

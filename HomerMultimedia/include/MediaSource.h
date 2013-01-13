@@ -359,6 +359,9 @@ private:
     /* lock manager for ffmpeg internal mutex usage */
     static int FfmpegLockManager(void **pMutex, enum AVLockOp pMutexOperation);
 
+    /* callback function to signal interrupt of avformat_open_input / avformat_find_stream_info */
+    static int FindStreamInfoCallback(void *pMediaSource);
+
 protected:
     /* internal video resolution switch */
     virtual void DoSetVideoGrabResolution(int pResX = 352, int pResY = 288);
