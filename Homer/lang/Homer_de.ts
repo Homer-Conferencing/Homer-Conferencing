@@ -2162,7 +2162,7 @@ Bitte Konfiguration prüfen!</translation>
     <message>
         <location filename="../src/Widgets/ParticipantWidget.cpp" line="419"/>
         <source>Video</source>
-        <translation>Vide</translation>
+        <translation>Video</translation>
     </message>
     <message>
         <location filename="../src/Widgets/ParticipantWidget.cpp" line="424"/>
