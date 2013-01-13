@@ -1859,12 +1859,10 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
                     LOG(LOG_VERBOSE, "..allocating final frame memory");
                     if ((mRecorderFinalFrame = AllocFrame()) == NULL)
                         LOG(LOG_ERROR, "Out of memory in avcodec_alloc_frame()");
-                    else
-                        avcodec_get_frame_defaults(mRecorderFinalFrame);
 
                     if (av_sample_fmt_is_planar(mRecorderAudioFormat))
                     {// planar audio buffering
-                        // init fifo buffer
+                        // init fifo buffer per channel
                         for (int i = 0; i < mRecorderAudioChannels; i++)
                             mRecorderSampleFifo[i] = HM_av_fifo_alloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
                     }else
@@ -2290,7 +2288,7 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
                         int tResamplingOutputSamples = HM_swr_convert(mRecorderAudioResampleContext, &mRecorderResampleBufferPlanes[0], MEDIA_SOURCE_SAMPLE_BUFFER_PER_CHANNEL, (const uint8_t**)tInputSamplesPlanes, tInputSamplesPerChannel);
                         if (tResamplingOutputSamples != tInputSamplesPerChannel)
                             LOG(LOG_ERROR, "Got %d samples instead of %d from audio resampling", tResamplingOutputSamples, tInputSamplesPerChannel);
-                        if(tResamplingOutputSamples <= 0)
+                        if (tResamplingOutputSamples <= 0)
                             LOG(LOG_ERROR, "Amount of resampled samples (%d) is invalid", tResamplingOutputSamples);
 
                         tInputSamplesPlanes = mRecorderResampleBufferPlanes;
@@ -2327,13 +2325,19 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
                         // ############################
                         // ### write frame content to FIFO
                         // ############################
+                        #ifdef MS_DEBUG_RECORDER_PACKETS
+                            LOG(LOG_VERBOSE, "Writing %d bytes from %u(%u) to FIFO %d", tWrittenFifoSizePerChannel, tInputBuffer, mRecorderResampleBufferPlanes[tFifoIndex], tFifoIndex);
+                        #endif
                         av_fifo_generic_write(mRecorderSampleFifo[tFifoIndex], tInputBuffer, tWrittenFifoSizePerChannel, NULL);
                     }
 
                     // ############################
                     // ### check FIFO for available frames
                     // ############################
-                    while (av_fifo_size(mRecorderSampleFifo[0]) >= tReadFifoSizePerChannel)
+                    while (/* planar */((av_sample_fmt_is_planar(mRecorderAudioFormat) &&
+                                            (av_fifo_size(mRecorderSampleFifo[0]) >= tReadFifoSizePerChannel))) ||
+                          (/* packed/interleaved */((!av_sample_fmt_is_planar(mRecorderAudioFormat)) &&
+                                            (av_fifo_size(mRecorderSampleFifo[0]) >= tReadFifoSizePerChannel * mRecorderAudioChannels /* FIFO 0 stores all samples */))))
                     {
                         //####################################################################
                         // create audio planes
@@ -2349,7 +2353,7 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
                             // ### read buffer from FIFO
                             // ############################
                             #ifdef MS_DEBUG_RECORDER_PACKETS
-                                LOG(LOG_VERBOSE, "Reading %d bytes (%d bytes/sample, frame size: %d samples per packet) from %d bytes of FIFO", tReadFifoSizePerChannel, tInputAudioBytesPerSample, mRecorderCodecContext->frame_size, av_fifo_size(mRecorderSampleFifo[tFifoIndex]));
+                                LOG(LOG_VERBOSE, "Reading %d bytes (%d bytes/sample, frame size: %d samples per packet) from %d bytes of FIFO %d", tReadFifoSizePerChannel, tInputAudioBytesPerSample, mRecorderCodecContext->frame_size, av_fifo_size(mRecorderSampleFifo[tFifoIndex]), tFifoIndex);
                             #endif
                             HM_av_fifo_generic_read(mRecorderSampleFifo[tFifoIndex], (void*)tOutputBuffer, tReadFifoSizePerChannel);
 
