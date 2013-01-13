@@ -3137,7 +3137,11 @@ bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
     }
 
     // verbose timestamp debugging
-    //mFormatContext->debug = FF_FDEBUG_TS;
+    if (LOGGER.GetLogLevel() == LOG_WORLD)
+    {
+        LOG(LOG_WARN, "Enabling ffmpeg timestamp debugging for %s decoder", GetMediaTypeStr().c_str());
+        mFormatContext->debug = FF_FDEBUG_TS;
+    }
 
     // discard all corrupted frames
     //mFormatContext->flags |= AVFMT_FLAG_DISCARD_CORRUPT;
