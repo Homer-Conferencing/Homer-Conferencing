@@ -1751,14 +1751,14 @@ Bitte Konfiguration prüfen!</translation>
     <message>
         <location filename="../src/Widgets/MessageWidget.cpp" line="157"/>
         <location filename="../src/Widgets/MessageWidget.cpp" line="175"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="516"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="517"/>
         <source>Close</source>
         <translation>Schließen</translation>
     </message>
     <message>
         <location filename="../src/Widgets/MessageWidget.cpp" line="159"/>
         <location filename="../src/Widgets/MessageWidget.cpp" line="170"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="511"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="512"/>
         <source>Show</source>
         <translation>Anzeigen</translation>
     </message>
@@ -1848,94 +1848,94 @@ Bitte Konfiguration prüfen!</translation>
     <message>
         <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="136"/>
         <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="144"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="215"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="278"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="408"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="451"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="213"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="270"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="400"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="443"/>
         <source>Add contact</source>
         <translation>Kontakt hinzufügen</translation>
     </message>
     <message>
         <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="199"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="268"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="260"/>
         <source>Send message</source>
         <translation>Nachrichten senden</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="207"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="273"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="205"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="265"/>
         <source>Call</source>
         <translation>Anrufen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="225"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="288"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="481"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="221"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="280"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="473"/>
         <source>Edit contact</source>
         <translation>Kontakt bearbeiten</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="233"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="283"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="227"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="275"/>
         <source>Duplicate contact</source>
         <translation>Kontakt duplizieren</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="238"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="293"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="232"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="285"/>
         <source>Delete contact</source>
         <translation>Kontakt entfernen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="251"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="299"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="243"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="291"/>
         <source>Reset contact list</source>
         <translation>Kontaktliste zurücksetzen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="261"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="305"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="253"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="297"/>
         <source>Check availability of contacts</source>
         <translation>Verfügbarkeit von Kontakten prüfen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="507"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="513"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="499"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="505"/>
         <source>Acknowledge deletion</source>
         <translation>Bestätigung der Löschung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="507"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="499"/>
         <source>Do you want to delete &quot;</source>
         <translation>Soll &quot;</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="507"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="499"/>
         <source>&quot; from the contact list?</source>
         <translation>&quot; aus der Kontaktliste gelöscht werden?</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="513"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="505"/>
         <source>Do you want to delete </source>
         <translation>Sollen </translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="513"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="505"/>
         <source> entries from the contact list?</source>
         <translation> Einträge aus der Kontaktliste gelöscht werden?</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="564"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="556"/>
         <source>Insert duplicated contact</source>
         <translation>Duplizierten Kontakt hinzufügen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="585"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="577"/>
         <source>Save contact list</source>
         <translation>Speichern der Kontaktliste</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="602"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="594"/>
         <source>Load contact list</source>
         <translation>Laden der Kontaktliste</translation>
     </message>
@@ -2060,7 +2060,7 @@ Bitte Konfiguration prüfen!</translation>
         <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="148"/>
         <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="187"/>
         <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="243"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="287"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="286"/>
         <source>All supported formats</source>
         <translation>Alle unterstützten Formate</translation>
     </message>
@@ -2070,75 +2070,75 @@ Bitte Konfiguration prüfen!</translation>
         <translation>/Homer-Video.avi</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="252"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="251"/>
         <source>/Homer-Audio.mp3</source>
         <translation>/Homer-Audio.mp3</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="403"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="448"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="402"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="451"/>
         <source>Play selected</source>
         <translation>Auswahl abspielen</translation>
     </message>
     <message>
         <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="411"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="453"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="456"/>
         <source>Add entry</source>
         <translation>Eintrag hinzufügen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="418"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="458"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="419"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="461"/>
         <source>Rename selected</source>
         <translation>Auswahl umbenennen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="423"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="463"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="425"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="466"/>
         <source>Delete selected</source>
         <translation>Auswahl entfernen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="433"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="468"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="436"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="471"/>
         <source>Reset playlist</source>
         <translation>Playlist zurücksetzen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="441"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="473"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="444"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="476"/>
         <source>Endless loop</source>
         <translation>Endlosschleife</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="501"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="504"/>
         <source>Add file(s) to playlist</source>
         <translation>Datei(en) zur Playlist hinzufügen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="543"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="546"/>
         <source>Save playlist</source>
         <translation>Speichern der Playlist</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="545"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="546"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="548"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="549"/>
         <source>Playlist File</source>
         <translation>Playlist-Datei</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="575"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="578"/>
         <source>Could not store playlist file</source>
         <translation>Abspeichern der Playlist fehlerhaft</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="575"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="578"/>
         <source>Couldn&apos;t write playlist in</source>
         <translation>Abspeichern der Playlist ist fehlgeschlagen in </translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="587"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="604"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="579"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="596"/>
         <source>Contact list</source>
         <translation>Kontaktliste</translation>
     </message>
@@ -2155,217 +2155,222 @@ Bitte Konfiguration prüfen!</translation>
 <context>
     <name>Homer::Gui::ParticipantWidget</name>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="418"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="419"/>
         <source>Video</source>
         <translation>Vide</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="423"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="424"/>
         <source>Audio</source>
         <translation>Audio</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="426"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="427"/>
         <source>A/V controls</source>
         <translation>A/V-Steuerung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="430"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="431"/>
         <source>Messages</source>
         <translation>Nachrichten</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="437"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="438"/>
         <source>Session info</source>
         <translation>Sitzungsinfo</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="502"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="503"/>
         <source>Close</source>
         <translation>Schließen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="504"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="505"/>
         <source>Show</source>
         <translation>Anzeigen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="661"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="693"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="662"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="694"/>
         <source>Hide session info</source>
         <translation>Verstecke Sitzungsinfo</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="666"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="688"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="667"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="689"/>
         <source>Show session info</source>
         <translation>Zeige Sitzungsinfo</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="673"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="703"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="719"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="738"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="674"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="704"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="720"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="739"/>
         <source>Hide A/V statistics</source>
         <translation>Verstecke A/V Statistiken</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="679"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="698"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="724"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="733"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="680"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="699"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="725"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="734"/>
         <source>Show A/V statistics</source>
         <translation>Zeige A/V Statistiken</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="858"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="859"/>
         <source>DNS lookup error</source>
         <translation>DNS Auflösungsfehler</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="858"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="859"/>
         <source>Unable to lookup DNS entry for</source>
         <translation>Die DNS-Auflösung war unmöglich für</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="858"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="859"/>
         <source>because</source>
         <translation>, weil</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="975"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="976"/>
         <source>General error occurred</source>
         <translation>Allgemeiner Fehler aufgetreten</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="975"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="976"/>
         <source>General error of code</source>
         <translation>Allgemeiner Fehler mit Code</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="975"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="976"/>
         <source>occurred. The error is described with</source>
         <translation>aufgetreten. Der Fehler ist beschrieben mit </translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1018"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1205"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1207"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1019"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1206"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1208"/>
         <source>Participant unavailable</source>
         <translation>Teilnehmer nicht verfügbar</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1018"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1205"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1207"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1019"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1206"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1208"/>
         <source>The participant</source>
         <translation>Der Teilnehmer</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1018"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1019"/>
         <source>is currently unavailable for an instant message! The reason is</source>
         <translation>ist im Moment nicht verfügbar für eine Nachricht. Die Ursache ist</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1205"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1206"/>
         <source>does not accept your video/audio codecs. Please, check the configuration and use different settings.</source>
         <translation>akzeptiert den Video-/Audiocodec nicht. Bitte die Konfiguration prüfen und andere Einstellungen verwenden.</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1207"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1208"/>
         <source>is currently unavailable for a call! The reason is</source>
         <translation>ist im Moment nicht verfügbar für einen Anruf. Die Ursache ist</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1601"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1603"/>
         <source>in chat</source>
         <translation>im Chat</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1604"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1606"/>
         <source>chat</source>
         <translation>Chat</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1609"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1611"/>
         <source>in conference</source>
         <translation>in Konferenz</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1612"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1614"/>
         <source>conference</source>
         <translation>Konferenz</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1617"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1620"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1619"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1622"/>
         <source>ringing</source>
         <translation>Rufen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1722"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1724"/>
         <source>Set file name for video/audio recording</source>
         <translation>Dateinamen für das Aufzeichnen von Video/Audio festlegen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1736"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1738"/>
         <source>Select video recording quality</source>
         <translation>Auswahl der Qualität für die Videoaufzeichnung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1736"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1738"/>
         <source>Record video with quality:</source>
         <translation>Videoaufzeichnung mit der Qualität:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1756"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1758"/>
         <source>Select audio recording quality</source>
         <translation>Auswahl der Qualität für die Audioaufzeichnung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1756"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1758"/>
         <source>Record audio with quality:</source>
         <translation>Audioaufzeichnung mit der Qualität:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2058"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2060"/>
         <source>Video statistics:</source>
         <translation>Videostatistiken:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2067"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2069"/>
         <source>Video/audio:</source>
         <translation>Video/Audio:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2069"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2071"/>
         <source>A/V pre-buffering:</source>
         <translation>A/V Vorpufferung:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2071"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2080"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2073"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2082"/>
         <source>active</source>
         <translation>aktiv</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2073"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2082"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2075"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2084"/>
         <source>inactive</source>
         <translation>inaktiv</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2076"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2078"/>
         <source>(auto restart)</source>
         <translation>(auto. Neustart)</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2078"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2080"/>
         <source>A/V synchronization:</source>
         <translation>A/V Synchronisierung:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2089"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2086"/>
+        <source>A/V synchronizations:</source>
+        <translation>A/V Synchronisierungen:</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2094"/>
         <source>Audio statistics:</source>
         <translation>Audiostatistiken:</translation>
     </message>
@@ -2599,21 +2604,21 @@ Bitte Konfiguration prüfen!</translation>
 <context>
     <name>Homer::Gui::VideoWidget</name>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="519"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="538"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="509"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="528"/>
         <source>Close</source>
         <translation>Schließen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="521"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="533"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="511"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="523"/>
         <source>Show</source>
         <translation>Anzeigen</translation>
     </message>
     <message>
         <location filename="../src/Widgets/VideoWidget.cpp" line="316"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="548"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1357"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="538"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1347"/>
         <source>Save picture</source>
         <translation>Bild speichern</translation>
     </message>
@@ -2624,312 +2629,312 @@ Bitte Konfiguration prüfen!</translation>
     </message>
     <message>
         <location filename="../src/Widgets/VideoWidget.cpp" line="325"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="553"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="543"/>
         <source>Stop recording</source>
         <translation>Aufnahme stoppen</translation>
     </message>
     <message>
         <location filename="../src/Widgets/VideoWidget.cpp" line="327"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="558"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="548"/>
         <source>Start recording</source>
         <translation>Aufnahme starten</translation>
     </message>
     <message>
         <location filename="../src/Widgets/VideoWidget.cpp" line="336"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="588"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="578"/>
         <source>Hide stream info</source>
         <translation>Verstecke Strominfo</translation>
     </message>
     <message>
         <location filename="../src/Widgets/VideoWidget.cpp" line="338"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="583"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="573"/>
         <source>Show stream info</source>
         <translation>Zeige Strominfo</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="356"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="625"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="353"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="615"/>
         <source>Window mode</source>
         <translation>Fenstermodus</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="359"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="625"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="356"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="615"/>
         <source>Full screen</source>
         <translation>Vollbild</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="383"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="378"/>
         <source>Aspect ratio</source>
         <translation>Bildformat</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="404"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="397"/>
         <source>Resolution</source>
         <translation>Auflösung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="349"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="346"/>
         <source>Playback</source>
         <translation>Wiedergabe</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="371"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="620"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="368"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="610"/>
         <source>Fast display</source>
         <translation>Schnelle Anzeige</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="374"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="620"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="371"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="610"/>
         <source>Smooth display</source>
         <translation>Geglättete Anzeige</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="442"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="568"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="435"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="558"/>
         <source>Unmirror horizontally</source>
         <translation>Horizontal entspiegeln</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="447"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="563"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="440"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="553"/>
         <source>Mirror horizontally</source>
         <translation>Horizontal spiegeln</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="454"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="578"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="447"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="568"/>
         <source>Unmirror vertically</source>
         <translation>Vertikal entspiegeln</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="469"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="462"/>
         <source>Relay stream</source>
         <translation>Strom verteilen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="470"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="605"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="463"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="595"/>
         <source>Add network sink</source>
         <translation>Netzwerksenke hinzufügen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="471"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="464"/>
         <source>Registered sinks</source>
         <translation>Registrierte Senken</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="486"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="610"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="479"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="600"/>
         <source>Live marker</source>
         <translation>Live-Markierung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="503"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="599"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="493"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="589"/>
         <source>Continue stream</source>
         <translation>Strom fortsetzen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="505"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="593"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="495"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="583"/>
         <source>Drop stream</source>
         <translation>Strom verwerfen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="513"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="543"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="503"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="533"/>
         <source>Reset source</source>
         <translation>Quelle zurücksetzen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="692"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="682"/>
         <source>Target for video streaming</source>
         <translation>Ziel für Videoverteilung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="751"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="741"/>
         <source>pre-buffer</source>
         <translation>Vorpuffer</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="763"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="807"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="753"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="797"/>
         <source>unknown</source>
         <translation>unbekannt</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="769"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="759"/>
         <source>Playback:</source>
         <translation>Wiedergabe:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="769"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="759"/>
         <source>[smoothed]</source>
         <translation>[geglättet]</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="797"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="787"/>
         <source>Time index:</source>
         <translation>Zeitindex:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="938"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="928"/>
         <source>System too busy</source>
         <translation>System zu beschäftigt</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="938"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="928"/>
         <source>Your system is too busy to do smooth transformation. Fast transformation will be used from now.</source>
         <translation>Das System ist zu beschäftigt, um eine Glättungstransformation durchzuführen. Schnelle Transformation wird ab jetzt verwendet.</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1185"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1175"/>
         <source>Recording active</source>
         <translation>Aufnahme aktiv</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1185"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1175"/>
         <source>The settings for video playback cannot be changed if the recording is active!</source>
         <translation>Die Einstellungen für Videowiedergabe können nicht verändert werden, wenn die Aufnahme aktiv ist!</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1305"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1295"/>
         <source>Bilinear filtering activated</source>
         <translation>Bilineare Filterung aktiviert</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1307"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1297"/>
         <source>Bilinear filtering deactivated</source>
         <translation>Bilineare Filterung deaktiviert</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1381"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1371"/>
         <source>Save recorded video</source>
         <translation>Speichern des aufgezeichneten Videos</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1391"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1381"/>
         <source>Select recording quality</source>
         <translation>Auswahl der Aufzeichnungsqualität</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1391"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1381"/>
         <source>Record with quality:</source>
         <translation>Aufzeichnen mit Qualität:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1583"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1573"/>
         <source>Audio muted</source>
         <translation>Audio stumm geschaltet</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1585"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1575"/>
         <source>Audio output active</source>
         <translation>Audiowiedergabe aktiv</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1594"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1584"/>
         <source>Playing..</source>
         <translation>Abspielend..</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1600"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1590"/>
         <source>Pausing..</source>
         <translation>Pausierend..</translation>
     </message>
     <message>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1633"/>
         <location filename="../src/Widgets/VideoWidget.cpp" line="1643"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1653"/>
         <source>Volume:</source>
         <translation>Lautstärke:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1938"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1940"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1928"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1930"/>
         <source>Video source not available</source>
         <translation>Videoquelle nicht verfügbar</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1938"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1928"/>
         <source>The selected video source &quot;</source>
         <translation>Die ausgewählte Videoquelle &quot;</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1938"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1928"/>
         <source>&quot; is not available. Please, select another one!</source>
         <translation>&quot; ist nicht verfügbar. Bitte eine andere auswählen!</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1940"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1930"/>
         <source>The selected video source auto detection was not successful. Please, connect an additional video device to your hardware!</source>
         <translation>Die ausgewählte automatische Erkennung der Videoquelle war nicht erfolgreich. Bitte ein zusätzliches Gerät anschließen!</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="459"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="573"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="452"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="563"/>
         <source>Mirror vertically</source>
         <translation>Vertikal spiegeln</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="424"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="417"/>
         <source>Scaling</source>
         <translation>Skalierung</translation>
     </message>
     <message>
         <location filename="../src/Widgets/AudioWidget.cpp" line="521"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="720"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="710"/>
         <source>Source:</source>
         <translation>Quelle:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="740"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="730"/>
         <source>lost packets</source>
         <translation>verlorene Pakete</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="740"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="730"/>
         <source>buffered packets</source>
         <translation>gepufferte Pakete</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="748"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="738"/>
         <source>buffered</source>
         <translation>gepuffert</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="763"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="753"/>
         <source>Source codec:</source>
         <translation>Quellcodec:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="807"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="797"/>
         <source>Streaming codec:</source>
         <translation>Verteilercodec:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="807"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="797"/>
         <source>buffered frames</source>
         <translation>gepufferte Frames</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="814"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="804"/>
         <source>Sender:</source>
         <translation>Sender:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="818"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="808"/>
         <source>synch. packets</source>
         <translation>synch. Pakete</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="821"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="811"/>
         <source>delay</source>
         <translation>Verzögerung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="837"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="827"/>
         <source>Recorded:</source>
         <translation>Aufgenommen:</translation>
     </message>
