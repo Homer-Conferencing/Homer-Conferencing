@@ -369,8 +369,14 @@ void ConfigurationDialog::LoadConfiguration()
     /* GUI language */
     QString tCurLang = CONF.GetLanguage();
     // search for translation files
-    LOG(LOG_VERBOSE, "Search language files in: %s", (CONF.GetBinaryPath() + "lang").toStdString().c_str());
     QDir tDir(CONF.GetBinaryPath() + "lang");
+    if (QString(HOMER_INSTALL_DATADIR) != "")
+    {
+        LOG(LOG_WARN, "HOMER_INSTALL_DATADIR is defined as %s", string(HOMER_INSTALL_DATADIR).c_str());
+        tDir.setPath(QString(HOMER_INSTALL_DATADIR) + "/lang");
+    }
+    LOG(LOG_VERBOSE, "Search language files in: %s", tDir.path().toStdString().c_str());
+
     QStringList tFileNames = tDir.entryList(QStringList("Homer_*.qm"));
 
     // iterate over all found translation files
@@ -658,6 +664,12 @@ void ConfigurationDialog::SaveConfiguration()
         QString tCurLang = CONF.GetLanguage();
         // search for translation files
         QDir tDir(CONF.GetBinaryPath() + "lang");
+        if (QString(HOMER_INSTALL_DATADIR) != "")
+        {
+            LOG(LOG_WARN, "HOMER_INSTALL_DATADIR is defined as %s", string(HOMER_INSTALL_DATADIR).c_str());
+            tDir.setPath(QString(HOMER_INSTALL_DATADIR) + "/lang");
+        }
+        LOG(LOG_VERBOSE, "Search language files in: %s", tDir.path().toStdString().c_str());
         QStringList tFileNames = tDir.entryList(QStringList("Homer_*.qm"));
 
         // iterate over all found translation files
