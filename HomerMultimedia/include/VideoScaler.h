@@ -63,10 +63,6 @@ public:
     virtual void ReadFifo(char *pBuffer, int &pBufferSize); // memory copy, returns entire memory
     virtual void ClearFifo();
 
-    // avoids memory copy, returns a pointer to memory
-    virtual int ReadFifoExclusive(char **pBuffer, int &pBufferSize); // return -1 if internal FIFO isn't available yet
-    virtual void ReadFifoExclusiveFinished(int pEntryPointer);
-
     virtual int GetEntrySize();
     virtual int GetUsage();
     virtual int GetSize();
@@ -74,12 +70,18 @@ public:
     virtual void ChangeInputResolution(int pResX, int pResY);
 
 private:
+    // avoids memory copy, returns a pointer to memory
+    int ReadFifoExclusive(char **pBuffer, int &pBufferSize); // return -1 if internal FIFO isn't available yet
+    void ReadFifoExclusiveFinished(int pEntryPointer);
+
     virtual void* Run(void* pArgs = NULL); // video scaler main loop
 
     std::string			mName;
+    Mutex               mInputFifoMutex;
     MediaFifo           *mInputFifo;
     Mutex               mScalingThreadMutex; // we use this to avoid concurrent access to input FIFO/scaler context by ChangeInputResolution() and scaler-thread
     MediaFifo           *mOutputFifo;
+    Mutex               mOutputFifoMutex;
     bool                mScalerNeeded;
     int                 mSourceResX;
     int                 mSourceResY;

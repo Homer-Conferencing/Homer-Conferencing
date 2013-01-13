@@ -102,7 +102,7 @@ void VideoScaler::StopScaler()
         do
         {
             if(tSignalingRound > 0)
-                LOG(LOG_WARN, "Signaling round %d to stop scaler, system has high load", tSignalingRound);
+                LOG(LOG_WARN, "Signaling attempt %d to stop video scaler", tSignalingRound);
             tSignalingRound++;
 
             // write fake data to awake scaler thread as long as it still runs
@@ -112,14 +112,19 @@ void VideoScaler::StopScaler()
         }while(IsRunning());
     }
 
+    LOG(LOG_VERBOSE, "Video scaler seems to be stopped, deleting input FIFO");
+
+    mInputFifoMutex.lock();
     delete mInputFifo;
     mInputFifo = NULL;
+    mInputFifoMutex.unlock();
 
     LOG(LOG_VERBOSE, "Scaler stopped");
 }
 
 void VideoScaler::WriteFifo(char* pBuffer, int pBufferSize)
 {
+    mInputFifoMutex.lock();
     if (mInputFifo != NULL)
     {
     	if (pBufferSize <= mInputFifo->GetEntrySize())
@@ -127,6 +132,7 @@ void VideoScaler::WriteFifo(char* pBuffer, int pBufferSize)
     	else
     		LOG(LOG_ERROR, "Input buffer of %d bytes is too big for input FIFO of video scaler %s with %d bytes per entry", pBufferSize, mName.c_str(), mInputFifo->GetEntrySize());
     }
+    mInputFifoMutex.unlock();
 }
 
 void VideoScaler::ReadFifo(char *pBuffer, int &pBufferSize)
@@ -139,14 +145,17 @@ void VideoScaler::ReadFifo(char *pBuffer, int &pBufferSize)
 
 void VideoScaler::ClearFifo()
 {
+    mInputFifoMutex.lock();
     if (mInputFifo != NULL)
         mInputFifo->ClearFifo();
     if (mOutputFifo != NULL)
         mOutputFifo->ClearFifo();
+    mInputFifoMutex.unlock();
 }
 
 int VideoScaler::ReadFifoExclusive(char **pBuffer, int &pBufferSize)
 {
+    // no locking, context of scaler thread
     if ((mInputFifo != NULL) && (mOutputFifo != NULL))
         return mOutputFifo->ReadFifoExclusive(pBuffer, pBufferSize);
     else
@@ -159,36 +168,47 @@ int VideoScaler::ReadFifoExclusive(char **pBuffer, int &pBufferSize)
 
 void VideoScaler::ReadFifoExclusiveFinished(int pEntryPointer)
 {
+    // no locking, context of scaler thread
     if (mOutputFifo != NULL)
         mOutputFifo->ReadFifoExclusiveFinished(pEntryPointer);
 }
 
 int VideoScaler::GetEntrySize()
 {
+    int tResult = 0;
+
+    mInputFifoMutex.lock();
     if (mInputFifo != NULL)
-        return mInputFifo->GetEntrySize();
-    else
-        return 0;
+        tResult = mInputFifo->GetEntrySize();
+    mInputFifoMutex.unlock();
+
+    return tResult;
 }
 
 int VideoScaler::GetUsage()
 {
     int tResult = 0;
 
+    mInputFifoMutex.lock();
     if (mOutputFifo != NULL)
         tResult += mOutputFifo->GetUsage();
     if (mInputFifo != NULL)
         tResult += mInputFifo->GetUsage();
+    mInputFifoMutex.unlock();
 
     return tResult;
 }
 
 int VideoScaler::GetSize()
 {
+    int tResult = 0;
+
+    mInputFifoMutex.lock();
     if (mInputFifo != NULL)
-        return mInputFifo->GetSize();
-    else
-        return 0;
+        tResult = mInputFifo->GetSize();
+    mInputFifoMutex.unlock();
+
+    return tResult;
 }
 
 void VideoScaler::ChangeInputResolution(int pResX, int pResY)
@@ -417,8 +437,10 @@ void* VideoScaler::Run(void* pArgs)
 
     LOG(LOG_VERBOSE, "Video scaler left thread main loop");
 
+    mOutputFifoMutex.lock();
     delete mOutputFifo;
     mOutputFifo = NULL;
+    mOutputFifoMutex.unlock();
 
     // free the software scaler context
     sws_freeContext(mVideoScalerContext);
