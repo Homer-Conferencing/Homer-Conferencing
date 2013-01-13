@@ -3467,11 +3467,14 @@ bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
 
 bool MediaSource::FfmpegCloseAll(string pSource, int pLine)
 {
+    LOG(LOG_VERBOSE, "%s %s source closing..", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
+
 	if (mMediaSourceOpened)
 	{
 		mMediaSourceOpened = false;
 
 		// stop A/V recorder
+	    LOG(LOG_VERBOSE, "    ..stopping %s recorder", GetMediaTypeStr().c_str());
         StopRecording();
 
 		// free resample context
@@ -3480,11 +3483,13 @@ bool MediaSource::FfmpegCloseAll(string pSource, int pLine)
 			case MEDIA_AUDIO:
 				if (mAudioResampleContext != NULL)
 				{
+			        LOG(LOG_VERBOSE, "    ..releasing %s resample context", GetMediaTypeStr().c_str());
 				    HM_swr_free(&mAudioResampleContext);
 					mAudioResampleContext = NULL;
 				}
 				if (mResampleBuffer != NULL)
 				{
+                    LOG(LOG_VERBOSE, "    ..releasing %s resample buffer", GetMediaTypeStr().c_str());
 		            free(mResampleBuffer);
 		            mResampleBuffer = NULL;
 				}
@@ -3493,6 +3498,7 @@ bool MediaSource::FfmpegCloseAll(string pSource, int pLine)
 				if (mVideoScalerContext != NULL)
 				{
 					// free the software scaler context
+                    LOG(LOG_VERBOSE, "    ..releasing %s scale context", GetMediaTypeStr().c_str());
 					sws_freeContext(mVideoScalerContext);
 					mVideoScalerContext = NULL;
 				}
@@ -3504,8 +3510,11 @@ bool MediaSource::FfmpegCloseAll(string pSource, int pLine)
 		// Close the codec
 		if (mCodecContext != NULL)
 		{
+            LOG(LOG_VERBOSE, "    ..closing %s codec", GetMediaTypeStr().c_str());
 	    	mFormatContext->streams[mMediaStreamIndex]->discard = AVDISCARD_ALL;
 			avcodec_close(mCodecContext);
+            LOG(LOG_VERBOSE, "    ..releasing %s codec context", GetMediaTypeStr().c_str());
+			av_free(mCodecContext);
 			mCodecContext = NULL;
 		}else
 		{
@@ -3516,6 +3525,7 @@ bool MediaSource::FfmpegCloseAll(string pSource, int pLine)
 		// Close the file
 		if (mFormatContext != NULL)
 		{
+            LOG(LOG_VERBOSE, "    ..closing %s format context", GetMediaTypeStr().c_str());
 			HM_avformat_close_input(mFormatContext);
 			mFormatContext = NULL;
 		}else
