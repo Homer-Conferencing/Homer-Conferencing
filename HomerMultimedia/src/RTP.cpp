@@ -448,6 +448,10 @@ unsigned int RTP::GetH261PayloadSizeMax()
 
 void RTP::Init()
 {
+    mRtcpLastReceivedPackets = 0;
+    mReceivedPackets = 0;
+    mRtcpLastRemotePackets = 0;
+    mRtcpLastRemoteOctets = 0;
     // reset variables
     mRemoteSequenceNumberLastPacket = 0;
     mRemoteTimestampLastPacket = 0;
@@ -456,6 +460,8 @@ void RTP::Init()
     mRemoteStartTimestamp = 0;
     mRemoteStartSequenceNumber = 0;
     mRtcpLastRemoteTimestamp = 0;
+    mRtcpLastRemotePackets = 0;
+    mRtcpLastRemoteOctets = 0;
     mRtcpLastRemoteNtpTime = 0;
     mRemoteTimestampOverflowShift = 0;
     mRemoteTimestampConsecutiveOverflows = 0;
@@ -1254,6 +1260,11 @@ unsigned int RTP::GetLostPacketsFromRTP()
     return mLostPackets;
 }
 
+float RTP::GetRelativeLostPacketsFromRTP()
+{
+    return mRelativeLostPackets;
+}
+
 void RTP::AnnounceLostPackets(uint64_t pCount)
 {
     LOG(LOG_VERBOSE, "Got %lu lost packets", pCount);
@@ -1486,6 +1497,12 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
                     pIsLastFragment = true;
                     return false;
     }
+
+    // #############################################################
+    // count packets in order to conclude packet loss based on RTCP
+    // #############################################################
+    if (!pReadOnly)
+        mReceivedPackets++;
 
     // #############################################################
     // HEADER: parse rtp header
@@ -2508,7 +2525,7 @@ void RTP::LogRtcpHeader(RtcpHeader *pRtcpHeader)
         pRtcpHeader->Data[i] = htonl(pRtcpHeader->Data[i]);
 }
 
-bool RTP::RtcpParseSenderReport(char *&pData, int &pDataSize, int64_t &pEndToEndDelay, int &pPackets, int &pOctets)
+bool RTP::RtcpParseSenderReport(char *&pData, int &pDataSize, int64_t &pEndToEndDelay, unsigned int &pPackets, unsigned int &pOctets, float &pRelativeLoss)
 {
     //HINT: assumes network byte order!
 
@@ -2545,15 +2562,30 @@ bool RTP::RtcpParseSenderReport(char *&pData, int &pDataSize, int64_t &pEndToEnd
 
         //HINT: the START SEQUENCE NUMBER: cannot be updated because this data is nopt included in the RTCP header
 
-        mSynchDataMutex.lock();
-        mRtcpLastRemoteNtpTime = tRemoteNtpTimestamp;
-        mRtcpLastRemoteTimestamp = tRtcpHeader->Feedback.RtpTimestamp - mRemoteStartTimestamp;
-        mSynchDataMutex.unlock();
-
-
         pEndToEndDelay = tLocalNtpTimestamp - tRemoteNtpTimestamp;
         pPackets = tRtcpHeader->Feedback.Packets;
         pOctets = tRtcpHeader->Feedback.Octets;
+
+        mSynchDataMutex.lock();
+        if (mRtcpLastRemotePackets != 0)
+        {
+            uint64_t tLocallyReceivedPackets = mReceivedPackets - mRtcpLastReceivedPackets;
+            uint64_t tRemotelyReportedSentPackets = pPackets - mRtcpLastRemotePackets + 1;
+            double tRelativeLoss = 100 - 100 * (double)tLocallyReceivedPackets / tRemotelyReportedSentPackets;
+            mRelativeLostPackets = (float)tRelativeLoss;
+            pRelativeLoss = mRelativeLostPackets;
+
+            #ifdef RTCP_DEBUG_PACKETS_DECODER
+                LOG(LOG_VERBOSE, "Received packets: %lu, should have received: %lu, concluded loss: %.2f", tLocallyReceivedPackets, tRemotelyReportedSentPackets, pRelativeLoss);
+            #endif
+        }
+        mRtcpLastRemoteNtpTime = tRemoteNtpTimestamp;
+        mRtcpLastRemoteTimestamp = tRtcpHeader->Feedback.RtpTimestamp - mRemoteStartTimestamp;
+        mRtcpLastRemotePackets = tRtcpHeader->Feedback.Packets;
+        mRtcpLastRemoteOctets = tRtcpHeader->Feedback.Octets;
+        mRtcpLastReceivedPackets = mReceivedPackets;
+        mSynchDataMutex.unlock();
+
         tResult = true;
     }else
     {// set fall back values

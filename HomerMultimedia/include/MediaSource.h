@@ -237,6 +237,7 @@ public:
     virtual int64_t GetSynchronizationTimestamp(); // in us
     virtual int GetSynchronizationPoints(); // how many synchronization points for deriving synchronization timestamp were included in the input stream till now?
     virtual bool TimeShift(int64_t pOffset); // in us
+    virtual float GetRelativeLoss();
 
     /* frame statistics */
     virtual bool SupportsDecoderFrameStatistics();
@@ -454,6 +455,7 @@ protected:
     bool                mDecoderFramePreBufferingAutoRestart;
     /* A/V synch. */
     int                 mDecoderSynchPoints; // mostly derived from RTCP(RTP) data
+    float               mRelativeLoss;
     /* live OSD marking */
     float               mMarkerRelX;
     float               mMarkerRelY;

@@ -524,7 +524,10 @@ QStringList AudioWidget::GetAudioStatistic()
 	//### Line 2: current audio buffer, dropped chunks, buffered packets
     QString tLine_Frame = "";
     tLine_Frame = "Frame: " + QString("%1").arg(mCurrentFrameNumber);
-    tLine_Frame += (mAudioSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mAudioSource->GetChunkDropCounter()) + " " + Homer::Gui::AudioWidget::tr("lost packets") + ")") : "") + (mAudioSource->GetFragmentBufferCounter() ? (" (" + QString("%1").arg(mAudioSource->GetFragmentBufferCounter()) + "/" + QString("%1").arg(mAudioSource->GetFragmentBufferSize()) + " " + Homer::Gui::AudioWidget::tr("buffered packets") + ")") : "");
+    tLine_Frame += (mAudioSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mAudioSource->GetChunkDropCounter()) + " " + Homer::Gui::AudioWidget::tr("lost packets")) : "");
+    tLine_Frame += (mAudioSource->GetRelativeLoss() ? (", " + QString("%1").arg(mAudioSource->GetRelativeLoss(), 2, 'f', 2, (QLatin1Char)' ') + Homer::Gui::AudioWidget::tr("% loss")) : "");
+    tLine_Frame += ")";
+    tLine_Frame += (mAudioSource->GetFragmentBufferCounter() ? (" (" + QString("%1").arg(mAudioSource->GetFragmentBufferCounter()) + "/" + QString("%1").arg(mAudioSource->GetFragmentBufferSize()) + " " + Homer::Gui::AudioWidget::tr("buffered packets") + ")") : "");
 
     //############################################
     //### Line 3: FPS and pre-buffer time

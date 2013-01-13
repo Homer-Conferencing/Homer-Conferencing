@@ -61,6 +61,7 @@ bool MediaSource::mFfmpegInitiated = false;
 MediaSource::MediaSource(string pName):
     PacketStatistic(pName)
 {
+    mRelativeLoss = 0;
     mDecoderSynchPoints = 0;
     mEndToEndDelay = 0;
     mDecodedIFrames = 0;
@@ -2735,6 +2736,11 @@ bool MediaSource::TimeShift(int64_t pOffset)
 {
     LOG(LOG_VERBOSE, "This is only the dummy TimeShift() function");
     return false;
+}
+
+float MediaSource::GetRelativeLoss()
+{
+    return mRelativeLoss;
 }
 
 void* MediaSource::AllocChunkBuffer(int& pChunkBufferSize, enum MediaType pMediaType)

@@ -139,6 +139,8 @@ public:
     /* RTP packetizing/parsing */
     bool RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts);
     unsigned int GetLostPacketsFromRTP();
+    float GetRelativeLostPacketsFromRTP(); // uses RTCP packets and concludes relative packet loss in "per cent", which occurred within the last synch. period
+
     static void LogRtpHeader(RtpHeader *pRtpHeader);
     bool ReceivedCorrectPayload(unsigned int pType);
     bool RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pIsSenderReport, enum CodecID pCodecId, bool pReadOnly);
@@ -149,7 +151,7 @@ public:
 
     /* RTCP packetizing/parsing */
     static void LogRtcpHeader(RtcpHeader *pRtcpHeader);
-    bool RtcpParseSenderReport(char *&pData, int &pDataSize, int64_t &pEndToEndDelay /* in micro seconds */, int &pPackets, int &pOctets);
+    bool RtcpParseSenderReport(char *&pData, int &pDataSize, int64_t &pEndToEndDelay /* in micro seconds */, unsigned int &pPackets, unsigned int &pOctets, float &pRelativeLoss);
 
 protected:
     uint64_t GetCurrentPtsFromRTP(); // uses the timestamps from the RTP header to derive a valid PTS value
@@ -181,6 +183,7 @@ private:
     std::string         mTargetHost;
     unsigned int        mTargetPort;
     uint64_t	        mLostPackets;
+    float               mRelativeLostPackets;
     unsigned int        mLocalSourceIdentifier;
     enum CodecID        mStreamCodecID;
     uint64_t			mRemoteSequenceNumber; // without overflows
@@ -198,6 +201,7 @@ private:
     unsigned int        mRemoteStartTimestamp;
     bool				mRemoteSourceChanged;
     unsigned int        mRemoteSourceIdentifier;
+    uint64_t            mReceivedPackets;
     /* MP3 RTP hack */
     unsigned int        mMp3Hack_EntireBufferSize;
     /* RTP packet stream */
@@ -213,6 +217,9 @@ private:
     Mutex               mSynchDataMutex;
     uint64_t            mRtcpLastRemoteNtpTime; // (NTP timestamp)
     unsigned int        mRtcpLastRemoteTimestamp; // PTS value (without clock rata adaption!)
+    unsigned int        mRtcpLastRemotePackets; // sent packets, reported via RTCP
+    unsigned int        mRtcpLastRemoteOctets; // sent bytes, reported via RTCP
+    uint64_t            mRtcpLastReceivedPackets;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

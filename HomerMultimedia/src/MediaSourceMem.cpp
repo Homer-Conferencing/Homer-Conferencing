@@ -214,9 +214,9 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
                     LOGEX(MediaSourceMem, LOG_WARN, "Current RTP packet was reported as invalid by RTP parser, ignoring this data");
                 else
                 {
-                    int tPacketCountReportedBySender = 0;
-                    int tOctetCountReportedBySender = 0;
-                    if (tMediaSourceMemInstance->RtcpParseSenderReport(tFragmentData, tFragmentDataSize, tMediaSourceMemInstance->mEndToEndDelay, tPacketCountReportedBySender, tOctetCountReportedBySender))
+                    unsigned int tPacketCountReportedBySender = 0;
+                    unsigned int tOctetCountReportedBySender = 0;
+                    if (tMediaSourceMemInstance->RtcpParseSenderReport(tFragmentData, tFragmentDataSize, tMediaSourceMemInstance->mEndToEndDelay, tPacketCountReportedBySender, tOctetCountReportedBySender, tMediaSourceMemInstance->mRelativeLoss))
                     {
                         tMediaSourceMemInstance->mDecoderSynchPoints++;
 						#ifdef MSMEM_DEBUG_SENDER_REPORTS

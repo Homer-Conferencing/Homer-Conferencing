@@ -727,7 +727,10 @@ QStringList VideoWidget::GetVideoStatistic()
         	tLine_Frame += QString(",%1*bi").arg(mVideoSource->DecodedBIFrames());
         tLine_Frame += ")";
     }
-    tLine_Frame += (mVideoSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropCounter()) + " " + Homer::Gui::VideoWidget::tr("lost packets") + ")") : "") + (mVideoSource->GetFragmentBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetFragmentBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetFragmentBufferSize()) + " " + Homer::Gui::VideoWidget::tr("buffered packets") + ")") : "");
+    tLine_Frame += (mVideoSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropCounter()) + " " + Homer::Gui::VideoWidget::tr("lost packets")) : "");
+    tLine_Frame += (mVideoSource->GetRelativeLoss() ? (", " + QString("%1").arg(mVideoSource->GetRelativeLoss(), 2, 'f', 2, (QLatin1Char)' ') + Homer::Gui::VideoWidget::tr("% loss")) : "");
+    tLine_Frame += ")";
+    tLine_Frame += (mVideoSource->GetFragmentBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetFragmentBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetFragmentBufferSize()) + " " + Homer::Gui::VideoWidget::tr("buffered packets") + ")") : "");
 
     //############################################
     //### Line 3: FPS and pre-buffer time
