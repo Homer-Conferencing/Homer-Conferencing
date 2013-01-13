@@ -1134,7 +1134,7 @@ bool Configuration::GetVideoRtp()
 
 QString Configuration::GetVideoCodec()
 {
-    return mQSettings->value("Streaming/VideoStreamCodec", QString("H.261")).toString();
+    return mQSettings->value("Streaming/VideoStreamCodec", QString("H.263+")).toString();
 }
 
 int Configuration::GetVideoQuality()

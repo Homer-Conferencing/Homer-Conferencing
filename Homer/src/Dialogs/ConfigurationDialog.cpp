@@ -1093,7 +1093,7 @@ void ConfigurationDialog::ClickedButton(QAbstractButton *pButton)
                 mCbHFlip->setChecked(false);
                 mCbVFlip->setChecked(false);
                 mSbVideoFps->setValue(0);
-                mCbVideoCodec->setCurrentIndex(0);//H.261
+                mCbVideoCodec->setCurrentIndex(2);//H.263+
                 mCbVideoQuality->setCurrentIndex(0);//10 %
                 mCbVideoBitRate->setCurrentIndex(3); // 90 KBit/s
                 mCbVideoResolution->setCurrentIndex(0);//auto
