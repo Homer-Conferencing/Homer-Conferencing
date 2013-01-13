@@ -1216,8 +1216,12 @@ void* MediaSourceMem::Run(void* pArgs)
                         av_free_packet(tPacket);
                     }
 
+                    // reset packet
+                    tPacket->data = NULL;
+                    tPacket->size = 0;
+
                     // read next sample from source - blocking
-                    if ((tRes = av_read_frame(mFormatContext, tPacket)) != 0)
+                    if ((tRes = av_read_frame(mFormatContext, tPacket)) < 0)
                     {// failed to read frame
                         #ifdef MSMEM_DEBUG_PACKETS
                             if (!tInputIsPicture)
