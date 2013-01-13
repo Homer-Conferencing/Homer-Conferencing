@@ -49,6 +49,9 @@ namespace Homer { namespace Multimedia {
 // the following de/activates debugging of ffmpag mutex management
 //#define MS_DEBUG_FFMPEG_MUTEX
 
+//#define MS_DEBUG_RECORDER_PACKETS
+//#define MS_DEBUG_RECORDER_FRAMES
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // video/audio processing
@@ -216,6 +219,7 @@ public:
     virtual int GetOutputChannels();
     virtual int GetInputSampleRate();
     virtual int GetInputChannels();
+    virtual std::string GetInputFormatStr();
 
     /* video */
     static AVFrame *AllocFrame();
@@ -415,8 +419,6 @@ protected:
     /* audio */
     HM_SwrContext       *mAudioResampleContext;
     char                *mResampleBuffer;
-    AVFifoBuffer        *mRecorderSampleFifo;
-    char                *mRecorderSamplesTempBuffer;
     int                 mOutputAudioSampleRate;
     int                 mOutputAudioChannels; // 1 - mono, 2 - stereo, ..
     enum AVSampleFormat mOutputAudioFormat;
@@ -461,13 +463,20 @@ protected:
     Mutex               mMediaSinksMutex;
     bool                mRtpActivated;
     /* recording */
+    HM_SwrContext       *mRecorderAudioResampleContext;
+    AVFifoBuffer        *mRecorderSampleFifo[32];
+    char                *mRecorderResampleBuffer;
+    uint8_t             *mRecorderResampleBufferPlanes[32];
+    AVStream            *mRecorderEncoderStream;
+    int                 mRecorderAudioSampleRate;
+    int                 mRecorderAudioChannels;
+    enum AVSampleFormat mRecorderAudioFormat;
+    uint64_t            mRecorderAudioChannelLayout;
     AVFormatContext     *mRecorderFormatContext;
     AVCodecContext      *mRecorderCodecContext;
     SwsContext          *mRecorderVideoScalerContext;
-    char                *mRecorderEncoderChunkBuffer;
-    int                 mRecorderChunkNumber;
+    int64_t             mRecorderFrameNumber;
     int64_t             mRecorderStartPts; // for synchronized playback we calculate the position within a media stream and write the value into PTS entry of an encoded packet
-    bool                mRecorderRealTime;
     AVFrame             *mRecorderFinalFrame;
     int64_t             mRecorderStart;
     /* device handling */

@@ -25,33 +25,10 @@
  * Since:   2008-12-02
  */
 
-/*
-    supported codecs:
-        http://ffmpeg.org/general.html#SEC6
-
-    codec licenses:
-
-    H.261: built-in ffmpeg: LGPL
-    H.263: built-in ffmpeg: LGPL
-    H.263+: built-in ffmpeg: LGPL
-    H.264: GPL-2
-    MPEG2: built-in ffmpeg: LGPL
-    MPEG4: built-in ffmpeg: LGPL
-    MJPEG: LGPL
-
-    AC3: decoder: built-in ffmpeg: LGPL, encoder: tbd??
-    AAC: built-in ffmpeg: LGPL, encoder: libfaac LGPL-2
-    MP3: decoder: built-in ffmpeg: LGPL, encoder: LGPL, http://lame.sourceforge.net
-    GSM FREE, http://kbs.cs.tu-berlin.de/~jutta/toast.html
-    A-LAW: built-in ffmpeg: LGPL
-    MU_LAW built-in ffmpeg: LGPL
-    PCM_S16BE: built-in ffmpeg: LGPL
-    AMR_NB: apache-2.0 license
- */
-
 #include <Header_Ffmpeg.h>
 #include <MediaSource.h>
 #include <Logger.h>
+#include <HBSystem.h>
 
 #include <string>
 #include <string.h>
@@ -69,6 +46,12 @@ using namespace Homer::Monitor;
 
 //de/activate VDPAU support
 //#define MEDIA_SOURCE_VDPAU_SUPPORT
+
+// de/activate MT support during video encoding: ffmpeg supports MT only for encoding
+#define MEDIA_SOURCE_RECORDER_MULTI_THREADED_VIDEO_ENCODING
+
+
+#define MEDIA_SOURCE_SAMPLE_BUFFER_PER_CHANNEL                  8192
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -100,8 +83,11 @@ MediaSource::MediaSource(string pName):
     SetRtpActivation(true);
     mCodecContext = NULL;
     mResampleBuffer = NULL;
+    mRecorderFinalFrame = NULL;
+    mRecorderResampleBuffer = NULL;
     mRecorderCodecContext = NULL;
     mRecorderFormatContext = NULL;
+    mRecorderAudioResampleContext = NULL;
     mRecorderVideoScalerContext = NULL;
     mAudioResampleContext = NULL;
     mInputAudioFormat = AV_SAMPLE_FMT_S16;
@@ -112,7 +98,6 @@ MediaSource::MediaSource(string pName):
     mDesiredDevice = "";
     mCurrentDevice = "";
     mCurrentDeviceName = "";
-    mRecorderRealTime = true;
     mLastGrabResultWasError = false;
     mNumberOfFrames = 0;
     mFrameNumber = 0;
@@ -820,6 +805,11 @@ int MediaSource::GetInputChannels()
 	return mInputAudioChannels;
 }
 
+string MediaSource::GetInputFormatStr()
+{
+    return av_get_sample_fmt_name(mInputAudioFormat);
+}
+
 int MediaSource::GetInputBitRate()
 {
 	return mInputBitRate;
@@ -827,7 +817,10 @@ int MediaSource::GetInputBitRate()
 
 AVFrame *MediaSource::AllocFrame()
 {
-	return avcodec_alloc_frame();
+    AVFrame *tResult = avcodec_alloc_frame();
+    if (tResult != NULL)
+        avcodec_get_frame_defaults(tResult);
+    return tResult;
 }
 
 int MediaSource::FillFrame(AVFrame *pFrame, void *pData, enum PixelFormat pPixFormat, int pWidth, int pHeight)
@@ -1654,12 +1647,12 @@ void MediaSource::RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacke
     mMediaSinksMutex.unlock();
 }
 
-bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality, bool pRealTime)
+bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality, bool pRealTime /*TODO: delete this*/)
 {
     int                 tResult;
     AVOutputFormat      *tFormat;
-    AVStream            *tStream;
     AVCodec             *tCodec;
+    AVDictionary        *tOptions = NULL;
     CodecID             tSaveFileCodec = CODEC_ID_NONE;
     int                 tMediaStreamIndex = 0; // we always use stream number 0
 
@@ -1715,7 +1708,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
 
     if (tFormat == NULL)
     {
-        LOG(LOG_ERROR, "Invalid suggested format");
+        LOG(LOG_ERROR, "Invalid suggested recorder format");
         // Close the format context
         av_free(mRecorderFormatContext);
 
@@ -1727,6 +1720,12 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
 
     // set correct output format
     mRecorderFormatContext->oformat = tFormat;
+    // verbose timestamp debugging
+    if (LOGGER.GetLogLevel() == LOG_VERBOSE)
+    {
+        LOG(LOG_WARN, "Enabling ffmpeg timestamp debugging for recorder");
+        mRecorderFormatContext->debug = FF_FDEBUG_TS;
+    }
 
     // set meta data
     HM_av_dict_set(&mRecorderFormatContext->metadata, "author"   , tAuthor);
@@ -1738,97 +1737,138 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     sprintf(mRecorderFormatContext->filename, "%s", pSaveFileName.c_str());
 
     // allocate new stream structure
-    tStream = HM_avformat_new_stream(mRecorderFormatContext, 0);
-    mRecorderCodecContext = tStream->codec;
-
-    // put sample parameters
-    mRecorderCodecContext->bit_rate = 500000;
+    LOG(LOG_VERBOSE, "..allocating new recorder stream");
+    mRecorderEncoderStream = HM_avformat_new_stream(mRecorderFormatContext, 0);
+    mRecorderEncoderStream = mRecorderFormatContext->streams[0];
+    mRecorderCodecContext = mRecorderEncoderStream->codec;
 
     switch(mMediaType)
     {
         case MEDIA_VIDEO:
-                tSaveFileCodec = tFormat->video_codec;
-                mRecorderCodecContext->codec_id = tFormat->video_codec;
-                mRecorderCodecContext->codec_type = AVMEDIA_TYPE_VIDEO;
-
-                // resolution
-                mRecorderCodecContext->width = mSourceResX;
-                mRecorderCodecContext->height = mSourceResY;
-
-                /*
-                 * time base: this is the fundamental unit of time (in seconds) in terms
-                 * of which frame timestamps are represented. for fixed-FrameRate content,
-                 * timebase should be 1/framerate and timestamp increments should be
-                 * identically to 1.
-                 */
-                mRecorderCodecContext->time_base.den = (int)mFrameRate * 100;
-                mRecorderCodecContext->time_base.num = 100;
-                tStream->time_base.den = (int)mFrameRate * 100;
-                tStream->time_base.num = 100;
-                // set i frame distance: GOP = group of pictures
-                mRecorderCodecContext->gop_size = (100 - pSaveFileQuality) / 5; // default is 12
-                mRecorderCodecContext->qmin = 1; // default is 2
-                mRecorderCodecContext->qmax = 2 +(100 - pSaveFileQuality) / 4; // default is 31
-                // set pixel format
-                mRecorderCodecContext->pix_fmt = PIX_FMT_YUV420P;
-
-                // workaround for incompatibility of ffmpeg/libx264
-                // inspired by check within libx264 in "x264_validate_parameters()" of encoder.c
-                if (tFormat->video_codec == CODEC_ID_H264)
                 {
-                    mRecorderCodecContext->me_range = 16;
-                    mRecorderCodecContext->max_qdiff = 4;
-                    mRecorderCodecContext->qcompress = 0.6;
-                }
+                    tSaveFileCodec = tFormat->video_codec;
+                    mRecorderCodecContext->codec_id = tFormat->video_codec;
+                    mRecorderCodecContext->codec_type = AVMEDIA_TYPE_VIDEO;
 
-                // set MPEG quantizer: for h261/h263/mjpeg use the h263 quantizer, in other cases use the MPEG2 one
-            //    if ((tFormat->video_codec == CODEC_ID_H261) || (tFormat->video_codec == CODEC_ID_H263) || (tFormat->video_codec == CODEC_ID_H263P) || (tFormat->video_codec == CODEC_ID_MJPEG))
-            //        mRecorderCodecContext->mpeg_quant = 0;
-            //    else
-            //        mRecorderCodecContext->mpeg_quant = 1;
+                    // add some extra parameters depending on the selected codec
+                    switch(tFormat->video_codec)
+                    {
+                        case CODEC_ID_MPEG4:
+                                        mRecorderCodecContext->flags |= CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED;
+                                        break;
+                    }
 
-                // set pixel format
-                if (tFormat->video_codec == CODEC_ID_MJPEG)
-                    mRecorderCodecContext->pix_fmt = PIX_FMT_YUVJ420P;
-                else
+                    // bit rate
+                    int pSaveBitRate = 500000; //TODO: use as separate function parameter
+                    mRecorderCodecContext->bit_rate = pSaveBitRate;
+
+                    // resolution
+                    mRecorderCodecContext->width = mSourceResX;
+                    mRecorderCodecContext->height = mSourceResY;
+
+                    /*
+                     * time base: this is the fundamental unit of time (in seconds) in terms
+                     * of which frame timestamps are represented. for fixed-FrameRate content,
+                     * timebase should be 1/framerate and timestamp increments should be
+                     * identically to 1.
+                     */
+                    mRecorderCodecContext->time_base = (AVRational){100, (int)(mFrameRate * 100)};
+                    mRecorderEncoderStream->time_base = (AVRational){100, (int)(mFrameRate * 100)};
+
+                    // set i frame distance: GOP = group of pictures
+                    mRecorderCodecContext->gop_size = (100 - pSaveFileQuality) / 5; // default is 12
+                    mRecorderCodecContext->qmin = 1; // default is 2
+                    mRecorderCodecContext->qmax = 2 +(100 - pSaveFileQuality) / 4; // default is 31
+
+                    // set pixel format
                     mRecorderCodecContext->pix_fmt = PIX_FMT_YUV420P;
 
-                // allocate software scaler context if necessary
-        		if (mCodecContext != NULL)
-                	mRecorderVideoScalerContext = sws_getContext(mSourceResX, mSourceResY, mCodecContext->pix_fmt, mSourceResX, mSourceResY, mRecorderCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
-        		else
-        		{
-        			LOG(LOG_WARN, "Codec context is invalid, pixel format cannot be determined automatically, assuming RGB32 as input");
-                	mRecorderVideoScalerContext = sws_getContext(mSourceResX, mSourceResY, PIX_FMT_RGB32, mSourceResX, mSourceResY, mRecorderCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
-        		}
+                    // allocate software scaler context if necessary
+                    if (mCodecContext != NULL)
+                        mRecorderVideoScalerContext = sws_getContext(mSourceResX, mSourceResY, mCodecContext->pix_fmt, mSourceResX, mSourceResY, mRecorderCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
+                    else
+                    {
+                        LOG(LOG_WARN, "Codec context is invalid, pixel format cannot be determined automatically, assuming RGB32 as input");
+                        mRecorderVideoScalerContext = sws_getContext(mSourceResX, mSourceResY, PIX_FMT_RGB32, mSourceResX, mSourceResY, mRecorderCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
+                    }
 
-                if ((mRecorderFinalFrame = avcodec_alloc_frame()) == NULL)
-                    LOG(LOG_ERROR, "Out of video memory in avcodec_alloc_frame()");
+                    LOG(LOG_VERBOSE, "..allocating final frame memory");
+                    if ((mRecorderFinalFrame = AllocFrame()) == NULL)
+                        LOG(LOG_ERROR, "Out of memory in avcodec_alloc_frame()");
 
-                if (avpicture_alloc((AVPicture*)mRecorderFinalFrame, mRecorderCodecContext->pix_fmt, mSourceResX, mSourceResY) < 0)
-                    LOG(LOG_ERROR, "Out of video memory in avpicture_alloc()");
-
-                // Dump information about device file
-        		av_dump_format(mRecorderFormatContext, 0, "MediaSource recorder (video)", true);
-
+                    if (avpicture_alloc((AVPicture*)mRecorderFinalFrame, mRecorderCodecContext->pix_fmt, mSourceResX, mSourceResY) < 0)
+                        LOG(LOG_ERROR, "Out of video memory in avpicture_alloc()");
+                }
                 break;
         case MEDIA_AUDIO:
-                tSaveFileCodec = tFormat->audio_codec;
-                mRecorderCodecContext->codec_id = tFormat->audio_codec;
-                mRecorderCodecContext->codec_type = AVMEDIA_TYPE_AUDIO;
+                {
+                    tSaveFileCodec = tFormat->audio_codec;
+                    mRecorderCodecContext->codec_id = tFormat->audio_codec;
+                    mRecorderCodecContext->codec_type = AVMEDIA_TYPE_AUDIO;
 
-                mRecorderCodecContext->channels = mOutputAudioChannels;
-                mRecorderCodecContext->bit_rate = MediaSource::AudioQuality2BitRate(pSaveFileQuality); // streaming rate
-                mRecorderCodecContext->sample_rate = mOutputAudioSampleRate; // sampling rate: 22050, 44100
+                    // bit rate
+                    int pSaveBitRate = AudioQuality2BitRate(pSaveFileQuality); //TODO: use as separate function parameter
+                    mRecorderCodecContext->bit_rate = pSaveBitRate;
 
-                mRecorderCodecContext->sample_fmt = AV_SAMPLE_FMT_S16;
+                    // define audio format for recording
+                    mRecorderAudioChannels = 2;
+                    if (mRecorderCodecContext->codec_id == CODEC_ID_MP3)
+                        mRecorderAudioFormat = mInputAudioFormat;
+                    else
+                        mRecorderAudioFormat = AV_SAMPLE_FMT_S16;
+                    mRecorderAudioChannelLayout = av_get_default_channel_layout(mRecorderAudioChannels);
+                    mRecorderAudioSampleRate = mInputAudioSampleRate;
 
-                // init fifo buffer
-                mRecorderSampleFifo = HM_av_fifo_alloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE * 2);
+                    mRecorderCodecContext->channels = mRecorderAudioChannels;
+                    mRecorderCodecContext->channel_layout = mRecorderAudioChannelLayout;
+                    mRecorderCodecContext->sample_rate = mRecorderAudioSampleRate;
+                    mRecorderCodecContext->sample_fmt = mRecorderAudioFormat;
+                    mRecorderCodecContext->channel_layout = mRecorderAudioChannelLayout;
 
-                // Dump information about device file
-                av_dump_format(mRecorderFormatContext, 0, "MediaSource recorder (audio)", true);
+                    // create resample context
+                    //do not use "if ((mInputAudioSampleRate != mRecorderAudioSampleRate) || (mInputAudioChannels != mRecorderAudioChannels) || (mInputAudioFormat != mRecorderAudioFormat))" because we need to convert from packed audio to plane based audio buffer
+                    {
+                        if (mRecorderAudioResampleContext != NULL)
+                            LOG(LOG_ERROR, "State of audio recorder resample context inconsistent");
+                        LOG(LOG_WARN, "Audio samples with rate of %d Hz and %d channels (format: %s) have to be resampled to %d Hz and %d channels (format: %s)", mInputAudioSampleRate, mInputAudioChannels, av_get_sample_fmt_name(mInputAudioFormat), mRecorderAudioSampleRate, mRecorderAudioChannels, av_get_sample_fmt_name(mRecorderAudioFormat));
+                        mRecorderAudioResampleContext = HM_swr_alloc_set_opts(NULL, av_get_default_channel_layout(mRecorderAudioChannels), mRecorderAudioFormat, mRecorderAudioSampleRate, av_get_default_channel_layout(mInputAudioChannels), mInputAudioFormat, mInputAudioSampleRate, 0, NULL);
+                        if (mRecorderAudioResampleContext != NULL)
+                        {// everything okay, we have to init the context
+                            int tRes = 0;
+                            if ((tRes = HM_swr_init(mRecorderAudioResampleContext)) < 0)
+                            {
+                                LOG(LOG_ERROR, "Couldn't initialize resample context because of \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
+                                return false;
+                            }
+                        }else
+                        {
+                            LOG(LOG_ERROR, "Failed to create audio-resample context");
+                        }
+                    }
 
+                    // resample buffer
+                    LOG(LOG_VERBOSE, "..allocating audio resample memory");
+                    if (mRecorderResampleBuffer != NULL)
+                        LOG(LOG_ERROR, "Recorder resample buffer of %s source was already allocated", GetSourceTypeStr().c_str());
+                    mRecorderResampleBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLE_BUFFER_PER_CHANNEL * 32 + FF_INPUT_BUFFER_PADDING_SIZE);
+
+                    LOG(LOG_VERBOSE, "..allocating final frame memory");
+                    if ((mRecorderFinalFrame = AllocFrame()) == NULL)
+                        LOG(LOG_ERROR, "Out of memory in avcodec_alloc_frame()");
+                    else
+                        avcodec_get_frame_defaults(mRecorderFinalFrame);
+
+                    if (av_sample_fmt_is_planar(mRecorderAudioFormat))
+                    {// planar audio buffering
+                        // init fifo buffer
+                        for (int i = 0; i < mRecorderAudioChannels; i++)
+                            mRecorderSampleFifo[i] = HM_av_fifo_alloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
+                    }else
+                    {// one interleaved audio buffer
+                        mRecorderSampleFifo[0] = HM_av_fifo_alloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
+                    }
+
+                }
                 break;
         default:
         case MEDIA_UNKNOWN:
@@ -1842,6 +1882,12 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     // some formats want stream headers to be separate
     if(mRecorderFormatContext->oformat->flags & AVFMT_GLOBALHEADER)
         mRecorderCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
+
+    // allow ffmpeg its speedup tricks
+    mRecorderCodecContext->flags2 |= CODEC_FLAG2_FAST;
+
+    // Dump information about device file
+    av_dump_format(mRecorderFormatContext, 0, ("MediaSource recorder (" + GetMediaTypeStr() + ")").c_str(), true);
 
     // find the encoder for the video stream
     if ((tCodec = avcodec_find_encoder(tSaveFileCodec)) == NULL)
@@ -1860,7 +1906,18 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
         return false;
     }
 
+    #ifdef MEDIA_SOURCE_RECORDER_MULTI_THREADED_VIDEO_ENCODING
+        // active multi-threading per default for the video encoding: leave two cpus for concurrent tasks (video grabbing/decoding, audio tasks)
+        av_dict_set(&tOptions, "threads", "auto", 0);
+
+        // trigger MT usage during video encoding
+        int tThreadCount = System::GetMachineCores() - 2;
+        if (tThreadCount > 1)
+            mRecorderCodecContext->thread_count = tThreadCount;
+    #endif
+
     // open codec
+    LOG(LOG_VERBOSE, "..opening %s codec", GetMediaTypeStr().c_str());
     if ((tResult = HM_avcodec_open(mRecorderCodecContext, tCodec, NULL)) < 0)
     {
         LOG(LOG_ERROR, "Couldn't open %s codec because of \"%s\".", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
@@ -1897,13 +1954,38 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
         }
     }
 
+    if (mRecorderCodecContext->frame_size < 32)
+    {
+        LOG(LOG_WARN, "Found invalid frame size %d, setting to %d", mRecorderCodecContext->frame_size, MEDIA_SOURCE_SAMPLES_PER_BUFFER);
+        mRecorderCodecContext->frame_size = MEDIA_SOURCE_SAMPLES_PER_BUFFER;
+    }
+
+    // we have to delay the following to this point because of "mRecorderCodecContext->frame_size" access
+    if (mMediaType == MEDIA_AUDIO)
+    {
+        // planes indexing resample buffer
+        int InputFrameSize = (mCodecContext != NULL) ? (mCodecContext->frame_size > 0 ? mCodecContext->frame_size : MEDIA_SOURCE_SAMPLES_PER_BUFFER) : MEDIA_SOURCE_SAMPLES_PER_BUFFER;
+        LOG(LOG_VERBOSE, "..assigning planes memory for indexing resample memory with frame size: %d", InputFrameSize /* we use the source frame size! */);
+        memset(mRecorderResampleBufferPlanes, 0, sizeof(mRecorderResampleBufferPlanes));
+        if (av_samples_fill_arrays(&mRecorderResampleBufferPlanes[0], NULL, (const uint8_t *)mRecorderResampleBuffer, mRecorderAudioChannels, InputFrameSize /* we use the source frame size! */, mRecorderAudioFormat, 1) < 0)
+        {
+            LOG(LOG_ERROR, "Could not fill the audio plane pointer array");
+        }
+        //AVCODEC_MAX_AUDIO_FRAME_SIZE / (av_get_bytes_per_sample(mRecorderAudioFormat) * mRecorderAudioChannels) /* amount of possible output samples */;
+        LOG(LOG_VERBOSE, "Resampling buffer is at: %p", mRecorderResampleBuffer);
+        for(int i = 0; i < mRecorderAudioChannels; i++)
+        {
+            LOG(LOG_VERBOSE, "Plane %d index points to: %p (diff: %u)", i, mRecorderResampleBufferPlanes[i], (i > 0) ? (mRecorderResampleBufferPlanes[i] - mRecorderResampleBufferPlanes[i - 1]) : 0);
+        }
+        LOG(LOG_VERBOSE, "Recorder audio format is planar: %d", av_sample_fmt_is_planar(mRecorderAudioFormat));
+    }
+
     // allocate streams private data buffer and write the streams header, if any
     avformat_write_header(mRecorderFormatContext, NULL);
 
     LOG(LOG_INFO, "%s recorder opened...", GetMediaTypeStr().c_str());
 
     LOG(LOG_INFO, "    ..selected recording quality: %d%", pSaveFileQuality);
-    LOG(LOG_INFO, "    ..pts adaption for real-time recording: %d", pRealTime);
 
     LOG(LOG_INFO, "    ..codec name: %s", mRecorderCodecContext->codec->name);
     LOG(LOG_INFO, "    ..codec long name: %s", mRecorderCodecContext->codec->long_name);
@@ -1917,8 +1999,10 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     LOG(LOG_INFO, "    ..current device: %s", mCurrentDevice.c_str());
     LOG(LOG_INFO, "    ..qmin: %d", mRecorderCodecContext->qmin);
     LOG(LOG_INFO, "    ..qmax: %d", mRecorderCodecContext->qmax);
-    LOG(LOG_INFO, "    ..source frame size: %d", mRecorderCodecContext->frame_size);
-    LOG(LOG_INFO, "    ..output frame size: %d", MEDIA_SOURCE_SAMPLES_PER_BUFFER);
+    LOG(LOG_INFO, "    ..codec caps: 0x%x", mRecorderCodecContext->codec->capabilities);
+    LOG(LOG_INFO, "    ..MT count: %d", mRecorderCodecContext->thread_count);
+    LOG(LOG_INFO, "    ..MT method: %d", mRecorderCodecContext->thread_type);
+    LOG(LOG_INFO, "    ..frame size: %d", mRecorderCodecContext->frame_size);
     LOG(LOG_INFO, "    ..duration: %.2f frames", mNumberOfFrames);
     LOG(LOG_INFO, "    ..stream context duration: %ld frames, %.0f seconds, format context duration: %ld, nr. of frames: %ld", mRecorderFormatContext->streams[tMediaStreamIndex]->duration, (float)mRecorderFormatContext->streams[tMediaStreamIndex]->duration / mFrameRate, mRecorderFormatContext->duration, mRecorderFormatContext->streams[tMediaStreamIndex]->nb_frames);
     switch(mMediaType)
@@ -1935,7 +2019,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
             LOG(LOG_INFO, "    ..channels: %d", mRecorderCodecContext->channels);
             LOG(LOG_INFO, "    ..sample format: %s", av_get_sample_fmt_name(mRecorderCodecContext->sample_fmt));
             LOG(LOG_INFO, "Fifo opened...");
-            LOG(LOG_INFO, "    ..fill size: %d bytes", av_fifo_size(mRecorderSampleFifo));
+            LOG(LOG_INFO, "    ..available FIFO %d size: %d bytes", 0, av_fifo_space(mRecorderSampleFifo[0]));
             break;
         default:
             LOG(LOG_ERROR, "Media type unknown");
@@ -1946,17 +2030,10 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     mGrabMutex.unlock();
 
     mRecorderStartPts = -1;
-    mRecorderChunkNumber = 0;
+    mRecorderFrameNumber = 0;
     mRecordingSaveFileName = pSaveFileName;
     mRecording = true;
-    mRecorderRealTime = pRealTime;
     mRecorderStart = av_gettime();
-
-    // allocate all needed buffers
-    LOG(LOG_VERBOSE, "Allocating needed recorder buffers");
-    mRecorderEncoderChunkBuffer = (char*)malloc(MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE);
-    if (mMediaType == MEDIA_AUDIO)
-        mRecorderSamplesTempBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE);
 
     return true;
 }
@@ -1965,7 +2042,7 @@ void MediaSource::StopRecording()
 {
     if (mRecording)
     {
-        LOG(LOG_VERBOSE, "Going to close recorder, media type is \"%s\"", GetMediaTypeStr().c_str());
+        LOG(LOG_VERBOSE, "Going to close %s recorder", GetMediaTypeStr().c_str());
 
         mRecording = false;
 
@@ -1984,13 +2061,18 @@ void MediaSource::StopRecording()
                     // free the file frame's data buffer
                     avpicture_free((AVPicture*)mRecorderFinalFrame);
 
-                    // free the file frame
-                    av_free(mRecorderFinalFrame);
-
                     break;
             case MEDIA_AUDIO:
                     // free fifo buffer
-                    av_fifo_free(mRecorderSampleFifo);
+                    if (av_sample_fmt_is_planar(mRecorderAudioFormat))
+                    {// planar audio buffering
+                        // init fifo buffer
+                        for (int i = 0; i < mRecorderAudioChannels; i++)
+                            av_fifo_free(mRecorderSampleFifo[i]);
+                    }else
+                    {// one interleaved audio buffer
+                        av_fifo_free(mRecorderSampleFifo[0]);
+                    }
 
                     break;
             default:
@@ -1999,12 +2081,20 @@ void MediaSource::StopRecording()
                     break;
         }
 
+        if (mRecorderFinalFrame != NULL)
+        {
+            // free the file frame
+            av_free(mRecorderFinalFrame);
+            mRecorderFinalFrame = NULL;
+        }
+
         // close the codec
+        mRecorderEncoderStream->discard = AVDISCARD_ALL;
         avcodec_close(mRecorderCodecContext);
 
         // free codec and stream 0
-        av_freep(&mRecorderFormatContext->streams[0]->codec);
-        av_freep(&mRecorderFormatContext->streams[0]);
+        av_freep(&mRecorderEncoderStream->codec);
+        av_freep(mRecorderEncoderStream);
 
         if (!(mRecorderFormatContext->oformat->flags & AVFMT_NOFILE))
         	avio_close(mRecorderFormatContext->pb);
@@ -2012,16 +2102,21 @@ void MediaSource::StopRecording()
         // close the format context
         av_free(mRecorderFormatContext);
 
-        LOG(LOG_VERBOSE, "Releasing recorder buffers");
-        if (mMediaType == MEDIA_AUDIO)
-            free(mRecorderSamplesTempBuffer);
-        free(mRecorderEncoderChunkBuffer);
+        if (mRecorderAudioResampleContext != NULL)
+        {
+            HM_swr_free(&mRecorderAudioResampleContext);
+            mRecorderAudioResampleContext = NULL;
+        }
+        if (mRecorderResampleBuffer != NULL)
+        {
+            free(mRecorderResampleBuffer);
+            mRecorderResampleBuffer = NULL;
+        }
 
         // unlock grabbing
         mGrabMutex.unlock();
 
-        LOG(LOG_INFO, "...closed, media type is \"%s\"", GetMediaTypeStr().c_str());
-
+        LOG(LOG_INFO, "...%s recorder stopped", GetMediaTypeStr().c_str());
     }
 
     mRecorderStartPts = -1;
@@ -2050,65 +2145,15 @@ int64_t MediaSource::RecordingTime()
 void MediaSource::RecordFrame(AVFrame *pSourceFrame)
 {
     AVPacket            tPacketStruc, *tPacket = &tPacketStruc;
-    int                 tFrameSize;
+    int                 tEncoderResult = 0;
     int64_t             tCurrentPts = 1;
-
-    if (mMediaType == MEDIA_AUDIO)
-    {
-        LOG(LOG_ERROR, "Wrong media type (audio)");
-        return;
-    }
+    int                 tFrameFinished = 0;
 
     if (!mRecording)
     {
         LOG(LOG_ERROR, "Recording not started");
         return;
     }
-
-    // #########################################
-    // frame rate emulation
-    // #########################################
-    // inspired by "output_packet" from ffmpeg.c
-    if (mRecorderRealTime)
-    {
-        // should we initiate the StartPts value?
-        if (mRecorderStartPts == -1)
-        {
-            tCurrentPts = 1;
-            mRecorderStartPts = pSourceFrame->pts;
-        }else
-            tCurrentPts = pSourceFrame->pts - mRecorderStartPts;
-    }else
-        tCurrentPts = mRecorderChunkNumber;
-
-    // #########################################
-    // has resolution changed since last call?
-    // #########################################
-    if ((mSourceResX != mRecorderCodecContext->width) || (mSourceResY != mRecorderCodecContext->height))
-    {
-        // free the software scaler context
-        sws_freeContext(mRecorderVideoScalerContext);
-
-        // set grabbing resolution to the resulting ones delivered by received frame
-        mRecorderCodecContext->width = mSourceResY;
-        mRecorderCodecContext->height = mSourceResY;
-
-        // allocate software scaler context
-		if (mCodecContext != NULL)
-        	mRecorderVideoScalerContext = sws_getContext(mSourceResX, mSourceResY, mCodecContext->pix_fmt, mSourceResX, mSourceResY, mRecorderCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
-		else
-		{
-			LOG(LOG_WARN, "Codec context is invalid, pixel format cannot be determined automatically, assuming RGB32 as input");
-        	mRecorderVideoScalerContext = sws_getContext(mSourceResX, mSourceResY, PIX_FMT_RGB32, mSourceResX, mSourceResY, mRecorderCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
-		}
-
-        LOG(LOG_INFO, "Resolution changed to (%d * %d)", mSourceResX, mSourceResY);
-    }
-
-    // #########################################
-    // scale resolution and transform pixel format
-    // #########################################
-    pSourceFrame->coded_picture_number = mRecorderChunkNumber;
 
     #ifdef MS_DEBUG_PACKETS
         LOG(LOG_VERBOSE, "Recorder source frame..");
@@ -2119,197 +2164,323 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
         LOG(LOG_VERBOSE, "      ..display pic number: %d", pSourceFrame->display_picture_number);
     #endif
 
-    mRecorderFinalFrame->coded_picture_number = tCurrentPts;
-    mRecorderFinalFrame->pts = tCurrentPts;
-    mRecorderFinalFrame->pict_type = pSourceFrame->pict_type;
-    mRecorderFinalFrame->key_frame = pSourceFrame->key_frame;
-
-    #ifdef MS_DEBUG_PACKETS
-        LOG(LOG_VERBOSE, "Recording video frame..");
-        LOG(LOG_VERBOSE, "      ..key frame: %d", mRecorderFinalFrame->key_frame);
-        LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(mRecorderFinalFrame).c_str());
-        LOG(LOG_VERBOSE, "      ..pts: %ld", mRecorderFinalFrame->pts);
-        LOG(LOG_VERBOSE, "      ..coded pic number: %d", mRecorderFinalFrame->coded_picture_number);
-        LOG(LOG_VERBOSE, "      ..display pic number: %d", mRecorderFinalFrame->display_picture_number);
-    #endif
-
-    // convert pixel format in pSourceFrame and store it in mRecorderFinalFrame
-    //HINT: we should execute this step in every case (incl. when pixel format is equal), otherwise data structures are wrong
-    HM_sws_scale(mRecorderVideoScalerContext, pSourceFrame->data, pSourceFrame->linesize, 0, mSourceResY, mRecorderFinalFrame->data, mRecorderFinalFrame->linesize);
-
-    // #########################################
-    // re-encode the frame
-    // #########################################
-    tFrameSize = avcodec_encode_video(mRecorderCodecContext, (uint8_t *)mRecorderEncoderChunkBuffer, MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE, mRecorderFinalFrame);
-
-    if (tFrameSize > 0)
+    switch(mMediaType)
     {
-        av_init_packet(tPacket);
+        case MEDIA_VIDEO:
+                // #########################################
+                // has resolution changed since last call?
+                // #########################################
+                if ((mSourceResX != mRecorderCodecContext->width) || (mSourceResY != mRecorderCodecContext->height))
+                {
+                    // free the software scaler context
+                    sws_freeContext(mRecorderVideoScalerContext);
 
-        // mark i-frame
-        if (mRecorderCodecContext->coded_frame->key_frame)
-            tPacket->flags |= AV_PKT_FLAG_KEY;
+                    // set grabbing resolution to the resulting ones delivered by received frame
+                    mRecorderCodecContext->width = mSourceResY;
+                    mRecorderCodecContext->height = mSourceResY;
 
-        // we only have one stream per video stream
-        tPacket->stream_index = 0;
-        tPacket->data = (uint8_t *)mRecorderEncoderChunkBuffer;
-        tPacket->size = tFrameSize;
-        tPacket->pts = tCurrentPts;
-        tPacket->dts = tCurrentPts;
-        tPacket->duration = 1; // always 1 because we increase pts for every packet by one
-        tPacket->pos = -1;
+                    // allocate software scaler context
+                    if (mCodecContext != NULL)
+                        mRecorderVideoScalerContext = sws_getContext(mSourceResX, mSourceResY, mCodecContext->pix_fmt, mSourceResX, mSourceResY, mRecorderCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
+                    else
+                    {
+                        LOG(LOG_WARN, "Codec context is invalid, pixel format cannot be determined automatically, assuming RGB32 as input");
+                        mRecorderVideoScalerContext = sws_getContext(mSourceResX, mSourceResY, PIX_FMT_RGB32, mSourceResX, mSourceResY, mRecorderCodecContext->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
+                    }
 
-        #ifdef MS_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "Recording packet..");
-            LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
-            LOG(LOG_VERBOSE, "      ..pts: %ld (fps: %3.2f)", tPacket->pts, mFrameRate);
-            LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket->dts);
-            LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
-            LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket->pos);
-        #endif
+                    LOG(LOG_INFO, "Resolution changed to (%d * %d)", mSourceResX, mSourceResY);
+                }
 
-         // distribute the encoded frame
-         if (av_write_frame(mRecorderFormatContext, tPacket) != 0)
-             LOG(LOG_ERROR, "Couldn't write video frame to file");
+                // #########################################
+                // scale resolution and transform pixel format
+                // #########################################
+                HM_sws_scale(mRecorderVideoScalerContext, pSourceFrame->data, pSourceFrame->linesize, 0, mSourceResY, mRecorderFinalFrame->data, mRecorderFinalFrame->linesize);
+                mRecorderFinalFrame->pict_type = pSourceFrame->pict_type;
 
-         av_free_packet(tPacket);
-    }else
-        LOG(LOG_ERROR, "Couldn't re-encode current video frame");
+                #ifdef MS_DEBUG_RECORDER_FRAMES
+                    LOG(LOG_VERBOSE, "Recording video frame..");
+                    LOG(LOG_VERBOSE, "      ..key frame: %d", mRecorderFinalFrame->key_frame);
+                    LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(mRecorderFinalFrame).c_str());
+                    LOG(LOG_VERBOSE, "      ..pts: %ld", mRecorderFinalFrame->pts);
+                    LOG(LOG_VERBOSE, "      ..coded pic number: %d", mRecorderFinalFrame->coded_picture_number);
+                    LOG(LOG_VERBOSE, "      ..display pic number: %d", mRecorderFinalFrame->display_picture_number);
+                #endif
 
-    mRecorderChunkNumber++;
+                // #########################################
+                // init. packet structure
+                // #########################################
+                av_init_packet(tPacket);
+                tPacket->data = NULL;
+                tPacket->size = 0;
+
+                // #########################################
+                // re-encode the frame
+                // #########################################
+                tEncoderResult = avcodec_encode_video2(mRecorderCodecContext, tPacket, mRecorderFinalFrame, &tFrameFinished);
+
+                // #########################################
+                // write encoded frame
+                // #########################################
+                if (tEncoderResult >= 0)
+                {
+                    if (tFrameFinished == 1)
+                    {
+                        #ifdef MS_DEBUG_RECORDER_PACKETS
+                            LOG(LOG_VERBOSE, "Recording packet..");
+                            LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
+                            LOG(LOG_VERBOSE, "      ..pts: %ld (fps: %3.2f)", tPacket->pts, mFrameRate);
+                            LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket->dts);
+                            LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
+                            LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket->pos);
+                        #endif
+
+                         // distribute the encoded frame
+                         if (av_write_frame(mRecorderFormatContext, tPacket) != 0)
+                             LOG(LOG_ERROR, "Couldn't write %s frame to file", GetMediaTypeStr().c_str());
+
+                    }else
+                    {// video frame was buffered by ffmpeg
+                        LOG(LOG_VERBOSE, "Video frame was buffered");
+                    }
+                }else
+                    LOG(LOG_ERROR, "Couldn't re-encode current %s frame", GetMediaTypeStr().c_str());
+
+                av_free_packet(tPacket);
+                mRecorderFrameNumber++;
+
+                break;
+
+        case MEDIA_AUDIO:
+                {
+                    int tRecorderAudioBytesPerSample = av_get_bytes_per_sample(mRecorderAudioFormat);
+                    int tOutputSamplesPerChannel = mRecorderCodecContext->frame_size; // nr. of samples of output frames
+                    int tReadFifoSize = tOutputSamplesPerChannel * tRecorderAudioBytesPerSample * mRecorderAudioChannels;
+                    int tReadFifoSizePerChannel = tOutputSamplesPerChannel * tRecorderAudioBytesPerSample;
+
+                    int tInputAudioBytesPerSample = av_get_bytes_per_sample(mInputAudioFormat);
+                    int tInputSamplesPerChannel = pSourceFrame->nb_samples; // nr. of samples of source frames
+                    int tWrittenFifoSize = tInputSamplesPerChannel * tRecorderAudioBytesPerSample * mRecorderAudioChannels;
+                    int tWrittenFifoSizePerChannel = tInputSamplesPerChannel * tRecorderAudioBytesPerSample;
+
+                    if (pSourceFrame->nb_samples != mCodecContext->frame_size)
+                        LOG(LOG_ERROR, "Number of samples in source framme differs from the defined frame size in the codec context");
+
+                    #ifdef MS_DEBUG_RECORDER_PACKETS
+                        LOG(LOG_VERBOSE, "Recorder audio input data planes...");
+                        for (int i = 0; i < AV_NUM_DATA_POINTERS; i++)
+                        {
+                            LOG(LOG_VERBOSE, "%d - %p", i, pSourceFrame->data[i]);
+                        }
+                    #endif
+
+                    uint8_t ** tInputSamplesPlanes = pSourceFrame->extended_data;
+                    if (mRecorderAudioResampleContext != NULL)
+                    {// audio resampling needed: we have to insert an intermediate step, which resamples the audio chunk
+                        // ############################
+                        // ### resample input
+                        // ############################
+                        #ifdef MS_DEBUG_RECORDER_PACKETS
+                            LOG(LOG_VERBOSE, "Converting %d samples/channel from %p and store it to %p", tInputSamplesPerChannel, *tInputSamplesPlanes, mRecorderResampleBuffer);
+                        #endif
+                        //LOG(LOG_VERBOSE, "planes are %p and %p", mRecorderResampleBufferPlanes[0], mRecorderResampleBufferPlanes[1]);
+                        int tResamplingOutputSamples = HM_swr_convert(mRecorderAudioResampleContext, &mRecorderResampleBufferPlanes[0], MEDIA_SOURCE_SAMPLE_BUFFER_PER_CHANNEL, (const uint8_t**)tInputSamplesPlanes, tInputSamplesPerChannel);
+                        if (tResamplingOutputSamples != tInputSamplesPerChannel)
+                            LOG(LOG_ERROR, "Got %d samples instead of %d from audio resampling", tResamplingOutputSamples, tInputSamplesPerChannel);
+                        if(tResamplingOutputSamples <= 0)
+                            LOG(LOG_ERROR, "Amount of resampled samples (%d) is invalid", tResamplingOutputSamples);
+
+                        tInputSamplesPlanes = mRecorderResampleBufferPlanes;
+                    }
+
+                    // ####################################################################
+                    // ### buffer the input (resampled?) audio date for frame size conversion
+                    // ###################################################################
+                    for (int i = 0; i < mRecorderAudioChannels; i++)
+                    {
+                        int tFifoIndex = i;
+                        void *tInputBuffer = (void*)tInputSamplesPlanes[i];
+                        if (!av_sample_fmt_is_planar(mRecorderAudioFormat))
+                        {
+                            tInputBuffer = (void*)(tInputSamplesPlanes[0] + i * tWrittenFifoSizePerChannel);
+                            tFifoIndex = 0;
+                        }
+
+                        // ############################
+                        // ### reallocate FIFO space
+                        // ############################
+                        #ifdef MS_DEBUG_RECORDER_PACKETS
+                            LOG(LOG_VERBOSE, "Adding %d bytes (%d bytes/sample, input channels: %d, frame size: %d) to AUDIO FIFO %d with size of %d bytes", tWrittenFifoSizePerChannel, tInputAudioBytesPerSample, mInputAudioChannels, pSourceFrame->nb_samples, tFifoIndex, av_fifo_size(mRecorderSampleFifo[tFifoIndex]));
+                        #endif
+                        // is there enough space in the FIFO?
+                        if (av_fifo_space(mRecorderSampleFifo[tFifoIndex]) < tWrittenFifoSizePerChannel)
+                        {// no, we need reallocation
+                            if (av_fifo_realloc2(mRecorderSampleFifo[tFifoIndex], av_fifo_size(mRecorderSampleFifo[tFifoIndex]) + tWrittenFifoSizePerChannel - av_fifo_space(mRecorderSampleFifo[tFifoIndex])) < 0)
+                            {
+                                // acknowledge failed
+                                LOG(LOG_ERROR, "Reallocation of recorder FIFO audio buffer for channel %d failed", i);
+                            }
+                        }
+                        // ############################
+                        // ### write frame content to FIFO
+                        // ############################
+                        av_fifo_generic_write(mRecorderSampleFifo[tFifoIndex], tInputBuffer, tWrittenFifoSizePerChannel, NULL);
+                    }
+
+                    // ############################
+                    // ### check FIFO for available frames
+                    // ############################
+                    while (av_fifo_size(mRecorderSampleFifo[0]) >= tReadFifoSizePerChannel)
+                    {
+                        //####################################################################
+                        // create audio planes
+                        // ###################################################################
+                        uint8_t* tOutputBuffer = (uint8_t*)mRecorderResampleBuffer;
+                        for (int i = 0; i < mRecorderAudioChannels; i++)
+                        {
+                            int tFifoIndex = i;
+                            if (!av_sample_fmt_is_planar(mRecorderAudioFormat))
+                                tFifoIndex = 0;
+
+                            // ############################
+                            // ### read buffer from FIFO
+                            // ############################
+                            #ifdef MS_DEBUG_RECORDER_PACKETS
+                                LOG(LOG_VERBOSE, "Reading %d bytes (%d bytes/sample, frame size: %d samples per packet) from %d bytes of FIFO", tReadFifoSizePerChannel, tInputAudioBytesPerSample, mRecorderCodecContext->frame_size, av_fifo_size(mRecorderSampleFifo[tFifoIndex]));
+                            #endif
+                            HM_av_fifo_generic_read(mRecorderSampleFifo[tFifoIndex], (void*)tOutputBuffer, tReadFifoSizePerChannel);
+
+                            tOutputBuffer += tReadFifoSizePerChannel;
+                        }
+
+                        //####################################################################
+                        // create final frame for audio encoder
+                        // ###################################################################
+                        avcodec_get_frame_defaults(mRecorderFinalFrame);
+                        // nb_samples
+                        mRecorderFinalFrame->nb_samples = tOutputSamplesPerChannel;
+                        // pts
+                        int64_t tCurPts = av_rescale_q(mRecorderFrameNumber * mRecorderCodecContext->frame_size, (AVRational){1, mRecorderAudioSampleRate}, mRecorderCodecContext->time_base);
+                        mRecorderFinalFrame->pts = tCurPts;
+                        //data
+                        int tRes = 0;
+                        if ((tRes = avcodec_fill_audio_frame(mRecorderFinalFrame, mRecorderAudioChannels, mRecorderAudioFormat, (const uint8_t *)mRecorderResampleBuffer, tReadFifoSize, 1)) < 0)
+                            LOG(LOG_ERROR, "Could not fill the audio frame with the provided data from the audio resampling step because of \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
+                        #ifdef MS_DEBUG_RECORDER_PACKETS
+                            LOG(LOG_VERBOSE, "Recording sample buffer with PTS: %ld (chunk: %ld", tCurPts, mRecorderFrameNumber);
+                            LOG(LOG_VERBOSE, "Filling audio frame with buffer size: %d", tReadFifoSize);
+                        #endif
+
+                        // #########################################
+                        // init. packet structure
+                        // #########################################
+                        av_init_packet(tPacket);
+                        tPacket->data = NULL;
+                        tPacket->size = 0;
+
+                        // #########################################
+                        // re-encode the frame
+                        // #########################################
+                        // re-encode the sample
+                        #ifdef MS_DEBUG_RECORDER_FRAMES
+                            LOG(LOG_VERBOSE, "Recording audio frame..");
+                            LOG(LOG_VERBOSE, "      ..key frame: %d", mRecorderFinalFrame->key_frame);
+                            LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(mRecorderFinalFrame).c_str());
+                            LOG(LOG_VERBOSE, "      ..pts: %ld", mRecorderFinalFrame->pts);
+                            LOG(LOG_VERBOSE, "      ..coded pic number: %d", mRecorderFinalFrame->coded_picture_number);
+                            LOG(LOG_VERBOSE, "      ..display pic number: %d", mRecorderFinalFrame->display_picture_number);
+                            LOG(LOG_VERBOSE, "      ..nr. of samples: %d", mRecorderFinalFrame->nb_samples);
+                            LOG(LOG_VERBOSE, "Recorder audio output data planes...");
+                            for (int i = 0; i < AV_NUM_DATA_POINTERS; i++)
+                            {
+                                LOG(LOG_VERBOSE, "%d - %p - %d", i, mRecorderFinalFrame->data[i], mRecorderFinalFrame->linesize[i]);
+                            }
+                        #endif
+
+                        tEncoderResult = avcodec_encode_audio2(mRecorderCodecContext, tPacket, mRecorderFinalFrame, &tFrameFinished);
+
+                        // #########################################
+                        // write encoded frame
+                        // #########################################
+                        if (tEncoderResult >= 0)
+                        {
+                            if (tFrameFinished == 1)
+                            {
+                                #ifdef MS_DEBUG_RECORDER_PACKETS
+                                    LOG(LOG_VERBOSE, "Recording packet..");
+                                    LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
+                                    LOG(LOG_VERBOSE, "      ..pts: %ld (fps: %3.2f)", tPacket->pts, mFrameRate);
+                                    LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket->dts);
+                                    LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
+                                    LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket->pos);
+                                #endif
+
+                                 // distribute the encoded frame
+                                 if (av_write_frame(mRecorderFormatContext, tPacket) != 0)
+                                     LOG(LOG_ERROR, "Couldn't write %s frame to file", GetMediaTypeStr().c_str());
+                            }else
+                            {// audio frame was buffered by ffmpeg
+                                LOG(LOG_VERBOSE, "Audio frame was buffered");
+                            }
+                        }else
+                            LOG(LOG_ERROR, "Couldn't re-encode current %s frame", GetMediaTypeStr().c_str());
+
+                        av_free_packet(tPacket);
+                        mRecorderFrameNumber++;
+                    }
+                }
+
+                break;
+
+        default:
+                LOG(LOG_ERROR, "Unknown format: %d", mMediaType);
+                break;
+    }
 }
 
 void MediaSource::RecordSamples(int16_t *pSourceSamples, int pSourceSamplesSize)
 {
-    AVPacket            tPacketStruc, *tPacket = &tPacketStruc;
-    int                 tFrameSize;
-    int64_t             tCurrentPts = 1;
+    AVFrame *tFrame = AllocFrame();
 
-    if (mMediaType == MEDIA_VIDEO)
-    {
-        LOG(LOG_ERROR, "Wrong media type (video)");
-        return;
-    }
+    //####################################################################
+    // create final frame for audio encoder
+    // ###################################################################
+    // nb_samples
+    tFrame->nb_samples = pSourceSamplesSize / (mInputAudioChannels * av_get_bytes_per_sample(mInputAudioFormat));
+    // data
+    tFrame->data[0] = (uint8_t*)pSourceSamples;
 
-    if (!mRecording)
-    {
-        LOG(LOG_ERROR, "Recording not started");
-        return;
-    }
+    RecordFrame(tFrame);
 
-    // #########################################
-    // frame rate emulation
-    // #########################################
-    // inspired by "output_packet" from ffmpeg.c
-//TODO: adapt the following code for real-time recording to the file? (similar to the video recording part)
-//    if (mRecorderRealTime)
-//    {
-//        // should we initiate the StartPts value?
-//        if (mRecorderStartPts == -1)
-//        {
-//            tCurrentPts = 1;
-//            mRecorderStartPts = pSourceFrame->pts;
-//        }else
-//            tCurrentPts = pSourceFrame->pts - mRecorderStartPts;
-//    }else
-//        tCurrentPts = mRecorderChunkNumber;
-
-    // increase fifo buffer size by size of input buffer size
-    #ifdef MS_DEBUG_PACKETS
-        LOG(LOG_VERBOSE, "Adding %d bytes to fifo buffer with size of %d bytes", pSourceSamplesSize, av_fifo_size(mRecorderSampleFifo));
-    #endif
-    if (av_fifo_realloc2(mRecorderSampleFifo, av_fifo_size(mRecorderSampleFifo) + pSourceSamplesSize) < 0)
-    {
-        // acknowledge failed
-        LOG(LOG_ERROR, "Reallocation of FIFO audio buffer failed");
-
-        return;
-    }
-
-    // write new samples into fifo buffer
-    av_fifo_generic_write(mRecorderSampleFifo, pSourceSamples, pSourceSamplesSize, NULL);
-
-    while (av_fifo_size(mRecorderSampleFifo) > 2 * mRecorderCodecContext->frame_size * mRecorderCodecContext->channels)
-    {
-        #ifdef MS_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "Reading %d bytes from %d bytes of fifo", 2 * mRecorderCodecContext->frame_size * mRecorderCodecContext->channels, av_fifo_size(mRecorderSampleFifo));
-        #endif
-        // read sample data from the fifo buffer
-        HM_av_fifo_generic_read(mRecorderSampleFifo, (void*)mRecorderSamplesTempBuffer, /* assume signed 16 bit */ 2 * mRecorderCodecContext->frame_size * mRecorderCodecContext->channels);
-
-        //####################################################################
-        // re-encode the sample
-        // ###################################################################
-        // re-encode the sample
-        #ifdef MS_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "Reencoding audio frame..");
-            LOG(LOG_VERBOSE, "Gonna encode with frame_size %d and channels %d", mRecorderCodecContext->frame_size, mRecorderCodecContext->channels);
-        #endif
-        int tEncodingResult = avcodec_encode_audio(mRecorderCodecContext, (uint8_t *)mRecorderEncoderChunkBuffer, /* assume signed 16 bit */ 2 * mRecorderCodecContext->frame_size * mRecorderCodecContext->channels, (const short *)mRecorderSamplesTempBuffer);
-
-        if (tEncodingResult > 0)
-        {
-            av_init_packet(tPacket);
-            mFrameNumber++;
-
-            // adapt pts value
-            if ((mRecorderCodecContext->coded_frame) && (mRecorderCodecContext->coded_frame->pts != 0))
-                tPacket->pts = av_rescale_q(mRecorderCodecContext->coded_frame->pts, mRecorderCodecContext->time_base, mRecorderFormatContext->streams[0]->time_base);
-            tPacket->flags |= AV_PKT_FLAG_KEY;
-
-            // we only have one stream per audio stream
-            tPacket->stream_index = 0;
-            tPacket->data = (uint8_t *)mRecorderEncoderChunkBuffer;
-            tPacket->size = tEncodingResult;
-            tPacket->pts = mRecorderChunkNumber;
-            tPacket->dts = mRecorderChunkNumber;
-//            tPacket->pos = av_gettime() - mStartPts;
-
-            #ifdef MSM_DEBUG_PACKETS
-                LOG(LOG_VERBOSE, "Writing audio packet: %5d to file", mRecorderChunkNumber);
-                LOG(LOG_VERBOSE, "      ..pts: %ld", tPacket->pts);
-                LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket->dts);
-                LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
-                LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket->pos);
-            #endif
-
-            //####################################################################
-            // distribute the encoded frame
-            // ###################################################################
-             if (av_write_frame(mRecorderFormatContext, tPacket) != 0)
-             {
-                 LOG(LOG_ERROR, "Couldn't write audio sample to file");
-             }
-
-             av_free_packet(tPacket);
-        }else
-            LOG(LOG_INFO, "Couldn't re-encode current audio sample");
-    }
-
-    mRecorderChunkNumber++;
+    av_free(tFrame);
 }
 
 string MediaSource::GetFrameType(AVFrame *pFrame)
 {
     string tResult = "unknown";
 
-    switch(pFrame->pict_type)
-    {
-            case AV_PICTURE_TYPE_NONE:
-                tResult = "undef.";
-                break;
-            case AV_PICTURE_TYPE_I:
-                tResult = "i";
-                break;
-            case AV_PICTURE_TYPE_P:
-                tResult = "p";
-                break;
-            case AV_PICTURE_TYPE_B:
-                tResult = "b";
-                break;
-            default:
-                tResult = "type " +toString(pFrame->pict_type);
-                break;
+    if (mMediaType == MEDIA_VIDEO)
+    {// video
+        switch(pFrame->pict_type)
+        {
+                case AV_PICTURE_TYPE_NONE:
+                    tResult = "undef.";
+                    break;
+                case AV_PICTURE_TYPE_I:
+                    tResult = "i";
+                    break;
+                case AV_PICTURE_TYPE_P:
+                    tResult = "p";
+                    break;
+                case AV_PICTURE_TYPE_B:
+                    tResult = "b";
+                    break;
+                default:
+                    tResult = "type " +toString(pFrame->pict_type);
+                    break;
+        }
+    }else if (mMediaType == MEDIA_AUDIO)
+    {// audio
+        tResult = "audio";
     }
     return tResult;
 }
@@ -3189,6 +3360,13 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     {
     	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't open video codec because of \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
         return false;
+    }
+
+    if (tCodec->capabilities & CODEC_CAP_DELAY)
+    {
+        LOG(LOG_WARN, "%s decoder output might be delayed for %s codec", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
+        LOG(LOG_WARN, "%s decoder output might be delayed for %s codec", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
+        LOG(LOG_WARN, "%s decoder output might be delayed for %s codec", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
     }
 
     //HINT: we allow the input bit stream to be truncated at packet boundaries instead of frame boundaries,
