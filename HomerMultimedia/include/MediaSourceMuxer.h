@@ -82,6 +82,7 @@ public:
     virtual int GetOutputChannels();
     virtual int GetInputSampleRate();
     virtual int GetInputChannels();
+    virtual std::string GetInputFormatStr();
 
     /* video */
     virtual float GetFrameRate();
@@ -203,7 +204,7 @@ private:
 
     /* FPS limitation */
     bool BelowMaxFps(int pFrameNumber);
-    int64_t CalculatePts(int pFrameNumber);
+    int64_t CalculateEncoderPts(int pFrameNumber);
 
     /* transcoder */
     virtual void* Run(void* pArgs = NULL); // transcoder main loop
