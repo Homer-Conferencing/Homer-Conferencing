@@ -240,11 +240,10 @@ QStringList OverviewPlaylistWidget::LetUserSelectAudioFile(QWidget *pParent, QSt
     return tResult;
 }
 
-static QString sAllSaveAudioFilter =  (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.mp3 *.ogg *.wav)";
+static QString sAllSaveAudioFilter =  (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.mp3 *.wav)";
 static QString sSaveAudioFilters =  sAllSaveAudioFilter + ";;"\
                     "MPEG Audio Layer 2/3 Format (*.mp3);;"\
-                    "OGG Container format (*.ogg);;"\
-                    "Waveform Audio File Format (*.wav)";
+                    "Wave Form Audio File Format (*.wav)";
 
 QString OverviewPlaylistWidget::LetUserSelectAudioSaveFile(QWidget *pParent, QString pDescription)
 {
