@@ -273,6 +273,7 @@ void MainWindow::ProcessRemainingArguments(QStringList &pArguments)
         if ((tFirst) && (tArgument != ""))
         {
             tFirst = false;
+            LOG(LOG_VERBOSE, "Found first parameter and interpret it as file open request: %s", tArgument.toStdString().c_str());
             PLAYLISTWIDGET.AddEntry(tArgument, true);
         }else
         {
