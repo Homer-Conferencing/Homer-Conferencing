@@ -3107,10 +3107,10 @@ bool MediaSource::FfmpegOpenInput(string pSource, int pLine, const char *pInputN
     mFormatContext->pb = pIOContext;
 
     // open input: automatic content detection is done inside ffmpeg
-    LOG(LOG_VERBOSE, "    ..calling avformat_open_input()");
+    LOG(LOG_VERBOSE, "    ..calling avformat_open_input() for %s source", GetMediaTypeStr().c_str());
     mFormatContext->interrupt_callback.callback = FindStreamInfoCallback;
     mFormatContext->interrupt_callback.opaque = this;
-	if ((tRes = avformat_open_input(&mFormatContext, pInputName, pInputFormat, NULL)) != 0)
+	if ((tRes = avformat_open_input(&mFormatContext, pInputName, pInputFormat, NULL)) < 0)
 	{
     	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't open %s input because of \"%s\"(%d)", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)), tRes);
 
@@ -3165,7 +3165,7 @@ bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
     //mFormatContext->flags |= AVFMT_FLAG_DISCARD_CORRUPT;
 
     //LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Current format context flags: %d, packet buffer: %p, raw packet buffer: %p, nb streams: %d", mFormatContext->flags, mFormatContext->packet_buffer, mFormatContext->raw_packet_buffer, mFormatContext->nb_streams);
-    LOG(LOG_VERBOSE, "    ..calling avformat_find_stream_info()");
+    LOG(LOG_VERBOSE, "    ..calling avformat_find_stream_info() for %s source", GetMediaTypeStr().c_str());
     if ((tRes = avformat_find_stream_info(mFormatContext, NULL)) < 0)
     {
         if (!mGrabbingStopped)
@@ -3179,7 +3179,7 @@ bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
         return false;
     }
 
-	LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected all streams");
+	LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected all %s streams", GetMediaTypeStr().c_str());
 
     return true;
 }
