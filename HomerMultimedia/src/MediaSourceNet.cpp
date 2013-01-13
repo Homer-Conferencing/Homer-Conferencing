@@ -257,7 +257,7 @@ void NetworkListener::StartListener()
         {
             if (tLoops % 10 == 0)
                 LOG(LOG_VERBOSE, "Waiting for start of %s network listener thread, loop count: %d", mMediaSourceNet->GetMediaTypeStr().c_str(), ++tLoops);
-            Thread::Suspend(100 * 1000);
+            Thread::Suspend(25 * 1000);
         }
     }
 }
@@ -284,10 +284,10 @@ void NetworkListener::StopListener()
 	do
 	{
 		if(tSignalingRound > 0)
-			LOG(LOG_WARN, "Signaling round %d to stop %s network listener, system has high load", tSignalingRound, mMediaSourceNet->GetMediaTypeStr().c_str());
+			LOG(LOG_WARN, "Signaling attempt %d to stop %s network listener", tSignalingRound, mMediaSourceNet->GetMediaTypeStr().c_str());
 		tSignalingRound++;
 
-		Suspend(100 * 1000);
+		Suspend(25 * 1000);
 	}while(IsRunning());
     
     LOG(LOG_VERBOSE, "%s network listener stopped", mMediaSourceNet->GetMediaTypeStr().c_str());
