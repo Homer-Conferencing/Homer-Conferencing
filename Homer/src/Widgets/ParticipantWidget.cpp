@@ -101,7 +101,8 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
     mLastVideoSynchronizationTimestamp = 0;
     mAVSynchActive = false;
     mAVPreBuffering = false;
-    mAvPreBufferingAutoRestart = false;
+    mAVSyncCounter = 0;
+    mAVPreBufferingAutoRestart = false;
     mCurrentMovieFile = "";
     mMainWindow = pMainWindow;
     mMovieSliderPosition = 0;
@@ -278,7 +279,7 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVCon
 
                     mAVSynchActive = true;
                     mAVPreBuffering = true;
-                    mAvPreBufferingAutoRestart = true;
+                    mAVPreBufferingAutoRestart = true;
 
                     break;
         case PARTICIPANT:
@@ -323,7 +324,7 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVCon
 
                     mAVSynchActive = true;
                     mAVPreBuffering = true;
-                    mAvPreBufferingAutoRestart = true;
+                    mAVPreBufferingAutoRestart = true;
 
 					break;
         case PREVIEW:
@@ -395,7 +396,7 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVCon
 
                     mAVSynchActive = tOpenVideoAudioPreviewDialog->AVSynchronization();
                     mAVPreBuffering = tOpenVideoAudioPreviewDialog->AVPreBuffering();
-                    mAvPreBufferingAutoRestart = tOpenVideoAudioPreviewDialog->AVPreBufferingAutoRestart();
+                    mAVPreBufferingAutoRestart = tOpenVideoAudioPreviewDialog->AVPreBufferingAutoRestart();
 
                     delete tOpenVideoAudioPreviewDialog;
 
@@ -1434,6 +1435,7 @@ void ParticipantWidget::AVSync()
 										LOG(LOG_WARN, "Detected asynchronous A/V playback, drift is %3.2f seconds (audio before video), max. allowed drift is %3.2f seconds, last synch. was at %lld, synchronizing now..", tTimeDiff, AV_SYNC_MAX_DRIFT, mTimeOfLastAVSynch);
 
 									mAudioWidget->GetWorker()->SyncClock(mVideoSource);
+									mAVSyncCounter++;
 									ResetAVSync();
 								}else
 								{// we tried to adapt waiting times for AV_SYNC_CONTINUOUS_ASYNC_THRESHOLD_TRY_RESET times, now we try to reset the A/V media sources
@@ -2072,7 +2074,7 @@ void ParticipantWidget::UpdateAVStatistics()
 		else
 			tAVStats += Homer::Gui::ParticipantWidget::tr("inactive");
 		tAVStats += " ";
-		if (mAvPreBufferingAutoRestart)
+		if (mAVPreBufferingAutoRestart)
 			tAVStats += Homer::Gui::ParticipantWidget::tr("(auto restart)");
 
 		tAVStats += "\n     " + Homer::Gui::ParticipantWidget::tr("A/V synchronization:") + " ";
@@ -2080,6 +2082,9 @@ void ParticipantWidget::UpdateAVStatistics()
 			tAVStats += Homer::Gui::ParticipantWidget::tr("active");
 		else
 			tAVStats += Homer::Gui::ParticipantWidget::tr("inactive");
+
+        tAVStats += "\n     " + Homer::Gui::ParticipantWidget::tr("A/V synchronizations:") + " ";
+		tAVStats += QString("%1").arg(mAVSyncCounter);
 
 		tAVStats += "\n\n";
 
@@ -2118,7 +2123,7 @@ void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
         // update the A/V synch. state
         mAVSynchActive = tActive;
         mAVPreBuffering = tActive;
-        mAvPreBufferingAutoRestart = tActive;
+        mAVPreBufferingAutoRestart = tActive;
 	}
 
     UpdateMovieControls();

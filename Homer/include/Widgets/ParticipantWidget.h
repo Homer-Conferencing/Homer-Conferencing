@@ -253,6 +253,7 @@ private:
     /* A/V controls */
     QAction					*mAssignedActionAVControls;
     /* A/V synch. */
+    int64_t                 mAVSyncCounter;
     int64_t					mLastAudioSynchronizationTimestamp;
     int64_t					mLastVideoSynchronizationTimestamp;
     float                   mVideoDelayAVDrift;
@@ -263,7 +264,7 @@ private:
     MovieControlWidget      *mFullscreeMovieControlWidget;
     bool                    mAVSynchActive;
     bool                    mAVPreBuffering;
-    bool                    mAvPreBufferingAutoRestart;
+    bool                    mAVPreBufferingAutoRestart;
     /* Mosaic mode */
     bool					mMosaicMode;
     bool					mMosaicModeAVControlsWereVisible;
