@@ -1066,7 +1066,7 @@ void* MediaSourceMem::Run(void* pArgs)
     AVFrame             *tSourceFrame = NULL;
     AVPacket            tPacketStruc, *tPacket = &tPacketStruc;
     int                 tFrameFinished = 0;
-    int                 tBytesDecoded = 0;
+    int                 tDecoderResult = 0;
     int                 tRes = 0;
     int                 tChunkBufferSize = 0;
     uint8_t             *tChunkBuffer;
@@ -1430,7 +1430,7 @@ void* MediaSourceMem::Run(void* pArgs)
 
                                 // Decode the next chunk of data
                                 tFrameFinished = 0;
-                                tBytesDecoded = HM_avcodec_decode_video(mCodecContext, tSourceFrame, &tFrameFinished, tPacket);
+                                tDecoderResult = HM_avcodec_decode_video(mCodecContext, tSourceFrame, &tFrameFinished, tPacket);
 
                                 #ifdef MSMEM_DEBUG_VIDEO_FRAME_RECEIVER
                                     LOG(LOG_VERBOSE, "New video frame before PTS adaption..");
@@ -1461,7 +1461,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                     LOG(LOG_ERROR, "MPEG2 picture should be repeated for %d times, unsupported feature!", tSourceFrame->repeat_pict);
 
                                 #ifdef MSMEM_DEBUG_PACKETS
-                                    LOG(LOG_VERBOSE, "    ..video decoding ended with result %d and %d bytes of output\n", tFrameFinished, tBytesDecoded);
+                                    LOG(LOG_VERBOSE, "    ..video decoding ended with result %d and %d bytes of output\n", tFrameFinished, tDecoderResult);
                                 #endif
 
                                 // log lost packets: difference between currently received frame number and the number of locally processed frames
@@ -1571,7 +1571,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                 // simulate a successful decoding step
                                 tFrameFinished = 1;
                                 // some value above 0
-                                tBytesDecoded = INT_MAX;
+                                tDecoderResult = INT_MAX;
                             }
 
                             // store the derived PTS value in the fields of the source frame
@@ -1611,86 +1611,81 @@ void* MediaSourceMem::Run(void* pArgs)
                             }else
                             {// we are not waiting for next key frame and can proceed as usual
                                 // do we have valid input from the video decoder?
-                                if ((tFrameFinished != 0) && (tBytesDecoded >= 0))
+                                if (tDecoderResult >= 0)
                                 {
-                                    // ############################
-                                    // ### ANNOUNCE FRAME (statistics)
-                                    // ############################
-                                    AnnounceFrame(tSourceFrame);
+                                    if (tFrameFinished == 1)
+                                    {
+                                        // ############################
+                                        // ### ANNOUNCE FRAME (statistics)
+                                        // ############################
+                                        AnnounceFrame(tSourceFrame);
 
-                                    // ############################
-                                    // ### RECORD FRAME
-                                    // ############################
-                                    // re-encode the frame and write it to file
-                                    if (mRecording)
-                                        RecordFrame(tSourceFrame);
+                                        // ############################
+                                        // ### RECORD FRAME
+                                        // ############################
+                                        // re-encode the frame and write it to file
+                                        if (mRecording)
+                                            RecordFrame(tSourceFrame);
 
-                                    // ############################
-                                    // ### SCALE FRAME (CONVERT): is done inside a separate thread
-                                    // ############################
-                                    if (!tInputIsPicture)
-                                    {// we decode one frame of a stream
-                                        #ifdef MSMEM_DEBUG_PACKETS
-                                            LOG(LOG_VERBOSE, "Scale (separate thread) video frame..");
-                                            LOG(LOG_VERBOSE, "Video frame data: %p, %p, %p, %p", tSourceFrame->data[0], tSourceFrame->data[1], tSourceFrame->data[2], tSourceFrame->data[3]);
-                                            LOG(LOG_VERBOSE, "Video frame line size: %d, %d, %d, %d", tSourceFrame->linesize[0], tSourceFrame->linesize[1], tSourceFrame->linesize[2], tSourceFrame->linesize[3]);
-                                        #endif
-
-//                                        //LOG(LOG_VERBOSE, "New %s RGB frame: dts: %ld, pts: %ld, pos: %ld, pic. nr.: %d", GetMediaTypeStr().c_str(), tRGBFrame->pkt_dts, tRGBFrame->pkt_pts, tRGBFrame->pkt_pos, tRGBFrame->display_picture_number);
-
-                                        if ((tRes = avpicture_layout((AVPicture*)tSourceFrame, mCodecContext->pix_fmt, mSourceResX, mSourceResY, tChunkBuffer, tChunkBufferSize)) < 0)
-                                        {
-                                            LOG(LOG_WARN, "Couldn't copy AVPicture/AVFrame pixel data into chunk buffer because \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
-                                        }else
-                                        {// everything is okay, we have the current frame in tChunkBuffer and can send the frame to the video scaler
-                                            tCurrentChunkSize = avpicture_get_size(mCodecContext->pix_fmt, mSourceResX, mSourceResY);
-                                        }
-                                    }else
-                                    {// we decode a picture
-                                        if  ((mDecoderSinglePictureResX != mDecoderTargetResX) || (mDecoderSinglePictureResY != mDecoderTargetResY))
-                                        {
+                                        // ############################
+                                        // ### SCALE FRAME (CONVERT): is done inside a separate thread
+                                        // ############################
+                                        if (!tInputIsPicture)
+                                        {// we decode one frame of a stream
                                             #ifdef MSMEM_DEBUG_PACKETS
-                                                LOG(LOG_VERBOSE, "Scale (within decoder thread) video frame..");
-                                                LOG(LOG_VERBOSE, "Video frame data: %p, %p", tSourceFrame->data[0], tSourceFrame->data[1]);
-                                                LOG(LOG_VERBOSE, "Video frame line size: %d, %d", tSourceFrame->linesize[0], tSourceFrame->linesize[1]);
+                                                LOG(LOG_VERBOSE, "Scale (separate thread) video frame..");
+                                                LOG(LOG_VERBOSE, "Video frame data: %p, %p, %p, %p", tSourceFrame->data[0], tSourceFrame->data[1], tSourceFrame->data[2], tSourceFrame->data[3]);
+                                                LOG(LOG_VERBOSE, "Video frame line size: %d, %d, %d, %d", tSourceFrame->linesize[0], tSourceFrame->linesize[1], tSourceFrame->linesize[2], tSourceFrame->linesize[3]);
                                             #endif
 
-                                            // scale the video frame
-                                            LOG(LOG_VERBOSE, "Scaling video input picture..");
-                                            tRes = HM_sws_scale(mVideoScalerContext, tSourceFrame->data, tSourceFrame->linesize, 0, mCodecContext->height, tRGBFrame->data, tRGBFrame->linesize);
-                                            if (tRes == 0)
-                                                LOG(LOG_ERROR, "Failed to scale the video frame");
+    //                                        //LOG(LOG_VERBOSE, "New %s RGB frame: dts: %ld, pts: %ld, pos: %ld, pic. nr.: %d", GetMediaTypeStr().c_str(), tRGBFrame->pkt_dts, tRGBFrame->pkt_pts, tRGBFrame->pkt_pos, tRGBFrame->display_picture_number);
 
-                                            LOG(LOG_VERBOSE, "Decoded picture into RGB frame: dts: %ld, pts: %ld, pos: %ld, pic. nr.: %d", tRGBFrame->pkt_dts, tRGBFrame->pkt_pts, tRGBFrame->pkt_pos, tRGBFrame->display_picture_number);
-
-                                            mDecoderSinglePictureResX = mDecoderTargetResX;
-                                            mDecoderSinglePictureResY = mDecoderTargetResY;
+                                            if ((tRes = avpicture_layout((AVPicture*)tSourceFrame, mCodecContext->pix_fmt, mSourceResX, mSourceResY, tChunkBuffer, tChunkBufferSize)) < 0)
+                                            {
+                                                LOG(LOG_WARN, "Couldn't copy AVPicture/AVFrame pixel data into chunk buffer because \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
+                                            }else
+                                            {// everything is okay, we have the current frame in tChunkBuffer and can send the frame to the video scaler
+                                                tCurrentChunkSize = avpicture_get_size(mCodecContext->pix_fmt, mSourceResX, mSourceResY);
+                                            }
                                         }else
-                                        {// use stored RGB frame
+                                        {// we decode a picture
+                                            if  ((mDecoderSinglePictureResX != mDecoderTargetResX) || (mDecoderSinglePictureResY != mDecoderTargetResY))
+                                            {
+                                                #ifdef MSMEM_DEBUG_PACKETS
+                                                    LOG(LOG_VERBOSE, "Scale (within decoder thread) video frame..");
+                                                    LOG(LOG_VERBOSE, "Video frame data: %p, %p", tSourceFrame->data[0], tSourceFrame->data[1]);
+                                                    LOG(LOG_VERBOSE, "Video frame line size: %d, %d", tSourceFrame->linesize[0], tSourceFrame->linesize[1]);
+                                                #endif
 
-                                            //HINT: tCurremtChunkSize will be updated later
-                                            //HINT: tChunkBuffer is still valid from first decoder loop
+                                                // scale the video frame
+                                                LOG(LOG_VERBOSE, "Scaling video input picture..");
+                                                tRes = HM_sws_scale(mVideoScalerContext, tSourceFrame->data, tSourceFrame->linesize, 0, mCodecContext->height, tRGBFrame->data, tRGBFrame->linesize);
+                                                if (tRes == 0)
+                                                    LOG(LOG_ERROR, "Failed to scale the video frame");
+
+                                                LOG(LOG_VERBOSE, "Decoded picture into RGB frame: dts: %ld, pts: %ld, pos: %ld, pic. nr.: %d", tRGBFrame->pkt_dts, tRGBFrame->pkt_pts, tRGBFrame->pkt_pos, tRGBFrame->display_picture_number);
+
+                                                mDecoderSinglePictureResX = mDecoderTargetResX;
+                                                mDecoderSinglePictureResY = mDecoderTargetResY;
+                                            }else
+                                            {// use stored RGB frame
+
+                                                //HINT: tCurremtChunkSize will be updated later
+                                                //HINT: tChunkBuffer is still valid from first decoder loop
+                                            }
+                                            // return size of decoded frame
+                                            tCurrentChunkSize = avpicture_get_size(PIX_FMT_RGB32, mDecoderTargetResX, mDecoderTargetResY);
                                         }
-                                        // return size of decoded frame
-                                        tCurrentChunkSize = avpicture_get_size(PIX_FMT_RGB32, mDecoderTargetResX, mDecoderTargetResY);
+                                        #ifdef MSMEM_DEBUG_PACKETS
+                                            LOG(LOG_VERBOSE, "Resulting frame size is %d bytes", tCurrentChunkSize);
+                                        #endif
+                                    }else
+                                    {// video frame was buffered by ffmpeg
+                                        LOG(LOG_VERBOSE, "Video frame was buffered");
                                     }
-                                    #ifdef MSMEM_DEBUG_PACKETS
-                                        LOG(LOG_VERBOSE, "Resulting frame size is %d bytes", tCurrentChunkSize);
-                                    #endif
                                 }else
                                 {
-                                    if(tBytesDecoded != 0)
-                                    {
-                                        // only print debug output if it is not "operation not permitted"
-                                        //if ((tBytesDecoded < 0) && (AVUNERROR(tBytesDecoded) != EPERM))
-                                        // acknowledge failed"
-                                        if (tPacket->size != tBytesDecoded)
-                                            LOG(LOG_WARN, "Couldn't decode video frame %ld because \"%s\"(%d), got a decoder result: %d", tCurPacketPts, strerror(AVUNERROR(tBytesDecoded)), AVUNERROR(tBytesDecoded), (tFrameFinished == 0));
-                                        else
-                                            LOG(LOG_WARN, "Couldn't decode video frame %ld, got a decoder result: %d", tCurPacketPts, (tFrameFinished != 0));
-                                    }else
-                                        LOG(LOG_VERBOSE, "Video decoder delivered no frame");
-
+                                    LOG(LOG_ERROR, "Couldn't decode video frame %ld because \"%s\"(%d), got a decoder result: %d", tCurPacketPts, strerror(AVUNERROR(tDecoderResult)), AVUNERROR(tDecoderResult), (tFrameFinished == 0));
                                     tCurrentChunkSize = 0;
                                 }
                             }
@@ -1713,109 +1708,115 @@ void* MediaSourceMem::Run(void* pArgs)
 
                             //printf("DecodeFrame..\n");
                             // Decode the next chunk of data
-                            int tBytesDecoded = avcodec_decode_audio4(mCodecContext, tAudioFrame, &tFrameFinished, tPacket);
-                            if ((tFrameFinished != 0) && (tBytesDecoded >= 0))
+                            tDecoderResult = avcodec_decode_audio4(mCodecContext, tAudioFrame, &tFrameFinished, tPacket);
+                            if (tDecoderResult >= 0)
                             {
-                                // ############################
-                                // ### ANNOUNCE FRAME (statistics)
-                                // ############################
-                                AnnounceFrame(tAudioFrame);
-
-                                // ############################
-                                // ### RECORD FRAME
-                                // ############################
-                                // re-encode the frame and write it to file
-                                if (mRecording)
-                                    RecordFrame(tAudioFrame);
-
-                                #ifdef MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
-                                    LOG(LOG_VERBOSE, "New audio frame..");
-                                    LOG(LOG_VERBOSE, "      ..size: %d bytes (%d samples of format %s)", tOutputBufferSize * tOutoutAudioBytesPerSample, tOutputBufferSize, av_get_sample_fmt_name(mOutputAudioFormat));
-                                #endif
-
-                                if (mAudioResampleContext != NULL)
-                                {// audio resampling needed: we have to insert an intermediate step, which resamples the audio chunk
-
-                                    // ############################
-                                    // ### RESAMPLE FRAME (CONVERT)
-                                    // ############################
-                                    const uint8_t **tAudioFramePlanes = (const uint8_t **)tAudioFrame->extended_data;
-                                    int tResampledBytes = (tOutputAudioBytesPerSample * mOutputAudioChannels) * HM_swr_convert(mAudioResampleContext, (uint8_t**)&tDecodedAudioSamples /* only one plane because this is packed audio data */, AVCODEC_MAX_AUDIO_FRAME_SIZE / (tOutputAudioBytesPerSample * mOutputAudioChannels) /* amount of possible output samples */, (const uint8_t**)tAudioFramePlanes, tAudioFrame->nb_samples);
-                                    if(tResampledBytes > 0)
-                                    {
-                                        tCurrentChunkSize = tResampledBytes;
-                                    }else
-                                    {
-                                        LOG(LOG_ERROR, "Amount of resampled bytes (%d) is invalid", tResampledBytes);
-                                        tCurrentChunkSize = 0;
-                                    }
-                                }else
-                                {// no audio resampling needed
-                                    // we can use the input buffer without modifications
-                                    tCurrentChunkSize = av_samples_get_buffer_size(NULL, tAudioFrame->channels, tAudioFrame->nb_samples, (enum AVSampleFormat) tAudioFrame->format, 1);
-                                    tDecodedAudioSamples = tAudioFrame->data[0];
-                                }
-
-                                if (tCurrentChunkSize > 0)
+                                if (tFrameFinished == 1)
                                 {
                                     // ############################
-                                    // ### WRITE FRAME TO FIFO
+                                    // ### ANNOUNCE FRAME (statistics)
                                     // ############################
-                                    #ifdef MSMEM_DEBUG_PACKETS
-                                        LOG(LOG_VERBOSE, "Adding %d bytes to AUDIO FIFO with size of %d bytes", tCurrentChunkSize, av_fifo_size(tSampleFifo));
+                                    AnnounceFrame(tAudioFrame);
+
+                                    // ############################
+                                    // ### RECORD FRAME
+                                    // ############################
+                                    // re-encode the frame and write it to file
+                                    if (mRecording)
+                                        RecordFrame(tAudioFrame);
+
+                                    #ifdef MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
+                                        LOG(LOG_VERBOSE, "New audio frame..");
+                                        LOG(LOG_VERBOSE, "      ..size: %d bytes (%d samples of format %s)", tOutputBufferSize * tOutoutAudioBytesPerSample, tOutputBufferSize, av_get_sample_fmt_name(mOutputAudioFormat));
                                     #endif
-                                    // is there enough space in the FIFO?
-                                    if (av_fifo_space(tSampleFifo) < tCurrentChunkSize)
-                                    {// no, we need reallocation
-                                        if (av_fifo_realloc2(tSampleFifo, av_fifo_size(tSampleFifo) + tCurrentChunkSize - av_fifo_space(tSampleFifo)) < 0)
+
+                                    if (mAudioResampleContext != NULL)
+                                    {// audio resampling needed: we have to insert an intermediate step, which resamples the audio chunk
+
+                                        // ############################
+                                        // ### RESAMPLE FRAME (CONVERT)
+                                        // ############################
+                                        const uint8_t **tAudioFramePlanes = (const uint8_t **)tAudioFrame->extended_data;
+                                        int tResampledBytes = (tOutputAudioBytesPerSample * mOutputAudioChannels) * HM_swr_convert(mAudioResampleContext, (uint8_t**)&tDecodedAudioSamples /* only one plane because this is packed audio data */, AVCODEC_MAX_AUDIO_FRAME_SIZE / (tOutputAudioBytesPerSample * mOutputAudioChannels) /* amount of possible output samples */, (const uint8_t**)tAudioFramePlanes, tAudioFrame->nb_samples);
+                                        if(tResampledBytes > 0)
                                         {
-                                            // acknowledge failed
-                                            LOG(LOG_ERROR, "Reallocation of FIFO audio buffer failed");
-                                        }
-                                    }
-
-                                    //LOG(LOG_VERBOSE, "ChunkSize: %d", pChunkSize);
-                                    // write new samples into fifo buffer
-                                    av_fifo_generic_write(tSampleFifo, tDecodedAudioSamples, tCurrentChunkSize, NULL);
-
-                                    // save PTS value to deliver it later to the frame grabbing thread
-                                    #ifdef MSMEM_DEBUG_PRE_BUFFERING
-                                        LOG(LOG_VERBOSE, "Setting current frame PTS to packet PTS: %ld", tCurPacketPts);
-                                    #endif
-                                    tCurFramePts = tCurPacketPts;
-
-                                    int tLoops = 0;
-                                    while (av_fifo_size(tSampleFifo) >= MEDIA_SOURCE_SAMPLES_BUFFER_SIZE)
-                                    {
-                                        tLoops++;
-                                        // ############################
-                                        // ### READ FRAME FROM FIFO
-                                        // ############################
-                                        #ifdef MSM_DEBUG_PACKETS
-                                            LOG(LOG_VERBOSE, "Loop %d-Reading %d bytes from %d bytes of fifo, current PTS: %ld", tLoops, MSF_DESIRED_AUDIO_INPUT_SIZE, av_fifo_size(tSampleFifo), tCurFramePts);
-                                        #endif
-                                        // read sample data from the fifo buffer
-                                        HM_av_fifo_generic_read(tSampleFifo, (void*)tChunkBuffer, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE);
-                                        tCurrentChunkSize = MEDIA_SOURCE_SAMPLES_BUFFER_SIZE;
-
-                                        // ############################
-                                        // ### WRITE FRAME TO OUTPUT FIFO
-                                        // ############################
-                                        // add new chunk to FIFO
-                                        if (tCurrentChunkSize <= mDecoderFifo->GetEntrySize())
-                                        {
-                                            #ifdef MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
-                                                LOG(LOG_VERBOSE, "Writing %d %s bytes at %p to output FIFO with PTS %ld, remaining audio data: %d bytes", tCurrentChunkSize, GetMediaTypeStr().c_str(), tChunkBuffer, tCurFramePts, av_fifo_size(tSampleFifo));
-                                            #endif
-                                            WriteFrameOutputBuffer((char*)tChunkBuffer, tCurrentChunkSize, tCurFramePts);
-                                            #ifdef MSMEM_DEBUG_DECODER_STATE
-                                                LOG(LOG_VERBOSE, "Successful audio buffer loop");
-                                            #endif
+                                            tCurrentChunkSize = tResampledBytes;
                                         }else
                                         {
-                                            LOG(LOG_ERROR, "Cannot write a %s chunk of %d bytes to the FIFO with %d bytes slots", GetMediaTypeStr().c_str(),  tCurrentChunkSize, mDecoderFifo->GetEntrySize());
+                                            LOG(LOG_ERROR, "Amount of resampled bytes (%d) is invalid", tResampledBytes);
+                                            tCurrentChunkSize = 0;
+                                        }
+                                    }else
+                                    {// no audio resampling needed
+                                        // we can use the input buffer without modifications
+                                        tCurrentChunkSize = av_samples_get_buffer_size(NULL, tAudioFrame->channels, tAudioFrame->nb_samples, (enum AVSampleFormat) tAudioFrame->format, 1);
+                                        tDecodedAudioSamples = tAudioFrame->data[0];
+                                    }
+
+                                    if (tCurrentChunkSize > 0)
+                                    {
+                                        // ############################
+                                        // ### WRITE FRAME TO FIFO
+                                        // ############################
+                                        #ifdef MSMEM_DEBUG_PACKETS
+                                            LOG(LOG_VERBOSE, "Adding %d bytes to AUDIO FIFO with size of %d bytes", tCurrentChunkSize, av_fifo_size(tSampleFifo));
+                                        #endif
+                                        // is there enough space in the FIFO?
+                                        if (av_fifo_space(tSampleFifo) < tCurrentChunkSize)
+                                        {// no, we need reallocation
+                                            if (av_fifo_realloc2(tSampleFifo, av_fifo_size(tSampleFifo) + tCurrentChunkSize - av_fifo_space(tSampleFifo)) < 0)
+                                            {
+                                                // acknowledge failed
+                                                LOG(LOG_ERROR, "Reallocation of FIFO audio buffer failed");
+                                            }
+                                        }
+
+                                        //LOG(LOG_VERBOSE, "ChunkSize: %d", pChunkSize);
+                                        // write new samples into fifo buffer
+                                        av_fifo_generic_write(tSampleFifo, tDecodedAudioSamples, tCurrentChunkSize, NULL);
+
+                                        // save PTS value to deliver it later to the frame grabbing thread
+                                        #ifdef MSMEM_DEBUG_PRE_BUFFERING
+                                            LOG(LOG_VERBOSE, "Setting current frame PTS to packet PTS: %ld", tCurPacketPts);
+                                        #endif
+                                        tCurFramePts = tCurPacketPts;
+
+                                        int tLoops = 0;
+                                        while (av_fifo_size(tSampleFifo) >= MEDIA_SOURCE_SAMPLES_BUFFER_SIZE)
+                                        {
+                                            tLoops++;
+                                            // ############################
+                                            // ### READ FRAME FROM FIFO
+                                            // ############################
+                                            #ifdef MSM_DEBUG_PACKETS
+                                                LOG(LOG_VERBOSE, "Loop %d-Reading %d bytes from %d bytes of fifo, current PTS: %ld", tLoops, MSF_DESIRED_AUDIO_INPUT_SIZE, av_fifo_size(tSampleFifo), tCurFramePts);
+                                            #endif
+                                            // read sample data from the fifo buffer
+                                            HM_av_fifo_generic_read(tSampleFifo, (void*)tChunkBuffer, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE);
+                                            tCurrentChunkSize = MEDIA_SOURCE_SAMPLES_BUFFER_SIZE;
+
+                                            // ############################
+                                            // ### WRITE FRAME TO OUTPUT FIFO
+                                            // ############################
+                                            // add new chunk to FIFO
+                                            if (tCurrentChunkSize <= mDecoderFifo->GetEntrySize())
+                                            {
+                                                #ifdef MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
+                                                    LOG(LOG_VERBOSE, "Writing %d %s bytes at %p to output FIFO with PTS %ld, remaining audio data: %d bytes", tCurrentChunkSize, GetMediaTypeStr().c_str(), tChunkBuffer, tCurFramePts, av_fifo_size(tSampleFifo));
+                                                #endif
+                                                WriteFrameOutputBuffer((char*)tChunkBuffer, tCurrentChunkSize, tCurFramePts);
+                                                #ifdef MSMEM_DEBUG_DECODER_STATE
+                                                    LOG(LOG_VERBOSE, "Successful audio buffer loop");
+                                                #endif
+                                            }else
+                                            {
+                                                LOG(LOG_ERROR, "Cannot write a %s chunk of %d bytes to the FIFO with %d bytes slots", GetMediaTypeStr().c_str(),  tCurrentChunkSize, mDecoderFifo->GetEntrySize());
+                                            }
                                         }
                                     }
+                                }else
+                                {// audio frame was buffered by ffmpeg
+                                    LOG(LOG_VERBOSE, "Audio frame was buffered");
                                 }
 
                                 // reset chunk size to avoid additional writes to output FIFO because we already stored all valid audio buffers in output FIFO
@@ -1824,17 +1825,9 @@ void* MediaSourceMem::Run(void* pArgs)
                                     if (tLoops > 1)
                                         LOG(LOG_VERBOSE, "Wrote %d audio packets to output FIFO");
                                 #endif
-//+
                             }else
                             {
-                                // only print debug output if it is not "operation not permitted"
-                                //if (AVUNERROR(tBytesDecoded) != EPERM)
-                                // acknowledge failed"
-                                if (tPacket->size != tBytesDecoded)
-                                    LOG(LOG_WARN, "Couldn't decode audio samples %ld  because \"%s\"(%d)", tCurPacketPts, strerror(AVUNERROR(tBytesDecoded)), AVUNERROR(tBytesDecoded));
-                                else
-                                    LOG(LOG_WARN, "Couldn't decode audio samples %ld, got a decoder result: %d", tCurPacketPts, (tFrameFinished != 0));
-
+                                LOG(LOG_WARN, "Couldn't decode audio samples %ld  because \"%s\"(%d)", tCurPacketPts, strerror(AVUNERROR(tDecoderResult)), AVUNERROR(tDecoderResult));
                                 tCurrentChunkSize = 0;
                             }
                         }
