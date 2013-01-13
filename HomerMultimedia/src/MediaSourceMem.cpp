@@ -969,8 +969,8 @@ bool MediaSourceMem::InputIsPicture()
 //        LOG(LOG_VERBOSE, "Media type: %d", mFormatContext->streams[mMediaStreamIndex]->codec->codec_type);
 
     // do we have a picture?
-    if ((mMediaSourceOpened) &&
-        (mFormatContext != NULL) && (mFormatContext->streams[mMediaStreamIndex]) &&
+    //HINT: don't check "mMediaSourceOpened" here because we use this function within OpenVideoGrabDevice
+    if ((mFormatContext != NULL) && (mFormatContext->streams[mMediaStreamIndex]) &&
         (mFormatContext->streams[mMediaStreamIndex]->codec->codec_type == AVMEDIA_TYPE_VIDEO) &&
         (mFormatContext->streams[mMediaStreamIndex]->duration == 1))
         tResult = true;
@@ -1169,7 +1169,6 @@ void* MediaSourceMem::Run(void* pArgs)
     mDecoderLastReadPts = 0;
     mGrabberCurrentFrameIndex = 0;
     mFrameBufferLastWrittenFrameIndex = 0;
-    mDecoderSinglePictureGrabbed = false;
 
     // trigger a avcodec_flush_buffers()
     mDecoderFlushBuffersAfterSeeking = true;
@@ -1359,8 +1358,8 @@ void* MediaSourceMem::Run(void* pArgs)
                     //LOG(LOG_VERBOSE, "New %s chunk with size: %d and stream index: %d", GetMediaTypeStr().c_str(), tPacket->size, tPacket->stream_index);
                 #endif
             }else
-            {// no packet was generated
-                LOG(LOG_WARN, "No packet was read");
+            {// no packet was read
+                //LOG(LOG_VERBOSE, "No packet was read");
 
                 // generate dummy packet (av_free_packet() will destroy it later)
                 av_init_packet(tPacket);
@@ -2039,7 +2038,7 @@ void MediaSourceMem::CalibrateRTGrabbing()
 void MediaSourceMem::WaitForRTGrabbing()
 {
 	// return immediately if PTS from grabber is invalid
-	if (mGrabberCurrentFrameIndex == 0)
+	if ((mRtpActivated) && (mGrabberCurrentFrameIndex == 0))
 	{
 		LOG(LOG_WARN, "PTS from grabber is invalid: %.2f", (float)mGrabberCurrentFrameIndex);
 		return;
