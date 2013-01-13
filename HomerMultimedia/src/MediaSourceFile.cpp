@@ -127,7 +127,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if (!OpenDecoder())
     	return false;
 
-	if ((SupportsSeeking()) || (InputIsPicture()))
+	if (SupportsSeeking())
     {
     	int tResult = 0;
         if((tResult = avformat_seek_file(mFormatContext, -1, INT64_MIN, 0, INT64_MAX, AVSEEK_FLAG_ANY)) < 0)
@@ -320,6 +320,7 @@ bool MediaSourceFile::SupportsRecording()
 
 bool MediaSourceFile::SupportsSeeking()
 {
+    //LOG(LOG_VERBOSE, "#### %.2f", GetSeekEnd());
     return ((!InputIsPicture()) && (GetSeekEnd() > 0));
 }
 
