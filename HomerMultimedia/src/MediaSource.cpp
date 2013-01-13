@@ -1721,7 +1721,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     // set correct output format
     mRecorderFormatContext->oformat = tFormat;
     // verbose timestamp debugging
-    if (LOGGER.GetLogLevel() == LOG_VERBOSE)
+    if (LOGGER.GetLogLevel() == LOG_WORLD)
     {
         LOG(LOG_WARN, "Enabling ffmpeg timestamp debugging for recorder");
         mRecorderFormatContext->debug = FF_FDEBUG_TS;

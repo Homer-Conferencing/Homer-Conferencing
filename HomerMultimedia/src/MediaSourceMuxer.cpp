@@ -433,7 +433,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     // set correct IO-context
     mFormatContext->pb = tIoContext;
     // verbose timestamp debugging
-    if (LOGGER.GetLogLevel() == LOG_VERBOSE)
+    if (LOGGER.GetLogLevel() == LOG_WORLD)
     {
     	LOG(LOG_WARN, "Enabling ffmpeg timestamp debugging");
     	mFormatContext->debug = FF_FDEBUG_TS;
@@ -713,7 +713,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     // set correct IO-context
     mFormatContext->pb = tIoContext;
     // verbose timestamp debugging
-    if (LOGGER.GetLogLevel() == LOG_VERBOSE)
+    if (LOGGER.GetLogLevel() == LOG_WORLD)
     {
     	LOG(LOG_WARN, "Enabling ffmpeg timestamp debugging");
     	mFormatContext->debug = FF_FDEBUG_TS;
