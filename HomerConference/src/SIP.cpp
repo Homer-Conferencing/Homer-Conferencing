@@ -252,7 +252,7 @@ void* SIP::Run(void*)
     SVC_PROCESS_STATISTIC.AssignThreadName("SIP-MainLoop");
 
     LOG(LOG_VERBOSE, "Setting up environment variables");
-    if (LOGGER.GetLogLevel() == LOG_VERBOSE)
+    if (LOGGER.GetLogLevel() == LOG_WORLD)
     {
         putenv((char*)"SOFIA_DEBUG=9"); // Default debugging level
         putenv((char*)"NUA_DEBUG=9"); //User Agent engine (nua)
