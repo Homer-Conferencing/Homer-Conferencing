@@ -2576,7 +2576,7 @@ bool RTP::RtcpParseSenderReport(char *&pData, int &pDataSize, int64_t &pEndToEnd
             pRelativeLoss = mRelativeLostPackets;
 
             #ifdef RTCP_DEBUG_PACKETS_DECODER
-                LOG(LOG_VERBOSE, "Received packets: %lu, should have received: %lu, concluded loss: %.2f", tLocallyReceivedPackets, tRemotelyReportedSentPackets, pRelativeLoss);
+                LOG(LOG_VERBOSE, "Received packets: %lu, should have received: %lu, loss: %.2f", tLocallyReceivedPackets, tRemotelyReportedSentPackets, pRelativeLoss);
             #endif
         }
         mRtcpLastRemoteNtpTime = tRemoteNtpTimestamp;
