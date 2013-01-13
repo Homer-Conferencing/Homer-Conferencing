@@ -127,7 +127,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if (!OpenDecoder())
     	return false;
 
-	if (SupportsSeeking())
+	if ((SupportsSeeking()) || (InputIsPicture()))
     {
     	int tResult = 0;
         if((tResult = avformat_seek_file(mFormatContext, -1, INT64_MIN, 0, INT64_MAX, AVSEEK_FLAG_ANY)) < 0)
@@ -410,8 +410,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
                     mDecoderWaitForNextKeyFramePackets = true;
                 }
 
-                tRes = (avformat_seek_file(mFormatContext, -1, INT64_MIN, tTargetTimestamp, INT64_MAX, 0) >= 0);
-                if (tRes < 0)
+                if ((tRes = avformat_seek_file(mFormatContext, -1, INT64_MIN, tTargetTimestamp, INT64_MAX, 0)) < 0)
                 {
                     LOG(LOG_ERROR, "Error during absolute seeking in %s source file because \"%s\"", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
                     tResult = false;
@@ -537,7 +536,7 @@ float MediaSourceFile::GetSeekPos()
             tCurrentFrameIndex -= mSourceStartPts;
         }
 
-        if (mNumberOfFrames > 0)
+        if (mNumberOfFrames > 1)
         {
             //LOG(LOG_VERBOSE, "Rel. progress: %.2f %.2f", tCurrentFrameIndex, mNumberOfFrames);
             float tRelProgress = tCurrentFrameIndex / mNumberOfFrames;
@@ -649,8 +648,8 @@ void MediaSourceFile::StartDecoder()
 	if (SupportsSeeking())
 	{
 		LOG(LOG_VERBOSE, "Seeking to last %s decoder position: %.2f", GetMediaTypeStr().c_str(), mLastDecoderFilePosition);
-		int tRes = (avformat_seek_file(mFormatContext, -1, INT64_MIN, mFormatContext->start_time + mLastDecoderFilePosition * AV_TIME_BASE, INT64_MAX, 0) >= 0);
-		if (tRes < 0)
+		int tRes;
+		if ((tRes = avformat_seek_file(mFormatContext, -1, INT64_MIN, mFormatContext->start_time + mLastDecoderFilePosition * AV_TIME_BASE, INT64_MAX, 0)) < 0)
 			LOG(LOG_ERROR, "Error during absolute seeking in %s source file because \"%s\"", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)));
 	}
     MediaSourceMem::StartDecoder();
@@ -659,7 +658,11 @@ void MediaSourceFile::StartDecoder()
 void MediaSourceFile::StopDecoder()
 {
 	// storing current decoder file position
-	mLastDecoderFilePosition = GetSeekPos();
+	if (!InputIsPicture())
+	    mLastDecoderFilePosition = GetSeekPos();
+	else
+	    mLastDecoderFilePosition = 0;
+	LOG(LOG_VERBOSE, "Last %s decoder position was set to: %.2f", GetMediaTypeStr().c_str(), mLastDecoderFilePosition);
 
 	MediaSourceMem::StopDecoder();
 }
