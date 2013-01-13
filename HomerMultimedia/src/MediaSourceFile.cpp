@@ -127,7 +127,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if (!OpenDecoder())
     	return false;
 
-	if (SupportsSeeking())
+	if ((SupportsSeeking() /* ignore http::// and mms:// based streams */) && (mFormatContext->streams[mMediaStreamIndex]->duration > 1 /* ignore pictures: picture files would have 1 here */))
     {
     	int tResult = 0;
         if((tResult = avformat_seek_file(mFormatContext, -1, INT64_MIN, 0, INT64_MAX, AVSEEK_FLAG_ANY)) < 0)

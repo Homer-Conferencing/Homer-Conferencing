@@ -969,8 +969,8 @@ bool MediaSourceMem::InputIsPicture()
 //        LOG(LOG_VERBOSE, "Media type: %d", mFormatContext->streams[mMediaStreamIndex]->codec->codec_type);
 
     // do we have a picture?
-    //HINT: don't check "mMediaSourceOpened" here because we use this function within OpenVideoGrabDevice
-    if ((mFormatContext != NULL) && (mFormatContext->streams[mMediaStreamIndex]) &&
+    if ((mMediaSourceOpened) &&
+        (mFormatContext != NULL) && (mFormatContext->streams[mMediaStreamIndex]) &&
         (mFormatContext->streams[mMediaStreamIndex]->codec->codec_type == AVMEDIA_TYPE_VIDEO) &&
         (mFormatContext->streams[mMediaStreamIndex]->duration == 1))
         tResult = true;
