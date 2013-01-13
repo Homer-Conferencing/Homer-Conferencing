@@ -2028,11 +2028,14 @@ void VideoWorkerThread::SetGrabResolution(int pX, int pY)
     if ((mResX != pX) || (mResY != pY))
     {
     	LOG(LOG_VERBOSE, "Setting grab resolution to %d*%d", pX, pY);
+
+    	// avoid race conditions when grab resolution is update in parallel
+    	mDeliverMutex.lock();
         mResX = pX;
         mResY = pY;
         mSetGrabResolutionAsap = true;
         mGrabbingCondition.wakeAll();
-
+        mDeliverMutex.unlock();
     }
 }
 
