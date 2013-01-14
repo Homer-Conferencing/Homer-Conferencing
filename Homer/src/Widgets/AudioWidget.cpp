@@ -1457,7 +1457,7 @@ void AudioWorkerThread::run()
 			// get new samples from audio grabber
 			tFrameNumber = mMediaSource->GrabChunk(mSamples[mSampleGrabIndex], tFrameSize, mDropSamples);
             mSamplesSize[mSampleGrabIndex] = tFrameSize;
-			mEofReached = (tFrameNumber == GRAB_RES_EOF);
+            mEofReached = ((tFrameNumber == GRAB_RES_EOF) && (!mMediaSource->HasInputStreamChanged()));
             if (mEofReached)
             {// EOF
                 mSourceAvailable = false;

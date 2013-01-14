@@ -80,6 +80,8 @@ using namespace Homer::Monitor;
 // how many consecutive sequence number overflows do we want to accept before we assume that the remote source has changed?
 #define RTP_MAX_CONSECUTIVE_SEQUENCE_NUMBER_OVERFLOWS						1
 
+#define RTP_MAX_REMOTE_SOURCE_CHANGED_RESET_SCORE                          32 // how many times should the same payload ID be received until we believe in an actual source change at remote side?
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #define IS_RTCP_TYPE(x) 				((x >= 72) && (x <= 76))
@@ -410,6 +412,18 @@ union VP8ExtendedHeader{
 };
 
 ///////////////////////////////////////////////////////////////////////////////
+// NTP time handling
+
+// from libavformat/internal.h
+#define NTP_OFFSET                          2208988800ULL
+#define NTP_OFFSET_US                       (NTP_OFFSET * 1000000ULL)
+
+uint64_t GetNtpTime(void)
+{
+    return (av_gettime() / 1000) * 1000 + NTP_OFFSET_US;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 
 RTP::RTP()
 {
@@ -450,6 +464,8 @@ unsigned int RTP::GetH261PayloadSizeMax()
 
 void RTP::Init()
 {
+    mRemoteSourceChangedLastPayload = 0;
+    mRemoteSourceChangedResetScore = 0;
     mRtcpLastReceivedPackets = 0;
     mReceivedPackets = 0;
     mRtcpLastRemotePackets = 0;
@@ -476,6 +492,8 @@ void RTP::Init()
     mPayloadId = RTP_PAYLOAD_TYPE_NONE;
     mRemoteSequenceNumberOverflowShift = 0;
     mRemoteSequenceNumber = 0;
+    mRtpEncoderStream = NULL;
+    mRtpRemoteSourceChanged = false;
 }
 
 bool RTP::OpenRtpEncoderH261(string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream)
@@ -511,6 +529,14 @@ bool RTP::OpenRtpEncoderH261(string pTargetHost, unsigned int pTargetPort, AVStr
     LOG(LOG_INFO, "    ..rtp payload size: %d bytes", pInnerStream->codec->rtp_payload_size);
     mEncoderOpened = true;
     mH261UseInternalEncoder = true;
+    mH261FirstPacket = true;
+    mH261SentPackets = 0;
+    mH261SentOctets = 0;
+    mH261SenderReports = 0;
+    mH261SentNtpTimeBase = GetNtpTime();
+    mH261SentOctetsLastSenderReport = 0;
+    mH261SentNtpTimeLastSenderReport = 0;
+    mH261LocalStreamTimeBase = pInnerStream->time_base;
     return true;
 }
 
@@ -550,7 +576,6 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
 
     int                 tResult;
     AVOutputFormat      *tFormat;
-    AVStream            *tOuterStream;
 
     // allocate new format context
     mRtpFormatContext = AV_NEW_FORMAT_CONTEXT();
@@ -578,25 +603,25 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     }
 
     // allocate new stream structure
-	tOuterStream = HM_avformat_new_stream(mRtpFormatContext, 0);
-    if (tOuterStream == NULL)
+    mRtpEncoderStream = HM_avformat_new_stream(mRtpFormatContext, 0);
+    if (mRtpEncoderStream == NULL)
     {
         LOG(LOG_ERROR, "Memory allocation failed");
         return false;
     }
 
     // copy stream description from original stream description
-    memcpy(tOuterStream, pInnerStream, sizeof(AVStream));
-    tOuterStream->priv_data = NULL;
+    memcpy(mRtpEncoderStream, pInnerStream, sizeof(AVStream));
+    mRtpEncoderStream->priv_data = NULL;
     // create monotone timestamps
-    tOuterStream->cur_dts = 0;
-    tOuterStream->reference_dts = 0;
+    mRtpEncoderStream->cur_dts = 0;
+    mRtpEncoderStream->reference_dts = 0;
 
     // set target coordinates for rtp stream
     snprintf(mRtpFormatContext->filename, sizeof(mRtpFormatContext->filename), "rtp://%s:%u", pTargetHost.c_str(), pTargetPort);
 
     // create I/O context which splits RTP stream into packets
-    MediaSource::CreateIOContext(mRtpPacketBuffer, tOuterStream->codec->rtp_payload_size, NULL, StoreRtpPacket, this, &mAVIOContext);
+    MediaSource::CreateIOContext(mRtpPacketBuffer, mRtpEncoderStream->codec->rtp_payload_size, NULL, StoreRtpPacket, this, &mAVIOContext);
 
     // set new I/O context
     mRtpFormatContext->pb = mAVIOContext;
@@ -629,38 +654,38 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     			break;
     }
 
-    tOuterStream->time_base.den = CalculateClockRateFactor() * 1000;
-    tOuterStream->time_base.num = 1;
-    int64_t tAVPacketPts = (float)tOuterStream->pts.val + tOuterStream->pts.num / tOuterStream->pts.den;
+    mRtpEncoderStream->time_base.den = CalculateClockRateFactor() * 1000;
+    mRtpEncoderStream->time_base.num = 1;
+    int64_t tAVPacketPts = (float)mRtpEncoderStream->pts.val + mRtpEncoderStream->pts.num / mRtpEncoderStream->pts.den;
 
     LOG(LOG_INFO, "Opened...");
     LOG(LOG_INFO, "    ..rtp target: %s:%u", pTargetHost.c_str(), pTargetPort);
     LOG(LOG_INFO, "    ..rtp header size: %d", RTP_HEADER_SIZE);
     LOG(LOG_INFO, "  Wrapping following codec...");
-    LOG(LOG_INFO, "    ..codec name: %s", tOuterStream->codec->codec->name);
-    LOG(LOG_INFO, "    ..codec long name: %s", tOuterStream->codec->codec->long_name);
-    LOG(LOG_INFO, "    ..resolution: %d * %d pixels", tOuterStream->codec->width, tOuterStream->codec->height);
+    LOG(LOG_INFO, "    ..codec name: %s", mRtpEncoderStream->codec->codec->name);
+    LOG(LOG_INFO, "    ..codec long name: %s", mRtpEncoderStream->codec->codec->long_name);
+    LOG(LOG_INFO, "    ..resolution: %d * %d pixels", mRtpEncoderStream->codec->width, mRtpEncoderStream->codec->height);
 //    LOG(LOG_INFO, "    ..codec time_base: %d/%d", mCodecContext->time_base.den, mCodecContext->time_base.num); // inverse
     LOG(LOG_INFO, "    ..stream start real-time: %ld", mRtpFormatContext->start_time_realtime);
-    LOG(LOG_INFO, "    ..stream start time: %ld", tOuterStream->start_time);
+    LOG(LOG_INFO, "    ..stream start time: %ld", mRtpEncoderStream->start_time);
     LOG(LOG_INFO, "    ..max. delay: %d", mRtpFormatContext->max_delay);
     LOG(LOG_INFO, "    ..audio preload: %d", mRtpFormatContext->audio_preload);
     LOG(LOG_INFO, "    ..start A/V PTS: %ld", tAVPacketPts);
-    LOG(LOG_INFO, "    ..stream rfps: %d/%d", tOuterStream->r_frame_rate.num, tOuterStream->r_frame_rate.den);
-    LOG(LOG_INFO, "    ..stream time_base: %d/%d", tOuterStream->time_base.den, tOuterStream->time_base.num); // inverse
-    LOG(LOG_INFO, "    ..stream codec time_base: %d/%d", tOuterStream->codec->time_base.den, tOuterStream->codec->time_base.num); // inverse
-    LOG(LOG_INFO, "    ..sample rate: %d Hz", tOuterStream->codec->sample_rate);
-    LOG(LOG_INFO, "    ..channels: %d", tOuterStream->codec->channels);
-    LOG(LOG_INFO, "    ..i-frame distance: %d pictures", tOuterStream->codec->gop_size);
-    LOG(LOG_INFO, "    ..bit rate: %d Hz", tOuterStream->codec->bit_rate);
-    LOG(LOG_INFO, "    ..qmin: %d", tOuterStream->codec->qmin);
-    LOG(LOG_INFO, "    ..qmax: %d", tOuterStream->codec->qmax);
-    LOG(LOG_INFO, "    ..mpeg quant: %d", tOuterStream->codec->mpeg_quant);
-    LOG(LOG_INFO, "    ..pixel format: %d", (int)tOuterStream->codec->pix_fmt);
-    LOG(LOG_INFO, "    ..sample format: %d", (int)tOuterStream->codec->sample_fmt);
-    LOG(LOG_INFO, "    ..frame size: %d bytes", tOuterStream->codec->frame_size);
+    LOG(LOG_INFO, "    ..stream rfps: %d/%d", mRtpEncoderStream->r_frame_rate.num, mRtpEncoderStream->r_frame_rate.den);
+    LOG(LOG_INFO, "    ..stream time_base: %d/%d", mRtpEncoderStream->time_base.den, mRtpEncoderStream->time_base.num); // inverse
+    LOG(LOG_INFO, "    ..stream codec time_base: %d/%d", mRtpEncoderStream->codec->time_base.den, mRtpEncoderStream->codec->time_base.num); // inverse
+    LOG(LOG_INFO, "    ..sample rate: %d Hz", mRtpEncoderStream->codec->sample_rate);
+    LOG(LOG_INFO, "    ..channels: %d", mRtpEncoderStream->codec->channels);
+    LOG(LOG_INFO, "    ..i-frame distance: %d pictures", mRtpEncoderStream->codec->gop_size);
+    LOG(LOG_INFO, "    ..bit rate: %d Hz", mRtpEncoderStream->codec->bit_rate);
+    LOG(LOG_INFO, "    ..qmin: %d", mRtpEncoderStream->codec->qmin);
+    LOG(LOG_INFO, "    ..qmax: %d", mRtpEncoderStream->codec->qmax);
+    LOG(LOG_INFO, "    ..mpeg quant: %d", mRtpEncoderStream->codec->mpeg_quant);
+    LOG(LOG_INFO, "    ..pixel format: %d", (int)mRtpEncoderStream->codec->pix_fmt);
+    LOG(LOG_INFO, "    ..sample format: %d", (int)mRtpEncoderStream->codec->sample_fmt);
+    LOG(LOG_INFO, "    ..frame size: %d bytes", mRtpEncoderStream->codec->frame_size);
     LOG(LOG_INFO, "    ..max packet size: %d bytes", mAVIOContext->max_packet_size);
-    LOG(LOG_INFO, "    ..rtp payload size: %d bytes", tOuterStream->codec->rtp_payload_size);
+    LOG(LOG_INFO, "    ..rtp payload size: %d bytes", mRtpEncoderStream->codec->rtp_payload_size);
 
     mEncoderOpened = true;
     mMp3Hack_EntireBufferSize = 0;
@@ -709,6 +734,11 @@ bool RTP::CloseRtpEncoder()
 void RTP::RTPRegisterPacketStatistic(PacketStatistic *pStatistic)
 {
     mPacketStatistic = pStatistic;
+}
+
+unsigned int RTP::GetRTPPayloadType()
+{
+    return mPayloadId;
 }
 
 bool RTP::IsPayloadSupported(enum CodecID pId)
@@ -921,7 +951,11 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
     //       later we use this MBZ entry inside of MediaSourceNet to detect the fragment/packet boundaries
     //       without this hack we wouldn't be able to provide correct processing because of buggy rfc for MPA payload definition
     tMp3Hack_EntireBufferSize = pDataSize;
+
     av_init_packet(&tPacket);
+    #ifdef RTP_DEBUG_PACKET_ENCODER_PTS
+        LOG(LOG_VERBOSE, "Sending packet with PTS: %ld, outgoing RTP-PTS: %.2f", pPacketPts, (float)pPacketPts * CalculateClockRateFactor());
+    #endif
 
     // we only have one stream per media stream
     tPacket.stream_index = 0;
@@ -1160,9 +1194,6 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize, int64_t pPacketPt
     #ifdef RTP_DEBUG_PACKET_ENCODER
         LOG(LOG_VERBOSE, "Calculated h261 packets: %u", tPacketCount);
     #endif
-    // allocate memory for the RTP packet stream
-    // HINT: the size of memory for storing the stream of RTP packets is rounded to multiples of (RTP_MAX_PACKET_SIZE + 4)
-    unsigned int tRtpStreamDataMaxSize = tPacketCount * (RTP_MAX_H261_PAYLOAD_SIZE + H261_HEADER_SIZE + RTP_HEADER_SIZE + 4 /* overhead for packet length field */);
     unsigned int tRtpStreamDataSize = 0;
 
     // get pointer to the current working address inside rtp packet stream
@@ -1172,18 +1203,33 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize, int64_t pPacketPt
     #endif
     for (unsigned int tPacketIndex = 0; tPacketIndex < tPacketCount; tPacketIndex++)
     {
+        // #############################################################
+        // create RTCP sender report
+        // #############################################################
+        #ifdef RTP_DEBUG_PACKET_ENCODER_PTS
+            LOG(LOG_VERBOSE, "Sending packet with PTS: %ld, outgoing RTP-PTS: %.2f", pPacketPts, (float)pPacketPts * CalculateClockRateFactor());
+        #endif
+        RtcpCreateH261SenderReport(tCurrentRtpStreamData, tRtpStreamDataSize, pPacketPts);
+
+        // #############################################################
+        // create RTP packet with H.261 payload inside
+        // #############################################################
         // size of current frame chunk
         unsigned int tChunkSize = 0;
 
+        // check size of remaining payload size
         if (pDataSize > (RTP_MAX_H261_PAYLOAD_SIZE))
+        {// bigger than max. payload size
             tChunkSize = (RTP_MAX_H261_PAYLOAD_SIZE);
-        else
+        }else
+        {// remaining payload fits into on additional packet
             tChunkSize = pDataSize;
+        }
 
         tRtpStreamDataSize += 4 + RTP_HEADER_SIZE + H261_HEADER_SIZE + tChunkSize;
-        if (tRtpStreamDataSize > tRtpStreamDataMaxSize)
+        if (tRtpStreamDataSize > MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE)
         {
-            LOG(LOG_ERROR, "Stream of RTP packets for H261 encapsulation too big");
+            LOG(LOG_ERROR, "RTP stream buffer is too small, stopping RTP encapsulation here");
             return false;
         }
 
@@ -1196,7 +1242,7 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize, int64_t pPacketPt
         // go to the start of the rtp packet
         tCurrentRtpStreamData += 4;
         // #############################################################
-        // HEADER: create rtp header
+        // HEADER: create RTP header
         // #############################################################
         // get pointer to RTP header buffer
         RtpHeader* tRtpHeader  = (RtpHeader*)tCurrentRtpStreamData;
@@ -1219,7 +1265,7 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize, int64_t pPacketPt
         tCurrentRtpStreamData += RTP_HEADER_SIZE;
 
         // #############################################################
-        // HEADER: create h261 header
+        // HEADER: create H261 specific RTP payload header
         // #############################################################
         // get pointer to H261 header buffer
         H261Header* tH261Header  = (H261Header*)tCurrentRtpStreamData;
@@ -1241,7 +1287,7 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize, int64_t pPacketPt
         tCurrentRtpStreamData += H261_HEADER_SIZE;
 
         // #############################################################
-        // PAYLOAD: copy chunk from original frame buffer
+        // PAYLOAD: copy PAYLOAD to packet buffer
         // #############################################################
         // copy data from original buffer
         memcpy(tCurrentRtpStreamData, pData, tChunkSize);
@@ -1250,6 +1296,10 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize, int64_t pPacketPt
 
         // go to the next packet header
         tCurrentRtpStreamData += tChunkSize;
+
+        //increase packet counter
+        mH261SentPackets++;
+        mH261SentOctets+= H261_HEADER_SIZE + tChunkSize;
     }
     pData = mRtpPacketStream;
     pDataSize = tRtpStreamDataSize;
@@ -1336,12 +1386,7 @@ unsigned int RTP::GetSourceIdentifierFromRTP()
 
 bool RTP::HasSourceChangedFromRTP()
 {
-	bool tResult = mRemoteSourceChanged;
-
-	// we avoid a mutex (protect against modifications by the RTP parser) here because the probability of such race conditions is too low to become real
-	mRemoteSourceChanged = false;
-
-	return tResult;
+	return mRtpRemoteSourceChanged;
 }
 
 float RTP::CalculateClockRateFactor()
@@ -1466,7 +1511,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
     char *tDataOriginal = pData;
 
     if ((mStreamCodecID != CODEC_ID_NONE) && (mStreamCodecID != pCodecId))
-        LOG(LOG_ERROR, "Unsupported codec change detected");
+        LOG(LOG_WARN, "Codec change from %d(%s) to %d(%s) in inout stream detected", mStreamCodecID, avcodec_get_name(mStreamCodecID), pCodecId, avcodec_get_name(pCodecId));
 
     mStreamCodecID = pCodecId;
 
@@ -1602,32 +1647,44 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
         {// we should have received a valid A/V RTP packet
 			if (mPayloadId != tRtpHeader->PayloadType)
 			{// payload changed
-				if (ReceivedCorrectPayload(tRtpHeader->PayloadType))
-				{// the payload type is okay for this codec ID
-					if (mPayloadId != RTP_PAYLOAD_TYPE_NONE)
-					{// we already know a payload type but the current packet does not belong to this type
+                if (mPayloadId != RTP_PAYLOAD_TYPE_NONE)
+                {// we already know a payload type but the current packet does not belong to this type
 
-						LOG(LOG_ERROR, "Unsupported payload change detected (do we receive more than one RTP stream?), ignoring this packet with payload %u(%s)", tRtpHeader->PayloadType, PayloadIdToCodec(tRtpHeader->PayloadType).c_str());
+                    //LOG(LOG_WARN, "Payload change from codec %d(%s) to %u(%s), reset score: %d", mStreamCodecID, avcodec_get_name(mStreamCodecID), tRtpHeader->PayloadType, PayloadIdToCodec(tRtpHeader->PayloadType).c_str(), mRemoteSourceChangedResetScore);
 
-						pIsLastFragment = false;
-						pIsSenderReport = false;
+                    // do we receive the same payload as last time?
+                    if ((mRemoteSourceChangedLastPayload != 0) && (mRemoteSourceChangedLastPayload == tRtpHeader->PayloadType))
+                    {// yes, same payload received -> check scoring
+                        mRemoteSourceChangedResetScore++;
+                        //LOG(LOG_WARN, "Reset score incread to: %d", mRemoteSourceChangedResetScore);
 
-						// inform that this is not a usable packet
-						return false;
-					}
+                        if (mRemoteSourceChangedResetScore >= RTP_MAX_REMOTE_SOURCE_CHANGED_RESET_SCORE)
+                        {// we should mark the remote source as "changed"
+                            LOG(LOG_WARN, "We received %d consecutive packets of payload type %u(%s), we assume a source change at remote side and trigger reset", mRemoteSourceChangedResetScore, tRtpHeader->PayloadType, PayloadIdToCodec(tRtpHeader->PayloadType).c_str());
+                            mRtpRemoteSourceChanged = true;
 
-					// store the payload ID to be able to detect repeating changes
-					mPayloadId = tRtpHeader->PayloadType;
-				}else
-				{
-					LOG(LOG_ERROR, "Payload type %u doesn't seem to be the correct one for codec %d(%s), ignoring this packet", tRtpHeader->PayloadType, mStreamCodecID, MediaSource::GetGuiNameFromCodecID(mStreamCodecID).c_str());
+                            // force a reset of the start timestamp and trigger a re-initialization
+                            mRemoteStartTimestamp = 0;
+                            mRemoteStartSequenceNumber = 0;
+                            mRemoteSourceChangedResetScore = 0;
 
-					pIsLastFragment = false;
-					pIsSenderReport = false;
+                            mPayloadId = mRemoteSourceChangedLastPayload;
+                        }
+                    }else
+                    {
+                        mRemoteSourceChangedResetScore = 0;
+                        mRemoteSourceChangedLastPayload = tRtpHeader->PayloadType;
+                    }
 
-					// inform that this is not a usable packet
-					return false;
-				}
+                    pIsLastFragment = false;
+                    pIsSenderReport = false;
+
+                    // inform that this is not a usable packet
+                    return false;
+                }
+
+                // store the payload ID to be able to detect repeating changes
+                mPayloadId = tRtpHeader->PayloadType;
 			}
         }
 
@@ -1641,7 +1698,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
             if (mRemoteSourceIdentifier != 0)
             {
                 LOG(LOG_WARN, "Alternating source at remote side detected, will reset start timestamp");
-                mRemoteSourceChanged = true;
+                mRtpRemoteSourceChanged = true;
 
                 // force a reset of the start timestamp and trigger a re-initialization
                 mRemoteStartTimestamp = 0;
@@ -1686,7 +1743,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
         	if (mRemoteSequenceNumberConsecutiveOverflows > RTP_MAX_CONSECUTIVE_SEQUENCE_NUMBER_OVERFLOWS)
         	{// yes -> mark source as changed
         		LOG(LOG_WARN, "Detected %d(max. allowed: %d) consecutive sequence number overflows, mark remote source as changed", mRemoteSequenceNumberConsecutiveOverflows, RTP_MAX_CONSECUTIVE_SEQUENCE_NUMBER_OVERFLOWS);
-        		mRemoteSourceChanged = true;
+        		mRtpRemoteSourceChanged = true;
         	}
         }else
         {// we don't have an value overflow
@@ -1759,7 +1816,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
         	if (mRemoteTimestampConsecutiveOverflows > RTP_MAX_CONSECUTIVE_TIMESTAMP_OVERFLOWS)
         	{// yes -> mark source as changed
         		LOG(LOG_WARN, "Detected %d(max. allowed: %d) consecutive timestamp overflows, mark remote source as changed", mRemoteTimestampConsecutiveOverflows, RTP_MAX_CONSECUTIVE_TIMESTAMP_OVERFLOWS);
-        		mRemoteSourceChanged = true;
+        		mRtpRemoteSourceChanged = true;
         	}
         }else
         {// we don't have an value overflow
@@ -2377,6 +2434,57 @@ unsigned int RTP::CodecToPayloadId(std::string pName)
     return tResult;
 }
 
+static std::string PayloadType(int pId)
+{
+    string tResult = "unknown";
+
+    switch(pId)
+    {
+        //video
+        case 31:
+        case 32:
+        case 34:
+        case 118:
+        case 119:
+        case 120:
+        case 121:
+        case 122:
+        case 123:
+                tResult = "VIDEO";
+                break;
+
+        //audio
+        case 0:
+        case 3:
+        case 8:
+        case 9:
+        case 10:
+        case 11:
+        case 14:
+        case 100:
+        case 101:
+                tResult = "AUDIO";
+                break;
+
+        //others
+        case 72 ... 76:
+                tResult = "RTCP";
+                break;
+
+        //others
+        case 96 ... 99:
+                tResult = "DYNAMIC";
+                break;
+        default:
+                tResult = "unknown";
+                break;
+    }
+
+    //LOGEX(RTP, LOG_VERBOSE, ("Translated %d to " + tResult).c_str(), pId);
+
+    return tResult;
+}
+
 string RTP::PayloadIdToCodec(int pId)
 {
     string tResult = "unknown";
@@ -2609,6 +2717,69 @@ bool RTP::RtcpParseSenderReport(char *&pData, int &pDataSize, int64_t &pEndToEnd
     return tResult;
 }
 
+// the following was inspired by RTCP handling in ffmpeg
+
+// RTCP packets use 0.5% of the bandwidth
+#define RTCP_TX_RATIO_NUM           5
+#define RTCP_TX_RATIO_DEN           1000
+#define RTCP_SR_SIZE                28
+
+void RTP::RtcpCreateH261SenderReport(char *&pData /* current stream pointer */, unsigned int &pDataSize /* resulting stream size */, int64_t pCurPts)
+{return;
+    uint64_t tNtpTime = GetNtpTime();
+    int tRtcpBytes = ((mH261SentOctets - mH261SentOctetsLastSenderReport) * RTCP_TX_RATIO_NUM) / RTCP_TX_RATIO_DEN;
+    if ((mH261FirstPacket) || ((tRtcpBytes >= (int)RTCP_HEADER_SIZE /* 0.5 % rules */) && (tNtpTime - mH261SentNtpTimeLastSenderReport > 5000000 /* minimum period between two SRs is 5 seconds */)))
+    {// we should create a sender report
+        #ifdef RTCP_DEBUG_PACKETS_ENCODER
+            LOG(LOG_VERBOSE, "Creating %d bytes H.261 sender report, %d reports already sent..", RTCP_HEADER_SIZE, mH261SenderReports);
+        #endif
+        mH261SenderReports++;
+
+        // ################################################
+        // write sender report packet size to RTP stream
+        // ################################################
+        unsigned int *tRtpPacketSize = (unsigned int*)pData;
+        *tRtpPacketSize = htonl((uint32_t)RTCP_HEADER_SIZE);
+        pData += 4;
+        pDataSize += 4;
+
+        // ################################################
+        // write sender report to RTP stream
+        // ################################################
+        RtcpHeader* tRtcpHeader = (RtcpHeader*)pData;
+
+        uint32_t tRtpTs = av_rescale_q(tNtpTime - mH261SentNtpTimeBase, (AVRational){1, 1000000}, mH261LocalStreamTimeBase) * CalculateClockRateFactor() /* without offset, no PTS shift from internal H261 packetizer */;
+        #ifdef RTCP_DEBUG_PACKETS_ENCODER
+            LOG(LOG_VERBOSE, "Sender report with PTS: %lu (own PTS: %ld)", tRtpTs, pCurPts);
+        #endif
+        tRtcpHeader->Feedback.Length = 6;
+        tRtcpHeader->Feedback.Type = RTCP_SENDER_REPORT;
+        tRtcpHeader->Feedback.Fmt = 0;
+        tRtcpHeader->Feedback.Padding = 0;
+        tRtcpHeader->Feedback.Version = 2;
+        tRtcpHeader->Feedback.Ssrc = mLocalSourceIdentifier;
+        tRtcpHeader->Feedback.TimestampHigh = tNtpTime / 1000000;
+        tRtcpHeader->Feedback.TimestampLow = ((tNtpTime % 1000000) << 32) / 1000000;
+        tRtcpHeader->Feedback.RtpTimestamp = pCurPts;//tRtpTs;
+        tRtcpHeader->Feedback.Packets = mH261SentPackets;
+        tRtcpHeader->Feedback.Octets = mH261SentOctets;
+
+        // convert from host to network byte order
+        for (int i = 0; i < 7; i++)
+            tRtcpHeader->Data[i] = htonl(tRtcpHeader->Data[i]);
+
+        #ifdef RTCP_DEBUG_PACKETS_ENCODER
+            LogRtcpHeader(tRtcpHeader);
+        #endif
+
+        pData += RTCP_SR_SIZE;
+        pDataSize += RTCP_SR_SIZE;
+
+        mH261SentOctetsLastSenderReport = mH261SentOctets;
+        mH261SentNtpTimeLastSenderReport = tNtpTime;
+        mH261FirstPacket = false;
+    }
+}
 ///////////////////////////////////////////////////////////////////////////////
 
 }} //namespace

@@ -2410,7 +2410,7 @@ void VideoWorkerThread::run()
             #ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
 			    LOG(LOG_WARN, "Grabbing new video frame took: %d ms", tTime.msecsTo(QTime::currentTime()));
             #endif
-			mEofReached = (tFrameNumber == GRAB_RES_EOF);
+			mEofReached = ((tFrameNumber == GRAB_RES_EOF) && (!mMediaSource->HasInputStreamChanged()));
 			if (mEofReached)
 			{
 			    mSourceAvailable = false;

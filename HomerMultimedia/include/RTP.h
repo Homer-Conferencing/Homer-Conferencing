@@ -53,11 +53,7 @@ namespace Homer { namespace Multimedia {
 //#define RTCP_DEBUG_PACKETS_ENCODER
 //#define RTCP_DEBUG_PACKET_ENCODER_FFMPEG
 
-///////////////////////////////////////////////////////////////////////////////
-
-// from libavformat/internal.h
-#define NTP_OFFSET                          2208988800ULL
-#define NTP_OFFSET_US                       (NTP_OFFSET * 1000000ULL)
+//#define RTP_DEBUG_PACKET_ENCODER_PTS
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -130,6 +126,7 @@ public:
 
     static unsigned int CodecToPayloadId(std::string pName);
     static std::string PayloadIdToCodec(int pId);
+    static std::string PayloadType(int pId);
     static bool IsPayloadSupported(enum CodecID pId);
     static int GetPayloadHeaderSizeMax(enum CodecID pCodec);// calculate the maximum header size of the RTP payload (not the RTP header!)
     static int GetHeaderSizeMax(enum CodecID pCodec);
@@ -149,6 +146,9 @@ public:
 
     void RTPRegisterPacketStatistic(Homer::Monitor::PacketStatistic *pStatistic);
 
+    /* RTP state */
+    unsigned int GetRTPPayloadType();
+
     /* RTCP packetizing/parsing */
     static void LogRtcpHeader(RtcpHeader *pRtcpHeader);
     bool RtcpParseSenderReport(char *&pData, int &pDataSize, int64_t &pEndToEndDelay /* in micro seconds */, unsigned int &pPackets, unsigned int &pOctets, float &pRelativeLoss);
@@ -162,13 +162,15 @@ protected:
     /* for clock rate adaption, e.g., 8, 16, 90 kHz */
     float CalculateClockRateFactor();
 
-private:
     void Init();
+
+private:
     void AnnounceLostPackets(uint64_t pCount);
 
     /* internal RTP packetizer for h.261 */
     bool OpenRtpEncoderH261(std::string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream);
     bool RtpCreateH261(char *&pData, unsigned int &pDataSize, int64_t pPacketPts);
+    void RtcpCreateH261SenderReport(char *&pData, unsigned int &pDataSize, int64_t pCurPts);
 
     /* RTP packet stream */
     static int StoreRtpPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize);
@@ -176,6 +178,7 @@ private:
     int CloseRtpPacketStream(char** pBuffer);
 
     Homer::Monitor::PacketStatistic *mPacketStatistic;
+    AVStream            *mRtpEncoderStream;
     AVFormatContext     *mRtpFormatContext;
     unsigned int        mPayloadId;
     bool                mIntermediateFragment;
@@ -199,7 +202,9 @@ private:
     int 				mRemoteTimestampConsecutiveOverflows;
     uint64_t            mRemoteTimestampLastCompleteFrame;
     unsigned int        mRemoteStartTimestamp;
-    bool				mRemoteSourceChanged;
+    bool				mRtpRemoteSourceChanged;
+    int                 mRemoteSourceChangedLastPayload;
+    int                 mRemoteSourceChangedResetScore;
     unsigned int        mRemoteSourceIdentifier;
     uint64_t            mReceivedPackets;
     /* MP3 RTP hack */
@@ -213,6 +218,14 @@ private:
     static unsigned int mH261PayloadSizeMax;
     bool                mH261UseInternalEncoder;
     unsigned short int  mH261LocalSequenceNumber;
+    uint64_t            mH261SentPackets;
+    uint64_t            mH261SentOctets;
+    uint64_t            mH261SentOctetsLastSenderReport;
+    uint64_t            mH261SentNtpTimeLastSenderReport;
+    uint64_t            mH261SentNtpTimeBase;
+    int                 mH261SenderReports;
+    bool                mH261FirstPacket;
+    AVRational          mH261LocalStreamTimeBase;
     /* RTCP */
     Mutex               mSynchDataMutex;
     uint64_t            mRtcpLastRemoteNtpTime; // (NTP timestamp)

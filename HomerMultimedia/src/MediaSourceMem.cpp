@@ -99,6 +99,7 @@ MediaSourceMem::MediaSourceMem(string pName, bool pRtpActivated):
     mRtpActivated = pRtpActivated;
     RTPRegisterPacketStatistic(this);
 
+    mRtpSourceCodecIdHint = CODEC_ID_NONE;
     mSourceCodecId = CODEC_ID_NONE;
 
     mDecoderFragmentFifo = new MediaFifo(MEDIA_SOURCE_MEM_FRAGMENT_INPUT_QUEUE_SIZE_LIMIT, MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE, "MediaSourceMem");
@@ -143,14 +144,14 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
         int tFragmentBufferSize;
         int tFragmentDataSize;
         bool tLastFragment;
-        bool tFragmentIsOkay;
+        bool tFragmenHasAVData;
         bool tFragmentIsSenderReport;
 
         tBufferSize = 0;
 
         do{
             tLastFragment = false;
-            tFragmentIsOkay = false;
+            tFragmenHasAVData = false;
             tFragmentData = &tMediaSourceMemInstance->mFragmentBuffer[0];
             tFragmentBufferSize = MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE; // maximum size of one single fragment of a frame packet
             // receive a fragment
@@ -178,17 +179,15 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
             }
             tFragmentDataSize = tFragmentBufferSize;
             // parse and remove the RTP header, extract the encapsulated frame fragment
-            tFragmentIsOkay = tMediaSourceMemInstance->RtpParse(tFragmentData, tFragmentDataSize, tLastFragment, tFragmentIsSenderReport, tMediaSourceMemInstance->mSourceCodecId, false);
+            tFragmenHasAVData = tMediaSourceMemInstance->RtpParse(tFragmentData, tFragmentDataSize, tLastFragment, tFragmentIsSenderReport, tMediaSourceMemInstance->mSourceCodecId, false);
 
             // relay new data to registered sinks
-            if(tFragmentIsOkay)
-            {
+            if(tFragmenHasAVData)
+            {// fragment is okay
                 // relay the received fragment to registered sinks
                 tMediaSourceMemInstance->RelayPacketToMediaSinks(tFragmentData, tFragmentDataSize);
-            }
 
-            if ((tFragmentIsOkay) && (!tFragmentIsSenderReport))
-            {
+                // store the received fragment locally
                 if (tBufferSize + tFragmentDataSize < pBufferSize)
                 {
                     if (tFragmentDataSize > 0)
@@ -209,21 +208,29 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
                     LOGEX(MediaSourceMem, LOG_ERROR, "Stream buffer of %d bytes too small for input, dropping received stream", pBufferSize);
                 }
             }else
-            {
-                if (!tFragmentIsSenderReport)
-                    LOGEX(MediaSourceMem, LOG_WARN, "Current RTP packet was reported as invalid by RTP parser, ignoring this data");
-                else
-                {
+            {// fragment has no valid A/V data
+                if (tFragmentIsSenderReport)
+                {// we have received a sender report
                     unsigned int tPacketCountReportedBySender = 0;
                     unsigned int tOctetCountReportedBySender = 0;
                     if (tMediaSourceMemInstance->RtcpParseSenderReport(tFragmentData, tFragmentDataSize, tMediaSourceMemInstance->mEndToEndDelay, tPacketCountReportedBySender, tOctetCountReportedBySender, tMediaSourceMemInstance->mRelativeLoss))
                     {
                         tMediaSourceMemInstance->mDecoderSynchPoints++;
-						#ifdef MSMEM_DEBUG_SENDER_REPORTS
-                    		LOGEX(MediaSourceMem, LOG_VERBOSE, "Sender reports: %d packets and %d bytes transmitted", tPacketCountReportedBySender, tOctetCountReportedBySender);
-						#endif
+                        #ifdef MSMEM_DEBUG_SENDER_REPORTS
+                            LOGEX(MediaSourceMem, LOG_VERBOSE, "Sender reports: %d packets and %d bytes transmitted", tPacketCountReportedBySender, tOctetCountReportedBySender);
+                        #endif
                     }else
                         LOGEX(MediaSourceMem, LOG_ERROR, "Unable to parse sender report in received RTCP packet");
+                }else
+                {// we have a received an unsupported RTCP packet/RTP payload or something went completely wrong
+                    if (tMediaSourceMemInstance->HasInputStreamChanged())
+                    {// we have to reset the source
+                        LOGEX(MediaSourceMem, LOG_VERBOSE, "Detected source change at remote side, signaling EOF and returning immediately");
+                        return -1;
+                    }else
+                    {// something went wrong
+                        LOGEX(MediaSourceMem, LOG_WARN, "Current RTP packet was reported as invalid by RTP parser, ignoring this data");
+                    }
                 }
             }
         }while(!tLastFragment);
@@ -417,7 +424,80 @@ bool MediaSourceMem::SupportsRelaying()
 
 bool MediaSourceMem::HasInputStreamChanged()
 {
-	return HasSourceChangedFromRTP();
+    bool tResult = HasSourceChangedFromRTP();
+    enum CodecID tNewCodecId = CODEC_ID_NONE;
+
+    // try to detect the right source codec based on RTP data
+    if ((tResult) && (mRtpActivated))
+    {
+        switch(GetRTPPayloadType())
+        {
+            //video
+            case 31:
+                    tNewCodecId = CODEC_ID_H261;
+                    break;
+            case 32:
+                    tNewCodecId = CODEC_ID_MPEG2VIDEO;
+                    break;
+            case 34:
+            case 118:
+                    tNewCodecId = CODEC_ID_H263;
+                    break;
+            case 119:
+                    tNewCodecId = CODEC_ID_H263P;
+                    break;
+            case 120:
+                    tNewCodecId = CODEC_ID_H264;
+                    break;
+            case 121:
+                    tNewCodecId = CODEC_ID_MPEG4;
+                    break;
+            case 122:
+                    tNewCodecId = CODEC_ID_THEORA;
+                    break;
+            case 123:
+                    tNewCodecId = CODEC_ID_VP8;
+                    break;
+
+            //audio
+            case 0:
+                    tNewCodecId = CODEC_ID_PCM_MULAW;
+                    break;
+            case 3:
+                    tNewCodecId = CODEC_ID_GSM;
+                    break;
+            case 8:
+                    tNewCodecId = CODEC_ID_PCM_ALAW;
+                    break;
+            case 9:
+                    tNewCodecId = CODEC_ID_ADPCM_G722;
+                    break;
+            case 10:
+                    tNewCodecId = CODEC_ID_PCM_S16BE;
+                    break;
+            case 11:
+                    tNewCodecId = CODEC_ID_PCM_S16BE;
+                    break;
+            case 14:
+                    tNewCodecId = CODEC_ID_MP3;
+                    break;
+            case 100:
+                    tNewCodecId = CODEC_ID_AAC;
+                    break;
+            case 101:
+                    tNewCodecId = CODEC_ID_AMR_NB;
+                    break;
+            default:
+                    break;
+        }
+        if ((tNewCodecId != CODEC_ID_NONE) && (tNewCodecId != mSourceCodecId))
+        {
+            LOG(LOG_VERBOSE, "Suggesting codec change from %d(%s) to %d(%s)", mSourceCodecId, avcodec_get_name(mSourceCodecId), tNewCodecId, avcodec_get_name(tNewCodecId));
+            mRtpSourceCodecIdHint = tNewCodecId;
+        }
+    }
+
+    return tResult;
 }
 
 void MediaSourceMem::StopGrabbing()
@@ -528,6 +608,7 @@ bool MediaSourceMem::SetInputStreamPreferences(std::string pStreamCodec, bool pD
         // set new codec
         LOG(LOG_VERBOSE, "    ..stream codec: %d => %d (%s)", mSourceCodecId, tStreamCodecId, pStreamCodec.c_str());
         mSourceCodecId = tStreamCodecId;
+        mRtpSourceCodecIdHint = tStreamCodecId;
 
         if ((pDoReset) && (mMediaSourceOpened))
         {
@@ -573,6 +654,10 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 
     // set category for packet statistics
     ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
+
+    // check if we have a suggestion from RTP parser
+    if (mRtpSourceCodecIdHint != CODEC_ID_NONE)
+        mSourceCodecId = mRtpSourceCodecIdHint;
 
     // there is no differentiation between H.263+ and H.263 when decoding an incoming video stream
     if (mSourceCodecId == CODEC_ID_H263P)
@@ -643,6 +728,10 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 
     // set category for packet statistics
     ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
+
+    // check if we have a suggestion from RTP parser
+    if (mRtpSourceCodecIdHint != CODEC_ID_NONE)
+        mSourceCodecId = mRtpSourceCodecIdHint;
 
     // get a format description
     if (!DescribeInput(mSourceCodecId, &tFormat))
@@ -749,6 +838,9 @@ bool MediaSourceMem::CloseGrabDevice()
     mResXLastGrabbedFrame = 0;
     mResYLastGrabbedFrame = 0;
     mDecoderSynchPoints = 0;
+
+    // reinit. RTP parser
+    RTP::Init();
 
     return tResult;
 }
@@ -1231,7 +1323,12 @@ void* MediaSourceMem::Run(void* pArgs)
 
                         // error reporting
                         if ((!mGrabbingStopped) && (tRes != (int)AVERROR_EOF) && (tRes != (int)AVERROR(EIO)))
-                            LOG(LOG_ERROR, "Couldn't grab a %s frame because \"%s\"(%d)", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)), tRes);
+                        {
+                            if (HasInputStreamChanged())
+                                mEOFReached = true;
+                            else
+                                LOG(LOG_ERROR, "Couldn't grab a %s frame because \"%s\"(%d)", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)), tRes);
+                        }
 
                         if (tPacket->size == 0)
                             tShouldReadNext = true;
@@ -1753,7 +1850,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                     }else
                                     {// no audio resampling needed
                                         // we can use the input buffer without modifications
-                                        tCurrentChunkSize = av_samples_get_buffer_size(NULL, tAudioFrame->channels, tAudioFrame->nb_samples, (enum AVSampleFormat) tAudioFrame->format, 1);
+                                        tCurrentChunkSize = av_samples_get_buffer_size(NULL, mCodecContext->channels, tAudioFrame->nb_samples, (enum AVSampleFormat) tAudioFrame->format, 1);
                                         tDecodedAudioSamples = tAudioFrame->data[0];
                                     }
 

@@ -171,6 +171,7 @@ protected:
     bool                mOpenInputStream;
     int                 mWrappingHeaderSize;
     int                 mPacketStatAdditionalFragmentSize; // used to adapt packet statistic to additional fragment header, which is used for TCP transmission
+    enum CodecID        mRtpSourceCodecIdHint;
     /* grabber */
     double              mGrabberCurrentFrameIndex; // we have to determine this manually during grabbing because cur_dts and everything else in AVStream is buggy for some video/audio files
     double              mFrameBufferLastWrittenFrameIndex; // we use this for calibrating RT grabbing

@@ -1835,15 +1835,7 @@ void MainWindow::actionConfiguration()
             mLocalUserParticipantWidget->SetAudioStreamPreferences(QString(tAudioCodec.c_str()), true);
         }
 
-        if (mParticipantWidgets.size())
-        {
-            // search for corresponding participant widget
-            for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
-            {
-                (*tIt)->SetVideoStreamPreferences(QString(tVideoCodec.c_str()));
-                (*tIt)->SetAudioStreamPreferences(QString(tAudioCodec.c_str()));
-            }
-        }
+        //HINT: the other participant widgets automatically detect the input change and reset their A/V widget
 
         // show QSliders for video and audio if we have seekable media sources selected
         if (mOwnVideoMuxer->SupportsMultipleInputStreams())
