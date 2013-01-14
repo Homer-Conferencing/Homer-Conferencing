@@ -728,8 +728,7 @@ QStringList VideoWidget::GetVideoStatistic()
         tLine_Frame += ")";
     }
     tLine_Frame += (mVideoSource->GetChunkDropCounter() ? (" (" + QString("%1").arg(mVideoSource->GetChunkDropCounter()) + " " + Homer::Gui::VideoWidget::tr("lost packets")) : "");
-    tLine_Frame += (mVideoSource->GetRelativeLoss() ? (", " + QString("%1").arg(mVideoSource->GetRelativeLoss(), 2, 'f', 2, (QLatin1Char)' ') + Homer::Gui::VideoWidget::tr("% loss")) : "");
-    tLine_Frame += ")";
+    tLine_Frame += (mVideoSource->GetRelativeLoss() ? (", " + QString("%1").arg(mVideoSource->GetRelativeLoss(), 2, 'f', 2, (QLatin1Char)' ') + Homer::Gui::VideoWidget::tr("% loss")) + ")" : ")");
     tLine_Frame += (mVideoSource->GetFragmentBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetFragmentBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetFragmentBufferSize()) + " " + Homer::Gui::VideoWidget::tr("buffered packets") + ")") : "");
 
     //############################################
@@ -2294,7 +2293,7 @@ int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFrameRate)
         *pFrame = mFrame[mFrameCurrentIndex];
         tResult = mFrameNumber[mFrameCurrentIndex];
     }else
-        LOG(LOG_WARN, "Can't deliver new frame, pending frames: %d, grab resolution invalid: %d, have to reset source: %d", mPendingNewFrames, mSetGrabResolutionAsap, mResetMediaSourceAsap);
+        LOG(LOG_WARN, "Can't deliver new frame, pending frames: %d, grab resolution invalid: %d, have to reset source: %d, source available: %d", mPendingNewFrames, mSetGrabResolutionAsap, mResetMediaSourceAsap, mSourceAvailable);
 
     // unlock
     mDeliverMutex.unlock();
