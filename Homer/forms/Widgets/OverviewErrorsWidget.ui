@@ -33,7 +33,7 @@
      <number>3</number>
     </property>
     <item row="0" column="0">
-     <widget class="QTextEdit" name="mTeErrorLog">
+     <widget class="QTextBrowser" name="mTeErrorLog">
       <property name="font">
        <font>
         <family>Arial</family>

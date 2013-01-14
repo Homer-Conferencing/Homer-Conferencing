@@ -2018,21 +2018,35 @@ Bitte Konfiguration prüfen!</translation>
 <context>
     <name>Homer::Gui::OverviewErrorsWidget</name>
     <message>
-        <location filename="../src/Widgets/OverviewErrorsWidget.cpp" line="120"/>
-        <location filename="../src/Widgets/OverviewErrorsWidget.cpp" line="128"/>
-        <location filename="../src/Widgets/OverviewErrorsWidget.cpp" line="142"/>
-        <location filename="../src/Widgets/OverviewErrorsWidget.cpp" line="150"/>
-        <location filename="../src/Widgets/OverviewErrorsWidget.cpp" line="161"/>
+        <location filename="../src/Widgets/OverviewErrorsWidget.cpp" line="121"/>
+        <location filename="../src/Widgets/OverviewErrorsWidget.cpp" line="130"/>
+        <source>Save</source>
+        <translation>Speichern</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewErrorsWidget.cpp" line="122"/>
+        <location filename="../src/Widgets/OverviewErrorsWidget.cpp" line="135"/>
+        <source>Update</source>
+        <translation>Aktualisieren</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewErrorsWidget.cpp" line="123"/>
+        <location filename="../src/Widgets/OverviewErrorsWidget.cpp" line="140"/>
+        <source>Automatic updates</source>
+        <translation>Automatische Aktualisierung</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewErrorsWidget.cpp" line="160"/>
         <source>Save error log</source>
         <translation>Fehlerverlauf speichern</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewErrorsWidget.cpp" line="162"/>
+        <location filename="../src/Widgets/OverviewErrorsWidget.cpp" line="161"/>
         <source>/HomerErrorLog.txt</source>
         <translation>/HomerFehlermeldungen.txt</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewErrorsWidget.cpp" line="163"/>
+        <location filename="../src/Widgets/OverviewErrorsWidget.cpp" line="162"/>
         <source>Text Document File</source>
         <translation>Textdokument-Datei</translation>
     </message>

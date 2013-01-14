@@ -84,6 +84,7 @@ private:
     QAction             *mAssignedAction;
     int                 mTimerId;
     bool                mNewLogMessageReceived;
+    bool                mAutoUpdate;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -51,6 +51,7 @@ OverviewErrorsWidget::OverviewErrorsWidget(QAction *pAssignedAction, QMainWindow
     QDockWidget(pMainWindow),
     LogSink()
 {
+    mAutoUpdate = true;
     mNewLogMessageReceived = true;
     mAssignedAction = pAssignedAction;
     mTimerId = -1;
@@ -111,23 +112,34 @@ void OverviewErrorsWidget::SetVisible(bool pVisible)
     }
 }
 
-void OverviewErrorsWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEvent)
+void OverviewErrorsWidget::contextMenuEvent(QContextMenuEvent *pEvent)
 {
     QAction *tAction;
 
     QMenu tMenu(this);
 
-    tAction = tMenu.addAction(Homer::Gui::OverviewErrorsWidget::tr("Save error log"));
-    QIcon tIcon1;
-    tIcon1.addPixmap(QPixmap(":/images/22_22/Save.png"), QIcon::Normal, QIcon::Off);
-    tAction->setIcon(tIcon1);
+    tAction = tMenu.addAction(QPixmap(":/images/22_22/Save.png"), Homer::Gui::OverviewErrorsWidget::tr("Save"));
+    tAction = tMenu.addAction(QPixmap(":/images/22_22/Reset.png"), Homer::Gui::OverviewErrorsWidget::tr("Update"));
+    tAction = tMenu.addAction(QPixmap(":/images/22_22/Reset.png"), Homer::Gui::OverviewErrorsWidget::tr("Automatic updates"));
+    tAction->setCheckable(true);
+    tAction->setChecked(mAutoUpdate);
 
-    QAction* tPopupRes = tMenu.exec(pContextMenuEvent->globalPos());
+    QAction* tPopupRes = tMenu.exec(pEvent->globalPos());
     if (tPopupRes != NULL)
     {
-        if (tPopupRes->text().compare(Homer::Gui::OverviewErrorsWidget::tr("Save error log")) == 0)
+        if (tPopupRes->text().compare(Homer::Gui::OverviewErrorsWidget::tr("Save")) == 0)
         {
             SaveLog();
+            return;
+        }
+        if (tPopupRes->text().compare(Homer::Gui::OverviewErrorsWidget::tr("Update")) == 0)
+        {
+            UpdateView();
+            return;
+        }
+        if (tPopupRes->text().compare(Homer::Gui::OverviewErrorsWidget::tr("Automatic updates")) == 0)
+        {
+            mAutoUpdate = !mAutoUpdate;
             return;
         }
     }
@@ -135,24 +147,11 @@ void OverviewErrorsWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEvent
 
 void OverviewErrorsWidget::ErrorLogCustomContextMenuEvent(const QPoint &pPos)
 {
-    QAction *tAction;
+    QContextMenuEvent *tEvent = new QContextMenuEvent(QContextMenuEvent::Mouse, pPos, QCursor::pos());
 
-    QMenu tMenu(this);
+    contextMenuEvent(tEvent);
 
-    tAction = tMenu.addAction(Homer::Gui::OverviewErrorsWidget::tr("Save error log"));
-    QIcon tIcon1;
-    tIcon1.addPixmap(QPixmap(":/images/22_22/Save.png"), QIcon::Normal, QIcon::Off);
-    tAction->setIcon(tIcon1);
-
-    QAction* tPopupRes = tMenu.exec(QCursor::pos());
-    if (tPopupRes != NULL)
-    {
-        if (tPopupRes->text().compare(Homer::Gui::OverviewErrorsWidget::tr("Save error log")) == 0)
-        {
-            SaveLog();
-            return;
-        }
-    }
+    delete tEvent;
 }
 
 void OverviewErrorsWidget::SaveLog()
@@ -256,7 +255,10 @@ void OverviewErrorsWidget::timerEvent(QTimerEvent *pEvent)
         LOG(LOG_VERBOSE, "New timer event");
     #endif
     if (pEvent->timerId() == mTimerId)
-        UpdateView();
+    {
+        if (mAutoUpdate)
+            UpdateView();
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
