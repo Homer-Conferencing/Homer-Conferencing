@@ -154,8 +154,7 @@ public:
     bool RtcpParseSenderReport(char *&pData, int &pDataSize, int64_t &pEndToEndDelay /* in micro seconds */, unsigned int &pPackets, unsigned int &pOctets, float &pRelativeLoss);
 
 protected:
-    uint64_t GetCurrentPtsFromRTP(); // uses the timestamps from the RTP header to derive the PTS value of the last received packet
-    //TODO: uint64_t GetPtsFromRTP(uint64_t pTimestamp); // uses the timestamp to derive a valid PTS value of the addressed frame
+    uint64_t GetCurrentPtsFromRTP(); // uses the timestamps from the RTP header to derive a valid PTS value
     void GetSynchronizationReferenceFromRTP(uint64_t &pReferenceNtpTime, unsigned int &pReferencePts);
     unsigned int GetSourceIdentifierFromRTP(); // returns the RTP source identifier
     bool HasSourceChangedFromRTP(); // return if RTP source identifier has changed and resets the flag
