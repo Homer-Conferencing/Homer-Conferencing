@@ -1825,10 +1825,6 @@ void* MediaSourceMem::Run(void* pArgs)
 
                                 // reset chunk size to avoid additional writes to output FIFO because we already stored all valid audio buffers in output FIFO
                                 tCurrentChunkSize = 0;
-                                #ifdef MSMEM_DEBUG_PACKETS
-                                    if (tLoops > 1)
-                                        LOG(LOG_VERBOSE, "Wrote %d audio packets to output FIFO");
-                                #endif
                             }else
                             {
                                 LOG(LOG_WARN, "Couldn't decode audio samples %ld  because \"%s\"(%d)", tCurPacketPts, strerror(AVUNERROR(tDecoderResult)), AVUNERROR(tDecoderResult));
@@ -2027,7 +2023,7 @@ void MediaSourceMem::CalibrateRTGrabbing()
     #endif
 	if (tRelativeTime < 0)
 	{
-		LOG(LOG_ERROR, "Faound invalid realtive PTS value of: %.2f", (float)tRelativeTime);
+		LOG(LOG_ERROR, "Found invalid relative PTS value of: %.2f", (float)tRelativeTime);
 		tRelativeTime = 0;
 	}
 	mSourceStartTimeForRTGrabbing = av_gettime() - tRelativeTime  + mDecoderFramePreBufferTime * AV_TIME_BASE;
@@ -2049,7 +2045,10 @@ void MediaSourceMem::WaitForRTGrabbing()
     float tNormalizedFrameIndexFromGrabber = mGrabberCurrentFrameIndex - mSourceStartPts; // the normalized frame index
     // return immediately if RT-grabbing is not possible
     if (tNormalizedFrameIndexFromGrabber < 0)
+    {
+        LOG(LOG_WARN, "Normalized frame index is invalid");
         return;
+    }
 
     // the PTS value of the last output frame
     uint64_t tCurrentPtsFromGrabber = (uint64_t)(1000 * tNormalizedFrameIndexFromGrabber / GetFrameRate()); // in ms
@@ -2059,9 +2058,29 @@ void MediaSourceMem::WaitForRTGrabbing()
 
     // calculate the current (normalized) play-out time of the current A/V stream
     int64_t tCurrentPlayOutTime = av_gettime() - (int64_t)mSourceStartTimeForRTGrabbing; // in us
-    // return immediately if RT-grabbing is not possible
+    // check if we have already reached the pre-buffer threshold time
     if (tCurrentPlayOutTime < 0)
-        return;
+    {// no pre-buffering is currently running, we should wait until pre-buffer time is reached
+        #ifdef MSMEM_DEBUG_TIMING
+            LOG(LOG_WARN, "Play-out time difference %ld points into the future", tCurrentPlayOutTime);
+        #endif
+
+        // transform into waiting time
+        tCurrentPlayOutTime *= (-1);
+
+        // wait until pre-buffer time is reached
+        if (tCurrentPlayOutTime <= MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME * AV_TIME_BASE)
+            Thread::Suspend(tCurrentPlayOutTime);
+        else
+        {
+            LOG(LOG_WARN, "Found in %s %s source an invalid delay time of %ld s for reaching pre-buffer threshold time, pre-buffer time: %.2f, PTS of last queued frame: %ld, PTS of last grabbed frame: %.2f", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tCurrentPlayOutTime / 1000, mDecoderFramePreBufferTime, mDecoderLastReadPts, (float)mGrabberCurrentFrameIndex);
+            LOG(LOG_WARN, "Triggering re-calibration of RT grabbing");
+            mDecoderRecalibrateRTGrabbingAfterSeeking = true;
+        }
+
+        // update play-out time
+        tCurrentPlayOutTime = av_gettime() - (int64_t)mSourceStartTimeForRTGrabbing; // in us
+    }
 
     // calculate the time offset between the desired and current play-out time, which can be used for a wait cycle (Thread::Suspend)
     int64_t tResultingTimeOffset = tDesiredPlayOutTime - tCurrentPlayOutTime; // in us
