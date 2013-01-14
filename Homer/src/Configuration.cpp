@@ -397,6 +397,13 @@ void Configuration::SetFeatureConferencing(bool pActive)
     mQSettings->endGroup();
 }
 
+void Configuration::SetFeatureAutoLogging(bool pActive)
+{
+    mQSettings->beginGroup("Global");
+    mQSettings->setValue("FeatureAutoLogging", pActive);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetLanguage(QString pLanguage)
 {
     mQSettings->beginGroup("Global");
@@ -1110,6 +1117,11 @@ bool Configuration::GetAutoUpdateCheck()
 bool Configuration::GetFeatureConferencing()
 {
     return mQSettings->value("Global/FeatureConferencing", true).toBool();
+}
+
+bool Configuration::GetFeatureAutoLogging()
+{
+    return mQSettings->value("Global/FeatureAutoLogging", true).toBool();
 }
 
 QString Configuration::GetLanguage()

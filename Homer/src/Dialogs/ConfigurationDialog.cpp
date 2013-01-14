@@ -365,6 +365,7 @@ void ConfigurationDialog::LoadConfiguration()
     mCbSeparatedParticipantWidgets->setChecked(CONF.GetParticipantWidgetsSeparation());
     mCbCloseParticipantWidgetsImmediately->setChecked(CONF.GetParticipantWidgetsCloseImmediately());
     mCbFeatureConferencing->setChecked(CONF.GetFeatureConferencing());
+    mCbFeatureAutoLogging->setChecked(CONF.GetFeatureAutoLogging());
 
     /* GUI language */
     QString tCurLang = CONF.GetLanguage();
@@ -652,6 +653,7 @@ void ConfigurationDialog::SaveConfiguration()
     }
 
     CONF.SetFeatureConferencing(mCbFeatureConferencing->isChecked());
+    CONF.SetFeatureAutoLogging(mCbFeatureAutoLogging->isChecked());
 
     /* GUI language */
     if (mCbLanguage->currentIndex() != 0)

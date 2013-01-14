@@ -139,7 +139,8 @@ void HomerApplication::initializeLogging()
     }
 
     // log to default log file
-    LOGGER.RegisterLogSink(new LogSinkFile(PATH_DEFAULT_LOGFILE.toStdString()));
+    if (CONF.GetFeatureAutoLogging())
+        LOGGER.RegisterLogSink(new LogSinkFile(PATH_DEFAULT_LOGFILE.toStdString()));
 
 	// network based log sinks
     QStringList tPorts = mArguments.filter("-DebugOutputNetwork=");

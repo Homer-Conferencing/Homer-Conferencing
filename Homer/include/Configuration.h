@@ -139,6 +139,7 @@ public:
     bool GetSmoothVideoPresentation();
     bool GetAutoUpdateCheck();
     bool GetFeatureConferencing();
+    bool GetFeatureAutoLogging();
     QString GetLanguage();
     QString GetSystemLanguage();
 
@@ -299,6 +300,7 @@ public:
     void SetSmoothVideoPresentation(bool pActive);
     void SetAutoUpdateCheck(bool pActive);
     void SetFeatureConferencing(bool pActive);
+    void SetFeatureAutoLogging(bool pActive);
     void SetLanguage(QString pLanguage);
 
     /* user settings */
