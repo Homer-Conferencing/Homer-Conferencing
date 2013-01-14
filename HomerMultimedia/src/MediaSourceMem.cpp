@@ -2231,6 +2231,9 @@ int64_t MediaSourceMem::GetSynchronizationTimestamp()
             uint64_t tReferenceNtpTime;
             unsigned int tReferencePts;
             GetSynchronizationReferenceFromRTP(tReferenceNtpTime, tReferencePts);
+            #ifdef MSMEM_DEBUG_AV_SYNC
+                LOG(LOG_VERBOSE, "Got %s synchronization: at %lu was pts %u", GetMediaTypeStr().c_str(), tReferenceNtpTime, tReferencePts);
+            #endif
 
             // calculate the current (normalized) frame index of the grabber
             float tNormalizedFrameIndexFromGrabber = mGrabberCurrentFrameIndex - mSourceStartPts; // the normalized frame index
@@ -2245,10 +2248,11 @@ int64_t MediaSourceMem::GetSynchronizationTimestamp()
             {
                 // calculate the NTP time (we refer to the NTP time of the RTP source) of the currently grabbed frame
                 tResult = (int64_t)tReferenceNtpTime + tTimeOffsetFromReference;
-                int64_t tLocalNtpTime = av_gettime();
 
                 #ifdef MSMEM_DEBUG_AV_SYNC
-					// the PTS value of the last (received) input frame
+                    int64_t tLocalNtpTime = av_gettime();
+
+                    // the PTS value of the last (received) input frame
 					uint64_t tCurrentPtsFromRTP = GetCurrentPtsFromRTP(); // in ms
 
                 	// calculate the play time of the RTP source [in us]
