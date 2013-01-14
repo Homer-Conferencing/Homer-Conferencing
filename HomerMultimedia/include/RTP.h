@@ -225,7 +225,6 @@ private:
     uint64_t            mH261SentNtpTimeBase;
     int                 mH261SenderReports;
     bool                mH261FirstPacket;
-    AVRational          mH261LocalStreamTimeBase;
     /* RTCP */
     Mutex               mSynchDataMutex;
     uint64_t            mRtcpLastRemoteNtpTime; // (NTP timestamp)

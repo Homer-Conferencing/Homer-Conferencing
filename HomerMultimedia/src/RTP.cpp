@@ -536,7 +536,6 @@ bool RTP::OpenRtpEncoderH261(string pTargetHost, unsigned int pTargetPort, AVStr
     mH261SentNtpTimeBase = GetNtpTime();
     mH261SentOctetsLastSenderReport = 0;
     mH261SentNtpTimeLastSenderReport = 0;
-    mH261LocalStreamTimeBase = pInnerStream->time_base;
     return true;
 }
 
@@ -2725,7 +2724,7 @@ bool RTP::RtcpParseSenderReport(char *&pData, int &pDataSize, int64_t &pEndToEnd
 #define RTCP_SR_SIZE                28
 
 void RTP::RtcpCreateH261SenderReport(char *&pData /* current stream pointer */, unsigned int &pDataSize /* resulting stream size */, int64_t pCurPts)
-{return;
+{
     uint64_t tNtpTime = GetNtpTime();
     int tRtcpBytes = ((mH261SentOctets - mH261SentOctetsLastSenderReport) * RTCP_TX_RATIO_NUM) / RTCP_TX_RATIO_DEN;
     if ((mH261FirstPacket) || ((tRtcpBytes >= (int)RTCP_HEADER_SIZE /* 0.5 % rules */) && (tNtpTime - mH261SentNtpTimeLastSenderReport > 5000000 /* minimum period between two SRs is 5 seconds */)))
@@ -2748,7 +2747,6 @@ void RTP::RtcpCreateH261SenderReport(char *&pData /* current stream pointer */, 
         // ################################################
         RtcpHeader* tRtcpHeader = (RtcpHeader*)pData;
 
-        uint32_t tRtpTs = av_rescale_q(tNtpTime - mH261SentNtpTimeBase, (AVRational){1, 1000000}, mH261LocalStreamTimeBase) * CalculateClockRateFactor() /* without offset, no PTS shift from internal H261 packetizer */;
         #ifdef RTCP_DEBUG_PACKETS_ENCODER
             LOG(LOG_VERBOSE, "Sender report with PTS: %lu (own PTS: %ld)", tRtpTs, pCurPts);
         #endif
@@ -2760,7 +2758,7 @@ void RTP::RtcpCreateH261SenderReport(char *&pData /* current stream pointer */, 
         tRtcpHeader->Feedback.Ssrc = mLocalSourceIdentifier;
         tRtcpHeader->Feedback.TimestampHigh = tNtpTime / 1000000;
         tRtcpHeader->Feedback.TimestampLow = ((tNtpTime % 1000000) << 32) / 1000000;
-        tRtcpHeader->Feedback.RtpTimestamp = pCurPts;//tRtpTs;
+        tRtcpHeader->Feedback.RtpTimestamp = pCurPts * CalculateClockRateFactor() /* 90 kHz clock rate */;
         tRtcpHeader->Feedback.Packets = mH261SentPackets;
         tRtcpHeader->Feedback.Octets = mH261SentOctets;
 
