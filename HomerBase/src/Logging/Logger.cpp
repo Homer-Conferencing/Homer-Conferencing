@@ -99,7 +99,7 @@ void Logger::RegisterLogSink(LogSink* pLogSink)
         return;
     }
 
-    LOG(LOG_VERBOSE, "Registering log sink: %s", tId.c_str());
+    printf("Registering log sink: %s\n", tId.c_str());
 
     // lock
     mLogSinksMutex.lock();
@@ -108,7 +108,7 @@ void Logger::RegisterLogSink(LogSink* pLogSink)
     {
         if ((*tIt)->GetId() == tId)
         {
-            LOG(LOG_VERBOSE, "Sink already registered");
+            printf("Sink already registered\n");
             tFound = true;
             break;
         }
@@ -142,15 +142,17 @@ void Logger::UnregisterLogSink(LogSink* pLogSink)
         return;
     }
 
-    LOG(LOG_VERBOSE, "Unregistering log sink: %s", tId.c_str());
+    printf("Unregistering log sink: %s\n", tId.c_str());
 
     // lock
     mLogSinksMutex.lock();
 
     for (tIt = mLogSinks.begin(); tIt != mLogSinks.end(); tIt++)
     {
+        //printf("Comparing log sinks: %s = %s?\n", (*tIt)->GetId().c_str(), tId.c_str());
         if ((*tIt)->GetId() == tId)
         {
+            printf("Sink found, deleting it..\n");
             // remove registration of log sink object
             tFound = true;
             mLogSinks.erase(tIt);
@@ -163,7 +165,12 @@ void Logger::UnregisterLogSink(LogSink* pLogSink)
     mLogSinksMutex.unlock();
 
     if (tFound)
+    {// sink found
         LOG(LOG_VERBOSE, "..unregistered");
+    }else
+    {// we haven't found the sink
+
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
