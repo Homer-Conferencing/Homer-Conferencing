@@ -3077,10 +3077,10 @@ int MediaSource::FindStreamInfoCallback(void *pMediaSource)
 {
     MediaSource* tMediaSource = (MediaSource*)pMediaSource;
 
-    LOGEX(MediaSource, LOG_VERBOSE, "Ffmpeg calls us to ask for interrupt for %s %s source", tMediaSource->GetMediaTypeStr().c_str(), tMediaSource->GetSourceTypeStr().c_str());
+    //LOGEX(MediaSource, LOG_VERBOSE, "Ffmpeg calls us to ask for interrupt for %s %s source", tMediaSource->GetMediaTypeStr().c_str(), tMediaSource->GetSourceTypeStr().c_str());
 
     bool tResult = tMediaSource->mGrabbingStopped;
-    LOGEX(MediaSource, LOG_VERBOSE, "Interrupt the running process: %d", tResult);
+    //LOGEX(MediaSource, LOG_VERBOSE, "Interrupt the running process: %d", tResult);
 
     return (int)tResult;
 }
