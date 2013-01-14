@@ -1,19 +1,20 @@
 
 =============================================================
-Instructions for installing Homer-Conferencing on your system
+Instructions for installing Homer Conferencing on your system
 =============================================================
 
- The source code of Homer was built for Windows (XP/2003/Vista/7), Linux,
- OS X (Snow Leopard) and FreeBSD. Please use always the latest release
- version from https://github.com/Homer-Conferencing/Homer-Conferencing to
- build Homer or one of its libraries. If you face problems during build
- process, please ask your question(s) via mailing list (you have to be
- subscribed):
+ The source code of Homer Conferencing (short: Homer) was created for 
+ Windows (2003/Vista/7/8), Linux, OS X (Snow Leopard, Lion, Mountain 
+ Lion) and FreeBSD. Please, use always the latest release version from: 
+ 	https://github.com/Homer-Conferencing/Homer-Conferencing 
+ to build Homer or one of its libraries. If you face problems during the 
+ build process, please, ask your question(s) via mailing list (you have to 
+ be subscribed):
 
     <homer-conf-users@lists.sourceforge.net>
 
- Most current binaries for all supported system and additional information
- can be found on the official home page of Homer:
+ The most recent binaries for all supported system and additional information
+ can be found on the official web site of Homer Conferencing:
 
     http://www.homer-conferencing.com
 
@@ -21,8 +22,9 @@ Instructions for installing Homer-Conferencing on your system
 Install Homer-Conferencing:
 ===========================
 
- At least gcc version 4.4 is needed to build Homer or one of its libraries.
- Additionally, GNU Make and CMake is needed during build process.
+ As minimum configuration, gcc version 4.4 is needed in order to build Homer 
+ or one of its libraries. Additionally, GNU Make and CMake is needed for the 
+ build process.
 
  Create and install Homer via:
 
@@ -32,19 +34,19 @@ Install Homer-Conferencing:
     This will create all needed libraries and binaries depending on your 
     current system configuration. All binary files are build without debug 
     symbols and the output is stripped. After these steps you can start Homer
-    via the command line "./bin/Homer".
-    Additionally, all created files will be installed to "/foo/bar/".
-    Libraries will be copied to "/foo/bar/lib" and binaries to "/foo/bar/bin".
-    The program icon for Homer will be copied to "/foo/bar/usr/share/Homer".
-    The default directory (without INSTALL_PREFIX parameter) is "/usr/local".
+    via the command line "./Homer" from within "/foo/bar"
+    This will copy the binary to "/foo/bar" besides the program icon "Homer.png".
+    Additionally, all provided libraries will be copied to "/foo/bar/lib". The 
+    language files (*.qm) will be copied to "/foo/bar/lang".
+    The default directory (without the "INSTALL_PREFIX" parameter) is "/usr/local".
 
 
 System dependencies:
 ====================
 
- To build Homer or one of its libraries several libraries from other projects 
- are needed. The following table gives an overview. Minimum required versions
- and operating system are listed in brackets.
+ To build Homer or one of its libraries, several libraries from other projects 
+ are needed. The following table gives an overview about this. Minimum required 
+ versions and operating system are listed in brackets.
 
     - Library "HomerBase": no additional dependencies
     - Library "HomerConference": sofia-sip (1.12), openssl (1.0)
@@ -59,7 +61,7 @@ System dependencies:
 	                            only for Windows: Winmm,
 	                            only for OS X: AppKit, AudioUnit, CoreFoundation, 
 	                                           Carbon, IOKit, OpenGL
-    - Program binary "Homer" GUI: Qt (4.6)
+    - Program binary "Homer" GUI: Qt (4.7)
 
     **) On some systems the library "ffmpeg" is split into separate libraries:
 	avutil, avformat, avcodec, avdevice, avfilter, swscale, swresample.
@@ -68,78 +70,78 @@ System dependencies:
 Removing old build data and restoring default data:
 ===================================================
 
- You can reset the Homer directories and restore defaults via:
+ You can reset the Homer directories and restore default values via:
 
     > "cd HomerBuild"
     > "make distclean"
 
-    After these commands all data from the last build run is deleted. You can 
-    use "make clean" if you want to remove only the temporary build files and 
-    keep the resulting CMake generated Makefile and binaries form the last 
-    build run on the disc.
+    After executing these commands, all data from the last build run is deleted. 
+    You can use "make clean" if you want to remove only the temporary build files 
+    and keep the resulting CMake-generated Makefile and binaries of the last build 
+    run on the disc.
 
 
 
 Install libraries and data files to a different directory than the Homer-Conferencing binary:
 =============================================================================================
 
- It is possible to install all built libraries to an explicitly given directory.
- This can be triggered via:
+ It is possible to install all built libraries to an explicitly given directory:
  
-     >"make install INSTALL_PREFIX=/foo/bar INSTALL_LIBDIR=/foo/bar/lib64 INSTALL_DATADIR=/foo/bar/share"
+     >"make install INSTALL_PREFIX=/foo/bin INSTALL_LIBDIR=/foo/lib64 INSTALL_DATADIR=/foo/share/Homer"
      
-     This will install all libraries to the directory "/foo/bar/lib64" instead of "/foo/bar/lib". 
-     Additionally, this will install all data files, e.g. Homer.png, to "/foo/bar/share". 
+     This will install all libraries to the directory "/foo/lib64" instead of "/foo/lib". 
+     Additionally, this will install all data files, e.g., language files and "Homer.png", 
+     to "/foo/share/Homer". The Homer Conferencing binary will be installed to "/foo/bin". 
 
 
 
 Additional information to build Homer-Conferencing on Windows systems:
 ======================================================================
 
- To build Homer on Windows you need a minimal Linux environment. At the moment
- the Windows releases are built with MSys32, which depends on MinGW32. GCC version
- 4.6 and binutils 2.22 are used. Additionally, cmake 2.6 is used to generate system 
- depending Makefiles for the build process.
+ To build Homer on Windows you need a minimal Linux environment. At the moment,
+ the Windows releases are built based on MSys32, which depends on MinGW32. Moreover, 
+ GCC version 4.6 and binutils 2.22 are needed. Additionally, CMake 2.6 is used to 
+ generate system depending Makefiles for the final build process.
 
 
 
 Additional information to build Homer-Conferencing on OS X systems:
 ===================================================================
 
- Current OS X releases of Homer are built with cmake 2.8.* for OS X and Apple's 
- Xcode 4.5.*, which includes both gcc and binutils in current versions.
+ Current OS X releases of Homer are built based on CMake 2.8.* for OS X and Apple's 
+ XCode 4.5.*, which includes both gcc and binutils.
 
 
 DEVELOPER: build Homer-Conferencing with debug symbols:
 =======================================================
 
- Create a debug build via:
+ In order to create a debug build you can use:
 
     > "cd HomerBuild"
     > "make" (alternatively "make debug")
 
-    This will create all needed libraries and binaries based on the pre-compiled 
-    files from the Homer-Release package. All binary files are built with debug 
-    symbols and the output isn't stripped. If you need the Homer-Release package 
-    mail to info@homer-conferencing.com.
+    This will create all needed libraries and binaries based on pre-compiled files 
+    from the Homer-Release package. All binary files are built with debug symbols 
+    and the output isn't stripped. If you need the Homer-Release package, mail to 
+    info@homer-conferencing.com.
 
 
 DEVELOPER: debug the build process:
 ===================================
 
  In general, GNU Make supports the parameter "VERBOSE=1". The Homer build system 
- supports this parameter, too.
+ also supports this parameter.
   
- Get verbose output during build process via:
+ In order to get verbose output during build process, you can use:
 
     > "cd HomerBuild"
     > "make VERBOSE=1"
 
  This shows several verbose outputs and often gives a good hint why header files
- weren't found or why linking failed.
+ weren't found or why the link process failed.
 
- Get even more verbose output during build process via:
+ In order to get even more verbose output during build process, you can use:
 
     > "cd HomerBuild"
     > "make VERBOSE=2"
-  
+   
