@@ -246,13 +246,8 @@ void MainWindow::SetLanguage(QString pLanguage)
 		if (pLanguage != "en")
 		{// we need translation file
 	        // create new translator
-			QString tNewLangFile = mAbsBinPath + "lang/Homer_" + pLanguage + ".qm";
-            if (QString(HOMER_INSTALL_DATADIR) != "")
-            {
-                LOG(LOG_WARN, "HOMER_INSTALL_DATADIR is defined as %s", string(HOMER_INSTALL_DATADIR).c_str());
-                tNewLangFile = QString(HOMER_INSTALL_DATADIR) + "/lang/Homer_" + pLanguage + ".qm";
-            }
-            LOG(LOG_VERBOSE, "Search language files according to pattern: %s", tNewLangFile.toStdString().c_str());
+			QString tNewLangFile = CONF.GetLanguagePath() + "Homer_" + pLanguage + ".qm";
+            LOG(LOG_VERBOSE, "Searching language files according to pattern: %s", tNewLangFile.toStdString().c_str());
 			if(mTranslator->load(tNewLangFile))
 			{
 				QCoreApplication::installTranslator(mTranslator);

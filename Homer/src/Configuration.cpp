@@ -931,6 +931,20 @@ QString Configuration::GetDataDirectory()
     return mQSettings->value("Global/DataDirectory", QDir::homePath()).toString();
 }
 
+QString Configuration::GetLanguagePath()
+{
+    QString tResult = mAbsBinPath;
+    if (QString(HOMER_INSTALL_DATADIR) != "")
+    {
+        LOG(LOG_WARN, "HOMER_INSTALL_DATADIR is defined as %s", string(HOMER_INSTALL_DATADIR).c_str());
+        tResult = QString(HOMER_INSTALL_DATADIR);
+    }
+    if ((!tResult.endsWith("\\")) && (!tResult.endsWith("/")))
+        tResult += "/";
+    tResult += "lang/";
+    return tResult;
+}
+
 QPoint Configuration::GetMainWindowPosition()
 {
     int tScreenResX = QApplication::desktop()->screenGeometry().width();

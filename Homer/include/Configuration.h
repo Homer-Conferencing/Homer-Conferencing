@@ -95,6 +95,7 @@ public:
     QString GetConferenceAvailability();
     QString GetContactFile();
     QString GetDataDirectory();
+    QString GetLanguagePath();
 
     QPoint GetMainWindowPosition();
     QSize GetMainWindowSize();
