@@ -165,12 +165,12 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
             if (tMediaSourceMemInstance->mGrabbingStopped)
             {
                 LOGEX(MediaSourceMem, LOG_VERBOSE, "Grabbing was stopped meanwhile");
-                return -1; //force negative resulting buffer size to signal error and force a return to the calling GUI!
+                return ENODEV; //force negative resulting buffer size to signal error and force a return to the calling GUI!
             }
             if (tFragmentBufferSize == 0)
             {
             	LOGEX(MediaSourceMem, LOG_VERBOSE, "Detected empty signaling fragment, returning zero data");
-                return 0;
+                return EAGAIN;
             }
             if (tFragmentBufferSize < 0)
             {
@@ -226,7 +226,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
                     if (tMediaSourceMemInstance->HasInputStreamChanged())
                     {// we have to reset the source
                         LOGEX(MediaSourceMem, LOG_VERBOSE, "Detected source change at remote side, signaling EOF and returning immediately");
-                        return -1;
+                        return ENODEV;
                     }else
                     {// something went wrong
                         LOGEX(MediaSourceMem, LOG_WARN, "Current RTP packet was reported as invalid by RTP parser, ignoring this data");
@@ -1322,30 +1322,32 @@ void* MediaSourceMem::Run(void* pArgs)
                         #endif
 
                         // error reporting
-                        if ((!mGrabbingStopped) && (tRes != (int)AVERROR_EOF) && (tRes != (int)AVERROR(EIO)))
+                        if (!mGrabbingStopped)
                         {
                             if (HasInputStreamChanged())
+                            {
                                 mEOFReached = true;
-                            else
+                            }else if (tRes == (int)AVERROR_EOF)
+                            {
+                                tCurPacketPts = mNumberOfFrames;
+                                LOG(LOG_WARN, "%s-Decoder reached EOF", GetMediaTypeStr().c_str());
+                                mEOFReached = true;
+                            }else if (tRes == (int)AVERROR(EIO))
+                            {
+                                // acknowledge failed"
+                                MarkGrabChunkFailed(GetMediaTypeStr() + " source has I/O error");
+
+                                // signal EOF instead of I/O error
+                                LOG(LOG_VERBOSE, "Returning EOF in %s stream because of I/O error", GetMediaTypeStr().c_str());
+                                mEOFReached = true;
+                            }else if (tRes != (int)AVERROR(EAGAIN))
+                            {// we should grab again, we signaled this ourself
+                                if (mDecoderNeeded)
+                                    tShouldReadNext = true;
+                            }else
+                            {// actually an error
                                 LOG(LOG_ERROR, "Couldn't grab a %s frame because \"%s\"(%d)", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)), tRes);
-                        }
-
-                        if (tPacket->size == 0)
-                            tShouldReadNext = true;
-
-                        if (tRes == (int)AVERROR_EOF)
-                        {
-                            tCurPacketPts = mNumberOfFrames;
-                            LOG(LOG_WARN, "%s-Decoder reached EOF", GetMediaTypeStr().c_str());
-                            mEOFReached = true;
-                        }else if (tRes == (int)AVERROR(EIO))
-                        {
-                            // acknowledge failed"
-                            MarkGrabChunkFailed(GetMediaTypeStr() + " source has I/O error");
-
-                            // signal EOF instead of I/O error
-                            LOG(LOG_VERBOSE, "Returning EOF in %s stream because of I/O error", GetMediaTypeStr().c_str());
-                            mEOFReached = true;
+                            }
                         }
                     }else
                     {// new frame was read
@@ -1786,7 +1788,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                     }
                                 }else
                                 {
-                                    LOG(LOG_ERROR, "Couldn't decode video frame %ld because \"%s\"(%d), got a decoder result: %d", tCurPacketPts, strerror(AVUNERROR(tDecoderResult)), AVUNERROR(tDecoderResult), (tFrameFinished == 0));
+                                    LOG(LOG_ERROR, "Couldn't decode video frame %ld because \"%s\"(%d), got a decoder result: %d", tCurPacketPts, strerror(AVUNERROR(tDecoderResult)), AVUNERROR(tDecoderResult), tFrameFinished);
                                     tCurrentChunkSize = 0;
                                 }
                             }
