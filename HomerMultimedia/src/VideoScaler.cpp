@@ -292,128 +292,134 @@ void* VideoScaler::Run(void* pArgs)
 			#ifdef VS_DEBUG_PACKETS
 	            LOG(LOG_VERBOSE, "Got new input of %d bytes for scaling", tBufferSize);
 			#endif
-            if ((tBufferSize > 0) && (mScalerNeeded))
+            if (mScalerNeeded)
             {
-            	mChunkNumber++;
-                //HINT: we only get input if mStreamActivated is set and we have some registered media sinks
+                if (tBufferSize > 0)
+                {
+                    mChunkNumber++;
+                    //HINT: we only get input if mStreamActivated is set and we have some registered media sinks
 
-                tCurrentChunkSize = 0;
-                //HINT: media type is always MEDIA_VIDEO here
+                    tCurrentChunkSize = 0;
+                    //HINT: media type is always MEDIA_VIDEO here
 
-                // ####################################################################
-                // ### PREPARE INPUT FRAME
-                // ###################################################################
-                // Assign appropriate parts of buffer to image planes in tInputFrame
-                avpicture_fill((AVPicture *)tInputFrame, (uint8_t *)tBuffer, mSourcePixelFormat, mSourceResX, mSourceResY);
+                    // ####################################################################
+                    // ### PREPARE INPUT FRAME
+                    // ###################################################################
+                    // Assign appropriate parts of buffer to image planes in tInputFrame
+                    avpicture_fill((AVPicture *)tInputFrame, (uint8_t *)tBuffer, mSourcePixelFormat, mSourceResX, mSourceResY);
 
-                // set frame number in corresponding entries within AVFrame structure
-                tInputFrame->pts = mChunkNumber;
-                tInputFrame->coded_picture_number = mChunkNumber;
-                tInputFrame->display_picture_number = mChunkNumber;
+                    // set frame number in corresponding entries within AVFrame structure
+                    tInputFrame->pts = mChunkNumber;
+                    tInputFrame->coded_picture_number = mChunkNumber;
+                    tInputFrame->display_picture_number = mChunkNumber;
 
-                #ifdef VS_DEBUG_PACKETS
-                    LOG(LOG_VERBOSE, "SCALER-new input video frame..");
-                    LOG(LOG_VERBOSE, "      ..key frame: %d", tInputFrame->key_frame);
-                    switch(tInputFrame->pict_type)
-                    {
-                            case AV_PICTURE_TYPE_I:
-                                LOG(LOG_VERBOSE, "      ..picture type: i-frame");
-                                break;
-                            case AV_PICTURE_TYPE_P:
-                                LOG(LOG_VERBOSE, "      ..picture type: p-frame");
-                                break;
-                            case AV_PICTURE_TYPE_B:
-                                LOG(LOG_VERBOSE, "      ..picture type: b-frame");
-                                break;
-                            default:
-                                LOG(LOG_VERBOSE, "      ..picture type: %d", tInputFrame->pict_type);
-                                break;
-                    }
-                    LOG(LOG_VERBOSE, "      ..pts: %ld", tInputFrame->pts);
-                    LOG(LOG_VERBOSE, "      ..coded pic number: %d", tInputFrame->coded_picture_number);
-                    LOG(LOG_VERBOSE, "      ..display pic number: %d", tInputFrame->display_picture_number);
-                #endif
-
-                // ####################################################################
-                // ### SCALE FRAME (CONVERT)
-                // ###################################################################
-                int64_t tTime = Time::GetTimeStamp();
-                // convert
-
-				#ifdef VS_DEBUG_PACKETS
-					LOG(LOG_VERBOSE, "%s-scaling frame %d, source res: %d*%d (fmt: %d) to %d*%d, scaler context at %p", mName.c_str(), mChunkNumber, mSourceResX, mSourceResY, (int)mSourcePixelFormat, mTargetResX, mTargetResY, mVideoScalerContext);
-					LOG(LOG_VERBOSE, "Video input frame data: %p, %p, %p, %p", tInputFrame->data[0], tInputFrame->data[1], tInputFrame->data[2], tInputFrame->data[3]);
-					LOG(LOG_VERBOSE, "Video input frame line size: %d, %d, %d, %d", tInputFrame->linesize[0], tInputFrame->linesize[1], tInputFrame->linesize[2], tInputFrame->linesize[3]);
-					LOG(LOG_VERBOSE, "Video output frame data: %p, %p, %p, %p", tOutputFrame->data[0], tOutputFrame->data[1], tOutputFrame->data[2], tOutputFrame->data[3]);
-					LOG(LOG_VERBOSE, "Video output frame line size: %d, %d, %d, %d", tOutputFrame->linesize[0], tOutputFrame->linesize[1], tOutputFrame->linesize[2], tOutputFrame->linesize[3]);
-				#endif
-                HM_sws_scale(mVideoScalerContext, tInputFrame->data, tInputFrame->linesize, 0, mSourceResY, tOutputFrame->data, tOutputFrame->linesize);
-				#ifdef VS_DEBUG_PACKETS
-                	LOG(LOG_VERBOSE, "..video scaling for %s finished", mName.c_str());
-                    int64_t tTime2 = Time::GetTimeStamp();
-                    LOG(LOG_VERBOSE, "SCALER-scaling video frame took %ld us", tTime2 - tTime);
-                #endif
-
-                // size of scaled output frame
-                tCurrentChunkSize = avpicture_get_size(mTargetPixelFormat, mTargetResX, mTargetResY);
-
-                #ifdef VS_DEBUG_PACKETS
-                    LOG(LOG_VERBOSE, "SCALER-new output video frame..");
-                    LOG(LOG_VERBOSE, "      ..key frame: %d", tOutputFrame->key_frame);
-                    switch(tOutputFrame->pict_type)
-                    {
-                            case AV_PICTURE_TYPE_I:
-                                LOG(LOG_VERBOSE, "      ..picture type: i-frame");
-                                break;
-                            case AV_PICTURE_TYPE_P:
-                                LOG(LOG_VERBOSE, "      ..picture type: p-frame");
-                                break;
-                            case AV_PICTURE_TYPE_B:
-                                LOG(LOG_VERBOSE, "      ..picture type: b-frame");
-                                break;
-                            default:
-                                LOG(LOG_VERBOSE, "      ..picture type: %d", tOutputFrame->pict_type);
-                                break;
-                    }
-                    LOG(LOG_VERBOSE, "      ..pts: %ld", tOutputFrame->pts);
-                    LOG(LOG_VERBOSE, "      ..coded pic number: %d", tOutputFrame->coded_picture_number);
-                    LOG(LOG_VERBOSE, "      ..display pic number: %d", tOutputFrame->display_picture_number);
-                #endif
-
-                // was there an error during decoding process?
-                if (tCurrentChunkSize > 0)
-                {// no error
-                    // add new chunk to FIFO
                     #ifdef VS_DEBUG_PACKETS
-                        LOG(LOG_VERBOSE, "SCALER-writing %d bytes to output FIFO", tCurrentChunkSize);
+                        LOG(LOG_VERBOSE, "SCALER-new input video frame..");
+                        LOG(LOG_VERBOSE, "      ..key frame: %d", tInputFrame->key_frame);
+                        switch(tInputFrame->pict_type)
+                        {
+                                case AV_PICTURE_TYPE_I:
+                                    LOG(LOG_VERBOSE, "      ..picture type: i-frame");
+                                    break;
+                                case AV_PICTURE_TYPE_P:
+                                    LOG(LOG_VERBOSE, "      ..picture type: p-frame");
+                                    break;
+                                case AV_PICTURE_TYPE_B:
+                                    LOG(LOG_VERBOSE, "      ..picture type: b-frame");
+                                    break;
+                                default:
+                                    LOG(LOG_VERBOSE, "      ..picture type: %d", tInputFrame->pict_type);
+                                    break;
+                        }
+                        LOG(LOG_VERBOSE, "      ..pts: %ld", tInputFrame->pts);
+                        LOG(LOG_VERBOSE, "      ..coded pic number: %d", tInputFrame->coded_picture_number);
+                        LOG(LOG_VERBOSE, "      ..display pic number: %d", tInputFrame->display_picture_number);
                     #endif
-                    if (tCurrentChunkSize <= mOutputFifo->GetEntrySize())
-                    {
-                        mOutputFifo->WriteFifo((char*)tOutputBuffer, tCurrentChunkSize);
-                        // add meta description about current chunk to different FIFO
-                        struct ChunkDescriptor tChunkDesc;
-//TODO                            tChunkDesc.Pts = tCurFramePts;
-//TODO                            mMetaDataOutputFifo->WriteFifo((char*) &tChunkDesc, sizeof(tChunkDesc));
+
+                    // ####################################################################
+                    // ### SCALE FRAME (CONVERT)
+                    // ###################################################################
+                    int64_t tTime = Time::GetTimeStamp();
+                    // convert
+
+                    #ifdef VS_DEBUG_PACKETS
+                        LOG(LOG_VERBOSE, "%s-scaling frame %d, source res: %d*%d (fmt: %d) to %d*%d, scaler context at %p", mName.c_str(), mChunkNumber, mSourceResX, mSourceResY, (int)mSourcePixelFormat, mTargetResX, mTargetResY, mVideoScalerContext);
+                        LOG(LOG_VERBOSE, "Video input frame data: %p, %p, %p, %p", tInputFrame->data[0], tInputFrame->data[1], tInputFrame->data[2], tInputFrame->data[3]);
+                        LOG(LOG_VERBOSE, "Video input frame line size: %d, %d, %d, %d", tInputFrame->linesize[0], tInputFrame->linesize[1], tInputFrame->linesize[2], tInputFrame->linesize[3]);
+                        LOG(LOG_VERBOSE, "Video output frame data: %p, %p, %p, %p", tOutputFrame->data[0], tOutputFrame->data[1], tOutputFrame->data[2], tOutputFrame->data[3]);
+                        LOG(LOG_VERBOSE, "Video output frame line size: %d, %d, %d, %d", tOutputFrame->linesize[0], tOutputFrame->linesize[1], tOutputFrame->linesize[2], tOutputFrame->linesize[3]);
+                    #endif
+                    HM_sws_scale(mVideoScalerContext, tInputFrame->data, tInputFrame->linesize, 0, mSourceResY, tOutputFrame->data, tOutputFrame->linesize);
+                    #ifdef VS_DEBUG_PACKETS
+                        LOG(LOG_VERBOSE, "..video scaling for %s finished", mName.c_str());
+                        int64_t tTime2 = Time::GetTimeStamp();
+                        LOG(LOG_VERBOSE, "SCALER-scaling video frame took %ld us", tTime2 - tTime);
+                    #endif
+
+                    // size of scaled output frame
+                    tCurrentChunkSize = avpicture_get_size(mTargetPixelFormat, mTargetResX, mTargetResY);
+
+                    #ifdef VS_DEBUG_PACKETS
+                        LOG(LOG_VERBOSE, "SCALER-new output video frame..");
+                        LOG(LOG_VERBOSE, "      ..key frame: %d", tOutputFrame->key_frame);
+                        switch(tOutputFrame->pict_type)
+                        {
+                                case AV_PICTURE_TYPE_I:
+                                    LOG(LOG_VERBOSE, "      ..picture type: i-frame");
+                                    break;
+                                case AV_PICTURE_TYPE_P:
+                                    LOG(LOG_VERBOSE, "      ..picture type: p-frame");
+                                    break;
+                                case AV_PICTURE_TYPE_B:
+                                    LOG(LOG_VERBOSE, "      ..picture type: b-frame");
+                                    break;
+                                default:
+                                    LOG(LOG_VERBOSE, "      ..picture type: %d", tOutputFrame->pict_type);
+                                    break;
+                        }
+                        LOG(LOG_VERBOSE, "      ..pts: %ld", tOutputFrame->pts);
+                        LOG(LOG_VERBOSE, "      ..coded pic number: %d", tOutputFrame->coded_picture_number);
+                        LOG(LOG_VERBOSE, "      ..display pic number: %d", tOutputFrame->display_picture_number);
+                    #endif
+
+                    // was there an error during decoding process?
+                    if (tCurrentChunkSize > 0)
+                    {// no error
+                        // add new chunk to FIFO
                         #ifdef VS_DEBUG_PACKETS
-                            LOG(LOG_VERBOSE, "SCALER-successful scaler loop");
+                            LOG(LOG_VERBOSE, "SCALER-writing %d bytes to output FIFO", tCurrentChunkSize);
                         #endif
-                    }else
-                    {
-                        LOG(LOG_ERROR, "Cannot write a VIDEO chunk of %d bytes to the encoder FIFO with %d bytes slots", tCurrentChunkSize, mOutputFifo->GetEntrySize());
+                        if (tCurrentChunkSize <= mOutputFifo->GetEntrySize())
+                        {
+                            mOutputFifo->WriteFifo((char*)tOutputBuffer, tCurrentChunkSize);
+                            // add meta description about current chunk to different FIFO
+                            struct ChunkDescriptor tChunkDesc;
+    //TODO                            tChunkDesc.Pts = tCurFramePts;
+    //TODO                            mMetaDataOutputFifo->WriteFifo((char*) &tChunkDesc, sizeof(tChunkDesc));
+                            #ifdef VS_DEBUG_PACKETS
+                                LOG(LOG_VERBOSE, "SCALER-successful scaler loop");
+                            #endif
+                        }else
+                        {
+                            LOG(LOG_ERROR, "Cannot write a VIDEO chunk of %d bytes to the encoder FIFO with %d bytes slots", tCurrentChunkSize, mOutputFifo->GetEntrySize());
+                        }
                     }
+                }else
+                {
+                    // got a message to stop the encoder pipe?
+                    if (tBufferSize == 0)
+                    {
+                        LOG(LOG_VERBOSE, "Forwarding the empty packet from the scaler input FIFO to the scaler output FIFO");
+
+                        // forward the empty packet to the output FIFO
+                        mOutputFifo->WriteFifo(tBuffer, 0);
+
+                        LOG(LOG_VERBOSE, "..forwarded the empty chunk from input to output");
+                    }else
+                    	LOG(LOG_ERROR, "Invalid buffer size: %d", tBufferSize);
                 }
             }else
-            {
-                // got a message to stop the encoder pipe?
-                if (tBufferSize == 0)
-                {
-                    LOG(LOG_VERBOSE, "Forwarding the empty packet from the scaler input FIFO to the scaler output FIFO");
-
-                    // forward the empty packet to the output FIFO
-                    mOutputFifo->WriteFifo(tBuffer, 0);
-                }
-            }
-
+                LOG(LOG_WARN, "VIDEO scaler isn't needed anymore, going to close the thread");
             // release FIFO entry lock
             if (tFifoEntry >= 0)
                 mInputFifo->ReadFifoExclusiveFinished(tFifoEntry);
