@@ -1380,6 +1380,7 @@ void* MediaSourceMem::Run(void* pArgs)
                         LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket->dts);
                         LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
                         LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket->pos);
+                        LOG(LOG_VERBOSE, "      ..pic. nr.: %ld", (int64_t)tPacket->pts / tPacket->duration /* works only for cfr, otherwise duration is variable */);
                         if (tPacket->flags == AV_PKT_FLAG_KEY)
                             LOG(LOG_VERBOSE, "      ..flags: key frame");
                         else
