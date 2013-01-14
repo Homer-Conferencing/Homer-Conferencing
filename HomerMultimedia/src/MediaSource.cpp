@@ -1969,7 +1969,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
         int InputFrameSize = (mCodecContext != NULL) ? (mCodecContext->frame_size > 0 ? mCodecContext->frame_size : MEDIA_SOURCE_SAMPLES_PER_BUFFER) : MEDIA_SOURCE_SAMPLES_PER_BUFFER;
         LOG(LOG_VERBOSE, "..assigning planes memory for indexing resample memory with frame size: %d", InputFrameSize /* we use the source frame size! */);
         memset(mRecorderResampleBufferPlanes, 0, sizeof(mRecorderResampleBufferPlanes));
-        if (av_samples_fill_arrays(&mRecorderResampleBufferPlanes[0], NULL, (const uint8_t *)mRecorderResampleBuffer, mRecorderAudioChannels, InputFrameSize /* we use the source frame size! */, mRecorderAudioFormat, 1) < 0)
+        if (HM_av_samples_fill_arrays(&mRecorderResampleBufferPlanes[0], NULL, (uint8_t *)mRecorderResampleBuffer, mRecorderAudioChannels, InputFrameSize /* we use the source frame size! */, mRecorderAudioFormat, 1) < 0)
         {
             LOG(LOG_ERROR, "Could not fill the audio plane pointer array");
         }
@@ -2218,7 +2218,7 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
                 // #########################################
                 // re-encode the frame
                 // #########################################
-                tEncoderResult = avcodec_encode_video2(mRecorderCodecContext, tPacket, mRecorderFinalFrame, &tFrameFinished);
+                tEncoderResult = HM_avcodec_encode_video2(mRecorderCodecContext, tPacket, mRecorderFinalFrame, &tFrameFinished);
 
                 // #########################################
                 // write encoded frame

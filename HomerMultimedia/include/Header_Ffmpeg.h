@@ -25,12 +25,22 @@
  * Since:   2009-02-16
  */
 
+/*
+ * This file is needed to maintain compatibility to the different APIs of known ffmpeg releases.
+ * This includes release 0.10.*, 0.11.*, 1.0.1, 1.1. This excludes release 0.8.*!
+ * Starting from January 2013, we won't continue this work and use error messages instead in order
+ * to give hints which version of ffmpeg would work.
+ */
+
 #ifndef _MULTIMEDIA_HEADER_FFMPEG_
 #define _MULTIMEDIA_HEADER_FFMPEG_
 
 #if __GNUC__ >=3
 #pragma GCC system_header //suppress warnings from ffmpeg
 #endif
+
+#include <Logger.h>
+using namespace Homer::Base;
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -152,6 +162,15 @@ inline void HM_swr_free(struct ReSampleContext **s)
     #define AVMEDIA_TYPE_UNKNOWN CODEC_TYPE_UNKNOWN
 #endif
 
+inline int HM_av_samples_fill_arrays(uint8_t **audio_data, int *linesize, uint8_t *buf, int nb_channels, int nb_samples, enum AVSampleFormat sample_fmt, int align)
+{
+    #if (LIBAVUTIL_VERSION_INT < AV_VERSION_INT(51, 54, 100))
+        return av_samples_fill_arrays(audio_data, linesize, buf, nb_channels, nb_samples, sample_fmt, align);
+    #else
+        return av_samples_fill_arrays(audio_data, linesize, (const uint8_t*)buf, nb_channels, nb_samples, sample_fmt, align);
+    #endif
+}
+
 inline int HM_avformat_write_header(AVFormatContext *s)
 {
     #if LIBAVFORMAT_VERSION_MAJOR < 54
@@ -207,6 +226,16 @@ inline int HM_avcodec_decode_audio(AVCodecContext *avctx, int16_t *samples, int 
         return avcodec_decode_audio2(avctx, samples, frame_size_ptr, avpkt->data, avpkt->size);
     #else
         return avcodec_decode_audio3(avctx, samples, frame_size_ptr, avpkt);
+    #endif
+}
+
+inline int HM_avcodec_encode_video2(AVCodecContext *avctx, AVPacket *avpkt, const AVFrame *frame, int *got_packet_ptr)
+{
+    #if (LIBAVCODEC_VERSION_INT < AV_VERSION_INT(154, 23, 100))
+        LOGEX(Logger, LOG_ERROR, "We need avcodec_encode_video2(), your ffmpeg version is too old, use version 0.11.1 at above.");
+        return -1;
+    #else
+        return avcodec_encode_video2(avctx, avpkt, frame, got_packet_ptr);
     #endif
 }
 
