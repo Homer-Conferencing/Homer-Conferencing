@@ -245,6 +245,13 @@ void NetworkListener::StartListener()
 {
     LOG(LOG_VERBOSE, "Starting network listener for local port %u", GetListenerPort());
 
+    int tRemainingFragments = mMediaSourceNet->mDecoderFragmentFifo->GetUsage();
+    if (tRemainingFragments)
+    {
+        LOG(LOG_WARN, "Detected %d pending %s fragments, dropping these fragments..", tRemainingFragments, mMediaSourceNet->GetMediaTypeStr().c_str());
+        mMediaSourceNet->mDecoderFragmentFifo->ClearFifo();
+    }
+
     if (!IsRunning())
     {
         // start decoder main loop
