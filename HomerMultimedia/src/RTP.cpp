@@ -88,6 +88,8 @@ using namespace Homer::Monitor;
 
 #define RTP_PAYLOAD_TYPE_NONE											0x7F
 
+#define RTCP_SENDER_REPORT                  200
+
 ///////////////////////////////////////////////////////////////////////////////
 
 /* ##################################################################################
@@ -1550,6 +1552,20 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
         // RTCP in-stream feedback starts at the beginning of RTP header
         RtcpHeader* tRtcpHeader = (RtcpHeader*)tDataOriginal;
 
+        pIsLastFragment = false;
+        switch(tRtcpHeader->General.Type)
+        {
+            case RTCP_SENDER_REPORT:
+                pIsSenderReport = true;
+                break;
+            default:
+                LOG(LOG_VERBOSE, "Received unsupported RTCP packet (type %d)", tRtcpHeader->General.Type);
+                pIsSenderReport = false;
+                break;
+        }
+        pData = (char*)tRtcpHeader;
+        pDataSize = (tRtcpHeader->Feedback.Length + 1) * 4;
+
         // convert from host to network byte order again
         for (int i = 0; i < 3; i++)
             tRtpHeader->Data[i] = htonl(tRtpHeader->Data[i]);
@@ -1557,11 +1573,6 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
         #ifdef RTCP_DEBUG_PACKETS_DECODER
             LogRtcpHeader(tRtcpHeader);
         #endif
-
-        pIsLastFragment = false;
-        pIsSenderReport = true;
-        pData = (char*)tRtcpHeader;
-        pDataSize = (tRtcpHeader->Feedback.Length + 1) * 4;
 
         // inform that is not a fragment which includes data for an audio/video decoder, this RTCP packet belongs to the RTP abstraction level
         return false;
@@ -2447,8 +2458,6 @@ string RTP::PayloadIdToCodec(int pId)
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////// RTCP handling ///////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-
-#define RTCP_SENDER_REPORT                  200
 
 string GetRtcpPayloadTypeStr(int pType)
 {
