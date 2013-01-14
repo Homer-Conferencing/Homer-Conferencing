@@ -238,7 +238,7 @@ void* VideoScaler::Run(void* pArgs)
     /* current chunk */
     int                 tCurrentChunkSize = 0;
 
-    LOG(LOG_VERBOSE, "%s video scaling thread started", mName.c_str());
+    LOG(LOG_WARN, "+++++++++++++++++ VIDEO scaler thread started");
 
     SVC_PROCESS_STATISTIC.AssignThreadName("Video-Scaler(" + toString(mSourceResX) + "*" + toString(mSourceResY) + ")");
     int tOutputBufferSize = avpicture_get_size(mTargetPixelFormat, mTargetResX, mTargetResY) + FF_INPUT_BUFFER_PADDING_SIZE;
@@ -279,7 +279,7 @@ void* VideoScaler::Run(void* pArgs)
     mChunkNumber = 0;
     mScalerNeeded = true;
 
-    LOG(LOG_VERBOSE, "..entering %s video scaler main loop", mName.c_str());
+    LOG(LOG_WARN, "================ Entering main VIDEO scaling loop");
     while(mScalerNeeded)
     {
         mScalingThreadMutex.lock();
@@ -455,7 +455,7 @@ void* VideoScaler::Run(void* pArgs)
     // free the output buffer
     free(tOutputBuffer);
 
-    LOG(LOG_WARN, "Video scaler thread finished");
+    LOG(LOG_WARN, "VIDEO scaler main loop finished ----------------");
 
     return NULL;
 }
