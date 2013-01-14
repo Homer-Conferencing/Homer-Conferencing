@@ -1504,6 +1504,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                         LOG(LOG_WARN, "Couldn't re-encode current video frame %ld because %s(%d)", tYUVFrame->pts, strerror(AVUNERROR(tEncoderResult)), tEncoderResult);
                                     else
                                         LOG(LOG_VERBOSE, "Video encoder delivered no frame");
+                                    mFrameNumber--;
 
                                 }
                                 #ifdef MSM_DEBUG_TIMING
