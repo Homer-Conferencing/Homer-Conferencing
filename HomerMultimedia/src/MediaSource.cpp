@@ -3144,6 +3144,7 @@ bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
                 case CODEC_ID_MPEG1VIDEO:
                 case CODEC_ID_MPEG2VIDEO:
                 case CODEC_ID_MPEG4:
+                case CODEC_ID_H264:
                     // we shouldn't limit the analyzing time because the analyzer needs the entire time period to deliver a reliable result
                     break;
                 default:
