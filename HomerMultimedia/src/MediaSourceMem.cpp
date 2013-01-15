@@ -165,73 +165,83 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
             if (tMediaSourceMemInstance->mGrabbingStopped)
             {
                 LOGEX(MediaSourceMem, LOG_VERBOSE, "Grabbing was stopped meanwhile");
-                return ENODEV; //force negative resulting buffer size to signal error and force a return to the calling GUI!
-            }
-            if (tFragmentBufferSize == 0)
-            {
-            	LOGEX(MediaSourceMem, LOG_VERBOSE, "Detected empty signaling fragment, returning zero data");
-                return EAGAIN;
+                return -ENODEV; //force negative resulting buffer size to signal error and force a return to the calling GUI!
             }
             if (tFragmentBufferSize < 0)
             {
                 LOGEX(MediaSourceMem, LOG_VERBOSE, "Received invalid fragment");
                 return 0;
             }
-            tFragmentDataSize = tFragmentBufferSize;
-            // parse and remove the RTP header, extract the encapsulated frame fragment
-            tFragmenHasAVData = tMediaSourceMemInstance->RtpParse(tFragmentData, tFragmentDataSize, tLastFragment, tFragmentIsSenderReport, tMediaSourceMemInstance->mSourceCodecId, false);
+            if (tFragmentBufferSize > 0)
+            {
+                tFragmentDataSize = tFragmentBufferSize;
+                // parse and remove the RTP header, extract the encapsulated frame fragment
+                tFragmenHasAVData = tMediaSourceMemInstance->RtpParse(tFragmentData, tFragmentDataSize, tLastFragment, tFragmentIsSenderReport, tMediaSourceMemInstance->mSourceCodecId, false);
 
-            // relay new data to registered sinks
-            if(tFragmenHasAVData)
-            {// fragment is okay
-                // relay the received fragment to registered sinks
-                tMediaSourceMemInstance->RelayPacketToMediaSinks(tFragmentData, tFragmentDataSize);
+                // relay new data to registered sinks
+                if(tFragmenHasAVData)
+                {// fragment is okay
+                    // relay the received fragment to registered sinks
+                    tMediaSourceMemInstance->RelayPacketToMediaSinks(tFragmentData, tFragmentDataSize);
 
-                // store the received fragment locally
-                if (tBufferSize + tFragmentDataSize < pBufferSize)
-                {
-                    if (tFragmentDataSize > 0)
+                    // store the received fragment locally
+                    if (tBufferSize + tFragmentDataSize < pBufferSize)
                     {
-                        // copy the fragment to the final buffer
-                        memcpy(tBuffer, tFragmentData, tFragmentDataSize);
-                        tBuffer += tFragmentDataSize;
-                        tBufferSize += tFragmentDataSize;
-                    }
-                    #ifdef MSMEM_DEBUG_PACKETS
-                        LOGEX(MediaSourceMem, LOG_VERBOSE, "Resulting temporary buffer size: %d", tBufferSize);
-                    #endif
-                }else
-                {
-                    tLastFragment = false;
-                    tBuffer = (char*)pBuffer;
-                    tBufferSize = pBufferSize;
-                    LOGEX(MediaSourceMem, LOG_ERROR, "Stream buffer of %d bytes too small for input, dropping received stream", pBufferSize);
-                }
-            }else
-            {// fragment has no valid A/V data
-                if (tFragmentIsSenderReport)
-                {// we have received a sender report
-                    unsigned int tPacketCountReportedBySender = 0;
-                    unsigned int tOctetCountReportedBySender = 0;
-                    if (tMediaSourceMemInstance->RtcpParseSenderReport(tFragmentData, tFragmentDataSize, tMediaSourceMemInstance->mEndToEndDelay, tPacketCountReportedBySender, tOctetCountReportedBySender, tMediaSourceMemInstance->mRelativeLoss))
-                    {
-                        tMediaSourceMemInstance->mDecoderSynchPoints++;
-                        #ifdef MSMEM_DEBUG_SENDER_REPORTS
-                            LOGEX(MediaSourceMem, LOG_VERBOSE, "Sender reports: %d packets and %d bytes transmitted", tPacketCountReportedBySender, tOctetCountReportedBySender);
+                        if (tFragmentDataSize > 0)
+                        {
+                            // copy the fragment to the final buffer
+                            memcpy(tBuffer, tFragmentData, tFragmentDataSize);
+                            tBuffer += tFragmentDataSize;
+                            tBufferSize += tFragmentDataSize;
+                        }
+                        #ifdef MSMEM_DEBUG_PACKETS
+                            LOGEX(MediaSourceMem, LOG_VERBOSE, "Resulting temporary buffer size: %d", tBufferSize);
                         #endif
                     }else
-                        LOGEX(MediaSourceMem, LOG_ERROR, "Unable to parse sender report in received RTCP packet");
+                    {
+                        tLastFragment = false;
+                        tBuffer = (char*)pBuffer;
+                        tBufferSize = pBufferSize;
+                        LOGEX(MediaSourceMem, LOG_ERROR, "Stream buffer of %d bytes too small for input, dropping received stream", pBufferSize);
+                    }
                 }else
-                {// we have a received an unsupported RTCP packet/RTP payload or something went completely wrong
-                    if (tMediaSourceMemInstance->HasInputStreamChanged())
-                    {// we have to reset the source
-                        LOGEX(MediaSourceMem, LOG_VERBOSE, "Detected source change at remote side, signaling EOF and returning immediately");
-                        return ENODEV;
+                {// fragment has no valid A/V data
+                    if (tFragmentIsSenderReport)
+                    {// we have received a sender report
+                        unsigned int tPacketCountReportedBySender = 0;
+                        unsigned int tOctetCountReportedBySender = 0;
+                        if (tMediaSourceMemInstance->RtcpParseSenderReport(tFragmentData, tFragmentDataSize, tMediaSourceMemInstance->mEndToEndDelay, tPacketCountReportedBySender, tOctetCountReportedBySender, tMediaSourceMemInstance->mRelativeLoss))
+                        {
+                            tMediaSourceMemInstance->mDecoderSynchPoints++;
+                            #ifdef MSMEM_DEBUG_SENDER_REPORTS
+                                LOGEX(MediaSourceMem, LOG_VERBOSE, "Sender reports: %d packets and %d bytes transmitted", tPacketCountReportedBySender, tOctetCountReportedBySender);
+                            #endif
+                        }else
+                            LOGEX(MediaSourceMem, LOG_ERROR, "Unable to parse sender report in received RTCP packet");
                     }else
-                    {// something went wrong
-                        LOGEX(MediaSourceMem, LOG_WARN, "Current RTP packet was reported as invalid by RTP parser, ignoring this data");
+                    {// we have a received an unsupported RTCP packet/RTP payload or something went completely wrong
+                        if (tMediaSourceMemInstance->HasInputStreamChanged())
+                        {// we have to reset the source
+                            LOGEX(MediaSourceMem, LOG_VERBOSE, "Detected source change at remote side, signaling EOF and returning immediately");
+                            return -ENODEV;
+                        }else
+                        {// something went wrong
+                            LOGEX(MediaSourceMem, LOG_WARN, "Current RTP packet was reported as invalid by RTP parser, ignoring this data");
+                        }
                     }
                 }
+            }else
+            {
+                if (tMediaSourceMemInstance->mGrabbingStopped)
+                {
+                    LOGEX(MediaSourceMem, LOG_VERBOSE, "Detected empty signaling fragment, grabber should be stopped, returning zero data");
+                    return 0;
+                }else if (!tMediaSourceMemInstance->mDecoderNeeded)
+                {
+                    LOGEX(MediaSourceMem, LOG_VERBOSE, "Detected empty signaling fragment, decoder should be stopped, returning zero data");
+                    return 0;
+                }else
+                    LOGEX(MediaSourceMem, LOG_VERBOSE, "Detected empty signaling fragment, ignoring it");
             }
         }while(!tLastFragment);
     }else
