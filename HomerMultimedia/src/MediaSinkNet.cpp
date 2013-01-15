@@ -295,10 +295,22 @@ void MediaSinkNet::StartSender()
 {
     LOG(LOG_VERBOSE, "Starting sender for target %s:%u", mTargetHost.c_str(), mTargetPort);
 
-	mSenderNeeded = true;
+    if (!IsRunning())
+    {
+        // start sender main loop
+        StartThread();
 
-	// start sender main loop
-	StartThread();
+        int tLoops = 0;
+
+        // wait until thread is running
+        while ((!IsRunning() /* wait until thread is started */) || (!mSenderNeeded /* wait until thread has finished the init. process */))
+        {
+            if (tLoops % 10 == 0)
+                LOG(LOG_VERBOSE, "Waiting for the start of the packet relay thread, loop count: %d", ++tLoops);
+
+            Thread::Suspend(25 * 1000);
+        }
+    }
 
     LOG(LOG_VERBOSE, "Sender for target %s:%u started", mTargetHost.c_str(), mTargetPort);
 }
@@ -325,7 +337,7 @@ void MediaSinkNet::StopSender()
             // write fake data to awake sender thread as long as it still runs
             mSinkFifo->WriteFifo(tTmp, 0);
 
-            Suspend(100 * 1000);
+            Suspend(25 * 1000);
         }while(IsRunning());
     }
 
@@ -368,6 +380,8 @@ void* MediaSinkNet::Run(void* pArgs)
                 break;
         }
     }
+
+    mSenderNeeded = true;
 
     while(mSenderNeeded)
     {
