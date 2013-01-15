@@ -373,6 +373,8 @@ protected:
     void RecordFrame(AVFrame *pSourceFrame);
     void RecordSamples(int16_t *pSourceSamples, int pSourceSamplesSize);
 
+    bool IsKeyFrame(AVFrame *pFrame);
+
     /* frame stats */
     std::string GetFrameType(AVFrame *pFrame);
     void AnnounceFrame(AVFrame *pFrame);

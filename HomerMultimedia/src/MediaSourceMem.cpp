@@ -1707,19 +1707,34 @@ void* MediaSourceMem::Run(void* pArgs)
                                                                         // wait for next key frame packets (either i-frame or p-frame
                             if (mDecoderWaitForNextKeyFrame)
                             {// we are still waiting for the next key frame after seeking in the input stream
-                                if (tSourceFrame->pict_type == AV_PICTURE_TYPE_I)
+                                if (IsKeyFrame(tSourceFrame))
                                 {
-                                    #ifdef MSMEM_DEBUG_SEEKING
-                                        LOG(LOG_VERBOSE, "Read first %s key frame at frame number %ld with flags %d from input stream after seeking", GetMediaTypeStr().c_str(), tCurFramePts, tPacket->flags);
-                                    #endif
                                     mDecoderWaitForNextKeyFrame = false;
+                                    mDecoderWaitForNextKeyFrameTimeout = 0;
+                                }else
+                                {
+                                    if (av_gettime() > mDecoderWaitForNextKeyFrameTimeout)
+                                    {
+                                        LOG(LOG_WARN, "We haven't found a key frame in the input stream within a specified time, giving up, continuing anyways");
+                                        mDecoderWaitForNextKeyFrame = false;
+                                        mDecoderWaitForNextKeyFrameTimeout = 0;
+                                    }
+                                }
+
+                                if (!mDecoderWaitForNextKeyFrame)
+                                {
+                                    LOG(LOG_VERBOSE, "Read first %s key frame at frame number %ld with flags %d from input stream after seeking", GetMediaTypeStr().c_str(), tCurFramePts, tPacket->flags);
                                 }else
                                 {
                                     #ifdef MSMEM_DEBUG_SEEKING
                                         LOG(LOG_VERBOSE, "Dropping %s frame %ld because we are waiting for next key frame after seeking", GetMediaTypeStr().c_str(), tCurFramePts);
                                     #endif
-                                }
+                                    #ifdef MSMEM_DEBUG_FRAME_QUEUE
+                                        if (mDecoderWaitForNextKeyFrame)
+                                            LOG(LOG_VERBOSE, "No %s frame will be written to frame queue, we ware waiting for the next key frame, current frame type: %s, EOF: %d", GetMediaTypeStr().c_str(), GetFrameType(tSourceFrame).c_str(), mEOFReached);
+                                    #endif
 
+                                }
                                 tCurrentChunkSize = 0;
                             }else
                             {// we are not waiting for next key frame and can proceed as usual
@@ -1965,6 +1980,11 @@ void* MediaSourceMem::Run(void* pArgs)
                     {
                         LOG(LOG_ERROR, "Cannot write a %s chunk of %d bytes to the FIFO with %d bytes slots", GetMediaTypeStr().c_str(),  tCurrentChunkSize, mDecoderFifo->GetEntrySize());
                     }
+                }else
+                {
+                    #ifdef MSMEM_DEBUG_FRAME_QUEUE
+                        LOG(LOG_VERBOSE, "No %s frame was written to frame queue, current chunk size: %d, EOF: %d", GetMediaTypeStr().c_str(), tCurrentChunkSize, mEOFReached);
+                    #endif
                 }
             }
 
@@ -2064,7 +2084,7 @@ void MediaSourceMem::WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int6
     if (mDecoderFifo == NULL)
         LOG(LOG_ERROR, "Invalid decoder FIFO");
 
-    #ifdef MSMEM_DEBUG_PACKETS
+    #ifdef MSMEM_DEBUG_FRAME_QUEUE
         LOG(LOG_VERBOSE, ">>> Writing frame of %d bytes and pts %ld, FIFOs: %d/%d", pBufferSize, pPts, mDecoderFifo->GetUsage(), mDecoderMetaDataFifo->GetUsage());
     #endif
 
@@ -2099,7 +2119,9 @@ void MediaSourceMem::ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int6
     if (tChunkDescSize != sizeof(tChunkDesc))
         LOG(LOG_ERROR, "Read from FIFO a chunk with wrong size of %d bytes, expected size is %d bytes", tChunkDescSize, sizeof(tChunkDesc));
 
-    //LOG(LOG_VERBOSE, "Returning from decoder FIFO the %s frame (PTS = %ld)", GetMediaTypeStr().c_str(), pPts);
+    #ifdef MSMEM_DEBUG_FRAME_QUEUE
+        LOG(LOG_VERBOSE, "Returning from decoder FIFO the %s frame (PTS = %ld)", GetMediaTypeStr().c_str(), pPts);
+    #endif
 
     // update pre-buffer time value
     UpdateBufferTime();

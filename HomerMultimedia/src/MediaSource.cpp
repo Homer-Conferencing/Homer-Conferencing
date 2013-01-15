@@ -2462,6 +2462,38 @@ void MediaSource::RecordSamples(int16_t *pSourceSamples, int pSourceSamplesSize)
     av_free(tFrame);
 }
 
+bool MediaSource::IsKeyFrame(AVFrame *pFrame)
+{
+    bool tResult = false;
+
+    if (mMediaType == MEDIA_VIDEO)
+    {// video
+        switch(pFrame->pict_type)
+        {
+                case AV_PICTURE_TYPE_NONE:
+                    tResult = false;
+                    break;
+                case AV_PICTURE_TYPE_I:
+                    tResult = true;
+                    break;
+                case AV_PICTURE_TYPE_P:
+                    tResult = true;
+                    break;
+                case AV_PICTURE_TYPE_B:
+                    tResult = false;
+                    break;
+                default:
+                    tResult = false;
+                    break;
+        }
+    }else if (mMediaType == MEDIA_AUDIO)
+    {// audio
+        tResult = true;
+    }
+
+    return tResult;
+}
+
 string MediaSource::GetFrameType(AVFrame *pFrame)
 {
     string tResult = "unknown";
@@ -2481,6 +2513,18 @@ string MediaSource::GetFrameType(AVFrame *pFrame)
                     break;
                 case AV_PICTURE_TYPE_B:
                     tResult = "b";
+                    break;
+                case AV_PICTURE_TYPE_S:
+                    tResult = "s";
+                    break;
+                case AV_PICTURE_TYPE_SI:
+                    tResult = "si";
+                    break;
+                case AV_PICTURE_TYPE_SP:
+                    tResult = "sp";
+                    break;
+                case AV_PICTURE_TYPE_BI:
+                    tResult = "bi";
                     break;
                 default:
                     tResult = "type " +toString(pFrame->pict_type);

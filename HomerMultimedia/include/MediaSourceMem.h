@@ -51,6 +51,7 @@ namespace Homer { namespace Multimedia {
 //#define MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
 //#define MSMEM_DEBUG_VIDEO_FRAME_RECEIVER
 //#define MSMEM_DEBUG_PACKETS
+//#define MSMEM_DEBUG_FRAME_QUEUE
 
 // de/activate output of RTCP sender reports
 //#define MSMEM_DEBUG_SENDER_REPORTS
@@ -194,6 +195,7 @@ protected:
     bool                mDecoderRecalibrateRTGrabbingAfterSeeking;
     bool                mDecoderFlushBuffersAfterSeeking;
     bool                mDecoderWaitForNextKeyFrame; // after seeking we wait for next i -frames
+    int64_t             mDecoderWaitForNextKeyFrameTimeout;
     /* picture grabbing */
     bool                mDecoderSinglePictureGrabbed;
     int                 mDecoderSinglePictureResX;
