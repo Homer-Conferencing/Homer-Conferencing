@@ -764,9 +764,9 @@ QStringList VideoWidget::GetVideoStatistic()
     QString tLine_Playback = "";
     tLine_Playback = Homer::Gui::VideoWidget::tr("Playback:") + " " + QString("%1").arg(mCurrentFrameOutputWidth) + "*" + QString("%1").arg(mCurrentFrameOutputHeight) + " (" + tAspectRatio + ")" + (mSmoothPresentation ? Homer::Gui::VideoWidget::tr("[smoothed]") : "");
     if (tAVDrift >= 0.0)
-        tLine_Playback += (tAVDrift != 0.0f ? QString(" (A/V drift: +%1 s)").arg(tAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
+        tLine_Playback += (tAVDrift != 0.0f ? QString(" (" + Homer::Gui::VideoWidget::tr("A/V drift:") + " +%1 s)").arg(tAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
     else if (tAVDrift < 0.0)
-        tLine_Playback += (tAVDrift != 0.0f ? QString(" (A/V drift: %1 s)").arg(tAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
+        tLine_Playback += (tAVDrift != 0.0f ? QString(" (" + Homer::Gui::VideoWidget::tr("A/V drift:") + " %1 s)").arg(tAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
 
     float tUserAVDrift = mParticipantWidget->GetUserAVDrift();
     if (tUserAVDrift != 0)
