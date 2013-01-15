@@ -318,6 +318,7 @@ void MainWindow::connectSignalsSlots()
     mToolBarMediaSources->setVisible(CONF.GetVisibilityToolBarMediaSources());
     mToolBarMediaSources->toggleViewAction()->setChecked(CONF.GetVisibilityToolBarMediaSources());
     mActionToolBarMediaSources->setChecked(CONF.GetVisibilityToolBarMediaSources());
+    mActionStautsBarWidget->setChecked(CONF.GetVisibilityStatusBar());
 
     if ((CONF.ConferencingEnabled()) && (mToolBarOnlineStatus != NULL))
     {
