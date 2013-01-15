@@ -1574,7 +1574,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                     LOG(LOG_ERROR, "MPEG2 picture should be repeated for %d times, unsupported feature!", tSourceFrame->repeat_pict);
 
                                 #ifdef MSMEM_DEBUG_PACKETS
-                                    LOG(LOG_VERBOSE, "    ..video decoding ended with result %d and %d bytes of output\n", tFrameFinished, tDecoderResult);
+                                    LOG(LOG_VERBOSE, "    ..video decoding ended with result %d and %d bytes of output", tFrameFinished, tDecoderResult);
                                 #endif
 
                                 // log lost packets: difference between currently received frame number and the number of locally processed frames
