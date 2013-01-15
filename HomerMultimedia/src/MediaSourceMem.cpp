@@ -165,7 +165,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
             if (tMediaSourceMemInstance->mGrabbingStopped)
             {
                 LOGEX(MediaSourceMem, LOG_VERBOSE, "Grabbing was stopped meanwhile");
-                return -ENODEV; //force negative resulting buffer size to signal error and force a return to the calling GUI!
+                return AVERROR(ENODEV); //force negative resulting buffer size to signal error and force a return to the calling GUI!
             }
             if (tFragmentBufferSize < 0)
             {
@@ -223,7 +223,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
                         if (tMediaSourceMemInstance->HasInputStreamChanged())
                         {// we have to reset the source
                             LOGEX(MediaSourceMem, LOG_VERBOSE, "Detected source change at remote side, signaling EOF and returning immediately");
-                            return -ENODEV;
+                            return AVERROR(ENODEV);
                         }else
                         {// something went wrong
                             LOGEX(MediaSourceMem, LOG_WARN, "Current RTP packet was reported as invalid by RTP parser, ignoring this data");
@@ -1342,7 +1342,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                 tCurPacketPts = mNumberOfFrames;
                                 LOG(LOG_WARN, "%s-Decoder reached EOF", GetMediaTypeStr().c_str());
                                 mEOFReached = true;
-                            }else if (tRes == (int)AVERROR(EIO))
+                            }else if (tRes == (int)AVUNERROR(EIO))
                             {
                                 // acknowledge failed"
                                 MarkGrabChunkFailed(GetMediaTypeStr() + " source has I/O error");
@@ -1350,7 +1350,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                 // signal EOF instead of I/O error
                                 LOG(LOG_VERBOSE, "Returning EOF in %s stream because of I/O error", GetMediaTypeStr().c_str());
                                 mEOFReached = true;
-                            }else if (tRes != (int)AVERROR(EAGAIN))
+                            }else if (tRes != (int)AVUNERROR(EAGAIN))
                             {// we should grab again, we signaled this ourself
                                 if (mDecoderNeeded)
                                     tShouldReadNext = true;
