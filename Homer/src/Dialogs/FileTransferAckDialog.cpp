@@ -47,7 +47,7 @@ FileTransferAckDialog::~FileTransferAckDialog()
 void FileTransferAckDialog::initializeGUI(QString pParticipant, QStringList pFiles)
 {
     setupUi(this);
-    setWindowTitle("Transfer these files to \"" + pParticipant + "\"?");
+    setWindowTitle(Homer::Gui::FileTransferAckDialog::tr("Send these files to") + " \"" + pParticipant + "\"?");
     for (int i = 0; i < pFiles.size(); i++)
         mTbFiles->setPlainText(mTbFiles->toPlainText() + pFiles[i] + "\n");
 }
