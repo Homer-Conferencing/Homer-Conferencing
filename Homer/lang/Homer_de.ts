@@ -1476,6 +1476,14 @@
     </message>
 </context>
 <context>
+    <name>Homer::Gui::FileTransferAckDialog</name>
+    <message>
+        <location filename="../src/Dialogs/FileTransferAckDialog.cpp" line="50"/>
+        <source>Send these files to</source>
+        <translation>Dateien senden an</translation>
+    </message>
+</context>
+<context>
     <name>Homer::Gui::HelpDialog</name>
     <message>
         <location filename="../src/Dialogs/HelpDialog.cpp" line="73"/>
@@ -1683,43 +1691,77 @@ Bitte Konfiguration prüfen!</translation>
         <translation>Der Verfügbarkeitsstatus konnte nicht am SIP-Server veröffentlicht werden</translation>
     </message>
     <message>
+<<<<<<< HEAD
         <location filename="../src/MainWindow.cpp" line="2111"/>
         <location filename="../src/MainWindow.cpp" line="2165"/>
+=======
+        <location filename="../src/MainWindow.cpp" line="2110"/>
+        <location filename="../src/MainWindow.cpp" line="2164"/>
+>>>>>>> branch 'master' of https://ThomasVolkert@github.com/Homer-Conferencing/Homer-Conferencing.git
         <source>Show window</source>
         <translation>Zeige Fenster</translation>
     </message>
     <message>
+<<<<<<< HEAD
         <location filename="../src/MainWindow.cpp" line="2114"/>
         <location filename="../src/MainWindow.cpp" line="2168"/>
+=======
+        <location filename="../src/MainWindow.cpp" line="2113"/>
+        <location filename="../src/MainWindow.cpp" line="2167"/>
+>>>>>>> branch 'master' of https://ThomasVolkert@github.com/Homer-Conferencing/Homer-Conferencing.git
         <source>Hide window</source>
         <translation>Verstecke Fenster</translation>
     </message>
     <message>
+<<<<<<< HEAD
         <location filename="../src/MainWindow.cpp" line="2124"/>
         <location filename="../src/MainWindow.cpp" line="2178"/>
+=======
+        <location filename="../src/MainWindow.cpp" line="2123"/>
+        <location filename="../src/MainWindow.cpp" line="2177"/>
+>>>>>>> branch 'master' of https://ThomasVolkert@github.com/Homer-Conferencing/Homer-Conferencing.git
         <source>Unmute me</source>
         <translation>Stimme aktivieren</translation>
     </message>
     <message>
+<<<<<<< HEAD
         <location filename="../src/MainWindow.cpp" line="2128"/>
         <location filename="../src/MainWindow.cpp" line="2182"/>
+=======
+        <location filename="../src/MainWindow.cpp" line="2127"/>
+        <location filename="../src/MainWindow.cpp" line="2181"/>
+>>>>>>> branch 'master' of https://ThomasVolkert@github.com/Homer-Conferencing/Homer-Conferencing.git
         <source>Mute me</source>
         <translation>Stumm schalten</translation>
     </message>
     <message>
+<<<<<<< HEAD
         <location filename="../src/MainWindow.cpp" line="2134"/>
         <location filename="../src/MainWindow.cpp" line="2188"/>
+=======
+        <location filename="../src/MainWindow.cpp" line="2133"/>
+        <location filename="../src/MainWindow.cpp" line="2187"/>
+>>>>>>> branch 'master' of https://ThomasVolkert@github.com/Homer-Conferencing/Homer-Conferencing.git
         <source>Mute others</source>
         <translation>Andere stumm schalten</translation>
     </message>
     <message>
+<<<<<<< HEAD
         <location filename="../src/MainWindow.cpp" line="2143"/>
         <location filename="../src/MainWindow.cpp" line="2197"/>
+=======
+        <location filename="../src/MainWindow.cpp" line="2142"/>
+        <location filename="../src/MainWindow.cpp" line="2196"/>
+>>>>>>> branch 'master' of https://ThomasVolkert@github.com/Homer-Conferencing/Homer-Conferencing.git
         <source>Online status</source>
         <translation>Onlinestatus</translation>
     </message>
     <message>
+<<<<<<< HEAD
         <location filename="../src/MainWindow.cpp" line="2152"/>
+=======
+        <location filename="../src/MainWindow.cpp" line="2151"/>
+>>>>>>> branch 'master' of https://ThomasVolkert@github.com/Homer-Conferencing/Homer-Conferencing.git
         <source>Exit</source>
         <translation>Beenden</translation>
     </message>
@@ -2049,6 +2091,41 @@ Bitte Konfiguration prüfen!</translation>
         <location filename="../src/Widgets/OverviewErrorsWidget.cpp" line="162"/>
         <source>Text Document File</source>
         <translation>Textdokument-Datei</translation>
+    </message>
+</context>
+<context>
+    <name>Homer::Gui::OverviewFileTransfersWidget</name>
+    <message>
+        <location filename="../src/Widgets/OverviewFileTransfersWidget.cpp" line="295"/>
+        <location filename="../src/Widgets/OverviewFileTransfersWidget.cpp" line="299"/>
+        <source>outgoing</source>
+        <translation>ausgehend</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewFileTransfersWidget.cpp" line="297"/>
+        <location filename="../src/Widgets/OverviewFileTransfersWidget.cpp" line="301"/>
+        <source>incoming</source>
+        <translation>eingehend</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewFileTransfersWidget.cpp" line="376"/>
+        <source>Select files for transfer</source>
+        <translation>Auswahl der Datei(en) zur Übertragung</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewFileTransfersWidget.cpp" line="378"/>
+        <source>All files</source>
+        <translation>Alle Dateien</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewFileTransfersWidget.cpp" line="388"/>
+        <source>Target for transferring</source>
+        <translation>Ziel der Übertragung</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewFileTransfersWidget.cpp" line="388"/>
+        <source>file(s)</source>
+        <translation>Datei(en)</translation>
     </message>
 </context>
 <context>
@@ -2804,12 +2881,15 @@ Bitte Konfiguration prüfen!</translation>
         <translation>[geglättet]</translation>
     </message>
     <message>
+<<<<<<< HEAD
         <location filename="../src/Widgets/VideoWidget.cpp" line="767"/>
         <location filename="../src/Widgets/VideoWidget.cpp" line="769"/>
         <source>A/V drift:</source>
         <translation>A/V-Drift:</translation>
     </message>
     <message>
+=======
+>>>>>>> branch 'master' of https://ThomasVolkert@github.com/Homer-Conferencing/Homer-Conferencing.git
         <location filename="../src/Widgets/VideoWidget.cpp" line="793"/>
         <source>Time index:</source>
         <translation>Zeitindex:</translation>

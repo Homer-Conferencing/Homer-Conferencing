@@ -292,13 +292,13 @@ void OverviewFileTransfersWidget::FillRow(QTableWidget *pTable, int pRow, const 
 
     if (pTable->item(pRow, 0) != NULL)
         if (pEntry.Outgoing)
-            pTable->item(pRow, 0)->setText(QString("outgoing"));
+            pTable->item(pRow, 0)->setText(Homer::Gui::OverviewFileTransfersWidget::tr("outgoing"));
         else
-            pTable->item(pRow, 0)->setText(QString("incoming"));
+            pTable->item(pRow, 0)->setText(Homer::Gui::OverviewFileTransfersWidget::tr("incoming"));
     else if (pEntry.Outgoing)
-        pTable->setItem(pRow, 0, new QTableWidgetItem(QString("outgoing")));
+        pTable->setItem(pRow, 0, new QTableWidgetItem(Homer::Gui::OverviewFileTransfersWidget::tr("outgoing")));
     else
-        pTable->setItem(pRow, 0, new QTableWidgetItem(QString("incoming")));
+        pTable->setItem(pRow, 0, new QTableWidgetItem(Homer::Gui::OverviewFileTransfersWidget::tr("incoming")));
     pTable->item(pRow, 0)->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
     QIcon tIcon11;
     if (pEntry.Outgoing)
@@ -373,11 +373,11 @@ void OverviewFileTransfersWidget::AddEntryDialog()
 {
     QStringList tFileNames;
 
-    tFileNames = QFileDialog::getOpenFileNames(this,       "Select files for transfer",
-                                                               CONF.GetDataDirectory(),
-                                                               "All files (*)",
-                                                               NULL,
-                                                               CONF_NATIVE_DIALOGS);
+    tFileNames = QFileDialog::getOpenFileNames(this, Homer::Gui::OverviewFileTransfersWidget::tr("Select files for transfer"),
+													   CONF.GetDataDirectory(),
+													   Homer::Gui::OverviewFileTransfersWidget::tr("All files") + " (*)",
+													   NULL,
+													   CONF_NATIVE_DIALOGS);
 
     if (tFileNames.isEmpty())
         return;
@@ -385,7 +385,7 @@ void OverviewFileTransfersWidget::AddEntryDialog()
     QString tFirstFileName = *tFileNames.constBegin();
     CONF.SetDataDirectory(tFirstFileName.left(tFirstFileName.lastIndexOf('/')));
 
-    AddNetworkSinkDialog tANSDialog(this, "Configure target for " + QString("%1").arg(tFileNames.size()) + " file(s)", DATA_TYPE_FILE, NULL);
+    AddNetworkSinkDialog tANSDialog(this, Homer::Gui::OverviewFileTransfersWidget::tr("Target for transferring") + " " + QString("%1").arg(tFileNames.size()) + " " + Homer::Gui::OverviewFileTransfersWidget::tr("file(s)"), DATA_TYPE_FILE, NULL);
     if (tANSDialog.exec() != QDialog::Accepted)
         return;
 
