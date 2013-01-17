@@ -1634,134 +1634,100 @@ Bitte Konfiguration prüfen!</translation>
 <context>
     <name>Homer::Gui::MainWindow</name>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1224"/>
+        <location filename="../src/MainWindow.cpp" line="1223"/>
         <source>NAT detection failed</source>
         <translation>NAT Erkennung fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1224"/>
+        <location filename="../src/MainWindow.cpp" line="1223"/>
         <source>Could not detect NAT address and type via STUN server. The failure reason is</source>
         <translation>Konnte die NAT-Adresse und -Typ nicht via STUN-Server erkennen. Die Fehlerursache ist</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1607"/>
-        <location filename="../src/MainWindow.cpp" line="1611"/>
+        <location filename="../src/MainWindow.cpp" line="1606"/>
+        <location filename="../src/MainWindow.cpp" line="1610"/>
         <source>Registration failed</source>
         <translation>Registrierung fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1607"/>
-        <location filename="../src/MainWindow.cpp" line="1611"/>
+        <location filename="../src/MainWindow.cpp" line="1606"/>
+        <location filename="../src/MainWindow.cpp" line="1610"/>
         <source>Could not register</source>
         <translation>Registerung fehlgeschlagen für</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1607"/>
-        <location filename="../src/MainWindow.cpp" line="1611"/>
+        <location filename="../src/MainWindow.cpp" line="1606"/>
+        <location filename="../src/MainWindow.cpp" line="1610"/>
         <source>at the SIP server</source>
         <translation>am SIP-Server</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1607"/>
-        <location filename="../src/MainWindow.cpp" line="1627"/>
+        <location filename="../src/MainWindow.cpp" line="1606"/>
+        <location filename="../src/MainWindow.cpp" line="1626"/>
         <source>The reason is</source>
         <translation>Die Ursache ist</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1608"/>
-        <location filename="../src/MainWindow.cpp" line="1612"/>
-        <location filename="../src/MainWindow.cpp" line="1628"/>
+        <location filename="../src/MainWindow.cpp" line="1607"/>
+        <location filename="../src/MainWindow.cpp" line="1611"/>
+        <location filename="../src/MainWindow.cpp" line="1627"/>
         <source>SIP server runs software</source>
         <translation>Der SIP-Server nutzt die Software</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1611"/>
+        <location filename="../src/MainWindow.cpp" line="1610"/>
         <source>The login name or password is wrong. Check configuration!
 </source>
         <translation>Der Loginname oder das Passwort sind falsch. Bitte die Konfiguration prüfen!</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1627"/>
+        <location filename="../src/MainWindow.cpp" line="1626"/>
         <source>Presence publication failed</source>
         <translation>Verfügbarkeitsstatus nicht aktualisiert</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1627"/>
+        <location filename="../src/MainWindow.cpp" line="1626"/>
         <source>Could not publish your new presence state at the SIP server</source>
         <translation>Der Verfügbarkeitsstatus konnte nicht am SIP-Server veröffentlicht werden</translation>
     </message>
     <message>
-<<<<<<< HEAD
-        <location filename="../src/MainWindow.cpp" line="2111"/>
-        <location filename="../src/MainWindow.cpp" line="2165"/>
-=======
         <location filename="../src/MainWindow.cpp" line="2110"/>
         <location filename="../src/MainWindow.cpp" line="2164"/>
->>>>>>> branch 'master' of https://ThomasVolkert@github.com/Homer-Conferencing/Homer-Conferencing.git
         <source>Show window</source>
         <translation>Zeige Fenster</translation>
     </message>
     <message>
-<<<<<<< HEAD
-        <location filename="../src/MainWindow.cpp" line="2114"/>
-        <location filename="../src/MainWindow.cpp" line="2168"/>
-=======
         <location filename="../src/MainWindow.cpp" line="2113"/>
         <location filename="../src/MainWindow.cpp" line="2167"/>
->>>>>>> branch 'master' of https://ThomasVolkert@github.com/Homer-Conferencing/Homer-Conferencing.git
         <source>Hide window</source>
         <translation>Verstecke Fenster</translation>
     </message>
     <message>
-<<<<<<< HEAD
-        <location filename="../src/MainWindow.cpp" line="2124"/>
-        <location filename="../src/MainWindow.cpp" line="2178"/>
-=======
         <location filename="../src/MainWindow.cpp" line="2123"/>
         <location filename="../src/MainWindow.cpp" line="2177"/>
->>>>>>> branch 'master' of https://ThomasVolkert@github.com/Homer-Conferencing/Homer-Conferencing.git
         <source>Unmute me</source>
         <translation>Stimme aktivieren</translation>
     </message>
     <message>
-<<<<<<< HEAD
-        <location filename="../src/MainWindow.cpp" line="2128"/>
-        <location filename="../src/MainWindow.cpp" line="2182"/>
-=======
         <location filename="../src/MainWindow.cpp" line="2127"/>
         <location filename="../src/MainWindow.cpp" line="2181"/>
->>>>>>> branch 'master' of https://ThomasVolkert@github.com/Homer-Conferencing/Homer-Conferencing.git
         <source>Mute me</source>
         <translation>Stumm schalten</translation>
     </message>
     <message>
-<<<<<<< HEAD
-        <location filename="../src/MainWindow.cpp" line="2134"/>
-        <location filename="../src/MainWindow.cpp" line="2188"/>
-=======
         <location filename="../src/MainWindow.cpp" line="2133"/>
         <location filename="../src/MainWindow.cpp" line="2187"/>
->>>>>>> branch 'master' of https://ThomasVolkert@github.com/Homer-Conferencing/Homer-Conferencing.git
         <source>Mute others</source>
         <translation>Andere stumm schalten</translation>
     </message>
     <message>
-<<<<<<< HEAD
-        <location filename="../src/MainWindow.cpp" line="2143"/>
-        <location filename="../src/MainWindow.cpp" line="2197"/>
-=======
         <location filename="../src/MainWindow.cpp" line="2142"/>
         <location filename="../src/MainWindow.cpp" line="2196"/>
->>>>>>> branch 'master' of https://ThomasVolkert@github.com/Homer-Conferencing/Homer-Conferencing.git
         <source>Online status</source>
         <translation>Onlinestatus</translation>
     </message>
     <message>
-<<<<<<< HEAD
-        <location filename="../src/MainWindow.cpp" line="2152"/>
-=======
         <location filename="../src/MainWindow.cpp" line="2151"/>
->>>>>>> branch 'master' of https://ThomasVolkert@github.com/Homer-Conferencing/Homer-Conferencing.git
         <source>Exit</source>
         <translation>Beenden</translation>
     </message>
@@ -2881,15 +2847,6 @@ Bitte Konfiguration prüfen!</translation>
         <translation>[geglättet]</translation>
     </message>
     <message>
-<<<<<<< HEAD
-        <location filename="../src/Widgets/VideoWidget.cpp" line="767"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="769"/>
-        <source>A/V drift:</source>
-        <translation>A/V-Drift:</translation>
-    </message>
-    <message>
-=======
->>>>>>> branch 'master' of https://ThomasVolkert@github.com/Homer-Conferencing/Homer-Conferencing.git
         <location filename="../src/Widgets/VideoWidget.cpp" line="793"/>
         <source>Time index:</source>
         <translation>Zeitindex:</translation>
