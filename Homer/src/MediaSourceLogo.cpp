@@ -96,7 +96,7 @@ void MediaSourceLogo::getVideoDevices(VideoDevices &pVList)
     //#############################
     tDevice.Name = MEDIA_SOURCE_HOMER_LOGO;
     tDevice.Card = "logo";
-	tDevice.Desc = "Homer-Conferencing logo capturing";
+	tDevice.Desc = "Homer Conferencing logo capturing";
 	if (tFirstCall)
         LOG(LOG_VERBOSE, "Found video device: %s (card: %s)", tDevice.Name.c_str(), tDevice.Card.c_str());
     pVList.push_back(tDevice);
