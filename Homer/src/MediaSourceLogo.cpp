@@ -59,6 +59,7 @@ MediaSourceLogo::MediaSourceLogo(string pDesiredDevice):
     ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 
     mLogoRawPicture = NULL;
+    mSourceType = SOURCE_DEVICE;
 
     // reset grabbing offset values
     mSourceResX = 352;
