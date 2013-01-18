@@ -244,7 +244,7 @@ void* VideoScaler::Run(void* pArgs)
     int tOutputBufferSize = avpicture_get_size(mTargetPixelFormat, mTargetResX, mTargetResY) + FF_INPUT_BUFFER_PADDING_SIZE;
 
     // allocate chunk buffer
-    tOutputBuffer = (uint8_t*)malloc(tOutputBufferSize);
+    tOutputBuffer = (uint8_t*)av_malloc(tOutputBufferSize);
 
     // Allocate video frame
     LOG(LOG_VERBOSE, "..allocating memory for output frame");
