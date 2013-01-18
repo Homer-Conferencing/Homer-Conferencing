@@ -50,6 +50,8 @@ namespace Homer { namespace Gui {
 
 using namespace Homer::Multimedia;
 
+class ParticipantWidget;
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // debug performance of audio widget
@@ -78,7 +80,7 @@ public:
 
     virtual ~AudioWidget();
 
-    void Init(MediaSource *pAudioSource, QMenu *pAudioMenu, QString pName = "Audio", bool pVisible = false, bool pMuted = false);
+    void Init(ParticipantWidget* pParticipantWidget, MediaSource *pAudioSource, QMenu *pAudioMenu, QString pName = "Audio", bool pVisible = false, bool pMuted = false);
 
     void SetVisible(bool pVisible);
 
@@ -138,7 +140,7 @@ class AudioWorkerThread:
 {
     Q_OBJECT;
 public:
-    AudioWorkerThread(QString pName, MediaSource *pAudioSource, AudioWidget *pAudioWidget);
+    AudioWorkerThread(ParticipantWidget* pParticipantWidget, QString pName, MediaSource *pAudioSource, AudioWidget *pAudioWidget);
 
     virtual ~AudioWorkerThread();
 
@@ -199,6 +201,7 @@ private:
     void DoStopPlayback();
 
     AudioWidget         *mAudioWidget;
+    ParticipantWidget   *mParticipantWidget;
     void                *mSamples[SAMPLE_BUFFER_SIZE];
     unsigned long       mSampleNumber[SAMPLE_BUFFER_SIZE];
     int                 mSamplesSize[SAMPLE_BUFFER_SIZE];

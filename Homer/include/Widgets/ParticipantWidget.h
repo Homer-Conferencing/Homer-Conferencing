@@ -142,6 +142,7 @@ public:
     QString GetSipInterface();
     VideoWorkerThread* GetVideoWorker();
     AudioWorkerThread* GetAudioWorker();
+    bool IsAVDriftOkay();
 
     void SeekMovieFileRelative(float pSeconds);
 

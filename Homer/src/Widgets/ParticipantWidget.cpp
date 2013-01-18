@@ -264,7 +264,7 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVCon
                     }
                     LOG(LOG_VERBOSE, "..init broadcast audio widget");
                     if (mAudioSourceMuxer != NULL)
-                        mAudioWidget->Init(mAudioSourceMuxer, pAudioMenu, mSessionName, CONF.GetVisibilityBroadcastAudio(), true);
+                        mAudioWidget->Init(this, mAudioSourceMuxer, pAudioMenu, mSessionName, CONF.GetVisibilityBroadcastAudio(), true);
                     setFeatures(QDockWidget::NoDockWidgetFeatures);
 
                     // push-to-talk mode
@@ -312,7 +312,7 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVCon
 						mAudioSource->SetPreBufferingAutoRestartActivation(true);
 						mAudioSource->SetFrameBufferPreBufferingTime(AV_CONFERENCE_BUFFER);
 						mAudioSource->SetInputStreamPreferences(CONF.GetAudioCodec().toStdString());
-						mAudioWidget->Init(mAudioSource, pAudioMenu, mSessionName);
+						mAudioWidget->Init(this, mAudioSource, pAudioMenu, mSessionName);
 					}else
 						LOG(LOG_ERROR, "Determined audio socket is NULL");
 
@@ -368,7 +368,7 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVCon
                             // create AUDIO widget
                             if (mAudioSource != NULL)
                             {
-                                mAudioWidget->Init(mAudioSource, pAudioMenu, mSessionName, true, false);
+                                mAudioWidget->Init(this, mAudioSource, pAudioMenu, mSessionName, true, false);
                                 tFoundPreviewSource = true;
                             }
 
@@ -1473,6 +1473,18 @@ void ParticipantWidget::AVSync()
         }
 
     #endif
+}
+
+bool ParticipantWidget::IsAVDriftOkay()
+{
+    bool tResult = true;
+
+    float tTimeDiff = GetAVDrift();
+
+    if ((tTimeDiff < -AV_SYNC_MAX_DRIFT) || (tTimeDiff > AV_SYNC_MAX_DRIFT))
+        tResult = false;
+
+    return tResult;
 }
 
 float ParticipantWidget::GetAVDrift(int64_t *pVideoSyncTime, int64_t *pAudioSyncTime)

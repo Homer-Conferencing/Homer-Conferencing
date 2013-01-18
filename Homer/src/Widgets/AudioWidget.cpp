@@ -32,6 +32,7 @@
 #include <ProcessStatisticService.h>
 #include <Widgets/AudioWidget.h>
 #include <Widgets/OverviewPlaylistWidget.h>
+#include <Widgets/ParticipantWidget.h>
 #include <Dialogs/AddNetworkSinkDialog.h>
 #include <Configuration.h>
 #include <Logger.h>
@@ -124,7 +125,7 @@ AudioWidget::AudioWidget(QWidget* pParent):
     hide();
 }
 
-void AudioWidget::Init(MediaSource *pAudioSource, QMenu *pMenu, QString pName, bool pVisible, bool pMuted)
+void AudioWidget::Init(ParticipantWidget* pParticipantWidget, MediaSource *pAudioSource, QMenu *pMenu, QString pName, bool pVisible, bool pMuted)
 {
     mAudioSource = pAudioSource;
     mAudioTitle = pName;
@@ -156,7 +157,7 @@ void AudioWidget::Init(MediaSource *pAudioSource, QMenu *pMenu, QString pName, b
     if (mAudioSource != NULL)
     {
         LOG(LOG_VERBOSE, "..create audio worker");
-        mAudioWorker = new AudioWorkerThread(mAudioTitle, mAudioSource, this);
+        mAudioWorker = new AudioWorkerThread(pParticipantWidget, mAudioTitle, mAudioSource, this);
         LOG(LOG_VERBOSE, "..start audio worker");
         mAudioWorker->start(QThread::TimeCriticalPriority);
         int tLoop = 0;
@@ -847,10 +848,11 @@ void AudioWidget::customEvent(QEvent* pEvent)
 //####################################################################
 //###################### WORKER ######################################
 //####################################################################
-AudioWorkerThread::AudioWorkerThread(QString pName, MediaSource *pAudioSource, AudioWidget *pAudioWidget):
+AudioWorkerThread::AudioWorkerThread(ParticipantWidget* pParticipantWidget, QString pName, MediaSource *pAudioSource, AudioWidget *pAudioWidget):
     MediaSourceGrabberThread(pName, pAudioSource), AudioPlayback()
 {
     LOG(LOG_VERBOSE, "..Creating audio worker");
+    mParticipantWidget = pParticipantWidget;
     mStartPlaybackAsap = false;
     mStopPlaybackAsap = false;
     mAudioOutMuted = true;
@@ -1488,7 +1490,7 @@ void AudioWorkerThread::run()
 			// play the sample block if audio out isn't currently muted
 			if ((!mAudioOutMuted) && (tFrameNumber >= 0) && (tFrameSize > 0) && (!mDropSamples) && (mPlaybackAvailable))
 			{
-			    if (mWaveOut != NULL)
+			    if ((mWaveOut != NULL) && (mParticipantWidget->IsAVDriftOkay()))
 			    {
                     #ifdef DEBUG_AUDIOWIDGET_PLAYBACK
 			            LOG(LOG_VERBOSE, "Writing buffer at index %d and size of %d bytes to audio output FIFO", mSampleGrabIndex, tFrameSize);
@@ -1497,7 +1499,14 @@ void AudioWorkerThread::run()
 			        mWaveOut->WriteChunk(mSamples[mSampleGrabIndex], tFrameSize);
 			        if (AUDIO_MAX_PLAYBACK_QUEUE > 0)
 			            mWaveOut->LimitQueue(AUDIO_MAX_PLAYBACK_QUEUE);
+			    }else
+			    {
+                    #ifdef DEBUG_AUDIOWIDGET_PLAYBACK
+			            if (mWaveOut != NULL)
+			                LOG(LOG_VERBOSE, "Dropping this audio frame because A/V drift is out of allowed range");
+			        #endif
 			    }
+
 			}else
 			{
 				#ifdef DEBUG_AUDIOWIDGET_PERFORMANCE
