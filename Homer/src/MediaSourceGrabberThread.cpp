@@ -339,6 +339,8 @@ float MediaSourceGrabberThread::GetSeekEnd()
 void MediaSourceGrabberThread::SyncClock(MediaSource* pSource)
 {
     LOG(LOG_VERBOSE, "Trigger clock synch. with %s", pSource->GetStreamName().c_str());
+    if (mEofReached)
+        LOG(LOG_WARN, "Try to synchronize while EOF was already reached");
     mSyncClockAsap = true;
     mSyncClockMasterSource = pSource;
     mGrabbingCondition.wakeAll();
