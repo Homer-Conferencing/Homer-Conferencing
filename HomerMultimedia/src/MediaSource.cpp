@@ -2808,6 +2808,7 @@ void* MediaSource::AllocChunkBuffer(int& pChunkBufferSize, enum MediaType pMedia
     {
         case MEDIA_VIDEO:
             pChunkBufferSize = avpicture_get_size(PIX_FMT_RGB32, mTargetResX, mTargetResY) + FF_INPUT_BUFFER_PADDING_SIZE;
+            LOG(LOG_VERBOSE, "Allocating %d bytes video buffer for %d*%d RGB32 pictures", pChunkBufferSize, mTargetResX, mTargetResY);
             return av_malloc(pChunkBufferSize);
         case MEDIA_AUDIO:
             pChunkBufferSize = MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE * 2 + FF_INPUT_BUFFER_PADDING_SIZE;
