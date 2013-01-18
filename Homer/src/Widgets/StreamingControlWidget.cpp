@@ -141,12 +141,6 @@ void StreamingControlWidget::initializeGUI()
 
 void StreamingControlWidget::StartScreenSegmentStreaming()
 {
-    // apply the current grab resolution to desktop capture source
-    int tResX, tResY;
-    mVideoWorker->GetGrabResolution(tResX, tResY);
-    LOG(LOG_VERBOSE, "Current grab resolution is: %d*%d", tResX, tResY);
-    mMediaSourceDesktop->SetScreenshotSize(tResX, tResY);
-
     // change the current source device
     mVideoWorker->SetCurrentDevice(MEDIA_SOURCE_DESKTOP); // used fixed name
 

@@ -52,7 +52,10 @@ public:
     /// The destructor.
     virtual ~SegmentSelectionDialog();
 
+    void Init();
+
     int exec();
+    void UpdateSize();
 
 private slots:
     void ClickedButton(QAbstractButton *pButton);
@@ -67,10 +70,14 @@ private:
     virtual void moveEvent(QMoveEvent *pEvent);
     virtual void resizeEvent(QResizeEvent *pEvent);
     void initializeGUI();
-    void ConfigureDesktopCapturing(int pOffsetX, int pOffsetY, int pWidth, int pHeight);
+    void ConfigureDesktopCapturing(int pOffsetX, int pOffsetY, int pWidth, int pHeight, bool pForceUpdate = false);
 
-    MediaSourceDesktop *mMediaSourceDesktop;
-    QPoint  mDrapPosition;
+    MediaSourceDesktop  *mMediaSourceDesktop;
+    QPoint              mDrapPosition;
+    int                 mWidth;
+    int                 mHeight;
+    int                 mOffsetX;
+    int                 mOffsetY;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -81,25 +81,28 @@ using namespace Homer::Monitor;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// at what time period is timerEvent() called?
-#define VIDEO_WIDGET_TIMER_PERIOD               	  250 //ms
+// what is the minimum time between two consecutive resolution updates caused by changes in the media source?
+#define VIDEO_WIDGET_MINIMUM_TIME_DIFF_BETWEEN_AUTO_RESOLUTION_UPDATES        1
 
-#define VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME       		3 // seconds
+// at what time period is timerEvent() called?
+#define VIDEO_WIDGET_TIMER_PERIOD               	                        250 //ms
+
+#define VIDEO_WIDGET_FS_MAX_MOUSE_IDLE_TIME       		                      3 // seconds
 
 // how long should a OSD status message stay on the screen?
-#define VIDEO_WIDGET_OSD_PERIOD                   		3 // seconds
+#define VIDEO_WIDGET_OSD_PERIOD                   		                      3 // seconds
 
 // how many measurement steps do we use?
-#define FPS_MEASUREMENT_STEPS                    		2 * 30
+#define FPS_MEASUREMENT_STEPS                    		                 2 * 30
 
-#define SEEK_SMALL_STEP                         		10 // seconds
-#define SEEK_MEDIUM_STEP                        	    60 // seconds
-#define SEEK_BIG_STEP                          	       300 // seconds
+#define SEEK_SMALL_STEP                         		                     10 // seconds
+#define SEEK_MEDIUM_STEP                        	                         60 // seconds
+#define SEEK_BIG_STEP                          	                            300 // seconds
 // additional seeking drift when seeking backwards
-#define SEEK_BACKWARD_DRIFT                      		 5 // seconds
+#define SEEK_BACKWARD_DRIFT                      		                      5 // seconds
 
 // de/activate periodic widget updates even if no new input data is received
-#define VIDEO_WIDGET_FORCE_PERIODIC_UPDATE_TIME	       250 // ms, 0 means "deactivated"
+#define VIDEO_WIDGET_FORCE_PERIODIC_UPDATE_TIME	                            250 // ms, 0 means "deactivated"
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -765,7 +768,7 @@ QStringList VideoWidget::GetVideoStatistic()
     tLine_Playback = Homer::Gui::VideoWidget::tr("Playback:") + " " + QString("%1").arg(mCurrentFrameOutputWidth) + "*" + QString("%1").arg(mCurrentFrameOutputHeight) + " (" + tAspectRatio + ")" + (mSmoothPresentation ? Homer::Gui::VideoWidget::tr("[smoothed]") : "");
     if (tAVDrift >= 0.0)
         tLine_Playback += (tAVDrift != 0.0f ? QString(" (" + Homer::Gui::VideoWidget::tr("A/V drift:") + " +%1 s)").arg(tAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
-    else if (tAVDrift < 0.0)
+    else
         tLine_Playback += (tAVDrift != 0.0f ? QString(" (" + Homer::Gui::VideoWidget::tr("A/V drift:") + " %1 s)").arg(tAVDrift, 2, 'f', 2, (QLatin1Char)' ') : "");
 
     float tUserAVDrift = mParticipantWidget->GetUserAVDrift();
@@ -1531,7 +1534,14 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
 
         return;
     }
-
+    if (CONF.DebuggingEnabled())
+    {
+        if (pEvent->key() == Qt::Key_Z)
+        {
+            mVideoWorker->ResetSource();
+            return;
+        }
+    }
     if ((pEvent->key() == Qt::Key_Escape) && (pEvent->modifiers() == 0) && (IsFullScreen()))
 	{
         ToggleFullScreenMode();
@@ -1843,13 +1853,16 @@ void VideoWidget::customEvent(QEvent *pEvent)
 				int tLoopCount = 0;
 				while (mPendingNewFrameSignals)
 				{
-					tLoopCount++;
-					#ifdef DEBUG_VIDEOWIDGET_FRAME_DELIVERY
-						if (tLoopCount > 1)
-							LOG(LOG_VERBOSE, "Called GetCurrentFrame() %d times", tLoopCount);
-					#endif
-					mPendingNewFrameSignals--;
-					mCurrentFrameNumber = mVideoWorker->GetCurrentFrame(&tFrame, &mCurrentFrameRate);
+                    if (tLoopCount > 0)
+                    {
+                        #ifdef DEBUG_VIDEOWIDGET_FRAME_DELIVERY
+                            if (tLoopCount > 0)
+                                LOG(LOG_VERBOSE, "Called GetCurrentFrameRef() %d times", tLoopCount);
+                        #endif
+                        mVideoWorker->ReleaseCurrentFrameRef();
+                    }
+					mCurrentFrameNumber = mVideoWorker->GetCurrentFrameRef(&tFrame, &mCurrentFrameRate);
+                    mPendingNewFrameSignals--;
 
 					// video delay
 					int tWorkerLastFrame = mVideoWorker->GetLastFrameNumber();
@@ -1870,6 +1883,7 @@ void VideoWidget::customEvent(QEvent *pEvent)
                     #ifdef DEBUG_VIDEOWIDGET_FRAME_DELIVERY
                         LOG(LOG_VERBOSE, "We show frame %d while we already grabbed frame %d", mCurrentFrameNumber, tWorkerLastFrame);
                     #endif
+                    tLoopCount++;
 				}
 
 				if (isVisible())
@@ -1921,6 +1935,8 @@ void VideoWidget::customEvent(QEvent *pEvent)
 					}else
 						LOG(LOG_WARN, "Current frame number is invalid (%d)", mCurrentFrameNumber);
 				}
+				// release the reference to the last grabbed frame
+				mVideoWorker->ReleaseCurrentFrameRef();
         	}else
         	{
 				#ifdef DEBUG_VIDEOWIDGET_FRAME_DELIVERY
@@ -2002,15 +2018,15 @@ void VideoWorkerThread::InitFrameBuffers()
 
         mFrameNumber[i] = 0;
 
-        //LOG(LOG_VERBOSE, "Initiating frame buffer %d with resolution %d*%d", i, mResX, mResY);
-        QImage tFrameImage = QImage((unsigned char*)mFrame[i], mResX, mResY, QImage::Format_RGB32);
+        LOG(LOG_VERBOSE, "Initiating frame buffer %d with resolution %d*%d", i, mResX, mResY);
+        QImage tFrameImage = QImage((uchar*)mFrame[i], mResX, mResY, QImage::Format_RGB32);
         QPainter *tPainter = new QPainter(&tFrameImage);
         tPainter->setRenderHint(QPainter::TextAntialiasing, true);
 
         tPainter->fillRect(0, 0, mResX, mResY, QColor(Qt::darkGray));
         tPainter->setFont(QFont("Tahoma", 16));
         tPainter->setPen(QColor(Qt::black));
-        tPainter->drawText(5, 70, "Waiting for data..");
+        tPainter->drawText(5, 70, Homer::Gui::VideoWorkerThread::tr("Waiting for data.."));
 
         delete tPainter;
     }
@@ -2018,15 +2034,24 @@ void VideoWorkerThread::InitFrameBuffers()
 
 void VideoWorkerThread::DeinitFrameBuffers()
 {
+    mPendingNewFrames = 0;
     for (int i = 0; i < FRAME_BUFFER_SIZE; i++)
     {
+        LOG(LOG_VERBOSE, "Releasing chunk buffer %d at %p", i, mFrame[i]);
         mMediaSource->FreeChunkBuffer(mFrame[i]);
+        mFrame[i] = NULL;
+        mFrameSize[i] = 0;
     }
 }
 
 void VideoWorkerThread::SetFrameDropping(bool pDrop)
 {
     mDropFrames = pDrop;
+}
+
+void VideoWorkerThread::GetGrabResolution(int &pX, int &pY)
+{
+    mMediaSource->GetVideoGrabResolution(pX, pY);
 }
 
 void VideoWorkerThread::SetGrabResolution(int pX, int pY)
@@ -2117,6 +2142,8 @@ void VideoWorkerThread::DoSetGrabResolution()
 
     // unlock
     mDeliverMutex.unlock();
+
+    LOG(LOG_VERBOSE, "..DoSetGrabResolution finished");
 }
 
 void VideoWorkerThread::DoSeek()
@@ -2249,17 +2276,12 @@ void VideoWorkerThread::HandlePlayFileSuccess()
     mVideoWidget->SetVisible(true);
 }
 
-int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFrameRate)
+int VideoWorkerThread::GetCurrentFrameRef(void **pFrame, float *pFrameRate)
 {
     int tResult = -1;
 
     // lock
-    if (!mDeliverMutex.tryLock(100))
-    {
-        LOG(LOG_WARN, "Timeout during locking of deliver mutex");
-        return -1;
-    }
-
+    mDeliverMutex.lock();
     if ((!mSetGrabResolutionAsap) && (!mResetMediaSourceAsap))
     {
         if (mPendingNewFrames)
@@ -2299,14 +2321,17 @@ int VideoWorkerThread::GetCurrentFrame(void **pFrame, float *pFrameRate)
     }else
         LOG(LOG_WARN, "Can't deliver new frame, pending frames: %d, grab resolution invalid: %d, have to reset source: %d, source available: %d", mPendingNewFrames, mSetGrabResolutionAsap, mResetMediaSourceAsap, mSourceAvailable);
 
-    // unlock
-    mDeliverMutex.unlock();
-
 	#ifdef VIDEO_WIDGET_DEBUG_FRAMES
     	LOG(LOG_VERBOSE, "GetCurrentFrame() delivered frame %d from index %d, pending frames: %d, missing frames: %d, grab index: %d", tResult, mFrameCurrentIndex, mPendingNewFrames, mMissingFrames, mFrameGrabIndex);
 	#endif
 
     return tResult;
+}
+
+void VideoWorkerThread::ReleaseCurrentFrameRef()
+{
+    // unlock
+    mDeliverMutex.unlock();
 }
 
 int VideoWorkerThread::GetLastFrameNumber()
@@ -2346,6 +2371,7 @@ void VideoWorkerThread::run()
     }
 
     mLastFrameNumber = 0;
+    mTimeLastDetectedVideoResolutionChange = QTime::currentTime();
 
     LOG(LOG_VERBOSE, "..start main loop");
     while(mWorkerNeeded)
@@ -2441,57 +2467,66 @@ void VideoWorkerThread::run()
 			    mMediaSource->GetVideoSourceResolution(tSourceResX, tSourceResY);
 			    if ((mFrameWidthLastGrabbedFrame != tSourceResX) || (mFrameHeightLastGrabbedFrame != tSourceResY))
 			    {
-					if ((tSourceResX != mResX) || (tSourceResY != mResY))
-					{
-						LOG(LOG_WARN, "Remote source changed, video resolution changed: %d*%d => %d*%d", mResX, mResY, tSourceResX, tSourceResY);
+			        if (mTimeLastDetectedVideoResolutionChange.msecsTo(QTime::currentTime()) >= VIDEO_WIDGET_MINIMUM_TIME_DIFF_BETWEEN_AUTO_RESOLUTION_UPDATES * 1000)
+			        {
+                        if ((tSourceResX != mResX) || (tSourceResY != mResY))
+                        {
+                            LOG(LOG_WARN, "Remote source changed, video resolution changed: %d*%d => %d*%d", mResX, mResY, tSourceResX, tSourceResY);
 
-						// reset the local media source
-						LOG(LOG_WARN, "Will reset local media source because input stream changed..");
-						DoResetMediaSource();
+                            // reset the local media source
+                            LOG(LOG_WARN, "Will reset local media source because input stream changed..");
+                            mResetMediaSourceAsap = true; //DoResetMediaSource();
 
-						// let the GUI react on this event
-						mVideoWidget->InformAboutNewSource();
-					}
+                            mTimeLastDetectedVideoResolutionChange = QTime::currentTime();
+
+                            // let the GUI react on this event
+                            mVideoWidget->InformAboutNewSource();
+                        }
+			        }
 			    }
 			    mFrameWidthLastGrabbedFrame = tSourceResX;
 			    mFrameHeightLastGrabbedFrame = tSourceResY;
 
-				// lock
-				mDeliverMutex.lock();
+			    if (!mResetMediaSourceAsap)
+			    {
+                    // lock
+                    mDeliverMutex.lock();
 
-				mFrameNumber[mFrameGrabIndex] = tFrameNumber;
-                if (mPendingNewFrames < FRAME_BUFFER_SIZE)
-                {
-                    mPendingNewFrames++;
-                    mVideoWidget->InformAboutNewFrame();
-                }else
-                {
-                    LOG(LOG_WARN, "System too slow?, frame buffer of %d entries is full, will drop all frames, grab index: %d, current read index: %d", FRAME_BUFFER_SIZE, mFrameGrabIndex, mFrameCurrentIndex);
-                    mPendingNewFrames = 1;
-                    mFrameCurrentIndex = mFrameGrabIndex -1;
-                    if (mFrameCurrentIndex < 0)
-                    	mFrameCurrentIndex = FRAME_BUFFER_SIZE - 1;
+                    mFrameNumber[mFrameGrabIndex] = tFrameNumber;
+                    if (mPendingNewFrames < FRAME_BUFFER_SIZE)
+                    {
+                        mPendingNewFrames++;
+                        mVideoWidget->InformAboutNewFrame();
+                    }else
+                    {
+                        LOG(LOG_WARN, "System too slow?, frame buffer of %d entries is full, will drop all frames, grab index: %d, current read index: %d", FRAME_BUFFER_SIZE, mFrameGrabIndex, mFrameCurrentIndex);
+                        mPendingNewFrames = 1;
+                        mFrameCurrentIndex = mFrameGrabIndex -1;
+                        if (mFrameCurrentIndex < 0)
+                            mFrameCurrentIndex = FRAME_BUFFER_SIZE - 1;
 
-                }
-				mFrameGrabIndex++;
-				if (mFrameGrabIndex >= FRAME_BUFFER_SIZE)
-				    mFrameGrabIndex = 0;
+                    }
+                    mFrameGrabIndex++;
+                    if (mFrameGrabIndex >= FRAME_BUFFER_SIZE)
+                        mFrameGrabIndex = 0;
 
-                // store timestamp starting from frame number 3 to avoid peaks
-				if(tFrameNumber > 3)
-				{
-                    //HINT: locking is done via mDeliverMutex!
-                    mFrameTimestamps.push_back(Time::GetTimeStamp());
-                    //LOG(LOG_WARN, "Time %ld", Time::GetTimeStamp());
-                    while (mFrameTimestamps.size() > FPS_MEASUREMENT_STEPS)
-                        mFrameTimestamps.removeFirst();
-				}
+                    // store timestamp starting from frame number 3 to avoid peaks
+                    if(tFrameNumber > 3)
+                    {
+                        //HINT: locking is done via mDeliverMutex!
+                        mFrameTimestamps.push_back(Time::GetTimeStamp());
+                        //LOG(LOG_WARN, "Time %ld", Time::GetTimeStamp());
+                        while (mFrameTimestamps.size() > FPS_MEASUREMENT_STEPS)
+                            mFrameTimestamps.removeFirst();
+                    }
 
-                 // unlock
-				mDeliverMutex.unlock();
+                     // unlock
+                    mDeliverMutex.unlock();
 
-				if ((mLastFrameNumber > tFrameNumber) && (tFrameNumber > 9 /* -1 means error, 1 is received after every reset, use "9" because of possible latencies */))
-					LOG(LOG_ERROR, "Frame ordering problem detected (%d -> %d)", mLastFrameNumber, tFrameNumber);
+                    if ((mLastFrameNumber > tFrameNumber) && (tFrameNumber > 9 /* -1 means error, 1 is received after every reset, use "9" because of possible latencies */))
+                        LOG(LOG_ERROR, "Frame ordering problem detected (%d -> %d)", mLastFrameNumber, tFrameNumber);
+			    }else
+			        LOG(LOG_VERBOSE, "Video frame dropped because source will be immediately reset");
 			}else
 			{
 				LOG(LOG_VERBOSE, "Invalid grabbing result: %d, frame size: %d", tFrameNumber, tFrameSize);

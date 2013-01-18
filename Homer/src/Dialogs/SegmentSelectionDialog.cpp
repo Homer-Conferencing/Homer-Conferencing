@@ -38,31 +38,34 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// auto apply the settings?
+#define SEGMENT_SELECTION_AUTO_APPLY
+
+///////////////////////////////////////////////////////////////////////////////
+
 SegmentSelectionDialog::SegmentSelectionDialog(QWidget* pParent, MediaSourceDesktop *pMediaSourceDesktop):
     QDialog(pParent)
 {
     mMediaSourceDesktop = pMediaSourceDesktop;
-
-    initializeGUI();
 }
 
 SegmentSelectionDialog::~SegmentSelectionDialog()
 {
 }
 
+void SegmentSelectionDialog::Init()
+{
+    initializeGUI();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 void SegmentSelectionDialog::initializeGUI()
 {
-    LOG(LOG_VERBOSE, "Found current segment resolution of %d*%d starting at %d*%d", mMediaSourceDesktop->mSourceResX, mMediaSourceDesktop->mSourceResY, mMediaSourceDesktop->mGrabOffsetX, mMediaSourceDesktop->mGrabOffsetY);
+    LOG(LOG_VERBOSE, "Found current segment resolution of %d*%d, starting at %d*%d", mMediaSourceDesktop->mSourceResX, mMediaSourceDesktop->mSourceResY, mMediaSourceDesktop->mGrabOffsetX, mMediaSourceDesktop->mGrabOffsetY);
 
     setupUi(this);
     setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
-
-    mLbOffsetX->setText(QString("%1").arg(mMediaSourceDesktop->mGrabOffsetX));
-    mLbOffsetY->setText(QString("%1").arg(mMediaSourceDesktop->mGrabOffsetY));
-    mLbResX->setText(QString("%1").arg(mMediaSourceDesktop->mSourceResX));
-    mLbResY->setText(QString("%1").arg(mMediaSourceDesktop->mSourceResY));
 
     connect(mTbDefaults, SIGNAL(clicked(bool)), this, SLOT(ResetToDefaults()));
     connect(mTbDesktop, SIGNAL(clicked(bool)), this, SLOT(ResetToDesktop()));
@@ -71,11 +74,7 @@ void SegmentSelectionDialog::initializeGUI()
     mTbDesktopAuto->setChecked(mMediaSourceDesktop->GetAutoDesktop());
     mCbMouse->setChecked(mMediaSourceDesktop->GetMouseVisualization());
 
-    //setSizeGripEnabled(false);
-    resize(mMediaSourceDesktop->mSourceResX - (frameGeometry().width() - width()),
-           mMediaSourceDesktop->mSourceResY - (frameGeometry().height() - height()) - (frameGeometry().width() - width()) / 2);
-    //setSizeGripEnabled(true);
-    move(mMediaSourceDesktop->mGrabOffsetX, mMediaSourceDesktop->mGrabOffsetY);
+    ConfigureDesktopCapturing(mMediaSourceDesktop->mGrabOffsetX, mMediaSourceDesktop->mGrabOffsetY, mMediaSourceDesktop->mSourceResX, mMediaSourceDesktop->mSourceResY, true);
 }
 
 int SegmentSelectionDialog::exec()
@@ -88,35 +87,67 @@ int SegmentSelectionDialog::exec()
 	{
 		mMediaSourceDesktop->SetAutoDesktop(mTbDesktopAuto->isChecked());
 		mMediaSourceDesktop->SetMouseVisualization(mCbMouse->isChecked());
+
+		mMediaSourceDesktop->mGrabOffsetX = mOffsetX;
+		mMediaSourceDesktop->mGrabOffsetY = mOffsetY;
+		mMediaSourceDesktop->mSourceResX = mWidth;
+		mMediaSourceDesktop->mSourceResY = mHeight;
 	}
 
 	return tResult;
 }
 
-void SegmentSelectionDialog::ConfigureDesktopCapturing(int pOffsetX, int pOffsetY, int pWidth, int pHeight)
+void SegmentSelectionDialog::ConfigureDesktopCapturing(int pOffsetX, int pOffsetY, int pWidth, int pHeight, bool pForceUpdate)
 {
-    LOG(LOG_VERBOSE, "Configuring desktop capturing to offset=(%d, %d), dimension=%d * %d", pOffsetX, pOffsetY, pWidth, pHeight);
+    //LOG(LOG_ERROR, "Configuring desktop capturing to offset (%d,%d) and dimension %d*%d", pOffsetX, pOffsetY, pWidth, pHeight);
 
-    mMediaSourceDesktop->SetScreenshotSize(pWidth, pHeight);
-    mMediaSourceDesktop->mGrabOffsetX = pOffsetX;
-    mMediaSourceDesktop->mGrabOffsetY = pOffsetY;
+    if ((pWidth >= 0) && (pHeight >= 0) && ((mWidth != pHeight) || (mHeight != pHeight) || (pForceUpdate)))
+    {
+        mWidth = pWidth;
+        mHeight = pHeight;
 
-    mLbOffsetX->setText(QString("%1").arg(pOffsetX));
-    mLbOffsetY->setText(QString("%1").arg(pOffsetY));
-    mLbResX->setText(QString("%1").arg(pWidth));
-    mLbResY->setText(QString("%1").arg(pHeight));
+        #ifdef SEGMENT_SELECTION_AUTO_APPLY
+            mMediaSourceDesktop->mSourceResX = pWidth;
+            mMediaSourceDesktop->mSourceResY = pHeight;
+        #endif
 
-    resize(pWidth, pHeight);
-    move(pOffsetX, pOffsetY);
+        mLbResX->setText(QString("%1").arg(pWidth));
+        mLbResY->setText(QString("%1").arg(pHeight));
+
+        resize(pWidth, pHeight);
+    }
+
+    if ((pOffsetX >= 0) && (pOffsetY >= 0) && ((mOffsetX != pOffsetX) || (mOffsetY != pOffsetY) || (pForceUpdate)))
+    {
+        mOffsetX = pOffsetX;
+        mOffsetY = pOffsetY;
+
+        #ifdef SEGMENT_SELECTION_AUTO_APPLY
+            mMediaSourceDesktop->mGrabOffsetX = pOffsetX;
+            mMediaSourceDesktop->mGrabOffsetY = pOffsetY;
+        #endif
+
+        mLbOffsetX->setText(QString("%1").arg(pOffsetX));
+        mLbOffsetY->setText(QString("%1").arg(pOffsetY));
+
+        move(pOffsetX, pOffsetY);
+    }
 }
 
 void SegmentSelectionDialog::ResetToDesktop()
 {
     LOG(LOG_VERBOSE, "Resetting to desktop size");
 
-    QDesktopWidget *tDesktop = QApplication::desktop();
-    int tResX = tDesktop->screenGeometry(tDesktop->primaryScreen()).width();
-    int tResY = tDesktop->screenGeometry(tDesktop->primaryScreen()).height();
+    int tResX = 0;
+    int tResY = 0;
+    #ifdef APPLE
+        tResX = CGDisplayPixelsWide(CGMainDisplayID());
+        tResY = CGDisplayPixelsHigh(CGMainDisplayID());
+    #else
+        QDesktopWidget *tDesktop = QApplication::desktop();
+        tResX = tDesktop->screenGeometry(tDesktop->primaryScreen()).width();
+        tResY = tDesktop->screenGeometry(tDesktop->primaryScreen()).height();
+    #endif
 
     ConfigureDesktopCapturing(0, 0, tResX, tResY);
 }
@@ -168,7 +199,7 @@ void SegmentSelectionDialog::mousePressEvent(QMouseEvent *pEvent)
 {
     if (pEvent->button() == Qt::LeftButton)
     {
-        mDrapPosition = pEvent->globalPos() - frameGeometry().topLeft();
+        mDrapPosition = pEvent->globalPos();// - frameGeometry().topLeft();
         pEvent->accept();
     }
 }
@@ -183,14 +214,16 @@ void SegmentSelectionDialog::mouseMoveEvent(QMouseEvent *pEvent)
         if (tNewPos.y() < 0)
             tNewPos.setY(0);
 
-        move(tNewPos);
+        ConfigureDesktopCapturing(tNewPos.x(), tNewPos.y(), -1, -1);
 
-        int tNewOffsetX = x();// + (frameGeometry().width() - width()) / 2;
-        int tNewOffsetY = y();// + (frameGeometry().height() - height()) - (frameGeometry().width() - width()) / 2;
-        mMediaSourceDesktop->mGrabOffsetX = tNewOffsetX;
-        mMediaSourceDesktop->mGrabOffsetY = tNewOffsetY;
-        mLbOffsetX->setText(QString("%1").arg(tNewOffsetX));
-        mLbOffsetY->setText(QString("%1").arg(tNewOffsetY));
+//        move(tNewPos);
+//
+//        int tNewOffsetX = x();// + (frameGeometry().width() - width()) / 2;
+//        int tNewOffsetY = y();// + (frameGeometry().height() - height()) - (frameGeometry().width() - width()) / 2;
+//        mMediaSourceDesktop->mGrabOffsetX = tNewOffsetX;
+//        mMediaSourceDesktop->mGrabOffsetY = tNewOffsetY;
+//        mLbOffsetX->setText(QString("%1").arg(tNewOffsetX));
+//        mLbOffsetY->setText(QString("%1").arg(tNewOffsetY));
 
         pEvent->accept();
     }
@@ -200,45 +233,34 @@ void SegmentSelectionDialog::moveEvent(QMoveEvent *pEvent)
 {
     QPoint tNewPos = pEvent->pos();
 
-    bool tCorrectMove = false;
-
     if (tNewPos.x() < 0)
-    {
         tNewPos.setX(0);
-        tCorrectMove = true;
-    }
     if (tNewPos.y() < 0)
-    {
         tNewPos.setY(0);
-        tCorrectMove = true;
-    }
-    if (tCorrectMove)
-        move(tNewPos);
 
-    int tNewOffsetX = x();// + (frameGeometry().width() - width()) / 2;
-    int tNewOffsetY = y();// + (frameGeometry().height() - height()) - (frameGeometry().width() - width()) / 2;
-    mMediaSourceDesktop->mGrabOffsetX = tNewOffsetX;
-    mMediaSourceDesktop->mGrabOffsetY = tNewOffsetY;
-    mLbOffsetX->setText(QString("%1").arg(tNewOffsetX));
-    mLbOffsetY->setText(QString("%1").arg(tNewOffsetY));
+    ConfigureDesktopCapturing(tNewPos.x(), tNewPos.y(), -1, -1);
+
+//    int tNewOffsetX = x();// + (frameGeometry().width() - width()) / 2;
+//    int tNewOffsetY = y();// + (frameGeometry().height() - height()) - (frameGeometry().width() - width()) / 2;
+//    mMediaSourceDesktop->mGrabOffsetX = tNewOffsetX;
+//    mMediaSourceDesktop->mGrabOffsetY = tNewOffsetY;
+//    mLbOffsetX->setText(QString("%1").arg(tNewOffsetX));
+//    mLbOffsetY->setText(QString("%1").arg(tNewOffsetY));
 
     pEvent->accept();
 }
 
 void SegmentSelectionDialog::resizeEvent(QResizeEvent *pEvent)
 {
-    int tNewWidth = pEvent->size().width() + (frameGeometry().width() - width());
+    int tNewWidth = pEvent->size().width();// + (frameGeometry().width() - width());
     if (tNewWidth < DESKTOP_SEGMENT_MIN_WIDTH)
         tNewWidth = DESKTOP_SEGMENT_MIN_WIDTH;
-    mLbResX->setText(QString("%1").arg(tNewWidth));
 
-
-    int tNewHeight = pEvent->size().height() + (frameGeometry().height() - height()) + (frameGeometry().width() - width()) / 2;
+    int tNewHeight = pEvent->size().height();// + (frameGeometry().height() - height()) + (frameGeometry().width() - width()) / 2;
     if (tNewHeight < DESKTOP_SEGMENT_MIN_HEIGHT)
         tNewHeight = DESKTOP_SEGMENT_MIN_HEIGHT;
-    mLbResY->setText(QString("%1").arg(tNewHeight));
 
-    mMediaSourceDesktop->SetScreenshotSize(tNewWidth, tNewHeight);
+    ConfigureDesktopCapturing( -1, -1, tNewWidth, tNewHeight);
 
     QDialog::resizeEvent(pEvent);
 }

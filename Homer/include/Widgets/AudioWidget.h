@@ -178,6 +178,9 @@ public slots:
     void SetVolume(int pValue);
 
 private:
+    /* buffering */
+    virtual void InitFrameBuffers();
+    virtual void DeinitFrameBuffers();
     /* audio playback */
     void ResetPlayback();
     virtual void OpenPlaybackDevice();

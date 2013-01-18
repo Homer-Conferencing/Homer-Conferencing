@@ -120,6 +120,9 @@ protected:
     virtual void DoStopRecorder();
     /* multi-input */
     virtual void DoSelectInputStream();
+    /* buffering */
+    virtual void InitFrameBuffers() = 0;
+    virtual void DeinitFrameBuffers() = 0;
     /* general purpose */
     virtual void DoPlayNewFile() = 0;
     virtual void DoSetCurrentDevice() = 0;

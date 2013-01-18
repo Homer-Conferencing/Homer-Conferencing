@@ -40,6 +40,7 @@ namespace Homer { namespace Gui {
 ///////////////////////////////////////////////////////////////////////////////
 
 class MainWindow;
+class MediaSourceDesktop;
 class StreamingControlWidget :
     public QWidget,
     public Ui_StreamingControlWidget

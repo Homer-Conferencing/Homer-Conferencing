@@ -872,14 +872,27 @@ AudioWorkerThread::~AudioWorkerThread()
     LOG(LOG_VERBOSE, "Destroyed");
 }
 
-void AudioWorkerThread::OpenPlaybackDevice()
+void AudioWorkerThread::InitFrameBuffers()
 {
-    LOG(LOG_VERBOSE, "Allocating audio buffers");
     for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
     {
         mSamples[i] = mMediaSource->AllocChunkBuffer(mSamplesBufferSize[i], MEDIA_AUDIO);
         mSampleNumber[i] = 0;
     }
+}
+
+void AudioWorkerThread::DeinitFrameBuffers()
+{
+    for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
+    {
+        mMediaSource->FreeChunkBuffer(mSamples[i]);
+    }
+}
+
+void AudioWorkerThread::OpenPlaybackDevice()
+{
+    LOG(LOG_VERBOSE, "Allocating audio buffers");
+    InitFrameBuffers();
 
     AudioPlayback::OpenPlaybackDevice(mName + "-Data");
 
@@ -891,8 +904,8 @@ void AudioWorkerThread::ClosePlaybackDevice()
     AudioPlayback::ClosePlaybackDevice();
 
     LOG(LOG_VERBOSE, "Releasing audio buffers");
-    for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
-        mMediaSource->FreeChunkBuffer(mSamples[i]);
+
+    DeinitFrameBuffers();
 }
 
 void AudioWorkerThread::SetVolume(int pValue)

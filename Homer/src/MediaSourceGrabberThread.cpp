@@ -447,6 +447,9 @@ void MediaSourceGrabberThread::DoResetMediaSource()
     // lock
     mDeliverMutex.lock();
 
+    // delete old frame buffers
+    DeinitFrameBuffers();
+
     // restart frame grabbing device
     mSourceAvailable = mMediaSource->Reset();
     if (!mSourceAvailable)
@@ -455,8 +458,13 @@ void MediaSourceGrabberThread::DoResetMediaSource()
     mPaused = false;
     mFrameTimestamps.clear();
 
+    // create new frame buffers
+    InitFrameBuffers();
+
     // unlock
     mDeliverMutex.unlock();
+
+    LOG(LOG_VERBOSE, "..DoResetMediaSource finished");
 }
 
 void MediaSourceGrabberThread::DoSetInputStreamPreferences()

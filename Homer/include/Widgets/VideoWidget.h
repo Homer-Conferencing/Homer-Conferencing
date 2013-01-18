@@ -76,7 +76,7 @@ class ParticipantWidget;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define FRAME_BUFFER_SIZE              4
+#define FRAME_BUFFER_SIZE                                                   3
 
 class VideoWorkerThread;
 
@@ -222,20 +222,22 @@ public:
 
     /* forwarded interface to media source */
     void SetGrabResolution(int pX, int pY);
+    void GetGrabResolution(int &pX, int &pY);
 
     /* device control */
     VideoDevices GetPossibleDevices();
 
     /* frame grabbing */
     void SetFrameDropping(bool pDrop);
-    int GetCurrentFrame(void **pFrame, float *pFrameRate = NULL);
+    int GetCurrentFrameRef(void **pFrame, float *pFrameRate = NULL);
+    void ReleaseCurrentFrameRef();
     int GetLastFrameNumber();
 
     VideoWidget *GetVideoWidget();
 
 private:
-    void InitFrameBuffers();
-    void DeinitFrameBuffers();
+    virtual void InitFrameBuffers();
+    virtual void DeinitFrameBuffers();
     void InitFrameBuffer(int pBufferId);
     void DoSetGrabResolution();
     virtual void DoSetCurrentDevice();
@@ -263,6 +265,8 @@ private:
     int                 mMissingFrames;
     /* A/V synch. */
     bool                mWaitForFirstFrameAfterSeeking;
+    /* vide resolution detection for source */
+    QTime               mTimeLastDetectedVideoResolutionChange;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

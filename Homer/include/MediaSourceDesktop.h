@@ -77,6 +77,9 @@ public:
     /* device control */
     virtual void getVideoDevices(VideoDevices &pVList);
 
+    /* video grabbing control */
+    virtual void SetVideoGrabResolution(int pResX = 352, int pResY = 288);
+
     /* create screenshot and updates internal buffer */
     void CreateScreenshot();
     void SetScreenshotSize(int pWidth, int pHeight);

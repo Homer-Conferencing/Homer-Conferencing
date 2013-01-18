@@ -58,6 +58,11 @@ using namespace Homer::Monitor;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define                     MAX_WIDTH                       1920 * 3
+#define                     MAX_HEIGHT                      1080 * 2
+
+///////////////////////////////////////////////////////////////////////////////
+
 MediaSourceDesktop::MediaSourceDesktop(string pDesiredDevice):
     MediaSource("Desktop: local capture")
 {
@@ -69,6 +74,7 @@ MediaSourceDesktop::MediaSourceDesktop(string pDesiredDevice):
     mWidget = NULL;
     mOutputScreenshot = NULL;
     mOriginalScreenshot = NULL;
+    mSourceType = SOURCE_DEVICE;
 
     // reset grabbing offset values
     mGrabOffsetX = 0;
@@ -84,12 +90,22 @@ MediaSourceDesktop::MediaSourceDesktop(string pDesiredDevice):
     {
         LOG(LOG_INFO, "Haven't selected new Qt-desktop device when creating source object");
     }
+    LOG(LOG_VERBOSE, "Allocating buffer for original screenshot..");
+    mOriginalScreenshot = malloc(MAX_WIDTH * MAX_HEIGHT * MSD_BYTES_PER_PIXEL * sizeof(char));
+    if (mOriginalScreenshot == NULL)
+        LOG(LOG_ERROR, "Original buffer allocation failed");
+    mOutputScreenshot = malloc(MAX_WIDTH * MAX_HEIGHT * MSD_BYTES_PER_PIXEL * sizeof(char));
+    if (mOutputScreenshot == NULL)
+        LOG(LOG_ERROR, "Output buffer allocation failed");
 }
 
 MediaSourceDesktop::~MediaSourceDesktop()
 {
     if (mMediaSourceOpened)
         CloseGrabDevice();
+
+    free(mOriginalScreenshot);
+    free(mOutputScreenshot);
 }
 
 void MediaSourceDesktop::getVideoDevices(VideoDevices &pVList)
@@ -179,7 +195,8 @@ bool MediaSourceDesktop::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         return false;
 
     mWidget = QApplication::desktop()->screen(0); //per default support only grabbing from screen 0
-    SetScreenshotSize(pResX, pResY);
+    mTargetResX = pResX;
+    mTargetResY = pResY;
 
     mCurrentDevice = mDesiredDevice;
 
@@ -189,12 +206,6 @@ bool MediaSourceDesktop::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 
 	mFrameRate = pFps;
     mRealFrameRate = pFps;
-    mOutputScreenshot = malloc(mTargetResX * mTargetResY * MSD_BYTES_PER_PIXEL * sizeof(char));
-    if (mOutputScreenshot == NULL)
-    {
-        LOG(LOG_ERROR, "Buffer allocation failed");
-        return false;
-    }
 
     LOG(LOG_INFO, "Opened...");
     LOG(LOG_INFO, "    ..fps: %3.2f", mFrameRate);
@@ -227,7 +238,7 @@ bool MediaSourceDesktop::CloseGrabDevice()
 {
     bool tResult = false;
 
-    LOG(LOG_VERBOSE, "Going to close");
+    LOG(LOG_VERBOSE, "%s %s source closing..", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
 
     if (mMediaType == MEDIA_AUDIO)
     {
@@ -235,23 +246,17 @@ bool MediaSourceDesktop::CloseGrabDevice()
         return false;
     }
 
-    mMutexGrabberActive.lock();
-
     if (mMediaSourceOpened)
     {
-        StopRecording();
-
         mMediaSourceOpened = false;
+
+        // stop A/V recorder
+        LOG(LOG_VERBOSE, "    ..stopping %s recorder", GetMediaTypeStr().c_str());
+        StopRecording();
 
         mWidget = NULL;
 
-        // free internal buffer
-        free(mOutputScreenshot);
-        mOutputScreenshot = NULL;
-        free(mOriginalScreenshot);
-        mOriginalScreenshot = NULL;
-
-        LOG(LOG_INFO, "...closed");
+        LOG(LOG_INFO, "...%s source closed", GetMediaTypeStr().c_str());
 
         tResult = true;
     }else
@@ -261,9 +266,16 @@ bool MediaSourceDesktop::CloseGrabDevice()
     mScreenshotUpdated = false;
     mMediaType = MEDIA_UNKNOWN;
 
-    mMutexGrabberActive.unlock();
-
     return tResult;
+}
+
+void MediaSourceDesktop::SetVideoGrabResolution(int pResX, int pResY)
+{
+    mMutexGrabberActive.lock();
+
+    MediaSource::SetVideoGrabResolution(pResX, pResY);
+
+    mMutexGrabberActive.unlock();
 }
 
 void MediaSourceDesktop::DoSetVideoGrabResolution(int pResX, int pResY)
@@ -272,23 +284,23 @@ void MediaSourceDesktop::DoSetVideoGrabResolution(int pResX, int pResY)
 
     mMutexScreenshot.lock();
 
-    free(mOutputScreenshot);
-    mSourceResX = pResX;
-    mSourceResY = pResY;
-
-    mOutputScreenshot = malloc(mTargetResX * mTargetResY * MSD_BYTES_PER_PIXEL * sizeof(char));
+    SetScreenshotSize(pResX, pResY);
 
     mMutexScreenshot.unlock();
 }
 
 void MediaSourceDesktop::SetScreenshotSize(int pWidth, int pHeight)
 {
-    free(mOriginalScreenshot);
-    mSourceResX = pWidth;
-    mSourceResY = pHeight;
+    if (pWidth > MAX_WIDTH)
+        pWidth = MAX_WIDTH;
+    if (pHeight > MAX_HEIGHT)
+        pHeight = MAX_HEIGHT;
 
     LOG(LOG_VERBOSE, "Setting screenshot size to %d * %d", pWidth, pHeight);
-    mOriginalScreenshot = malloc(mSourceResX * mSourceResY * MSD_BYTES_PER_PIXEL * sizeof(char));
+
+    mSourceResX = pWidth;
+    mSourceResY = pHeight;
+    GetSupportedVideoGrabResolutions();
 }
 
 bool MediaSourceDesktop::SupportsRecording()
@@ -336,6 +348,9 @@ void MediaSourceDesktop::CreateScreenshot()
     int					tCaptureResY = mSourceResY;
 
     mMutexGrabberActive.lock();
+
+//    LOG(LOG_VERBOSE, "Source: %d * %d", mSourceResX, mSourceResY);
+//    LOG(LOG_VERBOSE, "Target: %d * %d", mTargetResX, mTargetResY);
 
     if (!mMediaSourceOpened)
     {
@@ -391,7 +406,6 @@ void MediaSourceDesktop::CreateScreenshot()
 			QDesktopWidget *tDesktop = QApplication::desktop();
 			tCaptureResX = tDesktop->screenGeometry(tDesktop->primaryScreen()).width();
 			tCaptureResY = tDesktop->screenGeometry(tDesktop->primaryScreen()).height();
-			//LOG(LOG_VERBOSE, "Screen resolution: %d * %d", tCaptureResX, tCaptureResY);
 		#endif
 	}
 
@@ -468,14 +482,20 @@ void MediaSourceDesktop::CreateScreenshot()
 			}
 		}
 
-		// get the scaled version of the capture screen segment
-		QPixmap tTargetPixmap = tSourcePixmap.scaled(mTargetResX, mTargetResY);
-
 		// lock screenshot buffer
 		mMutexScreenshot.lock();
-		QImage tTargetImage = QImage((unsigned char*)mOutputScreenshot, mTargetResX, mTargetResY, QImage::Format_RGB32);
+		if (mOutputScreenshot == NULL)
+		    LOG(LOG_ERROR, "Invalid screenshot buffer: %p  %d*%d", mOutputScreenshot, mTargetResX, mTargetResY);
+		int tTargetResX = mTargetResX;
+		if (tTargetResX > MAX_WIDTH)
+		    tTargetResX = MAX_WIDTH;
+        int tTargetResY = mTargetResY;
+        if (tTargetResY > MAX_HEIGHT)
+            tTargetResY = MAX_HEIGHT;
+		QImage tTargetImage = QImage((unsigned char*)mOutputScreenshot, tTargetResX, tTargetResY, QImage::Format_RGB32);
 		QPainter *tTargetPainter = new QPainter(&tTargetImage);
-		tTargetPainter->drawPixmap(0, 0, tTargetPixmap);
+		QPixmap tScaledSourcePixmap = tSourcePixmap.scaled(tTargetResX, tTargetResY);
+		tTargetPainter->drawPixmap(0, 0, tScaledSourcePixmap);
 		delete tTargetPainter;
 		mScreenshotUpdated = true;
 		// notify consumer about new screenshot
@@ -520,12 +540,19 @@ int MediaSourceDesktop::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDro
         return -1;
     }
 
-    if ((pChunkSize != 0 /* the application doesn't give us the chunk size */) && (pChunkSize < mTargetResX * mTargetResY * MSD_BYTES_PER_PIXEL))
+    int tTargetResX = mTargetResX;
+    if (tTargetResX > MAX_WIDTH)
+        tTargetResX = MAX_WIDTH;
+    int tTargetResY = mTargetResY;
+    if (tTargetResY > MAX_HEIGHT)
+        tTargetResY = MAX_HEIGHT;
+
+    if ((pChunkSize != 0 /* the application doesn't give us the chunk size */) && (pChunkSize < tTargetResX * tTargetResY * MSD_BYTES_PER_PIXEL))
     {
         // unlock grabbing
         mGrabMutex.unlock();
 
-        LOG(LOG_ERROR, "Tried to grab while chunk buffer is too small (given: %d needed: %d)", pChunkSize, mTargetResX * mTargetResY * MSD_BYTES_PER_PIXEL);
+        LOG(LOG_ERROR, "Tried to grab while chunk buffer is too small (given: %d needed: %d)", pChunkSize, tTargetResX * tTargetResY * MSD_BYTES_PER_PIXEL);
         return -1;
     }
 
@@ -546,17 +573,17 @@ int MediaSourceDesktop::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDro
 		return -1;
 	}
 
-    memcpy(pChunkBuffer, mOutputScreenshot, mTargetResX * mTargetResY * MSD_BYTES_PER_PIXEL);
+    memcpy(pChunkBuffer, mOutputScreenshot, tTargetResX * tTargetResY * MSD_BYTES_PER_PIXEL);
     mScreenshotUpdated = false;
 
     // unlock again and enable new screenshots
     mMutexScreenshot.unlock();
 
+    // return size of decoded frame
+    pChunkSize = tTargetResX * tTargetResY * MSD_BYTES_PER_PIXEL;
+
     // unlock grabbing
     mGrabMutex.unlock();
-
-    // return size of decoded frame
-    pChunkSize = mTargetResX * mTargetResY * MSD_BYTES_PER_PIXEL;
 
     AnnouncePacket(pChunkSize);
 
@@ -620,7 +647,7 @@ GrabResolutions MediaSourceDesktop::GetSupportedVideoGrabResolutions()
 	#endif
     mSupportedVideoFormats.push_back(tFormat);
 
-    tFormat.Name="Segment";
+    tFormat.Name="Original";
     tFormat.ResX = mSourceResX;
     tFormat.ResY = mSourceResY;
     mSupportedVideoFormats.push_back(tFormat);
@@ -645,6 +672,7 @@ int MediaSourceDesktop::SelectSegment(QWidget *pParent)
     int tOldSourceResY = mSourceResY;
 
     SegmentSelectionDialog *tSelectDialog = new SegmentSelectionDialog(pParent, this);
+    tSelectDialog->Init();
     tResult = tSelectDialog->exec();
     if (tResult == QDialog::Rejected)
     {
@@ -653,7 +681,8 @@ int MediaSourceDesktop::SelectSegment(QWidget *pParent)
         mGrabOffsetY = tOldGrabOffsetY;
         mSourceResX = tOldSourceResX;
         mSourceResY = tOldSourceResY;
-    }
+    }else
+
     delete tSelectDialog;
 
     return tResult;
