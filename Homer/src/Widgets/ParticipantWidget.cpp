@@ -94,6 +94,7 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
     LOG(LOG_VERBOSE, "Creating new participant widget for %s..", pParticipant.toStdString().c_str());
 
     hide();
+    mPlayPauseButtonIsPaused = -1;
     mMosaicMode = false;
     mMosaicModeAVControlsWereVisible = true;
     mMosaicModeGenericTitleWidget = NULL;
@@ -1702,20 +1703,28 @@ void ParticipantWidget::ActionPlayPauseMovieFile(QString pFileName)
     LOG(LOG_VERBOSE, "User triggered play/pause");
     if (mVideoWidget->GetWorker()->IsPaused() || mAudioWidget->GetWorker()->IsPaused())
     {
-        LOG(LOG_VERBOSE, "User triggered play");
+        LOG(LOG_VERBOSE, "User triggered play, button state: %d", mPlayPauseButtonIsPaused);
         mVideoWidget->GetWorker()->PlayFile(pFileName);
         mAudioWidget->GetWorker()->PlayFile(pFileName);
-        mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Pause.png"));
-        if (mFullscreeMovieControlWidget != NULL)
-        	mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Pause.png"));
+        if (mPlayPauseButtonIsPaused != 1)
+        {
+            mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Pause.png"));
+            if (mFullscreeMovieControlWidget != NULL)
+                mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Pause.png"));
+            mPlayPauseButtonIsPaused = 1;
+         }
     }else
     {
-        LOG(LOG_VERBOSE, "User triggered pause");
+        LOG(LOG_VERBOSE, "User triggered pause, button state: %d", mPlayPauseButtonIsPaused);
         mVideoWidget->GetWorker()->PauseFile();
         mAudioWidget->GetWorker()->PauseFile();
-        mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Play.png"));
-        if (mFullscreeMovieControlWidget != NULL)
-        	mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Play.png"));
+        if (mPlayPauseButtonIsPaused != 0)
+        {
+            mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Play.png"));
+            if (mFullscreeMovieControlWidget != NULL)
+                mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Play.png"));
+            mPlayPauseButtonIsPaused = 0;
+        }
     }
 }
 
@@ -2034,6 +2043,27 @@ void ParticipantWidget::UpdateMovieControls()
 		}
 
         ShowStreamPosition(tCurPos, tEndPos);
+
+        // update play/pause button
+        if (mVideoWidget->GetWorker()->IsPaused() || mAudioWidget->GetWorker()->IsPaused())
+        {
+            if (mPlayPauseButtonIsPaused != 0)
+            {
+                mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Play.png"));
+                if (mFullscreeMovieControlWidget != NULL)
+                    mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Play.png"));
+                mPlayPauseButtonIsPaused = 0;
+            }
+        }else
+        {
+            if (mPlayPauseButtonIsPaused != 1)
+            {
+                mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Pause.png"));
+                if (mFullscreeMovieControlWidget != NULL)
+                    mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Pause.png"));
+                mPlayPauseButtonIsPaused = 1;
+            }
+        }
 
     	//#################
     	// make sure the movie slider is displayed

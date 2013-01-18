@@ -252,6 +252,7 @@ private:
     QMenu                   *mMenuSettingsSessionInfo;
     /* A/V controls */
     QAction					*mAssignedActionAVControls;
+    int                     mPlayPauseButtonIsPaused; // used to avoid unnecessary periodic updates
     /* A/V synch. */
     int64_t                 mAVSyncCounter;
     int64_t					mLastAudioSynchronizationTimestamp;
