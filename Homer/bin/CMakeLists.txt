@@ -267,10 +267,10 @@ SET(QT_TRANS_SOURCES
 # integrate Qt translations
 QT4_CREATE_TRANSLATION(QT_LANG_BINS ${QT_TRANS_SOURCES} ${QT_LANG_FILES} OPTIONS -no-obsolete)
 
-# copy translator binaries to destination folder
-#FOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
-#	file(COPY ${QT_LANG_BINS_ENTRY} DESTINATION lang/${QT_LANG_BINS_ENTRY})
-#ENDFOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
+# copy translation binaries to destination folder
+FOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
+	FILE(COPY ${QT_LANG_BINS_ENTRY} DESTINATION ${TARGET_DIRECTORY}lang/)
+ENDFOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
 
 # mark translator binaries for installation process
 IF ((LINUX) AND (DEFINED INSTALL_DATADIR))
