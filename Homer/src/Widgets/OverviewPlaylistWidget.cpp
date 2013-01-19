@@ -123,7 +123,7 @@ OverviewPlaylistWidget::~OverviewPlaylistWidget()
 /// some static helpers
 ///////////////////////////////////////////////////////////////////////////////
 
-static QString sAllLoadVideoFilter = (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.asf *.avi *.bmp *.divx *.dv *.flv *.jpg *.jpeg *.m4v *.mkv *.mov *.mpg *.mpeg *.mp4 *.mp4a *.m2ts *.m2t *.m3u *.ogg *.ogv *.pls *.png *.rm *.rmvb *.swf *.vob *.wmv *.wmx *.3gp)";
+static QString sAllLoadVideoFilter = (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.asf *.avi *.bmp *.divx *.dv *.flv *.jpg *.jpeg *.m4v *.mkv *.mov *.mpg *.mpeg *.mp4 *.mp4a *.m2ts *.m2t *.m3u *.ogg *.ogv *.pls *.png *.rm *.rmvb *.swf *.ts *.vob *.wmv *.wmx *.3gp)";
 static QString sLoadVideoFilters = sAllLoadVideoFilter + ";;"\
                     "Advanced Systems Format (*.asf);;"\
                     "Audio Video Interleave Format (*.avi *.divx);;"\
@@ -132,7 +132,7 @@ static QString sLoadVideoFilters = sAllLoadVideoFilter + ";;"\
                     "Joint Photographic Experts Group (*.jpg *.jpeg);;"\
                     "Matroska Format (*.mkv);;"\
                     "MPEG-Program Stream Format (*.mpg *.mpeg);;"\
-                    "MPEG-2 Transport Stream (*.m2ts *.m2t);;"\
+                    "MPEG-2 Transport Stream (*.m2ts *.m2t *.ts);;"\
                     "M3U Playlist File (*.m3u);;"\
                     "OGG Container format (*.ogg *.ogv);;"\
                     "PLS Playlist File (*.pls);;"\
@@ -184,12 +184,12 @@ bool OverviewPlaylistWidget::IsVideoFile(QString pFileName)
         return false;
 }
 
-static QString sAllLoadAudioFilter =  (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.3gp *.asf *.avi *.divx *.flv *.m2ts *.m2t *.m3u *.m4v *.mka *.mkv *.mov *.mp3 *.mp4 *.mp4a *.mpg *.mpeg *.ogg *.ogv *.pls *.rm *.rmvb *.vob *.wav *.wmv *.wmx)";
+static QString sAllLoadAudioFilter =  (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.3gp *.asf *.avi *.divx *.flv *.m2ts *.m2t *.m3u *.m4v *.mka *.mkv *.mov *.mp3 *.mp4 *.mp4a *.mpg *.mpeg *.ogg *.ogv *.pls *.rm *.rmvb *.ts *.vob *.wav *.wmv *.wmx)";
 static QString sLoadAudioFilters =  sAllLoadAudioFilter + ";;"\
                     "Advanced Systems Format (*.asf);;"\
                     "Audio Video Interleave Format (*.avi *.divx);;"\
 					"Flash Video Format (*.flv);;"\
-                    "MPEG-2 Transport Stream (*.m2ts *.m2t);;"\
+                    "MPEG-2 Transport Stream (*.m2ts *.m2t *.ts);;"\
                     "M3U Playlist File (*.m3u);;"\
                     "Matroska Format (*.mka *.mkv);;"\
                     "MPEG Audio Layer 2/3 Format (*.mp3);;"\
@@ -283,7 +283,7 @@ bool OverviewPlaylistWidget::IsAudioFile(QString pFileName)
         return false;
 }
 
-static QString sAllLoadMediaFilter = (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.asf *.avi *.bmp *.divx *.dv *.flv *.jpg *.jpeg *.m4v *.mka *.mkv *.mov *.mpg *.mpeg *.mp3 *.mp4 *.mp4a *.m2ts *.m2t *.m3u *.ogg *.ogv *.pls *.png *.rm *.rmvb *.swf *.vob *.wav *.wmv *.wmx *.3gp)";
+static QString sAllLoadMediaFilter = (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.asf *.avi *.bmp *.divx *.dv *.flv *.jpg *.jpeg *.m4v *.mka *.mkv *.mov *.mpg *.mpeg *.mp3 *.mp4 *.mp4a *.m2ts *.m2t *.m3u *.ogg *.ogv *.pls *.png *.rm *.rmvb *.swf *.ts *.vob *.wav *.wmv *.wmx *.3gp)";
 static QString sLoadMediaFilters = sAllLoadMediaFilter + ";;"\
                     "Advanced Systems Format (*.asf);;"\
                     "Audio Video Interleave Format (*.avi *.divx);;"\
@@ -293,7 +293,7 @@ static QString sLoadMediaFilters = sAllLoadMediaFilter + ";;"\
                     "Matroska Format (*.mka *.mkv);;"\
                     "MPEG Audio Layer 2/3 Format (*.mp3);;"\
                     "MPEG-Program Stream Format (*.mpg *.mpeg);;"\
-                    "MPEG-2 Transport Stream (*.m2ts *.m2t);;"\
+                    "MPEG-2 Transport Stream (*.m2ts *.m2t *.ts);;"\
                     "M3U Playlist File (*.m3u);;"\
                     "OGG Container format (*.ogg *.ogv);;"\
                     "Portable Network Graphics Format (*.png);;"\
