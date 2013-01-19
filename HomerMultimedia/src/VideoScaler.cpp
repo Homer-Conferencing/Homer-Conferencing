@@ -459,7 +459,7 @@ void* VideoScaler::Run(void* pArgs)
     av_free(tOutputFrame);
 
     // free the output buffer
-    free(tOutputBuffer);
+    av_free(tOutputBuffer);
 
     LOG(LOG_WARN, "VIDEO scaler main loop finished ----------------");
 
