@@ -2005,6 +2005,7 @@ VideoWorkerThread::VideoWorkerThread(QString pName, MediaSource *pVideoSource, V
     mFrameCurrentIndex = FRAME_BUFFER_SIZE - 1;
     mFrameGrabIndex = 0;
     mDropFrames = false;
+    mCurrentFrameRefTaken = false;
     InitFrameBuffers();
 }
 
@@ -2284,46 +2285,54 @@ int VideoWorkerThread::GetCurrentFrameRef(void **pFrame, float *pFrameRate)
 {
     int tResult = -1;
 
+    mCurrentFrameRefTaken = false;
+
     // lock
-    mDeliverMutex.lock();
-    if ((!mSetGrabResolutionAsap) && (!mResetMediaSourceAsap))
+    if (mDeliverMutex.tryLock(100 /* try to lock for 100 ms */))
     {
-        if (mPendingNewFrames)
+        mCurrentFrameRefTaken = true;
+        if ((!mSetGrabResolutionAsap) && (!mResetMediaSourceAsap))
         {
-			#ifdef VIDEO_WIDGET_DEBUG_FRAMES
-				if (mPendingNewFrames > 1)
-					LOG(LOG_VERBOSE, "Found %d pending frames", mPendingNewFrames);
-			#endif
+            if (mPendingNewFrames)
+            {
+                #ifdef VIDEO_WIDGET_DEBUG_FRAMES
+                    if (mPendingNewFrames > 1)
+                        LOG(LOG_VERBOSE, "Found %d pending frames", mPendingNewFrames);
+                #endif
 
-            mFrameCurrentIndex++;
-            if (mFrameCurrentIndex >= FRAME_BUFFER_SIZE)
-                mFrameCurrentIndex = 0;
-            mPendingNewFrames--;
+                mFrameCurrentIndex++;
+                if (mFrameCurrentIndex >= FRAME_BUFFER_SIZE)
+                    mFrameCurrentIndex = 0;
+                mPendingNewFrames--;
 
-            if (mFrameCurrentIndex == mFrameGrabIndex)
-			{
-				#ifdef DEBUG_VIDEOWIDGET_FRAME_DELIVERY
-            		LOG(LOG_WARN, "Current index %d is the current grab index, delivering old frame instead", mFrameCurrentIndex);
-				#endif
-	            mFrameCurrentIndex--;
-	            if (mFrameCurrentIndex < 0)
-	                mFrameCurrentIndex = FRAME_BUFFER_SIZE - 1;
+                if (mFrameCurrentIndex == mFrameGrabIndex)
+                {
+                    #ifdef DEBUG_VIDEOWIDGET_FRAME_DELIVERY
+                        LOG(LOG_WARN, "Current index %d is the current grab index, delivering old frame instead", mFrameCurrentIndex);
+                    #endif
+                    mFrameCurrentIndex--;
+                    if (mFrameCurrentIndex < 0)
+                        mFrameCurrentIndex = FRAME_BUFFER_SIZE - 1;
 
-			}
+                }
+            }else
+            {
+                mMissingFrames++;
+                #ifdef DEBUG_VIDEOWIDGET_FRAME_DELIVERY
+                    LOG(LOG_VERBOSE, "Missing new frame (%d overall missed frames), delivering old frame instead", mMissingFrames);
+                #endif
+            }
+
+            CalculateFrameRate(pFrameRate);
+
+            *pFrame = mFrame[mFrameCurrentIndex];
+            tResult = mFrameNumber[mFrameCurrentIndex];
         }else
-        {
-            mMissingFrames++;
-			#ifdef DEBUG_VIDEOWIDGET_FRAME_DELIVERY
-            	LOG(LOG_VERBOSE, "Missing new frame (%d overall missed frames), delivering old frame instead", mMissingFrames);
-			#endif
-        }
-
-        CalculateFrameRate(pFrameRate);
-
-        *pFrame = mFrame[mFrameCurrentIndex];
-        tResult = mFrameNumber[mFrameCurrentIndex];
+            LOG(LOG_WARN, "Can't deliver new frame, pending frames: %d, grab resolution invalid: %d, have to reset source: %d, source available: %d", mPendingNewFrames, mSetGrabResolutionAsap, mResetMediaSourceAsap, mSourceAvailable);
     }else
-        LOG(LOG_WARN, "Can't deliver new frame, pending frames: %d, grab resolution invalid: %d, have to reset source: %d, source available: %d", mPendingNewFrames, mSetGrabResolutionAsap, mResetMediaSourceAsap, mSourceAvailable);
+    {// timeout
+
+    }
 
 	#ifdef VIDEO_WIDGET_DEBUG_FRAMES
     	LOG(LOG_VERBOSE, "GetCurrentFrame() delivered frame %d from index %d, pending frames: %d, missing frames: %d, grab index: %d", tResult, mFrameCurrentIndex, mPendingNewFrames, mMissingFrames, mFrameGrabIndex);
@@ -2334,8 +2343,13 @@ int VideoWorkerThread::GetCurrentFrameRef(void **pFrame, float *pFrameRate)
 
 void VideoWorkerThread::ReleaseCurrentFrameRef()
 {
-    // unlock
-    mDeliverMutex.unlock();
+    if (mCurrentFrameRefTaken)
+    {
+        // unlock
+        mDeliverMutex.unlock();
+    }
+
+    mCurrentFrameRefTaken = false;
 }
 
 int VideoWorkerThread::GetLastFrameNumber()
