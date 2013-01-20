@@ -1578,9 +1578,10 @@ void* MediaSourceMuxer::Run(void* pArgs)
 										if ((!mRelayingSkipAudioSilence) || (!ContainsOnlySilence((void*)mSamplesTempBuffer, tReadSamplesSize) /* we have to check if the current chunk contains only silence */))
 										{// okay, we should process this audio frame
 											//####################################################################
-											// re-encode the sample
+											// re-encode the frame
 											// ###################################################################
-											// re-encode the sample
+			                                mFrameNumber++;
+											// re-encode the frame
 											#ifdef MSM_DEBUG_PACKETS
 												LOG(LOG_VERBOSE, "Encoding audio frame.. (frame size: %d, channels: %d, enc. buffeR: %p, samples buffer: %p)", mCodecContext->frame_size, mCodecContext->channels, mEncoderChunkBuffer, mSamplesTempBuffer);
 											#endif
@@ -1591,9 +1592,6 @@ void* MediaSourceMuxer::Run(void* pArgs)
 											//printf("encoded to mp3: %d\n\n", tSampleSize);
 											if (tEncoderResult > 0)
 											{
-												// we need to increase the frame number in every possible case, otherwise the time synchronization at receiver side is not possible anymore
-												mFrameNumber++;
-
 												av_init_packet(tPacket);
 
 												tPacket->flags |= AV_PKT_FLAG_KEY;
@@ -1634,8 +1632,10 @@ void* MediaSourceMuxer::Run(void* pArgs)
 											}else
 											{
 			                                    if (tEncoderResult != 0)
+			                                    {
 			                                        LOG(LOG_WARN, "Couldn't re-encode current audio frame because %s(%d)", strerror(AVUNERROR(tEncoderResult)), tEncoderResult);
-			                                    else
+			                                        mFrameNumber--;
+			                                    }else
 			                                    {
 			                                        LOG(LOG_VERBOSE, "Audio frame was buffered in encoder");
 			                                        mEncoderOutputFrameDelay++;
