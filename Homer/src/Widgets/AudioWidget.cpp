@@ -550,12 +550,13 @@ QStringList AudioWidget::GetAudioStatistic()
 	//### Line 3: audio codec and sample rate
     int tInputBitRate = mAudioSource->GetInputBitRate();
     QString tLine_InputCodec = "";
-    tLine_InputCodec = Homer::Gui::AudioWidget::tr("Source codec:") + " " + QString((mAudioSource->GetCodecName() != "") ? mAudioSource->GetCodecName().c_str() : Homer::Gui::AudioWidget::tr("unknown")) + " (" + QString("%1").arg(mAudioSource->GetInputSampleRate()) + " Hz, " + QString("%1").arg(mAudioSource->GetInputChannels())+ " " + Homer::Gui::AudioWidget::tr("channels") + (tInputBitRate > 0 ? ", " + QString("%1 kbit/s").arg(tInputBitRate / 1000): "") + ", " + QString(mAudioSource->GetInputFormatStr().c_str()) +  ")";
+    tLine_InputCodec = Homer::Gui::AudioWidget::tr("Source codec:") + " " + QString((mAudioSource->GetCodecName() != "") ? mAudioSource->GetCodecName().c_str() : Homer::Gui::AudioWidget::tr("unknown"));
+    tLine_InputCodec += " (" + QString("%1").arg((float)mAudioSource->GetInputSampleRate() / 1000) + " " + Homer::Gui::AudioWidget::tr("kHz") + ", " + QString("%1").arg(mAudioSource->GetInputChannels())+ " " + Homer::Gui::AudioWidget::tr("channels") + (tInputBitRate > 0 ? ", " + QString("%1 kbit/s").arg(tInputBitRate / 1000): "") + ", " + QString(mAudioSource->GetInputFormatStr().c_str()) +  ")";
 
     //############################################
 	//### Line 4: audio output
     QString tLine_Playback = "";
-    tLine_Playback = "Playback: " + QString("%1").arg(AUDIO_OUTPUT_SAMPLE_RATE) + " " + Homer::Gui::AudioWidget::tr("Hz, 2 channels");
+    tLine_Playback = "Playback: " + QString("%1").arg((float)AUDIO_OUTPUT_SAMPLE_RATE / 1000) + " " + Homer::Gui::AudioWidget::tr("kHz, 2 channels");
     int64_t tGaps = mAudioWorker->GetPlaybackGapsCounter();
     int tPlaybackBuffers = mAudioWorker->GetPlaybackQueueUsage();
     if (tPlaybackBuffers > 0)
@@ -578,7 +579,12 @@ QStringList AudioWidget::GetAudioStatistic()
     int tMuxResX = 0, tMuxResY = 0;
     mAudioSource->GetMuxingResolution(tMuxResX, tMuxResY);
     if (mAudioSource->SupportsMuxing())
-        tLine_OutputCodec = "Streaming codec: " + ((tMuxCodecName != "") ? tMuxCodecName : Homer::Gui::AudioWidget::tr("unknown")) + (mAudioSource->GetMuxingBufferCounter() ? (" (" + QString("%1").arg(mAudioSource->GetMuxingBufferCounter()) + "/" + QString("%1").arg(mAudioSource->GetMuxingBufferSize()) + " " + Homer::Gui::AudioWidget::tr("buffered frames") + ")") : "") + " (" + QString("%1").arg(mAudioSource->GetOutputSampleRate()) + " " + Homer::Gui::AudioWidget::tr("Hz") + ", " + QString("%1").arg(mAudioSource->GetOutputChannels())+ " " + Homer::Gui::AudioWidget::tr("channels") + ")";
+    {
+        tLine_OutputCodec = Homer::Gui::AudioWidget::tr("Streaming codec:")+ " " + ((tMuxCodecName != "") ? tMuxCodecName : Homer::Gui::AudioWidget::tr("unknown"));
+        tLine_OutputCodec +=  + " (" + QString("%1").arg((float)mAudioSource->GetOutputSampleRate() / 1000) + " " + Homer::Gui::AudioWidget::tr("kHz") + ", " + QString("%1").arg(mAudioSource->GetOutputChannels())+ " " + Homer::Gui::AudioWidget::tr("channels");
+        tLine_OutputCodec += ", " + QString("%1").arg(mAudioSource->GetRelayFrameDelay()) + " " + Homer::Gui::AudioWidget::tr("frames delay");
+        tLine_OutputCodec += (mAudioSource->GetMuxingBufferCounter() ? (", " + QString("%1").arg(mAudioSource->GetMuxingBufferCounter()) + "/" + QString("%1").arg(mAudioSource->GetMuxingBufferSize()) + " " + Homer::Gui::AudioWidget::tr("buffered frames") + ")") : ")");
+    }
 
     //############################################
     //### Line 7: network peer

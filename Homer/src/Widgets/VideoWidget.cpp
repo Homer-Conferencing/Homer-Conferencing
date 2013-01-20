@@ -803,7 +803,11 @@ QStringList VideoWidget::GetVideoStatistic()
     int tMuxResX = 0, tMuxResY = 0;
     mVideoSource->GetMuxingResolution(tMuxResX, tMuxResY);
     if (mVideoSource->SupportsMuxing())
-        tLine_OutputCodec = Homer::Gui::VideoWidget::tr("Streaming codec:")+ " " + ((tMuxCodecName != "") ? tMuxCodecName : Homer::Gui::VideoWidget::tr("unknown")) + " (" + QString("%1").arg(tMuxResX) + "*" + QString("%1").arg(tMuxResY) + ")" + (mVideoSource->GetMuxingBufferCounter() ? (" (" + QString("%1").arg(mVideoSource->GetMuxingBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetMuxingBufferSize()) + " " + Homer::Gui::VideoWidget::tr("buffered frames") + ")") : "");
+    {
+        tLine_OutputCodec = Homer::Gui::VideoWidget::tr("Streaming codec:")+ " " + ((tMuxCodecName != "") ? tMuxCodecName : Homer::Gui::VideoWidget::tr("unknown")) + " (" + QString("%1").arg(tMuxResX) + "*" + QString("%1").arg(tMuxResY);
+        tLine_OutputCodec += ", " + QString("%1").arg(mVideoSource->GetRelayFrameDelay()) + " " + Homer::Gui::VideoWidget::tr("frames delay");
+        tLine_OutputCodec += (mVideoSource->GetMuxingBufferCounter() ? (", " + QString("%1").arg(mVideoSource->GetMuxingBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetMuxingBufferSize()) + " " + Homer::Gui::VideoWidget::tr("buffered frames") + ")") : ")");
+    }
 
     //############################################
     //### Line 8: network peer
