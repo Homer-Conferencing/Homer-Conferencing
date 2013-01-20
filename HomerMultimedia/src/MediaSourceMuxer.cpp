@@ -1514,14 +1514,14 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 }else
                                 {
                                     if (tEncoderResult != 0)
+                                    {
                                         LOG(LOG_WARN, "Couldn't re-encode current video frame %ld because %s(%d)", tYUVFrame->pts, strerror(AVUNERROR(tEncoderResult)), tEncoderResult);
-                                    else
+                                        mFrameNumber--;
+                                    }else
                                     {
                                         LOG(LOG_VERBOSE, "Video frame was buffered in encoder");
                                         mEncoderOutputFrameDelay++;
                                     }
-                                    mFrameNumber--;
-
                                 }
                                 #ifdef MSM_DEBUG_TIMING
                                     int64_t tTime4 = Time::GetTimeStamp();
