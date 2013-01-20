@@ -98,6 +98,7 @@ public:
 
     /* relaying */
     virtual bool SupportsRelaying();
+    virtual int GetRelayFrameDelay(); // 3 means "the output is delayed by 3 frames)
     void SetRelayActivation(bool pState);
     void SetRelaySkipSilence(bool pState);
     void SetRelaySkipSilenceThreshold(int pValue);
@@ -233,7 +234,7 @@ private:
     bool				mEncoderHasKeyFrame;
     Mutex               mEncoderFifoAvailableMutex;
     AVStream            *mEncoderStream;
-    int                 mEncoderAudioFrameSize;
+    int					mEncoderOutputFrameDelay; // in frames
     /* device control */
     MediaSources        mMediaSources;
     Mutex               mMediaSourcesMutex;

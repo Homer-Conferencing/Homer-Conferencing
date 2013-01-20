@@ -179,6 +179,11 @@ bool MediaSourceMuxer::SupportsRelaying()
     return true;
 }
 
+int MediaSourceMuxer::GetRelayFrameDelay()
+{
+	return mEncoderOutputFrameDelay;
+}
+
 MediaSource* MediaSourceMuxer::GetMediaSource()
 {
     return mMediaSource;
@@ -1249,7 +1254,7 @@ int64_t MediaSourceMuxer::CalculateEncoderPts(int pFrameNumber)
 {
     int64_t tResult = 0;
 
-    tResult = mFrameNumber * 1000 / GetFrameRatePlayout(); // frame number * time between frames
+    tResult = pFrameNumber * 1000 / GetFrameRatePlayout(); // frame number * time between frames
 
     return tResult;
 }
@@ -1386,6 +1391,9 @@ void* MediaSourceMuxer::Run(void* pArgs)
     // flush ffmpeg internal buffers
     avcodec_flush_buffers(mCodecContext);
 
+    // reset buffer counter
+    mEncoderOutputFrameDelay = 0;
+
     while(mEncoderNeeded)
     {
 		#ifdef MSM_DEBUG_TIMING
@@ -1428,11 +1436,11 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 #endif
 
                                 // calculate the packet's PTS value
-                                int64_t tPacketPts = CalculateEncoderPts(mFrameNumber);
+                                int64_t tInputFramePts = CalculateEncoderPts(mFrameNumber);
 
                                 tYUVFrame->coded_picture_number = mFrameNumber;
                                 tYUVFrame->display_picture_number = mFrameNumber;
-                                tYUVFrame->pts = tPacketPts;
+                                tYUVFrame->pts = tInputFramePts;
 
                                 #ifdef MSM_DEBUG_PACKETS
                                     LOG(LOG_VERBOSE, "Scaler returned video frame..");
@@ -1458,6 +1466,9 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 // #########################################
                                 if (tEncoderResult > 0)
                                 {
+                                	// compensate frame delay, which is caused by video encoder, and derive a correct PTS value for output packets
+                                	int tOutputPacketPts = CalculateEncoderPts(mFrameNumber - mEncoderOutputFrameDelay);
+
                                     av_init_packet(tPacket);
 
                                     // mark i-frame
@@ -1471,18 +1482,20 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                     tPacket->stream_index = 0;
                                     tPacket->data = (uint8_t *)mEncoderChunkBuffer;
                                     tPacket->size = tEncoderResult;
-                                    tPacket->pts = tPacketPts;
-                                    tPacket->dts = tPacketPts;
+                                    tPacket->pts = tOutputPacketPts;
+                                    tPacket->dts = tOutputPacketPts;
 
                                     #ifdef MSM_DEBUG_PACKET_DISTRIBUTION
                                         LOG(LOG_VERBOSE, "Sending video packet: %5d to %2d sink(s):", mFrameNumber, mMediaSinks.size());
                                         LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
                                         LOG(LOG_VERBOSE, "      ..flags: %d", tPacket->flags);
-                                        LOG(LOG_VERBOSE, "      ..pts: %ld stream pts: %ld", tPacket->pts, mEncoderStream->pts);
+                                        LOG(LOG_VERBOSE, "      ..pts: %ld (%d frames delay)", tPacket->pts, mEncoderOutputFrameDelay);
                                         LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket->dts);
                                         LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
                                         LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket->pos);
                                         LOG(LOG_VERBOSE, "      ..key frame: %d", mEncoderHasKeyFrame);
+                                        LOG(LOG_VERBOSE, "      ..codec delay: %d", mCodecContext->delay);
+                                        LOG(LOG_VERBOSE, "      ..codec max. b frames: %d", mCodecContext->max_b_frames);
                                     #endif
 
                                     // write the encoded frame
@@ -1503,7 +1516,10 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                     if (tEncoderResult != 0)
                                         LOG(LOG_WARN, "Couldn't re-encode current video frame %ld because %s(%d)", tYUVFrame->pts, strerror(AVUNERROR(tEncoderResult)), tEncoderResult);
                                     else
-                                        LOG(LOG_VERBOSE, "Video encoder delivered no frame");
+                                    {
+                                        LOG(LOG_VERBOSE, "Video frame was buffered in encoder");
+                                        mEncoderOutputFrameDelay++;
+                                    }
                                     mFrameNumber--;
 
                                 }
@@ -1616,7 +1632,15 @@ void* MediaSourceMuxer::Run(void* pArgs)
 												// free packet buffer
 												av_free_packet(tPacket);
 											}else
-												LOG(LOG_WARN, "Couldn't re-encode current audio sample");
+											{
+			                                    if (tEncoderResult != 0)
+			                                        LOG(LOG_WARN, "Couldn't re-encode current audio frame because %s(%d)", strerror(AVUNERROR(tEncoderResult)), tEncoderResult);
+			                                    else
+			                                    {
+			                                        LOG(LOG_VERBOSE, "Audio frame was buffered in encoder");
+			                                        mEncoderOutputFrameDelay++;
+			                                    }
+											}
 										}else
 										{// we should skip this audio frame because it includes only silence
 											mRelayingSkipAudioSilenceSkippedChunks++;

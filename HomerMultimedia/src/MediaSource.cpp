@@ -1628,6 +1628,11 @@ bool MediaSource::SupportsRelaying()
     return false;
 }
 
+int MediaSource::GetRelayFrameDelay()
+{
+	return 0;
+}
+
 void MediaSource::RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacketSize, bool pIsKeyFrame)
 {
     MediaSinks::iterator tIt;

@@ -298,7 +298,10 @@ public:
     void DeleteAllRegisteredMediaSinks();
     void SetRtpActivation(bool pState);
     bool GetRtpActivation();
+
+    /* relaying */
     virtual bool SupportsRelaying();
+    virtual int GetRelayFrameDelay(); // 3 means "the output is delayed by 3 frames)
 
     /* recording control WITH reencoding but WITHOUT rtp support */
     virtual bool StartRecording(std::string pSaveFileName, int SaveFileQuality = 100, bool pRealTime = true /* 1 = frame rate emulation, 0 = no pts adaption */); // needs valid mCodecContext, otherwise RGB32 pictures are assumed as input; source resolution must not change during recording is activated
