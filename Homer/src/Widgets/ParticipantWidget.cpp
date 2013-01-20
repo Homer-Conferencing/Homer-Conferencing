@@ -1463,7 +1463,9 @@ void ParticipantWidget::AVSync()
                     }
                 }else
                 {
-                    LOG(LOG_VERBOSE, "Reseting A/V synch. counter");
+                    #ifdef PARTICIPANT_WIDGET_DEBUG_AV_SYNC
+                        LOG(LOG_VERBOSE, "Reseting A/V synch. counter");
+                    #endif
                     mAVASyncCounter = 0;
                     mAVAsyncCounterSinceLastSynchronization = 0;
                 }
