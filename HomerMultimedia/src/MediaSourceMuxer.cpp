@@ -564,6 +564,10 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
         return false;
     }
 
+    // force low delay
+    if (tCodec->capabilities & CODEC_CAP_DELAY)
+        mCodecContext->flags |= CODEC_FLAG_LOW_DELAY;
+
     #ifdef MEDIA_SOURCE_MUX_MULTI_THREADED_VIDEO_ENCODING
         // active multi-threading per default for the video encoding: leave two cpus for concurrent tasks (video grabbing/decoding, audio tasks)
         av_dict_set(&tOptions, "threads", "auto", 0);

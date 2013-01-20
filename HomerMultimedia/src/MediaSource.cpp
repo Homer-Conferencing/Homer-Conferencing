@@ -2980,6 +2980,9 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..current device: %s", mCurrentDevice.c_str());
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..qmin: %d", mCodecContext->qmin);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..qmax: %d", mCodecContext->qmax);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..decoding delay: %d", mCodecContext->delay);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..decoding profile: %d", mCodecContext->profile);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..decoding level: %d", mCodecContext->level);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec caps: 0x%x", mCodecContext->codec->capabilities);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..MT count: %d", mCodecContext->thread_count);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..MT method: %d", mCodecContext->thread_type);
@@ -3219,7 +3222,7 @@ bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
     }
 
     // discard all corrupted frames
-    //mFormatContext->flags |= AVFMT_FLAG_DISCARD_CORRUPT;
+    mFormatContext->flags |= AVFMT_FLAG_DISCARD_CORRUPT;
 
     //LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Current format context flags: %d, packet buffer: %p, raw packet buffer: %p, nb streams: %d", mFormatContext->flags, mFormatContext->packet_buffer, mFormatContext->raw_packet_buffer, mFormatContext->nb_streams);
     LOG(LOG_VERBOSE, "    ..calling avformat_find_stream_info() for %s source", GetMediaTypeStr().c_str());
@@ -3441,6 +3444,10 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 //    // bitstreams where sample boundaries can fall in the middle of packets
 //    if ((mMediaType == MEDIA_VIDEO) && (tCodec->capabilities & CODEC_CAP_TRUNCATED))
 //        mCodecContext->flags |= CODEC_FLAG_TRUNCATED;
+
+    // force low delay
+    if (tCodec->capabilities & CODEC_CAP_DELAY)
+        mCodecContext->flags |= CODEC_FLAG_LOW_DELAY;
 
     if (tCodec->capabilities & CODEC_CAP_DR1)
     	mCodecContext->flags |= CODEC_FLAG_EMU_EDGE;
