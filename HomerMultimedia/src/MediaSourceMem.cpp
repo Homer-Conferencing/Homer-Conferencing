@@ -62,6 +62,9 @@ using namespace Homer::Base;
 
 #define MEDIA_SOURCE_MEM_PRE_BUFFER_TIME                                    (MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME / 2) // leave some seconds for high system load situations so that this part of the input queue can be used for compensating it
 
+// how long do we want to wait for the first key frame when starting decoder loop?
+#define MSM_WAITING_FOR_FIRST_KEY_FRAME_TIMEOUT                             7 // seconds
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // for debugging purposes: define threshold for dropping a video frame
@@ -1278,6 +1281,10 @@ void* MediaSourceMem::Run(void* pArgs)
     // signal that decoder thread has finished init.
     mDecoderNeeded = true;
 
+    // wait for next key frame before we do anything
+    mDecoderWaitForNextKeyFrame = true;
+    mDecoderWaitForNextKeyFrameTimeout = av_gettime() + MSM_WAITING_FOR_FIRST_KEY_FRAME_TIMEOUT * 1000 * 1000;
+
     // reset buffer counter
     mDecoderOutputFrameDelay = 0;
 
@@ -1404,6 +1411,8 @@ void* MediaSourceMem::Run(void* pArgs)
                             }else
                             {// derive the frame number from the RTP timestamp, which works independent from packet loss
                                 tCurPacketPts = CalculateFrameNumberFromRTP();
+                                tPacket->pts = tCurPacketPts;
+                                tPacket->dts = tCurPacketPts;
                                 #ifdef MSMEM_DEBUG_PRE_BUFFERING
                                     LOG(LOG_VERBOSE, "Got from RTP data the frame number: %d", tCurPacketPts);
                                 #endif
@@ -1515,6 +1524,7 @@ void* MediaSourceMem::Run(void* pArgs)
                     #endif
 
                     mDecoderFlushBuffersAfterSeeking = false;
+                    mDecoderOutputFrameDelay = 0;
                 }
 
                 // #########################################
@@ -1670,7 +1680,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                     #endif
 
                                     // use the frame numbers which were derived from RTP timestamps
-                                    tCurFramePts = tCurPacketPts;
+                                    tCurFramePts = tCurPacketPts;// -mDecoderOutputFrameDelay;
                                 }
 
                                 if ((tSourceFrame->pkt_pts != tSourceFrame->pkt_dts) && (tSourceFrame->pkt_pts != (int64_t)AV_NOPTS_VALUE) && (tSourceFrame->pkt_dts != (int64_t)AV_NOPTS_VALUE))
@@ -1718,7 +1728,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                         LOG(LOG_VERBOSE, "New video frame..");
                                         LOG(LOG_VERBOSE, "      ..key frame: %d", tSourceFrame->key_frame);
                                         LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(tSourceFrame).c_str());
-                                        LOG(LOG_VERBOSE, "      ..pts: %ld", tSourceFrame->pts);
+                                        LOG(LOG_VERBOSE, "      ..pts: %ld, curFramePTS: %ld", tSourceFrame->pts, tCurFramePts);
                                         LOG(LOG_VERBOSE, "      ..pkt pts: %ld", tSourceFrame->pkt_pts);
                                         LOG(LOG_VERBOSE, "      ..pkt dts: %ld", tSourceFrame->pkt_dts);
                                         LOG(LOG_VERBOSE, "      ..resolution: %d * %d", tSourceFrame->width, tSourceFrame->height);
@@ -1830,7 +1840,8 @@ void* MediaSourceMem::Run(void* pArgs)
                                     }
                                 }else
                                 {// tFrameFinished != 1
-                                    LOG(LOG_VERBOSE, "Video frame was buffered");
+                                    // we shouldn't have frame buffering because we use CODEC_FLAG_LOW_DELAY
+                                    LOG(LOG_WARN, "Video frame was buffered, codec context flags: 0x%X", mCodecContext->flags);
                                     mDecoderOutputFrameDelay++;
                                     tCurrentChunkSize = 0;
                                 }
@@ -1929,7 +1940,8 @@ void* MediaSourceMem::Run(void* pArgs)
                                         #ifdef MSMEM_DEBUG_PRE_BUFFERING
                                             LOG(LOG_VERBOSE, "Setting current frame PTS to packet PTS: %ld", tCurPacketPts);
                                         #endif
-                                        tCurFramePts = tCurPacketPts;
+
+                                        tCurFramePts = tCurPacketPts;// - mDecoderOutputFrameDelay;
 
                                         int tLoops = 0;
                                         while (av_fifo_size(tSampleFifo) >= MEDIA_SOURCE_SAMPLES_BUFFER_SIZE)
