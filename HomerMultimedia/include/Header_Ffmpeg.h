@@ -214,7 +214,10 @@ inline int HM_avcodec_open(AVCodecContext *avctx, AVCodec *codec, AVDictionary *
 inline int HM_avcodec_decode_video(AVCodecContext *avctx, AVFrame *picture, int *got_picture_ptr, AVPacket *avpkt)
 {
     #if (LIBAVCODEC_VERSION_INT < AV_VERSION_INT(52, 21, 0))
-        return avcodec_decode_video(avctx, picture, got_picture_ptr, avpkt->data, avpkt->size);
+        int tResult = avcodec_decode_video(avctx, picture, got_picture_ptr, avpkt->data, avpkt->size);
+        if ((got_picture_ptr != NULL) && (tResult >= 0))
+            *got_picture_ptr = 1;
+        return tResult;
     #else
         return avcodec_decode_video2(avctx, picture, got_picture_ptr, avpkt);
     #endif
