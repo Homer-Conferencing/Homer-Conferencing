@@ -238,7 +238,7 @@ void Logger::AddMessage(int pLevel, const char *pSource, int pLine, const char* 
     tFinalMessage = toString(tMessageBuffer);
 
     // lock
-    if (mLoggerMutex.tryLock(250))
+    if (mLoggerMutex.lock(250))
     {
         if ((mLastMessage != tFinalMessage) || (mLastSource != tFinalSource) || (mLastLine != pLine))
         {

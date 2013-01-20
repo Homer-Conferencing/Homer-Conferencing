@@ -60,15 +60,17 @@ public:
     virtual ~Mutex( );
 
     /* every function returns TRUE if successful */
-    bool lock();
+    bool lock(int pTimeout = 0/* 0 means infinite waiting time */);
     bool unlock();
-    bool tryLock(int pMSecs = 0);
 
     /* for debbuging */
     void AssignName(std::string pName);
 
 private:
 friend class Condition;
+
+    bool tryLock(int pMSecs = 0);
+
     OS_DEP_MUTEX    mMutex;
     int             mOwnerThreadId;
     std::string     mName;

@@ -79,9 +79,7 @@ bool EventManager::Fire(GeneralEvent* pEvent)
     LOG(LOG_VERBOSE, "Firing new meeting event");
 
     // lock
-    // return false if timeout occurred while waiting for mutex
-    if (!mEventsMutex.tryLock(100))
-        return false;
+    mEventsMutex.lock();
 
     while (mEvents.size() > MEETING_EVENT_QUEUE_LENGTH)
     {

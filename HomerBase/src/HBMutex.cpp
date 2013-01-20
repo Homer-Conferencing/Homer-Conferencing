@@ -72,7 +72,7 @@ Mutex::~Mutex()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool Mutex::lock()
+bool Mutex::lock(int pTimeout)
 {
     int tThreadId = Thread::GetTId();
 
@@ -86,12 +86,21 @@ bool Mutex::lock()
 
     mOwnerThreadId = tThreadId;
 
-    #if defined(LINUX) || defined(APPLE) || defined(BSD)
-		return !pthread_mutex_lock(&mMutex);
-	#endif
-	#if defined(WIN32) ||defined(WIN64)
-		return (WaitForSingleObject(mMutex, INFINITE) != WAIT_FAILED);
-	#endif
+    if (pTimeout > 0)
+    {
+        return tryLock(pTimeout);
+    }else
+    {
+        #if defined(LINUX) || defined(APPLE) || defined(BSD)
+            return !pthread_mutex_lock(&mMutex);
+        #endif
+        #if defined(WIN32) ||defined(WIN64)
+            return (WaitForSingleObject(mMutex, INFINITE) != WAIT_FAILED);
+        #endif
+    }
+
+    LOG(LOG_ERROR, "We should never reach this point");
+    return false;
 }
 
 bool Mutex::unlock()

@@ -1567,7 +1567,7 @@ vector<string> MediaSource::ListRegisteredMediaSinks()
     MediaSinks::iterator tIt;
 
     // lock
-    if (mMediaSinksMutex.tryLock(250))
+    if (mMediaSinksMutex.lock(100))
     {
         if(mMediaSinks.size() > 0)
         {
