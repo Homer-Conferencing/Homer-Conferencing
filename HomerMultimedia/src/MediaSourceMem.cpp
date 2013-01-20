@@ -1525,9 +1525,6 @@ void* MediaSourceMem::Run(void* pArgs)
                 {
                     case MEDIA_VIDEO:
                         {
-                            // ############################
-                            // ### DECODE FRAME
-                            // ############################
                             if ((!tInputIsPicture) || (!mDecoderSinglePictureGrabbed))
                             {// we try to decode packet(s) from input stream -> either the desired picture or a single frame from the stream
                                 // log statistics
@@ -1544,7 +1541,9 @@ void* MediaSourceMem::Run(void* pArgs)
                                     mEOFReached = false;
                                 }
 
-                                // Decode the next chunk of data
+                                // ############################
+                                // ### DECODE FRAME
+                                // ############################
                                 tFrameFinished = 0;
                                 tDecoderResult = HM_avcodec_decode_video(mCodecContext, tSourceFrame, &tFrameFinished, tPacket);
 
@@ -1560,7 +1559,9 @@ void* MediaSourceMem::Run(void* pArgs)
                                     LOG(LOG_VERBOSE, "      ..display pic number: %d", tSourceFrame->display_picture_number);
                                 #endif
 
-                                // store the data planes and line sizes for later usage (for decoder loops >= 2)
+                                // ############################
+                                // ### store data planes and line size (for decoder loops >= 2)
+                                // ############################
                                 if ((tInputIsPicture) && (mDecoderSinglePictureGrabbed))
                                 {
                                     for (int i = 0; i < AV_NUM_DATA_POINTERS; i++)
@@ -1587,6 +1588,9 @@ void* MediaSourceMem::Run(void* pArgs)
                                     LOG(LOG_VERBOSE, "Video frame %d decoded", tSourceFrame->coded_picture_number);
                                 #endif
 
+                                // ############################
+                                // ### check codec ID
+                                // ############################
                                 // do we have a video codec change at sender side?
                                 if ((mSourceCodecId != 0) && (mSourceCodecId != mCodecContext->codec_id))
                                 {
@@ -1601,6 +1605,9 @@ void* MediaSourceMem::Run(void* pArgs)
 									mSourceCodecId = mCodecContext->codec_id;
                                 }
 
+                                // ############################
+                                // ### check video resolution
+                                // ############################
                                 // check if video resolution has changed within input stream (at remode side for network streams!)
                                 if ((mResXLastGrabbedFrame != mCodecContext->width) || (mResYLastGrabbedFrame != mCodecContext->height))
                                 {
@@ -1631,6 +1638,9 @@ void* MediaSourceMem::Run(void* pArgs)
                                     mResYLastGrabbedFrame = mCodecContext->height;
                                 }
 
+                                // ############################
+                                // ### calculate PTS value
+                                // ############################
                                 if (!mRtpActivated)
                                 {
                                     // save PTS value to deliver it later to the frame grabbing thread
@@ -1667,7 +1677,9 @@ void* MediaSourceMem::Run(void* pArgs)
                                     LOG(LOG_VERBOSE, "PTS(%ld) and DTS(%ld) differ after %s decoding step", tSourceFrame->pkt_pts, tSourceFrame->pkt_dts, GetMediaTypeStr().c_str());
                             }else
                             {// reuse the stored picture
-                                // restoring for ffmpeg the data planes and line sizes from the stored values
+                                // ############################
+                                // ### restore data planes and line sizes
+                                // ############################
                                 #ifdef MSMEM_DEBUG_PACKETS
                                     LOG(LOG_VERBOSE, "Restoring the source frame's data planes and line sizes from the stored values");
                                 #endif
@@ -1690,62 +1702,64 @@ void* MediaSourceMem::Run(void* pArgs)
                                 tDecoderResult = INT_MAX;
                             }
 
-                            // store the derived PTS value in the fields of the source frame
-                            tSourceFrame->pts = tCurFramePts;
-                            tSourceFrame->coded_picture_number = tCurFramePts;
-                            tSourceFrame->display_picture_number = tCurFramePts;
-
-                            #ifdef MSMEM_DEBUG_VIDEO_FRAME_RECEIVER
-                                LOG(LOG_VERBOSE, "New video frame..");
-                                LOG(LOG_VERBOSE, "      ..key frame: %d", tSourceFrame->key_frame);
-                                LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(tSourceFrame).c_str());
-                                LOG(LOG_VERBOSE, "      ..pts: %ld", tSourceFrame->pts);
-                                LOG(LOG_VERBOSE, "      ..pkt pts: %ld", tSourceFrame->pkt_pts);
-                                LOG(LOG_VERBOSE, "      ..pkt dts: %ld", tSourceFrame->pkt_dts);
-                                LOG(LOG_VERBOSE, "      ..resolution: %d * %d", tSourceFrame->width, tSourceFrame->height);
-                                LOG(LOG_VERBOSE, "      ..coded pic number: %d", tSourceFrame->coded_picture_number);
-                                LOG(LOG_VERBOSE, "      ..display pic number: %d", tSourceFrame->display_picture_number);
-                            #endif
-
-                                                                        // wait for next key frame packets (either i-frame or p-frame
-                            if (mDecoderWaitForNextKeyFrame)
-                            {// we are still waiting for the next key frame after seeking in the input stream
-                                if (IsKeyFrame(tSourceFrame))
+                            // ############################
+                            // ### process valid frame
+                            // ############################
+                            if (tDecoderResult >= 0)
+                            {
+                                if (tFrameFinished == 1)
                                 {
-                                    mDecoderWaitForNextKeyFrame = false;
-                                    mDecoderWaitForNextKeyFrameTimeout = 0;
-                                }else
-                                {
-                                    if (av_gettime() > mDecoderWaitForNextKeyFrameTimeout)
-                                    {
-                                        LOG(LOG_WARN, "We haven't found a key frame in the input stream within a specified time, giving up, continuing anyways");
-                                        mDecoderWaitForNextKeyFrame = false;
-                                        mDecoderWaitForNextKeyFrameTimeout = 0;
+                                    // store the derived PTS value in the fields of the source frame
+                                    tSourceFrame->pts = tCurFramePts;
+                                    tSourceFrame->coded_picture_number = tCurFramePts;
+                                    tSourceFrame->display_picture_number = tCurFramePts;
+
+                                    #ifdef MSMEM_DEBUG_VIDEO_FRAME_RECEIVER
+                                        LOG(LOG_VERBOSE, "New video frame..");
+                                        LOG(LOG_VERBOSE, "      ..key frame: %d", tSourceFrame->key_frame);
+                                        LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(tSourceFrame).c_str());
+                                        LOG(LOG_VERBOSE, "      ..pts: %ld", tSourceFrame->pts);
+                                        LOG(LOG_VERBOSE, "      ..pkt pts: %ld", tSourceFrame->pkt_pts);
+                                        LOG(LOG_VERBOSE, "      ..pkt dts: %ld", tSourceFrame->pkt_dts);
+                                        LOG(LOG_VERBOSE, "      ..resolution: %d * %d", tSourceFrame->width, tSourceFrame->height);
+                                        LOG(LOG_VERBOSE, "      ..coded pic number: %d", tSourceFrame->coded_picture_number);
+                                        LOG(LOG_VERBOSE, "      ..display pic number: %d", tSourceFrame->display_picture_number);
+                                    #endif
+
+                                    // wait for next key frame packets (either an i-frame or a p-frame)
+                                    if (mDecoderWaitForNextKeyFrame)
+                                    {// we are still waiting for the next key frame after seeking in the input stream
+                                        if (IsKeyFrame(tSourceFrame))
+                                        {
+                                            mDecoderWaitForNextKeyFrame = false;
+                                            mDecoderWaitForNextKeyFrameTimeout = 0;
+                                        }else
+                                        {
+                                            if (av_gettime() > mDecoderWaitForNextKeyFrameTimeout)
+                                            {
+                                                LOG(LOG_WARN, "We haven't found a key frame in the input stream within a specified time, giving up, continuing anyways");
+                                                mDecoderWaitForNextKeyFrame = false;
+                                                mDecoderWaitForNextKeyFrameTimeout = 0;
+                                            }
+                                        }
+
+                                        if (!mDecoderWaitForNextKeyFrame)
+                                        {
+                                            LOG(LOG_VERBOSE, "Read first %s key frame at frame number %ld with flags %d from input stream after seeking", GetMediaTypeStr().c_str(), tCurFramePts, tPacket->flags);
+                                        }else
+                                        {
+                                            #ifdef MSMEM_DEBUG_SEEKING
+                                                LOG(LOG_VERBOSE, "Dropping %s frame %ld because we are waiting for next key frame after seeking", GetMediaTypeStr().c_str(), tCurFramePts);
+                                            #endif
+                                            #ifdef MSMEM_DEBUG_FRAME_QUEUE
+                                                if (mDecoderWaitForNextKeyFrame)
+                                                    LOG(LOG_VERBOSE, "No %s frame will be written to frame queue, we ware waiting for the next key frame, current frame type: %s, EOF: %d", GetMediaTypeStr().c_str(), GetFrameType(tSourceFrame).c_str(), mEOFReached);
+                                            #endif
+
+                                        }
                                     }
-                                }
-
-                                if (!mDecoderWaitForNextKeyFrame)
-                                {
-                                    LOG(LOG_VERBOSE, "Read first %s key frame at frame number %ld with flags %d from input stream after seeking", GetMediaTypeStr().c_str(), tCurFramePts, tPacket->flags);
-                                }else
-                                {
-                                    #ifdef MSMEM_DEBUG_SEEKING
-                                        LOG(LOG_VERBOSE, "Dropping %s frame %ld because we are waiting for next key frame after seeking", GetMediaTypeStr().c_str(), tCurFramePts);
-                                    #endif
-                                    #ifdef MSMEM_DEBUG_FRAME_QUEUE
-                                        if (mDecoderWaitForNextKeyFrame)
-                                            LOG(LOG_VERBOSE, "No %s frame will be written to frame queue, we ware waiting for the next key frame, current frame type: %s, EOF: %d", GetMediaTypeStr().c_str(), GetFrameType(tSourceFrame).c_str(), mEOFReached);
-                                    #endif
-
-                                }
-                                tCurrentChunkSize = 0;
-                            }else
-                            {// we are not waiting for next key frame and can proceed as usual
-                                // do we have valid input from the video decoder?
-                                if (tDecoderResult >= 0)
-                                {
-                                    if (tFrameFinished == 1)
-                                    {
+                                    if (!mDecoderWaitForNextKeyFrame)
+                                    {// we are not waiting for next key frame and can proceed as usual
                                         // ############################
                                         // ### ANNOUNCE FRAME (statistics)
                                         // ############################
@@ -1769,7 +1783,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                                 LOG(LOG_VERBOSE, "Video frame line size: %d, %d, %d, %d", tSourceFrame->linesize[0], tSourceFrame->linesize[1], tSourceFrame->linesize[2], tSourceFrame->linesize[3]);
                                             #endif
 
-    //                                        //LOG(LOG_VERBOSE, "New %s RGB frame: dts: %ld, pts: %ld, pos: %ld, pic. nr.: %d", GetMediaTypeStr().c_str(), tRGBFrame->pkt_dts, tRGBFrame->pkt_pts, tRGBFrame->pkt_pos, tRGBFrame->display_picture_number);
+        //                                        //LOG(LOG_VERBOSE, "New %s RGB frame: dts: %ld, pts: %ld, pos: %ld, pic. nr.: %d", GetMediaTypeStr().c_str(), tRGBFrame->pkt_dts, tRGBFrame->pkt_pts, tRGBFrame->pkt_pos, tRGBFrame->display_picture_number);
 
                                             if ((tRes = avpicture_layout((AVPicture*)tSourceFrame, mCodecContext->pix_fmt, mSourceResX, mSourceResY, tChunkBuffer, tChunkBufferSize)) < 0)
                                             {
@@ -1811,15 +1825,19 @@ void* MediaSourceMem::Run(void* pArgs)
                                             LOG(LOG_VERBOSE, "Resulting frame size is %d bytes", tCurrentChunkSize);
                                         #endif
                                     }else
-                                    {// video frame was buffered by ffmpeg
-                                        LOG(LOG_VERBOSE, "Video frame was buffered");
-                                        mDecoderOutputFrameDelay++;
+                                    {// still waiting for first key frame
+                                        tCurrentChunkSize = 0;
                                     }
                                 }else
-                                {
-                                    LOG(LOG_ERROR, "Couldn't decode video frame %ld because \"%s\"(%d), got a decoder result: %d", tCurPacketPts, strerror(AVUNERROR(tDecoderResult)), AVUNERROR(tDecoderResult), tFrameFinished);
+                                {// tFrameFinished != 1
+                                    LOG(LOG_VERBOSE, "Video frame was buffered");
+                                    mDecoderOutputFrameDelay++;
                                     tCurrentChunkSize = 0;
                                 }
+                            }else
+                            {// tDecoderResult < 0
+                                LOG(LOG_ERROR, "Couldn't decode video frame %ld because \"%s\"(%d), got a decoder result: %d", tCurPacketPts, strerror(AVUNERROR(tDecoderResult)), AVUNERROR(tDecoderResult), tFrameFinished);
+                                tCurrentChunkSize = 0;
                             }
                         }
                         break;
@@ -1955,7 +1973,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                 // reset chunk size to avoid additional writes to output FIFO because we already stored all valid audio buffers in output FIFO
                                 tCurrentChunkSize = 0;
                             }else
-                            {
+                            {// tDecoderResult < 0
                                 LOG(LOG_WARN, "Couldn't decode audio samples %ld  because \"%s\"(%d)", tCurPacketPts, strerror(AVUNERROR(tDecoderResult)), AVUNERROR(tDecoderResult));
                                 tCurrentChunkSize = 0;
                             }
