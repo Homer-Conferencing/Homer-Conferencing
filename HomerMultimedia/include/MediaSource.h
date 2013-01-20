@@ -278,6 +278,7 @@ public:
     virtual int GetFrameBufferSize();
     virtual void SetPreBufferingActivation(bool pActive);
     virtual void SetPreBufferingAutoRestartActivation(bool pActive);
+    virtual int GetDecoderOutputFrameDelay();
 
     /* simple relaying WITHOUT any reencoding functionality but WITH rtp support*/
 	// register/unregister: Berkeley sockets based media sinks
@@ -464,6 +465,7 @@ protected:
     /* A/V synch. */
     int                 mDecoderSynchPoints; // mostly derived from RTCP(RTP) data
     float               mRelativeLoss;
+    int                 mDecoderOutputFrameDelay;
     /* live OSD marking */
     float               mMarkerRelX;
     float               mMarkerRelY;

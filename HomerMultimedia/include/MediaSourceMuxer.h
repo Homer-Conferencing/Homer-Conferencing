@@ -150,6 +150,7 @@ public:
     virtual int GetFrameBufferSize();
     virtual void SetPreBufferingActivation(bool pActive);
     virtual void SetPreBufferingAutoRestartActivation(bool pActive);
+    virtual int GetDecoderOutputFrameDelay();
 
     /* recording control */
     virtual bool StartRecording(std::string pSaveFileName, int pSaveFileQuality = 10, bool pRealTime = true /* 1 = frame rate emulation, 0 = no pts adaption */);

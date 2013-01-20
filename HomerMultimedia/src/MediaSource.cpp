@@ -72,6 +72,7 @@ MediaSource::MediaSource(string pName):
 	mDecodedSIFrames = 0;
 	mDecodedSPFrames = 0;
 	mDecodedBIFrames = 0;
+	mDecoderOutputFrameDelay = 0;
 	mAudioSilenceThreshold = MEDIA_SOURCE_DEFAULT_SILENCE_THRESHOLD;
     mDecoderFrameBufferTimeMax = 0;
     mDecoderFramePreBufferTime = 0;
@@ -1024,6 +1025,11 @@ void MediaSource::SetPreBufferingAutoRestartActivation(bool pActive)
 {
     LOG(LOG_VERBOSE, "Setting pre-buffering auto. restart for %s source to: %d", GetMediaTypeStr().c_str(), pActive);
     mDecoderFramePreBufferingAutoRestart = pActive;
+}
+
+int MediaSource::GetDecoderOutputFrameDelay()
+{
+    return mDecoderOutputFrameDelay;
 }
 
 void MediaSource::DoSetVideoGrabResolution(int pResX, int pResY)

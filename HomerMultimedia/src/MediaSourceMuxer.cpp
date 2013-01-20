@@ -1844,6 +1844,14 @@ void MediaSourceMuxer::SetPreBufferingAutoRestartActivation(bool pActive)
         mMediaSource->SetPreBufferingAutoRestartActivation(pActive);
 }
 
+int MediaSourceMuxer::GetDecoderOutputFrameDelay()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->GetDecoderOutputFrameDelay();
+    else
+        return mDecoderOutputFrameDelay;
+}
+
 void MediaSourceMuxer::SetVideoGrabResolution(int pResX, int pResY)
 {
     if (mMediaType == MEDIA_AUDIO)

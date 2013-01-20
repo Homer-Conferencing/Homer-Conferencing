@@ -1278,6 +1278,9 @@ void* MediaSourceMem::Run(void* pArgs)
     // signal that decoder thread has finished init.
     mDecoderNeeded = true;
 
+    // reset buffer counter
+    mDecoderOutputFrameDelay = 0;
+
     LOG(LOG_WARN, "================ Entering main %s decoding loop for %s media source", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
 
     while(mDecoderNeeded)
@@ -1810,6 +1813,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                     }else
                                     {// video frame was buffered by ffmpeg
                                         LOG(LOG_VERBOSE, "Video frame was buffered");
+                                        mDecoderOutputFrameDelay++;
                                     }
                                 }else
                                 {
@@ -1945,6 +1949,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                 }else
                                 {// audio frame was buffered by ffmpeg
                                     LOG(LOG_VERBOSE, "Audio frame was buffered");
+                                    mDecoderOutputFrameDelay++;
                                 }
 
                                 // reset chunk size to avoid additional writes to output FIFO because we already stored all valid audio buffers in output FIFO
