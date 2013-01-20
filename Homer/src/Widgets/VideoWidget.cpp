@@ -754,12 +754,15 @@ QStringList VideoWidget::GetVideoStatistic()
 
     //############################################
     //### Line 4: video codec and resolution
+    int tInputBitRate = mVideoSource->GetInputBitRate();
     QString tLine_InputCodec = "";
     QString tCodecName = QString(mVideoSource->GetCodecName().c_str());
     int tSourceResX = 0, tSourceResY = 0;
-    int tInputBitRate = mVideoSource->GetInputBitRate();
     mVideoSource->GetVideoSourceResolution(tSourceResX, tSourceResY);
-    tLine_InputCodec = Homer::Gui::VideoWidget::tr("Source codec:")+ " " + ((tCodecName != "") ? tCodecName : Homer::Gui::VideoWidget::tr("unknown")) + " (" + QString("%1").arg(tSourceResX) + "*" + QString("%1").arg(tSourceResY) + (tInputBitRate > 0 ? ", " + QString("%1 kbit/s").arg(tInputBitRate / 1000): "") + ")";
+    tLine_InputCodec = Homer::Gui::VideoWidget::tr("Source codec:")+ " " + ((tCodecName != "") ? tCodecName : Homer::Gui::VideoWidget::tr("unknown"));
+    tLine_InputCodec += " (" + QString("%1").arg(tSourceResX) + "*" + QString("%1").arg(tSourceResY);
+    tLine_InputCodec += (tInputBitRate > 0 ? ", " + QString("%1 kbit/s").arg(tInputBitRate / 1000) : "");
+    tLine_InputCodec += ", " + QString("%1").arg(mVideoSource->GetDecoderOutputFrameDelay()) + " " + Homer::Gui::VideoWidget::tr("frames delay") + ")";
 
     //############################################
     //### Line 5: video output
