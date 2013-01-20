@@ -3445,10 +3445,6 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 //    if ((mMediaType == MEDIA_VIDEO) && (tCodec->capabilities & CODEC_CAP_TRUNCATED))
 //        mCodecContext->flags |= CODEC_FLAG_TRUNCATED;
 
-    // force low delay
-    if (tCodec->capabilities & CODEC_CAP_DELAY)
-        mCodecContext->flags |= CODEC_FLAG_LOW_DELAY;
-
     if (tCodec->capabilities & CODEC_CAP_DR1)
     	mCodecContext->flags |= CODEC_FLAG_EMU_EDGE;
 
