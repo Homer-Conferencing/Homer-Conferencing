@@ -1121,7 +1121,7 @@ bool Configuration::GetFeatureConferencing()
 
 bool Configuration::GetFeatureAutoLogging()
 {
-    return mQSettings->value("Global/FeatureAutoLogging", true).toBool();
+    return mQSettings->value("Global/FeatureAutoLogging", false).toBool();
 }
 
 QString Configuration::GetLanguage()
