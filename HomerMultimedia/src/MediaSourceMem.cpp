@@ -1564,9 +1564,9 @@ void* MediaSourceMem::Run(void* pArgs)
                                     LOG(LOG_VERBOSE, "      ..pts: %ld", tSourceFrame->pts);
                                     LOG(LOG_VERBOSE, "      ..pkt pts: %ld", tSourceFrame->pkt_pts);
                                     LOG(LOG_VERBOSE, "      ..pkt dts: %ld", tSourceFrame->pkt_dts);
-                                    LOG(LOG_VERBOSE, "      ..resolution: %d * %d", tSourceFrame->width, tSourceFrame->height);
-                                    LOG(LOG_VERBOSE, "      ..coded pic number: %d", tSourceFrame->coded_picture_number);
-                                    LOG(LOG_VERBOSE, "      ..display pic number: %d", tSourceFrame->display_picture_number);
+//                                    LOG(LOG_VERBOSE, "      ..resolution: %d * %d", tSourceFrame->width, tSourceFrame->height);
+//                                    LOG(LOG_VERBOSE, "      ..coded pic number: %d", tSourceFrame->coded_picture_number);
+//                                    LOG(LOG_VERBOSE, "      ..display pic number: %d", tSourceFrame->display_picture_number);
                                 #endif
 
                                 // ############################
@@ -1719,22 +1719,25 @@ void* MediaSourceMem::Run(void* pArgs)
                             {
                                 if (tFrameFinished == 1)
                                 {
-                                    // store the derived PTS value in the fields of the source frame
-                                    tSourceFrame->pts = tCurFramePts;
-                                    tSourceFrame->coded_picture_number = tCurFramePts;
-                                    tSourceFrame->display_picture_number = tCurFramePts;
-
                                     #ifdef MSMEM_DEBUG_VIDEO_FRAME_RECEIVER
                                         LOG(LOG_VERBOSE, "New video frame..");
                                         LOG(LOG_VERBOSE, "      ..key frame: %d", tSourceFrame->key_frame);
                                         LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(tSourceFrame).c_str());
-                                        LOG(LOG_VERBOSE, "      ..pts: %ld, curFramePTS: %ld", tSourceFrame->pts, tCurFramePts);
+                                        LOG(LOG_VERBOSE, "      ..pts: %ld, original PTS: %ld", tSourceFrame->pts, tCurFramePts);
                                         LOG(LOG_VERBOSE, "      ..pkt pts: %ld", tSourceFrame->pkt_pts);
                                         LOG(LOG_VERBOSE, "      ..pkt dts: %ld", tSourceFrame->pkt_dts);
-                                        LOG(LOG_VERBOSE, "      ..resolution: %d * %d", tSourceFrame->width, tSourceFrame->height);
-                                        LOG(LOG_VERBOSE, "      ..coded pic number: %d", tSourceFrame->coded_picture_number);
-                                        LOG(LOG_VERBOSE, "      ..display pic number: %d", tSourceFrame->display_picture_number);
+//                                        LOG(LOG_VERBOSE, "      ..resolution: %d * %d", tSourceFrame->width, tSourceFrame->height);
+//                                        LOG(LOG_VERBOSE, "      ..coded pic number: %d", tSourceFrame->coded_picture_number);
+//                                        LOG(LOG_VERBOSE, "      ..display pic number: %d", tSourceFrame->display_picture_number);
+//                                        LOG(LOG_VERBOSE, "      ..context delay: %d", mCodecContext->delay);
+//                                        LOG(LOG_VERBOSE, "      ..context frame nr.: %d", mCodecContext->frame_number);
                                     #endif
+
+                                    // use the PTS value from the packet stream because it refers to the original (without decoder delays) timing
+                                    tCurFramePts = tSourceFrame->pkt_pts;
+                                    tSourceFrame->pts = tCurFramePts;
+                                    tSourceFrame->coded_picture_number = tCurFramePts;
+                                    tSourceFrame->display_picture_number = tCurFramePts;
 
                                     // wait for next key frame packets (either an i-frame or a p-frame)
                                     if (mDecoderWaitForNextKeyFrame)
@@ -1762,8 +1765,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                                 LOG(LOG_VERBOSE, "Dropping %s frame %ld because we are waiting for next key frame after seeking", GetMediaTypeStr().c_str(), tCurFramePts);
                                             #endif
                                             #ifdef MSMEM_DEBUG_FRAME_QUEUE
-                                                if (mDecoderWaitForNextKeyFrame)
-                                                    LOG(LOG_VERBOSE, "No %s frame will be written to frame queue, we ware waiting for the next key frame, current frame type: %s, EOF: %d", GetMediaTypeStr().c_str(), GetFrameType(tSourceFrame).c_str(), mEOFReached);
+                                                LOG(LOG_VERBOSE, "No %s frame will be written to frame queue, we ware waiting for the next key frame, current frame type: %s, EOF: %d", GetMediaTypeStr().c_str(), GetFrameType(tSourceFrame).c_str(), mEOFReached);
                                             #endif
 
                                         }
@@ -1793,7 +1795,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                                 LOG(LOG_VERBOSE, "Video frame line size: %d, %d, %d, %d", tSourceFrame->linesize[0], tSourceFrame->linesize[1], tSourceFrame->linesize[2], tSourceFrame->linesize[3]);
                                             #endif
 
-        //                                        //LOG(LOG_VERBOSE, "New %s RGB frame: dts: %ld, pts: %ld, pos: %ld, pic. nr.: %d", GetMediaTypeStr().c_str(), tRGBFrame->pkt_dts, tRGBFrame->pkt_pts, tRGBFrame->pkt_pos, tRGBFrame->display_picture_number);
+                                            //LOG(LOG_VERBOSE, "New %s RGB frame: dts: %ld, pts: %ld, pos: %ld, pic. nr.: %d", GetMediaTypeStr().c_str(), tRGBFrame->pkt_dts, tRGBFrame->pkt_pts, tRGBFrame->pkt_pos, tRGBFrame->display_picture_number);
 
                                             if ((tRes = avpicture_layout((AVPicture*)tSourceFrame, mCodecContext->pix_fmt, mSourceResX, mSourceResY, tChunkBuffer, tChunkBufferSize)) < 0)
                                             {
