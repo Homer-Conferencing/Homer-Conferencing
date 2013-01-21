@@ -267,11 +267,6 @@ SET(QT_TRANS_SOURCES
 # integrate Qt translations
 QT4_CREATE_TRANSLATION(QT_LANG_BINS ${QT_TRANS_SOURCES} ${QT_LANG_FILES} OPTIONS -no-obsolete)
 
-# copy translation binaries to destination folder
-FOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
-	FILE(COPY ${QT_LANG_BINS_ENTRY} DESTINATION ${TARGET_DIRECTORY}lang/)
-ENDFOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
-
 # mark translator binaries for installation process
 IF ((LINUX) AND (DEFINED INSTALL_DATADIR))
 	FOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
@@ -520,3 +515,9 @@ if (APPLE)
 endif()
 
 INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakeCore.txt)
+
+##############################################################
+# copy translation binaries to destination folder
+FOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
+    ADD_CUSTOM_COMMAND(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${QT_LANG_BINS_ENTRY} ${TARGET_DIRECTORY}lang/)
+ENDFOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
