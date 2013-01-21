@@ -455,6 +455,11 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     // add some extra parameters depending on the selected codec
     switch(tFormat->video_codec)
     {
+        case CODEC_ID_MPEG2VIDEO:
+                        // force low delay
+                        if (tCodec->capabilities & CODEC_CAP_DELAY)
+                            mCodecContext->flags |= CODEC_FLAG_LOW_DELAY;
+                        break;
         case CODEC_ID_H263P:
                         // old codec codext flag CODEC_FLAG_H263P_SLICE_STRUCT
                         av_dict_set(&tOptions, "structured_slices", "1", 0);
@@ -520,8 +525,10 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
         mCodecContext->gop_size = (100 - mStreamQuality) / 5; // default is 12
     else
         mCodecContext->gop_size = 0; // force GOP size of 0 for THEORA
+
     mCodecContext->qmin = 1; // default is 2
     mCodecContext->qmax = 2 +(100 - mStreamQuality) / 4; // default is 31
+
     // set max. packet size for RTP based packets
     //HINT: don't set if we use H261, otherwise ffmpeg internal functions in mpegvideo_enc.c (MPV_*) would get confused because H261 support is missing in ffmpeg's RTP support
     //TODO: fix packet size limitation here, ffmpegs lacks support for RTP encaps. for H.261 based video streams
@@ -563,10 +570,6 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
 
         return false;
     }
-
-    // force low delay
-    if (tCodec->capabilities & CODEC_CAP_DELAY)
-        mCodecContext->flags |= CODEC_FLAG_LOW_DELAY;
 
     #ifdef MEDIA_SOURCE_MUX_MULTI_THREADED_VIDEO_ENCODING
         // active multi-threading per default for the video encoding: leave two cpus for concurrent tasks (video grabbing/decoding, audio tasks)
@@ -1321,6 +1324,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
     int                 tChunkBufferSize = 0;
     uint8_t             *tChunkBuffer;
     VideoScaler         *tVideoScaler = NULL;
+    int                 tFrameFinished = 0;
 
     LOG(LOG_VERBOSE, "%s-Encoding thread started", GetMediaTypeStr().c_str());
 
@@ -1459,17 +1463,28 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 // ### ENCODE FRAME
                                 // #########################################
                                 int64_t tTime = Time::GetTimeStamp();
+
+#if 0
+                                av_init_packet(tPacket);
+                                tPacket->data = (uint8_t*)mEncoderChunkBuffer;
+                                tPacket->size = MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE;
+                                tEncoderResult = avcodec_encode_video2(mCodecContext, tPacket, tYUVFrame, &tFrameFinished);
+#endif
+
                                 tEncoderResult = avcodec_encode_video(mCodecContext, (uint8_t *)mEncoderChunkBuffer, MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE, tYUVFrame);
                                 #ifdef MSM_DEBUG_TIMING
                                     int64_t tTime2 = Time::GetTimeStamp();
                                     LOG(LOG_VERBOSE, "     encoding video frame took %ld us", tTime2 - tTime);
                                 #endif
 
+                                tFrameFinished =1;
                                 // #########################################
                                 // ### DISTRIBUTE FRAME
                                 // #########################################
                                 if (tEncoderResult > 0)
                                 {
+                                    if (tFrameFinished == 1)
+                                    {
                                 	// compensate frame delay, which is caused by video encoder, and derive a correct PTS value for output packets
                                 	int tOutputPacketPts = CalculateEncoderPts(mFrameNumber - mEncoderOutputFrameDelay);
 
@@ -1515,6 +1530,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
 
                                     // free packet buffer
                                     av_free_packet(tPacket);
+                                    }
                                 }else
                                 {
                                     if (tEncoderResult != 0)
@@ -1527,6 +1543,10 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                         mEncoderOutputFrameDelay++;
                                     }
                                 }
+#if 0
+    // free packet buffer
+    av_free_packet(tPacket);
+#endif
                                 #ifdef MSM_DEBUG_TIMING
                                     int64_t tTime4 = Time::GetTimeStamp();
                                     LOG(LOG_VERBOSE, "Entire transcoding step took %ld us", tTime4 - tTime3);
