@@ -1734,7 +1734,6 @@ void* MediaSourceMem::Run(void* pArgs)
                                     #endif
 
                                     // use the PTS value from the packet stream because it refers to the original (without decoder delays) timing
-                                    tCurFramePts = tSourceFrame->pkt_pts;
                                     tSourceFrame->pts = tCurFramePts;
                                     tSourceFrame->coded_picture_number = tCurFramePts;
                                     tSourceFrame->display_picture_number = tCurFramePts;
