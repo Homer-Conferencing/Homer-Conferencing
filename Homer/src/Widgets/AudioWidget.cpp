@@ -1128,28 +1128,30 @@ void AudioWorkerThread::DoSyncClock()
 {
     LOG(LOG_VERBOSE, "DoSyncClock now...");
 
+    // lock
+    mDeliverMutex.lock();
+
+    int64_t tShiftOffset = 0;
     if (mSyncClockMasterSource != NULL)
+        tShiftOffset = mSyncClockMasterSource->GetSynchronizationTimestamp() - mMediaSource->GetSynchronizationTimestamp() - (mUserAVDrift - mVideoDelayAVDrift) * 1000000;
+
+    LOG(LOG_VERBOSE, "Shifting time of source %s by %ld", mMediaSource->GetStreamName().c_str(), tShiftOffset);
+
+    mSourceAvailable = mMediaSource->TimeShift(tShiftOffset);
+    if(!mSourceAvailable)
     {
-        // lock
-        mDeliverMutex.lock();
+        if (mSyncClockMasterSource != NULL)
+            LOG(LOG_WARN, "Source isn't available anymore after synch. %s with %s", mMediaSource->GetStreamName().c_str(), mSyncClockMasterSource->GetStreamName().c_str());
+        else
+            LOG(LOG_WARN, "Source isn't available anymore after re-calibrating %s", mMediaSource->GetStreamName().c_str());
+    }
+    mEofReached = false;
+    mSyncClockAsap = false;
+    ResetPlayback();
+    mSeekAsap = false;
 
-        int64_t tShiftOffset = mSyncClockMasterSource->GetSynchronizationTimestamp() - mMediaSource->GetSynchronizationTimestamp() - (mUserAVDrift - mVideoDelayAVDrift) * 1000000;
-        LOG(LOG_VERBOSE, "Shifting time of source %s by %ld", mSyncClockMasterSource->GetStreamName().c_str(), tShiftOffset);
-
-        mSourceAvailable = mMediaSource->TimeShift(tShiftOffset);
-        if(!mSourceAvailable)
-        {
-            LOG(LOG_WARN, "Source isn't available anymore after synch. with %s", mSyncClockMasterSource->GetStreamName().c_str());
-        }
-        mEofReached = false;
-        mSyncClockAsap = false;
-        ResetPlayback();
-        mSeekAsap = false;
-
-        // unlock
-        mDeliverMutex.unlock();
-    }else
-        LOG(LOG_WARN, "Source of reference clock is invalid");
+    // unlock
+    mDeliverMutex.unlock();
 
     LOG(LOG_VERBOSE, "DoSyncClock finished");
 }

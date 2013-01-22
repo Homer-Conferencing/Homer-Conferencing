@@ -103,7 +103,7 @@ public:
     float GetSeekEnd();
 
     /* A/V sync. */
-    void SyncClock(MediaSource* pSource);
+    void SyncClock(MediaSource* pSource = NULL);
 
     /* multiple channels control */
     bool SupportsMultipleInputStreams();
