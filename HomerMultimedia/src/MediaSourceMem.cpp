@@ -1429,7 +1429,7 @@ void* MediaSourceMem::Run(void* pArgs)
                             // for seeking: is the currently read frame close to target frame index?
                             //HINT: we need a key frame in the remaining distance to the target frame)
                             if ((mDecoderTargetFrameIndex != 0) && (tCurPacketPts < mDecoderTargetFrameIndex - MEDIA_SOURCE_MEM_SEEK_MAX_EXPECTED_GOP_SIZE))
-                            {
+                            {// we are still waiting for a special frame number
                                 #ifdef MSMEM_DEBUG_SEEKING
                                     LOG(LOG_VERBOSE, "Dropping %s frame %ld because we are waiting for frame %.2f", GetMediaTypeStr().c_str(), tCurPacketPts, mDecoderTargetFrameIndex);
                                 #endif
@@ -2360,6 +2360,7 @@ bool MediaSourceMem::TimeShift(int64_t pOffset)
 {
     LOG(LOG_VERBOSE, "Shifting %s time by: %ld", GetMediaTypeStr().c_str(), pOffset);
     mSourceStartTimeForRTGrabbing -= pOffset;
+    mDecoderRecalibrateRTGrabbingAfterSeeking = true;
     return true;
 }
 
