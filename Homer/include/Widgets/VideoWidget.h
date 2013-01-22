@@ -255,7 +255,8 @@ private:
     int                 mFrameSize[FRAME_BUFFER_SIZE];
     int                 mFrameCurrentIndex, mFrameGrabIndex;
     bool                mCurrentFrameRefTaken;
-
+    int                 mDesiredResX;
+    int                 mDesiredResY;
     int                 mResX;
     int                 mResY;
     int					mFrameWidthLastGrabbedFrame;

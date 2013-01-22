@@ -2070,8 +2070,8 @@ void VideoWorkerThread::SetGrabResolution(int pX, int pY)
 
     	// avoid race conditions when grab resolution is update in parallel
     	mDeliverMutex.lock();
-        mResX = pX;
-        mResY = pY;
+        mDesiredResX = pX;
+        mDesiredResY = pY;
         mSetGrabResolutionAsap = true;
         mGrabbingCondition.wakeAll();
         mDeliverMutex.unlock();
@@ -2139,7 +2139,16 @@ void VideoWorkerThread::DoSetGrabResolution()
     DeinitFrameBuffers();
 
     // set new resolution for frame grabbing
-    mMediaSource->SetVideoGrabResolution(mResX, mResY);
+    mMediaSource->SetVideoGrabResolution(mDesiredResX, mDesiredResY);
+
+    // check if resolution changed
+    int tGotResX, tGotResY;
+    mMediaSource->GetVideoGrabResolution(tGotResX, tGotResY);
+    if ((tGotResX != mResX) || (tGotResY != mResY))
+    	LOG(LOG_WARN, "Got resolution %d*%d but we requested %d*%d", tGotResX, tGotResY, mDesiredResX, mDesiredResY);
+
+    mResX = tGotResX;
+	mResY = tGotResY;
 
     // create new frame buffers
     InitFrameBuffers();
