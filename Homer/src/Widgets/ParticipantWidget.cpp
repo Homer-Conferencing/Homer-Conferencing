@@ -85,7 +85,7 @@ namespace Homer { namespace Gui {
 // how many times do we have to detect continuous asynch. A/V playback before we synch. audio and video? (to avoid false-positives)
 #define AV_SYNC_CONSECUTIVE_ASYNC_THRESHOLD                          3 // checked every STREAM_POS_UPDATE_DELAY ms
 // how many times should we try to adapt the A/V synch bei waiting cycles? afterwards we try a reset of both the video and audio source
-#define AV_SYNC_CONSECUTIVE_ASYNC_THRESHOLD_TRY_RESET                3
+#define AV_SYNC_CONSECUTIVE_ASYNC_THRESHOLD_TRY_RESET                8
 // size of the pre-buffer during a live conference
 #define AV_CONFERENCE_BUFFER							          0.34 // seconds  - 1/24s time per frames * 8 frames =0.33333
 
@@ -1409,7 +1409,7 @@ void ParticipantWidget::AVSync()
         float tBufferTime = mVideoSource->GetFrameBufferTime();
         float tBufferTimeLimit = mVideoSource->GetFrameBufferPreBufferingTime() + AV_SYNC_MAX_DRIFT_UNTIL_RESYNC;
         if ((mVideoSource != NULL) && (tBufferTime > tBufferTimeLimit))
-        {
+        {// buffer has too many frames, this can be the case if the system has temporary high load
             LOG(LOG_WARN, "Detected over-buffering for video stream, buffer time: %.2f, limit is: %.2f", tBufferTime, tBufferTimeLimit);
             mVideoWidget->GetWorker()->SyncClock();
             ResetAVSync();
