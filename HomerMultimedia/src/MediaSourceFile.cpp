@@ -477,23 +477,6 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
     return tResult;
 }
 
-bool MediaSourceFile::SeekRelative(float pSeconds, bool pOnlyKeyFrames)
-{
-    bool tResult = false;
-
-    float tTargetPos = GetSeekPos() + pSeconds;
-    if (tTargetPos < 0)
-        tTargetPos = 0;
-    if (tTargetPos > GetSeekEnd())
-        tTargetPos = GetSeekEnd();
-
-    tResult = Seek(tTargetPos, pOnlyKeyFrames);
-
-    LOG(LOG_VERBOSE, "Seeking relative %.2f seconds to absolute position %.2f seconds resulted with state: %d", pSeconds, tTargetPos, tResult);
-
-    return tResult;
-}
-
 int64_t MediaSourceFile::GetSynchronizationTimestamp()
 {
     int64_t tResult = 0;

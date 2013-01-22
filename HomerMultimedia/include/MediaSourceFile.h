@@ -66,7 +66,6 @@ public:
     virtual bool SupportsSeeking();
     virtual float GetSeekEnd(); // get maximum seek time in seconds
     virtual bool Seek(float pSeconds, bool pOnlyKeyFrames = true); // seek to absolute position which is given in seconds
-    virtual bool SeekRelative(float pSeconds, bool pOnlyKeyFrames = true); // seeks relative to the current position, distance is given in seconds
     virtual float GetSeekPos(); // in seconds
 
     /* multi channel input interface */
