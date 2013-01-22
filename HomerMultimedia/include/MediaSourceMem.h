@@ -100,6 +100,7 @@ public:
     virtual int CalculateFrameBufferSize(); // calculates a good value for frame queue
     virtual int GetFrameBufferCounter(); // returns the currently used number of entries in the frame queue
     virtual int GetFrameBufferSize(); // returns current frame queue size
+    virtual void SetFrameBufferPreBufferingTime(float pTime);
 
     /* frame stats */
     virtual bool SupportsDecoderFrameStatistics();

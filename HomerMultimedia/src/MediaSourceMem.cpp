@@ -649,6 +649,14 @@ int MediaSourceMem::GetFrameBufferSize()
         return 0;
 }
 
+void MediaSourceMem::SetFrameBufferPreBufferingTime(float pTime)
+{
+	if (pTime > MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME - 0.5)
+		pTime = MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME - 0.5;
+
+	MediaSource::SetFrameBufferPreBufferingTime(pTime);
+}
+
 bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 {
     AVIOContext         *tIoContext;
