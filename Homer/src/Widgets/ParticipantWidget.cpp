@@ -107,7 +107,6 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
     mAVPreBuffering = false;
     mAVSyncCounter = 0;
     mAVPreBufferingAutoRestart = false;
-    mCurrentMovieFile = "";
     mMainWindow = pMainWindow;
     mMovieSliderPosition = 0;
     mRemoteVideoAdr = "";
@@ -1403,34 +1402,26 @@ void ParticipantWidget::AVSync()
         if (!mAVSynchActive)
             return;
 
-        //############################
-        //### limit vieo buffering
-        //############################
-        float tBufferTime = mVideoSource->GetFrameBufferTime();
-        float tBufferTimeLimit = mVideoSource->GetFrameBufferPreBufferingTime() + AV_SYNC_MAX_DRIFT_UNTIL_RESYNC;
-        if ((mVideoSource != NULL) && (tBufferTime > tBufferTimeLimit))
-        {// buffer has too many frames, this can be the case if the system has temporary high load
-            LOG(LOG_WARN, "Detected over-buffering for video stream, buffer time: %.2f, limit is: %.2f", tBufferTime, tBufferTimeLimit);
-            mVideoWidget->GetWorker()->SyncClock();
-            ResetAVSync();
-        }
-
-        //HINT: we have to keep the audio buffering flexible! otherwise, the A/V synchronizatino won't work anymore
-
-        //############################
-        //### synch. audio and video
-        //############################
         int64_t tCurTime = Time::GetTimeStamp();
         if ((tCurTime - mTimeOfLastAVSynch  >= AV_SYNC_MIN_PERIOD * 1000))
         {
-            if ((mSessionType == BROADCAST) && (mVideoWidget->GetWorker()->CurrentFile() != mCurrentMovieFile))
-            {// file has changed and we have to reset A/V sync. to wait for some time until we synch. for the first time
-                mCurrentMovieFile = mVideoWidget->GetWorker()->CurrentFile();
-                LOG(LOG_VERBOSE, "Setting current movie file to %s and reseting A/V sync.", mCurrentMovieFile.toStdString().c_str());
+            //############################
+            //### limit vieo buffering
+            //############################
+            float tBufferTime = mVideoSource->GetFrameBufferTime();
+            float tBufferTimeLimit = mVideoSource->GetFrameBufferPreBufferingTime() + AV_SYNC_MAX_DRIFT_UNTIL_RESYNC;
+            if ((mVideoSource != NULL) && (tBufferTime > tBufferTimeLimit))
+            {// buffer has too many frames, this can be the case if the system has temporary high load
+                LOG(LOG_WARN, "Detected over-buffering for video stream, buffer time: %.2f, limit is: %.2f", tBufferTime, tBufferTimeLimit);
+                mVideoWidget->GetWorker()->SyncClock();
                 ResetAVSync();
-                return;
             }
 
+            //HINT: we have to keep the audio buffering flexible! otherwise, the A/V synchronizatino won't work anymore
+
+            //############################
+            //### synch. audio and video
+            //############################
             // synch. video and audio by seeking in video stream based to the position of the audio stream, the other way around it would be more obvious to the user because he would hear audio gaps
             int64_t tAudioSyncTime;
             int64_t tVideoSyncTime;

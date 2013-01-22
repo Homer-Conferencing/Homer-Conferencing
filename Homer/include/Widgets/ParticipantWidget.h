@@ -262,7 +262,6 @@ private:
     int64_t					mTimeOfLastAVSynch;
     int 					mAVAsyncCounterSinceLastSynchronization;
     int						mAVASyncCounter;
-    QString             	mCurrentMovieFile;
     MovieControlWidget      *mFullscreeMovieControlWidget;
     bool                    mAVSynchActive;
     bool                    mAVPreBuffering;
