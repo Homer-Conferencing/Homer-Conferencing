@@ -24,19 +24,16 @@
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.66706838" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.877932354" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1702252001" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="M_LINUX=1"/>
 									<listOptionValue builtIn="false" value="LINUX=1"/>
-									<listOptionValue builtIn="false" value="WIN32=1"/>
 									<listOptionValue builtIn="false" value="APPLE"/>
 									<listOptionValue builtIn="false" value="__STDC_LIMIT_MACROS=1"/>
 									<listOptionValue builtIn="false" value="__STDC_CONSTANT_MACROS=1"/>
+									<listOptionValue builtIn="false" value="WINDOWS=1"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.include.paths.365846654" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value=".././include"/>
 									<listOptionValue builtIn="false" value="/usr/include/SDL"/>
 									<listOptionValue builtIn="false" value="../../HomerBase/include"/>
-									<listOptionValue builtIn="false" value="&quot;C:\MinGW\include\c++\3.4.5&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;C:\MinGW\include&quot;"/>
 									<listOptionValue builtIn="false" value="../../HomerMonitor/include"/>
 									<listOptionValue builtIn="false" value="../../HomerBase/include/Logging"/>
 									<listOptionValue builtIn="false" value="/usr/lib64/gcc/x86_64-pc-linux-gnu/4.4.5/include/g++-v4"/>
@@ -44,6 +41,8 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/HomerMultimedia/include}&quot;"/>
 									<listOptionValue builtIn="false" value="../../HomerSoundOutput/include"/>
 									<listOptionValue builtIn="false" value="../../../Homer-Release/HomerIncludes"/>
+									<listOptionValue builtIn="false" value="&quot;C:\mingw64\mingw\include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\mingw64\mingw\include\c++\4.7.0&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.943936581" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>

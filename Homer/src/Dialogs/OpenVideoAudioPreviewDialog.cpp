@@ -133,6 +133,9 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceVideo()
             #ifdef WIN32
                 return new MediaSourceDShow(mCbDeviceVideo->currentText().toStdString());
             #endif
+			#ifdef WIN64
+				return null; //TODO
+			#endif
             #ifdef APPLE
 //                return new MediaSourceCoreVideo(mCbDeviceVideo->currentText().toStdString());
             #endif
@@ -371,6 +374,9 @@ void OpenVideoAudioPreviewDialog::LoadConfiguration()
     #ifdef WIN32
 		MediaSourceDShow *tVSource = new MediaSourceDShow("");
     #endif
+	#ifdef WIN64
+		MediaSource *tVSource = null; //TODO
+	#endif
     #ifdef APPLE
         MediaSourceCoreVideo *tVSource = new MediaSourceCoreVideo("");
     #endif

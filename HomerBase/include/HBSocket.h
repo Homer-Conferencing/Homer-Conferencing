@@ -38,7 +38,7 @@
 #endif
 
 // define SHUT_RDWR also for Windows environments
-#if defined(WIN32)
+#if defined(WINDOWS)
 #ifndef SHUT_RDWR
 #define SHUT_RDWR SD_BOTH
 #endif

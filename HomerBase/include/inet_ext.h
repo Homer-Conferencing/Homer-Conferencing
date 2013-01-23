@@ -193,7 +193,7 @@ int inet_pton4(const char *pSrc, u_char *pDst)
 #undef inet_pton6
 int inet_pton6(const char *pSrc, u_char *pDst)
 {
-    #ifdef WIN32
+	#if defined(WINDOWS)
         const char tXDigits[] = "0123456789abcdef";
     #else
         static const char tXDigits[] = "0123456789abcdef";

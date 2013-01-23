@@ -55,7 +55,7 @@ unsigned long Random::GenerateNumber()
 		#if defined(LINUX) || defined(APPLE) || defined(BSD)
 				srandom((unsigned int)Time::GetTimeStamp());
 		#endif
-		#if defined(WIN32) ||defined(WIN64)
+		#if defined(WINDOWS)
 				srand((unsigned)Time::GetTimeStamp());
 		#endif
 	}
@@ -64,7 +64,7 @@ unsigned long Random::GenerateNumber()
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		return random();
 	#endif
-	#if defined(WIN32) ||defined(WIN64)
+	#if defined(WINDOWS)
 		return rand();
 	#endif
 }

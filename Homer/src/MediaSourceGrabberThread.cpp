@@ -192,7 +192,7 @@ bool MediaSourceGrabberThread::PlayFile(QString pName)
     }
 
     // remove "file:///" and "file://" from the beginning if existing
-    #ifdef WIN32
+    #ifdef WINDOWS
         if (pName.startsWith("file:///"))
             pName = pName.right(pName.size() - 8);
 

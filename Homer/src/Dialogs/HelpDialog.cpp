@@ -123,7 +123,7 @@ QString HelpDialog::GetSystemInfo()
                         break;
         }
     #endif
-    #ifdef WIN32
+    #ifdef WINDOWS
         tOs = Homer::Gui::HelpDialog::tr("Windows unknown version");
         tCurArch = (System::GetMachineType() == "x86") ? "win32" : "win64";
         tTargetArch = "win" + QString("%1").arg(ARCH_BITS);

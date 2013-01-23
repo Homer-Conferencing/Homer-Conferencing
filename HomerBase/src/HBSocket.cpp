@@ -81,7 +81,7 @@ void Socket::SetDefaults(enum TransportType pTransportType)
     mPeerPort = 0;
     mUdpLiteChecksumCoverage = UDP_LITE_HEADER_SIZE;
 
-    #if defined(WIN32) ||defined(WIN64) || defined(APPLE) || defined(BSD)
+    #if defined(WINDOWS) || defined(APPLE) || defined(BSD)
 		if (pTransportType == SOCKET_UDP_LITE)
 		{
 			LOG(LOG_ERROR, "UDP-Lite is not supported by Windows API, a common UDP socket will be used instead");
@@ -314,7 +314,7 @@ bool Socket::EnableReuse(bool pActive)
 	#if defined(APPLE) || defined(BSD)
 		int tReuseOption = SO_REUSEPORT;
 	#endif
-	#if defined(LINUX) || defined(WIN32) || defined (WIN64)
+	#if defined(LINUX) || defined(WINDOWS)
 		int tReuseOption = SO_REUSEADDR;
 	#endif
 
@@ -604,7 +604,7 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
             #if defined(APPLE) || defined(BSD)
                 tSent = sendto(mSocketHandle, pBuffer, (size_t)pBufferSize, 0, &tAddressDescriptor.sa, tAddressDescriptorSize);
             #endif
-			#if defined(WIN32) ||defined(WIN64)
+			#if defined(WINDOWS)
 				tSent = sendto(mSocketHandle, (const char*)pBuffer, (int)pBufferSize, 0, &tAddressDescriptor.sa, (int)tAddressDescriptorSize);
 			#endif
             #ifdef HBS_DEBUG_TIMING
@@ -659,7 +659,7 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
             #if defined(APPLE) || defined(BSD)
                 tSent = send(mSocketHandle, pBuffer, (size_t)pBufferSize, 0);
             #endif
-			#if defined(WIN32) ||defined(WIN64)
+			#if defined(WINDOWS)
 				tSent = send(mSocketHandle, (const char*)pBuffer, (int)pBufferSize, 0);
 			#endif
 			break;
@@ -690,7 +690,7 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		socklen_t           tAddressDescriptorSize = sizeof(tAddressDescriptor.sa_stor);
 	#endif
-	#if defined(WIN32) || defined(WIN64)
+	#if defined(WINDOWS)
 		int                 tAddressDescriptorSize = sizeof(tAddressDescriptor.sa_stor);
 	#endif
     bool                    tResult = false;
@@ -714,7 +714,7 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
             #if defined(APPLE) || defined(BSD)
                 tReceivedBytes = recvfrom(mSocketHandle, pBuffer, (size_t)pBufferSize, 0, &tAddressDescriptor.sa, &tAddressDescriptorSize);
             #endif
-			#if defined(WIN32) ||defined(WIN64)
+			#if defined(WINDOWS)
 				tReceivedBytes = recvfrom(mSocketHandle, (char*)pBuffer, (int)pBufferSize, 0, &tAddressDescriptor.sa, &tAddressDescriptorSize);
 			#endif
 		    if (tReceivedBytes >= 0)
@@ -770,7 +770,7 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
             #if defined(APPLE) || defined(BSD)
                 tReceivedBytes = recv(mTcpClientSockeHandle, pBuffer, (size_t)pBufferSize, 0);
             #endif
-            #if defined(WIN32) ||defined(WIN64)
+            #if defined(WINDOWS)
                 tReceivedBytes = recv(mTcpClientSockeHandle, (char*)pBuffer, (int)pBufferSize, 0);
             #endif
             if (tReceivedBytes < 0)
@@ -899,7 +899,7 @@ bool Socket::IsIPv6Supported()
 {
     if (sIPv6Supported == -1)
     {
-        #if defined(WIN32) ||defined(WIN64)
+        #if defined(WINDOWS)
             int tMajor, tMinor;
             if ((!System::GetWindowsKernelVersion(tMajor, tMinor)) || (tMajor < 6))
             {
@@ -921,7 +921,7 @@ bool Socket::IsIPv6Supported()
             #if defined(LINUX) || defined(APPLE) || defined(BSD)
                 close(tHandle);
             #endif
-            #if defined(WIN32) ||defined(WIN64)
+            #if defined(WINDOWS)
                 closesocket(tHandle);
                 // no WSACleanup() here, it would lead to a crash because of static context
             #endif
@@ -959,7 +959,7 @@ bool Socket::IsTransportSupported(enum TransportType pType)
         case SOCKET_UDP_LITE:
             if (sUDPliteSupported == -1)
             {
-                #if defined(WIN32) || defined(WIN64) || defined(APPLE) || defined(BSD)
+                #if defined(WINDOWS) || defined(APPLE) || defined(BSD)
                     sUDPliteSupported = false;
                 #endif
 
@@ -984,7 +984,7 @@ bool Socket::IsTransportSupported(enum TransportType pType)
         case SOCKET_DCCP:
             if (sDCCPSupported == -1)
             {
-                #if defined(WIN32) || defined(WIN64) || defined(APPLE) || defined(BSD)
+                #if defined(WINDOWS) || defined(APPLE) || defined(BSD)
                     sDCCPSupported = false;
                 #endif
 
@@ -1009,7 +1009,7 @@ bool Socket::IsTransportSupported(enum TransportType pType)
         case SOCKET_SCTP:
             if (sSCTPSupported == -1)
             {
-                #if defined(WIN32) || defined(WIN64) || defined(APPLE) || defined(BSD)
+                #if defined(WINDOWS) || defined(APPLE) || defined(BSD)
                     sSCTPSupported = false;
                 #endif
 
@@ -1185,7 +1185,7 @@ bool Socket::CreateSocket(enum NetworkType pIpVersion)
     int tSelectedIPDomain = 0;
     bool tResult = false;
 
-    #if defined(WIN32) ||defined(WIN64)
+    #if defined(WINDOWS)
         unsigned long int nonBlockingMode = 0; // blocking mode
         BOOL tNewBehaviour = false;
         DWORD tBytesReturned = 0;
@@ -1240,7 +1240,7 @@ bool Socket::CreateSocket(enum NetworkType pIpVersion)
                 LOG(LOG_ERROR, "Could not create UDP socket");
             else
                 tResult = true;
-            #if defined(WIN32) ||defined(WIN64)
+            #if defined(WINDOWS)
                 if (ioctlsocket(mSocketHandle, FIONBIO, &nonBlockingMode))
                 {
                     LOG(LOG_ERROR, "Failed to set blocking-mode for socket %d", mSocketHandle);
@@ -1264,7 +1264,7 @@ bool Socket::CreateSocket(enum NetworkType pIpVersion)
                 LOG(LOG_ERROR, "Could not create TCP socket");
             else
                 tResult = true;
-            #if defined(WIN32) ||defined(WIN64)
+            #if defined(WINDOWS)
                 if (ioctlsocket(mSocketHandle, FIONBIO, &nonBlockingMode))
                 {
                     LOG(LOG_ERROR, "Failed to set blocking-mode for socket %d", mSocketHandle);
@@ -1311,7 +1311,7 @@ void Socket::CloseSocket(int pHandle)
 
             close(pHandle);
         #endif
-        #if defined(WIN32) ||defined(WIN64)
+        #if defined(WINDOWS)
             // force a immediate return from any blocked "recv()" call
             shutdown(pHandle, SD_BOTH);
 
@@ -1344,7 +1344,7 @@ bool Socket::BindSocket(unsigned int pPort, unsigned int pProbeStepping, unsigne
     }
 
     // data port: search for the next free port and bind to it
-	#if defined(WIN32) ||defined(WIN64)
+	#if defined(WINDOWS)
     	while (bind(mSocketHandle, &tAddressDescriptor.sa, (int)tAddressDescriptorSize) < 0)
 	#else
 		while (bind(mSocketHandle, &tAddressDescriptor.sa, tAddressDescriptorSize) < 0)

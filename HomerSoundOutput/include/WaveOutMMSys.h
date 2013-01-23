@@ -25,7 +25,7 @@
  * Since:   2010-12-11
  */
 
-#ifdef WIN32
+#if defined(WINDOWS)
 #ifndef _SOUNDOUT_WAVE_OUT_MMSYS_
 #define _SOUNDOUT_WAVE_OUT_MMSYS_
 

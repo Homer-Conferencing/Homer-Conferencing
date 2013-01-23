@@ -119,6 +119,10 @@ void UpdateCheckDialog::DownloadStart()
 		tReleaseFileName = "Homer-Windows.zip";
 		tReleaseFileType = "ZIP archive file (*.zip)";
 	#endif
+	#ifdef WIN64
+		tReleaseFileName = "Homer-Windows" + QString("%1").arg(ARCH_BITS) + ".zip";
+		tReleaseFileType = "ZIP archive file (*.zip)";
+	#endif
 	#ifdef LINUX
 		tReleaseFileName = "Homer-Linux" + QString("%1").arg(ARCH_BITS) + ".tar.bz2";
 		tReleaseFileType = "bz2 archive file (*.bz2)";
@@ -181,6 +185,10 @@ void UpdateCheckDialog::DownloadInstallerStart()
 
 	#ifdef WIN32
 		tReleaseFileName = "Homer-Conferencing.exe";
+		tReleaseFileType = Homer::Gui::UpdateCheckDialog::tr("Windows executable file (*.exe)");
+	#endif
+	#ifdef WIN64
+		tReleaseFileName = "Homer-Conferencing64.exe";
 		tReleaseFileType = Homer::Gui::UpdateCheckDialog::tr("Windows executable file (*.exe)");
 	#endif
 	#ifdef LINUX
@@ -334,7 +342,7 @@ void UpdateCheckDialog::GotAnswerForVersionRequest(bool pError)
             if (mServerVersion != RELEASE_VERSION_STRING)
             {
                 mLbVersionServer->setText("<font color='red'><b>" + mServerVersion + "</b></font>");
-				#if defined(WIN32) || defined(LINUX)
+				#if defined(WINDOWS) || defined(LINUX)
                 	mTbDownloadUpdate->show();
 				#endif
 				mTbDownloadUpdateInstaller->show();

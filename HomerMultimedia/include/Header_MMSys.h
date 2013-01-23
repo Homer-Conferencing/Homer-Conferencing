@@ -28,7 +28,7 @@
 #ifndef _MULTIMEDIA_HEADER_MMSYS_
 #define _MULTIMEDIA_HEADER_MMSYS_
 
-#ifdef WIN32
+#if defined(WINDOWS)
 #pragma GCC system_header //suppress warnings from alsa
 
 #include <MMSystem.h>

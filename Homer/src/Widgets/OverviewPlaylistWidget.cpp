@@ -739,7 +739,7 @@ int OverviewPlaylistWidget::GetListSize()
 void OverviewPlaylistWidget::AddEntry(QString pLocation, bool pStartPlayback)
 {
 	// remove "file:///" and "file://" from the beginning if existing
-    #ifdef WIN32
+    #ifdef WINDOWS
         if (pLocation.toLower().startsWith("file:///"))
         	pLocation = pLocation.right(pLocation.size() - 8);
 
@@ -874,7 +874,7 @@ Playlist OverviewPlaylistWidget::ParseM3U(QString pFilePlaylist, bool pAcceptVid
 	tPlaylistEntry.Location = "";
 	tPlaylistEntry.Name = "";
 
-	#ifdef WIN32
+	#ifdef WINDOWS
     	QString tDir = pFilePlaylist.left(pFilePlaylist.lastIndexOf('\\'));
 	#else
     	QString tDir = pFilePlaylist.left(pFilePlaylist.lastIndexOf('/'));
@@ -949,7 +949,7 @@ Playlist OverviewPlaylistWidget::ParseWMX(QString pFilePlaylist, bool pAcceptVid
 	tPlaylistEntry.Location = "";
 	tPlaylistEntry.Name = "";
 
-	#ifdef WIN32
+	#ifdef WINDOWS
 		QString tDir = pFilePlaylist.left(pFilePlaylist.lastIndexOf('\\'));
 	#else
 		QString tDir = pFilePlaylist.left(pFilePlaylist.lastIndexOf('/'));
@@ -994,7 +994,7 @@ Playlist OverviewPlaylistWidget::ParsePLS(QString pFilePlaylist, bool pAcceptVid
     int tLoadedPlaylistEntries = 0;
 	Playlist tResult;
 
-	#ifdef WIN32
+	#ifdef WINDOWS
 		QString tDir = pFilePlaylist.left(pFilePlaylist.lastIndexOf('\\'));
 	#else
 		QString tDir = pFilePlaylist.left(pFilePlaylist.lastIndexOf('/'));

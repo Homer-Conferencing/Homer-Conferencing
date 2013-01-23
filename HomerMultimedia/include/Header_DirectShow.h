@@ -28,7 +28,7 @@
 #ifndef _MULTIMEDIA_HEADER_DIRECTSHOW_
 #define _MULTIMEDIA_HEADER_DIRECTSHOW_
 
-#if defined(WIN32)
+#if defined(WINDOWS)
 #pragma GCC system_header
 
 ///////////////////////////////////////////////////////////////////////////////

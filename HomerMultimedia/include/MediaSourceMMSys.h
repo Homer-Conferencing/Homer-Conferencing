@@ -25,7 +25,7 @@
  * Since:   2010-10-29
  */
 
-#ifdef WIN32
+#if defined(WINDOWS)
 #ifndef _MULTIMEDIA_MEDIA_SOURCE_MMSYS_
 #define _MULTIMEDIA_MEDIA_SOURCE_MMSYS_
 

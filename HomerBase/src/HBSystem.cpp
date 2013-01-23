@@ -69,7 +69,7 @@ bool System::GetWindowsKernelVersion(int &pMajor, int &pMinor)
     pMajor = 0;
     pMinor = 0;
 
-    #ifdef WIN32
+	#if defined(WINDOWS)
         OSVERSIONINFOEX tVersionInfo;
         ZeroMemory(&tVersionInfo, sizeof(OSVERSIONINFOEX));
         tVersionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
@@ -98,7 +98,7 @@ string System::GetKernelVersion()
 			if (tInfo.release != NULL)
 				tResult = string(tInfo.release);
 		#endif
-		#ifdef WIN32
+		#if defined(WINDOWS)
 			OSVERSIONINFOEX tVersionInfo;
 			ZeroMemory(&tVersionInfo, sizeof(OSVERSIONINFOEX));
 			tVersionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
@@ -130,7 +130,7 @@ int System::GetMachineCores()
 		#if defined(LINUX) || defined(APPLE) || defined(BSD)
 			tResult = sysconf(_SC_NPROCESSORS_ONLN);
 		#endif
-		#ifdef WIN32
+		#if defined(WINDOWS)
 			SYSTEM_INFO tSysInfo;
 
 			GetSystemInfo(&tSysInfo);
@@ -171,7 +171,7 @@ string System::GetMachineType()
 					tResult = "amd64";
 			}
 		#endif
-		#ifdef WIN32
+		#if defined(WINDOWS)
 			SYSTEM_INFO tSysInfo;
 
 			GetSystemInfo(&tSysInfo);
@@ -251,7 +251,7 @@ int64_t System::GetMachineMemoryPhysical()
         long tPageSize = sysconf(_SC_PAGE_SIZE);
         tResult = (int64_t)tPages * tPageSize;
     #endif
-    #ifdef WIN32
+	#if defined(WINDOWS)
         MEMORYSTATUSEX tMemStatus;
         tMemStatus.dwLength = sizeof(tMemStatus);
         GlobalMemoryStatusEx(&tMemStatus);
@@ -283,7 +283,7 @@ int64_t System::GetMachineMemorySwap()
         else
         	tResult = (int64_t)tVmUsage.xsu_total;
     #endif
-    #ifdef WIN32
+	#if defined(WINDOWS)
         MEMORYSTATUSEX tMemStatus;
         tMemStatus.dwLength = sizeof(tMemStatus);
         GlobalMemoryStatusEx(&tMemStatus);

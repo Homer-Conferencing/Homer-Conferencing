@@ -393,7 +393,7 @@ bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort, e
 		{
             LOG(LOG_VERBOSE, "Using bidirectional media sockets to support NAT traversal");
 
-			#if defined(WIN32) || defined(APPLE) || defined(BSD)
+			#if defined(WINDOWS) || defined(APPLE) || defined(BSD)
                 // create video receiver port
                 tParticipantDescriptor.VideoReceiveSocket = Socket::CreateServerSocket(IS_IPV6_ADDRESS(pHost) ? SOCKET_IPv6 : SOCKET_IPv4, GetSocketTypeFromMediaTransportType(GetVideoTransportType()), mVideoAudioStartPort, true, 2);
                 if (tParticipantDescriptor.VideoReceiveSocket == NULL)
@@ -500,7 +500,7 @@ bool Meeting::CloseParticipantSession(string pParticipant, enum TransportType pP
         {
             // hint: the media sources are deleted within video/audio-widget
 
-            #if defined(WIN32) || defined(APPLE) || defined(BSD)
+            #if defined(WINDOWS) || defined(APPLE) || defined(BSD)
                 // delete video/audio sockets
                 delete (*tIt).VideoSendSocket;
                 delete (*tIt).AudioSendSocket;

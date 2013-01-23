@@ -112,13 +112,13 @@ IF (NOT (${BUILD} MATCHES "Default"))
 	ENDIF()
 ENDIF()
 
-IF (WIN32)
+IF (WINDOWS)
 	IF (${BUILD} MATCHES "Debug")
 		SET (LFLAGS	"${LFLAGS} -Wl,--subsystem,console")
 	ELSE()
 		SET (LFLAGS	"${LFLAGS} -Wl,--subsystem,windows")
 	ENDIF ()
-ENDIF (WIN32)
+ENDIF (WINDOWS)
 
 ##############################################################
 # SOURCES 

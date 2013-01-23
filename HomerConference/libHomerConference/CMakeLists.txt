@@ -48,15 +48,15 @@ endif (NOT APPLE)
 
 ##############################################################
 # target directory for the lib
-IF (NOT (WIN32))
+IF (NOT (WINDOWS))
 SET (TARGET_DIRECTORY
     ${RELOCATION_DIR}lib
 )
-ELSE (NOT (WIN32))
+ELSE (NOT (WINDOWS))
 SET (TARGET_DIRECTORY
     ${RELOCATION_DIR}
 )
-ENDIF (NOT (WIN32))
+ENDIF (NOT (WINDOWS))
 
 ##############################################################
 # SOURCES

@@ -44,7 +44,7 @@ ENDIF()
 
 ##############################################################
 # Homer versioning
-IF(WIN32)
+IF (WINDOWS)
 	IF (DEFINED TARGET_LIB_NAME) 
 		INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../${RELOCATION_INCLUDES}HomerBuild/CMakeWinResLib.txt)
 	ELSE()
@@ -54,12 +54,12 @@ ENDIF()
 
 ##############################################################
 # support thread-safe exception handling on Mingw32
-IF (WIN32)
+IF (WINDOWS)
 	SET (FLAGS 
 		${FLAGS}
 		-mthreads
 	)
-ENDIF (WIN32)
+ENDIF (WINDOWS)
 
 ##############################################################
 # library directories
@@ -84,12 +84,12 @@ IF (APPLE)
 ENDIF (APPLE)
 ENDIF ()
 
-IF (WIN32)
+IF (WINDOWS)
     SET (LIB_DIRS
         ${LIB_DIRS}
         ${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerLibs/win${ARCH_BITS}
     )
-ENDIF (WIN32)
+ENDIF (WINDOWS)
 
 ##############################################################
 # lib search path
@@ -120,7 +120,7 @@ SET (INCLUDE_DIRS
 	${INCLUDE_DIRS}
 	/usr/local/include	
 )
-IF ((NOT ${BUILD} MATCHES "Default") OR (WIN32))
+IF ((NOT ${BUILD} MATCHES "Default") OR (WINDOWS))
 SET (INCLUDE_DIRS
 	${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-Release/HomerIncludes
 	${INCLUDE_DIRS}
@@ -186,18 +186,30 @@ ENDIF()
 
 ##############################################################
 # definitions
-# "-D" options for compilation in WIN32 environment
+# "-D" options for compilation in WINDOWS environment
 SET (DEFINITIONS_WINDOWS
 	${DEFINITIONS_WINDOWS}
 	-D__STDC_CONSTANT_MACROS
 	-D__STDC_FORMAT_MACROS
 	-D__STDC_LIMIT_MACROS
 	-DWINVER=0x0501
-	-DWIN32
+	-DWINDOWS
 	-D_REENTRANT
 	-DHOMER_NETWORK_SIMULATOR=${HOMER_NETWORK_SIMULATOR}
 	-DARCH_BITS=${ARCH_BITS}
 )
+IF (WIN32)
+SET (DEFINITIONS_WINDOWS
+	${DEFINITIONS_WINDOWS}
+	-DWIN32
+)
+ENDIF()
+IF (WIN64)
+SET (DEFINITIONS_WINDOWS
+	${DEFINITIONS_WINDOWS}
+	-DWIN64
+)
+ENDIF()
 
 # "-D" options for compilation in LINUX environment
 SET (DEFINITIONS_LINUX
@@ -251,19 +263,19 @@ ENDIF()
 
 ##############################################################
 # for win32 remove the "lib" prefix for dll's
-IF (WIN32)
+IF (WINDOWS)
 	SET(CMAKE_SHARED_LIBRARY_PREFIX "")
 	SET(CMAKE_STATIC_LIBRARY_PREFIX "")
 	SET(CMAKE_IMPORT_LIBRARY_PREFIX "")
-ENDIF (WIN32)
+ENDIF (WINDOWS)
 
 ##############################################################
 # add definitions for compilation
-IF (WIN32)
+IF (WINDOWS)
 	FOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_WINDOWS})
 		ADD_DEFINITIONS("${DEFINITIONS_ENTRY}")
 	ENDFOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_WINDOWS})
-ENDIF (WIN32)
+ENDIF (WINDOWS)
 IF (APPLE)
 	FOREACH(DEFINITIONS_ENTRY ${DEFINITIONS_APPLE})
 		ADD_DEFINITIONS("${DEFINITIONS_ENTRY}")
@@ -344,9 +356,9 @@ IF (DEFINED TARGET_LIB_NAME)
 ENDIF ()
 # generate program from given source files
 IF (DEFINED TARGET_PROGRAM_NAME) 
-	IF (WIN32)
+	IF (WINDOWS)
 		MESSAGE("### Flags for Windows binary linking: ${CMAKE_EXE_LINKER_FLAGS}")
-	ENDIF (WIN32)
+	ENDIF (WINDOWS)
 	
 	# build destination
 	SET(EXECUTABLE_OUTPUT_PATH ${TARGET_DIRECTORY})
@@ -356,7 +368,7 @@ IF (DEFINED TARGET_PROGRAM_NAME)
 	IF(APPLE)
 #		ADD_EXECUTABLE(${TARGET_PROGRAM_NAME} MACOSX_BUNDLE ${SOURCES})
 		ADD_EXECUTABLE(${TARGET_PROGRAM_NAME} ${SOURCES})
-	ELSEIF (WIN32)
+	ELSEIF (WINDOWS)
 		ADD_EXECUTABLE(${TARGET_PROGRAM_NAME} WIN32 ${SOURCES})
 	ELSE ()
 		ADD_EXECUTABLE(${TARGET_PROGRAM_NAME} ${SOURCES})
@@ -383,7 +395,7 @@ IF (DEFINED TARGET_LIB_NAME)
 	IF (DEFINED INSTALL_LIBDIR)
 		INSTALL(TARGETS ${TARGET_NAME} COMPONENT libraries RUNTIME DESTINATION ${INSTALL_LIBDIR} LIBRARY DESTINATION ${INSTALL_LIBDIR})
 	ELSE()
-        IF(WIN32)
+        IF(WINDOWS)
                 INSTALL(TARGETS ${TARGET_NAME} COMPONENT libraries RUNTIME DESTINATION . LIBRARY DESTINATION .)
         ELSE()
                 INSTALL(TARGETS ${TARGET_NAME} COMPONENT libraries RUNTIME DESTINATION lib LIBRARY DESTINATION lib)
@@ -398,7 +410,7 @@ ENDIF()
 
 # INSTALL executable: define install target
 IF (DEFINED TARGET_PROGRAM_NAME)
-    IF(WIN32)
+    IF(WINDOWS)
         INSTALL(TARGETS ${TARGET_NAME} RUNTIME DESTINATION . COMPONENT application)
     ELSE()
         INSTALL(TARGETS ${TARGET_NAME} BUNDLE DESTINATION . RUNTIME DESTINATION . PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE COMPONENT application)
@@ -406,7 +418,7 @@ IF (DEFINED TARGET_PROGRAM_NAME)
 ENDIF()
 
 # INSTALL additional libraries: define install target
-IF (WIN32)
+IF (WINDOWS)
     MESSAGE("### Will additionally install Windows libraries: ${LIBS_WINDOWS_INSTALL}")
     FOREACH(LIBS_WINDOWS_INSTALL_ENTRY ${LIBS_WINDOWS_INSTALL})
     	GET_FILENAME_COMPONENT(LIBS_INSTALL_ENTRY_PATH_PREFIX ${LIBS_WINDOWS_INSTALL_ENTRY}.dll PATH)
@@ -431,10 +443,10 @@ ENDIF()
 ##############################################################
 # link to needed external libraries
 IF (DEFINED TARGET_NAME)
-    IF (WIN32)
+    IF (WINDOWS)
 	   MESSAGE("### Linking dynamic Windows libraries: ${LIBS_WINDOWS}")
 	   TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_WINDOWS})
-    ENDIF (WIN32)
+    ENDIF (WINDOWS)
 ENDIF()
 
 # activate rpath

@@ -28,7 +28,7 @@
 #ifndef _CONFERENCE_HEADER_SOFIASIP_
 #define _CONFERENCE_HEADER_SOFIASIP_
 
-#ifdef WIN32
+#if defined(WINDOWS)
 #include <stdio.h>
 #ifndef ssize_t
 #define ssize_t SSIZE_T

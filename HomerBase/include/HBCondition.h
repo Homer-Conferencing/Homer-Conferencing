@@ -39,7 +39,7 @@
 
 #include <Header_Windows.h>
 
-#if defined(WIN32) ||defined(WIN64)
+#if defined(WINDOWS)
 #define OS_DEP_COND HANDLE
 #endif
 

@@ -71,7 +71,7 @@ Thread::~Thread()
 
 void Thread::CloseThread()
 {
-	#ifdef WIN32
+	#if defined(WINDOWS)
 		if (mThreadHandle != NULL)
 			CloseHandle(mThreadHandle);
 	#endif
@@ -86,7 +86,7 @@ void Thread::Suspend(unsigned int pUSecs)
 		if (usleep(pUSecs) != 0)
 			LOGEX(Thread, LOG_ERROR, "Error from usleep: \"%s\"", strerror(errno));
 	#endif
-	#ifdef WIN32
+	#if defined(WINDOWS)
 		Sleep(pUSecs / 1000);
 	#endif
 }
@@ -112,7 +112,7 @@ int Thread::GetTId()
     #if defined(BSD)
 		return (int)pthread_self();
     #endif
-	#ifdef WIN32
+	#ifdef WINDOWS
 		return (int)GetCurrentThreadId();
 	#endif
 }
@@ -122,7 +122,7 @@ int Thread::GetPId()
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		return getpid();
 	#endif
-	#ifdef WIN32
+	#ifdef WINDOWS
 		return GetCurrentProcessId();
 	#endif
 }
@@ -132,7 +132,7 @@ int Thread::GetPPId()
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		return getppid();
 	#endif
-	#ifdef WIN32
+	#ifdef WINDOWS
 		HANDLE tSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS /* include all system processes */, 0 /* current process only */);
 		if (tSnapshot)
 		{
@@ -217,7 +217,7 @@ vector<int> Thread::GetTIds()
 			LOGEX(Thread, LOG_ERROR, "Failed to get the list of OSX threads");
 		}
     #endif
-	#ifdef WIN32
+	#ifdef WINDOWS
 		HANDLE tSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD /* include all system thread */, 0 /* current process only */);
 		if (tSnapshot)
 		{
@@ -498,7 +498,7 @@ bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned l
         pPriority = 0;
         pBasePriority = 0;
     #endif
-	#ifdef WIN32
+	#ifdef WINDOWS
 		/* Windows thread priorities: (based on http://msdn.microsoft.com/en-us/library/ms683235%28VS.85%29.aspx)
 			 priority			| explanation
 			--------------------+-----------
@@ -716,7 +716,7 @@ bool Thread::StartThread(void* pArgs)
         }
         pthread_attr_destroy(&tThreadAttributes);
     #endif
-    #ifdef WIN32
+    #ifdef WINDOWS
         mThreadHandle = CreateThread(
              NULL,                   // default security attributes
              THREAD_DEFAULT_STACK_SIZE,        // use Linux pthread default stack size, Windows would use 1 MB
@@ -775,7 +775,7 @@ bool Thread::StartThread(THREAD_MAIN pMain, void* pArgs)
 		}
 		pthread_attr_destroy(&tThreadAttributes);
 	#endif
-    #ifdef WIN32
+    #ifdef WINDOWS
         mThreadHandle = CreateThread(
              NULL,                   // default security attributes
              0,                      // use default stack size
@@ -857,7 +857,7 @@ bool Thread::StopThread(int pTimeoutInMSecs, void** pResults)
             }
         #endif
 	#endif
-	#ifdef WIN32
+	#ifdef WINDOWS
         if (pTimeoutInMSecs == 0)
         {
             pTimeoutInMSecs = INFINITE;

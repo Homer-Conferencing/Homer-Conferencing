@@ -25,7 +25,7 @@
  * Since:   2010-10-19
  */
 
-#ifdef WIN32
+#if defined(WINDOWS)
 #ifndef _MULTIMEDIA_MEDIA_SOURCE_VFW_
 #define _MULTIMEDIA_MEDIA_SOURCE_VFW_
 

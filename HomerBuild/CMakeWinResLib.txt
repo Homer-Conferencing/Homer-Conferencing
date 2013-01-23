@@ -7,7 +7,7 @@ MESSAGE("##### Homer library RC file generation for Windows environments")
 
 ##############################################################
 # WINDOWS: create Homer.rc automatically as additional object for linking process
-IF(WIN32)
+IF(WINDOWS)
 	configure_file(
 		${CMAKE_CURRENT_SOURCE_DIR}/../../${RELOCATION_INCLUDES}HomerBuild/resources/windows/HomerLib.rc.in
 	  	${CMAKE_CURRENT_BINARY_DIR}/HomerLib.rc
@@ -16,7 +16,7 @@ ENDIF()
 
 ##############################################################
 # WINDOWS: add rc file to linking process
-IF (WIN32)
+IF (WINDOWS)
 	SET (SOURCES
 		${SOURCES}
 		${CMAKE_CURRENT_BINARY_DIR}/HomerLib.rc	

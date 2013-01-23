@@ -49,15 +49,15 @@ SET (INCLUDE_DIRS
 
 ##############################################################
 # target directory for the lib
-IF (NOT (WIN32))
+IF (NOT (WINDOWS))
 SET (TARGET_DIRECTORY
     ${RELOCATION_DIR}lib
 )
-ELSE (NOT (WIN32))
+ELSE (NOT (WINDOWS))
 SET (TARGET_DIRECTORY
     ${RELOCATION_DIR}
 )
-ENDIF (NOT (WIN32))
+ENDIF (NOT (WINDOWS))
 
 ##############################################################
 # compile flags                                                                                                                                                                                                                                                                   
@@ -88,12 +88,12 @@ SET (SOURCES
 	../src/WaveOutPortAudio	
 )
 
-IF (WIN32)
+IF (WIN32 AND NOT WIN64)
 SET (SOURCES
 	${SOURCES}
 	../src/MediaSourceDShow
 )
-ENDIF (WIN32)
+ENDIF()
 
 IF (APPLE)
 SET (SOURCES
@@ -130,7 +130,6 @@ SET (LIBS_WINDOWS_INSTALL
 	postproc-52
     swresample-0
     swscale-2
-    SDL    
 )
 SET (LIBS_WINDOWS
     avutil-52
@@ -147,7 +146,6 @@ SET (LIBS_WINDOWS
 	ws2_32
 	Avicap32
 	Winmm
-	SDL
 )
 
 #################

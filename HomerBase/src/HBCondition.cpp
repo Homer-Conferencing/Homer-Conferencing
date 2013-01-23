@@ -46,7 +46,7 @@ Condition::Condition()
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		tResult = (pthread_cond_init(&mCondition, NULL) == 0);
 	#endif
-	#if defined(WIN32) ||defined(WIN64)
+	#if defined(WINDOWS)
 		mCondition = CreateEvent(NULL, true, false, NULL);
 		tResult = (mCondition != NULL);
 	#endif
@@ -60,7 +60,7 @@ Condition::~Condition()
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		tResult = (pthread_cond_destroy(&mCondition) == 0);
 	#endif
-	#if defined(WIN32) ||defined(WIN64)
+	#if defined(WINDOWS)
 	    tResult = (CloseHandle(mCondition) != 0);
 	#endif
     if (!tResult)
@@ -177,7 +177,7 @@ bool Condition::Wait(Mutex *pMutex, int pMSecs)
         }
     #endif
 
-    #if defined(WIN32) ||defined(WIN64)
+	#if defined(WINDOWS)
         //TODO: fix this - mutex handling here is nothing to rely on!
         if (pMutex != NULL)
         	pMutex->unlock();
@@ -195,7 +195,7 @@ bool Condition::SignalOne()
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		return !pthread_cond_signal(&mCondition);
 	#endif
-	#if defined(WIN32) ||defined(WIN64)
+	#if defined(WINDOWS)
 		return (SetEvent(mCondition) != 0);
 	#endif
 }
@@ -205,7 +205,7 @@ bool Condition::SignalAll()
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
         return !pthread_cond_broadcast(&mCondition);
     #endif
-    #if defined(WIN32) ||defined(WIN64)
+	#if defined(WINDOWS)
 		return (SetEvent(mCondition) != 0);
     #endif
 }
@@ -215,7 +215,7 @@ bool Condition::Reset()
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
         return (pthread_cond_init(&mCondition, NULL) == 0);
 	#endif
-	#if defined(WIN32) ||defined(WIN64)
+	#if defined(WINDOWS)
 		return (ResetEvent(mCondition) != 0);
 	#endif
 }

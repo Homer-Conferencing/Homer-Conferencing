@@ -37,6 +37,7 @@
 #include <ProcessStatisticService.h>
 #include <Logger.h>
 #include <Header_Ffmpeg.h>
+#include <Header_DirectShow.h>
 
 #include <cstdio>
 #include <string.h>

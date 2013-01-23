@@ -25,7 +25,8 @@
  * Since:   2012-08-16
  */
 
-#ifdef WIN32
+//TODO: fix compile problems for WIN64 and reactivate the code again
+#if defined(WIN32)
 #ifndef _MULTIMEDIA_MEDIA_SOURCE_DSHOW_
 #define _MULTIMEDIA_MEDIA_SOURCE_DSHOW_
 

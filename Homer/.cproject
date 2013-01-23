@@ -51,11 +51,12 @@
 									<listOptionValue builtIn="false" value="../../../Homer-Release/HomerIncludes/qt4/QtCore"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1209009665" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="M_LINUX=1"/>
 									<listOptionValue builtIn="false" value="WIN32=1"/>
 									<listOptionValue builtIn="false" value="LINUX=1"/>
 									<listOptionValue builtIn="false" value="_GLIBCXX_USE_WSTRING=1"/>
 									<listOptionValue builtIn="false" value="__STDC_LIMIT_MACROS"/>
+									<listOptionValue builtIn="false" value="WIN64=1"/>
+									<listOptionValue builtIn="false" value="WINDOWS=1"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1416506455" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>

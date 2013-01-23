@@ -157,7 +157,7 @@ static void sQtDebugMessageOutput(QtMsgType pType, const char *pMsg)
 				break;
 		}
 	#endif
-	#ifdef WIN32
+	#ifdef WINDOWS
 		switch (pType)
 		{
 			case QtDebugMsg:
@@ -182,7 +182,7 @@ static void sQtDebugMessageOutput(QtMsgType pType, const char *pMsg)
 int main(int pArgc, char* pArgv[])
 {
 #endif
-#if defined(WIN32) || defined(WIN64)
+#if defined(WINDOWS)
 int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine, int pShowCmd)
 {
 	int pArgc = 0;

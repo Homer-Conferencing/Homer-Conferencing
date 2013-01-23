@@ -25,43 +25,7 @@ ELSE()
 ENDIF()
 
 ##############################################################
-# detect FreeBSD
-IF (DEFINED INSIDE_HOMER_BUILD)
-IF (${CMAKE_SYSTEM} MATCHES "FreeBSD.*")
-	SET (BSD "true")
-	MESSAGE("Detected system is FreeBSD")
-ELSE()
-	MESSAGE("Detected system is ${CMAKE_SYSTEM}") 
-ENDIF()
-ENDIF()
-
-##############################################################
-# detect Linux
-IF (UNIX AND NOT WIN32 AND NOT APPLE AND NOT BSD)
-	SET (LINUX "true")
-ENDIF()
-
-##############################################################
-# detect OS X
-if (APPLE)
-	exec_program(uname ARGS -v OUTPUT_VARIABLE DARWIN_VERSION)
-	string(REGEX MATCH "[0-9]+" DARWIN_VERSION ${DARWIN_VERSION})
-	if (DARWIN_VERSION LESS 10)
-		# 10.6 of Snow Leopard is minimum
-		MESSAGE(FATAL_ERROR "You need at least OS X Snow Leopard")
-	endif()
-	if (DARWIN_VERSION EQUAL 10)
-		MESSAGE("Detected DARWIN version 10 from OS X Snow Leopard")
-	elseif (DARWIN_VERSION EQUAL 11)
-		MESSAGE("Detected DARWIN version 11 from OS X Lion")
-	else()
-		message("Detected DARWIN version ${DARWIN_VERSION}")
-	endif()
-endif(APPLE)
-
-##############################################################
 # architecture
-IF (DEFINED INSIDE_HOMER_BUILD)
 IF (NOT DEFINED ARCH_BITS)
 	IF ("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
 		set(ARCH_BITS "64")
@@ -75,6 +39,56 @@ IF (NOT DEFINED ARCH_BITS)
 ELSE()
 	MESSAGE("Architecture was explicitly defined as ${ARCH_BITS} bit")
 ENDIF (NOT DEFINED ARCH_BITS)
+
+##############################################################
+# detect the operating system
+IF (DEFINED INSIDE_HOMER_BUILD)
+	##############################################################
+	# detect FreeBSD
+	IF (${CMAKE_SYSTEM} MATCHES "FreeBSD.*")
+		SET (BSD "true")
+		MESSAGE("Detected system is FreeBSD")
+	ELSE()
+		MESSAGE("Detected system is ${CMAKE_SYSTEM}") 
+	ENDIF()
+	
+	##############################################################
+	# detect Linux
+	IF (UNIX AND NOT WIN32 AND NOT APPLE AND NOT BSD)
+		MESSAGE("Detected system is Linux")
+		SET (LINUX "true")
+	ENDIF()
+	
+	##############################################################
+	# detect OS X
+	if (APPLE)
+		exec_program(uname ARGS -v OUTPUT_VARIABLE DARWIN_VERSION)
+		string(REGEX MATCH "[0-9]+" DARWIN_VERSION ${DARWIN_VERSION})
+		if (DARWIN_VERSION LESS 10)
+			# 10.6 of Snow Leopard is minimum
+			MESSAGE(FATAL_ERROR "You need at least OS X Snow Leopard")
+		endif()
+		if (DARWIN_VERSION EQUAL 10)
+			MESSAGE("Detected system is DARWIN version 10 from OS X Snow Leopard")
+		elseif (DARWIN_VERSION EQUAL 11)
+			MESSAGE("Detected system is DARWIN version 11 from OS X Lion")
+		else()
+			message("Detected system is DARWIN version ${DARWIN_VERSION}")
+		endif()
+	endif(APPLE)
+	
+	##############################################################
+	# detect Linux
+	IF (WIN32)
+		SET (WINDOWS "true")
+		IF ("${ARCH_BITS}" EQUAL "64")
+			MESSAGE("Detected system is Windows64")
+			SET(WIN64 "true")
+		ELSE()
+			MESSAGE("Detected system is Windows32")
+			SET(WIN32 "true")
+		ENDIF()
+	ENDIF()
 ENDIF()
 
 ##############################################################

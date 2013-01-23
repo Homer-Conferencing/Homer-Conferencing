@@ -516,6 +516,9 @@ void MainWindow::initializeVideoAudioIO()
     #ifdef WIN32
         mOwnVideoMuxer->RegisterMediaSource(new MediaSourceDShow());
     #endif
+	#ifdef WIN64
+//		mOwnVideoMuxer->RegisterMediaSource(new MediaSourceDShow()); //TODO
+	#endif
     #ifdef APPLE
 //        mOwnVideoMuxer->RegisterMediaSource(new MediaSourceCoreVideo());
     #endif

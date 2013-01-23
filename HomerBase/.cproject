@@ -25,9 +25,9 @@
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.282421056" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
 								<option id="gnu.cpp.compiler.option.preprocessor.def.224177496" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="LINUX=1"/>
-									<listOptionValue builtIn="false" value="WIN32=1"/>
 									<listOptionValue builtIn="false" value="__MINGW32__=1"/>
 									<listOptionValue builtIn="false" value="APPLE=1"/>
+									<listOptionValue builtIn="false" value="WINDOWS=1"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.include.paths.1138424256" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;C:\MinGW\include\c++\3.4.5&quot;"/>

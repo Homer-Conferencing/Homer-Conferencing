@@ -7,7 +7,7 @@ INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/CMakeConfig.txt)
 ###############################################################################
 # we are inside HomerBuild!
 SET (INSIDE_HOMER_BUILD "true")
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 2.8)
 PROJECT(Homer-Conferencing)
 ADD_SUBDIRECTORY(../HomerBase ${CMAKE_CURRENT_BINARY_DIR}/HomerBase)
 ADD_SUBDIRECTORY(../HomerMonitor ${CMAKE_CURRENT_BINARY_DIR}/HomerMonitor)

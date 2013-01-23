@@ -938,7 +938,7 @@ void SIP::SipCallBack(int pEvent, int pStatus, char const *pPhrase, nua_t *pNua,
         else
             LOGEX(SIP, LOG_INFO, "SIP-Network source: %s:<%u>[%s]", tSourceIp.c_str(), tSourcePort, Socket::TransportType2String(tSourcePortTransport).c_str());
     }
-    LOGEX(SIP, LOG_INFO, "Handle: 0x%"PRIx64"x", (unsigned long)pNuaHandle);
+    LOGEX(SIP, LOG_INFO, "Handle: %p", pNuaHandle);
     LOGEX(SIP, LOG_INFO, "Lib-Status: \"%s\"(%d)", pPhrase, pStatus);
     PrintIncomingMessageInfo(tRemote, tLocal, pSip);
     switch (pEvent)
@@ -2068,7 +2068,7 @@ void SIP::PrintOutgoingMessageInfo(nua_handle_t *pNuaHandle, GeneralEvent *pEven
     LOG(LOG_INFO, "Sending%sFrom: %s", pEventName.c_str(), pEvent->Sender.c_str());
     LOG(LOG_INFO, "Sending%sTo: %s", pEventName.c_str(), pEvent->Receiver.c_str());
     LOG(LOG_INFO, "Sending%sTransport: %s", pEventName.c_str(), Socket::TransportType2String(pEvent->Transport).c_str());
-    LOG(LOG_INFO, "Sending%sHandle: 0x%"PRIx64"", pEventName.c_str(), (unsigned long)pNuaHandle);
+    LOG(LOG_INFO, "Sending%sHandle: %p", pEventName.c_str(), pNuaHandle);
 }
 
 void SIP::initParticipantTriplet(const sip_to_t *pRemote, sip_t const *pSip, string &pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport, string &pUser, string &pHost, string &pPort)
@@ -2136,7 +2136,7 @@ void SIP::InitGeneralEvent_FromSipReceivedRequestEvent(const sip_to_t *pRemote, 
         pEvent->Transport = pSourcePortTransport;
     }
 
-    LOG(LOG_INFO, "%s-NewHandle: 0x%"PRIx64"", pEventName.c_str(), (unsigned long)pNuaHandle);
+    LOG(LOG_INFO, "%s-NewHandle: %p", pEventName.c_str(), pNuaHandle);
     LOG(LOG_INFO, "%s-EventSender: \"%s\" %s", pEventName.c_str(), pEvent->SenderName.c_str(), pEvent->Sender.c_str());
     if (pEvent->SenderComment.size())
         LOG(LOG_INFO, "%s-SenderComment: %s", pEventName.c_str(), pEvent->SenderComment.c_str());

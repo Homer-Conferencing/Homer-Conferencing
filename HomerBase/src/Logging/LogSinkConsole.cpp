@@ -40,7 +40,7 @@ namespace Homer { namespace Base {
 
 using namespace std;
 
-#ifdef WIN32
+#ifdef WINDOWS
 HANDLE sConsoleHandle;
 #endif
 
@@ -51,7 +51,7 @@ LogSinkConsole::LogSinkConsole()
     mLogLevel = LOG_ERROR;
     mLogSinkId = "CONSOLE: standard out";
     mColoring = true;
-	#ifdef WIN32
+	#ifdef WINDOWS
 		sConsoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 	#endif
 }
@@ -62,7 +62,7 @@ LogSinkConsole::~LogSinkConsole()
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
 		printf("\033[01;37m \n");
 	#endif
-	#ifdef WIN32
+	#ifdef WINDOWS
     	SetConsoleTextAttribute(sConsoleHandle, 7);
 	#endif
 }
@@ -155,7 +155,7 @@ void LogSinkConsole::ProcessMessage(int pLevel, string pTime, string pSource, in
                                 break;
                 }
             #endif
-            #ifdef WIN32
+            #ifdef WINDOWS
                 SetConsoleTextAttribute(sConsoleHandle, 3);
                 printf("(%s) ", pTime.c_str());
                 switch(pLevel)

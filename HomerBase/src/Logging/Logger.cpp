@@ -42,7 +42,7 @@
 
 namespace Homer { namespace Base {
 
-#ifdef WIN32
+#ifdef WINDOWS
 #ifndef __MINGW32__
 // use secured vsprintf of MS Win
 #define vsprintf vsprintf_s

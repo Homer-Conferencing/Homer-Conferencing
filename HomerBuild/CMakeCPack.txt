@@ -7,7 +7,7 @@ MESSAGE("### Supporting installer creation")
 
 ###############################################################################
 # generate Welcome.txt
-IF (WIN32)
+IF (WINDOWS)
 	configure_file(
 		${CMAKE_CURRENT_SOURCE_DIR}/../${RELOCATION_INCLUDES}HomerBuild/resources/texts/Homer-Welcome.txt.in
 	  	${CMAKE_CURRENT_BINARY_DIR}\\\\Homer-Welcome.txt
@@ -80,9 +80,9 @@ set(CPACK_COMPONENT_LANG_GROUP "Usability add-ons")
 
 ###############################################################################
 # NSIS specific configuration for Windows
-IF (WIN32)
+IF (WINDOWS)
         INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../${RELOCATION_INCLUDES}HomerBuild/CMakeCPackWin.txt)
-ENDIF(WIN32)
+ENDIF(WINDOWS)
 
 # STGZ/RPM/DEB specific configuration for Windows
 IF (LINUX)

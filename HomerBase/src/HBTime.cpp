@@ -83,7 +83,7 @@ int64_t Time::GetTimeStamp()
 		tResult = (int64_t)1000 * 1000 * tTimeVal.tv_sec + tTimeVal.tv_usec;
 	#endif
 
-	#ifdef WIN32
+	#ifdef WINDOWS
 		struct _timeb tTimeVal;
 		#ifdef __MINGW32__
 			_ftime(&tTimeVal);
@@ -120,7 +120,7 @@ bool Time::GetNow(int *pDay, int *pMonth, int *pYear, int *pHour, int *pMin, int
         else
             tResult = true;
     #endif
-    #ifdef WIN32
+    #ifdef WINDOWS
 		#ifdef __MINGW32__
 			struct tm* tTm = localtime(&tTimeStamp);
 			tLocalTimeData.tm_mday = tTm->tm_mday;

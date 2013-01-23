@@ -42,7 +42,7 @@
 #endif
 
 // include all needed headers for 32 bit and 64 bit Windows
-#if defined(WIN32) || defined(WIN64)
+#if defined(WINDOWS)
 
 // activate some additional definitions within Windows includes
 #ifndef WIN32_LEAN_AND_MEAN
