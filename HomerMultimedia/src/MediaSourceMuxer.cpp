@@ -1412,12 +1412,13 @@ void* MediaSourceMuxer::Run(void* pArgs)
             //###################################################################
             if (mEncoderFlushBuffersAfterSeeking)
             {
-                LOG(LOG_VERBOSE, "Flushing %s encoder internal buffers after seeking in input stream", GetMediaTypeStr().c_str());
 
                 // flush ffmpeg internal buffers
+                LOG(LOG_VERBOSE, "Flushing %s encoder internal buffers after seeking in input stream", GetMediaTypeStr().c_str());
                 avcodec_flush_buffers(mCodecContext);
 
                 // reset the library internal frame FIFO
+                LOG(LOG_VERBOSE, "Flushing %s encoder internal FIFO after seeking in input stream", GetMediaTypeStr().c_str());
                 mEncoderFifo->ClearFifo();
 
                 // reset flag
