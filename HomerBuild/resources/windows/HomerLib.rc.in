@@ -11,9 +11,9 @@ BEGIN
     BEGIN
       VALUE "ProductName", "Homer Conferencing"
       VALUE "CompanyName", "http://www.homer-conferencing.com"
-      VALUE "FileDescription", "Homer Conferencing Library"
+      VALUE "FileDescription", "Homer Conferencing library"
       VALUE "FileVersion", "@HOMER_VERSION@.0"
-      VALUE "LegalCopyright", "(C) 2008 Thomas Volkert <thomas@homer-conferencing.com>"
+      VALUE "LegalCopyright", "(C) 2008-2013 Thomas Volkert <thomas@homer-conferencing.com>"
       VALUE "Comments", "GNU General Public License 2 (GPLv2.0)"
       VALUE "OriginalFilename", "@TARGET_LIB_NAME@.dll"
       
