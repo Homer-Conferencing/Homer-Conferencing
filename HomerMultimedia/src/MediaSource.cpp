@@ -2854,11 +2854,6 @@ bool MediaSource::Seek(float pSeconds, bool pOnlyKeyFrames)
     return false;
 }
 
-bool MediaSource::SeekRelative(float pSeconds, bool pOnlyKeyFrames)
-{
-    return false;
-}
-
 float MediaSource::GetSeekPos()
 {
     return 0;

@@ -73,6 +73,7 @@ MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
     mStreamMaxFps = 0;
     mVideoHFlip = false;
     mVideoVFlip = false;
+    mEncoderFlushBuffersAfterSeeking = false;
     mMediaSource = pMediaSource;
     if (mMediaSource != NULL)
     	mMediaSources.push_back(mMediaSource);
@@ -1397,10 +1398,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
     mEncoderNeeded = true;
 
     // flush ffmpeg internal buffers
-    avcodec_flush_buffers(mCodecContext);
-
-    // reset buffer counter
-    mEncoderOutputFrameDelay = 0;
+    mEncoderFlushBuffersAfterSeeking = true;
 
     while(mEncoderNeeded)
     {
@@ -1409,6 +1407,29 @@ void* MediaSourceMuxer::Run(void* pArgs)
 		#endif
         if (mEncoderFifo != NULL)
         {
+            //####################################################################
+            //### flush codec buffer
+            //###################################################################
+            if (mEncoderFlushBuffersAfterSeeking)
+            {
+                LOG(LOG_VERBOSE, "Flushing %s encoder internal buffers after seeking in input stream", GetMediaTypeStr().c_str());
+
+                // flush ffmpeg internal buffers
+                avcodec_flush_buffers(mCodecContext);
+
+                // reset the library internal frame FIFO
+                mEncoderFifo->ClearFifo();
+
+                // reset flag
+                mEncoderFlushBuffersAfterSeeking = false;
+
+                // reset buffer counter
+                mEncoderOutputFrameDelay = 0;
+            }
+
+            //####################################################################
+            //### get next frame data
+            //###################################################################
             tFifoEntry = mEncoderFifo->ReadFifoExclusive(&tBuffer, tBufferSize);
 
             if ((tBufferSize > 0) && (mEncoderNeeded))
@@ -1422,8 +1443,8 @@ void* MediaSourceMuxer::Run(void* pArgs)
                 mMediaSinksMutex.unlock();
 
                 //####################################################################
-                // reencode frame and send it to the registered media sinks
-                // ###################################################################
+                //### reencode frame and send it to the registered media sinks
+                //###################################################################
                 if ((mStreamActivated) && (tRegisteredMediaSinks))
                 {
                     switch(mMediaType)
@@ -2508,10 +2529,16 @@ int MediaSourceMuxer::GetSynchronizationPoints()
 
 bool MediaSourceMuxer::TimeShift(int64_t pOffset)
 {
+    bool tResult = false;
+
     if (mMediaSource != NULL)
-        return mMediaSource->TimeShift(pOffset);
-    else
-        return false;
+    {
+        tResult = mMediaSource->TimeShift(pOffset);
+        if (tResult)
+            mEncoderFlushBuffersAfterSeeking = true;
+    }
+
+    return tResult;
 }
 
 int MediaSourceMuxer::GetOutputSampleRate()
@@ -2632,18 +2659,16 @@ float MediaSourceMuxer::GetSeekEnd()
 
 bool MediaSourceMuxer::Seek(float pSeconds, bool pOnlyKeyFrames)
 {
-    if (mMediaSource != NULL)
-    	return mMediaSource->Seek(pSeconds, pOnlyKeyFrames);
-    else
-        return false;
-}
+    bool tResult = false;
 
-bool MediaSourceMuxer::SeekRelative(float pSeconds, bool pOnlyKeyFrames)
-{
     if (mMediaSource != NULL)
-    	return mMediaSource->SeekRelative(pSeconds, pOnlyKeyFrames);
-	else
-        return false;
+    {
+    	tResult = mMediaSource->Seek(pSeconds, pOnlyKeyFrames);
+    	if (tResult)
+    	    mEncoderFlushBuffersAfterSeeking = true;
+    }
+
+    return tResult;
 }
 
 float MediaSourceMuxer::GetSeekPos()
@@ -2664,10 +2689,16 @@ bool MediaSourceMuxer::SupportsMultipleInputStreams()
 
 bool MediaSourceMuxer::SelectInputStream(int pIndex)
 {
+    bool tResult = false;
+
     if (mMediaSource != NULL)
-        return mMediaSource->SelectInputStream(pIndex);
-    else
-        return false;
+    {
+        tResult = mMediaSource->SelectInputStream(pIndex);
+        if (tResult)
+            mEncoderFlushBuffersAfterSeeking = true;
+    }
+
+    return tResult;
 }
 
 string MediaSourceMuxer::CurrentInputStream()

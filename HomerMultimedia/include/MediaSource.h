@@ -328,7 +328,6 @@ public:
     virtual bool SupportsSeeking();
     virtual float GetSeekEnd(); // get maximum seek time in seconds
     virtual bool Seek(float pSeconds, bool pOnlyKeyFrames = true);
-    virtual bool SeekRelative(float pSeconds, bool pOnlyKeyFrames = true);
     virtual float GetSeekPos(); // in seconds
 
     /* multi stream input interface */
