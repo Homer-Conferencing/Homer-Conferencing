@@ -163,7 +163,7 @@ void OverviewFileTransfersWidget::handleFileTransfersManagerEventTransferData(ui
         {
             tFound = true;
             tIt->FileTransferredSize = pTransferredSize;
-            //LOG(LOG_VERBOSE, "Updating entry: %lu transferred, %lu overall", pTransferredSize, tEntry.FileSize);
+            //LOG(LOG_VERBOSE, "Updating entry: %"PRIu64" transferred, %"PRIu64" overall", pTransferredSize, tEntry.FileSize);
             break;
         }
     }
@@ -309,7 +309,7 @@ void OverviewFileTransfersWidget::FillRow(QTableWidget *pTable, int pRow, const 
 
     FillCellText(pTable, pRow, 1, pEntry.FileName);
     double tProgress = 100 * pEntry.FileTransferredSize / pEntry.FileSize;
-    //LOG(LOG_VERBOSE, "Progress is: %d, %lu / %lu", (int)tProgress,  pEntry.FileTransferredSize, pEntry.FileSize);
+    //LOG(LOG_VERBOSE, "Progress is: %d, %"PRIu64" / %"PRIu64"", (int)tProgress,  pEntry.FileTransferredSize, pEntry.FileSize);
     FillCellText(pTable, pRow, 2, QString("%1 %").arg(tProgress));
     FillCellText(pTable, pRow, 3, QString("%1").arg(pEntry.FileSize));
     FillCellText(pTable, pRow, 4, QString("%1 bytes").arg(pEntry.GuiId));

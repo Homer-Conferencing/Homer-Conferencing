@@ -331,7 +331,7 @@ void* VideoScaler::Run(void* pArgs)
                                     LOG(LOG_VERBOSE, "      ..picture type: %d", tInputFrame->pict_type);
                                     break;
                         }
-                        LOG(LOG_VERBOSE, "      ..pts: %ld", tInputFrame->pts);
+                        LOG(LOG_VERBOSE, "      ..pts: %"PRId64"", tInputFrame->pts);
                         LOG(LOG_VERBOSE, "      ..coded pic number: %d", tInputFrame->coded_picture_number);
                         LOG(LOG_VERBOSE, "      ..display pic number: %d", tInputFrame->display_picture_number);
                     #endif
@@ -353,7 +353,7 @@ void* VideoScaler::Run(void* pArgs)
                     #ifdef VS_DEBUG_PACKETS
                         LOG(LOG_VERBOSE, "..video scaling for %s finished", mName.c_str());
                         int64_t tTime2 = Time::GetTimeStamp();
-                        LOG(LOG_VERBOSE, "SCALER-scaling video frame took %ld us", tTime2 - tTime);
+                        LOG(LOG_VERBOSE, "SCALER-scaling video frame took %"PRId64" us", tTime2 - tTime);
                     #endif
 
                     // size of scaled output frame
@@ -377,7 +377,7 @@ void* VideoScaler::Run(void* pArgs)
                                     LOG(LOG_VERBOSE, "      ..picture type: %d", tOutputFrame->pict_type);
                                     break;
                         }
-                        LOG(LOG_VERBOSE, "      ..pts: %ld", tOutputFrame->pts);
+                        LOG(LOG_VERBOSE, "      ..pts: %"PRId64"", tOutputFrame->pts);
                         LOG(LOG_VERBOSE, "      ..coded pic number: %d", tOutputFrame->coded_picture_number);
                         LOG(LOG_VERBOSE, "      ..display pic number: %d", tOutputFrame->display_picture_number);
                     #endif

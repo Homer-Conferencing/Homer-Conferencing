@@ -665,11 +665,11 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     LOG(LOG_INFO, "    ..codec long name: %s", mRtpEncoderStream->codec->codec->long_name);
     LOG(LOG_INFO, "    ..resolution: %d * %d pixels", mRtpEncoderStream->codec->width, mRtpEncoderStream->codec->height);
 //    LOG(LOG_INFO, "    ..codec time_base: %d/%d", mCodecContext->time_base.den, mCodecContext->time_base.num); // inverse
-    LOG(LOG_INFO, "    ..stream start real-time: %ld", mRtpFormatContext->start_time_realtime);
-    LOG(LOG_INFO, "    ..stream start time: %ld", mRtpEncoderStream->start_time);
+    LOG(LOG_INFO, "    ..stream start real-time: %"PRId64"", mRtpFormatContext->start_time_realtime);
+    LOG(LOG_INFO, "    ..stream start time: %"PRId64"", mRtpEncoderStream->start_time);
     LOG(LOG_INFO, "    ..max. delay: %d", mRtpFormatContext->max_delay);
     LOG(LOG_INFO, "    ..audio preload: %d", mRtpFormatContext->audio_preload);
-    LOG(LOG_INFO, "    ..start A/V PTS: %ld", tAVPacketPts);
+    LOG(LOG_INFO, "    ..start A/V PTS: %"PRId64"", tAVPacketPts);
     LOG(LOG_INFO, "    ..stream rfps: %d/%d", mRtpEncoderStream->r_frame_rate.num, mRtpEncoderStream->r_frame_rate.den);
     LOG(LOG_INFO, "    ..stream time_base: %d/%d", mRtpEncoderStream->time_base.den, mRtpEncoderStream->time_base.num); // inverse
     LOG(LOG_INFO, "    ..stream codec time_base: %d/%d", mRtpEncoderStream->codec->time_base.den, mRtpEncoderStream->codec->time_base.num); // inverse
@@ -953,7 +953,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
 
     av_init_packet(&tPacket);
     #ifdef RTP_DEBUG_PACKET_ENCODER_PTS
-        LOG(LOG_VERBOSE, "Sending packet with PTS: %ld, outgoing RTP-PTS: %.2f", pPacketPts, (float)pPacketPts * CalculateClockRateFactor());
+        LOG(LOG_VERBOSE, "Sending packet with PTS: %"PRId64", outgoing RTP-PTS: %.2f", pPacketPts, (float)pPacketPts * CalculateClockRateFactor());
     #endif
 
     // we only have one stream per media stream
@@ -964,10 +964,10 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
 
     #ifdef RTP_DEBUG_PACKET_ENCODER
         LOG(LOG_VERBOSE, "Encapsulating codec packet:");
-        LOG(LOG_VERBOSE, "      ..pts: %ld", tPacket.pts);
-        LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket.dts);
+        LOG(LOG_VERBOSE, "      ..pts: %"PRId64"", tPacket.pts);
+        LOG(LOG_VERBOSE, "      ..dts: %"PRId64"", tPacket.dts);
         LOG(LOG_VERBOSE, "      ..size: %d", tPacket.size);
-        LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket.pos);
+        LOG(LOG_VERBOSE, "      ..pos: %"PRId64"", tPacket.pos);
         LOG(LOG_VERBOSE, "      ..packet pts: ", pPacketPts);
     #endif
 
@@ -1206,7 +1206,7 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize, int64_t pPacketPt
         // create RTCP sender report
         // #############################################################
         #ifdef RTP_DEBUG_PACKET_ENCODER_PTS
-            LOG(LOG_VERBOSE, "Sending packet with PTS: %ld, outgoing RTP-PTS: %.2f", pPacketPts, (float)pPacketPts * CalculateClockRateFactor());
+            LOG(LOG_VERBOSE, "Sending packet with PTS: %"PRId64", outgoing RTP-PTS: %.2f", pPacketPts, (float)pPacketPts * CalculateClockRateFactor());
         #endif
         RtcpCreateH261SenderReport(tCurrentRtpStreamData, tRtpStreamDataSize, pPacketPts);
 
@@ -1318,7 +1318,7 @@ float RTP::GetRelativeLostPacketsFromRTP()
 
 void RTP::AnnounceLostPackets(uint64_t pCount)
 {
-    LOG(LOG_VERBOSE, "Got %lu lost packets", pCount);
+    LOG(LOG_VERBOSE, "Got %"PRIu64" lost packets", pCount);
     mLostPackets += pCount;
     if (mPacketStatistic != NULL)
         mPacketStatistic->SetLostPacketCount(mLostPackets);
@@ -1732,7 +1732,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
             mRemoteSequenceNumber = mRemoteSequenceNumberOverflowShift + (uint64_t)tRtpHeader->SequenceNumber - mRemoteStartSequenceNumber;
 
 			#ifdef RTP_DEBUG_PACKET_DECODER_SEQUENCE_NUMBERS
-            	LOG(LOG_WARN, "Overflow detected and compensated, new remote sequence number: abs=%hu(max: %hu), start=%hu, normalized=%lu", tRtpHeader->SequenceNumber, (unsigned short int)UINT16_MAX, mRemoteStartSequenceNumber, mRemoteSequenceNumber);
+            	LOG(LOG_WARN, "Overflow detected and compensated, new remote sequence number: abs=%hu(max: %hu), start=%hu, normalized=%"PRIu64"", tRtpHeader->SequenceNumber, (unsigned short int)UINT16_MAX, mRemoteStartSequenceNumber, mRemoteSequenceNumber);
 			#endif
 
 			// increase the "overflow" counter
@@ -1752,7 +1752,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
             // reset the "overflow" counter
             mRemoteSequenceNumberConsecutiveOverflows = 0;
 			#ifdef RTP_DEBUG_PACKET_DECODER_SEQUENCE_NUMBERS
-            	LOG(LOG_VERBOSE, "New remote SequenceNumber: abs=%hu(max: %hu), start=%hu, normalized=%lu", tRtpHeader->SequenceNumber, (unsigned short int)UINT16_MAX, mRemoteStartSequenceNumber, mRemoteSequenceNumber);
+            	LOG(LOG_VERBOSE, "New remote SequenceNumber: abs=%hu(max: %hu), start=%hu, normalized=%"PRIu64"", tRtpHeader->SequenceNumber, (unsigned short int)UINT16_MAX, mRemoteStartSequenceNumber, mRemoteSequenceNumber);
 			#endif
         }
         mLastSequenceNumberFromRTPHeader = tRtpHeader->SequenceNumber;
@@ -1763,7 +1763,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
         bool tPacketOutOfOrder = false;
         if ((mRemoteSequenceNumber > 0 /* ignore stream resets */) && (mRemoteSequenceNumberLastPacket > 0) && (mRemoteSequenceNumber < mRemoteSequenceNumberLastPacket))
         {
-            LOG(LOG_ERROR, "Packets in wrong order received (%lu->%lu)", mRemoteSequenceNumberLastPacket, mRemoteSequenceNumber);
+            LOG(LOG_ERROR, "Packets in wrong order received (%"PRIu64"->%"PRIu64")", mRemoteSequenceNumberLastPacket, mRemoteSequenceNumber);
             tPacketOutOfOrder = true;
         }
 
@@ -1774,7 +1774,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
         {
             uint64_t tLostPackets = mRemoteSequenceNumber - mRemoteSequenceNumberLastPacket - 1;
             AnnounceLostPackets(tLostPackets);
-            LOG(LOG_ERROR, "Packet loss detected (sequ. nr.: %lu->%lu), lost %lu packets, overall packet loss is now %lu", mRemoteSequenceNumberLastPacket, mRemoteSequenceNumber, tLostPackets, mLostPackets);
+            LOG(LOG_ERROR, "Packet loss detected (sequ. nr.: %"PRIu64"->%"PRIu64"), lost %"PRIu64" packets, overall packet loss is now %"PRIu64, mRemoteSequenceNumberLastPacket, mRemoteSequenceNumber, tLostPackets, mLostPackets);
         }
 
         // ############################################################
@@ -1805,7 +1805,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
             mRemoteTimestamp = mRemoteTimestampOverflowShift + (uint64_t)tRtpHeader->Timestamp - mRemoteStartTimestamp;
 
 			#ifdef RTP_DEBUG_PACKET_DECODER_TIMESTAMPS
-            	LOG(LOG_WARN, "Overflow detected and compensated, new remote timestamp: last=%u, abs=%u(max: %u), start=%u, normalized=%lu", mLastTimestampFromRTPHeader, tRtpHeader->Timestamp, UINT32_MAX, mRemoteStartTimestamp, mRemoteTimestamp);
+            	LOG(LOG_WARN, "Overflow detected and compensated, new remote timestamp: last=%u, abs=%u(max: %u), start=%u, normalized=%"PRIu64"", mLastTimestampFromRTPHeader, tRtpHeader->Timestamp, UINT32_MAX, mRemoteStartTimestamp, mRemoteTimestamp);
 			#endif
 
 			// increase the "overflow" counter
@@ -1826,7 +1826,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
             mRemoteTimestampConsecutiveOverflows = 0;
 
 			#ifdef RTP_DEBUG_PACKET_DECODER_TIMESTAMPS
-            	LOG(LOG_VERBOSE, "New remote timestamp: abs=%u(max: %u), start=%u, normalized=%lu", tRtpHeader->Timestamp, UINT32_MAX, mRemoteStartTimestamp, mRemoteTimestamp);
+            	LOG(LOG_VERBOSE, "New remote timestamp: abs=%u(max: %u), start=%u, normalized=%"PRIu64"", tRtpHeader->Timestamp, UINT32_MAX, mRemoteStartTimestamp, mRemoteTimestamp);
 			#endif
         }
         mLastTimestampFromRTPHeader = tRtpHeader->Timestamp;
@@ -2329,7 +2329,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
 		if ((mRemoteTimestampLastCompleteFrame != mRemoteTimestampLastPacket) && (mRemoteTimestampLastPacket != mRemoteTimestamp))
 		{
 			AnnounceLostPackets(1);
-			LOG(LOG_ERROR, "Packet belongs to new frame while last frame is incomplete, overall packet loss is now %lu, last complete timestamp: %lu, last timestamp: %lu", mLostPackets, mRemoteTimestampLastCompleteFrame, mRemoteTimestampLastPacket);
+			LOG(LOG_ERROR, "Packet belongs to new frame while last frame is incomplete, overall packet loss is now %"PRIu64", last complete timestamp: %"PRIu64", last timestamp: %"PRIu64"", mLostPackets, mRemoteTimestampLastCompleteFrame, mRemoteTimestampLastPacket);
 		}
 		// store the timestamp of the last complete frame
 		if (!mIntermediateFragment)
@@ -2630,10 +2630,10 @@ void RTP::LogRtcpHeader(RtcpHeader *pRtcpHeader)
         int64_t tRemoteTimestamp = tRemoteUsTimestamp - NTP_OFFSET_US;
         int64_t tLocalTimestamp = av_gettime();
 
-        LOGEX(RTP, LOG_VERBOSE, "Local     time: %ld", tLocalTimestamp);
-        LOGEX(RTP, LOG_VERBOSE, "Remote    time: %ld", tRemoteTimestamp);
-        LOGEX(RTP, LOG_VERBOSE, "Remote US time: %ld", tRemoteUsTimestamp);
-        LOGEX(RTP, LOG_VERBOSE, "Remote to local time difference: %ld us", tLocalTimestamp - tRemoteTimestamp);
+        LOGEX(RTP, LOG_VERBOSE, "Local     time: %"PRId64"", tLocalTimestamp);
+        LOGEX(RTP, LOG_VERBOSE, "Remote    time: %"PRId64"", tRemoteTimestamp);
+        LOGEX(RTP, LOG_VERBOSE, "Remote US time: %"PRId64"", tRemoteUsTimestamp);
+        LOGEX(RTP, LOG_VERBOSE, "Remote to local time difference: %"PRId64" us", tLocalTimestamp - tRemoteTimestamp);
     }
 
     // convert from host to network byte order, HACK: exceed array boundaries
@@ -2692,7 +2692,7 @@ bool RTP::RtcpParseSenderReport(char *&pData, int &pDataSize, int64_t &pEndToEnd
             pRelativeLoss = mRelativeLostPackets;
 
             #ifdef RTCP_DEBUG_PACKETS_DECODER
-                LOG(LOG_VERBOSE, "Received packets: %lu, should have received: %lu, loss: %.2f", tLocallyReceivedPackets, tRemotelyReportedSentPackets, pRelativeLoss);
+                LOG(LOG_VERBOSE, "Received packets: %"PRIu64", should have received: %"PRIu64", loss: %.2f", tLocallyReceivedPackets, tRemotelyReportedSentPackets, pRelativeLoss);
             #endif
         }
         mRtcpLastRemoteNtpTime = tRemoteNtpTimestamp;
@@ -2748,7 +2748,7 @@ void RTP::RtcpCreateH261SenderReport(char *&pData /* current stream pointer */, 
         RtcpHeader* tRtcpHeader = (RtcpHeader*)pData;
 
         #ifdef RTCP_DEBUG_PACKETS_ENCODER
-            LOG(LOG_VERBOSE, "Sender report with PTS: %lu (own PTS: %ld)", tRtpTs, pCurPts);
+            LOG(LOG_VERBOSE, "Sender report with PTS: %"PRIu64" (own PTS: %"PRId64")", tRtpTs, pCurPts);
         #endif
         tRtcpHeader->Feedback.Length = 6;
         tRtcpHeader->Feedback.Type = RTCP_SENDER_REPORT;

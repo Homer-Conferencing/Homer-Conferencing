@@ -138,7 +138,7 @@ void PacketStatistic::AnnouncePacket(int pSize)
 
     #ifdef STATISTIC_DEBUG_TIMING
         int64_t tTime2 = Time::GetTimeStamp();
-        LOG(LOG_VERBOSE, "PacketStatistic::Lock1 took %ld us", tTime2 - tTime);
+        LOG(LOG_VERBOSE, "PacketStatistic::Lock1 took %"PRId64" us", tTime2 - tTime);
     #endif
 
     DataRateHistoryDescriptor tHistEntry;
@@ -163,9 +163,9 @@ void PacketStatistic::AnnouncePacket(int pSize)
     mDataRateHistoryMutex.unlock();
     #ifdef STATISTIC_DEBUG_TIMING
         tTime2 = Time::GetTimeStamp();
-        LOG(LOG_VERBOSE, "PacketStatistic::Lock2 took %ld us", tTime2 - tTime);
+        LOG(LOG_VERBOSE, "PacketStatistic::Lock2 took %"PRId64" us", tTime2 - tTime);
         tTime2 = Time::GetTimeStamp();
-        LOG(LOG_VERBOSE, "PacketStatistic::Lock2-mutex took %ld us", tTime3 - tTime);
+        LOG(LOG_VERBOSE, "PacketStatistic::Lock2-mutex took %"PRId64" us", tTime3 - tTime);
     #endif
 }
 

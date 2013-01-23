@@ -365,7 +365,7 @@ int MediaSourceOss::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
         }
 
         //LOG(LOG_INFO, "    ..and stream ID: %d", tPacket.stream_index);
-        //LOG(LOG_INFO, "    ..and position: %lli", (long long int)tPacket.pos);
+        //LOG(LOG_INFO, "    ..and position: %"PRId64"", (long long int)tPacket.pos);
         //LOG(LOG_INFO, "    ..and size: %d", tPacket.size);
 
     }while (tPacket.stream_index != mMediaStreamIndex);

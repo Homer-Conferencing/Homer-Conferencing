@@ -106,7 +106,7 @@ bool Condition::Wait(Mutex *pMutex, int pMSecs)
             tTimeout.tv_nsec = tNanoSecs;
             tTimeout.tv_sec += tAddSecs;
             #ifdef HBC_DEBUG_TIMED
-                LOG(LOG_WARN, "Condition ns part of timeout exceeds by %ld seconds", tAddSecs);
+                LOG(LOG_WARN, "Condition ns part of timeout exceeds by %"PRId64" seconds", tAddSecs);
             #endif
         }
 
@@ -131,7 +131,7 @@ bool Condition::Wait(Mutex *pMutex, int pMSecs)
 					case EBUSY: // Condition can't be obtained because it is busy
 						break;
 					case EINVAL:
-			            LOG(LOG_WARN, "Timeout time: %ld / %ld", tTimeout.tv_sec, tTimeout.tv_nsec);
+			            LOG(LOG_WARN, "Timeout time: %"PRId64" / %"PRId64"", tTimeout.tv_sec, tTimeout.tv_nsec);
 						LOG(LOG_ERROR, "Specified time of %d was invalid", pMSecs);
 						break;
 					case EFAULT:

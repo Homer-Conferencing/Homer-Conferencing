@@ -384,7 +384,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
         tFrameIndex = (mSourceStartPts + (double)pSeconds * mFrameRate); // later the value for mCurrentFrameIndex will be changed to the same value like tAbsoluteTimestamp
     float tTimeDiff = pSeconds - GetSeekPos();
 
-    //LOG(LOG_VERBOSE, "Rel: %ld Abs: %ld", tRelativeTimestamp, tAbsoluteTimestamp);
+    //LOG(LOG_VERBOSE, "Rel: %"PRId64" Abs: %"PRId64"", tRelativeTimestamp, tAbsoluteTimestamp);
 
     if ((tFrameIndex >= 0) && (tFrameIndex < tNumberOfFrames))
     {
@@ -398,7 +398,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
                 float tTargetTimestamp = pSeconds * AV_TIME_BASE;
                 if (mFormatContext->start_time != (int64_t)AV_NOPTS_VALUE)
                 {
-                    LOG(LOG_VERBOSE, "Seeking: format context describes an additional start offset of %ld", mFormatContext->start_time);
+                    LOG(LOG_VERBOSE, "Seeking: format context describes an additional start offset of %"PRId64"", mFormatContext->start_time);
                     tTargetTimestamp += mFormatContext->start_time;
                 }
 
@@ -421,7 +421,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
                     tResult = false;
                 }else
                 {
-                    LOG(LOG_VERBOSE, "Seeking in %s file to frame index %.2f was successful, current dts is %ld", GetMediaTypeStr().c_str(), (float)tFrameIndex, mFormatContext->streams[mMediaStreamIndex]->cur_dts);
+                    LOG(LOG_VERBOSE, "Seeking in %s file to frame index %.2f was successful, current dts is %"PRId64"", GetMediaTypeStr().c_str(), (float)tFrameIndex, mFormatContext->streams[mMediaStreamIndex]->cur_dts);
                     mGrabberCurrentFrameIndex = tFrameIndex;
 
                     // seeking was successful
@@ -497,7 +497,7 @@ int64_t MediaSourceFile::GetSynchronizationTimestamp()
 
 bool MediaSourceFile::TimeShift(int64_t pOffset)
 {
-    LOG(LOG_VERBOSE, "Shifting %s time by: %ld", GetMediaTypeStr().c_str(), pOffset);
+    LOG(LOG_VERBOSE, "Shifting %s time by: %"PRId64"", GetMediaTypeStr().c_str(), pOffset);
     float tCurPos = GetSeekPos();
     float tOffsetSeconds = (float)pOffset / AV_TIME_BASE;
     float tTargetPos = tCurPos + tOffsetSeconds;

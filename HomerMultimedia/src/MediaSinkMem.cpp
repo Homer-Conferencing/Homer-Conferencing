@@ -120,7 +120,7 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
         // the PTS value is used within the RTP packetizer to calculate the resulting timestamp value for the RTP header
         int64_t tAVPacketPts = (float)pStream->pts.val + pStream->pts.num / pStream->pts.den; // result = val + num / den
         if (tAVPacketPts < mLastPacketPts)
-            LOG(LOG_ERROR, "Current packet pts (%d) from A/V encoder is lower than last one (%ld)", tAVPacketPts, mLastPacketPts);
+            LOG(LOG_ERROR, "Current packet pts (%d) from A/V encoder is lower than last one (%"PRId64")", tAVPacketPts, mLastPacketPts);
 
         // do we have monotonously increasing PTS values
         if (mIncomingAVStreamLastPts > tAVPacketPts)
@@ -205,7 +205,7 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
         int64_t tRtpPacketPts = tAVPacketPts - mIncomingAVStreamStartPts;
 
         #ifdef MSM_DEBUG_PACKET_DISTRIBUTION
-            LOG(LOG_VERBOSE, "Encapsulating codec packet of size %d at memory position %p with A/V pts: %ld, RTP pts: %ld", pPacketSize, pPacketData, tAVPacketPts, tRtpPacketPts);
+            LOG(LOG_VERBOSE, "Encapsulating codec packet of size %d at memory position %p with A/V pts: %"PRId64", RTP pts: %"PRId64"", pPacketSize, pPacketData, tAVPacketPts, tRtpPacketPts);
         #endif
 
 
@@ -213,7 +213,7 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
         bool tRtpCreationSucceed = RtpCreate(pPacketData, pPacketSize, tRtpPacketPts);
         #ifdef MSIM_DEBUG_TIMING
             int64_t tTime2 = Time::GetTimeStamp();
-            LOG(LOG_VERBOSE, "               generating RTP envelope took %ld us", tTime2 - tTime);
+            LOG(LOG_VERBOSE, "               generating RTP envelope took %"PRId64" us", tTime2 - tTime);
         #endif
         #ifdef MSIM_DEBUG_PACKETS
             LOG(LOG_VERBOSE, "Creation of RTP packets resulted in a buffer at %p with size %u", pPacketData, pPacketSize);
@@ -262,7 +262,7 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
             }while (tRemainingRtpDataSize > RTP_HEADER_SIZE);
             #ifdef MSIM_DEBUG_TIMING
                 tTime2 = Time::GetTimeStamp();
-                LOG(LOG_VERBOSE, "                             sending RTP packets to network took %ld us", tTime2 - tTime);
+                LOG(LOG_VERBOSE, "                             sending RTP packets to network took %"PRId64" us", tTime2 - tTime);
             #endif
         }
     }else

@@ -349,7 +349,7 @@ bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned l
                 %lu     sigcatch      bitmap of catched signals (obsolete)
                 %lu     wchan         This is the "channel" in which the process is waiting. It is the address of a system call,
                                       and can be looked up in a namelist if textual name is needed.
-                %llu    nswap(=0)     number of pages swapped (not maintained)
+                %lu    nswap(=0)     number of pages swapped (not maintained)
                 %lu     cnswap(=0)    cumulative nswap for child processes (not maintained)
                 %d      exit_signal   signal to send to parent thread on exit
                 %d      processor     which CPU the task is scheduled on
@@ -367,7 +367,7 @@ bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned l
 		if ((tFile = fopen(tFileName, "r")) != NULL)
 		{
 		    long int tPriority, tBasePriority;
-		    if (EOF == fscanf(tFile, "%d %*s %*c %d %*d %*d %*d %*d %*u %*lu %*lu %*lu %*lu %lu %lu %ld %ld %ld %ld %d 0 %*llu %lu %ld", &pPid, &pPPid, &tJiffiesUserMode, &tJiffiesKernelMode, &tJiffiesUserModeChildWait, &tJiffiesKernelModeChildWait, &tPriority, &tBasePriority, &pThreadCount, &pMemVirtual, (long int*)&pMemPhysical))
+		    if (EOF == fscanf(tFile, "%d %*s %*c %d %*d %*d %*d %*d %*u %*lu %*lu %*lu %*lu %"PRIu64" %"PRIu64" %"PRId64" %"PRId64" %"PRId64" %"PRId64" %d 0 %*"PRIu64" %"PRIu64" %"PRId64"", &pPid, &pPPid, &tJiffiesUserMode, &tJiffiesKernelMode, &tJiffiesUserModeChildWait, &tJiffiesKernelModeChildWait, &tPriority, &tBasePriority, &pThreadCount, &pMemVirtual, (long int*)&pMemPhysical))
 		        LOGEX(Thread, LOG_ERROR, "Failed to parse file content because of input failure");
 		    pPriority = tPriority;
 		    pBasePriority = tBasePriority;
@@ -711,7 +711,7 @@ bool Thread::StartThread(void* pArgs)
             LOG(LOG_ERROR, "Creation of thread failed because of \"%s\"", strerror(tRes));
         else
         {
-            LOG(LOG_VERBOSE, "Thread started with stack size of %ld bytes", tThreadStackSize);
+            LOG(LOG_VERBOSE, "Thread started with stack size of %"PRId64" bytes", tThreadStackSize);
             tResult = true;
         }
         pthread_attr_destroy(&tThreadAttributes);
@@ -770,7 +770,7 @@ bool Thread::StartThread(THREAD_MAIN pMain, void* pArgs)
 			LOG(LOG_ERROR, "Creation of thread failed because of \"%s\"", strerror(tRes));
 		else
 		{
-			LOG(LOG_VERBOSE, "Thread started with stack size of %ld bytes", tThreadStackSize);
+			LOG(LOG_VERBOSE, "Thread started with stack size of %"PRId64" bytes", tThreadStackSize);
 			tResult = true;
 		}
 		pthread_attr_destroy(&tThreadAttributes);

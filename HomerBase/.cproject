@@ -24,7 +24,6 @@
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.57987122" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.282421056" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
 								<option id="gnu.cpp.compiler.option.preprocessor.def.224177496" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="M_LINUX=1"/>
 									<listOptionValue builtIn="false" value="LINUX=1"/>
 									<listOptionValue builtIn="false" value="WIN32=1"/>
 									<listOptionValue builtIn="false" value="__MINGW32__=1"/>

@@ -609,7 +609,7 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
 			#endif
             #ifdef HBS_DEBUG_TIMING
                 tTime2 = Time::GetTimeStamp();
-                LOG(LOG_VERBOSE, "Sending %d bytes to network via UDP took %ld us", (int)pBufferSize, tTime2 - tTime);
+                LOG(LOG_VERBOSE, "Sending %d bytes to network via UDP took %"PRId64" us", (int)pBufferSize, tTime2 - tTime);
             #endif
 			break;
 		case SOCKET_TCP:

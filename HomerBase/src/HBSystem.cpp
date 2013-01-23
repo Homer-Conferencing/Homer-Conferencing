@@ -258,7 +258,7 @@ int64_t System::GetMachineMemoryPhysical()
         tResult = (int64_t)tMemStatus.ullTotalPhys;
     #endif
 
-    //LOGEX(System, LOG_VERBOSE, "Found machine memory (phys.): %ld MB", tResult / 1024 / 1024);
+    //LOGEX(System, LOG_VERBOSE, "Found machine memory (phys.): %"PRId64" MB", tResult / 1024 / 1024);
     return tResult;
 }
 
@@ -290,7 +290,7 @@ int64_t System::GetMachineMemorySwap()
         tResult = (int64_t)tMemStatus.ullTotalPageFile /* overall virt. memory */ - (int64_t)tMemStatus.ullTotalPhys /* phys. installed memory */;
     #endif
 
-    //LOGEX(System, LOG_VERBOSE, "Found machine memory (swap.): %ld MB", tResult / 1024 / 1024);
+    //LOGEX(System, LOG_VERBOSE, "Found machine memory (swap.): %"PRId64" MB", tResult / 1024 / 1024);
     return tResult;
 }
 

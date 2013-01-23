@@ -32,6 +32,7 @@
 #include <assert.h>
 #include <stdio.h>
 
+#include <Logger.h>
 #include <HBSocket.h>
 #include <HBTime.h>
 #include <Header_SofiaSip.h>
@@ -937,7 +938,7 @@ void SIP::SipCallBack(int pEvent, int pStatus, char const *pPhrase, nua_t *pNua,
         else
             LOGEX(SIP, LOG_INFO, "SIP-Network source: %s:<%u>[%s]", tSourceIp.c_str(), tSourcePort, Socket::TransportType2String(tSourcePortTransport).c_str());
     }
-    LOGEX(SIP, LOG_INFO, "Handle: 0x%lx", (unsigned long)pNuaHandle);
+    LOGEX(SIP, LOG_INFO, "Handle: 0x%"PRIx64"x", (unsigned long)pNuaHandle);
     LOGEX(SIP, LOG_INFO, "Lib-Status: \"%s\"(%d)", pPhrase, pStatus);
     PrintIncomingMessageInfo(tRemote, tLocal, pSip);
     switch (pEvent)
@@ -2067,7 +2068,7 @@ void SIP::PrintOutgoingMessageInfo(nua_handle_t *pNuaHandle, GeneralEvent *pEven
     LOG(LOG_INFO, "Sending%sFrom: %s", pEventName.c_str(), pEvent->Sender.c_str());
     LOG(LOG_INFO, "Sending%sTo: %s", pEventName.c_str(), pEvent->Receiver.c_str());
     LOG(LOG_INFO, "Sending%sTransport: %s", pEventName.c_str(), Socket::TransportType2String(pEvent->Transport).c_str());
-    LOG(LOG_INFO, "Sending%sHandle: 0x%lx", pEventName.c_str(), (unsigned long)pNuaHandle);
+    LOG(LOG_INFO, "Sending%sHandle: 0x%"PRIx64"", pEventName.c_str(), (unsigned long)pNuaHandle);
 }
 
 void SIP::initParticipantTriplet(const sip_to_t *pRemote, sip_t const *pSip, string &pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport, string &pUser, string &pHost, string &pPort)
@@ -2135,7 +2136,7 @@ void SIP::InitGeneralEvent_FromSipReceivedRequestEvent(const sip_to_t *pRemote, 
         pEvent->Transport = pSourcePortTransport;
     }
 
-    LOG(LOG_INFO, "%s-NewHandle: 0x%lx", pEventName.c_str(), (unsigned long)pNuaHandle);
+    LOG(LOG_INFO, "%s-NewHandle: 0x%"PRIx64"", pEventName.c_str(), (unsigned long)pNuaHandle);
     LOG(LOG_INFO, "%s-EventSender: \"%s\" %s", pEventName.c_str(), pEvent->SenderName.c_str(), pEvent->Sender.c_str());
     if (pEvent->SenderComment.size())
         LOG(LOG_INFO, "%s-SenderComment: %s", pEventName.c_str(), pEvent->SenderComment.c_str());
@@ -2609,14 +2610,14 @@ void SIP::SipReceivedCallStateChange(const sip_to_t *pSipRemote, const sip_to_t 
                 while (tMedia != NULL)
                 {
                     LOG(LOG_INFO, "CallStateChange-Media type: %s", tMedia->m_type_name);
-                    LOG(LOG_INFO, "CallStateChange-Media port: %lu", tMedia->m_port);
-                    LOG(LOG_INFO, "CallStateChange-Media port count: %lu", tMedia->m_number_of_ports);
+                    LOG(LOG_INFO, "CallStateChange-Media port: %"PRIu64"", tMedia->m_port);
+                    LOG(LOG_INFO, "CallStateChange-Media port count: %"PRIu64"", tMedia->m_number_of_ports);
                     LOG(LOG_INFO, "CallStateChange-Media information: %s", tMedia->m_information);
                     LOG(LOG_INFO, "CallStateChange-Transport type: %s", tMedia->m_proto_name);
                     if (tMedia->m_rtpmaps)
                     {
                         LOG(LOG_INFO, "CallStateChange-RtpMap codec: %s", tMedia->m_rtpmaps->rm_encoding);
-                        LOG(LOG_INFO, "CallStateChange-RtpMap rate: %ld", tMedia->m_rtpmaps->rm_rate);
+                        LOG(LOG_INFO, "CallStateChange-RtpMap rate: %"PRId64"", tMedia->m_rtpmaps->rm_rate);
                         LOG(LOG_INFO, "CallStateChange-RtpMap params: %s", tMedia->m_rtpmaps->rm_params);
                         LOG(LOG_INFO, "CallStateChange-RtpMap fmtp: %s", tMedia->m_rtpmaps->rm_fmtp);
                         LOG(LOG_INFO, "CallStateChange-RtpMap known entry: %d", tMedia->m_rtpmaps->rm_predef);
@@ -2638,7 +2639,7 @@ void SIP::SipReceivedCallStateChange(const sip_to_t *pSipRemote, const sip_to_t 
                                     tCMUEvent->RemoteAudioCodec = "incompatibly transported. Local transport is " + string(tMedia->m_proto_name);
                                 tFoundAudioVideo = true;
                                 if (tMedia->m_number_of_ports)
-                                    LOG(LOG_INFO, "Remote audio sink for \"%s\" is now at: %s:%u with: %ld ports", tCMUEvent->Sender.c_str(), tCMUEvent->RemoteAudioAddress.c_str(), tCMUEvent->RemoteAudioPort, tMedia->m_number_of_ports);
+                                    LOG(LOG_INFO, "Remote audio sink for \"%s\" is now at: %s:%u with: %"PRId64" ports", tCMUEvent->Sender.c_str(), tCMUEvent->RemoteAudioAddress.c_str(), tCMUEvent->RemoteAudioPort, tMedia->m_number_of_ports);
                                 else
                                     LOG(LOG_INFO, "Remote audio sink for \"%s\" is now at: %s:%u", tCMUEvent->Sender.c_str(), tCMUEvent->RemoteAudioAddress.c_str(), tCMUEvent->RemoteAudioPort);
                                 break;
@@ -2651,7 +2652,7 @@ void SIP::SipReceivedCallStateChange(const sip_to_t *pSipRemote, const sip_to_t 
                                     tCMUEvent->RemoteVideoCodec = "incompatibly transported. Local transport is " + string(tMedia->m_proto_name);
                                 tFoundAudioVideo = true;
                                 if (tMedia->m_number_of_ports)
-                                    LOG(LOG_INFO, "Remote video sink for \"%s\" is now at: %s:%u with: %ld ports", tCMUEvent->Sender.c_str(), tCMUEvent->RemoteVideoAddress.c_str(), tCMUEvent->RemoteVideoPort, tMedia->m_number_of_ports);
+                                    LOG(LOG_INFO, "Remote video sink for \"%s\" is now at: %s:%u with: %"PRId64" ports", tCMUEvent->Sender.c_str(), tCMUEvent->RemoteVideoAddress.c_str(), tCMUEvent->RemoteVideoPort, tMedia->m_number_of_ports);
                                 else
                                     LOG(LOG_INFO, "Remote video sink for \"%s\" is now at: %s:%u", tCMUEvent->Sender.c_str(), tCMUEvent->RemoteVideoAddress.c_str(), tCMUEvent->RemoteVideoPort);
                                 break;

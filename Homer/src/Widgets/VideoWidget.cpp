@@ -1440,7 +1440,7 @@ void VideoWidget::paintEvent(QPaintEvent *pEvent)
 {
 	mPaintEventCounter ++;
 	#ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
-		LOG(LOG_VERBOSE, "Paint event %ld", mPaintEventCounter);
+		LOG(LOG_VERBOSE, "Paint event %"PRId64"", mPaintEventCounter);
 	#endif
 
 	QWidget::paintEvent(pEvent);
@@ -2180,7 +2180,7 @@ void VideoWorkerThread::DoSyncClock()
     if (mSyncClockMasterSource != NULL)
         tShiftOffset = mSyncClockMasterSource->GetSynchronizationTimestamp() - mMediaSource->GetSynchronizationTimestamp();
 
-    LOG(LOG_VERBOSE, "Shifting time of source %s by %ld", mMediaSource->GetStreamName().c_str(), tShiftOffset);
+    LOG(LOG_VERBOSE, "Shifting time of source %s by %"PRId64"", mMediaSource->GetStreamName().c_str(), tShiftOffset);
 
     mSourceAvailable = mMediaSource->TimeShift(tShiftOffset);
     if(!mSourceAvailable)
@@ -2549,7 +2549,7 @@ void VideoWorkerThread::run()
                     {
                         //HINT: locking is done via mDeliverMutex!
                         mFrameTimestamps.push_back(Time::GetTimeStamp());
-                        //LOG(LOG_WARN, "Time %ld", Time::GetTimeStamp());
+                        //LOG(LOG_WARN, "Time %"PRId64"", Time::GetTimeStamp());
                         while (mFrameTimestamps.size() > FPS_MEASUREMENT_STEPS)
                             mFrameTimestamps.removeFirst();
                     }

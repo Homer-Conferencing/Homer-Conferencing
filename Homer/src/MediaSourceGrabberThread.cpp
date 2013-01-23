@@ -538,7 +538,7 @@ void MediaSourceGrabberThread::CalculateFrameRate(float *pFrameRate)
         // now finally calculate the FPS as follows: "count of measured values / measured time difference"
         *pFrameRate = ((float)tMeasuredValues) / tMeasuredTimeDifference;
         #ifdef GRABBER_THREAD_DEBUG_FRAMES
-            LOG(LOG_VERBOSE, "FPS: %f, interval %d, oldest %ld", *pFps, tMeasuredValues, tMeasurementStartTime);
+            LOG(LOG_VERBOSE, "FPS: %f, interval %d, oldest %"PRId64"", *pFps, tMeasuredValues, tMeasurementStartTime);
         #endif
     }
 }

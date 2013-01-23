@@ -312,12 +312,12 @@ int MediaSourceLogo::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
 		if (tWaitingTine > 0)
 		{// skip capturing when we are too fast
 	        #ifdef MSL_DEBUG_PACKETS
-				LOG(LOG_VERBOSE, "Logo capturing delayed by %ld ms for frame %d", tWaitingTine / 1000, mFrameNumber);
+				LOG(LOG_VERBOSE, "Logo capturing delayed by %"PRId64" ms for frame %d", tWaitingTine / 1000, mFrameNumber);
 	        #endif
 			Thread::Suspend(tWaitingTine);
 		}else
 		{// no waiting
-			//LOG(LOG_VERBOSE, "No waiting for frame %d (time=%ld)", mFrameNumber, tWaitingTine);
+			//LOG(LOG_VERBOSE, "No waiting for frame %d (time=%"PRId64")", mFrameNumber, tWaitingTine);
 		}
 
 		// limit history of timestamps

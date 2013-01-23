@@ -1209,7 +1209,7 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
 		mEncoderFifo->WriteFifo((char*)pChunkBuffer, pChunkSize);
 		#ifdef MSM_DEBUG_TIMING
 			int64_t tTime2 = Time::GetTimeStamp();
-			//LOG(LOG_VERBOSE, "Writing %d bytes to Encoder-FIFO took %ld us", pChunkSize, tTime2 - tTime);
+			//LOG(LOG_VERBOSE, "Writing %d bytes to Encoder-FIFO took %"PRId64" us", pChunkSize, tTime2 - tTime);
 		#endif
     }
 
@@ -1235,7 +1235,7 @@ bool MediaSourceMuxer::BelowMaxFps(int pFrameNumber)
         int64_t tTimeDiffTreshold = 1000*1000 / mStreamMaxFps;
         int64_t tTimeDiffForNextFrame = tTimeDiffToLastFrame - tTimeDiffTreshold;
         #ifdef MSM_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "Checking max. FPS(=%d) for frame number %d: %lld < %lld => %s", mStreamMaxFps, pFrameNumber, tTimeDiffToLastFrame, tTimeDiffTreshold, (tTimeDiffToLastFrame < tTimeDiffTreshold) ? "yes" : "no");
+            LOG(LOG_VERBOSE, "Checking max. FPS(%d) for frame number %d: %"PRId64" < %"PRId64" => %s", mStreamMaxFps, pFrameNumber, tTimeDiffToLastFrame, tTimeDiffTreshold, (tTimeDiffToLastFrame < tTimeDiffTreshold) ? "yes" : "no");
         #endif
 
         // time for a new frame?
@@ -1243,7 +1243,7 @@ bool MediaSourceMuxer::BelowMaxFps(int pFrameNumber)
         {
             mStreamMaxFps_LastFrame_Timestamp = tCurrentTime;
 
-            //LOG(LOG_VERBOSE, "Last frame timestamp: %lld(%lld) , %lld, %lld", tCurrentTime, mStreamMaxFps_LastFrame_Timestamp, tTimeDiffForNextFrame, mStreamMaxFps_LastFrame_Timestamp - tTimeDiffForNextFrame);
+            //LOG(LOG_VERBOSE, "Last frame timestamp: %"PRId64"(%"PRId64") , %"PRId64", %"PRId64"", tCurrentTime, mStreamMaxFps_LastFrame_Timestamp, tTimeDiffForNextFrame, mStreamMaxFps_LastFrame_Timestamp - tTimeDiffForNextFrame);
 
             // correct reference timestamp for last frame by the already passed time for the next frame
             mStreamMaxFps_LastFrame_Timestamp -= tTimeDiffForNextFrame;
@@ -1462,7 +1462,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
 
                                 #ifdef MSM_DEBUG_TIMING
                                     int64_t tTime5 = Time::GetTimeStamp();
-                                    LOG(LOG_VERBOSE, "     preparing data structures took %ld us", tTime5 - tTime3);
+                                    LOG(LOG_VERBOSE, "     preparing data structures took %"PRId64" us", tTime5 - tTime3);
                                 #endif
 
                                 // calculate the packet's PTS value
@@ -1476,7 +1476,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                     LOG(LOG_VERBOSE, "Scaler returned video frame..");
                                     LOG(LOG_VERBOSE, "      ..key frame: %d", tYUVFrame->key_frame);
                                     LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(tYUVFrame).c_str());
-                                    LOG(LOG_VERBOSE, "      ..pts: %ld", tYUVFrame->pts);
+                                    LOG(LOG_VERBOSE, "      ..pts: %"PRId64"", tYUVFrame->pts);
                                     LOG(LOG_VERBOSE, "      ..coded pic number: %d", tYUVFrame->coded_picture_number);
                                     LOG(LOG_VERBOSE, "      ..display pic number: %d", tYUVFrame->display_picture_number);
                                 #endif
@@ -1496,7 +1496,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 tEncoderResult = avcodec_encode_video(mCodecContext, (uint8_t *)mEncoderChunkBuffer, MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE, tYUVFrame);
                                 #ifdef MSM_DEBUG_TIMING
                                     int64_t tTime2 = Time::GetTimeStamp();
-                                    LOG(LOG_VERBOSE, "     encoding video frame took %ld us", tTime2 - tTime);
+                                    LOG(LOG_VERBOSE, "     encoding video frame took %"PRId64" us", tTime2 - tTime);
                                 #endif
 
                                 tFrameFinished =1;
@@ -1530,10 +1530,10 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                         LOG(LOG_VERBOSE, "Sending video packet: %5d to %2d sink(s):", mFrameNumber, mMediaSinks.size());
                                         LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
                                         LOG(LOG_VERBOSE, "      ..flags: %d", tPacket->flags);
-                                        LOG(LOG_VERBOSE, "      ..pts: %ld (%d frames delay)", tPacket->pts, mEncoderOutputFrameDelay);
-                                        LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket->dts);
+                                        LOG(LOG_VERBOSE, "      ..pts: %"PRId64" (%d frames delay)", tPacket->pts, mEncoderOutputFrameDelay);
+                                        LOG(LOG_VERBOSE, "      ..dts: %"PRId64"", tPacket->dts);
                                         LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
-                                        LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket->pos);
+                                        LOG(LOG_VERBOSE, "      ..pos: %"PRId64"", tPacket->pos);
                                         LOG(LOG_VERBOSE, "      ..key frame: %d", mEncoderHasKeyFrame);
                                         LOG(LOG_VERBOSE, "      ..codec delay: %d", mCodecContext->delay);
                                         LOG(LOG_VERBOSE, "      ..codec max. b frames: %d", mCodecContext->max_b_frames);
@@ -1547,7 +1547,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                     }
                                     #ifdef MSM_DEBUG_TIMING
                                         int64_t tTime2 = Time::GetTimeStamp();
-                                        LOG(LOG_VERBOSE, "     writing video frame to sinks took %ld us", tTime2 - tTime);
+                                        LOG(LOG_VERBOSE, "     writing video frame to sinks took %"PRId64" us", tTime2 - tTime);
                                     #endif
 
                                     // free packet buffer
@@ -1557,7 +1557,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 {
                                     if (tEncoderResult != 0)
                                     {
-                                        LOG(LOG_WARN, "Couldn't re-encode current video frame %ld because %s(%d)", tYUVFrame->pts, strerror(AVUNERROR(tEncoderResult)), tEncoderResult);
+                                        LOG(LOG_WARN, "Couldn't re-encode current video frame %"PRId64" because %s(%d)", tYUVFrame->pts, strerror(AVUNERROR(tEncoderResult)), tEncoderResult);
                                         mFrameNumber--;
                                     }else
                                     {
@@ -1571,7 +1571,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
 #endif
                                 #ifdef MSM_DEBUG_TIMING
                                     int64_t tTime4 = Time::GetTimeStamp();
-                                    LOG(LOG_VERBOSE, "Entire transcoding step took %ld us", tTime4 - tTime3);
+                                    LOG(LOG_VERBOSE, "Entire transcoding step took %"PRId64" us", tTime4 - tTime3);
                                 #endif
                             }
                             break;
@@ -1654,10 +1654,10 @@ void* MediaSourceMuxer::Run(void* pArgs)
 
 												#ifdef MSM_DEBUG_PACKET_DISTRIBUTION
 													LOG(LOG_VERBOSE, "Sending audio packet: %5d to %2d sink(s):", mFrameNumber, mMediaSinks.size());
-													LOG(LOG_VERBOSE, "      ..pts: %ld", tPacket->pts);
-													LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket->dts);
+													LOG(LOG_VERBOSE, "      ..pts: %"PRId64"", tPacket->pts);
+													LOG(LOG_VERBOSE, "      ..dts: %"PRId64"", tPacket->dts);
 													LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
-													LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket->pos);
+													LOG(LOG_VERBOSE, "      ..pos: %"PRId64"", tPacket->pos);
 												#endif
 
 												//####################################################################
@@ -1670,7 +1670,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
 												}
 												#ifdef MSM_DEBUG_TIMING
 													int64_t tTime2 = Time::GetTimeStamp();
-													LOG(LOG_VERBOSE, "         writing audio frame to sinks took %ld us", tTime2 - tTime);
+													LOG(LOG_VERBOSE, "         writing audio frame to sinks took %"PRId64" us", tTime2 - tTime);
 												#endif
 
 												// free packet buffer
@@ -1690,7 +1690,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
 										}else
 										{// we should skip this audio frame because it includes only silence
 											mRelayingSkipAudioSilenceSkippedChunks++;
-											//LOG(LOG_WARN, "Skipping %s data, overall skipped chunks: %ld", GetMediaTypeStr().c_str(), mRelayingSkipAudioSilenceSkippedChunks);
+											//LOG(LOG_WARN, "Skipping %s data, overall skipped chunks: %"PRId64"", GetMediaTypeStr().c_str(), mRelayingSkipAudioSilenceSkippedChunks);
 										}
 									}
                                 }

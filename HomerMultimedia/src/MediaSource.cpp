@@ -2017,7 +2017,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     LOG(LOG_INFO, "    ..MT method: %d", mRecorderCodecContext->thread_type);
     LOG(LOG_INFO, "    ..frame size: %d", mRecorderCodecContext->frame_size);
     LOG(LOG_INFO, "    ..duration: %.2f frames", mNumberOfFrames);
-    LOG(LOG_INFO, "    ..stream context duration: %ld frames, %.0f seconds, format context duration: %ld, nr. of frames: %ld", mRecorderFormatContext->streams[tMediaStreamIndex]->duration, (float)mRecorderFormatContext->streams[tMediaStreamIndex]->duration / mFrameRate, mRecorderFormatContext->duration, mRecorderFormatContext->streams[tMediaStreamIndex]->nb_frames);
+    LOG(LOG_INFO, "    ..stream context duration: %"PRId64" frames, %.0f seconds, format context duration: %"PRId64", nr. of frames: %"PRId64"", mRecorderFormatContext->streams[tMediaStreamIndex]->duration, (float)mRecorderFormatContext->streams[tMediaStreamIndex]->duration / mFrameRate, mRecorderFormatContext->duration, mRecorderFormatContext->streams[tMediaStreamIndex]->nb_frames);
     switch(mMediaType)
     {
         case MEDIA_VIDEO:
@@ -2172,7 +2172,7 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
         LOG(LOG_VERBOSE, "Recorder source frame..");
         LOG(LOG_VERBOSE, "      ..key frame: %d", pSourceFrame->key_frame);
         LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(pSourceFrame).c_str());
-        LOG(LOG_VERBOSE, "      ..pts: %ld", pSourceFrame->pts);
+        LOG(LOG_VERBOSE, "      ..pts: %"PRId64"", pSourceFrame->pts);
         LOG(LOG_VERBOSE, "      ..coded pic number: %d", pSourceFrame->coded_picture_number);
         LOG(LOG_VERBOSE, "      ..display pic number: %d", pSourceFrame->display_picture_number);
     #endif
@@ -2214,7 +2214,7 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
                     LOG(LOG_VERBOSE, "Recording video frame..");
                     LOG(LOG_VERBOSE, "      ..key frame: %d", mRecorderFinalFrame->key_frame);
                     LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(mRecorderFinalFrame).c_str());
-                    LOG(LOG_VERBOSE, "      ..pts: %ld", mRecorderFinalFrame->pts);
+                    LOG(LOG_VERBOSE, "      ..pts: %"PRId64"", mRecorderFinalFrame->pts);
                     LOG(LOG_VERBOSE, "      ..coded pic number: %d", mRecorderFinalFrame->coded_picture_number);
                     LOG(LOG_VERBOSE, "      ..display pic number: %d", mRecorderFinalFrame->display_picture_number);
                 #endif
@@ -2241,10 +2241,10 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
                         #ifdef MS_DEBUG_RECORDER_PACKETS
                             LOG(LOG_VERBOSE, "Recording packet..");
                             LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
-                            LOG(LOG_VERBOSE, "      ..pts: %ld (fps: %3.2f)", tPacket->pts, mFrameRate);
-                            LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket->dts);
+                            LOG(LOG_VERBOSE, "      ..pts: %"PRId64" (fps: %3.2f)", tPacket->pts, mFrameRate);
+                            LOG(LOG_VERBOSE, "      ..dts: %"PRId64"", tPacket->dts);
                             LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
-                            LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket->pos);
+                            LOG(LOG_VERBOSE, "      ..pos: %"PRId64"", tPacket->pos);
                         #endif
 
                          // distribute the encoded frame
@@ -2385,7 +2385,7 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
                         if ((tRes = avcodec_fill_audio_frame(mRecorderFinalFrame, mRecorderAudioChannels, mRecorderAudioFormat, (const uint8_t *)mRecorderResampleBuffer, tReadFifoSize, 1)) < 0)
                             LOG(LOG_ERROR, "Could not fill the audio frame with the provided data from the audio resampling step because of \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
                         #ifdef MS_DEBUG_RECORDER_PACKETS
-                            LOG(LOG_VERBOSE, "Recording sample buffer with PTS: %ld (chunk: %ld", tCurPts, mRecorderFrameNumber);
+                            LOG(LOG_VERBOSE, "Recording sample buffer with PTS: %"PRId64" (chunk: %"PRId64"", tCurPts, mRecorderFrameNumber);
                             LOG(LOG_VERBOSE, "Filling audio frame with buffer size: %d", tReadFifoSize);
                         #endif
 
@@ -2404,7 +2404,7 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
                             LOG(LOG_VERBOSE, "Recording audio frame..");
                             LOG(LOG_VERBOSE, "      ..key frame: %d", mRecorderFinalFrame->key_frame);
                             LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(mRecorderFinalFrame).c_str());
-                            LOG(LOG_VERBOSE, "      ..pts: %ld", mRecorderFinalFrame->pts);
+                            LOG(LOG_VERBOSE, "      ..pts: %"PRId64"", mRecorderFinalFrame->pts);
                             LOG(LOG_VERBOSE, "      ..coded pic number: %d", mRecorderFinalFrame->coded_picture_number);
                             LOG(LOG_VERBOSE, "      ..display pic number: %d", mRecorderFinalFrame->display_picture_number);
                             LOG(LOG_VERBOSE, "      ..nr. of samples: %d", mRecorderFinalFrame->nb_samples);
@@ -2427,10 +2427,10 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
                                 #ifdef MS_DEBUG_RECORDER_PACKETS
                                     LOG(LOG_VERBOSE, "Recording packet..");
                                     LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
-                                    LOG(LOG_VERBOSE, "      ..pts: %ld (fps: %3.2f)", tPacket->pts, mFrameRate);
-                                    LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket->dts);
+                                    LOG(LOG_VERBOSE, "      ..pts: %"PRId64" (fps: %3.2f)", tPacket->pts, mFrameRate);
+                                    LOG(LOG_VERBOSE, "      ..dts: %"PRId64"", tPacket->dts);
                                     LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
-                                    LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket->pos);
+                                    LOG(LOG_VERBOSE, "      ..pos: %"PRId64"", tPacket->pos);
                                 #endif
 
                                  // distribute the encoded frame
@@ -2965,8 +2965,8 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec flags: 0x%x", mCodecContext->flags);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec time_base: %d/%d", mCodecContext->time_base.den, mCodecContext->time_base.num); // inverse
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream ID: %d", mMediaStreamIndex);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream start real-time: %ld", mFormatContext->start_time_realtime);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream start time: %ld", FilterNeg(mFormatContext->streams[mMediaStreamIndex]->start_time));
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream start real-time: %"PRId64"", mFormatContext->start_time_realtime);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream start time: %"PRId64"", FilterNeg(mFormatContext->streams[mMediaStreamIndex]->start_time));
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream rfps: %d/%d", mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num, mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->time_base.den, mFormatContext->streams[mMediaStreamIndex]->time_base.num); // inverse
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream codec time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->codec->time_base.den, mFormatContext->streams[mMediaStreamIndex]->codec->time_base.num); // inverse
@@ -2984,14 +2984,14 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame size: %d", mCodecContext->frame_size);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..duration: %.2f frames", mNumberOfFrames);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start PTS: %.2f frames", FilterNeg(mSourceStartPts));
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS: %ld frames", FilterNeg(mFormatContext->start_time));
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS (RT): %ld frames", FilterNeg(mFormatContext->start_time_realtime));
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..format context duration: %ld seconds (exact value: %ld)", FilterNeg(mFormatContext->duration) / AV_TIME_BASE, mFormatContext->duration);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS: %"PRId64" frames", FilterNeg(mFormatContext->start_time));
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS (RT): %"PRId64" frames", FilterNeg(mFormatContext->start_time_realtime));
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..format context duration: %"PRId64" seconds (exact value: %"PRId64")", FilterNeg(mFormatContext->duration) / AV_TIME_BASE, mFormatContext->duration);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame rate: %.2f fps", mFrameRate);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame rate (playout): %.2f fps", mRealFrameRate);
     int64_t tStreamDuration = FilterNeg(mFormatContext->streams[mMediaStreamIndex]->duration);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context duration: %ld frames (%.0f seconds), nr. of frames: %ld", tStreamDuration, (float)tStreamDuration / mFrameRate);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context frames: %ld", mFormatContext->streams[mMediaStreamIndex]->nb_frames);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context duration: %"PRId64" frames (%.0f seconds), nr. of frames: %"PRId64"", tStreamDuration, (float)tStreamDuration / mFrameRate);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context frames: %"PRId64"", mFormatContext->streams[mMediaStreamIndex]->nb_frames);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..max. delay: %d", mFormatContext->max_delay);
     switch(mMediaType)
     {
@@ -3468,7 +3468,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     if (mFormatContext->duration > 0)
     {
         mNumberOfFrames = mFrameRate * mFormatContext->duration / AV_TIME_BASE;
-        LOG(LOG_VERBOSE, "Number of frames set to: %.2f, fps: %.2f, format context duration: %ld", (float)mNumberOfFrames, mFrameRate, mFormatContext->duration);
+        LOG(LOG_VERBOSE, "Number of frames set to: %.2f, fps: %.2f, format context duration: %"PRId64"", (float)mNumberOfFrames, mFrameRate, mFormatContext->duration);
     }else
     {
     	LOG(LOG_WARN, "Found duration of %s stream is invalid, will use a value of 0 instead", GetMediaTypeStr().c_str());

@@ -159,7 +159,7 @@ bool Mutex::tryLock(int pMSecs)
 				tTimeout.tv_nsec = tNanoSecs;
 				tTimeout.tv_sec += tAddSecs;
 				#ifdef HBC_DEBUG_TIMED
-					LOG(LOG_WARN, "Mutex ns part of timeout exceeds by %ld seconds", tAddSecs);
+					LOG(LOG_WARN, "Mutex ns part of timeout exceeds by %"PRId64" seconds", tAddSecs);
 				#endif
 			}
 

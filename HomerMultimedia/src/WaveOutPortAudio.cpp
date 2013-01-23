@@ -371,7 +371,7 @@ int WaveOutPortAudio::PlayAudioHandler(const void *pInputBuffer, void *pOutputBu
 		{
 			tWaveOutPortAudio->mPlaybackGaps++;
 			#ifdef WOPA_DEBUG_GAPS
-				LOGEX(WaveOutPortAudio, LOG_WARN, "Audio FIFO empty, playback for %s is non continuous, found gaps: %ld", tWaveOutPortAudio->GetStreamName().c_str(), tWaveOutPortAudio->mPlaybackGaps);
+				LOGEX(WaveOutPortAudio, LOG_WARN, "Audio FIFO empty, playback for %s is non continuous, found gaps: %"PRId64"", tWaveOutPortAudio->GetStreamName().c_str(), tWaveOutPortAudio->mPlaybackGaps);
 			#endif
 			memset(pOutputBuffer, 0, (size_t)tOutputBufferMaxSize);
 			return paContinue;

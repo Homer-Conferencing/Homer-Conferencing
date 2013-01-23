@@ -545,10 +545,10 @@ int MediaSourceDShow::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
         #ifdef MSDS_DEBUG_PACKETS
             LOG(LOG_VERBOSE, "Grabbed new video packet:");
             LOG(LOG_VERBOSE, "      ..duration: %d", tPacket.duration);
-            LOG(LOG_VERBOSE, "      ..pts: %ld stream [%d] pts: %ld", tPacket.pts, mMediaStreamIndex, mFormatContext->streams[mMediaStreamIndex]->pts);
-            LOG(LOG_VERBOSE, "      ..dts: %ld", tPacket.dts);
+            LOG(LOG_VERBOSE, "      ..pts: %"PRId64" stream [%d] pts: %"PRId64"", tPacket.pts, mMediaStreamIndex, mFormatContext->streams[mMediaStreamIndex]->pts);
+            LOG(LOG_VERBOSE, "      ..dts: %"PRId64"", tPacket.dts);
             LOG(LOG_VERBOSE, "      ..size: %d", tPacket.size);
-            LOG(LOG_VERBOSE, "      ..pos: %ld", tPacket.pos);
+            LOG(LOG_VERBOSE, "      ..pos: %"PRId64"", tPacket.pos);
         #endif
 
         // log statistics about original packets from device
@@ -584,7 +584,7 @@ int MediaSourceDShow::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
                             LOG(LOG_VERBOSE, "      ..picture type: %d", mSourceFrame->pict_type);
                             break;
                 }
-                LOG(LOG_VERBOSE, "      ..pts: %ld", mSourceFrame->pts);
+                LOG(LOG_VERBOSE, "      ..pts: %"PRId64"", mSourceFrame->pts);
                 LOG(LOG_VERBOSE, "      ..coded pic number: %d", mSourceFrame->coded_picture_number);
                 LOG(LOG_VERBOSE, "      ..display pic number: %d", mSourceFrame->display_picture_number);
             #endif

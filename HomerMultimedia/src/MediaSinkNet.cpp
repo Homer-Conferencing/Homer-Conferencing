@@ -272,7 +272,7 @@ void MediaSinkNet::WriteFragment(char* pData, unsigned int pSize)
             int64_t tTime3 = Time::GetTimeStamp();
             #ifdef MSIN_DEBUG_TIMING
                 int64_t tTime4 = Time::GetTimeStamp();
-                LOG(LOG_VERBOSE, "       SendFragment::AnnouncePacket for a fragment of %u bytes took %ld us", tFragmentSize, tTime4 - tTime3);
+                LOG(LOG_VERBOSE, "       SendFragment::AnnouncePacket for a fragment of %u bytes took %"PRId64" us", tFragmentSize, tTime4 - tTime3);
             #endif
             MediaSinkMem::WriteFragment(tFragmentData, tFragmentSize);
 
@@ -280,7 +280,7 @@ void MediaSinkNet::WriteFragment(char* pData, unsigned int pSize)
             tFragmentCount--;
             #ifdef MSIN_DEBUG_TIMING
                 int64_t tTime2 = Time::GetTimeStamp();
-                LOG(LOG_VERBOSE, "       SendFragment::Loop for a fragment of %u bytes took %ld us", tFragmentSize, tTime2 - tTime);
+                LOG(LOG_VERBOSE, "       SendFragment::Loop for a fragment of %u bytes took %"PRId64" us", tFragmentSize, tTime2 - tTime);
             #endif
             if ((tFragmentData > (pData + pSize)) && (tFragmentCount))
             {
@@ -457,12 +457,12 @@ void MediaSinkNet::SendPacket(char* pData, unsigned int pSize)
         int tRand = rand();
         if (tRand < (int64_t)MSIN_SIMULATED_PACKET_LOSS * RAND_MAX / 100)
         {
-            LOG(LOG_ERROR, "Dropped packet with pts: %ld", tVal);
+            LOG(LOG_ERROR, "Dropped packet with pts: %"PRId64"", tVal);
             return;
         }else
         {
             #ifdef MSIN_DEBUG_PACKETS
-                LOG(LOG_WARN, "Sending packet with pts: %ld", tVal);
+                LOG(LOG_WARN, "Sending packet with pts: %"PRId64"", tVal);
             #endif
         }
     #endif
@@ -492,7 +492,7 @@ void MediaSinkNet::SendPacket(char* pData, unsigned int pSize)
     }
     #ifdef MSIN_DEBUG_TIMING
         int64_t tTime2 = Time::GetTimeStamp();
-        LOG(LOG_VERBOSE, "       sending a packet of %u bytes took %ld us", pSize, tTime2 - tTime);
+        LOG(LOG_VERBOSE, "       sending a packet of %u bytes took %"PRId64" us", pSize, tTime2 - tTime);
     #endif
 }
 

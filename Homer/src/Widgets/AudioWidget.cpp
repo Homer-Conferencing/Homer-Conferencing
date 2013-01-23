@@ -1135,7 +1135,7 @@ void AudioWorkerThread::DoSyncClock()
     if (mSyncClockMasterSource != NULL)
         tShiftOffset = mSyncClockMasterSource->GetSynchronizationTimestamp() - mMediaSource->GetSynchronizationTimestamp() - (mUserAVDrift - mVideoDelayAVDrift) * 1000000;
 
-    LOG(LOG_VERBOSE, "Shifting time of source %s by %ld", mMediaSource->GetStreamName().c_str(), tShiftOffset);
+    LOG(LOG_VERBOSE, "Shifting time of source %s by %"PRId64"", mMediaSource->GetStreamName().c_str(), tShiftOffset);
 
     mSourceAvailable = mMediaSource->TimeShift(tShiftOffset);
     if(!mSourceAvailable)
@@ -1545,7 +1545,7 @@ void AudioWorkerThread::run()
                     {
                         //HINT: locking is done via mDeliverMutex!
                         mFrameTimestamps.push_back(Time::GetTimeStamp());
-                        //LOG(LOG_WARN, "Time %ld", Time::GetTimeStamp());
+                        //LOG(LOG_WARN, "Time %"PRId64"", Time::GetTimeStamp());
                         while (mFrameTimestamps.size() > SPS_MEASUREMENT_STEPS)
                             mFrameTimestamps.removeFirst();
                     }

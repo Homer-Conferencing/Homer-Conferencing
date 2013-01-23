@@ -467,7 +467,7 @@ bool FileTransfer::SendPacket(char* pData, unsigned int pSize)
         LOG(LOG_ERROR, "Invalid socket to peer");
     #ifdef FTM_DEBUG_TIMING
         int64_t tTime2 = Time::GetTimeStamp();
-        LOG(LOG_VERBOSE, "       sending a packet of %u bytes took %ld us", pSize, tTime2 - tTime);
+        LOG(LOG_VERBOSE, "       sending a packet of %u bytes took %"PRId64" us", pSize, tTime2 - tTime);
     #endif
 
     return tResult;
@@ -608,7 +608,7 @@ bool FileTransfer::SendRequestTransferData(char *pData, unsigned int pDataSize, 
     memcpy(tBuffer + sizeof(HomerFtmDataHeader) , pData, pDataSize);
 
     #ifdef FTM_DEBUG_DATA_PACKETS
-        LOG(LOG_ERROR, "Sending of file \"%s\" the fragment from %lu to %lu towards %s:%u", mFileName.c_str(), tDataHeader->Start, tDataHeader->End, mPeerName.c_str(), mPeerPort);
+        LOG(LOG_ERROR, "Sending of file \"%s\" the fragment from %"PRIu64" to %"PRIu64" towards %s:%u", mFileName.c_str(), tDataHeader->Start, tDataHeader->End, mPeerName.c_str(), mPeerPort);
     #endif
 
     tResult = SendRequest(FTM_PDU_TRANSFER_DATA, tBuffer, sizeof(HomerFtmDataHeader) + pDataSize);
@@ -646,7 +646,7 @@ void FileTransfer::ReceivedTransferBegin(HomerFtmHeader *pHeader, char *pPayload
     else
         strcpy(tFileName, "File name too long");
 
-    LOG(LOG_VERBOSE, "Remote signaled transfer begin for file \"%s\" with size %ld", mFileName.c_str(), mFileSize);
+    LOG(LOG_VERBOSE, "Remote signaled transfer begin for file \"%s\" with size %"PRId64"", mFileName.c_str(), mFileSize);
 
     // send ACK
     AcknowledgeRequest(pHeader);
@@ -654,7 +654,7 @@ void FileTransfer::ReceivedTransferBegin(HomerFtmHeader *pHeader, char *pPayload
     // who are we?
     if (IsSenderActive())
     {// we are sender
-        LOG(LOG_VERBOSE, "TRANSFER-BEGIN hand-shake finished, remote acknowledged transfer of file \"%s\" with size %ld", mFileName.c_str(), mFileSize);
+        LOG(LOG_VERBOSE, "TRANSFER-BEGIN hand-shake finished, remote acknowledged transfer of file \"%s\" with size %"PRId64"", mFileName.c_str(), mFileSize);
         mConditionRemoteWantsTransferBegin.SignalAll();
     }else
     {// we are receiver
@@ -669,14 +669,14 @@ void FileTransfer::ReceivedTransferBegin(HomerFtmHeader *pHeader, char *pPayload
 
 void FileTransfer::ReceivedTransferSuccess(HomerFtmHeader *pHeader)
 {
-    LOG(LOG_VERBOSE, "Remote signaled transfer successfully finished for file %s with size %ld", mFileName.c_str(), mFileSize);
+    LOG(LOG_VERBOSE, "Remote signaled transfer successfully finished for file %s with size %"PRId64"", mFileName.c_str(), mFileSize);
 
     AcknowledgeRequest(pHeader);
 
     // who are we?
     if (IsSenderActive())
     {// we are sender
-        LOG(LOG_VERBOSE, "TRANSFER-END hand-shake finished, remote acknowledged transfer of file \"%s\" with size %ld", mFileName.c_str(), mFileSize);
+        LOG(LOG_VERBOSE, "TRANSFER-END hand-shake finished, remote acknowledged transfer of file \"%s\" with size %"PRId64"", mFileName.c_str(), mFileSize);
         mRemoteClosedTransfer = true;
         #ifdef FTM_DEBUG_DATA_PACKETS
             LOG(LOG_WARN, "Sending wake up to \"RemoteAcksTransferEnd\"");
@@ -686,7 +686,7 @@ void FileTransfer::ReceivedTransferSuccess(HomerFtmHeader *pHeader)
     {// we are receiver
         // does the file size match the desired one (was initially reported in TransferBegin)?
         if (mFileSize != mFileTransferredSize)
-            LOG(LOG_WARN, "File size differs, received data: %lu bytes, expected data: %lu bytes", mFileTransferredSize, mFileSize);
+            LOG(LOG_WARN, "File size differs, received data: %"PRIu64" bytes, expected data: %"PRIu64" bytes", mFileTransferredSize, mFileSize);
 
         // tell the sender that we don't need more data and transfer can be closed
         if (mFileTransferredSize == mFileSize)
@@ -707,7 +707,7 @@ void FileTransfer::ReceivedTransferSuccess(HomerFtmHeader *pHeader)
 
 void FileTransfer::ReceivedTransferCancel(HomerFtmHeader *pHeader)
 {
-    LOG(LOG_VERBOSE, "Remote signaled transfer canceled for file %s with size %ld", mFileName.c_str(), mFileSize);
+    LOG(LOG_VERBOSE, "Remote signaled transfer canceled for file %s with size %"PRId64"", mFileName.c_str(), mFileSize);
 
     AcknowledgeRequest(pHeader);
 
@@ -722,7 +722,7 @@ void FileTransfer::ReceivedTransferCancel(HomerFtmHeader *pHeader)
 
 void FileTransfer::ReceivedTransferPause(HomerFtmHeader *pHeader)
 {
-    LOG(LOG_VERBOSE, "Remote signaled transfer paused for file %s with size %ld", mFileName.c_str(), mFileSize);
+    LOG(LOG_VERBOSE, "Remote signaled transfer paused for file %s with size %"PRId64"", mFileName.c_str(), mFileSize);
 
     AcknowledgeRequest(pHeader);
 
@@ -731,7 +731,7 @@ void FileTransfer::ReceivedTransferPause(HomerFtmHeader *pHeader)
 
 void FileTransfer::ReceivedTransferContinue(HomerFtmHeader *pHeader)
 {
-    LOG(LOG_VERBOSE, "Remote signaled transfer continued for file %s with size %ld", mFileName.c_str(), mFileSize);
+    LOG(LOG_VERBOSE, "Remote signaled transfer continued for file %s with size %"PRId64"", mFileName.c_str(), mFileSize);
 
     AcknowledgeRequest(pHeader);
 
@@ -743,12 +743,12 @@ void FileTransfer::ReceivedTransferData(HomerFtmHeader *pHeader, char *pPayload,
     HomerFtmDataHeader *tDataHeader = (HomerFtmDataHeader*)pPayload;
     uint64_t tFragmentSize = tDataHeader->End - tDataHeader->Start;
     #ifdef FTM_DEBUG_DATA_PACKETS
-        LOG(LOG_VERBOSE, "Remote signaled %d bytes of transfer data for file %s with size %ld", (int)tFragmentSize, mFileName.c_str(), mFileSize);
+        LOG(LOG_VERBOSE, "Remote signaled %d bytes of transfer data for file %s with size %"PRId64"", (int)tFragmentSize, mFileName.c_str(), mFileSize);
     #endif
 
     if (tDataHeader->Start != mFileTransferredSize)
     {
-        LOG(LOG_WARN, "Detected a gap in received transfer stream: %lu bytes successfully received, current fragment starts at position %lu", mFileTransferredSize, tDataHeader->Start);
+        LOG(LOG_WARN, "Detected a gap in received transfer stream: %"PRIu64" bytes successfully received, current fragment starts at position %"PRIu64"", mFileTransferredSize, tDataHeader->Start);
 
         // ACK this fragment
         if (mUsesDataAcks)
@@ -763,7 +763,7 @@ void FileTransfer::ReceivedTransferData(HomerFtmHeader *pHeader, char *pPayload,
     if (mLocalFile != NULL)
     {
         #ifdef FTM_DEBUG_DATA_PACKETS
-            LOG(LOG_ERROR, "Storing in file \"%s\" the fragment from %lu to %lu", mFileName.c_str(), tDataHeader->Start, tDataHeader->End);
+            LOG(LOG_ERROR, "Storing in file \"%s\" the fragment from %"PRIu64" to %"PRIu64"", mFileName.c_str(), tDataHeader->Start, tDataHeader->End);
         #endif
 
         char *tFragment = pPayload + sizeof(HomerFtmDataHeader);
@@ -771,7 +771,7 @@ void FileTransfer::ReceivedTransferData(HomerFtmHeader *pHeader, char *pPayload,
         // write fragment to local file
         size_t tResult = fwrite((void*)tFragment, 1, (size_t)tFragmentSize, mLocalFile);
         if (tResult != tFragmentSize)
-            LOG(LOG_ERROR, "Error when writing fragment to file, wrote %d bytes instead of %lu bytes", (int)tResult, tFragmentSize);
+            LOG(LOG_ERROR, "Error when writing fragment to file, wrote %d bytes instead of %"PRIu64" bytes", (int)tResult, tFragmentSize);
         else
             mFileTransferredSize += tFragmentSize;
     }
@@ -790,7 +790,7 @@ void FileTransfer::ReceivedTransferSeek(HomerFtmHeader *pHeader, char *pPayload,
 
     HomerFtmSeekHeader *tSeekHeader = (HomerFtmSeekHeader*)pPayload;
 
-    LOG(LOG_VERBOSE, "Remote signaled transfer seek to %lu for file \"%s\" with size %ld", tSeekHeader->Position, mFileName.c_str(), mFileSize);
+    LOG(LOG_VERBOSE, "Remote signaled transfer seek to %"PRIu64" for file \"%s\" with size %"PRId64"", tSeekHeader->Position, mFileName.c_str(), mFileSize);
 
     mFileReadMutex.lock();
 
@@ -820,35 +820,35 @@ void FileTransfer::ReceivedTransferSeek(HomerFtmHeader *pHeader, char *pPayload,
 
 void FileTransfer::ReceivedTransferBeginResponse(HomerFtmHeader *pHeader)
 {
-    LOG(LOG_VERBOSE, "Remote acknowledged begin of transfer data for file %s with size %ld", mFileName.c_str(), mFileSize);
+    LOG(LOG_VERBOSE, "Remote acknowledged begin of transfer data for file %s with size %"PRId64"", mFileName.c_str(), mFileSize);
 
     //TODO: timeout handling
 }
 
 void FileTransfer::ReceivedTransferSuccessResponse(HomerFtmHeader *pHeader)
 {
-    LOG(LOG_VERBOSE, "Remote acknowledged transfer successfully finished for file %s with size %ld", mFileName.c_str(), mFileSize);
+    LOG(LOG_VERBOSE, "Remote acknowledged transfer successfully finished for file %s with size %"PRId64"", mFileName.c_str(), mFileSize);
 
     //TODO: timeout handling
 }
 
 void FileTransfer::ReceivedTransferCancelResponse(HomerFtmHeader *pHeader)
 {
-    LOG(LOG_VERBOSE, "Remote acknowledged transfer canceled for file %s with size %ld", mFileName.c_str(), mFileSize);
+    LOG(LOG_VERBOSE, "Remote acknowledged transfer canceled for file %s with size %"PRId64"", mFileName.c_str(), mFileSize);
 
     //TODO: timeout handling
 }
 
 void FileTransfer::ReceivedTransferPauseResponse(HomerFtmHeader *pHeader)
 {
-    LOG(LOG_VERBOSE, "Remote acknowledged transfer paused for file %s with size %ld", mFileName.c_str(), mFileSize);
+    LOG(LOG_VERBOSE, "Remote acknowledged transfer paused for file %s with size %"PRId64"", mFileName.c_str(), mFileSize);
 
     //TODO: timeout handling
 }
 
 void FileTransfer::ReceivedTransferContinueResponse(HomerFtmHeader *pHeader)
 {
-    LOG(LOG_VERBOSE, "Remote acknowledged transfer continued for file %s with size %ld", mFileName.c_str(), mFileSize);
+    LOG(LOG_VERBOSE, "Remote acknowledged transfer continued for file %s with size %"PRId64"", mFileName.c_str(), mFileSize);
 
     //TODO: timeout handling
 }
@@ -856,7 +856,7 @@ void FileTransfer::ReceivedTransferContinueResponse(HomerFtmHeader *pHeader)
 void FileTransfer::ReceivedTransferDataResponse(HomerFtmHeader *pHeader)
 {
     #ifdef FTM_DEBUG_DATA_PACKETS
-        LOG(LOG_VERBOSE, "Remote acknowledged transfer data for file %s with size %ld", mFileName.c_str(), mFileSize);
+        LOG(LOG_VERBOSE, "Remote acknowledged transfer data for file %s with size %"PRId64"", mFileName.c_str(), mFileSize);
     #endif
 
     mConditionRemoteAcksTransferData.SignalAll();
@@ -867,7 +867,7 @@ void FileTransfer::ReceivedTransferDataResponse(HomerFtmHeader *pHeader)
 void FileTransfer::ReceivedTransferSeekResponse(HomerFtmHeader *pHeader)
 {
     #ifdef FTM_DEBUG_DATA_PACKETS
-        LOG(LOG_VERBOSE, "Remote acknowledged transfer seek for file %s with size %ld", mFileName.c_str(), mFileSize);
+        LOG(LOG_VERBOSE, "Remote acknowledged transfer seek for file %s with size %"PRId64"", mFileName.c_str(), mFileSize);
     #endif
 
     //TODO: timeout handling
@@ -1174,7 +1174,7 @@ uint64_t FileTransfersManager::SendFile(std::string pTargetName, Requirements *p
 
 void FileTransfersManager::AcknowledgeTransfer(uint64_t pId, std::string pLocalFileName)
 {
-    LOG(LOG_VERBOSE, "Acknowledging transfer %lu, local file name defined as \"%s\"", pId, pLocalFileName.c_str());
+    LOG(LOG_VERBOSE, "Acknowledging transfer %"PRIu64", local file name defined as \"%s\"", pId, pLocalFileName.c_str());
     FileTransfer *tTransfer = SearchTransfer(pId);
     if (tTransfer != NULL)
         tTransfer->ReceiverAcknowledgesTransferBegin(pLocalFileName);
@@ -1182,7 +1182,7 @@ void FileTransfersManager::AcknowledgeTransfer(uint64_t pId, std::string pLocalF
 
 void FileTransfersManager::PauseTransfer(uint64_t pId)
 {
-    LOG(LOG_VERBOSE, "Pausing transfer %lu", pId);
+    LOG(LOG_VERBOSE, "Pausing transfer %"PRIu64, pId);
     FileTransfer *tTransfer = SearchTransfer(pId);
     if (tTransfer != NULL)
         tTransfer->PauseFileTransfer();
@@ -1190,7 +1190,7 @@ void FileTransfersManager::PauseTransfer(uint64_t pId)
 
 void FileTransfersManager::ContinueTransfer(uint64_t pId)
 {
-    LOG(LOG_VERBOSE, "Continuing transfer %lu", pId);
+    LOG(LOG_VERBOSE, "Continuing transfer %"PRIu64, pId);
     FileTransfer *tTransfer = SearchTransfer(pId);
     if (tTransfer != NULL)
         tTransfer->ContinueFileTransfer();
@@ -1198,7 +1198,7 @@ void FileTransfersManager::ContinueTransfer(uint64_t pId)
 
 void FileTransfersManager::CancelTransfer(uint64_t pId)
 {
-    LOG(LOG_VERBOSE, "Canceling transfer %lu", pId);
+    LOG(LOG_VERBOSE, "Canceling transfer %"PRIu64, pId);
     FileTransfer *tTransfer = SearchTransfer(pId);
     if (tTransfer != NULL)
         tTransfer->CancelFileTransfer();
