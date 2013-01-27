@@ -1967,6 +1967,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
         }
     }
 
+    // make sure we have a defined frame size
     if (mRecorderCodecContext->frame_size < 32)
     {
         LOG(LOG_WARN, "Found invalid frame size %d, setting to %d", mRecorderCodecContext->frame_size, MEDIA_SOURCE_SAMPLES_PER_BUFFER);
@@ -3463,6 +3464,13 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     //HINT: we allow the input bit stream to be truncated at packet boundaries instead of frame boundaries,
     //		otherwise an UDP/TCP based transmission will fail because the decoder expects only complete packets as input
     mCodecContext->flags2 |= CODEC_FLAG2_CHUNKS | CODEC_FLAG2_SHOW_ALL;
+
+    // make sure we have a defined frame size
+    if (mCodecContext->frame_size < 32)
+    {
+        LOG(LOG_WARN, "Found invalid frame size %d, setting to %d", mCodecContext->frame_size, MEDIA_SOURCE_SAMPLES_PER_BUFFER);
+        mCodecContext->frame_size = MEDIA_SOURCE_SAMPLES_PER_BUFFER;
+    }
 
     //set duration
     if (mFormatContext->duration > 0)
