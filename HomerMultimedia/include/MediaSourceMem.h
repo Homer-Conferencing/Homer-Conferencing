@@ -154,8 +154,9 @@ protected:
     void UpdateBufferTime();
 
     /* FIFO helpers */
-    void WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int64_t pPts);
-    void ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int64_t &pPts);
+    void CalculateExpectedOutputPerInputFrame();
+    void WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int64_t pOutputPts);
+    void ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int64_t &pOutputPts);
     bool DecoderFifoFull();
 
     /* RTP based frame numbering */
@@ -190,6 +191,7 @@ protected:
     Mutex				mDecoderFragmentFifoDestructionMutex;
     MediaFifo           *mDecoderFifo; // for frames
     MediaFifo           *mDecoderMetaDataFifo; // for meta data about frames
+    int                 mDecoderExpectedMaxOutputPerInputFrame; // how many output frames can be calculated of one input frame?
     /* decoder thread seeking */
     double              mDecoderTargetFrameIndex;
     bool                mDecoderWaitForNextKeyFramePackets; // after seeking we wait for next key frame packets -> either i-frames or p-frames

@@ -1296,6 +1296,8 @@ void* MediaSourceMem::Run(void* pArgs)
     // reset buffer counter
     mDecoderOutputFrameDelay = 0;
 
+    CalculateExpectedOutputPerInputFrame();
+
     LOG(LOG_WARN, "================ Entering main %s decoding loop for %s media source", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
 
     while(mDecoderNeeded)
@@ -1509,7 +1511,7 @@ void* MediaSourceMem::Run(void* pArgs)
                         LOG(LOG_VERBOSE, "      ..dts: %"PRId64"", tPacket->dts);
                         LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
                         LOG(LOG_VERBOSE, "      ..pos: %"PRId64"", tPacket->pos);
-                        LOG(LOG_VERBOSE, "      ..pic. nr.: %"PRId64"", (int64_t)tPacket->pts / tPacket->duration /* works only for cfr, otherwise duration is variable */);
+                        LOG(LOG_VERBOSE, "      ..pic. nr.: %"PRId64"", (int64_t)tPacket->pts / (tPacket->duration > 0 ? tPacket->duration : 1) /* works only for cfr, otherwise duration is variable */);
                         if (tPacket->flags == AV_PKT_FLAG_KEY)
                             LOG(LOG_VERBOSE, "      ..flags: key frame");
                         else
@@ -1897,7 +1899,7 @@ void* MediaSourceMem::Run(void* pArgs)
 
                                     #ifdef MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
                                         LOG(LOG_VERBOSE, "New audio frame..");
-                                        LOG(LOG_VERBOSE, "      ..size: %d bytes (%d samples of format %s)", tOutputBufferSize * tOutoutAudioBytesPerSample, tOutputBufferSize, av_get_sample_fmt_name(mOutputAudioFormat));
+                                        LOG(LOG_VERBOSE, "      ..size: %d bytes (%d samples of format %s)", tAudioFrame->nb_samples * tOutputAudioBytesPerSample * mOutputAudioChannels, tAudioFrame->nb_samples, av_get_sample_fmt_name(mOutputAudioFormat));
                                     #endif
 
                                     if (mAudioResampleContext != NULL)
@@ -1929,7 +1931,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                         // ### WRITE FRAME TO FIFO
                                         // ############################
                                         #ifdef MSMEM_DEBUG_PACKETS
-                                            LOG(LOG_VERBOSE, "Adding %d bytes to AUDIO FIFO with size of %d bytes", tCurrentChunkSize, av_fifo_size(tSampleFifo));
+                                            LOG(LOG_VERBOSE, "Adding %d bytes to AUDIO FIFO with size of %d bytes, packet pts: %"PRId64, tCurrentChunkSize, av_fifo_size(tSampleFifo), tCurPacketPts);
                                         #endif
                                         // is there enough space in the FIFO?
                                         if (av_fifo_space(tSampleFifo) < tCurrentChunkSize)
@@ -1952,8 +1954,11 @@ void* MediaSourceMem::Run(void* pArgs)
 
                                         tCurFramePts = tCurPacketPts;// - mDecoderOutputFrameDelay;
 
+                                        // the amount of bytes we want to have in an output frame
+                                        int tDesiredOutputSize = MEDIA_SOURCE_SAMPLES_PER_BUFFER * tOutputAudioBytesPerSample * mOutputAudioChannels;
+
                                         int tLoops = 0;
-                                        while (av_fifo_size(tSampleFifo) >= MEDIA_SOURCE_SAMPLES_BUFFER_SIZE)
+                                        while (av_fifo_size(tSampleFifo) >= MEDIA_SOURCE_SAMPLES_PER_BUFFER * tOutputAudioBytesPerSample * mOutputAudioChannels)
                                         {
                                             tLoops++;
                                             // ############################
@@ -1963,8 +1968,8 @@ void* MediaSourceMem::Run(void* pArgs)
                                                 LOG(LOG_VERBOSE, "Loop %d-Reading %d bytes from %d bytes of fifo, current PTS: %"PRId64"", tLoops, MSF_DESIRED_AUDIO_INPUT_SIZE, av_fifo_size(tSampleFifo), tCurFramePts);
                                             #endif
                                             // read sample data from the fifo buffer
-                                            HM_av_fifo_generic_read(tSampleFifo, (void*)tChunkBuffer, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE);
-                                            tCurrentChunkSize = MEDIA_SOURCE_SAMPLES_BUFFER_SIZE;
+                                            HM_av_fifo_generic_read(tSampleFifo, (void*)tChunkBuffer, tDesiredOutputSize);
+                                            tCurrentChunkSize = tDesiredOutputSize;
 
                                             // ############################
                                             // ### WRITE FRAME TO OUTPUT FIFO
@@ -2123,31 +2128,31 @@ void* MediaSourceMem::Run(void* pArgs)
     return NULL;
 }
 
-void MediaSourceMem::WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int64_t pPts)
+void MediaSourceMem::WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int64_t pOutputPts)
 {
     if (mDecoderFifo == NULL)
         LOG(LOG_ERROR, "Invalid decoder FIFO");
 
     #ifdef MSMEM_DEBUG_FRAME_QUEUE
-        LOG(LOG_VERBOSE, ">>> Writing frame of %d bytes and pts %"PRId64", FIFOs: %d/%d", pBufferSize, pPts, mDecoderFifo->GetUsage(), mDecoderMetaDataFifo->GetUsage());
+        LOG(LOG_VERBOSE, ">>> Writing frame of %d bytes and pts %"PRId64", FIFOs: %d/%d", pBufferSize, pOutputPts, mDecoderFifo->GetUsage(), mDecoderMetaDataFifo->GetUsage());
     #endif
 
-    if (pPts != 0)
-        mFrameBufferLastWrittenFrameIndex = pPts;
+    if (pOutputPts != 0)
+        mFrameBufferLastWrittenFrameIndex = pOutputPts;
 
     // write A/V data to output FIFO
     mDecoderFifo->WriteFifo(pBuffer, pBufferSize);
 
     // add meta description about current chunk to different FIFO
     struct ChunkDescriptor tChunkDesc;
-    tChunkDesc.Pts = pPts;
+    tChunkDesc.Pts = pOutputPts;
     mDecoderMetaDataFifo->WriteFifo((char*) &tChunkDesc, sizeof(tChunkDesc));
 
     // update pre-buffer time value
     UpdateBufferTime();
 }
 
-void MediaSourceMem::ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int64_t &pPts)
+void MediaSourceMem::ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int64_t &pOutputPts)
 {
     if (mDecoderFifo == NULL)
         LOG(LOG_ERROR, "Invalid decoder FIFO");
@@ -2159,22 +2164,70 @@ void MediaSourceMem::ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int6
     struct ChunkDescriptor tChunkDesc;
     int tChunkDescSize = sizeof(tChunkDesc);
     mDecoderMetaDataFifo->ReadFifo((char*)&tChunkDesc, tChunkDescSize);
-    pPts = tChunkDesc.Pts;
+    pOutputPts = tChunkDesc.Pts;
     if (tChunkDescSize != sizeof(tChunkDesc))
         LOG(LOG_ERROR, "Read from FIFO a chunk with wrong size of %d bytes, expected size is %d bytes", tChunkDescSize, sizeof(tChunkDesc));
 
     #ifdef MSMEM_DEBUG_FRAME_QUEUE
-        LOG(LOG_VERBOSE, "Returning from decoder FIFO the %s frame (PTS = %"PRId64")", GetMediaTypeStr().c_str(), pPts);
+        LOG(LOG_VERBOSE, "Returning from decoder FIFO the %s frame (PTS = %"PRId64"), remaing frames in FIFO: %"PRId64, GetMediaTypeStr().c_str(), pOutputPts, mDecoderFifo->GetUsage());
     #endif
 
     // update pre-buffer time value
     UpdateBufferTime();
 }
 
+void MediaSourceMem::CalculateExpectedOutputPerInputFrame()
+{
+    switch(mMediaType)
+    {
+        case MEDIA_AUDIO:
+                if (mCodecContext != NULL)
+                {
+                    int tInputSamplesPerFrame = mCodecContext->frame_size;
+                    if (tInputSamplesPerFrame == 0)
+                        tInputSamplesPerFrame = MEDIA_SOURCE_SAMPLES_PER_BUFFER; // fall back to the default value
+
+                    int64_t tInputFrameSize = tInputSamplesPerFrame * av_get_bytes_per_sample(mInputAudioFormat) * mInputAudioChannels;
+
+                    float tSizeRatio = ((float)mOutputAudioChannels / mInputAudioChannels) *
+                                       ((float)av_get_bytes_per_sample(mOutputAudioFormat) / av_get_bytes_per_sample(mInputAudioFormat)) *
+                                       ((float)mOutputAudioSampleRate / mInputAudioSampleRate);
+
+                    int64_t tMaxOutputSize = (int64_t)((float)tInputFrameSize * tSizeRatio);
+
+                    int tBytesPerOutputSample = av_get_bytes_per_sample(mOutputAudioFormat) * mOutputAudioChannels;
+
+                    // round up to next valid size depending on the amount of bytes per output sample
+                    tMaxOutputSize = tMaxOutputSize / (tBytesPerOutputSample) * tBytesPerOutputSample + tBytesPerOutputSample;
+
+                    int64_t tOutputFrameSize = MEDIA_SOURCE_SAMPLES_PER_BUFFER * av_get_bytes_per_sample(mOutputAudioFormat) * mOutputAudioChannels;
+
+                    float tMaxPossibleOutputFrames = (float)tMaxOutputSize / tOutputFrameSize;
+
+                    mDecoderExpectedMaxOutputPerInputFrame = rint(tMaxPossibleOutputFrames);
+
+                    //LOG(LOG_ERROR, "Expected max. output frames: %d(%.2f), size ratio: %.2f (%d/%d + %d/%d + %d/%d), max. output size: %"PRId64, tOutputOfNextInputFrame, tMaxPossibleOutputFrames, tSizeRatio, mOutputAudioChannels, mInputAudioChannels, av_get_bytes_per_sample(mOutputAudioFormat), av_get_bytes_per_sample(mInputAudioFormat), mOutputAudioSampleRate, mInputAudioSampleRate, tMaxOutputSize);
+                }else
+                    mDecoderExpectedMaxOutputPerInputFrame = 8; // a fallback to a "good" value
+                break;
+        case MEDIA_VIDEO:
+                mDecoderExpectedMaxOutputPerInputFrame = 1;
+                break;
+        default:
+                mDecoderExpectedMaxOutputPerInputFrame = 1;
+                break;
+    }
+}
+
 bool MediaSourceMem::DecoderFifoFull()
 {
-	return ((mDecoderFifo == NULL) || (mDecoderFifo->GetUsage() >= mDecoderFifo->GetSize() - 1 /* one slot for a 0 byte signaling chunk*/) /* meta data FIFO has always the same size => hence, we don't have to check its size */ ||
-			(mDecoderMetaDataFifo == NULL) || (mDecoderMetaDataFifo->GetUsage() >= mDecoderMetaDataFifo->GetSize() - 1));
+    bool tResult;
+
+    tResult = ((mDecoderFifo == NULL)/* decoder FIFO is invalid */ || (mDecoderMetaDataFifo == NULL) /* decoder meta data FIFO is invalid */) ||
+               (mDecoderFifo->GetUsage() + mDecoderExpectedMaxOutputPerInputFrame > mDecoderFifo->GetSize() - 1 /* check the usage, one slot for a 0 byte signaling chunk*/);
+    //HINT: meta data FIFO has always the same size like the data FIFO => we don't have to check the usage of meta data FIFO
+
+    return tResult;
 }
 
 void MediaSourceMem::UpdateBufferTime()
@@ -2348,8 +2401,8 @@ int64_t MediaSourceMem::GetSynchronizationTimestamp()
                 // nothing to complain about, we return 0 to signal we have no valid synchronization timestamp yet
             }
         }else
-        {// no RTP available, we have plain network transport of a file based A/V media source
-            // ..
+        {// no RTP available
+            //TODO: we have to implement support for A/V sync. of plain (without RTP encapsulation) A/V streams
         }
     }
 
