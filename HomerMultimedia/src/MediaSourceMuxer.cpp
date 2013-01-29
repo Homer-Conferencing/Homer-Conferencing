@@ -356,7 +356,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     // use the frame rate from the base source in order to make the encoder produce the correct PTS values
     if (mMediaSource != NULL)
     {
-        float tFps = mMediaSource->GetFrameRatePlayout();
+        float tFps = mMediaSource->GetOutputFrameRate();
         if (tFps != pFps)
         {
             LOG(LOG_VERBOSE, "Setting the %s muxer frame rate from %.2f to %.2f (from base source)", GetMediaTypeStr().c_str(), pFps, tFps);
@@ -407,8 +407,8 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
 
     mSourceResX = pResX;
     mSourceResY = pResY;
-    mFrameRate = pFps;
-    mRealFrameRate = pFps;
+    mInputFrameRate = pFps;
+    mOutputFrameRate = pFps;
 
     // allocate new format context
     mFormatContext = AV_NEW_FORMAT_CONTEXT();
@@ -511,15 +511,15 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
      * identically to 1.
      */
     // mpeg1/2 codecs support only non-rational frame rates
-    if (((tFormat->video_codec == CODEC_ID_MPEG1VIDEO) || (tFormat->video_codec == CODEC_ID_MPEG2VIDEO)) && (mFrameRate = 29.97))
+    if (((tFormat->video_codec == CODEC_ID_MPEG1VIDEO) || (tFormat->video_codec == CODEC_ID_MPEG2VIDEO)) && (mInputFrameRate = 29.97))
     {
         //HACK: pretend a frame rate of 30 fps, the actual frame rate corresponds to the frame rate from the base media source
         mCodecContext->time_base = (AVRational){100, (int)(30 * 100)};
         mEncoderStream->time_base = (AVRational){100, (int)(30 * 100)};
     }else
     {
-        mCodecContext->time_base = (AVRational){100, (int)(mFrameRate * 100)};
-        mEncoderStream->time_base = (AVRational){100, (int)(mFrameRate * 100)};
+        mCodecContext->time_base = (AVRational){100, (int)(mInputFrameRate * 100)};
+        mEncoderStream->time_base = (AVRational){100, (int)(mInputFrameRate * 100)};
     }
     // set i frame distance: GOP = group of pictures
     if (mStreamCodecId != CODEC_ID_THEORA)
@@ -647,8 +647,8 @@ bool MediaSourceMuxer::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     	tResult = mMediaSource->OpenVideoGrabDevice(pResX, pResY, pFps);
 		if (!tResult)
 			return false;
-		mFrameRate = mMediaSource->GetFrameRate();
-		mRealFrameRate = mMediaSource->GetFrameRatePlayout();
+		mInputFrameRate = mMediaSource->GetInputFrameRate();
+		mOutputFrameRate = mMediaSource->GetOutputFrameRate();
     }
 
     if (mMediaSourceOpened)
@@ -827,7 +827,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     	return false;
 
     // update the real frame rate depending on the actual encoder sample rate and the encoder frame size
-    mRealFrameRate = (float)mOutputAudioSampleRate /* usually 44100 samples per second */ / mCodecContext->frame_size /* usually 1024 samples per frame */;
+    mOutputFrameRate = (float)mOutputAudioSampleRate /* usually 44100 samples per second */ / mCodecContext->frame_size /* usually 1024 samples per frame */;
 
     // init transcoder FIFO based for 2048 samples with 16 bit and 2 channels, more samples are never produced by a media source per grabbing cycle
     StartEncoder();
@@ -869,8 +869,8 @@ bool MediaSourceMuxer::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 		tResult = mMediaSource->OpenAudioGrabDevice(pSampleRate, pChannels);
 		if (!tResult)
 			return false;
-        mFrameRate = mMediaSource->GetFrameRate();
-        mRealFrameRate = mMediaSource->GetFrameRatePlayout();
+        mInputFrameRate = mMediaSource->GetInputFrameRate();
+        mOutputFrameRate = mMediaSource->GetOutputFrameRate();
     }
 
     if (mMediaSourceOpened)
@@ -1262,7 +1262,7 @@ int64_t MediaSourceMuxer::CalculateEncoderPts(int pFrameNumber)
 {
     int64_t tResult = 0;
 
-    tResult = pFrameNumber * 1000 / GetFrameRatePlayout(); // frame number * time between frames
+    tResult = pFrameNumber * 1000 / GetOutputFrameRate(); // frame number * time between frames
 
     return tResult;
 }
@@ -1978,7 +1978,7 @@ void MediaSourceMuxer::SetVideoGrabResolution(int pResX, int pResY)
             if (mMediaSource != NULL)
               mMediaSource->SetVideoGrabResolution(mSourceResX, mSourceResY);
 
-            OpenVideoMuxer(mSourceResX, mSourceResY, mFrameRate);
+            OpenVideoMuxer(mSourceResX, mSourceResY, mInputFrameRate);
 
             // unlock grabbing
             mGrabMutex.unlock();
@@ -2066,7 +2066,7 @@ bool MediaSourceMuxer::Reset(enum MediaType pMediaType)
     switch(tMediaType)
     {
         case MEDIA_VIDEO:
-            tResult = OpenVideoMuxer(mSourceResX, mSourceResY, mFrameRate);
+            tResult = OpenVideoMuxer(mSourceResX, mSourceResY, mInputFrameRate);
             break;
         case MEDIA_AUDIO:
             tResult = OpenAudioMuxer(mInputAudioSampleRate, mInputAudioChannels);
@@ -2353,12 +2353,12 @@ bool MediaSourceMuxer::SelectDevice(std::string pDesiredDevice, enum MediaType p
                         case MEDIA_VIDEO:
                             if (mMediaSource != NULL)
                                 mMediaSource->SetVideoGrabResolution(mSourceResX, mSourceResY);
-                            if (!OpenVideoGrabDevice(mSourceResX, mSourceResY, mFrameRate))
+                            if (!OpenVideoGrabDevice(mSourceResX, mSourceResY, mInputFrameRate))
                             {
                                 LOG(LOG_WARN, "Failed to open new video media source, selecting old one");
                                 mMediaSource = tOldMediaSource;
                                 pIsNewDevice = false;
-                                while((!(tResult = OpenVideoGrabDevice(mSourceResX, mSourceResY, mFrameRate))) && (tIt != mMediaSources.end()))
+                                while((!(tResult = OpenVideoGrabDevice(mSourceResX, mSourceResY, mInputFrameRate))) && (tIt != mMediaSources.end()))
                                 {
                                     LOG(LOG_VERBOSE, "Couldn't open basic video device, will probe next possible basic device");
                                     tIt++;
@@ -2495,19 +2495,19 @@ bool MediaSourceMuxer::UnregisterMediaSource(MediaSource* pMediaSource, bool pAu
     return tFound;
 }
 
-float MediaSourceMuxer::GetFrameRate()
+float MediaSourceMuxer::GetInputFrameRate()
 {
-    float tResult = 15;
+    float tResult = -1;
 
     if (mMediaSource != NULL)
-        tResult = mMediaSource->GetFrameRate();
+        tResult = mMediaSource->GetInputFrameRate();
 
     return tResult;
 }
 
 void MediaSourceMuxer::SetFrameRate(float pFps)
 {
-    mFrameRate = pFps;
+    mInputFrameRate = pFps;
     if (mMediaSource != NULL)
         mMediaSource->SetFrameRate(pFps);
 }

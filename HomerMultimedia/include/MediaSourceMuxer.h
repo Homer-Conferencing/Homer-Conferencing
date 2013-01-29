@@ -85,7 +85,7 @@ public:
     virtual std::string GetInputFormatStr();
 
     /* video */
-    virtual float GetFrameRate();
+    virtual float GetInputFrameRate();
     virtual void SetFrameRate(float pFps);
 
     /* audio/video */

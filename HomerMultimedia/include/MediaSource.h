@@ -226,8 +226,8 @@ public:
     static int FillFrame(AVFrame *pFrame, void *pData, enum PixelFormat pPixFormat, int pWidth, int pHeight);
     static void VideoFormat2Resolution(VideoFormat pFormat, int& pX, int& pY);
     static void VideoString2Resolution(std::string pString, int& pX, int& pY);
-    virtual float GetFrameRate();
-    virtual float GetFrameRatePlayout();
+    virtual float GetInputFrameRate();
+    virtual float GetOutputFrameRate();
     virtual void SetFrameRate(float pFps);
 
     /* audio/video */
@@ -421,7 +421,7 @@ protected:
     AVCodecContext      *mCodecContext;
     int                 mMediaStreamIndex;
     double              mSourceStartTimeForRTGrabbing;
-    double              mSourceStartPts;
+    double              mInputStartPts;
     double              mNumberOfFrames;
     enum CodecID        mSourceCodecId;
     bool                mEOFReached;
@@ -443,9 +443,10 @@ protected:
     int                 mSourceResY;
     int                 mTargetResX;
     int                 mTargetResY;
-    float               mFrameRate; // ffmpeg internal referen frame rate
-    float 				mRealFrameRate; // presentation frame rate
     SwsContext          *mVideoScalerContext;
+    /* audio/video */
+    float               mInputFrameRate;
+    float               mOutputFrameRate; // presentation frame rate
     /* frame stats */
     int64_t             mDecodedIFrames;
     int64_t             mDecodedPFrames;

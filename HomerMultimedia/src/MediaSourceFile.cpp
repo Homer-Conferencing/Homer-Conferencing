@@ -347,10 +347,10 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
 
     //HINT: we need the original PTS values from the file
     // correcting PTS value by a possible start PTS value (offset)
-    if (mSourceStartPts > 0)
+    if (mInputStartPts > 0)
     {
         //LOG(LOG_VERBOSE, "Correcting PTS value by offset: %.2f", (float)mSourceStartPts);
-        tNumberOfFrames += mSourceStartPts;
+        tNumberOfFrames += mInputStartPts;
     }
 
     if (pSeconds <= 0)
@@ -381,7 +381,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
     if (pSeconds <= 0)
         tFrameIndex = 0;
     else
-        tFrameIndex = (mSourceStartPts + (double)pSeconds * mFrameRate); // later the value for mCurrentFrameIndex will be changed to the same value like tAbsoluteTimestamp
+        tFrameIndex = (mInputStartPts + (double)pSeconds * GetInputFrameRate()); // later the value for mCurrentFrameIndex will be changed to the same value like tAbsoluteTimestamp
     float tTimeDiff = pSeconds - GetSeekPos();
 
     //LOG(LOG_VERBOSE, "Rel: %"PRId64" Abs: %"PRId64"", tRelativeTimestamp, tAbsoluteTimestamp);
@@ -402,9 +402,9 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
                     tTargetTimestamp += mFormatContext->start_time;
                 }
 
-                LOG(LOG_VERBOSE, "%s-SEEKING from %5.2f sec. (pts %.2f) to %5.2f sec. (pts %.2f, ts: %.2f), max. sec.: %.2f (pts %.2f), source start pts: %.2f", GetMediaTypeStr().c_str(), GetSeekPos(), mGrabberCurrentFrameIndex, pSeconds, tFrameIndex, tTargetTimestamp, tSeekEnd, tNumberOfFrames, mSourceStartPts);
+                LOG(LOG_VERBOSE, "%s-SEEKING from %5.2f sec. (pts %.2f) to %5.2f sec. (pts %.2f, ts: %.2f), max. sec.: %.2f (pts %.2f), source start pts: %"PRId64, GetMediaTypeStr().c_str(), GetSeekPos(), mCurrentOutputFrameIndex, pSeconds, tFrameIndex, tTargetTimestamp, tSeekEnd, tNumberOfFrames, mInputStartPts);
 
-                int tSeekFlags = (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) | AVSEEK_FLAG_FRAME | (tFrameIndex < mGrabberCurrentFrameIndex ? AVSEEK_FLAG_BACKWARD : 0);
+                int tSeekFlags = (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) | AVSEEK_FLAG_FRAME | (tFrameIndex < mCurrentOutputFrameIndex ? AVSEEK_FLAG_BACKWARD : 0);
                 mDecoderTargetFrameIndex = (int64_t)tFrameIndex;
 
                 // VIDEO: trigger a seeking until next key frame
@@ -422,7 +422,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
                 }else
                 {
                     LOG(LOG_VERBOSE, "Seeking in %s file to frame index %.2f was successful, current dts is %"PRId64"", GetMediaTypeStr().c_str(), (float)tFrameIndex, mFormatContext->streams[mMediaStreamIndex]->cur_dts);
-                    mGrabberCurrentFrameIndex = tFrameIndex;
+                    mCurrentOutputFrameIndex = tFrameIndex;
 
                     // seeking was successful
                     tResult = true;
@@ -440,10 +440,10 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
             }else
             {
                 LOG(LOG_VERBOSE, "WAITING for %2.2f sec., SEEK/WAIT threshold is %2.2f", tTimeDiff, MSF_SEEK_WAIT_THRESHOLD);
-                LOG(LOG_VERBOSE, "%s-we are at frame %.2f and we should be at frame %.2f", GetMediaTypeStr().c_str(), (float)mGrabberCurrentFrameIndex, (float)tFrameIndex);
+                LOG(LOG_VERBOSE, "%s-we are at frame %.2f and we should be at frame %.2f", GetMediaTypeStr().c_str(), (float)mCurrentOutputFrameIndex, (float)tFrameIndex);
 
                 // simulate a frame index
-                mGrabberCurrentFrameIndex = tFrameIndex;
+                mCurrentOutputFrameIndex = tFrameIndex;
 
                 // seek by adjusting the start time of RT grabbing
                 mSourceStartTimeForRTGrabbing = mSourceStartTimeForRTGrabbing - tTimeDiff/* in us */ * 1000 * 1000;
@@ -469,7 +469,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
             mDecoderRecalibrateRTGrabbingAfterSeeking = true;
         }
     }else
-        LOG(LOG_ERROR, "Seek position PTS=%.2f(%.2f) is out of range (0 - %.2f) for %s file, fps: %.2f, start offset: %.2f", (float)tFrameIndex, pSeconds, tNumberOfFrames, GetMediaTypeStr().c_str(), mFrameRate, (float)mSourceStartPts);
+        LOG(LOG_ERROR, "Seek position PTS=%.2f(%.2f) is out of range (0 - %.2f) for %s file, fps: %.2f, start offset: %.2f", (float)tFrameIndex, pSeconds, tNumberOfFrames, GetMediaTypeStr().c_str(), GetInputFrameRate(), (float)mInputStartPts);
 
     // unlock grabbing
     mGrabMutex.unlock();
@@ -509,7 +509,7 @@ float MediaSourceFile::GetSeekPos()
 {
     float tResult = 0;
     float tSeekEnd = GetSeekEnd();
-	double tCurrentFrameIndex = mGrabberCurrentFrameIndex;
+	double tCurrentFrameIndex = CalculateInputFrameNumber(mCurrentOutputFrameIndex);
 
 	if (!SupportsSeeking())
 		return 0;
@@ -518,10 +518,10 @@ float MediaSourceFile::GetSeekPos()
 	{
         //HINT: we need the corrected PTS values and the one from the file
         // correcting PTS value by a possible start PTS value (offset)
-        if (mSourceStartPts > 0)
+        if (mInputStartPts > 0)
         {
             //LOG(LOG_VERBOSE, "Correcting PTS value by offset: %.2f", (float)mSourceStartPts);
-            tCurrentFrameIndex -= mSourceStartPts;
+            tCurrentFrameIndex -= mInputStartPts;
         }
 
         if (mNumberOfFrames > 1)
@@ -618,10 +618,10 @@ vector<string> MediaSourceFile::GetInputStreams()
 void MediaSourceFile::CalibrateRTGrabbing()
 {
     // adopt the stored pts value which represent the start of the media presentation in real-time useconds
-    float  tRelativeFrameIndex = mGrabberCurrentFrameIndex - mSourceStartPts;
-    double tRelativeTime = (int64_t)((double)AV_TIME_BASE * tRelativeFrameIndex / GetFrameRate());
+    float  tRelativeFrameIndex = mCurrentOutputFrameIndex - mInputStartPts;
+    double tRelativeTime = (int64_t)((double)AV_TIME_BASE * tRelativeFrameIndex / GetOutputFrameRate());
     #ifdef MSMEM_DEBUG_CALIBRATION
-        LOG(LOG_WARN, "Calibrating %s RT playback, current frame: %.2f, source start: %.2f, RT ref. time: %.2f->%.2f(diff: %.2f)", GetMediaTypeStr().c_str(), (float)mGrabberCurrentFrameIndex, (float)mSourceStartPts, mSourceStartTimeForRTGrabbing, (float)av_gettime() - tRelativeTime, (float)av_gettime() - tRelativeTime -mSourceStartTimeForRTGrabbing);
+        LOG(LOG_WARN, "Calibrating %s RT playback, current frame: %.2f, source start: %.2f, RT ref. time: %.2f->%.2f(diff: %.2f)", GetMediaTypeStr().c_str(), (float)mCurrentOutputFrameIndex, (float)mInputStartPts, mSourceStartTimeForRTGrabbing, (float)av_gettime() - tRelativeTime, (float)av_gettime() - tRelativeTime -mSourceStartTimeForRTGrabbing);
     #endif
     mSourceStartTimeForRTGrabbing = av_gettime() - tRelativeTime; //HINT: no "+ mDecoderFramePreBufferTime * AV_TIME_BASE" here because we start playback immediately
     #ifdef MSMEM_DEBUG_CALIBRATION

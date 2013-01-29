@@ -204,12 +204,12 @@ bool MediaSourceDesktop::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if (pFps < MIN_GRABBING_FPS)
     	pFps = MIN_GRABBING_FPS;
 
-	mFrameRate = pFps;
-    mRealFrameRate = pFps;
+	mInputFrameRate = pFps;
+    mOutputFrameRate = pFps;
 
     LOG(LOG_INFO, "Opened...");
-    LOG(LOG_INFO, "    ..fps: %3.2f", mFrameRate);
-    LOG(LOG_INFO, "    ..fps (playout): %3.2f", mRealFrameRate);
+    LOG(LOG_INFO, "    ..fps: %3.2f", mInputFrameRate);
+    LOG(LOG_INFO, "    ..fps (playout): %3.2f", mOutputFrameRate);
     LOG(LOG_INFO, "    ..device: %s", mCurrentDevice.c_str());
     LOG(LOG_INFO, "    ..resolution: %d * %d", mSourceResX, mSourceResY);
     LOG(LOG_INFO, "    ..source frame size: %d", mSourceResX * mSourceResY * MSD_BYTES_PER_PIXEL);
@@ -220,7 +220,7 @@ bool MediaSourceDesktop::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     //######################################################
     InitFpsEmulator();
     mLastTimeGrabbed == QTime(0, 0, 0, 0);
-    mSourceStartPts = 0;
+    mInputStartPts = 0;
     mFrameNumber = 0;
     mMediaType = MEDIA_VIDEO;
     mMediaSourceOpened = true;
@@ -369,7 +369,7 @@ void MediaSourceDesktop::CreateScreenshot()
     int tTimeDiff = mLastTimeGrabbed.msecsTo(tCurrentTime);
 
     //### skip capturing when we are too slow
-    if (tTimeDiff < 1000 / (mFrameRate + 0.5 /* some tolerance! */))
+    if (tTimeDiff < 1000 / (mInputFrameRate + 0.5 /* some tolerance! */))
     {
         #ifdef MSD_DEBUG_PACKETS
             LOG(LOG_VERBOSE, "Screen capturing skipped because system is too fast");

@@ -207,8 +207,8 @@ bool MediaSourceAlsa::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     }
 
     mSampleBufferSize = MEDIA_SOURCE_SAMPLES_PER_BUFFER * 2 /* SND_PCM_FORMAT_S16_LE */ * mOutputAudioChannels;
-    mFrameRate = (float)mOutputAudioSampleRate /* 44100 samples per second */ / MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 samples per frame */;
-	mRealFrameRate = mFrameRate;
+    mInputFrameRate = (float)mOutputAudioSampleRate /* 44100 samples per second */ / MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 samples per frame */;
+	mOutputFrameRate = mInputFrameRate;
 
     //######################################################
     //### give some verbose output

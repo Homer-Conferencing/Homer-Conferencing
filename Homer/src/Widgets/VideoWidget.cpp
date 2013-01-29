@@ -741,7 +741,7 @@ QStringList VideoWidget::GetVideoStatistic()
     //############################################
     //### Line 3: FPS and pre-buffer time
     QString tLine_Fps = "";
-    tLine_Fps = "Fps: " + QString("%1").arg(mCurrentFrameRate, 4, 'f', 2, ' ') + "/" + QString("%1").arg(mVideoSource->GetFrameRatePlayout(), 4, 'f', 2, ' ');
+    tLine_Fps = "Fps: " + QString("%1").arg(mCurrentFrameRate, 4, 'f', 2, ' ') + "/" + QString("%1").arg(mVideoSource->GetOutputFrameRate(), 4, 'f', 2, ' ');
     if (mVideoSource->GetFrameBufferSize() > 0)
     {
     	tLine_Fps += " (" + QString("%1").arg(mVideoSource->GetFrameBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetFrameBufferSize()) + ", " + QString("%1").arg(mVideoSource->GetFrameBufferTime(), 2, 'f', 2, (QLatin1Char)' ') + " s " + Homer::Gui::VideoWidget::tr("buffered");

@@ -345,8 +345,8 @@ bool MediaSourcePortAudio::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     PortAudioUnlockStreamInterface();
 
     mCurrentDevice = mDesiredDevice;
-    mFrameRate = (float)mOutputAudioSampleRate /* 44100 samples per second */ / MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 samples per frame */;
-	mRealFrameRate = mFrameRate;
+    mInputFrameRate = (float)mOutputAudioSampleRate /* 44100 samples per second */ / MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 samples per frame */;
+	mOutputFrameRate = mInputFrameRate;
 
     //######################################################
     //### give some verbose output

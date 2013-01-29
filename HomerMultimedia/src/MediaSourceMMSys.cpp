@@ -273,8 +273,8 @@ bool MediaSourceMMSys::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 		return false;
 	}
 
-    mFrameRate = (float)mOutputAudioSampleRate /* 44100 samples per second */ / MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 samples per frame */;
-	mRealFrameRate = mFrameRate;
+    mInputFrameRate = (float)mOutputAudioSampleRate /* 44100 samples per second */ / MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 samples per frame */;
+	mOutputFrameRate = mInputFrameRate;
 
     //######################################################
     //### give some verbose output

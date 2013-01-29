@@ -154,9 +154,11 @@ protected:
     void UpdateBufferTime();
 
     /* FIFO helpers */
+    double CalculateOutputFrameNumber(double pFrameNumber);
+    double CalculateInputFrameNumber(double pFrameNumber);
     void CalculateExpectedOutputPerInputFrame();
-    void WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int64_t pOutputPts);
-    void ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int64_t &pOutputPts);
+    void WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int64_t pOutputFrameNumber);
+    void ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int64_t &pOutputFrameNumber);
     bool DecoderFifoFull();
 
     /* RTP based frame numbering */
@@ -176,8 +178,8 @@ protected:
     int                 mPacketStatAdditionalFragmentSize; // used to adapt packet statistic to additional fragment header, which is used for TCP transmission
     enum CodecID        mRtpSourceCodecIdHint;
     /* grabber */
-    double              mGrabberCurrentFrameIndex; // we have to determine this manually during grabbing because cur_dts and everything else in AVStream is buggy for some video/audio files
-    double              mFrameBufferLastWrittenFrameIndex; // we use this for calibrating RT grabbing
+    double              mCurrentOutputFrameIndex; // we have to determine this manually during grabbing because cur_dts and everything else in AVStream is buggy for some video/audio files
+    double              mLastBufferedOutputFrameIndex; // we use this for calibrating RT grabbing
     bool                mGrabberProvidesRTGrabbing;
     /* decoder thread */
     bool                mDecoderUsesPTSFromInputPackets;
