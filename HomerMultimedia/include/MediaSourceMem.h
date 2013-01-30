@@ -149,6 +149,7 @@ protected:
     virtual void* Run(void* pArgs = NULL); // decoder main loop
     VideoScaler *CreateVideoScaler();
     void DestroyVideoScaler(VideoScaler *pScaler);
+    void ReadPacketFromInputStream(AVPacket *pPacket, int64_t &pPacketPts);
 
     /* buffering */
     void UpdateBufferTime();
@@ -157,7 +158,7 @@ protected:
     double CalculateOutputFrameNumber(double pFrameNumber);
     double CalculateInputFrameNumber(double pFrameNumber);
     void CalculateExpectedOutputPerInputFrame();
-    void FlushOutputBuffers();
+    void ResetDecoderBuffers();
     void WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int64_t pOutputFrameNumber);
     void ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int64_t &pOutputFrameNumber);
     bool DecoderFifoFull();
@@ -193,13 +194,14 @@ protected:
     MediaFifo           *mDecoderFragmentFifo;
     Mutex				mDecoderFragmentFifoDestructionMutex;
     MediaFifo           *mDecoderFifo; // for frames
+    AVFifoBuffer        *mDecoderAudioSamplesFifo;
     MediaFifo           *mDecoderMetaDataFifo; // for meta data about frames
     int                 mDecoderExpectedMaxOutputPerInputFrame; // how many output frames can be calculated of one input frame?
     /* decoder thread seeking */
+    Mutex               mDecoderSeekMutex;
     double              mDecoderTargetFrameIndex;
     bool                mDecoderWaitForNextKeyFramePackets; // after seeking we wait for next key frame packets -> either i-frames or p-frames
     bool                mDecoderRecalibrateRTGrabbingAfterSeeking;
-    bool                mDecoderFlushBuffersAfterSeeking;
     bool                mDecoderWaitForNextKeyFrame; // after seeking we wait for next i -frames
     int64_t             mDecoderWaitForNextKeyFrameTimeout;
     /* picture grabbing */
