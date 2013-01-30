@@ -421,6 +421,7 @@ protected:
     AVCodecContext      *mCodecContext;
     int                 mMediaStreamIndex;
     double              mSourceStartTimeForRTGrabbing;
+    double              mSourceTimeShiftForRTGrabbing;
     double              mInputStartPts;
     double              mNumberOfFrames;
     enum CodecID        mSourceCodecId;

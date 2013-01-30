@@ -852,6 +852,7 @@ bool MediaSourceMem::CloseGrabDevice()
 
     mCurrentOutputFrameIndex = 0;
     mLastBufferedOutputFrameIndex = 0;
+    mSourceTimeShiftForRTGrabbing = 0;
     mDecoderSinglePictureGrabbed = false;
     mEOFReached = false;
     mDecoderRecalibrateRTGrabbingAfterSeeking = true;
@@ -1499,7 +1500,7 @@ void* MediaSourceMem::Run(void* pArgs)
             // #########################################
             // start packet processing
             // #########################################
-            if (((tPacket->data != NULL) && (tPacket->size > 0)) || ((mDecoderSinglePictureGrabbed /* we already grabbed the single frame from the picture input */) && (mMediaType == MEDIA_VIDEO)))
+            if (((tPacket->data != NULL) && (tPacket->size > 0)) || (mDecoderSinglePictureGrabbed /* we already grabbed the single frame from the picture input */))
             {
                 #ifdef MSMEM_DEBUG_PACKET_RECEIVER
                     if ((tPacket->data != NULL) && (tPacket->size > 0))
@@ -1521,13 +1522,25 @@ void* MediaSourceMem::Run(void* pArgs)
 
                 //LOG(LOG_VERBOSE, "New %s packet: dts: %"PRId64", pts: %"PRId64", pos: %"PRId64", duration: %d", GetMediaTypeStr().c_str(), tPacket->dts, tPacket->pts, tPacket->pos, tPacket->duration);
 
+                // #########################################
+                // flush decoder buffers
+                // #########################################
                 // do we have to flush buffers after seeking?
                 if (mDecoderFlushBuffersAfterSeeking)
                 {
-                    LOG(LOG_VERBOSE, "Flushing %s codec internal buffers after seeking in input stream", GetMediaTypeStr().c_str());
-
                     // flush ffmpeg internal buffers
+                    LOG(LOG_VERBOSE, "Flushing %s decoder internal buffers after seeking in input stream", GetMediaTypeStr().c_str());
                     avcodec_flush_buffers(mCodecContext);
+
+                    // reset the library internal frame FIFO
+                    LOG(LOG_VERBOSE, "Flushing %s decoder internal FIFO after seeking in input stream", GetMediaTypeStr().c_str());
+                    FlushOutputBuffers();
+
+                    if ((mMediaType == MEDIA_AUDIO) && (tSampleFifo != NULL))
+                    {
+                        LOG(LOG_VERBOSE, "Flushing %s decoder internal buffers resample FIFO after seeking in input stream", GetMediaTypeStr().c_str());
+                        av_fifo_drain(tSampleFifo, av_fifo_size(tSampleFifo));
+                    }
 
                     #ifdef MSMEM_DEBUG_SEEKING
                         LOG(LOG_VERBOSE, "Read %s packet %"PRId64" of %d bytes after seeking in input stream, current stream DTS is %"PRId64, GetMediaTypeStr().c_str(), tCurPacketPts, tPacket->size, mFormatContext->streams[mMediaStreamIndex]->cur_dts);
@@ -1842,24 +1855,41 @@ void* MediaSourceMem::Run(void* pArgs)
                                             // return size of decoded frame
                                             tCurrentChunkSize = avpicture_get_size(PIX_FMT_RGB32, mDecoderTargetResX, mDecoderTargetResY);
                                         }
-                                        #ifdef MSMEM_DEBUG_PACKETS
-                                            LOG(LOG_VERBOSE, "Resulting frame size is %d bytes", tCurrentChunkSize);
-                                        #endif
+
+                                        // ############################
+                                        // ### WRITE FRAME TO OUTPUT FIFO
+                                        // ############################
+                                        // add new chunk to FIFO
+                                        if (tCurrentChunkSize <= mDecoderFifo->GetEntrySize())
+                                        {
+                                            #ifdef MSMEM_DEBUG_PACKETS
+                                                LOG(LOG_VERBOSE, "Writing %d %s bytes at %p to FIFO with frame nr.%"PRId64, tCurrentChunkSize, GetMediaTypeStr().c_str(), tChunkBuffer, tCurFrameNumber);
+                                            #endif
+                                            WriteFrameOutputBuffer((char*)tChunkBuffer, tCurrentChunkSize, tCurFrameNumber);
+
+                                            // prepare frame number for next loop
+                                            tCurFrameNumber++;
+
+                                            #ifdef MSMEM_DEBUG_DECODER_STATE
+                                                LOG(LOG_VERBOSE, "Successful audio buffer loop");
+                                            #endif
+                                        }else
+                                        {
+                                            LOG(LOG_ERROR, "Cannot write a %s chunk of %d bytes to the FIFO with %d bytes slots", GetMediaTypeStr().c_str(),  tCurrentChunkSize, mDecoderFifo->GetEntrySize());
+                                        }
                                     }else
                                     {// still waiting for first key frame
-                                        tCurrentChunkSize = 0;
+                                        //nothing to do
                                     }
                                 }else
                                 {// tFrameFinished != 1
                                     // we shouldn't have frame buffering because we use CODEC_FLAG_LOW_DELAY
                                     LOG(LOG_WARN, "Video frame was buffered, codec context flags: 0x%X", mCodecContext->flags);
                                     mDecoderOutputFrameDelay++;
-                                    tCurrentChunkSize = 0;
                                 }
                             }else
                             {// tDecoderResult < 0
                                 LOG(LOG_ERROR, "Couldn't decode video frame %"PRId64" because \"%s\"(%d), got a decoder result: %d", tCurPacketPts, strerror(AVUNERROR(tDecoderResult)), AVUNERROR(tDecoderResult), tFrameFinished);
-                                tCurrentChunkSize = 0;
                             }
                         }
                         break;
@@ -1917,7 +1947,6 @@ void* MediaSourceMem::Run(void* pArgs)
                                         }else
                                         {
                                             LOG(LOG_ERROR, "Amount of resampled bytes (%d) is invalid", tResampledBytes);
-                                            tCurrentChunkSize = 0;
                                         }
                                     }else
                                     {// no audio resampling needed
@@ -1951,7 +1980,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                         // write new samples into fifo buffer
                                         av_fifo_generic_write(tSampleFifo, tDecodedAudioSamples, tCurrentChunkSize, NULL);
 
-                                        double tCurAudioFrameNumber = CalculateOutputFrameNumber(tCurPacketPts) - (double)tAudioFifoBufferedSamples / MEDIA_SOURCE_SAMPLES_PER_BUFFER;
+                                        tCurFrameNumber = (int64_t)rint(CalculateOutputFrameNumber(tCurPacketPts) - (double)tAudioFifoBufferedSamples / MEDIA_SOURCE_SAMPLES_PER_BUFFER);
 
                                         // save PTS value to deliver it later to the frame grabbing thread
                                         #ifdef MSMEM_DEBUG_PRE_BUFFERING
@@ -1981,11 +2010,14 @@ void* MediaSourceMem::Run(void* pArgs)
                                             // add new chunk to FIFO
                                             if (tCurrentChunkSize <= mDecoderFifo->GetEntrySize())
                                             {
-                                                //#ifdef MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
-                                                    LOG(LOG_VERBOSE, "Writing %d %s bytes at %p to output FIFO with frame nr. %.2f, remaining audio data: %d bytes", tCurrentChunkSize, GetMediaTypeStr().c_str(), tChunkBuffer, (float)tCurAudioFrameNumber, av_fifo_size(tSampleFifo));
-                                                //#endif
-                                                WriteFrameOutputBuffer((char*)tChunkBuffer, tCurrentChunkSize, rint(tCurAudioFrameNumber));
-                                                tCurAudioFrameNumber += 1;
+                                                #ifdef MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
+                                                    LOG(LOG_VERBOSE, "Writing %d %s bytes at %p to output FIFO with frame nr. %"PRId64", remaining audio data: %d bytes", tCurrentChunkSize, GetMediaTypeStr().c_str(), tChunkBuffer, tCurFrameNumber, av_fifo_size(tSampleFifo));
+                                                #endif
+                                                WriteFrameOutputBuffer((char*)tChunkBuffer, tCurrentChunkSize, tCurFrameNumber);
+
+                                                // prepare frame number for next loop
+                                                tCurFrameNumber++;
+
                                                 #ifdef MSMEM_DEBUG_DECODER_STATE
                                                     LOG(LOG_VERBOSE, "Successful audio buffer loop");
                                                 #endif
@@ -2000,45 +2032,15 @@ void* MediaSourceMem::Run(void* pArgs)
                                     LOG(LOG_VERBOSE, "Audio frame was buffered");
                                     mDecoderOutputFrameDelay++;
                                 }
-
-                                // reset chunk size to avoid additional writes to output FIFO because we already stored all valid audio buffers in output FIFO
-                                tCurrentChunkSize = 0;
                             }else
                             {// tDecoderResult < 0
                                 LOG(LOG_WARN, "Couldn't decode audio samples %"PRId64"  because \"%s\"(%d)", tCurPacketPts, strerror(AVUNERROR(tDecoderResult)), AVUNERROR(tDecoderResult));
-                                tCurrentChunkSize = 0;
                             }
                         }
                         break;
                     default:
                             LOG(LOG_ERROR, "Media type unknown");
                             break;
-
-                }
-
-                //HINT: usually audio buffers were already written to output FIFO within the audio switch-case-branch
-                // do we still have a prepared data chunk which can be delivered towards grabbing application?
-                if ((tCurrentChunkSize > 0) && (!mEOFReached))
-                {// no error
-                    // add new chunk to FIFO
-                    #ifdef MSMEM_DEBUG_PACKETS
-                        LOG(LOG_VERBOSE, "Writing %d %s bytes at %p to FIFO with frame nr.%"PRId64, tCurrentChunkSize, GetMediaTypeStr().c_str(), tChunkBuffer, tCurFrameNumber);
-                    #endif
-                    if (tCurrentChunkSize <= mDecoderFifo->GetEntrySize())
-                    {
-                        WriteFrameOutputBuffer((char*)tChunkBuffer, tCurrentChunkSize, tCurFrameNumber);
-                        #ifdef MSMEM_DEBUG_PACKETS
-                            LOG(LOG_VERBOSE, "Successful decoder loop");
-                        #endif
-                    }else
-                    {
-                        LOG(LOG_ERROR, "Cannot write a %s chunk of %d bytes to the FIFO with %d bytes slots", GetMediaTypeStr().c_str(),  tCurrentChunkSize, mDecoderFifo->GetEntrySize());
-                    }
-                }else
-                {
-                    #ifdef MSMEM_DEBUG_FRAME_QUEUE
-                        LOG(LOG_VERBOSE, "No %s frame was written to frame queue, current chunk size: %d, EOF: %d", GetMediaTypeStr().c_str(), tCurrentChunkSize, mEOFReached);
-                    #endif
                 }
             }
 
@@ -2133,14 +2135,20 @@ void* MediaSourceMem::Run(void* pArgs)
     return NULL;
 }
 
+void MediaSourceMem::FlushOutputBuffers()
+{
+    mDecoderFifo->ClearFifo();
+    mDecoderMetaDataFifo->ClearFifo();
+}
+
 void MediaSourceMem::WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int64_t pOutputFrameNumber)
 {
     if (mDecoderFifo == NULL)
         LOG(LOG_ERROR, "Invalid decoder FIFO");
 
-    //#ifdef MSMEM_DEBUG_FRAME_QUEUE
+    #ifdef MSMEM_DEBUG_FRAME_QUEUE
         LOG(LOG_VERBOSE, ">>> Writing %s frame of %d bytes and pts %"PRId64", FIFOs: %d/%d", GetMediaTypeStr().c_str(), pBufferSize, pOutputFrameNumber, mDecoderFifo->GetUsage(), mDecoderMetaDataFifo->GetUsage());
-    //#endif
+    #endif
 
     if (pOutputFrameNumber != 0)
         mLastBufferedOutputFrameIndex = pOutputFrameNumber;
@@ -2273,7 +2281,7 @@ void MediaSourceMem::CalibrateRTGrabbing()
 		LOG(LOG_ERROR, "Found invalid relative PTS value of: %.2f", (float)tRelativeTime);
 		tRelativeTime = 0;
 	}
-	mSourceStartTimeForRTGrabbing = av_gettime() - tRelativeTime  + mDecoderFramePreBufferTime * AV_TIME_BASE;
+	mSourceStartTimeForRTGrabbing = av_gettime() - tRelativeTime  + mSourceTimeShiftForRTGrabbing + mDecoderFramePreBufferTime * AV_TIME_BASE;
     #ifdef MSMEM_DEBUG_CALIBRATION
         LOG(LOG_WARN, "Calibrating %s RT playback: new PTS start: %.2f, rel. frame index: %.2f, rel. time: %.2f ms", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing, tRelativeFrameIndex, (float)(tRelativeTime / 1000));
     #endif
@@ -2431,8 +2439,8 @@ int64_t MediaSourceMem::GetSynchronizationTimestamp()
 
 bool MediaSourceMem::TimeShift(int64_t pOffset)
 {
-    LOG(LOG_VERBOSE, "Shifting %s time by: %"PRId64, GetMediaTypeStr().c_str(), pOffset);
-    mSourceStartTimeForRTGrabbing -= pOffset;
+    LOG(LOG_WARN, "Shifting %s time by: %"PRId64, GetMediaTypeStr().c_str(), pOffset);
+    mSourceTimeShiftForRTGrabbing -= pOffset;
     mDecoderRecalibrateRTGrabbingAfterSeeking = true;
     return true;
 }

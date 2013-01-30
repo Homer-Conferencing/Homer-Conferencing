@@ -61,6 +61,7 @@ bool MediaSource::mFfmpegInitiated = false;
 MediaSource::MediaSource(string pName):
     PacketStatistic(pName)
 {
+    mSourceTimeShiftForRTGrabbing = 0;
     mRelativeLoss = 0;
     mDecoderSynchPoints = 0;
     mEndToEndDelay = 0;
