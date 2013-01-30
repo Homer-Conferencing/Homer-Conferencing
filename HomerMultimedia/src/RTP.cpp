@@ -1121,14 +1121,23 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
                 tRtpHeader->Ssrc = mLocalSourceIdentifier;
             }else
             {// RTCP packet
-                tRtcpPacket = true;
-
                 RtcpHeader* tRtcpHeader = (RtcpHeader*)tRtpPacket;
 
+                for (int i = 3; i < 7; i++)
+                    tRtcpHeader->Data[i] = ntohl(tRtcpHeader->Data[i]);
+
                 //#################################################################################
-                //### patch source identifier to the generated one
+                //### RTCP sender report
                 //#################################################################################
-                tRtcpHeader->Feedback.Ssrc = mLocalSourceIdentifier;
+                if (tRtcpHeader->General.Type == RTCP_SENDER_REPORT)
+                {// patch the values to the same time value as used in the A/V stream
+                    tRtcpHeader->Feedback.Ssrc = mLocalSourceIdentifier;
+                }
+
+                tRtcpPacket = true;
+
+                for (int i = 3; i < 7; i++)
+                    tRtcpHeader->Data[i] = htonl(tRtcpHeader->Data[i]);
             }
 
 
@@ -2748,7 +2757,7 @@ void RTP::RtcpCreateH261SenderReport(char *&pData /* current stream pointer */, 
         RtcpHeader* tRtcpHeader = (RtcpHeader*)pData;
 
         #ifdef RTCP_DEBUG_PACKETS_ENCODER
-            LOG(LOG_VERBOSE, "Sender report with PTS: %"PRIu64" (own PTS: %"PRId64")", tRtpTs, pCurPts);
+            LOG(LOG_VERBOSE, "Sender report with PTS: %"PRIu64" (own PTS: %"PRId64")", (uint64_t)pCurPts * CalculateClockRateFactor(), pCurPts);
         #endif
         tRtcpHeader->Feedback.Length = 6;
         tRtcpHeader->Feedback.Type = RTCP_SENDER_REPORT;
