@@ -931,7 +931,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                 // acknowledge "success"
                 MarkGrabChunkSuccessful(mFrameNumber); // don't panic, it is only EOF
 
-                LOG(LOG_WARN, "Signaling EOF");
+                LOG(LOG_WARN, "%s-Grabber reached EOF", GetMediaTypeStr().c_str());
                 return GRAB_RES_EOF;
             }else
             {// queue empty but EOF not reached
@@ -996,7 +996,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
             // acknowledge "success"
             MarkGrabChunkSuccessful(mFrameNumber); // don't panic, it is only EOF
 
-            LOG(LOG_WARN, "Signaling invalid result");
+            LOG(LOG_WARN, "Signaling invalid %s grabber result", GetMediaTypeStr().c_str());
             return GRAB_RES_INVALID;
         }
 
@@ -1023,9 +1023,9 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
         int64_t tCurrentRelativeFramePts = tCurrentFramePts - CalculateOutputFrameNumber(mInputStartPts);
         if ((tCurrentRelativeFramePts >= mNumberOfFrames) && (mNumberOfFrames != 0) && (!InputIsPicture()))
         {// PTS value is bigger than possible max. value, EOF reached
-            LOG(LOG_VERBOSE, "Returning EOF for %s input because PTS value %"PRId64" (%"PRId64" - %.2f) is bigger than or equal to maximum %.2f", GetMediaTypeStr().c_str(), tCurrentRelativeFramePts, tCurrentFramePts, (float)mInputStartPts, (float)mNumberOfFrames);
-            mEOFReached = true;
-            tShouldGrabNext = false;
+            LOG(LOG_VERBOSE, "%s PTS value %"PRId64" (%"PRId64" - %.2f) is bigger than or equal to maximum %.2f", GetMediaTypeStr().c_str(), tCurrentRelativeFramePts, tCurrentFramePts, (float)mInputStartPts, (float)mNumberOfFrames);
+
+            //no panic, ignore this and continue playback
         }
 
         // unlock grabbing
@@ -1314,7 +1314,7 @@ void MediaSourceMem::ReadPacketFromInputStream(AVPacket *pPacket, int64_t &pPack
                     }
                 }
                 // check if PTS value is continuous
-                if (pPacketPts < mDecoderLastReadPts)
+                if ((mDecoderLastReadPts > 0) && (pPacketPts < mDecoderLastReadPts))
                 {// current packet is older than the last packet
                     LOG(LOG_WARN, "Found interleaved %s packets in %s source, non continuous PTS: %"PRId64" => %d", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), mDecoderLastReadPts, pPacketPts);
                 }
@@ -2016,9 +2016,6 @@ void* MediaSourceMem::Run(void* pArgs)
                 #ifdef MSMEM_DEBUG_PACKETS
                     LOG(LOG_VERBOSE, "EOF reached, writing empty chunk to %s stream decoder FIFO", GetMediaTypeStr().c_str());
                 #endif
-
-                char tData[4];
-                WriteFrameOutputBuffer(tData, 0, 0);
 
                 // time to sleep
                 #ifdef MSMEM_DEBUG_DECODER_STATE
