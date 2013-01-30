@@ -420,12 +420,10 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
                     tResult = true;
                 }
 
-                mDecoderFifo->ClearFifo();
-                mDecoderMetaDataFifo->ClearFifo();
-                mDecoderNeedWorkCondition.Signal();
-
                 // trigger a avcodec_flush_buffers()
                 ResetDecoderBuffers();
+
+                mDecoderNeedWorkCondition.Signal();
 
                 // trigger a RT playback calibration after seeking
                 mDecoderRecalibrateRTGrabbingAfterSeeking = true;
