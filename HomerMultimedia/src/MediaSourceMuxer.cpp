@@ -1408,11 +1408,10 @@ void* MediaSourceMuxer::Run(void* pArgs)
         if (mEncoderFifo != NULL)
         {
             //####################################################################
-            //### flush codec buffer
+            //### flush encoder buffer
             //###################################################################
             if (mEncoderFlushBuffersAfterSeeking)
             {
-
                 // flush ffmpeg internal buffers
                 LOG(LOG_VERBOSE, "Flushing %s encoder internal buffers after seeking in input stream", GetMediaTypeStr().c_str());
                 avcodec_flush_buffers(mCodecContext);
