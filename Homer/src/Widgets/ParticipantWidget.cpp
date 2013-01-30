@@ -85,7 +85,7 @@ namespace Homer { namespace Gui {
 // how many times do we have to detect continuous asynch. A/V playback before we synch. audio and video? (to avoid false-positives)
 #define AV_SYNC_CONSECUTIVE_ASYNC_THRESHOLD                          3 // checked every STREAM_POS_UPDATE_DELAY ms
 // how many times should we try to adapt the A/V synch bei waiting cycles? afterwards we try a reset of both the video and audio source
-#define AV_SYNC_CONSECUTIVE_ASYNC_THRESHOLD_TRY_RESET                8
+#define AV_SYNC_CONSECUTIVE_ASYNC_THRESHOLD_TRY_RESET               32
 // size of the pre-buffer during a live conference
 #define AV_CONFERENCE_BUFFER							          0.34 // seconds  - 1/24s time per frames * 8 frames =0.33333
 
