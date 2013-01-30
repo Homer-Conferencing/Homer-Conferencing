@@ -102,8 +102,6 @@ void MediaFifo::ReadFifo(char *pBuffer, int &pBufferSize)
 			LOG(LOG_VERBOSE, "%s-FIFO: waiting for new input", mName.c_str());
 		#endif
 
-		mFifoDataInputCondition.Reset();
-
 		while(!mFifoDataInputCondition.Wait(&mFifoMutex))
 		{
 			LOG(LOG_ERROR, "%s-FIFO: error when waiting for new input", mName.c_str());
@@ -222,8 +220,6 @@ int MediaFifo::ReadFifoExclusive(char **pBuffer, int &pBufferSize)
         if (tRounds > 0)
             LOG(LOG_VERBOSE, "%s-FIFO: woke up but no new data found, already passed rounds: %d", mName.c_str(), tRounds);
 
-        mFifoDataInputCondition.Reset();
-
         while(!mFifoDataInputCondition.Wait(&mFifoMutex))
         {
             LOG(LOG_ERROR, "%s-FIFO: error when waiting for new input", mName.c_str());
@@ -339,7 +335,7 @@ void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize)
     if (pBufferSize == 0)
         LOG(LOG_VERBOSE, "Send wake up signal for empty chunk");
 
-    mFifoDataInputCondition.SignalAll();
+    mFifoDataInputCondition.Signal();
     mFifoMutex.unlock();
 	if (pBufferSize == 0)
 	    LOG(LOG_VERBOSE, "%s-FIFO: released lock after writing empty chunk", mName.c_str());

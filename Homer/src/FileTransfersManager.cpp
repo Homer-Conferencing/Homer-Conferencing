@@ -655,7 +655,7 @@ void FileTransfer::ReceivedTransferBegin(HomerFtmHeader *pHeader, char *pPayload
     if (IsSenderActive())
     {// we are sender
         LOG(LOG_VERBOSE, "TRANSFER-BEGIN hand-shake finished, remote acknowledged transfer of file \"%s\" with size %"PRId64"", mFileName.c_str(), mFileSize);
-        mConditionRemoteWantsTransferBegin.SignalAll();
+        mConditionRemoteWantsTransferBegin.Signal();
     }else
     {// we are receiver
         mFileName = string (tFileName);
@@ -681,7 +681,7 @@ void FileTransfer::ReceivedTransferSuccess(HomerFtmHeader *pHeader)
         #ifdef FTM_DEBUG_DATA_PACKETS
             LOG(LOG_WARN, "Sending wake up to \"RemoteAcksTransferEnd\"");
         #endif
-        mConditionRemoteAcksTransferEnd.SignalAll();
+        mConditionRemoteAcksTransferEnd.Signal();
     }else
     {// we are receiver
         // does the file size match the desired one (was initially reported in TransferBegin)?
@@ -715,7 +715,7 @@ void FileTransfer::ReceivedTransferCancel(HomerFtmHeader *pHeader)
     #ifdef FTM_DEBUG_DATA_PACKETS
         LOG(LOG_WARN, "Sending wake up to \"RemoteAcksTransferEnd\"");
     #endif
-    mConditionRemoteAcksTransferEnd.SignalAll();
+    mConditionRemoteAcksTransferEnd.Signal();
 
     //TODO: notifyObserver
 }
@@ -813,7 +813,7 @@ void FileTransfer::ReceivedTransferSeek(HomerFtmHeader *pHeader, char *pPayload,
     #ifdef FTM_DEBUG_DATA_PACKETS
         LOG(LOG_WARN, "Sending wake up to \"RemoteAcksTransferEnd\" because of seek request");
     #endif
-    mConditionRemoteAcksTransferEnd.SignalAll();
+    mConditionRemoteAcksTransferEnd.Signal();
 
     //TODO: notifyObserver
 }
@@ -859,7 +859,7 @@ void FileTransfer::ReceivedTransferDataResponse(HomerFtmHeader *pHeader)
         LOG(LOG_VERBOSE, "Remote acknowledged transfer data for file %s with size %"PRId64"", mFileName.c_str(), mFileSize);
     #endif
 
-    mConditionRemoteAcksTransferData.SignalAll();
+    mConditionRemoteAcksTransferData.Signal();
 
     //TODO: timeout handling
 }
@@ -941,7 +941,7 @@ void FileTransfer::StopSendThread()
 {
     mCanceled = true;
     mSocketToPeer->cancel();
-    mConditionRemoteWantsTransferBegin.SignalAll();
+    mConditionRemoteWantsTransferBegin.Signal();
     StopThread(2000);
 }
 
@@ -963,7 +963,6 @@ void* FileTransfer::Run(void* pArgs)
     if (SendRequestTransferBegin())
     {
         // wait until hand-shake is completed
-        mConditionRemoteWantsTransferBegin.Reset();
         mConditionRemoteWantsTransferBegin.Wait();
 
         if (!mCanceled)
@@ -1014,7 +1013,6 @@ void* FileTransfer::Run(void* pArgs)
                                 if(mUsesDataAcks)
                                 {
                                     // wait until hand-shake is completed
-                                    mConditionRemoteAcksTransferData.Reset();
                                     if (!mConditionRemoteAcksTransferData.Wait(NULL, FTM_DATA_ACK_TIME))
                                     {
                                         LOG(LOG_WARN, "Timeout occurred while waiting for ACK of data transfer, retransmitting the packet");
@@ -1029,7 +1027,6 @@ void* FileTransfer::Run(void* pArgs)
                     SendRequestTransferSuccess();
 
                     // wait until hand-shake is completed
-                    mConditionRemoteAcksTransferEnd.Reset();
                     if (!mConditionRemoteAcksTransferEnd.Wait(NULL, FTM_KEEP_ALIVE_TIME * 2))
                     {
                         LOG(LOG_WARN, "Timeout occurred while waiting for ACK of data transfer end");

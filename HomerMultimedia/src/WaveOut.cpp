@@ -193,7 +193,7 @@ bool WaveOut::PlayFile(string pFileName, int pLoops)
     {
         // send wake up
         LOG(LOG_VERBOSE, "Sending thread for file based audio playback a wake up signal");
-        mFilePlaybackCondition.SignalAll();
+        mFilePlaybackCondition.Signal();
     }
 
     return true;
@@ -272,7 +272,7 @@ void WaveOut::StopFilePlayback()
         LOG(LOG_VERBOSE, "Stopping file based playback");
 
         mFilePlaybackNeeded = false;
-        mFilePlaybackCondition.SignalAll();
+        mFilePlaybackCondition.Signal();
         LOG(LOG_VERBOSE, "..loopback wake-up signal sent");
         StopThread(3000);
         LOG(LOG_VERBOSE, "..playback thread stopped");
@@ -479,7 +479,6 @@ void* WaveOut::Run(void* pArgs)
 					Stop();
 
 					// wait for next trigger
-					mFilePlaybackCondition.Reset();
 					mFilePlaybackCondition.Wait();
 					LOG(LOG_VERBOSE, "Continuing after last file based playback has finished");
 					if ((!mOpenNewFileAsap) && (!mPlaybackStopped))
@@ -490,7 +489,6 @@ void* WaveOut::Run(void* pArgs)
         }else
         {
 			// wait for next trigger
-			mFilePlaybackCondition.Reset();
 			mFilePlaybackCondition.Wait();
             LOG(LOG_VERBOSE, "Continuing after last file based playback was invalid");
         }

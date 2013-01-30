@@ -968,7 +968,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                     LOG(LOG_VERBOSE, "Signal to decoder that new data is needed");
                 #endif
                 mDecoderNeedWorkConditionMutex.lock();
-                mDecoderNeedWorkCondition.SignalAll();
+                mDecoderNeedWorkCondition.Signal();
                 mDecoderNeedWorkConditionMutex.unlock();
                 #ifdef MSMEM_DEBUG_DECODER_STATE
                     LOG(LOG_VERBOSE, "Signaling to decoder done");
@@ -1144,7 +1144,7 @@ void MediaSourceMem::StopDecoder()
             WriteFragment(tmp, 0);
 
             // force a wake up of decoder thread
-            mDecoderNeedWorkCondition.SignalAll();
+            mDecoderNeedWorkCondition.Signal();
 
             Suspend(25 * 1000);
         }while(IsRunning());
@@ -2062,7 +2062,6 @@ void* MediaSourceMem::Run(void* pArgs)
                 #ifdef MSMEM_DEBUG_DECODER_STATE
                     LOG(LOG_VERBOSE, "EOF for %s source reached, wait some time and check again, loop %d", GetMediaTypeStr().c_str(), ++tWaitLoop);
                 #endif
-                mDecoderNeedWorkCondition.Reset();
                 mDecoderNeedWorkCondition.Wait(&mDecoderNeedWorkConditionMutex);
                 mDecoderLastReadPts = 0;
                 mEOFReached = false;
@@ -2079,7 +2078,6 @@ void* MediaSourceMem::Run(void* pArgs)
                 else
                     LOG(LOG_VERBOSE, "Nothing to do for %s decoder, wait some time and check again, loop %d", GetMediaTypeStr().c_str(), ++tWaitLoop);
             #endif
-            mDecoderNeedWorkCondition.Reset();
             mDecoderNeedWorkCondition.Wait(&mDecoderNeedWorkConditionMutex);
             #ifdef MSMEM_DEBUG_DECODER_STATE
                 if(mDecoderFifo != NULL)

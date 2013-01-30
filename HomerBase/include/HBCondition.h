@@ -58,10 +58,11 @@ public:
 
     bool Wait(Mutex *pMutex = NULL, int pMSecs = 0); //in ms
     bool SignalOne();
-    bool SignalAll();
-    bool Reset();
+    bool Signal();
 
 private:
+    bool Reset();
+
     OS_DEP_COND mCondition;
 };
 

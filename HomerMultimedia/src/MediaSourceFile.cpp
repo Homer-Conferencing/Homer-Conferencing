@@ -430,7 +430,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
 
                 mDecoderFifo->ClearFifo();
                 mDecoderMetaDataFifo->ClearFifo();
-                mDecoderNeedWorkCondition.SignalAll();
+                mDecoderNeedWorkCondition.Signal();
 
                 // trigger a avcodec_flush_buffers()
                 mDecoderFlushBuffersAfterSeeking = true;

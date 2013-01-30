@@ -493,16 +493,9 @@ int MediaSourceMMSys::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
 			LOG(LOG_VERBOSE, "Waiting for some new audio capture data");
 		#endif
 
-        // reset capture event object
-		mWaitCondition.Reset();
-
-    	mMutexStateData.unlock();
-
     	// wait for capture event from static function
-        if (!mWaitCondition.Wait())
+        if (!mWaitCondition.Wait(&mMutexStateData))
         	LOG(LOG_ERROR, "Error when waiting for capture event");
-
-        mMutexStateData.lock();
     }
 	#ifdef MMSYS_DEBUG_PACKETS
 		LOG(LOG_VERBOSE, "Pending buffers %d", mQueueSize);

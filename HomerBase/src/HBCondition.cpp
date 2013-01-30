@@ -71,6 +71,12 @@ Condition::~Condition()
 
 bool Condition::Wait(Mutex *pMutex, int pMSecs)
 {
+    if (!Reset())
+    {
+        LOG(LOG_ERROR, "Reset of condition failed");
+        return false;
+    }
+
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
         struct timespec tTimeout;
         struct timespec tTimeout1;
@@ -200,7 +206,7 @@ bool Condition::SignalOne()
 	#endif
 }
 
-bool Condition::SignalAll()
+bool Condition::Signal()
 {
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
         return !pthread_cond_broadcast(&mCondition);
