@@ -167,7 +167,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
 //                    LOG(LOG_VERBOSE, "stream data (%2u): RTP+12 %02hx(%3d)  RTP %02hx(%3d)", i, tFragmentData[i + 12] & 0xFF, tFragmentData[i + 12] & 0xFF, tFragmentData[i] & 0xFF, tFragmentData[i] & 0xFF);
             if (tMediaSourceMemInstance->mGrabbingStopped)
             {
-                LOGEX(MediaSourceMem, LOG_VERBOSE, "Grabbing was stopped meanwhile");
+                LOGEX(MediaSourceMem, LOG_VERBOSE, "Grabbing was stopped");
                 return AVERROR(ENODEV); //force negative resulting buffer size to signal error and force a return to the calling GUI!
             }
             if (tFragmentBufferSize < 0)
@@ -252,7 +252,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
         tMediaSourceMemInstance->ReadFragment(tBuffer, tBufferSize, tFragmentNumber);
         if (tMediaSourceMemInstance->mGrabbingStopped)
         {
-            LOGEX(MediaSourceMem, LOG_VERBOSE, "Grabbing was stopped meanwhile");
+            LOGEX(MediaSourceMem, LOG_VERBOSE, "Grabbing was stopped");
             return -1; //force negative resulting buffer size to signal error and force a return to the calling GUI!
         }
 
@@ -2255,7 +2255,7 @@ void MediaSourceMem::WaitForRTGrabbing()
 {
     if (mGrabbingStopped)
     {
-        LOG(LOG_WARN, "Grabbing was stopped in the meanwhile, returning immediately");
+        LOG(LOG_WARN, "Grabbing was stopped, returning immediately");
         return;
     }
 
