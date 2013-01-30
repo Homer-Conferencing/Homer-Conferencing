@@ -3133,10 +3133,10 @@ int MediaSource::FindStreamInfoCallback(void *pMediaSource)
 {
     MediaSource* tMediaSource = (MediaSource*)pMediaSource;
 
-    //LOGEX(MediaSource, LOG_VERBOSE, "Ffmpeg calls us to ask for interrupt for %s %s source", tMediaSource->GetMediaTypeStr().c_str(), tMediaSource->GetSourceTypeStr().c_str());
+    //LOGEX(MediaSource, LOG_WARN, "Ffmpeg calls us to ask for interrupt for %s %s source", tMediaSource->GetMediaTypeStr().c_str(), tMediaSource->GetSourceTypeStr().c_str());
 
     bool tResult = tMediaSource->mGrabbingStopped;
-    //LOGEX(MediaSource, LOG_VERBOSE, "Interrupt the running process: %d", tResult);
+    //LOGEX(MediaSource, LOG_WARN, "Interrupt the running process: %d", tResult);
 
     return (int)tResult;
 }
@@ -3176,6 +3176,12 @@ bool MediaSource::FfmpegOpenInput(string pSource, int pLine, const char *pInputN
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Setting device (name) to %s", pInputName);
     mCurrentDevice = pInputName;
     mCurrentDeviceName = pInputName;
+
+    if (mGrabbingStopped)
+    {
+        LOG(LOG_WARN, "Grabbing was stopped in the meanwhile, returning immediately");
+        return false;
+    }
 
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "%s input opened", GetMediaTypeStr().c_str());
 

@@ -637,13 +637,13 @@ MediaSourceNet::~MediaSourceNet()
 {
 	LOG(LOG_VERBOSE, "Going to destroy network based media source");
 
-    LOG(LOG_VERBOSE, "..stopping grabbing");
+    LOG(LOG_VERBOSE, "..stopping %s grabbing", GetMediaTypeStr().c_str());
     StopGrabbing();
 
-    LOG(LOG_VERBOSE, "..stopping network listener");
+    LOG(LOG_VERBOSE, "..stopping %s network listener", GetMediaTypeStr().c_str());
     mNetworkListener->StopListener();
 
-    LOG(LOG_VERBOSE, "..closing media source");
+    LOG(LOG_VERBOSE, "..closing %s network source", GetMediaTypeStr().c_str());
     if (mMediaSourceOpened)
         CloseGrabDevice();
 
