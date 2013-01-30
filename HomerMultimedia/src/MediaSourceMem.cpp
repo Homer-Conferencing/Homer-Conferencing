@@ -2103,8 +2103,10 @@ void MediaSourceMem::ResetDecoderBuffers()
 
     // reset the library internal frame FIFO
     LOG(LOG_VERBOSE, "Reseting %s decoder internal FIFO after seeking in input stream", GetMediaTypeStr().c_str());
+    mDecoderFifoMutex.lock();
     mDecoderFifo->ClearFifo();
     mDecoderMetaDataFifo->ClearFifo();
+    mDecoderFifoMutex.unlock();
 
     if ((mMediaType == MEDIA_AUDIO) && (mDecoderAudioSamplesFifo != NULL) && (av_fifo_size(mDecoderAudioSamplesFifo) > 0))
     {
@@ -2135,6 +2137,8 @@ void MediaSourceMem::WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int6
     if (pOutputFrameNumber != 0)
         mLastBufferedOutputFrameIndex = pOutputFrameNumber;
 
+    mDecoderFifoMutex.lock();
+
     // write A/V data to output FIFO
     mDecoderFifo->WriteFifo(pBuffer, pBufferSize);
 
@@ -2142,6 +2146,8 @@ void MediaSourceMem::WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int6
     struct ChunkDescriptor tChunkDesc;
     tChunkDesc.Pts = pOutputFrameNumber;
     mDecoderMetaDataFifo->WriteFifo((char*) &tChunkDesc, sizeof(tChunkDesc));
+
+    mDecoderFifoMutex.unlock();
 
     // update pre-buffer time value
     UpdateBufferTime();
@@ -2152,6 +2158,8 @@ void MediaSourceMem::ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int6
     if (mDecoderFifo == NULL)
         LOG(LOG_ERROR, "Invalid decoder FIFO");
 
+    mDecoderFifoMutex.lock();
+
     // read A/V data from output FIFO
     mDecoderFifo->ReadFifo(pBuffer, pBufferSize);
 
@@ -2159,6 +2167,9 @@ void MediaSourceMem::ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int6
     struct ChunkDescriptor tChunkDesc;
     int tChunkDescSize = sizeof(tChunkDesc);
     mDecoderMetaDataFifo->ReadFifo((char*)&tChunkDesc, tChunkDescSize);
+
+    mDecoderFifoMutex.unlock();
+
     pOutputFrameNumber = tChunkDesc.Pts;
     if (tChunkDescSize != sizeof(tChunkDesc))
         LOG(LOG_ERROR, "Read from FIFO a chunk with wrong size of %d bytes, expected size is %d bytes", tChunkDescSize, sizeof(tChunkDesc));

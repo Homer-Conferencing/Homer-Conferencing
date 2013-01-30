@@ -193,8 +193,9 @@ protected:
     Mutex               mDecoderNeedWorkConditionMutex;
     MediaFifo           *mDecoderFragmentFifo;
     Mutex				mDecoderFragmentFifoDestructionMutex;
-    MediaFifo           *mDecoderFifo; // for frames
     AVFifoBuffer        *mDecoderAudioSamplesFifo;
+    Mutex               mDecoderFifoMutex; // make modifications of mDecoderFifo/mDecoderMetaDataFifo atomic
+    MediaFifo           *mDecoderFifo; // for frames
     MediaFifo           *mDecoderMetaDataFifo; // for meta data about frames
     int                 mDecoderExpectedMaxOutputPerInputFrame; // how many output frames can be calculated of one input frame?
     /* decoder thread seeking */
