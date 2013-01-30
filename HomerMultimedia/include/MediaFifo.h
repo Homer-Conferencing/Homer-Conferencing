@@ -48,6 +48,7 @@ struct MediaFifoEntry
 {
 	char	*Data;
 	int		Size;
+	int64_t Number;
 	Mutex   EntryMutex;
 };
 
@@ -56,17 +57,15 @@ struct MediaFifoEntry
 class MediaFifo
 {
 public:
-    /// The default constructor
     MediaFifo(std::string pName = "");
     MediaFifo(int pFifoSize, int pFifoEntrySize, std::string pName = "");
-    /// The destructor.
     virtual ~MediaFifo();
 
-    virtual void WriteFifo(char* pBuffer, int pBufferSize);
-    virtual void ReadFifo(char *pBuffer, int &pBufferSize); // memory copy, returns entire memory
+    virtual void WriteFifo(char* pBuffer, int pBufferSize, int64_t pBufferNumber);
+    virtual void ReadFifo(char *pBuffer, int &pBufferSize, int64_t &pBufferNumber); // memory copy, returns entire memory
     virtual void ClearFifo();
 
-    virtual int ReadFifoExclusive(char **pBuffer, int &pBufferSize); // avoids memory copy, returns a pointer to memory
+    virtual int ReadFifoExclusive(char **pBuffer, int &pBufferSize, int64_t &pBufferNumber); // avoids memory copy, returns a pointer to memory
     virtual void ReadFifoExclusiveFinished(int pEntryPointer);
 
     virtual int GetEntrySize();

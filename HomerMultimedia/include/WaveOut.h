@@ -114,6 +114,7 @@ protected:
     AVFifoBuffer        *mSampleFifo; // needed to create audio buffers of fixed size (4096 bytes)
     MediaFifo           *mPlaybackFifo; // needed as FIFO buffer with prepared audio buffers for playback, avoid expensive operations like malloc/free (used when using AVFifoBuffer)
     int64_t             mPlaybackGaps;
+    int64_t             mPlaybackChunks;
     /* playback of file */
     std::string         mFilePlaybackFileName;
     bool                mOpenNewFileAsap;

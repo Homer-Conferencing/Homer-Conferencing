@@ -249,7 +249,7 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
                     break;
 
                 // send final packet
-                WriteFragment(tRtpPacket, tRtpPacketSize);
+                WriteFragment(tRtpPacket, tRtpPacketSize, ++mPacketNumber);
 
                 // go to the next RTP packet
                 tRtpPacket = tRtpPacket + (tRtpPacketSize + 4);
@@ -268,7 +268,7 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
     }else
     {
         // send final packet
-        WriteFragment(pPacketData, pPacketSize);
+        WriteFragment(pPacketData, pPacketSize, ++mPacketNumber);
     }
 }
 
@@ -288,9 +288,9 @@ int MediaSinkMem::GetFragmentBufferSize()
         return 0;
 }
 
-void MediaSinkMem::ReadFragment(char *pData, int &pDataSize)
+void MediaSinkMem::ReadFragment(char *pData, int &pDataSize, int64_t &pFragmentNumber)
 {
-    mSinkFifo->ReadFifo(&pData[0], pDataSize);
+    mSinkFifo->ReadFifo(&pData[0], pDataSize, pFragmentNumber);
     if (pDataSize > 0)
     {
         #ifdef MSIM_DEBUG_PACKETS
@@ -312,15 +312,15 @@ void MediaSinkMem::StopProcessing()
 {
     LOG(LOG_VERBOSE, "Going to stop media sink \"%s\"", GetStreamName().c_str());
     char tData[4];
-    mSinkFifo->WriteFifo(tData, 0);
-    mSinkFifo->WriteFifo(tData, 0);
+    mSinkFifo->WriteFifo(tData, 0, 0);
+    mSinkFifo->WriteFifo(tData, 0, 0);
     LOG(LOG_VERBOSE, "Media sink \"%s\" successfully stopped", GetStreamName().c_str());
 }
 
-void MediaSinkMem::WriteFragment(char* pData, unsigned int pSize)
+void MediaSinkMem::WriteFragment(char* pData, unsigned int pSize, int64_t pFragmentNumber)
 {
     #ifdef MSIM_DEBUG_PACKETS
-        LOG(LOG_VERBOSE, "Storing packet number %6ld at %p with size %4u(%3u header) in memory \"%s\"", ++mPacketNumber, pData, pSize, RTP_HEADER_SIZE, mMediaId.c_str());
+        LOG(LOG_VERBOSE, "Storing packet number %6ld at %p with size %4u(%3u header) in memory \"%s\"", pFragmentNumber, pData, pSize, RTP_HEADER_SIZE, mMediaId.c_str());
 
         // if RTP activated then reparse the current packet and print the content
         if (mRtpActivated)
@@ -335,7 +335,7 @@ void MediaSinkMem::WriteFragment(char* pData, unsigned int pSize)
     AnnouncePacket(pSize);
     if ((int)pSize <= mSinkFifo->GetEntrySize())
     {
-        mSinkFifo->WriteFifo(pData, (int)pSize);
+        mSinkFifo->WriteFifo(pData, (int)pSize, pFragmentNumber);
     }else
         LOG(LOG_ERROR, "Packet for media sink of %u bytes is too big for FIFO with entries of %d bytes", pSize, mSinkFifo->GetEntrySize());
 }

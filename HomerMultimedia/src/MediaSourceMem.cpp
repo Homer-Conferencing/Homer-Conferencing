@@ -81,7 +81,6 @@ MediaSourceMem::MediaSourceMem(string pName, bool pRtpActivated):
     mDecoderRecalibrateRTGrabbingAfterSeeking = true;
     mDecoderSinglePictureGrabbed = false;
     mDecoderFifo = NULL;
-    mDecoderMetaDataFifo = NULL;
     mDecoderFragmentFifo = NULL;
 	mResXLastGrabbedFrame = 0;
 	mResYLastGrabbedFrame = 0;
@@ -136,6 +135,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
 	MediaSourceMem *tMediaSourceMemInstance = (MediaSourceMem*)pOpaque;
     char *tBuffer = (char*)pBuffer;
     int tBufferSize = pBufferSize;
+    int64_t tFragmentNumber;
 
     #ifdef MSMEM_DEBUG_PACKETS
         LOGEX(MediaSourceMem, LOG_VERBOSE, "Got a call for GetNextPacket() with a packet buffer at %p and size of %d bytes", pBuffer, pBufferSize);
@@ -158,7 +158,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
             tFragmentData = &tMediaSourceMemInstance->mFragmentBuffer[0];
             tFragmentBufferSize = MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE; // maximum size of one single fragment of a frame packet
             // receive a fragment
-            tMediaSourceMemInstance->ReadFragment(tFragmentData, tFragmentBufferSize);
+            tMediaSourceMemInstance->ReadFragment(tFragmentData, tFragmentBufferSize, tFragmentNumber);
             #ifdef MSMEM_DEBUG_PACKET_RECEIVER
                 LOGEX(MediaSourceMem, LOG_VERBOSE, "Got packet fragment of size %d at address %p", tFragmentBufferSize, tFragmentData);
             #endif
@@ -249,7 +249,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
         }while(!tLastFragment);
     }else
     {// rtp is inactive
-        tMediaSourceMemInstance->ReadFragment(tBuffer, tBufferSize);
+        tMediaSourceMemInstance->ReadFragment(tBuffer, tBufferSize, tFragmentNumber);
         if (tMediaSourceMemInstance->mGrabbingStopped)
         {
             LOGEX(MediaSourceMem, LOG_VERBOSE, "Grabbing was stopped meanwhile");
@@ -273,7 +273,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
     return tBufferSize;
 }
 
-void MediaSourceMem::WriteFragment(char *pBuffer, int pBufferSize)
+void MediaSourceMem::WriteFragment(char *pBuffer, int pBufferSize, int64_t pFragmentNumber)
 {
     if (mDecoderFragmentFifo == NULL)
     {
@@ -295,17 +295,17 @@ void MediaSourceMem::WriteFragment(char *pBuffer, int pBufferSize)
         mDecoderFragmentFifo->ClearFifo();
     }
 
-    mDecoderFragmentFifo->WriteFifo(pBuffer, pBufferSize);
+    mDecoderFragmentFifo->WriteFifo(pBuffer, pBufferSize, pFragmentNumber);
 }
 
-void MediaSourceMem::ReadFragment(char *pData, int &pDataSize)
+void MediaSourceMem::ReadFragment(char *pData, int &pDataSize, int64_t &pFragmentNumber)
 {
     if (mDecoderFragmentFifo == NULL)
     {
         return;
     }
 
-    mDecoderFragmentFifo->ReadFifo(&pData[0], pDataSize);
+    mDecoderFragmentFifo->ReadFifo(&pData[0], pDataSize, pFragmentNumber);
 
     if (pDataSize > 0)
     {
@@ -516,15 +516,6 @@ bool MediaSourceMem::HasInputStreamChanged()
 void MediaSourceMem::StopGrabbing()
 {
 	MediaSource::StopGrabbing();
-
-	LOG(LOG_VERBOSE, "Going to stop memory based %s source", GetMediaTypeStr().c_str());
-
-    char tData[4];
-    if (mDecoderFragmentFifo != NULL)
-    {
-        mDecoderFragmentFifo->WriteFifo(tData, 0);
-        mDecoderFragmentFifo->WriteFifo(tData, 0);
-    }
 
     LOG(LOG_VERBOSE, "Memory based %s source successfully stopped", GetMediaTypeStr().c_str());
 }
@@ -1140,7 +1131,7 @@ void MediaSourceMem::StopDecoder()
                 LOG(LOG_WARN, "Signaling attempt %d to stop %s decoder", tSignalingRound, GetMediaTypeStr().c_str());
             tSignalingRound++;
 
-            WriteFragment(tmp, 0);
+            WriteFragment(tmp, 0, 0);
 
             // force a wake up of decoder thread
             mDecoderNeedWorkCondition.Signal();
@@ -1440,8 +1431,6 @@ void* MediaSourceMem::Run(void* pArgs)
             return NULL;
             break;
     }
-
-    mDecoderMetaDataFifo = new MediaFifo(CalculateFrameBufferSize(), sizeof(ChunkDescriptor), GetMediaTypeStr() + "-MediaSource" + GetSourceTypeStr() + "(MetaData)");
 
     // reset last PTS
     mDecoderLastReadPts = 0;
@@ -2084,7 +2073,6 @@ void* MediaSourceMem::Run(void* pArgs)
     free(tChunkBuffer);
 
     delete mDecoderFifo;
-    delete mDecoderMetaDataFifo;
 
     mDecoderFifo = NULL;
 
@@ -2103,10 +2091,7 @@ void MediaSourceMem::ResetDecoderBuffers()
 
     // reset the library internal frame FIFO
     LOG(LOG_VERBOSE, "Reseting %s decoder internal FIFO after seeking in input stream", GetMediaTypeStr().c_str());
-    mDecoderFifoMutex.lock();
     mDecoderFifo->ClearFifo();
-    mDecoderMetaDataFifo->ClearFifo();
-    mDecoderFifoMutex.unlock();
 
     if ((mMediaType == MEDIA_AUDIO) && (mDecoderAudioSamplesFifo != NULL) && (av_fifo_size(mDecoderAudioSamplesFifo) > 0))
     {
@@ -2128,26 +2113,20 @@ void MediaSourceMem::ResetDecoderBuffers()
 void MediaSourceMem::WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int64_t pOutputFrameNumber)
 {
     if (mDecoderFifo == NULL)
+    {
         LOG(LOG_ERROR, "Invalid decoder FIFO");
+        return;
+    }
 
     #ifdef MSMEM_DEBUG_FRAME_QUEUE
-        LOG(LOG_VERBOSE, ">>> Writing %s frame of %d bytes and pts %"PRId64", FIFOs: %d/%d", GetMediaTypeStr().c_str(), pBufferSize, pOutputFrameNumber, mDecoderFifo->GetUsage(), mDecoderMetaDataFifo->GetUsage());
+        LOG(LOG_VERBOSE, ">>> Writing %s frame of %d bytes and pts %"PRId64", FIFOs: %d", GetMediaTypeStr().c_str(), pBufferSize, pOutputFrameNumber, mDecoderFifo->GetUsage());
     #endif
 
     if (pOutputFrameNumber != 0)
         mLastBufferedOutputFrameIndex = pOutputFrameNumber;
 
-    mDecoderFifoMutex.lock();
-
     // write A/V data to output FIFO
-    mDecoderFifo->WriteFifo(pBuffer, pBufferSize);
-
-    // add meta description about current chunk to different FIFO
-    struct ChunkDescriptor tChunkDesc;
-    tChunkDesc.Pts = pOutputFrameNumber;
-    mDecoderMetaDataFifo->WriteFifo((char*) &tChunkDesc, sizeof(tChunkDesc));
-
-    mDecoderFifoMutex.unlock();
+    mDecoderFifo->WriteFifo(pBuffer, pBufferSize, pOutputFrameNumber);
 
     // update pre-buffer time value
     UpdateBufferTime();
@@ -2156,23 +2135,13 @@ void MediaSourceMem::WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int6
 void MediaSourceMem::ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int64_t &pOutputFrameNumber)
 {
     if (mDecoderFifo == NULL)
+    {
+        return;
         LOG(LOG_ERROR, "Invalid decoder FIFO");
-
-    mDecoderFifoMutex.lock();
+    }
 
     // read A/V data from output FIFO
-    mDecoderFifo->ReadFifo(pBuffer, pBufferSize);
-
-    // read meta description about current chunk from different FIFO
-    struct ChunkDescriptor tChunkDesc;
-    int tChunkDescSize = sizeof(tChunkDesc);
-    mDecoderMetaDataFifo->ReadFifo((char*)&tChunkDesc, tChunkDescSize);
-
-    mDecoderFifoMutex.unlock();
-
-    pOutputFrameNumber = tChunkDesc.Pts;
-    if (tChunkDescSize != sizeof(tChunkDesc))
-        LOG(LOG_ERROR, "Read from FIFO a chunk with wrong size of %d bytes, expected size is %d bytes", tChunkDescSize, sizeof(tChunkDesc));
+    mDecoderFifo->ReadFifo(pBuffer, pBufferSize, pOutputFrameNumber);
 
     #ifdef MSMEM_DEBUG_FRAME_QUEUE
         LOG(LOG_VERBOSE, "Returning from decoder FIFO the %s frame (PTS = %"PRId64"), remaing frames in FIFO: %"PRId64, GetMediaTypeStr().c_str(), pOutputFrameNumber, mDecoderFifo->GetUsage());
@@ -2243,8 +2212,8 @@ bool MediaSourceMem::DecoderFifoFull()
 {
     bool tResult;
 
-    tResult = ((mDecoderFifo == NULL)/* decoder FIFO is invalid */ || (mDecoderMetaDataFifo == NULL) /* decoder meta data FIFO is invalid */) ||
-               (mDecoderFifo->GetUsage() + mDecoderExpectedMaxOutputPerInputFrame > mDecoderFifo->GetSize() - 1 /* check the usage, one slot for a 0 byte signaling chunk*/);
+    tResult = ((mDecoderFifo == NULL)/* decoder FIFO is invalid */ ||
+               (mDecoderFifo->GetUsage() + mDecoderExpectedMaxOutputPerInputFrame > mDecoderFifo->GetSize() - 1 /* check the usage, one slot for a 0 byte signaling chunk*/));
     //HINT: meta data FIFO has always the same size like the data FIFO => we don't have to check the usage of meta data FIFO
 
     return tResult;

@@ -386,10 +386,11 @@ int WaveOutPortAudio::PlayAudioHandler(const void *pInputBuffer, void *pOutputBu
     int tBufferSize;
     do {
         tBufferSize = tOutputBufferMaxSize;
+        int64_t tReadChunkNumber;
 		#ifdef WOPA_DEBUG_HANDLER
 			LOGEX(WaveOutPortAudio, LOG_WARN, "PlayAudioHandler: reading the FIFO");
 		#endif
-        tWaveOutPortAudio->mPlaybackFifo->ReadFifo((char*)pOutputBuffer, tBufferSize);
+        tWaveOutPortAudio->mPlaybackFifo->ReadFifo((char*)pOutputBuffer, tBufferSize, tReadChunkNumber);
 		#ifdef WOPA_DEBUG_HANDLER
 			LOGEX(WaveOutPortAudio, LOG_WARN, "PlayAudioHandler: got %d bytes from FIFO", tBufferSize);
 		#endif
@@ -568,7 +569,7 @@ void WaveOutPortAudio::Stop()
     // make sure no one waits for audio anymore -> send an empty buffer to FIFO and force a return from a possible ReadFifo() call
     LOG(LOG_VERBOSE, "..writing an empty packet to FIFO to force wake up");
     char tData[4];
-    mPlaybackFifo->WriteFifo(tData, 0);
+    mPlaybackFifo->WriteFifo(tData, 0, 0);
 
     LOG(LOG_VERBOSE, "..empty packets to FIFO were written to force a wake up");
 

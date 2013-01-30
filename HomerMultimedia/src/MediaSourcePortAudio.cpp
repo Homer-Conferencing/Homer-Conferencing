@@ -73,6 +73,7 @@ void MediaSourcePortAudio::PortAudioUnlockStreamInterface()
 MediaSourcePortAudio::MediaSourcePortAudio(string pDesiredDevice):
     MediaSource("PortAudio: local capture")
 {
+    mCapturedChunks = 0;
     mSourceType = SOURCE_DEVICE;
     ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
     mCaptureFifo = new MediaFifo(MEDIA_SOURCE_SAMPLES_CAPTURE_FIFO_SIZE, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE, "MediaSourcePortAudio");
@@ -241,7 +242,7 @@ int MediaSourcePortAudio::RecordedAudioHandler(const void *pInputBuffer, void *p
     #endif
 
 	if ((tMediaSourcePortAudio->mMediaSourceOpened) && (pInputSize > 0))
-		tMediaSourcePortAudio->mCaptureFifo->WriteFifo((char*)pInputBuffer, (int)pInputSize * 2 /* 16 bit LittleEndian */ * (tMediaSourcePortAudio->mOutputAudioChannels ? 2 : 1));
+		tMediaSourcePortAudio->mCaptureFifo->WriteFifo((char*)pInputBuffer, (int)pInputSize * 2 /* 16 bit LittleEndian */ * (tMediaSourcePortAudio->mOutputAudioChannels ? 2 : 1), ++tMediaSourcePortAudio->mCapturedChunks);
 
     return paContinue;
 }
@@ -453,7 +454,8 @@ int MediaSourcePortAudio::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pD
         LOG(LOG_VERBOSE, "Waiting for a new chunk of max. %d captured bytes", pChunkSize);
     #endif
 
-    mCaptureFifo->ReadFifo((char*)pChunkBuffer, pChunkSize);
+    int64_t tReadChunkNumber;
+    mCaptureFifo->ReadFifo((char*)pChunkBuffer, pChunkSize, tReadChunkNumber);
 
     //TODO: use ffmpeg and support more audio channel layouts
     if ((mInputAudioChannels == 1) && (mOutputAudioChannels == 2))
@@ -529,7 +531,7 @@ void MediaSourcePortAudio::StopGrabbing()
 
         // make sure no one waits for audio anymore -> send an empty buffer to FIFO and force a return from a possible ReadFifo() call
         char tData[4];
-        mCaptureFifo->WriteFifo(tData, 0);
+        mCaptureFifo->WriteFifo(tData, 0, 0);
     }
 }
 

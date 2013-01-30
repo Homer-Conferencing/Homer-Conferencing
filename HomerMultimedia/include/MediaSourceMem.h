@@ -132,14 +132,14 @@ public:
     virtual int GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk = false);
 
     // send input to the media source
-    void WriteFragment(char *pBuffer, int pBufferSize);
+    void WriteFragment(char *pBuffer, int pBufferSize, int64_t pFragmentNumber);
 
 protected:
     /* internal video resolution switch */
     virtual void DoSetVideoGrabResolution(int pResX = 352, int pResY = 288);
 
     static int GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize);
-    void ReadFragment(char *pData, int &pDataSize);
+    void ReadFragment(char *pData, int &pDataSize, int64_t &pFragmentNumber);
 
     virtual bool InputIsPicture();
 
@@ -194,9 +194,7 @@ protected:
     MediaFifo           *mDecoderFragmentFifo;
     Mutex				mDecoderFragmentFifoDestructionMutex;
     AVFifoBuffer        *mDecoderAudioSamplesFifo;
-    Mutex               mDecoderFifoMutex; // make modifications of mDecoderFifo/mDecoderMetaDataFifo atomic
     MediaFifo           *mDecoderFifo; // for frames
-    MediaFifo           *mDecoderMetaDataFifo; // for meta data about frames
     int                 mDecoderExpectedMaxOutputPerInputFrame; // how many output frames can be calculated of one input frame?
     /* decoder thread seeking */
     Mutex               mDecoderSeekMutex;

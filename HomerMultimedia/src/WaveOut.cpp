@@ -48,6 +48,7 @@ WaveOut::WaveOut(string pName):
     mFilePlaybackSource = NULL;
     mSampleFifo = NULL;
     mPlaybackGaps = 0;
+    mPlaybackChunks = 0;
     mFilePlaybackNeeded = false;
 
     LOG(LOG_VERBOSE, "Going to allocate playback FIFO");
@@ -234,7 +235,8 @@ void WaveOut::LimitQueue(int pNewSize)
         {
             char *tBuffer;
             int tBufferSize;
-            int tEntryId = mPlaybackFifo->ReadFifoExclusive(&tBuffer, tBufferSize);
+            int64_t tChunkNumber;
+            int tEntryId = mPlaybackFifo->ReadFifoExclusive(&tBuffer, tBufferSize, tChunkNumber);
             mPlaybackFifo->ReadFifoExclusiveFinished(tEntryId);
         }
     }
@@ -411,7 +413,7 @@ bool WaveOut::WriteChunk(void* pChunkBuffer, int pChunkSize)
 
 void WaveOut::DoWriteChunk(char *pChunkBuffer, int pChunkSize)
 {
-    mPlaybackFifo->WriteFifo(pChunkBuffer, pChunkSize);
+    mPlaybackFifo->WriteFifo(pChunkBuffer, pChunkSize, ++mPlaybackChunks);
 }
 
 void* WaveOut::Run(void* pArgs)

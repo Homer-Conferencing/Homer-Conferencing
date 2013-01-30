@@ -59,8 +59,8 @@ public:
     void StartScaler(int pInputQueueSize, int pSourceResX, int pSourceResY, enum PixelFormat pSourcePixelFormat, int pTargetResX, int pTargetResY, enum PixelFormat pTargetPixelFormat);
     void StopScaler();
 
-    virtual void WriteFifo(char* pBuffer, int pBufferSize);
-    virtual void ReadFifo(char *pBuffer, int &pBufferSize); // memory copy, returns entire memory
+    virtual void WriteFifo(char* pBuffer, int pBufferSize, int64_t pFrameNumber);
+    virtual void ReadFifo(char *pBuffer, int &pBufferSize, int64_t &pFrameNumber); // memory copy, returns entire memory
     virtual void ClearFifo();
 
     virtual int GetEntrySize();
@@ -71,7 +71,7 @@ public:
 
 private:
     // avoids memory copy, returns a pointer to memory
-    int ReadFifoExclusive(char **pBuffer, int &pBufferSize); // return -1 if internal FIFO isn't available yet
+    int ReadFifoExclusive(char **pBuffer, int &pBufferSize, int64_t &pFrameNumber); // return -1 if internal FIFO isn't available yet
     void ReadFifoExclusiveFinished(int pEntryPointer);
 
     virtual void* Run(void* pArgs = NULL); // video scaler main loop

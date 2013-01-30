@@ -1206,7 +1206,7 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
     {
 		// we relay this chunk to all registered media sinks based on the dedicated relay thread
 		int64_t tTime = Time::GetTimeStamp();
-		mEncoderFifo->WriteFifo((char*)pChunkBuffer, pChunkSize);
+		mEncoderFifo->WriteFifo((char*)pChunkBuffer, pChunkSize, 0 /* TODO: find a frame numbering here */);
 		#ifdef MSM_DEBUG_TIMING
 			int64_t tTime2 = Time::GetTimeStamp();
 			//LOG(LOG_VERBOSE, "Writing %d bytes to Encoder-FIFO took %"PRId64" us", pChunkSize, tTime2 - tTime);
@@ -1303,7 +1303,7 @@ void MediaSourceMuxer::StopEncoder()
             // write fake data to awake transcoder thread as long as it still runs
             mEncoderFifoState.lock();
             if (mEncoderFifo != NULL)
-            	mEncoderFifo->WriteFifo(tTmp, 0);
+            	mEncoderFifo->WriteFifo(tTmp, 0, 0);
             mEncoderFifoState.unlock();
 
             Thread::Suspend(25 * 1000);
@@ -1326,6 +1326,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
     uint8_t             *tChunkBuffer;
     VideoScaler         *tVideoScaler = NULL;
     int                 tFrameFinished = 0;
+    int64_t             tReadFrameNumber;
 
     LOG(LOG_VERBOSE, "%s-Encoding thread started", GetMediaTypeStr().c_str());
 
@@ -1430,7 +1431,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
             //####################################################################
             //### get next frame data
             //###################################################################
-            tFifoEntry = mEncoderFifo->ReadFifoExclusive(&tBuffer, tBufferSize);
+            tFifoEntry = mEncoderFifo->ReadFifoExclusive(&tBuffer, tBufferSize, tReadFrameNumber);
 
             if ((tBufferSize > 0) && (mEncoderNeeded))
             {

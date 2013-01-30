@@ -406,6 +406,7 @@ void* NetworkListener::Run(void* pArgs)
     string              tSourceHost = "";
     unsigned int        tSourcePort = 0;
     int                 tDataSize;
+    int64_t             tReceivedPackets = 0;
 
     LOG(LOG_VERBOSE, "%s Socket-Listener for port %u started", mMediaSourceNet->GetMediaTypeStr().c_str(), GetListenerPort());
     mListenerStopped = false;
@@ -470,7 +471,7 @@ void* NetworkListener::Run(void* pArgs)
         tDataSize = MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE;
         tSourceHost = "";
         if (!ReceivePacket(tSourceHost, tSourcePort, tPacketBuffer, tDataSize))
-        {
+        {// error occurred
             if (mReceiveErrors == MEDIA_SOURCE_NET_MAX_RECEIVE_ERRORS)
             {
                 LOG(LOG_ERROR, "Maximum number of continuous receive errors(%d) is exceeded, will stop network listener", MEDIA_SOURCE_NET_MAX_RECEIVE_ERRORS);
@@ -479,7 +480,10 @@ void* NetworkListener::Run(void* pArgs)
             }else
                 mReceiveErrors++;
         }else
+        {// everything is okay
             mReceiveErrors = 0;
+            tReceivedPackets++;
+        }
 
         // stop loop if listener isn't needed anymore
         if (!mListenerNeeded)
@@ -523,7 +527,7 @@ void* NetworkListener::Run(void* pArgs)
 
             // for TCP-like transport we have to use a special fragment header!
             if (mStreamedTransport)
-            {
+            {// TCP - like transport
                 TCPFragmentHeader *tHeader;
                 char *tData = tPacketBuffer;
                 char *tDataEnd = tPacketBuffer + tDataSize;
@@ -550,13 +554,13 @@ void* NetworkListener::Run(void* pArgs)
                     //       -> picture errors occur if the video quality is high enough and causes a high data rate
                     tData += TCP_FRAGMENT_HEADER_SIZE;
                     tDataSize -= TCP_FRAGMENT_HEADER_SIZE;
-                    mMediaSourceNet->WriteFragment(tData, (int)tHeader->FragmentSize);
+                    mMediaSourceNet->WriteFragment(tData, (int)tHeader->FragmentSize, tReceivedPackets);
                     tData += tHeader->FragmentSize;
                     tDataSize -= tHeader->FragmentSize;
                 }
             }else
-            {
-                mMediaSourceNet->WriteFragment(tPacketBuffer, (int)tDataSize);
+            {// UDP transport
+                mMediaSourceNet->WriteFragment(tPacketBuffer, (int)tDataSize, tReceivedPackets);
             }
         }else
         {
@@ -565,7 +569,7 @@ void* NetworkListener::Run(void* pArgs)
                 LOG(LOG_VERBOSE, "Zero byte %s packet received", mMediaSourceNet->GetMediaTypeStr().c_str());
 
                 // add also a zero byte packet to enable early thread termination
-                mMediaSourceNet->WriteFragment(tPacketBuffer, 0);
+                mMediaSourceNet->WriteFragment(tPacketBuffer, 0, 0);
             }else
             {
                 LOG(LOG_VERBOSE, "Got faulty %s packet", mMediaSourceNet->GetMediaTypeStr().c_str());

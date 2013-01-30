@@ -143,9 +143,10 @@ struct AudioDeviceDescriptor
 
 typedef std::vector<AudioDeviceDescriptor> AudioDevices;
 
-struct ChunkDescriptor
+struct FrameDescriptor
 {
-    int64_t     Pts;
+    int64_t     Number;
+    void        *Data;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

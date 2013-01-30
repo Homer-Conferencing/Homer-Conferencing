@@ -69,7 +69,7 @@ public:
     virtual void StopProcessing();
 
 protected:
-    virtual void WriteFragment(char* pData, unsigned int pSize);
+    virtual void WriteFragment(char* pData, unsigned int pSize, int64_t pFragmentNumber);
 
 private:
     /* sender thread */
