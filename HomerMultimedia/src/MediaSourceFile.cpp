@@ -618,7 +618,7 @@ vector<string> MediaSourceFile::GetInputStreams()
 void MediaSourceFile::CalibrateRTGrabbing()
 {
     // adopt the stored pts value which represent the start of the media presentation in real-time useconds
-    float  tRelativeFrameIndex = mCurrentOutputFrameIndex - mInputStartPts;
+    float  tRelativeFrameIndex = mCurrentOutputFrameIndex - CalculateOutputFrameNumber(mInputStartPts);
     double tRelativeTime = (int64_t)((double)AV_TIME_BASE * tRelativeFrameIndex / GetOutputFrameRate());
     #ifdef MSMEM_DEBUG_CALIBRATION
         LOG(LOG_WARN, "Calibrating %s RT playback, current frame: %.2f, source start: %.2f, RT ref. time: %.2f->%.2f(diff: %.2f)", GetMediaTypeStr().c_str(), (float)mCurrentOutputFrameIndex, (float)mInputStartPts, mSourceStartTimeForRTGrabbing, (float)av_gettime() - tRelativeTime, (float)av_gettime() - tRelativeTime -mSourceStartTimeForRTGrabbing);
