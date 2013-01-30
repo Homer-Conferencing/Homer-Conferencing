@@ -530,8 +530,7 @@ void MediaSourcePortAudio::StopGrabbing()
         }
 
         // make sure no one waits for audio anymore -> send an empty buffer to FIFO and force a return from a possible ReadFifo() call
-        char tData[4];
-        mCaptureFifo->WriteFifo(tData, 0, 0);
+        mCaptureFifo->WriteFifo(NULL, 0, 0);
     }
 }
 

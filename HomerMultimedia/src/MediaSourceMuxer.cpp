@@ -1284,7 +1284,6 @@ void MediaSourceMuxer::StartEncoder()
 void MediaSourceMuxer::StopEncoder()
 {
     int tSignalingRound = 0;
-    char tTmp[4];
 
     LOG(LOG_VERBOSE, "Stopping %s transcoder", GetMediaTypeStr().c_str());
 
@@ -1303,7 +1302,7 @@ void MediaSourceMuxer::StopEncoder()
             // write fake data to awake transcoder thread as long as it still runs
             mEncoderFifoState.lock();
             if (mEncoderFifo != NULL)
-            	mEncoderFifo->WriteFifo(tTmp, 0, 0);
+            	mEncoderFifo->WriteFifo(NULL, 0, 0);
             mEncoderFifoState.unlock();
 
             Thread::Suspend(25 * 1000);

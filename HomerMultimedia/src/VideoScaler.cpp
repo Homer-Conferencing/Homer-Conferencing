@@ -89,7 +89,6 @@ void VideoScaler::StartScaler(int pInputQueueSize, int pSourceResX, int pSourceR
 void VideoScaler::StopScaler()
 {
     int tSignalingRound = 0;
-    char tTmp[4];
 
     LOG(LOG_VERBOSE, "Stopping scaler");
 
@@ -106,7 +105,7 @@ void VideoScaler::StopScaler()
             tSignalingRound++;
 
             // write fake data to awake scaler thread as long as it still runs
-            mInputFifo->WriteFifo(tTmp, 0, 0);
+            mInputFifo->WriteFifo(NULL, 0, 0);
 
             Suspend(100 * 1000);
         }while(IsRunning());
@@ -409,7 +408,7 @@ void* VideoScaler::Run(void* pArgs)
                         LOG(LOG_VERBOSE, "Forwarding the empty packet from the scaler input FIFO to the scaler output FIFO");
 
                         // forward the empty packet to the output FIFO
-                        mOutputFifo->WriteFifo(tBuffer, 0, 0);
+                        mOutputFifo->WriteFifo(NULL, 0, 0);
 
                         LOG(LOG_VERBOSE, "..forwarded the empty chunk from input to output");
                     }else

@@ -568,8 +568,7 @@ void WaveOutPortAudio::Stop()
 
     // make sure no one waits for audio anymore -> send an empty buffer to FIFO and force a return from a possible ReadFifo() call
     LOG(LOG_VERBOSE, "..writing an empty packet to FIFO to force wake up");
-    char tData[4];
-    mPlaybackFifo->WriteFifo(tData, 0, 0);
+    mPlaybackFifo->WriteFifo(NULL, 0, 0);
 
     LOG(LOG_VERBOSE, "..empty packets to FIFO were written to force a wake up");
 

@@ -327,7 +327,8 @@ void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize, int64_t pBufferNumber)
 
     // add the new entry
     mFifo[tCurrentFifoWritePtr].Size = pBufferSize;
-    memcpy((void*)mFifo[tCurrentFifoWritePtr].Data, (const void*)pBuffer, (size_t)pBufferSize);
+    if ((pBuffer != NULL) && (pBufferSize > 0))
+        memcpy((void*)mFifo[tCurrentFifoWritePtr].Data, (const void*)pBuffer, (size_t)pBufferSize);
     mFifo[tCurrentFifoWritePtr].Number = pBufferNumber;
 
     // unlock fine grained mutex again

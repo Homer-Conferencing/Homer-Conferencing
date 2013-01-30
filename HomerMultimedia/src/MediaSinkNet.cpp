@@ -322,7 +322,6 @@ void MediaSinkNet::StartSender()
 void MediaSinkNet::StopSender()
 {
     int tSignalingRound = 0;
-    char tTmp[4];
 
     LOG(LOG_VERBOSE, "Stopping sender");
 
@@ -339,7 +338,7 @@ void MediaSinkNet::StopSender()
             tSignalingRound++;
 
             // write fake data to awake sender thread as long as it still runs
-            mSinkFifo->WriteFifo(tTmp, 0, 0);
+            mSinkFifo->WriteFifo(NULL, 0, 0);
 
             Suspend(25 * 1000);
         }while(IsRunning());

@@ -311,9 +311,8 @@ void MediaSinkMem::ReadFragment(char *pData, int &pDataSize, int64_t &pFragmentN
 void MediaSinkMem::StopProcessing()
 {
     LOG(LOG_VERBOSE, "Going to stop media sink \"%s\"", GetStreamName().c_str());
-    char tData[4];
-    mSinkFifo->WriteFifo(tData, 0, 0);
-    mSinkFifo->WriteFifo(tData, 0, 0);
+    mSinkFifo->WriteFifo(NULL, 0, 0);
+    mSinkFifo->WriteFifo(NULL, 0, 0);
     LOG(LOG_VERBOSE, "Media sink \"%s\" successfully stopped", GetStreamName().c_str());
 }
 
