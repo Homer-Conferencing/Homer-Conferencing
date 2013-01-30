@@ -517,6 +517,8 @@ void MediaSourceMem::StopGrabbing()
 {
 	MediaSource::StopGrabbing();
 
+	WriteFragment(NULL, 0, 0);
+
     LOG(LOG_VERBOSE, "Memory based %s source successfully stopped", GetMediaTypeStr().c_str());
 }
 
@@ -2251,6 +2253,12 @@ void MediaSourceMem::CalibrateRTGrabbing()
 
 void MediaSourceMem::WaitForRTGrabbing()
 {
+    if (mGrabbingStopped)
+    {
+        LOG(LOG_WARN, "Grabbing was stopped in the meanwhile, returning immediately");
+        return;
+    }
+
 	// return immediately if PTS from grabber is invalid
 	if ((mRtpActivated) && (mCurrentOutputFrameIndex == 0))
 	{
