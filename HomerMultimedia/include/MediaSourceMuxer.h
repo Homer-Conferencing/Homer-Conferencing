@@ -228,7 +228,7 @@ private:
     int64_t				mRelayingSkipAudioSilenceSkippedChunks;
     /* encoding */
     char                *mEncoderChunkBuffer;
-    bool                mEncoderNeeded;
+    bool                mEncoderThreadNeeded;
     MediaFifo           *mEncoderFifo;
     Mutex				mEncoderFifoState;
     bool				mEncoderHasKeyFrame;

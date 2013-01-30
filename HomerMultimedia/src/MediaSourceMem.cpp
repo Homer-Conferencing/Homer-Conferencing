@@ -239,7 +239,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
                 {
                     LOGEX(MediaSourceMem, LOG_VERBOSE, "Detected empty signaling fragment, grabber should be stopped, returning zero data");
                     return 0;
-                }else if (!tMediaSourceMemInstance->mDecoderNeeded)
+                }else if (!tMediaSourceMemInstance->mDecoderThreadNeeded)
                 {
                     LOGEX(MediaSourceMem, LOG_VERBOSE, "Detected empty signaling fragment, decoder should be stopped, returning zero data");
                     return 0;
@@ -1070,10 +1070,6 @@ bool MediaSourceMem::InputIsPicture()
 {
     bool tResult = false;
 
-//    LOG(LOG_VERBOSE, "Source opened: %d", mMediaSourceOpened);
-//    if ((mFormatContext != NULL) && (mFormatContext->streams[mMediaStreamIndex]))
-//        LOG(LOG_VERBOSE, "Media type: %d", mFormatContext->streams[mMediaStreamIndex]->codec->codec_type);
-
     // do we have a picture?
     if ((mMediaSourceOpened) &&
         (mFormatContext != NULL) && (mFormatContext->streams[mMediaStreamIndex]) &&
@@ -1094,7 +1090,7 @@ void MediaSourceMem::StartDecoder()
     // trigger a RT playback calibration
     mDecoderRecalibrateRTGrabbingAfterSeeking = true;
 
-    mDecoderNeeded = false;
+    mDecoderThreadNeeded = false;
 
     if (!IsRunning())
     {
@@ -1104,7 +1100,7 @@ void MediaSourceMem::StartDecoder()
         int tLoops = 0;
 
         // wait until thread is running
-        while ((!IsRunning() /* wait until thread is started */) || (!mDecoderNeeded /* wait until thread has finished the init. process */))
+        while ((!IsRunning() /* wait until thread is started */) || (!mDecoderThreadNeeded /* wait until thread has finished the init. process */))
         {
             if (tLoops % 10 == 0)
                 LOG(LOG_VERBOSE, "Waiting for start of %s decoding thread, loop count: %d", GetMediaTypeStr().c_str(), ++tLoops);
@@ -1124,7 +1120,7 @@ void MediaSourceMem::StopDecoder()
     if (mDecoderFifo != NULL)
     {
         // tell decoder thread it isn't needed anymore
-        mDecoderNeeded = false;
+        mDecoderThreadNeeded = false;
 
         // wait for termination of decoder thread
         do
@@ -1222,7 +1218,7 @@ void MediaSourceMem::ReadPacketFromInputStream(AVPacket *pPacket, int64_t &pPack
                     mEOFReached = true;
                 }else if (tRes != (int)AVUNERROR(EAGAIN))
                 {// we should grab again, we signaled this ourself
-                    if (mDecoderNeeded)
+                    if (mDecoderThreadNeeded)
                         tShouldReadNext = true;
                 }else
                 {// actually an error
@@ -1320,7 +1316,7 @@ void MediaSourceMem::ReadPacketFromInputStream(AVPacket *pPacket, int64_t &pPack
                 #endif
             }
         }
-    }while ((tShouldReadNext) && (!mEOFReached) && (mDecoderNeeded));
+    }while ((tShouldReadNext) && (!mEOFReached) && (mDecoderThreadNeeded));
 
     #ifdef MSMEM_DEBUG_PACKETS
         if (tReadIteration > 1)
@@ -1440,7 +1436,7 @@ void* MediaSourceMem::Run(void* pArgs)
     mLastBufferedOutputFrameIndex = 0;
 
     // signal that decoder thread has finished init.
-    mDecoderNeeded = true;
+    mDecoderThreadNeeded = true;
 
     CalculateExpectedOutputPerInputFrame();
 
@@ -1449,7 +1445,7 @@ void* MediaSourceMem::Run(void* pArgs)
 
     LOG(LOG_WARN, "================ Entering main %s decoding loop for %s media source", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
 
-    while(mDecoderNeeded)
+    while(mDecoderThreadNeeded)
     {
         #ifdef MSMEM_DEBUG_DECODER_STATE
             LOG(LOG_VERBOSE, "%s-decoder loop", GetMediaTypeStr().c_str());

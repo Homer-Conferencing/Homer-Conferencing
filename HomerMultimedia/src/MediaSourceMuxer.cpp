@@ -84,7 +84,7 @@ MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
     mStreamActivated = true;
     mRelayingSkipAudioSilence = false;
     mRelayingSkipAudioSilenceSkippedChunks = 0;
-    mEncoderNeeded = true;
+    mEncoderThreadNeeded = true;
     mEncoderHasKeyFrame = false;
     mEncoderFifo = NULL;
     mAudioResampleContext = NULL;
@@ -113,7 +113,7 @@ int MediaSourceMuxer::DistributePacket(void *pOpaque, uint8_t *pBuffer, int pBuf
     char *tBuffer = (char*)pBuffer;
 
     // drop write_header packets here
-    if (!tMuxer->mEncoderNeeded)
+    if (!tMuxer->mEncoderThreadNeeded)
         return pBufferSize;
 
     // log statistics
@@ -1274,7 +1274,7 @@ void MediaSourceMuxer::StartEncoder()
     // start transcoder main loop
     StartThread();
 
-    while(!mEncoderNeeded)
+    while(!mEncoderThreadNeeded)
     {
         LOG(LOG_VERBOSE, "Waiting for the start of %s transcoding thread", GetMediaTypeStr().c_str());
         Thread::Suspend(25 * 1000);
@@ -1290,7 +1290,7 @@ void MediaSourceMuxer::StopEncoder()
     if (mEncoderFifo != NULL)
     {
         // tell transcoder thread it isn't needed anymore
-        mEncoderNeeded = false;
+        mEncoderThreadNeeded = false;
 
         // wait for termination of transcoder thread
         do
@@ -1395,12 +1395,12 @@ void* MediaSourceMuxer::Run(void* pArgs)
     }
 
     // set marker to "active"
-    mEncoderNeeded = true;
+    mEncoderThreadNeeded = true;
 
     // flush ffmpeg internal buffers
     mEncoderFlushBuffersAfterSeeking = true;
 
-    while(mEncoderNeeded)
+    while(mEncoderThreadNeeded)
     {
 		#ifdef MSM_DEBUG_TIMING
 			LOG(LOG_VERBOSE, "%s-encoder loop", GetMediaTypeStr().c_str());
@@ -1432,7 +1432,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
             //###################################################################
             tFifoEntry = mEncoderFifo->ReadFifoExclusive(&tBuffer, tBufferSize, tReadFrameNumber);
 
-            if ((tBufferSize > 0) && (mEncoderNeeded))
+            if ((tBufferSize > 0) && (mEncoderThreadNeeded))
             {
                 // lock
                 mMediaSinksMutex.lock();
