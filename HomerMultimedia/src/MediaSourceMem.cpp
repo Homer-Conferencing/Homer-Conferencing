@@ -167,7 +167,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
 //                    LOG(LOG_VERBOSE, "stream data (%2u): RTP+12 %02hx(%3d)  RTP %02hx(%3d)", i, tFragmentData[i + 12] & 0xFF, tFragmentData[i + 12] & 0xFF, tFragmentData[i] & 0xFF, tFragmentData[i] & 0xFF);
             if (tMediaSourceMemInstance->mGrabbingStopped)
             {
-                LOGEX(MediaSourceMem, LOG_VERBOSE, "Grabbing was stopped");
+                LOGEX(MediaSourceMem, LOG_VERBOSE, "%s-Grabbing was stopped", tMediaSourceMemInstance->GetMediaTypeStr().c_str());
                 return AVERROR(ENODEV); //force negative resulting buffer size to signal error and force a return to the calling GUI!
             }
             if (tFragmentBufferSize < 0)
@@ -252,8 +252,8 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
         tMediaSourceMemInstance->ReadFragment(tBuffer, tBufferSize, tFragmentNumber);
         if (tMediaSourceMemInstance->mGrabbingStopped)
         {
-            LOGEX(MediaSourceMem, LOG_VERBOSE, "Grabbing was stopped");
-            return -1; //force negative resulting buffer size to signal error and force a return to the calling GUI!
+            LOGEX(MediaSourceMem, LOG_VERBOSE, "%s-Grabbing was stopped", tMediaSourceMemInstance->GetMediaTypeStr().c_str());
+            return AVERROR(ENODEV); //force negative resulting buffer size to signal error and force a return to the calling GUI!
         }
 
         if (tBufferSize < 0)
@@ -518,6 +518,7 @@ void MediaSourceMem::StopGrabbing()
 	MediaSource::StopGrabbing();
 
 	WriteFragment(NULL, 0, 0);
+	WriteFrameOutputBuffer(NULL, 0, 0);
 
     LOG(LOG_VERBOSE, "Memory based %s source successfully stopped", GetMediaTypeStr().c_str());
 }
@@ -2076,7 +2077,6 @@ void* MediaSourceMem::Run(void* pArgs)
     free(tChunkBuffer);
 
     delete mDecoderFifo;
-
     mDecoderFifo = NULL;
 
     LOG(LOG_WARN, "%s decoder main loop finished for %s media source <<<<<<<<<<<<<<<<", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
@@ -2117,7 +2117,7 @@ void MediaSourceMem::WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int6
 {
     if (mDecoderFifo == NULL)
     {
-        LOG(LOG_ERROR, "Invalid decoder FIFO");
+        LOG(LOG_ERROR, "Invalid %s decoder FIFO", GetMediaTypeStr().c_str());
         return;
     }
 
@@ -2140,7 +2140,7 @@ void MediaSourceMem::ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int6
     if (mDecoderFifo == NULL)
     {
         return;
-        LOG(LOG_ERROR, "Invalid decoder FIFO");
+        LOG(LOG_ERROR, "Invalid %s decoder FIFO", GetMediaTypeStr().c_str());
     }
 
     // read A/V data from output FIFO
