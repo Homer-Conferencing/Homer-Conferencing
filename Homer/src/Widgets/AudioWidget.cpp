@@ -860,7 +860,7 @@ void AudioWidget::customEvent(QEvent* pEvent)
 AudioWorkerThread::AudioWorkerThread(ParticipantWidget* pParticipantWidget, QString pName, MediaSource *pAudioSource, AudioWidget *pAudioWidget):
     MediaSourceGrabberThread(pName, pAudioSource), AudioPlayback()
 {
-    LOG(LOG_VERBOSE, "..Creating audio worker");
+    LOG(LOG_VERBOSE, "Created");
     mParticipantWidget = pParticipantWidget;
     mStartPlaybackAsap = false;
     mStopPlaybackAsap = false;
@@ -1418,7 +1418,7 @@ void AudioWorkerThread::run()
 
     mLastFrameNumber = 0;
 
-    LOG(LOG_VERBOSE, "..start main loop");
+    LOG(LOG_WARN, "================ Entering main AUDIO WORKER loop for media source %s", mMediaSource->GetStreamName().c_str());
     while(mWorkerNeeded)
     {
         // get the next frame from audio source
@@ -1589,11 +1589,16 @@ void AudioWorkerThread::run()
         }
 
     }
+
+    LOG(LOG_WARN, "AUDIO WORKER loop finished for media source %s <<<<<<<<<<<<<<<<", mMediaSource->GetStreamName().c_str());
+
     mMediaSource->CloseGrabDevice();
     mMediaSource->DeleteAllRegisteredMediaSinks();
 
     // close audio playback
     ClosePlaybackDevice();
+
+    LOG(LOG_WARN, "AUDIO WORKER thread finished for media source %s <<<<<<<<<<<<<<<<", mMediaSource->GetStreamName().c_str());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

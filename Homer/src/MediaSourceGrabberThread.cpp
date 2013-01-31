@@ -519,10 +519,13 @@ void MediaSourceGrabberThread::DoSeek()
 
 void MediaSourceGrabberThread::StopGrabber()
 {
-    LOG(LOG_VERBOSE, "StobGrabber now...");
+    LOG(LOG_VERBOSE, "Stopping %s-Grabber now...", mMediaSource->GetMediaTypeStr().c_str());
     mWorkerNeeded = false;
+    LOG(LOG_VERBOSE, "...setting %s grabbing-condition", mMediaSource->GetMediaTypeStr().c_str());
     mGrabbingCondition.wakeAll();
+    LOG(LOG_VERBOSE, "...stopping %s source grabbing", mMediaSource->GetMediaTypeStr().c_str());
     mMediaSource->StopGrabbing();
+    LOG(LOG_VERBOSE, "...%s-Grabber stopped", mMediaSource->GetMediaTypeStr().c_str());
 }
 
 void MediaSourceGrabberThread::CalculateFrameRate(float *pFrameRate)

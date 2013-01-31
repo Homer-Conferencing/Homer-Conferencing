@@ -1997,6 +1997,7 @@ void VideoWidget::FullscreenMarkUserIdle()
 VideoWorkerThread::VideoWorkerThread(QString pName, MediaSource *pVideoSource, VideoWidget *pVideoWidget):
     MediaSourceGrabberThread(pName, pVideoSource)
 {
+    LOG(LOG_VERBOSE, "Created");
     mSetGrabResolutionAsap = false;
     mWaitForFirstFrameAfterSeeking = false;
     mMissingFrames = 0;
@@ -2015,6 +2016,7 @@ VideoWorkerThread::VideoWorkerThread(QString pName, MediaSource *pVideoSource, V
 VideoWorkerThread::~VideoWorkerThread()
 {
     DeinitFrameBuffers();
+    LOG(LOG_VERBOSE, "Destroyed");
 }
 
 void VideoWorkerThread::InitFrameBuffers()
@@ -2407,7 +2409,7 @@ void VideoWorkerThread::run()
     mLastFrameNumber = 0;
     mTimeLastDetectedVideoResolutionChange = QTime::currentTime();
 
-    LOG(LOG_VERBOSE, "..start main loop");
+    LOG(LOG_WARN, "================ Entering main VIDEO WORKER loop for media source %s", mMediaSource->GetStreamName().c_str());
     while(mWorkerNeeded)
     {
     	// store last frame number
@@ -2585,8 +2587,13 @@ void VideoWorkerThread::run()
         	LOG(LOG_VERBOSE, "Continuing processing");
         }
     }
+
+    LOG(LOG_WARN, "VIDEO WORKER loop finished for media source %s <<<<<<<<<<<<<<<<", mMediaSource->GetStreamName().c_str());
+
     mMediaSource->CloseGrabDevice();
     mMediaSource->DeleteAllRegisteredMediaSinks();
+
+    LOG(LOG_WARN, "VIDEO WORKER thread finished for media source %s <<<<<<<<<<<<<<<<", mMediaSource->GetStreamName().c_str());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
