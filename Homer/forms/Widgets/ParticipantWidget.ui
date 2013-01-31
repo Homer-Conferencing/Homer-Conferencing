@@ -519,7 +519,7 @@ background-color: rgb(150, 150, 150);
                 </property>
                 <property name="icon">
                  <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/AV_Backward.png</normaloff>:/images/22_22/AV_Backward.png</iconset>
+                  <normaloff>:/images/22_22/AV_Previous.png</normaloff>:/images/22_22/AV_Previous.png</iconset>
                 </property>
                 <property name="iconSize">
                  <size>
@@ -565,7 +565,7 @@ background-color: rgb(150, 150, 150);
                 </property>
                 <property name="icon">
                  <iconset resource="../../resources/Icons.qrc">
-                  <normaloff>:/images/22_22/AV_Forward.png</normaloff>:/images/22_22/AV_Forward.png</iconset>
+                  <normaloff>:/images/22_22/AV_Next.png</normaloff>:/images/22_22/AV_Next.png</iconset>
                 </property>
                 <property name="iconSize">
                  <size>
