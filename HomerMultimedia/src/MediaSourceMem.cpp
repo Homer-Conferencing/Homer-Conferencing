@@ -237,14 +237,14 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
             {
                 if (tMediaSourceMemInstance->mGrabbingStopped)
                 {
-                    LOGEX(MediaSourceMem, LOG_VERBOSE, "Detected empty signaling fragment, grabber should be stopped, returning zero data");
+                    LOGEX(MediaSourceMem, LOG_ERROR, "Detected empty signaling fragment, grabber should be stopped, returning zero data");
                     return 0;
                 }else if (!tMediaSourceMemInstance->mDecoderThreadNeeded)
                 {
-                    LOGEX(MediaSourceMem, LOG_VERBOSE, "Detected empty signaling fragment, decoder should be stopped, returning zero data");
+                    LOGEX(MediaSourceMem, LOG_ERROR, "Detected empty signaling fragment, decoder should be stopped, returning zero data");
                     return 0;
                 }else
-                    LOGEX(MediaSourceMem, LOG_VERBOSE, "Detected empty signaling fragment, ignoring it");
+                    LOGEX(MediaSourceMem, LOG_ERROR, "Detected empty signaling fragment, ignoring it");
             }
         }while(!tLastFragment);
     }else
@@ -592,10 +592,13 @@ void MediaSourceMem::DoSetVideoGrabResolution(int pResX, int pResY)
             mMediaType = MEDIA_VIDEO;
         }
 
-        LOG(LOG_VERBOSE, "Stopping decoder from DoSetVideoGrabResolution()");
-        StopDecoder();
-        LOG(LOG_VERBOSE, "Starting decoder from DoSetVideoGrabResolution()");
-        StartDecoder();
+        if (IsRunning())
+        {
+            LOG(LOG_VERBOSE, "Stopping decoder from DoSetVideoGrabResolution()");
+            StopDecoder();
+            LOG(LOG_VERBOSE, "Starting decoder from DoSetVideoGrabResolution()");
+            StartDecoder();
+        }
     }
     LOG(LOG_VERBOSE, "DoSetVideoGrabResolution() finished");
 }
@@ -1421,6 +1424,8 @@ void* MediaSourceMem::Run(void* pArgs)
 
             // init fifo buffer
             mDecoderAudioSamplesFifo = HM_av_fifo_alloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE * 2);
+            if (mDecoderAudioSamplesFifo == NULL)
+                LOG(LOG_ERROR, "Out of audio memory");
 
             break;
         default:
@@ -1445,7 +1450,7 @@ void* MediaSourceMem::Run(void* pArgs)
 
     LOG(LOG_WARN, "================ Entering main %s decoding loop for %s media source", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
 
-    while(mDecoderThreadNeeded)
+    while ((mDecoderThreadNeeded) && (!mGrabbingStopped))
     {
         #ifdef MSMEM_DEBUG_DECODER_STATE
             LOG(LOG_VERBOSE, "%s-decoder loop", GetMediaTypeStr().c_str());
