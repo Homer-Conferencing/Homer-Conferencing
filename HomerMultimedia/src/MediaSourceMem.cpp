@@ -121,6 +121,11 @@ MediaSourceMem::~MediaSourceMem()
         delete mDecoderFragmentFifo;
         mDecoderFragmentFifo = NULL;
     }
+    if (mDecoderFifo != NULL)
+    {
+        delete mDecoderFifo;
+        mDecoderFifo = NULL;
+    }
     mDecoderFragmentFifoDestructionMutex.unlock();
 	free(mStreamPacketBuffer);
     free(mFragmentBuffer);
@@ -517,8 +522,15 @@ void MediaSourceMem::StopGrabbing()
 {
 	MediaSource::StopGrabbing();
 
-	WriteFragment(NULL, 0, 0);
-	WriteFrameOutputBuffer(NULL, 0, 0);
+    WriteFragment(NULL, 0, 0);
+
+    if (mDecoderFifo != NULL)
+    {// everything is okay
+        WriteFrameOutputBuffer(NULL, 0, 0);
+    }else
+    {// decoder FIFO is invalid
+        //the decoder thread wasn't started yet? - maybe because of input errors during Open(Video/Audio)GrabDevice
+    }
 
     LOG(LOG_VERBOSE, "Memory based %s source successfully stopped", GetMediaTypeStr().c_str());
 }
@@ -1361,6 +1373,18 @@ void* MediaSourceMem::Run(void* pArgs)
     tInputIsPicture = InputIsPicture();
 
     LOG(LOG_WARN, ">>>>>>>>>>>>>>>> %s-Decoding thread for %s media source started", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
+
+    if (mDecoderFifo != NULL)
+    {
+        LOG(LOG_VERBOSE, "Releasing old %s decoder FIFO", GetMediaTypeStr().c_str());
+
+        // make sure the grabber isn't active at the moment
+        delete mDecoderFifo;
+        mDecoderFifo = NULL;
+
+        LOG(LOG_VERBOSE, "%s decoder FIFO released", GetMediaTypeStr().c_str());
+    }
+
     switch(mMediaType)
     {
         case MEDIA_VIDEO:
@@ -2075,9 +2099,6 @@ void* MediaSourceMem::Run(void* pArgs)
     }
 
     free(tChunkBuffer);
-
-    delete mDecoderFifo;
-    mDecoderFifo = NULL;
 
     LOG(LOG_WARN, "%s decoder main loop finished for %s media source <<<<<<<<<<<<<<<<", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
 
