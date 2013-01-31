@@ -521,11 +521,21 @@ void MediaSourceGrabberThread::StopGrabber()
 {
     LOG(LOG_VERBOSE, "Stopping %s-Grabber now...", mMediaSource->GetMediaTypeStr().c_str());
     mWorkerNeeded = false;
-    LOG(LOG_VERBOSE, "...setting %s grabbing-condition", mMediaSource->GetMediaTypeStr().c_str());
-    mGrabbingCondition.wakeAll();
-    LOG(LOG_VERBOSE, "...stopping %s source grabbing", mMediaSource->GetMediaTypeStr().c_str());
-    mMediaSource->StopGrabbing();
-    LOG(LOG_VERBOSE, "...%s-Grabber stopped", mMediaSource->GetMediaTypeStr().c_str());
+
+    int tSignalingRound = 0;
+    while(isRunning())
+    {
+        if (tSignalingRound > 0)
+            LOG(LOG_WARN, "Signaling attempt %d to stop  %s-Grabber...", tSignalingRound, mMediaSource->GetMediaTypeStr().c_str());
+        tSignalingRound++;
+
+        LOG(LOG_VERBOSE, "...setting %s grabbing-condition", mMediaSource->GetMediaTypeStr().c_str());
+        mGrabbingCondition.wakeAll();
+        LOG(LOG_VERBOSE, "...stopping %s source grabbing", mMediaSource->GetMediaTypeStr().c_str());
+        mMediaSource->StopGrabbing();
+        LOG(LOG_VERBOSE, "...%s-Grabber stopped", mMediaSource->GetMediaTypeStr().c_str());
+        QThread::usleep(25 * 1000);
+    }
 }
 
 void MediaSourceGrabberThread::CalculateFrameRate(float *pFrameRate)
