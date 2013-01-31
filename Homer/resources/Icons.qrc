@@ -47,16 +47,18 @@
     <file>images/32_32/ArrowUp.png</file>
     <file>images/46_46/BoxOpen.png</file>
     <file>images/46_46/Hardware.png</file>
-    <file>images/22_22/Audio_Back.png</file>
     <file>images/22_22/ArrowDown.png</file>
     <file>images/22_22/ArrowRight.png</file>
-    <file>images/22_22/Audio_Forward.png</file>
-    <file>images/22_22/Audio_Pause.png</file>
-    <file>images/22_22/Audio_Paused.png</file>
-    <file>images/22_22/Audio_Play.png</file>
-    <file>images/22_22/Audio_Record.png</file>
-    <file>images/22_22/Audio_Record_active.png</file>
-    <file>images/22_22/Audio_Stop.png</file>
+    <file>images/22_22/AV_Backward.png</file>
+    <file>images/22_22/AV_Forward.png</file>
+    <file>images/22_22/AV_Previous.png</file>
+    <file>images/22_22/AV_Next.png</file>
+    <file>images/22_22/AV_Pause.png</file>
+    <file>images/22_22/AV_Paused.png</file>
+    <file>images/22_22/AV_Play.png</file>
+    <file>images/22_22/AV_Record.png</file>
+    <file>images/22_22/AV_Recording_active.png</file>
+    <file>images/22_22/AV_Stop.png</file>
     <file>images/22_22/BoxOpen.png</file>
     <file>images/22_22/Camera.png</file>
     <file>images/22_22/Checked.png</file>

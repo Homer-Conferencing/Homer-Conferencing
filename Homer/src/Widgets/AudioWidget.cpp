@@ -241,9 +241,9 @@ void AudioWidget::InitializeMenuAudioSettings(QMenu *pMenu)
     {
         QIcon tIcon5;
         if (mRecorderStarted)
-            tAction = pMenu->addAction(QPixmap(":/images/22_22/Audio_Stop.png"), Homer::Gui::AudioWidget::tr("Stop recording"));
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/AV_Stop.png"), Homer::Gui::AudioWidget::tr("Stop recording"));
         else
-            tAction = pMenu->addAction(QPixmap(":/images/22_22/Audio_Record.png"), Homer::Gui::AudioWidget::tr("Start recording"));
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/AV_Record.png"), Homer::Gui::AudioWidget::tr("Start recording"));
     }
 
     pMenu->addSeparator();
@@ -270,7 +270,7 @@ void AudioWidget::InitializeMenuAudioSettings(QMenu *pMenu)
         QAction *tStreamAction;
         for (tIt = tInputStreams.begin(); tIt != tInputStreams.end(); tIt++)
         {
-            tStreamAction = tStreamMenu->addAction(QPixmap(":/images/22_22/Audio_Play.png"), QString(tIt->c_str()));
+            tStreamAction = tStreamMenu->addAction(QPixmap(":/images/22_22/AV_Play.png"), QString(tIt->c_str()));
             tStreamAction->setCheckable(true);
             if ((*tIt) == tCurrentStream)
                 tStreamAction->setChecked(true);
@@ -325,7 +325,7 @@ void AudioWidget::InitializeMenuAudioSettings(QMenu *pMenu)
         //###############################################################################
         QIcon tIcon10;
         if (mAudioPaused)
-            tAction = pMenu->addAction(QPixmap(":/images/22_22/Audio_Play.png"), Homer::Gui::AudioWidget::tr("Continue stream"));
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/AV_Play.png"), Homer::Gui::AudioWidget::tr("Continue stream"));
         else
             tAction = pMenu->addAction(QPixmap(":/images/22_22/Exit.png"), Homer::Gui::AudioWidget::tr("Drop stream"));
     }
@@ -685,11 +685,11 @@ void AudioWidget::ShowSample(void* pBuffer, int pSampleSize)
     {
         if (tMSecs % 500 < 250)
         {
-            QPixmap tPixmap = QPixmap(":/images/22_22/Audio_Record_active.png");
+            QPixmap tPixmap = QPixmap(":/images/22_22/AV_Record_active.png");
             mLbRecording->setPixmap(tPixmap);
         }else
         {
-            QPixmap tPixmap = QPixmap(":/images/22_22/Audio_Record.png");
+            QPixmap tPixmap = QPixmap(":/images/22_22/AV_Record.png");
             mLbRecording->setPixmap(tPixmap);
         }
     }

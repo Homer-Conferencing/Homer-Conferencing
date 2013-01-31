@@ -1738,9 +1738,9 @@ void ParticipantWidget::ActionPlayPauseMovieFile(QString pFileName)
         mAudioWidget->GetWorker()->PlayFile(pFileName);
         if (mPlayPauseButtonIsPaused != 1)
         {
-            mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Pause.png"));
+            mTbPlayPause->setIcon(QPixmap(":/images/22_22/AV_Pause.png"));
             if (mFullscreeMovieControlWidget != NULL)
-                mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Pause.png"));
+                mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/AV_Pause.png"));
             mPlayPauseButtonIsPaused = 1;
          }
     }else
@@ -1750,9 +1750,9 @@ void ParticipantWidget::ActionPlayPauseMovieFile(QString pFileName)
         mAudioWidget->GetWorker()->PauseFile();
         if (mPlayPauseButtonIsPaused != 0)
         {
-            mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Play.png"));
+            mTbPlayPause->setIcon(QPixmap(":/images/22_22/AV_Play.png"));
             if (mFullscreeMovieControlWidget != NULL)
-                mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Play.png"));
+                mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/AV_Play.png"));
             mPlayPauseButtonIsPaused = 0;
         }
     }
@@ -1827,17 +1827,13 @@ void ParticipantWidget::SeekMovieFileRelative(float pSeconds)
     LOG(LOG_VERBOSE, "Seeking relative %.2f seconds to position %.2f", pSeconds, tTargetPos);
 
     mVideoWidget->GetWorker()->Seek(tTargetPos);
+    mAudioWidget->GetWorker()->Seek(tTargetPos);
     #ifdef PARTICIPANT_WIDGET_AV_SYNC
         if (PlayingMovieFile())
         {// synch. audio to video
             // force an AV sync
             mTimeOfLastAVSynch = 0;
-        }else
-        {// explicit seeking in audio file
-            mAudioWidget->GetWorker()->Seek(tTargetPos);
         }
-    #else
-        mAudioWidget->GetWorker()->Seek(tTargetPos);
     #endif
 }
 
@@ -1893,17 +1889,13 @@ void ParticipantWidget::AVSeek(int pPos)
         tPos = (double)mAudioWidget->GetWorker()->GetSeekEnd() * pPos / 1000;
 
     mVideoWidget->GetWorker()->Seek(tPos);
+    mAudioWidget->GetWorker()->Seek(tPos);
     #ifdef PARTICIPANT_WIDGET_AV_SYNC
         if (PlayingMovieFile())
         {// synch. audio to video
             // force an AV sync
             mTimeOfLastAVSynch = 0;
-        }else
-        {// explicit seeking in audio file
-            mAudioWidget->GetWorker()->Seek(tPos);
         }
-    #else
-        mAudioWidget->GetWorker()->Seek(tPos);
     #endif
 }
 
@@ -1917,9 +1909,9 @@ void ParticipantWidget::CreateFullscreenControls()
             mFullscreeMovieControlWidget->resize(mVideoWidget->width(), 58);
             mFullscreeMovieControlWidget->move(mVideoWidget->pos().x(), mVideoWidget->height() - 58);
             if (mVideoWidget->GetWorker()->IsPaused() || mAudioWidget->GetWorker()->IsPaused())
-				mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Play.png"));
+				mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/AV_Play.png"));
             else
-				mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Pause.png"));
+				mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/AV_Pause.png"));
             connect(mFullscreeMovieControlWidget->mTbPlayPause, SIGNAL(clicked()), this, SLOT(ActionPlayPauseMovieFile()));
             connect(mFullscreeMovieControlWidget->mSlMovie, SIGNAL(sliderMoved(int)), this, SLOT(ActionSeekMovieFile(int)));
             connect(mFullscreeMovieControlWidget->mSlMovie, SIGNAL(valueChanged(int)), this, SLOT(ActionSeekMovieFileToPos(int)));
@@ -2079,18 +2071,18 @@ void ParticipantWidget::UpdateMovieControls()
         {
             if (mPlayPauseButtonIsPaused != 0)
             {
-                mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Play.png"));
+                mTbPlayPause->setIcon(QPixmap(":/images/22_22/AV_Play.png"));
                 if (mFullscreeMovieControlWidget != NULL)
-                    mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Play.png"));
+                    mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/AV_Play.png"));
                 mPlayPauseButtonIsPaused = 0;
             }
         }else
         {
             if (mPlayPauseButtonIsPaused != 1)
             {
-                mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Pause.png"));
+                mTbPlayPause->setIcon(QPixmap(":/images/22_22/AV_Pause.png"));
                 if (mFullscreeMovieControlWidget != NULL)
-                    mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Pause.png"));
+                    mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/AV_Pause.png"));
                 mPlayPauseButtonIsPaused = 1;
             }
         }

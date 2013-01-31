@@ -92,7 +92,7 @@ StreamingControlWidget::StreamingControlWidget(MainWindow *pMainWindow, QMenu *p
     /* A/V preview */
     if (pMenu != NULL)
     {
-    	mAssignedActionAVPreview = pMenu->addAction(QPixmap(":/images/22_22/Audio_Play.png"), Homer::Gui::StreamingControlWidget::tr("Preview"));
+    	mAssignedActionAVPreview = pMenu->addAction(QPixmap(":/images/22_22/AV_Play.png"), Homer::Gui::StreamingControlWidget::tr("Preview"));
     	mAssignedActionAVPreview->setShortcut(QKeySequence("Alt+W"));
     	mAssignedActionAVPreview->setShortcutContext(Qt::ApplicationShortcut);
         pMainWindow->addAction(mAssignedActionAVPreview); // this action will also be available even if the main menu is hidden

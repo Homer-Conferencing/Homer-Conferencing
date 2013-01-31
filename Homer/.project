@@ -8,7 +8,6 @@
 		<project>HomerMonitor</project>
 		<project>HomerMultimedia</project>
 		<project>HomerNAPI</project>
-		<project>HomerSoundOutput</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

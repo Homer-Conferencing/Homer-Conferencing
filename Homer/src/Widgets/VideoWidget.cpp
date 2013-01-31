@@ -325,9 +325,9 @@ void VideoWidget::InitializeMenuVideoSettings(QMenu *pMenu)
     {
         QIcon tIcon5;
         if (mVideoSource->IsRecording())
-            tAction = pMenu->addAction(QPixmap(":/images/22_22/Audio_Stop.png"), Homer::Gui::VideoWidget::tr("Stop recording"));
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/AV_Stop.png"), Homer::Gui::VideoWidget::tr("Stop recording"));
         else
-            tAction = pMenu->addAction(QPixmap(":/images/22_22/Audio_Record.png"), Homer::Gui::VideoWidget::tr("Start recording"));
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/AV_Record.png"), Homer::Gui::VideoWidget::tr("Start recording"));
     }
 
     pMenu->addSeparator();
@@ -493,7 +493,7 @@ void VideoWidget::InitializeMenuVideoSettings(QMenu *pMenu)
         //###############################################################################
         QIcon tIcon10;
         if (mVideoPaused)
-            tAction = pMenu->addAction(QPixmap(":/images/22_22/Audio_Play.png"), Homer::Gui::VideoWidget::tr("Continue stream"));
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/AV_Play.png"), Homer::Gui::VideoWidget::tr("Continue stream"));
         else
             tAction = pMenu->addAction(QPixmap(":/images/22_22/Exit.png"), Homer::Gui::VideoWidget::tr("Drop stream"));
     }
@@ -982,11 +982,11 @@ void VideoWidget::ShowFrame(void* pBuffer)
     {
         if (tMSecs % 500 < 250)
         {
-            QPixmap tPixmap = QPixmap(":/images/22_22/Audio_Record_active.png");
+            QPixmap tPixmap = QPixmap(":/images/22_22/AV_Record_active.png");
             tPainter->drawPixmap(10, 10, tPixmap);
         }else
         {
-            QPixmap tPixmap = QPixmap(":/images/22_22/Audio_Record.png");
+            QPixmap tPixmap = QPixmap(":/images/22_22/AV_Record.png");
             tPainter->drawPixmap(10, 10, tPixmap);
         }
     }
@@ -996,7 +996,7 @@ void VideoWidget::ShowFrame(void* pBuffer)
     //#############################################################
     if ((mVideoPaused) and (tMSecs % 500 < 250))
     {
-        QPixmap tPixmap = QPixmap(":/images/22_22/Audio_Paused.png");
+        QPixmap tPixmap = QPixmap(":/images/22_22/AV_Paused.png");
         tPainter->drawPixmap(30, 10, tPixmap);
     }
 

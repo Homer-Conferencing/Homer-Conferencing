@@ -3299,7 +3299,7 @@ background-color: rgb(150, 150, 150);
                     </property>
                     <property name="icon">
                      <iconset resource="../../resources/Icons.qrc">
-                      <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
+                      <normaloff>:/images/22_22/AV_Play.png</normaloff>:/images/22_22/AV_Play.png</iconset>
                     </property>
                     <property name="iconSize">
                      <size>
@@ -3510,7 +3510,7 @@ background-color: rgb(150, 150, 150);
                     </property>
                     <property name="icon">
                      <iconset resource="../../resources/Icons.qrc">
-                      <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
+                      <normaloff>:/images/22_22/AV_Play.png</normaloff>:/images/22_22/AV_Play.png</iconset>
                     </property>
                     <property name="iconSize">
                      <size>
@@ -3748,7 +3748,7 @@ background-color: rgb(150, 150, 150);
                     </property>
                     <property name="icon">
                      <iconset resource="../../resources/Icons.qrc">
-                      <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
+                      <normaloff>:/images/22_22/AV_Play.png</normaloff>:/images/22_22/AV_Play.png</iconset>
                     </property>
                     <property name="iconSize">
                      <size>
@@ -3983,7 +3983,7 @@ background-color: rgb(150, 150, 150);
                     </property>
                     <property name="icon">
                      <iconset resource="../../resources/Icons.qrc">
-                      <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
+                      <normaloff>:/images/22_22/AV_Play.png</normaloff>:/images/22_22/AV_Play.png</iconset>
                     </property>
                     <property name="iconSize">
                      <size>
@@ -4191,7 +4191,7 @@ background-color: rgb(150, 150, 150);
                     </property>
                     <property name="icon">
                      <iconset resource="../../resources/Icons.qrc">
-                      <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
+                      <normaloff>:/images/22_22/AV_Play.png</normaloff>:/images/22_22/AV_Play.png</iconset>
                     </property>
                     <property name="iconSize">
                      <size>
@@ -4399,7 +4399,7 @@ background-color: rgb(150, 150, 150);
                     </property>
                     <property name="icon">
                      <iconset resource="../../resources/Icons.qrc">
-                      <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
+                      <normaloff>:/images/22_22/AV_Play.png</normaloff>:/images/22_22/AV_Play.png</iconset>
                     </property>
                     <property name="iconSize">
                      <size>
@@ -4607,7 +4607,7 @@ background-color: rgb(150, 150, 150);
                     </property>
                     <property name="icon">
                      <iconset resource="../../resources/Icons.qrc">
-                      <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
+                      <normaloff>:/images/22_22/AV_Play.png</normaloff>:/images/22_22/AV_Play.png</iconset>
                     </property>
                     <property name="iconSize">
                      <size>
@@ -4842,7 +4842,7 @@ background-color: rgb(150, 150, 150);
                     </property>
                     <property name="icon">
                      <iconset resource="../../resources/Icons.qrc">
-                      <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
+                      <normaloff>:/images/22_22/AV_Play.png</normaloff>:/images/22_22/AV_Play.png</iconset>
                     </property>
                     <property name="iconSize">
                      <size>
@@ -5050,7 +5050,7 @@ background-color: rgb(150, 150, 150);
                     </property>
                     <property name="icon">
                      <iconset resource="../../resources/Icons.qrc">
-                      <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
+                      <normaloff>:/images/22_22/AV_Play.png</normaloff>:/images/22_22/AV_Play.png</iconset>
                     </property>
                     <property name="iconSize">
                      <size>
@@ -5285,7 +5285,7 @@ background-color: rgb(150, 150, 150);
                     </property>
                     <property name="icon">
                      <iconset resource="../../resources/Icons.qrc">
-                      <normaloff>:/images/22_22/Audio_Play.png</normaloff>:/images/22_22/Audio_Play.png</iconset>
+                      <normaloff>:/images/22_22/AV_Play.png</normaloff>:/images/22_22/AV_Play.png</iconset>
                     </property>
                     <property name="iconSize">
                      <size>

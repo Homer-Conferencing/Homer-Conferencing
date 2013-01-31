@@ -147,7 +147,7 @@ border-radius: 6px;
       <string/>
      </property>
      <property name="pixmap">
-      <pixmap resource="../../resources/Icons.qrc">:/images/22_22/Audio_Record_active.png</pixmap>
+      <pixmap resource="../../resources/Icons.qrc">:/images/22_22/AV_Recording_active.png</pixmap>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
