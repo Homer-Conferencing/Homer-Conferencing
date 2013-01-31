@@ -82,6 +82,8 @@ bool Mutex::lock(int pTimeout)
             LOG(LOG_ERROR, "Recursive locking of mutex \"%s\" in thread %d detected", mName.c_str(), tThreadId);
         else
             LOG(LOG_ERROR, "Recursive locking in thread %d detected", tThreadId);
+        LOG(LOG_ERROR, "Program execution will end now..");
+        exit(1);
     }
 
     mOwnerThreadId = tThreadId;
