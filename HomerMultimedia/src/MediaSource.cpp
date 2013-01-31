@@ -3173,13 +3173,13 @@ bool MediaSource::FfmpegOpenInput(string pSource, int pLine, const char *pInputN
 		return false;
 	}
 
-    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Setting device (name) to %s", pInputName);
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Setting %s device (name) to %s", GetMediaTypeStr().c_str(), pInputName);
     mCurrentDevice = pInputName;
     mCurrentDeviceName = pInputName;
 
     if (mGrabbingStopped)
     {
-        LOG(LOG_WARN, "Grabbing was stopped, returning immediately");
+        LOG(LOG_WARN, "%s-Grabbing was stopped during avformat_open_input(), returning immediately", GetMediaTypeStr().c_str());
         return false;
     }
 
@@ -3234,7 +3234,7 @@ bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
         if (!mGrabbingStopped)
         	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't find %s stream information because of \"%s\"(%d)", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)), tRes);
         else
-            LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Grabbing was stopped");
+            LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Grabbing was stopped during avformat_find_stream_info()");
 
         // Close the video stream
         HM_avformat_close_input(mFormatContext);

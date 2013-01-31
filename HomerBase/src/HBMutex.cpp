@@ -67,7 +67,7 @@ Mutex::~Mutex()
 	    tResult = (CloseHandle(mMutex) != 0);
 	#endif
     if (!tResult)
-		LOG(LOG_ERROR, "Destruction of mutex in thread %d failed", Thread::GetTId());
+		LOG(LOG_ERROR, "Destruction of mutex %s in thread %d failed", mName.c_str(), Thread::GetTId());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

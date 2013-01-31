@@ -27,6 +27,7 @@
 
 #include <Logger.h>
 #include <HBCondition.h>
+#include <HBThread.h>
 
 #ifdef APPLE
 // to get current time stamp
@@ -64,7 +65,7 @@ Condition::~Condition()
 	    tResult = (CloseHandle(mCondition) != 0);
 	#endif
     if (!tResult)
-		LOG(LOG_ERROR, "Destruction of condition failed");
+        LOG(LOG_ERROR, "Destruction of condition in thread %d failed", Thread::GetTId());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
