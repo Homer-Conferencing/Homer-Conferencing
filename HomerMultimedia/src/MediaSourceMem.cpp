@@ -2212,7 +2212,6 @@ bool MediaSourceMem::DecoderFifoFull()
 
     tResult = ((mDecoderFifo == NULL)/* decoder FIFO is invalid */ ||
                (mDecoderFifo->GetUsage() + mDecoderExpectedMaxOutputPerInputFrame > mDecoderFifo->GetSize() - 1 /* check the usage, one slot for a 0 byte signaling chunk*/));
-    //HINT: meta data FIFO has always the same size like the data FIFO => we don't have to check the usage of meta data FIFO
 
     return tResult;
 }
