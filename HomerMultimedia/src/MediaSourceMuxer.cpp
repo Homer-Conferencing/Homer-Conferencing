@@ -1326,8 +1326,9 @@ void MediaSourceMuxer::ResetEncoderBuffers()
 
     if ((mMediaType == MEDIA_AUDIO) && (mSampleFifo != NULL) && (av_fifo_size(mSampleFifo) > 0))
     {
-        LOG(LOG_VERBOSE, "Reseting %s decoder internal buffers resample FIFO after seeking in input stream", GetMediaTypeStr().c_str());
-        av_fifo_drain(mSampleFifo, av_fifo_size(mSampleFifo));
+//TODO: fix crashes here
+//        LOG(LOG_VERBOSE, "Reseting %s decoder internal buffers resample FIFO after seeking in input stream", GetMediaTypeStr().c_str());
+//        av_fifo_drain(mSampleFifo, av_fifo_size(mSampleFifo));
     }
 
     // reset buffer counter
