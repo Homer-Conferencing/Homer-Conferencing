@@ -172,12 +172,12 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
 //                    LOG(LOG_VERBOSE, "stream data (%2u): RTP+12 %02hx(%3d)  RTP %02hx(%3d)", i, tFragmentData[i + 12] & 0xFF, tFragmentData[i + 12] & 0xFF, tFragmentData[i] & 0xFF, tFragmentData[i] & 0xFF);
             if (tMediaSourceMemInstance->mGrabbingStopped)
             {
-                LOGEX(MediaSourceMem, LOG_VERBOSE, "%s-Grabbing was stopped", tMediaSourceMemInstance->GetMediaTypeStr().c_str());
+                LOGEX(MediaSourceMem, LOG_WARN, "%s-Grabbing was stopped", tMediaSourceMemInstance->GetMediaTypeStr().c_str());
                 return AVERROR(ENODEV); //force negative resulting buffer size to signal error and force a return to the calling GUI!
             }
             if (tFragmentBufferSize < 0)
             {
-                LOGEX(MediaSourceMem, LOG_VERBOSE, "Received invalid fragment");
+                LOGEX(MediaSourceMem, LOG_ERROR, "Received invalid fragment");
                 return 0;
             }
             if (tFragmentBufferSize > 0)
@@ -230,7 +230,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
                     {// we have a received an unsupported RTCP packet/RTP payload or something went completely wrong
                         if (tMediaSourceMemInstance->HasInputStreamChanged())
                         {// we have to reset the source
-                            LOGEX(MediaSourceMem, LOG_VERBOSE, "Detected source change at remote side, signaling EOF and returning immediately");
+                            LOGEX(MediaSourceMem, LOG_WARN, "Detected source change at remote side, signaling EOF and returning immediately");
                             return AVERROR(ENODEV);
                         }else
                         {// something went wrong
@@ -242,14 +242,14 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
             {
                 if (tMediaSourceMemInstance->mGrabbingStopped)
                 {
-                    LOGEX(MediaSourceMem, LOG_ERROR, "Detected empty signaling fragment, grabber should be stopped, returning zero data");
+                    LOGEX(MediaSourceMem, LOG_WARN, "Detected empty signaling fragment, grabber should be stopped, returning zero data");
                     return 0;
                 }else if (!tMediaSourceMemInstance->mDecoderThreadNeeded)
                 {
-                    LOGEX(MediaSourceMem, LOG_ERROR, "Detected empty signaling fragment, decoder should be stopped, returning zero data");
+                    LOGEX(MediaSourceMem, LOG_WARN, "Detected empty signaling fragment, decoder should be stopped, returning zero data");
                     return 0;
                 }else
-                    LOGEX(MediaSourceMem, LOG_ERROR, "Detected empty signaling fragment, ignoring it");
+                    LOGEX(MediaSourceMem, LOG_WARN, "Detected empty signaling fragment, ignoring it");
             }
         }while(!tLastFragment);
     }else
@@ -257,7 +257,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
         tMediaSourceMemInstance->ReadFragment(tBuffer, tBufferSize, tFragmentNumber);
         if (tMediaSourceMemInstance->mGrabbingStopped)
         {
-            LOGEX(MediaSourceMem, LOG_VERBOSE, "%s-Grabbing was stopped", tMediaSourceMemInstance->GetMediaTypeStr().c_str());
+            LOGEX(MediaSourceMem, LOG_WARN, "%s-Grabbing was stopped", tMediaSourceMemInstance->GetMediaTypeStr().c_str());
             return AVERROR(ENODEV); //force negative resulting buffer size to signal error and force a return to the calling GUI!
         }
 
@@ -1470,7 +1470,7 @@ void* MediaSourceMem::Run(void* pArgs)
 
     CalculateExpectedOutputPerInputFrame();
 
-    // trigger a avcodec_flush_buffers()
+    // trigger an avcodec_flush_buffers()
     ResetDecoderBuffers();
 
     LOG(LOG_WARN, "================ Entering main %s decoding loop for %s media source", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
