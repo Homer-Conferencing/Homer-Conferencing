@@ -179,9 +179,9 @@ bool MediaSourceMuxer::SupportsRelaying()
     return true;
 }
 
-int MediaSourceMuxer::GetRelayFrameDelay()
+int MediaSourceMuxer::GetEncoderBufferedFrames()
 {
-	return mEncoderOutputFrameDelay;
+	return mEncoderBufferedFrames;
 }
 
 MediaSource* MediaSourceMuxer::GetMediaSource()
@@ -1331,7 +1331,7 @@ void MediaSourceMuxer::ResetEncoderBuffers()
     }
 
     // reset buffer counter
-    mEncoderOutputFrameDelay = 0;
+    mEncoderBufferedFrames = 0;
 
     mEncoderSeekMutex.unlock();
 }
@@ -1513,7 +1513,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                     if (tFrameFinished == 1)
                                     {
                                 	// compensate frame delay, which is caused by video encoder, and derive a correct PTS value for output packets
-                                	int tOutputPacketPts = CalculateEncoderPts(mFrameNumber - mEncoderOutputFrameDelay);
+                                	int tOutputPacketPts = CalculateEncoderPts(mFrameNumber);
 
                                     av_init_packet(tPacket);
 
@@ -1535,7 +1535,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                         LOG(LOG_VERBOSE, "Sending video packet: %5d to %2d sink(s):", mFrameNumber, mMediaSinks.size());
                                         LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
                                         LOG(LOG_VERBOSE, "      ..flags: %d", tPacket->flags);
-                                        LOG(LOG_VERBOSE, "      ..pts: %"PRId64" (%d frames delay)", tPacket->pts, mEncoderOutputFrameDelay);
+                                        LOG(LOG_VERBOSE, "      ..pts: %"PRId64" (delay: %d / %d)", tPacket->pts, mEncoderBufferedFrames, mFormatContext->max_delay);
                                         LOG(LOG_VERBOSE, "      ..dts: %"PRId64"", tPacket->dts);
 //                                        LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
 //                                        LOG(LOG_VERBOSE, "      ..pos: %"PRId64"", tPacket->pos);
@@ -1567,7 +1567,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                     }else
                                     {
                                         LOG(LOG_VERBOSE, "Video frame was buffered in encoder");
-                                        mEncoderOutputFrameDelay++;
+                                        mEncoderBufferedFrames++;
                                     }
                                 }
 #if 0
@@ -1689,7 +1689,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
 			                                    }else
 			                                    {
 			                                        LOG(LOG_VERBOSE, "Audio frame was buffered in encoder");
-			                                        mEncoderOutputFrameDelay++;
+			                                        mEncoderBufferedFrames++;
 			                                    }
 											}
 										}else

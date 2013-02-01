@@ -1635,7 +1635,7 @@ bool MediaSource::SupportsRelaying()
     return false;
 }
 
-int MediaSource::GetRelayFrameDelay()
+int MediaSource::GetEncoderBufferedFrames()
 {
 	return 0;
 }
