@@ -1670,7 +1670,6 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     AVCodec             *tCodec;
     AVDictionary        *tOptions = NULL;
     CodecID             tSaveFileCodec = CODEC_ID_NONE;
-    int                 tMediaStreamIndex = 0; // we always use stream number 0
 
     LOG(LOG_VERBOSE, "Going to open recorder, media type is \"%s\"", GetMediaTypeStr().c_str());
 
@@ -1755,7 +1754,6 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     // allocate new stream structure
     LOG(LOG_VERBOSE, "..allocating new recorder stream");
     mRecorderEncoderStream = HM_avformat_new_stream(mRecorderFormatContext, 0);
-    mRecorderEncoderStream = mRecorderFormatContext->streams[0];
     mRecorderCodecContext = mRecorderEncoderStream->codec;
 
     switch(mMediaType)
@@ -1907,12 +1905,8 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     if ((tCodec = avcodec_find_encoder(tSaveFileCodec)) == NULL)
     {
         LOG(LOG_ERROR, "Couldn't find a fitting %s codec", GetMediaTypeStr().c_str());
-        // free codec and stream 0
-        av_freep(&mRecorderFormatContext->streams[0]->codec);
-        av_freep(&mRecorderFormatContext->streams[0]);
 
-        // Close the format context
-        av_free(mRecorderFormatContext);
+        HM_avformat_close_input(mRecorderFormatContext);
 
         // unlock grabbing
         mGrabMutex.unlock();
@@ -1935,12 +1929,8 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     if ((tResult = HM_avcodec_open(mRecorderCodecContext, tCodec, NULL)) < 0)
     {
         LOG(LOG_ERROR, "Couldn't open %s codec because of \"%s\".", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
-        // free codec and stream 0
-        av_freep(&mRecorderFormatContext->streams[0]->codec);
-        av_freep(&mRecorderFormatContext->streams[0]);
 
-        // Close the format context
-        av_free(mRecorderFormatContext);
+        HM_avformat_close_input(mRecorderFormatContext);
 
         // unlock grabbing
         mGrabMutex.unlock();
@@ -1954,12 +1944,8 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
         if (avio_open(&mRecorderFormatContext->pb, pSaveFileName.c_str(), AVIO_FLAG_WRITE) < 0)
         {
             LOG(LOG_ERROR, "Could not open \"%s\"\n", pSaveFileName.c_str());
-            // free codec and stream 0
-            av_freep(&mRecorderFormatContext->streams[0]->codec);
-            av_freep(&mRecorderFormatContext->streams[0]);
 
-            // Close the format context
-            av_free(mRecorderFormatContext);
+            HM_avformat_close_input(mRecorderFormatContext);
 
             // unlock grabbing
             mGrabMutex.unlock();
@@ -2005,10 +1991,10 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     LOG(LOG_INFO, "    ..codec name: %s", mRecorderCodecContext->codec->name);
     LOG(LOG_INFO, "    ..codec long name: %s", mRecorderCodecContext->codec->long_name);
     LOG(LOG_INFO, "    ..codec flags: 0x%x", mRecorderCodecContext->flags);
-    LOG(LOG_INFO, "    ..codec time_base: %d/%d", mRecorderCodecContext->time_base.den, mRecorderCodecContext->time_base.num); // inverse
-    LOG(LOG_INFO, "    ..stream rfps: %d/%d", mRecorderFormatContext->streams[tMediaStreamIndex]->r_frame_rate.num, mRecorderFormatContext->streams[tMediaStreamIndex]->r_frame_rate.den);
-    LOG(LOG_INFO, "    ..stream time_base: %d/%d", mRecorderFormatContext->streams[tMediaStreamIndex]->time_base.den, mRecorderFormatContext->streams[tMediaStreamIndex]->time_base.num); // inverse
-    LOG(LOG_INFO, "    ..stream codec time_base: %d/%d", mRecorderFormatContext->streams[tMediaStreamIndex]->codec->time_base.den, mRecorderFormatContext->streams[tMediaStreamIndex]->codec->time_base.num); // inverse
+    LOG(LOG_INFO, "    ..codec time_base: %d/%d", mRecorderCodecContext->time_base.den, mRecorderCodecContext->time_base.num);
+    LOG(LOG_INFO, "    ..stream rfps: %d/%d", mRecorderEncoderStream->r_frame_rate.num, mRecorderEncoderStream->r_frame_rate.den);
+    LOG(LOG_INFO, "    ..stream time_base: %d/%d", mRecorderEncoderStream->time_base.den, mRecorderEncoderStream->time_base.num);
+    LOG(LOG_INFO, "    ..stream codec time_base: %d/%d", mRecorderEncoderStream->codec->time_base.den, mRecorderEncoderStream->codec->time_base.num);
     LOG(LOG_INFO, "    ..bit rate: %d", mRecorderCodecContext->bit_rate);
     LOG(LOG_INFO, "    ..desired device: %s", mDesiredDevice.c_str());
     LOG(LOG_INFO, "    ..current device: %s", mCurrentDevice.c_str());
@@ -2019,7 +2005,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     LOG(LOG_INFO, "    ..MT method: %d", mRecorderCodecContext->thread_type);
     LOG(LOG_INFO, "    ..frame size: %d", mRecorderCodecContext->frame_size);
     LOG(LOG_INFO, "    ..duration: %.2f frames", mNumberOfFrames);
-    LOG(LOG_INFO, "    ..stream context duration: %"PRId64" frames, %.0f seconds, format context duration: %"PRId64", nr. of frames: %"PRId64"", mRecorderFormatContext->streams[tMediaStreamIndex]->duration, (float)mRecorderFormatContext->streams[tMediaStreamIndex]->duration / mInputFrameRate, mRecorderFormatContext->duration, mRecorderFormatContext->streams[tMediaStreamIndex]->nb_frames);
+    LOG(LOG_INFO, "    ..stream context duration: %"PRId64" frames, %.0f seconds, format context duration: %"PRId64", nr. of frames: %"PRId64"", mRecorderEncoderStream->duration, (float)mRecorderEncoderStream->duration / mInputFrameRate, mRecorderFormatContext->duration, mRecorderEncoderStream->nb_frames);
     switch(mMediaType)
     {
         case MEDIA_VIDEO:
@@ -3352,7 +3338,6 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 		    }
 
 		    mOutputFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num / mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den;
-//TODO		    mInputFrameRate = mOutputFrameRate;
 
 		    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected video resolution: %d*%d", mSourceResX, mSourceResY);
 		    break;
@@ -3364,7 +3349,6 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 			mInputAudioChannels = mCodecContext->channels;
 			mInputAudioFormat = mCodecContext->sample_fmt;
 			mOutputFrameRate = (float)mOutputAudioSampleRate /* 44100 samples per second */ / MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 samples per frame */;
-//TODO		    mInputFrameRate = (float)mInputAudioSampleRate /* samples per second */ / mCodecContext->frame_size /* samples per frame */;
 
 		    break;
 
@@ -3467,7 +3451,10 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     if ((tRes = HM_avcodec_open(mCodecContext, tCodec, &tOptions)) < 0)
     {
     	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't open video codec because of \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
-        return false;
+
+    	HM_avformat_close_input(mFormatContext);
+
+    	return false;
     }
 
     if (tCodec->capabilities & CODEC_CAP_DELAY)
