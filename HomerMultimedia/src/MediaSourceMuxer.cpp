@@ -73,7 +73,6 @@ MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
     mStreamMaxFps = 0;
     mVideoHFlip = false;
     mVideoVFlip = false;
-    mEncoderFlushBuffersAfterSeeking = false;
     mMediaSource = pMediaSource;
     if (mMediaSource != NULL)
     	mMediaSources.push_back(mMediaSource);
@@ -1312,6 +1311,31 @@ void MediaSourceMuxer::StopEncoder()
     LOG(LOG_VERBOSE, "%s encoder stopped", GetMediaTypeStr().c_str());
 }
 
+void MediaSourceMuxer::ResetEncoderBuffers()
+{
+    mEncoderSeekMutex.lock();
+
+    // flush ffmpeg internal buffers
+    LOG(LOG_WARN, "Reseting %s encoder internal buffers after seeking in input stream", GetMediaTypeStr().c_str());
+    avcodec_flush_buffers(mCodecContext);
+
+    // reset the library internal frame FIFO
+    LOG(LOG_VERBOSE, "Reseting %s encoder internal FIFO after seeking in input stream", GetMediaTypeStr().c_str());
+    if (mEncoderFifo != NULL)
+        mEncoderFifo->ClearFifo();
+
+    if ((mMediaType == MEDIA_AUDIO) && (mSampleFifo != NULL) && (av_fifo_size(mSampleFifo) > 0))
+    {
+        LOG(LOG_VERBOSE, "Reseting %s decoder internal buffers resample FIFO after seeking in input stream", GetMediaTypeStr().c_str());
+        av_fifo_drain(mSampleFifo, av_fifo_size(mSampleFifo));
+    }
+
+    // reset buffer counter
+    mEncoderOutputFrameDelay = 0;
+
+    mEncoderSeekMutex.unlock();
+}
+
 void* MediaSourceMuxer::Run(void* pArgs)
 {
     char                *tBuffer;
@@ -1397,8 +1421,8 @@ void* MediaSourceMuxer::Run(void* pArgs)
     // set marker to "active"
     mEncoderThreadNeeded = true;
 
-    // flush ffmpeg internal buffers
-    mEncoderFlushBuffersAfterSeeking = true;
+    // trigger an avcodec_flush_buffers()
+    ResetEncoderBuffers();
 
     while(mEncoderThreadNeeded)
     {
@@ -1408,29 +1432,11 @@ void* MediaSourceMuxer::Run(void* pArgs)
         if (mEncoderFifo != NULL)
         {
             //####################################################################
-            //### flush encoder buffer
-            //###################################################################
-            if (mEncoderFlushBuffersAfterSeeking)
-            {
-                // flush ffmpeg internal buffers
-                LOG(LOG_VERBOSE, "Flushing %s encoder internal buffers after seeking in input stream", GetMediaTypeStr().c_str());
-                avcodec_flush_buffers(mCodecContext);
-
-                // reset the library internal frame FIFO
-                LOG(LOG_VERBOSE, "Flushing %s encoder internal FIFO after seeking in input stream", GetMediaTypeStr().c_str());
-                mEncoderFifo->ClearFifo();
-
-                // reset flag
-                mEncoderFlushBuffersAfterSeeking = false;
-
-                // reset buffer counter
-                mEncoderOutputFrameDelay = 0;
-            }
-
-            //####################################################################
             //### get next frame data
             //###################################################################
             tFifoEntry = mEncoderFifo->ReadFifoExclusive(&tBuffer, tBufferSize, tReadFrameNumber);
+
+            mEncoderSeekMutex.lock();
 
             if ((tBufferSize > 0) && (mEncoderThreadNeeded))
             {
@@ -1703,6 +1709,8 @@ void* MediaSourceMuxer::Run(void* pArgs)
                 }else
                     LOG(LOG_VERBOSE, "Skipped %s transcoder task", GetMediaTypeStr().c_str());
             }
+
+            mEncoderSeekMutex.unlock();
 
             // release FIFO entry lock
             if (tFifoEntry >= 0)
@@ -2534,8 +2542,7 @@ bool MediaSourceMuxer::TimeShift(int64_t pOffset)
     if (mMediaSource != NULL)
     {
         tResult = mMediaSource->TimeShift(pOffset);
-        if (tResult)
-            mEncoderFlushBuffersAfterSeeking = true;
+        ResetEncoderBuffers();
     }
 
     return tResult;
@@ -2664,8 +2671,7 @@ bool MediaSourceMuxer::Seek(float pSeconds, bool pOnlyKeyFrames)
     if (mMediaSource != NULL)
     {
     	tResult = mMediaSource->Seek(pSeconds, pOnlyKeyFrames);
-    	if (tResult)
-    	    mEncoderFlushBuffersAfterSeeking = true;
+        ResetEncoderBuffers();
     }
 
     return tResult;
@@ -2694,8 +2700,7 @@ bool MediaSourceMuxer::SelectInputStream(int pIndex)
     if (mMediaSource != NULL)
     {
         tResult = mMediaSource->SelectInputStream(pIndex);
-        if (tResult)
-            mEncoderFlushBuffersAfterSeeking = true;
+        ResetEncoderBuffers();
     }
 
     return tResult;

@@ -212,6 +212,8 @@ private:
     void StartEncoder();
     void StopEncoder();
 
+    void ResetEncoderBuffers();
+
     static int DistributePacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize);
 
     MediaSource         *mMediaSource;
@@ -227,6 +229,7 @@ private:
     bool				mRelayingSkipAudioSilence;
     int64_t				mRelayingSkipAudioSilenceSkippedChunks;
     /* encoding */
+    Mutex               mEncoderSeekMutex;
     char                *mEncoderChunkBuffer;
     bool                mEncoderThreadNeeded;
     MediaFifo           *mEncoderFifo;
@@ -235,7 +238,6 @@ private:
     Mutex               mEncoderFifoAvailableMutex;
     AVStream            *mEncoderStream;
     int					mEncoderOutputFrameDelay; // in frames
-    bool                mEncoderFlushBuffersAfterSeeking;
     /* device control */
     MediaSources        mMediaSources;
     Mutex               mMediaSourcesMutex;
