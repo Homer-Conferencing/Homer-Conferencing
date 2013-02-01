@@ -1481,7 +1481,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                     LOG(LOG_VERBOSE, "Scaler returned video frame..");
                                     LOG(LOG_VERBOSE, "      ..key frame: %d", tYUVFrame->key_frame);
                                     LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(tYUVFrame).c_str());
-                                    LOG(LOG_VERBOSE, "      ..pts: %"PRId64"", tYUVFrame->pts);
+                                    LOG(LOG_VERBOSE, "      ..pts: %"PRId64"(scaler pts: %"PRId64")", tYUVFrame->pts, tReadFrameNumber);
                                     LOG(LOG_VERBOSE, "      ..coded pic number: %d", tYUVFrame->coded_picture_number);
                                     LOG(LOG_VERBOSE, "      ..display pic number: %d", tYUVFrame->display_picture_number);
                                 #endif
@@ -1537,11 +1537,11 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                         LOG(LOG_VERBOSE, "      ..flags: %d", tPacket->flags);
                                         LOG(LOG_VERBOSE, "      ..pts: %"PRId64" (%d frames delay)", tPacket->pts, mEncoderOutputFrameDelay);
                                         LOG(LOG_VERBOSE, "      ..dts: %"PRId64"", tPacket->dts);
-                                        LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
-                                        LOG(LOG_VERBOSE, "      ..pos: %"PRId64"", tPacket->pos);
-                                        LOG(LOG_VERBOSE, "      ..key frame: %d", mEncoderHasKeyFrame);
-                                        LOG(LOG_VERBOSE, "      ..codec delay: %d", mCodecContext->delay);
-                                        LOG(LOG_VERBOSE, "      ..codec max. b frames: %d", mCodecContext->max_b_frames);
+//                                        LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
+//                                        LOG(LOG_VERBOSE, "      ..pos: %"PRId64"", tPacket->pos);
+//                                        LOG(LOG_VERBOSE, "      ..key frame: %d", mEncoderHasKeyFrame);
+//                                        LOG(LOG_VERBOSE, "      ..codec delay: %d", mCodecContext->delay);
+//                                        LOG(LOG_VERBOSE, "      ..codec max. b frames: %d", mCodecContext->max_b_frames);
                                     #endif
 
                                     // write the encoded frame

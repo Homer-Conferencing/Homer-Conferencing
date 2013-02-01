@@ -202,10 +202,10 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
         }
 
         // normalize the PTS values for the RTP packetizer of ffmpeg, otherwise we have synchronization problems at receiver side because of PTS offsets
-        int64_t tRtpPacketPts = tAVPacketPts - mIncomingAVStreamStartPts;
+        int64_t tRtpPacketPts = tAVPacketPts;// - mIncomingAVStreamStartPts;
 
         #ifdef MSM_DEBUG_PACKET_DISTRIBUTION
-            LOG(LOG_VERBOSE, "Encapsulating codec packet of size %d at memory position %p with A/V pts: %"PRId64", RTP pts: %"PRId64"", pPacketSize, pPacketData, tAVPacketPts, tRtpPacketPts);
+            LOG(LOG_VERBOSE, "Processing packet with A/V PTS: %"PRId64" and normalized PTS: %"PRId64"", tAVPacketPts, tRtpPacketPts);
         #endif
 
 
