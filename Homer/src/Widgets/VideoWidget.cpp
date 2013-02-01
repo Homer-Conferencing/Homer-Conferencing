@@ -808,7 +808,7 @@ QStringList VideoWidget::GetVideoStatistic()
     if (mVideoSource->SupportsMuxing())
     {
         tLine_OutputCodec = Homer::Gui::VideoWidget::tr("Streaming codec:")+ " " + ((tMuxCodecName != "") ? tMuxCodecName : Homer::Gui::VideoWidget::tr("unknown")) + " (" + QString("%1").arg(tMuxResX) + "*" + QString("%1").arg(tMuxResY);
-        tLine_OutputCodec += ", " + QString("%1").arg(mVideoSource->GetRelayFrameDelay()) + " " + Homer::Gui::VideoWidget::tr("frames delay");
+        tLine_OutputCodec += ", " + QString("%1").arg(mVideoSource->GetEncoderBufferedFrames()) + " " + Homer::Gui::VideoWidget::tr("frames buffered");
         tLine_OutputCodec += (mVideoSource->GetMuxingBufferCounter() ? (", " + QString("%1").arg(mVideoSource->GetMuxingBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetMuxingBufferSize()) + " " + Homer::Gui::VideoWidget::tr("buffered frames") + ")") : ")");
     }
 

@@ -585,7 +585,7 @@ QStringList AudioWidget::GetAudioStatistic()
     {
         tLine_OutputCodec = Homer::Gui::AudioWidget::tr("Streaming codec:")+ " " + ((tMuxCodecName != "") ? tMuxCodecName : Homer::Gui::AudioWidget::tr("unknown"));
         tLine_OutputCodec +=  + " (" + QString("%1").arg((float)mAudioSource->GetOutputSampleRate() / 1000) + " " + Homer::Gui::AudioWidget::tr("kHz") + ", " + QString("%1").arg(mAudioSource->GetOutputChannels())+ " " + Homer::Gui::AudioWidget::tr("channels");
-        tLine_OutputCodec += ", " + QString("%1").arg(mAudioSource->GetRelayFrameDelay()) + " " + Homer::Gui::AudioWidget::tr("frames delay");
+        tLine_OutputCodec += ", " + QString("%1").arg(mAudioSource->GetEncoderBufferedFrames()) + " " + Homer::Gui::AudioWidget::tr("frames buffered");
         tLine_OutputCodec += (mAudioSource->GetMuxingBufferCounter() ? (", " + QString("%1").arg(mAudioSource->GetMuxingBufferCounter()) + "/" + QString("%1").arg(mAudioSource->GetMuxingBufferSize()) + " " + Homer::Gui::AudioWidget::tr("buffered frames") + ")") : ")");
     }
 
