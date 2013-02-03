@@ -1840,24 +1840,21 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
                     mRecorderCodecContext->channel_layout = mRecorderAudioChannelLayout;
 
                     // create resample context
-                    //do not use "if ((mInputAudioSampleRate != mRecorderAudioSampleRate) || (mInputAudioChannels != mRecorderAudioChannels) || (mInputAudioFormat != mRecorderAudioFormat))" because we need to convert from packed audio to plane based audio buffer
-                    {
-                        if (mRecorderAudioResampleContext != NULL)
-                            LOG(LOG_ERROR, "State of audio recorder resample context inconsistent");
-                        LOG(LOG_WARN, "Audio samples with rate of %d Hz and %d channels (format: %s) have to be resampled to %d Hz and %d channels (format: %s)", mInputAudioSampleRate, mInputAudioChannels, av_get_sample_fmt_name(mInputAudioFormat), mRecorderAudioSampleRate, mRecorderAudioChannels, av_get_sample_fmt_name(mRecorderAudioFormat));
-                        mRecorderAudioResampleContext = HM_swr_alloc_set_opts(NULL, av_get_default_channel_layout(mRecorderAudioChannels), mRecorderAudioFormat, mRecorderAudioSampleRate, av_get_default_channel_layout(mInputAudioChannels), mInputAudioFormat, mInputAudioSampleRate, 0, NULL);
-                        if (mRecorderAudioResampleContext != NULL)
-                        {// everything okay, we have to init the context
-                            int tRes = 0;
-                            if ((tRes = HM_swr_init(mRecorderAudioResampleContext)) < 0)
-                            {
-                                LOG(LOG_ERROR, "Couldn't initialize resample context because of \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
-                                return false;
-                            }
-                        }else
+                    if (mRecorderAudioResampleContext != NULL)
+                        LOG(LOG_ERROR, "State of audio recorder resample context inconsistent");
+                    LOG(LOG_WARN, "Audio samples with rate of %d Hz and %d channels (format: %s) have to be resampled to %d Hz and %d channels (format: %s)", mInputAudioSampleRate, mInputAudioChannels, av_get_sample_fmt_name(mInputAudioFormat), mRecorderAudioSampleRate, mRecorderAudioChannels, av_get_sample_fmt_name(mRecorderAudioFormat));
+                    mRecorderAudioResampleContext = HM_swr_alloc_set_opts(NULL, av_get_default_channel_layout(mRecorderAudioChannels), mRecorderAudioFormat, mRecorderAudioSampleRate, av_get_default_channel_layout(mInputAudioChannels), mInputAudioFormat, mInputAudioSampleRate, 0, NULL);
+                    if (mRecorderAudioResampleContext != NULL)
+                    {// everything okay, we have to init the context
+                        int tRes = 0;
+                        if ((tRes = HM_swr_init(mRecorderAudioResampleContext)) < 0)
                         {
-                            LOG(LOG_ERROR, "Failed to create audio-resample context");
+                            LOG(LOG_ERROR, "Couldn't initialize resample context because of \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
+                            return false;
                         }
+                    }else
+                    {
+                        LOG(LOG_ERROR, "Failed to create audio-resample context");
                     }
 
                     // resample buffer
