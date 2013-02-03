@@ -759,6 +759,9 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
 			mOutputAudioChannels = 2;
 			mOutputAudioSampleRate = 44100;
 			break;
+        case CODEC_ID_MP3:
+		    mCodecContext->sample_fmt = AV_SAMPLE_FMT_S16P;
+		    break;
 		default:
 	        mCodecContext->bit_rate = mStreamBitRate; // streaming rate
 			mOutputAudioChannels = pChannels;
@@ -1261,7 +1264,17 @@ int64_t MediaSourceMuxer::CalculateEncoderPts(int pFrameNumber)
 {
     int64_t tResult = 0;
 
-    tResult = pFrameNumber * 1000 / GetOutputFrameRate(); // frame number * time between frames
+    switch(mMediaType)
+    {
+        case MEDIA_VIDEO:
+                    tResult = pFrameNumber * 1000 / GetOutputFrameRate(); // frame number * time between frames
+                    break;
+        case MEDIA_AUDIO:
+                    tResult = pFrameNumber * mCodecContext->frame_size; // = how many samples are already passed?
+                    break;
+        default:
+                    break;
+    }
 
     return tResult;
 }
@@ -1326,9 +1339,8 @@ void MediaSourceMuxer::ResetEncoderBuffers()
 
     if ((mMediaType == MEDIA_AUDIO) && (mSampleFifo != NULL) && (av_fifo_size(mSampleFifo) > 0))
     {
-//TODO: fix crashes here
-//        LOG(LOG_VERBOSE, "Reseting %s decoder internal buffers resample FIFO after seeking in input stream", GetMediaTypeStr().c_str());
-//        av_fifo_drain(mSampleFifo, av_fifo_size(mSampleFifo));
+        LOG(LOG_VERBOSE, "Reseting %s decoder internal buffers resample FIFO after seeking in input stream", GetMediaTypeStr().c_str());
+        av_fifo_drain(mSampleFifo, av_fifo_size(mSampleFifo));
     }
 
     // reset buffer counter
@@ -1458,7 +1470,6 @@ void* MediaSourceMuxer::Run(void* pArgs)
                     {
                         case MEDIA_VIDEO:
                             {
-                                mFrameNumber++;
                                 int64_t tTime3 = Time::GetTimeStamp();
                                 // ####################################################################
                                 // ### PREPARE YUV FRAME from SCALER
@@ -1513,51 +1524,54 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 {
                                     if (tFrameFinished == 1)
                                     {
-                                	// compensate frame delay, which is caused by video encoder, and derive a correct PTS value for output packets
-                                	int tOutputPacketPts = CalculateEncoderPts(mFrameNumber);
+                                        // compensate frame delay, which is caused by video encoder, and derive a correct PTS value for output packets
+                                        int tOutputPacketPts = CalculateEncoderPts(mFrameNumber);
 
-                                    av_init_packet(tPacket);
+                                        av_init_packet(tPacket);
 
-                                    // mark i-frame
-                                    if (mCodecContext->coded_frame->key_frame)
-                                    {
-                                        mEncoderHasKeyFrame = true;
-                                        tPacket->flags |= AV_PKT_FLAG_KEY;
-                                    }
+                                        // mark i-frame
+                                        if (mCodecContext->coded_frame->key_frame)
+                                        {
+                                            mEncoderHasKeyFrame = true;
+                                            tPacket->flags |= AV_PKT_FLAG_KEY;
+                                        }
 
-                                    // we only have one stream per audio stream
-                                    tPacket->stream_index = 0;
-                                    tPacket->data = (uint8_t *)mEncoderChunkBuffer;
-                                    tPacket->size = tEncoderResult;
-                                    tPacket->pts = tOutputPacketPts;
-                                    tPacket->dts = tOutputPacketPts;
+                                        // we only have one stream per audio stream
+                                        tPacket->stream_index = 0;
+                                        tPacket->data = (uint8_t *)mEncoderChunkBuffer;
+                                        tPacket->size = tEncoderResult;
+                                        tPacket->pts = tOutputPacketPts;
+                                        tPacket->dts = tOutputPacketPts;
 
-                                    #ifdef MSM_DEBUG_PACKET_DISTRIBUTION
-                                        LOG(LOG_VERBOSE, "Sending video packet: %5d to %2d sink(s):", mFrameNumber, mMediaSinks.size());
-                                        LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
-                                        LOG(LOG_VERBOSE, "      ..flags: %d", tPacket->flags);
-                                        LOG(LOG_VERBOSE, "      ..pts: %"PRId64" (delay: %d / %d)", tPacket->pts, mEncoderBufferedFrames, mFormatContext->max_delay);
-                                        LOG(LOG_VERBOSE, "      ..dts: %"PRId64"", tPacket->dts);
-//                                        LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
-//                                        LOG(LOG_VERBOSE, "      ..pos: %"PRId64"", tPacket->pos);
-//                                        LOG(LOG_VERBOSE, "      ..key frame: %d", mEncoderHasKeyFrame);
-//                                        LOG(LOG_VERBOSE, "      ..codec delay: %d", mCodecContext->delay);
-//                                        LOG(LOG_VERBOSE, "      ..codec max. b frames: %d", mCodecContext->max_b_frames);
-                                    #endif
+                                        #ifdef MSM_DEBUG_PACKET_DISTRIBUTION
+                                            LOG(LOG_VERBOSE, "Sending video packet: %5d to %2d sink(s):", mFrameNumber, mMediaSinks.size());
+                                            LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
+                                            LOG(LOG_VERBOSE, "      ..flags: %d", tPacket->flags);
+                                            LOG(LOG_VERBOSE, "      ..pts: %"PRId64" (delay: %d / %d)", tPacket->pts, mEncoderBufferedFrames, mFormatContext->max_delay);
+                                            LOG(LOG_VERBOSE, "      ..dts: %"PRId64"", tPacket->dts);
+    //                                        LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
+    //                                        LOG(LOG_VERBOSE, "      ..pos: %"PRId64"", tPacket->pos);
+    //                                        LOG(LOG_VERBOSE, "      ..key frame: %d", mEncoderHasKeyFrame);
+    //                                        LOG(LOG_VERBOSE, "      ..codec delay: %d", mCodecContext->delay);
+    //                                        LOG(LOG_VERBOSE, "      ..codec max. b frames: %d", mCodecContext->max_b_frames);
+                                        #endif
 
-                                    // write the encoded frame
-                                    int64_t tTime = Time::GetTimeStamp();
-                                    if (av_write_frame(mFormatContext, tPacket) != 0)
-                                    {
-                                        LOG(LOG_ERROR, "Couldn't distribute video frame among registered video sinks");
-                                    }
-                                    #ifdef MSM_DEBUG_TIMING
-                                        int64_t tTime2 = Time::GetTimeStamp();
-                                        LOG(LOG_VERBOSE, "     writing video frame to sinks took %"PRId64" us", tTime2 - tTime);
-                                    #endif
+                                        // write the encoded frame
+                                        int64_t tTime = Time::GetTimeStamp();
+                                        if (av_write_frame(mFormatContext, tPacket) != 0)
+                                        {
+                                            LOG(LOG_ERROR, "Couldn't distribute video frame among registered video sinks");
+                                        }
+                                        #ifdef MSM_DEBUG_TIMING
+                                            int64_t tTime2 = Time::GetTimeStamp();
+                                            LOG(LOG_VERBOSE, "     writing video frame to sinks took %"PRId64" us", tTime2 - tTime);
+                                        #endif
 
-                                    // free packet buffer
-                                    av_free_packet(tPacket);
+                                        // free packet buffer
+                                        av_free_packet(tPacket);
+
+                                        // increase the frame counter (used for PTS generation)
+                                        mFrameNumber++;
                                     }
                                 }else
                                 {
@@ -1632,7 +1646,6 @@ void* MediaSourceMuxer::Run(void* pArgs)
 											//####################################################################
 											// re-encode the frame
 											// ###################################################################
-			                                mFrameNumber++;
 											// re-encode the frame
 											#ifdef MSM_DEBUG_PACKETS
 												LOG(LOG_VERBOSE, "Encoding audio frame.. (frame size: %d, channels: %d, enc. buffeR: %p, samples buffer: %p)", mCodecContext->frame_size, mCodecContext->channels, mEncoderChunkBuffer, mSamplesTempBuffer);
@@ -1681,12 +1694,14 @@ void* MediaSourceMuxer::Run(void* pArgs)
 
 												// free packet buffer
 												av_free_packet(tPacket);
+
+												// increase the frame counter (used for PTS generation)
+		                                        mFrameNumber++;
 											}else
 											{
 			                                    if (tEncoderResult != 0)
 			                                    {
 			                                        LOG(LOG_WARN, "Couldn't re-encode current audio frame because %s(%d)", strerror(AVUNERROR(tEncoderResult)), tEncoderResult);
-			                                        mFrameNumber--;
 			                                    }else
 			                                    {
 			                                        LOG(LOG_VERBOSE, "Audio frame was buffered in encoder");

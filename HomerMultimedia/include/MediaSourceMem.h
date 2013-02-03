@@ -149,7 +149,7 @@ protected:
     virtual void* Run(void* pArgs = NULL); // decoder main loop
     VideoScaler *CreateVideoScaler();
     void DestroyVideoScaler(VideoScaler *pScaler);
-    void ReadPacketFromInputStream(AVPacket *pPacket, int64_t &pPacketPts);
+    void ReadPacketFromInputStream(AVPacket *pPacket, double &pPacketFrameNumber);
 
     /* buffering */
     void UpdateBufferTime();
@@ -164,7 +164,7 @@ protected:
     bool DecoderFifoFull();
 
     /* RTP based frame numbering */
-    virtual uint64_t CalculateFrameNumberFromRTP();
+    virtual double CalculateFrameNumberFromRTP();
 
     /* real-time playback */
     virtual void CalibrateRTGrabbing();
