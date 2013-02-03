@@ -71,6 +71,8 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+//#define PARTICIPANT_WIDGET_DEBUG_AV_SYNC
+
 // how often should we play the "call" event sound?
 #define SOUND_LOOPS_FOR_CALL                                        10
 // at what time period is timerEvent() called?
@@ -1405,17 +1407,19 @@ void ParticipantWidget::AVSync()
         int64_t tCurTime = Time::GetTimeStamp();
         if ((tCurTime - mTimeOfLastAVSynch  >= AV_SYNC_MIN_PERIOD * 1000))
         {
-            //############################
-            //### limit vieo buffering
-            //############################
-            float tBufferTime = mVideoSource->GetFrameBufferTime();
-            float tBufferTimeLimit = mVideoSource->GetFrameBufferPreBufferingTime() + AV_SYNC_MAX_DRIFT_UNTIL_RESYNC;
-            if ((mVideoSource != NULL) && (tBufferTime > tBufferTimeLimit))
-            {// buffer has too many frames, this can be the case if the system has temporary high load
-                LOG(LOG_WARN, "Detected over-buffering for video stream, buffer time: %.2f, limit is: %.2f", tBufferTime, tBufferTimeLimit);
-                mVideoWidget->GetWorker()->SyncClock();
-                ResetAVSync();
-            }
+            #ifdef PARTICIPANT_WIDGET_AV_SYNC_AVOID_OVER_BUFFERING
+                //############################
+                //### limit vieo buffering
+                //############################
+                float tBufferTime = mVideoSource->GetFrameBufferTime();
+                float tBufferTimeLimit = mVideoSource->GetFrameBufferPreBufferingTime() + AV_SYNC_MAX_DRIFT_UNTIL_RESYNC;
+                if ((mVideoSource != NULL) && (tBufferTime > tBufferTimeLimit))
+                {// buffer has too many frames, this can be the case if the system has temporary high load
+                    LOG(LOG_WARN, "Detected over-buffering for video stream, buffer time: %.2f, limit is: %.2f", tBufferTime, tBufferTimeLimit);
+                    mVideoWidget->GetWorker()->SyncClock();
+                    ResetAVSync();
+                }
+            #endif
 
             //HINT: we have to keep the audio buffering flexible! otherwise, the A/V synchronizatino won't work anymore
 
@@ -1442,9 +1446,9 @@ void ParticipantWidget::AVSync()
                             if (mAVASyncCounter < AV_SYNC_CONSECUTIVE_ASYNC_THRESHOLD * (AV_SYNC_CONSECUTIVE_ASYNC_THRESHOLD_TRY_RESET + 1))
                             {// try to adapt waiting times
                                 if (tTimeDiff > 0)
-                                    LOG(LOG_WARN, "Detected asynchronous A/V playback, drift is %3.2f seconds (video before audio), max. allowed drift is %3.2f seconds, last synch. was at %"PRId64", synchronizing now..", tTimeDiff, AV_SYNC_MAX_DRIFT_UNTIL_RESYNC, mTimeOfLastAVSynch);
+                                    LOG(LOG_WARN, "Detected asynchronous A/V playback, drift is %f seconds (video before audio), max. allowed drift is %3.2f seconds, last synch. was at %"PRId64", synchronizing now..", tTimeDiff, AV_SYNC_MAX_DRIFT_UNTIL_RESYNC, mTimeOfLastAVSynch);
                                 else
-                                    LOG(LOG_WARN, "Detected asynchronous A/V playback, drift is %3.2f seconds (audio before video), max. allowed drift is %3.2f seconds, last synch. was at %"PRId64", synchronizing now..", tTimeDiff, AV_SYNC_MAX_DRIFT_UNTIL_RESYNC, mTimeOfLastAVSynch);
+                                    LOG(LOG_WARN, "Detected asynchronous A/V playback, drift is %f seconds (audio before video), max. allowed drift is %3.2f seconds, last synch. was at %"PRId64", synchronizing now..", tTimeDiff, AV_SYNC_MAX_DRIFT_UNTIL_RESYNC, mTimeOfLastAVSynch);
 
                                 mAudioWidget->GetWorker()->SyncClock(mVideoSource);
                                 mAVSyncCounter++;
