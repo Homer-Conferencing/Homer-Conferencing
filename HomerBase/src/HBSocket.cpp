@@ -578,7 +578,10 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
     int64_t             tTime, tTime2;
 
     if (mSocketHandle == -1)
-        return false;
+    {
+    	LOG(LOG_ERROR, "Invalid socket handle");
+    	return false;
+    }
 
     //LOG(LOG_VERBOSE, "Try to send %d bytes via socket %d to %s<%u>", (int)pBufferSize, mSocketHandle, pTargetHost.c_str(), pTargetPort);
 
@@ -697,8 +700,15 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
     bool                    tSourceIsIPv6 = false;
     int                     tUdpLiteChecksumCoverage = mUdpLiteChecksumCoverage;
 
+	#ifdef HBS_DEBUG_PACKETS
+		LOG(LOG_VERBOSE, "Got a Receive() call for socket %d", mSocketHandle);
+    #endif
+
     if (mSocketHandle == -1)
-        return false;
+    {
+    	LOG(LOG_ERROR, "Invalid socket handle");
+    	return false;
+    }
 
     switch(mSocketTransportType)
     {
