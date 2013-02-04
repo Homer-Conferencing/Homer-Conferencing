@@ -32,6 +32,7 @@
 #include <HBMutex.h>
 
 #include <string>
+#include <stdint.h>
 
 using namespace Homer::Base;
 
