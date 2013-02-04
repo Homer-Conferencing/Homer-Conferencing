@@ -52,12 +52,12 @@ struct QoSIpOption{
     unsigned char Copied:1;         // "1" to copy this option to all fragments of a packet
     unsigned char Length;           // length of the entire IP option
 
-    unsigned char Pointer;          // time stamp specific
-    unsigned char Flags;            // time stamp specific
+    unsigned char Pointer:8;          // time stamp specific
+    unsigned char Flags:8;            // time stamp specific
     unsigned int  InternetAddress;  // time stamp specific
 
     struct QoSSettings Settings;
-}ATTRIBUTE_PACKED;
+};
 
 // define setqos if is not defined by linked libs
 #ifndef setqos

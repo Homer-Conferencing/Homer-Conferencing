@@ -59,16 +59,16 @@ namespace Homer { namespace Multimedia {
 // ########################## RTCP ###########################################
 union RtcpHeader{
     struct{ // send via separate port
-        unsigned short int Length;          /* length of report */
+        unsigned int Length:16;             /* length of report */
         unsigned int Type:8;                /* report type */
         unsigned int RC:5;                  /* report counter */
         unsigned int Padding:1;             /* padding flag */
         unsigned int Version:2;             /* protocol version */
         unsigned int Ssrc;                  /* synchronization source */
-        unsigned int Data[5];              /*  */
-    } __attribute__((__packed__))General;
+        unsigned int Data[5];               /*  */
+    }General;
     struct{ // send within media stream as intermediate packets
-        unsigned short int Length;          /* length of report */
+        unsigned int Length:16;             /* length of report */
         unsigned int Type:8;                /* Payload type (PT) */
         unsigned int Fmt:5;                 /* Feedback message type (FMT) */
         unsigned int Padding:1;             /* padding flag */
@@ -79,7 +79,7 @@ union RtcpHeader{
         unsigned int RtpTimestamp;          /* reference RTP timestamp */
         unsigned int Packets;               /* packet count */
         unsigned int Octets;                /* byte count */
-    } __attribute__((__packed__))Feedback;
+    }Feedback;
     uint32_t Data[7];
 };
 
@@ -91,7 +91,7 @@ union RtcpHeader{
 // ########################## RTP ############################################
 union RtpHeader{
     struct{
-        unsigned short int SequenceNumber; /* sequence number */
+        unsigned int SequenceNumber:16; /* sequence number */
 
         unsigned int PayloadType:7;         /* payload type */
         unsigned int Marked:1;              /* marker bit */
@@ -105,7 +105,7 @@ union RtpHeader{
         unsigned int Ssrc;                  /* synchronization source */
         //HINT: we do not support CSRC because it is not necessary!
         //unsigned int Csrc[1];               /* optional CSRC list */
-    } __attribute__((__packed__));
+    };
     uint32_t Data[3];
 };
 

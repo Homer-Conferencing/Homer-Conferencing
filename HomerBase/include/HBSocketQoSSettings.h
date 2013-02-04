@@ -43,18 +43,12 @@ namespace Homer { namespace Base {
 #define QOS_FEATURE_LOSSLESS								0x0001
 #endif
 
-#ifndef WIN64
-#define ATTRIBUTE_PACKED __attribute__((__packed__))
-#else
-#define ATTRIBUTE_PACKED
-#endif
-
 struct QoSSettings
 {
     unsigned int DataRate; /* in KB/s */
-    unsigned short int Delay; /* in ms */
-    unsigned short int Features;
-}ATTRIBUTE_PACKED;
+    unsigned short int Delay:16; /* in ms */
+    unsigned short int Features:16;
+};
 
 struct QoSProfileDescriptor
 {
