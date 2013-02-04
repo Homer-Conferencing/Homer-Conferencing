@@ -241,9 +241,9 @@ void AudioWidget::InitializeMenuAudioSettings(QMenu *pMenu)
     {
         QIcon tIcon5;
         if (mRecorderStarted)
-            tAction = pMenu->addAction(QPixmap(":/images/22_22/Audio_Stop.png"), Homer::Gui::AudioWidget::tr("Stop recording"));
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/AV_Stop.png"), Homer::Gui::AudioWidget::tr("Stop recording"));
         else
-            tAction = pMenu->addAction(QPixmap(":/images/22_22/Audio_Record.png"), Homer::Gui::AudioWidget::tr("Start recording"));
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/AV_Record.png"), Homer::Gui::AudioWidget::tr("Start recording"));
     }
 
     pMenu->addSeparator();
@@ -270,7 +270,7 @@ void AudioWidget::InitializeMenuAudioSettings(QMenu *pMenu)
         QAction *tStreamAction;
         for (tIt = tInputStreams.begin(); tIt != tInputStreams.end(); tIt++)
         {
-            tStreamAction = tStreamMenu->addAction(QPixmap(":/images/22_22/Audio_Play.png"), QString(tIt->c_str()));
+            tStreamAction = tStreamMenu->addAction(QPixmap(":/images/22_22/AV_Play.png"), QString(tIt->c_str()));
             tStreamAction->setCheckable(true);
             if ((*tIt) == tCurrentStream)
                 tStreamAction->setChecked(true);
@@ -325,7 +325,7 @@ void AudioWidget::InitializeMenuAudioSettings(QMenu *pMenu)
         //###############################################################################
         QIcon tIcon10;
         if (mAudioPaused)
-            tAction = pMenu->addAction(QPixmap(":/images/22_22/Audio_Play.png"), Homer::Gui::AudioWidget::tr("Continue stream"));
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/AV_Play.png"), Homer::Gui::AudioWidget::tr("Continue stream"));
         else
             tAction = pMenu->addAction(QPixmap(":/images/22_22/Exit.png"), Homer::Gui::AudioWidget::tr("Drop stream"));
     }
@@ -585,7 +585,7 @@ QStringList AudioWidget::GetAudioStatistic()
     {
         tLine_OutputCodec = Homer::Gui::AudioWidget::tr("Streaming codec:")+ " " + ((tMuxCodecName != "") ? tMuxCodecName : Homer::Gui::AudioWidget::tr("unknown"));
         tLine_OutputCodec +=  + " (" + QString("%1").arg((float)mAudioSource->GetOutputSampleRate() / 1000) + " " + Homer::Gui::AudioWidget::tr("kHz") + ", " + QString("%1").arg(mAudioSource->GetOutputChannels())+ " " + Homer::Gui::AudioWidget::tr("channels");
-        tLine_OutputCodec += ", " + QString("%1").arg(mAudioSource->GetRelayFrameDelay()) + " " + Homer::Gui::AudioWidget::tr("frames delay");
+        tLine_OutputCodec += ", " + QString("%1").arg(mAudioSource->GetEncoderBufferedFrames()) + " " + Homer::Gui::AudioWidget::tr("frames buffered");
         tLine_OutputCodec += (mAudioSource->GetMuxingBufferCounter() ? (", " + QString("%1").arg(mAudioSource->GetMuxingBufferCounter()) + "/" + QString("%1").arg(mAudioSource->GetMuxingBufferSize()) + " " + Homer::Gui::AudioWidget::tr("buffered frames") + ")") : ")");
     }
 
@@ -685,11 +685,11 @@ void AudioWidget::ShowSample(void* pBuffer, int pSampleSize)
     {
         if (tMSecs % 500 < 250)
         {
-            QPixmap tPixmap = QPixmap(":/images/22_22/Audio_Record_active.png");
+            QPixmap tPixmap = QPixmap(":/images/22_22/AV_Record_active.png");
             mLbRecording->setPixmap(tPixmap);
         }else
         {
-            QPixmap tPixmap = QPixmap(":/images/22_22/Audio_Record.png");
+            QPixmap tPixmap = QPixmap(":/images/22_22/AV_Record.png");
             mLbRecording->setPixmap(tPixmap);
         }
     }
@@ -860,7 +860,7 @@ void AudioWidget::customEvent(QEvent* pEvent)
 AudioWorkerThread::AudioWorkerThread(ParticipantWidget* pParticipantWidget, QString pName, MediaSource *pAudioSource, AudioWidget *pAudioWidget):
     MediaSourceGrabberThread(pName, pAudioSource), AudioPlayback()
 {
-    LOG(LOG_VERBOSE, "..Creating audio worker");
+    LOG(LOG_VERBOSE, "Created");
     mParticipantWidget = pParticipantWidget;
     mStartPlaybackAsap = false;
     mStopPlaybackAsap = false;
@@ -1418,7 +1418,7 @@ void AudioWorkerThread::run()
 
     mLastFrameNumber = 0;
 
-    LOG(LOG_VERBOSE, "..start main loop");
+    LOG(LOG_WARN, "================ Entering main AUDIO WORKER loop for media source %s", mMediaSource->GetStreamName().c_str());
     while(mWorkerNeeded)
     {
         // get the next frame from audio source
@@ -1589,11 +1589,16 @@ void AudioWorkerThread::run()
         }
 
     }
+
+    LOG(LOG_WARN, "AUDIO WORKER loop finished for media source %s <<<<<<<<<<<<<<<<", mMediaSource->GetStreamName().c_str());
+
     mMediaSource->CloseGrabDevice();
     mMediaSource->DeleteAllRegisteredMediaSinks();
 
     // close audio playback
     ClosePlaybackDevice();
+
+    LOG(LOG_WARN, "AUDIO WORKER thread finished for media source %s <<<<<<<<<<<<<<<<", mMediaSource->GetStreamName().c_str());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -70,7 +70,7 @@ namespace Homer { namespace Multimedia {
 // size of one single fragment of a frame packet
 #define MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE                8*1024 // 8 KB (for jumbo packets!)
 
-#define MEDIA_SOURCE_MEM_FRAGMENT_INPUT_QUEUE_SIZE_LIMIT 	 ((System::GetTargetMachineType() != "x86") ? 2048 : 256) // á 8 KB: 256 buffers for 32 bit targets with limit of 4 GB ram, 2*1024 buffers for 64 bit targets
+#define MEDIA_SOURCE_MEM_FRAGMENT_INPUT_QUEUE_SIZE_LIMIT 	 ((System::GetTargetMachineType() != "x86") ? 256 : 64)
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -132,14 +132,14 @@ public:
     virtual int GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk = false);
 
     // send input to the media source
-    void WriteFragment(char *pBuffer, int pBufferSize);
+    void WriteFragment(char *pBuffer, int pBufferSize, int64_t pFragmentNumber);
 
 protected:
     /* internal video resolution switch */
     virtual void DoSetVideoGrabResolution(int pResX = 352, int pResY = 288);
 
     static int GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize);
-    void ReadFragment(char *pData, int &pDataSize);
+    void ReadFragment(char *pData, int &pDataSize, int64_t &pFragmentNumber);
 
     virtual bool InputIsPicture();
 
@@ -149,17 +149,22 @@ protected:
     virtual void* Run(void* pArgs = NULL); // decoder main loop
     VideoScaler *CreateVideoScaler();
     void DestroyVideoScaler(VideoScaler *pScaler);
+    void ReadPacketFromInputStream(AVPacket *pPacket, double &pPacketFrameNumber);
 
     /* buffering */
     void UpdateBufferTime();
 
     /* FIFO helpers */
-    void WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int64_t pPts);
-    void ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int64_t &pPts);
+    double CalculateOutputFrameNumber(double pFrameNumber);
+    double CalculateInputFrameNumber(double pFrameNumber);
+    void CalculateExpectedOutputPerInputFrame();
+    void ResetDecoderBuffers();
+    void WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int64_t pOutputFrameNumber);
+    void ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int64_t &pOutputFrameNumber);
     bool DecoderFifoFull();
 
     /* RTP based frame numbering */
-    virtual uint64_t CalculateFrameNumberFromRTP();
+    virtual double CalculateFrameNumberFromRTP();
 
     /* real-time playback */
     virtual void CalibrateRTGrabbing();
@@ -175,26 +180,27 @@ protected:
     int                 mPacketStatAdditionalFragmentSize; // used to adapt packet statistic to additional fragment header, which is used for TCP transmission
     enum CodecID        mRtpSourceCodecIdHint;
     /* grabber */
-    double              mGrabberCurrentFrameIndex; // we have to determine this manually during grabbing because cur_dts and everything else in AVStream is buggy for some video/audio files
-    double              mFrameBufferLastWrittenFrameIndex; // we use this for calibrating RT grabbing
+    double              mCurrentOutputFrameIndex; // we have to determine this manually during grabbing because cur_dts and everything else in AVStream is buggy for some video/audio files
+    double              mLastBufferedOutputFrameIndex; // we use this for calibrating RT grabbing
     bool                mGrabberProvidesRTGrabbing;
     /* decoder thread */
     bool                mDecoderUsesPTSFromInputPackets;
     int                 mDecoderTargetResX;
     int                 mDecoderTargetResY;
-    bool                mDecoderNeeded; // also used to signal that the decoder thread has finished the init. process
+    bool                mDecoderThreadNeeded; // also used to signal that the decoder thread has finished the init. process
     int64_t             mDecoderLastReadPts; // check for interleaved packets, non-monotonous PTS values
     Condition           mDecoderNeedWorkCondition;
     Mutex               mDecoderNeedWorkConditionMutex;
     MediaFifo           *mDecoderFragmentFifo;
     Mutex				mDecoderFragmentFifoDestructionMutex;
+    AVFifoBuffer        *mDecoderAudioSamplesFifo;
     MediaFifo           *mDecoderFifo; // for frames
-    MediaFifo           *mDecoderMetaDataFifo; // for meta data about frames
+    int                 mDecoderExpectedMaxOutputPerInputFrame; // how many output frames can be calculated of one input frame?
     /* decoder thread seeking */
+    Mutex               mDecoderSeekMutex;
     double              mDecoderTargetFrameIndex;
     bool                mDecoderWaitForNextKeyFramePackets; // after seeking we wait for next key frame packets -> either i-frames or p-frames
     bool                mDecoderRecalibrateRTGrabbingAfterSeeking;
-    bool                mDecoderFlushBuffersAfterSeeking;
     bool                mDecoderWaitForNextKeyFrame; // after seeking we wait for next i -frames
     int64_t             mDecoderWaitForNextKeyFrameTimeout;
     /* picture grabbing */

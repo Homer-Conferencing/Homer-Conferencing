@@ -59,11 +59,11 @@ public:
     virtual int GetFragmentBufferCounter();
     virtual int GetFragmentBufferSize();
 
-    virtual void ReadFragment(char *pData, int &pDataSize);
+    virtual void ReadFragment(char *pData, int &pDataSize, int64_t &pFragmentNumber);
     virtual void StopProcessing();
 
 protected:
-    virtual void WriteFragment(char* pData, unsigned int pSize);
+    virtual void WriteFragment(char* pData, unsigned int pSize, int64_t pFragmentNumber);
 
     /* RTP stream handling */
     virtual bool OpenStreamer(AVStream *pStream);

@@ -401,7 +401,7 @@ void OverviewPlaylistWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEve
     {
         tAction = tMenu.addAction(Homer::Gui::OverviewPlaylistWidget::tr("Play selected"));
         QIcon tIcon0;
-        tIcon0.addPixmap(QPixmap(":/images/22_22/Audio_Play.png"), QIcon::Normal, QIcon::Off);
+        tIcon0.addPixmap(QPixmap(":/images/22_22/AV_Play.png"), QIcon::Normal, QIcon::Off);
         tAction->setIcon(tIcon0);
         tAction->setShortcut(Qt::Key_Enter);
 
@@ -849,7 +849,7 @@ Playlist OverviewPlaylistWidget::Parse(QString pLocation, QString pName, bool pA
 					else if (!tIsVideoFile && tIsAudioFile) // audio file
 						tPlaylistEntry.Icon = QIcon(":/images/46_46/Speaker.png");
 					else // audio/video file
-						tPlaylistEntry.Icon = QIcon(":/images/22_22/Audio_Play.png");
+						tPlaylistEntry.Icon = QIcon(":/images/22_22/AV_Play.png");
 				}
 
 				// save playlist entry

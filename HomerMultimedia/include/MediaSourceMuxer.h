@@ -85,7 +85,7 @@ public:
     virtual std::string GetInputFormatStr();
 
     /* video */
-    virtual float GetFrameRate();
+    virtual float GetInputFrameRate();
     virtual void SetFrameRate(float pFps);
 
     /* audio/video */
@@ -98,7 +98,7 @@ public:
 
     /* relaying */
     virtual bool SupportsRelaying();
-    virtual int GetRelayFrameDelay(); // 3 means "the output is delayed by 3 frames)
+    virtual int GetEncoderBufferedFrames();
     void SetRelayActivation(bool pState);
     void SetRelaySkipSilence(bool pState);
     void SetRelaySkipSilenceThreshold(int pValue);
@@ -212,6 +212,8 @@ private:
     void StartEncoder();
     void StopEncoder();
 
+    void ResetEncoderBuffers();
+
     static int DistributePacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize);
 
     MediaSource         *mMediaSource;
@@ -227,15 +229,15 @@ private:
     bool				mRelayingSkipAudioSilence;
     int64_t				mRelayingSkipAudioSilenceSkippedChunks;
     /* encoding */
+    Mutex               mEncoderSeekMutex;
     char                *mEncoderChunkBuffer;
-    bool                mEncoderNeeded;
+    bool                mEncoderThreadNeeded;
     MediaFifo           *mEncoderFifo;
     Mutex				mEncoderFifoState;
     bool				mEncoderHasKeyFrame;
     Mutex               mEncoderFifoAvailableMutex;
     AVStream            *mEncoderStream;
-    int					mEncoderOutputFrameDelay; // in frames
-    bool                mEncoderFlushBuffersAfterSeeking;
+    int					mEncoderBufferedFrames; // in frames
     /* device control */
     MediaSources        mMediaSources;
     Mutex               mMediaSourcesMutex;

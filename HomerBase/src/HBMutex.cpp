@@ -67,7 +67,7 @@ Mutex::~Mutex()
 	    tResult = (CloseHandle(mMutex) != 0);
 	#endif
     if (!tResult)
-		LOG(LOG_ERROR, "Destruction of mutex in thread %d failed", Thread::GetTId());
+		LOG(LOG_ERROR, "Destruction of mutex %s in thread %d failed", mName.c_str(), Thread::GetTId());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -82,6 +82,8 @@ bool Mutex::lock(int pTimeout)
             LOG(LOG_ERROR, "Recursive locking of mutex \"%s\" in thread %d detected", mName.c_str(), tThreadId);
         else
             LOG(LOG_ERROR, "Recursive locking in thread %d detected", tThreadId);
+        LOG(LOG_ERROR, "Program execution will end now..");
+        exit(1);
     }
 
     mOwnerThreadId = tThreadId;

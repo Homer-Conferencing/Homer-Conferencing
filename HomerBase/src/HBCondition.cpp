@@ -27,6 +27,7 @@
 
 #include <Logger.h>
 #include <HBCondition.h>
+#include <HBThread.h>
 
 #ifdef APPLE
 // to get current time stamp
@@ -64,13 +65,19 @@ Condition::~Condition()
 	    tResult = (CloseHandle(mCondition) != 0);
 	#endif
     if (!tResult)
-		LOG(LOG_ERROR, "Destruction of condition failed");
+        LOG(LOG_ERROR, "Destruction of condition in thread %d failed", Thread::GetTId());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 bool Condition::Wait(Mutex *pMutex, int pMSecs)
 {
+    if (!Reset())
+    {
+        LOG(LOG_ERROR, "Reset of condition failed");
+        return false;
+    }
+
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
         struct timespec tTimeout;
         struct timespec tTimeout1;
@@ -200,7 +207,7 @@ bool Condition::SignalOne()
 	#endif
 }
 
-bool Condition::SignalAll()
+bool Condition::Signal()
 {
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
         return !pthread_cond_broadcast(&mCondition);

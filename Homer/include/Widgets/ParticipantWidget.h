@@ -78,7 +78,8 @@ typedef std::list<ParticipantWidget*>  ParticipantWidgetList;
 // de/activate A/V synch. for file playback: audio grabbing is always synchronized with video grabbing and not the other way around
 #define PARTICIPANT_WIDGET_AV_SYNC
 
-//#define PARTICIPANT_WIDGET_DEBUG_AV_SYNC
+// avoid over buffering of input A/V stream
+#define PARTICIPANT_WIDGET_AV_SYNC_AVOID_OVER_BUFFERING
 
 ///////////////////////////////////////////////////////////////////////////////
 // use the SIP-Events-structure for signaling the deletion of a participant ///

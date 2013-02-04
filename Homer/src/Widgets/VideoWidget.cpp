@@ -325,9 +325,9 @@ void VideoWidget::InitializeMenuVideoSettings(QMenu *pMenu)
     {
         QIcon tIcon5;
         if (mVideoSource->IsRecording())
-            tAction = pMenu->addAction(QPixmap(":/images/22_22/Audio_Stop.png"), Homer::Gui::VideoWidget::tr("Stop recording"));
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/AV_Stop.png"), Homer::Gui::VideoWidget::tr("Stop recording"));
         else
-            tAction = pMenu->addAction(QPixmap(":/images/22_22/Audio_Record.png"), Homer::Gui::VideoWidget::tr("Start recording"));
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/AV_Record.png"), Homer::Gui::VideoWidget::tr("Start recording"));
     }
 
     pMenu->addSeparator();
@@ -493,7 +493,7 @@ void VideoWidget::InitializeMenuVideoSettings(QMenu *pMenu)
         //###############################################################################
         QIcon tIcon10;
         if (mVideoPaused)
-            tAction = pMenu->addAction(QPixmap(":/images/22_22/Audio_Play.png"), Homer::Gui::VideoWidget::tr("Continue stream"));
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/AV_Play.png"), Homer::Gui::VideoWidget::tr("Continue stream"));
         else
             tAction = pMenu->addAction(QPixmap(":/images/22_22/Exit.png"), Homer::Gui::VideoWidget::tr("Drop stream"));
     }
@@ -741,7 +741,7 @@ QStringList VideoWidget::GetVideoStatistic()
     //############################################
     //### Line 3: FPS and pre-buffer time
     QString tLine_Fps = "";
-    tLine_Fps = "Fps: " + QString("%1").arg(mCurrentFrameRate, 4, 'f', 2, ' ') + "/" + QString("%1").arg(mVideoSource->GetFrameRatePlayout(), 4, 'f', 2, ' ');
+    tLine_Fps = "Fps: " + QString("%1").arg(mCurrentFrameRate, 4, 'f', 2, ' ') + "/" + QString("%1").arg(mVideoSource->GetOutputFrameRate(), 4, 'f', 2, ' ');
     if (mVideoSource->GetFrameBufferSize() > 0)
     {
     	tLine_Fps += " (" + QString("%1").arg(mVideoSource->GetFrameBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetFrameBufferSize()) + ", " + QString("%1").arg(mVideoSource->GetFrameBufferTime(), 2, 'f', 2, (QLatin1Char)' ') + " s " + Homer::Gui::VideoWidget::tr("buffered");
@@ -808,7 +808,7 @@ QStringList VideoWidget::GetVideoStatistic()
     if (mVideoSource->SupportsMuxing())
     {
         tLine_OutputCodec = Homer::Gui::VideoWidget::tr("Streaming codec:")+ " " + ((tMuxCodecName != "") ? tMuxCodecName : Homer::Gui::VideoWidget::tr("unknown")) + " (" + QString("%1").arg(tMuxResX) + "*" + QString("%1").arg(tMuxResY);
-        tLine_OutputCodec += ", " + QString("%1").arg(mVideoSource->GetRelayFrameDelay()) + " " + Homer::Gui::VideoWidget::tr("frames delay");
+        tLine_OutputCodec += ", " + QString("%1").arg(mVideoSource->GetEncoderBufferedFrames()) + " " + Homer::Gui::VideoWidget::tr("frames buffered");
         tLine_OutputCodec += (mVideoSource->GetMuxingBufferCounter() ? (", " + QString("%1").arg(mVideoSource->GetMuxingBufferCounter()) + "/" + QString("%1").arg(mVideoSource->GetMuxingBufferSize()) + " " + Homer::Gui::VideoWidget::tr("buffered frames") + ")") : ")");
     }
 
@@ -982,11 +982,11 @@ void VideoWidget::ShowFrame(void* pBuffer)
     {
         if (tMSecs % 500 < 250)
         {
-            QPixmap tPixmap = QPixmap(":/images/22_22/Audio_Record_active.png");
+            QPixmap tPixmap = QPixmap(":/images/22_22/AV_Record_active.png");
             tPainter->drawPixmap(10, 10, tPixmap);
         }else
         {
-            QPixmap tPixmap = QPixmap(":/images/22_22/Audio_Record.png");
+            QPixmap tPixmap = QPixmap(":/images/22_22/AV_Record.png");
             tPainter->drawPixmap(10, 10, tPixmap);
         }
     }
@@ -996,7 +996,7 @@ void VideoWidget::ShowFrame(void* pBuffer)
     //#############################################################
     if ((mVideoPaused) and (tMSecs % 500 < 250))
     {
-        QPixmap tPixmap = QPixmap(":/images/22_22/Audio_Paused.png");
+        QPixmap tPixmap = QPixmap(":/images/22_22/AV_Paused.png");
         tPainter->drawPixmap(30, 10, tPixmap);
     }
 
@@ -1997,6 +1997,7 @@ void VideoWidget::FullscreenMarkUserIdle()
 VideoWorkerThread::VideoWorkerThread(QString pName, MediaSource *pVideoSource, VideoWidget *pVideoWidget):
     MediaSourceGrabberThread(pName, pVideoSource)
 {
+    LOG(LOG_VERBOSE, "Created");
     mSetGrabResolutionAsap = false;
     mWaitForFirstFrameAfterSeeking = false;
     mMissingFrames = 0;
@@ -2015,6 +2016,7 @@ VideoWorkerThread::VideoWorkerThread(QString pName, MediaSource *pVideoSource, V
 VideoWorkerThread::~VideoWorkerThread()
 {
     DeinitFrameBuffers();
+    LOG(LOG_VERBOSE, "Destroyed");
 }
 
 void VideoWorkerThread::InitFrameBuffers()
@@ -2407,7 +2409,7 @@ void VideoWorkerThread::run()
     mLastFrameNumber = 0;
     mTimeLastDetectedVideoResolutionChange = QTime::currentTime();
 
-    LOG(LOG_VERBOSE, "..start main loop");
+    LOG(LOG_WARN, "================ Entering main VIDEO WORKER loop for media source %s", mMediaSource->GetStreamName().c_str());
     while(mWorkerNeeded)
     {
     	// store last frame number
@@ -2585,8 +2587,13 @@ void VideoWorkerThread::run()
         	LOG(LOG_VERBOSE, "Continuing processing");
         }
     }
+
+    LOG(LOG_WARN, "VIDEO WORKER loop finished for media source %s <<<<<<<<<<<<<<<<", mMediaSource->GetStreamName().c_str());
+
     mMediaSource->CloseGrabDevice();
     mMediaSource->DeleteAllRegisteredMediaSinks();
+
+    LOG(LOG_WARN, "VIDEO WORKER thread finished for media source %s <<<<<<<<<<<<<<<<", mMediaSource->GetStreamName().c_str());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -86,7 +86,7 @@ MediaFifo::~MediaFifo()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void MediaFifo::ReadFifo(char *pBuffer, int &pBufferSize)
+void MediaFifo::ReadFifo(char *pBuffer, int &pBufferSize, int64_t &pBufferNumber)
 {
     int tCurrentFifoReadPtr;
 
@@ -101,8 +101,6 @@ void MediaFifo::ReadFifo(char *pBuffer, int &pBufferSize)
 		#ifdef MF_DEBUG
 			LOG(LOG_VERBOSE, "%s-FIFO: waiting for new input", mName.c_str());
 		#endif
-
-		mFifoDataInputCondition.Reset();
 
 		while(!mFifoDataInputCondition.Wait(&mFifoMutex))
 		{
@@ -137,6 +135,8 @@ void MediaFifo::ReadFifo(char *pBuffer, int &pBufferSize)
 
     if (pBufferSize >= mFifo[tCurrentFifoReadPtr].Size)
     {// input buffer is okay
+        // get the number from Fifo
+        pBufferNumber = mFifo[tCurrentFifoReadPtr].Number;
         // get captured data from Fifo
         pBufferSize = mFifo[tCurrentFifoReadPtr].Size;
         memcpy((void*)pBuffer, mFifo[tCurrentFifoReadPtr].Data, (size_t)pBufferSize);
@@ -206,7 +206,7 @@ int MediaFifo::GetSize()
     return tResult;
 }
 
-int MediaFifo::ReadFifoExclusive(char **pBuffer, int &pBufferSize)
+int MediaFifo::ReadFifoExclusive(char **pBuffer, int &pBufferSize, int64_t &pBufferNumber)
 {
     int tCurrentFifoReadPtr;
 
@@ -221,8 +221,6 @@ int MediaFifo::ReadFifoExclusive(char **pBuffer, int &pBufferSize)
     {
         if (tRounds > 0)
             LOG(LOG_VERBOSE, "%s-FIFO: woke up but no new data found, already passed rounds: %d", mName.c_str(), tRounds);
-
-        mFifoDataInputCondition.Reset();
 
         while(!mFifoDataInputCondition.Wait(&mFifoMutex))
         {
@@ -250,6 +248,8 @@ int MediaFifo::ReadFifoExclusive(char **pBuffer, int &pBufferSize)
     mFifo[tCurrentFifoReadPtr].EntryMutex.lock();
     mFifoMutex.unlock();
 
+    // get number
+    pBufferNumber = mFifo[tCurrentFifoReadPtr].Number;
     // get captured data from Fifo
     pBufferSize = mFifo[tCurrentFifoReadPtr].Size;
     // don't copy, use pointer to data instead
@@ -276,7 +276,7 @@ void MediaFifo::ReadFifoExclusiveFinished(int pEntryPointer)
     mFifo[pEntryPointer].EntryMutex.unlock();
 }
 
-void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize)
+void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize, int64_t pBufferNumber)
 {
     int tCurrentFifoWritePtr;
 
@@ -327,7 +327,9 @@ void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize)
 
     // add the new entry
     mFifo[tCurrentFifoWritePtr].Size = pBufferSize;
-    memcpy((void*)mFifo[tCurrentFifoWritePtr].Data, (const void*)pBuffer, (size_t)pBufferSize);
+    if ((pBuffer != NULL) && (pBufferSize > 0))
+        memcpy((void*)mFifo[tCurrentFifoWritePtr].Data, (const void*)pBuffer, (size_t)pBufferSize);
+    mFifo[tCurrentFifoWritePtr].Number = pBufferNumber;
 
     // unlock fine grained mutex again
     mFifo[tCurrentFifoWritePtr].EntryMutex.unlock();
@@ -339,7 +341,7 @@ void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize)
     if (pBufferSize == 0)
         LOG(LOG_VERBOSE, "Send wake up signal for empty chunk");
 
-    mFifoDataInputCondition.SignalAll();
+    mFifoDataInputCondition.Signal();
     mFifoMutex.unlock();
 	if (pBufferSize == 0)
 	    LOG(LOG_VERBOSE, "%s-FIFO: released lock after writing empty chunk", mName.c_str());

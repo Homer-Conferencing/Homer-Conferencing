@@ -59,6 +59,7 @@ Thread::Thread()
 {
 	mRunning = false;
     mThreadHandle = 0;
+    mThreadId = -1;
     LOG(LOG_VERBOSE, "Created thread object");
 }
 
@@ -659,6 +660,7 @@ void* Thread::StartThreadStaticWrapperUniversal(void* pThread)
 	LOGEX(Thread, LOG_VERBOSE, "Going to start thread main");
 
     Thread *tThreadObject = (Thread*)pThread;
+    tThreadObject->mThreadId = GetTId();
     tThreadObject->mRunning = true;
     void* tResult = tThreadObject->mThreadMain(tThreadObject->mThreadArguments);
     tThreadObject->mRunning = false;
@@ -672,6 +674,7 @@ void* Thread::StartThreadStaticWrapperRun(void* pThread)
 	LOGEX(Thread, LOG_VERBOSE, "Going to start thread main (Run method)");
 
     Thread *tThreadObject = (Thread*)pThread;
+    tThreadObject->mThreadId = GetTId();
     tThreadObject->mRunning = true;
     void* tResult = tThreadObject->Run(tThreadObject->mThreadArguments);
     tThreadObject->mRunning = false;

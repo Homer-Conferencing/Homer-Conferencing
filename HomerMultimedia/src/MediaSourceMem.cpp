@@ -79,21 +79,20 @@ MediaSourceMem::MediaSourceMem(string pName, bool pRtpActivated):
     mDecoderFramePreBufferTime = MEDIA_SOURCE_MEM_PRE_BUFFER_TIME;
     mDecoderTargetFrameIndex = 0;
     mDecoderRecalibrateRTGrabbingAfterSeeking = true;
-    mDecoderFlushBuffersAfterSeeking = false;
     mDecoderSinglePictureGrabbed = false;
     mDecoderFifo = NULL;
-    mDecoderMetaDataFifo = NULL;
     mDecoderFragmentFifo = NULL;
 	mResXLastGrabbedFrame = 0;
 	mResYLastGrabbedFrame = 0;
     mDecoderSinglePictureResX = 0;
     mDecoderSinglePictureResY = 0;
     mDecoderUsesPTSFromInputPackets = false;
-    mGrabberCurrentFrameIndex = 0;
-    mFrameBufferLastWrittenFrameIndex = 0;
+    mCurrentOutputFrameIndex = 0;
+    mLastBufferedOutputFrameIndex = 0;
 	mWrappingHeaderSize= 0;
     mGrabberProvidesRTGrabbing = true;
     mSourceType = SOURCE_MEMORY;
+    mDecoderAudioSamplesFifo = NULL;
     mStreamPacketBuffer = (char*)malloc(MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE);
     mFragmentBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
     mFragmentNumber = 0;
@@ -122,6 +121,11 @@ MediaSourceMem::~MediaSourceMem()
         delete mDecoderFragmentFifo;
         mDecoderFragmentFifo = NULL;
     }
+    if (mDecoderFifo != NULL)
+    {
+        delete mDecoderFifo;
+        mDecoderFifo = NULL;
+    }
     mDecoderFragmentFifoDestructionMutex.unlock();
 	free(mStreamPacketBuffer);
     free(mFragmentBuffer);
@@ -136,6 +140,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
 	MediaSourceMem *tMediaSourceMemInstance = (MediaSourceMem*)pOpaque;
     char *tBuffer = (char*)pBuffer;
     int tBufferSize = pBufferSize;
+    int64_t tFragmentNumber;
 
     #ifdef MSMEM_DEBUG_PACKETS
         LOGEX(MediaSourceMem, LOG_VERBOSE, "Got a call for GetNextPacket() with a packet buffer at %p and size of %d bytes", pBuffer, pBufferSize);
@@ -158,7 +163,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
             tFragmentData = &tMediaSourceMemInstance->mFragmentBuffer[0];
             tFragmentBufferSize = MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE; // maximum size of one single fragment of a frame packet
             // receive a fragment
-            tMediaSourceMemInstance->ReadFragment(tFragmentData, tFragmentBufferSize);
+            tMediaSourceMemInstance->ReadFragment(tFragmentData, tFragmentBufferSize, tFragmentNumber);
             #ifdef MSMEM_DEBUG_PACKET_RECEIVER
                 LOGEX(MediaSourceMem, LOG_VERBOSE, "Got packet fragment of size %d at address %p", tFragmentBufferSize, tFragmentData);
             #endif
@@ -167,12 +172,12 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
 //                    LOG(LOG_VERBOSE, "stream data (%2u): RTP+12 %02hx(%3d)  RTP %02hx(%3d)", i, tFragmentData[i + 12] & 0xFF, tFragmentData[i + 12] & 0xFF, tFragmentData[i] & 0xFF, tFragmentData[i] & 0xFF);
             if (tMediaSourceMemInstance->mGrabbingStopped)
             {
-                LOGEX(MediaSourceMem, LOG_VERBOSE, "Grabbing was stopped meanwhile");
+                LOGEX(MediaSourceMem, LOG_WARN, "%s-Grabbing was stopped", tMediaSourceMemInstance->GetMediaTypeStr().c_str());
                 return AVERROR(ENODEV); //force negative resulting buffer size to signal error and force a return to the calling GUI!
             }
             if (tFragmentBufferSize < 0)
             {
-                LOGEX(MediaSourceMem, LOG_VERBOSE, "Received invalid fragment");
+                LOGEX(MediaSourceMem, LOG_ERROR, "Received invalid fragment");
                 return 0;
             }
             if (tFragmentBufferSize > 0)
@@ -180,7 +185,9 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
                 tFragmentDataSize = tFragmentBufferSize;
                 // parse and remove the RTP header, extract the encapsulated frame fragment
                 tFragmenHasAVData = tMediaSourceMemInstance->RtpParse(tFragmentData, tFragmentDataSize, tLastFragment, tFragmentIsSenderReport, tMediaSourceMemInstance->mSourceCodecId, false);
-
+                #ifdef MSMEM_DEBUG_PACKETS
+                    LOGEX(MediaSourceMem, LOG_VERBOSE, "Got %d bytes %s payload from %d bytes RTP packet", tFragmentDataSize, GetGuiNameFromCodecID(tMediaSourceMemInstance->mSourceCodecId).c_str(), tFragmentBufferSize);
+                #endif
                 // relay new data to registered sinks
                 if(tFragmenHasAVData)
                 {// fragment is okay
@@ -225,7 +232,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
                     {// we have a received an unsupported RTCP packet/RTP payload or something went completely wrong
                         if (tMediaSourceMemInstance->HasInputStreamChanged())
                         {// we have to reset the source
-                            LOGEX(MediaSourceMem, LOG_VERBOSE, "Detected source change at remote side, signaling EOF and returning immediately");
+                            LOGEX(MediaSourceMem, LOG_WARN, "Detected source change at remote side, signaling EOF and returning immediately");
                             return AVERROR(ENODEV);
                         }else
                         {// something went wrong
@@ -237,23 +244,23 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
             {
                 if (tMediaSourceMemInstance->mGrabbingStopped)
                 {
-                    LOGEX(MediaSourceMem, LOG_VERBOSE, "Detected empty signaling fragment, grabber should be stopped, returning zero data");
+                    LOGEX(MediaSourceMem, LOG_WARN, "Detected empty signaling fragment, grabber should be stopped, returning zero data");
                     return 0;
-                }else if (!tMediaSourceMemInstance->mDecoderNeeded)
+                }else if (!tMediaSourceMemInstance->mDecoderThreadNeeded)
                 {
-                    LOGEX(MediaSourceMem, LOG_VERBOSE, "Detected empty signaling fragment, decoder should be stopped, returning zero data");
+                    LOGEX(MediaSourceMem, LOG_WARN, "Detected empty signaling fragment, decoder should be stopped, returning zero data");
                     return 0;
                 }else
-                    LOGEX(MediaSourceMem, LOG_VERBOSE, "Detected empty signaling fragment, ignoring it");
+                    LOGEX(MediaSourceMem, LOG_WARN, "Detected empty signaling fragment, ignoring it");
             }
         }while(!tLastFragment);
     }else
     {// rtp is inactive
-        tMediaSourceMemInstance->ReadFragment(tBuffer, tBufferSize);
+        tMediaSourceMemInstance->ReadFragment(tBuffer, tBufferSize, tFragmentNumber);
         if (tMediaSourceMemInstance->mGrabbingStopped)
         {
-            LOGEX(MediaSourceMem, LOG_VERBOSE, "Grabbing was stopped meanwhile");
-            return -1; //force negative resulting buffer size to signal error and force a return to the calling GUI!
+            LOGEX(MediaSourceMem, LOG_WARN, "%s-Grabbing was stopped", tMediaSourceMemInstance->GetMediaTypeStr().c_str());
+            return AVERROR(ENODEV); //force negative resulting buffer size to signal error and force a return to the calling GUI!
         }
 
         if (tBufferSize < 0)
@@ -273,7 +280,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
     return tBufferSize;
 }
 
-void MediaSourceMem::WriteFragment(char *pBuffer, int pBufferSize)
+void MediaSourceMem::WriteFragment(char *pBuffer, int pBufferSize, int64_t pFragmentNumber)
 {
     if (mDecoderFragmentFifo == NULL)
     {
@@ -295,17 +302,17 @@ void MediaSourceMem::WriteFragment(char *pBuffer, int pBufferSize)
         mDecoderFragmentFifo->ClearFifo();
     }
 
-    mDecoderFragmentFifo->WriteFifo(pBuffer, pBufferSize);
+    mDecoderFragmentFifo->WriteFifo(pBuffer, pBufferSize, pFragmentNumber);
 }
 
-void MediaSourceMem::ReadFragment(char *pData, int &pDataSize)
+void MediaSourceMem::ReadFragment(char *pData, int &pDataSize, int64_t &pFragmentNumber)
 {
     if (mDecoderFragmentFifo == NULL)
     {
         return;
     }
 
-    mDecoderFragmentFifo->ReadFifo(&pData[0], pDataSize);
+    mDecoderFragmentFifo->ReadFifo(&pData[0], pDataSize, pFragmentNumber);
 
     if (pDataSize > 0)
     {
@@ -422,7 +429,7 @@ GrabResolutions MediaSourceMem::GetSupportedVideoGrabResolutions()
 void MediaSourceMem::SetFrameRate(float pFps)
 {
     LOG(LOG_VERBOSE, "Calls to SetFrameRate() are ignored here, otherwise the real-time playback would delay input data for the wrong FPS value");
-    LOG(LOG_VERBOSE, "Ignoring %f, keeping FPS of %f", pFps, mFrameRate);
+    LOG(LOG_VERBOSE, "Ignoring %f, keeping FPS of %f", pFps, GetInputFrameRate());
 }
 
 bool MediaSourceMem::SupportsRecording()
@@ -517,13 +524,14 @@ void MediaSourceMem::StopGrabbing()
 {
 	MediaSource::StopGrabbing();
 
-	LOG(LOG_VERBOSE, "Going to stop memory based %s source", GetMediaTypeStr().c_str());
+    WriteFragment(NULL, 0, 0);
 
-    char tData[4];
-    if (mDecoderFragmentFifo != NULL)
-    {
-        mDecoderFragmentFifo->WriteFifo(tData, 0);
-        mDecoderFragmentFifo->WriteFifo(tData, 0);
+    if (mDecoderFifo != NULL)
+    {// everything is okay
+        WriteFrameOutputBuffer(NULL, 0, 0);
+    }else
+    {// decoder FIFO is invalid
+        //the decoder thread wasn't started yet? - maybe because of input errors during Open(Video/Audio)GrabDevice
     }
 
     LOG(LOG_VERBOSE, "Memory based %s source successfully stopped", GetMediaTypeStr().c_str());
@@ -571,10 +579,10 @@ int MediaSourceMem::CalculateFrameBufferSize()
     switch(GetMediaType())
     {
         case MEDIA_AUDIO:
-            tResult = rint(mDecoderFrameBufferTimeMax * mRealFrameRate /* 44100 samples per second / 1024 samples per frame */);
+            tResult = rint(mDecoderFrameBufferTimeMax * mOutputFrameRate /* 44100 samples per second / 1024 samples per frame */);
             break;
         case MEDIA_VIDEO:
-            tResult = rint(mDecoderFrameBufferTimeMax * mRealFrameRate /* r_frame_rate.num / r_frame_rate.den from the AVStream */);
+            tResult = rint(mDecoderFrameBufferTimeMax * mOutputFrameRate /* r_frame_rate.num / r_frame_rate.den from the AVStream */);
             break;
         default:
             LOG(LOG_ERROR, "Unsupported media type");
@@ -599,10 +607,13 @@ void MediaSourceMem::DoSetVideoGrabResolution(int pResX, int pResY)
             mMediaType = MEDIA_VIDEO;
         }
 
-        LOG(LOG_VERBOSE, "Stopping decoder from DoSetVideoGrabResolution()");
-        StopDecoder();
-        LOG(LOG_VERBOSE, "Starting decoder from DoSetVideoGrabResolution()");
-        StartDecoder();
+        if (IsRunning())
+        {
+            LOG(LOG_VERBOSE, "Stopping decoder from DoSetVideoGrabResolution()");
+            StopDecoder();
+            LOG(LOG_VERBOSE, "Starting decoder from DoSetVideoGrabResolution()");
+            StartDecoder();
+        }
     }
     LOG(LOG_VERBOSE, "DoSetVideoGrabResolution() finished");
 }
@@ -720,7 +731,7 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 		return false;
 
     // overwrite FPS by the playout FPS value
-    mFrameRate = mRealFrameRate;
+    mInputFrameRate = mOutputFrameRate;
 
     MarkOpenGrabDeviceSuccessful();
 
@@ -789,12 +800,16 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     	case CODEC_ID_ADPCM_G722:
     		tCodec->channels = 1;
     		tCodec->sample_rate = 16000;
+            mFormatContext->streams[mMediaStreamIndex]->time_base.den = 8000;
+            mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
 			break;
     	case CODEC_ID_GSM:
     	case CODEC_ID_PCM_ALAW:
 		case CODEC_ID_PCM_MULAW:
 			tCodec->channels = 1;
 			tCodec->sample_rate = 8000;
+			mFormatContext->streams[mMediaStreamIndex]->time_base.den = 8000;
+			mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
 			break;
     	case CODEC_ID_PCM_S16BE:
     		tCodec->channels = 2;
@@ -808,11 +823,10 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     if (!OpenDecoder())
     	return false;
 
+    mInputFrameRate = (float)mInputAudioSampleRate / mCodecContext->frame_size /* shouldn't be zero here */;
+
     if (!OpenFormatConverter())
 		return false;
-
-    // overwrite FPS by the playout FPS value
-    mFrameRate = mRealFrameRate;
 
     MarkOpenGrabDeviceSuccessful();
 
@@ -850,12 +864,12 @@ bool MediaSourceMem::CloseGrabDevice()
 
     ResetPacketStatistic();
 
-    mGrabberCurrentFrameIndex = 0;
-    mFrameBufferLastWrittenFrameIndex = 0;
+    mCurrentOutputFrameIndex = 0;
+    mLastBufferedOutputFrameIndex = 0;
+    mSourceTimeShiftForRTGrabbing = 0;
     mDecoderSinglePictureGrabbed = false;
     mEOFReached = false;
     mDecoderRecalibrateRTGrabbingAfterSeeking = true;
-    mDecoderFlushBuffersAfterSeeking = false;
     mResXLastGrabbedFrame = 0;
     mResYLastGrabbedFrame = 0;
     mDecoderSynchPoints = 0;
@@ -931,7 +945,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                 // acknowledge "success"
                 MarkGrabChunkSuccessful(mFrameNumber); // don't panic, it is only EOF
 
-                LOG(LOG_WARN, "Signaling EOF");
+                LOG(LOG_WARN, "%s-Grabber reached EOF", GetMediaTypeStr().c_str());
                 return GRAB_RES_EOF;
             }else
             {// queue empty but EOF not reached
@@ -967,7 +981,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                     LOG(LOG_VERBOSE, "Signal to decoder that new data is needed");
                 #endif
                 mDecoderNeedWorkConditionMutex.lock();
-                mDecoderNeedWorkCondition.SignalAll();
+                mDecoderNeedWorkCondition.Signal();
                 mDecoderNeedWorkConditionMutex.unlock();
                 #ifdef MSMEM_DEBUG_DECODER_STATE
                     LOG(LOG_VERBOSE, "Signaling to decoder done");
@@ -996,7 +1010,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
             // acknowledge "success"
             MarkGrabChunkSuccessful(mFrameNumber); // don't panic, it is only EOF
 
-            LOG(LOG_WARN, "Signaling invalid result");
+            LOG(LOG_WARN, "Signaling invalid %s grabber result", GetMediaTypeStr().c_str());
             return GRAB_RES_INVALID;
         }
 
@@ -1004,9 +1018,9 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
             LOG(LOG_VERBOSE, "Grabbed chunk %d of size %d with pts %"PRId64" from decoder FIFO", mFrameNumber, pChunkSize, tCurrentFramePts);
         #endif
 
-        if ((mDecoderTargetFrameIndex != 0) && (mGrabberCurrentFrameIndex < mDecoderTargetFrameIndex))
+        if ((mDecoderTargetFrameIndex != 0) && (mCurrentOutputFrameIndex < mDecoderTargetFrameIndex))
         {// we are waiting for some special frame number
-            LOG(LOG_VERBOSE, "Dropping grabbed %s frame %.2f because we are still waiting for frame %.2f", GetMediaTypeStr().c_str(), (float)mGrabberCurrentFrameIndex, mDecoderTargetFrameIndex);
+            LOG(LOG_VERBOSE, "Dropping grabbed %s frame %.2f because we are still waiting for frame %.2f", GetMediaTypeStr().c_str(), (float)mCurrentOutputFrameIndex, mDecoderTargetFrameIndex);
             tShouldGrabNext = true;
         }
 
@@ -1014,18 +1028,18 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
         if (!tShouldGrabNext)
         {
             #ifdef MSMEM_DEBUG_PACKETS
-                LOG(LOG_VERBOSE, "Setting current frame index to %"PRId64"", tCurrentFramePts);
+                LOG(LOG_VERBOSE, "Setting current frame index to %"PRId64, tCurrentFramePts);
             #endif
-            mGrabberCurrentFrameIndex = tCurrentFramePts;
+            mCurrentOutputFrameIndex = tCurrentFramePts;
         }
 
         // check for EOF
-        int64_t tCurrentRelativeFramePts = tCurrentFramePts - mSourceStartPts;
+        int64_t tCurrentRelativeFramePts = tCurrentFramePts - CalculateOutputFrameNumber(mInputStartPts);
         if ((tCurrentRelativeFramePts >= mNumberOfFrames) && (mNumberOfFrames != 0) && (!InputIsPicture()))
         {// PTS value is bigger than possible max. value, EOF reached
-            LOG(LOG_VERBOSE, "Returning EOF for %s input because PTS value %"PRId64" (%"PRId64" - %.2f) is bigger than or equal to maximum %.2f", GetMediaTypeStr().c_str(), tCurrentRelativeFramePts, tCurrentFramePts, (float)mSourceStartPts, (float)mNumberOfFrames);
-            mEOFReached = true;
-            tShouldGrabNext = false;
+            LOG(LOG_VERBOSE, "%s PTS value %"PRId64" (%"PRId64" - %.2f) is bigger than or equal to maximum %.2f", GetMediaTypeStr().c_str(), tCurrentRelativeFramePts, tCurrentFramePts, (float)mInputStartPts, (float)mNumberOfFrames);
+
+            //no panic, ignore this and continue playback
         }
 
         // unlock grabbing
@@ -1057,7 +1071,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
             CalibrateRTGrabbing();
 
             #ifdef MSMEM_DEBUG_SEEKING
-                LOG(LOG_VERBOSE, "Read valid %s frame %.2f after seeking in input stream", GetMediaTypeStr().c_str(), (float)mGrabberCurrentFrameIndex);
+                LOG(LOG_VERBOSE, "Read valid %s frame %.2f after seeking in input stream", GetMediaTypeStr().c_str(), (float)mCurrentOutputFrameIndex);
             #endif
 
             mDecoderRecalibrateRTGrabbingAfterSeeking = false;
@@ -1076,10 +1090,6 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
 bool MediaSourceMem::InputIsPicture()
 {
     bool tResult = false;
-
-//    LOG(LOG_VERBOSE, "Source opened: %d", mMediaSourceOpened);
-//    if ((mFormatContext != NULL) && (mFormatContext->streams[mMediaStreamIndex]))
-//        LOG(LOG_VERBOSE, "Media type: %d", mFormatContext->streams[mMediaStreamIndex]->codec->codec_type);
 
     // do we have a picture?
     if ((mMediaSourceOpened) &&
@@ -1101,7 +1111,7 @@ void MediaSourceMem::StartDecoder()
     // trigger a RT playback calibration
     mDecoderRecalibrateRTGrabbingAfterSeeking = true;
 
-    mDecoderNeeded = false;
+    mDecoderThreadNeeded = false;
 
     if (!IsRunning())
     {
@@ -1111,7 +1121,7 @@ void MediaSourceMem::StartDecoder()
         int tLoops = 0;
 
         // wait until thread is running
-        while ((!IsRunning() /* wait until thread is started */) || (!mDecoderNeeded /* wait until thread has finished the init. process */))
+        while ((!IsRunning() /* wait until thread is started */) || (!mDecoderThreadNeeded /* wait until thread has finished the init. process */))
         {
             if (tLoops % 10 == 0)
                 LOG(LOG_VERBOSE, "Waiting for start of %s decoding thread, loop count: %d", GetMediaTypeStr().c_str(), ++tLoops);
@@ -1131,7 +1141,7 @@ void MediaSourceMem::StopDecoder()
     if (mDecoderFifo != NULL)
     {
         // tell decoder thread it isn't needed anymore
-        mDecoderNeeded = false;
+        mDecoderThreadNeeded = false;
 
         // wait for termination of decoder thread
         do
@@ -1140,10 +1150,10 @@ void MediaSourceMem::StopDecoder()
                 LOG(LOG_WARN, "Signaling attempt %d to stop %s decoder", tSignalingRound, GetMediaTypeStr().c_str());
             tSignalingRound++;
 
-            WriteFragment(tmp, 0);
+            WriteFragment(tmp, 0, 0);
 
             // force a wake up of decoder thread
-            mDecoderNeedWorkCondition.SignalAll();
+            mDecoderNeedWorkCondition.Signal();
 
             Suspend(25 * 1000);
         }while(IsRunning());
@@ -1171,6 +1181,180 @@ void MediaSourceMem::DestroyVideoScaler(VideoScaler *pScaler)
     pScaler->StopScaler();
 }
 
+void MediaSourceMem::ReadPacketFromInputStream(AVPacket *pPacket, double &pPacketFrameNumber)
+{
+    int             tRes;
+
+    // #########################################
+    // read new packet
+    // #########################################
+    bool tShouldReadNext;
+    int tReadIteration = 0;
+    do
+    {
+        tReadIteration++;
+        tShouldReadNext = false;
+
+        if (tReadIteration > 1)
+        {
+            // free packet buffer
+            #ifdef MSMEM_DEBUG_PACKETS
+                LOG(LOG_WARN, "Freeing the ffmpeg packet structure..(read loop: %d)", tReadIteration);
+            #endif
+            av_free_packet(pPacket);
+        }
+
+        // reset packet
+        pPacket->data = NULL;
+        pPacket->size = 0;
+
+        // read next sample from source - blocking
+        if ((tRes = av_read_frame(mFormatContext, pPacket)) < 0)
+        {// failed to read frame
+            #ifdef MSMEM_DEBUG_PACKETS
+                if (!tInputIsPicture)
+                    LOG(LOG_VERBOSE, "Read bad frame %d with %d bytes from stream %d and result %s(%d)", pPacket->pts, pPacket->size, pPacket->stream_index, strerror(AVUNERROR(tRes)), tRes);
+                else
+                    LOG(LOG_VERBOSE, "Read bad picture %d with %d bytes from stream %d and result %s(%d)", pPacket->pts, pPacket->size, pPacket->stream_index, strerror(AVUNERROR(tRes)), tRes);
+            #endif
+
+            // error reporting
+            if (!mGrabbingStopped)
+            {
+                if (HasInputStreamChanged())
+                {
+                    mEOFReached = true;
+                }else if (tRes == (int)AVERROR_EOF)
+                {
+                    pPacketFrameNumber = mNumberOfFrames;
+                    LOG(LOG_WARN, "%s-Decoder reached EOF", GetMediaTypeStr().c_str());
+                    mEOFReached = true;
+                }else if (tRes == (int)AVUNERROR(EIO))
+                {
+                    // acknowledge failed"
+                    MarkGrabChunkFailed(GetMediaTypeStr() + " source has I/O error");
+
+                    // signal EOF instead of I/O error
+                    LOG(LOG_VERBOSE, "Returning EOF in %s stream because of I/O error", GetMediaTypeStr().c_str());
+                    mEOFReached = true;
+                }else if (tRes != (int)AVUNERROR(EAGAIN))
+                {// we should grab again, we signaled this ourself
+                    if (mDecoderThreadNeeded)
+                        tShouldReadNext = true;
+                }else
+                {// actually an error
+                    LOG(LOG_ERROR, "Couldn't grab a %s frame because \"%s\"(%d)", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)), tRes);
+                }
+            }
+        }else
+        {// new frame was read
+            if (pPacket->stream_index == mMediaStreamIndex)
+            {
+                #ifdef MSMEM_DEBUG_PACKETS
+                    if (!tInputIsPicture)
+                        LOG(LOG_VERBOSE, "Read good frame %d with %d bytes from stream %d", pPacket->pts, pPacket->size, pPacket->stream_index);
+                    else
+                        LOG(LOG_VERBOSE, "Read good picture %d with %d bytes from stream %d", pPacket->pts, pPacket->size, pPacket->stream_index);
+                #endif
+
+                // is "presentation timestamp" stored within media stream?
+                if (pPacket->dts != (int64_t)AV_NOPTS_VALUE)
+                { // DTS value
+                    pPacketFrameNumber = pPacket->dts;
+                    #ifdef MSMEM_DEBUG_TIMING
+                        LOG(LOG_VERBOSE, "Found %d bytes with DTS: %ld => %.2f %lf", pPacket->size, pPacket->dts, (float)pPacketFrameNumber, av_q2d(mFormatContext->streams[pPacket->stream_index]->time_base));
+                    #endif
+                    #ifdef MSMEM_DEBUG_PACKETS
+                        if ((pPacket->dts < mDecoderLastReadPts) && (mDecoderLastReadPts != 0) && (pPacket->dts > 16 /* ignore the first frames */))
+                            LOG(LOG_VERBOSE, "%s-DTS values are non continuous in stream, read DTS: %"PRId64", last %"PRId64", alternative PTS: %"PRId64, GetMediaTypeStr().c_str(), pPacket->dts, mDecoderLastReadPts, pPacket->pts);
+                    #endif
+                }else
+                {// PTS value
+                    pPacketFrameNumber = pPacket->pts;
+                    #ifdef MSMEM_DEBUG_TIMING
+                        LOG(LOG_VERBOSE, "Found %d bytes with PTS: %ld => %.2f %lf", pPacket->size, pPacket->pts, (float)pPacketFrameNumber, av_q2d(mFormatContext->streams[pPacket->stream_index]->time_base));
+                    #endif
+                    #ifdef MSMEM_DEBUG_PACKETS
+                        if ((pPacket->pts < mDecoderLastReadPts) && (mDecoderLastReadPts != 0) && (pPacket->pts > 16 /* ignore the first frames */))
+                            LOG(LOG_VERBOSE, "%s-PTS values are non continuous in stream, %"PRId64" is lower than last %"PRId64", alternative DTS: %"PRId64", difference is: %"PRId64, GetMediaTypeStr().c_str(), pPacket->pts, mDecoderLastReadPts, pPacket->dts, mDecoderLastReadPts - pPacket->pts);
+                    #endif
+                }
+
+                if (mRtpActivated)
+                {// derive the frame number from the RTP timestamp, which works independent from packet loss
+                    pPacketFrameNumber = CalculateFrameNumberFromRTP();
+                    #ifdef MSMEM_DEBUG_TIMING
+                        LOG(LOG_VERBOSE, "Found %d bytes with PTS: %ld => %.2f %lf", pPacket->size, pPacket->pts, (float)pPacketFrameNumber, av_q2d(mFormatContext->streams[pPacket->stream_index]->time_base));
+                    #endif
+                    pPacket->pts = pPacketFrameNumber;
+                    pPacket->dts = pPacketFrameNumber;
+                    #ifdef MSMEM_DEBUG_PRE_BUFFERING
+                        LOG(LOG_VERBOSE, "Got from RTP data the frame number: %d", pPacketFrameNumber);
+                    #endif
+                }
+
+                // for seeking: is the currently read frame close to target frame index?
+                //HINT: we need a key frame in the remaining distance to the target frame)
+                if ((mDecoderTargetFrameIndex != 0) && (pPacketFrameNumber < mDecoderTargetFrameIndex - MEDIA_SOURCE_MEM_SEEK_MAX_EXPECTED_GOP_SIZE))
+                {// we are still waiting for a special frame number
+                    #ifdef MSMEM_DEBUG_SEEKING
+                        LOG(LOG_VERBOSE, "Dropping %s frame %"PRId64" because we are waiting for frame %.2f", GetMediaTypeStr().c_str(), pPacketFrameNumber, mDecoderTargetFrameIndex);
+                    #endif
+                    tShouldReadNext = true;
+                }else
+                {
+                    if (mDecoderRecalibrateRTGrabbingAfterSeeking)
+                    {
+                        // wait for next key frame packets (either i-frame or p-frame
+                        if (mDecoderWaitForNextKeyFramePackets)
+                        {
+                            if (pPacket->flags & AV_PKT_FLAG_KEY)
+                            {
+                                #ifdef MSMEM_DEBUG_SEEKING
+                                    LOG(LOG_VERBOSE, "Read first %s key packet in packet frame number %"PRId64" with flags %d from input stream after seeking", GetMediaTypeStr().c_str(), pPacketFrameNumber, pPacket->flags);
+                                #endif
+                                mDecoderWaitForNextKeyFramePackets = false;
+                            }else
+                            {
+                                #ifdef MSMEM_DEBUG_SEEKING
+                                    LOG(LOG_VERBOSE, "Dropping %s frame packet %"PRId64" because we are waiting for next key frame packets after seek target frame %.2f", GetMediaTypeStr().c_str(), pPacketFrameNumber, mDecoderTargetFrameIndex);
+                                #endif
+                               tShouldReadNext = true;
+                            }
+                        }
+                        #ifdef MSMEM_DEBUG_SEEKING
+                            LOG(LOG_VERBOSE, "Read %s frame number %"PRId64" from input stream after seeking", GetMediaTypeStr().c_str(), pPacketFrameNumber);
+                        #endif
+                    }else
+                    {
+                        #if defined(MSMEM_DEBUG_DECODER_STATE) || defined(MSMEM_DEBUG_PACKETS)
+                            LOG(LOG_WARN, "Read %s frame number %"PRId64" from input stream, last frame was %"PRId64, GetMediaTypeStr().c_str(), pPacketFrameNumber, mDecoderLastReadPts);
+                        #endif
+                    }
+                }
+                // check if PTS value is continuous
+                if ((mDecoderLastReadPts > 0) && (pPacketFrameNumber < mDecoderLastReadPts))
+                {// current packet is older than the last packet
+                    LOG(LOG_WARN, "Found interleaved %s packets in %s source, non continuous PTS: %"PRId64" => %d", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), mDecoderLastReadPts, pPacketFrameNumber);
+                }
+                mDecoderLastReadPts = pPacketFrameNumber;
+            }else
+            {
+                tShouldReadNext = true;
+                #ifdef MSMEM_DEBUG_PACKETS
+                    LOG(LOG_VERBOSE, "Read frame %d of stream %d instead of desired stream %d", pPacket->pts, pPacket->stream_index, mMediaStreamIndex);
+                #endif
+            }
+        }
+    }while ((tShouldReadNext) && (!mEOFReached) && (mDecoderThreadNeeded));
+
+    #ifdef MSMEM_DEBUG_PACKETS
+        if (tReadIteration > 1)
+            LOG(LOG_VERBOSE, "Needed %d read iterations to get next %s  packet from source stream", tReadIteration, GetMediaTypeStr().c_str());
+        //LOG(LOG_VERBOSE, "New %s chunk with size: %d and stream index: %d", GetMediaTypeStr().c_str(), pPacket->size, pPacket->stream_index);
+    #endif
+}
+
 //###################################
 //### Decoder thread
 //###################################
@@ -1186,8 +1370,8 @@ void* MediaSourceMem::Run(void* pArgs)
     int                 tWaitLoop;
     /* current chunk */
     int                 tCurrentChunkSize = 0;
-    int64_t             tCurPacketPts = 0; // input PTS/DTS stream from the packets
-    int64_t             tCurFramePts = 0; // ordered PTS/DTS stream from the decoder
+    double              tCurrrentInputPacketPts = 0; // input PTS/DTS stream from the packets
+    int64_t             tCurrentOutputFrameNumber = 0; // output frame number from the decoder
     /* video scaler */
     VideoScaler         *tVideoScaler = NULL;
     /* picture as input */
@@ -1203,6 +1387,18 @@ void* MediaSourceMem::Run(void* pArgs)
     tInputIsPicture = InputIsPicture();
 
     LOG(LOG_WARN, ">>>>>>>>>>>>>>>> %s-Decoding thread for %s media source started", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
+
+    if (mDecoderFifo != NULL)
+    {
+        LOG(LOG_VERBOSE, "Releasing old %s decoder FIFO", GetMediaTypeStr().c_str());
+
+        // make sure the grabber isn't active at the moment
+        delete mDecoderFifo;
+        mDecoderFifo = NULL;
+
+        LOG(LOG_VERBOSE, "%s decoder FIFO released", GetMediaTypeStr().c_str());
+    }
+
     switch(mMediaType)
     {
         case MEDIA_VIDEO:
@@ -1266,7 +1462,9 @@ void* MediaSourceMem::Run(void* pArgs)
             mDecoderFifo = new MediaFifo(CalculateFrameBufferSize(), tChunkBufferSize, GetMediaTypeStr() + "-MediaSource" + GetSourceTypeStr() + "(Data)");
 
             // init fifo buffer
-            tSampleFifo = HM_av_fifo_alloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE * 2);
+            mDecoderAudioSamplesFifo = HM_av_fifo_alloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE * 2);
+            if (mDecoderAudioSamplesFifo == NULL)
+                LOG(LOG_ERROR, "Out of audio memory");
 
             break;
         default:
@@ -1276,29 +1474,22 @@ void* MediaSourceMem::Run(void* pArgs)
             break;
     }
 
-    mDecoderMetaDataFifo = new MediaFifo(CalculateFrameBufferSize(), sizeof(ChunkDescriptor), GetMediaTypeStr() + "-MediaSource" + GetSourceTypeStr() + "(MetaData)");
-
     // reset last PTS
     mDecoderLastReadPts = 0;
-    mGrabberCurrentFrameIndex = 0;
-    mFrameBufferLastWrittenFrameIndex = 0;
-
-    // trigger a avcodec_flush_buffers()
-    mDecoderFlushBuffersAfterSeeking = true;
+    mCurrentOutputFrameIndex = 0;
+    mLastBufferedOutputFrameIndex = 0;
 
     // signal that decoder thread has finished init.
-    mDecoderNeeded = true;
+    mDecoderThreadNeeded = true;
 
-    // wait for next key frame before we do anything
-    mDecoderWaitForNextKeyFrame = true;
-    mDecoderWaitForNextKeyFrameTimeout = av_gettime() + MSM_WAITING_FOR_FIRST_KEY_FRAME_TIMEOUT * 1000 * 1000;
+    CalculateExpectedOutputPerInputFrame();
 
-    // reset buffer counter
-    mDecoderOutputFrameDelay = 0;
+    // trigger an avcodec_flush_buffers()
+    ResetDecoderBuffers();
 
     LOG(LOG_WARN, "================ Entering main %s decoding loop for %s media source", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
 
-    while(mDecoderNeeded)
+    while ((mDecoderThreadNeeded) && (!mGrabbingStopped))
     {
         #ifdef MSMEM_DEBUG_DECODER_STATE
             LOG(LOG_VERBOSE, "%s-decoder loop", GetMediaTypeStr().c_str());
@@ -1316,176 +1507,7 @@ void* MediaSourceMem::Run(void* pArgs)
 
             if ((!tInputIsPicture) || (!mDecoderSinglePictureGrabbed))
             {// we try to read packet(s) from input stream -> either the desired picture or a single frame
-                // #########################################
-                // read new packet
-                // #########################################
-                bool tShouldReadNext;
-                int tReadIteration = 0;
-                do
-                {
-                    tReadIteration++;
-                    tShouldReadNext = false;
-
-                    if (tReadIteration > 1)
-                    {
-                        // free packet buffer
-                        #ifdef MSMEM_DEBUG_PACKETS
-                            LOG(LOG_WARN, "Freeing the ffmpeg packet structure..(read loop: %d)", tReadIteration);
-                        #endif
-                        av_free_packet(tPacket);
-                    }
-
-                    // reset packet
-                    tPacket->data = NULL;
-                    tPacket->size = 0;
-
-                    // read next sample from source - blocking
-                    if ((tRes = av_read_frame(mFormatContext, tPacket)) < 0)
-                    {// failed to read frame
-                        #ifdef MSMEM_DEBUG_PACKETS
-                            if (!tInputIsPicture)
-                                LOG(LOG_VERBOSE, "Read bad frame %d with %d bytes from stream %d and result %s(%d)", tPacket->pts, tPacket->size, tPacket->stream_index, strerror(AVUNERROR(tRes)), tRes);
-                            else
-                                LOG(LOG_VERBOSE, "Read bad picture %d with %d bytes from stream %d and result %s(%d)", tPacket->pts, tPacket->size, tPacket->stream_index, strerror(AVUNERROR(tRes)), tRes);
-                        #endif
-
-                        // error reporting
-                        if (!mGrabbingStopped)
-                        {
-                            if (HasInputStreamChanged())
-                            {
-                                mEOFReached = true;
-                            }else if (tRes == (int)AVERROR_EOF)
-                            {
-                                tCurPacketPts = mNumberOfFrames;
-                                LOG(LOG_WARN, "%s-Decoder reached EOF", GetMediaTypeStr().c_str());
-                                mEOFReached = true;
-                            }else if (tRes == (int)AVUNERROR(EIO))
-                            {
-                                // acknowledge failed"
-                                MarkGrabChunkFailed(GetMediaTypeStr() + " source has I/O error");
-
-                                // signal EOF instead of I/O error
-                                LOG(LOG_VERBOSE, "Returning EOF in %s stream because of I/O error", GetMediaTypeStr().c_str());
-                                mEOFReached = true;
-                            }else if (tRes != (int)AVUNERROR(EAGAIN))
-                            {// we should grab again, we signaled this ourself
-                                if (mDecoderNeeded)
-                                    tShouldReadNext = true;
-                            }else
-                            {// actually an error
-                                LOG(LOG_ERROR, "Couldn't grab a %s frame because \"%s\"(%d)", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)), tRes);
-                            }
-                        }
-                    }else
-                    {// new frame was read
-                        if (tPacket->stream_index == mMediaStreamIndex)
-                        {
-                            #ifdef MSMEM_DEBUG_PACKETS
-                                if (!tInputIsPicture)
-                                    LOG(LOG_VERBOSE, "Read good frame %d with %d bytes from stream %d", tPacket->pts, tPacket->size, tPacket->stream_index);
-                                else
-                                    LOG(LOG_VERBOSE, "Read good picture %d with %d bytes from stream %d", tPacket->pts, tPacket->size, tPacket->stream_index);
-                            #endif
-
-                            // is "presentation timestamp" stored within media stream?
-                            if (tPacket->dts != (int64_t)AV_NOPTS_VALUE)
-                            { // DTS value
-                                mDecoderUsesPTSFromInputPackets = false;
-                                if ((tPacket->dts < mDecoderLastReadPts) && (mDecoderLastReadPts != 0) && (tPacket->dts > 16 /* ignore the first frames */))
-                                {
-                                    #ifdef MSMEM_DEBUG_PACKETS
-                                        LOG(LOG_VERBOSE, "%s-DTS values are non continuous in stream, read DTS: %"PRId64", last %"PRId64", alternative PTS: %"PRId64"", GetMediaTypeStr().c_str(), tPacket->dts, mDecoderLastReadPts, tPacket->pts);
-                                    #endif
-                                }
-                            }else
-                            {// PTS value
-                                mDecoderUsesPTSFromInputPackets = true;
-                                if ((tPacket->pts < mDecoderLastReadPts) && (mDecoderLastReadPts != 0) && (tPacket->pts > 16 /* ignore the first frames */))
-                                {
-                                    #ifdef MSMEM_DEBUG_PACKETS
-                                        LOG(LOG_VERBOSE, "%s-PTS values are non continuous in stream, %"PRId64" is lower than last %"PRId64", alternative DTS: %"PRId64", difference is: %"PRId64"", GetMediaTypeStr().c_str(), tPacket->pts, mDecoderLastReadPts, tPacket->dts, mDecoderLastReadPts - tPacket->pts);
-                                    #endif
-                                }
-                            }
-
-                            // derive the correct PTS value either from RTP data or from FPS emulation
-                            if (!mRtpActivated)
-                            {// use the PTS/DTS value from the stream packet
-                                if (mDecoderUsesPTSFromInputPackets)
-                                    tCurPacketPts = tPacket->pts;
-                                else
-                                    tCurPacketPts = tPacket->dts;
-                            }else
-                            {// derive the frame number from the RTP timestamp, which works independent from packet loss
-                                tCurPacketPts = CalculateFrameNumberFromRTP();
-                                tPacket->pts = tCurPacketPts;
-                                tPacket->dts = tCurPacketPts;
-                                #ifdef MSMEM_DEBUG_PRE_BUFFERING
-                                    LOG(LOG_VERBOSE, "Got from RTP data the frame number: %d", tCurPacketPts);
-                                #endif
-                            }
-
-                            // for seeking: is the currently read frame close to target frame index?
-                            //HINT: we need a key frame in the remaining distance to the target frame)
-                            if ((mDecoderTargetFrameIndex != 0) && (tCurPacketPts < mDecoderTargetFrameIndex - MEDIA_SOURCE_MEM_SEEK_MAX_EXPECTED_GOP_SIZE))
-                            {// we are still waiting for a special frame number
-                                #ifdef MSMEM_DEBUG_SEEKING
-                                    LOG(LOG_VERBOSE, "Dropping %s frame %"PRId64" because we are waiting for frame %.2f", GetMediaTypeStr().c_str(), tCurPacketPts, mDecoderTargetFrameIndex);
-                                #endif
-                                tShouldReadNext = true;
-                            }else
-                            {
-                                if (mDecoderRecalibrateRTGrabbingAfterSeeking)
-                                {
-                                    // wait for next key frame packets (either i-frame or p-frame
-                                    if (mDecoderWaitForNextKeyFramePackets)
-                                    {
-                                        if (tPacket->flags & AV_PKT_FLAG_KEY)
-                                        {
-                                            #ifdef MSMEM_DEBUG_SEEKING
-                                                LOG(LOG_VERBOSE, "Read first %s key packet in packet frame number %"PRId64" with flags %d from input stream after seeking", GetMediaTypeStr().c_str(), tCurPacketPts, tPacket->flags);
-                                            #endif
-                                            mDecoderWaitForNextKeyFramePackets = false;
-                                        }else
-                                        {
-                                            #ifdef MSMEM_DEBUG_SEEKING
-                                                LOG(LOG_VERBOSE, "Dropping %s frame packet %"PRId64" because we are waiting for next key frame packets after seek target frame %.2f", GetMediaTypeStr().c_str(), tCurPacketPts, mDecoderTargetFrameIndex);
-                                            #endif
-                                           tShouldReadNext = true;
-                                        }
-                                    }
-                                    #ifdef MSMEM_DEBUG_SEEKING
-                                        LOG(LOG_VERBOSE, "Read %s frame number %"PRId64" from input stream after seeking", GetMediaTypeStr().c_str(), tCurPacketPts);
-                                    #endif
-                                }else
-                                {
-                                    #if defined(MSMEM_DEBUG_DECODER_STATE) || defined(MSMEM_DEBUG_PACKETS)
-                                        LOG(LOG_WARN, "Read %s frame number %"PRId64" from input stream, last frame was %"PRId64"", GetMediaTypeStr().c_str(), tCurPacketPts, mDecoderLastReadPts);
-                                    #endif
-                                }
-                            }
-                            // check if PTS value is continuous
-                            if (tCurPacketPts < mDecoderLastReadPts)
-                            {// current packet is older than the last packet
-                                LOG(LOG_WARN, "Found interleaved %s packets in %s source, non continuous PTS: %"PRId64" => %d", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), mDecoderLastReadPts, tCurPacketPts);
-                            }
-                            mDecoderLastReadPts = tCurPacketPts;
-                        }else
-                        {
-                            tShouldReadNext = true;
-                            #ifdef MSMEM_DEBUG_PACKETS
-                                LOG(LOG_VERBOSE, "Read frame %d of stream %d instead of desired stream %d", tPacket->pts, tPacket->stream_index, mMediaStreamIndex);
-                            #endif
-                        }
-                    }
-                }while ((tShouldReadNext) && (!mEOFReached) && (mDecoderNeeded));
-
-                #ifdef MSMEM_DEBUG_PACKETS
-                    if (tReadIteration > 1)
-                        LOG(LOG_VERBOSE, "Needed %d read iterations to get next %s  packet from source stream", tReadIteration, GetMediaTypeStr().c_str());
-                    //LOG(LOG_VERBOSE, "New %s chunk with size: %d and stream index: %d", GetMediaTypeStr().c_str(), tPacket->size, tPacket->stream_index);
-                #endif
+                ReadPacketFromInputStream(tPacket, tCurrrentInputPacketPts);
             }else
             {// no packet was read
                 //LOG(LOG_VERBOSE, "No packet was read");
@@ -1497,19 +1519,19 @@ void* MediaSourceMem::Run(void* pArgs)
             // #########################################
             // start packet processing
             // #########################################
-            if (((tPacket->data != NULL) && (tPacket->size > 0)) || ((mDecoderSinglePictureGrabbed /* we already grabbed the single frame from the picture input */) && (mMediaType == MEDIA_VIDEO)))
+            if (((tPacket->data != NULL) && (tPacket->size > 0)) || (mDecoderSinglePictureGrabbed /* we already grabbed the single frame from the picture input */))
             {
                 #ifdef MSMEM_DEBUG_PACKET_RECEIVER
                     if ((tPacket->data != NULL) && (tPacket->size > 0))
                     {
                         LOG(LOG_VERBOSE, "New %s packet..", GetMediaTypeStr().c_str());
                         LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
-                        LOG(LOG_VERBOSE, "      ..pts: %"PRId64" stream [%d] pts: %"PRId64"", tPacket->pts, mMediaStreamIndex, mFormatContext->streams[mMediaStreamIndex]->pts.val);
-                        LOG(LOG_VERBOSE, "      ..stream: %"PRId64"", tPacket->stream_index);
-                        LOG(LOG_VERBOSE, "      ..dts: %"PRId64"", tPacket->dts);
+                        LOG(LOG_VERBOSE, "      ..pts: %"PRId64" stream [%d] pts: %"PRId64, tPacket->pts, mMediaStreamIndex, mFormatContext->streams[mMediaStreamIndex]->pts.val);
+                        LOG(LOG_VERBOSE, "      ..stream: %"PRId64, tPacket->stream_index);
+                        LOG(LOG_VERBOSE, "      ..dts: %"PRId64, tPacket->dts);
                         LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
-                        LOG(LOG_VERBOSE, "      ..pos: %"PRId64"", tPacket->pos);
-                        LOG(LOG_VERBOSE, "      ..pic. nr.: %"PRId64"", (int64_t)tPacket->pts / tPacket->duration /* works only for cfr, otherwise duration is variable */);
+                        LOG(LOG_VERBOSE, "      ..pos: %"PRId64, tPacket->pos);
+                        LOG(LOG_VERBOSE, "      ..frame number: %"PRId64, (int64_t)tPacket->pts / (tPacket->duration > 0 ? tPacket->duration : 1) /* works only for cfr, otherwise duration is variable */);
                         if (tPacket->flags == AV_PKT_FLAG_KEY)
                             LOG(LOG_VERBOSE, "      ..flags: key frame");
                         else
@@ -1519,25 +1541,10 @@ void* MediaSourceMem::Run(void* pArgs)
 
                 //LOG(LOG_VERBOSE, "New %s packet: dts: %"PRId64", pts: %"PRId64", pos: %"PRId64", duration: %d", GetMediaTypeStr().c_str(), tPacket->dts, tPacket->pts, tPacket->pos, tPacket->duration);
 
-                // do we have to flush buffers after seeking?
-                if (mDecoderFlushBuffersAfterSeeking)
-                {
-                    LOG(LOG_VERBOSE, "Flushing %s codec internal buffers after seeking in input stream", GetMediaTypeStr().c_str());
-
-                    // flush ffmpeg internal buffers
-                    avcodec_flush_buffers(mCodecContext);
-
-                    #ifdef MSMEM_DEBUG_SEEKING
-                        LOG(LOG_VERBOSE, "Read %s packet %"PRId64" of %d bytes after seeking in input stream, current stream DTS is %"PRId64"", GetMediaTypeStr().c_str(), tCurPacketPts, tPacket->size, mFormatContext->streams[mMediaStreamIndex]->cur_dts);
-                    #endif
-
-                    mDecoderFlushBuffersAfterSeeking = false;
-                    mDecoderOutputFrameDelay = 0;
-                }
-
                 // #########################################
                 // process packet
                 // #########################################
+                mDecoderSeekMutex.lock();
                 tCurrentChunkSize = 0;
                 switch(mMediaType)
                 {
@@ -1569,9 +1576,9 @@ void* MediaSourceMem::Run(void* pArgs)
                                     LOG(LOG_VERBOSE, "New video frame before PTS adaption..");
                                     LOG(LOG_VERBOSE, "      ..key frame: %d", tSourceFrame->key_frame);
                                     LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(tSourceFrame).c_str());
-                                    LOG(LOG_VERBOSE, "      ..pts: %"PRId64"", tSourceFrame->pts);
-                                    LOG(LOG_VERBOSE, "      ..pkt pts: %"PRId64"", tSourceFrame->pkt_pts);
-                                    LOG(LOG_VERBOSE, "      ..pkt dts: %"PRId64"", tSourceFrame->pkt_dts);
+                                    LOG(LOG_VERBOSE, "      ..pts: %"PRId64, tSourceFrame->pts);
+                                    LOG(LOG_VERBOSE, "      ..pkt pts: %"PRId64, tSourceFrame->pkt_pts);
+                                    LOG(LOG_VERBOSE, "      ..pkt dts: %"PRId64, tSourceFrame->pkt_dts);
 //                                    LOG(LOG_VERBOSE, "      ..resolution: %d * %d", tSourceFrame->width, tSourceFrame->height);
 //                                    LOG(LOG_VERBOSE, "      ..coded pic number: %d", tSourceFrame->coded_picture_number);
 //                                    LOG(LOG_VERBOSE, "      ..display pic number: %d", tSourceFrame->display_picture_number);
@@ -1659,38 +1666,26 @@ void* MediaSourceMem::Run(void* pArgs)
                                 // ############################
                                 // ### calculate PTS value
                                 // ############################
-                                if (!mRtpActivated)
-                                {
-                                    // save PTS value to deliver it later to the frame grabbing thread
-                                    if ((tSourceFrame->pkt_dts != (int64_t)AV_NOPTS_VALUE) && (!MEDIA_SOURCE_MEM_USE_REORDERED_PTS))
-                                    {// use DTS value from decoder
-                                        #ifdef MSMEM_DEBUG_TIMING
-                                            LOG(LOG_VERBOSE, "Setting current frame PTS to frame packet DTS %"PRId64"", tSourceFrame->pkt_dts);
-                                        #endif
-                                        tCurFramePts = tSourceFrame->pkt_dts;
-                                    }else if (tSourceFrame->pkt_pts != (int64_t)AV_NOPTS_VALUE)
-                                    {// fall back to reordered PTS value
-                                        #ifdef MSMEM_DEBUG_TIMING
-                                            LOG(LOG_VERBOSE, "Setting current frame PTS to frame packet PTS %"PRId64"", tSourceFrame->pkt_pts);
-                                        #endif
-                                        tCurFramePts = tSourceFrame->pkt_pts;
-                                    }else
-                                    {// fall back to packet's PTS value
-                                        #ifdef MSMEM_DEBUG_TIMING
-                                            LOG(LOG_VERBOSE, "Setting current frame PTS to packet PTS %"PRId64"", tCurPacketPts);
-                                        #endif
-                                        tCurFramePts = tCurPacketPts;
-                                    }
-                                }else
-                                {// RTP active
-                                    #ifdef MSMEM_DEBUG_PRE_BUFFERING
-                                        LOG(LOG_VERBOSE, "Setting current frame PTS to packet PTS (derived from RTP timestamp): %"PRId64"", tCurPacketPts);
+                                // save PTS value to deliver it later to the frame grabbing thread
+                                if ((tSourceFrame->pkt_dts != (int64_t)AV_NOPTS_VALUE) && (!MEDIA_SOURCE_MEM_USE_REORDERED_PTS))
+                                {// use DTS value from decoder
+                                    #ifdef MSMEM_DEBUG_TIMING
+                                        LOG(LOG_VERBOSE, "Setting current frame PTS to frame packet DTS %"PRId64, tSourceFrame->pkt_dts);
                                     #endif
-
-                                    // use the frame numbers which were derived from RTP timestamps
-                                    tCurFramePts = tCurPacketPts;// -mDecoderOutputFrameDelay;
+                                    tCurrentOutputFrameNumber = rint(CalculateOutputFrameNumber(tSourceFrame->pkt_dts));
+                                }else if (tSourceFrame->pkt_pts != (int64_t)AV_NOPTS_VALUE)
+                                {// fall back to reordered PTS value
+                                    #ifdef MSMEM_DEBUG_TIMING
+                                        LOG(LOG_VERBOSE, "Setting current frame PTS to frame packet PTS %"PRId64, tSourceFrame->pkt_pts);
+                                    #endif
+                                    tCurrentOutputFrameNumber = rint(CalculateOutputFrameNumber(tSourceFrame->pkt_pts));
+                                }else
+                                {// fall back to packet's PTS value
+                                    #ifdef MSMEM_DEBUG_TIMING
+                                        LOG(LOG_VERBOSE, "Setting current frame PTS to packet PTS %.2f", (float)tCurrrentInputPacketPts);
+                                    #endif
+                                    tCurrentOutputFrameNumber = rint(CalculateOutputFrameNumber(tCurrrentInputPacketPts));
                                 }
-
                                 if ((tSourceFrame->pkt_pts != tSourceFrame->pkt_dts) && (tSourceFrame->pkt_pts != (int64_t)AV_NOPTS_VALUE) && (tSourceFrame->pkt_dts != (int64_t)AV_NOPTS_VALUE))
                                     LOG(LOG_VERBOSE, "PTS(%"PRId64") and DTS(%"PRId64") differ after %s decoding step", tSourceFrame->pkt_pts, tSourceFrame->pkt_dts, GetMediaTypeStr().c_str());
                             }else
@@ -1709,10 +1704,10 @@ void* MediaSourceMem::Run(void* pArgs)
                                 }
 
                                 // simulate a monotonous increasing PTS value
-                                tCurPacketPts++;
+                                tCurrrentInputPacketPts += 1;
 
                                 // prepare the PTS value which is later delivered to the grabbing thread
-                                tCurFramePts = tCurPacketPts;
+                                tCurrentOutputFrameNumber = rint(CalculateOutputFrameNumber(tCurrrentInputPacketPts));
 
                                 // simulate a successful decoding step
                                 tFrameFinished = 1;
@@ -1731,9 +1726,9 @@ void* MediaSourceMem::Run(void* pArgs)
                                         LOG(LOG_VERBOSE, "New video frame..");
                                         LOG(LOG_VERBOSE, "      ..key frame: %d", tSourceFrame->key_frame);
                                         LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(tSourceFrame).c_str());
-                                        LOG(LOG_VERBOSE, "      ..pts: %"PRId64", original PTS: %"PRId64"", tSourceFrame->pts, tCurFramePts);
-                                        LOG(LOG_VERBOSE, "      ..pkt pts: %"PRId64"", tSourceFrame->pkt_pts);
-                                        LOG(LOG_VERBOSE, "      ..pkt dts: %"PRId64"", tSourceFrame->pkt_dts);
+                                        LOG(LOG_VERBOSE, "      ..pts: %"PRId64", original PTS: %"PRId64, tSourceFrame->pts, tCurrentOutputFrameNumber);
+                                        LOG(LOG_VERBOSE, "      ..pkt pts: %"PRId64, tSourceFrame->pkt_pts);
+                                        LOG(LOG_VERBOSE, "      ..pkt dts: %"PRId64, tSourceFrame->pkt_dts);
 //                                        LOG(LOG_VERBOSE, "      ..resolution: %d * %d", tSourceFrame->width, tSourceFrame->height);
 //                                        LOG(LOG_VERBOSE, "      ..coded pic number: %d", tSourceFrame->coded_picture_number);
 //                                        LOG(LOG_VERBOSE, "      ..display pic number: %d", tSourceFrame->display_picture_number);
@@ -1742,9 +1737,9 @@ void* MediaSourceMem::Run(void* pArgs)
                                     #endif
 
                                     // use the PTS value from the packet stream because it refers to the original (without decoder delays) timing
-                                    tSourceFrame->pts = tCurFramePts;
-                                    tSourceFrame->coded_picture_number = tCurFramePts;
-                                    tSourceFrame->display_picture_number = tCurFramePts;
+                                    tSourceFrame->pts = tCurrentOutputFrameNumber;
+                                    tSourceFrame->coded_picture_number = tCurrentOutputFrameNumber;
+                                    tSourceFrame->display_picture_number = tCurrentOutputFrameNumber;
 
                                     // wait for next key frame packets (either an i-frame or a p-frame)
                                     if (mDecoderWaitForNextKeyFrame)
@@ -1765,11 +1760,11 @@ void* MediaSourceMem::Run(void* pArgs)
 
                                         if (!mDecoderWaitForNextKeyFrame)
                                         {
-                                            LOG(LOG_VERBOSE, "Read first %s key frame at frame number %"PRId64" with flags %d from input stream after seeking", GetMediaTypeStr().c_str(), tCurFramePts, tPacket->flags);
+                                            LOG(LOG_VERBOSE, "Read first %s key frame at frame number %"PRId64" with flags %d from input stream after seeking", GetMediaTypeStr().c_str(), tCurrentOutputFrameNumber, tPacket->flags);
                                         }else
                                         {
                                             #ifdef MSMEM_DEBUG_SEEKING
-                                                LOG(LOG_VERBOSE, "Dropping %s frame %"PRId64" because we are waiting for next key frame after seeking", GetMediaTypeStr().c_str(), tCurFramePts);
+                                                LOG(LOG_VERBOSE, "Dropping %s frame %"PRId64" because we are waiting for next key frame after seeking", GetMediaTypeStr().c_str(), tCurrentOutputFrameNumber);
                                             #endif
                                             #ifdef MSMEM_DEBUG_FRAME_QUEUE
                                                 LOG(LOG_VERBOSE, "No %s frame will be written to frame queue, we ware waiting for the next key frame, current frame type: %s, EOF: %d", GetMediaTypeStr().c_str(), GetFrameType(tSourceFrame).c_str(), mEOFReached);
@@ -1840,24 +1835,41 @@ void* MediaSourceMem::Run(void* pArgs)
                                             // return size of decoded frame
                                             tCurrentChunkSize = avpicture_get_size(PIX_FMT_RGB32, mDecoderTargetResX, mDecoderTargetResY);
                                         }
-                                        #ifdef MSMEM_DEBUG_PACKETS
-                                            LOG(LOG_VERBOSE, "Resulting frame size is %d bytes", tCurrentChunkSize);
-                                        #endif
+
+                                        // ############################
+                                        // ### WRITE FRAME TO OUTPUT FIFO
+                                        // ############################
+                                        // add new chunk to FIFO
+                                        if (tCurrentChunkSize <= mDecoderFifo->GetEntrySize())
+                                        {
+                                            #ifdef MSMEM_DEBUG_PACKETS
+                                                LOG(LOG_VERBOSE, "Writing %d %s bytes at %p to FIFO with frame nr.%"PRId64, tCurrentChunkSize, GetMediaTypeStr().c_str(), tChunkBuffer, tCurrentOutputFrameNumber);
+                                            #endif
+                                            WriteFrameOutputBuffer((char*)tChunkBuffer, tCurrentChunkSize, tCurrentOutputFrameNumber);
+
+                                            // prepare frame number for next loop
+                                            tCurrentOutputFrameNumber++;
+
+                                            #ifdef MSMEM_DEBUG_DECODER_STATE
+                                                LOG(LOG_VERBOSE, "Successful audio buffer loop");
+                                            #endif
+                                        }else
+                                        {
+                                            LOG(LOG_ERROR, "Cannot write a %s chunk of %d bytes to the FIFO with %d bytes slots", GetMediaTypeStr().c_str(),  tCurrentChunkSize, mDecoderFifo->GetEntrySize());
+                                        }
                                     }else
                                     {// still waiting for first key frame
-                                        tCurrentChunkSize = 0;
+                                        //nothing to do
                                     }
                                 }else
                                 {// tFrameFinished != 1
                                     // we shouldn't have frame buffering because we use CODEC_FLAG_LOW_DELAY
                                     LOG(LOG_WARN, "Video frame was buffered, codec context flags: 0x%X", mCodecContext->flags);
                                     mDecoderOutputFrameDelay++;
-                                    tCurrentChunkSize = 0;
                                 }
                             }else
                             {// tDecoderResult < 0
-                                LOG(LOG_ERROR, "Couldn't decode video frame %"PRId64" because \"%s\"(%d), got a decoder result: %d", tCurPacketPts, strerror(AVUNERROR(tDecoderResult)), AVUNERROR(tDecoderResult), tFrameFinished);
-                                tCurrentChunkSize = 0;
+                                LOG(LOG_ERROR, "Couldn't decode video frame %.2f because \"%s\"(%d), got a decoder result: %d", (float)tCurrrentInputPacketPts, strerror(AVUNERROR(tDecoderResult)), AVUNERROR(tDecoderResult), tFrameFinished);
                             }
                         }
                         break;
@@ -1897,7 +1909,8 @@ void* MediaSourceMem::Run(void* pArgs)
 
                                     #ifdef MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
                                         LOG(LOG_VERBOSE, "New audio frame..");
-                                        LOG(LOG_VERBOSE, "      ..size: %d bytes (%d samples of format %s)", tOutputBufferSize * tOutoutAudioBytesPerSample, tOutputBufferSize, av_get_sample_fmt_name(mOutputAudioFormat));
+                                        LOG(LOG_VERBOSE, "      ..pts: %"PRId64", original PTS: %.2f", tAudioFrame->pts, (float)tCurrrentInputPacketPts);
+                                        LOG(LOG_VERBOSE, "      ..size: %d bytes (%d samples of format %s)", tAudioFrame->nb_samples * tOutputAudioBytesPerSample * mOutputAudioChannels, tAudioFrame->nb_samples, av_get_sample_fmt_name(mOutputAudioFormat));
                                     #endif
 
                                     if (mAudioResampleContext != NULL)
@@ -1914,7 +1927,6 @@ void* MediaSourceMem::Run(void* pArgs)
                                         }else
                                         {
                                             LOG(LOG_ERROR, "Amount of resampled bytes (%d) is invalid", tResampledBytes);
-                                            tCurrentChunkSize = 0;
                                         }
                                     }else
                                     {// no audio resampling needed
@@ -1925,16 +1937,19 @@ void* MediaSourceMem::Run(void* pArgs)
 
                                     if (tCurrentChunkSize > 0)
                                     {
+                                        // get the buffered samples (= pts)
+                                        int tAudioFifoBufferedSamples = av_fifo_size(mDecoderAudioSamplesFifo) /* buffer sie in bytes */ / (tOutputAudioBytesPerSample * mOutputAudioChannels);
+
                                         // ############################
                                         // ### WRITE FRAME TO FIFO
                                         // ############################
                                         #ifdef MSMEM_DEBUG_PACKETS
-                                            LOG(LOG_VERBOSE, "Adding %d bytes to AUDIO FIFO with size of %d bytes", tCurrentChunkSize, av_fifo_size(tSampleFifo));
+                                            LOG(LOG_VERBOSE, "Adding %d bytes to AUDIO FIFO with buffer of %d bytes (%d samples), packet pts: %.2f", tCurrentChunkSize, av_fifo_size(mDecoderAudioSamplesFifo), tAudioFifoBufferedSamples, (float)tCurrrentInputPacketPts);
                                         #endif
                                         // is there enough space in the FIFO?
-                                        if (av_fifo_space(tSampleFifo) < tCurrentChunkSize)
+                                        if (av_fifo_space(mDecoderAudioSamplesFifo) < tCurrentChunkSize)
                                         {// no, we need reallocation
-                                            if (av_fifo_realloc2(tSampleFifo, av_fifo_size(tSampleFifo) + tCurrentChunkSize - av_fifo_space(tSampleFifo)) < 0)
+                                            if (av_fifo_realloc2(mDecoderAudioSamplesFifo, av_fifo_size(mDecoderAudioSamplesFifo) + tCurrentChunkSize - av_fifo_space(mDecoderAudioSamplesFifo)) < 0)
                                             {
                                                 // acknowledge failed
                                                 LOG(LOG_ERROR, "Reallocation of FIFO audio buffer failed");
@@ -1943,28 +1958,31 @@ void* MediaSourceMem::Run(void* pArgs)
 
                                         //LOG(LOG_VERBOSE, "ChunkSize: %d", pChunkSize);
                                         // write new samples into fifo buffer
-                                        av_fifo_generic_write(tSampleFifo, tDecodedAudioSamples, tCurrentChunkSize, NULL);
+                                        av_fifo_generic_write(mDecoderAudioSamplesFifo, tDecodedAudioSamples, tCurrentChunkSize, NULL);
 
+                                        tCurrentOutputFrameNumber = (int64_t)rint(CalculateOutputFrameNumber(tCurrrentInputPacketPts) - (double)tAudioFifoBufferedSamples / MEDIA_SOURCE_SAMPLES_PER_BUFFER);
+                                        
                                         // save PTS value to deliver it later to the frame grabbing thread
                                         #ifdef MSMEM_DEBUG_PRE_BUFFERING
-                                            LOG(LOG_VERBOSE, "Setting current frame PTS to packet PTS: %"PRId64"", tCurPacketPts);
+                                            LOG(LOG_VERBOSE, "Setting current frame nr. to %"PRId64", packet PTS: %.2f", tCurrentOutputFrameNumber, (float)tCurrrentInputPacketPts);
                                         #endif
 
-                                        tCurFramePts = tCurPacketPts;// - mDecoderOutputFrameDelay;
+                                        // the amount of bytes we want to have in an output frame
+                                        int tDesiredOutputSize = MEDIA_SOURCE_SAMPLES_PER_BUFFER * tOutputAudioBytesPerSample * mOutputAudioChannels;
 
                                         int tLoops = 0;
-                                        while (av_fifo_size(tSampleFifo) >= MEDIA_SOURCE_SAMPLES_BUFFER_SIZE)
+                                        while (av_fifo_size(mDecoderAudioSamplesFifo) >= MEDIA_SOURCE_SAMPLES_PER_BUFFER * tOutputAudioBytesPerSample * mOutputAudioChannels)
                                         {
                                             tLoops++;
                                             // ############################
                                             // ### READ FRAME FROM FIFO
                                             // ############################
                                             #ifdef MSM_DEBUG_PACKETS
-                                                LOG(LOG_VERBOSE, "Loop %d-Reading %d bytes from %d bytes of fifo, current PTS: %"PRId64"", tLoops, MSF_DESIRED_AUDIO_INPUT_SIZE, av_fifo_size(tSampleFifo), tCurFramePts);
+                                                LOG(LOG_VERBOSE, "Loop %d-Reading %d bytes from %d bytes of fifo, current frame nr.: %"PRId64, tLoops, MSF_DESIRED_AUDIO_INPUT_SIZE, av_fifo_size(mDecoderAudioSamplesFifo), tCurrentOutputFrameNumber);
                                             #endif
                                             // read sample data from the fifo buffer
-                                            HM_av_fifo_generic_read(tSampleFifo, (void*)tChunkBuffer, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE);
-                                            tCurrentChunkSize = MEDIA_SOURCE_SAMPLES_BUFFER_SIZE;
+                                            HM_av_fifo_generic_read(mDecoderAudioSamplesFifo, (void*)tChunkBuffer, tDesiredOutputSize);
+                                            tCurrentChunkSize = tDesiredOutputSize;
 
                                             // ############################
                                             // ### WRITE FRAME TO OUTPUT FIFO
@@ -1973,9 +1991,13 @@ void* MediaSourceMem::Run(void* pArgs)
                                             if (tCurrentChunkSize <= mDecoderFifo->GetEntrySize())
                                             {
                                                 #ifdef MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
-                                                    LOG(LOG_VERBOSE, "Writing %d %s bytes at %p to output FIFO with PTS %"PRId64", remaining audio data: %d bytes", tCurrentChunkSize, GetMediaTypeStr().c_str(), tChunkBuffer, tCurFramePts, av_fifo_size(tSampleFifo));
+                                                    LOG(LOG_VERBOSE, "Writing %d %s bytes at %p to output FIFO with frame nr. %"PRId64", remaining audio data: %d bytes", tCurrentChunkSize, GetMediaTypeStr().c_str(), tChunkBuffer, tCurrentOutputFrameNumber, av_fifo_size(mDecoderAudioSamplesFifo));
                                                 #endif
-                                                WriteFrameOutputBuffer((char*)tChunkBuffer, tCurrentChunkSize, tCurFramePts);
+                                                WriteFrameOutputBuffer((char*)tChunkBuffer, tCurrentChunkSize, tCurrentOutputFrameNumber);
+
+                                                // prepare frame number for next loop
+                                                tCurrentOutputFrameNumber++;
+
                                                 #ifdef MSMEM_DEBUG_DECODER_STATE
                                                     LOG(LOG_VERBOSE, "Successful audio buffer loop");
                                                 #endif
@@ -1990,46 +2012,17 @@ void* MediaSourceMem::Run(void* pArgs)
                                     LOG(LOG_VERBOSE, "Audio frame was buffered");
                                     mDecoderOutputFrameDelay++;
                                 }
-
-                                // reset chunk size to avoid additional writes to output FIFO because we already stored all valid audio buffers in output FIFO
-                                tCurrentChunkSize = 0;
                             }else
                             {// tDecoderResult < 0
-                                LOG(LOG_WARN, "Couldn't decode audio samples %"PRId64"  because \"%s\"(%d)", tCurPacketPts, strerror(AVUNERROR(tDecoderResult)), AVUNERROR(tDecoderResult));
-                                tCurrentChunkSize = 0;
+                                LOG(LOG_WARN, "Couldn't decode audio samples %.2f because \"%s\"(%d)", (float)tCurrrentInputPacketPts, strerror(AVUNERROR(tDecoderResult)), AVUNERROR(tDecoderResult));
                             }
                         }
                         break;
                     default:
                             LOG(LOG_ERROR, "Media type unknown");
                             break;
-
                 }
-
-                //HINT: usually audio buffers were already written to output FIFO within the audio switch-case-branch
-                // do we still have a prepared data chunk which can be delivered towards grabbing application?
-                if ((tCurrentChunkSize > 0) && (!mEOFReached))
-                {// no error
-                    // add new chunk to FIFO
-                    #ifdef MSMEM_DEBUG_PACKETS
-                        LOG(LOG_VERBOSE, "Writing %d %s bytes at %p to FIFO with PTS %"PRId64"", tCurrentChunkSize, GetMediaTypeStr().c_str(), tChunkBuffer, tCurFramePts);
-                    #endif
-                    if (tCurrentChunkSize <= mDecoderFifo->GetEntrySize())
-                    {
-                        WriteFrameOutputBuffer((char*)tChunkBuffer, tCurrentChunkSize, tCurFramePts);
-                        #ifdef MSMEM_DEBUG_PACKETS
-                            LOG(LOG_VERBOSE, "Successful decoder loop");
-                        #endif
-                    }else
-                    {
-                        LOG(LOG_ERROR, "Cannot write a %s chunk of %d bytes to the FIFO with %d bytes slots", GetMediaTypeStr().c_str(),  tCurrentChunkSize, mDecoderFifo->GetEntrySize());
-                    }
-                }else
-                {
-                    #ifdef MSMEM_DEBUG_FRAME_QUEUE
-                        LOG(LOG_VERBOSE, "No %s frame was written to frame queue, current chunk size: %d, EOF: %d", GetMediaTypeStr().c_str(), tCurrentChunkSize, mEOFReached);
-                    #endif
-                }
+                mDecoderSeekMutex.unlock();
             }
 
             // free packet buffer
@@ -2043,14 +2036,10 @@ void* MediaSourceMem::Run(void* pArgs)
                     LOG(LOG_VERBOSE, "EOF reached, writing empty chunk to %s stream decoder FIFO", GetMediaTypeStr().c_str());
                 #endif
 
-                char tData[4];
-                WriteFrameOutputBuffer(tData, 0, 0);
-
                 // time to sleep
                 #ifdef MSMEM_DEBUG_DECODER_STATE
                     LOG(LOG_VERBOSE, "EOF for %s source reached, wait some time and check again, loop %d", GetMediaTypeStr().c_str(), ++tWaitLoop);
                 #endif
-                mDecoderNeedWorkCondition.Reset();
                 mDecoderNeedWorkCondition.Wait(&mDecoderNeedWorkConditionMutex);
                 mDecoderLastReadPts = 0;
                 mEOFReached = false;
@@ -2067,7 +2056,6 @@ void* MediaSourceMem::Run(void* pArgs)
                 else
                     LOG(LOG_VERBOSE, "Nothing to do for %s decoder, wait some time and check again, loop %d", GetMediaTypeStr().c_str(), ++tWaitLoop);
             #endif
-            mDecoderNeedWorkCondition.Reset();
             mDecoderNeedWorkCondition.Wait(&mDecoderNeedWorkConditionMutex);
             #ifdef MSMEM_DEBUG_DECODER_STATE
                 if(mDecoderFifo != NULL)
@@ -2102,7 +2090,8 @@ void* MediaSourceMem::Run(void* pArgs)
                 break;
         case MEDIA_AUDIO:
                 // free fifo buffer
-                av_fifo_free(tSampleFifo);
+                av_fifo_free(mDecoderAudioSamplesFifo);
+                mDecoderAudioSamplesFifo = NULL;
 
                 av_free(tAudioFrame);
 
@@ -2113,68 +2102,146 @@ void* MediaSourceMem::Run(void* pArgs)
 
     free(tChunkBuffer);
 
-    delete mDecoderFifo;
-    delete mDecoderMetaDataFifo;
-
-    mDecoderFifo = NULL;
-
     LOG(LOG_WARN, "%s decoder main loop finished for %s media source <<<<<<<<<<<<<<<<", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
 
     return NULL;
 }
 
-void MediaSourceMem::WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int64_t pPts)
+void MediaSourceMem::ResetDecoderBuffers()
+{
+    mDecoderSeekMutex.lock();
+
+    // flush ffmpeg internal buffers
+    LOG(LOG_WARN, "Reseting %s decoder internal buffers after seeking in input stream", GetMediaTypeStr().c_str());
+    avcodec_flush_buffers(mCodecContext);
+
+    // reset the library internal frame FIFO
+    LOG(LOG_VERBOSE, "Reseting %s decoder internal FIFO after seeking in input stream", GetMediaTypeStr().c_str());
+    mDecoderFifo->ClearFifo();
+
+    if ((mMediaType == MEDIA_AUDIO) && (mDecoderAudioSamplesFifo != NULL) && (av_fifo_size(mDecoderAudioSamplesFifo) > 0))
+    {
+        LOG(LOG_VERBOSE, "Reseting %s decoder internal buffers resample FIFO after seeking in input stream", GetMediaTypeStr().c_str());
+        av_fifo_drain(mDecoderAudioSamplesFifo, av_fifo_size(mDecoderAudioSamplesFifo));
+    }
+
+    mDecoderOutputFrameDelay = 0;
+
+    // wait for next key frame before we do anything
+    LOG(LOG_VERBOSE, "Waiting for first %s key frame after reset of decoder buffers", GetMediaTypeStr().c_str());
+    mDecoderWaitForNextKeyFramePackets = true;
+    mDecoderWaitForNextKeyFrame = true;
+    mDecoderWaitForNextKeyFrameTimeout = av_gettime() + MSM_WAITING_FOR_FIRST_KEY_FRAME_TIMEOUT * 1000 * 1000;
+
+    mDecoderSeekMutex.unlock();
+}
+
+void MediaSourceMem::WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int64_t pOutputFrameNumber)
 {
     if (mDecoderFifo == NULL)
-        LOG(LOG_ERROR, "Invalid decoder FIFO");
+    {
+        LOG(LOG_ERROR, "Invalid %s decoder FIFO", GetMediaTypeStr().c_str());
+        return;
+    }
 
     #ifdef MSMEM_DEBUG_FRAME_QUEUE
-        LOG(LOG_VERBOSE, ">>> Writing frame of %d bytes and pts %"PRId64", FIFOs: %d/%d", pBufferSize, pPts, mDecoderFifo->GetUsage(), mDecoderMetaDataFifo->GetUsage());
+        LOG(LOG_VERBOSE, ">>> Writing %s frame of %d bytes and pts %"PRId64", FIFOs: %d", GetMediaTypeStr().c_str(), pBufferSize, pOutputFrameNumber, mDecoderFifo->GetUsage());
     #endif
 
-    if (pPts != 0)
-        mFrameBufferLastWrittenFrameIndex = pPts;
+    if (pOutputFrameNumber != 0)
+        mLastBufferedOutputFrameIndex = pOutputFrameNumber;
 
     // write A/V data to output FIFO
-    mDecoderFifo->WriteFifo(pBuffer, pBufferSize);
-
-    // add meta description about current chunk to different FIFO
-    struct ChunkDescriptor tChunkDesc;
-    tChunkDesc.Pts = pPts;
-    mDecoderMetaDataFifo->WriteFifo((char*) &tChunkDesc, sizeof(tChunkDesc));
+    mDecoderFifo->WriteFifo(pBuffer, pBufferSize, pOutputFrameNumber);
 
     // update pre-buffer time value
     UpdateBufferTime();
 }
 
-void MediaSourceMem::ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int64_t &pPts)
+void MediaSourceMem::ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int64_t &pOutputFrameNumber)
 {
     if (mDecoderFifo == NULL)
-        LOG(LOG_ERROR, "Invalid decoder FIFO");
+    {
+        return;
+        LOG(LOG_ERROR, "Invalid %s decoder FIFO", GetMediaTypeStr().c_str());
+    }
 
     // read A/V data from output FIFO
-    mDecoderFifo->ReadFifo(pBuffer, pBufferSize);
-
-    // read meta description about current chunk from different FIFO
-    struct ChunkDescriptor tChunkDesc;
-    int tChunkDescSize = sizeof(tChunkDesc);
-    mDecoderMetaDataFifo->ReadFifo((char*)&tChunkDesc, tChunkDescSize);
-    pPts = tChunkDesc.Pts;
-    if (tChunkDescSize != sizeof(tChunkDesc))
-        LOG(LOG_ERROR, "Read from FIFO a chunk with wrong size of %d bytes, expected size is %d bytes", tChunkDescSize, sizeof(tChunkDesc));
+    mDecoderFifo->ReadFifo(pBuffer, pBufferSize, pOutputFrameNumber);
 
     #ifdef MSMEM_DEBUG_FRAME_QUEUE
-        LOG(LOG_VERBOSE, "Returning from decoder FIFO the %s frame (PTS = %"PRId64")", GetMediaTypeStr().c_str(), pPts);
+        LOG(LOG_VERBOSE, "Returning from decoder FIFO the %s frame (PTS = %"PRId64"), remaing frames in FIFO: %"PRId64, GetMediaTypeStr().c_str(), pOutputFrameNumber, mDecoderFifo->GetUsage());
     #endif
 
     // update pre-buffer time value
     UpdateBufferTime();
+}
+
+double MediaSourceMem::CalculateInputFrameNumber(double pFrameNumber)
+{
+    double tTransformationFactor = GetInputFrameRate() / GetOutputFrameRate();
+
+    return pFrameNumber * tTransformationFactor;
+}
+
+double MediaSourceMem::CalculateOutputFrameNumber(double pFrameNumber)
+{
+    double tTransformationFactor = GetOutputFrameRate() / GetInputFrameRate();
+
+    return pFrameNumber * tTransformationFactor;
+}
+
+void MediaSourceMem::CalculateExpectedOutputPerInputFrame()
+{
+    switch(mMediaType)
+    {
+        case MEDIA_AUDIO:
+                if (mCodecContext != NULL)
+                {
+                    int tInputSamplesPerFrame = mCodecContext->frame_size;
+                    if (tInputSamplesPerFrame == 0)
+                        tInputSamplesPerFrame = MEDIA_SOURCE_SAMPLES_PER_BUFFER; // fall back to the default value
+
+                    int64_t tInputFrameSize = tInputSamplesPerFrame * av_get_bytes_per_sample(mInputAudioFormat) * mInputAudioChannels;
+
+                    float tSizeRatio = ((float)mOutputAudioChannels / mInputAudioChannels) *
+                                       ((float)av_get_bytes_per_sample(mOutputAudioFormat) / av_get_bytes_per_sample(mInputAudioFormat)) *
+                                       ((float)mOutputAudioSampleRate / mInputAudioSampleRate);
+
+                    int64_t tMaxOutputSize = (int64_t)((float)tInputFrameSize * tSizeRatio);
+
+                    int tBytesPerOutputSample = av_get_bytes_per_sample(mOutputAudioFormat) * mOutputAudioChannels;
+
+                    // round up to next valid size depending on the amount of bytes per output sample
+                    tMaxOutputSize = tMaxOutputSize / (tBytesPerOutputSample) * tBytesPerOutputSample + tBytesPerOutputSample;
+
+                    int64_t tOutputFrameSize = MEDIA_SOURCE_SAMPLES_PER_BUFFER * av_get_bytes_per_sample(mOutputAudioFormat) * mOutputAudioChannels;
+
+                    float tMaxPossibleOutputFrames = (float)tMaxOutputSize / tOutputFrameSize;
+
+                    mDecoderExpectedMaxOutputPerInputFrame = rint(tMaxPossibleOutputFrames);
+
+                    //LOG(LOG_ERROR, "Expected max. output frames: %d(%.2f), size ratio: %.2f (%d/%d + %d/%d + %d/%d), max. output size: %"PRId64, tOutputOfNextInputFrame, tMaxPossibleOutputFrames, tSizeRatio, mOutputAudioChannels, mInputAudioChannels, av_get_bytes_per_sample(mOutputAudioFormat), av_get_bytes_per_sample(mInputAudioFormat), mOutputAudioSampleRate, mInputAudioSampleRate, tMaxOutputSize);
+                }else
+                    mDecoderExpectedMaxOutputPerInputFrame = 8; // a fallback to a "good" value
+                break;
+        case MEDIA_VIDEO:
+                mDecoderExpectedMaxOutputPerInputFrame = 1;
+                break;
+        default:
+                mDecoderExpectedMaxOutputPerInputFrame = 1;
+                break;
+    }
 }
 
 bool MediaSourceMem::DecoderFifoFull()
 {
-	return ((mDecoderFifo == NULL) || (mDecoderFifo->GetUsage() >= mDecoderFifo->GetSize() - 1 /* one slot for a 0 byte signaling chunk*/) /* meta data FIFO has always the same size => hence, we don't have to check its size */ ||
-			(mDecoderMetaDataFifo == NULL) || (mDecoderMetaDataFifo->GetUsage() >= mDecoderMetaDataFifo->GetSize() - 1));
+    bool tResult;
+
+    tResult = ((mDecoderFifo == NULL)/* decoder FIFO is invalid */ ||
+               (mDecoderFifo->GetUsage() + mDecoderExpectedMaxOutputPerInputFrame > mDecoderFifo->GetSize() - 1 /* check the usage, one slot for a 0 byte signaling chunk*/));
+
+    return tResult;
 }
 
 void MediaSourceMem::UpdateBufferTime()
@@ -2185,14 +2252,14 @@ void MediaSourceMem::UpdateBufferTime()
     if (mDecoderFifo != NULL)
         tBufferSize = mDecoderFifo->GetUsage();
 
-    mDecoderFrameBufferTime = tBufferSize / GetFrameRatePlayout();
+    mDecoderFrameBufferTime = tBufferSize / GetOutputFrameRate();
 }
 
 void MediaSourceMem::CalibrateRTGrabbing()
 {
     // adopt the stored pts value which represent the start of the media presentation in real-time useconds
-    float  tRelativeFrameIndex = mFrameBufferLastWrittenFrameIndex - mSourceStartPts;
-    double tRelativeTime = (int64_t)((double)AV_TIME_BASE * tRelativeFrameIndex / GetFrameRate());
+    float  tRelativeFrameIndex = mLastBufferedOutputFrameIndex - CalculateOutputFrameNumber(mInputStartPts);
+    double tRelativeTime = (int64_t)((double)AV_TIME_BASE * tRelativeFrameIndex / GetOutputFrameRate());
     #ifdef MSMEM_DEBUG_CALIBRATION
         LOG(LOG_WARN, "Calibrating %s RT playback, old PTS start: %.2f, pre-buffer time: %.2f", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing, mDecoderFramePreBufferTime);
     #endif
@@ -2201,7 +2268,7 @@ void MediaSourceMem::CalibrateRTGrabbing()
 		LOG(LOG_ERROR, "Found invalid relative PTS value of: %.2f", (float)tRelativeTime);
 		tRelativeTime = 0;
 	}
-	mSourceStartTimeForRTGrabbing = av_gettime() - tRelativeTime  + mDecoderFramePreBufferTime * AV_TIME_BASE;
+	mSourceStartTimeForRTGrabbing = av_gettime() - tRelativeTime  + mSourceTimeShiftForRTGrabbing + mDecoderFramePreBufferTime * AV_TIME_BASE;
     #ifdef MSMEM_DEBUG_CALIBRATION
         LOG(LOG_WARN, "Calibrating %s RT playback: new PTS start: %.2f, rel. frame index: %.2f, rel. time: %.2f ms", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing, tRelativeFrameIndex, (float)(tRelativeTime / 1000));
     #endif
@@ -2209,15 +2276,21 @@ void MediaSourceMem::CalibrateRTGrabbing()
 
 void MediaSourceMem::WaitForRTGrabbing()
 {
+    if (mGrabbingStopped)
+    {
+        LOG(LOG_WARN, "Grabbing was stopped, returning immediately");
+        return;
+    }
+
 	// return immediately if PTS from grabber is invalid
-	if ((mRtpActivated) && (mGrabberCurrentFrameIndex == 0))
+	if ((mRtpActivated) && (mCurrentOutputFrameIndex == 0))
 	{
-		LOG(LOG_WARN, "PTS from grabber is invalid: %.2f", (float)mGrabberCurrentFrameIndex);
+		LOG(LOG_WARN, "PTS from grabber is invalid: %.2f", (float)mCurrentOutputFrameIndex);
 		return;
 	}
 
     // calculate the current (normalized) frame index of the grabber
-    float tNormalizedFrameIndexFromGrabber = mGrabberCurrentFrameIndex - mSourceStartPts; // the normalized frame index
+    float tNormalizedFrameIndexFromGrabber = mCurrentOutputFrameIndex - CalculateOutputFrameNumber(mInputStartPts); // the normalized frame index
     // return immediately if RT-grabbing is not possible
     if (tNormalizedFrameIndexFromGrabber < 0)
     {
@@ -2226,13 +2299,14 @@ void MediaSourceMem::WaitForRTGrabbing()
     }
 
     // the PTS value of the last output frame
-    uint64_t tCurrentPtsFromGrabber = (uint64_t)(1000 * tNormalizedFrameIndexFromGrabber / GetFrameRate()); // in ms
+    uint64_t tCurrentPtsFromGrabber = (uint64_t)(1000 * tNormalizedFrameIndexFromGrabber / GetOutputFrameRate()); // in ms
 
     // calculate the PTS offset between the RTCP PTS reference and the last grabbed frame
     int64_t tDesiredPlayOutTime = 1000 * ((int64_t)tCurrentPtsFromGrabber); // in us
 
     // calculate the current (normalized) play-out time of the current A/V stream
     int64_t tCurrentPlayOutTime = av_gettime() - (int64_t)mSourceStartTimeForRTGrabbing; // in us
+
     // check if we have already reached the pre-buffer threshold time
     if (tCurrentPlayOutTime < 0)
     {// no pre-buffering is currently running, we should wait until pre-buffer time is reached
@@ -2248,7 +2322,7 @@ void MediaSourceMem::WaitForRTGrabbing()
             Thread::Suspend(tCurrentPlayOutTime);
         else
         {
-            LOG(LOG_WARN, "Found in %s %s source an invalid delay time of %"PRId64" s for reaching pre-buffer threshold time, pre-buffer time: %.2f, PTS of last queued frame: %"PRId64", PTS of last grabbed frame: %.2f", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tCurrentPlayOutTime / 1000, mDecoderFramePreBufferTime, mDecoderLastReadPts, (float)mGrabberCurrentFrameIndex);
+            LOG(LOG_WARN, "Found in %s %s source an invalid delay time of %"PRId64" s for reaching pre-buffer threshold time, pre-buffer time: %.2f, PTS of last queued frame: %"PRId64", PTS of last grabbed frame: %.2f", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tCurrentPlayOutTime / 1000, mDecoderFramePreBufferTime, mDecoderLastReadPts, (float)mCurrentOutputFrameIndex);
             LOG(LOG_WARN, "Triggering re-calibration of RT grabbing");
             mDecoderRecalibrateRTGrabbingAfterSeeking = true;
         }
@@ -2261,19 +2335,19 @@ void MediaSourceMem::WaitForRTGrabbing()
     int64_t tResultingTimeOffset = tDesiredPlayOutTime - tCurrentPlayOutTime; // in us
 
     #ifdef MSMEM_DEBUG_TIMING
-        LOG(LOG_VERBOSE, "%s-current relative frame index: %f, relative time: %"PRIu64" ms (Fps: %3.2f), stream start time: %f us, packet's relative play out time: %f us, time difference: %f us", GetMediaTypeStr().c_str(), tNormalizedFrameIndexFromGrabber, tCurrentPtsFromGrabber, GetFrameRate(), (float)mSourceStartPts, tDesiredPlayOutTime, tResultingTimeOffset);
+        LOG(LOG_VERBOSE, "%s-current relative frame index: %f, relative time: %"PRIu64" ms (Fps: %3.2f), stream start time: %f us, packet's relative play out time: %f us, time difference: %f us", GetMediaTypeStr().c_str(), tNormalizedFrameIndexFromGrabber, tCurrentPtsFromGrabber, GetInputFrameRate(), (float)mInputStartPts, tDesiredPlayOutTime, tResultingTimeOffset);
     #endif
     // adapt timing to real-time
     if (tResultingTimeOffset > 0)
     {
         #ifdef MSMEM_DEBUG_TIMING
-            LOG(LOG_WARN, "%s-%s-sleeping for %"PRId64" ms (%"PRId64" - %"PRId64") for frame %.2f, RT ref. time: %.2f", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tResultingTimeOffset / 1000, tDesiredPlayOutTime, tCurrentPlayOutTime, (float)mGrabberCurrentFrameIndex, (float)mSourceStartTimeForRTGrabbing);
+            LOG(LOG_WARN, "%s-%s-sleeping for %"PRId64" ms (%"PRId64" - %"PRId64") for frame %.2f, RT ref. time: %.2f", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tResultingTimeOffset / 1000, tDesiredPlayOutTime, tCurrentPlayOutTime, (float)mCurrentOutputFrameIndex, (float)mSourceStartTimeForRTGrabbing);
         #endif
 		if (tResultingTimeOffset <= MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME * AV_TIME_BASE)
 			Thread::Suspend(tResultingTimeOffset);
 		else
 		{
-			LOG(LOG_WARN, "Found in %s %s source an invalid delay time of %"PRId64" s, pre-buffer time: %.2f, PTS of last queued frame: %"PRId64", PTS of last grabbed frame: %.2f", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tResultingTimeOffset / 1000, mDecoderFramePreBufferTime, mDecoderLastReadPts, (float)mGrabberCurrentFrameIndex);
+			LOG(LOG_WARN, "Found in %s %s source an invalid delay time of %"PRId64" s, pre-buffer time: %.2f, PTS of last queued frame: %"PRId64", PTS of last grabbed frame: %.2f", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tResultingTimeOffset / 1000, mDecoderFramePreBufferTime, mDecoderLastReadPts, (float)mCurrentOutputFrameIndex);
 			LOG(LOG_WARN, "Triggering re-calibration of RT grabbing");
 			mDecoderRecalibrateRTGrabbingAfterSeeking = true;
 		}
@@ -2290,7 +2364,7 @@ int64_t MediaSourceMem::GetSynchronizationTimestamp()
 {
     int64_t tResult = 0;
 
-    if ((mGrabberCurrentFrameIndex != 0) && (!mDecoderRecalibrateRTGrabbingAfterSeeking))
+    if ((mCurrentOutputFrameIndex != 0) && (!mDecoderRecalibrateRTGrabbingAfterSeeking))
     {// we have some first passed A/V frames, the decoder does not need to re-calibrate the RT grabber
         /******************************************
          * The following lines do the following:
@@ -2301,55 +2375,50 @@ int64_t MediaSourceMem::GetSynchronizationTimestamp()
          *   - return the calculated NTP time as synchronization timestamp in micro seconds
          *
          *   - when this approach is applied for both the video and audio stream (which is received from the same physical host with the same real-time clock inside!),
-         *     a time difference can be derived which corresponds to the A/V drift in micro seconds of the video and audio playback on the local(!) machine
+         *     a time difference can be derived, which corresponds to the A/V drift in micro seconds of the video and audio playback on the local(!) machine
          ******************************************/
         if (mRtpActivated)
         {// RTP active
             // get the reference from RTCP
-            uint64_t tReferenceNtpTime;
-            unsigned int tReferencePts;
+            uint64_t tReferenceNtpTime = 0;
+            uint64_t tReferencePts = 0;
             GetSynchronizationReferenceFromRTP(tReferenceNtpTime, tReferencePts);
-            #ifdef MSMEM_DEBUG_AV_SYNC
-                LOG(LOG_VERBOSE, "Got %s synchronization: at %"PRIu64" was pts %u", GetMediaTypeStr().c_str(), tReferenceNtpTime, tReferencePts);
-            #endif
-
-            // calculate the current (normalized) frame index of the grabber
-            float tNormalizedFrameIndexFromGrabber = mGrabberCurrentFrameIndex - mSourceStartPts; // the normalized frame index
-
-            // the PTS value of the last output frame
-            uint64_t tCurrentPtsFromGrabber = (uint64_t)(1000 * tNormalizedFrameIndexFromGrabber / GetFrameRatePlayout()); // in ms
-
-            // calculate the PTS offset between the RTCP PTS reference and the last grabbed frame
-            int64_t tTimeOffsetFromReference = 1000 * ((int64_t)tCurrentPtsFromGrabber - tReferencePts); // in us
-
-            if (tReferenceNtpTime != 0)
-            {
-                // calculate the NTP time (we refer to the NTP time of the RTP source) of the currently grabbed frame
-                tResult = (int64_t)tReferenceNtpTime + tTimeOffsetFromReference;
-
-                #ifdef MSMEM_DEBUG_AV_SYNC
-                    int64_t tLocalNtpTime = av_gettime();
-
-                    // the PTS value of the last (received) input frame
-					uint64_t tCurrentPtsFromRTP = GetCurrentPtsFromRTP(); // in ms
-
-                	// calculate the play time of the RTP source [in us]
-					uint64_t tCurrentPlayTimeofRTPSource = ((uint64_t) tReferencePts /* playout time in ms */) * 1000; // in us
-
-                	LOG(LOG_VERBOSE, "%s reference PTS from RTP: %u, PTS from grabber: %"PRIu64"(frame: %"PRIu64", play-out fps: %.2f), PTS from RTP: %"PRIu64"(frame: %"PRIu64"), play time from RTP source: %.2f s", GetMediaTypeStr().c_str(), tReferencePts, tCurrentPtsFromGrabber, (uint64_t)mGrabberCurrentFrameIndex, GetFrameRatePlayout(), tCurrentPtsFromRTP, CalculateFrameNumberFromRTP(), (float)tCurrentPlayTimeofRTPSource / AV_TIME_BASE);
-                    LOG(LOG_VERBOSE, "%s reference NTP time: %10lu, offset: %10ld (reference PTS: %10u, grabber PTS: %10lu), resulting synch. timestamp: %10ld", GetMediaTypeStr().c_str(), tReferenceNtpTime, tTimeOffsetFromReference * 1000, tReferencePts, tCurrentPtsFromGrabber, tResult);
-                    //HINT: "diff" value should correlate with the frame buffer time! otherwise something went wrong in the processing chain
-                    LOG(LOG_VERBOSE, "         local timestamp: %10ld                                                                                      local timestamp: %10ld, diff: %"PRId64" ms", tLocalNtpTime, tLocalNtpTime, (tLocalNtpTime - tResult) / 1000);
-                #endif
-                //if (tCurrentPtsFromRTP < tReferencePts)
-                //    LOG(LOG_WARN, "Received %s reference (from RTP) PTS value: %u is in the future, last received (RTP) PTS value: %"PRIu64")", GetMediaTypeStr().c_str(), tReferencePts, tCurrentPtsFromRTP);
-            }else
+            if (tReferenceNtpTime == 0)
             {// reference values from RTP are still invalid, RTCP packet is needed (expected in some seconds)
                 // nothing to complain about, we return 0 to signal we have no valid synchronization timestamp yet
+                LOG(LOG_WARN, "NTP time invalid");
+                return 0;
             }
+
+            tReferencePts = (uint64_t)(1000 * CalculateOutputFrameNumber(tReferencePts) / (GetMediaType() == MEDIA_AUDIO ? (float)mOutputAudioSampleRate / 1000 /* audio PTS is the play-out time in samples */: 1  /* video PTS is the play-out time in ms */)); // in ms
+
+            // calculate the current (normalized) frame index of the grabber
+            float tNormalizedFrameIndexFromGrabber = mCurrentOutputFrameIndex - CalculateOutputFrameNumber(mInputStartPts); // the normalized frame index
+
+            // the PTS value of the last output frame
+            uint64_t tCurrentPtsFromGrabber = (uint64_t)(AV_TIME_BASE * tNormalizedFrameIndexFromGrabber / GetOutputFrameRate()); // in us
+
+            // calculate the PTS offset between the RTCP PTS reference and the last grabbed frame
+            int64_t tTimeOffsetToRTPReference = ((int64_t)tCurrentPtsFromGrabber - tReferencePts); // in us
+
+            // calculate the NTP time (we refer to the NTP time of the RTP source) of the currently grabbed frame
+            tResult = (int64_t)tReferenceNtpTime + tTimeOffsetToRTPReference;
+
+            #ifdef MSMEM_DEBUG_AV_SYNC
+                int64_t tLocalNtpTime = av_gettime();
+
+                //HINT: "diff" value should correlate with the frame buffer time! otherwise something went wrong in the processing chain
+                LOG(LOG_VERBOSE, "%s output frame rate: %lf, input frame rate: %lf", GetMediaTypeStr().c_str(), GetOutputFrameRate(), GetInputFrameRate());
+                LOG(LOG_VERBOSE, "%s RTP reference: (pts %"PRIu64" / NTP %"PRIu64"), RTP pts playback time: %.2f s", GetMediaTypeStr().c_str(), tReferencePts, tReferenceNtpTime, (float)tReferencePts / 1000);
+                LOG(LOG_VERBOSE, "%s normalized local playback time: %lu ms (frame index: %.2f, start PTS: %lf)", GetMediaTypeStr().c_str(), tCurrentPtsFromGrabber / 1000, tNormalizedFrameIndexFromGrabber, CalculateOutputFrameNumber(mInputStartPts));
+                LOG(LOG_VERBOSE, "%s time offset to RTP reference: %.2f s (%lu - %lu ms)", GetMediaTypeStr().c_str(), (float)tTimeOffsetToRTPReference / AV_TIME_BASE, tCurrentPtsFromGrabber / 1000, tReferencePts / 1000);
+                LOG(LOG_VERBOSE, "%s time diff: %"PRId64" ms (%"PRId64" ms - %"PRId64" ms) ", GetMediaTypeStr().c_str(), (tLocalNtpTime - tResult) / 1000, tLocalNtpTime / 1000, tResult / 1000);
+            #endif
+            //if (tCurrentPtsFromRTP < tReferencePts)
+            //    LOG(LOG_WARN, "Received %s reference (from RTP) PTS value: %u is in the future, last received (RTP) PTS value: %"PRIu64")", GetMediaTypeStr().c_str(), tReferencePts, tCurrentPtsFromRTP);
         }else
-        {// no RTP available, we have plain network transport of a file based A/V media source
-            // ..
+        {// no RTP available
+            //TODO: we have to implement support for A/V sync. of plain (without RTP encapsulation) A/V streams
         }
     }
 
@@ -2358,26 +2427,44 @@ int64_t MediaSourceMem::GetSynchronizationTimestamp()
 
 bool MediaSourceMem::TimeShift(int64_t pOffset)
 {
-    LOG(LOG_VERBOSE, "Shifting %s time by: %"PRId64"", GetMediaTypeStr().c_str(), pOffset);
-    mSourceStartTimeForRTGrabbing -= pOffset;
+    if ((pOffset < -MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME * AV_TIME_BASE) || (pOffset > MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME * AV_TIME_BASE))
+    {
+        LOG(LOG_WARN, "Desired time shift of %d s is out of allowed range (%d) and will be ignored", (int)(pOffset / AV_TIME_BASE), (int)MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME);
+        return true; //we signal success because this isn't a real problem
+    }
+
+    LOG(LOG_WARN, "Shifting %s time by: %"PRId64, GetMediaTypeStr().c_str(), pOffset);
+    mSourceTimeShiftForRTGrabbing -= pOffset;
     mDecoderRecalibrateRTGrabbingAfterSeeking = true;
     return true;
 }
 
-uint64_t MediaSourceMem::CalculateFrameNumberFromRTP()
+double MediaSourceMem::CalculateFrameNumberFromRTP()
 {
-    uint64_t tResult = 0;
-    float tFrameRate = GetFrameRatePlayout();
+    double tResult = 0;
+    float tFrameRate = GetInputFrameRate();
     if (tFrameRate < 1.0)
         return 0;
 
     // the following sequence delivers the frame number independent from packet loss because
     // it calculates the frame number based on the current timestamp from the RTP header
-    float tTimeBetweenFrames = 1000 / tFrameRate;
-    tResult = rint((float) GetCurrentPtsFromRTP()/ tTimeBetweenFrames);
+    switch(mMediaType)
+    {
+        case MEDIA_VIDEO:
+                {
+                    double tTimeBetweenFrames = 1000 / tFrameRate;
+                    tResult = (double) GetCurrentPtsFromRTP() / tTimeBetweenFrames;
+                }
+                break;
+        case MEDIA_AUDIO:
+                tResult = (double) GetCurrentPtsFromRTP() / mCodecContext->frame_size;
+                break;
+        default:
+                break;
+    }
 
     #ifdef MSMEM_DEBUG_PRE_BUFFERING
-        LOG(LOG_VERBOSE, "Calculated a frame number: %"PRId64" (RTP timestamp: %"PRId64"), fps: %.2f", tResult, GetCurrentPtsFromRTP(), tFrameRate);
+        LOG(LOG_VERBOSE, "Calculated a frame number: %.2f (RTP timestamp: %"PRId64"), fps: %.2f", (float)tResult, GetCurrentPtsFromRTP(), tFrameRate);
     #endif
 
     return tResult;

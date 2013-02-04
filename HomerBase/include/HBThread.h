@@ -77,6 +77,7 @@ private:
     void            *mThreadArguments;
     OS_DEP_THREAD   mThreadHandle;
     bool            mRunning;
+    int             mThreadId;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

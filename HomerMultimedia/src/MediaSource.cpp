@@ -61,13 +61,14 @@ bool MediaSource::mFfmpegInitiated = false;
 MediaSource::MediaSource(string pName):
     PacketStatistic(pName)
 {
+    mSourceTimeShiftForRTGrabbing = 0;
     mRelativeLoss = 0;
     mDecoderSynchPoints = 0;
     mEndToEndDelay = 0;
     mDecodedIFrames = 0;
     mDecodedPFrames = 0;
     mDecodedBFrames = 0;
-    mSourceStartPts = 0;
+    mInputStartPts = 0;
 	mDecodedSFrames = 0;
 	mDecodedSIFrames = 0;
 	mDecodedSPFrames = 0;
@@ -113,8 +114,8 @@ MediaSource::MediaSource(string pName):
     mSourceResY = 288;
     mTargetResX = 352;
     mTargetResY = 288;
-    mFrameRate = 29.97;
-    mRealFrameRate = 29.97;
+    mInputFrameRate = 29.97;
+    mOutputFrameRate = 29.97;
     mCurrentInputChannel = 0;
     mDesiredInputChannel = 0;
     mMediaType = MEDIA_UNKNOWN;
@@ -1035,7 +1036,7 @@ int MediaSource::GetDecoderOutputFrameDelay()
 void MediaSource::DoSetVideoGrabResolution(int pResX, int pResY)
 {
     CloseGrabDevice();
-    OpenVideoGrabDevice(pResX, pResY, mFrameRate);
+    OpenVideoGrabDevice(pResX, pResY, GetInputFrameRate());
 }
 
 void MediaSource::SetVideoGrabResolution(int pResX, int pResY)
@@ -1125,7 +1126,7 @@ bool MediaSource::Reset(enum MediaType pMediaType)
     switch(tMediaType)
     {
         case MEDIA_VIDEO:
-            tResult = OpenVideoGrabDevice(mSourceResX, mSourceResY, mFrameRate);
+            tResult = OpenVideoGrabDevice(mSourceResX, mSourceResY, GetInputFrameRate());
             break;
         case MEDIA_AUDIO:
             tResult = OpenAudioGrabDevice(mOutputAudioSampleRate, mOutputAudioChannels);
@@ -1634,7 +1635,7 @@ bool MediaSource::SupportsRelaying()
     return false;
 }
 
-int MediaSource::GetRelayFrameDelay()
+int MediaSource::GetEncoderBufferedFrames()
 {
 	return 0;
 }
@@ -1669,7 +1670,6 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     AVCodec             *tCodec;
     AVDictionary        *tOptions = NULL;
     CodecID             tSaveFileCodec = CODEC_ID_NONE;
-    int                 tMediaStreamIndex = 0; // we always use stream number 0
 
     LOG(LOG_VERBOSE, "Going to open recorder, media type is \"%s\"", GetMediaTypeStr().c_str());
 
@@ -1754,7 +1754,6 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     // allocate new stream structure
     LOG(LOG_VERBOSE, "..allocating new recorder stream");
     mRecorderEncoderStream = HM_avformat_new_stream(mRecorderFormatContext, 0);
-    mRecorderEncoderStream = mRecorderFormatContext->streams[0];
     mRecorderCodecContext = mRecorderEncoderStream->codec;
 
     switch(mMediaType)
@@ -1787,8 +1786,8 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
                      * timebase should be 1/framerate and timestamp increments should be
                      * identically to 1.
                      */
-                    mRecorderCodecContext->time_base = (AVRational){100, (int)(mFrameRate * 100)};
-                    mRecorderEncoderStream->time_base = (AVRational){100, (int)(mFrameRate * 100)};
+                    mRecorderCodecContext->time_base = (AVRational){100, (int)(GetInputFrameRate() * 100)};
+                    mRecorderEncoderStream->time_base = (AVRational){100, (int)(GetInputFrameRate() * 100)};
 
                     // set i frame distance: GOP = group of pictures
                     mRecorderCodecContext->gop_size = (100 - pSaveFileQuality) / 5; // default is 12
@@ -1841,24 +1840,21 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
                     mRecorderCodecContext->channel_layout = mRecorderAudioChannelLayout;
 
                     // create resample context
-                    //do not use "if ((mInputAudioSampleRate != mRecorderAudioSampleRate) || (mInputAudioChannels != mRecorderAudioChannels) || (mInputAudioFormat != mRecorderAudioFormat))" because we need to convert from packed audio to plane based audio buffer
-                    {
-                        if (mRecorderAudioResampleContext != NULL)
-                            LOG(LOG_ERROR, "State of audio recorder resample context inconsistent");
-                        LOG(LOG_WARN, "Audio samples with rate of %d Hz and %d channels (format: %s) have to be resampled to %d Hz and %d channels (format: %s)", mInputAudioSampleRate, mInputAudioChannels, av_get_sample_fmt_name(mInputAudioFormat), mRecorderAudioSampleRate, mRecorderAudioChannels, av_get_sample_fmt_name(mRecorderAudioFormat));
-                        mRecorderAudioResampleContext = HM_swr_alloc_set_opts(NULL, av_get_default_channel_layout(mRecorderAudioChannels), mRecorderAudioFormat, mRecorderAudioSampleRate, av_get_default_channel_layout(mInputAudioChannels), mInputAudioFormat, mInputAudioSampleRate, 0, NULL);
-                        if (mRecorderAudioResampleContext != NULL)
-                        {// everything okay, we have to init the context
-                            int tRes = 0;
-                            if ((tRes = HM_swr_init(mRecorderAudioResampleContext)) < 0)
-                            {
-                                LOG(LOG_ERROR, "Couldn't initialize resample context because of \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
-                                return false;
-                            }
-                        }else
+                    if (mRecorderAudioResampleContext != NULL)
+                        LOG(LOG_ERROR, "State of audio recorder resample context inconsistent");
+                    LOG(LOG_WARN, "Audio samples with rate of %d Hz and %d channels (format: %s) have to be resampled to %d Hz and %d channels (format: %s)", mInputAudioSampleRate, mInputAudioChannels, av_get_sample_fmt_name(mInputAudioFormat), mRecorderAudioSampleRate, mRecorderAudioChannels, av_get_sample_fmt_name(mRecorderAudioFormat));
+                    mRecorderAudioResampleContext = HM_swr_alloc_set_opts(NULL, av_get_default_channel_layout(mRecorderAudioChannels), mRecorderAudioFormat, mRecorderAudioSampleRate, av_get_default_channel_layout(mInputAudioChannels), mInputAudioFormat, mInputAudioSampleRate, 0, NULL);
+                    if (mRecorderAudioResampleContext != NULL)
+                    {// everything okay, we have to init the context
+                        int tRes = 0;
+                        if ((tRes = HM_swr_init(mRecorderAudioResampleContext)) < 0)
                         {
-                            LOG(LOG_ERROR, "Failed to create audio-resample context");
+                            LOG(LOG_ERROR, "Couldn't initialize resample context because of \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
+                            return false;
                         }
+                    }else
+                    {
+                        LOG(LOG_ERROR, "Failed to create audio-resample context");
                     }
 
                     // resample buffer
@@ -1906,12 +1902,8 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     if ((tCodec = avcodec_find_encoder(tSaveFileCodec)) == NULL)
     {
         LOG(LOG_ERROR, "Couldn't find a fitting %s codec", GetMediaTypeStr().c_str());
-        // free codec and stream 0
-        av_freep(&mRecorderFormatContext->streams[0]->codec);
-        av_freep(&mRecorderFormatContext->streams[0]);
 
-        // Close the format context
-        av_free(mRecorderFormatContext);
+        HM_avformat_close_input(mRecorderFormatContext);
 
         // unlock grabbing
         mGrabMutex.unlock();
@@ -1934,12 +1926,8 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     if ((tResult = HM_avcodec_open(mRecorderCodecContext, tCodec, NULL)) < 0)
     {
         LOG(LOG_ERROR, "Couldn't open %s codec because of \"%s\".", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
-        // free codec and stream 0
-        av_freep(&mRecorderFormatContext->streams[0]->codec);
-        av_freep(&mRecorderFormatContext->streams[0]);
 
-        // Close the format context
-        av_free(mRecorderFormatContext);
+        HM_avformat_close_input(mRecorderFormatContext);
 
         // unlock grabbing
         mGrabMutex.unlock();
@@ -1953,12 +1941,8 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
         if (avio_open(&mRecorderFormatContext->pb, pSaveFileName.c_str(), AVIO_FLAG_WRITE) < 0)
         {
             LOG(LOG_ERROR, "Could not open \"%s\"\n", pSaveFileName.c_str());
-            // free codec and stream 0
-            av_freep(&mRecorderFormatContext->streams[0]->codec);
-            av_freep(&mRecorderFormatContext->streams[0]);
 
-            // Close the format context
-            av_free(mRecorderFormatContext);
+            HM_avformat_close_input(mRecorderFormatContext);
 
             // unlock grabbing
             mGrabMutex.unlock();
@@ -1967,6 +1951,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
         }
     }
 
+    // make sure we have a defined frame size
     if (mRecorderCodecContext->frame_size < 32)
     {
         LOG(LOG_WARN, "Found invalid frame size %d, setting to %d", mRecorderCodecContext->frame_size, MEDIA_SOURCE_SAMPLES_PER_BUFFER);
@@ -2003,10 +1988,10 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     LOG(LOG_INFO, "    ..codec name: %s", mRecorderCodecContext->codec->name);
     LOG(LOG_INFO, "    ..codec long name: %s", mRecorderCodecContext->codec->long_name);
     LOG(LOG_INFO, "    ..codec flags: 0x%x", mRecorderCodecContext->flags);
-    LOG(LOG_INFO, "    ..codec time_base: %d/%d", mRecorderCodecContext->time_base.den, mRecorderCodecContext->time_base.num); // inverse
-    LOG(LOG_INFO, "    ..stream rfps: %d/%d", mRecorderFormatContext->streams[tMediaStreamIndex]->r_frame_rate.num, mRecorderFormatContext->streams[tMediaStreamIndex]->r_frame_rate.den);
-    LOG(LOG_INFO, "    ..stream time_base: %d/%d", mRecorderFormatContext->streams[tMediaStreamIndex]->time_base.den, mRecorderFormatContext->streams[tMediaStreamIndex]->time_base.num); // inverse
-    LOG(LOG_INFO, "    ..stream codec time_base: %d/%d", mRecorderFormatContext->streams[tMediaStreamIndex]->codec->time_base.den, mRecorderFormatContext->streams[tMediaStreamIndex]->codec->time_base.num); // inverse
+    LOG(LOG_INFO, "    ..codec time_base: %d/%d", mRecorderCodecContext->time_base.num, mRecorderCodecContext->time_base.den);
+    LOG(LOG_INFO, "    ..stream rfps: %d/%d", mRecorderEncoderStream->r_frame_rate.num, mRecorderEncoderStream->r_frame_rate.den);
+    LOG(LOG_INFO, "    ..stream time_base: %d/%d", mRecorderEncoderStream->time_base.num, mRecorderEncoderStream->time_base.den);
+    LOG(LOG_INFO, "    ..stream codec time_base: %d/%d", mRecorderEncoderStream->codec->time_base.num, mRecorderEncoderStream->codec->time_base.den);
     LOG(LOG_INFO, "    ..bit rate: %d", mRecorderCodecContext->bit_rate);
     LOG(LOG_INFO, "    ..desired device: %s", mDesiredDevice.c_str());
     LOG(LOG_INFO, "    ..current device: %s", mCurrentDevice.c_str());
@@ -2017,7 +2002,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     LOG(LOG_INFO, "    ..MT method: %d", mRecorderCodecContext->thread_type);
     LOG(LOG_INFO, "    ..frame size: %d", mRecorderCodecContext->frame_size);
     LOG(LOG_INFO, "    ..duration: %.2f frames", mNumberOfFrames);
-    LOG(LOG_INFO, "    ..stream context duration: %"PRId64" frames, %.0f seconds, format context duration: %"PRId64", nr. of frames: %"PRId64"", mRecorderFormatContext->streams[tMediaStreamIndex]->duration, (float)mRecorderFormatContext->streams[tMediaStreamIndex]->duration / mFrameRate, mRecorderFormatContext->duration, mRecorderFormatContext->streams[tMediaStreamIndex]->nb_frames);
+    LOG(LOG_INFO, "    ..stream context duration: %"PRId64" frames, %.0f seconds, format context duration: %"PRId64", nr. of frames: %"PRId64"", mRecorderEncoderStream->duration, (float)mRecorderEncoderStream->duration / GetInputFrameRate(), mRecorderFormatContext->duration, mRecorderEncoderStream->nb_frames);
     switch(mMediaType)
     {
         case MEDIA_VIDEO:
@@ -2241,7 +2226,7 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
                         #ifdef MS_DEBUG_RECORDER_PACKETS
                             LOG(LOG_VERBOSE, "Recording packet..");
                             LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
-                            LOG(LOG_VERBOSE, "      ..pts: %"PRId64" (fps: %3.2f)", tPacket->pts, mFrameRate);
+                            LOG(LOG_VERBOSE, "      ..pts: %"PRId64" (fps: %3.2f)", tPacket->pts, GetInputFrameRate());
                             LOG(LOG_VERBOSE, "      ..dts: %"PRId64"", tPacket->dts);
                             LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
                             LOG(LOG_VERBOSE, "      ..pos: %"PRId64"", tPacket->pos);
@@ -2427,7 +2412,7 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
                                 #ifdef MS_DEBUG_RECORDER_PACKETS
                                     LOG(LOG_VERBOSE, "Recording packet..");
                                     LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
-                                    LOG(LOG_VERBOSE, "      ..pts: %"PRId64" (fps: %3.2f)", tPacket->pts, mFrameRate);
+                                    LOG(LOG_VERBOSE, "      ..pts: %"PRId64" (fps: %3.2f)", tPacket->pts, GetInputFrameRate());
                                     LOG(LOG_VERBOSE, "      ..dts: %"PRId64"", tPacket->dts);
                                     LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
                                     LOG(LOG_VERBOSE, "      ..pos: %"PRId64"", tPacket->pos);
@@ -2762,14 +2747,14 @@ bool MediaSource::UnregisterMediaSource(MediaSource* pMediaSource, bool pAutoDel
     return true;
 }
 
-float MediaSource::GetFrameRate()
+float MediaSource::GetInputFrameRate()
 {
-    return mFrameRate;
+    return mInputFrameRate;
 }
 
-float MediaSource::GetFrameRatePlayout()
+float MediaSource::GetOutputFrameRate()
 {
-    return mRealFrameRate;
+    return mOutputFrameRate;
 }
 
 void MediaSource::SetFrameRate(float pFps)
@@ -2778,7 +2763,7 @@ void MediaSource::SetFrameRate(float pFps)
         pFps = 29.97;
     if (pFps < 5)
         pFps = 5;
-    mFrameRate = pFps;
+    mInputFrameRate = pFps;
 }
 
 int64_t MediaSource::GetSynchronizationTimestamp()
@@ -2920,7 +2905,7 @@ void MediaSource::InitFpsEmulator()
 int64_t MediaSource::GetPtsFromFpsEmulator()
 {
     int64_t tRelativeRealTimeUSecs = av_gettime() - mSourceStartTimeForRTGrabbing; // relative playback time in usecs
-    float tRelativeFrameNumber = mFrameRate * tRelativeRealTimeUSecs / 1000000;
+    float tRelativeFrameNumber = GetInputFrameRate() * tRelativeRealTimeUSecs / AV_TIME_BASE;
     return (int64_t)tRelativeFrameNumber;
 }
 
@@ -2963,13 +2948,13 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec name: %s", mCodecContext->codec->name);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec long name: %s", mCodecContext->codec->long_name);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec flags: 0x%x", mCodecContext->flags);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec time_base: %d/%d", mCodecContext->time_base.den, mCodecContext->time_base.num); // inverse
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec time_base: %d/%d", mCodecContext->time_base.num, mCodecContext->time_base.den); // inverse
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream ID: %d", mMediaStreamIndex);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream start real-time: %"PRId64"", mFormatContext->start_time_realtime);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream start time: %"PRId64"", FilterNeg(mFormatContext->streams[mMediaStreamIndex]->start_time));
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream rfps: %d/%d", mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num, mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->time_base.den, mFormatContext->streams[mMediaStreamIndex]->time_base.num); // inverse
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream codec time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->codec->time_base.den, mFormatContext->streams[mMediaStreamIndex]->codec->time_base.num); // inverse
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->time_base.num, mFormatContext->streams[mMediaStreamIndex]->time_base.den); // inverse
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream codec time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->codec->time_base.num, mFormatContext->streams[mMediaStreamIndex]->codec->time_base.den); // inverse
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..bit rate: %d", mCodecContext->bit_rate);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..desired device: %s", mDesiredDevice.c_str());
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..current device: %s", mCurrentDevice.c_str());
@@ -2983,14 +2968,14 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..MT method: %d", mCodecContext->thread_type);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame size: %d", mCodecContext->frame_size);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..duration: %.2f frames", mNumberOfFrames);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start PTS: %.2f frames", FilterNeg(mSourceStartPts));
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..input start PTS: %"PRId64" frames", FilterNeg(mInputStartPts));
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS: %"PRId64" frames", FilterNeg(mFormatContext->start_time));
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS (RT): %"PRId64" frames", FilterNeg(mFormatContext->start_time_realtime));
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..format context duration: %"PRId64" seconds (exact value: %"PRId64")", FilterNeg(mFormatContext->duration) / AV_TIME_BASE, mFormatContext->duration);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame rate: %.2f fps", mFrameRate);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame rate (playout): %.2f fps", mRealFrameRate);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..input frame rate: %.2f fps", GetInputFrameRate());
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..output frame rate: %.2f fps", GetOutputFrameRate());
     int64_t tStreamDuration = FilterNeg(mFormatContext->streams[mMediaStreamIndex]->duration);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context duration: %"PRId64" frames (%.0f seconds), nr. of frames: %"PRId64"", tStreamDuration, (float)tStreamDuration / mFrameRate);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context duration: %"PRId64" frames (%.0f seconds), nr. of frames: %"PRId64"", tStreamDuration, (float)tStreamDuration / GetInputFrameRate());
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context frames: %"PRId64"", mFormatContext->streams[mMediaStreamIndex]->nb_frames);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..max. delay: %d", mFormatContext->max_delay);
     switch(mMediaType)
@@ -3131,10 +3116,10 @@ int MediaSource::FindStreamInfoCallback(void *pMediaSource)
 {
     MediaSource* tMediaSource = (MediaSource*)pMediaSource;
 
-    //LOGEX(MediaSource, LOG_VERBOSE, "Ffmpeg calls us to ask for interrupt for %s %s source", tMediaSource->GetMediaTypeStr().c_str(), tMediaSource->GetSourceTypeStr().c_str());
+    //LOGEX(MediaSource, LOG_WARN, "Ffmpeg calls us to ask for interrupt for %s %s source", tMediaSource->GetMediaTypeStr().c_str(), tMediaSource->GetSourceTypeStr().c_str());
 
     bool tResult = tMediaSource->mGrabbingStopped;
-    //LOGEX(MediaSource, LOG_VERBOSE, "Interrupt the running process: %d", tResult);
+    //LOGEX(MediaSource, LOG_WARN, "Interrupt the running process: %d", tResult);
 
     return (int)tResult;
 }
@@ -3171,9 +3156,15 @@ bool MediaSource::FfmpegOpenInput(string pSource, int pLine, const char *pInputN
 		return false;
 	}
 
-    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Setting device (name) to %s", pInputName);
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Setting %s device (name) to %s", GetMediaTypeStr().c_str(), pInputName);
     mCurrentDevice = pInputName;
     mCurrentDeviceName = pInputName;
+
+    if (mGrabbingStopped)
+    {
+        LOG(LOG_WARN, "%s-Grabbing was stopped during avformat_open_input(), returning immediately", GetMediaTypeStr().c_str());
+        return false;
+    }
 
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "%s input opened", GetMediaTypeStr().c_str());
 
@@ -3226,7 +3217,7 @@ bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
         if (!mGrabbingStopped)
         	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't find %s stream information because of \"%s\"(%d)", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)), tRes);
         else
-            LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Grabbing was stopped meanwhile");
+            LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Grabbing was stopped during avformat_find_stream_info()");
 
         // Close the video stream
         HM_avformat_close_input(mFormatContext);
@@ -3322,6 +3313,13 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
         	LOG_REMOTE(LOG_WARN, pSource, pLine, "%s codec %s supports SUB FRAMES!", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
 	}
 
+    // make sure we have a defined frame size
+    if (mCodecContext->frame_size < 32)
+    {
+        LOG(LOG_WARN, "Found invalid frame size %d, setting to %d", mCodecContext->frame_size, MEDIA_SOURCE_SAMPLES_PER_BUFFER);
+        mCodecContext->frame_size = MEDIA_SOURCE_SAMPLES_PER_BUFFER;
+    }
+
     switch(mMediaType)
     {
 		case MEDIA_VIDEO:
@@ -3336,7 +3334,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 		        mSourceResY = mCodecContext->coded_height;
 		    }
 
-		    mRealFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num / mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den;
+		    mOutputFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num / mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den;
 
 		    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected video resolution: %d*%d", mSourceResX, mSourceResY);
 		    break;
@@ -3347,7 +3345,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 			mInputAudioSampleRate = mCodecContext->sample_rate;
 			mInputAudioChannels = mCodecContext->channels;
 			mInputAudioFormat = mCodecContext->sample_fmt;
-			mRealFrameRate = (float)mOutputAudioSampleRate /* 44100 samples per second */ / MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 samples per frame */;
+			mOutputFrameRate = (float)mOutputAudioSampleRate /* 44100 samples per second */ / MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 samples per frame */;
 
 		    break;
 
@@ -3358,9 +3356,9 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 	mInputBitRate = mFormatContext->streams[mMediaStreamIndex]->codec->bit_rate;
 
 	// derive the FPS from the timebase of the selected input stream
-    mFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->time_base.den / mFormatContext->streams[mMediaStreamIndex]->time_base.num;
+	mInputFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->time_base.den / mFormatContext->streams[mMediaStreamIndex]->time_base.num;
 
-    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected frame rate: %f", mFrameRate);
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected frame rate: %f", GetInputFrameRate());
 
     if ((mMediaType == MEDIA_VIDEO) && ((mSourceResX == 0) || (mSourceResY == 0)))
     {
@@ -3450,7 +3448,10 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     if ((tRes = HM_avcodec_open(mCodecContext, tCodec, &tOptions)) < 0)
     {
     	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't open video codec because of \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
-        return false;
+
+    	HM_avformat_close_input(mFormatContext);
+
+    	return false;
     }
 
     if (tCodec->capabilities & CODEC_CAP_DELAY)
@@ -3467,8 +3468,8 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     //set duration
     if (mFormatContext->duration > 0)
     {
-        mNumberOfFrames = mFrameRate * mFormatContext->duration / AV_TIME_BASE;
-        LOG(LOG_VERBOSE, "Number of frames set to: %.2f, fps: %.2f, format context duration: %"PRId64"", (float)mNumberOfFrames, mFrameRate, mFormatContext->duration);
+        mNumberOfFrames = GetInputFrameRate() * mFormatContext->duration / AV_TIME_BASE;
+        LOG(LOG_VERBOSE, "Number of frames set to: %.2f, fps: %.2f, format context duration: %"PRId64"", (float)mNumberOfFrames, GetInputFrameRate(), mFormatContext->duration);
     }else
     {
     	LOG(LOG_WARN, "Found duration of %s stream is invalid, will use a value of 0 instead", GetMediaTypeStr().c_str());
@@ -3478,12 +3479,12 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     // set PTS offset
     if (mFormatContext->start_time > 0)
     {
-    	mSourceStartPts =  mFrameRate * mFormatContext->start_time / AV_TIME_BASE;
-    	LOG(LOG_WARN, "Setting %s start time to %.2f", GetMediaTypeStr().c_str(), (float)mSourceStartPts);
+    	mInputStartPts = GetInputFrameRate() * mFormatContext->start_time / AV_TIME_BASE;
+    	LOG(LOG_WARN, "Setting %s start time to %"PRId64, GetMediaTypeStr().c_str(), mInputStartPts);
     }else
     {
     	LOG(LOG_WARN, "Found start time of %s stream is invalid, will use a value of 0 instead", GetMediaTypeStr().c_str());
-    	mSourceStartPts = 0;
+    	mInputStartPts = 0;
     }
 
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..successfully opened %s decoder", GetMediaTypeStr().c_str());

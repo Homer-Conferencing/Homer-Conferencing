@@ -148,8 +148,8 @@ bool MediaSourceLogo::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 
     mSourceResX = pResX;
     mSourceResY = pResY;
-	mFrameRate = pFps;
-    mRealFrameRate = pFps;
+	mInputFrameRate = pFps;
+    mOutputFrameRate = pFps;
     mLogoRawPicture = malloc(mTargetResX * mTargetResY * MSD_BYTES_PER_PIXEL * sizeof(char));
     if (mLogoRawPicture == NULL)
     {
@@ -169,8 +169,8 @@ bool MediaSourceLogo::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 	delete tTargetPainter;
 
     LOG(LOG_INFO, "Opened...");
-    LOG(LOG_INFO, "    ..fps: %3.2f", mFrameRate);
-    LOG(LOG_INFO, "    ..fps (playout): %3.2f", mRealFrameRate);
+    LOG(LOG_INFO, "    ..fps: %3.2f", mInputFrameRate);
+    LOG(LOG_INFO, "    ..fps (playout): %3.2f", mOutputFrameRate);
     LOG(LOG_INFO, "    ..device: %s", mCurrentDevice.c_str());
     LOG(LOG_INFO, "    ..resolution: %d * %d", mSourceResX, mSourceResY);
     LOG(LOG_INFO, "    ..source frame size: %d", mSourceResX * mSourceResY * MSD_BYTES_PER_PIXEL);
@@ -180,7 +180,7 @@ bool MediaSourceLogo::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     //### initiate local variables
     //######################################################
     InitFpsEmulator();
-    mSourceStartPts = 0;
+    mInputStartPts = 0;
     mFrameNumber = 0;
     mMediaType = MEDIA_VIDEO;
     mMediaSourceOpened = true;
@@ -298,7 +298,7 @@ int MediaSourceLogo::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
     if (mFrameTimestamps.size() > 0)
     {
 		// calculate the time which corresponds to the request FPS
-		int64_t tTimePerFrame = 1000000 / mFrameRate; // in us
+		int64_t tTimePerFrame = 1000000 / mInputFrameRate; // in us
 
 		// calculate the time difference for the current frame in relation to the first timestamp in the history
 		int64_t tTimeDiffForHistory = tTimePerFrame * mFrameTimestamps.size();

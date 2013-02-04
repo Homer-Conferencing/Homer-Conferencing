@@ -41,19 +41,18 @@ namespace Homer { namespace Multimedia {
 // the following de/activates debugging of send RTP packets
 //#define RTP_DEBUG_PACKET_ENCODER_FFMPEG
 //#define RTP_DEBUG_PACKET_ENCODER
+//#define RTP_DEBUG_PACKET_ENCODER_PTS
 
 // the following de/activates debugging of received RTP packets
 //#define RTP_DEBUG_PACKET_DECODER
 //#define RTP_DEBUG_PACKET_DECODER_SEQUENCE_NUMBERS
 //#define RTP_DEBUG_PACKET_DECODER_TIMESTAMPS
 
-// the following de/activates debugging of RTCP packets
-//#define RTCP_DEBUG_PACKETS_DECODER
-
 //#define RTCP_DEBUG_PACKETS_ENCODER
 //#define RTCP_DEBUG_PACKET_ENCODER_FFMPEG
 
-//#define RTP_DEBUG_PACKET_ENCODER_PTS
+// the following de/activates debugging of RTCP packets
+//#define RTCP_DEBUG_PACKETS_DECODER
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -155,7 +154,7 @@ public:
 
 protected:
     uint64_t GetCurrentPtsFromRTP(); // uses the timestamps from the RTP header to derive a valid PTS value
-    void GetSynchronizationReferenceFromRTP(uint64_t &pReferenceNtpTime, unsigned int &pReferencePts);
+    void GetSynchronizationReferenceFromRTP(uint64_t &pReferenceNtpTime, uint64_t &pReferencePts);
     unsigned int GetSourceIdentifierFromRTP(); // returns the RTP source identifier
     bool HasSourceChangedFromRTP(); // return if RTP source identifier has changed and resets the flag
 
@@ -166,6 +165,8 @@ protected:
 
 private:
     void AnnounceLostPackets(uint64_t pCount);
+
+    void RtcpPatchLiveSenderReport(char *pHeader, uint32_t pTimestamp);
 
     /* internal RTP packetizer for h.261 */
     bool OpenRtpEncoderH261(std::string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream);
@@ -201,7 +202,7 @@ private:
     uint64_t            mRemoteTimestampLastPacket;
     int 				mRemoteTimestampConsecutiveOverflows;
     uint64_t            mRemoteTimestampLastCompleteFrame;
-    unsigned int        mRemoteStartTimestamp;
+    uint64_t            mRemoteStartTimestamp;
     bool				mRtpRemoteSourceChanged;
     int                 mRemoteSourceChangedLastPayload;
     int                 mRemoteSourceChangedResetScore;
@@ -214,6 +215,7 @@ private:
     char                *mRtpPacketBuffer;
     char                *mRtpPacketStream;
     char                *mRtpPacketStreamPos;
+    char                *mRtcpLastSenderReport;
     /* H261 RTP encoder */
     static unsigned int mH261PayloadSizeMax;
     bool                mH261UseInternalEncoder;
@@ -228,7 +230,7 @@ private:
     /* RTCP */
     Mutex               mSynchDataMutex;
     uint64_t            mRtcpLastRemoteNtpTime; // (NTP timestamp)
-    unsigned int        mRtcpLastRemoteTimestamp; // PTS value (without clock rata adaption!)
+    uint64_t            mRtcpLastRemoteTimestamp; // PTS value (without clock rata adaption!)
     unsigned int        mRtcpLastRemotePackets; // sent packets, reported via RTCP
     unsigned int        mRtcpLastRemoteOctets; // sent bytes, reported via RTCP
     uint64_t            mRtcpLastReceivedPackets;

@@ -143,9 +143,10 @@ struct AudioDeviceDescriptor
 
 typedef std::vector<AudioDeviceDescriptor> AudioDevices;
 
-struct ChunkDescriptor
+struct FrameDescriptor
 {
-    int64_t     Pts;
+    int64_t     Number;
+    void        *Data;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -226,8 +227,8 @@ public:
     static int FillFrame(AVFrame *pFrame, void *pData, enum PixelFormat pPixFormat, int pWidth, int pHeight);
     static void VideoFormat2Resolution(VideoFormat pFormat, int& pX, int& pY);
     static void VideoString2Resolution(std::string pString, int& pX, int& pY);
-    virtual float GetFrameRate();
-    virtual float GetFrameRatePlayout();
+    virtual float GetInputFrameRate();
+    virtual float GetOutputFrameRate();
     virtual void SetFrameRate(float pFps);
 
     /* audio/video */
@@ -302,7 +303,7 @@ public:
 
     /* relaying */
     virtual bool SupportsRelaying();
-    virtual int GetRelayFrameDelay(); // 3 means "the output is delayed by 3 frames)
+    virtual int GetEncoderBufferedFrames();
 
     /* recording control WITH reencoding but WITHOUT rtp support */
     virtual bool StartRecording(std::string pSaveFileName, int SaveFileQuality = 100, bool pRealTime = true /* 1 = frame rate emulation, 0 = no pts adaption */); // needs valid mCodecContext, otherwise RGB32 pictures are assumed as input; source resolution must not change during recording is activated
@@ -421,7 +422,8 @@ protected:
     AVCodecContext      *mCodecContext;
     int                 mMediaStreamIndex;
     double              mSourceStartTimeForRTGrabbing;
-    double              mSourceStartPts;
+    double              mSourceTimeShiftForRTGrabbing;
+    double              mInputStartPts;
     double              mNumberOfFrames;
     enum CodecID        mSourceCodecId;
     bool                mEOFReached;
@@ -443,9 +445,10 @@ protected:
     int                 mSourceResY;
     int                 mTargetResX;
     int                 mTargetResY;
-    float               mFrameRate; // ffmpeg internal referen frame rate
-    float 				mRealFrameRate; // presentation frame rate
     SwsContext          *mVideoScalerContext;
+    /* audio/video */
+    float               mInputFrameRate;
+    float               mOutputFrameRate; // presentation frame rate
     /* frame stats */
     int64_t             mDecodedIFrames;
     int64_t             mDecodedPFrames;

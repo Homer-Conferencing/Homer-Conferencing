@@ -71,6 +71,8 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+//#define PARTICIPANT_WIDGET_DEBUG_AV_SYNC
+
 // how often should we play the "call" event sound?
 #define SOUND_LOOPS_FOR_CALL                                        10
 // at what time period is timerEvent() called?
@@ -85,7 +87,7 @@ namespace Homer { namespace Gui {
 // how many times do we have to detect continuous asynch. A/V playback before we synch. audio and video? (to avoid false-positives)
 #define AV_SYNC_CONSECUTIVE_ASYNC_THRESHOLD                          3 // checked every STREAM_POS_UPDATE_DELAY ms
 // how many times should we try to adapt the A/V synch bei waiting cycles? afterwards we try a reset of both the video and audio source
-#define AV_SYNC_CONSECUTIVE_ASYNC_THRESHOLD_TRY_RESET                8
+#define AV_SYNC_CONSECUTIVE_ASYNC_THRESHOLD_TRY_RESET               32
 // size of the pre-buffer during a live conference
 #define AV_CONFERENCE_BUFFER							          0.34 // seconds  - 1/24s time per frames * 8 frames =0.33333
 
@@ -1405,17 +1407,19 @@ void ParticipantWidget::AVSync()
         int64_t tCurTime = Time::GetTimeStamp();
         if ((tCurTime - mTimeOfLastAVSynch  >= AV_SYNC_MIN_PERIOD * 1000))
         {
-            //############################
-            //### limit vieo buffering
-            //############################
-            float tBufferTime = mVideoSource->GetFrameBufferTime();
-            float tBufferTimeLimit = mVideoSource->GetFrameBufferPreBufferingTime() + AV_SYNC_MAX_DRIFT_UNTIL_RESYNC;
-            if ((mVideoSource != NULL) && (tBufferTime > tBufferTimeLimit))
-            {// buffer has too many frames, this can be the case if the system has temporary high load
-                LOG(LOG_WARN, "Detected over-buffering for video stream, buffer time: %.2f, limit is: %.2f", tBufferTime, tBufferTimeLimit);
-                mVideoWidget->GetWorker()->SyncClock();
-                ResetAVSync();
-            }
+            #ifdef PARTICIPANT_WIDGET_AV_SYNC_AVOID_OVER_BUFFERING
+                //############################
+                //### limit vieo buffering
+                //############################
+                float tBufferTime = mVideoSource->GetFrameBufferTime();
+                float tBufferTimeLimit = mVideoSource->GetFrameBufferPreBufferingTime() + AV_SYNC_MAX_DRIFT_UNTIL_RESYNC;
+                if ((mVideoSource != NULL) && (tBufferTime > tBufferTimeLimit))
+                {// buffer has too many frames, this can be the case if the system has temporary high load
+                    LOG(LOG_WARN, "Detected over-buffering for video stream, buffer time: %.2f, limit is: %.2f", tBufferTime, tBufferTimeLimit);
+                    mVideoWidget->GetWorker()->SyncClock();
+                    ResetAVSync();
+                }
+            #endif
 
             //HINT: we have to keep the audio buffering flexible! otherwise, the A/V synchronizatino won't work anymore
 
@@ -1442,9 +1446,9 @@ void ParticipantWidget::AVSync()
                             if (mAVASyncCounter < AV_SYNC_CONSECUTIVE_ASYNC_THRESHOLD * (AV_SYNC_CONSECUTIVE_ASYNC_THRESHOLD_TRY_RESET + 1))
                             {// try to adapt waiting times
                                 if (tTimeDiff > 0)
-                                    LOG(LOG_WARN, "Detected asynchronous A/V playback, drift is %3.2f seconds (video before audio), max. allowed drift is %3.2f seconds, last synch. was at %"PRId64", synchronizing now..", tTimeDiff, AV_SYNC_MAX_DRIFT_UNTIL_RESYNC, mTimeOfLastAVSynch);
+                                    LOG(LOG_WARN, "Detected asynchronous A/V playback, drift is %f seconds (video before audio), max. allowed drift is %3.2f seconds, last synch. was at %"PRId64", synchronizing now..", tTimeDiff, AV_SYNC_MAX_DRIFT_UNTIL_RESYNC, mTimeOfLastAVSynch);
                                 else
-                                    LOG(LOG_WARN, "Detected asynchronous A/V playback, drift is %3.2f seconds (audio before video), max. allowed drift is %3.2f seconds, last synch. was at %"PRId64", synchronizing now..", tTimeDiff, AV_SYNC_MAX_DRIFT_UNTIL_RESYNC, mTimeOfLastAVSynch);
+                                    LOG(LOG_WARN, "Detected asynchronous A/V playback, drift is %f seconds (audio before video), max. allowed drift is %3.2f seconds, last synch. was at %"PRId64", synchronizing now..", tTimeDiff, AV_SYNC_MAX_DRIFT_UNTIL_RESYNC, mTimeOfLastAVSynch);
 
                                 mAudioWidget->GetWorker()->SyncClock(mVideoSource);
                                 mAVSyncCounter++;
@@ -1738,9 +1742,9 @@ void ParticipantWidget::ActionPlayPauseMovieFile(QString pFileName)
         mAudioWidget->GetWorker()->PlayFile(pFileName);
         if (mPlayPauseButtonIsPaused != 1)
         {
-            mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Pause.png"));
+            mTbPlayPause->setIcon(QPixmap(":/images/22_22/AV_Pause.png"));
             if (mFullscreeMovieControlWidget != NULL)
-                mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Pause.png"));
+                mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/AV_Pause.png"));
             mPlayPauseButtonIsPaused = 1;
          }
     }else
@@ -1750,9 +1754,9 @@ void ParticipantWidget::ActionPlayPauseMovieFile(QString pFileName)
         mAudioWidget->GetWorker()->PauseFile();
         if (mPlayPauseButtonIsPaused != 0)
         {
-            mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Play.png"));
+            mTbPlayPause->setIcon(QPixmap(":/images/22_22/AV_Play.png"));
             if (mFullscreeMovieControlWidget != NULL)
-                mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Play.png"));
+                mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/AV_Play.png"));
             mPlayPauseButtonIsPaused = 0;
         }
     }
@@ -1827,17 +1831,13 @@ void ParticipantWidget::SeekMovieFileRelative(float pSeconds)
     LOG(LOG_VERBOSE, "Seeking relative %.2f seconds to position %.2f", pSeconds, tTargetPos);
 
     mVideoWidget->GetWorker()->Seek(tTargetPos);
+    mAudioWidget->GetWorker()->Seek(tTargetPos);
     #ifdef PARTICIPANT_WIDGET_AV_SYNC
         if (PlayingMovieFile())
         {// synch. audio to video
             // force an AV sync
             mTimeOfLastAVSynch = 0;
-        }else
-        {// explicit seeking in audio file
-            mAudioWidget->GetWorker()->Seek(tTargetPos);
         }
-    #else
-        mAudioWidget->GetWorker()->Seek(tTargetPos);
     #endif
 }
 
@@ -1893,17 +1893,13 @@ void ParticipantWidget::AVSeek(int pPos)
         tPos = (double)mAudioWidget->GetWorker()->GetSeekEnd() * pPos / 1000;
 
     mVideoWidget->GetWorker()->Seek(tPos);
+    mAudioWidget->GetWorker()->Seek(tPos);
     #ifdef PARTICIPANT_WIDGET_AV_SYNC
         if (PlayingMovieFile())
         {// synch. audio to video
             // force an AV sync
             mTimeOfLastAVSynch = 0;
-        }else
-        {// explicit seeking in audio file
-            mAudioWidget->GetWorker()->Seek(tPos);
         }
-    #else
-        mAudioWidget->GetWorker()->Seek(tPos);
     #endif
 }
 
@@ -1917,9 +1913,9 @@ void ParticipantWidget::CreateFullscreenControls()
             mFullscreeMovieControlWidget->resize(mVideoWidget->width(), 58);
             mFullscreeMovieControlWidget->move(mVideoWidget->pos().x(), mVideoWidget->height() - 58);
             if (mVideoWidget->GetWorker()->IsPaused() || mAudioWidget->GetWorker()->IsPaused())
-				mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Play.png"));
+				mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/AV_Play.png"));
             else
-				mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Pause.png"));
+				mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/AV_Pause.png"));
             connect(mFullscreeMovieControlWidget->mTbPlayPause, SIGNAL(clicked()), this, SLOT(ActionPlayPauseMovieFile()));
             connect(mFullscreeMovieControlWidget->mSlMovie, SIGNAL(sliderMoved(int)), this, SLOT(ActionSeekMovieFile(int)));
             connect(mFullscreeMovieControlWidget->mSlMovie, SIGNAL(valueChanged(int)), this, SLOT(ActionSeekMovieFileToPos(int)));
@@ -2079,18 +2075,18 @@ void ParticipantWidget::UpdateMovieControls()
         {
             if (mPlayPauseButtonIsPaused != 0)
             {
-                mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Play.png"));
+                mTbPlayPause->setIcon(QPixmap(":/images/22_22/AV_Play.png"));
                 if (mFullscreeMovieControlWidget != NULL)
-                    mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Play.png"));
+                    mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/AV_Play.png"));
                 mPlayPauseButtonIsPaused = 0;
             }
         }else
         {
             if (mPlayPauseButtonIsPaused != 1)
             {
-                mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Pause.png"));
+                mTbPlayPause->setIcon(QPixmap(":/images/22_22/AV_Pause.png"));
                 if (mFullscreeMovieControlWidget != NULL)
-                    mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/Audio_Pause.png"));
+                    mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/AV_Pause.png"));
                 mPlayPauseButtonIsPaused = 1;
             }
         }

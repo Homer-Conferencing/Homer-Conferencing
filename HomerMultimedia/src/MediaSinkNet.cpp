@@ -197,17 +197,21 @@ void MediaSinkNet::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
 {
     int tNewMaxNetworkPacketSize = -1;
 
-    // save maximum network packet size to use it later within SendPacket() function
-    if (pStream->codec->codec_id == CODEC_ID_H261)
-        tNewMaxNetworkPacketSize = RTP::GetH261PayloadSizeMax() + RTP_HEADER_SIZE + 4 /* H.261 rtp payload header */;
-    else
-        tNewMaxNetworkPacketSize = pStream->codec->rtp_payload_size;
-
-    // update max. network packet size
-    if (mMaxNetworkPacketSize != tNewMaxNetworkPacketSize)
+    // store the max. RTP payload size from AVStream*
+    if (pStream != NULL)
     {
-        LOG(LOG_WARN, "Setting max. network packet size to: %d for codec: %s", tNewMaxNetworkPacketSize, avcodec_get_name(pStream->codec->codec_id));
-        mMaxNetworkPacketSize = tNewMaxNetworkPacketSize;
+        // save maximum network packet size to use it later within SendPacket() function
+        if (pStream->codec->codec_id == CODEC_ID_H261)
+            tNewMaxNetworkPacketSize = RTP::GetH261PayloadSizeMax() + RTP_HEADER_SIZE + 4 /* H.261 rtp payload header */;
+        else
+            tNewMaxNetworkPacketSize = pStream->codec->rtp_payload_size;
+
+        // update max. network packet size
+        if (mMaxNetworkPacketSize != tNewMaxNetworkPacketSize)
+        {
+            LOG(LOG_WARN, "Setting max. network packet size to: %d for codec: %s", tNewMaxNetworkPacketSize, avcodec_get_name(pStream->codec->codec_id));
+            mMaxNetworkPacketSize = tNewMaxNetworkPacketSize;
+        }
     }
 
     // call ProcessPacket from mem based media sink
@@ -228,11 +232,11 @@ void MediaSinkNet::StopProcessing()
 	MediaSinkMem::StopProcessing();
 }
 
-void MediaSinkNet::WriteFragment(char* pData, unsigned int pSize)
+void MediaSinkNet::WriteFragment(char* pData, unsigned int pSize, int64_t pFragmentNumber)
 {
     if (mRtpActivated)
     {// RTP active
-        MediaSinkMem::WriteFragment(pData, pSize);
+        MediaSinkMem::WriteFragment(pData, pSize, pFragmentNumber);
     }else
     {// RTP inactive
         #ifdef MSIN_DEBUG_PACKETS
@@ -274,7 +278,7 @@ void MediaSinkNet::WriteFragment(char* pData, unsigned int pSize)
                 int64_t tTime4 = Time::GetTimeStamp();
                 LOG(LOG_VERBOSE, "       SendFragment::AnnouncePacket for a fragment of %u bytes took %"PRId64" us", tFragmentSize, tTime4 - tTime3);
             #endif
-            MediaSinkMem::WriteFragment(tFragmentData, tFragmentSize);
+            MediaSinkMem::WriteFragment(tFragmentData, tFragmentSize, pFragmentNumber /* do not increase the fragment number here because we don't disntinguish between sub-fragments here*/);
 
             tFragmentData = tFragmentData + tFragmentSize;
             tFragmentCount--;
@@ -318,7 +322,6 @@ void MediaSinkNet::StartSender()
 void MediaSinkNet::StopSender()
 {
     int tSignalingRound = 0;
-    char tTmp[4];
 
     LOG(LOG_VERBOSE, "Stopping sender");
 
@@ -335,7 +338,7 @@ void MediaSinkNet::StopSender()
             tSignalingRound++;
 
             // write fake data to awake sender thread as long as it still runs
-            mSinkFifo->WriteFifo(tTmp, 0);
+            mSinkFifo->WriteFifo(NULL, 0, 0);
 
             Suspend(25 * 1000);
         }while(IsRunning());
@@ -349,6 +352,7 @@ void* MediaSinkNet::Run(void* pArgs)
     int tFifoEntry = 0;
     char *tBuffer;
     int tBufferSize;
+    int64_t tFragmentNumber;
 
     LOG(LOG_VERBOSE, "%s Stream relay for target %s:%u started", GetDataTypeStr().c_str(), mTargetHost.c_str(), mTargetPort);
     if (mNAPIUsed)
@@ -387,10 +391,19 @@ void* MediaSinkNet::Run(void* pArgs)
     {
     	if (mSinkFifo != NULL)
     	{
-            tFifoEntry = mSinkFifo->ReadFifoExclusive(&tBuffer, tBufferSize);
+    	    int tBufferedPackets = mSinkFifo->GetUsage();
+
+            tFifoEntry = mSinkFifo->ReadFifoExclusive(&tBuffer, tBufferSize, tFragmentNumber);
 
             if ((tBufferSize > 0) && (mSenderNeeded))
             {
+                #ifdef MSIN_DEBUG_PACKETS
+                    if (tBufferedPackets > 2)
+                        LOG(LOG_WARN, "%d/%d %s packets are already buffered for relaying to %s", tBufferedPackets, mSinkFifo->GetSize(), mCodec.c_str(), GetId().c_str());
+                    else
+                        LOG(LOG_VERBOSE, "Sending packet %d with %d bytes, %d remaining packets in queue", (int)tFragmentNumber, pBufferSize, tBufferedPackets);
+                #endif
+
             	SendPacket(tBuffer, tBufferSize);
             }
 
