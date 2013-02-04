@@ -292,6 +292,12 @@ void MediaSourceMem::WriteFragment(char *pBuffer, int pBufferSize, int64_t pFrag
         // log statistics
         // mFragmentHeaderSize to add additional TCPFragmentHeader to the statistic if TCP is used, this is triggered by MediaSourceNet
         AnnouncePacket((int)pBufferSize + mPacketStatAdditionalFragmentSize);
+
+		#ifdef MSMEM_DEBUG_PACKETS
+			LOG(LOG_VERBOSE, "Write fragment at %p with size %5d for %s decoder", pBuffer, pBufferSize, GetMediaTypeStr().c_str());
+        	if (pBufferSize > 7)
+        		LOG(LOG_VERBOSE, "First eight bytes are: %hhx %hhx %hhx %hhx  %hhx %hhx %hhx %hhx", pBuffer[0], pBuffer[1], pBuffer[2], pBuffer[3], pBuffer[4], pBuffer[5], pBuffer[6], pBuffer[7]);
+		#endif
 	}
 	
     if (mDecoderFragmentFifo->GetUsage() >= mDecoderFragmentFifo->GetSize() - 4)
@@ -305,19 +311,19 @@ void MediaSourceMem::WriteFragment(char *pBuffer, int pBufferSize, int64_t pFrag
     mDecoderFragmentFifo->WriteFifo(pBuffer, pBufferSize, pFragmentNumber);
 }
 
-void MediaSourceMem::ReadFragment(char *pData, int &pDataSize, int64_t &pFragmentNumber)
+void MediaSourceMem::ReadFragment(char *pBuffer, int &pBufferSize, int64_t &pFragmentNumber)
 {
     if (mDecoderFragmentFifo == NULL)
     {
         return;
     }
 
-    mDecoderFragmentFifo->ReadFifo(&pData[0], pDataSize, pFragmentNumber);
+    mDecoderFragmentFifo->ReadFifo(&pBuffer[0], pBufferSize, pFragmentNumber);
 
-    if (pDataSize > 0)
+    if (pBufferSize > 0)
     {
         #ifdef MSMEM_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "Read fragment with number %5u at %p with size %5d towards decoder", (unsigned int)++mFragmentNumber, pData, pDataSize);
+            LOG(LOG_VERBOSE, "Read fragment with number %5u at %p with size %5d towards %s decoder", (unsigned int)++mFragmentNumber, pBuffer, pBufferSize, GetMediaTypeStr().c_str());
         #endif
     }
 
@@ -1212,7 +1218,7 @@ void MediaSourceMem::ReadPacketFromInputStream(AVPacket *pPacket, double &pPacke
         if ((tRes = av_read_frame(mFormatContext, pPacket)) < 0)
         {// failed to read frame
             #ifdef MSMEM_DEBUG_PACKETS
-                if (!tInputIsPicture)
+                if (!InputIsPicture())
                     LOG(LOG_VERBOSE, "Read bad frame %d with %d bytes from stream %d and result %s(%d)", pPacket->pts, pPacket->size, pPacket->stream_index, strerror(AVUNERROR(tRes)), tRes);
                 else
                     LOG(LOG_VERBOSE, "Read bad picture %d with %d bytes from stream %d and result %s(%d)", pPacket->pts, pPacket->size, pPacket->stream_index, strerror(AVUNERROR(tRes)), tRes);
@@ -1251,7 +1257,7 @@ void MediaSourceMem::ReadPacketFromInputStream(AVPacket *pPacket, double &pPacke
             if (pPacket->stream_index == mMediaStreamIndex)
             {
                 #ifdef MSMEM_DEBUG_PACKETS
-                    if (!tInputIsPicture)
+                    if (!InputIsPicture())
                         LOG(LOG_VERBOSE, "Read good frame %d with %d bytes from stream %d", pPacket->pts, pPacket->size, pPacket->stream_index);
                     else
                         LOG(LOG_VERBOSE, "Read good picture %d with %d bytes from stream %d", pPacket->pts, pPacket->size, pPacket->stream_index);

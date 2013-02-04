@@ -139,7 +139,7 @@ protected:
     virtual void DoSetVideoGrabResolution(int pResX = 352, int pResY = 288);
 
     static int GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize);
-    void ReadFragment(char *pData, int &pDataSize, int64_t &pFragmentNumber);
+    void ReadFragment(char *pBuffer, int &pBufferSize, int64_t &pFragmentNumber);
 
     virtual bool InputIsPicture();
 
